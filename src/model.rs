@@ -5,6 +5,7 @@
 //! of *auxiliary functions* (e.g. its contacts). Cross references are derived from that.
 
 use crate::geom::{p, P};
+pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -59,7 +60,7 @@ impl Default for Project {
         let mut prj = Project {
             info: ProjectInfo::default(),
             pages: Vec::new(),
-            parts: default_parts(),
+            parts: Vec::new(),
             devices: BTreeMap::new(),
             next_id: 1,
         };
@@ -266,56 +267,13 @@ pub struct Shape {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
-pub struct Part {
-    pub number: String,
-    pub manufacturer: String,
-    pub description: String,
-    pub price: f32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
 pub struct DeviceData {
-    pub part: String,
+    /// Assigned parts (e.g. contactor + auxiliary contact block).
+    pub parts: Vec<PartRef>,
     pub description: String,
-}
-
-/// Generic example parts so a fresh project can produce a bill of materials.
-pub fn default_parts() -> Vec<Part> {
-    let mk = |n: &str, d: &str, price: f32| Part {
-        number: n.into(),
-        manufacturer: "Generic".into(),
-        description: d.into(),
-        price,
-    };
-    vec![
-        mk("CT-9A-24DC", "Contactor 3P 9 A, coil 24 V DC, 1 NO aux", 38.50),
-        mk("CT-18A-24DC", "Contactor 3P 18 A, coil 24 V DC, 1 NO aux", 52.00),
-        mk("AUX-1NO1NC", "Auxiliary contact block 1 NO + 1 NC", 9.80),
-        mk("RLY-24DC-2CO", "Interface relay 24 V DC, 2 CO", 12.40),
-        mk("TMR-24DC-OND", "Timer relay on-delay 24 V DC, 1 CO", 34.90),
-        mk("MPS-2.5-4A", "Motor protection switch 2.5 - 4 A", 61.00),
-        mk("MPS-4-6.3A", "Motor protection switch 4 - 6.3 A", 63.00),
-        mk("MCB-1P-C6", "Miniature circuit breaker 1P C6", 8.70),
-        mk("MCB-1P-B10", "Miniature circuit breaker 1P B10", 8.70),
-        mk("MCB-3P-C16", "Miniature circuit breaker 3P C16", 27.30),
-        mk("FUSE-5X20-2A", "Fuse 5x20 mm 2 A with holder", 4.20),
-        mk("OL-2.8-4A", "Thermal overload relay 2.8 - 4 A", 44.00),
-        mk("PB-GN-1NO", "Pushbutton green, 1 NO", 11.20),
-        mk("PB-RD-1NC", "Pushbutton red, 1 NC", 11.20),
-        mk("ESTOP-1NC", "Emergency stop mushroom 40 mm, 1 NC", 24.60),
-        mk("SEL-2POS-1NO", "Selector switch 2 positions, 1 NO", 15.90),
-        mk("LMP-GN-24", "Indicator lamp green 24 V", 9.10),
-        mk("LMP-RD-24", "Indicator lamp red 24 V", 9.10),
-        mk("MOT-0.75KW", "Three-phase motor 0.75 kW 400 V", 180.00),
-        mk("PS-24DC-5A", "Power supply 230 V AC / 24 V DC 5 A", 89.00),
-        mk("TB-2.5", "Feed-through terminal 2.5 mm²", 0.95),
-        mk("TB-PE-2.5", "Protective earth terminal 2.5 mm²", 1.80),
-        mk("PROX-M12-PNP", "Inductive proximity sensor M12 PNP NO", 29.00),
-        mk("SV-24DC", "Solenoid valve coil 24 V DC", 22.50),
-        mk("PLC-DI16", "PLC digital input module 16 x 24 V DC", 145.00),
-        mk("PLC-DO16", "PLC digital output module 16 x 24 V DC 0.5 A", 165.00),
-    ]
+    /// Single part number of files written by older versions.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub part: String,
 }
 
 impl Project {
@@ -347,9 +305,39 @@ impl Project {
                 }
             }
         }
+        self.migrate_part_assignments();
         if self.pages.is_empty() {
             let id = self.new_id();
             self.pages.push(Page::new(id, "1", "Schematic", PageKind::Schematic));
+        }
+    }
+
+    /// Converts single part assignments of older files to part lists; old generic
+    /// part numbers are mapped onto the catalog ("CT-9A-24DC" → "GEN.CT-9A-24DC").
+    fn migrate_part_assignments(&mut self) {
+        let catalog = crate::parts::default_catalog();
+        let mut remapped = Vec::new();
+        for dev in self.devices.values_mut() {
+            let legacy = std::mem::take(&mut dev.part);
+            if legacy.is_empty() || !dev.parts.is_empty() {
+                continue;
+            }
+            let gen = format!("GEN.{legacy}");
+            let number = if catalog.iter().any(|p| p.number == gen) {
+                remapped.push((legacy.clone(), gen.clone()));
+                gen
+            } else {
+                legacy
+            };
+            dev.parts.push(PartRef { number, count: 1 });
+        }
+        for (old, new) in remapped {
+            self.parts.retain(|p| p.number != old);
+            if !self.parts.iter().any(|p| p.number == new) {
+                if let Some(p) = catalog.iter().find(|p| p.number == new) {
+                    self.parts.push(p.clone());
+                }
+            }
         }
     }
 

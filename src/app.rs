@@ -3,7 +3,9 @@
 
 use crate::editor::{symbol_icon, Editor, Tool};
 use crate::index::Index;
-use crate::io::{self, FileIo, PROJECT_EXT};
+use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
+use crate::parts::{self, PartsDb};
+use crate::parts_ui::{PartsAction, PartsUi};
 use crate::model::*;
 use crate::netlist::{pin_designation, PinRef};
 use crate::ops;
@@ -35,7 +37,8 @@ pub struct App {
     show_reports: bool,
     report_kind: ReportKind,
     show_project: bool,
-    show_parts: bool,
+    parts_db: PartsDb,
+    parts_ui: PartsUi,
     show_help: bool,
     page_props: Option<usize>,
     message: Option<(String, f64)>,
@@ -46,10 +49,13 @@ impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> App {
         let mut prj: Option<Project> = None;
         let mut file_name = None;
+        let mut parts_db: Option<PartsDb> = None;
         if let Some(storage) = cc.storage {
             prj = eframe::get_value(storage, "project");
             file_name = eframe::get_value(storage, "file_name").flatten();
+            parts_db = eframe::get_value(storage, "parts_db");
         }
+        let parts_db = parts_db.unwrap_or_default();
         let mut prj = prj.unwrap_or_else(sample::demo_project);
         prj.normalize();
         let history = History::new(&prj);
@@ -70,7 +76,8 @@ impl App {
             show_reports: false,
             report_kind: ReportKind::DeviceList,
             show_project: false,
-            show_parts: false,
+            parts_db,
+            parts_ui: PartsUi::default(),
             show_help: false,
             page_props: None,
             message: None,
@@ -171,6 +178,20 @@ impl App {
 
     fn poll_loaded(&mut self, ctx: &egui::Context) {
         if let Some(loaded) = self.io.poll() {
+            if loaded.purpose == Purpose::Parts {
+                match parts::import(&loaded.content) {
+                    Ok(list) => {
+                        let n = list.len();
+                        for p in list {
+                            self.parts_db.upsert(p);
+                        }
+                        self.parts_db.sort();
+                        self.notify(ctx, format!("Imported {n} parts into the database"));
+                    }
+                    Err(e) => self.notify(ctx, format!("Parts import failed: {e}")),
+                }
+                return;
+            }
             match serde_json::from_str::<Project>(&loaded.content) {
                 Ok(prj) => {
                     self.replace_project(prj, Some(loaded.name.clone()));
@@ -212,7 +233,7 @@ impl App {
                     self.replace_project(Project::default(), None);
                 }
                 if ui.button("Open…        Ctrl+O").clicked() {
-                    self.io.open_project(&ctx);
+                    self.io.open(&ctx, Purpose::Project);
                 }
                 if ui.button("Open demo project").clicked() {
                     self.replace_project(sample::demo_project(), None);
@@ -328,7 +349,7 @@ impl App {
                     self.show_project = true;
                 }
                 if ui.button("Parts management…").clicked() {
-                    self.show_parts = true;
+                    self.parts_ui.open = true;
                 }
                 if ui.button("Check project").clicked() {
                     self.left_tab = LeftTab::Check;
@@ -751,23 +772,73 @@ impl App {
             ui.label(RichText::new(format!("Device {}", edited.tag)).strong());
             let mut data = self.prj.devices.get(&edited.tag).cloned().unwrap_or_default();
             let before = data.clone();
-            egui::Grid::new("dprops").num_columns(2).show(ui, |ui| {
-                ui.label("Part");
-                let parts = &self.prj.parts;
-                let shown = if data.part.is_empty() { "(none)".to_string() } else { data.part.clone() };
-                egui::ComboBox::from_id_salt("part").selected_text(shown).width(170.0).show_ui(ui, |ui| {
-                    ui.selectable_value(&mut data.part, String::new(), "(none)");
-                    for part in parts {
-                        ui.selectable_value(&mut data.part, part.number.clone(), format!("{} – {}", part.number, part.description));
-                    }
-                });
-                ui.end_row();
+            ui.horizontal(|ui| {
                 ui.label("Description");
                 ui.text_edit_singleline(&mut data.description);
-                ui.end_row();
+            });
+            // Part assignment (several parts per device, e.g. contactor + auxiliary block)
+            ui.label(RichText::new("Parts").strong());
+            let mut remove = None;
+            let mut show_part = None;
+            egui::Grid::new("devparts").num_columns(2).striped(true).show(ui, |ui| {
+                for (i, r) in data.parts.iter_mut().enumerate() {
+                    let known = self.prj.parts.iter().find(|p| p.number == r.number);
+                    let link = ui.link(RichText::new(&r.number).monospace());
+                    let link = match known {
+                        Some(p) => link.on_hover_text(format!("{}\n{}", p.description, p.template_summary())),
+                        None => link.on_hover_text("Not in the project parts – synchronize in parts management"),
+                    };
+                    if link.clicked() {
+                        show_part = Some(r.number.clone());
+                    }
+                    ui.horizontal(|ui| {
+                        ui.add(egui::DragValue::new(&mut r.count).range(1..=999).prefix("× "));
+                        if ui.small_button("🗑").on_hover_text("Remove part").clicked() {
+                            remove = Some(i);
+                        }
+                    });
+                    ui.end_row();
+                }
+            });
+            if let Some(i) = remove {
+                data.parts.remove(i);
+            }
+            if let Some(n) = show_part {
+                self.parts_ui.show_part(&n, true);
+            }
+            ui.horizontal(|ui| {
+                if ui.button("➕ Add part…").on_hover_text("Part selection from the parts database").clicked() {
+                    self.parts_ui.select_for(&edited.tag);
+                }
+                if !data.parts.is_empty()
+                    && ui
+                        .button("Apply designations")
+                        .on_hover_text("Takes the connection point designations of all functions of this device from the function templates of its parts")
+                        .clicked()
+                {
+                    parts::apply_designations(&mut self.prj, Some(&self.parts_db), &edited.tag);
+                }
             });
             if data != before {
-                self.prj.devices.insert(edited.tag.clone(), data);
+                self.prj.devices.insert(edited.tag.clone(), data.clone());
+            }
+            // Functions placed vs. provided by the parts' function templates
+            let usage = parts::usage(&self.prj, None, &edited.tag);
+            if usage.values().any(|(_, a)| *a > 0) {
+                ui.horizontal_wrapped(|ui| {
+                    ui.spacing_mut().item_spacing.x = 10.0;
+                    for (kind, (placed, avail)) in &usage {
+                        let txt = format!("{} {placed}/{avail}", kind.title());
+                        let color = if placed > avail && *kind != parts::FnKind::Terminal {
+                            Color32::from_rgb(220, 60, 60)
+                        } else if placed < avail {
+                            ui.visuals().weak_text_color()
+                        } else {
+                            ui.visuals().text_color()
+                        };
+                        ui.label(RichText::new(txt).small().color(color)).on_hover_text("placed / provided by the parts");
+                    }
+                });
             }
             // Rename the complete device
             let rename_id = ui.scope_id().with("rename");
@@ -917,42 +988,15 @@ impl App {
             self.show_project = open;
         }
 
-        // Parts
-        if self.show_parts {
-            let mut open = true;
-            egui::Window::new("Parts management").open(&mut open).default_size([760.0, 420.0]).show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    if ui.button("➕ New part").clicked() {
-                        self.prj.parts.push(Part { number: "NEW-PART".into(), manufacturer: "Generic".into(), ..Default::default() });
-                    }
-                    ui.weak("Parts are assigned to devices in the property panel and appear in the bill of materials.");
-                });
-                ui.separator();
-                let mut remove = None;
-                egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    egui::Grid::new("parts").striped(true).num_columns(5).show(ui, |ui| {
-                        for h in ["Part number", "Manufacturer", "Description", "Price", ""] {
-                            ui.label(RichText::new(h).strong());
-                        }
-                        ui.end_row();
-                        for (i, part) in self.prj.parts.iter_mut().enumerate() {
-                            ui.add(egui::TextEdit::singleline(&mut part.number).desired_width(130.0));
-                            ui.add(egui::TextEdit::singleline(&mut part.manufacturer).desired_width(100.0));
-                            ui.add(egui::TextEdit::singleline(&mut part.description).desired_width(300.0));
-                            ui.add(egui::DragValue::new(&mut part.price).speed(0.1).range(0.0..=1.0e6).fixed_decimals(2));
-                            if ui.button("🗑").clicked() {
-                                remove = Some(i);
-                            }
-                            ui.end_row();
-                        }
-                    });
-                });
-                if let Some(i) = remove {
-                    self.prj.parts.remove(i);
-                }
-            });
-            self.show_parts = open;
+        // Parts management and part selection
+        for action in self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.prj) {
+            match action {
+                PartsAction::Import => self.io.open(ctx, Purpose::Parts),
+                PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
+                PartsAction::Message(m) => self.notify(ctx, m),
+            }
         }
+        self.parts_ui.selector(ctx, &self.parts_db, &mut self.prj);
 
         // Page properties
         if let Some(pi) = self.page_props {
@@ -1057,7 +1101,7 @@ impl App {
             self.save(ctx, false);
         }
         if open {
-            self.io.open_project(ctx);
+            self.io.open(ctx, Purpose::Project);
         }
         if pgup && self.page > 0 {
             self.goto(self.page - 1, 0);
@@ -1134,5 +1178,6 @@ impl eframe::App for App {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "project", &self.prj);
         eframe::set_value(storage, "file_name", &self.file_name);
+        eframe::set_value(storage, "parts_db", &self.parts_db);
     }
 }

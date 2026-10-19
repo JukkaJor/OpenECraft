@@ -14,6 +14,8 @@ mod io;
 mod model;
 mod netlist;
 mod ops;
+mod parts;
+mod parts_ui;
 mod render;
 mod reports;
 mod sample;

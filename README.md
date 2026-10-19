@@ -27,7 +27,20 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Project check**: aux functions without main function, duplicate main functions,
   open connection points, unpaired interruption points, short circuits between
   potentials, duplicate terminal numbers / PLC addresses, devices without part.
-- **Parts management** and device data (part number, description).
+- **Parts management** (EPLAN style):
+  - a global **parts database** shared by all projects (product top group / group /
+    subgroup tree, filter), with general, commercial (price, price unit, packaging,
+    quantity unit), technical, mounting (dimensions, weight) data, accessories and a
+    **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
+  - **project parts**: parts are copied into the project when assigned; synchronize
+    project ← database, transfer project → database, remove unused project parts;
+  - **part selection** dialog with *device selection* (only parts providing the device's
+    main function); several parts per device with quantity (contactor + aux block);
+  - function templates drive **reserve contacts** in the contact image, "Apply
+    designations" (connection point numbers from the part) and the project check
+    (more functions placed than the parts provide, parts missing in the project);
+  - import / export as CSV (`;` separated, header names) or JSON; the database is stored
+    in the app storage (desktop) / local storage (browser).
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
@@ -93,6 +106,8 @@ cargo test
 | `src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
 | `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
 | `src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, …) |
+| `src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
+| `src/parts_ui.rs` | Parts management window and part selection dialog |
 | `src/app.rs` | Application UI (menus, panels, dialogs) |
 | `src/svg.rs` | SVG / print export |
 | `src/io.rs` | Native file dialogs and browser up/downloads |

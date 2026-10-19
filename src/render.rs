@@ -5,6 +5,7 @@ use crate::geom::{p, P, R};
 use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::netlist;
+use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
 use std::collections::{BTreeSet, HashSet};
@@ -250,45 +251,63 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, def: &Symb
     // Contact image (mirror) below coils
     if matches!(def.func, Func::Main { mirror: true }) {
         if let Some(dev) = dev {
-            draw_contact_image(d, prj, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            draw_contact_image(d, prj, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
         }
     }
 }
 
-fn draw_contact_image(d: &mut dyn Draw, prj: &Project, auxs: &[Loc], bounds: &R, vertical: bool, ink: Ink) {
-    if auxs.is_empty() {
+fn draw_contact_image(d: &mut dyn Draw, prj: &Project, tag: &str, auxs: &[Loc], bounds: &R, vertical: bool, ink: Ink) {
+    // Rows: contact kind, connection designations, cross reference (None = reserve).
+    let mut rows: Vec<(ContactKind, Vec<String>, Option<String>)> = Vec::new();
+    for loc in auxs {
+        let (Some(def), Some(inst)) = (find_symbol(prj, loc), find_inst(prj, loc)) else { continue };
+        let kind = def.contact_kind().unwrap_or(ContactKind::No);
+        rows.push((kind, inst.pins.clone(), Some(loc.reference(prj))));
+    }
+    // Unused contacts of the assigned parts (function templates) are shown as reserve.
+    for f in parts::reserve_functions(prj, None, tag) {
+        let kind = match f.kind {
+            FnKind::No => ContactKind::No,
+            FnKind::Nc => ContactKind::Nc,
+            FnKind::Changeover => ContactKind::Changeover,
+            FnKind::MainContacts3 | FnKind::MainContact => ContactKind::MainNo,
+            _ => continue,
+        };
+        rows.push((kind, f.pin_list(), None));
+    }
+    if rows.is_empty() {
         return;
     }
     // Placed right of the outgoing wire so it does not overlap it.
     let (cx, mut y) = if vertical {
         (bounds.center().x + 7.5, bounds.max.y + 3.0)
     } else {
-        (bounds.max.x + 8.0, bounds.center().y - (auxs.len() as f32 - 1.0) * 1.5)
+        (bounds.max.x + 8.0, bounds.center().y - (rows.len() as f32 - 1.0) * 1.5)
     };
-    let line_ink = if ink == Ink::Text { Ink::Line } else { ink };
-    for loc in auxs {
-        let (Some(def), Some(inst)) = (find_symbol(prj, loc), find_inst(prj, loc)) else { continue };
-        let kind = def.contact_kind().unwrap_or(ContactKind::No);
-        // Common pin is listed first for changeover contacts.
-        let pins = &inst.pins;
-        let (left, right) = match kind {
-            ContactKind::Changeover => (pins.first().cloned().unwrap_or_default(), pins[1..].join(" ")),
-            _ => (pins.first().cloned().unwrap_or_default(), pins.get(1).cloned().unwrap_or_default()),
+    for (kind, pins, reference) in rows {
+        let (text_ink, line_ink) = match (&reference, ink) {
+            (None, Ink::Text) => (Ink::FrameText, Ink::Frame),
+            (_, Ink::Text) => (Ink::Text, Ink::Line),
+            _ => (ink, ink),
         };
-        let multi = def.pins.len() > 3 && kind == ContactKind::MainNo;
-        let (left, right) = if multi {
+        let (left, right) = if kind == ContactKind::MainNo && pins.len() > 3 {
             // 3-pole main contacts: "1 3 5" / "2 4 6"
-            let l: Vec<&str> = pins.iter().take(def.pins.len() / 2).map(String::as_str).collect();
-            let r: Vec<&str> = pins.iter().skip(def.pins.len() / 2).map(String::as_str).collect();
-            (l.join(" "), r.join(" "))
+            let half = pins.len() / 2;
+            (pins[..half].join(" "), pins[half..].join(" "))
+        } else if kind == ContactKind::Changeover {
+            // Common pin is listed first for changeover contacts.
+            (pins.first().cloned().unwrap_or_default(), pins.get(1..).map(|r| r.join(" ")).unwrap_or_default())
         } else {
-            (left, right)
+            (pins.first().cloned().unwrap_or_default(), pins.get(1).cloned().unwrap_or_default())
         };
         mirror_glyph(d, p(cx, y), kind, line_ink);
-        d.text(p(cx - 3.6, y), &left, SMALL_SIZE, Anchor::Right, VAnchor::Middle, ink);
-        d.text(p(cx + 3.6, y), &right, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
-        let rx = cx + 4.2 + right.chars().count() as f32 * SMALL_SIZE * 0.6;
-        d.text(p(rx.max(cx + 7.5), y), &loc.reference(prj), SMALL_SIZE, Anchor::Left, VAnchor::Middle, Ink::CrossRef);
+        d.text(p(cx - 3.6, y), &left, SMALL_SIZE, Anchor::Right, VAnchor::Middle, text_ink);
+        d.text(p(cx + 3.6, y), &right, SMALL_SIZE, Anchor::Left, VAnchor::Middle, text_ink);
+        let rx = (cx + 4.2 + right.chars().count() as f32 * SMALL_SIZE * 0.6).max(cx + 7.5);
+        match reference {
+            Some(r) => d.text(p(rx, y), &r, SMALL_SIZE, Anchor::Left, VAnchor::Middle, Ink::CrossRef),
+            None => d.text(p(rx, y), "reserve", SMALL_SIZE * 0.9, Anchor::Left, VAnchor::Middle, Ink::FrameText),
+        }
         y += 3.0;
     }
 }

@@ -3,7 +3,25 @@
 
 use std::sync::{Arc, Mutex};
 
+/// What a file is opened for.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Purpose {
+    Project,
+    /// Import into the parts database.
+    Parts,
+}
+
+impl Purpose {
+    fn filter(self) -> (&'static str, &'static [&'static str]) {
+        match self {
+            Purpose::Project => ("OpenECraft project", &[PROJECT_EXT, "json"]),
+            Purpose::Parts => ("Parts (CSV, JSON)", &["csv", "json", "txt"]),
+        }
+    }
+}
+
 pub struct Loaded {
+    pub purpose: Purpose,
     /// Native: full path. Web: file name.
     pub name: String,
     pub content: String,
@@ -23,9 +41,10 @@ impl FileIo {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn open_project(&self, _ctx: &egui::Context) {
+    pub fn open(&self, _ctx: &egui::Context, purpose: Purpose) {
+        let (name, ext) = purpose.filter();
         let Some(path) = rfd::FileDialog::new()
-            .add_filter("OpenECraft project", &[PROJECT_EXT, "json"])
+            .add_filter(name, ext)
             .pick_file()
         else {
             return;
@@ -33,7 +52,7 @@ impl FileIo {
         match std::fs::read_to_string(&path) {
             Ok(content) => {
                 if let Ok(mut inbox) = self.inbox.lock() {
-                    inbox.push(Loaded { name: path.display().to_string(), content });
+                    inbox.push(Loaded { purpose, name: path.display().to_string(), content });
                 }
             }
             Err(e) => log::error!("Could not read {}: {e}", path.display()),
@@ -41,12 +60,13 @@ impl FileIo {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn open_project(&self, ctx: &egui::Context) {
+    pub fn open(&self, ctx: &egui::Context, purpose: Purpose) {
         let inbox = self.inbox.clone();
         let ctx = ctx.clone();
         wasm_bindgen_futures::spawn_local(async move {
+            let (name, ext) = purpose.filter();
             let Some(file) = rfd::AsyncFileDialog::new()
-                .add_filter("OpenECraft project", &[PROJECT_EXT, "json"])
+                .add_filter(name, ext)
                 .pick_file()
                 .await
             else {
@@ -55,7 +75,7 @@ impl FileIo {
             let bytes = file.read().await;
             let content = String::from_utf8_lossy(&bytes).to_string();
             if let Ok(mut inbox) = inbox.lock() {
-                inbox.push(Loaded { name: file.file_name(), content });
+                inbox.push(Loaded { purpose, name: file.file_name(), content });
             }
             ctx.request_repaint();
         });

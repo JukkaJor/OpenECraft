@@ -135,10 +135,20 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
         };
         let data = prj.devices.get(tag).cloned().unwrap_or_default();
         let desc = if data.description.is_empty() {
-            prj.parts.iter().find(|p| p.number == data.part).map(|p| p.description.clone()).unwrap_or_default()
+            data.parts
+                .first()
+                .and_then(|r| prj.parts.iter().find(|p| p.number == r.number))
+                .map(|p| p.description.clone())
+                .unwrap_or_default()
         } else {
             data.description.clone()
         };
+        let part_list = data
+            .parts
+            .iter()
+            .map(|r| if r.count > 1 { format!("{}× {}", r.count, r.number) } else { r.number.clone() })
+            .collect::<Vec<_>>()
+            .join(", ");
         t.push(
             vec![
                 tag.clone(),
@@ -146,7 +156,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
                 ftext.replace('\n', " "),
                 loc_str(prj, loc.page, loc.pos),
                 dev.auxs.len().to_string(),
-                data.part.clone(),
+                part_list,
                 desc,
             ],
             Some((loc.page, loc.sym_id)),
@@ -157,19 +167,21 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
 
 fn bom(prj: &Project, idx: &Index) -> Table {
     let mut t = Table::new(&[
-        ("Pos", 0.6),
+        ("Pos", 0.5),
         ("Qty", 0.6),
+        ("Unit", 0.5),
         ("Part number", 1.8),
-        ("Manufacturer", 1.4),
-        ("Description", 3.5),
-        ("Devices", 2.4),
-        ("Unit price", 1.0),
-        ("Total", 1.0),
+        ("Type number", 1.4),
+        ("Manufacturer", 1.0),
+        ("Description", 3.2),
+        ("Devices", 2.0),
+        ("Unit price", 0.9),
+        ("Total", 0.9),
     ]);
     let mut groups: BTreeMap<String, (usize, Vec<String>)> = BTreeMap::new();
     for tag in idx.sorted_tags() {
         let Some(data) = prj.devices.get(tag) else { continue };
-        if data.part.is_empty() {
+        if data.parts.is_empty() {
             continue;
         }
         let dev = &idx.devices[tag];
@@ -187,32 +199,45 @@ fn bom(prj: &Project, idx: &Index) -> Table {
                     .unwrap_or(false)
             })
             .count();
-        let qty = if dev.mains.is_empty() && terminals > 0 { terminals } else { 1 };
-        let g = groups.entry(data.part.clone()).or_default();
-        g.0 += qty;
-        g.1.push(tag.clone());
+        let per_device = if dev.mains.is_empty() && terminals > 0 { terminals } else { 1 };
+        for r in &data.parts {
+            let g = groups.entry(r.number.clone()).or_default();
+            g.0 += per_device * r.count.max(1) as usize;
+            if !g.1.contains(tag) {
+                g.1.push(tag.clone());
+            }
+        }
     }
     let mut sum = 0.0;
     for (i, (part, (qty, tags))) in groups.iter().enumerate() {
-        let pd = prj.parts.iter().find(|p| &p.number == part).cloned().unwrap_or_default();
-        let total = pd.price * *qty as f32;
+        let pd = prj.parts.iter().find(|p| &p.number == part).cloned().unwrap_or_else(|| Part {
+            description: "(part not in project – synchronize parts)".into(),
+            ..Default::default()
+        });
+        let total = pd.total_price(*qty as f32);
         sum += total;
+        let unit_price = if pd.price_unit > 1 { format!("{:.2}/{}", pd.price, pd.price_unit) } else { format!("{:.2}", pd.price) };
         t.push(
             vec![
                 (i + 1).to_string(),
                 qty.to_string(),
+                pd.quantity_unit.clone(),
                 part.clone(),
+                pd.type_number,
                 pd.manufacturer,
                 pd.description,
                 tags.join(", "),
-                format!("{:.2}", pd.price),
+                format!("{unit_price} {}", pd.currency),
                 format!("{total:.2}"),
             ],
             None,
         );
     }
     if !groups.is_empty() {
-        t.push(vec!["".into(), "".into(), "".into(), "".into(), "Sum".into(), "".into(), "".into(), format!("{sum:.2}")], None);
+        let mut last = vec![String::new(); 10];
+        last[6] = "Sum".into();
+        last[9] = format!("{sum:.2}");
+        t.push(last, None);
     }
     t
 }
@@ -406,7 +431,33 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                 }
             }
         }
-        let has_part = prj.devices.get(tag).map(|d| !d.part.is_empty()).unwrap_or(false);
+        let data = prj.devices.get(tag);
+        for r in data.map(|d| d.parts.as_slice()).unwrap_or(&[]) {
+            if !prj.parts.iter().any(|p| p.number == r.number) {
+                let l = dev.mains.first().or(dev.others.first()).or(dev.auxs.first());
+                issue(
+                    Severity::Error,
+                    format!("{tag}: part {} is not in the project parts (Parts management ▸ synchronize)", r.number),
+                    l.and_then(t),
+                );
+            }
+        }
+        // Function templates: more functions placed than the parts provide?
+        let usage = crate::parts::usage(prj, None, tag);
+        let has_templates = usage.values().any(|(_, avail)| *avail > 0);
+        if has_templates {
+            for (kind, (placed, avail)) in &usage {
+                if *kind != crate::parts::FnKind::Terminal && placed > avail {
+                    let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
+                    issue(
+                        Severity::Warning,
+                        format!("{tag}: {placed}× {} placed, assigned parts provide {avail}", kind.title()),
+                        l.and_then(t),
+                    );
+                }
+            }
+        }
+        let has_part = data.map(|d| !d.parts.is_empty()).unwrap_or(false);
         if !has_part && (!dev.mains.is_empty() || !dev.others.is_empty()) {
             let l = dev.mains.first().or(dev.others.first()).unwrap();
             issue(Severity::Info, format!("{tag}: no part assigned"), t(l));

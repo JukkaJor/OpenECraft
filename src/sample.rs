@@ -2,6 +2,7 @@
 
 use crate::geom::{p, P};
 use crate::model::*;
+use crate::parts::PartsDb;
 use crate::symbols;
 
 struct Pg<'a> {
@@ -120,11 +121,11 @@ pub fn demo_project() -> Project {
     g.sym("coil", 40.0, 128.0, 0, "-K1", "", "Conveyor motor");
     g.w(40.0, 108.0, 40.0, 124.0).w(40.0, 132.0, 40.0, 236.0);
     // Indicator
-    g.sym("no", 120.0, 76.0, 0, "-K1", "", "").pins(&["23", "24"]);
+    g.sym("no", 120.0, 76.0, 0, "-K1", "", "").pins(&["53", "54"]);
     g.w(120.0, 24.0, 120.0, 72.0).w(120.0, 80.0, 120.0, 124.0);
     g.sym("lamp", 120.0, 128.0, 0, "-P1", "", "Motor running").w(120.0, 132.0, 120.0, 236.0);
     // Feedback to PLC
-    g.sym("no", 200.0, 76.0, 0, "-K1", "", "").pins(&["33", "34"]);
+    g.sym("no", 200.0, 76.0, 0, "-K1", "", "").pins(&["83", "84"]);
     g.w(200.0, 24.0, 200.0, 72.0).w(200.0, 80.0, 200.0, 120.0).sym("intr", 200.0, 120.0, 0, "", "K1.FB", "");
 
     // ------------------------------------------------------------------ PLC
@@ -149,25 +150,30 @@ pub fn demo_project() -> Project {
     add_page(&mut prj, "6", "Terminal diagram -X1", PageKind::Report(ReportKind::TerminalDiagram));
     add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList));
 
-    for (tag, part) in [
-        ("-Q1", "MPS-2.5-4A"),
-        ("-K1", "CT-9A-24DC"),
-        ("-M1", "MOT-0.75KW"),
-        ("-X1", "TB-2.5"),
-        ("-F1", "MCB-1P-C6"),
-        ("-T1", "PS-24DC-5A"),
-        ("-S1", "ESTOP-1NC"),
-        ("-S2", "PB-RD-1NC"),
-        ("-S3", "PB-GN-1NO"),
-        ("-S4", "PB-GN-1NO"),
-        ("-P1", "LMP-GN-24"),
-        ("-P2", "LMP-RD-24"),
-        ("-B1", "PROX-M12-PNP"),
-        ("-Y1", "SV-24DC"),
-        ("-A1", "PLC-DI16"),
-        ("-A2", "PLC-DO16"),
+    let db = PartsDb::default();
+    for (tag, parts) in [
+        ("-Q1", &["GEN.MPS-2.5-4A", "GEN.MPS-AUX-1NO1NC"][..]),
+        ("-K1", &["GEN.CT-9A-24DC", "GEN.AUX-2NO2NC"]),
+        ("-M1", &["GEN.MOT-0.75KW"]),
+        ("-X1", &["GEN.TB-2.5"]),
+        ("-F1", &["GEN.MCB-1P-C6"]),
+        ("-T1", &["GEN.PS-24DC-5A"]),
+        ("-S1", &["GEN.ESTOP-1NC"]),
+        ("-S2", &["GEN.PB-RD-1NC"]),
+        ("-S3", &["GEN.PB-GN-1NO"]),
+        ("-S4", &["GEN.PB-GN-1NO"]),
+        ("-P1", &["GEN.LMP-GN-24"]),
+        ("-P2", &["GEN.LMP-RD-24"]),
+        ("-B1", &["GEN.PROX-M12-PNP"]),
+        ("-Y1", &["GEN.SV-24DC"]),
+        ("-A1", &["GEN.PLC-DI16"]),
+        ("-A2", &["GEN.PLC-DO16"]),
     ] {
-        prj.devices.insert(tag.into(), DeviceData { part: part.into(), description: String::new() });
+        let refs = parts.iter().map(|n| PartRef { number: n.to_string(), count: 1 }).collect();
+        prj.devices.insert(tag.into(), DeviceData { parts: refs, ..Default::default() });
+        for n in parts {
+            crate::parts::ensure_in_project(&mut prj, &db, n);
+        }
     }
     prj
 }
@@ -193,5 +199,13 @@ mod tests {
         assert_eq!(an.netlist.nets[net].name, "0V");
         let warnings: Vec<_> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| &i.message).collect();
         assert!(warnings.is_empty(), "{warnings:#?}");
+        // Unused contacts of contactor + auxiliary block are reserves (2 NC of the block).
+        let reserve = crate::parts::reserve_functions(&prj, None, "-K1");
+        let pins: Vec<_> = reserve.iter().map(|f| f.pins.as_str()).collect();
+        assert_eq!(pins, vec!["61 62", "71 72"]);
+        // BOM: -X1 has four terminals.
+        let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
+        let tb = bom.rows.iter().find(|r| r[3] == "GEN.TB-2.5").unwrap();
+        assert_eq!(tb[1], "4");
     }
 }
