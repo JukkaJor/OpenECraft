@@ -425,7 +425,7 @@ fn build_library() -> Vec<SymbolDef> {
     for x in [0.0, 8.0, 16.0] {
         b.no(x).breaker_x(x);
     }
-    b.dl(-5.0, 0.0, 15.1, 0.0).rect(-13.0, -1.5, -5.0, 1.5, false).text(-9.0, 0.0, "I>  ϑ>", 1.6, Center);
+    b.dl(-5.0, 0.0, 15.1, 0.0).rect(-13.0, -1.5, -5.0, 1.5, false).text(-9.0, 0.0, "I>  θ>", 1.6, Center);
     b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
     b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
     v.push(def("mps3", "Motor protection switch", C::Protection, "Q", MAIN).build(&mut b));

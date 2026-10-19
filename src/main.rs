@@ -8,6 +8,8 @@
 mod app;
 mod editor;
 mod geom;
+#[cfg(test)]
+mod glyphs;
 mod history;
 mod index;
 mod io;

@@ -246,7 +246,7 @@ pub fn pin_designation(prj: &Project, pin: PinRef) -> String {
     let Some(def) = symbols::get(&s.sym) else { return "?".into() };
     match def.func {
         Func::Potential => format!("={}", s.label),
-        Func::Interruption => format!("→{}", s.label),
+        Func::Interruption => format!("»{}", s.label),
         Func::Terminal => format!("{}:{}", s.tag, s.label),
         Func::Plc => format!("{}:{}", s.tag, s.label),
         _ => {

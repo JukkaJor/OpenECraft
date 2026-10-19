@@ -494,9 +494,9 @@ impl Editor {
                     let page = &prj.pages[page_i];
                     if let Some(sym) = page.symbols.iter().find(|s| s.id == id) {
                         let name = symbols::get(&sym.sym).map(|d| d.name).unwrap_or("?");
-                        s += &format!("   │  {} {} {}", sym.tag, name, sym.label);
+                        s += &format!("   |  {} {} {}", sym.tag, name, sym.label);
                     } else if let Some(net) = an.netlist.net_of_wire(id) {
-                        s += &format!("   │  Potential {}", net.name);
+                        s += &format!("   |  Potential {}", net.name);
                     }
                 }
                 s

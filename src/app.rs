@@ -397,20 +397,20 @@ impl App {
                 }
             };
             tbtn(ui, Tool::Select, "⬉ Select", "Select / move (Esc)");
-            tbtn(ui, Tool::Wire, "╱ Wire", "Draw connections (W)");
+            tbtn(ui, Tool::Wire, "✏ Wire", "Draw connections (W)");
             tbtn(ui, Tool::Text, "T Text", "Place text (T)");
-            tbtn(ui, Tool::Line, "─ Line", "Graphic line");
-            tbtn(ui, Tool::Rect, "▭ Rect", "Graphic rectangle");
+            tbtn(ui, Tool::Line, "— Line", "Graphic line");
+            tbtn(ui, Tool::Rect, "☐ Rect", "Graphic rectangle");
             if let Tool::Place(key) = tool {
                 if let Some(def) = symbols::get(key) {
                     ui.label(RichText::new(format!("Placing: {}", def.name)).strong());
                 }
             }
             ui.separator();
-            if ui.add_enabled(self.history.can_undo(), egui::Button::new("↶")).on_hover_text("Undo (Ctrl+Z)").clicked() {
+            if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text("Undo (Ctrl+Z)").clicked() {
                 self.history.undo(&mut self.prj);
             }
-            if ui.add_enabled(self.history.can_redo(), egui::Button::new("↷")).on_hover_text("Redo (Ctrl+Y)").clicked() {
+            if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text("Redo (Ctrl+Y)").clicked() {
                 self.history.redo(&mut self.prj);
             }
             let has_sel = !self.editor.selection.is_empty();

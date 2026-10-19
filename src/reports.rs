@@ -437,7 +437,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                 let l = dev.mains.first().or(dev.others.first()).or(dev.auxs.first());
                 issue(
                     Severity::Error,
-                    format!("{tag}: part {} is not in the project parts (Parts management ▸ synchronize)", r.number),
+                    format!("{tag}: part {} is not in the project parts (Parts management › synchronize)", r.number),
                     l.and_then(t),
                 );
             }
