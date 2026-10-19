@@ -5,6 +5,7 @@ use crate::geom::{p, P, R};
 use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::netlist;
+use crate::panel::{self, Enclosure, ItemKind, PanelItem};
 use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
@@ -23,6 +24,10 @@ pub enum Ink {
     Pin,
     CrossRef,
     Error,
+    /// Light fill of mounting plates.
+    Plate,
+    /// Fill of devices / ducts in mounting layouts.
+    Fill,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -60,6 +65,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     match page.kind {
         PageKind::Cover => draw_cover(d, prj),
         PageKind::Report(kind) => draw_report(d, an, kind),
+        PageKind::Mounting(id) => draw_mounting_page(d, prj, id),
         PageKind::Schematic => {}
     }
     for s in &page.shapes {
@@ -401,6 +407,7 @@ fn draw_title_block(d: &mut dyn Draw, prj: &Project, page_i: usize) {
         PageKind::Schematic => "Schematic",
         PageKind::Cover => "Cover",
         PageKind::Report(_) => "Report",
+        PageKind::Mounting(_) => "Mounting",
     };
     val(d, 330.0, ym + 9.0, kind, 2.5);
     lbl(d, 370.0, y0, "Sheet");
@@ -474,4 +481,130 @@ fn draw_report(d: &mut dyn Draw, an: &Analysis, kind: ReportKind) {
     if table.rows.is_empty() {
         d.text(p(x0 + 2.0, y + 5.0), "(no entries)", 2.5, Anchor::Left, VAnchor::Middle, Ink::FrameText);
     }
+}
+
+// ---------------------------------------------------------------------- panel layout
+
+/// Draws an enclosure with its mounting plate in front view. `origin` is the page
+/// position of the enclosure's top left corner, `k` the scale (page mm per real mm).
+pub fn draw_enclosure(
+    d: &mut dyn Draw,
+    e: &Enclosure,
+    origin: P,
+    k: f32,
+    selected: &BTreeSet<u64>,
+    problems: &BTreeSet<u64>,
+) {
+    let tf = |x: f32, y: f32| origin + p((x + panel::PLATE_MARGIN) * k, (y + panel::PLATE_MARGIN) * k);
+    d.rect(origin, origin + p(e.width * k, e.height * k), 0.5, Ink::Line, false);
+    let (pw, ph) = e.plate_size();
+    d.rect(tf(0.0, 0.0), tf(pw, ph), 0.0, Ink::Plate, true);
+    d.rect(tf(0.0, 0.0), tf(pw, ph), 0.25, Ink::Frame, false);
+    // Rails first, then ducts, devices on top.
+    let mut items: Vec<&PanelItem> = e.items.iter().collect();
+    items.sort_by_key(|i| match i.kind {
+        ItemKind::Rail => 0,
+        ItemKind::Duct => 1,
+        ItemKind::Device => 2,
+    });
+    for it in items {
+        let ink = if selected.contains(&it.id) {
+            Ink::Selected
+        } else if problems.contains(&it.id) {
+            Ink::Error
+        } else {
+            Ink::Line
+        };
+        let (a, b) = (tf(it.x, it.y), tf(it.x + it.w, it.y + it.h));
+        let horizontal = it.horizontal();
+        let len = it.length();
+        match it.kind {
+            ItemKind::Rail => {
+                d.rect(a, b, 0.0, Ink::Plate, true);
+                d.rect(a, b, 0.2, ink, false);
+                // Mounting slots
+                let mut t = 12.5;
+                while t + 10.0 < len {
+                    let (s0, s1) = if horizontal {
+                        (tf(it.x + t, it.y + it.h / 2.0), tf(it.x + t + 10.0, it.y + it.h / 2.0))
+                    } else {
+                        (tf(it.x + it.w / 2.0, it.y + t), tf(it.x + it.w / 2.0, it.y + t + 10.0))
+                    };
+                    d.line(s0, s1, 0.15, Ink::Frame, false);
+                    t += 25.0;
+                }
+            }
+            ItemKind::Duct => {
+                d.rect(a, b, 0.0, Ink::Fill, true);
+                d.rect(a, b, 0.25, ink, false);
+                // Comb of the duct
+                let mut t = 10.0;
+                while t < len {
+                    let pairs = if horizontal {
+                        [
+                            (tf(it.x + t, it.y), tf(it.x + t, it.y + it.h * 0.25)),
+                            (tf(it.x + t, it.y + it.h * 0.75), tf(it.x + t, it.y + it.h)),
+                        ]
+                    } else {
+                        [
+                            (tf(it.x, it.y + t), tf(it.x + it.w * 0.25, it.y + t)),
+                            (tf(it.x + it.w * 0.75, it.y + t), tf(it.x + it.w, it.y + t)),
+                        ]
+                    };
+                    for (s0, s1) in pairs {
+                        d.line(s0, s1, 0.12, Ink::Frame, false);
+                    }
+                    t += 10.0;
+                }
+            }
+            ItemKind::Device => {
+                d.rect(a, b, 0.0, Ink::Fill, true);
+                d.rect(a, b, 0.3, ink, false);
+                let size = (it.w.min(it.h) * 0.22).clamp(3.0, 9.0) * k;
+                let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
+                d.text(tf(it.x + it.w / 2.0, it.y + it.h / 2.0), &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+            }
+        }
+    }
+}
+
+/// "Nice" drawing scale 1:N so that `real` fits into `space`.
+pub fn drawing_scale(real: (f32, f32), space: (f32, f32)) -> f32 {
+    let needed = (real.0 / space.0).max(real.1 / space.1);
+    [1.0, 2.0, 2.5, 4.0, 5.0, 10.0, 15.0, 20.0, 25.0, 50.0, 100.0]
+        .into_iter()
+        .find(|n| *n >= needed)
+        .unwrap_or(needed.ceil())
+}
+
+fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
+    let Some(e) = prj.layout.enclosures.iter().find(|e| e.id == id) else {
+        let msg = "Enclosure not found - choose another one in the page properties";
+        d.text(p(30.0, 40.0), msg, 4.0, Anchor::Left, VAnchor::Middle, Ink::Error);
+        return;
+    };
+    let (x0, y0, x1, y1) = (AREA_X0 + 25.0, AREA_Y0 + 12.0, FRAME_X1 - 15.0, TITLE_Y0 - 22.0);
+    let n = drawing_scale((e.width, e.height), (x1 - x0, y1 - y0));
+    let k = 1.0 / n;
+    let (w, h) = (e.width * k, e.height * k);
+    let origin = p(x0 + ((x1 - x0) - w) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
+    draw_enclosure(d, e, origin, k, &BTreeSet::new(), &BTreeSet::new());
+    // Dimensions
+    let bottom = origin.y + h + 6.0;
+    d.line(p(origin.x, bottom), p(origin.x + w, bottom), 0.18, Ink::Frame, false);
+    for x in [origin.x, origin.x + w] {
+        d.line(p(x, bottom - 2.0), p(x, bottom + 2.0), 0.18, Ink::Frame, false);
+    }
+    d.text(p(origin.x + w / 2.0, bottom - 1.5), &format!("{:.0}", e.width), 2.5, Anchor::Center, VAnchor::Bottom, Ink::Text);
+    let left = origin.x - 6.0;
+    d.line(p(left, origin.y), p(left, origin.y + h), 0.18, Ink::Frame, false);
+    for y in [origin.y, origin.y + h] {
+        d.line(p(left - 2.0, y), p(left + 2.0, y), 0.18, Ink::Frame, false);
+    }
+    d.text(p(left - 1.5, origin.y + h / 2.0), &format!("{:.0}", e.height), 2.5, Anchor::Right, VAnchor::Middle, Ink::Text);
+    let caption = format!(
+        "{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  Scale 1:{}",
+        e.name, e.part, e.width, e.height, e.depth, n
+    );
+    d.text(p(x0, TITLE_Y0 - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
 }

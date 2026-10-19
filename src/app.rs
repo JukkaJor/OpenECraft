@@ -5,6 +5,7 @@ use crate::editor::{symbol_icon, Editor, Tool};
 use crate::index::Index;
 use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
 use crate::parts::{self, PartsDb};
+use crate::panel_ui::PanelUi;
 use crate::parts_ui::{PartsAction, PartsUi};
 use crate::model::*;
 use crate::netlist::{pin_designation, PinRef};
@@ -13,6 +14,12 @@ use crate::reports::{Analysis, Severity};
 use crate::symbols::{self, Category, Func};
 use crate::{history::History, sample, svg};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Workspace {
+    Schematic,
+    Panel,
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum LeftTab {
@@ -39,6 +46,8 @@ pub struct App {
     show_project: bool,
     parts_db: PartsDb,
     parts_ui: PartsUi,
+    workspace: Workspace,
+    panel_ui: PanelUi,
     show_help: bool,
     page_props: Option<usize>,
     message: Option<(String, f64)>,
@@ -78,6 +87,8 @@ impl App {
             show_project: false,
             parts_db,
             parts_ui: PartsUi::default(),
+            workspace: Workspace::Schematic,
+            panel_ui: PanelUi::default(),
             show_help: false,
             page_props: None,
             message: None,
@@ -215,6 +226,10 @@ impl App {
             PageKind::Schematic => "Schematic".to_string(),
             PageKind::Cover => "Cover sheet".to_string(),
             PageKind::Report(r) => r.title().to_string(),
+            PageKind::Mounting(id) => {
+                let name = self.prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
+                format!("Mounting layout {name}")
+            }
         };
         let page = Page::new(id, &self.next_page_name(), &desc, kind);
         let at = (self.page + 1).min(self.prj.pages.len());
@@ -326,6 +341,17 @@ impl App {
                         }
                     }
                 });
+                ui.menu_button("New mounting layout page", |ui| {
+                    let encs: Vec<(u64, String)> = self.prj.layout.enclosures.iter().map(|e| (e.id, e.name.clone())).collect();
+                    for (id, name) in encs {
+                        if ui.button(name).clicked() {
+                            self.add_page(PageKind::Mounting(id));
+                        }
+                    }
+                    if self.prj.layout.enclosures.is_empty() {
+                        ui.weak("Create an enclosure in the panel layout first.");
+                    }
+                });
                 ui.separator();
                 if ui.button("Page properties…").clicked() {
                     self.page_props = Some(self.page);
@@ -390,6 +416,23 @@ impl App {
 
     fn toolbar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
+            ui.selectable_value(&mut self.workspace, Workspace::Schematic, RichText::new("🗋 Schematic").strong());
+            ui.selectable_value(&mut self.workspace, Workspace::Panel, RichText::new("🗄 Panel layout").strong());
+            ui.separator();
+            if self.workspace == Workspace::Panel {
+                if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text("Undo (Ctrl+Z)").clicked() {
+                    self.history.undo(&mut self.prj);
+                }
+                if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text("Redo (Ctrl+Y)").clicked() {
+                    self.history.redo(&mut self.prj);
+                }
+                ui.separator();
+                if ui.button("📊 Reports").clicked() {
+                    self.report_kind = ReportKind::PanelWiring;
+                    self.show_reports = true;
+                }
+                return;
+            }
             let tool = self.editor.tool.clone();
             let mut tbtn = |ui: &mut egui::Ui, t: Tool, label: &str, tip: &str| {
                 if ui.selectable_label(tool == t, label).on_hover_text(tip).clicked() {
@@ -476,6 +519,7 @@ impl App {
                             PageKind::Schematic => "🗋",
                             PageKind::Cover => "🏷",
                             PageKind::Report(_) => "📊",
+                            PageKind::Mounting(_) => "🗄",
                         };
                         let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", pg.name, pg.description));
                         if r.clicked() {
@@ -822,6 +866,12 @@ impl App {
             if data != before {
                 self.prj.devices.insert(edited.tag.clone(), data.clone());
             }
+            if let Some((ei, _)) = self.prj.layout.find_device(&edited.tag) {
+                let enc = self.prj.layout.enclosures[ei].name.clone();
+                if ui.button(format!("🗄 Show in panel layout ({enc})")).clicked() && self.panel_ui.show_device(&self.prj, &edited.tag) {
+                    self.workspace = Workspace::Panel;
+                }
+            }
             // Functions placed vs. provided by the parts' function templates
             let usage = parts::usage(&self.prj, None, &edited.tag);
             if usage.values().any(|(_, a)| *a > 0) {
@@ -1018,6 +1068,9 @@ impl App {
                             for k in ReportKind::ALL {
                                 ui.selectable_value(&mut pg.kind, PageKind::Report(k), PageKind::Report(k).label());
                             }
+                            for e in &self.prj.layout.enclosures {
+                                ui.selectable_value(&mut pg.kind, PageKind::Mounting(e.id), format!("Mounting layout {}", e.name));
+                            }
                         });
                         ui.end_row();
                     });
@@ -1103,6 +1156,9 @@ impl App {
         if open {
             self.io.open(ctx, Purpose::Project);
         }
+        if self.workspace != Workspace::Schematic {
+            return;
+        }
         if pgup && self.page > 0 {
             self.goto(self.page - 1, 0);
         }
@@ -1147,21 +1203,51 @@ impl eframe::App for App {
                 });
             });
         });
-        egui::Panel::left("nav").resizable(true).default_size(230.0).show(ui, |ui| self.navigator(ui, &idx));
-        egui::Panel::right("side").resizable(true).default_size(300.0).show(ui, |ui| {
-            self.library(ui);
-            ui.separator();
-            egui::ScrollArea::vertical().id_salt("props").auto_shrink([false, false]).show(ui, |ui| self.properties(ui, &idx));
-        });
-        egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
-            let page = self.page;
-            let out = self.editor.ui(ui, &mut self.prj, page, &idx, &self.analysis);
-            let _ = out.open_properties;
-        });
+        match self.workspace {
+            Workspace::Schematic => {
+                egui::Panel::left("nav").resizable(true).default_size(230.0).show(ui, |ui| self.navigator(ui, &idx));
+                egui::Panel::right("side").resizable(true).default_size(300.0).show(ui, |ui| {
+                    self.library(ui);
+                    ui.separator();
+                    egui::ScrollArea::vertical().id_salt("props").auto_shrink([false, false]).show(ui, |ui| self.properties(ui, &idx));
+                });
+                egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
+                    let page = self.page;
+                    let out = self.editor.ui(ui, &mut self.prj, page, &idx, &self.analysis);
+                    let _ = out.open_properties;
+                });
+            }
+            Workspace::Panel => {
+                egui::Panel::left("panel_nav").resizable(true).default_size(250.0).show(ui, |ui| {
+                    self.panel_ui.navigator(ui, &mut self.prj, &self.parts_db);
+                });
+                egui::Panel::right("panel_side").resizable(true).default_size(300.0).show(ui, |ui| {
+                    egui::ScrollArea::vertical().id_salt("panel_props").auto_shrink([false, false]).show(ui, |ui| {
+                        self.panel_ui.properties(ui, &mut self.prj, &self.analysis);
+                    });
+                });
+                egui::CentralPanel::default().show(ui, |ui| {
+                    self.panel_ui.canvas(ui, &mut self.prj, &self.analysis, &self.parts_db);
+                });
+                self.panel_ui.dialogs(&ctx, &mut self.prj, &self.parts_db);
+                self.editor.status = self.panel_ui.status.clone();
+                if let Some(tag) = self.panel_ui.goto_schematic.take() {
+                    self.workspace = Workspace::Schematic;
+                    let target = idx.devices.get(&tag).and_then(|d| d.mains.first().or(d.others.first()).or(d.auxs.first()).copied());
+                    if let Some(loc) = target {
+                        self.goto(loc.page, loc.sym_id);
+                    }
+                }
+                if let Some(id) = self.panel_ui.add_page.take() {
+                    self.add_page(PageKind::Mounting(id));
+                    self.workspace = Workspace::Schematic;
+                }
+            }
+        }
         self.windows(&ctx);
 
         // Commit finished edits as one undo step.
-        let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy();
+        let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy() && !self.panel_ui.busy();
         self.history.track(&self.prj, can_commit);
 
         let title = format!(

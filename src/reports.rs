@@ -1,6 +1,7 @@
 //! Reports (device list, BOM, terminal diagram, ...) and the project check.
 
 use crate::index::Index;
+use crate::panel::{self, ItemKind, OpenWire, RoutedWire};
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist, PinRef};
 use crate::symbols::{self, Func};
@@ -68,6 +69,8 @@ pub struct Analysis {
     pub netlist: Netlist,
     pub reports: HashMap<ReportKind, Table>,
     pub issues: Vec<Issue>,
+    /// Virtual wiring of the panel layout.
+    pub wiring: Vec<RoutedWire>,
 }
 
 impl Analysis {
@@ -75,6 +78,7 @@ impl Analysis {
         let idx = Index::build(prj);
         let netlist = Netlist::build(prj, true);
         let open = Netlist::build(prj, false);
+        let (wiring, open_wires) = panel::virtual_wiring(prj, &netlist);
         let mut reports = HashMap::new();
         for k in ReportKind::ALL {
             let t = match k {
@@ -85,11 +89,14 @@ impl Analysis {
                 ReportKind::ConnectionList => connection_list(prj, &netlist),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
                 ReportKind::PotentialList => potential_list(prj, &netlist),
+                ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
             };
             reports.insert(k, t);
         }
-        let issues = check(prj, &idx, &netlist);
-        Analysis { netlist, reports, issues }
+        let mut issues = check(prj, &idx, &netlist);
+        issues.extend(check_layout(prj));
+        issues.sort_by_key(|i| i.severity);
+        Analysis { netlist, reports, issues, wiring }
     }
 }
 
@@ -178,7 +185,7 @@ fn bom(prj: &Project, idx: &Index) -> Table {
         ("Unit price", 0.9),
         ("Total", 0.9),
     ]);
-    let mut groups: BTreeMap<String, (usize, Vec<String>)> = BTreeMap::new();
+    let mut groups: BTreeMap<String, (f32, Vec<String>)> = BTreeMap::new();
     for tag in idx.sorted_tags() {
         let Some(data) = prj.devices.get(tag) else { continue };
         if data.parts.is_empty() {
@@ -202,11 +209,17 @@ fn bom(prj: &Project, idx: &Index) -> Table {
         let per_device = if dev.mains.is_empty() && terminals > 0 { terminals } else { 1 };
         for r in &data.parts {
             let g = groups.entry(r.number.clone()).or_default();
-            g.0 += per_device * r.count.max(1) as usize;
+            g.0 += (per_device * r.count.max(1) as usize) as f32;
             if !g.1.contains(tag) {
                 g.1.push(tag.clone());
             }
         }
+    }
+    // Enclosures, rails and ducts of the panel layout.
+    for (part, qty, used) in panel::layout_material(prj) {
+        let g = groups.entry(part).or_default();
+        g.0 += qty;
+        g.1.extend(used);
     }
     let mut sum = 0.0;
     for (i, (part, (qty, tags))) in groups.iter().enumerate() {
@@ -214,13 +227,13 @@ fn bom(prj: &Project, idx: &Index) -> Table {
             description: "(part not in project – synchronize parts)".into(),
             ..Default::default()
         });
-        let total = pd.total_price(*qty as f32);
+        let total = pd.total_price(*qty);
         sum += total;
         let unit_price = if pd.price_unit > 1 { format!("{:.2}/{}", pd.price, pd.price_unit) } else { format!("{:.2}", pd.price) };
         t.push(
             vec![
                 (i + 1).to_string(),
-                qty.to_string(),
+                if qty.fract() == 0.0 { format!("{qty:.0}") } else { format!("{qty:.2}") },
                 pd.quantity_unit.clone(),
                 part.clone(),
                 pd.type_number,
@@ -240,6 +253,77 @@ fn bom(prj: &Project, idx: &Index) -> Table {
         t.push(last, None);
     }
     t
+}
+
+fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Table {
+    let mut t = Table::new(&[
+        ("Enclosure", 0.8),
+        ("From", 1.4),
+        ("To", 1.4),
+        ("Potential", 0.9),
+        ("Colour", 0.6),
+        ("Cross-section", 0.9),
+        ("Length (mm)", 0.9),
+        ("Routing", 1.2),
+    ]);
+    let mut total = 0.0;
+    for w in wiring {
+        total += w.length;
+        t.push(
+            vec![
+                prj.layout.enclosures[w.enclosure].name.clone(),
+                w.from.clone(),
+                w.to.clone(),
+                w.net.clone(),
+                w.color.clone(),
+                w.cross_section.clone(),
+                format!("{:.0}", w.length),
+                if w.route.via_ducts { "via cable ducts".into() } else { "direct (no ducts)".into() },
+            ],
+            None,
+        );
+    }
+    if !wiring.is_empty() {
+        let mut last = vec![String::new(); 8];
+        last[5] = "Total".into();
+        last[6] = format!("{total:.0}");
+        t.push(last, None);
+    }
+    for w in open {
+        t.push(
+            vec![String::new(), w.from.clone(), w.to.clone(), w.net.clone(), String::new(), String::new(), "–".into(), w.reason.into()],
+            None,
+        );
+    }
+    t
+}
+
+/// Panel layout checks: unplaced devices, collisions, items outside the plate.
+fn check_layout(prj: &Project) -> Vec<Issue> {
+    let mut v = Vec::new();
+    if prj.layout.enclosures.is_empty() {
+        return v;
+    }
+    for d in panel::devices_to_place(prj) {
+        let target = prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().find(|s| s.tag == d.tag).map(|s| (pi, s.id)));
+        v.push(Issue { severity: Severity::Info, message: format!("{}: not placed in the panel layout", d.tag), target });
+    }
+    for e in &prj.layout.enclosures {
+        let name = |id: u64| {
+            e.item(id).map(|i| if i.kind == ItemKind::Device { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default()
+        };
+        for (a, b) in panel::collisions(e) {
+            v.push(Issue { severity: Severity::Warning, message: format!("{}: {} collides with {}", e.name, name(a), name(b)), target: None });
+        }
+        for id in panel::outside(e) {
+            v.push(Issue {
+                severity: Severity::Warning,
+                message: format!("{}: {} outside the mounting plate / enclosure", e.name, name(id)),
+                target: None,
+            });
+        }
+    }
+    v
 }
 
 fn targets(prj: &Project, nl: &Netlist, net: Option<usize>, exclude: (usize, usize)) -> String {
@@ -304,46 +388,19 @@ fn connection_list(prj: &Project, nl: &Netlist) -> Table {
         ("Colour", 0.8),
         ("Cross-section", 1.0),
     ]);
-    for net in &nl.nets {
-        // Device connection points only (potentials / connectors are not physical ends).
-        let mut pins: Vec<&PinRef> = net
-            .pins
-            .iter()
-            .filter(|p| {
-                let s = &prj.pages[p.page].symbols[p.sym];
-                symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
-            })
-            .collect();
-        if pins.len() < 2 {
-            continue;
-        }
-        pins.sort_by(|a, b| {
-            let (sa, sb) = (&prj.pages[a.page].symbols[a.sym], &prj.pages[b.page].symbols[b.sym]);
-            a.page.cmp(&b.page).then(sa.pos.x.total_cmp(&sb.pos.x)).then(sa.pos.y.total_cmp(&sb.pos.y))
-        });
-        let (color, cs) = net
-            .wires
-            .iter()
-            .find_map(|(pi, wid)| {
-                prj.pages[*pi].wires.iter().find(|w| w.id == *wid && (!w.color.is_empty() || !w.cross_section.is_empty()))
-            })
-            .map(|w| (w.color.clone(), w.cross_section.clone()))
-            .unwrap_or_default();
-        for pair in pins.windows(2) {
-            let (a, b) = (pair[0], pair[1]);
-            let s = &prj.pages[a.page].symbols[a.sym];
-            t.push(
-                vec![
-                    net.name.clone(),
-                    pin_designation(prj, *a),
-                    pin_designation(prj, *b),
-                    loc_str(prj, a.page, s.pos),
-                    color.clone(),
-                    cs.clone(),
-                ],
-                Some((a.page, s.id)),
-            );
-        }
+    for c in crate::netlist::connections(prj, nl) {
+        let s = &prj.pages[c.a.page].symbols[c.a.sym];
+        t.push(
+            vec![
+                c.net.clone(),
+                pin_designation(prj, c.a),
+                pin_designation(prj, c.b),
+                loc_str(prj, c.a.page, s.pos),
+                c.color.clone(),
+                c.cross_section.clone(),
+            ],
+            Some((c.a.page, s.id)),
+        );
     }
     t
 }

@@ -6,6 +6,12 @@
       "runtimeExecutable": "trunk",
       "runtimeArgs": ["serve"],
       "port": 8080
+    },
+    {
+      "name": "web-fresh",
+      "runtimeExecutable": "trunk",
+      "runtimeArgs": ["serve", "--port", "8081", "--dist", "target/dist-fresh"],
+      "port": 8081
     }
   ]
 }
