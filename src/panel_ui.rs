@@ -50,6 +50,8 @@ pub struct PanelUi {
     pub tool: Tool,
     pub view: View,
     pub selection: BTreeSet<u64>,
+    /// Selected wire of the virtual wiring (from, to).
+    pub selected_wire: Option<(String, String)>,
     pub show_wires: bool,
     offset: Vec2,
     zoom: f32,
@@ -72,6 +74,7 @@ impl Default for PanelUi {
             tool: Tool::Select,
             view: View::Front,
             selection: BTreeSet::new(),
+            selected_wire: None,
             show_wires: true,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
@@ -92,11 +95,44 @@ impl Default for PanelUi {
 const OUTER_WALLS: u8 = 6;
 
 const WIRE_COLOR: Color32 = Color32::from_rgb(40, 110, 230);
+/// Selected wire and the devices it connects (same colour as potential highlighting).
+const WIRE_HIGHLIGHT: Color32 = Color32::from_rgb(230, 40, 200);
 
 impl PanelUi {
     /// True while a gesture is in progress (no undo step yet).
     pub fn busy(&self) -> bool {
         self.start.is_some() || self.drag.is_some()
+    }
+
+    fn select_item(&mut self, id: u64) {
+        self.selection = [id].into_iter().collect();
+        self.selected_wire = None;
+    }
+
+    fn select_wire(&mut self, key: (String, String)) {
+        self.selected_wire = Some(key);
+        self.selection.clear();
+    }
+
+    /// Index of the selected wire in the current analysis.
+    fn wire_index(&self, an: &Analysis) -> Option<usize> {
+        let key = self.selected_wire.as_ref()?;
+        an.wiring.iter().position(|w| &w.key() == key)
+    }
+
+    /// Selects the next wire among `candidates` (cycling on repeated clicks).
+    fn pick_wire(&mut self, an: &Analysis, candidates: &[usize]) {
+        let current = self.wire_index(an);
+        if let Some(i) = panel::next_candidate(candidates, current) {
+            let w = &an.wiring[i];
+            self.select_wire(w.key());
+            self.status = if candidates.len() > 1 {
+                let pos = candidates.iter().position(|c| *c == i).unwrap_or(0) + 1;
+                format!("Wire {} – {}  ({pos} of {} here, click again for the next)", w.from, w.to, candidates.len())
+            } else {
+                format!("Wire {} – {}  {:.0} mm", w.from, w.to, w.length)
+            };
+        }
     }
 
     fn set_tool(&mut self, tool: Tool) {
@@ -117,7 +153,7 @@ impl PanelUi {
         match prj.layout.find_device(tag) {
             Some((ei, item)) => {
                 self.enclosure = ei;
-                self.selection = BTreeSet::from([item.id]);
+                self.select_item(item.id);
                 true
             }
             None => false,
@@ -192,7 +228,7 @@ impl PanelUi {
         egui::ScrollArea::vertical().id_salt("placed").auto_shrink([false, false]).show(ui, |ui| {
             for it in placed {
                 if ui.selectable_label(self.selection.contains(&it.id), &it.tag).clicked() {
-                    self.selection = BTreeSet::from([it.id]);
+                    self.select_item(it.id);
                 }
             }
         });
@@ -203,6 +239,10 @@ impl PanelUi {
     pub fn properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
         ui.heading("Properties");
         let Some(ei) = self.enclosure_index(prj) else { return };
+        if let Some(wi) = self.wire_index(an) {
+            self.wire_properties(ui, prj, an, wi);
+            return;
+        }
         let sel: Vec<u64> = self.selection.iter().copied().collect();
         if sel.len() > 1 {
             ui.label(format!("{} items selected", sel.len()));
@@ -293,13 +333,19 @@ impl PanelUi {
                 if !wires.is_empty() {
                     ui.separator();
                     ui.label(RichText::new("Wires").strong());
+                    let mut clicked = None;
                     egui::Grid::new("pwires").striped(true).num_columns(2).show(ui, |ui| {
                         for w in wires {
-                            ui.label(format!("{} – {}", w.from, w.to));
+                            if ui.selectable_label(false, format!("{} – {}", w.from, w.to)).on_hover_text("Show this wire").clicked() {
+                                clicked = Some(w.key());
+                            }
                             ui.label(format!("{:.0} mm", w.length));
                             ui.end_row();
                         }
                     });
+                    if let Some(key) = clicked {
+                        self.select_wire(key);
+                    }
                 }
             }
             return;
@@ -344,6 +390,56 @@ impl PanelUi {
         }
         if ui.button("➕ Insert mounting layout page").clicked() {
             self.add_page = Some(e.id);
+        }
+    }
+
+    fn wire_properties(&mut self, ui: &mut egui::Ui, prj: &Project, an: &Analysis, wi: usize) {
+        let w = &an.wiring[wi];
+        ui.label(RichText::new("Wire").strong());
+        egui::Grid::new("pwire").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
+            ui.label("From");
+            ui.label(RichText::new(&w.from).monospace().color(WIRE_HIGHLIGHT));
+            ui.end_row();
+            ui.label("To");
+            ui.label(RichText::new(&w.to).monospace().color(WIRE_HIGHLIGHT));
+            ui.end_row();
+            ui.label("Potential");
+            ui.label(&w.net);
+            ui.end_row();
+            ui.label("Length");
+            ui.label(format!("{:.0} mm", w.length));
+            ui.end_row();
+            ui.label("Routing");
+            ui.label(if w.route.via_ducts { "via cable ducts" } else { "direct (no ducts)" });
+            ui.end_row();
+            if !w.color.is_empty() || !w.cross_section.is_empty() {
+                ui.label("Colour / cross-section");
+                ui.label(format!("{} {}", w.color, w.cross_section));
+                ui.end_row();
+            }
+        });
+        ui.label(RichText::new(format!(
+            "{:.0} mm on the plate + {:.0} mm reserve; the rest is the way to the device fronts.",
+            w.route.plate_length, prj.layout.wire_reserve
+        )).weak());
+        ui.separator();
+        ui.label(RichText::new("Connected devices").strong());
+        let e = &prj.layout.enclosures[w.enclosure];
+        let mut select = None;
+        for id in [w.items.0, w.items.1] {
+            if let Some(it) = e.item(id) {
+                ui.horizontal(|ui| {
+                    if ui.link(RichText::new(&it.tag).monospace()).on_hover_text("Select device").clicked() {
+                        select = Some(id);
+                    }
+                    if ui.small_button("Show in schematic").clicked() {
+                        self.goto_schematic = Some(it.tag.clone());
+                    }
+                });
+            }
+        }
+        if let Some(id) = select {
+            self.select_item(id);
         }
     }
 
@@ -503,6 +599,7 @@ impl PanelUi {
                     self.set_tool(Tool::Select);
                 } else {
                     self.selection.clear();
+                    self.selected_wire = None;
                 }
             }
             if del && !self.selection.is_empty() {
@@ -526,7 +623,7 @@ impl PanelUi {
 
         // Mouse
         match self.tool.clone() {
-            Tool::Select => self.select_and_move(ui, &resp, prj, ei, rect),
+            Tool::Select => self.select_and_move(ui, &resp, prj, ei, rect, an),
             Tool::Rail | Tool::Duct => {
                 if let (true, Some(sn)) = (resp.clicked_by(PointerButton::Primary), snapped) {
                     match self.start.take() {
@@ -548,7 +645,7 @@ impl PanelUi {
                     let size = panel::device_size(prj, &tag);
                     let (w, h) = size.map(|s| (s.w, s.h)).unwrap_or((panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1));
                     if let Some(id) = panel::place_device(prj, ei, &tag, p(q.x - w / 2.0, q.y - h / 2.0)) {
-                        self.selection = BTreeSet::from([id]);
+                        self.select_item(id);
                     }
                     // Continue with the next unplaced device.
                     let next = panel::devices_to_place(prj).into_iter().next();
@@ -565,10 +662,31 @@ impl PanelUi {
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
         render::draw_enclosure(&mut d, e, p(0.0, 0.0), 1.0, &self.selection, &problems);
         let to_screen = |q: P| origin + vec2(q.x + PLATE_MARGIN, q.y + PLATE_MARGIN) * self.zoom;
-        if self.show_wires {
-            for w in an.wiring.iter().filter(|w| w.enclosure == ei) {
-                let pts: Vec<Pos2> = w.route.points.iter().map(|q| to_screen(*q)).collect();
-                painter.add(Shape::line(pts, Stroke::new(1.0, WIRE_COLOR.gamma_multiply(0.7))));
+        let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei);
+        if self.show_wires || selected_wire.is_some() {
+            // Other wires are dimmed while one is selected.
+            let normal = if selected_wire.is_some() { WIRE_COLOR.gamma_multiply(0.25) } else { WIRE_COLOR.gamma_multiply(0.7) };
+            for (i, w) in an.wiring.iter().enumerate().filter(|(_, w)| w.enclosure == ei) {
+                if Some(i) != selected_wire && self.show_wires {
+                    let pts: Vec<Pos2> = w.route.points.iter().map(|q| to_screen(*q)).collect();
+                    painter.add(Shape::line(pts, Stroke::new(1.0, normal)));
+                }
+            }
+        }
+        if let Some(i) = selected_wire {
+            let w = &an.wiring[i];
+            let pts: Vec<Pos2> = w.route.points.iter().map(|q| to_screen(*q)).collect();
+            painter.add(Shape::line(pts.clone(), Stroke::new(3.0, WIRE_HIGHLIGHT)));
+            for end in [pts.first(), pts.last()].into_iter().flatten() {
+                painter.circle_filled(*end, 4.5, WIRE_HIGHLIGHT);
+            }
+            // The two connected devices
+            for id in [w.items.0, w.items.1] {
+                if let Some(it) = e.item(id) {
+                    let r = Rect::from_min_max(to_screen(p(it.x, it.y)), to_screen(p(it.x + it.w, it.y + it.h)));
+                    painter.rect_filled(r, 0.0, WIRE_HIGHLIGHT.gamma_multiply(0.18));
+                    painter.rect_stroke(r.expand(2.0), 2.0, Stroke::new(2.5, WIRE_HIGHLIGHT), egui::StrokeKind::Outside);
+                }
             }
         }
         // Previews
@@ -604,13 +722,13 @@ impl PanelUi {
             _ => {}
         }
         if let Some(q) = plate {
-            if self.start.is_none() {
+            if self.start.is_none() && !resp.clicked() {
                 self.status = format!("X {:.0}  Y {:.0} mm on the mounting plate", q.x, q.y);
             }
         }
     }
 
-    fn select_and_move(&mut self, ui: &egui::Ui, resp: &egui::Response, prj: &mut Project, ei: usize, rect: Rect) {
+    fn select_and_move(&mut self, ui: &egui::Ui, resp: &egui::Response, prj: &mut Project, ei: usize, rect: Rect, an: &Analysis) {
         let shift = ui.input(|i| i.modifiers.shift);
         let tol = 6.0 / self.zoom;
         let hit = |e: &Enclosure, q: P| -> Option<u64> {
@@ -627,6 +745,7 @@ impl PanelUi {
             let q = to_plate(origin);
             let e = &prj.layout.enclosures[ei];
             if let Some(id) = hit(e, q) {
+                self.selected_wire = None;
                 if !self.selection.contains(&id) {
                     if !shift {
                         self.selection.clear();
@@ -678,14 +797,26 @@ impl PanelUi {
         }
         if resp.clicked_by(PointerButton::Primary) {
             if let Some(ptr) = resp.interact_pointer_pos() {
+                let q = to_plate(ptr);
                 let e = &prj.layout.enclosures[ei];
-                match hit(e, to_plate(ptr)) {
+                let item = hit(e, q);
+                let on_device = item.and_then(|id| e.item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
+                // Wires lie on top of ducts and rails, devices on top of wires.
+                if self.show_wires && !on_device && !shift {
+                    let candidates = panel::wires_at(&an.wiring, ei, q, tol);
+                    if !candidates.is_empty() {
+                        self.pick_wire(an, &candidates);
+                        return;
+                    }
+                }
+                self.selected_wire = None;
+                match item {
                     Some(id) if shift => {
                         if !self.selection.remove(&id) {
                             self.selection.insert(id);
                         }
                     }
-                    Some(id) => self.selection = BTreeSet::from([id]),
+                    Some(id) => self.select_item(id),
                     None if !shift => self.selection.clear(),
                     None => {}
                 }
@@ -800,9 +931,13 @@ impl PanelUi {
         let plate_min = [PLATE_MARGIN, h - PLATE_MARGIN - ph, PLATE_Z - PLATE_THICKNESS];
         add_box(&mut prims, 1, plate_min, [PLATE_MARGIN + pw, h - PLATE_MARGIN, PLATE_Z], Color32::from_rgb(222, 218, 205), None);
         let to3 = |x: f32, y: f32, z: f32| [PLATE_MARGIN + x, h - PLATE_MARGIN - y, PLATE_Z + z];
+        let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei);
+        let wire_ends = selected_wire.map(|i| an.wiring[i].items);
         for it in &e.items {
             let base = if self.selection.contains(&it.id) {
                 Color32::from_rgb(255, 150, 40)
+            } else if wire_ends.map(|(a, b)| a == it.id || b == it.id).unwrap_or(false) {
+                WIRE_HIGHLIGHT
             } else if problems.contains(&it.id) {
                 Color32::from_rgb(230, 70, 70)
             } else {
@@ -821,15 +956,26 @@ impl PanelUi {
             };
             add_box(&mut prims, layer, min, max, base, Some(it.id));
         }
-        // Wires inside the ducts
-        if self.show_wires {
-            for wire in an.wiring.iter().filter(|wire| wire.enclosure == ei) {
-                let z = if wire.route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
-                for seg in wire.route.points.windows(2) {
-                    let (a, b) = (to3(seg[0].x, seg[0].y, z), to3(seg[1].x, seg[1].y, z));
-                    if let (Some(pa), Some(pb)) = (project(a), project(b)) {
-                        prims.push((4, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color: WIRE_COLOR, width: 1.5 }));
-                    }
+        // Wires inside the ducts; the selected one is drawn on top of everything.
+        let mut wire_segs: Vec<(Pos2, Pos2, usize)> = Vec::new();
+        for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.enclosure == ei) {
+            let selected = Some(wi) == selected_wire;
+            if !self.show_wires && !selected {
+                continue;
+            }
+            let z = if wire.route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
+            let (layer, color, width) = if selected {
+                (OUTER_WALLS + 1, WIRE_HIGHLIGHT, 3.5)
+            } else if selected_wire.is_some() {
+                (4, WIRE_COLOR.gamma_multiply(0.3), 1.0)
+            } else {
+                (4, WIRE_COLOR, 1.5)
+            };
+            for seg in wire.route.points.windows(2) {
+                let (a, b) = (to3(seg[0].x, seg[0].y, z), to3(seg[1].x, seg[1].y, z));
+                if let (Some(pa), Some(pb)) = (project(a), project(b)) {
+                    prims.push((layer, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                    wire_segs.push((pa.0, pb.0, wi));
                 }
             }
         }
@@ -875,20 +1021,43 @@ impl PanelUi {
             if let Some(ptr) = resp.interact_pointer_pos() {
                 // Faces are in drawing order: the last one under the pointer is visible.
                 let hit = pick.iter().rev().find(|(_, pts, _)| point_in_convex(ptr, pts)).map(|x| x.2);
+                let on_device = hit.and_then(|id| e.item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
+                let mut candidates: Vec<(usize, f32)> = Vec::new();
+                for (a, b, wi) in &wire_segs {
+                    let d = crate::geom::dist_to_segment(p(ptr.x, ptr.y), p(a.x, a.y), p(b.x, b.y));
+                    if d <= 6.0 {
+                        match candidates.iter_mut().find(|c| c.0 == *wi) {
+                            Some(c) => c.1 = c.1.min(d),
+                            None => candidates.push((*wi, d)),
+                        }
+                    }
+                }
+                candidates.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
+                let candidates: Vec<usize> = candidates.into_iter().map(|c| c.0).collect();
                 match hit {
-                    Some(id) => self.selection = BTreeSet::from([id]),
-                    None => self.selection.clear(),
+                    Some(id) if on_device => self.select_item(id),
+                    _ if !candidates.is_empty() => {
+                        self.pick_wire(an, &candidates);
+                        return;
+                    }
+                    Some(id) => self.select_item(id),
+                    None => {
+                        self.selection.clear();
+                        self.selected_wire = None;
+                    }
                 }
             }
         }
         painter.text(
             rect.left_bottom() + vec2(10.0, -10.0),
             egui::Align2::LEFT_BOTTOM,
-            "Drag: orbit · right/middle drag: pan · wheel: zoom · click: select",
+            "Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire",
             egui::FontId::proportional(12.0),
             if dark { Color32::GRAY } else { Color32::DARK_GRAY },
         );
-        self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
+        if self.selected_wire.is_none() {
+            self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
+        }
     }
 }
 

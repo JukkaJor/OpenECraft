@@ -532,6 +532,41 @@ pub struct RoutedWire {
     pub items: (u64, u64),
 }
 
+impl RoutedWire {
+    /// Stable identification of a wire across re-analysis (its two ends).
+    pub fn key(&self) -> (String, String) {
+        (self.from.clone(), self.to.clone())
+    }
+}
+
+/// Distance from `q` to a route polyline.
+pub fn route_distance(points: &[P], q: P) -> f32 {
+    points.windows(2).map(|s| crate::geom::dist_to_segment(q, s[0], s[1])).fold(f32::INFINITY, f32::min)
+}
+
+/// Indices of the wires of an enclosure whose route passes within `tol` of `q`,
+/// nearest first.
+pub fn wires_at(wiring: &[RoutedWire], enclosure: usize, q: P, tol: f32) -> Vec<usize> {
+    let mut v: Vec<(usize, f32)> = wiring
+        .iter()
+        .enumerate()
+        .filter(|(_, w)| w.enclosure == enclosure)
+        .map(|(i, w)| (i, route_distance(&w.route.points, q)))
+        .filter(|(_, d)| *d <= tol)
+        .collect();
+    v.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
+    v.into_iter().map(|(i, _)| i).collect()
+}
+
+/// Clicking repeatedly on overlapping wires steps through them: the candidate after
+/// the current one, or the first.
+pub fn next_candidate(candidates: &[usize], current: Option<usize>) -> Option<usize> {
+    match current.and_then(|c| candidates.iter().position(|x| *x == c)) {
+        Some(pos) => Some(candidates[(pos + 1) % candidates.len()]),
+        None => candidates.first().copied(),
+    }
+}
+
 /// Unrouted connection (at least one device not placed or in different enclosures).
 #[derive(Clone, Debug)]
 pub struct OpenWire {

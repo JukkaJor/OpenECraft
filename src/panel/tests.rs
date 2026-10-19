@@ -127,3 +127,32 @@ fn mounting_page_renders() {
     assert!(svg.contains("Scale 1:"));
     assert!(svg.contains("-K1"));
 }
+
+#[test]
+fn wire_hit_test_and_cycling() {
+    let prj = demo_project();
+    let an = Analysis::build(&prj);
+    // Keys identify wires uniquely (selection survives re-analysis).
+    let mut keys: Vec<_> = an.wiring.iter().map(|w| w.key()).collect();
+    keys.sort();
+    keys.dedup();
+    assert_eq!(keys.len(), an.wiring.len());
+
+    // A point in the middle of a route segment finds that wire.
+    let (wi, w) = an.wiring.iter().enumerate().find(|(_, w)| w.from.starts_with("-Q1")).unwrap();
+    let seg = &w.route.points[0..2];
+    let mid = p((seg[0].x + seg[1].x) / 2.0, (seg[0].y + seg[1].y) / 2.0);
+    assert!(route_distance(&w.route.points, mid) < 0.01);
+    let hits = wires_at(&an.wiring, w.enclosure, mid, 2.0);
+    assert!(hits.contains(&wi));
+    // Nearest first, other enclosures and far points excluded.
+    assert!(wires_at(&an.wiring, w.enclosure + 1, mid, 2.0).is_empty());
+    assert!(wires_at(&an.wiring, w.enclosure, p(-500.0, -500.0), 2.0).is_empty());
+
+    // Repeated clicks step through overlapping wires and wrap around.
+    assert_eq!(next_candidate(&[4, 7, 9], None), Some(4));
+    assert_eq!(next_candidate(&[4, 7, 9], Some(4)), Some(7));
+    assert_eq!(next_candidate(&[4, 7, 9], Some(9)), Some(4));
+    assert_eq!(next_candidate(&[4, 7, 9], Some(1)), Some(4));
+    assert_eq!(next_candidate(&[], Some(1)), None);
+}
