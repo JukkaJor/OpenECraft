@@ -41,6 +41,19 @@ built with [egui / eframe](https://github.com/emilk/egui).
     (more functions placed than the parts provide, parts missing in the project);
   - import / export as CSV (`;` separated, header names) or JSON; the database is stored
     in the app storage (desktop) / local storage (browser).
+- **Panel layout** (in the spirit of EPLAN Pro Panel):
+  - enclosures (from a part such as `GEN.ENC-600X800` or custom size) with mounting plate;
+  - mounting rails and cable ducts drawn by length; devices placed from a "devices to
+    place" list with their real dimensions from the parts data (contactor + auxiliary
+    block add up in depth, terminal strips are as wide as their terminals) and snapped
+    onto rails; move (devices travel with their rail), rotate, delete;
+  - 2D front view and a 3D view (orbit, pan, zoom, click to select);
+  - collision and boundary checks (overlaps, outside the plate, too deep for the enclosure);
+  - virtual wiring: every schematic connection between placed devices is routed through
+    the cable duct network (shortest path) → wire list with lengths, wires shown in 2D/3D;
+  - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
+    rails and ducts appear in the BOM by cut length, enclosures per piece;
+  - jump between a device in the schematic and its place in the panel layout.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
@@ -106,6 +119,8 @@ cargo test
 | `src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
 | `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
 | `src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, …) |
+| `src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
+| `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
 | `src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `src/parts_ui.rs` | Parts management window and part selection dialog |
 | `src/app.rs` | Application UI (menus, panels, dialogs) |

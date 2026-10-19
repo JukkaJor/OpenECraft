@@ -18,6 +18,8 @@ mod io;
 mod model;
 mod netlist;
 mod ops;
+mod panel;
+mod panel_ui;
 mod parts;
 mod parts_ui;
 mod render;

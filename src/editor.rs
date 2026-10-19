@@ -53,6 +53,8 @@ pub struct Palette {
     pub pin: Color32,
     pub crossref: Color32,
     pub error: Color32,
+    pub plate: Color32,
+    pub fill: Color32,
 }
 
 impl Palette {
@@ -72,6 +74,8 @@ impl Palette {
                 pin: Color32::from_rgb(255, 90, 90),
                 crossref: Color32::from_rgb(140, 180, 255),
                 error: Color32::from_rgb(255, 90, 90),
+                plate: Color32::from_rgb(52, 55, 60),
+                fill: Color32::from_rgb(78, 82, 90),
             }
         } else {
             Palette {
@@ -88,6 +92,8 @@ impl Palette {
                 pin: Color32::from_rgb(220, 0, 0),
                 crossref: Color32::from_rgb(20, 60, 170),
                 error: Color32::from_rgb(220, 0, 0),
+                plate: Color32::from_rgb(236, 238, 241),
+                fill: Color32::from_rgb(214, 218, 224),
             }
         }
     }
@@ -104,6 +110,8 @@ impl Palette {
             Ink::Pin => self.pin,
             Ink::CrossRef => self.crossref,
             Ink::Error => self.error,
+            Ink::Plate => self.plate,
+            Ink::Fill => self.fill,
         }
     }
 }

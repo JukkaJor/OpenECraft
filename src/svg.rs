@@ -17,6 +17,8 @@ fn color(ink: Ink) -> &'static str {
         Ink::Frame | Ink::FrameText => "#555",
         Ink::CrossRef => "#1a3d8f",
         Ink::Error => "#c00",
+        Ink::Plate => "#f2f2f2",
+        Ink::Fill => "#dcdcdc",
         Ink::Wire => "#000",
         _ => "#000",
     }

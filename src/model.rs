@@ -5,6 +5,7 @@
 //! of *auxiliary functions* (e.g. its contacts). Cross references are derived from that.
 
 use crate::geom::{p, P};
+pub use crate::panel::Layout;
 pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -52,6 +53,8 @@ pub struct Project {
     pub parts: Vec<Part>,
     /// Device level data (article assignment etc.) keyed by device tag.
     pub devices: BTreeMap<String, DeviceData>,
+    /// Panel layout (enclosures, mounting plates, rails, ducts, devices).
+    pub layout: Layout,
     pub next_id: u64,
 }
 
@@ -62,6 +65,7 @@ impl Default for Project {
             pages: Vec::new(),
             parts: Vec::new(),
             devices: BTreeMap::new(),
+            layout: Layout::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -99,6 +103,8 @@ pub enum PageKind {
     Schematic,
     Cover,
     Report(ReportKind),
+    /// 2D model view of the mounting plate of an enclosure (enclosure id).
+    Mounting(u64),
 }
 
 impl PageKind {
@@ -107,6 +113,7 @@ impl PageKind {
             PageKind::Schematic => "Schematic (multi-line)".into(),
             PageKind::Cover => "Cover sheet".into(),
             PageKind::Report(r) => format!("Report: {}", r.title()),
+            PageKind::Mounting(_) => "Mounting layout".into(),
         }
     }
 }
@@ -120,10 +127,11 @@ pub enum ReportKind {
     ConnectionList,
     PlcAssignment,
     PotentialList,
+    PanelWiring,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 7] = [
+    pub const ALL: [ReportKind; 8] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -131,6 +139,7 @@ impl ReportKind {
         ReportKind::ConnectionList,
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
+        ReportKind::PanelWiring,
     ];
 
     pub fn title(self) -> &'static str {
@@ -142,6 +151,7 @@ impl ReportKind {
             ReportKind::ConnectionList => "Connection list",
             ReportKind::PlcAssignment => "PLC assignment list",
             ReportKind::PotentialList => "Potential overview",
+            ReportKind::PanelWiring => "Wire list (panel routing)",
         }
     }
 }
@@ -292,6 +302,10 @@ impl Project {
             max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
             max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
             max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
+        }
+        for e in &self.layout.enclosures {
+            max = max.max(e.id);
+            max = e.items.iter().map(|i| i.id).fold(max, u64::max);
         }
         self.next_id = self.next_id.max(max + 1);
         // Make sure each symbol has a designation for each pin.

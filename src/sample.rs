@@ -175,7 +175,51 @@ pub fn demo_project() -> Project {
             crate::parts::ensure_in_project(&mut prj, &db, n);
         }
     }
+    add_panel_layout(&mut prj, &db);
     prj
+}
+
+/// Enclosure +CAB1: cable duct frame, three mounting rails and the cabinet devices.
+fn add_panel_layout(prj: &mut Project, db: &PartsDb) {
+    use crate::panel::{self, ItemKind};
+    for part in [panel::ENCLOSURE_PART, panel::RAIL_PART, panel::DUCT_PART] {
+        crate::parts::ensure_in_project(prj, db, part);
+    }
+    let enc = panel::new_enclosure(prj, panel::ENCLOSURE_PART, "+CAB1");
+    let enc_id = enc.id;
+    prj.layout.enclosures.push(enc);
+    // Plate 550 x 750 mm: duct frame plus two horizontal ducts between the rails.
+    let ducts = [
+        ((0.0, 20.0), (550.0, 20.0)),
+        ((0.0, 730.0), (550.0, 730.0)),
+        ((20.0, 40.0), (20.0, 710.0)),
+        ((530.0, 40.0), (530.0, 710.0)),
+        ((40.0, 270.0), (510.0, 270.0)),
+        ((40.0, 500.0), (510.0, 500.0)),
+    ];
+    for (a, b) in ducts {
+        let item = panel::new_profile(prj, ItemKind::Duct, panel::DUCT_PART, p(a.0, a.1), p(b.0, b.1));
+        prj.layout.enclosures[0].items.push(item);
+    }
+    for y in [145.0, 385.0, 615.0] {
+        let item = panel::new_profile(prj, ItemKind::Rail, panel::RAIL_PART, p(60.0, y), p(490.0, y));
+        prj.layout.enclosures[0].items.push(item);
+    }
+    for (tag, x, rail_y) in [
+        ("-Q1", 70.0, 145.0),
+        ("-T1", 140.0, 145.0),
+        ("-K1", 70.0, 385.0),
+        ("-F1", 135.0, 385.0),
+        ("-A1", 180.0, 385.0),
+        ("-A2", 215.0, 385.0),
+        ("-X1", 70.0, 615.0),
+    ] {
+        let h = panel::device_size(prj, tag).map(|d| d.h).unwrap_or(40.0);
+        panel::place_device(prj, 0, tag, p(x, rail_y - h / 2.0));
+    }
+    let id = prj.new_id();
+    let at = prj.pages.len();
+    prj.pages.push(Page::new(id, &(at + 1).to_string(), "Mounting layout +CAB1", PageKind::Mounting(enc_id)));
 }
 
 #[cfg(test)]

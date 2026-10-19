@@ -240,6 +240,57 @@ impl Netlist {
     }
 }
 
+/// A point-to-point connection between two device connection points.
+#[derive(Clone, Debug)]
+pub struct Connection {
+    pub net: String,
+    pub a: PinRef,
+    pub b: PinRef,
+    pub color: String,
+    pub cross_section: String,
+}
+
+/// Point-to-point connections: the device connection points of each net are chained
+/// in schematic order (potentials and connectors are not physical wire ends).
+pub fn connections(prj: &Project, nl: &Netlist) -> Vec<Connection> {
+    let mut out = Vec::new();
+    for net in &nl.nets {
+        let mut pins: Vec<&PinRef> = net
+            .pins
+            .iter()
+            .filter(|p| {
+                let s = &prj.pages[p.page].symbols[p.sym];
+                symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
+            })
+            .collect();
+        if pins.len() < 2 {
+            continue;
+        }
+        pins.sort_by(|a, b| {
+            let (sa, sb) = (&prj.pages[a.page].symbols[a.sym], &prj.pages[b.page].symbols[b.sym]);
+            a.page.cmp(&b.page).then(sa.pos.x.total_cmp(&sb.pos.x)).then(sa.pos.y.total_cmp(&sb.pos.y))
+        });
+        let (color, cross_section) = net
+            .wires
+            .iter()
+            .find_map(|(pi, wid)| {
+                prj.pages[*pi].wires.iter().find(|w| w.id == *wid && (!w.color.is_empty() || !w.cross_section.is_empty()))
+            })
+            .map(|w| (w.color.clone(), w.cross_section.clone()))
+            .unwrap_or_default();
+        for pair in pins.windows(2) {
+            out.push(Connection {
+                net: net.name.clone(),
+                a: *pair[0],
+                b: *pair[1],
+                color: color.clone(),
+                cross_section: cross_section.clone(),
+            });
+        }
+    }
+    out
+}
+
 /// Human readable designation of a pin: `-K1:A1`, `=L1`, `-X1:3`.
 pub fn pin_designation(prj: &Project, pin: PinRef) -> String {
     let s = &prj.pages[pin.page].symbols[pin.sym];
