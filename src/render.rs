@@ -6,6 +6,7 @@ use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::netlist;
 use crate::panel::{self, Enclosure, ItemKind, PanelItem};
+use crate::parts::{Model2d, Part, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
@@ -494,6 +495,7 @@ pub fn draw_enclosure(
     k: f32,
     selected: &BTreeSet<u64>,
     problems: &BTreeSet<u64>,
+    parts: &[Part],
 ) {
     let tf = |x: f32, y: f32| origin + p((x + panel::PLATE_MARGIN) * k, (y + panel::PLATE_MARGIN) * k);
     d.rect(origin, origin + p(e.width * k, e.height * k), 0.5, Ink::Line, false);
@@ -559,10 +561,67 @@ pub fn draw_enclosure(
             }
             ItemKind::Device => {
                 d.rect(a, b, 0.0, Ink::Fill, true);
-                d.rect(a, b, 0.3, ink, false);
-                let size = (it.w.min(it.h) * 0.22).clamp(3.0, 9.0) * k;
+                let model = parts.iter().find(|x| x.number == it.part).and_then(|x| x.model_2d.as_ref());
                 let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
-                d.text(tf(it.x + it.w / 2.0, it.y + it.h / 2.0), &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                let size = (it.w.min(it.h) * 0.22).clamp(3.0, 9.0) * k;
+                let c = tf(it.x + it.w / 2.0, it.y + it.h / 2.0);
+                match model {
+                    Some(m) => {
+                        draw_model_2d(d, m, it, &tf, k, ink);
+                        // Tag on a small label so it stays readable on the drawing
+                        let size = size * 0.8;
+                        let half = p(it.tag.chars().count() as f32 * size * 0.33 + size * 0.2, size * 0.6);
+                        d.rect(c - half, c + half, 0.0, Ink::Plate, true);
+                        d.text(c, &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                    }
+                    None => d.text(c, &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink),
+                }
+                d.rect(a, b, 0.3, ink, false);
+            }
+        }
+    }
+}
+
+/// Draws a part's 2D front view into a placed device. Rotated devices (width and
+/// height swapped) get the drawing turned by 90°, other size differences are scaled.
+fn draw_model_2d(d: &mut dyn Draw, m: &Model2d, it: &PanelItem, tf: &dyn Fn(f32, f32) -> P, k: f32, ink: Ink) {
+    if m.width <= 0.0 || m.height <= 0.0 {
+        return;
+    }
+    let same = |a: f32, b: f32| (a - b).abs() < 0.5;
+    let rotated = !same(m.width, m.height) && same(it.w, m.height) && same(it.h, m.width);
+    // Terminal strips: one drawing per terminal side by side.
+    let n = if rotated { 1 } else { panel::tiles(it.w, m.width) };
+    let cell_w = it.w / n as f32;
+    let (sx, sy) = if rotated { (it.w / m.height, it.h / m.width) } else { (cell_w / m.width, it.h / m.height) };
+    let s = (sx + sy) / 2.0;
+    let w = 0.15;
+    for tile in 0..n {
+        let x0 = it.x + tile as f32 * cell_w;
+        let map = |q: [f32; 2]| {
+            let (x, y) = if rotated { (m.height - q[1], q[0]) } else { (q[0], q[1]) };
+            tf(x0 + x * sx, it.y + y * sy)
+        };
+        draw_prims_2d(d, &m.prims, &map, s * k, w, ink);
+    }
+}
+
+pub fn draw_prims_2d(d: &mut dyn Draw, prims: &[Prim2d], map: &dyn Fn([f32; 2]) -> P, s: f32, w: f32, ink: Ink) {
+    for prim in prims {
+        match prim {
+            Prim2d::Line { a, b } => d.line(map(*a), map(*b), w, ink, false),
+            Prim2d::Rect { min, max, fill } => {
+                let corners = [*min, [max[0], min[1]], *max, [min[0], max[1]]].map(map);
+                d.poly(&corners, true, if *fill { 0.0 } else { w }, ink, *fill);
+            }
+            Prim2d::Circle { c, r, fill } => d.circle(map(*c), r * s, if *fill { 0.0 } else { w }, ink, *fill),
+            Prim2d::Polyline { pts, closed, fill } => {
+                let v: Vec<P> = pts.iter().map(|q| map(*q)).collect();
+                d.poly(&v, *closed, if *fill { 0.0 } else { w }, ink, *fill && *closed);
+            }
+            Prim2d::Text { pos, text, size } => {
+                let ink = if ink == Ink::Line { Ink::Text } else { ink };
+                d.text(map(*pos), text, size * s, Anchor::Left, VAnchor::Middle, ink)
             }
         }
     }
@@ -588,7 +647,7 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
     let origin = p(x0 + ((x1 - x0) - w) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, origin, k, &BTreeSet::new(), &BTreeSet::new());
+    draw_enclosure(d, e, origin, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
     // Dimensions
     let bottom = origin.y + h + 6.0;
     d.line(p(origin.x, bottom), p(origin.x + w, bottom), 0.18, Ink::Frame, false);

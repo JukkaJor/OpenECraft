@@ -231,6 +231,66 @@ pub struct DeviceSize {
     pub from_part: bool,
 }
 
+/// Width, height and depth of a part: the mounting data, or the size of its 3D model
+/// when the part has no mounting data.
+pub fn part_dims(part: &crate::parts::Part) -> Option<[f32; 3]> {
+    let model = part.model_3d.as_ref().map(|m| m.size()).filter(|s| s[0] > 0.0 && s[1] > 0.0);
+    if part.width > 0.0 && part.height > 0.0 {
+        let depth = if part.depth > 0.0 { part.depth } else { model.map(|s| s[2]).unwrap_or(0.0) };
+        Some([part.width, part.height, depth])
+    } else {
+        model
+    }
+}
+
+/// Number of copies of a model of width `model_w` side by side in an item of width
+/// `item_w` (terminal strips show one model per terminal).
+pub fn tiles(item_w: f32, model_w: f32) -> usize {
+    if model_w <= 0.0 {
+        return 1;
+    }
+    let n = (item_w / model_w).round();
+    if n >= 2.0 && (n * model_w - item_w).abs() < 0.5 {
+        n as usize
+    } else {
+        1
+    }
+}
+
+/// Triangles of a part's 3D model placed into a device on the plate, in plate
+/// coordinates (x right, y down, z = height above the plate). The model is fitted
+/// into the device box; rotated devices turn the model by 90° about the front axis,
+/// terminal strips repeat it once per terminal. Winding (outside) is preserved.
+pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3]; 3]> {
+    let (min, _) = mesh.bounds();
+    let [mw, mh, md] = mesh.size();
+    if mw <= 0.0 || mh <= 0.0 || md <= 0.0 {
+        return Vec::new();
+    }
+    let same = |a: f32, b: f32| (a - b).abs() < 0.5;
+    let rotated = !same(mw, mh) && same(it.w, mh) && same(it.h, mw);
+    let n = if rotated { 1 } else { tiles(it.w, mw) };
+    let cell_w = it.w / n as f32;
+    let sz = it.d / md;
+    let mut out = Vec::with_capacity(mesh.triangles.len() * n);
+    for tile in 0..n {
+        let x0 = it.x + tile as f32 * cell_w;
+        let tf = |v: [f32; 3]| {
+            let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
+            if rotated {
+                // Quarter turn: model up becomes plate right, model right becomes plate down.
+                [it.x + y_up * (it.w / mh), it.y + x * (it.h / mw), it.z + z * sz]
+            } else {
+                [x0 + x * (cell_w / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * sz]
+            }
+        };
+        for t in &mesh.triangles {
+            out.push([tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]);
+        }
+    }
+    out
+}
+
 /// Footprint of a device from its parts: the first part with mounting data gives
 /// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
 /// strips are as wide as all their terminals together.
@@ -241,19 +301,21 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         .iter()
         .filter_map(|r| prj.parts.iter().find(|x| x.number == r.number).map(|pd| (pd, r.count.max(1))))
         .collect();
-    let (main, _) = parts.iter().find(|(pd, _)| pd.width > 0.0 && pd.height > 0.0)?;
+    let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| part_dims(pd).map(|dims| (*pd, dims)))?;
     let terminals = parts::placed_functions(prj, tag).iter().filter(|f| f.0 == FnKind::Terminal).count();
-    let mut w = main.width;
+    let mut w = mw;
     if terminals > 0 && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
-        w = main.width * terminals as f32;
+        w = mw * terminals as f32;
     }
-    let mut d = main.depth;
+    let mut d = md;
     for (pd, count) in &parts {
-        if pd.number != main.number && pd.depth > 0.0 && pd.width > 0.0 && pd.width <= main.width + 1.0 {
-            d += pd.depth * *count as f32;
+        if let (true, Some([aw, _, ad])) = (pd.number != main.number, part_dims(pd)) {
+            if aw <= mw + 1.0 {
+                d += ad * *count as f32;
+            }
         }
     }
-    Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: main.height, d, from_part: true })
+    Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d, from_part: true })
 }
 
 /// Devices with parts that are not placed in any enclosure yet. Devices whose parts

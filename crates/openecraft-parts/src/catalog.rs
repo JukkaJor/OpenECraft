@@ -1,0 +1,262 @@
+//! Generic example catalog with function templates.
+
+use crate::{natural_cmp, FnKind, FunctionTemplate, Mesh3d, Model2d, Part, Prim2d, TopGroup};
+
+struct C {
+    parts: Vec<Part>,
+}
+
+#[allow(clippy::too_many_arguments)]
+impl C {
+    fn add(
+        &mut self,
+        number: &str,
+        desc: &str,
+        group: &str,
+        subgroup: &str,
+        ident: &str,
+        price: f32,
+        dims: (f32, f32, f32, f32),
+        functions: &[(FnKind, &str)],
+    ) -> &mut Part {
+        let (top, rest) = number.split_once('.').unwrap_or(("GEN", number));
+        let manufacturer = if top == "GEN" { "Generic" } else { top };
+        self.parts.push(Part {
+            number: number.into(),
+            type_number: rest.into(),
+            order_number: rest.into(),
+            manufacturer: manufacturer.into(),
+            supplier: "Generic distribution".into(),
+            description: desc.into(),
+            top_group: if group == "Mounting" { TopGroup::Mechanics } else if group == "Valves" { TopGroup::Fluid } else { TopGroup::Electrical },
+            group: group.into(),
+            subgroup: subgroup.into(),
+            identifier: ident.into(),
+            price,
+            width: dims.0,
+            height: dims.1,
+            depth: dims.2,
+            weight: dims.3,
+            mounting: if dims.0 > 0.0 { "Mounting rail 35 mm".into() } else { String::new() },
+            functions: functions.iter().map(|(k, p)| FunctionTemplate::new(*k, p)).collect(),
+            ..Default::default()
+        });
+        self.parts.last_mut().unwrap()
+    }
+}
+
+/// Generic example catalog with function templates.
+pub fn default_catalog() -> Vec<Part> {
+    use FnKind::*;
+    let mut c = C { parts: Vec::new() };
+    let rc = "Relays, contactors";
+    let sd = "Safety devices";
+    let sw = "Sensors, switches, pushbuttons";
+    let main3 = "1 3 5 2 4 6";
+
+    let p = c.add("GEN.CT-9A-24DC", "Contactor 3P 9 A, coil 24 V DC, 1 NO aux", rc, "Power contactor", "K", 38.5, (45.0, 74.0, 73.0, 0.32), &[(Coil, "A1 A2"), (MainContacts3, main3), (No, "13 14")]);
+    p.voltage = "24 V DC".into();
+    p.current = "9 A (AC-3)".into();
+    p.power = "4 kW / 400 V".into();
+    p.accessories = vec!["GEN.AUX-2NO2NC".into()];
+    let p = c.add("GEN.CT-18A-24DC", "Contactor 3P 18 A, coil 24 V DC, 1 NO + 1 NC aux", rc, "Power contactor", "K", 52.0, (45.0, 84.0, 87.0, 0.45), &[(Coil, "A1 A2"), (MainContacts3, main3), (No, "13 14"), (Nc, "21 22")]);
+    p.voltage = "24 V DC".into();
+    p.current = "18 A (AC-3)".into();
+    p.power = "7.5 kW / 400 V".into();
+    p.accessories = vec!["GEN.AUX-2NO2NC".into()];
+    c.add("GEN.AUX-2NO2NC", "Auxiliary contact block 2 NO + 2 NC, front mounting", rc, "Auxiliary contact block", "K", 14.6, (45.0, 40.0, 40.0, 0.05), &[(No, "53 54"), (Nc, "61 62"), (Nc, "71 72"), (No, "83 84")]);
+    c.add("GEN.AUX-1NO1NC", "Auxiliary contact block 1 NO + 1 NC", rc, "Auxiliary contact block", "K", 9.8, (45.0, 40.0, 40.0, 0.03), &[(No, "53 54"), (Nc, "61 62")]);
+    let p = c.add("GEN.RLY-24DC-2CO", "Interface relay 24 V DC, 2 CO, with socket", rc, "Relay", "K", 12.4, (15.5, 78.0, 70.0, 0.04), &[(Coil, "A1 A2"), (Changeover, "11 12 14"), (Changeover, "21 22 24")]);
+    p.voltage = "24 V DC".into();
+    p.current = "8 A".into();
+    let p = c.add("GEN.TMR-24DC-OND", "Timer relay on-delay 24 V DC, 0.05 s - 100 h, 1 CO", rc, "Timer relay", "K", 34.9, (17.5, 90.0, 64.0, 0.07), &[(Coil, "A1 A2"), (Changeover, "15 16 18")]);
+    p.voltage = "24 V DC".into();
+
+    let p = c.add("GEN.MPS-2.5-4A", "Motor protection switch 2.5 - 4 A", sd, "Motor protection switch", "Q", 61.0, (45.0, 97.0, 97.0, 0.3), &[(MotorProtection, main3)]);
+    p.current = "2.5 - 4 A".into();
+    p.accessories = vec!["GEN.MPS-AUX-1NO1NC".into()];
+    let p = c.add("GEN.MPS-4-6.3A", "Motor protection switch 4 - 6.3 A", sd, "Motor protection switch", "Q", 63.0, (45.0, 97.0, 97.0, 0.3), &[(MotorProtection, main3)]);
+    p.current = "4 - 6.3 A".into();
+    p.accessories = vec!["GEN.MPS-AUX-1NO1NC".into()];
+    c.add("GEN.MPS-AUX-1NO1NC", "Auxiliary switch for motor protection switch, 1 NO + 1 NC", sd, "Auxiliary switch", "Q", 12.9, (9.0, 90.0, 60.0, 0.02), &[(No, "13 14"), (Nc, "21 22")]);
+    let p = c.add("GEN.MCB-1P-C6", "Miniature circuit breaker 1P C6", sd, "Circuit breaker", "F", 8.7, (18.0, 90.0, 70.0, 0.12), &[(Breaker1, "1 2")]);
+    p.current = "6 A".into();
+    let p = c.add("GEN.MCB-1P-B10", "Miniature circuit breaker 1P B10", sd, "Circuit breaker", "F", 8.7, (18.0, 90.0, 70.0, 0.12), &[(Breaker1, "1 2")]);
+    p.current = "10 A".into();
+    let p = c.add("GEN.MCB-3P-C16", "Miniature circuit breaker 3P C16", sd, "Circuit breaker", "Q", 27.3, (54.0, 90.0, 70.0, 0.36), &[(Breaker3, main3)]);
+    p.current = "16 A".into();
+    let p = c.add("GEN.FUSE-5X20-2A", "Fuse holder 5x20 mm with fuse 2 A", sd, "Fuse", "F", 4.2, (8.0, 60.0, 50.0, 0.02), &[(Fuse, "1 2")]);
+    p.current = "2 A".into();
+    let p = c.add("GEN.OL-2.8-4A", "Thermal overload relay 2.8 - 4 A, 1 NO + 1 NC", sd, "Overload relay", "F", 44.0, (45.0, 70.0, 80.0, 0.15), &[(Overload, main3), (Nc, "95 96"), (No, "97 98")]);
+    p.current = "2.8 - 4 A".into();
+
+    c.add("GEN.PB-GN-1NO", "Pushbutton green, 1 NO", sw, "Pushbutton", "S", 11.2, (30.0, 30.0, 45.0, 0.03), &[(PushbuttonNo, "13 14")]).accessories = vec!["GEN.CB-1NO".into(), "GEN.CB-1NC".into()];
+    c.add("GEN.PB-RD-1NC", "Pushbutton red, 1 NC", sw, "Pushbutton", "S", 11.2, (30.0, 30.0, 45.0, 0.03), &[(PushbuttonNc, "11 12")]).accessories = vec!["GEN.CB-1NO".into(), "GEN.CB-1NC".into()];
+    c.add("GEN.ESTOP-1NC", "Emergency stop mushroom 40 mm, twist release, 1 NC", sw, "Emergency stop", "S", 24.6, (40.0, 40.0, 60.0, 0.06), &[(PushbuttonNc, "11 12")]).accessories = vec!["GEN.CB-1NC".into()];
+    c.add("GEN.SEL-2POS-1NO", "Selector switch 2 positions, 1 NO", sw, "Selector switch", "S", 15.9, (30.0, 30.0, 45.0, 0.03), &[(SwitchNo, "13 14")]);
+    c.add("GEN.CB-1NO", "Contact block 1 NO for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(No, "13 14")]);
+    c.add("GEN.CB-1NC", "Contact block 1 NC for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(Nc, "21 22")]);
+    let p = c.add("GEN.PROX-M12-PNP", "Inductive proximity sensor M12, PNP NO, Sn 4 mm", sw, "Proximity sensor", "B", 29.0, (12.0, 12.0, 60.0, 0.05), &[(Sensor, "BN BK")]);
+    p.voltage = "10 - 30 V DC".into();
+    c.add("GEN.LIMIT-1NO1NC", "Position switch roller plunger, 1 NO + 1 NC", sw, "Position switch", "B", 32.0, (31.0, 60.0, 33.0, 0.1), &[(Sensor, "13 14"), (Nc, "21 22")]);
+
+    let p = c.add("GEN.LMP-GN-24", "Indicator lamp green, LED 24 V", "Signal devices", "Indicator lamp", "P", 9.1, (30.0, 30.0, 45.0, 0.02), &[(Signal, "X1 X2")]);
+    p.voltage = "24 V AC/DC".into();
+    let p = c.add("GEN.LMP-RD-24", "Indicator lamp red, LED 24 V", "Signal devices", "Indicator lamp", "P", 9.1, (30.0, 30.0, 45.0, 0.02), &[(Signal, "X1 X2")]);
+    p.voltage = "24 V AC/DC".into();
+    c.add("GEN.HORN-24", "Panel buzzer 24 V, 85 dB", "Signal devices", "Horn", "P", 18.0, (30.0, 30.0, 50.0, 0.03), &[(Signal, "1 2")]);
+
+    let p = c.add("GEN.MOT-0.75KW", "Three-phase motor 0.75 kW 400 V, 1400 rpm", "Motors", "Three-phase motor", "M", 180.0, (0.0, 0.0, 0.0, 9.5), &[(Motor3, "U1 V1 W1 PE")]);
+    p.voltage = "400 V".into();
+    p.current = "1.9 A".into();
+    p.power = "0.75 kW".into();
+    let p = c.add("GEN.MOT-1PH-0.25KW", "Single-phase motor 0.25 kW 230 V", "Motors", "Single-phase motor", "M", 140.0, (0.0, 0.0, 0.0, 5.0), &[(Motor1, "L N PE")]);
+    p.power = "0.25 kW".into();
+
+    let p = c.add("GEN.PS-24DC-5A", "Power supply 230 V AC / 24 V DC 5 A", "Power supplies, transformers", "Power supply", "T", 89.0, (40.0, 125.0, 115.0, 0.6), &[(PowerSupply, "L N PE L+ M")]);
+    p.voltage = "230 V AC / 24 V DC".into();
+    p.current = "5 A".into();
+    c.add("GEN.TR-230-24-100VA", "Control transformer 230 V / 24 V 100 VA", "Power supplies, transformers", "Control transformer", "T", 46.0, (78.0, 84.0, 70.0, 1.6), &[(Transformer, "1.1 1.2 2.1 2.2")]);
+
+    let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
+    p.accessories = vec!["GEN.TB-END".into()];
+    c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]);
+    c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
+
+    let di: Vec<(FnKind, String)> = (0..16).map(|i| (PlcInput, format!("I{}.{}", i / 8, i % 8))).collect();
+    let di: Vec<(FnKind, &str)> = di.iter().map(|(k, s)| (*k, s.as_str())).collect();
+    c.add("GEN.PLC-DI16", "PLC digital input module 16 x 24 V DC", "PLC", "Digital input module", "A", 145.0, (25.0, 100.0, 75.0, 0.15), &di);
+    let dq: Vec<(FnKind, String)> = (0..16).map(|i| (PlcOutput, format!("Q{}.{}", i / 8, i % 8))).collect();
+    let dq: Vec<(FnKind, &str)> = dq.iter().map(|(k, s)| (*k, s.as_str())).collect();
+    c.add("GEN.PLC-DO16", "PLC digital output module 16 x 24 V DC 0.5 A", "PLC", "Digital output module", "A", 165.0, (25.0, 100.0, 75.0, 0.15), &dq);
+
+    let p = c.add("GEN.SV-24DC", "Solenoid valve coil 24 V DC, 4.8 W", "Valves", "Solenoid valve", "Y", 22.5, (0.0, 0.0, 0.0, 0.1), &[(Valve, "A1 A2")]);
+    p.voltage = "24 V DC".into();
+    p.power = "4.8 W".into();
+
+    c.add("GEN.RES-1K", "Resistor 1 kΩ 0.6 W", "Passive components", "Resistor", "R", 0.1, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);
+    c.add("GEN.CAP-100N", "Capacitor 100 nF 63 V", "Passive components", "Capacitor", "C", 0.15, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);
+    c.add("GEN.DIODE-1N4007", "Rectifier diode 1 A 1000 V", "Passive components", "Diode", "V", 0.08, (0.0, 0.0, 0.0, 0.0), &[(Generic, "A K")]);
+
+    let p = c.add("GEN.RAIL-TS35-1M", "Mounting rail TS 35 x 7.5, perforated, 1 m", "Mounting", "Mounting rail", "", 6.5, (1000.0, 35.0, 7.5, 0.35), &[]);
+    p.quantity_unit = "m".into();
+    p.mounting.clear();
+    let p = c.add("GEN.DUCT-40X60", "Cable duct 40 x 60 mm, 2 m", "Mounting", "Cable duct", "", 11.0, (2000.0, 40.0, 60.0, 0.9), &[]);
+    p.pack_quantity = 10;
+    p.mounting.clear();
+    let p = c.add("GEN.ENC-600X800", "Steel enclosure 600 x 800 x 250 mm, IP66", "Mounting", "Enclosure", "", 320.0, (600.0, 800.0, 250.0, 28.0), &[]);
+    p.mounting.clear();
+
+    let mut parts = c.parts;
+    for p in &mut parts {
+        if let Some((m2, m3)) = generated_models(p) {
+            p.model_2d = Some(m2);
+            p.model_3d = Some(m3);
+        }
+    }
+    parts.sort_by(|a, b| natural_cmp(&a.number, &b.number));
+    parts
+}
+
+/// Shape family of the generated example models.
+#[derive(Clone, Copy, PartialEq)]
+enum Shape {
+    /// DIN rail device: base, raised front, screw terminals top and bottom.
+    Din { toggle: bool, display: bool },
+    /// Feed-through terminal: thin block with two screws.
+    Terminal,
+    /// PLC I/O module: tall block with an LED / connector column.
+    Plc,
+    /// Door / field device (pushbutton, lamp, sensor): round front.
+    Round,
+}
+
+fn shape_of(p: &Part) -> Option<Shape> {
+    if p.width <= 0.0 || p.height <= 0.0 || p.depth <= 0.0 || p.group == "Mounting" {
+        return None;
+    }
+    Some(match p.subgroup.as_str() {
+        "Feed-through terminal" | "PE terminal" | "Accessories" => Shape::Terminal,
+        "Digital input module" | "Digital output module" | "CPU" => Shape::Plc,
+        "Circuit breaker" | "Motor protection switch" | "Auxiliary switch" => Shape::Din { toggle: true, display: false },
+        "Power supply" | "Timer relay" => Shape::Din { toggle: false, display: true },
+        _ if p.group == "Sensors, switches, pushbuttons" || p.group == "Signal devices" => Shape::Round,
+        _ => Shape::Din { toggle: false, display: false },
+    })
+}
+
+/// Simple 2D front view and 3D model with exactly the part's mounting dimensions.
+fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
+    let shape = shape_of(p)?;
+    let (w, h, d) = (p.width, p.height, p.depth);
+    let mut m3 = Mesh3d::default();
+    let mut prims: Vec<Prim2d> = vec![Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false }];
+    // 2D uses y down from the top, 3D y up from the bottom.
+    let rect = |prims: &mut Vec<Prim2d>, x0: f32, y0: f32, x1: f32, y1: f32, fill: bool| {
+        prims.push(Prim2d::Rect { min: [x0, h - y1], max: [x1, h - y0], fill })
+    };
+    match shape {
+        Shape::Din { toggle, display } => {
+            let base = d * 0.6;
+            m3.add_box([0.0, 0.0, 0.0], [w, h, base]);
+            // Raised front in the middle third
+            let (f0, f1) = (h * 0.3, h * 0.7);
+            m3.add_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }]);
+            rect(&mut prims, w * 0.05, f0, w * 0.95, f1, false);
+            // Screw terminals on the steps above and below the front
+            let n = ((w / 9.0).floor() as usize).clamp(1, 6);
+            let pitch = w / n as f32;
+            for i in 0..n {
+                let cx = pitch * (i as f32 + 0.5);
+                let r = (pitch * 0.28).min(3.0);
+                for cy in [h * 0.15, h * 0.85] {
+                    m3.add_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5]);
+                    prims.push(Prim2d::Circle { c: [cx, h - cy], r, fill: false });
+                    prims.push(Prim2d::Line { a: [cx - r * 0.7, h - cy], b: [cx + r * 0.7, h - cy] });
+                }
+            }
+            if toggle {
+                let (tw, th) = ((w * 0.35).min(8.0), h * 0.12);
+                let (cx, cy) = (w / 2.0, h / 2.0);
+                m3.add_box([cx - tw / 2.0, cy - th / 2.0, d * 0.92], [cx + tw / 2.0, cy + th / 2.0, d]);
+                rect(&mut prims, cx - tw / 2.0, cy - th / 2.0, cx + tw / 2.0, cy + th / 2.0, true);
+            }
+            if display {
+                let (cx, cy) = (w / 2.0, h * 0.58);
+                let (dw, dh) = (w * 0.6, h * 0.08);
+                m3.add_box([cx - dw / 2.0, cy - dh / 2.0, d * 0.92], [cx + dw / 2.0, cy + dh / 2.0, d]);
+                rect(&mut prims, cx - dw / 2.0, cy - dh / 2.0, cx + dw / 2.0, cy + dh / 2.0, false);
+                prims.push(Prim2d::Circle { c: [cx, h - h * 0.42], r: (w * 0.08).min(3.0), fill: false });
+            }
+        }
+        Shape::Terminal => {
+            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.7]);
+            m3.add_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d]);
+            let r = (w * 0.3).min(2.0);
+            for cy in [h * 0.18, h * 0.82] {
+                prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
+            }
+            rect(&mut prims, w * 0.1, h * 0.35, w * 0.9, h * 0.65, false);
+        }
+        Shape::Plc => {
+            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.85]);
+            m3.add_box([w * 0.15, h * 0.08, d * 0.85], [w * 0.85, h * 0.92, d]);
+            rect(&mut prims, w * 0.15, h * 0.08, w * 0.85, h * 0.92, false);
+            for i in 0..8 {
+                let y = h * 0.14 + i as f32 * h * 0.095;
+                prims.push(Prim2d::Rect { min: [w * 0.25, y], max: [w * 0.4, y + h * 0.03], fill: true });
+                prims.push(Prim2d::Line { a: [w * 0.5, y + h * 0.015], b: [w * 0.75, y + h * 0.015] });
+            }
+        }
+        Shape::Round => {
+            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.8]);
+            m3.add_box([w * 0.15, h * 0.15, d * 0.8], [w * 0.85, h * 0.85, d]);
+            prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.42, fill: false });
+            prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.3, fill: true });
+        }
+    }
+    Some((Model2d { width: w, height: h, prims }, m3))
+}
+
+#[cfg(test)]
+mod tests;

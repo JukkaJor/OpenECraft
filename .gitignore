@@ -1,3 +1,6 @@
 /target
 /dist
 /.idea/
+# Local parts server databases
+parts-db.json
+*.tmp

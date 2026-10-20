@@ -25,12 +25,14 @@ fn source_files(dir: &Path) -> Vec<PathBuf> {
 fn all_ui_characters_exist_in_bundled_fonts() {
     let mut fonts = Fonts::new(TextOptions::default(), FontDefinitions::default());
     let font = FontId::new(14.0, FontFamily::Proportional);
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    // The application and the parts library (catalog texts are shown in the UI).
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut missing: BTreeMap<char, Vec<String>> = BTreeMap::new();
     let mut checked = 0;
-    for path in source_files(&dir) {
+    let files = [root.join("src"), root.join("crates/openecraft-parts/src")].iter().flat_map(|d| source_files(d)).collect::<Vec<_>>();
+    for path in files {
         let src = std::fs::read_to_string(&path).unwrap();
-        let name = path.strip_prefix(&dir).unwrap_or(&path).display().to_string();
+        let name = path.strip_prefix(root).unwrap_or(&path).display().to_string();
         for (line, c) in literal_chars(&src) {
             if c.is_ascii() || c.is_whitespace() {
                 continue;

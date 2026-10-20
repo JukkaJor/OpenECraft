@@ -1,7 +1,11 @@
 //! Parts management window and part selection dialog.
 
 use crate::model::{natural_cmp, Project};
-use crate::parts::{self, FnKind, FunctionTemplate, Part, PartRef, PartsDb, TopGroup, PRODUCT_GROUPS};
+use crate::editor::{EguiDraw, Palette};
+use crate::parts::{self, FnKind, FunctionTemplate, Model2d, Part, PartRef, PartsDb, TopGroup, PRODUCT_GROUPS};
+use crate::render::{Draw, Ink};
+use crate::io::{Loaded, Purpose};
+use crate::parts_server::ServerClient;
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
 
@@ -19,11 +23,14 @@ enum Tab {
     Mounting,
     Functions,
     Accessories,
+    Graphics,
 }
 
 /// Requests the application has to carry out (file dialogs, messages).
 pub enum PartsAction {
     Import,
+    /// Pick a 2D / 3D model file for the selected part.
+    ImportModel(Purpose),
     Export { name: String, filter: (&'static str, &'static str), content: String },
     Message(String),
 }
@@ -42,6 +49,12 @@ pub struct PartsUi {
     sel_filter: String,
     sel_matching: bool,
     sel_part: Option<String>,
+    /// Connection to the global parts server.
+    pub server: ServerClient,
+    show_server: bool,
+    /// Part (source, number) that receives the next imported model.
+    model_target: Option<(Source, String)>,
+    model_scale: f32,
 }
 
 impl Default for PartsUi {
@@ -56,6 +69,10 @@ impl Default for PartsUi {
             sel_filter: String::new(),
             sel_matching: true,
             sel_part: None,
+            server: ServerClient::default(),
+            show_server: false,
+            model_target: None,
+            model_scale: 25.4,
         }
     }
 }
@@ -123,7 +140,16 @@ fn num_row(ui: &mut egui::Ui, label: &str, value: &mut f32, suffix: &str) {
 }
 
 /// Tabbed editor for one part.
-fn part_editor(ui: &mut egui::Ui, part: &mut Part, tab: &mut Tab, all_numbers: &[String], duplicate: bool) {
+/// Tabbed editor for one part. Returns a requested model import.
+fn part_editor(
+    ui: &mut egui::Ui,
+    part: &mut Part,
+    tab: &mut Tab,
+    all_numbers: &[String],
+    duplicate: bool,
+    model_scale: &mut f32,
+) -> Option<Purpose> {
+    let mut request = None;
     ui.horizontal_wrapped(|ui| {
         for (t, name) in [
             (Tab::General, "General"),
@@ -132,6 +158,7 @@ fn part_editor(ui: &mut egui::Ui, part: &mut Part, tab: &mut Tab, all_numbers: &
             (Tab::Mounting, "Mounting data"),
             (Tab::Functions, "Function template"),
             (Tab::Accessories, "Accessories"),
+            (Tab::Graphics, "Graphics"),
         ] {
             ui.selectable_value(tab, t, name);
         }
@@ -298,7 +325,108 @@ fn part_editor(ui: &mut egui::Ui, part: &mut Part, tab: &mut Tab, all_numbers: &
                 part.accessories.push(n);
             }
         }
+        Tab::Graphics => request = graphics_tab(ui, part, model_scale),
     });
+    request
+}
+
+/// 2D front view and 3D model of a part.
+fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Option<Purpose> {
+    let mut request = None;
+    ui.weak("The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).");
+    ui.add_space(4.0);
+    ui.label(RichText::new("2D front view").strong());
+    ui.horizontal(|ui| {
+        model_2d_preview(ui, part.model_2d.as_ref(), vec2(180.0, 140.0));
+        ui.vertical(|ui| {
+            match &part.model_2d {
+                Some(m) => ui.label(format!("{:.1} × {:.1} mm, {} elements", m.width, m.height, m.prims.len())),
+                None => ui.weak("none – a plain rectangle is drawn"),
+            };
+            if ui.button("Import SVG…").clicked() {
+                request = Some(Purpose::Model2d);
+            }
+            if part.model_2d.is_some() && ui.button("🗑 Remove").clicked() {
+                part.model_2d = None;
+            }
+        });
+    });
+    ui.separator();
+    ui.label(RichText::new("3D model").strong());
+    ui.horizontal(|ui| {
+        match &part.model_3d {
+            Some(m) => crate::panel_ui::mesh_preview(ui, m, vec2(180.0, 160.0)),
+            None => {
+                ui.allocate_space(vec2(180.0, 40.0));
+            }
+        }
+        ui.vertical(|ui| {
+            match &part.model_3d {
+                Some(m) => {
+                    let s = m.size();
+                    ui.label(format!("{:.1} × {:.1} × {:.1} mm, {} triangles", s[0], s[1], s[2], m.triangles.len()));
+                }
+                None => {
+                    ui.weak("none – a box of the mounting dimensions is drawn");
+                }
+            }
+            if ui.button("Import STL / OBJ…").clicked() {
+                request = Some(Purpose::Model3d);
+            }
+            if part.model_3d.is_some() && ui.button("🗑 Remove").clicked() {
+                part.model_3d = None;
+            }
+        });
+    });
+    if let Some(m) = &mut part.model_3d {
+        ui.horizontal_wrapped(|ui| {
+            ui.label("Rotate 90°:");
+            for (axis, label) in [(0, "X"), (1, "Y"), (2, "Z")] {
+                if ui.button(label).on_hover_text("Turn the model so that its front faces the viewer (+Z) and its top is +Y").clicked() {
+                    m.rotate90(axis);
+                }
+            }
+            ui.separator();
+            ui.label("Scale ×");
+            ui.add(egui::DragValue::new(model_scale).speed(0.01).range(0.001..=10000.0));
+            if ui.button("Apply").on_hover_text("e.g. 25.4 for models in inch, 1000 for models in metres").clicked() {
+                m.scale(*model_scale);
+            }
+        });
+        let s = m.size();
+        let differs = [(s[0], part.width), (s[1], part.height), (s[2], part.depth)].iter().any(|(a, b)| (a - b).abs() > 0.5);
+        if differs {
+            ui.colored_label(
+                Color32::from_rgb(220, 140, 0),
+                format!(
+                    "The model ({:.1} × {:.1} × {:.1}) differs from the mounting data ({:.1} × {:.1} × {:.1}); it is stretched to the mounting data.",
+                    s[0], s[1], s[2], part.width, part.height, part.depth
+                ),
+            );
+            if ui.button("Use model size as mounting data").clicked() {
+                part.width = (s[0] * 10.0).round() / 10.0;
+                part.height = (s[1] * 10.0).round() / 10.0;
+                part.depth = (s[2] * 10.0).round() / 10.0;
+            }
+        }
+    }
+    request
+}
+
+/// Scaled drawing of a 2D front view.
+pub fn model_2d_preview(ui: &mut egui::Ui, model: Option<&Model2d>, size: egui::Vec2) {
+    let (resp, painter) = ui.allocate_painter(size, egui::Sense::hover());
+    let pal = Palette::new(ui.visuals().dark_mode);
+    painter.rect_filled(resp.rect, 4.0, pal.paper);
+    let Some(m) = model.filter(|m| m.width > 0.0 && m.height > 0.0) else {
+        painter.text(resp.rect.center(), egui::Align2::CENTER_CENTER, "no 2D model", egui::FontId::proportional(12.0), pal.frame);
+        return;
+    };
+    let zoom = ((size.x - 12.0) / m.width).min((size.y - 12.0) / m.height);
+    let origin = resp.rect.center() - vec2(m.width, m.height) * zoom / 2.0;
+    let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None };
+    d.rect(crate::geom::p(0.0, 0.0), crate::geom::p(m.width, m.height), 0.0, Ink::Fill, true);
+    crate::render::draw_prims_2d(&mut d, &m.prims, &|q| crate::geom::p(q[0], q[1]), 1.0, 0.15, Ink::Line);
 }
 
 /// Read only summary used in the selection dialog.
@@ -328,6 +456,91 @@ fn part_summary(ui: &mut egui::Ui, p: &Part) {
 
 impl PartsUi {
     /// Opens the management window with a part selected.
+    /// Puts an imported 2D / 3D model into the part it was requested for.
+    pub fn apply_model(&mut self, loaded: &Loaded, db: &mut PartsDb, prj: &mut Project) -> Result<String, String> {
+        let (source, number) = self.model_target.take().ok_or("no part selected for the model")?;
+        let list = match source {
+            Source::Database => &mut db.parts,
+            Source::Project => &mut prj.parts,
+        };
+        let part = list.iter_mut().find(|p| p.number == number).ok_or(format!("part {number} not found"))?;
+        let file = crate::io::short_name(&loaded.name).to_string();
+        match loaded.purpose {
+            Purpose::Model2d => {
+                let m = parts::parse_svg(&loaded.text())?;
+                let msg = format!("{file}: 2D front view with {} elements assigned to {number}", m.prims.len());
+                part.model_2d = Some(m);
+                Ok(msg)
+            }
+            Purpose::Model3d => {
+                let m = parts::parse_mesh(&file, &loaded.bytes)?;
+                let s = m.size();
+                // Parts without mounting data take the model size.
+                if part.width <= 0.0 || part.height <= 0.0 {
+                    part.width = s[0];
+                    part.height = s[1];
+                    part.depth = s[2];
+                }
+                let msg = format!("{file}: 3D model with {} triangles ({:.1} × {:.1} × {:.1} mm) assigned to {number}", m.triangles.len(), s[0], s[1], s[2]);
+                part.model_3d = Some(m);
+                Ok(msg)
+            }
+            _ => Err("not a model file".into()),
+        }
+    }
+
+    /// Applies finished parts server requests (call every frame).
+    pub fn poll_server(&mut self, db: &mut PartsDb) -> Option<String> {
+        self.server.poll(db)
+    }
+
+    /// Server URL, token and transfer buttons.
+    fn server_panel(&mut self, ui: &mut egui::Ui, db: &PartsDb, selected: Option<Part>) {
+        let ctx = ui.ctx().clone();
+        egui::Grid::new("server").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+            ui.label("Server URL");
+            ui.add(egui::TextEdit::singleline(&mut self.server.url).desired_width(320.0));
+            ui.end_row();
+            ui.label("Access token");
+            ui.add(egui::TextEdit::singleline(&mut self.server.token).password(true).desired_width(320.0).hint_text("only needed for uploads"));
+            ui.end_row();
+        });
+        let busy = self.server.busy();
+        ui.horizontal_wrapped(|ui| {
+            if ui.add_enabled(!busy, egui::Button::new("Test connection")).clicked() {
+                self.server.check(&ctx);
+            }
+            if ui
+                .add_enabled(!busy, egui::Button::new("⬇ Download into database"))
+                .on_hover_text("Adds new parts and updates existing ones in the local parts database")
+                .clicked()
+            {
+                self.server.download(&ctx);
+            }
+            let upload_one = ui.add_enabled(!busy && selected.is_some(), egui::Button::new("⬆ Upload selected part"));
+            if upload_one.clicked() {
+                if let Some(p) = &selected {
+                    self.server.upload(&ctx, std::slice::from_ref(p));
+                }
+            }
+            if ui
+                .add_enabled(!busy && !db.parts.is_empty(), egui::Button::new(format!("⬆ Upload database ({})", db.parts.len())))
+                .on_hover_text("Adds / replaces all parts of the local database on the server")
+                .clicked()
+            {
+                self.server.upload(&ctx, &db.parts);
+            }
+            if busy {
+                ui.spinner();
+            }
+        });
+        if !self.server.status.is_empty() {
+            let ok = !self.server.status.starts_with("Parts server:");
+            let color = if ok { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) };
+            ui.label(RichText::new(&self.server.status).color(color));
+        }
+    }
+
     pub fn show_part(&mut self, number: &str, in_project: bool) {
         self.open = true;
         self.source = if in_project { Source::Project } else { Source::Database };
@@ -404,6 +617,19 @@ impl PartsUi {
                         actions.push(PartsAction::Message(format!("{n} unused project parts removed")));
                     }
                     ui.separator();
+                    if ui
+                        .button("Refresh example catalog parts (GEN.*)")
+                        .on_hover_text("Replaces the GEN.* parts in the database with the current example catalog (including models)")
+                        .clicked()
+                    {
+                        let catalog = parts::default_catalog();
+                        let n = catalog.len();
+                        for p in catalog {
+                            db.upsert(p);
+                        }
+                        db.sort();
+                        actions.push(PartsAction::Message(format!("{n} example catalog parts refreshed")));
+                    }
                     if ui.button("Add missing parts of the example catalog").clicked() {
                         let mut n = 0;
                         for p in parts::default_catalog() {
@@ -415,8 +641,19 @@ impl PartsUi {
                         actions.push(PartsAction::Message(format!("{n} catalog parts added")));
                     }
                 });
+                ui.separator();
+                ui.toggle_value(&mut self.show_server, "🌐 Parts server")
+                    .on_hover_text("Exchange parts with a global parts database (openecraft-server)");
             });
             ui.separator();
+            if self.show_server {
+                let selected = self.selected.as_ref().and_then(|n| match self.source {
+                    Source::Database => db.get(n).cloned(),
+                    Source::Project => prj.parts.iter().find(|p| &p.number == n).cloned(),
+                });
+                self.server_panel(ui, db, selected);
+                ui.separator();
+            }
 
             // ---------------------------------------------------------- body
             let numbers: Vec<String> = db.parts.iter().chain(prj.parts.iter()).map(|p| p.number.clone()).collect();
@@ -441,7 +678,10 @@ impl PartsUi {
                         Some(i) => {
                             let duplicate = list.iter().filter(|p| p.number == list[i].number).count() > 1;
                             let before = list[i].number.clone();
-                            part_editor(ui, &mut list[i], &mut self.tab, &numbers, duplicate);
+                            if let Some(purpose) = part_editor(ui, &mut list[i], &mut self.tab, &numbers, duplicate, &mut self.model_scale) {
+                                self.model_target = Some((self.source, list[i].number.clone()));
+                                actions.push(PartsAction::ImportModel(purpose));
+                            }
                             if list[i].number != before {
                                 self.selected = Some(list[i].number.clone());
                             }
@@ -533,3 +773,6 @@ impl PartsUi {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

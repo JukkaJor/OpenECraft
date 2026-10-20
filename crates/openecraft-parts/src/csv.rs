@@ -1,0 +1,214 @@
+//! CSV / JSON import and export of parts.
+
+use crate::{FnKind, FunctionTemplate, Part, PartsDb, TopGroup};
+
+const CSV_FIELDS: [&str; 29] = [
+    "Part number",
+    "Type number",
+    "Order number",
+    "Manufacturer",
+    "Supplier",
+    "Description",
+    "Note",
+    "Product top group",
+    "Product group",
+    "Product subgroup",
+    "Identifier",
+    "Price",
+    "Currency",
+    "Price unit",
+    "Pack quantity",
+    "Quantity unit",
+    "Voltage",
+    "Current",
+    "Power",
+    "Technical data",
+    "Certificates",
+    "Datasheet",
+    "Width",
+    "Height",
+    "Depth",
+    "Weight",
+    "Mounting",
+    "Functions",
+    "Accessories",
+];
+
+fn csv_escape(s: &str) -> String {
+    if s.contains([';', '"', '\n', '\r']) {
+        format!("\"{}\"", s.replace('"', "\"\""))
+    } else {
+        s.to_string()
+    }
+}
+
+pub fn to_csv(parts: &[Part]) -> String {
+    let mut out = CSV_FIELDS.join(";");
+    out.push('\n');
+    for p in parts {
+        let functions = p
+            .functions
+            .iter()
+            .map(|f| format!("{}:{}", f.kind.short(), f.pins))
+            .collect::<Vec<_>>()
+            .join("|");
+        let top = match p.top_group {
+            TopGroup::Electrical => "Electrical",
+            TopGroup::Fluid => "Fluid",
+            TopGroup::Mechanics => "Mechanics",
+        };
+        let row = [
+            p.number.clone(),
+            p.type_number.clone(),
+            p.order_number.clone(),
+            p.manufacturer.clone(),
+            p.supplier.clone(),
+            p.description.clone(),
+            p.note.clone(),
+            top.to_string(),
+            p.group.clone(),
+            p.subgroup.clone(),
+            p.identifier.clone(),
+            format!("{:.2}", p.price),
+            p.currency.clone(),
+            p.price_unit.to_string(),
+            p.pack_quantity.to_string(),
+            p.quantity_unit.clone(),
+            p.voltage.clone(),
+            p.current.clone(),
+            p.power.clone(),
+            p.tech_data.clone(),
+            p.certificates.clone(),
+            p.datasheet.clone(),
+            p.width.to_string(),
+            p.height.to_string(),
+            p.depth.to_string(),
+            p.weight.to_string(),
+            p.mounting.clone(),
+            functions,
+            p.accessories.join(","),
+        ];
+        out.push_str(&row.iter().map(|c| csv_escape(c)).collect::<Vec<_>>().join(";"));
+        out.push('\n');
+    }
+    out
+}
+
+/// Splits CSV text (separator `;` or `,`) into records, honouring quotes.
+fn parse_csv(text: &str) -> Vec<Vec<String>> {
+    let sep = if text.lines().next().map(|l| l.contains(';')).unwrap_or(true) { ';' } else { ',' };
+    let mut rows = Vec::new();
+    let mut row = Vec::new();
+    let mut cell = String::new();
+    let mut quoted = false;
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '"' if quoted && chars.peek() == Some(&'"') => {
+                cell.push('"');
+                chars.next();
+            }
+            '"' => quoted = !quoted,
+            c if c == sep && !quoted => row.push(std::mem::take(&mut cell)),
+            '\r' if !quoted => {}
+            '\n' if !quoted => {
+                row.push(std::mem::take(&mut cell));
+                if row.iter().any(|c| !c.is_empty()) {
+                    rows.push(std::mem::take(&mut row));
+                } else {
+                    row.clear();
+                }
+            }
+            c => cell.push(c),
+        }
+    }
+    if !cell.is_empty() || !row.is_empty() {
+        row.push(cell);
+        rows.push(row);
+    }
+    rows
+}
+
+/// Reads parts from CSV. Columns are matched by header name; unknown columns are ignored.
+pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
+    let rows = parse_csv(text.trim_start_matches('\u{feff}'));
+    let Some((header, data)) = rows.split_first() else { return Err("empty file".into()) };
+    let col = |name: &str| header.iter().position(|h| h.trim().eq_ignore_ascii_case(name));
+    if col("Part number").is_none() {
+        return Err("column 'Part number' missing".into());
+    }
+    let idx: Vec<Option<usize>> = CSV_FIELDS.iter().map(|f| col(f)).collect();
+    let mut parts = Vec::new();
+    for r in data {
+        let get = |i: usize| idx[i].and_then(|c| r.get(c)).map(|s| s.trim().to_string()).unwrap_or_default();
+        let num = |i: usize| get(i).replace(',', ".").parse::<f32>().unwrap_or(0.0);
+        let int = |i: usize, d: u32| get(i).parse::<u32>().unwrap_or(d);
+        let number = get(0);
+        if number.is_empty() {
+            continue;
+        }
+        let top_group = match get(7).to_lowercase().as_str() {
+            s if s.starts_with("fluid") => TopGroup::Fluid,
+            s if s.starts_with("mech") => TopGroup::Mechanics,
+            _ => TopGroup::Electrical,
+        };
+        let functions = get(27)
+            .split('|')
+            .filter(|s| !s.trim().is_empty())
+            .filter_map(|s| {
+                let (k, pins) = s.split_once(':').unwrap_or((s, ""));
+                FnKind::from_short(k).map(|k| FunctionTemplate::new(k, pins.trim()))
+            })
+            .collect();
+        parts.push(Part {
+            number,
+            type_number: get(1),
+            order_number: get(2),
+            manufacturer: get(3),
+            supplier: get(4),
+            description: get(5),
+            note: get(6),
+            top_group,
+            group: get(8),
+            subgroup: get(9),
+            identifier: get(10),
+            price: num(11),
+            currency: if get(12).is_empty() { "EUR".into() } else { get(12) },
+            price_unit: int(13, 1).max(1),
+            pack_quantity: int(14, 1).max(1),
+            quantity_unit: if get(15).is_empty() { "pcs".into() } else { get(15) },
+            voltage: get(16),
+            current: get(17),
+            power: get(18),
+            tech_data: get(19),
+            certificates: get(20),
+            datasheet: get(21),
+            width: num(22),
+            height: num(23),
+            depth: num(24),
+            weight: num(25),
+            mounting: get(26),
+            functions,
+            accessories: get(28).split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect(),
+            // 2D / 3D models are only exchanged as JSON.
+            model_2d: None,
+            model_3d: None,
+        });
+    }
+    Ok(parts)
+}
+
+/// Imports a parts file (JSON database / part list or CSV). Returns the parts.
+pub fn import(text: &str) -> Result<Vec<Part>, String> {
+    let t = text.trim_start_matches('\u{feff}').trim_start();
+    if t.starts_with('{') {
+        serde_json::from_str::<PartsDb>(t).map(|d| d.parts).map_err(|e| e.to_string())
+    } else if t.starts_with('[') {
+        serde_json::from_str::<Vec<Part>>(t).map_err(|e| e.to_string())
+    } else {
+        from_csv(t)
+    }
+}
+
+#[cfg(test)]
+mod tests;

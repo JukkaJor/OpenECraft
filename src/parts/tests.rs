@@ -1,31 +1,6 @@
 use super::*;
 
 #[test]
-fn csv_roundtrip() {
-    let parts = default_catalog();
-    let csv = to_csv(&parts);
-    let back = from_csv(&csv).unwrap();
-    assert_eq!(parts.len(), back.len());
-    for (a, b) in parts.iter().zip(&back) {
-        assert_eq!(a.number, b.number);
-        assert_eq!(a.functions, b.functions);
-        assert_eq!(a.accessories, b.accessories);
-        assert_eq!(a.description, b.description);
-    }
-}
-
-#[test]
-fn catalog_numbers_unique_and_accessories_exist() {
-    let parts = default_catalog();
-    for (i, p) in parts.iter().enumerate() {
-        assert!(parts[i + 1..].iter().all(|q| q.number != p.number), "duplicate {}", p.number);
-        for a in &p.accessories {
-            assert!(parts.iter().any(|q| &q.number == a), "{} accessory {a} missing", p.number);
-        }
-    }
-}
-
-#[test]
 fn legacy_single_part_is_migrated() {
     let json = r#"{"devices": {"-K1": {"part": "CT-9A-24DC", "description": ""}},
                   "parts": [{"number": "CT-9A-24DC", "manufacturer": "Generic", "description": "old", "price": 1.0}]}"#;
@@ -60,11 +35,4 @@ fn designations_from_template_and_device_selection() {
     assert_eq!(main, Some(FnKind::Coil));
     assert!(fits_device(db.get("GEN.CT-9A-24DC").unwrap(), &placed, main));
     assert!(!fits_device(db.get("GEN.MCB-1P-C6").unwrap(), &placed, main));
-}
-
-#[test]
-fn json_import() {
-    let db = PartsDb::default();
-    let json = serde_json::to_string(&db).unwrap();
-    assert_eq!(import(&json).unwrap().len(), db.parts.len());
 }

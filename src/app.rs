@@ -59,12 +59,18 @@ impl App {
         let mut prj: Option<Project> = None;
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
+        let mut server_url: Option<String> = None;
         if let Some(storage) = cc.storage {
             prj = eframe::get_value(storage, "project");
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
+            server_url = eframe::get_value(storage, "parts_server_url");
         }
         let parts_db = parts_db.unwrap_or_default();
+        let mut parts_ui = PartsUi::default();
+        if let Some(url) = server_url {
+            parts_ui.server.url = url;
+        }
         let mut prj = prj.unwrap_or_else(sample::demo_project);
         prj.normalize();
         let history = History::new(&prj);
@@ -86,7 +92,7 @@ impl App {
             report_kind: ReportKind::DeviceList,
             show_project: false,
             parts_db,
-            parts_ui: PartsUi::default(),
+            parts_ui,
             workspace: Workspace::Schematic,
             panel_ui: PanelUi::default(),
             show_help: false,
@@ -189,8 +195,16 @@ impl App {
 
     fn poll_loaded(&mut self, ctx: &egui::Context) {
         if let Some(loaded) = self.io.poll() {
+            if matches!(loaded.purpose, Purpose::Model2d | Purpose::Model3d) {
+                let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.prj) {
+                    Ok(m) => m,
+                    Err(e) => format!("Model import failed: {e}"),
+                };
+                self.notify(ctx, msg);
+                return;
+            }
             if loaded.purpose == Purpose::Parts {
-                match parts::import(&loaded.content) {
+                match parts::import(&loaded.text()) {
                     Ok(list) => {
                         let n = list.len();
                         for p in list {
@@ -203,7 +217,7 @@ impl App {
                 }
                 return;
             }
-            match serde_json::from_str::<Project>(&loaded.content) {
+            match serde_json::from_str::<Project>(&loaded.text()) {
                 Ok(prj) => {
                     self.replace_project(prj, Some(loaded.name.clone()));
                     self.notify(ctx, format!("Opened {}", io::short_name(&loaded.name)));
@@ -1042,6 +1056,7 @@ impl App {
         for action in self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.prj) {
             match action {
                 PartsAction::Import => self.io.open(ctx, Purpose::Parts),
+                PartsAction::ImportModel(purpose) => self.io.open(ctx, purpose),
                 PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
                 PartsAction::Message(m) => self.notify(ctx, m),
             }
@@ -1178,6 +1193,9 @@ impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
+        if let Some(msg) = self.parts_ui.poll_server(&mut self.parts_db) {
+            self.notify(&ctx, msg);
+        }
         self.shortcuts(&ctx);
         self.page = self.page.min(self.prj.pages.len().saturating_sub(1));
 
@@ -1265,5 +1283,6 @@ impl eframe::App for App {
         eframe::set_value(storage, "project", &self.prj);
         eframe::set_value(storage, "file_name", &self.file_name);
         eframe::set_value(storage, "parts_db", &self.parts_db);
+        eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
     }
 }
