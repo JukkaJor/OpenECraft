@@ -13,18 +13,44 @@ fn rust_files(dir: &Path) -> Vec<PathBuf> {
     out
 }
 
+/// Workspace root (the application crate is the root package).
+fn root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+/// `src` directories of all workspace members (from `[workspace] members` in Cargo.toml).
+fn source_dirs() -> Vec<PathBuf> {
+    let manifest = std::fs::read_to_string(root().join("Cargo.toml")).unwrap();
+    let members = manifest.split("members = [").nth(1).and_then(|r| r.split(']').next()).expect("workspace members");
+    let dirs: Vec<PathBuf> = members
+        .split(',')
+        .map(|m| m.trim().trim_matches('"'))
+        .filter(|m| !m.is_empty())
+        .map(|m| root().join(m).join("src"))
+        .collect();
+    assert!(dirs.len() >= 2, "workspace members not found");
+    dirs
+}
+
+fn all_rust_files() -> Vec<PathBuf> {
+    source_dirs().iter().flat_map(|d| rust_files(d)).collect()
+}
+
+fn display(path: &Path) -> String {
+    path.strip_prefix(root()).unwrap_or(path).display().to_string().replace('\\', "/")
+}
+
 fn is_test_file(path: &Path) -> bool {
     path.file_name().and_then(|n| n.to_str()) == Some("tests.rs")
 }
 
-/// Unit tests live in `src/<module>/tests.rs`, never inline in the module file.
+/// Unit tests live in `<crate>/src/<module>/tests.rs`, never inline in the module file.
 #[test]
 fn unit_tests_are_in_separate_files() {
-    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     let mut violations = Vec::new();
-    for path in rust_files(&src).into_iter().filter(|p| !is_test_file(p)) {
+    for path in all_rust_files().into_iter().filter(|p| !is_test_file(p)) {
         let text = std::fs::read_to_string(&path).unwrap();
-        let name = path.strip_prefix(&src).unwrap().display().to_string();
+        let name = display(&path);
         let lines: Vec<&str> = text.lines().collect();
         for (i, line) in lines.iter().enumerate() {
             let t = line.trim();
@@ -45,9 +71,8 @@ fn unit_tests_are_in_separate_files() {
 /// Every `tests.rs` belongs to a module file next to its directory (`foo.rs` + `foo/tests.rs`).
 #[test]
 fn test_files_belong_to_a_module() {
-    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     let mut orphans = Vec::new();
-    for path in rust_files(&src).into_iter().filter(|p| is_test_file(p)) {
+    for path in all_rust_files().into_iter().filter(|p| is_test_file(p)) {
         let dir = path.parent().unwrap();
         let module_file = dir.with_extension("rs");
         let declared = std::fs::read_to_string(&module_file)
@@ -56,8 +81,8 @@ fn test_files_belong_to_a_module() {
         if !declared {
             orphans.push(format!(
                 "{} is not declared via `#[cfg(test)] mod tests;` in {}",
-                path.strip_prefix(&src).unwrap().display(),
-                module_file.strip_prefix(&src).unwrap_or(&module_file).display()
+                display(&path),
+                display(&module_file)
             ));
         }
     }
@@ -65,5 +90,13 @@ fn test_files_belong_to_a_module() {
 }
 
 fn tests_path(module_file: &str) -> String {
-    format!("src/{}/tests.rs", module_file.trim_end_matches(".rs"))
+    format!("{}/tests.rs", module_file.trim_end_matches(".rs"))
+}
+
+#[test]
+fn all_workspace_crates_are_checked() {
+    let dirs = source_dirs();
+    for member in ["src", "crates/openecraft-parts/src", "server/src"] {
+        assert!(dirs.iter().any(|d| d.ends_with(member)), "{member} missing in {dirs:?}");
+    }
 }

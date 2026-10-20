@@ -9,14 +9,31 @@ macOS and in the browser (WebAssembly).
 Run these before considering a change done. All of them must pass without warnings.
 
 ```bash
-cargo test
-cargo clippy --all-targets
-cargo clippy --target wasm32-unknown-unknown
+cargo test --workspace
+cargo clippy --workspace --all-targets
+cargo clippy -p openecraft --target wasm32-unknown-unknown
 ```
 
 - Desktop: `cargo run --release`
+- Parts server: `cargo run -p openecraft-server -- --token <secret>` (http://127.0.0.1:8090)
 - Web: `trunk serve` (dev server on http://127.0.0.1:8080), `trunk build --release`
 - The web target needs `rustup target add wasm32-unknown-unknown` and `cargo install trunk --locked`.
+
+## Workspace layout
+
+| Crate | Path | Purpose |
+| --- | --- | --- |
+| `openecraft` | `.` (`src/`) | Editor (desktop + web) – the root package, built by trunk |
+| `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
+| `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |
+
+- Code needed by more than one executable belongs in a library crate under `crates/`,
+  never duplicated. The library must stay free of UI and platform dependencies
+  (only `serde` / `serde_json`).
+- API types and request paths of the parts server live in `openecraft_parts::api`; change
+  server and client together.
+- New crates are added to `[workspace] members` in the root `Cargo.toml`; the
+  convention test reads that list, so its rules apply to every member.
 
 ## Unit tests – mandatory layout
 
@@ -30,7 +47,7 @@ src/geom.rs          ← module code, ends with:
 src/geom/tests.rs    ← the tests, starting with `use super::*;`
 ```
 
-Rules:
+Rules (for every crate of the workspace):
 
 1. No `#[test]` functions and no `mod tests { … }` blocks in module files.
 2. The module file declares its tests exactly as `#[cfg(test)]` followed by `mod tests;`

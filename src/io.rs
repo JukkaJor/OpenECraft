@@ -9,6 +9,10 @@ pub enum Purpose {
     Project,
     /// Import into the parts database.
     Parts,
+    /// 2D front view of a part (SVG).
+    Model2d,
+    /// 3D model of a part (STL, OBJ).
+    Model3d,
 }
 
 impl Purpose {
@@ -16,6 +20,8 @@ impl Purpose {
         match self {
             Purpose::Project => ("OpenECraft project", &[PROJECT_EXT, "json"]),
             Purpose::Parts => ("Parts (CSV, JSON)", &["csv", "json", "txt"]),
+            Purpose::Model2d => ("2D front view (SVG)", &["svg"]),
+            Purpose::Model3d => ("3D model (STL, OBJ)", &["stl", "obj"]),
         }
     }
 }
@@ -24,7 +30,14 @@ pub struct Loaded {
     pub purpose: Purpose,
     /// Native: full path. Web: file name.
     pub name: String,
-    pub content: String,
+    /// Raw file content (binary STL files are not text).
+    pub bytes: Vec<u8>,
+}
+
+impl Loaded {
+    pub fn text(&self) -> String {
+        String::from_utf8_lossy(&self.bytes).into_owned()
+    }
 }
 
 #[derive(Default, Clone)]
@@ -49,10 +62,10 @@ impl FileIo {
         else {
             return;
         };
-        match std::fs::read_to_string(&path) {
-            Ok(content) => {
+        match std::fs::read(&path) {
+            Ok(bytes) => {
                 if let Ok(mut inbox) = self.inbox.lock() {
-                    inbox.push(Loaded { purpose, name: path.display().to_string(), content });
+                    inbox.push(Loaded { purpose, name: path.display().to_string(), bytes });
                 }
             }
             Err(e) => log::error!("Could not read {}: {e}", path.display()),
@@ -73,9 +86,8 @@ impl FileIo {
                 return;
             };
             let bytes = file.read().await;
-            let content = String::from_utf8_lossy(&bytes).to_string();
             if let Ok(mut inbox) = inbox.lock() {
-                inbox.push(Loaded { purpose, name: file.file_name(), content });
+                inbox.push(Loaded { purpose, name: file.file_name(), bytes });
             }
             ctx.request_repaint();
         });

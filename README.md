@@ -88,10 +88,32 @@ trunk build --release  # static files in dist/ – host them on any web server
 
 In the browser "Save" downloads the project file and "Open" uses the file picker.
 
+### Parts server
+
+`openecraft-server` hosts a global parts database that all OpenECraft installations
+(desktop and web) can share. It is a separate executable and runs independently of
+the editor.
+
+```bash
+cargo run --release -p openecraft-server -- --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
+```
+
+- The database is a JSON file, created with the example catalog if it does not exist,
+  and written atomically on every change.
+- Reading is open; changes need `Authorization: Bearer <token>`. Without `--token`
+  (or the `OPENECRAFT_TOKEN` environment variable) the server is read-only.
+- REST API (`/api/v1`): `GET /info`, `GET /parts?q=&group=&manufacturer=&offset=&limit=`,
+  `GET|PUT|DELETE /parts/{number}`, `POST /import` (CSV or JSON), `GET /export.csv`.
+- In the editor: *Project › Parts management › 🌐 Parts server* – enter the server URL,
+  test the connection, download all parts into the local database or upload the
+  selected part / the whole local database (needs the access token).
+- The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
+  from outside your network.
+
 ### Tests
 
 ```bash
-cargo test
+cargo test --workspace
 ```
 
 ## Usage
@@ -111,6 +133,9 @@ cargo test
 
 | File | Purpose |
 | --- | --- |
+| `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types |
+| `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
+| `src/parts_server.rs` | Client for the parts server |
 | `src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
 | `src/symbols.rs` | Built-in IEC symbol library |
 | `src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |

@@ -660,7 +660,7 @@ impl PanelUi {
         let origin = rect.min + self.offset;
         let problems = panel::problem_items(e);
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
-        render::draw_enclosure(&mut d, e, p(0.0, 0.0), 1.0, &self.selection, &problems);
+        render::draw_enclosure(&mut d, e, p(0.0, 0.0), 1.0, &self.selection, &problems, &prj.parts);
         let to_screen = |q: P| origin + vec2(q.x + PLATE_MARGIN, q.y + PLATE_MARGIN) * self.zoom;
         let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei);
         if self.show_wires || selected_wire.is_some() {
@@ -872,7 +872,7 @@ impl PanelUi {
 
         // Collect primitives
         enum Prim {
-            Face { pts: Vec<Pos2>, color: Color32, item: Option<u64> },
+            Face { pts: Vec<Pos2>, color: Color32, item: Option<u64>, outline: bool },
             Line { a: Pos2, b: Pos2, color: Color32, width: f32 },
         }
         // (layer, depth, primitive): walls and plate are always behind the equipment
@@ -911,7 +911,7 @@ impl PanelUi {
                 if layer == OUTER_WALLS {
                     color = color.gamma_multiply(0.6);
                 }
-                prims.push((layer, depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item }));
+                prims.push((layer, depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item, outline: true }));
             }
         };
         // Enclosure: rear wall and inner side walls (door open)
@@ -947,6 +947,28 @@ impl PanelUi {
                     ItemKind::Device => Color32::from_rgb(170, 186, 210),
                 }
             };
+            // Devices with a 3D model in their part are drawn with it instead of a box.
+            let mesh = prj.parts.iter().find(|p| it.kind == ItemKind::Device && p.number == it.part).and_then(|p| p.model_3d.as_ref());
+            if let Some(mesh) = mesh {
+                for tri in panel::place_mesh(mesh, it) {
+                    let w = tri.map(|v| to3(v[0], v[1], v[2]));
+                    let n = norm(cross(sub3(w[1], w[0]), sub3(w[2], w[0])));
+                    if dot(n, sub3(eye, w[0])) <= 0.0 {
+                        continue; // back face
+                    }
+                    let Some(pr) = w.iter().map(|q| project(*q)).collect::<Option<Vec<_>>>() else { continue };
+                    let depth = pr.iter().map(|x| x.1).sum::<f32>() / 3.0;
+                    let shade = 0.55 + 0.45 * dot(n, light).max(0.0);
+                    let color = Color32::from_rgb(
+                        (base.r() as f32 * shade) as u8,
+                        (base.g() as f32 * shade) as u8,
+                        (base.b() as f32 * shade) as u8,
+                    );
+                    let pts = pr.into_iter().map(|x| x.0).collect();
+                    prims.push((5, depth, Prim::Face { pts, color, item: Some(it.id), outline: false }));
+                }
+                continue;
+            }
             let min = to3(it.x, it.y + it.h, it.z);
             let max = to3(it.x + it.w, it.y, it.z + it.d);
             let layer = match it.kind {
@@ -984,8 +1006,10 @@ impl PanelUi {
         let mut pick: Vec<(f32, Vec<Pos2>, u64)> = Vec::new();
         for (_, depth, prim) in &prims {
             match prim {
-                Prim::Face { pts, color, item } => {
-                    painter.add(Shape::convex_polygon(pts.clone(), *color, Stroke::new(0.6, color.gamma_multiply(0.6))));
+                Prim::Face { pts, color, item, outline } => {
+                    // Mesh triangles get a hairline in their own colour to close the seams.
+                    let stroke = if *outline { Stroke::new(0.6, color.gamma_multiply(0.6)) } else { Stroke::new(0.5, *color) };
+                    painter.add(Shape::convex_polygon(pts.clone(), *color, stroke));
                     if let Some(id) = item {
                         pick.push((*depth, pts.clone(), *id));
                     }
@@ -1058,6 +1082,53 @@ impl PanelUi {
         if self.selected_wire.is_none() {
             self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
         }
+    }
+}
+
+/// Small shaded view of a mesh; drag to rotate.
+pub fn mesh_preview(ui: &mut egui::Ui, mesh: &crate::parts::Mesh3d, size: Vec2) {
+    let (resp, painter) = ui.allocate_painter(size, Sense::drag());
+    let id = resp.id.with("angles");
+    let (mut yaw, mut pitch): (f32, f32) = ui.data(|d| d.get_temp(id)).unwrap_or((0.6, 0.35));
+    if resp.dragged() {
+        yaw -= resp.drag_delta().x * 0.01;
+        pitch = (pitch + resp.drag_delta().y * 0.01).clamp(-1.5, 1.5);
+        ui.data_mut(|d| d.insert_temp(id, (yaw, pitch)));
+    }
+    let dark = ui.visuals().dark_mode;
+    painter.rect_filled(resp.rect, 4.0, if dark { Color32::from_rgb(30, 32, 36) } else { Color32::from_rgb(232, 235, 240) });
+    let s = mesh.size();
+    let (min, _) = mesh.bounds();
+    let c = [min[0] + s[0] / 2.0, min[1] + s[1] / 2.0, min[2] + s[2] / 2.0];
+    let cam = Camera { yaw, pitch, dist: 1.0, target: c };
+    let (eye_dir, right, up, fwd) = cam_basis(&cam);
+    let view = sub3(eye_dir, c); // direction towards the viewer
+    let radius = (s[0] * s[0] + s[1] * s[1] + s[2] * s[2]).sqrt().max(1e-3) / 2.0;
+    let scale = size.x.min(size.y) * 0.45 / radius;
+    let center = resp.rect.center();
+    let light = norm([0.35, 0.75, 0.55]);
+    let mut tris: Vec<(f32, [Pos2; 3], Color32)> = Vec::new();
+    for t in &mesh.triangles {
+        let v = t.map(|i| mesh.vertices[i as usize]);
+        let n = norm(cross(sub3(v[1], v[0]), sub3(v[2], v[0])));
+        if dot(n, view) <= 0.0 {
+            continue;
+        }
+        let pts = v.map(|q| {
+            let d = sub3(q, c);
+            center + vec2(dot(d, right), -dot(d, up)) * scale
+        });
+        let depth = v.iter().map(|q| dot(sub3(*q, c), fwd)).sum::<f32>();
+        let shade = 0.5 + 0.5 * dot(n, light).max(0.0);
+        let g = (190.0 * shade) as u8;
+        tris.push((depth, pts, Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14))));
+    }
+    tris.sort_by(|a, b| b.0.total_cmp(&a.0));
+    for (_, pts, color) in tris {
+        painter.add(Shape::convex_polygon(pts.to_vec(), color, Stroke::new(0.5, color)));
+    }
+    if resp.hovered() {
+        painter.text(resp.rect.left_bottom() + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, "drag to rotate", egui::FontId::proportional(10.0), Color32::GRAY);
     }
 }
 

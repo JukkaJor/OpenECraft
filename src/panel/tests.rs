@@ -156,3 +156,88 @@ fn wire_hit_test_and_cycling() {
     assert_eq!(next_candidate(&[4, 7, 9], Some(1)), Some(4));
     assert_eq!(next_candidate(&[], Some(1)), None);
 }
+
+fn within(tris: &[[[f32; 3]; 3]], it: &PanelItem) -> bool {
+    tris.iter().flatten().all(|v| {
+        v[0] >= it.x - 0.01
+            && v[0] <= it.x + it.w + 0.01
+            && v[1] >= it.y - 0.01
+            && v[1] <= it.y + it.h + 0.01
+            && v[2] >= it.z - 0.01
+            && v[2] <= it.z + it.d + 0.01
+    })
+}
+
+fn extent(tris: &[[[f32; 3]; 3]]) -> [f32; 3] {
+    let mut min = [f32::INFINITY; 3];
+    let mut max = [f32::NEG_INFINITY; 3];
+    for v in tris.iter().flatten() {
+        for k in 0..3 {
+            min[k] = min[k].min(v[k]);
+            max[k] = max[k].max(v[k]);
+        }
+    }
+    [max[0] - min[0], max[1] - min[1], max[2] - min[2]]
+}
+
+#[test]
+fn part_models_are_fitted_into_devices() {
+    let prj = demo_project();
+    let (ei, k1) = prj.layout.find_device("-K1").unwrap();
+    let part = prj.parts.iter().find(|p| p.number == k1.part).unwrap();
+    let mesh = part.model_3d.as_ref().expect("catalog contactor has a 3D model");
+    // Contactor + aux block: the model (73 deep) is stretched to the device depth (113).
+    let tris = place_mesh(mesh, k1);
+    assert_eq!(tris.len(), mesh.triangles.len());
+    assert!(within(&tris, k1));
+    let e = extent(&tris);
+    assert!((e[0] - k1.w).abs() < 0.01 && (e[1] - k1.h).abs() < 0.01 && (e[2] - k1.d).abs() < 0.01, "{e:?}");
+
+    // Rotated device: the model is turned, not squeezed.
+    let mut rotated = k1.clone();
+    rotated.rotate();
+    let tris = place_mesh(mesh, &rotated);
+    assert!(within(&tris, &rotated));
+    assert!((extent(&tris)[0] - rotated.w).abs() < 0.01);
+
+    // Terminal strip: one terminal model per terminal.
+    let (_, x1) = prj.layout.find_device("-X1").unwrap();
+    let tb = prj.parts.iter().find(|p| p.number == x1.part).unwrap().model_3d.as_ref().unwrap();
+    assert_eq!(tiles(x1.w, tb.size()[0]), 4);
+    let tris = place_mesh(tb, x1);
+    assert_eq!(tris.len(), tb.triangles.len() * 4);
+    assert!(within(&tris, x1));
+    assert_eq!(ei, 0);
+}
+
+#[test]
+fn model_size_is_used_without_mounting_data() {
+    let mut prj = demo_project();
+    // Remove the mounting data of the lamp part but give it a 3D model.
+    let part = prj.parts.iter_mut().find(|p| p.number == "GEN.LMP-GN-24").unwrap();
+    part.width = 0.0;
+    part.height = 0.0;
+    part.depth = 0.0;
+    let mut mesh = crate::parts::Mesh3d::default();
+    mesh.add_box([0.0, 0.0, 0.0], [22.0, 22.0, 50.0]);
+    part.model_3d = Some(mesh);
+    assert_eq!(part_dims(part), Some([22.0, 22.0, 50.0]));
+    let size = device_size(&prj, "-P1").unwrap();
+    assert_eq!((size.w, size.h, size.d), (22.0, 22.0, 50.0));
+    assert_eq!(tiles(20.8, 5.2), 4);
+    assert_eq!(tiles(45.0, 45.0), 1);
+    assert_eq!(tiles(30.0, 7.0), 1);
+}
+
+#[test]
+fn mounting_page_draws_part_models() {
+    let mut prj = demo_project();
+    let page = prj.pages.iter().position(|pg| matches!(pg.kind, crate::model::PageKind::Mounting(_))).unwrap();
+    let with = crate::svg::page_svg(&prj, page);
+    for p in &mut prj.parts {
+        p.model_2d = None;
+    }
+    let without = crate::svg::page_svg(&prj, page);
+    // Terminal screws of the generated front views are circles.
+    assert!(with.matches("<circle").count() > without.matches("<circle").count() + 10);
+}
