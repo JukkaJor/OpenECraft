@@ -1,5 +1,6 @@
 /target
 /dist
+/parts-manager/dist
 /.idea/
 # Local parts server databases
 parts-db.json

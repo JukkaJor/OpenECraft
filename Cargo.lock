@@ -2539,12 +2539,10 @@ version = "0.1.0"
 dependencies = [
  "eframe",
  "egui",
- "ehttp",
  "env_logger",
- "js-sys",
  "log",
  "openecraft-parts",
- "rfd",
+ "openecraft-ui",
  "serde",
  "serde_json",
  "wasm-bindgen",
@@ -2558,6 +2556,22 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "openecraft-parts-manager"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "env_logger",
+ "log",
+ "openecraft-parts",
+ "openecraft-ui",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
@@ -2575,6 +2589,23 @@ dependencies = [
  "tokio",
  "tower",
  "tower-http",
+]
+
+[[package]]
+name = "openecraft-ui"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "ehttp",
+ "js-sys",
+ "log",
+ "openecraft-parts",
+ "rfd",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

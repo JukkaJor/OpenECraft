@@ -10,7 +10,7 @@ name = "openecraft"
 path = "src/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-parts", "server"]
+members = [".", "crates/openecraft-parts", "crates/openecraft-ui", "server", "parts-manager"]
 
 [dependencies]
 eframe = { version = "0.37", default-features = false, features = [
@@ -29,9 +29,8 @@ egui = { version = "0.37", features = ["monochrome_emoji_fonts"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 log = "0.4"
-rfd = "0.17"
-ehttp = "0.7"
 openecraft-parts = { path = "crates/openecraft-parts" }
+openecraft-ui = { path = "crates/openecraft-ui" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.11"
@@ -39,22 +38,7 @@ env_logger = "0.11"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-js-sys = "0.3"
-web-sys = { version = "0.3", features = [
-    "Window",
-    "Document",
-    "Element",
-    "HtmlCanvasElement",
-    "HtmlAnchorElement",
-    "HtmlInputElement",
-    "Blob",
-    "BlobPropertyBag",
-    "Url",
-    "File",
-    "FileList",
-    "FileReader",
-    "Event",
-] }
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement"] }
 
 [profile.release]
 opt-level = 2

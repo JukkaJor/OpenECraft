@@ -28,14 +28,28 @@ fn decode_success_and_errors() {
 }
 
 #[test]
-fn merge_adds_and_updates() {
-    let mut db = PartsDb { parts: vec![Part { number: "A".into(), description: "old".into(), ..Default::default() }] };
-    let incoming = vec![
-        Part { number: "A".into(), description: "new".into(), ..Default::default() },
-        Part { number: "B".into(), ..Default::default() },
-    ];
-    assert_eq!(merge(&mut db, incoming.clone()), (1, 1));
-    assert_eq!(db.get("A").unwrap().description, "new");
-    // Same data again: nothing changes.
-    assert_eq!(merge(&mut db, incoming), (0, 0));
+fn empty_answers_are_fine_for_deletes() {
+    assert!(check(response(204, "")).is_ok());
+    assert_eq!(check(response(404, r#"{"error": "part 'X' not found"}"#)).unwrap_err(), "part 'X' not found");
+}
+
+#[test]
+fn poll_updates_status_and_info() {
+    let mut client = ServerClient { pending: 2, ..Default::default() };
+    {
+        let mut inbox = client.inbox.lock().unwrap();
+        inbox.push(Reply::Info(Ok(ServerInfo { name: "srv".into(), writable: true, ..Default::default() })));
+        inbox.push(Reply::Deleted("A".into(), Ok(())));
+    }
+    let replies = client.poll();
+    assert_eq!(replies.len(), 2);
+    assert!(!client.busy());
+    assert!(client.writable());
+    assert_eq!(client.status, "Deleted part A");
+    assert!(!client.failed());
+
+    client.inbox.lock().unwrap().push(Reply::Info(Err("connection failed: refused".into())));
+    client.poll();
+    assert!(client.failed());
+    assert!(client.info.is_none());
 }

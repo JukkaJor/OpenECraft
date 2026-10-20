@@ -6,6 +6,7 @@ use crate::geom::{p, P};
 use crate::model::{natural_cmp, Project};
 use crate::panel::{self, Enclosure, ItemKind, PanelItem, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
 use crate::parts::{self, PartsDb};
+use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
 use crate::render::{self, Draw, Ink};
 use crate::reports::Analysis;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
@@ -23,13 +24,6 @@ pub enum Tool {
 pub enum View {
     Front,
     ThreeD,
-}
-
-struct Camera {
-    yaw: f32,
-    pitch: f32,
-    dist: f32,
-    target: [f32; 3],
 }
 
 struct MoveDrag {
@@ -58,7 +52,7 @@ pub struct PanelUi {
     fit_pending: bool,
     start: Option<P>,
     drag: Option<MoveDrag>,
-    cam: Option<Camera>,
+    cam: Option<Orbit>,
     device_filter: String,
     new_enclosure: Option<NewEnclosure>,
     pub status: String,
@@ -831,7 +825,7 @@ impl PanelUi {
         let dark = ui.visuals().dark_mode;
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
-        let cam = self.cam.get_or_insert_with(|| Camera {
+        let cam = self.cam.get_or_insert_with(|| Orbit {
             yaw: 0.55,
             pitch: 0.3,
             dist: e.width.max(e.height) * 1.9,
@@ -845,7 +839,7 @@ impl PanelUi {
         }
         if resp.dragged_by(PointerButton::Middle) || resp.dragged_by(PointerButton::Secondary) {
             let dl = resp.drag_delta();
-            let (_, right, up, _) = cam_basis(cam);
+            let (_, right, up, _) = cam.basis();
             let s = cam.dist * 0.0015;
             for k in 0..3 {
                 cam.target[k] += -right[k] * dl.x * s + up[k] * dl.y * s;
@@ -856,11 +850,11 @@ impl PanelUi {
             let factor = zoom_delta * (wheel * 0.0025).exp();
             cam.dist = (cam.dist / factor).clamp(100.0, 20000.0);
         }
-        let (eye, right, up, fwd) = cam_basis(cam);
+        let (eye, right, up, fwd) = cam.basis();
         let f = rect.height() * 1.3;
         let center = rect.center();
         let project = |q: [f32; 3]| -> Option<(Pos2, f32)> {
-            let v = sub3(q, eye);
+            let v = sub(q, eye);
             let z = dot(v, fwd);
             if z < 10.0 {
                 return None;
@@ -897,7 +891,7 @@ impl PanelUi {
                     pts3.iter().map(|q| q[1]).sum::<f32>() / 4.0,
                     pts3.iter().map(|q| q[2]).sum::<f32>() / 4.0,
                 ];
-                if dot(n, sub3(eye, fc)) <= 0.0 {
+                if dot(n, sub(eye, fc)) <= 0.0 {
                     continue; // back face
                 }
                 let Some(pr) = pts3.iter().map(|q| project(*q)).collect::<Option<Vec<_>>>() else { continue };
@@ -952,8 +946,8 @@ impl PanelUi {
             if let Some(mesh) = mesh {
                 for tri in panel::place_mesh(mesh, it) {
                     let w = tri.map(|v| to3(v[0], v[1], v[2]));
-                    let n = norm(cross(sub3(w[1], w[0]), sub3(w[2], w[0])));
-                    if dot(n, sub3(eye, w[0])) <= 0.0 {
+                    let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
+                    if dot(n, sub(eye, w[0])) <= 0.0 {
                         continue; // back face
                     }
                     let Some(pr) = w.iter().map(|q| project(*q)).collect::<Option<Vec<_>>>() else { continue };
@@ -1035,7 +1029,7 @@ impl PanelUi {
         for it in e.items.iter().filter(|i| i.kind == ItemKind::Device) {
             if let Some((q, z)) = project(to3(it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d)) {
                 let size = (it.w.min(it.h) * 0.25 * f / z).clamp(0.0, 18.0);
-                if size >= 7.0 && dot(sub3(eye, to3(it.x, it.y, it.z + it.d)), [0.0, 0.0, 1.0]) > 0.0 {
+                if size >= 7.0 && dot(sub(eye, to3(it.x, it.y, it.z + it.d)), [0.0, 0.0, 1.0]) > 0.0 {
                     painter.text(q, egui::Align2::CENTER_CENTER, &it.tag, egui::FontId::proportional(size), Color32::from_rgb(20, 30, 50));
                 }
             }
@@ -1085,53 +1079,6 @@ impl PanelUi {
     }
 }
 
-/// Small shaded view of a mesh; drag to rotate.
-pub fn mesh_preview(ui: &mut egui::Ui, mesh: &crate::parts::Mesh3d, size: Vec2) {
-    let (resp, painter) = ui.allocate_painter(size, Sense::drag());
-    let id = resp.id.with("angles");
-    let (mut yaw, mut pitch): (f32, f32) = ui.data(|d| d.get_temp(id)).unwrap_or((0.6, 0.35));
-    if resp.dragged() {
-        yaw -= resp.drag_delta().x * 0.01;
-        pitch = (pitch + resp.drag_delta().y * 0.01).clamp(-1.5, 1.5);
-        ui.data_mut(|d| d.insert_temp(id, (yaw, pitch)));
-    }
-    let dark = ui.visuals().dark_mode;
-    painter.rect_filled(resp.rect, 4.0, if dark { Color32::from_rgb(30, 32, 36) } else { Color32::from_rgb(232, 235, 240) });
-    let s = mesh.size();
-    let (min, _) = mesh.bounds();
-    let c = [min[0] + s[0] / 2.0, min[1] + s[1] / 2.0, min[2] + s[2] / 2.0];
-    let cam = Camera { yaw, pitch, dist: 1.0, target: c };
-    let (eye_dir, right, up, fwd) = cam_basis(&cam);
-    let view = sub3(eye_dir, c); // direction towards the viewer
-    let radius = (s[0] * s[0] + s[1] * s[1] + s[2] * s[2]).sqrt().max(1e-3) / 2.0;
-    let scale = size.x.min(size.y) * 0.45 / radius;
-    let center = resp.rect.center();
-    let light = norm([0.35, 0.75, 0.55]);
-    let mut tris: Vec<(f32, [Pos2; 3], Color32)> = Vec::new();
-    for t in &mesh.triangles {
-        let v = t.map(|i| mesh.vertices[i as usize]);
-        let n = norm(cross(sub3(v[1], v[0]), sub3(v[2], v[0])));
-        if dot(n, view) <= 0.0 {
-            continue;
-        }
-        let pts = v.map(|q| {
-            let d = sub3(q, c);
-            center + vec2(dot(d, right), -dot(d, up)) * scale
-        });
-        let depth = v.iter().map(|q| dot(sub3(*q, c), fwd)).sum::<f32>();
-        let shade = 0.5 + 0.5 * dot(n, light).max(0.0);
-        let g = (190.0 * shade) as u8;
-        tris.push((depth, pts, Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14))));
-    }
-    tris.sort_by(|a, b| b.0.total_cmp(&a.0));
-    for (_, pts, color) in tris {
-        painter.add(Shape::convex_polygon(pts.to_vec(), color, Stroke::new(0.5, color)));
-    }
-    if resp.hovered() {
-        painter.text(resp.rect.left_bottom() + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, "drag to rotate", egui::FontId::proportional(10.0), Color32::GRAY);
-    }
-}
-
 fn apply_enclosure_part(ne: &mut NewEnclosure, db: &PartsDb) {
     if let Some(p) = db.get(&ne.part) {
         if p.width > 0.0 && p.height > 0.0 {
@@ -1171,36 +1118,6 @@ fn wheel_delta(i: &egui::InputState) -> f32 {
         }
     }
     wheel
-}
-
-fn sub3(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
-    [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
-}
-
-fn dot(a: [f32; 3], b: [f32; 3]) -> f32 {
-    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-}
-
-fn cross(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
-    [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
-}
-
-fn norm(a: [f32; 3]) -> [f32; 3] {
-    let l = dot(a, a).sqrt().max(1e-6);
-    [a[0] / l, a[1] / l, a[2] / l]
-}
-
-/// Eye position and camera axes (right, up, forward).
-fn cam_basis(cam: &Camera) -> ([f32; 3], [f32; 3], [f32; 3], [f32; 3]) {
-    let eye = [
-        cam.target[0] + cam.dist * cam.pitch.cos() * cam.yaw.sin(),
-        cam.target[1] + cam.dist * cam.pitch.sin(),
-        cam.target[2] + cam.dist * cam.pitch.cos() * cam.yaw.cos(),
-    ];
-    let fwd = norm(sub3(cam.target, eye));
-    let right = norm(cross(fwd, [0.0, 1.0, 0.0]));
-    let up = cross(right, fwd);
-    (eye, right, up, fwd)
 }
 
 fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
