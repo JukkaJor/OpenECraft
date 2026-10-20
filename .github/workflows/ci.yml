@@ -29,6 +29,8 @@ jobs:
             target/release/openecraft.exe
             target/release/openecraft-server
             target/release/openecraft-server.exe
+            target/release/openecraft-parts-manager
+            target/release/openecraft-parts-manager.exe
 
   web:
     runs-on: ubuntu-latest
@@ -39,7 +41,13 @@ jobs:
           targets: wasm32-unknown-unknown
       - run: cargo install trunk --locked
       - run: trunk build --release
+      - run: trunk build --release
+        working-directory: parts-manager
       - uses: actions/upload-artifact@v4
         with:
           name: openecraft-web
           path: dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-parts-manager-web
+          path: parts-manager/dist

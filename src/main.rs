@@ -21,7 +21,6 @@ mod ops;
 mod panel;
 mod panel_ui;
 mod parts;
-mod parts_server;
 mod parts_ui;
 mod render;
 mod reports;

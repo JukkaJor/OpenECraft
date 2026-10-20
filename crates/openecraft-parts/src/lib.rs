@@ -13,6 +13,7 @@ mod csv;
 mod graphics;
 mod part;
 mod text;
+pub mod vec3;
 
 pub use catalog::default_catalog;
 pub use csv::{from_csv, import, to_csv};

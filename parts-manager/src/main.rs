@@ -1,0 +1,48 @@
+//! OpenECraft parts manager – creates, edits and deletes the parts of an OpenECraft
+//! parts server (`openecraft-server`).
+//!
+//! Runs natively on Windows, Linux and macOS and in the browser (WebAssembly).
+
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+mod app;
+mod session;
+
+#[cfg(not(target_arch = "wasm32"))]
+fn main() -> eframe::Result {
+    env_logger::init();
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_title("OpenECraft parts manager")
+            .with_inner_size([1200.0, 800.0])
+            .with_min_inner_size([700.0, 450.0]),
+        ..Default::default()
+    };
+    eframe::run_native("OpenECraft parts manager", options, Box::new(|cc| Ok(Box::new(app::ManagerApp::new(cc)))))
+}
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    use wasm_bindgen::JsCast;
+    eframe::WebLogger::init(log::LevelFilter::Info).ok();
+    wasm_bindgen_futures::spawn_local(async {
+        let document = web_sys::window().expect("no window").document().expect("no document");
+        let canvas = document
+            .get_element_by_id("parts_manager_canvas")
+            .expect("canvas missing")
+            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .expect("not a canvas");
+        let result = eframe::WebRunner::new()
+            .start(canvas, eframe::WebOptions::default(), Box::new(|cc| Ok(Box::new(app::ManagerApp::new(cc)))))
+            .await;
+        if let Some(loading) = document.get_element_by_id("loading") {
+            match result {
+                Ok(()) => loading.remove(),
+                Err(e) => {
+                    loading.set_inner_html("<p>The parts manager failed to start. See the browser console for details.</p>");
+                    panic!("Failed to start eframe: {e:?}");
+                }
+            }
+        }
+    });
+}

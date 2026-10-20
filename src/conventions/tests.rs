@@ -96,7 +96,7 @@ fn tests_path(module_file: &str) -> String {
 #[test]
 fn all_workspace_crates_are_checked() {
     let dirs = source_dirs();
-    for member in ["src", "crates/openecraft-parts/src", "server/src"] {
+    for member in ["src", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "server/src", "parts-manager/src"] {
         assert!(dirs.iter().any(|d| d.ends_with(member)), "{member} missing in {dirs:?}");
     }
 }

@@ -344,6 +344,26 @@ impl PartsDb {
     pub fn sort(&mut self) {
         self.parts.sort_by(|a, b| natural_cmp(&a.number, &b.number));
     }
+
+    /// Adds / replaces parts (e.g. downloaded from a parts server). Returns (added, updated).
+    pub fn merge(&mut self, parts: Vec<Part>) -> (usize, usize) {
+        let (mut added, mut updated) = (0, 0);
+        for part in parts {
+            match self.parts.iter_mut().find(|p| p.number == part.number) {
+                Some(existing) if *existing != part => {
+                    *existing = part;
+                    updated += 1;
+                }
+                Some(_) => {}
+                None => {
+                    self.parts.push(part);
+                    added += 1;
+                }
+            }
+        }
+        self.sort();
+        (added, updated)
+    }
 }
 
 pub fn upsert(list: &mut Vec<Part>, part: Part) {
@@ -363,3 +383,6 @@ pub fn unique_number(list: &[Part], base: &str) -> String {
         .find(|n| !list.iter().any(|p| &p.number == n))
         .unwrap()
 }
+
+#[cfg(test)]
+mod tests;

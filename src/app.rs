@@ -195,7 +195,7 @@ impl App {
 
     fn poll_loaded(&mut self, ctx: &egui::Context) {
         if let Some(loaded) = self.io.poll() {
-            if matches!(loaded.purpose, Purpose::Model2d | Purpose::Model3d) {
+            if matches!(loaded.purpose, Purpose::Model(_)) {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.prj) {
                     Ok(m) => m,
                     Err(e) => format!("Model import failed: {e}"),
@@ -1056,7 +1056,7 @@ impl App {
         for action in self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.prj) {
             match action {
                 PartsAction::Import => self.io.open(ctx, Purpose::Parts),
-                PartsAction::ImportModel(purpose) => self.io.open(ctx, purpose),
+                PartsAction::ImportModel(kind) => self.io.open(ctx, Purpose::Model(kind)),
                 PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
                 PartsAction::Message(m) => self.notify(ctx, m),
             }

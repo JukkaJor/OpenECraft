@@ -110,6 +110,23 @@ cargo run --release -p openecraft-server -- --bind 0.0.0.0:8090 --data parts-db.
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
   from outside your network.
 
+### Parts manager
+
+`openecraft-parts-manager` is a standalone application that maintains the parts of a
+parts server: create new parts, edit existing ones (including 2D / 3D models), rename
+and delete parts, upload CSV / JSON parts files and export all parts. It uses the same
+part editor as the editor's parts management and runs on the desktop and in the browser.
+
+```bash
+cargo run --release -p openecraft-parts-manager        # desktop
+cd parts-manager && trunk serve                        # web, http://127.0.0.1:8082
+cd parts-manager && trunk build --release              # static files in parts-manager/dist/
+```
+
+Enter the server URL and the access token (kept in memory only) and click *Connect*.
+Changes are saved to the server with *Save* (`Ctrl+S`); the editor asks before unsaved
+changes are discarded and before a part is deleted.
+
 ### Tests
 
 ```bash
@@ -133,9 +150,10 @@ cargo test --workspace
 
 | File | Purpose |
 | --- | --- |
-| `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types |
+| `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
+| `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
-| `src/parts_server.rs` | Client for the parts server |
+| `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
 | `src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
 | `src/symbols.rs` | Built-in IEC symbol library |
 | `src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
@@ -147,7 +165,7 @@ cargo test --workspace
 | `src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
 | `src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
-| `src/parts_ui.rs` | Parts management window and part selection dialog |
+| `src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
 | `src/app.rs` | Application UI (menus, panels, dialogs) |
 | `src/svg.rs` | SVG / print export |
-| `src/io.rs` | Native file dialogs and browser up/downloads |
+| `src/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |

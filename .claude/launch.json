@@ -12,6 +12,18 @@
       "runtimeExecutable": "trunk",
       "runtimeArgs": ["serve", "--port", "8081", "--dist", "target/dist-fresh"],
       "port": 8081
+    },
+    {
+      "name": "parts-manager-web",
+      "runtimeExecutable": "trunk",
+      "runtimeArgs": ["serve", "parts-manager/index.html", "--port", "8082", "--dist", "target/dist-parts-manager"],
+      "port": 8082
+    },
+    {
+      "name": "parts-server",
+      "runtimeExecutable": "cargo",
+      "runtimeArgs": ["run", "-p", "openecraft-server", "--", "--token", "local-test-token", "--data", "target/parts-db-dev.json"],
+      "port": 8090
     }
   ]
 }
