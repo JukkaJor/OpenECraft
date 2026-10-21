@@ -17,6 +17,9 @@ use crate::parts::{self, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashSet};
 
+mod points;
+pub use points::{device_points, point_of, PlacedPoint};
+
 /// Distance between enclosure wall and mounting plate edge.
 pub const PLATE_MARGIN: f32 = 25.0;
 /// Distance of the plate surface from the rear wall.
