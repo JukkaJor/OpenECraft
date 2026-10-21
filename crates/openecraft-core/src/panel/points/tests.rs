@@ -119,3 +119,23 @@ fn nothing_to_place_without_parts() {
     assert!(device_points(&prj, &item(&prj, "-K1")).len() > 1);
     assert!(device_points(&prj, &it).is_empty());
 }
+
+#[test]
+fn terminals_use_the_points_of_their_own_part() {
+    let mut prj = demo_project();
+    let pe = prj.parts.iter_mut().find(|p| p.number == "GEN.TB-PE-2.5").unwrap();
+    pe.connection_points = vec![
+        ConnectionPoint { pin: "1".into(), pos: [2.6, 4.0, 30.0], exit: Exit::Up },
+        ConnectionPoint { pin: "2".into(), pos: [2.6, 44.0, 30.0], exit: Exit::Down },
+    ];
+    let it = item(&prj, "-X1");
+    let points = device_points(&prj, &it);
+    let of = |terminal: &str| points.iter().filter(|p| p.terminal == terminal).collect::<Vec<_>>();
+    assert!(of("PE").iter().all(|p| p.exact), "PE terminal: points of the PE part");
+    assert!(of("1").iter().all(|p| !p.exact), "grey terminal: generated points");
+    let top = of("PE").into_iter().find(|p| p.pin == "1").unwrap();
+    assert!((top.pos[1] - (it.y + 4.0)).abs() < 0.01);
+    // The PE terminal is the last of four equal ones: its centre is at 3.5 / 4 of the strip.
+    assert!((top.pos[0] - (it.x + it.w * 3.5 / 4.0)).abs() < 0.01, "{} vs {}", top.pos[0], it.x + it.w * 3.5 / 4.0);
+}
+

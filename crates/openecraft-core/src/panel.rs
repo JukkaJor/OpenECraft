@@ -13,7 +13,7 @@ use crate::geom::{p, P, R};
 use crate::model::Project;
 use crate::netlist::{connections, Netlist};
 use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
-use crate::parts::{self, Exit, FnKind};
+use crate::parts::{Exit, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -405,7 +405,7 @@ pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3];
 
 /// Footprint of a device from its parts: the first part with mounting data gives
 /// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
-/// strips are as wide as all their terminals together.
+/// strips are as long as their strip layout (terminals and spare terminals).
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let data = prj.devices.get(tag)?;
     let parts: Vec<_> = data
@@ -414,10 +414,12 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         .filter_map(|r| prj.parts.iter().find(|x| x.number == r.number).map(|pd| (pd, r.count.max(1))))
         .collect();
     let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
-    let terminals = parts::placed_functions(prj, tag).iter().filter(|f| f.0 == FnKind::Terminal).count();
     let mut w = mw;
-    if terminals > 0 && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
-        w = mw * terminals as f32;
+    if !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
+        let strip: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
+        if strip > 0.0 {
+            w = strip;
+        }
     }
     let mut d = md;
     for (pd, count) in &parts {

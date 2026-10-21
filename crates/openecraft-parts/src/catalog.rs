@@ -123,7 +123,8 @@ pub fn default_catalog() -> Vec<Part> {
 
     let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
     p.accessories = vec!["GEN.TB-END".into()];
-    c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]);
+    c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]).tech_data =
+        "Terminal type: PE".into();
     c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
 
     let di: Vec<(FnKind, String)> = (0..16).map(|i| (PlcInput, format!("I{}.{}", i / 8, i % 8))).collect();

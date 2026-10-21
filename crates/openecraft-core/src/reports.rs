@@ -232,9 +232,16 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
                     .unwrap_or(false)
             })
             .count();
-        let spares = prj.strips.get(tag).map(|d| d.spares as usize).unwrap_or(0);
-        let per_device = if dev.mains.is_empty() && terminals > 0 { terminals + spares } else { 1 };
+        let layout = if dev.mains.is_empty() && terminals > 0 { crate::strips::strip_layout(prj, tag) } else { Vec::new() };
         for r in &data.parts {
+            // Terminal parts as often as the strip layout uses them (PE terminals their
+            // own part), other parts once.
+            let used = layout.iter().filter(|e| e.part == r.number).count();
+            let terminal_part = !layout.is_empty() && prj.parts.iter().chain(crate::parts::catalog()).any(|p| p.number == r.number && crate::strips::is_terminal_part(p));
+            let per_device = if used > 0 || terminal_part { used } else { 1 };
+            if per_device == 0 {
+                continue;
+            }
             let g = groups.entry(r.number.clone()).or_default();
             g.0 += (per_device * r.count.max(1) as usize) as f32;
             if !g.1.contains(tag) {

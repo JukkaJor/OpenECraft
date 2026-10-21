@@ -1,7 +1,9 @@
-//! Terminal strips: terminal order, renumbering, jumpers and spare terminals.
+//! Terminal strips: terminal order, renumbering, jumpers, spare terminals, the part
+//! of every terminal and the layout of the strip on the rail.
 
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
+use crate::parts::FnKind;
 use crate::symbols::{self, Func};
 
 /// A terminal of a strip as placed in the schematic.
@@ -137,6 +139,82 @@ pub fn rows(prj: &Project, strip: &str, nl: &Netlist, open: &Netlist) -> Vec<Row
             location: String::new(),
             function_text: "spare".into(),
         });
+    }
+    out
+}
+
+/// Width of a terminal whose part has no mounting data (mm).
+pub const TERMINAL_WIDTH: f32 = 5.2;
+
+/// Symbol of protective earth terminals.
+const PE_SYMBOL: &str = "term_pe";
+
+/// A protective earth terminal part (tech data `Terminal type: PE`).
+pub fn is_pe_part(part: &Part) -> bool {
+    part.tech_value("Terminal type").is_some_and(|t| t.eq_ignore_ascii_case("PE"))
+}
+
+/// A part whose functions are all terminals.
+pub fn is_terminal_part(part: &Part) -> bool {
+    !part.functions.is_empty() && part.functions.iter().all(|f| f.kind == FnKind::Terminal)
+}
+
+/// Terminal parts of a strip in the order of its parts list (project parts first,
+/// then the built-in catalog).
+fn terminal_parts<'a>(prj: &'a Project, strip: &str) -> Vec<&'a Part> {
+    let Some(data) = prj.devices.get(strip) else { return Vec::new() };
+    data.parts
+        .iter()
+        .filter_map(|r| prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == r.number))
+        .filter(|p| is_terminal_part(p))
+        .collect()
+}
+
+/// The part of a terminal: PE terminals take the strip's PE terminal part, all others
+/// its first other terminal part; either falls back to the first terminal part.
+pub fn terminal_part<'a>(prj: &'a Project, strip: &str, pe: bool) -> Option<&'a Part> {
+    let parts = terminal_parts(prj, strip);
+    parts.iter().find(|p| is_pe_part(p) == pe).or(parts.first()).copied()
+}
+
+/// What sits on the rail at one place of a strip.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ElementKind {
+    /// A terminal of the schematic (designation).
+    Terminal(String),
+    /// A spare terminal (designation).
+    Spare(String),
+}
+
+/// One element of a terminal strip on the rail.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Element {
+    pub kind: ElementKind,
+    /// Part number; empty if the strip has no terminal part.
+    pub part: String,
+    /// Width along the rail (mm).
+    pub width: f32,
+}
+
+/// The strip on the rail in order: its terminals, then the spare terminals, each
+/// with its part and width. Reports, the bill of materials and the panel layout all
+/// work from this.
+pub fn strip_layout(prj: &Project, strip: &str) -> Vec<Element> {
+    let element = |kind, pe| {
+        let part = terminal_part(prj, strip, pe);
+        let width = part.and_then(|p| p.size()).map(|s| s[0]).unwrap_or(TERMINAL_WIDTH);
+        Element { kind, part: part.map(|p| p.number.clone()).unwrap_or_default(), width }
+    };
+    let mut out = Vec::new();
+    let mut max = 0u32;
+    for t in terminals(prj, strip) {
+        let pe = prj.pages[t.page].symbols[t.sym].sym == PE_SYMBOL;
+        max = max.max(t.label.parse().unwrap_or(0));
+        out.push(element(ElementKind::Terminal(t.label), pe));
+    }
+    let spares = prj.strips.get(strip).map(|d| d.spares).unwrap_or(0);
+    for i in 1..=spares {
+        out.push(element(ElementKind::Spare((max + i).to_string()), false));
     }
     out
 }
