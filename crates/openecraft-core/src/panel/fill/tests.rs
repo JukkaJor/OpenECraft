@@ -84,3 +84,46 @@ fn demo_ducts_in_check_and_report() {
     assert!(warnings[0].starts_with("+CAB1: cable duct at "), "{}", warnings[0]);
     assert!(warnings[0].ends_with(&format!("(limit {:.0} %)", fullest / 2.0)));
 }
+
+#[test]
+fn loads_make_full_stretches_expensive() {
+    let mut prj = project_with_duct("NONE");
+    prj.layout.duct_fill_limit = 1.0; // 24 mm² of the 2400 mm² duct
+    let mut loads = DuctLoads::new(&prj);
+    let area = wire_area("1.5");
+    assert_eq!(loads.cost(7, 0.0, 100.0, area), 1.0);
+    for _ in 0..3 {
+        loads.add(&wire("1.5", &[(0.0, 50.0)]).route, area);
+    }
+    assert!((loads.load(7, 0.0, 100.0) - 3.0 * area).abs() < 1e-3);
+    assert_eq!(loads.cost(7, 0.0, 100.0, area), OVERFILL_COST, "a fourth wire would exceed 1 %");
+    // Beyond the loaded stretch the duct is still empty.
+    assert_eq!(loads.load(7, 50.0, 100.0), 0.0);
+    assert_eq!(loads.cost(7, 60.0, 100.0, area), 1.0);
+    // Unknown ducts have no capacity to protect.
+    assert_eq!(loads.cost(99, 0.0, 10.0, area), 1.0);
+}
+
+#[test]
+fn wires_avoid_overfull_ducts() {
+    let mut prj = crate::sample::demo_project();
+    let before = Analysis::build(&prj);
+    let fullest = before.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
+    prj.layout.duct_fill_limit = fullest * 0.6;
+    let after = Analysis::build(&prj);
+    assert_eq!(after.wiring.len(), before.wiring.len());
+    let moved: Vec<&RoutedWire> = after
+        .wiring
+        .iter()
+        .filter(|w| before.wiring.iter().find(|o| o.key() == w.key()).is_some_and(|o| o.route.runs != w.route.runs))
+        .collect();
+    assert!(!moved.is_empty(), "some wires take another way");
+    let new_fullest = after.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
+    assert!(new_fullest < fullest, "{new_fullest} < {fullest}");
+    // Lengths follow the new routes.
+    for w in &moved {
+        let old = before.wiring.iter().find(|o| o.key() == w.key()).unwrap();
+        assert!((w.length - old.length - (w.route.plate_length - old.route.plate_length)).abs() < 0.01);
+    }
+}
+

@@ -379,3 +379,24 @@ fn own_connection_points_make_exact_ends() {
     assert!(w.length < old.length, "{} < {}", w.length, old.length);
 }
 
+#[test]
+fn weighted_routes_avoid_expensive_ducts() {
+    // A ring of ducts: top (1), bottom (2), left (3), right (4).
+    let mut e = Enclosure::default();
+    e.items.push(duct(1, 0.0, 0.0, 400.0, 40.0));
+    e.items.push(duct(2, 0.0, 360.0, 400.0, 40.0));
+    e.items.push(duct(3, 0.0, 40.0, 40.0, 320.0));
+    e.items.push(duct(4, 360.0, 40.0, 40.0, 320.0));
+    let (a, b) = (WireEnd::at(p(100.0, 150.0)), WireEnd::at(p(300.0, 150.0)));
+    let short = route_ends(&e, a, b);
+    assert!(short.runs.iter().any(|r| r.duct == 1));
+    assert!((short.plate_length - 780.0).abs() < 1.0, "{}", short.plate_length);
+    // The top duct counts a hundred times: the way round the bottom is cheaper.
+    let around = route_weighted(&e, a, b, &|duct, _, _| if duct == 1 { 100.0 } else { 1.0 });
+    assert!(around.runs.iter().all(|r| r.duct != 1), "{:?}", around.runs);
+    assert!(around.runs.iter().any(|r| r.duct == 2));
+    assert!((around.plate_length - 980.0).abs() < 1.0, "real length: {}", around.plate_length);
+    // Factors below 1 do not make ducts cheaper than their length.
+    assert_eq!(route_weighted(&e, a, b, &|_, _, _| 0.1).plate_length, short.plate_length);
+}
+

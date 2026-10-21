@@ -124,7 +124,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
     the duct cross section at its fullest stretch; ducts coloured green / orange / red
     in the front view, fill level in the duct properties, limit in the enclosure
     properties (70 % by default); report *Duct fill levels*, the check warns above the
-    limit and hints above 80 % of it; the selected device shows its connection points;
+    limit and hints above 80 % of it; when a duct is overfull, the wiring is routed
+    again, thickest wires first, and wires take a detour (up to 10 × longer) around
+    stretches they would fill above the limit; the selected device shows its
+    connection points;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
     rails and ducts appear in the BOM by cut length, enclosures per piece;
   - jump between a device in the schematic and its place in the panel layout.

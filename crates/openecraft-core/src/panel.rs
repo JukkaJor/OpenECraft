@@ -19,7 +19,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod fill;
 mod points;
-pub use fill::{duct_fill, wire_area, DuctFill};
+pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
 pub use points::{device_points, point_of, PlacedPoint};
 
 /// Distance between enclosure wall and mounting plate edge.
@@ -635,6 +635,13 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
 /// connection point (a terminal at the top goes into the duct above), or the nearest
 /// duct if there is none in that direction.
 pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
+    route_weighted(e, from, to, &|_, _, _| 1.0)
+}
+
+/// Like [`route_ends`], but the way along a duct counts `cost(duct id, from, to)`
+/// times its length (`from <= to` along the duct's axis), so that the shortest path
+/// avoids expensive stretches. The route's length stays the real length.
+pub fn route_weighted(e: &Enclosure, from: WireEnd, to: WireEnd, cost: &dyn Fn(u64, f32, f32) -> f32) -> Route {
     let (a, b) = (from.pos, to.pos);
     let direct = || Route { points: vec![a, p(b.x, a.y), b], plate_length: manhattan(a, b), via_ducts: false, runs: Vec::new() };
     let ducts: Vec<&PanelItem> = e.items.iter().filter(|i| i.kind == ItemKind::Duct).collect();
@@ -721,14 +728,24 @@ pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
             along.insert((w[0].min(w[1]), w[0].max(w[1])), di);
         }
     }
-    // Dijkstra (small graphs, simple O(n²)).
+    // Dijkstra (small graphs, simple O(n²)) on the weighted lengths; `real` keeps the
+    // real length of the path.
+    let axis = |di: usize, q: P| if ducts[di].horizontal() { q.x } else { q.y };
     let n = nodes.len();
-    let mut adj: Vec<Vec<(usize, f32)>> = vec![Vec::new(); n];
-    for &(x, y, w) in &edges {
-        adj[x].push((y, w));
-        adj[y].push((x, w));
+    let mut adj: Vec<Vec<(usize, f32, f32)>> = vec![Vec::new(); n];
+    for &(x, y, len) in &edges {
+        let weight = match along.get(&(x.min(y), x.max(y))) {
+            Some(&di) => {
+                let (s, t) = (axis(di, nodes[x]), axis(di, nodes[y]));
+                len * cost(ducts[di].id, s.min(t), s.max(t)).max(1.0)
+            }
+            None => len,
+        };
+        adj[x].push((y, weight, len));
+        adj[y].push((x, weight, len));
     }
     let mut dist = vec![f32::INFINITY; n];
+    let mut real = vec![0.0f32; n];
     let mut prev = vec![usize::MAX; n];
     let mut done = vec![false; n];
     dist[0] = 0.0;
@@ -740,9 +757,10 @@ pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
             break;
         }
         done[u] = true;
-        for &(v, w) in &adj[u] {
+        for &(v, w, len) in &adj[u] {
             if dist[u] + w < dist[v] {
                 dist[v] = dist[u] + w;
+                real[v] = real[u] + len;
                 prev[v] = u;
             }
         }
@@ -758,8 +776,7 @@ pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
     let mut runs: Vec<DuctRun> = Vec::new();
     for w in path.windows(2) {
         let Some(&di) = along.get(&(w[0].min(w[1]), w[0].max(w[1]))) else { continue };
-        let axis = |q: P| if ducts[di].horizontal() { q.x } else { q.y };
-        let (s, t) = (axis(nodes[w[0]]), axis(nodes[w[1]]));
+        let (s, t) = (axis(di, nodes[w[0]]), axis(di, nodes[w[1]]));
         let run = DuctRun { duct: ducts[di].id, from: s.min(t), to: s.max(t) };
         match runs.last_mut() {
             Some(last) if last.duct == run.duct && (last.to - run.from).abs() < 0.01 => last.to = run.to,
@@ -781,7 +798,7 @@ pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
             points.push(q);
         }
     }
-    Route { points, plate_length: dist[1], via_ducts: true, runs }
+    Route { points, plate_length: real[1], via_ducts: true, runs }
 }
 
 /// A routed wire of the virtual wiring.
@@ -864,6 +881,7 @@ pub struct OpenWire {
 /// the terminal sides apart, see [`connections`]).
 pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
+    let mut ends = Vec::new();
     let mut open = Vec::new();
     let mut points: HashMap<u64, Vec<PlacedPoint>> = HashMap::new();
     for c in connections(prj, nl, wired) {
@@ -897,6 +915,7 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
         let (pa, la, ka) = end(ia, sa, c.a.pin);
         let (pb, lb, kb) = end(ib, sb, c.b.pin);
         let r = route_ends(e, pa, pb);
+        ends.push((pa, pb));
         let length = r.plate_length + la + lb + prj.layout.wire_reserve;
         routed.push(RoutedWire {
             enclosure: ea,
@@ -912,7 +931,33 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             ends: (ka, kb),
         });
     }
+    reroute_overfull(prj, &mut routed, &ends);
     (routed, open)
+}
+
+/// Second pass of the virtual wiring when a duct is filled above the limit: all wires
+/// are routed again one by one, thickest first, and keep out of stretches they would
+/// fill above the limit unless every other way is more than [`OVERFILL_COST`] times
+/// longer. Without overfull ducts the shortest routes stay.
+fn reroute_overfull(prj: &Project, routed: &mut [RoutedWire], ends: &[(WireEnd, WireEnd)]) {
+    let limit = prj.layout.duct_fill_limit;
+    if !duct_fill(prj, routed).iter().any(|f| f.percent > limit) {
+        return;
+    }
+    let areas: Vec<f32> = routed.iter().map(|w| wire_area(&w.cross_section)).collect();
+    let mut order: Vec<usize> = (0..routed.len()).collect();
+    order.sort_by(|&a, &b| areas[b].total_cmp(&areas[a]));
+    let mut loads = DuctLoads::new(prj);
+    for i in order {
+        let e = &prj.layout.enclosures[routed[i].enclosure];
+        let (from, to) = ends[i];
+        let area = areas[i];
+        let r = route_weighted(e, from, to, &|duct, s, t| loads.cost(duct, s, t, area));
+        loads.add(&r, area);
+        let w = &mut routed[i];
+        w.length += r.plate_length - w.route.plate_length;
+        w.route = r;
+    }
 }
 
 /// Where a wire of a device joins the wiring on the plate, and the length from its
