@@ -113,14 +113,20 @@ impl Mesh3d {
     }
 }
 
-/// Collects triangles and merges identical vertices.
-struct MeshBuilder {
+/// Collects triangles and merges identical vertices (STL / OBJ / STEP import).
+pub struct MeshBuilder {
     mesh: Mesh3d,
     index: HashMap<(i64, i64, i64), u32>,
 }
 
+impl Default for MeshBuilder {
+    fn default() -> Self {
+        MeshBuilder::new()
+    }
+}
+
 impl MeshBuilder {
-    fn new() -> MeshBuilder {
+    pub fn new() -> MeshBuilder {
         MeshBuilder { mesh: Mesh3d::default(), index: HashMap::new() }
     }
 
@@ -135,7 +141,8 @@ impl MeshBuilder {
         i
     }
 
-    fn triangle(&mut self, a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> Result<(), String> {
+    /// Adds a triangle; an error once the mesh has [`MAX_TRIANGLES`] triangles.
+    pub fn triangle(&mut self, a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> Result<(), String> {
         if self.mesh.triangles.len() >= MAX_TRIANGLES {
             return Err(format!("model has more than {MAX_TRIANGLES} triangles"));
         }
@@ -146,7 +153,8 @@ impl MeshBuilder {
         Ok(())
     }
 
-    fn finish(mut self) -> Result<Mesh3d, String> {
+    /// The mesh, moved to the origin; an error without triangles.
+    pub fn finish(mut self) -> Result<Mesh3d, String> {
         if self.mesh.triangles.is_empty() {
             return Err("no triangles found".into());
         }

@@ -22,6 +22,6 @@ pub use catalog::default_catalog;
 pub use connection::{default_connection_points, points_from_text, points_to_text, upper_side, ConnectionPoint, Exit};
 pub use csv::{from_csv, import, to_csv};
 pub use filter::{distinct_values, Grouping, PartFilter};
-pub use graphics::{parse_mesh, parse_obj, parse_stl, parse_svg, Mesh3d, Model2d, Prim2d, MAX_TRIANGLES};
+pub use graphics::{parse_mesh, parse_obj, parse_stl, parse_svg, Mesh3d, MeshBuilder, Model2d, Prim2d, MAX_TRIANGLES};
 pub use part::*;
 pub use text::natural_cmp;
