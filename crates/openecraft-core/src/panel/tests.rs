@@ -221,7 +221,7 @@ fn model_size_is_used_without_mounting_data() {
     let mut mesh = crate::parts::Mesh3d::default();
     mesh.add_box([0.0, 0.0, 0.0], [22.0, 22.0, 50.0]);
     part.model_3d = Some(mesh);
-    assert_eq!(part_dims(part), Some([22.0, 22.0, 50.0]));
+    assert_eq!(part.size(), Some([22.0, 22.0, 50.0]));
     let size = device_size(&prj, "-P1").unwrap();
     assert_eq!((size.w, size.h, size.d), (22.0, 22.0, 50.0));
     assert_eq!(tiles(20.8, 5.2), 4);
@@ -300,11 +300,103 @@ fn door_wires_run_over_the_hinge() {
     let e = &prj.layout.enclosures[0];
     let s2 = e.items.iter().find(|i| i.tag == "-S2").unwrap();
     let w = an.wiring.iter().find(|w| w.items.0 == s2.id || w.items.1 == s2.id).expect("door device is wired");
-    let (start, extra) = wiring_end(e, s2);
-    assert_eq!(start.x, 0.0);
+    let (start, extra) = wiring_end(e, s2, None);
+    assert_eq!(start.pos.x, 0.0);
     assert!(extra > DOOR_LOOP + e.depth - PLATE_Z);
     assert!(w.length > extra);
     // The mounting layout page shows the door next to the plate.
     let page = prj.pages.iter().position(|p| matches!(p.kind, crate::model::PageKind::Mounting(_))).unwrap();
     assert!(crate::svg::page_svg(&prj, page).contains("Door (front view)"));
 }
+
+#[test]
+fn wires_enter_the_duct_their_terminal_faces() {
+    let mut e = Enclosure::default();
+    // Ducts above (y 100) and below (y 300) a terminal at y 250, joined on the left.
+    e.items.push(duct(1, 0.0, 80.0, 400.0, 40.0));
+    e.items.push(duct(2, 0.0, 280.0, 400.0, 40.0));
+    e.items.push(duct(3, 0.0, 120.0, 40.0, 160.0));
+    let target = WireEnd::at(p(300.0, 300.0));
+    // Without a direction the nearer duct below is used.
+    let r = route_ends(&e, WireEnd::at(p(200.0, 250.0)), target);
+    assert_eq!(r.runs.iter().map(|run| run.duct).collect::<Vec<_>>(), [2]);
+    // A terminal at the top goes up into the upper duct, even though it is farther.
+    let up = WireEnd { pos: p(200.0, 250.0), exit: Some(Exit::Up) };
+    let r = route_ends(&e, up, target);
+    assert_eq!(r.runs.first().unwrap().duct, 1);
+    assert!(r.points[1].y < 250.0, "{:?}", r.points);
+    // Nothing in that direction: the nearest duct after all.
+    let right = WireEnd { pos: p(450.0, 250.0), exit: Some(Exit::Right) };
+    assert!(route_ends(&e, right, target).via_ducts);
+}
+
+#[test]
+fn routes_record_their_duct_runs() {
+    let mut e = Enclosure::default();
+    e.items.push(duct(1, 0.0, 0.0, 400.0, 40.0));
+    e.items.push(duct(2, 0.0, 40.0, 40.0, 400.0));
+    let r = route(&e, p(300.0, 100.0), p(100.0, 400.0));
+    assert_eq!(r.runs.len(), 2, "{:?}", r.runs);
+    let (h, v) = (r.runs[0], r.runs[1]);
+    assert_eq!((h.duct, h.from, h.to), (1, 20.0, 300.0));
+    assert_eq!((v.duct, v.to), (2, 400.0));
+    assert!(v.from <= 40.0);
+    assert!(route(&Enclosure::default(), p(0.0, 0.0), p(10.0, 10.0)).runs.is_empty());
+}
+
+#[test]
+fn demo_wires_start_at_the_connection_points() {
+    let prj = demo_project();
+    let an = Analysis::build(&prj);
+    let centre: Vec<String> = an.wiring.iter().filter(|w| w.ends.0 == EndKind::Centre || w.ends.1 == EndKind::Centre).map(|w| format!("{} - {}", w.from, w.to)).collect();
+    assert!(centre.is_empty(), "wires from device centres: {centre:?}");
+    // -K1:A1 is at the top edge of the contactor and leaves upwards.
+    let k1 = prj.layout.find_device("-K1").unwrap().1;
+    let a1 = device_points(&prj, k1).into_iter().find(|p| p.pin == "A1").unwrap();
+    let w = an.wiring.iter().find(|w| w.from == "-K1:A1" || w.to == "-K1:A1").unwrap();
+    let start = if w.from == "-K1:A1" { w.route.points[0] } else { *w.route.points.last().unwrap() };
+    assert!(start.same(p(a1.pos[0], a1.pos[1])));
+    let next = if w.from == "-K1:A1" { w.route.points[1] } else { w.route.points[w.route.points.len() - 2] };
+    assert!(next.y < start.y, "leaves upwards: {:?}", w.route.points);
+}
+
+#[test]
+fn own_connection_points_make_exact_ends() {
+    let mut prj = demo_project();
+    let before = Analysis::build(&prj).wiring;
+    let part = prj.parts.iter_mut().find(|p| p.number == "GEN.MCB-1P-C6").unwrap();
+    part.connection_points = vec![
+        crate::parts::ConnectionPoint { pin: "1".into(), pos: [9.0, 0.0, 10.0], exit: Exit::Up },
+        crate::parts::ConnectionPoint { pin: "2".into(), pos: [9.0, 90.0, 10.0], exit: Exit::Down },
+    ];
+    let after = Analysis::build(&prj).wiring;
+    let f1 = |w: &&RoutedWire| w.from.starts_with("-F1:") || w.to.starts_with("-F1:");
+    let w = after.iter().find(f1).unwrap();
+    let kind = if w.from.starts_with("-F1:") { w.ends.0 } else { w.ends.1 };
+    assert_eq!(kind, EndKind::Exact);
+    // The terminals sit low (10 mm instead of 52.5 mm above the rail): shorter wires.
+    let old = before.iter().find(|o| o.key() == w.key()).unwrap();
+    assert!(w.length < old.length, "{} < {}", w.length, old.length);
+}
+
+#[test]
+fn weighted_routes_avoid_expensive_ducts() {
+    // A ring of ducts: top (1), bottom (2), left (3), right (4).
+    let mut e = Enclosure::default();
+    e.items.push(duct(1, 0.0, 0.0, 400.0, 40.0));
+    e.items.push(duct(2, 0.0, 360.0, 400.0, 40.0));
+    e.items.push(duct(3, 0.0, 40.0, 40.0, 320.0));
+    e.items.push(duct(4, 360.0, 40.0, 40.0, 320.0));
+    let (a, b) = (WireEnd::at(p(100.0, 150.0)), WireEnd::at(p(300.0, 150.0)));
+    let short = route_ends(&e, a, b);
+    assert!(short.runs.iter().any(|r| r.duct == 1));
+    assert!((short.plate_length - 780.0).abs() < 1.0, "{}", short.plate_length);
+    // The top duct counts a hundred times: the way round the bottom is cheaper.
+    let around = route_weighted(&e, a, b, &|duct, _, _| if duct == 1 { 100.0 } else { 1.0 });
+    assert!(around.runs.iter().all(|r| r.duct != 1), "{:?}", around.runs);
+    assert!(around.runs.iter().any(|r| r.duct == 2));
+    assert!((around.plate_length - 980.0).abs() < 1.0, "real length: {}", around.plate_length);
+    // Factors below 1 do not make ducts cheaper than their length.
+    assert_eq!(route_weighted(&e, a, b, &|_, _, _| 0.1).plate_length, short.plate_length);
+}
+

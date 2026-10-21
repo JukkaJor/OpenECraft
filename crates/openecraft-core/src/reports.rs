@@ -79,6 +79,8 @@ pub struct Analysis {
     pub changes: Vec<crate::revision::PageChanges>,
     /// Point-to-point connections.
     pub connections: Vec<Connection>,
+    /// Fill levels of the cable ducts the wiring runs through.
+    pub duct_fill: Vec<panel::DuctFill>,
 }
 
 impl Analysis {
@@ -87,6 +89,7 @@ impl Analysis {
         let netlist = Netlist::build(prj, true);
         let open = Netlist::build(prj, false);
         let (wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
+        let fill = panel::duct_fill(prj, &wiring);
         let conns = connections(prj, &netlist, &open);
         let mut reports = HashMap::new();
         for k in ReportKind::ALL {
@@ -103,6 +106,7 @@ impl Analysis {
                 ReportKind::CableOverview => cable_overview(prj, &conns),
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
+                ReportKind::DuctFill => duct_fill_report(prj, &fill),
             };
             reports.insert(k, t);
         }
@@ -110,9 +114,10 @@ impl Analysis {
         issues.extend(check_layout(prj));
         issues.extend(check_wires(prj, &netlist, &open));
         issues.extend(check_strips_and_plc(prj, &netlist));
+        issues.extend(check_duct_fill(prj, &fill));
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
-        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns };
+        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };
         // Harness data needs the connections and the routed lengths.
         an.reports.insert(ReportKind::HarnessData, harness_data(prj, &an));
         an.issues.extend(check_harnesses(prj, &an));
@@ -297,6 +302,75 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
     t
 }
 
+/// Middle of the fullest stretch of a duct, on its centre line (plate coordinates).
+fn fill_spot(prj: &Project, f: &panel::DuctFill) -> crate::geom::P {
+    let e = &prj.layout.enclosures[f.enclosure];
+    let mid = (f.from + f.to) / 2.0;
+    match e.item(f.duct) {
+        Some(d) if d.horizontal() => crate::geom::p(mid, d.center().y),
+        Some(d) => crate::geom::p(d.center().x, mid),
+        None => crate::geom::p(0.0, 0.0),
+    }
+}
+
+fn duct_fill_report(prj: &Project, fill: &[panel::DuctFill]) -> Table {
+    let mut t = Table::new(&[
+        (tr("Enclosure"), 0.8),
+        (tr("Cable duct"), 1.2),
+        (tr("Position (mm)"), 0.9),
+        (tr("Length (mm)"), 0.8),
+        (tr("Wires"), 0.6),
+        (tr("Fullest stretch (mm)"), 1.0),
+        (tr("Fill level (%)"), 0.8),
+        (tr("Limit (%)"), 0.6),
+    ]);
+    for f in fill {
+        let e = &prj.layout.enclosures[f.enclosure];
+        let Some(d) = e.item(f.duct) else { continue };
+        let at = fill_spot(prj, f);
+        t.push(
+            vec![
+                e.name.clone(),
+                d.part.clone(),
+                format!("{:.0} / {:.0}", at.x, at.y),
+                format!("{:.0}", d.length()),
+                f.total_wires.to_string(),
+                format!("{:.0} – {:.0}", f.from, f.to),
+                format!("{:.0}", f.percent),
+                format!("{:.0}", prj.layout.duct_fill_limit),
+            ],
+            None,
+        );
+    }
+    t
+}
+
+/// Ducts above the fill limit (warning) or close to it (above 80 % of it, hint).
+fn check_duct_fill(prj: &Project, fill: &[panel::DuctFill]) -> Vec<Issue> {
+    let limit = prj.layout.duct_fill_limit;
+    let mut v = Vec::new();
+    for f in fill {
+        let severity = if f.percent > limit {
+            Severity::Warning
+        } else if f.percent > 0.8 * limit {
+            Severity::Info
+        } else {
+            continue;
+        };
+        let at = fill_spot(prj, f);
+        let name = &prj.layout.enclosures[f.enclosure].name;
+        let message = tr_fmt!(
+            "{}: cable duct at {} mm filled {} % (limit {} %)",
+            name,
+            format!("{:.0} / {:.0}", at.x, at.y),
+            format!("{:.0}", f.percent),
+            format!("{limit:.0}")
+        );
+        v.push(Issue { severity, message, target: None });
+    }
+    v
+}
+
 fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Table {
     let mut t = Table::new(&[
         (tr("Enclosure"), 0.8),
@@ -322,7 +396,7 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
                 w.color.clone(),
                 w.cross_section.clone(),
                 format!("{:.0}", w.length),
-                if w.route.via_ducts { "via cable ducts".into() } else { "direct (no ducts)".into() },
+                if w.route.via_ducts { tr("via cable ducts").into() } else { tr("direct (no ducts)").into() },
             ],
             None,
         );

@@ -86,6 +86,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - function templates drive **reserve contacts** in the contact image, "Apply
     designations" (connection point numbers from the part) and the project check
     (more functions placed than the parts provide, parts missing in the project);
+  - **connection points** per part (designation, position in the front view, the
+    direction the wire leaves); parts without their own get them from the function
+    templates by the IEC convention (odd designations at the top, even at the bottom,
+    door devices from the rear, PLC modules at the bottom). Edited in the part editor
+    (tab *Connection points*: table, click into the front view to place one); the
+    panel layout wires to them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
   - import / export as CSV (`;` separated, header names) or JSON; the database is stored
     in the app storage (desktop) / local storage (browser).
 - **Panel layout** (in the spirit of EPLAN Pro Panel):
@@ -110,8 +116,18 @@ built with [egui / eframe](https://github.com/emilk/egui).
     length, devices screwed onto the plate get holes from their part data
     (`Mounting holes: M5: 9,12; 69,72`) or two default holes; **NC export** per
     enclosure and face as DXF (outline, one layer per hole diameter, cutouts) or CSV;
-  - virtual wiring: every schematic connection between placed devices is routed through
-    the cable duct network (shortest path) → wire list with lengths, wires shown in 2D/3D;
+  - virtual wiring: every schematic connection between placed devices is routed from
+    its connection point (rotated devices, aux blocks, terminal by terminal) into the
+    duct the terminal faces and through the cable duct network (shortest path) → wire
+    list with lengths, wires shown in 2D/3D;
+  - **duct fill levels**: cross sections of the routed wires (with insulation) against
+    the duct cross section at its fullest stretch; ducts coloured green / orange / red
+    in the front view, fill level in the duct properties, limit in the enclosure
+    properties (70 % by default); report *Duct fill levels*, the check warns above the
+    limit and hints above 80 % of it; when a duct is overfull, the wiring is routed
+    again, thickest wires first, and wires take a detour (up to 10 × longer) around
+    stretches they would fill above the limit; the selected device shows its
+    connection points;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
     rails and ducts appear in the BOM by cut length, enclosures per piece;
   - jump between a device in the schematic and its place in the panel layout.

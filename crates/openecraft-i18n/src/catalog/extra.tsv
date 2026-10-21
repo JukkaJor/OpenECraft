@@ -150,11 +150,54 @@ Wire number (kept when renumbering)	Verbindungsnummer (bleibt beim Neunummeriere
 X position in mm	X-Position in mm	Position X en mm	Posición X en mm
 Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
 json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
-schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data
+schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill
 svg, html, pdf, dxf, wire_list, plc_table or kbl	svg, html, pdf, dxf, wire_list, plc_table oder kbl	svg, html, pdf, dxf, wire_list, plc_table ou kbl	svg, html, pdf, dxf, wire_list, plc_table o kbl
-table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview or harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview oder harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview ou harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview o harness_data
+table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data or duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data oder duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data ou duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data o duct_fill
 {} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
 {} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)
 Released pages cannot be deleted	Freigegebene Seiten können nicht gelöscht werden	Les pages validées ne peuvent pas être supprimées	Las páginas liberadas no se pueden eliminar
 Page {} is generated and cannot be edited	Seite {} wird erzeugt und kann nicht bearbeitet werden	La page {} est générée et ne peut pas être modifiée	La página {} se genera y no se puede editar
 Page {}: its enclosure no longer exists	Seite {}: ihr Gehäuse existiert nicht mehr	Page {} : son armoire n'existe plus	Página {}: su envolvente ya no existe
+Duct fill levels	Füllgrade der Kabelkanäle	Taux de remplissage des goulottes	Grados de llenado de las canaletas
+Position (mm)	Position (mm)	Position (mm)	Posición (mm)
+Fullest stretch (mm)	Vollster Abschnitt (mm)	Tronçon le plus rempli (mm)	Tramo más lleno (mm)
+Fill level (%)	Füllgrad (%)	Taux de remplissage (%)	Grado de llenado (%)
+Limit (%)	Grenzwert (%)	Limite (%)	Límite (%)
+{}: cable duct at {} mm filled {} % (limit {} %)	{}: Kabelkanal bei {} mm zu {} % gefüllt (Grenzwert {} %)	{} : goulotte à {} mm remplie à {} % (limite {} %)	{}: canaleta en {} mm llena al {} % (límite {} %)
+Colour the cable ducts by their fill level	Kabelkanäle nach Füllgrad einfärben	Colorer les goulottes selon leur taux de remplissage	Colorear las canaletas según su grado de llenado
+Duct fill limit	Grenzwert Kanalfüllung	Limite de remplissage des goulottes	Límite de llenado de canaletas
+Duct fill	Kanalfüllung	Remplissage goulottes	Llenado de canaletas
+Fill level	Füllgrad	Taux de remplissage	Grado de llenado
+Fullest stretch	Vollster Abschnitt	Tronçon le plus rempli	Tramo más lleno
+Generate from function template	Aus Funktionsschablone erzeugen	Générer à partir du modèle de fonctions	Generar a partir de la plantilla de funciones
+No own connection points – the generated ones are shown.	Keine eigenen Anschlüsse – die erzeugten werden angezeigt.	Aucun point de connexion propre – ceux générés sont affichés.	Sin puntos de conexión propios: se muestran los generados.
+Place by clicking into the view	Durch Klick in die Ansicht platzieren	Placer en cliquant dans la vue	Colocar haciendo clic en la vista
+Replaces the connection points by the IEC convention: odd designations at the top, even ones at the bottom	Ersetzt die Anschlüsse nach IEC-Konvention: ungerade Bezeichnungen oben, gerade unten	Remplace les points de connexion selon la convention CEI : désignations impaires en haut, paires en bas	Sustituye los puntos de conexión según la convención IEC: designaciones impares arriba, pares abajo
+Select a row, then click into the view to place it.	Zeile wählen, dann in die Ansicht klicken, um den Anschluss zu platzieren.	Choisissez une ligne, puis cliquez dans la vue pour la placer.	Elija una fila y haga clic en la vista para colocarla.
+The check warns about cable ducts filled above this level	Die Prüfung warnt vor Kabelkanälen, die stärker gefüllt sind	La vérification avertit des goulottes plus remplies que ce taux	La comprobación avisa de canaletas más llenas que este nivel
+Use generated connection points again	Wieder erzeugte Anschlüsse verwenden	Utiliser à nouveau les points de connexion générés	Volver a usar los puntos de conexión generados
+Where the wire starts and ends: a connection point from the part data, one generated from the function template, or the device centre if no connection point matches	Wo die Verbindung beginnt und endet: ein Anschluss aus den Artikeldaten, ein aus der Funktionsschablone erzeugter oder die Gerätemitte, wenn kein Anschluss passt	Où le fil commence et se termine : un point de connexion des données de l'article, un point généré à partir du modèle de fonctions ou le centre de l'appareil si aucun point ne correspond	Dónde empieza y termina el cable: un punto de conexión de los datos del artículo, uno generado a partir de la plantilla de funciones o el centro del equipo si no coincide ningún punto
+Where the wires are connected in the panel layout: the designation as in the function template, the position in the front view (x from the left, y from the top, z above the mounting surface) and the direction the wire leaves in. Parts without own connection points get them from the function template.	Wo im Aufbau verdrahtet wird: die Bezeichnung wie in der Funktionsschablone, die Lage in der Frontansicht (x von links, y von oben, z über der Montagefläche) und die Richtung, in der die Leitung abgeht. Artikel ohne eigene Anschlüsse erhalten sie aus der Funktionsschablone.	Où les fils sont raccordés dans l'implantation : la désignation comme dans le modèle de fonctions, la position dans la vue de face (x depuis la gauche, y depuis le haut, z au-dessus de la surface de montage) et la direction de départ du fil. Les articles sans points propres les reçoivent du modèle de fonctions.	Dónde se conectan los cables en el montaje: la designación como en la plantilla de funciones, la posición en la vista frontal (x desde la izquierda, y desde arriba, z sobre la superficie de montaje) y la dirección en la que sale el cable. Los artículos sin puntos propios los obtienen de la plantilla de funciones.
+Wire ends	Verbindungsenden	Extrémités du fil	Extremos del cable
+Wire leaves	Abgang	Départ du fil	Salida del cable
+connection point (generated)	Anschluss (erzeugt)	point de connexion (généré)	punto de conexión (generado)
+connection point	Anschluss	point de connexion	punto de conexión
+device centre	Gerätemitte	centre de l'appareil	centro del equipo
+direct (no ducts)	direkt (keine Kanäle)	direct (sans goulottes)	directo (sin canaletas)
+down	nach unten	vers le bas	hacia abajo
+horizontal	waagerecht	horizontale	horizontal
+left	nach links	vers la gauche	hacia la izquierda
+no 2D model	kein 2D-Modell	pas de modèle 2D	sin modelo 2D
+no mounting data	keine Montagedaten	pas de données de montage	sin datos de montaje
+no wires	keine Verbindungen	aucun fil	sin cables
+right	nach rechts	vers la droite	hacia la derecha
+to the front	nach vorn	vers l'avant	hacia delante
+up	nach oben	vers le haut	hacia arriba
+vertical	senkrecht	verticale	vertical
+via cable ducts	über Kabelkanäle	par les goulottes	por las canaletas
+{} % (limit {} %)	{} % (Grenzwert {} %)	{} % (limite {} %)	{} % (límite {} %)
+{} connection points	{} Anschlüsse	{} points de connexion	{} puntos de conexión
+{} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm auf der Platte + {} mm Reserve; der Rest ist der Weg von den Anschlüssen zur Platte.	{} mm sur la plaque + {} mm de réserve ; le reste est le chemin des points de connexion à la plaque.	{} mm en la placa + {} mm de reserva; el resto es el recorrido desde los puntos de conexión hasta la placa.
+{} wires, {} – {} mm	{} Verbindungen, {} – {} mm	{} fils, {} – {} mm	{} cables, {} – {} mm
+➕ Add connection point	➕ Anschluss hinzufügen	➕ Ajouter un point de connexion	➕ Añadir punto de conexión
+🗑 Remove all	🗑 Alle entfernen	🗑 Tout supprimer	🗑 Quitar todos

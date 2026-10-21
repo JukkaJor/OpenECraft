@@ -64,6 +64,8 @@ pub struct PanelUi {
     /// Selected wire of the virtual wiring (from, to).
     pub selected_wire: Option<(String, String)>,
     pub show_wires: bool,
+    /// Cable ducts coloured by their fill level.
+    pub show_fill: bool,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -90,6 +92,7 @@ impl Default for PanelUi {
             selection: BTreeSet::new(),
             selected_wire: None,
             show_wires: true,
+            show_fill: true,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -366,8 +369,29 @@ impl PanelUi {
                     }
                     ui.end_row();
                     ui.label(tr("Orientation"));
-                    ui.label(if it.horizontal() { "horizontal" } else { "vertical" });
+                    ui.label(if it.horizontal() { tr("horizontal") } else { tr("vertical") });
                     ui.end_row();
+                }
+                if it.kind == ItemKind::Duct {
+                    let limit = prj.layout.duct_fill_limit;
+                    match an.duct_fill.iter().find(|f| f.enclosure == ei && f.duct == it.id) {
+                        Some(f) => {
+                            ui.label(tr("Fill level"));
+                            ui.label(RichText::new(tr_fmt!("{} % (limit {} %)", format!("{:.0}", f.percent), format!("{limit:.0}"))).color(fill_color(f.percent, limit)));
+                            ui.end_row();
+                            ui.label(tr("Wires"));
+                            ui.label(f.total_wires.to_string());
+                            ui.end_row();
+                            ui.label(tr("Fullest stretch"));
+                            ui.label(tr_fmt!("{} wires, {} – {} mm", f.wires, format!("{:.0}", f.from), format!("{:.0}", f.to)));
+                            ui.end_row();
+                        }
+                        None => {
+                            ui.label(tr("Fill level"));
+                            ui.label(tr("no wires"));
+                            ui.end_row();
+                        }
+                    }
                 }
             });
             ui.horizontal(|ui| {
@@ -438,6 +462,11 @@ impl PanelUi {
             ui.label(tr("Wire reserve per connection"));
             ui.add(egui::DragValue::new(&mut prj.layout.wire_reserve).speed(5.0).range(0.0..=2000.0).suffix(" mm"));
         });
+        ui.horizontal(|ui| {
+            ui.label(tr("Duct fill limit"));
+            ui.add(egui::DragValue::new(&mut prj.layout.duct_fill_limit).speed(1.0).range(5.0..=100.0).suffix(" %"))
+                .on_hover_text(tr("The check warns about cable ducts filled above this level"));
+        });
         ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
@@ -492,7 +521,11 @@ impl PanelUi {
             ui.label(format!("{:.0} mm", w.length));
             ui.end_row();
             ui.label(tr("Routing"));
-            ui.label(if w.route.via_ducts { "via cable ducts" } else { "direct (no ducts)" });
+            ui.label(if w.route.via_ducts { tr("via cable ducts") } else { tr("direct (no ducts)") });
+            ui.end_row();
+            ui.label(tr("Wire ends"));
+            ui.label(format!("{} / {}", end_kind(w.ends.0), end_kind(w.ends.1)))
+                .on_hover_text(tr("Where the wire starts and ends: a connection point from the part data, one generated from the function template, or the device centre if no connection point matches"));
             ui.end_row();
             if !w.color.is_empty() || !w.cross_section.is_empty() {
                 ui.label(tr("Colour / cross-section"));
@@ -500,10 +533,14 @@ impl PanelUi {
                 ui.end_row();
             }
         });
-        ui.label(RichText::new(format!(
-            "{:.0} mm on the plate + {:.0} mm reserve; the rest is the way to the device fronts.",
-            w.route.plate_length, prj.layout.wire_reserve
-        )).weak());
+        ui.label(
+            RichText::new(tr_fmt!(
+                "{} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.",
+                format!("{:.0}", w.route.plate_length),
+                format!("{:.0}", prj.layout.wire_reserve)
+            ))
+            .weak(),
+        );
         ui.separator();
         ui.label(RichText::new(tr("Connected devices")).strong());
         let e = &prj.layout.enclosures[w.enclosure];
@@ -639,6 +676,7 @@ impl PanelUi {
                 ui.separator();
             }
             ui.checkbox(&mut self.show_wires, tr("Wires"));
+            ui.checkbox(&mut self.show_fill, tr("Duct fill")).on_hover_text(tr("Colour the cable ducts by their fill level"));
             if ui.button(tr("⛶ Fit")).clicked() {
                 self.fit_pending = true;
                 self.cam = None;
@@ -784,6 +822,19 @@ impl PanelUi {
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
         render::draw_enclosure(&mut d, e, self.face, p(0.0, 0.0), 1.0, &self.selection, &problems, &prj.parts);
         let to_screen = |q: P| origin + vec2(q.x + fm, q.y + fm) * self.zoom;
+        // Cable ducts coloured by their fill level.
+        if self.show_fill && self.face == Face::Plate {
+            let limit = prj.layout.duct_fill_limit;
+            for f in an.duct_fill.iter().filter(|f| f.enclosure == ei) {
+                let Some(d) = e.item(f.duct) else { continue };
+                let r = Rect::from_min_max(to_screen(p(d.x, d.y)), to_screen(p(d.x + d.w, d.y + d.h)));
+                let color = fill_color(f.percent, limit);
+                painter.rect_filled(r, 0.0, color.gamma_multiply(0.3));
+                if r.width().min(r.height()) >= 12.0 {
+                    painter.text(r.center(), egui::Align2::CENTER_CENTER, format!("{:.0} %", f.percent), egui::FontId::proportional(11.0), color);
+                }
+            }
+        }
         // Wires run on the mounting plate.
         let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei && self.face == Face::Plate);
         if (self.show_wires && self.face == Face::Plate) || selected_wire.is_some() {
@@ -809,6 +860,32 @@ impl PanelUi {
                     let r = Rect::from_min_max(to_screen(p(it.x, it.y)), to_screen(p(it.x + it.w, it.y + it.h)));
                     painter.rect_filled(r, 0.0, WIRE_HIGHLIGHT.gamma_multiply(0.18));
                     painter.rect_stroke(r.expand(2.0), 2.0, Stroke::new(2.5, WIRE_HIGHLIGHT), egui::StrokeKind::Outside);
+                }
+            }
+        }
+        // Connection points of the selected device.
+        if let [id] = self.selection.iter().copied().collect::<Vec<_>>()[..] {
+            if let Some(it) = e.item(id).filter(|it| it.kind == ItemKind::Device && it.face == self.face) {
+                let ink = ui.visuals().text_color();
+                for pt in panel::device_points(prj, it) {
+                    let c = to_screen(p(pt.pos[0], pt.pos[1]));
+                    let dir = match pt.exit {
+                        crate::parts::Exit::Up => vec2(0.0, -1.0),
+                        crate::parts::Exit::Down => vec2(0.0, 1.0),
+                        crate::parts::Exit::Left => vec2(-1.0, 0.0),
+                        crate::parts::Exit::Right => vec2(1.0, 0.0),
+                        crate::parts::Exit::Front => vec2(0.0, 0.0),
+                    };
+                    painter.line_segment([c, c + dir * 9.0], Stroke::new(1.5, WIRE_COLOR));
+                    if pt.exact {
+                        painter.circle_filled(c, 3.0, WIRE_COLOR);
+                    } else {
+                        painter.circle_stroke(c, 3.0, Stroke::new(1.5, WIRE_COLOR));
+                    }
+                    if self.zoom >= 2.0 {
+                        let name = if pt.terminal.is_empty() { pt.pin.clone() } else { format!("{}:{}", pt.terminal, pt.pin) };
+                        painter.text(c - dir * 4.0, egui::Align2::CENTER_CENTER, name, egui::FontId::monospace(10.0), ink);
+                    }
                 }
             }
         }
@@ -1269,6 +1346,25 @@ fn wheel_delta(i: &egui::InputState) -> f32 {
     wheel
 }
 
+/// Green below 80 % of the limit, orange up to the limit, red above.
+fn fill_color(percent: f32, limit: f32) -> Color32 {
+    if percent > limit {
+        Color32::from_rgb(220, 60, 60)
+    } else if percent > 0.8 * limit {
+        Color32::from_rgb(230, 150, 30)
+    } else {
+        Color32::from_rgb(60, 170, 90)
+    }
+}
+
+fn end_kind(kind: panel::EndKind) -> &'static str {
+    match kind {
+        panel::EndKind::Exact => tr("connection point"),
+        panel::EndKind::Generated => tr("connection point (generated)"),
+        panel::EndKind::Centre => tr("device centre"),
+    }
+}
+
 fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
     let mut sign = 0.0f32;
     for i in 0..pts.len() {
@@ -1285,3 +1381,6 @@ fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
     }
     true
 }
+
+#[cfg(test)]
+mod tests;
