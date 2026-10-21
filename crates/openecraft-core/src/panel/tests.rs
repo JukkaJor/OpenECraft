@@ -221,7 +221,7 @@ fn model_size_is_used_without_mounting_data() {
     let mut mesh = crate::parts::Mesh3d::default();
     mesh.add_box([0.0, 0.0, 0.0], [22.0, 22.0, 50.0]);
     part.model_3d = Some(mesh);
-    assert_eq!(part_dims(part), Some([22.0, 22.0, 50.0]));
+    assert_eq!(part.size(), Some([22.0, 22.0, 50.0]));
     let size = device_size(&prj, "-P1").unwrap();
     assert_eq!((size.w, size.h, size.d), (22.0, 22.0, 50.0));
     assert_eq!(tiles(20.8, 5.2), 4);

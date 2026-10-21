@@ -1,8 +1,8 @@
 //! CSV / JSON import and export of parts.
 
-use crate::{FnKind, FunctionTemplate, Part, PartsDb, TopGroup};
+use crate::{points_from_text, points_to_text, FnKind, FunctionTemplate, Part, PartsDb, TopGroup};
 
-const CSV_FIELDS: [&str; 29] = [
+const CSV_FIELDS: [&str; 30] = [
     "Part number",
     "Type number",
     "Order number",
@@ -32,6 +32,7 @@ const CSV_FIELDS: [&str; 29] = [
     "Mounting",
     "Functions",
     "Accessories",
+    "Connection points",
 ];
 
 fn csv_escape(s: &str) -> String {
@@ -87,6 +88,7 @@ pub fn to_csv(parts: &[Part]) -> String {
             p.mounting.clone(),
             functions,
             p.accessories.join(","),
+            points_to_text(&p.connection_points),
         ];
         out.push_str(&row.iter().map(|c| csv_escape(c)).collect::<Vec<_>>().join(";"));
         out.push('\n');
@@ -193,6 +195,7 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
             // 2D / 3D models are only exchanged as JSON.
             model_2d: None,
             model_3d: None,
+            connection_points: points_from_text(&get(29)),
         });
     }
     Ok(parts)

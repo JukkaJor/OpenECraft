@@ -86,6 +86,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - function templates drive **reserve contacts** in the contact image, "Apply
     designations" (connection point numbers from the part) and the project check
     (more functions placed than the parts provide, parts missing in the project);
+  - **connection points** per part (designation, position in the front view, the
+    direction the wire leaves); parts without their own get them from the function
+    templates by the IEC convention (odd designations at the top, even at the bottom,
+    door devices from the rear, PLC modules at the bottom). The panel layout will wire
+    to them (in progress); CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
   - import / export as CSV (`;` separated, header names) or JSON; the database is stored
     in the app storage (desktop) / local storage (browser).
 - **Panel layout** (in the spirit of EPLAN Pro Panel):

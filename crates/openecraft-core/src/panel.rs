@@ -348,18 +348,6 @@ pub struct DeviceSize {
     pub from_part: bool,
 }
 
-/// Width, height and depth of a part: the mounting data, or the size of its 3D model
-/// when the part has no mounting data.
-pub fn part_dims(part: &crate::parts::Part) -> Option<[f32; 3]> {
-    let model = part.model_3d.as_ref().map(|m| m.size()).filter(|s| s[0] > 0.0 && s[1] > 0.0);
-    if part.width > 0.0 && part.height > 0.0 {
-        let depth = if part.depth > 0.0 { part.depth } else { model.map(|s| s[2]).unwrap_or(0.0) };
-        Some([part.width, part.height, depth])
-    } else {
-        model
-    }
-}
-
 /// Number of copies of a model of width `model_w` side by side in an item of width
 /// `item_w` (terminal strips show one model per terminal).
 pub fn tiles(item_w: f32, model_w: f32) -> usize {
@@ -418,7 +406,7 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         .iter()
         .filter_map(|r| prj.parts.iter().find(|x| x.number == r.number).map(|pd| (pd, r.count.max(1))))
         .collect();
-    let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| part_dims(pd).map(|dims| (*pd, dims)))?;
+    let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
     let terminals = parts::placed_functions(prj, tag).iter().filter(|f| f.0 == FnKind::Terminal).count();
     let mut w = mw;
     if terminals > 0 && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
@@ -426,7 +414,7 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     }
     let mut d = md;
     for (pd, count) in &parts {
-        if let (true, Some([aw, _, ad])) = (pd.number != main.number, part_dims(pd)) {
+        if let (true, Some([aw, _, ad])) = (pd.number != main.number, pd.size()) {
             if aw <= mw + 1.0 {
                 d += ad * *count as f32;
             }

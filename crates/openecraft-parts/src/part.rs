@@ -1,7 +1,7 @@
 //! Part data: product groups, function templates, commercial / technical / mounting
 //! data and the parts database container.
 
-use crate::{natural_cmp, Mesh3d, Model2d};
+use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -236,6 +236,10 @@ pub struct Part {
     /// 3D model for the panel layout.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub model_3d: Option<Mesh3d>,
+    /// Terminals for wiring in the panel layout; empty: generated from the function
+    /// templates ([`Part::connection_points_or_default`]).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub connection_points: Vec<ConnectionPoint>,
 }
 
 impl Default for Part {
@@ -272,11 +276,24 @@ impl Default for Part {
             accessories: Vec::new(),
             model_2d: None,
             model_3d: None,
+            connection_points: Vec::new(),
         }
     }
 }
 
 impl Part {
+    /// Width, height and depth: the mounting data, or the size of the 3D model when
+    /// the part has no mounting data. `None` without either.
+    pub fn size(&self) -> Option<[f32; 3]> {
+        let model = self.model_3d.as_ref().map(|m| m.size()).filter(|s| s[0] > 0.0 && s[1] > 0.0);
+        if self.width > 0.0 && self.height > 0.0 {
+            let depth = if self.depth > 0.0 { self.depth } else { model.map(|s| s[2]).unwrap_or(0.0) };
+            Some([self.width, self.height, depth])
+        } else {
+            model
+        }
+    }
+
     /// Price of `qty` units, respecting the price unit.
     pub fn total_price(&self, qty: f32) -> f32 {
         self.price / self.price_unit.max(1) as f32 * qty
