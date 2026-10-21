@@ -9,6 +9,7 @@ pub mod harness;
 pub mod history;
 pub mod index;
 pub mod macros;
+pub mod marking;
 pub mod model;
 pub mod netlist;
 pub mod ops;

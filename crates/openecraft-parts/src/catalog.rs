@@ -135,6 +135,14 @@ pub fn default_catalog() -> Vec<Part> {
         c.add(&number, &desc, "Terminals", "Jumper", "", 0.25 * poles as f32, (0.0, 0.0, 0.0, 0.001), &[]).tech_data = format!("Poles: {poles}");
     }
 
+    // Marker material (printed by marking software), per piece.
+    let mk = "Marking";
+    c.add("GEN.MARK-DEV", "Device marker 15 x 5 mm, white, printable", mk, "Device marker", "", 0.08, (0.0, 0.0, 0.0, 0.0), &[]);
+    c.add("GEN.MARK-LEG", "Legend plate 27 x 8 mm for 22 mm command devices, printable", mk, "Legend plate", "", 0.35, (0.0, 0.0, 0.0, 0.0), &[]);
+    c.add("GEN.MARK-TB-5", "Terminal marker 5.2 mm, white, printable", mk, "Terminal marker", "", 0.02, (0.0, 0.0, 0.0, 0.0), &[]);
+    c.add("GEN.MARK-WIRE", "Wire marker sleeve for 0.5 – 2.5 mm², white, printable", mk, "Wire marker", "", 0.03, (0.0, 0.0, 0.0, 0.0), &[]);
+    c.add("GEN.MARK-CABLE", "Cable marker for cable Ø 4 – 10 mm, white, printable", mk, "Cable marker", "", 0.12, (0.0, 0.0, 0.0, 0.0), &[]);
+
     let di: Vec<(FnKind, String)> = (0..16).map(|i| (PlcInput, format!("I{}.{}", i / 8, i % 8))).collect();
     let di: Vec<(FnKind, &str)> = di.iter().map(|(k, s)| (*k, s.as_str())).collect();
     c.add("GEN.PLC-DI16", "PLC digital input module 16 x 24 V DC", "PLC", "Digital input module", "A", 145.0, (25.0, 100.0, 75.0, 0.15), &di);

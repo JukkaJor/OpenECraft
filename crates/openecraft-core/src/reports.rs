@@ -96,7 +96,7 @@ impl Analysis {
             let t = match k {
                 ReportKind::TableOfContents => toc(prj),
                 ReportKind::DeviceList => device_list(prj, &idx),
-                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring),
+                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
@@ -107,6 +107,7 @@ impl Analysis {
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
+                ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
             };
             reports.insert(k, t);
         }
@@ -198,7 +199,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
     t
 }
 
-fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
+fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
         (tr("Pos"), 0.5),
         (tr("Qty"), 0.6),
@@ -289,6 +290,12 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
         g.0 += n as f32;
         g.1.push("wiring".into());
     }
+    // Marker material.
+    for (part, n) in crate::marking::material(&crate::marking::markers(prj, conns)) {
+        let g = groups.entry(part).or_default();
+        g.0 += n as f32;
+        g.1.push("marking".into());
+    }
     // Wiring and mounting material may come straight from the built-in catalog.
     let catalog = crate::parts::catalog();
     let mut sum = 0.0;
@@ -321,6 +328,21 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
         last[6] = tr("Sum").into();
         last[9] = format!("{sum:.2}");
         t.push(last, None);
+    }
+    t
+}
+
+fn marking_report(markers: &[crate::marking::Marker]) -> Table {
+    let mut t = Table::new(&[
+        (tr("Material"), 1.2),
+        (tr("Category"), 1.0),
+        (tr("Text"), 1.6),
+        (tr("Count"), 0.5),
+        (tr("Enclosure"), 0.8),
+        (tr("Belongs to"), 1.6),
+    ]);
+    for m in markers {
+        t.push(vec![m.material.clone(), m.category.title().into(), m.text.clone(), m.count.to_string(), m.enclosure.clone(), m.group.clone()], None);
     }
     t
 }

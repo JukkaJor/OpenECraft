@@ -49,6 +49,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   plate after the last terminal of each part, plug-in jumpers of the shortest
   fitting length (cut if longer, teeth broken off at terminals in between) – in the
   bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check.
+- **Marking** (*File › Export marking (CSV)…*, report *Marking*): device markers (legend
+  plates for door devices; the enclosure's location left out of the tag), terminal markers
+  in rail order with the strip marker, wire markers (wire number on both ends, or
+  destination marking: each end shows the other end), cable markers; grouped by
+  marker material in the order of application, as CSV for marking software (UTF-8,
+  `;`, header `Material;Category;Text;Count;Enclosure;Group`); the material is in the
+  bill of materials. Texts and materials are project settings (`marking`).
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
@@ -334,6 +341,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
+| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |

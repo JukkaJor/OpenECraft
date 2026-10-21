@@ -352,6 +352,10 @@ impl App {
                     let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
                     self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);
                 }
+                if ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
+                    let csv = crate::marking::csv(&crate::marking::markers(&self.prj, &self.analysis.connections));
+                    self.export(&ctx, "marking.csv".into(), ("CSV", "csv"), csv);
+                }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     ui.separator();

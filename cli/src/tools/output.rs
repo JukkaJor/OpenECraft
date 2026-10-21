@@ -20,7 +20,7 @@ pub static TOOLS: &[Tool] = &[
         name: "report",
         help: tr_const!("Generates a report as table"),
         params: &[
-            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data or duct_fill")),
+            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill or marking")),
             optional("format", Kind::Str, tr_const!("json (default) or csv")),
         ],
         needs_project: true,
@@ -35,9 +35,9 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV) or kbl (harness XML)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML) or marking (CSV)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table or kbl")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl or marking")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
         ],
@@ -106,6 +106,7 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
         "wire_list" => reports::production_wire_list(prj, &Analysis::build(prj)).to_csv(),
         "plc_table" => plc::symbol_table(prj, &Analysis::build(prj).netlist),
         "kbl" => harness::kbl(prj, &Analysis::build(prj)),
+        "marking" => openecraft_core::marking::csv(&openecraft_core::marking::markers(prj, &Analysis::build(prj).connections)),
         other => return Err(tr_fmt!("Unknown format: {}", other)),
     };
     match a.str("path") {
