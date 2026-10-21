@@ -119,6 +119,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
     its connection point (rotated devices, aux blocks, terminal by terminal) into the
     duct the terminal faces and through the cable duct network (shortest path) → wire
     list with lengths, wires shown in 2D/3D;
+  - **duct fill levels**: cross sections of the routed wires (with insulation) against
+    the duct cross section at its fullest stretch; report *Duct fill levels*, the check
+    warns above the limit (70 % by default) and hints above 80 % of it;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
     rails and ducts appear in the BOM by cut length, enclosures per piece;
   - jump between a device in the schematic and its place in the panel layout.

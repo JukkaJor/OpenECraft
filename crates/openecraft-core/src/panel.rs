@@ -17,7 +17,9 @@ use crate::parts::{self, Exit, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
+mod fill;
 mod points;
+pub use fill::{duct_fill, wire_area, DuctFill};
 pub use points::{device_points, point_of, PlacedPoint};
 
 /// Distance between enclosure wall and mounting plate edge.
@@ -269,11 +271,13 @@ pub struct Layout {
     pub wire_reserve: f32,
     /// Wire ends get ferrules (production wire list, bill of materials).
     pub ferrules: bool,
+    /// Highest fill level of the cable ducts in percent (project check).
+    pub duct_fill_limit: f32,
 }
 
 impl Default for Layout {
     fn default() -> Self {
-        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true }
+        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true, duct_fill_limit: 70.0 }
     }
 }
 

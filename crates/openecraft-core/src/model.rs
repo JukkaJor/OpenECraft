@@ -165,10 +165,11 @@ pub enum ReportKind {
     CableDiagram,
     RevisionOverview,
     HarnessData,
+    DuctFill,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 12] = [
+    pub const ALL: [ReportKind; 13] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -181,6 +182,7 @@ impl ReportKind {
         ReportKind::CableDiagram,
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
+        ReportKind::DuctFill,
     ];
 
     pub fn title(self) -> &'static str {
@@ -197,6 +199,7 @@ impl ReportKind {
             ReportKind::CableDiagram => tr("Cable diagram"),
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
+            ReportKind::DuctFill => tr("Duct fill levels"),
         }
     }
 }
