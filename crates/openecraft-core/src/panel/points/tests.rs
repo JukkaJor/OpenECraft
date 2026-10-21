@@ -98,6 +98,11 @@ fn schematic_connection_points_find_their_place() {
     assert_eq!(point_of(&points, coil, 0).unwrap().pin, "A1");
     assert_eq!(point_of(&points, coil, 1).unwrap().pin, "A2");
 
+    let input = symbols.iter().find(|s| s.tag == "-A1" && s.label == "I0.2").unwrap();
+    let points = device_points(&prj, &item(&prj, "-A1"));
+    let at = point_of(&points, input, 0).unwrap();
+    assert_eq!((at.pin.as_str(), at.exit), ("I0.2", Exit::Down), "PLC points by address");
+
     let terminal = symbols.iter().find(|s| s.tag == "-X1").unwrap();
     let points = device_points(&prj, &item(&prj, "-X1"));
     let bottom = point_of(&points, terminal, 1).unwrap();

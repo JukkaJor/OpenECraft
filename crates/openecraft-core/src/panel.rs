@@ -13,9 +13,9 @@ use crate::geom::{p, P, R};
 use crate::model::Project;
 use crate::netlist::{connections, Netlist};
 use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
-use crate::parts::{self, FnKind};
+use crate::parts::{self, Exit, FnKind};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod points;
 pub use points::{device_points, point_of, PlacedPoint};
@@ -567,6 +567,43 @@ pub struct Route {
     /// Length along the plate (without the vertical parts and reserve).
     pub plate_length: f32,
     pub via_ducts: bool,
+    /// Stretches of the ducts the wire runs through.
+    pub runs: Vec<DuctRun>,
+}
+
+/// Stretch of a duct a wire runs through: from / to along the duct's axis (x of
+/// horizontal, y of vertical ducts), `from <= to`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct DuctRun {
+    pub duct: u64,
+    pub from: f32,
+    pub to: f32,
+}
+
+/// Where a wire starts on the plate and in which direction it leaves its connection
+/// point (`None`: no direction, e.g. the device centre).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct WireEnd {
+    pub pos: P,
+    pub exit: Option<Exit>,
+}
+
+impl WireEnd {
+    pub fn at(pos: P) -> WireEnd {
+        WireEnd { pos, exit: None }
+    }
+
+    /// `q` lies in the direction the wire leaves in.
+    fn ahead(&self, q: P) -> bool {
+        let a = self.pos;
+        match self.exit {
+            Some(Exit::Up) => q.y < a.y - 0.5,
+            Some(Exit::Down) => q.y > a.y + 0.5,
+            Some(Exit::Left) => q.x < a.x - 0.5,
+            Some(Exit::Right) => q.x > a.x + 0.5,
+            Some(Exit::Front) | None => true,
+        }
+    }
 }
 
 /// Manhattan length of a polyline.
@@ -587,10 +624,18 @@ fn closest_on_segment(q: P, a: P, b: P) -> P {
 /// Routes a wire from `a` to `b` through the cable duct network (shortest path).
 /// Without ducts the wire runs directly (orthogonally).
 pub fn route(e: &Enclosure, a: P, b: P) -> Route {
+    route_ends(e, WireEnd::at(a), WireEnd::at(b))
+}
+
+/// Like [`route`]; each end enters the nearest duct in the direction it leaves its
+/// connection point (a terminal at the top goes into the duct above), or the nearest
+/// duct if there is none in that direction.
+pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
+    let (a, b) = (from.pos, to.pos);
+    let direct = || Route { points: vec![a, p(b.x, a.y), b], plate_length: manhattan(a, b), via_ducts: false, runs: Vec::new() };
     let ducts: Vec<&PanelItem> = e.items.iter().filter(|i| i.kind == ItemKind::Duct).collect();
     if ducts.is_empty() {
-        let corner = p(b.x, a.y);
-        return Route { points: vec![a, corner, b], plate_length: manhattan(a, b), via_ducts: false };
+        return direct();
     }
     // Nodes: per duct, the points on its centre line that matter.
     let mut nodes: Vec<P> = vec![a, b];
@@ -636,10 +681,11 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
             }
         }
     }
-    // Entries: a wire leaves its device into the nearest duct (not across the
-    // plate to some farther duct).
-    for (end, q) in [(0usize, a), (1usize, b)] {
-        let entries: Vec<(usize, P, f32)> = ducts
+    // Entries: a wire leaves its device into the nearest duct in its direction (not
+    // across the plate to some farther duct).
+    for (end, w) in [(0usize, from), (1usize, to)] {
+        let q = w.pos;
+        let all: Vec<(usize, P, f32)> = ducts
             .iter()
             .enumerate()
             .map(|(di, d)| {
@@ -648,6 +694,8 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
                 (di, c, manhattan(q, c))
             })
             .collect();
+        let ahead: Vec<(usize, P, f32)> = all.iter().copied().filter(|e| w.ahead(e.1)).collect();
+        let entries = if ahead.is_empty() { all } else { ahead };
         let nearest = entries.iter().map(|e| e.2).fold(f32::INFINITY, f32::min);
         for (di, c, dist) in entries.into_iter().filter(|e| e.2 <= nearest + 1.0) {
             let n = add_node(&mut nodes, c);
@@ -656,6 +704,7 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
         }
     }
     // Along each duct: connect consecutive nodes.
+    let mut along: HashMap<(usize, usize), usize> = HashMap::new();
     for (di, d) in ducts.iter().enumerate() {
         let horizontal = d.horizontal();
         let list = &mut on_duct[di];
@@ -665,6 +714,7 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
         });
         for w in list.windows(2) {
             edges.push((w[0], w[1], nodes[w[0]].dist(nodes[w[1]])));
+            along.insert((w[0].min(w[1]), w[0].max(w[1])), di);
         }
     }
     // Dijkstra (small graphs, simple O(n²)).
@@ -694,14 +744,25 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
         }
     }
     if !dist[1].is_finite() {
-        let corner = p(b.x, a.y);
-        return Route { points: vec![a, corner, b], plate_length: manhattan(a, b), via_ducts: false };
+        return direct();
     }
     let mut path = vec![1];
     while *path.last().unwrap() != 0 {
         path.push(prev[*path.last().unwrap()]);
     }
     path.reverse();
+    let mut runs: Vec<DuctRun> = Vec::new();
+    for w in path.windows(2) {
+        let Some(&di) = along.get(&(w[0].min(w[1]), w[0].max(w[1]))) else { continue };
+        let axis = |q: P| if ducts[di].horizontal() { q.x } else { q.y };
+        let (s, t) = (axis(nodes[w[0]]), axis(nodes[w[1]]));
+        let run = DuctRun { duct: ducts[di].id, from: s.min(t), to: s.max(t) };
+        match runs.last_mut() {
+            Some(last) if last.duct == run.duct && (last.to - run.from).abs() < 0.01 => last.to = run.to,
+            Some(last) if last.duct == run.duct && (run.to - last.from).abs() < 0.01 => last.from = run.from,
+            _ => runs.push(run),
+        }
+    }
     let mut points: Vec<P> = Vec::new();
     for idx in path {
         let q = nodes[idx];
@@ -716,7 +777,7 @@ pub fn route(e: &Enclosure, a: P, b: P) -> Route {
             points.push(q);
         }
     }
-    Route { points, plate_length: dist[1], via_ducts: true }
+    Route { points, plate_length: dist[1], via_ducts: true, runs }
 }
 
 /// A routed wire of the virtual wiring.
@@ -735,6 +796,19 @@ pub struct RoutedWire {
     pub length: f32,
     /// (from device item, to device item)
     pub items: (u64, u64),
+    /// How exactly the two ends are known.
+    pub ends: (EndKind, EndKind),
+}
+
+/// Where a routed wire end comes from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EndKind {
+    /// The device centre: no connection point of its parts matches.
+    Centre,
+    /// A connection point generated from the function templates.
+    Generated,
+    /// A connection point from the part data.
+    Exact,
 }
 
 impl RoutedWire {
@@ -787,6 +861,7 @@ pub struct OpenWire {
 pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
     let mut open = Vec::new();
+    let mut points: HashMap<u64, Vec<PlacedPoint>> = HashMap::new();
     for c in connections(prj, nl, wired) {
         let sa = &prj.pages[c.a.page].symbols[c.a.sym];
         let sb = &prj.pages[c.b.page].symbols[c.b.sym];
@@ -804,8 +879,20 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             continue;
         }
         let e = &prj.layout.enclosures[ea];
-        let ((pa, la), (pb, lb)) = (wiring_end(e, ia), wiring_end(e, ib));
-        let r = route(e, pa, pb);
+        let mut end = |it: &PanelItem, s, pin| {
+            let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));
+            let point = point_of(placed, s, pin);
+            let kind = match point {
+                None => EndKind::Centre,
+                Some(pt) if pt.exact => EndKind::Exact,
+                Some(_) => EndKind::Generated,
+            };
+            let (w, extra) = wiring_end(e, it, point);
+            (w, extra, kind)
+        };
+        let (pa, la, ka) = end(ia, sa, c.a.pin);
+        let (pb, lb, kb) = end(ib, sb, c.b.pin);
+        let r = route_ends(e, pa, pb);
         let length = r.plate_length + la + lb + prj.layout.wire_reserve;
         routed.push(RoutedWire {
             enclosure: ea,
@@ -818,21 +905,26 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             route: r,
             length,
             items: (ia.id, ib.id),
+            ends: (ka, kb),
         });
     }
     (routed, open)
 }
 
-/// Where the wires of a device join the wiring on the plate, and the length from the
-/// device to there: down from the device front to the plate, or for door devices
-/// along the door to the hinge (left) and across the hinge loop.
-pub fn wiring_end(e: &Enclosure, it: &PanelItem) -> (P, f32) {
+/// Where a wire of a device joins the wiring on the plate, and the length from its
+/// connection point to there: down to the plate, or for door devices along the door to
+/// the hinge (left) and across the hinge loop. Without a connection point the wire
+/// starts at the device centre, at its front.
+pub fn wiring_end(e: &Enclosure, it: &PanelItem, point: Option<&PlacedPoint>) -> (WireEnd, f32) {
+    let (at, height) = match point {
+        Some(pt) => (p(pt.pos[0], pt.pos[1]), pt.pos[2]),
+        None => (it.center(), it.z + it.d),
+    };
     match it.face {
-        Face::Plate => (it.center(), it.z + it.d),
+        Face::Plate => (WireEnd { pos: at, exit: point.map(|pt| pt.exit) }, height),
         Face::Door => {
             let (_, ph) = e.plate_size();
-            let c = it.center();
-            (p(0.0, (c.y - PLATE_MARGIN).clamp(0.0, ph)), c.x + it.d + DOOR_LOOP + (e.depth - PLATE_Z))
+            (WireEnd::at(p(0.0, (at.y - PLATE_MARGIN).clamp(0.0, ph))), at.x + height + DOOR_LOOP + (e.depth - PLATE_Z))
         }
     }
 }

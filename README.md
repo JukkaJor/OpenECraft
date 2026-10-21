@@ -89,8 +89,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - **connection points** per part (designation, position in the front view, the
     direction the wire leaves); parts without their own get them from the function
     templates by the IEC convention (odd designations at the top, even at the bottom,
-    door devices from the rear, PLC modules at the bottom). The panel layout will wire
-    to them (in progress); CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
+    door devices from the rear, PLC modules at the bottom). The panel layout wires to
+    them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
   - import / export as CSV (`;` separated, header names) or JSON; the database is stored
     in the app storage (desktop) / local storage (browser).
 - **Panel layout** (in the spirit of EPLAN Pro Panel):
@@ -115,8 +115,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
     length, devices screwed onto the plate get holes from their part data
     (`Mounting holes: M5: 9,12; 69,72`) or two default holes; **NC export** per
     enclosure and face as DXF (outline, one layer per hole diameter, cutouts) or CSV;
-  - virtual wiring: every schematic connection between placed devices is routed through
-    the cable duct network (shortest path) → wire list with lengths, wires shown in 2D/3D;
+  - virtual wiring: every schematic connection between placed devices is routed from
+    its connection point (rotated devices, aux blocks, terminal by terminal) into the
+    duct the terminal faces and through the cable duct network (shortest path) → wire
+    list with lengths, wires shown in 2D/3D;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
     rails and ducts appear in the BOM by cut length, enclosures per piece;
   - jump between a device in the schematic and its place in the panel layout.
