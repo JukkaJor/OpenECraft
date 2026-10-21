@@ -6,8 +6,8 @@ use crate::io::{short_name, FileKind};
 use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
 use openecraft_parts::{
-    distinct_values, parse_mesh, parse_svg, natural_cmp, FnKind, FunctionTemplate, Grouping, Mesh3d, Model2d, Part, PartFilter, Prim2d, TopGroup,
-    PRODUCT_GROUPS,
+    default_connection_points, distinct_values, parse_mesh, parse_svg, natural_cmp, ConnectionPoint, Exit, FnKind, FunctionTemplate, Grouping,
+    Mesh3d, Model2d, Part, PartFilter, Prim2d, TopGroup, PRODUCT_GROUPS,
 };
 use std::collections::BTreeMap;
 
@@ -36,6 +36,7 @@ pub enum PartTab {
     Technical,
     Mounting,
     Functions,
+    Connections,
     Accessories,
     Graphics,
 }
@@ -45,11 +46,13 @@ pub struct EditorState {
     pub tab: PartTab,
     /// Factor of the "Scale" button for imported 3D models.
     pub model_scale: f32,
+    /// Connection point placed by clicking into the front view.
+    pub point: Option<usize>,
 }
 
 impl Default for EditorState {
     fn default() -> Self {
-        EditorState { tab: PartTab::General, model_scale: 25.4 }
+        EditorState { tab: PartTab::General, model_scale: 25.4, point: None }
     }
 }
 
@@ -189,6 +192,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             (PartTab::Technical, tr("Technical data")),
             (PartTab::Mounting, tr("Mounting data")),
             (PartTab::Functions, tr("Function template")),
+            (PartTab::Connections, tr("Connection points")),
             (PartTab::Accessories, tr("Accessories")),
             (PartTab::Graphics, tr("Graphics")),
         ] {
@@ -357,9 +361,139 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 part.accessories.push(n);
             }
         }
+        PartTab::Connections => connections_tab(ui, part, &mut state.point),
         PartTab::Graphics => request = graphics_tab(ui, part, &mut state.model_scale),
     });
     request
+}
+
+fn exit_title(exit: Exit) -> &'static str {
+    match exit {
+        Exit::Up => tr("up"),
+        Exit::Down => tr("down"),
+        Exit::Left => tr("left"),
+        Exit::Right => tr("right"),
+        Exit::Front => tr("to the front"),
+    }
+}
+
+/// Where the wires are connected in the panel layout.
+fn connections_tab(ui: &mut egui::Ui, part: &mut Part, selected: &mut Option<usize>) {
+    ui.weak(tr("Where the wires are connected in the panel layout: the designation as in the function template, the position in the front view (x from the left, y from the top, z above the mounting surface) and the direction the wire leaves in. Parts without own connection points get them from the function template."));
+    ui.add_space(4.0);
+    let own = !part.connection_points.is_empty();
+    if selected.is_some_and(|i| i >= part.connection_points.len()) {
+        *selected = None;
+    }
+    let shown = if own { part.connection_points.clone() } else { default_connection_points(part) };
+    ui.horizontal(|ui| {
+        let clicked = connection_preview(ui, part, &shown, if own { *selected } else { None }, vec2(240.0, 220.0));
+        if let (Some([x, y]), Some(c)) = (clicked, selected.and_then(|i| part.connection_points.get_mut(i))) {
+            c.pos[0] = x;
+            c.pos[1] = y;
+        }
+        ui.vertical(|ui| {
+            if own {
+                ui.label(tr_fmt!("{} connection points", part.connection_points.len()));
+                ui.weak(tr("Select a row, then click into the view to place it."));
+            } else {
+                ui.weak(tr("No own connection points – the generated ones are shown."));
+            }
+            if ui
+                .button(tr("Generate from function template"))
+                .on_hover_text(tr("Replaces the connection points by the IEC convention: odd designations at the top, even ones at the bottom"))
+                .clicked()
+            {
+                part.connection_points = default_connection_points(part);
+                *selected = None;
+            }
+            if own && ui.button(tr("🗑 Remove all")).on_hover_text(tr("Use generated connection points again")).clicked() {
+                part.connection_points.clear();
+                *selected = None;
+            }
+        });
+    });
+    if own {
+        let mut remove = None;
+        egui::Grid::new("pcp").num_columns(7).striped(true).spacing([8.0, 4.0]).show(ui, |ui| {
+            ui.label("");
+            for h in [tr("Designation"), "X", "Y", "Z", tr("Wire leaves"), ""] {
+                ui.label(RichText::new(h).strong());
+            }
+            ui.end_row();
+            for (i, c) in part.connection_points.iter_mut().enumerate() {
+                if ui.radio(*selected == Some(i), "").on_hover_text(tr("Place by clicking into the view")).clicked() {
+                    *selected = Some(i);
+                }
+                ui.add(egui::TextEdit::singleline(&mut c.pin).desired_width(60.0).font(egui::TextStyle::Monospace));
+                for v in &mut c.pos {
+                    ui.add(egui::DragValue::new(v).speed(0.5).range(0.0..=5000.0).suffix(" mm"));
+                }
+                egui::ComboBox::from_id_salt(("cpx", i)).selected_text(exit_title(c.exit)).width(110.0).show_ui(ui, |ui| {
+                    for e in Exit::ALL {
+                        ui.selectable_value(&mut c.exit, e, exit_title(e));
+                    }
+                });
+                if ui.small_button("🗑").clicked() {
+                    remove = Some(i);
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(i) = remove {
+            part.connection_points.remove(i);
+            *selected = None;
+        }
+    }
+    if ui.button(tr("➕ Add connection point")).clicked() {
+        let [w, _, d] = part.size().unwrap_or_default();
+        part.connection_points.push(ConnectionPoint { pin: String::new(), pos: [w / 2.0, 0.0, d * 0.75], exit: Exit::Up });
+        *selected = Some(part.connection_points.len() - 1);
+    }
+}
+
+/// Front view of the part with its connection points. Returns the clicked position
+/// in part coordinates (mm, rounded to 0.5 mm).
+fn connection_preview(ui: &mut egui::Ui, part: &Part, points: &[ConnectionPoint], selected: Option<usize>, size: egui::Vec2) -> Option<[f32; 2]> {
+    let (resp, painter) = ui.allocate_painter(size, Sense::click());
+    let visuals = ui.visuals();
+    painter.rect_filled(resp.rect, 4.0, visuals.extreme_bg_color);
+    let Some([w, h, _]) = part.size() else {
+        painter.text(resp.rect.center(), egui::Align2::CENTER_CENTER, tr("no mounting data"), egui::FontId::proportional(12.0), visuals.weak_text_color());
+        return None;
+    };
+    let zoom = ((size.x - 24.0) / w).min((size.y - 24.0) / h);
+    let origin = resp.rect.center() - vec2(w, h) * zoom / 2.0;
+    let map = |q: [f32; 2]| origin + vec2(q[0], q[1]) * zoom;
+    let ink = visuals.text_color();
+    painter.rect_filled(egui::Rect::from_two_pos(map([0.0, 0.0]), map([w, h])), 0.0, visuals.widgets.inactive.bg_fill);
+    if let Some(m) = part.model_2d.as_ref().filter(|m| m.width > 0.0 && m.height > 0.0) {
+        // The front view is fitted to the mounting data, like in the panel layout.
+        let (sx, sy) = (w / m.width, h / m.height);
+        paint_model_2d(&painter, m, &|q| map([q[0] * sx, q[1] * sy]), zoom * sx.min(sy), Stroke::new(1.0, ink.gamma_multiply(0.6)));
+    }
+    painter.rect_stroke(egui::Rect::from_two_pos(map([0.0, 0.0]), map([w, h])), 0.0, Stroke::new(1.0, ink), egui::StrokeKind::Middle);
+    let accent = Color32::from_rgb(40, 110, 230);
+    let highlight = Color32::from_rgb(230, 40, 200);
+    for (i, c) in points.iter().enumerate() {
+        let color = if Some(i) == selected { highlight } else { accent };
+        let at = map([c.pos[0], c.pos[1]]);
+        let dir = match c.exit {
+            Exit::Up => vec2(0.0, -1.0),
+            Exit::Down => vec2(0.0, 1.0),
+            Exit::Left => vec2(-1.0, 0.0),
+            Exit::Right => vec2(1.0, 0.0),
+            Exit::Front => vec2(0.0, 0.0),
+        };
+        painter.line_segment([at, at + dir * 10.0], Stroke::new(1.5, color));
+        painter.circle_filled(at, if Some(i) == selected { 4.5 } else { 3.0 }, color);
+        let label_at = if c.exit == Exit::Front { at + vec2(0.0, -9.0) } else { at - dir * 9.0 };
+        painter.text(label_at, egui::Align2::CENTER_CENTER, &c.pin, egui::FontId::monospace(10.0), ink);
+    }
+    let pos = resp.interact_pointer_pos().filter(|_| resp.clicked())?;
+    let q = (pos - origin) / zoom;
+    let round = |v: f32, max: f32| ((v * 2.0).round() / 2.0).clamp(0.0, max);
+    Some([round(q.x, w), round(q.y, h)])
 }
 
 /// 2D front view and 3D model of a part.
@@ -483,15 +617,19 @@ pub fn model_2d_preview(ui: &mut egui::Ui, model: Option<&Model2d>, size: egui::
     let visuals = ui.visuals();
     painter.rect_filled(resp.rect, 4.0, visuals.extreme_bg_color);
     let Some(m) = model.filter(|m| m.width > 0.0 && m.height > 0.0) else {
-        painter.text(resp.rect.center(), egui::Align2::CENTER_CENTER, "no 2D model", egui::FontId::proportional(12.0), visuals.weak_text_color());
+        painter.text(resp.rect.center(), egui::Align2::CENTER_CENTER, tr("no 2D model"), egui::FontId::proportional(12.0), visuals.weak_text_color());
         return;
     };
     let zoom = ((size.x - 12.0) / m.width).min((size.y - 12.0) / m.height);
     let origin = resp.rect.center() - vec2(m.width, m.height) * zoom / 2.0;
     let map = |q: [f32; 2]| origin + vec2(q[0], q[1]) * zoom;
-    let ink = visuals.text_color();
-    let line = Stroke::new(1.0, ink);
     painter.rect_filled(egui::Rect::from_two_pos(map([0.0, 0.0]), map([m.width, m.height])), 0.0, visuals.widgets.inactive.bg_fill);
+    paint_model_2d(&painter, m, &map, zoom, Stroke::new(1.0, visuals.text_color()));
+}
+
+/// Draws the elements of a 2D front view; `map` turns model mm into screen positions.
+fn paint_model_2d(painter: &egui::Painter, m: &Model2d, map: &dyn Fn([f32; 2]) -> Pos2, zoom: f32, line: Stroke) {
+    let ink = line.color;
     for prim in &m.prims {
         match prim {
             Prim2d::Line { a, b } => {

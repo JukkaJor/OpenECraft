@@ -396,7 +396,7 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
                 w.color.clone(),
                 w.cross_section.clone(),
                 format!("{:.0}", w.length),
-                if w.route.via_ducts { "via cable ducts".into() } else { "direct (no ducts)".into() },
+                if w.route.via_ducts { tr("via cable ducts").into() } else { tr("direct (no ducts)").into() },
             ],
             None,
         );
