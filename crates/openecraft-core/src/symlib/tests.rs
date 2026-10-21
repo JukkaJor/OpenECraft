@@ -130,3 +130,12 @@ fn placed_user_symbols_work_like_built_in_ones() {
     let an = Analysis::build(&back);
     assert!(!an.issues.iter().any(|i| i.message.contains("Unknown symbol")), "{:?}", an.issues.iter().map(|i| &i.message).collect::<Vec<_>>());
 }
+
+#[test]
+fn library_files_hold_one_or_many_symbols() {
+    let u = UserSymbol { key: "u_lamp".into(), name: "Lamp".into(), ..Default::default() };
+    let lib = SymbolLibrary { symbols: vec![u.clone()] };
+    assert_eq!(SymbolLibrary::from_json(&serde_json::to_string(&lib).unwrap()).unwrap().symbols, lib.symbols);
+    assert_eq!(SymbolLibrary::from_json(&serde_json::to_string(&u).unwrap()).unwrap().symbols, lib.symbols);
+    assert!(SymbolLibrary::from_json("42").is_err());
+}

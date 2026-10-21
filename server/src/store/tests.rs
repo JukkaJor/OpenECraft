@@ -51,3 +51,18 @@ fn invalid_file_is_an_error() {
     assert_eq!(err.kind(), io::ErrorKind::InvalidData);
     std::fs::remove_dir_all(path.parent().unwrap()).ok();
 }
+
+#[test]
+fn failed_save_keeps_the_previous_state() {
+    // A directory where the file should be: writing succeeds, replacing fails.
+    let dir = temp_file("db.json");
+    std::fs::create_dir_all(&dir).unwrap();
+    let part = Part { number: "TEST.1".into(), ..Default::default() };
+    let mut store = Store { path: Some(dir.clone()), revision: 5, parts: vec![part.clone()] };
+    assert!(store.upsert(Part { description: "changed".into(), ..part.clone() }).is_err());
+    assert!(store.delete("TEST.1").is_err());
+    assert!(store.import(vec![Part { number: "TEST.2".into(), ..Default::default() }]).is_err());
+    assert_eq!(store.parts, vec![part]);
+    assert_eq!(store.revision, 5);
+    std::fs::remove_dir_all(dir.parent().unwrap()).ok();
+}

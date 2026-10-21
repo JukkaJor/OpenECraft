@@ -1,0 +1,13 @@
+[package]
+name = "openecraft-client"
+version = "0.1.0"
+edition = "2021"
+description = "Requests to the OpenECraft parts server and the decoding of its answers (shared by the applications and the command line)"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+ehttp = "0.7"
+serde = "1"
+serde_json = "1"
+openecraft-parts = { path = "../openecraft-parts" }
+openecraft-i18n = { path = "../openecraft-i18n" }

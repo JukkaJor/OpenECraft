@@ -3,7 +3,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::Project;
-use crate::parts::{self, Part, PartFilter, PartRef, PartsDb};
+use crate::parts::{self, Part, PartFilter, PartsDb};
 use crate::io::{Loaded, Purpose};
 use egui::{vec2, Color32, RichText};
 use openecraft_ui::client::{Reply, ServerClient};
@@ -354,14 +354,7 @@ impl PartsUi {
             });
         });
         if let Some(number) = chosen {
-            if db.get(&number).is_some() {
-                parts::ensure_in_project(prj, db, &number);
-            }
-            let dev = prj.devices.entry(tag).or_default();
-            match dev.parts.iter_mut().find(|r| r.number == number) {
-                Some(r) => r.count += 1,
-                None => dev.parts.push(PartRef { number, count: 1 }),
-            }
+            parts::add_to_device(prj, db, &tag, &number, 1);
             self.select = None;
         }
         if !open {

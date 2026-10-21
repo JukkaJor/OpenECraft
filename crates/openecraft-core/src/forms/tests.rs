@@ -110,3 +110,19 @@ fn report_pages_use_their_form() {
     let back: Project = serde_json::from_str(&json).unwrap();
     assert_eq!(back.forms, prj.forms);
 }
+
+#[test]
+fn merging_title_blocks_replaces_by_name() {
+    let mut prj = Project::default();
+    let before = prj.forms.title_blocks.len();
+    let mut own = builtin().remove(0);
+    own.name = "Company".into();
+    let mut lib = FormLibrary { title_blocks: vec![own.clone()] };
+    assert_eq!(merge(&mut prj, FormLibrary::from_json(&serde_json::to_string(&lib).unwrap()).unwrap()), 1);
+    own.items.clear();
+    lib.title_blocks = vec![own];
+    merge(&mut prj, lib);
+    assert_eq!(prj.forms.title_blocks.len(), before + 1);
+    assert!(prj.forms.title_blocks.iter().find(|f| f.name == "Company").unwrap().items.is_empty());
+    assert!(FormLibrary::from_json("42").is_err());
+}

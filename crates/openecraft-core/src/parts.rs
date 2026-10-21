@@ -66,6 +66,17 @@ pub fn ensure_in_project(prj: &mut Project, db: &PartsDb, number: &str) {
     }
 }
 
+/// Adds `count` units of a part to a device; the part is copied from the database
+/// into the project parts.
+pub fn add_to_device(prj: &mut Project, db: &PartsDb, tag: &str, number: &str, count: u32) {
+    ensure_in_project(prj, db, number);
+    let dev = prj.devices.entry(tag.to_string()).or_default();
+    match dev.parts.iter_mut().find(|r| r.number == number) {
+        Some(r) => r.count += count,
+        None => dev.parts.push(PartRef { number: number.into(), count }),
+    }
+}
+
 /// Resolves a part: project parts first, then the database.
 pub fn lookup<'a>(prj: &'a Project, db: Option<&'a PartsDb>, number: &str) -> Option<&'a Part> {
     prj.parts.iter().find(|p| p.number == number).or_else(|| db.and_then(|d| d.get(number)))

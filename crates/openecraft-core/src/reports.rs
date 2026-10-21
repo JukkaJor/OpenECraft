@@ -345,6 +345,13 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
 /// Panel layout checks: unplaced devices, collisions, items outside the plate.
 fn check_layout(prj: &Project) -> Vec<Issue> {
     let mut v = Vec::new();
+    for (pi, pg) in prj.pages.iter().enumerate() {
+        if let PageKind::Mounting(id) = pg.kind {
+            if !prj.layout.enclosures.iter().any(|e| e.id == id) {
+                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Page {}: its enclosure no longer exists", pg.name), target: Some((pi, 0)) });
+            }
+        }
+    }
     if prj.layout.enclosures.is_empty() {
         return v;
     }

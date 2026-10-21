@@ -2556,8 +2556,19 @@ dependencies = [
 name = "openecraft-cli"
 version = "0.1.0"
 dependencies = [
- "ehttp",
+ "openecraft-client",
  "openecraft-core",
+ "openecraft-i18n",
+ "openecraft-parts",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "openecraft-client"
+version = "0.1.0"
+dependencies = [
+ "ehttp",
  "openecraft-i18n",
  "openecraft-parts",
  "serde",
@@ -2625,9 +2636,9 @@ name = "openecraft-ui"
 version = "0.1.0"
 dependencies = [
  "egui",
- "ehttp",
  "js-sys",
  "log",
+ "openecraft-client",
  "openecraft-i18n",
  "openecraft-parts",
  "rfd",

@@ -10,7 +10,7 @@ name = "openecraft"
 path = "src/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-parts", "crates/openecraft-ui", "server", "parts-manager", "cli"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-parts", "crates/openecraft-ui", "server", "parts-manager", "cli"]
 
 [dependencies]
 eframe = { version = "0.37", default-features = false, features = [

@@ -80,13 +80,13 @@ pub static TOOLS: &[Tool] = &[
 
 fn connect(s: &mut Session, a: &Args) -> Result<Value, String> {
     if let Some(url) = a.str("url") {
-        s.server.url = url.into();
+        s.server.endpoint.url = url.into();
     }
     if let Some(token) = a.str("token") {
-        s.server.token = token.into();
+        s.server.endpoint.token = token.into();
     }
     let info = s.server.info()?;
-    Ok(json!({ "url": s.server.url, "info": info }))
+    Ok(json!({ "url": s.server.endpoint.url, "info": info }))
 }
 
 fn search(s: &mut Session, a: &Args) -> Result<Value, String> {

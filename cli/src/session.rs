@@ -41,8 +41,7 @@ impl Session {
 
     pub fn open(&mut self, path: &str) -> Result<(), String> {
         let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
-        let prj = serde_json::from_str::<Project>(&text).map_err(|e| tr_fmt!("Not a valid project file: {}", e))?;
-        self.replace(prj, Some(PathBuf::from(path)));
+        self.replace(Project::from_json(&text)?, Some(PathBuf::from(path)));
         Ok(())
     }
 
@@ -50,8 +49,7 @@ impl Session {
     pub fn save(&mut self, path: Option<&str>) -> Result<PathBuf, String> {
         let prj = self.project()?;
         let path = path.map(PathBuf::from).or_else(|| self.path.clone()).ok_or_else(|| tr("The project has no file yet: pass a path").to_string())?;
-        let json = serde_json::to_string_pretty(prj).unwrap_or_default();
-        std::fs::write(&path, json).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), e))?;
+        std::fs::write(&path, prj.to_json()).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), e))?;
         self.saved = Some(prj.clone());
         self.path = Some(path.clone());
         Ok(path)

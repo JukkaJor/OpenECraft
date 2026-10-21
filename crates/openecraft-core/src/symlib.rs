@@ -70,6 +70,19 @@ pub struct SymbolLibrary {
     pub symbols: Vec<UserSymbol>,
 }
 
+impl SymbolLibrary {
+    /// A symbol library file, or a file with a single symbol. (Every object would parse
+    /// as an empty library because of the defaults, so the key decides.)
+    pub fn from_json(text: &str) -> Result<SymbolLibrary, String> {
+        let value: serde_json::Value = serde_json::from_str(text).map_err(|e| e.to_string())?;
+        if value.get("symbols").is_some() {
+            serde_json::from_value(value).map_err(|e| e.to_string())
+        } else {
+            serde_json::from_value::<UserSymbol>(value).map(|u| SymbolLibrary { symbols: vec![u] }).map_err(|e| e.to_string())
+        }
+    }
+}
+
 /// Symbol definition of a user symbol. Its texts are leaked to get the `'static`
 /// lifetime of the built-in definitions, so it is only built when a symbol changed.
 fn to_def(u: &UserSymbol) -> SymbolDef {

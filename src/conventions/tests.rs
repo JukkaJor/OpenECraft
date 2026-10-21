@@ -1,4 +1,5 @@
-use std::path::{Path, PathBuf};
+use super::*;
+use std::path::Path;
 
 fn rust_files(dir: &Path) -> Vec<PathBuf> {
     let mut out = Vec::new();
@@ -11,25 +12,6 @@ fn rust_files(dir: &Path) -> Vec<PathBuf> {
         }
     }
     out
-}
-
-/// Workspace root (the application crate is the root package).
-fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-}
-
-/// `src` directories of all workspace members (from `[workspace] members` in Cargo.toml).
-fn source_dirs() -> Vec<PathBuf> {
-    let manifest = std::fs::read_to_string(root().join("Cargo.toml")).unwrap();
-    let members = manifest.split("members = [").nth(1).and_then(|r| r.split(']').next()).expect("workspace members");
-    let dirs: Vec<PathBuf> = members
-        .split(',')
-        .map(|m| m.trim().trim_matches('"'))
-        .filter(|m| !m.is_empty())
-        .map(|m| root().join(m).join("src"))
-        .collect();
-    assert!(dirs.len() >= 2, "workspace members not found");
-    dirs
 }
 
 fn all_rust_files() -> Vec<PathBuf> {

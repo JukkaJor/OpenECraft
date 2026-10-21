@@ -1,6 +1,6 @@
 //! Editing operations on a page: placement defaults, move, rotate, delete, copy/paste.
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P, R, GRID};
 use crate::model::*;
 use crate::symbols::{self, ContactKind, Func, SymbolDef};
@@ -477,6 +477,54 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
         }
     }
     crate::harness::rename_device(prj, old, new);
+}
+
+/// Deletes a page; released pages and the last page stay.
+pub fn delete_page(prj: &mut Project, page: usize) -> Result<Page, &'static str> {
+    if prj.pages[page].locked {
+        return Err(tr_const!("Released pages cannot be deleted"));
+    }
+    if prj.pages.len() == 1 {
+        return Err(tr_const!("The last page cannot be deleted"));
+    }
+    Ok(prj.pages.remove(page))
+}
+
+/// Adds a cable with the next free tag (`W`) in `structure`. Returns its tag.
+pub fn add_cable(prj: &mut Project, structure: &str) -> String {
+    let tag = prj.next_tag(structure, "W");
+    let id = prj.new_id();
+    prj.cables.push(Cable { id, tag: tag.clone(), cores: "BN BK GY GNYE".into(), cross_section: "1.5 mm²".into(), ..Default::default() });
+    tag
+}
+
+/// The wires of cable `old` move to `new` (after the cable was renamed).
+pub fn rename_cable(prj: &mut Project, old: &str, new: &str) {
+    for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == old) {
+        w.cable = new.to_string();
+    }
+}
+
+/// Deletes a cable; its wires lose cable and core.
+pub fn remove_cable(prj: &mut Project, index: usize) -> Cable {
+    let cable = prj.cables.remove(index);
+    for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == cable.tag) {
+        w.cable.clear();
+        w.core.clear();
+    }
+    cable
+}
+
+/// Takes part number, type, cores and cross section of a cable part.
+pub fn apply_cable_part(cable: &mut Cable, part: &Part) {
+    cable.part = part.number.clone();
+    cable.cable_type = part.type_number.clone();
+    if let Some(cores) = part.tech_value("Cores") {
+        cable.cores = cores.to_string();
+    }
+    if let Some(cs) = part.tech_value("Cross-section") {
+        cable.cross_section = cs.to_string();
+    }
 }
 
 /// Assigns wires of a page to the free cores of a cable in order (left to right,

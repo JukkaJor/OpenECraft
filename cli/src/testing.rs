@@ -2,6 +2,7 @@
 
 use crate::parts_server::{Server, Transport};
 use crate::session::Session;
+use openecraft_client::{ehttp, Endpoint};
 use openecraft_parts::api::{ApiError, ImportResult, PartQuery, ServerInfo, API_PREFIX};
 use openecraft_parts::{import, to_csv, Part};
 use std::cell::RefCell;
@@ -124,7 +125,7 @@ pub fn part(number: &str, group: &str) -> Part {
 
 /// Session connected to `server` (with the write token).
 pub fn session_with(server: &FakeServer) -> Session {
-    Session::new(Server { url: URL.into(), token: TOKEN.into(), transport: Box::new(server.clone()) })
+    Session::new(Server { endpoint: Endpoint { url: URL.into(), token: TOKEN.into() }, transport: Box::new(server.clone()) })
 }
 
 pub fn session() -> Session {
@@ -137,4 +138,16 @@ pub fn temp_dir(name: &str) -> PathBuf {
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     dir
+}
+
+/// Runs a tool with JSON arguments.
+pub fn run(s: &mut Session, tool: &str, args: serde_json::Value) -> Result<serde_json::Value, String> {
+    crate::tools::call(s, crate::tools::find(tool).unwrap(), args.as_object().unwrap())
+}
+
+/// Session with a new, empty project.
+pub fn new_session() -> Session {
+    let mut s = session();
+    run(&mut s, "new_project", serde_json::json!({ "name": "Test" })).unwrap();
+    s
 }
