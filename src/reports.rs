@@ -1,5 +1,6 @@
 //! Reports (device list, BOM, terminal diagram, ...) and the project check.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::index::Index;
 use crate::panel::{self, ItemKind, OpenWire, RoutedWire};
 use crate::model::*;
@@ -125,7 +126,7 @@ fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
 }
 
 fn toc(prj: &Project) -> Table {
-    let mut t = Table::new(&[("Page", 1.0), ("Description", 4.0), ("Type", 2.0), ("Devices", 1.0)]);
+    let mut t = Table::new(&[(tr("Page"), 1.0), (tr("Description"), 4.0), (tr("Type"), 2.0), (tr("Devices"), 1.0)]);
     for (i, pg) in prj.pages.iter().enumerate() {
         t.push(
             vec![pg.name.clone(), pg.description.clone(), pg.kind.label(), pg.symbols.len().to_string()],
@@ -137,13 +138,13 @@ fn toc(prj: &Project) -> Table {
 
 fn device_list(prj: &Project, idx: &Index) -> Table {
     let mut t = Table::new(&[
-        ("Device tag", 1.2),
-        ("Main function", 2.0),
-        ("Function text", 2.0),
-        ("Location", 1.0),
-        ("Aux. functions", 1.6),
-        ("Part number", 1.6),
-        ("Description", 3.0),
+        (tr("Device tag"), 1.2),
+        (tr("Main function"), 2.0),
+        (tr("Function text"), 2.0),
+        (tr("Location"), 1.0),
+        (tr("Aux. functions"), 1.6),
+        (tr("Part number"), 1.6),
+        (tr("Description"), 3.0),
     ]);
     for tag in idx.sorted_tags() {
         let dev = &idx.devices[tag];
@@ -151,7 +152,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
         let Some(loc) = first else { continue };
         let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
         let (name, ftext) = inst
-            .map(|s| (symbols::get(&s.sym).map(|d| d.name).unwrap_or("?").to_string(), s.function_text.clone()))
+            .map(|s| (symbols::get(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
             .unwrap_or_default();
         let name = if dev.mains.is_empty() && !dev.others.is_empty() {
             format!("{name} ×{}", dev.others.len())
@@ -194,16 +195,16 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
 
 fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
     let mut t = Table::new(&[
-        ("Pos", 0.5),
-        ("Qty", 0.6),
-        ("Unit", 0.5),
-        ("Part number", 1.8),
-        ("Type number", 1.4),
-        ("Manufacturer", 1.0),
-        ("Description", 3.2),
-        ("Devices", 2.0),
-        ("Unit price", 0.9),
-        ("Total", 0.9),
+        (tr("Pos"), 0.5),
+        (tr("Qty"), 0.6),
+        (tr("Unit"), 0.5),
+        (tr("Part number"), 1.8),
+        (tr("Type number"), 1.4),
+        (tr("Manufacturer"), 1.0),
+        (tr("Description"), 3.2),
+        (tr("Devices"), 2.0),
+        (tr("Unit price"), 0.9),
+        (tr("Total"), 0.9),
     ]);
     let mut groups: BTreeMap<String, (f32, Vec<String>)> = BTreeMap::new();
     for tag in idx.sorted_tags() {
@@ -289,7 +290,7 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
     }
     if !groups.is_empty() {
         let mut last = vec![String::new(); 10];
-        last[6] = "Sum".into();
+        last[6] = tr("Sum").into();
         last[9] = format!("{sum:.2}");
         t.push(last, None);
     }
@@ -298,15 +299,15 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
 
 fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Table {
     let mut t = Table::new(&[
-        ("Enclosure", 0.8),
-        ("Wire no.", 0.7),
-        ("From", 1.4),
-        ("To", 1.4),
-        ("Potential", 0.9),
-        ("Colour", 0.6),
+        (tr("Enclosure"), 0.8),
+        (tr("Wire no."), 0.7),
+        (tr("From"), 1.4),
+        (tr("To"), 1.4),
+        (tr("Potential"), 0.9),
+        (tr("Colour"), 0.6),
         ("Cross-section", 0.9),
-        ("Length (mm)", 0.9),
-        ("Routing", 1.2),
+        (tr("Length (mm)"), 0.9),
+        (tr("Routing"), 1.2),
     ]);
     let mut total = 0.0;
     for w in wiring {
@@ -328,7 +329,7 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
     }
     if !wiring.is_empty() {
         let mut last = vec![String::new(); 9];
-        last[6] = "Total".into();
+        last[6] = tr("Total").into();
         last[7] = format!("{total:.0}");
         t.push(last, None);
     }
@@ -349,26 +350,26 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
     }
     for d in panel::devices_to_place(prj) {
         let target = prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().find(|s| s.tag == d.tag).map(|s| (pi, s.id)));
-        v.push(Issue { severity: Severity::Info, message: format!("{}: not placed in the panel layout", d.tag), target });
+        v.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: not placed in the panel layout", d.tag), target });
     }
     for e in &prj.layout.enclosures {
         let name = |id: u64| {
             e.item(id).map(|i| if i.kind == ItemKind::Device { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default()
         };
         for (a, b) in panel::collisions(e, &prj.parts) {
-            v.push(Issue { severity: Severity::Warning, message: format!("{}: {} collides with {}", e.name, name(a), name(b)), target: None });
+            v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: {} collides with {}", e.name, name(a), name(b)), target: None });
         }
         for id in panel::outside(e) {
             v.push(Issue {
                 severity: Severity::Warning,
-                message: format!("{}: {} outside the mounting plate / enclosure", e.name, name(id)),
+                message: tr_fmt!("{}: {} outside the mounting plate / enclosure", e.name, name(id)),
                 target: None,
             });
         }
         for (a, b) in crate::production::clearance_violations(e, &prj.parts) {
             v.push(Issue {
                 severity: Severity::Warning,
-                message: format!("{}: {} is inside the required clearance of {}", e.name, name(b), name(a)),
+                message: tr_fmt!("{}: {} is inside the required clearance of {}", e.name, name(b), name(a)),
                 target: None,
             });
         }
@@ -378,14 +379,14 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
 
 fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     let mut t = Table::new(&[
-        ("Strip", 0.8),
-        ("Terminal", 0.7),
-        ("Jumper", 0.5),
-        ("External (top)", 3.0),
-        ("Internal (bottom)", 3.0),
-        ("Potential", 1.0),
-        ("Location", 0.8),
-        ("Function text", 1.6),
+        (tr("Strip"), 0.8),
+        (tr("Terminal"), 0.7),
+        (tr("Jumper"), 0.5),
+        (tr("External (top)"), 3.0),
+        (tr("Internal (bottom)"), 3.0),
+        (tr("Potential"), 1.0),
+        (tr("Location"), 0.8),
+        (tr("Function text"), 1.6),
     ]);
     for strip in crate::strips::strip_tags(prj) {
         for r in crate::strips::rows(prj, &strip, nl, open) {
@@ -398,15 +399,15 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
 }
 fn connection_list(prj: &Project, conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
-        ("Wire no.", 0.8),
-        ("Potential", 1.0),
-        ("From", 1.6),
-        ("To", 1.6),
-        ("Page", 0.8),
-        ("Colour", 0.8),
+        (tr("Wire no."), 0.8),
+        (tr("Potential"), 1.0),
+        (tr("From"), 1.6),
+        (tr("To"), 1.6),
+        (tr("Page"), 0.8),
+        (tr("Colour"), 0.8),
         ("Cross-section", 1.0),
-        ("Cable", 1.0),
-        ("Core", 0.6),
+        (tr("Cable"), 1.0),
+        (tr("Core"), 0.6),
     ]);
     for c in conns {
         let s = &prj.pages[c.a.page].symbols[c.a.sym];
@@ -456,15 +457,15 @@ fn sorted_cables(prj: &Project) -> Vec<&Cable> {
 
 fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
-        ("Cable", 1.0),
-        ("Type", 1.6),
-        ("Cores used", 0.8),
+        (tr("Cable"), 1.0),
+        (tr("Type"), 1.6),
+        (tr("Cores used"), 0.8),
         ("Cross-section", 0.9),
-        ("Length (m)", 0.8),
-        ("From", 1.6),
-        ("To", 1.6),
-        ("Part number", 1.4),
-        ("Description", 2.0),
+        (tr("Length (m)"), 0.8),
+        (tr("From"), 1.6),
+        (tr("To"), 1.6),
+        (tr("Part number"), 1.4),
+        (tr("Description"), 2.0),
     ]);
     for cable in sorted_cables(prj) {
         let used = cable_connections(prj, conns, &cable.tag);
@@ -496,12 +497,12 @@ fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
 
 fn cable_diagram(prj: &Project, conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
-        ("Cable", 1.0),
-        ("Core", 0.6),
-        ("From", 1.6),
-        ("To", 1.6),
-        ("Potential", 1.0),
-        ("Wire no.", 0.8),
+        (tr("Cable"), 1.0),
+        (tr("Core"), 0.6),
+        (tr("From"), 1.6),
+        (tr("To"), 1.6),
+        (tr("Potential"), 1.0),
+        (tr("Wire no."), 0.8),
         ("Cross-section", 0.9),
     ]);
     for cable in sorted_cables(prj) {
@@ -546,11 +547,11 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
     for c in &prj.cables {
         *tags.entry(c.tag.as_str()).or_default() += 1;
         if c.tag.trim().is_empty() {
-            issue(Severity::Error, "Cable without tag".into(), None);
+            issue(Severity::Error, tr("Cable without tag").into(), None);
         }
     }
     for (tag, n) in tags.iter().filter(|(t, n)| **n > 1 && !t.is_empty()) {
-        issue(Severity::Error, format!("Cable {tag} defined {n} times"), None);
+        issue(Severity::Error, tr_fmt!("Cable {} defined {} times", tag, n), None);
     }
     // Cable cores: known cable, listed core, one connection per core.
     let mut core_use: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
@@ -562,10 +563,10 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
             }
             let at = Some((*pi, w.id));
             match prj.cable(&w.cable) {
-                None => issue(Severity::Error, format!("Wire assigned to unknown cable {}", w.cable), at),
-                Some(_) if w.core.is_empty() => issue(Severity::Warning, format!("{}: wire without core designation", w.cable), at),
+                None => issue(Severity::Error, tr_fmt!("Wire assigned to unknown cable {}", w.cable), at),
+                Some(_) if w.core.is_empty() => issue(Severity::Warning, tr_fmt!("{}: wire without core designation", w.cable), at),
                 Some(c) if !c.core_list().contains(&w.core) => {
-                    issue(Severity::Warning, format!("{}: core {} is not a core of the cable ({})", w.cable, w.core, c.cores), at)
+                    issue(Severity::Warning, tr_fmt!("{}: core {} is not a core of the cable ({})", w.cable, w.core, c.cores), at)
                 }
                 Some(_) => {}
             }
@@ -578,7 +579,7 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
     for ((cable, core), nets) in &core_use {
         if nets.len() > 1 && !core.is_empty() {
             let at = open.nets[nets[1]].wires.first().copied();
-            issue(Severity::Error, format!("{cable}: core {core} used for {} connections", nets.len()), at);
+            issue(Severity::Error, tr_fmt!("{}: core {} used for {} connections", cable, core, nets.len()), at);
         }
     }
     // Wire numbers: one per connection, not shared by different potentials.
@@ -587,7 +588,7 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
         let numbers = crate::wirenum::numbers_of(prj, net);
         let at = net.wires.first().copied();
         if numbers.len() > 1 {
-            issue(Severity::Warning, format!("Different wire numbers in one connection: {}", numbers.join(", ")), at);
+            issue(Severity::Warning, tr_fmt!("Different wire numbers in one connection: {}", numbers.join(", ")), at);
         }
         let potential = net.pins.first().and_then(|p| nl.pin_net.get(&(prj.pages[p.page].symbols[p.sym].id, p.pin)).copied());
         if let (Some(n), Some(pot)) = (numbers.first(), potential) {
@@ -595,13 +596,13 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
         }
     }
     for (number, pots) in by_number.iter().filter(|(_, p)| p.len() > 1) {
-        issue(Severity::Warning, format!("Wire number {number} is used for {} different potentials", pots.len()), None);
+        issue(Severity::Warning, tr_fmt!("Wire number {} is used for {} different potentials", number, pots.len()), None);
     }
     // Device tags need a device name after the structure.
     for (pi, pg) in prj.pages.iter().enumerate() {
         for s in pg.symbols.iter().filter(|s| !s.tag.is_empty()) {
             if crate::structure::Dt::parse(&s.tag).name.is_empty() {
-                issue(Severity::Error, format!("{}: device tag without device name", s.tag), Some((pi, s.id)));
+                issue(Severity::Error, tr_fmt!("{}: device tag without device name", s.tag), Some((pi, s.id)));
             }
         }
     }
@@ -610,12 +611,12 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
 
 fn plc_list(prj: &Project, nl: &Netlist) -> Table {
     let mut t = Table::new(&[
-        ("PLC card", 1.0),
-        ("Address", 1.0),
-        ("Type", 0.8),
-        ("Function text", 2.5),
-        ("Connected to", 3.0),
-        ("Location", 0.8),
+        (tr("PLC card"), 1.0),
+        (tr("Address"), 1.0),
+        (tr("Type"), 0.8),
+        (tr("Function text"), 2.5),
+        (tr("Connected to"), 3.0),
+        (tr("Location"), 0.8),
     ]);
     for p in crate::plc::points(prj, nl) {
         let kind = if p.input { "DI" } else { "DO" };
@@ -626,7 +627,7 @@ fn plc_list(prj: &Project, nl: &Netlist) -> Table {
 
 fn revision_overview(prj: &Project) -> Table {
     let since = prj.revisions.last().map(|r| r.name.as_str()).unwrap_or("-");
-    let mut t = Table::new(&[("Page", 0.8), ("Change", 0.8), ("Item", 0.8), (if since.is_empty() { "Description" } else { "Description (since last revision)" }, 3.0)]);
+    let mut t = Table::new(&[(tr("Page"), 0.8), (tr("Change"), 0.8), (tr("Item"), 0.8), (if since.is_empty() { tr("Description") } else { tr("Description (since last revision)") }, 3.0)]);
     for (page, kind, what, label, target) in crate::revision::overview(prj) {
         t.push(vec![page, kind, what, label], target);
     }
@@ -640,18 +641,18 @@ fn revision_overview(prj: &Project) -> Table {
 /// (machine batches).
 pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
     let mut t = Table::new(&[
-        ("Wire no.", 0.8),
-        ("From", 1.6),
-        ("To", 1.6),
-        ("Colour", 0.7),
+        (tr("Wire no."), 0.8),
+        (tr("From"), 1.6),
+        (tr("To"), 1.6),
+        (tr("Colour"), 0.7),
         ("Cross-section", 0.9),
-        ("Length (mm)", 0.9),
-        ("Strip (mm)", 0.7),
-        ("Ferrule", 1.6),
-        ("Ferrule part", 1.0),
-        ("Cable", 0.8),
-        ("Core", 0.6),
-        ("Potential", 1.0),
+        (tr("Length (mm)"), 0.9),
+        (tr("Strip (mm)"), 0.7),
+        (tr("Ferrule"), 1.6),
+        (tr("Ferrule part"), 1.0),
+        (tr("Cable"), 0.8),
+        (tr("Core"), 0.6),
+        (tr("Potential"), 1.0),
     ]);
     // (routed length, cells, jump target)
     type Row = (Option<f32>, Vec<String>, Option<(usize, u64)>);
@@ -701,22 +702,22 @@ pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
 /// summary row (wires, connectors, total length, bundle diameter).
 fn harness_data(prj: &Project, an: &Analysis) -> Table {
     let mut t = Table::new(&[
-        ("Harness", 0.9),
-        ("Wire no.", 0.7),
-        ("From", 1.4),
-        ("To", 1.4),
-        ("Colour", 0.6),
+        (tr("Harness"), 0.9),
+        (tr("Wire no."), 0.7),
+        (tr("From"), 1.4),
+        (tr("To"), 1.4),
+        (tr("Colour"), 0.6),
         ("Cross-section", 0.9),
-        ("Length (mm)", 0.8),
-        ("End treatment", 1.6),
+        (tr("Length (mm)"), 0.8),
+        (tr("End treatment"), 1.6),
     ]);
     for h in &prj.harnesses {
         let ws = crate::harness::wires(prj, an, &h.tag);
         for w in &ws {
             let end = crate::production::end_treatment(&w.cross_section, prj.layout.ferrules)
                 .map(|e| match e.ferrule {
-                    Some(f) => format!("strip {:.0} mm, ferrule {} mm² {}", e.strip, f.cross_section, f.color),
-                    None => format!("strip {:.0} mm", e.strip),
+                    Some(f) => tr_fmt!("strip {} mm, ferrule {} mm² {}", format!("{:.0}", e.strip), f.cross_section, f.color),
+                    None => tr_fmt!("strip {} mm", format!("{:.0}", e.strip)),
                 })
                 .unwrap_or_default();
             let length = if w.length > 0.0 { format!("{:.0}{}", w.length, if w.routed { "" } else { " *" }) } else { "?".into() };
@@ -730,7 +731,7 @@ fn harness_data(prj: &Project, an: &Analysis) -> Table {
             crate::harness::connectors(&ws).len(),
             crate::harness::bundle_diameter(&ws)
         );
-        t.push(vec![h.tag.clone(), String::new(), summary, String::new(), String::new(), "Total".into(), format!("{total:.0}"), h.description.clone()], None);
+        t.push(vec![h.tag.clone(), String::new(), summary, String::new(), String::new(), tr("Total").into(), format!("{total:.0}"), h.description.clone()], None);
     }
     t
 }
@@ -739,11 +740,11 @@ fn harness_data(prj: &Project, an: &Analysis) -> Table {
 fn check_harnesses(prj: &Project, an: &Analysis) -> Vec<Issue> {
     let mut v = Vec::new();
     for (tag, [a, b]) in crate::harness::stale(prj, an) {
-        v.push(Issue { severity: Severity::Warning, message: format!("Harness {tag}: connection {a} – {b} does not exist in the schematic"), target: None });
+        v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Harness {}: connection {} – {} does not exist in the schematic", tag, a, b), target: None });
     }
     for h in &prj.harnesses {
         if !an.connections.iter().any(|c| c.harness == h.tag) {
-            v.push(Issue { severity: Severity::Info, message: format!("Harness {} has no wires", h.tag), target: None });
+            v.push(Issue { severity: Severity::Info, message: tr_fmt!("Harness {} has no wires", h.tag), target: None });
         }
     }
     v
@@ -756,7 +757,7 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
         let labels: Vec<String> = crate::strips::terminals(prj, strip).into_iter().map(|t| t.label).collect();
         for (label, j) in data.jumpers.iter().filter(|(_, j)| **j > 0) {
             if !labels.contains(label) {
-                v.push(Issue { severity: Severity::Warning, message: format!("{strip}: jumper {j} on terminal {label}, which is not placed"), target: None });
+                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: jumper {} on terminal {}, which is not placed", strip, j, label), target: None });
             }
         }
     }
@@ -766,7 +767,7 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
         if cards.len() > 1 {
             v.push(Issue {
                 severity: Severity::Error,
-                message: format!("PLC address {addr} used on several cards: {}", cards.join(", ")),
+                message: tr_fmt!("PLC address {} used on several cards: {}", addr, cards.join(", ")),
                 target: Some((points[1].page, points[1].id)),
             });
         }
@@ -774,7 +775,7 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     v
 }
 fn potential_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[("Potential", 1.0), ("Connection points", 4.0), ("Pages", 1.5)]);
+    let mut t = Table::new(&[(tr("Potential"), 1.0), (tr("Connection points"), 4.0), (tr("Pages"), 1.5)]);
     let mut nets: Vec<_> = nl.nets.iter().filter(|n| n.named).collect();
     nets.sort_by(|a, b| natural_cmp(&a.name, &b.name));
     for net in nets {
@@ -804,10 +805,10 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         let dev = &idx.devices[tag];
         let t = |l: &crate::index::Loc| Some((l.page, l.sym_id));
         if dev.mains.is_empty() && !dev.auxs.is_empty() {
-            issue(Severity::Error, format!("{tag}: auxiliary function(s) without main function"), t(&dev.auxs[0]));
+            issue(Severity::Error, tr_fmt!("{}: auxiliary function(s) without main function", tag), t(&dev.auxs[0]));
         }
         if dev.mains.len() > 1 {
-            issue(Severity::Error, format!("{tag}: main function placed {} times", dev.mains.len()), t(&dev.mains[1]));
+            issue(Severity::Error, tr_fmt!("{}: main function placed {} times", tag, dev.mains.len()), t(&dev.mains[1]));
         }
         if !dev.others.is_empty() {
             // Duplicate terminal numbers / PLC addresses
@@ -817,7 +818,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                     let c = seen.entry(s.label.clone()).or_default();
                     *c += 1;
                     if *c == 2 {
-                        issue(Severity::Warning, format!("{tag}: designation '{}' used more than once", s.label), t(l));
+                        issue(Severity::Warning, tr_fmt!("{}: designation '{}' used more than once", tag, s.label), t(l));
                     }
                 }
             }
@@ -828,7 +829,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                 let l = dev.mains.first().or(dev.others.first()).or(dev.auxs.first());
                 issue(
                     Severity::Error,
-                    format!("{tag}: part {} is not in the project parts (Parts management › synchronize)", r.number),
+                    tr_fmt!("{}: part {} is not in the project parts (Parts management › synchronize)", tag, r.number),
                     l.and_then(t),
                 );
             }
@@ -842,7 +843,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                     let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
                     issue(
                         Severity::Warning,
-                        format!("{tag}: {placed}× {} placed, assigned parts provide {avail}", kind.title()),
+                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, kind.title(), avail),
                         l.and_then(t),
                     );
                 }
@@ -851,14 +852,14 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         let has_part = data.map(|d| !d.parts.is_empty()).unwrap_or(false);
         if !has_part && (!dev.mains.is_empty() || !dev.others.is_empty()) {
             let l = dev.mains.first().or(dev.others.first()).unwrap();
-            issue(Severity::Info, format!("{tag}: no part assigned"), t(l));
+            issue(Severity::Info, tr_fmt!("{}: no part assigned", tag), t(l));
         }
     }
     for (name, locs) in &idx.interruptions {
         if locs.len() == 1 {
             issue(
                 Severity::Warning,
-                format!("Interruption point '{name}' has no counterpart"),
+                tr_fmt!("Interruption point '{}' has no counterpart", name),
                 Some((locs[0].page, locs[0].sym_id)),
             );
         }
@@ -866,11 +867,11 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     for (pi, pg) in prj.pages.iter().enumerate() {
         for s in &pg.symbols {
             let Some(def) = symbols::get(&s.sym) else {
-                issue(Severity::Error, format!("Unknown symbol '{}'", s.sym), Some((pi, s.id)));
+                issue(Severity::Error, tr_fmt!("Unknown symbol '{}'", s.sym), Some((pi, s.id)));
                 continue;
             };
             if def.func.has_tag() && s.tag.trim().is_empty() {
-                issue(Severity::Error, format!("{} without device tag on page {}", def.name, pg.name), Some((pi, s.id)));
+                issue(Severity::Error, tr_fmt!("{} without device tag on page {}", def.name, pg.name), Some((pi, s.id)));
             }
         }
     }
@@ -881,7 +882,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             let d = pin_designation(prj, PinRef { page: pi, sym: si, pin });
             issue(
                 Severity::Warning,
-                format!("Open connection point {d} ({})", loc_str(prj, pi, s.pos)),
+                tr_fmt!("Open connection point {} ({})", d, loc_str(prj, pi, s.pos)),
                 Some((pi, sid)),
             );
         }
@@ -889,7 +890,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     for net in &nl.nets {
         if net.name.contains(" / ") {
             let target = net.pins.first().map(|p| (p.page, prj.pages[p.page].symbols[p.sym].id));
-            issue(Severity::Error, format!("Short circuit between potentials {}", net.name), target);
+            issue(Severity::Error, tr_fmt!("Short circuit between potentials {}", net.name), target);
         }
     }
     v.sort_by_key(|i| i.severity);

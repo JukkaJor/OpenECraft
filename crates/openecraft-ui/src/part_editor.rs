@@ -1,6 +1,7 @@
 //! Part widgets: product group tree, tabbed part editor, read only summary and
 //! previews of the 2D front view and the 3D model.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::io::{short_name, FileKind};
 use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
@@ -94,7 +95,7 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &str, sel
             });
     }
     if tree.is_empty() {
-        ui.weak("No parts found.");
+        ui.weak(tr("No parts found."));
     }
     activated
 }
@@ -117,13 +118,13 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
     let mut request = None;
     ui.horizontal_wrapped(|ui| {
         for (t, name) in [
-            (PartTab::General, "General"),
-            (PartTab::Commercial, "Prices / other"),
-            (PartTab::Technical, "Technical data"),
-            (PartTab::Mounting, "Mounting data"),
-            (PartTab::Functions, "Function template"),
-            (PartTab::Accessories, "Accessories"),
-            (PartTab::Graphics, "Graphics"),
+            (PartTab::General, tr("General")),
+            (PartTab::Commercial, tr("Prices / other")),
+            (PartTab::Technical, tr("Technical data")),
+            (PartTab::Mounting, tr("Mounting data")),
+            (PartTab::Functions, tr("Function template")),
+            (PartTab::Accessories, tr("Accessories")),
+            (PartTab::Graphics, tr("Graphics")),
         ] {
             ui.selectable_value(&mut state.tab, t, name);
         }
@@ -132,29 +133,29 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
     egui::ScrollArea::vertical().id_salt("part_editor").auto_shrink([false, false]).show(ui, |ui| match state.tab {
         PartTab::General => {
             egui::Grid::new("pg").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                ui.label("Part number");
+                ui.label(tr("Part number"));
                 ui.vertical(|ui| {
                     ui.add(egui::TextEdit::singleline(&mut part.number).desired_width(f32::INFINITY).font(egui::TextStyle::Monospace));
                     if duplicate {
-                        ui.colored_label(Color32::from_rgb(220, 60, 60), "Part number already exists");
+                        ui.colored_label(Color32::from_rgb(220, 60, 60), tr("Part number already exists"));
                     }
                 });
                 ui.end_row();
-                text_row(ui, "Type number", &mut part.type_number);
-                text_row(ui, "Order number", &mut part.order_number);
-                text_row(ui, "Manufacturer", &mut part.manufacturer);
-                text_row(ui, "Supplier", &mut part.supplier);
-                ui.label("Description");
+                text_row(ui, tr("Type number"), &mut part.type_number);
+                text_row(ui, tr("Order number"), &mut part.order_number);
+                text_row(ui, tr("Manufacturer"), &mut part.manufacturer);
+                text_row(ui, tr("Supplier"), &mut part.supplier);
+                ui.label(tr("Description"));
                 ui.add(egui::TextEdit::multiline(&mut part.description).desired_rows(2).desired_width(f32::INFINITY));
                 ui.end_row();
-                ui.label("Product top group");
+                ui.label(tr("Product top group"));
                 egui::ComboBox::from_id_salt("top").selected_text(part.top_group.title()).show_ui(ui, |ui| {
                     for t in TopGroup::ALL {
                         ui.selectable_value(&mut part.top_group, t, t.title());
                     }
                 });
                 ui.end_row();
-                ui.label("Product group");
+                ui.label(tr("Product group"));
                 ui.horizontal(|ui| {
                     ui.add(egui::TextEdit::singleline(&mut part.group).desired_width(200.0));
                     egui::ComboBox::from_id_salt("grp").selected_text("…").width(24.0).show_ui(ui, |ui| {
@@ -166,7 +167,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                     });
                 });
                 ui.end_row();
-                ui.label("Product subgroup");
+                ui.label(tr("Product subgroup"));
                 ui.horizontal(|ui| {
                     ui.add(egui::TextEdit::singleline(&mut part.subgroup).desired_width(200.0));
                     let subs = PRODUCT_GROUPS.iter().find(|(g, _)| *g == part.group).map(|(_, s)| *s).unwrap_or(&[]);
@@ -181,66 +182,66 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                     }
                 });
                 ui.end_row();
-                ui.label("Identifier");
+                ui.label(tr("Identifier"));
                 ui.add(egui::TextEdit::singleline(&mut part.identifier).desired_width(50.0))
-                    .on_hover_text("Identifying letter of devices using this part (K, Q, S …)");
+                    .on_hover_text(tr("Identifying letter of devices using this part (K, Q, S …)"));
                 ui.end_row();
-                ui.label("Note");
+                ui.label(tr("Note"));
                 ui.add(egui::TextEdit::multiline(&mut part.note).desired_rows(2).desired_width(f32::INFINITY));
                 ui.end_row();
             });
         }
         PartTab::Commercial => {
             egui::Grid::new("pc").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                ui.label("Price");
+                ui.label(tr("Price"));
                 ui.horizontal(|ui| {
                     ui.add(egui::DragValue::new(&mut part.price).speed(0.1).range(0.0..=1.0e7).fixed_decimals(2));
                     ui.add(egui::TextEdit::singleline(&mut part.currency).desired_width(40.0));
                 });
                 ui.end_row();
-                ui.label("Price unit");
-                ui.add(egui::DragValue::new(&mut part.price_unit).range(1..=100000)).on_hover_text("The price refers to this many units");
+                ui.label(tr("Price unit"));
+                ui.add(egui::DragValue::new(&mut part.price_unit).range(1..=100000)).on_hover_text(tr("The price refers to this many units"));
                 ui.end_row();
-                ui.label("Packaging quantity");
+                ui.label(tr("Packaging quantity"));
                 ui.add(egui::DragValue::new(&mut part.pack_quantity).range(1..=100000));
                 ui.end_row();
-                ui.label("Quantity unit");
+                ui.label(tr("Quantity unit"));
                 ui.add(egui::TextEdit::singleline(&mut part.quantity_unit).desired_width(60.0));
                 ui.end_row();
-                text_row(ui, "Certificates", &mut part.certificates);
-                text_row(ui, "Datasheet (URL)", &mut part.datasheet);
+                text_row(ui, tr("Certificates"), &mut part.certificates);
+                text_row(ui, tr("Datasheet (URL)"), &mut part.datasheet);
             });
             if part.datasheet.starts_with("http") {
-                ui.hyperlink_to("Open datasheet", &part.datasheet);
+                ui.hyperlink_to(tr("Open datasheet"), &part.datasheet);
             }
         }
         PartTab::Technical => {
             egui::Grid::new("pt").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                text_row(ui, "Voltage", &mut part.voltage);
-                text_row(ui, "Current", &mut part.current);
-                text_row(ui, "Power", &mut part.power);
-                ui.label("Technical data");
+                text_row(ui, tr("Voltage"), &mut part.voltage);
+                text_row(ui, tr("Current"), &mut part.current);
+                text_row(ui, tr("Power"), &mut part.power);
+                ui.label(tr("Technical data"));
                 ui.add(egui::TextEdit::multiline(&mut part.tech_data).desired_rows(5).desired_width(f32::INFINITY));
                 ui.end_row();
             });
         }
         PartTab::Mounting => {
             egui::Grid::new("pm").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                num_row(ui, "Width", &mut part.width, " mm");
-                num_row(ui, "Height", &mut part.height, " mm");
-                num_row(ui, "Depth", &mut part.depth, " mm");
-                num_row(ui, "Weight", &mut part.weight, " kg");
-                text_row(ui, "Mounting", &mut part.mounting);
+                num_row(ui, tr("Width"), &mut part.width, " mm");
+                num_row(ui, tr("Height"), &mut part.height, " mm");
+                num_row(ui, tr("Depth"), &mut part.depth, " mm");
+                num_row(ui, tr("Weight"), &mut part.weight, " kg");
+                text_row(ui, tr("Mounting"), &mut part.mounting);
             });
         }
         PartTab::Functions => {
-            ui.weak("Functions the part provides. Used for device selection, the contact image (reserve contacts), the project check and to assign connection designations. Designations are listed in symbol connection order, separated by blanks.");
+            ui.weak(tr("Functions the part provides. Used for device selection, the contact image (reserve contacts), the project check and to assign connection designations. Designations are listed in symbol connection order, separated by blanks."));
             ui.add_space(4.0);
             let mut remove = None;
             egui::Grid::new("pf").num_columns(4).striped(true).spacing([8.0, 4.0]).show(ui, |ui| {
-                ui.label(RichText::new("Function").strong());
-                ui.label(RichText::new("Connection designations").strong());
-                ui.label(RichText::new("Description").strong());
+                ui.label(RichText::new(tr("Function")).strong());
+                ui.label(RichText::new(tr("Connection designations")).strong());
+                ui.label(RichText::new(tr("Description")).strong());
                 ui.label("");
                 ui.end_row();
                 for (i, f) in part.functions.iter_mut().enumerate() {
@@ -260,7 +261,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             if let Some(i) = remove {
                 part.functions.remove(i);
             }
-            if ui.button("➕ Add function").clicked() {
+            if ui.button(tr("➕ Add function")).clicked() {
                 part.functions.push(FunctionTemplate::new(FnKind::No, ""));
             }
         }
@@ -279,7 +280,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 part.accessories.remove(i);
             }
             let mut add = None;
-            egui::ComboBox::from_id_salt("acc").selected_text("➕ Add accessory").width(240.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("acc").selected_text(tr("➕ Add accessory")).width(240.0).show_ui(ui, |ui| {
                 for n in all_numbers {
                     if *n != part.number && !part.accessories.contains(n) && ui.selectable_label(false, n).clicked() {
                         add = Some(n.clone());
@@ -298,26 +299,26 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
 /// 2D front view and 3D model of a part.
 fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Option<ModelKind> {
     let mut request = None;
-    ui.weak("The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).");
+    ui.weak(tr("The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth)."));
     ui.add_space(4.0);
-    ui.label(RichText::new("2D front view").strong());
+    ui.label(RichText::new(tr("2D front view")).strong());
     ui.horizontal(|ui| {
         model_2d_preview(ui, part.model_2d.as_ref(), vec2(180.0, 140.0));
         ui.vertical(|ui| {
             match &part.model_2d {
-                Some(m) => ui.label(format!("{:.1} × {:.1} mm, {} elements", m.width, m.height, m.prims.len())),
-                None => ui.weak("none – a plain rectangle is drawn"),
+                Some(m) => ui.label(tr_fmt!("{} × {} mm, {} elements", format!("{:.1}", m.width), format!("{:.1}", m.height), m.prims.len())),
+                None => ui.weak(tr("none – a plain rectangle is drawn")),
             };
-            if ui.button("Import SVG…").clicked() {
+            if ui.button(tr("Import SVG…")).clicked() {
                 request = Some(ModelKind::Front2d);
             }
-            if part.model_2d.is_some() && ui.button("🗑 Remove").clicked() {
+            if part.model_2d.is_some() && ui.button(tr("🗑 Remove")).clicked() {
                 part.model_2d = None;
             }
         });
     });
     ui.separator();
-    ui.label(RichText::new("3D model").strong());
+    ui.label(RichText::new(tr("3D model")).strong());
     ui.horizontal(|ui| {
         match &part.model_3d {
             Some(m) => mesh_preview(ui, m, vec2(180.0, 160.0)),
@@ -329,32 +330,32 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
             match &part.model_3d {
                 Some(m) => {
                     let s = m.size();
-                    ui.label(format!("{:.1} × {:.1} × {:.1} mm, {} triangles", s[0], s[1], s[2], m.triangles.len()));
+                    ui.label(tr_fmt!("{} × {} × {} mm, {} triangles", format!("{:.1}", s[0]), format!("{:.1}", s[1]), format!("{:.1}", s[2]), m.triangles.len()));
                 }
                 None => {
-                    ui.weak("none – a box of the mounting dimensions is drawn");
+                    ui.weak(tr("none – a box of the mounting dimensions is drawn"));
                 }
             }
-            if ui.button("Import STL / OBJ…").clicked() {
+            if ui.button(tr("Import STL / OBJ…")).clicked() {
                 request = Some(ModelKind::Mesh3d);
             }
-            if part.model_3d.is_some() && ui.button("🗑 Remove").clicked() {
+            if part.model_3d.is_some() && ui.button(tr("🗑 Remove")).clicked() {
                 part.model_3d = None;
             }
         });
     });
     if let Some(m) = &mut part.model_3d {
         ui.horizontal_wrapped(|ui| {
-            ui.label("Rotate 90°:");
+            ui.label(tr("Rotate 90°:"));
             for (axis, label) in [(0, "X"), (1, "Y"), (2, "Z")] {
-                if ui.button(label).on_hover_text("Turn the model so that its front faces the viewer (+Z) and its top is +Y").clicked() {
+                if ui.button(label).on_hover_text(tr("Turn the model so that its front faces the viewer (+Z) and its top is +Y")).clicked() {
                     m.rotate90(axis);
                 }
             }
             ui.separator();
-            ui.label("Scale ×");
+            ui.label(tr("Scale ×"));
             ui.add(egui::DragValue::new(model_scale).speed(0.01).range(0.001..=10000.0));
-            if ui.button("Apply").on_hover_text("e.g. 25.4 for models in inch, 1000 for models in metres").clicked() {
+            if ui.button(tr("Apply")).on_hover_text(tr("e.g. 25.4 for models in inch, 1000 for models in metres")).clicked() {
                 m.scale(*model_scale);
             }
         });
@@ -363,12 +364,17 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
         if differs {
             ui.colored_label(
                 Color32::from_rgb(220, 140, 0),
-                format!(
-                    "The model ({:.1} × {:.1} × {:.1}) differs from the mounting data ({:.1} × {:.1} × {:.1}); it is stretched to the mounting data.",
-                    s[0], s[1], s[2], part.width, part.height, part.depth
+                tr_fmt!(
+                    "The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.",
+                    format!("{:.1}", s[0]),
+                    format!("{:.1}", s[1]),
+                    format!("{:.1}", s[2]),
+                    format!("{:.1}", part.width),
+                    format!("{:.1}", part.height),
+                    format!("{:.1}", part.depth)
                 ),
             );
-            if ui.button("Use model size as mounting data").clicked() {
+            if ui.button(tr("Use model size as mounting data")).clicked() {
                 part.width = (s[0] * 10.0).round() / 10.0;
                 part.height = (s[1] * 10.0).round() / 10.0;
                 part.depth = (s[2] * 10.0).round() / 10.0;
@@ -385,14 +391,14 @@ pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -
     match kind {
         ModelKind::Front2d => {
             let m = parse_svg(&String::from_utf8_lossy(bytes))?;
-            let msg = format!("{file}: 2D front view with {} elements assigned to {number}", m.prims.len());
+            let msg = tr_fmt!("{}: 2D front view with {} elements assigned to {}", file, m.prims.len(), number);
             part.model_2d = Some(m);
             Ok(msg)
         }
         ModelKind::Mesh3d => {
             let m = parse_mesh(file, bytes)?;
             let s = m.size();
-            let msg = format!("{file}: 3D model with {} triangles ({:.1} × {:.1} × {:.1} mm) assigned to {number}", m.triangles.len(), s[0], s[1], s[2]);
+            let msg = tr_fmt!("{}: 3D model with {} triangles ({} × {} × {} mm) assigned to {}", file, m.triangles.len(), format!("{:.1}", s[0]), format!("{:.1}", s[1]), format!("{:.1}", s[2]), number);
             // Parts without mounting data take the model size.
             if part.width <= 0.0 || part.height <= 0.0 {
                 part.width = s[0];
@@ -511,15 +517,15 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
     ui.label(&p.description);
     egui::Grid::new("sum").num_columns(2).show(ui, |ui| {
         for (k, v) in [
-            ("Manufacturer", p.manufacturer.clone()),
-            ("Type number", p.type_number.clone()),
-            ("Order number", p.order_number.clone()),
-            ("Product group", format!("{} / {}", p.group, p.subgroup)),
-            ("Voltage / current", format!("{} {}", p.voltage, p.current)),
-            ("Price", format!("{:.2} {} / {} {}", p.price, p.currency, p.price_unit, p.quantity_unit)),
-            ("Dimensions", format!("{} × {} × {} mm", p.width, p.height, p.depth)),
-            ("Functions", p.template_summary()),
-            ("Accessories", p.accessories.join(", ")),
+            (tr("Manufacturer"), p.manufacturer.clone()),
+            (tr("Type number"), p.type_number.clone()),
+            (tr("Order number"), p.order_number.clone()),
+            (tr("Product group"), format!("{} / {}", p.group, p.subgroup)),
+            (tr("Voltage / current"), format!("{} {}", p.voltage, p.current)),
+            (tr("Price"), format!("{:.2} {} / {} {}", p.price, p.currency, p.price_unit, p.quantity_unit)),
+            (tr("Dimensions"), tr_fmt!("{} × {} × {} mm", p.width, p.height, p.depth)),
+            (tr("Functions"), p.template_summary()),
+            (tr("Accessories"), p.accessories.join(", ")),
         ] {
             if !v.trim().is_empty() && v.trim() != "/" {
                 ui.label(RichText::new(k).weak());

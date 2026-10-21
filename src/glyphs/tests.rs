@@ -61,3 +61,26 @@ fn scanner_finds_literals_and_skips_comments() {
     let found: String = literal_chars(src).into_iter().map(|(_, c)| c).collect();
     assert_eq!(found, "x→y✔ϑ");
 }
+
+#[test]
+fn translations_only_use_characters_of_the_bundled_fonts() {
+    let mut fonts = Fonts::new(TextOptions::default(), FontDefinitions::default());
+    let font = FontId::new(14.0, FontFamily::Proportional);
+    let mut missing: BTreeMap<char, String> = BTreeMap::new();
+    let mut checked = 0;
+    for entry in openecraft_i18n::catalog_entries() {
+        for text in entry {
+            for c in text.chars().filter(|c| !c.is_ascii() && !c.is_whitespace()) {
+                checked += 1;
+                if !fonts.has_glyph(&font, c) {
+                    missing.entry(c).or_insert_with(|| entry[0].to_string());
+                }
+            }
+        }
+    }
+    assert!(checked > 100, "no non-ASCII characters in the catalog – check broken?");
+    let report: Vec<String> = missing.iter().map(|(c, text)| format!("'{c}' (U+{:04X}) in the translation of {text:?}", *c as u32)).collect();
+    assert!(missing.is_empty(), "translation characters without glyph in the bundled fonts:
+{}", report.join("
+"));
+}

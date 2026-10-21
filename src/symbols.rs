@@ -5,6 +5,7 @@
 //! (current flows top → bottom). Connection points lie on the 4 mm grid relative to
 //! the symbol origin so that placed symbols connect cleanly to wires.
 
+use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
@@ -59,17 +60,17 @@ impl Func {
 
     pub fn title(self) -> &'static str {
         match self {
-            Func::Main { mirror: false } => "Main function",
-            Func::Main { mirror: true } => "Main function with contact image",
-            Func::Aux(ContactKind::No) => "Auxiliary function: NO contact",
-            Func::Aux(ContactKind::Nc) => "Auxiliary function: NC contact",
-            Func::Aux(ContactKind::Changeover) => "Auxiliary function: changeover",
-            Func::Aux(ContactKind::MainNo) => "Auxiliary function: main contact",
-            Func::Terminal => "Terminal",
-            Func::Plc => "PLC connection point",
-            Func::Potential => "Potential",
-            Func::Interruption => "Interruption point",
-            Func::Overview => "Overview / single-line",
+            Func::Main { mirror: false } => tr("Main function"),
+            Func::Main { mirror: true } => tr("Main function with contact image"),
+            Func::Aux(ContactKind::No) => tr("Auxiliary function: NO contact"),
+            Func::Aux(ContactKind::Nc) => tr("Auxiliary function: NC contact"),
+            Func::Aux(ContactKind::Changeover) => tr("Auxiliary function: changeover"),
+            Func::Aux(ContactKind::MainNo) => tr("Auxiliary function: main contact"),
+            Func::Terminal => tr("Terminal"),
+            Func::Plc => tr("PLC connection point"),
+            Func::Potential => tr("Potential"),
+            Func::Interruption => tr("Interruption point"),
+            Func::Overview => tr("Overview / single-line"),
         }
     }
 }
@@ -113,20 +114,20 @@ impl Category {
 
     pub fn title(self) -> &'static str {
         match self {
-            Category::Coils => "Coils / Relays",
-            Category::Contacts => "Contacts",
-            Category::Switches => "Switches / Sensors",
-            Category::Protection => "Protective devices",
-            Category::Loads => "Motors / Loads",
-            Category::Terminals => "Terminals",
-            Category::Plc => "PLC",
-            Category::Potentials => "Potentials / Connectors",
-            Category::Passive => "Passive components",
-            Category::BlackBox => "Black boxes / PLC boxes",
-            Category::SingleLine => "Single-line / overview",
-            Category::Nfpa => "NFPA / JIC",
-            Category::Fluid => "Fluid power (ISO 1219)",
-            Category::User => "User symbols",
+            Category::Coils => tr("Coils / Relays"),
+            Category::Contacts => tr("Contacts"),
+            Category::Switches => tr("Switches / Sensors"),
+            Category::Protection => tr("Protective devices"),
+            Category::Loads => tr("Motors / Loads"),
+            Category::Terminals => tr("Terminals"),
+            Category::Plc => tr("PLC"),
+            Category::Potentials => tr("Potentials / Connectors"),
+            Category::Passive => tr("Passive components"),
+            Category::BlackBox => tr("Black boxes / PLC boxes"),
+            Category::SingleLine => tr("Single-line / overview"),
+            Category::Nfpa => tr("NFPA / JIC"),
+            Category::Fluid => tr("Fluid power (ISO 1219)"),
+            Category::User => tr("User symbols"),
         }
     }
 }
@@ -579,7 +580,7 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(-1.6, -1.6, -0.7, -0.7).l(-1.6, 1.6, -0.7, 0.7);
     b.field(FieldKind::Tag, -2.2, 0.0, 2.0, Right).field(FieldKind::Label, 1.6, 0.0, 2.2, Left);
     b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
-    let mut t = def("term_pe", "PE terminal", C::Terminals, "X", Func::Terminal).label("PE");
+    let mut t = def("term_pe", "PE terminal", C::Terminals, "X", Func::Terminal).label(tr("PE"));
     t.show_tag = false;
     t.bridges = vec![(0, 1)];
     v.push(t.build(&mut b));
@@ -620,7 +621,7 @@ fn build_library() -> Vec<SymbolDef> {
 
     b.l(0.0, -4.0, 0.0, 0.0).l(-2.5, 0.0, 2.5, 0.0).l(-1.6, 1.0, 1.6, 1.0).l(-0.7, 2.0, 0.7, 2.0);
     b.pin(0.0, -4.0, "");
-    v.push(def("ground", "Protective earth", C::Potentials, "", Func::Potential).label("PE").build(&mut b));
+    v.push(def("ground", "Protective earth", C::Potentials, "", Func::Potential).label(tr("PE")).build(&mut b));
 
     b.l(0.0, 0.0, 0.0, 2.6).poly(&[(-1.5, 1.2), (0.0, 2.7), (1.5, 1.2)], false, false);
     b.field(FieldKind::Label, 2.2, 1.6, 2.5, Left);

@@ -2541,6 +2541,7 @@ dependencies = [
  "egui",
  "env_logger",
  "log",
+ "openecraft-i18n",
  "openecraft-parts",
  "openecraft-ui",
  "serde",
@@ -2549,6 +2550,10 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
 ]
+
+[[package]]
+name = "openecraft-i18n"
+version = "0.1.0"
 
 [[package]]
 name = "openecraft-parts"
@@ -2566,6 +2571,7 @@ dependencies = [
  "egui",
  "env_logger",
  "log",
+ "openecraft-i18n",
  "openecraft-parts",
  "openecraft-ui",
  "serde_json",
@@ -2599,6 +2605,7 @@ dependencies = [
  "ehttp",
  "js-sys",
  "log",
+ "openecraft-i18n",
  "openecraft-parts",
  "rfd",
  "serde",

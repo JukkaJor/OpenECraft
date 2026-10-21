@@ -1,6 +1,7 @@
 //! Interactive schematic canvas: pan/zoom, selection, moving, placing symbols,
 //! drawing wires, texts and graphics.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{dist_to_segment, p, P, R, GRID};
 use crate::index::Index;
 use crate::model::*;
@@ -26,12 +27,12 @@ pub enum Tool {
 impl Tool {
     pub fn hint(&self) -> &'static str {
         match self {
-            Tool::Select => "Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.",
-            Tool::Place(_) => "Click to place · R rotate · M mirror · Esc finish",
-            Tool::Wire => "Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish",
-            Tool::Text => "Click to place a text",
-            Tool::Line | Tool::Rect => "Click start point, click end point",
-            Tool::Insert => "Click to insert the macro · Esc cancel",
+            Tool::Select => tr("Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms."),
+            Tool::Place(_) => tr("Click to place · R rotate · M mirror · Esc finish"),
+            Tool::Wire => tr("Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish"),
+            Tool::Text => tr("Click to place a text"),
+            Tool::Line | Tool::Rect => tr("Click start point, click end point"),
+            Tool::Insert => tr("Click to insert the macro · Esc cancel"),
         }
     }
 }
@@ -517,21 +518,21 @@ impl Editor {
             }
         }
         if !editable {
-            let msg = if locked { "Released page – unlock it in Project › Revisions to change it" } else { "Generated page – edit via page properties" };
+            let msg = if locked { tr("Released page – unlock it in Project › Revisions to change it") } else { tr("Generated page – edit via page properties") };
             painter.text(rect.left_top() + vec2(10.0, 10.0), Align2::LEFT_TOP, msg, FontId::proportional(13.0), pal.frame);
         }
 
         // Status line
         self.status = match (world, snapped) {
             (Some(w), Some(_)) => {
-                let mut s = format!("X {:7.1}  Y {:7.1} mm   Column {}  Row {}", w.x, w.y, column_of(w), row_of(w));
+                let mut s = tr_fmt!("X {}  Y {} mm   Column {}  Row {}", format!("{:7.1}", w.x), format!("{:7.1}", w.y), column_of(w), row_of(w));
                 if let Some(id) = self.hit(&prj.pages[page_i], w) {
                     let page = &prj.pages[page_i];
                     if let Some(sym) = page.symbols.iter().find(|s| s.id == id) {
-                        let name = symbols::get(&sym.sym).map(|d| d.name).unwrap_or("?");
+                        let name = symbols::get(&sym.sym).map(|d| tr(d.name)).unwrap_or("?");
                         s += &format!("   |  {} {} {}", sym.tag, name, sym.label);
                     } else if let Some(net) = an.netlist.net_of_wire(id) {
-                        s += &format!("   |  Potential {}", net.name);
+                        s += &tr_fmt!("   |  Potential {}", net.name);
                     }
                 }
                 s

@@ -6,6 +6,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
 
 ## Features
 
+- **Languages**: English, German, French and Spanish (View › Language; the editor and the
+  parts manager remember the choice and start in the system / browser language if supported).
 - **Projects with pages**: multi-line schematic pages (A3, 10 columns / 6 rows, title block),
   cover sheet and generated report pages. Page navigator with reordering.
 - **IEC symbol library** (~40 symbols): coils and timers, NO/NC/changeover contacts, main
@@ -236,6 +238,7 @@ cargo test --workspace
 
 | File | Purpose |
 | --- | --- |
+| `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |

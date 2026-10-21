@@ -1,6 +1,7 @@
 //! Panel layout workspace: enclosure navigator, 2D mounting plate editor, 3D view
 //! and property editor.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Project};
@@ -142,9 +143,9 @@ impl PanelUi {
             self.select_wire(w.key());
             self.status = if candidates.len() > 1 {
                 let pos = candidates.iter().position(|c| *c == i).unwrap_or(0) + 1;
-                format!("Wire {} – {}  ({pos} of {} here, click again for the next)", w.from, w.to, candidates.len())
+                tr_fmt!("Wire {} – {}  ({} of {} here, click again for the next)", w.from, w.to, pos, candidates.len())
             } else {
-                format!("Wire {} – {}  {:.0} mm", w.from, w.to, w.length)
+                tr_fmt!("Wire {} – {}  {} mm", w.from, w.to, format!("{:.0}", w.length))
             };
         }
     }
@@ -179,8 +180,8 @@ impl PanelUi {
 
     pub fn navigator(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
         ui.horizontal(|ui| {
-            ui.heading("Enclosures");
-            if ui.button("➕").on_hover_text("New enclosure").clicked() {
+            ui.heading(tr("Enclosures"));
+            if ui.button("➕").on_hover_text(tr("New enclosure")).clicked() {
                 let part = if db.get(panel::ENCLOSURE_PART).is_some() { panel::ENCLOSURE_PART } else { "" };
                 let mut ne = NewEnclosure {
                     name: format!("+CAB{}", prj.layout.enclosures.len() + 1),
@@ -202,7 +203,7 @@ impl PanelUi {
                     self.selection.clear();
                     self.fit_pending = true;
                 }
-                if ui.small_button("🗑").on_hover_text("Delete enclosure").clicked() {
+                if ui.small_button("🗑").on_hover_text(tr("Delete enclosure")).clicked() {
                     remove = Some(i);
                 }
             });
@@ -212,12 +213,12 @@ impl PanelUi {
             self.selection.clear();
         }
         if prj.layout.enclosures.is_empty() {
-            ui.weak("No enclosure yet – create one with ➕.");
+            ui.weak(tr("No enclosure yet – create one with ➕."));
             return;
         }
         ui.separator();
-        ui.heading("Devices to place");
-        ui.add(egui::TextEdit::singleline(&mut self.device_filter).hint_text("Filter…"));
+        ui.heading(tr("Devices to place"));
+        ui.add(egui::TextEdit::singleline(&mut self.device_filter).hint_text(tr("Filter…")));
         let todo = panel::devices_to_place(prj);
         let f = self.device_filter.to_lowercase();
         egui::ScrollArea::vertical().id_salt("todo").max_height(ui.available_height() * 0.5).auto_shrink([false, true]).show(ui, |ui| {
@@ -232,17 +233,17 @@ impl PanelUi {
                 }
             }
             if todo.is_empty() {
-                ui.weak("All devices with mounting data are placed.");
+                ui.weak(tr("All devices with mounting data are placed."));
             }
         });
         ui.separator();
-        ui.heading("Placed");
+        ui.heading(tr("Placed"));
         let Some(ei) = self.enclosure_index(prj) else { return };
         let mut placed: Vec<&PanelItem> = prj.layout.enclosures[ei].items.iter().filter(|i| i.kind == ItemKind::Device).collect();
         placed.sort_by(|a, b| natural_cmp(&a.tag, &b.tag));
         egui::ScrollArea::vertical().id_salt("placed").auto_shrink([false, false]).show(ui, |ui| {
             for it in placed {
-                let text = if it.face == Face::Door { format!("{}  (door)", it.tag) } else { it.tag.clone() };
+                let text = if it.face == Face::Door { tr_fmt!("{}  (door)", it.tag) } else { it.tag.clone() };
                 if ui.selectable_label(self.selection.contains(&it.id), text).clicked() {
                     self.face = it.face;
                     self.select_item(it.id);
@@ -254,7 +255,7 @@ impl PanelUi {
     // ------------------------------------------------------------------ properties
 
     pub fn properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
-        ui.heading("Properties");
+        ui.heading(tr("Properties"));
         let Some(ei) = self.enclosure_index(prj) else { return };
         if let Some(wi) = self.wire_index(an) {
             self.wire_properties(ui, prj, an, wi);
@@ -262,12 +263,12 @@ impl PanelUi {
         }
         let sel: Vec<u64> = self.selection.iter().copied().collect();
         if sel.len() > 1 {
-            ui.label(format!("{} items selected", sel.len()));
+            ui.label(tr_fmt!("{} items selected", sel.len()));
             ui.horizontal(|ui| {
-                if ui.button("⟳ Rotate").clicked() {
+                if ui.button(tr("⟳ Rotate")).clicked() {
                     rotate(&mut prj.layout.enclosures[ei], &self.selection);
                 }
-                if ui.button("🗑 Delete").clicked() {
+                if ui.button(tr("🗑 Delete")).clicked() {
                     prj.layout.enclosures[ei].items.retain(|i| !self.selection.contains(&i.id));
                     self.selection.clear();
                 }
@@ -284,16 +285,16 @@ impl PanelUi {
             ui.label(RichText::new(it.kind.title()).strong());
             egui::Grid::new("pitem").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
                 if it.kind == ItemKind::Device {
-                    ui.label("Device");
+                    ui.label(tr("Device"));
                     ui.horizontal(|ui| {
                         ui.label(RichText::new(&it.tag).monospace().strong());
-                        if ui.small_button("Show in schematic").clicked() {
+                        if ui.small_button(tr("Show in schematic")).clicked() {
                             self.goto_schematic = Some(it.tag.clone());
                         }
                     });
                     ui.end_row();
                 }
-                ui.label("Part");
+                ui.label(tr("Part"));
                 ui.label(RichText::new(if it.part.is_empty() { "–" } else { &it.part }).monospace());
                 ui.end_row();
                 ui.label("X / Y");
@@ -303,17 +304,17 @@ impl PanelUi {
                 });
                 ui.end_row();
                 if it.kind == ItemKind::Device {
-                    ui.label("Width × height");
+                    ui.label(tr("Width × height"));
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut it.w).speed(0.5).range(1.0..=5000.0));
                         ui.add(egui::DragValue::new(&mut it.h).speed(0.5).range(1.0..=5000.0));
                     });
                     ui.end_row();
-                    ui.label("Mounted on");
+                    ui.label(tr("Mounted on"));
                     let before = it.face;
                     ui.horizontal(|ui| {
-                        ui.selectable_value(&mut it.face, Face::Plate, "Mounting plate");
-                        ui.selectable_value(&mut it.face, Face::Door, "Door");
+                        ui.selectable_value(&mut it.face, Face::Plate, tr("Mounting plate"));
+                        ui.selectable_value(&mut it.face, Face::Door, tr("Door"));
                     });
                     if it.face != before {
                         // Keep the position in front view; door devices sit directly on the door.
@@ -324,26 +325,26 @@ impl PanelUi {
                         self.face = it.face;
                     }
                     ui.end_row();
-                    ui.label("Depth / mounted at");
+                    ui.label(tr("Depth / mounted at"));
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut it.d).speed(0.5).range(1.0..=2000.0));
                         ui.add(egui::DragValue::new(&mut it.z).speed(0.5).range(0.0..=2000.0).prefix("z "));
                     });
                     ui.end_row();
                 } else if it.kind == ItemKind::Cutout {
-                    ui.label("Shape");
+                    ui.label(tr("Shape"));
                     ui.horizontal(|ui| {
-                        ui.selectable_value(&mut it.round, false, "Rectangular");
-                        ui.selectable_value(&mut it.round, true, "Round");
+                        ui.selectable_value(&mut it.round, false, tr("Rectangular"));
+                        ui.selectable_value(&mut it.round, true, tr("Round"));
                     });
                     ui.end_row();
                     if it.round {
-                        ui.label("Diameter");
+                        ui.label(tr("Diameter"));
                         if ui.add(egui::DragValue::new(&mut it.w).speed(0.5).range(1.0..=2000.0).suffix(" mm")).changed() {
                             it.h = it.w;
                         }
                     } else {
-                        ui.label("Width × height");
+                        ui.label(tr("Width × height"));
                         ui.horizontal(|ui| {
                             ui.add(egui::DragValue::new(&mut it.w).speed(0.5).range(1.0..=5000.0));
                             ui.add(egui::DragValue::new(&mut it.h).speed(0.5).range(1.0..=5000.0));
@@ -354,7 +355,7 @@ impl PanelUi {
                         it.h = it.w;
                     }
                 } else {
-                    ui.label("Length");
+                    ui.label(tr("Length"));
                     let mut len = it.length();
                     if ui.add(egui::DragValue::new(&mut len).speed(5.0).range(10.0..=5000.0).suffix(" mm")).changed() {
                         if it.horizontal() {
@@ -364,16 +365,16 @@ impl PanelUi {
                         }
                     }
                     ui.end_row();
-                    ui.label("Orientation");
+                    ui.label(tr("Orientation"));
                     ui.label(if it.horizontal() { "horizontal" } else { "vertical" });
                     ui.end_row();
                 }
             });
             ui.horizontal(|ui| {
-                if ui.button("⟳ Rotate").on_hover_text("R").clicked() {
+                if ui.button(tr("⟳ Rotate")).on_hover_text("R").clicked() {
                     it.rotate();
                 }
-                if ui.button("🗑 Delete").on_hover_text("Del").clicked() {
+                if ui.button(tr("🗑 Delete")).on_hover_text(tr("Del")).clicked() {
                     self.selection.clear();
                 }
             });
@@ -387,11 +388,11 @@ impl PanelUi {
                 let wires: Vec<_> = an.wiring.iter().filter(|w| w.items.0 == it.id || w.items.1 == it.id).collect();
                 if !wires.is_empty() {
                     ui.separator();
-                    ui.label(RichText::new("Wires").strong());
+                    ui.label(RichText::new(tr("Wires")).strong());
                     let mut clicked = None;
                     egui::Grid::new("pwires").striped(true).num_columns(2).show(ui, |ui| {
                         for w in wires {
-                            if ui.selectable_label(false, format!("{} – {}", w.from, w.to)).on_hover_text("Show this wire").clicked() {
+                            if ui.selectable_label(false, format!("{} – {}", w.from, w.to)).on_hover_text(tr("Show this wire")).clicked() {
                                 clicked = Some(w.key());
                             }
                             ui.label(format!("{:.0} mm", w.length));
@@ -407,94 +408,94 @@ impl PanelUi {
         }
         // Enclosure properties
         let e = &mut prj.layout.enclosures[ei];
-        ui.label(RichText::new("Enclosure").strong());
+        ui.label(RichText::new(tr("Enclosure")).strong());
         egui::Grid::new("penc").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
-            ui.label("Location");
+            ui.label(tr("Location"));
             ui.text_edit_singleline(&mut e.name);
             ui.end_row();
-            ui.label("Part");
+            ui.label(tr("Part"));
             ui.label(RichText::new(if e.part.is_empty() { "–" } else { &e.part }).monospace());
             ui.end_row();
-            ui.label("Width × height");
+            ui.label(tr("Width × height"));
             ui.horizontal(|ui| {
                 ui.add(egui::DragValue::new(&mut e.width).speed(5.0).range(100.0..=5000.0));
                 ui.add(egui::DragValue::new(&mut e.height).speed(5.0).range(100.0..=5000.0));
             });
             ui.end_row();
-            ui.label("Depth");
+            ui.label(tr("Depth"));
             ui.add(egui::DragValue::new(&mut e.depth).speed(5.0).range(60.0..=2000.0).suffix(" mm"));
             ui.end_row();
-            ui.label("Door clearance");
+            ui.label(tr("Door clearance"));
             ui.add(egui::DragValue::new(&mut e.door_clearance).speed(1.0).range(0.0..=500.0).suffix(" mm"))
-                .on_hover_text("Space behind the door that devices must keep free (door-mounted devices, handles)");
+                .on_hover_text(tr("Space behind the door that devices must keep free (door-mounted devices, handles)"));
             ui.end_row();
             let (pw, ph) = e.plate_size();
-            ui.label("Mounting plate");
+            ui.label(tr("Mounting plate"));
             ui.label(format!("{pw:.0} × {ph:.0} mm"));
             ui.end_row();
         });
         ui.horizontal(|ui| {
-            ui.label("Wire reserve per connection");
+            ui.label(tr("Wire reserve per connection"));
             ui.add(egui::DragValue::new(&mut prj.layout.wire_reserve).speed(5.0).range(0.0..=2000.0).suffix(" mm"));
         });
-        ui.checkbox(&mut prj.layout.ferrules, "Wire ends with ferrules").on_hover_text("Production wire list and bill of materials");
+        ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
         let wires: Vec<_> = an.wiring.iter().filter(|w| w.enclosure == ei).collect();
         let total: f32 = wires.iter().map(|w| w.length).sum();
         ui.separator();
-        ui.label(format!("{devices} devices placed, {} wires routed ({:.1} m)", wires.len(), total / 1000.0));
+        ui.label(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0)));
         let problems = panel::collisions(e, &prj.parts).len() + panel::outside(e).len() + crate::production::clearance_violations(e, &prj.parts).len();
         let holes = crate::production::holes(e, &prj.parts).len();
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
-        ui.label(format!("Mounting plate: {holes} holes, {cutouts} cutouts"));
+        ui.label(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts));
         ui.horizontal(|ui| {
-            if ui.button("⬇ NC data (DXF)").on_hover_text("Plate outline, holes per diameter, cutouts").clicked() {
+            if ui.button(tr("⬇ NC data (DXF)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
                 self.export = Some((ei, Face::Plate, true));
             }
-            if ui.button("⬇ Drilling list (CSV)").clicked() {
+            if ui.button(tr("⬇ Drilling list (CSV)")).clicked() {
                 self.export = Some((ei, Face::Plate, false));
             }
         });
         let door_devices = e.items.iter().filter(|i| i.face == Face::Door && i.kind == ItemKind::Device).count();
-        ui.label(format!("Door: {door_devices} devices, {} cutouts", crate::production::openings(e, &prj.parts, Face::Door).len()));
+        ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, crate::production::openings(e, &prj.parts, Face::Door).len()));
         ui.horizontal(|ui| {
-            if ui.button("⬇ Door NC data (DXF)").clicked() {
+            if ui.button(tr("⬇ Door NC data (DXF)")).clicked() {
                 self.export = Some((ei, Face::Door, true));
             }
-            if ui.button("⬇ Door cutouts (CSV)").clicked() {
+            if ui.button(tr("⬇ Door cutouts (CSV)")).clicked() {
                 self.export = Some((ei, Face::Door, false));
             }
         });
         if problems > 0 {
-            ui.colored_label(Color32::from_rgb(220, 60, 60), format!("{problems} placement problems (red) – see Check"));
+            ui.colored_label(Color32::from_rgb(220, 60, 60), tr_fmt!("{} placement problems (red) – see Check", problems));
         }
-        if ui.button("➕ Insert mounting layout page").clicked() {
+        if ui.button(tr("➕ Insert mounting layout page")).clicked() {
             self.add_page = Some(e.id);
         }
     }
 
     fn wire_properties(&mut self, ui: &mut egui::Ui, prj: &Project, an: &Analysis, wi: usize) {
         let w = &an.wiring[wi];
-        ui.label(RichText::new("Wire").strong());
+        ui.label(RichText::new(tr("Wire")).strong());
         egui::Grid::new("pwire").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
-            ui.label("From");
+            ui.label(tr("From"));
             ui.label(RichText::new(&w.from).monospace().color(WIRE_HIGHLIGHT));
             ui.end_row();
-            ui.label("To");
+            ui.label(tr("To"));
             ui.label(RichText::new(&w.to).monospace().color(WIRE_HIGHLIGHT));
             ui.end_row();
-            ui.label("Potential");
+            ui.label(tr("Potential"));
             ui.label(&w.net);
             ui.end_row();
-            ui.label("Length");
+            ui.label(tr("Length"));
             ui.label(format!("{:.0} mm", w.length));
             ui.end_row();
-            ui.label("Routing");
+            ui.label(tr("Routing"));
             ui.label(if w.route.via_ducts { "via cable ducts" } else { "direct (no ducts)" });
             ui.end_row();
             if !w.color.is_empty() || !w.cross_section.is_empty() {
-                ui.label("Colour / cross-section");
+                ui.label(tr("Colour / cross-section"));
                 ui.label(format!("{} {}", w.color, w.cross_section));
                 ui.end_row();
             }
@@ -504,16 +505,16 @@ impl PanelUi {
             w.route.plate_length, prj.layout.wire_reserve
         )).weak());
         ui.separator();
-        ui.label(RichText::new("Connected devices").strong());
+        ui.label(RichText::new(tr("Connected devices")).strong());
         let e = &prj.layout.enclosures[w.enclosure];
         let mut select = None;
         for id in [w.items.0, w.items.1] {
             if let Some(it) = e.item(id) {
                 ui.horizontal(|ui| {
-                    if ui.link(RichText::new(&it.tag).monospace()).on_hover_text("Select device").clicked() {
+                    if ui.link(RichText::new(&it.tag).monospace()).on_hover_text(tr("Select device")).clicked() {
                         select = Some(id);
                     }
-                    if ui.small_button("Show in schematic").clicked() {
+                    if ui.small_button(tr("Show in schematic")).clicked() {
                         self.goto_schematic = Some(it.tag.clone());
                     }
                 });
@@ -536,18 +537,18 @@ impl PanelUi {
             .chain(prj.parts.iter())
             .filter(|p| p.subgroup == "Enclosure" && p.width > 0.0)
             .collect();
-        egui::Window::new("New enclosure").open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+        egui::Window::new(tr("New enclosure")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
             egui::Grid::new("newenc").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                ui.label("Location");
+                ui.label(tr("Location"));
                 ui.text_edit_singleline(&mut ne.name);
                 ui.end_row();
-                ui.label("Part");
+                ui.label(tr("Part"));
                 let before = ne.part.clone();
                 egui::ComboBox::from_id_salt("encpart")
                     .selected_text(if ne.part.is_empty() { "(custom size)".to_string() } else { ne.part.clone() })
                     .width(220.0)
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut ne.part, String::new(), "(custom size)");
+                        ui.selectable_value(&mut ne.part, String::new(), tr("(custom size)"));
                         for p in &enclosures {
                             ui.selectable_value(&mut ne.part, p.number.clone(), format!("{} – {}", p.number, p.description));
                         }
@@ -557,7 +558,7 @@ impl PanelUi {
                 }
                 ui.end_row();
                 let custom = ne.part.is_empty();
-                ui.label("Width × height × depth");
+                ui.label(tr("Width × height × depth"));
                 ui.add_enabled_ui(custom, |ui| {
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut ne.width).speed(5.0).range(100.0..=5000.0));
@@ -567,7 +568,7 @@ impl PanelUi {
                 });
                 ui.end_row();
             });
-            if ui.button("✔ Create").clicked() {
+            if ui.button(tr("✔ Create")).clicked() {
                 create = true;
             }
         });
@@ -596,12 +597,12 @@ impl PanelUi {
     pub fn canvas(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, db: &PartsDb) {
         let Some(ei) = self.enclosure_index(prj) else {
             ui.centered_and_justified(|ui| {
-                ui.label("Create an enclosure (➕ in the navigator on the left) to start the panel layout.");
+                ui.label(tr("Create an enclosure (➕ in the navigator on the left) to start the panel layout."));
             });
             return;
         };
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.view, View::Front, "Front view (2D)");
+            ui.selectable_value(&mut self.view, View::Front, tr("Front view (2D)"));
             ui.selectable_value(&mut self.view, View::ThreeD, "3D");
             ui.separator();
             if self.view == View::Front {
@@ -619,11 +620,11 @@ impl PanelUi {
                 ui.separator();
                 let tool = self.tool.clone();
                 for (t, label, tip) in [
-                    (Tool::Select, "⬉ Select", "Select / move (Esc)"),
-                    (Tool::Rail, "Mounting rail", "Click start and end point"),
-                    (Tool::Duct, "Cable duct", "Click start and end point"),
-                    (Tool::Busbar, "Busbar", "Copper busbar system: click start and end point"),
-                    (Tool::Cutout, "Cutout", "Opening in the mounting plate / door: click two corners (round: in the properties)"),
+                    (Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)")),
+                    (Tool::Rail, tr("Mounting rail"), tr("Click start and end point")),
+                    (Tool::Duct, tr("Cable duct"), tr("Click start and end point")),
+                    (Tool::Busbar, tr("Busbar"), tr("Copper busbar system: click start and end point")),
+                    (Tool::Cutout, tr("Cutout"), tr("Opening in the mounting plate / door: click two corners (round: in the properties)")),
                 ] {
                     if self.face == Face::Door && t.profile().is_some() {
                         continue;
@@ -633,12 +634,12 @@ impl PanelUi {
                     }
                 }
                 if let Tool::PlaceDevice(tag) = &tool {
-                    ui.label(RichText::new(format!("Placing {tag}")).strong());
+                    ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
                 }
                 ui.separator();
             }
-            ui.checkbox(&mut self.show_wires, "Wires");
-            if ui.button("⛶ Fit").clicked() {
+            ui.checkbox(&mut self.show_wires, tr("Wires"));
+            if ui.button(tr("⛶ Fit")).clicked() {
                 self.fit_pending = true;
                 self.cam = None;
             }
@@ -818,7 +819,7 @@ impl PanelUi {
             (Tool::Cutout, Some(sn), _) => {
                 if let Some(a) = self.start {
                     g.rect(a + m, sn + m, 0.5, Ink::Ghost, false);
-                    self.status = format!("Cutout {:.0} × {:.0} mm", (sn.x - a.x).abs(), (sn.y - a.y).abs());
+                    self.status = tr_fmt!("Cutout {} × {} mm", format!("{:.0}", (sn.x - a.x).abs()), format!("{:.0}", (sn.y - a.y).abs()));
                 }
                 let c = to_screen(sn);
                 painter.line_segment([c - vec2(8.0, 0.0), c + vec2(8.0, 0.0)], Stroke::new(1.0, pal.ghost));
@@ -836,7 +837,7 @@ impl PanelUi {
                     };
                     g.rect(r0 + m, r1 + m, 0.5, Ink::Ghost, false);
                     let len = if horizontal { (sn.x - a.x).abs() } else { (sn.y - a.y).abs() };
-                    self.status = format!("Length {len:.0} mm");
+                    self.status = tr_fmt!("Length {} mm", format!("{len:.0}"));
                 }
                 let c = to_screen(sn);
                 painter.line_segment([c - vec2(8.0, 0.0), c + vec2(8.0, 0.0)], Stroke::new(1.0, pal.ghost));
@@ -853,7 +854,7 @@ impl PanelUi {
         }
         if let Some(q) = plate {
             if self.start.is_none() && !resp.clicked() {
-                self.status = format!("X {:.0}  Y {:.0} mm on the {}", q.x, q.y, self.face.title().to_lowercase());
+                self.status = tr_fmt!("X {}  Y {} mm on the {}", format!("{:.0}", q.x), format!("{:.0}", q.y), self.face.title().to_lowercase());
             }
         }
     }
@@ -1217,7 +1218,7 @@ impl PanelUi {
         painter.text(
             rect.left_bottom() + vec2(10.0, -10.0),
             egui::Align2::LEFT_BOTTOM,
-            "Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire",
+            tr("Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire"),
             egui::FontId::proportional(12.0),
             if dark { Color32::GRAY } else { Color32::DARK_GRAY },
         );
