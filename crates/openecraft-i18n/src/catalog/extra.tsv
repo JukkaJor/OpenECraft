@@ -1,0 +1,15 @@
+# Entries added by hand (not part of the generated translations.tsv).
+{} connections removed from their harness	{} Verbindungen aus ihrem Kabelbaum entfernt	{} liaisons retirées de leur faisceau	{} conexiones quitadas de su mazo
+{} connections assigned to {}	{} Verbindungen {} zugewiesen	{} liaisons affectées à {}	{} conexiones asignadas a {}
+🗄 Show in panel layout ({})	🗄 Im Schaltschrank-Layout anzeigen ({})	🗄 Afficher dans l'implantation de l'armoire ({})	🗄 Mostrar en la distribución del armario ({})
+   |  Potential {}	   |  Potenzial {}	   |  Potentiel {}	   |  Potencial {}
+📁 Project parts ({})	📁 Projektartikel ({})	📁 Articles du projet ({})	📁 Artículos del proyecto ({})
+part {} not found	Artikel {} nicht gefunden	article {} introuvable	artículo {} no encontrado
+… {} more rows – see Reports window / CSV export	… {} weitere Zeilen – siehe Berichtsfenster / CSV-Export	… {} lignes de plus – voir la fenêtre Rapports / export CSV	… {} filas más – ver la ventana de informes / exportación CSV
+strip {} mm, ferrule {} mm² {}	abisolieren {} mm, Aderendhülse {} mm² {}	dénuder {} mm, embout {} mm² {}	pelar {} mm, punta {} mm² {}
+strip {} mm	abisolieren {} mm	dénuder {} mm	pelar {} mm
+unexpected answer: {}	unerwartete Antwort: {}	réponse inattendue : {}	respuesta inesperada: {}
+connection failed: {}	Verbindung fehlgeschlagen: {}	échec de la connexion : {}	conexión fallida: {}
+value set…	Wertesatz …	jeu de valeurs…	conjunto de valores…
+Shown in title blocks with {prop:Name}	Wird in Schriftfeldern mit {prop:Name} angezeigt	Affiché dans les cartouches avec {prop:Name}	Se muestra en los cajetines con {prop:Name}
+e.g. W	z. B. W	p. ex. W	p. ej. W

@@ -4,6 +4,7 @@
 //! tag belong to the same device: one *main function* (e.g. the coil) and any number
 //! of *auxiliary functions* (e.g. its contacts). Cross references are derived from that.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P};
 pub use crate::panel::Layout;
 pub use openecraft_parts::natural_cmp;
@@ -142,10 +143,10 @@ pub enum PageKind {
 impl PageKind {
     pub fn label(self) -> String {
         match self {
-            PageKind::Schematic => "Schematic (multi-line)".into(),
-            PageKind::Cover => "Cover sheet".into(),
-            PageKind::Report(r) => format!("Report: {}", r.title()),
-            PageKind::Mounting(_) => "Mounting layout".into(),
+            PageKind::Schematic => tr("Schematic (multi-line)").into(),
+            PageKind::Cover => tr("Cover sheet").into(),
+            PageKind::Report(r) => tr_fmt!("Report: {}", r.title()),
+            PageKind::Mounting(_) => tr("Mounting layout").into(),
         }
     }
 }
@@ -184,18 +185,18 @@ impl ReportKind {
 
     pub fn title(self) -> &'static str {
         match self {
-            ReportKind::TableOfContents => "Table of contents",
-            ReportKind::DeviceList => "Device list",
-            ReportKind::BillOfMaterials => "Bill of materials",
-            ReportKind::TerminalDiagram => "Terminal diagram",
-            ReportKind::ConnectionList => "Connection list",
-            ReportKind::PlcAssignment => "PLC assignment list",
-            ReportKind::PotentialList => "Potential overview",
-            ReportKind::PanelWiring => "Wire list (panel routing)",
-            ReportKind::CableOverview => "Cable overview",
-            ReportKind::CableDiagram => "Cable diagram",
-            ReportKind::RevisionOverview => "Revision overview (changes)",
-            ReportKind::HarnessData => "Harness data",
+            ReportKind::TableOfContents => tr("Table of contents"),
+            ReportKind::DeviceList => tr("Device list"),
+            ReportKind::BillOfMaterials => tr("Bill of materials"),
+            ReportKind::TerminalDiagram => tr("Terminal diagram"),
+            ReportKind::ConnectionList => tr("Connection list"),
+            ReportKind::PlcAssignment => tr("PLC assignment list"),
+            ReportKind::PotentialList => tr("Potential overview"),
+            ReportKind::PanelWiring => tr("Wire list (panel routing)"),
+            ReportKind::CableOverview => tr("Cable overview"),
+            ReportKind::CableDiagram => tr("Cable diagram"),
+            ReportKind::RevisionOverview => tr("Revision overview (changes)"),
+            ReportKind::HarnessData => tr("Harness data"),
         }
     }
 }
@@ -353,9 +354,9 @@ impl NumberScheme {
 
     pub fn title(self) -> &'static str {
         match self {
-            NumberScheme::Sequential => "Sequential (1, 2, 3 …)",
-            NumberScheme::PageColumn => "Page / column (3.4.1)",
-            NumberScheme::Potential => "Potential name (L1, +24V, otherwise counted)",
+            NumberScheme::Sequential => tr("Sequential (1, 2, 3 …)"),
+            NumberScheme::PageColumn => tr("Page / column (3.4.1)"),
+            NumberScheme::Potential => tr("Potential name (L1, +24V, otherwise counted)"),
         }
     }
 }

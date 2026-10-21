@@ -1,6 +1,7 @@
 //! Main application window: menus, toolbar, navigators, symbol library, property
 //! editor, reports and dialogs.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{symbol_icon, Editor, Tool};
 use crate::index::Index;
 use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
@@ -41,6 +42,7 @@ pub struct App {
     history: History,
     analysis: Analysis,
     analysis_rev: u64,
+    analysis_lang: openecraft_i18n::Lang,
     saved_rev: u64,
     file_name: Option<String>,
     io: FileIo,
@@ -77,13 +79,16 @@ impl App {
         let mut parts_db: Option<PartsDb> = None;
         let mut server_url: Option<String> = None;
         let mut macro_lib = None;
+        let mut language: Option<String> = None;
         if let Some(storage) = cc.storage {
+            language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
             prj = eframe::get_value(storage, "project");
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
             macro_lib = eframe::get_value(storage, "macros");
         }
+        openecraft_i18n::init(language.as_deref());
         let parts_db = parts_db.unwrap_or_default();
         let mut parts_ui = PartsUi::default();
         if let Some(url) = server_url {
@@ -100,6 +105,7 @@ impl App {
             history,
             analysis: Analysis::default(),
             analysis_rev: 0,
+            analysis_lang: openecraft_i18n::lang(),
             saved_rev: rev,
             file_name,
             io: FileIo::default(),
@@ -202,20 +208,20 @@ impl App {
         };
         match result {
             Ok(Some(path)) => {
-                self.notify(ctx, format!("Saved {}", io::short_name(&path)));
+                self.notify(ctx, tr_fmt!("Saved {}", io::short_name(&path)));
                 self.file_name = Some(path);
                 self.saved_rev = self.history.rev;
             }
             Ok(None) => {}
-            Err(e) => self.notify(ctx, format!("Saving failed: {e}")),
+            Err(e) => self.notify(ctx, tr_fmt!("Saving failed: {}", e)),
         }
     }
 
     fn export(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: String) {
         match self.io.save_as(&name, filter, &content) {
-            Ok(Some(path)) => self.notify(ctx, format!("Exported {}", io::short_name(&path))),
+            Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
             Ok(None) => {}
-            Err(e) => self.notify(ctx, format!("Export failed: {e}")),
+            Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
         }
     }
 
@@ -224,7 +230,7 @@ impl App {
             if matches!(loaded.purpose, Purpose::Model(_)) {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.prj) {
                     Ok(m) => m,
-                    Err(e) => format!("Model import failed: {e}"),
+                    Err(e) => tr_fmt!("Model import failed: {}", e),
                 };
                 self.notify(ctx, msg);
                 return;
@@ -236,9 +242,9 @@ impl App {
                 match lib {
                     Ok(lib) => {
                         let n = self.macro_lib.merge(lib);
-                        self.notify(ctx, format!("Imported {n} macros"));
+                        self.notify(ctx, tr_fmt!("Imported {} macros", n));
                     }
-                    Err(e) => self.notify(ctx, format!("Not a macro file: {e}")),
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
                 }
                 return;
             }
@@ -250,9 +256,9 @@ impl App {
                     Ok(lib) => {
                         let (added, replaced) = crate::symlib::merge(&mut self.prj.symbols, lib);
                         self.symed.open = true;
-                        self.notify(ctx, format!("{added} symbols added, {replaced} replaced"));
+                        self.notify(ctx, tr_fmt!("{} symbols added, {} replaced", added, replaced));
                     }
-                    Err(e) => self.notify(ctx, format!("Not a symbol library: {e}")),
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a symbol library: {}", e)),
                 }
                 return;
             }
@@ -266,16 +272,16 @@ impl App {
                                 None => self.prj.forms.title_blocks.push(f),
                             }
                         }
-                        self.notify(ctx, format!("Imported {n} title blocks"));
+                        self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
                     }
-                    Err(e) => self.notify(ctx, format!("Not a title block file: {e}")),
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
                 }
                 return;
             }
             if loaded.purpose == Purpose::PlcTable {
                 match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
-                    Ok(n) => self.notify(ctx, format!("{n} PLC function texts updated")),
-                    Err(e) => self.notify(ctx, format!("Symbol table import failed: {e}")),
+                    Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
+                    Err(e) => self.notify(ctx, tr_fmt!("Symbol table import failed: {}", e)),
                 }
                 return;
             }
@@ -287,18 +293,18 @@ impl App {
                             self.parts_db.upsert(p);
                         }
                         self.parts_db.sort();
-                        self.notify(ctx, format!("Imported {n} parts into the database"));
+                        self.notify(ctx, tr_fmt!("Imported {} parts into the database", n));
                     }
-                    Err(e) => self.notify(ctx, format!("Parts import failed: {e}")),
+                    Err(e) => self.notify(ctx, tr_fmt!("Parts import failed: {}", e)),
                 }
                 return;
             }
             match serde_json::from_str::<Project>(&loaded.text()) {
                 Ok(prj) => {
                     self.replace_project(prj, Some(loaded.name.clone()));
-                    self.notify(ctx, format!("Opened {}", io::short_name(&loaded.name)));
+                    self.notify(ctx, tr_fmt!("Opened {}", io::short_name(&loaded.name)));
                 }
-                Err(e) => self.notify(ctx, format!("Not a valid project file: {e}")),
+                Err(e) => self.notify(ctx, tr_fmt!("Not a valid project file: {}", e)),
             }
         }
     }
@@ -313,12 +319,12 @@ impl App {
     fn add_page(&mut self, kind: PageKind) {
         let id = self.prj.new_id();
         let desc = match kind {
-            PageKind::Schematic => "Schematic".to_string(),
-            PageKind::Cover => "Cover sheet".to_string(),
+            PageKind::Schematic => tr("Schematic").to_string(),
+            PageKind::Cover => tr("Cover sheet").to_string(),
             PageKind::Report(r) => r.title().to_string(),
             PageKind::Mounting(id) => {
                 let name = self.prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
-                format!("Mounting layout {name}")
+                tr_fmt!("Mounting layout {}", name)
             }
         };
         let page = Page::new(id, &self.next_page_name(), &desc, kind);
@@ -333,110 +339,110 @@ impl App {
     fn menu_bar(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         egui::MenuBar::new().ui(ui, |ui| {
-            ui.menu_button("File", |ui| {
-                if ui.button("New project").clicked() {
+            ui.menu_button(tr("File"), |ui| {
+                if ui.button(tr("New project")).clicked() {
                     self.replace_project(Project::default(), None);
                 }
-                if ui.button("Open…        Ctrl+O").clicked() {
+                if ui.button(tr("Open…        Ctrl+O")).clicked() {
                     self.io.open(&ctx, Purpose::Project);
                 }
-                if ui.button("Open demo project").clicked() {
+                if ui.button(tr("Open demo project")).clicked() {
                     self.replace_project(sample::demo_project(), None);
                 }
                 ui.separator();
-                let save_label = if FileIo::can_save_in_place() { "Save          Ctrl+S" } else { "Download project   Ctrl+S" };
+                let save_label = if FileIo::can_save_in_place() { tr("Save          Ctrl+S") } else { tr("Download project   Ctrl+S") };
                 if ui.button(save_label).clicked() {
                     self.save(&ctx, false);
                 }
-                if FileIo::can_save_in_place() && ui.button("Save as…").clicked() {
+                if FileIo::can_save_in_place() && ui.button(tr("Save as…")).clicked() {
                     self.save(&ctx, true);
                 }
                 ui.separator();
-                if ui.button("Export page as SVG…").clicked() {
+                if ui.button(tr("Export page as SVG…")).clicked() {
                     let svg = svg::page_svg(&self.prj, self.page);
                     let name = format!("{}_page_{}.svg", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
-                    self.export(&ctx, name, ("SVG image", "svg"), svg);
+                    self.export(&ctx, name, (tr("SVG image"), "svg"), svg);
                 }
-                if ui.button("Export all pages for printing (HTML/PDF)…").clicked() {
+                if ui.button(tr("Export all pages for printing (HTML/PDF)…")).clicked() {
                     let html = svg::print_document(&self.prj);
-                    self.export(&ctx, self.suggested_name("html"), ("HTML document", "html"), html);
+                    self.export(&ctx, self.suggested_name("html"), (tr("HTML document"), "html"), html);
                 }
-                if ui.button("Export as PDF (bookmarks, linked cross references)…").clicked() {
+                if ui.button(tr("Export as PDF (bookmarks, linked cross references)…")).clicked() {
                     let pdf = crate::pdf::document(&self.prj);
-                    self.export(&ctx, self.suggested_name("pdf"), ("PDF document", "pdf"), pdf);
+                    self.export(&ctx, self.suggested_name("pdf"), (tr("PDF document"), "pdf"), pdf);
                 }
-                if ui.button("Export page as DXF…").clicked() {
+                if ui.button(tr("Export page as DXF…")).clicked() {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &[self.page]);
                     let name = format!("{}_page_{}.dxf", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
-                    self.export(&ctx, name, ("DXF drawing", "dxf"), dxf);
+                    self.export(&ctx, name, (tr("DXF drawing"), "dxf"), dxf);
                 }
-                if ui.button("Export all pages as DXF…").clicked() {
+                if ui.button(tr("Export all pages as DXF…")).clicked() {
                     let all: Vec<usize> = (0..self.prj.pages.len()).collect();
                     let dxf = crate::dxf::pages_dxf(&self.prj, &all);
-                    self.export(&ctx, self.suggested_name("dxf"), ("DXF drawing", "dxf"), dxf);
+                    self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
                 }
-                if ui.button("Export production wire list (CSV)…").on_hover_text("Wire numbers, ends, colour, cross-section, routed length, cable cores").clicked() {
+                if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {
                     let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
                     self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     ui.separator();
-                    if ui.button("Quit").clicked() {
+                    if ui.button(tr("Quit")).clicked() {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 }
             });
-            ui.menu_button("Edit", |ui| {
-                if ui.add_enabled(self.history.can_undo(), egui::Button::new("Undo   Ctrl+Z")).clicked() {
+            ui.menu_button(tr("Edit"), |ui| {
+                if ui.add_enabled(self.history.can_undo(), egui::Button::new(tr("Undo   Ctrl+Z"))).clicked() {
                     self.history.undo(&mut self.prj);
                 }
-                if ui.add_enabled(self.history.can_redo(), egui::Button::new("Redo   Ctrl+Y")).clicked() {
+                if ui.add_enabled(self.history.can_redo(), egui::Button::new(tr("Redo   Ctrl+Y"))).clicked() {
                     self.history.redo(&mut self.prj);
                 }
                 ui.separator();
                 let has_sel = !self.editor.selection.is_empty();
-                if ui.add_enabled(has_sel, egui::Button::new("Rotate   R")).clicked() {
+                if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate   R"))).clicked() {
                     ops::rotate(&mut self.prj.pages[self.page], &self.editor.selection);
                 }
-                if ui.add_enabled(has_sel, egui::Button::new("Mirror   M")).clicked() {
+                if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror   M"))).clicked() {
                     ops::mirror(&mut self.prj.pages[self.page], &self.editor.selection);
                 }
-                if ui.add_enabled(has_sel, egui::Button::new("Delete   Del")).clicked() {
+                if ui.add_enabled(has_sel, egui::Button::new(tr("Delete   Del"))).clicked() {
                     ops::delete(&mut self.prj.pages[self.page], &self.editor.selection);
                     self.editor.selection.clear();
                 }
-                if ui.button("Select all   Ctrl+A").clicked() {
+                if ui.button(tr("Select all   Ctrl+A")).clicked() {
                     self.editor.selection = ops::all_ids(&self.prj.pages[self.page]).into_iter().collect();
                 }
-                ui.label(RichText::new("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V").weak());
+                ui.label(RichText::new(tr("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V")).weak());
                 ui.separator();
-                if ui.add_enabled(has_sel, egui::Button::new("Save selection as macro…")).clicked() {
+                if ui.add_enabled(has_sel, egui::Button::new(tr("Save selection as macro…"))).clicked() {
                     self.save_as_macro(false);
                 }
             });
-            ui.menu_button("Insert", |ui| {
-                if ui.button("Macro…").clicked() {
+            ui.menu_button(tr("Insert"), |ui| {
+                if ui.button(tr("Macro…")).clicked() {
                     self.eng.show_macros = true;
                 }
                 ui.separator();
-                if ui.button("Wire   W").clicked() {
+                if ui.button(tr("Wire   W")).clicked() {
                     self.editor.set_tool(Tool::Wire);
                 }
-                if ui.button("Text   T").clicked() {
+                if ui.button(tr("Text   T")).clicked() {
                     self.editor.set_tool(Tool::Text);
                 }
-                if ui.button("Graphic line").clicked() {
+                if ui.button(tr("Graphic line")).clicked() {
                     self.editor.set_tool(Tool::Line);
                 }
-                if ui.button("Graphic rectangle").clicked() {
+                if ui.button(tr("Graphic rectangle")).clicked() {
                     self.editor.set_tool(Tool::Rect);
                 }
                 ui.separator();
                 for cat in Category::ALL {
                     ui.menu_button(cat.title(), |ui| {
                         for def in symbols::library().iter().filter(|d| d.category == cat) {
-                            if ui.button(def.name).clicked() {
+                            if ui.button(tr(def.name)).clicked() {
                                 self.editor.set_tool(Tool::Place(def.key));
                             }
                         }
@@ -446,28 +452,28 @@ impl App {
                 if !user.is_empty() {
                     ui.menu_button(Category::User.title(), |ui| {
                         for def in user {
-                            if ui.button(format!("{}  ({})", def.name, def.library)).clicked() {
+                            if ui.button(format!("{}  ({})", tr(def.name), def.library)).clicked() {
                                 self.editor.set_tool(Tool::Place(def.key));
                             }
                         }
                     });
                 }
             });
-            ui.menu_button("Page", |ui| {
-                if ui.button("New schematic page").clicked() {
+            ui.menu_button(tr("Page"), |ui| {
+                if ui.button(tr("New schematic page")).clicked() {
                     self.add_page(PageKind::Schematic);
                 }
-                if ui.button("New cover sheet").clicked() {
+                if ui.button(tr("New cover sheet")).clicked() {
                     self.add_page(PageKind::Cover);
                 }
-                ui.menu_button("New report page", |ui| {
+                ui.menu_button(tr("New report page"), |ui| {
                     for k in ReportKind::ALL {
                         if ui.button(k.title()).clicked() {
                             self.add_page(PageKind::Report(k));
                         }
                     }
                 });
-                ui.menu_button("New mounting layout page", |ui| {
+                ui.menu_button(tr("New mounting layout page"), |ui| {
                     let encs: Vec<(u64, String)> = self.prj.layout.enclosures.iter().map(|e| (e.id, e.name.clone())).collect();
                     for (id, name) in encs {
                         if ui.button(name).clicked() {
@@ -475,70 +481,70 @@ impl App {
                         }
                     }
                     if self.prj.layout.enclosures.is_empty() {
-                        ui.weak("Create an enclosure in the panel layout first.");
+                        ui.weak(tr("Create an enclosure in the panel layout first."));
                     }
                 });
                 ui.separator();
-                if ui.button("Page properties…").clicked() {
+                if ui.button(tr("Page properties…")).clicked() {
                     self.page_props = Some(self.page);
                 }
-                if ui.button("Save page as macro…").clicked() {
+                if ui.button(tr("Save page as macro…")).clicked() {
                     self.save_as_macro(true);
                 }
-                if ui.add_enabled(self.page > 0, egui::Button::new("Move page up")).clicked() {
+                if ui.add_enabled(self.page > 0, egui::Button::new(tr("Move page up"))).clicked() {
                     self.prj.pages.swap(self.page, self.page - 1);
                     self.page -= 1;
                 }
-                if ui.add_enabled(self.page + 1 < self.prj.pages.len(), egui::Button::new("Move page down")).clicked() {
+                if ui.add_enabled(self.page + 1 < self.prj.pages.len(), egui::Button::new(tr("Move page down"))).clicked() {
                     self.prj.pages.swap(self.page, self.page + 1);
                     self.page += 1;
                 }
-                if ui.add_enabled(self.prj.pages.len() > 1, egui::Button::new("Delete page")).clicked() {
+                if ui.add_enabled(self.prj.pages.len() > 1, egui::Button::new(tr("Delete page"))).clicked() {
                     self.prj.pages.remove(self.page);
                     self.page = self.page.min(self.prj.pages.len() - 1);
                     self.editor.selection.clear();
                 }
             });
-            ui.menu_button("Project", |ui| {
-                if ui.button("Project properties…").clicked() {
+            ui.menu_button(tr("Project"), |ui| {
+                if ui.button(tr("Project properties…")).clicked() {
                     self.show_project = true;
                 }
-                if ui.button("Parts management…").clicked() {
+                if ui.button(tr("Parts management…")).clicked() {
                     self.parts_ui.open = true;
                 }
-                if ui.button("Cables…").clicked() {
+                if ui.button(tr("Cables…")).clicked() {
                     self.show_cables = true;
                 }
-                if ui.button("Wire numbering…").clicked() {
+                if ui.button(tr("Wire numbering…")).clicked() {
                     self.show_numbering = true;
                 }
-                if ui.button("Harnesses…").clicked() {
+                if ui.button(tr("Harnesses…")).clicked() {
                     self.harness_ui.open = true;
                 }
-                if ui.button("Terminal strips…").clicked() {
+                if ui.button(tr("Terminal strips…")).clicked() {
                     self.eng.show_strips = true;
                 }
-                if ui.button("PLC overview…").clicked() {
+                if ui.button(tr("PLC overview…")).clicked() {
                     self.eng.show_plc = true;
                 }
-                if ui.button("Revisions…").clicked() {
+                if ui.button(tr("Revisions…")).clicked() {
                     self.eng.show_revisions = true;
                 }
-                if ui.button("Macros…").clicked() {
+                if ui.button(tr("Macros…")).clicked() {
                     self.eng.show_macros = true;
                 }
                 ui.separator();
-                if ui.button("Symbol editor…").clicked() {
+                if ui.button(tr("Symbol editor…")).clicked() {
                     self.symed.open = true;
                 }
-                if ui.button("Title blocks and report forms…").clicked() {
+                if ui.button(tr("Title blocks and report forms…")).clicked() {
                     self.forms_ui.open = true;
                 }
-                if ui.button("Check project").clicked() {
+                if ui.button(tr("Check project")).clicked() {
                     self.left_tab = LeftTab::Check;
                 }
             });
-            ui.menu_button("Reports", |ui| {
+            ui.menu_button(tr("Reports"), |ui| {
                 for k in ReportKind::ALL {
                     if ui.button(k.title()).clicked() {
                         self.report_kind = k;
@@ -546,26 +552,27 @@ impl App {
                     }
                 }
             });
-            ui.menu_button("View", |ui| {
-                if ui.button("Fit page   F").clicked() {
+            ui.menu_button(tr("View"), |ui| {
+                if ui.button(tr("Fit page   F")).clicked() {
                     self.editor.fit_pending = true;
                 }
-                ui.checkbox(&mut self.editor.show_grid, "Grid");
-                ui.checkbox(&mut self.editor.show_pins, "Connection points");
-                ui.checkbox(&mut self.editor.show_revision_marks, "Revision marks");
+                ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
+                ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
+                ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
                 ui.separator();
+                openecraft_ui::language::menu(ui);
                 let mut pref = ui.ctx().options(|o| o.theme_preference);
                 ui.horizontal(|ui| {
-                    ui.selectable_value(&mut pref, egui::ThemePreference::System, "System");
-                    ui.selectable_value(&mut pref, egui::ThemePreference::Light, "Light");
-                    ui.selectable_value(&mut pref, egui::ThemePreference::Dark, "Dark");
+                    ui.selectable_value(&mut pref, egui::ThemePreference::System, tr("System"));
+                    ui.selectable_value(&mut pref, egui::ThemePreference::Light, tr("Light"));
+                    ui.selectable_value(&mut pref, egui::ThemePreference::Dark, tr("Dark"));
                 });
                 if pref != ui.ctx().options(|o| o.theme_preference) {
                     ui.ctx().set_theme(pref);
                 }
             });
-            ui.menu_button("Help", |ui| {
-                if ui.button("Shortcuts & usage").clicked() {
+            ui.menu_button(tr("Help"), |ui| {
+                if ui.button(tr("Shortcuts & usage")).clicked() {
                     self.show_help = true;
                 }
             });
@@ -574,18 +581,18 @@ impl App {
 
     fn toolbar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
-            ui.selectable_value(&mut self.workspace, Workspace::Schematic, RichText::new("🗋 Schematic").strong());
-            ui.selectable_value(&mut self.workspace, Workspace::Panel, RichText::new("🗄 Panel layout").strong());
+            ui.selectable_value(&mut self.workspace, Workspace::Schematic, RichText::new(tr("🗋 Schematic")).strong());
+            ui.selectable_value(&mut self.workspace, Workspace::Panel, RichText::new(tr("🗄 Panel layout")).strong());
             ui.separator();
             if self.workspace == Workspace::Panel {
-                if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text("Undo (Ctrl+Z)").clicked() {
+                if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text(tr("Undo (Ctrl+Z)")).clicked() {
                     self.history.undo(&mut self.prj);
                 }
-                if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text("Redo (Ctrl+Y)").clicked() {
+                if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text(tr("Redo (Ctrl+Y)")).clicked() {
                     self.history.redo(&mut self.prj);
                 }
                 ui.separator();
-                if ui.button("📊 Reports").clicked() {
+                if ui.button(tr("📊 Reports")).clicked() {
                     self.report_kind = ReportKind::PanelWiring;
                     self.show_reports = true;
                 }
@@ -597,47 +604,47 @@ impl App {
                     self.editor.set_tool(t);
                 }
             };
-            tbtn(ui, Tool::Select, "⬉ Select", "Select / move (Esc)");
-            tbtn(ui, Tool::Wire, "✏ Wire", "Draw connections (W)");
-            tbtn(ui, Tool::Text, "T Text", "Place text (T)");
-            tbtn(ui, Tool::Line, "— Line", "Graphic line");
-            tbtn(ui, Tool::Rect, "☐ Rect", "Graphic rectangle");
+            tbtn(ui, Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)"));
+            tbtn(ui, Tool::Wire, tr("✏ Wire"), tr("Draw connections (W)"));
+            tbtn(ui, Tool::Text, tr("T Text"), tr("Place text (T)"));
+            tbtn(ui, Tool::Line, tr("— Line"), tr("Graphic line"));
+            tbtn(ui, Tool::Rect, tr("☐ Rect"), tr("Graphic rectangle"));
             if let Tool::Place(key) = tool {
                 if let Some(def) = symbols::get(key) {
-                    ui.label(RichText::new(format!("Placing: {}", def.name)).strong());
+                    ui.label(RichText::new(tr_fmt!("Placing: {}", tr(def.name))).strong());
                 }
             }
             ui.separator();
-            if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text("Undo (Ctrl+Z)").clicked() {
+            if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text(tr("Undo (Ctrl+Z)")).clicked() {
                 self.history.undo(&mut self.prj);
             }
-            if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text("Redo (Ctrl+Y)").clicked() {
+            if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text(tr("Redo (Ctrl+Y)")).clicked() {
                 self.history.redo(&mut self.prj);
             }
             let has_sel = !self.editor.selection.is_empty();
-            if ui.add_enabled(has_sel, egui::Button::new("⟳")).on_hover_text("Rotate (R)").clicked() {
+            if ui.add_enabled(has_sel, egui::Button::new("⟳")).on_hover_text(tr("Rotate (R)")).clicked() {
                 ops::rotate(&mut self.prj.pages[self.page], &self.editor.selection);
             }
-            if ui.add_enabled(has_sel, egui::Button::new("🗑")).on_hover_text("Delete (Del)").clicked() {
+            if ui.add_enabled(has_sel, egui::Button::new("🗑")).on_hover_text(tr("Delete (Del)")).clicked() {
                 ops::delete(&mut self.prj.pages[self.page], &self.editor.selection);
                 self.editor.selection.clear();
             }
             ui.separator();
-            if ui.button("⛶ Fit").on_hover_text("Fit page (F)").clicked() {
+            if ui.button(tr("⛶ Fit")).on_hover_text(tr("Fit page (F)")).clicked() {
                 self.editor.fit_pending = true;
             }
-            ui.label(format!("{:.0}%", self.editor.zoom / 3.78 * 100.0)).on_hover_text("100% ≈ real size on a 96 dpi screen");
+            ui.label(format!("{:.0}%", self.editor.zoom / 3.78 * 100.0)).on_hover_text(tr("100% ≈ real size on a 96 dpi screen"));
             ui.separator();
-            if ui.add_enabled(self.page > 0, egui::Button::new("◀")).on_hover_text("Previous page (Page Up)").clicked() {
+            if ui.add_enabled(self.page > 0, egui::Button::new("◀")).on_hover_text(tr("Previous page (Page Up)")).clicked() {
                 self.goto(self.page - 1, 0);
             }
             let pg = &self.prj.pages[self.page];
-            ui.label(RichText::new(format!("Page {}  {}", structure::page_full_name(pg), pg.description)).strong());
-            if ui.add_enabled(self.page + 1 < self.prj.pages.len(), egui::Button::new("▶")).on_hover_text("Next page (Page Down)").clicked() {
+            ui.label(RichText::new(tr_fmt!("Page {}  {}", structure::page_full_name(pg), pg.description)).strong());
+            if ui.add_enabled(self.page + 1 < self.prj.pages.len(), egui::Button::new("▶")).on_hover_text(tr("Next page (Page Down)")).clicked() {
                 self.goto(self.page + 1, 0);
             }
             ui.separator();
-            if ui.button("📊 Reports").clicked() {
+            if ui.button(tr("📊 Reports")).clicked() {
                 self.show_reports = true;
             }
         });
@@ -645,20 +652,20 @@ impl App {
 
     fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index) {
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.left_tab, LeftTab::Pages, "Pages");
-            ui.selectable_value(&mut self.left_tab, LeftTab::Devices, "Devices");
+            ui.selectable_value(&mut self.left_tab, LeftTab::Pages, tr("Pages"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Devices, tr("Devices"));
             let n_err = self.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
-            let label = if n_err > 0 { RichText::new(format!("Check ({n_err})")).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new("Check") };
+            let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
         });
         ui.separator();
         match self.left_tab {
             LeftTab::Pages => {
                 ui.horizontal(|ui| {
-                    if ui.button("+ Page").on_hover_text("New schematic page after the current one").clicked() {
+                    if ui.button(tr("+ Page")).on_hover_text(tr("New schematic page after the current one")).clicked() {
                         self.add_page(PageKind::Schematic);
                     }
-                    if ui.button("⚙").on_hover_text("Page properties").clicked() {
+                    if ui.button("⚙").on_hover_text(tr("Page properties")).clicked() {
                         self.page_props = Some(self.page);
                     }
                     if ui.add_enabled(self.page > 0, egui::Button::new("⏶")).clicked() {
@@ -693,7 +700,7 @@ impl App {
                 });
             }
             LeftTab::Devices => {
-                ui.add(egui::TextEdit::singleline(&mut self.device_filter).hint_text("Filter devices…"));
+                ui.add(egui::TextEdit::singleline(&mut self.device_filter).hint_text(tr("Filter devices…")));
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut jump = None;
                     let f = self.device_filter.to_lowercase();
@@ -713,11 +720,11 @@ impl App {
                         let dev = &idx.devices[tag];
                         let title = if structured { Dt::parse(tag).name } else { tag.clone() };
                         egui::CollapsingHeader::new(RichText::new(title).monospace().strong()).id_salt(tag).show(ui, |ui| {
-                            for (kind, locs) in [("Main", &dev.mains), ("Aux", &dev.auxs), ("", &dev.others)] {
+                            for (kind, locs) in [(tr("Main"), &dev.mains), (tr("Aux"), &dev.auxs), ("", &dev.others)] {
                                 for loc in locs {
                                     let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
                                     let Some(inst) = inst else { continue };
-                                    let name = symbols::get(&inst.sym).map(|d| d.name).unwrap_or("?");
+                                    let name = symbols::get(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
                                     let extra = if inst.label.is_empty() { inst.pins.join("-") } else { inst.label.clone() };
                                     let text = format!("{} {kind} {name} {extra}", loc.reference(prj));
                                     if ui.link(text.trim()).clicked() {
@@ -742,7 +749,7 @@ impl App {
                         }
                     }
                     if idx.devices.is_empty() {
-                        ui.weak("No devices yet. Pick a symbol from the library on the right and click into the page.");
+                        ui.weak(tr("No devices yet. Pick a symbol from the library on the right and click into the page."));
                     }
                     if let Some((pg, id)) = jump {
                         self.goto(pg, id);
@@ -769,13 +776,13 @@ impl App {
                         ui.horizontal_wrapped(|ui| {
                             ui.label(RichText::new(icon).color(color));
                             let r = ui.add(egui::Label::new(&issue.message).sense(egui::Sense::click()));
-                            if r.on_hover_text("Click to show").clicked() {
+                            if r.on_hover_text(tr("Click to show")).clicked() {
                                 jump = issue.target;
                             }
                         });
                     }
                     if issues.is_empty() {
-                        ui.label("✔ No problems found.");
+                        ui.label(tr("✔ No problems found."));
                     }
                     if let Some((pg, id)) = jump {
                         self.goto(pg, id);
@@ -787,8 +794,8 @@ impl App {
 
     fn library(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.heading("Symbols");
-            ui.add(egui::TextEdit::singleline(&mut self.lib_filter).hint_text("Search…").desired_width(f32::INFINITY));
+            ui.heading(tr("Symbols"));
+            ui.add(egui::TextEdit::singleline(&mut self.lib_filter).hint_text(tr("Search…")).desired_width(f32::INFINITY));
         });
         let f = self.lib_filter.to_lowercase();
         let user = self.user_symbols();
@@ -800,7 +807,7 @@ impl App {
                 .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().copied().filter(|d| d.library == *lib).collect::<Vec<_>>()))
                 .chain(Category::ALL.into_iter().map(|cat| (cat.title().to_string(), symbols::library().iter().filter(|d| d.category == cat).collect())));
             for (title, defs) in groups {
-                let defs: Vec<&symbols::SymbolDef> = defs.into_iter().filter(|d| f.is_empty() || d.name.to_lowercase().contains(&f)).collect();
+                let defs: Vec<&symbols::SymbolDef> = defs.into_iter().filter(|d| f.is_empty() || (d.name.to_lowercase().contains(&f) || tr(d.name).to_lowercase().contains(&f))).collect();
                 if defs.is_empty() {
                     continue;
                 }
@@ -811,7 +818,7 @@ impl App {
                         let active = self.editor.tool == Tool::Place(def.key);
                         ui.horizontal(|ui| {
                             let icon = symbol_icon(ui, def.key, egui::vec2(40.0, 30.0));
-                            let lbl = ui.selectable_label(active, format!("{}  ({})", def.name, if def.letter.is_empty() { "–" } else { def.letter }));
+                            let lbl = ui.selectable_label(active, format!("{}  ({})", tr(def.name), if def.letter.is_empty() { "–" } else { def.letter }));
                             if icon.clicked() || lbl.clicked() {
                                 self.editor.set_tool(Tool::Place(def.key));
                                 self.editor.place_rot = 0;
@@ -832,19 +839,19 @@ impl App {
     }
 
     fn properties(&mut self, ui: &mut egui::Ui, idx: &Index) {
-        ui.heading("Properties");
+        ui.heading(tr("Properties"));
         let sel: Vec<u64> = self.editor.selection.iter().copied().collect();
         let pi = self.page;
         if self.prj.pages[pi].locked {
-            ui.label(RichText::new("🔒 Released page – read only").color(Color32::from_rgb(220, 140, 0)));
+            ui.label(RichText::new(tr("🔒 Released page – read only")).color(Color32::from_rgb(220, 140, 0)));
             ui.disable();
         }
         if sel.is_empty() {
             let pg = &mut self.prj.pages[pi];
-            ui.label(RichText::new(format!("Page {} – {}", structure::page_full_name(pg), pg.kind.label())).strong());
-            ui.label("Description");
+            ui.label(RichText::new(tr_fmt!("Page {} – {}", structure::page_full_name(pg), pg.kind.label())).strong());
+            ui.label(tr("Description"));
             ui.text_edit_singleline(&mut pg.description);
-            if ui.link("Structure (function / location)…").on_hover_text("Page properties").clicked() {
+            if ui.link(tr("Structure (function / location)…")).on_hover_text(tr("Page properties")).clicked() {
                 self.page_props = Some(pi);
             }
             ui.add_space(6.0);
@@ -852,12 +859,12 @@ impl App {
             return;
         }
         if sel.len() > 1 {
-            ui.label(format!("{} objects selected", sel.len()));
+            ui.label(tr_fmt!("{} objects selected", sel.len()));
             ui.horizontal(|ui| {
-                if ui.button("⟳ Rotate").clicked() {
+                if ui.button(tr("⟳ Rotate")).clicked() {
                     ops::rotate(&mut self.prj.pages[pi], &self.editor.selection);
                 }
-                if ui.button("🗑 Delete").clicked() {
+                if ui.button(tr("🗑 Delete")).clicked() {
                     ops::delete(&mut self.prj.pages[pi], &self.editor.selection);
                     self.editor.selection.clear();
                 }
@@ -865,14 +872,14 @@ impl App {
             let wires: Vec<u64> = self.prj.pages[pi].wires.iter().filter(|w| self.editor.selection.contains(&w.id)).map(|w| w.id).collect();
             if !wires.is_empty() {
                 ui.separator();
-                ui.label(format!("{} wires", wires.len()));
+                ui.label(tr_fmt!("{} wires", wires.len()));
                 let first = self.prj.pages[pi].wires.iter().find(|w| w.id == wires[0]).cloned().unwrap_or_default();
                 let (mut color, mut cs) = (first.color.clone(), first.cross_section.clone());
                 egui::Grid::new("wprops").num_columns(2).show(ui, |ui| {
-                    ui.label("Colour");
+                    ui.label(tr("Colour"));
                     ui.text_edit_singleline(&mut color);
                     ui.end_row();
-                    ui.label("Cross-section");
+                    ui.label(tr("Cross-section"));
                     ui.text_edit_singleline(&mut cs);
                     ui.end_row();
                 });
@@ -885,19 +892,19 @@ impl App {
                 let cables: Vec<String> = self.prj.cables.iter().map(|c| c.tag.clone()).collect();
                 let mut assign = None;
                 ui.horizontal(|ui| {
-                    ui.menu_button("Assign to cable", |ui| {
+                    ui.menu_button(tr("Assign to cable"), |ui| {
                         for c in &cables {
                             if ui.button(c).clicked() {
                                 assign = Some(c.clone());
                             }
                         }
                         if cables.is_empty() {
-                            ui.weak("No cables yet – Project › Cables…");
+                            ui.weak(tr("No cables yet – Project › Cables…"));
                         }
                     })
                     .response
-                    .on_hover_text("The wires get the free cores of the cable in order (left to right)");
-                    if ui.button("Remove from cable").clicked() {
+                    .on_hover_text(tr("The wires get the free cores of the cable in order (left to right)"));
+                    if ui.button(tr("Remove from cable")).clicked() {
                         for w in self.prj.pages[pi].wires.iter_mut().filter(|w| wires.contains(&w.id)) {
                             w.cable.clear();
                             w.core.clear();
@@ -907,19 +914,19 @@ impl App {
                 let harnesses: Vec<String> = self.prj.harnesses.iter().map(|h| h.tag.clone()).collect();
                 let mut to_harness = None;
                 ui.horizontal(|ui| {
-                    ui.menu_button("Assign to harness", |ui| {
+                    ui.menu_button(tr("Assign to harness"), |ui| {
                         for h in &harnesses {
                             if ui.button(h).clicked() {
                                 to_harness = Some(h.clone());
                             }
                         }
                         if harnesses.is_empty() {
-                            ui.weak("No harnesses yet – Project › Harnesses…");
+                            ui.weak(tr("No harnesses yet – Project › Harnesses…"));
                         }
                     })
                     .response
-                    .on_hover_text("Connections whose two ends are both on selected wires");
-                    if ui.button("Remove from harness").clicked() {
+                    .on_hover_text(tr("Connections whose two ends are both on selected wires"));
+                    if ui.button(tr("Remove from harness")).clicked() {
                         to_harness = Some(String::new());
                     }
                 });
@@ -937,14 +944,13 @@ impl App {
                         crate::harness::assign(&mut self.prj, a, b, &tag);
                     }
                     let ctx = ui.ctx().clone();
-                    let what = if tag.is_empty() { "removed from their harness".to_string() } else { format!("assigned to {tag}") };
-                    self.notify(&ctx, format!("{} connections {what}", ends.len()));
+                    self.notify(&ctx, if tag.is_empty() { tr_fmt!("{} connections removed from their harness", ends.len()) } else { tr_fmt!("{} connections assigned to {}", ends.len(), tag) });
                 }
                 if let Some(c) = assign {
                     let sel: std::collections::BTreeSet<u64> = wires.iter().copied().collect();
                     let n = ops::assign_cores(&mut self.prj, pi, &sel, &c);
                     let ctx = ui.ctx().clone();
-                    self.notify(&ctx, format!("{n} of {} wires assigned to cores of {c}", wires.len()));
+                    self.notify(&ctx, tr_fmt!("{} of {} wires assigned to cores of {}", n, wires.len(), c));
                 }
             }
             return;
@@ -956,13 +962,13 @@ impl App {
         } else if let Some(wi) = page.wires.iter().position(|w| w.id == id) {
             let net = self.analysis.netlist.net_of_wire(id);
             if let Some(net) = net {
-                ui.label(RichText::new(format!("Potential: {}", net.name)).strong());
-                ui.label("Connected to:");
+                ui.label(RichText::new(tr_fmt!("Potential: {}", net.name)).strong());
+                ui.label(tr("Connected to:"));
                 let mut v: Vec<String> = net.pins.iter().map(|p| pin_designation(&self.prj, *p)).collect();
                 v.sort_by(|a, b| natural_cmp(a, b));
                 v.dedup();
                 ui.label(RichText::new(v.join(", ")).monospace());
-                ui.weak("All wires of this potential are highlighted.");
+                ui.weak(tr("All wires of this potential are highlighted."));
             }
             ui.separator();
             let open_net = self.analysis.open.wire_net.get(&id).map(|&n| self.analysis.open.nets[n].clone());
@@ -993,16 +999,16 @@ impl App {
             let mut harness_change = None;
             let w = &mut self.prj.pages[pi].wires[wi];
             egui::Grid::new("wprops1").num_columns(2).show(ui, |ui| {
-                ui.label("Wire number");
+                ui.label(tr("Wire number"));
                 ui.horizontal(|ui| {
-                    ui.add(egui::TextEdit::singleline(&mut number).hint_text("not numbered").desired_width(90.0))
-                        .on_hover_text("Applies to all wires of this connection; automatic numbering keeps manual numbers");
+                    ui.add(egui::TextEdit::singleline(&mut number).hint_text(tr("not numbered")).desired_width(90.0))
+                        .on_hover_text(tr("Applies to all wires of this connection; automatic numbering keeps manual numbers"));
                     if w.number_fixed {
-                        ui.weak("manual");
+                        ui.weak(tr("manual"));
                     }
                 });
                 ui.end_row();
-                ui.label("Cable");
+                ui.label(tr("Cable"));
                 let shown = if w.cable.is_empty() { "(none)".to_string() } else { structure::relative(&here, &w.cable) };
                 egui::ComboBox::from_id_salt("wcable").selected_text(shown).show_ui(ui, |ui| {
                     if ui.selectable_label(w.cable.is_empty(), "(none)").clicked() {
@@ -1018,25 +1024,25 @@ impl App {
                 });
                 ui.end_row();
                 if let Some((_, cores)) = cables.iter().find(|(t, _)| *t == w.cable) {
-                    ui.label("Core");
+                    ui.label(tr("Core"));
                     egui::ComboBox::from_id_salt("wcore").selected_text(w.core.clone()).show_ui(ui, |ui| {
                         for c in cores {
-                            let text = if used.contains(c) { format!("{c}  (used)") } else { c.clone() };
+                            let text = if used.contains(c) { tr_fmt!("{}  (used)", c) } else { c.clone() };
                             ui.selectable_value(&mut w.core, c.clone(), text);
                         }
                     });
                     ui.end_row();
                 }
-                ui.label("Colour");
-                ui.add(egui::TextEdit::singleline(&mut w.color).hint_text("e.g. BU, BK, GNYE"));
+                ui.label(tr("Colour"));
+                ui.add(egui::TextEdit::singleline(&mut w.color).hint_text(tr("e.g. BU, BK, GNYE")));
                 ui.end_row();
-                ui.label("Cross-section");
-                ui.add(egui::TextEdit::singleline(&mut w.cross_section).hint_text("e.g. 1.5 mm²"));
+                ui.label(tr("Cross-section"));
+                ui.add(egui::TextEdit::singleline(&mut w.cross_section).hint_text(tr("e.g. 1.5 mm²")));
                 ui.end_row();
-                ui.label("From");
+                ui.label(tr("From"));
                 ui.label(format!("{:.0} / {:.0}", w.a.x, w.a.y));
                 ui.end_row();
-                ui.label("To");
+                ui.label(tr("To"));
                 ui.label(format!("{:.0} / {:.0}", w.b.x, w.b.y));
                 ui.end_row();
             });
@@ -1047,7 +1053,7 @@ impl App {
             }
             if !conns.is_empty() {
                 ui.separator();
-                ui.label(RichText::new("Connections / harness").strong()).on_hover_text("Each point-to-point connection can belong to a harness");
+                ui.label(RichText::new(tr("Connections / harness")).strong()).on_hover_text(tr("Each point-to-point connection can belong to a harness"));
                 egui::Grid::new("wharness").num_columns(2).show(ui, |ui| {
                     for (i, (a, b, h)) in conns.iter().enumerate() {
                         ui.label(RichText::new(format!("{a} – {b}")).monospace());
@@ -1070,36 +1076,36 @@ impl App {
                 crate::harness::assign(&mut self.prj, &a, &b, &tag);
             }
         } else if let Some(t) = self.prj.pages[pi].texts.iter_mut().find(|t| t.id == id) {
-            ui.label("Text");
+            ui.label(tr("Text"));
             ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
-            ui.add(egui::Slider::new(&mut t.size, 1.5..=20.0).text("Height (mm)"));
+            ui.add(egui::Slider::new(&mut t.size, 1.5..=20.0).text(tr("Height (mm)")));
         } else if let Some(s) = self.prj.pages[pi].shapes.iter_mut().find(|s| s.id == id) {
             ui.label(match s.kind {
-                ShapeKind::Line => "Graphic line",
-                ShapeKind::Rect => "Graphic rectangle",
+                ShapeKind::Line => tr("Graphic line"),
+                ShapeKind::Rect => tr("Graphic rectangle"),
             });
-            ui.checkbox(&mut s.dashed, "Dashed");
+            ui.checkbox(&mut s.dashed, tr("Dashed"));
         }
     }
 
     fn symbol_properties(&mut self, ui: &mut egui::Ui, idx: &Index, pi: usize, si: usize) {
         let s = self.prj.pages[pi].symbols[si].clone();
         let Some(def) = symbols::get(&s.sym) else {
-            ui.label(format!("Unknown symbol {}", s.sym));
+            ui.label(tr_fmt!("Unknown symbol {}", s.sym));
             return;
         };
-        ui.label(RichText::new(def.name).strong());
+        ui.label(RichText::new(tr(def.name)).strong());
         let mut edited = s.clone();
         let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
-                ui.label(if def.func == Func::Terminal { "Terminal strip" } else if def.func == Func::Plc { "PLC card" } else { "Device tag" });
+                ui.label(if def.func == Func::Terminal { tr("Terminal strip") } else if def.func == Func::Plc { tr("PLC card") } else { tr("Device tag") });
                 ui.horizontal(|ui| {
                     // Shown relative to the page structure, stored complete.
                     let mut shown = structure::relative(&here, &edited.tag);
                     let before = shown.clone();
                     ui.add(egui::TextEdit::singleline(&mut shown).desired_width(90.0).font(egui::TextStyle::Monospace))
-                        .on_hover_text(format!("Complete tag: {}\nAspects missing here are taken from the page (=function +location).", edited.tag));
+                        .on_hover_text(tr_fmt!("Complete tag: {}\nAspects missing here are taken from the page (=function +location).", edited.tag));
                     if shown != before {
                         edited.tag = if shown.trim().is_empty() { String::new() } else { structure::complete(&here, &shown) };
                     }
@@ -1118,15 +1124,15 @@ impl App {
                         }
                     })
                     .response
-                    .on_hover_text("Assign to existing device");
+                    .on_hover_text(tr("Assign to existing device"));
                 });
                 ui.end_row();
             }
             let label_name = match def.func {
-                Func::Terminal => Some("Terminal number"),
-                Func::Plc => Some("Address"),
-                Func::Potential => Some("Potential name"),
-                Func::Interruption => Some("Name"),
+                Func::Terminal => Some(tr("Terminal number")),
+                Func::Plc => Some(tr("Address")),
+                Func::Potential => Some(tr("Potential name")),
+                Func::Interruption => Some(tr("Name")),
                 _ => None,
             };
             if let Some(name) = label_name {
@@ -1135,12 +1141,12 @@ impl App {
                 ui.end_row();
             }
             if def.func.has_tag() {
-                ui.label("Function text");
+                ui.label(tr("Function text"));
                 ui.add(egui::TextEdit::multiline(&mut edited.function_text).desired_rows(2).desired_width(160.0));
                 ui.end_row();
             }
             if def.show_pin_labels {
-                ui.label("Connection points");
+                ui.label(tr("Connection points"));
                 ui.horizontal_wrapped(|ui| {
                     for pin in edited.pins.iter_mut() {
                         ui.add(egui::TextEdit::singleline(pin).desired_width(32.0));
@@ -1148,7 +1154,7 @@ impl App {
                 });
                 ui.end_row();
             }
-            ui.label("Orientation");
+            ui.label(tr("Orientation"));
             ui.horizontal(|ui| {
                 if ui.button("⟲").clicked() {
                     edited.rot = (edited.rot + 3) % 4;
@@ -1157,15 +1163,15 @@ impl App {
                 if ui.button("⟳").clicked() {
                     edited.rot = (edited.rot + 1) % 4;
                 }
-                ui.checkbox(&mut edited.mirror, "Mirror");
+                ui.checkbox(&mut edited.mirror, tr("Mirror"));
             });
             ui.end_row();
-            ui.label("Position");
-            ui.label(format!("{:.0} / {:.0} mm  (column {})", s.pos.x, s.pos.y, column_of(s.pos)));
+            ui.label(tr("Position"));
+            ui.label(tr_fmt!("{} / {} mm  (column {})", format!("{:.0}", s.pos.x), format!("{:.0}", s.pos.y), column_of(s.pos)));
             ui.end_row();
         });
         if let Func::Aux(kind) = def.func {
-            if def.auto_number && ui.button("Renumber contact").on_hover_text("Next free contact numbers on this device").clicked() {
+            if def.auto_number && ui.button(tr("Renumber contact")).on_hover_text(tr("Next free contact numbers on this device")).clicked() {
                 edited.pins = ops::next_contact_pins(&self.prj, &edited.tag, kind, Some(s.id));
             }
         }
@@ -1176,15 +1182,15 @@ impl App {
         // Device data
         if def.func.has_tag() && !edited.tag.is_empty() {
             ui.separator();
-            ui.label(RichText::new(format!("Device {}", edited.tag)).strong());
+            ui.label(RichText::new(tr_fmt!("Device {}", edited.tag)).strong());
             let mut data = self.prj.devices.get(&edited.tag).cloned().unwrap_or_default();
             let before = data.clone();
             ui.horizontal(|ui| {
-                ui.label("Description");
+                ui.label(tr("Description"));
                 ui.text_edit_singleline(&mut data.description);
             });
             // Part assignment (several parts per device, e.g. contactor + auxiliary block)
-            ui.label(RichText::new("Parts").strong());
+            ui.label(RichText::new(tr("Parts")).strong());
             let mut remove = None;
             let mut show_part = None;
             egui::Grid::new("devparts").num_columns(2).striped(true).show(ui, |ui| {
@@ -1193,14 +1199,14 @@ impl App {
                     let link = ui.link(RichText::new(&r.number).monospace());
                     let link = match known {
                         Some(p) => link.on_hover_text(format!("{}\n{}", p.description, p.template_summary())),
-                        None => link.on_hover_text("Not in the project parts – synchronize in parts management"),
+                        None => link.on_hover_text(tr("Not in the project parts – synchronize in parts management")),
                     };
                     if link.clicked() {
                         show_part = Some(r.number.clone());
                     }
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut r.count).range(1..=999).prefix("× "));
-                        if ui.small_button("🗑").on_hover_text("Remove part").clicked() {
+                        if ui.small_button("🗑").on_hover_text(tr("Remove part")).clicked() {
                             remove = Some(i);
                         }
                     });
@@ -1214,13 +1220,13 @@ impl App {
                 self.parts_ui.show_part(&n, true);
             }
             ui.horizontal(|ui| {
-                if ui.button("➕ Add part…").on_hover_text("Part selection from the parts database").clicked() {
+                if ui.button(tr("➕ Add part…")).on_hover_text(tr("Part selection from the parts database")).clicked() {
                     self.parts_ui.select_for(&edited.tag);
                 }
                 if !data.parts.is_empty()
                     && ui
-                        .button("Apply designations")
-                        .on_hover_text("Takes the connection point designations of all functions of this device from the function templates of its parts")
+                        .button(tr("Apply designations"))
+                        .on_hover_text(tr("Takes the connection point designations of all functions of this device from the function templates of its parts"))
                         .clicked()
                 {
                     parts::apply_designations(&mut self.prj, Some(&self.parts_db), &edited.tag);
@@ -1231,7 +1237,7 @@ impl App {
             }
             if let Some((ei, _)) = self.prj.layout.find_device(&edited.tag) {
                 let enc = self.prj.layout.enclosures[ei].name.clone();
-                if ui.button(format!("🗄 Show in panel layout ({enc})")).clicked() && self.panel_ui.show_device(&self.prj, &edited.tag) {
+                if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.prj, &edited.tag) {
                     self.workspace = Workspace::Panel;
                 }
             }
@@ -1249,7 +1255,7 @@ impl App {
                         } else {
                             ui.visuals().text_color()
                         };
-                        ui.label(RichText::new(txt).small().color(color)).on_hover_text("placed / provided by the parts");
+                        ui.label(RichText::new(txt).small().color(color)).on_hover_text(tr("placed / provided by the parts"));
                     }
                 });
             }
@@ -1258,7 +1264,7 @@ impl App {
             let mut new_tag: String = ui.data_mut(|d| d.get_temp(rename_id)).unwrap_or_else(|| edited.tag.clone());
             ui.horizontal(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut new_tag).desired_width(90.0));
-                if ui.button("Rename device").on_hover_text("Changes the tag of all functions of this device").clicked() {
+                if ui.button(tr("Rename device")).on_hover_text(tr("Changes the tag of all functions of this device")).clicked() {
                     ops::rename_device(&mut self.prj, &edited.tag, &new_tag);
                 }
             });
@@ -1267,13 +1273,13 @@ impl App {
             // Cross references
             if let Some(dev) = idx.devices.get(&edited.tag) {
                 ui.separator();
-                ui.label(RichText::new("Cross references").strong());
+                ui.label(RichText::new(tr("Cross references")).strong());
                 let mut jump = None;
-                for (kind, locs) in [("Main", &dev.mains), ("Aux", &dev.auxs), ("", &dev.others)] {
+                for (kind, locs) in [(tr("Main"), &dev.mains), (tr("Aux"), &dev.auxs), ("", &dev.others)] {
                     for loc in locs {
                         let inst = self.prj.pages[loc.page].symbols.iter().find(|x| x.id == loc.sym_id);
                         let Some(inst) = inst else { continue };
-                        let dname = symbols::get(&inst.sym).map(|d| d.name).unwrap_or("?");
+                        let dname = symbols::get(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
                         let extra = if inst.label.is_empty() { inst.pins.join("-") } else { inst.label.clone() };
                         let me = if loc.sym_id == s.id { " ◀" } else { "" };
                         if ui.link(format!("{} {kind} {dname} {extra}{me}", loc.reference(&self.prj))).clicked() {
@@ -1290,7 +1296,7 @@ impl App {
         // Potentials at the connection points
         if !def.pins.is_empty() {
             ui.separator();
-            ui.label(RichText::new("Connections").strong());
+            ui.label(RichText::new(tr("Connections")).strong());
             egui::Grid::new("pinnets").num_columns(2).striped(true).show(ui, |ui| {
                 for i in 0..def.pins.len() {
                     let pin = PinRef { page: pi, sym: si, pin: i };
@@ -1298,7 +1304,7 @@ impl App {
                     let net = self.analysis.netlist.pin_net.get(&(s.id, i)).map(|&n| self.analysis.netlist.nets[n].name.clone());
                     let unconnected = self.analysis.netlist.unconnected.iter().any(|&(_, id, p)| id == s.id && p == i);
                     if unconnected {
-                        ui.label(RichText::new("open").color(Color32::from_rgb(220, 120, 0)));
+                        ui.label(RichText::new(tr("open")).color(Color32::from_rgb(220, 120, 0)));
                     } else {
                         ui.label(net.unwrap_or_default());
                     }
@@ -1315,7 +1321,7 @@ impl App {
             let mut jump = None;
             let mut export = None;
             let mut add_page = None;
-            egui::Window::new("Reports").open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
+            egui::Window::new(tr("Reports")).open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
                 ui.horizontal_wrapped(|ui| {
                     for k in ReportKind::ALL {
                         ui.selectable_value(&mut self.report_kind, k, k.title());
@@ -1324,13 +1330,13 @@ impl App {
                 ui.separator();
                 let kind = self.report_kind;
                 ui.horizontal(|ui| {
-                    if ui.button("⬇ Export CSV").clicked() {
+                    if ui.button(tr("⬇ Export CSV")).clicked() {
                         export = Some(kind);
                     }
-                    if ui.button("➕ Insert as report page").clicked() {
+                    if ui.button(tr("➕ Insert as report page")).clicked() {
                         add_page = Some(kind);
                     }
-                    if ui.button("Form…").on_hover_text("Columns, order and rows of the report pages").clicked() {
+                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, order and rows of the report pages")).clicked() {
                         self.forms_ui.open_report(kind);
                     }
                 });
@@ -1355,7 +1361,7 @@ impl App {
                         }
                     });
                     if table.rows.is_empty() {
-                        ui.weak("(no entries)");
+                        ui.weak(tr("(no entries)"));
                     }
                 });
             });
@@ -1379,28 +1385,28 @@ impl App {
         if self.show_project {
             let mut open = true;
             let prj_tb_names = crate::forms::names(&self.prj);
-            egui::Window::new("Project properties").open(&mut open).resizable(false).show(ctx, |ui| {
+            egui::Window::new(tr("Project properties")).open(&mut open).resizable(false).show(ctx, |ui| {
                 let info = &mut self.prj.info;
                 egui::Grid::new("prj").num_columns(2).show(ui, |ui| {
-                    ui.label("Project name");
+                    ui.label(tr("Project name"));
                     ui.text_edit_singleline(&mut info.name);
                     ui.end_row();
-                    ui.label("Description");
+                    ui.label(tr("Description"));
                     ui.text_edit_multiline(&mut info.description);
                     ui.end_row();
-                    ui.label("Company");
+                    ui.label(tr("Company"));
                     ui.text_edit_singleline(&mut info.company);
                     ui.end_row();
-                    ui.label("Created by");
+                    ui.label(tr("Created by"));
                     ui.text_edit_singleline(&mut info.creator);
                     ui.end_row();
-                    ui.label("Date");
+                    ui.label(tr("Date"));
                     ui.text_edit_singleline(&mut info.date);
                     ui.end_row();
-                    ui.label("Revision");
+                    ui.label(tr("Revision"));
                     ui.text_edit_singleline(&mut info.revision);
                     ui.end_row();
-                    ui.label("Title block");
+                    ui.label(tr("Title block"));
                     let forms = &mut self.prj.forms;
                     let current = if forms.default_title_block.is_empty() { crate::forms::STANDARD.to_string() } else { forms.default_title_block.clone() };
                     egui::ComboBox::from_id_salt("prjtb").selected_text(&current).show_ui(ui, |ui| {
@@ -1413,7 +1419,7 @@ impl App {
                     ui.end_row();
                 });
                 ui.separator();
-                ui.label(RichText::new("Project properties").strong()).on_hover_text("Shown in title blocks with {prop:Name}");
+                ui.label(RichText::new(tr("Project properties")).strong()).on_hover_text(tr("Shown in title blocks with {prop:Name}"));
                 let props = &mut self.prj.info.properties;
                 let mut remove = None;
                 let mut rename = None;
@@ -1440,7 +1446,7 @@ impl App {
                 if let Some(k) = remove {
                     props.remove(&k);
                 }
-                if ui.button("➕ Property").clicked() {
+                if ui.button(tr("➕ Property")).clicked() {
                     let mut n = props.len() + 1;
                     while props.contains_key(&format!("Property{n}")) {
                         n += 1;
@@ -1475,16 +1481,16 @@ impl App {
             let mut apply_structure = None;
             if pi < self.prj.pages.len() {
                 let tb_names = crate::forms::names(&self.prj);
-                egui::Window::new("Page properties").open(&mut open).resizable(false).show(ctx, |ui| {
+                egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
                     let pg = &mut self.prj.pages[pi];
                     egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
-                        ui.label("Page name / number");
+                        ui.label(tr("Page name / number"));
                         ui.text_edit_singleline(&mut pg.name);
                         ui.end_row();
-                        ui.label("Description");
+                        ui.label(tr("Description"));
                         ui.text_edit_singleline(&mut pg.description);
                         ui.end_row();
-                        ui.label("Page type");
+                        ui.label(tr("Page type"));
                         egui::ComboBox::from_id_salt("pgkind").selected_text(pg.kind.label()).show_ui(ui, |ui| {
                             ui.selectable_value(&mut pg.kind, PageKind::Schematic, PageKind::Schematic.label());
                             ui.selectable_value(&mut pg.kind, PageKind::Cover, PageKind::Cover.label());
@@ -1492,44 +1498,44 @@ impl App {
                                 ui.selectable_value(&mut pg.kind, PageKind::Report(k), PageKind::Report(k).label());
                             }
                             for e in &self.prj.layout.enclosures {
-                                ui.selectable_value(&mut pg.kind, PageKind::Mounting(e.id), format!("Mounting layout {}", e.name));
+                                ui.selectable_value(&mut pg.kind, PageKind::Mounting(e.id), tr_fmt!("Mounting layout {}", e.name));
                             }
                         });
                         ui.end_row();
                     });
                     ui.horizontal(|ui| {
-                        ui.label("Title block");
+                        ui.label(tr("Title block"));
                         let shown = if pg.title_block.is_empty() { "(project default)".to_string() } else { pg.title_block.clone() };
                         egui::ComboBox::from_id_salt("pgtb").selected_text(shown).show_ui(ui, |ui| {
-                            ui.selectable_value(&mut pg.title_block, String::new(), "(project default)");
+                            ui.selectable_value(&mut pg.title_block, String::new(), tr("(project default)"));
                             for n in &tb_names {
                                 ui.selectable_value(&mut pg.title_block, n.clone(), n);
                             }
                         });
                     });
                     if pg.kind != PageKind::Schematic && !pg.is_empty() {
-                        ui.colored_label(Color32::from_rgb(220, 140, 0), "This page contains schematic content which is not evaluated on non-schematic pages.");
+                        ui.colored_label(Color32::from_rgb(220, 140, 0), tr("This page contains schematic content which is not evaluated on non-schematic pages."));
                     }
                     ui.separator();
-                    ui.label(RichText::new("Structure (IEC 81346)").strong());
+                    ui.label(RichText::new(tr("Structure (IEC 81346)")).strong());
                     let key = ui.scope_id().with(("page_structure", pi));
                     let (mut function, mut location, mut move_devices): (String, String, bool) =
                         ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (pg.function.clone(), pg.location.clone(), true));
                     egui::Grid::new("pgstruct").num_columns(2).show(ui, |ui| {
-                        ui.label("Function  =");
-                        ui.add(egui::TextEdit::singleline(&mut function).hint_text("e.g. A1, PUMP.2"));
+                        ui.label(tr("Function  ="));
+                        ui.add(egui::TextEdit::singleline(&mut function).hint_text(tr("e.g. A1, PUMP.2")));
                         ui.end_row();
-                        ui.label("Location  +");
-                        ui.add(egui::TextEdit::singleline(&mut location).hint_text("e.g. CAB1, FIELD"));
+                        ui.label(tr("Location  +"));
+                        ui.add(egui::TextEdit::singleline(&mut location).hint_text(tr("e.g. CAB1, FIELD")));
                         ui.end_row();
                     });
-                    ui.checkbox(&mut move_devices, "Move the devices of this page into the new structure")
-                        .on_hover_text("Renames the devices (all their functions, also on other pages)");
+                    ui.checkbox(&mut move_devices, tr("Move the devices of this page into the new structure"))
+                        .on_hover_text(tr("Renames the devices (all their functions, also on other pages)"));
                     let changed = structure::clean_aspect(&function) != pg.function || structure::clean_aspect(&location) != pg.location;
-                    if ui.add_enabled(changed, egui::Button::new("Apply structure")).clicked() {
+                    if ui.add_enabled(changed, egui::Button::new(tr("Apply structure"))).clicked() {
                         apply_structure = Some((function.clone(), location.clone(), move_devices));
                     }
-                    ui.weak("Devices placed on the page get its structure; their tags are shown without it.");
+                    ui.weak(tr("Devices placed on the page get its structure; their tags are shown without it."));
                     ui.data_mut(|d| d.insert_temp(key, (function, location, move_devices)));
                 });
             } else {
@@ -1545,40 +1551,40 @@ impl App {
 
         if self.show_help {
             let mut open = true;
-            egui::Window::new("OpenECraft – usage").open(&mut open).default_width(520.0).show(ctx, |ui| {
-                ui.label(RichText::new("Workflow").strong());
-                ui.label("1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.");
-                ui.label("2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.");
-                ui.label("3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.");
-                ui.label("4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.");
-                ui.label("5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.");
-                ui.label("6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.");
-                ui.label("7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.");
-                ui.label("8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.");
-                ui.label("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.");
-                ui.label("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.");
-                ui.label("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.");
-                ui.label("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules.");
-                ui.label("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.");
-                ui.label("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.");
+            egui::Window::new(tr("OpenECraft – usage")).open(&mut open).default_width(520.0).show(ctx, |ui| {
+                ui.label(RichText::new(tr("Workflow")).strong());
+                ui.label(tr("1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically."));
+                ui.label(tr("2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live."));
+                ui.label(tr("3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot."));
+                ui.label(tr("4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential."));
+                ui.label(tr("5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages."));
+                ui.label(tr("6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown."));
+                ui.label(tr("7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties."));
+                ui.label(tr("8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets."));
+                ui.label(tr("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."));
+                ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
+                ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
+                ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
+                ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
+                ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
                 ui.separator();
-                ui.label(RichText::new("Shortcuts").strong());
+                ui.label(RichText::new(tr("Shortcuts")).strong());
                 egui::Grid::new("keys").striped(true).show(ui, |ui| {
                     for (k, v) in [
-                        ("Esc", "Cancel / select tool / clear selection"),
-                        ("W / T", "Wire tool / text tool"),
-                        ("R / M", "Rotate / mirror (selection or symbol being placed)"),
-                        ("Space", "Toggle corner direction while drawing wires"),
-                        ("Del", "Delete selection"),
-                        ("Arrows", "Move selection by one grid step"),
-                        ("Ctrl+C / X / V", "Copy / cut / paste (devices get new tags)"),
-                        ("Ctrl+A", "Select all"),
-                        ("Ctrl+Z / Ctrl+Y", "Undo / redo"),
-                        ("Ctrl+S / Ctrl+O", "Save / open"),
-                        ("F / Home", "Fit page"),
-                        ("Page Up / Down", "Previous / next page"),
-                        ("Wheel / right or middle drag", "Zoom / pan"),
-                        ("Shift + click / drag", "Add to selection"),
+                        (tr("Esc"), tr("Cancel / select tool / clear selection")),
+                        ("W / T", tr("Wire tool / text tool")),
+                        ("R / M", tr("Rotate / mirror (selection or symbol being placed)")),
+                        (tr("Space"), tr("Toggle corner direction while drawing wires")),
+                        (tr("Del"), tr("Delete selection")),
+                        (tr("Arrows"), tr("Move selection by one grid step")),
+                        (tr("Ctrl+C / X / V"), tr("Copy / cut / paste (devices get new tags)")),
+                        (tr("Ctrl+A"), tr("Select all")),
+                        (tr("Ctrl+Z / Ctrl+Y"), tr("Undo / redo")),
+                        (tr("Ctrl+S / Ctrl+O"), tr("Save / open")),
+                        (tr("F / Home"), tr("Fit page")),
+                        (tr("Page Up / Down"), tr("Previous / next page")),
+                        (tr("Wheel / right or middle drag"), tr("Zoom / pan")),
+                        (tr("Shift + click / drag"), tr("Add to selection")),
                     ] {
                         ui.label(RichText::new(k).monospace());
                         ui.label(v);
@@ -1604,23 +1610,23 @@ impl App {
             used.entry(w.cable.clone()).or_default().insert(w.core.clone());
         }
         let structure = structure::page_structure(&self.prj.pages[self.page]);
-        egui::Window::new("Cables").open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button("➕ New cable").on_hover_text("In the structure of the current page").clicked() {
+                if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
                     let tag = self.prj.next_tag(&structure, "W");
                     let id = self.prj.new_id();
                     self.prj.cables.push(Cable { id, tag, cores: "BN BK GY GNYE".into(), cross_section: "1.5 mm²".into(), ..Default::default() });
                 }
-                if ui.button("📊 Cable overview").clicked() {
+                if ui.button(tr("📊 Cable overview")).clicked() {
                     overview = true;
                 }
-                ui.weak("Assign wires: select them in the schematic › Assign to cable.");
+                ui.weak(tr("Assign wires: select them in the schematic › Assign to cable."));
             });
             ui.separator();
             let cable_parts: Vec<&parts::Part> = self.parts_db.parts.iter().filter(|p| p.group == "Cables").collect();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("cables").striped(true).num_columns(9).spacing([8.0, 4.0]).show(ui, |ui| {
-                    for h in ["Cable", "Type", "Cores", "Cross-section", "Length", "Part", "Description", "Used", ""] {
+                    for h in [tr("Cable"), tr("Type"), tr("Cores"), tr("Cross-section"), tr("Length"), tr("Part"), tr("Description"), tr("Used"), ""] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -1631,7 +1637,7 @@ impl App {
                             renamed.push((old.clone(), c.tag.clone()));
                         }
                         ui.add_sized([120.0, 20.0], egui::TextEdit::singleline(&mut c.cable_type));
-                        ui.add_sized([140.0, 20.0], egui::TextEdit::singleline(&mut c.cores)).on_hover_text("Core designations separated by blanks");
+                        ui.add_sized([140.0, 20.0], egui::TextEdit::singleline(&mut c.cores)).on_hover_text(tr("Core designations separated by blanks"));
                         ui.add_sized([70.0, 20.0], egui::TextEdit::singleline(&mut c.cross_section));
                         ui.add(egui::DragValue::new(&mut c.length).speed(0.5).range(0.0..=100000.0).suffix(" m"));
                         ui.horizontal(|ui| {
@@ -1651,21 +1657,21 @@ impl App {
                                     }
                                 }
                                 if cable_parts.is_empty() {
-                                    ui.weak("No parts of the product group Cables in the parts database.");
+                                    ui.weak(tr("No parts of the product group Cables in the parts database."));
                                 }
                             });
                         });
                         ui.add_sized([160.0, 20.0], egui::TextEdit::singleline(&mut c.description));
                         let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
                         ui.label(format!("{n}/{}", c.core_list().len()));
-                        if ui.small_button("🗑").on_hover_text("Delete cable (its wires are removed from it)").clicked() {
+                        if ui.small_button("🗑").on_hover_text(tr("Delete cable (its wires are removed from it)")).clicked() {
                             remove = Some(i);
                         }
                         ui.end_row();
                     }
                 });
                 if self.prj.cables.is_empty() {
-                    ui.weak("No cables defined.");
+                    ui.weak(tr("No cables defined."));
                 }
             });
         });
@@ -1700,35 +1706,35 @@ impl App {
         let nets: Vec<&crate::netlist::Net> = self.analysis.open.nets.iter().filter(|n| !n.wires.is_empty() && !n.pins.is_empty()).collect();
         let numbered = nets.iter().filter(|n| !wirenum::number_of(&self.prj, n).is_empty()).count();
         let total = nets.len();
-        egui::Window::new("Wire numbering").open(&mut open).resizable(false).show(ctx, |ui| {
+        egui::Window::new(tr("Wire numbering")).open(&mut open).resizable(false).show(ctx, |ui| {
             let s = &mut self.prj.wire_numbering;
-            ui.label("Every connection gets one number for all its wires; the two sides of a terminal are separate connections.");
+            ui.label(tr("Every connection gets one number for all its wires; the two sides of a terminal are separate connections."));
             ui.add_space(4.0);
             for scheme in NumberScheme::ALL {
                 ui.radio_value(&mut s.scheme, scheme, scheme.title());
             }
             egui::Grid::new("numbering").num_columns(2).show(ui, |ui| {
-                ui.label("Prefix");
-                ui.add(egui::TextEdit::singleline(&mut s.prefix).desired_width(60.0).hint_text("e.g. W"));
+                ui.label(tr("Prefix"));
+                ui.add(egui::TextEdit::singleline(&mut s.prefix).desired_width(60.0).hint_text(tr("e.g. W")));
                 ui.end_row();
-                ui.label("Start at");
+                ui.label(tr("Start at"));
                 ui.add(egui::DragValue::new(&mut s.start).range(0..=1_000_000));
                 ui.end_row();
             });
-            ui.checkbox(&mut self.numbering_overwrite, "Include manually set numbers");
-            ui.label(format!("{numbered} of {total} connections numbered"));
+            ui.checkbox(&mut self.numbering_overwrite, tr("Include manually set numbers"));
+            ui.label(tr_fmt!("{} of {} connections numbered", numbered, total));
             ui.horizontal(|ui| {
-                number = ui.button("Number wires").clicked();
-                remove = ui.button("Remove numbers").clicked();
+                number = ui.button(tr("Number wires")).clicked();
+                remove = ui.button(tr("Remove numbers")).clicked();
             });
         });
         if number {
             let n = wirenum::renumber(&mut self.prj, &self.analysis.open, &self.analysis.netlist, self.numbering_overwrite);
-            self.notify(ctx, format!("{n} connections numbered"));
+            self.notify(ctx, tr_fmt!("{} connections numbered", n));
         }
         if remove {
             let n = wirenum::clear(&mut self.prj, self.numbering_overwrite);
-            self.notify(ctx, format!("Numbers removed from {n} wires"));
+            self.notify(ctx, tr_fmt!("Numbers removed from {} wires", n));
         }
         self.show_numbering = open;
     }
@@ -1798,9 +1804,10 @@ impl eframe::App for App {
         if !self.symed.busy() {
             crate::symlib::register(&self.prj.symbols);
         }
-        if self.analysis_rev != self.history.rev {
+        if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
             self.analysis = Analysis::build(&self.prj);
             self.analysis_rev = self.history.rev;
+            self.analysis_lang = openecraft_i18n::lang();
         }
         let idx = Index::build(&self.prj);
 
@@ -1861,7 +1868,7 @@ impl eframe::App for App {
                         let what = if face == crate::panel::Face::Door { "door" } else { "plate" };
                         if dxf {
                             let content = crate::production::nc_dxf(&self.prj, ei, face);
-                            self.export(&ctx, format!("{what}{base}.dxf"), ("DXF drawing", "dxf"), content);
+                            self.export(&ctx, format!("{what}{base}.dxf"), (tr("DXF drawing"), "dxf"), content);
                         } else {
                             let content = crate::production::nc_csv(&self.prj, ei, face);
                             self.export(&ctx, format!("{what}{base}_drilling.csv"), ("CSV", "csv"), content);
@@ -1897,5 +1904,6 @@ impl eframe::App for App {
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
         eframe::set_value(storage, "macros", &self.macro_lib);
+        eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

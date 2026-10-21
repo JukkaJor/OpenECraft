@@ -1,6 +1,7 @@
 //! Forms window: title block editor (lines, rectangles, texts with placeholders)
 //! and report forms (columns, order, rows per page).
 
+use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette};
 use crate::forms::{self, Form, FormItem, FormLibrary, ReportForm};
@@ -54,10 +55,10 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
-        egui::Window::new("Forms – title blocks and reports").open(&mut open).default_size([1150.0, 560.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Forms – title blocks and reports")).open(&mut open).default_size([1150.0, 560.0]).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.forms_ui.tab, Tab::TitleBlocks, RichText::new("Title blocks").strong());
-                ui.selectable_value(&mut self.forms_ui.tab, Tab::Reports, RichText::new("Report forms").strong());
+                ui.selectable_value(&mut self.forms_ui.tab, Tab::TitleBlocks, RichText::new(tr("Title blocks")).strong());
+                ui.selectable_value(&mut self.forms_ui.tab, Tab::Reports, RichText::new(tr("Report forms")).strong());
             });
             ui.separator();
             match self.forms_ui.tab {
@@ -71,7 +72,7 @@ impl App {
             Some(Action::Export) => {
                 let lib = FormLibrary { title_blocks: self.prj.forms.title_blocks.clone() };
                 let json = serde_json::to_string_pretty(&lib).unwrap_or_default();
-                self.export(ctx, "title_blocks.json".into(), ("OpenECraft title blocks", "json"), json);
+                self.export(ctx, "title_blocks.json".into(), (tr("OpenECraft title blocks"), "json"), json);
             }
             None => {}
         }
@@ -88,7 +89,7 @@ impl App {
         }
         let custom = prj.forms.title_blocks.iter().position(|f| f.name == fu.form);
         ui.horizontal_wrapped(|ui| {
-            ui.label("Title block");
+            ui.label(tr("Title block"));
             egui::ComboBox::from_id_salt("tbsel").selected_text(&fu.form).width(180.0).show_ui(ui, |ui| {
                 for n in &names {
                     let tag = if prj.forms.title_blocks.iter().any(|f| &f.name == n) { "" } else { "  (built-in)" };
@@ -98,7 +99,7 @@ impl App {
                     }
                 }
             });
-            if ui.button("Copy as new").on_hover_text("Editable copy of this title block").clicked() {
+            if ui.button(tr("Copy as new")).on_hover_text(tr("Editable copy of this title block")).clicked() {
                 let mut f = forms::find(prj, &fu.form).into_owned();
                 let mut name = format!("{} (copy)", f.name);
                 while names.contains(&name) {
@@ -109,7 +110,7 @@ impl App {
                 fu.form = name;
                 fu.item = None;
             }
-            if ui.button("New empty").clicked() {
+            if ui.button(tr("New empty")).clicked() {
                 let mut name = "My title block".to_string();
                 while names.contains(&name) {
                     name.push('+');
@@ -120,11 +121,11 @@ impl App {
                 fu.item = None;
             }
             let is_default = prj.forms.default_title_block == fu.form || (prj.forms.default_title_block.is_empty() && fu.form == forms::STANDARD);
-            if ui.add_enabled(!is_default, egui::Button::new("Use for all pages")).on_hover_text("Project default; pages can choose their own in the page properties").clicked() {
+            if ui.add_enabled(!is_default, egui::Button::new(tr("Use for all pages"))).on_hover_text(tr("Project default; pages can choose their own in the page properties")).clicked() {
                 prj.forms.default_title_block = if fu.form == forms::STANDARD { String::new() } else { fu.form.clone() };
             }
             if let Some(ci) = custom {
-                if ui.button("🗑 Delete").on_hover_text("Pages using it get the project default").clicked() {
+                if ui.button(tr("🗑 Delete")).on_hover_text(tr("Pages using it get the project default")).clicked() {
                     let name = prj.forms.title_blocks.remove(ci).name;
                     for pg in prj.pages.iter_mut().filter(|pg| pg.title_block == name) {
                         pg.title_block.clear();
@@ -137,20 +138,20 @@ impl App {
                 }
             }
             ui.separator();
-            if ui.button("⬆ Import…").clicked() {
+            if ui.button(tr("⬆ Import…")).clicked() {
                 action = Some(Action::Import);
             }
-            if ui.add_enabled(!prj.forms.title_blocks.is_empty(), egui::Button::new("⬇ Export…")).on_hover_text("The project's own title blocks").clicked() {
+            if ui.add_enabled(!prj.forms.title_blocks.is_empty(), egui::Button::new(tr("⬇ Export…"))).on_hover_text(tr("The project's own title blocks")).clicked() {
                 action = Some(Action::Export);
             }
         });
         let used = (0..prj.pages.len()).filter(|&i| forms::title_block(prj, i).name == fu.form).count();
-        ui.weak(format!("Used on {used} of {} pages", prj.pages.len()));
+        ui.weak(tr_fmt!("Used on {} of {} pages", used, prj.pages.len()));
         let custom = prj.forms.title_blocks.iter().position(|f| f.name == fu.form);
         let page = self.page.min(prj.pages.len().saturating_sub(1));
         match custom {
             None => {
-                ui.colored_label(Color32::from_rgb(220, 140, 0), "Built-in title blocks are read only – use “Copy as new” to make your own.");
+                ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Built-in title blocks are read only – use “Copy as new” to make your own."));
                 let mut form = forms::find(prj, &fu.form).into_owned();
                 preview(ui, fu, prj, page, &mut form, false);
             }
@@ -158,7 +159,7 @@ impl App {
                 let mut form = prj.forms.title_blocks[ci].clone();
                 let old_name = form.name.clone();
                 ui.horizontal(|ui| {
-                    ui.label("Name");
+                    ui.label(tr("Name"));
                     ui.text_edit_singleline(&mut form.name);
                 });
                 preview(ui, fu, prj, page, &mut form, true);
@@ -169,10 +170,10 @@ impl App {
                         ui.horizontal_wrapped(|ui| {
                             let mid = p(forms::AREA_W / 2.0, forms::AREA_H / 2.0);
                             let new = [
-                                ("➕ Line", FormItem::Line { a: mid - p(20.0, 0.0), b: mid + p(20.0, 0.0), width: 0.25 }),
-                                ("➕ Rectangle", FormItem::Rect { a: mid - p(20.0, 8.0), b: mid + p(20.0, 8.0), width: 0.25, fill: false }),
-                                ("➕ Text", FormItem::Text { pos: mid, text: "{project}".into(), size: 2.5, anchor: Anchor::Left, label: false, max_width: 0.0 }),
-                                ("➕ Label", FormItem::Text { pos: mid, text: "Label".into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 }),
+                                (tr("➕ Line"), FormItem::Line { a: mid - p(20.0, 0.0), b: mid + p(20.0, 0.0), width: 0.25 }),
+                                (tr("➕ Rectangle"), FormItem::Rect { a: mid - p(20.0, 8.0), b: mid + p(20.0, 8.0), width: 0.25, fill: false }),
+                                (tr("➕ Text"), FormItem::Text { pos: mid, text: "{project}".into(), size: 2.5, anchor: Anchor::Left, label: false, max_width: 0.0 }),
+                                (tr("➕ Label"), FormItem::Text { pos: mid, text: "Label".into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 }),
                             ];
                             for (label, item) in new {
                                 if ui.button(label).clicked() {
@@ -200,8 +201,8 @@ impl App {
                     });
                     ui.separator();
                     ui.vertical(|ui| {
-                        ui.label(RichText::new("Placeholders").strong());
-                        ui.weak("Click to add to the selected text.");
+                        ui.label(RichText::new(tr("Placeholders")).strong());
+                        ui.weak(tr("Click to add to the selected text."));
                         egui::ScrollArea::vertical().id_salt("tbph").max_height(240.0).show(ui, |ui| {
                             for (ph, meaning) in forms::PLACEHOLDERS {
                                 ui.horizontal(|ui| {
@@ -210,7 +211,7 @@ impl App {
                                             text.push_str(ph);
                                         }
                                     }
-                                    ui.weak(meaning);
+                                    ui.weak(tr(meaning));
                                 });
                             }
                         });
@@ -240,7 +241,7 @@ impl App {
         let fu = &mut self.forms_ui;
         let kind = *fu.report.get_or_insert(ReportKind::DeviceList);
         ui.horizontal(|ui| {
-            ui.label("Report");
+            ui.label(tr("Report"));
             egui::ComboBox::from_id_salt("rfkind").selected_text(kind.title()).width(240.0).show_ui(ui, |ui| {
                 for k in ReportKind::ALL {
                     ui.selectable_value(&mut fu.report, Some(k), k.title());
@@ -251,10 +252,10 @@ impl App {
         let headers: Vec<&str> = table.headers.clone();
         let mut form = self.prj.forms.reports.get(&kind).cloned().unwrap_or_default();
         egui::Grid::new("rform").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-            ui.label("Page heading");
+            ui.label(tr("Page heading"));
             ui.add(egui::TextEdit::singleline(&mut form.title).hint_text(kind.title()).desired_width(320.0));
             ui.end_row();
-            ui.label("Rows per page");
+            ui.label(tr("Rows per page"));
             let mut rows = if form.rows == 0 { crate::render::REPORT_ROWS_PER_PAGE } else { form.rows };
             if ui.add(egui::DragValue::new(&mut rows).range(5..=80)).changed() {
                 form.rows = if rows == crate::render::REPORT_ROWS_PER_PAGE { 0 } else { rows };
@@ -262,7 +263,7 @@ impl App {
             ui.end_row();
         });
         ui.add_space(4.0);
-        ui.label(RichText::new("Columns").strong());
+        ui.label(RichText::new(tr("Columns")).strong());
         // Shown columns in their order, then the hidden ones.
         let shown: Vec<usize> = forms::report_columns(Some(&form), &headers);
         let mut order: Vec<(usize, bool)> = shown.iter().map(|&c| (c, true)).collect();
@@ -291,10 +292,10 @@ impl App {
             form.columns = if all_in_order || cols.is_empty() { Vec::new() } else { cols.iter().map(|&c| headers[c].to_string()).collect() };
         }
         ui.horizontal(|ui| {
-            if ui.button("Reset to standard").clicked() {
+            if ui.button(tr("Reset to standard")).clicked() {
                 form = ReportForm::default();
             }
-            ui.weak("Applies to report pages, the PDF and the print export.");
+            ui.weak(tr("Applies to report pages, the PDF and the print export."));
         });
         let stored = self.prj.forms.reports.get(&kind).cloned().unwrap_or_default();
         if form != stored {
@@ -334,7 +335,7 @@ fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &crate::model::Project, pag
 /// Properties of the selected title block element.
 fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
     let Some(i) = fu.item.filter(|i| *i < form.items.len()) else {
-        ui.weak("Select an element in the list or the drawing.");
+        ui.weak(tr("Select an element in the list or the drawing."));
         return;
     };
     let mut delete = false;
@@ -350,52 +351,52 @@ fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
     ui.label(RichText::new(form.items[i].kind_name()).strong());
     egui::Grid::new("tbitem").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| match &mut form.items[i] {
         FormItem::Line { a, b, width } => {
-            pt(ui, "Start", a);
-            pt(ui, "End", b);
-            ui.label("Line width");
+            pt(ui, tr("Start"), a);
+            pt(ui, tr("End"), b);
+            ui.label(tr("Line width"));
             ui.add(egui::DragValue::new(width).speed(0.05).range(0.05..=2.0).suffix(" mm"));
             ui.end_row();
         }
         FormItem::Rect { a, b, width, fill } => {
-            pt(ui, "Corner", a);
-            pt(ui, "Corner", b);
-            ui.label("Line width");
+            pt(ui, tr("Corner"), a);
+            pt(ui, tr("Corner"), b);
+            ui.label(tr("Line width"));
             ui.add(egui::DragValue::new(width).speed(0.05).range(0.0..=2.0).suffix(" mm"));
             ui.end_row();
-            ui.label("Filled");
+            ui.label(tr("Filled"));
             ui.checkbox(fill, "");
             ui.end_row();
         }
         FormItem::Text { pos, text, size, anchor, label, max_width } => {
-            ui.label("Text");
+            ui.label(tr("Text"));
             ui.add(egui::TextEdit::multiline(text).desired_rows(2).desired_width(220.0));
             ui.end_row();
-            pt(ui, "Position", pos);
-            ui.label("Size");
+            pt(ui, tr("Position"), pos);
+            ui.label(tr("Size"));
             ui.add(egui::DragValue::new(size).speed(0.1).range(0.8..=20.0).suffix(" mm"));
             ui.end_row();
-            ui.label("Alignment");
+            ui.label(tr("Alignment"));
             ui.horizontal(|ui| {
-                ui.selectable_value(anchor, Anchor::Left, "Left");
-                ui.selectable_value(anchor, Anchor::Center, "Centre");
-                ui.selectable_value(anchor, Anchor::Right, "Right");
+                ui.selectable_value(anchor, Anchor::Left, tr("Left"));
+                ui.selectable_value(anchor, Anchor::Center, tr("Centre"));
+                ui.selectable_value(anchor, Anchor::Right, tr("Right"));
             });
             ui.end_row();
-            ui.label("Style");
+            ui.label(tr("Style"));
             ui.horizontal(|ui| {
-                ui.selectable_value(label, false, "Value");
-                ui.selectable_value(label, true, "Label (grey)");
+                ui.selectable_value(label, false, tr("Value"));
+                ui.selectable_value(label, true, tr("Label (grey)"));
             });
             ui.end_row();
-            ui.label("Max. width");
+            ui.label(tr("Max. width"));
             ui.add(egui::DragValue::new(max_width).speed(0.5).range(0.0..=forms::AREA_W).suffix(" mm"))
-                .on_hover_text("Longer values are drawn smaller (0 = no limit)");
+                .on_hover_text(tr("Longer values are drawn smaller (0 = no limit)"));
             ui.end_row();
         }
     });
     ui.horizontal(|ui| {
-        duplicate = ui.button("Duplicate").clicked();
-        delete = ui.button("🗑 Delete").clicked();
+        duplicate = ui.button(tr("Duplicate")).clicked();
+        delete = ui.button(tr("🗑 Delete")).clicked();
     });
     if duplicate {
         let mut copy = form.items[i].clone();

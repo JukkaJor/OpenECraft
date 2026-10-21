@@ -26,7 +26,8 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | --- | --- | --- |
 | `openecraft` | `.` (`src/`) | Editor (desktop + web) – the root package, built by trunk |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
-| `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs |
+| `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
+| `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
 
@@ -40,6 +41,38 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
   server and client together.
 - New crates are added to `[workspace] members` in the root `Cargo.toml`; the
   convention test reads that list, so its rules apply to every member.
+
+## Languages – mandatory for every feature
+
+The app is available in **English, German, French and Spanish**. All four are required:
+a feature, menu entry, dialog, message, tooltip, report heading or placeholder text is
+not done until it is available in all of them. Further languages are optional (add a
+column to the catalog and a `Lang` variant).
+
+- Write texts in English in the code and pass them through `openecraft_i18n`:
+  `tr("Open")` for plain texts, `tr_fmt!("Saved {}", name)` for texts with `{}`
+  placeholders (the translation may reorder with `{0}`, `{1}`), `tr_const!("…")` in
+  `const` / `static` tables (translate with `tr(…)` where the text is shown).
+  Never build sentences from translated fragments (`"Macro " + tr("saved")`); translate
+  the whole sentence, one catalog entry per variant.
+- Every English text needs a line in `crates/openecraft-i18n/src/catalog/extra.tsv`
+  (`English<TAB>Deutsch<TAB>Français<TAB>Español`; `\n` and `\"` as in Rust source;
+  `{}` placeholders must appear in every translation). `translations.tsv` holds the
+  initial set. The catalog is checked by `cargo test`: all four languages present,
+  placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` and every
+  built-in symbol name is in the catalog, and all translated characters exist in the
+  bundled fonts.
+- `src/conventions/tests.rs` fails for plain string literals passed to widgets
+  (`ui.button("…")`, `.label("…")`, `.on_hover_text("…")`, `Window::new("…")`, …).
+- Translate at the point where the text is shown, so that switching the language in
+  View › Language (or the parts manager's toolbar) takes effect immediately. Texts
+  that are stored in the project (user input, names of built-in forms) stay as they are;
+  generated content (reports, title blocks, check messages) is translated when it is
+  generated, `App` regenerates it when the language changes.
+- Do not translate file formats, CSV headers of machine readable exports, JSON keys,
+  part data and log messages.
+- Language choice: stored by the apps (`language` key), otherwise the OS / browser
+  language if supported, otherwise English (`openecraft_i18n::init`).
 
 ## Unit tests – mandatory layout
 

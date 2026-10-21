@@ -2,6 +2,7 @@
 //! implemented in `openecraft_ui::io`.
 
 pub use openecraft_ui::io::short_name;
+use openecraft_i18n::tr;
 use openecraft_ui::io::FileKind;
 use openecraft_ui::part_editor::ModelKind;
 
@@ -26,13 +27,13 @@ pub enum Purpose {
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Project => ("OpenECraft project", &[PROJECT_EXT, "json"]),
-            Purpose::Parts => ("Parts (CSV, JSON)", &["csv", "json", "txt"]),
+            Purpose::Project => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::Model(kind) => kind.filter(),
-            Purpose::Macros => ("OpenECraft macros (JSON)", &["json"]),
+            Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
-            Purpose::Symbols => ("OpenECraft symbol library (JSON)", &["json"]),
-            Purpose::Forms => ("OpenECraft title blocks (JSON)", &["json"]),
+            Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
+            Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
         }
     }
 }

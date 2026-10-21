@@ -3,7 +3,9 @@
 //! - [`part_editor`] – part tree, tabbed part editor, 2D / 3D model previews
 //! - [`client`] – client of the parts server (`openecraft-server`)
 //! - [`io`] – file dialogs on desktop, file picker and downloads in the browser
+//! - [`language`] – language menu (UI texts are translated with `openecraft-i18n`)
 
 pub mod client;
 pub mod io;
+pub mod language;
 pub mod part_editor;

@@ -1,6 +1,7 @@
 //! Backend independent page rendering. The same code draws to the egui canvas and
 //! to SVG export, so what you see is what you print.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P, R};
 use crate::index::{Index, Loc};
 use crate::model::*;
@@ -486,13 +487,13 @@ fn draw_cover(d: &mut dyn Draw, prj: &Project) {
         d.text(p(cx, 100.0 + i as f32 * 8.0), l, 5.0, Anchor::Center, VAnchor::Middle, Ink::Text);
     }
     let rows = [
-        ("Company", info.company.as_str()),
-        ("Created by", info.creator.as_str()),
-        ("Date", info.date.as_str()),
-        ("Revision", info.revision.as_str()),
+        (tr("Company"), info.company.as_str()),
+        (tr("Created by"), info.creator.as_str()),
+        (tr("Date"), info.date.as_str()),
+        (tr("Revision"), info.revision.as_str()),
     ];
     let pages = prj.pages.len().to_string();
-    let rows = rows.iter().copied().chain(std::iter::once(("Number of pages", pages.as_str())));
+    let rows = rows.iter().copied().chain(std::iter::once((tr("Number of pages"), pages.as_str())));
     for (i, (k, v)) in rows.enumerate() {
         let y = 160.0 + i as f32 * 9.0;
         d.text(p(cx - 5.0, y), k, 3.5, Anchor::Right, VAnchor::Middle, Ink::FrameText);
@@ -547,7 +548,7 @@ fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind)
     }
     d.rect(p(x0, 34.0), p(x1, y), 0.3, Ink::Frame, false);
     if table.rows.len() > per_page {
-        let more = format!("… {} more rows – see Reports window / CSV export", table.rows.len() - per_page);
+        let more = tr_fmt!("… {} more rows – see Reports window / CSV export", table.rows.len() - per_page);
         d.text(p(x0, y + 5.0), &more, 2.5, Anchor::Left, VAnchor::Middle, Ink::FrameText);
     }
     if table.rows.is_empty() {
@@ -786,7 +787,7 @@ pub fn drawing_scale(real: (f32, f32), space: (f32, f32)) -> f32 {
 
 fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
     let Some(e) = prj.layout.enclosures.iter().find(|e| e.id == id) else {
-        let msg = "Enclosure not found - choose another one in the page properties";
+        let msg = tr("Enclosure not found - choose another one in the page properties");
         d.text(p(30.0, 40.0), msg, 4.0, Anchor::Left, VAnchor::Middle, Ink::Error);
         return;
     };
@@ -803,8 +804,8 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
     if door {
         let o = origin + p(w + gap * k, 0.0);
         draw_enclosure(d, e, Face::Door, o, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
-        d.text(p(origin.x + w / 2.0, origin.y - 3.0), "Mounting plate", 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
-        d.text(p(o.x + w / 2.0, o.y - 3.0), "Door (front view)", 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+        d.text(p(origin.x + w / 2.0, origin.y - 3.0), tr("Mounting plate"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+        d.text(p(o.x + w / 2.0, o.y - 3.0), tr("Door (front view)"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
     }
     // Dimensions
     let bottom = origin.y + h + 6.0;

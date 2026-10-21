@@ -2,6 +2,7 @@
 //! macro a complete page. Placeholders `{NAME}` in tags, texts, function texts,
 //! designations and connection points are filled from value sets when inserting.
 
+use openecraft_i18n::tr_fmt;
 use crate::model::*;
 use crate::ops::{self, Clip};
 use serde::{Deserialize, Serialize};
@@ -125,7 +126,7 @@ impl Macro {
     /// Number of symbols / wires / texts and graphics.
     pub fn summary(&self) -> String {
         let c = &self.clip;
-        format!("{} symbols, {} wires, {} texts / graphics", c.symbols.len(), c.wires.len(), c.texts.len() + c.shapes.len())
+        tr_fmt!("{} symbols, {} wires, {} texts / graphics", c.symbols.len(), c.wires.len(), c.texts.len() + c.shapes.len())
     }
 }
 

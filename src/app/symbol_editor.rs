@@ -1,6 +1,7 @@
 //! Symbol editor: user symbols of the project (graphics, connection points,
 //! function), copies of built-in symbols and symbol library files.
 
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
 use crate::geom::{p, P, GRID};
@@ -26,14 +27,14 @@ pub enum SymTool {
 
 impl SymTool {
     const ALL: [(SymTool, &'static str, &'static str); 8] = [
-        (SymTool::Select, "⬉ Select", "Select and drag elements; Del deletes"),
-        (SymTool::Line, "— Line", "Click start and end point"),
-        (SymTool::Rect, "☐ Rect", "Click two corners"),
-        (SymTool::Circle, "○ Circle", "Click centre, then a point on the circle"),
-        (SymTool::Text, "T Text", "Click to place the text from the field below"),
-        (SymTool::Pin, "• Connection point", "Click on the 4 mm grid"),
-        (SymTool::TagField, "Tag field", "Position of the device tag (instead of the tag block)"),
-        (SymTool::LabelField, "Label field", "Position of the label (terminal number, address …)"),
+        (SymTool::Select, tr_const!("⬉ Select"), tr_const!("Select and drag elements; Del deletes")),
+        (SymTool::Line, tr_const!("— Line"), tr_const!("Click start and end point")),
+        (SymTool::Rect, tr_const!("☐ Rect"), tr_const!("Click two corners")),
+        (SymTool::Circle, tr_const!("○ Circle"), tr_const!("Click centre, then a point on the circle")),
+        (SymTool::Text, tr_const!("T Text"), tr_const!("Click to place the text from the field below")),
+        (SymTool::Pin, tr_const!("• Connection point"), tr_const!("Click on the 4 mm grid")),
+        (SymTool::TagField, tr_const!("Tag field"), tr_const!("Position of the device tag (instead of the tag block)")),
+        (SymTool::LabelField, tr_const!("Label field"), tr_const!("Position of the label (terminal number, address …)")),
     ];
 }
 
@@ -89,13 +90,13 @@ impl App {
             se.sel = prj.symbols.first().map(|u| u.key.clone());
             se.hit = None;
         }
-        egui::Window::new("Symbol editor").open(&mut open).default_size([960.0, 520.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Symbol editor")).open(&mut open).default_size([960.0, 520.0]).show(ctx, |ui| {
             ui.horizontal_top(|ui| {
                 // ------------------------------------------------ symbol list
                 ui.vertical(|ui| {
                     ui.set_width(180.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("➕ New").clicked() {
+                        if ui.button(tr("➕ New")).clicked() {
                             let mut u = UserSymbol::default();
                             u.key = symlib::new_key(&prj.symbols, &u.name);
                             u.prims.push(Prim::Poly { pts: vec![p(-4.0, -4.0), p(4.0, -4.0), p(4.0, 4.0), p(-4.0, 4.0)], closed: true, fill: false });
@@ -105,12 +106,12 @@ impl App {
                             se.sel = Some(u.key.clone());
                             prj.symbols.push(u);
                         }
-                        ui.menu_button("Copy built-in…", |ui| {
+                        ui.menu_button(tr("Copy built-in…"), |ui| {
                             egui::ScrollArea::vertical().max_height(400.0).show(ui, |ui| {
                                 for cat in symbols::Category::ALL {
                                     ui.menu_button(cat.title(), |ui| {
                                         for def in symbols::library().iter().filter(|d| d.category == cat) {
-                                            if ui.button(def.name).clicked() {
+                                            if ui.button(tr(def.name)).clicked() {
                                                 let u = symlib::from_def(def, &prj.symbols);
                                                 se.sel = Some(u.key.clone());
                                                 prj.symbols.push(u);
@@ -123,10 +124,10 @@ impl App {
                         });
                     });
                     ui.horizontal(|ui| {
-                        if ui.button("⬆ Import…").on_hover_text("Merge a symbol library file").clicked() {
+                        if ui.button(tr("⬆ Import…")).on_hover_text(tr("Merge a symbol library file")).clicked() {
                             action = Some(Action::Import);
                         }
-                        if ui.add_enabled(!prj.symbols.is_empty(), egui::Button::new("⬇ Export…")).on_hover_text("All user symbols as library file").clicked() {
+                        if ui.add_enabled(!prj.symbols.is_empty(), egui::Button::new(tr("⬇ Export…"))).on_hover_text(tr("All user symbols as library file")).clicked() {
                             action = Some(Action::Export);
                         }
                     });
@@ -152,7 +153,7 @@ impl App {
                             se.start = None;
                         }
                         if prj.symbols.is_empty() {
-                            ui.weak("No user symbols yet. Create one or copy a built-in symbol.");
+                            ui.weak(tr("No user symbols yet. Create one or copy a built-in symbol."));
                         }
                     });
                 });
@@ -164,20 +165,20 @@ impl App {
                 ui.vertical(|ui| {
                     ui.horizontal_wrapped(|ui| {
                         for (t, label, tip) in SymTool::ALL {
-                            if ui.selectable_label(se.tool == t, label).on_hover_text(tip).clicked() {
+                            if ui.selectable_label(se.tool == t, tr(label)).on_hover_text(tr(tip)).clicked() {
                                 se.set_tool(t);
                             }
                         }
                     });
                     if se.tool == SymTool::Text {
                         ui.horizontal(|ui| {
-                            ui.label("Text");
+                            ui.label(tr("Text"));
                             ui.text_edit_singleline(&mut se.text);
                         });
                     }
                     let u = &mut prj.symbols[si];
                     canvas(ui, se, u);
-                    ui.weak("Wheel: zoom · right click: cancel · graphics snap to 0.5 mm, connection points to the 4 mm grid");
+                    ui.weak(tr("Wheel: zoom · right click: cancel · graphics snap to 0.5 mm, connection points to the 4 mm grid"));
                 });
                 ui.separator();
                 // ------------------------------------------------ properties
@@ -193,15 +194,15 @@ impl App {
                         for msg in symlib::problems(u) {
                             ui.colored_label(Color32::from_rgb(220, 140, 0), format!("⚠ {msg}"));
                         }
-                        ui.label(format!("Placed {usage}× in the project"));
+                        ui.label(tr_fmt!("Placed {}× in the project", usage));
                         ui.horizontal(|ui| {
-                            if ui.add_enabled(symlib::problems(u).is_empty(), egui::Button::new("✏ Place in schematic")).clicked() {
+                            if ui.add_enabled(symlib::problems(u).is_empty(), egui::Button::new(tr("✏ Place in schematic"))).clicked() {
                                 action = Some(Action::Place(u.key.clone()));
                             }
-                            if ui.button("Duplicate").clicked() {
+                            if ui.button(tr("Duplicate")).clicked() {
                                 action = Some(Action::Duplicate(si));
                             }
-                            let del = ui.add_enabled(usage == 0, egui::Button::new("🗑 Delete")).on_disabled_hover_text("The symbol is placed in the project");
+                            let del = ui.add_enabled(usage == 0, egui::Button::new(tr("🗑 Delete"))).on_disabled_hover_text(tr("The symbol is placed in the project"));
                             if del.clicked() {
                                 action = Some(Action::Delete(si));
                             }
@@ -216,14 +217,14 @@ impl App {
             Some(Action::Export) => {
                 let lib = SymbolLibrary { symbols: self.prj.symbols.clone() };
                 let json = serde_json::to_string_pretty(&lib).unwrap_or_default();
-                self.export(ctx, "symbols.json".into(), ("OpenECraft symbol library", "json"), json);
+                self.export(ctx, "symbols.json".into(), (tr("OpenECraft symbol library"), "json"), json);
             }
             Some(Action::Place(key)) => {
                 symlib::register(&self.prj.symbols);
                 if let Some(def) = symbols::get(&key) {
                     self.workspace = super::Workspace::Schematic;
                     self.editor.set_tool(Tool::Place(def.key));
-                    self.notify(ctx, format!("Click into the page to place {}", def.name));
+                    self.notify(ctx, tr_fmt!("Click into the page to place {}", tr(def.name)));
                 }
             }
             Some(Action::Duplicate(si)) => {
@@ -244,43 +245,43 @@ impl App {
 }
 
 fn symbol_properties(ui: &mut egui::Ui, u: &mut UserSymbol) {
-    ui.label(RichText::new("Symbol").strong());
+    ui.label(RichText::new(tr("Symbol")).strong());
     egui::Grid::new("symprops_grid").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
-        ui.label("Name");
+        ui.label(tr("Name"));
         ui.text_edit_singleline(&mut u.name);
         ui.end_row();
-        ui.label("Library");
-        ui.text_edit_singleline(&mut u.library).on_hover_text("Group in the symbol list, e.g. your company");
+        ui.label(tr("Library"));
+        ui.text_edit_singleline(&mut u.library).on_hover_text(tr("Group in the symbol list, e.g. your company"));
         ui.end_row();
-        ui.label("Function");
+        ui.label(tr("Function"));
         egui::ComboBox::from_id_salt("symfunc").selected_text(u.func.title()).width(200.0).show_ui(ui, |ui| {
             for f in Func::ALL {
                 ui.selectable_value(&mut u.func, f, f.title());
             }
         });
         ui.end_row();
-        ui.label("Identifying letter");
-        ui.add(egui::TextEdit::singleline(&mut u.letter).desired_width(60.0).hint_text("K, Q, MM …"));
+        ui.label(tr("Identifying letter"));
+        ui.add(egui::TextEdit::singleline(&mut u.letter).desired_width(60.0).hint_text(tr("K, Q, MM …")));
         ui.end_row();
-        ui.label("Default label");
-        ui.add(egui::TextEdit::singleline(&mut u.default_label).desired_width(80.0)).on_hover_text("Terminal number, PLC address, potential name …");
+        ui.label(tr("Default label"));
+        ui.add(egui::TextEdit::singleline(&mut u.default_label).desired_width(80.0)).on_hover_text(tr("Terminal number, PLC address, potential name …"));
         ui.end_row();
     });
-    ui.checkbox(&mut u.show_tag, "Show device tag and cross references");
-    ui.checkbox(&mut u.show_pin_labels, "Show connection point designations");
+    ui.checkbox(&mut u.show_tag, tr("Show device tag and cross references"));
+    ui.checkbox(&mut u.show_pin_labels, tr("Show connection point designations"));
     if matches!(u.func, Func::Aux(_)) {
-        ui.checkbox(&mut u.auto_number, "Number contacts automatically (13/14, 21/22 …)");
+        ui.checkbox(&mut u.auto_number, tr("Number contacts automatically (13/14, 21/22 …)"));
     }
     if u.func == Func::Terminal && u.pins.len() >= 2 {
         let mut bridged = u.bridges.contains(&(0, 1));
-        if ui.checkbox(&mut bridged, "Connection points 1 and 2 are connected inside").changed() {
+        if ui.checkbox(&mut bridged, tr("Connection points 1 and 2 are connected inside")).changed() {
             u.bridges.retain(|b| *b != (0, 1));
             if bridged {
                 u.bridges.push((0, 1));
             }
         }
     }
-    ui.weak(format!("Key: {}", u.key));
+    ui.weak(tr_fmt!("Key: {}", u.key));
 }
 
 fn point_edit(ui: &mut egui::Ui, label: &str, q: &mut P, speed: f32) {
@@ -296,39 +297,39 @@ fn element_properties(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymb
     let mut delete = false;
     match se.hit {
         Some(Hit::Pin(i)) if i < u.pins.len() => {
-            ui.label(RichText::new(format!("Connection point {}", i + 1)).strong());
+            ui.label(RichText::new(tr_fmt!("Connection point {}", i + 1)).strong());
             egui::Grid::new("pinprops").num_columns(2).show(ui, |ui| {
-                ui.label("Designation");
+                ui.label(tr("Designation"));
                 ui.text_edit_singleline(&mut u.pins[i].label);
                 ui.end_row();
-                point_edit(ui, "Position", &mut u.pins[i].pos, GRID);
+                point_edit(ui, tr("Position"), &mut u.pins[i].pos, GRID);
             });
             u.pins[i].pos = symlib::snap(u.pins[i].pos, GRID);
-            delete = ui.button("🗑 Delete connection point").clicked();
+            delete = ui.button(tr("🗑 Delete connection point")).clicked();
         }
         Some(Hit::Prim(i)) if i < u.prims.len() => {
             let prim = &mut u.prims[i];
             let kind = match prim {
-                Prim::Line { .. } => "Line",
-                Prim::Poly { .. } => "Polyline / rectangle",
-                Prim::Circle { .. } => "Circle",
-                Prim::Text { .. } => "Text",
-                Prim::Field { .. } => "Field",
+                Prim::Line { .. } => tr("Line"),
+                Prim::Poly { .. } => tr("Polyline / rectangle"),
+                Prim::Circle { .. } => tr("Circle"),
+                Prim::Text { .. } => tr("Text"),
+                Prim::Field { .. } => tr("Field"),
             };
             ui.label(RichText::new(kind).strong());
             egui::Grid::new("primprops").num_columns(2).show(ui, |ui| match prim {
                 Prim::Line { a, b, dashed } => {
-                    point_edit(ui, "Start", a, 0.1);
-                    point_edit(ui, "End", b, 0.1);
-                    ui.label("Dashed");
+                    point_edit(ui, tr("Start"), a, 0.1);
+                    point_edit(ui, tr("End"), b, 0.1);
+                    ui.label(tr("Dashed"));
                     ui.checkbox(dashed, "");
                     ui.end_row();
                 }
                 Prim::Poly { pts, closed, fill } => {
-                    ui.label("Points");
+                    ui.label(tr("Points"));
                     ui.label(pts.len().to_string());
                     ui.end_row();
-                    ui.label("Closed / filled");
+                    ui.label(tr("Closed / filled"));
                     ui.horizontal(|ui| {
                         ui.checkbox(closed, "");
                         ui.checkbox(fill, "");
@@ -336,42 +337,42 @@ fn element_properties(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymb
                     ui.end_row();
                 }
                 Prim::Circle { c, r, fill } => {
-                    point_edit(ui, "Centre", c, 0.1);
-                    ui.label("Radius");
+                    point_edit(ui, tr("Centre"), c, 0.1);
+                    ui.label(tr("Radius"));
                     ui.add(egui::DragValue::new(r).speed(0.1).range(0.1..=100.0));
                     ui.end_row();
-                    ui.label("Filled");
+                    ui.label(tr("Filled"));
                     ui.checkbox(fill, "");
                     ui.end_row();
                 }
                 Prim::Text { pos, text, size, anchor } => {
-                    ui.label("Text");
+                    ui.label(tr("Text"));
                     ui.text_edit_singleline(text);
                     ui.end_row();
-                    point_edit(ui, "Position", pos, 0.1);
-                    ui.label("Size");
+                    point_edit(ui, tr("Position"), pos, 0.1);
+                    ui.label(tr("Size"));
                     ui.add(egui::DragValue::new(size).speed(0.1).range(0.5..=20.0));
                     ui.end_row();
                     anchor_edit(ui, anchor);
                 }
                 Prim::Field { kind, pos, size, anchor } => {
-                    ui.label("Shows");
+                    ui.label(tr("Shows"));
                     ui.horizontal(|ui| {
-                        ui.selectable_value(kind, FieldKind::Tag, "Device tag");
-                        ui.selectable_value(kind, FieldKind::Label, "Label");
+                        ui.selectable_value(kind, FieldKind::Tag, tr("Device tag"));
+                        ui.selectable_value(kind, FieldKind::Label, tr("Label"));
                     });
                     ui.end_row();
-                    point_edit(ui, "Position", pos, 0.1);
-                    ui.label("Size");
+                    point_edit(ui, tr("Position"), pos, 0.1);
+                    ui.label(tr("Size"));
                     ui.add(egui::DragValue::new(size).speed(0.1).range(0.5..=20.0));
                     ui.end_row();
                     anchor_edit(ui, anchor);
                 }
             });
-            delete = ui.button("🗑 Delete element").clicked();
+            delete = ui.button(tr("🗑 Delete element")).clicked();
         }
         _ => {
-            ui.weak("Click an element in the drawing to edit it.");
+            ui.weak(tr("Click an element in the drawing to edit it."));
         }
     }
     if delete {
@@ -380,11 +381,11 @@ fn element_properties(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymb
 }
 
 fn anchor_edit(ui: &mut egui::Ui, anchor: &mut Anchor) {
-    ui.label("Alignment");
+    ui.label(tr("Alignment"));
     ui.horizontal(|ui| {
-        ui.selectable_value(anchor, Anchor::Left, "Left");
-        ui.selectable_value(anchor, Anchor::Center, "Centre");
-        ui.selectable_value(anchor, Anchor::Right, "Right");
+        ui.selectable_value(anchor, Anchor::Left, tr("Left"));
+        ui.selectable_value(anchor, Anchor::Center, tr("Centre"));
+        ui.selectable_value(anchor, Anchor::Right, tr("Right"));
     });
     ui.end_row();
 }

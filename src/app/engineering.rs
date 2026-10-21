@@ -1,5 +1,6 @@
 //! Engineering windows: macros, terminal strips, PLC overview and revisions.
 
+use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
 use crate::io::Purpose;
@@ -91,30 +92,30 @@ impl App {
     fn save_macro_dialog(&mut self, ctx: &egui::Context) {
         let Some(m) = &mut self.eng.saving else { return };
         let (mut save, mut cancel) = (false, false);
-        egui::Window::new("Save as macro").collapsible(false).resizable(false).show(ctx, |ui| {
-            ui.label(format!("{} macro: {}", if m.kind == MacroKind::Page { "Page" } else { "Window" }, m.summary()));
+        egui::Window::new(tr("Save as macro")).collapsible(false).resizable(false).show(ctx, |ui| {
+            ui.label(if m.kind == MacroKind::Page { tr_fmt!("Page macro: {}", m.summary()) } else { tr_fmt!("Window macro: {}", m.summary()) });
             egui::Grid::new("savemacro").num_columns(2).show(ui, |ui| {
-                ui.label("Name");
+                ui.label(tr("Name"));
                 ui.text_edit_singleline(&mut m.name);
                 ui.end_row();
-                ui.label("Category");
-                ui.add(egui::TextEdit::singleline(&mut m.category).hint_text("e.g. Motors"));
+                ui.label(tr("Category"));
+                ui.add(egui::TextEdit::singleline(&mut m.category).hint_text(tr("e.g. Motors")));
                 ui.end_row();
-                ui.label("Description");
+                ui.label(tr("Description"));
                 ui.text_edit_multiline(&mut m.description);
                 ui.end_row();
             });
-            ui.weak("Placeholders like {MOTOR} in tags, texts and function texts are filled in when inserting.");
+            ui.weak(tr("Placeholders like {MOTOR} in tags, texts and function texts are filled in when inserting."));
             ui.horizontal(|ui| {
-                save = ui.add_enabled(!m.name.trim().is_empty(), egui::Button::new("💾 Save")).clicked();
-                cancel = ui.button("Cancel").clicked();
+                save = ui.add_enabled(!m.name.trim().is_empty(), egui::Button::new(tr("💾 Save"))).clicked();
+                cancel = ui.button(tr("Cancel")).clicked();
             });
         });
         if save {
             let m = self.eng.saving.take().unwrap();
             let replaced = self.macro_lib.macros.iter().any(|x| x.name == m.name);
             self.eng.macro_sel = Some(m.name.clone());
-            self.notify(ctx, format!("Macro {} {}", m.name, if replaced { "replaced" } else { "saved" }));
+            self.notify(ctx, if replaced { tr_fmt!("Macro {} replaced", m.name) } else { tr_fmt!("Macro {} saved", m.name) });
             self.macro_lib.upsert(m);
             self.eng.show_macros = true;
         }
@@ -131,20 +132,20 @@ impl App {
         let mut action = None;
         let can_save_selection = !self.editor.selection.is_empty() && self.prj.pages[self.page].kind == PageKind::Schematic;
         let mut save = None;
-        egui::Window::new("Macros").open(&mut open).default_size([820.0, 480.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Macros")).open(&mut open).default_size([820.0, 480.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
-                ui.add(egui::TextEdit::singleline(&mut self.eng.macro_filter).hint_text("Filter…").desired_width(160.0));
-                if ui.add_enabled(can_save_selection, egui::Button::new("💾 Save selection as macro…")).clicked() {
+                ui.add(egui::TextEdit::singleline(&mut self.eng.macro_filter).hint_text(tr("Filter…")).desired_width(160.0));
+                if ui.add_enabled(can_save_selection, egui::Button::new(tr("💾 Save selection as macro…"))).clicked() {
                     save = Some(false);
                 }
-                if ui.button("Save page as macro…").clicked() {
+                if ui.button(tr("Save page as macro…")).clicked() {
                     save = Some(true);
                 }
-                ui.menu_button("Library", |ui| {
-                    if ui.button("Export macros (JSON)…").clicked() {
+                ui.menu_button(tr("Library"), |ui| {
+                    if ui.button(tr("Export macros (JSON)…")).clicked() {
                         action = Some(MacroAction::Export);
                     }
-                    if ui.button("Import macros…").clicked() {
+                    if ui.button(tr("Import macros…")).clicked() {
                         action = Some(MacroAction::Import);
                     }
                 });
@@ -174,14 +175,14 @@ impl App {
                             });
                         }
                         if self.macro_lib.macros.is_empty() {
-                            ui.weak("No macros yet. Select items in a schematic and save them as a macro.");
+                            ui.weak(tr("No macros yet. Select items in a schematic and save them as a macro."));
                         }
                     });
                 });
                 ui.separator();
                 ui.vertical(|ui| {
                     let Some(i) = self.eng.macro_sel.as_ref().and_then(|n| self.macro_lib.macros.iter().position(|m| &m.name == n)) else {
-                        ui.weak("Select a macro.");
+                        ui.weak(tr("Select a macro."));
                         return;
                     };
                     let values = &mut self.eng.macro_values;
@@ -192,14 +193,14 @@ impl App {
                             ui.weak(if m.kind == MacroKind::Page { "page macro" } else { "window macro" });
                         });
                         egui::Grid::new("macroprops").num_columns(2).show(ui, |ui| {
-                            ui.label("Category");
+                            ui.label(tr("Category"));
                             ui.text_edit_singleline(&mut m.category);
                             ui.end_row();
-                            ui.label("Description");
+                            ui.label(tr("Description"));
                             ui.text_edit_multiline(&mut m.description);
                             ui.end_row();
                             if m.kind == MacroKind::Page {
-                                ui.label("Page description");
+                                ui.label(tr("Page description"));
                                 ui.text_edit_singleline(&mut m.page_description);
                                 ui.end_row();
                             }
@@ -209,10 +210,10 @@ impl App {
                         let placeholders = m.placeholders();
                         if !placeholders.is_empty() {
                             ui.separator();
-                            ui.label(RichText::new("Value sets").strong());
+                            ui.label(RichText::new(tr("Value sets")).strong());
                             let mut remove = None;
                             egui::Grid::new("valuesets").striped(true).num_columns(placeholders.len() + 2).show(ui, |ui| {
-                                ui.label(RichText::new("Name").strong());
+                                ui.label(RichText::new(tr("Name")).strong());
                                 for ph in &placeholders {
                                     ui.label(RichText::new(format!("{{{ph}}}")).strong());
                                 }
@@ -232,14 +233,14 @@ impl App {
                             if let Some(vi) = remove {
                                 m.value_sets.remove(vi);
                             }
-                            if ui.button("➕ Value set").clicked() {
+                            if ui.button(tr("➕ Value set")).clicked() {
                                 let name = format!("Set {}", m.value_sets.len() + 1);
                                 m.value_sets.push(macros::ValueSet { name, values: values.clone() });
                             }
                             ui.separator();
                             ui.horizontal(|ui| {
-                                ui.label(RichText::new("Insert with").strong());
-                                egui::ComboBox::from_id_salt("useset").selected_text("value set…").show_ui(ui, |ui| {
+                                ui.label(RichText::new(tr("Insert with")).strong());
+                                egui::ComboBox::from_id_salt("useset").selected_text(tr("value set…")).show_ui(ui, |ui| {
                                     for vs in &m.value_sets {
                                         if ui.button(&vs.name).clicked() {
                                             *values = vs.values.clone();
@@ -257,11 +258,11 @@ impl App {
                         }
                         ui.add_space(6.0);
                         ui.horizontal(|ui| {
-                            let label = if m.kind == MacroKind::Page { "➕ Insert as new page" } else { "➕ Insert (click into the page)" };
+                            let label = if m.kind == MacroKind::Page { tr("➕ Insert as new page") } else { tr("➕ Insert (click into the page)") };
                             if ui.button(label).clicked() {
                                 action = Some(MacroAction::Insert(i));
                             }
-                            if ui.button("🗑 Delete macro").clicked() {
+                            if ui.button(tr("🗑 Delete macro")).clicked() {
                                 action = Some(MacroAction::Delete(i));
                             }
                         });
@@ -279,7 +280,7 @@ impl App {
                 if m.kind == MacroKind::Page {
                     let at = macros::insert_page(&mut self.prj, self.page, &m, &self.eng.macro_values);
                     self.goto(at, 0);
-                    self.notify(ctx, format!("Page macro {} inserted as page {}", m.name, self.prj.pages[at].name));
+                    self.notify(ctx, tr_fmt!("Page macro {} inserted as page {}", m.name, self.prj.pages[at].name));
                 } else {
                     self.editor.insert = Some(m.resolve(&self.eng.macro_values));
                     self.editor.set_tool(Tool::Insert);
@@ -316,30 +317,30 @@ impl App {
         let mut moved = None;
         let mut relabel: Vec<(usize, usize, String, String)> = Vec::new();
         let mut jump = None;
-        egui::Window::new("Terminal strips").open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Terminal strips")).open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
             if tags.is_empty() {
-                ui.weak("No terminal strips: place terminals in a schematic first.");
+                ui.weak(tr("No terminal strips: place terminals in a schematic first."));
                 return;
             }
             ui.horizontal_wrapped(|ui| {
-                ui.label("Strip");
+                ui.label(tr("Strip"));
                 egui::ComboBox::from_id_salt("strip").selected_text(&strip).show_ui(ui, |ui| {
                     for t in &tags {
                         ui.selectable_value(&mut self.eng.strip, t.clone(), t);
                     }
                 });
                 ui.separator();
-                ui.label("Spare terminals");
+                ui.label(tr("Spare terminals"));
                 ui.add(egui::DragValue::new(&mut data.spares).range(0..=500));
                 ui.separator();
-                renumber = ui.button("Renumber 1 … n").on_hover_text("In strip order; PE and other non-numeric terminals keep their designation").clicked();
-                sort = ui.button("Sort by designation").clicked();
+                renumber = ui.button(tr("Renumber 1 … n")).on_hover_text(tr("In strip order; PE and other non-numeric terminals keep their designation")).clicked();
+                sort = ui.button(tr("Sort by designation")).clicked();
             });
-            ui.weak("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.");
+            ui.weak(tr("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials."));
             ui.separator();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("strip").striped(true).num_columns(8).spacing([10.0, 4.0]).show(ui, |ui| {
-                    for h in ["", "Terminal", "Jumper", "External (top)", "Internal (bottom)", "Potential", "Function text", "Location"] {
+                    for h in ["", tr("Terminal"), tr("Jumper"), tr("External (top)"), tr("Internal (bottom)"), tr("Potential"), tr("Function text"), tr("Location")] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -349,7 +350,7 @@ impl App {
                             ui.label("");
                             ui.weak(&r.label);
                             ui.label("");
-                            ui.weak("spare");
+                            ui.weak(tr("spare"));
                             ui.end_row();
                             continue;
                         };
@@ -367,7 +368,7 @@ impl App {
                             relabel.push((t.page, t.sym, r.label.clone(), label));
                         }
                         let mut j = data.jumpers.get(&r.label).copied().unwrap_or(0);
-                        if ui.add(egui::DragValue::new(&mut j).range(0..=99)).on_hover_text("0 = no jumper").changed() {
+                        if ui.add(egui::DragValue::new(&mut j).range(0..=99)).on_hover_text(tr("0 = no jumper")).changed() {
                             if j == 0 {
                                 data.jumpers.remove(&r.label);
                             } else {
@@ -411,7 +412,7 @@ impl App {
         }
         if renumber {
             let n = strips::renumber(&mut self.prj, &strip);
-            self.notify(ctx, format!("{strip}: {n} terminals renumbered"));
+            self.notify(ctx, tr_fmt!("{}: {} terminals renumbered", strip, n));
         }
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
@@ -435,36 +436,36 @@ impl App {
         let (mut readdress, mut export, mut import) = (false, false, false);
         let mut edits: Vec<(usize, usize, Option<String>, Option<String>)> = Vec::new();
         let mut jump = None;
-        egui::Window::new("PLC overview").open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
+        egui::Window::new(tr("PLC overview")).open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
-                ui.label("Card");
+                ui.label(tr("Card"));
                 egui::ComboBox::from_id_salt("plccard").selected_text(if card.is_empty() { "all cards" } else { &card }).show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.eng.card, String::new(), "all cards");
+                    ui.selectable_value(&mut self.eng.card, String::new(), tr("all cards"));
                     for c in &cards {
                         ui.selectable_value(&mut self.eng.card, c.clone(), c);
                     }
                 });
                 ui.separator();
-                export = ui.button("⬇ Export symbol table (CSV)…").on_hover_text("Name; Data Type; Logical Address; Comment – for PLC programming tools").clicked();
-                import = ui.button("⬆ Import symbol table…").on_hover_text("Takes the comments as function texts (matched by address)").clicked();
+                export = ui.button(tr("⬇ Export symbol table (CSV)…")).on_hover_text(tr("Name; Data Type; Logical Address; Comment – for PLC programming tools")).clicked();
+                import = ui.button(tr("⬆ Import symbol table…")).on_hover_text(tr("Takes the comments as function texts (matched by address)")).clicked();
             });
             if !card.is_empty() {
                 ui.horizontal_wrapped(|ui| {
-                    ui.label("Start byte");
+                    ui.label(tr("Start byte"));
                     ui.add(egui::DragValue::new(&mut data.start_byte).range(0..=65535));
-                    ui.label("Rack");
+                    ui.label(tr("Rack"));
                     ui.add(egui::TextEdit::singleline(&mut data.rack).desired_width(40.0));
-                    ui.label("Slot");
+                    ui.label(tr("Slot"));
                     ui.add(egui::TextEdit::singleline(&mut data.slot).desired_width(40.0));
-                    ui.label("Description");
+                    ui.label(tr("Description"));
                     ui.add(egui::TextEdit::singleline(&mut data.description).desired_width(180.0));
-                    readdress = ui.button("Readdress card").on_hover_text("Consecutive addresses from the start byte, in schematic order").clicked();
+                    readdress = ui.button(tr("Readdress card")).on_hover_text(tr("Consecutive addresses from the start byte, in schematic order")).clicked();
                 });
             }
             ui.separator();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("plcpoints").striped(true).num_columns(6).spacing([10.0, 4.0]).show(ui, |ui| {
-                    for h in ["Card", "Address", "Type", "Function text", "Connected to", "Location"] {
+                    for h in [tr("Card"), tr("Address"), tr("Type"), tr("Function text"), tr("Connected to"), tr("Location")] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -486,7 +487,7 @@ impl App {
                     }
                 });
                 if points.is_empty() {
-                    ui.weak("No PLC inputs / outputs placed.");
+                    ui.weak(tr("No PLC inputs / outputs placed."));
                 }
             });
         });
@@ -505,7 +506,7 @@ impl App {
         }
         if readdress {
             let n = plc::readdress(&mut self.prj, &card);
-            self.notify(ctx, format!("{card}: {n} addresses changed"));
+            self.notify(ctx, tr_fmt!("{}: {} addresses changed", card, n));
         }
         if export {
             let csv = plc::symbol_table(&self.prj, &self.analysis.netlist);
@@ -534,11 +535,11 @@ impl App {
             self.eng.rev_author = self.prj.info.creator.clone();
         }
         let locked = self.prj.pages.iter().filter(|p| p.locked).count();
-        egui::Window::new("Revisions").open(&mut open).default_size([640.0, 480.0]).show(ctx, |ui| {
+        egui::Window::new(tr("Revisions")).open(&mut open).default_size([640.0, 480.0]).show(ctx, |ui| {
             egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                ui.label(RichText::new("Revisions").strong());
+                ui.label(RichText::new(tr("Revisions")).strong());
                 egui::Grid::new("revs").striped(true).num_columns(4).show(ui, |ui| {
-                    for h in ["Index", "Date", "Author", "Description"] {
+                    for h in [tr("Index"), tr("Date"), tr("Author"), tr("Description")] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -551,53 +552,53 @@ impl App {
                     }
                 });
                 if self.prj.revisions.is_empty() {
-                    ui.weak("No revision yet. Changes are tracked from the first revision on.");
+                    ui.weak(tr("No revision yet. Changes are tracked from the first revision on."));
                 }
                 ui.separator();
-                ui.label(RichText::new("New revision").strong());
+                ui.label(RichText::new(tr("New revision")).strong());
                 egui::Grid::new("newrev").num_columns(2).show(ui, |ui| {
-                    ui.label("Index");
+                    ui.label(tr("Index"));
                     ui.add(egui::TextEdit::singleline(&mut self.eng.rev_name).desired_width(60.0));
                     ui.end_row();
-                    ui.label("Date");
-                    ui.add(egui::TextEdit::singleline(&mut self.eng.rev_date).hint_text("YYYY-MM-DD").desired_width(100.0));
+                    ui.label(tr("Date"));
+                    ui.add(egui::TextEdit::singleline(&mut self.eng.rev_date).hint_text(tr("YYYY-MM-DD")).desired_width(100.0));
                     ui.end_row();
-                    ui.label("Author");
+                    ui.label(tr("Author"));
                     ui.text_edit_singleline(&mut self.eng.rev_author);
                     ui.end_row();
-                    ui.label("Description");
+                    ui.label(tr("Description"));
                     ui.text_edit_multiline(&mut self.eng.rev_description);
                     ui.end_row();
                 });
-                ui.checkbox(&mut self.eng.rev_release, "Release: lock all pages");
-                create = ui.add_enabled(!self.eng.rev_name.trim().is_empty(), egui::Button::new("Create revision")).clicked();
+                ui.checkbox(&mut self.eng.rev_release, tr("Release: lock all pages"));
+                create = ui.add_enabled(!self.eng.rev_name.trim().is_empty(), egui::Button::new(tr("Create revision"))).clicked();
                 ui.separator();
                 ui.horizontal_wrapped(|ui| {
-                    ui.label(format!("{locked} of {} pages locked", self.prj.pages.len()));
-                    if ui.button("Lock all").clicked() {
+                    ui.label(tr_fmt!("{} of {} pages locked", locked, self.prj.pages.len()));
+                    if ui.button(tr("Lock all")).clicked() {
                         lock = Some(true);
                     }
-                    if ui.button("Unlock all").clicked() {
+                    if ui.button(tr("Unlock all")).clicked() {
                         lock = Some(false);
                     }
                     let pg = &mut self.prj.pages[self.page];
-                    ui.checkbox(&mut pg.locked, format!("Page {} locked", pg.name));
+                    ui.checkbox(&mut pg.locked, tr_fmt!("Page {} locked", pg.name));
                 });
                 ui.separator();
                 ui.horizontal(|ui| {
                     let since = self.prj.revisions.last().map(|r| r.name.clone()).unwrap_or_default();
-                    ui.label(RichText::new(if since.is_empty() { "Changes".to_string() } else { format!("Changes since revision {since}") }).strong());
-                    ui.checkbox(&mut self.editor.show_revision_marks, "Revision marks");
-                    overview = ui.button("📊 Revision overview").clicked();
+                    ui.label(RichText::new(if since.is_empty() { "Changes".to_string() } else { tr_fmt!("Changes since revision {}", since) }).strong());
+                    ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
+                    overview = ui.button(tr("📊 Revision overview")).clicked();
                 });
                 for pc in &self.analysis.changes {
                     let title = match pc.page {
-                        Some(_) => format!("Page {} ({})", pc.name, pc.changes.len()),
-                        None => format!("Page {} (deleted)", pc.name),
+                        Some(_) => tr_fmt!("Page {} ({})", pc.name, pc.changes.len()),
+                        None => tr_fmt!("Page {} (deleted)", pc.name),
                     };
                     egui::CollapsingHeader::new(title).id_salt(("chg", pc.page_id)).show(ui, |ui| {
                         for c in &pc.changes {
-                            let text = format!("{} {} {}", c.what, c.kind.title(), c.label);
+                            let text = format!("{} {} {}", tr(c.what), c.kind.title(), c.label);
                             match pc.page {
                                 Some(pi) if c.kind != revision::ChangeKind::Removed => {
                                     if ui.link(text.trim()).clicked() {
@@ -612,7 +613,7 @@ impl App {
                     });
                 }
                 if self.analysis.changes.is_empty() && !self.prj.revisions.is_empty() {
-                    ui.weak("No changes since the last revision.");
+                    ui.weak(tr("No changes since the last revision."));
                 }
             });
         });
@@ -620,7 +621,7 @@ impl App {
         if create {
             let e = &self.eng;
             revision::create(&mut self.prj, e.rev_name.trim(), &e.rev_date, &e.rev_author, &e.rev_description, e.rev_release);
-            self.notify(ctx, format!("Revision {} created", self.eng.rev_name.trim()));
+            self.notify(ctx, tr_fmt!("Revision {} created", self.eng.rev_name.trim()));
             self.eng.rev_name.clear();
             self.eng.rev_description.clear();
         }

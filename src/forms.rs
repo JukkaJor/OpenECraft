@@ -4,6 +4,7 @@
 //! own title blocks and share them as files; report forms choose the columns, their
 //! order and the rows per report page.
 
+use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P};
 use crate::model::{PageKind, Project, ReportKind, FRAME_X0, FRAME_X1, FRAME_Y1, TITLE_Y0};
 use crate::render::{Draw, Ink, VAnchor};
@@ -52,9 +53,9 @@ pub enum FormItem {
 impl FormItem {
     pub fn kind_name(&self) -> &'static str {
         match self {
-            FormItem::Line { .. } => "Line",
-            FormItem::Rect { .. } => "Rectangle",
-            FormItem::Text { .. } => "Text",
+            FormItem::Line { .. } => tr("Line"),
+            FormItem::Rect { .. } => tr("Rectangle"),
+            FormItem::Text { .. } => tr("Text"),
         }
     }
 
@@ -130,8 +131,8 @@ pub struct FormLibrary {
     pub title_blocks: Vec<Form>,
 }
 
-fn label(items: &mut Vec<FormItem>, x: f32, y: f32, text: &str) {
-    items.push(FormItem::Text { pos: p(x + 1.0, y + 1.8), text: text.into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 });
+fn label(items: &mut Vec<FormItem>, x: f32, y: f32, text: &'static str) {
+    items.push(FormItem::Text { pos: p(x + 1.0, y + 1.8), text: tr(text).into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 });
 }
 
 fn value(items: &mut Vec<FormItem>, x: f32, y: f32, text: &str, size: f32, max_width: f32) {
@@ -248,10 +249,10 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
         "page.function" => page.function.clone(),
         "page.location" => page.location.clone(),
         "page.type" => match page.kind {
-            PageKind::Schematic => "Schematic",
-            PageKind::Cover => "Cover",
-            PageKind::Report(_) => "Report",
-            PageKind::Mounting(_) => "Mounting",
+            PageKind::Schematic => tr("Schematic"),
+            PageKind::Cover => tr("Cover"),
+            PageKind::Report(_) => tr("Report"),
+            PageKind::Mounting(_) => tr("Mounting"),
         }
         .into(),
         "sheet" => (page_i + 1).to_string(),
@@ -267,28 +268,28 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
 
 /// Placeholders offered in the title block editor: (placeholder, meaning).
 pub const PLACEHOLDERS: [(&str, &str); 22] = [
-    ("{project}", "Project name"),
-    ("{project.description}", "Project description"),
-    ("{company}", "Company"),
-    ("{creator}", "Created by"),
-    ("{date}", "Date"),
-    ("{revision}", "Project revision"),
-    ("{software}", "OpenECraft"),
-    ("{page}", "Full page name (=A1+CAB1/3)"),
-    ("{page.name}", "Page number"),
-    ("{page.description}", "Page description"),
-    ("{page.structure}", "Page structure (=A1+CAB1)"),
-    ("{page.function}", "Function of the page"),
-    ("{page.location}", "Location of the page"),
-    ("{page.type}", "Page type"),
-    ("{sheet}", "Sheet number"),
-    ("{sheets}", "Number of sheets"),
-    ("{rev.name}", "Last revision"),
-    ("{rev.date}", "Date of the last revision"),
-    ("{rev.author}", "Author of the last revision"),
-    ("{rev.description}", "Description of the last revision"),
+    ("{project}", tr_const!("Project name")),
+    ("{project.description}", tr_const!("Project description")),
+    ("{company}", tr_const!("Company")),
+    ("{creator}", tr_const!("Created by")),
+    ("{date}", tr_const!("Date")),
+    ("{revision}", tr_const!("Project revision")),
+    ("{software}", tr_const!("OpenECraft")),
+    ("{page}", tr_const!("Full page name (=A1+CAB1/3)")),
+    ("{page.name}", tr_const!("Page number")),
+    ("{page.description}", tr_const!("Page description")),
+    ("{page.structure}", tr_const!("Page structure (=A1+CAB1)")),
+    ("{page.function}", tr_const!("Function of the page")),
+    ("{page.location}", tr_const!("Location of the page")),
+    ("{page.type}", tr_const!("Page type")),
+    ("{sheet}", tr_const!("Sheet number")),
+    ("{sheets}", tr_const!("Number of sheets")),
+    ("{rev.name}", tr_const!("Last revision")),
+    ("{rev.date}", tr_const!("Date of the last revision")),
+    ("{rev.author}", tr_const!("Author of the last revision")),
+    ("{rev.description}", tr_const!("Description of the last revision")),
     ("{prop:Name}", "Project property \"Name\""),
-    ("{{ }}", "Literal braces"),
+    ("{{ }}", tr_const!("Literal braces")),
 ];
 
 /// Replaces the placeholders of a text; unknown ones stay as they are.

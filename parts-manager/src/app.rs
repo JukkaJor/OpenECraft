@@ -1,5 +1,6 @@
 //! Main window of the parts manager: connection, part tree, part editor.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::session::{FollowUp, Session};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 use openecraft_parts::to_csv;
@@ -19,7 +20,7 @@ pub enum Purpose {
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Parts => ("Parts (CSV, JSON)", &["csv", "json", "txt"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::Model(kind) => kind.filter(),
         }
     }
@@ -51,6 +52,7 @@ const URL_KEY: &str = "server_url";
 impl ManagerApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> ManagerApp {
         let mut client = ServerClient::default();
+        openecraft_i18n::init(cc.storage.and_then(|s| eframe::get_value::<String>(s, openecraft_ui::language::STORAGE_KEY)).as_deref());
         if let Some(url) = cc.storage.and_then(|s| eframe::get_value::<String>(s, URL_KEY)) {
             client.url = url;
         }
@@ -92,9 +94,9 @@ impl ManagerApp {
                 let draft = self.session.draft.as_mut().filter(|d| Some(&d.part.number) == target.as_ref());
                 self.client.status = match draft {
                     Some(d) => pe::apply_model(&mut d.part, kind, &loaded.name, &loaded.bytes)
-                        .map(|m| format!("{m} – save to upload it"))
-                        .unwrap_or_else(|e| format!("Model import failed: {e}")),
-                    None => format!("{}: the part is no longer open", short_name(&loaded.name)),
+                        .map(|m| tr_fmt!("{} – save to upload it", m))
+                        .unwrap_or_else(|e| tr_fmt!("Model import failed: {}", e)),
+                    None => tr_fmt!("{}: the part is no longer open", short_name(&loaded.name)),
                 };
             }
         }
@@ -126,25 +128,25 @@ impl ManagerApp {
             ("parts.json", ("JSON", "json"), serde_json::to_string_pretty(&self.session.database()).unwrap_or_default())
         };
         self.client.status = match self.io.save_as(name, filter, &content) {
-            Ok(Some(path)) => format!("Exported {} parts to {}", self.session.parts.len(), short_name(&path)),
+            Ok(Some(path)) => tr_fmt!("Exported {} parts to {}", self.session.parts.len(), short_name(&path)),
             Ok(None) => return,
-            Err(e) => format!("Export failed: {e}"),
+            Err(e) => tr_fmt!("Export failed: {}", e),
         };
     }
 
     fn connection_bar(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         ui.horizontal_wrapped(|ui| {
-            ui.label(RichText::new("OpenECraft parts manager").strong());
+            ui.label(RichText::new(tr("OpenECraft parts manager")).strong());
             ui.separator();
-            ui.label("Server");
+            ui.label(tr("Server"));
             let url = ui.add(egui::TextEdit::singleline(&mut self.client.url).desired_width(240.0));
-            ui.label("Access token");
+            ui.label(tr("Access token"));
             let token = ui.add(
-                egui::TextEdit::singleline(&mut self.client.token).password(true).desired_width(160.0).hint_text("needed for changes"),
+                egui::TextEdit::singleline(&mut self.client.token).password(true).desired_width(160.0).hint_text(tr("needed for changes")),
             );
             let enter = (url.lost_focus() || token.lost_focus()) && ui.input(|i| i.key_pressed(Key::Enter));
-            if ui.add_enabled(!self.client.busy(), egui::Button::new("Connect")).clicked() || enter {
+            if ui.add_enabled(!self.client.busy(), egui::Button::new(tr("Connect"))).clicked() || enter {
                 self.client.check(&ctx);
             }
             ui.separator();
@@ -152,22 +154,22 @@ impl ManagerApp {
                 Some(info) => {
                     ui.label(format!("{} {}", info.name, info.version));
                     if info.writable {
-                        ui.label(RichText::new("writable with token").color(Color32::from_rgb(60, 160, 90)));
+                        ui.label(RichText::new(tr("writable with token")).color(Color32::from_rgb(60, 160, 90)));
                     } else {
-                        ui.label(RichText::new("read-only server").color(Color32::from_rgb(220, 140, 0)))
-                            .on_hover_text("Start openecraft-server with --token to allow changes");
+                        ui.label(RichText::new(tr("read-only server")).color(Color32::from_rgb(220, 140, 0)))
+                            .on_hover_text(tr("Start openecraft-server with --token to allow changes"));
                     }
                 }
                 None => {
-                    ui.weak("not connected");
+                    ui.weak(tr("not connected"));
                 }
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 let mut pref = ui.ctx().options(|o| o.theme_preference);
                 egui::ComboBox::from_id_salt("theme").selected_text(format!("{pref:?}")).width(70.0).show_ui(ui, |ui| {
-                    ui.selectable_value(&mut pref, egui::ThemePreference::System, "System");
-                    ui.selectable_value(&mut pref, egui::ThemePreference::Light, "Light");
-                    ui.selectable_value(&mut pref, egui::ThemePreference::Dark, "Dark");
+                    ui.selectable_value(&mut pref, egui::ThemePreference::System, tr("System"));
+                    ui.selectable_value(&mut pref, egui::ThemePreference::Light, tr("Light"));
+                    ui.selectable_value(&mut pref, egui::ThemePreference::Dark, tr("Dark"));
                 });
                 if pref != ui.ctx().options(|o| o.theme_preference) {
                     ui.ctx().set_theme(pref);
@@ -183,45 +185,46 @@ impl ManagerApp {
         let has_draft = self.session.draft.is_some();
         let dirty = self.session.dirty();
         ui.horizontal_wrapped(|ui| {
-            if ui.add_enabled(connected, egui::Button::new("➕ New")).clicked() {
+            if ui.add_enabled(connected, egui::Button::new(tr("➕ New"))).clicked() {
                 self.open(None);
             }
-            if ui.add_enabled(has_draft, egui::Button::new("⎘ Copy")).on_hover_text("New part based on the open one").clicked() {
+            if ui.add_enabled(has_draft, egui::Button::new(tr("⎘ Copy"))).on_hover_text(tr("New part based on the open one")).clicked() {
                 self.session.copy_part();
             }
             let save = ui
-                .add_enabled(writable && dirty && self.session.save_problem().is_none(), egui::Button::new("✔ Save"))
-                .on_hover_text("Create / update the part on the server (Ctrl+S)");
+                .add_enabled(writable && dirty && self.session.save_problem().is_none(), egui::Button::new(tr("✔ Save")))
+                .on_hover_text(tr("Create / update the part on the server (Ctrl+S)"));
             if save.clicked() {
                 self.save(&ctx);
             }
-            if ui.add_enabled(dirty, egui::Button::new("⟲ Revert")).on_hover_text("Discard the changes").clicked() {
+            if ui.add_enabled(dirty, egui::Button::new(tr("⟲ Revert"))).on_hover_text(tr("Discard the changes")).clicked() {
                 self.session.revert();
             }
             let deletable = self.session.draft.as_ref().and_then(|d| d.original.clone());
-            if ui.add_enabled(writable && deletable.is_some(), egui::Button::new("🗑 Delete")).clicked() {
+            if ui.add_enabled(writable && deletable.is_some(), egui::Button::new(tr("🗑 Delete"))).clicked() {
                 self.confirm = deletable.map(Confirm::Delete);
             }
             ui.separator();
-            if ui.add_enabled(!self.client.busy() && connected, egui::Button::new("⟳ Reload")).on_hover_text("Load all parts from the server again").clicked() {
+            if ui.add_enabled(!self.client.busy() && connected, egui::Button::new(tr("⟳ Reload"))).on_hover_text(tr("Load all parts from the server again")).clicked() {
                 self.client.download(&ctx);
             }
-            ui.menu_button("Import / export", |ui| {
+            ui.menu_button(tr("Import / export"), |ui| {
                 if ui
-                    .add_enabled(writable, egui::Button::new("⬆ Upload parts file (CSV / JSON)…"))
-                    .on_hover_text("Adds new parts and replaces existing ones on the server")
+                    .add_enabled(writable, egui::Button::new(tr("⬆ Upload parts file (CSV / JSON)…")))
+                    .on_hover_text(tr("Adds new parts and replaces existing ones on the server"))
                     .clicked()
                 {
                     self.io.open(&ctx, Purpose::Parts);
                 }
                 ui.separator();
-                if ui.add_enabled(connected, egui::Button::new("Export as CSV…")).clicked() {
+                if ui.add_enabled(connected, egui::Button::new(tr("Export as CSV…"))).clicked() {
                     self.export(true);
                 }
-                if ui.add_enabled(connected, egui::Button::new("Export as JSON…")).clicked() {
+                if ui.add_enabled(connected, egui::Button::new(tr("Export as JSON…"))).clicked() {
                     self.export(false);
                 }
             });
+            openecraft_ui::language::menu(ui);
             if self.client.busy() {
                 ui.spinner();
             }
@@ -229,10 +232,10 @@ impl ManagerApp {
     }
 
     fn part_list(&mut self, ui: &mut egui::Ui) {
-        ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text("Filter (number, type, manufacturer, text …)"));
-        ui.label(RichText::new(format!("{} parts", self.session.parts.len())).weak());
+        ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text(tr("Filter (number, type, manufacturer, text …)")));
+        ui.label(RichText::new(tr_fmt!("{} parts", self.session.parts.len())).weak());
         if let Some(d) = self.session.draft.as_ref().filter(|d| d.original.is_none()) {
-            ui.label(RichText::new(format!("➕ {} (not saved)", d.part.number)).italics());
+            ui.label(RichText::new(tr_fmt!("➕ {} (not saved)", d.part.number)).italics());
         }
         egui::ScrollArea::vertical().id_salt("tree").auto_shrink([false, false]).show(ui, |ui| {
             let refs: Vec<_> = self.session.parts.iter().collect();
@@ -249,11 +252,11 @@ impl ManagerApp {
         if !self.session.loaded {
             ui.vertical_centered(|ui| {
                 ui.add_space(60.0);
-                ui.heading("Connect to a parts server");
-                ui.label("Enter the address of an openecraft-server and click Connect.");
-                ui.label("The access token is only needed for changes; it is not stored.");
+                ui.heading(tr("Connect to a parts server"));
+                ui.label(tr("Enter the address of an openecraft-server and click Connect."));
+                ui.label(tr("The access token is only needed for changes; it is not stored."));
                 ui.add_space(8.0);
-                ui.weak("Start a server with:  openecraft-server --token <secret>");
+                ui.weak(tr("Start a server with:  openecraft-server --token <secret>"));
             });
             return;
         }
@@ -261,18 +264,18 @@ impl ManagerApp {
         let problem = self.session.save_problem();
         let dirty = self.session.dirty();
         let Some(d) = self.session.draft.as_mut() else {
-            ui.weak("Select a part in the tree or create a new one.");
+            ui.weak(tr("Select a part in the tree or create a new one."));
             return;
         };
         ui.horizontal(|ui| {
             ui.heading(&d.part.number);
             match (&d.original, dirty) {
-                (None, _) => ui.label(RichText::new("new part, not saved").color(Color32::from_rgb(220, 140, 0))),
-                (Some(_), true) => ui.label(RichText::new("changed, not saved").color(Color32::from_rgb(220, 140, 0))),
-                (Some(_), false) => ui.weak("saved"),
+                (None, _) => ui.label(RichText::new(tr("new part, not saved")).color(Color32::from_rgb(220, 140, 0))),
+                (Some(_), true) => ui.label(RichText::new(tr("changed, not saved")).color(Color32::from_rgb(220, 140, 0))),
+                (Some(_), false) => ui.weak(tr("saved")),
             };
             if let Some(original) = d.original.as_ref().filter(|o| **o != d.part.number) {
-                ui.weak(format!("(renamed from {original})"));
+                ui.weak(tr_fmt!("(renamed from {})", original));
             }
         });
         ui.separator();
@@ -289,9 +292,9 @@ impl ManagerApp {
         let (text, button) = match confirm {
             Confirm::Discard(_) => {
                 let n = self.session.draft.as_ref().map(|d| d.part.number.clone()).unwrap_or_default();
-                (format!("Discard the unsaved changes of {n}?"), "Discard")
+                (tr_fmt!("Discard the unsaved changes of {}?", n), "Discard")
             }
-            Confirm::Delete(n) => (format!("Delete part {n} from the server? This cannot be undone."), "🗑 Delete"),
+            Confirm::Delete(n) => (tr_fmt!("Delete part {} from the server? This cannot be undone.", n), "🗑 Delete"),
         };
         let mut answer = None;
         egui::Modal::new(egui::Id::unique("confirm")).show(ctx, |ui| {
@@ -302,7 +305,7 @@ impl ManagerApp {
                 if ui.button(button).clicked() {
                     answer = Some(true);
                 }
-                if ui.button("Cancel").clicked() || ui.input(|i| i.key_pressed(Key::Escape)) {
+                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(Key::Escape)) {
                     answer = Some(false);
                 }
             });
@@ -353,5 +356,7 @@ impl eframe::App for ManagerApp {
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, URL_KEY, &self.client.url);
+        eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
+        eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

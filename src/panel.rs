@@ -8,6 +8,7 @@
 //! door's front view: origin at the top left corner of the enclosure front, `z` is the
 //! distance behind the door.
 
+use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
 use crate::model::Project;
 use crate::netlist::{connections, Netlist};
@@ -52,8 +53,8 @@ pub enum Face {
 impl Face {
     pub fn title(self) -> &'static str {
         match self {
-            Face::Plate => "Mounting plate",
-            Face::Door => "Door",
+            Face::Plate => tr("Mounting plate"),
+            Face::Door => tr("Door"),
         }
     }
 
@@ -85,11 +86,11 @@ pub enum ItemKind {
 impl ItemKind {
     pub fn title(self) -> &'static str {
         match self {
-            ItemKind::Device => "Device",
-            ItemKind::Rail => "Mounting rail",
-            ItemKind::Duct => "Cable duct",
-            ItemKind::Busbar => "Busbar system",
-            ItemKind::Cutout => "Cutout",
+            ItemKind::Device => tr("Device"),
+            ItemKind::Rail => tr("Mounting rail"),
+            ItemKind::Duct => tr("Cable duct"),
+            ItemKind::Busbar => tr("Busbar system"),
+            ItemKind::Cutout => tr("Cutout"),
         }
     }
 

@@ -100,3 +100,53 @@ fn all_workspace_crates_are_checked() {
         assert!(dirs.iter().any(|d| d.ends_with(member)), "{member} missing in {dirs:?}");
     }
 }
+
+/// UI crates (the others have no user-visible texts of their own).
+fn ui_source_files() -> Vec<PathBuf> {
+    ["src", "crates/openecraft-ui/src", "parts-manager/src"]
+        .iter()
+        .flat_map(|d| rust_files(&root().join(d)))
+        .filter(|p| !is_test_file(p))
+        .collect()
+}
+
+/// Texts shown to the user go through `tr` / `tr_fmt!` (see AGENTS.md, languages): a
+/// widget call with a plain string literal is an untranslated text.
+#[test]
+fn ui_texts_are_translated() {
+    let calls = [
+        ".button(\"", ".small_button(\"", ".label(\"", ".heading(\"", ".weak(\"", ".strong(\"", ".link(\"", ".menu_button(\"",
+        ".collapsing(\"", ".on_hover_text(\"", ".hint_text(\"", ".selectable_label(", ".selected_text(\"", ".hyperlink_to(\"",
+        "Button::new(\"", "RichText::new(\"", "Window::new(\"",
+    ];
+    let mut violations = Vec::new();
+    for path in ui_source_files() {
+        let text = std::fs::read_to_string(&path).unwrap();
+        for (i, line) in text.lines().enumerate() {
+            let t = line.trim();
+            if t.starts_with("//") {
+                continue;
+            }
+            for call in calls {
+                let mut rest = t;
+                while let Some(at) = rest.find(call) {
+                    let after = &rest[at + call.len()..];
+                    rest = after;
+                    if !call.ends_with('"') {
+                        continue;
+                    }
+                    let literal: String = after.chars().take_while(|c| *c != '"').collect();
+                    let letters = literal.chars().filter(|c| c.is_alphabetic()).count();
+                    if letters >= 3 {
+                        violations.push(format!("{}:{}: {t}", display(&path), i + 1));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        violations.is_empty(),
+        "texts shown in the UI must be translated: wrap them in `tr(\"…\")` / `tr_fmt!(…)` and add them to crates/openecraft-i18n/src/catalog/extra.tsv (English, German, French, Spanish):\n{}",
+        violations.join("\n")
+    );
+}

@@ -57,6 +57,9 @@ fn main() -> eframe::Result {
 fn main() {
     use wasm_bindgen::JsCast;
     eframe::WebLogger::init(log::LevelFilter::Info).ok();
+    if let Some(lang) = web_sys::window().and_then(|w| w.navigator().language()).and_then(|code| openecraft_i18n::Lang::from_code(&code)) {
+        openecraft_i18n::set_lang(lang);
+    }
     wasm_bindgen_futures::spawn_local(async {
         let document = web_sys::window().expect("no window").document().expect("no document");
         let canvas = document

@@ -3,6 +3,7 @@
 //! instances refer to them by key. [`register`] makes them known to
 //! [`symbols::get`](crate::symbols::get).
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{dist_to_segment, p, P, GRID};
 use crate::model::Project;
 use crate::symbols::{self, Anchor, Category, FieldKind, Func, PinDef, Prim, SymbolDef};
@@ -194,21 +195,21 @@ pub fn merge(list: &mut Vec<UserSymbol>, lib: SymbolLibrary) -> (usize, usize) {
 pub fn problems(u: &UserSymbol) -> Vec<String> {
     let mut v = Vec::new();
     if u.name.trim().is_empty() {
-        v.push("The symbol has no name.".into());
+        v.push(tr("The symbol has no name.").into());
     }
     if u.pins.is_empty() && !matches!(u.func, Func::Overview) {
-        v.push("The symbol has no connection points.".into());
+        v.push(tr("The symbol has no connection points.").into());
     }
     for (i, a) in u.pins.iter().enumerate() {
         if a.pos.x % GRID != 0.0 || a.pos.y % GRID != 0.0 {
-            v.push(format!("Connection point {} is not on the {GRID} mm grid.", i + 1));
+            v.push(tr_fmt!("Connection point {} is not on the {} mm grid.", i + 1, GRID));
         }
         if u.pins[..i].iter().any(|b| b.pos.same(a.pos)) {
-            v.push(format!("Connection point {} lies on another one.", i + 1));
+            v.push(tr_fmt!("Connection point {} lies on another one.", i + 1));
         }
     }
     if u.func.has_tag() && u.letter.trim().is_empty() {
-        v.push("No identifying letter for the device tag.".into());
+        v.push(tr("No identifying letter for the device tag.").into());
     }
     v
 }

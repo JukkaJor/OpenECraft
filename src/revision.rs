@@ -2,6 +2,7 @@
 //! since the last revision are listed and marked on the pages. Released pages are
 //! locked against changes.
 
+use openecraft_i18n::tr;
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Page, Project};
 use serde::{Deserialize, Serialize};
@@ -39,9 +40,9 @@ pub enum ChangeKind {
 impl ChangeKind {
     pub fn title(self) -> &'static str {
         match self {
-            ChangeKind::Added => "added",
-            ChangeKind::Removed => "removed",
-            ChangeKind::Modified => "changed",
+            ChangeKind::Added => tr("added"),
+            ChangeKind::Removed => tr("removed"),
+            ChangeKind::Modified => tr("changed"),
         }
     }
 }
@@ -107,7 +108,7 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
             None => changes.push(Change { kind: ChangeKind::Added, what: "Page", id: n.id, label: n.description.clone(), pos: p(0.0, 0.0) }),
             Some(o) => {
                 if (&o.name, &o.description, &o.function, &o.location, o.kind) != (&n.name, &n.description, &n.function, &n.location, n.kind) {
-                    changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: "page properties".into(), pos: p(0.0, 0.0) });
+                    changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: tr("page properties").into(), pos: p(0.0, 0.0) });
                 }
                 diff(&o.symbols, &n.symbols, |s| s.id, "Symbol", |s| (format!("{} {}", s.tag, s.label).trim().to_string(), s.pos), &mut changes);
                 diff(&o.wires, &n.wires, |w| w.id, "Wire", |w| (w.number.clone(), mid(w.a, w.b)), &mut changes);
@@ -175,7 +176,7 @@ pub fn overview(prj: &Project) -> Vec<OverviewRow> {
     for pc in pages {
         for c in &pc.changes {
             let target = pc.page.map(|pi| (pi, if c.kind == ChangeKind::Removed || c.what == "Page" { 0 } else { c.id }));
-            rows.push((pc.name.clone(), c.kind.title().to_string(), c.what.to_string(), c.label.clone(), target));
+            rows.push((pc.name.clone(), c.kind.title().to_string(), tr(c.what).to_string(), c.label.clone(), target));
         }
     }
     rows
