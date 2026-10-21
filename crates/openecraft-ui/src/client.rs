@@ -1,11 +1,11 @@
 //! Client for the global parts server (`openecraft-server`). Requests run in the
 //! background (thread on desktop, fetch in the browser); results are collected with
-//! [`ServerClient::poll`].
+//! [`ServerClient::poll`]. The requests themselves are built by `openecraft_client`.
 
 use openecraft_i18n::{tr, tr_fmt};
-use openecraft_parts::api::{self, ImportResult, PartList, ServerInfo, API_PREFIX, DEFAULT_PORT};
+use openecraft_client::{check, decode, ehttp, Endpoint};
+use openecraft_parts::api::{ImportResult, PartList, PartQuery, ServerInfo};
 use openecraft_parts::Part;
-use serde::de::DeserializeOwned;
 use std::sync::{Arc, Mutex};
 
 /// Result of a finished request.
@@ -58,44 +58,17 @@ pub struct ServerClient {
     pub token: String,
     pub info: Option<ServerInfo>,
     pub status: String,
+    /// The last finished request failed (`status` shows why).
+    failed: bool,
     pending: usize,
     inbox: Arc<Mutex<Vec<Reply>>>,
 }
 
 impl Default for ServerClient {
     fn default() -> Self {
-        ServerClient {
-            url: format!("http://127.0.0.1:{DEFAULT_PORT}"),
-            token: String::new(),
-            info: None,
-            status: String::new(),
-            pending: 0,
-            inbox: Arc::default(),
-        }
+        let Endpoint { url, token } = Endpoint::default();
+        ServerClient { url, token, info: None, status: String::new(), failed: false, pending: 0, inbox: Arc::default() }
     }
-}
-
-/// Turns an HTTP result into the expected JSON type or a readable error.
-pub fn decode<T: DeserializeOwned>(result: ehttp::Result<ehttp::Response>) -> Result<T, String> {
-    let resp = check(result)?;
-    serde_json::from_slice(&resp.bytes).map_err(|e| tr_fmt!("unexpected answer: {}", e))
-}
-
-/// Successful response or a readable error (server message, HTTP status, connection error).
-fn check(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, String> {
-    match result {
-        Err(e) => Err(tr_fmt!("connection failed: {}", e)),
-        Ok(resp) if resp.ok => Ok(resp),
-        Ok(resp) => Err(api::error_text(resp.status, &resp.status_text, &resp.bytes)),
-    }
-}
-
-/// Sets the content type. `Headers::insert` would add a second one next to the
-/// `text/plain` ehttp sets for requests with a body, and the server uses the first.
-fn with_content_type(mut req: ehttp::Request, content_type: &str) -> ehttp::Request {
-    req.headers.headers.retain(|(k, _)| !k.eq_ignore_ascii_case("content-type"));
-    req.headers.insert("Content-Type", content_type);
-    req
 }
 
 impl ServerClient {
@@ -108,15 +81,8 @@ impl ServerClient {
         self.info.as_ref().is_some_and(|i| i.writable)
     }
 
-    fn endpoint(&self, path: &str) -> String {
-        api::url(&self.url, path)
-    }
-
-    fn authorized(&self, mut req: ehttp::Request) -> ehttp::Request {
-        if !self.token.trim().is_empty() {
-            req.headers.insert("Authorization", format!("Bearer {}", self.token.trim()));
-        }
-        req
+    fn endpoint(&self) -> Endpoint {
+        Endpoint { url: self.url.clone(), token: self.token.clone() }
     }
 
     fn send(
@@ -138,46 +104,38 @@ impl ServerClient {
         });
     }
 
-    /// GET /api/v1/info
+    /// Checks the connection (server info).
     pub fn check(&mut self, ctx: &egui::Context) {
-        let req = ehttp::Request::get(self.endpoint(&format!("{API_PREFIX}/info")));
+        let req = self.endpoint().info();
         self.send(ctx, req, tr("Connecting…").into(), |r| Reply::Info(decode(r)));
     }
 
-    /// GET /api/v1/parts (all parts)
+    /// Loads all parts.
     pub fn download(&mut self, ctx: &egui::Context) {
-        let req = ehttp::Request::get(self.endpoint(&format!("{API_PREFIX}/parts")));
+        let req = self.endpoint().list(&PartQuery::default());
         self.send(ctx, req, tr("Downloading parts…").into(), |r| Reply::Parts(decode(r)));
     }
 
-    /// POST /api/v1/import with the parts as JSON (needs the access token).
+    /// Uploads parts as JSON (needs the access token).
     pub fn upload(&mut self, ctx: &egui::Context, parts: &[Part]) {
-        let body = serde_json::to_vec(parts).unwrap_or_default();
-        self.import(ctx, body, "application/json", tr_fmt!("Uploading {} parts…", parts.len()));
+        let req = self.endpoint().import(serde_json::to_vec(parts).unwrap_or_default(), "application/json");
+        self.send(ctx, req, tr_fmt!("Uploading {} parts…", parts.len()), |r| Reply::Imported(decode(r)));
     }
 
-    /// POST /api/v1/import with the content of a CSV or JSON parts file.
+    /// Uploads the content of a CSV or JSON parts file.
     pub fn upload_file(&mut self, ctx: &egui::Context, content: Vec<u8>) {
-        self.import(ctx, content, "text/plain; charset=utf-8", tr("Uploading parts file…").into());
+        let req = self.endpoint().import(content, "text/plain; charset=utf-8");
+        self.send(ctx, req, tr("Uploading parts file…").into(), |r| Reply::Imported(decode(r)));
     }
 
-    fn import(&mut self, ctx: &egui::Context, body: Vec<u8>, content_type: &str, status: String) {
-        let req = with_content_type(ehttp::Request::post(self.endpoint(&format!("{API_PREFIX}/import")), body), content_type);
-        let req = self.authorized(req);
-        self.send(ctx, req, status, |r| Reply::Imported(decode(r)));
-    }
-
-    /// PUT /api/v1/parts/{number}: creates or replaces a part.
+    /// Creates or replaces a part.
     pub fn save(&mut self, ctx: &egui::Context, part: &Part) {
-        let body = serde_json::to_vec(part).unwrap_or_default();
-        let req = with_content_type(ehttp::Request::put(self.endpoint(&api::part_path(&part.number)), body), "application/json");
-        let req = self.authorized(req);
+        let req = self.endpoint().save(part);
         self.send(ctx, req, tr_fmt!("Saving {}…", part.number), |r| Reply::Saved(decode(r).map(Box::new)));
     }
 
-    /// DELETE /api/v1/parts/{number}
     pub fn delete(&mut self, ctx: &egui::Context, number: &str) {
-        let req = self.authorized(ehttp::Request::delete(&self.endpoint(&api::part_path(number))));
+        let req = self.endpoint().delete(number);
         let n = number.to_string();
         self.send(ctx, req, tr_fmt!("Deleting {}…", number), move |r| Reply::Deleted(n, check(r).map(|_| ())));
     }
@@ -193,13 +151,14 @@ impl ServerClient {
                 _ => {}
             }
             self.status = reply.describe();
+            self.failed = reply.error().is_some();
         }
         replies
     }
 
     /// True if the status line shows an error.
     pub fn failed(&self) -> bool {
-        self.status.starts_with(tr("Parts server: {}").split("{}").next().unwrap_or_default())
+        self.failed
     }
 }
 

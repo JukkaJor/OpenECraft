@@ -74,3 +74,12 @@ fn library_upsert_and_merge() {
     let json = serde_json::to_string(&lib).unwrap();
     assert_eq!(serde_json::from_str::<MacroLibrary>(&json).unwrap(), lib);
 }
+
+#[test]
+fn library_files_hold_one_or_many_macros() {
+    let m = Macro { name: "Motor".into(), ..Default::default() };
+    let lib = MacroLibrary { macros: vec![m.clone()] };
+    assert_eq!(MacroLibrary::from_json(&serde_json::to_string(&lib).unwrap()).unwrap(), lib);
+    assert_eq!(MacroLibrary::from_json(&serde_json::to_string(&m).unwrap()).unwrap(), lib);
+    assert!(MacroLibrary::from_json("42").is_err());
+}

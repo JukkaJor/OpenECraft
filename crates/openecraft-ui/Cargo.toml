@@ -8,11 +8,11 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 # Bundle the symbol / emoji fonts: native builds have no browser font fallback.
 egui = { version = "0.37", features = ["monochrome_emoji_fonts"] }
-ehttp = "0.7"
 log = "0.4"
 rfd = "0.17"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+openecraft-client = { path = "../openecraft-client" }
 openecraft-parts = { path = "../openecraft-parts" }
 openecraft-i18n = { path = "../openecraft-i18n" }
 

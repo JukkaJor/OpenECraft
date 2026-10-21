@@ -154,6 +154,7 @@ fn rename_device_updates_the_panel_layout() {
     assert!(prj.layout.find_device("-K10").is_some());
     assert!(prj.layout.find_device("-K1").is_none());
 }
+
 #[test]
 fn add_page_numbers_after_the_highest_page() {
     let mut prj = Project::default();
@@ -163,4 +164,39 @@ fn add_page_numbers_after_the_highest_page() {
     assert_eq!(prj.pages[0].name, "8");
     assert_eq!(prj.pages[0].kind, PageKind::Report(ReportKind::DeviceList));
     assert_eq!(add_page(&mut prj, PageKind::Schematic, 99), 2);
+}
+
+#[test]
+fn released_and_last_pages_are_not_deleted() {
+    let mut prj = Project::default();
+    assert!(delete_page(&mut prj, 0).is_err(), "last page");
+    add_page(&mut prj, PageKind::Schematic, 1);
+    prj.pages[1].locked = true;
+    assert_eq!(delete_page(&mut prj, 1).unwrap_err(), "Released pages cannot be deleted");
+    assert_eq!(delete_page(&mut prj, 0).unwrap().name, "1");
+    assert_eq!(prj.pages.len(), 1);
+}
+
+#[test]
+fn cables_keep_their_wires_consistent() {
+    let mut prj = Project::default();
+    let tag = add_cable(&mut prj, "");
+    assert_eq!(tag, "-W1");
+    assert_eq!(add_cable(&mut prj, ""), "-W2");
+    prj.pages[0].wires.push(Wire { id: 50, a: p(0.0, 0.0), b: p(0.0, 8.0), cable: "-W1".into(), core: "BN".into(), ..Default::default() });
+    prj.cables[0].tag = "-W10".into();
+    rename_cable(&mut prj, "-W1", "-W10");
+    assert_eq!(prj.pages[0].wires[0].cable, "-W10");
+    assert_eq!(remove_cable(&mut prj, 0).tag, "-W10");
+    let w = &prj.pages[0].wires[0];
+    assert!(w.cable.is_empty() && w.core.is_empty());
+    assert_eq!(prj.cables.len(), 1);
+
+    let mut part = crate::parts::Part { number: "GEN.CABLE".into(), type_number: "H05VV-F".into(), ..Default::default() };
+    part.tech_data = "Cores: BK BU GNYE
+Cross-section: 0.75 mm²".into();
+    apply_cable_part(&mut prj.cables[0], &part);
+    let c = &prj.cables[0];
+    assert_eq!((c.part.as_str(), c.cable_type.as_str()), ("GEN.CABLE", "H05VV-F"));
+    assert_eq!((c.cores.as_str(), c.cross_section.as_str()), ("BK BU GNYE", "0.75 mm²"));
 }

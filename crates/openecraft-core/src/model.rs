@@ -232,6 +232,12 @@ impl Default for Page {
 }
 
 impl Page {
+    /// Its content can be changed: a schematic page that is not released. Report,
+    /// cover and mounting pages are generated.
+    pub fn is_editable(&self) -> bool {
+        self.kind == PageKind::Schematic && !self.locked
+    }
+
     pub fn new(id: u64, name: &str, description: &str, kind: PageKind) -> Page {
         Page {
             id,
@@ -454,6 +460,18 @@ impl Project {
     }
 
     /// Repairs ids after loading (e.g. hand-edited files).
+    /// Reads a project file and prepares it for editing ([`Project::normalize`]).
+    pub fn from_json(text: &str) -> Result<Project, String> {
+        let mut prj: Project = serde_json::from_str(text).map_err(|e| tr_fmt!("Not a valid project file: {}", e))?;
+        prj.normalize();
+        Ok(prj)
+    }
+
+    /// Content of a project file.
+    pub fn to_json(&self) -> String {
+        serde_json::to_string_pretty(self).unwrap_or_default()
+    }
+
     pub fn normalize(&mut self) {
         crate::symlib::register(&self.symbols);
         let mut max = 0;

@@ -405,9 +405,8 @@ impl Editor {
             self.offset += resp.drag_delta();
         }
 
-        let page_kind = prj.pages[page_i].kind;
         let locked = prj.pages[page_i].locked;
-        let editable = page_kind == PageKind::Schematic && !locked;
+        let editable = prj.pages[page_i].is_editable();
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
         let snapped = world.map(|w| w.snap(GRID));
@@ -561,7 +560,7 @@ impl Editor {
     }
 
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>) {
-        let editable = prj.pages[page_i].kind == PageKind::Schematic && !prj.pages[page_i].locked;
+        let editable = prj.pages[page_i].is_editable();
         let (esc, r, m, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (

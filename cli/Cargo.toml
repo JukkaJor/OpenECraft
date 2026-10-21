@@ -10,9 +10,9 @@ name = "openecraft-cli"
 path = "src/main.rs"
 
 [dependencies]
-ehttp = "0.7"
 serde = "1"
 serde_json = "1"
+openecraft-client = { path = "../crates/openecraft-client" }
 openecraft-core = { path = "../crates/openecraft-core" }
 openecraft-parts = { path = "../crates/openecraft-parts" }
 openecraft-i18n = { path = "../crates/openecraft-i18n" }

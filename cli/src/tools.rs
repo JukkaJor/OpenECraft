@@ -3,6 +3,11 @@
 //! Help texts are English (`tr_const!`); the command line shows them translated, MCP
 //! clients get them as they are.
 
+mod common;
+mod devices;
+mod drawing;
+mod output;
+mod pages;
 mod parts;
 mod project;
 
@@ -51,7 +56,7 @@ pub const fn optional(name: &'static str, kind: Kind, help: &'static str) -> Par
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    project::TOOLS.iter().chain(parts::TOOLS.iter())
+    [project::TOOLS, pages::TOOLS, drawing::TOOLS, devices::TOOLS, output::TOOLS, parts::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

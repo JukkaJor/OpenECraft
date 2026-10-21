@@ -131,6 +131,25 @@ pub struct FormLibrary {
     pub title_blocks: Vec<Form>,
 }
 
+impl FormLibrary {
+    pub fn from_json(text: &str) -> Result<FormLibrary, String> {
+        serde_json::from_str(text).map_err(|e| e.to_string())
+    }
+}
+
+/// Adds the title blocks of a library to the project; ones with the same name are
+/// replaced. Returns their number.
+pub fn merge(prj: &mut Project, lib: FormLibrary) -> usize {
+    let n = lib.title_blocks.len();
+    for f in lib.title_blocks {
+        match prj.forms.title_blocks.iter_mut().find(|x| x.name == f.name) {
+            Some(x) => *x = f,
+            None => prj.forms.title_blocks.push(f),
+        }
+    }
+    n
+}
+
 fn label(items: &mut Vec<FormItem>, x: f32, y: f32, text: &'static str) {
     items.push(FormItem::Text { pos: p(x + 1.0, y + 1.8), text: tr(text).into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 });
 }

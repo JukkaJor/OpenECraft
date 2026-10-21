@@ -181,10 +181,6 @@ impl App {
 
     // ------------------------------------------------------------------ files
 
-    fn project_json(&self) -> String {
-        serde_json::to_string_pretty(&self.prj).unwrap_or_default()
-    }
-
     fn suggested_name(&self, ext: &str) -> String {
         let base: String = self
             .prj
@@ -197,13 +193,13 @@ impl App {
     }
 
     fn save(&mut self, ctx: &egui::Context, save_as: bool) {
-        let json = self.project_json();
+        let json = self.prj.to_json();
         let result = match (&self.file_name, save_as || !FileIo::can_save_in_place()) {
             (Some(path), false) => self.io.save_to(path, &json).map(|_| Some(path.clone())),
             _ => {
                 let name = self.file_name.as_deref().map(io::short_name).map(String::from);
                 let name = name.unwrap_or_else(|| self.suggested_name(PROJECT_EXT));
-                self.io.save_as(&name, ("OpenECraft project", PROJECT_EXT), &json)
+                self.io.save_as(&name, (tr("OpenECraft project"), PROJECT_EXT), &json)
             }
         };
         match result {
@@ -236,10 +232,7 @@ impl App {
                 return;
             }
             if loaded.purpose == Purpose::Macros {
-                let text = loaded.text();
-                let lib = serde_json::from_str::<crate::macros::MacroLibrary>(&text)
-                    .or_else(|_| serde_json::from_str::<crate::macros::Macro>(&text).map(|m| crate::macros::MacroLibrary { macros: vec![m] }));
-                match lib {
+                match crate::macros::MacroLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
                         let n = self.macro_lib.merge(lib);
                         self.notify(ctx, tr_fmt!("Imported {} macros", n));
@@ -249,10 +242,7 @@ impl App {
                 return;
             }
             if loaded.purpose == Purpose::Symbols {
-                let text = loaded.text();
-                let lib = serde_json::from_str::<crate::symlib::SymbolLibrary>(&text)
-                    .or_else(|_| serde_json::from_str::<crate::symlib::UserSymbol>(&text).map(|u| crate::symlib::SymbolLibrary { symbols: vec![u] }));
-                match lib {
+                match crate::symlib::SymbolLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
                         let (added, replaced) = crate::symlib::merge(&mut self.prj.symbols, lib);
                         self.symed.open = true;
@@ -263,15 +253,9 @@ impl App {
                 return;
             }
             if loaded.purpose == Purpose::Forms {
-                match serde_json::from_str::<crate::forms::FormLibrary>(&loaded.text()) {
+                match crate::forms::FormLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
-                        let n = lib.title_blocks.len();
-                        for f in lib.title_blocks {
-                            match self.prj.forms.title_blocks.iter_mut().find(|x| x.name == f.name) {
-                                Some(x) => *x = f,
-                                None => self.prj.forms.title_blocks.push(f),
-                            }
-                        }
+                        let n = crate::forms::merge(&mut self.prj, lib);
                         self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
@@ -299,12 +283,12 @@ impl App {
                 }
                 return;
             }
-            match serde_json::from_str::<Project>(&loaded.text()) {
+            match Project::from_json(&loaded.text()) {
                 Ok(prj) => {
                     self.replace_project(prj, Some(loaded.name.clone()));
                     self.notify(ctx, tr_fmt!("Opened {}", io::short_name(&loaded.name)));
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Not a valid project file: {}", e)),
+                Err(e) => self.notify(ctx, e),
             }
         }
     }
@@ -483,9 +467,13 @@ impl App {
                     self.page += 1;
                 }
                 if ui.add_enabled(self.prj.pages.len() > 1, egui::Button::new(tr("Delete page"))).clicked() {
-                    self.prj.pages.remove(self.page);
-                    self.page = self.page.min(self.prj.pages.len() - 1);
-                    self.editor.selection.clear();
+                    match ops::delete_page(&mut self.prj, self.page) {
+                        Ok(_) => {
+                            self.page = self.page.min(self.prj.pages.len() - 1);
+                            self.editor.selection.clear();
+                        }
+                        Err(e) => self.notify(&ctx, tr(e)),
+                    }
                 }
             });
             ui.menu_button(tr("Project"), |ui| {
@@ -1596,9 +1584,7 @@ impl App {
         egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
-                    let tag = self.prj.next_tag(&structure, "W");
-                    let id = self.prj.new_id();
-                    self.prj.cables.push(Cable { id, tag, cores: "BN BK GY GNYE".into(), cross_section: "1.5 mm²".into(), ..Default::default() });
+                    ops::add_cable(&mut self.prj, &structure);
                 }
                 if ui.button(tr("📊 Cable overview")).clicked() {
                     overview = true;
@@ -1628,14 +1614,7 @@ impl App {
                             ui.menu_button("…", |ui| {
                                 for p in &cable_parts {
                                     if ui.button(format!("{}  {}", p.number, p.description)).clicked() {
-                                        c.part = p.number.clone();
-                                        c.cable_type = p.type_number.clone();
-                                        if let Some(cores) = p.tech_value("Cores") {
-                                            c.cores = cores.to_string();
-                                        }
-                                        if let Some(cs) = p.tech_value("Cross-section") {
-                                            c.cross_section = cs.to_string();
-                                        }
+                                        ops::apply_cable_part(c, p);
                                         picked.push(p.number.clone());
                                     }
                                 }
@@ -1659,16 +1638,10 @@ impl App {
             });
         });
         for (old, new) in renamed {
-            for w in self.prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == old) {
-                w.cable = new.clone();
-            }
+            ops::rename_cable(&mut self.prj, &old, &new);
         }
         if let Some(i) = remove {
-            let tag = self.prj.cables.remove(i).tag;
-            for w in self.prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == tag) {
-                w.cable.clear();
-                w.core.clear();
-            }
+            ops::remove_cable(&mut self.prj, i);
         }
         for n in picked {
             parts::ensure_in_project(&mut self.prj, &self.parts_db, &n);

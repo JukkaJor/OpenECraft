@@ -134,9 +134,12 @@ fn source_files(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
 fn all_texts_used_in_the_sources_are_in_the_catalog() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let known: std::collections::HashSet<&str> = catalog::all().map(|e| e.0).collect();
+    // All workspace members (`[workspace] members` of the root manifest).
+    let manifest = std::fs::read_to_string(root.join("Cargo.toml")).unwrap();
+    let members = manifest.split("members = [").nth(1).and_then(|r| r.split(']').next()).expect("workspace members");
     let mut files = Vec::new();
-    for dir in ["src", "crates/openecraft-core/src", "crates/openecraft-ui/src", "parts-manager/src", "cli/src"] {
-        source_files(&root.join(dir), &mut files);
+    for member in members.split(',').map(|m| m.trim().trim_matches('"')).filter(|m| !m.is_empty()) {
+        source_files(&root.join(member).join("src"), &mut files);
     }
     let mut missing = Vec::new();
     let mut checked = 0;

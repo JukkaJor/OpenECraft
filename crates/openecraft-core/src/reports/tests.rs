@@ -81,3 +81,14 @@ fn wire_numbers_and_tags_are_checked() {
     prj.pages[2].symbols[0].tag = "=A1".into();
     assert!(find(&messages(&prj), "=A1: device tag without device name").is_some());
 }
+
+#[test]
+fn mounting_pages_without_enclosure_are_reported() {
+    let mut prj = demo_project();
+    assert!(find(&messages(&prj), "no longer exists").is_none());
+    prj.layout.enclosures.clear();
+    let msgs = messages(&prj);
+    let page = prj.pages.iter().find(|p| matches!(p.kind, PageKind::Mounting(_))).unwrap();
+    assert_eq!(find(&msgs, "no longer exists").unwrap(), &format!("Page {}: its enclosure no longer exists", page.name));
+}
+

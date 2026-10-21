@@ -29,6 +29,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
+| `openecraft-client` | `crates/openecraft-client` | Requests to the parts server and decoding of its answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
@@ -43,10 +44,10 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
     on egui or an application crate.
   - `openecraft-ui` holds egui widgets and platform code shared by the editor and the
     parts manager. It must not depend on an application crate.
-- API types and request paths of the parts server live in `openecraft_parts::api`; change
-  server and client together.
+- API types and request paths of the parts server live in `openecraft_parts::api`, the
+  requests in `openecraft-client`; change server and client together.
 - New crates are added to `[workspace] members` in the root `Cargo.toml`; the
-  convention test reads that list, so its rules apply to every member.
+  convention, glyph and catalog tests read that list, so their rules apply to every member.
 
 ## Languages – mandatory for every feature
 
@@ -114,7 +115,7 @@ violations. Do not weaken or delete that test to make a change pass.
 - **Glyphs:** every character used in a string literal must exist in the bundled
   egui fonts. Native builds have no font fallback, so missing characters render as
   empty boxes (the browser hides the problem). `src/glyphs/tests.rs` checks this for
-  every UI crate (editor, `openecraft-core`, `openecraft-parts`, `openecraft-ui`, parts manager, command line); if
+  every workspace member; if
   it fails, pick a character the fonts contain instead of disabling the check. Keep
   the egui feature `monochrome_emoji_fonts` enabled.
 - **eframe features:** default features are disabled in both app manifests; when changing
@@ -128,7 +129,7 @@ violations. Do not weaken or delete that test to make a change pass.
   `Project`, no explicit undo bookkeeping is needed.
 - **Platform code:** keep `#[cfg(target_arch = "wasm32")]` branches confined to
   `crates/openecraft-ui/src/io.rs` and the `main.rs` files.
-- **Command line / MCP:** every command is a `Tool` in `cli/src/tools/` (parameters,
+- **Command line / MCP:** every command is a `Tool` in `cli/src/tools/<area>.rs` (parameters,
   help text, run function); the command line and the MCP server are generated from that
   list, so add new functions there once. Help texts use `tr_const!` and need catalog
   entries; MCP clients get them in English.

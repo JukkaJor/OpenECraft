@@ -36,3 +36,17 @@ fn designations_from_template_and_device_selection() {
     assert!(fits_device(db.get("GEN.CT-9A-24DC").unwrap(), &placed, main));
     assert!(!fits_device(db.get("GEN.MCB-1P-C6").unwrap(), &placed, main));
 }
+
+#[test]
+fn parts_are_added_to_devices() {
+    let mut prj = Project::default();
+    let db = PartsDb::default();
+    let number = db.parts[0].number.clone();
+    add_to_device(&mut prj, &db, "-K1", &number, 1);
+    add_to_device(&mut prj, &db, "-K1", &number, 2);
+    assert_eq!(prj.devices["-K1"].parts, vec![PartRef { number: number.clone(), count: 3 }]);
+    assert!(prj.parts.iter().any(|p| p.number == number), "copied into the project");
+    // Unknown numbers are referenced all the same (typed by hand).
+    add_to_device(&mut prj, &db, "-K1", "OWN.1", 1);
+    assert_eq!(prj.devices["-K1"].parts.len(), 2);
+}

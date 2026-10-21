@@ -54,9 +54,18 @@ impl Store {
         std::fs::rename(&tmp, path)
     }
 
-    fn changed(&mut self) -> io::Result<()> {
+    /// Applies a change as a new revision and saves it. If saving fails, the store
+    /// stays as it was, so memory and file never differ.
+    fn change<T>(&mut self, f: impl FnOnce(&mut Vec<Part>) -> T) -> io::Result<T> {
+        let before = self.parts.clone();
+        let result = f(&mut self.parts);
         self.revision += 1;
-        self.save()
+        if let Err(e) = self.save() {
+            self.parts = before;
+            self.revision -= 1;
+            return Err(e);
+        }
+        Ok(result)
     }
 
     pub fn get(&self, number: &str) -> Option<&Part> {
@@ -65,44 +74,43 @@ impl Store {
 
     /// Inserts or replaces a part. Returns true if it was created.
     pub fn upsert(&mut self, part: Part) -> io::Result<bool> {
-        let created = match self.parts.iter_mut().find(|p| p.number == part.number) {
-            Some(existing) => {
-                *existing = part;
-                false
-            }
-            None => {
-                self.parts.push(part);
-                true
-            }
-        };
-        self.changed()?;
-        Ok(created)
+        self.change(|parts| put(parts, part))
     }
 
     /// Removes a part. Returns false if it did not exist.
     pub fn delete(&mut self, number: &str) -> io::Result<bool> {
-        let before = self.parts.len();
-        self.parts.retain(|p| p.number != number);
-        if self.parts.len() == before {
+        if self.get(number).is_none() {
             return Ok(false);
         }
-        self.changed()?;
+        self.change(|parts| parts.retain(|p| p.number != number))?;
         Ok(true)
     }
 
     /// Upserts many parts with a single revision step.
-    pub fn import(&mut self, parts: Vec<Part>) -> io::Result<usize> {
-        let n = parts.len();
-        for part in parts {
-            match self.parts.iter_mut().find(|p| p.number == part.number) {
-                Some(existing) => *existing = part,
-                None => self.parts.push(part),
-            }
-        }
+    pub fn import(&mut self, new: Vec<Part>) -> io::Result<usize> {
+        let n = new.len();
         if n > 0 {
-            self.changed()?;
+            self.change(|parts| {
+                for p in new {
+                    put(parts, p);
+                }
+            })?;
         }
         Ok(n)
+    }
+}
+
+/// Inserts or replaces a part. Returns true if it was created.
+fn put(parts: &mut Vec<Part>, part: Part) -> bool {
+    match parts.iter_mut().find(|p| p.number == part.number) {
+        Some(existing) => {
+            *existing = part;
+            false
+        }
+        None => {
+            parts.push(part);
+            true
+        }
     }
 }
 

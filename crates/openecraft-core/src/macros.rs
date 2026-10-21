@@ -44,6 +44,17 @@ pub struct MacroLibrary {
 }
 
 impl MacroLibrary {
+    /// A macro library file, or a file with a single macro. (Every object would parse
+    /// as an empty library because of the defaults, so the key decides.)
+    pub fn from_json(text: &str) -> Result<MacroLibrary, String> {
+        let value: serde_json::Value = serde_json::from_str(text).map_err(|e| e.to_string())?;
+        if value.get("macros").is_some() {
+            serde_json::from_value(value).map_err(|e| e.to_string())
+        } else {
+            serde_json::from_value::<Macro>(value).map(|m| MacroLibrary { macros: vec![m] }).map_err(|e| e.to_string())
+        }
+    }
+
     /// Adds a macro or replaces the one with the same name.
     pub fn upsert(&mut self, m: Macro) {
         match self.macros.iter_mut().find(|x| x.name == m.name) {

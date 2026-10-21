@@ -1,12 +1,8 @@
 use super::*;
 use crate::parts_server::Server;
-use crate::testing::{part, session_with, temp_dir, FakeServer, URL};
-use crate::tools::{call, find};
+use openecraft_client::Endpoint;
+use crate::testing::{part, run, session_with, temp_dir, FakeServer, URL};
 use openecraft_parts::to_csv;
-
-fn run(s: &mut Session, tool: &str, args: Value) -> Result<Value, String> {
-    call(s, find(tool).unwrap(), args.as_object().unwrap())
-}
 
 fn server() -> FakeServer {
     let server = FakeServer::default();
@@ -49,7 +45,7 @@ fn save_rename_and_delete() {
 fn changes_need_the_token() {
     let srv = server();
     let mut s = session_with(&srv);
-    s.server.token = String::new();
+    s.server.endpoint.token = String::new();
     assert_eq!(run(&mut s, "parts_delete", json!({ "number": "ACME.K1" })).unwrap_err(), "invalid token");
     run(&mut s, "parts_connect", json!({ "token": crate::testing::TOKEN })).unwrap();
     run(&mut s, "parts_delete", json!({ "number": "ACME.K1" })).unwrap();
@@ -57,7 +53,7 @@ fn changes_need_the_token() {
 
 #[test]
 fn unreachable_server() {
-    let mut s = Session::new(Server { url: "http://elsewhere".into(), token: String::new(), transport: Box::new(server()) });
+    let mut s = Session::new(Server { endpoint: Endpoint { url: "http://elsewhere".into(), token: String::new() }, transport: Box::new(server()) });
     let err = run(&mut s, "parts_search", json!({})).unwrap_err();
     assert!(err.starts_with("connection failed"), "{err}");
     run(&mut s, "parts_connect", json!({ "url": URL })).unwrap();
