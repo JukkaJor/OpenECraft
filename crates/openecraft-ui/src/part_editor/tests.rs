@@ -28,5 +28,15 @@ fn models_are_assigned_to_the_part() {
 #[test]
 fn model_file_filters() {
     assert_eq!(ModelKind::Front2d.filter().1, &["svg"]);
-    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj"]);
+    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj", "step", "stp"]);
+}
+
+#[test]
+fn step_files_go_to_the_step_reader() {
+    let mut part = Part::default();
+    for name in ["Model.STEP", "model.stp"] {
+        let err = apply_model(&mut part, ModelKind::Mesh3d, name, b"garbage").unwrap_err();
+        assert!(err.contains("STEP"), "{name}: {err}");
+    }
+    assert!(part.model_3d.is_none());
 }

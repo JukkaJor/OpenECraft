@@ -29,6 +29,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
+| `openecraft-step` | `crates/openecraft-step` | STEP import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts server and decoding of its answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |

@@ -79,6 +79,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
     subgroup tree, filter), with general, commercial (price, price unit, packaging,
     quantity unit), technical, mounting (dimensions, weight) data, accessories and a
     **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
+  - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ or **STEP**:
+    solids and surface models of AP203 / AP214 / AP242 files, placed by their
+    assembly structure, tessellated and converted to mm);
   - **project parts**: parts are copied into the project when assigned; synchronize
     project ← database, transfer project → database, remove unused project parts;
   - **part selection** dialog with *device selection* (only parts providing the device's
@@ -302,6 +305,7 @@ cargo test --workspace
 | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
 | `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
+| `crates/openecraft-step` | STEP import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-client` | Requests to the parts server and decoding of its answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
