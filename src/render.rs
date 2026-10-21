@@ -5,10 +5,11 @@ use crate::geom::{p, P, R};
 use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::netlist;
-use crate::panel::{self, Enclosure, ItemKind, PanelItem};
+use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
 use crate::parts::{Model2d, Part, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
+use crate::{structure, wirenum};
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
 use std::collections::{BTreeSet, HashSet};
 
@@ -45,6 +46,19 @@ pub trait Draw {
     fn rect(&mut self, a: P, b: P, width: f32, ink: Ink, fill: bool) {
         self.poly(&[a, p(b.x, a.y), b, p(a.x, b.y)], true, width, ink, fill);
     }
+    /// Marks the area `min`..`max` as a link to another page (PDF export).
+    fn link(&mut self, _min: P, _max: P, _page: usize) {}
+}
+
+/// Links the area of a text (estimated from its length) to a page.
+fn link_text(d: &mut dyn Draw, pos: P, text: &str, size: f32, h: Anchor, page: usize) {
+    let w = text.chars().count() as f32 * size * 0.62;
+    let x0 = match h {
+        Anchor::Left => pos.x,
+        Anchor::Center => pos.x - w / 2.0,
+        Anchor::Right => pos.x - w,
+    };
+    d.link(p(x0, pos.y - size * 0.7), p(x0 + w, pos.y + size * 0.7), page);
 }
 
 pub const SYMBOL_W: f32 = 0.25;
@@ -57,6 +71,8 @@ pub struct Opts {
     pub selected: BTreeSet<u64>,
     pub highlight_wires: HashSet<u64>,
     pub show_pins: bool,
+    /// Revision marks for changes since the last revision are drawn unless hidden.
+    pub hide_revision_marks: bool,
 }
 
 /// Draws a complete page including frame and title block.
@@ -65,7 +81,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     draw_frame(d, prj, page_i);
     match page.kind {
         PageKind::Cover => draw_cover(d, prj),
-        PageKind::Report(kind) => draw_report(d, an, kind),
+        PageKind::Report(kind) => draw_report(d, prj, an, kind),
         PageKind::Mounting(id) => draw_mounting_page(d, prj, id),
         PageKind::Schematic => {}
     }
@@ -86,11 +102,18 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     for j in netlist::junctions(page) {
         d.circle(j, 0.7, 0.0, Ink::Wire, true);
     }
+    draw_wire_labels(d, prj, an, page_i);
+    let structured = !page.function.is_empty() || !page.location.is_empty();
     for s in &page.symbols {
         let Some(def) = symbols::get(&s.sym) else { continue };
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
-        draw_symbol(d, def, s, ink);
-        draw_annotations(d, prj, idx, def, s, ink);
+        if structured {
+            let shown = SymbolInst { tag: structure::relative(page, &s.tag), ..s.clone() };
+            draw_symbol(d, def, &shown, ink);
+        } else {
+            draw_symbol(d, def, s, ink);
+        }
+        draw_annotations(d, prj, idx, page_i, def, s, ink);
         if opts.show_pins {
             for i in 0..def.pins.len() {
                 d.circle(def.pin_world(i, s.pos, s.rot, s.mirror), 0.6, 0.15, Ink::Pin, false);
@@ -102,6 +125,28 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         for (i, line) in t.text.lines().enumerate() {
             d.text(t.pos + p(0.0, i as f32 * t.size * 1.4), line, t.size, Anchor::Left, VAnchor::Middle, ink);
         }
+    }
+    if !opts.hide_revision_marks {
+        draw_revision_marks(d, prj, an, page_i);
+    }
+}
+
+/// Triangle with the upcoming revision index at every item changed since the last
+/// revision (at the title block for changed page properties / new pages).
+fn draw_revision_marks(d: &mut dyn Draw, prj: &Project, an: &Analysis, page_i: usize) {
+    let Some(pc) = an.changes.iter().find(|c| c.page == Some(page_i)) else { return };
+    let name = crate::revision::next_name(prj);
+    let mut done: Vec<(i64, i64)> = Vec::new();
+    for c in &pc.changes {
+        let at = if c.what == "Page" { p(203.0, 262.0) } else { c.pos + p(3.5, -3.5) };
+        // One mark per spot (e.g. a moved wire split into several).
+        if done.contains(&at.key()) {
+            continue;
+        }
+        done.push(at.key());
+        let ink = Ink::Highlight;
+        d.poly(&[at + p(0.0, -2.4), at + p(2.2, 1.4), at + p(-2.2, 1.4)], true, 0.2, ink, false);
+        d.text(at + p(0.0, 0.3), &name, 1.5, Anchor::Center, VAnchor::Middle, ink);
     }
 }
 
@@ -120,9 +165,14 @@ pub fn draw_shape(d: &mut dyn Draw, s: &Shape, ink: Ink) {
 
 /// Draws only the symbol graphics (used for canvas, ghost and library previews).
 pub fn draw_symbol(d: &mut dyn Draw, def: &SymbolDef, s: &SymbolInst, ink: Ink) {
+    draw_prims(d, &def.prims, s, ink);
+}
+
+/// Symbol graphics placed like the instance `s` (also used by the symbol editor).
+pub fn draw_prims(d: &mut dyn Draw, prims: &[Prim], s: &SymbolInst, ink: Ink) {
     let tf = |q: P| s.pos + q.transform(s.rot, s.mirror);
     let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
-    for prim in &def.prims {
+    for prim in prims {
         match prim {
             Prim::Line { a, b, dashed } => d.line(tf(*a), tf(*b), SYMBOL_W, ink, *dashed),
             Prim::Poly { pts, closed, fill } => {
@@ -171,8 +221,50 @@ fn find_inst<'a>(prj: &'a Project, loc: &Loc) -> Option<&'a SymbolInst> {
     prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id)
 }
 
+/// Text beside a wire at fraction `t` of its length: left of vertical wires, above
+/// horizontal ones (`below`: right of / below the wire).
+fn wire_text(d: &mut dyn Draw, w: &Wire, t: f32, text: &str, below: bool, ink: Ink) {
+    let q = p(w.a.x + (w.b.x - w.a.x) * t, w.a.y + (w.b.y - w.a.y) * t);
+    if (w.b.x - w.a.x).abs() < (w.b.y - w.a.y).abs() {
+        let (dx, anchor) = if below { (1.2, Anchor::Left) } else { (-0.8, Anchor::Right) };
+        d.text(p(q.x + dx, q.y), text, SMALL_SIZE, anchor, VAnchor::Middle, ink);
+    } else if below {
+        d.text(p(q.x, q.y + 2.8), text, SMALL_SIZE, Anchor::Center, VAnchor::Bottom, ink);
+    } else {
+        d.text(p(q.x, q.y - 0.6), text, SMALL_SIZE, Anchor::Center, VAnchor::Bottom, ink);
+    }
+}
+
+/// Wire numbers (once per connection and page, on its longest wire) and cable cores
+/// (a stroke across the wire, the core and once per page the cable tag).
+fn draw_wire_labels(d: &mut dyn Draw, prj: &Project, an: &Analysis, page_i: usize) {
+    let page = &prj.pages[page_i];
+    for net in &an.open.nets {
+        let Some(w) = wirenum::label_wire(page, page_i, net) else { continue };
+        let number = wirenum::number_of(prj, net);
+        if !number.is_empty() {
+            // Cable cores are labelled at 30 % of the wire.
+            let t = if w.cable.is_empty() { 0.5 } else { 0.72 };
+            wire_text(d, w, t, &number, false, Ink::Text);
+        }
+    }
+    let mut cabled: Vec<&Wire> = page.wires.iter().filter(|w| !w.cable.is_empty()).collect();
+    cabled.sort_by(|a, b| a.a.x.min(a.b.x).total_cmp(&b.a.x.min(b.b.x)).then(a.a.y.total_cmp(&b.a.y)));
+    let mut tagged: Vec<&str> = Vec::new();
+    for w in cabled {
+        let t = 0.3;
+        let q = p(w.a.x + (w.b.x - w.a.x) * t, w.a.y + (w.b.y - w.a.y) * t);
+        d.line(q + p(-1.0, 0.8), q + p(1.0, -0.8), SYMBOL_W, Ink::Line, false);
+        if !tagged.contains(&w.cable.as_str()) {
+            tagged.push(&w.cable);
+            wire_text(d, w, t, &structure::relative(page, &w.cable), false, Ink::CrossRef);
+        }
+        wire_text(d, w, t, &w.core, true, Ink::CrossRef);
+    }
+}
+
 /// Device tag, function text, connection point designations and cross references.
-pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, def: &SymbolDef, s: &SymbolInst, ink: Ink) {
+pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: usize, def: &SymbolDef, s: &SymbolInst, ink: Ink) {
     let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
     let bounds = def.world_bounds(s.pos, s.rot, s.mirror);
     let vertical = s.rot.is_multiple_of(2);
@@ -197,26 +289,33 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, def: &Symb
     }
 
     // Cross references
-    let mut refs: Vec<String> = Vec::new();
+    let mut refs: Vec<(String, Option<usize>)> = Vec::new();
     let dev = idx.devices.get(&s.tag);
     match def.func {
         Func::Aux(_) => match dev.map(|d| d.mains.as_slice()) {
-            Some([]) | None => refs.push("?".into()),
-            Some(mains) => refs.extend(mains.iter().map(|m| m.reference(prj))),
+            Some([]) | None => refs.push(("?".into(), None)),
+            Some(mains) => refs.extend(mains.iter().map(|m| (m.reference_from(prj, page_i), Some(m.page)))),
         },
+        Func::Overview => {
+            if let Some(dev) = dev {
+                refs.extend(dev.mains.iter().map(|m| (m.reference_from(prj, page_i), Some(m.page))));
+            }
+        }
         Func::Main { mirror: false } => {
             if let Some(dev) = dev {
-                refs.extend(dev.auxs.iter().map(|a| a.reference(prj)));
+                refs.extend(dev.auxs.iter().map(|a| (a.reference_from(prj, page_i), Some(a.page))));
             }
         }
         Func::Interruption => {
             if let Some(locs) = idx.interruptions.get(&s.label) {
-                let others: Vec<String> =
-                    locs.iter().filter(|l| l.sym_id != s.id).map(|l| l.reference(prj)).collect();
-                let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror);
-                let txt = if others.is_empty() { "?".to_string() } else { others.join(" ") };
+                let others: Vec<&Loc> = locs.iter().filter(|l| l.sym_id != s.id).collect();
+                let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror) + p(0.0, 2.6);
+                let txt = if others.is_empty() { "?".to_string() } else { others.iter().map(|l| l.reference_from(prj, page_i)).collect::<Vec<_>>().join(" ") };
                 let ink = if others.is_empty() { Ink::Error } else { Ink::CrossRef };
-                d.text(q + p(0.0, 2.6), &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
+                d.text(q, &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
+                if let Some(l) = others.first() {
+                    link_text(d, q, &txt, SMALL_SIZE, Anchor::Left, l.page);
+                }
             }
         }
         _ => {}
@@ -224,52 +323,55 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, def: &Symb
 
     // Tag block
     if def.show_tag {
-        let mut lines: Vec<(String, f32, Ink)> = Vec::new();
+        let mut lines: Vec<(String, f32, Ink, Option<usize>)> = Vec::new();
         if !s.tag.is_empty() {
-            lines.push((s.tag.clone(), TAG_SIZE, text_ink));
+            lines.push((structure::relative(&prj.pages[page_i], &s.tag), TAG_SIZE, text_ink, None));
         }
         if !s.function_text.is_empty() {
             for l in s.function_text.lines() {
-                lines.push((l.to_string(), 2.0, text_ink));
+                lines.push((l.to_string(), 2.0, text_ink, None));
             }
         }
-        for r in refs {
+        for (r, target) in refs {
             let ink = if r == "?" { Ink::Error } else { Ink::CrossRef };
-            lines.push((r, 2.0, ink));
+            lines.push((r, 2.0, ink, target));
         }
         let total: f32 = lines.iter().map(|l| l.1 * 1.35).sum();
-        if vertical {
-            let x = bounds.min.x - 1.2;
-            let mut y = bounds.center().y - total / 2.0;
-            for (t, size, ink) in &lines {
-                d.text(p(x, y + size * 0.675), t, *size, Anchor::Right, VAnchor::Middle, *ink);
-                y += size * 1.35;
-            }
+        let (x, mut y, anchor) = if vertical {
+            (bounds.min.x - 1.2, bounds.center().y - total / 2.0, Anchor::Right)
         } else {
-            let x = bounds.center().x;
-            let mut y = bounds.min.y - 1.0 - total;
-            for (t, size, ink) in &lines {
-                d.text(p(x, y + size * 0.675), t, *size, Anchor::Center, VAnchor::Middle, *ink);
-                y += size * 1.35;
+            (bounds.center().x, bounds.min.y - 1.0 - total, Anchor::Center)
+        };
+        for (t, size, ink, target) in &lines {
+            let q = p(x, y + size * 0.675);
+            d.text(q, t, *size, anchor, VAnchor::Middle, *ink);
+            if let Some(page) = target {
+                link_text(d, q, t, *size, anchor, *page);
             }
+            y += size * 1.35;
         }
     }
 
     // Contact image (mirror) below coils
     if matches!(def.func, Func::Main { mirror: true }) {
         if let Some(dev) = dev {
-            draw_contact_image(d, prj, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
         }
     }
 }
 
-fn draw_contact_image(d: &mut dyn Draw, prj: &Project, tag: &str, auxs: &[Loc], bounds: &R, vertical: bool, ink: Ink) {
+/// Contact image row: kind, connection designations, cross reference and its page
+/// (None = reserve contact).
+type ContactRow = (ContactKind, Vec<String>, Option<(String, usize)>);
+
+#[allow(clippy::too_many_arguments)]
+fn draw_contact_image(d: &mut dyn Draw, prj: &Project, page_i: usize, tag: &str, auxs: &[Loc], bounds: &R, vertical: bool, ink: Ink) {
     // Rows: contact kind, connection designations, cross reference (None = reserve).
-    let mut rows: Vec<(ContactKind, Vec<String>, Option<String>)> = Vec::new();
+    let mut rows: Vec<ContactRow> = Vec::new();
     for loc in auxs {
         let (Some(def), Some(inst)) = (find_symbol(prj, loc), find_inst(prj, loc)) else { continue };
         let kind = def.contact_kind().unwrap_or(ContactKind::No);
-        rows.push((kind, inst.pins.clone(), Some(loc.reference(prj))));
+        rows.push((kind, inst.pins.clone(), Some((loc.reference_from(prj, page_i), loc.page))));
     }
     // Unused contacts of the assigned parts (function templates) are shown as reserve.
     for f in parts::reserve_functions(prj, None, tag) {
@@ -312,7 +414,10 @@ fn draw_contact_image(d: &mut dyn Draw, prj: &Project, tag: &str, auxs: &[Loc], 
         d.text(p(cx + 3.6, y), &right, SMALL_SIZE, Anchor::Left, VAnchor::Middle, text_ink);
         let rx = (cx + 4.2 + right.chars().count() as f32 * SMALL_SIZE * 0.6).max(cx + 7.5);
         match reference {
-            Some(r) => d.text(p(rx, y), &r, SMALL_SIZE, Anchor::Left, VAnchor::Middle, Ink::CrossRef),
+            Some((r, page)) => {
+                d.text(p(rx, y), &r, SMALL_SIZE, Anchor::Left, VAnchor::Middle, Ink::CrossRef);
+                link_text(d, p(rx, y), &r, SMALL_SIZE, Anchor::Left, page);
+            }
             None => d.text(p(rx, y), "reserve", SMALL_SIZE * 0.9, Anchor::Left, VAnchor::Middle, Ink::FrameText),
         }
         y += 3.0;
@@ -369,52 +474,8 @@ pub fn draw_frame(d: &mut dyn Draw, prj: &Project, page_i: usize) {
 }
 
 fn draw_title_block(d: &mut dyn Draw, prj: &Project, page_i: usize) {
-    let page = &prj.pages[page_i];
-    let info = &prj.info;
-    let fi = Ink::Frame;
-    let (y0, y1) = (TITLE_Y0, FRAME_Y1);
-    let ym = (y0 + y1) / 2.0;
-    d.line(p(FRAME_X0, y0), p(FRAME_X1, y0), 0.5, fi, false);
-    let cols = [FRAME_X0, 90.0, 150.0, 210.0, 330.0, 370.0, FRAME_X1];
-    for &x in &cols[1..cols.len() - 1] {
-        d.line(p(x, y0), p(x, y1), 0.25, fi, false);
-    }
-    for (x0, x1) in [(90.0, 150.0), (150.0, 210.0), (330.0, 370.0), (370.0, FRAME_X1)] {
-        d.line(p(x0, ym), p(x1, ym), 0.25, fi, false);
-    }
-    let lbl = |d: &mut dyn Draw, x: f32, y: f32, t: &str| {
-        d.text(p(x + 1.0, y + 1.8), t, 1.6, Anchor::Left, VAnchor::Middle, Ink::FrameText)
-    };
-    let val = |d: &mut dyn Draw, x: f32, y: f32, t: &str, size: f32| {
-        d.text(p(x + 2.0, y), t, size, Anchor::Left, VAnchor::Middle, Ink::Text)
-    };
-    lbl(d, FRAME_X0, y0, "Company");
-    val(d, FRAME_X0, ym + 2.0, &info.company, 4.0);
-    lbl(d, 90.0, y0, "Date");
-    val(d, 90.0, y0 + 9.0, &info.date, 2.5);
-    lbl(d, 90.0, ym, "Creator");
-    val(d, 90.0, ym + 9.0, &info.creator, 2.5);
-    lbl(d, 150.0, y0, "Revision");
-    val(d, 150.0, y0 + 9.0, &info.revision, 2.5);
-    lbl(d, 150.0, ym, "Software");
-    val(d, 150.0, ym + 9.0, "OpenECraft", 2.5);
-    lbl(d, 210.0, y0, "Project / page description");
-    val(d, 210.0, y0 + 9.0, &info.name, 3.5);
-    val(d, 210.0, y0 + 21.0, &page.description, 3.0);
-    lbl(d, 330.0, y0, "Page");
-    val(d, 330.0, y0 + 9.5, &page.name, 4.0);
-    lbl(d, 330.0, ym, "Type");
-    let kind = match page.kind {
-        PageKind::Schematic => "Schematic",
-        PageKind::Cover => "Cover",
-        PageKind::Report(_) => "Report",
-        PageKind::Mounting(_) => "Mounting",
-    };
-    val(d, 330.0, ym + 9.0, kind, 2.5);
-    lbl(d, 370.0, y0, "Sheet");
-    val(d, 370.0, y0 + 9.5, &format!("{} / {}", page_i + 1, prj.pages.len()), 3.5);
-    lbl(d, 370.0, ym, "Project");
-    val(d, 370.0, ym + 9.0, &info.name, 2.2);
+    let form = crate::forms::title_block(prj, page_i);
+    crate::forms::draw(d, &form, prj, page_i);
 }
 
 fn draw_cover(d: &mut dyn Draw, prj: &Project) {
@@ -442,31 +503,41 @@ fn draw_cover(d: &mut dyn Draw, prj: &Project) {
 
 pub const REPORT_ROWS_PER_PAGE: usize = 40;
 
-fn draw_report(d: &mut dyn Draw, an: &Analysis, kind: ReportKind) {
+fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind) {
     let Some(table) = an.reports.get(&kind) else { return };
-    d.text(p(22.0, 24.0), kind.title(), 6.0, Anchor::Left, VAnchor::Middle, Ink::Text);
+    let form = prj.forms.reports.get(&kind);
+    let title = form.map(|f| f.title.as_str()).filter(|t| !t.is_empty()).unwrap_or(kind.title());
+    d.text(p(22.0, 24.0), title, 6.0, Anchor::Left, VAnchor::Middle, Ink::Text);
+    let cols = crate::forms::report_columns(form, &table.headers);
+    let per_page = form.map(|f| f.rows).filter(|r| *r > 0).unwrap_or(REPORT_ROWS_PER_PAGE);
     let (x0, x1) = (22.0, 400.0);
-    let total_w: f32 = table.widths.iter().sum();
+    let total_w: f32 = cols.iter().map(|&c| table.widths[c]).sum();
     let mut xs = vec![x0];
-    for w in &table.widths {
-        xs.push(xs.last().unwrap() + w / total_w * (x1 - x0));
+    for &c in &cols {
+        xs.push(xs.last().unwrap() + table.widths[c] / total_w * (x1 - x0));
     }
-    let row_h = 5.0;
+    // Rows get lower (and their text smaller) when more of them must fit.
+    let row_h = (5.0f32).min((TITLE_Y0 - 12.0 - 39.0) / per_page as f32).max(2.0);
+    let k = row_h / 5.0;
     let mut y = 34.0;
-    for (i, h) in table.headers.iter().enumerate() {
-        d.text(p(xs[i] + 1.2, y + row_h / 2.0), h, 2.4, Anchor::Left, VAnchor::Middle, Ink::Text);
+    for (i, &c) in cols.iter().enumerate() {
+        d.text(p(xs[i] + 1.2, y + 2.5), table.headers[c], 2.4, Anchor::Left, VAnchor::Middle, Ink::Text);
     }
-    y += row_h;
+    y += 5.0;
     d.line(p(x0, y), p(x1, y), 0.5, Ink::Frame, false);
-    for row in table.rows.iter().take(REPORT_ROWS_PER_PAGE) {
-        for (i, cell) in row.iter().enumerate() {
-            let maxc = ((xs[i + 1] - xs[i]) / (2.2 * 0.6)) as usize;
+    for (row, target) in table.rows.iter().zip(&table.targets).take(per_page) {
+        if let Some((page, _)) = target {
+            d.link(p(x0, y), p(x1, y + row_h), *page);
+        }
+        for (i, &c) in cols.iter().enumerate() {
+            let cell = row.get(c).map(String::as_str).unwrap_or("");
+            let maxc = ((xs[i + 1] - xs[i]) / (2.2 * k * 0.6)) as usize;
             let txt: String = if cell.chars().count() > maxc && maxc > 1 {
                 cell.chars().take(maxc - 1).collect::<String>() + "…"
             } else {
-                cell.clone()
+                cell.to_string()
             };
-            d.text(p(xs[i] + 1.2, y + row_h / 2.0), &txt, 2.2, Anchor::Left, VAnchor::Middle, Ink::Text);
+            d.text(p(xs[i] + 1.2, y + row_h / 2.0), &txt, 2.2 * k, Anchor::Left, VAnchor::Middle, Ink::Text);
         }
         y += row_h;
         d.line(p(x0, y), p(x1, y), 0.1, Ink::Frame, false);
@@ -475,8 +546,8 @@ fn draw_report(d: &mut dyn Draw, an: &Analysis, kind: ReportKind) {
         d.line(p(*x, 34.0), p(*x, y), 0.15, Ink::Frame, false);
     }
     d.rect(p(x0, 34.0), p(x1, y), 0.3, Ink::Frame, false);
-    if table.rows.len() > REPORT_ROWS_PER_PAGE {
-        let more = format!("… {} more rows – see Reports window / CSV export", table.rows.len() - REPORT_ROWS_PER_PAGE);
+    if table.rows.len() > per_page {
+        let more = format!("… {} more rows – see Reports window / CSV export", table.rows.len() - per_page);
         d.text(p(x0, y + 5.0), &more, 2.5, Anchor::Left, VAnchor::Middle, Ink::FrameText);
     }
     if table.rows.is_empty() {
@@ -486,29 +557,48 @@ fn draw_report(d: &mut dyn Draw, an: &Analysis, kind: ReportKind) {
 
 // ---------------------------------------------------------------------- panel layout
 
-/// Draws an enclosure with its mounting plate in front view. `origin` is the page
-/// position of the enclosure's top left corner, `k` the scale (page mm per real mm).
+/// Draws an enclosure in front view: its mounting plate or its door (seen from the
+/// front). `origin` is the page position of the enclosure's top left corner, `k` the
+/// scale (page mm per real mm).
+#[allow(clippy::too_many_arguments)]
 pub fn draw_enclosure(
     d: &mut dyn Draw,
     e: &Enclosure,
+    face: Face,
     origin: P,
     k: f32,
     selected: &BTreeSet<u64>,
     problems: &BTreeSet<u64>,
     parts: &[Part],
 ) {
-    let tf = |x: f32, y: f32| origin + p((x + panel::PLATE_MARGIN) * k, (y + panel::PLATE_MARGIN) * k);
+    let m = face.origin();
+    let tf = |x: f32, y: f32| origin + p((x + m) * k, (y + m) * k);
     d.rect(origin, origin + p(e.width * k, e.height * k), 0.5, Ink::Line, false);
-    let (pw, ph) = e.plate_size();
-    d.rect(tf(0.0, 0.0), tf(pw, ph), 0.0, Ink::Plate, true);
-    d.rect(tf(0.0, 0.0), tf(pw, ph), 0.25, Ink::Frame, false);
-    // Rails first, then ducts, devices on top.
-    let mut items: Vec<&PanelItem> = e.items.iter().collect();
-    items.sort_by_key(|i| match i.kind {
-        ItemKind::Rail => 0,
-        ItemKind::Duct => 1,
-        ItemKind::Device => 2,
-    });
+    match face {
+        Face::Plate => {
+            let (pw, ph) = e.plate_size();
+            d.rect(tf(0.0, 0.0), tf(pw, ph), 0.0, Ink::Plate, true);
+            d.rect(tf(0.0, 0.0), tf(pw, ph), 0.25, Ink::Frame, false);
+        }
+        Face::Door => {
+            // Door frame, hinges on the left, handle on the right.
+            let f = panel::DOOR_FRAME;
+            let (a, b) = (tf(f, f), tf(e.width - f, e.height - f));
+            for (s, t) in [(a, p(b.x, a.y)), (p(b.x, a.y), b), (b, p(a.x, b.y)), (p(a.x, b.y), a)] {
+                d.line(s, t, 0.15, Ink::Frame, true);
+            }
+            for y in [0.15, 0.85] {
+                let hy = e.height * y;
+                d.rect(tf(-3.0, hy - 25.0), tf(3.0, hy + 25.0), 0.25, Ink::Frame, false);
+            }
+            let hy = e.height / 2.0;
+            d.rect(tf(e.width - 32.0, hy - 50.0), tf(e.width - 14.0, hy + 50.0), 0.0, Ink::Fill, true);
+            d.rect(tf(e.width - 32.0, hy - 50.0), tf(e.width - 14.0, hy + 50.0), 0.25, Ink::Line, false);
+        }
+    }
+    // Cutouts first, then rails, ducts, busbars, devices on top.
+    let mut items: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == face).collect();
+    items.sort_by_key(|i| i.kind.layer());
     for it in items {
         let ink = if selected.contains(&it.id) {
             Ink::Selected
@@ -559,6 +649,39 @@ pub fn draw_enclosure(
                     t += 10.0;
                 }
             }
+            ItemKind::Busbar => {
+                d.rect(a, b, 0.0, Ink::Plate, true);
+                d.rect(a, b, 0.2, ink, false);
+                // The bars, evenly spaced across the system.
+                let n = crate::production::bar_count(parts, &it.part);
+                let across = if horizontal { it.h } else { it.w };
+                let pitch = across / n as f32;
+                for k in 0..n {
+                    let off = pitch * (k as f32 + 0.5);
+                    let half = (pitch * 0.18).min(3.0);
+                    let (r0, r1) = if horizontal {
+                        (tf(it.x, it.y + off - half), tf(it.x + it.w, it.y + off + half))
+                    } else {
+                        (tf(it.x + off - half, it.y), tf(it.x + off + half, it.y + it.h))
+                    };
+                    d.rect(r0, r1, 0.0, Ink::Fill, true);
+                    d.rect(r0, r1, 0.15, ink, false);
+                }
+            }
+            ItemKind::Cutout => {
+                let line_ink = if ink == Ink::Line { Ink::Frame } else { ink };
+                if it.round {
+                    let c = tf(it.x + it.w / 2.0, it.y + it.h / 2.0);
+                    d.circle(c, it.w / 2.0 * k, 0.3, ink, false);
+                    let r = it.w / 2.0 * k * std::f32::consts::FRAC_1_SQRT_2;
+                    d.line(c + p(-r, -r), c + p(r, r), 0.12, line_ink, false);
+                    d.line(c + p(-r, r), c + p(r, -r), 0.12, line_ink, false);
+                } else {
+                    d.rect(a, b, 0.3, ink, false);
+                    d.line(a, b, 0.12, line_ink, false);
+                    d.line(p(a.x, b.y), p(b.x, a.y), 0.12, line_ink, false);
+                }
+            }
             ItemKind::Device => {
                 d.rect(a, b, 0.0, Ink::Fill, true);
                 let model = parts.iter().find(|x| x.number == it.part).and_then(|x| x.model_2d.as_ref());
@@ -579,6 +702,31 @@ pub fn draw_enclosure(
                 d.rect(a, b, 0.3, ink, false);
             }
         }
+    }
+    // Door cutouts of the door devices (dashed: under the device)
+    if face == Face::Door {
+        for o in crate::production::openings(e, parts, face).iter().filter(|o| e.item(o.item).map(|i| i.kind == ItemKind::Device).unwrap_or(false)) {
+            let c = tf(o.center.x, o.center.y);
+            if o.round {
+                d.circle(c, o.w / 2.0 * k, 0.15, Ink::Frame, false);
+            } else {
+                let half = p(o.w / 2.0 * k, o.h / 2.0 * k);
+                let (a, b) = (c - half, c + half);
+                for (s, t) in [(a, p(b.x, a.y)), (p(b.x, a.y), b), (b, p(a.x, b.y)), (p(a.x, b.y), a)] {
+                    d.line(s, t, 0.15, Ink::Frame, true);
+                }
+            }
+        }
+        return;
+    }
+    // Drilling pattern (holes hidden under other devices are left out)
+    for h in crate::production::holes(e, parts) {
+        let covered = e.items.iter().any(|i| i.kind == ItemKind::Device && i.face == Face::Plate && i.id != h.item && i.rect().contains(h.pos));
+        if covered {
+            continue;
+        }
+        let c = tf(h.pos.x, h.pos.y);
+        d.circle(c, (h.diameter / 2.0 * k).max(0.25), 0.1, Ink::Frame, false);
     }
 }
 
@@ -643,11 +791,21 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
         return;
     };
     let (x0, y0, x1, y1) = (AREA_X0 + 25.0, AREA_Y0 + 12.0, FRAME_X1 - 15.0, TITLE_Y0 - 22.0);
-    let n = drawing_scale((e.width, e.height), (x1 - x0, y1 - y0));
+    // With door devices the door is drawn to the right of the mounting plate.
+    let door = e.items.iter().any(|i| i.face == Face::Door);
+    let gap = if door { e.width * 0.25 } else { 0.0 };
+    let total_w = if door { 2.0 * e.width + gap } else { e.width };
+    let n = drawing_scale((total_w, e.height), (x1 - x0, y1 - y0));
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
-    let origin = p(x0 + ((x1 - x0) - w) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, origin, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
+    let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
+    draw_enclosure(d, e, Face::Plate, origin, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
+    if door {
+        let o = origin + p(w + gap * k, 0.0);
+        draw_enclosure(d, e, Face::Door, o, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
+        d.text(p(origin.x + w / 2.0, origin.y - 3.0), "Mounting plate", 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+        d.text(p(o.x + w / 2.0, o.y - 3.0), "Door (front view)", 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+    }
     // Dimensions
     let bottom = origin.y + h + 6.0;
     d.line(p(origin.x, bottom), p(origin.x + w, bottom), 0.18, Ink::Frame, false);

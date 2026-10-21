@@ -19,6 +19,8 @@ pub enum Tool {
     Text,
     Line,
     Rect,
+    /// Place the items of `Editor::insert` (macro).
+    Insert,
 }
 
 impl Tool {
@@ -29,6 +31,7 @@ impl Tool {
             Tool::Wire => "Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish",
             Tool::Text => "Click to place a text",
             Tool::Line | Tool::Rect => "Click start point, click end point",
+            Tool::Insert => "Click to insert the macro · Esc cancel",
         }
     }
 }
@@ -208,6 +211,9 @@ pub struct Editor {
     pub hover: Option<P>,
     pub status: String,
     pub center_on: Option<P>,
+    /// Items placed with `Tool::Insert`.
+    pub insert: Option<Clip>,
+    pub show_revision_marks: bool,
     wire_start: Option<P>,
     wire_hfirst: bool,
     shape_start: Option<P>,
@@ -231,6 +237,8 @@ impl Default for Editor {
             hover: None,
             status: String::new(),
             center_on: None,
+            insert: None,
+            show_revision_marks: true,
             wire_start: None,
             wire_hfirst: true,
             shape_start: None,
@@ -397,7 +405,8 @@ impl Editor {
         }
 
         let page_kind = prj.pages[page_i].kind;
-        let editable = page_kind == PageKind::Schematic;
+        let locked = prj.pages[page_i].locked;
+        let editable = page_kind == PageKind::Schematic && !locked;
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
         let snapped = world.map(|w| w.snap(GRID));
@@ -425,7 +434,12 @@ impl Editor {
             self.draw_grid(&painter, rect, &pal);
         }
 
-        let mut opts = Opts { selected: self.selection.clone(), show_pins: self.show_pins || self.tool == Tool::Wire, ..Default::default() };
+        let mut opts = Opts {
+            selected: self.selection.clone(),
+            show_pins: self.show_pins || self.tool == Tool::Wire,
+            hide_revision_marks: !self.show_revision_marks,
+            ..Default::default()
+        };
         // Highlight the complete potential of a selected wire.
         if self.selection.len() == 1 {
             let id = *self.selection.iter().next().unwrap();
@@ -468,6 +482,24 @@ impl Editor {
                         render::draw_shape(&mut g, &s, Ink::Ghost);
                     }
                 }
+                Tool::Insert => {
+                    if let Some(clip) = &self.insert {
+                        // Same offset as ops::paste
+                        let d = (sn - clip.bounds().min).snap(GRID);
+                        for s in &clip.symbols {
+                            if let Some(def) = symbols::get(&s.sym) {
+                                let inst = SymbolInst { pos: s.pos + d, ..s.clone() };
+                                render::draw_symbol(&mut g, def, &inst, Ink::Ghost);
+                            }
+                        }
+                        for w in &clip.wires {
+                            g.line(w.a + d, w.b + d, render::WIRE_W, Ink::Ghost, false);
+                        }
+                        for s in &clip.shapes {
+                            render::draw_shape(&mut g, &Shape { a: s.a + d, b: s.b + d, ..s.clone() }, Ink::Ghost);
+                        }
+                    }
+                }
                 _ => {}
             }
             if self.tool != Tool::Select {
@@ -485,13 +517,8 @@ impl Editor {
             }
         }
         if !editable {
-            painter.text(
-                rect.left_top() + vec2(10.0, 10.0),
-                Align2::LEFT_TOP,
-                "Generated page – edit via page properties",
-                FontId::proportional(13.0),
-                pal.frame,
-            );
+            let msg = if locked { "Released page – unlock it in Project › Revisions to change it" } else { "Generated page – edit via page properties" };
+            painter.text(rect.left_top() + vec2(10.0, 10.0), Align2::LEFT_TOP, msg, FontId::proportional(13.0), pal.frame);
         }
 
         // Status line
@@ -533,7 +560,7 @@ impl Editor {
     }
 
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>) {
-        let editable = prj.pages[page_i].kind == PageKind::Schematic;
+        let editable = prj.pages[page_i].kind == PageKind::Schematic && !prj.pages[page_i].locked;
         let (esc, r, m, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
@@ -728,10 +755,18 @@ impl Editor {
                     out.open_properties = true;
                 }
             }
+            Tool::Insert => {
+                let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten();
+                if let (Some(sn), Some(clip)) = (click, click.and_then(|_| self.insert.take())) {
+                    let ids = ops::paste(prj, page_i, &clip, sn);
+                    self.set_tool(Tool::Select);
+                    self.selection = ids;
+                }
+            }
             Tool::Place(key) => {
                 if let (true, Some(sn)) = (resp.clicked_by(PointerButton::Primary), snapped) {
                     if let Some(def) = symbols::get(key) {
-                        let s = ops::new_symbol(prj, &self.place_ctx, def, sn, self.place_rot, self.place_mirror);
+                        let s = ops::new_symbol(prj, page_i, &self.place_ctx, def, sn, self.place_rot, self.place_mirror);
                         self.place_ctx.remember(&s);
                         prj.pages[page_i].symbols.push(s);
                     }
@@ -799,3 +834,6 @@ pub fn symbol_icon(ui: &mut egui::Ui, key: &str, size: Vec2) -> egui::Response {
     render::draw_symbol(&mut d, def, &inst, Ink::Line);
     resp
 }
+
+#[cfg(test)]
+mod tests;

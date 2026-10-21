@@ -1,13 +1,15 @@
-//! Built-in IEC style symbol library.
+//! Symbol libraries: built-in IEC, NFPA / JIC, fluid power, single-line and black
+//! box symbols, plus the user symbols of the project ([`crate::symlib`]).
 //!
 //! Symbols are defined in local millimetre coordinates in vertical orientation
 //! (current flows top → bottom). Connection points lie on the 4 mm grid relative to
 //! the symbol origin so that placed symbols connect cleanly to wires.
 
 use crate::geom::{p, P, R};
+use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ContactKind {
     No,
     Nc,
@@ -15,7 +17,7 @@ pub enum ContactKind {
     MainNo,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Func {
     /// Main function of a device. `mirror` = draws a contact image (coils, overloads).
     Main { mirror: bool },
@@ -29,11 +31,46 @@ pub enum Func {
     Potential,
     /// Interruption point (page connector): label = name. No device tag.
     Interruption,
+    /// Single-line / overview representation of a device that is drawn in detail
+    /// elsewhere: shows cross references to the main function, its connection
+    /// points are not part of the netlist.
+    Overview,
 }
 
 impl Func {
     pub fn has_tag(self) -> bool {
         !matches!(self, Func::Potential | Func::Interruption)
+    }
+
+    /// All functions a symbol can have (symbol editor).
+    pub const ALL: [Func; 11] = [
+        Func::Main { mirror: false },
+        Func::Main { mirror: true },
+        Func::Aux(ContactKind::No),
+        Func::Aux(ContactKind::Nc),
+        Func::Aux(ContactKind::Changeover),
+        Func::Aux(ContactKind::MainNo),
+        Func::Terminal,
+        Func::Plc,
+        Func::Potential,
+        Func::Interruption,
+        Func::Overview,
+    ];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Func::Main { mirror: false } => "Main function",
+            Func::Main { mirror: true } => "Main function with contact image",
+            Func::Aux(ContactKind::No) => "Auxiliary function: NO contact",
+            Func::Aux(ContactKind::Nc) => "Auxiliary function: NC contact",
+            Func::Aux(ContactKind::Changeover) => "Auxiliary function: changeover",
+            Func::Aux(ContactKind::MainNo) => "Auxiliary function: main contact",
+            Func::Terminal => "Terminal",
+            Func::Plc => "PLC connection point",
+            Func::Potential => "Potential",
+            Func::Interruption => "Interruption point",
+            Func::Overview => "Overview / single-line",
+        }
     }
 }
 
@@ -48,10 +85,17 @@ pub enum Category {
     Plc,
     Potentials,
     Passive,
+    BlackBox,
+    SingleLine,
+    Nfpa,
+    Fluid,
+    /// Symbols of the project symbol library (symbol editor).
+    User,
 }
 
 impl Category {
-    pub const ALL: [Category; 9] = [
+    /// Categories of the built-in libraries.
+    pub const ALL: [Category; 13] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
@@ -61,6 +105,10 @@ impl Category {
         Category::Plc,
         Category::Potentials,
         Category::Passive,
+        Category::BlackBox,
+        Category::SingleLine,
+        Category::Nfpa,
+        Category::Fluid,
     ];
 
     pub fn title(self) -> &'static str {
@@ -74,24 +122,29 @@ impl Category {
             Category::Plc => "PLC",
             Category::Potentials => "Potentials / Connectors",
             Category::Passive => "Passive components",
+            Category::BlackBox => "Black boxes / PLC boxes",
+            Category::SingleLine => "Single-line / overview",
+            Category::Nfpa => "NFPA / JIC",
+            Category::Fluid => "Fluid power (ISO 1219)",
+            Category::User => "User symbols",
         }
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Anchor {
     Left,
     Center,
     Right,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FieldKind {
     Label,
     Tag,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Prim {
     Line { a: P, b: P, dashed: bool },
     Poly { pts: Vec<P>, closed: bool, fill: bool },
@@ -112,6 +165,8 @@ pub struct SymbolDef {
     pub key: &'static str,
     pub name: &'static str,
     pub category: Category,
+    /// Library of a user symbol (group in the symbol list); empty for built-in ones.
+    pub library: &'static str,
     /// Default identifying letter (IEC 81346 style).
     pub letter: &'static str,
     pub func: Func,
@@ -171,6 +226,10 @@ impl B {
     fn dl(&mut self, x1: f32, y1: f32, x2: f32, y2: f32) -> &mut Self {
         self.prims.push(Prim::Line { a: p(x1, y1), b: p(x2, y2), dashed: true });
         self
+    }
+    /// Dashed rectangle (black box outline).
+    fn drect(&mut self, x1: f32, y1: f32, x2: f32, y2: f32) -> &mut Self {
+        self.dl(x1, y1, x2, y1).dl(x2, y1, x2, y2).dl(x2, y2, x1, y2).dl(x1, y2, x1, y1)
     }
     fn rect(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, fill: bool) -> &mut Self {
         self.prims.push(Prim::Poly {
@@ -281,28 +340,12 @@ impl Def {
         self
     }
     fn build(self, b: &mut B) -> SymbolDef {
-        let mut bounds = R::nothing();
-        for prim in &b.prims {
-            match prim {
-                Prim::Line { a, b, .. } => {
-                    bounds.extend(*a);
-                    bounds.extend(*b);
-                }
-                Prim::Poly { pts, .. } => pts.iter().for_each(|q| bounds.extend(*q)),
-                Prim::Circle { c, r, .. } => {
-                    bounds.extend(p(c.x - r, c.y - r));
-                    bounds.extend(p(c.x + r, c.y + r));
-                }
-                Prim::Text { .. } | Prim::Field { .. } => {}
-            }
-        }
-        for pin in &b.pins {
-            bounds.extend(pin.pos);
-        }
+        let bounds = bounds_of(&b.prims, b.pins.iter().map(|x| x.pos));
         SymbolDef {
             key: self.key,
             name: self.name,
             category: self.category,
+            library: "",
             letter: self.letter,
             func: self.func,
             prims: std::mem::take(&mut b.prims),
@@ -312,9 +355,35 @@ impl Def {
             auto_number: self.auto_number,
             show_tag: self.show_tag,
             show_pin_labels: self.show_pin_labels,
-            bounds: bounds.expand(0.5),
+            bounds,
         }
     }
+}
+
+/// Bounding box of a symbol's graphics and pins (texts are not included).
+pub fn bounds_of(prims: &[Prim], pins: impl Iterator<Item = P>) -> R {
+    let mut bounds = R::nothing();
+    for prim in prims {
+        match prim {
+            Prim::Line { a, b, .. } => {
+                bounds.extend(*a);
+                bounds.extend(*b);
+            }
+            Prim::Poly { pts, .. } => pts.iter().for_each(|q| bounds.extend(*q)),
+            Prim::Circle { c, r, .. } => {
+                bounds.extend(p(c.x - r, c.y - r));
+                bounds.extend(p(c.x + r, c.y + r));
+            }
+            Prim::Text { .. } | Prim::Field { .. } => {}
+        }
+    }
+    for q in pins {
+        bounds.extend(q);
+    }
+    if bounds.min.x > bounds.max.x {
+        bounds = R::from_points(p(-1.0, -1.0), p(1.0, 1.0));
+    }
+    bounds.expand(0.5)
 }
 
 const MAIN: Func = Func::Main { mirror: false };
@@ -572,16 +641,168 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
     v.push(def("diode", "Diode", C::Passive, "V", MAIN).build(&mut b));
 
+    // ---------------------------------------------------------------- black boxes
+    b.drect(-4.0, -4.0, 12.0, 4.0);
+    b.l(0.0, -8.0, 0.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
+    b.pin(0.0, -8.0, "1").pin(8.0, -8.0, "2").pin(0.0, 8.0, "3").pin(8.0, 8.0, "4");
+    v.push(def("box2", "Black box 2 + 2 connections", C::BlackBox, "A", MAIN).build(&mut b));
+
+    b.drect(-4.0, -4.0, 28.0, 4.0);
+    for (i, x) in [0.0, 8.0, 16.0, 24.0].into_iter().enumerate() {
+        b.l(x, -8.0, x, -4.0).l(x, 4.0, x, 8.0);
+        b.pin(x, -8.0, ["1", "2", "3", "4"][i]);
+    }
+    for (i, x) in [0.0, 8.0, 16.0, 24.0].into_iter().enumerate() {
+        b.pin(x, 8.0, ["5", "6", "7", "8"][i]);
+    }
+    v.push(def("box4", "Black box 4 + 4 connections", C::BlackBox, "A", MAIN).build(&mut b));
+
+    // PLC boxes: 8 channels on one side, supply on the other.
+    const CH: [&str; 8] = ["0", "1", "2", "3", "4", "5", "6", "7"];
+    b.rect(-4.0, -6.0, 60.0, 6.0, false).text(28.0, 0.0, "DI 8 x 24 V DC", 2.5, Center);
+    for (i, label) in CH.into_iter().enumerate() {
+        let x = i as f32 * 8.0;
+        b.l(x, -12.0, x, -6.0).pin(x, -12.0, label);
+    }
+    b.l(0.0, 6.0, 0.0, 12.0).l(8.0, 6.0, 8.0, 12.0).pin(0.0, 12.0, "L+").pin(8.0, 12.0, "M");
+    v.push(def("plcbox_di8", "PLC card 8 digital inputs", C::BlackBox, "A", MAIN).build(&mut b));
+
+    b.l(0.0, -12.0, 0.0, -6.0).l(8.0, -12.0, 8.0, -6.0).pin(0.0, -12.0, "L+").pin(8.0, -12.0, "M");
+    b.rect(-4.0, -6.0, 60.0, 6.0, false).text(28.0, 0.0, "DO 8 x 24 V DC 0.5 A", 2.5, Center);
+    for (i, label) in CH.into_iter().enumerate() {
+        let x = i as f32 * 8.0;
+        b.l(x, 6.0, x, 12.0).pin(x, 12.0, label);
+    }
+    v.push(def("plcbox_do8", "PLC card 8 digital outputs", C::BlackBox, "A", MAIN).build(&mut b));
+
+    // ---------------------------------------------------------------- single-line
+    const OVERVIEW: Func = Func::Overview;
+    // Three strokes on the lead mark a 3-phase connection.
+    let three = |b: &mut B| {
+        for y in [-6.6, -5.6, -4.6] {
+            b.l(-1.0, y + 0.4, 1.0, y - 0.4);
+        }
+    };
+    b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).breaker_x(0.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_cb", "Circuit breaker (single-line)", C::SingleLine, "Q", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).arc(0.0, -1.3, 0.7, 180.0, 360.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_contactor", "Contactor (single-line)", C::SingleLine, "K", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -2.0).rect(-1.2, -2.0, 1.2, 4.0, false).l(0.0, 4.0, 0.0, 8.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_fuse", "Fuse (single-line)", C::SingleLine, "F", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -2.0).circle(0.0, 3.0, 5.0, false);
+    b.text(0.0, 1.8, "M", 3.0, Center).text(0.0, 5.0, "3~", 2.0, Center);
+    three(&mut b);
+    b.pin(0.0, -8.0, "");
+    v.push(def("sl_motor", "Motor (single-line)", C::SingleLine, "M", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -6.0).circle(0.0, -2.5, 3.5, false).circle(0.0, 2.5, 3.5, false).l(0.0, 6.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_trafo", "Transformer (single-line)", C::SingleLine, "T", OVERVIEW).build(&mut b));
+
+    // ---------------------------------------------------------------- NFPA / JIC
+    b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2");
+    v.push(def("nfpa_coil", "Relay coil (NFPA)", C::Nfpa, "K", MAIN_MIRROR).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_no", "NO contact (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::No)).auto().build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.l(-2.4, 2.4, 2.4, -2.4);
+    b.pin(0.0, -4.0, "21").pin(0.0, 4.0, "22");
+    v.push(def("nfpa_nc", "NC contact (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::Nc)).auto().build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    b.l(-2.0, -3.2, -2.0, 3.2).l(-2.0, 0.0, -4.5, 0.0).l(-4.5, -1.5, -4.5, 1.5);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_pb_no", "Push button NO (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    b.l(0.6, -3.2, 0.6, 3.2).l(0.6, 0.0, -4.5, 0.0).l(-4.5, -1.5, -4.5, 1.5);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("nfpa_pb_nc", "Push button NC (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -2.0).arc(0.0, -1.0, 1.0, 270.0, 450.0).arc(0.0, 1.0, 1.0, 270.0, 450.0).l(0.0, 2.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("nfpa_ol", "Overload heater (NFPA)", C::Nfpa, "F", MAIN_MIRROR).build(&mut b));
+
+    let r = 2.5 * std::f32::consts::FRAC_1_SQRT_2;
+    b.l(0.0, -4.0, 0.0, -2.5).circle(0.0, 0.0, 2.5, false).l(0.0, 2.5, 0.0, 4.0);
+    for (sx, sy) in [(1.0, 1.0), (1.0, -1.0), (-1.0, 1.0), (-1.0, -1.0)] {
+        b.l(sx * (r + 0.4), sy * (r + 0.4), sx * (r + 1.4), sy * (r + 1.4));
+    }
+    b.field(FieldKind::Label, 0.0, 0.0, 2.2, Center);
+    b.pin(0.0, -4.0, "X1").pin(0.0, 4.0, "X2");
+    v.push(def("nfpa_lamp", "Pilot light (NFPA)", C::Nfpa, "P", MAIN).label("R").build(&mut b));
+
+    // ---------------------------------------------------------------- fluid power
+    // Small filled arrow head at `tip` pointing in direction (dx, dy).
+    let head = |b: &mut B, tx: f32, ty: f32, dx: f32, dy: f32| {
+        let (nx, ny) = (-dy, dx);
+        b.poly(&[(tx, ty), (tx - dx * 1.4 + nx * 0.7, ty - dy * 1.4 + ny * 0.7), (tx - dx * 1.4 - nx * 0.7, ty - dy * 1.4 - ny * 0.7)], true, true);
+    };
+    b.l(0.0, -8.0, 0.0, -4.0).circle(0.0, 0.0, 4.0, false).l(0.0, 4.0, 0.0, 8.0);
+    b.poly(&[(0.0, -4.0), (-1.6, -1.4), (1.6, -1.4)], true, true);
+    b.pin(0.0, -8.0, "P").pin(0.0, 8.0, "S");
+    v.push(def("fl_pump", "Hydraulic pump", C::Fluid, "GP", MAIN).build(&mut b));
+
+    b.rect(-4.0, -6.0, 20.0, 0.0, false).l(4.0, -6.0, 4.0, 0.0).l(4.0, -3.0, 28.0, -3.0);
+    b.l(0.0, 0.0, 0.0, 4.0).l(16.0, 0.0, 16.0, 4.0);
+    b.pin(0.0, 4.0, "1").pin(16.0, 4.0, "2");
+    v.push(def("fl_cylinder", "Cylinder, double-acting", C::Fluid, "MM", MAIN).build(&mut b));
+
+    // 4/2 directional valve, solenoid operated, spring return; right box = rest position.
+    b.rect(-12.0, -4.0, 0.0, 4.0, false).rect(0.0, -4.0, 12.0, 4.0, false);
+    b.l(4.0, 4.0, 4.0, -3.0);
+    head(&mut b, 4.0, -4.0, 0.0, -1.0);
+    b.l(8.0, -4.0, 8.0, 3.0);
+    head(&mut b, 8.0, 4.0, 0.0, 1.0);
+    b.l(-8.0, 4.0, -4.6, -3.2);
+    head(&mut b, -4.0, -4.0, 0.5, -1.0);
+    b.l(-4.0, 4.0, -7.4, -3.2);
+    head(&mut b, -8.0, -4.0, -0.5, -1.0);
+    b.rect(-16.0, -2.0, -12.0, 2.0, false).l(-16.0, 2.0, -12.0, -2.0);
+    b.poly(&[(12.0, 0.0), (12.8, -1.5), (13.6, 1.5), (14.4, -1.5), (15.2, 1.5), (16.0, 0.0)], false, false);
+    b.l(4.0, -8.0, 4.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(4.0, 4.0, 4.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
+    b.pin(4.0, -8.0, "A").pin(8.0, -8.0, "B").pin(4.0, 8.0, "P").pin(8.0, 8.0, "T");
+    v.push(def("fl_valve42", "4/2 directional valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, 3.0, 0.0, 4.0);
+    b.dl(-3.0, 0.0, 3.0, 0.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_filter", "Filter", C::Fluid, "HQ", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 2.5, false).l(0.0, 2.5, 0.0, 4.0).l(-1.4, 1.4, 1.2, -1.2);
+    head(&mut b, 1.7, -1.7, 0.7, -0.7);
+    b.pin(0.0, 4.0, "1");
+    v.push(def("fl_gauge", "Pressure gauge", C::Fluid, "BP", MAIN).build(&mut b));
+
+    b.poly(&[(-3.0, 0.0), (-3.0, 4.0), (3.0, 4.0), (3.0, 0.0)], false, false).l(0.0, -4.0, 0.0, 3.0);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("fl_tank", "Tank", C::Fluid, "CM", MAIN).build(&mut b));
+
     v
 }
 
+/// Built-in symbols.
 pub fn library() -> &'static [SymbolDef] {
     static LIB: OnceLock<Vec<SymbolDef>> = OnceLock::new();
     LIB.get_or_init(build_library)
 }
 
+/// Built-in or registered user symbol.
 pub fn get(key: &str) -> Option<&'static SymbolDef> {
-    library().iter().find(|d| d.key == key)
+    library().iter().find(|d| d.key == key).or_else(|| crate::symlib::lookup(key))
 }
 
 #[cfg(test)]

@@ -128,6 +128,8 @@ pub fn mime_type(ext: &str) -> &'static str {
         "svg" => "image/svg+xml",
         "html" => "text/html",
         "csv" => "text/csv",
+        "pdf" => "application/pdf",
+        "dxf" => "application/dxf",
         _ => "application/json",
     }
 }

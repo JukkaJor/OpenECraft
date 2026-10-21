@@ -20,3 +20,29 @@ fn orbit_from_the_front_looks_down_minus_z() {
     assert!(close(right, [1.0, 0.0, 0.0]));
     assert!(close(up, [0.0, 1.0, 0.0]));
 }
+
+#[test]
+fn segments_and_triangles() {
+    let t = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [0.0, 10.0, 0.0]];
+    assert!(segment_crosses_triangle([2.0, 2.0, -1.0], [2.0, 2.0, 1.0], &t));
+    // Ending on the plane, outside, or lying in the plane does not count.
+    assert!(!segment_crosses_triangle([2.0, 2.0, 0.0], [2.0, 2.0, 1.0], &t));
+    assert!(!segment_crosses_triangle([8.0, 8.0, -1.0], [8.0, 8.0, 1.0], &t));
+    assert!(!segment_crosses_triangle([1.0, 1.0, 0.0], [3.0, 1.0, 0.0], &t));
+}
+
+#[test]
+fn box_surfaces() {
+    let a = box_triangles([0.0; 3], [10.0; 3]);
+    assert!(point_inside([5.0, 5.0, 5.0], &a));
+    assert!(!point_inside([15.0, 5.0, 5.0], &a));
+    // Overlapping, touching, apart, contained.
+    assert!(surfaces_intersect(&a, &box_triangles([8.0, 2.0, 2.0], [20.0, 8.0, 8.0])));
+    assert!(!surfaces_intersect(&a, &box_triangles([10.0, 0.0, 0.0], [20.0, 10.0, 10.0])));
+    assert!(!surfaces_intersect(&a, &box_triangles([12.0, 0.0, 0.0], [20.0, 10.0, 10.0])));
+    assert!(surfaces_intersect(&a, &box_triangles([2.0; 3], [4.0; 3])));
+    assert!(surfaces_intersect(&box_triangles([2.0; 3], [4.0; 3]), &a));
+    // Crossing bars (no corner inside the other box).
+    let x = box_triangles([-5.0, 4.0, 4.0], [15.0, 6.0, 6.0]);
+    assert!(surfaces_intersect(&a, &x));
+}
