@@ -3,7 +3,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::Project;
-use crate::parts::{self, Part, PartRef, PartsDb};
+use crate::parts::{self, Part, PartFilter, PartRef, PartsDb};
 use crate::io::{Loaded, Purpose};
 use egui::{vec2, Color32, RichText};
 use openecraft_ui::client::{Reply, ServerClient};
@@ -31,11 +31,11 @@ struct SelectRequest {
 pub struct PartsUi {
     pub open: bool,
     source: Source,
-    filter: String,
+    filter: PartFilter,
     selected: Option<String>,
     editor: EditorState,
     select: Option<SelectRequest>,
-    sel_filter: String,
+    sel_filter: PartFilter,
     sel_matching: bool,
     sel_part: Option<String>,
     /// Connection to the global parts server.
@@ -50,11 +50,11 @@ impl Default for PartsUi {
         PartsUi {
             open: false,
             source: Source::Database,
-            filter: String::new(),
+            filter: PartFilter::default(),
             selected: None,
             editor: EditorState::default(),
             select: None,
-            sel_filter: String::new(),
+            sel_filter: PartFilter::default(),
             sel_matching: true,
             sel_part: None,
             server: ServerClient::default(),
@@ -263,10 +263,9 @@ impl PartsUi {
             let h = ui.available_height();
             ui.horizontal_top(|ui| {
                 ui.allocate_ui_with_layout(vec2(300.0, h), egui::Layout::top_down(egui::Align::Min), |ui| {
-                    ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text(tr("Filter (number, type, manufacturer, text …)")));
-                    ui.label(RichText::new(tr_fmt!("{} parts", list.len())).weak());
+                    let refs: Vec<&Part> = list.iter().collect();
+                    pe::part_filter(ui, "mgr", &refs, &mut self.filter);
                     egui::ScrollArea::vertical().id_salt("ptree").auto_shrink([false, false]).show(ui, |ui| {
-                        let refs: Vec<&Part> = list.iter().collect();
                         pe::part_tree(ui, "mgr", &refs, &self.filter, &mut self.selected);
                     });
                 });
@@ -317,11 +316,8 @@ impl PartsUi {
         let placed = parts::placed_functions(prj, &tag);
         let main = parts::main_kind(prj, &tag);
         egui::Window::new(tr_fmt!("Part selection – {}", tag)).open(&mut open).default_size([760.0, 480.0]).collapsible(false).show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.add(egui::TextEdit::singleline(&mut self.sel_filter).hint_text(tr("Filter…")).desired_width(220.0));
-                ui.checkbox(&mut self.sel_matching, tr("Device selection"))
-                    .on_hover_text(tr("Only parts whose function template provides the device's main function"));
-            });
+            ui.checkbox(&mut self.sel_matching, tr("Device selection"))
+                .on_hover_text(tr("Only parts whose function template provides the device's main function"));
             ui.separator();
             let shown: Vec<&Part> = all
                 .iter()
@@ -330,6 +326,7 @@ impl PartsUi {
             let h = ui.available_height() - 36.0;
             ui.horizontal_top(|ui| {
                 ui.allocate_ui_with_layout(vec2(300.0, h), egui::Layout::top_down(egui::Align::Min), |ui| {
+                    pe::part_filter(ui, "sel", &shown, &mut self.sel_filter);
                     egui::ScrollArea::vertical().id_salt("seltree").auto_shrink([false, false]).show(ui, |ui| {
                         if let Some(n) = pe::part_tree(ui, "sel", &shown, &self.sel_filter, &mut self.sel_part) {
                             chosen = Some(n);
