@@ -56,6 +56,25 @@ pub struct Project {
     pub devices: BTreeMap<String, DeviceData>,
     /// Panel layout (enclosures, mounting plates, rails, ducts, devices).
     pub layout: Layout,
+    pub cables: Vec<Cable>,
+    pub wire_numbering: WireNumbering,
+    /// Terminal strip data (order, jumpers, spare terminals) keyed by strip tag.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub strips: BTreeMap<String, StripData>,
+    /// PLC card data (start address, rack / slot) keyed by card tag.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub plc_cards: BTreeMap<String, PlcCard>,
+    /// Released revisions, oldest first.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub revisions: Vec<crate::revision::Revision>,
+    /// Wire harnesses with the connections they contain.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub harnesses: Vec<crate::harness::Harness>,
+    /// Project symbol library (user symbols).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub symbols: Vec<crate::symlib::UserSymbol>,
+    /// Title blocks and report forms.
+    pub forms: crate::forms::Forms,
     pub next_id: u64,
 }
 
@@ -67,6 +86,14 @@ impl Default for Project {
             parts: Vec::new(),
             devices: BTreeMap::new(),
             layout: Layout::default(),
+            cables: Vec::new(),
+            wire_numbering: WireNumbering::default(),
+            strips: BTreeMap::new(),
+            plc_cards: BTreeMap::new(),
+            revisions: Vec::new(),
+            harnesses: Vec::new(),
+            symbols: Vec::new(),
+            forms: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -84,6 +111,9 @@ pub struct ProjectInfo {
     pub creator: String,
     pub date: String,
     pub revision: String,
+    /// User defined project properties, shown in title blocks as `{prop:Name}`.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub properties: BTreeMap<String, String>,
 }
 
 impl Default for ProjectInfo {
@@ -95,6 +125,7 @@ impl Default for ProjectInfo {
             creator: String::new(),
             date: String::new(),
             revision: "A".into(),
+            properties: BTreeMap::new(),
         }
     }
 }
@@ -129,10 +160,14 @@ pub enum ReportKind {
     PlcAssignment,
     PotentialList,
     PanelWiring,
+    CableOverview,
+    CableDiagram,
+    RevisionOverview,
+    HarnessData,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 8] = [
+    pub const ALL: [ReportKind; 12] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -141,6 +176,10 @@ impl ReportKind {
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
         ReportKind::PanelWiring,
+        ReportKind::CableOverview,
+        ReportKind::CableDiagram,
+        ReportKind::RevisionOverview,
+        ReportKind::HarnessData,
     ];
 
     pub fn title(self) -> &'static str {
@@ -153,6 +192,10 @@ impl ReportKind {
             ReportKind::PlcAssignment => "PLC assignment list",
             ReportKind::PotentialList => "Potential overview",
             ReportKind::PanelWiring => "Wire list (panel routing)",
+            ReportKind::CableOverview => "Cable overview",
+            ReportKind::CableDiagram => "Cable diagram",
+            ReportKind::RevisionOverview => "Revision overview (changes)",
+            ReportKind::HarnessData => "Harness data",
         }
     }
 }
@@ -164,6 +207,16 @@ pub struct Page {
     /// Page number / name as shown in cross references, e.g. "3".
     pub name: String,
     pub description: String,
+    /// Structure of the page (IEC 81346) without prefix signs: function (`=`) and
+    /// location (`+`). Devices placed on the page inherit it.
+    pub function: String,
+    pub location: String,
+    /// Released page: no changes until it is unlocked.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub locked: bool,
+    /// Title block of this page; empty = the project's default.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub title_block: String,
     pub kind: PageKind,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
@@ -183,6 +236,10 @@ impl Page {
             id,
             name: name.into(),
             description: description.into(),
+            function: String::new(),
+            location: String::new(),
+            locked: false,
+            title_block: String::new(),
             kind,
             symbols: Vec::new(),
             wires: Vec::new(),
@@ -242,6 +299,107 @@ pub struct Wire {
     pub color: String,
     /// Optional cross-section (e.g. "1.5 mm²").
     pub cross_section: String,
+    /// Wire (connection) number; all wires of a connection carry the same number.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub number: String,
+    /// Set manually: automatic numbering keeps it.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub number_fixed: bool,
+    /// Tag of the cable this wire is a core of, and the core designation.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub cable: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub core: String,
+}
+
+/// A cable; its cores are assigned to wires (`Wire::cable` / `Wire::core`).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Cable {
+    pub id: u64,
+    /// Complete device tag, e.g. `=A1-W1`.
+    pub tag: String,
+    /// Cable type, e.g. "H07RN-F 4G1.5".
+    pub cable_type: String,
+    /// Core designations separated by blanks, e.g. "BN BK GY GNYE" or "1 2 3 GNYE".
+    pub cores: String,
+    pub cross_section: String,
+    /// Length in metres.
+    pub length: f32,
+    /// Part number (bill of materials: length × part).
+    pub part: String,
+    pub description: String,
+}
+
+impl Cable {
+    pub fn core_list(&self) -> Vec<String> {
+        self.cores.split_whitespace().map(String::from).collect()
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum NumberScheme {
+    /// 1, 2, 3 … in schematic order.
+    #[default]
+    Sequential,
+    /// Page, column and counter: `3.4.1`.
+    PageColumn,
+    /// Named potentials (L1, +24V …) keep their name, other connections are counted.
+    Potential,
+}
+
+impl NumberScheme {
+    pub const ALL: [NumberScheme; 3] = [NumberScheme::Sequential, NumberScheme::PageColumn, NumberScheme::Potential];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            NumberScheme::Sequential => "Sequential (1, 2, 3 …)",
+            NumberScheme::PageColumn => "Page / column (3.4.1)",
+            NumberScheme::Potential => "Potential name (L1, +24V, otherwise counted)",
+        }
+    }
+}
+
+/// Terminal strip data beyond the placed terminals.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct StripData {
+    /// Terminal designations in strip order; terminals not listed follow sorted.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub order: Vec<String>,
+    /// Terminal designation -> jumper (bridge) number; terminals with the same
+    /// number are connected.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub jumpers: BTreeMap<String, u32>,
+    /// Spare terminals (not in the schematic) at the end of the strip.
+    pub spares: u32,
+}
+
+/// PLC card (I/O module) data.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct PlcCard {
+    /// First byte of the card's inputs / outputs (I<start>.0, Q<start>.0).
+    pub start_byte: u32,
+    pub rack: String,
+    pub slot: String,
+    pub description: String,
+}
+
+/// Settings of the automatic wire numbering.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct WireNumbering {
+    pub scheme: NumberScheme,
+    /// Put in front of counted numbers, e.g. "W".
+    pub prefix: String,
+    pub start: u32,
+}
+
+impl Default for WireNumbering {
+    fn default() -> Self {
+        WireNumbering { scheme: NumberScheme::Sequential, prefix: String::new(), start: 1 }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -296,6 +454,7 @@ impl Project {
 
     /// Repairs ids after loading (e.g. hand-edited files).
     pub fn normalize(&mut self) {
+        crate::symlib::register(&self.symbols);
         let mut max = 0;
         for pg in &self.pages {
             max = max.max(pg.id);
@@ -308,6 +467,8 @@ impl Project {
             max = max.max(e.id);
             max = e.items.iter().map(|i| i.id).fold(max, u64::max);
         }
+        max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
+        max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
         self.next_id = self.next_id.max(max + 1);
         // Make sure each symbol has a designation for each pin.
         for pg in &mut self.pages {
@@ -370,20 +531,22 @@ impl Project {
         v
     }
 
-    /// Next free device tag for an identifying letter, e.g. `-K3`.
-    pub fn next_tag(&self, letter: &str) -> String {
-        let prefix = format!("-{letter}");
-        let mut max = 0u32;
-        for pg in &self.pages {
-            for s in &pg.symbols {
-                if let Some(rest) = s.tag.strip_prefix(&prefix) {
-                    if let Ok(n) = rest.parse::<u32>() {
-                        max = max.max(n);
-                    }
-                }
-            }
-        }
+    /// Next free device tag for an identifying letter within a structure, e.g.
+    /// `=A1-K3` (counted per structure, as `=A1-K1` and `=A2-K1` are different devices).
+    pub fn next_tag(&self, structure: &str, letter: &str) -> String {
+        let prefix = format!("{structure}-{letter}");
+        let tags = self.pages.iter().flat_map(|pg| pg.symbols.iter().map(|s| s.tag.as_str()));
+        let max = tags
+            .chain(self.cables.iter().map(|c| c.tag.as_str()))
+            .chain(self.harnesses.iter().map(|h| h.tag.as_str()))
+            .filter_map(|t| t.strip_prefix(&prefix)?.parse::<u32>().ok())
+            .max()
+            .unwrap_or(0);
         format!("{prefix}{}", max + 1)
+    }
+
+    pub fn cable(&self, tag: &str) -> Option<&Cable> {
+        self.cables.iter().find(|c| c.tag == tag)
     }
 }
 

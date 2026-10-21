@@ -121,13 +121,16 @@ pub fn junctions(page: &Page) -> Vec<P> {
 
 impl Netlist {
     /// Builds the netlist. With `bridge_terminals == false` the two sides of a terminal
-    /// are kept as separate nets (used for terminal diagrams).
+    /// are kept as separate nets (used for terminal diagrams and wire numbers); with
+    /// `true` the jumpers of terminal strips connect their terminals as well.
     pub fn build(prj: &Project, bridge_terminals: bool) -> Netlist {
         let mut b = Builder { uf: Uf { parent: Vec::new() }, points: HashMap::new(), named: HashMap::new() };
         let mut pin_nodes: Vec<(PinRef, u64, usize)> = Vec::new();
         let mut wire_nodes: Vec<(usize, u64, usize)> = Vec::new();
         // Number of things touching each point node (to find unconnected pins).
         let mut degree: HashMap<usize, usize> = HashMap::new();
+        // (strip, terminal designation) -> node, for jumpers
+        let mut terminals: HashMap<(String, String), usize> = HashMap::new();
 
         for (pi, page) in prj.pages.iter().enumerate() {
             if page.kind != PageKind::Schematic {
@@ -151,6 +154,9 @@ impl Netlist {
             }
             for (si, s) in page.symbols.iter().enumerate() {
                 let Some(def) = symbols::get(&s.sym) else { continue };
+                if def.func == Func::Overview {
+                    continue;
+                }
                 let mut nodes = Vec::new();
                 for i in 0..def.pins.len() {
                     let q = def.pin_world(i, s.pos, s.rot, s.mirror);
@@ -164,6 +170,9 @@ impl Netlist {
                         b.uf.union(nodes[x], nodes[y]);
                     }
                 }
+                if def.func == Func::Terminal && !nodes.is_empty() {
+                    terminals.insert((s.tag.clone(), s.label.clone()), nodes[0]);
+                }
                 match def.func {
                     Func::Potential if !s.label.is_empty() => {
                         let n = b.named(format!("pot:{}", s.label));
@@ -174,6 +183,15 @@ impl Netlist {
                         b.uf.union(n, nodes[0]);
                     }
                     _ => {}
+                }
+            }
+        }
+
+        if bridge_terminals {
+            for (strip, labels) in crate::strips::jumper_groups(prj) {
+                let nodes: Vec<usize> = labels.iter().filter_map(|l| terminals.get(&(strip.clone(), l.clone())).copied()).collect();
+                for w in nodes.windows(2) {
+                    b.uf.union(w[0], w[1]);
                 }
             }
         }
@@ -243,18 +261,26 @@ impl Netlist {
 /// A point-to-point connection between two device connection points.
 #[derive(Clone, Debug)]
 pub struct Connection {
+    /// Potential (from the netlist with bridged terminals).
     pub net: String,
     pub a: PinRef,
     pub b: PinRef,
     pub color: String,
     pub cross_section: String,
+    pub number: String,
+    /// Cable tag and core, if the wires are a cable core.
+    pub cable: String,
+    pub core: String,
+    /// Harness the connection belongs to.
+    pub harness: String,
 }
 
-/// Point-to-point connections: the device connection points of each net are chained
-/// in schematic order (potentials and connectors are not physical wire ends).
-pub fn connections(prj: &Project, nl: &Netlist) -> Vec<Connection> {
+/// Point-to-point connections: the device connection points of each connection of
+/// `open` (terminal sides apart) are chained in schematic order (potentials and
+/// connectors are not physical wire ends). Potential names come from `nl`.
+pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connection> {
     let mut out = Vec::new();
-    for net in &nl.nets {
+    for net in &open.nets {
         let mut pins: Vec<&PinRef> = net
             .pins
             .iter()
@@ -266,25 +292,40 @@ pub fn connections(prj: &Project, nl: &Netlist) -> Vec<Connection> {
         if pins.len() < 2 {
             continue;
         }
+        let at = |p: &PinRef| {
+            let s = &prj.pages[p.page].symbols[p.sym];
+            symbols::get(&s.sym).map(|d| d.pin_world(p.pin, s.pos, s.rot, s.mirror)).unwrap_or(s.pos)
+        };
         pins.sort_by(|a, b| {
-            let (sa, sb) = (&prj.pages[a.page].symbols[a.sym], &prj.pages[b.page].symbols[b.sym]);
-            a.page.cmp(&b.page).then(sa.pos.x.total_cmp(&sb.pos.x)).then(sa.pos.y.total_cmp(&sb.pos.y))
+            let (qa, qb) = (at(a), at(b));
+            a.page.cmp(&b.page).then(qa.x.total_cmp(&qb.x)).then(qa.y.total_cmp(&qb.y))
         });
-        let (color, cross_section) = net
-            .wires
+        let wires = crate::wirenum::wires_of(prj, net);
+        let (color, cross_section) = wires
             .iter()
-            .find_map(|(pi, wid)| {
-                prj.pages[*pi].wires.iter().find(|w| w.id == *wid && (!w.color.is_empty() || !w.cross_section.is_empty()))
-            })
+            .find(|w| !w.color.is_empty() || !w.cross_section.is_empty())
             .map(|w| (w.color.clone(), w.cross_section.clone()))
             .unwrap_or_default();
+        let (cable, core) = wires.iter().find(|w| !w.cable.is_empty()).map(|w| (w.cable.clone(), w.core.clone())).unwrap_or_default();
+        let number = crate::wirenum::number_of(prj, net);
+        let first = pins[0];
+        let potential = nl
+            .pin_net
+            .get(&(prj.pages[first.page].symbols[first.sym].id, first.pin))
+            .map(|&n| nl.nets[n].name.clone())
+            .unwrap_or_else(|| net.name.clone());
         for pair in pins.windows(2) {
+            let harness = crate::harness::of(prj, &pin_designation(prj, *pair[0]), &pin_designation(prj, *pair[1]));
             out.push(Connection {
-                net: net.name.clone(),
+                net: potential.clone(),
                 a: *pair[0],
                 b: *pair[1],
                 color: color.clone(),
                 cross_section: cross_section.clone(),
+                number: number.clone(),
+                cable: cable.clone(),
+                core: core.clone(),
+                harness,
             });
         }
     }

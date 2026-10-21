@@ -46,7 +46,7 @@ fn collisions_and_outside() {
     // Device beyond the plate edge
     let (pw, _) = e.plate_size();
     e.items.push(device(6, pw - 10.0, 400.0, 40.0, 40.0, 0.0, 50.0));
-    assert_eq!(collisions(&e), vec![(1, 2)]);
+    assert_eq!(collisions(&e, &[]), vec![(1, 2)]);
     assert_eq!(outside(&e), vec![6]);
     // Too deep for the enclosure
     e.items.push(device(7, 100.0, 400.0, 40.0, 40.0, 0.0, 400.0));
@@ -89,7 +89,7 @@ fn virtual_wiring_of_demo() {
     assert!(an.wiring.iter().any(|w| w.from.starts_with("-Q1") && w.to.starts_with("-K1")));
     // The motor is in the field: its connections stay open.
     let report = &an.reports[&crate::model::ReportKind::PanelWiring];
-    assert!(report.rows.iter().any(|r| r[2].starts_with("-M1") && r[7] == "device not placed"));
+    assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
 }
 
 #[test]
@@ -240,4 +240,71 @@ fn mounting_page_draws_part_models() {
     let without = crate::svg::page_svg(&prj, page);
     // Terminal screws of the generated front views are circles.
     assert!(with.matches("<circle").count() > without.matches("<circle").count() + 10);
+}
+
+#[test]
+fn collisions_use_the_3d_models() {
+    // Two DIN devices whose boxes overlap only beside the raised fronts: the models
+    // (base 60 % deep, front in the middle third) do not touch.
+    let ct = crate::parts::catalog().iter().find(|p| p.number == "GEN.CT-9A-24DC").unwrap().clone();
+    let parts = vec![ct.clone()];
+    let (w, h, d) = (ct.width, ct.height, ct.depth);
+    let dev = |id, x: f32, y: f32, z: f32| PanelItem { id, kind: ItemKind::Device, part: ct.number.clone(), x, y, w, h, d, z, ..Default::default() };
+    // B sits above A's base and terminal screws (on a higher rail), beside A's raised front.
+    let a = dev(1, 100.0, 100.0, 0.0);
+    let b = dev(2, 100.0, 100.0 + h * 0.75, d * 0.6 + 2.0);
+    let e = Enclosure { items: vec![a.clone(), b.clone()], ..Default::default() };
+    // Boxes overlap ...
+    assert_eq!(collisions(&e, &[]), vec![(1, 2)]);
+    // ... the models do not.
+    assert!(collisions(&e, &parts).is_empty());
+    // Moved onto A's front, the models collide.
+    let b = dev(2, 100.0, 100.0 + h * 0.4, d * 0.6 + 2.0);
+    let e = Enclosure { items: vec![a, b], ..Default::default() };
+    assert_eq!(collisions(&e, &parts), vec![(1, 2)]);
+}
+
+#[test]
+fn door_devices() {
+    let prj = demo_project();
+    let e = &prj.layout.enclosures[0];
+    let s1 = e.items.iter().find(|i| i.tag == "-S1").unwrap();
+    assert_eq!(s1.face, Face::Door);
+    // Door devices sit behind the door, their front at the enclosure front.
+    let (min, max) = item_box(e, s1);
+    assert_eq!(max[2], e.depth);
+    assert_eq!(min[2], e.depth - s1.d);
+    assert!(collisions(e, &prj.parts).is_empty());
+    assert!(outside(e).is_empty());
+    // Too deep: reaches the devices of the mounting plate / the plate.
+    let mut e = e.clone();
+    let i = e.items.iter().position(|i| i.tag == "-S1").unwrap();
+    e.items[i].d = 240.0;
+    assert!(outside(&e).contains(&e.items[i].id));
+    // A door device placed over a plate device in front view collides in 3D when deep enough.
+    let k1 = e.items.iter().find(|i| i.tag == "-K1").unwrap().clone();
+    e.items[i].x = k1.x + PLATE_MARGIN;
+    e.items[i].y = k1.y + PLATE_MARGIN;
+    e.items[i].d = e.depth - PLATE_Z - k1.z - k1.d + 10.0;
+    assert!(collisions(&e, &prj.parts).contains(&(k1.id.min(e.items[i].id), k1.id.max(e.items[i].id))));
+    // Outside the door frame.
+    e.items[i].d = 45.0;
+    e.items[i].x = 5.0;
+    assert!(outside(&e).contains(&e.items[i].id));
+}
+
+#[test]
+fn door_wires_run_over_the_hinge() {
+    let prj = demo_project();
+    let an = Analysis::build(&prj);
+    let e = &prj.layout.enclosures[0];
+    let s2 = e.items.iter().find(|i| i.tag == "-S2").unwrap();
+    let w = an.wiring.iter().find(|w| w.items.0 == s2.id || w.items.1 == s2.id).expect("door device is wired");
+    let (start, extra) = wiring_end(e, s2);
+    assert_eq!(start.x, 0.0);
+    assert!(extra > DOOR_LOOP + e.depth - PLATE_Z);
+    assert!(w.length > extra);
+    // The mounting layout page shows the door next to the plate.
+    let page = prj.pages.iter().position(|p| matches!(p.kind, crate::model::PageKind::Mounting(_))).unwrap();
+    assert!(crate::svg::page_svg(&prj, page).contains("Door (front view)"));
 }

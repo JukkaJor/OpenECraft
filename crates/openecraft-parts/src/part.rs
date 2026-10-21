@@ -37,7 +37,9 @@ pub const PRODUCT_GROUPS: &[(&str, &[&str])] = &[
     ("PLC", &["Digital input module", "Digital output module", "CPU"]),
     ("Valves", &["Solenoid valve"]),
     ("Passive components", &["Resistor", "Capacitor", "Diode"]),
-    ("Mounting", &["Mounting rail", "Cable duct", "Enclosure"]),
+    ("Mounting", &["Mounting rail", "Cable duct", "Enclosure", "Busbar system", "Busbar holder"]),
+    ("Cables", &["Power cable", "Control cable"]),
+    ("Wiring material", &["Ferrule"]),
 ];
 
 /// Kinds of functions in a function template. Placed symbols map onto these kinds.
@@ -291,6 +293,14 @@ impl Part {
     }
 
     /// Short summary of the function template, e.g. "Coil, Main3, NO".
+    /// Value of a `Name: value` line of the technical data (e.g. the cores of a cable).
+    pub fn tech_value(&self, name: &str) -> Option<&str> {
+        self.tech_data.lines().find_map(|l| {
+            let (k, v) = l.split_once(':')?;
+            k.trim().eq_ignore_ascii_case(name).then_some(v.trim())
+        })
+    }
+
     pub fn template_summary(&self) -> String {
         let mut counts: BTreeMap<FnKind, usize> = BTreeMap::new();
         for f in &self.functions {

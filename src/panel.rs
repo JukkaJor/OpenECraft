@@ -4,11 +4,14 @@
 //!
 //! Coordinates on the mounting plate are millimetres, origin at the top left corner
 //! of the plate, x to the right, y downwards (like schematic pages). `z` is the height
-//! above the plate surface.
+//! above the plate surface. Items on the door (door devices, door cutouts) use the
+//! door's front view: origin at the top left corner of the enclosure front, `z` is the
+//! distance behind the door.
 
 use crate::geom::{p, P, R};
 use crate::model::Project;
 use crate::netlist::{connections, Netlist};
+use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
 use crate::parts::{self, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashSet};
@@ -24,12 +27,48 @@ pub const SNAP: f32 = 5.0;
 pub const RAIL_PROFILE: (f32, f32) = (35.0, 7.5);
 /// Cable duct profile (width × depth) if the part has no data.
 pub const DUCT_PROFILE: (f32, f32) = (40.0, 60.0);
+/// Busbar system profile (width × height) if the part has no data.
+pub const BUSBAR_PROFILE: (f32, f32) = (75.0, 40.0);
 /// Device size if the part has no mounting data.
 pub const DEFAULT_DEVICE: (f32, f32, f32) = (40.0, 40.0, 40.0);
 
 pub const RAIL_PART: &str = "GEN.RAIL-TS35-1M";
 pub const DUCT_PART: &str = "GEN.DUCT-40X60";
 pub const ENCLOSURE_PART: &str = "GEN.ENC-600X800";
+pub const BUSBAR_PART: &str = "GEN.BB-3X12X5";
+/// Door frame: door devices keep this distance from the door edges.
+pub const DOOR_FRAME: f32 = 20.0;
+/// Wire loop across the door hinge.
+pub const DOOR_LOOP: f32 = 150.0;
+
+/// Mounting surface of an item.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Face {
+    #[default]
+    Plate,
+    Door,
+}
+
+impl Face {
+    pub fn title(self) -> &'static str {
+        match self {
+            Face::Plate => "Mounting plate",
+            Face::Door => "Door",
+        }
+    }
+
+    /// Distance of the face's origin from the top left corner of the enclosure.
+    pub fn origin(self) -> f32 {
+        match self {
+            Face::Plate => PLATE_MARGIN,
+            Face::Door => 0.0,
+        }
+    }
+}
+
+fn is_plate(f: &Face) -> bool {
+    *f == Face::Plate
+}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ItemKind {
@@ -37,6 +76,10 @@ pub enum ItemKind {
     Device,
     Rail,
     Duct,
+    /// Copper busbar system (several parallel bars on holders).
+    Busbar,
+    /// Opening in the mounting plate (rectangular or round).
+    Cutout,
 }
 
 impl ItemKind {
@@ -45,7 +88,25 @@ impl ItemKind {
             ItemKind::Device => "Device",
             ItemKind::Rail => "Mounting rail",
             ItemKind::Duct => "Cable duct",
+            ItemKind::Busbar => "Busbar system",
+            ItemKind::Cutout => "Cutout",
         }
+    }
+
+    /// Drawing / picking order: higher is on top.
+    pub fn layer(self) -> u8 {
+        match self {
+            ItemKind::Cutout => 0,
+            ItemKind::Rail => 1,
+            ItemKind::Duct => 2,
+            ItemKind::Busbar => 3,
+            ItemKind::Device => 4,
+        }
+    }
+
+    /// Profiles drawn from a start to an end point.
+    pub fn is_profile(self) -> bool {
+        matches!(self, ItemKind::Rail | ItemKind::Duct | ItemKind::Busbar)
     }
 }
 
@@ -65,6 +126,11 @@ pub struct PanelItem {
     pub d: f32,
     /// Base height above the plate (devices on a rail sit on the rail).
     pub z: f32,
+    /// Round cutout (diameter = width).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub round: bool,
+    #[serde(skip_serializing_if = "is_plate")]
+    pub face: Face,
 }
 
 impl PanelItem {
@@ -115,6 +181,8 @@ pub struct Enclosure {
     pub width: f32,
     pub height: f32,
     pub depth: f32,
+    /// Space kept free behind the door (door-mounted devices, handles), mm.
+    pub door_clearance: f32,
     pub items: Vec<PanelItem>,
 }
 
@@ -127,6 +195,7 @@ impl Default for Enclosure {
             width: 600.0,
             height: 800.0,
             depth: 250.0,
+            door_clearance: 0.0,
             items: Vec::new(),
         }
     }
@@ -145,6 +214,47 @@ impl Enclosure {
     pub fn item(&self, id: u64) -> Option<&PanelItem> {
         self.items.iter().find(|i| i.id == id)
     }
+
+    /// Size of a face (mounting plate or door).
+    pub fn face_size(&self, face: Face) -> (f32, f32) {
+        match face {
+            Face::Plate => self.plate_size(),
+            Face::Door => (self.width, self.height),
+        }
+    }
+}
+
+/// 3D box of an item in enclosure coordinates: x to the right and y downwards from
+/// the top left corner of the enclosure front, z from the rear wall towards the door.
+pub fn item_box(e: &Enclosure, it: &PanelItem) -> (V3, V3) {
+    match it.face {
+        Face::Plate => {
+            let (x, y, z) = (PLATE_MARGIN + it.x, PLATE_MARGIN + it.y, PLATE_Z + it.z);
+            ([x, y, z], [x + it.w, y + it.h, z + it.d])
+        }
+        Face::Door => ([it.x, it.y, e.depth - it.z - it.d], [it.x + it.w, it.y + it.h, e.depth - it.z]),
+    }
+}
+
+/// Point of a placed model ([`place_mesh`] coordinates) in enclosure coordinates.
+/// Door devices face outwards: their front is at the door.
+pub fn to_enclosure(e: &Enclosure, it: &PanelItem, v: V3) -> V3 {
+    match it.face {
+        Face::Plate => [PLATE_MARGIN + v[0], PLATE_MARGIN + v[1], PLATE_Z + v[2]],
+        Face::Door => [v[0], v[1], e.depth - 2.0 * it.z - it.d + v[2]],
+    }
+}
+
+/// Surface of an item in enclosure coordinates: the part's 3D model, or its box.
+pub fn item_surface(e: &Enclosure, it: &PanelItem, parts: &[crate::parts::Part]) -> Vec<Tri> {
+    let mesh = parts.iter().find(|p| it.kind == ItemKind::Device && p.number == it.part).and_then(|p| p.model_3d.as_ref());
+    match mesh.map(|m| place_mesh(m, it)).filter(|t| !t.is_empty()) {
+        Some(tris) => tris.into_iter().map(|t| t.map(|v| to_enclosure(e, it, v))).collect(),
+        None => {
+            let (min, max) = item_box(e, it);
+            box_triangles(min, max)
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -153,11 +263,13 @@ pub struct Layout {
     pub enclosures: Vec<Enclosure>,
     /// Additional wire length per connection (stripping, reserve loops) in mm.
     pub wire_reserve: f32,
+    /// Wire ends get ferrules (production wire list, bill of materials).
+    pub ferrules: bool,
 }
 
 impl Default for Layout {
     fn default() -> Self {
-        Layout { enclosures: Vec::new(), wire_reserve: 100.0 }
+        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true }
     }
 }
 
@@ -213,7 +325,11 @@ pub fn new_profile(prj: &mut Project, kind: ItemKind, part: &str, a: P, b: P) ->
 
 /// Profile width and height of rails / ducts (from the part or the defaults).
 pub fn profile(prj: &Project, kind: ItemKind, part: &str) -> (f32, f32) {
-    let def = if kind == ItemKind::Rail { RAIL_PROFILE } else { DUCT_PROFILE };
+    let def = match kind {
+        ItemKind::Rail => RAIL_PROFILE,
+        ItemKind::Busbar => BUSBAR_PROFILE,
+        _ => DUCT_PROFILE,
+    };
     match prj.parts.iter().find(|x| x.number == part) {
         Some(pd) if pd.height > 0.0 && pd.depth > 0.0 => (pd.height, pd.depth),
         _ => def,
@@ -332,8 +448,14 @@ pub fn devices_to_place(prj: &Project) -> Vec<DeviceSize> {
     v
 }
 
-/// Places a device with its top left corner at `at` (snapped, rail aware).
+/// Places a device on the mounting plate with its top left corner at `at` (snapped,
+/// rail aware).
 pub fn place_device(prj: &mut Project, enc: usize, tag: &str, at: P) -> Option<u64> {
+    place_device_on(prj, enc, tag, at, Face::Plate)
+}
+
+/// Places a device on the mounting plate or the door.
+pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Face) -> Option<u64> {
     let size = device_size(prj, tag).unwrap_or(DeviceSize {
         tag: tag.into(),
         part: String::new(),
@@ -354,6 +476,8 @@ pub fn place_device(prj: &mut Project, enc: usize, tag: &str, at: P) -> Option<u
         h: size.h,
         d: size.d,
         z: 0.0,
+        round: false,
+        face,
     };
     let e = prj.layout.enclosures.get_mut(enc)?;
     snap_to_rail(e, &mut item);
@@ -364,12 +488,13 @@ pub fn place_device(prj: &mut Project, enc: usize, tag: &str, at: P) -> Option<u
 /// Devices whose centre lies on a horizontal rail are centred on it and mounted on
 /// top of it; otherwise they sit directly on the plate.
 pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
-    if item.kind != ItemKind::Device {
+    if item.kind != ItemKind::Device || item.face != Face::Plate {
         return;
     }
     let c = item.center();
     let rail = e.items.iter().find(|r| {
         r.kind == ItemKind::Rail
+            && r.face == Face::Plate
             && r.horizontal()
             && c.x >= r.x
             && c.x <= r.x + r.w
@@ -386,8 +511,11 @@ pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
 
 // ---------------------------------------------------------------------- checks
 
-/// Pairs of items that occupy the same space.
-pub fn collisions(e: &Enclosure) -> Vec<(u64, u64)> {
+/// Pairs of items that occupy the same space (or are mounted over a cutout). Boxes
+/// are checked first; where a device with a 3D model is involved, the models
+/// themselves must penetrate each other (also door devices against the equipment
+/// of the mounting plate).
+pub fn collisions(e: &Enclosure, parts: &[crate::parts::Part]) -> Vec<(u64, u64)> {
     let mut v = Vec::new();
     for (i, a) in e.items.iter().enumerate() {
         for b in &e.items[i + 1..] {
@@ -395,24 +523,45 @@ pub fn collisions(e: &Enclosure) -> Vec<(u64, u64)> {
             let rb = b.rect();
             let eps = 0.01;
             let xy = ra.min.x < rb.max.x - eps && rb.min.x < ra.max.x - eps && ra.min.y < rb.max.y - eps && rb.min.y < ra.max.y - eps;
-            let z = a.z < b.z + b.d - eps && b.z < a.z + a.d - eps;
-            // Crossing rails / ducts of the same kind are joined, not colliding.
-            let joint = a.kind == b.kind && a.kind != ItemKind::Device && a.horizontal() != b.horizontal();
-            if xy && z && !joint {
-                v.push((a.id, b.id));
+            if a.kind == ItemKind::Cutout || b.kind == ItemKind::Cutout {
+                // Anything fastened to the plate / door must not sit over an opening.
+                let other = if a.kind == ItemKind::Cutout { b } else { a };
+                if a.face == b.face && xy && other.kind != ItemKind::Cutout && other.z <= eps {
+                    v.push((a.id, b.id));
+                }
+                continue;
             }
+            let (ba, bb) = (item_box(e, a), item_box(e, b));
+            if !(0..3).all(|k| ba.0[k] < bb.1[k] - eps && bb.0[k] < ba.1[k] - eps) {
+                continue;
+            }
+            // Crossing rails / ducts of the same kind are joined, not colliding.
+            let joint = a.face == b.face && a.kind == b.kind && a.kind != ItemKind::Device && a.horizontal() != b.horizontal();
+            if joint {
+                continue;
+            }
+            let modelled = |it: &PanelItem| it.kind == ItemKind::Device && parts.iter().any(|p| p.number == it.part && p.model_3d.is_some());
+            if (modelled(a) || modelled(b)) && !surfaces_intersect(&item_surface(e, a, parts), &item_surface(e, b, parts)) {
+                continue;
+            }
+            v.push((a.id, b.id));
         }
     }
     v
 }
 
-/// Items that leave the mounting plate or are higher than the enclosure allows.
+/// Items that leave the mounting plate (door: the door inside its frame) or are
+/// higher than the enclosure allows (door devices: reaching the mounting plate).
 pub fn outside(e: &Enclosure) -> Vec<u64> {
     let plate = e.plate_rect().expand(0.01);
-    let max_z = e.depth - PLATE_Z - PLATE_THICKNESS;
+    let door = R::from_points(p(DOOR_FRAME, DOOR_FRAME), p(e.width - DOOR_FRAME, e.height - DOOR_FRAME)).expand(0.01);
+    let max_z = e.depth - PLATE_Z - PLATE_THICKNESS - e.door_clearance;
     e.items
         .iter()
-        .filter(|i| !plate.contains_rect(&i.rect()) || i.z + i.d > max_z)
+        .filter(|i| match i.face {
+            Face::Plate => !plate.contains_rect(&i.rect()) || i.z + i.d > max_z,
+            Face::Door => !door.contains_rect(&i.rect()) || item_box(e, i).0[2] < PLATE_Z,
+        })
         .map(|i| i.id)
         .collect()
 }
@@ -587,6 +736,8 @@ pub struct RoutedWire {
     pub net: String,
     pub color: String,
     pub cross_section: String,
+    /// Wire number of the connection.
+    pub number: String,
     pub route: Route,
     /// Total length including the way down to the plate and the reserve.
     pub length: f32,
@@ -639,11 +790,12 @@ pub struct OpenWire {
 }
 
 /// Virtual wiring: routes every point-to-point connection of the schematic between
-/// placed devices through the cable ducts.
-pub fn virtual_wiring(prj: &Project, nl: &Netlist) -> (Vec<RoutedWire>, Vec<OpenWire>) {
+/// placed devices through the cable ducts (`nl`: potentials, `wired`: netlist with
+/// the terminal sides apart, see [`connections`]).
+pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
     let mut open = Vec::new();
-    for c in connections(prj, nl) {
+    for c in connections(prj, nl, wired) {
         let sa = &prj.pages[c.a.page].symbols[c.a.sym];
         let sb = &prj.pages[c.b.page].symbols[c.b.sym];
         let from = crate::netlist::pin_designation(prj, c.a);
@@ -660,9 +812,9 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist) -> (Vec<RoutedWire>, Vec<Open
             continue;
         }
         let e = &prj.layout.enclosures[ea];
-        let r = route(e, ia.center(), ib.center());
-        // Down from the device front to the plate and up again at the other end.
-        let length = r.plate_length + ia.z + ia.d + ib.z + ib.d + prj.layout.wire_reserve;
+        let ((pa, la), (pb, lb)) = (wiring_end(e, ia), wiring_end(e, ib));
+        let r = route(e, pa, pb);
+        let length = r.plate_length + la + lb + prj.layout.wire_reserve;
         routed.push(RoutedWire {
             enclosure: ea,
             from,
@@ -670,12 +822,27 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist) -> (Vec<RoutedWire>, Vec<Open
             net: c.net,
             color: c.color,
             cross_section: c.cross_section,
+            number: c.number,
             route: r,
             length,
             items: (ia.id, ib.id),
         });
     }
     (routed, open)
+}
+
+/// Where the wires of a device join the wiring on the plate, and the length from the
+/// device to there: down from the device front to the plate, or for door devices
+/// along the door to the hinge (left) and across the hinge loop.
+pub fn wiring_end(e: &Enclosure, it: &PanelItem) -> (P, f32) {
+    match it.face {
+        Face::Plate => (it.center(), it.z + it.d),
+        Face::Door => {
+            let (_, ph) = e.plate_size();
+            let c = it.center();
+            (p(0.0, (c.y - PLATE_MARGIN).clamp(0.0, ph)), c.x + it.d + DOOR_LOOP + (e.depth - PLATE_Z))
+        }
+    }
 }
 
 /// Material for the BOM: (part number, quantity, quantity unit) of rails, ducts and
@@ -699,7 +866,7 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
     for e in &prj.layout.enclosures {
         add(&mut out, &e.part, 1.0, e.name.clone());
         let mut lengths: Vec<(String, f32)> = Vec::new();
-        for i in e.items.iter().filter(|i| i.kind != ItemKind::Device) {
+        for i in e.items.iter().filter(|i| i.kind.is_profile()) {
             match lengths.iter_mut().find(|x| x.0 == i.part) {
                 Some(x) => x.1 += i.length(),
                 None => lengths.push((i.part.clone(), i.length())),
@@ -715,14 +882,19 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
             };
             add(&mut out, &part, qty, e.name.clone());
         }
+        let holders = crate::production::busbar_holders(e);
+        if holders > 0 {
+            add(&mut out, crate::production::BUSBAR_HOLDER, holders as f32, e.name.clone());
+        }
     }
     out
 }
 
 /// Item ids involved in any problem (for highlighting).
-pub fn problem_items(e: &Enclosure) -> BTreeSet<u64> {
-    let mut s: BTreeSet<u64> = collisions(e).into_iter().flat_map(|(a, b)| [a, b]).collect();
+pub fn problem_items(e: &Enclosure, parts: &[crate::parts::Part]) -> BTreeSet<u64> {
+    let mut s: BTreeSet<u64> = collisions(e, parts).into_iter().flat_map(|(a, b)| [a, b]).collect();
     s.extend(outside(e));
+    s.extend(crate::production::clearance_violations(e, parts).into_iter().flat_map(|(a, b)| [a, b]));
     s
 }
 

@@ -14,3 +14,40 @@ fn pins_on_grid_and_keys_unique() {
         }
     }
 }
+
+#[test]
+fn extra_libraries_are_complete() {
+    for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid] {
+        let n = library().iter().filter(|d| d.category == cat).count();
+        assert!(n >= 4, "{} has only {n} symbols", cat.title());
+    }
+    // Every function a symbol can have has a title (symbol editor).
+    assert_eq!(Func::ALL.iter().map(|f| f.title()).collect::<std::collections::BTreeSet<_>>().len(), Func::ALL.len());
+    for d in library().iter().filter(|d| d.category == Category::SingleLine) {
+        assert_eq!(d.func, Func::Overview, "{}", d.key);
+    }
+}
+
+#[test]
+fn overview_symbols_refer_to_the_main_function_but_stay_out_of_the_netlist() {
+    use crate::model::{Page, PageKind, Project, SymbolInst};
+    let mut prj = Project { pages: vec![Page::new(1, "1", "", PageKind::Schematic), Page::new(2, "2", "", PageKind::Schematic)], next_id: 10, ..Default::default() };
+    let motor = get("motor3").unwrap();
+    let overview = get("sl_motor").unwrap();
+    let inst = |id, sym: &str, x| SymbolInst { id, sym: sym.into(), pos: p(x, 60.0), tag: "-M1".into(), ..Default::default() };
+    let mut m = inst(2, "motor3", 100.0);
+    m.pins = motor.pins.iter().map(|x| x.label.to_string()).collect();
+    prj.pages[0].symbols.push(m);
+    prj.pages[1].symbols.push(inst(3, "sl_motor", 60.0));
+    assert_eq!(overview.pins.len(), 1);
+    let idx = crate::index::Index::build(&prj);
+    assert_eq!(idx.devices["-M1"].mains.len(), 1);
+    assert_eq!(idx.devices["-M1"].overviews.len(), 1);
+    let nl = crate::netlist::Netlist::build(&prj, true);
+    // Only the four motor pins are open, the overview has no connection points.
+    assert_eq!(nl.unconnected.len(), 4);
+    assert!(nl.unconnected.iter().all(|(page, _, _)| *page == 0));
+    // The overview shows the cross reference to the motor on page 1.
+    let svg = crate::svg::page_svg(&prj, 1);
+    assert!(svg.contains("/1.3"), "cross reference missing");
+}

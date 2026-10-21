@@ -94,8 +94,10 @@ fn next_plc_address(prj: &Project, card: &str, prefix: char) -> String {
     format!("{prefix}{}.{}", n / 8, n % 8)
 }
 
-/// Creates a symbol instance with sensible defaults (tag, numbering, ...).
-pub fn new_symbol(prj: &mut Project, ctx: &PlaceCtx, def: &SymbolDef, pos: P, rot: u8, mirror: bool) -> SymbolInst {
+/// Creates a symbol instance for a page with sensible defaults (tag in the page's
+/// structure, numbering, ...).
+pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDef, pos: P, rot: u8, mirror: bool) -> SymbolInst {
+    let structure = crate::structure::page_structure(&prj.pages[page]);
     let mut s = SymbolInst {
         id: prj.new_id(),
         sym: def.key.into(),
@@ -107,21 +109,22 @@ pub fn new_symbol(prj: &mut Project, ctx: &PlaceCtx, def: &SymbolDef, pos: P, ro
         ..Default::default()
     };
     match def.func {
-        Func::Main { .. } => s.tag = prj.next_tag(def.letter),
+        Func::Main { .. } => s.tag = prj.next_tag(&structure, def.letter),
+        Func::Overview => s.tag = ctx.last_main.get(def.letter).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter)),
         Func::Aux(kind) => {
-            s.tag = ctx.last_main.get(def.letter).cloned().unwrap_or_else(|| prj.next_tag(def.letter));
+            s.tag = ctx.last_main.get(def.letter).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
             if def.auto_number {
                 s.pins = next_contact_pins(prj, &s.tag, kind, None);
             }
         }
         Func::Terminal => {
-            s.tag = ctx.last_strip.clone().unwrap_or_else(|| "-X1".into());
+            s.tag = ctx.last_strip.clone().unwrap_or_else(|| format!("{structure}-X1"));
             if def.default_label.chars().all(|c| c.is_ascii_digit()) {
                 s.label = next_terminal(prj, &s.tag);
             }
         }
         Func::Plc => {
-            s.tag = ctx.last_plc.get(def.key).cloned().unwrap_or_else(|| prj.next_tag(def.letter));
+            s.tag = ctx.last_plc.get(def.key).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
             let prefix = def.default_label.chars().next().unwrap_or('I');
             s.label = next_plc_address(prj, &s.tag, prefix);
         }
@@ -291,9 +294,13 @@ pub fn cleanup_wires(page: &mut Page) {
     });
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Clip {
     pub magic: String,
+    /// Function and location of the page the clip was copied from.
+    pub function: String,
+    pub location: String,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -305,6 +312,8 @@ const CLIP_MAGIC: &str = "openecraft-clipboard-v1";
 pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
     Clip {
         magic: CLIP_MAGIC.into(),
+        function: page.function.clone(),
+        location: page.location.clone(),
         symbols: page.symbols.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         wires: page.wires.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         texts: page.texts.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
@@ -326,7 +335,7 @@ impl Clip {
         self.symbols.is_empty() && self.wires.is_empty() && self.texts.is_empty() && self.shapes.is_empty()
     }
 
-    fn bounds(&self) -> R {
+    pub fn bounds(&self) -> R {
         let mut r = R::nothing();
         for s in &self.symbols {
             r.extend(s.pos);
@@ -346,9 +355,13 @@ impl Clip {
     }
 }
 
-/// Pastes the clip so that its top-left corner lands on `at`. Device tags of main
-/// functions that already exist get new numbers (consistently for coil + contacts).
+/// Pastes the clip so that its top-left corner lands on `at`. Tags move into the
+/// structure of the target page; device tags of main functions that already exist
+/// get new numbers (consistently for coil + contacts). Wire numbers and cable cores
+/// are not copied.
 pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u64> {
+    let source = Page { function: clip.function.clone(), location: clip.location.clone(), ..Default::default() };
+    let target = prj.pages[page_i].clone();
     let b = clip.bounds();
     if !b.is_valid() {
         return BTreeSet::new();
@@ -362,13 +375,16 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
         let mut s = s.clone();
         s.id = prj.new_id();
         s.pos = s.pos + d;
+        if !s.tag.is_empty() {
+            s.tag = crate::structure::complete(&target, &crate::structure::relative(&source, &s.tag));
+        }
         if let Some(def) = symbols::get(&s.sym) {
             match def.func {
                 Func::Main { .. } | Func::Aux(_) if existing.contains(&s.tag) => {
                     if let Some(n) = rename.get(&s.tag) {
                         s.tag = n.clone();
                     } else {
-                        let n = prj.next_tag(def.letter);
+                        let n = prj.next_tag(&crate::structure::Dt::parse(&s.tag).structure(), def.letter);
                         // Reserve the tag by temporarily recording it.
                         rename.insert(s.tag.clone(), n.clone());
                         s.tag = n;
@@ -390,6 +406,10 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
         w.id = prj.new_id();
         w.a = w.a + d;
         w.b = w.b + d;
+        w.number.clear();
+        w.number_fixed = false;
+        w.cable.clear();
+        w.core.clear();
         new_ids.insert(w.id);
         prj.pages[page_i].wires.push(w);
     }
@@ -425,6 +445,59 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     }
     if let Some(d) = prj.devices.remove(old) {
         prj.devices.entry(new.to_string()).or_insert(d);
+    }
+    for it in prj.layout.enclosures.iter_mut().flat_map(|e| e.items.iter_mut()) {
+        if it.tag == old {
+            it.tag = new.to_string();
+        }
+    }
+    crate::harness::rename_device(prj, old, new);
+}
+
+/// Assigns wires of a page to the free cores of a cable in order (left to right,
+/// top to bottom). Returns the number of wires that got a core.
+pub fn assign_cores(prj: &mut Project, page: usize, wires: &BTreeSet<u64>, cable: &str) -> usize {
+    let Some(c) = prj.cable(cable) else { return 0 };
+    let cores = c.core_list();
+    let used: Vec<String> = prj
+        .pages
+        .iter()
+        .enumerate()
+        .flat_map(|(pi, pg)| pg.wires.iter().map(move |w| (pi, w)))
+        .filter(|(pi, w)| w.cable == cable && !(*pi == page && wires.contains(&w.id)))
+        .map(|(_, w)| w.core.clone())
+        .collect();
+    let mut free = cores.into_iter().filter(|c| !used.contains(c));
+    let mut sel: Vec<&mut Wire> = prj.pages[page].wires.iter_mut().filter(|w| wires.contains(&w.id)).collect();
+    sel.sort_by(|a, b| a.a.x.min(a.b.x).total_cmp(&b.a.x.min(b.b.x)).then(a.a.y.min(a.b.y).total_cmp(&b.a.y.min(b.b.y))));
+    let mut n = 0;
+    for w in sel {
+        let Some(core) = free.next() else { break };
+        w.cable = cable.to_string();
+        w.core = core;
+        n += 1;
+    }
+    n
+}
+
+/// Changes the structure of a page; with `move_devices` the devices on the page
+/// move along (all their functions, also on other pages, see [`rename_device`]).
+pub fn set_page_structure(prj: &mut Project, page: usize, function: &str, location: &str, move_devices: bool) {
+    let old = prj.pages[page].clone();
+    prj.pages[page].function = crate::structure::clean_aspect(function);
+    prj.pages[page].location = crate::structure::clean_aspect(location);
+    if !move_devices {
+        return;
+    }
+    let new = prj.pages[page].clone();
+    let mut tags: Vec<String> = old.symbols.iter().filter(|s| !s.tag.is_empty()).map(|s| s.tag.clone()).collect();
+    tags.sort();
+    tags.dedup();
+    for tag in tags {
+        let moved = crate::structure::complete(&new, &crate::structure::relative(&old, &tag));
+        if moved != tag && !prj.all_tags().contains(&moved) {
+            rename_device(prj, &tag, &moved);
+        }
     }
 }
 

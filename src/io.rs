@@ -13,6 +13,14 @@ pub enum Purpose {
     Parts,
     /// 2D / 3D model of a part.
     Model(ModelKind),
+    /// Macro library (JSON) to merge.
+    Macros,
+    /// PLC symbol table (CSV).
+    PlcTable,
+    /// Symbol library (JSON) to merge into the project.
+    Symbols,
+    /// Title blocks (JSON) to add to the project.
+    Forms,
 }
 
 impl FileKind for Purpose {
@@ -21,6 +29,10 @@ impl FileKind for Purpose {
             Purpose::Project => ("OpenECraft project", &[PROJECT_EXT, "json"]),
             Purpose::Parts => ("Parts (CSV, JSON)", &["csv", "json", "txt"]),
             Purpose::Model(kind) => kind.filter(),
+            Purpose::Macros => ("OpenECraft macros (JSON)", &["json"]),
+            Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
+            Purpose::Symbols => ("OpenECraft symbol library (JSON)", &["json"]),
+            Purpose::Forms => ("OpenECraft title blocks (JSON)", &["json"]),
         }
     }
 }

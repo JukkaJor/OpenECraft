@@ -19,3 +19,12 @@ fn unique_numbers() {
     assert_eq!(unique_number(&list, "Y"), "Y");
     assert_eq!(unique_number(&list, "X"), "X_2");
 }
+
+#[test]
+fn technical_data_values() {
+    let p = crate::default_catalog().into_iter().find(|p| p.number == "GEN.CBL-4G1.5").unwrap();
+    assert_eq!(p.tech_value("cores"), Some("BN BK GY GNYE"));
+    assert_eq!(p.tech_value("Cross-section"), Some("1.5 mm²"));
+    assert_eq!(p.tech_value("Voltage"), None);
+    assert_eq!(p.quantity_unit, "m");
+}

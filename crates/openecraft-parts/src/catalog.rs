@@ -116,7 +116,10 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.PS-24DC-5A", "Power supply 230 V AC / 24 V DC 5 A", "Power supplies, transformers", "Power supply", "T", 89.0, (40.0, 125.0, 115.0, 0.6), &[(PowerSupply, "L N PE L+ M")]);
     p.voltage = "230 V AC / 24 V DC".into();
     p.current = "5 A".into();
-    c.add("GEN.TR-230-24-100VA", "Control transformer 230 V / 24 V 100 VA", "Power supplies, transformers", "Control transformer", "T", 46.0, (78.0, 84.0, 70.0, 1.6), &[(Transformer, "1.1 1.2 2.1 2.2")]);
+    p.tech_data = "Clearance: 25 mm (convection cooling, above and below)".into();
+    let p = c.add("GEN.TR-230-24-100VA", "Control transformer 230 V / 24 V 100 VA", "Power supplies, transformers", "Control transformer", "T", 46.0, (78.0, 84.0, 70.0, 1.6), &[(Transformer, "1.1 1.2 2.1 2.2")]);
+    p.mounting = "Screw mounting".into();
+    p.tech_data = "Mounting holes: M5: 9,12; 69,12; 9,72; 69,72".into();
 
     let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
     p.accessories = vec!["GEN.TB-END".into()];
@@ -146,6 +149,45 @@ pub fn default_catalog() -> Vec<Part> {
     p.mounting.clear();
     let p = c.add("GEN.ENC-600X800", "Steel enclosure 600 x 800 x 250 mm, IP66", "Mounting", "Enclosure", "", 320.0, (600.0, 800.0, 250.0, 28.0), &[]);
     p.mounting.clear();
+    // Busbar system: width = length of 1 m, height = width of the system, depth = height above the plate.
+    let p = c.add("GEN.BB-3X12X5", "Busbar system 3-pole, Cu 12 x 5 mm, 60 mm centre distance", "Mounting", "Busbar system", "", 38.0, (1000.0, 75.0, 40.0, 1.6), &[]);
+    p.quantity_unit = "m".into();
+    p.mounting.clear();
+    p.tech_data = "Bars: 3\nBar: Cu 12 x 5 mm\nRated current: 200 A".into();
+    let p = c.add("GEN.BB-HOLDER-3P", "Busbar holder 3-pole for 12 x 5 mm, 60 mm", "Mounting", "Busbar holder", "", 6.4, (75.0, 25.0, 40.0, 0.08), &[]);
+    p.mounting.clear();
+
+    // Ferrules (DIN 46228-4 colour code), sold per piece.
+    for (cs, color, len) in [
+        ("0.34", "turquoise", 8),
+        ("0.5", "white", 8),
+        ("0.75", "grey", 8),
+        ("1.0", "red", 8),
+        ("1.5", "black", 8),
+        ("2.5", "blue", 8),
+        ("4", "grey", 10),
+        ("6", "yellow", 12),
+        ("10", "red", 12),
+        ("16", "blue", 12),
+    ] {
+        let number = format!("GEN.FER-{cs}");
+        let desc = format!("Ferrule {cs} mm², insulated, {color}, {len} mm");
+        let p = c.add(&number, &desc, "Wiring material", "Ferrule", "", 0.03, (0.0, 0.0, 0.0, 0.0), &[]);
+        p.mounting.clear();
+        p.tech_data = format!("Cross-section: {cs} mm²\nColour: {color}\nLength: {len} mm");
+    }
+
+    // Cables: sold by the metre; the cores are listed in the technical data.
+    for (number, desc, subgroup, price, kg, cores, cs) in [
+        ("GEN.CBL-4G1.5", "Power cable 4G1.5, rubber sheathed", "Power cable", 2.4, 0.12, "BN BK GY GNYE", "1.5 mm²"),
+        ("GEN.CBL-5G2.5", "Power cable 5G2.5, rubber sheathed", "Power cable", 4.1, 0.2, "BN BK GY BU GNYE", "2.5 mm²"),
+        ("GEN.CBL-7G1.0", "Control cable 7G1.0, numbered cores", "Control cable", 2.9, 0.11, "1 2 3 4 5 6 GNYE", "1 mm²"),
+        ("GEN.CBL-SENS-3X0.34", "Sensor cable M12 3 x 0.34, PUR", "Control cable", 1.6, 0.04, "BN BU BK", "0.34 mm²"),
+    ] {
+        let p = c.add(number, desc, "Cables", subgroup, "W", price, (0.0, 0.0, 0.0, kg), &[]);
+        p.quantity_unit = "m".into();
+        p.tech_data = format!("Cores: {cores}\nCross-section: {cs}");
+    }
 
     let mut parts = c.parts;
     for p in &mut parts {

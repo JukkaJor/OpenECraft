@@ -73,6 +73,7 @@ pub fn demo_project() -> Project {
         creator: "OpenECraft".into(),
         date: "2026-10-19".into(),
         revision: "A".into(),
+        ..Default::default()
     };
 
     add_page(&mut prj, "1", "Cover sheet", PageKind::Cover);
@@ -176,7 +177,53 @@ pub fn demo_project() -> Project {
         }
     }
     add_panel_layout(&mut prj, &db);
+    add_motor_cable(&mut prj, &db);
+    let open = crate::netlist::Netlist::build(&prj, false);
+    let bridged = crate::netlist::Netlist::build(&prj, true);
+    crate::wirenum::renumber(&mut prj, &open, &bridged, false);
+    add_door_harness(&mut prj);
     prj
+}
+
+/// Command and signal devices on the door of +CAB1 are wired with harness -WH1.
+const DOOR_DEVICES: [(&str, f32, f32); 6] =
+    [("-S1", 280.0, 110.0), ("-S2", 180.0, 230.0), ("-S3", 240.0, 230.0), ("-S4", 300.0, 230.0), ("-P1", 360.0, 230.0), ("-P2", 420.0, 230.0)];
+
+fn add_door_harness(prj: &mut Project) {
+    let id = prj.new_id();
+    prj.harnesses.push(crate::harness::Harness { id, tag: "-WH1".into(), description: "Door harness +CAB1".into(), length: 1.5, ..Default::default() });
+    // Every connection with a door device at one of its ends.
+    let nl = crate::netlist::Netlist::build(prj, true);
+    let open = crate::netlist::Netlist::build(prj, false);
+    let door: Vec<&str> = DOOR_DEVICES.iter().map(|d| d.0).collect();
+    let ends: Vec<(String, String)> = crate::netlist::connections(prj, &nl, &open)
+        .into_iter()
+        .filter(|c| [c.a, c.b].iter().any(|p| door.contains(&prj.pages[p.page].symbols[p.sym].tag.as_str())))
+        .map(|c| (crate::netlist::pin_designation(prj, c.a), crate::netlist::pin_designation(prj, c.b)))
+        .collect();
+    for (a, b) in ends {
+        crate::harness::assign(prj, &a, &b, "-WH1");
+    }
+}
+
+/// Cable -W1 from terminal strip -X1 to the motor -M1 (page 2).
+fn add_motor_cable(prj: &mut Project, db: &PartsDb) {
+    let part = db.get("GEN.CBL-4G1.5").expect("cable part");
+    let id = prj.new_id();
+    prj.cables.push(Cable {
+        id,
+        tag: "-W1".into(),
+        cable_type: part.type_number.clone(),
+        cores: part.tech_value("Cores").unwrap_or_default().into(),
+        cross_section: part.tech_value("Cross-section").unwrap_or_default().into(),
+        length: 15.0,
+        part: part.number.clone(),
+        description: "Conveyor motor".into(),
+    });
+    crate::parts::ensure_in_project(prj, db, "GEN.CBL-4G1.5");
+    let page = prj.pages.iter().position(|p| p.name == "2").expect("page 2");
+    let wires = prj.pages[page].wires.iter().filter(|w| w.a.y == 144.0 && w.b.y == 152.0).map(|w| w.id).collect();
+    crate::ops::assign_cores(prj, page, &wires, "-W1");
 }
 
 /// Enclosure +CAB1: cable duct frame, three mounting rails and the cabinet devices.
@@ -216,6 +263,9 @@ fn add_panel_layout(prj: &mut Project, db: &PartsDb) {
     ] {
         let h = panel::device_size(prj, tag).map(|d| d.h).unwrap_or(40.0);
         panel::place_device(prj, 0, tag, p(x, rail_y - h / 2.0));
+    }
+    for (tag, x, y) in DOOR_DEVICES {
+        panel::place_device_on(prj, 0, tag, p(x, y), panel::Face::Door);
     }
     let id = prj.new_id();
     let at = prj.pages.len();

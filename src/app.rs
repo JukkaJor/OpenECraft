@@ -11,9 +11,15 @@ use crate::model::*;
 use crate::netlist::{pin_designation, PinRef};
 use crate::ops;
 use crate::reports::{Analysis, Severity};
+use crate::structure::{self, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, sample, svg};
+use crate::{history::History, sample, svg, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
+
+mod engineering;
+mod forms_ui;
+mod harness_ui;
+mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Workspace {
@@ -49,6 +55,16 @@ pub struct App {
     workspace: Workspace,
     panel_ui: PanelUi,
     show_help: bool,
+    show_cables: bool,
+    show_numbering: bool,
+    /// Macros, terminal strips, PLC overview, revisions.
+    eng: engineering::EngineeringUi,
+    macro_lib: crate::macros::MacroLibrary,
+    symed: symbol_editor::SymbolEditor,
+    forms_ui: forms_ui::FormsUi,
+    harness_ui: harness_ui::HarnessUi,
+    /// Wire numbering: also renumber / remove manually set numbers.
+    numbering_overwrite: bool,
     page_props: Option<usize>,
     message: Option<(String, f64)>,
     title: String,
@@ -60,11 +76,13 @@ impl App {
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
         let mut server_url: Option<String> = None;
+        let mut macro_lib = None;
         if let Some(storage) = cc.storage {
             prj = eframe::get_value(storage, "project");
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
+            macro_lib = eframe::get_value(storage, "macros");
         }
         let parts_db = parts_db.unwrap_or_default();
         let mut parts_ui = PartsUi::default();
@@ -96,6 +114,14 @@ impl App {
             workspace: Workspace::Schematic,
             panel_ui: PanelUi::default(),
             show_help: false,
+            show_cables: false,
+            show_numbering: false,
+            eng: Default::default(),
+            macro_lib: macro_lib.unwrap_or_default(),
+            symed: Default::default(),
+            forms_ui: Default::default(),
+            harness_ui: Default::default(),
+            numbering_overwrite: false,
             page_props: None,
             message: None,
             title: String::new(),
@@ -203,6 +229,56 @@ impl App {
                 self.notify(ctx, msg);
                 return;
             }
+            if loaded.purpose == Purpose::Macros {
+                let text = loaded.text();
+                let lib = serde_json::from_str::<crate::macros::MacroLibrary>(&text)
+                    .or_else(|_| serde_json::from_str::<crate::macros::Macro>(&text).map(|m| crate::macros::MacroLibrary { macros: vec![m] }));
+                match lib {
+                    Ok(lib) => {
+                        let n = self.macro_lib.merge(lib);
+                        self.notify(ctx, format!("Imported {n} macros"));
+                    }
+                    Err(e) => self.notify(ctx, format!("Not a macro file: {e}")),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::Symbols {
+                let text = loaded.text();
+                let lib = serde_json::from_str::<crate::symlib::SymbolLibrary>(&text)
+                    .or_else(|_| serde_json::from_str::<crate::symlib::UserSymbol>(&text).map(|u| crate::symlib::SymbolLibrary { symbols: vec![u] }));
+                match lib {
+                    Ok(lib) => {
+                        let (added, replaced) = crate::symlib::merge(&mut self.prj.symbols, lib);
+                        self.symed.open = true;
+                        self.notify(ctx, format!("{added} symbols added, {replaced} replaced"));
+                    }
+                    Err(e) => self.notify(ctx, format!("Not a symbol library: {e}")),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::Forms {
+                match serde_json::from_str::<crate::forms::FormLibrary>(&loaded.text()) {
+                    Ok(lib) => {
+                        let n = lib.title_blocks.len();
+                        for f in lib.title_blocks {
+                            match self.prj.forms.title_blocks.iter_mut().find(|x| x.name == f.name) {
+                                Some(x) => *x = f,
+                                None => self.prj.forms.title_blocks.push(f),
+                            }
+                        }
+                        self.notify(ctx, format!("Imported {n} title blocks"));
+                    }
+                    Err(e) => self.notify(ctx, format!("Not a title block file: {e}")),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::PlcTable {
+                match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
+                    Ok(n) => self.notify(ctx, format!("{n} PLC function texts updated")),
+                    Err(e) => self.notify(ctx, format!("Symbol table import failed: {e}")),
+                }
+                return;
+            }
             if loaded.purpose == Purpose::Parts {
                 match parts::import(&loaded.text()) {
                     Ok(list) => {
@@ -285,6 +361,24 @@ impl App {
                     let html = svg::print_document(&self.prj);
                     self.export(&ctx, self.suggested_name("html"), ("HTML document", "html"), html);
                 }
+                if ui.button("Export as PDF (bookmarks, linked cross references)…").clicked() {
+                    let pdf = crate::pdf::document(&self.prj);
+                    self.export(&ctx, self.suggested_name("pdf"), ("PDF document", "pdf"), pdf);
+                }
+                if ui.button("Export page as DXF…").clicked() {
+                    let dxf = crate::dxf::pages_dxf(&self.prj, &[self.page]);
+                    let name = format!("{}_page_{}.dxf", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
+                    self.export(&ctx, name, ("DXF drawing", "dxf"), dxf);
+                }
+                if ui.button("Export all pages as DXF…").clicked() {
+                    let all: Vec<usize> = (0..self.prj.pages.len()).collect();
+                    let dxf = crate::dxf::pages_dxf(&self.prj, &all);
+                    self.export(&ctx, self.suggested_name("dxf"), ("DXF drawing", "dxf"), dxf);
+                }
+                if ui.button("Export production wire list (CSV)…").on_hover_text("Wire numbers, ends, colour, cross-section, routed length, cable cores").clicked() {
+                    let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
+                    self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);
+                }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     ui.separator();
@@ -316,8 +410,16 @@ impl App {
                     self.editor.selection = ops::all_ids(&self.prj.pages[self.page]).into_iter().collect();
                 }
                 ui.label(RichText::new("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V").weak());
+                ui.separator();
+                if ui.add_enabled(has_sel, egui::Button::new("Save selection as macro…")).clicked() {
+                    self.save_as_macro(false);
+                }
             });
             ui.menu_button("Insert", |ui| {
+                if ui.button("Macro…").clicked() {
+                    self.eng.show_macros = true;
+                }
+                ui.separator();
                 if ui.button("Wire   W").clicked() {
                     self.editor.set_tool(Tool::Wire);
                 }
@@ -335,6 +437,16 @@ impl App {
                     ui.menu_button(cat.title(), |ui| {
                         for def in symbols::library().iter().filter(|d| d.category == cat) {
                             if ui.button(def.name).clicked() {
+                                self.editor.set_tool(Tool::Place(def.key));
+                            }
+                        }
+                    });
+                }
+                let user = self.user_symbols();
+                if !user.is_empty() {
+                    ui.menu_button(Category::User.title(), |ui| {
+                        for def in user {
+                            if ui.button(format!("{}  ({})", def.name, def.library)).clicked() {
                                 self.editor.set_tool(Tool::Place(def.key));
                             }
                         }
@@ -370,6 +482,9 @@ impl App {
                 if ui.button("Page properties…").clicked() {
                     self.page_props = Some(self.page);
                 }
+                if ui.button("Save page as macro…").clicked() {
+                    self.save_as_macro(true);
+                }
                 if ui.add_enabled(self.page > 0, egui::Button::new("Move page up")).clicked() {
                     self.prj.pages.swap(self.page, self.page - 1);
                     self.page -= 1;
@@ -391,6 +506,34 @@ impl App {
                 if ui.button("Parts management…").clicked() {
                     self.parts_ui.open = true;
                 }
+                if ui.button("Cables…").clicked() {
+                    self.show_cables = true;
+                }
+                if ui.button("Wire numbering…").clicked() {
+                    self.show_numbering = true;
+                }
+                if ui.button("Harnesses…").clicked() {
+                    self.harness_ui.open = true;
+                }
+                if ui.button("Terminal strips…").clicked() {
+                    self.eng.show_strips = true;
+                }
+                if ui.button("PLC overview…").clicked() {
+                    self.eng.show_plc = true;
+                }
+                if ui.button("Revisions…").clicked() {
+                    self.eng.show_revisions = true;
+                }
+                if ui.button("Macros…").clicked() {
+                    self.eng.show_macros = true;
+                }
+                ui.separator();
+                if ui.button("Symbol editor…").clicked() {
+                    self.symed.open = true;
+                }
+                if ui.button("Title blocks and report forms…").clicked() {
+                    self.forms_ui.open = true;
+                }
                 if ui.button("Check project").clicked() {
                     self.left_tab = LeftTab::Check;
                 }
@@ -409,6 +552,7 @@ impl App {
                 }
                 ui.checkbox(&mut self.editor.show_grid, "Grid");
                 ui.checkbox(&mut self.editor.show_pins, "Connection points");
+                ui.checkbox(&mut self.editor.show_revision_marks, "Revision marks");
                 ui.separator();
                 let mut pref = ui.ctx().options(|o| o.theme_preference);
                 ui.horizontal(|ui| {
@@ -488,7 +632,7 @@ impl App {
                 self.goto(self.page - 1, 0);
             }
             let pg = &self.prj.pages[self.page];
-            ui.label(RichText::new(format!("Page {}  {}", pg.name, pg.description)).strong());
+            ui.label(RichText::new(format!("Page {}  {}", structure::page_full_name(pg), pg.description)).strong());
             if ui.add_enabled(self.page + 1 < self.prj.pages.len(), egui::Button::new("▶")).on_hover_text("Next page (Page Down)").clicked() {
                 self.goto(self.page + 1, 0);
             }
@@ -535,7 +679,7 @@ impl App {
                             PageKind::Report(_) => "📊",
                             PageKind::Mounting(_) => "🗄",
                         };
-                        let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", pg.name, pg.description));
+                        let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", structure::page_full_name(pg), pg.description));
                         if r.clicked() {
                             goto = Some(i);
                         }
@@ -553,25 +697,49 @@ impl App {
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut jump = None;
                     let f = self.device_filter.to_lowercase();
-                    for tag in idx.sorted_tags() {
-                        if !f.is_empty() && !tag.to_lowercase().contains(&f) {
-                            continue;
+                    // Devices grouped by structure (=function+location).
+                    let mut groups: Vec<(String, Vec<&String>)> = Vec::new();
+                    for tag in idx.sorted_tags().into_iter().filter(|t| f.is_empty() || t.to_lowercase().contains(&f)) {
+                        let st = Dt::parse(tag).structure();
+                        match groups.iter_mut().find(|g| g.0 == st) {
+                            Some(g) => g.1.push(tag),
+                            None => groups.push((st, vec![tag])),
                         }
+                    }
+                    groups.sort_by(|a, b| natural_cmp(&a.0, &b.0));
+                    let structured = groups.iter().any(|g| !g.0.is_empty());
+                    let prj = &self.prj;
+                    let mut device = |ui: &mut egui::Ui, tag: &String| {
                         let dev = &idx.devices[tag];
-                        egui::CollapsingHeader::new(RichText::new(tag).monospace().strong()).id_salt(tag).show(ui, |ui| {
+                        let title = if structured { Dt::parse(tag).name } else { tag.clone() };
+                        egui::CollapsingHeader::new(RichText::new(title).monospace().strong()).id_salt(tag).show(ui, |ui| {
                             for (kind, locs) in [("Main", &dev.mains), ("Aux", &dev.auxs), ("", &dev.others)] {
                                 for loc in locs {
-                                    let inst = self.prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
+                                    let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
                                     let Some(inst) = inst else { continue };
                                     let name = symbols::get(&inst.sym).map(|d| d.name).unwrap_or("?");
                                     let extra = if inst.label.is_empty() { inst.pins.join("-") } else { inst.label.clone() };
-                                    let text = format!("{} {kind} {name} {extra}", loc.reference(&self.prj));
+                                    let text = format!("{} {kind} {name} {extra}", loc.reference(prj));
                                     if ui.link(text.trim()).clicked() {
                                         jump = Some((loc.page, loc.sym_id));
                                     }
                                 }
                             }
                         });
+                    };
+                    for (st, tags) in &groups {
+                        if structured {
+                            let title = if st.is_empty() { "(no structure)" } else { st.as_str() };
+                            egui::CollapsingHeader::new(RichText::new(title).strong()).id_salt(("structure", st)).default_open(true).show(ui, |ui| {
+                                for tag in tags {
+                                    device(ui, tag);
+                                }
+                            });
+                        } else {
+                            for tag in tags {
+                                device(ui, tag);
+                            }
+                        }
                     }
                     if idx.devices.is_empty() {
                         ui.weak("No devices yet. Pick a symbol from the library on the right and click into the page.");
@@ -623,16 +791,22 @@ impl App {
             ui.add(egui::TextEdit::singleline(&mut self.lib_filter).hint_text("Search…").desired_width(f32::INFINITY));
         });
         let f = self.lib_filter.to_lowercase();
+        let user = self.user_symbols();
+        let mut libs: Vec<&str> = user.iter().map(|d| d.library).collect();
+        libs.dedup();
         egui::ScrollArea::vertical().id_salt("lib").max_height(ui.available_height() * 0.45).auto_shrink([false, true]).show(ui, |ui| {
-            for cat in Category::ALL {
-                let defs: Vec<_> = symbols::library()
-                    .iter()
-                    .filter(|d| d.category == cat && (f.is_empty() || d.name.to_lowercase().contains(&f)))
-                    .collect();
+            let groups = libs
+                .iter()
+                .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().copied().filter(|d| d.library == *lib).collect::<Vec<_>>()))
+                .chain(Category::ALL.into_iter().map(|cat| (cat.title().to_string(), symbols::library().iter().filter(|d| d.category == cat).collect())));
+            for (title, defs) in groups {
+                let defs: Vec<&symbols::SymbolDef> = defs.into_iter().filter(|d| f.is_empty() || d.name.to_lowercase().contains(&f)).collect();
                 if defs.is_empty() {
                     continue;
                 }
-                egui::CollapsingHeader::new(cat.title()).default_open(f.is_empty() || !defs.is_empty()).show(ui, |ui| {
+                // The extra libraries start collapsed.
+                let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::SingleLine | Category::BlackBox);
+                egui::CollapsingHeader::new(title).default_open(!f.is_empty() || main).show(ui, |ui| {
                     for def in defs {
                         let active = self.editor.tool == Tool::Place(def.key);
                         ui.horizontal(|ui| {
@@ -650,15 +824,29 @@ impl App {
         });
     }
 
+    /// Registered symbols of the project symbol library, sorted by library and name.
+    fn user_symbols(&self) -> Vec<&'static symbols::SymbolDef> {
+        let mut v: Vec<&'static symbols::SymbolDef> = self.prj.symbols.iter().filter_map(|u| symbols::get(&u.key)).collect();
+        v.sort_by(|a, b| a.library.cmp(b.library).then(natural_cmp(a.name, b.name)));
+        v
+    }
+
     fn properties(&mut self, ui: &mut egui::Ui, idx: &Index) {
         ui.heading("Properties");
         let sel: Vec<u64> = self.editor.selection.iter().copied().collect();
         let pi = self.page;
+        if self.prj.pages[pi].locked {
+            ui.label(RichText::new("🔒 Released page – read only").color(Color32::from_rgb(220, 140, 0)));
+            ui.disable();
+        }
         if sel.is_empty() {
             let pg = &mut self.prj.pages[pi];
-            ui.label(RichText::new(format!("Page {} – {}", pg.name, pg.kind.label())).strong());
+            ui.label(RichText::new(format!("Page {} – {}", structure::page_full_name(pg), pg.kind.label())).strong());
             ui.label("Description");
             ui.text_edit_singleline(&mut pg.description);
+            if ui.link("Structure (function / location)…").on_hover_text("Page properties").clicked() {
+                self.page_props = Some(pi);
+            }
             ui.add_space(6.0);
             ui.weak(self.editor.tool.hint());
             return;
@@ -694,6 +882,70 @@ impl App {
                         w.cross_section = cs.clone();
                     }
                 }
+                let cables: Vec<String> = self.prj.cables.iter().map(|c| c.tag.clone()).collect();
+                let mut assign = None;
+                ui.horizontal(|ui| {
+                    ui.menu_button("Assign to cable", |ui| {
+                        for c in &cables {
+                            if ui.button(c).clicked() {
+                                assign = Some(c.clone());
+                            }
+                        }
+                        if cables.is_empty() {
+                            ui.weak("No cables yet – Project › Cables…");
+                        }
+                    })
+                    .response
+                    .on_hover_text("The wires get the free cores of the cable in order (left to right)");
+                    if ui.button("Remove from cable").clicked() {
+                        for w in self.prj.pages[pi].wires.iter_mut().filter(|w| wires.contains(&w.id)) {
+                            w.cable.clear();
+                            w.core.clear();
+                        }
+                    }
+                });
+                let harnesses: Vec<String> = self.prj.harnesses.iter().map(|h| h.tag.clone()).collect();
+                let mut to_harness = None;
+                ui.horizontal(|ui| {
+                    ui.menu_button("Assign to harness", |ui| {
+                        for h in &harnesses {
+                            if ui.button(h).clicked() {
+                                to_harness = Some(h.clone());
+                            }
+                        }
+                        if harnesses.is_empty() {
+                            ui.weak("No harnesses yet – Project › Harnesses…");
+                        }
+                    })
+                    .response
+                    .on_hover_text("Connections whose two ends are both on selected wires");
+                    if ui.button("Remove from harness").clicked() {
+                        to_harness = Some(String::new());
+                    }
+                });
+                if let Some(tag) = to_harness {
+                    let sel: std::collections::BTreeSet<u64> = wires.iter().copied().collect();
+                    let conns = crate::harness::connections_at(&self.prj, &self.analysis, pi, &sel);
+                    let ends: Vec<(String, String)> = conns
+                        .iter()
+                        .map(|&i| {
+                            let c = &self.analysis.connections[i];
+                            (pin_designation(&self.prj, c.a), pin_designation(&self.prj, c.b))
+                        })
+                        .collect();
+                    for (a, b) in &ends {
+                        crate::harness::assign(&mut self.prj, a, b, &tag);
+                    }
+                    let ctx = ui.ctx().clone();
+                    let what = if tag.is_empty() { "removed from their harness".to_string() } else { format!("assigned to {tag}") };
+                    self.notify(&ctx, format!("{} connections {what}", ends.len()));
+                }
+                if let Some(c) = assign {
+                    let sel: std::collections::BTreeSet<u64> = wires.iter().copied().collect();
+                    let n = ops::assign_cores(&mut self.prj, pi, &sel, &c);
+                    let ctx = ui.ctx().clone();
+                    self.notify(&ctx, format!("{n} of {} wires assigned to cores of {c}", wires.len()));
+                }
             }
             return;
         }
@@ -713,8 +965,68 @@ impl App {
                 ui.weak("All wires of this potential are highlighted.");
             }
             ui.separator();
+            let open_net = self.analysis.open.wire_net.get(&id).map(|&n| self.analysis.open.nets[n].clone());
+            let number_now = open_net.as_ref().map(|n| wirenum::number_of(&self.prj, n)).unwrap_or_default();
+            let mut number = number_now.clone();
+            let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
+            let cables: Vec<(String, Vec<String>)> = self.prj.cables.iter().map(|c| (c.tag.clone(), c.core_list())).collect();
+            // Cores of the wire's cable already used by other connections
+            let own: Vec<u64> = open_net.as_ref().map(|n| n.wires.iter().map(|w| w.1).collect()).unwrap_or_default();
+            let cable_now = self.prj.pages[pi].wires[wi].cable.clone();
+            let used: Vec<String> = self
+                .prj
+                .pages
+                .iter()
+                .flat_map(|pg| pg.wires.iter())
+                .filter(|x| x.cable == cable_now && !cable_now.is_empty() && !own.contains(&x.id))
+                .map(|x| x.core.clone())
+                .collect();
+            let harnesses: Vec<String> = self.prj.harnesses.iter().map(|h| h.tag.clone()).collect();
+            // Connections of this wire's potential section, each with its own harness.
+            let conns: Vec<(String, String, String)> = crate::harness::connections_of_wire(&self.analysis, id)
+                .into_iter()
+                .map(|i| {
+                    let c = &self.analysis.connections[i];
+                    (pin_designation(&self.prj, c.a), pin_designation(&self.prj, c.b), c.harness.clone())
+                })
+                .collect();
+            let mut harness_change = None;
             let w = &mut self.prj.pages[pi].wires[wi];
             egui::Grid::new("wprops1").num_columns(2).show(ui, |ui| {
+                ui.label("Wire number");
+                ui.horizontal(|ui| {
+                    ui.add(egui::TextEdit::singleline(&mut number).hint_text("not numbered").desired_width(90.0))
+                        .on_hover_text("Applies to all wires of this connection; automatic numbering keeps manual numbers");
+                    if w.number_fixed {
+                        ui.weak("manual");
+                    }
+                });
+                ui.end_row();
+                ui.label("Cable");
+                let shown = if w.cable.is_empty() { "(none)".to_string() } else { structure::relative(&here, &w.cable) };
+                egui::ComboBox::from_id_salt("wcable").selected_text(shown).show_ui(ui, |ui| {
+                    if ui.selectable_label(w.cable.is_empty(), "(none)").clicked() {
+                        w.cable.clear();
+                        w.core.clear();
+                    }
+                    for (tag, _) in &cables {
+                        if ui.selectable_label(w.cable == *tag, tag).clicked() && w.cable != *tag {
+                            w.cable = tag.clone();
+                            w.core.clear();
+                        }
+                    }
+                });
+                ui.end_row();
+                if let Some((_, cores)) = cables.iter().find(|(t, _)| *t == w.cable) {
+                    ui.label("Core");
+                    egui::ComboBox::from_id_salt("wcore").selected_text(w.core.clone()).show_ui(ui, |ui| {
+                        for c in cores {
+                            let text = if used.contains(c) { format!("{c}  (used)") } else { c.clone() };
+                            ui.selectable_value(&mut w.core, c.clone(), text);
+                        }
+                    });
+                    ui.end_row();
+                }
                 ui.label("Colour");
                 ui.add(egui::TextEdit::singleline(&mut w.color).hint_text("e.g. BU, BK, GNYE"));
                 ui.end_row();
@@ -728,6 +1040,35 @@ impl App {
                 ui.label(format!("{:.0} / {:.0}", w.b.x, w.b.y));
                 ui.end_row();
             });
+            if number != number_now {
+                if let Some(net) = &open_net {
+                    wirenum::set(&mut self.prj, net, number.trim(), true);
+                }
+            }
+            if !conns.is_empty() {
+                ui.separator();
+                ui.label(RichText::new("Connections / harness").strong()).on_hover_text("Each point-to-point connection can belong to a harness");
+                egui::Grid::new("wharness").num_columns(2).show(ui, |ui| {
+                    for (i, (a, b, h)) in conns.iter().enumerate() {
+                        ui.label(RichText::new(format!("{a} – {b}")).monospace());
+                        let shown = if h.is_empty() { "(none)".to_string() } else { structure::relative(&here, h) };
+                        egui::ComboBox::from_id_salt(("wharness", i)).selected_text(shown).show_ui(ui, |ui| {
+                            if ui.selectable_label(h.is_empty(), "(none)").clicked() {
+                                harness_change = Some((a.clone(), b.clone(), String::new()));
+                            }
+                            for t in &harnesses {
+                                if ui.selectable_label(t == h, t).clicked() {
+                                    harness_change = Some((a.clone(), b.clone(), t.clone()));
+                                }
+                            }
+                        });
+                        ui.end_row();
+                    }
+                });
+            }
+            if let Some((a, b, tag)) = harness_change {
+                crate::harness::assign(&mut self.prj, &a, &b, &tag);
+            }
         } else if let Some(t) = self.prj.pages[pi].texts.iter_mut().find(|t| t.id == id) {
             ui.label("Text");
             ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
@@ -749,11 +1090,19 @@ impl App {
         };
         ui.label(RichText::new(def.name).strong());
         let mut edited = s.clone();
+        let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
                 ui.label(if def.func == Func::Terminal { "Terminal strip" } else if def.func == Func::Plc { "PLC card" } else { "Device tag" });
                 ui.horizontal(|ui| {
-                    ui.add(egui::TextEdit::singleline(&mut edited.tag).desired_width(90.0).font(egui::TextStyle::Monospace));
+                    // Shown relative to the page structure, stored complete.
+                    let mut shown = structure::relative(&here, &edited.tag);
+                    let before = shown.clone();
+                    ui.add(egui::TextEdit::singleline(&mut shown).desired_width(90.0).font(egui::TextStyle::Monospace))
+                        .on_hover_text(format!("Complete tag: {}\nAspects missing here are taken from the page (=function +location).", edited.tag));
+                    if shown != before {
+                        edited.tag = if shown.trim().is_empty() { String::new() } else { structure::complete(&here, &shown) };
+                    }
                     // Assign to an existing device (e.g. contact → coil)
                     egui::ComboBox::from_id_salt("assign").selected_text("…").width(30.0).show_ui(ui, |ui| {
                         for tag in idx.sorted_tags() {
@@ -981,6 +1330,9 @@ impl App {
                     if ui.button("➕ Insert as report page").clicked() {
                         add_page = Some(kind);
                     }
+                    if ui.button("Form…").on_hover_text("Columns, order and rows of the report pages").clicked() {
+                        self.forms_ui.open_report(kind);
+                    }
                 });
                 let Some(table) = self.analysis.reports.get(&kind) else { return };
                 egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
@@ -1026,6 +1378,7 @@ impl App {
         // Project properties
         if self.show_project {
             let mut open = true;
+            let prj_tb_names = crate::forms::names(&self.prj);
             egui::Window::new("Project properties").open(&mut open).resizable(false).show(ctx, |ui| {
                 let info = &mut self.prj.info;
                 egui::Grid::new("prj").num_columns(2).show(ui, |ui| {
@@ -1047,7 +1400,53 @@ impl App {
                     ui.label("Revision");
                     ui.text_edit_singleline(&mut info.revision);
                     ui.end_row();
+                    ui.label("Title block");
+                    let forms = &mut self.prj.forms;
+                    let current = if forms.default_title_block.is_empty() { crate::forms::STANDARD.to_string() } else { forms.default_title_block.clone() };
+                    egui::ComboBox::from_id_salt("prjtb").selected_text(&current).show_ui(ui, |ui| {
+                        for n in prj_tb_names.iter().cloned() {
+                            if ui.selectable_label(n == current, &n).clicked() {
+                                forms.default_title_block = if n == crate::forms::STANDARD { String::new() } else { n };
+                            }
+                        }
+                    });
+                    ui.end_row();
                 });
+                ui.separator();
+                ui.label(RichText::new("Project properties").strong()).on_hover_text("Shown in title blocks with {prop:Name}");
+                let props = &mut self.prj.info.properties;
+                let mut remove = None;
+                let mut rename = None;
+                egui::Grid::new("prjprops").num_columns(3).show(ui, |ui| {
+                    for (k, v) in props.iter_mut() {
+                        let mut key = k.clone();
+                        if ui.add(egui::TextEdit::singleline(&mut key).desired_width(120.0)).changed() {
+                            rename = Some((k.clone(), key));
+                        }
+                        ui.add(egui::TextEdit::singleline(v).desired_width(200.0));
+                        if ui.small_button("🗑").clicked() {
+                            remove = Some(k.clone());
+                        }
+                        ui.end_row();
+                    }
+                });
+                if let Some((old, new)) = rename {
+                    if !new.is_empty() && !props.contains_key(&new) {
+                        if let Some(v) = props.remove(&old) {
+                            props.insert(new, v);
+                        }
+                    }
+                }
+                if let Some(k) = remove {
+                    props.remove(&k);
+                }
+                if ui.button("➕ Property").clicked() {
+                    let mut n = props.len() + 1;
+                    while props.contains_key(&format!("Property{n}")) {
+                        n += 1;
+                    }
+                    props.insert(format!("Property{n}"), String::new());
+                }
             });
             self.show_project = open;
         }
@@ -1063,10 +1462,19 @@ impl App {
         }
         self.parts_ui.selector(ctx, &self.parts_db, &mut self.prj);
 
+        self.cables_window(ctx);
+        self.numbering_window(ctx);
+        self.engineering_windows(ctx);
+        self.symbol_editor_window(ctx);
+        self.forms_window(ctx);
+        self.harness_window(ctx);
+
         // Page properties
         if let Some(pi) = self.page_props {
             let mut open = true;
+            let mut apply_structure = None;
             if pi < self.prj.pages.len() {
+                let tb_names = crate::forms::names(&self.prj);
                 egui::Window::new("Page properties").open(&mut open).resizable(false).show(ctx, |ui| {
                     let pg = &mut self.prj.pages[pi];
                     egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
@@ -1089,12 +1497,46 @@ impl App {
                         });
                         ui.end_row();
                     });
+                    ui.horizontal(|ui| {
+                        ui.label("Title block");
+                        let shown = if pg.title_block.is_empty() { "(project default)".to_string() } else { pg.title_block.clone() };
+                        egui::ComboBox::from_id_salt("pgtb").selected_text(shown).show_ui(ui, |ui| {
+                            ui.selectable_value(&mut pg.title_block, String::new(), "(project default)");
+                            for n in &tb_names {
+                                ui.selectable_value(&mut pg.title_block, n.clone(), n);
+                            }
+                        });
+                    });
                     if pg.kind != PageKind::Schematic && !pg.is_empty() {
                         ui.colored_label(Color32::from_rgb(220, 140, 0), "This page contains schematic content which is not evaluated on non-schematic pages.");
                     }
+                    ui.separator();
+                    ui.label(RichText::new("Structure (IEC 81346)").strong());
+                    let key = ui.scope_id().with(("page_structure", pi));
+                    let (mut function, mut location, mut move_devices): (String, String, bool) =
+                        ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (pg.function.clone(), pg.location.clone(), true));
+                    egui::Grid::new("pgstruct").num_columns(2).show(ui, |ui| {
+                        ui.label("Function  =");
+                        ui.add(egui::TextEdit::singleline(&mut function).hint_text("e.g. A1, PUMP.2"));
+                        ui.end_row();
+                        ui.label("Location  +");
+                        ui.add(egui::TextEdit::singleline(&mut location).hint_text("e.g. CAB1, FIELD"));
+                        ui.end_row();
+                    });
+                    ui.checkbox(&mut move_devices, "Move the devices of this page into the new structure")
+                        .on_hover_text("Renames the devices (all their functions, also on other pages)");
+                    let changed = structure::clean_aspect(&function) != pg.function || structure::clean_aspect(&location) != pg.location;
+                    if ui.add_enabled(changed, egui::Button::new("Apply structure")).clicked() {
+                        apply_structure = Some((function.clone(), location.clone(), move_devices));
+                    }
+                    ui.weak("Devices placed on the page get its structure; their tags are shown without it.");
+                    ui.data_mut(|d| d.insert_temp(key, (function, location, move_devices)));
                 });
             } else {
                 open = false;
+            }
+            if let Some((function, location, move_devices)) = apply_structure {
+                ops::set_page_structure(&mut self.prj, pi, &function, &location, move_devices);
             }
             if !open {
                 self.page_props = None;
@@ -1110,6 +1552,15 @@ impl App {
                 ui.label("3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.");
                 ui.label("4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.");
                 ui.label("5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.");
+                ui.label("6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.");
+                ui.label("7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.");
+                ui.label("8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.");
+                ui.label("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.");
+                ui.label("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.");
+                ui.label("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.");
+                ui.label("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules.");
+                ui.label("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.");
+                ui.label("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.");
                 ui.separator();
                 ui.label(RichText::new("Shortcuts").strong());
                 egui::Grid::new("keys").striped(true).show(ui, |ui| {
@@ -1137,6 +1588,149 @@ impl App {
             });
             self.show_help = open;
         }
+    }
+
+    fn cables_window(&mut self, ctx: &egui::Context) {
+        if !self.show_cables {
+            return;
+        }
+        let mut open = true;
+        let mut renamed: Vec<(String, String)> = Vec::new();
+        let mut remove = None;
+        let mut picked: Vec<String> = Vec::new();
+        let mut overview = false;
+        let mut used: std::collections::HashMap<String, std::collections::BTreeSet<String>> = Default::default();
+        for w in self.prj.pages.iter().flat_map(|pg| pg.wires.iter()).filter(|w| !w.cable.is_empty()) {
+            used.entry(w.cable.clone()).or_default().insert(w.core.clone());
+        }
+        let structure = structure::page_structure(&self.prj.pages[self.page]);
+        egui::Window::new("Cables").open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
+            ui.horizontal_wrapped(|ui| {
+                if ui.button("➕ New cable").on_hover_text("In the structure of the current page").clicked() {
+                    let tag = self.prj.next_tag(&structure, "W");
+                    let id = self.prj.new_id();
+                    self.prj.cables.push(Cable { id, tag, cores: "BN BK GY GNYE".into(), cross_section: "1.5 mm²".into(), ..Default::default() });
+                }
+                if ui.button("📊 Cable overview").clicked() {
+                    overview = true;
+                }
+                ui.weak("Assign wires: select them in the schematic › Assign to cable.");
+            });
+            ui.separator();
+            let cable_parts: Vec<&parts::Part> = self.parts_db.parts.iter().filter(|p| p.group == "Cables").collect();
+            egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
+                egui::Grid::new("cables").striped(true).num_columns(9).spacing([8.0, 4.0]).show(ui, |ui| {
+                    for h in ["Cable", "Type", "Cores", "Cross-section", "Length", "Part", "Description", "Used", ""] {
+                        ui.label(RichText::new(h).strong());
+                    }
+                    ui.end_row();
+                    for (i, c) in self.prj.cables.iter_mut().enumerate() {
+                        let old = c.tag.clone();
+                        ui.add_sized([100.0, 20.0], egui::TextEdit::singleline(&mut c.tag).font(egui::TextStyle::Monospace));
+                        if c.tag != old {
+                            renamed.push((old.clone(), c.tag.clone()));
+                        }
+                        ui.add_sized([120.0, 20.0], egui::TextEdit::singleline(&mut c.cable_type));
+                        ui.add_sized([140.0, 20.0], egui::TextEdit::singleline(&mut c.cores)).on_hover_text("Core designations separated by blanks");
+                        ui.add_sized([70.0, 20.0], egui::TextEdit::singleline(&mut c.cross_section));
+                        ui.add(egui::DragValue::new(&mut c.length).speed(0.5).range(0.0..=100000.0).suffix(" m"));
+                        ui.horizontal(|ui| {
+                            ui.add(egui::TextEdit::singleline(&mut c.part).desired_width(120.0));
+                            ui.menu_button("…", |ui| {
+                                for p in &cable_parts {
+                                    if ui.button(format!("{}  {}", p.number, p.description)).clicked() {
+                                        c.part = p.number.clone();
+                                        c.cable_type = p.type_number.clone();
+                                        if let Some(cores) = p.tech_value("Cores") {
+                                            c.cores = cores.to_string();
+                                        }
+                                        if let Some(cs) = p.tech_value("Cross-section") {
+                                            c.cross_section = cs.to_string();
+                                        }
+                                        picked.push(p.number.clone());
+                                    }
+                                }
+                                if cable_parts.is_empty() {
+                                    ui.weak("No parts of the product group Cables in the parts database.");
+                                }
+                            });
+                        });
+                        ui.add_sized([160.0, 20.0], egui::TextEdit::singleline(&mut c.description));
+                        let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
+                        ui.label(format!("{n}/{}", c.core_list().len()));
+                        if ui.small_button("🗑").on_hover_text("Delete cable (its wires are removed from it)").clicked() {
+                            remove = Some(i);
+                        }
+                        ui.end_row();
+                    }
+                });
+                if self.prj.cables.is_empty() {
+                    ui.weak("No cables defined.");
+                }
+            });
+        });
+        for (old, new) in renamed {
+            for w in self.prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == old) {
+                w.cable = new.clone();
+            }
+        }
+        if let Some(i) = remove {
+            let tag = self.prj.cables.remove(i).tag;
+            for w in self.prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == tag) {
+                w.cable.clear();
+                w.core.clear();
+            }
+        }
+        for n in picked {
+            parts::ensure_in_project(&mut self.prj, &self.parts_db, &n);
+        }
+        if overview {
+            self.report_kind = ReportKind::CableOverview;
+            self.show_reports = true;
+        }
+        self.show_cables = open;
+    }
+
+    fn numbering_window(&mut self, ctx: &egui::Context) {
+        if !self.show_numbering {
+            return;
+        }
+        let mut open = true;
+        let (mut number, mut remove) = (false, false);
+        let nets: Vec<&crate::netlist::Net> = self.analysis.open.nets.iter().filter(|n| !n.wires.is_empty() && !n.pins.is_empty()).collect();
+        let numbered = nets.iter().filter(|n| !wirenum::number_of(&self.prj, n).is_empty()).count();
+        let total = nets.len();
+        egui::Window::new("Wire numbering").open(&mut open).resizable(false).show(ctx, |ui| {
+            let s = &mut self.prj.wire_numbering;
+            ui.label("Every connection gets one number for all its wires; the two sides of a terminal are separate connections.");
+            ui.add_space(4.0);
+            for scheme in NumberScheme::ALL {
+                ui.radio_value(&mut s.scheme, scheme, scheme.title());
+            }
+            egui::Grid::new("numbering").num_columns(2).show(ui, |ui| {
+                ui.label("Prefix");
+                ui.add(egui::TextEdit::singleline(&mut s.prefix).desired_width(60.0).hint_text("e.g. W"));
+                ui.end_row();
+                ui.label("Start at");
+                ui.add(egui::DragValue::new(&mut s.start).range(0..=1_000_000));
+                ui.end_row();
+            });
+            ui.checkbox(&mut self.numbering_overwrite, "Include manually set numbers");
+            ui.label(format!("{numbered} of {total} connections numbered"));
+            ui.horizontal(|ui| {
+                number = ui.button("Number wires").clicked();
+                remove = ui.button("Remove numbers").clicked();
+            });
+        });
+        if number {
+            let n = wirenum::renumber(&mut self.prj, &self.analysis.open, &self.analysis.netlist, self.numbering_overwrite);
+            self.notify(ctx, format!("{n} connections numbered"));
+        }
+        if remove {
+            let n = wirenum::clear(&mut self.prj, self.numbering_overwrite);
+            self.notify(ctx, format!("Numbers removed from {n} wires"));
+        }
+        self.show_numbering = open;
     }
 
     fn shortcuts(&mut self, ctx: &egui::Context) {
@@ -1199,6 +1793,11 @@ impl eframe::App for App {
         self.shortcuts(&ctx);
         self.page = self.page.min(self.prj.pages.len().saturating_sub(1));
 
+        // User symbols are rebuilt when they change (not while one is dragged in the
+        // symbol editor).
+        if !self.symed.busy() {
+            crate::symlib::register(&self.prj.symbols);
+        }
         if self.analysis_rev != self.history.rev {
             self.analysis = Analysis::build(&self.prj);
             self.analysis_rev = self.history.rev;
@@ -1256,6 +1855,19 @@ impl eframe::App for App {
                         self.goto(loc.page, loc.sym_id);
                     }
                 }
+                if let Some((ei, face, dxf)) = self.panel_ui.export.take() {
+                    if let Some(e) = self.prj.layout.enclosures.get(ei) {
+                        let base: String = e.name.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect();
+                        let what = if face == crate::panel::Face::Door { "door" } else { "plate" };
+                        if dxf {
+                            let content = crate::production::nc_dxf(&self.prj, ei, face);
+                            self.export(&ctx, format!("{what}{base}.dxf"), ("DXF drawing", "dxf"), content);
+                        } else {
+                            let content = crate::production::nc_csv(&self.prj, ei, face);
+                            self.export(&ctx, format!("{what}{base}_drilling.csv"), ("CSV", "csv"), content);
+                        }
+                    }
+                }
                 if let Some(id) = self.panel_ui.add_page.take() {
                     self.add_page(PageKind::Mounting(id));
                     self.workspace = Workspace::Schematic;
@@ -1265,7 +1877,7 @@ impl eframe::App for App {
         self.windows(&ctx);
 
         // Commit finished edits as one undo step.
-        let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy() && !self.panel_ui.busy();
+        let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy() && !self.panel_ui.busy() && !self.symed.busy() && !self.forms_ui.busy();
         self.history.track(&self.prj, can_commit);
 
         let title = format!(
@@ -1284,5 +1896,6 @@ impl eframe::App for App {
         eframe::set_value(storage, "file_name", &self.file_name);
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
+        eframe::set_value(storage, "macros", &self.macro_lib);
     }
 }

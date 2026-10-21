@@ -6,6 +6,13 @@ use crate::model::Project;
 use crate::symbols::{self, Func};
 pub use openecraft_parts::*;
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
+
+/// The built-in catalog, built once (reports look up wiring material in it).
+pub fn catalog() -> &'static [Part] {
+    static CATALOG: OnceLock<Vec<Part>> = OnceLock::new();
+    CATALOG.get_or_init(default_catalog)
+}
 
 /// Function kind represented by a library symbol.
 pub fn kind_of_symbol(key: &str) -> Option<FnKind> {

@@ -15,6 +15,50 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Device-oriented engineering**: device tags (`-K1`, `-S3`, …) are assigned automatically.
   Main function (coil) + auxiliary functions (contacts) form one device. Select a coil and
   place contacts: they are assigned to it and numbered (13/14, 21/22, …).
+- **Structure identifiers (IEC 81346)**: pages carry a function (`=A1`) and a location
+  (`+CAB1`). Devices placed on a page get its structure (`=A1+CAB1-K1`); on the page, tags
+  and cross references show only what differs from the page structure (EPLAN style),
+  tags are numbered per structure, copy / paste moves devices into the target structure,
+  changing a page structure can move its devices along. The device navigator groups by
+  structure; the title block shows the full page name (`=A1+CAB1/3`).
+- **Cables**: cable definitions (tag, type, cores, cross-section, length, part from the
+  product group *Cables*). Wires are assigned to cores (several wires at once get the free
+  cores in order); cores and the cable tag are shown on the schematic. Cable overview and
+  cable diagram reports, cables in the BOM by length, checks for unknown cables, cores
+  used twice or not in the cable.
+- **Wire numbers**: one number per connection (all its wire segments; the two sides of a
+  terminal are separate connections). Automatic numbering: sequential, page/column
+  (`3.4.1`) or by potential name (`L1`, `+24V`), with prefix and start value; manually
+  set numbers are kept. Shown on the schematic, in the connection list and the panel
+  wire list; checks for conflicting and duplicate numbers.
+- **Macros**: save a selection (window macro) or a whole page (page macro) into a macro
+  library (stored with the application, JSON import / export). Window macros are placed
+  with the mouse (ghost preview, devices get new tags), page macros insert a page.
+  Placeholders such as `{MOTOR}` in tags, texts, function texts and designations are
+  filled from **value sets** when inserting.
+- **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
+  **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
+  diagram and the BOM).
+- **PLC overview**: all inputs / outputs per card with connected devices, editable
+  addresses and function texts, card start byte / rack / slot, readdressing, **symbol
+  table export / import** (CSV: name, data type, address, comment) for PLC programming
+  tools; addresses used on several cards are reported.
+- **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
+  locked pages are read only. Changes since the last revision (added / changed / removed
+  symbols, wires, texts, pages) are listed, marked on the pages with a revision triangle
+  and reported in the *revision overview*.
+- **Symbol editor and libraries**: besides the IEC symbols there are NFPA / JIC
+  symbols, fluid power symbols (ISO 1219: pump, cylinder, 4/2 valve, filter, gauge,
+  tank), single-line / overview symbols (cross references to the device, not part of
+  the netlist) and black boxes / PLC boxes. Own symbols are drawn in the symbol editor
+  (lines, rectangles, circles, texts, tag / label fields, connection points on the 4 mm
+  grid, function such as main function, contact, terminal, PLC point), or copied from a
+  built-in symbol; they are stored in the project and exchanged as library files.
+- **Forms**: title blocks are lists of lines, rectangles and texts with placeholders
+  (`{project}`, `{page}`, `{sheet}`, `{rev.date}`, user properties `{prop:Name}` …),
+  edited in the title block editor and shared as files; one per project with an
+  override per page (built-in: Standard, Compact, None). Report forms choose the
+  columns, their order, the heading and the rows per report page.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
   counterparts on other pages.
@@ -22,7 +66,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   potential connection points (L1, N, PE, +24V, …) and interruption points are evaluated
   into nets across pages. Selecting a wire highlights its whole potential.
 - **Reports**: table of contents, device list, bill of materials (with parts and prices),
-  terminal diagram, connection list, PLC assignment list, potential overview — in a window,
+  terminal diagram, connection list, PLC assignment list, potential overview, cable
+  overview, cable diagram — in a window,
   as CSV export, or inserted as live report pages.
 - **Project check**: aux functions without main function, duplicate main functions,
   open connection points, unpaired interruption points, short circuits between
@@ -48,7 +93,21 @@ built with [egui / eframe](https://github.com/emilk/egui).
     block add up in depth, terminal strips are as wide as their terminals) and snapped
     onto rails; move (devices travel with their rail), rotate, delete;
   - 2D front view and a 3D view (orbit, pan, zoom, click to select);
-  - collision and boundary checks (overlaps, outside the plate, too deep for the enclosure);
+  - collision and boundary checks (overlaps, outside the plate, too deep for the enclosure
+    including a door clearance, mounted over a cutout, inside the clearance a device
+    needs above and below from its part data `Clearance: 25 mm`); where a device has a
+    3D model, the **models** are checked for penetration, not just their boxes;
+  - **enclosure door**: command and signal devices (pushbuttons, lamps …) are placed on
+    the door (front view *Door*); each gets its **door cutout** (Ø22.5 by default or from
+    the part data `Door cutout: Ø30.5` / `92 x 68`), checked against the door frame and
+    in 3D against the equipment of the mounting plate; their wires are routed over the
+    hinge; the mounting layout page shows plate and door side by side;
+  - copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
+    or round **cutouts** in the mounting plate;
+  - **drilling pattern**: rails, ducts and busbar holders get tapped holes along their
+    length, devices screwed onto the plate get holes from their part data
+    (`Mounting holes: M5: 9,12; 69,72`) or two default holes; **NC export** per
+    enclosure and face as DXF (outline, one layer per hole diameter, cutouts) or CSV;
   - virtual wiring: every schematic connection between placed devices is routed through
     the cable duct network (shortest path) → wire list with lengths, wires shown in 2D/3D;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
@@ -57,7 +116,22 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
-- **Output**: SVG per page, printable HTML of all pages (print to PDF from the browser).
+- **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
+  references and report rows), **DXF** (R12, layers by kind) per page or all pages side
+  by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,
+  ends, colour, cross-section, routed length, stripping length and ferrule per
+  DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
+  wire processing machines; ferrules also in the BOM), report CSVs, PLC symbol tables,
+  NC data of mounting plates.
+  DWG and EPLAN's EDZ format are proprietary and not supported.
+- **Wire harnesses**: single point-to-point connections (`-S1:13 – -K1:A1`) are
+  assigned to harnesses (`-WH1`), independent of the other connections of the same
+  potential section; assignments follow renamed devices, missing connections are
+  reported by the check; the *harness data*
+  report lists their wires with length (routed in the panel layout or the harness's
+  field length) and end treatment, the harness window shows the connectors with their
+  pin assignment and the bundle diameter; export as simplified **KBL** (VDA 4964, XML)
+  for harness manufacturing.
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
   (app storage on desktop, local storage in the browser).
 
@@ -141,6 +215,18 @@ cargo test --workspace
 | Draw wires | `W`, click start and corner points, ends automatically on a connection point; `Space` flips the corner |
 | Select / move | click, `Shift`+click, drag on empty space for window selection, drag items to move |
 | Edit properties | right panel: tag, function text, connection point designations, part, cross references |
+| Page structure | *Page › Page properties…*: function (`=`) and location (`+`) |
+| Cables | *Project › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
+| Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
+| Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
+| Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
+| Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
+| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list |
+| Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
+| Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
+| Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
+| Door devices | panel layout: front view *Door*, place devices there or move them in their properties |
+| Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; KBL export in the window |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
 | Pages | `Page Up` / `Page Down`, navigator on the left |
 | Undo / redo | `Ctrl+Z` / `Ctrl+Y` |
@@ -155,13 +241,27 @@ cargo test --workspace
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
 | `src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
-| `src/symbols.rs` | Built-in IEC symbol library |
+| `src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, single-line, black boxes) |
+| `src/symlib.rs` | User symbols: registry, editing helpers, library files |
+| `src/forms.rs` | Title blocks (placeholders) and report forms |
+| `src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
+| `src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
 | `src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `src/index.rs` | Device and cross-reference index |
 | `src/reports.rs` | Reports and project check |
 | `src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
 | `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
-| `src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, …) |
+| `src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
+| `src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
+| `src/wirenum.rs` | Wire numbers per connection and automatic numbering |
+| `src/macros.rs` | Window / page macros, placeholders and value sets |
+| `src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals |
+| `src/plc.rs` | PLC points, addressing, symbol table export / import |
+| `src/revision.rs` | Revisions: page snapshots, change detection, revision names |
+| `src/pdf.rs` / `src/dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
+| `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
+| `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
+| `src/app/harness_ui.rs` | Harness window |
 | `src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
 | `src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
