@@ -5,7 +5,10 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::io::{short_name, FileKind};
 use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
-use openecraft_parts::{parse_mesh, parse_svg, natural_cmp, FnKind, FunctionTemplate, Mesh3d, Model2d, Part, Prim2d, TopGroup, PRODUCT_GROUPS};
+use openecraft_parts::{
+    distinct_values, parse_mesh, parse_svg, natural_cmp, FnKind, FunctionTemplate, Grouping, Mesh3d, Model2d, Part, PartFilter, Prim2d, TopGroup,
+    PRODUCT_GROUPS,
+};
 use std::collections::BTreeMap;
 
 /// Graphics file of a part.
@@ -50,14 +53,75 @@ impl Default for EditorState {
     }
 }
 
-/// Product group tree. Returns the part number that was double clicked.
-pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &str, selected: &mut Option<String>) -> Option<String> {
-    let mut tree: BTreeMap<TopGroup, BTreeMap<&str, BTreeMap<&str, Vec<&Part>>>> = BTreeMap::new();
-    for p in parts.iter().filter(|p| p.matches_text(filter)) {
-        let group = if p.group.is_empty() { "(no product group)" } else { p.group.as_str() };
-        tree.entry(p.top_group).or_default().entry(group).or_default().entry(p.subgroup.as_str()).or_default().push(p);
+fn choice_row(ui: &mut egui::Ui, id: (&str, &str), label: &str, value: &mut Option<String>, options: &[String]) {
+    ui.label(label);
+    egui::ComboBox::from_id_salt(id).selected_text(value.as_deref().unwrap_or(tr("(all)"))).width(180.0).show_ui(ui, |ui| {
+        ui.selectable_value(value, None, tr("(all)"));
+        for o in options {
+            ui.selectable_value(value, Some(o.clone()), o);
+        }
+    });
+    ui.end_row();
+}
+
+/// Filter of a part tree: text, manufacturer, supplier, product group and grouping,
+/// followed by the number of shown parts.
+pub fn part_filter(ui: &mut egui::Ui, id: &str, parts: &[&Part], f: &mut PartFilter) {
+    ui.horizontal(|ui| {
+        let reset = ui.add_enabled(f.is_active(), egui::Button::new("✖")).on_hover_text(tr("Reset filter"));
+        if reset.clicked() {
+            f.reset();
+        }
+        ui.add(egui::TextEdit::singleline(&mut f.text).hint_text(tr("Filter (number, type, manufacturer, text …)")).desired_width(f32::INFINITY));
+    });
+    egui::CollapsingHeader::new(tr("Filter criteria")).id_salt((id, "criteria")).show(ui, |ui| {
+        egui::Grid::new((id, "filter")).num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
+            choice_row(ui, (id, "manufacturer"), tr("Manufacturer"), &mut f.manufacturer, &distinct_values(parts.iter().copied(), |p| &p.manufacturer));
+            choice_row(ui, (id, "supplier"), tr("Supplier"), &mut f.supplier, &distinct_values(parts.iter().copied(), |p| &p.supplier));
+            ui.label(tr("Top group"));
+            let title = f.top_group.map_or(tr("(all)"), |t| t.title());
+            egui::ComboBox::from_id_salt((id, "top")).selected_text(title).width(180.0).show_ui(ui, |ui| {
+                ui.selectable_value(&mut f.top_group, None, tr("(all)"));
+                for t in TopGroup::ALL {
+                    ui.selectable_value(&mut f.top_group, Some(t), t.title());
+                }
+            });
+            ui.end_row();
+            let top = f.top_group;
+            let groups = distinct_values(parts.iter().copied().filter(|p| top.is_none_or(|t| t == p.top_group)), |p| &p.group);
+            choice_row(ui, (id, "group"), tr("Product group"), &mut f.group, &groups);
+            ui.label(tr("Group by"));
+            egui::ComboBox::from_id_salt((id, "grouping")).selected_text(tr(f.grouping.title())).width(180.0).show_ui(ui, |ui| {
+                for g in Grouping::ALL {
+                    ui.selectable_value(&mut f.grouping, g, tr(g.title()));
+                }
+            });
+            ui.end_row();
+        });
+    });
+    let shown = parts.iter().filter(|p| f.matches(p)).count();
+    let count = if f.is_active() { tr_fmt!("{} of {} parts", shown, parts.len()) } else { tr_fmt!("{} parts", parts.len()) };
+    ui.label(RichText::new(count).weak());
+}
+
+/// Part tree, grouped as the filter says (product group, manufacturer or supplier).
+/// Returns the part number that was double clicked.
+pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilter, selected: &mut Option<String>) -> Option<String> {
+    let (no_group, no_manufacturer, no_supplier) = (tr("(no product group)"), tr("(no manufacturer)"), tr("(no supplier)"));
+    let or = |s: &str, empty: &str| if s.is_empty() { empty } else { s }.to_string();
+    // First level: (sort key, title); product groups keep the top group order.
+    type Groups<'a> = BTreeMap<String, BTreeMap<&'a str, Vec<&'a Part>>>;
+    let mut tree: BTreeMap<(usize, String), Groups> = BTreeMap::new();
+    for p in parts.iter().filter(|p| filter.matches(p)) {
+        let group = or(&p.group, no_group);
+        let (first, sub) = match filter.grouping {
+            Grouping::ProductGroup => ((p.top_group as usize, p.top_group.title().to_string()), p.subgroup.as_str()),
+            Grouping::Manufacturer => ((0, or(&p.manufacturer, no_manufacturer)), ""),
+            Grouping::Supplier => ((0, or(&p.supplier, no_supplier)), ""),
+        };
+        tree.entry(first).or_default().entry(group).or_default().entry(sub).or_default().push(p);
     }
-    let open = if filter.is_empty() { None } else { Some(true) };
+    let open = if filter.is_active() { Some(true) } else { None };
     let mut activated = None;
     let mut leaf = |ui: &mut egui::Ui, list: &mut Vec<&Part>| {
         list.sort_by(|a, b| natural_cmp(&a.number, &b.number));
@@ -72,20 +136,22 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &str, sel
             }
         }
     };
-    for (top, groups) in tree.iter_mut() {
-        egui::CollapsingHeader::new(RichText::new(top.title()).strong())
-            .id_salt((id, top.title()))
+    let grouping = filter.grouping.title();
+    for ((_, top), groups) in tree.iter_mut() {
+        let top = top.as_str();
+        egui::CollapsingHeader::new(RichText::new(top).strong())
+            .id_salt((id, grouping, top))
             .default_open(true)
             .open(open)
             .show(ui, |ui| {
                 for (group, subs) in groups.iter_mut() {
-                    egui::CollapsingHeader::new(*group).id_salt((id, top.title(), *group)).open(open).show(ui, |ui| {
+                    egui::CollapsingHeader::new(group.as_str()).id_salt((id, grouping, top, group.as_str())).open(open).show(ui, |ui| {
                         for (sub, list) in subs.iter_mut() {
                             if sub.is_empty() {
                                 leaf(ui, list);
                             } else {
                                 egui::CollapsingHeader::new(*sub)
-                                    .id_salt((id, top.title(), *group, *sub))
+                                    .id_salt((id, grouping, top, group.as_str(), *sub))
                                     .open(open)
                                     .show(ui, |ui| leaf(ui, list));
                             }

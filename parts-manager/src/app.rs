@@ -3,7 +3,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::session::{FollowUp, Session};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
-use openecraft_parts::to_csv;
+use openecraft_parts::{to_csv, PartFilter};
 use openecraft_ui::client::ServerClient;
 use openecraft_ui::io::{short_name, FileIo, FileKind, Loaded};
 use openecraft_ui::part_editor::{self as pe, EditorState, ModelKind};
@@ -39,7 +39,7 @@ pub struct ManagerApp {
     session: Session,
     editor: EditorState,
     io: FileIo<Purpose>,
-    filter: String,
+    filter: PartFilter,
     confirm: Option<Confirm>,
     /// Part number a model import was requested for.
     model_target: Option<String>,
@@ -61,7 +61,7 @@ impl ManagerApp {
             session: Session::default(),
             editor: EditorState::default(),
             io: FileIo::default(),
-            filter: String::new(),
+            filter: PartFilter::default(),
             confirm: None,
             model_target: None,
             started: false,
@@ -232,8 +232,8 @@ impl ManagerApp {
     }
 
     fn part_list(&mut self, ui: &mut egui::Ui) {
-        ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text(tr("Filter (number, type, manufacturer, text …)")));
-        ui.label(RichText::new(tr_fmt!("{} parts", self.session.parts.len())).weak());
+        let refs: Vec<_> = self.session.parts.iter().collect();
+        pe::part_filter(ui, "parts", &refs, &mut self.filter);
         if let Some(d) = self.session.draft.as_ref().filter(|d| d.original.is_none()) {
             ui.label(RichText::new(tr_fmt!("➕ {} (not saved)", d.part.number)).italics());
         }

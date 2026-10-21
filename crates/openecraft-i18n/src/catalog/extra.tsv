@@ -13,3 +13,12 @@ connection failed: {}	Verbindung fehlgeschlagen: {}	échec de la connexion : {}	
 value set…	Wertesatz …	jeu de valeurs…	conjunto de valores…
 Shown in title blocks with {prop:Name}	Wird in Schriftfeldern mit {prop:Name} angezeigt	Affiché dans les cartouches avec {prop:Name}	Se muestra en los cajetines con {prop:Name}
 e.g. W	z. B. W	p. ex. W	p. ej. W
+(all)	(alle)	(tous)	(todos)
+Reset filter	Filter zurücksetzen	Réinitialiser le filtre	Restablecer el filtro
+Filter criteria	Filterkriterien	Critères de filtre	Criterios de filtro
+Top group	Hauptgruppe	Groupe principal	Grupo principal
+Group by	Gruppieren nach	Grouper par	Agrupar por
+{} of {} parts	{} von {} Artikeln	{} sur {} articles	{} de {} artículos
+(no product group)	(keine Produktgruppe)	(aucun groupe de produits)	(sin grupo de productos)
+(no manufacturer)	(kein Hersteller)	(aucun fabricant)	(sin fabricante)
+(no supplier)	(kein Lieferant)	(aucun fournisseur)	(sin proveedor)
