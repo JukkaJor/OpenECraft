@@ -3,7 +3,7 @@
 //! [`ServerClient::poll`].
 
 use openecraft_i18n::{tr, tr_fmt};
-use openecraft_parts::api::{self, ApiError, ImportResult, PartList, ServerInfo, API_PREFIX, DEFAULT_PORT};
+use openecraft_parts::api::{self, ImportResult, PartList, ServerInfo, API_PREFIX, DEFAULT_PORT};
 use openecraft_parts::Part;
 use serde::de::DeserializeOwned;
 use std::sync::{Arc, Mutex};
@@ -86,10 +86,16 @@ fn check(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, Stri
     match result {
         Err(e) => Err(tr_fmt!("connection failed: {}", e)),
         Ok(resp) if resp.ok => Ok(resp),
-        Ok(resp) => Err(serde_json::from_slice::<ApiError>(&resp.bytes)
-            .map(|e| e.error)
-            .unwrap_or_else(|_| format!("{} {}", resp.status, resp.status_text))),
+        Ok(resp) => Err(api::error_text(resp.status, &resp.status_text, &resp.bytes)),
     }
+}
+
+/// Sets the content type. `Headers::insert` would add a second one next to the
+/// `text/plain` ehttp sets for requests with a body, and the server uses the first.
+fn with_content_type(mut req: ehttp::Request, content_type: &str) -> ehttp::Request {
+    req.headers.headers.retain(|(k, _)| !k.eq_ignore_ascii_case("content-type"));
+    req.headers.insert("Content-Type", content_type);
+    req
 }
 
 impl ServerClient {
@@ -156,8 +162,7 @@ impl ServerClient {
     }
 
     fn import(&mut self, ctx: &egui::Context, body: Vec<u8>, content_type: &str, status: String) {
-        let mut req = ehttp::Request::post(self.endpoint(&format!("{API_PREFIX}/import")), body);
-        req.headers.insert("Content-Type", content_type);
+        let req = with_content_type(ehttp::Request::post(self.endpoint(&format!("{API_PREFIX}/import")), body), content_type);
         let req = self.authorized(req);
         self.send(ctx, req, status, |r| Reply::Imported(decode(r)));
     }
@@ -165,8 +170,7 @@ impl ServerClient {
     /// PUT /api/v1/parts/{number}: creates or replaces a part.
     pub fn save(&mut self, ctx: &egui::Context, part: &Part) {
         let body = serde_json::to_vec(part).unwrap_or_default();
-        let mut req = ehttp::Request::put(self.endpoint(&api::part_path(&part.number)), body);
-        req.headers.insert("Content-Type", "application/json");
+        let req = with_content_type(ehttp::Request::put(self.endpoint(&api::part_path(&part.number)), body), "application/json");
         let req = self.authorized(req);
         self.send(ctx, req, tr_fmt!("Saving {}…", part.number), |r| Reply::Saved(decode(r).map(Box::new)));
     }

@@ -135,7 +135,7 @@ fn all_texts_used_in_the_sources_are_in_the_catalog() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let known: std::collections::HashSet<&str> = catalog::all().map(|e| e.0).collect();
     let mut files = Vec::new();
-    for dir in ["src", "crates/openecraft-ui/src", "parts-manager/src"] {
+    for dir in ["src", "crates/openecraft-core/src", "crates/openecraft-ui/src", "parts-manager/src", "cli/src"] {
         source_files(&root.join(dir), &mut files);
     }
     let mut missing = Vec::new();

@@ -10,7 +10,7 @@ name = "openecraft"
 path = "src/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-parts", "crates/openecraft-ui", "server", "parts-manager"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-parts", "crates/openecraft-ui", "server", "parts-manager", "cli"]
 
 [dependencies]
 eframe = { version = "0.37", default-features = false, features = [
@@ -32,6 +32,7 @@ log = "0.4"
 openecraft-parts = { path = "crates/openecraft-parts" }
 openecraft-i18n = { path = "crates/openecraft-i18n" }
 openecraft-ui = { path = "crates/openecraft-ui" }
+openecraft-core = { path = "crates/openecraft-core" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.11"

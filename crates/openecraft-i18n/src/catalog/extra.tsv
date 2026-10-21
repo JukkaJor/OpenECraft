@@ -22,3 +22,136 @@ Group by	Gruppieren nach	Grouper par	Agrupar por
 (no product group)	(keine Produktgruppe)	(aucun groupe de produits)	(sin grupo de productos)
 (no manufacturer)	(kein Hersteller)	(aucun fabricant)	(sin fabricante)
 (no supplier)	(kein Lieferant)	(aucun fournisseur)	(sin proveedor)
+(optional)	(optional)	(facultatif)	(opcional)
+--json needs a JSON object	--json erwartet ein JSON-Objekt	--json attend un objet JSON	--json necesita un objeto JSON
+A page named {} already exists	Eine Seite mit dem Namen {} existiert bereits	Une page nommée {} existe déjà	Ya existe una página llamada {}
+A wire needs at least two points	Eine Verbindung braucht mindestens zwei Punkte	Un fil nécessite au moins deux points	Un cable necesita al menos dos puntos
+Access token for changes	Zugangstoken für Änderungen	Jeton d'accès pour les modifications	Token de acceso para cambios
+Adds a page	Fügt eine Seite hinzu	Ajoute une page	Añade una página
+Adds a text to a page	Fügt einer Seite einen Text hinzu	Ajoute un texte à une page	Añade un texto a una página
+Also renumber wires with a fixed number	Auch Verbindungen mit fester Nummer neu nummerieren	Renuméroter aussi les fils à numéro fixe	Renumerar también los cables con número fijo
+Assigns a part to a device (from the project, the built-in catalog or the parts server)	Ordnet einem Betriebsmittel einen Artikel zu (aus dem Projekt, dem eingebauten Katalog oder dem Artikelserver)	Affecte un article à un appareil (du projet, du catalogue intégré ou du serveur d'articles)	Asigna un artículo a un equipo (del proyecto, del catálogo integrado o del servidor de artículos)
+CSV or JSON file	CSV- oder JSON-Datei	Fichier CSV ou JSON	Archivo CSV o JSON
+Cable core	Kabelader	Conducteur du câble	Conductor del cable
+Cable tag	Kabel-BMK	Repère du câble	Identificador del cable
+Cannot read {}: {}	{} kann nicht gelesen werden: {}	Impossible de lire {} : {}	No se puede leer {}: {}
+Cannot write {}: {}	{} kann nicht geschrieben werden: {}	Impossible d'écrire {} : {}	No se puede escribir {}: {}
+Category, e.g. coils, contacts, terminals, plc	Kategorie, z. B. coils, contacts, terminals, plc	Catégorie, p. ex. coils, contacts, terminals, plc	Categoría, p. ej. coils, contacts, terminals, plc
+Changes a placed symbol; when it moves, connected wire ends follow	Ändert ein platziertes Symbol; wird es verschoben, folgen angeschlossene Verbindungsenden	Modifie un symbole placé ; s'il est déplacé, les extrémités de fils raccordées suivent	Cambia un símbolo colocado; si se mueve, los extremos de cable conectados lo siguen
+Changes name, description or structure of a page	Ändert Name, Beschreibung oder Struktur einer Seite	Modifie le nom, la description ou la structure d'une page	Cambia el nombre, la descripción o la estructura de una página
+Changes project properties	Ändert Projekteigenschaften	Modifie les propriétés du projet	Cambia las propiedades del proyecto
+Changes the number of a part on the parts server	Ändert die Nummer eines Artikels auf dem Artikelserver	Modifie le numéro d'un article sur le serveur d'articles	Cambia el número de un artículo en el servidor de artículos
+Changes the properties of a wire	Ändert die Eigenschaften einer Verbindung	Modifie les propriétés d'un fil	Cambia las propiedades de un cable
+Checks the project (errors, warnings, hints)	Prüft das Projekt (Fehler, Warnungen, Hinweise)	Vérifie le projet (erreurs, avertissements, remarques)	Comprueba el proyecto (errores, advertencias, avisos)
+Color, e.g. BU	Farbe, z. B. BU	Couleur, p. ex. BU	Color, p. ej. BU
+Connection point designations, comma separated, e.g. 13,14	Anschlussbezeichnungen, durch Komma getrennt, z. B. 13,14	Désignations des points de connexion, séparées par des virgules, p. ex. 13,14	Designaciones de los puntos de conexión, separadas por comas, p. ej. 13,14
+Creates a new project (optionally the demo project) and saves it if a path is given	Erstellt ein neues Projekt (wahlweise das Demoprojekt) und speichert es, wenn ein Pfad angegeben ist	Crée un nouveau projet (éventuellement le projet de démonstration) et l'enregistre si un chemin est indiqué	Crea un proyecto nuevo (opcionalmente el proyecto de demostración) y lo guarda si se indica una ruta
+Creates or replaces a part on the parts server (same JSON as parts_get; missing fields are empty)	Legt einen Artikel auf dem Artikelserver an oder ersetzt ihn (gleiches JSON wie parts_get; fehlende Felder sind leer)	Crée ou remplace un article sur le serveur d'articles (même JSON que parts_get ; les champs absents sont vides)	Crea o sustituye un artículo en el servidor de artículos (mismo JSON que parts_get; los campos que faltan quedan vacíos)
+Creator	Ersteller	Auteur	Autor
+Cross section, e.g. 1.5	Querschnitt, z. B. 1.5	Section, p. ex. 1.5	Sección, p. ej. 1.5
+Current device tag	Aktuelles BMK	Repère actuel de l'appareil	Identificador actual del equipo
+Deletes a page	Löscht eine Seite	Supprime une page	Elimina una página
+Deletes a part from the parts server	Löscht einen Artikel vom Artikelserver	Supprime un article du serveur d'articles	Elimina un artículo del servidor de artículos
+Deletes symbols, wires, texts and shapes	Löscht Symbole, Verbindungen, Texte und Grafiken	Supprime des symboles, fils, textes et formes	Elimina símbolos, cables, textos y formas
+Device tag, e.g. -K1	Betriebsmittelkennzeichen, z. B. -K1	Repère d'appareil, p. ex. -K1	Identificador del equipo, p. ej. -K1
+Device {} already exists	Betriebsmittel {} existiert bereits	L'appareil {} existe déjà	El equipo {} ya existe
+Discard unsaved changes of the open project	Nicht gespeicherte Änderungen des offenen Projekts verwerfen	Abandonner les modifications non enregistrées du projet ouvert	Descartar los cambios no guardados del proyecto abierto
+Distance in X (mm)	Abstand in X (mm)	Distance en X (mm)	Distancia en X (mm)
+Distance in Y (mm)	Abstand in Y (mm)	Distance en Y (mm)	Distancia en Y (mm)
+Draws a wire between two connection points, e.g. -K1:A1 to -S1:14 (#id:pin for ambiguous ones, the name for potentials, 1, 2… for points without designation)	Zeichnet eine Verbindung zwischen zwei Anschlüssen, z. B. -K1:A1 nach -S1:14 (#id:pin bei mehrdeutigen, der Name bei Potentialen, 1, 2… bei Anschlüssen ohne Bezeichnung)	Trace un fil entre deux points de connexion, p. ex. -K1:A1 vers -S1:14 (#id:pin s'ils sont ambigus, le nom pour les potentiels, 1, 2… pour les points sans désignation)	Dibuja un cable entre dos puntos de conexión, p. ej. -K1:A1 a -S1:14 (#id:pin si son ambiguos, el nombre para potenciales, 1, 2… para puntos sin designación)
+Draws a wire through two or more points	Zeichnet eine Verbindung durch zwei oder mehr Punkte	Trace un fil passant par deux points ou plus	Dibuja un cable por dos o más puntos
+End: device tag and connection point, e.g. -S1:14	Ende: BMK und Anschluss, z. B. -S1:14	Fin : repère et point de connexion, p. ex. -S1:14	Fin: identificador y punto de conexión, p. ej. -S1:14
+Error: {}	Fehler: {}	Erreur : {}	Error: {}
+Exports all parts of the parts server as CSV	Exportiert alle Artikel des Artikelservers als CSV	Exporte tous les articles du serveur d'articles en CSV	Exporta todos los artículos del servidor de artículos como CSV
+Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV) or kbl (harness XML)	Exportiert das Projekt: svg (eine Seite), html, pdf, dxf, wire_list (CSV), plc_table (CSV) oder kbl (Kabelbaum-XML)	Exporte le projet : svg (une page), html, pdf, dxf, wire_list (CSV), plc_table (CSV) ou kbl (XML de faisceau)	Exporta el proyecto: svg (una página), html, pdf, dxf, wire_list (CSV), plc_table (CSV) o kbl (XML de mazo de cables)
+File to save the project to (.oec)	Datei, in die das Projekt gespeichert wird (.oec)	Fichier dans lequel enregistrer le projet (.oec)	Archivo en el que se guarda el proyecto (.oec)
+Function aspect (=) of the page; the devices on the page move along	Funktionsaspekt (=) der Seite; die Betriebsmittel der Seite wandern mit	Aspect fonction (=) de la page ; les appareils de la page suivent	Aspecto de función (=) de la página; los equipos de la página lo siguen
+Generates a report as table	Erzeugt eine Auswertung als Tabelle	Génère un rapport sous forme de tableau	Genera un informe como tabla
+Imports a CSV or JSON parts file into the parts server	Importiert eine CSV- oder JSON-Artikeldatei in den Artikelserver	Importe un fichier d'articles CSV ou JSON dans le serveur d'articles	Importa un archivo de artículos CSV o JSON al servidor de artículos
+Insert after this page (default: at the end)	Nach dieser Seite einfügen (Standard: am Ende)	Insérer après cette page (par défaut : à la fin)	Insertar después de esta página (por defecto: al final)
+Item id	Element-ID	ID de l'élément	ID del elemento
+Item ids	Element-IDs	ID des éléments	ID de los elementos
+Label: terminal number, PLC address or potential name	Beschriftung: Klemmennummer, SPS-Adresse oder Potentialname	Libellé : numéro de borne, adresse API ou nom de potentiel	Etiqueta: número de borna, dirección PLC o nombre de potencial
+Lists the devices with cross references and assigned parts	Listet die Betriebsmittel mit Querverweisen und zugeordneten Artikeln auf	Liste les appareils avec renvois et articles affectés	Lista los equipos con referencias cruzadas y artículos asignados
+Lists the pages of the project	Listet die Seiten des Projekts auf	Liste les pages du projet	Lista las páginas del proyecto
+Lists the symbols that can be placed, with their connection points relative to the insertion point	Listet die platzierbaren Symbole mit ihren Anschlüssen relativ zum Einfügepunkt auf	Liste les symboles disponibles avec leurs points de connexion relatifs au point d'insertion	Lista los símbolos que se pueden colocar con sus puntos de conexión relativos al punto de inserción
+Location aspect (+) of the page; the devices on the page move along	Ortsaspekt (+) der Seite; die Betriebsmittel der Seite wandern mit	Aspect localisation (+) de la page ; les appareils de la page suivent	Aspecto de ubicación (+) de la página; los equipos de la página lo siguen
+Maximum number of hits (default 50)	Höchstzahl an Treffern (Standard 50)	Nombre maximal de résultats (50 par défaut)	Número máximo de resultados (50 por defecto)
+Mirror the symbol	Symbol spiegeln	Mettre le symbole en miroir	Reflejar el símbolo
+Missing parameter: {}	Fehlender Parameter: {}	Paramètre manquant : {}	Falta el parámetro: {}
+Missing value for --{}	Fehlender Wert für --{}	Valeur manquante pour --{}	Falta el valor de --{}
+Moves symbols, wires and texts; connected wire ends follow	Verschiebt Symbole, Verbindungen und Texte; angeschlossene Verbindungsenden folgen	Déplace des symboles, fils et textes ; les extrémités de fils raccordées suivent	Mueve símbolos, cables y textos; los extremos de cable conectados los siguen
+New device tag	Neues BMK	Nouveau repère d'appareil	Nuevo identificador del equipo
+New file name (save as)	Neuer Dateiname (speichern unter)	Nouveau nom de fichier (enregistrer sous)	Nuevo nombre de archivo (guardar como)
+New page name	Neuer Seitenname	Nouveau nom de page	Nuevo nombre de página
+New part number	Neue Artikelnummer	Nouveau numéro d'article	Nuevo número de artículo
+No connection point {} on this page	Kein Anschluss {} auf dieser Seite	Aucun point de connexion {} sur cette page	No hay ningún punto de conexión {} en esta página
+No device {}	Kein Betriebsmittel {}	Aucun appareil {}	No existe el equipo {}
+No item with id {}	Kein Element mit der ID {}	Aucun élément avec l'ID {}	Ningún elemento con el ID {}
+No page named {}	Keine Seite mit dem Namen {}	Aucune page nommée {}	No hay ninguna página llamada {}
+No project is open: use open_project or new_project first	Kein Projekt geöffnet: zuerst open_project oder new_project verwenden	Aucun projet ouvert : utilisez d'abord open_project ou new_project	No hay ningún proyecto abierto: use primero open_project o new_project
+No symbol with id {}	Kein Symbol mit der ID {}	Aucun symbole avec l'ID {}	Ningún símbolo con el ID {}
+No wire with id {}	Keine Verbindung mit der ID {}	Aucun fil avec l'ID {}	Ningún cable con el ID {}
+Not a valid part: {}	Kein gültiger Artikel: {}	Article non valide : {}	No es un artículo válido: {}
+Number of hits to skip	Anzahl zu überspringender Treffer	Nombre de résultats à ignorer	Número de resultados que se omiten
+Numbers the wires by the numbering scheme of the project	Nummeriert die Verbindungen nach dem Nummernschema des Projekts	Numérote les fils selon le schéma de numérotation du projet	Numera los cables según el esquema de numeración del proyecto
+Opens a project file	Öffnet eine Projektdatei	Ouvre un fichier de projet	Abre un archivo de proyecto
+Output file; without it the content is returned	Ausgabedatei; ohne sie wird der Inhalt zurückgegeben	Fichier de sortie ; sans lui, le contenu est renvoyé	Archivo de salida; sin él se devuelve el contenido
+Page (svg: required, dxf: default all pages)	Seite (svg: erforderlich, dxf: Standard alle Seiten)	Page (svg : obligatoire, dxf : par défaut toutes les pages)	Página (svg: obligatoria, dxf: por defecto todas las páginas)
+Page name (default: next number)	Seitenname (Standard: nächste Nummer)	Nom de page (par défaut : numéro suivant)	Nombre de página (por defecto: el número siguiente)
+Page name as shown by list_pages	Seitenname wie von list_pages angezeigt	Nom de page tel qu'affiché par list_pages	Nombre de página como lo muestra list_pages
+Page {} is locked	Seite {} ist gesperrt	La page {} est verrouillée	La página {} está bloqueada
+Parameter {} has the wrong type	Parameter {} hat den falschen Typ	Le paramètre {} a un type incorrect	El parámetro {} tiene un tipo incorrecto
+Part data	Artikeldaten	Données de l'article	Datos del artículo
+Places a symbol on a page. Without a tag the next free one is used; auxiliary contacts get the next free contact numbers of their device	Platziert ein Symbol auf einer Seite. Ohne BMK wird das nächste freie verwendet; Hilfskontakte erhalten die nächsten freien Kontaktnummern ihres Betriebsmittels	Place un symbole sur une page. Sans repère, le prochain libre est utilisé ; les contacts auxiliaires reçoivent les prochains numéros de contact libres de leur appareil	Coloca un símbolo en una página. Sin identificador se usa el siguiente libre; los contactos auxiliares reciben los siguientes números de contacto libres de su equipo
+Points in between: [[x, y], …]	Zwischenpunkte: [[x, y], …]	Points intermédiaires : [[x, y], …]	Puntos intermedios: [[x, y], …]
+Points in mm: [[x, y], …]	Punkte in mm: [[x, y], …]	Points en mm : [[x, y], …]	Puntos en mm: [[x, y], …]
+Project file (.oec)	Projektdatei (.oec)	Fichier de projet (.oec)	Archivo de proyecto (.oec)
+Quantity (default 1)	Menge (Standard 1)	Quantité (1 par défaut)	Cantidad (1 por defecto)
+Redoes the last undone change	Stellt die zuletzt rückgängig gemachte Änderung wieder her	Rétablit la dernière modification annulée	Rehace el último cambio deshecho
+Remove the parts assigned so far	Bisher zugeordnete Artikel entfernen	Retirer les articles affectés jusqu'ici	Quitar los artículos asignados hasta ahora
+Renames a device with all its functions	Benennt ein Betriebsmittel mit allen seinen Funktionen um	Renomme un appareil avec toutes ses fonctions	Renombra un equipo con todas sus funciones
+Return all part data instead of a summary	Alle Artikeldaten statt einer Zusammenfassung liefern	Renvoyer toutes les données de l'article au lieu d'un résumé	Devolver todos los datos del artículo en lugar de un resumen
+Rotation in degrees clockwise: 0, 90, 180 or 270	Drehung in Grad im Uhrzeigersinn: 0, 90, 180 oder 270	Rotation en degrés dans le sens horaire : 0, 90, 180 ou 270	Rotación en grados en sentido horario: 0, 90, 180 o 270
+Saves the project to its file or to a new path	Speichert das Projekt in seine Datei oder unter einem neuen Pfad	Enregistre le projet dans son fichier ou sous un nouveau chemin	Guarda el proyecto en su archivo o en una ruta nueva
+Searches the parts on the parts server	Sucht Artikel auf dem Artikelserver	Recherche des articles sur le serveur d'articles	Busca artículos en el servidor de artículos
+Server URL, e.g. http://127.0.0.1:8090	Server-URL, z. B. http://127.0.0.1:8090	URL du serveur, p. ex. http://127.0.0.1:8090	URL del servidor, p. ej. http://127.0.0.1:8090
+Sets the parts server (URL and access token) and shows its state	Legt den Artikelserver fest (URL und Zugangstoken) und zeigt seinen Zustand	Définit le serveur d'articles (URL et jeton d'accès) et affiche son état	Define el servidor de artículos (URL y token de acceso) y muestra su estado
+Shows all data of a part	Zeigt alle Daten eines Artikels	Affiche toutes les données d'un article	Muestra todos los datos de un artículo
+Shows the content of a page: symbols with their connection point positions, wires and texts	Zeigt den Inhalt einer Seite: Symbole mit den Positionen ihrer Anschlüsse, Verbindungen und Texte	Affiche le contenu d'une page : symboles avec la position de leurs points de connexion, fils et textes	Muestra el contenido de una página: símbolos con la posición de sus puntos de conexión, cables y textos
+Shows the project properties, file, number of pages and devices and the check result	Zeigt Projekteigenschaften, Datei, Anzahl der Seiten und Betriebsmittel sowie das Prüfergebnis	Affiche les propriétés du projet, le fichier, le nombre de pages et d'appareils et le résultat de la vérification	Muestra las propiedades del proyecto, el archivo, el número de páginas y equipos y el resultado de la comprobación
+Start from the demo project	Mit dem Demoprojekt beginnen	Partir du projet de démonstration	Empezar con el proyecto de demostración
+Start: device tag and connection point, e.g. -K1:A1	Anfang: BMK und Anschluss, z. B. -K1:A1	Début : repère et point de connexion, p. ex. -K1:A1	Inicio: identificador y punto de conexión, p. ej. -K1:A1
+Symbol key from list_symbols	Symbolschlüssel aus list_symbols	Clé de symbole issue de list_symbols	Clave de símbolo de list_symbols
+Text height in mm (default 3.5)	Texthöhe in mm (Standard 3.5)	Hauteur du texte en mm (3.5 par défaut)	Altura del texto en mm (3.5 por defecto)
+Text in number, type, manufacturer, description or groups	Text in Nummer, Typ, Hersteller, Beschreibung oder Gruppen	Texte dans le numéro, le type, le fabricant, la description ou les groupes	Texto en número, tipo, fabricante, descripción o grupos
+Text in the key or name	Text im Schlüssel oder Namen	Texte dans la clé ou le nom	Texto en la clave o el nombre
+The last page cannot be deleted	Die letzte Seite kann nicht gelöscht werden	La dernière page ne peut pas être supprimée	La última página no se puede eliminar
+The open project has unsaved changes: save it first or pass discard	Das offene Projekt hat ungespeicherte Änderungen: zuerst speichern oder discard angeben	Le projet ouvert a des modifications non enregistrées : enregistrez-le d'abord ou indiquez discard	El proyecto abierto tiene cambios sin guardar: guárdelo primero o indique discard
+The part number must not be empty	Die Artikelnummer darf nicht leer sein	Le numéro d'article ne doit pas être vide	El número de artículo no puede estar vacío
+The project has no file yet: pass a path	Das Projekt hat noch keine Datei: Pfad angeben	Le projet n'a pas encore de fichier : indiquez un chemin	El proyecto aún no tiene archivo: indique una ruta
+The rotation must be 0, 90, 180 or 270	Die Drehung muss 0, 90, 180 oder 270 sein	La rotation doit être 0, 90, 180 ou 270	La rotación debe ser 0, 90, 180 o 270
+The server sent no text	Der Server hat keinen Text gesendet	Le serveur n'a pas envoyé de texte	El servidor no ha enviado texto
+This command needs a project: --project <file>	Dieser Befehl braucht ein Projekt: --project <Datei>	Cette commande nécessite un projet : --project <fichier>	Este comando necesita un proyecto: --project <archivo>
+This format needs a page	Dieses Format braucht eine Seite	Ce format nécessite une page	Este formato necesita una página
+Undoes the last change	Macht die letzte Änderung rückgängig	Annule la dernière modification	Deshace el último cambio
+Unexpected argument: {}	Unerwartetes Argument: {}	Argument inattendu : {}	Argumento inesperado: {}
+Unknown command: {}. Run openecraft-cli help for a list.	Unbekannter Befehl: {}. openecraft-cli help zeigt eine Liste.	Commande inconnue : {}. openecraft-cli help affiche la liste.	Comando desconocido: {}. openecraft-cli help muestra la lista.
+Unknown format: {}	Unbekanntes Format: {}	Format inconnu : {}	Formato desconocido: {}
+Unknown language: {}	Unbekannte Sprache: {}	Langue inconnue : {}	Idioma desconocido: {}
+Unknown parameter: {}	Unbekannter Parameter: {}	Paramètre inconnu : {}	Parámetro desconocido: {}
+Unknown part {} (parts server: {})	Unbekannter Artikel {} (Artikelserver: {})	Article inconnu {} (serveur d'articles : {})	Artículo desconocido {} (servidor de artículos: {})
+Unknown part: {}	Unbekannter Artikel: {}	Article inconnu : {}	Artículo desconocido: {}
+Unknown report: {}	Unbekannte Auswertung: {}	Rapport inconnu : {}	Informe desconocido: {}
+Unknown symbol: {}	Unbekanntes Symbol: {}	Symbole inconnu : {}	Símbolo desconocido: {}
+Usage: openecraft-cli [--project <file>] [--server <url>] [--token <token>] [--lang <code>] <command> [--<parameter> <value>]…\n\nopenecraft-cli mcp        runs a Model Context Protocol server on stdin / stdout\nopenecraft-cli <command> --help   shows the parameters of a command\n\nCommands:\n	Aufruf: openecraft-cli [--project <Datei>] [--server <URL>] [--token <Token>] [--lang <Code>] <Befehl> [--<Parameter> <Wert>]…\n\nopenecraft-cli mcp        startet einen Model-Context-Protocol-Server auf stdin / stdout\nopenecraft-cli <Befehl> --help   zeigt die Parameter eines Befehls\n\nBefehle:\n	Utilisation : openecraft-cli [--project <fichier>] [--server <url>] [--token <jeton>] [--lang <code>] <commande> [--<paramètre> <valeur>]…\n\nopenecraft-cli mcp        lance un serveur Model Context Protocol sur stdin / stdout\nopenecraft-cli <commande> --help   affiche les paramètres d'une commande\n\nCommandes :\n	Uso: openecraft-cli [--project <archivo>] [--server <url>] [--token <token>] [--lang <código>] <comando> [--<parámetro> <valor>]…\n\nopenecraft-cli mcp        ejecuta un servidor Model Context Protocol en stdin / stdout\nopenecraft-cli <comando> --help   muestra los parámetros de un comando\n\nComandos:\n
+User defined properties (name: value; an empty value removes it)	Benutzerdefinierte Eigenschaften (Name: Wert; ein leerer Wert entfernt sie)	Propriétés définies par l'utilisateur (nom : valeur ; une valeur vide la supprime)	Propiedades definidas por el usuario (nombre: valor; un valor vacío la elimina)
+Wire number (kept when renumbering)	Verbindungsnummer (bleibt beim Neunummerieren erhalten)	Numéro de fil (conservé lors de la renumérotation)	Número de cable (se conserva al renumerar)
+X position in mm	X-Position in mm	Position X en mm	Posición X en mm
+Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
+json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
+schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data
+svg, html, pdf, dxf, wire_list, plc_table or kbl	svg, html, pdf, dxf, wire_list, plc_table oder kbl	svg, html, pdf, dxf, wire_list, plc_table ou kbl	svg, html, pdf, dxf, wire_list, plc_table o kbl
+table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview or harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview oder harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview ou harness_data	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview o harness_data
+{} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
+{} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)

@@ -1,5 +1,6 @@
 //! Editing operations on a page: placement defaults, move, rotate, delete, copy/paste.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P, R, GRID};
 use crate::model::*;
 use crate::symbols::{self, ContactKind, Func, SymbolDef};
@@ -92,6 +93,30 @@ fn next_plc_address(prj: &Project, card: &str, prefix: char) -> String {
         .max();
     let n = max.map(|m| m + 1).unwrap_or(0);
     format!("{prefix}{}.{}", n / 8, n % 8)
+}
+
+/// Name for a new page: one more than the highest numeric page name.
+pub fn next_page_name(prj: &Project) -> String {
+    let max = prj.pages.iter().filter_map(|p| p.name.parse::<u32>().ok()).max().unwrap_or(0);
+    (max + 1).to_string()
+}
+
+/// Inserts a new page of `kind` at position `at` (clamped). Returns its index.
+pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
+    let id = prj.new_id();
+    let desc = match kind {
+        PageKind::Schematic => tr("Schematic").to_string(),
+        PageKind::Cover => tr("Cover sheet").to_string(),
+        PageKind::Report(r) => r.title().to_string(),
+        PageKind::Mounting(id) => {
+            let name = prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
+            tr_fmt!("Mounting layout {}", name)
+        }
+    };
+    let page = Page::new(id, &next_page_name(prj), &desc, kind);
+    let at = at.min(prj.pages.len());
+    prj.pages.insert(at, page);
+    at
 }
 
 /// Creates a symbol instance for a page with sensible defaults (tag in the page's

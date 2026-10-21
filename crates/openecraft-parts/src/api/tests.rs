@@ -36,3 +36,9 @@ fn query_string_and_urls() {
     assert_eq!(url("http://host:8090/", "/api/v1/info"), "http://host:8090/api/v1/info");
     assert_eq!(url(" http://host:8090 ", "/api/v1/info"), "http://host:8090/api/v1/info");
 }
+
+#[test]
+fn error_text_prefers_the_server_message() {
+    assert_eq!(error_text(401, "Unauthorized", br#"{"error":"invalid token"}"#), "invalid token");
+    assert_eq!(error_text(502, "Bad Gateway", b"<html>"), "502 Bad Gateway");
+}
