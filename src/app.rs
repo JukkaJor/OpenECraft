@@ -311,26 +311,9 @@ impl App {
 
     // ------------------------------------------------------------------ pages
 
-    fn next_page_name(&self) -> String {
-        let max = self.prj.pages.iter().filter_map(|p| p.name.parse::<u32>().ok()).max().unwrap_or(0);
-        (max + 1).to_string()
-    }
-
     fn add_page(&mut self, kind: PageKind) {
-        let id = self.prj.new_id();
-        let desc = match kind {
-            PageKind::Schematic => tr("Schematic").to_string(),
-            PageKind::Cover => tr("Cover sheet").to_string(),
-            PageKind::Report(r) => r.title().to_string(),
-            PageKind::Mounting(id) => {
-                let name = self.prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
-                tr_fmt!("Mounting layout {}", name)
-            }
-        };
-        let page = Page::new(id, &self.next_page_name(), &desc, kind);
         let at = (self.page + 1).min(self.prj.pages.len());
-        self.prj.pages.insert(at, page);
-        self.page = at;
+        self.page = ops::add_page(&mut self.prj, kind, at);
         self.editor.selection.clear();
     }
 

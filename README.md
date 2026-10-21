@@ -203,6 +203,51 @@ Enter the server URL and the access token (kept in memory only) and click *Conne
 Changes are saved to the server with *Save* (`Ctrl+S`); the editor asks before unsaved
 changes are discarded and before a part is deleted.
 
+### Command line and MCP server (AI agents)
+
+`openecraft-cli` edits projects and maintains the parts server without a window. The same
+commands are offered to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io)
+(`openecraft-cli mcp`, JSON-RPC on stdin / stdout), so an agent can create projects, place
+symbols, draw wires between connection points, assign parts, run the check, generate
+reports and export PDF / SVG / DXF.
+
+```bash
+cargo run --release -p openecraft-cli -- help                 # all commands
+cargo run --release -p openecraft-cli -- help connect         # parameters of a command
+openecraft-cli new_project --name "Pump control" --path pump.oec
+openecraft-cli -p pump.oec place_symbol --page 1 --symbol pb_no --x 200 --y 100   # -S1
+openecraft-cli -p pump.oec place_symbol --page 1 --symbol coil --x 200 --y 160    # -K1
+openecraft-cli -p pump.oec connect --page 1 --from -S1:14 --to -K1:A1
+openecraft-cli -p pump.oec check
+openecraft-cli -p pump.oec export --format pdf --path pump.pdf
+openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --path parts.csv
+```
+
+- On the command line every change is written back to `--project` at once. In an MCP
+  session the project stays open in memory: `save_project` writes it, `undo` / `redo`
+  revert single tool calls.
+- Parameters are `--name value` (also `--name=value`, or all at once with `--json '{…}'`);
+  lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
+- Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
+  environment variables or the `parts_connect` tool; default `http://127.0.0.1:8090`.
+- Help and messages follow `--lang` or the system language; the MCP server answers in
+  English unless `--lang` is given.
+
+Register the MCP server with an agent, e.g. Claude Code:
+
+```bash
+claude mcp add openecraft -- /path/to/openecraft-cli mcp
+```
+
+or in the `mcpServers` configuration of other clients:
+
+```json
+{ "mcpServers": { "openecraft": { "command": "openecraft-cli", "args": ["mcp"] } } }
+```
+
+The agent can read and write any file the server process can access; start it in a
+working directory (and with a parts server token) you are fine with the agent using.
+
 ### Tests
 
 ```bash
@@ -239,36 +284,38 @@ cargo test --workspace
 | File | Purpose |
 | --- | --- |
 | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
+| `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
+| `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
-| `src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
-| `src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, single-line, black boxes) |
-| `src/symlib.rs` | User symbols: registry, editing helpers, library files |
-| `src/forms.rs` | Title blocks (placeholders) and report forms |
-| `src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
-| `src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
-| `src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
-| `src/index.rs` | Device and cross-reference index |
-| `src/reports.rs` | Reports and project check |
-| `src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
+| `crates/openecraft-core/src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
+| `crates/openecraft-core/src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, single-line, black boxes) |
+| `crates/openecraft-core/src/symlib.rs` | User symbols: registry, editing helpers, library files |
+| `crates/openecraft-core/src/forms.rs` | Title blocks (placeholders) and report forms |
+| `crates/openecraft-core/src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
+| `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
+| `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
+| `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
+| `crates/openecraft-core/src/reports.rs` | Reports and project check |
+| `crates/openecraft-core/src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
 | `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
-| `src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
-| `src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
-| `src/wirenum.rs` | Wire numbers per connection and automatic numbering |
-| `src/macros.rs` | Window / page macros, placeholders and value sets |
-| `src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals |
-| `src/plc.rs` | PLC points, addressing, symbol table export / import |
-| `src/revision.rs` | Revisions: page snapshots, change detection, revision names |
-| `src/pdf.rs` / `src/dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
+| `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
+| `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
+| `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
+| `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
+| `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals |
+| `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
+| `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
+| `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |
-| `src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
+| `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
-| `src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
+| `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
 | `src/app.rs` | Application UI (menus, panels, dialogs) |
-| `src/svg.rs` | SVG / print export |
+| `crates/openecraft-core/src/svg.rs` | SVG / print export |
 | `src/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |

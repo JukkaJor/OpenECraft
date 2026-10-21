@@ -53,3 +53,10 @@ fn poll_updates_status_and_info() {
     assert!(client.failed());
     assert!(client.info.is_none());
 }
+
+#[test]
+fn content_type_replaces_the_default() {
+    let req = with_content_type(ehttp::Request::put("http://test", Vec::new()), "application/json");
+    let types: Vec<&str> = req.headers.get_all("Content-Type").collect();
+    assert_eq!(types, ["application/json"]);
+}

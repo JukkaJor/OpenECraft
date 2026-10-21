@@ -1,0 +1,18 @@
+[package]
+name = "openecraft-cli"
+version = "0.1.0"
+edition = "2021"
+description = "OpenECraft command line and MCP server - edits projects and maintains the parts server without a window"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "openecraft-cli"
+path = "src/main.rs"
+
+[dependencies]
+ehttp = "0.7"
+serde = "1"
+serde_json = "1"
+openecraft-core = { path = "../crates/openecraft-core" }
+openecraft-parts = { path = "../crates/openecraft-parts" }
+openecraft-i18n = { path = "../crates/openecraft-i18n" }

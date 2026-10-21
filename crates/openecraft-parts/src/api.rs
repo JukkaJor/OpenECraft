@@ -111,6 +111,12 @@ impl PartQuery {
     }
 }
 
+/// Readable message of a failed request: the server's [`ApiError`], otherwise the
+/// HTTP status.
+pub fn error_text(status: u16, status_text: &str, body: &[u8]) -> String {
+    serde_json::from_slice::<ApiError>(body).map(|e| e.error).unwrap_or_else(|_| format!("{status} {status_text}"))
+}
+
 /// Percent-encodes everything except unreserved URL characters (RFC 3986).
 pub fn encode_component(s: &str) -> String {
     let mut out = String::new();

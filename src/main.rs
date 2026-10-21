@@ -8,37 +8,17 @@
 mod app;
 #[cfg(test)]
 mod conventions;
-mod dxf;
 mod editor;
-mod forms;
-mod geom;
 #[cfg(test)]
 mod glyphs;
-mod harness;
-mod history;
-mod index;
 mod io;
-mod macros;
-mod model;
-mod netlist;
-mod ops;
-mod panel;
 mod panel_ui;
-mod parts;
 mod parts_ui;
-mod pdf;
-mod plc;
-mod production;
-mod render;
-mod reports;
-mod revision;
-mod sample;
-mod strips;
-mod structure;
-mod svg;
-mod symbols;
-mod symlib;
-mod wirenum;
+
+use openecraft_core::{
+    dxf, forms, geom, harness, history, index, macros, model, netlist, ops, panel, parts, pdf, plc, production, render, reports,
+    revision, sample, strips, structure, svg, symbols, symlib, wirenum,
+};
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {

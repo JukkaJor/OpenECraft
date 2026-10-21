@@ -29,7 +29,7 @@ fn all_ui_characters_exist_in_bundled_fonts() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut missing: BTreeMap<char, Vec<String>> = BTreeMap::new();
     let mut checked = 0;
-    let files = ["src", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "parts-manager/src"].iter().map(|d| root.join(d)).flat_map(|d| source_files(&d)).collect::<Vec<_>>();
+    let files = ["src", "crates/openecraft-core/src", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "parts-manager/src", "cli/src"].iter().map(|d| root.join(d)).flat_map(|d| source_files(&d)).collect::<Vec<_>>();
     for path in files {
         let src = std::fs::read_to_string(&path).unwrap();
         let name = path.strip_prefix(root).unwrap_or(&path).display().to_string();
