@@ -43,7 +43,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   diagram and the BOM);
   every terminal has its part: PE terminals take the strip's part with the tech data
   `Terminal type: PE`, all others its feed-through part (bill of materials, panel
-  length of the strip, connection points per terminal).
+  length of the strip, connection points per terminal); **automatic accessories**
+  from the tech data of the terminal parts (`End bracket: …`, `End plate: …`,
+  `Jumper: …` with jumper parts `Poles: n`): an end bracket at both ends, an end
+  plate after the last terminal of each part, plug-in jumpers of the shortest
+  fitting length (cut if longer, teeth broken off at terminals in between) – in the
+  bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check.
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
@@ -329,7 +334,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
-| `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout |
+| `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |

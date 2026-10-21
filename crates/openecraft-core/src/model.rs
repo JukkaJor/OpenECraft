@@ -383,6 +383,9 @@ pub struct StripData {
     pub jumpers: BTreeMap<String, u32>,
     /// Spare terminals (not in the schematic) at the end of the strip.
     pub spares: u32,
+    /// End brackets and end plates are not placed automatically.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub manual_accessories: bool,
 }
 
 /// PLC card (I/O module) data.

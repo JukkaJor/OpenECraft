@@ -232,11 +232,27 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
                     .unwrap_or(false)
             })
             .count();
-        let layout = if dev.mains.is_empty() && terminals > 0 { crate::strips::strip_layout(prj, tag) } else { Vec::new() };
-        for r in &data.parts {
+        let strip = dev.mains.is_empty() && terminals > 0;
+        let layout = if strip { crate::strips::strip_layout(prj, tag) } else { Vec::new() };
+        let jumpers = if strip { crate::strips::strip_jumpers(prj, tag) } else { Vec::new() };
+        // End brackets, end plates and jumpers of the strip.
+        let mut accessories: Vec<&str> = layout
+            .iter()
+            .filter(|e| matches!(e.kind, crate::strips::ElementKind::EndBracket | crate::strips::ElementKind::EndPlate))
+            .map(|e| e.part.as_str())
+            .collect();
+        accessories.extend(jumpers.iter().filter(|j| !j.part.is_empty()).map(|j| j.part.as_str()));
+        for part in &accessories {
+            let g = groups.entry(part.to_string()).or_default();
+            g.0 += 1.0;
+            if !g.1.contains(tag) {
+                g.1.push(tag.clone());
+            }
+        }
+        for r in data.parts.iter().filter(|r| !accessories.contains(&r.number.as_str())) {
             // Terminal parts as often as the strip layout uses them (PE terminals their
             // own part), other parts once.
-            let used = layout.iter().filter(|e| e.part == r.number).count();
+            let used = layout.iter().filter(|e| matches!(e.kind, crate::strips::ElementKind::Terminal(_) | crate::strips::ElementKind::Spare(_)) && e.part == r.number).count();
             let terminal_part = !layout.is_empty() && prj.parts.iter().chain(crate::parts::catalog()).any(|p| p.number == r.number && crate::strips::is_terminal_part(p));
             let per_device = if used > 0 || terminal_part { used } else { 1 };
             if per_device == 0 {
@@ -476,11 +492,34 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
         (tr("Location"), 0.8),
         (tr("Function text"), 1.6),
     ]);
+    use crate::strips::ElementKind;
     for strip in crate::strips::strip_tags(prj) {
-        for r in crate::strips::rows(prj, &strip, nl, open) {
-            let target = r.terminal.as_ref().map(|t| (t.page, t.id));
-            let jumper = if r.jumper > 0 { r.jumper.to_string() } else { String::new() };
-            t.push(vec![strip.clone(), r.label, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
+        let mut rows = crate::strips::rows(prj, &strip, nl, open);
+        // In the order of the strip on the rail, with its end brackets and end plates.
+        for e in crate::strips::strip_layout(prj, &strip) {
+            let accessory = |title: &str| vec![strip.clone(), title.to_string(), String::new(), e.part.clone(), String::new(), String::new(), String::new(), String::new()];
+            match &e.kind {
+                ElementKind::Terminal(label) | ElementKind::Spare(label) => {
+                    if let Some(i) = rows.iter().position(|r| &r.label == label) {
+                        let r = rows.remove(i);
+                        let target = r.terminal.as_ref().map(|t| (t.page, t.id));
+                        let jumper = if r.jumper > 0 { r.jumper.to_string() } else { String::new() };
+                        t.push(vec![strip.clone(), r.label, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
+                    }
+                }
+                ElementKind::EndBracket => t.push(accessory(tr("End bracket")), None),
+                ElementKind::EndPlate => t.push(accessory(tr("End plate")), None),
+            }
+        }
+        // Jumpers: part, length and the teeth to break off.
+        for j in crate::strips::strip_jumpers(prj, &strip) {
+            let (first, last) = (j.span.first().cloned().unwrap_or_default(), j.span.last().cloned().unwrap_or_default());
+            let length = match j.span.len() as u32 {
+                n if j.poles > n => tr_fmt!("cut from {} to {} poles", j.poles, n),
+                n => tr_fmt!("{} poles", n),
+            };
+            let broken = if j.broken.is_empty() { String::new() } else { tr_fmt!("break off at {}", j.broken.join(", ")) };
+            t.push(vec![strip.clone(), tr("Jumper").into(), j.number.to_string(), j.part, length, String::new(), broken, tr_fmt!("terminals {} – {}", first, last)], None);
         }
     }
     t
@@ -847,6 +886,19 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
             if !labels.contains(label) {
                 v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: jumper {} on terminal {}, which is not placed", strip, j, label), target: None });
             }
+        }
+        use crate::strips::JumperProblem as P;
+        for j in crate::strips::strip_jumpers(prj, strip) {
+            let n = j.number;
+            let (severity, message) = match j.problem {
+                None => continue,
+                Some(P::Blocked) => (Severity::Warning, tr_fmt!("{}: jumper {} crosses an end plate or end bracket", strip, n)),
+                Some(P::MixedParts) => (Severity::Warning, tr_fmt!("{}: jumper {} connects terminals of different parts", strip, n)),
+                Some(P::Pe) => (Severity::Warning, tr_fmt!("{}: jumper {} includes a PE terminal", strip, n)),
+                Some(P::TooShort { needed, longest }) => (Severity::Warning, tr_fmt!("{}: jumper {} needs {} poles, the longest jumper part has {}", strip, n, needed, longest)),
+                Some(P::NoPart) => (Severity::Info, tr_fmt!("{}: no jumper part for jumper {} (tech data Jumper of the terminal part)", strip, n)),
+            };
+            v.push(Issue { severity, message, target: None });
         }
     }
     for (addr, points) in crate::plc::duplicate_addresses(prj, nl) {

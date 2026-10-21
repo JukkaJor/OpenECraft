@@ -57,11 +57,15 @@ fn terminal_strips_have_points_per_terminal() {
     let labels: Vec<String> = crate::strips::terminals(&prj, "-X1").into_iter().map(|t| t.label).collect();
     let points = device_points(&prj, &it);
     assert_eq!(points.len(), 2 * labels.len());
-    let cell = it.w / labels.len() as f32;
-    for (k, label) in labels.iter().enumerate() {
+    // The terminals sit in their cells of the strip, between brackets and end plates.
+    let cells = crate::panel::strip_cells(&prj, &it);
+    let layout = crate::strips::strip_layout(&prj, "-X1");
+    for label in &labels {
+        let i = layout.iter().position(|e| e.kind == crate::strips::ElementKind::Terminal(label.clone())).unwrap();
+        let centre = it.x + cells[i].at + cells[i].len / 2.0;
         let top = points.iter().find(|p| &p.terminal == label && p.pin == "1").unwrap();
         let bottom = points.iter().find(|p| &p.terminal == label && p.pin == "2").unwrap();
-        assert!((top.pos[0] - (it.x + (k as f32 + 0.5) * cell)).abs() < 0.01, "terminal {label} in strip order");
+        assert!((top.pos[0] - centre).abs() < 0.01, "terminal {label} in its cell");
         assert_eq!((top.exit, bottom.exit), (Exit::Up, Exit::Down));
     }
 }
@@ -135,7 +139,11 @@ fn terminals_use_the_points_of_their_own_part() {
     assert!(of("1").iter().all(|p| !p.exact), "grey terminal: generated points");
     let top = of("PE").into_iter().find(|p| p.pin == "1").unwrap();
     assert!((top.pos[1] - (it.y + 4.0)).abs() < 0.01);
-    // The PE terminal is the last of four equal ones: its centre is at 3.5 / 4 of the strip.
-    assert!((top.pos[0] - (it.x + it.w * 3.5 / 4.0)).abs() < 0.01, "{} vs {}", top.pos[0], it.x + it.w * 3.5 / 4.0);
+    // In the cell of the PE terminal.
+    let cells = crate::panel::strip_cells(&prj, &it);
+    let layout = crate::strips::strip_layout(&prj, "-X1");
+    let i = layout.iter().position(|e| e.kind == crate::strips::ElementKind::Terminal("PE".into())).unwrap();
+    let centre = it.x + cells[i].at + cells[i].len / 2.0;
+    assert!((top.pos[0] - centre).abs() < 0.01, "{} vs {centre}", top.pos[0]);
 }
 

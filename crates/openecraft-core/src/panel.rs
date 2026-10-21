@@ -369,38 +369,113 @@ pub fn tiles(item_w: f32, model_w: f32) -> usize {
     }
 }
 
+/// The item is turned by a quarter turn against a part of height `part_h`: the
+/// part's height lies along x.
+pub fn item_rotated(it: &PanelItem, part_h: f32) -> bool {
+    let same = |a: f32, b: f32| (a - b).abs() < 0.5;
+    !same(it.h, part_h) && same(it.w, part_h)
+}
+
 /// Triangles of a part's 3D model placed into a device on the plate, in plate
 /// coordinates (x right, y down, z = height above the plate). The model is fitted
 /// into the device box; rotated devices turn the model by 90° about the front axis,
-/// terminal strips repeat it once per terminal. Winding (outside) is preserved.
+/// a strip of equal models repeats it. Winding (outside) is preserved.
 pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3]; 3]> {
+    let [mw, mh, _] = mesh.size();
+    let rotated = item_rotated(it, mh);
+    let n = if rotated { 1 } else { tiles(it.w, mw) };
+    let cell = (if rotated { it.h } else { it.w }) / n as f32;
+    (0..n).flat_map(|k| place_mesh_in(mesh, it, k as f32 * cell, cell)).collect()
+}
+
+/// A part's 3D model fitted into the stretch `at .. at + len` along a device (along
+/// x, or along y for rotated devices) and the full height and depth.
+pub fn place_mesh_in(mesh: &crate::parts::Mesh3d, it: &PanelItem, at: f32, len: f32) -> Vec<[[f32; 3]; 3]> {
     let (min, _) = mesh.bounds();
     let [mw, mh, md] = mesh.size();
     if mw <= 0.0 || mh <= 0.0 || md <= 0.0 {
         return Vec::new();
     }
-    let same = |a: f32, b: f32| (a - b).abs() < 0.5;
-    let rotated = !same(mw, mh) && same(it.w, mh) && same(it.h, mw);
-    let n = if rotated { 1 } else { tiles(it.w, mw) };
-    let cell_w = it.w / n as f32;
+    let rotated = item_rotated(it, mh);
     let sz = it.d / md;
-    let mut out = Vec::with_capacity(mesh.triangles.len() * n);
-    for tile in 0..n {
-        let x0 = it.x + tile as f32 * cell_w;
-        let tf = |v: [f32; 3]| {
-            let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
-            if rotated {
-                // Quarter turn: model up becomes plate right, model right becomes plate down.
-                [it.x + y_up * (it.w / mh), it.y + x * (it.h / mw), it.z + z * sz]
-            } else {
-                [x0 + x * (cell_w / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * sz]
+    let tf = |v: [f32; 3]| {
+        let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
+        if rotated {
+            // Quarter turn: model up becomes plate right, model right becomes plate down.
+            [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * sz]
+        } else {
+            [it.x + at + x * (len / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * sz]
+        }
+    };
+    mesh.triangles.iter().map(|t| [tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]).collect()
+}
+
+/// A place along a device for one part: offset and length along the device (along
+/// x, or along y for rotated devices).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Cell {
+    pub at: f32,
+    pub len: f32,
+    pub part: String,
+}
+
+fn part_by_number<'a>(prj: &'a Project, number: &str) -> Option<&'a crate::parts::Part> {
+    prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == number)
+}
+
+/// Terminal strips: one cell per element of the strip layout (terminals, end plates,
+/// end brackets), scaled to the item. Empty for other items.
+pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
+    let Some(main) = part_by_number(prj, &it.part).filter(|_| it.kind == ItemKind::Device) else { return Vec::new() };
+    if !crate::strips::is_terminal_part(main) {
+        return Vec::new();
+    }
+    let layout = crate::strips::strip_layout(prj, &it.tag);
+    let total: f32 = layout.iter().map(|e| e.width).sum();
+    if total <= 0.0 {
+        return Vec::new();
+    }
+    let rotated = main.size().is_some_and(|s| item_rotated(it, s[1]));
+    let scale = (if rotated { it.h } else { it.w }) / total;
+    let mut at = 0.0;
+    layout
+        .into_iter()
+        .map(|e| {
+            let cell = Cell { at, len: e.width * scale, part: e.part };
+            at += cell.len;
+            cell
+        })
+        .collect()
+}
+
+/// The 3D model of a device in plate coordinates: the part's model, for terminal
+/// strips the model of every element in its cell (a box where a part has none).
+/// `None` for items without a model.
+pub fn device_mesh(prj: &Project, it: &PanelItem) -> Option<Vec<[[f32; 3]; 3]>> {
+    if it.kind != ItemKind::Device {
+        return None;
+    }
+    let cells = strip_cells(prj, it);
+    if cells.is_empty() {
+        let tris = place_mesh(part_by_number(prj, &it.part)?.model_3d.as_ref()?, it);
+        return (!tris.is_empty()).then_some(tris);
+    }
+    let rotated = part_by_number(prj, &it.part).and_then(|p| p.size()).is_some_and(|s| item_rotated(it, s[1]));
+    let mut out = Vec::new();
+    for c in cells {
+        match part_by_number(prj, &c.part).and_then(|p| p.model_3d.as_ref()) {
+            Some(mesh) => out.extend(place_mesh_in(mesh, it, c.at, c.len)),
+            None => {
+                let (min, max) = if rotated {
+                    ([it.x, it.y + c.at, it.z], [it.x + it.w, it.y + c.at + c.len, it.z + it.d])
+                } else {
+                    ([it.x + c.at, it.y, it.z], [it.x + c.at + c.len, it.y + it.h, it.z + it.d])
+                };
+                out.extend(box_triangles(min, max));
             }
-        };
-        for t in &mesh.triangles {
-            out.push([tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]);
         }
     }
-    out
+    Some(out)
 }
 
 /// Footprint of a device from its parts: the first part with mounting data gives

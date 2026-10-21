@@ -122,10 +122,18 @@ pub fn default_catalog() -> Vec<Part> {
     p.tech_data = "Mounting holes: M5: 9,12; 69,12; 9,72; 69,72".into();
 
     let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
-    p.accessories = vec!["GEN.TB-END".into()];
-    c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]).tech_data =
-        "Terminal type: PE".into();
+    p.tech_data = "End bracket: GEN.EB-35\nEnd plate: GEN.TB-END\nJumper: GEN.JMP-2.5-2, GEN.JMP-2.5-3, GEN.JMP-2.5-10".into();
+    p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into(), "GEN.JMP-2.5-2".into(), "GEN.JMP-2.5-3".into(), "GEN.JMP-2.5-10".into()];
+    let p = c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]);
+    p.tech_data = "Terminal type: PE\nEnd bracket: GEN.EB-35\nEnd plate: GEN.TB-END".into();
+    p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into()];
     c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
+    c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.0, 40.0, 36.0, 0.01), &[]);
+    for poles in [2, 3, 10] {
+        let number = format!("GEN.JMP-2.5-{poles}");
+        let desc = format!("Plug-in jumper {poles} poles for terminal 2.5 mm²");
+        c.add(&number, &desc, "Terminals", "Jumper", "", 0.25 * poles as f32, (0.0, 0.0, 0.0, 0.001), &[]).tech_data = format!("Poles: {poles}");
+    }
 
     let di: Vec<(FnKind, String)> = (0..16).map(|i| (PlcInput, format!("I{}.{}", i / 8, i % 8))).collect();
     let di: Vec<(FnKind, &str)> = di.iter().map(|(k, s)| (*k, s.as_str())).collect();
@@ -219,7 +227,7 @@ fn shape_of(p: &Part) -> Option<Shape> {
         return None;
     }
     Some(match p.subgroup.as_str() {
-        "Feed-through terminal" | "PE terminal" | "Accessories" => Shape::Terminal,
+        "Feed-through terminal" | "PE terminal" | "Accessories" | "End bracket" => Shape::Terminal,
         "Digital input module" | "Digital output module" | "CPU" => Shape::Plc,
         "Circuit breaker" | "Motor protection switch" | "Auxiliary switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" => Shape::Din { toggle: false, display: true },

@@ -203,3 +203,14 @@ via cable ducts	über Kabelkanäle	par les goulottes	por las canaletas
 🗑 Remove all	🗑 Alle entfernen	🗑 Tout supprimer	🗑 Quitar todos
 2D front view (SVG)	2D-Frontansicht (SVG)	Vue de face 2D (SVG)	Vista frontal 2D (SVG)
 3D model (STL, OBJ, STEP)	3D-Modell (STL, OBJ, STEP)	Modèle 3D (STL, OBJ, STEP)	Modelo 3D (STL, OBJ, STEP)
+End bracket	Endhalter	Butée d'arrêt	Soporte final
+End plate	Abschlussdeckel	Flasque d'extrémité	Tapa final
+break off at {}	ausbrechen bei {}	à casser en {}	romper en {}
+cut from {} to {} poles	von {} auf {} Pole gekürzt	coupé de {} à {} pôles	cortado de {} a {} polos
+terminals {} – {}	Klemmen {} – {}	bornes {} – {}	bornas {} – {}
+{} poles	{} Pole	{} pôles	{} polos
+{}: jumper {} connects terminals of different parts	{}: Brücke {} verbindet Klemmen verschiedener Artikel	{} : le pont {} relie des bornes d'articles différents	{}: el puente {} une bornas de artículos distintos
+{}: jumper {} crosses an end plate or end bracket	{}: Brücke {} überquert einen Abschlussdeckel oder Endhalter	{} : le pont {} traverse un flasque d'extrémité ou une butée d'arrêt	{}: el puente {} cruza una tapa final o un soporte final
+{}: jumper {} includes a PE terminal	{}: Brücke {} umfasst eine PE-Klemme	{} : le pont {} comprend une borne PE	{}: el puente {} incluye una borna PE
+{}: jumper {} needs {} poles, the longest jumper part has {}	{}: Brücke {} braucht {} Pole, der längste Brückenartikel hat {}	{} : le pont {} nécessite {} pôles, l'article de pont le plus long en a {}	{}: el puente {} necesita {} polos, el artículo de puente más largo tiene {}
+{}: no jumper part for jumper {} (tech data Jumper of the terminal part)	{}: kein Brückenartikel für Brücke {} (technische Daten Jumper des Klemmenartikels)	{} : aucun article de pont pour le pont {} (données techniques Jumper de l'article de borne)	{}: ningún artículo de puente para el puente {} (datos técnicos Jumper del artículo de borna)

@@ -17,9 +17,9 @@ fn device_size_from_parts() {
     let k1 = device_size(&prj, "-K1").unwrap();
     assert_eq!((k1.w, k1.h, k1.d), (45.0, 74.0, 113.0));
     assert_eq!(k1.part, "GEN.CT-9A-24DC");
-    // Terminal strip: 4 terminals of 5.2 mm
+    // Terminal strip: 4 terminals of 5.2 mm, 2 end plates of 1.5 mm, 2 end brackets of 9 mm
     let x1 = device_size(&prj, "-X1").unwrap();
-    assert!((x1.w - 20.8).abs() < 0.01, "{}", x1.w);
+    assert!((x1.w - 41.8).abs() < 0.01, "{}", x1.w);
     // Motors have no mounting data: not placeable
     assert!(device_size(&prj, "-M1").is_none());
 }
@@ -200,13 +200,20 @@ fn part_models_are_fitted_into_devices() {
     assert!(within(&tris, &rotated));
     assert!((extent(&tris)[0] - rotated.w).abs() < 0.01);
 
-    // Terminal strip: one terminal model per terminal.
+    // Terminal strip: every element of the strip with its own model in its cell.
     let (_, x1) = prj.layout.find_device("-X1").unwrap();
-    let tb = prj.parts.iter().find(|p| p.number == x1.part).unwrap().model_3d.as_ref().unwrap();
-    assert_eq!(tiles(x1.w, tb.size()[0]), 4);
-    let tris = place_mesh(tb, x1);
-    assert_eq!(tris.len(), tb.triangles.len() * 4);
+    let cells = strip_cells(&prj, x1);
+    assert_eq!(cells.len(), 8, "bracket, 3 terminals, plate, PE terminal, plate, bracket");
+    let model = |n: &str| prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == n).and_then(|p| p.model_3d.as_ref()).unwrap();
+    let expected: usize = cells.iter().map(|c| model(&c.part).triangles.len()).sum();
+    let tris = device_mesh(&prj, x1).unwrap();
+    assert_eq!(tris.len(), expected);
     assert!(within(&tris, x1));
+    // A strip of equal models without accessories is still tiled.
+    let tb = model("GEN.TB-2.5");
+    let mut plain = x1.clone();
+    plain.w = 4.0 * 5.2;
+    assert_eq!(place_mesh(tb, &plain).len(), tb.triangles.len() * 4);
     assert_eq!(ei, 0);
 }
 
