@@ -97,7 +97,7 @@ fn summary(s: &Session) -> Result<Value, String> {
 
 fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     ensure_unsaved_ok(s, a)?;
-    let mut prj = if a.flag("demo") { sample::demo_project() } else { Project::default() };
+    let mut prj = if a.flag("demo") { sample::demo_project() } else { Project::new_default() };
     if let Some(name) = a.str("name") {
         prj.info.name = name.into();
     }

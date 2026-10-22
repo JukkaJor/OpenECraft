@@ -17,6 +17,8 @@ pub mod panel;
 pub mod parts;
 pub mod pdf;
 pub mod plc;
+pub mod plugs;
+pub mod potentials;
 pub mod production;
 pub mod render;
 pub mod reports;

@@ -28,6 +28,18 @@ built with [egui / eframe](https://github.com/emilk/egui).
   cores in order); cores and the cable tag are shown on the schematic. Cable overview and
   cable diagram reports, cables in the BOM by length, checks for unknown cables, cores
   used twice or not in the cable.
+- **Potential definitions** (*Project › Potentials…*): kind (L, N, PE, DC +/−, signal),
+  voltage, wire colour (IEC 60757 codes) and cross-section per potential; presets
+  IEC 60204-1 (machinery, new projects) and IEC 60445 (phase colours). Wires without
+  their own colour / cross-section take them from the potential of their connection
+  (also behind terminals), otherwise from the project default for connections without
+  a defined potential; cable cores keep the cable's values. The wire properties show
+  the automatic value and where it comes from; the wire lists, panel wiring, duct fill,
+  ferrules, harnesses and marking use it. The check reports GNYE outside protective
+  conductors and PE in other colours, manual values that differ from the definition
+  and potentials without definition. *View › Wire colours* (saved with the project)
+  draws the wires in their colour on the schematic and in PDF / SVG export; two-colour
+  wires such as GNYE are drawn dashed in their second colour.
 - **Wire numbers**: one number per connection (all its wire segments; the two sides of a
   terminal are separate connections). Automatic numbering: sequential, page/column
   (`3.4.1`) or by potential name (`L1`, `+24V`), with prefix and start value; manually
@@ -51,6 +63,15 @@ built with [egui / eframe](https://github.com/emilk/egui).
   bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check;
   the terminal strip window shows the strip on the rail with its jumpers and has a
   switch for the automatic accessories.
+- **Plugs** (*Project › Plugs…*, symbol group *Plugs*): pin and socket (mated pair, two
+  connection points), male pin and female socket (one each); tag = plug (`-X10`),
+  designation = pin. Male and female pins of the same designation are mated: the
+  potential passes through, the two sides are separate connections (wire numbers,
+  cables). Pins are numbered per plug when placed; the plug window and the *plug
+  diagram* report list the pins in plug order with the socket side, the pin side and
+  the potential; parts with `Plug pin` functions give the pin count (unused pins are
+  listed as spare). The check reports pins placed twice and more pins than the plug
+  parts have; KBL export names the housing part of plug connectors.
 - **Marking** (*Project › Marking…*: wire marker text, material per kind with piece
   counts and export; *File › Export marking (CSV)…*, report *Marking*): device markers (legend
   plates for door devices; the enclosure's location left out of the tag), terminal markers
@@ -304,6 +325,7 @@ cargo test --workspace
 | Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
 | Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
+| Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
 | Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
 | Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
@@ -342,10 +364,12 @@ cargo test --workspace
 | `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
 | `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
+| `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
+| `crates/openecraft-core/src/plugs.rs` | Plugs: pin order, both sides of each pin, pin count of the parts, placement check |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |

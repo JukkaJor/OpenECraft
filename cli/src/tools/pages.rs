@@ -4,7 +4,8 @@ use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::model::*;
-use openecraft_core::ops;
+use openecraft_core::netlist::Netlist;
+use openecraft_core::{ops, potentials};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -27,7 +28,7 @@ pub static TOOLS: &[Tool] = &[
         name: "add_page",
         help: tr_const!("Adds a page"),
         params: &[
-            param("kind", Kind::Str, tr_const!("schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking")),
+            param("kind", Kind::Str, tr_const!("schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking")),
             optional("after", Kind::Str, tr_const!("Insert after this page (default: at the end)")),
             optional("name", Kind::Str, tr_const!("Page name (default: next number)")),
             optional("description", Kind::Str, tr_const!("Description")),
@@ -72,12 +73,14 @@ fn list_pages(s: &mut Session, _: &Args) -> Result<Value, String> {
 fn get_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let pg = &prj.pages[page_index(prj, a.req("page"))?];
+    let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
     let mut v = page_json(pg);
     v["symbols"] = pg.symbols.iter().map(symbol_json).collect();
     v["wires"] = pg
         .wires
         .iter()
         .map(|w| {
+            let auto = potentials::props_of_wire(prj, &nl, &open, w.id);
             json!({
                 "id": w.id,
                 "from": xy(w.a),
@@ -87,6 +90,9 @@ fn get_page(s: &mut Session, a: &Args) -> Result<Value, String> {
                 "cross_section": w.cross_section,
                 "cable": w.cable,
                 "core": w.core,
+                "potential": auto.potential,
+                "resulting_color": auto.color,
+                "resulting_cross_section": auto.cross_section,
             })
         })
         .collect();

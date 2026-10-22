@@ -14,12 +14,14 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, sample, svg, wirenum};
+use crate::{history::History, potentials, sample, svg, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
 mod engineering;
 mod forms_ui;
 mod harness_ui;
+mod plugs_ui;
+mod potentials_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -65,6 +67,7 @@ pub struct App {
     symed: symbol_editor::SymbolEditor,
     forms_ui: forms_ui::FormsUi,
     harness_ui: harness_ui::HarnessUi,
+    plugs_ui: plugs_ui::PlugsUi,
     /// Wire numbering: also renumber / remove manually set numbers.
     numbering_overwrite: bool,
     page_props: Option<usize>,
@@ -127,6 +130,7 @@ impl App {
             symed: Default::default(),
             forms_ui: Default::default(),
             harness_ui: Default::default(),
+            plugs_ui: Default::default(),
             numbering_overwrite: false,
             page_props: None,
             message: None,
@@ -308,7 +312,7 @@ impl App {
         egui::MenuBar::new().ui(ui, |ui| {
             ui.menu_button(tr("File"), |ui| {
                 if ui.button(tr("New project")).clicked() {
-                    self.replace_project(Project::default(), None);
+                    self.replace_project(Project::new_default(), None);
                 }
                 if ui.button(tr("Open…        Ctrl+O")).clicked() {
                     self.io.open(&ctx, Purpose::Project);
@@ -490,6 +494,9 @@ impl App {
                 if ui.button(tr("Cables…")).clicked() {
                     self.show_cables = true;
                 }
+                if ui.button(tr("Potentials…")).clicked() {
+                    self.eng.show_potentials = true;
+                }
                 if ui.button(tr("Wire numbering…")).clicked() {
                     self.show_numbering = true;
                 }
@@ -498,6 +505,9 @@ impl App {
                 }
                 if ui.button(tr("Terminal strips…")).clicked() {
                     self.eng.show_strips = true;
+                }
+                if ui.button(tr("Plugs…")).clicked() {
+                    self.plugs_ui.open = true;
                 }
                 if ui.button(tr("Marking…")).clicked() {
                     self.eng.show_marking = true;
@@ -537,6 +547,8 @@ impl App {
                 ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
                 ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
                 ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
+                ui.checkbox(&mut self.prj.wire_colors, tr("Wire colours"))
+                    .on_hover_text(tr("Draw wires in their colour (also in PDF and SVG); saved with the project"));
                 ui.separator();
                 openecraft_ui::language::menu(ui);
                 let mut pref = ui.ctx().options(|o| o.theme_preference);
@@ -853,13 +865,9 @@ impl App {
                 ui.label(tr_fmt!("{} wires", wires.len()));
                 let first = self.prj.pages[pi].wires.iter().find(|w| w.id == wires[0]).cloned().unwrap_or_default();
                 let (mut color, mut cs) = (first.color.clone(), first.cross_section.clone());
+                let auto = potentials::props_of_wire(&self.prj, &self.analysis.netlist, &self.analysis.open, first.id);
                 egui::Grid::new("wprops").num_columns(2).show(ui, |ui| {
-                    ui.label(tr("Colour"));
-                    ui.text_edit_singleline(&mut color);
-                    ui.end_row();
-                    ui.label(tr("Cross-section"));
-                    ui.text_edit_singleline(&mut cs);
-                    ui.end_row();
+                    potentials_ui::wire_fields(ui, &mut color, &mut cs, &auto);
                 });
                 if color != first.color || cs != first.cross_section {
                     for w in self.prj.pages[pi].wires.iter_mut().filter(|w| wires.contains(&w.id)) {
@@ -975,6 +983,7 @@ impl App {
                 })
                 .collect();
             let mut harness_change = None;
+            let auto = potentials::props_of_wire(&self.prj, &self.analysis.netlist, &self.analysis.open, id);
             let w = &mut self.prj.pages[pi].wires[wi];
             egui::Grid::new("wprops1").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Wire number"));
@@ -1011,12 +1020,7 @@ impl App {
                     });
                     ui.end_row();
                 }
-                ui.label(tr("Colour"));
-                ui.add(egui::TextEdit::singleline(&mut w.color).hint_text(tr("e.g. BU, BK, GNYE")));
-                ui.end_row();
-                ui.label(tr("Cross-section"));
-                ui.add(egui::TextEdit::singleline(&mut w.cross_section).hint_text(tr("e.g. 1.5 mm²")));
-                ui.end_row();
+                potentials_ui::wire_fields(ui, &mut w.color, &mut w.cross_section, &auto);
                 ui.label(tr("From"));
                 ui.label(format!("{:.0} / {:.0}", w.a.x, w.a.y));
                 ui.end_row();
@@ -1077,7 +1081,12 @@ impl App {
         let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
-                ui.label(if def.func == Func::Terminal { tr("Terminal strip") } else if def.func == Func::Plc { tr("PLC card") } else { tr("Device tag") });
+                ui.label(match def.func {
+                    Func::Terminal => tr("Terminal strip"),
+                    Func::Plc => tr("PLC card"),
+                    Func::Plug(_) => tr("Plug"),
+                    _ => tr("Device tag"),
+                });
                 ui.horizontal(|ui| {
                     // Shown relative to the page structure, stored complete.
                     let mut shown = structure::relative(&here, &edited.tag);
@@ -1093,7 +1102,7 @@ impl App {
                             let dev = &idx.devices[tag];
                             let fits = match def.func {
                                 Func::Aux(_) => !dev.mains.is_empty(),
-                                Func::Terminal | Func::Plc => !dev.others.is_empty(),
+                                Func::Terminal | Func::Plc | Func::Plug(_) => !dev.others.is_empty(),
                                 _ => true,
                             };
                             if fits && ui.selectable_label(*tag == edited.tag, tag.as_str()).clicked() {
@@ -1108,6 +1117,7 @@ impl App {
             }
             let label_name = match def.func {
                 Func::Terminal => Some(tr("Terminal number")),
+                Func::Plug(_) => Some(tr("Pin")),
                 Func::Plc => Some(tr("Address")),
                 Func::Potential => Some(tr("Potential name")),
                 Func::Interruption => Some(tr("Name")),
@@ -1226,7 +1236,7 @@ impl App {
                     ui.spacing_mut().item_spacing.x = 10.0;
                     for (kind, (placed, avail)) in &usage {
                         let txt = format!("{} {placed}/{avail}", kind.title());
-                        let color = if placed > avail && *kind != parts::FnKind::Terminal {
+                        let color = if placed > avail && !matches!(kind, parts::FnKind::Terminal | parts::FnKind::PlugPin) {
                             Color32::from_rgb(220, 60, 60)
                         } else if placed < avail {
                             ui.visuals().weak_text_color()
@@ -1452,6 +1462,7 @@ impl App {
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
         self.harness_window(ctx);
+        self.plugs_window(ctx);
 
         // Page properties
         if let Some(pi) = self.page_props {

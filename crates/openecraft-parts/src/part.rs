@@ -69,12 +69,13 @@ pub enum FnKind {
     PlcInput,
     PlcOutput,
     Valve,
+    PlugPin,
     #[default]
     Generic,
 }
 
 impl FnKind {
-    pub const ALL: [FnKind; 25] = [
+    pub const ALL: [FnKind; 26] = [
         FnKind::Coil,
         FnKind::MainContacts3,
         FnKind::MainContact,
@@ -99,6 +100,7 @@ impl FnKind {
         FnKind::PlcInput,
         FnKind::PlcOutput,
         FnKind::Valve,
+        FnKind::PlugPin,
         FnKind::Generic,
     ];
 
@@ -128,6 +130,7 @@ impl FnKind {
             FnKind::PlcInput => "PLC input",
             FnKind::PlcOutput => "PLC output",
             FnKind::Valve => "Valve coil",
+            FnKind::PlugPin => "Plug pin",
             FnKind::Generic => "Generic function",
         }
     }
@@ -159,6 +162,7 @@ impl FnKind {
             FnKind::PlcInput => "DI",
             FnKind::PlcOutput => "DO",
             FnKind::Valve => "Valve",
+            FnKind::PlugPin => "Pin",
             FnKind::Generic => "Generic",
         }
     }

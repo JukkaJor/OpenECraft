@@ -131,6 +131,8 @@ impl Netlist {
         let mut degree: HashMap<usize, usize> = HashMap::new();
         // (strip, terminal designation) -> node, for jumpers
         let mut terminals: HashMap<(String, String), usize> = HashMap::new();
+        // (plug, pin designation) -> nodes of its pins (male and female are mated)
+        let mut plug_pins: HashMap<(String, String), Vec<usize>> = HashMap::new();
 
         for (pi, page) in prj.pages.iter().enumerate() {
             if page.kind != PageKind::Schematic {
@@ -165,13 +167,16 @@ impl Netlist {
                     nodes.push(n);
                     pin_nodes.push((PinRef { page: pi, sym: si, pin: i }, s.id, n));
                 }
-                if bridge_terminals || def.func != Func::Terminal {
+                if bridge_terminals || !def.func.is_feedthrough() {
                     for &(x, y) in &def.bridges {
                         b.uf.union(nodes[x], nodes[y]);
                     }
                 }
                 if def.func == Func::Terminal && !nodes.is_empty() {
                     terminals.insert((s.tag.clone(), s.label.clone()), nodes[0]);
+                }
+                if matches!(def.func, Func::Plug(_)) && !nodes.is_empty() && !s.tag.is_empty() {
+                    plug_pins.entry((s.tag.clone(), s.label.clone())).or_default().push(nodes[0]);
                 }
                 match def.func {
                     Func::Potential if !s.label.is_empty() => {
@@ -188,6 +193,11 @@ impl Netlist {
         }
 
         if bridge_terminals {
+            for nodes in plug_pins.values() {
+                for w in nodes.windows(2) {
+                    b.uf.union(w[0], w[1]);
+                }
+            }
             for (strip, labels) in crate::strips::jumper_groups(prj) {
                 let nodes: Vec<usize> = labels.iter().filter_map(|l| terminals.get(&(strip.clone(), l.clone())).copied()).collect();
                 for w in nodes.windows(2) {
@@ -301,11 +311,8 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
             a.page.cmp(&b.page).then(qa.x.total_cmp(&qb.x)).then(qa.y.total_cmp(&qb.y))
         });
         let wires = crate::wirenum::wires_of(prj, net);
-        let (color, cross_section) = wires
-            .iter()
-            .find(|w| !w.color.is_empty() || !w.cross_section.is_empty())
-            .map(|w| (w.color.clone(), w.cross_section.clone()))
-            .unwrap_or_default();
+        let props = crate::potentials::props_of(prj, nl, net);
+        let (color, cross_section) = (props.color, props.cross_section);
         let (cable, core) = wires.iter().find(|w| !w.cable.is_empty()).map(|w| (w.cable.clone(), w.core.clone())).unwrap_or_default();
         let number = crate::wirenum::number_of(prj, net);
         let first = pins[0];
@@ -339,7 +346,7 @@ pub fn pin_designation(prj: &Project, pin: PinRef) -> String {
     match def.func {
         Func::Potential => format!("={}", s.label),
         Func::Interruption => format!("»{}", s.label),
-        Func::Terminal => format!("{}:{}", s.tag, s.label),
+        Func::Terminal | Func::Plug(_) => format!("{}:{}", s.tag, s.label),
         Func::Plc => format!("{}:{}", s.tag, s.label),
         _ => {
             let pl = s.pins.get(pin.pin).map(String::as_str).unwrap_or("");

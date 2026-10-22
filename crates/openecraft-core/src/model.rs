@@ -59,9 +59,21 @@ pub struct Project {
     pub layout: Layout,
     pub cables: Vec<Cable>,
     pub wire_numbering: WireNumbering,
+    /// Potential definitions (kind, voltage, wire colour and cross-section).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub potentials: Vec<crate::potentials::PotentialDef>,
+    /// Wire colour and cross-section of nets without a defined potential.
+    #[serde(skip_serializing_if = "crate::potentials::WireDefaults::is_default")]
+    pub wire_defaults: crate::potentials::WireDefaults,
+    /// Wires are drawn in their colour (schematic, PDF, SVG).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub wire_colors: bool,
     /// Terminal strip data (order, jumpers, spare terminals) keyed by strip tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub strips: BTreeMap<String, StripData>,
+    /// Plug data (pin order) keyed by plug tag.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub plugs: BTreeMap<String, crate::plugs::PlugData>,
     /// PLC card data (start address, rack / slot) keyed by card tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plc_cards: BTreeMap<String, PlcCard>,
@@ -92,7 +104,11 @@ impl Default for Project {
             layout: Layout::default(),
             cables: Vec::new(),
             wire_numbering: WireNumbering::default(),
+            potentials: Vec::new(),
+            wire_defaults: Default::default(),
+            wire_colors: false,
             strips: BTreeMap::new(),
+            plugs: BTreeMap::new(),
             plc_cards: BTreeMap::new(),
             revisions: Vec::new(),
             harnesses: Vec::new(),
@@ -161,6 +177,7 @@ pub enum ReportKind {
     DeviceList,
     BillOfMaterials,
     TerminalDiagram,
+    PlugDiagram,
     ConnectionList,
     PlcAssignment,
     PotentialList,
@@ -174,11 +191,12 @@ pub enum ReportKind {
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 14] = [
+    pub const ALL: [ReportKind; 15] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
         ReportKind::TerminalDiagram,
+        ReportKind::PlugDiagram,
         ReportKind::ConnectionList,
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
@@ -197,6 +215,7 @@ impl ReportKind {
             ReportKind::DeviceList => tr("Device list"),
             ReportKind::BillOfMaterials => tr("Bill of materials"),
             ReportKind::TerminalDiagram => tr("Terminal diagram"),
+            ReportKind::PlugDiagram => tr("Plug diagram"),
             ReportKind::ConnectionList => tr("Connection list"),
             ReportKind::PlcAssignment => tr("PLC assignment list"),
             ReportKind::PotentialList => tr("Potential overview"),
@@ -312,9 +331,10 @@ pub struct Wire {
     pub id: u64,
     pub a: P,
     pub b: P,
-    /// Optional wire colour (e.g. "BK", "BU", "GNYE").
+    /// Wire colour set manually (e.g. "BK", "BU", "GNYE"); empty = from the
+    /// potential definition or the project default.
     pub color: String,
-    /// Optional cross-section (e.g. "1.5 mm²").
+    /// Cross-section set manually (e.g. "1.5 mm²"); empty = automatic.
     pub cross_section: String,
     /// Wire (connection) number; all wires of a connection carry the same number.
     #[serde(skip_serializing_if = "String::is_empty")]

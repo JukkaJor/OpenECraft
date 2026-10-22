@@ -98,6 +98,7 @@ impl Analysis {
                 ReportKind::DeviceList => device_list(prj, &idx),
                 ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
+                ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
                 ReportKind::RevisionOverview => revision_overview(prj),
@@ -114,6 +115,8 @@ impl Analysis {
         let mut issues = check(prj, &idx, &netlist);
         issues.extend(check_layout(prj));
         issues.extend(check_wires(prj, &netlist, &open));
+        issues.extend(check_potentials(prj, &netlist, &open));
+        issues.extend(crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue { severity: Severity::Warning, message, target }));
         issues.extend(check_strips_and_plc(prj, &netlist));
         issues.extend(check_duct_fill(prj, &fill));
         issues.sort_by_key(|i| i.severity);
@@ -541,6 +544,25 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     }
     t
 }
+fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
+    let mut t = Table::new(&[
+        (tr("Plug"), 0.8),
+        (tr("Pin"), 0.6),
+        (tr("Socket side"), 3.0),
+        (tr("Pin side"), 3.0),
+        (tr("Potential"), 1.0),
+        (tr("Location"), 0.8),
+        (tr("Function text"), 1.6),
+    ]);
+    for plug in crate::plugs::plug_tags(prj) {
+        for r in crate::plugs::rows(prj, &plug, nl, open) {
+            let target = r.pins.first().map(|p| (p.page, p.id));
+            t.push(vec![plug.clone(), r.label, r.socket, r.pin, r.potential, r.location, r.function_text], target);
+        }
+    }
+    t
+}
+
 fn connection_list(prj: &Project, conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
         (tr("Wire no."), 0.8),
@@ -924,7 +946,15 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     v
 }
 fn potential_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[(tr("Potential"), 1.0), (tr("Connection points"), 4.0), (tr("Pages"), 1.5)]);
+    let mut t = Table::new(&[
+        (tr("Potential"), 1.0),
+        (tr("Type"), 1.2),
+        (tr("Voltage"), 0.9),
+        (tr("Colour"), 0.6),
+        (tr("Cross-section"), 0.9),
+        (tr("Connection points"), 4.0),
+        (tr("Pages"), 1.5),
+    ]);
     let mut nets: Vec<_> = nl.nets.iter().filter(|n| n.named).collect();
     nets.sort_by(|a, b| natural_cmp(&a.name, &b.name));
     for net in nets {
@@ -941,9 +971,69 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
         pins.dedup();
         let pages: BTreeSet<usize> = net.pins.iter().map(|p| p.page).chain(net.wires.iter().map(|w| w.0)).collect();
         let pages: Vec<String> = pages.iter().map(|&p| prj.pages[p].name.clone()).collect();
-        t.push(vec![net.name.clone(), pins.join(", "), pages.join(", ")], None);
+        let def = prj.potential(&net.name).cloned().unwrap_or_default();
+        let kind = if prj.potential(&net.name).is_some() { def.kind.title().to_string() } else { String::new() };
+        t.push(vec![net.name.clone(), kind, def.voltage, def.color, def.cross_section, pins.join(", "), pages.join(", ")], None);
     }
     t
+}
+
+/// Potential definitions and the colours / cross-sections of the connections.
+fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
+    use crate::potentials::{is_protective, normalize_color, props_of, Source};
+    let mut v = Vec::new();
+    let mut issue = |severity, message: String, target| v.push(Issue { severity, message, target });
+    let mut names: HashMap<&str, usize> = HashMap::new();
+    for d in &prj.potentials {
+        *names.entry(d.name.as_str()).or_default() += 1;
+    }
+    for (name, n) in names.iter().filter(|(_, n)| **n > 1) {
+        issue(Severity::Error, tr_fmt!("Potential {} defined {} times", name, n), None);
+    }
+    if !prj.potentials.is_empty() {
+        let mut undefined: BTreeMap<String, (usize, u64)> = BTreeMap::new();
+        for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
+            for s in &pg.symbols {
+                let pot = symbols::get(&s.sym).map(|d| d.func == Func::Potential).unwrap_or(false);
+                if pot && !s.label.is_empty() && prj.potential(&s.label).is_none() {
+                    undefined.entry(s.label.clone()).or_insert((pi, s.id));
+                }
+            }
+        }
+        for (name, at) in undefined {
+            issue(Severity::Info, tr_fmt!("Potential {} has no definition (Project › Potentials)", name), Some(at));
+        }
+    }
+    for net in &open.nets {
+        let Some(&(pi, wid)) = net.wires.first() else { continue };
+        let at = Some((pi, wid));
+        let p = props_of(prj, nl, net);
+        if p.potential.contains(" / ") || crate::wirenum::wires_of(prj, net).iter().any(|w| !w.cable.is_empty()) {
+            continue;
+        }
+        let color = normalize_color(&p.color);
+        if is_protective(prj, &p.potential) {
+            if !color.is_empty() && color != "GNYE" {
+                issue(Severity::Error, tr_fmt!("Protective conductor {} with wire colour {} (must be GNYE)", p.potential, p.color), at);
+            }
+        } else if color == "GNYE" {
+            let name = if p.potential.is_empty() { net.name.clone() } else { p.potential.clone() };
+            issue(Severity::Error, tr_fmt!("Wire colour GNYE is reserved for protective conductors ({})", name), at);
+        }
+        let Some(def) = prj.potential(&p.potential) else { continue };
+        if p.color_source == Source::Manual && !def.color.is_empty() && color != normalize_color(&def.color) {
+            issue(Severity::Warning, tr_fmt!("{}: wire colour {} differs from the potential definition ({})", def.name, p.color, def.color), at);
+        }
+        let mm2 = crate::production::cross_section_mm2;
+        if p.cross_section_source == Source::Manual && !def.cross_section.is_empty() && mm2(&p.cross_section) != mm2(&def.cross_section) {
+            issue(
+                Severity::Warning,
+                tr_fmt!("{}: cross-section {} differs from the potential definition ({})", def.name, p.cross_section, def.cross_section),
+                at,
+            );
+        }
+    }
+    v
 }
 
 /// Project check ("Prüfläufe"): finds typical engineering mistakes.
@@ -960,10 +1050,11 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             issue(Severity::Error, tr_fmt!("{}: main function placed {} times", tag, dev.mains.len()), t(&dev.mains[1]));
         }
         if !dev.others.is_empty() {
-            // Duplicate terminal numbers / PLC addresses
+            // Duplicate terminal numbers / PLC addresses (plug pins: see `plugs::problems`)
             let mut seen: HashMap<String, usize> = HashMap::new();
             for l in &dev.others {
-                if let Some(s) = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id) {
+                let s = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id);
+                if let Some(s) = s.filter(|s| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Plug(_)))) {
                     let c = seen.entry(s.label.clone()).or_default();
                     *c += 1;
                     if *c == 2 {
@@ -988,7 +1079,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         let has_templates = usage.values().any(|(_, avail)| *avail > 0);
         if has_templates {
             for (kind, (placed, avail)) in &usage {
-                if *kind != crate::parts::FnKind::Terminal && placed > avail {
+                if !matches!(kind, crate::parts::FnKind::Terminal | crate::parts::FnKind::PlugPin) && placed > avail {
                     let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
                     issue(
                         Severity::Warning,

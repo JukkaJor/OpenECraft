@@ -31,6 +31,8 @@ pub enum Ink {
     Plate,
     /// Fill of devices / ducts in mounting layouts.
     Fill,
+    /// Wire drawn in its own colour (RGB).
+    Color([u8; 3]),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -76,6 +78,10 @@ pub struct Opts {
     pub hide_revision_marks: bool,
 }
 
+fn is_black(c: &[u8; 3]) -> bool {
+    crate::potentials::color_rgb("BK") == Some(*c)
+}
+
 /// Draws a complete page including frame and title block.
 pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, page_i: usize, opts: &Opts) {
     let page = &prj.pages[page_i];
@@ -90,6 +96,11 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
         draw_shape(d, s, ink);
     }
+    let colors = if prj.wire_colors && page.kind == PageKind::Schematic {
+        crate::potentials::wire_colors(prj, &an.netlist, &an.open)
+    } else {
+        Default::default()
+    };
     for w in &page.wires {
         let ink = if opts.selected.contains(&w.id) {
             Ink::Selected
@@ -98,7 +109,18 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         } else {
             Ink::Wire
         };
-        d.line(w.a, w.b, WIRE_W, ink, false);
+        let parts = colors.get(&w.id).map(|c| crate::potentials::color_parts(c)).unwrap_or_default();
+        match parts.as_slice() {
+            // Black is the normal wire ink (stays visible on a dark canvas).
+            [c] if ink == Ink::Wire && is_black(c) => d.line(w.a, w.b, WIRE_W, ink, false),
+            [c] if ink == Ink::Wire => d.line(w.a, w.b, WIRE_W, Ink::Color(*c), false),
+            // Two-colour wires: the second colour dashed over the first.
+            [a, b] if ink == Ink::Wire => {
+                d.line(w.a, w.b, WIRE_W, Ink::Color(*a), false);
+                d.line(w.a, w.b, WIRE_W, Ink::Color(*b), true);
+            }
+            _ => d.line(w.a, w.b, WIRE_W, ink, false),
+        }
     }
     for j in netlist::junctions(page) {
         d.circle(j, 0.7, 0.0, Ink::Wire, true);

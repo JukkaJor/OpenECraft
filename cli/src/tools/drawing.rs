@@ -93,8 +93,8 @@ pub static TOOLS: &[Tool] = &[
             PAGE,
             param("id", Kind::Int, tr_const!("Item id")),
             optional("number", Kind::Str, tr_const!("Wire number (kept when renumbering)")),
-            optional("color", Kind::Str, tr_const!("Color, e.g. BU")),
-            optional("cross_section", Kind::Str, tr_const!("Cross section, e.g. 1.5")),
+            optional("color", Kind::Str, tr_const!("Wire colour, e.g. BU (empty = from the potential definition)")),
+            optional("cross_section", Kind::Str, tr_const!("Cross section, e.g. 1.5 mm² (empty = from the potential definition)")),
             optional("cable", Kind::Str, tr_const!("Cable tag")),
             optional("core", Kind::Str, tr_const!("Cable core")),
         ],
@@ -141,6 +141,7 @@ fn func_name(f: Func) -> &'static str {
         Func::Aux(_) => "auxiliary",
         Func::Terminal => "terminal",
         Func::Plc => "plc",
+        Func::Plug(_) => "plug",
         Func::Potential => "potential",
         Func::Interruption => "interruption",
         Func::Overview => "overview",
@@ -284,6 +285,7 @@ fn place_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
                 ctx.last_main.insert(def.letter.into(), tag.into());
             }
             Func::Terminal => ctx.last_strip = Some(tag.into()),
+            Func::Plug(_) => ctx.last_plug = Some(tag.into()),
             Func::Plc => {
                 ctx.last_plc.insert(def.key.into(), tag.into());
             }

@@ -272,7 +272,7 @@ fn symbol_properties(ui: &mut egui::Ui, u: &mut UserSymbol) {
     if matches!(u.func, Func::Aux(_)) {
         ui.checkbox(&mut u.auto_number, tr("Number contacts automatically (13/14, 21/22 …)"));
     }
-    if u.func == Func::Terminal && u.pins.len() >= 2 {
+    if u.func.is_feedthrough() && u.pins.len() >= 2 {
         let mut bridged = u.bridges.contains(&(0, 1));
         if ui.checkbox(&mut bridged, tr("Connection points 1 and 2 are connected inside")).changed() {
             u.bridges.retain(|b| *b != (0, 1));

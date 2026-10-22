@@ -18,6 +18,15 @@ pub enum ContactKind {
     MainNo,
 }
 
+/// Side of a plug pin symbol.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PinKind {
+    /// Mated pin and socket: socket side (connection point 1) and pin side (2).
+    Pair,
+    Male,
+    Female,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Func {
     /// Main function of a device. `mirror` = draws a contact image (coils, overloads).
@@ -28,6 +37,9 @@ pub enum Func {
     Terminal,
     /// PLC connection point: tag = PLC card, label = address.
     Plc,
+    /// Plug pin: tag = plug, label = pin designation. Male and female pins of the
+    /// same designation are mated.
+    Plug(PinKind),
     /// Potential connection point: label = potential name. No device tag.
     Potential,
     /// Interruption point (page connector): label = name. No device tag.
@@ -43,8 +55,14 @@ impl Func {
         !matches!(self, Func::Potential | Func::Interruption)
     }
 
+    /// Terminals and plug pins: their sides are separate connections that the
+    /// potential passes through.
+    pub fn is_feedthrough(self) -> bool {
+        matches!(self, Func::Terminal | Func::Plug(_))
+    }
+
     /// All functions a symbol can have (symbol editor).
-    pub const ALL: [Func; 11] = [
+    pub const ALL: [Func; 14] = [
         Func::Main { mirror: false },
         Func::Main { mirror: true },
         Func::Aux(ContactKind::No),
@@ -53,6 +71,9 @@ impl Func {
         Func::Aux(ContactKind::MainNo),
         Func::Terminal,
         Func::Plc,
+        Func::Plug(PinKind::Pair),
+        Func::Plug(PinKind::Male),
+        Func::Plug(PinKind::Female),
         Func::Potential,
         Func::Interruption,
         Func::Overview,
@@ -68,6 +89,9 @@ impl Func {
             Func::Aux(ContactKind::MainNo) => tr("Auxiliary function: main contact"),
             Func::Terminal => tr("Terminal"),
             Func::Plc => tr("PLC connection point"),
+            Func::Plug(PinKind::Pair) => tr("Plug: pin and socket"),
+            Func::Plug(PinKind::Male) => tr("Plug: male pin"),
+            Func::Plug(PinKind::Female) => tr("Plug: female socket"),
             Func::Potential => tr("Potential"),
             Func::Interruption => tr("Interruption point"),
             Func::Overview => tr("Overview / single-line"),
@@ -83,6 +107,7 @@ pub enum Category {
     Protection,
     Loads,
     Terminals,
+    Plugs,
     Plc,
     Potentials,
     Passive,
@@ -96,13 +121,14 @@ pub enum Category {
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 13] = [
+    pub const ALL: [Category; 14] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
         Category::Protection,
         Category::Loads,
         Category::Terminals,
+        Category::Plugs,
         Category::Plc,
         Category::Potentials,
         Category::Passive,
@@ -120,6 +146,7 @@ impl Category {
             Category::Protection => tr("Protective devices"),
             Category::Loads => tr("Motors / Loads"),
             Category::Terminals => tr("Terminals"),
+            Category::Plugs => tr("Plugs"),
             Category::Plc => tr("PLC"),
             Category::Potentials => tr("Potentials / Connectors"),
             Category::Passive => tr("Passive components"),
@@ -583,6 +610,31 @@ fn build_library() -> Vec<SymbolDef> {
     let mut t = def("term_pe", "PE terminal", C::Terminals, "X", Func::Terminal).label(tr("PE"));
     t.show_tag = false;
     t.bridges = vec![(0, 1)];
+    v.push(t.build(&mut b));
+
+    // ---------------------------------------------------------------- plugs
+    // Socket (IEC 60617-03-03-01): a cup open to the pin; pin (03-03-03): a bar.
+    b.l(0.0, -4.0, 0.0, -1.6).arc(0.0, 0.0, 1.6, 180.0, 360.0);
+    b.rect(-0.5, -0.8, 0.5, 1.6, true).l(0.0, 1.6, 0.0, 4.0);
+    b.field(FieldKind::Tag, -2.2, 0.0, 2.0, Right).field(FieldKind::Label, 2.2, 0.0, 2.2, Left);
+    b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
+    let mut t = def("plug_pair", "Plug pin and socket", C::Plugs, "X", Func::Plug(PinKind::Pair)).label("1");
+    t.show_tag = false;
+    t.bridges = vec![(0, 1)];
+    v.push(t.build(&mut b));
+
+    b.rect(-0.5, -1.6, 0.5, 0.8, true).l(0.0, 0.8, 0.0, 4.0);
+    b.field(FieldKind::Tag, -1.6, 1.6, 2.0, Right).field(FieldKind::Label, 1.6, 1.6, 2.2, Left);
+    b.pin(0.0, 4.0, "");
+    let mut t = def("plug_m", "Plug male pin", C::Plugs, "X", Func::Plug(PinKind::Male)).label("1");
+    t.show_tag = false;
+    v.push(t.build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.6).arc(0.0, 0.0, 1.6, 180.0, 360.0);
+    b.field(FieldKind::Tag, -2.2, -1.6, 2.0, Right).field(FieldKind::Label, 2.2, -1.6, 2.2, Left);
+    b.pin(0.0, -4.0, "");
+    let mut t = def("plug_f", "Plug female socket", C::Plugs, "X", Func::Plug(PinKind::Female)).label("1");
+    t.show_tag = false;
     v.push(t.build(&mut b));
 
     // ---------------------------------------------------------------- PLC

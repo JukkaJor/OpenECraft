@@ -12,15 +12,15 @@ pub struct SvgDraw {
     out: String,
 }
 
-fn color(ink: Ink) -> &'static str {
+fn color(ink: Ink) -> String {
     match ink {
-        Ink::Frame | Ink::FrameText => "#555",
-        Ink::CrossRef => "#1a3d8f",
-        Ink::Error => "#c00",
-        Ink::Plate => "#f2f2f2",
-        Ink::Fill => "#dcdcdc",
-        Ink::Wire => "#000",
-        _ => "#000",
+        Ink::Frame | Ink::FrameText => "#555".into(),
+        Ink::CrossRef => "#1a3d8f".into(),
+        Ink::Error => "#c00".into(),
+        Ink::Plate => "#f2f2f2".into(),
+        Ink::Fill => "#dcdcdc".into(),
+        Ink::Color([r, g, b]) => format!("#{r:02x}{g:02x}{b:02x}"),
+        _ => "#000".into(),
     }
 }
 
@@ -44,13 +44,13 @@ impl Draw for SvgDraw {
     fn poly(&mut self, pts: &[P], closed: bool, width: f32, ink: Ink, fill: bool) {
         let tag = if closed { "polygon" } else { "polyline" };
         let pts: Vec<String> = pts.iter().map(|q| format!("{:.2},{:.2}", q.x, q.y)).collect();
-        let fill_s = if fill { color(ink) } else { "none" };
+        let fill_s = if fill { color(ink) } else { "none".into() };
         let s = if fill && width <= 0.0 { String::new() } else { self.stroke(width, ink, false) };
         let _ = writeln!(self.out, "<{tag} points=\"{}\" fill=\"{fill_s}\" {s}/>", pts.join(" "));
     }
 
     fn circle(&mut self, c: P, r: f32, width: f32, ink: Ink, fill: bool) {
-        let fill_s = if fill { color(ink) } else { "none" };
+        let fill_s = if fill { color(ink) } else { "none".into() };
         let s = if fill && width <= 0.0 { String::new() } else { self.stroke(width, ink, false) };
         let _ = writeln!(self.out, "<circle cx=\"{:.2}\" cy=\"{:.2}\" r=\"{:.2}\" fill=\"{fill_s}\" {s}/>", c.x, c.y, r);
     }
