@@ -2,6 +2,7 @@
 //! MCP front end: pages, symbols, devices, netlist, checks, reports, panel layout and
 //! the SVG / PDF / DXF export. Contains no UI code.
 
+pub mod climate;
 pub mod dxf;
 pub mod forms;
 pub mod geom;

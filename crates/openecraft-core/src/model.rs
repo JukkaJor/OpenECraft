@@ -187,11 +187,12 @@ pub enum ReportKind {
     RevisionOverview,
     HarnessData,
     DuctFill,
+    Climate,
     Marking,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 15] = [
+    pub const ALL: [ReportKind; 16] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -206,6 +207,7 @@ impl ReportKind {
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
         ReportKind::DuctFill,
+        ReportKind::Climate,
         ReportKind::Marking,
     ];
 
@@ -225,6 +227,7 @@ impl ReportKind {
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
             ReportKind::DuctFill => tr("Duct fill levels"),
+            ReportKind::Climate => tr("Enclosure climate"),
             ReportKind::Marking => tr("Marking"),
         }
     }

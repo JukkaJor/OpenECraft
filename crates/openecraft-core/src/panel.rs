@@ -190,6 +190,9 @@ pub struct Enclosure {
     /// Space kept free behind the door (door-mounted devices, handles), mm.
     pub door_clearance: f32,
     pub items: Vec<PanelItem>,
+    /// Installation and temperatures for the climate calculation.
+    #[serde(skip_serializing_if = "crate::climate::Climate::is_default")]
+    pub climate: crate::climate::Climate,
 }
 
 impl Default for Enclosure {
@@ -203,6 +206,7 @@ impl Default for Enclosure {
             depth: 250.0,
             door_clearance: 0.0,
             items: Vec::new(),
+            climate: Default::default(),
         }
     }
 }

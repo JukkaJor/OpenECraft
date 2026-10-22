@@ -108,6 +108,7 @@ impl Analysis {
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
+                ReportKind::Climate => climate_report(prj),
                 ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
             };
             reports.insert(k, t);
@@ -119,6 +120,7 @@ impl Analysis {
         issues.extend(crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue { severity: Severity::Warning, message, target }));
         issues.extend(check_strips_and_plc(prj, &netlist));
         issues.extend(check_duct_fill(prj, &fill));
+        issues.extend(check_climate(prj));
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
         let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };
@@ -976,6 +978,60 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
         t.push(vec![net.name.clone(), kind, def.voltage, def.color, def.cross_section, pins.join(", "), pages.join(", ")], None);
     }
     t
+}
+
+fn climate_report(prj: &Project) -> Table {
+    let mut t = Table::new(&[
+        (tr("Enclosure"), 0.9),
+        (tr("Surface (m²)"), 0.8),
+        (tr("Power loss (W)"), 0.8),
+        (tr("Inside (°C)"), 0.7),
+        (tr("Highest (°C)"), 0.7),
+        (tr("Cooling"), 1.4),
+        (tr("Heating (W)"), 0.7),
+        (tr("Devices without power loss"), 2.0),
+    ]);
+    for e in &prj.layout.enclosures {
+        let r = crate::climate::calculate(prj, e);
+        t.push(
+            vec![
+                e.name.clone(),
+                format!("{:.2}", r.surface),
+                format!("{:.0}", r.loss),
+                format!("{:.1}", r.inside),
+                format!("{:.0}", e.climate.inside_max),
+                r.cooling.text(),
+                if r.heating > 0.0 { format!("{:.0}", r.heating) } else { "–".into() },
+                r.without_data.join(", "),
+            ],
+            None,
+        );
+    }
+    t
+}
+
+/// Enclosures that get too warm without cooling.
+fn check_climate(prj: &Project) -> Vec<Issue> {
+    use crate::climate::Cooling;
+    let mut v = Vec::new();
+    for e in &prj.layout.enclosures {
+        let r = crate::climate::calculate(prj, e);
+        if r.cooling != Cooling::None {
+            v.push(Issue {
+                severity: Severity::Warning,
+                message: tr_fmt!(
+                    "{}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed",
+                    e.name,
+                    format!("{:.0}", r.loss),
+                    format!("{:.0}", r.inside),
+                    format!("{:.0}", e.climate.inside_max),
+                    r.cooling.text()
+                ),
+                target: None,
+            });
+        }
+    }
+    v
 }
 
 /// Potential definitions and the colours / cross-sections of the connections.

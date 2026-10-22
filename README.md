@@ -172,7 +172,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
     connection points;
   - mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
     rails and ducts appear in the BOM by cut length, enclosures per piece;
-  - jump between a device in the schematic and its place in the panel layout.
+  - jump between a device in the schematic and its place in the panel layout;
+  - **climate** (IEC/TR 60890, enclosure properties): power loss of the placed devices
+    from the tech data of their parts (`Power loss: 7.5 W`) plus an additional loss,
+    effective surface by installation type (single, in a suite, free-standing, wall
+    mounted, roof covered), material (heat transfer coefficient), ambient and allowed
+    inside temperatures → inside temperature, filter fan air flow or cooling unit
+    output, heater output; report *Enclosure climate*, the check warns when cooling is
+    needed.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
@@ -324,6 +331,7 @@ cargo test --workspace
 | Cables | *Project › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
 | Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
 | Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
+| Enclosure climate | panel layout: select the enclosure › *Climate (IEC 60890)* |
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
 | Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
@@ -365,6 +373,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
+| `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
