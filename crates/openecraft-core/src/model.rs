@@ -184,6 +184,7 @@ pub enum ReportKind {
     PanelWiring,
     CableOverview,
     CableDiagram,
+    CableSizing,
     RevisionOverview,
     HarnessData,
     DuctFill,
@@ -192,7 +193,7 @@ pub enum ReportKind {
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 16] = [
+    pub const ALL: [ReportKind; 17] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -204,6 +205,7 @@ impl ReportKind {
         ReportKind::PanelWiring,
         ReportKind::CableOverview,
         ReportKind::CableDiagram,
+        ReportKind::CableSizing,
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
         ReportKind::DuctFill,
@@ -224,6 +226,7 @@ impl ReportKind {
             ReportKind::PanelWiring => tr("Wire list (panel routing)"),
             ReportKind::CableOverview => tr("Cable overview"),
             ReportKind::CableDiagram => tr("Cable diagram"),
+            ReportKind::CableSizing => tr("Cable sizing (voltage drop)"),
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
             ReportKind::DuctFill => tr("Duct fill levels"),

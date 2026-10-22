@@ -106,6 +106,7 @@ impl Analysis {
                 ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
                 ReportKind::CableOverview => cable_overview(prj, &conns),
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
+                ReportKind::CableSizing => cable_sizing(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
                 ReportKind::Climate => climate_report(prj),
@@ -121,6 +122,7 @@ impl Analysis {
         issues.extend(check_strips_and_plc(prj, &netlist));
         issues.extend(check_duct_fill(prj, &fill));
         issues.extend(check_climate(prj));
+        issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
         let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };
@@ -976,6 +978,38 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
         let def = prj.potential(&net.name).cloned().unwrap_or_default();
         let kind = if prj.potential(&net.name).is_some() { def.kind.title().to_string() } else { String::new() };
         t.push(vec![net.name.clone(), kind, def.voltage, def.color, def.cross_section, pins.join(", "), pages.join(", ")], None);
+    }
+    t
+}
+
+fn cable_sizing(prj: &Project, conns: &[Connection]) -> Table {
+    let mut t = Table::new(&[
+        (tr("Cable"), 0.9),
+        (tr("Length (m)"), 0.7),
+        (tr("Cross-section"), 0.9),
+        (tr("Load"), 0.8),
+        (tr("Current (A)"), 0.7),
+        (tr("Voltage (V)"), 0.7),
+        (tr("Voltage drop (V)"), 0.8),
+        (tr("Voltage drop (%)"), 0.8),
+        (tr("Current capacity (A)"), 0.9),
+    ]);
+    let num = |v: Option<f32>, digits: usize| v.map(|x| format!("{x:.digits$}")).unwrap_or_else(|| "–".into());
+    for d in crate::sizing::cable_drops(prj, conns) {
+        t.push(
+            vec![
+                d.cable,
+                format!("{:.1}", d.length),
+                d.cross_section,
+                d.load,
+                num(d.current, 1),
+                num(d.voltage, 0),
+                num(d.drop.map(|x| x.0), 2),
+                num(d.drop.map(|x| x.1), 2),
+                num(d.ampacity, 1),
+            ],
+            None,
+        );
     }
     t
 }

@@ -1,8 +1,11 @@
-//! Engineering calculations: enclosure climate.
+//! Engineering calculations: enclosure climate and electrical sizing.
 
 use super::{optional, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::climate::{self, Cooling, Installation, Material};
+use openecraft_core::netlist::Netlist;
+use openecraft_core::reports::Analysis;
+use openecraft_core::sizing;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -22,6 +25,13 @@ pub static TOOLS: &[Tool] = &[
         ],
         needs_project: true,
         run: enclosure_climate,
+    },
+    Tool {
+        name: "electrical_sizing",
+        help: tr_const!("Wires too thin for their protective device and the voltage drop of the cables (IEC 60204-1)"),
+        params: &[],
+        needs_project: true,
+        run: electrical_sizing,
     },
 ];
 
@@ -91,6 +101,34 @@ fn enclosure_climate(s: &mut Session, a: &Args) -> Result<Value, String> {
         })
         .collect();
     Ok(Value::Array(out))
+}
+
+fn electrical_sizing(s: &mut Session, _: &Args) -> Result<Value, String> {
+    let prj = s.project()?;
+    let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
+    let an = Analysis::build(prj);
+    let overloads: Vec<Value> = sizing::overloads(prj, &nl, &open)
+        .into_iter()
+        .map(|o| json!({ "device": o.device, "rated_a": o.rated, "cross_section": o.cross_section, "capacity_a": o.ampacity, "page": prj.pages[o.target.0].name, "wire": o.target.1 }))
+        .collect();
+    let cables: Vec<Value> = sizing::cable_drops(prj, &an.connections)
+        .into_iter()
+        .map(|d| {
+            json!({
+                "cable": d.cable,
+                "length_m": d.length,
+                "cross_section": d.cross_section,
+                "load": d.load,
+                "current_a": d.current,
+                "voltage_v": d.voltage,
+                "three_phase": d.three_phase,
+                "voltage_drop_v": d.drop.map(|x| x.0),
+                "voltage_drop_percent": d.drop.map(|x| x.1),
+                "capacity_a": d.ampacity,
+            })
+        })
+        .collect();
+    Ok(json!({ "too_thin": overloads, "cables": cables, "voltage_drop_limit_percent": sizing::VOLTAGE_DROP_LIMIT }))
 }
 
 #[cfg(test)]

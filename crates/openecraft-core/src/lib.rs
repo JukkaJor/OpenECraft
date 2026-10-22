@@ -25,6 +25,7 @@ pub mod render;
 pub mod reports;
 pub mod revision;
 pub mod sample;
+pub mod sizing;
 pub mod strips;
 pub mod structure;
 pub mod svg;

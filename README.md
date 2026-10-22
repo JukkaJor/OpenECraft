@@ -180,6 +180,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
     inside temperatures → inside temperature, filter fan air flow or cooling unit
     output, heater output; report *Enclosure climate*, the check warns when cooling is
     needed.
+- **Electrical sizing** (IEC 60204-1): the wires behind a protective device – from its
+  load side through main contacts and overload relays – must carry its rated current
+  (part `Current`, the upper value of a setting range; current-carrying capacity per
+  table 6, method B2); cables get their voltage drop to the load with the highest rated
+  current at their ends (√3 for three cores, copper at operating temperature), report
+  *Cable sizing*; the check reports too thin wires and cables (errors) and voltage
+  drops above 5 %.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
@@ -374,6 +381,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
 | `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
+| `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices, voltage drop |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
