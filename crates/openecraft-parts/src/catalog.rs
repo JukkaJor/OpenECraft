@@ -57,11 +57,13 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.CT-9A-24DC", "Contactor 3P 9 A, coil 24 V DC, 1 NO aux", rc, "Power contactor", "K", 38.5, (45.0, 74.0, 73.0, 0.32), &[(Coil, "A1 A2"), (MainContacts3, main3), (No, "13 14")]);
     p.voltage = "24 V DC".into();
     p.current = "9 A (AC-3)".into();
+    p.tech_data = "Power loss: 3 W".into();
     p.power = "4 kW / 400 V".into();
     p.accessories = vec!["GEN.AUX-2NO2NC".into()];
     let p = c.add("GEN.CT-18A-24DC", "Contactor 3P 18 A, coil 24 V DC, 1 NO + 1 NC aux", rc, "Power contactor", "K", 52.0, (45.0, 84.0, 87.0, 0.45), &[(Coil, "A1 A2"), (MainContacts3, main3), (No, "13 14"), (Nc, "21 22")]);
     p.voltage = "24 V DC".into();
     p.current = "18 A (AC-3)".into();
+    p.tech_data = "Power loss: 4.5 W".into();
     p.power = "7.5 kW / 400 V".into();
     p.accessories = vec!["GEN.AUX-2NO2NC".into()];
     c.add("GEN.AUX-2NO2NC", "Auxiliary contact block 2 NO + 2 NC, front mounting", rc, "Auxiliary contact block", "K", 14.6, (45.0, 40.0, 40.0, 0.05), &[(No, "53 54"), (Nc, "61 62"), (Nc, "71 72"), (No, "83 84")]);
@@ -69,26 +71,35 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.RLY-24DC-2CO", "Interface relay 24 V DC, 2 CO, with socket", rc, "Relay", "K", 12.4, (15.5, 78.0, 70.0, 0.04), &[(Coil, "A1 A2"), (Changeover, "11 12 14"), (Changeover, "21 22 24")]);
     p.voltage = "24 V DC".into();
     p.current = "8 A".into();
+    p.tech_data = "Power loss: 0.5 W".into();
     let p = c.add("GEN.TMR-24DC-OND", "Timer relay on-delay 24 V DC, 0.05 s - 100 h, 1 CO", rc, "Timer relay", "K", 34.9, (17.5, 90.0, 64.0, 0.07), &[(Coil, "A1 A2"), (Changeover, "15 16 18")]);
     p.voltage = "24 V DC".into();
+    p.tech_data = "Power loss: 1 W".into();
 
     let p = c.add("GEN.MPS-2.5-4A", "Motor protection switch 2.5 - 4 A", sd, "Motor protection switch", "Q", 61.0, (45.0, 97.0, 97.0, 0.3), &[(MotorProtection, main3)]);
     p.current = "2.5 - 4 A".into();
+    p.tech_data = "Power loss: 5 W".into();
     p.accessories = vec!["GEN.MPS-AUX-1NO1NC".into()];
     let p = c.add("GEN.MPS-4-6.3A", "Motor protection switch 4 - 6.3 A", sd, "Motor protection switch", "Q", 63.0, (45.0, 97.0, 97.0, 0.3), &[(MotorProtection, main3)]);
     p.current = "4 - 6.3 A".into();
+    p.tech_data = "Power loss: 6 W".into();
     p.accessories = vec!["GEN.MPS-AUX-1NO1NC".into()];
     c.add("GEN.MPS-AUX-1NO1NC", "Auxiliary switch for motor protection switch, 1 NO + 1 NC", sd, "Auxiliary switch", "Q", 12.9, (9.0, 90.0, 60.0, 0.02), &[(No, "13 14"), (Nc, "21 22")]);
     let p = c.add("GEN.MCB-1P-C6", "Miniature circuit breaker 1P C6", sd, "Circuit breaker", "F", 8.7, (18.0, 90.0, 70.0, 0.12), &[(Breaker1, "1 2")]);
     p.current = "6 A".into();
+    p.tech_data = "Power loss: 1.5 W".into();
     let p = c.add("GEN.MCB-1P-B10", "Miniature circuit breaker 1P B10", sd, "Circuit breaker", "F", 8.7, (18.0, 90.0, 70.0, 0.12), &[(Breaker1, "1 2")]);
     p.current = "10 A".into();
+    p.tech_data = "Power loss: 2 W".into();
     let p = c.add("GEN.MCB-3P-C16", "Miniature circuit breaker 3P C16", sd, "Circuit breaker", "Q", 27.3, (54.0, 90.0, 70.0, 0.36), &[(Breaker3, main3)]);
     p.current = "16 A".into();
+    p.tech_data = "Power loss: 7 W".into();
     let p = c.add("GEN.FUSE-5X20-2A", "Fuse holder 5x20 mm with fuse 2 A", sd, "Fuse", "F", 4.2, (8.0, 60.0, 50.0, 0.02), &[(Fuse, "1 2")]);
     p.current = "2 A".into();
+    p.tech_data = "Power loss: 0.4 W".into();
     let p = c.add("GEN.OL-2.8-4A", "Thermal overload relay 2.8 - 4 A, 1 NO + 1 NC", sd, "Overload relay", "F", 44.0, (45.0, 70.0, 80.0, 0.15), &[(Overload, main3), (Nc, "95 96"), (No, "97 98")]);
     p.current = "2.8 - 4 A".into();
+    p.tech_data = "Power loss: 3 W".into();
 
     c.add("GEN.PB-GN-1NO", "Pushbutton green, 1 NO", sw, "Pushbutton", "S", 11.2, (30.0, 30.0, 45.0, 0.03), &[(PushbuttonNo, "13 14")]).accessories = vec!["GEN.CB-1NO".into(), "GEN.CB-1NC".into()];
     c.add("GEN.PB-RD-1NC", "Pushbutton red, 1 NC", sw, "Pushbutton", "S", 11.2, (30.0, 30.0, 45.0, 0.03), &[(PushbuttonNc, "11 12")]).accessories = vec!["GEN.CB-1NO".into(), "GEN.CB-1NC".into()];
@@ -116,10 +127,10 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.PS-24DC-5A", "Power supply 230 V AC / 24 V DC 5 A", "Power supplies, transformers", "Power supply", "T", 89.0, (40.0, 125.0, 115.0, 0.6), &[(PowerSupply, "L N PE L+ M")]);
     p.voltage = "230 V AC / 24 V DC".into();
     p.current = "5 A".into();
-    p.tech_data = "Clearance: 25 mm (convection cooling, above and below)".into();
+    p.tech_data = "Clearance: 25 mm (convection cooling, above and below)\nPower loss: 13 W".into();
     let p = c.add("GEN.TR-230-24-100VA", "Control transformer 230 V / 24 V 100 VA", "Power supplies, transformers", "Control transformer", "T", 46.0, (78.0, 84.0, 70.0, 1.6), &[(Transformer, "1.1 1.2 2.1 2.2")]);
     p.mounting = "Screw mounting".into();
-    p.tech_data = "Mounting holes: M5: 9,12; 69,12; 9,72; 69,72".into();
+    p.tech_data = "Mounting holes: M5: 9,12; 69,12; 9,72; 69,72\nPower loss: 12 W".into();
 
     let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
     p.tech_data = "End bracket: GEN.EB-35\nEnd plate: GEN.TB-END\nJumper: GEN.JMP-2.5-2, GEN.JMP-2.5-3, GEN.JMP-2.5-10".into();

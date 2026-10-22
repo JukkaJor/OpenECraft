@@ -1,6 +1,8 @@
 //! Macros: reusable circuit parts. A window macro is a selection of a page, a page
 //! macro a complete page. Placeholders `{NAME}` in tags, texts, function texts,
 //! designations and connection points are filled from value sets when inserting.
+//! A macro can have variants (A, B, …): the same function in other versions, e.g. a
+//! motor feeder direct on line or star-delta, chosen when inserting.
 
 use openecraft_i18n::tr_fmt;
 use crate::model::*;
@@ -23,6 +25,19 @@ pub struct ValueSet {
     pub values: BTreeMap<String, String>,
 }
 
+/// A further variant of a macro.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct MacroVariant {
+    pub name: String,
+    pub description: String,
+    pub clip: Clip,
+    pub page_description: String,
+}
+
+/// Name of the variant a macro holds in its own items when none is given.
+pub const FIRST_VARIANT: &str = "A";
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct Macro {
@@ -34,6 +49,12 @@ pub struct Macro {
     /// Page macros: description of the inserted page.
     pub page_description: String,
     pub value_sets: Vec<ValueSet>,
+    /// Name of the variant held in `clip` (empty: [`FIRST_VARIANT`]).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub variant: String,
+    /// The other variants.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub variants: Vec<MacroVariant>,
 }
 
 /// The macro library (stored with the application, like the parts database).
@@ -62,6 +83,24 @@ impl MacroLibrary {
             None => self.macros.push(m),
         }
         self.macros.sort_by(|a, b| natural_cmp(&a.category, &b.category).then_with(|| natural_cmp(&a.name, &b.name)));
+    }
+
+    /// Saves `m` as variant `variant` of the macro with its name: a new macro, or a
+    /// new / replaced variant of an existing one. Returns whether the variant existed.
+    pub fn upsert_variant(&mut self, mut m: Macro, variant: &str) -> bool {
+        let variant = if variant.trim().is_empty() { FIRST_VARIANT } else { variant.trim() };
+        match self.macros.iter_mut().find(|x| x.name == m.name) {
+            Some(x) => x.set_variant(variant, m.description, m.clip, m.page_description),
+            None => {
+                m.variant = if variant == FIRST_VARIANT { String::new() } else { variant.to_string() };
+                self.upsert(m);
+                false
+            }
+        }
+    }
+
+    pub fn get(&self, name: &str) -> Option<&Macro> {
+        self.macros.iter().find(|m| m.name == name)
     }
 
     /// Adds the macros of another library (same names are replaced). Returns the count.
@@ -132,6 +171,62 @@ impl Macro {
             *t = fill(t, values);
         }
         clip
+    }
+
+    /// Name of the variant held in the macro's own items.
+    pub fn main_variant(&self) -> &str {
+        if self.variant.is_empty() { FIRST_VARIANT } else { &self.variant }
+    }
+
+    /// All variant names, the macro's own first.
+    pub fn variant_names(&self) -> Vec<String> {
+        std::iter::once(self.main_variant().to_string()).chain(self.variants.iter().map(|v| v.name.clone())).collect()
+    }
+
+    /// The macro as variant `name` (its items, page and variant description); `None`
+    /// if there is no such variant. An empty name is the macro's own variant.
+    pub fn with_variant(&self, name: &str) -> Option<Macro> {
+        if name.is_empty() || name == self.main_variant() {
+            return Some(Macro { variants: Vec::new(), ..self.clone() });
+        }
+        let v = self.variants.iter().find(|v| v.name == name)?;
+        Some(Macro {
+            clip: v.clip.clone(),
+            page_description: v.page_description.clone(),
+            description: if v.description.is_empty() { self.description.clone() } else { v.description.clone() },
+            variant: v.name.clone(),
+            variants: Vec::new(),
+            ..self.clone()
+        })
+    }
+
+    /// Sets the items of a variant (adds it if new). Returns whether it existed.
+    pub fn set_variant(&mut self, name: &str, description: String, clip: Clip, page_description: String) -> bool {
+        if name == self.main_variant() {
+            self.clip = clip;
+            self.page_description = page_description;
+            return true;
+        }
+        match self.variants.iter_mut().find(|v| v.name == name) {
+            Some(v) => {
+                v.clip = clip;
+                v.page_description = page_description;
+                v.description = description;
+                true
+            }
+            None => {
+                self.variants.push(MacroVariant { name: name.to_string(), description, clip, page_description });
+                self.variants.sort_by(|a, b| natural_cmp(&a.name, &b.name));
+                false
+            }
+        }
+    }
+
+    /// Removes a further variant (the macro's own variant stays).
+    pub fn remove_variant(&mut self, name: &str) -> bool {
+        let n = self.variants.len();
+        self.variants.retain(|v| v.name != name);
+        n != self.variants.len()
     }
 
     /// Number of symbols / wires / texts and graphics.

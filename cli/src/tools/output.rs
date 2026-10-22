@@ -20,7 +20,7 @@ pub static TOOLS: &[Tool] = &[
         name: "report",
         help: tr_const!("Generates a report as table"),
         params: &[
-            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill or marking")),
+            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate or marking")),
             optional("format", Kind::Str, tr_const!("json (default) or csv")),
         ],
         needs_project: true,

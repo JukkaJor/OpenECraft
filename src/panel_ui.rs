@@ -46,6 +46,73 @@ struct MoveDrag {
     originals: Vec<(u64, f32, f32)>,
 }
 
+/// Climate settings and result of an enclosure (IEC/TR 60890).
+fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+    use crate::climate::{self, Cooling, Installation, Material};
+    let result = climate::calculate(prj, &prj.layout.enclosures[ei]);
+    let c = &mut prj.layout.enclosures[ei].climate;
+    egui::CollapsingHeader::new(tr("Climate (IEC 60890)")).id_salt("climate").show(ui, |ui| {
+        egui::Grid::new("pclimate").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
+            ui.label(tr("Installation"));
+            egui::ComboBox::from_id_salt("installation").selected_text(c.installation.title()).show_ui(ui, |ui| {
+                for i in Installation::ALL {
+                    ui.selectable_value(&mut c.installation, i, i.title());
+                }
+            });
+            ui.end_row();
+            ui.label(tr("Material"));
+            egui::ComboBox::from_id_salt("material").selected_text(c.material.title()).show_ui(ui, |ui| {
+                for m in Material::ALL {
+                    ui.selectable_value(&mut c.material, m, m.title());
+                }
+            });
+            ui.end_row();
+            ui.label(tr("Ambient temperature"));
+            ui.horizontal(|ui| {
+                ui.add(egui::DragValue::new(&mut c.ambient_min).speed(0.5).range(-50.0..=80.0).suffix(" °C"));
+                ui.label("…");
+                ui.add(egui::DragValue::new(&mut c.ambient_max).speed(0.5).range(-50.0..=80.0).suffix(" °C"));
+            });
+            ui.end_row();
+            ui.label(tr("Inside temperature"));
+            ui.horizontal(|ui| {
+                ui.add(egui::DragValue::new(&mut c.inside_min).speed(0.5).range(-50.0..=80.0).suffix(" °C"));
+                ui.label("…");
+                ui.add(egui::DragValue::new(&mut c.inside_max).speed(0.5).range(-50.0..=80.0).suffix(" °C"));
+            });
+            ui.end_row();
+            ui.label(tr("Additional power loss"));
+            ui.add(egui::DragValue::new(&mut c.extra_loss).speed(1.0).range(0.0..=100000.0).suffix(" W"))
+                .on_hover_text(tr("Power loss not covered by the parts (tech data Power loss: 7.5 W)"));
+            ui.end_row();
+            ui.label(tr("Power loss"));
+            ui.label(format!("{:.0} W", result.loss));
+            ui.end_row();
+            ui.label(tr("Effective surface"));
+            ui.label(format!("{:.2} m²", result.surface));
+            ui.end_row();
+            ui.label(tr("Inside without cooling"));
+            let hot = result.cooling != Cooling::None;
+            let text = format!("{:.1} °C", result.inside);
+            if hot {
+                ui.colored_label(Color32::from_rgb(220, 120, 0), text);
+            } else {
+                ui.label(text);
+            }
+            ui.end_row();
+            ui.label(tr("Cooling"));
+            ui.label(result.cooling.text());
+            ui.end_row();
+            ui.label(tr("Heating"));
+            ui.label(if result.heating > 0.0 { format!("{:.0} W", result.heating) } else { "–".into() });
+            ui.end_row();
+        });
+        if !result.without_data.is_empty() {
+            ui.weak(tr_fmt!("Without power loss data: {}", result.without_data.join(", ")));
+        }
+    });
+}
+
 struct NewEnclosure {
     name: String,
     part: String,
@@ -468,6 +535,7 @@ impl PanelUi {
                 .on_hover_text(tr("The check warns about cable ducts filled above this level"));
         });
         ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
+        climate_section(ui, prj, ei);
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
         let wires: Vec<_> = an.wiring.iter().filter(|w| w.enclosure == ei).collect();
