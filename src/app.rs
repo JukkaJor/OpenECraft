@@ -14,12 +14,13 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, sample, svg, wirenum};
+use crate::{history::History, potentials, sample, svg, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
 mod engineering;
 mod forms_ui;
 mod harness_ui;
+mod potentials_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -308,7 +309,7 @@ impl App {
         egui::MenuBar::new().ui(ui, |ui| {
             ui.menu_button(tr("File"), |ui| {
                 if ui.button(tr("New project")).clicked() {
-                    self.replace_project(Project::default(), None);
+                    self.replace_project(Project::new_default(), None);
                 }
                 if ui.button(tr("Open…        Ctrl+O")).clicked() {
                     self.io.open(&ctx, Purpose::Project);
@@ -490,6 +491,9 @@ impl App {
                 if ui.button(tr("Cables…")).clicked() {
                     self.show_cables = true;
                 }
+                if ui.button(tr("Potentials…")).clicked() {
+                    self.eng.show_potentials = true;
+                }
                 if ui.button(tr("Wire numbering…")).clicked() {
                     self.show_numbering = true;
                 }
@@ -537,6 +541,8 @@ impl App {
                 ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
                 ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
                 ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
+                ui.checkbox(&mut self.prj.wire_colors, tr("Wire colours"))
+                    .on_hover_text(tr("Draw wires in their colour (also in PDF and SVG); saved with the project"));
                 ui.separator();
                 openecraft_ui::language::menu(ui);
                 let mut pref = ui.ctx().options(|o| o.theme_preference);
@@ -853,13 +859,9 @@ impl App {
                 ui.label(tr_fmt!("{} wires", wires.len()));
                 let first = self.prj.pages[pi].wires.iter().find(|w| w.id == wires[0]).cloned().unwrap_or_default();
                 let (mut color, mut cs) = (first.color.clone(), first.cross_section.clone());
+                let auto = potentials::props_of_wire(&self.prj, &self.analysis.netlist, &self.analysis.open, first.id);
                 egui::Grid::new("wprops").num_columns(2).show(ui, |ui| {
-                    ui.label(tr("Colour"));
-                    ui.text_edit_singleline(&mut color);
-                    ui.end_row();
-                    ui.label(tr("Cross-section"));
-                    ui.text_edit_singleline(&mut cs);
-                    ui.end_row();
+                    potentials_ui::wire_fields(ui, &mut color, &mut cs, &auto);
                 });
                 if color != first.color || cs != first.cross_section {
                     for w in self.prj.pages[pi].wires.iter_mut().filter(|w| wires.contains(&w.id)) {
@@ -975,6 +977,7 @@ impl App {
                 })
                 .collect();
             let mut harness_change = None;
+            let auto = potentials::props_of_wire(&self.prj, &self.analysis.netlist, &self.analysis.open, id);
             let w = &mut self.prj.pages[pi].wires[wi];
             egui::Grid::new("wprops1").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Wire number"));
@@ -1011,12 +1014,7 @@ impl App {
                     });
                     ui.end_row();
                 }
-                ui.label(tr("Colour"));
-                ui.add(egui::TextEdit::singleline(&mut w.color).hint_text(tr("e.g. BU, BK, GNYE")));
-                ui.end_row();
-                ui.label(tr("Cross-section"));
-                ui.add(egui::TextEdit::singleline(&mut w.cross_section).hint_text(tr("e.g. 1.5 mm²")));
-                ui.end_row();
+                potentials_ui::wire_fields(ui, &mut w.color, &mut w.cross_section, &auto);
                 ui.label(tr("From"));
                 ui.label(format!("{:.0} / {:.0}", w.a.x, w.a.y));
                 ui.end_row();

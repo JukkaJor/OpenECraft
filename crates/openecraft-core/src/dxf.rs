@@ -23,7 +23,7 @@ const LAYERS: [(&str, u8); 7] = [
 
 fn layer(ink: Ink) -> &'static str {
     match ink {
-        Ink::Wire | Ink::Highlight => "OEC_WIRES",
+        Ink::Wire | Ink::Highlight | Ink::Color(_) => "OEC_WIRES",
         Ink::Text => "OEC_TEXT",
         Ink::Frame | Ink::FrameText => "OEC_FRAME",
         Ink::CrossRef => "OEC_XREF",

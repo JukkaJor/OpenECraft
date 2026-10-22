@@ -116,6 +116,7 @@ impl Palette {
             Ink::Error => self.error,
             Ink::Plate => self.plate,
             Ink::Fill => self.fill,
+            Ink::Color([r, g, b]) => Color32::from_rgb(r, g, b),
         }
     }
 }

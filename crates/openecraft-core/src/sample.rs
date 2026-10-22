@@ -76,6 +76,7 @@ pub fn demo_project() -> Project {
         ..Default::default()
     };
 
+    prj.apply_preset(crate::potentials::Preset::Iec60204);
     add_page(&mut prj, "1", "Cover sheet", PageKind::Cover);
 
     // ------------------------------------------------------------------ power
@@ -97,6 +98,11 @@ pub fn demo_project() -> Project {
     g.sym("term_pe", 84.0, 140.0, 0, "-X1", "PE", "");
     g.w(84.0, 56.0, 84.0, 136.0).w(84.0, 144.0, 84.0, 152.0);
     g.sym("motor3", 60.0, 156.0, 0, "-M1", "", "Conveyor\n0.75 kW");
+    // The motor feeder behind -Q1 is a power circuit, not a control circuit (project default).
+    for w in g.prj.pages[page].wires.iter_mut().filter(|w| [60.0, 68.0, 76.0].contains(&w.a.x) && w.a.y >= 84.0) {
+        w.color = "BK".into();
+        w.cross_section = "1.5 mm²".into();
+    }
     // 24 V power supply
     g.sym("cb1", 180.0, 64.0, 0, "-F1", "", "");
     g.w(180.0, 24.0, 180.0, 60.0).w(180.0, 68.0, 180.0, 76.0);

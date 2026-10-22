@@ -24,6 +24,7 @@ pub struct EngineeringUi {
     /// Macro waiting for its name (save dialog).
     saving: Option<Macro>,
     pub show_strips: bool,
+    pub show_potentials: bool,
     strip: String,
     pub show_plc: bool,
     card: String,
@@ -76,6 +77,7 @@ impl App {
         self.save_macro_dialog(ctx);
         self.macros_window(ctx);
         self.strips_window(ctx);
+        self.potentials_window(ctx);
         self.plc_window(ctx);
         self.revisions_window(ctx);
         self.marking_window(ctx);

@@ -114,6 +114,7 @@ impl Analysis {
         let mut issues = check(prj, &idx, &netlist);
         issues.extend(check_layout(prj));
         issues.extend(check_wires(prj, &netlist, &open));
+        issues.extend(check_potentials(prj, &netlist, &open));
         issues.extend(check_strips_and_plc(prj, &netlist));
         issues.extend(check_duct_fill(prj, &fill));
         issues.sort_by_key(|i| i.severity);
@@ -924,7 +925,15 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     v
 }
 fn potential_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[(tr("Potential"), 1.0), (tr("Connection points"), 4.0), (tr("Pages"), 1.5)]);
+    let mut t = Table::new(&[
+        (tr("Potential"), 1.0),
+        (tr("Type"), 1.2),
+        (tr("Voltage"), 0.9),
+        (tr("Colour"), 0.6),
+        (tr("Cross-section"), 0.9),
+        (tr("Connection points"), 4.0),
+        (tr("Pages"), 1.5),
+    ]);
     let mut nets: Vec<_> = nl.nets.iter().filter(|n| n.named).collect();
     nets.sort_by(|a, b| natural_cmp(&a.name, &b.name));
     for net in nets {
@@ -941,9 +950,69 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
         pins.dedup();
         let pages: BTreeSet<usize> = net.pins.iter().map(|p| p.page).chain(net.wires.iter().map(|w| w.0)).collect();
         let pages: Vec<String> = pages.iter().map(|&p| prj.pages[p].name.clone()).collect();
-        t.push(vec![net.name.clone(), pins.join(", "), pages.join(", ")], None);
+        let def = prj.potential(&net.name).cloned().unwrap_or_default();
+        let kind = if prj.potential(&net.name).is_some() { def.kind.title().to_string() } else { String::new() };
+        t.push(vec![net.name.clone(), kind, def.voltage, def.color, def.cross_section, pins.join(", "), pages.join(", ")], None);
     }
     t
+}
+
+/// Potential definitions and the colours / cross-sections of the connections.
+fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
+    use crate::potentials::{is_protective, normalize_color, props_of, Source};
+    let mut v = Vec::new();
+    let mut issue = |severity, message: String, target| v.push(Issue { severity, message, target });
+    let mut names: HashMap<&str, usize> = HashMap::new();
+    for d in &prj.potentials {
+        *names.entry(d.name.as_str()).or_default() += 1;
+    }
+    for (name, n) in names.iter().filter(|(_, n)| **n > 1) {
+        issue(Severity::Error, tr_fmt!("Potential {} defined {} times", name, n), None);
+    }
+    if !prj.potentials.is_empty() {
+        let mut undefined: BTreeMap<String, (usize, u64)> = BTreeMap::new();
+        for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
+            for s in &pg.symbols {
+                let pot = symbols::get(&s.sym).map(|d| d.func == Func::Potential).unwrap_or(false);
+                if pot && !s.label.is_empty() && prj.potential(&s.label).is_none() {
+                    undefined.entry(s.label.clone()).or_insert((pi, s.id));
+                }
+            }
+        }
+        for (name, at) in undefined {
+            issue(Severity::Info, tr_fmt!("Potential {} has no definition (Project › Potentials)", name), Some(at));
+        }
+    }
+    for net in &open.nets {
+        let Some(&(pi, wid)) = net.wires.first() else { continue };
+        let at = Some((pi, wid));
+        let p = props_of(prj, nl, net);
+        if p.potential.contains(" / ") || crate::wirenum::wires_of(prj, net).iter().any(|w| !w.cable.is_empty()) {
+            continue;
+        }
+        let color = normalize_color(&p.color);
+        if is_protective(prj, &p.potential) {
+            if !color.is_empty() && color != "GNYE" {
+                issue(Severity::Error, tr_fmt!("Protective conductor {} with wire colour {} (must be GNYE)", p.potential, p.color), at);
+            }
+        } else if color == "GNYE" {
+            let name = if p.potential.is_empty() { net.name.clone() } else { p.potential.clone() };
+            issue(Severity::Error, tr_fmt!("Wire colour GNYE is reserved for protective conductors ({})", name), at);
+        }
+        let Some(def) = prj.potential(&p.potential) else { continue };
+        if p.color_source == Source::Manual && !def.color.is_empty() && color != normalize_color(&def.color) {
+            issue(Severity::Warning, tr_fmt!("{}: wire colour {} differs from the potential definition ({})", def.name, p.color, def.color), at);
+        }
+        let mm2 = crate::production::cross_section_mm2;
+        if p.cross_section_source == Source::Manual && !def.cross_section.is_empty() && mm2(&p.cross_section) != mm2(&def.cross_section) {
+            issue(
+                Severity::Warning,
+                tr_fmt!("{}: cross-section {} differs from the potential definition ({})", def.name, p.cross_section, def.cross_section),
+                at,
+            );
+        }
+    }
+    v
 }
 
 /// Project check ("Prüfläufe"): finds typical engineering mistakes.

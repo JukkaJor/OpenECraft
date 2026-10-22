@@ -301,11 +301,8 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
             a.page.cmp(&b.page).then(qa.x.total_cmp(&qb.x)).then(qa.y.total_cmp(&qb.y))
         });
         let wires = crate::wirenum::wires_of(prj, net);
-        let (color, cross_section) = wires
-            .iter()
-            .find(|w| !w.color.is_empty() || !w.cross_section.is_empty())
-            .map(|w| (w.color.clone(), w.cross_section.clone()))
-            .unwrap_or_default();
+        let props = crate::potentials::props_of(prj, nl, net);
+        let (color, cross_section) = (props.color, props.cross_section);
         let (cable, core) = wires.iter().find(|w| !w.cable.is_empty()).map(|w| (w.cable.clone(), w.core.clone())).unwrap_or_default();
         let number = crate::wirenum::number_of(prj, net);
         let first = pins[0];
