@@ -21,8 +21,11 @@ pub struct EngineeringUi {
     macro_sel: Option<String>,
     /// Placeholder values for the next insertion.
     macro_values: BTreeMap<String, String>,
-    /// Macro waiting for its name (save dialog).
+    /// Macro waiting for its name (save dialog) and the variant to save it as.
     saving: Option<Macro>,
+    saving_variant: String,
+    /// Variant of the selected macro.
+    macro_variant: String,
     pub show_strips: bool,
     pub show_potentials: bool,
     strip: String,
@@ -40,6 +43,7 @@ pub struct EngineeringUi {
 enum MacroAction {
     Insert(usize),
     Delete(usize),
+    DeleteVariant(usize, String),
     Export,
     Import,
 }
@@ -92,6 +96,7 @@ impl App {
             macros::from_selection(page, &self.editor.selection, "")
         };
         self.eng.saving = Some(m);
+        self.eng.saving_variant.clear();
     }
 
     fn save_macro_dialog(&mut self, ctx: &egui::Context) {
@@ -106,6 +111,10 @@ impl App {
                 ui.label(tr("Category"));
                 ui.add(egui::TextEdit::singleline(&mut m.category).hint_text(tr("e.g. Motors")));
                 ui.end_row();
+                ui.label(tr("Variant"));
+                ui.add(egui::TextEdit::singleline(&mut self.eng.saving_variant).hint_text(macros::FIRST_VARIANT).desired_width(60.0))
+                    .on_hover_text(tr("Another variant of an existing macro with this name (e.g. B), chosen when inserting"));
+                ui.end_row();
                 ui.label(tr("Description"));
                 ui.text_edit_multiline(&mut m.description);
                 ui.end_row();
@@ -118,10 +127,18 @@ impl App {
         });
         if save {
             let m = self.eng.saving.take().unwrap();
-            let replaced = self.macro_lib.macros.iter().any(|x| x.name == m.name);
-            self.eng.macro_sel = Some(m.name.clone());
-            self.notify(ctx, if replaced { tr_fmt!("Macro {} replaced", m.name) } else { tr_fmt!("Macro {} saved", m.name) });
-            self.macro_lib.upsert(m);
+            let variant = self.eng.saving_variant.trim().to_string();
+            let name = m.name.clone();
+            let existed = self.macro_lib.get(&name).is_some();
+            let replaced = self.macro_lib.upsert_variant(m, &variant);
+            self.eng.macro_sel = Some(name.clone());
+            self.eng.macro_variant = variant.clone();
+            let msg = match (existed, replaced) {
+                (false, _) => tr_fmt!("Macro {} saved", name),
+                (true, true) => tr_fmt!("Variant {} of macro {} replaced", if variant.is_empty() { macros::FIRST_VARIANT } else { &variant }, name),
+                (true, false) => tr_fmt!("Variant {} of macro {} saved", variant, name),
+            };
+            self.notify(ctx, msg);
             self.eng.show_macros = true;
         }
         if cancel {
@@ -175,6 +192,7 @@ impl App {
                                     if ui.selectable_label(sel, format!("{icon} {}", m.name)).on_hover_text(&m.description).clicked() {
                                         self.eng.macro_sel = Some(m.name.clone());
                                         self.eng.macro_values.clear();
+                                        self.eng.macro_variant.clear();
                                     }
                                 }
                             });
@@ -191,7 +209,12 @@ impl App {
                         return;
                     };
                     let values = &mut self.eng.macro_values;
+                    let variant = &mut self.eng.macro_variant;
                     let m = &mut self.macro_lib.macros[i];
+                    if m.with_variant(variant).is_none() {
+                        variant.clear();
+                    }
+                    let shown = m.with_variant(variant).unwrap_or_else(|| m.clone());
                     egui::ScrollArea::vertical().id_salt("macrodetail").auto_shrink([false, false]).show(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.heading(&m.name);
@@ -210,9 +233,27 @@ impl App {
                                 ui.end_row();
                             }
                         });
-                        ui.weak(m.summary());
-                        clip_preview(ui, &m.clip, vec2(420.0, 200.0));
-                        let placeholders = m.placeholders();
+                        let names = m.variant_names();
+                        ui.horizontal(|ui| {
+                            ui.label(tr("Variant"));
+                            egui::ComboBox::from_id_salt("mvariant").selected_text(shown.main_variant().to_string()).show_ui(ui, |ui| {
+                                for n in &names {
+                                    if ui.selectable_label(shown.main_variant() == n, n).clicked() {
+                                        *variant = n.clone();
+                                    }
+                                }
+                            });
+                            let own = shown.main_variant() == m.main_variant();
+                            if !own && ui.small_button(tr("🗑 Delete variant")).clicked() {
+                                action = Some(MacroAction::DeleteVariant(i, shown.main_variant().to_string()));
+                            }
+                            if names.len() == 1 {
+                                ui.weak(tr("Save a selection under this name with another variant to add one."));
+                            }
+                        });
+                        ui.weak(shown.summary());
+                        clip_preview(ui, &shown.clip, vec2(420.0, 200.0));
+                        let placeholders = shown.placeholders();
                         if !placeholders.is_empty() {
                             ui.separator();
                             ui.label(RichText::new(tr("Value sets")).strong());
@@ -281,7 +322,7 @@ impl App {
         }
         match action {
             Some(MacroAction::Insert(i)) => {
-                let m = self.macro_lib.macros[i].clone();
+                let m = self.macro_lib.macros[i].with_variant(&self.eng.macro_variant).unwrap_or_else(|| self.macro_lib.macros[i].clone());
                 if m.kind == MacroKind::Page {
                     let at = macros::insert_page(&mut self.prj, self.page, &m, &self.eng.macro_values);
                     self.goto(at, 0);
@@ -295,6 +336,10 @@ impl App {
             Some(MacroAction::Delete(i)) => {
                 self.macro_lib.macros.remove(i);
                 self.eng.macro_sel = None;
+            }
+            Some(MacroAction::DeleteVariant(i, name)) => {
+                self.macro_lib.macros[i].remove_variant(&name);
+                self.eng.macro_variant.clear();
             }
             Some(MacroAction::Export) => {
                 let json = serde_json::to_string_pretty(&self.macro_lib).unwrap_or_default();

@@ -49,7 +49,16 @@ built with [egui / eframe](https://github.com/emilk/egui).
   library (stored with the application, JSON import / export). Window macros are placed
   with the mouse (ghost preview, devices get new tags), page macros insert a page.
   Placeholders such as `{MOTOR}` in tags, texts, function texts and designations are
-  filled from **value sets** when inserting.
+  filled from **value sets** when inserting. **Variants**: a macro can hold the same
+  function in several versions (A, B, … – e.g. direct on line and star-delta); save a
+  selection under the name of an existing macro with another variant, choose the
+  variant when inserting.
+- **Configurator** (*Project › Configurator…*): options with their choices (e.g.
+  `STARTER` = DOL / SD) and rules that insert a page macro in a variant with
+  placeholder values (`NAME=Pump; POWER={POWER}`) when their condition holds
+  (`STARTER=DOL & LINE!=2`, `LINE=1|2`). *Generate pages* replaces the pages generated
+  before (marked in the page properties, switch off to keep one); option values fill
+  `{OPTION}` placeholders; problems (unknown macro, variant or option) stop it.
 - **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
   **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
   diagram and the BOM);
@@ -344,6 +353,7 @@ cargo test --workspace
 | Cables | *Project › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
 | Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
 | Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
+| Configurator | *Project › Configurator…*: options, rules with page macros, *Generate pages* |
 | Bulk changes | *Project › Edit in table…*: filter, edit, fill, find and replace, CSV |
 | Enclosure climate | panel layout: select the enclosure › *Climate (IEC 60890)* |
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
@@ -390,6 +400,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
 | `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices, voltage drop |
 | `crates/openecraft-core/src/tables.rs` | Editing devices, connections and terminals in tables, CSV round trip |
+| `crates/openecraft-core/src/config.rs` | Configurator: options, rules, page generation from macros |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |

@@ -3,6 +3,7 @@
 //! the SVG / PDF / DXF export. Contains no UI code.
 
 pub mod climate;
+pub mod config;
 pub mod dxf;
 pub mod forms;
 pub mod geom;

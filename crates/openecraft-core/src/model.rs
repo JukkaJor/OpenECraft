@@ -88,6 +88,9 @@ pub struct Project {
     pub symbols: Vec<crate::symlib::UserSymbol>,
     /// Title blocks and report forms.
     pub forms: crate::forms::Forms,
+    /// Options and generation rules of the configurator.
+    #[serde(skip_serializing_if = "crate::config::Configuration::is_empty")]
+    pub configuration: crate::config::Configuration,
     /// Marker texts and materials.
     #[serde(skip_serializing_if = "crate::marking::Settings::is_default")]
     pub marking: crate::marking::Settings,
@@ -115,6 +118,7 @@ impl Default for Project {
             symbols: Vec::new(),
             forms: Default::default(),
             marking: Default::default(),
+            configuration: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -250,6 +254,9 @@ pub struct Page {
     /// Released page: no changes until it is unlocked.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub locked: bool,
+    /// Inserted by the configurator: replaced when it generates again.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub generated: bool,
     /// Title block of this page; empty = the project's default.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub title_block: String,
@@ -281,6 +288,7 @@ impl Page {
             function: String::new(),
             location: String::new(),
             locked: false,
+            generated: false,
             title_block: String::new(),
             kind,
             symbols: Vec::new(),

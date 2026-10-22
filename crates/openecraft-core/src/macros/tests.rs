@@ -83,3 +83,37 @@ fn library_files_hold_one_or_many_macros() {
     assert_eq!(MacroLibrary::from_json(&serde_json::to_string(&m).unwrap()).unwrap(), lib);
     assert!(MacroLibrary::from_json("42").is_err());
 }
+
+#[test]
+fn variants_are_saved_and_chosen() {
+    let prj = demo_project();
+    let mut lib = MacroLibrary::default();
+    let dol = motor_macro(&prj);
+    assert!(!lib.upsert_variant(dol.clone(), ""));
+    let mut sd = from_selection(&prj.pages[1], &BTreeSet::new(), "DOL starter");
+    sd.description = "Star-delta".into();
+    assert!(!lib.upsert_variant(sd, "B"));
+    let m = lib.get("DOL starter").unwrap();
+    assert_eq!(m.variant_names(), ["A", "B"]);
+    assert_eq!(m.with_variant("A").unwrap().clip, dol.clip);
+    let b = m.with_variant("B").unwrap();
+    assert!(b.clip.symbols.is_empty());
+    assert_eq!((b.description.as_str(), b.variant.as_str()), ("Star-delta", "B"));
+    assert!(b.variants.is_empty());
+    assert!(m.with_variant("C").is_none());
+    // Saving again replaces the variant; the macro's own variant can be renamed.
+    assert!(lib.upsert_variant(dol.clone(), "B"));
+    assert_eq!(lib.get("DOL starter").unwrap().with_variant("B").unwrap().clip, dol.clip);
+    let m = lib.macros.iter_mut().find(|m| m.name == "DOL starter").unwrap();
+    assert!(m.remove_variant("B"));
+    assert!(!m.remove_variant("A"));
+    assert_eq!(m.variant_names(), ["A"]);
+}
+
+#[test]
+fn files_without_variants_still_load() {
+    let lib = MacroLibrary::from_json(r#"{"macros":[{"name":"X","kind":"Page"}]}"#).unwrap();
+    assert_eq!(lib.macros[0].variant_names(), ["A"]);
+    let json = serde_json::to_string(&lib).unwrap();
+    assert!(!json.contains("variants"));
+}
