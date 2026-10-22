@@ -20,6 +20,7 @@ use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 mod engineering;
 mod forms_ui;
 mod harness_ui;
+mod plugs_ui;
 mod potentials_ui;
 mod symbol_editor;
 
@@ -66,6 +67,7 @@ pub struct App {
     symed: symbol_editor::SymbolEditor,
     forms_ui: forms_ui::FormsUi,
     harness_ui: harness_ui::HarnessUi,
+    plugs_ui: plugs_ui::PlugsUi,
     /// Wire numbering: also renumber / remove manually set numbers.
     numbering_overwrite: bool,
     page_props: Option<usize>,
@@ -128,6 +130,7 @@ impl App {
             symed: Default::default(),
             forms_ui: Default::default(),
             harness_ui: Default::default(),
+            plugs_ui: Default::default(),
             numbering_overwrite: false,
             page_props: None,
             message: None,
@@ -502,6 +505,9 @@ impl App {
                 }
                 if ui.button(tr("Terminal strips…")).clicked() {
                     self.eng.show_strips = true;
+                }
+                if ui.button(tr("Plugs…")).clicked() {
+                    self.plugs_ui.open = true;
                 }
                 if ui.button(tr("Marking…")).clicked() {
                     self.eng.show_marking = true;
@@ -1075,7 +1081,12 @@ impl App {
         let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
-                ui.label(if def.func == Func::Terminal { tr("Terminal strip") } else if def.func == Func::Plc { tr("PLC card") } else { tr("Device tag") });
+                ui.label(match def.func {
+                    Func::Terminal => tr("Terminal strip"),
+                    Func::Plc => tr("PLC card"),
+                    Func::Plug(_) => tr("Plug"),
+                    _ => tr("Device tag"),
+                });
                 ui.horizontal(|ui| {
                     // Shown relative to the page structure, stored complete.
                     let mut shown = structure::relative(&here, &edited.tag);
@@ -1091,7 +1102,7 @@ impl App {
                             let dev = &idx.devices[tag];
                             let fits = match def.func {
                                 Func::Aux(_) => !dev.mains.is_empty(),
-                                Func::Terminal | Func::Plc => !dev.others.is_empty(),
+                                Func::Terminal | Func::Plc | Func::Plug(_) => !dev.others.is_empty(),
                                 _ => true,
                             };
                             if fits && ui.selectable_label(*tag == edited.tag, tag.as_str()).clicked() {
@@ -1106,6 +1117,7 @@ impl App {
             }
             let label_name = match def.func {
                 Func::Terminal => Some(tr("Terminal number")),
+                Func::Plug(_) => Some(tr("Pin")),
                 Func::Plc => Some(tr("Address")),
                 Func::Potential => Some(tr("Potential name")),
                 Func::Interruption => Some(tr("Name")),
@@ -1224,7 +1236,7 @@ impl App {
                     ui.spacing_mut().item_spacing.x = 10.0;
                     for (kind, (placed, avail)) in &usage {
                         let txt = format!("{} {placed}/{avail}", kind.title());
-                        let color = if placed > avail && *kind != parts::FnKind::Terminal {
+                        let color = if placed > avail && !matches!(kind, parts::FnKind::Terminal | parts::FnKind::PlugPin) {
                             Color32::from_rgb(220, 60, 60)
                         } else if placed < avail {
                             ui.visuals().weak_text_color()
@@ -1450,6 +1462,7 @@ impl App {
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
         self.harness_window(ctx);
+        self.plugs_window(ctx);
 
         // Page properties
         if let Some(pi) = self.page_props {

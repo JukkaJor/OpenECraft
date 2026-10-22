@@ -9,6 +9,7 @@ mod drawing;
 mod output;
 mod pages;
 mod parts;
+mod plugs;
 mod potentials;
 mod project;
 
@@ -57,7 +58,7 @@ pub const fn optional(name: &'static str, kind: Kind, help: &'static str) -> Par
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, pages::TOOLS, drawing::TOOLS, devices::TOOLS, potentials::TOOLS, output::TOOLS, parts::TOOLS].into_iter().flatten()
+    [project::TOOLS, pages::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, potentials::TOOLS, output::TOOLS, parts::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

@@ -124,7 +124,7 @@ pub fn point_of<'a>(points: &'a [PlacedPoint], s: &SymbolInst, pin: usize) -> Op
         return points.iter().find(|p| p.terminal == s.label && p.pin == side);
     }
     let name = match def.func {
-        Func::Plc => s.label.as_str(),
+        Func::Plc | Func::Plug(_) => s.label.as_str(),
         _ => s.pins.get(pin).map(String::as_str).or_else(|| def.pins.get(pin).map(|d| d.label))?,
     };
     points.iter().find(|p| p.terminal.is_empty() && p.pin == name)

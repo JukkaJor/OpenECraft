@@ -39,6 +39,7 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "psu" => FnKind::PowerSupply,
         "trafo" => FnKind::Transformer,
         "term" | "term_pe" => FnKind::Terminal,
+        "plug_pair" | "plug_m" | "plug_f" => FnKind::PlugPin,
         "plc_in" => FnKind::PlcInput,
         "plc_out" => FnKind::PlcOutput,
         "res" | "cap" | "diode" => FnKind::Generic,

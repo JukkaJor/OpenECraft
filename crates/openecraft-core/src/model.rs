@@ -71,6 +71,9 @@ pub struct Project {
     /// Terminal strip data (order, jumpers, spare terminals) keyed by strip tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub strips: BTreeMap<String, StripData>,
+    /// Plug data (pin order) keyed by plug tag.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub plugs: BTreeMap<String, crate::plugs::PlugData>,
     /// PLC card data (start address, rack / slot) keyed by card tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plc_cards: BTreeMap<String, PlcCard>,
@@ -105,6 +108,7 @@ impl Default for Project {
             wire_defaults: Default::default(),
             wire_colors: false,
             strips: BTreeMap::new(),
+            plugs: BTreeMap::new(),
             plc_cards: BTreeMap::new(),
             revisions: Vec::new(),
             harnesses: Vec::new(),
@@ -173,6 +177,7 @@ pub enum ReportKind {
     DeviceList,
     BillOfMaterials,
     TerminalDiagram,
+    PlugDiagram,
     ConnectionList,
     PlcAssignment,
     PotentialList,
@@ -186,11 +191,12 @@ pub enum ReportKind {
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 14] = [
+    pub const ALL: [ReportKind; 15] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
         ReportKind::TerminalDiagram,
+        ReportKind::PlugDiagram,
         ReportKind::ConnectionList,
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
@@ -209,6 +215,7 @@ impl ReportKind {
             ReportKind::DeviceList => tr("Device list"),
             ReportKind::BillOfMaterials => tr("Bill of materials"),
             ReportKind::TerminalDiagram => tr("Terminal diagram"),
+            ReportKind::PlugDiagram => tr("Plug diagram"),
             ReportKind::ConnectionList => tr("Connection list"),
             ReportKind::PlcAssignment => tr("PLC assignment list"),
             ReportKind::PotentialList => tr("Potential overview"),

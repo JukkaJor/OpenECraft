@@ -141,6 +141,7 @@ fn func_name(f: Func) -> &'static str {
         Func::Aux(_) => "auxiliary",
         Func::Terminal => "terminal",
         Func::Plc => "plc",
+        Func::Plug(_) => "plug",
         Func::Potential => "potential",
         Func::Interruption => "interruption",
         Func::Overview => "overview",
@@ -284,6 +285,7 @@ fn place_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
                 ctx.last_main.insert(def.letter.into(), tag.into());
             }
             Func::Terminal => ctx.last_strip = Some(tag.into()),
+            Func::Plug(_) => ctx.last_plug = Some(tag.into()),
             Func::Plc => {
                 ctx.last_plc.insert(def.key.into(), tag.into());
             }

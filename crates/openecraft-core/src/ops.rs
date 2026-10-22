@@ -3,7 +3,7 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P, R, GRID};
 use crate::model::*;
-use crate::symbols::{self, ContactKind, Func, SymbolDef};
+use crate::symbols::{self, ContactKind, Func, PinKind, SymbolDef};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
 
@@ -15,6 +15,7 @@ pub struct PlaceCtx {
     pub last_strip: Option<String>,
     /// symbol key -> last PLC card
     pub last_plc: HashMap<String, String>,
+    pub last_plug: Option<String>,
 }
 
 impl PlaceCtx {
@@ -31,6 +32,7 @@ impl PlaceCtx {
             Func::Plc => {
                 self.last_plc.insert(s.sym.clone(), s.tag.clone());
             }
+            Func::Plug(_) => self.last_plug = Some(s.tag.clone()),
             _ => {}
         }
     }
@@ -79,6 +81,19 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
 fn next_terminal(prj: &Project, strip: &str) -> String {
     let max = symbols_with_tag(prj, strip)
         .filter(|s| symbols::get(&s.sym).map(|d| d.func) == Some(Func::Terminal))
+        .filter_map(|s| s.label.parse::<u32>().ok())
+        .max()
+        .unwrap_or(0);
+    (max + 1).to_string()
+}
+
+/// Next free pin number of a plug for pins of this kind (a pair counts as both).
+fn next_plug_pin(prj: &Project, plug: &str, kind: PinKind) -> String {
+    let max = symbols_with_tag(prj, plug)
+        .filter(|s| match symbols::get(&s.sym).map(|d| d.func) {
+            Some(Func::Plug(k)) => k == kind || k == PinKind::Pair || kind == PinKind::Pair,
+            _ => false,
+        })
         .filter_map(|s| s.label.parse::<u32>().ok())
         .max()
         .unwrap_or(0);
@@ -147,6 +162,10 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
             if def.default_label.chars().all(|c| c.is_ascii_digit()) {
                 s.label = next_terminal(prj, &s.tag);
             }
+        }
+        Func::Plug(kind) => {
+            s.tag = ctx.last_plug.clone().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
+            s.label = next_plug_pin(prj, &s.tag, kind);
         }
         Func::Plc => {
             s.tag = ctx.last_plc.get(def.key).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
@@ -417,6 +436,9 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
                 }
                 Func::Terminal if s.label.chars().all(|c| c.is_ascii_digit()) => {
                     s.label = next_terminal(prj, &s.tag);
+                }
+                Func::Plug(kind) if s.label.chars().all(|c| c.is_ascii_digit()) => {
+                    s.label = next_plug_pin(prj, &s.tag, kind);
                 }
                 _ => {}
             }

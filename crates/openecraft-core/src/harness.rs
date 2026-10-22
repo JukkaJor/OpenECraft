@@ -208,6 +208,18 @@ pub fn kbl(prj: &Project, an: &Analysis) -> String {
         }
     }
     let gw_id = |cs: &str, color: &str| general.iter().position(|g| g.0 == cs && g.1 == color).map(|i| format!("GW{}", i + 1)).unwrap_or_default();
+    // Connector housings: the (first) part of the plugs the harnesses end at.
+    let plugs = crate::plugs::plug_tags(prj);
+    let housing_of = |dev: &str| -> Option<String> {
+        plugs.iter().any(|p| p == dev).then(|| prj.devices.get(dev).and_then(|d| d.parts.first()).map(|r| r.number.clone())).flatten()
+    };
+    let mut housings: Vec<String> = Vec::new();
+    for c in all.iter().flat_map(|(_, ws)| connectors(ws)) {
+        if let Some(h) = housing_of(&c.device).filter(|h| !housings.contains(h)) {
+            housings.push(h);
+        }
+    }
+    let ch_id = |dev: &str| housing_of(dev).and_then(|h| housings.iter().position(|x| *x == h)).map(|i| format!("CH{}", i + 1));
     for (i, (cs, color)) in general.iter().enumerate() {
         let area = crate::production::cross_section_mm2(cs).map(|v| v.to_string()).unwrap_or_default();
         let _ = writeln!(
@@ -220,6 +232,9 @@ pub fn kbl(prj: &Project, an: &Analysis) -> String {
             outer_diameter(cs)
         );
     }
+    for (i, h) in housings.iter().enumerate() {
+        let _ = writeln!(out, "  <Connector_housing id=\"CH{}\"><Part_number>{}</Part_number></Connector_housing>", i + 1, xml(h));
+    }
     for (hi, h) in prj.harnesses.iter().enumerate() {
         let ws = &all[hi].1;
         let _ = writeln!(out, "  <Harness id=\"H{}\"><Part_number>{}</Part_number><Description>{}</Description>", hi + 1, xml(if h.part.is_empty() { &h.tag } else { &h.part }), xml(&h.description));
@@ -231,7 +246,11 @@ pub fn kbl(prj: &Project, an: &Analysis) -> String {
             format!("H{}_C{}_P{}", hi + 1, ci + 1, pi + 1)
         };
         for (ci, c) in cons.iter().enumerate() {
-            let _ = write!(out, "    <Connector_occurrence id=\"H{}_C{}\"><Id>{}</Id><Contact_points>", hi + 1, ci + 1, xml(&c.device));
+            let _ = write!(out, "    <Connector_occurrence id=\"H{}_C{}\"><Id>{}</Id>", hi + 1, ci + 1, xml(&c.device));
+            if let Some(id) = ch_id(&c.device) {
+                let _ = write!(out, "<Part>{id}</Part>");
+            }
+            out.push_str("<Contact_points>");
             let mut seen: Vec<&str> = Vec::new();
             for (pi, pin) in c.pins.iter().enumerate() {
                 if seen.contains(&pin.0.as_str()) {

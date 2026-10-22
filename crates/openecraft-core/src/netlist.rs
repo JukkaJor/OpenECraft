@@ -131,6 +131,8 @@ impl Netlist {
         let mut degree: HashMap<usize, usize> = HashMap::new();
         // (strip, terminal designation) -> node, for jumpers
         let mut terminals: HashMap<(String, String), usize> = HashMap::new();
+        // (plug, pin designation) -> nodes of its pins (male and female are mated)
+        let mut plug_pins: HashMap<(String, String), Vec<usize>> = HashMap::new();
 
         for (pi, page) in prj.pages.iter().enumerate() {
             if page.kind != PageKind::Schematic {
@@ -165,13 +167,16 @@ impl Netlist {
                     nodes.push(n);
                     pin_nodes.push((PinRef { page: pi, sym: si, pin: i }, s.id, n));
                 }
-                if bridge_terminals || def.func != Func::Terminal {
+                if bridge_terminals || !def.func.is_feedthrough() {
                     for &(x, y) in &def.bridges {
                         b.uf.union(nodes[x], nodes[y]);
                     }
                 }
                 if def.func == Func::Terminal && !nodes.is_empty() {
                     terminals.insert((s.tag.clone(), s.label.clone()), nodes[0]);
+                }
+                if matches!(def.func, Func::Plug(_)) && !nodes.is_empty() && !s.tag.is_empty() {
+                    plug_pins.entry((s.tag.clone(), s.label.clone())).or_default().push(nodes[0]);
                 }
                 match def.func {
                     Func::Potential if !s.label.is_empty() => {
@@ -188,6 +193,11 @@ impl Netlist {
         }
 
         if bridge_terminals {
+            for nodes in plug_pins.values() {
+                for w in nodes.windows(2) {
+                    b.uf.union(w[0], w[1]);
+                }
+            }
             for (strip, labels) in crate::strips::jumper_groups(prj) {
                 let nodes: Vec<usize> = labels.iter().filter_map(|l| terminals.get(&(strip.clone(), l.clone())).copied()).collect();
                 for w in nodes.windows(2) {
@@ -336,7 +346,7 @@ pub fn pin_designation(prj: &Project, pin: PinRef) -> String {
     match def.func {
         Func::Potential => format!("={}", s.label),
         Func::Interruption => format!("»{}", s.label),
-        Func::Terminal => format!("{}:{}", s.tag, s.label),
+        Func::Terminal | Func::Plug(_) => format!("{}:{}", s.tag, s.label),
         Func::Plc => format!("{}:{}", s.tag, s.label),
         _ => {
             let pl = s.pins.get(pin.pin).map(String::as_str).unwrap_or("");

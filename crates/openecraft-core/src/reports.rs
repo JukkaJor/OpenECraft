@@ -98,6 +98,7 @@ impl Analysis {
                 ReportKind::DeviceList => device_list(prj, &idx),
                 ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
+                ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
                 ReportKind::RevisionOverview => revision_overview(prj),
@@ -115,6 +116,7 @@ impl Analysis {
         issues.extend(check_layout(prj));
         issues.extend(check_wires(prj, &netlist, &open));
         issues.extend(check_potentials(prj, &netlist, &open));
+        issues.extend(crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue { severity: Severity::Warning, message, target }));
         issues.extend(check_strips_and_plc(prj, &netlist));
         issues.extend(check_duct_fill(prj, &fill));
         issues.sort_by_key(|i| i.severity);
@@ -542,6 +544,25 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     }
     t
 }
+fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
+    let mut t = Table::new(&[
+        (tr("Plug"), 0.8),
+        (tr("Pin"), 0.6),
+        (tr("Socket side"), 3.0),
+        (tr("Pin side"), 3.0),
+        (tr("Potential"), 1.0),
+        (tr("Location"), 0.8),
+        (tr("Function text"), 1.6),
+    ]);
+    for plug in crate::plugs::plug_tags(prj) {
+        for r in crate::plugs::rows(prj, &plug, nl, open) {
+            let target = r.pins.first().map(|p| (p.page, p.id));
+            t.push(vec![plug.clone(), r.label, r.socket, r.pin, r.potential, r.location, r.function_text], target);
+        }
+    }
+    t
+}
+
 fn connection_list(prj: &Project, conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
         (tr("Wire no."), 0.8),
@@ -1029,10 +1050,11 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             issue(Severity::Error, tr_fmt!("{}: main function placed {} times", tag, dev.mains.len()), t(&dev.mains[1]));
         }
         if !dev.others.is_empty() {
-            // Duplicate terminal numbers / PLC addresses
+            // Duplicate terminal numbers / PLC addresses (plug pins: see `plugs::problems`)
             let mut seen: HashMap<String, usize> = HashMap::new();
             for l in &dev.others {
-                if let Some(s) = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id) {
+                let s = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id);
+                if let Some(s) = s.filter(|s| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Plug(_)))) {
                     let c = seen.entry(s.label.clone()).or_default();
                     *c += 1;
                     if *c == 2 {
@@ -1057,7 +1079,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         let has_templates = usage.values().any(|(_, avail)| *avail > 0);
         if has_templates {
             for (kind, (placed, avail)) in &usage {
-                if *kind != crate::parts::FnKind::Terminal && placed > avail {
+                if !matches!(kind, crate::parts::FnKind::Terminal | crate::parts::FnKind::PlugPin) && placed > avail {
                     let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
                     issue(
                         Severity::Warning,
