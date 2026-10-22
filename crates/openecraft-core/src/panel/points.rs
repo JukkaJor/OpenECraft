@@ -68,26 +68,44 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
         }
     }
     let strip = !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal);
-    let terminals: Vec<String> = if strip { crate::strips::terminals(prj, &it.tag).into_iter().map(|t| t.label).collect() } else { Vec::new() };
     // Rotated by a quarter turn: the part's height lies along x.
     let rotated = !same(it.h, mh) && same(it.w, mh);
-    let n = terminals.len().max(1);
-    let cell = (if rotated { it.h } else { it.w }) / n as f32;
+    let along = if rotated { it.h } else { it.w };
     let sz = if depth > 0.0 { it.d / depth } else { 0.0 };
+    // Places along the device: (start, width, terminal number, layers). Terminal
+    // strips have one per terminal with its own part, in the widths of the strip
+    // layout; other devices one for the whole device.
+    let mut cells: Vec<(f32, f32, String, Vec<Layer>)> = Vec::new();
+    let layout = if strip { crate::strips::strip_layout(prj, &it.tag) } else { Vec::new() };
+    let total: f32 = layout.iter().map(|e| e.width).sum();
+    if layout.is_empty() || total <= 0.0 {
+        cells.push((0.0, along, String::new(), layers));
+    } else {
+        let mut at = 0.0;
+        for e in &layout {
+            let width = e.width * along / total;
+            if let crate::strips::ElementKind::Terminal(label) = &e.kind {
+                let part = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == e.part).unwrap_or(main);
+                let size = part.size().unwrap_or([mw, mh, md]);
+                cells.push((at, width, label.clone(), vec![Layer { part, size, z: 0.0 }]));
+            }
+            at += width;
+        }
+    }
     let mut out = Vec::new();
-    for k in 0..n {
-        let terminal = terminals.get(k).cloned().unwrap_or_default();
+    for (start, cell, terminal, layers) in cells {
+        let [cw, ch, _] = layers[0].size;
         for layer in &layers {
             let (points, exact) = layer.part.connection_points_or_default();
             for c in points {
                 // Accessories are centred on the main part's front.
-                let fx = c.pos[0] + (mw - layer.size[0]) / 2.0;
-                let fy = c.pos[1] + (mh - layer.size[1]) / 2.0;
+                let fx = c.pos[0] + (cw - layer.size[0]) / 2.0;
+                let fy = c.pos[1] + (ch - layer.size[1]) / 2.0;
                 let z = it.z + (layer.z + c.pos[2]) * sz;
                 let (pos, exit) = if rotated {
-                    ([it.x + (mh - fy) * (it.w / mh), it.y + k as f32 * cell + fx * (cell / mw), z], turned(c.exit))
+                    ([it.x + (ch - fy) * (it.w / ch), it.y + start + fx * (cell / cw), z], turned(c.exit))
                 } else {
-                    ([it.x + k as f32 * cell + fx * (cell / mw), it.y + fy * (it.h / mh), z], c.exit)
+                    ([it.x + start + fx * (cell / cw), it.y + fy * (it.h / ch), z], c.exit)
                 };
                 out.push(PlacedPoint { pin: c.pin, terminal: terminal.clone(), pos, exit, exact });
             }

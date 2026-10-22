@@ -820,7 +820,7 @@ impl PanelUi {
         let origin = rect.min + self.offset;
         let problems = panel::problem_items(e, &prj.parts);
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
-        render::draw_enclosure(&mut d, e, self.face, p(0.0, 0.0), 1.0, &self.selection, &problems, &prj.parts);
+        render::draw_enclosure(&mut d, e, self.face, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
         let to_screen = |q: P| origin + vec2(q.x + fm, q.y + fm) * self.zoom;
         // Cable ducts coloured by their fill level.
         if self.show_fill && self.face == Face::Plate {
@@ -1160,9 +1160,8 @@ impl PanelUi {
                 }
             };
             // Devices with a 3D model in their part are drawn with it instead of a box.
-            let mesh = prj.parts.iter().find(|p| it.kind == ItemKind::Device && p.number == it.part).and_then(|p| p.model_3d.as_ref());
-            if let Some(mesh) = mesh {
-                for tri in panel::place_mesh(mesh, it) {
+            if let Some(tris) = panel::device_mesh(prj, it) {
+                for tri in tris {
                     let w = tri.map(|v| up(panel::to_enclosure(e, it, v)));
                     let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
                     if dot(n, sub(eye, w[0])) <= 0.0 {

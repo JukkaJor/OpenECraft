@@ -38,9 +38,27 @@ built with [egui / eframe](https://github.com/emilk/egui).
   with the mouse (ghost preview, devices get new tags), page macros insert a page.
   Placeholders such as `{MOTOR}` in tags, texts, function texts and designations are
   filled from **value sets** when inserting.
-- **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
-  **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
-  diagram and the BOM).
+- **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
+  **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
+  diagram and the BOM);
+  every terminal has its part: PE terminals take the strip's part with the tech data
+  `Terminal type: PE`, all others its feed-through part (bill of materials, panel
+  length of the strip, connection points per terminal); **automatic accessories**
+  from the tech data of the terminal parts (`End bracket: …`, `End plate: …`,
+  `Jumper: …` with jumper parts `Poles: n`): an end bracket at both ends, an end
+  plate after the last terminal of each part, plug-in jumpers of the shortest
+  fitting length (cut if longer, teeth broken off at terminals in between) – in the
+  bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check;
+  the terminal strip window shows the strip on the rail with its jumpers and has a
+  switch for the automatic accessories.
+- **Marking** (*Project › Marking…*: wire marker text, material per kind with piece
+  counts and export; *File › Export marking (CSV)…*, report *Marking*): device markers (legend
+  plates for door devices; the enclosure's location left out of the tag), terminal markers
+  in rail order with the strip marker, wire markers (wire number on both ends, or
+  destination marking: each end shows the other end), cable markers; grouped by
+  marker material in the order of application, as CSV for marking software (UTF-8,
+  `;`, header `Material;Category;Text;Count;Enclosure;Group`); the material is in the
+  bill of materials. Texts and materials are project settings (`marking`).
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
@@ -101,7 +119,7 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - enclosures (from a part such as `GEN.ENC-600X800` or custom size) with mounting plate;
   - mounting rails and cable ducts drawn by length; devices placed from a "devices to
     place" list with their real dimensions from the parts data (contactor + auxiliary
-    block add up in depth, terminal strips are as wide as their terminals) and snapped
+    block add up in depth, terminal strips are as long as their terminals and spares) and snapped
     onto rails; move (devices travel with their rail), rotate, delete;
   - 2D front view and a 3D view (orbit, pan, zoom, click to select);
   - collision and boundary checks (overlaps, outside the plate, too deep for the enclosure
@@ -326,7 +344,8 @@ cargo test --workspace
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
-| `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals |
+| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
+| `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |

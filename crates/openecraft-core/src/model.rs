@@ -76,6 +76,9 @@ pub struct Project {
     pub symbols: Vec<crate::symlib::UserSymbol>,
     /// Title blocks and report forms.
     pub forms: crate::forms::Forms,
+    /// Marker texts and materials.
+    #[serde(skip_serializing_if = "crate::marking::Settings::is_default")]
+    pub marking: crate::marking::Settings,
     pub next_id: u64,
 }
 
@@ -95,6 +98,7 @@ impl Default for Project {
             harnesses: Vec::new(),
             symbols: Vec::new(),
             forms: Default::default(),
+            marking: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -166,10 +170,11 @@ pub enum ReportKind {
     RevisionOverview,
     HarnessData,
     DuctFill,
+    Marking,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 13] = [
+    pub const ALL: [ReportKind; 14] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -183,6 +188,7 @@ impl ReportKind {
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
         ReportKind::DuctFill,
+        ReportKind::Marking,
     ];
 
     pub fn title(self) -> &'static str {
@@ -200,6 +206,7 @@ impl ReportKind {
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
             ReportKind::DuctFill => tr("Duct fill levels"),
+            ReportKind::Marking => tr("Marking"),
         }
     }
 }
@@ -383,6 +390,9 @@ pub struct StripData {
     pub jumpers: BTreeMap<String, u32>,
     /// Spare terminals (not in the schematic) at the end of the strip.
     pub spares: u32,
+    /// End brackets and end plates are not placed automatically.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub manual_accessories: bool,
 }
 
 /// PLC card (I/O module) data.

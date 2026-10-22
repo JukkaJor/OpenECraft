@@ -15,7 +15,7 @@ fn order_moves_and_renumbering() {
     move_terminal(&mut prj, "-X1", 0, true); // already first
     assert_eq!(labels(&prj), ["1", "3", "2", "PE"]);
     // Renumbering follows the strip order, PE keeps its designation; jumpers move along.
-    prj.strips.get_mut("-X1").unwrap().jumpers.insert("3".into(), 1);
+    prj.strips.entry("-X1".into()).or_default().jumpers.insert("3".into(), 1);
     assert_eq!(renumber(&mut prj, "-X1"), 2);
     assert_eq!(labels(&prj), ["1", "2", "3", "PE"]);
     assert_eq!(prj.strips["-X1"].jumpers.get("2"), Some(&1));
@@ -35,10 +35,10 @@ fn rows_include_jumpers_and_spares() {
     assert!(rows[0].internal.contains("-M1:U1"), "{}", rows[0].internal);
     assert_eq!((rows[4].label.as_str(), rows[5].label.as_str()), ("4", "5"));
     assert!(rows[5].terminal.is_none());
-    // Spares are in the bill of materials.
+    // Spares are in the bill of materials (as feed-through terminals, PE apart).
     let an = crate::reports::Analysis::build(&prj);
-    let tb = an.reports[&ReportKind::BillOfMaterials].rows.iter().find(|r| r[3] == "GEN.TB-2.5").cloned().unwrap();
-    assert_eq!(tb[1], "6");
+    let qty = |part: &str| an.reports[&ReportKind::BillOfMaterials].rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap();
+    assert_eq!((qty("GEN.TB-2.5").as_str(), qty("GEN.TB-PE-2.5").as_str()), ("5", "1"));
 }
 
 #[test]
@@ -60,3 +60,178 @@ fn jumpers_join_potentials() {
     let id = |l: &str| prj.pages.iter().flat_map(|p| &p.symbols).find(|s| s.tag == "-X1" && s.label == l).unwrap().id;
     assert_ne!(open.pin_net[&(id("1"), 0)], open.pin_net[&(id("2"), 0)]);
 }
+
+#[test]
+fn every_terminal_gets_its_part() {
+    let prj = demo_project();
+    assert_eq!(terminal_part(&prj, "-X1", false).unwrap().number, "GEN.TB-2.5");
+    assert_eq!(terminal_part(&prj, "-X1", true).unwrap().number, "GEN.TB-PE-2.5");
+    // Without a PE part, PE terminals fall back to the strip's terminal part.
+    let mut only_grey = prj.clone();
+    only_grey.devices.get_mut("-X1").unwrap().parts.retain(|r| r.number == "GEN.TB-2.5");
+    assert_eq!(terminal_part(&only_grey, "-X1", true).unwrap().number, "GEN.TB-2.5");
+    // Unknown strips have none.
+    assert!(terminal_part(&prj, "-X9", false).is_none());
+}
+
+#[test]
+fn strip_layout_lists_terminals_and_spares() {
+    let mut prj = demo_project();
+    prj.strips.entry("-X1".into()).or_default().spares = 1;
+    prj.strips.entry("-X1".into()).or_default().manual_accessories = true;
+    let layout = strip_layout(&prj, "-X1");
+    let kinds: Vec<(ElementKind, &str)> = layout.iter().map(|e| (e.kind.clone(), e.part.as_str())).collect();
+    assert_eq!(
+        kinds,
+        [
+            (ElementKind::Terminal("1".into()), "GEN.TB-2.5"),
+            (ElementKind::Terminal("2".into()), "GEN.TB-2.5"),
+            (ElementKind::Terminal("3".into()), "GEN.TB-2.5"),
+            (ElementKind::Terminal("PE".into()), "GEN.TB-PE-2.5"),
+            (ElementKind::Spare("4".into()), "GEN.TB-2.5"),
+        ]
+    );
+    assert!(layout.iter().all(|e| e.width == 5.2));
+    // A strip without parts still has its terminals, in the default width.
+    prj.devices.remove("-X1");
+    let bare = strip_layout(&prj, "-X1");
+    assert_eq!(bare.len(), 5);
+    assert!(bare.iter().all(|e| e.part.is_empty() && e.width == TERMINAL_WIDTH));
+}
+
+#[test]
+fn strips_are_as_long_as_their_layout() {
+    let mut prj = demo_project();
+    let terminal = |prj: &Project| crate::panel::device_size(prj, "-X1").unwrap().w;
+    // 4 terminals, end plates after the grey ones and after PE, 2 end brackets.
+    assert!((terminal(&prj) - (4.0 * 5.2 + 2.0 * 1.5 + 2.0 * 9.0)).abs() < 0.01);
+    // A wider PE terminal and a spare (with its own end plate) make the strip longer.
+    prj.parts.iter_mut().find(|p| p.number == "GEN.TB-PE-2.5").unwrap().width = 10.4;
+    prj.strips.entry("-X1".into()).or_default().spares = 1;
+    assert!((terminal(&prj) - (4.0 * 5.2 + 10.4 + 3.0 * 1.5 + 2.0 * 9.0)).abs() < 0.01);
+}
+
+fn kinds(prj: &Project) -> Vec<ElementKind> {
+    strip_layout(prj, "-X1").into_iter().map(|e| e.kind).collect()
+}
+
+#[test]
+fn accessories_follow_the_terminal_parts() {
+    let mut prj = demo_project();
+    use ElementKind::*;
+    assert_eq!(
+        kinds(&prj),
+        [EndBracket, Terminal("1".into()), Terminal("2".into()), Terminal("3".into()), EndPlate, Terminal("PE".into()), EndPlate, EndBracket]
+    );
+    // Same part throughout: one end plate at the end.
+    prj.devices.get_mut("-X1").unwrap().parts.retain(|r| r.number == "GEN.TB-2.5");
+    assert_eq!(kinds(&prj).iter().filter(|k| **k == EndPlate).count(), 1);
+    assert_eq!(kinds(&prj).last(), Some(&EndBracket));
+    // Parts without accessory data: none.
+    prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap().tech_data.clear();
+    assert!(kinds(&prj).iter().all(|k| matches!(k, Terminal(_))));
+    // Unknown accessory parts still get placed in their default width.
+    prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap().tech_data = "End bracket: OWN.BRACKET".into();
+    let layout = strip_layout(&prj, "-X1");
+    assert_eq!((layout[0].part.as_str(), layout[0].width), ("OWN.BRACKET", END_BRACKET_WIDTH));
+}
+
+#[test]
+fn accessories_are_in_the_bill_of_materials() {
+    let prj = demo_project();
+    let an = crate::reports::Analysis::build(&prj);
+    let qty = |part: &str| an.reports[&ReportKind::BillOfMaterials].rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    assert_eq!((qty("GEN.EB-35").as_str(), qty("GEN.TB-END").as_str()), ("2", "2"));
+    // Switched off: none, and nothing counted twice when listed by hand.
+    let mut manual = prj.clone();
+    manual.strips.entry("-X1".into()).or_default().manual_accessories = true;
+    manual.devices.get_mut("-X1").unwrap().parts.push(crate::parts::PartRef { number: "GEN.TB-END".into(), count: 1 });
+    let an = crate::reports::Analysis::build(&manual);
+    let qty = |part: &str| an.reports[&ReportKind::BillOfMaterials].rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    assert_eq!((qty("GEN.EB-35").as_str(), qty("GEN.TB-END").as_str()), ("", "1"));
+}
+
+fn jumper(prj: &mut Project, number: u32, labels: &[&str]) {
+    let data = prj.strips.entry("-X1".into()).or_default();
+    for l in labels {
+        data.jumpers.insert(l.to_string(), number);
+    }
+}
+
+#[test]
+fn jumpers_get_the_shortest_fitting_part() {
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["1", "2"]);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.part.as_str(), j.poles, j.span.len(), j.problem.clone()), ("GEN.JMP-2.5-2", 2, 2, None));
+    // 1 and 3: a 3-pole jumper with the tooth at 2 broken off.
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["1", "3"]);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.part.as_str(), j.broken.clone()), ("GEN.JMP-2.5-3", vec!["2".to_string()]));
+    // Four spares in a row: no 4-pole part, the 10-pole one is cut.
+    let mut prj = demo_project();
+    prj.strips.entry("-X1".into()).or_default().spares = 4;
+    jumper(&mut prj, 2, &["4", "7"]);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.part.as_str(), j.poles, j.span.len()), ("GEN.JMP-2.5-10", 10, 4));
+    // In the bill of materials.
+    let an = crate::reports::Analysis::build(&prj);
+    assert!(an.reports[&ReportKind::BillOfMaterials].rows.iter().any(|r| r[3] == "GEN.JMP-2.5-10" && r[1] == "1"));
+}
+
+#[test]
+fn jumper_problems() {
+    let problem = |labels: &[&str], setup: &dyn Fn(&mut Project)| {
+        let mut prj = demo_project();
+        setup(&mut prj);
+        jumper(&mut prj, 1, labels);
+        strip_jumpers(&prj, "-X1")[0].problem.clone()
+    };
+    let none = |_: &mut Project| {};
+    // Across the end plate between the grey terminals and PE.
+    assert_eq!(problem(&["3", "PE"], &none), Some(JumperProblem::Blocked));
+    let manual = |prj: &mut Project| prj.strips.entry("-X1".into()).or_default().manual_accessories = true;
+    assert_eq!(problem(&["3", "PE"], &manual), Some(JumperProblem::MixedParts));
+    let no_jumpers = |prj: &mut Project| {
+        let p = prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap();
+        p.tech_data = p.tech_data.lines().filter(|l| !l.starts_with("Jumper")).collect::<Vec<_>>().join("\n");
+    };
+    assert_eq!(problem(&["1", "2"], &no_jumpers), Some(JumperProblem::NoPart));
+    let short = |prj: &mut Project| {
+        let p = prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap();
+        p.tech_data = p.tech_data.replace(", GEN.JMP-2.5-3, GEN.JMP-2.5-10", "");
+    };
+    assert_eq!(problem(&["1", "3"], &short), Some(JumperProblem::TooShort { needed: 3, longest: 2 }));
+    // Reported by the project check.
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["3", "PE"]);
+    let an = crate::reports::Analysis::build(&prj);
+    assert!(an.issues.iter().any(|i| i.message == "-X1: jumper 1 crosses an end plate or end bracket"));
+}
+
+#[test]
+fn terminal_diagram_shows_accessories_and_jumpers() {
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["1", "3"]);
+    let an = crate::reports::Analysis::build(&prj);
+    let rows = &an.reports[&ReportKind::TerminalDiagram].rows;
+    let column: Vec<&str> = rows.iter().map(|r| r[1].as_str()).collect();
+    assert_eq!(column, ["End bracket", "1", "2", "3", "End plate", "PE", "End plate", "End bracket", "Jumper"]);
+    let j = rows.last().unwrap();
+    assert_eq!((j[3].as_str(), j[4].as_str(), j[6].as_str(), j[7].as_str()), ("GEN.JMP-2.5-3", "3 poles", "break off at 2", "terminals 1 – 3"));
+}
+
+#[test]
+fn texts_for_lists() {
+    assert_eq!(ElementKind::EndBracket.title(), "End bracket");
+    assert_eq!(ElementKind::Spare("7".into()).title(), "7");
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["1", "2"]);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.length_text().as_str(), j.broken_text().as_str(), j.span_text().as_str()), ("2 poles", "", "terminals 1 – 2"));
+    assert_eq!(j.problem_text("-X1"), None);
+    let cut = Jumper { poles: 10, ..j.clone() };
+    assert_eq!(cut.length_text(), "cut from 10 to 2 poles");
+}
+

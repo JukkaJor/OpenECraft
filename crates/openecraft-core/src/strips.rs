@@ -1,7 +1,10 @@
-//! Terminal strips: terminal order, renumbering, jumpers and spare terminals.
+//! Terminal strips: terminal order, renumbering, jumpers, spare terminals, the part
+//! of every terminal and the layout of the strip on the rail.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
+use crate::parts::FnKind;
 use crate::symbols::{self, Func};
 
 /// A terminal of a strip as placed in the schematic.
@@ -137,6 +140,254 @@ pub fn rows(prj: &Project, strip: &str, nl: &Netlist, open: &Netlist) -> Vec<Row
             location: String::new(),
             function_text: "spare".into(),
         });
+    }
+    out
+}
+
+/// Width of a terminal whose part has no mounting data (mm).
+pub const TERMINAL_WIDTH: f32 = 5.2;
+/// Widths of end brackets and end plates whose parts are unknown (mm).
+pub const END_BRACKET_WIDTH: f32 = 9.0;
+pub const END_PLATE_WIDTH: f32 = 1.5;
+
+/// Symbol of protective earth terminals.
+const PE_SYMBOL: &str = "term_pe";
+
+/// A protective earth terminal part (tech data `Terminal type: PE`).
+pub fn is_pe_part(part: &Part) -> bool {
+    part.tech_value("Terminal type").is_some_and(|t| t.eq_ignore_ascii_case("PE"))
+}
+
+/// A part whose functions are all terminals.
+pub fn is_terminal_part(part: &Part) -> bool {
+    !part.functions.is_empty() && part.functions.iter().all(|f| f.kind == FnKind::Terminal)
+}
+
+/// Terminal parts of a strip in the order of its parts list (project parts first,
+/// then the built-in catalog).
+fn terminal_parts<'a>(prj: &'a Project, strip: &str) -> Vec<&'a Part> {
+    let Some(data) = prj.devices.get(strip) else { return Vec::new() };
+    data.parts
+        .iter()
+        .filter_map(|r| prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == r.number))
+        .filter(|p| is_terminal_part(p))
+        .collect()
+}
+
+/// The part of a terminal: PE terminals take the strip's PE terminal part, all others
+/// its first other terminal part; either falls back to the first terminal part.
+pub fn terminal_part<'a>(prj: &'a Project, strip: &str, pe: bool) -> Option<&'a Part> {
+    let parts = terminal_parts(prj, strip);
+    parts.iter().find(|p| is_pe_part(p) == pe).or(parts.first()).copied()
+}
+
+fn part_by_number<'a>(prj: &'a Project, number: &str) -> Option<&'a Part> {
+    prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == number)
+}
+
+/// What sits on the rail at one place of a strip.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ElementKind {
+    /// A terminal of the schematic (designation).
+    Terminal(String),
+    /// A spare terminal (designation).
+    Spare(String),
+    /// Holds the strip on the rail, at both ends.
+    EndBracket,
+    /// Covers the open side of the last terminal of a kind.
+    EndPlate,
+}
+
+/// One element of a terminal strip on the rail.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Element {
+    pub kind: ElementKind,
+    /// Part number; empty if the strip has no terminal part.
+    pub part: String,
+    /// Width along the rail (mm).
+    pub width: f32,
+}
+
+/// Accessory element named by the tech data `key` of a terminal part (`End bracket`,
+/// `End plate`).
+fn accessory(prj: &Project, terminal_part: &str, key: &str, kind: ElementKind, default_width: f32) -> Option<Element> {
+    let number = part_by_number(prj, terminal_part)?.tech_value(key)?.trim().to_string();
+    let width = part_by_number(prj, &number).and_then(|p| p.size()).map(|s| s[0]).unwrap_or(default_width);
+    Some(Element { kind, part: number, width })
+}
+
+/// The strip on the rail in order, each element with its part and width: an end
+/// bracket, the terminals, the spare terminals, an end bracket. An end plate follows
+/// the last terminal of each part (where the next terminal has another part, and at
+/// the end). The accessory parts come from the tech data of the terminal parts
+/// (`End bracket: …`, `End plate: …`), unless the strip has `manual_accessories`.
+/// Reports, the bill of materials and the panel layout all work from this.
+pub fn strip_layout(prj: &Project, strip: &str) -> Vec<Element> {
+    let terminals = terminal_elements(prj, strip);
+    if terminals.is_empty() || prj.strips.get(strip).is_some_and(|d| d.manual_accessories) {
+        return terminals;
+    }
+    let bracket = |part: &str| accessory(prj, part, "End bracket", ElementKind::EndBracket, END_BRACKET_WIDTH);
+    let mut out: Vec<Element> = bracket(&terminals[0].part).into_iter().collect();
+    for (i, e) in terminals.iter().enumerate() {
+        out.push(e.clone());
+        if terminals.get(i + 1).is_none_or(|next| next.part != e.part) {
+            out.extend(accessory(prj, &e.part, "End plate", ElementKind::EndPlate, END_PLATE_WIDTH));
+        }
+    }
+    out.extend(bracket(&terminals[terminals.len() - 1].part));
+    out
+}
+
+/// Terminals and spare terminals of a strip with their parts.
+fn terminal_elements(prj: &Project, strip: &str) -> Vec<Element> {
+    let element = |kind, pe| {
+        let part = terminal_part(prj, strip, pe);
+        let width = part.and_then(|p| p.size()).map(|s| s[0]).unwrap_or(TERMINAL_WIDTH);
+        Element { kind, part: part.map(|p| p.number.clone()).unwrap_or_default(), width }
+    };
+    let mut out = Vec::new();
+    let mut max = 0u32;
+    for t in terminals(prj, strip) {
+        let pe = prj.pages[t.page].symbols[t.sym].sym == PE_SYMBOL;
+        max = max.max(t.label.parse().unwrap_or(0));
+        out.push(element(ElementKind::Terminal(t.label), pe));
+    }
+    let spares = prj.strips.get(strip).map(|d| d.spares).unwrap_or(0);
+    for i in 1..=spares {
+        out.push(element(ElementKind::Spare((max + i).to_string()), false));
+    }
+    out
+}
+
+/// Why a jumper cannot be fitted as planned.
+#[derive(Clone, Debug, PartialEq)]
+pub enum JumperProblem {
+    /// The terminal part names no jumper parts (tech data `Jumper: …`).
+    NoPart,
+    /// It needs more poles than the longest jumper part has.
+    TooShort { needed: u32, longest: u32 },
+    /// An end plate or end bracket lies between its terminals.
+    Blocked,
+    /// It connects terminals of different parts.
+    MixedParts,
+    /// It includes a PE terminal.
+    Pe,
+}
+
+/// A plug-in jumper of a strip: from the first to the last terminal with the same
+/// jumper number.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Jumper {
+    pub number: u32,
+    /// Jumper part; empty without a suitable one.
+    pub part: String,
+    /// Poles of the part (cut to the length of `span` if longer).
+    pub poles: u32,
+    /// Terminals the jumper spans, in strip order.
+    pub span: Vec<String>,
+    /// Terminals in the span that are not jumpered: their teeth are broken off.
+    pub broken: Vec<String>,
+    pub problem: Option<JumperProblem>,
+}
+
+impl Jumper {
+    /// `3 poles`, or `cut from 10 to 3 poles` for a longer part.
+    pub fn length_text(&self) -> String {
+        match self.span.len() as u32 {
+            n if self.poles > n => tr_fmt!("cut from {} to {} poles", self.poles, n),
+            n => tr_fmt!("{} poles", n),
+        }
+    }
+
+    /// `break off at 2, 4`; empty if every terminal of the span is jumpered.
+    pub fn broken_text(&self) -> String {
+        if self.broken.is_empty() {
+            String::new()
+        } else {
+            tr_fmt!("break off at {}", self.broken.join(", "))
+        }
+    }
+
+    /// `terminals 1 – 3`.
+    pub fn span_text(&self) -> String {
+        tr_fmt!("terminals {} – {}", self.span.first().cloned().unwrap_or_default(), self.span.last().cloned().unwrap_or_default())
+    }
+
+    /// The problem as a sentence (project check, terminal strip window).
+    pub fn problem_text(&self, strip: &str) -> Option<String> {
+        let n = self.number;
+        Some(match self.problem.as_ref()? {
+            JumperProblem::Blocked => tr_fmt!("{}: jumper {} crosses an end plate or end bracket", strip, n),
+            JumperProblem::MixedParts => tr_fmt!("{}: jumper {} connects terminals of different parts", strip, n),
+            JumperProblem::Pe => tr_fmt!("{}: jumper {} includes a PE terminal", strip, n),
+            JumperProblem::TooShort { needed, longest } => tr_fmt!("{}: jumper {} needs {} poles, the longest jumper part has {}", strip, n, needed, longest),
+            JumperProblem::NoPart => tr_fmt!("{}: no jumper part for jumper {} (tech data Jumper of the terminal part)", strip, n),
+        })
+    }
+}
+
+impl ElementKind {
+    /// Name for lists: the designation of terminals, the kind of accessories.
+    pub fn title(&self) -> String {
+        match self {
+            ElementKind::Terminal(label) | ElementKind::Spare(label) => label.clone(),
+            ElementKind::EndBracket => tr("End bracket").into(),
+            ElementKind::EndPlate => tr("End plate").into(),
+        }
+    }
+}
+
+/// Poles of a jumper part (tech data `Poles: 3`).
+fn poles(prj: &Project, number: &str) -> u32 {
+    part_by_number(prj, number).and_then(|p| p.tech_value("Poles")).and_then(|v| v.trim().parse().ok()).unwrap_or(0)
+}
+
+/// The jumpers of a strip with their parts: the shortest jumper part of the terminal
+/// part (tech data `Jumper: …`) that spans the group.
+pub fn strip_jumpers(prj: &Project, strip: &str) -> Vec<Jumper> {
+    let Some(data) = prj.strips.get(strip) else { return Vec::new() };
+    let layout = strip_layout(prj, strip);
+    let label = |e: &Element| match &e.kind {
+        ElementKind::Terminal(l) | ElementKind::Spare(l) => Some(l.clone()),
+        _ => None,
+    };
+    let mut numbers: Vec<u32> = data.jumpers.values().copied().filter(|j| *j > 0).collect();
+    numbers.sort_unstable();
+    numbers.dedup();
+    let mut out = Vec::new();
+    for number in numbers {
+        let group: Vec<&String> = data.jumpers.iter().filter(|(_, j)| **j == number).map(|(l, _)| l).collect();
+        let at: Vec<usize> = layout.iter().enumerate().filter(|(_, e)| label(e).is_some_and(|l| group.contains(&&l))).map(|(i, _)| i).collect();
+        let (Some(&lo), Some(&hi)) = (at.first(), at.last()) else { continue };
+        if at.len() < 2 {
+            continue;
+        }
+        let elements = &layout[lo..=hi];
+        let span: Vec<String> = elements.iter().filter_map(label).collect();
+        let broken: Vec<String> = span.iter().filter(|l| !group.contains(l)).cloned().collect();
+        let first = &layout[lo].part;
+        let candidates: Vec<(String, u32)> = part_by_number(prj, first)
+            .and_then(|p| p.tech_value("Jumper"))
+            .map(|list| list.split(',').map(|n| n.trim().to_string()).filter(|n| !n.is_empty()).map(|n| (n.clone(), poles(prj, &n))).collect())
+            .unwrap_or_default();
+        let needed = span.len() as u32;
+        let fitting = candidates.iter().filter(|c| c.1 >= needed).min_by_key(|c| c.1);
+        let (part, poles) = fitting.cloned().unwrap_or_default();
+        let problem = if elements.iter().any(|e| matches!(e.kind, ElementKind::EndPlate | ElementKind::EndBracket)) {
+            Some(JumperProblem::Blocked)
+        } else if elements.iter().any(|e| e.part != *first) {
+            Some(JumperProblem::MixedParts)
+        } else if part_by_number(prj, first).is_some_and(is_pe_part) {
+            Some(JumperProblem::Pe)
+        } else if candidates.is_empty() {
+            Some(JumperProblem::NoPart)
+        } else if fitting.is_none() {
+            Some(JumperProblem::TooShort { needed, longest: candidates.iter().map(|c| c.1).max().unwrap_or(0) })
+        } else {
+            None
+        };
+        out.push(Jumper { number, part, poles, span, broken, problem });
     }
     out
 }

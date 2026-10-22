@@ -7,7 +7,7 @@ use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::netlist;
 use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
-use crate::parts::{Model2d, Part, Prim2d};
+use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
 use crate::{structure, wirenum};
@@ -570,8 +570,9 @@ pub fn draw_enclosure(
     k: f32,
     selected: &BTreeSet<u64>,
     problems: &BTreeSet<u64>,
-    parts: &[Part],
+    prj: &Project,
 ) {
+    let parts = &prj.parts[..];
     let m = face.origin();
     let tf = |x: f32, y: f32| origin + p((x + m) * k, (y + m) * k);
     d.rect(origin, origin + p(e.width * k, e.height * k), 0.5, Ink::Line, false);
@@ -689,7 +690,16 @@ pub fn draw_enclosure(
                 let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
                 let size = (it.w.min(it.h) * 0.22).clamp(3.0, 9.0) * k;
                 let c = tf(it.x + it.w / 2.0, it.y + it.h / 2.0);
+                // Terminal strips: every element of the strip in its place.
+                let cells = panel::strip_cells(prj, it);
                 match model {
+                    Some(_) if !cells.is_empty() => {
+                        draw_strip_2d(d, prj, it, &cells, &tf, k, ink);
+                        let size = size * 0.8;
+                        let half = p(it.tag.chars().count() as f32 * size * 0.33 + size * 0.2, size * 0.6);
+                        d.rect(c - half, c + half, 0.0, Ink::Plate, true);
+                        d.text(c, &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                    }
                     Some(m) => {
                         draw_model_2d(d, m, it, &tf, k, ink);
                         // Tag on a small label so it stays readable on the drawing
@@ -732,26 +742,56 @@ pub fn draw_enclosure(
 }
 
 /// Draws a part's 2D front view into a placed device. Rotated devices (width and
-/// height swapped) get the drawing turned by 90°, other size differences are scaled.
+/// height swapped) get the drawing turned by 90°, other size differences are scaled;
+/// a strip of equal parts repeats it.
 fn draw_model_2d(d: &mut dyn Draw, m: &Model2d, it: &PanelItem, tf: &dyn Fn(f32, f32) -> P, k: f32, ink: Ink) {
     if m.width <= 0.0 || m.height <= 0.0 {
         return;
     }
-    let same = |a: f32, b: f32| (a - b).abs() < 0.5;
-    let rotated = !same(m.width, m.height) && same(it.w, m.height) && same(it.h, m.width);
-    // Terminal strips: one drawing per terminal side by side.
+    let rotated = panel::item_rotated(it, m.height);
     let n = if rotated { 1 } else { panel::tiles(it.w, m.width) };
-    let cell_w = it.w / n as f32;
-    let (sx, sy) = if rotated { (it.w / m.height, it.h / m.width) } else { (cell_w / m.width, it.h / m.height) };
-    let s = (sx + sy) / 2.0;
-    let w = 0.15;
+    let cell = (if rotated { it.h } else { it.w }) / n as f32;
     for tile in 0..n {
-        let x0 = it.x + tile as f32 * cell_w;
-        let map = |q: [f32; 2]| {
-            let (x, y) = if rotated { (m.height - q[1], q[0]) } else { (q[0], q[1]) };
-            tf(x0 + x * sx, it.y + y * sy)
-        };
-        draw_prims_2d(d, &m.prims, &map, s * k, w, ink);
+        draw_model_2d_in(d, m, it, tf, k, ink, tile as f32 * cell, cell);
+    }
+}
+
+/// A part's 2D front view in the stretch `at .. at + len` along a device.
+#[allow(clippy::too_many_arguments)]
+fn draw_model_2d_in(d: &mut dyn Draw, m: &Model2d, it: &PanelItem, tf: &dyn Fn(f32, f32) -> P, k: f32, ink: Ink, at: f32, len: f32) {
+    if m.width <= 0.0 || m.height <= 0.0 {
+        return;
+    }
+    let rotated = panel::item_rotated(it, m.height);
+    let (sx, sy) = if rotated { (it.w / m.height, len / m.width) } else { (len / m.width, it.h / m.height) };
+    let s = (sx + sy) / 2.0;
+    let map = |q: [f32; 2]| {
+        if rotated {
+            tf(it.x + (m.height - q[1]) * sx, it.y + at + q[0] * sy)
+        } else {
+            tf(it.x + at + q[0] * sx, it.y + q[1] * sy)
+        }
+    };
+    draw_prims_2d(d, &m.prims, &map, s * k, 0.15, ink);
+}
+
+/// The elements of a terminal strip: each part's front view in its cell, a plain
+/// outline where a part has none.
+#[allow(clippy::too_many_arguments)]
+fn draw_strip_2d(d: &mut dyn Draw, prj: &Project, it: &PanelItem, cells: &[panel::Cell], tf: &dyn Fn(f32, f32) -> P, k: f32, ink: Ink) {
+    let rotated = prj.parts.iter().chain(parts::catalog()).find(|x| x.number == it.part).and_then(|x| x.size()).is_some_and(|s| panel::item_rotated(it, s[1]));
+    for c in cells {
+        match prj.parts.iter().chain(parts::catalog()).find(|x| x.number == c.part).and_then(|x| x.model_2d.as_ref()) {
+            Some(m) => draw_model_2d_in(d, m, it, tf, k, ink, c.at, c.len),
+            None => {
+                let (a, b) = if rotated {
+                    (tf(it.x, it.y + c.at), tf(it.x + it.w, it.y + c.at + c.len))
+                } else {
+                    (tf(it.x + c.at, it.y), tf(it.x + c.at + c.len, it.y + it.h))
+                };
+                d.rect(a, b, 0.15, ink, false);
+            }
+        }
     }
 }
 
@@ -800,10 +840,10 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
     let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, Face::Plate, origin, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
+    draw_enclosure(d, e, Face::Plate, origin, k, &BTreeSet::new(), &BTreeSet::new(), prj);
     if door {
         let o = origin + p(w + gap * k, 0.0);
-        draw_enclosure(d, e, Face::Door, o, k, &BTreeSet::new(), &BTreeSet::new(), &prj.parts);
+        draw_enclosure(d, e, Face::Door, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
         d.text(p(origin.x + w / 2.0, origin.y - 3.0), tr("Mounting plate"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
         d.text(p(o.x + w / 2.0, o.y - 3.0), tr("Door (front view)"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
     }

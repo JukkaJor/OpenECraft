@@ -156,7 +156,7 @@ pub fn demo_project() -> Project {
         ("-Q1", &["GEN.MPS-2.5-4A", "GEN.MPS-AUX-1NO1NC"][..]),
         ("-K1", &["GEN.CT-9A-24DC", "GEN.AUX-2NO2NC"]),
         ("-M1", &["GEN.MOT-0.75KW"]),
-        ("-X1", &["GEN.TB-2.5"]),
+        ("-X1", &["GEN.TB-2.5", "GEN.TB-PE-2.5"]),
         ("-F1", &["GEN.MCB-1P-C6"]),
         ("-T1", &["GEN.PS-24DC-5A"]),
         ("-S1", &["GEN.ESTOP-1NC"]),

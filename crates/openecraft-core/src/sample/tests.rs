@@ -21,8 +21,8 @@ fn demo_is_consistent() {
     let reserve = crate::parts::reserve_functions(&prj, None, "-K1");
     let pins: Vec<_> = reserve.iter().map(|f| f.pins.as_str()).collect();
     assert_eq!(pins, vec!["61 62", "71 72"]);
-    // BOM: -X1 has four terminals.
+    // BOM: -X1 has three feed-through terminals and one PE terminal.
     let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
-    let tb = bom.rows.iter().find(|r| r[3] == "GEN.TB-2.5").unwrap();
-    assert_eq!(tb[1], "4");
+    let qty = |part: &str| bom.rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    assert_eq!((qty("GEN.TB-2.5").as_str(), qty("GEN.TB-PE-2.5").as_str()), ("3", "1"));
 }

@@ -63,7 +63,7 @@ Draws a wire through two or more points	Zeichnet eine Verbindung durch zwei oder
 End: device tag and connection point, e.g. -S1:14	Ende: BMK und Anschluss, z. B. -S1:14	Fin : repère et point de connexion, p. ex. -S1:14	Fin: identificador y punto de conexión, p. ej. -S1:14
 Error: {}	Fehler: {}	Erreur : {}	Error: {}
 Exports all parts of the parts server as CSV	Exportiert alle Artikel des Artikelservers als CSV	Exporte tous les articles du serveur d'articles en CSV	Exporta todos los artículos del servidor de artículos como CSV
-Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV) or kbl (harness XML)	Exportiert das Projekt: svg (eine Seite), html, pdf, dxf, wire_list (CSV), plc_table (CSV) oder kbl (Kabelbaum-XML)	Exporte le projet : svg (une page), html, pdf, dxf, wire_list (CSV), plc_table (CSV) ou kbl (XML de faisceau)	Exporta el proyecto: svg (una página), html, pdf, dxf, wire_list (CSV), plc_table (CSV) o kbl (XML de mazo de cables)
+Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML) or marking (CSV)	Exportiert das Projekt: svg (eine Seite), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (Kabelbaum-XML) oder marking (CSV)	Exporte le projet : svg (une page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (XML de faisceau) ou marking (CSV)	Exporta el proyecto: svg (una página), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (XML de mazo de cables) o marking (CSV)
 File to save the project to (.oec)	Datei, in die das Projekt gespeichert wird (.oec)	Fichier dans lequel enregistrer le projet (.oec)	Archivo en el que se guarda el proyecto (.oec)
 Function aspect (=) of the page; the devices on the page move along	Funktionsaspekt (=) der Seite; die Betriebsmittel der Seite wandern mit	Aspect fonction (=) de la page ; les appareils de la page suivent	Aspecto de función (=) de la página; los equipos de la página lo siguen
 Generates a report as table	Erzeugt eine Auswertung als Tabelle	Génère un rapport sous forme de tableau	Genera un informe como tabla
@@ -150,9 +150,9 @@ Wire number (kept when renumbering)	Verbindungsnummer (bleibt beim Neunummeriere
 X position in mm	X-Position in mm	Position X en mm	Posición X en mm
 Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
 json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
-schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill
-svg, html, pdf, dxf, wire_list, plc_table or kbl	svg, html, pdf, dxf, wire_list, plc_table oder kbl	svg, html, pdf, dxf, wire_list, plc_table ou kbl	svg, html, pdf, dxf, wire_list, plc_table o kbl
-table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data or duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data oder duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data ou duct_fill	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data o duct_fill
+schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill, marking
+svg, html, pdf, dxf, wire_list, plc_table, kbl or marking	svg, html, pdf, dxf, wire_list, plc_table, kbl oder marking	svg, html, pdf, dxf, wire_list, plc_table, kbl ou marking	svg, html, pdf, dxf, wire_list, plc_table, kbl o marking
+table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill or marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill oder marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill ou marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, revision_overview, harness_data, duct_fill o marking
 {} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
 {} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)
 Released pages cannot be deleted	Freigegebene Seiten können nicht gelöscht werden	Les pages validées ne peuvent pas être supprimées	Las páginas liberadas no se pueden eliminar
@@ -203,3 +203,42 @@ via cable ducts	über Kabelkanäle	par les goulottes	por las canaletas
 🗑 Remove all	🗑 Alle entfernen	🗑 Tout supprimer	🗑 Quitar todos
 2D front view (SVG)	2D-Frontansicht (SVG)	Vue de face 2D (SVG)	Vista frontal 2D (SVG)
 3D model (STL, OBJ, STEP)	3D-Modell (STL, OBJ, STEP)	Modèle 3D (STL, OBJ, STEP)	Modelo 3D (STL, OBJ, STEP)
+End bracket	Endhalter	Butée d'arrêt	Soporte final
+End plate	Abschlussdeckel	Flasque d'extrémité	Tapa final
+break off at {}	ausbrechen bei {}	à casser en {}	romper en {}
+cut from {} to {} poles	von {} auf {} Pole gekürzt	coupé de {} à {} pôles	cortado de {} a {} polos
+terminals {} – {}	Klemmen {} – {}	bornes {} – {}	bornas {} – {}
+{} poles	{} Pole	{} pôles	{} polos
+{}: jumper {} connects terminals of different parts	{}: Brücke {} verbindet Klemmen verschiedener Artikel	{} : le pont {} relie des bornes d'articles différents	{}: el puente {} une bornas de artículos distintos
+{}: jumper {} crosses an end plate or end bracket	{}: Brücke {} überquert einen Abschlussdeckel oder Endhalter	{} : le pont {} traverse un flasque d'extrémité ou une butée d'arrêt	{}: el puente {} cruza una tapa final o un soporte final
+{}: jumper {} includes a PE terminal	{}: Brücke {} umfasst eine PE-Klemme	{} : le pont {} comprend une borne PE	{}: el puente {} incluye una borna PE
+{}: jumper {} needs {} poles, the longest jumper part has {}	{}: Brücke {} braucht {} Pole, der längste Brückenartikel hat {}	{} : le pont {} nécessite {} pôles, l'article de pont le plus long en a {}	{}: el puente {} necesita {} polos, el artículo de puente más largo tiene {}
+{}: no jumper part for jumper {} (tech data Jumper of the terminal part)	{}: kein Brückenartikel für Brücke {} (technische Daten Jumper des Klemmenartikels)	{} : aucun article de pont pour le pont {} (données techniques Jumper de l'article de borne)	{}: ningún artículo de puente para el puente {} (datos técnicos Jumper del artículo de borna)
+Belongs to	Gehört zu	Appartient à	Pertenece a
+Cable marker	Kabelmarkierer	Repère de câble	Marcador de cable
+Count	Anzahl	Nombre	Cantidad
+Device marker	Betriebsmittelschild	Repère d'appareil	Marcador de equipo
+Device, terminal, wire and cable markers for marking software	Betriebsmittel-, Klemmen-, Leitungs- und Kabelmarkierer für Beschriftungssoftware	Repères d'appareils, de bornes, de fils et de câbles pour logiciel de marquage	Marcadores de equipos, bornas, cables y mangueras para software de marcado
+Export marking (CSV)…	Beschriftung exportieren (CSV)…	Exporter le marquage (CSV)…	Exportar marcado (CSV)…
+Marking	Beschriftung	Marquage	Marcado
+Material	Material	Matériel	Material
+Terminal marker	Klemmenmarkierer	Repère de borne	Marcador de borna
+Wire marker	Leitungsmarkierer	Repère de fil	Marcador de cable
+Automatic accessories	Automatisches Zubehör	Accessoires automatiques	Accesorios automáticos
+Cable markers	Kabelmarkierer	Repères de câbles	Marcadores de mangueras
+Destination: each end shows the connection point at the other end	Ziel: jedes Ende zeigt den Anschluss am anderen Ende	Destination : chaque extrémité indique le point de connexion à l'autre extrémité	Destino: cada extremo muestra el punto de conexión del otro extremo
+Device markers	Betriebsmittelschilder	Repères d'appareils	Marcadores de equipos
+End brackets and end plates from the tech data of the terminal parts (End bracket, End plate)	Endhalter und Abschlussdeckel aus den technischen Daten der Klemmenartikel (End bracket, End plate)	Butées d'arrêt et flasques d'extrémité d'après les données techniques des articles de bornes (End bracket, End plate)	Soportes finales y tapas finales según los datos técnicos de los artículos de bornas (End bracket, End plate)
+Jumper {}	Brücke {}	Pont {}	Puente {}
+Legend plates (door devices)	Bezeichnungsschilder (Türgeräte)	Plaques de repérage (appareils de porte)	Placas de leyenda (equipos de puerta)
+Marker material	Markierungsmaterial	Matériel de repérage	Material de marcado
+Marking…	Beschriftung…	Marquage…	Marcado…
+No parts of the product group Marking in the parts database.	Keine Artikel der Produktgruppe Marking in der Artikeldatenbank.	Aucun article du groupe de produits Marking dans la base d'articles.	Ningún artículo del grupo de productos Marking en la base de datos de artículos.
+Strip on the rail	Leiste auf der Tragschiene	Bornier sur le rail	Regleta en el carril
+Terminal markers	Klemmenmarkierer	Repères de bornes	Marcadores de bornas
+The terminal parts name no end brackets or end plates (tech data End bracket, End plate).	Die Klemmenartikel nennen keine Endhalter oder Abschlussdeckel (technische Daten End bracket, End plate).	Les articles de bornes n'indiquent ni butées d'arrêt ni flasques d'extrémité (données techniques End bracket, End plate).	Los artículos de bornas no indican soportes finales ni tapas finales (datos técnicos End bracket, End plate).
+Wire markers	Leitungsmarkierer	Repères de fils	Marcadores de cables
+Wire number on both ends	Verbindungsnummer an beiden Enden	Numéro de fil aux deux extrémités	Número de cable en ambos extremos
+{} markers	{} Markierer	{} repères	{} marcadores
+{} mm	{} mm	{} mm	{} mm
+{} pieces	{} Stück	{} pièces	{} piezas

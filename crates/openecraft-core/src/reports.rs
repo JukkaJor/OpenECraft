@@ -96,7 +96,7 @@ impl Analysis {
             let t = match k {
                 ReportKind::TableOfContents => toc(prj),
                 ReportKind::DeviceList => device_list(prj, &idx),
-                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring),
+                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
@@ -107,6 +107,7 @@ impl Analysis {
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
+                ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
             };
             reports.insert(k, t);
         }
@@ -198,7 +199,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
     t
 }
 
-fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
+fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) -> Table {
     let mut t = Table::new(&[
         (tr("Pos"), 0.5),
         (tr("Qty"), 0.6),
@@ -232,9 +233,32 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
                     .unwrap_or(false)
             })
             .count();
-        let spares = prj.strips.get(tag).map(|d| d.spares as usize).unwrap_or(0);
-        let per_device = if dev.mains.is_empty() && terminals > 0 { terminals + spares } else { 1 };
-        for r in &data.parts {
+        let strip = dev.mains.is_empty() && terminals > 0;
+        let layout = if strip { crate::strips::strip_layout(prj, tag) } else { Vec::new() };
+        let jumpers = if strip { crate::strips::strip_jumpers(prj, tag) } else { Vec::new() };
+        // End brackets, end plates and jumpers of the strip.
+        let mut accessories: Vec<&str> = layout
+            .iter()
+            .filter(|e| matches!(e.kind, crate::strips::ElementKind::EndBracket | crate::strips::ElementKind::EndPlate))
+            .map(|e| e.part.as_str())
+            .collect();
+        accessories.extend(jumpers.iter().filter(|j| !j.part.is_empty()).map(|j| j.part.as_str()));
+        for part in &accessories {
+            let g = groups.entry(part.to_string()).or_default();
+            g.0 += 1.0;
+            if !g.1.contains(tag) {
+                g.1.push(tag.clone());
+            }
+        }
+        for r in data.parts.iter().filter(|r| !accessories.contains(&r.number.as_str())) {
+            // Terminal parts as often as the strip layout uses them (PE terminals their
+            // own part), other parts once.
+            let used = layout.iter().filter(|e| matches!(e.kind, crate::strips::ElementKind::Terminal(_) | crate::strips::ElementKind::Spare(_)) && e.part == r.number).count();
+            let terminal_part = !layout.is_empty() && prj.parts.iter().chain(crate::parts::catalog()).any(|p| p.number == r.number && crate::strips::is_terminal_part(p));
+            let per_device = if used > 0 || terminal_part { used } else { 1 };
+            if per_device == 0 {
+                continue;
+            }
             let g = groups.entry(r.number.clone()).or_default();
             g.0 += (per_device * r.count.max(1) as usize) as f32;
             if !g.1.contains(tag) {
@@ -265,6 +289,12 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
         let g = groups.entry(part.to_string()).or_default();
         g.0 += n as f32;
         g.1.push("wiring".into());
+    }
+    // Marker material.
+    for (part, n) in crate::marking::material(&crate::marking::markers(prj, conns)) {
+        let g = groups.entry(part).or_default();
+        g.0 += n as f32;
+        g.1.push("marking".into());
     }
     // Wiring and mounting material may come straight from the built-in catalog.
     let catalog = crate::parts::catalog();
@@ -298,6 +328,21 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire]) -> Table {
         last[6] = tr("Sum").into();
         last[9] = format!("{sum:.2}");
         t.push(last, None);
+    }
+    t
+}
+
+fn marking_report(markers: &[crate::marking::Marker]) -> Table {
+    let mut t = Table::new(&[
+        (tr("Material"), 1.2),
+        (tr("Category"), 1.0),
+        (tr("Text"), 1.6),
+        (tr("Count"), 0.5),
+        (tr("Enclosure"), 0.8),
+        (tr("Belongs to"), 1.6),
+    ]);
+    for m in markers {
+        t.push(vec![m.material.clone(), m.category.title().into(), m.text.clone(), m.count.to_string(), m.enclosure.clone(), m.group.clone()], None);
     }
     t
 }
@@ -469,11 +514,29 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
         (tr("Location"), 0.8),
         (tr("Function text"), 1.6),
     ]);
+    use crate::strips::ElementKind;
     for strip in crate::strips::strip_tags(prj) {
-        for r in crate::strips::rows(prj, &strip, nl, open) {
-            let target = r.terminal.as_ref().map(|t| (t.page, t.id));
-            let jumper = if r.jumper > 0 { r.jumper.to_string() } else { String::new() };
-            t.push(vec![strip.clone(), r.label, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
+        let mut rows = crate::strips::rows(prj, &strip, nl, open);
+        // In the order of the strip on the rail, with its end brackets and end plates.
+        for e in crate::strips::strip_layout(prj, &strip) {
+            let accessory = |title: &str| vec![strip.clone(), title.to_string(), String::new(), e.part.clone(), String::new(), String::new(), String::new(), String::new()];
+            match &e.kind {
+                ElementKind::Terminal(label) | ElementKind::Spare(label) => {
+                    if let Some(i) = rows.iter().position(|r| &r.label == label) {
+                        let r = rows.remove(i);
+                        let target = r.terminal.as_ref().map(|t| (t.page, t.id));
+                        let jumper = if r.jumper > 0 { r.jumper.to_string() } else { String::new() };
+                        t.push(vec![strip.clone(), r.label, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
+                    }
+                }
+                ElementKind::EndBracket => t.push(accessory(tr("End bracket")), None),
+                ElementKind::EndPlate => t.push(accessory(tr("End plate")), None),
+            }
+        }
+        // Jumpers: part, length and the teeth to break off.
+        for j in crate::strips::strip_jumpers(prj, &strip) {
+            let row = vec![strip.clone(), tr("Jumper").into(), j.number.to_string(), j.part.clone(), j.length_text(), String::new(), j.broken_text(), j.span_text()];
+            t.push(row, None);
         }
     }
     t
@@ -840,6 +903,11 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
             if !labels.contains(label) {
                 v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: jumper {} on terminal {}, which is not placed", strip, j, label), target: None });
             }
+        }
+        for j in crate::strips::strip_jumpers(prj, strip) {
+            let Some(message) = j.problem_text(strip) else { continue };
+            let severity = if j.problem == Some(crate::strips::JumperProblem::NoPart) { Severity::Info } else { Severity::Warning };
+            v.push(Issue { severity, message, target: None });
         }
     }
     for (addr, points) in crate::plc::duplicate_addresses(prj, nl) {
