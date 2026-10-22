@@ -187,6 +187,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   current at their ends (√3 for three cores, copper at operating temperature), report
   *Cable sizing*; the check reports too thin wires and cables (errors) and voltage
   drops above 5 %.
+- **Editing in tables** (*Project › Edit in table…*): devices (tag, function text,
+  description, part), connections (wire number, colour, cross-section, cable, core) and
+  terminals (strip, number, function text) as rows; filter, edit cells in place, fill a
+  column or find and replace in the filtered rows; CSV export / import for changes in a
+  spreadsheet (rows by key, only changed cells are applied); rows on released pages
+  stay unchanged. Renaming a device moves its strip, plug and PLC card data along.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
   lines and rectangles, grid snapping, pan and zoom.
@@ -338,6 +344,7 @@ cargo test --workspace
 | Cables | *Project › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
 | Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
 | Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
+| Bulk changes | *Project › Edit in table…*: filter, edit, fill, find and replace, CSV |
 | Enclosure climate | panel layout: select the enclosure › *Climate (IEC 60890)* |
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
@@ -382,6 +389,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
 | `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
 | `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices, voltage drop |
+| `crates/openecraft-core/src/tables.rs` | Editing devices, connections and terminals in tables, CSV round trip |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |

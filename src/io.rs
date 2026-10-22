@@ -22,6 +22,8 @@ pub enum Purpose {
     Symbols,
     /// Title blocks (JSON) to add to the project.
     Forms,
+    /// A table (CSV) changed in a spreadsheet.
+    Table(crate::tables::TableKind),
 }
 
 impl FileKind for Purpose {
@@ -34,6 +36,7 @@ impl FileKind for Purpose {
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
             Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
+            Purpose::Table(_) => ("CSV", &["csv", "txt"]),
         }
     }
 }

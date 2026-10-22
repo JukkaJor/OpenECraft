@@ -17,7 +17,7 @@ mod parts_ui;
 
 use openecraft_core::{
     climate, dxf, forms, geom, harness, history, index, macros, marking, model, netlist, ops, panel, parts, pdf, plc, plugs, potentials, production, render, reports,
-    revision, sample, strips, structure, svg, symbols, symlib, wirenum,
+    revision, sample, strips, structure, svg, symbols, symlib, tables, wirenum,
 };
 
 #[cfg(not(target_arch = "wasm32"))]

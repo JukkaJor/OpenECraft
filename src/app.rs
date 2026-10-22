@@ -21,6 +21,7 @@ mod engineering;
 mod forms_ui;
 mod harness_ui;
 mod plugs_ui;
+mod tables_ui;
 mod potentials_ui;
 mod symbol_editor;
 
@@ -68,6 +69,7 @@ pub struct App {
     forms_ui: forms_ui::FormsUi,
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
+    tables_ui: tables_ui::TablesUi,
     /// Wire numbering: also renumber / remove manually set numbers.
     numbering_overwrite: bool,
     page_props: Option<usize>,
@@ -131,6 +133,7 @@ impl App {
             forms_ui: Default::default(),
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
+            tables_ui: Default::default(),
             numbering_overwrite: false,
             page_props: None,
             message: None,
@@ -264,6 +267,10 @@ impl App {
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
                 }
+                return;
+            }
+            if let Purpose::Table(kind) = loaded.purpose {
+                self.import_table(ctx, kind, &loaded.text());
                 return;
             }
             if loaded.purpose == Purpose::PlcTable {
@@ -517,6 +524,9 @@ impl App {
                 }
                 if ui.button(tr("Revisions…")).clicked() {
                     self.eng.show_revisions = true;
+                }
+                if ui.button(tr("Edit in table…")).on_hover_text(tr("Devices, connections and terminals: filter, fill, find and replace, CSV")).clicked() {
+                    self.tables_ui.open = true;
                 }
                 if ui.button(tr("Macros…")).clicked() {
                     self.eng.show_macros = true;
@@ -1463,6 +1473,7 @@ impl App {
         self.forms_window(ctx);
         self.harness_window(ctx);
         self.plugs_window(ctx);
+        self.tables_window(ctx);
 
         // Page properties
         if let Some(pi) = self.page_props {

@@ -35,7 +35,7 @@ const CSV_FIELDS: [&str; 30] = [
     "Connection points",
 ];
 
-fn csv_escape(s: &str) -> String {
+pub fn csv_escape(s: &str) -> String {
     if s.contains([';', '"', '\n', '\r']) {
         format!("\"{}\"", s.replace('"', "\"\""))
     } else {
@@ -97,7 +97,7 @@ pub fn to_csv(parts: &[Part]) -> String {
 }
 
 /// Splits CSV text (separator `;` or `,`) into records, honouring quotes.
-fn parse_csv(text: &str) -> Vec<Vec<String>> {
+pub fn parse_csv(text: &str) -> Vec<Vec<String>> {
     let sep = if text.lines().next().map(|l| l.contains(';')).unwrap_or(true) { ';' } else { ',' };
     let mut rows = Vec::new();
     let mut row = Vec::new();

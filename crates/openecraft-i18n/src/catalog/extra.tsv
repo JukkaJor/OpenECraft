@@ -340,24 +340,40 @@ Additional power loss in W	Zusätzliche Verlustleistung in W	Puissance dissipée
 Additional power loss	Zusätzliche Verlustleistung	Puissance dissipée supplémentaire	Potencia disipada adicional
 Aluminium	Aluminium	Aluminium	Aluminio
 Ambient temperature	Umgebungstemperatur	Température ambiante	Temperatura ambiente
+Applies a CSV exported with table_get (and changed in a spreadsheet): the changed cells are set	Übernimmt eine mit table_get exportierte (und in einer Tabellenkalkulation geänderte) CSV: die geänderten Zellen werden gesetzt	Applique un CSV exporté avec table_get (et modifié dans un tableur) : les cellules modifiées sont reprises	Aplica un CSV exportado con table_get (y modificado en una hoja de cálculo): se fijan las celdas cambiadas
+CSV file	CSV-Datei	Fichier CSV	Archivo CSV
 Cable sizing (voltage drop)	Kabelbemessung (Spannungsfall)	Dimensionnement des câbles (chute de tension)	Dimensionado de cables (caída de tensión)
+Changed cells of a CSV exported here (rows by their key)	Geänderte Zellen einer hier exportierten CSV (Zeilen über ihren Schlüssel)	Cellules modifiées d'un CSV exporté ici (lignes par leur clé)	Celdas cambiadas de un CSV exportado aquí (filas por su clave)
+Changes a cell of a table: device tag, function text, description, part; wire number, colour, cross-section, cable, core; strip, terminal	Ändert eine Zelle einer Tabelle: Betriebsmittelkennzeichen, Funktionstext, Beschreibung, Artikel; Verbindungsnummer, Farbe, Querschnitt, Kabel, Ader; Klemmleiste, Klemme	Modifie une cellule d'un tableau : repère, texte de fonction, description, article ; numéro de fil, couleur, section, câble, conducteur ; bornier, borne	Cambia una celda de una tabla: identificador, texto de función, descripción, artículo; número de hilo, color, sección, cable, conductor; regleta, borne
 Climate (IEC 60890)	Klimatisierung (IEC 60890)	Climatisation (CEI 60890)	Climatización (IEC 60890)
 Climate of the enclosures (IEC/TR 60890): power loss, inside temperature, fan or cooling unit and heating needed; optionally changes the settings of one	Klimatisierung der Gehäuse (IEC/TR 60890): Verlustleistung, Innentemperatur, benötigter Lüfter oder Kühlgerät und Heizung; ändert auf Wunsch die Einstellungen eines Gehäuses	Climatisation des armoires (CEI/TR 60890) : puissance dissipée, température intérieure, ventilateur ou climatiseur et chauffage nécessaires ; modifie au besoin les réglages d'une armoire	Climatización de los armarios (IEC/TR 60890): potencia disipada, temperatura interior, ventilador o refrigerador y calefacción necesarios; opcionalmente cambia los ajustes de uno
+Column name, e.g. Description	Spaltenname, z. B. Description	Nom de colonne, p. ex. Description	Nombre de columna, p. ej. Description
+Column {} cannot be changed	Spalte {} kann nicht geändert werden	La colonne {} ne peut pas être modifiée	La columna {} no se puede cambiar
+Column	Spalte	Colonne	Columna
 Cooling	Kühlung	Refroidissement	Refrigeración
 Cross-section {} carries {} A, less than the {} A of {}	Querschnitt {} trägt {} A, weniger als die {} A von {}	La section {} supporte {} A, moins que les {} A de {}	La sección {} soporta {} A, menos que los {} A de {}
 Current (A)	Strom (A)	Courant (A)	Corriente (A)
 Current capacity (A)	Strombelastbarkeit (A)	Courant admissible (A)	Intensidad admisible (A)
 Devices without power loss	Betriebsmittel ohne Verlustleistung	Appareils sans puissance dissipée	Equipos sin potencia disipada
+Devices, connections and terminals: filter, fill, find and replace, CSV	Betriebsmittel, Verbindungen und Klemmen: filtern, füllen, suchen und ersetzen, CSV	Appareils, liaisons et bornes : filtrer, remplir, rechercher et remplacer, CSV	Equipos, conexiones y bornes: filtrar, rellenar, buscar y reemplazar, CSV
+Edit in table	In Tabelle bearbeiten	Modifier dans un tableau	Editar en tabla
+Edit in table…	In Tabelle bearbeiten…	Modifier dans un tableau…	Editar en tabla…
 Effective surface	Wirksame Oberfläche	Surface effective	Superficie efectiva
 Enclosure (location, e.g. +CAB1) whose settings change	Gehäuse (Ort, z. B. +CAB1), dessen Einstellungen sich ändern	Armoire (emplacement, p. ex. +CAB1) dont les réglages changent	Armario (ubicación, p. ej. +CAB1) cuyos ajustes cambian
 Enclosure climate	Gehäuseklimatisierung	Climatisation des armoires	Climatización de armarios
 End of a suite, free-standing	Anfang/Ende einer Reihe, freistehend	Début/fin d'une rangée, autoportante	Inicio/final de una fila, autoportante
 End of a suite, wall mounted	Anfang/Ende einer Reihe, Wandmontage	Début/fin d'une rangée, montage mural	Inicio/final de una fila, montaje mural
+Export CSV…	CSV exportieren…	Exporter en CSV…	Exportar CSV…
+Fill	Füllen	Remplir	Rellenar
+Find	Suchen	Rechercher	Buscar
+Finds and replaces text in a column of all (filtered) rows; without find the column is filled with the replacement	Sucht und ersetzt Text in einer Spalte aller (gefilterten) Zeilen; ohne Suchtext wird die Spalte mit dem Ersatz gefüllt	Recherche et remplace du texte dans une colonne de toutes les lignes (filtrées) ; sans texte recherché, la colonne est remplie avec le remplacement	Busca y reemplaza texto en una columna de todas las filas (filtradas); sin texto a buscar, la columna se rellena con el reemplazo
 Heating (W)	Heizung (W)	Chauffage (W)	Calefacción (W)
 Heating	Heizung	Chauffage	Calefacción
 Highest (°C)	Höchstens (°C)	Maximum (°C)	Máximo (°C)
 Highest ambient temperature in °C	Höchste Umgebungstemperatur in °C	Température ambiante maximale en °C	Temperatura ambiente máxima en °C
 Highest inside temperature in °C	Höchste Innentemperatur in °C	Température intérieure maximale en °C	Temperatura interior máxima en °C
+Import CSV…	CSV importieren…	Importer un CSV…	Importar CSV…
+In the filtered rows	In den gefilterten Zeilen	Dans les lignes filtrées	En las filas filtradas
 Inside (°C)	Innen (°C)	Intérieur (°C)	Interior (°C)
 Inside temperature	Innentemperatur	Température intérieure	Temperatura interior
 Inside without cooling	Innen ohne Kühlung	Intérieur sans refroidissement	Interior sin refrigeración
@@ -365,18 +381,39 @@ Installation	Aufstellung	Installation	Instalación
 Load	Verbraucher	Charge	Carga
 Lowest ambient temperature in °C	Niedrigste Umgebungstemperatur in °C	Température ambiante minimale en °C	Temperatura ambiente mínima en °C
 Lowest inside temperature in °C	Niedrigste Innentemperatur in °C	Température intérieure minimale en °C	Temperatura interior mínima en °C
+New value	Neuer Wert	Nouvelle valeur	Valor nuevo
+No connection {}	Keine Verbindung {}	Aucune liaison {}	No hay conexión {}
 No enclosure {}	Kein Gehäuse {}	Aucune armoire {}	No hay armario {}
+No terminal {}	Keine Klemme {}	Aucune borne {}	No hay borne {}
+Only rows containing this text	Nur Zeilen mit diesem Text	Seulement les lignes contenant ce texte	Solo filas que contienen este texto
 Plastic	Kunststoff	Plastique	Plástico
 Power loss (W)	Verlustleistung (W)	Puissance dissipée (W)	Potencia disipada (W)
 Power loss not covered by the parts (tech data Power loss: 7.5 W)	Verlustleistung, die die Artikel nicht abdecken (technische Daten Power loss: 7.5 W)	Puissance dissipée non couverte par les articles (données techniques Power loss: 7.5 W)	Potencia disipada no cubierta por los artículos (datos técnicos Power loss: 7.5 W)
 Power loss	Verlustleistung	Puissance dissipée	Potencia disipada
+Replace with	Ersetzen durch	Remplacer par	Reemplazar por
+Replace	Ersetzen	Remplacer	Reemplazar
+Replacement	Ersatz	Remplacement	Reemplazo
+Row key (from table_get)	Zeilenschlüssel (aus table_get)	Clé de ligne (de table_get)	Clave de fila (de table_get)
+Row {} not found	Zeile {} nicht gefunden	Ligne {} introuvable	Fila {} no encontrada
+Rows on released pages cannot be changed. A line break in a text is written as \\n.	Zeilen auf freigegebenen Seiten können nicht geändert werden. Ein Zeilenumbruch in einem Text wird als \\n geschrieben.	Les lignes sur des pages validées ne peuvent pas être modifiées. Un saut de ligne dans un texte s'écrit \\n.	Las filas en páginas liberadas no se pueden cambiar. Un salto de línea en un texto se escribe como \\n.
+Sets the column of all filtered rows to the replacement	Setzt die Spalte aller gefilterten Zeilen auf den Ersatz	Met la colonne de toutes les lignes filtrées au remplacement	Fija la columna de todas las filas filtradas al reemplazo
 Sheet steel	Stahlblech	Tôle d'acier	Chapa de acero
+Show in the schematic	Im Schaltplan zeigen	Afficher dans le schéma	Mostrar en el esquema
+Shows a table (devices, connections or terminals) with its rows; the key of a row is used to change it	Zeigt eine Tabelle (Betriebsmittel, Verbindungen oder Klemmen) mit ihren Zeilen; über den Schlüssel einer Zeile wird sie geändert	Affiche un tableau (appareils, liaisons ou bornes) avec ses lignes ; la clé d'une ligne sert à la modifier	Muestra una tabla (equipos, conexiones o bornes) con sus filas; la clave de una fila sirve para cambiarla
 Single, free-standing	Einzeln, freistehend	Seule, autoportante	Individual, autoportante
 Single, wall mounted	Einzeln, Wandmontage	Seule, montage mural	Individual, montaje mural
 Stainless steel	Edelstahl	Acier inoxydable	Acero inoxidable
 Surface (m²)	Oberfläche (m²)	Surface (m²)	Superficie (m²)
+Table import failed: {}	Tabellenimport fehlgeschlagen: {}	Échec de l'import du tableau : {}	Error al importar la tabla: {}
+Text to find; empty: fill	Gesuchter Text; leer: füllen	Texte recherché ; vide : remplir	Texto a buscar; vacío: rellenar
+The file is empty	Die Datei ist leer	Le fichier est vide	El archivo está vacío
+The first column must be Key	Die erste Spalte muss Key sein	La première colonne doit être Key	La primera columna debe ser Key
+The row lies on a released page	Die Zeile liegt auf einer freigegebenen Seite	La ligne se trouve sur une page validée	La fila está en una página liberada
+Unknown cable {}	Unbekanntes Kabel {}	Câble inconnu {}	Cable desconocido {}
+Unknown column: {}	Unbekannte Spalte: {}	Colonne inconnue : {}	Columna desconocida: {}
 Unknown installation: {}	Unbekannte Aufstellung: {}	Installation inconnue : {}	Instalación desconocida: {}
 Unknown material: {}	Unbekanntes Material: {}	Matériau inconnu : {}	Material desconocido: {}
+Unknown table: {}	Unbekannte Tabelle: {}	Tableau inconnu : {}	Tabla desconocida: {}
 Voltage (V)	Spannung (V)	Tension (V)	Tensión (V)
 Voltage drop (%)	Spannungsfall (%)	Chute de tension (%)	Caída de tensión (%)
 Voltage drop (V)	Spannungsfall (V)	Chute de tension (V)	Caída de tensión (V)
@@ -385,10 +422,16 @@ Within a suite, free-standing	Innerhalb einer Reihe, freistehend	Au milieu d'une
 Within a suite, wall mounted	Innerhalb einer Reihe, Wandmontage	Au milieu d'une rangée, montage mural	Dentro de una fila, montaje mural
 Within a suite, wall mounted, roof covered	Innerhalb einer Reihe, Wandmontage, Dach abgedeckt	Au milieu d'une rangée, montage mural, toit couvert	Dentro de una fila, montaje mural, techo cubierto
 Without power loss data: {}	Ohne Angabe der Verlustleistung: {}	Sans puissance dissipée : {}	Sin datos de potencia disipada: {}
+Write the table as CSV to this file	Tabelle als CSV in diese Datei schreiben	Écrire le tableau en CSV dans ce fichier	Escribir la tabla como CSV en este archivo
 cooling unit {} W	Kühlgerät {} W	climatiseur {} W	refrigerador {} W
+devices, connections or terminals	devices, connections oder terminals	devices, connections ou terminals	devices, connections o terminals
 filter fan {} m³/h	Filterlüfter {} m³/h	ventilateur à filtre {} m³/h	ventilador con filtro {} m³/h
 free_standing, wall_mounted, end_free_standing, end_wall_mounted, middle_free_standing, middle_wall_mounted or middle_wall_mounted_covered	free_standing, wall_mounted, end_free_standing, end_wall_mounted, middle_free_standing, middle_wall_mounted oder middle_wall_mounted_covered	free_standing, wall_mounted, end_free_standing, end_wall_mounted, middle_free_standing, middle_wall_mounted ou middle_wall_mounted_covered	free_standing, wall_mounted, end_free_standing, end_wall_mounted, middle_free_standing, middle_wall_mounted o middle_wall_mounted_covered
 sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel, aluminium oder plastic	sheet_steel, stainless_steel, aluminium ou plastic	sheet_steel, stainless_steel, aluminium o plastic
+{} (and {} more)	{} (und {} weitere)	{} (et {} autres)	{} (y {} más)
+{} cells changed	{} Zellen geändert	{} cellules modifiées	{} celdas cambiadas
+{} cells changed, {} problems: {}	{} Zellen geändert, {} Probleme: {}	{} cellules modifiées, {} problèmes : {}	{} celdas cambiadas, {} problemas: {}
+{} of {} rows	{} von {} Zeilen	{} lignes sur {}	{} de {} filas
 {}: voltage drop {} V ({} %) above {} %	{}: Spannungsfall {} V ({} %) über {} %	{} : chute de tension {} V ({} %) au-dessus de {} %	{}: caída de tensión {} V ({} %) por encima del {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W Verlustleistung erwärmen das Gehäuse auf {} °C (höchstens {} °C): {} nötig	{} : {} W de puissance dissipée chauffent l'armoire à {} °C (maximum {} °C) : {} nécessaire	{}: {} W de potencia disipada calientan el armario a {} °C (máximo {} °C): se necesita {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} trägt {} A, der Verbraucher {} braucht {} A	{} : {} supporte {} A, la charge {} demande {} A	{}: {} soporta {} A, la carga {} necesita {} A

@@ -31,4 +31,5 @@ pub mod structure;
 pub mod svg;
 pub mod symbols;
 pub mod symlib;
+pub mod tables;
 pub mod wirenum;

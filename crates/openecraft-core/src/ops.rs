@@ -478,7 +478,8 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
     new_ids
 }
 
-/// Renames a device everywhere (all functions with that tag, device data).
+/// Renames a device everywhere (all functions with that tag, device, strip, plug and
+/// PLC card data, panel layout, harnesses).
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if old == new || old.is_empty() {
         return;
@@ -499,6 +500,15 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
         }
     }
     crate::harness::rename_device(prj, old, new);
+    if let Some(d) = prj.strips.remove(old) {
+        prj.strips.entry(new.to_string()).or_insert(d);
+    }
+    if let Some(d) = prj.plugs.remove(old) {
+        prj.plugs.entry(new.to_string()).or_insert(d);
+    }
+    if let Some(d) = prj.plc_cards.remove(old) {
+        prj.plc_cards.entry(new.to_string()).or_insert(d);
+    }
 }
 
 /// Deletes a page; released pages and the last page stay.
