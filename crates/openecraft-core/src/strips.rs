@@ -1,6 +1,7 @@
 //! Terminal strips: terminal order, renumbering, jumpers, spare terminals, the part
 //! of every terminal and the layout of the strip on the rail.
 
+use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
 use crate::parts::FnKind;
@@ -288,6 +289,53 @@ pub struct Jumper {
     /// Terminals in the span that are not jumpered: their teeth are broken off.
     pub broken: Vec<String>,
     pub problem: Option<JumperProblem>,
+}
+
+impl Jumper {
+    /// `3 poles`, or `cut from 10 to 3 poles` for a longer part.
+    pub fn length_text(&self) -> String {
+        match self.span.len() as u32 {
+            n if self.poles > n => tr_fmt!("cut from {} to {} poles", self.poles, n),
+            n => tr_fmt!("{} poles", n),
+        }
+    }
+
+    /// `break off at 2, 4`; empty if every terminal of the span is jumpered.
+    pub fn broken_text(&self) -> String {
+        if self.broken.is_empty() {
+            String::new()
+        } else {
+            tr_fmt!("break off at {}", self.broken.join(", "))
+        }
+    }
+
+    /// `terminals 1 – 3`.
+    pub fn span_text(&self) -> String {
+        tr_fmt!("terminals {} – {}", self.span.first().cloned().unwrap_or_default(), self.span.last().cloned().unwrap_or_default())
+    }
+
+    /// The problem as a sentence (project check, terminal strip window).
+    pub fn problem_text(&self, strip: &str) -> Option<String> {
+        let n = self.number;
+        Some(match self.problem.as_ref()? {
+            JumperProblem::Blocked => tr_fmt!("{}: jumper {} crosses an end plate or end bracket", strip, n),
+            JumperProblem::MixedParts => tr_fmt!("{}: jumper {} connects terminals of different parts", strip, n),
+            JumperProblem::Pe => tr_fmt!("{}: jumper {} includes a PE terminal", strip, n),
+            JumperProblem::TooShort { needed, longest } => tr_fmt!("{}: jumper {} needs {} poles, the longest jumper part has {}", strip, n, needed, longest),
+            JumperProblem::NoPart => tr_fmt!("{}: no jumper part for jumper {} (tech data Jumper of the terminal part)", strip, n),
+        })
+    }
+}
+
+impl ElementKind {
+    /// Name for lists: the designation of terminals, the kind of accessories.
+    pub fn title(&self) -> String {
+        match self {
+            ElementKind::Terminal(label) | ElementKind::Spare(label) => label.clone(),
+            ElementKind::EndBracket => tr("End bracket").into(),
+            ElementKind::EndPlate => tr("End plate").into(),
+        }
+    }
 }
 
 /// Poles of a jumper part (tech data `Poles: 3`).

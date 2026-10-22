@@ -222,3 +222,16 @@ fn terminal_diagram_shows_accessories_and_jumpers() {
     assert_eq!((j[3].as_str(), j[4].as_str(), j[6].as_str(), j[7].as_str()), ("GEN.JMP-2.5-3", "3 poles", "break off at 2", "terminals 1 – 3"));
 }
 
+#[test]
+fn texts_for_lists() {
+    assert_eq!(ElementKind::EndBracket.title(), "End bracket");
+    assert_eq!(ElementKind::Spare("7".into()).title(), "7");
+    let mut prj = demo_project();
+    jumper(&mut prj, 1, &["1", "2"]);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.length_text().as_str(), j.broken_text().as_str(), j.span_text().as_str()), ("2 poles", "", "terminals 1 – 2"));
+    assert_eq!(j.problem_text("-X1"), None);
+    let cut = Jumper { poles: 10, ..j.clone() };
+    assert_eq!(cut.length_text(), "cut from 10 to 2 poles");
+}
+

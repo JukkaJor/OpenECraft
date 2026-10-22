@@ -1,4 +1,4 @@
-//! Engineering windows: macros, terminal strips, PLC overview and revisions.
+//! Engineering windows: macros, terminal strips, PLC overview, revisions and marking.
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
@@ -8,7 +8,8 @@ use crate::macros::{self, Macro, MacroKind};
 use crate::model::*;
 use crate::ops::Clip;
 use crate::render::{self, Draw, Ink};
-use crate::{plc, revision, strips, symbols};
+use crate::marking::{self, WireText};
+use crate::{parts, plc, revision, strips, symbols};
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
 
@@ -27,6 +28,7 @@ pub struct EngineeringUi {
     pub show_plc: bool,
     card: String,
     pub show_revisions: bool,
+    pub show_marking: bool,
     rev_name: String,
     rev_date: String,
     rev_author: String,
@@ -76,6 +78,7 @@ impl App {
         self.strips_window(ctx);
         self.plc_window(ctx);
         self.revisions_window(ctx);
+        self.marking_window(ctx);
     }
 
     /// Opens the save dialog for the selection (window macro) or the page (page macro).
@@ -310,6 +313,8 @@ impl App {
         }
         let strip = self.eng.strip.clone();
         let rows = strips::rows(&self.prj, &strip, &self.analysis.netlist, &self.analysis.open);
+        let layout = strips::strip_layout(&self.prj, &strip);
+        let jumpers = strips::strip_jumpers(&self.prj, &strip);
         let mut data = self.prj.strips.get(&strip).cloned().unwrap_or_default();
         let before = data.clone();
         let mut open = true;
@@ -335,6 +340,47 @@ impl App {
                 ui.separator();
                 renumber = ui.button(tr("Renumber 1 … n")).on_hover_text(tr("In strip order; PE and other non-numeric terminals keep their designation")).clicked();
                 sort = ui.button(tr("Sort by designation")).clicked();
+                ui.separator();
+                let mut auto = !data.manual_accessories;
+                if ui
+                    .checkbox(&mut auto, tr("Automatic accessories"))
+                    .on_hover_text(tr("End brackets and end plates from the tech data of the terminal parts (End bracket, End plate)"))
+                    .changed()
+                {
+                    data.manual_accessories = !auto;
+                }
+            });
+            egui::CollapsingHeader::new(tr("Strip on the rail")).id_salt("strip_layout").default_open(true).show(ui, |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    for e in &layout {
+                        let text = RichText::new(e.kind.title()).monospace();
+                        let accessory = matches!(e.kind, strips::ElementKind::EndBracket | strips::ElementKind::EndPlate);
+                        let label = if accessory { ui.label(text.weak()) } else { ui.label(text) };
+                        if !e.part.is_empty() {
+                            label.on_hover_text(format!("{} – {:.1} mm", e.part, e.width));
+                        }
+                    }
+                    ui.separator();
+                    ui.label(tr_fmt!("{} mm", format!("{:.1}", layout.iter().map(|e| e.width).sum::<f32>())));
+                });
+                let accessories = layout.iter().any(|e| matches!(e.kind, strips::ElementKind::EndBracket | strips::ElementKind::EndPlate));
+                if !data.manual_accessories && !accessories && !layout.is_empty() {
+                    ui.weak(tr("The terminal parts name no end brackets or end plates (tech data End bracket, End plate)."));
+                }
+                for j in &jumpers {
+                    ui.horizontal_wrapped(|ui| {
+                        ui.label(tr_fmt!("Jumper {}", j.number));
+                        ui.label(RichText::new(if j.part.is_empty() { "–" } else { &j.part }).monospace());
+                        ui.label(j.length_text());
+                        ui.label(j.span_text());
+                        if !j.broken.is_empty() {
+                            ui.label(j.broken_text());
+                        }
+                        if let Some(problem) = j.problem_text(&strip) {
+                            ui.colored_label(Color32::from_rgb(220, 120, 0), problem);
+                        }
+                    });
+                }
             });
             ui.weak(tr("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials."));
             ui.separator();
@@ -416,6 +462,75 @@ impl App {
         }
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
+        }
+    }
+
+    fn marking_window(&mut self, ctx: &egui::Context) {
+        if !self.eng.show_marking {
+            return;
+        }
+        let markers = marking::markers(&self.prj, &self.analysis.connections);
+        let material = marking::material(&markers);
+        let mut choices: Vec<(String, String)> = self
+            .parts_db
+            .parts
+            .iter()
+            .chain(parts::catalog())
+            .filter(|p| p.group == "Marking")
+            .map(|p| (p.number.clone(), p.description.clone()))
+            .collect();
+        choices.sort_by(|a, b| a.0.cmp(&b.0));
+        choices.dedup_by(|a, b| a.0 == b.0);
+        let mut open = true;
+        let mut export = false;
+        let mut picked = Vec::new();
+        let s = &mut self.prj.marking;
+        egui::Window::new(tr("Marking")).open(&mut open).resizable(false).min_width(520.0).show(ctx, |ui| {
+            ui.label(RichText::new(tr("Wire markers")).strong());
+            ui.radio_value(&mut s.wire_text, WireText::Number, tr("Wire number on both ends"));
+            ui.radio_value(&mut s.wire_text, WireText::Destination, tr("Destination: each end shows the connection point at the other end"));
+            ui.separator();
+            ui.label(RichText::new(tr("Marker material")).strong());
+            egui::Grid::new("marking").num_columns(4).spacing([8.0, 4.0]).show(ui, |ui| {
+                let fields = [
+                    (tr("Device markers"), &mut s.device_material),
+                    (tr("Legend plates (door devices)"), &mut s.door_material),
+                    (tr("Terminal markers"), &mut s.terminal_material),
+                    (tr("Wire markers"), &mut s.wire_material),
+                    (tr("Cable markers"), &mut s.cable_material),
+                ];
+                for (title, field) in fields {
+                    ui.label(title);
+                    ui.add_sized([160.0, 20.0], egui::TextEdit::singleline(field).font(egui::TextStyle::Monospace));
+                    ui.menu_button("…", |ui| {
+                        for (number, description) in &choices {
+                            if ui.button(format!("{number}  {description}")).clicked() {
+                                *field = number.clone();
+                                picked.push(number.clone());
+                            }
+                        }
+                        if choices.is_empty() {
+                            ui.weak(tr("No parts of the product group Marking in the parts database."));
+                        }
+                    });
+                    let pieces = material.iter().find(|m| m.0 == *field).map(|m| m.1).unwrap_or(0);
+                    ui.label(tr_fmt!("{} pieces", pieces));
+                    ui.end_row();
+                }
+            });
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.label(tr_fmt!("{} markers", markers.iter().map(|m| m.count).sum::<u32>()));
+                export = ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked();
+            });
+        });
+        self.eng.show_marking = open;
+        for number in picked {
+            parts::ensure_in_project(&mut self.prj, &self.parts_db, &number);
+        }
+        if export {
+            let csv = marking::csv(&marking::markers(&self.prj, &self.analysis.connections));
+            self.export(ctx, "marking.csv".into(), ("CSV", "csv"), csv);
         }
     }
 

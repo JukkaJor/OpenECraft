@@ -535,13 +535,8 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
         }
         // Jumpers: part, length and the teeth to break off.
         for j in crate::strips::strip_jumpers(prj, &strip) {
-            let (first, last) = (j.span.first().cloned().unwrap_or_default(), j.span.last().cloned().unwrap_or_default());
-            let length = match j.span.len() as u32 {
-                n if j.poles > n => tr_fmt!("cut from {} to {} poles", j.poles, n),
-                n => tr_fmt!("{} poles", n),
-            };
-            let broken = if j.broken.is_empty() { String::new() } else { tr_fmt!("break off at {}", j.broken.join(", ")) };
-            t.push(vec![strip.clone(), tr("Jumper").into(), j.number.to_string(), j.part, length, String::new(), broken, tr_fmt!("terminals {} – {}", first, last)], None);
+            let row = vec![strip.clone(), tr("Jumper").into(), j.number.to_string(), j.part.clone(), j.length_text(), String::new(), j.broken_text(), j.span_text()];
+            t.push(row, None);
         }
     }
     t
@@ -909,17 +904,9 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
                 v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: jumper {} on terminal {}, which is not placed", strip, j, label), target: None });
             }
         }
-        use crate::strips::JumperProblem as P;
         for j in crate::strips::strip_jumpers(prj, strip) {
-            let n = j.number;
-            let (severity, message) = match j.problem {
-                None => continue,
-                Some(P::Blocked) => (Severity::Warning, tr_fmt!("{}: jumper {} crosses an end plate or end bracket", strip, n)),
-                Some(P::MixedParts) => (Severity::Warning, tr_fmt!("{}: jumper {} connects terminals of different parts", strip, n)),
-                Some(P::Pe) => (Severity::Warning, tr_fmt!("{}: jumper {} includes a PE terminal", strip, n)),
-                Some(P::TooShort { needed, longest }) => (Severity::Warning, tr_fmt!("{}: jumper {} needs {} poles, the longest jumper part has {}", strip, n, needed, longest)),
-                Some(P::NoPart) => (Severity::Info, tr_fmt!("{}: no jumper part for jumper {} (tech data Jumper of the terminal part)", strip, n)),
-            };
+            let Some(message) = j.problem_text(strip) else { continue };
+            let severity = if j.problem == Some(crate::strips::JumperProblem::NoPart) { Severity::Info } else { Severity::Warning };
             v.push(Issue { severity, message, target: None });
         }
     }

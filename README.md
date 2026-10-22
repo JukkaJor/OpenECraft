@@ -48,8 +48,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   `Jumper: …` with jumper parts `Poles: n`): an end bracket at both ends, an end
   plate after the last terminal of each part, plug-in jumpers of the shortest
   fitting length (cut if longer, teeth broken off at terminals in between) – in the
-  bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check.
-- **Marking** (*File › Export marking (CSV)…*, report *Marking*): device markers (legend
+  bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check;
+  the terminal strip window shows the strip on the rail with its jumpers and has a
+  switch for the automatic accessories.
+- **Marking** (*Project › Marking…*: wire marker text, material per kind with piece
+  counts and export; *File › Export marking (CSV)…*, report *Marking*): device markers (legend
   plates for door devices; the enclosure's location left out of the tag), terminal markers
   in rail order with the strip marker, wire markers (wire number on both ends, or
   destination marking: each end shows the other end), cable markers; grouped by

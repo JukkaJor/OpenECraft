@@ -499,6 +499,9 @@ impl App {
                 if ui.button(tr("Terminal strips…")).clicked() {
                     self.eng.show_strips = true;
                 }
+                if ui.button(tr("Marking…")).clicked() {
+                    self.eng.show_marking = true;
+                }
                 if ui.button(tr("PLC overview…")).clicked() {
                     self.eng.show_plc = true;
                 }
