@@ -28,3 +28,21 @@ fn technical_data_values() {
     assert_eq!(p.tech_value("Voltage"), None);
     assert_eq!(p.quantity_unit, "m");
 }
+
+#[test]
+fn function_kinds_have_unique_titles_and_short_names() {
+    let titles: std::collections::BTreeSet<_> = FnKind::ALL.iter().map(|k| k.title()).collect();
+    assert_eq!(titles.len(), FnKind::ALL.len());
+    for k in FnKind::ALL {
+        assert_eq!(FnKind::from_short(k.short()), Some(k), "{}", k.title());
+    }
+}
+
+#[test]
+fn catalog_uses_the_function_kinds() {
+    // Every kind except the generic one appears in a part of the example catalog.
+    let parts = crate::default_catalog();
+    for k in FnKind::ALL.into_iter().filter(|k| *k != FnKind::Generic) {
+        assert!(parts.iter().any(|p| p.functions.iter().any(|f| f.kind == k)), "no part with {}", k.title());
+    }
+}

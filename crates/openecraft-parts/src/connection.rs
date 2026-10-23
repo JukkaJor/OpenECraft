@@ -55,7 +55,7 @@ const TERMINAL_DEPTH: f32 = 0.75;
 
 /// Devices mounted in the door: their terminals are on the rear.
 fn door_kind(kind: FnKind) -> bool {
-    matches!(kind, FnKind::PushbuttonNo | FnKind::PushbuttonNc | FnKind::SwitchNo | FnKind::Signal)
+    matches!(kind, FnKind::PushbuttonNo | FnKind::PushbuttonNc | FnKind::SwitchNo | FnKind::SwitchNc | FnKind::Signal | FnKind::Meter)
 }
 
 /// Whether a connection point is on the upper side of a device (IEC convention: odd
@@ -68,6 +68,13 @@ pub fn upper_side(pin: &str) -> bool {
     }
     if let Some((winding, _)) = pin.split_once('.').filter(|(a, b)| !a.is_empty() && !b.is_empty() && pin.chars().all(|c| c.is_ascii_digit() || c == '.')) {
         return winding.parse::<u32>().is_ok_and(|w| w % 2 == 1);
+    }
+    // Power terminals with a leading digit (IEC 60445): 1L1 above, 2T1 below.
+    let mut chars = pin.chars();
+    if let (Some(d), Some(c)) = (chars.next().and_then(|c| c.to_digit(10)), chars.next()) {
+        if c.is_ascii_alphabetic() {
+            return d % 2 == 1;
+        }
     }
     pin.chars().last().and_then(|c| c.to_digit(10)).is_some_and(|d| d % 2 == 1)
 }
@@ -85,7 +92,7 @@ pub fn default_connection_points(part: &Part) -> Vec<ConnectionPoint> {
     let door = !part.functions.is_empty() && part.functions.iter().all(|f| door_kind(f.kind));
     let (mut upper, mut lower): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
     for f in &part.functions {
-        let plc = matches!(f.kind, FnKind::PlcInput | FnKind::PlcOutput);
+        let plc = matches!(f.kind, FnKind::PlcInput | FnKind::PlcOutput | FnKind::PlcAnalogInput | FnKind::PlcAnalogOutput);
         for pin in f.pin_list() {
             if upper.contains(&pin) || lower.contains(&pin) {
                 continue;

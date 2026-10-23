@@ -17,7 +17,7 @@ mod parts_ui;
 mod wiring_ui;
 
 use openecraft_core::{
-    aml, cabledef, climate, config, conndef, devdesc, document, dxf, dxf_import, export3d, fluid, forms, frame, geom, graphics, harness, history, index, macros, marking, model, netlist, ops, page_templates, panel, parts, pdf, plc, plc_hw, plugs, potentials, process, production, props, render, report_blocks, reports,
+    aml, cabledef, climate, config, conndef, devdesc, document, dxf, dxf_import, electrofluid, export3d, fluid, forms, frame, geom, graphics, harness, history, index, macros, marking, model, netlist, ops, page_templates, panel, parts, pdf, plc, plc_hw, plugs, potentials, process, production, props, render, report_blocks, reports,
     revision, routing, sample, strips, structure, svg, symbols, symlib, tables, translation, wirenum, wiring,
 };
 

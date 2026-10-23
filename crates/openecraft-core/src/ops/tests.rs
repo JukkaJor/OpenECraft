@@ -17,6 +17,13 @@ fn contact_numbering_and_tag_follow_coil() {
     let nc = symbols::get("nc").unwrap();
     let c2 = new_symbol(&mut prj, 0, &ctx, nc, p(120.0, 40.0), 0, false);
     assert_eq!(c2.pins, vec!["21", "22"]);
+    prj.pages[0].symbols.push(c2);
+    // Time-delayed contacts: x7/x8 (NO) and x5/x6 (NC).
+    let c3 = new_symbol(&mut prj, 0, &ctx, symbols::get("no_on").unwrap(), p(160.0, 40.0), 0, false);
+    assert_eq!((c3.tag.as_str(), c3.pins.clone()), ("-K1", vec!["37".to_string(), "38".to_string()]));
+    prj.pages[0].symbols.push(c3);
+    let c4 = new_symbol(&mut prj, 0, &ctx, symbols::get("nc_off").unwrap(), p(200.0, 40.0), 0, false);
+    assert_eq!(c4.pins, vec!["45", "46"]);
 }
 
 #[test]

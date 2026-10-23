@@ -67,6 +67,9 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
         ContactKind::No | ContactKind::MainNo => vec![format!("{o}3"), format!("{o}4")],
         ContactKind::Nc => vec![format!("{o}1"), format!("{o}2")],
         ContactKind::Changeover => vec![format!("{o}1"), format!("{o}2"), format!("{o}4")],
+        // Time-delayed contacts: x5/x6 (NC), x7/x8 (NO).
+        ContactKind::NcOnDelay | ContactKind::NcOffDelay => vec![format!("{o}5"), format!("{o}6")],
+        ContactKind::NoOnDelay | ContactKind::NoOffDelay => vec![format!("{o}7"), format!("{o}8")],
     }
 }
 
@@ -599,7 +602,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
 }
 
 /// Renames a device everywhere (all functions with that tag, device, strip, plug and
-/// PLC card data, panel layout, harnesses).
+/// PLC card data, panel layout, harnesses, fluid device groups and links).
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if old == new || old.is_empty() {
         return;
@@ -630,6 +633,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
         prj.plc_cards.entry(new.to_string()).or_insert(d);
     }
     crate::plc_hw::rename_device(prj, old, new);
+    crate::electrofluid::rename_device(prj, old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.

@@ -272,7 +272,30 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Fluid and process**: wires between the ports of fluid power and P&ID symbols are
   hoses / pipes in their own nets (not mixed with electrical potentials; a fluid port
   on an electrical net is an error), numbered apart from the wires (`H1`, `H2` …),
-  with medium, nominal size, colour and length, listed in the *hose list*. P&ID
+  with medium, nominal size, colour and length, listed in the *hose list*.
+  - *Fluid netlist*: every port gets its function from its ISO 1219 / ISO 5599
+    designation (supply, pressure P/1, working A/B/2/4, exhaust R/S/3/5, return T,
+    pilot X/Y/Z/12/14, leakage L, in-line) and every hose line its kind (pressure,
+    working, return / exhaust, pilot … line) with its branches (tees).
+  - *Hose configuration*: per hose, tube or pipe the line type, part (by the metre),
+    end fittings, maximum pressure and bend radius; the cut length adds the project's
+    cutting allowance per end. Tubes between devices placed on the same mounting
+    plate are routed through its ducts like wires, which gives the length when none
+    is set. The *tubing / piping list* sums pieces, cut lengths, bends and fittings
+    per type, size and part.
+  - *Fluid device groups*: valve terminals, service units, manifolds and power units
+    with their devices in slot order and the number of places.
+  - *Electro-fluid*: fluid devices are linked with the electrical devices that actuate
+    or monitor them (solenoid coils, position and pressure switches); both schematics
+    show cross references to each other, and *Synchronize* links solenoid valves with
+    the coil of the same number (`-QM3` → `-MB3`) and copies function texts.
+  - Checks: pressure lines on a return / exhaust, different media or sizes on one hose
+    or one device, hoses rated below the operating pressure or shorter than their
+    route, solenoid valves without coil, coils without valve, wrong or missing links,
+    full or duplicated groups; open exhausts of pneumatic devices vent to the
+    atmosphere instead of being open connection points.
+  - Reports: *fluid netlist*, *hose configuration*, *tubing / piping list*, *fluid
+    device groups*, *electro-fluid cross reference*. P&ID
   symbols (ISO 10628: vessel, pumps, valves, heat exchanger, instruments) support
   pre-planning: instruments carry function letters and loop number (`TIC 101`), the
   PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
@@ -432,7 +455,7 @@ cargo test --workspace
 | Door devices | panel layout: front view *Door (front)* for door devices and cutouts, *Door (inside)* (mirrored) for cable ducts and the door wiring; 3D: *Open door* / *Close door* |
 | Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
 | Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
-| Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties in the wire properties; *Project › Fluid and process…* |
+| Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties and configuration in the wire properties; *Project › Fluid and process…* (hoses, device groups, electro-fluid links and *Synchronize*, PCT loops) |
 | Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; KBL export in the window |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
 | Pages | `Page Up` / `Page Down`, navigator on the left |
@@ -461,7 +484,8 @@ cargo test --workspace
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
 | `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
-| `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, hose list |
+| `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
+| `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
 | `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
@@ -491,7 +515,7 @@ cargo test --workspace
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |
 | `src/app/languages_ui.rs` | Project languages window: dictionary, export per language |
-| `src/app/process_ui.rs` | Hose properties and the fluid and process window (PCT loops) |
+| `src/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
 | `src/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |

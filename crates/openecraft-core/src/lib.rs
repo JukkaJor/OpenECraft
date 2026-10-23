@@ -10,6 +10,7 @@ pub mod conndef;
 pub mod devdesc;
 pub mod dxf;
 pub mod dxf_import;
+pub mod electrofluid;
 pub mod export3d;
 pub mod fluid;
 pub mod document;

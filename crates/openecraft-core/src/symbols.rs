@@ -16,6 +16,32 @@ pub enum ContactKind {
     Nc,
     Changeover,
     MainNo,
+    /// Time-delayed contacts (timer relays): delayed when the coil is energized
+    /// (on-delay) or de-energized (off-delay).
+    NoOnDelay,
+    NcOnDelay,
+    NoOffDelay,
+    NcOffDelay,
+}
+
+impl ContactKind {
+    /// Contact without the delay: NO, NC, changeover or main contact.
+    pub fn base(self) -> ContactKind {
+        match self {
+            ContactKind::NoOnDelay | ContactKind::NoOffDelay => ContactKind::No,
+            ContactKind::NcOnDelay | ContactKind::NcOffDelay => ContactKind::Nc,
+            k => k,
+        }
+    }
+
+    /// `Some(true)` = on-delay, `Some(false)` = off-delay.
+    pub fn delay(self) -> Option<bool> {
+        match self {
+            ContactKind::NoOnDelay | ContactKind::NcOnDelay => Some(true),
+            ContactKind::NoOffDelay | ContactKind::NcOffDelay => Some(false),
+            _ => None,
+        }
+    }
 }
 
 /// Side of a plug pin symbol.
@@ -62,13 +88,17 @@ impl Func {
     }
 
     /// All functions a symbol can have (symbol editor).
-    pub const ALL: [Func; 14] = [
+    pub const ALL: [Func; 18] = [
         Func::Main { mirror: false },
         Func::Main { mirror: true },
         Func::Aux(ContactKind::No),
         Func::Aux(ContactKind::Nc),
         Func::Aux(ContactKind::Changeover),
         Func::Aux(ContactKind::MainNo),
+        Func::Aux(ContactKind::NoOnDelay),
+        Func::Aux(ContactKind::NcOnDelay),
+        Func::Aux(ContactKind::NoOffDelay),
+        Func::Aux(ContactKind::NcOffDelay),
         Func::Terminal,
         Func::Plc,
         Func::Plug(PinKind::Pair),
@@ -87,6 +117,10 @@ impl Func {
             Func::Aux(ContactKind::Nc) => tr("Auxiliary function: NC contact"),
             Func::Aux(ContactKind::Changeover) => tr("Auxiliary function: changeover"),
             Func::Aux(ContactKind::MainNo) => tr("Auxiliary function: main contact"),
+            Func::Aux(ContactKind::NoOnDelay) => tr("Auxiliary function: NO contact, on-delay"),
+            Func::Aux(ContactKind::NcOnDelay) => tr("Auxiliary function: NC contact, on-delay"),
+            Func::Aux(ContactKind::NoOffDelay) => tr("Auxiliary function: NO contact, off-delay"),
+            Func::Aux(ContactKind::NcOffDelay) => tr("Auxiliary function: NC contact, off-delay"),
             Func::Terminal => tr("Terminal"),
             Func::Plc => tr("PLC connection point"),
             Func::Plug(PinKind::Pair) => tr("Plug: pin and socket"),
@@ -338,6 +372,24 @@ impl B {
     fn breaker_x(&mut self, x: f32) -> &mut Self {
         self.l(x - 0.7, -2.7, x + 0.7, -1.3).l(x - 0.7, -1.3, x + 0.7, -2.7)
     }
+    /// Disconnector bar at the fixed contact of a pole at x.
+    fn disconnector_bar(&mut self, x: f32) -> &mut Self {
+        self.l(x - 0.8, -2.0, x + 0.8, -2.0)
+    }
+    /// Delay mark of a time-delayed contact, linked to the blade at `bx`: a double
+    /// line ending in a semicircle (open to the left for on-delay).
+    fn delay(&mut self, bx: f32, on: bool) -> &mut Self {
+        self.l(bx, -0.5, -4.0, -0.5).l(bx, 0.5, -4.0, 0.5);
+        if on {
+            self.arc(-5.5, 0.0, 1.5, 270.0, 450.0)
+        } else {
+            self.arc(-4.0, 0.0, 1.5, 90.0, 270.0)
+        }
+    }
+    /// Actuator box with a symbol (pressure, temperature …) linked to the blade at `bx`.
+    fn sensing_box(&mut self, bx: f32, t: &str) -> &mut Self {
+        self.dl(bx, 0.0, -4.0, 0.0).rect(-8.0, -1.5, -4.0, 1.5, false).text(-6.0, 0.0, t, 1.6, Anchor::Center)
+    }
 }
 
 struct Def {
@@ -485,6 +537,27 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "95").pin(0.0, 4.0, "96");
     v.push(def("ol_nc", "Overload aux contact NC", C::Contacts, "F", Func::Aux(ContactKind::Nc)).build(&mut b));
 
+    // Time-delayed contacts (IEC 60617-07-05), numbered x7/x8 (NO) and x5/x6 (NC).
+    b.no(0.0).delay(-0.9, true).pin(0.0, -4.0, "17").pin(0.0, 4.0, "18");
+    v.push(def("no_on", "NO contact, on-delay", C::Contacts, "K", Func::Aux(ContactKind::NoOnDelay)).auto().build(&mut b));
+
+    b.nc(0.0).delay(1.0, true).pin(0.0, -4.0, "15").pin(0.0, 4.0, "16");
+    v.push(def("nc_on", "NC contact, on-delay", C::Contacts, "K", Func::Aux(ContactKind::NcOnDelay)).auto().build(&mut b));
+
+    b.no(0.0).delay(-0.9, false).pin(0.0, -4.0, "17").pin(0.0, 4.0, "18");
+    v.push(def("no_off", "NO contact, off-delay", C::Contacts, "K", Func::Aux(ContactKind::NoOffDelay)).auto().build(&mut b));
+
+    b.nc(0.0).delay(1.0, false).pin(0.0, -4.0, "15").pin(0.0, 4.0, "16");
+    v.push(def("nc_off", "NC contact, off-delay", C::Contacts, "K", Func::Aux(ContactKind::NcOffDelay)).auto().build(&mut b));
+
+    for x in [0.0, 8.0, 16.0, 24.0] {
+        b.no(x).arc(x, -1.3, 0.7, 180.0, 360.0);
+    }
+    b.dl(-0.9, 0.0, 23.1, 0.0);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5").pin(24.0, -4.0, "7");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6").pin(24.0, 4.0, "8");
+    v.push(def("main4", "Main contacts 4-pole", C::Contacts, "K", Func::Aux(ContactKind::MainNo)).build(&mut b));
+
     // ---------------------------------------------------------------- switches
     b.no(0.0).push_actuator(-0.9).pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
     v.push(def("pb_no", "Push button NO", C::Switches, "S", MAIN).build(&mut b));
@@ -510,6 +583,54 @@ fn build_library() -> Vec<SymbolDef> {
     b.poly(&[(-4.0, -1.5), (-6.0, 0.0), (-4.0, 1.5)], false, false);
     b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
     v.push(def("limit", "Position switch NO", C::Switches, "B", MAIN).build(&mut b));
+
+    b.nc(0.0).dl(0.96, 0.0, -4.0, 0.0);
+    b.poly(&[(-4.0, -1.5), (-6.0, 0.0), (-4.0, 1.5)], false, false);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("limit_nc", "Position switch NC", C::Switches, "B", MAIN).build(&mut b));
+
+    b.nc(0.0).dl(0.96, 0.0, -4.0, 0.0);
+    b.poly(&[(-4.0, -1.5), (-5.0, -1.5), (-5.0, 1.5), (-6.0, 1.5)], false, false);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("sel_nc", "Selector switch NC", C::Switches, "S", MAIN).build(&mut b));
+
+    // Key: bow and shank with a bit.
+    b.no(0.0).dl(-0.9, 0.0, -4.0, 0.0).l(-4.0, 0.0, -6.0, 0.0).circle(-7.0, 0.0, 1.0, false).l(-5.0, 0.0, -5.0, 1.0);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("key_no", "Key switch NO", C::Switches, "S", MAIN).build(&mut b));
+
+    b.no(0.0).sensing_box(-0.9, "p");
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("pressure_no", "Pressure switch NO", C::Switches, "B", MAIN).build(&mut b));
+
+    b.nc(0.0).sensing_box(0.96, "θ");
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("temp_nc", "Temperature switch NC", C::Switches, "B", MAIN).build(&mut b));
+
+    // Float on the liquid level.
+    b.no(0.0).dl(-0.9, 0.0, -5.0, 0.0).circle(-6.5, 0.0, 1.5, false).l(-9.0, 1.5, -4.0, 1.5);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("level_no", "Float switch NO", C::Switches, "B", MAIN).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0] {
+        b.no(x).disconnector_bar(x);
+    }
+    b.dl(-5.0, 0.0, 15.1, 0.0).l(-5.0, -1.5, -5.0, 1.5).l(-5.0, -1.5, -6.5, -1.5);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
+    v.push(def("disc3", "Main switch 3-pole", C::Switches, "Q", MAIN).build(&mut b));
+
+    // 2-wire transmitter: the measured value goes in, a 4 - 20 mA loop current out.
+    b.rect(-3.0, -1.0, 11.0, 6.0, false).l(-3.0, 6.0, 11.0, -1.0);
+    b.l(0.0, -4.0, 0.0, -1.0).l(8.0, -4.0, 8.0, -1.0);
+    b.text(1.0, 4.0, "p", 1.8, Center).text(8.0, 2.0, "I", 1.8, Center);
+    b.pin(0.0, -4.0, "+").pin(8.0, -4.0, "-");
+    v.push(def("transmitter", "Measuring transducer", C::Switches, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-3.2, 2.6, -2.2, 2.6).l(-2.2, 2.6, 2.2, -2.6).text(2.6, 2.4, "θ", 1.6, Left);
+    b.pin(0.0, -4.0, "T1").pin(0.0, 4.0, "T2");
+    v.push(def("ptc", "Thermistor PTC", C::Switches, "B", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- protection
     b.l(0.0, -4.0, 0.0, 4.0).rect(-1.2, -2.6, 1.2, 2.6, false);
@@ -545,6 +666,46 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
     b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
     v.push(def("ol3", "Thermal overload relay", C::Protection, "F", MAIN_MIRROR).build(&mut b));
+
+    for x in [0.0, 8.0] {
+        b.no(x).breaker_x(x);
+    }
+    b.dl(-5.0, 0.0, 7.1, 0.0).rect(-9.0, -1.5, -5.0, 1.5, false).text(-7.0, 0.0, "I>", 1.6, Center);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4");
+    v.push(def("cb2", "Circuit breaker 2-pole", C::Protection, "F", MAIN).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0, 24.0] {
+        b.no(x).breaker_x(x);
+    }
+    b.dl(-5.0, 0.0, 23.1, 0.0).rect(-9.0, -1.5, -5.0, 1.5, false).text(-7.0, 0.0, "I>", 1.6, Center);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5").pin(24.0, -4.0, "7");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6").pin(24.0, 4.0, "8");
+    v.push(def("cb4", "Circuit breaker 4-pole", C::Protection, "Q", MAIN).build(&mut b));
+
+    // Residual current device: 4 switching poles, the summation current transformer
+    // around all conductors and the residual current release.
+    for x in [0.0, 8.0, 16.0, 24.0] {
+        b.no(x);
+    }
+    b.rect(-1.5, 2.6, 25.5, 3.4, false);
+    b.dl(-5.0, 0.0, 23.1, 0.0).rect(-11.0, -1.5, -5.0, 1.5, false).text(-8.0, 0.0, "IΔ", 1.6, Center);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5").pin(24.0, -4.0, "N");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6").pin(24.0, 4.0, "N'");
+    v.push(def("rcd4", "Residual current device 4-pole", C::Protection, "F", MAIN).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, 4.0).rect(x - 1.2, -2.6, x + 1.2, 2.6, false);
+    }
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
+    v.push(def("fuse3", "Fuse 3-pole", C::Protection, "F", MAIN).build(&mut b));
+
+    // Surge arrester: voltage-dependent resistor between the conductor and earth.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-2.4, 3.0, 1.0, -0.6).l(1.0, -0.6, 2.4, -0.6).poly(&[(-2.6, 3.4), (-1.6, 3.1), (-2.2, 2.4)], true, true);
+    b.pin(0.0, -4.0, "L").pin(0.0, 4.0, "PE");
+    v.push(def("spd", "Surge protective device", C::Protection, "F", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- loads
     {
@@ -604,6 +765,76 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "1.1").pin(8.0, -4.0, "1.2").pin(0.0, 16.0, "2.1").pin(8.0, 16.0, "2.2");
     v.push(def("trafo", "Control transformer", C::Loads, "T", MAIN).build(&mut b));
 
+    {
+        let (cx, cy, r) = (4.0f32, 8.0f32, 5.0f32);
+        for x in [0.0f32, 8.0] {
+            let d = p(x, 3.0) - p(cx, cy);
+            let e = p(cx, cy) + d * (r / d.len());
+            b.l(x, -4.0, x, 3.0).l(x, 3.0, e.x, e.y);
+        }
+        b.circle(cx, cy, r, false).text(cx, cy - 1.0, "M", 3.0, Center).text(cx, cy + 2.0, "=", 2.0, Center);
+        b.pin(0.0, -4.0, "A1").pin(8.0, -4.0, "A2");
+        v.push(def("motor_dc", "Motor DC", C::Loads, "M", MAIN).build(&mut b));
+    }
+
+    // Electromagnetic brake: winding with the brake shoe.
+    b.l(0.0, -4.0, 0.0, -2.0).rect(-3.0, -2.0, 3.0, 2.0, false).l(0.0, 2.0, 0.0, 4.0);
+    b.l(-6.0, -2.0, -6.0, 2.0).l(-5.0, -2.0, -5.0, 2.0).l(-5.0, 0.0, -3.0, 0.0);
+    b.pin(0.0, -4.0, "BD1").pin(0.0, 4.0, "BD2");
+    v.push(def("brake", "Brake (electromagnetic)", C::Loads, "Y", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-2.0, -3.0, 2.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    for y in [-1.5, 0.0, 1.5] {
+        b.l(-2.0, y + 1.0, 2.0, y - 1.0);
+    }
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("heater", "Heating element", C::Loads, "E", MAIN).build(&mut b));
+
+    b.rect(-3.0, 0.0, 27.0, 12.0, false).l(-3.0, 12.0, 27.0, 0.0);
+    b.text(4.0, 3.5, "~", 3.5, Center).text(20.0, 8.5, "~", 3.5, Center);
+    for x in [0.0, 8.0, 16.0, 24.0] {
+        b.l(x, -4.0, x, 0.0);
+    }
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "L1").pin(8.0, -4.0, "L2").pin(16.0, -4.0, "L3").pin(24.0, -4.0, "PE");
+    b.pin(0.0, 16.0, "U").pin(8.0, 16.0, "V").pin(16.0, 16.0, "W");
+    v.push(def("vfd", "Frequency converter", C::Loads, "T", MAIN).build(&mut b));
+
+    // Soft starter: semiconductor controller with the starting ramp.
+    b.rect(-3.0, 0.0, 19.0, 12.0, false).poly(&[(0.0, 9.0), (5.0, 9.0), (13.0, 3.0), (16.0, 3.0)], false, false);
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, 0.0).l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "1L1").pin(8.0, -4.0, "3L2").pin(16.0, -4.0, "5L3");
+    b.pin(0.0, 16.0, "2T1").pin(8.0, 16.0, "4T2").pin(16.0, 16.0, "6T3");
+    v.push(def("softstarter", "Soft starter", C::Loads, "Q", MAIN).build(&mut b));
+
+    // Socket outlet with protective contact: a cup open towards the plug.
+    b.arc(8.0, 2.0, 9.0, 0.0, 180.0).l(0.0, -4.0, 0.0, 4.0).l(8.0, -4.0, 8.0, 6.0).l(16.0, -4.0, 16.0, 4.0);
+    b.pin(0.0, -4.0, "L").pin(8.0, -4.0, "N").pin(16.0, -4.0, "PE");
+    v.push(def("socket", "Socket outlet", C::Loads, "X", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).text(0.0, 0.0, "A", 2.5, Center).l(0.0, 3.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("ammeter", "Ammeter", C::Loads, "P", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).text(0.0, 0.0, "V", 2.5, Center).l(0.0, 3.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("voltmeter", "Voltmeter", C::Loads, "P", MAIN).build(&mut b));
+
+    // Current transformer: the primary conductor passes through the core.
+    b.l(0.0, -8.0, 0.0, 8.0).circle(0.0, 0.0, 3.0, false);
+    b.l(2.1, -2.1, 4.0, -4.0).l(4.0, -4.0, 8.0, -4.0).l(2.1, 2.1, 4.0, 4.0).l(4.0, 4.0, 8.0, 4.0);
+    b.pin(0.0, -8.0, "P1").pin(0.0, 8.0, "P2").pin(8.0, -4.0, "S1").pin(8.0, 4.0, "S2");
+    v.push(def("ct", "Current transformer", C::Loads, "T", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-3.0, -1.0, 3.0, -1.0).l(-1.5, 1.0, 1.5, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.text(3.0, -2.6, "+", 1.8, Left);
+    b.pin(0.0, -4.0, "+").pin(0.0, 4.0, "-");
+    v.push(def("battery", "Battery", C::Loads, "G", MAIN).build(&mut b));
+
     // ---------------------------------------------------------------- terminals
     b.l(0.0, -4.0, 0.0, -1.0).circle(0.0, 0.0, 1.0, false).l(0.0, 1.0, 0.0, 4.0);
     b.field(FieldKind::Tag, -1.6, 0.0, 2.0, Right).field(FieldKind::Label, 1.6, 0.0, 2.2, Left);
@@ -618,6 +849,31 @@ fn build_library() -> Vec<SymbolDef> {
     b.field(FieldKind::Tag, -2.2, 0.0, 2.0, Right).field(FieldKind::Label, 1.6, 0.0, 2.2, Left);
     b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
     let mut t = def("term_pe", "PE terminal", C::Terminals, "X", Func::Terminal).label(tr("PE"));
+    t.show_tag = false;
+    t.bridges = vec![(0, 1)];
+    v.push(t.build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).circle(0.0, 0.0, 1.0, false).l(0.0, 1.0, 0.0, 4.0).l(-0.7, 0.0, 0.7, 0.0);
+    b.field(FieldKind::Tag, -1.6, 0.0, 2.0, Right).field(FieldKind::Label, 1.6, 0.0, 2.2, Left);
+    b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
+    let mut t = def("term_n", "N terminal", C::Terminals, "X", Func::Terminal).label("N");
+    t.show_tag = false;
+    t.bridges = vec![(0, 1)];
+    v.push(t.build(&mut b));
+
+    // Disconnect terminal: knife between the two terminal points.
+    b.l(0.0, -4.0, 0.0, -2.6).circle(0.0, -2.0, 0.6, false).l(0.3, -1.5, 1.4, 1.6).circle(0.0, 2.0, 0.6, false).l(0.0, 2.6, 0.0, 4.0);
+    b.field(FieldKind::Tag, -1.6, 0.0, 2.0, Right).field(FieldKind::Label, 2.0, 0.0, 2.2, Left);
+    b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
+    let mut t = def("term_disc", "Disconnect terminal", C::Terminals, "X", Func::Terminal).label("1");
+    t.show_tag = false;
+    t.bridges = vec![(0, 1)];
+    v.push(t.build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, 4.0).rect(-1.0, -2.6, 1.0, 2.6, false);
+    b.field(FieldKind::Tag, -1.6, 0.0, 2.0, Right).field(FieldKind::Label, 1.6, 0.0, 2.2, Left);
+    b.pin(0.0, -4.0, "").pin(0.0, 4.0, "");
+    let mut t = def("term_fuse", "Fuse terminal", C::Terminals, "X", Func::Terminal).label("1");
     t.show_tag = false;
     t.bridges = vec![(0, 1)];
     v.push(t.build(&mut b));
@@ -664,6 +920,28 @@ fn build_library() -> Vec<SymbolDef> {
     t.show_tag = false;
     v.push(t.build(&mut b));
 
+    // Analog points: the same boxes with a wave.
+    let wave = |b: &mut B, y: f32| {
+        b.poly(&[(-4.4, y), (-3.9, y - 0.6), (-3.4, y), (-2.9, y + 0.6), (-2.4, y)], false, false);
+    };
+    b.l(0.0, -4.0, 0.0, 0.0).rect(-5.0, 0.0, 5.0, 6.0, false);
+    wave(&mut b, 4.8);
+    b.field(FieldKind::Label, 0.0, 3.2, 2.0, Center);
+    b.field(FieldKind::Tag, 5.6, 4.5, 1.8, Left);
+    b.pin(0.0, -4.0, "");
+    let mut t = def("plc_ai", "PLC analog input", C::Plc, "A", Func::Plc).label("IW64");
+    t.show_tag = false;
+    v.push(t.build(&mut b));
+
+    b.l(0.0, 0.0, 0.0, 4.0).rect(-5.0, -6.0, 5.0, 0.0, false);
+    wave(&mut b, -4.8);
+    b.field(FieldKind::Label, 0.0, -2.8, 2.0, Center);
+    b.field(FieldKind::Tag, 5.6, -4.5, 1.8, Left);
+    b.pin(0.0, 4.0, "");
+    let mut t = def("plc_ao", "PLC analog output", C::Plc, "A", Func::Plc).label("QW64");
+    t.show_tag = false;
+    v.push(t.build(&mut b));
+
     // ---------------------------------------------------------------- potentials
     for (key, name, label) in [
         ("pot_l1", "Potential L1", "L1"),
@@ -703,6 +981,33 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0);
     b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
     v.push(def("diode", "Diode", C::Passive, "V", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.5).poly(&[(-1.8, -1.5), (1.8, -1.5), (0.0, 1.5)], true, false);
+    b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0);
+    for y in [-1.2, 0.4] {
+        b.l(2.2, y, 3.8, y - 1.2);
+        b.poly(&[(3.8, y - 1.2), (3.0, y - 1.0), (3.6, y - 0.4)], true, true);
+    }
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
+    v.push(def("led", "LED", C::Passive, "P", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0);
+    for y in [-2.25, -0.75, 0.75, 2.25] {
+        b.arc(0.0, y, 0.75, 270.0, 450.0);
+    }
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("inductor", "Inductor", C::Passive, "L", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-3.2, 2.6, -2.2, 2.6).l(-2.2, 2.6, 2.2, -2.6).text(2.6, 2.4, "U", 1.6, Left);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("varistor", "Varistor", C::Passive, "R", MAIN).build(&mut b));
+
+    // Potentiometer: wiper (2) on the side.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(4.0, 0.0, 1.8, 0.0).poly(&[(1.2, 0.0), (2.2, -0.6), (2.2, 0.6)], true, true);
+    b.pin(0.0, -4.0, "1").pin(4.0, 0.0, "2").pin(0.0, 4.0, "3");
+    v.push(def("potentiometer", "Potentiometer", C::Passive, "R", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- black boxes
     b.drect(-4.0, -4.0, 12.0, 4.0);
@@ -807,6 +1112,63 @@ fn build_library() -> Vec<SymbolDef> {
     b.field(FieldKind::Label, 0.0, 0.0, 2.2, Center);
     b.pin(0.0, -4.0, "X1").pin(0.0, 4.0, "X2");
     v.push(def("nfpa_lamp", "Pilot light (NFPA)", C::Nfpa, "P", MAIN).label("R").build(&mut b));
+
+    // Timed contacts: NOTC (normally open, timed closed) and NCTO (normally closed, timed open).
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.text(3.0, 0.0, "TC", 1.4, Left);
+    b.pin(0.0, -4.0, "17").pin(0.0, 4.0, "18");
+    v.push(def("nfpa_notc", "NO contact, timed closing (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::NoOnDelay)).auto().build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.l(-2.4, 2.4, 2.4, -2.4).text(3.0, 0.0, "TO", 1.4, Left);
+    b.pin(0.0, -4.0, "15").pin(0.0, 4.0, "16");
+    v.push(def("nfpa_ncto", "NC contact, timed opening (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::NcOnDelay)).auto().build(&mut b));
+
+    // Limit switches: blade with the actuating wedge.
+    b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    b.l(0.5, 2.0, -2.0, -2.4).poly(&[(-1.2, -1.0), (-2.6, -0.4), (-0.9, 0.0)], true, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ls_no", "Limit switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    b.l(0.5, 2.0, 1.0, -3.2).poly(&[(0.8, -0.6), (-0.6, -0.2), (0.7, 0.4)], true, false);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("nfpa_ls_nc", "Limit switch NC (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-1.0, -0.4, -4.0, -0.4).l(-4.0, -0.4, -5.0, -1.8);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ss", "Selector switch (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -2.0).rect(-1.4, -2.0, 1.4, 2.0, false).arc(0.0, -1.0, 1.0, 90.0, 270.0).arc(0.0, 1.0, 1.0, 270.0, 450.0).l(0.0, 2.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("nfpa_fuse", "Fuse (NFPA)", C::Nfpa, "F", MAIN).build(&mut b));
+
+    // Circuit breaker and disconnect: open contacts with arcs (breaker) or blades
+    // (disconnect), operated together.
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, -3.1).circle(x, -2.5, 0.6, false).circle(x, 2.5, 0.6, false).l(x, 3.1, x, 4.0);
+        b.arc(x + 1.5, 0.0, 2.6, 125.0, 235.0);
+    }
+    b.dl(-1.1, 0.0, 14.9, 0.0);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
+    v.push(def("nfpa_cb3", "Circuit breaker 3-pole (NFPA)", C::Nfpa, "Q", MAIN).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, -3.1).circle(x, -2.5, 0.6, false).circle(x, 2.5, 0.6, false).l(x, 3.1, x, 4.0);
+        b.l(x + 0.5, 2.0, x - 2.0, -2.4);
+    }
+    b.dl(-1.2, 0.0, 14.8, 0.0);
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5");
+    b.pin(0.0, 4.0, "2").pin(8.0, 4.0, "4").pin(16.0, 4.0, "6");
+    v.push(def("nfpa_disc3", "Disconnect switch 3-pole (NFPA)", C::Nfpa, "Q", MAIN).build(&mut b));
+
+    b.circle(8.0, 8.0, 6.0, false).text(8.0, 8.0, "MTR", 2.2, Center);
+    b.l(0.0, -4.0, 0.0, 8.0).l(0.0, 8.0, 2.0, 8.0).l(8.0, -4.0, 8.0, 2.0);
+    b.l(16.0, -4.0, 16.0, 8.0).l(16.0, 8.0, 14.0, 8.0).l(24.0, -4.0, 24.0, 14.0).l(24.0, 14.0, 8.0, 14.0);
+    b.pin(0.0, -4.0, "T1").pin(8.0, -4.0, "T2").pin(16.0, -4.0, "T3").pin(24.0, -4.0, "GND");
+    v.push(def("nfpa_motor", "Motor (NFPA)", C::Nfpa, "M", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- fluid power
     // Small filled arrow head at `tip` pointing in direction (dx, dy).
