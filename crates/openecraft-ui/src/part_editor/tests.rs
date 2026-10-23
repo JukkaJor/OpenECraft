@@ -28,15 +28,27 @@ fn models_are_assigned_to_the_part() {
 #[test]
 fn model_file_filters() {
     assert_eq!(ModelKind::Front2d.filter().1, &["svg"]);
-    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj", "step", "stp"]);
+    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj", "step", "stp", "igs", "iges", "ifc", "jt"]);
 }
 
 #[test]
-fn step_files_go_to_the_step_reader() {
+fn files_go_to_the_reader_of_their_format() {
     let mut part = Part::default();
-    for name in ["Model.STEP", "model.stp"] {
+    for (name, format) in [("Model.STEP", "STEP"), ("model.stp", "STEP"), ("model.IGS", "IGES"), ("model.iges", "IGES"), ("model.ifc", "IFC"), ("model.jt", "JT")] {
         let err = apply_model(&mut part, ModelKind::Mesh3d, name, b"garbage").unwrap_err();
-        assert!(err.contains("STEP"), "{name}: {err}");
+        assert!(err.contains(format), "{name}: {err}");
     }
     assert!(part.model_3d.is_none());
+}
+
+#[test]
+fn jt_and_ifc_models_are_assigned() {
+    let tris = [[[0.0, 0.0, 0.0], [12.0, 0.0, 0.0], [0.0, 8.0, 3.0]]];
+    let jt = openecraft_jt::write_jt("part", &[openecraft_jt::Group { name: "g", bodies: vec![openecraft_jt::Body { name: "b", color: [0; 3], transparent: false, triangles: &tris }] }]);
+    let mut part = Part::default();
+    apply_model(&mut part, ModelKind::Mesh3d, "part.jt", &jt).unwrap();
+    assert_eq!((part.width, part.height, part.depth), (12.0, 8.0, 3.0));
+    let ifc = "ISO-10303-21;\nHEADER;\nFILE_SCHEMA(('IFC4'));\nENDSEC;\nDATA;\n#1=IFCCARTESIANPOINT((0.,0.,0.));\n#2=IFCAXIS2PLACEMENT3D(#1,$,$);\n#3=IFCBLOCK(#2,5.,6.,7.);\n#4=IFCSHAPEREPRESENTATION($,'Body','CSG',(#3));\n#5=IFCPRODUCTDEFINITIONSHAPE($,$,(#4));\n#6=IFCBUILDINGELEMENTPROXY('x',$,$,$,$,$,#5,$,$);\nENDSEC;\nEND-ISO-10303-21;\n";
+    apply_model(&mut part, ModelKind::Mesh3d, "part.ifc", ifc.as_bytes()).unwrap();
+    assert_eq!(part.model_3d.as_ref().unwrap().size(), [5.0, 6.0, 7.0]);
 }

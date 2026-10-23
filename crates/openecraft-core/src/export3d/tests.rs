@@ -25,9 +25,9 @@ fn the_scene_has_walls_door_plate_and_items() {
 
 #[test]
 fn base64_and_step_reals() {
-    assert_eq!(base64(b"Man"), "TWFu");
-    assert_eq!(base64(b"Ma"), "TWE=");
-    assert_eq!(base64(b"M"), "TQ==");
+    assert_eq!(crate::document::base64_encode(b"Man"), "TWFu");
+    assert_eq!(crate::document::base64_encode(b"Ma"), "TWE=");
+    assert_eq!(crate::document::base64_encode(b"M"), "TQ==");
     assert_eq!(real(12.0), "12.");
     assert_eq!(real(-0.5), "-0.5");
     assert_eq!(real(1e-9), "0.");
@@ -58,12 +58,9 @@ fn gltf_is_consistent() {
     assert!(v["materials"].as_array().unwrap().iter().any(|m| m["alphaMode"] == "BLEND"));
 }
 
-#[test]
-fn step_references_only_defined_entities() {
-    let prj = demo_project();
-    let text = step(&prj, "panel.stp");
+/// Every `#n` used in the data section of a STEP physical file (STEP, IFC) is defined once.
+fn assert_references_defined(text: &str) {
     assert!(text.starts_with("ISO-10303-21;\nHEADER;") && text.ends_with("END-ISO-10303-21;\n"));
-    assert!(text.contains("FILE_SCHEMA(('AUTOMOTIVE_DESIGN"));
     let mut defined = HashSet::new();
     let mut used = HashSet::new();
     for line in text.lines().filter(|l| l.starts_with('#')) {
@@ -79,10 +76,132 @@ fn step_references_only_defined_entities() {
     }
     let missing: Vec<_> = used.difference(&defined).collect();
     assert!(missing.is_empty(), "{missing:?}");
+}
+
+fn solid_count(prj: &Project) -> usize {
+    scene(prj).iter().map(|e| e.solids.iter().filter(|s| !s.triangles.is_empty()).count()).sum()
+}
+
+#[test]
+fn step_references_only_defined_entities() {
+    let prj = demo_project();
+    let text = step(&prj, "panel.stp");
+    assert!(text.contains("FILE_SCHEMA(('AUTOMOTIVE_DESIGN"));
+    assert_references_defined(&text);
     let solids: usize = scene(&prj).iter().map(|e| e.solids.iter().filter(|s| !s.triangles.is_empty()).count()).sum();
     assert_eq!(text.matches("=FACETED_BREP(").count(), solids);
     assert_eq!(text.matches("=STYLED_ITEM(").count(), solids);
     assert!(text.contains("FACETED_BREP('-K1'"));
+}
+
+#[test]
+fn ifc_has_a_board_per_enclosure_and_an_element_per_solid() {
+    let prj = demo_project();
+    let text = ifc(&prj, "panel.ifc");
+    assert!(text.contains("FILE_SCHEMA(('IFC4'))"));
+    assert_references_defined(&text);
+    assert_eq!(text.matches("=IFCELECTRICDISTRIBUTIONBOARD(").count(), prj.layout.enclosures.len());
+    assert_eq!(text.matches("=IFCBUILDINGELEMENTPROXY(").count(), solid_count(&prj));
+    assert_eq!(text.matches("=IFCTRIANGULATEDFACESET(").count(), solid_count(&prj));
+    assert!(text.contains("IFCSIUNIT(*,.LENGTHUNIT.,.MILLI.,.METRE.)"));
+    // GlobalIds: 22 characters, unique, the same for every export.
+    let ids: Vec<&str> = text.lines().filter(|l| l.contains("=IFC")).filter_map(|l| l.split('\'').nth(1)).filter(|s| s.len() == 22).collect();
+    assert!(ids.len() > solid_count(&prj));
+    assert_eq!(ids.iter().collect::<HashSet<_>>().len(), ids.len());
+    assert_eq!(ifc(&prj, "panel.ifc"), text);
+    // The IFC import reads it back: z up, all enclosures side by side.
+    let mesh = crate::parts::parse_ifc(text.as_bytes()).unwrap();
+    let height = prj.layout.enclosures.iter().map(|e| e.height).fold(0.0, f32::max);
+    assert!((mesh.size()[2] - height).abs() < 0.01, "{:?}", mesh.size());
+}
+
+#[test]
+fn ifc_strings_and_guids() {
+    assert_eq!(ifc::guid(0), "0000000000000000000000");
+    assert_eq!(ifc::guid(u128::MAX), "3$$$$$$$$$$$$$$$$$$$$$");
+    assert_eq!(ifc::text("It's -K1"), "'It''s -K1'");
+    assert_eq!(ifc::text("Größe"), "'Gr\\X2\\00F6\\X0\\\\X2\\00DF\\X0\\e'");
+}
+
+/// Directory entry: type, form, parameter pointer.
+type DirectoryEntry = (u32, u32, usize);
+/// Parameter record: DE pointer, text.
+type ParameterRecord = (usize, String);
+
+/// Directory entries and parameter records of an IGES file, after checking the
+/// fixed-column layout.
+fn iges_sections(text: &str) -> (Vec<DirectoryEntry>, Vec<ParameterRecord>) {
+    let lines: Vec<&str> = text.lines().collect();
+    assert!(lines.iter().all(|l| l.len() == 80), "80 columns");
+    let count = |c: char| lines.iter().filter(|l| l.as_bytes()[72] == c as u8).count();
+    let terminate = lines.last().unwrap();
+    assert_eq!(&terminate[72..73], "T");
+    let field = |s: &str| s[1..8].trim().parse::<usize>().unwrap();
+    assert_eq!([field(&terminate[0..8]), field(&terminate[8..16]), field(&terminate[16..24]), field(&terminate[24..32])], [count('S'), count('G'), count('D'), count('P')]);
+    let d: Vec<&str> = lines.iter().filter(|l| &l[72..73] == "D").copied().collect();
+    let num = |s: &str| s.trim().parse::<usize>().unwrap();
+    let entries = d.chunks(2).map(|e| (num(&e[0][0..8]) as u32, num(&e[1][32..40]) as u32, num(&e[0][8..16]))).collect();
+    let params = lines.iter().filter(|l| &l[72..73] == "P").map(|l| (num(&l[64..72]), l[..64].trim_end().to_string())).collect();
+    (entries, params)
+}
+
+#[test]
+fn iges_solids_reference_existing_entities() {
+    let prj = demo_project();
+    let text = iges(&prj, "panel.igs");
+    let (entries, params) = iges_sections(&text);
+    // Closed meshes as solids, the others (the walls: overlapping boxes) as open shells.
+    let solids = entries.iter().filter(|e| e.0 == 186).count();
+    assert_eq!(solids + entries.iter().filter(|e| (e.0, e.1) == (514, 2)).count(), solid_count(&prj));
+    assert!(solids > prj.layout.enclosures.len());
+    assert_eq!(entries.iter().filter(|e| (e.0, e.1) == (402, 7)).count(), prj.layout.enclosures.len());
+    // The parameters of each entity start at its pointer, with its type, and end with `;`.
+    for (i, &(kind, _, first)) in entries.iter().enumerate() {
+        let de = 2 * i + 1;
+        assert_eq!(params[first - 1].0, de);
+        assert!(params[first - 1].1.starts_with(&format!("{kind},")), "{kind}: {}", params[first - 1].1);
+        let all: String = params.iter().filter(|p| p.0 == de).map(|p| p.1.as_str()).collect();
+        assert!(all.ends_with(';'));
+    }
+    // An MSBO points to a closed shell, a face to a plane and a loop.
+    let kind_at = |de: usize| entries[(de - 1) / 2].0;
+    let fields = |de: usize| -> Vec<String> {
+        let all: String = params.iter().filter(|p| p.0 == de).map(|p| p.1.as_str()).collect();
+        all.trim_end_matches(';').split(',').map(str::to_string).collect()
+    };
+    let msbo = 2 * entries.iter().position(|e| e.0 == 186).unwrap() + 1;
+    let shell: usize = fields(msbo)[1].parse().unwrap();
+    assert_eq!((kind_at(shell), entries[(shell - 1) / 2].1), (514, 1));
+    let face: usize = fields(shell)[2].parse().unwrap();
+    let f = fields(face);
+    assert_eq!((kind_at(f[1].parse().unwrap()), kind_at(f[4].parse().unwrap())), (190, 508));
+    assert!(text.contains("2HMM"));
+}
+
+#[test]
+fn iges_packs_parameters_and_dates() {
+    assert_eq!(iges::pack(&["110".into(), "1.".into()], 64), ["110,1.;"]);
+    let long: Vec<String> = (0..30).map(|i| format!("{i}.5")).collect();
+    let lines = iges::pack(&long, 64);
+    assert!(lines.len() > 1 && lines.iter().all(|l| l.len() <= 64));
+    assert_eq!(lines.concat().split(',').count(), 30);
+    let tetrahedron = [[1, 3, 2], [1, 2, 4], [2, 3, 4], [3, 1, 4]];
+    assert!(iges::closed(&tetrahedron));
+    assert!(!iges::closed(&tetrahedron[..3]));
+    assert!(!iges::closed(&[[1, 2, 3], [1, 2, 4], [2, 3, 4], [3, 1, 4]]), "inconsistent orientation");
+    assert_eq!(iges::timestamp("2026-10-23"), "20261023.000000");
+    assert_eq!(iges::timestamp("23.10.26"), "20000101.000000");
+}
+
+#[test]
+fn jt_holds_every_solid() {
+    let prj = demo_project();
+    let mesh = openecraft_jt::parse_jt(&jt(&prj)).unwrap();
+    let triangles: usize = scene(&prj).iter().flat_map(|e| &e.solids).map(|s| s.triangles.len()).sum();
+    assert!(mesh.triangles.len() > triangles / 2, "{} of {triangles}", mesh.triangles.len());
+    // z up: the enclosure height is the extent in z.
+    let height = prj.layout.enclosures.iter().map(|e| e.height).fold(0.0, f32::max);
+    assert!((mesh.size()[2] - height).abs() < 0.01, "{:?}", mesh.size());
 }
 
 #[test]
@@ -91,6 +210,9 @@ fn empty_layouts_export_empty_files() {
     let v: serde_json::Value = serde_json::from_str(&gltf(&prj)).unwrap();
     assert_eq!(v["meshes"].as_array().unwrap().len(), 0);
     assert!(step(&prj, "x.stp").contains("FACETED_BREP_SHAPE_REPRESENTATION"));
+    assert!(!ifc(&prj, "x.ifc").contains("IFCRELCONTAINEDINSPATIALSTRUCTURE"));
+    assert_eq!(iges_sections(&iges(&prj, "x.igs")).0.len(), 0);
+    assert!(openecraft_jt::parse_jt(&jt(&prj)).is_err());
 }
 
 #[test]

@@ -1,8 +1,16 @@
-//! 3D export of the panel layout for MCAD / PLM: the enclosures with their components
-//! (body or frame, walls, side panels, door, mounting plate, gland plate, plinth),
-//! rails, ducts, busbars, accessories and devices (the parts' 3D models or boxes) as
-//! glTF 2.0 (JSON with embedded buffer, metres, y up) and as STEP AP214 (faceted
-//! solids with colours, millimetres, z up).
+//! 3D export of the panel layout for MCAD / PLM / BIM: the enclosures with their
+//! components (body or frame, walls, side panels, door, mounting plate, gland plate,
+//! plinth), accessories, rails, ducts, busbars and devices (the parts' 3D
+//! models or boxes) as glTF 2.0 (JSON with embedded buffer, metres, y up) and – in
+//! millimetres, z up – as STEP AP214 (faceted solids with colours), IGES 5.3
+//! (manifold solid B-rep objects with planar faces), IFC4 (distribution boards with
+//! triangulated elements) and JT (tri-strip meshes).
+
+mod ifc;
+mod iges;
+
+pub use ifc::ifc;
+pub use iges::iges;
 
 use crate::model::Project;
 use crate::panel::{self, Enclosure, ItemKind, Role};
@@ -127,20 +135,32 @@ pub fn scene(prj: &Project) -> Vec<EnclosureScene> {
         .collect()
 }
 
-fn base64(data: &[u8]) -> String {
-    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
-    for c in data.chunks(3) {
-        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
-        for i in 0..4 {
-            if i <= c.len() {
-                out.push(T[(n >> (18 - 6 * i) & 63) as usize] as char);
-            } else {
-                out.push('=');
-            }
-        }
-    }
-    out
+/// The triangles of a solid in exchange coordinates: view (x right, y up, z to the
+/// door) to z up – (x, -z, y) – plus the enclosure offset.
+fn z_up(es: &EnclosureScene, solid: &Solid) -> Vec<Tri> {
+    let tf = |v: [f32; 3]| [v[0] + es.offset[0], -(v[2] + es.offset[2]), v[1] + es.offset[1]];
+    solid.triangles.iter().map(|t| t.map(tf)).collect()
+}
+
+/// Unit normal of a triangle; `None` if it is degenerate.
+fn normal(t: &Tri) -> Option<[f32; 3]> {
+    let n = norm(cross(sub(t[1], t[0]), sub(t[2], t[0])));
+    (!n.iter().all(|c| c.abs() < 1e-9) && !n.iter().any(|c| c.is_nan())).then_some(n)
+}
+
+/// The scene as JT: a group per enclosure with a tri-strip set shape per solid.
+pub fn jt(prj: &Project) -> Vec<u8> {
+    let scenes = scene(prj);
+    let tris: Vec<Vec<Vec<Tri>>> = scenes.iter().map(|es| es.solids.iter().map(|s| z_up(es, s)).collect()).collect();
+    let groups: Vec<openecraft_jt::Group> = scenes
+        .iter()
+        .zip(&tris)
+        .map(|(es, tris)| openecraft_jt::Group {
+            name: &es.name,
+            bodies: es.solids.iter().zip(tris).map(|(s, t)| openecraft_jt::Body { name: &s.name, color: s.color, transparent: s.transparent, triangles: t }).collect(),
+        })
+        .collect();
+    openecraft_jt::write_jt(if prj.info.name.is_empty() { "Panel layout" } else { &prj.info.name }, &groups)
 }
 
 fn json_str(s: &str) -> String {
@@ -203,7 +223,7 @@ pub fn gltf(prj: &Project) -> String {
     let _ = write!(out, r#""asset":{{"version":"2.0","generator":"OpenECraft"}},"scene":0,"scenes":[{{"name":{},"nodes":[{roots}]}}],"#, json_str(&prj.info.name));
     let _ = write!(out, r#""nodes":[{}],"meshes":[{}],"materials":[{}],"#, nodes.join(","), meshes.join(","), materials.join(","));
     let _ = write!(out, r#""accessors":[{}],"bufferViews":[{}],"#, accessors.join(","), views.join(","));
-    let _ = write!(out, r#""buffers":[{{"byteLength":{},"uri":"data:application/octet-stream;base64,{}"}}]}}"#, bin.len(), base64(&bin));
+    let _ = write!(out, r#""buffers":[{{"byteLength":{},"uri":"data:application/octet-stream;base64,{}"}}]}}"#, bin.len(), crate::document::base64_encode(&bin));
     out
 }
 
@@ -263,16 +283,12 @@ pub fn step(prj: &Project, file_name: &str) -> String {
     let mut styles: HashMap<[u8; 3], usize> = HashMap::new();
     for es in scene(prj) {
         for solid in es.solids.iter().filter(|x| !x.triangles.is_empty()) {
-            // View (x right, y up, z to the door) to z up: (x, -z, y), plus the offset.
-            let tf = |v: [f32; 3]| [v[0] + es.offset[0], -(v[2] + es.offset[2]), v[1] + es.offset[1]];
             let mut points: HashMap<[i64; 3], usize> = HashMap::new();
             let mut faces = Vec::with_capacity(solid.triangles.len());
-            for t in &solid.triangles {
-                let t = t.map(tf);
-                let n = norm(cross(sub(t[1], t[0]), sub(t[2], t[0])));
-                if n.iter().all(|c| c.abs() < 1e-9) || n.iter().any(|c| c.is_nan()) {
-                    continue; // degenerate
-                }
+            for t in z_up(&es, solid) {
+                let Some(n) = normal(&t) else {
+                    continue;
+                };
                 let mut ids = [0; 3];
                 for (k, v) in t.iter().enumerate() {
                     let key = v.map(|c| (c * 1000.0).round() as i64);

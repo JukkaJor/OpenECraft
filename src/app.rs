@@ -13,7 +13,7 @@ use crate::model::*;
 use crate::netlist::{pin_designation, PinRef};
 use crate::ops;
 use crate::reports::{Analysis, Severity};
-use crate::structure::{self, Dt};
+use crate::structure::{self, Aspect, Dt};
 use crate::symbols::{self, Category, Func};
 use crate::{history::History, potentials, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
@@ -23,10 +23,14 @@ mod forms_ui;
 mod harness_ui;
 mod languages_ui;
 mod config_ui;
+mod plc_ui;
 mod plugs_ui;
 mod tables_ui;
+mod pages_ui;
 mod potentials_ui;
+mod structure_ui;
 mod process_ui;
+mod report_blocks_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -58,6 +62,10 @@ pub struct App {
     left_tab: LeftTab,
     lib_filter: String,
     device_filter: String,
+    /// Active work area (name); empty = the whole project.
+    work_area: String,
+    structure_ui: structure_ui::StructureUi,
+    pages_ui: pages_ui::PagesUi,
     show_reports: bool,
     report_kind: ReportKind,
     show_project: bool,
@@ -74,8 +82,10 @@ pub struct App {
     macro_lib: crate::macros::MacroLibrary,
     symed: symbol_editor::SymbolEditor,
     forms_ui: forms_ui::FormsUi,
+    report_blocks_ui: report_blocks_ui::ReportBlocksUi,
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
+    plc_ui: plc_ui::PlcUi,
     process_ui: process_ui::ProcessUi,
     languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
@@ -127,6 +137,9 @@ impl App {
             left_tab: LeftTab::Pages,
             lib_filter: String::new(),
             device_filter: String::new(),
+            work_area: String::new(),
+            structure_ui: Default::default(),
+            pages_ui: Default::default(),
             show_reports: false,
             report_kind: ReportKind::DeviceList,
             show_project: false,
@@ -142,8 +155,10 @@ impl App {
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),
             forms_ui: Default::default(),
+            report_blocks_ui: Default::default(),
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
+            plc_ui: Default::default(),
             process_ui: Default::default(),
             languages_ui: Default::default(),
             tables_ui: Default::default(),
@@ -243,7 +258,11 @@ impl App {
     }
 
     fn export(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: String) {
-        match self.io.save_as(&name, filter, &content) {
+        self.export_bytes(ctx, name, filter, content.as_bytes());
+    }
+
+    fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
+        match self.io.save_bytes_as(&name, filter, content) {
             Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
             Ok(None) => {}
             Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
@@ -284,10 +303,38 @@ impl App {
             if loaded.purpose == Purpose::Forms {
                 match crate::forms::FormLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
-                        let n = crate::forms::merge(&mut self.prj, lib);
-                        self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
+                        let (blocks, schemes) = crate::forms::merge(&mut self.prj, lib);
+                        self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::OutputTarget {
+                self.output_reports(ctx, &loaded);
+                return;
+            }
+            if loaded.purpose == Purpose::Document {
+                self.load_document(ctx, &loaded);
+                return;
+            }
+            if loaded.purpose == Purpose::PageTemplates {
+                match crate::page_templates::Library::from_json(&loaded.text()) {
+                    Ok(lib) => {
+                        let n = crate::page_templates::merge(&mut self.prj, lib);
+                        self.notify(ctx, tr_fmt!("Imported {} page templates", n));
+                    }
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::StructureTemplate {
+                match structure::Structures::from_json(&loaded.text()) {
+                    Ok(file) => {
+                        let n = self.prj.structures.merge(&file);
+                        self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
+                    }
+                    Err(e) => self.notify(ctx, e),
                 }
                 return;
             }
@@ -311,6 +358,10 @@ impl App {
             }
             if let Purpose::Table(kind) = loaded.purpose {
                 self.import_table(ctx, kind, &loaded.text());
+                return;
+            }
+            if matches!(loaded.purpose, Purpose::Aml | Purpose::DeviceDescription) {
+                self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text());
                 return;
             }
             if loaded.purpose == Purpose::Dictionary {
@@ -438,6 +489,32 @@ impl App {
                     let step = crate::export3d::step(&self.prj, &name);
                     self.export(&ctx, name, ("STEP", "stp"), step);
                 }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IGES)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as B-rep solids with planar faces (IGES 5.3)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("igs");
+                    let iges = crate::export3d::iges(&self.prj, &name);
+                    self.export(&ctx, name, ("IGES", "igs"), iges);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IFC)…")))
+                    .on_hover_text(tr("Enclosures as distribution boards with their components for BIM (IFC4)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("ifc");
+                    let ifc = crate::export3d::ifc(&self.prj, &name);
+                    self.export(&ctx, name, ("IFC", "ifc"), ifc);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (JT)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as triangle meshes for PLM viewers (JT)"))
+                    .clicked()
+                {
+                    let jt = crate::export3d::jt(&self.prj);
+                    self.export_bytes(&ctx, self.suggested_name("jt"), ("JT", "jt"), &jt);
+                }
                 ui.separator();
                 if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {
                     let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
@@ -528,6 +605,23 @@ impl App {
                 if ui.button(tr("New cover sheet")).clicked() {
                     self.add_page(PageKind::Cover);
                 }
+                if ui.button(tr("New overview page")).on_hover_text(tr("Single-line or block diagram: drawn like a schematic, not evaluated")).clicked() {
+                    self.add_page(PageKind::Overview);
+                }
+                if ui.button(tr("New graphics page")).on_hover_text(tr("Free graphics and notes, not evaluated")).clicked() {
+                    self.add_page(PageKind::Graphic);
+                }
+                if ui.button(tr("New document page…")).on_hover_text(tr("Embeds a file (PDF, Word, Excel, image …) as a page")).clicked() {
+                    self.pages_ui.replace_document = None;
+                    self.io.open(&ctx, Purpose::Document);
+                }
+                ui.menu_button(tr("New page from template"), |ui| {
+                    for t in crate::page_templates::all(&self.prj) {
+                        if ui.button(crate::page_templates::display_name(&t.name)).on_hover_text(t.kind.label()).clicked() {
+                            self.insert_template(&t);
+                        }
+                    }
+                });
                 ui.menu_button(tr("New report page"), |ui| {
                     for k in ReportKind::ALL {
                         if ui.button(k.title()).clicked() {
@@ -549,6 +643,9 @@ impl App {
                 ui.separator();
                 if ui.button(tr("Page properties…")).clicked() {
                     self.page_props = Some(self.page);
+                }
+                if ui.button(tr("Save page as template…")).clicked() {
+                    self.open_save_template();
                 }
                 if ui.button(tr("Save page as macro…")).clicked() {
                     self.save_as_macro(true);
@@ -577,6 +674,9 @@ impl App {
                 }
                 if ui.button(tr("Parts management…")).clicked() {
                     self.parts_ui.open = true;
+                }
+                if ui.button(tr("Structure management…")).on_hover_text(tr("Structure identifiers (IEC 81346), templates and work areas")).clicked() {
+                    self.structure_ui.open = true;
                 }
                 if ui.button(tr("Cables…")).clicked() {
                     self.show_cables = true;
@@ -608,6 +708,9 @@ impl App {
                 if ui.button(tr("PLC overview…")).clicked() {
                     self.eng.show_plc = true;
                 }
+                if ui.button(tr("PLC hardware and bus topology…")).on_hover_text(tr("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")).clicked() {
+                    self.plc_ui.open = true;
+                }
                 if ui.button(tr("Revisions…")).clicked() {
                     self.eng.show_revisions = true;
                 }
@@ -624,8 +727,11 @@ impl App {
                 if ui.button(tr("Symbol editor…")).clicked() {
                     self.symed.open = true;
                 }
-                if ui.button(tr("Title blocks and report forms…")).clicked() {
+                if ui.button(tr("Title blocks, plot frames and page templates…")).clicked() {
                     self.forms_ui.open = true;
+                }
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
                 }
                 if ui.button(tr("Check project")).clicked() {
                     self.left_tab = LeftTab::Check;
@@ -637,6 +743,13 @@ impl App {
                         self.report_kind = k;
                         self.show_reports = true;
                     }
+                }
+                ui.separator();
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
+                }
+                if ui.add_enabled(!self.prj.report_blocks.is_empty(), egui::Button::new(tr("⟳ Update report blocks"))).clicked() {
+                    self.generate_report_blocks(ui.ctx());
                 }
             });
             ui.menu_button(tr("View"), |ui| {
@@ -758,6 +871,20 @@ impl App {
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
         });
+        let areas = &self.prj.structures.work_areas;
+        if !areas.is_empty() || !self.work_area.is_empty() {
+            ui.horizontal(|ui| {
+                ui.label(tr("Work area"));
+                let shown = if self.work_area.is_empty() { tr("(whole project)").to_string() } else { self.work_area.clone() };
+                egui::ComboBox::from_id_salt("work_area").selected_text(shown).show_ui(ui, |ui| {
+                    ui.selectable_value(&mut self.work_area, String::new(), tr("(whole project)"));
+                    for w in areas {
+                        ui.selectable_value(&mut self.work_area, w.name.clone(), &w.name).on_hover_text(w.filter.structure());
+                    }
+                });
+            });
+        }
+        let area = self.prj.structures.work_area(&self.work_area).cloned();
         ui.separator();
         match self.left_tab {
             LeftTab::Pages => {
@@ -780,11 +907,17 @@ impl App {
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut goto = None;
                     for (i, pg) in self.prj.pages.iter().enumerate() {
+                        if area.as_ref().is_some_and(|w| !w.shows_page(pg)) && i != self.page {
+                            continue;
+                        }
                         let icon = match pg.kind {
                             PageKind::Schematic => "🗋",
                             PageKind::Cover => "🏷",
                             PageKind::Report(_) => "📊",
                             PageKind::Mounting(_) => "🗄",
+                            PageKind::Overview => "🗺",
+                            PageKind::Graphic => "✏",
+                            PageKind::Document => "📎",
                         };
                         let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", structure::page_full_name(pg), pg.description));
                         if r.clicked() {
@@ -806,7 +939,8 @@ impl App {
                     let f = self.device_filter.to_lowercase();
                     // Devices grouped by structure (=function+location).
                     let mut groups: Vec<(String, Vec<&String>)> = Vec::new();
-                    for tag in idx.sorted_tags().into_iter().filter(|t| f.is_empty() || t.to_lowercase().contains(&f)) {
+                    let tags = idx.sorted_tags().into_iter().filter(|t| area.as_ref().is_none_or(|w| w.shows_device(t)));
+                    for tag in tags.filter(|t| f.is_empty() || t.to_lowercase().contains(&f)) {
                         let st = Dt::parse(tag).structure();
                         match groups.iter_mut().find(|g| g.0 == st) {
                             Some(g) => g.1.push(tag),
@@ -1072,7 +1206,7 @@ impl App {
             let open_net = self.analysis.open.wire_net.get(&id).map(|&n| self.analysis.open.nets[n].clone());
             let number_now = open_net.as_ref().map(|n| wirenum::number_of(&self.prj, n)).unwrap_or_default();
             let mut number = number_now.clone();
-            let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
+            let here = Dt::of_page(&self.prj.pages[pi]);
             let cables: Vec<(String, Vec<String>)> = self.prj.cables.iter().map(|c| (c.tag.clone(), c.core_list())).collect();
             // Cores of the wire's cable already used by other connections
             let own: Vec<u64> = open_net.as_ref().map(|n| n.wires.iter().map(|w| w.1).collect()).unwrap_or_default();
@@ -1108,7 +1242,7 @@ impl App {
                 });
                 ui.end_row();
                 ui.label(tr("Cable"));
-                let shown = if w.cable.is_empty() { "(none)".to_string() } else { structure::relative(&here, &w.cable) };
+                let shown = if w.cable.is_empty() { "(none)".to_string() } else { here.relative(&w.cable) };
                 egui::ComboBox::from_id_salt("wcable").selected_text(shown).show_ui(ui, |ui| {
                     if ui.selectable_label(w.cable.is_empty(), "(none)").clicked() {
                         w.cable.clear();
@@ -1151,7 +1285,7 @@ impl App {
                 egui::Grid::new("wharness").num_columns(2).show(ui, |ui| {
                     for (i, (a, b, h)) in conns.iter().enumerate() {
                         ui.label(RichText::new(format!("{a} – {b}")).monospace());
-                        let shown = if h.is_empty() { "(none)".to_string() } else { structure::relative(&here, h) };
+                        let shown = if h.is_empty() { "(none)".to_string() } else { here.relative(h) };
                         egui::ComboBox::from_id_salt(("wharness", i)).selected_text(shown).show_ui(ui, |ui| {
                             if ui.selectable_label(h.is_empty(), "(none)").clicked() {
                                 harness_change = Some((a.clone(), b.clone(), String::new()));
@@ -1190,7 +1324,7 @@ impl App {
         };
         ui.label(RichText::new(tr(def.name)).strong());
         let mut edited = s.clone();
-        let here = Page { function: self.prj.pages[pi].function.clone(), location: self.prj.pages[pi].location.clone(), ..Default::default() };
+        let here = Dt::of_page(&self.prj.pages[pi]);
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
                 ui.label(match def.func {
@@ -1201,12 +1335,12 @@ impl App {
                 });
                 ui.horizontal(|ui| {
                     // Shown relative to the page structure, stored complete.
-                    let mut shown = structure::relative(&here, &edited.tag);
+                    let mut shown = here.relative(&edited.tag);
                     let before = shown.clone();
                     ui.add(egui::TextEdit::singleline(&mut shown).desired_width(90.0).font(egui::TextStyle::Monospace))
                         .on_hover_text(tr_fmt!("Complete tag: {}\nAspects missing here are taken from the page (=function +location).", edited.tag));
                     if shown != before {
-                        edited.tag = if shown.trim().is_empty() { String::new() } else { structure::complete(&here, &shown) };
+                        edited.tag = if shown.trim().is_empty() { String::new() } else { here.complete(&shown) };
                     }
                     // Assign to an existing device (e.g. contact → coil)
                     egui::ComboBox::from_id_salt("assign").selected_text("…").width(30.0).show_ui(ui, |ui| {
@@ -1267,7 +1401,7 @@ impl App {
             });
             ui.end_row();
             ui.label(tr("Position"));
-            ui.label(tr_fmt!("{} / {} mm  (column {})", format!("{:.0}", s.pos.x), format!("{:.0}", s.pos.y), column_of(s.pos)));
+            ui.label(tr_fmt!("{} / {} mm  (column {})", format!("{:.0}", s.pos.x), format!("{:.0}", s.pos.y), crate::frame::of_page(&self.prj, pi).column_of(s.pos)));
             ui.end_row();
         });
         if let Func::Aux(kind) = def.func {
@@ -1436,8 +1570,11 @@ impl App {
                     if ui.button(tr("➕ Insert as report page")).clicked() {
                         add_page = Some(kind);
                     }
-                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, order and rows of the report pages")).clicked() {
+                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, filter, sort order and rows of the report pages")).clicked() {
                         self.forms_ui.open_report(kind);
+                    }
+                    if ui.button(tr("Report blocks…")).on_hover_text(tr("Generate report pages per strip, plug, cable or device")).clicked() {
+                        self.report_blocks_ui.open = true;
                     }
                 });
                 let Some(table) = self.analysis.reports.get(&kind) else { return };
@@ -1573,10 +1710,14 @@ impl App {
         self.engineering_windows(ctx);
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
+        self.report_blocks_window(ctx);
         self.harness_window(ctx);
         self.plugs_window(ctx);
+        self.plc_hw_window(ctx);
         self.process_window(ctx);
         self.languages_window(ctx);
+        self.structure_window(ctx);
+        self.save_template_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
 
@@ -1584,8 +1725,12 @@ impl App {
         if let Some(pi) = self.page_props {
             let mut open = true;
             let mut apply_structure = None;
+            let mut document_action = None;
             if pi < self.prj.pages.len() {
                 let tb_names = crate::forms::names(&self.prj);
+                let frame_names = crate::frame::names(&self.prj);
+                let page_aspects = self.prj.structures.page_aspects();
+                let structure_entries = self.prj.structures.entries.clone();
                 egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
                     let pg = &mut self.prj.pages[pi];
                     egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
@@ -1598,6 +1743,9 @@ impl App {
                         ui.label(tr("Page type"));
                         egui::ComboBox::from_id_salt("pgkind").selected_text(pg.kind.label()).show_ui(ui, |ui| {
                             ui.selectable_value(&mut pg.kind, PageKind::Schematic, PageKind::Schematic.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Overview, PageKind::Overview.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Graphic, PageKind::Graphic.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Document, PageKind::Document.label());
                             ui.selectable_value(&mut pg.kind, PageKind::Cover, PageKind::Cover.label());
                             for k in ReportKind::ALL {
                                 ui.selectable_value(&mut pg.kind, PageKind::Report(k), PageKind::Report(k).label());
@@ -1618,7 +1766,38 @@ impl App {
                             }
                         });
                     });
-                    if pg.kind != PageKind::Schematic && !pg.is_empty() {
+                    ui.horizontal(|ui| {
+                        ui.label(tr("Plot frame"));
+                        let shown = if pg.frame.is_empty() { tr("(project default)").to_string() } else { crate::frame::display_name(&pg.frame) };
+                        egui::ComboBox::from_id_salt("pgframe").selected_text(shown).show_ui(ui, |ui| {
+                            ui.selectable_value(&mut pg.frame, String::new(), tr("(project default)"));
+                            for n in &frame_names {
+                                ui.selectable_value(&mut pg.frame, n.clone(), crate::frame::display_name(n));
+                            }
+                        });
+                    });
+                    if pg.kind == PageKind::Document {
+                        ui.horizontal(|ui| {
+                            match &pg.document {
+                                Some(doc) => {
+                                    ui.label(RichText::new(&doc.name).strong());
+                                    ui.weak(format!("{}, {}", doc.kind().title(), crate::document::size_text(doc.size())));
+                                    if ui.button(tr("Save file…")).clicked() {
+                                        document_action = Some(false);
+                                    }
+                                }
+                                None => {
+                                    ui.weak(tr("No document embedded"));
+                                }
+                            }
+                            if ui.button(tr("Choose file…")).on_hover_text(tr("Embeds the file in the project (replaces the current one)")).clicked() {
+                                document_action = Some(true);
+                            }
+                        });
+                    }
+                    if matches!(pg.kind, PageKind::Overview | PageKind::Graphic) {
+                        ui.weak(tr("Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports)."));
+                    } else if !pg.kind.is_drawing() && !pg.is_empty() {
                         ui.colored_label(Color32::from_rgb(220, 140, 0), tr("This page contains schematic content which is not evaluated on non-schematic pages."));
                     }
                     if pg.generated {
@@ -1628,30 +1807,58 @@ impl App {
                     ui.separator();
                     ui.label(RichText::new(tr("Structure (IEC 81346)")).strong());
                     let key = ui.scope_id().with(("page_structure", pi));
-                    let (mut function, mut location, mut move_devices): (String, String, bool) =
-                        ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (pg.function.clone(), pg.location.clone(), true));
-                    egui::Grid::new("pgstruct").num_columns(2).show(ui, |ui| {
-                        ui.label(tr("Function  ="));
-                        ui.add(egui::TextEdit::singleline(&mut function).hint_text(tr("e.g. A1, PUMP.2")));
-                        ui.end_row();
-                        ui.label(tr("Location  +"));
-                        ui.add(egui::TextEdit::singleline(&mut location).hint_text(tr("e.g. CAB1, FIELD")));
-                        ui.end_row();
+                    let (mut dt, mut move_devices): (Dt, bool) = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (Dt::of_page(pg), true));
+                    let current = Dt::of_page(pg);
+                    egui::Grid::new("pgstruct").num_columns(3).show(ui, |ui| {
+                        for a in Aspect::ALL.into_iter().filter(|a| page_aspects.contains(a) || !current.get(*a).is_empty()) {
+                            ui.label(format!("{}  {}", a.title(), a.prefix()));
+                            let hint = match a {
+                                Aspect::Function => tr("e.g. A1, PUMP.2"),
+                                Aspect::Installation => tr("e.g. HALL1, PLANT2"),
+                                Aspect::Location => tr("e.g. CAB1, FIELD"),
+                                Aspect::Product => tr("e.g. U1, U1-A2"),
+                            };
+                            ui.add(egui::TextEdit::singleline(dt.get_mut(a)).hint_text(hint).desired_width(140.0));
+                            let defined: Vec<_> = structure_entries.iter().filter(|e| e.aspect == a).collect();
+                            ui.add_enabled_ui(!defined.is_empty(), |ui| {
+                                ui.menu_button("⏷", |ui| {
+                                    for e in defined {
+                                        if ui.button(format!("{}  {}", a.format(&e.id), e.description)).clicked() {
+                                            *dt.get_mut(a) = e.id.clone();
+                                            ui.close();
+                                        }
+                                    }
+                                })
+                                .response
+                                .on_hover_text(tr("Identifiers of the structure management"));
+                            });
+                            ui.end_row();
+                        }
                     });
                     ui.checkbox(&mut move_devices, tr("Move the devices of this page into the new structure"))
                         .on_hover_text(tr("Renames the devices (all their functions, also on other pages)"));
-                    let changed = structure::clean_aspect(&function) != pg.function || structure::clean_aspect(&location) != pg.location;
+                    let mut cleaned = Page::default();
+                    dt.apply_to(&mut cleaned);
+                    let changed = Dt::of_page(&cleaned) != current;
                     if ui.add_enabled(changed, egui::Button::new(tr("Apply structure"))).clicked() {
-                        apply_structure = Some((function.clone(), location.clone(), move_devices));
+                        apply_structure = Some((dt.clone(), move_devices));
                     }
                     ui.weak(tr("Devices placed on the page get its structure; their tags are shown without it."));
-                    ui.data_mut(|d| d.insert_temp(key, (function, location, move_devices)));
+                    ui.data_mut(|d| d.insert_temp(key, (dt, move_devices)));
                 });
             } else {
                 open = false;
             }
-            if let Some((function, location, move_devices)) = apply_structure {
-                ops::set_page_structure(&mut self.prj, pi, &function, &location, move_devices);
+            match document_action {
+                Some(true) => {
+                    self.pages_ui.replace_document = Some(pi);
+                    self.io.open(ctx, Purpose::Document);
+                }
+                Some(false) => self.save_document(ctx, pi),
+                None => {}
+            }
+            if let Some((dt, move_devices)) = apply_structure {
+                ops::set_page_structure(&mut self.prj, pi, &dt, move_devices);
             }
             if !open {
                 self.page_props = None;
@@ -1673,6 +1880,7 @@ impl App {
                 ui.label(tr("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."));
                 ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
                 ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
+                ui.label(tr("Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project."));
                 ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
                 ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
                 ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
@@ -1718,6 +1926,10 @@ impl App {
         for w in self.prj.pages.iter().flat_map(|pg| pg.wires.iter()).filter(|w| !w.cable.is_empty()) {
             used.entry(w.cable.clone()).or_default().insert(w.core.clone());
         }
+        let mut bus_links: std::collections::HashMap<String, usize> = Default::default();
+        for l in self.prj.plc.connections.iter().filter(|l| !l.cable.is_empty()) {
+            *bus_links.entry(l.cable.clone()).or_default() += 1;
+        }
         let structure = structure::page_structure(&self.prj.pages[self.page]);
         egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -1732,8 +1944,8 @@ impl App {
             ui.separator();
             let cable_parts: Vec<&parts::Part> = self.parts_db.parts.iter().filter(|p| p.group == "Cables").collect();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
-                egui::Grid::new("cables").striped(true).num_columns(9).spacing([8.0, 4.0]).show(ui, |ui| {
-                    for h in [tr("Cable"), tr("Type"), tr("Cores"), tr("Cross-section"), tr("Length"), tr("Part"), tr("Description"), tr("Used"), ""] {
+                egui::Grid::new("cables").striped(true).num_columns(10).spacing([8.0, 4.0]).show(ui, |ui| {
+                    for h in [tr("Cable"), tr("Type"), tr("Bus"), tr("Cores"), tr("Cross-section"), tr("Length"), tr("Part"), tr("Description"), tr("Used"), ""] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -1744,6 +1956,12 @@ impl App {
                             renamed.push((old.clone(), c.tag.clone()));
                         }
                         ui.add_sized([120.0, 20.0], egui::TextEdit::singleline(&mut c.cable_type));
+                        egui::ComboBox::from_id_salt(("cablebus", i)).width(90.0).selected_text(c.bus.map(|b| b.title()).unwrap_or("–")).show_ui(ui, |ui| {
+                            ui.selectable_value(&mut c.bus, None, "–").on_hover_text(tr("Ordinary cable"));
+                            for b in crate::plc_hw::BusKind::ALL {
+                                ui.selectable_value(&mut c.bus, Some(b), b.title());
+                            }
+                        });
                         ui.add_sized([140.0, 20.0], egui::TextEdit::singleline(&mut c.cores)).on_hover_text(tr("Core designations separated by blanks"));
                         ui.add_sized([70.0, 20.0], egui::TextEdit::singleline(&mut c.cross_section));
                         ui.add(egui::DragValue::new(&mut c.length).speed(0.5).range(0.0..=100000.0).suffix(" m"));
@@ -1762,8 +1980,13 @@ impl App {
                             });
                         });
                         ui.add_sized([160.0, 20.0], egui::TextEdit::singleline(&mut c.description));
-                        let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
-                        ui.label(format!("{n}/{}", c.core_list().len()));
+                        let links = bus_links.get(&old).copied().unwrap_or(0);
+                        if links > 0 {
+                            ui.label(tr_fmt!("{} bus connections", links));
+                        } else {
+                            let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
+                            ui.label(format!("{n}/{}", c.core_list().len()));
+                        }
                         if ui.small_button("🗑").on_hover_text(tr("Delete cable (its wires are removed from it)")).clicked() {
                             remove = Some(i);
                         }

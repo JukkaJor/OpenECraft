@@ -88,8 +88,13 @@ impl<K: FileKind> FileIo<K> {
 
 impl<K> FileIo<K> {
     /// Asks for a location and writes the file. Returns the chosen path / name.
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn save_as(&self, suggested: &str, filter: (&str, &str), content: &str) -> Result<Option<String>, String> {
+        self.save_bytes_as(suggested, filter, content.as_bytes())
+    }
+
+    /// Like [`FileIo::save_as`] for binary content.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn save_bytes_as(&self, suggested: &str, filter: (&str, &str), content: &[u8]) -> Result<Option<String>, String> {
         let Some(path) = rfd::FileDialog::new().add_filter(filter.0, &[filter.1]).set_file_name(suggested).save_file()
         else {
             return Ok(None);
@@ -100,7 +105,7 @@ impl<K> FileIo<K> {
 
     /// In the browser "save as" is a download.
     #[cfg(target_arch = "wasm32")]
-    pub fn save_as(&self, suggested: &str, filter: (&str, &str), content: &str) -> Result<Option<String>, String> {
+    pub fn save_bytes_as(&self, suggested: &str, filter: (&str, &str), content: &[u8]) -> Result<Option<String>, String> {
         download(suggested, mime_type(filter.1), content).map_err(|e| format!("{e:?}"))?;
         Ok(Some(suggested.to_string()))
     }
@@ -113,7 +118,7 @@ impl<K> FileIo<K> {
         }
         #[cfg(target_arch = "wasm32")]
         {
-            download(path, "application/json", content).map_err(|e| format!("{e:?}"))
+            download(path, "application/json", content.as_bytes()).map_err(|e| format!("{e:?}"))
         }
     }
 
@@ -130,18 +135,20 @@ pub fn mime_type(ext: &str) -> &'static str {
         "csv" => "text/csv",
         "pdf" => "application/pdf",
         "dxf" => "application/dxf",
+        "igs" | "iges" => "model/iges",
+        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" => "application/octet-stream",
         _ => "application/json",
     }
 }
 
 #[cfg(target_arch = "wasm32")]
-fn download(name: &str, mime: &str, content: &str) -> Result<(), wasm_bindgen::JsValue> {
+fn download(name: &str, mime: &str, content: &[u8]) -> Result<(), wasm_bindgen::JsValue> {
     use wasm_bindgen::JsCast;
     let parts = js_sys::Array::new();
-    parts.push(&wasm_bindgen::JsValue::from_str(content));
+    parts.push(&js_sys::Uint8Array::from(content));
     let opts = web_sys::BlobPropertyBag::new();
     opts.set_type(mime);
-    let blob = web_sys::Blob::new_with_str_sequence_and_options(&parts, &opts)?;
+    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &opts)?;
     let url = web_sys::Url::create_object_url_with_blob(&blob)?;
     let document = web_sys::window().and_then(|w| w.document()).ok_or("no document")?;
     let a: web_sys::HtmlAnchorElement = document.create_element("a")?.dyn_into()?;

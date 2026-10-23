@@ -38,14 +38,6 @@ impl PlaceCtx {
     }
 }
 
-fn parse_plc(addr: &str) -> Option<(char, u32, u32)> {
-    let mut chars = addr.chars();
-    let prefix = chars.next()?;
-    let rest: String = chars.collect();
-    let (byte, bit) = rest.split_once('.')?;
-    Some((prefix, byte.parse().ok()?, bit.parse().ok()?))
-}
-
 fn symbols_with_tag<'a>(prj: &'a Project, tag: &'a str) -> impl Iterator<Item = &'a SymbolInst> + 'a {
     prj.pages.iter().flat_map(|pg| pg.symbols.iter()).filter(move |s| s.tag == tag)
 }
@@ -100,14 +92,16 @@ fn next_plug_pin(prj: &Project, plug: &str, kind: PinKind) -> String {
     (max + 1).to_string()
 }
 
-fn next_plc_address(prj: &Project, card: &str, prefix: char) -> String {
+/// Next free address of a card in the scheme of its station.
+fn next_plc_address(prj: &Project, card: &str, input: bool) -> String {
+    let data = prj.plc_cards.get(card).cloned().unwrap_or_default();
+    let start = if input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) };
     let max = symbols_with_tag(prj, card)
-        .filter_map(|s| parse_plc(&s.label))
-        .filter(|(c, _, _)| *c == prefix)
-        .map(|(_, by, bi)| by * 8 + bi)
+        .filter_map(|s| crate::plc_hw::parse_address(&s.label))
+        .filter(|a| a.input == input)
+        .map(|a| if a.slot.is_some() { a.byte * 8 + a.bit } else { a.byte.saturating_sub(start) * 8 + a.bit })
         .max();
-    let n = max.map(|m| m + 1).unwrap_or(0);
-    format!("{prefix}{}.{}", n / 8, n % 8)
+    crate::plc_hw::card_address(prj, card, input, max.map(|m| m + 1).unwrap_or(0))
 }
 
 /// Name for a new page: one more than the highest numeric page name.
@@ -127,6 +121,9 @@ pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
             let name = prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
             tr_fmt!("Mounting layout {}", name)
         }
+        PageKind::Overview => tr("Overview").to_string(),
+        PageKind::Graphic => tr("Graphics").to_string(),
+        PageKind::Document => tr("Document").to_string(),
     };
     let page = Page::new(id, &next_page_name(prj), &desc, kind);
     let at = at.min(prj.pages.len());
@@ -169,8 +166,7 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
         }
         Func::Plc => {
             s.tag = ctx.last_plc.get(def.key).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
-            let prefix = def.default_label.chars().next().unwrap_or('I');
-            s.label = next_plc_address(prj, &s.tag, prefix);
+            s.label = next_plc_address(prj, &s.tag, !def.default_label.starts_with('Q'));
         }
         Func::Potential | Func::Interruption => {}
     }
@@ -342,9 +338,13 @@ pub fn cleanup_wires(page: &mut Page) {
 #[serde(default)]
 pub struct Clip {
     pub magic: String,
-    /// Function and location of the page the clip was copied from.
+    /// Structure of the page the clip was copied from.
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -357,7 +357,9 @@ pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
     Clip {
         magic: CLIP_MAGIC.into(),
         function: page.function.clone(),
+        installation: page.installation.clone(),
         location: page.location.clone(),
+        product: page.product.clone(),
         symbols: page.symbols.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         wires: page.wires.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         texts: page.texts.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
@@ -366,6 +368,17 @@ pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
 }
 
 impl Clip {
+    /// Structure of the page the clip was copied from.
+    pub fn structure(&self) -> crate::structure::Dt {
+        crate::structure::Dt {
+            function: self.function.clone(),
+            installation: self.installation.clone(),
+            location: self.location.clone(),
+            product: self.product.clone(),
+            name: String::new(),
+        }
+    }
+
     pub fn to_text(&self) -> String {
         serde_json::to_string(self).unwrap_or_default()
     }
@@ -404,8 +417,8 @@ impl Clip {
 /// get new numbers (consistently for coil + contacts). Wire numbers and cable cores
 /// are not copied.
 pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u64> {
-    let source = Page { function: clip.function.clone(), location: clip.location.clone(), ..Default::default() };
-    let target = prj.pages[page_i].clone();
+    let source = clip.structure();
+    let target = crate::structure::Dt::of_page(&prj.pages[page_i]);
     let b = clip.bounds();
     if !b.is_valid() {
         return BTreeSet::new();
@@ -420,7 +433,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
         s.id = prj.new_id();
         s.pos = s.pos + d;
         if !s.tag.is_empty() {
-            s.tag = crate::structure::complete(&target, &crate::structure::relative(&source, &s.tag));
+            s.tag = target.complete(&source.relative(&s.tag));
         }
         if let Some(def) = symbols::get(&s.sym) {
             match def.func {
@@ -509,6 +522,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if let Some(d) = prj.plc_cards.remove(old) {
         prj.plc_cards.entry(new.to_string()).or_insert(d);
     }
+    crate::plc_hw::rename_device(prj, old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.
@@ -535,6 +549,9 @@ pub fn rename_cable(prj: &mut Project, old: &str, new: &str) {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == old) {
         w.cable = new.to_string();
     }
+    for c in prj.plc.connections.iter_mut().filter(|c| c.cable == old) {
+        c.cable = new.to_string();
+    }
 }
 
 /// Deletes a cable; its wires lose cable and core.
@@ -543,6 +560,9 @@ pub fn remove_cable(prj: &mut Project, index: usize) -> Cable {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == cable.tag) {
         w.cable.clear();
         w.core.clear();
+    }
+    for c in prj.plc.connections.iter_mut().filter(|c| c.cable == cable.tag) {
+        c.cable.clear();
     }
     cable
 }
@@ -587,10 +607,9 @@ pub fn assign_cores(prj: &mut Project, page: usize, wires: &BTreeSet<u64>, cable
 
 /// Changes the structure of a page; with `move_devices` the devices on the page
 /// move along (all their functions, also on other pages, see [`rename_device`]).
-pub fn set_page_structure(prj: &mut Project, page: usize, function: &str, location: &str, move_devices: bool) {
+pub fn set_page_structure(prj: &mut Project, page: usize, structure: &crate::structure::Dt, move_devices: bool) {
     let old = prj.pages[page].clone();
-    prj.pages[page].function = crate::structure::clean_aspect(function);
-    prj.pages[page].location = crate::structure::clean_aspect(location);
+    structure.apply_to(&mut prj.pages[page]);
     if !move_devices {
         return;
     }

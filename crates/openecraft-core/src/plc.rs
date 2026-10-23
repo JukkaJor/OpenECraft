@@ -1,6 +1,7 @@
 //! PLC overview: inputs / outputs per card, addressing from the card's start byte and
 //! symbol table exchange with PLC programming tools (CSV: name, data type, address,
-//! comment).
+//! comment; IEC 61131-3 global variables). The hardware (stations, racks, buses) is in
+//! `plc_hw`.
 
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
@@ -26,9 +27,17 @@ fn is_plc(s: &SymbolInst) -> bool {
     symbols::get(&s.sym).map(|d| d.func) == Some(Func::Plc)
 }
 
-/// Address sort key: prefix, byte, bit (`I1.7` → ('I', 1, 7)).
-pub fn address_key(addr: &str) -> (String, u32, u32) {
+/// Prefix, byte and bit of an address.
+pub type AddressKey = (String, u32, u32);
+
+/// Address sort key: prefix, byte, bit (`I1.7` → ('I', 1, 7)). Rockwell addresses
+/// keep module and direction in the prefix (`Local:3:I.Data.5` → ("LOCAL:3:I", 0, 5)).
+pub fn address_key(addr: &str) -> AddressKey {
     let a = addr.trim().trim_start_matches('%').to_uppercase();
+    if let Some(r) = crate::plc_hw::parse_address(&a).filter(|r| r.slot.is_some()) {
+        let prefix = a.split('.').next().unwrap_or_default().to_string();
+        return (prefix, r.byte, r.bit);
+    }
     let prefix: String = a.chars().take_while(|c| c.is_ascii_alphabetic()).collect();
     let rest = &a[prefix.len()..];
     let (byte, bit) = rest.split_once('.').unwrap_or((rest, "0"));
@@ -73,7 +82,7 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 input: s.sym == "plc_in",
                 function_text: s.function_text.replace('\n', " "),
                 connected,
-                location: format!("/{}.{}", pg.name, column_of(s.pos)),
+                location: crate::frame::reference(prj, pi, s.pos),
             });
         }
     }
@@ -82,9 +91,9 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
 }
 
 /// Gives the points of a card consecutive addresses from its start byte (inputs and
-/// outputs separately, in schematic order). Returns the number of changed addresses.
+/// outputs separately, in schematic order) in the address scheme of its station.
+/// Returns the number of changed addresses.
 pub fn readdress(prj: &mut Project, card: &str) -> usize {
-    let start = prj.plc_cards.get(card).map(|c| c.start_byte).unwrap_or(0);
     let mut changed = 0;
     for input in [true, false] {
         let mut list: Vec<(usize, usize)> = Vec::new();
@@ -99,9 +108,8 @@ pub fn readdress(prj: &mut Project, card: &str) -> usize {
             let (sa, sb) = (&prj.pages[a.0].symbols[a.1], &prj.pages[b.0].symbols[b.1]);
             a.0.cmp(&b.0).then(sa.pos.x.total_cmp(&sb.pos.x)).then(sa.pos.y.total_cmp(&sb.pos.y))
         });
-        let prefix = if input { 'I' } else { 'Q' };
         for (n, (pi, si)) in list.into_iter().enumerate() {
-            let addr = format!("{prefix}{}.{}", start + n as u32 / 8, n % 8);
+            let addr = crate::plc_hw::card_address(prj, card, input, n as u32);
             let s = &mut prj.pages[pi].symbols[si];
             if s.label != addr {
                 s.label = addr;
@@ -127,10 +135,10 @@ fn tag_name(p: &Point) -> String {
     }
 }
 
-/// Symbol table for PLC programming tools: `Name;Data Type;Logical Address;Comment`.
-pub fn symbol_table(prj: &Project, nl: &Netlist) -> String {
-    let mut out = String::from("Name;Data Type;Logical Address;Comment\n");
+/// PLC points with unique tag names.
+pub fn tags(prj: &Project, nl: &Netlist) -> Vec<(String, Point)> {
     let mut used = HashSet::new();
+    let mut v = Vec::new();
     for p in points(prj, nl) {
         let mut name = tag_name(&p);
         let mut i = 2;
@@ -138,8 +146,54 @@ pub fn symbol_table(prj: &Project, nl: &Netlist) -> String {
             name = format!("{}_{i}", tag_name(&p));
             i += 1;
         }
-        let comment = format!("{} {}", p.card, p.function_text).trim().replace(';', ",");
-        out.push_str(&format!("{name};Bool;%{};{comment}\n", p.address));
+        v.push((name, p));
+    }
+    v
+}
+
+/// Comment of a tag: card and function text.
+pub fn tag_comment(p: &Point) -> String {
+    format!("{} {}", p.card, p.function_text).trim().to_string()
+}
+
+/// Symbol table for PLC programming tools: `Name;Data Type;Logical Address;Comment`.
+pub fn symbol_table(prj: &Project, nl: &Netlist) -> String {
+    let mut out = String::from("Name;Data Type;Logical Address;Comment\n");
+    for (name, p) in tags(prj, nl) {
+        let comment = tag_comment(&p).replace(';', ",");
+        out.push_str(&format!("{name};Bool;%{};{comment}\n", p.address.trim_start_matches('%')));
+    }
+    out
+}
+
+/// IEC 61131-3 global variable list (CODESYS, TwinCAT, …): one `VAR_GLOBAL` block per
+/// address space with direct addresses (`%IX0.0`).
+pub fn global_variables(prj: &Project, nl: &Netlist) -> String {
+    let mut groups: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for (name, p) in tags(prj, nl) {
+        let Some(a) = crate::plc_hw::parse_address(&p.address) else { continue };
+        let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
+        // Module relative addresses (Rockwell) are placed at the card's start byte.
+        let byte = match a.slot {
+            Some(_) => a.byte + if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) },
+            None => a.byte,
+        };
+        let comment = tag_comment(&p).replace("*)", "* )");
+        let dir = if a.input { 'I' } else { 'Q' };
+        let line = format!("    {name} AT %{dir}X{byte}.{} : BOOL; (* {comment} *)", a.bit);
+        groups.entry(crate::plc_hw::card_domain(prj, &p.card)).or_default().push(line);
+    }
+    let mut out = String::new();
+    for (station, lines) in groups {
+        if !station.is_empty() {
+            out.push_str(&format!("(* {station} *)\n"));
+        }
+        out.push_str("VAR_GLOBAL\n");
+        for l in lines {
+            out.push_str(&l);
+            out.push('\n');
+        }
+        out.push_str("END_VAR\n\n");
     }
     out
 }
@@ -157,7 +211,7 @@ pub fn import_symbol_table(prj: &mut Project, text: &str) -> Result<usize, Strin
     let addr_col = find(&["logical address", "address", "adresse"]).ok_or("no address column")?;
     let comment_col = find(&["comment", "kommentar"]);
     let name_col = find(&["name", "symbol"]);
-    let mut texts: BTreeMap<(String, u32, u32), String> = BTreeMap::new();
+    let mut texts: BTreeMap<AddressKey, String> = BTreeMap::new();
     for line in lines {
         let cells: Vec<&str> = line.split(sep).map(|c| c.trim().trim_matches('"')).collect();
         let Some(addr) = cells.get(addr_col).filter(|a| !a.is_empty()) else { continue };
@@ -165,25 +219,35 @@ pub fn import_symbol_table(prj: &mut Project, text: &str) -> Result<usize, Strin
         let text = comment.or(name_col.and_then(|i| cells.get(i))).map(|t| t.to_string()).unwrap_or_default();
         texts.insert(address_key(addr), text);
     }
+    Ok(apply_texts(prj, None, &texts))
+}
+
+/// Sets the function texts of the points by address (only on the cards of address
+/// space `domain` if given). A leading card tag (as in exported comments) is dropped.
+/// Returns the number of changed points.
+pub fn apply_texts(prj: &mut Project, domain: Option<&str>, texts: &BTreeMap<AddressKey, String>) -> usize {
+    let cards: HashSet<String> = cards(prj).into_iter().filter(|c| domain.is_none_or(|d| crate::plc_hw::card_domain(prj, c) == d)).collect();
     let mut n = 0;
     for pg in &mut prj.pages {
-        for s in pg.symbols.iter_mut().filter(|s| is_plc(s)) {
+        for s in pg.symbols.iter_mut().filter(|s| is_plc(s) && (domain.is_none() || cards.contains(&s.tag))) {
             if let Some(t) = texts.get(&address_key(&s.label)) {
-                if !t.is_empty() && s.function_text != *t {
-                    s.function_text = t.clone();
+                let t = t.strip_prefix(&format!("{} ", s.tag)).unwrap_or(t).trim();
+                if !t.is_empty() && s.function_text != t {
+                    s.function_text = t.to_string();
                     n += 1;
                 }
             }
         }
     }
-    Ok(n)
+    n
 }
 
-/// Addresses used by more than one point (over all cards).
+/// Addresses used by more than one point (over all cards of an address space: a
+/// controller with its remote I/O).
 pub fn duplicate_addresses(prj: &Project, nl: &Netlist) -> Vec<(String, Vec<Point>)> {
-    let mut by: BTreeMap<(String, u32, u32), Vec<Point>> = BTreeMap::new();
+    let mut by: BTreeMap<(String, AddressKey), Vec<Point>> = BTreeMap::new();
     for p in points(prj, nl) {
-        by.entry(address_key(&p.address)).or_default().push(p);
+        by.entry((crate::plc_hw::card_domain(prj, &p.card), address_key(&p.address))).or_default().push(p);
     }
     by.into_values().filter(|v| v.len() > 1).map(|v| (v[0].address.clone(), v)).collect()
 }

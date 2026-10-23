@@ -28,20 +28,37 @@ pub enum Purpose {
     Table(crate::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
     Dictionary,
+    /// Another project that gets report pages of this one.
+    OutputTarget,
+    /// PLC hardware configuration (AutomationML).
+    Aml,
+    /// Device descriptions of PLC hardware (GSDML, ESI).
+    DeviceDescription,
+    /// Structure template (JSON) to apply to the project.
+    StructureTemplate,
+    /// A file to embed as a document page.
+    Document,
+    /// Page templates (JSON) to add to the project.
+    PageTemplates,
 }
 
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Project => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::Project | Purpose::OutputTarget => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
-            Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
+            Purpose::Forms => (tr("OpenECraft title blocks and report schemes (JSON)"), &["json"]),
+            Purpose::StructureTemplate => (tr("OpenECraft structure template (JSON)"), &["json"]),
+            Purpose::PageTemplates => (tr("OpenECraft page templates (JSON)"), &["json"]),
+            Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
+            Purpose::Aml => ("AutomationML", &["aml", "xml"]),
+            Purpose::DeviceDescription => (tr("Device description (GSDML, ESI)"), &["xml"]),
         }
     }
 }

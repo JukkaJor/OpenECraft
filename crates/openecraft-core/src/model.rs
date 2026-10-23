@@ -12,41 +12,6 @@ pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-pub const PAGE_W: f32 = 420.0;
-pub const PAGE_H: f32 = 297.0;
-/// Outer drawing frame.
-pub const FRAME_X0: f32 = 10.0;
-pub const FRAME_Y0: f32 = 10.0;
-pub const FRAME_X1: f32 = 410.0;
-pub const FRAME_Y1: f32 = 287.0;
-/// Inner area (inside column / row strips).
-pub const AREA_X0: f32 = 15.0;
-pub const AREA_Y0: f32 = 15.0;
-/// Top edge of the title block.
-pub const TITLE_Y0: f32 = 255.0;
-pub const COLUMNS: usize = 10;
-pub const ROWS: usize = 6;
-
-pub fn column_width() -> f32 {
-    (FRAME_X1 - AREA_X0) / COLUMNS as f32
-}
-
-pub fn row_height() -> f32 {
-    (TITLE_Y0 - AREA_Y0) / ROWS as f32
-}
-
-/// Column (1-based) of a page position, as used for cross references (`/page.column`).
-pub fn column_of(pos: P) -> usize {
-    let c = ((pos.x - AREA_X0) / column_width()).floor() as i64 + 1;
-    c.clamp(1, COLUMNS as i64) as usize
-}
-
-/// Row letter of a page position.
-pub fn row_of(pos: P) -> char {
-    let r = ((pos.y - AREA_Y0) / row_height()).floor() as i64;
-    (b'A' + r.clamp(0, ROWS as i64 - 1) as u8) as char
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Project {
@@ -77,6 +42,9 @@ pub struct Project {
     /// PLC card data (start address, rack / slot) keyed by card tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plc_cards: BTreeMap<String, PlcCard>,
+    /// PLC stations, bus systems, bus connections and device descriptions.
+    #[serde(skip_serializing_if = "crate::plc_hw::Hardware::is_empty")]
+    pub plc: crate::plc_hw::Hardware,
     /// Released revisions, oldest first.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub revisions: Vec<crate::revision::Revision>,
@@ -88,6 +56,9 @@ pub struct Project {
     pub symbols: Vec<crate::symlib::UserSymbol>,
     /// Title blocks and report forms.
     pub forms: crate::forms::Forms,
+    /// Report blocks: report pages generated and updated together.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub report_blocks: Vec<crate::report_blocks::ReportBlock>,
     /// Options and generation rules of the configurator.
     #[serde(skip_serializing_if = "crate::config::Configuration::is_empty")]
     pub configuration: crate::config::Configuration,
@@ -106,6 +77,12 @@ pub struct Project {
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub wiring_marks: Vec<crate::wiring::WiringMark>,
+    /// Structure management: defined identifiers, aspects of the pages, work areas.
+    #[serde(skip_serializing_if = "crate::structure::Structures::is_default")]
+    pub structures: crate::structure::Structures,
+    /// Page templates defined for the project.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub page_templates: Vec<crate::page_templates::PageTemplate>,
     pub next_id: u64,
 }
 
@@ -125,16 +102,20 @@ impl Default for Project {
             strips: BTreeMap::new(),
             plugs: BTreeMap::new(),
             plc_cards: BTreeMap::new(),
+            plc: Default::default(),
             revisions: Vec::new(),
             harnesses: Vec::new(),
             symbols: Vec::new(),
             forms: Default::default(),
+            report_blocks: Vec::new(),
             marking: Default::default(),
             configuration: Default::default(),
             fluid: Default::default(),
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
             languages: Default::default(),
+            structures: Default::default(),
+            page_templates: Vec::new(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -178,6 +159,13 @@ pub enum PageKind {
     Report(ReportKind),
     /// 2D model view of the mounting plate of an enclosure (enclosure id).
     Mounting(u64),
+    /// Overview drawing (single-line, block diagram): symbols and wires are drawn
+    /// but not evaluated.
+    Overview,
+    /// Free graphics (layout sketches, notes): not evaluated.
+    Graphic,
+    /// An embedded file (PDF, Office document, image).
+    Document,
 }
 
 impl PageKind {
@@ -187,7 +175,15 @@ impl PageKind {
             PageKind::Cover => tr("Cover sheet").into(),
             PageKind::Report(r) => tr_fmt!("Report: {}", r.title()),
             PageKind::Mounting(_) => tr("Mounting layout").into(),
+            PageKind::Overview => tr("Overview (not evaluated)").into(),
+            PageKind::Graphic => tr("Graphics").into(),
+            PageKind::Document => tr("Document (embedded file)").into(),
         }
+    }
+
+    /// Pages drawn by hand (symbols, wires, texts, graphics).
+    pub fn is_drawing(self) -> bool {
+        matches!(self, PageKind::Schematic | PageKind::Overview | PageKind::Graphic)
     }
 }
 
@@ -197,17 +193,24 @@ pub enum ReportKind {
     DeviceList,
     BillOfMaterials,
     TerminalDiagram,
+    TerminalLineup,
+    TerminalStripOverview,
+    TerminalConnections,
     PlugDiagram,
+    PinConnections,
     ConnectionList,
+    DeviceConnections,
     PlcAssignment,
     PotentialList,
     PanelWiring,
     CableOverview,
     CableDiagram,
+    CableConnections,
     CableSizing,
     RevisionOverview,
     HarnessData,
     DuctFill,
+    PanelLegend,
     Climate,
     Marking,
     HoseList,
@@ -215,22 +218,29 @@ pub enum ReportKind {
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 19] = [
+    pub const ALL: [ReportKind; 26] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
         ReportKind::TerminalDiagram,
+        ReportKind::TerminalLineup,
+        ReportKind::TerminalStripOverview,
+        ReportKind::TerminalConnections,
         ReportKind::PlugDiagram,
+        ReportKind::PinConnections,
         ReportKind::ConnectionList,
+        ReportKind::DeviceConnections,
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
         ReportKind::PanelWiring,
         ReportKind::CableOverview,
         ReportKind::CableDiagram,
+        ReportKind::CableConnections,
         ReportKind::CableSizing,
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
         ReportKind::DuctFill,
+        ReportKind::PanelLegend,
         ReportKind::Climate,
         ReportKind::Marking,
         ReportKind::HoseList,
@@ -243,13 +253,20 @@ impl ReportKind {
             ReportKind::DeviceList => tr("Device list"),
             ReportKind::BillOfMaterials => tr("Bill of materials"),
             ReportKind::TerminalDiagram => tr("Terminal diagram"),
+            ReportKind::TerminalLineup => tr("Terminal line-up"),
+            ReportKind::TerminalStripOverview => tr("Terminal strip overview"),
+            ReportKind::TerminalConnections => tr("Terminal connection diagram"),
             ReportKind::PlugDiagram => tr("Plug diagram"),
+            ReportKind::PinConnections => tr("Pin connection diagram"),
+            ReportKind::DeviceConnections => tr("Device connection diagram"),
             ReportKind::ConnectionList => tr("Connection list"),
             ReportKind::PlcAssignment => tr("PLC assignment list"),
             ReportKind::PotentialList => tr("Potential overview"),
             ReportKind::PanelWiring => tr("Wire list (panel routing)"),
             ReportKind::CableOverview => tr("Cable overview"),
             ReportKind::CableDiagram => tr("Cable diagram"),
+            ReportKind::CableConnections => tr("Cable connection diagram"),
+            ReportKind::PanelLegend => tr("Panel legend"),
             ReportKind::CableSizing => tr("Cable sizing (voltage drop)"),
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
@@ -269,10 +286,15 @@ pub struct Page {
     /// Page number / name as shown in cross references, e.g. "3".
     pub name: String,
     pub description: String,
-    /// Structure of the page (IEC 81346) without prefix signs: function (`=`) and
-    /// location (`+`). Devices placed on the page inherit it.
+    /// Structure of the page (IEC 81346) without prefix signs: function (`=`),
+    /// installation site (`++`), location (`+`) and higher-level product (`-`).
+    /// Devices placed on the page inherit it.
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
     /// Released page: no changes until it is unlocked.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub locked: bool,
@@ -282,7 +304,17 @@ pub struct Page {
     /// Title block of this page; empty = the project's default.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub title_block: String,
+    /// Plot frame (paper format, columns, rows); empty = the project's default.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub frame: String,
+    /// File of a document page.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document: Option<crate::document::Document>,
     pub kind: PageKind,
+    /// Report pages: what part of the report the page shows (report blocks, pages
+    /// output from other projects); none: the first rows of the whole report.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub report: Option<crate::report_blocks::ReportPart>,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -296,10 +328,10 @@ impl Default for Page {
 }
 
 impl Page {
-    /// Its content can be changed: a schematic page that is not released. Report,
-    /// cover and mounting pages are generated.
+    /// Its content can be changed: a schematic, overview or graphics page that is
+    /// not released. Report, cover and mounting pages are generated.
     pub fn is_editable(&self) -> bool {
-        self.kind == PageKind::Schematic && !self.locked
+        self.kind.is_drawing() && !self.locked
     }
 
     pub fn new(id: u64, name: &str, description: &str, kind: PageKind) -> Page {
@@ -308,11 +340,16 @@ impl Page {
             name: name.into(),
             description: description.into(),
             function: String::new(),
+            installation: String::new(),
             location: String::new(),
+            product: String::new(),
             locked: false,
             generated: false,
             title_block: String::new(),
+            frame: String::new(),
+            document: None,
             kind,
+            report: None,
             symbols: Vec::new(),
             wires: Vec::new(),
             texts: Vec::new(),
@@ -413,6 +450,9 @@ pub struct Cable {
     /// Part number (bill of materials: length × part).
     pub part: String,
     pub description: String,
+    /// Network / bus cable for this bus system (`None`: ordinary cable).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bus: Option<crate::devdesc::BusKind>,
 }
 
 impl Cable {
@@ -468,9 +508,18 @@ pub struct StripData {
 pub struct PlcCard {
     /// First byte of the card's inputs / outputs (I<start>.0, Q<start>.0).
     pub start_byte: u32,
+    /// First byte of the outputs when it differs from the inputs' (mixed modules).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_byte: Option<u32>,
     pub rack: String,
     pub slot: String,
     pub description: String,
+    /// Station of the hardware configuration the card is plugged into.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub station: String,
+    /// Device description (overrides the one from the parts).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub device: String,
 }
 
 /// Settings of the automatic wire numbering.
@@ -554,21 +603,7 @@ impl Project {
 
     pub fn normalize(&mut self) {
         crate::symlib::register(&self.symbols);
-        let mut max = 0;
-        for pg in &self.pages {
-            max = max.max(pg.id);
-            max = pg.symbols.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
-        }
-        for e in &self.layout.enclosures {
-            max = max.max(e.id);
-            max = e.items.iter().map(|i| i.id).fold(max, u64::max);
-        }
-        max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
-        max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
-        self.next_id = self.next_id.max(max + 1);
+        self.fix_next_id();
         // Make sure each symbol has a designation for each pin.
         for pg in &mut self.pages {
             for s in &mut pg.symbols {
@@ -585,6 +620,25 @@ impl Project {
             let id = self.new_id();
             self.pages.push(Page::new(id, "1", "Schematic", PageKind::Schematic));
         }
+    }
+
+    /// Makes `next_id` larger than every id in use.
+    pub fn fix_next_id(&mut self) {
+        let mut max = 0;
+        for pg in &self.pages {
+            max = max.max(pg.id);
+            max = pg.symbols.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
+        }
+        for e in &self.layout.enclosures {
+            max = max.max(e.id);
+            max = e.items.iter().map(|i| i.id).fold(max, u64::max);
+        }
+        max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
+        max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
+        self.next_id = self.next_id.max(max + 1);
     }
 
     /// Converts single part assignments of older files to part lists; old generic

@@ -107,7 +107,7 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
         match old.iter().find(|o| o.id == n.id) {
             None => changes.push(Change { kind: ChangeKind::Added, what: "Page", id: n.id, label: n.description.clone(), pos: p(0.0, 0.0) }),
             Some(o) => {
-                if (&o.name, &o.description, &o.function, &o.location, o.kind) != (&n.name, &n.description, &n.function, &n.location, n.kind) {
+                if (&o.name, &o.description, crate::structure::page_structure(o), o.kind) != (&n.name, &n.description, crate::structure::page_structure(n), n.kind) {
                     changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: tr("page properties").into(), pos: p(0.0, 0.0) });
                 }
                 diff(&o.symbols, &n.symbols, |s| s.id, "Symbol", |s| (format!("{} {}", s.tag, s.label).trim().to_string(), s.pos), &mut changes);

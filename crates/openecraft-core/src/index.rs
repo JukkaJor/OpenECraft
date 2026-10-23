@@ -1,7 +1,7 @@
 //! Device / cross-reference index of a project.
 
 use crate::geom::P;
-use crate::model::{column_of, natural_cmp, PageKind, Project};
+use crate::model::{natural_cmp, PageKind, Project};
 use crate::structure;
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, HashMap};
@@ -17,7 +17,7 @@ impl Loc {
     /// Complete cross reference, e.g. `/3.4` or `=A1+CAB1/3.4`.
     pub fn reference(&self, prj: &Project) -> String {
         let page = &prj.pages[self.page];
-        format!("{}/{}.{}", structure::page_structure(page), page.name, column_of(self.pos))
+        format!("{}{}", structure::page_structure(page), crate::frame::reference(prj, self.page, self.pos))
     }
 
     /// Cross reference as shown on page `from`: the structure is left out if both
@@ -25,7 +25,7 @@ impl Loc {
     pub fn reference_from(&self, prj: &Project, from: usize) -> String {
         let (page, here) = (&prj.pages[self.page], &prj.pages[from]);
         if structure::page_structure(page) == structure::page_structure(here) {
-            format!("/{}.{}", page.name, column_of(self.pos))
+            crate::frame::reference(prj, self.page, self.pos)
         } else {
             self.reference(prj)
         }

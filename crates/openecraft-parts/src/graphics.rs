@@ -250,15 +250,17 @@ pub fn parse_obj(text: &str) -> Result<Mesh3d, String> {
     b.finish()
 }
 
-/// Reads a 3D model by file name extension (`.stl` or `.obj`).
+/// Reads a 3D model by file name extension (`.stl`, `.obj` or `.ifc`).
 pub fn parse_mesh(name: &str, bytes: &[u8]) -> Result<Mesh3d, String> {
     let lower = name.to_lowercase();
     if lower.ends_with(".obj") {
         parse_obj(&String::from_utf8_lossy(bytes))
     } else if lower.ends_with(".stl") {
         parse_stl(bytes)
+    } else if lower.ends_with(".ifc") {
+        crate::ifc::parse_ifc(bytes)
     } else {
-        Err("unsupported 3D format (use STL or OBJ)".into())
+        Err("unsupported 3D format (use STL, OBJ or IFC)".into())
     }
 }
 

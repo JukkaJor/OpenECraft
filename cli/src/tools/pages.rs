@@ -5,7 +5,8 @@ use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::model::*;
 use openecraft_core::netlist::Netlist;
-use openecraft_core::{dxf_import, ops, potentials};
+use openecraft_core::structure::{Aspect, Dt};
+use openecraft_core::{dxf_import, frame, ops, page_templates, potentials};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -13,7 +14,7 @@ pub static TOOLS: &[Tool] = &[
     Tool {
         name: "list_pages",
         help: tr_const!("Lists the pages of the project"),
-        params: &[],
+        params: &[optional("work_area", Kind::Str, tr_const!("Only the pages of this work area (list_structure)"))],
         needs_project: true,
         run: list_pages,
     },
@@ -28,7 +29,9 @@ pub static TOOLS: &[Tool] = &[
         name: "add_page",
         help: tr_const!("Adds a page"),
         params: &[
-            param("kind", Kind::Str, tr_const!("schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops")),
+            optional("kind", Kind::Str, tr_const!("schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops")),
+            optional("template", Kind::Str, tr_const!("Page template (list_page_templates) instead of kind")),
+            optional("frame", Kind::Str, tr_const!("Plot frame (list_frames); default: the project's")),
             optional("after", Kind::Str, tr_const!("Insert after this page (default: at the end)")),
             optional("name", Kind::Str, tr_const!("Page name (default: next number)")),
             optional("description", Kind::Str, tr_const!("Description")),
@@ -55,8 +58,11 @@ pub static TOOLS: &[Tool] = &[
             PAGE,
             optional("name", Kind::Str, tr_const!("New page name")),
             optional("description", Kind::Str, tr_const!("Description")),
+            optional("frame", Kind::Str, tr_const!("Plot frame (list_frames); empty = the project default")),
             optional("function", Kind::Str, tr_const!("Function aspect (=) of the page; the devices on the page move along")),
+            optional("installation", Kind::Str, tr_const!("Installation site aspect (++) of the page; the devices on the page move along")),
             optional("location", Kind::Str, tr_const!("Location aspect (+) of the page; the devices on the page move along")),
+            optional("product", Kind::Str, tr_const!("Higher-level product aspect (-) of the page; the devices on the page move along")),
         ],
         needs_project: true,
         run: set_page,
@@ -70,9 +76,13 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn list_pages(s: &mut Session, _: &Args) -> Result<Value, String> {
+fn list_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
-    let pages = prj.pages.iter().map(|pg| {
+    let area = match a.str("work_area") {
+        Some(name) => Some(prj.structures.work_area(name).ok_or_else(|| tr_fmt!("No work area named {}", name))?),
+        None => None,
+    };
+    let pages = prj.pages.iter().filter(|pg| area.is_none_or(|w| w.shows_page(pg))).map(|pg| {
         let mut v = page_json(pg);
         v["symbols"] = pg.symbols.len().into();
         v["wires"] = pg.wires.len().into();
@@ -135,11 +145,26 @@ fn import_dxf(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project_mut()?;
-    let kind = match a.req("kind").trim().to_ascii_lowercase().as_str() {
-        "schematic" => PageKind::Schematic,
-        "cover" => PageKind::Cover,
-        other => PageKind::Report(report_kind(other)?),
+    let template = match a.str("template") {
+        Some(name) => Some(page_templates::find(prj, name).ok_or_else(|| tr_fmt!("No page template named {}", name))?),
+        None => None,
     };
+    let kind = match (a.str("kind").map(|k| k.trim().to_ascii_lowercase()), &template) {
+        (Some(k), _) => match k.as_str() {
+            "schematic" => PageKind::Schematic,
+            "overview" => PageKind::Overview,
+            "graphic" | "graphics" => PageKind::Graphic,
+            "cover" => PageKind::Cover,
+            other => PageKind::Report(report_kind(other)?),
+        },
+        (None, Some(t)) => t.kind,
+        (None, None) => return Err(tr("Give kind or template").into()),
+    };
+    if let Some(f) = a.str("frame") {
+        if !frame::names(prj).iter().any(|n| n == f) {
+            return Err(tr_fmt!("No plot frame named {}", f));
+        }
+    }
     let at = match a.str("after") {
         Some(after) => page_index(prj, after)? + 1,
         None => prj.pages.len(),
@@ -149,8 +174,17 @@ fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
             return Err(tr_fmt!("A page named {} already exists", name));
         }
     }
-    let i = ops::add_page(prj, kind, at);
+    let i = match template {
+        Some(mut t) => {
+            t.kind = kind;
+            page_templates::insert(prj, &t, at)
+        }
+        None => ops::add_page(prj, kind, at),
+    };
     let pg = &mut prj.pages[i];
+    if let Some(f) = a.str("frame") {
+        pg.frame = f.into();
+    }
     if let Some(name) = a.str("name") {
         pg.name = name.into();
     }
@@ -172,10 +206,20 @@ fn set_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     if let Some(d) = a.str("description") {
         prj.pages[i].description = d.into();
     }
-    if a.str("function").is_some() || a.str("location").is_some() {
-        let function = a.str("function").map(String::from).unwrap_or_else(|| prj.pages[i].function.clone());
-        let location = a.str("location").map(String::from).unwrap_or_else(|| prj.pages[i].location.clone());
-        ops::set_page_structure(prj, i, &function, &location, true);
+    if let Some(f) = a.str("frame") {
+        if !f.is_empty() && !frame::names(prj).iter().any(|n| n == f) {
+            return Err(tr_fmt!("No plot frame named {}", f));
+        }
+        prj.pages[i].frame = f.into();
+    }
+    if Aspect::ALL.iter().any(|asp| a.str(asp.key()).is_some()) {
+        let mut dt = Dt::of_page(&prj.pages[i]);
+        for asp in Aspect::ALL {
+            if let Some(v) = a.str(asp.key()) {
+                *dt.get_mut(asp) = v.to_string();
+            }
+        }
+        ops::set_page_structure(prj, i, &dt, true);
     }
     Ok(page_json(&prj.pages[i]))
 }

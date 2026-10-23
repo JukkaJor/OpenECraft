@@ -16,7 +16,7 @@ use std::collections::BTreeMap;
 pub enum ModelKind {
     /// 2D front view (SVG).
     Front2d,
-    /// 3D model (STL, OBJ).
+    /// 3D model (STL, OBJ, STEP, IGES, IFC, JT).
     Mesh3d,
 }
 
@@ -24,8 +24,20 @@ impl FileKind for ModelKind {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
             ModelKind::Front2d => (tr("2D front view (SVG)"), &["svg"]),
-            ModelKind::Mesh3d => (tr("3D model (STL, OBJ, STEP)"), &["stl", "obj", "step", "stp"]),
+            ModelKind::Mesh3d => (tr("3D model (STL, OBJ, STEP, IGES, IFC, JT)"), &["stl", "obj", "step", "stp", "igs", "iges", "ifc", "jt"]),
         }
+    }
+}
+
+/// Reads a 3D model by file name extension.
+pub fn parse_model_3d(file: &str, bytes: &[u8]) -> Result<Mesh3d, String> {
+    let lower = file.to_lowercase();
+    let ext = lower.rsplit('.').next().unwrap_or_default();
+    match ext {
+        "step" | "stp" => openecraft_step::parse_step(bytes),
+        "igs" | "iges" => openecraft_step::parse_iges(bytes),
+        "jt" => openecraft_jt::parse_jt(bytes),
+        _ => parse_mesh(file, bytes),
     }
 }
 
@@ -536,7 +548,7 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
                     ui.weak(tr("none – a box of the mounting dimensions is drawn"));
                 }
             }
-            if ui.button(tr("Import STL / OBJ / STEP…")).clicked() {
+            if ui.button(tr("Import STL / OBJ / STEP / IGES / IFC / JT…")).clicked() {
                 request = Some(ModelKind::Mesh3d);
             }
             if part.model_3d.is_some() && ui.button(tr("🗑 Remove")).clicked() {
@@ -596,8 +608,7 @@ pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -
             Ok(msg)
         }
         ModelKind::Mesh3d => {
-            let lower = file.to_lowercase();
-            let m = if lower.ends_with(".step") || lower.ends_with(".stp") { openecraft_step::parse_step(bytes)? } else { parse_mesh(file, bytes)? };
+            let m = parse_model_3d(file, bytes)?;
             let s = m.size();
             let msg = tr_fmt!("{}: 3D model with {} triangles ({} × {} × {} mm) assigned to {}", file, m.triangles.len(), format!("{:.1}", s[0]), format!("{:.1}", s[1]), format!("{:.1}", s[2]), number);
             // Parts without mounting data take the model size.

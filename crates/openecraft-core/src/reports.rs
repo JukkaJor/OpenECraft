@@ -8,6 +8,8 @@ use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
+mod diagrams;
+
 #[derive(Clone, Debug, Default)]
 pub struct Table {
     pub headers: Vec<&'static str>,
@@ -98,17 +100,24 @@ impl Analysis {
                 ReportKind::DeviceList => device_list(prj, &idx),
                 ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
+                ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
+                ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, &netlist, &open),
+                ReportKind::TerminalConnections => diagrams::terminal_connections(prj, &conns),
                 ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
+                ReportKind::PinConnections => diagrams::pin_connections(prj, &conns),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
+                ReportKind::DeviceConnections => diagrams::device_connections(prj, &idx, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
                 ReportKind::RevisionOverview => revision_overview(prj),
                 ReportKind::PotentialList => potential_list(prj, &netlist),
                 ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
                 ReportKind::CableOverview => cable_overview(prj, &conns),
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
+                ReportKind::CableConnections => diagrams::cable_connections_report(prj, &conns),
                 ReportKind::CableSizing => cable_sizing(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
+                ReportKind::PanelLegend => diagrams::panel_legend(prj, &idx),
                 ReportKind::Climate => climate_report(prj),
                 ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
                 ReportKind::HoseList => hose_list(prj, &open),
@@ -122,11 +131,13 @@ impl Analysis {
         issues.extend(check_potentials(prj, &netlist, &open));
         issues.extend(crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue { severity: Severity::Warning, message, target }));
         issues.extend(check_strips_and_plc(prj, &netlist));
+        issues.extend(crate::plc_hw::problems(prj));
         issues.extend(check_duct_fill(prj, &fill));
         issues.extend(check_climate(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
+        issues.extend(crate::structure::problems(prj).into_iter().map(|message| Issue { severity: Severity::Warning, message, target: None }));
         for lang in &prj.languages.targets {
             let n = crate::translation::missing(prj, lang).len();
             if n > 0 {
@@ -221,7 +232,7 @@ fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
 }
 
 fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
-    format!("/{}.{}", prj.pages[page].name, column_of(pos))
+    crate::frame::reference(prj, page, pos)
 }
 
 fn toc(prj: &Project) -> Table {
@@ -733,15 +744,25 @@ fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
         };
         let cores: BTreeSet<&str> = used.iter().map(|c| c.core.as_str()).collect();
         let target = used.first().map(|c| (c.a.page, prj.pages[c.a.page].symbols[c.a.sym].id));
+        // Bus cables: all cores, ends at the ports.
+        let links = crate::plc_hw::cable_links(prj, &cable.tag);
+        let port_ends = |f: fn(&crate::plc_hw::BusConnection) -> &crate::plc_hw::PortRef| {
+            links.iter().map(|c| crate::plc_hw::port_label(prj, f(c))).collect::<Vec<_>>().join(", ")
+        };
+        let (from, to, cores_used) = if used.is_empty() && !links.is_empty() {
+            (port_ends(|c| &c.a), port_ends(|c| &c.b), cable.core_list().len())
+        } else {
+            (ends(|c| c.a), ends(|c| c.b), cores.len())
+        };
         t.push(
             vec![
                 cable.tag.clone(),
                 cable.cable_type.clone(),
-                format!("{}/{}", cores.len(), cable.core_list().len()),
+                format!("{}/{}", cores_used, cable.core_list().len()),
                 cable.cross_section.clone(),
                 if cable.length > 0.0 { format!("{}", cable.length) } else { String::new() },
-                ends(|c| c.a),
-                ends(|c| c.b),
+                from,
+                to,
                 cable.part.clone(),
                 cable.description.clone(),
             ],
@@ -769,6 +790,16 @@ fn cable_diagram(prj: &Project, conns: &[Connection]) -> Table {
             if !cores.contains(&c.core) {
                 cores.push(c.core.clone());
             }
+        }
+        let links = crate::plc_hw::cable_links(prj, &cable.tag);
+        if used.is_empty() && !links.is_empty() {
+            for link in links {
+                for core in &cores {
+                    let ends = (crate::plc_hw::port_label(prj, &link.a), crate::plc_hw::port_label(prj, &link.b));
+                    t.push(vec![cable.tag.clone(), core.clone(), ends.0, ends.1, link.network.clone(), String::new(), cable.cross_section.clone()], None);
+                }
+            }
+            continue;
         }
         for core in cores {
             let on_core: Vec<&Connection> = used.iter().filter(|c| c.core == core).collect();

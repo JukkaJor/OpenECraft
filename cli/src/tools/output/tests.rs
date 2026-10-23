@@ -35,4 +35,13 @@ fn panel_layout_in_3d() {
     assert!(r["bytes"].as_u64().unwrap() > 1000);
     let step = std::fs::read_to_string(&file).unwrap();
     assert!(step.starts_with("ISO-10303-21;") && step.contains("FILE_NAME('panel.stp'"));
+    let iges = run(&mut s, "export", json!({ "format": "iges" })).unwrap();
+    assert!(iges.as_str().unwrap().contains(",9Hpanel.igs,"));
+    let ifc = run(&mut s, "export", json!({ "format": "ifc" })).unwrap();
+    assert!(ifc.as_str().unwrap().contains("FILE_SCHEMA(('IFC4'))"));
+    // JT is binary: only to a file.
+    assert!(run(&mut s, "export", json!({ "format": "jt" })).unwrap_err().contains("path"));
+    let file = temp_dir("export-3d").join("panel.jt");
+    run(&mut s, "export", json!({ "format": "jt", "path": file.to_str().unwrap() })).unwrap();
+    assert!(std::fs::read(&file).unwrap().starts_with(b"Version 8.1 JT"));
 }

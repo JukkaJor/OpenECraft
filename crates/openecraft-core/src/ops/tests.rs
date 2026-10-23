@@ -108,13 +108,21 @@ fn page_structure_change_renames_its_devices() {
     contact.tag = "=A1+CAB1-K1".into();
     prj.pages[0].symbols.push(contact);
     prj.devices.insert("=A1+CAB1-K1".into(), DeviceData { description: "pump".into(), ..Default::default() });
-    set_page_structure(&mut prj, 1, "=A2", "+CAB1", true);
+    let dt = crate::structure::Dt::parse_structure;
+    set_page_structure(&mut prj, 1, &dt("=A2+CAB1"), true);
     assert_eq!((prj.pages[1].function.as_str(), prj.pages[1].location.as_str()), ("A2", "CAB1"));
     assert_eq!(prj.all_tags(), vec!["=A2+CAB1-K1".to_string()]);
     assert_eq!(prj.devices["=A2+CAB1-K1"].description, "pump");
     // Without moving, the tags stay.
-    set_page_structure(&mut prj, 1, "A3", "", false);
+    set_page_structure(&mut prj, 1, &dt("=A3"), false);
     assert_eq!(prj.all_tags(), vec!["=A2+CAB1-K1".to_string()]);
+    // Installation site and product move along as well.
+    set_page_structure(&mut prj, 1, &dt("=A2++HALL1+CAB1-U1"), false);
+    let mut s = new_symbol(&mut prj, 1, &ctx, symbols::get("coil").unwrap(), p(40.0, 80.0), 0, false);
+    s.tag = "=A2++HALL1+CAB1-U1-K2".into();
+    prj.pages[1].symbols.push(s);
+    set_page_structure(&mut prj, 1, &dt("=A2++HALL2+CAB1-U3"), true);
+    assert!(prj.all_tags().contains(&"=A2++HALL2+CAB1-U3-K2".to_string()), "{:?}", prj.all_tags());
 }
 
 #[test]

@@ -36,6 +36,6 @@ fn pages_side_by_side_and_unicode() {
     let prj = demo_project();
     let dxf = pages_dxf(&prj, &[1, 2]);
     let max_x = pairs(&dxf).iter().filter(|(c, _)| *c == 10).filter_map(|(_, v)| v.parse::<f32>().ok()).fold(0.0, f32::max);
-    assert!(max_x > PAGE_W + 20.0, "{max_x}");
+    assert!(max_x > 420.0 + 20.0, "{max_x}");
     assert_eq!(dxf_text("1.5 mm²"), "1.5 mm\\U+00B2");
 }
