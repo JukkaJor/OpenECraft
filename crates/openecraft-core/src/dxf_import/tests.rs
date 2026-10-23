@@ -49,7 +49,8 @@ fn entities_become_lines_and_texts() {
     // 1:1, y flipped: the drawing's top (y = 60 + text) is at the top of the area.
     let line = page.shapes.iter().find(|s| (s.a.x - s.b.x).abs() > 99.0).unwrap();
     assert!((line.b.x - line.a.x).abs() - 100.0 < 0.01);
-    assert!(page.shapes.iter().all(|s| s.a.y >= AREA_Y0 - 0.01 && s.b.y >= AREA_Y0 - 0.01));
+    let area = crate::frame::PlotFrame::default().area();
+    assert!(page.shapes.iter().all(|s| s.a.y >= area.min.y - 0.01 && s.b.y >= area.min.y - 0.01));
 }
 
 #[test]
@@ -73,9 +74,10 @@ fn large_drawings_are_scaled_to_the_page_and_units_are_respected() {
     let text = dxf("", "", "0 LINE\n10 0\n20 0\n11 4000\n21 1000");
     let (prj, r) = import(&text, true);
     assert!(r.scale < 0.1);
+    let area = crate::frame::PlotFrame::default().area();
     for s in &prj.pages[r.page].shapes {
         for q in [s.a, s.b] {
-            assert!(q.x >= AREA_X0 - 0.01 && q.x <= FRAME_X1 && q.y >= AREA_Y0 - 0.01 && q.y <= TITLE_Y0, "{q:?}");
+            assert!(area.expand(0.01).contains(q), "{q:?}");
         }
     }
     // Inches: a 1" line is 25.4 mm.

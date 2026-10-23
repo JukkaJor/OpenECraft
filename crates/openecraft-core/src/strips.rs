@@ -124,7 +124,7 @@ pub fn rows(prj: &Project, strip: &str, nl: &Netlist, open: &Netlist) -> Vec<Row
             external: targets(prj, open, open.pin_net.get(&(s.id, 0)).copied(), (t.page, t.sym)),
             internal: targets(prj, open, open.pin_net.get(&(s.id, 1)).copied(), (t.page, t.sym)),
             potential: nl.pin_net.get(&(s.id, 0)).map(|&n| nl.nets[n].name.clone()).unwrap_or_default(),
-            location: format!("/{}.{}", prj.pages[t.page].name, column_of(s.pos)),
+            location: crate::frame::reference(prj, t.page, s.pos),
             function_text: s.function_text.replace('\n', " "),
             terminal: Some(t),
         });

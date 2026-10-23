@@ -1,81 +1,228 @@
-//! Structure identifiers (IEC 81346): a device tag such as `=A1+CAB1-K1` names the
-//! function (`=A1`), the location (`+CAB1`) and the device itself (`-K1`).
+//! Structure identifiers (IEC 81346): a device tag such as `=A1++HALL1+CAB1-U1-K1`
+//! names the function (`=A1`), the installation site (`++HALL1`), the location
+//! (`+CAB1`), the higher-level product (`-U1`) and the device itself (`-K1`).
 //!
-//! Tags are stored complete. Pages carry a function and a location; on a page a
-//! tag is shown without the aspects that equal the page's, and aspects missing in
-//! an entered tag are taken from the page.
+//! Tags are stored complete. Pages carry a structure; on a page a tag is shown
+//! without the aspects that equal the page's, and aspects missing in an entered tag
+//! are taken from the page.
+//!
+//! The structure management of the project ([`Structures`]) holds the defined
+//! identifiers with their descriptions, the aspects the pages use (set by a
+//! [`Template`]) and the work areas that limit the pages and devices shown.
 
-use crate::model::Page;
+use openecraft_i18n::{tr, tr_const, tr_fmt};
+use crate::model::{natural_cmp, Page, PageKind, Project};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
+
+/// Aspect of a structure identifier.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum Aspect {
+    /// `=` what the system does.
+    Function,
+    /// `++` the plant, building or area.
+    Installation,
+    /// `+` where it is mounted (enclosure, field).
+    Location,
+    /// `-` the higher-level product (assembly) the device belongs to.
+    Product,
+}
+
+impl Aspect {
+    pub const ALL: [Aspect; 4] = [Aspect::Function, Aspect::Installation, Aspect::Location, Aspect::Product];
+
+    pub fn prefix(self) -> &'static str {
+        match self {
+            Aspect::Function => "=",
+            Aspect::Installation => "++",
+            Aspect::Location => "+",
+            Aspect::Product => "-",
+        }
+    }
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Aspect::Function => tr("Function"),
+            Aspect::Installation => tr("Installation site"),
+            Aspect::Location => tr("Location"),
+            Aspect::Product => tr("Product"),
+        }
+    }
+
+    /// Name in files and commands.
+    pub fn key(self) -> &'static str {
+        match self {
+            Aspect::Function => "function",
+            Aspect::Installation => "installation",
+            Aspect::Location => "location",
+            Aspect::Product => "product",
+        }
+    }
+
+    /// Accepts the key or the prefix sign.
+    pub fn from_key(s: &str) -> Option<Aspect> {
+        let s = s.trim();
+        Aspect::ALL.into_iter().find(|a| a.key() == s.to_lowercase() || a.prefix() == s)
+    }
+
+    /// `=A1`, `++HALL1` …
+    pub fn format(self, id: &str) -> String {
+        format!("{}{id}", self.prefix())
+    }
+}
 
 /// A device tag split into its aspects (stored without the prefix signs, except
-/// the device name which keeps its `-`).
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// the device name which keeps its `-`). Product levels are separated by `-`.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Dt {
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub name: String,
 }
 
 impl Dt {
-    /// Parses `=A1+CAB1-K1`, `+CAB1-K1`, `-K1` …; the device name starts at the
-    /// first `-`.
+    /// Parses `=A1++HALL1+CAB1-U1-K1`, `+CAB1-K1`, `-K1` …; the product and device
+    /// name start at the first `-`, the last `-` level is the device name.
     pub fn parse(tag: &str) -> Dt {
         let tag = tag.trim();
-        let (structure, name) = match tag.find('-') {
+        let (structure, product) = match tag.find('-') {
             Some(i) => (&tag[..i], &tag[i..]),
             None if tag.starts_with(['=', '+']) => (tag, ""),
             None => ("", tag),
         };
-        let mut dt = Dt { name: name.to_string(), ..Default::default() };
-        let mut sign = None;
-        let mut buf = String::new();
-        for c in structure.chars().chain(std::iter::once('\0')) {
-            if matches!(c, '=' | '+' | '\0') {
-                match sign {
-                    Some('=') => dt.function = std::mem::take(&mut buf),
-                    Some('+') => dt.location = std::mem::take(&mut buf),
-                    _ => buf.clear(),
-                }
-                sign = Some(c);
-            } else {
-                buf.push(c);
+        let mut dt = Dt::default();
+        match product.rfind('-') {
+            Some(i) if i > 0 => {
+                dt.product = product[1..i].to_string();
+                dt.name = product[i..].to_string();
             }
+            _ => dt.name = product.to_string(),
+        }
+        let mut aspect = None;
+        let mut buf = String::new();
+        let mut chars = structure.chars().peekable();
+        loop {
+            let c = chars.next();
+            let next = match c {
+                Some('=') => Some(Aspect::Function),
+                Some('+') if chars.peek() == Some(&'+') => {
+                    chars.next();
+                    Some(Aspect::Installation)
+                }
+                Some('+') => Some(Aspect::Location),
+                Some(c) => {
+                    buf.push(c);
+                    continue;
+                }
+                None => None,
+            };
+            match aspect {
+                Some(a) => *dt.get_mut(a) = std::mem::take(&mut buf),
+                None => buf.clear(),
+            }
+            if c.is_none() {
+                break;
+            }
+            aspect = next;
         }
         dt
     }
 
-    /// `=A1+CAB1` (empty without structure).
+    /// Parses a structure without device name (`=A1+CAB1-U1-A2`): all `-` levels
+    /// belong to the product.
+    pub fn parse_structure(s: &str) -> Dt {
+        let mut dt = Dt::parse(s);
+        if let Some(level) = std::mem::take(&mut dt.name).strip_prefix('-') {
+            dt.product = if dt.product.is_empty() { level.to_string() } else { format!("{}-{level}", dt.product) };
+        }
+        dt
+    }
+
+    /// Structure of a page (no device name).
+    pub fn of_page(page: &Page) -> Dt {
+        Dt {
+            function: page.function.clone(),
+            installation: page.installation.clone(),
+            location: page.location.clone(),
+            product: page.product.clone(),
+            name: String::new(),
+        }
+    }
+
+    /// Sets the structure of a page (cleaned, see [`clean_aspect`]).
+    pub fn apply_to(&self, page: &mut Page) {
+        page.function = clean_aspect(&self.function);
+        page.installation = clean_aspect(&self.installation);
+        page.location = clean_aspect(&self.location);
+        page.product = clean_aspect(&self.product);
+    }
+
+    pub fn get(&self, a: Aspect) -> &str {
+        match a {
+            Aspect::Function => &self.function,
+            Aspect::Installation => &self.installation,
+            Aspect::Location => &self.location,
+            Aspect::Product => &self.product,
+        }
+    }
+
+    pub fn get_mut(&mut self, a: Aspect) -> &mut String {
+        match a {
+            Aspect::Function => &mut self.function,
+            Aspect::Installation => &mut self.installation,
+            Aspect::Location => &mut self.location,
+            Aspect::Product => &mut self.product,
+        }
+    }
+
+    /// `=A1++HALL1+CAB1-U1` (empty without structure).
     pub fn structure(&self) -> String {
-        structure(&self.function, &self.location)
+        Aspect::ALL.into_iter().filter(|a| !self.get(*a).is_empty()).map(|a| a.format(self.get(a))).collect()
     }
 
     pub fn tag(&self) -> String {
         format!("{}{}", self.structure(), self.name)
     }
-}
 
-/// `=function+location` with empty aspects left out.
-pub fn structure(function: &str, location: &str) -> String {
-    let mut s = String::new();
-    if !function.is_empty() {
-        s.push('=');
-        s.push_str(function);
+    /// Complete tag of a tag entered in this structure: missing aspects come from it.
+    pub fn complete(&self, entered: &str) -> String {
+        let mut dt = Dt::parse(entered);
+        for a in Aspect::ALL {
+            if dt.get(a).is_empty() {
+                *dt.get_mut(a) = self.get(a).to_string();
+            }
+        }
+        dt.tag()
     }
-    if !location.is_empty() {
-        s.push('+');
-        s.push_str(location);
+
+    /// Shortest form of a complete tag in this structure: equal aspects are left out.
+    pub fn relative(&self, tag: &str) -> String {
+        let mut dt = Dt::parse(tag);
+        for a in Aspect::ALL {
+            if dt.get(a) == self.get(a) {
+                dt.get_mut(a).clear();
+            }
+        }
+        dt.tag()
     }
-    s
 }
 
 /// Removes prefix signs and blanks from an entered aspect (`"=A1 "` → `"A1"`).
 pub fn clean_aspect(s: &str) -> String {
-    s.trim().trim_start_matches(['=', '+']).replace(' ', "")
+    s.trim().trim_start_matches(['=', '+', '-']).replace(' ', "")
 }
 
 /// Structure of a page, e.g. `=A1+CAB1`.
 pub fn page_structure(page: &Page) -> String {
-    structure(&page.function, &page.location)
+    Dt::of_page(page).structure()
 }
 
 /// Page name with structure, e.g. `=A1+CAB1/3` (just `3` without structure).
@@ -90,26 +237,377 @@ pub fn page_full_name(page: &Page) -> String {
 
 /// Complete tag of a tag entered on a page: missing aspects come from the page.
 pub fn complete(page: &Page, entered: &str) -> String {
-    let mut dt = Dt::parse(entered);
-    if dt.function.is_empty() {
-        dt.function = page.function.clone();
-    }
-    if dt.location.is_empty() {
-        dt.location = page.location.clone();
-    }
-    dt.tag()
+    Dt::of_page(page).complete(entered)
 }
 
 /// Shortest form of a complete tag on a page: aspects equal to the page's are left out.
 pub fn relative(page: &Page, tag: &str) -> String {
-    let mut dt = Dt::parse(tag);
-    if dt.function == page.function {
-        dt.function.clear();
+    Dt::of_page(page).relative(tag)
+}
+
+/// Structure management of the project.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Structures {
+    /// Aspects the pages use; empty = function and location.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub aspects: Vec<Aspect>,
+    /// Defined identifiers with their descriptions.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub entries: Vec<Entry>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub work_areas: Vec<WorkArea>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Entry {
+    pub aspect: Aspect,
+    pub id: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub description: String,
+}
+
+impl Structures {
+    pub fn is_default(&self) -> bool {
+        *self == Structures::default()
     }
-    if dt.location == page.location {
-        dt.location.clear();
+
+    /// Aspects shown for pages, in tag order.
+    pub fn page_aspects(&self) -> Vec<Aspect> {
+        if self.aspects.is_empty() {
+            vec![Aspect::Function, Aspect::Location]
+        } else {
+            Aspect::ALL.into_iter().filter(|a| self.aspects.contains(a)).collect()
+        }
     }
-    dt.tag()
+
+    pub fn entry(&self, aspect: Aspect, id: &str) -> Option<&Entry> {
+        self.entries.iter().find(|e| e.aspect == aspect && e.id == id)
+    }
+
+    /// Defines an identifier or changes its description.
+    pub fn define(&mut self, aspect: Aspect, id: &str, description: &str) {
+        let id = clean_aspect(id);
+        match self.entries.iter_mut().find(|e| e.aspect == aspect && e.id == id) {
+            Some(e) => e.description = description.to_string(),
+            None => self.entries.push(Entry { aspect, id, description: description.to_string() }),
+        }
+        self.sort();
+    }
+
+    pub fn remove(&mut self, aspect: Aspect, id: &str) -> bool {
+        let n = self.entries.len();
+        self.entries.retain(|e| !(e.aspect == aspect && e.id == id));
+        self.entries.len() != n
+    }
+
+    fn sort(&mut self) {
+        self.entries.sort_by(|a, b| a.aspect.cmp(&b.aspect).then_with(|| natural_cmp(&a.id, &b.id)));
+    }
+
+    pub fn work_area(&self, name: &str) -> Option<&WorkArea> {
+        self.work_areas.iter().find(|w| w.name == name)
+    }
+
+    /// Adds or replaces a work area.
+    pub fn set_work_area(&mut self, area: WorkArea) {
+        match self.work_areas.iter_mut().find(|w| w.name == area.name) {
+            Some(w) => *w = area,
+            None => self.work_areas.push(area),
+        }
+    }
+
+    /// File of a user template: aspects, identifiers and work areas.
+    pub fn to_json(&self) -> String {
+        serde_json::to_string_pretty(self).unwrap_or_default()
+    }
+
+    pub fn from_json(text: &str) -> Result<Structures, String> {
+        serde_json::from_str(text).map_err(|e| tr_fmt!("Not a structure template: {}", e))
+    }
+
+    /// Takes the aspects of a template file (if it has any), adds its identifiers
+    /// (descriptions of defined ones stay) and work areas. Returns the number of
+    /// identifiers added.
+    pub fn merge(&mut self, other: &Structures) -> usize {
+        if !other.aspects.is_empty() {
+            self.aspects = other.aspects.clone();
+        }
+        let mut n = 0;
+        for e in &other.entries {
+            if self.entry(e.aspect, &e.id).is_none() {
+                self.define(e.aspect, &e.id, &e.description);
+                n += 1;
+            }
+        }
+        for w in &other.work_areas {
+            if self.work_area(&w.name).is_none() {
+                self.work_areas.push(w.clone());
+            }
+        }
+        n
+    }
+}
+
+/// A defined part of the project: only the pages and devices whose structure
+/// matches the filter are shown.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct WorkArea {
+    pub name: String,
+    /// Pattern per aspect: empty = any, `*` = any characters; without `*` the
+    /// identifier and its sub-levels (`A1.2`, `U1-A3`) match.
+    pub filter: Dt,
+}
+
+impl WorkArea {
+    pub fn contains(&self, dt: &Dt) -> bool {
+        Aspect::ALL.into_iter().all(|a| matches(self.filter.get(a), dt.get(a)))
+    }
+
+    /// Schematic pages in the work area; other pages (cover, reports, mounting
+    /// layouts) are always shown.
+    pub fn shows_page(&self, page: &Page) -> bool {
+        page.kind != PageKind::Schematic || self.contains(&Dt::of_page(page))
+    }
+
+    pub fn shows_device(&self, tag: &str) -> bool {
+        self.contains(&Dt::parse(tag))
+    }
+}
+
+/// Identifier pattern (see [`WorkArea::filter`]).
+pub fn matches(pattern: &str, id: &str) -> bool {
+    let pattern = clean_aspect(pattern);
+    if pattern.is_empty() {
+        return true;
+    }
+    if !pattern.contains('*') {
+        return id == pattern || id.strip_prefix(pattern.as_str()).is_some_and(|rest| rest.starts_with(['.', '-']));
+    }
+    let parts: Vec<&str> = pattern.split('*').collect();
+    let (first, last) = (parts[0], parts[parts.len() - 1]);
+    let Some(mut rest) = id.strip_prefix(first) else { return false };
+    for part in &parts[1..parts.len() - 1] {
+        match rest.find(part) {
+            Some(i) => rest = &rest[i + part.len()..],
+            None => return false,
+        }
+    }
+    rest.ends_with(last)
+}
+
+/// Built-in structure template: the aspects the pages use and identifiers to start with.
+pub struct Template {
+    pub name: &'static str,
+    pub aspects: &'static [Aspect],
+    /// Aspect, identifier, description (translated when applied).
+    pub entries: &'static [(Aspect, &'static str, &'static str)],
+}
+
+use Aspect::{Function as F, Installation as I, Location as L, Product as P};
+
+pub static TEMPLATES: &[Template] = &[
+    Template { name: tr_const!("Function and location"), aspects: &[F, L], entries: &[] },
+    Template { name: tr_const!("Installation site and location"), aspects: &[I, L], entries: &[] },
+    Template { name: tr_const!("Function, installation site and location"), aspects: &[F, I, L], entries: &[] },
+    Template { name: tr_const!("All aspects (with product)"), aspects: &[F, I, L, P], entries: &[] },
+    Template {
+        name: tr_const!("Machine (example identifiers)"),
+        aspects: &[F, L],
+        entries: &[
+            (F, "POWER", tr_const!("Power supply")),
+            (F, "CTRL", tr_const!("Control")),
+            (F, "DRIVE", tr_const!("Drives")),
+            (F, "SAFETY", tr_const!("Safety")),
+            (L, "CAB1", tr_const!("Control cabinet")),
+            (L, "DESK", tr_const!("Operator desk")),
+            (L, "FIELD", tr_const!("Field devices")),
+        ],
+    },
+    Template {
+        name: tr_const!("Process plant (example identifiers)"),
+        aspects: &[F, I, L],
+        entries: &[
+            (F, "SUPPLY", tr_const!("Supply")),
+            (F, "PUMP", tr_const!("Pumps")),
+            (F, "TANK", tr_const!("Tanks")),
+            (I, "HALL1", tr_const!("Hall 1")),
+            (I, "OUTDOOR", tr_const!("Outdoor area")),
+            (L, "CAB1", tr_const!("Control cabinet")),
+            (L, "FIELD", tr_const!("Field devices")),
+        ],
+    },
+];
+
+pub fn template(name: &str) -> Option<&'static Template> {
+    TEMPLATES.iter().find(|t| t.name == name || tr(t.name) == name)
+}
+
+/// Sets the aspects of a template and adds its identifiers. Returns the number of
+/// identifiers added.
+pub fn apply_template(s: &mut Structures, t: &Template) -> usize {
+    let other = Structures {
+        aspects: t.aspects.to_vec(),
+        entries: t.entries.iter().map(|(aspect, id, d)| Entry { aspect: *aspect, id: id.to_string(), description: tr(d).to_string() }).collect(),
+        work_areas: Vec::new(),
+    };
+    s.merge(&other)
+}
+
+/// Every device tag of the project (symbols, cables, harnesses, panel layout, device data).
+pub fn device_tags(prj: &Project) -> BTreeSet<String> {
+    let mut tags: BTreeSet<String> = prj.all_tags().into_iter().collect();
+    tags.extend(prj.cables.iter().map(|c| c.tag.clone()));
+    tags.extend(prj.harnesses.iter().map(|h| h.tag.clone()));
+    tags.extend(prj.layout.enclosures.iter().flat_map(|e| e.items.iter()).map(|i| i.tag.clone()));
+    tags.extend(prj.devices.keys().cloned());
+    tags.remove("");
+    tags
+}
+
+/// An identifier of the structure management: defined, used or both.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Usage {
+    pub aspect: Aspect,
+    pub id: String,
+    pub description: String,
+    pub defined: bool,
+    /// Pages with this identifier.
+    pub pages: usize,
+    /// Devices with this identifier.
+    pub devices: usize,
+}
+
+/// Defined and used identifiers, sorted by aspect and identifier.
+pub fn overview(prj: &Project) -> Vec<Usage> {
+    let mut rows: Vec<Usage> = prj
+        .structures
+        .entries
+        .iter()
+        .map(|e| Usage { aspect: e.aspect, id: e.id.clone(), description: e.description.clone(), defined: true, pages: 0, devices: 0 })
+        .collect();
+    let mut row = |a: Aspect, id: &str| -> usize {
+        match rows.iter().position(|r| r.aspect == a && r.id == id) {
+            Some(i) => i,
+            None => {
+                rows.push(Usage { aspect: a, id: id.to_string(), description: String::new(), defined: false, pages: 0, devices: 0 });
+                rows.len() - 1
+            }
+        }
+    };
+    let mut counts = Vec::new();
+    for pg in &prj.pages {
+        let dt = Dt::of_page(pg);
+        for a in Aspect::ALL.into_iter().filter(|a| !dt.get(*a).is_empty()) {
+            counts.push((row(a, dt.get(a)), true));
+        }
+    }
+    for tag in device_tags(prj) {
+        let dt = Dt::parse(&tag);
+        for a in Aspect::ALL.into_iter().filter(|a| !dt.get(*a).is_empty()) {
+            counts.push((row(a, dt.get(a)), false));
+        }
+    }
+    for (i, page) in counts {
+        if page {
+            rows[i].pages += 1;
+        } else {
+            rows[i].devices += 1;
+        }
+    }
+    rows.sort_by(|a, b| a.aspect.cmp(&b.aspect).then_with(|| natural_cmp(&a.id, &b.id)));
+    rows
+}
+
+/// Defines every identifier in use that is not defined yet. Returns their number.
+pub fn define_used(prj: &mut Project) -> usize {
+    let new: Vec<Usage> = overview(prj).into_iter().filter(|u| !u.defined).collect();
+    for u in &new {
+        prj.structures.define(u.aspect, &u.id, "");
+    }
+    new.len()
+}
+
+/// Removes the definitions of identifiers no page or device uses. Returns their number.
+pub fn remove_unused(prj: &mut Project) -> usize {
+    let unused: Vec<Usage> = overview(prj).into_iter().filter(|u| u.defined && u.pages == 0 && u.devices == 0).collect();
+    for u in &unused {
+        prj.structures.remove(u.aspect, &u.id);
+    }
+    unused.len()
+}
+
+/// Renames an identifier in the whole project: pages, device tags (with all their
+/// data, see [`crate::ops::rename_device`]), cables, harnesses, definition and work
+/// areas. Returns the number of renamed pages and devices; fails without changes
+/// when a renamed device tag exists already.
+pub fn rename(prj: &mut Project, aspect: Aspect, old: &str, new: &str) -> Result<usize, String> {
+    let (old, new) = (clean_aspect(old), clean_aspect(new));
+    if old.is_empty() || new.is_empty() {
+        return Err(tr("The identifier must not be empty").into());
+    }
+    if old == new {
+        return Ok(0);
+    }
+    let existing = device_tags(prj);
+    let mut renames = Vec::new();
+    for tag in &existing {
+        let mut dt = Dt::parse(tag);
+        if dt.get(aspect) == old {
+            *dt.get_mut(aspect) = new.clone();
+            let to = dt.tag();
+            if existing.contains(&to) {
+                return Err(tr_fmt!("{} exists already", to));
+            }
+            renames.push((tag.clone(), to));
+        }
+    }
+    let mut n = renames.len();
+    for pg in &mut prj.pages {
+        let mut dt = Dt::of_page(pg);
+        if dt.get(aspect) == old {
+            *dt.get_mut(aspect) = new.clone();
+            dt.apply_to(pg);
+            n += 1;
+        }
+    }
+    for (from, to) in &renames {
+        crate::ops::rename_device(prj, from, to);
+        if let Some(c) = prj.cables.iter_mut().find(|c| c.tag == *from) {
+            c.tag = to.clone();
+            crate::ops::rename_cable(prj, from, to);
+        }
+        for h in prj.harnesses.iter_mut().filter(|h| h.tag == *from) {
+            h.tag = to.clone();
+        }
+    }
+    let s = &mut prj.structures;
+    if let Some(e) = s.entries.iter().position(|e| e.aspect == aspect && e.id == old) {
+        let e = s.entries.remove(e);
+        if s.entry(aspect, &new).is_none() {
+            s.define(aspect, &new, &e.description);
+        }
+    }
+    for w in &mut s.work_areas {
+        if w.filter.get(aspect) == old {
+            *w.filter.get_mut(aspect) = new.clone();
+        }
+    }
+    Ok(n)
+}
+
+/// Identifiers in use that the structure management does not define (only checked
+/// once it defines any).
+pub fn problems(prj: &Project) -> Vec<String> {
+    if prj.structures.entries.is_empty() {
+        return Vec::new();
+    }
+    overview(prj)
+        .into_iter()
+        .filter(|u| !u.defined)
+        .map(|u| tr_fmt!("Structure identifier {} is not defined in the structure management", u.aspect.format(&u.id)))
+        .collect()
 }
 
 #[cfg(test)]

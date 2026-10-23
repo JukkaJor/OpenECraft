@@ -7,7 +7,7 @@ use crate::editor::{EguiDraw, Palette};
 use crate::forms::{self, Form, FormItem, FormLibrary, ReportForm};
 use crate::geom::{p, P};
 use crate::io::Purpose;
-use crate::model::{ReportKind, FRAME_X0, TITLE_Y0};
+use crate::model::ReportKind;
 use crate::render::Ink;
 use crate::symbols::Anchor;
 use egui::{vec2, Color32, PointerButton, RichText, Sense, Stroke};
@@ -17,6 +17,8 @@ enum Tab {
     #[default]
     TitleBlocks,
     Reports,
+    Frames,
+    PageTemplates,
 }
 
 #[derive(Default)]
@@ -57,18 +59,26 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
-        egui::Window::new(tr("Forms – title blocks and reports")).open(&mut open).default_size([1150.0, 560.0]).show(ctx, |ui| {
+        let mut template_action = None;
+        egui::Window::new(tr("Forms – title blocks, frames and templates")).open(&mut open).default_size([1150.0, 560.0]).show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.forms_ui.tab, Tab::TitleBlocks, RichText::new(tr("Title blocks")).strong());
                 ui.selectable_value(&mut self.forms_ui.tab, Tab::Reports, RichText::new(tr("Report forms")).strong());
+                ui.selectable_value(&mut self.forms_ui.tab, Tab::Frames, RichText::new(tr("Plot frames")).strong());
+                ui.selectable_value(&mut self.forms_ui.tab, Tab::PageTemplates, RichText::new(tr("Page templates")).strong());
             });
             ui.separator();
             match self.forms_ui.tab {
                 Tab::TitleBlocks => action = self.title_block_tab(ui),
                 Tab::Reports => action = self.report_form_tab(ui),
+                Tab::Frames => self.frame_tab(ui),
+                Tab::PageTemplates => template_action = self.template_tab(ui),
             }
         });
         self.forms_ui.open = open;
+        if let Some(a) = template_action {
+            self.template_action(ctx, a);
+        }
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::Forms),
             Some(Action::Export) => {
@@ -471,17 +481,17 @@ fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &crate::model::Project, pag
     let (resp, painter) = ui.allocate_painter(vec2(width, forms::AREA_H * zoom + 8.0), Sense::click_and_drag());
     let pal = Palette::new(ui.visuals().dark_mode);
     painter.rect_filled(resp.rect, 2.0, pal.paper);
-    let origin = resp.rect.min + vec2(0.0, 4.0) - vec2(FRAME_X0, TITLE_Y0) * zoom;
+    let origin = resp.rect.min + vec2(0.0, 4.0);
     if edit {
         pick(fu, &resp, ui, form, origin, zoom);
     }
     let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None };
-    forms::draw(&mut d, form, prj, page);
+    forms::draw_at(&mut d, form, prj, page, p(0.0, 0.0), 1.0);
     if let Some(item) = fu.item.and_then(|i| form.items.get(i)) {
         let mut s = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: Some(Ink::Selected), mirror: None };
-        forms::draw(&mut s, &Form { name: String::new(), items: vec![item.clone()] }, prj, page);
+        forms::draw_at(&mut s, &Form { name: String::new(), items: vec![item.clone()] }, prj, page, p(0.0, 0.0), 1.0);
         if let FormItem::Text { pos, .. } = item {
-            let c = origin + vec2(FRAME_X0 + pos.x, TITLE_Y0 + pos.y) * zoom;
+            let c = origin + vec2(pos.x, pos.y) * zoom;
             painter.circle_stroke(c, 3.0, Stroke::new(1.0, pal.selected));
         }
     }
@@ -567,7 +577,7 @@ fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
 
 /// Picking and dragging in the editable preview.
 fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, form: &mut Form, origin: egui::Pos2, zoom: f32) {
-    let to_mm = |s: egui::Pos2| p((s.x - origin.x) / zoom - FRAME_X0, (s.y - origin.y) / zoom - TITLE_Y0);
+    let to_mm = |s: egui::Pos2| p((s.x - origin.x) / zoom, (s.y - origin.y) / zoom);
     let tol = 6.0 / zoom;
     let nearest = |form: &Form, q: P| {
         form.items

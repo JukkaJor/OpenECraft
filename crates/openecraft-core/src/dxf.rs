@@ -4,7 +4,7 @@
 
 use crate::geom::P;
 use crate::index::Index;
-use crate::model::{Project, PAGE_H, PAGE_W};
+use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
 use crate::reports::Analysis;
 use crate::symbols::Anchor;
@@ -50,11 +50,13 @@ pub struct DxfDraw {
     out: String,
     /// Horizontal offset of the current page.
     dx: f32,
+    /// Paper height of the current page (DXF y runs upwards).
+    h: f32,
 }
 
 impl DxfDraw {
     fn pt(&mut self, code: u16, q: P) {
-        let _ = write!(self.out, "{}\n{:.3}\n{}\n{:.3}\n{}\n0.0\n", code, q.x + self.dx, code + 10, PAGE_H - q.y, code + 20);
+        let _ = write!(self.out, "{}\n{:.3}\n{}\n{:.3}\n{}\n0.0\n", code, q.x + self.dx, code + 10, self.h - q.y, code + 20);
     }
 
     fn entity(&mut self, kind: &str, ink: Ink, dashed: bool) {
@@ -138,13 +140,15 @@ pub fn header(out: &mut String, layers: &[(String, u8)]) {
 pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
     let idx = Index::build(prj);
     let an = Analysis::build(prj);
-    let mut d = DxfDraw { out: String::new(), dx: 0.0 };
+    let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0 };
     let layers: Vec<(String, u8)> = LAYERS.iter().map(|(n, c)| (n.to_string(), *c)).collect();
     header(&mut d.out, &layers);
     d.out.push_str("0\nSECTION\n2\nENTITIES\n");
-    for (n, &i) in pages.iter().enumerate() {
-        d.dx = n as f32 * (PAGE_W + 20.0);
+    for &i in pages {
+        let (w, h) = crate::frame::of_page(prj, i).size();
+        d.h = h;
         draw_page(&mut d, prj, &idx, &an, i, &Opts::default());
+        d.dx += w + 20.0;
     }
     d.out.push_str("0\nENDSEC\n0\nEOF\n");
     d.out
