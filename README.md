@@ -320,6 +320,37 @@ cargo run --release -p openecraft-server -- --bind 0.0.0.0:8090 --data parts-db.
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
   from outside your network.
 
+### Project server (several users)
+
+`openecraft-project-server` stores projects for a team. Several users open the same
+project at the same time and work on different pages; a page is edited by one user at a
+time.
+
+```bash
+cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data projects --token <secret>
+```
+
+- Each project is stored as `<name>.oec` (a normal project file) next to
+  `<name>.state.json` (revision, id counter) in the data directory.
+- With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
+  `Authorization: Bearer <token>`; without it everyone who reaches the server can
+  change its projects.
+- Locks: every page and the project data (page list and order, devices, parts, panel
+  layout, settings) are locked separately. Editing something you have not locked
+  requests the lock automatically; if another user holds it, the change is taken back.
+  Pages locked by others are read-only and marked with 🔒 and the user's name in the
+  page list. Locks end when they are released, when the project is closed, or 90 s after
+  the editor stopped sending its status (every 15 s).
+- Saving merges only what you have locked into the server's project; everything else
+  comes from the server. Changes of other users are loaded automatically.
+- Each session gets its own range of object ids, so users never create the same id.
+- In the editor: *File › Project server…* – enter the server URL, your user name and the
+  token, list the projects and open one, or upload the current project. While a shared
+  project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
+  context menu lock and release pages.
+- REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT /projects/{name}`,
+  `POST /projects/{name}/open|status|lock|release|close` (see `openecraft_core::collab`).
+
 ### Parts manager
 
 `openecraft-parts-manager` is a standalone application that maintains the parts of a
@@ -430,9 +461,10 @@ cargo test --workspace
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
-| `crates/openecraft-client` | Requests to the parts server and decoding of its answers, shared by the applications and the command line |
+| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
+| `project-server/` | `openecraft-project-server`: shared projects with page locks for several users |
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
 | `crates/openecraft-core/src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
@@ -479,6 +511,7 @@ cargo test --workspace
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
+| `src/remote.rs`, `src/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
 | `src/app.rs` | Application UI (menus, panels, dialogs) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |
 | `src/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |

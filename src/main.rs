@@ -14,6 +14,7 @@ mod glyphs;
 mod io;
 mod panel_ui;
 mod parts_ui;
+mod remote;
 mod wiring_ui;
 
 use openecraft_core::{

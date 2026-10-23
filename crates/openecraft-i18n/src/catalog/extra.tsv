@@ -1347,3 +1347,51 @@ starts with	beginnt mit	commence par	empieza por
 ⟳ Generate all	⟳ Alle erzeugen	⟳ Tout générer	⟳ Generar todo
 ⟳ Generate	⟳ Erzeugen	⟳ Générer	⟳ Generar
 ⟳ Update report blocks	⟳ Auswertungsblöcke aktualisieren	⟳ Mettre à jour les blocs de rapports	⟳ Actualizar bloques de informes
+Opening {}…	{} wird geöffnet…	Ouverture de {}…	Abriendo {}…
+Uploading {}…	{} wird hochgeladen…	Envoi de {}…	Subiendo {}…
+Saving to the project server…	Speichern auf dem Projektserver…	Enregistrement sur le serveur de projets…	Guardando en el servidor de proyectos…
+Locking…	Sperren…	Verrouillage…	Bloqueando…
+Releasing…	Freigeben…	Libération…	Liberando…
+Closed {} on the project server	{} auf dem Projektserver geschlossen	{} fermé sur le serveur de projets	{} cerrado en el servidor de proyectos
+Loading changes…	Änderungen werden geladen…	Chargement des modifications…	Cargando cambios…
+{} projects on the server	{} Projekte auf dem Server	{} projets sur le serveur	{} proyectos en el servidor
+Opened {} from the project server	{} vom Projektserver geöffnet	{} ouvert depuis le serveur de projets	{} abierto desde el servidor de proyectos
+Saved to the project server (revision {})	Auf dem Projektserver gespeichert (Revision {})	Enregistré sur le serveur de projets (révision {})	Guardado en el servidor de proyectos (revisión {})
+Project server: {}	Projektserver: {}	Serveur de projets : {}	Servidor de proyectos: {}
+the project data (page list, devices, settings)	die Projektdaten (Seitenliste, Geräte, Einstellungen)	les données du projet (liste des pages, appareils, paramètres)	los datos del proyecto (lista de páginas, dispositivos, ajustes)
+page {}	Seite {}	page {}	página {}
+Changed by another user in the meantime, your change was replaced: {}	Inzwischen von einem anderen Benutzer geändert, Ihre Änderung wurde ersetzt: {}	Modifié entre-temps par un autre utilisateur, votre modification a été remplacée : {}	Modificado mientras tanto por otro usuario, su cambio fue reemplazado: {}
+{} (locked by {})	{} (gesperrt von {})	{} (verrouillé par {})	{} (bloqueado por {})
+Not changed: {}	Nicht geändert: {}	Non modifié : {}	No modificado: {}
+Save and release page	Speichern und Seite freigeben	Enregistrer et libérer la page	Guardar y liberar página
+Lock page	Seite sperren	Verrouiller la page	Bloquear página
+Project server	Projektserver	Serveur de projets	Servidor de proyectos
+User name	Benutzername	Nom d'utilisateur	Nombre de usuario
+⟳ List projects	⟳ Projekte auflisten	⟳ Lister les projets	⟳ Listar proyectos
+Enter a user name: other users see it on your locks.	Geben Sie einen Benutzernamen ein: andere Benutzer sehen ihn an Ihren Sperren.	Saisissez un nom d'utilisateur : les autres utilisateurs le voient sur vos verrous.	Introduzca un nombre de usuario: los demás usuarios lo ven en sus bloqueos.
+Users	Benutzer	Utilisateurs	Usuarios
+Opening a project replaces the current one, its unsaved changes are lost.	Das Öffnen eines Projekts ersetzt das aktuelle, dessen ungespeicherte Änderungen gehen verloren.	Ouvrir un projet remplace le projet actuel, ses modifications non enregistrées sont perdues.	Abrir un proyecto reemplaza el actual, sus cambios no guardados se pierden.
+Upload the current project as a new shared project:	Aktuelles Projekt als neues gemeinsames Projekt hochladen:	Envoyer le projet actuel comme nouveau projet partagé :	Subir el proyecto actual como nuevo proyecto compartido:
+Name on the server	Name auf dem Server	Nom sur le serveur	Nombre en el servidor
+⬆ Upload	⬆ Hochladen	⬆ Envoyer	⬆ Subir
+Letters, digits, space, - _ . (up to 64 characters)	Buchstaben, Ziffern, Leerzeichen, - _ . (bis zu 64 Zeichen)	Lettres, chiffres, espace, - _ . (64 caractères au plus)	Letras, dígitos, espacio, - _ . (hasta 64 caracteres)
+Shared project {} – revision {}, user {}	Gemeinsames Projekt {} – Revision {}, Benutzer {}	Projet partagé {} – révision {}, utilisateur {}	Proyecto compartido {} – revisión {}, usuario {}
+Save and release all locks	Speichern und alle Sperren freigeben	Enregistrer et libérer tous les verrous	Guardar y liberar todos los bloqueos
+Lock current page	Aktuelle Seite sperren	Verrouiller la page actuelle	Bloquear la página actual
+Lock project data	Projektdaten sperren	Verrouiller les données du projet	Bloquear los datos del proyecto
+Page list, devices, parts, panel layout and settings	Seitenliste, Geräte, Artikel, Schaltschrankaufbau und Einstellungen	Liste des pages, appareils, articles, implantation d'armoire et paramètres	Lista de páginas, dispositivos, artículos, montaje del armario y ajustes
+My locks	Meine Sperren	Mes verrous	Mis bloqueos
+None – editing a page or the project data locks it.	Keine – das Bearbeiten einer Seite oder der Projektdaten sperrt sie.	Aucun – modifier une page ou les données du projet les verrouille.	Ninguno – editar una página o los datos del proyecto los bloquea.
+Save and release	Speichern und freigeben	Enregistrer et libérer	Guardar y liberar
+Release without saving	Ohne Speichern freigeben	Libérer sans enregistrer	Liberar sin guardar
+Your unsaved changes of it are taken back	Ihre ungespeicherten Änderungen daran werden zurückgenommen	Vos modifications non enregistrées sont annulées	Sus cambios no guardados se deshacen
+Locked by other users	Von anderen Benutzern gesperrt	Verrouillé par d'autres utilisateurs	Bloqueado por otros usuarios
+None	Keine	Aucun	Ninguno
+Close shared project	Gemeinsames Projekt schließen	Fermer le projet partagé	Cerrar el proyecto compartido
+Releases all locks; the project stays open as a local copy	Gibt alle Sperren frei; das Projekt bleibt als lokale Kopie geöffnet	Libère tous les verrous ; le projet reste ouvert en copie locale	Libera todos los bloqueos; el proyecto sigue abierto como copia local
+Save to project server   Ctrl+S	Auf Projektserver speichern   Strg+S	Enregistrer sur le serveur de projets   Ctrl+S	Guardar en el servidor de proyectos   Ctrl+S
+Download project	Projekt herunterladen	Télécharger le projet	Descargar proyecto
+Project server…	Projektserver…	Serveur de projets…	Servidor de proyectos…
+Open and save shared projects, lock pages	Gemeinsame Projekte öffnen und speichern, Seiten sperren	Ouvrir et enregistrer des projets partagés, verrouiller des pages	Abrir y guardar proyectos compartidos, bloquear páginas
+🔒 Locked by {} – read only	🔒 Gesperrt von {} – schreibgeschützt	🔒 Verrouillé par {} – lecture seule	🔒 Bloqueado por {} – solo lectura
+{} (project server, revision {})	{} (Projektserver, Revision {})	{} (serveur de projets, révision {})	{} (servidor de proyectos, revisión {})

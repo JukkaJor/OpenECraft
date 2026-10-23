@@ -68,7 +68,7 @@ impl Endpoint {
 
 /// Sets the content type. `Headers::insert` would add a second one next to the
 /// `text/plain` ehttp sets for requests with a body, and the server uses the first.
-fn with_content_type(mut req: ehttp::Request, content_type: &str) -> ehttp::Request {
+pub(crate) fn with_content_type(mut req: ehttp::Request, content_type: &str) -> ehttp::Request {
     req.headers.headers.retain(|(k, _)| !k.eq_ignore_ascii_case("content-type"));
     req.headers.insert("Content-Type", content_type);
     req

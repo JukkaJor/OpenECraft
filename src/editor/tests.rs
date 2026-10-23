@@ -68,3 +68,22 @@ fn released_pages_are_not_edited() {
     frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
     assert_eq!(prj.pages[page].symbols.len(), before + 1);
 }
+
+#[test]
+fn pages_locked_by_other_users_are_not_edited() {
+    let mut prj = demo_project();
+    let page = 1;
+    let ctx = egui::Context::default();
+    let mut ed = Editor { read_only: true, ..Editor::default() };
+    ed.set_tool(Tool::Place("coil"));
+    let before = prj.pages[page].symbols.len();
+    let at = pos2(600.0, 400.0);
+    frame(&mut ed, &ctx, &mut prj, page, vec![Event::PointerMoved(at)]);
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, true)]);
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
+    assert_eq!(prj.pages[page].symbols.len(), before);
+    ed.read_only = false;
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, true)]);
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
+    assert_eq!(prj.pages[page].symbols.len(), before + 1);
+}

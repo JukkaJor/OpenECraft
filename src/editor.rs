@@ -220,6 +220,8 @@ pub struct Editor {
     /// Items placed with `Tool::Insert`.
     pub insert: Option<Clip>,
     pub show_revision_marks: bool,
+    /// The page is locked by another user of a shared project.
+    pub read_only: bool,
     wire_start: Option<P>,
     wire_hfirst: bool,
     shape_start: Option<P>,
@@ -247,6 +249,7 @@ impl Default for Editor {
             center_on: None,
             insert: None,
             show_revision_marks: true,
+            read_only: false,
             wire_start: None,
             wire_hfirst: true,
             shape_start: None,
@@ -420,7 +423,7 @@ impl Editor {
         }
 
         let locked = prj.pages[page_i].locked;
-        let editable = prj.pages[page_i].is_editable();
+        let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
         let snapped = world.map(|w| w.snap(GRID));
@@ -574,7 +577,7 @@ impl Editor {
     }
 
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>) {
-        let editable = prj.pages[page_i].is_editable();
+        let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let (esc, r, m, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (

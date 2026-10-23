@@ -32,6 +32,17 @@ impl History {
         }
     }
 
+    /// Applies `f` to the project and all undo / redo steps (changes of other users
+    /// of a shared project, which undo must not take back).
+    pub fn rebase(&mut self, prj: &mut Project, f: impl Fn(&Project) -> Project) {
+        for p in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+            *p = f(p);
+        }
+        self.committed = f(&self.committed);
+        *prj = f(prj);
+        self.rev += 1;
+    }
+
     pub fn can_undo(&self) -> bool {
         !self.undo.is_empty()
     }
