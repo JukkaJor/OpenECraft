@@ -9,6 +9,7 @@ use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 mod diagrams;
+mod fluid_reports;
 
 #[derive(Clone, Debug, Default)]
 pub struct Table {
@@ -122,6 +123,11 @@ impl Analysis {
                 ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
                 ReportKind::HoseList => hose_list(prj, &open),
                 ReportKind::PctLoops => pct_loops(prj, &idx),
+                ReportKind::FluidNetlist => fluid_reports::netlist(prj, &open),
+                ReportKind::HoseConfiguration => fluid_reports::configuration(prj, &open),
+                ReportKind::TubingList => fluid_reports::tubing(prj, &open),
+                ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, &idx),
+                ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, &idx),
             };
             reports.insert(k, t);
         }
@@ -134,6 +140,8 @@ impl Analysis {
         issues.extend(crate::plc_hw::problems(prj));
         issues.extend(check_duct_fill(prj, &fill));
         issues.extend(check_climate(prj));
+        issues.extend(crate::conndef::problems(prj, &open));
+        issues.extend(crate::cabledef::problems(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
@@ -168,10 +176,11 @@ fn hose_list(prj: &Project, open: &Netlist) -> Table {
     ]);
     let mut total = 0.0;
     for h in crate::fluid::hoses(prj, open) {
-        total += h.length;
+        let length = h.effective_length();
+        total += length;
         let s = &prj.pages[h.a.page].symbols[h.a.sym];
         t.push(
-            vec![h.number, h.from, h.to, h.medium.title().into(), h.size, h.color, crate::fluid::length_text(h.length), loc_str(prj, h.a.page, s.pos)],
+            vec![h.number, h.from, h.to, h.medium.title().into(), h.size, h.color, crate::fluid::length_text(length), loc_str(prj, h.a.page, s.pos)],
             Some((h.a.page, s.id)),
         );
     }
@@ -204,9 +213,10 @@ fn pct_loops(prj: &Project, idx: &Index) -> Table {
     t
 }
 
-/// Hoses, P&ID instruments and PCT loops of the pre-planning.
+/// Hoses, fluid device groups, electro-fluid links, P&ID instruments and PCT loops of
+/// the pre-planning.
 fn check_fluid_and_process(prj: &Project, idx: &Index, open: &Netlist) -> Vec<Issue> {
-    let fluid = crate::fluid::problems(prj, open).into_iter().map(|(message, error, target)| Issue { severity: if error { Severity::Error } else { Severity::Info }, message, target });
+    let fluid = crate::fluid::problems(prj, open).into_iter().chain(crate::electrofluid::problems(prj, idx)).map(|(severity, message, target)| Issue { severity, message, target });
     let process = crate::process::problems(prj, idx).into_iter().map(|(message, warning, target)| Issue { severity: if warning { Severity::Warning } else { Severity::Info }, message, target });
     fluid.chain(process).collect()
 }
@@ -1290,7 +1300,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                     let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
                     issue(
                         Severity::Warning,
-                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, kind.title(), avail),
+                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, tr(kind.title()), avail),
                         l.and_then(t),
                     );
                 }
@@ -1326,6 +1336,9 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     unconnected.sort();
     for (pi, sid, pin) in unconnected {
         if let Some((si, s)) = prj.pages[pi].symbols.iter().enumerate().find(|(_, s)| s.id == sid) {
+            if crate::fluid::vents(prj, PinRef { page: pi, sym: si, pin }) {
+                continue; // reported by the fluid check
+            }
             let d = pin_designation(prj, PinRef { page: pi, sym: si, pin });
             issue(
                 Severity::Warning,

@@ -24,6 +24,7 @@ mod forms_ui;
 mod harness_ui;
 mod languages_ui;
 mod config_ui;
+mod drawing_ui;
 mod plc_ui;
 mod plugs_ui;
 mod tables_ui;
@@ -50,6 +51,9 @@ enum Workspace {
 enum LeftTab {
     Pages,
     Devices,
+    Connections,
+    Cables,
+    Layers,
     Check,
     Review,
 }
@@ -68,6 +72,9 @@ pub struct App {
     left_tab: LeftTab,
     lib_filter: String,
     device_filter: String,
+    connection_filter: String,
+    /// Rename device dialog: old tag and the tag entered.
+    rename_device: Option<(String, String)>,
     /// Active work area (name); empty = the whole project.
     work_area: String,
     structure_ui: structure_ui::StructureUi,
@@ -157,6 +164,8 @@ impl App {
             left_tab: LeftTab::Pages,
             lib_filter: String::new(),
             device_filter: String::new(),
+            connection_filter: String::new(),
+            rename_device: None,
             work_area: String::new(),
             structure_ui: Default::default(),
             pages_ui: Default::default(),
@@ -356,6 +365,10 @@ impl App {
             }
             if loaded.purpose == Purpose::OutputTarget {
                 self.output_reports(ctx, &loaded);
+                return;
+            }
+            if loaded.purpose == Purpose::Image {
+                self.load_image(ctx, &loaded);
                 return;
             }
             if loaded.purpose == Purpose::Document {
@@ -613,6 +626,8 @@ impl App {
                 }
                 ui.label(RichText::new(tr("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V")).weak());
                 ui.separator();
+                self.edit_menu_entries(ui);
+                ui.separator();
                 if ui.add_enabled(has_sel, egui::Button::new(tr("Save selection as macro…"))).clicked() {
                     self.save_as_macro(false);
                 }
@@ -634,6 +649,7 @@ impl App {
                 if ui.button(tr("Graphic rectangle")).clicked() {
                     self.editor.set_tool(Tool::Rect);
                 }
+                self.insert_menu_entries(ui);
                 ui.separator();
                 for cat in Category::ALL {
                     ui.menu_button(cat.title(), |ui| {
@@ -887,8 +903,7 @@ impl App {
             tbtn(ui, Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)"));
             tbtn(ui, Tool::Wire, tr("✏ Wire"), tr("Draw connections (W)"));
             tbtn(ui, Tool::Text, tr("T Text"), tr("Place text (T)"));
-            tbtn(ui, Tool::Line, tr("— Line"), tr("Graphic line"));
-            tbtn(ui, Tool::Rect, tr("☐ Rect"), tr("Graphic rectangle"));
+            self.drawing_toolbar(ui);
             self.review_tools(ui);
             if let Tool::Place(key) = tool {
                 if let Some(def) = symbols::get(key) {
@@ -932,9 +947,12 @@ impl App {
     }
 
     fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index) {
-        ui.horizontal(|ui| {
+        ui.horizontal_wrapped(|ui| {
             ui.selectable_value(&mut self.left_tab, LeftTab::Pages, tr("Pages"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Devices, tr("Devices"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Connections, tr("Connections"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Cables, tr("Cables"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Layers, tr("Layers"));
             let n_err = self.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
@@ -1042,10 +1060,13 @@ impl App {
                     groups.sort_by(|a, b| natural_cmp(&a.0, &b.0));
                     let structured = groups.iter().any(|g| !g.0.is_empty());
                     let prj = &self.prj;
+                    let placing = self.editor.place_tag.clone();
+                    let mut menu: Option<(String, drawing_ui::DeviceAction)> = None;
                     let mut device = |ui: &mut egui::Ui, tag: &String| {
                         let dev = &idx.devices[tag];
                         let title = if structured { Dt::parse(tag).name } else { tag.clone() };
-                        egui::CollapsingHeader::new(RichText::new(title).monospace().strong()).id_salt(tag).show(ui, |ui| {
+                        let title = if placing.as_deref() == Some(tag.as_str()) { format!("{title}  ✏") } else { title };
+                        let header = egui::CollapsingHeader::new(RichText::new(title).monospace().strong()).id_salt(tag).show(ui, |ui| {
                             for (kind, locs) in [(tr("Main"), &dev.mains), (tr("Aux"), &dev.auxs), ("", &dev.others)] {
                                 for loc in locs {
                                     let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
@@ -1057,6 +1078,11 @@ impl App {
                                         jump = Some((loc.page, loc.sym_id));
                                     }
                                 }
+                            }
+                        });
+                        header.header_response.context_menu(|ui| {
+                            if let Some(a) = drawing_ui::device_menu(ui, placing.as_deref() == Some(tag.as_str())) {
+                                menu = Some((tag.clone(), a));
                             }
                         });
                     };
@@ -1077,6 +1103,9 @@ impl App {
                     if idx.devices.is_empty() {
                         ui.weak(tr("No devices yet. Pick a symbol from the library on the right and click into the page."));
                     }
+                    if let Some((tag, a)) = menu {
+                        self.device_action(&tag, a);
+                    }
                     if let Some((pg, id)) = jump {
                         self.goto(pg, id);
                     }
@@ -1085,6 +1114,9 @@ impl App {
             LeftTab::Review => {
                 egui::ScrollArea::vertical().id_salt("review_tab").auto_shrink([false, false]).show(ui, |ui| self.review_tab(ui));
             }
+            LeftTab::Connections => self.connections_tab(ui),
+            LeftTab::Cables => self.cables_tab(ui),
+            LeftTab::Layers => self.layers_tab(ui),
             LeftTab::Check => {
                 let issues = self.analysis.issues.clone();
                 let count = |s| issues.iter().filter(|i| i.severity == s).count();
@@ -1401,16 +1433,8 @@ impl App {
             if let Some((a, b, tag)) = harness_change {
                 crate::harness::assign(&mut self.prj, &a, &b, &tag);
             }
-        } else if let Some(t) = self.prj.pages[pi].texts.iter_mut().find(|t| t.id == id) {
-            ui.label(tr("Text"));
-            ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
-            ui.add(egui::Slider::new(&mut t.size, 1.5..=20.0).text(tr("Height (mm)")));
-        } else if let Some(s) = self.prj.pages[pi].shapes.iter_mut().find(|s| s.id == id) {
-            ui.label(match s.kind {
-                ShapeKind::Line => tr("Graphic line"),
-                ShapeKind::Rect => tr("Graphic rectangle"),
-            });
-            ui.checkbox(&mut s.dashed, tr("Dashed"));
+        } else {
+            self.graphic_properties(ui, id);
         }
     }
 
@@ -1579,7 +1603,7 @@ impl App {
                 ui.horizontal_wrapped(|ui| {
                     ui.spacing_mut().item_spacing.x = 10.0;
                     for (kind, (placed, avail)) in &usage {
-                        let txt = format!("{} {placed}/{avail}", kind.title());
+                        let txt = format!("{} {placed}/{avail}", tr(kind.title()));
                         let color = if placed > avail && !matches!(kind, parts::FnKind::Terminal | parts::FnKind::PlugPin) {
                             Color32::from_rgb(220, 60, 60)
                         } else if placed < avail {
@@ -1643,6 +1667,10 @@ impl App {
                     ui.end_row();
                 }
             });
+        }
+        if self.prj.pages[pi].symbols.get(si).is_some_and(|x| x.id == s.id) && def.show_tag {
+            ui.separator();
+            self.placement_properties(ui, pi, si);
         }
     }
 
@@ -1804,6 +1832,7 @@ impl App {
         self.parts_ui.selector(ctx, &self.parts_db, &mut self.prj);
 
         self.cables_window(ctx);
+        self.rename_device_window(ctx);
         self.numbering_window(ctx);
         self.engineering_windows(ctx);
         self.compare_window(ctx);
@@ -1984,6 +2013,8 @@ impl App {
                 ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
                 ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
                 ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
+                ui.label(tr("15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols."));
+                ui.label(tr("16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties."));
                 ui.separator();
                 ui.label(RichText::new(tr("Shortcuts")).strong());
                 egui::Grid::new("keys").striped(true).show(ui, |ui| {
@@ -2262,6 +2293,9 @@ impl eframe::App for App {
                     self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.prj, page, &idx, &self.analysis);
                     let _ = out.open_properties;
+                    if let Some(msg) = out.message {
+                        self.notify(&ctx, msg);
+                    }
                     if let Some(input) = out.review {
                         self.review_input(input);
                     } else if let Some(at) = out.clicked {

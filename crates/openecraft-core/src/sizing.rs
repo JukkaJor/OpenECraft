@@ -80,7 +80,8 @@ fn device_parts<'a>(prj: &'a Project, tag: &str) -> Vec<&'a Part> {
     prj.devices.get(tag).map(|d| d.parts.iter().filter_map(|r| part(prj, &r.number)).collect()).unwrap_or_default()
 }
 
-const PROTECTIVE: [FnKind; 4] = [FnKind::Breaker1, FnKind::Breaker3, FnKind::MotorProtection, FnKind::Fuse];
+const PROTECTIVE: [FnKind; 7] =
+    [FnKind::Breaker1, FnKind::Breaker2, FnKind::Breaker3, FnKind::Breaker4, FnKind::MotorProtection, FnKind::Fuse, FnKind::Fuse3];
 
 fn is_protective(key: &str) -> bool {
     kind_of_symbol(key).is_some_and(|k| PROTECTIVE.contains(&k))
@@ -88,7 +89,10 @@ fn is_protective(key: &str) -> bool {
 
 /// The current passes through these from one designation to the next (1 → 2).
 fn passes_current(s: &SymbolInst) -> bool {
-    matches!(kind_of_symbol(&s.sym), Some(FnKind::MainContacts3 | FnKind::MainContact | FnKind::Overload))
+    matches!(
+        kind_of_symbol(&s.sym),
+        Some(FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact | FnKind::Overload | FnKind::Disconnector3 | FnKind::ResidualCurrent)
+    )
         || symbols::get(&s.sym).is_some_and(|d| d.func == Func::Aux(ContactKind::MainNo))
 }
 

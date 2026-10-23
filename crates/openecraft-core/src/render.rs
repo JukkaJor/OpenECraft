@@ -10,7 +10,7 @@ use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
 use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::reports::Analysis;
-use crate::{structure, wirenum};
+use crate::{graphics, structure, wirenum};
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
 use std::collections::{BTreeSet, HashSet};
 
@@ -51,6 +51,21 @@ pub trait Draw {
     }
     /// Marks the area `min`..`max` as a link to another page (PDF export).
     fn link(&mut self, _min: P, _max: P, _page: usize) {}
+    /// Draws a bitmap; back ends that cannot show it draw a frame with its name.
+    fn image(&mut self, img: &ImageItem) {
+        image_placeholder(self, img);
+    }
+    /// Layer of the following elements (DXF layers); None = by ink.
+    fn layer(&mut self, _name: Option<&str>) {}
+}
+
+/// Frame with crossed diagonals and the file name in place of a bitmap.
+pub fn image_placeholder<D: Draw + ?Sized>(d: &mut D, img: &ImageItem) {
+    let r = R::from_points(img.a, img.b);
+    d.rect(r.min, r.max, SYMBOL_W, Ink::Frame, false);
+    d.line(r.min, r.max, SYMBOL_W * 0.5, Ink::Frame, false);
+    d.line(p(r.min.x, r.max.y), p(r.max.x, r.min.y), SYMBOL_W * 0.5, Ink::Frame, false);
+    d.text(r.center(), &img.file.name, 2.0, Anchor::Center, VAnchor::Middle, Ink::FrameText);
 }
 
 /// Links the area of a text (estimated from its length) to a page.
@@ -79,6 +94,8 @@ pub struct Opts {
     /// Draw the review layer (comments, redline / greenline markup).
     pub review: bool,
     pub review_selected: Option<crate::review::Hit>,
+    /// Drawn on screen: layers that are not printed are shown.
+    pub screen: bool,
 }
 
 fn is_black(c: &[u8; 3]) -> bool {
@@ -101,10 +118,30 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         PageKind::Document => crate::document::draw(d, &frame, page.document.as_ref()),
         PageKind::Schematic | PageKind::Overview | PageKind::Graphic => {}
     }
-    for s in &page.shapes {
-        let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
-        draw_shape(d, s, ink);
+    let shown = |layer: &str| graphics::shown(prj, layer, !opts.screen);
+    let item_ink = |id: u64, own: Option<[u8; 3]>, layer: &str, normal: Ink| {
+        if opts.selected.contains(&id) {
+            Ink::Selected
+        } else {
+            own.or_else(|| graphics::color(prj, layer)).map(Ink::Color).unwrap_or(normal)
+        }
+    };
+    for img in page.images.iter().filter(|i| shown(&i.layer)) {
+        d.layer(Some(&img.layer));
+        d.image(img);
+        if opts.selected.contains(&img.id) {
+            d.rect(img.a, img.b, SYMBOL_W, Ink::Selected, false);
+        }
     }
+    for s in page.shapes.iter().filter(|s| shown(&s.layer)) {
+        d.layer(Some(&s.layer));
+        draw_shape(d, s, item_ink(s.id, s.color, &s.layer, Ink::Line));
+    }
+    for dm in page.dimensions.iter().filter(|x| shown(&x.layer)) {
+        d.layer(Some(&dm.layer));
+        draw_dimension(d, dm, item_ink(dm.id, None, &dm.layer, Ink::Line));
+    }
+    d.layer(None);
     let colors = if prj.wire_colors && page.kind == PageKind::Schematic {
         crate::potentials::wire_colors(prj, &an.netlist, &an.open)
     } else {
@@ -152,12 +189,22 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
             }
         }
     }
-    for t in &page.texts {
-        let ink = if opts.selected.contains(&t.id) { Ink::Selected } else { Ink::Text };
+    for cd in &page.cable_defs {
+        let ink = if opts.selected.contains(&cd.id) { Ink::Selected } else { Ink::Line };
+        draw_cable_def(d, prj, page, cd, ink);
+    }
+    for cd in &page.conn_defs {
+        let ink = if opts.selected.contains(&cd.id) { Ink::Selected } else { Ink::Line };
+        draw_conn_def(d, page, cd, ink);
+    }
+    for t in page.texts.iter().filter(|t| shown(&t.layer)) {
+        d.layer(Some(&t.layer));
+        let ink = item_ink(t.id, t.color, &t.layer, Ink::Text);
         for (i, line) in t.text.lines().enumerate() {
             d.text(t.pos + p(0.0, i as f32 * t.size * 1.4), line, t.size, Anchor::Left, VAnchor::Middle, ink);
         }
     }
+    d.layer(None);
     if !opts.hide_revision_marks {
         draw_revision_marks(d, prj, an, page_i);
     }
@@ -186,14 +233,99 @@ fn draw_revision_marks(d: &mut dyn Draw, prj: &Project, an: &Analysis, page_i: u
 }
 
 pub fn draw_shape(d: &mut dyn Draw, s: &Shape, ink: Ink) {
-    match s.kind {
-        ShapeKind::Line => d.line(s.a, s.b, SYMBOL_W, ink, s.dashed),
-        ShapeKind::Rect => {
-            let (a, b) = (s.a, s.b);
-            let c = [a, p(b.x, a.y), b, p(a.x, b.y), a];
-            for w in c.windows(2) {
-                d.line(w[0], w[1], SYMBOL_W, ink, s.dashed);
-            }
+    let width = if s.width > 0.0 { s.width } else { SYMBOL_W };
+    let (pts, closed) = graphics::outline(s);
+    if pts.len() < 2 {
+        return;
+    }
+    if s.fill && closed && ink != Ink::Ghost {
+        d.poly(&pts, true, 0.0, ink, true);
+    }
+    if s.dashed || matches!(s.kind, ShapeKind::Line | ShapeKind::Rect) {
+        let n = if closed { pts.len() } else { pts.len() - 1 };
+        for i in 0..n {
+            d.line(pts[i], pts[(i + 1) % pts.len()], width, ink, s.dashed);
+        }
+    } else {
+        d.poly(&pts, closed, width, ink, false);
+    }
+}
+
+/// Dimension line with arrows, extension lines and the measured value.
+pub fn draw_dimension(d: &mut dyn Draw, dm: &Dimension, ink: Ink) {
+    let g = graphics::dim_geom(dm);
+    let w = SYMBOL_W * 0.7;
+    d.line(g.line.0, g.line.1, w, ink, false);
+    for (a, b) in g.ext {
+        d.line(a, b, w, ink, false);
+    }
+    if g.line.0.dist(g.line.1) > graphics::ARROW * 1.5 {
+        for a in g.arrows {
+            d.poly(&a, true, 0.0, ink, true);
+        }
+    }
+    let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
+    let text = graphics::dim_text(dm);
+    match g.text_side {
+        Some(right) => {
+            let anchor = if right { Anchor::Left } else { Anchor::Right };
+            d.text(g.text_pos, &text, TAG_SIZE, anchor, VAnchor::Middle, text_ink);
+        }
+        None if g.text_below => d.text(g.text_pos + p(0.0, TAG_SIZE * 0.6), &text, TAG_SIZE, Anchor::Center, VAnchor::Middle, text_ink),
+        None => d.text(g.text_pos, &text, TAG_SIZE, Anchor::Center, VAnchor::Bottom, text_ink),
+    }
+}
+
+/// Diamond on the wire and the defined values beside it.
+fn draw_conn_def(d: &mut dyn Draw, page: &Page, cd: &ConnDef, ink: Ink) {
+    let q = cd.pos;
+    let r = 0.9;
+    d.poly(&[q + p(0.0, -r), q + p(r, 0.0), q + p(0.0, r), q + p(-r, 0.0)], true, SYMBOL_W, ink, ink != Ink::Line);
+    let text = crate::conndef::label(cd);
+    if text.is_empty() {
+        return;
+    }
+    let text_ink = if ink == Ink::Line { Ink::CrossRef } else { ink };
+    let vertical = crate::conndef::wire_at(page, q).is_some_and(|w| (w.b.x - w.a.x).abs() < (w.b.y - w.a.y).abs());
+    if vertical {
+        d.text(q + p(1.6, 0.0), &text, SMALL_SIZE, Anchor::Left, VAnchor::Middle, text_ink);
+    } else {
+        d.text(q + p(0.0, 3.4), &text, SMALL_SIZE, Anchor::Center, VAnchor::Bottom, text_ink);
+    }
+}
+
+/// Cable definition line, shield and the cable data at its end.
+fn draw_cable_def(d: &mut dyn Draw, prj: &Project, page: &Page, cd: &CableDef, ink: Ink) {
+    d.line(cd.a, cd.b, SYMBOL_W, ink, false);
+    let v = cd.b - cd.a;
+    let len = v.len();
+    if len < 0.1 {
+        return;
+    }
+    let u = v * (1.0 / len);
+    if cd.shield {
+        let c = cd.a + v * 0.5;
+        let n = p(-u.y, u.x);
+        let pts: Vec<P> = (0..48)
+            .map(|i| {
+                let t = (i as f32 / 48.0) * std::f32::consts::TAU;
+                c + u * (t.cos() * len * 0.42) + n * (t.sin() * 1.6)
+            })
+            .collect();
+        d.poly(&pts, true, SYMBOL_W * 0.7, ink, false);
+    }
+    let text_ink = if ink == Ink::Line { Ink::CrossRef } else { ink };
+    let lines = crate::cabledef::label(prj, page, cd);
+    let horizontal = u.x.abs() >= u.y.abs();
+    for (i, t) in lines.iter().enumerate() {
+        let size = if i == 0 { TAG_SIZE } else { SMALL_SIZE };
+        if horizontal {
+            let anchor = if u.x >= 0.0 { Anchor::Left } else { Anchor::Right };
+            let q = cd.b + u * 1.2 + p(0.0, i as f32 * 3.0 - (lines.len() as f32 - 1.0) * 1.5);
+            d.text(q, t, size, anchor, VAnchor::Middle, text_ink);
+        } else {
+            let q = cd.b + u * 2.0 + p(0.0, if u.y >= 0.0 { i as f32 * 3.0 + 1.0 } else { -((lines.len() - 1 - i) as f32) * 3.0 - 1.0 });
+            d.text(q, t, size, Anchor::Center, VAnchor::Middle, text_ink);
         }
     }
 }
@@ -355,6 +487,9 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
         }
         _ => {}
     }
+    if matches!(def.func, Func::Main { .. }) && !s.tag.is_empty() {
+        refs.extend(crate::electrofluid::cross_refs(prj, idx, page_i, &s.tag));
+    }
 
     // Tag block
     if def.show_tag {
@@ -371,12 +506,7 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
             let ink = if r == "?" { Ink::Error } else { Ink::CrossRef };
             lines.push((r, 2.0, ink, target));
         }
-        let total: f32 = lines.iter().map(|l| l.1 * 1.35).sum();
-        let (x, mut y, anchor) = if vertical {
-            (bounds.min.x - 1.2, bounds.center().y - total / 2.0, Anchor::Right)
-        } else {
-            (bounds.center().x, bounds.min.y - 1.0 - total, Anchor::Center)
-        };
+        let (x, mut y, anchor) = tag_block_origin(def, s, &lines.iter().map(|l| l.1).collect::<Vec<_>>());
         for (t, size, ink, target) in &lines {
             let q = p(x, y + size * 0.675);
             d.text(q, t, *size, anchor, VAnchor::Middle, *ink);
@@ -387,12 +517,61 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
         }
     }
 
+    for pp in &s.props {
+        let t = crate::props::value(prj, s, pp.kind);
+        if !t.is_empty() {
+            d.text(s.pos + pp.offset, &t, pp.size, Anchor::Left, VAnchor::Middle, text_ink);
+        }
+    }
+
     // Contact image (mirror) below coils
     if matches!(def.func, Func::Main { mirror: true }) {
         if let Some(dev) = dev {
             draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
         }
     }
+}
+
+/// Where the tag block starts: x and top y of the first line and the text anchor
+/// (left of vertical symbols, above horizontal ones, or where it was placed).
+fn tag_block_origin(def: &SymbolDef, s: &SymbolInst, sizes: &[f32]) -> (f32, f32, Anchor) {
+    let bounds = def.world_bounds(s.pos, s.rot, s.mirror);
+    let total: f32 = sizes.iter().map(|z| z * 1.35).sum();
+    match s.tag_offset {
+        Some(o) => (s.pos.x + o.x, s.pos.y + o.y, Anchor::Left),
+        None if s.rot.is_multiple_of(2) => (bounds.min.x - 1.2, bounds.center().y - total / 2.0, Anchor::Right),
+        None => (bounds.center().x, bounds.min.y - 1.0 - total, Anchor::Center),
+    }
+}
+
+/// Approximate area of the tag block (tag and function text) of a placed symbol,
+/// used to pick and drag it.
+pub fn tag_block_bounds(prj: &Project, page_i: usize, def: &SymbolDef, s: &SymbolInst) -> Option<R> {
+    if !def.show_tag || (s.tag.is_empty() && s.function_text.is_empty()) {
+        return None;
+    }
+    let mut lines: Vec<(String, f32)> = Vec::new();
+    if !s.tag.is_empty() {
+        lines.push((structure::relative(&prj.pages[page_i], &s.tag), TAG_SIZE));
+    }
+    lines.extend(s.function_text.lines().map(|l| (l.to_string(), 2.0)));
+    let (x, y, anchor) = tag_block_origin(def, s, &lines.iter().map(|l| l.1).collect::<Vec<_>>());
+    let w = lines.iter().map(|(t, z)| t.chars().count() as f32 * z * 0.62).fold(0.0, f32::max);
+    let h: f32 = lines.iter().map(|l| l.1 * 1.35).sum();
+    let x0 = match anchor {
+        Anchor::Left => x,
+        Anchor::Center => x - w / 2.0,
+        Anchor::Right => x - w,
+    };
+    Some(R::from_points(p(x0, y), p(x0 + w, y + h)))
+}
+
+/// Area of a placed property text.
+pub fn prop_bounds(prj: &Project, s: &SymbolInst, pp: &PlacedProp) -> R {
+    let t = crate::props::value(prj, s, pp.kind);
+    let w = t.chars().count().max(3) as f32 * pp.size * 0.62;
+    let q = s.pos + pp.offset;
+    R::from_points(p(q.x, q.y - pp.size * 0.7), p(q.x + w, q.y + pp.size * 0.7))
 }
 
 /// Contact image row: kind, connection designations, cross reference and its page
@@ -414,7 +593,11 @@ fn draw_contact_image(d: &mut dyn Draw, prj: &Project, page_i: usize, tag: &str,
             FnKind::No => ContactKind::No,
             FnKind::Nc => ContactKind::Nc,
             FnKind::Changeover => ContactKind::Changeover,
-            FnKind::MainContacts3 | FnKind::MainContact => ContactKind::MainNo,
+            FnKind::NoOnDelay => ContactKind::NoOnDelay,
+            FnKind::NcOnDelay => ContactKind::NcOnDelay,
+            FnKind::NoOffDelay => ContactKind::NoOffDelay,
+            FnKind::NcOffDelay => ContactKind::NcOffDelay,
+            FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact => ContactKind::MainNo,
             _ => continue,
         };
         rows.push((kind, f.pin_list(), None));
@@ -464,8 +647,7 @@ fn mirror_glyph(d: &mut dyn Draw, c: P, kind: ContactKind, ink: Ink) {
     let w = 0.18;
     d.line(c + p(-3.0, 0.0), c + p(-1.2, 0.0), w, ink, false);
     d.line(c + p(1.2, 0.0), c + p(3.0, 0.0), w, ink, false);
-    match kind {
-        ContactKind::No | ContactKind::MainNo => d.line(c + p(1.2, 0.0), c + p(-1.5, -1.1), w, ink, false),
+    match kind.base() {
         ContactKind::Nc => {
             d.line(c + p(-1.2, 0.0), c + p(-1.2, 0.9), w, ink, false);
             d.line(c + p(1.2, 0.0), c + p(-1.6, 1.2), w, ink, false);
@@ -475,6 +657,13 @@ fn mirror_glyph(d: &mut dyn Draw, c: P, kind: ContactKind, ink: Ink) {
             d.line(c + p(1.2, 0.0), c + p(-1.6, 1.2), w, ink, false);
             d.line(c + p(-1.2, 0.0), c + p(-1.2, -0.9), w, ink, false);
         }
+        _ => d.line(c + p(1.2, 0.0), c + p(-1.5, -1.1), w, ink, false),
+    }
+    // Delayed contacts: a short stem from the blade with a bar, pointing up for on-delay.
+    if let Some(on) = kind.delay() {
+        let (y0, y1) = if on { (-0.4, -1.6) } else { (0.4, 1.6) };
+        d.line(c + p(0.0, y0), c + p(0.0, y1), w, ink, false);
+        d.line(c + p(-0.6, y1), c + p(0.6, y1), w, ink, false);
     }
 }
 

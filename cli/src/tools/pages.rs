@@ -29,7 +29,7 @@ pub static TOOLS: &[Tool] = &[
         name: "add_page",
         help: tr_const!("Adds a page"),
         params: &[
-            optional("kind", Kind::Str, tr_const!("schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops")),
+            optional("kind", Kind::Str, tr_const!("schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups, electro_fluid")),
             optional("template", Kind::Str, tr_const!("Page template (list_page_templates) instead of kind")),
             optional("frame", Kind::Str, tr_const!("Plot frame (list_frames); default: the project's")),
             optional("after", Kind::Str, tr_const!("Insert after this page (default: at the end)")),

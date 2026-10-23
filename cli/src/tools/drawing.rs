@@ -10,6 +10,7 @@ use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
 use openecraft_core::fluid::Medium;
 use openecraft_core::symbols::{self, Func, SymbolDef};
+use openecraft_core::{cabledef, conndef, routing};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
@@ -135,6 +136,49 @@ pub static TOOLS: &[Tool] = &[
         params: &[PAGE, param("ids", Kind::Ids, tr_const!("Item ids"))],
         needs_project: true,
         run: delete_items,
+    },
+    Tool {
+        name: "route",
+        help: tr_const!("Connects two connection points with wires routed around symbols and other wires"),
+        params: &[
+            PAGE,
+            param("from", Kind::Str, tr_const!("Connection point TAG:PIN, e.g. -K1:A1")),
+            param("to", Kind::Str, tr_const!("Connection point TAG:PIN, e.g. -K1:A1")),
+        ],
+        needs_project: true,
+        run: route,
+    },
+    Tool {
+        name: "autoconnect",
+        help: tr_const!("Draws wires between free connection points of symbols that face each other"),
+        params: &[PAGE, optional("ids", Kind::Ids, tr_const!("Symbol ids (default: all symbols of the page)"))],
+        needs_project: true,
+        run: autoconnect,
+    },
+    Tool {
+        name: "add_cable_definition",
+        help: tr_const!("Draws a cable definition line; the wires it crosses become cores of the cable (a new cable when none is given)"),
+        params: &[
+            PAGE,
+            param("points", Kind::Points, tr_const!("Start and end point of the line")),
+            optional("cable", Kind::Str, tr_const!("Cable tag, e.g. -W1")),
+        ],
+        needs_project: true,
+        run: add_cable_definition,
+    },
+    Tool {
+        name: "add_connection_definition",
+        help: tr_const!("Places a connection definition point on a wire; the connection takes its number, colour and cross-section"),
+        params: &[
+            PAGE,
+            param("x", Kind::Num, tr_const!("X position in mm")),
+            param("y", Kind::Num, tr_const!("Y position in mm (downwards)")),
+            optional("number", Kind::Str, tr_const!("Wire number")),
+            optional("color", Kind::Str, tr_const!("Wire colour, e.g. BU")),
+            optional("cross_section", Kind::Str, tr_const!("Cross-section, e.g. 1.5 mm²")),
+        ],
+        needs_project: true,
+        run: add_connection_definition,
     },
 ];
 
@@ -379,7 +423,7 @@ fn add_text(s: &mut Session, a: &Args) -> Result<Value, String> {
     let id = prj.new_id();
     let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
     let size = a.num("size").unwrap_or(3.5);
-    prj.pages[i].texts.push(TextItem { id, pos, text: a.req("text").into(), size });
+    prj.pages[i].texts.push(TextItem { id, pos, text: a.req("text").into(), size, ..Default::default() });
     Ok(json!({ "id": id }))
 }
 
@@ -400,6 +444,68 @@ fn delete_items(s: &mut Session, a: &Args) -> Result<Value, String> {
     let sel = selection(&prj.pages[i], a)?;
     ops::delete(&mut prj.pages[i], &sel);
     Ok(json!({ "deleted": sel.len() }))
+}
+
+fn route(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let i = editable(prj, a.req("page"))?;
+    let from = pin_position(&prj.pages[i], a.req("from"))?;
+    let to = pin_position(&prj.pages[i], a.req("to"))?;
+    let area = openecraft_core::frame::of_page(prj, i).area();
+    let path = routing::route(&prj.pages[i], area, from, to);
+    let ids = push_path(prj, i, &path);
+    Ok(json!({ "ids": ids, "points": path.into_iter().map(xy).collect::<Vec<_>>() }))
+}
+
+fn autoconnect(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let i = editable(prj, a.req("page"))?;
+    let ids: BTreeSet<u64> = match a.ids("ids") {
+        v if v.is_empty() => prj.pages[i].symbols.iter().map(|s| s.id).collect(),
+        v => v.into_iter().collect(),
+    };
+    let before = prj.pages[i].wires.len();
+    routing::apply_autoconnect(prj, i, &ids);
+    let added: Vec<u64> = prj.pages[i].wires[before..].iter().map(|w| w.id).collect();
+    Ok(json!({ "ids": added }))
+}
+
+fn add_cable_definition(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let i = editable(prj, a.req("page"))?;
+    let pts = a.points("points");
+    let [[x0, y0], [x1, y1]] = pts.as_slice() else {
+        return Err(tr("A cable definition needs a start and an end point").to_string());
+    };
+    let cable = a.str("cable").unwrap_or_default();
+    if !cable.is_empty() && prj.cable(cable).is_none() {
+        return Err(tr_fmt!("No cable {}", cable));
+    }
+    let id = cabledef::add(prj, i, p(*x0, *y0), p(*x1, *y1), cable);
+    let def = prj.pages[i].cable_defs.iter().find(|c| c.id == id).cloned().unwrap_or_default();
+    let cores: Vec<Value> = prj.pages[i].wires.iter().filter(|w| w.cable == def.cable).map(|w| json!({ "wire": w.id, "core": w.core })).collect();
+    Ok(json!({ "id": id, "cable": def.cable, "cores": cores }))
+}
+
+fn add_connection_definition(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let i = editable(prj, a.req("page"))?;
+    let pos = p(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
+    if conndef::wire_at(&prj.pages[i], pos).is_none() {
+        return Err(tr("Click on a wire to place the connection definition point").to_string());
+    }
+    let open = openecraft_core::netlist::Netlist::build(prj, false);
+    let mut cd = conndef::adopt(prj, &open, i, pos);
+    for (field, name) in [(&mut cd.number, "number"), (&mut cd.color, "color"), (&mut cd.cross_section, "cross_section")] {
+        if let Some(v) = a.str(name) {
+            *field = v.to_string();
+        }
+    }
+    cd.id = prj.new_id();
+    let id = cd.id;
+    prj.pages[i].conn_defs.push(cd);
+    let changed = conndef::apply(prj, &open, i, id);
+    Ok(json!({ "id": id, "wires_changed": changed }))
 }
 
 #[cfg(test)]

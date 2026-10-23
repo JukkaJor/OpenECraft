@@ -67,6 +67,9 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
         ContactKind::No | ContactKind::MainNo => vec![format!("{o}3"), format!("{o}4")],
         ContactKind::Nc => vec![format!("{o}1"), format!("{o}2")],
         ContactKind::Changeover => vec![format!("{o}1"), format!("{o}2"), format!("{o}4")],
+        // Time-delayed contacts: x5/x6 (NC), x7/x8 (NO).
+        ContactKind::NcOnDelay | ContactKind::NcOffDelay => vec![format!("{o}5"), format!("{o}6")],
+        ContactKind::NoOnDelay | ContactKind::NoOffDelay => vec![format!("{o}7"), format!("{o}8")],
     }
 }
 
@@ -191,7 +194,19 @@ pub fn item_bounds(page: &Page, id: u64) -> Option<R> {
     if let Some(t) = page.texts.iter().find(|t| t.id == id) {
         return Some(text_bounds(t));
     }
-    page.shapes.iter().find(|s| s.id == id).map(|s| R::from_points(s.a, s.b))
+    if let Some(s) = page.shapes.iter().find(|s| s.id == id) {
+        return Some(crate::graphics::shape_bounds(s));
+    }
+    if let Some(d) = page.dimensions.iter().find(|d| d.id == id) {
+        return Some(crate::graphics::dim_bounds(d));
+    }
+    if let Some(i) = page.images.iter().find(|i| i.id == id) {
+        return Some(R::from_points(i.a, i.b));
+    }
+    if let Some(c) = page.conn_defs.iter().find(|c| c.id == id) {
+        return Some(R::from_points(c.pos, c.pos).expand(1.0));
+    }
+    page.cable_defs.iter().find(|c| c.id == id).map(|c| R::from_points(c.a, c.b))
 }
 
 pub fn all_ids(page: &Page) -> Vec<u64> {
@@ -201,7 +216,38 @@ pub fn all_ids(page: &Page) -> Vec<u64> {
         .chain(page.wires.iter().map(|w| w.id))
         .chain(page.texts.iter().map(|t| t.id))
         .chain(page.shapes.iter().map(|s| s.id))
+        .chain(page.dimensions.iter().map(|s| s.id))
+        .chain(page.images.iter().map(|s| s.id))
+        .chain(page.conn_defs.iter().map(|s| s.id))
+        .chain(page.cable_defs.iter().map(|s| s.id))
         .collect()
+}
+
+/// Applies `f` to the points of the selected items other than symbols and wires.
+fn map_items(page: &mut Page, sel: &BTreeSet<u64>, f: impl Fn(P) -> P) {
+    for t in page.texts.iter_mut().filter(|t| sel.contains(&t.id)) {
+        t.pos = f(t.pos);
+    }
+    for s in page.shapes.iter_mut().filter(|s| sel.contains(&s.id)) {
+        crate::graphics::map_shape(s, &f);
+    }
+    for d in page.dimensions.iter_mut().filter(|d| sel.contains(&d.id)) {
+        d.a = f(d.a);
+        d.b = f(d.b);
+    }
+    for i in page.images.iter_mut().filter(|i| sel.contains(&i.id)) {
+        let (a, b) = (f(i.a), f(i.b));
+        let r = R::from_points(a, b);
+        i.a = r.min;
+        i.b = r.max;
+    }
+    for c in page.conn_defs.iter_mut().filter(|c| sel.contains(&c.id)) {
+        c.pos = f(c.pos);
+    }
+    for c in page.cable_defs.iter_mut().filter(|c| sel.contains(&c.id)) {
+        c.a = f(c.a);
+        c.b = f(c.b);
+    }
 }
 
 /// World positions of all connection points of the selected symbols and the end
@@ -258,13 +304,7 @@ pub fn translate(page: &mut Page, sel: &BTreeSet<u64>, attached: &[(u64, bool)],
             }
         }
     }
-    for t in page.texts.iter_mut().filter(|t| sel.contains(&t.id)) {
-        t.pos = t.pos + d;
-    }
-    for s in page.shapes.iter_mut().filter(|s| sel.contains(&s.id)) {
-        s.a = s.a + d;
-        s.b = s.b + d;
-    }
+    map_items(page, sel, |q| q + d);
 }
 
 /// Rotates the selection by 90° clockwise around its (grid snapped) centre.
@@ -292,13 +332,7 @@ pub fn rotate(page: &mut Page, sel: &BTreeSet<u64>) {
         w.a = rot(w.a);
         w.b = rot(w.b);
     }
-    for t in page.texts.iter_mut().filter(|t| sel.contains(&t.id)) {
-        t.pos = rot(t.pos);
-    }
-    for s in page.shapes.iter_mut().filter(|s| sel.contains(&s.id)) {
-        s.a = rot(s.a);
-        s.b = rot(s.b);
-    }
+    map_items(page, sel, rot);
     // Attached wire ends follow their connection point.
     for (id, is_a) in attached {
         if let Some(w) = page.wires.iter_mut().find(|w| w.id == id) {
@@ -321,6 +355,10 @@ pub fn delete(page: &mut Page, sel: &BTreeSet<u64>) {
     page.wires.retain(|w| !sel.contains(&w.id));
     page.texts.retain(|t| !sel.contains(&t.id));
     page.shapes.retain(|s| !sel.contains(&s.id));
+    page.dimensions.retain(|s| !sel.contains(&s.id));
+    page.images.retain(|s| !sel.contains(&s.id));
+    page.conn_defs.retain(|s| !sel.contains(&s.id));
+    page.cable_defs.retain(|s| !sel.contains(&s.id));
 }
 
 /// Removes zero length wires and merges exact duplicates.
@@ -349,6 +387,14 @@ pub struct Clip {
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
     pub shapes: Vec<Shape>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub dimensions: Vec<Dimension>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub images: Vec<ImageItem>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub conn_defs: Vec<ConnDef>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub cable_defs: Vec<CableDef>,
 }
 
 const CLIP_MAGIC: &str = "openecraft-clipboard-v1";
@@ -364,10 +410,19 @@ pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
         wires: page.wires.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         texts: page.texts.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         shapes: page.shapes.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
+        dimensions: page.dimensions.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
+        images: page.images.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
+        conn_defs: page.conn_defs.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
+        cable_defs: page.cable_defs.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
     }
 }
 
 impl Clip {
+    /// An empty clip (to be filled with items to insert).
+    pub fn new() -> Clip {
+        Clip { magic: CLIP_MAGIC.into(), ..Default::default() }
+    }
+
     /// Structure of the page the clip was copied from.
     pub fn structure(&self) -> crate::structure::Dt {
         crate::structure::Dt {
@@ -389,7 +444,14 @@ impl Clip {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.symbols.is_empty() && self.wires.is_empty() && self.texts.is_empty() && self.shapes.is_empty()
+        self.symbols.is_empty()
+            && self.wires.is_empty()
+            && self.texts.is_empty()
+            && self.shapes.is_empty()
+            && self.dimensions.is_empty()
+            && self.images.is_empty()
+            && self.conn_defs.is_empty()
+            && self.cable_defs.is_empty()
     }
 
     pub fn bounds(&self) -> R {
@@ -405,8 +467,22 @@ impl Clip {
             r.extend(t.pos);
         }
         for s in &self.shapes {
-            r.extend(s.a);
-            r.extend(s.b);
+            r.union(crate::graphics::shape_bounds(s));
+        }
+        for d in &self.dimensions {
+            r.extend(d.a);
+            r.extend(d.b);
+        }
+        for i in &self.images {
+            r.extend(i.a);
+            r.extend(i.b);
+        }
+        for c in &self.conn_defs {
+            r.extend(c.pos);
+        }
+        for c in &self.cable_defs {
+            r.extend(c.a);
+            r.extend(c.b);
         }
         r
     }
@@ -483,16 +559,50 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
     for s in &clip.shapes {
         let mut s = s.clone();
         s.id = prj.new_id();
-        s.a = s.a + d;
-        s.b = s.b + d;
+        crate::graphics::map_shape(&mut s, |q| q + d);
         new_ids.insert(s.id);
         prj.pages[page_i].shapes.push(s);
+    }
+    for x in &clip.dimensions {
+        let mut x = x.clone();
+        x.id = prj.new_id();
+        x.a = x.a + d;
+        x.b = x.b + d;
+        new_ids.insert(x.id);
+        prj.pages[page_i].dimensions.push(x);
+    }
+    for x in &clip.images {
+        let mut x = x.clone();
+        x.id = prj.new_id();
+        x.a = x.a + d;
+        x.b = x.b + d;
+        new_ids.insert(x.id);
+        prj.pages[page_i].images.push(x);
+    }
+    // Connection definitions keep their values except the cable core.
+    for x in &clip.conn_defs {
+        let mut x = x.clone();
+        x.id = prj.new_id();
+        x.pos = x.pos + d;
+        x.number.clear();
+        x.cable.clear();
+        x.core.clear();
+        new_ids.insert(x.id);
+        prj.pages[page_i].conn_defs.push(x);
+    }
+    for x in &clip.cable_defs {
+        let mut x = x.clone();
+        x.id = prj.new_id();
+        x.a = x.a + d;
+        x.b = x.b + d;
+        new_ids.insert(x.id);
+        prj.pages[page_i].cable_defs.push(x);
     }
     new_ids
 }
 
 /// Renames a device everywhere (all functions with that tag, device, strip, plug and
-/// PLC card data, panel layout, harnesses).
+/// PLC card data, panel layout, harnesses, fluid device groups and links).
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if old == new || old.is_empty() {
         return;
@@ -523,6 +633,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
         prj.plc_cards.entry(new.to_string()).or_insert(d);
     }
     crate::plc_hw::rename_device(prj, old, new);
+    crate::electrofluid::rename_device(prj, old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.

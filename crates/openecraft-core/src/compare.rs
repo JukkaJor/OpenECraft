@@ -72,11 +72,12 @@ pub enum Section {
     Languages,
     Structures,
     PageTemplates,
+    Layers,
     Workflow,
 }
 
 impl Section {
-    const ALL: [Section; 16] = [
+    const ALL: [Section; 17] = [
         Section::Info,
         Section::WireNumbering,
         Section::Wires,
@@ -92,6 +93,7 @@ impl Section {
         Section::Languages,
         Section::Structures,
         Section::PageTemplates,
+        Section::Layers,
         Section::Workflow,
     ];
 
@@ -112,6 +114,7 @@ impl Section {
             Section::Languages => tr("Languages and dictionary"),
             Section::Structures => tr("Structure identifiers"),
             Section::PageTemplates => tr("Page templates"),
+            Section::Layers => tr("Layers"),
             Section::Workflow => tr("Approvers"),
         }
     }
@@ -133,6 +136,7 @@ impl Section {
             Section::Languages => a.languages == b.languages,
             Section::Structures => a.structures == b.structures,
             Section::PageTemplates => a.page_templates == b.page_templates,
+            Section::Layers => a.layers == b.layers,
             Section::Workflow => a.workflow == b.workflow,
         }
     }
@@ -161,6 +165,7 @@ impl Section {
             Section::Languages => to.languages = from.languages.clone(),
             Section::Structures => to.structures = from.structures.clone(),
             Section::PageTemplates => to.page_templates = from.page_templates.clone(),
+            Section::Layers => to.layers = from.layers.clone(),
             Section::Workflow => to.workflow = from.workflow.clone(),
         }
     }

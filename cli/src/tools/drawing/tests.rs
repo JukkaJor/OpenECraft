@@ -95,3 +95,31 @@ fn generated_pages_are_not_drawn_on() {
     run(&mut s, "set_page", json!({ "page": "DL", "description": "Devices" })).unwrap();
 }
 
+#[test]
+fn routing_autoconnect_and_definitions() {
+    let mut s = new_session();
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "no", "x": 40, "y": 40 })).unwrap();
+    let coil = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 40, "y": 80 })).unwrap();
+    let auto = run(&mut s, "autoconnect", json!({ "page": "1" })).unwrap();
+    assert_eq!(auto["ids"].as_array().unwrap().len(), 1);
+    // A route around the coil to another coil beside it.
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 120, "y": 80, "tag": "-K9" })).unwrap();
+    let from = format!("#{}:A2", coil["id"]);
+    let routed = run(&mut s, "route", json!({ "page": "1", "from": from, "to": "-K9:A2" })).unwrap();
+    assert!(!routed["ids"].as_array().unwrap().is_empty());
+    let wire = routed["ids"][0].as_u64().unwrap();
+    let pts = routed["points"].as_array().unwrap();
+    let (x, y) = (pts[0][0].as_f64().unwrap() as f32, pts[0][1].as_f64().unwrap() as f32);
+    let (x1, y1) = (pts[1][0].as_f64().unwrap() as f32, pts[1][1].as_f64().unwrap() as f32);
+    let cd = run(&mut s, "add_connection_definition", json!({ "page": "1", "x": (x + x1) / 2.0, "y": (y + y1) / 2.0, "number": "W5", "color": "BU" })).unwrap();
+    assert!(cd["wires_changed"].as_u64().unwrap() >= 1);
+    let prj = s.project().unwrap();
+    let w = prj.pages[0].wires.iter().find(|w| w.id == wire).unwrap();
+    assert_eq!((w.number.as_str(), w.color.as_str()), ("W5", "BU"));
+    assert!(run(&mut s, "add_connection_definition", json!({ "page": "1", "x": 300, "y": 10 })).is_err());
+
+    let cable = run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[30, 60], [50, 60]] })).unwrap();
+    assert_eq!(cable["cores"].as_array().unwrap().len(), 1);
+    assert!(run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[30, 60], [50, 60]], "cable": "-W99" })).is_err());
+}
+

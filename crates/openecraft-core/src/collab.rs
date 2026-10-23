@@ -274,6 +274,7 @@ fn with_data(out: &mut Project, src: &Project) {
         wiring_marks,
         structures,
         page_templates,
+        layers,
         workflow,
         baselines,
         review: _,
@@ -305,6 +306,7 @@ fn with_data(out: &mut Project, src: &Project) {
     out.wiring_marks = wiring_marks.clone();
     out.structures = structures.clone();
     out.page_templates = page_templates.clone();
+    out.layers = layers.clone();
     out.workflow = workflow.clone();
     out.baselines = baselines.clone();
 }
@@ -340,6 +342,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         wiring_marks,
         structures,
         page_templates,
+        layers,
         workflow,
         baselines,
         review: _,
@@ -372,6 +375,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *wiring_marks == b.wiring_marks
         && *structures == b.structures
         && *page_templates == b.page_templates
+        && *layers == b.layers
         && *workflow == b.workflow
         && *baselines == b.baselines
 }
