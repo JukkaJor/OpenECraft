@@ -39,9 +39,6 @@ pub struct EnclosureScene {
     pub solids: Vec<Solid>,
 }
 
-/// Gap between enclosures placed side by side (mm).
-const GAP: f32 = 200.0;
-
 fn color(kind: ItemKind) -> [u8; 3] {
     match kind {
         ItemKind::Rail => [205, 208, 212],
@@ -121,17 +118,15 @@ fn kind_role(role: Role) -> &'static str {
     }
 }
 
-/// All enclosures of the project, side by side.
+/// All enclosures of the project side by side: bayed ones in their line-up, all
+/// standing on the floor (y 0).
 pub fn scene(prj: &Project) -> Vec<EnclosureScene> {
-    let mut x = 0.0;
+    let pos = panel::positions(&prj.layout);
     prj.layout
         .enclosures
         .iter()
-        .map(|e| {
-            let s = EnclosureScene { name: e.name.clone(), offset: [x, 0.0, 0.0], solids: enclosure_solids(prj, e) };
-            x += e.width + GAP;
-            s
-        })
+        .zip(pos)
+        .map(|(e, o)| EnclosureScene { name: e.name.clone(), offset: [o[0], e.build.plinth, o[2]], solids: enclosure_solids(prj, e) })
         .collect()
 }
 

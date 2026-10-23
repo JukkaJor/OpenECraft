@@ -45,6 +45,7 @@ pub mod reports;
 pub mod review;
 pub mod revision;
 pub mod routing;
+pub mod routing3d;
 pub mod sample;
 pub mod sizing;
 pub mod strips;

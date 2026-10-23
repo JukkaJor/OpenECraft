@@ -24,6 +24,27 @@ fn enclosure_of_a_system_with_components() {
 }
 
 #[test]
+fn enclosures_bayed_with_a_cable_passage() {
+    let mut s = demo();
+    run(&mut s, "add_enclosure", json!({ "name": "+CAB2" })).unwrap();
+    assert!(run(&mut s, "add_cable_passage", json!({ "enclosure": "+CAB1" })).unwrap_err().contains("no enclosure bayed"));
+    let r = run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2", "right_of": "+CAB1" })).unwrap();
+    assert_eq!(r["lineup"], json!(["+CAB1", "+CAB2"]));
+    assert!(run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2", "right_of": "+CAB2" })).unwrap_err().contains("itself"));
+    let p = run(&mut s, "add_cable_passage", json!({ "enclosure": "+CAB1", "y": 200, "diameter": 50 })).unwrap();
+    assert_eq!((p["cutouts"].as_array().unwrap().len(), p["to"].as_str()), (2, Some("+CAB2")));
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB1" })).unwrap()[0];
+    assert_eq!(e["lineup"]["left_of"], "+CAB2");
+    let passages = e["lineup"]["passages_right"].as_array().unwrap();
+    assert_eq!(passages.len(), 1);
+    assert!((passages[0]["y"].as_f64().unwrap() - 200.0).abs() < 0.01);
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB2" })).unwrap()[0];
+    assert_eq!((e["lineup"]["right_of"].as_str(), e["lineup"]["position"][0].as_f64()), (Some("+CAB1"), Some(600.0)));
+    let r = run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2" })).unwrap();
+    assert_eq!(r["lineup"], json!(["+CAB2"]));
+}
+
+#[test]
 fn accessories_items_and_arranging() {
     let mut s = demo();
     let g = run(&mut s, "place_accessory", json!({ "enclosure": "+CAB1", "part": "GEN.GLAND-M25", "face": "bottom", "anchor_x": "center:0", "y": 60 })).unwrap();

@@ -105,9 +105,10 @@ fn marked_tag(tag: &str, enclosure: &str) -> String {
     dt.tag()
 }
 
-/// Enclosure of a placed device and whether it sits on the door.
+/// Enclosure of a placed device (or of the valve terminal / valve it sits on) and
+/// whether it sits on the door.
 fn placement(prj: &Project, tag: &str) -> (String, bool) {
-    match prj.layout.find_device(tag) {
+    match crate::panel::locate(prj, tag) {
         Some((ei, it)) => (prj.layout.enclosures[ei].name.clone(), it.face == Face::Door),
         None => (String::new(), false),
     }

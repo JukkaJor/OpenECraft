@@ -335,7 +335,7 @@ fn door_wires_run_over_the_hinge() {
     // Between two door devices the wire stays on the door: short, no plate route.
     let jumper = an.wiring.iter().find(|w| w.items.0 == s2.id || w.items.1 == s2.id).unwrap();
     assert!(jumper.on_door() && jumper.route.points.is_empty() && jumper.route.runs.is_empty());
-    assert!(!jumper.paths_on(Face::Door).is_empty() && jumper.paths_on(Face::Plate).is_empty());
+    assert!(!jumper.paths_in(0, Face::Door).is_empty() && jumper.paths_in(0, Face::Plate).is_empty());
     assert!(jumper.length < w.length);
     // The mounting layout page shows the door next to the plate.
     let page = prj.pages.iter().position(|p| matches!(p.kind, crate::model::PageKind::Mounting(_))).unwrap();

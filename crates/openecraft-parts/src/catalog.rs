@@ -260,10 +260,10 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.SV-24DC", "Solenoid valve coil 24 V DC, 4.8 W", "Valves", "Solenoid valve", "Y", 22.5, (0.0, 0.0, 0.0, 0.1), &[(Valve, "A1 A2")]);
     p.voltage = "24 V DC".into();
     p.power = "4.8 W".into();
-    let p = c.add("GEN.VLV-52-24DC", "5/2-way solenoid valve G1/8, spring return, coil 24 V DC", "Valves", "Directional valve", "QM", 68.0, (0.0, 0.0, 0.0, 0.25), &[(DirectionalValve, "4 2 5 1 3"), (Valve, "A1 A2")]);
+    let p = c.add("GEN.VLV-52-24DC", "5/2-way solenoid valve G1/8, spring return, coil 24 V DC", "Valves", "Directional valve", "QM", 68.0, (26.0, 110.0, 64.0, 0.25), &[(DirectionalValve, "4 2 5 1 3"), (Valve, "A1 A2")]);
     p.voltage = "24 V DC".into();
     p.power = "1.5 W".into();
-    let p = c.add("GEN.VLV-42-24DC", "4/2-way solenoid valve G1/4, spring return, coil 24 V DC", "Valves", "Directional valve", "QM", 74.0, (0.0, 0.0, 0.0, 0.3), &[(DirectionalValve, "A B P T"), (Valve, "A1 A2")]);
+    let p = c.add("GEN.VLV-42-24DC", "4/2-way solenoid valve G1/4, spring return, coil 24 V DC", "Valves", "Directional valve", "QM", 74.0, (32.0, 120.0, 70.0, 0.3), &[(DirectionalValve, "A B P T"), (Valve, "A1 A2")]);
     p.voltage = "24 V DC".into();
     p.power = "2.5 W".into();
     for (number, desc, pins) in [
@@ -278,7 +278,7 @@ pub fn default_catalog() -> Vec<Part> {
     c.add("GEN.CYL-32-100", "Pneumatic cylinder double-acting, bore 32 mm, stroke 100 mm", fl, "Cylinder", "MM", 82.0, (0.0, 0.0, 0.0, 0.7), &[(Cylinder, "1 2")]);
     c.add("GEN.CYL-20-50-SA", "Pneumatic cylinder single-acting, bore 20 mm, stroke 50 mm", fl, "Cylinder", "MM", 46.0, (0.0, 0.0, 0.0, 0.3), &[(Cylinder, "1")]);
     c.add("GEN.PUMP-HYD-4CC", "Hydraulic gear pump 4 cm³/rev, 200 bar", fl, "Pump", "GP", 190.0, (0.0, 0.0, 0.0, 1.8), &[(Pump, "P S")]);
-    c.add("GEN.FR-G14", "Filter regulator G1/4, 5 µm, 0.5 - 10 bar", fl, "Service unit", "HQ", 54.0, (0.0, 0.0, 0.0, 0.4), &[(FluidComponent, "1 2")]);
+    c.add("GEN.FR-G14", "Filter regulator G1/4, 5 µm, 0.5 - 10 bar", fl, "Service unit", "HQ", 54.0, (45.0, 160.0, 70.0, 0.4), &[(FluidComponent, "1 2")]);
     c.add("GEN.THROTTLE-G18", "One-way flow control valve G1/8", fl, "Service unit", "RN", 12.0, (0.0, 0.0, 0.0, 0.05), &[(FluidComponent, "1 2")]);
 
     c.add("GEN.RES-1K", "Resistor 1 kΩ 0.6 W", "Passive components", "Resistor", "R", 0.1, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);

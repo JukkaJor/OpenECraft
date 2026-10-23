@@ -236,10 +236,12 @@ pub enum ReportKind {
     TubingList,
     FluidDeviceGroups,
     ElectroFluid,
+    RoutingList,
+    BundleList,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 31] = [
+    pub const ALL: [ReportKind; 33] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -271,6 +273,8 @@ impl ReportKind {
         ReportKind::TubingList,
         ReportKind::FluidDeviceGroups,
         ReportKind::ElectroFluid,
+        ReportKind::RoutingList,
+        ReportKind::BundleList,
     ];
 
     pub fn title(self) -> &'static str {
@@ -306,6 +310,8 @@ impl ReportKind {
             ReportKind::TubingList => tr("Tubing / piping list"),
             ReportKind::FluidDeviceGroups => tr("Fluid device groups"),
             ReportKind::ElectroFluid => tr("Electro-fluid cross reference"),
+            ReportKind::RoutingList => tr("Routing list (3D)"),
+            ReportKind::BundleList => tr("Bundle list"),
         }
     }
 }
@@ -546,6 +552,15 @@ pub struct Cable {
     /// Network / bus cable for this bus system (`None`: ordinary cable).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bus: Option<crate::devdesc::BusKind>,
+    /// The cable has an overall shield; `None`: from the cable type and the bus.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shielded: Option<bool>,
+    /// Ends at which the shield is connected.
+    #[serde(skip_serializing_if = "crate::routing3d::ShieldEnds::is_both")]
+    pub shield_ends: crate::routing3d::ShieldEnds,
+    /// Outer diameter in mm; 0 = estimated from cores and cross-section.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub diameter: f32,
 }
 
 impl Cable {

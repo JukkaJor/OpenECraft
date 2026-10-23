@@ -315,7 +315,7 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
     let mut out = Vec::new();
     for net in open.nets.iter().filter(|n| !n.fluid) {
         let mut pins = chained_pins(prj, net);
-        let enclosure = |p: &PinRef| prj.layout.find_device(&prj.pages[p.page].symbols[p.sym].tag).map(|(e, _)| e).unwrap_or(usize::MAX);
+        let enclosure = |p: &PinRef| crate::panel::locate(prj, &prj.pages[p.page].symbols[p.sym].tag).map(|(e, _)| e).unwrap_or(usize::MAX);
         pins.sort_by_key(enclosure);
         if pins.len() < 2 {
             continue;

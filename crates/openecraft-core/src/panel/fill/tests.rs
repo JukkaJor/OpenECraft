@@ -30,6 +30,7 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         ends: (EndKind::Generated, EndKind::Generated),
         door: (None, None),
         door_routes: (None, None),
+        legs: Vec::new(),
     }
 }
 

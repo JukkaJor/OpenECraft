@@ -62,6 +62,28 @@ pub static TOOLS: &[Tool] = &[
         run: set_enclosure,
     },
     Tool {
+        name: "bay_enclosure",
+        help: tr_const!("Bays an enclosure side by side to the right of another one (line-up); without right_of it leaves its line-up"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            optional("right_of", Kind::Str, tr_const!("Enclosure it stands right of; empty to take it out of its line-up")),
+        ],
+        needs_project: true,
+        run: bay_enclosure,
+    },
+    Tool {
+        name: "add_cable_passage",
+        help: tr_const!("Adds a cable passage to the right neighbour: round cutouts facing each other in both side walls; wires between the enclosures run through it"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            optional("y", Kind::Num, tr_const!("Centre from the top of the enclosure in mm")),
+            optional("z", Kind::Num, tr_const!("Centre from the rear wall in mm")),
+            optional("diameter", Kind::Num, tr_const!("Diameter in mm")),
+        ],
+        needs_project: true,
+        run: add_cable_passage,
+    },
+    Tool {
         name: "place_accessory",
         help: tr_const!("Places an enclosure accessory (fan, filter, cable gland, light, handle, PE bar) on a face"),
         params: &[
@@ -182,6 +204,18 @@ fn item_json(prj: &Project, it: &PanelItem) -> Value {
     })
 }
 
+/// Line-up of an enclosure: neighbours and the cable passages to the right one.
+fn lineup_json(prj: &Project, ei: usize) -> Value {
+    let (left, right) = panel::neighbours(&prj.layout, ei);
+    let name = |i: Option<usize>| i.map(|i| prj.layout.enclosures[i].name.clone());
+    let pos = panel::positions(&prj.layout);
+    let passages: Vec<Value> = panel::passages(&prj.layout, &pos, ei)
+        .into_iter()
+        .map(|x| json!({ "y": x.at[1] - pos[ei][1], "z": x.at[2] - pos[ei][2], "cutouts": [x.cutouts.0, x.cutouts.1] }))
+        .collect();
+    json!({ "right_of": name(left), "left_of": name(right), "position": pos[ei], "passages_right": passages })
+}
+
 fn enclosure_json(prj: &Project, e: &Enclosure) -> Value {
     let components: Vec<Value> = panel::components(e).into_iter().map(|c| json!({ "role": c.role.title(), "part": c.part, "count": c.count })).collect();
     let faces: Vec<Value> = Face::ALL
@@ -191,8 +225,10 @@ fn enclosure_json(prj: &Project, e: &Enclosure) -> Value {
             (!items.is_empty()).then(|| json!({ "face": f.key(), "items": items }))
         })
         .collect();
+    let ei = prj.layout.enclosures.iter().position(|x| std::ptr::eq(x, e)).unwrap_or(0);
     json!({
         "name": e.name,
+        "lineup": lineup_json(prj, ei),
         "system": e.build.system,
         "part": e.part,
         "size": [e.width, e.height, e.depth],
@@ -285,6 +321,35 @@ fn set_enclosure(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     resize(e, a);
     Ok(enclosure_json(prj, &prj.layout.enclosures[ei]))
+}
+
+fn bay_enclosure(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    match a.str("right_of").filter(|n| !n.trim().is_empty()) {
+        Some(left) => {
+            let li = enclosure_index(prj, left.trim())?;
+            if !panel::bay_right_of(prj, ei, li) {
+                return Err(tr_fmt!("{} cannot be bayed to itself", prj.layout.enclosures[ei].name));
+            }
+        }
+        None => panel::unbay(prj, ei),
+    }
+    let lineup: Vec<&str> = panel::lineup_of(&prj.layout, ei).into_iter().map(|i| prj.layout.enclosures[i].name.as_str()).collect();
+    Ok(json!({ "lineup": lineup }))
+}
+
+fn add_cable_passage(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let prj = s.project_mut()?;
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let Some(right) = panel::neighbours(&prj.layout, ei).1 else {
+        return Err(tr_fmt!("{} has no enclosure bayed to its right side", prj.layout.enclosures[ei].name));
+    };
+    let (y, z) = panel::next_passage_place(&prj.layout, ei);
+    let (y, z) = (a.num("y").unwrap_or(y), a.num("z").unwrap_or(z));
+    let ids = panel::add_passage(prj, ei, y, z, a.num("diameter").unwrap_or(panel::PASSAGE_DIAMETER).max(1.0));
+    let (left_name, right_name) = (prj.layout.enclosures[ei].name.clone(), prj.layout.enclosures[right].name.clone());
+    Ok(json!({ "cutouts": ids, "from": left_name, "to": right_name, "lineup": lineup_json(prj, ei) }))
 }
 
 fn place_accessory(s: &mut Session, a: &Args) -> Result<Value, String> {

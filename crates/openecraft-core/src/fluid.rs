@@ -384,32 +384,49 @@ pub fn fluid_nets(prj: &Project, open: &Netlist) -> Vec<FluidNet> {
     out
 }
 
-/// Way of a tube through the ducts of an enclosure.
+/// Way of a tube through the ducts of an enclosure (or of the enclosures of a
+/// line-up, through their cable passages).
 #[derive(Clone, Debug, PartialEq)]
 pub struct TubeRoute {
+    /// Enclosure name; "+CAB1 / +CAB2" across bayed enclosures.
     pub enclosure: String,
     /// Metres, including the way to the plate and the reserve.
     pub length: f32,
     pub bends: usize,
 }
 
-/// Routes a hose between two devices placed on the mounting plate of the same
-/// enclosure through its ducts (like the virtual wiring).
+/// Routes a hose between two placed devices through the ducts (like the virtual
+/// wiring): on the plate, from the door or the walls, and into bayed enclosures
+/// through the cable passages. Devices of a placed device group (valve terminal) are
+/// reached at the group; hoses inside one group are part of its base (none).
 pub fn route(prj: &Project, a: PinRef, b: PinRef) -> Option<TubeRoute> {
+    use crate::panel;
     let tag = |p: PinRef| &prj.pages[p.page].symbols[p.sym].tag;
     let (ta, tb) = (tag(a), tag(b));
     if ta == tb {
         return None;
     }
-    let (ea, ia) = prj.layout.find_device(ta)?;
-    let (eb, ib) = prj.layout.find_device(tb)?;
-    if ea != eb || ia.face != crate::panel::Face::Plate || ib.face != crate::panel::Face::Plate {
+    let (ea, ia) = panel::locate(prj, ta)?;
+    let (eb, ib) = panel::locate(prj, tb)?;
+    if ia.id == ib.id {
         return None;
     }
-    let e = &prj.layout.enclosures[ea];
-    let r = crate::panel::route(e, ia.center(), ib.center());
-    let mm = r.plate_length + ia.z + ia.d + ib.z + ib.d + prj.layout.wire_reserve;
-    Some(TubeRoute { enclosure: e.name.clone(), length: mm / 1000.0, bends: r.points.len().saturating_sub(2) })
+    let encs = &prj.layout.enclosures;
+    let (wa, la, _) = panel::wiring_end(&encs[ea], ia, None);
+    let (wb, lb, _) = panel::wiring_end(&encs[eb], ib, None);
+    let bends = |r: &panel::Route| r.points.len().saturating_sub(2);
+    let (plate, n, enclosure) = if ea == eb {
+        let r = panel::route_ends(&encs[ea], wa, wb);
+        (r.plate_length, bends(&r), encs[ea].name.clone())
+    } else {
+        let pos = panel::positions(&prj.layout);
+        let (r, legs) = panel::route_across(&prj.layout, &pos, (ea, wa), (eb, wb)).ok()?;
+        let plate = r.plate_length + legs.iter().map(|l| l.route.plate_length + l.passage_length).sum::<f32>();
+        let names: Vec<&str> = std::iter::once(ea).chain(legs.iter().map(|l| l.enclosure)).map(|k| encs[k].name.as_str()).collect();
+        (plate, bends(&r) + legs.iter().map(|l| bends(&l.route) + 2).sum::<usize>(), names.join(" / "))
+    };
+    let mm = plate + la + lb + prj.layout.wire_reserve;
+    Some(TubeRoute { enclosure, length: mm / 1000.0, bends: n })
 }
 
 /// A hose (or tube, pipe) between two ports.
