@@ -12,41 +12,6 @@ pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-pub const PAGE_W: f32 = 420.0;
-pub const PAGE_H: f32 = 297.0;
-/// Outer drawing frame.
-pub const FRAME_X0: f32 = 10.0;
-pub const FRAME_Y0: f32 = 10.0;
-pub const FRAME_X1: f32 = 410.0;
-pub const FRAME_Y1: f32 = 287.0;
-/// Inner area (inside column / row strips).
-pub const AREA_X0: f32 = 15.0;
-pub const AREA_Y0: f32 = 15.0;
-/// Top edge of the title block.
-pub const TITLE_Y0: f32 = 255.0;
-pub const COLUMNS: usize = 10;
-pub const ROWS: usize = 6;
-
-pub fn column_width() -> f32 {
-    (FRAME_X1 - AREA_X0) / COLUMNS as f32
-}
-
-pub fn row_height() -> f32 {
-    (TITLE_Y0 - AREA_Y0) / ROWS as f32
-}
-
-/// Column (1-based) of a page position, as used for cross references (`/page.column`).
-pub fn column_of(pos: P) -> usize {
-    let c = ((pos.x - AREA_X0) / column_width()).floor() as i64 + 1;
-    c.clamp(1, COLUMNS as i64) as usize
-}
-
-/// Row letter of a page position.
-pub fn row_of(pos: P) -> char {
-    let r = ((pos.y - AREA_Y0) / row_height()).floor() as i64;
-    (b'A' + r.clamp(0, ROWS as i64 - 1) as u8) as char
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Project {
@@ -106,6 +71,12 @@ pub struct Project {
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub wiring_marks: Vec<crate::wiring::WiringMark>,
+    /// Structure management: defined identifiers, aspects of the pages, work areas.
+    #[serde(skip_serializing_if = "crate::structure::Structures::is_default")]
+    pub structures: crate::structure::Structures,
+    /// Page templates defined for the project.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub page_templates: Vec<crate::page_templates::PageTemplate>,
     pub next_id: u64,
 }
 
@@ -135,6 +106,8 @@ impl Default for Project {
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
             languages: Default::default(),
+            structures: Default::default(),
+            page_templates: Vec::new(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -178,6 +151,13 @@ pub enum PageKind {
     Report(ReportKind),
     /// 2D model view of the mounting plate of an enclosure (enclosure id).
     Mounting(u64),
+    /// Overview drawing (single-line, block diagram): symbols and wires are drawn
+    /// but not evaluated.
+    Overview,
+    /// Free graphics (layout sketches, notes): not evaluated.
+    Graphic,
+    /// An embedded file (PDF, Office document, image).
+    Document,
 }
 
 impl PageKind {
@@ -187,7 +167,15 @@ impl PageKind {
             PageKind::Cover => tr("Cover sheet").into(),
             PageKind::Report(r) => tr_fmt!("Report: {}", r.title()),
             PageKind::Mounting(_) => tr("Mounting layout").into(),
+            PageKind::Overview => tr("Overview (not evaluated)").into(),
+            PageKind::Graphic => tr("Graphics").into(),
+            PageKind::Document => tr("Document (embedded file)").into(),
         }
+    }
+
+    /// Pages drawn by hand (symbols, wires, texts, graphics).
+    pub fn is_drawing(self) -> bool {
+        matches!(self, PageKind::Schematic | PageKind::Overview | PageKind::Graphic)
     }
 }
 
@@ -269,10 +257,15 @@ pub struct Page {
     /// Page number / name as shown in cross references, e.g. "3".
     pub name: String,
     pub description: String,
-    /// Structure of the page (IEC 81346) without prefix signs: function (`=`) and
-    /// location (`+`). Devices placed on the page inherit it.
+    /// Structure of the page (IEC 81346) without prefix signs: function (`=`),
+    /// installation site (`++`), location (`+`) and higher-level product (`-`).
+    /// Devices placed on the page inherit it.
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
     /// Released page: no changes until it is unlocked.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub locked: bool,
@@ -282,6 +275,12 @@ pub struct Page {
     /// Title block of this page; empty = the project's default.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub title_block: String,
+    /// Plot frame (paper format, columns, rows); empty = the project's default.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub frame: String,
+    /// File of a document page.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document: Option<crate::document::Document>,
     pub kind: PageKind,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
@@ -296,10 +295,10 @@ impl Default for Page {
 }
 
 impl Page {
-    /// Its content can be changed: a schematic page that is not released. Report,
-    /// cover and mounting pages are generated.
+    /// Its content can be changed: a schematic, overview or graphics page that is
+    /// not released. Report, cover and mounting pages are generated.
     pub fn is_editable(&self) -> bool {
-        self.kind == PageKind::Schematic && !self.locked
+        self.kind.is_drawing() && !self.locked
     }
 
     pub fn new(id: u64, name: &str, description: &str, kind: PageKind) -> Page {
@@ -308,10 +307,14 @@ impl Page {
             name: name.into(),
             description: description.into(),
             function: String::new(),
+            installation: String::new(),
             location: String::new(),
+            product: String::new(),
             locked: false,
             generated: false,
             title_block: String::new(),
+            frame: String::new(),
+            document: None,
             kind,
             symbols: Vec::new(),
             wires: Vec::new(),

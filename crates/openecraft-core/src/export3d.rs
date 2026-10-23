@@ -105,22 +105,6 @@ pub fn scene(prj: &Project) -> Vec<EnclosureScene> {
         .collect()
 }
 
-fn base64(data: &[u8]) -> String {
-    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::with_capacity(data.len().div_ceil(3) * 4);
-    for c in data.chunks(3) {
-        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
-        for i in 0..4 {
-            if i <= c.len() {
-                out.push(T[(n >> (18 - 6 * i) & 63) as usize] as char);
-            } else {
-                out.push('=');
-            }
-        }
-    }
-    out
-}
-
 fn json_str(s: &str) -> String {
     serde_json::to_string(s).unwrap_or_else(|_| "\"\"".into())
 }
@@ -181,7 +165,7 @@ pub fn gltf(prj: &Project) -> String {
     let _ = write!(out, r#""asset":{{"version":"2.0","generator":"OpenECraft"}},"scene":0,"scenes":[{{"name":{},"nodes":[{roots}]}}],"#, json_str(&prj.info.name));
     let _ = write!(out, r#""nodes":[{}],"meshes":[{}],"materials":[{}],"#, nodes.join(","), meshes.join(","), materials.join(","));
     let _ = write!(out, r#""accessors":[{}],"bufferViews":[{}],"#, accessors.join(","), views.join(","));
-    let _ = write!(out, r#""buffers":[{{"byteLength":{},"uri":"data:application/octet-stream;base64,{}"}}]}}"#, bin.len(), base64(&bin));
+    let _ = write!(out, r#""buffers":[{{"byteLength":{},"uri":"data:application/octet-stream;base64,{}"}}]}}"#, bin.len(), crate::document::base64_encode(&bin));
     out
 }
 

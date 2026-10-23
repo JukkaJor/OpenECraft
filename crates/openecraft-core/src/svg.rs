@@ -2,7 +2,7 @@
 
 use crate::geom::P;
 use crate::index::Index;
-use crate::model::{Project, PAGE_H, PAGE_W};
+use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
 use crate::reports::Analysis;
 use crate::symbols::Anchor;
@@ -86,11 +86,12 @@ pub fn page_svg(prj: &Project, page_i: usize) -> String {
 
 fn page_svg_with(prj: &Project, idx: &Index, an: &Analysis, page_i: usize) -> String {
     let mut d = SvgDraw { out: String::new() };
+    let (w, h) = crate::frame::of_page(prj, page_i).size();
     let _ = writeln!(
         d.out,
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{PAGE_W}mm\" height=\"{PAGE_H}mm\" viewBox=\"0 0 {PAGE_W} {PAGE_H}\" font-family=\"Arial, Helvetica, sans-serif\">"
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{w}mm\" height=\"{h}mm\" viewBox=\"0 0 {w} {h}\" font-family=\"Arial, Helvetica, sans-serif\">"
     );
-    let _ = writeln!(d.out, "<rect x=\"0\" y=\"0\" width=\"{PAGE_W}\" height=\"{PAGE_H}\" fill=\"#fff\"/>");
+    let _ = writeln!(d.out, "<rect x=\"0\" y=\"0\" width=\"{w}\" height=\"{h}\" fill=\"#fff\"/>");
     draw_page(&mut d, prj, idx, an, page_i, &Opts::default());
     d.out.push_str("</svg>\n");
     d.out
@@ -105,15 +106,26 @@ pub fn print_document(prj: &Project) -> String {
     let _ = writeln!(
         out,
         "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>{}</title><style>\
-         @page {{ size: A3 landscape; margin: 0; }}\
          body {{ margin: 0; background: #888; }}\
-         .page {{ width: 420mm; height: 297mm; page-break-after: always; background: #fff; margin: 0 auto 8mm auto; }}\
-         @media print {{ body {{ background: none; }} .page {{ margin: 0; }} }}\
-         </style></head><body>",
+         .page {{ page-break-after: always; background: #fff; margin: 0 auto 8mm auto; }}\
+         @media print {{ body {{ background: none; }} .page {{ margin: 0; }} }}",
         esc(&prj.info.name)
     );
-    for i in 0..prj.pages.len() {
-        out.push_str("<div class=\"page\">\n");
+    // One named @page rule per paper size.
+    let sizes: Vec<(f32, f32)> = (0..prj.pages.len()).map(|i| crate::frame::of_page(prj, i).size()).collect();
+    let mut distinct: Vec<(f32, f32)> = Vec::new();
+    for s in &sizes {
+        if !distinct.contains(s) {
+            distinct.push(*s);
+        }
+    }
+    for (n, (w, h)) in distinct.iter().enumerate() {
+        let _ = write!(out, "@page s{n} {{ size: {w}mm {h}mm; margin: 0; }}");
+    }
+    out.push_str("</style></head><body>\n");
+    for (i, (w, h)) in sizes.iter().enumerate() {
+        let n = distinct.iter().position(|s| s == &(*w, *h)).unwrap_or(0);
+        let _ = writeln!(out, "<div class=\"page\" style=\"page: s{n}; width: {w}mm; height: {h}mm\">");
         out.push_str(&page_svg_with(prj, &idx, &an, i));
         out.push_str("</div>\n");
     }

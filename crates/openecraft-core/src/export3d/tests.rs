@@ -23,9 +23,9 @@ fn the_scene_has_walls_door_plate_and_items() {
 
 #[test]
 fn base64_and_step_reals() {
-    assert_eq!(base64(b"Man"), "TWFu");
-    assert_eq!(base64(b"Ma"), "TWE=");
-    assert_eq!(base64(b"M"), "TQ==");
+    assert_eq!(crate::document::base64_encode(b"Man"), "TWFu");
+    assert_eq!(crate::document::base64_encode(b"Ma"), "TWE=");
+    assert_eq!(crate::document::base64_encode(b"M"), "TQ==");
     assert_eq!(real(12.0), "12.");
     assert_eq!(real(-0.5), "-0.5");
     assert_eq!(real(1e-9), "0.");

@@ -28,6 +28,12 @@ pub enum Purpose {
     Table(crate::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
     Dictionary,
+    /// Structure template (JSON) to apply to the project.
+    StructureTemplate,
+    /// A file to embed as a document page.
+    Document,
+    /// Page templates (JSON) to add to the project.
+    PageTemplates,
 }
 
 impl FileKind for Purpose {
@@ -40,6 +46,9 @@ impl FileKind for Purpose {
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
             Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
+            Purpose::StructureTemplate => (tr("OpenECraft structure template (JSON)"), &["json"]),
+            Purpose::PageTemplates => (tr("OpenECraft page templates (JSON)"), &["json"]),
+            Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
         }

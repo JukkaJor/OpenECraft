@@ -710,3 +710,224 @@ Door (front)	Tür (Vorderseite)	Porte (face avant)	Puerta (frente)
 The door seen from the front: door devices and cutouts	Die Tür von vorn: Türgeräte und Ausschnitte	La porte vue de face : appareils de porte et découpes	La puerta vista de frente: equipos de la puerta y recortes
 Door (inside)	Tür (Innenseite)	Porte (face intérieure)	Puerta (interior)
 The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door	Die Tür von innen (Scharniere rechts): Kabelkanäle und die Verdrahtung hinter der Tür	La porte vue de l'intérieur (charnières à droite) : goulottes et câblage derrière la porte	La puerta vista desde dentro (bisagras a la derecha): canaletas y cableado detrás de la puerta
+Installation site	Aufstellungsort	Lieu d'installation	Lugar de instalación
+Structure management	Strukturkennzeichenverwaltung	Gestion des identificateurs de structure	Gestión de identificadores de estructura
+Structure management…	Strukturkennzeichenverwaltung…	Gestion des identificateurs de structure…	Gestión de identificadores de estructura…
+Structure identifiers (IEC 81346), templates and work areas	Strukturkennzeichen (IEC 81346), Vorlagen und Arbeitsbereiche	Identificateurs de structure (CEI 81346), modèles et zones de travail	Identificadores de estructura (IEC 81346), plantillas y áreas de trabajo
+Template	Vorlage	Modèle	Plantilla
+Apply template	Vorlage anwenden	Appliquer le modèle	Aplicar plantilla
+Sets the aspects of the pages and adds the template's identifiers	Setzt die Aspekte der Seiten und fügt die Kennzeichen der Vorlage hinzu	Définit les aspects des pages et ajoute les identificateurs du modèle	Establece los aspectos de las páginas y añade los identificadores de la plantilla
+Load template…	Vorlage laden…	Charger un modèle…	Cargar plantilla…
+Save as template…	Als Vorlage speichern…	Enregistrer comme modèle…	Guardar como plantilla…
+Aspects, identifiers and work areas as a file for other projects	Aspekte, Kennzeichen und Arbeitsbereiche als Datei für andere Projekte	Aspects, identificateurs et zones de travail dans un fichier pour d'autres projets	Aspectos, identificadores y áreas de trabajo como archivo para otros proyectos
+Aspects of the pages	Aspekte der Seiten	Aspects des pages	Aspectos de las páginas
+Identifiers	Kennzeichen	Identificateurs	Identificadores
+Define all used	Alle verwendeten definieren	Définir tous les utilisés	Definir todos los usados
+Adds the identifiers used on pages and in device tags	Fügt die auf Seiten und in Betriebsmittelkennzeichen verwendeten Kennzeichen hinzu	Ajoute les identificateurs utilisés sur les pages et dans les repères d'appareils	Añade los identificadores usados en páginas y en las referencias de dispositivos
+Remove unused	Unbenutzte entfernen	Supprimer les inutilisés	Eliminar los no usados
+Removes the definitions no page or device uses	Entfernt die Definitionen, die keine Seite und kein Betriebsmittel verwendet	Supprime les définitions qu'aucune page ni aucun appareil n'utilise	Elimina las definiciones que ninguna página ni dispositivo usa
+not defined	nicht definiert	non défini	no definido
+Rename	Umbenennen	Renommer	Renombrar
+Renames the identifier on all pages and in all device tags	Benennt das Kennzeichen auf allen Seiten und in allen Betriebsmittelkennzeichen um	Renomme l'identificateur sur toutes les pages et dans tous les repères d'appareils	Renombra el identificador en todas las páginas y en todas las referencias de dispositivos
+Rename in the whole project	Im ganzen Projekt umbenennen	Renommer dans tout le projet	Renombrar en todo el proyecto
+Define	Definieren	Définir	Definir
+Remove the definition (pages and devices keep the identifier)	Definition entfernen (Seiten und Betriebsmittel behalten das Kennzeichen)	Supprimer la définition (les pages et appareils gardent l'identificateur)	Eliminar la definición (páginas y dispositivos conservan el identificador)
+Identifiers in use that are not defined are reported by the check.	Verwendete Kennzeichen ohne Definition meldet die Prüfung.	Les identificateurs utilisés mais non définis sont signalés par la vérification.	La comprobación informa de los identificadores usados que no están definidos.
+Work areas	Arbeitsbereiche	Zones de travail	Áreas de trabajo
+Work area	Arbeitsbereich	Zone de travail	Área de trabajo
+Work area {}	Arbeitsbereich {}	Zone de travail {}	Área de trabajo {}
+➕ Work area	➕ Arbeitsbereich	➕ Zone de travail	➕ Área de trabajo
+(whole project)	(ganzes Projekt)	(projet entier)	(proyecto completo)
+A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Ein Arbeitsbereich beschränkt die Seiten und Betriebsmittel im Navigator auf einen Teil des Projekts. Filter: leer = beliebig, * = beliebige Zeichen; A1 umfasst auch A1.2.	Une zone de travail limite les pages et appareils du navigateur à une partie du projet. Filtres : vide = tout, * = caractères quelconques ; A1 couvre aussi A1.2.	Un área de trabajo limita las páginas y dispositivos del navegador a una parte del proyecto. Filtros: vacío = cualquiera, * = cualquier carácter; A1 incluye también A1.2.
+OpenECraft structure template	OpenECraft-Strukturvorlage	Modèle de structure OpenECraft	Plantilla de estructura de OpenECraft
+OpenECraft structure template (JSON)	OpenECraft-Strukturvorlage (JSON)	Modèle de structure OpenECraft (JSON)	Plantilla de estructura de OpenECraft (JSON)
+{} structure identifiers added	{} Strukturkennzeichen hinzugefügt	{} identificateurs de structure ajoutés	{} identificadores de estructura añadidos
+{} unused structure identifiers removed	{} unbenutzte Strukturkennzeichen entfernt	{} identificateurs de structure inutilisés supprimés	{} identificadores de estructura no usados eliminados
+{} renamed: {} pages and devices	{} umbenannt: {} Seiten und Betriebsmittel	{} renommé : {} pages et appareils	{} renombrado: {} páginas y dispositivos
+Identifiers of the structure management	Kennzeichen der Strukturkennzeichenverwaltung	Identificateurs de la gestion de structure	Identificadores de la gestión de estructura
+e.g. HALL1, PLANT2	z. B. HALL1, PLANT2	p. ex. HALL1, PLANT2	p. ej. HALL1, PLANT2
+e.g. U1, U1-A2	z. B. U1, U1-A2	p. ex. U1, U1-A2	p. ej. U1, U1-A2
+Function and location	Funktion und Ort	Fonction et emplacement	Función y ubicación
+Installation site and location	Aufstellungsort und Ort	Lieu d'installation et emplacement	Lugar de instalación y ubicación
+Function, installation site and location	Funktion, Aufstellungsort und Ort	Fonction, lieu d'installation et emplacement	Función, lugar de instalación y ubicación
+All aspects (with product)	Alle Aspekte (mit Produkt)	Tous les aspects (avec produit)	Todos los aspectos (con producto)
+Machine (example identifiers)	Maschine (Beispielkennzeichen)	Machine (identificateurs d'exemple)	Máquina (identificadores de ejemplo)
+Process plant (example identifiers)	Verfahrenstechnische Anlage (Beispielkennzeichen)	Installation de process (identificateurs d'exemple)	Planta de proceso (identificadores de ejemplo)
+Power supply	Einspeisung	Alimentation	Alimentación
+Control	Steuerung	Commande	Control
+Drives	Antriebe	Entraînements	Accionamientos
+Safety	Sicherheit	Sécurité	Seguridad
+Control cabinet	Schaltschrank	Armoire de commande	Armario de control
+Operator desk	Bedienpult	Pupitre de commande	Pupitre de mando
+Field devices	Feldgeräte	Appareils de terrain	Dispositivos de campo
+Supply	Versorgung	Approvisionnement	Suministro
+Pumps	Pumpen	Pompes	Bombas
+Tanks	Behälter	Réservoirs	Depósitos
+Hall 1	Halle 1	Hall 1	Nave 1
+Outdoor area	Außenbereich	Zone extérieure	Zona exterior
+Structure identifier {} is not defined in the structure management	Strukturkennzeichen {} ist in der Strukturkennzeichenverwaltung nicht definiert	L'identificateur de structure {} n'est pas défini dans la gestion de structure	El identificador de estructura {} no está definido en la gestión de estructura
+The identifier must not be empty	Das Kennzeichen darf nicht leer sein	L'identificateur ne doit pas être vide	El identificador no debe estar vacío
+The name must not be empty	Der Name darf nicht leer sein	Le nom ne doit pas être vide	El nombre no debe estar vacío
+{} exists already	{} existiert bereits	{} existe déjà	{} ya existe
+{} is not defined	{} ist nicht definiert	{} n'est pas défini	{} no está definido
+Not a structure template: {}	Keine Strukturvorlage: {}	Pas un modèle de structure : {}	No es una plantilla de estructura: {}
+Unknown aspect: {}	Unbekannter Aspekt: {}	Aspect inconnu : {}	Aspecto desconocido: {}
+Unknown structure template: {}	Unbekannte Strukturvorlage: {}	Modèle de structure inconnu : {}	Plantilla de estructura desconocida: {}
+No work area named {}	Kein Arbeitsbereich namens {}	Aucune zone de travail nommée {}	Ningún área de trabajo llamada {}
+Give either template or path	Entweder template oder path angeben	Indiquer soit template soit path	Indique template o path
+Installation site of the page	Aufstellungsort der Seite	Lieu d'installation de la page	Lugar de instalación de la página
+Higher-level product of the page	Übergeordnetes Produkt der Seite	Produit de niveau supérieur de la page	Producto de nivel superior de la página
+Description of the page's function (structure management)	Beschreibung der Funktion der Seite (Strukturkennzeichenverwaltung)	Description de la fonction de la page (gestion de structure)	Descripción de la función de la página (gestión de estructura)
+Description of the page's location (structure management)	Beschreibung des Orts der Seite (Strukturkennzeichenverwaltung)	Description de l'emplacement de la page (gestion de structure)	Descripción de la ubicación de la página (gestión de estructura)
+Installation site aspect (++) of the page; the devices on the page move along	Aspekt Aufstellungsort (++) der Seite; die Betriebsmittel der Seite ziehen mit	Aspect lieu d'installation (++) de la page ; les appareils de la page suivent	Aspecto lugar de instalación (++) de la página; los dispositivos de la página se mueven con ella
+Higher-level product aspect (-) of the page; the devices on the page move along	Aspekt übergeordnetes Produkt (-) der Seite; die Betriebsmittel der Seite ziehen mit	Aspect produit de niveau supérieur (-) de la page ; les appareils de la page suivent	Aspecto producto de nivel superior (-) de la página; los dispositivos de la página se mueven con ella
+Only the pages of this work area (list_structure)	Nur die Seiten dieses Arbeitsbereichs (list_structure)	Uniquement les pages de cette zone de travail (list_structure)	Solo las páginas de esta área de trabajo (list_structure)
+function (=), installation (++), location (+) or product (-)	function (=), installation (++), location (+) oder product (-)	function (=), installation (++), location (+) ou product (-)	function (=), installation (++), location (+) o product (-)
+Lists the structure management: aspects of the pages, defined and used identifiers, work areas	Listet die Strukturkennzeichenverwaltung: Aspekte der Seiten, definierte und verwendete Kennzeichen, Arbeitsbereiche	Liste la gestion de structure : aspects des pages, identificateurs définis et utilisés, zones de travail	Lista la gestión de estructura: aspectos de las páginas, identificadores definidos y usados, áreas de trabajo
+Defines a structure identifier or changes its description	Definiert ein Strukturkennzeichen oder ändert seine Beschreibung	Définit un identificateur de structure ou modifie sa description	Define un identificador de estructura o cambia su descripción
+Identifier, e.g. A1 or CAB1	Kennzeichen, z. B. A1 oder CAB1	Identificateur, p. ex. A1 ou CAB1	Identificador, p. ej. A1 o CAB1
+Removes the definition of a structure identifier (pages and devices keep it)	Entfernt die Definition eines Strukturkennzeichens (Seiten und Betriebsmittel behalten es)	Supprime la définition d'un identificateur de structure (les pages et appareils le gardent)	Elimina la definición de un identificador de estructura (páginas y dispositivos lo conservan)
+Renames a structure identifier in the whole project: pages, devices, cables, definition and work areas	Benennt ein Strukturkennzeichen im ganzen Projekt um: Seiten, Betriebsmittel, Kabel, Definition und Arbeitsbereiche	Renomme un identificateur de structure dans tout le projet : pages, appareils, câbles, définition et zones de travail	Renombra un identificador de estructura en todo el proyecto: páginas, dispositivos, cables, definición y áreas de trabajo
+New identifier	Neues Kennzeichen	Nouvel identificateur	Nuevo identificador
+Defines all identifiers in use and / or removes the definitions nobody uses	Definiert alle verwendeten Kennzeichen und / oder entfernt die unbenutzten Definitionen	Définit tous les identificateurs utilisés et / ou supprime les définitions inutilisées	Define todos los identificadores usados y / o elimina las definiciones sin uso
+Define the identifiers in use (default: true)	Verwendete Kennzeichen definieren (Standard: true)	Définir les identificateurs utilisés (par défaut : true)	Definir los identificadores usados (por defecto: true)
+Remove unused definitions (default: false)	Unbenutzte Definitionen entfernen (Standard: false)	Supprimer les définitions inutilisées (par défaut : false)	Eliminar las definiciones sin uso (por defecto: false)
+Lists the built-in structure templates	Listet die eingebauten Strukturvorlagen	Liste les modèles de structure intégrés	Lista las plantillas de estructura integradas
+Applies a structure template: the aspects of the pages and its identifiers	Wendet eine Strukturvorlage an: die Aspekte der Seiten und ihre Kennzeichen	Applique un modèle de structure : les aspects des pages et ses identificateurs	Aplica una plantilla de estructura: los aspectos de las páginas y sus identificadores
+Name of a built-in template (list_structure_templates)	Name einer eingebauten Vorlage (list_structure_templates)	Nom d'un modèle intégré (list_structure_templates)	Nombre de una plantilla integrada (list_structure_templates)
+Template file written by export_structure_template	Vorlagendatei von export_structure_template	Fichier de modèle écrit par export_structure_template	Archivo de plantilla escrito por export_structure_template
+Writes the structure management (aspects, identifiers, work areas) as a template file	Schreibt die Strukturkennzeichenverwaltung (Aspekte, Kennzeichen, Arbeitsbereiche) als Vorlagendatei	Écrit la gestion de structure (aspects, identificateurs, zones de travail) dans un fichier de modèle	Escribe la gestión de estructura (aspectos, identificadores, áreas de trabajo) como archivo de plantilla
+Sets the aspects the pages use	Legt die Aspekte fest, die die Seiten verwenden	Définit les aspects utilisés par les pages	Establece los aspectos que usan las páginas
+Aspects separated by commas, e.g. function,location	Aspekte durch Kommas getrennt, z. B. function,location	Aspects séparés par des virgules, p. ex. function,location	Aspectos separados por comas, p. ej. function,location
+Creates or changes a work area: only the pages and devices of its structure are shown	Legt einen Arbeitsbereich an oder ändert ihn: nur die Seiten und Betriebsmittel seiner Struktur werden gezeigt	Crée ou modifie une zone de travail : seuls les pages et appareils de sa structure sont affichés	Crea o cambia un área de trabajo: solo se muestran las páginas y dispositivos de su estructura
+Name of the work area	Name des Arbeitsbereichs	Nom de la zone de travail	Nombre del área de trabajo
+Function filter (= A1, A*; empty = any)	Funktionsfilter (= A1, A*; leer = beliebig)	Filtre de fonction (= A1, A* ; vide = tout)	Filtro de función (= A1, A*; vacío = cualquiera)
+Installation site filter (++)	Filter Aufstellungsort (++)	Filtre de lieu d'installation (++)	Filtro de lugar de instalación (++)
+Location filter (+)	Filter Ort (+)	Filtre d'emplacement (+)	Filtro de ubicación (+)
+Product filter (-)	Filter Produkt (-)	Filtre de produit (-)	Filtro de producto (-)
+Deletes a work area	Löscht einen Arbeitsbereich	Supprime une zone de travail	Elimina un área de trabajo
+  (built-in)	  (eingebaut)	  (intégré)	  (integrado)
+{} (built-in)	{} (eingebaut)	{} (intégré)	{} (integrado)
+{} (copy)	{} (Kopie)	{} (copie)	{} (copia)
+A template of this name is replaced.	Eine Vorlage mit diesem Namen wird ersetzt.	Un modèle portant ce nom est remplacé.	Se reemplaza una plantilla con este nombre.
+A template sets the page type, plot frame, title block, structure and description of a new page and places its content.	Eine Vorlage legt Seitentyp, Plotrahmen, Schriftfeld, Struktur und Beschreibung einer neuen Seite fest und platziert ihren Inhalt.	Un modèle définit le type, le cadre, le cartouche, la structure et la description d'une nouvelle page et place son contenu.	Una plantilla fija el tipo, el marco, el cajetín, la estructura y la descripción de una página nueva y coloca su contenido.
+A0 landscape	A0 quer	A0 paysage	A0 horizontal
+A1 landscape	A1 quer	A1 paysage	A1 horizontal
+A2 landscape	A2 quer	A2 paysage	A2 horizontal
+A3 landscape	A3 quer	A3 paysage	A3 horizontal
+A3 portrait	A3 hoch	A3 portrait	A3 vertical
+A4 landscape	A4 quer	A4 paysage	A4 horizontal
+A4 portrait	A4 hoch	A4 portrait	A4 vertical
+Letter landscape	Letter quer	Letter paysage	Letter horizontal
+Tabloid landscape	Tabloid quer	Tabloid paysage	Tabloid horizontal
+Schematic A4 portrait	Schaltplan A4 hoch	Schéma A4 portrait	Esquema A4 vertical
+Graphics A4 portrait	Grafik A4 hoch	Graphique A4 portrait	Gráfico A4 vertical
+Document A4 portrait	Dokument A4 hoch	Document A4 portrait	Documento A4 vertical
+A0, A1, A2, A3, A4, Letter, Legal, Tabloid or custom	A0, A1, A2, A3, A4, Letter, Legal, Tabloid oder custom	A0, A1, A2, A3, A4, Letter, Legal, Tabloid ou custom	A0, A1, A2, A3, A4, Letter, Legal, Tabloid o custom
+Border distance (mm)	Randabstand (mm)	Distance du bord (mm)	Distancia al borde (mm)
+Built-in frames cannot be changed; copy one to adapt it.	Eingebaute Rahmen sind nicht änderbar; zum Anpassen kopieren.	Les cadres intégrés ne sont pas modifiables ; copiez-en un pour l'adapter.	Los marcos integrados no se pueden cambiar; copie uno para adaptarlo.
+Choose file…	Datei wählen…	Choisir un fichier…	Elegir archivo…
+Column / row strips	Spalten- / Zeilenleisten	Bandes de colonnes / lignes	Bandas de columnas / filas
+Column and row strips	Spalten- und Zeilenleisten	Bandes de colonnes et de lignes	Bandas de columnas y filas
+Column labels	Spaltenbeschriftung	Repères de colonnes	Rótulos de columnas
+Row labels	Zeilenbeschriftung	Repères de lignes	Rótulos de filas
+Columns / rows	Spalten / Zeilen	Colonnes / lignes	Columnas / filas
+Content	Inhalt	Contenu	Contenido
+Creates or changes a plot frame of the project (built-in frames are copied under a new name)	Legt einen Plotrahmen des Projekts an oder ändert ihn (eingebaute Rahmen werden unter neuem Namen kopiert)	Crée ou modifie un cadre du projet (les cadres intégrés sont copiés sous un nouveau nom)	Crea o cambia un marco del proyecto (los marcos integrados se copian con un nombre nuevo)
+Deletes a page template of the project	Löscht eine Seitenvorlage des Projekts	Supprime un modèle de page du projet	Elimina una plantilla de página del proyecto
+Deletes a plot frame of the project that no page uses	Löscht einen Plotrahmen des Projekts, den keine Seite verwendet	Supprime un cadre du projet qu'aucune page n'utilise	Elimina un marco del proyecto que ninguna página usa
+Distance of the border from the paper edge in mm	Abstand des Rahmens vom Papierrand in mm	Distance du cadre au bord du papier en mm	Distancia del marco al borde del papel en mm
+Document	Dokument	Document	Documento
+Document (embedded file)	Dokument (eingebettete Datei)	Document (fichier intégré)	Documento (archivo incrustado)
+Document {} embedded ({})	Dokument {} eingebettet ({})	Document {} intégré ({})	Documento {} incrustado ({})
+Documents	Dokumente	Documents	Documentos
+Drawing area {} x {} mm, column width {} mm	Zeichenbereich {} x {} mm, Spaltenbreite {} mm	Zone de dessin {} x {} mm, largeur de colonne {} mm	Área de dibujo {} x {} mm, ancho de columna {} mm
+Editable copy of this plot frame	Bearbeitbare Kopie dieses Plotrahmens	Copie modifiable de ce cadre	Copia editable de este marco
+Embedded document: attached to this page in the PDF export	Eingebettetes Dokument: im PDF-Export an diese Seite angehängt	Document intégré : joint à cette page dans l'export PDF	Documento incrustado: adjunto a esta página en la exportación PDF
+Embeds a file (PDF, Office document, image …) as a document page; the PDF export attaches it to the page	Bettet eine Datei (PDF, Office-Dokument, Bild …) als Dokumentseite ein; der PDF-Export hängt sie an die Seite an	Intègre un fichier (PDF, document Office, image …) comme page document ; l'export PDF le joint à la page	Incrusta un archivo (PDF, documento de Office, imagen …) como página de documento; la exportación PDF lo adjunta a la página
+Embeds a file (PDF, Word, Excel, image …) as a page	Bettet eine Datei (PDF, Word, Excel, Bild …) als Seite ein	Intègre un fichier (PDF, Word, Excel, image …) comme page	Incrusta un archivo (PDF, Word, Excel, imagen …) como página
+Embeds the file in the project (replaces the current one)	Bettet die Datei ins Projekt ein (ersetzt die bisherige)	Intègre le fichier dans le projet (remplace l'actuel)	Incrusta el archivo en el proyecto (reemplaza el actual)
+Excel workbook	Excel-Arbeitsmappe	Classeur Excel	Libro de Excel
+Word document	Word-Dokument	Document Word	Documento de Word
+PowerPoint presentation	PowerPoint-Präsentation	Présentation PowerPoint	Presentación de PowerPoint
+OpenDocument file	OpenDocument-Datei	Fichier OpenDocument	Archivo OpenDocument
+Image	Bild	Image	Imagen
+Text file	Textdatei	Fichier texte	Archivo de texto
+Export…	Exportieren…	Exporter…	Exportar…
+Import…	Importieren…	Importer…	Importar…
+File to embed	Einzubettende Datei	Fichier à intégrer	Archivo a incrustar
+Forms – title blocks, frames and templates	Formulare – Schriftfelder, Rahmen und Vorlagen	Formulaires – cartouches, cadres et modèles	Formularios – cajetines, marcos y plantillas
+Title blocks, plot frames and page templates…	Schriftfelder, Plotrahmen und Seitenvorlagen…	Cartouches, cadres et modèles de page…	Cajetines, marcos y plantillas de página…
+Frame of all pages that do not choose one	Rahmen aller Seiten, die keinen eigenen wählen	Cadre de toutes les pages qui n'en choisissent pas	Marco de todas las páginas que no eligen uno
+Frame to start from when the frame is new (default: A3 landscape)	Ausgangsrahmen für einen neuen Rahmen (Standard: A3 landscape)	Cadre de départ pour un nouveau cadre (par défaut : A3 landscape)	Marco de partida para un marco nuevo (por defecto: A3 landscape)
+Free graphics and notes, not evaluated	Freie Grafik und Notizen, nicht ausgewertet	Graphiques libres et notes, non évalués	Gráficos libres y notas, no evaluados
+Give kind or template	kind oder template angeben	Indiquer kind ou template	Indique kind o template
+Imported {} page templates	{} Seitenvorlagen importiert	{} modèles de page importés	{} plantillas de página importadas
+Insert page	Seite einfügen	Insérer la page	Insertar página
+Landscape	Querformat	Paysage	Horizontal
+Portrait	Hochformat	Portrait	Vertical
+landscape	quer	paysage	horizontal
+portrait	hoch	portrait	vertical
+Landscape (true) or portrait (false)	Querformat (true) oder Hochformat (false)	Paysage (true) ou portrait (false)	Horizontal (true) o vertical (false)
+Letters (A, B, C)	Buchstaben (A, B, C)	Lettres (A, B, C)	Letras (A, B, C)
+Numbers (1, 2, 3)	Zahlen (1, 2, 3)	Chiffres (1, 2, 3)	Números (1, 2, 3)
+Lists the page templates (built-in and the project's own)	Listet die Seitenvorlagen (eingebaute und die des Projekts)	Liste les modèles de page (intégrés et ceux du projet)	Lista las plantillas de página (integradas y las del proyecto)
+Lists the plot frames (paper format, orientation, columns and rows) and the project default	Listet die Plotrahmen (Papierformat, Ausrichtung, Spalten und Zeilen) und den Projektstandard	Liste les cadres (format, orientation, colonnes et lignes) et celui par défaut du projet	Lista los marcos (formato, orientación, columnas y filas) y el predeterminado del proyecto
+My page	Meine Seite	Ma page	Mi página
+Name of the frame	Name des Rahmens	Nom du cadre	Nombre del marco
+Name of the template	Name der Vorlage	Nom du modèle	Nombre de la plantilla
+New document page…	Neue Dokumentseite…	Nouvelle page document…	Nueva página de documento…
+New graphics page	Neue Grafikseite	Nouvelle page graphique	Nueva página gráfica
+New overview page	Neue Übersichtsseite	Nouvelle page de vue d'ensemble	Nueva página de vista general
+New page after the current one	Neue Seite nach der aktuellen	Nouvelle page après la page actuelle	Nueva página tras la actual
+New page from template	Neue Seite aus Vorlage	Nouvelle page depuis un modèle	Nueva página desde plantilla
+No document embedded - choose a file in the page properties	Kein Dokument eingebettet - Datei in den Seiteneigenschaften wählen	Aucun document intégré - choisissez un fichier dans les propriétés de la page	Ningún documento incrustado - elija un archivo en las propiedades de la página
+No document embedded	Kein Dokument eingebettet	Aucun document intégré	Ningún documento incrustado
+No page template named {}	Keine Seitenvorlage namens {}	Aucun modèle de page nommé {}	Ninguna plantilla de página llamada {}
+No plot frame named {}	Kein Plotrahmen namens {}	Aucun cadre nommé {}	Ningún marco llamado {}
+Not a page template file: {}	Keine Seitenvorlagen-Datei: {}	Pas un fichier de modèles de page : {}	No es un archivo de plantillas de página: {}
+Number of columns	Anzahl der Spalten	Nombre de colonnes	Número de columnas
+Number of rows	Anzahl der Zeilen	Nombre de lignes	Número de filas
+Only frames no page uses can be deleted	Nur Rahmen, die keine Seite verwendet, sind löschbar	Seuls les cadres qu'aucune page n'utilise peuvent être supprimés	Solo se pueden eliminar marcos que ninguna página usa
+OpenECraft page templates	OpenECraft-Seitenvorlagen	Modèles de page OpenECraft	Plantillas de página de OpenECraft
+OpenECraft page templates (JSON)	OpenECraft-Seitenvorlagen (JSON)	Modèles de page OpenECraft (JSON)	Plantillas de página de OpenECraft (JSON)
+Output file	Ausgabedatei	Fichier de sortie	Archivo de salida
+Overview	Übersicht	Vue d'ensemble	Vista general
+Overview (not evaluated)	Übersicht (nicht ausgewertet)	Vue d'ensemble (non évaluée)	Vista general (no evaluada)
+Page template (list_page_templates) instead of kind	Seitenvorlage (list_page_templates) statt kind	Modèle de page (list_page_templates) au lieu de kind	Plantilla de página (list_page_templates) en lugar de kind
+Page template {} saved	Seitenvorlage {} gespeichert	Modèle de page {} enregistré	Plantilla de página {} guardada
+Page templates	Seitenvorlagen	Modèles de page	Plantillas de página
+Page templates (JSON) from another project	Seitenvorlagen (JSON) aus einem anderen Projekt	Modèles de page (JSON) d'un autre projet	Plantillas de página (JSON) de otro proyecto
+Page {} has no embedded document	Seite {} hat kein eingebettetes Dokument	La page {} n'a pas de document intégré	La página {} no tiene documento incrustado
+Pages and templates using the frame follow	Seiten und Vorlagen mit diesem Rahmen ziehen mit	Les pages et modèles utilisant ce cadre suivent	Las páginas y plantillas que usan el marco lo siguen
+Paper	Papier	Papier	Papel
+Paper height in mm (custom paper)	Papierhöhe in mm (eigenes Format)	Hauteur du papier en mm (format libre)	Alto del papel en mm (formato libre)
+Paper width in mm (custom paper)	Papierbreite in mm (eigenes Format)	Largeur du papier en mm (format libre)	Ancho del papel en mm (formato libre)
+Plot frame	Plotrahmen	Cadre	Marco
+Plot frames	Plotrahmen	Cadres	Marcos
+Plot frame (list_frames); default: the project's	Plotrahmen (list_frames); Standard: der des Projekts	Cadre (list_frames) ; par défaut : celui du projet	Marco (list_frames); por defecto: el del proyecto
+Plot frame (list_frames); empty = the project default	Plotrahmen (list_frames); leer = Projektstandard	Cadre (list_frames) ; vide = celui par défaut du projet	Marco (list_frames); vacío = el predeterminado del proyecto
+Project default: {}	Projektstandard: {}	Par défaut du projet : {}	Predeterminado del proyecto: {}
+Save current page as template…	Aktuelle Seite als Vorlage speichern…	Enregistrer la page actuelle comme modèle…	Guardar la página actual como plantilla…
+Save page as template…	Seite als Vorlage speichern…	Enregistrer la page comme modèle…	Guardar página como plantilla…
+Save page as template	Seite als Vorlage speichern	Enregistrer la page comme modèle	Guardar página como plantilla
+Save file…	Datei speichern…	Enregistrer le fichier…	Guardar archivo…
+Save	Speichern	Enregistrer	Guardar
+Saves a page (type, plot frame, title block, structure, description, content) as a page template	Speichert eine Seite (Typ, Plotrahmen, Schriftfeld, Struktur, Beschreibung, Inhalt) als Seitenvorlage	Enregistre une page (type, cadre, cartouche, structure, description, contenu) comme modèle de page	Guarda una página (tipo, marco, cajetín, estructura, descripción, contenido) como plantilla de página
+Sets the plot frame of all pages that do not choose one	Legt den Plotrahmen aller Seiten fest, die keinen eigenen wählen	Définit le cadre de toutes les pages qui n'en choisissent pas	Establece el marco de todas las páginas que no eligen uno
+Single-line or block diagram: drawn like a schematic, not evaluated	Einpolige Darstellung oder Blockschaltbild: wie ein Schaltplan gezeichnet, nicht ausgewertet	Schéma unifilaire ou synoptique : dessiné comme un schéma, non évalué	Esquema unifilar o de bloques: se dibuja como un esquema, no se evalúa
+Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports).	Symbole und Verbindungen dieser Seite werden gezeichnet, aber nicht ausgewertet (keine Betriebsmittel, Verbindungen oder Auswertungen).	Les symboles et liaisons de cette page sont dessinés mais non évalués (ni appareils, ni connexions, ni rapports).	Los símbolos y conexiones de esta página se dibujan pero no se evalúan (sin dispositivos, conexiones ni informes).
+The embedded document {} is damaged	Das eingebettete Dokument {} ist beschädigt	Le document intégré {} est endommagé	El documento incrustado {} está dañado
+The page type, plot frame, title block, structure, description and the whole content are saved.	Seitentyp, Plotrahmen, Schriftfeld, Struktur, Beschreibung und der ganze Inhalt werden gespeichert.	Le type de page, le cadre, le cartouche, la structure, la description et tout le contenu sont enregistrés.	Se guardan el tipo de página, el marco, el cajetín, la estructura, la descripción y todo el contenido.
+The plot frame {} is in use	Der Plotrahmen {} wird verwendet	Le cadre {} est utilisé	El marco {} está en uso
+The project's own page templates as a file	Die eigenen Seitenvorlagen des Projekts als Datei	Les modèles de page propres au projet dans un fichier	Las plantillas de página propias del proyecto como archivo
+Unknown labels: {}	Unbekannte Beschriftung: {}	Repères inconnus : {}	Rótulos desconocidos: {}
+Unknown paper format: {}	Unbekanntes Papierformat: {}	Format de papier inconnu : {}	Formato de papel desconocido: {}
+Use as project default	Als Projektstandard verwenden	Utiliser par défaut dans le projet	Usar como predeterminado del proyecto
+Used by {} pages	Von {} Seiten verwendet	Utilisé par {} pages	Usado por {} páginas
+Width / height (mm)	Breite / Höhe (mm)	Largeur / hauteur (mm)	Ancho / alto (mm)
+Writes the embedded file of a document page	Schreibt die eingebettete Datei einer Dokumentseite	Écrit le fichier intégré d'une page document	Escribe el archivo incrustado de una página de documento
+numbers or letters	numbers oder letters	numbers ou letters	numbers o letters
+schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops
+{} is a built-in frame; give the frame a new name	{} ist ein eingebauter Rahmen; dem Rahmen einen neuen Namen geben	{} est un cadre intégré ; donnez un nouveau nom au cadre	{} es un marco integrado; dé un nombre nuevo al marco
+Custom	Benutzerdefiniert	Personnalisé	Personalizado
