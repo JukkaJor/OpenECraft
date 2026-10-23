@@ -149,7 +149,7 @@ X position in mm	X-Position in mm	Position X en mm	Posición X en mm
 Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
 json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
 svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step or dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step oder dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step ou dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step o dictionary
-table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list or pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list oder pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list ou pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list o pct_loops
+table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups or electro_fluid	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups oder electro_fluid	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups ou electro_fluid	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups o electro_fluid
 {} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
 {} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)
 Released pages cannot be deleted	Freigegebene Seiten können nicht gelöscht werden	Les pages validées ne peuvent pas être supprimées	Las páginas liberadas no se pueden eliminar
@@ -1072,7 +1072,7 @@ Used by {} pages	Von {} Seiten verwendet	Utilisé par {} pages	Usado por {} pág
 Width / height (mm)	Breite / Höhe (mm)	Largeur / hauteur (mm)	Ancho / alto (mm)
 Writes the embedded file of a document page	Schreibt die eingebettete Datei einer Dokumentseite	Écrit le fichier intégré d'une page document	Escribe el archivo incrustado de una página de documento
 numbers or letters	numbers oder letters	numbers ou letters	numbers o letters
-schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops
+schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups, electro_fluid	schematic, overview, graphic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups, electro_fluid	schematic, overview, graphic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups, electro_fluid	schematic, overview, graphic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups, electro_fluid
 {} is a built-in frame; give the frame a new name	{} ist ein eingebauter Rahmen; dem Rahmen einen neuen Namen geben	{} est un cadre intégré ; donnez un nouveau nom au cadre	{} es un marco integrado; dé un nombre nuevo al marco
 Custom	Benutzerdefiniert	Personnalisé	Personalizado
 CPU	CPU	CPU	CPU
@@ -1420,3 +1420,125 @@ Auxiliary function: NO contact, on-delay	Hilfsfunktion: Schließer, einschaltver
 Auxiliary function: NC contact, on-delay	Hilfsfunktion: Öffner, einschaltverzögert	Fonction auxiliaire : contact NF, temporisé à l'appel	Función auxiliar: contacto NC, temporizado a la conexión
 Auxiliary function: NO contact, off-delay	Hilfsfunktion: Schließer, ausschaltverzögert	Fonction auxiliaire : contact NO, temporisé à la retombée	Función auxiliar: contacto NA, temporizado a la desconexión
 Auxiliary function: NC contact, off-delay	Hilfsfunktion: Öffner, ausschaltverzögert	Fonction auxiliaire : contact NF, temporisé à la retombée	Función auxiliar: contacto NC, temporizado a la desconexión
+Hose	Schlauch	Flexible	Manguera
+Tube	Rohr (Schlauch)	Tube	Tubo flexible
+Pipe	Rohrleitung	Tuyauterie	Tubería
+supply	Versorgung	alimentation	alimentación
+pressure	Druck	pression	presión
+working	Arbeit	travail	trabajo
+exhaust	Entlüftung	échappement	escape
+return	Rücklauf	retour	retorno
+pilot	Steuer	pilotage	pilotaje
+suction	Saug	aspiration	aspiración
+leakage	Leck	fuite	fuga
+measuring	Mess	mesure	medición
+in-line	Durchgang	en ligne	en línea
+Pressure line	Druckleitung	Conduite de pression	Línea de presión
+Working line	Arbeitsleitung	Conduite de travail	Línea de trabajo
+Return / exhaust line	Rücklauf- / Abluftleitung	Conduite de retour / d'échappement	Línea de retorno / escape
+Pilot line	Steuerleitung	Conduite de pilotage	Línea de pilotaje
+Suction line	Saugleitung	Conduite d'aspiration	Línea de aspiración
+Leakage line	Leckölleitung	Conduite de fuite	Línea de fugas
+Process line	Prozessleitung	Conduite de procédé	Línea de proceso
+Hose {}: pressure line {} connected to return / exhaust {}	Schlauch {}: Druckleitung {} mit Rücklauf / Entlüftung {} verbunden	Flexible {} : conduite de pression {} reliée au retour / à l'échappement {}	Manguera {}: línea de presión {} conectada al retorno / escape {}
+Hose {}: different media on its wires ({})	Schlauch {}: verschiedene Medien an seinen Verbindungen ({})	Flexible {} : fluides différents sur ses liaisons ({})	Manguera {}: medios diferentes en sus conexiones ({})
+Hose {}: different nominal sizes on its wires ({})	Schlauch {}: verschiedene Nennweiten an seinen Verbindungen ({})	Flexible {} : diamètres nominaux différents sur ses liaisons ({})	Manguera {}: tamaños nominales diferentes en sus conexiones ({})
+Hose {}: rated for {} bar, operating pressure {} bar	Schlauch {}: ausgelegt für {} bar, Betriebsdruck {} bar	Flexible {} : prévu pour {} bar, pression de service {} bar	Manguera {}: apta para {} bar, presión de servicio {} bar
+Hose {} – {}: length {} m shorter than the routed {} m	Schlauch {} – {}: Länge {} m kürzer als die verlegten {} m	Flexible {} – {} : longueur {} m inférieure aux {} m routés	Manguera {} – {}: longitud {} m menor que los {} m tendidos
+{}: ports with different media ({})	{}: Anschlüsse mit verschiedenen Medien ({})	{} : raccords avec des fluides différents ({})	{}: conexiones con medios diferentes ({})
+Exhaust {} open to the atmosphere (no silencer)	Entlüftung {} offen zur Atmosphäre (kein Schalldämpfer)	Échappement {} ouvert à l'atmosphère (sans silencieux)	Escape {} abierto a la atmósfera (sin silenciador)
+Valve terminal	Ventilinsel	Terminal de distributeurs	Terminal de válvulas
+Service unit	Wartungseinheit	Unité de conditionnement	Unidad de mantenimiento
+Manifold	Verteilerblock	Bloc de distribution	Bloque distribuidor
+Hydraulic power unit	Hydraulikaggregat	Centrale hydraulique	Grupo hidráulico
+Device group {} defined twice	Gerätegruppe {} doppelt definiert	Groupe d'appareils {} défini deux fois	Grupo de dispositivos {} definido dos veces
+Device group {}: {} devices on {} places	Gerätegruppe {}: {} Geräte auf {} Plätzen	Groupe d'appareils {} : {} appareils sur {} emplacements	Grupo de dispositivos {}: {} dispositivos en {} posiciones
+Device group {}: {} is not in the schematic	Gerätegruppe {}: {} ist nicht im Schaltplan	Groupe d'appareils {} : {} n'est pas dans le schéma	Grupo de dispositivos {}: {} no está en el esquema
+Device group {}: {} is not a fluid device	Gerätegruppe {}: {} ist kein Fluidgerät	Groupe d'appareils {} : {} n'est pas un appareil fluidique	Grupo de dispositivos {}: {} no es un dispositivo de fluidos
+Device group {}: {} is not a valve	Gerätegruppe {}: {} ist kein Ventil	Groupe d'appareils {} : {} n'est pas un distributeur	Grupo de dispositivos {}: {} no es una válvula
+{}: member of several device groups ({})	{}: Mitglied mehrerer Gerätegruppen ({})	{} : membre de plusieurs groupes d'appareils ({})	{}: miembro de varios grupos de dispositivos ({})
+{}: linked fluid device is not in the schematic	{}: verknüpftes Fluidgerät ist nicht im Schaltplan	{} : l'appareil fluidique lié n'est pas dans le schéma	{}: el dispositivo de fluidos vinculado no está en el esquema
+{}: linked electrical device {} is not in the schematic	{}: verknüpftes elektrisches Gerät {} ist nicht im Schaltplan	{} : l'appareil électrique lié {} n'est pas dans le schéma	{}: el dispositivo eléctrico vinculado {} no está en el esquema
+{}: {} is a fluid device, not an electrical one	{}: {} ist ein Fluidgerät, kein elektrisches	{} : {} est un appareil fluidique, pas électrique	{}: {} es un dispositivo de fluidos, no eléctrico
+{}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: Magnetventil ohne verknüpfte Magnetspule (Fluid und Prozess › Abgleichen)	{} : électrodistributeur sans bobine liée (Fluide et procédé › Synchroniser)	{}: electroválvula sin bobina vinculada (Fluidos y proceso › Sincronizar)
+{}: {} solenoid coils linked, the valve has {}	{}: {} Magnetspulen verknüpft, das Ventil hat {}	{} : {} bobines liées, le distributeur en a {}	{}: {} bobinas vinculadas, la válvula tiene {}
+{}: linked to several fluid devices ({})	{}: mit mehreren Fluidgeräten verknüpft ({})	{} : lié à plusieurs appareils fluidiques ({})	{}: vinculado a varios dispositivos de fluidos ({})
+{}: solenoid coil not linked to a valve	{}: Magnetspule mit keinem Ventil verknüpft	{} : bobine liée à aucun distributeur	{}: bobina no vinculada a ninguna válvula
+Fluid netlist	Fluid-Netzliste	Liste des réseaux fluidiques	Lista de redes de fluidos
+Hose configuration	Schlauchkonfiguration	Configuration des flexibles	Configuración de mangueras
+Tubing / piping list	Rohr- / Schlauchmaterialliste	Liste des tubes / tuyauteries	Lista de tubos / tuberías
+Fluid device groups	Fluid-Gerätegruppen	Groupes d'appareils fluidiques	Grupos de dispositivos de fluidos
+Electro-fluid cross reference	Elektro-Fluid-Querverweise	Renvois électro-fluidiques	Referencias cruzadas electro-fluidos
+Net	Netz	Réseau	Red
+Branches	Abzweige	Dérivations	Derivaciones
+Fitting	Verschraubung	Raccord	Racor
+Cut length (m)	Schnittlänge (m)	Longueur de coupe (m)	Longitud de corte (m)
+Max. pressure (bar)	Max. Druck (bar)	Pression max. (bar)	Presión máx. (bar)
+{} (routed)	{} (verlegt)	{} (routé)	{} (tendido)
+Pieces	Stück	Pièces	Piezas
+Total length (m)	Gesamtlänge (m)	Longueur totale (m)	Longitud total (m)
+Bends	Biegungen	Coudes	Curvas
+Fittings	Verschraubungen	Raccords	Racores
+Group	Gruppe	Groupe	Grupo
+Kind	Art	Type	Tipo
+Place	Platz	Emplacement	Posición
+Actuated by	Betätigt durch	Actionné par	Accionado por
+Fluid device	Fluidgerät	Appareil fluidique	Dispositivo de fluidos
+Electrical device	Elektrisches Gerät	Appareil électrique	Dispositivo eléctrico
+Solenoid not linked	Magnetspule nicht verknüpft	Bobine non liée	Bobina no vinculada
+Not in the schematic	Nicht im Schaltplan	Pas dans le schéma	No está en el esquema
+Linked	Verknüpft	Lié	Vinculado
+Hose / tube / pipe, sold by the metre	Schlauch / Rohr / Rohrleitung, Meterware	Flexible / tube / tuyauterie, vendu au mètre	Manguera / tubo / tubería, vendida por metros
+Fitting at the start	Verschraubung am Anfang	Raccord au début	Racor al inicio
+Fitting at the end	Verschraubung am Ende	Raccord à la fin	Racor al final
+Max. pressure	Max. Druck	Pression max.	Presión máx.
+Min. bend radius	Min. Biegeradius	Rayon de courbure min.	Radio de curvatura mín.
+Routed in {}: {} m, {} bends	Verlegt in {}: {} m, {} Biegungen	Routé dans {} : {} m, {} coudes	Tendido en {}: {} m, {} curvas
+Device groups	Gerätegruppen	Groupes d'appareils	Grupos de dispositivos
+Electro-fluid	Elektro-Fluid	Électro-fluidique	Electro-fluidos
+Operating pressure	Betriebsdruck	Pression de service	Presión de servicio
+Hoses rated below it are errors; 0 = not checked	Schläuche mit geringerer Druckstufe sind Fehler; 0 = nicht geprüft	Les flexibles prévus pour moins sont des erreurs ; 0 = non vérifié	Las mangueras aptas para menos son errores; 0 = no se comprueba
+Cutting allowance per end	Schnittzugabe je Ende	Surlongueur de coupe par extrémité	Margen de corte por extremo
+Added to both ends of the length for the cut length (insertion depth)	Wird für die Schnittlänge an beiden Enden zur Länge addiert (Einstecktiefe)	Ajoutée aux deux extrémités pour la longueur de coupe (profondeur d'insertion)	Se suma a ambos extremos para la longitud de corte (profundidad de inserción)
+📊 Hose configuration	📊 Schlauchkonfiguration	📊 Configuration des flexibles	📊 Configuración de mangueras
+📊 Tubing / piping list	📊 Rohr- / Schlauchmaterialliste	📊 Liste des tubes / tuyauteries	📊 Lista de tubos / tuberías
+📊 Fluid netlist	📊 Fluid-Netzliste	📊 Liste des réseaux fluidiques	📊 Lista de redes de fluidos
+➕ Group	➕ Gruppe	➕ Groupe	➕ Grupo
+📊 Fluid device groups	📊 Fluid-Gerätegruppen	📊 Groupes d'appareils fluidiques	📊 Grupos de dispositivos de fluidos
+Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Ventilinseln, Wartungseinheiten und Verteilerblöcke: ihre Fluidgeräte in Platzreihenfolge, durch Leerzeichen getrennt.	Terminaux de distributeurs, unités de conditionnement et blocs de distribution : leurs appareils fluidiques dans l'ordre des emplacements, séparés par des espaces.	Terminales de válvulas, unidades de mantenimiento y bloques distribuidores: sus dispositivos de fluidos en orden de posición, separados por espacios.
+Places	Plätze	Emplacements	Posiciones
+0 = not limited	0 = unbegrenzt	0 = illimité	0 = sin límite
+Delete group	Gruppe löschen	Supprimer le groupe	Eliminar grupo
+🔄 Synchronize	🔄 Abgleichen	🔄 Synchroniser	🔄 Sincronizar
+Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Verknüpft Magnetventile mit der Spule gleicher Nummer (-QM3 › -MB3) und übernimmt Funktionstexte	Lie les électrodistributeurs à la bobine de même numéro (-QM3 › -MB3) et copie les textes de fonction	Vincula las electroválvulas con la bobina del mismo número (-QM3 › -MB3) y copia los textos de función
+{} links created, {} function texts copied	{} Verknüpfungen erstellt, {} Funktionstexte übernommen	{} liens créés, {} textes de fonction copiés	{} vínculos creados, {} textos de función copiados
+📊 Electro-fluid cross reference	📊 Elektro-Fluid-Querverweise	📊 Renvois électro-fluidiques	📊 Referencias cruzadas electro-fluidos
+Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Elektrische Geräte, die ein Fluidgerät betätigen oder überwachen (Magnetspulen, Positions- und Druckschalter); beide Schaltpläne zeigen Querverweise aufeinander.	Appareils électriques qui actionnent ou surveillent un appareil fluidique (bobines, détecteurs de position et pressostats) ; les deux schémas affichent des renvois l'un vers l'autre.	Dispositivos eléctricos que accionan o supervisan un dispositivo de fluidos (bobinas, interruptores de posición y presostatos); ambos esquemas muestran referencias cruzadas entre sí.
+Electrical devices	Elektrische Geräte	Appareils électriques	Dispositivos eléctricos
+Operating pressure in bar (0 = hose ratings are not checked)	Betriebsdruck in bar (0 = Druckstufen der Schläuche werden nicht geprüft)	Pression de service en bar (0 = pressions nominales des flexibles non vérifiées)	Presión de servicio en bar (0 = no se comprueban las presiones de las mangueras)
+Cutting allowance per tube end in mm	Schnittzugabe je Rohrende in mm	Surlongueur de coupe par extrémité de tube en mm	Margen de corte por extremo de tubo en mm
+Configures a hose / tube / pipe: line type, part, end fittings, pressure rating, bend radius, medium, size, colour and length	Konfiguriert einen Schlauch / ein Rohr / eine Rohrleitung: Leitungsart, Artikel, Verschraubungen, Druckstufe, Biegeradius, Medium, Nennweite, Farbe und Länge	Configure un flexible / tube / tuyauterie : type, article, raccords, pression nominale, rayon de courbure, fluide, diamètre, couleur et longueur	Configura una manguera / tubo / tubería: tipo, artículo, racores, presión nominal, radio de curvatura, medio, tamaño, color y longitud
+Hose number or fluid net (F1)	Schlauchnummer oder Fluidnetz (F1)	Numéro de flexible ou réseau fluidique (F1)	Número de manguera o red de fluidos (F1)
+hose, tube or pipe	hose, tube oder pipe	hose, tube ou pipe	hose, tube o pipe
+Part number of the hose / tube / pipe	Artikelnummer des Schlauchs / Rohrs / der Rohrleitung	Référence du flexible / tube / tuyauterie	Número de artículo de la manguera / tubo / tubería
+Maximum operating pressure in bar	Maximaler Betriebsdruck in bar	Pression de service maximale en bar	Presión de servicio máxima en bar
+Smallest bend radius in mm	Kleinster Biegeradius in mm	Plus petit rayon de courbure en mm	Radio de curvatura mínimo en mm
+Lists the fluid netlist: each hose line with its line kind (pressure, working, return, pilot …), medium, size and the ports with their function	Listet die Fluid-Netzliste: jede Schlauchleitung mit Leitungsart (Druck, Arbeit, Rücklauf, Steuer …), Medium, Nennweite und den Anschlüssen mit ihrer Funktion	Liste les réseaux fluidiques : chaque conduite avec son type (pression, travail, retour, pilotage …), fluide, diamètre et les raccords avec leur fonction	Lista las redes de fluidos: cada línea con su tipo (presión, trabajo, retorno, pilotaje …), medio, tamaño y las conexiones con su función
+Lists the fluid device groups (valve terminals, service units, manifolds) with their devices in slot order	Listet die Fluid-Gerätegruppen (Ventilinseln, Wartungseinheiten, Verteilerblöcke) mit ihren Geräten in Platzreihenfolge	Liste les groupes d'appareils fluidiques (terminaux de distributeurs, unités de conditionnement, blocs de distribution) avec leurs appareils dans l'ordre des emplacements	Lista los grupos de dispositivos de fluidos (terminales de válvulas, unidades de mantenimiento, bloques distribuidores) con sus dispositivos en orden de posición
+Creates or changes a fluid device group	Legt eine Fluid-Gerätegruppe an oder ändert sie	Crée ou modifie un groupe d'appareils fluidiques	Crea o modifica un grupo de dispositivos de fluidos
+Device tag of the group, e.g. -KH1	Betriebsmittelkennzeichen der Gruppe, z. B. -KH1	Repère de l'appareil du groupe, p. ex. -KH1	Identificador del grupo, p. ej. -KH1
+valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit oder other	valve_terminal, service_unit, manifold, power_unit ou other	valve_terminal, service_unit, manifold, power_unit u other
+Places of the group (0 = not limited)	Plätze der Gruppe (0 = unbegrenzt)	Emplacements du groupe (0 = illimité)	Posiciones del grupo (0 = sin límite)
+Device tags of the members in slot order, separated by blanks	Betriebsmittelkennzeichen der Mitglieder in Platzreihenfolge, durch Leerzeichen getrennt	Repères des membres dans l'ordre des emplacements, séparés par des espaces	Identificadores de los miembros en orden de posición, separados por espacios
+Part number of the base	Artikelnummer der Grundplatte	Référence de l'embase	Número de artículo de la base
+Deletes a fluid device group	Löscht eine Fluid-Gerätegruppe	Supprime un groupe d'appareils fluidiques	Elimina un grupo de dispositivos de fluidos
+Lists the fluid devices with solenoids or links and the electrical devices linked to them	Listet die Fluidgeräte mit Magnetspulen oder Verknüpfungen und die mit ihnen verknüpften elektrischen Geräte	Liste les appareils fluidiques avec bobines ou liens et les appareils électriques qui leur sont liés	Lista los dispositivos de fluidos con bobinas o vínculos y los dispositivos eléctricos vinculados a ellos
+Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Verknüpft ein Fluidgerät mit den elektrischen Geräten, die es betätigen oder überwachen (ersetzt die Verknüpfungen)	Lie un appareil fluidique aux appareils électriques qui l'actionnent ou le surveillent (remplace les liens)	Vincula un dispositivo de fluidos con los dispositivos eléctricos que lo accionan o supervisan (sustituye los vínculos)
+Device tag of the fluid device, e.g. -QM1	Betriebsmittelkennzeichen des Fluidgeräts, z. B. -QM1	Repère de l'appareil fluidique, p. ex. -QM1	Identificador del dispositivo de fluidos, p. ej. -QM1
+Electrical device tags separated by blanks (empty = remove the links)	Kennzeichen der elektrischen Geräte, durch Leerzeichen getrennt (leer = Verknüpfungen entfernen)	Repères des appareils électriques séparés par des espaces (vide = supprimer les liens)	Identificadores de los dispositivos eléctricos separados por espacios (vacío = eliminar los vínculos)
+Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Verknüpft Magnetventile mit der Spule gleicher Nummer (-QM3 › -MB3) und übernimmt Funktionstexte zwischen verknüpften Geräten	Lie les électrodistributeurs à la bobine de même numéro (-QM3 › -MB3) et copie les textes de fonction entre appareils liés	Vincula las electroválvulas con la bobina del mismo número (-QM3 › -MB3) y copia los textos de función entre dispositivos vinculados
+No hose {}	Kein Schlauch {}	Aucun flexible {}	No hay manguera {}
+Unknown line type: {}	Unbekannte Leitungsart: {}	Type de conduite inconnu : {}	Tipo de línea desconocido: {}
+Device group {} already exists	Gerätegruppe {} existiert bereits	Le groupe d'appareils {} existe déjà	El grupo de dispositivos {} ya existe
+Unknown group kind: {}	Unbekannte Gruppenart: {}	Type de groupe inconnu : {}	Tipo de grupo desconocido: {}
+No device group {}	Keine Gerätegruppe {}	Aucun groupe d'appareils {}	No hay grupo de dispositivos {}
