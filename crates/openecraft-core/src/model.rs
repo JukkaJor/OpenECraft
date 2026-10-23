@@ -42,6 +42,9 @@ pub struct Project {
     /// PLC card data (start address, rack / slot) keyed by card tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plc_cards: BTreeMap<String, PlcCard>,
+    /// PLC stations, bus systems, bus connections and device descriptions.
+    #[serde(skip_serializing_if = "crate::plc_hw::Hardware::is_empty")]
+    pub plc: crate::plc_hw::Hardware,
     /// Released revisions, oldest first.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub revisions: Vec<crate::revision::Revision>,
@@ -96,6 +99,7 @@ impl Default for Project {
             strips: BTreeMap::new(),
             plugs: BTreeMap::new(),
             plc_cards: BTreeMap::new(),
+            plc: Default::default(),
             revisions: Vec::new(),
             harnesses: Vec::new(),
             symbols: Vec::new(),
@@ -416,6 +420,9 @@ pub struct Cable {
     /// Part number (bill of materials: length × part).
     pub part: String,
     pub description: String,
+    /// Network / bus cable for this bus system (`None`: ordinary cable).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bus: Option<crate::devdesc::BusKind>,
 }
 
 impl Cable {
@@ -471,9 +478,18 @@ pub struct StripData {
 pub struct PlcCard {
     /// First byte of the card's inputs / outputs (I<start>.0, Q<start>.0).
     pub start_byte: u32,
+    /// First byte of the outputs when it differs from the inputs' (mixed modules).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_byte: Option<u32>,
     pub rack: String,
     pub slot: String,
     pub description: String,
+    /// Station of the hardware configuration the card is plugged into.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub station: String,
+    /// Device description (overrides the one from the parts).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub device: String,
 }
 
 /// Settings of the automatic wire numbering.

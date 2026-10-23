@@ -931,3 +931,169 @@ numbers or letters	numbers oder letters	numbers ou letters	numbers o letters
 schematic, overview, graphic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, overview, graphic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops
 {} is a built-in frame; give the frame a new name	{} ist ein eingebauter Rahmen; dem Rahmen einen neuen Namen geben	{} est un cadre intégré ; donnez un nouveau nom au cadre	{} es un marco integrado; dé un nombre nuevo al marco
 Custom	Benutzerdefiniert	Personnalisé	Personalizado
+CPU	CPU	CPU	CPU
+Bus coupler	Buskoppler	Coupleur de bus	Acoplador de bus
+Digital input module	Digitaleingabebaugruppe	Module d'entrées TOR	Módulo de entradas digitales
+Digital output module	Digitalausgabebaugruppe	Module de sorties TOR	Módulo de salidas digitales
+Digital input / output module	Digitalein-/-ausgabebaugruppe	Module d'entrées / sorties TOR	Módulo de entradas / salidas digitales
+Analog input module	Analogeingabebaugruppe	Module d'entrées analogiques	Módulo de entradas analógicas
+Analog output module	Analogausgabebaugruppe	Module de sorties analogiques	Módulo de salidas analógicas
+Power module	Powermodul	Module d'alimentation	Módulo de potencia
+Communication module	Kommunikationsbaugruppe	Module de communication	Módulo de comunicación
+Other module	Sonstige Baugruppe	Autre module	Otro módulo
+Generic PLC CPU with PROFINET interface	Generische SPS-CPU mit PROFINET-Schnittstelle	CPU d'automate générique avec interface PROFINET	CPU de PLC genérica con interfaz PROFINET
+Generic PLC CPU with EtherCAT master	Generische SPS-CPU mit EtherCAT-Master	CPU d'automate générique avec maître EtherCAT	CPU de PLC genérica con maestro EtherCAT
+Generic PROFINET interface module	Generisches PROFINET-Interfacemodul	Module d'interface PROFINET générique	Módulo de interfaz PROFINET genérico
+Generic EtherCAT bus coupler	Generischer EtherCAT-Buskoppler	Coupleur de bus EtherCAT générique	Acoplador de bus EtherCAT genérico
+Generic digital input module 8 channels	Generische Digitaleingabebaugruppe 8 Kanäle	Module d'entrées TOR générique 8 voies	Módulo de entradas digitales genérico 8 canales
+Generic digital input module 16 channels	Generische Digitaleingabebaugruppe 16 Kanäle	Module d'entrées TOR générique 16 voies	Módulo de entradas digitales genérico 16 canales
+Generic digital output module 8 channels	Generische Digitalausgabebaugruppe 8 Kanäle	Module de sorties TOR générique 8 voies	Módulo de salidas digitales genérico 8 canales
+Generic digital output module 16 channels	Generische Digitalausgabebaugruppe 16 Kanäle	Module de sorties TOR générique 16 voies	Módulo de salidas digitales genérico 16 canales
+Generic digital module 8 inputs / 8 outputs	Generische Digitalbaugruppe 8 Eingänge / 8 Ausgänge	Module TOR générique 8 entrées / 8 sorties	Módulo digital genérico 8 entradas / 8 salidas
+Generic analog input module 4 channels	Generische Analogeingabebaugruppe 4 Kanäle	Module d'entrées analogiques générique 4 voies	Módulo de entradas analógicas genérico 4 canales
+Generic analog output module 4 channels	Generische Analogausgabebaugruppe 4 Kanäle	Module de sorties analogiques générique 4 voies	Módulo de salidas analógicas genérico 4 canales
+Siemens (I0.0 / Q0.0)	Siemens (I0.0 / Q0.0)	Siemens (I0.0 / Q0.0)	Siemens (I0.0 / Q0.0)
+IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)	CEI 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
+Rockwell (Local:1:I.Data.0)	Rockwell (Local:1:I.Data.0)	Rockwell (Local:1:I.Data.0)	Rockwell (Local:1:I.Data.0)
+Controller	Steuerung	Contrôleur	Controlador
+Remote I/O	Dezentrale Peripherie	E/S déportées	E/S remotas
+Drive	Antrieb	Variateur	Accionamiento
+HMI	HMI	IHM	HMI
+Other bus device	Sonstiger Busteilnehmer	Autre appareil de bus	Otro dispositivo de bus
+No station {}	Keine Station {}	Pas de station {}	No hay estación {}
+A port cannot be connected to itself	Ein Port kann nicht mit sich selbst verbunden werden	Un port ne peut pas être relié à lui-même	Un puerto no se puede conectar consigo mismo
+Station name {} is used {} times	Stationsname {} wird {}-mal verwendet	Le nom de station {} est utilisé {} fois	El nombre de estación {} se usa {} veces
+Station {}: bus system {} does not exist	Station {}: Bussystem {} existiert nicht	Station {} : le système de bus {} n'existe pas	Estación {}: el sistema de bus {} no existe
+Remote I/O {} has no controller	Dezentrale Peripherie {} hat keine Steuerung	Les E/S déportées {} n'ont pas de contrôleur	Las E/S remotas {} no tienen controlador
+PLC card {} is not assigned to a station	SPS-Karte {} ist keiner Station zugeordnet	La carte automate {} n'est affectée à aucune station	La tarjeta PLC {} no está asignada a ninguna estación
+PLC card {}: station {} does not exist	SPS-Karte {}: Station {} existiert nicht	Carte automate {} : la station {} n'existe pas	Tarjeta PLC {}: la estación {} no existe
+{}: slot {} of rack {} is used by {} and {}	{}: Steckplatz {} von Baugruppenträger {} wird von {} und {} belegt	{} : l'emplacement {} du châssis {} est occupé par {} et {}	{}: el slot {} del bastidor {} lo ocupan {} y {}
+{}: {} inputs used, the module has {}	{}: {} Eingänge verwendet, die Baugruppe hat {}	{} : {} entrées utilisées, le module en a {}	{}: {} entradas usadas, el módulo tiene {}
+{}: {} outputs used, the module has {}	{}: {} Ausgänge verwendet, die Baugruppe hat {}	{} : {} sorties utilisées, le module en a {}	{}: {} salidas usadas, el módulo tiene {}
+{}: {} modules, the head has {} slots	{}: {} Baugruppen, der Kopf hat {} Steckplätze	{} : {} modules, la tête a {} emplacements	{}: {} módulos, la cabecera tiene {} slots
+Address ranges of {} and {} overlap	Adressbereiche von {} und {} überschneiden sich	Les plages d'adresses de {} et {} se chevauchent	Los rangos de direcciones de {} y {} se solapan
+Address {} is used by {} and {}	Adresse {} wird von {} und {} verwendet	L'adresse {} est utilisée par {} et {}	La dirección {} la usan {} y {}
+Station {} is not connected to bus {}	Station {} ist nicht mit Bus {} verbunden	La station {} n'est pas reliée au bus {}	La estación {} no está conectada al bus {}
+Bus connection to {}: the station does not exist	Busverbindung zu {}: Die Station existiert nicht	Liaison bus vers {} : la station n'existe pas	Conexión de bus a {}: la estación no existe
+{}: the station has no port {}	{}: Die Station hat keinen Port {}	{} : la station n'a pas de port {}	{}: la estación no tiene el puerto {}
+{}: port {} is not a {} port	{}: Port {} ist kein {}-Port	{} : le port {} n'est pas un port {}	{}: el puerto {} no es un puerto {}
+Port {} is connected more than once	Port {} ist mehrfach verbunden	Le port {} est relié plusieurs fois	El puerto {} está conectado más de una vez
+Station name, e.g. PLC1	Stationsname, z. B. PLC1	Nom de station, p. ex. PLC1	Nombre de estación, p. ej. PLC1
+Shows the PLC hardware configuration: stations with racks, slots, modules and address ranges, bus systems, port connections and the problems found	Zeigt die SPS-Hardwarekonfiguration: Stationen mit Baugruppenträgern, Steckplätzen, Baugruppen und Adressbereichen, Bussysteme, Portverbindungen und gefundene Probleme	Affiche la configuration matérielle automate : stations avec châssis, emplacements, modules et plages d'adresses, systèmes de bus, liaisons de ports et problèmes trouvés	Muestra la configuración de hardware del PLC: estaciones con bastidores, slots, módulos y rangos de direcciones, sistemas de bus, conexiones de puertos y problemas encontrados
+Automatic hardware configuration: stations for CPUs and bus couplers, bus systems, cards to stations, slots, start addresses, point addresses, IP addresses and a line topology	Automatische Hardwarekonfiguration: Stationen für CPUs und Buskoppler, Bussysteme, Karten zu Stationen, Steckplätze, Anfangsadressen, Adressen der Punkte, IP-Adressen und eine Linientopologie	Configuration matérielle automatique : stations pour CPU et coupleurs de bus, systèmes de bus, cartes vers stations, emplacements, adresses de début, adresses des points, adresses IP et une topologie en ligne	Configuración de hardware automática: estaciones para CPU y acopladores de bus, sistemas de bus, tarjetas a estaciones, slots, direcciones iniciales, direcciones de los puntos, direcciones IP y una topología en línea
+Creates or changes a PLC station (controller, remote I/O, drive, HMI). Changing the address scheme converts the addresses of its points	Legt eine SPS-Station an oder ändert sie (Steuerung, dezentrale Peripherie, Antrieb, HMI). Ein geändertes Adressschema wandelt die Adressen ihrer Punkte um	Crée ou modifie une station automate (contrôleur, E/S déportées, variateur, IHM). Changer le schéma d'adressage convertit les adresses de ses points	Crea o modifica una estación PLC (controlador, E/S remotas, accionamiento, HMI). Cambiar el esquema de direcciones convierte las direcciones de sus puntos
+Renames the station	Benennt die Station um	Renomme la station	Cambia el nombre de la estación
+controller, io_device, drive, hmi or other	controller, io_device, drive, hmi oder other	controller, io_device, drive, hmi ou other	controller, io_device, drive, hmi u other
+Device tag of the CPU / bus coupler, e.g. -A0	BMK der CPU / des Buskopplers, z. B. -A0	Repère de la CPU / du coupleur de bus, p. ex. -A0	Identificador de la CPU / del acoplador de bus, p. ej. -A0
+Device description id of the head (list_device_descriptions)	ID der Gerätebeschreibung des Kopfes (list_device_descriptions)	ID de la description d'appareil de la tête (list_device_descriptions)	ID de la descripción de dispositivo de la cabecera (list_device_descriptions)
+Address scheme: siemens, iec or rockwell	Adressschema: siemens, iec oder rockwell	Schéma d'adressage : siemens, iec ou rockwell	Esquema de direcciones: siemens, iec o rockwell
+Bus system name	Name des Bussystems	Nom du système de bus	Nombre del sistema de bus
+IP address or bus address	IP-Adresse oder Busadresse	Adresse IP ou adresse de bus	Dirección IP o dirección de bus
+Device number on the bus	Gerätenummer am Bus	Numéro d'appareil sur le bus	Número de dispositivo en el bus
+Remote I/O: station of the controller	Dezentrale Peripherie: Station der Steuerung	E/S déportées : station du contrôleur	E/S remotas: estación del controlador
+Comment	Kommentar	Commentaire	Comentario
+Removes a station; its cards stay unassigned, its bus connections are removed	Entfernt eine Station; ihre Karten bleiben ohne Zuordnung, ihre Busverbindungen werden entfernt	Supprime une station ; ses cartes restent sans affectation, ses liaisons bus sont supprimées	Elimina una estación; sus tarjetas quedan sin asignar, sus conexiones de bus se eliminan
+Places a PLC card (I/O module) in a station: rack, slot, start addresses and device description; readdresses its points	Steckt eine SPS-Karte (E/A-Baugruppe) in eine Station: Baugruppenträger, Steckplatz, Anfangsadressen und Gerätebeschreibung; adressiert ihre Punkte neu	Place une carte automate (module d'E/S) dans une station : châssis, emplacement, adresses de début et description d'appareil ; réadresse ses points	Coloca una tarjeta PLC (módulo de E/S) en una estación: bastidor, slot, direcciones iniciales y descripción de dispositivo; vuelve a direccionar sus puntos
+Card tag, e.g. -A1	BMK der Karte, z. B. -A1	Repère de la carte, p. ex. -A1	Identificador de la tarjeta, p. ej. -A1
+Station name (empty: unassigned)	Stationsname (leer: ohne Zuordnung)	Nom de station (vide : sans affectation)	Nombre de estación (vacío: sin asignar)
+Rack number	Nummer des Baugruppenträgers	Numéro de châssis	Número de bastidor
+Slot number	Steckplatznummer	Numéro d'emplacement	Número de slot
+First byte of the inputs (and outputs)	Erstes Byte der Eingänge (und Ausgänge)	Premier octet des entrées (et sorties)	Primer byte de las entradas (y salidas)
+First byte of the outputs if it differs; -1 removes it	Erstes Byte der Ausgänge, falls abweichend; -1 entfernt es	Premier octet des sorties s'il diffère ; -1 le supprime	Primer byte de las salidas si es distinto; -1 lo elimina
+Device description id (empty: from the parts)	ID der Gerätebeschreibung (leer: aus den Artikeln)	ID de la description d'appareil (vide : d'après les articles)	ID de la descripción de dispositivo (vacío: de los artículos)
+Creates or changes a bus system (PROFINET, EtherCAT, …)	Legt ein Bussystem an oder ändert es (PROFINET, EtherCAT, …)	Crée ou modifie un système de bus (PROFINET, EtherCAT, …)	Crea o modifica un sistema de bus (PROFINET, EtherCAT, …)
+Bus system name, e.g. PN/IE_1	Name des Bussystems, z. B. PN/IE_1	Nom du système de bus, p. ex. PN/IE_1	Nombre del sistema de bus, p. ej. PN/IE_1
+profinet, ethercat, ethernet_ip, profibus_dp, modbus_tcp or canopen	profinet, ethercat, ethernet_ip, profibus_dp, modbus_tcp oder canopen	profinet, ethercat, ethernet_ip, profibus_dp, modbus_tcp ou canopen	profinet, ethercat, ethernet_ip, profibus_dp, modbus_tcp o canopen
+First address of the subnet, e.g. 192.168.0.0	Erste Adresse des Subnetzes, z. B. 192.168.0.0	Première adresse du sous-réseau, p. ex. 192.168.0.0	Primera dirección de la subred, p. ej. 192.168.0.0
+Removes the bus system with its connections	Entfernt das Bussystem mit seinen Verbindungen	Supprime le système de bus avec ses liaisons	Elimina el sistema de bus con sus conexiones
+Connects two ports of stations with a network cable; connections already on these ports are replaced	Verbindet zwei Ports von Stationen mit einem Netzwerkkabel; vorhandene Verbindungen an diesen Ports werden ersetzt	Relie deux ports de stations par un câble réseau ; les liaisons existantes sur ces ports sont remplacées	Conecta dos puertos de estaciones con un cable de red; las conexiones existentes en esos puertos se sustituyen
+First port as station:port, e.g. PLC1:X1 P2	Erster Port als Station:Port, z. B. PLC1:X1 P2	Premier port sous la forme station:port, p. ex. PLC1:X1 P2	Primer puerto como estación:puerto, p. ej. PLC1:X1 P2
+Second port as station:port	Zweiter Port als Station:Port	Second port sous la forme station:port	Segundo puerto como estación:puerto
+Removes the bus connection of a port	Entfernt die Busverbindung eines Ports	Supprime la liaison bus d'un port	Elimina la conexión de bus de un puerto
+Port as station:port	Port als Station:Port	Port sous la forme station:port	Puerto como estación:puerto
+Lists the device descriptions of PLC hardware: imported ones, from the project parts and the built-in generic ones	Listet die Gerätebeschreibungen der SPS-Hardware: importierte, aus den Projektartikeln und die eingebauten generischen	Liste les descriptions d'appareils du matériel automate : importées, issues des articles du projet et les génériques intégrées	Lista las descripciones de dispositivos del hardware PLC: importadas, de los artículos del proyecto y las genéricas integradas
+Text in id, name or order number	Text in ID, Name oder Bestellnummer	Texte dans l'ID, le nom ou la référence de commande	Texto en ID, nombre o número de pedido
+Imports device descriptions from a GSDML (PROFINET) or ESI (EtherCAT) file into the project	Importiert Gerätebeschreibungen aus einer GSDML- (PROFINET) oder ESI-Datei (EtherCAT) in das Projekt	Importe dans le projet des descriptions d'appareils depuis un fichier GSDML (PROFINET) ou ESI (EtherCAT)	Importa al proyecto descripciones de dispositivos desde un archivo GSDML (PROFINET) o ESI (EtherCAT)
+GSDML or ESI file	GSDML- oder ESI-Datei	Fichier GSDML ou ESI	Archivo GSDML o ESI
+Imports a PLC hardware configuration from AutomationML (e.g. exported from TIA Portal): stations, modules, addresses, subnets, port connections and tag comments	Importiert eine SPS-Hardwarekonfiguration aus AutomationML (z. B. aus dem TIA Portal exportiert): Stationen, Baugruppen, Adressen, Subnetze, Portverbindungen und Variablenkommentare	Importe une configuration matérielle automate depuis AutomationML (p. ex. exportée de TIA Portal) : stations, modules, adresses, sous-réseaux, liaisons de ports et commentaires de variables	Importa una configuración de hardware PLC desde AutomationML (p. ej. exportada de TIA Portal): estaciones, módulos, direcciones, subredes, conexiones de puertos y comentarios de variables
+AutomationML file	AutomationML-Datei	Fichier AutomationML	Archivo AutomationML
+AutomationML content instead of a file	AutomationML-Inhalt statt einer Datei	Contenu AutomationML au lieu d'un fichier	Contenido AutomationML en lugar de un archivo
+Unknown station kind: {}	Unbekannte Stationsart: {}	Type de station inconnu : {}	Tipo de estación desconocido: {}
+Unknown address scheme: {}	Unbekanntes Adressschema: {}	Schéma d'adressage inconnu : {}	Esquema de direcciones desconocido: {}
+No device description {}	Keine Gerätebeschreibung {}	Pas de description d'appareil {}	No hay descripción de dispositivo {}
+Station {} exists already	Station {} existiert bereits	La station {} existe déjà	La estación {} ya existe
+No bus system {}	Kein Bussystem {}	Pas de système de bus {}	No hay sistema de bus {}
+Unknown bus system: {}	Unbekanntes Bussystem: {}	Système de bus inconnu : {}	Sistema de bus desconocido: {}
+Port must be given as station:port: {}	Port muss als Station:Port angegeben werden: {}	Le port doit être donné sous la forme station:port : {}	El puerto debe indicarse como estación:puerto: {}
+Port {} is not connected	Port {} ist nicht verbunden	Le port {} n'est pas relié	El puerto {} no está conectado
+Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf or step (3D panel layout), dictionary (CSV of the project text translations)	Exportiert das Projekt: svg (eine Seite), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (globale Variablen nach IEC 61131-3), aml (SPS-Hardware als AutomationML), kbl (Kabelbaum-XML), marking (CSV), gltf oder step (3D-Schaltschrankaufbau), dictionary (CSV der Übersetzungen der Projekttexte)	Exporte le projet : svg (une page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (variables globales CEI 61131-3), aml (matériel automate en AutomationML), kbl (XML de faisceau), marking (CSV), gltf ou step (implantation 3D de l'armoire), dictionary (CSV des traductions des textes du projet)	Exporta el proyecto: svg (una página), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (variables globales IEC 61131-3), aml (hardware PLC en AutomationML), kbl (XML de mazo), marking (CSV), gltf o step (distribución 3D del armario), dictionary (CSV de las traducciones de los textos del proyecto)
+svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step or dictionary	svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step oder dictionary	svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step ou dictionary	svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step o dictionary
+PLC hardware	SPS-Hardware	Matériel automate	Hardware PLC
+⚙ Automatic configuration	⚙ Automatische Konfiguration	⚙ Configuration automatique	⚙ Configuración automática
+Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stationen für CPUs und Buskoppler, Bussysteme, Steckplätze, Anfangsadressen, Adressen der Punkte, IP-Adressen und eine Linientopologie	Stations pour CPU et coupleurs de bus, systèmes de bus, emplacements, adresses de début, adresses des points, adresses IP et une topologie en ligne	Estaciones para CPU y acopladores de bus, sistemas de bus, slots, direcciones iniciales, direcciones de los puntos, direcciones IP y una topología en línea
+⬇ Export AutomationML…	⬇ AutomationML exportieren…	⬇ Exporter AutomationML…	⬇ Exportar AutomationML…
+Hardware configuration and PLC tags for TIA Portal and other PLC tools	Hardwarekonfiguration und SPS-Variablen für TIA Portal und andere SPS-Werkzeuge	Configuration matérielle et variables automate pour TIA Portal et d'autres outils automate	Configuración de hardware y variables PLC para TIA Portal y otras herramientas PLC
+⬆ Import AutomationML…	⬆ AutomationML importieren…	⬆ Importer AutomationML…	⬆ Importar AutomationML…
+Stations, modules, addresses, subnets and tag comments from a PLC tool	Stationen, Baugruppen, Adressen, Subnetze und Variablenkommentare aus einem SPS-Werkzeug	Stations, modules, adresses, sous-réseaux et commentaires de variables depuis un outil automate	Estaciones, módulos, direcciones, subredes y comentarios de variables desde una herramienta PLC
+⬇ Export IEC 61131-3 variables…	⬇ Variablen nach IEC 61131-3 exportieren…	⬇ Exporter les variables CEI 61131-3…	⬇ Exportar variables IEC 61131-3…
+Global variable list with direct addresses for CODESYS, TwinCAT and others	Globale Variablenliste mit direkten Adressen für CODESYS, TwinCAT und andere	Liste de variables globales avec adresses directes pour CODESYS, TwinCAT et autres	Lista de variables globales con direcciones directas para CODESYS, TwinCAT y otros
+Stations and racks	Stationen und Baugruppenträger	Stations et châssis	Estaciones y bastidores
+Bus topology	Bustopologie	Topologie de bus	Topología de bus
+Device descriptions	Gerätebeschreibungen	Descriptions d'appareils	Descripciones de dispositivos
+Station	Station	Station	Estación
+➕ Station	➕ Station	➕ Station	➕ Estación
+Cards without station: {}	Karten ohne Station: {}	Cartes sans station : {}	Tarjetas sin estación: {}
+No stations: add one or use the automatic configuration.	Keine Stationen: Legen Sie eine an oder verwenden Sie die automatische Konfiguration.	Aucune station : ajoutez-en une ou utilisez la configuration automatique.	No hay estaciones: añada una o use la configuración automática.
+Head (CPU / coupler)	Kopf (CPU / Koppler)	Tête (CPU / coupleur)	Cabecera (CPU / acoplador)
+Address scheme	Adressschema	Schéma d'adressage	Esquema de direcciones
+Bus system	Bussystem	Système de bus	Sistema de bus
+IP / bus address	IP- / Busadresse	Adresse IP / de bus	Dirección IP / de bus
+Device number	Gerätenummer	Numéro d'appareil	Número de dispositivo
+{}: {} slots, ports {}	{}: {} Steckplätze, Ports {}	{} : {} emplacements, ports {}	{}: {} slots, puertos {}
+🗑 Remove station	🗑 Station entfernen	🗑 Supprimer la station	🗑 Eliminar estación
+Plug in card	Karte stecken	Insérer une carte	Insertar tarjeta
+No modules: plug in PLC cards of the schematic.	Keine Baugruppen: Stecken Sie SPS-Karten des Schaltplans.	Aucun module : insérez des cartes automate du schéma.	No hay módulos: inserte tarjetas PLC del esquema.
+Device description	Gerätebeschreibung	Description d'appareil	Descripción de dispositivo
+Inputs	Eingänge	Entrées	Entradas
+Outputs	Ausgänge	Sorties	Salidas
+Input bytes	Eingangsbytes	Octets d'entrée	Bytes de entrada
+Output bytes	Ausgangsbytes	Octets de sortie	Bytes de salida
+from the parts	aus den Artikeln	d'après les articles	de los artículos
+Remove from the station	Aus der Station entfernen	Retirer de la station	Quitar de la estación
+Bus systems	Bussysteme	Systèmes de bus	Sistemas de bus
+➕ Bus system	➕ Bussystem	➕ Système de bus	➕ Sistema de bus
+Subnet	Subnetz	Sous-réseau	Subred
+Port A	Port A	Port A	Puerto A
+Port B	Port B	Port B	Puerto B
+Without bus system	Ohne Bussystem	Sans système de bus	Sin sistema de bus
+No bus systems.	Keine Bussysteme.	Aucun système de bus.	No hay sistemas de bus.
+⬆ Import GSDML / ESI…	⬆ GSDML / ESI importieren…	⬆ Importer GSDML / ESI…	⬆ Importar GSDML / ESI…
+Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Gerätebeschreibungen von PROFINET- (GSDML) und EtherCAT-Geräten (ESI)	Descriptions d'appareils PROFINET (GSDML) et EtherCAT (ESI)	Descripciones de dispositivos PROFINET (GSDML) y EtherCAT (ESI)
+Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Artikel der Produktgruppe SPS liefern ebenfalls Beschreibungen (technische Daten: Inputs, Outputs, Slots, Bus, Ports).	Les articles du groupe de produits automate fournissent aussi des descriptions (données techniques : Inputs, Outputs, Slots, Bus, Ports).	Los artículos del grupo de productos PLC también dan descripciones (datos técnicos: Inputs, Outputs, Slots, Bus, Ports).
+Slots	Steckplätze	Emplacements	Slots
+Ports	Ports	Ports	Puertos
+Source	Quelle	Source	Origen
+built-in	eingebaut	intégrée	integrada
+{} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections	{} Stationen, {} Bussysteme, {} Karten zugeordnet, {} Adressen geändert, {} Verbindungen	{} stations, {} systèmes de bus, {} cartes affectées, {} adresses modifiées, {} liaisons	{} estaciones, {} sistemas de bus, {} tarjetas asignadas, {} direcciones cambiadas, {} conexiones
+{} addresses changed	{} Adressen geändert	{} adresses modifiées	{} direcciones cambiadas
+Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	{} Stationen, {} Baugruppen, {} Bussysteme, {} Verbindungen importiert; {} Adressen und {} Texte geändert	{} stations, {} modules, {} systèmes de bus, {} liaisons importés ; {} adresses et {} textes modifiés	Importadas {} estaciones, {} módulos, {} sistemas de bus, {} conexiones; {} direcciones y {} textos cambiados
+{} device descriptions imported	{} Gerätebeschreibungen importiert	{} descriptions d'appareils importées	{} descripciones de dispositivos importadas
+PLC hardware and bus topology…	SPS-Hardware und Bustopologie…	Matériel automate et topologie de bus…	Hardware PLC y topología de bus…
+Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stationen, Baugruppenträger, Baugruppen, Bussysteme, AutomationML-Austausch mit SPS-Werkzeugen	Stations, châssis, modules, systèmes de bus, échange AutomationML avec les outils automate	Estaciones, bastidores, módulos, sistemas de bus, intercambio AutomationML con herramientas PLC
+Device description (GSDML, ESI)	Gerätebeschreibung (GSDML, ESI)	Description d'appareil (GSDML, ESI)	Descripción de dispositivo (GSDML, ESI)
+Bus connection {} - {}: cable {} does not exist	Busverbindung {} - {}: Kabel {} existiert nicht	Liaison bus {} - {} : le câble {} n'existe pas	Conexión de bus {} - {}: el cable {} no existe
+Cable {} is a {} cable on a {} connection	Kabel {} ist ein {}-Kabel an einer {}-Verbindung	Le câble {} est un câble {} sur une liaison {}	El cable {} es un cable {} en una conexión {}
+Port {} has more than {} cables	Port {} hat mehr als {} Kabel	Le port {} a plus de {} câbles	El puerto {} tiene más de {} cables
+Cable {} is used for {} bus connections	Kabel {} wird für {} Busverbindungen verwendet	Le câble {} est utilisé pour {} liaisons bus	El cable {} se usa para {} conexiones de bus
+with bus cables	mit Buskabeln	avec câbles de bus	con cables de bus
+➕ Create bus cables	➕ Buskabel anlegen	➕ Créer les câbles de bus	➕ Crear cables de bus
+A cable of the bus type for every connection without cable	Ein Kabel des Bustyps für jede Verbindung ohne Kabel	Un câble du type de bus pour chaque liaison sans câble	Un cable del tipo de bus para cada conexión sin cable
+missing	fehlt	manquant	falta
+{} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} Stationen, {} Bussysteme, {} Karten zugeordnet, {} Adressen geändert, {} Verbindungen, {} Kabel	{} stations, {} systèmes de bus, {} cartes affectées, {} adresses modifiées, {} liaisons, {} câbles	{} estaciones, {} sistemas de bus, {} tarjetas asignadas, {} direcciones cambiadas, {} conexiones, {} cables
+{} bus cables created	{} Buskabel angelegt	{} câbles de bus créés	{} cables de bus creados
+Bus	Bus	Bus	Bus
+Ordinary cable	Normales Kabel	Câble ordinaire	Cable normal
+{} bus connections	{} Busverbindungen	{} liaisons bus	{} conexiones de bus
+Also create a bus cable for every connection without cable	Auch ein Buskabel für jede Verbindung ohne Kabel anlegen	Créer aussi un câble de bus pour chaque liaison sans câble	Crear también un cable de bus para cada conexión sin cable
+Creates a bus cable for the connection (without cable tag)	Legt ein Buskabel für die Verbindung an (ohne Kabel-BMK)	Crée un câble de bus pour la liaison (sans repère de câble)	Crea un cable de bus para la conexión (sin identificador de cable)
+Creates a cable of the bus type (type, cores, cross-section) for every bus connection without cable	Legt für jede Busverbindung ohne Kabel ein Kabel des Bustyps an (Typ, Adern, Querschnitt)	Crée un câble du type de bus (type, conducteurs, section) pour chaque liaison bus sans câble	Crea un cable del tipo de bus (tipo, conductores, sección) para cada conexión de bus sin cable

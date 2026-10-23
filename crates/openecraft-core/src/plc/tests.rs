@@ -58,3 +58,18 @@ fn addresses_used_on_two_cards_are_reported() {
     let msgs: Vec<String> = crate::reports::Analysis::build(&prj).issues.into_iter().map(|i| i.message).collect();
     assert!(msgs.iter().any(|m| m == "PLC address I0.0 used on several cards: -A1, -A3"), "{msgs:#?}");
 }
+
+#[test]
+fn iec_global_variables_per_address_space() {
+    let mut prj = demo_project();
+    let gvl = global_variables(&prj, &nl(&prj));
+    assert!(gvl.starts_with("VAR_GLOBAL\n"), "{gvl}");
+    assert!(gvl.contains("    Part_present AT %IX0.0 : BOOL; (* -A1 Part present *)\n"), "{gvl}");
+    assert!(gvl.contains("    Valve AT %QX0.0 : BOOL;"), "{gvl}");
+    crate::plc_hw::auto_configure(&mut prj, false);
+    let gvl = global_variables(&prj, &nl(&prj));
+    assert!(gvl.starts_with("(* PLC1 *)\nVAR_GLOBAL\n") && gvl.ends_with("END_VAR\n\n"), "{gvl}");
+    // Exported comments carry the card; importing them gives the plain text again.
+    let table = symbol_table(&prj, &nl(&prj));
+    assert_eq!(import_symbol_table(&mut prj, &table).unwrap(), 0);
+}

@@ -38,14 +38,6 @@ impl PlaceCtx {
     }
 }
 
-fn parse_plc(addr: &str) -> Option<(char, u32, u32)> {
-    let mut chars = addr.chars();
-    let prefix = chars.next()?;
-    let rest: String = chars.collect();
-    let (byte, bit) = rest.split_once('.')?;
-    Some((prefix, byte.parse().ok()?, bit.parse().ok()?))
-}
-
 fn symbols_with_tag<'a>(prj: &'a Project, tag: &'a str) -> impl Iterator<Item = &'a SymbolInst> + 'a {
     prj.pages.iter().flat_map(|pg| pg.symbols.iter()).filter(move |s| s.tag == tag)
 }
@@ -100,14 +92,16 @@ fn next_plug_pin(prj: &Project, plug: &str, kind: PinKind) -> String {
     (max + 1).to_string()
 }
 
-fn next_plc_address(prj: &Project, card: &str, prefix: char) -> String {
+/// Next free address of a card in the scheme of its station.
+fn next_plc_address(prj: &Project, card: &str, input: bool) -> String {
+    let data = prj.plc_cards.get(card).cloned().unwrap_or_default();
+    let start = if input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) };
     let max = symbols_with_tag(prj, card)
-        .filter_map(|s| parse_plc(&s.label))
-        .filter(|(c, _, _)| *c == prefix)
-        .map(|(_, by, bi)| by * 8 + bi)
+        .filter_map(|s| crate::plc_hw::parse_address(&s.label))
+        .filter(|a| a.input == input)
+        .map(|a| if a.slot.is_some() { a.byte * 8 + a.bit } else { a.byte.saturating_sub(start) * 8 + a.bit })
         .max();
-    let n = max.map(|m| m + 1).unwrap_or(0);
-    format!("{prefix}{}.{}", n / 8, n % 8)
+    crate::plc_hw::card_address(prj, card, input, max.map(|m| m + 1).unwrap_or(0))
 }
 
 /// Name for a new page: one more than the highest numeric page name.
@@ -172,8 +166,7 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
         }
         Func::Plc => {
             s.tag = ctx.last_plc.get(def.key).cloned().unwrap_or_else(|| prj.next_tag(&structure, def.letter));
-            let prefix = def.default_label.chars().next().unwrap_or('I');
-            s.label = next_plc_address(prj, &s.tag, prefix);
+            s.label = next_plc_address(prj, &s.tag, !def.default_label.starts_with('Q'));
         }
         Func::Potential | Func::Interruption => {}
     }
@@ -529,6 +522,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if let Some(d) = prj.plc_cards.remove(old) {
         prj.plc_cards.entry(new.to_string()).or_insert(d);
     }
+    crate::plc_hw::rename_device(prj, old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.
@@ -555,6 +549,9 @@ pub fn rename_cable(prj: &mut Project, old: &str, new: &str) {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == old) {
         w.cable = new.to_string();
     }
+    for c in prj.plc.connections.iter_mut().filter(|c| c.cable == old) {
+        c.cable = new.to_string();
+    }
 }
 
 /// Deletes a cable; its wires lose cable and core.
@@ -563,6 +560,9 @@ pub fn remove_cable(prj: &mut Project, index: usize) -> Cable {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable == cable.tag) {
         w.cable.clear();
         w.core.clear();
+    }
+    for c in prj.plc.connections.iter_mut().filter(|c| c.cable == cable.tag) {
+        c.cable.clear();
     }
     cable
 }
