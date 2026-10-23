@@ -41,3 +41,15 @@ fn t_junction_connects() {
     assert_eq!(nl.wire_net[&1], nl.wire_net[&2]);
     assert_eq!(junctions(&prj.pages[0]).len(), 1);
 }
+
+#[test]
+fn devices_in_the_cabinet_are_chained_before_field_devices() {
+    let prj = crate::sample::demo_project();
+    let nl = Netlist::build(&prj, true);
+    let open = Netlist::build(&prj, false);
+    let pairs: Vec<(String, String)> = connections(&prj, &nl, &open).into_iter().map(|c| (pin_designation(&prj, c.a), pin_designation(&prj, c.b))).collect();
+    // 0 V: the two door lamps are bridged in the cabinet, one wire leaves for the valve.
+    assert!(pairs.contains(&("-P1:X2".into(), "-P2:X2".into())), "{pairs:?}");
+    assert!(pairs.contains(&("-P2:X2".into(), "-Y1:A2".into())));
+    assert!(!pairs.iter().any(|(a, b)| a == "-Y1:A2" || (b == "-Y1:A2" && a == "-P1:X2")));
+}

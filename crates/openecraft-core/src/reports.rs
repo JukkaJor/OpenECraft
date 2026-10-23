@@ -469,7 +469,7 @@ fn duct_fill_report(prj: &Project, fill: &[panel::DuctFill]) -> Table {
         t.push(
             vec![
                 e.name.clone(),
-                d.part.clone(),
+                if d.face == panel::Face::Door { format!("{} ({})", d.part, d.face.title()) } else { d.part.clone() },
                 format!("{:.0} / {:.0}", at.x, at.y),
                 format!("{:.0}", d.length()),
                 f.total_wires.to_string(),
@@ -534,7 +534,7 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
                 w.color.clone(),
                 w.cross_section.clone(),
                 format!("{:.0}", w.length),
-                if w.route.via_ducts { tr("via cable ducts").into() } else { tr("direct (no ducts)").into() },
+                w.routing().into(),
             ],
             None,
         );

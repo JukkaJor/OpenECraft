@@ -28,6 +28,8 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         length: 0.0,
         items: (1, 2),
         ends: (EndKind::Generated, EndKind::Generated),
+        door: (None, None),
+        door_routes: (None, None),
     }
 }
 
@@ -108,7 +110,9 @@ fn loads_make_full_stretches_expensive() {
 fn wires_avoid_overfull_ducts() {
     let mut prj = crate::sample::demo_project();
     let before = Analysis::build(&prj);
-    let fullest = before.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
+    // Only wires on the mounting plate are routed again (door routes stay the shortest).
+    let on_plate = |prj: &Project, f: &&DuctFill| prj.layout.enclosures[f.enclosure].item(f.duct).is_some_and(|d| d.face == crate::panel::Face::Plate);
+    let fullest = before.duct_fill.iter().filter(|f| on_plate(&prj, f)).map(|f| f.percent).fold(0.0, f32::max);
     prj.layout.duct_fill_limit = fullest * 0.6;
     let after = Analysis::build(&prj);
     assert_eq!(after.wiring.len(), before.wiring.len());
@@ -118,7 +122,7 @@ fn wires_avoid_overfull_ducts() {
         .filter(|w| before.wiring.iter().find(|o| o.key() == w.key()).is_some_and(|o| o.route.runs != w.route.runs))
         .collect();
     assert!(!moved.is_empty(), "some wires take another way");
-    let new_fullest = after.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
+    let new_fullest = after.duct_fill.iter().filter(|f| on_plate(&prj, f)).map(|f| f.percent).fold(0.0, f32::max);
     assert!(new_fullest < fullest, "{new_fullest} < {fullest}");
     // Lengths follow the new routes.
     for w in &moved {

@@ -74,7 +74,8 @@ pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
     let mut runs: HashMap<(usize, u64), Vec<Stretch>> = HashMap::new();
     for w in wiring {
         let area = wire_area(&w.cross_section);
-        for r in w.route.runs.iter().filter(|r| r.to - r.from > 0.01) {
+        let door = [&w.door_routes.0, &w.door_routes.1].into_iter().flatten().flat_map(|r| r.runs.iter());
+        for r in w.route.runs.iter().chain(door).filter(|r| r.to - r.from > 0.01) {
             runs.entry((w.enclosure, r.duct)).or_default().push(Stretch { from: r.from, to: r.to, area });
         }
     }

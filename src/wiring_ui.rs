@@ -265,7 +265,7 @@ impl WiringUi {
                     }
                     ui.separator();
                 }
-                ui.label(big(if w.route.via_ducts { tr("via cable ducts").to_string() } else { tr("direct (no ducts)").to_string() }));
+                ui.label(big(w.routing().to_string()));
                 if w.net != w.number && !w.net.is_empty() {
                     ui.separator();
                     ui.label(big(tr_fmt!("Potential {}", w.net)));
@@ -316,6 +316,7 @@ impl WiringUi {
     fn view(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, panel: &mut PanelUi) {
         ui.horizontal(|ui| {
             ui.checkbox(&mut self.show_others, tr("Show the other wires"));
+            panel.door_button(ui);
             if ui.button(tr("⛶ Fit")).clicked() {
                 panel.reset_camera();
                 if let Some(w) = self.current_index(an).map(|i| an.wiring[i].clone()) {

@@ -82,7 +82,8 @@ fn virtual_wiring_of_demo() {
     let an = Analysis::build(&prj);
     assert!(!an.wiring.is_empty());
     for w in &an.wiring {
-        assert!(w.route.via_ducts, "{} - {}", w.from, w.to);
+        // Wires between door devices stay on the door.
+        assert_eq!(w.route.via_ducts, !w.on_door(), "{} - {}", w.from, w.to);
         assert!(w.length > prj.layout.wire_reserve);
     }
     // Q1 feeds the main contacts of K1 inside the cabinet.
@@ -143,11 +144,11 @@ fn wire_hit_test_and_cycling() {
     let seg = &w.route.points[0..2];
     let mid = p((seg[0].x + seg[1].x) / 2.0, (seg[0].y + seg[1].y) / 2.0);
     assert!(route_distance(&w.route.points, mid) < 0.01);
-    let hits = wires_at(&an.wiring, w.enclosure, mid, 2.0);
+    let hits = wires_at(&an.wiring, w.enclosure, Face::Plate, mid, 2.0);
     assert!(hits.contains(&wi));
     // Nearest first, other enclosures and far points excluded.
-    assert!(wires_at(&an.wiring, w.enclosure + 1, mid, 2.0).is_empty());
-    assert!(wires_at(&an.wiring, w.enclosure, p(-500.0, -500.0), 2.0).is_empty());
+    assert!(wires_at(&an.wiring, w.enclosure + 1, Face::Plate, mid, 2.0).is_empty());
+    assert!(wires_at(&an.wiring, w.enclosure, Face::Plate, p(-500.0, -500.0), 2.0).is_empty());
 
     // Repeated clicks step through overlapping wires and wrap around.
     assert_eq!(next_candidate(&[4, 7, 9], None), Some(4));
@@ -306,11 +307,36 @@ fn door_wires_run_over_the_hinge() {
     let an = Analysis::build(&prj);
     let e = &prj.layout.enclosures[0];
     let s2 = e.items.iter().find(|i| i.tag == "-S2").unwrap();
-    let w = an.wiring.iter().find(|w| w.items.0 == s2.id || w.items.1 == s2.id).expect("door device is wired");
-    let (start, extra) = wiring_end(e, s2, None);
+    let s3 = e.items.iter().find(|i| i.tag == "-S3").unwrap();
+    let w = an.wiring.iter().find(|w| (w.items.0 == s3.id) != (w.items.1 == s3.id) && !w.on_door()).expect("door device is wired into the cabinet");
+    let (start, extra, door_route) = wiring_end(e, s3, None);
     assert_eq!(start.pos.x, 0.0);
     assert!(extra > DOOR_LOOP + e.depth - PLATE_Z);
     assert!(w.length > extra);
+    // On the door the wire runs through the door ducts to the hinge side.
+    let door_route = door_route.expect("route on the door");
+    assert!(door_route.via_ducts);
+    assert!(door_route.points.last().unwrap().x < DOOR_FRAME);
+    let at = if w.items.0 == s3.id { w.door.0 } else { w.door.1 }.expect("door end");
+    assert!(at[2] < e.depth && at[2] > e.depth - s3.d - 1.0);
+    let route = if w.items.0 == s3.id { &w.door_routes.0 } else { &w.door_routes.1 }.clone().expect("door route");
+    let door_ducts: Vec<u64> = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Door).map(|i| i.id).collect();
+    assert!(route.runs.iter().all(|r| door_ducts.contains(&r.duct)) && !route.runs.is_empty());
+    // The 3D path: back into the door duct, along the door, over the hinge to the plate.
+    let plate = [PLATE_MARGIN, PLATE_MARGIN + 100.0, PLATE_Z + 30.0];
+    let (path, on_door) = door_path(e, at, &route, plate);
+    assert_eq!((path[0], *path.last().unwrap(), on_door), (at, plate, route.points.len() + 1));
+    let duct_z = e.depth - 15.0;
+    assert!(path[1..on_door].iter().all(|q| (q[2] - duct_z).abs() < 0.01), "{path:?}");
+    // The door ducts get fill levels; the 2D door view finds the wire on the door.
+    assert!(an.duct_fill.iter().any(|f| door_ducts.contains(&f.duct) && f.total_wires > 0));
+    let mid = route.points[route.points.len() / 2];
+    assert!(wires_at(&an.wiring, 0, Face::Door, mid, 2.0).iter().any(|&i| an.wiring[i].key() == w.key()));
+    // Between two door devices the wire stays on the door: short, no plate route.
+    let jumper = an.wiring.iter().find(|w| w.items.0 == s2.id || w.items.1 == s2.id).unwrap();
+    assert!(jumper.on_door() && jumper.route.points.is_empty() && jumper.route.runs.is_empty());
+    assert!(!jumper.paths_on(Face::Door).is_empty() && jumper.paths_on(Face::Plate).is_empty());
+    assert!(jumper.length < w.length);
     // The mounting layout page shows the door next to the plate.
     let page = prj.pages.iter().position(|p| matches!(p.kind, crate::model::PageKind::Mounting(_))).unwrap();
     assert!(crate::svg::page_svg(&prj, page).contains("Door (front view)"));

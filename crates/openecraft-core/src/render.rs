@@ -582,12 +582,15 @@ fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind)
 
 /// Draws an enclosure in front view: its mounting plate or its door (seen from the
 /// front). `origin` is the page position of the enclosure's top left corner, `k` the
-/// scale (page mm per real mm).
+/// scale (page mm per real mm). From the front, the cable ducts behind the door are
+/// hidden (dashed); `inside` draws the door as seen from the inside (the caller
+/// mirrors it): ducts as they are, door devices from the rear.
 #[allow(clippy::too_many_arguments)]
 pub fn draw_enclosure(
     d: &mut dyn Draw,
     e: &Enclosure,
     face: Face,
+    inside: bool,
     origin: P,
     k: f32,
     selected: &BTreeSet<u64>,
@@ -650,6 +653,12 @@ pub fn draw_enclosure(
                     t += 25.0;
                 }
             }
+            ItemKind::Duct if face == Face::Door && !inside => {
+                let ink = if ink == Ink::Line { Ink::Frame } else { ink };
+                for (s, t) in [(a, p(b.x, a.y)), (p(b.x, a.y), b), (b, p(a.x, b.y)), (p(a.x, b.y), a)] {
+                    d.line(s, t, 0.2, ink, true);
+                }
+            }
             ItemKind::Duct => {
                 d.rect(a, b, 0.0, Ink::Fill, true);
                 d.rect(a, b, 0.25, ink, false);
@@ -705,6 +714,14 @@ pub fn draw_enclosure(
                     d.line(a, b, 0.12, line_ink, false);
                     d.line(p(a.x, b.y), p(b.x, a.y), 0.12, line_ink, false);
                 }
+            }
+            ItemKind::Device if inside => {
+                // Rear of a door device: its box and tag.
+                d.rect(a, b, 0.0, Ink::Fill, true);
+                let size = (it.w.min(it.h) * 0.22).clamp(3.0, 9.0) * k;
+                let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
+                d.text(tf(it.x + it.w / 2.0, it.y + it.h / 2.0), &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                d.rect(a, b, 0.3, ink, false);
             }
             ItemKind::Device => {
                 d.rect(a, b, 0.0, Ink::Fill, true);
@@ -862,10 +879,10 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
     let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, Face::Plate, origin, k, &BTreeSet::new(), &BTreeSet::new(), prj);
+    draw_enclosure(d, e, Face::Plate, false, origin, k, &BTreeSet::new(), &BTreeSet::new(), prj);
     if door {
         let o = origin + p(w + gap * k, 0.0);
-        draw_enclosure(d, e, Face::Door, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
+        draw_enclosure(d, e, Face::Door, false, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
         d.text(p(origin.x + w / 2.0, origin.y - 3.0), tr("Mounting plate"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
         d.text(p(o.x + w / 2.0, o.y - 3.0), tr("Door (front view)"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
     }

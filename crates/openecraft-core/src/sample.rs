@@ -273,6 +273,13 @@ fn add_panel_layout(prj: &mut Project, db: &PartsDb) {
     for (tag, x, y) in DOOR_DEVICES {
         panel::place_device_on(prj, 0, tag, p(x, y), panel::Face::Door);
     }
+    // Door ducts: one along the hinge side, one above and one below the row of
+    // command devices; the door wires run through them to the hinge.
+    crate::parts::ensure_in_project(prj, db, panel::DOOR_DUCT_PART);
+    for (a, b) in [((50.0, 60.0), (50.0, 740.0)), ((62.5, 190.0), (480.0, 190.0)), ((62.5, 295.0), (480.0, 295.0))] {
+        let item = panel::new_profile(prj, ItemKind::Duct, panel::DOOR_DUCT_PART, p(a.0, a.1), p(b.0, b.1));
+        prj.layout.enclosures[0].items.push(panel::PanelItem { face: panel::Face::Door, ..item });
+    }
     let id = prj.new_id();
     let at = prj.pages.len();
     prj.pages.push(Page::new(id, &(at + 1).to_string(), "Mounting layout +CAB1", PageKind::Mounting(enc_id)));
