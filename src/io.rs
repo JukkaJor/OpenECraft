@@ -28,6 +28,10 @@ pub enum Purpose {
     Table(crate::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
     Dictionary,
+    /// PLC hardware configuration (AutomationML).
+    Aml,
+    /// Device descriptions of PLC hardware (GSDML, ESI).
+    DeviceDescription,
 }
 
 impl FileKind for Purpose {
@@ -42,6 +46,8 @@ impl FileKind for Purpose {
             Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
+            Purpose::Aml => ("AutomationML", &["aml", "xml"]),
+            Purpose::DeviceDescription => (tr("Device description (GSDML, ESI)"), &["xml"]),
         }
     }
 }
