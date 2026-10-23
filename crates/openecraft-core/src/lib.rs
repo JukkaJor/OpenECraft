@@ -5,6 +5,7 @@
 pub mod climate;
 pub mod config;
 pub mod dxf;
+pub mod export3d;
 pub mod forms;
 pub mod geom;
 pub mod harness;

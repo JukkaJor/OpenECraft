@@ -211,7 +211,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   ends, colour, cross-section, routed length, stripping length and ferrule per
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
   wire processing machines; ferrules also in the BOM), report CSVs, PLC symbol tables,
-  NC data of mounting plates.
+  NC data of mounting plates, the **panel layout in 3D** as **glTF 2.0** (viewers, web,
+  PLM; metres, one node per enclosure and item, colours) and **STEP AP214** (MCAD;
+  faceted solids with colours, millimetres, z up) – walls, door, mounting plate,
+  rails, ducts, busbars and devices with the 3D models of their parts.
   DWG and EPLAN's EDZ format are proprietary and not supported.
 - **Wire harnesses**: single point-to-point connections (`-S1:13 – -K1:A1`) are
   assigned to harnesses (`-WH1`), independent of the other connections of the same
@@ -359,7 +362,7 @@ cargo test --workspace
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
 | Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
-| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list |
+| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP) |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
 | Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
@@ -409,6 +412,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
+| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF and STEP export |
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |

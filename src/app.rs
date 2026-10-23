@@ -362,6 +362,26 @@ impl App {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &all);
                     self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
                 }
+                ui.separator();
+                let has_layout = !self.prj.layout.enclosures.is_empty();
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (glTF)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices for viewers and MCAD / PLM"))
+                    .clicked()
+                {
+                    let gltf = crate::export3d::gltf(&self.prj);
+                    self.export(&ctx, self.suggested_name("gltf"), ("glTF", "gltf"), gltf);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (STEP)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as faceted solids (STEP AP214)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("stp");
+                    let step = crate::export3d::step(&self.prj, &name);
+                    self.export(&ctx, name, ("STEP", "stp"), step);
+                }
+                ui.separator();
                 if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {
                     let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
                     self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);

@@ -22,3 +22,17 @@ fn reports_and_exports() {
         assert!(run(&mut s, "export", json!({ "format": format })).is_ok(), "{format}");
     }
 }
+
+#[test]
+fn panel_layout_in_3d() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let gltf = run(&mut s, "export", json!({ "format": "gltf" })).unwrap();
+    let v: Value = serde_json::from_str(gltf.as_str().unwrap()).unwrap();
+    assert_eq!(v["asset"]["version"], "2.0");
+    let file = temp_dir("export-3d").join("panel.stp");
+    let r = run(&mut s, "export", json!({ "format": "step", "path": file.to_str().unwrap() })).unwrap();
+    assert!(r["bytes"].as_u64().unwrap() > 1000);
+    let step = std::fs::read_to_string(&file).unwrap();
+    assert!(step.starts_with("ISO-10303-21;") && step.contains("FILE_NAME('panel.stp'"));
+}
