@@ -28,18 +28,20 @@ pub enum Purpose {
     Table(crate::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
     Dictionary,
+    /// Another project that gets report pages of this one.
+    OutputTarget,
 }
 
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Project => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::Project | Purpose::OutputTarget => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
-            Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
+            Purpose::Forms => (tr("OpenECraft title blocks and report schemes (JSON)"), &["json"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
         }

@@ -8,6 +8,8 @@ use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
+mod diagrams;
+
 #[derive(Clone, Debug, Default)]
 pub struct Table {
     pub headers: Vec<&'static str>,
@@ -98,17 +100,24 @@ impl Analysis {
                 ReportKind::DeviceList => device_list(prj, &idx),
                 ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
                 ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
+                ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
+                ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, &netlist, &open),
+                ReportKind::TerminalConnections => diagrams::terminal_connections(prj, &conns),
                 ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
+                ReportKind::PinConnections => diagrams::pin_connections(prj, &conns),
                 ReportKind::ConnectionList => connection_list(prj, &conns),
+                ReportKind::DeviceConnections => diagrams::device_connections(prj, &idx, &conns),
                 ReportKind::PlcAssignment => plc_list(prj, &netlist),
                 ReportKind::RevisionOverview => revision_overview(prj),
                 ReportKind::PotentialList => potential_list(prj, &netlist),
                 ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
                 ReportKind::CableOverview => cable_overview(prj, &conns),
                 ReportKind::CableDiagram => cable_diagram(prj, &conns),
+                ReportKind::CableConnections => diagrams::cable_connections_report(prj, &conns),
                 ReportKind::CableSizing => cable_sizing(prj, &conns),
                 ReportKind::HarnessData => Table::default(),
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
+                ReportKind::PanelLegend => diagrams::panel_legend(prj, &idx),
                 ReportKind::Climate => climate_report(prj),
                 ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
                 ReportKind::HoseList => hose_list(prj, &open),

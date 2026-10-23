@@ -98,7 +98,7 @@ fn report_pages_use_their_form() {
     let id = prj.new_id();
     prj.pages.push(crate::model::Page::new(id, "99", "Devices", PageKind::Report(ReportKind::DeviceList)));
     let page = prj.pages.len() - 1;
-    let form = ReportForm { title: "Our device list".into(), columns: vec!["Part number".into(), "Device tag".into()], rows: 10 };
+    let form = ReportForm { title: "Our device list".into(), columns: vec!["Part number".into(), "Device tag".into()], rows: 10, ..Default::default() };
     prj.forms.reports.insert(ReportKind::DeviceList, form);
     let svg = crate::svg::page_svg(&prj, page);
     assert!(svg.contains("Our device list"));
@@ -117,12 +117,26 @@ fn merging_title_blocks_replaces_by_name() {
     let before = prj.forms.title_blocks.len();
     let mut own = builtin().remove(0);
     own.name = "Company".into();
-    let mut lib = FormLibrary { title_blocks: vec![own.clone()] };
-    assert_eq!(merge(&mut prj, FormLibrary::from_json(&serde_json::to_string(&lib).unwrap()).unwrap()), 1);
+    let mut lib = FormLibrary { title_blocks: vec![own.clone()], ..Default::default() };
+    assert_eq!(merge(&mut prj, FormLibrary::from_json(&serde_json::to_string(&lib).unwrap()).unwrap()), (1, 0));
     own.items.clear();
     lib.title_blocks = vec![own];
     merge(&mut prj, lib);
     assert_eq!(prj.forms.title_blocks.len(), before + 1);
     assert!(prj.forms.title_blocks.iter().find(|f| f.name == "Company").unwrap().items.is_empty());
     assert!(FormLibrary::from_json("42").is_err());
+}
+
+#[test]
+fn merging_report_schemes_replaces_by_report_and_name() {
+    let mut prj = Project::default();
+    let scheme = |kind, title: &str| ReportScheme { name: "Workshop".into(), kind, form: ReportForm { title: title.into(), ..Default::default() } };
+    let lib = FormLibrary { schemes: vec![scheme(ReportKind::DeviceList, "a"), scheme(ReportKind::TerminalDiagram, "b")], ..Default::default() };
+    let json = serde_json::to_string(&lib).unwrap();
+    assert_eq!(merge(&mut prj, FormLibrary::from_json(&json).unwrap()), (0, 2));
+    merge(&mut prj, FormLibrary { schemes: vec![scheme(ReportKind::DeviceList, "c")], ..Default::default() });
+    assert_eq!(prj.forms.schemes.len(), 2);
+    assert_eq!(report_form(&prj, ReportKind::DeviceList, "Workshop").unwrap().title, "c");
+    // Old title block files without schemes still load.
+    assert!(FormLibrary::from_json(r#"{"title_blocks":[]}"#).unwrap().schemes.is_empty());
 }

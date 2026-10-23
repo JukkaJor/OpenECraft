@@ -148,9 +148,9 @@ Wire number (kept when renumbering)	Verbindungsnummer (bleibt beim Neunummeriere
 X position in mm	X-Position in mm	Position X en mm	Posición X en mm
 Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
 json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
-schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops
+schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops
 svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step or dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step oder dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step ou dictionary	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step o dictionary
-table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list or pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list oder pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list ou pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list o pct_loops
+table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list or pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list oder pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list ou pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list o pct_loops
 {} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
 {} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)
 Released pages cannot be deleted	Freigegebene Seiten können nicht gelöscht werden	Les pages validées ne peuvent pas être supprimées	Las páginas liberadas no se pueden eliminar
@@ -710,3 +710,110 @@ Door (front)	Tür (Vorderseite)	Porte (face avant)	Puerta (frente)
 The door seen from the front: door devices and cutouts	Die Tür von vorn: Türgeräte und Ausschnitte	La porte vue de face : appareils de porte et découpes	La puerta vista de frente: equipos de la puerta y recortes
 Door (inside)	Tür (Innenseite)	Porte (face intérieure)	Puerta (interior)
 The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door	Die Tür von innen (Scharniere rechts): Kabelkanäle und die Verdrahtung hinter der Tür	La porte vue de l'intérieur (charnières à droite) : goulottes et câblage derrière la porte	La puerta vista desde dentro (bisagras a la derecha): canaletas y cableado detrás de la puerta
+0 = fitted to the rows per page	0 = an die Zeilen pro Seite angepasst	0 = adaptée au nombre de lignes par page	0 = ajustado a las filas por página
+A report block generates the pages of a report, e.g. one terminal diagram per strip, and updates them.	Ein Auswertungsblock erzeugt die Seiten einer Auswertung, z. B. einen Klemmenplan je Leiste, und aktualisiert sie.	Un bloc de rapports génère les pages d'un rapport, p. ex. un plan de bornes par bornier, et les met à jour.	Un bloque de informes genera las páginas de un informe, p. ej. un esquema de bornes por regleta, y las actualiza.
+All report pages	Alle Auswertungsseiten	Toutes les pages de rapport	Todas las páginas de informe
+Block {}	Block {}	Bloc {}	Bloque {}
+Cable connection diagram	Kabelanschlussplan	Plan de raccordement des câbles	Esquema de conexión de cables
+Columns, filter, sort order and rows of the report pages	Spalten, Filter, Sortierung und Zeilen der Auswertungsseiten	Colonnes, filtre, tri et lignes des pages de rapport	Columnas, filtro, orden y filas de las páginas de informe
+Connected	Belegt	Raccordées	Conectadas
+Connection point	Anschluss	Point de raccordement	Punto de conexión
+Continued on the next page	Fortsetzung auf der nächsten Seite	Suite à la page suivante	Continúa en la página siguiente
+Copies the report pages as fixed pages into another project file; pages output from this project before are replaced	Kopiert die Auswertungsseiten als feste Seiten in eine andere Projektdatei; früher aus diesem Projekt ausgegebene Seiten werden ersetzt	Copie les pages de rapport comme pages fixes dans un autre fichier de projet ; les pages sorties auparavant de ce projet sont remplacées	Copia las páginas de informe como páginas fijas en otro archivo de proyecto; las páginas emitidas antes desde este proyecto se reemplazan
+Creates or changes a report block (report pages generated together, e.g. one terminal diagram per strip)	Legt einen Auswertungsblock an oder ändert ihn (gemeinsam erzeugte Auswertungsseiten, z. B. ein Klemmenplan je Leiste)	Crée ou modifie un bloc de rapports (pages de rapport générées ensemble, p. ex. un plan de bornes par bornier)	Crea o modifica un bloque de informes (páginas de informe generadas juntas, p. ej. un esquema de bornes por regleta)
+Creates or replaces a report scheme	Legt ein Auswertungsschema an oder ersetzt es	Crée ou remplace un schéma de rapport	Crea o reemplaza un esquema de informe
+Descending	Absteigend	Décroissant	Descendente
+Device connection diagram	Geräteanschlussplan	Plan de raccordement des appareils	Esquema de conexión de equipos
+Element	Element	Élément	Elemento
+External	Extern	Externe	Externo
+Form: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size	Formular: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size	Formulaire : title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size	Formulario: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size
+Function (=) of the generated pages	Funktion (=) der erzeugten Seiten	Fonction (=) des pages générées	Función (=) de las páginas generadas
+Generate report pages per strip, plug, cable or device	Auswertungsseiten je Leiste, Stecker, Kabel oder Gerät erzeugen	Générer des pages de rapport par bornier, connecteur, câble ou appareil	Generar páginas de informe por regleta, conector, cable o equipo
+Generates the pages of all report blocks again	Erzeugt die Seiten aller Auswertungsblöcke neu	Génère à nouveau les pages de tous les blocs de rapports	Vuelve a generar las páginas de todos los bloques de informes
+Generates the pages of the report blocks again (replacing the pages they generated before)	Erzeugt die Seiten der Auswertungsblöcke neu (ersetzt die zuvor erzeugten Seiten)	Génère à nouveau les pages des blocs de rapports (remplace les pages générées auparavant)	Vuelve a generar las páginas de los bloques de informes (reemplaza las páginas generadas antes)
+Generates {} pages	Erzeugt {} Seiten	Génère {} pages	Genera {} páginas
+Group column	Gruppierungsspalte	Colonne de regroupement	Columna de agrupación
+Groups to generate, wildcards allowed (-X*, -W1); empty: all	Zu erzeugende Gruppen, Platzhalter erlaubt (-X*, -W1); leer: alle	Groupes à générer, jokers autorisés (-X*, -W1) ; vide : tous	Grupos a generar, se permiten comodines (-X*, -W1); vacío: todos
+Groups	Gruppen	Groupes	Grupos
+Imported {} title blocks and {} report schemes	{} Schriftfelder und {} Auswertungsschemata importiert	{} cartouches et {} schémas de rapport importés	{} cajetines y {} esquemas de informe importados
+Internal	Intern	Interne	Interno
+Invalid form: {}	Ungültiges Formular: {}	Formulaire invalide : {}	Formulario no válido: {}
+Jumpers	Brücken	Ponts	Puentes
+Leave repeated values of the first column blank	Wiederholte Werte der ersten Spalte leer lassen	Laisser vides les valeurs répétées de la première colonne	Dejar en blanco los valores repetidos de la primera columna
+Lists the report blocks with their report, scheme, groups and generated pages	Listet die Auswertungsblöcke mit Auswertung, Schema, Gruppen und erzeugten Seiten	Liste les blocs de rapports avec leur rapport, schéma, groupes et pages générées	Lista los bloques de informes con su informe, esquema, grupos y páginas generadas
+Lists the report schemes (named report forms) with their settings	Listet die Auswertungsschemata (benannte Auswertungsformulare) mit ihren Einstellungen	Liste les schémas de rapport (formulaires de rapport nommés) avec leurs réglages	Lista los esquemas de informe (formularios de informe con nombre) con sus ajustes
+Location (+) of the generated pages	Ort (+) der erzeugten Seiten	Emplacement (+) des pages générées	Ubicación (+) de las páginas generadas
+Name of the block	Name des Blocks	Nom du bloc	Nombre del bloque
+Name of the scheme	Name des Schemas	Nom du schéma	Nombre del esquema
+Named copy of this form, for report blocks	Benannte Kopie dieses Formulars, für Auswertungsblöcke	Copie nommée de ce formulaire, pour les blocs de rapports	Copia con nombre de este formulario, para bloques de informes
+New pages for every group (strip, plug, cable, device …)	Neue Seiten für jede Gruppe (Leiste, Stecker, Kabel, Gerät …)	Nouvelles pages pour chaque groupe (bornier, connecteur, câble, appareil …)	Páginas nuevas para cada grupo (regleta, conector, cable, equipo …)
+New pages for every value of the group column (default true)	Neue Seiten für jeden Wert der Gruppierungsspalte (Standard: true)	Nouvelles pages pour chaque valeur de la colonne de regroupement (par défaut true)	Páginas nuevas para cada valor de la columna de agrupación (por defecto true)
+New report block {} needs a kind	Neuer Auswertungsblock {} braucht eine Auswertung (kind)	Le nouveau bloc de rapports {} a besoin d'un rapport (kind)	El nuevo bloque de informes {} necesita un informe (kind)
+No report block named {}	Kein Auswertungsblock namens {}	Aucun bloc de rapports nommé {}	Ningún bloque de informes llamado {}
+No report block {}	Kein Auswertungsblock {}	Aucun bloc de rapports {}	Ningún bloque de informes {}
+No report pages to output	Keine Auswertungsseiten zum Ausgeben	Aucune page de rapport à sortir	No hay páginas de informe para emitir
+Only rows that pass all filters are shown	Nur Zeilen, die alle Filter erfüllen, werden angezeigt	Seules les lignes qui passent tous les filtres sont affichées	Solo se muestran las filas que cumplen todos los filtros
+Only the pages of this report block; default all report pages	Nur die Seiten dieses Auswertungsblocks; Standard: alle Auswertungsseiten	Seulement les pages de ce bloc de rapports ; par défaut toutes les pages de rapport	Solo las páginas de este bloque de informes; por defecto todas las páginas de informe
+Only this block	Nur dieser Block	Seulement ce bloc	Solo este bloque
+OpenECraft title blocks and report schemes (JSON)	OpenECraft-Schriftfelder und Auswertungsschemata (JSON)	Cartouches et schémas de rapport OpenECraft (JSON)	Cajetines y esquemas de informe de OpenECraft (JSON)
+Output failed: {}	Ausgabe fehlgeschlagen: {}	Échec de la sortie : {}	La emisión ha fallado: {}
+Output from project {}	Ausgegeben aus Projekt {}	Sortie du projet {}	Emitido desde el proyecto {}
+Output to another project	Ausgabe in ein anderes Projekt	Sortie dans un autre projet	Emitir a otro proyecto
+Output to project…	In Projekt ausgeben…	Sortir dans un projet…	Emitir al proyecto…
+Outputs report pages as fixed pages into another project file; pages output from this project before are replaced	Gibt Auswertungsseiten als feste Seiten in eine andere Projektdatei aus; früher aus diesem Projekt ausgegebene Seiten werden ersetzt	Sort des pages de rapport comme pages fixes dans un autre fichier de projet ; les pages sorties auparavant de ce projet sont remplacées	Emite páginas de informe como páginas fijas en otro archivo de proyecto; las páginas emitidas antes desde este proyecto se reemplazan
+Pages of the selected block	Seiten des gewählten Blocks	Pages du bloc sélectionné	Páginas del bloque seleccionado
+Panel legend	Schaltschranklegende	Légende de l'armoire	Leyenda del armario
+Pin connection diagram	Steckeranschlussplan	Plan de raccordement des broches	Esquema de conexión de pines
+Project file that gets the pages	Projektdatei, die die Seiten erhält	Fichier de projet qui reçoit les pages	Archivo de proyecto que recibe las páginas
+Relative column width	Relative Spaltenbreite	Largeur relative de la colonne	Ancho relativo de la columna
+Removes a report block; the pages it generated stay	Entfernt einen Auswertungsblock; die erzeugten Seiten bleiben	Supprime un bloc de rapports ; les pages qu'il a générées restent	Elimina un bloque de informes; las páginas que generó se mantienen
+Replaces the pages of this block	Ersetzt die Seiten dieses Blocks	Remplace les pages de ce bloc	Reemplaza las páginas de este bloque
+Report block {}: {} pages generated	Auswertungsblock {}: {} Seiten erzeugt	Bloc de rapports {} : {} pages générées	Bloque de informes {}: {} páginas generadas
+Report blocks start new pages for every value of this column	Auswertungsblöcke beginnen für jeden Wert dieser Spalte neue Seiten	Les blocs de rapports commencent de nouvelles pages pour chaque valeur de cette colonne	Los bloques de informes empiezan páginas nuevas para cada valor de esta columna
+Report blocks updated: {} pages	Auswertungsblöcke aktualisiert: {} Seiten	Blocs de rapports mis à jour : {} pages	Bloques de informes actualizados: {} páginas
+Report blocks	Auswertungsblöcke	Blocs de rapports	Bloques de informes
+Report blocks…	Auswertungsblöcke…	Blocs de rapports…	Bloques de informes…
+Report scheme: its filter, sort order and columns	Auswertungsschema: dessen Filter, Sortierung und Spalten	Schéma de rapport : son filtre, son tri et ses colonnes	Esquema de informe: su filtro, orden y columnas
+Report scheme; empty: the form of the report	Auswertungsschema; leer: das Formular der Auswertung	Schéma de rapport ; vide : le formulaire du rapport	Esquema de informe; vacío: el formulario del informe
+Report the scheme belongs to	Auswertung, zu der das Schema gehört	Rapport auquel appartient le schéma	Informe al que pertenece el esquema
+Report, e.g. terminal_diagram, terminal_lineup, cable_connections (required for a new block)	Auswertung, z. B. terminal_diagram, terminal_lineup, cable_connections (für einen neuen Block erforderlich)	Rapport, p. ex. terminal_diagram, terminal_lineup, cable_connections (obligatoire pour un nouveau bloc)	Informe, p. ej. terminal_diagram, terminal_lineup, cable_connections (obligatorio para un bloque nuevo)
+Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project.	Auswertungen › Auswertungsblöcke: Auswertungsseiten je Leiste, Stecker, Kabel oder Gerät mit einem benannten Schema (Filter, Sortierung, Gruppierung) erzeugen und aktualisieren; Auswertungsseiten in ein anderes Projekt ausgeben.	Rapports › Blocs de rapports : générer des pages de rapport par bornier, connecteur, câble ou appareil avec un schéma nommé (filtre, tri, regroupement) et les mettre à jour ; sortir des pages de rapport dans un autre projet.	Informes › Bloques de informes: generar páginas de informe por regleta, conector, cable o equipo con un esquema con nombre (filtro, orden, agrupación) y actualizarlas; emitir páginas de informe a otro proyecto.
+Reserve	Reserve	Réserve	Reserva
+Scheme name	Name des Schemas	Nom du schéma	Nombre del esquema
+Scheme {}	Schema {}	Schéma {}	Esquema {}
+Scheme	Schema	Schéma	Esquema
+Select a report block.	Einen Auswertungsblock wählen.	Sélectionnez un bloc de rapports.	Seleccione un bloque de informes.
+Side	Seite	Côté	Lado
+Size (mm)	Größe (mm)	Taille (mm)	Tamaño (mm)
+Sort order	Sortierung	Ordre de tri	Orden
+Source	Quelle	Source	Origen
+Spare terminal	Reserveklemme	Borne de réserve	Borne de reserva
+Spare	Reserve	Réserve	Reserva
+Standard form of the report	Standardformular der Auswertung	Formulaire standard du rapport	Formulario estándar del informe
+Target	Ziel	Cible	Destino
+Terminal connection diagram	Klemmenanschlussplan	Plan de raccordement des bornes	Esquema de conexión de bornes
+Terminal line-up	Klemmenaufreihung	Alignement des bornes	Disposición de bornes
+Terminal strip overview	Klemmenleistenübersicht	Vue d'ensemble des borniers	Vista general de regletas
+Text size	Textgröße	Taille du texte	Tamaño del texto
+The pages it generated stay	Die erzeugten Seiten bleiben	Les pages générées restent	Las páginas generadas se mantienen
+The project's own title blocks and report schemes	Die eigenen Schriftfelder und Auswertungsschemata des Projekts	Les cartouches et schémas de rapport propres au projet	Los cajetines y esquemas de informe propios del proyecto
+Unknown report scheme: {}	Unbekanntes Auswertungsschema: {}	Schéma de rapport inconnu : {}	Esquema de informe desconocido: {}
+Width (mm)	Breite (mm)	Largeur (mm)	Ancho (mm)
+all, or e.g. -X*, -W1	alle, oder z. B. -X*, -W1	tous, ou p. ex. -X*, -W1	todos, o p. ej. -X*, -W1
+contains	enthält	contient	contiene
+does not contain	enthält nicht	ne contient pas	no contiene
+is empty	ist leer	est vide	está vacío
+is not empty	ist nicht leer	n'est pas vide	no está vacío
+is not	ist nicht	n'est pas	no es
+is	ist	est	es
+starts with	beginnt mit	commence par	empieza por
+{} (first column)	{} (erste Spalte)	{} (première colonne)	{} (primera columna)
+{} report pages output to {}	{} Auswertungsseiten ausgegeben nach {}	{} pages de rapport sorties dans {}	{} páginas de informe emitidas a {}
+{} – {} ({} pages)	{} – {} ({} Seiten)	{} – {} ({} pages)	{} – {} ({} páginas)
+➕ Add filter	➕ Filter hinzufügen	➕ Ajouter un filtre	➕ Añadir filtro
+➕ Add sort key	➕ Sortierung hinzufügen	➕ Ajouter un critère de tri	➕ Añadir criterio de orden
+➕ New block	➕ Neuer Block	➕ Nouveau bloc	➕ Nuevo bloque
+➕ New scheme	➕ Neues Schema	➕ Nouveau schéma	➕ Nuevo esquema
+⟳ Generate all	⟳ Alle erzeugen	⟳ Tout générer	⟳ Generar todo
+⟳ Generate	⟳ Erzeugen	⟳ Générer	⟳ Generar
+⟳ Update report blocks	⟳ Auswertungsblöcke aktualisieren	⟳ Mettre à jour les blocs de rapports	⟳ Actualizar bloques de informes
