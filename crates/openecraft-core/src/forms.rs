@@ -6,7 +6,7 @@
 
 use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P};
-use crate::model::{PageKind, Project, ReportKind, FRAME_X0, FRAME_X1, FRAME_Y1, TITLE_Y0};
+use crate::model::{PageKind, Project, ReportKind};
 use crate::render::{Draw, Ink, VAnchor};
 use crate::symbols::Anchor;
 use serde::{Deserialize, Serialize};
@@ -14,8 +14,8 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 /// Size of the title block area (origin at its top left corner).
-pub const AREA_W: f32 = FRAME_X1 - FRAME_X0;
-pub const AREA_H: f32 = FRAME_Y1 - TITLE_Y0;
+pub const AREA_W: f32 = crate::frame::TITLE_W;
+pub const AREA_H: f32 = crate::frame::TITLE_H;
 
 pub const STANDARD: &str = "Standard";
 pub const COMPACT: &str = "Compact";
@@ -122,6 +122,12 @@ pub struct Forms {
     pub default_title_block: String,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub reports: BTreeMap<ReportKind, ReportForm>,
+    /// Plot frames defined for the project.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub frames: Vec<crate::frame::PlotFrame>,
+    /// Plot frame of pages that do not choose one; empty: A3 landscape.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub default_frame: String,
 }
 
 /// File format for exchanging title blocks.
@@ -280,6 +286,9 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
             PageKind::Cover => tr("Cover"),
             PageKind::Report(_) => tr("Report"),
             PageKind::Mounting(_) => tr("Mounting"),
+            PageKind::Overview => tr("Overview"),
+            PageKind::Graphic => tr("Graphics"),
+            PageKind::Document => tr("Document"),
         }
         .into(),
         "sheet" => (page_i + 1).to_string(),
@@ -354,18 +363,24 @@ pub fn text_width(text: &str, size: f32) -> f32 {
     text.chars().count() as f32 * size * 0.62
 }
 
-/// Draws a title block for a page.
+/// Draws a title block for a page into the title block area of its plot frame.
 pub fn draw(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize) {
-    let o = p(FRAME_X0, TITLE_Y0);
+    let frame = crate::frame::of_page(prj, page_i);
+    draw_at(d, form, prj, page_i, frame.title_origin(), frame.title_scale());
+}
+
+/// Draws a title block with its top left corner at `o`, scaled by `k`.
+pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P, k: f32) {
+    let at = |q: P| o + q * k;
     for item in &form.items {
         match item {
-            FormItem::Line { a, b, width } => d.line(o + *a, o + *b, *width, Ink::Frame, false),
+            FormItem::Line { a, b, width } => d.line(at(*a), at(*b), width * k, Ink::Frame, false),
             FormItem::Rect { a, b, width, fill } => {
                 if *fill {
-                    d.rect(o + *a, o + *b, 0.0, Ink::Plate, true);
+                    d.rect(at(*a), at(*b), 0.0, Ink::Plate, true);
                 }
                 if *width > 0.0 {
-                    d.rect(o + *a, o + *b, *width, Ink::Frame, false);
+                    d.rect(at(*a), at(*b), width * k, Ink::Frame, false);
                 }
             }
             FormItem::Text { pos, text, size, anchor, label, max_width } => {
@@ -374,7 +389,7 @@ pub fn draw(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize) {
                 for (i, l) in value.lines().enumerate() {
                     let w = text_width(l, *size);
                     let size = if *max_width > 0.0 && w > *max_width { (size * max_width / w).max(1.0) } else { *size };
-                    d.text(o + *pos + p(0.0, i as f32 * size * 1.4), l, size, *anchor, VAnchor::Middle, ink);
+                    d.text(at(*pos + p(0.0, i as f32 * size * 1.4)), l, size * k, *anchor, VAnchor::Middle, ink);
                 }
             }
         }

@@ -25,6 +25,7 @@ mod languages_ui;
 mod config_ui;
 mod plugs_ui;
 mod tables_ui;
+mod pages_ui;
 mod potentials_ui;
 mod structure_ui;
 mod process_ui;
@@ -62,6 +63,7 @@ pub struct App {
     /// Active work area (name); empty = the whole project.
     work_area: String,
     structure_ui: structure_ui::StructureUi,
+    pages_ui: pages_ui::PagesUi,
     show_reports: bool,
     report_kind: ReportKind,
     show_project: bool,
@@ -133,6 +135,7 @@ impl App {
             device_filter: String::new(),
             work_area: String::new(),
             structure_ui: Default::default(),
+            pages_ui: Default::default(),
             show_reports: false,
             report_kind: ReportKind::DeviceList,
             show_project: false,
@@ -294,6 +297,20 @@ impl App {
                         self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::Document {
+                self.load_document(ctx, &loaded);
+                return;
+            }
+            if loaded.purpose == Purpose::PageTemplates {
+                match crate::page_templates::Library::from_json(&loaded.text()) {
+                    Ok(lib) => {
+                        let n = crate::page_templates::merge(&mut self.prj, lib);
+                        self.notify(ctx, tr_fmt!("Imported {} page templates", n));
+                    }
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
                 }
                 return;
             }
@@ -544,6 +561,23 @@ impl App {
                 if ui.button(tr("New cover sheet")).clicked() {
                     self.add_page(PageKind::Cover);
                 }
+                if ui.button(tr("New overview page")).on_hover_text(tr("Single-line or block diagram: drawn like a schematic, not evaluated")).clicked() {
+                    self.add_page(PageKind::Overview);
+                }
+                if ui.button(tr("New graphics page")).on_hover_text(tr("Free graphics and notes, not evaluated")).clicked() {
+                    self.add_page(PageKind::Graphic);
+                }
+                if ui.button(tr("New document page…")).on_hover_text(tr("Embeds a file (PDF, Word, Excel, image …) as a page")).clicked() {
+                    self.pages_ui.replace_document = None;
+                    self.io.open(&ctx, Purpose::Document);
+                }
+                ui.menu_button(tr("New page from template"), |ui| {
+                    for t in crate::page_templates::all(&self.prj) {
+                        if ui.button(crate::page_templates::display_name(&t.name)).on_hover_text(t.kind.label()).clicked() {
+                            self.insert_template(&t);
+                        }
+                    }
+                });
                 ui.menu_button(tr("New report page"), |ui| {
                     for k in ReportKind::ALL {
                         if ui.button(k.title()).clicked() {
@@ -565,6 +599,9 @@ impl App {
                 ui.separator();
                 if ui.button(tr("Page properties…")).clicked() {
                     self.page_props = Some(self.page);
+                }
+                if ui.button(tr("Save page as template…")).clicked() {
+                    self.open_save_template();
                 }
                 if ui.button(tr("Save page as macro…")).clicked() {
                     self.save_as_macro(true);
@@ -643,7 +680,7 @@ impl App {
                 if ui.button(tr("Symbol editor…")).clicked() {
                     self.symed.open = true;
                 }
-                if ui.button(tr("Title blocks and report forms…")).clicked() {
+                if ui.button(tr("Title blocks, plot frames and page templates…")).clicked() {
                     self.forms_ui.open = true;
                 }
                 if ui.button(tr("Check project")).clicked() {
@@ -821,6 +858,9 @@ impl App {
                             PageKind::Cover => "🏷",
                             PageKind::Report(_) => "📊",
                             PageKind::Mounting(_) => "🗄",
+                            PageKind::Overview => "🗺",
+                            PageKind::Graphic => "✏",
+                            PageKind::Document => "📎",
                         };
                         let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", structure::page_full_name(pg), pg.description));
                         if r.clicked() {
@@ -1304,7 +1344,7 @@ impl App {
             });
             ui.end_row();
             ui.label(tr("Position"));
-            ui.label(tr_fmt!("{} / {} mm  (column {})", format!("{:.0}", s.pos.x), format!("{:.0}", s.pos.y), column_of(s.pos)));
+            ui.label(tr_fmt!("{} / {} mm  (column {})", format!("{:.0}", s.pos.x), format!("{:.0}", s.pos.y), crate::frame::of_page(&self.prj, pi).column_of(s.pos)));
             ui.end_row();
         });
         if let Func::Aux(kind) = def.func {
@@ -1615,6 +1655,7 @@ impl App {
         self.process_window(ctx);
         self.languages_window(ctx);
         self.structure_window(ctx);
+        self.save_template_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
 
@@ -1622,8 +1663,10 @@ impl App {
         if let Some(pi) = self.page_props {
             let mut open = true;
             let mut apply_structure = None;
+            let mut document_action = None;
             if pi < self.prj.pages.len() {
                 let tb_names = crate::forms::names(&self.prj);
+                let frame_names = crate::frame::names(&self.prj);
                 let page_aspects = self.prj.structures.page_aspects();
                 let structure_entries = self.prj.structures.entries.clone();
                 egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
@@ -1638,6 +1681,9 @@ impl App {
                         ui.label(tr("Page type"));
                         egui::ComboBox::from_id_salt("pgkind").selected_text(pg.kind.label()).show_ui(ui, |ui| {
                             ui.selectable_value(&mut pg.kind, PageKind::Schematic, PageKind::Schematic.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Overview, PageKind::Overview.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Graphic, PageKind::Graphic.label());
+                            ui.selectable_value(&mut pg.kind, PageKind::Document, PageKind::Document.label());
                             ui.selectable_value(&mut pg.kind, PageKind::Cover, PageKind::Cover.label());
                             for k in ReportKind::ALL {
                                 ui.selectable_value(&mut pg.kind, PageKind::Report(k), PageKind::Report(k).label());
@@ -1658,7 +1704,38 @@ impl App {
                             }
                         });
                     });
-                    if pg.kind != PageKind::Schematic && !pg.is_empty() {
+                    ui.horizontal(|ui| {
+                        ui.label(tr("Plot frame"));
+                        let shown = if pg.frame.is_empty() { tr("(project default)").to_string() } else { crate::frame::display_name(&pg.frame) };
+                        egui::ComboBox::from_id_salt("pgframe").selected_text(shown).show_ui(ui, |ui| {
+                            ui.selectable_value(&mut pg.frame, String::new(), tr("(project default)"));
+                            for n in &frame_names {
+                                ui.selectable_value(&mut pg.frame, n.clone(), crate::frame::display_name(n));
+                            }
+                        });
+                    });
+                    if pg.kind == PageKind::Document {
+                        ui.horizontal(|ui| {
+                            match &pg.document {
+                                Some(doc) => {
+                                    ui.label(RichText::new(&doc.name).strong());
+                                    ui.weak(format!("{}, {}", doc.kind().title(), crate::document::size_text(doc.size())));
+                                    if ui.button(tr("Save file…")).clicked() {
+                                        document_action = Some(false);
+                                    }
+                                }
+                                None => {
+                                    ui.weak(tr("No document embedded"));
+                                }
+                            }
+                            if ui.button(tr("Choose file…")).on_hover_text(tr("Embeds the file in the project (replaces the current one)")).clicked() {
+                                document_action = Some(true);
+                            }
+                        });
+                    }
+                    if matches!(pg.kind, PageKind::Overview | PageKind::Graphic) {
+                        ui.weak(tr("Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports)."));
+                    } else if !pg.kind.is_drawing() && !pg.is_empty() {
                         ui.colored_label(Color32::from_rgb(220, 140, 0), tr("This page contains schematic content which is not evaluated on non-schematic pages."));
                     }
                     if pg.generated {
@@ -1709,6 +1786,14 @@ impl App {
                 });
             } else {
                 open = false;
+            }
+            match document_action {
+                Some(true) => {
+                    self.pages_ui.replace_document = Some(pi);
+                    self.io.open(ctx, Purpose::Document);
+                }
+                Some(false) => self.save_document(ctx, pi),
+                None => {}
             }
             if let Some((dt, move_devices)) = apply_structure {
                 ops::set_page_structure(&mut self.prj, pi, &dt, move_devices);

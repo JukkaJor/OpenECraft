@@ -32,6 +32,9 @@ pub fn kind_name(kind: PageKind) -> String {
         PageKind::Cover => "cover".into(),
         PageKind::Report(r) => snake(r),
         PageKind::Mounting(_) => "mounting".into(),
+        PageKind::Overview => "overview".into(),
+        PageKind::Graphic => "graphic".into(),
+        PageKind::Document => "document".into(),
     }
 }
 
@@ -104,5 +107,7 @@ pub fn page_json(pg: &Page) -> Value {
         "location": pg.location,
         "product": pg.product,
         "locked": pg.locked,
+        "frame": pg.frame,
+        "document": pg.document.as_ref().map(|d| d.name.clone()),
     })
 }

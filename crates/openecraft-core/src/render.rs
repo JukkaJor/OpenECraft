@@ -86,11 +86,13 @@ fn is_black(c: &[u8; 3]) -> bool {
 pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, page_i: usize, opts: &Opts) {
     let page = &prj.pages[page_i];
     draw_frame(d, prj, page_i);
+    let frame = crate::frame::of_page(prj, page_i);
     match page.kind {
-        PageKind::Cover => draw_cover(d, prj),
-        PageKind::Report(kind) => draw_report(d, prj, an, kind),
-        PageKind::Mounting(id) => draw_mounting_page(d, prj, id),
-        PageKind::Schematic => {}
+        PageKind::Cover => draw_cover(d, prj, &frame),
+        PageKind::Report(kind) => draw_report(d, prj, an, kind, &frame),
+        PageKind::Mounting(id) => draw_mounting_page(d, prj, id, &frame),
+        PageKind::Document => crate::document::draw(d, &frame, page.document.as_ref()),
+        PageKind::Schematic | PageKind::Overview | PageKind::Graphic => {}
     }
     for s in &page.shapes {
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
@@ -468,29 +470,32 @@ fn mirror_glyph(d: &mut dyn Draw, c: P, kind: ContactKind, ink: Ink) {
 
 pub fn draw_frame(d: &mut dyn Draw, prj: &Project, page_i: usize) {
     let page = &prj.pages[page_i];
+    let f = crate::frame::of_page(prj, page_i);
     let fi = Ink::Frame;
-    d.rect(p(FRAME_X0, FRAME_Y0), p(FRAME_X1, FRAME_Y1), 0.5, fi, false);
-    if page.kind == PageKind::Schematic {
+    let b = f.border();
+    let a = f.area();
+    d.rect(b.min, b.max, 0.5, fi, false);
+    if f.strips && crate::frame::has_strips(page.kind) && a.min.x > b.min.x {
         // Column strip
-        d.line(p(AREA_X0, AREA_Y0), p(FRAME_X1, AREA_Y0), 0.25, fi, false);
-        d.line(p(AREA_X0, FRAME_Y0), p(AREA_X0, TITLE_Y0), 0.25, fi, false);
-        let cw = column_width();
-        for c in 0..COLUMNS {
-            let x = AREA_X0 + c as f32 * cw;
+        let size = ((a.min.y - b.min.y) * 0.5).min(2.5);
+        d.line(p(a.min.x, a.min.y), p(b.max.x, a.min.y), 0.25, fi, false);
+        d.line(p(a.min.x, b.min.y), p(a.min.x, a.max.y), 0.25, fi, false);
+        let cw = f.column_width();
+        for c in 0..f.columns.max(1) {
+            let x = a.min.x + c as f32 * cw;
             if c > 0 {
-                d.line(p(x, FRAME_Y0), p(x, AREA_Y0), 0.25, fi, false);
-                d.line(p(x, TITLE_Y0 - 2.0), p(x, TITLE_Y0), 0.25, fi, false);
+                d.line(p(x, b.min.y), p(x, a.min.y), 0.25, fi, false);
+                d.line(p(x, a.max.y - 2.0), p(x, a.max.y), 0.25, fi, false);
             }
-            d.text(p(x + cw / 2.0, (FRAME_Y0 + AREA_Y0) / 2.0), &(c + 1).to_string(), 2.5, Anchor::Center, VAnchor::Middle, Ink::FrameText);
+            d.text(p(x + cw / 2.0, (b.min.y + a.min.y) / 2.0), &f.column_labels.label(c), size, Anchor::Center, VAnchor::Middle, Ink::FrameText);
         }
-        let rh = row_height();
-        for r in 0..ROWS {
-            let y = AREA_Y0 + r as f32 * rh;
+        let rh = f.row_height();
+        for r in 0..f.rows.max(1) {
+            let y = a.min.y + r as f32 * rh;
             if r > 0 {
-                d.line(p(FRAME_X0, y), p(AREA_X0, y), 0.25, fi, false);
+                d.line(p(b.min.x, y), p(a.min.x, y), 0.25, fi, false);
             }
-            let letter = ((b'A' + r as u8) as char).to_string();
-            d.text(p((FRAME_X0 + AREA_X0) / 2.0, y + rh / 2.0), &letter, 2.5, Anchor::Center, VAnchor::Middle, Ink::FrameText);
+            d.text(p((b.min.x + a.min.x) / 2.0, y + rh / 2.0), &f.row_labels.label(r), size, Anchor::Center, VAnchor::Middle, Ink::FrameText);
         }
     }
     draw_title_block(d, prj, page_i);
@@ -501,12 +506,16 @@ fn draw_title_block(d: &mut dyn Draw, prj: &Project, page_i: usize) {
     crate::forms::draw(d, &form, prj, page_i);
 }
 
-fn draw_cover(d: &mut dyn Draw, prj: &Project) {
+fn draw_cover(d: &mut dyn Draw, prj: &Project, frame: &crate::frame::PlotFrame) {
     let info = &prj.info;
-    let cx = PAGE_W / 2.0;
-    d.text(p(cx, 80.0), &info.name, 10.0, Anchor::Center, VAnchor::Middle, Ink::Text);
+    let a = frame.area();
+    let cx = a.center().x;
+    // Laid out for the 240 mm high area of A3; other heights move the blocks.
+    let k = a.height() / 240.0;
+    let at = |y: f32| a.min.y + (y - 15.0) * k;
+    d.text(p(cx, at(80.0)), &info.name, 10.0, Anchor::Center, VAnchor::Middle, Ink::Text);
     for (i, l) in info.description.lines().enumerate() {
-        d.text(p(cx, 100.0 + i as f32 * 8.0), l, 5.0, Anchor::Center, VAnchor::Middle, Ink::Text);
+        d.text(p(cx, at(100.0) + i as f32 * 8.0), l, 5.0, Anchor::Center, VAnchor::Middle, Ink::Text);
     }
     let rows = [
         (tr("Company"), info.company.as_str()),
@@ -516,33 +525,38 @@ fn draw_cover(d: &mut dyn Draw, prj: &Project) {
     ];
     let pages = prj.pages.len().to_string();
     let rows = rows.iter().copied().chain(std::iter::once((tr("Number of pages"), pages.as_str())));
+    let top = at(150.0);
     for (i, (k, v)) in rows.enumerate() {
-        let y = 160.0 + i as f32 * 9.0;
+        let y = top + 10.0 + i as f32 * 9.0;
         d.text(p(cx - 5.0, y), k, 3.5, Anchor::Right, VAnchor::Middle, Ink::FrameText);
         d.text(p(cx + 5.0, y), v, 3.5, Anchor::Left, VAnchor::Middle, Ink::Text);
     }
-    d.rect(p(110.0, 150.0), p(310.0, 150.0 + 5.0 * 9.0 + 1.0), 0.25, Ink::Frame, false);
+    let half = (a.width() / 2.0 - 5.0).min(100.0);
+    d.rect(p(cx - half, top), p(cx + half, top + 5.0 * 9.0 + 1.0), 0.25, Ink::Frame, false);
 }
 
 pub const REPORT_ROWS_PER_PAGE: usize = 40;
 
-fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind) {
+fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind, frame: &crate::frame::PlotFrame) {
     let Some(table) = an.reports.get(&kind) else { return };
     let form = prj.forms.reports.get(&kind);
     let title = form.map(|f| f.title.as_str()).filter(|t| !t.is_empty()).unwrap_or(kind.title());
-    d.text(p(22.0, 24.0), title, 6.0, Anchor::Left, VAnchor::Middle, Ink::Text);
+    let area = frame.area();
+    let (x0, x1) = (area.min.x + 7.0, area.max.x - 10.0);
+    let top = area.min.y;
+    d.text(p(x0, top + 9.0), title, 6.0, Anchor::Left, VAnchor::Middle, Ink::Text);
     let cols = crate::forms::report_columns(form, &table.headers);
     let per_page = form.map(|f| f.rows).filter(|r| *r > 0).unwrap_or(REPORT_ROWS_PER_PAGE);
-    let (x0, x1) = (22.0, 400.0);
     let total_w: f32 = cols.iter().map(|&c| table.widths[c]).sum();
     let mut xs = vec![x0];
     for &c in &cols {
         xs.push(xs.last().unwrap() + table.widths[c] / total_w * (x1 - x0));
     }
     // Rows get lower (and their text smaller) when more of them must fit.
-    let row_h = (5.0f32).min((TITLE_Y0 - 12.0 - 39.0) / per_page as f32).max(2.0);
+    let row_h = (5.0f32).min((area.max.y - top - 36.0) / per_page as f32).max(2.0);
     let k = row_h / 5.0;
-    let mut y = 34.0;
+    let table_top = top + 19.0;
+    let mut y = table_top;
     for (i, &c) in cols.iter().enumerate() {
         d.text(p(xs[i] + 1.2, y + 2.5), table.headers[c], 2.4, Anchor::Left, VAnchor::Middle, Ink::Text);
     }
@@ -566,9 +580,9 @@ fn draw_report(d: &mut dyn Draw, prj: &Project, an: &Analysis, kind: ReportKind)
         d.line(p(x0, y), p(x1, y), 0.1, Ink::Frame, false);
     }
     for x in &xs {
-        d.line(p(*x, 34.0), p(*x, y), 0.15, Ink::Frame, false);
+        d.line(p(*x, table_top), p(*x, y), 0.15, Ink::Frame, false);
     }
-    d.rect(p(x0, 34.0), p(x1, y), 0.3, Ink::Frame, false);
+    d.rect(p(x0, table_top), p(x1, y), 0.3, Ink::Frame, false);
     if table.rows.len() > per_page {
         let more = tr_fmt!("… {} more rows – see Reports window / CSV export", table.rows.len() - per_page);
         d.text(p(x0, y + 5.0), &more, 2.5, Anchor::Left, VAnchor::Middle, Ink::FrameText);
@@ -864,13 +878,14 @@ pub fn drawing_scale(real: (f32, f32), space: (f32, f32)) -> f32 {
         .unwrap_or(needed.ceil())
 }
 
-fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
+fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::frame::PlotFrame) {
     let Some(e) = prj.layout.enclosures.iter().find(|e| e.id == id) else {
         let msg = tr("Enclosure not found - choose another one in the page properties");
-        d.text(p(30.0, 40.0), msg, 4.0, Anchor::Left, VAnchor::Middle, Ink::Error);
+        d.text(frame.area().min + p(15.0, 25.0), msg, 4.0, Anchor::Left, VAnchor::Middle, Ink::Error);
         return;
     };
-    let (x0, y0, x1, y1) = (AREA_X0 + 25.0, AREA_Y0 + 12.0, FRAME_X1 - 15.0, TITLE_Y0 - 22.0);
+    let a = frame.area();
+    let (x0, y0, x1, y1) = (a.min.x + 25.0, a.min.y + 12.0, a.max.x - 15.0, a.max.y - 22.0);
     // With door devices the door is drawn to the right of the mounting plate.
     let door = e.items.iter().any(|i| i.face == Face::Door);
     let gap = if door { e.width * 0.25 } else { 0.0 };
@@ -903,5 +918,5 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64) {
         "{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  Scale 1:{}",
         e.name, e.part, e.width, e.height, e.depth, n
     );
-    d.text(p(x0, TITLE_Y0 - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
+    d.text(p(x0, a.max.y - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
 }

@@ -344,8 +344,6 @@ pub struct DxfImport {
     pub skipped: Vec<String>,
 }
 
-/// Drawing area of a page above the title block (mm).
-const AREA: (f32, f32, f32, f32) = (AREA_X0, AREA_Y0, FRAME_X1 - 5.0, TITLE_Y0 - 5.0);
 
 /// Inserts a DXF drawing as a new schematic page after `after`.
 pub fn import_page(prj: &mut Project, text: &str, description: &str, after: usize, opts: DxfOptions) -> Result<DxfImport, String> {
@@ -372,10 +370,13 @@ pub fn import_page(prj: &mut Project, text: &str, description: &str, after: usiz
         }
     }
     let (w, h) = ((max.x - min.x).max(1e-3), (max.y - min.y).max(1e-3));
-    let (aw, ah) = (AREA.2 - AREA.0, AREA.3 - AREA.1);
+    // Drawing area of the new page above the title block.
+    let area = crate::frame::project_default(prj).area();
+    let area = (area.min.x, area.min.y, area.max.x - 5.0, area.max.y - 5.0);
+    let (aw, ah) = (area.2 - area.0, area.3 - area.1);
     let scale = if opts.fit { (aw / w).min(ah / h).min(1.0) } else { 1.0 };
     // DXF y up → page y down; the drawing's top left corner at the area's.
-    let to_page = |q: P| p(AREA.0 + (q.x - min.x) * scale, AREA.1 + (max.y - q.y) * scale);
+    let to_page = |q: P| p(area.0 + (q.x - min.x) * scale, area.1 + (max.y - q.y) * scale);
     let at = crate::ops::add_page(prj, PageKind::Schematic, after + 1);
     prj.pages[at].description = description.to_string();
     let (mut lines, mut texts) = (0, 0);

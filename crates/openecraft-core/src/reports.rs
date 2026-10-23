@@ -222,7 +222,7 @@ fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
 }
 
 fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
-    format!("/{}.{}", prj.pages[page].name, column_of(pos))
+    crate::frame::reference(prj, page, pos)
 }
 
 fn toc(prj: &Project) -> Table {

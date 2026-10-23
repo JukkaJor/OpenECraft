@@ -3,6 +3,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{dist_to_segment, p, P, R, GRID};
+use crate::frame::PlotFrame;
 use crate::index::Index;
 use crate::model::*;
 use crate::ops::{self, Clip, PlaceCtx};
@@ -224,6 +225,8 @@ pub struct Editor {
     shape_start: Option<P>,
     drag: Drag,
     canvas_size: Vec2,
+    /// Plot frame of the page shown.
+    frame: PlotFrame,
 }
 
 impl Default for Editor {
@@ -249,6 +252,7 @@ impl Default for Editor {
             shape_start: None,
             drag: Drag::None,
             canvas_size: vec2(800.0, 600.0),
+            frame: PlotFrame::default(),
         }
     }
 }
@@ -291,8 +295,9 @@ impl Editor {
 
     pub fn fit(&mut self, size: Vec2) {
         let margin = 16.0;
-        self.zoom = ((size.x - 2.0 * margin) / PAGE_W).min((size.y - 2.0 * margin) / PAGE_H).max(0.3);
-        self.offset = vec2((size.x - PAGE_W * self.zoom) / 2.0, (size.y - PAGE_H * self.zoom) / 2.0);
+        let (w, h) = self.frame.size();
+        self.zoom = ((size.x - 2.0 * margin) / w).min((size.y - 2.0 * margin) / h).max(0.1);
+        self.offset = vec2((size.x - w * self.zoom) / 2.0, (size.y - h * self.zoom) / 2.0);
     }
 
     fn zoom_at(&mut self, rect: Rect, screen: Pos2, factor: f32) {
@@ -370,6 +375,11 @@ impl Editor {
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
         self.canvas_size = rect.size();
+        let frame = crate::frame::of_page(prj, page_i);
+        if frame.size() != self.frame.size() {
+            self.fit_pending = true;
+        }
+        self.frame = frame;
         // Wait for a sensible canvas size (the first web frame can be tiny).
         if self.fit_pending && rect.width() > 200.0 && rect.height() > 150.0 {
             self.fit(rect.size());
@@ -431,7 +441,7 @@ impl Editor {
 
         // ------------------------------------------------------------ drawing
         painter.rect_filled(rect, 0.0, pal.canvas);
-        let page_rect = Rect::from_min_max(self.w2s(rect, p(0.0, 0.0)), self.w2s(rect, p(PAGE_W, PAGE_H)));
+        let page_rect = Rect::from_min_max(self.w2s(rect, p(0.0, 0.0)), self.w2s(rect, p(self.frame.width(), self.frame.height())));
         painter.rect_filled(page_rect.translate(vec2(3.0, 3.0)), 0.0, Color32::from_black_alpha(60));
         painter.rect_filled(page_rect, 0.0, pal.paper);
         if self.show_grid && editable && self.zoom * GRID >= 7.0 {
@@ -528,7 +538,7 @@ impl Editor {
         // Status line
         self.status = match (world, snapped) {
             (Some(w), Some(_)) => {
-                let mut s = tr_fmt!("X {}  Y {} mm   Column {}  Row {}", format!("{:7.1}", w.x), format!("{:7.1}", w.y), column_of(w), row_of(w));
+                let mut s = tr_fmt!("X {}  Y {} mm   Column {}  Row {}", format!("{:7.1}", w.x), format!("{:7.1}", w.y), self.frame.column_of(w), self.frame.row_of(w));
                 if let Some(id) = self.hit(&prj.pages[page_i], w) {
                     let page = &prj.pages[page_i];
                     if let Some(sym) = page.symbols.iter().find(|s| s.id == id) {
@@ -549,9 +559,9 @@ impl Editor {
         let tl = self.s2w(rect, rect.min);
         let br = self.s2w(rect, rect.max);
         let x0 = (tl.x.max(0.0) / GRID).ceil() as i32;
-        let x1 = (br.x.min(PAGE_W) / GRID).floor() as i32;
+        let x1 = (br.x.min(self.frame.width()) / GRID).floor() as i32;
         let y0 = (tl.y.max(0.0) / GRID).ceil() as i32;
-        let y1 = (br.y.min(PAGE_H) / GRID).floor() as i32;
+        let y1 = (br.y.min(self.frame.height()) / GRID).floor() as i32;
         let mut mesh = egui::Mesh::default();
         let r = if self.zoom * GRID > 20.0 { 1.0 } else { 0.6 };
         for gx in x0..=x1 {
@@ -646,7 +656,7 @@ impl Editor {
                 egui::Event::Paste(text) => {
                     if let Some(clip) = Clip::from_text(&text) {
                         if !clip.is_empty() {
-                            let at = snapped.unwrap_or(p(AREA_X0 + 20.0, AREA_Y0 + 20.0));
+                            let at = snapped.unwrap_or(self.frame.area().min + p(20.0, 20.0));
                             self.selection = ops::paste(prj, page_i, &clip, at);
                             self.set_tool(Tool::Select);
                         }

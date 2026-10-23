@@ -152,7 +152,7 @@ pub fn rows(prj: &Project, plug: &str, nl: &Netlist, open: &Netlist) -> Vec<Row>
             }
         }
         let first = &prj.pages[pins[0].page].symbols[pins[0].sym];
-        let mut locations: Vec<String> = pins.iter().map(|p| format!("/{}.{}", prj.pages[p.page].name, column_of(prj.pages[p.page].symbols[p.sym].pos))).collect();
+        let mut locations: Vec<String> = pins.iter().map(|p| crate::frame::reference(prj, p.page, prj.pages[p.page].symbols[p.sym].pos)).collect();
         locations.dedup();
         out.push(Row {
             socket: targets(prj, open, &socket, &own),

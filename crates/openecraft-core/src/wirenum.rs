@@ -40,7 +40,10 @@ fn connections_in_order(prj: &Project, open: &Netlist) -> Vec<(usize, usize, usi
             .wires
             .iter()
             .filter_map(|(pi, id)| prj.pages[*pi].wires.iter().find(|w| w.id == *id).map(|w| (*pi, w)))
-            .flat_map(|(pi, w)| [w.a, w.b].map(|q| (pi, column_of(q), (q.y * 10.0) as i64, (q.x * 10.0) as i64)))
+            .flat_map(|(pi, w)| {
+                let frame = crate::frame::of_page(prj, pi);
+                [w.a, w.b].map(|q| (pi, frame.column_index(q) + 1, (q.y * 10.0) as i64, (q.x * 10.0) as i64))
+            })
             .min();
         if let Some(start) = start {
             v.push((start, ni));
