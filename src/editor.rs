@@ -129,11 +129,14 @@ pub struct EguiDraw<'a> {
     pub pal: &'a Palette,
     /// Forces every element to this ink (ghost previews).
     pub force: Option<Ink>,
+    /// Mirrors the drawing at `x = mirror / 2` (inside view of a door).
+    pub mirror: Option<f32>,
 }
 
 impl EguiDraw<'_> {
     fn w2s(&self, q: P) -> Pos2 {
-        pos2(self.origin.x + q.x * self.zoom, self.origin.y + q.y * self.zoom)
+        let x = self.mirror.map(|m| m - q.x).unwrap_or(q.x);
+        pos2(self.origin.x + x * self.zoom, self.origin.y + q.y * self.zoom)
     }
     fn color(&self, ink: Ink) -> Color32 {
         self.pal.ink(self.force.unwrap_or(ink))
@@ -449,11 +452,11 @@ impl Editor {
             }
         }
         let origin = rect.min + self.offset;
-        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
+        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror: None };
         render::draw_page(&mut d, prj, idx, an, page_i, &opts);
 
         // Previews
-        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost) };
+        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None };
         if let (Some(sn), true) = (snapped, editable) {
             match &self.tool {
                 Tool::Place(key) => {
@@ -830,7 +833,7 @@ pub fn symbol_icon(ui: &mut egui::Ui, key: &str, size: Vec2) -> egui::Response {
     let zoom = ((size.x - 6.0) / b.width()).min((size.y - 6.0) / b.height()).min(3.2);
     let center = resp.rect.center();
     let origin = center - vec2(b.center().x, b.center().y) * zoom;
-    let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None };
+    let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None };
     let inst = SymbolInst { sym: key.into(), label: def.default_label.into(), ..Default::default() };
     render::draw_symbol(&mut d, def, &inst, Ink::Line);
     resp

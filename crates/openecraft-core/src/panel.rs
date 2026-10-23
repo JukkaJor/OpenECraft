@@ -40,6 +40,8 @@ pub const DEFAULT_DEVICE: (f32, f32, f32) = (40.0, 40.0, 40.0);
 
 pub const RAIL_PART: &str = "GEN.RAIL-TS35-1M";
 pub const DUCT_PART: &str = "GEN.DUCT-40X60";
+/// Smaller cable duct for doors.
+pub const DOOR_DUCT_PART: &str = "GEN.DUCT-25X30";
 pub const ENCLOSURE_PART: &str = "GEN.ENC-600X800";
 pub const BUSBAR_PART: &str = "GEN.BB-3X12X5";
 /// Door frame: door devices keep this distance from the door edges.
@@ -719,13 +721,19 @@ pub fn route_ends(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
     route_weighted(e, from, to, &|_, _, _| 1.0)
 }
 
+/// Route on the door (door coordinates) through the cable ducts on the door.
+pub fn route_door(e: &Enclosure, from: P, to: P) -> Route {
+    let ducts = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Door).map(|i| PanelItem { face: Face::Plate, ..i.clone() }).collect();
+    route_ends(&Enclosure { items: ducts, ..Default::default() }, WireEnd::at(from), WireEnd::at(to))
+}
+
 /// Like [`route_ends`], but the way along a duct counts `cost(duct id, from, to)`
 /// times its length (`from <= to` along the duct's axis), so that the shortest path
 /// avoids expensive stretches. The route's length stays the real length.
 pub fn route_weighted(e: &Enclosure, from: WireEnd, to: WireEnd, cost: &dyn Fn(u64, f32, f32) -> f32) -> Route {
     let (a, b) = (from.pos, to.pos);
     let direct = || Route { points: vec![a, p(b.x, a.y), b], plate_length: manhattan(a, b), via_ducts: false, runs: Vec::new() };
-    let ducts: Vec<&PanelItem> = e.items.iter().filter(|i| i.kind == ItemKind::Duct).collect();
+    let ducts: Vec<&PanelItem> = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate).collect();
     if ducts.is_empty() {
         return direct();
     }
@@ -900,6 +908,12 @@ pub struct RoutedWire {
     pub items: (u64, u64),
     /// How exactly the two ends are known.
     pub ends: (EndKind, EndKind),
+    /// Connection point of an end on the door (enclosure coordinates, door closed);
+    /// the wire runs from there along the door to the hinge and over the hinge loop.
+    pub door: (Option<V3>, Option<V3>),
+    /// Routes on the door (door coordinates) of the two ends: from the connection point
+    /// to the hinge; between two door devices the whole wire is the first one.
+    pub door_routes: (Option<Route>, Option<Route>),
 }
 
 /// Where a routed wire end comes from.
@@ -914,6 +928,33 @@ pub enum EndKind {
 }
 
 impl RoutedWire {
+    /// How the wire is laid, for lists.
+    pub fn routing(&self) -> &'static str {
+        match (self.on_door(), self.door.0.is_some() || self.door.1.is_some(), self.route.via_ducts) {
+            (true, _, _) => tr("on the door"),
+            (_, true, true) => tr("over the door hinge, via cable ducts"),
+            (_, true, false) => tr("over the door hinge, direct"),
+            (_, _, true) => tr("via cable ducts"),
+            _ => tr("direct (no ducts)"),
+        }
+    }
+
+    /// Polylines of the wire on a face (plate or door coordinates).
+    pub fn paths_on(&self, face: Face) -> Vec<&[P]> {
+        match face {
+            Face::Plate => vec![self.route.points.as_slice()],
+            Face::Door => [&self.door_routes.0, &self.door_routes.1].into_iter().flatten().map(|r| r.points.as_slice()).collect(),
+        }
+        .into_iter()
+        .filter(|p| p.len() > 1)
+        .collect()
+    }
+
+    /// Both ends are on the door: the wire stays there.
+    pub fn on_door(&self) -> bool {
+        self.door.0.is_some() && self.door.1.is_some()
+    }
+
     /// Stable identification of a wire across re-analysis (its two ends).
     pub fn key(&self) -> (String, String) {
         (self.from.clone(), self.to.clone())
@@ -925,14 +966,14 @@ pub fn route_distance(points: &[P], q: P) -> f32 {
     points.windows(2).map(|s| crate::geom::dist_to_segment(q, s[0], s[1])).fold(f32::INFINITY, f32::min)
 }
 
-/// Indices of the wires of an enclosure whose route passes within `tol` of `q`,
-/// nearest first.
-pub fn wires_at(wiring: &[RoutedWire], enclosure: usize, q: P, tol: f32) -> Vec<usize> {
+/// Indices of the wires of an enclosure whose route on `face` passes within `tol` of
+/// `q`, nearest first.
+pub fn wires_at(wiring: &[RoutedWire], enclosure: usize, face: Face, q: P, tol: f32) -> Vec<usize> {
     let mut v: Vec<(usize, f32)> = wiring
         .iter()
         .enumerate()
         .filter(|(_, w)| w.enclosure == enclosure)
-        .map(|(i, w)| (i, route_distance(&w.route.points, q)))
+        .map(|(i, w)| (i, w.paths_on(face).into_iter().map(|pts| route_distance(pts, q)).fold(f32::INFINITY, f32::min)))
         .filter(|(_, d)| *d <= tol)
         .collect();
     v.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
@@ -990,14 +1031,28 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
                 Some(pt) if pt.exact => EndKind::Exact,
                 Some(_) => EndKind::Generated,
             };
-            let (w, extra) = wiring_end(e, it, point);
-            (w, extra, kind)
+            let (w, extra, door_route) = wiring_end(e, it, point);
+            let door = (it.face == Face::Door).then(|| door_point(e, it, point));
+            (w, extra, kind, door, door_route)
         };
-        let (pa, la, ka) = end(ia, sa, c.a.pin);
-        let (pb, lb, kb) = end(ib, sb, c.b.pin);
-        let r = route_ends(e, pa, pb);
+        let (pa, la, ka, da, ra) = end(ia, sa, c.a.pin);
+        let (pb, lb, kb, db, rb) = end(ib, sb, c.b.pin);
+        let (r, length, door_routes) = match (da, db) {
+            // Both ends on the door: along the door, not into the cabinet.
+            (Some(a), Some(b)) => {
+                let on_door = route_door(e, p(a[0], a[1]), p(b[0], b[1]));
+                let bundle = door_bundle(e, on_door.via_ducts);
+                let length = (a[2] - bundle).abs() + on_door.plate_length + (b[2] - bundle).abs();
+                (Route { points: Vec::new(), plate_length: 0.0, via_ducts: false, runs: Vec::new() }, length, (Some(on_door), None))
+            }
+            _ => {
+                let r = route_ends(e, pa, pb);
+                let length = r.plate_length + la + lb;
+                (r, length, (ra, rb))
+            }
+        };
         ends.push((pa, pb));
-        let length = r.plate_length + la + lb + prj.layout.wire_reserve;
+        let length = length + prj.layout.wire_reserve;
         routed.push(RoutedWire {
             enclosure: ea,
             from,
@@ -1010,6 +1065,8 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             length,
             items: (ia.id, ib.id),
             ends: (ka, kb),
+            door: (da, db),
+            door_routes,
         });
     }
     reroute_overfull(prj, &mut routed, &ends);
@@ -1029,6 +1086,7 @@ fn reroute_overfull(prj: &Project, routed: &mut [RoutedWire], ends: &[(WireEnd, 
     let mut order: Vec<usize> = (0..routed.len()).collect();
     order.sort_by(|&a, &b| areas[b].total_cmp(&areas[a]));
     let mut loads = DuctLoads::new(prj);
+    order.retain(|&i| !routed[i].on_door());
     for i in order {
         let e = &prj.layout.enclosures[routed[i].enclosure];
         let (from, to) = ends[i];
@@ -1041,20 +1099,70 @@ fn reroute_overfull(prj: &Project, routed: &mut [RoutedWire], ends: &[(WireEnd, 
     }
 }
 
+/// Distance of the wire bundle on the door behind the door leaf.
+pub const DOOR_BUNDLE: f32 = 15.0;
+
+/// Connection point of a door device in enclosure coordinates (door closed); without
+/// a connection point the centre of the device's rear.
+pub fn door_point(e: &Enclosure, it: &PanelItem, point: Option<&PlacedPoint>) -> V3 {
+    match point {
+        Some(pt) => [pt.pos[0], pt.pos[1], e.depth - pt.pos[2]],
+        None => [it.x + it.w / 2.0, it.y + it.h / 2.0, e.depth - it.z - it.d],
+    }
+}
+
+/// Depth of the wires on the door: in the middle of the door ducts they run through,
+/// otherwise a bundle just behind the door leaf.
+pub fn door_bundle(e: &Enclosure, via_ducts: bool) -> f32 {
+    let duct = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Door).map(|i| i.z + i.d / 2.0).reduce(f32::min);
+    match duct {
+        Some(z) if via_ducts => e.depth - z,
+        _ => e.depth - DOOR_BUNDLE,
+    }
+}
+
+/// 3D path of a wire between two door devices along its door route (all on the door).
+pub fn door_jumper_path(e: &Enclosure, a: V3, b: V3, route: &Route) -> Vec<V3> {
+    let bundle = door_bundle(e, route.via_ducts);
+    let mut v = vec![a];
+    v.extend(route.points.iter().map(|q| [q.x, q.y, bundle]));
+    v.push(b);
+    v
+}
+
+/// 3D path of a door wire end from its connection point to where it joins the wiring
+/// on the plate (`plate`, enclosure coordinates): back into the door ducts (or the
+/// bundle behind the door), along its door route to the hinge, over the hinge loop to
+/// the plate. The first `n` points lie on the door and swing with it.
+pub fn door_path(e: &Enclosure, at: V3, route: &Route, plate: V3) -> (Vec<V3>, usize) {
+    let bundle = door_bundle(e, route.via_ducts);
+    let mut pts = vec![at];
+    pts.extend(route.points.iter().map(|q| [q.x, q.y, bundle]));
+    let hinge = pts.last().copied().unwrap_or(at);
+    let n = pts.len();
+    pts.push([hinge[0], plate[1], e.depth - 3.0 * DOOR_BUNDLE]);
+    pts.push(plate);
+    (pts, n)
+}
+
 /// Where a wire of a device joins the wiring on the plate, and the length from its
-/// connection point to there: down to the plate, or for door devices along the door to
-/// the hinge (left) and across the hinge loop. Without a connection point the wire
+/// connection point to there: down to the plate, or for door devices along the door
+/// (through its cable ducts) to the hinge (left) and across the hinge loop; door
+/// devices also return their route on the door. Without a connection point the wire
 /// starts at the device centre, at its front.
-pub fn wiring_end(e: &Enclosure, it: &PanelItem, point: Option<&PlacedPoint>) -> (WireEnd, f32) {
+pub fn wiring_end(e: &Enclosure, it: &PanelItem, point: Option<&PlacedPoint>) -> (WireEnd, f32, Option<Route>) {
     let (at, height) = match point {
         Some(pt) => (p(pt.pos[0], pt.pos[1]), pt.pos[2]),
         None => (it.center(), it.z + it.d),
     };
     match it.face {
-        Face::Plate => (WireEnd { pos: at, exit: point.map(|pt| pt.exit) }, height),
+        Face::Plate => (WireEnd { pos: at, exit: point.map(|pt| pt.exit) }, height, None),
         Face::Door => {
             let (_, ph) = e.plate_size();
-            (WireEnd::at(p(0.0, (at.y - PLATE_MARGIN).clamp(0.0, ph))), at.x + height + DOOR_LOOP + (e.depth - PLATE_Z))
+            let r = route_door(e, at, p(DOOR_FRAME / 2.0, at.y));
+            let hinge = r.points.last().copied().unwrap_or(at);
+            let length = r.plate_length + height + DOOR_LOOP + (e.depth - PLATE_Z);
+            (WireEnd::at(p(0.0, (hinge.y - PLATE_MARGIN).clamp(0.0, ph))), length, Some(r))
         }
     }
 }

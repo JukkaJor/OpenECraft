@@ -527,7 +527,7 @@ fn canvas(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymbol) {
     }
 
     // Drawing
-    let mut d = EguiDraw { painter: &painter, origin, zoom: se.zoom, pal: &pal, force: None };
+    let mut d = EguiDraw { painter: &painter, origin, zoom: se.zoom, pal: &pal, force: None, mirror: None };
     let inst = SymbolInst { tag: "-K1".into(), label: if u.default_label.is_empty() { "1".into() } else { u.default_label.clone() }, ..Default::default() };
     render::draw_prims(&mut d, &u.prims, &inst, Ink::Line);
     if let Some(Hit::Prim(i)) = se.hit {
@@ -541,7 +541,7 @@ fn canvas(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymbol) {
         d.text(pin.pos + p(1.0, -0.9), &pin.label, 1.6, Anchor::Left, VAnchor::Middle, Ink::CrossRef);
     }
     // Previews
-    let mut g = EguiDraw { painter: &painter, origin, zoom: se.zoom, pal: &pal, force: Some(Ink::Ghost) };
+    let mut g = EguiDraw { painter: &painter, origin, zoom: se.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None };
     if let (Some(a), Some(q)) = (se.start, snapped) {
         match se.tool {
             SymTool::Line => g.line(a, q, 0.25, Ink::Ghost, false),

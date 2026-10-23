@@ -307,12 +307,16 @@ pub struct Connection {
 
 /// Point-to-point connections: the device connection points of each connection of
 /// `open` (terminal sides apart) are chained in schematic order (potentials and
-/// connectors are not physical wire ends). Potential names come from `nl`. Fluid
-/// nets are left out (see [`crate::fluid::hoses`]).
+/// connectors are not physical wire ends). Devices placed in the same enclosure are
+/// chained first, so the wiring stays inside the cabinet and one wire leaves for the
+/// devices outside. Potential names come from `nl`. Fluid nets are left out (see
+/// [`crate::fluid::hoses`]).
 pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connection> {
     let mut out = Vec::new();
     for net in open.nets.iter().filter(|n| !n.fluid) {
-        let pins = chained_pins(prj, net);
+        let mut pins = chained_pins(prj, net);
+        let enclosure = |p: &PinRef| prj.layout.find_device(&prj.pages[p.page].symbols[p.sym].tag).map(|(e, _)| e).unwrap_or(usize::MAX);
+        pins.sort_by_key(enclosure);
         if pins.len() < 2 {
             continue;
         }

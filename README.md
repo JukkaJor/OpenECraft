@@ -405,7 +405,7 @@ cargo test --workspace
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
 | Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
-| Door devices | panel layout: front view *Door*, place devices there or move them in their properties |
+| Door devices | panel layout: front view *Door (front)* for door devices and cutouts, *Door (inside)* (mirrored) for cable ducts and the door wiring; 3D: *Open door* / *Close door* |
 | Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
 | Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
 | Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties in the wire properties; *Project › Fluid and process…* |

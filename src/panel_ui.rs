@@ -127,12 +127,18 @@ pub struct PanelUi {
     pub view: View,
     /// Face shown in the front view (mounting plate or door).
     pub face: Face,
+    /// The door is seen from the inside (mirrored, hinges on the right).
+    pub door_inside: bool,
     pub selection: BTreeSet<u64>,
     /// Selected wire of the virtual wiring (from, to).
     pub selected_wire: Option<(String, String)>,
     pub show_wires: bool,
     /// Wires marked as wired in the wiring assistant (drawn green in 3D).
     pub done_wires: HashSet<(String, String)>,
+    /// The door is (being) opened in the 3D view.
+    pub door_open: bool,
+    /// Current opening angle of the door (radians), animated towards `door_open`.
+    door_angle: f32,
     /// Cable ducts coloured by their fill level.
     pub show_fill: bool,
     offset: Vec2,
@@ -158,10 +164,13 @@ impl Default for PanelUi {
             tool: Tool::Select,
             view: View::Front,
             face: Face::Plate,
+            door_inside: false,
             selection: BTreeSet::new(),
             selected_wire: None,
             show_wires: true,
             done_wires: HashSet::new(),
+            door_open: true,
+            door_angle: DOOR_OPEN_ANGLE,
             show_fill: true,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
@@ -184,6 +193,8 @@ const OUTER_WALLS: u8 = 6;
 
 const WIRE_COLOR: Color32 = Color32::from_rgb(40, 110, 230);
 const WIRE_DONE: Color32 = Color32::from_rgb(50, 170, 80);
+/// Opening angle of the door in the 3D view.
+const DOOR_OPEN_ANGLE: f32 = 1.85;
 /// Selected wire and the devices it connects (same colour as potential highlighting).
 const WIRE_HIGHLIGHT: Color32 = Color32::from_rgb(230, 40, 200);
 
@@ -224,6 +235,32 @@ impl PanelUi {
         }
     }
 
+    fn hidden(&self, it: &PanelItem) -> bool {
+        hidden_behind_door(self.door_inside, it)
+    }
+
+    /// Tools of the face shown: no rails or busbars on the door, cable ducts only on its
+    /// inside, cutouts from the front.
+    fn tool_allowed(&self, t: &Tool) -> bool {
+        !matches!(
+            (self.face, self.door_inside, t),
+            (Face::Door, _, Tool::Rail | Tool::Busbar) | (Face::Door, false, Tool::Duct) | (Face::Door, true, Tool::Cutout)
+        )
+    }
+
+    /// Item kind and default part of the profile tool on the face shown: the door gets
+    /// the smaller door duct.
+    fn profile_here(&self) -> Option<(ItemKind, &'static str)> {
+        self.profile_here_for(&self.tool)
+    }
+
+    fn profile_here_for(&self, tool: &Tool) -> Option<(ItemKind, &'static str)> {
+        match tool.profile()? {
+            (ItemKind::Duct, _) if self.face == Face::Door => Some((ItemKind::Duct, panel::DOOR_DUCT_PART)),
+            x => Some(x),
+        }
+    }
+
     fn set_tool(&mut self, tool: Tool) {
         self.tool = tool;
         self.start = None;
@@ -249,6 +286,9 @@ impl PanelUi {
         }
         self.enclosure = w.enclosure;
         self.select_wire(w.key());
+        if w.door.0.is_some() || w.door.1.is_some() {
+            self.door_open = true;
+        }
         let pts = &w.route.points;
         if pts.is_empty() {
             return;
@@ -615,7 +655,7 @@ impl PanelUi {
             ui.label(format!("{:.0} mm", w.length));
             ui.end_row();
             ui.label(tr("Routing"));
-            ui.label(if w.route.via_ducts { tr("via cable ducts") } else { tr("direct (no ducts)") });
+            ui.label(w.routing());
             ui.end_row();
             ui.label(tr("Wire ends"));
             ui.label(format!("{} / {}", end_kind(w.ends.0), end_kind(w.ends.1)))
@@ -738,12 +778,22 @@ impl PanelUi {
             ui.separator();
             if self.view == View::Front {
                 ui.separator();
-                for face in [Face::Plate, Face::Door] {
-                    if ui.selectable_label(self.face == face, face.title()).clicked() && self.face != face {
+                for (face, inside, label, tip) in [
+                    (Face::Plate, false, Face::Plate.title(), ""),
+                    (Face::Door, false, tr("Door (front)"), tr("The door seen from the front: door devices and cutouts")),
+                    (Face::Door, true, tr("Door (inside)"), tr("The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door")),
+                ] {
+                    let current = self.face == face && (face == Face::Plate || self.door_inside == inside);
+                    let resp = ui.selectable_label(current, label);
+                    let resp = if tip.is_empty() { resp } else { resp.on_hover_text(tip) };
+                    if resp.clicked() && !current {
+                        if self.face != face {
+                            self.selection.clear();
+                            self.selected_wire = None;
+                        }
                         self.face = face;
-                        self.selection.clear();
-                        self.selected_wire = None;
-                        if self.tool.profile().is_some() {
+                        self.door_inside = inside;
+                        if !self.tool_allowed(&self.tool) {
                             self.set_tool(Tool::Select);
                         }
                     }
@@ -757,7 +807,7 @@ impl PanelUi {
                     (Tool::Busbar, tr("Busbar"), tr("Copper busbar system: click start and end point")),
                     (Tool::Cutout, tr("Cutout"), tr("Opening in the mounting plate / door: click two corners (round: in the properties)")),
                 ] {
-                    if self.face == Face::Door && t.profile().is_some() {
+                    if !self.tool_allowed(&t) {
                         continue;
                     }
                     if ui.selectable_label(tool == t, label).on_hover_text(tip).clicked() {
@@ -768,6 +818,9 @@ impl PanelUi {
                     ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
                 }
                 ui.separator();
+            }
+            if self.view == View::ThreeD {
+                self.door_button(ui);
             }
             ui.checkbox(&mut self.show_wires, tr("Wires"));
             ui.checkbox(&mut self.show_fill, tr("Duct fill")).on_hover_text(tr("Colour the cable ducts by their fill level"));
@@ -781,6 +834,11 @@ impl PanelUi {
             View::Front => self.front_view(ui, prj, ei, an, db),
             View::ThreeD => self.view_3d(ui, prj, ei, an),
         }
+    }
+
+    /// Mirror axis of the inside view of the door: face x ↔ `width - x`.
+    fn mirror(&self, e: &Enclosure) -> Option<f32> {
+        (self.face == Face::Door && self.door_inside).then_some(e.width)
     }
 
     fn s2w(&self, rect: Rect, s: Pos2) -> P {
@@ -815,7 +873,9 @@ impl PanelUi {
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|q| rect.contains(*q));
         // Plate coordinates of the pointer
         let fm = self.face.origin();
-        let plate = ptr.map(|s| self.s2w(rect, s) - p(fm, fm));
+        let mirror = self.mirror(&prj.layout.enclosures[ei]);
+        let unmirror = move |q: P| p(mirror.map(|m| m - q.x).unwrap_or(q.x), q.y);
+        let plate = ptr.map(|s| unmirror(self.s2w(rect, s)) - p(fm, fm));
         let snapped = plate.map(|q| p(panel::snap(q.x), panel::snap(q.y)));
 
         // Keyboard
@@ -834,7 +894,7 @@ impl PanelUi {
                     self.selected_wire = None;
                 }
             }
-            if self.face == Face::Door && self.tool.profile().is_some() {
+            if !self.tool_allowed(&self.tool) {
                 self.set_tool(Tool::Select);
             }
             if del && !self.selection.is_empty() {
@@ -864,14 +924,14 @@ impl PanelUi {
                     match self.start.take() {
                         None => self.start = Some(sn),
                         Some(a) if !a.same(sn) => {
-                            let (kind, part) = self.tool.profile().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
+                            let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
                             if db.get(part).is_some() {
                                 parts::ensure_in_project(prj, db, part);
                             }
                             if kind == ItemKind::Busbar && db.get(crate::production::BUSBAR_HOLDER).is_some() {
                                 parts::ensure_in_project(prj, db, crate::production::BUSBAR_HOLDER);
                             }
-                            let item = panel::new_profile(prj, kind, part, a, sn);
+                            let item = PanelItem { face: self.face, ..panel::new_profile(prj, kind, part, a, sn) };
                             prj.layout.enclosures[ei].items.push(item);
                         }
                         Some(_) => {}
@@ -913,15 +973,15 @@ impl PanelUi {
         painter.rect_filled(rect, 0.0, pal.canvas);
         let origin = rect.min + self.offset;
         let problems = panel::problem_items(e, &prj.parts);
-        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None };
-        render::draw_enclosure(&mut d, e, self.face, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
-        let to_screen = |q: P| origin + vec2(q.x + fm, q.y + fm) * self.zoom;
+        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror };
+        render::draw_enclosure(&mut d, e, self.face, self.door_inside, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
+        let to_screen = |q: P| origin + vec2(mirror.map(|m| m - (q.x + fm)).unwrap_or(q.x + fm), q.y + fm) * self.zoom;
         // Cable ducts coloured by their fill level.
-        if self.show_fill && self.face == Face::Plate {
+        if self.show_fill {
             let limit = prj.layout.duct_fill_limit;
             for f in an.duct_fill.iter().filter(|f| f.enclosure == ei) {
-                let Some(d) = e.item(f.duct) else { continue };
-                let r = Rect::from_min_max(to_screen(p(d.x, d.y)), to_screen(p(d.x + d.w, d.y + d.h)));
+                let Some(d) = e.item(f.duct).filter(|d| d.face == self.face && !self.hidden(d)) else { continue };
+                let r = Rect::from_two_pos(to_screen(p(d.x, d.y)), to_screen(p(d.x + d.w, d.y + d.h)));
                 let color = fill_color(f.percent, limit);
                 painter.rect_filled(r, 0.0, color.gamma_multiply(0.3));
                 if r.width().min(r.height()) >= 12.0 {
@@ -929,29 +989,37 @@ impl PanelUi {
                 }
             }
         }
-        // Wires run on the mounting plate.
-        let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei && self.face == Face::Plate);
-        if (self.show_wires && self.face == Face::Plate) || selected_wire.is_some() {
+        // Wires on the face shown: the routes on the plate, or on the door from the door
+        // devices to the hinge.
+        let face = self.face;
+        let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei && !an.wiring[*i].paths_on(face).is_empty());
+        // The wiring of the door is behind it: seen from the front only the selected wire.
+        let show_wires = self.show_wires && !(face == Face::Door && !self.door_inside);
+        if show_wires || selected_wire.is_some() {
             // Other wires are dimmed while one is selected.
             let normal = if selected_wire.is_some() { WIRE_COLOR.gamma_multiply(0.25) } else { WIRE_COLOR.gamma_multiply(0.7) };
             for (i, w) in an.wiring.iter().enumerate().filter(|(_, w)| w.enclosure == ei) {
-                if Some(i) != selected_wire && self.show_wires {
-                    let pts: Vec<Pos2> = w.route.points.iter().map(|q| to_screen(*q)).collect();
-                    painter.add(Shape::line(pts, Stroke::new(1.0, normal)));
+                if Some(i) != selected_wire && show_wires {
+                    for path in w.paths_on(face) {
+                        let pts: Vec<Pos2> = path.iter().map(|q| to_screen(*q)).collect();
+                        painter.add(Shape::line(pts, Stroke::new(1.0, normal)));
+                    }
                 }
             }
         }
         if let Some(i) = selected_wire {
             let w = &an.wiring[i];
-            let pts: Vec<Pos2> = w.route.points.iter().map(|q| to_screen(*q)).collect();
-            painter.add(Shape::line(pts.clone(), Stroke::new(3.0, WIRE_HIGHLIGHT)));
-            for end in [pts.first(), pts.last()].into_iter().flatten() {
-                painter.circle_filled(*end, 4.5, WIRE_HIGHLIGHT);
+            for path in w.paths_on(face) {
+                let pts: Vec<Pos2> = path.iter().map(|q| to_screen(*q)).collect();
+                painter.add(Shape::line(pts.clone(), Stroke::new(3.0, WIRE_HIGHLIGHT)));
+                for end in [pts.first(), pts.last()].into_iter().flatten() {
+                    painter.circle_filled(*end, 4.5, WIRE_HIGHLIGHT);
+                }
             }
-            // The two connected devices
+            // The connected devices on this face
             for id in [w.items.0, w.items.1] {
-                if let Some(it) = e.item(id) {
-                    let r = Rect::from_min_max(to_screen(p(it.x, it.y)), to_screen(p(it.x + it.w, it.y + it.h)));
+                if let Some(it) = e.item(id).filter(|it| it.face == face) {
+                    let r = Rect::from_two_pos(to_screen(p(it.x, it.y)), to_screen(p(it.x + it.w, it.y + it.h)));
                     painter.rect_filled(r, 0.0, WIRE_HIGHLIGHT.gamma_multiply(0.18));
                     painter.rect_stroke(r.expand(2.0), 2.0, Stroke::new(2.5, WIRE_HIGHLIGHT), egui::StrokeKind::Outside);
                 }
@@ -984,7 +1052,7 @@ impl PanelUi {
             }
         }
         // Previews
-        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost) };
+        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror };
         let m = p(fm, fm);
         match (&self.tool, snapped, plate) {
             (Tool::Cutout, Some(sn), _) => {
@@ -998,7 +1066,7 @@ impl PanelUi {
             }
             (Tool::Rail | Tool::Duct | Tool::Busbar, Some(sn), _) => {
                 if let Some(a) = self.start {
-                    let (kind, part) = self.tool.profile().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
+                    let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
                     let (pw, _) = panel::profile(prj, kind, part);
                     let horizontal = (sn.x - a.x).abs() >= (sn.y - a.y).abs();
                     let (r0, r1) = if horizontal {
@@ -1034,14 +1102,20 @@ impl PanelUi {
         let shift = ui.input(|i| i.modifiers.shift);
         let tol = 6.0 / self.zoom;
         let face = self.face;
+        let inside = self.door_inside;
+        let hidden = move |i: &PanelItem| hidden_behind_door(inside, i);
         let hit = |e: &Enclosure, q: P| -> Option<u64> {
             // Top layer first: devices, busbars, ducts, rails, cutouts.
-            let mut items: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == face && i.rect().expand(tol).contains(q)).collect();
+            let mut items: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == face && !hidden(i) && i.rect().expand(tol).contains(q)).collect();
             items.sort_by_key(|i| std::cmp::Reverse(i.kind.layer()));
             items.first().map(|i| i.id)
         };
         let (offset, zoom, fm) = (self.offset, self.zoom, face.origin());
-        let to_plate = move |s: Pos2| p((s.x - rect.min.x - offset.x) / zoom - fm, (s.y - rect.min.y - offset.y) / zoom - fm);
+        let mirror = self.mirror(&prj.layout.enclosures[ei]);
+        let to_plate = move |s: Pos2| {
+            let x = (s.x - rect.min.x - offset.x) / zoom;
+            p(mirror.map(|m| m - x).unwrap_or(x) - fm, (s.y - rect.min.y - offset.y) / zoom - fm)
+        };
         if resp.drag_started_by(PointerButton::Primary) {
             let origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(rect.center());
             let q = to_plate(origin);
@@ -1104,8 +1178,8 @@ impl PanelUi {
                 let item = hit(e, q);
                 let on_device = item.and_then(|id| e.item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
                 // Wires lie on top of ducts and rails, devices on top of wires.
-                if self.show_wires && face == Face::Plate && !on_device && !shift {
-                    let candidates = panel::wires_at(&an.wiring, ei, q, tol);
+                if self.show_wires && !(face == Face::Door && !inside) && !on_device && !shift {
+                    let candidates = panel::wires_at(&an.wiring, ei, face, q, tol);
                     if !candidates.is_empty() {
                         self.pick_wire(an, &candidates);
                         return;
@@ -1128,6 +1202,14 @@ impl PanelUi {
 
     // ------------------------------------------------------------------ 3D
 
+    /// Opens or closes the door in the 3D view.
+    pub fn door_button(&mut self, ui: &mut egui::Ui) {
+        let text = if self.door_open { tr("Close door") } else { tr("Open door") };
+        if ui.button(text).on_hover_text(tr("Swing the enclosure door open or shut (door devices and their wires move with it)")).clicked() {
+            self.door_open = !self.door_open;
+        }
+    }
+
     /// 3D view of the current enclosure without the toolbar (wiring assistant).
     pub fn view_3d_current(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
         if let Some(ei) = self.enclosure_index(prj) {
@@ -1140,6 +1222,19 @@ impl PanelUi {
         let dark = ui.visuals().dark_mode;
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
+        let target = if self.door_open { DOOR_OPEN_ANGLE } else { 0.0 };
+        if (self.door_angle - target).abs() > 1e-3 {
+            let step = ui.input(|i| i.stable_dt).min(0.1) * 2.5;
+            self.door_angle += (target - self.door_angle).clamp(-step, step);
+            ui.ctx().request_repaint();
+        }
+        let (sin, cos) = self.door_angle.sin_cos();
+        // The door turns about its hinge on the left front edge (view coordinates).
+        let swing_dir = |v: [f32; 3]| [v[0] * cos - v[2] * sin, v[1], v[0] * sin + v[2] * cos];
+        let swing = |q: [f32; 3]| {
+            let r = swing_dir([q[0], q[1], q[2] - e.depth]);
+            [r[0], r[1], r[2] + e.depth]
+        };
         let cam = self.cam.get_or_insert_with(|| default_cam(e));
         // Orbit / pan / zoom
         if resp.dragged_by(PointerButton::Primary) {
@@ -1184,7 +1279,7 @@ impl PanelUi {
         let mut prims: Vec<(u8, f32, Prim)> = Vec::new();
         let light = norm([0.35, 0.75, 0.55]);
         let problems = panel::problem_items(e, &prj.parts);
-        let add_box = |prims: &mut Vec<(u8, f32, Prim)>, layer: u8, min: [f32; 3], max: [f32; 3], base: Color32, item: Option<u64>| {
+        let add_box = |prims: &mut Vec<(u8, f32, Prim)>, layer: u8, min: [f32; 3], max: [f32; 3], base: Color32, item: Option<u64>, door: bool| {
             let c = |x: usize, y: usize, z: usize| [if x == 0 { min[0] } else { max[0] }, if y == 0 { min[1] } else { max[1] }, if z == 0 { min[2] } else { max[2] }];
             let faces: [([usize; 4], [f32; 3]); 6] = [
                 ([0b000, 0b010, 0b011, 0b001], [-1.0, 0.0, 0.0]),
@@ -1195,7 +1290,13 @@ impl PanelUi {
                 ([0b001, 0b011, 0b111, 0b101], [0.0, 0.0, 1.0]),
             ];
             for (corners, n) in faces {
-                let pts3: Vec<[f32; 3]> = corners.iter().map(|&b| c(b >> 2 & 1, b >> 1 & 1, b & 1)).collect();
+                let mut pts3: Vec<[f32; 3]> = corners.iter().map(|&b| c(b >> 2 & 1, b >> 1 & 1, b & 1)).collect();
+                let n = if door {
+                    pts3.iter_mut().for_each(|q| *q = swing(*q));
+                    swing_dir(n)
+                } else {
+                    n
+                };
                 let fc = [
                     pts3.iter().map(|q| q[0]).sum::<f32>() / 4.0,
                     pts3.iter().map(|q| q[1]).sum::<f32>() / 4.0,
@@ -1225,15 +1326,20 @@ impl PanelUi {
         // A wall seen from the outside covers the equipment (drawn last, translucent);
         // seen from the inside it is behind everything.
         let wall_layer = |outside: bool| if outside { OUTER_WALLS } else { 0 };
-        add_box(&mut prims, wall_layer(eye[2] < 0.0), [0.0, 0.0, 0.0], [w, h, t], wall, None);
-        add_box(&mut prims, wall_layer(eye[0] < 0.0), [0.0, 0.0, 0.0], [t, h, dpt], wall, None);
-        add_box(&mut prims, wall_layer(eye[0] > w), [w - t, 0.0, 0.0], [w, h, dpt], wall, None);
-        add_box(&mut prims, wall_layer(eye[1] < 0.0), [0.0, 0.0, 0.0], [w, t, dpt], wall, None);
-        add_box(&mut prims, wall_layer(eye[1] > h), [0.0, h - t, 0.0], [w, h, dpt], wall, None);
+        add_box(&mut prims, wall_layer(eye[2] < 0.0), [0.0, 0.0, 0.0], [w, h, t], wall, None, false);
+        add_box(&mut prims, wall_layer(eye[0] < 0.0), [0.0, 0.0, 0.0], [t, h, dpt], wall, None, false);
+        add_box(&mut prims, wall_layer(eye[0] > w), [w - t, 0.0, 0.0], [w, h, dpt], wall, None, false);
+        add_box(&mut prims, wall_layer(eye[1] < 0.0), [0.0, 0.0, 0.0], [w, t, dpt], wall, None, false);
+        add_box(&mut prims, wall_layer(eye[1] > h), [0.0, h - t, 0.0], [w, h, dpt], wall, None, false);
         // Mounting plate
         let (pw, ph) = e.plate_size();
         let plate_min = [PLATE_MARGIN, h - PLATE_MARGIN - ph, PLATE_Z - PLATE_THICKNESS];
-        add_box(&mut prims, 1, plate_min, [PLATE_MARGIN + pw, h - PLATE_MARGIN, PLATE_Z], Color32::from_rgb(222, 218, 205), None);
+        add_box(&mut prims, 1, plate_min, [PLATE_MARGIN + pw, h - PLATE_MARGIN, PLATE_Z], Color32::from_rgb(222, 218, 205), None, false);
+        // Door leaf on its hinge: seen from the outside it covers the equipment
+        // (translucent), seen from the inside it is behind the door devices.
+        let leaf_out = sub(eye, swing([w / 2.0, h / 2.0, dpt + t]));
+        let leaf_layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
+        add_box(&mut prims, leaf_layer, [0.0, 0.0, dpt], [w, h, dpt + t], Color32::from_rgb(190, 194, 200), None, true);
         let to3 = |x: f32, y: f32, z: f32| [PLATE_MARGIN + x, h - PLATE_MARGIN - y, PLATE_Z + z];
         // Enclosure coordinates (y down) to the 3D view (y up).
         let up = |q: [f32; 3]| [q[0], h - q[1], q[2]];
@@ -1256,9 +1362,10 @@ impl PanelUi {
                 }
             };
             // Devices with a 3D model in their part are drawn with it instead of a box.
+            let on_door = it.face == Face::Door;
             if let Some(tris) = panel::device_mesh(prj, it) {
                 for tri in tris {
-                    let w = tri.map(|v| up(panel::to_enclosure(e, it, v)));
+                    let w = tri.map(|v| up(panel::to_enclosure(e, it, v))).map(|q| if on_door { swing(q) } else { q });
                     let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
                     if dot(n, sub(eye, w[0])) <= 0.0 {
                         continue; // back face
@@ -1289,7 +1396,7 @@ impl PanelUi {
                 ItemKind::Duct | ItemKind::Busbar => 3,
                 ItemKind::Device => 5,
             };
-            add_box(&mut prims, layer, min, max, base, Some(it.id));
+            add_box(&mut prims, layer, min, max, base, Some(it.id), on_door);
         }
         // Wires inside the ducts; the selected one is drawn on top of everything.
         let mut wire_segs: Vec<(Pos2, Pos2, usize)> = Vec::new();
@@ -1309,8 +1416,29 @@ impl PanelUi {
             } else {
                 (4, WIRE_COLOR, 1.5)
             };
-            for seg in wire.route.points.windows(2) {
-                let (a, b) = (to3(seg[0].x, seg[0].y, z), to3(seg[1].x, seg[1].y, z));
+            // Door ends run along the door and over the hinge loop; the part on the
+            // door swings with it.
+            let door_end = |at: [f32; 3], route: &Option<panel::Route>, plate: Option<&P>| -> Vec<[f32; 3]> {
+                let (Some(q), Some(route)) = (plate, route) else { return Vec::new() };
+                let (path, n) = panel::door_path(e, at, route, [PLATE_MARGIN + q.x, PLATE_MARGIN + q.y, PLATE_Z + z]);
+                path.into_iter().enumerate().map(|(i, v)| if i < n { swing(up(v)) } else { up(v) }).collect()
+            };
+            let path: Vec<[f32; 3]> = match wire.door {
+                (Some(a), Some(b)) if wire.on_door() => match &wire.door_routes.0 {
+                    Some(r) => panel::door_jumper_path(e, a, b, r).into_iter().map(|v| swing(up(v))).collect(),
+                    None => Vec::new(),
+                },
+                (a, b) => {
+                    let mut v = a.map(|a| door_end(a, &wire.door_routes.0, wire.route.points.first())).unwrap_or_default();
+                    v.extend(wire.route.points.iter().map(|q| to3(q.x, q.y, z)));
+                    if let Some(b) = b {
+                        v.extend(door_end(b, &wire.door_routes.1, wire.route.points.last()).into_iter().rev());
+                    }
+                    v
+                }
+            };
+            for seg in path.windows(2) {
+                let (a, b) = (seg[0], seg[1]);
                 if let (Some(pa), Some(pb)) = (project(a), project(b)) {
                     prims.push((layer, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
                     wire_segs.push((pa.0, pb.0, wi));
@@ -1350,10 +1478,15 @@ impl PanelUi {
         // Device labels on the front faces
         for it in e.items.iter().filter(|i| i.kind == ItemKind::Device) {
             let (b0, b1) = panel::item_box(e, it);
-            let front = up([(b0[0] + b1[0]) / 2.0, (b0[1] + b1[1]) / 2.0, b1[2]]);
+            // Door devices show their front on the outside of the door leaf.
+            let (front, normal) = if it.face == Face::Door {
+                (swing(up([(b0[0] + b1[0]) / 2.0, (b0[1] + b1[1]) / 2.0, b1[2] + 2.5])), swing_dir([0.0, 0.0, 1.0]))
+            } else {
+                (up([(b0[0] + b1[0]) / 2.0, (b0[1] + b1[1]) / 2.0, b1[2]]), [0.0, 0.0, 1.0])
+            };
             if let Some((q, z)) = project(front) {
                 let size = (it.w.min(it.h) * 0.25 * f / z).clamp(0.0, 18.0);
-                if size >= 7.0 && dot(sub(eye, front), [0.0, 0.0, 1.0]) > 0.0 {
+                if size >= 7.0 && dot(sub(eye, front), normal) > 0.0 {
                     painter.text(q, egui::Align2::CENTER_CENTER, &it.tag, egui::FontId::proportional(size), Color32::from_rgb(20, 30, 50));
                 }
             }
@@ -1401,6 +1534,12 @@ impl PanelUi {
             self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
         }
     }
+}
+
+/// Items behind the door (cable ducts) are hidden in its front view: they cannot be
+/// picked there.
+fn hidden_behind_door(inside: bool, it: &PanelItem) -> bool {
+    it.face == Face::Door && !inside && it.kind == ItemKind::Duct
 }
 
 fn default_cam(e: &Enclosure) -> Orbit {

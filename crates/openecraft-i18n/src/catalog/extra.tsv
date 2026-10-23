@@ -700,3 +700,13 @@ CSV content instead of a file	CSV-Inhalt statt einer Datei	Contenu CSV au lieu d
 {} is not a language of the project	{} ist keine Sprache des Projekts	{} n'est pas une langue du projet	{} no es un idioma del proyecto
 svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)	svg, html, pdf, dxf: Sprache der Projekttexte und Auswertungen (eine Projektsprache, Standard die Quellsprache)	svg, html, pdf, dxf : langue des textes du projet et des rapports (une langue du projet, par défaut la langue source)	svg, html, pdf, dxf: idioma de los textos del proyecto y de los informes (un idioma del proyecto, por defecto el de origen)
 e.g. de, fr, it	z. B. de, fr, it	p. ex. de, fr, it	p. ej. de, fr, it
+Close door	Tür schließen	Fermer la porte	Cerrar la puerta
+Open door	Tür öffnen	Ouvrir la porte	Abrir la puerta
+Swing the enclosure door open or shut (door devices and their wires move with it)	Gehäusetür auf- oder zuschwenken (Türgeräte und ihre Drähte schwenken mit)	Ouvrir ou fermer la porte de l'armoire (les appareils de porte et leurs fils pivotent avec elle)	Abrir o cerrar la puerta del armario (los equipos de la puerta y sus cables giran con ella)
+on the door	auf der Tür	sur la porte	en la puerta
+over the door hinge, via cable ducts	über das Türscharnier, durch Kabelkanäle	par la charnière de porte, via les goulottes	por la bisagra de la puerta, por canaletas
+over the door hinge, direct	über das Türscharnier, direkt	par la charnière de porte, direct	por la bisagra de la puerta, directo
+Door (front)	Tür (Vorderseite)	Porte (face avant)	Puerta (frente)
+The door seen from the front: door devices and cutouts	Die Tür von vorn: Türgeräte und Ausschnitte	La porte vue de face : appareils de porte et découpes	La puerta vista de frente: equipos de la puerta y recortes
+Door (inside)	Tür (Innenseite)	Porte (face intérieure)	Puerta (interior)
+The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door	Die Tür von innen (Scharniere rechts): Kabelkanäle und die Verdrahtung hinter der Tür	La porte vue de l'intérieur (charnières à droite) : goulottes et câblage derrière la porte	La puerta vista desde dentro (bisagras a la derecha): canaletas y cableado detrás de la puerta

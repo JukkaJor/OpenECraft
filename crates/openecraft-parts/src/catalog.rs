@@ -175,6 +175,9 @@ pub fn default_catalog() -> Vec<Part> {
     let p = c.add("GEN.DUCT-40X60", "Cable duct 40 x 60 mm, 2 m", "Mounting", "Cable duct", "", 11.0, (2000.0, 40.0, 60.0, 0.9), &[]);
     p.pack_quantity = 10;
     p.mounting.clear();
+    let p = c.add("GEN.DUCT-25X30", "Cable duct 25 x 30 mm, 2 m, for doors", "Mounting", "Cable duct", "", 6.5, (2000.0, 25.0, 30.0, 0.4), &[]);
+    p.pack_quantity = 10;
+    p.mounting.clear();
     let p = c.add("GEN.ENC-600X800", "Steel enclosure 600 x 800 x 250 mm, IP66", "Mounting", "Enclosure", "", 320.0, (600.0, 800.0, 250.0, 28.0), &[]);
     p.mounting.clear();
     // Busbar system: width = length of 1 m, height = width of the system, depth = height above the plate.

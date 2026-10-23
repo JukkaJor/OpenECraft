@@ -320,10 +320,10 @@ fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &crate::model::Project, pag
     if edit {
         pick(fu, &resp, ui, form, origin, zoom);
     }
-    let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None };
+    let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None };
     forms::draw(&mut d, form, prj, page);
     if let Some(item) = fu.item.and_then(|i| form.items.get(i)) {
-        let mut s = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: Some(Ink::Selected) };
+        let mut s = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: Some(Ink::Selected), mirror: None };
         forms::draw(&mut s, &Form { name: String::new(), items: vec![item.clone()] }, prj, page);
         if let FormItem::Text { pos, .. } = item {
             let c = origin + vec2(FRAME_X0 + pos.x, TITLE_Y0 + pos.y) * zoom;
