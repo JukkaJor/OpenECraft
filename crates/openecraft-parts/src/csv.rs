@@ -201,10 +201,12 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
     Ok(parts)
 }
 
-/// Imports a parts file (JSON database / part list or CSV). Returns the parts.
+/// Imports a parts file (JSON database / part list, BMEcat or CSV). Returns the parts.
 pub fn import(text: &str) -> Result<Vec<Part>, String> {
     let t = text.trim_start_matches('\u{feff}').trim_start();
-    if t.starts_with('{') {
+    if crate::bmecat::is_bmecat(t) {
+        crate::bmecat::from_bmecat(t)
+    } else if t.starts_with('{') {
         serde_json::from_str::<PartsDb>(t).map(|d| d.parts).map_err(|e| e.to_string())
     } else if t.starts_with('[') {
         serde_json::from_str::<Vec<Part>>(t).map_err(|e| e.to_string())

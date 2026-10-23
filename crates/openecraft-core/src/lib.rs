@@ -5,6 +5,7 @@
 pub mod climate;
 pub mod config;
 pub mod dxf;
+pub mod dxf_import;
 pub mod export3d;
 pub mod forms;
 pub mod geom;

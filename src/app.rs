@@ -272,6 +272,24 @@ impl App {
                 }
                 return;
             }
+            if loaded.purpose == Purpose::Dxf {
+                let name = io::short_name(&loaded.name);
+                let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
+                match crate::dxf_import::import_page(&mut self.prj, &loaded.text(), &description, self.page, Default::default()) {
+                    Ok(r) => {
+                        self.goto(r.page, 0);
+                        let page = self.prj.pages[r.page].name.clone();
+                        let msg = if r.skipped.is_empty() {
+                            tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts)
+                        } else {
+                            tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", "))
+                        };
+                        self.notify(ctx, msg);
+                    }
+                    Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
+                }
+                return;
+            }
             if let Purpose::Table(kind) = loaded.purpose {
                 self.import_table(ctx, kind, &loaded.text());
                 return;
@@ -361,6 +379,9 @@ impl App {
                     let all: Vec<usize> = (0..self.prj.pages.len()).collect();
                     let dxf = crate::dxf::pages_dxf(&self.prj, &all);
                     self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
+                }
+                if ui.button(tr("Import DXF as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
+                    self.io.open(&ctx, Purpose::Dxf);
                 }
                 ui.separator();
                 let has_layout = !self.prj.layout.enclosures.is_empty();

@@ -29,3 +29,18 @@ fn released_pages_are_not_deleted() {
     assert!(run(&mut s, "set_page", json!({ "page": "2", "name": "9" })).unwrap_err().contains("locked"));
 }
 
+
+#[test]
+fn dxf_drawings_are_imported_as_pages() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let file = temp_dir("dxf-import").join("old drawing.dxf");
+    run(&mut s, "export", json!({ "format": "dxf", "page": "2", "path": file.to_str().unwrap() })).unwrap();
+    let pages = s.project().unwrap().pages.len();
+    let r = run(&mut s, "import_dxf", json!({ "path": file.to_str().unwrap(), "after": "1" })).unwrap();
+    assert_eq!((r["name"].as_str(), r["description"].as_str()), (Some(s.project().unwrap().pages[1].name.as_str()), Some("old drawing")));
+    assert!(r["lines"].as_u64().unwrap() > 50 && r["texts"].as_u64().unwrap() > 5);
+    assert_eq!(s.project().unwrap().pages.len(), pages + 1);
+    std::fs::write(&file, "not a drawing").unwrap();
+    assert!(run(&mut s, "import_dxf", json!({ "path": file.to_str().unwrap() })).unwrap_err().contains("Not a DXF file"));
+}

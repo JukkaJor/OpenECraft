@@ -488,7 +488,19 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 🗑 Delete variant	🗑 Variante löschen	🗑 Supprimer la variante	🗑 Eliminar variante
 e.g. NAME=Pump; POWER={POWER}	z. B. NAME=Pumpe; POWER={POWER}	p. ex. NAME=Pompe; POWER={POWER}	p. ej. NAME=Bomba; POWER={POWER}
 e.g. STARTER=DOL	z. B. STARTER=DOL	p. ex. STARTER=DOL	p. ej. STARTER=DOL
+Parts (CSV, JSON, BMEcat)	Artikel (CSV, JSON, BMEcat)	Articles (CSV, JSON, BMEcat)	Artículos (CSV, JSON, BMEcat)
+Not a DXF file	Keine DXF-Datei	Pas un fichier DXF	No es un archivo DXF
+Not a DXF file (binary DXF is not supported)	Keine DXF-Datei (binäres DXF wird nicht unterstützt)	Pas un fichier DXF (le DXF binaire n'est pas pris en charge)	No es un archivo DXF (el DXF binario no es compatible)
+The DXF file contains nothing that can be imported	Die DXF-Datei enthält nichts, was importiert werden kann	Le fichier DXF ne contient rien d'importable	El archivo DXF no contiene nada que se pueda importar
+An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)	Eine alte Zeichnung als Grafik auf einer neuen Schaltplanseite (Linien, Bögen, Texte, Blöcke)	Un ancien dessin comme graphique sur une nouvelle page de schéma (lignes, arcs, textes, blocs)	Un dibujo antiguo como gráfico en una nueva página de esquema (líneas, arcos, textos, bloques)
+DXF file	DXF-Datei	Fichier DXF	Archivo DXF
+DXF import failed: {}	DXF-Import fehlgeschlagen: {}	Échec de l'import DXF : {}	Error al importar el DXF: {}
+DXF imported as page {}: {} lines, {} texts (not imported: {})	DXF als Seite {} importiert: {} Linien, {} Texte (nicht importiert: {})	DXF importé comme page {} : {} lignes, {} textes (non importé : {})	DXF importado como página {}: {} líneas, {} textos (no importado: {})
+DXF imported as page {}: {} lines, {} texts	DXF als Seite {} importiert: {} Linien, {} Texte	DXF importé comme page {} : {} lignes, {} textes	DXF importado como página {}: {} líneas, {} textos
 Enclosures with plate, rails, ducts and devices as faceted solids (STEP AP214)	Gehäuse mit Montageplatte, Schienen, Kanälen und Geräten als facettierte Volumenkörper (STEP AP214)	Armoires avec plaque, rails, goulottes et appareils en solides à facettes (STEP AP214)	Armarios con placa, carriles, canaletas y equipos como sólidos facetados (STEP AP214)
 Enclosures with plate, rails, ducts and devices for viewers and MCAD / PLM	Gehäuse mit Montageplatte, Schienen, Kanälen und Geräten für Viewer und MCAD / PLM	Armoires avec plaque, rails, goulottes et appareils pour visionneuses et MCAD / PLM	Armarios con placa, carriles, canaletas y equipos para visores y MCAD / PLM
 Export panel layout in 3D (STEP)…	Schaltschrankaufbau in 3D exportieren (STEP)…	Exporter l'implantation en 3D (STEP)…	Exportar el montaje en 3D (STEP)…
 Export panel layout in 3D (glTF)…	Schaltschrankaufbau in 3D exportieren (glTF)…	Exporter l'implantation en 3D (glTF)…	Exportar el montaje en 3D (glTF)…
+Import DXF as page…	DXF als Seite importieren…	Importer un DXF comme page…	Importar DXF como página…
+Imports a DXF drawing as graphics (lines, arcs, texts, blocks) on a new schematic page	Importiert eine DXF-Zeichnung als Grafik (Linien, Bögen, Texte, Blöcke) auf eine neue Schaltplanseite	Importe un dessin DXF comme graphique (lignes, arcs, textes, blocs) sur une nouvelle page de schéma	Importa un dibujo DXF como gráfico (líneas, arcos, textos, bloques) en una nueva página de esquema
+Scale drawings down that do not fit on the page (default: true)	Zeichnungen verkleinern, die nicht auf die Seite passen (Standard: true)	Réduire les dessins qui ne tiennent pas sur la page (par défaut : true)	Reducir los dibujos que no caben en la página (predeterminado: true)
