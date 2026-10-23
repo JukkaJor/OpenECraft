@@ -4,6 +4,8 @@
 
 pub mod climate;
 pub mod config;
+pub mod aml;
+pub mod devdesc;
 pub mod dxf;
 pub mod dxf_import;
 pub mod export3d;
@@ -25,11 +27,13 @@ pub mod panel;
 pub mod parts;
 pub mod pdf;
 pub mod plc;
+pub mod plc_hw;
 pub mod plugs;
 pub mod potentials;
 pub mod process;
 pub mod production;
 pub mod render;
+pub mod report_blocks;
 pub mod reports;
 pub mod revision;
 pub mod sample;
@@ -43,3 +47,4 @@ pub mod tables;
 pub mod translation;
 pub mod wirenum;
 pub mod wiring;
+pub mod xml;

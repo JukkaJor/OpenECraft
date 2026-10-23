@@ -109,6 +109,106 @@ pub struct ReportForm {
     pub columns: Vec<String>,
     /// Rows per page; 0: the default.
     pub rows: usize,
+    /// Only rows that pass all filters are shown.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub filters: Vec<RowFilter>,
+    /// Sort order (first key first); empty: the order of the report.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub sort: Vec<SortKey>,
+    /// Column that groups the rows: report blocks start new pages for every value;
+    /// empty: the first column.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// Values of the first shown column that repeat the row above are left blank.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub blank_repeats: bool,
+    /// Relative column widths by header name (instead of the report's).
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub widths: BTreeMap<String, f32>,
+    /// Text size of the rows (mm); 0: fitted to the rows per page.
+    pub text_size: f32,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FilterOp {
+    #[default]
+    Contains,
+    NotContains,
+    Equals,
+    NotEquals,
+    StartsWith,
+    Empty,
+    NotEmpty,
+}
+
+impl FilterOp {
+    pub const ALL: [FilterOp; 7] =
+        [FilterOp::Contains, FilterOp::NotContains, FilterOp::Equals, FilterOp::NotEquals, FilterOp::StartsWith, FilterOp::Empty, FilterOp::NotEmpty];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            FilterOp::Contains => tr("contains"),
+            FilterOp::NotContains => tr("does not contain"),
+            FilterOp::Equals => tr("is"),
+            FilterOp::NotEquals => tr("is not"),
+            FilterOp::StartsWith => tr("starts with"),
+            FilterOp::Empty => tr("is empty"),
+            FilterOp::NotEmpty => tr("is not empty"),
+        }
+    }
+
+    /// Needs a value to compare with.
+    pub fn has_value(self) -> bool {
+        !matches!(self, FilterOp::Empty | FilterOp::NotEmpty)
+    }
+}
+
+/// Keeps the rows whose cell in `column` passes (case-insensitive).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct RowFilter {
+    pub column: String,
+    pub op: FilterOp,
+    pub value: String,
+}
+
+impl RowFilter {
+    pub fn passes(&self, cell: &str) -> bool {
+        let (c, v) = (cell.to_lowercase(), self.value.trim().to_lowercase());
+        match self.op {
+            FilterOp::Contains => c.contains(&v),
+            FilterOp::NotContains => !c.contains(&v),
+            FilterOp::Equals => c == v,
+            FilterOp::NotEquals => c != v,
+            FilterOp::StartsWith => c.starts_with(&v),
+            FilterOp::Empty => c.trim().is_empty(),
+            FilterOp::NotEmpty => !c.trim().is_empty(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SortKey {
+    pub column: String,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub descending: bool,
+}
+
+/// A named report form of one report, e.g. "Terminals for the workshop"; report
+/// blocks choose it by name.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ReportScheme {
+    pub name: String,
+    pub kind: ReportKind,
+    pub form: ReportForm,
+}
+
+impl Default for ReportScheme {
+    fn default() -> Self {
+        ReportScheme { name: String::new(), kind: ReportKind::DeviceList, form: ReportForm::default() }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -122,6 +222,9 @@ pub struct Forms {
     pub default_title_block: String,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub reports: BTreeMap<ReportKind, ReportForm>,
+    /// Named report forms.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub schemes: Vec<ReportScheme>,
     /// Plot frames defined for the project.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub frames: Vec<crate::frame::PlotFrame>,
@@ -130,11 +233,13 @@ pub struct Forms {
     pub default_frame: String,
 }
 
-/// File format for exchanging title blocks.
+/// File format for exchanging title blocks and report schemes.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct FormLibrary {
     pub title_blocks: Vec<Form>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub schemes: Vec<ReportScheme>,
 }
 
 impl FormLibrary {
@@ -143,17 +248,54 @@ impl FormLibrary {
     }
 }
 
-/// Adds the title blocks of a library to the project; ones with the same name are
-/// replaced. Returns their number.
-pub fn merge(prj: &mut Project, lib: FormLibrary) -> usize {
-    let n = lib.title_blocks.len();
+/// Adds the title blocks and report schemes of a library to the project; ones with
+/// the same name (schemes: of the same report) are replaced. Returns their numbers.
+pub fn merge(prj: &mut Project, lib: FormLibrary) -> (usize, usize) {
+    let n = (lib.title_blocks.len(), lib.schemes.len());
     for f in lib.title_blocks {
         match prj.forms.title_blocks.iter_mut().find(|x| x.name == f.name) {
             Some(x) => *x = f,
             None => prj.forms.title_blocks.push(f),
         }
     }
+    for s in lib.schemes {
+        match prj.forms.schemes.iter_mut().find(|x| x.name == s.name && x.kind == s.kind) {
+            Some(x) => *x = s,
+            None => prj.forms.schemes.push(s),
+        }
+    }
     n
+}
+
+/// Report form of a report: the scheme of that name, otherwise the report's form.
+pub fn report_form<'a>(prj: &'a Project, kind: ReportKind, scheme: &str) -> Option<&'a ReportForm> {
+    let named = prj.forms.schemes.iter().find(|s| !scheme.is_empty() && s.kind == kind && s.name == scheme);
+    named.map(|s| &s.form).or_else(|| prj.forms.reports.get(&kind))
+}
+
+/// Renames a scheme together with the report blocks and pages that use it. Fails for
+/// empty names and names the report already has.
+pub fn rename_scheme(prj: &mut Project, kind: ReportKind, old: &str, new: &str) -> bool {
+    let new = new.trim();
+    if new.is_empty() || prj.forms.schemes.iter().any(|s| s.kind == kind && s.name == new) {
+        return false;
+    }
+    let Some(s) = prj.forms.schemes.iter_mut().find(|s| s.kind == kind && s.name == old) else { return false };
+    s.name = new.to_string();
+    for b in prj.report_blocks.iter_mut().filter(|b| b.kind == kind && b.scheme == old) {
+        b.scheme = new.to_string();
+    }
+    for pg in prj.pages.iter_mut().filter(|p| p.kind == PageKind::Report(kind)) {
+        if let Some(r) = pg.report.as_mut().filter(|r| r.scheme == old) {
+            r.scheme = new.to_string();
+        }
+    }
+    true
+}
+
+/// Names of the schemes of a report.
+pub fn scheme_names(prj: &Project, kind: ReportKind) -> Vec<String> {
+    prj.forms.schemes.iter().filter(|s| s.kind == kind).map(|s| s.name.clone()).collect()
 }
 
 fn label(items: &mut Vec<FormItem>, x: f32, y: f32, text: &'static str) {

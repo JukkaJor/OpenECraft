@@ -20,8 +20,9 @@ pub static TOOLS: &[Tool] = &[
         name: "report",
         help: tr_const!("Generates a report as table"),
         params: &[
-            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list or pct_loops")),
+            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list or pct_loops")),
             optional("format", Kind::Str, tr_const!("json (default) or csv")),
+            optional("scheme", Kind::Str, tr_const!("Report scheme: its filter, sort order and columns")),
         ],
         needs_project: true,
         run: report,
@@ -35,9 +36,9 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step, iges, ifc, jt or dictionary")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary")),
             optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
@@ -78,7 +79,18 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let kind = report_kind(a.req("kind"))?;
     let an = Analysis::build(prj);
-    let table = an.reports.get(&kind).cloned().unwrap_or_default();
+    let mut table = an.reports.get(&kind).cloned().unwrap_or_default();
+    if let Some(name) = a.str("scheme") {
+        let scheme = prj.forms.schemes.iter().find(|s| s.kind == kind && s.name == name).ok_or_else(|| tr_fmt!("Unknown report scheme: {}", name))?;
+        let t = openecraft_core::report_blocks::scheme_table(&table, Some(&scheme.form));
+        let cols = openecraft_core::forms::report_columns(Some(&scheme.form), &t.headers);
+        table = reports::Table {
+            headers: cols.iter().map(|&c| t.headers[c]).collect(),
+            widths: cols.iter().map(|&c| t.widths[c]).collect(),
+            rows: t.rows.iter().map(|r| cols.iter().map(|&c| r.get(c).cloned().unwrap_or_default()).collect()).collect(),
+            targets: t.targets,
+        };
+    }
     match a.str("format").unwrap_or("json") {
         "csv" => Ok(Value::String(table.to_csv())),
         "json" => Ok(json!({ "report": snake(kind), "title": kind.title(), "headers": table.headers, "rows": table.rows })),
@@ -125,6 +137,8 @@ fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<
         }
         "wire_list" => reports::production_wire_list(prj, &Analysis::build(prj)).to_csv(),
         "plc_table" => plc::symbol_table(prj, &Analysis::build(prj).netlist),
+        "plc_variables" => plc::global_variables(prj, &Analysis::build(prj).netlist),
+        "aml" => openecraft_core::aml::export(prj, &Analysis::build(prj).netlist),
         "kbl" => harness::kbl(prj, &Analysis::build(prj)),
         "marking" => openecraft_core::marking::csv(&openecraft_core::marking::markers(prj, &Analysis::build(prj).connections)),
         "gltf" => openecraft_core::export3d::gltf(prj),

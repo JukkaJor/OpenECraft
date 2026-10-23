@@ -23,12 +23,14 @@ mod forms_ui;
 mod harness_ui;
 mod languages_ui;
 mod config_ui;
+mod plc_ui;
 mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
 mod potentials_ui;
 mod structure_ui;
 mod process_ui;
+mod report_blocks_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -80,8 +82,10 @@ pub struct App {
     macro_lib: crate::macros::MacroLibrary,
     symed: symbol_editor::SymbolEditor,
     forms_ui: forms_ui::FormsUi,
+    report_blocks_ui: report_blocks_ui::ReportBlocksUi,
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
+    plc_ui: plc_ui::PlcUi,
     process_ui: process_ui::ProcessUi,
     languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
@@ -151,8 +155,10 @@ impl App {
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),
             forms_ui: Default::default(),
+            report_blocks_ui: Default::default(),
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
+            plc_ui: Default::default(),
             process_ui: Default::default(),
             languages_ui: Default::default(),
             tables_ui: Default::default(),
@@ -297,11 +303,15 @@ impl App {
             if loaded.purpose == Purpose::Forms {
                 match crate::forms::FormLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
-                        let n = crate::forms::merge(&mut self.prj, lib);
-                        self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
+                        let (blocks, schemes) = crate::forms::merge(&mut self.prj, lib);
+                        self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
                 }
+                return;
+            }
+            if loaded.purpose == Purpose::OutputTarget {
+                self.output_reports(ctx, &loaded);
                 return;
             }
             if loaded.purpose == Purpose::Document {
@@ -348,6 +358,10 @@ impl App {
             }
             if let Purpose::Table(kind) = loaded.purpose {
                 self.import_table(ctx, kind, &loaded.text());
+                return;
+            }
+            if matches!(loaded.purpose, Purpose::Aml | Purpose::DeviceDescription) {
+                self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text());
                 return;
             }
             if loaded.purpose == Purpose::Dictionary {
@@ -694,6 +708,9 @@ impl App {
                 if ui.button(tr("PLC overview…")).clicked() {
                     self.eng.show_plc = true;
                 }
+                if ui.button(tr("PLC hardware and bus topology…")).on_hover_text(tr("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")).clicked() {
+                    self.plc_ui.open = true;
+                }
                 if ui.button(tr("Revisions…")).clicked() {
                     self.eng.show_revisions = true;
                 }
@@ -713,6 +730,9 @@ impl App {
                 if ui.button(tr("Title blocks, plot frames and page templates…")).clicked() {
                     self.forms_ui.open = true;
                 }
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
+                }
                 if ui.button(tr("Check project")).clicked() {
                     self.left_tab = LeftTab::Check;
                 }
@@ -723,6 +743,13 @@ impl App {
                         self.report_kind = k;
                         self.show_reports = true;
                     }
+                }
+                ui.separator();
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
+                }
+                if ui.add_enabled(!self.prj.report_blocks.is_empty(), egui::Button::new(tr("⟳ Update report blocks"))).clicked() {
+                    self.generate_report_blocks(ui.ctx());
                 }
             });
             ui.menu_button(tr("View"), |ui| {
@@ -1543,8 +1570,11 @@ impl App {
                     if ui.button(tr("➕ Insert as report page")).clicked() {
                         add_page = Some(kind);
                     }
-                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, order and rows of the report pages")).clicked() {
+                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, filter, sort order and rows of the report pages")).clicked() {
                         self.forms_ui.open_report(kind);
+                    }
+                    if ui.button(tr("Report blocks…")).on_hover_text(tr("Generate report pages per strip, plug, cable or device")).clicked() {
+                        self.report_blocks_ui.open = true;
                     }
                 });
                 let Some(table) = self.analysis.reports.get(&kind) else { return };
@@ -1680,8 +1710,10 @@ impl App {
         self.engineering_windows(ctx);
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
+        self.report_blocks_window(ctx);
         self.harness_window(ctx);
         self.plugs_window(ctx);
+        self.plc_hw_window(ctx);
         self.process_window(ctx);
         self.languages_window(ctx);
         self.structure_window(ctx);
@@ -1848,6 +1880,7 @@ impl App {
                 ui.label(tr("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."));
                 ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
                 ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
+                ui.label(tr("Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project."));
                 ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
                 ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
                 ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
@@ -1893,6 +1926,10 @@ impl App {
         for w in self.prj.pages.iter().flat_map(|pg| pg.wires.iter()).filter(|w| !w.cable.is_empty()) {
             used.entry(w.cable.clone()).or_default().insert(w.core.clone());
         }
+        let mut bus_links: std::collections::HashMap<String, usize> = Default::default();
+        for l in self.prj.plc.connections.iter().filter(|l| !l.cable.is_empty()) {
+            *bus_links.entry(l.cable.clone()).or_default() += 1;
+        }
         let structure = structure::page_structure(&self.prj.pages[self.page]);
         egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -1907,8 +1944,8 @@ impl App {
             ui.separator();
             let cable_parts: Vec<&parts::Part> = self.parts_db.parts.iter().filter(|p| p.group == "Cables").collect();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
-                egui::Grid::new("cables").striped(true).num_columns(9).spacing([8.0, 4.0]).show(ui, |ui| {
-                    for h in [tr("Cable"), tr("Type"), tr("Cores"), tr("Cross-section"), tr("Length"), tr("Part"), tr("Description"), tr("Used"), ""] {
+                egui::Grid::new("cables").striped(true).num_columns(10).spacing([8.0, 4.0]).show(ui, |ui| {
+                    for h in [tr("Cable"), tr("Type"), tr("Bus"), tr("Cores"), tr("Cross-section"), tr("Length"), tr("Part"), tr("Description"), tr("Used"), ""] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -1919,6 +1956,12 @@ impl App {
                             renamed.push((old.clone(), c.tag.clone()));
                         }
                         ui.add_sized([120.0, 20.0], egui::TextEdit::singleline(&mut c.cable_type));
+                        egui::ComboBox::from_id_salt(("cablebus", i)).width(90.0).selected_text(c.bus.map(|b| b.title()).unwrap_or("–")).show_ui(ui, |ui| {
+                            ui.selectable_value(&mut c.bus, None, "–").on_hover_text(tr("Ordinary cable"));
+                            for b in crate::plc_hw::BusKind::ALL {
+                                ui.selectable_value(&mut c.bus, Some(b), b.title());
+                            }
+                        });
                         ui.add_sized([140.0, 20.0], egui::TextEdit::singleline(&mut c.cores)).on_hover_text(tr("Core designations separated by blanks"));
                         ui.add_sized([70.0, 20.0], egui::TextEdit::singleline(&mut c.cross_section));
                         ui.add(egui::DragValue::new(&mut c.length).speed(0.5).range(0.0..=100000.0).suffix(" m"));
@@ -1937,8 +1980,13 @@ impl App {
                             });
                         });
                         ui.add_sized([160.0, 20.0], egui::TextEdit::singleline(&mut c.description));
-                        let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
-                        ui.label(format!("{n}/{}", c.core_list().len()));
+                        let links = bus_links.get(&old).copied().unwrap_or(0);
+                        if links > 0 {
+                            ui.label(tr_fmt!("{} bus connections", links));
+                        } else {
+                            let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
+                            ui.label(format!("{n}/{}", c.core_list().len()));
+                        }
                         if ui.small_button("🗑").on_hover_text(tr("Delete cable (its wires are removed from it)")).clicked() {
                             remove = Some(i);
                         }
