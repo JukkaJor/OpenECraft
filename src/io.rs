@@ -22,6 +22,8 @@ pub enum Purpose {
     Symbols,
     /// Title blocks (JSON) to add to the project.
     Forms,
+    /// A drawing to import as a page.
+    Dxf,
     /// A table (CSV) changed in a spreadsheet.
     Table(crate::tables::TableKind),
 }
@@ -30,13 +32,14 @@ impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
             Purpose::Project => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
-            Purpose::Parts => (tr("Parts (CSV, JSON)"), &["csv", "json", "txt"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
             Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
             Purpose::Table(_) => ("CSV", &["csv", "txt"]),
+            Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
         }
     }
 }

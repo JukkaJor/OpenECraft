@@ -272,6 +272,24 @@ impl App {
                 }
                 return;
             }
+            if loaded.purpose == Purpose::Dxf {
+                let name = io::short_name(&loaded.name);
+                let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
+                match crate::dxf_import::import_page(&mut self.prj, &loaded.text(), &description, self.page, Default::default()) {
+                    Ok(r) => {
+                        self.goto(r.page, 0);
+                        let page = self.prj.pages[r.page].name.clone();
+                        let msg = if r.skipped.is_empty() {
+                            tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts)
+                        } else {
+                            tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", "))
+                        };
+                        self.notify(ctx, msg);
+                    }
+                    Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
+                }
+                return;
+            }
             if let Purpose::Table(kind) = loaded.purpose {
                 self.import_table(ctx, kind, &loaded.text());
                 return;
@@ -362,6 +380,29 @@ impl App {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &all);
                     self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
                 }
+                if ui.button(tr("Import DXF as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
+                    self.io.open(&ctx, Purpose::Dxf);
+                }
+                ui.separator();
+                let has_layout = !self.prj.layout.enclosures.is_empty();
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (glTF)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices for viewers and MCAD / PLM"))
+                    .clicked()
+                {
+                    let gltf = crate::export3d::gltf(&self.prj);
+                    self.export(&ctx, self.suggested_name("gltf"), ("glTF", "gltf"), gltf);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (STEP)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as faceted solids (STEP AP214)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("stp");
+                    let step = crate::export3d::step(&self.prj, &name);
+                    self.export(&ctx, name, ("STEP", "stp"), step);
+                }
+                ui.separator();
                 if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {
                     let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
                     self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);

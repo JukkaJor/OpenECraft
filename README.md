@@ -143,8 +143,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
     door devices from the rear, PLC modules at the bottom). Edited in the part editor
     (tab *Connection points*: table, click into the front view to place one); the
     panel layout wires to them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
-  - import / export as CSV (`;` separated, header names) or JSON; the database is stored
-    in the app storage (desktop) / local storage (browser).
+  - import / export as CSV (`;` separated, header names) or JSON, import of **BMEcat**
+    catalogs (1.2 / 2005, as published by manufacturers and wholesalers, e.g. from the
+    EPLAN Data Portal or ETIM / eCl@ss data pools): identification, description, price,
+    data sheet, the ETIM / eCl@ss class and every feature as technical data;
+    dimensions, weight, rated current / voltage and power loss go into their fields
+    (by feature name, or the ETIM codes of width, height and depth); the database is
+    stored in the app storage (desktop) / local storage (browser).
 - **Panel layout** (in the spirit of EPLAN Pro Panel):
   - enclosures (from a part such as `GEN.ENC-600X800` or custom size) with mounting plate;
   - mounting rails and cable ducts drawn by length; devices placed from a "devices to
@@ -211,7 +216,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
   ends, colour, cross-section, routed length, stripping length and ferrule per
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
   wire processing machines; ferrules also in the BOM), report CSVs, PLC symbol tables,
-  NC data of mounting plates.
+  NC data of mounting plates, the **panel layout in 3D** as **glTF 2.0** (viewers, web,
+  PLM; metres, one node per enclosure and item, colours) and **STEP AP214** (MCAD;
+  faceted solids with colours, millimetres, z up) – walls, door, mounting plate,
+  rails, ducts, busbars and devices with the 3D models of their parts.
+  **DXF import** (*File › Import DXF as page…*): old drawings as graphics on a new
+  schematic page – lines, polylines, circles, arcs, ellipses, splines, texts, MTEXT,
+  block references and dimensions, in their units, scaled down to the drawing area
+  when they are larger.
   DWG and EPLAN's EDZ format are proprietary and not supported.
 - **Wire harnesses**: single point-to-point connections (`-S1:13 – -K1:A1`) are
   assigned to harnesses (`-WH1`), independent of the other connections of the same
@@ -359,7 +371,8 @@ cargo test --workspace
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
 | Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
-| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list |
+| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP) |
+| Import old drawings | *File › Import DXF as page…* |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
 | Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
@@ -409,6 +422,9 @@ cargo test --workspace
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
+| `crates/openecraft-core/src/dxf_import.rs` | DXF import as a schematic page |
+| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF and STEP export |
+| `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |

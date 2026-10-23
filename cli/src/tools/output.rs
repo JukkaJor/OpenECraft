@@ -35,9 +35,9 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML) or marking (CSV)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML), marking (CSV), gltf or step (3D panel layout)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl or marking")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf or step")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
         ],
@@ -107,6 +107,8 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
         "plc_table" => plc::symbol_table(prj, &Analysis::build(prj).netlist),
         "kbl" => harness::kbl(prj, &Analysis::build(prj)),
         "marking" => openecraft_core::marking::csv(&openecraft_core::marking::markers(prj, &Analysis::build(prj).connections)),
+        "gltf" => openecraft_core::export3d::gltf(prj),
+        "step" => openecraft_core::export3d::step(prj, a.str("path").map(|p| p.rsplit(['/', '\\']).next().unwrap_or(p)).unwrap_or("panel.stp")),
         other => return Err(tr_fmt!("Unknown format: {}", other)),
     };
     match a.str("path") {
