@@ -33,6 +33,7 @@ pub mod potentials;
 pub mod process;
 pub mod production;
 pub mod render;
+pub mod report_blocks;
 pub mod reports;
 pub mod revision;
 pub mod sample;

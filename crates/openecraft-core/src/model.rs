@@ -56,6 +56,9 @@ pub struct Project {
     pub symbols: Vec<crate::symlib::UserSymbol>,
     /// Title blocks and report forms.
     pub forms: crate::forms::Forms,
+    /// Report blocks: report pages generated and updated together.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub report_blocks: Vec<crate::report_blocks::ReportBlock>,
     /// Options and generation rules of the configurator.
     #[serde(skip_serializing_if = "crate::config::Configuration::is_empty")]
     pub configuration: crate::config::Configuration,
@@ -104,6 +107,7 @@ impl Default for Project {
             harnesses: Vec::new(),
             symbols: Vec::new(),
             forms: Default::default(),
+            report_blocks: Vec::new(),
             marking: Default::default(),
             configuration: Default::default(),
             fluid: Default::default(),
@@ -189,17 +193,24 @@ pub enum ReportKind {
     DeviceList,
     BillOfMaterials,
     TerminalDiagram,
+    TerminalLineup,
+    TerminalStripOverview,
+    TerminalConnections,
     PlugDiagram,
+    PinConnections,
     ConnectionList,
+    DeviceConnections,
     PlcAssignment,
     PotentialList,
     PanelWiring,
     CableOverview,
     CableDiagram,
+    CableConnections,
     CableSizing,
     RevisionOverview,
     HarnessData,
     DuctFill,
+    PanelLegend,
     Climate,
     Marking,
     HoseList,
@@ -207,22 +218,29 @@ pub enum ReportKind {
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 19] = [
+    pub const ALL: [ReportKind; 26] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
         ReportKind::TerminalDiagram,
+        ReportKind::TerminalLineup,
+        ReportKind::TerminalStripOverview,
+        ReportKind::TerminalConnections,
         ReportKind::PlugDiagram,
+        ReportKind::PinConnections,
         ReportKind::ConnectionList,
+        ReportKind::DeviceConnections,
         ReportKind::PlcAssignment,
         ReportKind::PotentialList,
         ReportKind::PanelWiring,
         ReportKind::CableOverview,
         ReportKind::CableDiagram,
+        ReportKind::CableConnections,
         ReportKind::CableSizing,
         ReportKind::RevisionOverview,
         ReportKind::HarnessData,
         ReportKind::DuctFill,
+        ReportKind::PanelLegend,
         ReportKind::Climate,
         ReportKind::Marking,
         ReportKind::HoseList,
@@ -235,13 +253,20 @@ impl ReportKind {
             ReportKind::DeviceList => tr("Device list"),
             ReportKind::BillOfMaterials => tr("Bill of materials"),
             ReportKind::TerminalDiagram => tr("Terminal diagram"),
+            ReportKind::TerminalLineup => tr("Terminal line-up"),
+            ReportKind::TerminalStripOverview => tr("Terminal strip overview"),
+            ReportKind::TerminalConnections => tr("Terminal connection diagram"),
             ReportKind::PlugDiagram => tr("Plug diagram"),
+            ReportKind::PinConnections => tr("Pin connection diagram"),
+            ReportKind::DeviceConnections => tr("Device connection diagram"),
             ReportKind::ConnectionList => tr("Connection list"),
             ReportKind::PlcAssignment => tr("PLC assignment list"),
             ReportKind::PotentialList => tr("Potential overview"),
             ReportKind::PanelWiring => tr("Wire list (panel routing)"),
             ReportKind::CableOverview => tr("Cable overview"),
             ReportKind::CableDiagram => tr("Cable diagram"),
+            ReportKind::CableConnections => tr("Cable connection diagram"),
+            ReportKind::PanelLegend => tr("Panel legend"),
             ReportKind::CableSizing => tr("Cable sizing (voltage drop)"),
             ReportKind::RevisionOverview => tr("Revision overview (changes)"),
             ReportKind::HarnessData => tr("Harness data"),
@@ -286,6 +311,10 @@ pub struct Page {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document: Option<crate::document::Document>,
     pub kind: PageKind,
+    /// Report pages: what part of the report the page shows (report blocks, pages
+    /// output from other projects); none: the first rows of the whole report.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub report: Option<crate::report_blocks::ReportPart>,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -320,6 +349,7 @@ impl Page {
             frame: String::new(),
             document: None,
             kind,
+            report: None,
             symbols: Vec::new(),
             wires: Vec::new(),
             texts: Vec::new(),
@@ -573,21 +603,7 @@ impl Project {
 
     pub fn normalize(&mut self) {
         crate::symlib::register(&self.symbols);
-        let mut max = 0;
-        for pg in &self.pages {
-            max = max.max(pg.id);
-            max = pg.symbols.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
-            max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
-        }
-        for e in &self.layout.enclosures {
-            max = max.max(e.id);
-            max = e.items.iter().map(|i| i.id).fold(max, u64::max);
-        }
-        max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
-        max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
-        self.next_id = self.next_id.max(max + 1);
+        self.fix_next_id();
         // Make sure each symbol has a designation for each pin.
         for pg in &mut self.pages {
             for s in &mut pg.symbols {
@@ -604,6 +620,25 @@ impl Project {
             let id = self.new_id();
             self.pages.push(Page::new(id, "1", "Schematic", PageKind::Schematic));
         }
+    }
+
+    /// Makes `next_id` larger than every id in use.
+    pub fn fix_next_id(&mut self) {
+        let mut max = 0;
+        for pg in &self.pages {
+            max = max.max(pg.id);
+            max = pg.symbols.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
+        }
+        for e in &self.layout.enclosures {
+            max = max.max(e.id);
+            max = e.items.iter().map(|i| i.id).fold(max, u64::max);
+        }
+        max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
+        max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
+        self.next_id = self.next_id.max(max + 1);
     }
 
     /// Converts single part assignments of older files to part lists; old generic

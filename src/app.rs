@@ -30,6 +30,7 @@ mod pages_ui;
 mod potentials_ui;
 mod structure_ui;
 mod process_ui;
+mod report_blocks_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -81,6 +82,7 @@ pub struct App {
     macro_lib: crate::macros::MacroLibrary,
     symed: symbol_editor::SymbolEditor,
     forms_ui: forms_ui::FormsUi,
+    report_blocks_ui: report_blocks_ui::ReportBlocksUi,
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
     plc_ui: plc_ui::PlcUi,
@@ -153,6 +155,7 @@ impl App {
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),
             forms_ui: Default::default(),
+            report_blocks_ui: Default::default(),
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
             plc_ui: Default::default(),
@@ -296,11 +299,15 @@ impl App {
             if loaded.purpose == Purpose::Forms {
                 match crate::forms::FormLibrary::from_json(&loaded.text()) {
                     Ok(lib) => {
-                        let n = crate::forms::merge(&mut self.prj, lib);
-                        self.notify(ctx, tr_fmt!("Imported {} title blocks", n));
+                        let (blocks, schemes) = crate::forms::merge(&mut self.prj, lib);
+                        self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
                 }
+                return;
+            }
+            if loaded.purpose == Purpose::OutputTarget {
+                self.output_reports(ctx, &loaded);
                 return;
             }
             if loaded.purpose == Purpose::Document {
@@ -693,6 +700,9 @@ impl App {
                 if ui.button(tr("Title blocks, plot frames and page templates…")).clicked() {
                     self.forms_ui.open = true;
                 }
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
+                }
                 if ui.button(tr("Check project")).clicked() {
                     self.left_tab = LeftTab::Check;
                 }
@@ -703,6 +713,13 @@ impl App {
                         self.report_kind = k;
                         self.show_reports = true;
                     }
+                }
+                ui.separator();
+                if ui.button(tr("Report blocks…")).clicked() {
+                    self.report_blocks_ui.open = true;
+                }
+                if ui.add_enabled(!self.prj.report_blocks.is_empty(), egui::Button::new(tr("⟳ Update report blocks"))).clicked() {
+                    self.generate_report_blocks(ui.ctx());
                 }
             });
             ui.menu_button(tr("View"), |ui| {
@@ -1523,8 +1540,11 @@ impl App {
                     if ui.button(tr("➕ Insert as report page")).clicked() {
                         add_page = Some(kind);
                     }
-                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, order and rows of the report pages")).clicked() {
+                    if ui.button(tr("Form…")).on_hover_text(tr("Columns, filter, sort order and rows of the report pages")).clicked() {
                         self.forms_ui.open_report(kind);
+                    }
+                    if ui.button(tr("Report blocks…")).on_hover_text(tr("Generate report pages per strip, plug, cable or device")).clicked() {
+                        self.report_blocks_ui.open = true;
                     }
                 });
                 let Some(table) = self.analysis.reports.get(&kind) else { return };
@@ -1660,6 +1680,7 @@ impl App {
         self.engineering_windows(ctx);
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
+        self.report_blocks_window(ctx);
         self.harness_window(ctx);
         self.plugs_window(ctx);
         self.plc_hw_window(ctx);
@@ -1829,6 +1850,7 @@ impl App {
                 ui.label(tr("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."));
                 ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
                 ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
+                ui.label(tr("Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project."));
                 ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
                 ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
                 ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
