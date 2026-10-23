@@ -1,10 +1,11 @@
-//! PDF export of all pages (A3 landscape): vector graphics, Helvetica text, clickable
-//! cross references and report rows, one bookmark per page. The file is plain ASCII
-//! (non-ASCII text is written as WinAnsi octal escapes).
+//! PDF export of all pages (each in the paper format of its plot frame): vector
+//! graphics, Helvetica text, clickable cross references and report rows, one bookmark
+//! per page; the files of document pages are attached to their page. The file is
+//! plain ASCII (non-ASCII text is written as WinAnsi octal escapes, attachments as hex).
 
 use crate::geom::P;
 use crate::index::Index;
-use crate::model::{Project, PAGE_H, PAGE_W};
+use crate::model::{PageKind, Project};
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
 use crate::reports::Analysis;
 use crate::symbols::Anchor;
@@ -12,6 +13,11 @@ use std::fmt::Write;
 
 /// Points per millimetre.
 const K: f32 = 72.0 / 25.4;
+
+/// `application/pdf` → `application#2Fpdf` (PDF name syntax).
+fn pdf_name(s: &str) -> String {
+    s.chars().map(|c| if c.is_ascii_alphanumeric() || c == '.' || c == '-' { c.to_string() } else { format!("#{:02X}", c as u32) }).collect()
+}
 
 /// Glyph widths of Helvetica (1/1000 em) for ASCII 32..=126.
 const HELVETICA: [u16; 95] = [
@@ -84,19 +90,22 @@ fn x(v: f32) -> f32 {
     v * K
 }
 
-fn y(v: f32) -> f32 {
-    (PAGE_H - v) * K
-}
 
 /// Collects the content stream and the links of one page.
 #[derive(Default)]
 pub struct PdfDraw {
+    /// Paper height in mm (PDF y runs upwards).
+    h: f32,
     ops: String,
     /// (x0, y0, x1, y1 in PDF units, target page index)
     links: Vec<([f32; 4], usize)>,
 }
 
 impl PdfDraw {
+    fn y(&self, v: f32) -> f32 {
+        (self.h - v) * K
+    }
+
     fn stroke(&mut self, width: f32, ink: Ink, dashed: bool) {
         let (r, g, b) = rgb(ink);
         let dash = if dashed { "[4.25 2.83] 0 d" } else { "[] 0 d" };
@@ -110,7 +119,7 @@ impl PdfDraw {
 
     fn path(&mut self, pts: &[P]) {
         for (i, q) in pts.iter().enumerate() {
-            let _ = write!(self.ops, "{:.2} {:.2} {} ", x(q.x), y(q.y), if i == 0 { "m" } else { "l" });
+            let _ = write!(self.ops, "{:.2} {:.2} {} ", x(q.x), self.y(q.y), if i == 0 { "m" } else { "l" });
         }
     }
 }
@@ -145,7 +154,7 @@ impl Draw for PdfDraw {
 
     fn circle(&mut self, c: P, r: f32, width: f32, ink: Ink, fill: bool) {
         // Four Bézier arcs.
-        let (cx, cy, r) = (x(c.x), y(c.y), r * K);
+        let (cx, cy, r) = (x(c.x), self.y(c.y), r * K);
         let k = 0.552_284_8 * r;
         if fill {
             self.fill(ink);
@@ -181,11 +190,11 @@ impl Draw for PdfDraw {
             VAnchor::Bottom => pos.y - size * 0.1,
         };
         self.fill(ink);
-        let _ = writeln!(self.ops, "BT /F1 {fs:.2} Tf {x0:.2} {:.2} Td ({}) Tj ET", y(base), pdf_string(text));
+        let _ = writeln!(self.ops, "BT /F1 {fs:.2} Tf {x0:.2} {:.2} Td ({}) Tj ET", self.y(base), pdf_string(text));
     }
 
     fn link(&mut self, min: P, max: P, page: usize) {
-        self.links.push(([x(min.x), y(max.y), x(max.x), y(min.y)], page));
+        self.links.push(([x(min.x), self.y(max.y), x(max.x), self.y(min.y)], page));
     }
 }
 
@@ -211,7 +220,7 @@ pub fn document(prj: &Project) -> String {
     let an = Analysis::build(prj);
     let pages: Vec<PdfDraw> = (0..prj.pages.len())
         .map(|i| {
-            let mut d = PdfDraw::default();
+            let mut d = PdfDraw { h: crate::frame::of_page(prj, i).height(), ..Default::default() };
             draw_page(&mut d, prj, &idx, &an, i, &Opts::default());
             d
         })
@@ -223,7 +232,6 @@ pub fn document(prj: &Project) -> String {
     let page_obj = |i: usize| 6 + 3 * i;
     let mut next = 6 + 3 * n;
     let mut w = Writer { out: String::from("%PDF-1.4\n"), offsets: vec![0] };
-    w.obj(1, "<< /Type /Catalog /Pages 2 0 R /Outlines 4 0 R /PageMode /UseOutlines >>");
     let kids: Vec<String> = (0..n).map(|i| format!("{} 0 R", page_obj(i))).collect();
     w.obj(2, &format!("<< /Type /Pages /Kids [{}] /Count {n} >>", kids.join(" ")));
     w.obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
@@ -233,9 +241,47 @@ pub fn document(prj: &Project) -> String {
         w.obj(4, "<< /Type /Outlines /Count 0 >>");
     }
     w.obj(5, &format!("<< /Title ({}) /Producer (OpenECraft) >>", pdf_string(&prj.info.name)));
-    let (width, height) = (PAGE_W * K, PAGE_H * K);
+    let mut attachments = Vec::new();
     for (i, d) in pages.iter().enumerate() {
+        let frame = crate::frame::of_page(prj, i);
+        let (width, height) = (frame.width() * K, frame.height() * K);
         let mut annots = Vec::new();
+        let pg = &prj.pages[i];
+        if let (PageKind::Document, Some(doc)) = (pg.kind, &pg.document) {
+            if let Ok(bytes) = doc.bytes() {
+                let (min, max) = crate::document::icon_area(&frame);
+                let (file, spec, annot) = (next, next + 1, next + 2);
+                next += 3;
+                let mut hex = String::with_capacity(bytes.len() * 2 + 1);
+                for b in &bytes {
+                    let _ = write!(hex, "{b:02X}");
+                }
+                hex.push('>');
+                w.obj(
+                    file,
+                    &format!(
+                        "<< /Type /EmbeddedFile /Subtype /{} /Filter /ASCIIHexDecode /Length {} /Params << /Size {} >> >>\nstream\n{hex}\nendstream",
+                        pdf_name(doc.mime()),
+                        hex.len(),
+                        bytes.len()
+                    ),
+                );
+                let name = pdf_string(&doc.name);
+                w.obj(spec, &format!("<< /Type /Filespec /F ({name}) /UF ({name}) /EF << /F {file} 0 R >> >>"));
+                w.obj(
+                    annot,
+                    &format!(
+                        "<< /Type /Annot /Subtype /FileAttachment /Rect [{:.2} {:.2} {:.2} {:.2}] /FS {spec} 0 R /Contents ({name}) /Name /Paperclip >>",
+                        min.x * K,
+                        (frame.height() - max.y) * K,
+                        max.x * K,
+                        (frame.height() - min.y) * K
+                    ),
+                );
+                annots.push(format!("{annot} 0 R"));
+                attachments.push(format!("({name}) {spec} 0 R"));
+            }
+        }
         for (rect, target) in &d.links {
             if *target >= n || *target == i {
                 continue;
@@ -258,7 +304,6 @@ pub fn document(prj: &Project) -> String {
             ),
         );
         w.obj(po + 1, &format!("<< /Length {} >>\nstream\n{}endstream", d.ops.len(), d.ops));
-        let pg = &prj.pages[i];
         let title = format!("{} {}", crate::structure::page_full_name(pg), pg.description).trim().to_string();
         let mut bookmark = format!("<< /Title ({}) /Parent 4 0 R /Dest [{po} 0 R /Fit]", pdf_string(&title));
         if i > 0 {
@@ -270,6 +315,8 @@ pub fn document(prj: &Project) -> String {
         bookmark.push_str(" >>");
         w.obj(po + 2, &bookmark);
     }
+    let names = if attachments.is_empty() { String::new() } else { format!(" /Names << /EmbeddedFiles << /Names [{}] >> >>", attachments.join(" ")) };
+    w.obj(1, &format!("<< /Type /Catalog /Pages 2 0 R /Outlines 4 0 R /PageMode /UseOutlines{names} >>"));
     let xref = w.out.len();
     let count = w.offsets.len();
     let _ = writeln!(w.out, "xref\n0 {count}\n0000000000 65535 f ");

@@ -261,8 +261,7 @@ pub fn insert_page(prj: &mut Project, after: usize, m: &Macro, values: &BTreeMap
     let name = (prj.pages.iter().filter_map(|p| p.name.parse::<u32>().ok()).max().unwrap_or(0) + 1).to_string();
     let id = prj.new_id();
     let mut page = Page::new(id, &name, &fill(&m.page_description, values), PageKind::Schematic);
-    page.function = clip.function.clone();
-    page.location = clip.location.clone();
+    clip.structure().apply_to(&mut page);
     let at = (after + 1).min(prj.pages.len());
     prj.pages.insert(at, page);
     // Items keep their position on the page.

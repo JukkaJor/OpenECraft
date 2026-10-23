@@ -82,7 +82,7 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 input: s.sym == "plc_in",
                 function_text: s.function_text.replace('\n', " "),
                 connected,
-                location: format!("/{}.{}", pg.name, column_of(s.pos)),
+                location: crate::frame::reference(prj, pi, s.pos),
             });
         }
     }
