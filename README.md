@@ -213,8 +213,26 @@ built with [egui / eframe](https://github.com/emilk/egui).
   spreadsheet (rows by key, only changed cells are applied); rows on released pages
   stay unchanged. Renaming a device moves its strip, plug and PLC card data along.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
-  copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, graphic
-  lines and rectangles, grid snapping, pan and zoom.
+  copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
+  snapping, pan and zoom.
+- **Schematic graphics**: lines, rectangles, circles, ellipses, arcs, polylines and
+  polygons (width, colour, dashed, filled), dimensions (aligned / horizontal / vertical,
+  scale, unit), PNG / JPEG images (also in the PDF and SVG export). **Layers**
+  (navigator › Layers): visible, locked, printed, colour; DXF export per layer.
+- **Connection and cable definitions**: a connection definition point on a wire sets
+  number, colour and cross-section of the whole connection and the core of its wire; a
+  cable definition line drawn across wires makes them cores of a cable (new cable with
+  numbered cores, or a chosen one). The check reports points beside wires, contradicting
+  or not applied points, and lines of unknown cables.
+- **Routing**: auto-connect draws wires between facing free connection points when
+  symbols are placed or moved; the wire tool can route around symbols and other wires
+  (A); collinear wire pieces can be joined. Also as `route` / `autoconnect` commands.
+- **Property placement**: drag the tag block of a selected symbol; place further device
+  properties (description, part / type number, manufacturer, designation, connection
+  points, structure) beside it.
+- **Navigators**: pages, devices (select on page, place further functions, rename),
+  connections (filter, show, select, add a connection definition), cables (cores in
+  use and free, cable definitions, draw a cable definition), layers and the check.
 - **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
   references and report rows), **DXF** (R12, layers by kind) per page or all pages side
   by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,

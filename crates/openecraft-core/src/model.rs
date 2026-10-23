@@ -83,6 +83,9 @@ pub struct Project {
     /// Page templates defined for the project.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub page_templates: Vec<crate::page_templates::PageTemplate>,
+    /// Layers of graphics, texts, dimensions and images (visibility, locking, print).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub layers: Vec<crate::graphics::Layer>,
     pub next_id: u64,
 }
 
@@ -116,6 +119,7 @@ impl Default for Project {
             languages: Default::default(),
             structures: Default::default(),
             page_templates: Vec::new(),
+            layers: Vec::new(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -334,6 +338,17 @@ pub struct Page {
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
     pub shapes: Vec<Shape>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub dimensions: Vec<Dimension>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub images: Vec<ImageItem>,
+    /// Connection definition points: define number, colour, cross-section and
+    /// cable core of the connection they sit on.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub conn_defs: Vec<ConnDef>,
+    /// Cable definition lines: the wires they cross are cores of the cable.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub cable_defs: Vec<CableDef>,
 }
 
 impl Default for Page {
@@ -369,11 +384,22 @@ impl Page {
             wires: Vec::new(),
             texts: Vec::new(),
             shapes: Vec::new(),
+            dimensions: Vec::new(),
+            images: Vec::new(),
+            conn_defs: Vec::new(),
+            cable_defs: Vec::new(),
         }
     }
 
     pub fn is_empty(&self) -> bool {
-        self.symbols.is_empty() && self.wires.is_empty() && self.texts.is_empty() && self.shapes.is_empty()
+        self.symbols.is_empty()
+            && self.wires.is_empty()
+            && self.texts.is_empty()
+            && self.shapes.is_empty()
+            && self.dimensions.is_empty()
+            && self.images.is_empty()
+            && self.conn_defs.is_empty()
+            && self.cable_defs.is_empty()
     }
 }
 
@@ -395,6 +421,12 @@ pub struct SymbolInst {
     pub function_text: String,
     /// Connection point designations, one per symbol pin.
     pub pins: Vec<String>,
+    /// Tag block placed by hand: position of its top-left corner relative to `pos`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tag_offset: Option<P>,
+    /// Further properties shown beside the symbol (part number, description …).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub props: Vec<PlacedProp>,
 }
 
 impl Default for SymbolInst {
@@ -409,7 +441,38 @@ impl Default for SymbolInst {
             label: String::new(),
             function_text: String::new(),
             pins: Vec::new(),
+            tag_offset: None,
+            props: Vec::new(),
         }
+    }
+}
+
+/// Property of a device that can be placed as a text beside one of its symbols.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum PropKind {
+    #[default]
+    Description,
+    PartNumber,
+    TypeNumber,
+    Manufacturer,
+    Label,
+    Pins,
+    Structure,
+}
+
+/// A device property shown at a position relative to its symbol.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlacedProp {
+    pub kind: PropKind,
+    /// Left end of the text relative to the symbol position.
+    pub offset: P,
+    pub size: f32,
+}
+
+impl Default for PlacedProp {
+    fn default() -> Self {
+        PlacedProp { kind: PropKind::Description, offset: p(4.0, 4.0), size: 2.0 }
     }
 }
 
@@ -563,11 +626,15 @@ pub struct TextItem {
     pub pos: P,
     pub text: String,
     pub size: f32,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub layer: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color: Option<[u8; 3]>,
 }
 
 impl Default for TextItem {
     fn default() -> Self {
-        TextItem { id: 0, pos: P::default(), text: String::new(), size: 3.0 }
+        TextItem { id: 0, pos: P::default(), text: String::new(), size: 3.0, layer: String::new(), color: None }
     }
 }
 
@@ -576,6 +643,16 @@ pub enum ShapeKind {
     #[default]
     Line,
     Rect,
+    /// Centre `a`, a point of the circle `b`.
+    Circle,
+    /// Inside the rectangle `a` – `b`.
+    Ellipse,
+    /// Centre `a`, start point `b`, `sweep` degrees counter-clockwise.
+    Arc,
+    /// Open line through `pts`.
+    Polyline,
+    /// Closed area through `pts`.
+    Polygon,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
@@ -586,6 +663,121 @@ pub struct Shape {
     pub a: P,
     pub b: P,
     pub dashed: bool,
+    /// Corner points of polylines and polygons.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub pts: Vec<P>,
+    /// Arc angle in degrees.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub sweep: f32,
+    /// Line width in mm; 0 = the normal symbol line.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub width: f32,
+    /// Line (and fill) colour; none = the normal line colour.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color: Option<[u8; 3]>,
+    /// Closed shapes are filled.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub fill: bool,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub layer: String,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum DimKind {
+    /// Parallel to the measured points.
+    #[default]
+    Aligned,
+    Horizontal,
+    Vertical,
+}
+
+/// A dimension between the points `a` and `b`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Dimension {
+    pub id: u64,
+    pub kind: DimKind,
+    pub a: P,
+    pub b: P,
+    /// Distance of the dimension line from the measured points (along the normal
+    /// of the measuring direction).
+    pub offset: f32,
+    /// Shown instead of the measured value when not empty.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub text: String,
+    /// Real length per millimetre on the page (drawing scale).
+    pub scale: f32,
+    pub decimals: u8,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub unit: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub layer: String,
+}
+
+impl Default for Dimension {
+    fn default() -> Self {
+        Dimension {
+            id: 0,
+            kind: DimKind::Aligned,
+            a: P::default(),
+            b: P::default(),
+            offset: 8.0,
+            text: String::new(),
+            scale: 1.0,
+            decimals: 0,
+            unit: String::new(),
+            layer: String::new(),
+        }
+    }
+}
+
+/// A bitmap (PNG, JPEG) shown in the rectangle `a` – `b`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct ImageItem {
+    pub id: u64,
+    pub a: P,
+    pub b: P,
+    pub file: crate::document::Document,
+    /// Pixel size of the bitmap (keeps the aspect ratio when resized).
+    pub px: [u32; 2],
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub layer: String,
+}
+
+/// Connection definition point on a wire.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct ConnDef {
+    pub id: u64,
+    pub pos: P,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub number: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub color: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub cross_section: String,
+    /// Cable and core of the wire it sits on.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub cable: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub core: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub description: String,
+}
+
+/// Cable definition line from `a` to `b`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct CableDef {
+    pub id: u64,
+    pub a: P,
+    pub b: P,
+    /// Complete tag of the cable.
+    pub cable: String,
+    /// Draw a shield (ellipse around the crossing).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub shield: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
@@ -649,6 +841,10 @@ impl Project {
             max = pg.wires.iter().map(|s| s.id).fold(max, u64::max);
             max = pg.texts.iter().map(|s| s.id).fold(max, u64::max);
             max = pg.shapes.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.dimensions.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.images.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.conn_defs.iter().map(|s| s.id).fold(max, u64::max);
+            max = pg.cable_defs.iter().map(|s| s.id).fold(max, u64::max);
         }
         for e in &self.layout.enclosures {
             max = max.max(e.id);

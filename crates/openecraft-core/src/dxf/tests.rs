@@ -39,3 +39,21 @@ fn pages_side_by_side_and_unicode() {
     assert!(max_x > 420.0 + 20.0, "{max_x}");
     assert_eq!(dxf_text("1.5 mm²"), "1.5 mm\\U+00B2");
 }
+
+#[test]
+fn project_layers_and_hidden_ones() {
+    use crate::model::*;
+    let mut prj = Project::default();
+    prj.layers.push(crate::graphics::Layer::new("Notes 1"));
+    prj.layers.push(crate::graphics::Layer { print: false, ..crate::graphics::Layer::new("Draft") });
+    let pg = &mut prj.pages[0];
+    pg.shapes.push(Shape { id: 90, kind: ShapeKind::Circle, a: crate::geom::p(50.0, 50.0), b: crate::geom::p(60.0, 50.0), layer: "Notes 1".into(), ..Default::default() });
+    pg.texts.push(TextItem { id: 91, pos: crate::geom::p(50.0, 80.0), text: "only on screen".into(), layer: "Draft".into(), ..Default::default() });
+    pg.dimensions.push(Dimension { id: 92, a: crate::geom::p(20.0, 100.0), b: crate::geom::p(60.0, 100.0), ..Default::default() });
+    let dxf = pages_dxf(&prj, &[0]);
+    let p = pairs(&dxf);
+    assert!(p.contains(&(2, "USER_NOTES_1")));
+    assert!(p.contains(&(8, "USER_NOTES_1")));
+    assert!(p.contains(&(1, "40")), "dimension text");
+    assert!(!dxf.contains("only on screen"));
+}

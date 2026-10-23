@@ -25,6 +25,7 @@ impl Pg<'_> {
             label: if label.is_empty() { def.default_label.into() } else { label.into() },
             function_text: ftext.into(),
             pins: def.pins.iter().map(|x| x.label.to_string()).collect(),
+            ..Default::default()
         };
         self.prj.pages[self.page].symbols.push(s);
         self
@@ -53,7 +54,7 @@ impl Pg<'_> {
 
     fn text(&mut self, x: f32, y: f32, t: &str, size: f32) -> &mut Self {
         let id = self.prj.new_id();
-        self.prj.pages[self.page].texts.push(TextItem { id, pos: P { x, y }, text: t.into(), size });
+        self.prj.pages[self.page].texts.push(TextItem { id, pos: P { x, y }, text: t.into(), size, ..Default::default() });
         self
     }
 }

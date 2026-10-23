@@ -140,6 +140,8 @@ impl Analysis {
         issues.extend(crate::plc_hw::problems(prj));
         issues.extend(check_duct_fill(prj, &fill));
         issues.extend(check_climate(prj));
+        issues.extend(crate::conndef::problems(prj, &open));
+        issues.extend(crate::cabledef::problems(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));

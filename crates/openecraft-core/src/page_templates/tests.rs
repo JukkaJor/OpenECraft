@@ -21,7 +21,7 @@ fn pages_are_saved_as_templates_with_their_content() {
     prj.pages[0].title_block = "Compact".into();
     prj.pages[0].function = "A1".into();
     let id = prj.new_id();
-    prj.pages[0].texts.push(TextItem { id, pos: p(30.0, 40.0), text: "Note".into(), size: 3.0 });
+    prj.pages[0].texts.push(TextItem { id, pos: p(30.0, 40.0), text: "Note".into(), size: 3.0, ..Default::default() });
     let id = prj.new_id();
     prj.pages[0].symbols.push(SymbolInst { id, sym: "coil".into(), pos: p(60.0, 60.0), tag: "=A1-K1".into(), ..Default::default() });
     let t = from_page(&prj, 0, " Motor page ");

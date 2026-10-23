@@ -388,11 +388,11 @@ pub fn import_page(prj: &mut Project, text: &str, description: &str, after: usiz
                 if (a.x - b.x).abs() + (a.y - b.y).abs() < 1e-4 {
                     continue;
                 }
-                prj.pages[at].shapes.push(Shape { id, kind: ShapeKind::Line, a, b, dashed });
+                prj.pages[at].shapes.push(Shape { id, kind: ShapeKind::Line, a, b, dashed, ..Default::default() });
                 lines += 1;
             }
             Geo::Text { pos, text, height } => {
-                prj.pages[at].texts.push(TextItem { id, pos: to_page(pos), text, size: (height * scale).max(1.0) });
+                prj.pages[at].texts.push(TextItem { id, pos: to_page(pos), text, size: (height * scale).max(1.0), ..Default::default() });
                 texts += 1;
             }
         }

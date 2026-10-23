@@ -91,6 +91,89 @@ fn x(v: f32) -> f32 {
 }
 
 
+/// A bitmap as PDF image: dictionary entries and the data as hex.
+struct PdfImage {
+    dict: String,
+    hex: String,
+}
+
+fn hex(data: &[u8]) -> String {
+    let mut out = String::with_capacity(data.len() * 2 + 1);
+    for b in data {
+        let _ = write!(out, "{b:02X}");
+    }
+    out.push('>');
+    out
+}
+
+/// JPEG files (grey or RGB) go into the PDF as they are; PNG files without
+/// transparency, palette or interlacing use the PNG predictor of the PDF.
+fn pdf_image(bytes: &[u8]) -> Option<PdfImage> {
+    if bytes.starts_with(&[0xFF, 0xD8]) {
+        let mut i = 2;
+        while i + 9 < bytes.len() {
+            if bytes[i] != 0xFF {
+                i += 1;
+                continue;
+            }
+            let marker = bytes[i + 1];
+            let len = u16::from_be_bytes([bytes[i + 2], bytes[i + 3]]) as usize;
+            if (0xC0..=0xCF).contains(&marker) && !matches!(marker, 0xC4 | 0xC8 | 0xCC) {
+                let h = u16::from_be_bytes([bytes[i + 5], bytes[i + 6]]);
+                let w = u16::from_be_bytes([bytes[i + 7], bytes[i + 8]]);
+                let space = match bytes[i + 9] {
+                    1 => "DeviceGray",
+                    3 => "DeviceRGB",
+                    _ => return None,
+                };
+                return Some(PdfImage {
+                    dict: format!("/Width {w} /Height {h} /ColorSpace /{space} /BitsPerComponent 8 /Filter [/ASCIIHexDecode /DCTDecode]"),
+                    hex: hex(bytes),
+                });
+            }
+            i += 2 + len;
+        }
+        return None;
+    }
+    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+        return None;
+    }
+    let mut i = 8;
+    let (mut w, mut h, mut colors) = (0, 0, 0);
+    let mut idat = Vec::new();
+    while i + 8 <= bytes.len() {
+        let len = u32::from_be_bytes([bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3]]) as usize;
+        let kind = &bytes[i + 4..i + 8];
+        let data = bytes.get(i + 8..i + 8 + len)?;
+        match kind {
+            b"IHDR" if len >= 13 => {
+                w = u32::from_be_bytes([data[0], data[1], data[2], data[3]]);
+                h = u32::from_be_bytes([data[4], data[5], data[6], data[7]]);
+                let (depth, color, interlace) = (data[8], data[9], data[12]);
+                colors = match (depth, color, interlace) {
+                    (8, 0, 0) => 1,
+                    (8, 2, 0) => 3,
+                    _ => return None,
+                };
+            }
+            b"IDAT" => idat.extend_from_slice(data),
+            b"IEND" => break,
+            _ => {}
+        }
+        i += 12 + len;
+    }
+    if colors == 0 || idat.is_empty() {
+        return None;
+    }
+    let space = if colors == 1 { "DeviceGray" } else { "DeviceRGB" };
+    Some(PdfImage {
+        dict: format!(
+            "/Width {w} /Height {h} /ColorSpace /{space} /BitsPerComponent 8 /Filter [/ASCIIHexDecode /FlateDecode] /DecodeParms [null << /Predictor 15 /Colors {colors} /BitsPerComponent 8 /Columns {w} >>]"
+        ),
+        hex: hex(&idat),
+    })
+}
+
 /// Collects the content stream and the links of one page.
 #[derive(Default)]
 pub struct PdfDraw {
@@ -99,6 +182,8 @@ pub struct PdfDraw {
     ops: String,
     /// (x0, y0, x1, y1 in PDF units, target page index)
     links: Vec<([f32; 4], usize)>,
+    /// Bitmaps used by the page (`/Im0`, `/Im1` …).
+    images: Vec<PdfImage>,
 }
 
 impl PdfDraw {
@@ -196,6 +281,17 @@ impl Draw for PdfDraw {
     fn link(&mut self, min: P, max: P, page: usize) {
         self.links.push(([x(min.x), self.y(max.y), x(max.x), self.y(min.y)], page));
     }
+
+    fn image(&mut self, img: &crate::model::ImageItem) {
+        let Some(pi) = img.file.bytes().ok().and_then(|b| pdf_image(&b)) else {
+            crate::render::image_placeholder(self, img);
+            return;
+        };
+        let r = crate::geom::R::from_points(img.a, img.b);
+        let n = self.images.len();
+        self.images.push(pi);
+        let _ = writeln!(self.ops, "q {:.2} 0 0 {:.2} {:.2} {:.2} cm /Im{n} Do Q", r.width() * K, r.height() * K, x(r.min.x), self.y(r.max.y));
+    }
 }
 
 /// Builds the PDF objects and the cross reference table.
@@ -252,11 +348,7 @@ pub fn document(prj: &Project) -> String {
                 let (min, max) = crate::document::icon_area(&frame);
                 let (file, spec, annot) = (next, next + 1, next + 2);
                 next += 3;
-                let mut hex = String::with_capacity(bytes.len() * 2 + 1);
-                for b in &bytes {
-                    let _ = write!(hex, "{b:02X}");
-                }
-                hex.push('>');
+                let hex = hex(&bytes);
                 w.obj(
                     file,
                     &format!(
@@ -294,11 +386,21 @@ pub fn document(prj: &Project) -> String {
             annots.push(format!("{next} 0 R"));
             next += 1;
         }
+        let mut xobjects = Vec::new();
+        for (k, img) in d.images.iter().enumerate() {
+            w.obj(
+                next,
+                &format!("<< /Type /XObject /Subtype /Image {} /Length {} >>\nstream\n{}\nendstream", img.dict, img.hex.len(), img.hex),
+            );
+            xobjects.push(format!("/Im{k} {next} 0 R"));
+            next += 1;
+        }
+        let xobject = if xobjects.is_empty() { String::new() } else { format!(" /XObject << {} >>", xobjects.join(" ")) };
         let po = page_obj(i);
         w.obj(
             po,
             &format!(
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R >> >> /Contents {} 0 R /Annots [{}] >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
                 po + 1,
                 annots.join(" ")
             ),

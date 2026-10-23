@@ -52,6 +52,14 @@ pub struct DxfDraw {
     dx: f32,
     /// Paper height of the current page (DXF y runs upwards).
     h: f32,
+    /// Layer of the project the following elements are on.
+    user_layer: Option<String>,
+}
+
+/// DXF layer of a project layer (the default layer has none of its own).
+fn user_layer_name(name: &str) -> String {
+    let clean: String = name.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c.to_ascii_uppercase() } else { '_' }).collect();
+    format!("USER_{clean}")
 }
 
 impl DxfDraw {
@@ -60,7 +68,11 @@ impl DxfDraw {
     }
 
     fn entity(&mut self, kind: &str, ink: Ink, dashed: bool) {
-        let _ = write!(self.out, "0\n{kind}\n8\n{}\n", layer(ink));
+        let name = match &self.user_layer {
+            Some(l) => user_layer_name(l),
+            None => layer(ink).to_string(),
+        };
+        let _ = write!(self.out, "0\n{kind}\n8\n{name}\n");
         if dashed {
             self.out.push_str("6\nDASHED\n");
         }
@@ -68,6 +80,10 @@ impl DxfDraw {
 }
 
 impl Draw for DxfDraw {
+    fn layer(&mut self, name: Option<&str>) {
+        self.user_layer = name.filter(|n| !n.is_empty()).map(String::from);
+    }
+
     fn line(&mut self, a: P, b: P, _width: f32, ink: Ink, dashed: bool) {
         self.entity("LINE", ink, dashed);
         self.pt(10, a);
@@ -140,8 +156,11 @@ pub fn header(out: &mut String, layers: &[(String, u8)]) {
 pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
     let idx = Index::build(prj);
     let an = Analysis::build(prj);
-    let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0 };
-    let layers: Vec<(String, u8)> = LAYERS.iter().map(|(n, c)| (n.to_string(), *c)).collect();
+    let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0, user_layer: None };
+    let mut layers: Vec<(String, u8)> = LAYERS.iter().map(|(n, c)| (n.to_string(), *c)).collect();
+    for name in crate::graphics::layer_names(prj).iter().filter(|n| !n.is_empty()) {
+        layers.push((user_layer_name(name), 7));
+    }
     header(&mut d.out, &layers);
     d.out.push_str("0\nSECTION\n2\nENTITIES\n");
     for &i in pages {
