@@ -187,6 +187,9 @@ pub fn default_catalog() -> Vec<Part> {
     p.tech_data = "Bars: 3\nBar: Cu 12 x 5 mm\nRated current: 200 A".into();
     let p = c.add("GEN.BB-HOLDER-3P", "Busbar holder 3-pole for 12 x 5 mm, 60 mm", "Mounting", "Busbar holder", "", 6.4, (75.0, 25.0, 40.0, 0.08), &[]);
     p.mounting.clear();
+    enclosure_systems(&mut c);
+    fasteners(&mut c);
+    accessories(&mut c);
 
     // Ferrules (DIN 46228-4 colour code), sold per piece.
     for (cs, color, len) in [
@@ -229,6 +232,83 @@ pub fn default_catalog() -> Vec<Part> {
     }
     parts.sort_by(|a, b| natural_cmp(&a.number, &b.number));
     parts
+}
+
+/// The standard sizes of the enclosure systems with their components (side panels,
+/// rear walls, plinths, gland plates).
+fn enclosure_systems(c: &mut C) {
+    use crate::mechanics::*;
+    let mut seen: Vec<String> = Vec::new();
+    let mut add = |c: &mut C, number: String, desc: String, subgroup: &str, price: f32, dims: (f32, f32, f32, f32), tech: String| {
+        if seen.contains(&number) {
+            return;
+        }
+        seen.push(number.clone());
+        let p = c.add(&number, &desc, "Mounting", subgroup, "", (price * 100.0).round() / 100.0, dims, &[]);
+        p.mounting.clear();
+        p.tech_data = tech;
+    };
+    for s in SYSTEMS {
+        for &(w, h, d) in s.sizes {
+            let area = w * h / 1e6;
+            let price = s.price.0.max(s.price.1 * area);
+            let kg = area * if s.material == "plastic" { 6.0 } else { 9.0 } * (1.0 + d / 1000.0) + if s.bayable { 25.0 } else { 0.0 };
+            let tech = format!("Enclosure system: {}\nProtection: {}\nWall: {} mm", s.id, s.ip, s.wall);
+            add(c, body_number(s, w, h, d), format!("{} {w:.0} x {h:.0} x {d:.0} mm, {}", s.body, s.ip), "Enclosure", price, (w, h, d, kg), tech);
+            add(c, gland_plate_number(w, d), format!("Gland plate {w:.0} x {d:.0} mm, sheet steel, with seal"), "Gland plate", 18.0 + 60.0 * w * d / 1e6, (w, d, 2.0, 0.0), String::new());
+            if s.bayable {
+                add(c, side_number(s, h, d), format!("Side panel {h:.0} x {d:.0} mm for floor-standing enclosures, pair"), "Side panel", 95.0 + 80.0 * h * d / 1e6, (d, h, s.wall, 0.0), String::new());
+                add(c, rear_number(s, w, h), format!("Rear wall {w:.0} x {h:.0} mm, screw-fastened"), "Rear wall", 70.0 + 60.0 * w * h / 1e6, (w, h, s.wall, 0.0), String::new());
+            }
+            if s.plinth > 0.0 {
+                add(c, plinth_number(w, d, s.plinth), format!("Plinth {w:.0} x {d:.0} mm, {:.0} mm high, corner pieces and trims", s.plinth), "Plinth", 85.0 + 0.1 * (w + d), (w, s.plinth, d, 0.0), String::new());
+            }
+        }
+    }
+    let p = c.add(BAYING_KIT, "Baying kit for floor-standing enclosures (6 clamps, seal)", "Mounting", "Baying kit", "", 24.0, (0.0, 0.0, 0.0, 0.4), &[]);
+    p.mounting.clear();
+    let p = c.add(RAIL_STANDOFF, "Mounting rail standoff 40 mm, M5", "Mounting", "Rail standoff", "", 1.2, (20.0, 20.0, 40.0, 0.02), &[]);
+    p.mounting.clear();
+}
+
+/// Screws, nuts, washers and rivet nuts of the fastening systems.
+fn fasteners(c: &mut C) {
+    use crate::mechanics::*;
+    for &(t, len) in THREADS {
+        let m: f32 = t[1..].parse().unwrap_or(5.0);
+        for (number, desc, subgroup, price) in [
+            (screw_number(t), format!("Combination screw {t} x {len}, ISO 7045, steel zinc plated"), "Screw", 0.04 * m),
+            (nut_number(t), format!("Hexagon nut {t}, ISO 4032, steel zinc plated"), "Nut", 0.02 * m),
+            (washer_number(t), format!("Washer {t}, ISO 7089, steel zinc plated"), "Washer", 0.01 * m),
+            (rivet_nut_number(t), format!("Rivet nut {t}, steel zinc plated, flat head"), "Rivet nut", 0.06 * m),
+        ] {
+            let p = c.add(&number, &desc, "Mounting", subgroup, "", (price * 100.0).round() / 100.0, (0.0, 0.0, 0.0, 0.0), &[]);
+            p.pack_quantity = 100;
+            p.mounting.clear();
+        }
+    }
+}
+
+/// Enclosure accessories placed without a device tag: fans, filters, glands, lights,
+/// handles. Technical data: `Cutout` (opening in the face), `Outside` (protrusion
+/// outside the face), `Faces` (where it can be mounted), `Fastening`.
+fn accessories(c: &mut C) {
+    for (number, desc, subgroup, price, dims, tech) in [
+        ("GEN.FAN-FILTER-120", "Filter fan 120 m³/h, 230 V AC, 204 x 204 mm, IP54", "Filter fan", 98.0, (204.0, 204.0, 105.0, 1.6), "Cutout: 177 x 177\nOutside: 25\nAir flow: 120 m³/h\nFaces: Left, Right, Door, Rear\nFastening: Clip"),
+        ("GEN.FAN-OUTLET-120", "Outlet filter for filter fan 120 m³/h, 204 x 204 mm", "Outlet filter", 32.0, (204.0, 204.0, 30.0, 0.4), "Cutout: 177 x 177\nOutside: 25\nFaces: Left, Right, Door, Rear\nFastening: Clip"),
+        ("GEN.GLAND-M20", "Cable gland M20 x 1.5, polyamide, IP68, cable Ø 6 – 12 mm", "Cable gland", 1.4, (30.0, 30.0, 12.0, 0.01), "Cutout: Ø20.5\nOutside: 20\nFaces: Bottom, Roof, Left, Right, Rear\nFastening: Clip"),
+        ("GEN.GLAND-M25", "Cable gland M25 x 1.5, polyamide, IP68, cable Ø 9 – 17 mm", "Cable gland", 1.9, (36.0, 36.0, 13.0, 0.02), "Cutout: Ø25.5\nOutside: 24\nFaces: Bottom, Roof, Left, Right, Rear\nFastening: Clip"),
+        ("GEN.GLAND-M32", "Cable gland M32 x 1.5, polyamide, IP68, cable Ø 13 – 21 mm", "Cable gland", 2.8, (46.0, 46.0, 15.0, 0.03), "Cutout: Ø32.5\nOutside: 28\nFaces: Bottom, Roof, Left, Right, Rear\nFastening: Clip"),
+        ("GEN.LIGHT-LED-350", "Enclosure LED light 5 W, 230 V AC, 350 mm, with door switch input", "Enclosure light", 46.0, (350.0, 30.0, 25.0, 0.2), "Mounting holes: M4: 10,15; 340,15\nFaces: Plate, Roof, Left, Right, Door"),
+        ("GEN.PE-BAR-10", "PE busbar 10 x 3 mm with 10 screw terminals, 200 mm", "PE busbar", 9.5, (200.0, 30.0, 30.0, 0.15), "Mounting holes: M5: 10,15; 190,15\nFaces: Plate, Bottom, Left, Right"),
+        ("GEN.CLAMP-RAIL-500", "Cable clamp rail C 30, 500 mm, for strain relief", "Cable clamp rail", 7.8, (500.0, 30.0, 15.0, 0.3), "Mounting holes: M6: 15,15; 250,15; 485,15\nFaces: Plate, Bottom, Left, Right, Rear"),
+        ("GEN.HANDLE-SWING", "Swing handle, lockable, with double bit insert", "Door handle", 29.0, (40.0, 160.0, 30.0, 0.35), "Cutout: 25 x 110\nOutside: 35\nFaces: Door\nFastening: Clip"),
+        ("GEN.DOC-HOLDER-A4", "Document holder A4, plastic, for the inside of doors", "Document holder", 12.0, (240.0, 230.0, 30.0, 0.2), "Mounting holes: M4: 15,15; 225,15\nFaces: Door, Left, Right\nFastening: Rivet nut"),
+    ] {
+        let p = c.add(number, desc, "Mounting", subgroup, "", price, dims, &[]);
+        p.mounting.clear();
+        p.tech_data = tech.into();
+    }
 }
 
 /// Shape family of the generated example models.

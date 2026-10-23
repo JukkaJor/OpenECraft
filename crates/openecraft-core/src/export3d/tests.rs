@@ -9,14 +9,16 @@ fn the_scene_has_walls_door_plate_and_items() {
     assert_eq!(s.len(), prj.layout.enclosures.len());
     let e = &prj.layout.enclosures[0];
     let solids = &s[0].solids;
-    assert_eq!(solids.len(), 3 + e.items.iter().filter(|i| i.kind != ItemKind::Cutout).count());
-    assert!(solids[1].transparent && solids[1].name.ends_with("door"));
+    let parts = panel::components(e).iter().filter(|c| !c.boxes.is_empty()).count();
+    assert_eq!(parts, 7, "door, five walls, mounting plate");
+    assert_eq!(solids.len(), parts + e.items.iter().filter(|i| i.kind != ItemKind::Cutout).count());
+    assert!(solids.iter().any(|x| x.transparent && x.name.ends_with("door")));
     assert!(solids.iter().any(|x| x.name == "-K1"));
     // Everything lies inside the enclosure (the door in front of it).
     for x in solids {
         for v in x.triangles.iter().flatten() {
             assert!(v[0] >= -0.01 && v[0] <= e.width + 0.01 && v[1] >= -0.01 && v[1] <= e.height + 0.01, "{} {v:?}", x.name);
-            assert!(v[2] >= -0.01 && v[2] <= e.depth + WALL + 0.01, "{} {v:?}", x.name);
+            assert!(v[2] >= -0.01 && v[2] <= e.depth + crate::panel::WALL + 0.01, "{} {v:?}", x.name);
         }
     }
 }
@@ -211,4 +213,17 @@ fn empty_layouts_export_empty_files() {
     assert!(!ifc(&prj, "x.ifc").contains("IFCRELCONTAINEDINSPATIALSTRUCTURE"));
     assert_eq!(iges_sections(&iges(&prj, "x.igs")).0.len(), 0);
     assert!(openecraft_jt::parse_jt(&jt(&prj)).is_err());
+}
+
+#[test]
+fn floor_standing_system_with_frame_and_plinth() {
+    let mut prj = demo_project();
+    panel::apply_system(&mut prj.layout.enclosures[0], "baying", Some((800.0, 2000.0, 600.0)));
+    let s = scene(&prj);
+    let solids = &s[0].solids;
+    let plinth = solids.iter().find(|x| x.name.contains("plinth")).unwrap();
+    // y up: the plinth is below the enclosure.
+    assert!(plinth.triangles.iter().flatten().all(|v| v[1] <= 0.01 && v[1] >= -100.01));
+    assert!(solids.iter().any(|x| x.name.contains("GEN.TS-800X2000X600")));
+    assert!(solids.iter().any(|x| x.name.contains("GEN.TS-SP-2000X600")));
 }

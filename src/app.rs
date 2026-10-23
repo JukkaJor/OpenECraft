@@ -2198,7 +2198,7 @@ impl eframe::App for App {
                 if let Some((ei, face, dxf)) = self.panel_ui.export.take() {
                     if let Some(e) = self.prj.layout.enclosures.get(ei) {
                         let base: String = e.name.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect();
-                        let what = if face == crate::panel::Face::Door { "door" } else { "plate" };
+                        let what = face.key();
                         if dxf {
                             let content = crate::production::nc_dxf(&self.prj, ei, face);
                             self.export(&ctx, format!("{what}{base}.dxf"), (tr("DXF drawing"), "dxf"), content);

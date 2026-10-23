@@ -6,7 +6,9 @@
 //! of the plate, x to the right, y downwards (like schematic pages). `z` is the height
 //! above the plate surface. Items on the door (door devices, door cutouts) use the
 //! door's front view: origin at the top left corner of the enclosure front, `z` is the
-//! distance behind the door.
+//! distance behind the door. Items on the walls (sides, rear, roof, bottom) use the
+//! wall seen from the outside, `z` is the distance from the wall's inside surface
+//! into the enclosure (negative: sticking out).
 
 use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
@@ -17,10 +19,18 @@ use crate::parts::{Exit, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
+mod fastening;
 mod fill;
+mod macros;
+mod placement;
 mod points;
+mod system;
+pub use fastening::{fastening_material, Fastening};
 pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
+pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
+pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
+pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
 
 /// Distance between enclosure wall and mounting plate edge.
 pub const PLATE_MARGIN: f32 = 25.0;
@@ -55,21 +65,63 @@ pub enum Face {
     #[default]
     Plate,
     Door,
+    /// Left side wall, seen from the left (the front is on the right).
+    Left,
+    /// Right side wall, seen from the right (the front is on the left).
+    Right,
+    /// Rear wall, seen from behind.
+    Rear,
+    /// Roof, seen from above (the front at the bottom).
+    Roof,
+    /// Bottom (gland plate), seen from below (the front at the bottom).
+    Bottom,
 }
 
 impl Face {
+    pub const ALL: [Face; 7] = [Face::Plate, Face::Door, Face::Left, Face::Right, Face::Rear, Face::Roof, Face::Bottom];
+    pub const WALLS: [Face; 5] = [Face::Left, Face::Right, Face::Rear, Face::Roof, Face::Bottom];
+
     pub fn title(self) -> &'static str {
         match self {
             Face::Plate => tr("Mounting plate"),
             Face::Door => tr("Door"),
+            Face::Left => tr("Left side"),
+            Face::Right => tr("Right side"),
+            Face::Rear => tr("Rear wall"),
+            Face::Roof => tr("Roof"),
+            Face::Bottom => tr("Bottom"),
         }
     }
 
-    /// Distance of the face's origin from the top left corner of the enclosure.
+    /// Key of the face in files and on the command line.
+    pub fn key(self) -> &'static str {
+        match self {
+            Face::Plate => "plate",
+            Face::Door => "door",
+            Face::Left => "left",
+            Face::Right => "right",
+            Face::Rear => "rear",
+            Face::Roof => "roof",
+            Face::Bottom => "bottom",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Face> {
+        let k = key.trim().to_lowercase();
+        Face::ALL.into_iter().find(|f| f.key() == k)
+    }
+
+    /// Side, rear, roof or bottom wall.
+    pub fn is_wall(self) -> bool {
+        !matches!(self, Face::Plate | Face::Door)
+    }
+
+    /// Distance of the face's origin from the top left corner of the enclosure (front
+    /// view; walls are shown on their own).
     pub fn origin(self) -> f32 {
         match self {
             Face::Plate => PLATE_MARGIN,
-            Face::Door => 0.0,
+            _ => 0.0,
         }
     }
 }
@@ -88,6 +140,9 @@ pub enum ItemKind {
     Busbar,
     /// Opening in the mounting plate (rectangular or round).
     Cutout,
+    /// Enclosure accessory without a device tag (fan, filter, cable gland, light,
+    /// handle, PE bar).
+    Accessory,
 }
 
 impl ItemKind {
@@ -98,6 +153,7 @@ impl ItemKind {
             ItemKind::Duct => tr("Cable duct"),
             ItemKind::Busbar => tr("Busbar system"),
             ItemKind::Cutout => tr("Cutout"),
+            ItemKind::Accessory => tr("Accessory"),
         }
     }
 
@@ -108,7 +164,8 @@ impl ItemKind {
             ItemKind::Rail => 1,
             ItemKind::Duct => 2,
             ItemKind::Busbar => 3,
-            ItemKind::Device => 4,
+            ItemKind::Accessory => 4,
+            ItemKind::Device => 5,
         }
     }
 
@@ -139,6 +196,18 @@ pub struct PanelItem {
     pub round: bool,
     #[serde(skip_serializing_if = "is_plate")]
     pub face: Face,
+    #[serde(skip_serializing_if = "Fastening::is_auto")]
+    pub fastening: Fastening,
+    /// Parametric position relative to the edges of its face.
+    #[serde(skip_serializing_if = "Anchor::is_free")]
+    pub anchor: Anchor,
+    /// Group (assembly) the item belongs to, 0 for none.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub group: u64,
+}
+
+fn is_zero(v: &u64) -> bool {
+    *v == 0
 }
 
 impl PanelItem {
@@ -195,6 +264,12 @@ pub struct Enclosure {
     /// Installation and temperatures for the climate calculation.
     #[serde(skip_serializing_if = "crate::climate::Climate::is_default")]
     pub climate: crate::climate::Climate,
+    /// Enclosure system and its components (plinth, side panels, gland plate).
+    #[serde(skip_serializing_if = "Build::is_default")]
+    pub build: Build,
+    /// Groups (assemblies) of items.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<ItemGroup>,
 }
 
 impl Default for Enclosure {
@@ -209,6 +284,8 @@ impl Default for Enclosure {
             door_clearance: 0.0,
             items: Vec::new(),
             climate: Default::default(),
+            build: Default::default(),
+            groups: Vec::new(),
         }
     }
 }
@@ -227,41 +304,134 @@ impl Enclosure {
         self.items.iter().find(|i| i.id == id)
     }
 
-    /// Size of a face (mounting plate or door).
+    /// Size of a face (mounting plate, door or wall).
     pub fn face_size(&self, face: Face) -> (f32, f32) {
         match face {
             Face::Plate => self.plate_size(),
-            Face::Door => (self.width, self.height),
+            Face::Door | Face::Rear => (self.width, self.height),
+            Face::Left | Face::Right => (self.depth, self.height),
+            Face::Roof | Face::Bottom => (self.width, self.depth),
         }
     }
+
+    /// Size of the front view of a face: the plate is shown inside the enclosure
+    /// front, the walls on their own.
+    pub fn view_size(&self, face: Face) -> (f32, f32) {
+        match face {
+            Face::Plate => (self.width, self.height),
+            f => self.face_size(f),
+        }
+    }
+
+    /// Room in front of a face: how far items may reach into the enclosure.
+    pub fn face_room(&self, face: Face) -> f32 {
+        let t = self.wall();
+        match face {
+            Face::Plate => self.depth - PLATE_Z - PLATE_THICKNESS - self.door_clearance,
+            Face::Door => self.depth - PLATE_Z,
+            Face::Left | Face::Right => self.width - 2.0 * t,
+            Face::Rear => PLATE_Z - PLATE_THICKNESS - t,
+            Face::Roof | Face::Bottom => self.height - 2.0 * t,
+        }
+    }
+
+    /// Sheet thickness of walls and door.
+    pub fn wall(&self) -> f32 {
+        self.system().map(|s| s.data.wall).unwrap_or(WALL)
+    }
+
+    /// Free edge of the door and the walls where nothing can be mounted.
+    pub fn flange(&self) -> f32 {
+        self.system().map(|s| s.data.flange).unwrap_or(DOOR_FRAME)
+    }
+
+    pub fn system(&self) -> Option<&'static System> {
+        system::by_id(&self.build.system)
+    }
+
+    pub fn group(&self, id: u64) -> Option<&ItemGroup> {
+        self.groups.iter().find(|g| g.id == id)
+    }
+}
+
+/// Sheet thickness of enclosures without a system.
+pub const WALL: f32 = 2.0;
+
+/// Frame of a face in enclosure coordinates: origin (face coordinates 0, 0 on the
+/// mounting surface), direction of face x, of face y and of `z` (into the enclosure).
+pub fn face_frame(e: &Enclosure, face: Face) -> [V3; 4] {
+    let (w, h, d, t) = (e.width, e.height, e.depth, e.wall());
+    match face {
+        Face::Plate => [[PLATE_MARGIN, PLATE_MARGIN, PLATE_Z], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        Face::Door => [[0.0, 0.0, d], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]],
+        Face::Left => [[t, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]],
+        Face::Right => [[w - t, 0.0, d], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]],
+        Face::Rear => [[w, 0.0, t], [-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        Face::Roof => [[0.0, t, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]],
+        Face::Bottom => [[0.0, h - t, d], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, -1.0, 0.0]],
+    }
+}
+
+/// A point of a face (face x, face y, distance into the enclosure) in enclosure
+/// coordinates.
+pub fn face_point(e: &Enclosure, face: Face, v: V3) -> V3 {
+    let [o, u, w, n] = face_frame(e, face);
+    [0, 1, 2].map(|k| o[k] + v[0] * u[k] + v[1] * w[k] + v[2] * n[k])
+}
+
+/// The face's frame turns models inside out (left-handed): triangles are flipped.
+fn face_mirrors(e: &Enclosure, face: Face) -> bool {
+    let [_, u, w, n] = face_frame(e, face);
+    crate::parts::vec3::dot(crate::parts::vec3::cross(u, w), n) < 0.0
 }
 
 /// 3D box of an item in enclosure coordinates: x to the right and y downwards from
 /// the top left corner of the enclosure front, z from the rear wall towards the door.
 pub fn item_box(e: &Enclosure, it: &PanelItem) -> (V3, V3) {
-    match it.face {
-        Face::Plate => {
-            let (x, y, z) = (PLATE_MARGIN + it.x, PLATE_MARGIN + it.y, PLATE_Z + it.z);
-            ([x, y, z], [x + it.w, y + it.h, z + it.d])
+    let mut min = [f32::INFINITY; 3];
+    let mut max = [f32::NEG_INFINITY; 3];
+    for c in 0..8 {
+        let v = [
+            if c & 1 == 0 { it.x } else { it.x + it.w },
+            if c & 2 == 0 { it.y } else { it.y + it.h },
+            if c & 4 == 0 { it.z } else { it.z + it.d },
+        ];
+        let q = face_point(e, it.face, v);
+        for k in 0..3 {
+            min[k] = min[k].min(q[k]);
+            max[k] = max[k].max(q[k]);
         }
-        Face::Door => ([it.x, it.y, e.depth - it.z - it.d], [it.x + it.w, it.y + it.h, e.depth - it.z]),
     }
+    (min, max)
 }
 
 /// Point of a placed model ([`place_mesh`] coordinates) in enclosure coordinates.
-/// Door devices face outwards: their front is at the door.
+/// Door devices face outwards: their front is at the door; on the plate and the walls
+/// devices face into the enclosure.
 pub fn to_enclosure(e: &Enclosure, it: &PanelItem, v: V3) -> V3 {
     match it.face {
-        Face::Plate => [PLATE_MARGIN + v[0], PLATE_MARGIN + v[1], PLATE_Z + v[2]],
         Face::Door => [v[0], v[1], e.depth - 2.0 * it.z - it.d + v[2]],
+        f => face_point(e, f, v),
     }
+}
+
+/// Triangles of a placed model ([`place_mesh`] coordinates) in enclosure coordinates,
+/// keeping their outside.
+pub fn place_triangles(e: &Enclosure, it: &PanelItem, tris: Vec<Tri>) -> Vec<Tri> {
+    let flip = it.face != Face::Door && face_mirrors(e, it.face);
+    tris.into_iter()
+        .map(|t| {
+            let t = t.map(|v| to_enclosure(e, it, v));
+            if flip { [t[0], t[2], t[1]] } else { t }
+        })
+        .collect()
 }
 
 /// Surface of an item in enclosure coordinates: the part's 3D model, or its box.
 pub fn item_surface(e: &Enclosure, it: &PanelItem, parts: &[crate::parts::Part]) -> Vec<Tri> {
     let mesh = parts.iter().find(|p| it.kind == ItemKind::Device && p.number == it.part).and_then(|p| p.model_3d.as_ref());
     match mesh.map(|m| place_mesh(m, it)).filter(|t| !t.is_empty()) {
-        Some(tris) => tris.into_iter().map(|t| t.map(|v| to_enclosure(e, it, v))).collect(),
+        Some(tris) => place_triangles(e, it, tris),
         None => {
             let (min, max) = item_box(e, it);
             box_triangles(min, max)
@@ -279,11 +449,16 @@ pub struct Layout {
     pub ferrules: bool,
     /// Highest fill level of the cable ducts in percent (project check).
     pub duct_fill_limit: f32,
+    /// Screws, nuts and rivet nuts of the fastening systems in the bill of materials.
+    pub hardware: bool,
+    /// 3D macros of the project (groups of items to insert again).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub macros: Vec<PanelMacro>,
 }
 
 impl Default for Layout {
     fn default() -> Self {
-        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true, duct_fill_limit: 70.0 }
+        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true, duct_fill_limit: 70.0, hardware: true, macros: Vec::new() }
     }
 }
 
@@ -315,11 +490,14 @@ pub fn snap(v: f32) -> f32 {
 /// Creates an enclosure, taking the dimensions from a part if it has them.
 pub fn new_enclosure(prj: &mut Project, part: &str, name: &str) -> Enclosure {
     let mut e = Enclosure { id: prj.new_id(), name: name.into(), part: part.into(), ..Default::default() };
-    if let Some(pd) = prj.parts.iter().find(|x| x.number == part) {
+    if let Some(pd) = part_by_number(prj, part) {
         if pd.width > 0.0 && pd.height > 0.0 {
             e.width = pd.width;
             e.height = pd.height;
             e.depth = if pd.depth > 0.0 { pd.depth } else { e.depth };
+        }
+        if let Some(s) = system_of_part(pd) {
+            apply_system(&mut e, s.id(), None);
         }
     }
     e
@@ -554,13 +732,45 @@ pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Fa
         w: size.w,
         h: size.h,
         d: size.d,
-        z: 0.0,
-        round: false,
         face,
+        ..Default::default()
     };
     let e = prj.layout.enclosures.get_mut(enc)?;
     snap_to_rail(e, &mut item);
     e.items.push(item);
+    Some(id)
+}
+
+/// Technical value of a part as a number ("Outside: 25" → 25).
+pub fn tech_number(part: &crate::parts::Part, name: &str) -> Option<f32> {
+    part.tech_value(name)?.trim().trim_end_matches("mm").trim().replace(',', ".").parse().ok()
+}
+
+/// Faces an accessory can be mounted on (part data `Faces: Left, Right`); all faces
+/// without data.
+pub fn allowed_faces(part: &crate::parts::Part) -> Vec<Face> {
+    match part.tech_value("Faces") {
+        Some(list) => list.split([',', ';']).filter_map(Face::from_key).collect(),
+        None => Face::ALL.to_vec(),
+    }
+}
+
+/// An accessory (fan, gland, light, …) of a part with its top left corner at `at` on
+/// a face: its size from the part, sticking out of the face as far as the part data
+/// `Outside` says.
+pub fn new_accessory(prj: &mut Project, part: &str, face: Face, at: P) -> PanelItem {
+    let pd = part_by_number(prj, part).cloned();
+    let [w, h, d] = pd.as_ref().and_then(|p| p.size()).unwrap_or([DEFAULT_DEVICE.0, DEFAULT_DEVICE.1, DEFAULT_DEVICE.2]);
+    let outside = pd.as_ref().and_then(|p| tech_number(p, "Outside")).unwrap_or(0.0);
+    PanelItem { id: prj.new_id(), kind: ItemKind::Accessory, part: part.into(), x: snap(at.x), y: snap(at.y), w, h, d, z: -outside, face, ..Default::default() }
+}
+
+/// Places an accessory on a face of an enclosure.
+pub fn place_accessory(prj: &mut Project, enc: usize, part: &str, face: Face, at: P) -> Option<u64> {
+    prj.layout.enclosures.get(enc)?;
+    let item = new_accessory(prj, part, face, at);
+    let id = item.id;
+    prj.layout.enclosures[enc].items.push(item);
     Some(id)
 }
 
@@ -603,9 +813,10 @@ pub fn collisions(e: &Enclosure, parts: &[crate::parts::Part]) -> Vec<(u64, u64)
             let eps = 0.01;
             let xy = ra.min.x < rb.max.x - eps && rb.min.x < ra.max.x - eps && ra.min.y < rb.max.y - eps && rb.min.y < ra.max.y - eps;
             if a.kind == ItemKind::Cutout || b.kind == ItemKind::Cutout {
-                // Anything fastened to the plate / door must not sit over an opening.
+                // Anything fastened to the plate / door must not sit over an opening;
+                // accessories (fans, glands) are mounted into theirs.
                 let other = if a.kind == ItemKind::Cutout { b } else { a };
-                if a.face == b.face && xy && other.kind != ItemKind::Cutout && other.z <= eps {
+                if a.face == b.face && xy && !matches!(other.kind, ItemKind::Cutout | ItemKind::Accessory) && other.z <= eps {
                     v.push((a.id, b.id));
                 }
                 continue;
@@ -629,17 +840,30 @@ pub fn collisions(e: &Enclosure, parts: &[crate::parts::Part]) -> Vec<(u64, u64)
     v
 }
 
-/// Items that leave the mounting plate (door: the door inside its frame) or are
-/// higher than the enclosure allows (door devices: reaching the mounting plate).
+/// Area of a face where items can be mounted: the plate, the door and the walls
+/// within their flanges.
+pub fn mounting_area(e: &Enclosure, face: Face) -> R {
+    let (w, h) = e.face_size(face);
+    let f = if face == Face::Plate { 0.0 } else { e.flange().min(w / 3.0).min(h / 3.0) };
+    R::from_points(p(f, f), p(w - f, h - f))
+}
+
+/// Items that leave the mounting plate (door and walls: their area inside the flanges)
+/// or reach further into the enclosure than it allows (door devices: the mounting
+/// plate), and items on a side that is open (bayed).
 pub fn outside(e: &Enclosure) -> Vec<u64> {
-    let plate = e.plate_rect().expand(0.01);
-    let door = R::from_points(p(DOOR_FRAME, DOOR_FRAME), p(e.width - DOOR_FRAME, e.height - DOOR_FRAME)).expand(0.01);
-    let max_z = e.depth - PLATE_Z - PLATE_THICKNESS - e.door_clearance;
+    let room = |f: Face| e.face_room(f);
     e.items
         .iter()
-        .filter(|i| match i.face {
-            Face::Plate => !plate.contains_rect(&i.rect()) || i.z + i.d > max_z,
-            Face::Door => !door.contains_rect(&i.rect()) || item_box(e, i).0[2] < PLATE_Z,
+        .filter(|i| {
+            let area = mounting_area(e, i.face).expand(0.01);
+            let open = (i.face == Face::Left && e.build.left_open) || (i.face == Face::Right && e.build.right_open);
+            !area.contains_rect(&i.rect())
+                || open
+                || match i.face {
+                    Face::Door => item_box(e, i).0[2] < PLATE_Z,
+                    f => i.z + i.d > room(f),
+                }
         })
         .map(|i| i.id)
         .collect()
@@ -939,11 +1163,12 @@ impl RoutedWire {
         }
     }
 
-    /// Polylines of the wire on a face (plate or door coordinates).
+    /// Polylines of the wire on a face (plate or door coordinates; none on the walls).
     pub fn paths_on(&self, face: Face) -> Vec<&[P]> {
         match face {
             Face::Plate => vec![self.route.points.as_slice()],
             Face::Door => [&self.door_routes.0, &self.door_routes.1].into_iter().flatten().map(|r| r.points.as_slice()).collect(),
+            _ => Vec::new(),
         }
         .into_iter()
         .filter(|p| p.len() > 1)
@@ -1164,11 +1389,20 @@ pub fn wiring_end(e: &Enclosure, it: &PanelItem, point: Option<&PlacedPoint>) ->
             let length = r.plate_length + height + DOOR_LOOP + (e.depth - PLATE_Z);
             (WireEnd::at(p(0.0, (hinge.y - PLATE_MARGIN).clamp(0.0, ph))), length, Some(r))
         }
+        wall => {
+            // Devices on the walls (fans, lights): straight to the nearest plate edge.
+            let at = face_point(e, wall, [at.x, at.y, height]);
+            let (pw, ph) = e.plate_size();
+            let q = p((at[0] - PLATE_MARGIN).clamp(0.0, pw), (at[1] - PLATE_MARGIN).clamp(0.0, ph));
+            let length = (at[2] - PLATE_Z).abs() + (at[0] - PLATE_MARGIN - q.x).abs() + (at[1] - PLATE_MARGIN - q.y).abs();
+            (WireEnd::at(q), length, None)
+        }
     }
 }
 
-/// Material for the BOM: (part number, quantity, quantity unit) of rails, ducts and
-/// enclosures. Rails / ducts are counted by cut length.
+/// Material for the BOM: (part number, quantity, where used) of the enclosures and
+/// their components, rails, ducts, busbars, accessories and fastening hardware. Rails /
+/// ducts are counted by cut length.
 pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
     let mut out: Vec<(String, f32, Vec<String>)> = Vec::new();
     let add = |out: &mut Vec<(String, f32, Vec<String>)>, part: &str, qty: f32, used: String| {
@@ -1186,7 +1420,21 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
         }
     };
     for e in &prj.layout.enclosures {
-        add(&mut out, &e.part, 1.0, e.name.clone());
+        for c in components(e) {
+            add(&mut out, &c.part, c.count as f32, e.name.clone());
+        }
+        for a in e.items.iter().filter(|i| i.kind == ItemKind::Accessory) {
+            add(&mut out, &a.part, 1.0, e.name.clone());
+        }
+        let standoffs: usize = e
+            .items
+            .iter()
+            .filter(|i| i.kind == ItemKind::Rail && i.face == Face::Plate && i.z > 0.01)
+            .map(|i| crate::production::item_holes(i, &prj.parts).len())
+            .sum();
+        if standoffs > 0 {
+            add(&mut out, crate::parts::mechanics::RAIL_STANDOFF, standoffs as f32, e.name.clone());
+        }
         let mut lengths: Vec<(String, f32)> = Vec::new();
         for i in e.items.iter().filter(|i| i.kind.is_profile()) {
             match lengths.iter_mut().find(|x| x.0 == i.part) {
@@ -1207,6 +1455,13 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
         let holders = crate::production::busbar_holders(e);
         if holders > 0 {
             add(&mut out, crate::production::BUSBAR_HOLDER, holders as f32, e.name.clone());
+        }
+    }
+    if prj.layout.hardware {
+        for (part, qty, used) in fastening_material(prj) {
+            for (k, name) in used.into_iter().enumerate() {
+                add(&mut out, &part, if k == 0 { qty as f32 } else { 0.0 }, name);
+            }
         }
     }
     out

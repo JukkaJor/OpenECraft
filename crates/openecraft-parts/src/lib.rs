@@ -16,6 +16,7 @@ mod connection;
 mod csv;
 mod filter;
 mod graphics;
+pub mod mechanics;
 mod ifc;
 mod part;
 mod text;
