@@ -76,6 +76,9 @@ pub struct Opts {
     pub show_pins: bool,
     /// Revision marks for changes since the last revision are drawn unless hidden.
     pub hide_revision_marks: bool,
+    /// Draw the review layer (comments, redline / greenline markup).
+    pub review: bool,
+    pub review_selected: Option<crate::review::Hit>,
 }
 
 fn is_black(c: &[u8; 3]) -> bool {
@@ -157,6 +160,9 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     if !opts.hide_revision_marks {
         draw_revision_marks(d, prj, an, page_i);
+    }
+    if opts.review {
+        crate::review::draw(d, prj, page_i, opts.review_selected);
     }
 }
 

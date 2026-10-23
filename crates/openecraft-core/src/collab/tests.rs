@@ -199,3 +199,18 @@ fn api_types_round_trip() {
     assert!(json.contains(r#""page":7"#));
     assert_eq!(serde_json::from_str::<LockRequest>(&json).unwrap(), req);
 }
+
+#[test]
+fn review_records_need_no_lock() {
+    let (sh, mut prj) = shared(Vec::new());
+    let page = prj.pages[0].id;
+    crate::review::add_comment(&mut prj, page, crate::geom::p(1.0, 1.0), "me", "", "check fuse");
+    assert!(sh.unlocked_changes(&prj).is_empty());
+    assert!(sh.has_changes(&prj));
+    // Saved without any lock, kept next to a comment of another user.
+    let mut theirs = sh.base.clone();
+    crate::review::add_comment(&mut theirs, page, crate::geom::p(2.0, 2.0), "ben", "", "other");
+    theirs.review.comments[0].id = 77;
+    let out = merge(&theirs, &prj, &Owned::default());
+    assert_eq!(out.review.live_comments().count(), 2);
+}

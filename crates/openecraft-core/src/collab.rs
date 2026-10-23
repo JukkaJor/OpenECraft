@@ -5,7 +5,8 @@
 //! settings, …) are locked separately ([`Target`]). A user changes only what they
 //! have locked; saving merges their locked parts into the server's project and takes
 //! everything else from the server ([`merge`]). New pages belong to the project-wide
-//! data until they are saved.
+//! data until they are saved. Review records (comments, markup, approvals, change
+//! requests) need no lock: they are merged record by record (`review::merge`).
 //!
 //! | Method | Path | |
 //! | --- | --- | --- |
@@ -229,11 +230,12 @@ pub fn merge(theirs: &Project, mine: &Project, owned: &Owned) -> Project {
         .collect();
     let mut out = if owned.project { data_clone(mine) } else { data_clone(theirs) };
     out.pages = pages;
+    out.review = crate::review::merge(&theirs.review, &mine.review);
     out.next_id = mine.next_id;
     out
 }
 
-/// Copy of the project without its pages.
+/// Copy of the project without its pages and review.
 fn data_clone(prj: &Project) -> Project {
     let mut out = Project::default();
     out.pages.clear();
@@ -241,7 +243,8 @@ fn data_clone(prj: &Project) -> Project {
     out
 }
 
-/// Sets the project-wide data of `out` to that of `src` (all but pages and `next_id`).
+/// Sets the project-wide data of `out` to that of `src` (all but pages, review and
+/// `next_id`).
 fn with_data(out: &mut Project, src: &Project) {
     let Project {
         info,
@@ -271,6 +274,9 @@ fn with_data(out: &mut Project, src: &Project) {
         wiring_marks,
         structures,
         page_templates,
+        workflow,
+        baselines,
+        review: _,
         next_id: _,
     } = src;
     out.info = info.clone();
@@ -299,10 +305,12 @@ fn with_data(out: &mut Project, src: &Project) {
     out.wiring_marks = wiring_marks.clone();
     out.structures = structures.clone();
     out.page_templates = page_templates.clone();
+    out.workflow = workflow.clone();
+    out.baselines = baselines.clone();
 }
 
-/// Project-wide data equal (all but page contents and `next_id`; the page list
-/// counts).
+/// Project-wide data equal (all but page contents, review and `next_id`; the page
+/// list counts). The review needs no lock, its records are merged one by one.
 fn same_data(a: &Project, b: &Project) -> bool {
     let Project {
         info,
@@ -332,6 +340,9 @@ fn same_data(a: &Project, b: &Project) -> bool {
         wiring_marks,
         structures,
         page_templates,
+        workflow,
+        baselines,
+        review: _,
         next_id: _,
     } = a;
     pages.iter().map(|p| p.id).eq(b.pages.iter().map(|p| p.id))
@@ -361,6 +372,8 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *wiring_marks == b.wiring_marks
         && *structures == b.structures
         && *page_templates == b.page_templates
+        && *workflow == b.workflow
+        && *baselines == b.baselines
 }
 
 /// What differs between `a` and `b`. Changes of pages that `a` does not have count
@@ -454,7 +467,7 @@ impl Shared {
     /// `prj` has changes the server takes on saving.
     pub fn has_changes(&self, prj: &Project) -> bool {
         let owned = self.owned();
-        changes(&self.base, prj).into_iter().any(|t| owned.contains(t))
+        self.base.review != prj.review || changes(&self.base, prj).into_iter().any(|t| owned.contains(t))
     }
 
     /// `prj` with `targets` set back to the server's version.

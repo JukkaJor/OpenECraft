@@ -97,9 +97,31 @@ built with [egui / eframe](https://github.com/emilk/egui).
   table export / import** (CSV: name, data type, address, comment) for PLC programming
   tools; addresses used on several cards are reported.
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
-  locked pages are read only. Changes since the last revision (added / changed / removed
-  symbols, wires, texts, pages) are listed, marked on the pages with a revision triangle
-  and reported in the *revision overview*.
+  locked pages are read only. Changes since the last released revision (added / changed /
+  removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
+  triangle and reported in the *revision overview*.
+- **Release workflow**: with approvers defined (*Project › Revisions… › Approval
+  workflow*: user names and the number of approvals needed) a new revision starts as a
+  draft, is submitted for review, approved or rejected by the approvers (recorded with
+  user, date and note) and released once approved. Pages changed after the submission
+  block the release until the revision is submitted again (earlier approvals become void).
+- **Baselines and compare / merge**: a baseline stores the whole project (pages, devices,
+  parts, cables, panel layout, settings); releasing a revision stores one automatically.
+  *Project › Compare and baselines…* compares the project with a baseline, the pages of a
+  revision or another project file: added / removed / changed pages (with the changed
+  items), devices, parts, potentials, cables, harnesses, enclosures, terminal strips,
+  plugs, PLC cards and settings sections. Selected differences are taken over.
+- **Review: comments and redlining**: comments on a page position with status (open, in
+  progress, resolved, rejected), author, date and replies; redline (to be changed) and
+  greenline (changed as built) markup as line, rectangle, revision cloud or text. They are
+  drawn on a layer of their own (shown on screen, not in exports), listed in the *Review*
+  tab of the navigator and can be added to released pages and to pages another user has
+  locked. On the project server they are merged record by record without locks.
+- **Change requests**: requests from inside or outside the project (number, title,
+  description, requester, origin, priority, status, affected pages and devices,
+  implementing revision) with linked comments (*Project › Change requests…*). Exchange
+  with other systems as CSV (`Number;Title;Description;Requester;Origin;Date;Priority;
+  Status;Pages;Devices;Revision`) or JSON; importing updates requests with a known number.
 - **Symbol editor and libraries**: besides the IEC symbols there are NFPA / JIC
   symbols, fluid power symbols (ISO 1219: pump, cylinder, 4/2 valve, filter, gauge,
   tank), single-line / overview symbols (cross references to the device, not part of
@@ -436,7 +458,10 @@ cargo test --workspace
 | Enclosure climate | panel layout: select the enclosure › *Climate (IEC 60890)* |
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
-| Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
+| Revisions | *Project › Revisions…*: create (and release) revisions, approval workflow, lock / unlock pages, see changes |
+| Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
+| Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
+| Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
 | Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
 | Import old drawings | *File › Import DXF as page…* |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
@@ -495,13 +520,17 @@ cargo test --workspace
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plugs.rs` | Plugs: pin order, both sides of each pin, pin count of the parts, placement check |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
-| `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
+| `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names, approval workflow |
+| `crates/openecraft-core/src/compare.rs` | Baselines, project comparison and taking differences over |
+| `crates/openecraft-core/src/review.rs` | Comments, redline / greenline markup, approvals, change requests (merged without locks) |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
 | `crates/openecraft-core/src/dxf_import.rs` | DXF import as a schematic page |
 | `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC and JT export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
-| `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
+| `src/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
+| `src/app/revisions_ui.rs` | Revisions window with the approval workflow |
+| `src/app/compare_ui.rs`, `src/app/review_ui.rs`, `src/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |
 | `src/app/languages_ui.rs` | Project languages window: dictionary, export per language |

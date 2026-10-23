@@ -1395,3 +1395,142 @@ Project server…	Projektserver…	Serveur de projets…	Servidor de proyectos�
 Open and save shared projects, lock pages	Gemeinsame Projekte öffnen und speichern, Seiten sperren	Ouvrir et enregistrer des projets partagés, verrouiller des pages	Abrir y guardar proyectos compartidos, bloquear páginas
 🔒 Locked by {} – read only	🔒 Gesperrt von {} – schreibgeschützt	🔒 Verrouillé par {} – lecture seule	🔒 Bloqueado por {} – solo lectura
 {} (project server, revision {})	{} (Projektserver, Revision {})	{} (serveur de projets, révision {})	{} (servidor de proyectos, revisión {})
+{} change requests added, {} updated	{} Änderungsanträge hinzugefügt, {} aktualisiert	{} demandes de modification ajoutées, {} mises à jour	{} solicitudes de cambio añadidas, {} actualizadas
+Compare and baselines…	Vergleichen und Baselines…	Comparer et références…	Comparar y líneas base…
+Compare with a baseline, a revision or another project file and take differences over	Mit einer Baseline, einer Revision oder einer anderen Projektdatei vergleichen und Unterschiede übernehmen	Comparer avec une référence, une révision ou un autre fichier de projet et reprendre les différences	Comparar con una línea base, una revisión u otro archivo de proyecto y adoptar diferencias
+Change requests…	Änderungsanträge…	Demandes de modification…	Solicitudes de cambio…
+Review: comments and markup	Prüfung: Kommentare und Markierungen	Révision : commentaires et annotations	Revisión: comentarios y marcas
+Revisions, approval and release	Revisionen, Genehmigung und Freigabe	Révisions, approbation et diffusion	Revisiones, aprobación y liberación
+Review ({})	Prüfung ({})	Révision ({})	Revisión ({})
+Review	Prüfung	Révision	Revisión
+Click to place a comment	Klicken, um einen Kommentar zu setzen	Cliquer pour placer un commentaire	Haga clic para colocar un comentario
+Click to place the markup text	Klicken, um den Markierungstext zu setzen	Cliquer pour placer le texte d'annotation	Haga clic para colocar el texto de la marca
+Change requests (CSV, JSON)	Änderungsanträge (CSV, JSON)	Demandes de modification (CSV, JSON)	Solicitudes de cambio (CSV, JSON)
+💬 Comment	💬 Kommentar	💬 Commentaire	💬 Comentario
+Place a comment on the page	Einen Kommentar auf die Seite setzen	Placer un commentaire sur la page	Colocar un comentario en la página
+Redline: to be changed · Greenline: changed as built	Redline: zu ändern · Greenline: wie gebaut geändert	Redline : à modifier · Greenline : modifié tel que construit	Redline: a cambiar · Greenline: cambiado según construcción
+Show on the pages	Auf den Seiten zeigen	Afficher sur les pages	Mostrar en las páginas
+All pages	Alle Seiten	Toutes les pages	Todas las páginas
+Done ones too	Auch erledigte	Aussi les terminés	También los terminados
+Markup text	Markierungstext	Texte d'annotation	Texto de la marca
+Comments ({} open)	Kommentare ({} offen)	Commentaires ({} ouverts)	Comentarios ({} abiertos)
+Markup on this page	Markierungen auf dieser Seite	Annotations sur cette page	Marcas en esta página
+None – draw it with the redline / greenline tools of the toolbar.	Keine – mit den Redline- / Greenline-Werkzeugen der Werkzeugleiste zeichnen.	Aucune – à dessiner avec les outils redline / greenline de la barre d'outils.	Ninguna – dibújelas con las herramientas redline / greenline de la barra de herramientas.
+taken over	übernommen	reprise	adoptada
+Taken into the drawing: drawn faded	In die Zeichnung übernommen: blass dargestellt	Reprise dans le dessin : affichée en pâle	Adoptada en el dibujo: se muestra atenuada
+Comment #{} – {} {}	Kommentar #{} – {} {}	Commentaire n° {} – {} {}	Comentario n.º {} – {} {}
+What should be checked or changed?	Was soll geprüft oder geändert werden?	Que faut-il vérifier ou modifier ?	¿Qué hay que comprobar o cambiar?
+Change request	Änderungsantrag	Demande de modification	Solicitud de cambio
+Reply…	Antworten…	Répondre…	Responder…
+Reply	Antworten	Répondre	Responder
+🗑 Delete comment	🗑 Kommentar löschen	🗑 Supprimer le commentaire	🗑 Eliminar comentario
+Approval workflow	Genehmigungsablauf	Circuit d'approbation	Flujo de aprobación
+Approvers	Genehmiger	Approbateurs	Aprobadores
+User names, separated by commas	Benutzernamen, durch Kommas getrennt	Noms d'utilisateur, séparés par des virgules	Nombres de usuario, separados por comas
+Approvals needed	Benötigte Genehmigungen	Approbations nécessaires	Aprobaciones necesarias
+0 = all approvers	0 = alle Genehmiger	0 = tous les approbateurs	0 = todos los aprobadores
+New revisions start as drafts, are submitted for review and can be released once approved.	Neue Revisionen beginnen als Entwurf, werden zur Prüfung eingereicht und können nach der Genehmigung freigegeben werden.	Les nouvelles révisions commencent comme brouillons, sont soumises à vérification et peuvent être diffusées une fois approuvées.	Las nuevas revisiones empiezan como borradores, se envían a revisión y pueden liberarse una vez aprobadas.
+Without approvers a new revision is released directly.	Ohne Genehmiger wird eine neue Revision direkt freigegeben.	Sans approbateurs, une nouvelle révision est diffusée directement.	Sin aprobadores, una nueva revisión se libera directamente.
+Revision {}	Revision {}	Révision {}	Revisión {}
+review round {}	Prüfrunde {}	tour de vérification {}	ronda de revisión {}
+{} of {} approvals	{} von {} Genehmigungen	{} approbations sur {}	{} de {} aprobaciones
+approved	genehmigt	approuvé	aprobado
+rejected	abgelehnt	refusé	rechazado
+Submit for review	Zur Prüfung einreichen	Soumettre à vérification	Enviar a revisión
+Release	Freigeben	Diffuser	Liberar
+Discard draft	Entwurf verwerfen	Abandonner le brouillon	Descartar borrador
+✔ Approve	✔ Genehmigen	✔ Approuver	✔ Aprobar
+✖ Reject	✖ Ablehnen	✖ Refuser	✖ Rechazar
+Approving needs an approver; you are \"{}\".	Genehmigen kann nur ein Genehmiger; Sie sind \"{}\".	Seul un approbateur peut approuver ; vous êtes \"{}\".	Solo un aprobador puede aprobar; usted es \"{}\".
+Submit again	Erneut einreichen	Soumettre à nouveau	Enviar de nuevo
+With the current pages; the approvals so far become void	Mit den aktuellen Seiten; die bisherigen Genehmigungen verfallen	Avec les pages actuelles ; les approbations précédentes deviennent caduques	Con las páginas actuales; las aprobaciones anteriores quedan anuladas
+Withdraw	Zurückziehen	Retirer	Retirar
+Lock all pages	Alle Seiten sperren	Verrouiller toutes les pages	Bloquear todas las páginas
+Create draft	Entwurf anlegen	Créer un brouillon	Crear borrador
+Changes	Änderungen	Modifications	Cambios
+Draft of revision {} created	Entwurf der Revision {} angelegt	Brouillon de la révision {} créé	Borrador de la revisión {} creado
+Revision {} submitted for review	Revision {} zur Prüfung eingereicht	Révision {} soumise à vérification	Revisión {} enviada a revisión
+Revision {} withdrawn	Revision {} zurückgezogen	Révision {} retirée	Revisión {} retirada
+Draft of revision {} discarded	Entwurf der Revision {} verworfen	Brouillon de la révision {} abandonné	Borrador de la revisión {} descartado
+Revision {} approved by {}	Revision {} von {} genehmigt	Révision {} approuvée par {}	Revisión {} aprobada por {}
+Revision {} rejected by {}	Revision {} von {} abgelehnt	Révision {} refusée par {}	Revisión {} rechazada por {}
+Revision {} released	Revision {} freigegeben	Révision {} diffusée	Revisión {} liberada
+File {}	Datei {}	Fichier {}	Archivo {}
+only here: taking over removes it	nur hier: Übernehmen entfernt es	seulement ici : la reprise le supprime	solo aquí: adoptar lo elimina
+only there: taking over adds it	nur dort: Übernehmen fügt es hinzu	seulement là-bas : la reprise l'ajoute	solo allí: adoptar lo añade
+different: taking over replaces it	verschieden: Übernehmen ersetzt es	différent : la reprise le remplace	diferente: adoptar lo reemplaza
+Compare and baselines	Vergleichen und Baselines	Comparer et références	Comparar y líneas base
+Compare with	Vergleichen mit	Comparer avec	Comparar con
+(choose)	(auswählen)	(choisir)	(elegir)
+Baseline {} {}	Baseline {} {}	Référence {} {}	Línea base {} {}
+Baseline {}	Baseline {}	Référence {}	Línea base {}
+Pages of revision {}	Seiten der Revision {}	Pages de la révision {}	Páginas de la revisión {}
+📂 Project file…	📂 Projektdatei…	📂 Fichier de projet…	📂 Archivo de proyecto…
+Baselines ({})	Baselines ({})	Références ({})	Líneas base ({})
+A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Eine Baseline speichert das ganze Projekt (Seiten, Geräte, Artikel, Einstellungen). Die Freigabe einer Revision speichert eine.	Une référence enregistre tout le projet (pages, appareils, articles, paramètres). La diffusion d'une révision en enregistre une.	Una línea base guarda todo el proyecto (páginas, dispositivos, artículos, ajustes). Liberar una revisión guarda una.
+Create baseline	Baseline anlegen	Créer une référence	Crear línea base
+Choose a baseline, a revision or a project file to compare the project with.	Wählen Sie eine Baseline, eine Revision oder eine Projektdatei zum Vergleich.	Choisissez une référence, une révision ou un fichier de projet à comparer.	Elija una línea base, una revisión o un archivo de proyecto para comparar.
+No differences to {}.	Keine Unterschiede zu {}.	Aucune différence avec {}.	Sin diferencias con {}.
+{} differences to {}	{} Unterschiede zu {}	{} différences avec {}	{} diferencias con {}
+Take over selected ({})	Ausgewählte übernehmen ({})	Reprendre la sélection ({})	Adoptar seleccionadas ({})
+Make the selected elements of this project equal to the compared ones	Die ausgewählten Elemente dieses Projekts den verglichenen angleichen	Rendre les éléments sélectionnés de ce projet identiques à ceux comparés	Igualar los elementos seleccionados de este proyecto a los comparados
+{} details	{} Details	{} détails	{} detalles
+Baseline {} created	Baseline {} angelegt	Référence {} créée	Línea base {} creada
+Change requests	Änderungsanträge	Demandes de modification	Solicitudes de cambio
+➕ New request	➕ Neuer Antrag	➕ Nouvelle demande	➕ Nueva solicitud
+📂 Import…	📂 Importieren…	📂 Importer…	📂 Importar…
+CSV or JSON from another system; known numbers are updated	CSV oder JSON aus einem anderen System; bekannte Nummern werden aktualisiert	CSV ou JSON d'un autre système ; les numéros connus sont mis à jour	CSV o JSON de otro sistema; los números conocidos se actualizan
+⬇ Export JSON	⬇ JSON exportieren	⬇ Exporter en JSON	⬇ Exportar JSON
+Rejected and closed ones too	Auch abgelehnte und geschlossene	Aussi les refusées et clôturées	También las rechazadas y cerradas
+No change requests yet.	Noch keine Änderungsanträge.	Pas encore de demandes de modification.	Aún no hay solicitudes de cambio.
+Select a request.	Einen Antrag auswählen.	Sélectionnez une demande.	Seleccione una solicitud.
+New change request	Neuer Änderungsantrag	Nouvelle demande de modification	Nueva solicitud de cambio
+Number	Nummer	Numéro	Número
+Title	Titel	Titre	Título
+Requester	Antragsteller	Demandeur	Solicitante
+Origin	Herkunft	Origine	Origen
+e.g. customer, ERP, PLM	z. B. Kunde, ERP, PLM	p. ex. client, ERP, PLM	p. ej. cliente, ERP, PLM
+Priority	Priorität	Priorité	Prioridad
+Device tags, separated by commas	Gerätekennzeichen, durch Kommas getrennt	Repères d'appareils, séparés par des virgules	Identificadores de dispositivos, separados por comas
+Affected pages ({})	Betroffene Seiten ({})	Pages concernées ({})	Páginas afectadas ({})
+Go to page	Zur Seite	Aller à la page	Ir a la página
+Comments ({})	Kommentare ({})	Commentaires ({})	Comentarios ({})
+💬 Comment on the current page	💬 Kommentar auf der aktuellen Seite	💬 Commentaire sur la page actuelle	💬 Comentario en la página actual
+Linked to this request	Mit diesem Antrag verknüpft	Lié à cette demande	Vinculado a esta solicitud
+🗑 Delete request	🗑 Antrag löschen	🗑 Supprimer la demande	🗑 Eliminar solicitud
+in progress	in Arbeit	en cours	en curso
+resolved	erledigt	résolu	resuelto
+Redline	Redline	Redline	Redline
+Greenline	Greenline	Greenline	Greenline
+Cloud	Wolke	Nuage	Nube
+low	niedrig	basse	baja
+normal	normal	normale	normal
+high	hoch	haute	alta
+new	neu	nouvelle	nueva
+accepted	angenommen	acceptée	aceptada
+in work	in Bearbeitung	en traitement	en trabajo
+implemented	umgesetzt	réalisée	implementada
+closed	geschlossen	clôturée	cerrada
+Not a change request file: {}	Keine Änderungsantragsdatei: {}	Pas un fichier de demandes de modification : {}	No es un archivo de solicitudes de cambio: {}
+Not a change request file: the column \"Number\" is missing	Keine Änderungsantragsdatei: die Spalte \"Number\" fehlt	Pas un fichier de demandes de modification : la colonne \"Number\" manque	No es un archivo de solicitudes de cambio: falta la columna \"Number\"
+draft	Entwurf	brouillon	borrador
+in review	in Prüfung	en vérification	en revisión
+released	freigegeben	diffusée	liberada
+Only revisions that are not released can be submitted	Nur nicht freigegebene Revisionen können eingereicht werden	Seules les révisions non diffusées peuvent être soumises	Solo se pueden enviar revisiones no liberadas
+Unknown revision	Unbekannte Revision	Révision inconnue	Revisión desconocida
+The revision is not in review	Die Revision ist nicht in Prüfung	La révision n'est pas en vérification	La revisión no está en revisión
+{} is not an approver of this project	{} ist kein Genehmiger dieses Projekts	{} n'est pas approbateur de ce projet	{} no es aprobador de este proyecto
+The revision is already released	Die Revision ist bereits freigegeben	La révision est déjà diffusée	La revisión ya está liberada
+The revision is not approved	Die Revision ist nicht genehmigt	La révision n'est pas approuvée	La revisión no está aprobada
+The pages were changed after the submission; submit the revision again	Die Seiten wurden nach dem Einreichen geändert; reichen Sie die Revision erneut ein	Les pages ont été modifiées après la soumission ; soumettez à nouveau la révision	Las páginas se cambiaron tras el envío; envíe la revisión de nuevo
+Wire colours and cross-sections	Aderfarben und Querschnitte	Couleurs et sections des fils	Colores y secciones de los cables
+Panel layout settings	Einstellungen Schaltschrankaufbau	Paramètres d'implantation d'armoire	Ajustes del montaje del armario
+Project symbols	Projektsymbole	Symboles du projet	Símbolos del proyecto
+Title blocks and report forms	Schriftfelder und Auswertungsformulare	Cartouches et formulaires de rapports	Cajetines y formularios de informes
+Fluid power settings	Fluidtechnik-Einstellungen	Paramètres de fluidique	Ajustes de fluídica
+PCT loops	PCT-Stellen	Boucles PCT	Lazos PCT
+Languages and dictionary	Sprachen und Wörterbuch	Langues et dictionnaire	Idiomas y diccionario
+Structure identifiers	Strukturkennzeichen	Identifiants de structure	Identificadores de estructura
+Settings	Einstellungen	Paramètres	Ajustes
+Page order	Seitenreihenfolge	Ordre des pages	Orden de páginas
+{} differences taken over	{} Unterschiede übernommen	{} différences reprises	{} diferencias adoptadas

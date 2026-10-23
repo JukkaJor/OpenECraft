@@ -4,6 +4,7 @@
 
 pub mod climate;
 pub mod collab;
+pub mod compare;
 pub mod config;
 pub mod aml;
 pub mod devdesc;
@@ -36,6 +37,7 @@ pub mod production;
 pub mod render;
 pub mod report_blocks;
 pub mod reports;
+pub mod review;
 pub mod revision;
 pub mod sample;
 pub mod sizing;

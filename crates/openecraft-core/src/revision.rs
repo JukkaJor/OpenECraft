@@ -1,8 +1,13 @@
 //! Revision management: a revision stores a snapshot of all pages; changes made
-//! since the last revision are listed and marked on the pages. Released pages are
-//! locked against changes.
+//! since the last released revision are listed and marked on the pages. Released
+//! pages are locked against changes.
+//!
+//! Release workflow: with approvers defined ([`Workflow`]) a new revision starts as
+//! a draft, is submitted for review, approved or rejected by the approvers
+//! (`review::Approval`, recorded with user and date) and released once approved.
+//! Releasing stores a baseline of the whole project.
 
-use openecraft_i18n::tr;
+use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Page, Project};
 use serde::{Deserialize, Serialize};
@@ -19,6 +24,25 @@ impl PartialEq for Snapshot {
     }
 }
 
+/// Stored state of a revision; approved / rejected follow from the approvals
+/// ([`status`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum State {
+    Draft,
+    InReview,
+    #[default]
+    Released,
+}
+
+fn is_released(s: &State) -> bool {
+    *s == State::Released
+}
+
+fn is_zero(v: &u32) -> bool {
+    *v == 0
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct Revision {
@@ -28,6 +52,67 @@ pub struct Revision {
     pub author: String,
     pub description: String,
     pub pages: Snapshot,
+    #[serde(skip_serializing_if = "is_released")]
+    pub state: State,
+    /// Review round: counts the submissions; approvals of earlier rounds are void.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub round: u32,
+}
+
+/// Who approves revisions before they are released.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Workflow {
+    /// User names of the approvers; empty = revisions are released directly.
+    pub approvers: Vec<String>,
+    /// Approvals needed; 0 = all approvers.
+    pub required: usize,
+}
+
+impl Workflow {
+    pub fn is_default(&self) -> bool {
+        *self == Workflow::default()
+    }
+
+    pub fn active(&self) -> bool {
+        self.approvers.iter().any(|a| !a.trim().is_empty())
+    }
+
+    pub fn needed(&self) -> usize {
+        let n = self.approvers.iter().filter(|a| !a.trim().is_empty()).count();
+        if self.required == 0 {
+            n
+        } else {
+            self.required.min(n)
+        }
+    }
+
+    pub fn is_approver(&self, user: &str) -> bool {
+        let user = user.trim();
+        !user.is_empty() && self.approvers.iter().any(|a| a.trim().eq_ignore_ascii_case(user))
+    }
+}
+
+/// Status of a revision.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Status {
+    Draft,
+    InReview,
+    Approved,
+    Rejected,
+    Released,
+}
+
+impl Status {
+    pub fn title(self) -> &'static str {
+        match self {
+            Status::Draft => tr("draft"),
+            Status::InReview => tr("in review"),
+            Status::Approved => tr("approved"),
+            Status::Rejected => tr("rejected"),
+            Status::Released => tr("released"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -127,16 +212,29 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
     out
 }
 
-/// Changes since the last revision (empty without revisions).
+/// Changes since the last released revision (empty without one).
 pub fn pending(prj: &Project) -> Vec<PageChanges> {
-    match prj.revisions.last() {
+    match last_released(prj) {
         Some(r) => compare(&r.pages.0, &prj.pages),
         None => Vec::new(),
     }
 }
 
-/// Suggested name of the next revision: A → B, Z → AA, 01 → 02.
+pub fn last_released(prj: &Project) -> Option<&Revision> {
+    prj.revisions.iter().rev().find(|r| r.state == State::Released)
+}
+
+/// The revision being prepared (draft or in review), if any.
+pub fn open_revision(prj: &Project) -> Option<usize> {
+    prj.revisions.iter().rposition(|r| r.state != State::Released)
+}
+
+/// Name of the revision being prepared, or the suggested name of the next one:
+/// A → B, Z → AA, 01 → 02.
 pub fn next_name(prj: &Project) -> String {
+    if let Some(i) = open_revision(prj) {
+        return prj.revisions[i].name.clone();
+    }
     let Some(last) = prj.revisions.last().map(|r| r.name.trim().to_string()) else {
         return "A".into();
     };
@@ -152,17 +250,142 @@ pub fn next_name(prj: &Project) -> String {
     chars.into_iter().collect()
 }
 
-/// Creates a revision from the current pages; the project revision becomes its name.
-/// With `release` all pages are locked.
-pub fn create(prj: &mut Project, name: &str, date: &str, author: &str, description: &str, release: bool) {
-    if release {
+/// Creates a revision from the current pages. Without approval workflow it is
+/// released at once (the project revision becomes its name, a baseline is stored;
+/// with `lock` all pages are locked), otherwise it starts as a draft.
+pub fn create(prj: &mut Project, name: &str, date: &str, author: &str, description: &str, lock: bool) {
+    let pages = Snapshot(Arc::new(prj.pages.clone()));
+    let state = if prj.workflow.active() { State::Draft } else { State::Released };
+    prj.revisions.push(Revision { name: name.into(), date: date.into(), author: author.into(), description: description.into(), pages, state, round: 0 });
+    if state == State::Released {
+        finish_release(prj, prj.revisions.len() - 1, lock);
+    }
+}
+
+fn finish_release(prj: &mut Project, i: usize, lock: bool) {
+    if lock {
         for pg in &mut prj.pages {
             pg.locked = true;
         }
     }
-    prj.info.revision = name.to_string();
+    let r = &mut prj.revisions[i];
+    r.state = State::Released;
+    r.pages = Snapshot(Arc::new(prj.pages.clone()));
+    let (name, date, author, description) = (r.name.clone(), r.date.clone(), r.author.clone(), r.description.clone());
+    prj.info.revision = name.clone();
+    crate::compare::add_baseline(prj, &tr_fmt!("Revision {}", name), &date, &author, &description);
+}
+
+/// Decisions of the current review round of revision `i`, the latest per user.
+pub fn decisions(prj: &Project, i: usize) -> Vec<&crate::review::Approval> {
+    let Some(r) = prj.revisions.get(i) else { return Vec::new() };
+    let mut out: Vec<&crate::review::Approval> = Vec::new();
+    for a in prj.review.approvals.iter().filter(|a| !a.deleted && a.revision == r.name && a.round == r.round) {
+        match out.iter_mut().find(|o| o.user.eq_ignore_ascii_case(&a.user)) {
+            Some(o) => *o = a,
+            None => out.push(a),
+        }
+    }
+    out
+}
+
+pub fn status(prj: &Project, i: usize) -> Status {
+    let Some(r) = prj.revisions.get(i) else { return Status::Draft };
+    match r.state {
+        State::Released => Status::Released,
+        State::Draft => Status::Draft,
+        State::InReview => {
+            let d = decisions(prj, i);
+            if d.iter().any(|a| !a.approved) {
+                Status::Rejected
+            } else if d.iter().filter(|a| a.approved && prj.workflow.is_approver(&a.user)).count() >= prj.workflow.needed() {
+                Status::Approved
+            } else {
+                Status::InReview
+            }
+        }
+    }
+}
+
+/// Submits a draft (or a revision in review again, e.g. after a rejection) for
+/// review with the current pages; earlier approvals become void.
+pub fn submit(prj: &mut Project, i: usize) -> Result<(), String> {
+    match prj.revisions.get(i).map(|r| r.state) {
+        Some(State::Draft | State::InReview) => {}
+        _ => return Err(tr("Only revisions that are not released can be submitted").into()),
+    }
     let pages = Snapshot(Arc::new(prj.pages.clone()));
-    prj.revisions.push(Revision { name: name.into(), date: date.into(), author: author.into(), description: description.into(), pages });
+    let r = &mut prj.revisions[i];
+    r.pages = pages;
+    r.round += 1;
+    r.state = State::InReview;
+    Ok(())
+}
+
+/// Takes a revision in review back to draft.
+pub fn withdraw(prj: &mut Project, i: usize) {
+    if let Some(r) = prj.revisions.get_mut(i).filter(|r| r.state == State::InReview) {
+        r.state = State::Draft;
+    }
+}
+
+/// Removes a revision that is not released.
+pub fn discard(prj: &mut Project, i: usize) {
+    if prj.revisions.get(i).is_some_and(|r| r.state != State::Released) {
+        prj.revisions.remove(i);
+    }
+}
+
+/// Records the decision of `user` on revision `i` in review.
+pub fn decide(prj: &mut Project, i: usize, user: &str, date: &str, approved: bool, note: &str) -> Result<(), String> {
+    use crate::review::Record;
+    let Some(r) = prj.revisions.get(i) else { return Err(tr("Unknown revision").into()) };
+    if r.state != State::InReview {
+        return Err(tr("The revision is not in review").into());
+    }
+    if !prj.workflow.is_approver(user) {
+        return Err(tr_fmt!("{} is not an approver of this project", user));
+    }
+    let (name, round) = (r.name.clone(), r.round);
+    let existing = prj.review.approvals.iter_mut().find(|a| !a.deleted && a.revision == name && a.round == round && a.user.eq_ignore_ascii_case(user));
+    match existing {
+        Some(a) => {
+            a.approved = approved;
+            a.date = date.into();
+            a.note = note.into();
+            a.bump();
+        }
+        None => {
+            let id = prj.new_id();
+            prj.review.approvals.push(crate::review::Approval {
+                id,
+                rev: 1,
+                deleted: false,
+                revision: name,
+                round,
+                user: user.trim().into(),
+                date: date.into(),
+                approved,
+                note: note.into(),
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Releases an approved revision; the pages must still be the approved ones.
+pub fn release(prj: &mut Project, i: usize, lock: bool) -> Result<(), String> {
+    match status(prj, i) {
+        Status::Approved => {}
+        Status::Draft if !prj.workflow.active() => {}
+        Status::Released => return Err(tr("The revision is already released").into()),
+        _ => return Err(tr("The revision is not approved").into()),
+    }
+    if prj.revisions[i].state == State::InReview && !compare(&prj.revisions[i].pages.0, &prj.pages).is_empty() {
+        return Err(tr("The pages were changed after the submission; submit the revision again").into());
+    }
+    finish_release(prj, i, lock);
+    Ok(())
 }
 
 /// Report row: page, kind, item, description and jump target.

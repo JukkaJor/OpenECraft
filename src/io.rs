@@ -40,12 +40,17 @@ pub enum Purpose {
     Document,
     /// Page templates (JSON) to add to the project.
     PageTemplates,
+    /// A project to compare with.
+    Compare,
+    /// Change requests (CSV, JSON) of another system.
+    ChangeRequests,
 }
 
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Project | Purpose::OutputTarget => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::Project | Purpose::OutputTarget | Purpose::Compare => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),

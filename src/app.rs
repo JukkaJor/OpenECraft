@@ -18,6 +18,7 @@ use crate::symbols::{self, Category, Func};
 use crate::{history::History, potentials, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
+mod compare_ui;
 mod engineering;
 mod forms_ui;
 mod harness_ui;
@@ -31,6 +32,9 @@ mod potentials_ui;
 mod structure_ui;
 mod process_ui;
 mod remote_ui;
+mod requests_ui;
+mod review_ui;
+mod revisions_ui;
 mod report_blocks_ui;
 mod symbol_editor;
 
@@ -47,6 +51,7 @@ enum LeftTab {
     Pages,
     Devices,
     Check,
+    Review,
 }
 
 pub struct App {
@@ -98,6 +103,11 @@ pub struct App {
     title: String,
     /// Project server: shared projects and locks.
     remote: crate::remote::Remote,
+    /// Comments and markup.
+    review_ui: review_ui::ReviewUi,
+    revisions_ui: revisions_ui::RevisionsUi,
+    compare_ui: compare_ui::CompareUi,
+    requests_ui: requests_ui::RequestsUi,
 }
 
 impl App {
@@ -178,6 +188,10 @@ impl App {
             message: None,
             title: String::new(),
             remote,
+            review_ui: Default::default(),
+            revisions_ui: Default::default(),
+            compare_ui: Default::default(),
+            requests_ui: Default::default(),
         }
         .start_on_first_schematic()
     }
@@ -302,6 +316,20 @@ impl App {
                         self.notify(ctx, tr_fmt!("Imported {} macros", n));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::Compare {
+                match Project::from_json(&loaded.text()) {
+                    Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
+                    Err(e) => self.notify(ctx, e),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::ChangeRequests {
+                match crate::review::import_requests(&mut self.prj, &loaded.text()) {
+                    Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
+                    Err(e) => self.notify(ctx, e),
                 }
                 return;
             }
@@ -740,7 +768,17 @@ impl App {
                 if ui.button(tr("PLC hardware and bus topology…")).on_hover_text(tr("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")).clicked() {
                     self.plc_ui.open = true;
                 }
-                if ui.button(tr("Revisions…")).clicked() {
+                if ui.button(tr("Compare and baselines…")).on_hover_text(tr("Compare with a baseline, a revision or another project file and take differences over")).clicked() {
+                    self.compare_ui.open = true;
+                }
+                if ui.button(tr("Change requests…")).clicked() {
+                    self.requests_ui.open = true;
+                }
+                if ui.button(tr("Review: comments and markup")).clicked() {
+                    self.workspace = Workspace::Schematic;
+                    self.left_tab = LeftTab::Review;
+                }
+                if ui.button(tr("Revisions…")).on_hover_text(tr("Revisions, approval and release")).clicked() {
                     self.eng.show_revisions = true;
                 }
                 if ui.button(tr("Edit in table…")).on_hover_text(tr("Devices, connections and terminals: filter, fill, find and replace, CSV")).clicked() {
@@ -851,6 +889,7 @@ impl App {
             tbtn(ui, Tool::Text, tr("T Text"), tr("Place text (T)"));
             tbtn(ui, Tool::Line, tr("— Line"), tr("Graphic line"));
             tbtn(ui, Tool::Rect, tr("☐ Rect"), tr("Graphic rectangle"));
+            self.review_tools(ui);
             if let Tool::Place(key) = tool {
                 if let Some(def) = symbols::get(key) {
                     ui.label(RichText::new(tr_fmt!("Placing: {}", tr(def.name))).strong());
@@ -899,6 +938,9 @@ impl App {
             let n_err = self.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
+            let open = self.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
+            let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
+            ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
         });
         let areas = &self.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
@@ -1039,6 +1081,9 @@ impl App {
                         self.goto(pg, id);
                     }
                 });
+            }
+            LeftTab::Review => {
+                egui::ScrollArea::vertical().id_salt("review_tab").auto_shrink([false, false]).show(ui, |ui| self.review_tab(ui));
             }
             LeftTab::Check => {
                 let issues = self.analysis.issues.clone();
@@ -1761,6 +1806,8 @@ impl App {
         self.cables_window(ctx);
         self.numbering_window(ctx);
         self.engineering_windows(ctx);
+        self.compare_window(ctx);
+        self.requests_window(ctx);
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
         self.report_blocks_window(ctx);
@@ -2212,8 +2259,14 @@ impl eframe::App for App {
                 egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
                     let page = self.page;
                     self.editor.read_only = self.page_locked_by().is_some();
+                    self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.prj, page, &idx, &self.analysis);
                     let _ = out.open_properties;
+                    if let Some(input) = out.review {
+                        self.review_input(input);
+                    } else if let Some(at) = out.clicked {
+                        self.review_pick(at);
+                    }
                 });
             }
             Workspace::Wiring => {

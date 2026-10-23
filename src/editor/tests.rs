@@ -4,7 +4,7 @@ use crate::sample::demo_project;
 use egui::{Event, Modifiers, RawInput};
 
 /// Runs one editor frame on page `page` with the given input events.
-fn frame(ed: &mut Editor, ctx: &egui::Context, prj: &mut Project, page: usize, events: Vec<Event>) {
+fn frame(ed: &mut Editor, ctx: &egui::Context, prj: &mut Project, page: usize, events: Vec<Event>) -> CanvasOutput {
     let idx = Index::build(prj);
     let an = Analysis::build(prj);
     let input = RawInput {
@@ -12,10 +12,12 @@ fn frame(ed: &mut Editor, ctx: &egui::Context, prj: &mut Project, page: usize, e
         events,
         ..Default::default()
     };
+    let mut canvas = CanvasOutput::default();
     let mut out = ctx.run_ui(input, |ui| {
-        ed.ui(ui, prj, page, &idx, &an);
+        canvas = ed.ui(ui, prj, page, &idx, &an);
     });
     out.textures_delta.clear();
+    canvas
 }
 
 fn button(pos: Pos2, pressed: bool) -> Event {
@@ -86,4 +88,32 @@ fn pages_locked_by_other_users_are_not_edited() {
     frame(&mut ed, &ctx, &mut prj, page, vec![button(at, true)]);
     frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
     assert_eq!(prj.pages[page].symbols.len(), before + 1);
+}
+
+#[test]
+fn review_tools_work_on_released_pages() {
+    let mut prj = demo_project();
+    let page = 1;
+    prj.pages[page].locked = true;
+    let ctx = egui::Context::default();
+    let mut ed = Editor { read_only: true, ..Editor::default() };
+    ed.set_tool(Tool::Comment);
+    let at = pos2(600.0, 400.0);
+    frame(&mut ed, &ctx, &mut prj, page, vec![Event::PointerMoved(at)]);
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, true)]);
+    let out = frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
+    assert!(matches!(out.review, Some(ReviewInput::Comment(_))));
+
+    // Markup rectangles take two clicks.
+    ed.set_tool(Tool::Markup(MarkupKind::Rect, Pen::Green));
+    let b = pos2(700.0, 450.0);
+    frame(&mut ed, &ctx, &mut prj, page, vec![button(at, true)]);
+    let out = frame(&mut ed, &ctx, &mut prj, page, vec![button(at, false)]);
+    assert!(out.review.is_none());
+    frame(&mut ed, &ctx, &mut prj, page, vec![Event::PointerMoved(b), button(b, true)]);
+    let out = frame(&mut ed, &ctx, &mut prj, page, vec![button(b, false)]);
+    match out.review {
+        Some(ReviewInput::Markup(MarkupKind::Rect, Pen::Green, a, b)) => assert!(b.x > a.x && b.y > a.y),
+        other => panic!("{other:?}"),
+    }
 }

@@ -9,6 +9,7 @@ use crate::model::*;
 use crate::ops::{self, Clip, PlaceCtx};
 use crate::render::{self, Draw, Ink, Opts, VAnchor};
 use crate::reports::Analysis;
+use crate::review::{Hit, MarkupKind, Pen};
 use crate::symbols::{self, Anchor};
 use egui::{pos2, vec2, Align2, Color32, FontId, Key, Painter, PointerButton, Pos2, Rect, Sense, Shape as EShape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashSet};
@@ -23,6 +24,10 @@ pub enum Tool {
     Rect,
     /// Place the items of `Editor::insert` (macro).
     Insert,
+    /// Place a review comment.
+    Comment,
+    /// Draw redline / greenline markup.
+    Markup(MarkupKind, Pen),
 }
 
 impl Tool {
@@ -34,7 +39,15 @@ impl Tool {
             Tool::Text => tr("Click to place a text"),
             Tool::Line | Tool::Rect => tr("Click start point, click end point"),
             Tool::Insert => tr("Click to insert the macro · Esc cancel"),
+            Tool::Comment => tr("Click to place a comment"),
+            Tool::Markup(MarkupKind::Text, _) => tr("Click to place the markup text"),
+            Tool::Markup(..) => tr("Click start point, click end point"),
         }
+    }
+
+    /// Tools of the review layer: they work on every page.
+    pub fn is_review(&self) -> bool {
+        matches!(self, Tool::Comment | Tool::Markup(..))
     }
 }
 
@@ -222,6 +235,10 @@ pub struct Editor {
     pub show_revision_marks: bool,
     /// The page is locked by another user of a shared project.
     pub read_only: bool,
+    /// Comments and markup are drawn.
+    pub review_layer: bool,
+    /// Selected comment or markup.
+    pub review_selected: Option<Hit>,
     wire_start: Option<P>,
     wire_hfirst: bool,
     shape_start: Option<P>,
@@ -250,6 +267,8 @@ impl Default for Editor {
             insert: None,
             show_revision_marks: true,
             read_only: false,
+            review_layer: true,
+            review_selected: None,
             wire_start: None,
             wire_hfirst: true,
             shape_start: None,
@@ -265,6 +284,16 @@ impl Default for Editor {
 pub struct CanvasOutput {
     /// The user double clicked an item (show its properties).
     pub open_properties: bool,
+    /// A comment or markup to add (review tools).
+    pub review: Option<ReviewInput>,
+    /// Click with the select tool (world position), for picking comments and markup.
+    pub clicked: Option<P>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ReviewInput {
+    Comment(P),
+    Markup(MarkupKind, Pen, P, P),
 }
 
 impl Editor {
@@ -436,7 +465,12 @@ impl Editor {
         }
 
         // ------------------------------------------------------------ mouse
-        if editable {
+        if self.tool == Tool::Select && resp.clicked_by(PointerButton::Primary) {
+            out.clicked = world;
+        }
+        if self.tool.is_review() {
+            self.review_mouse(&resp, world, &mut out);
+        } else if editable {
             self.mouse(ui, &resp, prj, page_i, rect, world, snapped, &mut out);
         } else if resp.clicked() {
             self.selection.clear();
@@ -455,6 +489,8 @@ impl Editor {
             selected: self.selection.clone(),
             show_pins: self.show_pins || self.tool == Tool::Wire,
             hide_revision_marks: !self.show_revision_marks,
+            review: self.review_layer || self.tool.is_review(),
+            review_selected: self.review_selected,
             ..Default::default()
         };
         // Highlight the complete potential of a selected wire.
@@ -470,6 +506,12 @@ impl Editor {
 
         // Previews
         let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None };
+        if let (Tool::Markup(kind, _), Some(a), Some(b)) = (&self.tool, self.shape_start, world) {
+            match kind {
+                MarkupKind::Line => g.line(a, b, 0.5, Ink::Ghost, true),
+                _ => g.rect(a, b, 0.5, Ink::Ghost, false),
+            }
+        }
         if let (Some(sn), true) = (snapped, editable) {
             match &self.tool {
                 Tool::Place(key) => {
@@ -772,6 +814,7 @@ impl Editor {
                     out.open_properties = true;
                 }
             }
+            Tool::Comment | Tool::Markup(..) => {}
             Tool::Insert => {
                 let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten();
                 if let (Some(sn), Some(clip)) = (click, click.and_then(|_| self.insert.take())) {
@@ -833,6 +876,23 @@ impl Editor {
                     }
                 }
             }
+        }
+    }
+}
+
+impl Editor {
+    /// Comment and markup tools: two clicks for lines and rectangles, one otherwise.
+    fn review_mouse(&mut self, resp: &egui::Response, world: Option<P>, out: &mut CanvasOutput) {
+        let (true, Some(w)) = (resp.clicked_by(PointerButton::Primary), world) else { return };
+        match self.tool {
+            Tool::Comment => out.review = Some(ReviewInput::Comment(w)),
+            Tool::Markup(MarkupKind::Text, pen) => out.review = Some(ReviewInput::Markup(MarkupKind::Text, pen, w, w)),
+            Tool::Markup(kind, pen) => match self.shape_start.take() {
+                None => self.shape_start = Some(w),
+                Some(a) if a.dist(w) > 0.5 => out.review = Some(ReviewInput::Markup(kind, pen, a, w)),
+                Some(_) => {}
+            },
+            _ => {}
         }
     }
 }
