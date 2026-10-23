@@ -36,9 +36,9 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML), marking (CSV), gltf or step (3D panel layout), dictionary (CSV of the project text translations)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf or step (3D panel layout), dictionary (CSV of the project text translations)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step or dictionary")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step or dictionary")),
             optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
@@ -136,6 +136,8 @@ fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<
         }
         "wire_list" => reports::production_wire_list(prj, &Analysis::build(prj)).to_csv(),
         "plc_table" => plc::symbol_table(prj, &Analysis::build(prj).netlist),
+        "plc_variables" => plc::global_variables(prj, &Analysis::build(prj).netlist),
+        "aml" => openecraft_core::aml::export(prj, &Analysis::build(prj).netlist),
         "kbl" => harness::kbl(prj, &Analysis::build(prj)),
         "marking" => openecraft_core::marking::csv(&openecraft_core::marking::markers(prj, &Analysis::build(prj).connections)),
         "gltf" => openecraft_core::export3d::gltf(prj),

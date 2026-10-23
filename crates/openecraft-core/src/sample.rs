@@ -225,6 +225,7 @@ fn add_motor_cable(prj: &mut Project, db: &PartsDb) {
         length: 15.0,
         part: part.number.clone(),
         description: "Conveyor motor".into(),
+        bus: None,
     });
     crate::parts::ensure_in_project(prj, db, "GEN.CBL-4G1.5");
     let page = prj.pages.iter().position(|p| p.name == "2").expect("page 2");
