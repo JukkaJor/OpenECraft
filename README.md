@@ -254,6 +254,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
   PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
   and the *PCT loop overview* shows whether each loop is planned, in engineering or
   engineered in the schematic.
+- **Project texts in several languages**: function texts, page descriptions, free
+  texts and descriptions are written in a source language; the project's translation
+  dictionary (*Project › Project languages…*) translates them line by line into any
+  number of target languages, with CSV export / import for translators and a check
+  for untranslated texts. *File › Export as PDF in language* (command line: `export`
+  with `language`) puts out the documentation per language – project texts from the
+  dictionary, reports and title blocks in that language (English, German, French,
+  Spanish; other languages get English report headings).
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
   (app storage on desktop, local storage in the browser).
 
@@ -399,6 +407,7 @@ cargo test --workspace
 | Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
 | Door devices | panel layout: front view *Door*, place devices there or move them in their properties |
 | Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
+| Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
 | Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties in the wire properties; *Project › Fluid and process…* |
 | Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; KBL export in the window |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
@@ -425,6 +434,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/forms.rs` | Title blocks (placeholders) and report forms |
 | `crates/openecraft-core/src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
+| `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, hose list |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
@@ -454,6 +464,7 @@ cargo test --workspace
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |
+| `src/app/languages_ui.rs` | Project languages window: dictionary, export per language |
 | `src/app/process_ui.rs` | Hose properties and the fluid and process window (PCT loops) |
 | `src/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |

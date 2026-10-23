@@ -37,5 +37,6 @@ pub mod svg;
 pub mod symbols;
 pub mod symlib;
 pub mod tables;
+pub mod translation;
 pub mod wirenum;
 pub mod wiring;

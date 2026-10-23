@@ -15,12 +15,13 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, potentials, sample, svg, wirenum};
+use crate::{history::History, potentials, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
 mod engineering;
 mod forms_ui;
 mod harness_ui;
+mod languages_ui;
 mod config_ui;
 mod plugs_ui;
 mod tables_ui;
@@ -76,6 +77,7 @@ pub struct App {
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
     process_ui: process_ui::ProcessUi,
+    languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
     config_ui: config_ui::ConfigUi,
     /// Wire numbering: also renumber / remove manually set numbers.
@@ -143,6 +145,7 @@ impl App {
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
             process_ui: Default::default(),
+            languages_ui: Default::default(),
             tables_ui: Default::default(),
             config_ui: Default::default(),
             numbering_overwrite: false,
@@ -310,6 +313,13 @@ impl App {
                 self.import_table(ctx, kind, &loaded.text());
                 return;
             }
+            if loaded.purpose == Purpose::Dictionary {
+                match translation::from_csv(&mut self.prj, &loaded.text()) {
+                    Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
+                    Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                }
+                return;
+            }
             if loaded.purpose == Purpose::PlcTable {
                 match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
                     Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
@@ -385,6 +395,16 @@ impl App {
                 if ui.button(tr("Export as PDF (bookmarks, linked cross references)…")).clicked() {
                     let pdf = crate::pdf::document(&self.prj);
                     self.export(&ctx, self.suggested_name("pdf"), (tr("PDF document"), "pdf"), pdf);
+                }
+                if !self.prj.languages.targets.is_empty() {
+                    ui.menu_button(tr("Export as PDF in language"), |ui| {
+                        for l in self.prj.languages.all() {
+                            if ui.button(translation::language_name(&l)).clicked() {
+                                self.export_pdf_in(&ctx, &l);
+                                ui.close();
+                            }
+                        }
+                    });
                 }
                 if ui.button(tr("Export page as DXF…")).clicked() {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &[self.page]);
@@ -575,6 +595,9 @@ impl App {
                 }
                 if ui.button(tr("Plugs…")).clicked() {
                     self.plugs_ui.open = true;
+                }
+                if ui.button(tr("Project languages…")).on_hover_text(tr("Translate the project texts; documentation per language")).clicked() {
+                    self.languages_ui.open = true;
                 }
                 if ui.button(tr("Fluid and process…")).on_hover_text(tr("Hose defaults and PCT loops of the pre-planning")).clicked() {
                     self.process_ui.open = true;
@@ -1553,6 +1576,7 @@ impl App {
         self.harness_window(ctx);
         self.plugs_window(ctx);
         self.process_window(ctx);
+        self.languages_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
 

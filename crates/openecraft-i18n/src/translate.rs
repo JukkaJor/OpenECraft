@@ -1,6 +1,7 @@
 //! Language state and the lookup / substitution functions (see the crate docs).
 
 use crate::catalog;
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::atomic::{AtomicU8, Ordering};
@@ -51,8 +52,26 @@ impl Lang {
 
 static CURRENT: AtomicU8 = AtomicU8::new(0);
 
+thread_local! {
+    /// Language of output generated on this thread (see [`with_lang`]).
+    static OVERRIDE: Cell<Option<Lang>> = const { Cell::new(None) };
+}
+
 pub fn lang() -> Lang {
-    Lang::ALL[CURRENT.load(Ordering::Relaxed) as usize % Lang::ALL.len()]
+    OVERRIDE.with(Cell::get).unwrap_or_else(|| Lang::ALL[CURRENT.load(Ordering::Relaxed) as usize % Lang::ALL.len()])
+}
+
+/// Runs `f` with `lang` as the language of this thread, e.g. to generate a PDF in
+/// another language than the UI's; the UI language stays as it is.
+pub fn with_lang<R>(lang: Lang, f: impl FnOnce() -> R) -> R {
+    struct Restore(Option<Lang>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            OVERRIDE.with(|o| o.set(self.0));
+        }
+    }
+    let _restore = Restore(OVERRIDE.with(|o| o.replace(Some(lang))));
+    f()
 }
 
 pub fn set_lang(lang: Lang) {

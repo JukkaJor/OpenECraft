@@ -20,6 +20,19 @@ fn translates_and_falls_back_to_english() {
 }
 
 #[test]
+fn output_language_is_set_for_this_thread_only() {
+    let ui = lang();
+    let inner = with_lang(Lang::De, || {
+        let other = std::thread::spawn(lang).join().unwrap();
+        (tr("Open"), with_lang(Lang::Fr, lang), lang(), other)
+    });
+    assert_eq!(inner.0, translate("Open", Lang::De));
+    assert_eq!((inner.1, inner.2), (Lang::Fr, Lang::De));
+    assert_eq!(inner.3, ui);
+    assert_eq!(lang(), ui);
+}
+
+#[test]
 fn placeholders_are_filled_in_order_or_by_index() {
     assert_eq!(fill("Saved {} as {}", &[&"a", &3]), "Saved a as 3");
     assert_eq!(fill("{1} von {0}", &[&"x", &"y"]), "y von x");

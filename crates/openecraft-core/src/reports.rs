@@ -127,6 +127,12 @@ impl Analysis {
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
+        for lang in &prj.languages.targets {
+            let n = crate::translation::missing(prj, lang).len();
+            if n > 0 {
+                issues.push(Issue { severity: Severity::Info, message: tr_fmt!("{} texts are not translated into {}", n, crate::translation::language_name(lang)), target: None });
+            }
+        }
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
         let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };

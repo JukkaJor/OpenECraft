@@ -100,6 +100,9 @@ pub struct Project {
     /// PCT loops of the pre-planning.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pct_loops: Vec<crate::process::PctLoop>,
+    /// Source and target languages of the project texts with their dictionary.
+    #[serde(skip_serializing_if = "crate::translation::Languages::is_default")]
+    pub languages: crate::translation::Languages,
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub wiring_marks: Vec<crate::wiring::WiringMark>,
@@ -131,6 +134,7 @@ impl Default for Project {
             fluid: Default::default(),
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
+            languages: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
