@@ -710,3 +710,141 @@ Door (front)	Tür (Vorderseite)	Porte (face avant)	Puerta (frente)
 The door seen from the front: door devices and cutouts	Die Tür von vorn: Türgeräte und Ausschnitte	La porte vue de face : appareils de porte et découpes	La puerta vista de frente: equipos de la puerta y recortes
 Door (inside)	Tür (Innenseite)	Porte (face intérieure)	Puerta (interior)
 The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door	Die Tür von innen (Scharniere rechts): Kabelkanäle und die Verdrahtung hinter der Tür	La porte vue de l'intérieur (charnières à droite) : goulottes et câblage derrière la porte	La puerta vista desde dentro (bisagras a la derecha): canaletas y cableado detrás de la puerta
+Standoff height	Abstandshöhe	Hauteur d'entretoise	Altura del distanciador
+Rail raised on standoffs above the plate (devices on it move up)	Tragschiene auf Abstandshaltern über der Platte (Geräte darauf wandern mit)	Rail surélevé sur entretoises au-dessus de la plaque (les appareils montent avec)	Carril elevado sobre distanciadores encima de la placa (los aparatos suben con él)
+Fastening	Befestigung	Fixation	Fijación
+Horizontal position	Horizontale Lage	Position horizontale	Posición horizontal
+Vertical position	Vertikale Lage	Position verticale	Posición vertical
+Select assembly	Baugruppe auswählen	Sélectionner l'ensemble	Seleccionar conjunto
+Ungroup	Gruppierung aufheben	Dissocier	Desagrupar
+Enclosure system	Gehäusesystem	Système d'armoire	Sistema de armario
+(none)	(keines)	(aucun)	(ninguno)
+Standard size	Standardgröße	Taille standard	Tamaño estándar
+Plinth	Sockel	Socle	Zócalo
+Height of the plinth, 0 without plinth	Höhe des Sockels, 0 ohne Sockel	Hauteur du socle, 0 sans socle	Altura del zócalo, 0 sin zócalo
+Bayed	Angereiht	Juxtaposé	Ensamblado
+Bayed to the neighbouring enclosure: no side panel, a baying kit instead	An das Nachbargehäuse angereiht: keine Seitenwand, stattdessen ein Anreihverbinder	Juxtaposé à l'armoire voisine : pas de paroi latérale, un kit de juxtaposition à la place	Ensamblado al armario vecino: sin panel lateral, en su lugar un kit de ensamblaje
+Gland plate	Flanschplatte	Plaque passe-câbles	Placa pasacables
+Bottom with removable gland plate	Boden mit abnehmbarer Flanschplatte	Fond avec plaque passe-câbles amovible	Fondo con placa pasacables desmontable
+Components (assembly)	Komponenten (Baugruppe)	Composants (ensemble)	Componentes (conjunto)
+(included)	(enthalten)	(inclus)	(incluido)
+Fastening hardware in the bill of materials	Befestigungsmaterial in der Stückliste	Visserie de fixation dans la nomenclature	Tornillería de fijación en la lista de materiales
+Screws, nuts, washers and rivet nuts of the fixing points	Schrauben, Muttern, Scheiben und Einnietmuttern der Befestigungspunkte	Vis, écrous, rondelles et écrous à sertir des points de fixation	Tornillos, tuercas, arandelas y tuercas remachables de los puntos de fijación
+⬇ NC data of this face (DXF)	⬇ NC-Daten dieser Fläche (DXF)	⬇ Données CN de cette face (DXF)	⬇ Datos CN de esta cara (DXF)
+⬇ Drilling list of this face (CSV)	⬇ Bohrliste dieser Fläche (CSV)	⬇ Liste de perçage de cette face (CSV)	⬇ Lista de taladros de esta cara (CSV)
+Group as assembly	Als Baugruppe gruppieren	Grouper en ensemble	Agrupar como conjunto
+The items are selected and moved together	Die Elemente werden gemeinsam ausgewählt und verschoben	Les éléments sont sélectionnés et déplacés ensemble	Los elementos se seleccionan y se mueven juntos
+Distribute horizontally	Horizontal verteilen	Répartir horizontalement	Distribuir horizontalmente
+Distribute vertically	Vertikal verteilen	Répartir verticalement	Distribuir verticalmente
+Line up on the rail	Auf der Schiene aufreihen	Aligner sur le rail	Alinear en el carril
+The selected devices side by side on the selected rail, from its left end	Die ausgewählten Geräte nebeneinander auf der ausgewählten Schiene, ab ihrem linken Ende	Les appareils sélectionnés côte à côte sur le rail sélectionné, depuis son extrémité gauche	Los aparatos seleccionados uno junto a otro en el carril seleccionado, desde su extremo izquierdo
+Gap	Abstand	Écart	Separación
+The devices do not fit onto the rail	Die Geräte passen nicht auf die Schiene	Les appareils ne tiennent pas sur le rail	Los aparatos no caben en el carril
+Pattern…	Muster…	Motif…	Patrón…
+Copies in rows and columns	Kopien in Zeilen und Spalten	Copies en lignes et colonnes	Copias en filas y columnas
+Save as 3D macro…	Als 3D-Makro speichern…	Enregistrer comme macro 3D…	Guardar como macro 3D…
+Pattern	Muster	Motif	Patrón
+Columns × rows	Spalten × Zeilen	Colonnes × lignes	Columnas × filas
+Pitch X / Y	Raster X / Y	Pas X / Y	Paso X / Y
+Devices are not copied: a device is placed once.	Geräte werden nicht kopiert: ein Gerät wird einmal platziert.	Les appareils ne sont pas copiés : un appareil est placé une seule fois.	Los aparatos no se copian: un aparato se coloca una sola vez.
+✔ Copy	✔ Kopieren	✔ Copier	✔ Copiar
+Save as 3D macro	Als 3D-Makro speichern	Enregistrer comme macro 3D	Guardar como macro 3D
+Items with an anchor keep it; the others are inserted relative to the click.	Elemente mit Verankerung behalten sie; die anderen werden relativ zum Klick eingefügt.	Les éléments ancrés gardent leur ancrage ; les autres sont insérés par rapport au clic.	Los elementos anclados lo conservan; los demás se insertan respecto al clic.
+Walls	Wände	Parois	Paredes
+Side walls, rear wall, roof and bottom seen from the outside: fans, cable glands, cutouts	Seitenwände, Rückwand, Dach und Boden von außen gesehen: Lüfter, Kabelverschraubungen, Ausschnitte	Parois latérales, paroi arrière, toit et fond vus de l'extérieur : ventilateurs, presse-étoupes, découpes	Paredes laterales, pared trasera, techo y fondo vistos desde fuera: ventiladores, prensaestopas, recortes
+Accessory	Zubehör	Accessoire	Accesorio
+Fans, filters, cable glands, lights, handles: choose one, then click where it goes	Lüfter, Filter, Kabelverschraubungen, Leuchten, Griffe: eins wählen, dann an die Einbaustelle klicken	Ventilateurs, filtres, presse-étoupes, éclairages, poignées : en choisir un, puis cliquer à son emplacement	Ventiladores, filtros, prensaestopas, luces, manetas: elija uno y haga clic donde va
+3D macro	3D-Makro	Macro 3D	Macro 3D
+Delete macro	Makro löschen	Supprimer la macro	Eliminar macro
+Insert a group of items (anchored items go to their place, the others where you click)	Eine Gruppe von Elementen einfügen (verankerte an ihren Platz, die anderen an die Klickstelle)	Insérer un groupe d'éléments (les éléments ancrés à leur place, les autres là où vous cliquez)	Insertar un grupo de elementos (los anclados en su sitio, los demás donde haga clic)
+Assembly: {}	Baugruppe: {}	Ensemble : {}	Conjunto: {}
+{}: {} holes, {} cutouts	{}: {} Bohrungen, {} Ausschnitte	{} : {} perçages, {} découpes	{}: {} taladros, {} recortes
+Assembly {}	Baugruppe {}	Ensemble {}	Conjunto {}
+{} copies placed	{} Kopien platziert	{} copies placées	{} copias colocadas
+3D macro {} saved	3D-Makro {} gespeichert	Macro 3D {} enregistrée	Macro 3D {} guardada
+3D macro {} inserted	3D-Makro {} eingefügt	Macro 3D {} insérée	Macro 3D {} insertada
+Automatic	Automatisch	Automatique	Automático
+Tapped hole	Gewindebohrung	Trou taraudé	Agujero roscado
+Through hole with nut	Durchgangsbohrung mit Mutter	Trou de passage avec écrou	Agujero pasante con tuerca
+Rivet nut	Einnietmutter	Écrou à sertir	Tuerca remachable
+Weld stud	Schweißbolzen	Goujon soudé	Espárrago soldado
+Clip / snap-on	Klemmen / Aufschnappen	Clipsé / encliqueté	Clip / encaje a presión
+Adhesive	Kleben	Collé	Adhesivo
+Duct frame with rails	Kanalrahmen mit Schienen	Cadre de goulottes avec rails	Marco de canaletas con carriles
+Filter fan with outlet filter	Filterlüfter mit Austrittsfilter	Ventilateur à filtre avec filtre de sortie	Ventilador con filtro y filtro de salida
+Cable entry 5 x M25	Kabeleinführung 5 x M25	Entrée de câbles 5 x M25	Entrada de cables 5 x M25
+Door handle and document holder	Türgriff und Schaltplantasche	Poignée de porte et porte-documents	Maneta de puerta y portadocumentos
+Enclosure light	Schaltschrankleuchte	Éclairage d'armoire	Luz de armario
+Free	Frei	Libre	Libre
+From start	Vom Anfang	Depuis le début	Desde el inicio
+Centred	Zentriert	Centré	Centrado
+From end	Vom Ende	Depuis la fin	Desde el final
+Stretched	Gestreckt	Étiré	Estirado
+Align left	Links ausrichten	Aligner à gauche	Alinear a la izquierda
+Centre horizontally	Horizontal zentrieren	Centrer horizontalement	Centrar horizontalmente
+Align right	Rechts ausrichten	Aligner à droite	Alinear a la derecha
+Align top	Oben ausrichten	Aligner en haut	Alinear arriba
+Centre vertically	Vertikal zentrieren	Centrer verticalement	Centrar verticalmente
+Align bottom	Unten ausrichten	Aligner en bas	Alinear abajo
+Compact enclosure (wall-mounted)	Kompaktgehäuse (Wandmontage)	Coffret compact (montage mural)	Armario compacto (montaje mural)
+Floor-standing baying system	Anreihschranksystem (stehend)	Système d'armoires juxtaposables (au sol)	Sistema de armarios ensamblables (de pie)
+Terminal box	Klemmenkasten	Boîte à bornes	Caja de bornes
+Plastic enclosure	Kunststoffgehäuse	Coffret plastique	Caja de plástico
+Enclosure body	Gehäusekörper	Corps de l'armoire	Cuerpo del armario
+Left side panel	Linke Seitenwand	Paroi latérale gauche	Panel lateral izquierdo
+Right side panel	Rechte Seitenwand	Paroi latérale droite	Panel lateral derecho
+Rear wall	Rückwand	Paroi arrière	Pared trasera
+Roof	Dach	Toit	Techo
+Bottom	Boden	Fond	Fondo
+Baying kit	Anreihverbinder	Kit de juxtaposition	Kit de ensamblaje
+Left side	Linke Seite	Côté gauche	Lado izquierdo
+Right side	Rechte Seite	Côté droit	Lado derecho
+bayed (open)	angereiht (offen)	juxtaposé (ouvert)	ensamblado (abierto)
+Unknown face: {}	Unbekannte Fläche: {}	Face inconnue : {}	Cara desconocida: {}
+Unknown anchor: {}	Unbekannte Verankerung: {}	Ancrage inconnu : {}	Anclaje desconocido: {}
+Unknown fastening: {}	Unbekannte Befestigung: {}	Fixation inconnue : {}	Fijación desconocida: {}
+Enclosure {} exists already	Gehäuse {} existiert bereits	L'armoire {} existe déjà	El armario {} ya existe
+Unknown enclosure system: {}	Unbekanntes Gehäusesystem: {}	Système d'armoire inconnu : {}	Sistema de armario desconocido: {}
+{} cannot be mounted on the {}	{} kann nicht auf {} montiert werden	{} ne peut pas être monté sur {}	{} no se puede montar en {}
+No item {}	Kein Element {}	Aucun élément {}	Ningún elemento {}
+The devices do not fit onto rail {}	Die Geräte passen nicht auf Schiene {}	Les appareils ne tiennent pas sur le rail {}	Los aparatos no caben en el carril {}
+Unknown action: {}	Unbekannte Aktion: {}	Action inconnue : {}	Acción desconocida: {}
+No items to save in {}	Keine Elemente zum Speichern in {}	Aucun élément à enregistrer dans {}	Ningún elemento que guardar en {}
+No macro named {}	Kein Makro namens {}	Aucune macro nommée {}	Ninguna macro llamada {}
+Enclosure (location, e.g. +CAB1)	Gehäuse (Ort, z. B. +CAB1)	Armoire (emplacement, p. ex. +CAB1)	Armario (ubicación, p. ej. +CAB1)
+plate, door, left, right, rear, roof or bottom	plate, door, left, right, rear, roof oder bottom	plate, door, left, right, rear, roof ou bottom	plate, door, left, right, rear, roof o bottom
+Anchor along the axis: free, start:<mm>, center:<mm>, end:<mm> or stretch:<mm>,<mm>	Verankerung entlang der Achse: free, start:<mm>, center:<mm>, end:<mm> oder stretch:<mm>,<mm>	Ancrage le long de l'axe : free, start:<mm>, center:<mm>, end:<mm> ou stretch:<mm>,<mm>	Anclaje a lo largo del eje: free, start:<mm>, center:<mm>, end:<mm> o stretch:<mm>,<mm>
+Lists the enclosure systems with their standard sizes, wall thickness, plinth and whether they can be bayed	Listet die Gehäusesysteme mit Standardgrößen, Wandstärke, Sockel und ob sie anreihbar sind	Liste les systèmes d'armoires avec leurs tailles standard, épaisseur de paroi, socle et s'ils sont juxtaposables	Lista los sistemas de armarios con sus tamaños estándar, espesor de pared, zócalo y si son ensamblables
+Lists the enclosures with their system, components (assembly), items per face and assemblies	Listet die Gehäuse mit System, Komponenten (Baugruppe), Elementen je Fläche und Baugruppen	Liste les armoires avec leur système, leurs composants (ensemble), les éléments par face et les ensembles	Lista los armarios con su sistema, componentes (conjunto), elementos por cara y conjuntos
+Adds an enclosure: of a system in one of its sizes (or a custom size), or from an enclosure part	Fügt ein Gehäuse hinzu: eines Systems in einer seiner Größen (oder freier Größe) oder aus einem Gehäuseartikel	Ajoute une armoire : d'un système dans l'une de ses tailles (ou une taille libre), ou depuis un article d'armoire	Añade un armario: de un sistema en uno de sus tamaños (o un tamaño libre), o desde un artículo de armario
+compact, baying, terminal_box or plastic	compact, baying, terminal_box oder plastic	compact, baying, terminal_box ou plastic	compact, baying, terminal_box o plastic
+Enclosure part number	Artikelnummer des Gehäuses	Référence de l'armoire	Referencia del armario
+Width in mm	Breite in mm	Largeur en mm	Ancho en mm
+Height in mm	Höhe in mm	Hauteur en mm	Altura en mm
+Depth in mm	Tiefe in mm	Profondeur en mm	Profundidad en mm
+Changes the system, size and components of an enclosure (plinth, bayed sides, gland plate); anchored items follow	Ändert System, Größe und Komponenten eines Gehäuses (Sockel, angereihte Seiten, Flanschplatte); verankerte Elemente folgen	Modifie le système, la taille et les composants d'une armoire (socle, côtés juxtaposés, plaque passe-câbles) ; les éléments ancrés suivent	Cambia el sistema, el tamaño y los componentes de un armario (zócalo, lados ensamblados, placa pasacables); los elementos anclados le siguen
+compact, baying, terminal_box or plastic; empty for none	compact, baying, terminal_box oder plastic; leer für keines	compact, baying, terminal_box ou plastic ; vide pour aucun	compact, baying, terminal_box o plastic; vacío para ninguno
+Plinth height in mm, 0 without plinth	Sockelhöhe in mm, 0 ohne Sockel	Hauteur du socle en mm, 0 sans socle	Altura del zócalo en mm, 0 sin zócalo
+Left side bayed (no side panel)	Linke Seite angereiht (keine Seitenwand)	Côté gauche juxtaposé (sans paroi latérale)	Lado izquierdo ensamblado (sin panel lateral)
+Right side bayed (no side panel)	Rechte Seite angereiht (keine Seitenwand)	Côté droit juxtaposé (sans paroi latérale)	Lado derecho ensamblado (sin panel lateral)
+Places an enclosure accessory (fan, filter, cable gland, light, handle, PE bar) on a face	Platziert Gehäusezubehör (Lüfter, Filter, Kabelverschraubung, Leuchte, Griff, PE-Schiene) auf einer Fläche	Place un accessoire d'armoire (ventilateur, filtre, presse-étoupe, éclairage, poignée, barre PE) sur une face	Coloca un accesorio de armario (ventilador, filtro, prensaestopas, luz, maneta, barra PE) en una cara
+Accessory part number, e.g. GEN.GLAND-M25	Artikelnummer des Zubehörs, z. B. GEN.GLAND-M25	Référence de l'accessoire, p. ex. GEN.GLAND-M25	Referencia del accesorio, p. ej. GEN.GLAND-M25
+Left edge on the face in mm	Linke Kante auf der Fläche in mm	Bord gauche sur la face en mm	Borde izquierdo en la cara en mm
+Top edge on the face in mm	Obere Kante auf der Fläche in mm	Bord supérieur sur la face en mm	Borde superior en la cara en mm
+auto, tapped, through, rivet_nut, stud, clip or adhesive	auto, tapped, through, rivet_nut, stud, clip oder adhesive	auto, tapped, through, rivet_nut, stud, clip ou adhesive	auto, tapped, through, rivet_nut, stud, clip o adhesive
+Changes position, face, fastening or anchors of a panel item	Ändert Lage, Fläche, Befestigung oder Verankerung eines Layout-Elements	Modifie la position, la face, la fixation ou l'ancrage d'un élément d'implantation	Cambia la posición, la cara, la fijación o el anclaje de un elemento de la distribución
+Distance from the face in mm (rails: standoff height)	Abstand von der Fläche in mm (Schienen: Abstandshöhe)	Distance à la face en mm (rails : hauteur d'entretoise)	Distancia a la cara en mm (carriles: altura del distanciador)
+Aligns items, spaces them evenly, lines devices up on a rail or copies items in a pattern	Richtet Elemente aus, verteilt sie gleichmäßig, reiht Geräte auf einer Schiene auf oder kopiert Elemente in einem Muster	Aligne des éléments, les répartit régulièrement, aligne des appareils sur un rail ou copie des éléments selon un motif	Alinea elementos, los distribuye por igual, alinea aparatos en un carril o copia elementos en un patrón
+left, center_x, right, top, center_y, bottom, distribute_x, distribute_y, rail or pattern	left, center_x, right, top, center_y, bottom, distribute_x, distribute_y, rail oder pattern	left, center_x, right, top, center_y, bottom, distribute_x, distribute_y, rail ou pattern	left, center_x, right, top, center_y, bottom, distribute_x, distribute_y, rail o pattern
+Rail id (action rail)	Schienen-ID (Aktion rail)	ID du rail (action rail)	ID del carril (acción rail)
+Gap between the devices on the rail in mm	Abstand zwischen den Geräten auf der Schiene in mm	Écart entre les appareils sur le rail en mm	Separación entre los aparatos en el carril en mm
+Columns of the pattern	Spalten des Musters	Colonnes du motif	Columnas del patrón
+Rows of the pattern	Zeilen des Musters	Lignes du motif	Filas del patrón
+Horizontal pitch of the pattern in mm	Horizontales Raster des Musters in mm	Pas horizontal du motif en mm	Paso horizontal del patrón en mm
+Vertical pitch of the pattern in mm	Vertikales Raster des Musters in mm	Pas vertical du motif en mm	Paso vertical del patrón en mm
+Groups items into an assembly that is selected and moved together; without a name the items leave their assemblies	Gruppiert Elemente zu einer Baugruppe, die gemeinsam ausgewählt und verschoben wird; ohne Namen verlassen die Elemente ihre Baugruppen	Groupe des éléments en un ensemble sélectionné et déplacé d'un bloc ; sans nom, les éléments quittent leurs ensembles	Agrupa elementos en un conjunto que se selecciona y mueve junto; sin nombre los elementos dejan sus conjuntos
+Name of the assembly	Name der Baugruppe	Nom de l'ensemble	Nombre del conjunto
+Lists the 3D macros: the project's own and the built-in ones	Listet die 3D-Makros: die des Projekts und die mitgelieferten	Liste les macros 3D : celles du projet et celles fournies	Lista las macros 3D: las del proyecto y las incluidas
+Saves items of an enclosure as a 3D macro of the project	Speichert Elemente eines Gehäuses als 3D-Makro des Projekts	Enregistre des éléments d'une armoire comme macro 3D du projet	Guarda elementos de un armario como macro 3D del proyecto
+Macro name	Makroname	Nom de la macro	Nombre de la macro
+Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Fügt ein 3D-Makro als Baugruppe ein: verankerte Elemente an ihren Platz, die anderen relativ zu x / y auf der Fläche	Insère une macro 3D comme ensemble : les éléments ancrés à leur place, les autres par rapport à x / y sur la face	Inserta una macro 3D como conjunto: los elementos anclados en su sitio, los demás respecto a x / y en la cara

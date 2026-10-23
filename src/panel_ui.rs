@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Project};
-use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, Role, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
 use crate::parts::{self, PartsDb};
 use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
 use crate::render::{self, Draw, Ink};
@@ -21,6 +21,10 @@ pub enum Tool {
     Busbar,
     Cutout,
     PlaceDevice(String),
+    /// Accessory of this part.
+    Accessory(String),
+    /// 3D macro of this name.
+    Macro(String),
 }
 
 impl Tool {
@@ -116,9 +120,62 @@ fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
 struct NewEnclosure {
     name: String,
     part: String,
+    /// Enclosure system the part list is narrowed to.
+    system: String,
     width: f32,
     height: f32,
     depth: f32,
+}
+
+/// Rectangular pattern of copies of the selection.
+struct PatternDialog {
+    nx: usize,
+    ny: usize,
+    px: f32,
+    py: f32,
+}
+
+/// Enclosure accessories of the parts database, the project and the catalog.
+fn accessory_parts(db: &PartsDb, prj: &Project) -> Vec<parts::Part> {
+    let mut v: Vec<parts::Part> = Vec::new();
+    for p in db.parts.iter().chain(prj.parts.iter()).chain(parts::catalog()) {
+        if parts::mechanics::ACCESSORY_SUBGROUPS.contains(&p.subgroup.as_str()) && !v.iter().any(|x| x.number == p.number) {
+            v.push(p.clone());
+        }
+    }
+    v.sort_by(|a, b| a.subgroup.cmp(&b.subgroup).then(natural_cmp(&a.number, &b.number)));
+    v
+}
+
+/// The item and the other members of its group (assembly).
+fn with_group(e: &Enclosure, id: u64) -> Vec<u64> {
+    match e.item(id).map(|i| i.group) {
+        Some(g) if g != 0 => panel::group_members(e, g),
+        _ => vec![id],
+    }
+}
+
+/// Placement along one axis: kind and distances.
+fn align_editor(ui: &mut egui::Ui, salt: &str, a: &mut Align) {
+    ui.horizontal(|ui| {
+        egui::ComboBox::from_id_salt(salt).selected_text(a.title()).width(90.0).show_ui(ui, |ui| {
+            for k in Align::KINDS {
+                if ui.selectable_label(a.same_kind(k), k.title()).clicked() && !a.same_kind(k) {
+                    *a = k;
+                }
+            }
+        });
+        match a {
+            Align::Free => {}
+            Align::Start(v) | Align::Center(v) | Align::End(v) => {
+                ui.add(egui::DragValue::new(v).speed(1.0).suffix(" mm"));
+            }
+            Align::Stretch(s, t) => {
+                ui.add(egui::DragValue::new(s).speed(1.0));
+                ui.add(egui::DragValue::new(t).speed(1.0).suffix(" mm"));
+            }
+        }
+    });
 }
 
 pub struct PanelUi {
@@ -155,6 +212,11 @@ pub struct PanelUi {
     pub add_page: Option<u64>,
     /// NC export of an enclosure face (DXF = true, CSV = false).
     pub export: Option<(usize, Face, bool)>,
+    pattern: Option<PatternDialog>,
+    /// Name of the 3D macro being saved from the selection.
+    save_macro: Option<String>,
+    /// Gap between devices lined up on a rail.
+    rail_gap: f32,
 }
 
 impl Default for PanelUi {
@@ -184,6 +246,9 @@ impl Default for PanelUi {
             goto_schematic: None,
             add_page: None,
             export: None,
+            pattern: None,
+            save_macro: None,
+            rail_gap: 0.0,
         }
     }
 }
@@ -206,6 +271,12 @@ impl PanelUi {
 
     fn select_item(&mut self, id: u64) {
         self.selection = [id].into_iter().collect();
+        self.selected_wire = None;
+    }
+
+    /// Selects an item with the other members of its assembly.
+    fn select_assembly(&mut self, e: &Enclosure, id: u64) {
+        self.selection = with_group(e, id).into_iter().collect();
         self.selected_wire = None;
     }
 
@@ -240,8 +311,11 @@ impl PanelUi {
     }
 
     /// Tools of the face shown: no rails or busbars on the door, cable ducts only on its
-    /// inside, cutouts from the front.
+    /// inside, cutouts from the front; no busbars on the walls.
     fn tool_allowed(&self, t: &Tool) -> bool {
+        if self.face.is_wall() {
+            return !matches!(t, Tool::Busbar);
+        }
         !matches!(
             (self.face, self.door_inside, t),
             (Face::Door, _, Tool::Rail | Tool::Busbar) | (Face::Door, false, Tool::Duct) | (Face::Door, true, Tool::Cutout)
@@ -322,6 +396,7 @@ impl PanelUi {
                 let mut ne = NewEnclosure {
                     name: format!("+CAB{}", prj.layout.enclosures.len() + 1),
                     part: part.into(),
+                    system: String::new(),
                     width: 600.0,
                     height: 800.0,
                     depth: 250.0,
@@ -379,7 +454,11 @@ impl PanelUi {
         placed.sort_by(|a, b| natural_cmp(&a.tag, &b.tag));
         egui::ScrollArea::vertical().id_salt("placed").auto_shrink([false, false]).show(ui, |ui| {
             for it in placed {
-                let text = if it.face == Face::Door { tr_fmt!("{}  (door)", it.tag) } else { it.tag.clone() };
+                let text = match it.face {
+                    Face::Plate => it.tag.clone(),
+                    Face::Door => tr_fmt!("{}  (door)", it.tag),
+                    f => format!("{}  ({})", it.tag, f.title()),
+                };
                 if ui.selectable_label(self.selection.contains(&it.id), text).clicked() {
                     self.face = it.face;
                     self.select_item(it.id);
@@ -409,6 +488,7 @@ impl PanelUi {
                     self.selection.clear();
                 }
             });
+            self.selection_tools(ui, prj, ei, &sel);
             return;
         }
         if let Some(id) = sel.first().copied() {
@@ -418,7 +498,15 @@ impl PanelUi {
                 return;
             };
             let mut it = e.items[idx].clone();
+            let before_item = it.clone();
+            let part = prj.parts.iter().chain(parts::catalog()).find(|p| p.number == it.part).cloned();
+            let (face_w, face_h) = e.face_size(it.face);
             ui.label(RichText::new(it.kind.title()).strong());
+            if it.kind == ItemKind::Accessory {
+                if let Some(p) = &part {
+                    ui.weak(&p.description);
+                }
+            }
             egui::Grid::new("pitem").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
                 if it.kind == ItemKind::Device {
                     ui.label(tr("Device"));
@@ -439,7 +527,7 @@ impl PanelUi {
                     ui.add(egui::DragValue::new(&mut it.y).speed(1.0).suffix(" mm"));
                 });
                 ui.end_row();
-                if it.kind == ItemKind::Device {
+                if matches!(it.kind, ItemKind::Device | ItemKind::Accessory) {
                     ui.label(tr("Width × height"));
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut it.w).speed(0.5).range(1.0..=5000.0));
@@ -448,17 +536,21 @@ impl PanelUi {
                     ui.end_row();
                     ui.label(tr("Mounted on"));
                     let before = it.face;
-                    ui.horizontal(|ui| {
-                        ui.selectable_value(&mut it.face, Face::Plate, tr("Mounting plate"));
-                        ui.selectable_value(&mut it.face, Face::Door, tr("Door"));
+                    let faces = part.as_ref().filter(|_| it.kind == ItemKind::Accessory).map(panel::allowed_faces).unwrap_or(Face::ALL.to_vec());
+                    egui::ComboBox::from_id_salt("itemface").selected_text(it.face.title()).show_ui(ui, |ui| {
+                        for f in faces {
+                            ui.selectable_value(&mut it.face, f, f.title());
+                        }
                     });
                     if it.face != before {
                         // Keep the position in front view; door devices sit directly on the door.
                         let shift = it.face.origin() - before.origin();
                         it.x -= shift;
                         it.y -= shift;
-                        it.z = 0.0;
+                        it.z = if it.kind == ItemKind::Accessory { before_item.z.min(0.0) } else { 0.0 };
+                        it.anchor = Anchor::default();
                         self.face = it.face;
+                        self.door_inside = false;
                     }
                     ui.end_row();
                     ui.label(tr("Depth / mounted at"));
@@ -504,7 +596,30 @@ impl PanelUi {
                     ui.label(tr("Orientation"));
                     ui.label(if it.horizontal() { tr("horizontal") } else { tr("vertical") });
                     ui.end_row();
+                    if it.kind == ItemKind::Rail {
+                        ui.label(tr("Standoff height"));
+                        ui.add(egui::DragValue::new(&mut it.z).speed(1.0).range(0.0..=200.0).suffix(" mm"))
+                            .on_hover_text(tr("Rail raised on standoffs above the plate (devices on it move up)"));
+                        ui.end_row();
+                    }
                 }
+                if it.kind != ItemKind::Cutout {
+                    ui.label(tr("Fastening"));
+                    let resolved = Fastening::resolve(&PanelItem { fastening: Fastening::Auto, ..it.clone() }, part.as_ref());
+                    let text = |f: Fastening| if f == Fastening::Auto { format!("{} ({})", f.title(), resolved.title()) } else { f.title().to_string() };
+                    egui::ComboBox::from_id_salt("fastening").selected_text(text(it.fastening)).show_ui(ui, |ui| {
+                        for f in Fastening::ALL {
+                            ui.selectable_value(&mut it.fastening, f, text(f));
+                        }
+                    });
+                    ui.end_row();
+                }
+                ui.label(tr("Horizontal position"));
+                align_editor(ui, "anchorx", &mut it.anchor.x);
+                ui.end_row();
+                ui.label(tr("Vertical position"));
+                align_editor(ui, "anchory", &mut it.anchor.y);
+                ui.end_row();
                 if it.kind == ItemKind::Duct {
                     let limit = prj.layout.duct_fill_limit;
                     match an.duct_fill.iter().find(|f| f.enclosure == ei && f.duct == it.id) {
@@ -535,10 +650,34 @@ impl PanelUi {
                     self.selection.clear();
                 }
             });
+            // A new anchor places the item; a moved anchored item keeps its anchor
+            // with the new distances.
+            if it.anchor != before_item.anchor {
+                let a = it.anchor;
+                a.apply(&mut it, (face_w, face_h));
+            } else if !it.anchor.is_free() && (it.x, it.y, it.w, it.h) != (before_item.x, before_item.y, before_item.w, before_item.h) {
+                it.anchor = it.anchor.capture(&it, e.face_size(it.face));
+            }
+            let group = it.group;
             if self.selection.is_empty() {
                 e.items.remove(idx);
             } else if it != e.items[idx] {
                 e.items[idx] = it;
+            }
+            if group != 0 {
+                let name = e.group(group).map(|g| g.name.clone()).unwrap_or_default();
+                ui.horizontal(|ui| {
+                    ui.label(tr_fmt!("Assembly: {}", name));
+                    if ui.small_button(tr("Select assembly")).clicked() {
+                        self.selection = panel::group_members(e, group).into_iter().collect();
+                    }
+                    if ui.small_button(tr("Ungroup")).clicked() {
+                        ungroup(e, &[id]);
+                    }
+                });
+            }
+            if !self.selection.is_empty() {
+                self.selection_tools(ui, prj, ei, &sel);
             }
             // Wires at this device
             if let Some(it) = prj.layout.enclosures[ei].items.iter().find(|i| i.id == id) {
@@ -565,11 +704,48 @@ impl PanelUi {
         }
         // Enclosure properties
         let e = &mut prj.layout.enclosures[ei];
+        let size_before = (e.width, e.height, e.depth);
         ui.label(RichText::new(tr("Enclosure")).strong());
         egui::Grid::new("penc").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
             ui.label(tr("Location"));
             ui.text_edit_singleline(&mut e.name);
             ui.end_row();
+            ui.label(tr("Enclosure system"));
+            let current = e.system().map(|s| s.title()).unwrap_or(tr("(none)"));
+            let mut choice: Option<String> = None;
+            egui::ComboBox::from_id_salt("encsystem").selected_text(current).width(200.0).show_ui(ui, |ui| {
+                if ui.selectable_label(e.system().is_none(), tr("(none)")).clicked() {
+                    choice = Some(String::new());
+                }
+                for s in &panel::SYSTEMS {
+                    if ui.selectable_label(e.build.system == s.id(), s.title()).clicked() {
+                        choice = Some(s.id().to_string());
+                    }
+                }
+            });
+            if let Some(id) = choice {
+                panel::apply_system(e, &id, None);
+            }
+            ui.end_row();
+            if let Some(s) = e.system() {
+                ui.label(tr("Standard size"));
+                let now = (e.width, e.height, e.depth);
+                let label = |(w, h, d): (f32, f32, f32)| format!("{w:.0} × {h:.0} × {d:.0}");
+                let standard = s.data.sizes.contains(&now);
+                let mut size = None;
+                egui::ComboBox::from_id_salt("encsize").selected_text(if standard { label(now) } else { tr("(custom size)").to_string() }).show_ui(ui, |ui| {
+                    for x in s.data.sizes {
+                        if ui.selectable_label(*x == now, label(*x)).clicked() {
+                            size = Some(*x);
+                        }
+                    }
+                });
+                if size.is_some() {
+                    let id = s.id();
+                    panel::apply_system(e, id, size);
+                }
+                ui.end_row();
+            }
             ui.label(tr("Part"));
             ui.label(RichText::new(if e.part.is_empty() { "–" } else { &e.part }).monospace());
             ui.end_row();
@@ -582,6 +758,20 @@ impl PanelUi {
             ui.label(tr("Depth"));
             ui.add(egui::DragValue::new(&mut e.depth).speed(5.0).range(60.0..=2000.0).suffix(" mm"));
             ui.end_row();
+            ui.label(tr("Plinth"));
+            ui.add(egui::DragValue::new(&mut e.build.plinth).speed(5.0).range(0.0..=300.0).suffix(" mm")).on_hover_text(tr("Height of the plinth, 0 without plinth"));
+            ui.end_row();
+            if e.system().is_some_and(|s| s.data.bayable) {
+                ui.label(tr("Bayed"));
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut e.build.left_open, tr("left")).on_hover_text(tr("Bayed to the neighbouring enclosure: no side panel, a baying kit instead"));
+                    ui.checkbox(&mut e.build.right_open, tr("right"));
+                });
+                ui.end_row();
+            }
+            ui.label(tr("Gland plate"));
+            ui.checkbox(&mut e.build.gland_plate, tr("Bottom with removable gland plate"));
+            ui.end_row();
             ui.label(tr("Door clearance"));
             ui.add(egui::DragValue::new(&mut e.door_clearance).speed(1.0).range(0.0..=500.0).suffix(" mm"))
                 .on_hover_text(tr("Space behind the door that devices must keep free (door-mounted devices, handles)"));
@@ -590,6 +780,20 @@ impl PanelUi {
             ui.label(tr("Mounting plate"));
             ui.label(format!("{pw:.0} × {ph:.0} mm"));
             ui.end_row();
+        });
+        if (e.width, e.height, e.depth) != size_before {
+            panel::sync_part(e);
+            panel::apply_anchors(e);
+        }
+        egui::CollapsingHeader::new(tr("Components (assembly)")).id_salt("components").show(ui, |ui| {
+            egui::Grid::new("pcomp").striped(true).num_columns(3).show(ui, |ui| {
+                for c in panel::components(e) {
+                    ui.label(c.role.title());
+                    ui.label(RichText::new(if c.part.is_empty() { tr("(included)") } else { &c.part }).monospace());
+                    ui.label(if c.count > 1 { format!("{} ×", c.count) } else { String::new() });
+                    ui.end_row();
+                }
+            });
         });
         ui.horizontal(|ui| {
             ui.label(tr("Wire reserve per connection"));
@@ -601,6 +805,7 @@ impl PanelUi {
                 .on_hover_text(tr("The check warns about cable ducts filled above this level"));
         });
         ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
+        ui.checkbox(&mut prj.layout.hardware, tr("Fastening hardware in the bill of materials")).on_hover_text(tr("Screws, nuts, washers and rivet nuts of the fixing points"));
         climate_section(ui, prj, ei);
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
@@ -630,12 +835,79 @@ impl PanelUi {
                 self.export = Some((ei, Face::Door, false));
             }
         });
+        if self.face.is_wall() {
+            let face = self.face;
+            let n = crate::production::holes_on(e, &prj.parts, face).len();
+            ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, crate::production::openings(e, &prj.parts, face).len()));
+            ui.horizontal(|ui| {
+                if ui.button(tr("⬇ NC data of this face (DXF)")).clicked() {
+                    self.export = Some((ei, face, true));
+                }
+                if ui.button(tr("⬇ Drilling list of this face (CSV)")).clicked() {
+                    self.export = Some((ei, face, false));
+                }
+            });
+        }
         if problems > 0 {
             ui.colored_label(Color32::from_rgb(220, 60, 60), tr_fmt!("{} placement problems (red) – see Check", problems));
         }
         if ui.button(tr("➕ Insert mounting layout page")).clicked() {
             self.add_page = Some(e.id);
         }
+    }
+
+    /// Tools for the selected items: assemblies, aligning, rails, patterns and macros.
+    fn selection_tools(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, sel: &[u64]) {
+        let e = &mut prj.layout.enclosures[ei];
+        ui.separator();
+        if sel.len() > 1 {
+            ui.horizontal(|ui| {
+                if ui.button(tr("Group as assembly")).on_hover_text(tr("The items are selected and moved together")).clicked() {
+                    let n = e.groups.len() + 1;
+                    let id = e.items.iter().map(|i| i.id).chain(e.groups.iter().map(|g| g.id)).max().unwrap_or(0) + 1;
+                    ungroup(e, sel);
+                    e.groups.push(panel::ItemGroup { id, name: tr_fmt!("Assembly {}", n), source: String::new() });
+                    for it in e.items.iter_mut().filter(|i| sel.contains(&i.id)) {
+                        it.group = id;
+                    }
+                }
+                if e.items.iter().any(|i| sel.contains(&i.id) && i.group != 0) && ui.button(tr("Ungroup")).clicked() {
+                    ungroup(e, sel);
+                }
+            });
+            ui.horizontal_wrapped(|ui| {
+                for (to, icon) in panel::AlignTo::ALL.into_iter().zip(["⏮", "↔", "⏭", "⏫", "↕", "⏬"]) {
+                    if ui.small_button(icon).on_hover_text(to.title()).clicked() {
+                        panel::align(e, sel, to);
+                    }
+                }
+                if ui.small_button("|↔|").on_hover_text(tr("Distribute horizontally")).clicked() {
+                    panel::distribute(e, sel, true);
+                }
+                if ui.small_button("|↕|").on_hover_text(tr("Distribute vertically")).clicked() {
+                    panel::distribute(e, sel, false);
+                }
+            });
+            let rail = e.items.iter().find(|i| sel.contains(&i.id) && i.kind == ItemKind::Rail).map(|i| i.id);
+            if let Some(rail) = rail {
+                ui.horizontal(|ui| {
+                    let line_up = ui.button(tr("Line up on the rail")).on_hover_text(tr("The selected devices side by side on the selected rail, from its left end")).clicked();
+                    ui.label(tr("Gap"));
+                    ui.add(egui::DragValue::new(&mut self.rail_gap).speed(0.5).range(0.0..=100.0).suffix(" mm"));
+                    if line_up && !panel::arrange_on_rail(e, rail, sel, self.rail_gap) {
+                        self.status = tr("The devices do not fit onto the rail").to_string();
+                    }
+                });
+            }
+        }
+        ui.horizontal(|ui| {
+            if ui.button(tr("Pattern…")).on_hover_text(tr("Copies in rows and columns")).clicked() {
+                self.pattern = Some(PatternDialog { nx: 2, ny: 1, px: 50.0, py: 50.0 });
+            }
+            if ui.button(tr("Save as 3D macro…")).clicked() {
+                self.save_macro = Some(String::new());
+            }
+        });
     }
 
     fn wire_properties(&mut self, ui: &mut egui::Ui, prj: &Project, an: &Analysis, wi: usize) {
@@ -699,19 +971,32 @@ impl PanelUi {
     // ------------------------------------------------------------------ dialogs
 
     pub fn dialogs(&mut self, ctx: &egui::Context, prj: &mut Project, db: &PartsDb) {
+        self.pattern_dialog(ctx, prj);
+        self.save_macro_dialog(ctx, prj);
         let Some(ne) = &mut self.new_enclosure else { return };
         let mut open = true;
         let mut create = false;
-        let enclosures: Vec<&parts::Part> = db
-            .parts
-            .iter()
-            .chain(prj.parts.iter())
-            .filter(|p| p.subgroup == "Enclosure" && p.width > 0.0)
-            .collect();
+        let mut enclosures: Vec<&parts::Part> = Vec::new();
+        for p in db.parts.iter().chain(prj.parts.iter()).chain(parts::catalog()) {
+            let system = panel::system_of_part(p).map(|s| s.id()).unwrap_or("");
+            let wanted = ne.system.is_empty() || system == ne.system;
+            if p.subgroup == "Enclosure" && p.width > 0.0 && wanted && !enclosures.iter().any(|x| x.number == p.number) {
+                enclosures.push(p);
+            }
+        }
         egui::Window::new(tr("New enclosure")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
             egui::Grid::new("newenc").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr("Location"));
                 ui.text_edit_singleline(&mut ne.name);
+                ui.end_row();
+                ui.label(tr("Enclosure system"));
+                let title = panel::SYSTEMS.iter().find(|s| s.id() == ne.system).map(|s| s.title()).unwrap_or(tr("(all)"));
+                egui::ComboBox::from_id_salt("newencsys").selected_text(title).width(220.0).show_ui(ui, |ui| {
+                    ui.selectable_value(&mut ne.system, String::new(), tr("(all)"));
+                    for s in &panel::SYSTEMS {
+                        ui.selectable_value(&mut ne.system, s.id().to_string(), s.title());
+                    }
+                });
                 ui.end_row();
                 ui.label(tr("Part"));
                 let before = ne.part.clone();
@@ -753,6 +1038,9 @@ impl PanelUi {
                 e.width = ne.width;
                 e.height = ne.height;
                 e.depth = ne.depth;
+                if !ne.system.is_empty() {
+                    panel::apply_system(&mut e, &ne.system, None);
+                }
             }
             prj.layout.enclosures.push(e);
             self.enclosure = prj.layout.enclosures.len() - 1;
@@ -760,6 +1048,64 @@ impl PanelUi {
             self.fit_pending = true;
         } else if !open {
             self.new_enclosure = None;
+        }
+    }
+
+    fn pattern_dialog(&mut self, ctx: &egui::Context, prj: &mut Project) {
+        let Some(pd) = &mut self.pattern else { return };
+        let mut open = true;
+        let mut apply = false;
+        egui::Window::new(tr("Pattern")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+            egui::Grid::new("pattern").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+                ui.label(tr("Columns × rows"));
+                ui.horizontal(|ui| {
+                    ui.add(egui::DragValue::new(&mut pd.nx).range(1..=50));
+                    ui.add(egui::DragValue::new(&mut pd.ny).range(1..=50));
+                });
+                ui.end_row();
+                ui.label(tr("Pitch X / Y"));
+                ui.horizontal(|ui| {
+                    ui.add(egui::DragValue::new(&mut pd.px).speed(1.0).suffix(" mm"));
+                    ui.add(egui::DragValue::new(&mut pd.py).speed(1.0).suffix(" mm"));
+                });
+                ui.end_row();
+            });
+            ui.weak(tr("Devices are not copied: a device is placed once."));
+            apply = ui.button(tr("✔ Copy")).clicked();
+        });
+        if apply {
+            let ids: Vec<u64> = self.selection.iter().copied().collect();
+            let new = panel::pattern_copy(prj, self.enclosure, &ids, pd.nx, pd.ny, pd.px, pd.py);
+            self.status = tr_fmt!("{} copies placed", new.len());
+            self.pattern = None;
+        } else if !open {
+            self.pattern = None;
+        }
+    }
+
+    fn save_macro_dialog(&mut self, ctx: &egui::Context, prj: &mut Project) {
+        let Some(name) = &mut self.save_macro else { return };
+        let mut open = true;
+        let mut save = false;
+        egui::Window::new(tr("Save as 3D macro")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(tr("Name"));
+                ui.text_edit_singleline(name);
+            });
+            ui.weak(tr("Items with an anchor keep it; the others are inserted relative to the click."));
+            save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("✔ Save"))).clicked();
+        });
+        if save {
+            let ids: Vec<u64> = self.selection.iter().copied().collect();
+            let name = name.trim().to_string();
+            if let Some(m) = prj.layout.enclosures.get(self.enclosure).and_then(|e| panel::macro_from_items(e, &ids, &name)) {
+                prj.layout.macros.retain(|x| x.name != name);
+                prj.layout.macros.push(m);
+                self.status = tr_fmt!("3D macro {} saved", name);
+            }
+            self.save_macro = None;
+        } else if !open {
+            self.save_macro = None;
         }
     }
 
@@ -787,35 +1133,24 @@ impl PanelUi {
                     let resp = ui.selectable_label(current, label);
                     let resp = if tip.is_empty() { resp } else { resp.on_hover_text(tip) };
                     if resp.clicked() && !current {
-                        if self.face != face {
-                            self.selection.clear();
-                            self.selected_wire = None;
-                        }
-                        self.face = face;
-                        self.door_inside = inside;
-                        if !self.tool_allowed(&self.tool) {
-                            self.set_tool(Tool::Select);
-                        }
+                        self.show_face(face, inside);
                     }
                 }
-                ui.separator();
-                let tool = self.tool.clone();
-                for (t, label, tip) in [
-                    (Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)")),
-                    (Tool::Rail, tr("Mounting rail"), tr("Click start and end point")),
-                    (Tool::Duct, tr("Cable duct"), tr("Click start and end point")),
-                    (Tool::Busbar, tr("Busbar"), tr("Copper busbar system: click start and end point")),
-                    (Tool::Cutout, tr("Cutout"), tr("Opening in the mounting plate / door: click two corners (round: in the properties)")),
-                ] {
-                    if !self.tool_allowed(&t) {
-                        continue;
-                    }
-                    if ui.selectable_label(tool == t, label).on_hover_text(tip).clicked() {
-                        self.set_tool(t);
-                    }
-                }
-                if let Tool::PlaceDevice(tag) = &tool {
-                    ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
+                let wall = if self.face.is_wall() { self.face.title() } else { tr("Walls") };
+                let mut picked = None;
+                egui::ComboBox::from_id_salt("wallface")
+                    .selected_text(RichText::new(wall).strong().color(if self.face.is_wall() { ui.visuals().strong_text_color() } else { ui.visuals().text_color() }))
+                    .show_ui(ui, |ui| {
+                        for f in Face::WALLS {
+                            if ui.selectable_label(self.face == f, f.title()).clicked() {
+                                picked = Some(f);
+                            }
+                        }
+                    })
+                    .response
+                    .on_hover_text(tr("Side walls, rear wall, roof and bottom seen from the outside: fans, cable glands, cutouts"));
+                if let Some(f) = picked {
+                    self.show_face(f, false);
                 }
                 ui.separator();
             }
@@ -829,10 +1164,97 @@ impl PanelUi {
                 self.cam = None;
             }
         });
+        if self.view == View::Front {
+            ui.horizontal_wrapped(|ui| self.tool_bar(ui, prj, db));
+        }
         ui.separator();
         match self.view {
             View::Front => self.front_view(ui, prj, ei, an, db),
             View::ThreeD => self.view_3d(ui, prj, ei, an),
+        }
+    }
+
+    /// Editing tools of the front view: profiles, cutouts, accessories, 3D macros.
+    fn tool_bar(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
+            let tool = self.tool.clone();
+            for (t, label, tip) in [
+                (Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)")),
+                (Tool::Rail, tr("Mounting rail"), tr("Click start and end point")),
+                (Tool::Duct, tr("Cable duct"), tr("Click start and end point")),
+                (Tool::Busbar, tr("Busbar"), tr("Copper busbar system: click start and end point")),
+                (Tool::Cutout, tr("Cutout"), tr("Opening in the mounting plate / door: click two corners (round: in the properties)")),
+            ] {
+                if !self.tool_allowed(&t) {
+                    continue;
+                }
+                if ui.selectable_label(tool == t, label).on_hover_text(tip).clicked() {
+                    self.set_tool(t);
+                }
+            }
+            if let Tool::PlaceDevice(tag) = &tool {
+                ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
+            }
+            // Accessories for the face shown, 3D macros.
+            let face = self.face;
+            let accessories: Vec<parts::Part> = accessory_parts(db, prj).into_iter().filter(|p| panel::allowed_faces(p).contains(&face)).collect();
+            let current = match &tool {
+                Tool::Accessory(part) => accessories.iter().find(|p| &p.number == part).map(|p| p.subgroup.clone()).unwrap_or(part.clone()),
+                _ => tr("Accessory").to_string(),
+            };
+            egui::ComboBox::from_id_salt("accessory")
+                .selected_text(current)
+                .width(130.0)
+                .show_ui(ui, |ui| {
+                    for p in &accessories {
+                        let active = tool == Tool::Accessory(p.number.clone());
+                        if ui.selectable_label(active, format!("{} – {}", p.subgroup, p.number)).on_hover_text(&p.description).clicked() {
+                            self.set_tool(Tool::Accessory(p.number.clone()));
+                        }
+                    }
+                })
+                .response
+                .on_hover_text(tr("Fans, filters, cable glands, lights, handles: choose one, then click where it goes"));
+            let macros = panel::all_macros(prj);
+            let current = match &tool {
+                Tool::Macro(name) => macros.iter().find(|m| &m.name == name).map(|m| m.title().to_string()).unwrap_or(name.clone()),
+                _ => tr("3D macro").to_string(),
+            };
+            let mut remove = None;
+            egui::ComboBox::from_id_salt("macro")
+                .selected_text(current)
+                .width(130.0)
+                .show_ui(ui, |ui| {
+                    for m in &macros {
+                        ui.horizontal(|ui| {
+                            let active = tool == Tool::Macro(m.name.clone());
+                            let text = if m.is_builtin() { m.title().to_string() } else { format!("★ {}", m.name) };
+                            if ui.selectable_label(active, text).on_hover_text(&m.description).clicked() {
+                                self.set_tool(Tool::Macro(m.name.clone()));
+                            }
+                            if !m.is_builtin() && ui.small_button("🗑").on_hover_text(tr("Delete macro")).clicked() {
+                                remove = Some(m.name.clone());
+                            }
+                        });
+                    }
+                })
+                .response
+                .on_hover_text(tr("Insert a group of items (anchored items go to their place, the others where you click)"));
+            if let Some(name) = remove {
+                prj.layout.macros.retain(|m| m.name != name);
+            }
+    }
+
+    /// Shows a face in the front view.
+    fn show_face(&mut self, face: Face, inside: bool) {
+        if self.face != face {
+            self.selection.clear();
+            self.selected_wire = None;
+            self.fit_pending = true;
+        }
+        self.face = face;
+        self.door_inside = inside;
+        if !self.tool_allowed(&self.tool) {
+            self.set_tool(Tool::Select);
         }
     }
 
@@ -849,7 +1271,7 @@ impl PanelUi {
         let pal = Palette::new(ui.visuals().dark_mode);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
-        let (ew, eh) = (prj.layout.enclosures[ei].width, prj.layout.enclosures[ei].height);
+        let (ew, eh) = prj.layout.enclosures[ei].view_size(self.face);
         if self.fit_pending && rect.width() > 100.0 && rect.height() > 100.0 {
             self.zoom = ((rect.width() - 40.0) / ew).min((rect.height() - 40.0) / eh).max(0.05);
             self.offset = vec2((rect.width() - ew * self.zoom) / 2.0, (rect.height() - eh * self.zoom) / 2.0);
@@ -946,7 +1368,12 @@ impl PanelUi {
                             let id = prj.new_id();
                             let (x, y) = (a.x.min(sn.x), a.y.min(sn.y));
                             let (w, h) = ((a.x - sn.x).abs(), (a.y - sn.y).abs());
-                            let (z, d) = if self.face == Face::Door { (0.0, 2.0) } else { (-PLATE_THICKNESS, PLATE_THICKNESS) };
+                            let t = prj.layout.enclosures[ei].wall();
+                            let (z, d) = match self.face {
+                                Face::Plate => (-PLATE_THICKNESS, PLATE_THICKNESS),
+                                Face::Door => (0.0, 2.0),
+                                _ => (-t, t),
+                            };
                             prj.layout.enclosures[ei].items.push(PanelItem { id, kind: ItemKind::Cutout, x, y, w, h, z, d, face: self.face, ..Default::default() });
                             self.select_item(id);
                         }
@@ -964,6 +1391,31 @@ impl PanelUi {
                     // Continue with the next unplaced device.
                     let next = panel::devices_to_place(prj).into_iter().next();
                     self.set_tool(next.map(|d| Tool::PlaceDevice(d.tag)).unwrap_or(Tool::Select));
+                }
+            }
+            Tool::Accessory(part) => {
+                if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plate) {
+                    if db.get(&part).is_some() {
+                        parts::ensure_in_project(prj, db, &part);
+                    }
+                    let probe = panel::new_accessory(prj, &part, self.face, p(0.0, 0.0));
+                    if let Some(id) = panel::place_accessory(prj, ei, &part, self.face, p(q.x - probe.w / 2.0, q.y - probe.h / 2.0)) {
+                        self.select_item(id);
+                    }
+                }
+            }
+            Tool::Macro(name) => {
+                if let (true, Some(sn)) = (resp.clicked_by(PointerButton::Primary), snapped) {
+                    if let Some(m) = panel::all_macros(prj).into_iter().find(|m| m.name == name) {
+                        for it in m.items.iter().filter(|i| !i.part.is_empty()) {
+                            if db.get(&it.part).is_some() {
+                                parts::ensure_in_project(prj, db, &it.part);
+                            }
+                        }
+                        let ids = panel::insert_macro(prj, ei, &m, self.face, sn);
+                        self.selection = ids.into_iter().collect();
+                        self.status = tr_fmt!("3D macro {} inserted", m.title());
+                    }
                 }
             }
         }
@@ -1082,6 +1534,12 @@ impl PanelUi {
                 painter.line_segment([c - vec2(8.0, 0.0), c + vec2(8.0, 0.0)], Stroke::new(1.0, pal.ghost));
                 painter.line_segment([c - vec2(0.0, 8.0), c + vec2(0.0, 8.0)], Stroke::new(1.0, pal.ghost));
             }
+            (Tool::Accessory(part), _, Some(q)) => {
+                let pd = prj.parts.iter().chain(parts::catalog()).find(|x| &x.number == part);
+                let [w, h, _] = pd.and_then(|x| x.size()).unwrap_or([panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1, 0.0]);
+                let (x, y) = (panel::snap(q.x - w / 2.0), panel::snap(q.y - h / 2.0));
+                g.rect(p(x, y) + m, p(x + w, y + h) + m, 0.6, Ink::Ghost, false);
+            }
             (Tool::PlaceDevice(tag), _, Some(q)) => {
                 let (w, h) = panel::device_size(prj, tag).map(|s| (s.w, s.h)).unwrap_or((panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1));
                 let mut ghost = PanelItem { kind: ItemKind::Device, x: panel::snap(q.x - w / 2.0), y: panel::snap(q.y - h / 2.0), w, h, face: self.face, ..Default::default() };
@@ -1126,7 +1584,7 @@ impl PanelUi {
                     if !shift {
                         self.selection.clear();
                     }
-                    self.selection.insert(id);
+                    self.selection.extend(with_group(e, id));
                 }
                 // Devices mounted on a moved rail move with it.
                 let mut ids = self.selection.clone();
@@ -1169,7 +1627,10 @@ impl PanelUi {
             }
         }
         if resp.drag_stopped() {
-            self.drag = None;
+            if let Some(drag) = self.drag.take() {
+                let moved: Vec<u64> = drag.originals.iter().map(|o| o.0).collect();
+                panel::capture_anchors(&mut prj.layout.enclosures[ei], &moved);
+            }
         }
         if resp.clicked_by(PointerButton::Primary) {
             if let Some(ptr) = resp.interact_pointer_pos() {
@@ -1186,13 +1647,16 @@ impl PanelUi {
                     }
                 }
                 self.selected_wire = None;
+                let alt = ui.input(|i| i.modifiers.alt);
                 match item {
                     Some(id) if shift => {
                         if !self.selection.remove(&id) {
                             self.selection.insert(id);
                         }
                     }
-                    Some(id) => self.select_item(id),
+                    // Alt: the single item of an assembly.
+                    Some(id) if alt => self.select_item(id),
+                    Some(id) => self.select_assembly(e, id),
                     None if !shift => self.selection.clear(),
                     None => {}
                 }
@@ -1319,30 +1783,44 @@ impl PanelUi {
                 prims.push((layer, depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item, outline: true }));
             }
         };
-        // Enclosure: rear wall and inner side walls (door open)
+        // The enclosure's components: walls, side panels, frame, plinth, mounting plate,
+        // door leaf.
         let (w, h, dpt) = (e.width, e.height, e.depth);
-        let wall = Color32::from_rgb(200, 204, 210);
-        let t = 2.0;
-        // A wall seen from the outside covers the equipment (drawn last, translucent);
-        // seen from the inside it is behind everything.
-        let wall_layer = |outside: bool| if outside { OUTER_WALLS } else { 0 };
-        add_box(&mut prims, wall_layer(eye[2] < 0.0), [0.0, 0.0, 0.0], [w, h, t], wall, None, false);
-        add_box(&mut prims, wall_layer(eye[0] < 0.0), [0.0, 0.0, 0.0], [t, h, dpt], wall, None, false);
-        add_box(&mut prims, wall_layer(eye[0] > w), [w - t, 0.0, 0.0], [w, h, dpt], wall, None, false);
-        add_box(&mut prims, wall_layer(eye[1] < 0.0), [0.0, 0.0, 0.0], [w, t, dpt], wall, None, false);
-        add_box(&mut prims, wall_layer(eye[1] > h), [0.0, h - t, 0.0], [w, h, dpt], wall, None, false);
-        // Mounting plate
-        let (pw, ph) = e.plate_size();
-        let plate_min = [PLATE_MARGIN, h - PLATE_MARGIN - ph, PLATE_Z - PLATE_THICKNESS];
-        add_box(&mut prims, 1, plate_min, [PLATE_MARGIN + pw, h - PLATE_MARGIN, PLATE_Z], Color32::from_rgb(222, 218, 205), None, false);
-        // Door leaf on its hinge: seen from the outside it covers the equipment
-        // (translucent), seen from the inside it is behind the door devices.
-        let leaf_out = sub(eye, swing([w / 2.0, h / 2.0, dpt + t]));
-        let leaf_layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
-        add_box(&mut prims, leaf_layer, [0.0, 0.0, dpt], [w, h, dpt + t], Color32::from_rgb(190, 194, 200), None, true);
-        let to3 = |x: f32, y: f32, z: f32| [PLATE_MARGIN + x, h - PLATE_MARGIN - y, PLATE_Z + z];
+        let t = e.wall();
         // Enclosure coordinates (y down) to the 3D view (y up).
         let up = |q: [f32; 3]| [q[0], h - q[1], q[2]];
+        let up_box = |(a, b): ([f32; 3], [f32; 3])| (up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]));
+        // The eye in enclosure coordinates.
+        let eye_e = [eye[0], h - eye[1], eye[2]];
+        // A wall seen from the outside covers the equipment (drawn last, translucent);
+        // seen from the inside it is behind everything.
+        let outside_of = |face: Face, b: ([f32; 3], [f32; 3])| {
+            let n = panel::outward(face);
+            let c = [0, 1, 2].map(|k| if n[k] > 0.0 { b.1[k] } else if n[k] < 0.0 { b.0[k] } else { (b.0[k] + b.1[k]) / 2.0 });
+            dot(n, sub(eye_e, c)) > 0.0
+        };
+        let wall_layer = |outside: bool| if outside { OUTER_WALLS } else { 0 };
+        let leaf_out = sub(eye, swing([w / 2.0, h / 2.0, dpt + t]));
+        for c in panel::components(e) {
+            let [r, g, b] = crate::export3d::component_color(c.role);
+            let color = Color32::from_rgb(r, g, b);
+            for bx in c.boxes {
+                let (min, max) = up_box(bx);
+                match c.role {
+                    // Door leaf on its hinge: seen from the outside it covers the equipment
+                    // (translucent), seen from the inside it is behind the door devices.
+                    Role::Door => {
+                        let layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
+                        add_box(&mut prims, layer, min, max, Color32::from_rgb(190, 194, 200), None, true);
+                    }
+                    Role::Wall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), min, max, color, None, false),
+                    Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), min, max, color, None, false),
+                    Role::MountingPlate | Role::Body => add_box(&mut prims, 1, min, max, color, None, false),
+                    Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, min, max, color, None, false),
+                }
+            }
+        }
+        let to3 = |x: f32, y: f32, z: f32| [PLATE_MARGIN + x, h - PLATE_MARGIN - y, PLATE_Z + z];
         let selected_wire = self.wire_index(an).filter(|i| an.wiring[*i].enclosure == ei);
         let wire_ends = selected_wire.map(|i| an.wiring[i].items);
         for it in &e.items {
@@ -1359,13 +1837,14 @@ impl PanelUi {
                     ItemKind::Busbar => Color32::from_rgb(200, 120, 60),
                     ItemKind::Cutout => Color32::from_rgb(40, 40, 44),
                     ItemKind::Device => Color32::from_rgb(170, 186, 210),
+                    ItemKind::Accessory => Color32::from_rgb(95, 100, 110),
                 }
             };
             // Devices with a 3D model in their part are drawn with it instead of a box.
             let on_door = it.face == Face::Door;
             if let Some(tris) = panel::device_mesh(prj, it) {
-                for tri in tris {
-                    let w = tri.map(|v| up(panel::to_enclosure(e, it, v))).map(|q| if on_door { swing(q) } else { q });
+                for tri in panel::place_triangles(e, it, tris) {
+                    let w = tri.map(up).map(|q| if on_door { swing(q) } else { q });
                     let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
                     if dot(n, sub(eye, w[0])) <= 0.0 {
                         continue; // back face
@@ -1387,14 +1866,20 @@ impl PanelUi {
             let (min, max) = if it.kind == ItemKind::Cutout && it.face == Face::Plate {
                 // Dark patch just in front of the plate.
                 (to3(it.x, it.y + it.h, 0.0), to3(it.x + it.w, it.y, 0.3))
+            } else if it.kind == ItemKind::Cutout && it.face.is_wall() {
+                // Through the wall, a little proud of both of its surfaces.
+                let n = panel::outward(it.face);
+                let (a, b) = ([0, 1, 2].map(|k| b0[k] - n[k].abs() * 0.5), [0, 1, 2].map(|k| b1[k] + n[k].abs() * 0.5));
+                (up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]))
             } else {
                 (up([b0[0], b1[1], b0[2]]), up([b1[0], b0[1], b1[2]]))
             };
             let layer = match it.kind {
+                ItemKind::Cutout if it.face.is_wall() => wall_layer(outside_of(it.face, (b0, b1))),
                 ItemKind::Cutout => 1,
                 ItemKind::Rail => 2,
                 ItemKind::Duct | ItemKind::Busbar => 3,
-                ItemKind::Device => 5,
+                ItemKind::Device | ItemKind::Accessory => 5,
             };
             add_box(&mut prims, layer, min, max, base, Some(it.id), on_door);
         }
@@ -1463,6 +1948,7 @@ impl PanelUi {
                 }
             }
         }
+        let _ = (PLATE_THICKNESS, t);
         // Enclosure outline
         let edges = [
             ([0.0, 0.0, dpt], [w, 0.0, dpt]),
@@ -1482,7 +1968,10 @@ impl PanelUi {
             let (front, normal) = if it.face == Face::Door {
                 (swing(up([(b0[0] + b1[0]) / 2.0, (b0[1] + b1[1]) / 2.0, b1[2] + 2.5])), swing_dir([0.0, 0.0, 1.0]))
             } else {
-                (up([(b0[0] + b1[0]) / 2.0, (b0[1] + b1[1]) / 2.0, b1[2]]), [0.0, 0.0, 1.0])
+                // The side facing into the enclosure.
+                let n = panel::face_frame(e, it.face)[3];
+                let q = panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d]);
+                (up(q), [n[0], -n[1], n[2]])
             };
             if let Some((q, z)) = project(front) {
                 let size = (it.w.min(it.h) * 0.25 * f / z).clamp(0.0, 18.0);
@@ -1556,6 +2045,15 @@ fn apply_enclosure_part(ne: &mut NewEnclosure, db: &PartsDb) {
             }
         }
     }
+}
+
+/// Dissolves the groups of the items (all members leave them).
+fn ungroup(e: &mut Enclosure, ids: &[u64]) {
+    let groups: HashSet<u64> = e.items.iter().filter(|i| ids.contains(&i.id) && i.group != 0).map(|i| i.group).collect();
+    for it in e.items.iter_mut().filter(|i| groups.contains(&i.group)) {
+        it.group = 0;
+    }
+    e.groups.retain(|g| !groups.contains(&g.id));
 }
 
 fn rotate(e: &mut Enclosure, sel: &BTreeSet<u64>) {

@@ -1,10 +1,11 @@
-//! 3D export of the panel layout for MCAD / PLM: the enclosures with their walls,
-//! door, mounting plate, rails, ducts, busbars and devices (the parts' 3D models or
-//! boxes) as glTF 2.0 (JSON with embedded buffer, metres, y up) and as STEP AP214
-//! (faceted solids with colours, millimetres, z up).
+//! 3D export of the panel layout for MCAD / PLM: the enclosures with their components
+//! (body or frame, walls, side panels, door, mounting plate, gland plate, plinth),
+//! rails, ducts, busbars, accessories and devices (the parts' 3D models or boxes) as
+//! glTF 2.0 (JSON with embedded buffer, metres, y up) and as STEP AP214 (faceted
+//! solids with colours, millimetres, z up).
 
 use crate::model::Project;
-use crate::panel::{self, Enclosure, ItemKind, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use crate::panel::{self, Enclosure, ItemKind, Role};
 use crate::parts::vec3::{box_triangles, cross, norm, sub};
 use std::collections::HashMap;
 use std::fmt::Write;
@@ -30,7 +31,6 @@ pub struct EnclosureScene {
     pub solids: Vec<Solid>,
 }
 
-const WALL: f32 = 2.0;
 /// Gap between enclosures placed side by side (mm).
 const GAP: f32 = 200.0;
 
@@ -41,6 +41,18 @@ fn color(kind: ItemKind) -> [u8; 3] {
         ItemKind::Busbar => [200, 120, 60],
         ItemKind::Cutout => [40, 40, 44],
         ItemKind::Device => [170, 186, 210],
+        ItemKind::Accessory => [95, 100, 110],
+    }
+}
+
+/// Colour of an enclosure component.
+pub fn component_color(role: Role) -> [u8; 3] {
+    match role {
+        Role::MountingPlate => [222, 218, 205],
+        Role::Plinth => [60, 62, 66],
+        Role::Body => [150, 155, 162],
+        Role::GlandPlate => [175, 178, 184],
+        _ => [200, 204, 210],
     }
 }
 
@@ -51,36 +63,29 @@ fn kind_name(kind: ItemKind) -> &'static str {
         ItemKind::Busbar => "Busbar",
         ItemKind::Cutout => "Cutout",
         ItemKind::Device => "Device",
+        ItemKind::Accessory => "Accessory",
     }
 }
 
 /// The solids of an enclosure (the coordinates of the 3D view).
 pub fn enclosure_solids(prj: &Project, e: &Enclosure) -> Vec<Solid> {
-    let (w, h, d) = (e.width, e.height, e.depth);
+    let h = e.height;
     let up = |q: [f32; 3]| [q[0], h - q[1], q[2]];
+    // Boxes in enclosure coordinates (y down) to y up.
+    let up_box = |(a, b): ([f32; 3], [f32; 3])| box_triangles(up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]));
     let mut out = Vec::new();
     let mut solid = |name: &str, color: [u8; 3], transparent: bool, triangles: Vec<Tri>| {
         out.push(Solid { name: name.to_string(), color, transparent, triangles });
     };
-    let wall = [200, 204, 210];
-    let mut walls = box_triangles([0.0, 0.0, 0.0], [w, h, WALL]);
-    walls.extend(box_triangles([0.0, 0.0, 0.0], [WALL, h, d]));
-    walls.extend(box_triangles([w - WALL, 0.0, 0.0], [w, h, d]));
-    walls.extend(box_triangles([0.0, 0.0, 0.0], [w, WALL, d]));
-    walls.extend(box_triangles([0.0, h - WALL, 0.0], [w, h, d]));
-    solid(&format!("{} enclosure", e.name), wall, false, walls);
-    solid(&format!("{} door", e.name), wall, true, box_triangles([0.0, 0.0, d], [w, h, d + WALL]));
-    let (pw, ph) = e.plate_size();
-    solid(
-        &format!("{} mounting plate", e.name),
-        [222, 218, 205],
-        false,
-        box_triangles([PLATE_MARGIN, h - PLATE_MARGIN - ph, PLATE_Z - PLATE_THICKNESS], [PLATE_MARGIN + pw, h - PLATE_MARGIN, PLATE_Z]),
-    );
+    for c in panel::components(e).into_iter().filter(|c| !c.boxes.is_empty()) {
+        let name = if c.part.is_empty() { format!("{} {}", e.name, kind_role(c.role)) } else { format!("{} {} {}", e.name, kind_role(c.role), c.part) };
+        let tris = c.boxes.into_iter().flat_map(up_box).collect();
+        solid(&name, component_color(c.role), c.role == Role::Door, tris);
+    }
     for it in e.items.iter().filter(|i| i.kind != ItemKind::Cutout) {
         let name = if it.tag.is_empty() { kind_name(it.kind) } else { it.tag.as_str() };
         let tris = match panel::device_mesh(prj, it) {
-            Some(tris) => tris.into_iter().map(|t| t.map(|v| up(panel::to_enclosure(e, it, v)))).collect(),
+            Some(tris) => panel::place_triangles(e, it, tris).into_iter().map(|t| t.map(up)).collect(),
             None => {
                 let (b0, b1) = panel::item_box(e, it);
                 box_triangles(up([b0[0], b1[1], b0[2]]), up([b1[0], b0[1], b1[2]]))
@@ -89,6 +94,23 @@ pub fn enclosure_solids(prj: &Project, e: &Enclosure) -> Vec<Solid> {
         solid(name, color(it.kind), false, tris);
     }
     out
+}
+
+/// Name of a component in the exported scene (machine data, not translated).
+fn kind_role(role: Role) -> &'static str {
+    match role {
+        Role::Body => "enclosure",
+        Role::Door => "door",
+        Role::Wall(panel::Face::Left) => "left side panel",
+        Role::Wall(panel::Face::Right) => "right side panel",
+        Role::Wall(panel::Face::Rear) => "rear wall",
+        Role::Wall(panel::Face::Roof) => "roof",
+        Role::Wall(_) => "bottom",
+        Role::GlandPlate => "gland plate",
+        Role::MountingPlate => "mounting plate",
+        Role::Plinth => "plinth",
+        Role::BayingKit => "baying kit",
+    }
 }
 
 /// All enclosures of the project, side by side.

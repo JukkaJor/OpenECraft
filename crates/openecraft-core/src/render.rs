@@ -600,7 +600,8 @@ pub fn draw_enclosure(
     let parts = &prj.parts[..];
     let m = face.origin();
     let tf = |x: f32, y: f32| origin + p((x + m) * k, (y + m) * k);
-    d.rect(origin, origin + p(e.width * k, e.height * k), 0.5, Ink::Line, false);
+    let (vw, vh) = e.view_size(face);
+    d.rect(origin, origin + p(vw * k, vh * k), 0.5, Ink::Line, false);
     match face {
         Face::Plate => {
             let (pw, ph) = e.plate_size();
@@ -621,6 +622,28 @@ pub fn draw_enclosure(
             let hy = e.height / 2.0;
             d.rect(tf(e.width - 32.0, hy - 50.0), tf(e.width - 14.0, hy + 50.0), 0.0, Ink::Fill, true);
             d.rect(tf(e.width - 32.0, hy - 50.0), tf(e.width - 14.0, hy + 50.0), 0.25, Ink::Line, false);
+        }
+        wall => {
+            // The sheet, its mounting area inside the flanges (dashed) and, for walls
+            // that are a separate component, the outline of that part.
+            d.rect(origin, origin + p(vw * k, vh * k), 0.0, Ink::Plate, true);
+            let a = panel::mounting_area(e, wall);
+            let (s, t) = (tf(a.min.x, a.min.y), tf(a.max.x, a.max.y));
+            for (u, v) in [(s, p(t.x, s.y)), (p(t.x, s.y), t), (t, p(s.x, t.y)), (p(s.x, t.y), s)] {
+                d.line(u, v, 0.15, Ink::Frame, true);
+            }
+            let open = (wall == Face::Left && e.build.left_open) || (wall == Face::Right && e.build.right_open);
+            if open {
+                d.line(origin, origin + p(vw * k, vh * k), 0.15, Ink::Frame, false);
+                d.line(origin + p(0.0, vh * k), origin + p(vw * k, 0.0), 0.15, Ink::Frame, false);
+                d.text(origin + p(vw * k / 2.0, vh * k / 2.0), tr("bayed (open)"), 3.0 * k.max(0.2), Anchor::Center, VAnchor::Middle, Ink::Text);
+            }
+            if wall == Face::Bottom && e.build.gland_plate {
+                let g = 3.0 * e.flange();
+                if vw > 2.0 * g && vh > 2.0 * g {
+                    d.rect(tf(g, g / 2.0), tf(vw - g, vh - g / 2.0), 0.2, Ink::Frame, false);
+                }
+            }
         }
     }
     // Cutouts first, then rails, ducts, busbars, devices on top.
@@ -715,6 +738,15 @@ pub fn draw_enclosure(
                     d.line(p(a.x, b.y), p(b.x, a.y), 0.12, line_ink, false);
                 }
             }
+            ItemKind::Accessory => {
+                // Accessories: their outline with the part number.
+                d.rect(a, b, 0.0, Ink::Fill, true);
+                let text_ink = if ink == Ink::Line { Ink::Text } else { ink };
+                let size = (it.w.min(it.h) * 0.18).clamp(2.0, 7.0) * k;
+                d.text(tf(it.x + it.w / 2.0, it.y + it.h / 2.0), it.part.trim_start_matches("GEN."), size, Anchor::Center, VAnchor::Middle, text_ink);
+                d.rect(a, b, 0.25, ink, false);
+                d.line(a, p(a.x + (b.x - a.x).min(b.y - a.y) * 0.3, a.y), 0.15, ink, false);
+            }
             ItemKind::Device if inside => {
                 // Rear of a door device: its box and tag.
                 d.rect(a, b, 0.0, Ink::Fill, true);
@@ -753,9 +785,10 @@ pub fn draw_enclosure(
             }
         }
     }
-    // Door cutouts of the door devices (dashed: under the device)
-    if face == Face::Door {
-        for o in crate::production::openings(e, parts, face).iter().filter(|o| e.item(o.item).map(|i| i.kind == ItemKind::Device).unwrap_or(false)) {
+    // Cutouts of door devices and accessories (dashed: under the item)
+    {
+        let under = |o: &crate::production::Opening| e.item(o.item).map(|i| matches!(i.kind, ItemKind::Device | ItemKind::Accessory)).unwrap_or(false);
+        for o in crate::production::openings(e, parts, face).iter().filter(|o| under(o)) {
             let c = tf(o.center.x, o.center.y);
             if o.round {
                 d.circle(c, o.w / 2.0 * k, 0.15, Ink::Frame, false);
@@ -767,16 +800,17 @@ pub fn draw_enclosure(
                 }
             }
         }
-        return;
     }
-    // Drilling pattern (holes hidden under other devices are left out)
-    for h in crate::production::holes(e, parts) {
-        let covered = e.items.iter().any(|i| i.kind == ItemKind::Device && i.face == Face::Plate && i.id != h.item && i.rect().contains(h.pos));
+    // Drilling pattern (holes hidden under other devices are left out); weld studs as
+    // a filled dot.
+    for h in crate::production::holes_on(e, parts, face) {
+        let covered = e.items.iter().any(|i| i.kind == ItemKind::Device && i.face == face && i.id != h.item && i.rect().contains(h.pos));
         if covered {
             continue;
         }
         let c = tf(h.pos.x, h.pos.y);
-        d.circle(c, (h.diameter / 2.0 * k).max(0.25), 0.1, Ink::Frame, false);
+        let stud = h.fastening == panel::Fastening::Stud;
+        d.circle(c, (h.diameter / 2.0 * k).max(0.25), if stud { 0.0 } else { 0.1 }, Ink::Frame, stud);
     }
 }
 

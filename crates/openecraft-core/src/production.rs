@@ -1,10 +1,10 @@
 //! Production data of the panel layout (in the spirit of EPLAN Pro Panel): drilling
-//! pattern and cutouts of the mounting plate and the door with NC export (DXF / CSV),
-//! wire end treatment (stripping length, ferrules) and clearance checks.
+//! pattern and cutouts of the mounting plate, the door and the walls with NC export
+//! (DXF / CSV), wire end treatment (stripping length, ferrules) and clearance checks.
 
 use crate::geom::{p, P, R};
 use crate::model::Project;
-use crate::panel::{Enclosure, Face, ItemKind, PanelItem};
+use crate::panel::{Enclosure, Face, Fastening, ItemKind, PanelItem};
 use crate::parts::Part;
 use std::fmt::Write;
 
@@ -38,11 +38,16 @@ pub fn drill_diameter(spec: &str) -> Option<f32> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Hole {
     pub item: u64,
-    /// Plate coordinates (origin top left, y down).
+    /// Face coordinates (origin top left, y down).
     pub pos: P,
+    /// Drill diameter (weld studs: their nominal diameter).
     pub diameter: f32,
     /// Thread to cut ("M5"), empty for through holes.
     pub thread: String,
+    /// How the item is fixed at this point.
+    pub fastening: Fastening,
+    /// Size of the screw ("M5", also for through holes), empty for plain diameters.
+    pub thread_size: String,
 }
 
 /// Positions along a length: `end` from both ends and evenly spaced in between with
@@ -71,14 +76,34 @@ pub fn part_holes(part: &Part) -> Option<(String, Vec<P>)> {
     (!pts.is_empty()).then(|| (thread.trim().to_string(), pts))
 }
 
-fn hole(item: u64, pos: P, thread: &str) -> Hole {
-    let diameter = drill_diameter(thread).unwrap_or(4.2);
-    let is_thread = thread.trim().to_uppercase().starts_with('M');
-    Hole { item, pos, diameter, thread: if is_thread { thread.trim().to_uppercase() } else { String::new() } }
+fn hole_with(item: u64, pos: P, thread: &str, fastening: Fastening) -> Hole {
+    let size = crate::parts::mechanics::thread(thread).unwrap_or("").to_string();
+    let diameter = fastening.hole_diameter(thread).or_else(|| drill_diameter(thread)).unwrap_or(4.2);
+    let tapped = fastening == Fastening::Tapped && !size.is_empty();
+    Hole { item, pos, diameter, thread: if tapped { size.clone() } else { String::new() }, fastening, thread_size: size }
 }
 
-/// Holes of one item (devices on rails need none).
+fn hole(item: u64, pos: P, thread: &str) -> Hole {
+    hole_with(item, pos, thread, Fastening::Tapped)
+}
+
+/// Holes of one item by its fastening (devices on rails, glued or clipped items need
+/// none; weld studs are fixing points without a hole).
 pub fn item_holes(it: &PanelItem, parts: &[Part]) -> Vec<Hole> {
+    let part = parts.iter().find(|x| x.number == it.part).or_else(|| crate::parts::catalog().iter().find(|x| x.number == it.part));
+    let fastening = Fastening::resolve(it, part);
+    if !fastening.has_points() {
+        return Vec::new();
+    }
+    pattern_holes(it, parts)
+        .into_iter()
+        .map(|h| if h.thread_size.is_empty() { Hole { fastening, ..h } } else { hole_with(h.item, h.pos, &h.thread_size, fastening) })
+        .collect()
+}
+
+/// Fixing points of an item as tapped holes (the pattern, independent of the
+/// fastening).
+fn pattern_holes(it: &PanelItem, parts: &[Part]) -> Vec<Hole> {
     let along = |(end, pitch, thread): (f32, f32, &str)| {
         let (a, _) = it.center_line();
         line_positions(it.length(), end, pitch)
@@ -102,8 +127,8 @@ pub fn item_holes(it: &PanelItem, parts: &[Part]) -> Vec<Hole> {
             }
             v
         }
-        ItemKind::Device if it.z <= 0.01 => {
-            let part = parts.iter().find(|x| x.number == it.part);
+        ItemKind::Device | ItemKind::Accessory => {
+            let part = parts.iter().find(|x| x.number == it.part).or_else(|| crate::parts::catalog().iter().find(|x| x.number == it.part));
             match part.and_then(part_holes) {
                 Some((thread, pts)) => {
                     // Turned devices (width and height swapped) turn their pattern.
@@ -121,13 +146,18 @@ pub fn item_holes(it: &PanelItem, parts: &[Part]) -> Vec<Hole> {
                 None => Vec::new(),
             }
         }
-        ItemKind::Device | ItemKind::Cutout => Vec::new(),
+        ItemKind::Cutout => Vec::new(),
     }
 }
 
 /// Drilling pattern of a mounting plate.
 pub fn holes(e: &Enclosure, parts: &[Part]) -> Vec<Hole> {
-    let mut v: Vec<Hole> = e.items.iter().filter(|it| it.face == Face::Plate).flat_map(|it| item_holes(it, parts)).collect();
+    holes_on(e, parts, Face::Plate)
+}
+
+/// Drilling pattern (and weld studs) of a face.
+pub fn holes_on(e: &Enclosure, parts: &[Part], face: Face) -> Vec<Hole> {
+    let mut v: Vec<Hole> = e.items.iter().filter(|it| it.face == face).flat_map(|it| item_holes(it, parts)).collect();
     v.sort_by(|a, b| a.pos.y.total_cmp(&b.pos.y).then(a.pos.x.total_cmp(&b.pos.x)));
     v
 }
@@ -165,20 +195,24 @@ pub struct Opening {
     pub round: bool,
 }
 
+/// A cutout size: `Ø22.5` (round) or `92 x 92` (rectangular). Returns (round, width,
+/// height).
+pub fn parse_cutout(spec: &str) -> Option<(bool, f32, f32)> {
+    let s = spec.trim().trim_end_matches("mm").trim().replace(',', ".");
+    if let Some((w, h)) = s.split_once(['x', 'X', '×']) {
+        if let (Ok(w), Ok(h)) = (w.trim().parse::<f32>(), h.trim().parse::<f32>()) {
+            return Some((false, w, h));
+        }
+    }
+    drill_diameter(&s).map(|d| (true, d, d))
+}
+
 /// Door cutout of a device: part data `Door cutout: Ø22.5` (round) or `92 x 92`
 /// (rectangular); without data Ø22.5 for command and signal devices, otherwise the
 /// device outline less 2 mm on each side. Returns (round, width, height).
 pub fn door_cutout(part: Option<&Part>, it: &PanelItem) -> (bool, f32, f32) {
-    if let Some(spec) = part.and_then(|p| p.tech_value("Door cutout")) {
-        let s = spec.trim().trim_end_matches("mm").trim().replace(',', ".");
-        if let Some((w, h)) = s.split_once(['x', 'X', '×']) {
-            if let (Ok(w), Ok(h)) = (w.trim().parse::<f32>(), h.trim().parse::<f32>()) {
-                return (false, w, h);
-            }
-        }
-        if let Some(d) = drill_diameter(&s) {
-            return (true, d, d);
-        }
+    if let Some(c) = part.and_then(|p| p.tech_value("Door cutout").or_else(|| p.tech_value("Cutout"))).and_then(parse_cutout) {
+        return c;
     }
     let command = part.map(|p| p.group == "Sensors, switches, pushbuttons" || p.group == "Signal devices").unwrap_or(false);
     if command {
@@ -188,15 +222,25 @@ pub fn door_cutout(part: Option<&Part>, it: &PanelItem) -> (bool, f32, f32) {
     }
 }
 
-/// Openings of a face: cutout items and, on the door, one per door device.
+/// Openings of a face: cutout items, one per door device on the door, and the
+/// cutouts of accessories and devices whose parts have one (`Cutout: 177 x 177`, fans,
+/// cable glands).
 pub fn openings(e: &Enclosure, parts: &[Part], face: Face) -> Vec<Opening> {
     let mut v = Vec::new();
     for it in e.items.iter().filter(|i| i.face == face) {
+        let part = || parts.iter().chain(crate::parts::catalog()).find(|p| p.number == it.part);
         match it.kind {
             ItemKind::Cutout => v.push(Opening { item: it.id, center: it.center(), w: it.w, h: it.h, round: it.round }),
             ItemKind::Device if face == Face::Door => {
-                let (round, w, h) = door_cutout(parts.iter().find(|p| p.number == it.part), it);
+                let (round, w, h) = door_cutout(part(), it);
                 v.push(Opening { item: it.id, center: it.center(), w, h, round });
+            }
+            ItemKind::Device | ItemKind::Accessory => {
+                if let Some((round, w, h)) = part().and_then(|p| p.tech_value("Cutout")).and_then(parse_cutout) {
+                    // Quarter-turned items turn their cutout.
+                    let (w, h) = if (it.w - it.h).abs() > 0.5 && part().is_some_and(|p| (p.width - it.h).abs() < 0.5) { (h, w) } else { (w, h) };
+                    v.push(Opening { item: it.id, center: it.center(), w, h, round });
+                }
             }
             _ => {}
         }
@@ -210,20 +254,17 @@ fn csv_num(v: f32) -> String {
     format!("{v:.1}")
 }
 
-fn face_holes(e: &Enclosure, parts: &[Part], face: Face) -> Vec<Hole> {
-    if face == Face::Plate { holes(e, parts) } else { Vec::new() }
-}
-
-/// Drilling and cutout list of the mounting plate or the door for NC machines:
+/// Drilling and cutout list of a face (mounting plate, door, wall) for NC machines:
 /// coordinates from the bottom left corner, y up.
 pub fn nc_csv(prj: &Project, enc: usize, face: Face) -> String {
     let e = &prj.layout.enclosures[enc];
     let (_, fh) = e.face_size(face);
     let name = |id: u64| e.item(id).map(|i| if i.kind == ItemKind::Device { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default();
     let mut out = String::from("Enclosure;Face;Item;Operation;X;Y;Diameter;Thread;Width;Height\n");
-    for h in face_holes(e, &prj.parts, face) {
-        let op = if h.thread.is_empty() { "Drill" } else { "Drill + tap" };
-        let _ = writeln!(out, "{};{};{};{op};{};{};{};{};;", e.name, face.title(), name(h.item), csv_num(h.pos.x), csv_num(fh - h.pos.y), csv_num(h.diameter), h.thread);
+    for h in holes_on(e, &prj.parts, face) {
+        let op = h.fastening.operation();
+        let thread = if h.fastening == Fastening::Tapped { &h.thread } else { &h.thread_size };
+        let _ = writeln!(out, "{};{};{};{op};{};{};{};{};;", e.name, face.title(), name(h.item), csv_num(h.pos.x), csv_num(fh - h.pos.y), csv_num(h.diameter), thread);
     }
     for o in openings(e, &prj.parts, face) {
         let (op, dia) = if o.round { ("Cutout round", csv_num(o.w)) } else { ("Cutout rectangular", String::new()) };
@@ -232,12 +273,14 @@ pub fn nc_csv(prj: &Project, enc: usize, face: Face) -> String {
     out
 }
 
-/// Mounting plate or door as DXF for NC machines: outline, holes on one layer per
-/// diameter (`HOLE_D4.2`), thread marks, cutouts; millimetres, origin bottom left.
+/// A face as DXF for NC machines: outline, holes on one layer per diameter
+/// (`HOLE_D4.2`), thread marks, weld studs (`STUD_M5`), cutouts; millimetres, origin
+/// bottom left.
 pub fn nc_dxf(prj: &Project, enc: usize, face: Face) -> String {
     let e = &prj.layout.enclosures[enc];
     let (fw, fh) = e.face_size(face);
-    let hs = face_holes(e, &prj.parts, face);
+    let all = holes_on(e, &prj.parts, face);
+    let (studs, hs): (Vec<Hole>, Vec<Hole>) = all.into_iter().partition(|h| h.fastening == Fastening::Stud);
     let mut diameters: Vec<f32> = Vec::new();
     for h in &hs {
         if !diameters.iter().any(|d| (d - h.diameter).abs() < 0.01) {
@@ -245,9 +288,16 @@ pub fn nc_dxf(prj: &Project, enc: usize, face: Face) -> String {
         }
     }
     let hole_layer = |d: f32| format!("HOLE_D{d:.1}");
-    let outline = if face == Face::Plate { "PLATE" } else { "DOOR" };
+    let stud_layer = |h: &Hole| format!("STUD_{}", h.thread_size);
+    let outline = face.key().to_uppercase();
+    let outline = outline.as_str();
     let mut layers: Vec<(String, u8)> = vec![(outline.into(), 7), ("CUTOUT".into(), 1), ("THREAD".into(), 3)];
     layers.extend(diameters.iter().map(|d| (hole_layer(*d), 5)));
+    for h in &studs {
+        if !layers.iter().any(|l| l.0 == stud_layer(h)) {
+            layers.push((stud_layer(h), 6));
+        }
+    }
     let mut out = String::new();
     crate::dxf::header(&mut out, &layers);
     out.push_str("0\nSECTION\n2\nENTITIES\n");
@@ -275,6 +325,9 @@ pub fn nc_dxf(prj: &Project, enc: usize, face: Face) -> String {
             let nominal: f32 = h.thread.trim_start_matches('M').parse().unwrap_or(h.diameter);
             circle(&mut out, "THREAD", h.pos, nominal / 2.0);
         }
+    }
+    for h in &studs {
+        circle(&mut out, &stud_layer(h), h.pos, h.diameter / 2.0);
     }
     for o in openings(e, &prj.parts, face) {
         if o.round {

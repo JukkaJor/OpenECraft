@@ -433,3 +433,76 @@ fn weighted_routes_avoid_expensive_ducts() {
     assert_eq!(route_weighted(&e, a, b, &|_, _, _| 0.1).plate_length, short.plate_length);
 }
 
+
+#[test]
+fn wall_faces_in_enclosure_coordinates() {
+    let e = Enclosure::default();
+    let t = e.wall();
+    let on = |face: Face| PanelItem { id: 1, kind: ItemKind::Accessory, x: 10.0, y: 20.0, w: 100.0, h: 50.0, z: 0.0, d: 30.0, face, ..Default::default() };
+    // Left side seen from the left: face x runs from the rear to the front.
+    assert_eq!(item_box(&e, &on(Face::Left)), ([t, 20.0, 10.0], [t + 30.0, 70.0, 110.0]));
+    // Right side: face x runs from the front to the rear.
+    assert_eq!(item_box(&e, &on(Face::Right)), ([e.width - t - 30.0, 20.0, e.depth - 110.0], [e.width - t, 70.0, e.depth - 10.0]));
+    // Rear wall seen from behind: mirrored.
+    assert_eq!(item_box(&e, &on(Face::Rear)), ([e.width - 110.0, 20.0, t], [e.width - 10.0, 70.0, t + 30.0]));
+    // Roof from above: face y runs from the rear to the front.
+    assert_eq!(item_box(&e, &on(Face::Roof)), ([10.0, t, 20.0], [110.0, t + 30.0, 70.0]));
+    assert_eq!(item_box(&e, &on(Face::Bottom)), ([10.0, e.height - t - 30.0, e.depth - 70.0], [110.0, e.height - t, e.depth - 20.0]));
+    // The plate and the door keep their coordinates.
+    assert_eq!(item_box(&e, &on(Face::Plate)).0, [PLATE_MARGIN + 10.0, PLATE_MARGIN + 20.0, PLATE_Z]);
+    assert_eq!(item_box(&e, &on(Face::Door)).1, [110.0, 70.0, e.depth]);
+    for f in Face::ALL {
+        assert_eq!(Face::from_key(f.key()), Some(f));
+    }
+}
+
+#[test]
+fn models_on_walls_keep_their_outside() {
+    let prj = demo_project();
+    let part = prj.parts.iter().find(|p| p.number == "GEN.CT-9A-24DC").unwrap();
+    let [w, h, d] = part.size().unwrap();
+    let e = Enclosure::default();
+    // Signed volume: its sign is the orientation of the surface.
+    let volume = |face: Face| {
+        let it = PanelItem { id: 1, kind: ItemKind::Device, part: part.number.clone(), x: 50.0, y: 50.0, w, h, d, face, ..Default::default() };
+        let tris = place_triangles(&e, &it, place_mesh(part.model_3d.as_ref().unwrap(), &it));
+        tris.iter().map(|t| crate::parts::vec3::dot(t[0], crate::parts::vec3::cross(t[1], t[2])) / 6.0).sum::<f32>()
+    };
+    let plate = volume(Face::Plate);
+    assert!((plate.abs() - w * h * d).abs() < 0.5 * w * h * d, "{plate}");
+    for face in Face::ALL {
+        let v = volume(face);
+        assert!(v.signum() == plate.signum() && (v.abs() - plate.abs()).abs() < 0.01 * plate.abs(), "{face:?}: {v} / {plate}");
+    }
+}
+
+#[test]
+fn wall_items_inside_the_flanges() {
+    let mut e = Enclosure::default();
+    let f = e.flange();
+    let fan = |id: u64, face: Face, x: f32| PanelItem { id, kind: ItemKind::Accessory, x, y: 100.0, w: 150.0, h: 150.0, z: -20.0, d: 100.0, face, ..Default::default() };
+    e.items = vec![fan(1, Face::Left, f), fan(2, Face::Left, 0.0), fan(3, Face::Right, f)];
+    assert_eq!(outside(&e), vec![2]);
+    // Bayed sides have no wall to mount on.
+    e.build.right_open = true;
+    assert_eq!(outside(&e), vec![2, 3]);
+    // Behind the mounting plate there is hardly any room on the rear wall.
+    e.items = vec![fan(4, Face::Rear, f)];
+    assert_eq!(outside(&e), vec![4]);
+}
+
+#[test]
+fn accessories_from_parts() {
+    let mut prj = demo_project();
+    let id = place_accessory(&mut prj, 0, "GEN.GLAND-M25", Face::Bottom, p(100.0, 60.0)).unwrap();
+    let e = &prj.layout.enclosures[0];
+    let g = e.item(id).unwrap();
+    assert_eq!((g.w, g.h, g.z), (36.0, 36.0, -24.0));
+    let gland = crate::parts::catalog().iter().find(|p| p.number == "GEN.GLAND-M25").unwrap();
+    assert_eq!(allowed_faces(gland), vec![Face::Bottom, Face::Roof, Face::Left, Face::Right, Face::Rear]);
+    // Its cutout is in the NC data of the bottom, it is clamped (no holes) and in the BOM.
+    let o = crate::production::openings(e, &prj.parts, Face::Bottom);
+    assert!(o.iter().any(|o| o.item == id && o.round && (o.w - 25.5).abs() < 0.01));
+    assert!(crate::production::holes_on(e, &prj.parts, Face::Bottom).is_empty());
+    assert!(layout_material(&prj).iter().any(|m| m.0 == "GEN.GLAND-M25" && m.1 == 1.0));
+}
