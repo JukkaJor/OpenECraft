@@ -94,6 +94,15 @@ pub struct Project {
     /// Marker texts and materials.
     #[serde(skip_serializing_if = "crate::marking::Settings::is_default")]
     pub marking: crate::marking::Settings,
+    /// Defaults and numbering of hoses / pipes.
+    #[serde(skip_serializing_if = "crate::fluid::FluidSettings::is_default")]
+    pub fluid: crate::fluid::FluidSettings,
+    /// PCT loops of the pre-planning.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub pct_loops: Vec<crate::process::PctLoop>,
+    /// Wired / problem marks of the wiring assistant.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub wiring_marks: Vec<crate::wiring::WiringMark>,
     pub next_id: u64,
 }
 
@@ -119,6 +128,9 @@ impl Default for Project {
             forms: Default::default(),
             marking: Default::default(),
             configuration: Default::default(),
+            fluid: Default::default(),
+            pct_loops: Vec::new(),
+            wiring_marks: Vec::new(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -194,10 +206,12 @@ pub enum ReportKind {
     DuctFill,
     Climate,
     Marking,
+    HoseList,
+    PctLoops,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 17] = [
+    pub const ALL: [ReportKind; 19] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -215,6 +229,8 @@ impl ReportKind {
         ReportKind::DuctFill,
         ReportKind::Climate,
         ReportKind::Marking,
+        ReportKind::HoseList,
+        ReportKind::PctLoops,
     ];
 
     pub fn title(self) -> &'static str {
@@ -236,6 +252,8 @@ impl ReportKind {
             ReportKind::DuctFill => tr("Duct fill levels"),
             ReportKind::Climate => tr("Enclosure climate"),
             ReportKind::Marking => tr("Marking"),
+            ReportKind::HoseList => tr("Hose list"),
+            ReportKind::PctLoops => tr("PCT loop overview"),
         }
     }
 }
@@ -348,8 +366,15 @@ pub struct Wire {
     /// Wire colour set manually (e.g. "BK", "BU", "GNYE"); empty = from the
     /// potential definition or the project default.
     pub color: String,
-    /// Cross-section set manually (e.g. "1.5 mm²"); empty = automatic.
+    /// Cross-section set manually (e.g. "1.5 mm²"); empty = automatic. Hoses and
+    /// pipes (fluid nets): nominal size, e.g. "8 mm" or "DN25".
     pub cross_section: String,
+    /// Medium of a hose / pipe; None = the project's default.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub medium: Option<crate::fluid::Medium>,
+    /// Length of a hose / pipe in metres; 0 = not set.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub length: f32,
     /// Wire (connection) number; all wires of a connection carry the same number.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub number: String,
@@ -361,6 +386,10 @@ pub struct Wire {
     pub cable: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub core: String,
+}
+
+fn is_zero(v: &f32) -> bool {
+    *v == 0.0
 }
 
 /// A cable; its cores are assigned to wires (`Wire::cable` / `Wire::core`).

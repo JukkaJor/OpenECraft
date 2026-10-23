@@ -1,5 +1,7 @@
 //! Connectivity analysis: builds electrical nets (potentials) from wires, connection
-//! points, terminals, potential connection points and interruption points.
+//! points, terminals, potential connection points and interruption points. Wires
+//! between the ports of fluid power and process symbols form fluid nets (hoses,
+//! pipes) that are kept apart from the electrical ones.
 
 use crate::geom::{on_segment_interior, P};
 use crate::model::{Page, PageKind, Project};
@@ -22,6 +24,10 @@ pub struct Net {
     pub pins: Vec<PinRef>,
     /// (page index, wire id)
     pub wires: Vec<(usize, u64)>,
+    /// Connects ports of fluid symbols (hose / pipe).
+    pub fluid: bool,
+    /// Connects fluid ports with electrical connection points (an error).
+    pub mixed: bool,
 }
 
 #[derive(Default)]
@@ -125,7 +131,7 @@ impl Netlist {
     /// `true` the jumpers of terminal strips connect their terminals as well.
     pub fn build(prj: &Project, bridge_terminals: bool) -> Netlist {
         let mut b = Builder { uf: Uf { parent: Vec::new() }, points: HashMap::new(), named: HashMap::new() };
-        let mut pin_nodes: Vec<(PinRef, u64, usize)> = Vec::new();
+        let mut pin_nodes: Vec<(PinRef, u64, usize, bool)> = Vec::new();
         let mut wire_nodes: Vec<(usize, u64, usize)> = Vec::new();
         // Number of things touching each point node (to find unconnected pins).
         let mut degree: HashMap<usize, usize> = HashMap::new();
@@ -165,7 +171,7 @@ impl Netlist {
                     let n = b.point(pi, q);
                     *degree.entry(n).or_default() += 1;
                     nodes.push(n);
-                    pin_nodes.push((PinRef { page: pi, sym: si, pin: i }, s.id, n));
+                    pin_nodes.push((PinRef { page: pi, sym: si, pin: i }, s.id, n, def.is_fluid()));
                 }
                 if bridge_terminals || !def.func.is_feedthrough() {
                     for &(x, y) in &def.bridges {
@@ -215,9 +221,16 @@ impl Netlist {
                 nets.len() - 1
             })
         };
-        for (pin, sym_id, node) in &pin_nodes {
+        let mut electric = vec![];
+        for (pin, sym_id, node, fluid) in &pin_nodes {
             let ni = net_for(&mut b.uf, &mut nl.nets, *node);
             nl.nets[ni].pins.push(*pin);
+            electric.resize(nl.nets.len(), false);
+            if *fluid {
+                nl.nets[ni].fluid = true;
+            } else {
+                electric[ni] = true;
+            }
             nl.pin_net.insert((*sym_id, pin.pin), ni);
             if degree.get(node).copied().unwrap_or(0) <= 1 {
                 nl.unconnected.push((pin.page, *sym_id, pin.pin));
@@ -227,6 +240,9 @@ impl Netlist {
             let ni = net_for(&mut b.uf, &mut nl.nets, *node);
             nl.nets[ni].wires.push((*pi, *wid));
             nl.wire_net.insert(*wid, ni);
+        }
+        for (ni, net) in nl.nets.iter_mut().enumerate() {
+            net.mixed = net.fluid && electric.get(ni).copied().unwrap_or(false);
         }
         // Names: potentials win over interruption points. Two different potentials in
         // one net stay visible as "A / B" (short circuit).
@@ -253,9 +269,13 @@ impl Netlist {
                 net.named = true;
             }
         }
-        let mut counter = 0;
+        let (mut counter, mut fluid) = (0, 0);
         for net in &mut nl.nets {
-            if !net.named {
+            if net.named {
+            } else if net.fluid && !net.mixed {
+                fluid += 1;
+                net.name = format!("F{fluid}");
+            } else {
                 counter += 1;
                 net.name = format!("N{counter}");
             }
@@ -287,29 +307,15 @@ pub struct Connection {
 
 /// Point-to-point connections: the device connection points of each connection of
 /// `open` (terminal sides apart) are chained in schematic order (potentials and
-/// connectors are not physical wire ends). Potential names come from `nl`.
+/// connectors are not physical wire ends). Potential names come from `nl`. Fluid
+/// nets are left out (see [`crate::fluid::hoses`]).
 pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connection> {
     let mut out = Vec::new();
-    for net in &open.nets {
-        let mut pins: Vec<&PinRef> = net
-            .pins
-            .iter()
-            .filter(|p| {
-                let s = &prj.pages[p.page].symbols[p.sym];
-                symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
-            })
-            .collect();
+    for net in open.nets.iter().filter(|n| !n.fluid) {
+        let pins = chained_pins(prj, net);
         if pins.len() < 2 {
             continue;
         }
-        let at = |p: &PinRef| {
-            let s = &prj.pages[p.page].symbols[p.sym];
-            symbols::get(&s.sym).map(|d| d.pin_world(p.pin, s.pos, s.rot, s.mirror)).unwrap_or(s.pos)
-        };
-        pins.sort_by(|a, b| {
-            let (qa, qb) = (at(a), at(b));
-            a.page.cmp(&b.page).then(qa.x.total_cmp(&qb.x)).then(qa.y.total_cmp(&qb.y))
-        });
         let wires = crate::wirenum::wires_of(prj, net);
         let props = crate::potentials::props_of(prj, nl, net);
         let (color, cross_section) = (props.color, props.cross_section);
@@ -322,11 +328,11 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
             .map(|&n| nl.nets[n].name.clone())
             .unwrap_or_else(|| net.name.clone());
         for pair in pins.windows(2) {
-            let harness = crate::harness::of(prj, &pin_designation(prj, *pair[0]), &pin_designation(prj, *pair[1]));
+            let harness = crate::harness::of(prj, &pin_designation(prj, pair[0]), &pin_designation(prj, pair[1]));
             out.push(Connection {
                 net: potential.clone(),
-                a: *pair[0],
-                b: *pair[1],
+                a: pair[0],
+                b: pair[1],
                 color: color.clone(),
                 cross_section: cross_section.clone(),
                 number: number.clone(),
@@ -337,6 +343,29 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
         }
     }
     out
+}
+
+/// Connection points of the devices in a net in schematic order (page, then left to
+/// right, top to bottom); potentials and connectors are left out.
+pub fn chained_pins(prj: &Project, net: &Net) -> Vec<PinRef> {
+    let mut pins: Vec<PinRef> = net
+        .pins
+        .iter()
+        .filter(|p| {
+            let s = &prj.pages[p.page].symbols[p.sym];
+            symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
+        })
+        .copied()
+        .collect();
+    let at = |p: &PinRef| {
+        let s = &prj.pages[p.page].symbols[p.sym];
+        symbols::get(&s.sym).map(|d| d.pin_world(p.pin, s.pos, s.rot, s.mirror)).unwrap_or(s.pos)
+    };
+    pins.sort_by(|a, b| {
+        let (qa, qb) = (at(a), at(b));
+        a.page.cmp(&b.page).then(qa.x.total_cmp(&qb.x)).then(qa.y.total_cmp(&qb.y))
+    });
+    pins
 }
 
 /// Human readable designation of a pin: `-K1:A1`, `=L1`, `-X1:3`.

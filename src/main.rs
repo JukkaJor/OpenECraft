@@ -14,10 +14,11 @@ mod glyphs;
 mod io;
 mod panel_ui;
 mod parts_ui;
+mod wiring_ui;
 
 use openecraft_core::{
-    climate, config, dxf, dxf_import, export3d, forms, geom, harness, history, index, macros, marking, model, netlist, ops, panel, parts, pdf, plc, plugs, potentials, production, render, reports,
-    revision, sample, strips, structure, svg, symbols, symlib, tables, wirenum,
+    climate, config, dxf, dxf_import, export3d, fluid, forms, geom, harness, history, index, macros, marking, model, netlist, ops, panel, parts, pdf, plc, plugs, potentials, process, production, render, reports,
+    revision, sample, strips, structure, svg, symbols, symlib, tables, wirenum, wiring,
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -30,7 +31,9 @@ fn main() -> eframe::Result {
             .with_min_inner_size([800.0, 500.0]),
         ..Default::default()
     };
-    eframe::run_native("OpenECraft", options, Box::new(|cc| Ok(Box::new(app::App::new(cc)))))
+    // `--wiring` opens the wiring assistant (touch screens in the workshop).
+    let wiring = std::env::args().any(|a| a == "--wiring");
+    eframe::run_native("OpenECraft", options, Box::new(move |cc| Ok(Box::new(app::App::new(cc).start_wiring(wiring)))))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -40,7 +43,9 @@ fn main() {
     if let Some(lang) = web_sys::window().and_then(|w| w.navigator().language()).and_then(|code| openecraft_i18n::Lang::from_code(&code)) {
         openecraft_i18n::set_lang(lang);
     }
-    wasm_bindgen_futures::spawn_local(async {
+    // `…/#wiring` opens the wiring assistant (tablets in the workshop).
+    let wiring = web_sys::window().and_then(|w| w.location().hash().ok()).is_some_and(|h| h == "#wiring");
+    wasm_bindgen_futures::spawn_local(async move {
         let document = web_sys::window().expect("no window").document().expect("no document");
         let canvas = document
             .get_element_by_id("openecraft_canvas")
@@ -48,7 +53,7 @@ fn main() {
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .expect("not a canvas");
         let result = eframe::WebRunner::new()
-            .start(canvas, eframe::WebOptions::default(), Box::new(|cc| Ok(Box::new(app::App::new(cc)))))
+            .start(canvas, eframe::WebOptions::default(), Box::new(move |cc| Ok(Box::new(app::App::new(cc).start_wiring(wiring)))))
             .await;
         if let Some(loading) = document.get_element_by_id("loading") {
             match result {

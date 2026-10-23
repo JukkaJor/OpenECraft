@@ -8,6 +8,7 @@ use crate::session::Session;
 use openecraft_core::geom::{p, P, GRID};
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
+use openecraft_core::fluid::Medium;
 use openecraft_core::symbols::{self, Func, SymbolDef};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -97,6 +98,8 @@ pub static TOOLS: &[Tool] = &[
             optional("cross_section", Kind::Str, tr_const!("Cross section, e.g. 1.5 mm² (empty = from the potential definition)")),
             optional("cable", Kind::Str, tr_const!("Cable tag")),
             optional("core", Kind::Str, tr_const!("Cable core")),
+            optional("medium", Kind::Str, tr_const!("Hoses / pipes: medium (compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam, product; empty = project default)")),
+            optional("length", Kind::Num, tr_const!("Hoses / pipes: length in m")),
         ],
         needs_project: true,
         run: update_wire,
@@ -360,7 +363,14 @@ fn update_wire(s: &mut Session, a: &Args) -> Result<Value, String> {
             *field = v.into();
         }
     }
-    Ok(json!({ "id": w.id, "number": w.number, "color": w.color, "cross_section": w.cross_section, "cable": w.cable, "core": w.core }))
+    if let Some(m) = a.str("medium") {
+        w.medium = if m.trim().is_empty() { None } else { Some(Medium::from_code(m).ok_or_else(|| tr_fmt!("Unknown medium: {}", m))?) };
+    }
+    if let Some(l) = a.num("length") {
+        w.length = l.max(0.0);
+    }
+    let medium = w.medium.map(|m| m.code()).unwrap_or_default();
+    Ok(json!({ "id": w.id, "number": w.number, "color": w.color, "cross_section": w.cross_section, "cable": w.cable, "core": w.core, "medium": medium, "length": w.length }))
 }
 
 fn add_text(s: &mut Session, a: &Args) -> Result<Value, String> {

@@ -59,9 +59,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   (`STARTER=DOL & LINE!=2`, `LINE=1|2`). *Generate pages* replaces the pages generated
   before (marked in the page properties, switch off to keep one); option values fill
   `{OPTION}` placeholders; problems (unknown macro, variant or option) stop it.
-- **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
-  **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
-  diagram and the BOM);
+- **Terminal strip editor**: terminal order (move up / down, sort), renumbering 1 … n,
+
+  **jumpers** (bridged terminals share their potential), spare terminals (in the terminal
+
+  diagram and the BOM);
+
   every terminal has its part: PE terminals take the strip's part with the tech data
   `Terminal type: PE`, all others its feed-through part (bill of materials, panel
   length of the strip, connection points per terminal); **automatic accessories**
@@ -233,6 +236,24 @@ built with [egui / eframe](https://github.com/emilk/egui).
   field length) and end treatment, the harness window shows the connectors with their
   pin assignment and the bundle diameter; export as simplified **KBL** (VDA 4964, XML)
   for harness manufacturing.
+- **Wiring assistant** (in the spirit of EPLAN Smart Wiring): the *Wiring* workspace
+  turns the routed wires of the panel layout into a touch-friendly checklist for the
+  workshop – ordered by device, position, cross-section or wire number – with the
+  current wire highlighted in 3D, its colour, cross-section, length, stripping length
+  and ferrule, and the progress in wires and metres. Wires are marked as wired or as a
+  problem (with a note); marks are stored in the project, so wires changed in the
+  schematic after they were wired are flagged by the check. The web build opens the
+  assistant directly with `…/#wiring` (desktop: `--wiring`), which makes a tablet in
+  the workshop a cheap wiring station; checklist with state as CSV.
+- **Fluid and process**: wires between the ports of fluid power and P&ID symbols are
+  hoses / pipes in their own nets (not mixed with electrical potentials; a fluid port
+  on an electrical net is an error), numbered apart from the wires (`H1`, `H2` …),
+  with medium, nominal size, colour and length, listed in the *hose list*. P&ID
+  symbols (ISO 10628: vessel, pumps, valves, heat exchanger, instruments) support
+  pre-planning: instruments carry function letters and loop number (`TIC 101`), the
+  PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
+  and the *PCT loop overview* shows whether each loop is planned, in engineering or
+  engineered in the schematic.
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
   (app storage on desktop, local storage in the browser).
 
@@ -377,6 +398,8 @@ cargo test --workspace
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
 | Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
 | Door devices | panel layout: front view *Door*, place devices there or move them in their properties |
+| Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
+| Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties in the wire properties; *Project › Fluid and process…* |
 | Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; KBL export in the window |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
 | Pages | `Page Up` / `Page Down`, navigator on the left |
@@ -397,11 +420,14 @@ cargo test --workspace
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
 | `crates/openecraft-core/src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
-| `crates/openecraft-core/src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, single-line, black boxes) |
+| `crates/openecraft-core/src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, P&ID, single-line, black boxes) |
 | `crates/openecraft-core/src/symlib.rs` | User symbols: registry, editing helpers, library files |
 | `crates/openecraft-core/src/forms.rs` | Title blocks (placeholders) and report forms |
 | `crates/openecraft-core/src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
+| `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
+| `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, hose list |
+| `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
 | `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
 | `crates/openecraft-core/src/reports.rs` | Reports and project check |
@@ -428,6 +454,8 @@ cargo test --workspace
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
 | `src/app/harness_ui.rs` | Harness window |
+| `src/app/process_ui.rs` | Hose properties and the fluid and process window (PCT loops) |
+| `src/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |

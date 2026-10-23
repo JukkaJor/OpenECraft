@@ -50,7 +50,8 @@ fn connections_in_order(prj: &Project, open: &Netlist) -> Vec<(usize, usize, usi
     v.into_iter().map(|((page, col, _, _), ni)| (ni, page, col)).collect()
 }
 
-/// Numbers all connections according to the project's settings. Manually set
+/// Numbers all connections according to the project's settings; hoses and pipes
+/// (fluid nets) are counted apart with the fluid prefix (`H1`, `H2` …). Manually set
 /// numbers stay unless `overwrite_fixed`. Returns the number of numbered connections.
 pub fn renumber(prj: &mut Project, open: &Netlist, bridged: &Netlist, overwrite_fixed: bool) -> usize {
     let settings = prj.wire_numbering.clone();
@@ -76,9 +77,17 @@ pub fn renumber(prj: &mut Project, open: &Netlist, bridged: &Netlist, overwrite_
     };
     let mut per_column: HashMap<(usize, usize), u32> = HashMap::new();
     let mut numbers = Vec::new();
+    let mut hoses = 0;
     for (ni, page, col) in todo {
         let net = &open.nets[ni];
         let number = match settings.scheme {
+            _ if net.fluid => loop {
+                hoses += 1;
+                let n = format!("{}{hoses}", prj.fluid.prefix);
+                if !used.contains(&n) {
+                    break n;
+                }
+            },
             NumberScheme::Sequential => next_counted(&used),
             NumberScheme::PageColumn => loop {
                 let k = per_column.entry((page, col)).or_insert(0);

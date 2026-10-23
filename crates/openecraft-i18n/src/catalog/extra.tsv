@@ -148,9 +148,9 @@ Wire number (kept when renumbering)	Verbindungsnummer (bleibt beim Neunummeriere
 X position in mm	X-Position in mm	Position X en mm	Posición X en mm
 Y position in mm (downwards)	Y-Position in mm (nach unten)	Position Y en mm (vers le bas)	Posición Y en mm (hacia abajo)
 json (default) or csv	json (Standard) oder csv	json (par défaut) ou csv	json (por defecto) o csv
-schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking
+schematic, cover or a report: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover oder eine Auswertung: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover ou un rapport : table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops	schematic, cover o un informe: table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list, pct_loops
 svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf or step	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf oder step	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf ou step	svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf o step
-table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate or marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate oder marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate ou marking	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate o marking
+table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list or pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list oder pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list ou pct_loops	table_of_contents, device_list, bill_of_materials, terminal_diagram, plug_diagram, connection_list, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_sizing, revision_overview, harness_data, duct_fill, climate, marking, hose_list o pct_loops
 {} is ambiguous: use #id:pin	{} ist mehrdeutig: #id:pin verwenden	{} est ambigu : utilisez #id:pin	{} es ambiguo: use #id:pin
 {} is not a connection point (TAG:PIN)	{} ist kein Anschluss (BMK:ANSCHLUSS)	{} n'est pas un point de connexion (REPÈRE:BORNE)	{} no es un punto de conexión (IDENT:PUNTO)
 Released pages cannot be deleted	Freigegebene Seiten können nicht gelöscht werden	Les pages validées ne peuvent pas être supprimées	Las páginas liberadas no se pueden eliminar
@@ -504,3 +504,153 @@ Export panel layout in 3D (glTF)…	Schaltschrankaufbau in 3D exportieren (glTF)
 Import DXF as page…	DXF als Seite importieren…	Importer un DXF comme page…	Importar DXF como página…
 Imports a DXF drawing as graphics (lines, arcs, texts, blocks) on a new schematic page	Importiert eine DXF-Zeichnung als Grafik (Linien, Bögen, Texte, Blöcke) auf eine neue Schaltplanseite	Importe un dessin DXF comme graphique (lignes, arcs, textes, blocs) sur une nouvelle page de schéma	Importa un dibujo DXF como gráfico (líneas, arcos, textos, bloques) en una nueva página de esquema
 Scale drawings down that do not fit on the page (default: true)	Zeichnungen verkleinern, die nicht auf die Seite passen (Standard: true)	Réduire les dessins qui ne tiennent pas sur la page (par défaut : true)	Reducir los dibujos que no caben en la página (predeterminado: true)
+Hose number	Schlauchnummer	Numéro de flexible	Número de manguera
+Medium	Medium	Fluide	Medio
+Nominal size	Nennweite	Diamètre nominal	Diámetro nominal
+Outer diameter (e.g. 8 mm) or DN	Außendurchmesser (z. B. 8 mm) oder DN	Diamètre extérieur (p. ex. 8 mm) ou DN	Diámetro exterior (p. ej. 8 mm) o DN
+Fluid and process	Fluid und Verfahrenstechnik	Fluide et procédé	Fluidos y proceso
+Hoses and pipes	Schläuche und Rohre	Flexibles et tuyaux	Mangueras y tuberías
+Wires between the ports of fluid power and P&ID symbols are hoses / pipes: their own nets, numbered with the wire numbering, listed in the hose list.	Verbindungen zwischen den Anschlüssen von Fluid- und R&I-Symbolen sind Schläuche / Rohre: eigene Netze, nummeriert mit der Drahtnummerierung, aufgeführt in der Schlauchliste.	Les liaisons entre les orifices des symboles fluides et P&ID sont des flexibles / tuyaux : réseaux propres, numérotés avec la numérotation des fils, listés dans la liste des flexibles.	Las conexiones entre las bocas de los símbolos de fluidos y P&ID son mangueras / tuberías: redes propias, numeradas con la numeración de cables, listadas en la lista de mangueras.
+Default medium	Standardmedium	Fluide par défaut	Medio predeterminado
+Number prefix	Nummernpräfix	Préfixe de numéro	Prefijo de número
+📊 Hose list	📊 Schlauchliste	📊 Liste des flexibles	📊 Lista de mangueras
+PCT loops (pre-planning)	PLT-Stellen (Vorplanung)	Boucles CCP (pré-étude)	Lazos PCT (preplanificación)
+➕ Loop	➕ Stelle	➕ Boucle	➕ Lazo
+📊 PCT loop overview	📊 PLT-Stellenübersicht	📊 Vue d'ensemble des boucles CCP	📊 Resumen de lazos PCT
+Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrumente im R&I-Fließschema tragen Kennbuchstaben und Stellennummer in ihrer Bezeichnung (TIC 101); ihr BMK verbindet sie mit dem Schaltplan.	Les instruments du P&ID portent les lettres de fonction et le numéro de boucle dans leur libellé (TIC 101) ; leur repère les relie au schéma.	Los instrumentos del P&ID llevan las letras de función y el número de lazo en su etiqueta (TIC 101); su identificador los vincula con el esquema.
+PCT loop	PLT-Stelle	Boucle CCP	Lazo PCT
+Range	Bereich	Plage	Rango
+Further devices	Weitere Betriebsmittel	Autres appareils	Otros equipos
+Status	Status	État	Estado
+Add to the pre-planning	In die Vorplanung übernehmen	Ajouter à la pré-étude	Añadir a la preplanificación
+not in the P&ID	nicht im R&I-Fließschema	absent du P&ID	no está en el P&ID
+? = not in the schematic yet	? = noch nicht im Schaltplan	? = pas encore dans le schéma	? = aún no está en el esquema
+Delete loop	Stelle löschen	Supprimer la boucle	Eliminar lazo
+{} (default)	{} (Standard)	{} (par défaut)	{} (predeterminado)
+Hose / pipe {}	Schlauch / Rohr {}	Flexible / tuyau {}	Manguera / tubería {}
+Resulting: {} · {} · {} · {} m	Ergebnis: {} · {} · {} · {} m	Résultat : {} · {} · {} · {} m	Resultado: {} · {} · {} · {} m
+Fluid and process…	Fluid und Verfahrenstechnik…	Fluide et procédé…	Fluidos y proceso…
+Hose defaults and PCT loops of the pre-planning	Schlauch-Standardwerte und PLT-Stellen der Vorplanung	Valeurs par défaut des flexibles et boucles CCP de la pré-étude	Valores predeterminados de mangueras y lazos PCT de la preplanificación
+✔ Wiring	✔ Verdrahtung	✔ Câblage	✔ Cableado
+Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Verdrahtungsassistent: Checkliste der Drähte mit 3D-Ansicht und Fortschritt (Tablet: Web-App mit #wiring öffnen)	Assistant de câblage : liste de contrôle des fils avec vue 3D et avancement (tablette : ouvrir l'application web avec #wiring)	Asistente de cableado: lista de comprobación de los cables con vista 3D y progreso (tableta: abrir la aplicación web con #wiring)
+To do	Offen	À faire	Pendiente
+Wired	Verdrahtet	Câblé	Cableado
+All	Alle	Tous	Todos
+Wiring	Verdrahtung	Câblage	Cableado
+All enclosures	Alle Gehäuse	Toutes les armoires	Todos los armarios
+No routed wires: place the devices in the panel layout.	Keine verlegten Drähte: Platzieren Sie die Geräte im Schaltschrankaufbau.	Aucun fil acheminé : placez les appareils dans l'implantation d'armoire.	No hay cables enrutados: coloque los equipos en la disposición del armario.
+Nothing left in this list.	Nichts mehr in dieser Liste.	Plus rien dans cette liste.	No queda nada en esta lista.
+Mark as wired	Als verdrahtet markieren	Marquer comme câblé	Marcar como cableado
+Mark as open	Als offen markieren	Marquer comme ouvert	Marcar como pendiente
+Export CSV	CSV exportieren	Exporter en CSV	Exportar CSV
+Checklist with the wiring state	Checkliste mit dem Verdrahtungsstand	Liste de contrôle avec l'état du câblage	Lista de comprobación con el estado del cableado
+Marks of wires that no longer exist	Markierungen von Drähten, die es nicht mehr gibt	Marques de fils qui n'existent plus	Marcas de cables que ya no existen
+✔ All wires are wired.	✔ Alle Drähte sind verdrahtet.	✔ Tous les fils sont câblés.	✔ Todos los cables están cableados.
+Select a wire in the list or in the 3D view.	Wählen Sie einen Draht in der Liste oder in der 3D-Ansicht.	Sélectionnez un fil dans la liste ou dans la vue 3D.	Seleccione un cable en la lista o en la vista 3D.
+✔ Wired	✔ Verdrahtet	✔ Câblé	✔ Cableado
+⚠ Problem	⚠ Problem	⚠ Problème	⚠ Problema
+Mark as not wirable; describe the problem in the note	Als nicht verdrahtbar markieren; Problem in der Notiz beschreiben	Marquer comme non câblable ; décrire le problème dans la note	Marcar como no cableable; describir el problema en la nota
+Reset	Zurücksetzen	Réinitialiser	Restablecer
+Previous wire	Vorheriger Draht	Fil précédent	Cable anterior
+Next wire	Nächster Draht	Fil suivant	Cable siguiente
+e.g. wire too short, terminal missing	z. B. Draht zu kurz, Klemme fehlt	p. ex. fil trop court, borne manquante	p. ej. cable demasiado corto, falta un borne
+Show the other wires	Andere Drähte anzeigen	Afficher les autres fils	Mostrar los demás cables
+{} of {} wires	{} von {} Drähten	{} fils sur {}	{} de {} cables
+{} m of {} m wired	{} m von {} m verdrahtet	{} m sur {} m câblés	{} m de {} m cableados
+{} changed since wired · {} problems	{} seit dem Verdrahten geändert · {} Probleme	{} modifiés depuis le câblage · {} problèmes	{} modificados desde el cableado · {} problemas
+Remove {} old marks	{} alte Markierungen entfernen	Supprimer {} anciennes marques	Eliminar {} marcas antiguas
+Wire no. {}	Draht-Nr. {}	Fil n° {}	Cable n.º {}
+Strip {} mm	Abisolieren {} mm	Dénuder {} mm	Pelar {} mm
+Ferrule {} ({})	Aderendhülse {} ({})	Embout {} ({})	Puntera {} ({})
+Potential {}	Potenzial {}	Potentiel {}	Potencial {}
+Changed since wired: was {} · {} · {}	Seit dem Verdrahten geändert: war {} · {} · {}	Modifié depuis le câblage : était {} · {} · {}	Modificado desde el cableado: era {} · {} · {}
+Compressed air	Druckluft	Air comprimé	Aire comprimido
+Vacuum	Vakuum	Vide	Vacío
+Hydraulic oil	Hydrauliköl	Huile hydraulique	Aceite hidráulico
+Water	Wasser	Eau	Agua
+Coolant	Kühlmittel	Liquide de refroidissement	Refrigerante
+Lubricant	Schmierstoff	Lubrifiant	Lubricante
+Gas	Gas	Gaz	Gas
+Steam	Dampf	Vapeur	Vapor
+Product	Produkt	Produit	Producto
+Fluid port connected to an electrical connection point: {}	Fluidanschluss mit einem elektrischen Anschluss verbunden: {}	Orifice fluide relié à un point de connexion électrique : {}	Boca de fluido conectada a un punto de conexión eléctrico: {}
+Hose {} – {} without length	Schlauch {} – {} ohne Länge	Flexible {} – {} sans longueur	Manguera {} – {} sin longitud
+Hose list	Schlauchliste	Liste des flexibles	Lista de mangueras
+PCT loop overview	PLT-Stellenübersicht	Vue d'ensemble des boucles CCP	Resumen de lazos PCT
+Analysis	Analyse	Analyse	Análisis
+Density	Dichte	Densité	Densidad
+Flow	Durchfluss	Débit	Caudal
+Hand	Hand	Manuel	Manual
+Time	Zeit	Temps	Tiempo
+Level	Füllstand	Niveau	Nivel
+Moisture	Feuchte	Humidité	Humedad
+Pressure	Druck	Pression	Presión
+Quantity	Menge	Quantité	Cantidad
+Radiation	Strahlung	Rayonnement	Radiación
+Speed	Drehzahl	Vitesse	Velocidad
+Temperature	Temperatur	Température	Temperatura
+Vibration	Schwingung	Vibration	Vibración
+Planned	Geplant	Planifiée	Planificado
+In engineering	In Bearbeitung	En cours d'étude	En ingeniería
+Engineered	Projektiert	Étudiée	Diseñado
+Instrument {}: label '{}' has no function letters and loop number (e.g. TIC 101)	Instrument {}: Bezeichnung '{}' enthält keine Kennbuchstaben und Stellennummer (z. B. TIC 101)	Instrument {} : le libellé '{}' n'a pas de lettres de fonction ni de numéro de boucle (p. ex. TIC 101)	Instrumento {}: la etiqueta '{}' no tiene letras de función ni número de lazo (p. ej. TIC 101)
+PCT loop {} is in the P&ID but not in the pre-planning	PLT-Stelle {} ist im R&I-Fließschema, aber nicht in der Vorplanung	La boucle CCP {} est dans le P&ID mais pas dans la pré-étude	El lazo PCT {} está en el P&ID pero no en la preplanificación
+PCT loop {} has no instrument in the P&ID	PLT-Stelle {} hat kein Instrument im R&I-Fließschema	La boucle CCP {} n'a pas d'instrument dans le P&ID	El lazo PCT {} no tiene instrumento en el P&ID
+PCT loop {}: devices not in the schematic yet: {}	PLT-Stelle {}: Betriebsmittel noch nicht im Schaltplan: {}	Boucle CCP {} : appareils pas encore dans le schéma : {}	Lazo PCT {}: equipos aún no en el esquema: {}
+Hose no.	Schlauch-Nr.	N° flexible	N.º manguera
+Measured variable	Messgröße	Grandeur mesurée	Variable medida
+Wire {} – {} changed after it was wired	Draht {} – {} wurde nach dem Verdrahten geändert	Le fil {} – {} a été modifié après le câblage	El cable {} – {} se modificó después de cablearlo
+Wiring problem {} – {}: {}	Verdrahtungsproblem {} – {}: {}	Problème de câblage {} – {} : {}	Problema de cableado {} – {}: {}
+{} wiring marks belong to wires that no longer exist	{} Verdrahtungsmarkierungen gehören zu Drähten, die es nicht mehr gibt	{} marques de câblage appartiennent à des fils qui n'existent plus	{} marcas de cableado pertenecen a cables que ya no existen
+P&ID / process (ISO 10628)	R&I / Verfahrenstechnik (ISO 10628)	P&ID / procédé (ISO 10628)	P&ID / proceso (ISO 10628)
+Compressed air supply	Druckluftversorgung	Alimentation en air comprimé	Suministro de aire comprimido
+Silencer	Schalldämpfer	Silencieux	Silenciador
+One-way flow control valve	Drosselrückschlagventil	Réducteur de débit unidirectionnel	Válvula reguladora de caudal unidireccional
+5/2 directional valve	5/2-Wegeventil	Distributeur 5/2	Válvula distribuidora 5/2
+Cylinder, single-acting	Zylinder, einfachwirkend	Vérin simple effet	Cilindro de simple efecto
+Vessel	Behälter	Réservoir	Recipiente
+Centrifugal pump	Kreiselpumpe	Pompe centrifuge	Bomba centrífuga
+Shut-off valve	Absperrventil	Vanne d'arrêt	Válvula de cierre
+Control valve	Stellventil	Vanne de régulation	Válvula de control
+Check valve	Rückschlagventil	Clapet anti-retour	Válvula antirretorno
+Heat exchanger	Wärmeübertrager	Échangeur de chaleur	Intercambiador de calor
+Instrument (PCT loop)	Instrument (PLT-Stelle)	Instrument (boucle CCP)	Instrumento (lazo PCT)
+Open	Offen	Ouvert	Pendiente
+Changed since wired	Seit dem Verdrahten geändert	Modifié depuis le câblage	Modificado desde el cableado
+Problem	Problem	Problème	Problema
+By device	Nach Betriebsmittel	Par appareil	Por equipo
+By position (top left first)	Nach Position (oben links zuerst)	Par position (en haut à gauche d'abord)	Por posición (arriba a la izquierda primero)
+By cross-section (thickest first)	Nach Querschnitt (dickste zuerst)	Par section (la plus forte d'abord)	Por sección (la mayor primero)
+By wire number	Nach Drahtnummer	Par numéro de fil	Por número de cable
+Unknown medium: {}	Unbekanntes Medium: {}	Fluide inconnu : {}	Medio desconocido: {}
+Hoses / pipes: medium (compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam, product; empty = project default)	Schläuche / Rohre: Medium (compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam, product; leer = Projektstandard)	Flexibles / tuyaux : fluide (compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam, product ; vide = défaut du projet)	Mangueras / tuberías: medio (compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam, product; vacío = predeterminado del proyecto)
+Hoses / pipes: length in m	Schläuche / Rohre: Länge in m	Flexibles / tuyaux : longueur en m	Mangueras / tuberías: longitud en m
+PCT loop {} already exists	PLT-Stelle {} existiert bereits	La boucle CCP {} existe déjà	El lazo PCT {} ya existe
+No PCT loop {}	Keine PLT-Stelle {}	Aucune boucle CCP {}	No hay lazo PCT {}
+Lists the hoses and pipes (connections between fluid ports) with medium, nominal size, colour and length	Listet die Schläuche und Rohre (Verbindungen zwischen Fluidanschlüssen) mit Medium, Nennweite, Farbe und Länge	Liste les flexibles et tuyaux (liaisons entre orifices fluides) avec fluide, diamètre nominal, couleur et longueur	Lista las mangueras y tuberías (conexiones entre bocas de fluido) con medio, diámetro nominal, color y longitud
+Sets the defaults of hoses that do not set their own values, and the hose number prefix	Legt die Standardwerte von Schläuchen ohne eigene Werte und das Präfix der Schlauchnummern fest	Définit les valeurs par défaut des flexibles sans valeurs propres et le préfixe des numéros de flexibles	Define los valores predeterminados de las mangueras sin valores propios y el prefijo de los números de manguera
+compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam or product	compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam oder product	compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam ou product	compressed_air, vacuum, hydraulic_oil, water, coolant, lubricant, gas, steam o product
+Nominal size, e.g. 8 mm or DN25	Nennweite, z. B. 8 mm oder DN25	Diamètre nominal, p. ex. 8 mm ou DN25	Diámetro nominal, p. ej. 8 mm o DN25
+Hose colour	Schlauchfarbe	Couleur du flexible	Color de la manguera
+Hose number prefix, e.g. H	Präfix der Schlauchnummern, z. B. H	Préfixe des numéros de flexibles, p. ex. H	Prefijo de los números de manguera, p. ej. H
+Lists the PCT loops of the pre-planning and of the P&ID instruments with their devices and engineering status	Listet die PLT-Stellen der Vorplanung und der R&I-Instrumente mit ihren Betriebsmitteln und dem Projektierungsstand	Liste les boucles CCP de la pré-étude et des instruments du P&ID avec leurs appareils et l'état de l'étude	Lista los lazos PCT de la preplanificación y de los instrumentos del P&ID con sus equipos y el estado de ingeniería
+Creates or changes a PCT loop of the pre-planning	Legt eine PLT-Stelle der Vorplanung an oder ändert sie	Crée ou modifie une boucle CCP de la pré-étude	Crea o modifica un lazo PCT de la preplanificación
+Loop number, e.g. 101	Stellennummer, z. B. 101	Numéro de boucle, p. ex. 101	Número de lazo, p. ej. 101
+Measuring range or set point	Messbereich oder Sollwert	Plage de mesure ou consigne	Rango de medida o consigna
+Further device tags of the loop, separated by blanks	Weitere BMK der Stelle, durch Leerzeichen getrennt	Autres repères de la boucle, séparés par des espaces	Otros identificadores del lazo, separados por espacios
+Deletes a PCT loop of the pre-planning	Löscht eine PLT-Stelle der Vorplanung	Supprime une boucle CCP de la pré-étude	Elimina un lazo PCT de la preplanificación
+Loop number	Stellennummer	Numéro de boucle	Número de lazo
+No enclosure named {}	Kein Gehäuse namens {}	Aucune armoire nommée {}	Ningún armario llamado {}
+Unknown order: {}	Unbekannte Reihenfolge: {}	Ordre inconnu : {}	Orden desconocido: {}
+Unknown state: {}	Unbekannter Zustand: {}	État inconnu : {}	Estado desconocido: {}
+No routed wire {} – {}	Kein verlegter Draht {} – {}	Aucun fil acheminé {} – {}	Ningún cable enrutado {} – {}
+Lists the routed wires of the panel layout as a wiring checklist with end treatment, state and progress	Listet die verlegten Drähte des Schaltschrankaufbaus als Verdrahtungs-Checkliste mit Aderendbehandlung, Zustand und Fortschritt	Liste les fils acheminés de l'implantation d'armoire comme liste de contrôle de câblage avec préparation des extrémités, état et avancement	Lista los cables enrutados de la disposición del armario como lista de comprobación de cableado con tratamiento de extremos, estado y progreso
+Enclosure name (all if missing)	Gehäusename (alle, wenn nicht angegeben)	Nom de l'armoire (toutes si absent)	Nombre del armario (todos si falta)
+device (default), position, cross_section or number	device (Standard), position, cross_section oder number	device (par défaut), position, cross_section ou number	device (predeterminado), position, cross_section o number
+Only wires with this state: open, wired, changed or problem	Nur Drähte mit diesem Zustand: open, wired, changed oder problem	Seulement les fils dans cet état : open, wired, changed ou problem	Solo cables con este estado: open, wired, changed o problem
+Marks a routed wire as wired or as a problem, or as open again; the wire is given by its two ends	Markiert einen verlegten Draht als verdrahtet oder als Problem, oder wieder als offen; der Draht wird durch seine beiden Enden angegeben	Marque un fil acheminé comme câblé ou comme problème, ou à nouveau comme ouvert ; le fil est donné par ses deux extrémités	Marca un cable enrutado como cableado o como problema, o de nuevo como pendiente; el cable se indica por sus dos extremos
+One end, e.g. -K1:A1	Ein Ende, z. B. -K1:A1	Une extrémité, p. ex. -K1:A1	Un extremo, p. ej. -K1:A1
+Other end, e.g. -X1:3	Anderes Ende, z. B. -X1:3	Autre extrémité, p. ex. -X1:3	Otro extremo, p. ej. -X1:3
+wired, problem or open	wired, problem oder open	wired, problem ou open	wired, problem o open
+Note, e.g. what the problem is	Notiz, z. B. worin das Problem besteht	Note, p. ex. quel est le problème	Nota, p. ej. cuál es el problema
+Removes the wiring marks of wires that no longer exist	Entfernt die Verdrahtungsmarkierungen von Drähten, die es nicht mehr gibt	Supprime les marques de câblage des fils qui n'existent plus	Elimina las marcas de cableado de los cables que ya no existen
