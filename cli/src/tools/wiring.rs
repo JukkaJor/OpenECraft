@@ -68,7 +68,7 @@ fn wiring_list(s: &mut Session, a: &Args) -> Result<Value, String> {
         .map(|st| {
             let w = &an.wiring[st.wire];
             json!({
-                "enclosure": prj.layout.enclosures[w.enclosure].name,
+                "enclosure": w.enclosure_names(&prj.layout),
                 "from": w.from,
                 "to": w.to,
                 "number": w.number,

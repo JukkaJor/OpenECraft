@@ -1591,7 +1591,7 @@ impl App {
             if data != before {
                 self.prj.devices.insert(edited.tag.clone(), data.clone());
             }
-            if let Some((ei, _)) = self.prj.layout.find_device(&edited.tag) {
+            if let Some((ei, _)) = crate::panel::locate(&self.prj, &edited.tag) {
                 let enc = self.prj.layout.enclosures[ei].name.clone();
                 if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.prj, &edited.tag) {
                     self.workspace = Workspace::Panel;

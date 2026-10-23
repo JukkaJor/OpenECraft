@@ -1859,3 +1859,174 @@ Unknown line type: {}	Unbekannte Leitungsart: {}	Type de conduite inconnu : {}	T
 Device group {} already exists	Gerätegruppe {} existiert bereits	Le groupe d'appareils {} existe déjà	El grupo de dispositivos {} ya existe
 Unknown group kind: {}	Unbekannte Gruppenart: {}	Type de groupe inconnu : {}	Tipo de grupo desconocido: {}
 No device group {}	Keine Gerätegruppe {}	Aucun groupe d'appareils {}	No hay grupo de dispositivos {}
+through cable passages into the neighbouring enclosure	durch Kabeldurchführungen in den Nachbarschrank	par des passages de câbles vers l'armoire voisine	a través de pasos de cables al armario vecino
+Line-up and cable passages	Anreihung und Kabeldurchführungen	Juxtaposition et passages de câbles	Alineación y pasos de cables
+Bayed to the right of	Rechts angereiht an	Juxtaposée à droite de	Alineado a la derecha de
+The enclosure stands with its left side against the right side of the chosen one; wires run between them through cable passages	Der Schrank steht mit seiner linken Seite an der rechten Seite des gewählten; Drähte laufen durch Kabeldurchführungen hinüber	L'armoire est placée avec son côté gauche contre le côté droit de celle choisie ; les fils passent par des passages de câbles	El armario se coloca con su lado izquierdo contra el lado derecho del elegido; los cables pasan por pasos de cables
+Right neighbour	Rechter Nachbar	Voisine de droite	Vecino derecho
+No cable passage to {}: wires to it are not routed	Keine Kabeldurchführung zu {}: Drähte dorthin werden nicht verlegt	Aucun passage de câbles vers {} : les fils vers elle ne sont pas acheminés	Ningún paso de cables hacia {}: los cables hacia él no se tienden
+Open to {}: wires cross beside the mounting plates	Offen zu {}: Drähte laufen neben den Montageplatten hinüber	Ouverte vers {} : les fils passent à côté des plaques de montage	Abierto hacia {}: los cables pasan junto a las placas de montaje
+{} cable passages to {}	{} Kabeldurchführungen zu {}	{} passages de câbles vers {}	{} pasos de cables hacia {}
+➕ Cable passage to {}	➕ Kabeldurchführung zu {}	➕ Passage de câbles vers {}	➕ Paso de cables hacia {}
+Round cutouts facing each other in both side walls	Runde Ausschnitte gegenüber in beiden Seitenwänden	Découpes rondes face à face dans les deux parois latérales	Recortes redondos enfrentados en ambas paredes laterales
+Both sides are open: the wires need no cutout	Beide Seiten sind offen: die Drähte brauchen keinen Ausschnitt	Les deux côtés sont ouverts : les fils n'ont pas besoin de découpe	Ambos lados están abiertos: los cables no necesitan recorte
+Cable passage to {}	Kabeldurchführung zu {}	Passage de câbles vers {}	Paso de cables hacia {}
+Add the facing cutout in {}	Gegenüberliegenden Ausschnitt in {} hinzufügen	Ajouter la découpe en face dans {}	Añadir el recorte enfrentado en {}
+A cutout of the same size at the same place in the neighbour's side wall: together they are a cable passage	Ein gleich großer Ausschnitt an derselben Stelle in der Seitenwand des Nachbarn: zusammen bilden sie eine Kabeldurchführung	Une découpe de même taille au même endroit dans la paroi latérale de la voisine : ensemble elles forment un passage de câbles	Un recorte del mismo tamaño en el mismo lugar de la pared lateral del vecino: juntos forman un paso de cables
+The side of {} is open	Die Seite von {} ist offen	Le côté de {} est ouvert	El lado de {} está abierto
+Line-up	Anreihung	Juxtaposition	Alineación
+Show the enclosures bayed to this one as well	Auch die an diesen angereihten Schränke zeigen	Afficher aussi les armoires juxtaposées à celle-ci	Mostrar también los armarios alineados con este
+Bays an enclosure side by side to the right of another one (line-up); without right_of it leaves its line-up	Reiht einen Schrank rechts an einen anderen an (Anreihung); ohne right_of verlässt er seine Anreihung	Juxtapose une armoire à droite d'une autre (juxtaposition) ; sans right_of elle quitte sa juxtaposition	Alinea un armario a la derecha de otro (alineación); sin right_of sale de su alineación
+Enclosure it stands right of; empty to take it out of its line-up	Schrank, rechts von dem er steht; leer, um ihn aus der Anreihung zu nehmen	Armoire à droite de laquelle elle se trouve ; vide pour la retirer de sa juxtaposition	Armario a cuya derecha se encuentra; vacío para sacarlo de su alineación
+Adds a cable passage to the right neighbour: round cutouts facing each other in both side walls; wires between the enclosures run through it	Fügt eine Kabeldurchführung zum rechten Nachbarn hinzu: runde Ausschnitte gegenüber in beiden Seitenwänden; Drähte zwischen den Schränken laufen hindurch	Ajoute un passage de câbles vers la voisine de droite : découpes rondes face à face dans les deux parois latérales ; les fils entre les armoires y passent	Añade un paso de cables hacia el vecino derecho: recortes redondos enfrentados en ambas paredes laterales; los cables entre los armarios pasan por él
+Centre from the top of the enclosure in mm	Mitte vom oberen Rand des Schranks in mm	Centre depuis le haut de l'armoire en mm	Centro desde la parte superior del armario en mm
+Centre from the rear wall in mm	Mitte von der Rückwand in mm	Centre depuis la paroi arrière en mm	Centro desde la pared trasera en mm
+Diameter in mm	Durchmesser in mm	Diamètre en mm	Diámetro en mm
+{} cannot be bayed to itself	{} kann nicht an sich selbst angereiht werden	{} ne peut pas être juxtaposée à elle-même	{} no puede alinearse consigo mismo
+{} has no enclosure bayed to its right side	An {} ist rechts kein Schrank angereiht	{} n'a aucune armoire juxtaposée à droite	{} no tiene ningún armario alineado a su derecha
+3D routing	3D-Verlegung	Routage 3D	Enrutado 3D
+Cables and tubes	Kabel und Schläuche	Câbles et tuyaux	Cables y tubos
+From / to	Von / nach	De / à	De / a
+Class	Klasse	Classe	Clase
+Free air	Freie Verlegung	Air libre	Aire libre
+Diameter / bends	Durchmesser / Biegungen	Diamètre / coudes	Diámetro / curvas
+Bundles	Bündel	Faisceaux	Haces
+Shielded	Geschirmt	Blindé	Apantallado
+Outer diameter	Außendurchmesser	Diamètre extérieur	Diámetro exterior
+0 = estimated from cores and cross-section	0 = aus Adern und Querschnitt geschätzt	0 = estimé à partir des conducteurs et de la section	0 = estimado a partir de los conductores y la sección
+Release route	Verlegung freigeben	Libérer le tracé	Liberar el recorrido
+Freeze route	Verlegung einfrieren	Figer le tracé	Congelar el recorrido
+Keep this route when recalculating, as long as it is still possible	Diese Verlegung beim Neuberechnen beibehalten, solange sie möglich ist	Conserver ce tracé lors du recalcul tant qu'il reste possible	Mantener este recorrido al recalcular mientras siga siendo posible
+Deselect	Abwählen	Désélectionner	Deseleccionar
+Routing paths	Verlegewege	Chemins de routage	Rutas de tendido
+New	Neu	Nouveau	Nuevo
+Height above the mounting plate	Höhe über der Montageplatte	Hauteur au-dessus de la plaque de montage	Altura sobre la placa de montaje
+For	Für	Pour	Para
+Height above the plate	Höhe über der Platte	Hauteur au-dessus de la plaque	Altura sobre la placa
+Share of the capacity kept free for later additions	Anteil der Kapazität, der für spätere Erweiterungen frei bleibt	Part de la capacité gardée libre pour des ajouts ultérieurs	Parte de la capacidad reservada para ampliaciones posteriores
+Classes	Klassen	Classes	Clases
+Reservations	Reservierungen	Réservations	Reservas
+Depth from / to	Tiefe von / bis	Profondeur de / à	Profundidad de / a
+Production	Fertigung	Production	Producción
+Freeze all routes	Alle Verlegungen einfrieren	Figer tous les tracés	Congelar todos los recorridos
+The recalculation keeps frozen routes as long as they are still possible	Die Neuberechnung behält eingefrorene Verlegungen bei, solange sie möglich sind	Le recalcul conserve les tracés figés tant qu'ils restent possibles	El recálculo mantiene los recorridos congelados mientras sigan siendo posibles
+Release all	Alle freigeben	Tout libérer	Liberar todo
+Changed against the frozen routes:	Geändert gegenüber den eingefrorenen Verlegungen:	Modifié par rapport aux tracés figés :	Cambiado respecto a los recorridos congelados:
+Routing rules	Verlegeregeln	Règles de routage	Reglas de tendido
+Route wires in 3D	Drähte in 3D verlegen	Router les fils en 3D	Tender los cables en 3D
+Wires take the obstacle-aware 3D routes too, instead of only the cable ducts on the plate	Drähte nehmen ebenfalls die hindernisbewussten 3D-Wege statt nur der Kabelkanäle auf der Platte	Les fils prennent aussi les tracés 3D qui évitent les obstacles, au lieu des seules goulottes sur la plaque	Los cables también siguen los recorridos 3D que evitan obstáculos, en lugar de solo las canaletas de la placa
+Edge length of the routing grid: smaller is finer and slower	Kantenlänge des Verlegerasters: kleiner ist feiner und langsamer	Longueur d'arête de la grille de routage : plus petit est plus fin et plus lent	Longitud de arista de la rejilla de tendido: más pequeña es más fina y más lenta
+Clearance	Abstand	Distance	Distancia
+Distance from devices, rails and busbars	Abstand zu Geräten, Schienen und Sammelschienen	Distance aux appareils, rails et jeux de barres	Distancia a aparatos, carriles y barras colectoras
+Free air factor	Faktor freie Verlegung	Facteur air libre	Factor aire libre
+A way through free air costs this many times the way in a duct or routing path	Ein Weg durch freien Raum kostet so viel mal mehr als im Kanal oder Verlegeweg	Un chemin à l'air libre coûte autant de fois plus que dans une goulotte ou un chemin de routage	Un recorrido por aire libre cuesta tantas veces más que en una canaleta o ruta de tendido
+Segregation	Trennung	Séparation	Separación
+Distance of signals and fluids from power	Abstand von Signalen und Fluiden zur Energie	Distance des signaux et fluides à la puissance	Distancia de señales y fluidos a la potencia
+Segregation factor	Trennungsfaktor	Facteur de séparation	Factor de separación
+Cost of running closer than the segregation distance	Kosten für einen Verlauf näher als der Trennabstand	Coût d'un passage plus proche que la distance de séparation	Coste de pasar más cerca que la distancia de separación
+Bend radius wires	Biegeradius Drähte	Rayon de courbure fils	Radio de curvatura cables
+Bend radius cables	Biegeradius Kabel	Rayon de courbure câbles	Radio de curvatura mangueras
+Bend radius tubes	Biegeradius Schläuche	Rayon de courbure tuyaux	Radio de curvatura tubos
+Cut length step wires	Ablängschritt Drähte	Pas de coupe fils	Paso de corte cables
+Cut length step cables	Ablängschritt Kabel	Pas de coupe câbles	Paso de corte mangueras
+Cut length step tubes	Ablängschritt Schläuche	Pas de coupe tuyaux	Paso de corte tubos
+Cable end reserve	Reserve je Kabelende	Réserve par extrémité de câble	Reserva por extremo de manguera
+Added to each cable end in the enclosure	Wird jedem Kabelende im Schrank hinzugefügt	Ajoutée à chaque extrémité de câble dans l'armoire	Se añade a cada extremo de manguera en el armario
+Shield pigtail	Schirm-Pigtail	Queue de cochon du blindage	Coleta de pantalla
+Length of a shield pigtail where there is no shield clamp	Länge eines Schirm-Pigtails, wo keine Schirmklemme vorhanden ist	Longueur d'une queue de cochon là où il n'y a pas de collier de blindage	Longitud de una coleta de pantalla donde no hay abrazadera de pantalla
+Default rules	Standardregeln	Règles par défaut	Reglas predeterminadas
+{} wires, {} cables and {} tubes routed	{} Drähte, {} Kabel und {} Schläuche verlegt	{} fils, {} câbles et {} tuyaux routés	{} cables, {} mangueras y {} tubos tendidos
+{} bundles, {} branch points	{} Bündel, {} Abzweigpunkte	{} faisceaux, {} points de dérivation	{} haces, {} puntos de derivación
+{} mm (cut {} mm)	{} mm (abgelängt {} mm)	{} mm (coupe {} mm)	{} mm (corte {} mm)
+{} items, {} %	{} Elemente, {} %	{} éléments, {} %	{} elementos, {} %
+{} routes frozen	{} Verlegungen eingefroren	{} tracés figés	{} recorridos congelados
+{} mm, now {} mm	{} mm, jetzt {} mm	{} mm, maintenant {} mm	{} mm, ahora {} mm
+{} mm, removed	{} mm, entfernt	{} mm, supprimé	{} mm, eliminado
+Cut length	Ablänglänge	Longueur de coupe	Longitud de corte
+Routing path	Verlegeweg	Chemin de routage	Ruta de tendido
+Path for cables, tubes or wires over the plate: click the corners, double-click or Enter to finish	Weg für Kabel, Schläuche oder Drähte über der Platte: Eckpunkte klicken, Doppelklick oder Enter zum Abschließen	Chemin pour câbles, tuyaux ou fils au-dessus de la plaque : cliquer les angles, double-clic ou Entrée pour terminer	Ruta para mangueras, tubos o cables sobre la placa: haga clic en las esquinas, doble clic o Intro para terminar
+Reservation	Reservierung	Réservation	Reserva
+Space kept free of routes, or for one class only: click two corners	Raum, der frei von Verlegungen bleibt oder nur einer Klasse vorbehalten ist: zwei Ecken klicken	Espace gardé libre de tracés, ou pour une seule classe : cliquer deux angles	Espacio libre de recorridos, o solo para una clase: haga clic en dos esquinas
+{} (class {})	{} (Klasse {})	{} (classe {})	{} (clase {})
+Routing path {} mm – double-click or Enter to finish	Verlegeweg {} mm – Doppelklick oder Enter zum Abschließen	Chemin de routage {} mm – double-clic ou Entrée pour terminer	Ruta de tendido {} mm – doble clic o Intro para terminar
+Routing list (3D)	Verlegeliste (3D)	Liste de routage (3D)	Lista de tendido (3D)
+Bundle list	Bündelliste	Liste des faisceaux	Lista de haces
+Cut length (mm)	Ablänglänge (mm)	Longueur de coupe (mm)	Longitud de corte (mm)
+Free air (mm)	Freie Verlegung (mm)	Air libre (mm)	Aire libre (mm)
+Bundle	Bündel	Faisceau	Haz
+Items	Elemente	Éléments	Elementos
+Diameter (mm)	Durchmesser (mm)	Diamètre (mm)	Diámetro (mm)
+Contents	Inhalt	Contenu	Contenido
+{} frozen routes changed their length	{} eingefrorene Verlegungen haben ihre Länge geändert	{} tracés figés ont changé de longueur	{} recorridos congelados han cambiado de longitud
+in the field	im Feld	sur le terrain	en campo
+shield clamp ({} mm away)	Schirmklemme ({} mm entfernt)	collier de blindage (à {} mm)	abrazadera de pantalla (a {} mm)
+pigtail {} mm	Pigtail {} mm	queue de cochon {} mm	coleta {} mm
+Shield of bus cable {} is not connected at both ends	Schirm des Buskabels {} ist nicht an beiden Enden aufgelegt	Le blindage du câble de bus {} n'est pas raccordé aux deux extrémités	La pantalla del cable de bus {} no está conectada en ambos extremos
+Shield of {} is connected with a pigtail at {}: use a shield clamp	Schirm von {} ist an {} mit einem Pigtail aufgelegt: Schirmklemme verwenden	Le blindage de {} est raccordé par une queue de cochon à {} : utiliser un collier de blindage	La pantalla de {} está conectada con una coleta en {}: use una abrazadera de pantalla
+Shielded cable {} runs together with power conductors over {} mm	Geschirmtes Kabel {} verläuft über {} mm mit Energieleitern zusammen	Le câble blindé {} est posé avec des conducteurs de puissance sur {} mm	El cable apantallado {} discurre junto a conductores de potencia a lo largo de {} mm
+Fluid	Fluid	Fluide	Fluido
+Wires, cables and tubes	Drähte, Kabel und Schläuche	Fils, câbles et tuyaux	Cables, mangueras y tubos
+Tubes	Schläuche	Tuyaux	Tubos
+Keep free	Freihalten	Garder libre	Mantener libre
+Both ends	Beide Enden	Les deux extrémités	Ambos extremos
+First end only	Nur erstes Ende	Première extrémité seulement	Solo el primer extremo
+Second end only	Nur zweites Ende	Seconde extrémité seulement	Solo el segundo extremo
+in the cable ducts	in den Kabelkanälen	dans les goulottes	en las canaletas
+routed	verlegt	routé	tendido
+frozen	eingefroren	figé	congelado
+rerouted (frozen route no longer possible)	neu verlegt (eingefrorene Verlegung nicht mehr möglich)	re-routé (tracé figé plus possible)	retendido (el recorrido congelado ya no es posible)
+not in the panel layout	nicht im Schaltschrankaufbau	pas dans l'implantation	no está en el montaje del armario
+enclosures not bayed	Schränke nicht angereiht	armoires non juxtaposées	armarios no alineados
+no way through the enclosure	kein Weg durch den Schrank	aucun chemin à travers l'armoire	ningún camino a través del armario
+Only {}	Nur {}	Seulement {}	Solo {}
+not routed: {}	nicht verlegt: {}	non routé : {}	no tendido: {}
+Frozen route of {} is no longer possible and was routed again	Eingefrorene Verlegung von {} ist nicht mehr möglich und wurde neu verlegt	Le tracé figé de {} n'est plus possible et a été re-routé	El recorrido congelado de {} ya no es posible y se ha vuelto a tender
+{} {} cannot be routed: no way around the obstacles	{} {} kann nicht verlegt werden: kein Weg um die Hindernisse	{} {} ne peut pas être routé : aucun chemin autour des obstacles	{} {} no se puede tender: ningún camino alrededor de los obstáculos
+{} {}: bends closer than the bend radius ({} mm)	{} {}: Biegungen enger als der Biegeradius ({} mm)	{} {} : coudes plus serrés que le rayon de courbure ({} mm)	{} {}: curvas más cerradas que el radio de curvatura ({} mm)
+Segregation: {} run together with power conductors over {} mm	Trennung: {} verlaufen über {} mm mit Energieleitern zusammen	Séparation : {} sont posés avec des conducteurs de puissance sur {} mm	Separación: {} discurren junto a conductores de potencia a lo largo de {} mm
+{}: routing path {} is full ({} % of its usable cross-section)	{}: Verlegeweg {} ist voll ({} % seines nutzbaren Querschnitts)	{} : le chemin de routage {} est plein ({} % de sa section utile)	{}: la ruta de tendido {} está llena ({} % de su sección útil)
+{} {} enters through the bottom: no cable gland in the enclosure	{} {} wird durch den Boden eingeführt: keine Kabelverschraubung im Schrank	{} {} entre par le fond : aucun presse-étoupe dans l'armoire	{} {} entra por el fondo: ningún prensaestopas en el armario
+Unknown class: {}	Unbekannte Klasse: {}	Classe inconnue : {}	Clase desconocida: {}
+Unknown path kind: {}	Unbekannte Wegart: {}	Type de chemin inconnu : {}	Tipo de ruta desconocido: {}
+A routing path needs {} points at least	Ein Verlegeweg braucht mindestens {} Punkte	Un chemin de routage nécessite au moins {} points	Una ruta de tendido necesita al menos {} puntos
+No routing path or reservation {}	Kein Verlegeweg und keine Reservierung {}	Aucun chemin de routage ni réservation {}	Ninguna ruta de tendido ni reserva {}
+No routed item {}	Kein verlegtes Element {}	Aucun élément routé {}	Ningún elemento tendido {}
+Unknown shield ends: {}	Unbekannte Schirmenden: {}	Extrémités de blindage inconnues : {}	Extremos de pantalla desconocidos: {}
+Shows the rules of the 3D routing and changes those given: grid, clearance, free air factor, segregation, bend radii, cut lengths, reserves	Zeigt die Regeln der 3D-Verlegung und ändert die angegebenen: Raster, Abstand, Faktor freie Verlegung, Trennung, Biegeradien, Ablänglängen, Reserven	Affiche les règles du routage 3D et modifie celles indiquées : grille, distance, facteur air libre, séparation, rayons de courbure, longueurs de coupe, réserves	Muestra las reglas del enrutado 3D y cambia las indicadas: rejilla, distancia, factor de aire libre, separación, radios de curvatura, longitudes de corte, reservas
+Route the wires in 3D as well (otherwise through the cable ducts)	Auch die Drähte in 3D verlegen (sonst durch die Kabelkanäle)	Router aussi les fils en 3D (sinon dans les goulottes)	Tender también los cables en 3D (si no, por las canaletas)
+Edge length of the routing grid in mm	Kantenlänge des Verlegerasters in mm	Longueur d'arête de la grille de routage en mm	Longitud de arista de la rejilla de tendido en mm
+Distance from devices, rails and busbars in mm	Abstand zu Geräten, Schienen und Sammelschienen in mm	Distance aux appareils, rails et jeux de barres en mm	Distancia a aparatos, carriles y barras colectoras en mm
+Cost of free air against ducts and routing paths	Kosten freier Verlegung gegenüber Kanälen und Verlegewegen	Coût de l'air libre par rapport aux goulottes et chemins de routage	Coste del aire libre frente a canaletas y rutas de tendido
+Distance between power and signal or fluid in mm	Abstand zwischen Energie und Signal oder Fluid in mm	Distance entre puissance et signal ou fluide en mm	Distancia entre potencia y señal o fluido en mm
+Bend radius of wires as a multiple of the diameter	Biegeradius von Drähten als Vielfaches des Durchmessers	Rayon de courbure des fils en multiple du diamètre	Radio de curvatura de los cables como múltiplo del diámetro
+Bend radius of cables as a multiple of the diameter	Biegeradius von Kabeln als Vielfaches des Durchmessers	Rayon de courbure des câbles en multiple du diamètre	Radio de curvatura de las mangueras como múltiplo del diámetro
+Bend radius of tubes as a multiple of the diameter	Biegeradius von Schläuchen als Vielfaches des Durchmessers	Rayon de courbure des tuyaux en multiple du diamètre	Radio de curvatura de los tubos como múltiplo del diámetro
+Cut lengths of wires rounded up to this step in mm	Ablänglängen von Drähten auf diesen Schritt in mm aufgerundet	Longueurs de coupe des fils arrondies à ce pas en mm	Longitudes de corte de los cables redondeadas a este paso en mm
+Cut lengths of cables rounded up to this step in mm	Ablänglängen von Kabeln auf diesen Schritt in mm aufgerundet	Longueurs de coupe des câbles arrondies à ce pas en mm	Longitudes de corte de las mangueras redondeadas a este paso en mm
+Cut lengths of tubes rounded up to this step in mm	Ablänglängen von Schläuchen auf diesen Schritt in mm aufgerundet	Longueurs de coupe des tuyaux arrondies à ce pas en mm	Longitudes de corte de los tubos redondeadas a este paso en mm
+Length added to each cable end in mm	Länge, die jedem Kabelende hinzugefügt wird, in mm	Longueur ajoutée à chaque extrémité de câble en mm	Longitud añadida a cada extremo de manguera en mm
+Length of a shield pigtail in mm	Länge eines Schirm-Pigtails in mm	Longueur d'une queue de cochon de blindage en mm	Longitud de una coleta de pantalla en mm
+Adds a routing path (cable tray, tube guide) over the mounting plate that routes prefer	Fügt über der Montageplatte einen Verlegeweg hinzu (Kabelpritsche, Schlauchführung), den Verlegungen bevorzugen	Ajoute au-dessus de la plaque de montage un chemin de routage (chemin de câbles, guide de tuyaux) que les tracés privilégient	Añade sobre la placa de montaje una ruta de tendido (bandeja, guía de tubos) que los recorridos prefieren
+Corner points on the mounting plate in mm	Eckpunkte auf der Montageplatte in mm	Points d'angle sur la plaque de montage en mm	Puntos de esquina en la placa de montaje en mm
+Height above the mounting plate in mm (default 50)	Höhe über der Montageplatte in mm (Standard 50)	Hauteur au-dessus de la plaque de montage en mm (par défaut 50)	Altura sobre la placa de montaje en mm (por defecto 50)
+Width of the path in mm (default 50)	Breite des Wegs in mm (Standard 50)	Largeur du chemin en mm (par défaut 50)	Ancho de la ruta en mm (por defecto 50)
+any, wires, cables or tubes	any, wires, cables oder tubes	any, wires, cables ou tubes	any, wires, cables o tubes
+Allowed classes, comma separated: power, control, signal, fluid (default all)	Erlaubte Klassen, durch Komma getrennt: power, control, signal, fluid (Standard alle)	Classes autorisées, séparées par des virgules : power, control, signal, fluid (par défaut toutes)	Clases permitidas, separadas por comas: power, control, signal, fluid (por defecto todas)
+Share of the capacity kept free in percent	Freigehaltener Anteil der Kapazität in Prozent	Part de la capacité gardée libre en pour cent	Parte de la capacidad que se mantiene libre en porcentaje
+Reserves space over the mounting plate: kept free of routes, or for one class only	Reserviert Raum über der Montageplatte: frei von Verlegungen oder nur für eine Klasse	Réserve de l'espace au-dessus de la plaque de montage : libre de tracés ou pour une seule classe	Reserva espacio sobre la placa de montaje: libre de recorridos o solo para una clase
+Left edge on the mounting plate in mm	Linke Kante auf der Montageplatte in mm	Bord gauche sur la plaque de montage en mm	Borde izquierdo en la placa de montaje en mm
+Top edge on the mounting plate in mm	Obere Kante auf der Montageplatte in mm	Bord supérieur sur la plaque de montage en mm	Borde superior en la placa de montaje en mm
+keepout (default), power, control, signal or fluid	keepout (Standard), power, control, signal oder fluid	keepout (par défaut), power, control, signal ou fluid	keepout (por defecto), power, control, signal o fluid
+Removes a routing path or reservation	Entfernt einen Verlegeweg oder eine Reservierung	Supprime un chemin de routage ou une réservation	Elimina una ruta de tendido o una reserva
+Id of the path or reservation	Id des Wegs oder der Reservierung	Id du chemin ou de la réservation	Id de la ruta o de la reserva
+Lists the 3D routing: routed wires, cables and tubes with lengths and status, bundles, branches, shields, routing paths, changes and problems	Listet die 3D-Verlegung: verlegte Drähte, Kabel und Schläuche mit Längen und Status, Bündel, Abzweige, Schirme, Verlegewege, Änderungen und Probleme	Liste le routage 3D : fils, câbles et tuyaux routés avec longueurs et état, faisceaux, dérivations, blindages, chemins de routage, modifications et problèmes	Lista el enrutado 3D: cables, mangueras y tubos tendidos con longitudes y estado, haces, derivaciones, pantallas, rutas de tendido, cambios y problemas
+Only wire, cable or tube	Nur wire, cable oder tube	Seulement wire, cable ou tube	Solo wire, cable o tube
+Freezes routes for production (kept by the recalculation while possible) or releases them	Friert Verlegungen für die Fertigung ein (von der Neuberechnung beibehalten, solange möglich) oder gibt sie frei	Fige des tracés pour la production (conservés par le recalcul tant que possible) ou les libère	Congela recorridos para la producción (el recálculo los mantiene mientras sea posible) o los libera
+Keys of the routes, comma separated (all if missing)	Schlüssel der Verlegungen, durch Komma getrennt (alle, wenn leer)	Clés des tracés, séparées par des virgules (tous si absent)	Claves de los recorridos, separadas por comas (todos si falta)
+Release instead of freeze	Freigeben statt einfrieren	Libérer au lieu de figer	Liberar en lugar de congelar
+Sets the shield and the outer diameter of a cable	Setzt den Schirm und den Außendurchmesser eines Kabels	Définit le blindage et le diamètre extérieur d'un câble	Define la pantalla y el diámetro exterior de una manguera
+The cable has an overall shield	Das Kabel hat einen Gesamtschirm	Le câble a un blindage global	La manguera tiene una pantalla general
+Shield connected at: both, first, second or none	Schirm aufgelegt an: both, first, second oder none	Blindage raccordé à : both, first, second ou none	Pantalla conectada en: both, first, second o none
+Outer diameter in mm, 0 = estimated	Außendurchmesser in mm, 0 = geschätzt	Diamètre extérieur en mm, 0 = estimé	Diámetro exterior en mm, 0 = estimado
+Not connected	Nicht aufgelegt	Non raccordé	No conectado
+Hose {}: length {} m shorter than its 3D route of {} m	Schlauch {}: Länge {} m kürzer als seine 3D-Verlegung von {} m	Tuyau {} : longueur {} m plus courte que son tracé 3D de {} m	Manguera {}: longitud {} m menor que su recorrido 3D de {} m

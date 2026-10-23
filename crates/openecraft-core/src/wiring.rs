@@ -129,7 +129,7 @@ pub fn steps(prj: &Project, wiring: &[RoutedWire], enclosure: Option<usize>, ord
     let mut v: Vec<Step> = wiring
         .iter()
         .enumerate()
-        .filter(|(_, w)| enclosure.is_none_or(|e| w.enclosure == e))
+        .filter(|(_, w)| enclosure.is_none_or(|e| w.in_enclosure(e)))
         .map(|(i, w)| Step {
             wire: i,
             status: status(prj, w),
@@ -180,7 +180,7 @@ impl Progress {
 
 pub fn progress(prj: &Project, wiring: &[RoutedWire], enclosure: Option<usize>) -> Progress {
     let mut p = Progress::default();
-    for w in wiring.iter().filter(|w| enclosure.is_none_or(|e| w.enclosure == e)) {
+    for w in wiring.iter().filter(|w| enclosure.is_none_or(|e| w.in_enclosure(e))) {
         p.total += 1;
         p.length_total += w.length;
         match status(prj, w) {
@@ -249,7 +249,7 @@ pub fn csv(prj: &Project, wiring: &[RoutedWire], order: Order) -> String {
         let _ = writeln!(
             out,
             "{};{};{};{};{};{};{:.0};{strip};{ferrule};{status};{}",
-            prj.layout.enclosures[w.enclosure].name,
+            w.enclosure_names(&prj.layout),
             w.number,
             w.from,
             w.to,

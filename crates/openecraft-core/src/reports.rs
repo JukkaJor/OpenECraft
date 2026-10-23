@@ -84,6 +84,8 @@ pub struct Analysis {
     pub connections: Vec<Connection>,
     /// Fill levels of the cable ducts the wiring runs through.
     pub duct_fill: Vec<panel::DuctFill>,
+    /// 3D routing of wires, cables and tubes.
+    pub routing: crate::routing3d::Routing,
 }
 
 impl Analysis {
@@ -91,9 +93,10 @@ impl Analysis {
         let idx = Index::build(prj);
         let netlist = Netlist::build(prj, true);
         let open = Netlist::build(prj, false);
-        let (wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
-        let fill = panel::duct_fill(prj, &wiring);
+        let (mut wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
         let conns = connections(prj, &netlist, &open);
+        let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
+        let fill = panel::duct_fill(prj, &wiring);
         let mut reports = HashMap::new();
         for k in ReportKind::ALL {
             let t = match k {
@@ -128,6 +131,8 @@ impl Analysis {
                 ReportKind::TubingList => fluid_reports::tubing(prj, &open),
                 ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, &idx),
                 ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, &idx),
+                ReportKind::RoutingList => routing_list(prj, &routing),
+                ReportKind::BundleList => bundle_list(&routing),
             };
             reports.insert(k, t);
         }
@@ -145,6 +150,17 @@ impl Analysis {
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
+        issues.extend(routing.problems.iter().map(|p| {
+            let severity = match p.level {
+                crate::routing3d::Level::Error => Severity::Error,
+                crate::routing3d::Level::Warning => Severity::Warning,
+                crate::routing3d::Level::Info => Severity::Info,
+            };
+            Issue { severity, message: p.message.clone(), target: None }
+        }));
+        if !routing.changes.is_empty() {
+            issues.push(Issue { severity: Severity::Info, message: tr_fmt!("{} frozen routes changed their length", routing.changes.len()), target: None });
+        }
         issues.extend(crate::structure::problems(prj).into_iter().map(|message| Issue { severity: Severity::Warning, message, target: None }));
         for lang in &prj.languages.targets {
             let n = crate::translation::missing(prj, lang).len();
@@ -154,7 +170,7 @@ impl Analysis {
         }
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
-        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };
+        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill, routing };
         // Harness data needs the connections and the routed lengths.
         an.reports.insert(ReportKind::HarnessData, harness_data(prj, &an));
         an.issues.extend(check_harnesses(prj, &an));
@@ -189,6 +205,70 @@ fn hose_list(prj: &Project, open: &Netlist) -> Table {
         last[5] = tr("Total").into();
         last[6] = format!("{total:.2}");
         t.push(last, None);
+    }
+    t
+}
+
+/// Routing list: every routed wire, cable and tube with its ends, class, enclosures,
+/// lengths and how it is routed (cut lengths for production).
+fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
+    let mut t = Table::new(&[
+        (tr("Kind"), 0.5),
+        (tr("Designation"), 1.2),
+        (tr("From"), 1.0),
+        (tr("To"), 1.0),
+        (tr("Class"), 0.6),
+        (tr("Enclosures"), 0.9),
+        (tr("Length (mm)"), 0.7),
+        (tr("Cut length (mm)"), 0.7),
+        (tr("Free air (mm)"), 0.6),
+        (tr("Bundles"), 0.5),
+        (tr("Status"), 1.2),
+    ]);
+    for (i, it) in r.items.iter().enumerate() {
+        let names: Vec<&str> = it.enclosures.iter().filter_map(|&k| prj.layout.enclosures.get(k)).map(|e| e.name.as_str()).collect();
+        let routed = it.routed();
+        let mm = |v: f32| if routed { format!("{v:.0}") } else { "–".into() };
+        t.push(
+            vec![
+                it.kind.title().into(),
+                it.label.clone(),
+                it.ends[0].tag.clone(),
+                it.ends[1].tag.clone(),
+                it.class.title().into(),
+                names.join(" / "),
+                mm(it.length),
+                mm(it.cut),
+                mm(it.free),
+                r.bundles_of(i).len().to_string(),
+                it.status_text(),
+            ],
+            None,
+        );
+    }
+    t
+}
+
+/// Bundles: stretches shared by several wires, cables and tubes, with their
+/// diameter and the branches at their ends.
+fn bundle_list(r: &crate::routing3d::Routing) -> Table {
+    let mut t = Table::new(&[(tr("Bundle"), 0.5), (tr("Items"), 0.5), (tr("Diameter (mm)"), 0.7), (tr("Length (mm)"), 0.7), (tr("Classes"), 1.0), (tr("Branches"), 0.6), (tr("Contents"), 3.0)]);
+    for (bi, b) in r.bundles.iter().enumerate() {
+        let classes: Vec<&str> = b.classes.iter().map(|c| c.title()).collect();
+        let branches = r.branches.iter().filter(|x| x.bundles.contains(&bi)).count();
+        let labels: Vec<&str> = b.items.iter().map(|&i| r.items[i].label.as_str()).collect();
+        t.push(
+            vec![
+                format!("B{}", bi + 1),
+                b.items.len().to_string(),
+                format!("{:.1}", b.diameter),
+                format!("{:.0}", b.length),
+                classes.join(", "),
+                branches.to_string(),
+                labels.join(", "),
+            ],
+            None,
+        );
     }
     t
 }
@@ -547,7 +627,7 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
         total += w.length;
         t.push(
             vec![
-                prj.layout.enclosures[w.enclosure].name.clone(),
+                w.enclosure_names(&prj.layout),
                 w.number.clone(),
                 w.from.clone(),
                 w.to.clone(),

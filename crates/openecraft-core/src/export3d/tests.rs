@@ -227,3 +227,20 @@ fn floor_standing_system_with_frame_and_plinth() {
     assert!(solids.iter().any(|x| x.name.contains("GEN.TS-800X2000X600")));
     assert!(solids.iter().any(|x| x.name.contains("GEN.TS-SP-2000X600")));
 }
+
+#[test]
+fn bayed_enclosures_touch_and_stand_on_the_floor() {
+    let mut prj = demo_project();
+    panel::apply_system(&mut prj.layout.enclosures[0], "baying", Some((800.0, 2000.0, 600.0)));
+    let mut e = panel::new_enclosure(&mut prj, "", "+CAB2");
+    e.build.plinth = 0.0;
+    prj.layout.enclosures.push(e);
+    let mut lone = panel::new_enclosure(&mut prj, "", "+CAB3");
+    lone.build.plinth = 0.0;
+    prj.layout.enclosures.push(lone);
+    panel::bay_right_of(&mut prj, 1, 0);
+    let s = scene(&prj);
+    assert_eq!(s[1].offset, [800.0, 0.0, 0.0]);
+    assert_eq!(s[0].offset[1], 100.0, "lifted by its plinth");
+    assert_eq!(s[2].offset[0], 800.0 + 600.0 + panel::LINEUP_GAP);
+}

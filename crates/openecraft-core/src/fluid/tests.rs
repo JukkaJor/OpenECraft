@@ -1,7 +1,7 @@
 use super::*;
 use crate::reports::Severity;
 use crate::geom::{p, P};
-use crate::model::{SymbolInst, Wire};
+use crate::model::{DeviceData, SymbolInst, Wire};
 
 fn sym(id: u64, key: &str, pos: P, tag: &str) -> SymbolInst {
     let def = crate::symbols::get(key).unwrap();
@@ -204,6 +204,71 @@ fn tubes_are_routed_in_the_panel_layout() {
     // A set length shorter than the route is a warning.
     wire_mut(&mut prj, 11).length = 0.3;
     assert!(messages(&prj).iter().any(|(s, m)| *s == Severity::Warning && m.contains("shorter than the routed 0.40 m")));
+}
+
+/// The pneumatics with the valve in valve terminal -KH1 (its coil -MB1 linked to it)
+/// in +A, the air supply in +B bayed to the right of it, the cylinder in the field.
+fn pneumatics_in_line_up() -> Project {
+    use crate::panel::{bay_right_of, new_enclosure, place_device_on, Face};
+    let mut prj = pneumatics();
+    crate::parts::ensure_in_project(&mut prj, &crate::parts::PartsDb::default(), "GEN.VLV-52-24DC");
+    let part = crate::parts::PartRef { number: "GEN.VLV-52-24DC".into(), count: 1 };
+    prj.devices.insert("-QM1".into(), DeviceData { parts: vec![part], ..Default::default() });
+    prj.fluid.groups.push(crate::electrofluid::DeviceGroup { tag: "-KH1".into(), members: vec!["-QM1".into()], ..Default::default() });
+    prj.fluid.links.insert("-QM1".into(), vec!["-MB1".into()]);
+    for name in ["+A", "+B"] {
+        let e = new_enclosure(&mut prj, "", name);
+        prj.layout.enclosures.push(e);
+    }
+    bay_right_of(&mut prj, 1, 0);
+    place_device_on(&mut prj, 1, "-GQ1", p(100.0, 300.0), Face::Plate);
+    prj
+}
+
+#[test]
+fn valve_terminals_and_coils_are_placed_with_their_group() {
+    use crate::panel::{device_size, devices_to_place, locate, place_device};
+    let mut prj = pneumatics_in_line_up();
+    // The valve has mounting data now; the terminal is as wide as its valves.
+    assert_eq!(device_size(&prj, "-QM1").map(|s| (s.w, s.h)), Some((26.0, 110.0)));
+    assert_eq!(device_size(&prj, "-KH1").map(|s| (s.w, s.h, s.d)), Some((26.0, 110.0, 64.0)));
+    let todo = |prj: &Project| devices_to_place(prj).into_iter().map(|d| d.tag).collect::<Vec<_>>();
+    assert_eq!(todo(&prj), ["-KH1", "-QM1"]);
+    place_device(&mut prj, 0, "-KH1", p(200.0, 300.0)).unwrap();
+    assert!(todo(&prj).is_empty(), "members of a placed terminal are placed");
+    let kh1 = prj.layout.find_device("-KH1").map(|(_, i)| i.id);
+    assert_eq!(locate(&prj, "-QM1").map(|(e, i)| (e, i.id)), kh1.map(|id| (0, id)));
+    assert_eq!(locate(&prj, "-MB1").map(|(_, i)| i.id), kh1, "the coil sits on its valve");
+    assert!(locate(&prj, "-MM1").is_none());
+}
+
+#[test]
+fn hoses_run_between_bayed_enclosures_and_in_3d() {
+    let mut prj = pneumatics_in_line_up();
+    crate::panel::place_device(&mut prj, 0, "-KH1", p(200.0, 300.0)).unwrap();
+    let nl = Netlist::build(&prj, false);
+    let supply = |hs: &[Hose]| hs.iter().find(|h| h.from.starts_with("-GQ1") || h.to.starts_with("-GQ1")).cloned().unwrap();
+    // No cable passage yet: the supply hose has no route.
+    assert!(supply(&hoses(&prj, &nl)).routed.is_none());
+    crate::panel::add_passage(&mut prj, 0, 300.0, 80.0, 60.0);
+    let r = supply(&hoses(&prj, &nl)).routed.expect("through the passage");
+    assert_eq!(r.enclosure, "+A / +B");
+    assert!(r.length > 0.3 && r.bends >= 2, "{r:?}");
+    // The 3D routing takes the hoses too: through the passage, and to the cylinder in
+    // the field through the bottom; the hose's own bend radius counts.
+    wire_mut(&mut prj, 10).hose = Some(HoseConfig { bend_radius: 40.0, ..Default::default() });
+    wire_mut(&mut prj, 10).length = 0.1;
+    let an = crate::reports::Analysis::build(&prj);
+    let tubes: Vec<&crate::routing3d::RoutedItem> = an.routing.items.iter().filter(|i| i.kind == crate::routing3d::RouteKind::Tube).collect();
+    assert_eq!(tubes.len(), 3);
+    assert!(tubes.iter().all(|t| t.routed() && t.class == crate::routing3d::Class::Fluid), "{tubes:?}");
+    let across = tubes.iter().find(|t| t.enclosures.len() == 2).expect("supply hose across");
+    assert!(across.ends.iter().any(|e| e.tag == "-GQ1"));
+    assert!(tubes.iter().filter(|t| t.ends.iter().any(|e| e.tag == "-MM1")).all(|t| t.ends[1].item.is_none() || t.ends[0].item.is_none()));
+    assert!(an.issues.iter().any(|i| i.message.contains("shorter than its 3D route")), "set length 0.1 m");
+    // The tubing list and the hose reports know the route.
+    let tubing = &an.reports[&crate::model::ReportKind::TubingList];
+    assert!(!tubing.rows.is_empty());
 }
 
 #[test]

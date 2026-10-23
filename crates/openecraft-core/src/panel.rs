@@ -21,12 +21,14 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod fastening;
 mod fill;
+mod lineup;
 mod macros;
 mod placement;
 mod points;
 mod system;
 pub use fastening::{fastening_material, Fastening};
 pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
+pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, unbay, Leg, Passage, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
@@ -270,6 +272,16 @@ pub struct Enclosure {
     /// Groups (assemblies) of items.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub groups: Vec<ItemGroup>,
+    /// Id of the enclosure this one is bayed to with its left side: it stands right of
+    /// that one in a line-up. 0 for none.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub bayed_to: u64,
+    /// Routing paths through the free space (3D routing).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub paths: Vec<crate::routing3d::RoutingPath>,
+    /// Space kept free, or for one class only (3D routing).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub reservations: Vec<crate::routing3d::Reservation>,
 }
 
 impl Default for Enclosure {
@@ -286,6 +298,9 @@ impl Default for Enclosure {
             climate: Default::default(),
             build: Default::default(),
             groups: Vec::new(),
+            bayed_to: 0,
+            paths: Vec::new(),
+            reservations: Vec::new(),
         }
     }
 }
@@ -454,11 +469,26 @@ pub struct Layout {
     /// 3D macros of the project (groups of items to insert again).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub macros: Vec<PanelMacro>,
+    /// Rules of the 3D routing.
+    #[serde(skip_serializing_if = "crate::routing3d::RoutingRules::is_default")]
+    pub routing: crate::routing3d::RoutingRules,
+    /// Routes frozen for production.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub frozen: Vec<crate::routing3d::FrozenRoute>,
 }
 
 impl Default for Layout {
     fn default() -> Self {
-        Layout { enclosures: Vec::new(), wire_reserve: 100.0, ferrules: true, duct_fill_limit: 70.0, hardware: true, macros: Vec::new() }
+        Layout {
+            enclosures: Vec::new(),
+            wire_reserve: 100.0,
+            ferrules: true,
+            duct_fill_limit: 70.0,
+            hardware: true,
+            macros: Vec::new(),
+            routing: Default::default(),
+            frozen: Vec::new(),
+        }
     }
 }
 
@@ -666,7 +696,7 @@ pub fn device_mesh(prj: &Project, it: &PanelItem) -> Option<Vec<[[f32; 3]; 3]>> 
 /// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
 /// strips are as long as their strip layout (terminals and spare terminals).
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
-    let data = prj.devices.get(tag)?;
+    let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
     let parts: Vec<_> = data
         .parts
         .iter()
@@ -691,17 +721,49 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d, from_part: true })
 }
 
-/// Devices with parts that are not placed in any enclosure yet. Devices whose parts
-/// have no mounting data (e.g. motors in the field) are not listed.
+/// Footprint of a fluid device group (valve terminal, service unit) placed as one
+/// item: its base part if that has mounting data, otherwise its members side by side.
+pub fn group_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
+    let g = prj.fluid.groups.iter().find(|g| g.tag == tag)?;
+    if let Some([w, h, d]) = part_by_number(prj, &g.part).and_then(|p| p.size()) {
+        return Some(DeviceSize { tag: tag.into(), part: g.part.clone(), w, h, d, from_part: true });
+    }
+    let members: Vec<DeviceSize> = g.members.iter().filter_map(|m| device_size(prj, m)).collect();
+    if members.is_empty() {
+        return None;
+    }
+    let w = members.iter().map(|m| m.w).sum();
+    let h = members.iter().map(|m| m.h).fold(0.0, f32::max);
+    let d = members.iter().map(|m| m.d).fold(0.0, f32::max);
+    Some(DeviceSize { tag: tag.into(), part: g.part.clone(), w, h, d, from_part: true })
+}
+
+/// Where a device is in the panel layout: placed itself, as a member of a placed
+/// fluid device group (valve terminal, service unit), or – for an electrical device
+/// linked to a fluid device (solenoid coil) – where that fluid device is.
+pub fn locate<'a>(prj: &'a Project, tag: &str) -> Option<(usize, &'a PanelItem)> {
+    let direct = |t: &str| {
+        prj.layout.find_device(t).or_else(|| prj.fluid.groups.iter().find(|g| g.members.iter().any(|m| m == t)).and_then(|g| prj.layout.find_device(&g.tag)))
+    };
+    direct(tag).or_else(|| crate::electrofluid::fluid_devices_of(prj, tag).into_iter().find_map(|f| direct(f)))
+}
+
+/// Devices with parts that are not placed in any enclosure yet, and fluid device
+/// groups whose members are not placed. Devices whose parts have no mounting data
+/// (e.g. motors in the field) are not listed, nor members of a placed group and coils
+/// on a placed valve.
 pub fn devices_to_place(prj: &Project) -> Vec<DeviceSize> {
-    let placed = prj.layout.placed_tags();
+    let groups = prj.fluid.groups.iter().map(|g| &g.tag).filter(|t| !t.is_empty() && !prj.devices.contains_key(*t));
     let mut v: Vec<DeviceSize> = prj
         .devices
         .keys()
-        .filter(|t| !placed.contains(t.as_str()))
+        .chain(groups)
+        .filter(|t| locate(prj, t).is_none())
+        .filter(|t| !prj.fluid.groups.iter().any(|g| g.tag == **t && g.members.iter().any(|m| prj.layout.find_device(m).is_some())))
         .filter_map(|t| device_size(prj, t))
         .collect();
     v.sort_by(|a, b| crate::model::natural_cmp(&a.tag, &b.tag));
+    v.dedup_by(|a, b| a.tag == b.tag);
     v
 }
 
@@ -1136,8 +1198,12 @@ pub struct RoutedWire {
     /// the wire runs from there along the door to the hinge and over the hinge loop.
     pub door: (Option<V3>, Option<V3>),
     /// Routes on the door (door coordinates) of the two ends: from the connection point
-    /// to the hinge; between two door devices the whole wire is the first one.
+    /// to the hinge; between two door devices the whole wire is the first one. The
+    /// second end is in the last enclosure of the wire.
     pub door_routes: (Option<Route>, Option<Route>),
+    /// Further stretches through cable passages into neighbouring enclosures of the
+    /// line-up; empty if the wire stays in `enclosure`.
+    pub legs: Vec<Leg>,
 }
 
 /// Where a routed wire end comes from.
@@ -1154,6 +1220,9 @@ pub enum EndKind {
 impl RoutedWire {
     /// How the wire is laid, for lists.
     pub fn routing(&self) -> &'static str {
+        if !self.legs.is_empty() {
+            return tr("through cable passages into the neighbouring enclosure");
+        }
         match (self.on_door(), self.door.0.is_some() || self.door.1.is_some(), self.route.via_ducts) {
             (true, _, _) => tr("on the door"),
             (_, true, true) => tr("over the door hinge, via cable ducts"),
@@ -1163,11 +1232,50 @@ impl RoutedWire {
         }
     }
 
-    /// Polylines of the wire on a face (plate or door coordinates; none on the walls).
-    pub fn paths_on(&self, face: Face) -> Vec<&[P]> {
+    /// The routes on the mounting plates: (enclosure, route) of the first enclosure and
+    /// of the legs.
+    pub fn stretches(&self) -> impl Iterator<Item = (usize, &Route)> {
+        std::iter::once((self.enclosure, &self.route)).chain(self.legs.iter().map(|l| (l.enclosure, &l.route)))
+    }
+
+    /// Like [`RoutedWire::stretches`], with the cable passages (line-up coordinates)
+    /// each stretch comes in through and leaves through.
+    pub fn stretch_passages(&self) -> Vec<(usize, &Route, Option<V3>, Option<V3>)> {
+        let entries = std::iter::once(None).chain(self.legs.iter().map(|l| Some(l.passage)));
+        let exits = self.legs.iter().map(|l| Some(l.passage)).chain(std::iter::once(None));
+        self.stretches().zip(entries.zip(exits)).map(|((e, r), (a, b))| (e, r, a, b)).collect()
+    }
+
+    /// Names of the enclosures the wire runs through ("+CAB1 / +CAB2").
+    pub fn enclosure_names(&self, layout: &Layout) -> String {
+        self.stretches().filter_map(|(e, _)| layout.enclosures.get(e)).map(|e| e.name.as_str()).collect::<Vec<_>>().join(" / ")
+    }
+
+    /// Enclosure of the second end.
+    pub fn last_enclosure(&self) -> usize {
+        self.legs.last().map(|l| l.enclosure).unwrap_or(self.enclosure)
+    }
+
+    /// The wire runs through the enclosure.
+    pub fn in_enclosure(&self, ei: usize) -> bool {
+        self.stretches().any(|(e, _)| e == ei)
+    }
+
+    /// Length on the mounting plates and through the cable passages.
+    pub fn plate_length(&self) -> f32 {
+        self.route.plate_length + self.legs.iter().map(|l| l.route.plate_length + l.passage_length).sum::<f32>()
+    }
+
+    /// Polylines of the wire on a face of an enclosure (plate or door coordinates; none
+    /// on the walls).
+    pub fn paths_in(&self, ei: usize, face: Face) -> Vec<&[P]> {
         match face {
-            Face::Plate => vec![self.route.points.as_slice()],
-            Face::Door => [&self.door_routes.0, &self.door_routes.1].into_iter().flatten().map(|r| r.points.as_slice()).collect(),
+            Face::Plate => self.stretches().filter(|(e, _)| *e == ei).map(|(_, r)| r.points.as_slice()).collect(),
+            Face::Door => {
+                let first = self.door_routes.0.as_ref().filter(|_| self.enclosure == ei);
+                let last = self.door_routes.1.as_ref().filter(|_| self.last_enclosure() == ei);
+                [first, last].into_iter().flatten().map(|r| r.points.as_slice()).collect()
+            }
             _ => Vec::new(),
         }
         .into_iter()
@@ -1197,8 +1305,8 @@ pub fn wires_at(wiring: &[RoutedWire], enclosure: usize, face: Face, q: P, tol: 
     let mut v: Vec<(usize, f32)> = wiring
         .iter()
         .enumerate()
-        .filter(|(_, w)| w.enclosure == enclosure)
-        .map(|(i, w)| (i, w.paths_on(face).into_iter().map(|pts| route_distance(pts, q)).fold(f32::INFINITY, f32::min)))
+        .filter(|(_, w)| w.in_enclosure(enclosure))
+        .map(|(i, w)| (i, w.paths_in(enclosure, face).into_iter().map(|pts| route_distance(pts, q)).fold(f32::INFINITY, f32::min)))
         .filter(|(_, d)| *d <= tol)
         .collect();
     v.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
@@ -1231,6 +1339,7 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
     let mut ends = Vec::new();
     let mut open = Vec::new();
     let mut points: HashMap<u64, Vec<PlacedPoint>> = HashMap::new();
+    let pos = positions(&prj.layout);
     for c in connections(prj, nl, wired) {
         let sa = &prj.pages[c.a.page].symbols[c.a.sym];
         let sb = &prj.pages[c.b.page].symbols[c.b.sym];
@@ -1239,16 +1348,12 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
         if sa.tag == sb.tag {
             continue; // internal connection (e.g. bridged on the device)
         }
-        let (Some((ea, ia)), Some((eb, ib))) = (prj.layout.find_device(&sa.tag), prj.layout.find_device(&sb.tag)) else {
+        let (Some((ea, ia)), Some((eb, ib))) = (locate(prj, &sa.tag), locate(prj, &sb.tag)) else {
             open.push(OpenWire { from, to, net: c.net.clone(), reason: "device not placed" });
             continue;
         };
-        if ea != eb {
-            open.push(OpenWire { from, to, net: c.net.clone(), reason: "different enclosures" });
-            continue;
-        }
-        let e = &prj.layout.enclosures[ea];
-        let mut end = |it: &PanelItem, s, pin| {
+        let mut end = |ei: usize, it: &PanelItem, s, pin| {
+            let e = &prj.layout.enclosures[ei];
             let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));
             let point = point_of(placed, s, pin);
             let kind = match point {
@@ -1260,21 +1365,33 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             let door = (it.face == Face::Door).then(|| door_point(e, it, point));
             (w, extra, kind, door, door_route)
         };
-        let (pa, la, ka, da, ra) = end(ia, sa, c.a.pin);
-        let (pb, lb, kb, db, rb) = end(ib, sb, c.b.pin);
-        let (r, length, door_routes) = match (da, db) {
+        let (pa, la, ka, da, ra) = end(ea, ia, sa, c.a.pin);
+        let (pb, lb, kb, db, rb) = end(eb, ib, sb, c.b.pin);
+        let e = &prj.layout.enclosures[ea];
+        let (r, length, door_routes, legs) = match (da, db) {
             // Both ends on the door: along the door, not into the cabinet.
-            (Some(a), Some(b)) => {
+            (Some(a), Some(b)) if ea == eb => {
                 let on_door = route_door(e, p(a[0], a[1]), p(b[0], b[1]));
                 let bundle = door_bundle(e, on_door.via_ducts);
                 let length = (a[2] - bundle).abs() + on_door.plate_length + (b[2] - bundle).abs();
-                (Route { points: Vec::new(), plate_length: 0.0, via_ducts: false, runs: Vec::new() }, length, (Some(on_door), None))
+                (Route { points: Vec::new(), plate_length: 0.0, via_ducts: false, runs: Vec::new() }, length, (Some(on_door), None), Vec::new())
             }
-            _ => {
+            _ if ea == eb => {
                 let r = route_ends(e, pa, pb);
                 let length = r.plate_length + la + lb;
-                (r, length, (ra, rb))
+                (r, length, (ra, rb), Vec::new())
             }
+            // Into another enclosure of the line-up through the cable passages.
+            _ => match route_across(&prj.layout, &pos, (ea, pa), (eb, pb)) {
+                Ok((r, legs)) => {
+                    let plate = r.plate_length + legs.iter().map(|l| l.route.plate_length + l.passage_length).sum::<f32>();
+                    (r, plate + la + lb, (ra, rb), legs)
+                }
+                Err(reason) => {
+                    open.push(OpenWire { from, to, net: c.net.clone(), reason });
+                    continue;
+                }
+            },
         };
         ends.push((pa, pb));
         let length = length + prj.layout.wire_reserve;
@@ -1292,6 +1409,7 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             ends: (ka, kb),
             door: (da, db),
             door_routes,
+            legs,
         });
     }
     reroute_overfull(prj, &mut routed, &ends);
@@ -1311,7 +1429,13 @@ fn reroute_overfull(prj: &Project, routed: &mut [RoutedWire], ends: &[(WireEnd, 
     let mut order: Vec<usize> = (0..routed.len()).collect();
     order.sort_by(|&a, &b| areas[b].total_cmp(&areas[a]));
     let mut loads = DuctLoads::new(prj);
-    order.retain(|&i| !routed[i].on_door());
+    // Wires into other enclosures keep their routes and load the ducts first.
+    for (w, area) in routed.iter().zip(&areas).filter(|(w, _)| !w.legs.is_empty()) {
+        for (_, r) in w.stretches() {
+            loads.add(r, *area);
+        }
+    }
+    order.retain(|&i| !routed[i].on_door() && routed[i].legs.is_empty());
     for i in order {
         let e = &prj.layout.enclosures[routed[i].enclosure];
         let (from, to) = ends[i];
