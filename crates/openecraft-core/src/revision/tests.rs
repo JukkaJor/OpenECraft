@@ -56,3 +56,74 @@ fn snapshots_are_shared_and_serialized_as_pages() {
     assert_eq!(back.revisions[0].pages.0.len(), prj.pages.len());
     assert_eq!(back, prj);
 }
+
+#[test]
+fn releasing_without_workflow_stores_a_baseline() {
+    let mut prj = demo_project();
+    create(&mut prj, "A", "2026-10-23", "anna", "", false);
+    assert_eq!(status(&prj, 0), Status::Released);
+    assert_eq!(prj.baselines.len(), 1);
+    assert!(prj.baselines[0].name.contains('A'));
+    assert!(open_revision(&prj).is_none());
+    // Files of older versions: revisions without state are released.
+    let old: Revision = serde_json::from_str(r#"{"name": "X"}"#).unwrap();
+    assert_eq!(old.state, State::Released);
+}
+
+#[test]
+fn approval_workflow() {
+    let mut prj = demo_project();
+    create(&mut prj, "A", "", "", "", false);
+    prj.workflow = Workflow { approvers: vec!["Anna".into(), "Ben".into(), "Cleo".into()], required: 2 };
+    assert_eq!(prj.workflow.needed(), 2);
+
+    prj.pages[1].description = "changed".into();
+    create(&mut prj, "B", "2026-10-23", "dev", "motor changed", true);
+    let i = 1;
+    assert_eq!(status(&prj, i), Status::Draft);
+    assert_eq!(next_name(&prj), "B", "marks show the revision being prepared");
+    assert_eq!(prj.info.revision, "A");
+    assert_eq!(pending(&prj).len(), 1, "changes since the released revision");
+    assert!(decide(&mut prj, i, "anna", "", true, "").is_err(), "not in review");
+    assert!(release(&mut prj, i, true).is_err());
+
+    submit(&mut prj, i).unwrap();
+    assert_eq!(status(&prj, i), Status::InReview);
+    assert!(decide(&mut prj, i, "mallory", "", true, "").is_err());
+    decide(&mut prj, i, "anna", "2026-10-24", true, "").unwrap();
+    assert_eq!(status(&prj, i), Status::InReview);
+    decide(&mut prj, i, "Ben", "2026-10-24", false, "wrong fuse").unwrap();
+    assert_eq!(status(&prj, i), Status::Rejected);
+    // Ben changes his mind: one decision per user.
+    decide(&mut prj, i, "ben", "2026-10-25", true, "").unwrap();
+    assert_eq!(decisions(&prj, i).len(), 2);
+    assert_eq!(status(&prj, i), Status::Approved);
+
+    // Changed after the approval: release refused, submit again voids the approvals.
+    prj.pages[1].description = "changed again".into();
+    assert!(release(&mut prj, i, true).is_err());
+    submit(&mut prj, i).unwrap();
+    assert_eq!(prj.revisions[i].round, 2);
+    assert!(decisions(&prj, i).is_empty());
+    decide(&mut prj, i, "cleo", "", true, "").unwrap();
+    decide(&mut prj, i, "anna", "", true, "").unwrap();
+    release(&mut prj, i, true).unwrap();
+    assert_eq!(status(&prj, i), Status::Released);
+    assert_eq!(prj.info.revision, "B");
+    assert!(prj.pages.iter().all(|p| p.locked));
+    assert_eq!(prj.baselines.len(), 2);
+    assert!(pending(&prj).is_empty());
+    assert_eq!(next_name(&prj), "C");
+}
+
+#[test]
+fn withdraw_and_discard() {
+    let mut prj = demo_project();
+    prj.workflow.approvers = vec!["anna".into()];
+    create(&mut prj, "A", "", "", "", false);
+    submit(&mut prj, 0).unwrap();
+    withdraw(&mut prj, 0);
+    assert_eq!(status(&prj, 0), Status::Draft);
+    discard(&mut prj, 0);
+    assert!(prj.revisions.is_empty());
+}

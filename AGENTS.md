@@ -16,6 +16,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 
 - Desktop: `cargo run --release`
 - Parts server: `cargo run -p openecraft-server -- --token <secret>` (http://127.0.0.1:8090)
+- Project server: `cargo run -p openecraft-project-server -- --token <secret>` (http://127.0.0.1:8091)
 - Parts manager: `cargo run -p openecraft-parts-manager`; web: `cd parts-manager && trunk serve` (http://127.0.0.1:8082)
 - Command line / MCP server: `cargo run -p openecraft-cli -- help`, `cargo run -p openecraft-cli -- mcp`
 - Web: `trunk serve` (dev server on http://127.0.0.1:8080), `trunk build --release`
@@ -31,9 +32,10 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
 | `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
-| `openecraft-client` | `crates/openecraft-client` | Requests to the parts server and decoding of its answers (ehttp), shared by the UI client and the command line |
+| `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |
+| `openecraft-project-server` | `project-server/` | Project server: shared projects, page locks for several users (axum, project files) |
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
 
@@ -47,7 +49,9 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
   - `openecraft-ui` holds egui widgets and platform code shared by the editor and the
     parts manager. It must not depend on an application crate.
 - API types and request paths of the parts server live in `openecraft_parts::api`, the
-  requests in `openecraft-client`; change server and client together.
+  requests in `openecraft-client`; change server and client together. The same holds
+  for the project server with `openecraft_core::collab`, which also holds the merge and
+  lock rules of shared projects.
 - New crates are added to `[workspace] members` in the root `Cargo.toml`; the
   convention, glyph and catalog tests read that list, so their rules apply to every member.
 

@@ -3072,6 +3072,7 @@ dependencies = [
  "env_logger",
  "image",
  "log",
+ "openecraft-client",
  "openecraft-core",
  "openecraft-i18n",
  "openecraft-parts",
@@ -3100,6 +3101,7 @@ name = "openecraft-client"
 version = "0.1.0"
 dependencies = [
  "ehttp",
+ "openecraft-core",
  "openecraft-i18n",
  "openecraft-parts",
  "serde",
@@ -3152,6 +3154,24 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "openecraft-project-server"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "clap",
+ "env_logger",
+ "http-body-util",
+ "log",
+ "openecraft-core",
+ "openecraft-parts",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
+ "tower-http",
 ]
 
 [[package]]

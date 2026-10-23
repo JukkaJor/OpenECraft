@@ -404,7 +404,7 @@ fn structure_description(prj: &Project, aspect: crate::structure::Aspect, id: &s
 pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
     let info = &prj.info;
     let page = &prj.pages[page_i];
-    let rev = prj.revisions.last();
+    let rev = crate::revision::last_released(prj);
     let v = match name {
         "project" => info.name.clone(),
         "project.description" => info.description.lines().collect::<Vec<_>>().join(" "),

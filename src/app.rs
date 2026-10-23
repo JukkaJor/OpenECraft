@@ -18,6 +18,7 @@ use crate::symbols::{self, Category, Func};
 use crate::{history::History, potentials, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
+mod compare_ui;
 mod engineering;
 mod forms_ui;
 mod harness_ui;
@@ -31,6 +32,10 @@ mod pages_ui;
 mod potentials_ui;
 mod structure_ui;
 mod process_ui;
+mod remote_ui;
+mod requests_ui;
+mod review_ui;
+mod revisions_ui;
 mod report_blocks_ui;
 mod symbol_editor;
 
@@ -50,6 +55,7 @@ enum LeftTab {
     Cables,
     Layers,
     Check,
+    Review,
 }
 
 pub struct App {
@@ -102,6 +108,13 @@ pub struct App {
     page_props: Option<usize>,
     message: Option<(String, f64)>,
     title: String,
+    /// Project server: shared projects and locks.
+    remote: crate::remote::Remote,
+    /// Comments and markup.
+    review_ui: review_ui::ReviewUi,
+    revisions_ui: revisions_ui::RevisionsUi,
+    compare_ui: compare_ui::CompareUi,
+    requests_ui: requests_ui::RequestsUi,
 }
 
 impl App {
@@ -110,6 +123,7 @@ impl App {
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
         let mut server_url: Option<String> = None;
+        let mut remote = crate::remote::Remote::default();
         let mut macro_lib = None;
         let mut language: Option<String> = None;
         if let Some(storage) = cc.storage {
@@ -119,6 +133,12 @@ impl App {
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
             macro_lib = eframe::get_value(storage, "macros");
+            if let Some(url) = eframe::get_value(storage, "project_server_url") {
+                remote.url = url;
+            }
+            if let Some(user) = eframe::get_value::<String>(storage, "project_server_user").filter(|u| !u.is_empty()) {
+                remote.user = user;
+            }
         }
         openecraft_i18n::init(language.as_deref());
         let parts_db = parts_db.unwrap_or_default();
@@ -176,6 +196,11 @@ impl App {
             page_props: None,
             message: None,
             title: String::new(),
+            remote,
+            review_ui: Default::default(),
+            revisions_ui: Default::default(),
+            compare_ui: Default::default(),
+            requests_ui: Default::default(),
         }
         .start_on_first_schematic()
     }
@@ -202,6 +227,7 @@ impl App {
     }
 
     fn replace_project(&mut self, prj: Project, file_name: Option<String>) {
+        self.remote.close();
         self.prj = prj;
         self.prj.normalize();
         self.file_name = file_name;
@@ -246,6 +272,10 @@ impl App {
     }
 
     fn save(&mut self, ctx: &egui::Context, save_as: bool) {
+        if self.remote.shared.is_some() && !save_as {
+            self.save_remote(Vec::new());
+            return;
+        }
         let json = self.prj.to_json();
         let result = match (&self.file_name, save_as || !FileIo::can_save_in_place()) {
             (Some(path), false) => self.io.save_to(path, &json).map(|_| Some(path.clone())),
@@ -295,6 +325,20 @@ impl App {
                         self.notify(ctx, tr_fmt!("Imported {} macros", n));
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::Compare {
+                match Project::from_json(&loaded.text()) {
+                    Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
+                    Err(e) => self.notify(ctx, e),
+                }
+                return;
+            }
+            if loaded.purpose == Purpose::ChangeRequests {
+                match crate::review::import_requests(&mut self.prj, &loaded.text()) {
+                    Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
+                    Err(e) => self.notify(ctx, e),
                 }
                 return;
             }
@@ -439,12 +483,25 @@ impl App {
                     self.replace_project(sample::demo_project(), None);
                 }
                 ui.separator();
-                let save_label = if FileIo::can_save_in_place() { tr("Save          Ctrl+S") } else { tr("Download project   Ctrl+S") };
+                let save_label = if self.remote.shared.is_some() {
+                    tr("Save to project server   Ctrl+S")
+                } else if FileIo::can_save_in_place() {
+                    tr("Save          Ctrl+S")
+                } else {
+                    tr("Download project   Ctrl+S")
+                };
                 if ui.button(save_label).clicked() {
                     self.save(&ctx, false);
                 }
+                if self.remote.shared.is_some() && !FileIo::can_save_in_place() && ui.button(tr("Download project")).clicked() {
+                    self.save(&ctx, true);
+                }
                 if FileIo::can_save_in_place() && ui.button(tr("Save as…")).clicked() {
                     self.save(&ctx, true);
+                }
+                ui.separator();
+                if ui.button(tr("Project server…")).on_hover_text(tr("Open and save shared projects, lock pages")).clicked() {
+                    self.remote.window = true;
                 }
                 ui.separator();
                 if ui.button(tr("Export page as SVG…")).clicked() {
@@ -727,7 +784,17 @@ impl App {
                 if ui.button(tr("PLC hardware and bus topology…")).on_hover_text(tr("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")).clicked() {
                     self.plc_ui.open = true;
                 }
-                if ui.button(tr("Revisions…")).clicked() {
+                if ui.button(tr("Compare and baselines…")).on_hover_text(tr("Compare with a baseline, a revision or another project file and take differences over")).clicked() {
+                    self.compare_ui.open = true;
+                }
+                if ui.button(tr("Change requests…")).clicked() {
+                    self.requests_ui.open = true;
+                }
+                if ui.button(tr("Review: comments and markup")).clicked() {
+                    self.workspace = Workspace::Schematic;
+                    self.left_tab = LeftTab::Review;
+                }
+                if ui.button(tr("Revisions…")).on_hover_text(tr("Revisions, approval and release")).clicked() {
                     self.eng.show_revisions = true;
                 }
                 if ui.button(tr("Edit in table…")).on_hover_text(tr("Devices, connections and terminals: filter, fill, find and replace, CSV")).clicked() {
@@ -837,6 +904,7 @@ impl App {
             tbtn(ui, Tool::Wire, tr("✏ Wire"), tr("Draw connections (W)"));
             tbtn(ui, Tool::Text, tr("T Text"), tr("Place text (T)"));
             self.drawing_toolbar(ui);
+            self.review_tools(ui);
             if let Tool::Place(key) = tool {
                 if let Some(def) = symbols::get(key) {
                     ui.label(RichText::new(tr_fmt!("Placing: {}", tr(def.name))).strong());
@@ -888,6 +956,9 @@ impl App {
             let n_err = self.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
+            let open = self.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
+            let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
+            ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
         });
         let areas = &self.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
@@ -924,6 +995,7 @@ impl App {
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut goto = None;
+                    let mut lock_action = None;
                     for (i, pg) in self.prj.pages.iter().enumerate() {
                         if area.as_ref().is_some_and(|w| !w.shows_page(pg)) && i != self.page {
                             continue;
@@ -937,9 +1009,22 @@ impl App {
                             PageKind::Graphic => "✏",
                             PageKind::Document => "📎",
                         };
-                        let r = ui.selectable_label(i == self.page, format!("{icon} {}   {}", structure::page_full_name(pg), pg.description));
+                        let mut text = egui::text::LayoutJob::default();
+                        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
+                        text.append(&format!("{icon} {}   {}", structure::page_full_name(pg), pg.description), 0.0, style.clone());
+                        if let Some((mark, color)) = self.page_lock_mark(pg.id) {
+                            text.append(&mark, 8.0, egui::TextFormat { color, ..style });
+                        }
+                        let r = ui.selectable_label(i == self.page, text);
                         if r.clicked() {
                             goto = Some(i);
+                        }
+                        if self.remote.shared.is_some() {
+                            r.context_menu(|ui| {
+                                if let Some(a) = self.page_lock_menu(ui, pg.id) {
+                                    lock_action = Some(a);
+                                }
+                            });
                         }
                         if r.double_clicked() {
                             self.page_props = Some(i);
@@ -947,6 +1032,13 @@ impl App {
                     }
                     if let Some(i) = goto {
                         self.goto(i, 0);
+                    }
+                    if let Some((target, release)) = lock_action {
+                        if release {
+                            self.save_remote(vec![target]);
+                        } else {
+                            self.remote.lock(vec![target]);
+                        }
                     }
                 });
             }
@@ -1018,6 +1110,9 @@ impl App {
                         self.goto(pg, id);
                     }
                 });
+            }
+            LeftTab::Review => {
+                egui::ScrollArea::vertical().id_salt("review_tab").auto_shrink([false, false]).show(ui, |ui| self.review_tab(ui));
             }
             LeftTab::Connections => self.connections_tab(ui),
             LeftTab::Cables => self.cables_tab(ui),
@@ -1110,6 +1205,9 @@ impl App {
         let pi = self.page;
         if self.prj.pages[pi].locked {
             ui.label(RichText::new(tr("🔒 Released page – read only")).color(Color32::from_rgb(220, 140, 0)));
+            ui.disable();
+        } else if let Some(user) = self.page_locked_by() {
+            ui.label(RichText::new(tr_fmt!("🔒 Locked by {} – read only", user)).color(Color32::from_rgb(220, 140, 0)));
             ui.disable();
         }
         if sel.is_empty() {
@@ -1737,6 +1835,8 @@ impl App {
         self.rename_device_window(ctx);
         self.numbering_window(ctx);
         self.engineering_windows(ctx);
+        self.compare_window(ctx);
+        self.requests_window(ctx);
         self.symbol_editor_window(ctx);
         self.forms_window(ctx);
         self.report_blocks_window(ctx);
@@ -2141,6 +2241,7 @@ impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
+        self.poll_remote(&ctx);
         if let Some(msg) = self.parts_ui.poll_server(&mut self.parts_db) {
             self.notify(&ctx, msg);
         }
@@ -2165,7 +2266,10 @@ impl eframe::App for App {
             ui.horizontal(|ui| {
                 ui.monospace(&self.editor.status);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    let name = self.file_name.as_deref().map(io::short_name).unwrap_or("unsaved");
+                    let name = match &self.remote.shared {
+                        Some(sh) => tr_fmt!("{} (project server, revision {})", sh.name, sh.revision),
+                        None => self.file_name.as_deref().map(io::short_name).unwrap_or("unsaved").to_string(),
+                    };
                     ui.weak(format!("{}{}", name, if self.dirty() { " *" } else { "" }));
                     if let Some((msg, t)) = &self.message {
                         if ctx.input(|i| i.time) - t < 6.0 {
@@ -2185,10 +2289,17 @@ impl eframe::App for App {
                 });
                 egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
                     let page = self.page;
+                    self.editor.read_only = self.page_locked_by().is_some();
+                    self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.prj, page, &idx, &self.analysis);
                     let _ = out.open_properties;
                     if let Some(msg) = out.message {
                         self.notify(&ctx, msg);
+                    }
+                    if let Some(input) = out.review {
+                        self.review_input(input);
+                    } else if let Some(at) = out.clicked {
+                        self.review_pick(at);
                     }
                 });
             }
@@ -2249,10 +2360,12 @@ impl eframe::App for App {
             }
         }
         self.windows(&ctx);
+        self.remote_window(&ctx);
 
         // Commit finished edits as one undo step.
         let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy() && !self.panel_ui.busy() && !self.symed.busy() && !self.forms_ui.busy();
         self.history.track(&self.prj, can_commit);
+        self.check_locks(&ctx);
 
         let title = format!(
             "OpenECraft – {}{}",
@@ -2271,6 +2384,8 @@ impl eframe::App for App {
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
         eframe::set_value(storage, "macros", &self.macro_lib);
+        eframe::set_value(storage, "project_server_url", &self.remote.url);
+        eframe::set_value(storage, "project_server_user", &self.remote.user);
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

@@ -923,7 +923,7 @@ fn plc_list(prj: &Project, nl: &Netlist) -> Table {
 }
 
 fn revision_overview(prj: &Project) -> Table {
-    let since = prj.revisions.last().map(|r| r.name.as_str()).unwrap_or("-");
+    let since = crate::revision::last_released(prj).map(|r| r.name.as_str()).unwrap_or("-");
     let mut t = Table::new(&[(tr("Page"), 0.8), (tr("Change"), 0.8), (tr("Item"), 0.8), (if since.is_empty() { tr("Description") } else { tr("Description (since last revision)") }, 3.0)]);
     for (page, kind, what, label, target) in crate::revision::overview(prj) {
         t.push(vec![page, kind, what, label], target);

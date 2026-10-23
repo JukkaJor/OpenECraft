@@ -1,0 +1,216 @@
+use super::*;
+use crate::model::PageKind;
+
+fn project() -> Project {
+    let mut prj = Project::default();
+    let id = prj.new_id();
+    prj.pages.push(Page::new(id, "2", "Motors", PageKind::Schematic));
+    prj
+}
+
+fn ids(prj: &Project) -> (u64, u64) {
+    (prj.pages[0].id, prj.pages[1].id)
+}
+
+fn lock(target: Target, session: &str) -> Lock {
+    Lock { target, user: format!("user {session}"), session: session.into() }
+}
+
+#[test]
+fn merge_takes_owned_pages_from_mine() {
+    let theirs = project();
+    let (a, b) = ids(&theirs);
+    let mut mine = theirs.clone();
+    mine.pages[0].description = "mine A".into();
+    mine.pages[1].description = "mine B".into();
+    mine.info.name = "mine".into();
+    let mut theirs = theirs;
+    theirs.pages[1].description = "theirs B".into();
+    let owned = Owned { project: false, pages: [a].into() };
+    let out = merge(&theirs, &mine, &owned);
+    assert_eq!(out.pages[0].description, "mine A");
+    assert_eq!(out.pages[1].description, "theirs B");
+    assert_eq!(out.info.name, theirs.info.name);
+    assert_eq!(out.pages.iter().map(|p| p.id).collect::<Vec<_>>(), vec![a, b]);
+}
+
+#[test]
+fn merge_with_project_lock_takes_page_list_and_data_from_mine() {
+    let theirs = project();
+    let (a, b) = ids(&theirs);
+    let mut mine = theirs.clone();
+    mine.info.name = "renamed".into();
+    mine.pages.swap(0, 1);
+    mine.pages[0].description = "edited without page lock".into();
+    let new = mine.new_id();
+    mine.pages.push(Page::new(new, "3", "New", PageKind::Schematic));
+    let owned = Owned { project: true, pages: BTreeSet::new() };
+    let out = merge(&theirs, &mine, &owned);
+    assert_eq!(out.info.name, "renamed");
+    assert_eq!(out.pages.iter().map(|p| p.id).collect::<Vec<_>>(), vec![b, a, new]);
+    // Page contents need the page lock; new pages come with the project lock.
+    assert_eq!(out.pages[0].description, theirs.pages[1].description);
+    assert_eq!(out.pages[2].description, "New");
+}
+
+#[test]
+fn merge_without_project_lock_keeps_deleted_pages() {
+    let theirs = project();
+    let (a, b) = ids(&theirs);
+    let mut mine = theirs.clone();
+    mine.pages.remove(0);
+    let out = merge(&theirs, &mine, &Owned { project: false, pages: [a, b].into() });
+    assert_eq!(out.pages.len(), 2);
+    let out = merge(&theirs, &mine, &Owned { project: true, pages: BTreeSet::new() });
+    assert_eq!(out.pages.iter().map(|p| p.id).collect::<Vec<_>>(), vec![b]);
+}
+
+#[test]
+fn merge_keeps_my_next_id() {
+    let theirs = project();
+    let mut mine = theirs.clone();
+    mine.next_id = 5_000_000;
+    assert_eq!(merge(&theirs, &mine, &Owned::default()).next_id, 5_000_000);
+}
+
+#[test]
+fn changes_by_target() {
+    let a = project();
+    let (p1, p2) = ids(&a);
+    let mut b = a.clone();
+    assert!(changes(&a, &b).is_empty());
+    b.next_id += 100;
+    assert!(changes(&a, &b).is_empty());
+    b.pages[1].description = "x".into();
+    assert_eq!(changes(&a, &b), [Target::Page(p2)].into());
+    b.devices.insert("-K1".into(), Default::default());
+    assert_eq!(changes(&a, &b), [Target::Project, Target::Page(p2)].into());
+    let mut c = a.clone();
+    c.pages.swap(0, 1);
+    assert_eq!(changes(&a, &c), [Target::Project].into());
+    let mut d = a.clone();
+    let id = d.new_id();
+    d.pages.push(Page::new(id, "9", "", PageKind::Schematic));
+    assert_eq!(changes(&a, &d), [Target::Project].into());
+    let _ = p1;
+}
+
+fn shared(locks: Vec<Lock>) -> (Shared, Project) {
+    let opened = Opened {
+        session: Session { user: "me".into(), session: "s1".into() },
+        first_id: 2_000_000,
+        snapshot: Snapshot { revision: 3, project: project(), locks },
+    };
+    Shared::open("plant", opened)
+}
+
+#[test]
+fn opening_uses_the_session_id_range() {
+    let (sh, prj) = shared(Vec::new());
+    assert_eq!(prj.next_id, 2_000_000);
+    assert_eq!(sh.id_end, 2_000_000 + ID_BLOCK);
+    assert_eq!(sh.revision, 3);
+}
+
+#[test]
+fn unlocked_changes_skip_owned_and_requested() {
+    let (mut sh, mut prj) = shared(Vec::new());
+    let (a, b) = ids(&prj);
+    sh.locks = vec![lock(Target::Page(a), "s1"), lock(Target::Page(b), "s2")];
+    prj.pages[0].description = "x".into();
+    prj.pages[1].description = "y".into();
+    prj.info.name = "z".into();
+    assert_eq!(sh.unlocked_changes(&prj), vec![Target::Project, Target::Page(b)]);
+    assert_eq!(sh.holder(Target::Page(b)).unwrap().session, "s2");
+    assert!(sh.holder(Target::Page(a)).is_none());
+    sh.requested.insert(Target::Project);
+    assert_eq!(sh.unlocked_changes(&prj), vec![Target::Page(b)]);
+    assert!(sh.has_changes(&prj));
+}
+
+#[test]
+fn revert_restores_the_server_version() {
+    let (sh, mut prj) = shared(Vec::new());
+    prj.pages[0].description = "x".into();
+    prj.pages[1].description = "y".into();
+    prj.info.name = "z".into();
+    let b = prj.pages[1].id;
+    let out = sh.revert(&prj, &[Target::Page(b), Target::Project]);
+    assert_eq!(out.pages[0].description, "x");
+    assert_eq!(out.pages[1].description, sh.base.pages[1].description);
+    assert_eq!(out.info.name, sh.base.info.name);
+    assert_eq!(out.next_id, prj.next_id);
+}
+
+#[test]
+fn locks_granted_on_an_old_state_are_checked_on_update() {
+    let (mut sh, mut prj) = shared(Vec::new());
+    let (a, b) = ids(&prj);
+    prj.pages[0].description = "mine A".into();
+    prj.pages[1].description = "mine B".into();
+    sh.requested.extend([Target::Page(a), Target::Page(b)]);
+    let mine = vec![lock(Target::Page(a), "s1"), lock(Target::Page(b), "s1")];
+    assert!(sh.status(Status { revision: 4, locks: mine.clone() }, &[Target::Page(a), Target::Page(b)]));
+    assert!(sh.requested.is_empty());
+    // Not used before the newer project is loaded.
+    assert!(!sh.owned().contains(Target::Page(a)));
+
+    // Another user changed page B before the lock was granted.
+    let mut server = sh.base.clone();
+    server.pages[1].description = "theirs B".into();
+    server.info.name = "theirs".into();
+    let (lost, apply) = sh.update(Snapshot { revision: 4, project: server, locks: mine });
+    assert_eq!(lost, vec![Target::Page(b)]);
+    let out = apply(&prj);
+    assert_eq!(out.pages[0].description, "mine A");
+    assert_eq!(out.pages[1].description, "theirs B");
+    assert_eq!(out.info.name, "theirs");
+    assert!(sh.fresh.is_empty());
+    assert!(sh.owned().contains(Target::Page(b)));
+    assert_eq!(sh.revision, 4);
+}
+
+#[test]
+fn denied_locks_are_no_longer_requested() {
+    let (mut sh, _) = shared(Vec::new());
+    sh.requested.insert(Target::Project);
+    sh.denied(&[Target::Project]);
+    assert!(sh.requested.is_empty());
+    assert!(!sh.status(Status { revision: 3, locks: Vec::new() }, &[]));
+}
+
+#[test]
+fn names_and_paths() {
+    assert!(valid_name("Plant 1"));
+    assert!(valid_name("line-2_v1.0"));
+    assert!(!valid_name(""));
+    assert!(!valid_name(" a"));
+    assert!(!valid_name(".hidden"));
+    assert!(!valid_name("a/b"));
+    assert!(!valid_name("a\\b"));
+    assert!(!valid_name(&"x".repeat(65)));
+    assert_eq!(project_path("Plant 1"), "/api/v1/projects/Plant%201");
+}
+
+#[test]
+fn api_types_round_trip() {
+    let req = LockRequest { session: Session { user: "u".into(), session: "s".into() }, targets: vec![Target::Project, Target::Page(7)] };
+    let json = serde_json::to_string(&req).unwrap();
+    assert!(json.contains(r#""page":7"#));
+    assert_eq!(serde_json::from_str::<LockRequest>(&json).unwrap(), req);
+}
+
+#[test]
+fn review_records_need_no_lock() {
+    let (sh, mut prj) = shared(Vec::new());
+    let page = prj.pages[0].id;
+    crate::review::add_comment(&mut prj, page, crate::geom::p(1.0, 1.0), "me", "", "check fuse");
+    assert!(sh.unlocked_changes(&prj).is_empty());
+    assert!(sh.has_changes(&prj));
+    // Saved without any lock, kept next to a comment of another user.
+    let mut theirs = sh.base.clone();
+    crate::review::add_comment(&mut theirs, page, crate::geom::p(2.0, 2.0), "ben", "", "other");
+    theirs.review.comments[0].id = 77;
+    let out = merge(&theirs, &prj, &Owned::default());
+    assert_eq!(out.review.live_comments().count(), 2);
+}

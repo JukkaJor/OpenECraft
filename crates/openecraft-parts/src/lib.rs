@@ -31,4 +31,4 @@ pub use filter::{distinct_values, Grouping, PartFilter};
 pub use ifc::parse_ifc;
 pub use graphics::{parse_mesh, parse_obj, parse_stl, parse_svg, Mesh3d, MeshBuilder, Model2d, Prim2d, MAX_TRIANGLES};
 pub use part::*;
-pub use text::natural_cmp;
+pub use text::{date_from_unix, natural_cmp};

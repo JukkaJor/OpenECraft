@@ -1,4 +1,4 @@
-//! Engineering windows: macros, terminal strips, PLC overview, revisions and marking.
+//! Engineering windows: macros, terminal strips, PLC overview and marking.
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
@@ -9,7 +9,7 @@ use crate::model::*;
 use crate::ops::Clip;
 use crate::render::{self, Draw, Ink};
 use crate::marking::{self, WireText};
-use crate::{parts, plc, revision, strips, symbols};
+use crate::{parts, plc, strips, symbols};
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
 
@@ -33,11 +33,6 @@ pub struct EngineeringUi {
     card: String,
     pub show_revisions: bool,
     pub show_marking: bool,
-    rev_name: String,
-    rev_date: String,
-    rev_author: String,
-    rev_description: String,
-    rev_release: bool,
 }
 
 enum MacroAction {
@@ -679,125 +674,6 @@ impl App {
         }
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
-        }
-    }
-
-    fn revisions_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_revisions {
-            return;
-        }
-        let mut open = true;
-        let mut create = false;
-        let mut lock = None;
-        let mut jump = None;
-        let mut overview = false;
-        if self.eng.rev_name.is_empty() {
-            self.eng.rev_name = revision::next_name(&self.prj);
-            self.eng.rev_date = self.prj.info.date.clone();
-            self.eng.rev_author = self.prj.info.creator.clone();
-        }
-        let locked = self.prj.pages.iter().filter(|p| p.locked).count();
-        egui::Window::new(tr("Revisions")).open(&mut open).default_size([640.0, 480.0]).show(ctx, |ui| {
-            egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                ui.label(RichText::new(tr("Revisions")).strong());
-                egui::Grid::new("revs").striped(true).num_columns(4).show(ui, |ui| {
-                    for h in [tr("Index"), tr("Date"), tr("Author"), tr("Description")] {
-                        ui.label(RichText::new(h).strong());
-                    }
-                    ui.end_row();
-                    for r in &self.prj.revisions {
-                        ui.label(&r.name);
-                        ui.label(&r.date);
-                        ui.label(&r.author);
-                        ui.label(&r.description);
-                        ui.end_row();
-                    }
-                });
-                if self.prj.revisions.is_empty() {
-                    ui.weak(tr("No revision yet. Changes are tracked from the first revision on."));
-                }
-                ui.separator();
-                ui.label(RichText::new(tr("New revision")).strong());
-                egui::Grid::new("newrev").num_columns(2).show(ui, |ui| {
-                    ui.label(tr("Index"));
-                    ui.add(egui::TextEdit::singleline(&mut self.eng.rev_name).desired_width(60.0));
-                    ui.end_row();
-                    ui.label(tr("Date"));
-                    ui.add(egui::TextEdit::singleline(&mut self.eng.rev_date).hint_text(tr("YYYY-MM-DD")).desired_width(100.0));
-                    ui.end_row();
-                    ui.label(tr("Author"));
-                    ui.text_edit_singleline(&mut self.eng.rev_author);
-                    ui.end_row();
-                    ui.label(tr("Description"));
-                    ui.text_edit_multiline(&mut self.eng.rev_description);
-                    ui.end_row();
-                });
-                ui.checkbox(&mut self.eng.rev_release, tr("Release: lock all pages"));
-                create = ui.add_enabled(!self.eng.rev_name.trim().is_empty(), egui::Button::new(tr("Create revision"))).clicked();
-                ui.separator();
-                ui.horizontal_wrapped(|ui| {
-                    ui.label(tr_fmt!("{} of {} pages locked", locked, self.prj.pages.len()));
-                    if ui.button(tr("Lock all")).clicked() {
-                        lock = Some(true);
-                    }
-                    if ui.button(tr("Unlock all")).clicked() {
-                        lock = Some(false);
-                    }
-                    let pg = &mut self.prj.pages[self.page];
-                    ui.checkbox(&mut pg.locked, tr_fmt!("Page {} locked", pg.name));
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    let since = self.prj.revisions.last().map(|r| r.name.clone()).unwrap_or_default();
-                    ui.label(RichText::new(if since.is_empty() { "Changes".to_string() } else { tr_fmt!("Changes since revision {}", since) }).strong());
-                    ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
-                    overview = ui.button(tr("📊 Revision overview")).clicked();
-                });
-                for pc in &self.analysis.changes {
-                    let title = match pc.page {
-                        Some(_) => tr_fmt!("Page {} ({})", pc.name, pc.changes.len()),
-                        None => tr_fmt!("Page {} (deleted)", pc.name),
-                    };
-                    egui::CollapsingHeader::new(title).id_salt(("chg", pc.page_id)).show(ui, |ui| {
-                        for c in &pc.changes {
-                            let text = format!("{} {} {}", tr(c.what), c.kind.title(), c.label);
-                            match pc.page {
-                                Some(pi) if c.kind != revision::ChangeKind::Removed => {
-                                    if ui.link(text.trim()).clicked() {
-                                        jump = Some((pi, if c.what == "Page" { 0 } else { c.id }));
-                                    }
-                                }
-                                _ => {
-                                    ui.label(RichText::new(text.trim()).color(Color32::from_rgb(200, 80, 80)));
-                                }
-                            }
-                        }
-                    });
-                }
-                if self.analysis.changes.is_empty() && !self.prj.revisions.is_empty() {
-                    ui.weak(tr("No changes since the last revision."));
-                }
-            });
-        });
-        self.eng.show_revisions = open;
-        if create {
-            let e = &self.eng;
-            revision::create(&mut self.prj, e.rev_name.trim(), &e.rev_date, &e.rev_author, &e.rev_description, e.rev_release);
-            self.notify(ctx, tr_fmt!("Revision {} created", self.eng.rev_name.trim()));
-            self.eng.rev_name.clear();
-            self.eng.rev_description.clear();
-        }
-        if let Some(l) = lock {
-            for pg in &mut self.prj.pages {
-                pg.locked = l;
-            }
-        }
-        if let Some((pg, id)) = jump {
-            self.goto(pg, id);
-        }
-        if overview {
-            self.report_kind = ReportKind::RevisionOverview;
-            self.show_reports = true;
         }
     }
 }

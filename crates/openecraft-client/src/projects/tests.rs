@@ -1,0 +1,49 @@
+use super::*;
+
+fn endpoint() -> ProjectEndpoint {
+    ProjectEndpoint { url: "http://host:8091/".into(), token: " secret ".into() }
+}
+
+fn session() -> Session {
+    Session { user: "anna".into(), session: "1-ab".into() }
+}
+
+#[test]
+fn requests_of_the_api() {
+    let e = endpoint();
+    assert_eq!(e.info().url, "http://host:8091/api/v1/info");
+    assert_eq!(e.list().url, "http://host:8091/api/v1/projects");
+    assert_eq!(e.snapshot("Plant 1").url, "http://host:8091/api/v1/projects/Plant%201");
+    assert_eq!(e.open("Plant 1", "anna").url, "http://host:8091/api/v1/projects/Plant%201/open");
+    assert_eq!(e.status("p", &session()).url, "http://host:8091/api/v1/projects/p/status");
+    assert_eq!(e.release("p", &session(), Vec::new()).url, "http://host:8091/api/v1/projects/p/release");
+    assert_eq!(e.close("p", &session()).url, "http://host:8091/api/v1/projects/p/close");
+    // Every request carries the token.
+    assert_eq!(e.list().headers.get("Authorization"), Some("Bearer secret"));
+    let anonymous = ProjectEndpoint { token: " ".into(), ..endpoint() };
+    assert_eq!(anonymous.list().headers.get("Authorization"), None);
+}
+
+#[test]
+fn bodies_are_json() {
+    let e = endpoint();
+    let lock = e.lock("p", &session(), vec![Target::Page(4)]);
+    assert_eq!(lock.method, ehttp::Method::POST);
+    assert_eq!(lock.url, "http://host:8091/api/v1/projects/p/lock");
+    assert_eq!(lock.headers.get_all("Content-Type").collect::<Vec<_>>(), ["application/json"]);
+    let body: LockRequest = serde_json::from_slice(&lock.body).unwrap();
+    assert_eq!(body.targets, vec![Target::Page(4)]);
+    assert_eq!(body.session, session());
+
+    let prj = Project::default();
+    let save = e.save("p", &session(), &prj, vec![Target::Project]);
+    assert_eq!(save.method, ehttp::Method::PUT);
+    let body: SaveRequest = serde_json::from_slice(&save.body).unwrap();
+    assert_eq!(body.release, vec![Target::Project]);
+    assert_eq!(body.project, prj);
+
+    let create = e.create("p", "anna", &prj);
+    assert_eq!(create.url, "http://host:8091/api/v1/projects");
+    let body: CreateRequest = serde_json::from_slice(&create.body).unwrap();
+    assert_eq!((body.name.as_str(), body.user.as_str()), ("p", "anna"));
+}

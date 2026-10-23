@@ -159,6 +159,15 @@ fn download(name: &str, mime: &str, content: &[u8]) -> Result<(), wasm_bindgen::
     Ok(())
 }
 
+/// Today's date `YYYY-MM-DD` (UTC).
+pub fn today() -> String {
+    #[cfg(not(target_arch = "wasm32"))]
+    let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    #[cfg(target_arch = "wasm32")]
+    let secs = (js_sys::Date::now() / 1000.0) as u64;
+    openecraft_parts::date_from_unix(secs)
+}
+
 /// File name without directories, for window titles.
 pub fn short_name(path: &str) -> &str {
     path.rsplit(['/', '\\']).next().unwrap_or(path)

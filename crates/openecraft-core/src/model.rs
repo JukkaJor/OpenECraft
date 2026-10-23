@@ -86,6 +86,15 @@ pub struct Project {
     /// Layers of graphics, texts, dimensions and images (visibility, locking, print).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub layers: Vec<crate::graphics::Layer>,
+    /// Approvers of revisions (release workflow).
+    #[serde(skip_serializing_if = "crate::revision::Workflow::is_default")]
+    pub workflow: crate::revision::Workflow,
+    /// Stored states of the whole project (compare, take over).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub baselines: Vec<crate::compare::Baseline>,
+    /// Comments, redline / greenline markup, approvals and change requests.
+    #[serde(skip_serializing_if = "crate::review::Review::is_empty")]
+    pub review: crate::review::Review,
     pub next_id: u64,
 }
 
@@ -120,6 +129,9 @@ impl Default for Project {
             structures: Default::default(),
             page_templates: Vec::new(),
             layers: Vec::new(),
+            workflow: Default::default(),
+            baselines: Vec::new(),
+            review: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
