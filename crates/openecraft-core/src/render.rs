@@ -408,7 +408,11 @@ fn draw_contact_image(d: &mut dyn Draw, prj: &Project, page_i: usize, tag: &str,
             FnKind::No => ContactKind::No,
             FnKind::Nc => ContactKind::Nc,
             FnKind::Changeover => ContactKind::Changeover,
-            FnKind::MainContacts3 | FnKind::MainContact => ContactKind::MainNo,
+            FnKind::NoOnDelay => ContactKind::NoOnDelay,
+            FnKind::NcOnDelay => ContactKind::NcOnDelay,
+            FnKind::NoOffDelay => ContactKind::NoOffDelay,
+            FnKind::NcOffDelay => ContactKind::NcOffDelay,
+            FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact => ContactKind::MainNo,
             _ => continue,
         };
         rows.push((kind, f.pin_list(), None));
@@ -458,8 +462,7 @@ fn mirror_glyph(d: &mut dyn Draw, c: P, kind: ContactKind, ink: Ink) {
     let w = 0.18;
     d.line(c + p(-3.0, 0.0), c + p(-1.2, 0.0), w, ink, false);
     d.line(c + p(1.2, 0.0), c + p(3.0, 0.0), w, ink, false);
-    match kind {
-        ContactKind::No | ContactKind::MainNo => d.line(c + p(1.2, 0.0), c + p(-1.5, -1.1), w, ink, false),
+    match kind.base() {
         ContactKind::Nc => {
             d.line(c + p(-1.2, 0.0), c + p(-1.2, 0.9), w, ink, false);
             d.line(c + p(1.2, 0.0), c + p(-1.6, 1.2), w, ink, false);
@@ -469,6 +472,13 @@ fn mirror_glyph(d: &mut dyn Draw, c: P, kind: ContactKind, ink: Ink) {
             d.line(c + p(1.2, 0.0), c + p(-1.6, 1.2), w, ink, false);
             d.line(c + p(-1.2, 0.0), c + p(-1.2, -0.9), w, ink, false);
         }
+        _ => d.line(c + p(1.2, 0.0), c + p(-1.5, -1.1), w, ink, false),
+    }
+    // Delayed contacts: a short stem from the blade with a bar, pointing up for on-delay.
+    if let Some(on) = kind.delay() {
+        let (y0, y1) = if on { (-0.4, -1.6) } else { (0.4, 1.6) };
+        d.line(c + p(0.0, y0), c + p(0.0, y1), w, ink, false);
+        d.line(c + p(-0.6, y1), c + p(0.6, y1), w, ink, false);
     }
 }
 

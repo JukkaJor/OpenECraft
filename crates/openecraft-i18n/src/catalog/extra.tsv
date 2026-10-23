@@ -1347,3 +1347,76 @@ starts with	beginnt mit	commence par	empieza por
 ⟳ Generate all	⟳ Alle erzeugen	⟳ Tout générer	⟳ Generar todo
 ⟳ Generate	⟳ Erzeugen	⟳ Générer	⟳ Generar
 ⟳ Update report blocks	⟳ Auswertungsblöcke aktualisieren	⟳ Mettre à jour les blocs de rapports	⟳ Actualizar bloques de informes
+Coil	Spule	Bobine	Bobina
+Main contacts 4-pole	Hauptkontakte 4-polig	Contacts principaux 4 pôles	Contactos principales 4 polos
+NO contact, on-delay	Schließer, einschaltverzögert	Contact NO, temporisé à l'appel	Contacto NA, temporizado a la conexión
+NC contact, on-delay	Öffner, einschaltverzögert	Contact NF, temporisé à l'appel	Contacto NC, temporizado a la conexión
+NO contact, off-delay	Schließer, ausschaltverzögert	Contact NO, temporisé à la retombée	Contacto NA, temporizado a la desconexión
+NC contact, off-delay	Öffner, ausschaltverzögert	Contact NF, temporisé à la retombée	Contacto NC, temporizado a la desconexión
+Pushbutton NO	Taster Schließer	Bouton-poussoir NO	Pulsador NA
+Pushbutton NC	Taster Öffner	Bouton-poussoir NF	Pulsador NC
+Switch NO	Schalter Schließer	Interrupteur NO	Interruptor NA
+Switch NC	Schalter Öffner	Interrupteur NF	Interruptor NC
+Main switch 3-pole	Hauptschalter 3-polig	Interrupteur principal 3 pôles	Interruptor principal 3 polos
+Sensor	Sensor	Capteur	Sensor
+Sensor NC	Sensor Öffner	Capteur NF	Sensor NC
+Measuring transducer	Messumformer	Transmetteur de mesure	Transmisor de medida
+Thermistor (PTC)	Kaltleiter (PTC)	Thermistance (CTP)	Termistor (PTC)
+Circuit breaker 2-pole	Leistungsschalter 2-polig	Disjoncteur 2 pôles	Interruptor automático 2 polos
+Circuit breaker 4-pole	Leistungsschalter 4-polig	Disjoncteur 4 pôles	Interruptor automático 4 polos
+Residual current device	Fehlerstromschutzschalter	Interrupteur différentiel	Interruptor diferencial
+Overload relay	Überlastrelais	Relais de surcharge	Relé de sobrecarga
+Fuse 3-pole	Sicherung 3-polig	Fusible 3 pôles	Fusible 3 polos
+Surge protective device	Überspannungsschutz	Parafoudre	Protector contra sobretensiones
+Motor DC	Gleichstrommotor	Moteur à courant continu	Motor de corriente continua
+Brake	Bremse	Frein	Freno
+Frequency converter	Frequenzumrichter	Variateur de fréquence	Variador de frecuencia
+Soft starter	Sanftanlasser	Démarreur progressif	Arrancador suave
+Heating element	Heizelement	Élément chauffant	Elemento calefactor
+Socket outlet	Steckdose	Prise de courant	Toma de corriente
+Signal device	Meldegerät	Appareil de signalisation	Dispositivo de señalización
+Measuring instrument	Messgerät	Appareil de mesure	Instrumento de medida
+Transformer	Transformator	Transformateur	Transformador
+Current transformer	Stromwandler	Transformateur de courant	Transformador de corriente
+Battery	Batterie	Batterie	Batería
+PLC input	SPS-Eingang	Entrée API	Entrada PLC
+PLC output	SPS-Ausgang	Sortie API	Salida PLC
+PLC analog input	SPS-Analogeingang	Entrée analogique API	Entrada analógica PLC
+PLC analog output	SPS-Analogausgang	Sortie analogique API	Salida analógica PLC
+Valve coil	Ventilspule	Bobine de distributeur	Bobina de válvula
+Directional valve	Wegeventil	Distributeur	Válvula distribuidora
+Cylinder	Zylinder	Vérin	Cilindro
+Pump	Pumpe	Pompe	Bomba
+Fluid component	Fluidkomponente	Composant fluidique	Componente de fluidos
+Generic function	Allgemeine Funktion	Fonction générique	Función genérica
+Position switch NC	Positionsschalter Öffner	Interrupteur de position NF	Interruptor de posición NC
+Selector switch NC	Wahlschalter Öffner	Sélecteur NF	Selector NC
+Key switch NO	Schlüsselschalter Schließer	Commutateur à clé NO	Interruptor de llave NA
+Pressure switch NO	Druckschalter Schließer	Pressostat NO	Presostato NA
+Temperature switch NC	Temperaturschalter Öffner	Thermostat NF	Termostato NC
+Float switch NO	Schwimmerschalter Schließer	Interrupteur à flotteur NO	Interruptor de flotador NA
+Thermistor PTC	Kaltleiter PTC	Thermistance CTP	Termistor PTC
+Residual current device 4-pole	Fehlerstromschutzschalter 4-polig	Interrupteur différentiel 4 pôles	Interruptor diferencial 4 polos
+Brake (electromagnetic)	Bremse (elektromagnetisch)	Frein (électromagnétique)	Freno (electromagnético)
+Ammeter	Strommesser	Ampèremètre	Amperímetro
+Voltmeter	Spannungsmesser	Voltmètre	Voltímetro
+N terminal	N-Klemme	Borne N	Borne N
+Disconnect terminal	Trennklemme	Borne sectionnable	Borne seccionable
+Fuse terminal	Sicherungsklemme	Borne à fusible	Borne portafusible
+LED	LED	LED	LED
+Inductor	Spule (Induktivität)	Inductance	Inductancia
+Varistor	Varistor	Varistance	Varistor
+Potentiometer	Potentiometer	Potentiomètre	Potenciómetro
+NO contact, timed closing (NFPA)	Schließer, verzögert schließend (NFPA)	Contact NO, fermeture temporisée (NFPA)	Contacto NA, cierre temporizado (NFPA)
+NC contact, timed opening (NFPA)	Öffner, verzögert öffnend (NFPA)	Contact NF, ouverture temporisée (NFPA)	Contacto NC, apertura temporizada (NFPA)
+Limit switch NO (NFPA)	Endschalter Schließer (NFPA)	Fin de course NO (NFPA)	Final de carrera NA (NFPA)
+Limit switch NC (NFPA)	Endschalter Öffner (NFPA)	Fin de course NF (NFPA)	Final de carrera NC (NFPA)
+Selector switch (NFPA)	Wahlschalter (NFPA)	Sélecteur (NFPA)	Selector (NFPA)
+Fuse (NFPA)	Sicherung (NFPA)	Fusible (NFPA)	Fusible (NFPA)
+Circuit breaker 3-pole (NFPA)	Leistungsschalter 3-polig (NFPA)	Disjoncteur 3 pôles (NFPA)	Interruptor automático 3 polos (NFPA)
+Disconnect switch 3-pole (NFPA)	Trennschalter 3-polig (NFPA)	Sectionneur 3 pôles (NFPA)	Seccionador 3 polos (NFPA)
+Motor (NFPA)	Motor (NFPA)	Moteur (NFPA)	Motor (NFPA)
+Auxiliary function: NO contact, on-delay	Hilfsfunktion: Schließer, einschaltverzögert	Fonction auxiliaire : contact NO, temporisé à l'appel	Función auxiliar: contacto NA, temporizado a la conexión
+Auxiliary function: NC contact, on-delay	Hilfsfunktion: Öffner, einschaltverzögert	Fonction auxiliaire : contact NF, temporisé à l'appel	Función auxiliar: contacto NC, temporizado a la conexión
+Auxiliary function: NO contact, off-delay	Hilfsfunktion: Schließer, ausschaltverzögert	Fonction auxiliaire : contact NO, temporisé à la retombée	Función auxiliar: contacto NA, temporizado a la desconexión
+Auxiliary function: NC contact, off-delay	Hilfsfunktion: Öffner, ausschaltverzögert	Fonction auxiliaire : contact NF, temporisé à la retombée	Función auxiliar: contacto NC, temporizado a la desconexión

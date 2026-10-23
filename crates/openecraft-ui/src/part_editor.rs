@@ -327,9 +327,9 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 ui.label("");
                 ui.end_row();
                 for (i, f) in part.functions.iter_mut().enumerate() {
-                    egui::ComboBox::from_id_salt(("fk", i)).selected_text(f.kind.title()).width(170.0).show_ui(ui, |ui| {
+                    egui::ComboBox::from_id_salt(("fk", i)).selected_text(tr(f.kind.title())).width(170.0).show_ui(ui, |ui| {
                         for k in FnKind::ALL {
-                            ui.selectable_value(&mut f.kind, k, k.title());
+                            ui.selectable_value(&mut f.kind, k, tr(k.title()));
                         }
                     });
                     ui.add(egui::TextEdit::singleline(&mut f.pins).desired_width(140.0).font(egui::TextStyle::Monospace));
