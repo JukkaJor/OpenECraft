@@ -1290,7 +1290,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
                     let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
                     issue(
                         Severity::Warning,
-                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, kind.title(), avail),
+                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, tr(kind.title()), avail),
                         l.and_then(t),
                     );
                 }

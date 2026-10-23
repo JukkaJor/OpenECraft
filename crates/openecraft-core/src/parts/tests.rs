@@ -12,6 +12,38 @@ fn legacy_single_part_is_migrated() {
 }
 
 #[test]
+fn every_function_kind_can_be_placed() {
+    // Each kind has a symbol, and each template of the catalog fits a symbol of its
+    // kind (same number of connection points), so designations can be assigned.
+    for k in FnKind::ALL {
+        assert!(symbols::library().iter().any(|d| kind_of_symbol(d.key) == Some(k)), "no symbol for {}", k.title());
+    }
+    for part in catalog() {
+        for f in part.functions.iter().filter(|f| f.kind != FnKind::Terminal) {
+            let n = f.pin_list().len();
+            assert!(
+                symbols::library().iter().any(|d| kind_of_symbol(d.key) == Some(f.kind) && d.pins.len() == n),
+                "{}: no {} symbol with {n} connection points",
+                part.number,
+                f.kind.title()
+            );
+        }
+    }
+    // Main and auxiliary functions of devices are counted against the templates.
+    for d in symbols::library().iter().filter(|d| matches!(d.func, Func::Aux(_))) {
+        assert!(kind_of_symbol(d.key).is_some(), "{} has no function kind", d.key);
+    }
+}
+
+#[test]
+fn function_kind_titles_are_translated() {
+    let known: std::collections::HashSet<&str> = openecraft_i18n::catalog_entries().into_iter().map(|e| e[0]).collect();
+    for k in FnKind::ALL {
+        assert!(known.contains(k.title()), "{} missing in the translation catalog", k.title());
+    }
+}
+
+#[test]
 fn designations_from_template_and_device_selection() {
     let mut prj = crate::sample::demo_project();
     // Scramble the contact numbers of -K1, then take them from the parts again.

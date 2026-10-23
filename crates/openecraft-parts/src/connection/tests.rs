@@ -11,10 +11,10 @@ fn pin<'a>(points: &'a [ConnectionPoint], name: &str) -> &'a ConnectionPoint {
 
 #[test]
 fn iec_sides() {
-    for top in ["1", "3", "5", "A1", "13", "21", "31", "53", "95", "L", "N", "PE", "L1", "L2", "L3", "1.1", "1.2", "I0.1"] {
+    for top in ["1", "3", "5", "A1", "13", "21", "31", "53", "95", "L", "N", "PE", "L1", "L2", "L3", "1.1", "1.2", "I0.1", "1L1", "3L2", "5L3"] {
         assert!(upper_side(top), "{top} is on top");
     }
-    for bottom in ["2", "4", "6", "A2", "14", "22", "32", "34", "96", "L+", "M", "2.1", "2.2", "BN", "", "I0.0"] {
+    for bottom in ["2", "4", "6", "A2", "14", "22", "32", "34", "96", "L+", "M", "2.1", "2.2", "BN", "", "I0.0", "2T1", "4T2", "6T3", "U", "N'"] {
         assert!(!upper_side(bottom), "{bottom} is at the bottom");
     }
 }

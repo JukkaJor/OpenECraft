@@ -1481,7 +1481,7 @@ impl App {
                 ui.horizontal_wrapped(|ui| {
                     ui.spacing_mut().item_spacing.x = 10.0;
                     for (kind, (placed, avail)) in &usage {
-                        let txt = format!("{} {placed}/{avail}", kind.title());
+                        let txt = format!("{} {placed}/{avail}", tr(kind.title()));
                         let color = if placed > avail && !matches!(kind, parts::FnKind::Terminal | parts::FnKind::PlugPin) {
                             Color32::from_rgb(220, 60, 60)
                         } else if placed < avail {

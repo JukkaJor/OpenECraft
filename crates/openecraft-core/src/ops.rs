@@ -67,6 +67,9 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
         ContactKind::No | ContactKind::MainNo => vec![format!("{o}3"), format!("{o}4")],
         ContactKind::Nc => vec![format!("{o}1"), format!("{o}2")],
         ContactKind::Changeover => vec![format!("{o}1"), format!("{o}2"), format!("{o}4")],
+        // Time-delayed contacts: x5/x6 (NC), x7/x8 (NO).
+        ContactKind::NcOnDelay | ContactKind::NcOffDelay => vec![format!("{o}5"), format!("{o}6")],
+        ContactKind::NoOnDelay | ContactKind::NoOffDelay => vec![format!("{o}7"), format!("{o}8")],
     }
 }
 
