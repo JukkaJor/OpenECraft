@@ -8,13 +8,16 @@ mod config;
 mod devices;
 mod drawing;
 mod engineering;
+mod languages;
 mod output;
 mod pages;
 mod parts;
 mod plugs;
 mod potentials;
+mod process;
 mod project;
 mod tables;
+mod wiring;
 
 use crate::session::Session;
 use openecraft_i18n::{tr, tr_fmt};
@@ -61,7 +64,7 @@ pub const fn optional(name: &'static str, kind: Kind, help: &'static str) -> Par
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, pages::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, potentials::TOOLS, tables::TOOLS, engineering::TOOLS, config::TOOLS, output::TOOLS, parts::TOOLS].into_iter().flatten()
+    [project::TOOLS, pages::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, potentials::TOOLS, process::TOOLS, tables::TOOLS, engineering::TOOLS, wiring::TOOLS, languages::TOOLS, config::TOOLS, output::TOOLS, parts::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

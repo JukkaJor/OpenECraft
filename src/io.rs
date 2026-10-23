@@ -26,6 +26,8 @@ pub enum Purpose {
     Dxf,
     /// A table (CSV) changed in a spreadsheet.
     Table(crate::tables::TableKind),
+    /// Translation dictionary (CSV) of the project texts.
+    Dictionary,
 }
 
 impl FileKind for Purpose {
@@ -38,7 +40,7 @@ impl FileKind for Purpose {
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
             Purpose::Symbols => (tr("OpenECraft symbol library (JSON)"), &["json"]),
             Purpose::Forms => (tr("OpenECraft title blocks (JSON)"), &["json"]),
-            Purpose::Table(_) => ("CSV", &["csv", "txt"]),
+            Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
         }
     }

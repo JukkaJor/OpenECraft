@@ -11,7 +11,7 @@ use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
 use crate::render::{self, Draw, Ink};
 use crate::reports::Analysis;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Tool {
@@ -131,6 +131,8 @@ pub struct PanelUi {
     /// Selected wire of the virtual wiring (from, to).
     pub selected_wire: Option<(String, String)>,
     pub show_wires: bool,
+    /// Wires marked as wired in the wiring assistant (drawn green in 3D).
+    pub done_wires: HashSet<(String, String)>,
     /// Cable ducts coloured by their fill level.
     pub show_fill: bool,
     offset: Vec2,
@@ -159,6 +161,7 @@ impl Default for PanelUi {
             selection: BTreeSet::new(),
             selected_wire: None,
             show_wires: true,
+            done_wires: HashSet::new(),
             show_fill: true,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
@@ -180,6 +183,7 @@ impl Default for PanelUi {
 const OUTER_WALLS: u8 = 6;
 
 const WIRE_COLOR: Color32 = Color32::from_rgb(40, 110, 230);
+const WIRE_DONE: Color32 = Color32::from_rgb(50, 170, 80);
 /// Selected wire and the devices it connects (same colour as potential highlighting).
 const WIRE_HIGHLIGHT: Color32 = Color32::from_rgb(230, 40, 200);
 
@@ -231,6 +235,28 @@ impl PanelUi {
         }
         self.enclosure = self.enclosure.min(prj.layout.enclosures.len() - 1);
         Some(self.enclosure)
+    }
+
+    pub fn reset_camera(&mut self) {
+        self.cam = None;
+    }
+
+    /// Selects a wire and turns the 3D camera towards it (wiring assistant).
+    pub fn focus_wire(&mut self, prj: &Project, w: &panel::RoutedWire) {
+        let Some(e) = prj.layout.enclosures.get(w.enclosure) else { return };
+        if self.enclosure != w.enclosure {
+            self.cam = None;
+        }
+        self.enclosure = w.enclosure;
+        self.select_wire(w.key());
+        let pts = &w.route.points;
+        if pts.is_empty() {
+            return;
+        }
+        let n = pts.len() as f32;
+        let c = p(pts.iter().map(|q| q.x).sum::<f32>() / n, pts.iter().map(|q| q.y).sum::<f32>() / n);
+        let cam = self.cam.get_or_insert_with(|| default_cam(e));
+        cam.target = [PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z];
     }
 
     /// Selects a placed device (e.g. coming from the schematic).
@@ -1102,17 +1128,19 @@ impl PanelUi {
 
     // ------------------------------------------------------------------ 3D
 
+    /// 3D view of the current enclosure without the toolbar (wiring assistant).
+    pub fn view_3d_current(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
+        if let Some(ei) = self.enclosure_index(prj) {
+            self.view_3d(ui, prj, ei, an);
+        }
+    }
+
     fn view_3d(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis) {
         let e = &prj.layout.enclosures[ei];
         let dark = ui.visuals().dark_mode;
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
-        let cam = self.cam.get_or_insert_with(|| Orbit {
-            yaw: 0.55,
-            pitch: 0.3,
-            dist: e.width.max(e.height) * 1.9,
-            target: [e.width / 2.0, e.height / 2.0, e.depth / 2.0],
-        });
+        let cam = self.cam.get_or_insert_with(|| default_cam(e));
         // Orbit / pan / zoom
         if resp.dragged_by(PointerButton::Primary) {
             let dl = resp.drag_delta();
@@ -1267,12 +1295,15 @@ impl PanelUi {
         let mut wire_segs: Vec<(Pos2, Pos2, usize)> = Vec::new();
         for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.enclosure == ei) {
             let selected = Some(wi) == selected_wire;
-            if !self.show_wires && !selected {
+            let done = self.done_wires.contains(&wire.key());
+            if !self.show_wires && !selected && !done {
                 continue;
             }
             let z = if wire.route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
             let (layer, color, width) = if selected {
                 (OUTER_WALLS + 1, WIRE_HIGHLIGHT, 3.5)
+            } else if done {
+                (4, if selected_wire.is_some() { WIRE_DONE.gamma_multiply(0.5) } else { WIRE_DONE }, 1.5)
             } else if selected_wire.is_some() {
                 (4, WIRE_COLOR.gamma_multiply(0.3), 1.0)
             } else {
@@ -1370,6 +1401,10 @@ impl PanelUi {
             self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
         }
     }
+}
+
+fn default_cam(e: &Enclosure) -> Orbit {
+    Orbit { yaw: 0.55, pitch: 0.3, dist: e.width.max(e.height) * 1.9, target: [e.width / 2.0, e.height / 2.0, e.depth / 2.0] }
 }
 
 fn apply_enclosure_part(ne: &mut NewEnclosure, db: &PartsDb) {

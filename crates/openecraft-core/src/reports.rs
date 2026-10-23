@@ -111,6 +111,8 @@ impl Analysis {
                 ReportKind::DuctFill => duct_fill_report(prj, &fill),
                 ReportKind::Climate => climate_report(prj),
                 ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
+                ReportKind::HoseList => hose_list(prj, &open),
+                ReportKind::PctLoops => pct_loops(prj, &idx),
             };
             reports.insert(k, t);
         }
@@ -123,6 +125,14 @@ impl Analysis {
         issues.extend(check_duct_fill(prj, &fill));
         issues.extend(check_climate(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
+        issues.extend(check_fluid_and_process(prj, &idx, &open));
+        issues.extend(check_wiring_marks(prj, &wiring));
+        for lang in &prj.languages.targets {
+            let n = crate::translation::missing(prj, lang).len();
+            if n > 0 {
+                issues.push(Issue { severity: Severity::Info, message: tr_fmt!("{} texts are not translated into {}", n, crate::translation::language_name(lang)), target: None });
+            }
+        }
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
         let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill };
@@ -132,6 +142,82 @@ impl Analysis {
         an.issues.sort_by_key(|i| i.severity);
         an
     }
+}
+
+fn hose_list(prj: &Project, open: &Netlist) -> Table {
+    let mut t = Table::new(&[
+        (tr("Hose no."), 0.7),
+        (tr("From"), 1.4),
+        (tr("To"), 1.4),
+        (tr("Medium"), 1.1),
+        (tr("Nominal size"), 0.8),
+        (tr("Colour"), 0.6),
+        (tr("Length (m)"), 0.7),
+        (tr("Page"), 0.6),
+    ]);
+    let mut total = 0.0;
+    for h in crate::fluid::hoses(prj, open) {
+        total += h.length;
+        let s = &prj.pages[h.a.page].symbols[h.a.sym];
+        t.push(
+            vec![h.number, h.from, h.to, h.medium.title().into(), h.size, h.color, crate::fluid::length_text(h.length), loc_str(prj, h.a.page, s.pos)],
+            Some((h.a.page, s.id)),
+        );
+    }
+    if total > 0.0 {
+        let mut last = vec![String::new(); 8];
+        last[5] = tr("Total").into();
+        last[6] = format!("{total:.2}");
+        t.push(last, None);
+    }
+    t
+}
+
+fn pct_loops(prj: &Project, idx: &Index) -> Table {
+    let mut t = Table::new(&[
+        (tr("PCT loop"), 0.6),
+        (tr("Description"), 1.6),
+        (tr("Functions"), 0.9),
+        (tr("Measured variable"), 0.9),
+        (tr("Range"), 0.9),
+        (tr("Devices"), 1.3),
+        (tr("Status"), 0.9),
+    ]);
+    for l in crate::process::loops(prj, idx) {
+        let first = l.functions.first().map(String::as_str).unwrap_or("");
+        t.push(
+            vec![l.name, l.description, l.functions.join(", "), crate::process::variable(first).into(), l.range, l.devices.join(", "), l.status.title().into()],
+            l.target,
+        );
+    }
+    t
+}
+
+/// Hoses, P&ID instruments and PCT loops of the pre-planning.
+fn check_fluid_and_process(prj: &Project, idx: &Index, open: &Netlist) -> Vec<Issue> {
+    let fluid = crate::fluid::problems(prj, open).into_iter().map(|(message, error, target)| Issue { severity: if error { Severity::Error } else { Severity::Info }, message, target });
+    let process = crate::process::problems(prj, idx).into_iter().map(|(message, warning, target)| Issue { severity: if warning { Severity::Warning } else { Severity::Info }, message, target });
+    fluid.chain(process).collect()
+}
+
+/// Wires changed after they were wired, and problems reported from the workshop.
+fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
+    let mut v = Vec::new();
+    for w in wiring {
+        match crate::wiring::status(prj, w) {
+            crate::wiring::Status::Changed => v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Wire {} – {} changed after it was wired", w.from, w.to), target: None }),
+            crate::wiring::Status::Problem => {
+                let note = crate::wiring::mark_of(prj, w).map(|m| m.note.clone()).unwrap_or_default();
+                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Wiring problem {} – {}: {}", w.from, w.to, note), target: None });
+            }
+            _ => {}
+        }
+    }
+    let stale = crate::wiring::stale(prj, wiring).len();
+    if stale > 0 {
+        v.push(Issue { severity: Severity::Info, message: tr_fmt!("{} wiring marks belong to wires that no longer exist", stale), target: None });
+    }
+    v
 }
 
 fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
@@ -1094,7 +1180,7 @@ fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
             issue(Severity::Info, tr_fmt!("Potential {} has no definition (Project › Potentials)", name), Some(at));
         }
     }
-    for net in &open.nets {
+    for net in open.nets.iter().filter(|n| !n.fluid) {
         let Some(&(pi, wid)) = net.wires.first() else { continue };
         let at = Some((pi, wid));
         let p = props_of(prj, nl, net);

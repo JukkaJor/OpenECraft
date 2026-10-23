@@ -115,13 +115,15 @@ pub enum Category {
     SingleLine,
     Nfpa,
     Fluid,
+    /// Piping and instrumentation diagrams (ISO 10628, ISA 5.1).
+    Process,
     /// Symbols of the project symbol library (symbol editor).
     User,
 }
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 14] = [
+    pub const ALL: [Category; 15] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
@@ -136,6 +138,7 @@ impl Category {
         Category::SingleLine,
         Category::Nfpa,
         Category::Fluid,
+        Category::Process,
     ];
 
     pub fn title(self) -> &'static str {
@@ -154,6 +157,7 @@ impl Category {
             Category::SingleLine => tr("Single-line / overview"),
             Category::Nfpa => tr("NFPA / JIC"),
             Category::Fluid => tr("Fluid power (ISO 1219)"),
+            Category::Process => tr("P&ID / process (ISO 10628)"),
             Category::User => tr("User symbols"),
         }
     }
@@ -228,6 +232,12 @@ impl SymbolDef {
             r.extend(pos + c.transform(rot, mirror));
         }
         r
+    }
+
+    /// Fluid power and process symbols: their connection points are ports of hoses
+    /// and pipes, which form fluid nets apart from the electrical ones.
+    pub fn is_fluid(&self) -> bool {
+        matches!(self.category, Category::Fluid | Category::Process)
     }
 
     pub fn contact_kind(&self) -> Option<ContactKind> {
@@ -843,6 +853,90 @@ fn build_library() -> Vec<SymbolDef> {
     b.poly(&[(-3.0, 0.0), (-3.0, 4.0), (3.0, 4.0), (3.0, 0.0)], false, false).l(0.0, -4.0, 0.0, 3.0);
     b.pin(0.0, -4.0, "1");
     v.push(def("fl_tank", "Tank", C::Fluid, "CM", MAIN).build(&mut b));
+
+    // Pressure source (compressed air supply).
+    b.circle(0.0, 0.0, 2.5, false).circle(0.0, 0.0, 0.8, true).l(0.0, 2.5, 0.0, 4.0);
+    b.pin(0.0, 4.0, "1");
+    v.push(def("fl_source", "Compressed air supply", C::Fluid, "GQ", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).rect(-2.0, -1.0, 2.0, 3.0, false).dl(-2.0, 0.0, 2.0, 0.0).dl(-2.0, 1.0, 2.0, 1.0).dl(-2.0, 2.0, 2.0, 2.0);
+    b.pin(0.0, -4.0, "3");
+    v.push(def("fl_silencer", "Silencer", C::Fluid, "RN", MAIN).build(&mut b));
+
+    // One-way flow control valve: throttle with a check valve in parallel.
+    b.l(0.0, -8.0, 0.0, 8.0).arc(-2.6, 0.0, 2.4, -50.0, 50.0).arc(2.6, 0.0, 2.4, 130.0, 230.0);
+    b.l(0.0, -5.0, 6.0, -5.0).l(6.0, -5.0, 6.0, -1.6).circle(6.0, 0.0, 1.2, false).l(4.6, -1.6, 6.0, 0.6).l(7.4, -1.6, 6.0, 0.6);
+    b.l(6.0, 1.2, 6.0, 5.0).l(6.0, 5.0, 0.0, 5.0);
+    b.pin(0.0, -8.0, "1").pin(0.0, 8.0, "2");
+    v.push(def("fl_throttle", "One-way flow control valve", C::Fluid, "RN", MAIN).build(&mut b));
+
+    // 5/2 directional valve, solenoid operated, spring return.
+    b.rect(-12.0, -4.0, 0.0, 4.0, false).rect(0.0, -4.0, 12.0, 4.0, false);
+    b.l(4.0, 4.0, 4.0, -3.0);
+    head(&mut b, 4.0, -4.0, 0.0, -1.0);
+    b.l(8.0, -4.0, 8.0, 3.0);
+    head(&mut b, 8.0, 4.0, 0.0, 1.0);
+    b.l(-8.0, 4.0, -4.6, -3.2);
+    head(&mut b, -4.0, -4.0, 0.5, -1.0);
+    b.l(-4.0, 4.0, -7.4, -3.2);
+    head(&mut b, -8.0, -4.0, -0.5, -1.0);
+    b.l(-2.0, 4.0, -2.0, 2.6).l(-3.0, 2.6, -1.0, 2.6).l(10.0, 4.0, 10.0, 2.6).l(9.0, 2.6, 11.0, 2.6);
+    b.rect(-16.0, -2.0, -12.0, 2.0, false).l(-16.0, 2.0, -12.0, -2.0);
+    b.poly(&[(12.0, 0.0), (12.8, -1.5), (13.6, 1.5), (14.4, -1.5), (15.2, 1.5), (16.0, 0.0)], false, false);
+    b.l(4.0, -8.0, 4.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(4.0, 4.0, 4.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
+    b.pin(4.0, -8.0, "4").pin(8.0, -8.0, "2").pin(0.0, 8.0, "5").pin(4.0, 8.0, "1").pin(8.0, 8.0, "3");
+    v.push(def("fl_valve52", "5/2 directional valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.rect(-4.0, -6.0, 20.0, 0.0, false).l(4.0, -6.0, 4.0, 0.0).l(4.0, -3.0, 28.0, -3.0);
+    b.poly(&[(6.0, -3.0), (7.0, -5.0), (8.0, -1.0), (9.0, -5.0), (10.0, -1.0), (11.0, -5.0), (12.0, -3.0)], false, false);
+    b.l(0.0, 0.0, 0.0, 4.0);
+    b.pin(0.0, 4.0, "1");
+    v.push(def("fl_cylinder_sa", "Cylinder, single-acting", C::Fluid, "MM", MAIN).build(&mut b));
+
+    // ---------------------------------------------------------------- P&ID
+    // Process equipment has ports (pipes); instruments are overview functions of the
+    // device that measures or actuates (sensor, valve drive), engineered elsewhere.
+    b.l(-6.0, -6.0, -6.0, 6.0).l(6.0, -6.0, 6.0, 6.0).arc(0.0, -6.0, 6.0, 180.0, 360.0).arc(0.0, 6.0, 6.0, 0.0, 180.0);
+    b.l(0.0, -16.0, 0.0, -12.0).l(0.0, 12.0, 0.0, 16.0);
+    b.pin(0.0, -16.0, "N1").pin(0.0, 16.0, "N2");
+    v.push(def("pid_vessel", "Vessel", C::Process, "CM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).l(-4.0, 0.0, -8.0, 0.0).l(0.0, -4.0, 4.0, -4.0).l(4.0, -4.0, 8.0, -4.0);
+    b.l(-2.8, 2.8, -4.0, 6.0).l(2.8, 2.8, 4.0, 6.0).l(-4.0, 6.0, 4.0, 6.0);
+    b.pin(-8.0, 0.0, "S").pin(8.0, -4.0, "P");
+    v.push(def("pid_pump", "Centrifugal pump", C::Process, "GP", MAIN).build(&mut b));
+
+    // Valves in a horizontal line: two triangles tip to tip.
+    let bowtie = |b: &mut B, fill: bool| {
+        b.poly(&[(-4.0, -2.5), (0.0, 0.0), (-4.0, 2.5)], true, fill).poly(&[(4.0, -2.5), (0.0, 0.0), (4.0, 2.5)], true, fill);
+        b.l(-8.0, 0.0, -4.0, 0.0).l(4.0, 0.0, 8.0, 0.0);
+    };
+    bowtie(&mut b, false);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
+    v.push(def("pid_valve", "Shut-off valve", C::Process, "QM", MAIN).build(&mut b));
+
+    bowtie(&mut b, false);
+    b.l(0.0, 0.0, 0.0, -4.0).arc(0.0, -4.0, 2.5, 180.0, 360.0).l(-2.5, -4.0, 2.5, -4.0);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
+    v.push(def("pid_control_valve", "Control valve", C::Process, "QN", MAIN).build(&mut b));
+
+    b.l(-8.0, 0.0, -3.0, 0.0).l(3.0, 0.0, 8.0, 0.0).rect(-3.0, -2.5, 3.0, 2.5, false).l(-3.0, 2.5, 3.0, -2.5);
+    b.poly(&[(1.0, -1.6), (3.0, -2.5), (2.2, -0.6)], true, true);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
+    v.push(def("pid_check_valve", "Check valve", C::Process, "RM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).poly(&[(-4.0, 0.0), (-1.5, -2.0), (1.5, 2.0), (4.0, 0.0)], false, false);
+    b.l(-4.0, 0.0, -8.0, 0.0).l(4.0, 0.0, 8.0, 0.0).l(0.0, -4.0, 0.0, -8.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2").pin(0.0, -8.0, "3").pin(0.0, 8.0, "4");
+    v.push(def("pid_heat_exchanger", "Heat exchanger", C::Process, "EP", MAIN).build(&mut b));
+
+    // Instrument bubble: label = function letters and loop number, e.g. "TIC 101".
+    b.circle(0.0, 0.0, 4.0, false).l(-4.0, 0.0, 4.0, 0.0).dl(0.0, 4.0, 0.0, 8.0);
+    b.field(FieldKind::Label, 0.0, -1.2, 1.8, Center);
+    b.pin(0.0, 8.0, "");
+    let mut instrument = def("pid_instrument", "Instrument (PCT loop)", C::Process, "B", Func::Overview).label("TI 1");
+    instrument.show_tag = true;
+    v.push(instrument.build(&mut b));
 
     v
 }

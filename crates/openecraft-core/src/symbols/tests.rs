@@ -17,7 +17,7 @@ fn pins_on_grid_and_keys_unique() {
 
 #[test]
 fn extra_libraries_are_complete() {
-    for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid] {
+    for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid, Category::Process] {
         let n = library().iter().filter(|d| d.category == cat).count();
         assert!(n >= 4, "{} has only {n} symbols", cat.title());
     }

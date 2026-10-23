@@ -7,6 +7,7 @@ use crate::index::Index;
 use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
 use crate::parts::{self, PartsDb};
 use crate::panel_ui::PanelUi;
+use crate::wiring_ui::WiringUi;
 use crate::parts_ui::{PartsAction, PartsUi};
 use crate::model::*;
 use crate::netlist::{pin_designation, PinRef};
@@ -14,22 +15,26 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, potentials, sample, svg, wirenum};
+use crate::{history::History, potentials, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
 mod engineering;
 mod forms_ui;
 mod harness_ui;
+mod languages_ui;
 mod config_ui;
 mod plugs_ui;
 mod tables_ui;
 mod potentials_ui;
+mod process_ui;
 mod symbol_editor;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Workspace {
     Schematic,
     Panel,
+    /// Wiring assistant for the workshop.
+    Wiring,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -60,6 +65,7 @@ pub struct App {
     parts_ui: PartsUi,
     workspace: Workspace,
     panel_ui: PanelUi,
+    wiring_ui: WiringUi,
     show_help: bool,
     show_cables: bool,
     show_numbering: bool,
@@ -70,6 +76,8 @@ pub struct App {
     forms_ui: forms_ui::FormsUi,
     harness_ui: harness_ui::HarnessUi,
     plugs_ui: plugs_ui::PlugsUi,
+    process_ui: process_ui::ProcessUi,
+    languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
     config_ui: config_ui::ConfigUi,
     /// Wire numbering: also renumber / remove manually set numbers.
@@ -126,6 +134,7 @@ impl App {
             parts_ui,
             workspace: Workspace::Schematic,
             panel_ui: PanelUi::default(),
+            wiring_ui: WiringUi::default(),
             show_help: false,
             show_cables: false,
             show_numbering: false,
@@ -135,6 +144,8 @@ impl App {
             forms_ui: Default::default(),
             harness_ui: Default::default(),
             plugs_ui: Default::default(),
+            process_ui: Default::default(),
+            languages_ui: Default::default(),
             tables_ui: Default::default(),
             config_ui: Default::default(),
             numbering_overwrite: false,
@@ -143,6 +154,14 @@ impl App {
             title: String::new(),
         }
         .start_on_first_schematic()
+    }
+
+    /// Opens the wiring assistant instead of the schematic.
+    pub fn start_wiring(mut self, wiring: bool) -> Self {
+        if wiring {
+            self.workspace = Workspace::Wiring;
+        }
+        self
     }
 
     fn start_on_first_schematic(mut self) -> Self {
@@ -294,6 +313,13 @@ impl App {
                 self.import_table(ctx, kind, &loaded.text());
                 return;
             }
+            if loaded.purpose == Purpose::Dictionary {
+                match translation::from_csv(&mut self.prj, &loaded.text()) {
+                    Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
+                    Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                }
+                return;
+            }
             if loaded.purpose == Purpose::PlcTable {
                 match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
                     Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
@@ -369,6 +395,16 @@ impl App {
                 if ui.button(tr("Export as PDF (bookmarks, linked cross references)…")).clicked() {
                     let pdf = crate::pdf::document(&self.prj);
                     self.export(&ctx, self.suggested_name("pdf"), (tr("PDF document"), "pdf"), pdf);
+                }
+                if !self.prj.languages.targets.is_empty() {
+                    ui.menu_button(tr("Export as PDF in language"), |ui| {
+                        for l in self.prj.languages.all() {
+                            if ui.button(translation::language_name(&l)).clicked() {
+                                self.export_pdf_in(&ctx, &l);
+                                ui.close();
+                            }
+                        }
+                    });
                 }
                 if ui.button(tr("Export page as DXF…")).clicked() {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &[self.page]);
@@ -560,6 +596,12 @@ impl App {
                 if ui.button(tr("Plugs…")).clicked() {
                     self.plugs_ui.open = true;
                 }
+                if ui.button(tr("Project languages…")).on_hover_text(tr("Translate the project texts; documentation per language")).clicked() {
+                    self.languages_ui.open = true;
+                }
+                if ui.button(tr("Fluid and process…")).on_hover_text(tr("Hose defaults and PCT loops of the pre-planning")).clicked() {
+                    self.process_ui.open = true;
+                }
                 if ui.button(tr("Marking…")).clicked() {
                     self.eng.show_marking = true;
                 }
@@ -630,7 +672,18 @@ impl App {
         ui.horizontal_wrapped(|ui| {
             ui.selectable_value(&mut self.workspace, Workspace::Schematic, RichText::new(tr("🗋 Schematic")).strong());
             ui.selectable_value(&mut self.workspace, Workspace::Panel, RichText::new(tr("🗄 Panel layout")).strong());
+            ui.selectable_value(&mut self.workspace, Workspace::Wiring, RichText::new(tr("✔ Wiring")).strong())
+                .on_hover_text(tr("Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)"));
             ui.separator();
+            if self.workspace == Workspace::Wiring {
+                if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text(tr("Undo (Ctrl+Z)")).clicked() {
+                    self.history.undo(&mut self.prj);
+                }
+                if ui.add_enabled(self.history.can_redo(), egui::Button::new("↪")).on_hover_text(tr("Redo (Ctrl+Y)")).clicked() {
+                    self.history.redo(&mut self.prj);
+                }
+                return;
+            }
             if self.workspace == Workspace::Panel {
                 if ui.add_enabled(self.history.can_undo(), egui::Button::new("↩")).on_hover_text(tr("Undo (Ctrl+Z)")).clicked() {
                     self.history.undo(&mut self.prj);
@@ -859,7 +912,7 @@ impl App {
                     continue;
                 }
                 // The extra libraries start collapsed.
-                let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::SingleLine | Category::BlackBox);
+                let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::Process | Category::SingleLine | Category::BlackBox);
                 egui::CollapsingHeader::new(title).default_open(!f.is_empty() || main).show(ui, |ui| {
                     for def in defs {
                         let active = self.editor.tool == Tool::Place(def.key);
@@ -1002,6 +1055,8 @@ impl App {
         let page = &self.prj.pages[pi];
         if let Some(si) = page.symbols.iter().position(|s| s.id == id) {
             self.symbol_properties(ui, idx, pi, si);
+        } else if self.analysis.open.net_of_wire(id).is_some_and(|n| n.fluid && !n.mixed) && page.wires.iter().any(|w| w.id == id) {
+            self.hose_properties(ui, id);
         } else if let Some(wi) = page.wires.iter().position(|w| w.id == id) {
             let net = self.analysis.netlist.net_of_wire(id);
             if let Some(net) = net {
@@ -1520,6 +1575,8 @@ impl App {
         self.forms_window(ctx);
         self.harness_window(ctx);
         self.plugs_window(ctx);
+        self.process_window(ctx);
+        self.languages_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
 
@@ -1878,7 +1935,23 @@ impl eframe::App for App {
                     let _ = out.open_properties;
                 });
             }
+            Workspace::Wiring => {
+                self.panel_ui.selection.clear();
+                self.wiring_ui.sync(&self.prj, &self.analysis, &mut self.panel_ui);
+                egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
+                    self.wiring_ui.checklist(ui, &mut self.prj, &self.analysis, &mut self.panel_ui);
+                });
+                egui::CentralPanel::default().show(ui, |ui| {
+                    self.wiring_ui.workbench(ui, &mut self.prj, &self.analysis, &mut self.panel_ui);
+                });
+                self.editor.status = self.panel_ui.status.clone();
+                if std::mem::take(&mut self.wiring_ui.export) {
+                    let content = crate::wiring::csv(&self.prj, &self.analysis.wiring, self.wiring_ui.order);
+                    self.export(&ctx, "wiring.csv".into(), ("CSV", "csv"), content);
+                }
+            }
             Workspace::Panel => {
+                self.panel_ui.done_wires.clear();
                 egui::Panel::left("panel_nav").resizable(true).default_size(250.0).show(ui, |ui| {
                     self.panel_ui.navigator(ui, &mut self.prj, &self.parts_db);
                 });
