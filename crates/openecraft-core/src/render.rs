@@ -349,6 +349,9 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
         }
         _ => {}
     }
+    if matches!(def.func, Func::Main { .. }) && !s.tag.is_empty() {
+        refs.extend(crate::electrofluid::cross_refs(prj, idx, page_i, &s.tag));
+    }
 
     // Tag block
     if def.show_tag {

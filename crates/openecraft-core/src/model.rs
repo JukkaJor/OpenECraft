@@ -215,10 +215,15 @@ pub enum ReportKind {
     Marking,
     HoseList,
     PctLoops,
+    FluidNetlist,
+    HoseConfiguration,
+    TubingList,
+    FluidDeviceGroups,
+    ElectroFluid,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 26] = [
+    pub const ALL: [ReportKind; 31] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -245,6 +250,11 @@ impl ReportKind {
         ReportKind::Marking,
         ReportKind::HoseList,
         ReportKind::PctLoops,
+        ReportKind::FluidNetlist,
+        ReportKind::HoseConfiguration,
+        ReportKind::TubingList,
+        ReportKind::FluidDeviceGroups,
+        ReportKind::ElectroFluid,
     ];
 
     pub fn title(self) -> &'static str {
@@ -275,6 +285,11 @@ impl ReportKind {
             ReportKind::Marking => tr("Marking"),
             ReportKind::HoseList => tr("Hose list"),
             ReportKind::PctLoops => tr("PCT loop overview"),
+            ReportKind::FluidNetlist => tr("Fluid netlist"),
+            ReportKind::HoseConfiguration => tr("Hose configuration"),
+            ReportKind::TubingList => tr("Tubing / piping list"),
+            ReportKind::FluidDeviceGroups => tr("Fluid device groups"),
+            ReportKind::ElectroFluid => tr("Electro-fluid cross reference"),
         }
     }
 }
@@ -416,6 +431,9 @@ pub struct Wire {
     /// Length of a hose / pipe in metres; 0 = not set.
     #[serde(skip_serializing_if = "is_zero")]
     pub length: f32,
+    /// Hose / tube / pipe configuration (line type, part, fittings, rating).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hose: Option<crate::fluid::HoseConfig>,
     /// Wire (connection) number; all wires of a connection carry the same number.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub number: String,

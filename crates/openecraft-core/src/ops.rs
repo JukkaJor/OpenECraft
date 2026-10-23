@@ -495,7 +495,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
 }
 
 /// Renames a device everywhere (all functions with that tag, device, strip, plug and
-/// PLC card data, panel layout, harnesses).
+/// PLC card data, panel layout, harnesses, fluid device groups and links).
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if old == new || old.is_empty() {
         return;
@@ -526,6 +526,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
         prj.plc_cards.entry(new.to_string()).or_insert(d);
     }
     crate::plc_hw::rename_device(prj, old, new);
+    crate::electrofluid::rename_device(prj, old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.
