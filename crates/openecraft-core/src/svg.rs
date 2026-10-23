@@ -76,6 +76,24 @@ impl Draw for SvgDraw {
             esc(text)
         );
     }
+
+    fn image(&mut self, img: &crate::model::ImageItem) {
+        let mime = img.file.mime();
+        if !mime.starts_with("image/") || img.file.data.is_empty() {
+            crate::render::image_placeholder(self, img);
+            return;
+        }
+        let r = crate::geom::R::from_points(img.a, img.b);
+        let _ = writeln!(
+            self.out,
+            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" href=\"data:{mime};base64,{}\"/>",
+            r.min.x,
+            r.min.y,
+            r.width(),
+            r.height(),
+            img.file.data
+        );
+    }
 }
 
 pub fn page_svg(prj: &Project, page_i: usize) -> String {

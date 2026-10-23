@@ -1425,7 +1425,7 @@ impl PanelUi {
         painter.rect_filled(rect, 0.0, pal.canvas);
         let origin = rect.min + self.offset;
         let problems = panel::problem_items(e, &prj.parts);
-        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror };
+        let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror, textures: None };
         render::draw_enclosure(&mut d, e, self.face, self.door_inside, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
         let to_screen = |q: P| origin + vec2(mirror.map(|m| m - (q.x + fm)).unwrap_or(q.x + fm), q.y + fm) * self.zoom;
         // Cable ducts coloured by their fill level.
@@ -1504,7 +1504,7 @@ impl PanelUi {
             }
         }
         // Previews
-        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror };
+        let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror, textures: None };
         let m = p(fm, fm);
         match (&self.tool, snapped, plate) {
             (Tool::Cutout, Some(sn), _) => {

@@ -1347,3 +1347,134 @@ starts with	beginnt mit	commence par	empieza por
 ⟳ Generate all	⟳ Alle erzeugen	⟳ Tout générer	⟳ Generar todo
 ⟳ Generate	⟳ Erzeugen	⟳ Générer	⟳ Generar
 ⟳ Update report blocks	⟳ Auswertungsblöcke aktualisieren	⟳ Mettre à jour les blocs de rapports	⟳ Actualizar bloques de informes
+Layers	Ebenen	Calques	Capas
+Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klicken zum Auswählen, Ziehen zum Verschieben, Ziehen auf freier Fläche für Fensterauswahl. Kennzeichen oder Eigenschaftstext eines markierten Symbols ziehen, um es zu platzieren. Rechts-/Mittelziehen verschiebt die Ansicht, Mausrad zoomt.	Cliquer pour sélectionner, glisser pour déplacer, glisser sur une zone vide pour une sélection par fenêtre. Glisser le repère ou un texte de propriété d'un symbole sélectionné pour le placer. Glisser avec le bouton droit/central pour déplacer la vue, molette pour zoomer.	Haga clic para seleccionar, arrastre para mover, arrastre en un espacio vacío para seleccionar por ventana. Arrastre la identificación o un texto de propiedad de un símbolo seleccionado para colocarlo. Arrastre con el botón derecho/central para desplazar, rueda para hacer zoom.
+Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Start- und Eckpunkte klicken · Leertaste wechselt die Eckrichtung · A schaltet das Führen um Symbole herum um · endet automatisch an einem Anschluss · Rechtsklick / Esc beendet	Cliquer le point de départ et les angles · Espace change le sens de l'angle · A active le routage autour des symboles · se termine automatiquement sur une connexion · clic droit / Échap termine	Haga clic en el inicio y las esquinas · Espacio cambia la dirección de la esquina · A activa el trazado alrededor de los símbolos · termina automáticamente en una conexión · clic derecho / Esc termina
+Click the centre, then a point of the circle	Mittelpunkt klicken, dann einen Punkt des Kreises	Cliquer le centre, puis un point du cercle	Haga clic en el centro y luego en un punto del círculo
+Click the centre, the start point and the end point (counter-clockwise)	Mittelpunkt, Startpunkt und Endpunkt klicken (gegen den Uhrzeigersinn)	Cliquer le centre, le point de départ et le point d'arrivée (sens antihoraire)	Haga clic en el centro, el punto inicial y el punto final (sentido antihorario)
+Click the corner points · double click, Enter or right click finishes	Eckpunkte klicken · Doppelklick, Eingabe oder Rechtsklick beendet	Cliquer les sommets · double-clic, Entrée ou clic droit termine	Haga clic en los vértices · doble clic, Intro o clic derecho termina
+Click the two points to measure, then the position of the dimension line	Die beiden zu bemaßenden Punkte klicken, dann die Lage der Maßlinie	Cliquer les deux points à coter, puis la position de la ligne de cote	Haga clic en los dos puntos a acotar y luego en la posición de la línea de cota
+Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Auf eine Verbindung klicken: der Punkt legt Nummer, Farbe, Querschnitt und Kabelader der Verbindung fest	Cliquer sur un fil : le point définit le numéro, la couleur, la section et le conducteur de câble de la liaison	Haga clic en un cable: el punto define número, color, sección y conductor de cable de la conexión
+Draw a line across the wires that are cores of the cable	Eine Linie über die Verbindungen ziehen, die Adern des Kabels sind	Tracer une ligne à travers les fils qui sont des conducteurs du câble	Trace una línea a través de los cables que son conductores de la manguera
+Click to insert · Esc cancel	Klicken zum Einfügen · Esc bricht ab	Cliquer pour insérer · Échap annule	Haga clic para insertar · Esc cancela
+Routing around symbols	Führung um Symbole herum	Routage autour des symboles	Trazado alrededor de los símbolos
+{} objects pasted	{} Objekte eingefügt	{} objets collés	{} objetos pegados
+Cable {}: {} cores assigned	Kabel {}: {} Adern zugeordnet	Câble {} : {} conducteurs affectés	Manguera {}: {} conductores asignados
+{} connections drawn automatically	{} Verbindungen automatisch gezeichnet	{} liaisons tracées automatiquement	{} conexiones dibujadas automáticamente
+Click on a wire to place the connection definition point	Auf eine Verbindung klicken, um den Verbindungsdefinitionspunkt zu setzen	Cliquer sur un fil pour placer le point de définition de liaison	Haga clic en un cable para colocar el punto de definición de conexión
+Images (PNG, JPEG)	Bilder (PNG, JPEG)	Images (PNG, JPEG)	Imágenes (PNG, JPEG)
+(default)	(Standard)	(par défaut)	(predeterminada)
+Own colour	Eigene Farbe	Couleur propre	Color propio
+Ellipse	Ellipse	Ellipse	Elipse
+Arc	Bogen	Arc	Arco
+Polyline	Polylinie	Polyligne	Polilínea
+Polygon	Polygon	Polygone	Polígono
+✏ Draw: {}	✏ Zeichnen: {}	✏ Dessiner : {}	✏ Dibujar: {}
+✏ Draw	✏ Zeichnen	✏ Dessiner	✏ Dibujar
+Graphics: lines, rectangles, circles, ellipses, arcs, polylines and polygons	Grafik: Linien, Rechtecke, Kreise, Ellipsen, Bögen, Polylinien und Polygone	Graphiques : lignes, rectangles, cercles, ellipses, arcs, polylignes et polygones	Gráficos: líneas, rectángulos, círculos, elipses, arcos, polilíneas y polígonos
+Aligned	Ausgerichtet	Alignée	Alineada
+Horizontal	Horizontal	Horizontale	Horizontal
+Vertical	Vertikal	Verticale	Vertical
+↔ Dimension	↔ Bemaßung	↔ Cotation	↔ Cota
+Dimension lines	Maßlinien	Lignes de cote	Líneas de cota
+Conn. def.	Verb.-Def.	Déf. liaison	Def. conexión
+Connection definition point: defines number, colour, cross-section and cable core of a connection	Verbindungsdefinitionspunkt: legt Nummer, Farbe, Querschnitt und Kabelader einer Verbindung fest	Point de définition de liaison : définit le numéro, la couleur, la section et le conducteur de câble d'une liaison	Punto de definición de conexión: define número, color, sección y conductor de cable de una conexión
+Cable def.	Kabel-Def.	Déf. câble	Def. manguera
+Cable definition: draw a line across the wires that are cores of a cable	Kabeldefinition: eine Linie über die Verbindungen ziehen, die Adern eines Kabels sind	Définition de câble : tracer une ligne à travers les fils qui sont des conducteurs d'un câble	Definición de manguera: trace una línea a través de los cables que son conductores de una manguera
+Layer	Ebene	Calque	Capa
+Auto-connect	Autoverbinden	Connexion auto	Autoconexión
+Draw connections between facing connection points when symbols are placed or moved	Verbindungen zwischen gegenüberliegenden Anschlüssen zeichnen, wenn Symbole platziert oder verschoben werden	Tracer les liaisons entre les connexions en vis-à-vis lorsque des symboles sont placés ou déplacés	Dibujar conexiones entre puntos de conexión enfrentados al colocar o mover símbolos
+Route	Führen	Router	Trazar
+The wire tool routes around symbols and other wires (A)	Das Verbindungswerkzeug führt um Symbole und andere Verbindungen herum (A)	L'outil fil contourne les symboles et les autres fils (A)	La herramienta de cable rodea los símbolos y otros cables (A)
+Dimension	Bemaßung	Cotation	Cota
+Image…	Bild…	Image…	Imagen…
+PNG or JPEG bitmap, e.g. a logo or a photo	PNG- oder JPEG-Bitmap, z. B. ein Logo oder ein Foto	Image PNG ou JPEG, p. ex. un logo ou une photo	Mapa de bits PNG o JPEG, p. ej. un logotipo o una foto
+Connection definition point	Verbindungsdefinitionspunkt	Point de définition de liaison	Punto de definición de conexión
+Cable definition	Kabeldefinition	Définition de câble	Definición de manguera
+Auto-connect selection	Auswahl autoverbinden	Connecter automatiquement la sélection	Autoconectar la selección
+Connects free connection points of the selected symbols with facing ones	Verbindet freie Anschlüsse der ausgewählten Symbole mit gegenüberliegenden	Relie les connexions libres des symboles sélectionnés à celles en vis-à-vis	Conecta los puntos de conexión libres de los símbolos seleccionados con los enfrentados
+Join collinear wires	Fluchtende Verbindungen zusammenfassen	Fusionner les fils alignés	Unir cables alineados
+Joins wire pieces in a line where nothing else connects (current page)	Fasst Verbindungsstücke in einer Linie zusammen, an denen nichts anderes anschließt (aktuelle Seite)	Fusionne les segments de fil alignés où rien d'autre n'est connecté (page actuelle)	Une los tramos de cable alineados donde no se conecta nada más (página actual)
+{} wire pieces joined	{} Verbindungsstücke zusammengefasst	{} segments de fil fusionnés	{} tramos de cable unidos
+Apply connection definitions	Verbindungsdefinitionen anwenden	Appliquer les définitions de liaison	Aplicar las definiciones de conexión
+All connections take the values of their connection definition points	Alle Verbindungen übernehmen die Werte ihrer Verbindungsdefinitionspunkte	Toutes les liaisons prennent les valeurs de leurs points de définition	Todas las conexiones toman los valores de sus puntos de definición
+{} wires changed	{} Verbindungen geändert	{} fils modifiés	{} cables modificados
+{} is not a PNG or JPEG image	{} ist kein PNG- oder JPEG-Bild	{} n'est pas une image PNG ou JPEG	{} no es una imagen PNG o JPEG
+Click into the page to place the image	In die Seite klicken, um das Bild zu platzieren	Cliquer dans la page pour placer l'image	Haga clic en la página para colocar la imagen
+normal	normal	normale	normal
+Angle	Winkel	Angle	Ángulo
+{} corner points	{} Eckpunkte	{} sommets	{} vértices
+Direction	Richtung	Direction	Dirección
+Measured	Gemessen	Mesuré	Medido
+Scale	Maßstab	Échelle	Escala
+Real length per millimetre on the page, e.g. 10 for a 1:10 drawing	Reale Länge je Millimeter auf der Seite, z. B. 10 für eine Zeichnung 1:10	Longueur réelle par millimètre sur la page, p. ex. 10 pour un dessin au 1:10	Longitud real por milímetro en la página, p. ej. 10 para un dibujo 1:10
+Decimals	Nachkommastellen	Décimales	Decimales
+Shown instead of the measured value	Wird statt des gemessenen Werts angezeigt	Affiché à la place de la valeur mesurée	Se muestra en lugar del valor medido
+Distance	Abstand	Distance	Distancia
+{} × {} pixels, {}	{} × {} Pixel, {}	{} × {} pixels, {}	{} × {} píxeles, {}
+The aspect ratio is kept.	Das Seitenverhältnis bleibt erhalten.	Les proportions sont conservées.	Se mantiene la relación de aspecto.
+Connection:	Verbindung:	Liaison :	Conexión:
+Not on a wire	Nicht auf einer Verbindung	Pas sur un fil	No está sobre un cable
+Apply to the connection	Auf die Verbindung anwenden	Appliquer à la liaison	Aplicar a la conexión
+The wires of the connection take these values again	Die Verbindungsstücke übernehmen diese Werte erneut	Les fils de la liaison reprennent ces valeurs	Los cables de la conexión vuelven a tomar estos valores
+Shield	Schirm	Blindage	Pantalla
+Crossed wires	Gekreuzte Verbindungen	Fils croisés	Cables cruzados
+Number cores	Adern nummerieren	Numéroter les conducteurs	Numerar conductores
+Cores 1, 2, 3 … for the wires crossed, plus GNYE	Adern 1, 2, 3 … für die gekreuzten Verbindungen, dazu GNYE	Conducteurs 1, 2, 3 … pour les fils croisés, plus GNYE	Conductores 1, 2, 3 … para los cables cruzados, más GNYE
+Assign crossed wires	Gekreuzte Verbindungen zuordnen	Affecter les fils croisés	Asignar los cables cruzados
+The crossed wires get free cores of the cable in order	Die gekreuzten Verbindungen erhalten der Reihe nach freie Adern des Kabels	Les fils croisés reçoivent dans l'ordre les conducteurs libres du câble	Los cables cruzados reciben en orden los conductores libres de la manguera
+Draw another line for this cable	Weitere Linie für dieses Kabel zeichnen	Tracer une autre ligne pour ce câble	Trazar otra línea para esta manguera
+{} wires are cores of the cable	{} Verbindungen sind Adern des Kabels	{} fils sont des conducteurs du câble	{} cables son conductores de la manguera
+Property placement	Eigenschaftsplatzierung	Placement des propriétés	Colocación de propiedades
+Tag placed by hand	Kennzeichen von Hand platziert	Repère placé manuellement	Identificación colocada a mano
+Drag the tag of the selected symbol to place it.	Kennzeichen des markierten Symbols ziehen, um es zu platzieren.	Glisser le repère du symbole sélectionné pour le placer.	Arrastre la identificación del símbolo seleccionado para colocarla.
+(empty)	(leer)	(vide)	(vacío)
+➕ Place property	➕ Eigenschaft platzieren	➕ Placer une propriété	➕ Colocar propiedad
+➕ Layer	➕ Ebene	➕ Calque	➕ Capa
+Layer {}	Ebene {}	Calque {}	Capa {}
+Layers of graphics, texts, dimensions and images	Ebenen für Grafik, Texte, Bemaßungen und Bilder	Calques des graphiques, textes, cotes et images	Capas de gráficos, textos, cotas e imágenes
+Visible	Sichtbar	Visible	Visible
+Locked	Gesperrt	Verrouillé	Bloqueada
+Print	Drucken	Imprimer	Imprimir
+New items go onto this layer	Neue Objekte kommen auf diese Ebene	Les nouveaux éléments vont sur ce calque	Los nuevos elementos van a esta capa
+Colour of the items without their own	Farbe der Objekte ohne eigene Farbe	Couleur des éléments sans couleur propre	Color de los elementos sin color propio
+Items on the layer	Objekte auf der Ebene	Éléments sur le calque	Elementos en la capa
+Delete the layer; its items move to the default layer	Ebene löschen; ihre Objekte kommen auf die Standardebene	Supprimer le calque ; ses éléments passent sur le calque par défaut	Eliminar la capa; sus elementos pasan a la capa predeterminada
+Filter connections…	Verbindungen filtern…	Filtrer les liaisons…	Filtrar conexiones…
+{} connections	{} Verbindungen	{} liaisons	{} conexiones
+Show	Anzeigen	Afficher	Mostrar
+Select wires on this page	Verbindungsstücke auf dieser Seite auswählen	Sélectionner les fils sur cette page	Seleccionar los cables de esta página
+Place connection definition point	Verbindungsdefinitionspunkt setzen	Placer un point de définition de liaison	Colocar punto de definición de conexión
+In the middle of the first wire	In der Mitte des ersten Verbindungsstücks	Au milieu du premier fil	En el centro del primer cable
+Draw cable definition	Kabeldefinition zeichnen	Tracer une définition de câble	Trazar definición de manguera
+Draw a line across the wires that are cores of this cable	Eine Linie über die Verbindungen ziehen, die Adern dieses Kabels sind	Tracer une ligne à travers les fils qui sont des conducteurs de ce câble	Trace una línea a través de los cables que son conductores de esta manguera
+{}  ›  page {}	{}  ›  Seite {}	{}  ›  page {}	{}  ›  página {}
+{}  (free)	{}  (frei)	{}  (libre)	{}  (libre)
+Cable definition on page {}	Kabeldefinition auf Seite {}	Définition de câble en page {}	Definición de manguera en la página {}
+No cables yet. Draw a cable definition across wires or add a cable.	Noch keine Kabel. Eine Kabeldefinition über Verbindungen zeichnen oder ein Kabel anlegen.	Pas encore de câbles. Tracer une définition de câble à travers des fils ou ajouter un câble.	Aún no hay mangueras. Trace una definición de manguera a través de cables o añada una manguera.
+New tag for {}	Neues Kennzeichen für {}	Nouveau repère pour {}	Nueva identificación para {}
+This tag is already used	Dieses Kennzeichen ist bereits vergeben	Ce repère est déjà utilisé	Esta identificación ya está en uso
+Select on this page	Auf dieser Seite auswählen	Sélectionner sur cette page	Seleccionar en esta página
+Place functions of this device	Funktionen dieses Geräts platzieren	Placer des fonctions de cet appareil	Colocar funciones de este equipo
+Symbols placed next get this device tag (contacts are numbered on)	Als Nächstes platzierte Symbole erhalten dieses Betriebsmittelkennzeichen (Kontakte werden weiternummeriert)	Les symboles placés ensuite reçoivent ce repère d'appareil (les contacts sont numérotés à la suite)	Los símbolos colocados a continuación reciben esta identificación de equipo (los contactos se numeran a continuación)
+Stop placing for this device	Platzieren für dieses Gerät beenden	Arrêter le placement pour cet appareil	Dejar de colocar para este equipo
+Rename…	Umbenennen…	Renommer…	Renombrar…
+Cable definition on page {} refers to the unknown cable {}	Kabeldefinition auf Seite {} verweist auf das unbekannte Kabel {}	La définition de câble en page {} renvoie au câble inconnu {}	La definición de manguera en la página {} remite a la manguera desconocida {}
+Cable definition {} on page {} crosses no wire	Kabeldefinition {} auf Seite {} kreuzt keine Verbindung	La définition de câble {} en page {} ne croise aucun fil	La definición de manguera {} en la página {} no cruza ningún cable
+Connection definition point on page {} is not on a wire	Verbindungsdefinitionspunkt auf Seite {} liegt nicht auf einer Verbindung	Le point de définition de liaison en page {} n'est pas sur un fil	El punto de definición de conexión en la página {} no está sobre un cable
+Connection {} has contradicting connection definition points	Verbindung {} hat widersprüchliche Verbindungsdefinitionspunkte	La liaison {} a des points de définition contradictoires	La conexión {} tiene puntos de definición contradictorios
+Connection definition point on page {} is not applied to its connection	Verbindungsdefinitionspunkt auf Seite {} ist nicht auf seine Verbindung angewendet	Le point de définition de liaison en page {} n'est pas appliqué à sa liaison	El punto de definición de conexión en la página {} no está aplicado a su conexión
+Structure	Struktur	Structure	Estructura
+Connects two connection points with wires routed around symbols and other wires	Verbindet zwei Anschlüsse mit Verbindungen, die um Symbole und andere Verbindungen herumgeführt werden	Relie deux connexions par des fils routés autour des symboles et des autres fils	Conecta dos puntos de conexión con cables trazados alrededor de los símbolos y de otros cables
+Connection point TAG:PIN, e.g. -K1:A1	Anschluss KENNZEICHEN:ANSCHLUSS, z. B. -K1:A1	Connexion REPÈRE:BORNE, p. ex. -K1:A1	Punto de conexión IDENT:PIN, p. ej. -K1:A1
+Draws wires between free connection points of symbols that face each other	Zeichnet Verbindungen zwischen freien, gegenüberliegenden Anschlüssen von Symbolen	Trace des fils entre les connexions libres de symboles en vis-à-vis	Dibuja cables entre puntos de conexión libres de símbolos enfrentados
+Symbol ids (default: all symbols of the page)	Symbol-IDs (Standard: alle Symbole der Seite)	Identifiants de symboles (par défaut : tous les symboles de la page)	ID de símbolos (predeterminado: todos los símbolos de la página)
+Draws a cable definition line; the wires it crosses become cores of the cable (a new cable when none is given)	Zeichnet eine Kabeldefinitionslinie; die gekreuzten Verbindungen werden Adern des Kabels (ohne Angabe ein neues Kabel)	Trace une ligne de définition de câble ; les fils croisés deviennent des conducteurs du câble (un nouveau câble si aucun n'est indiqué)	Traza una línea de definición de manguera; los cables cruzados pasan a ser conductores de la manguera (una manguera nueva si no se indica ninguna)
+Start and end point of the line	Start- und Endpunkt der Linie	Point de départ et d'arrivée de la ligne	Punto inicial y final de la línea
+Cable tag, e.g. -W1	Kabelkennzeichen, z. B. -W1	Repère du câble, p. ex. -W1	Identificación de la manguera, p. ej. -W1
+Places a connection definition point on a wire; the connection takes its number, colour and cross-section	Setzt einen Verbindungsdefinitionspunkt auf eine Verbindung; die Verbindung übernimmt seine Nummer, Farbe und seinen Querschnitt	Place un point de définition de liaison sur un fil ; la liaison prend son numéro, sa couleur et sa section	Coloca un punto de definición de conexión sobre un cable; la conexión toma su número, color y sección
+Cross-section, e.g. 1.5 mm²	Querschnitt, z. B. 1.5 mm²	Section, p. ex. 1.5 mm²	Sección, p. ej. 1.5 mm²
+A cable definition needs a start and an end point	Eine Kabeldefinition braucht einen Start- und einen Endpunkt	Une définition de câble nécessite un point de départ et un point d'arrivée	Una definición de manguera necesita un punto inicial y uno final
+No cable {}	Kein Kabel {}	Aucun câble {}	No hay manguera {}
+15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Verbindungsdefinitionspunkte auf einer Verbindung legen Nummer, Farbe, Querschnitt und Ader der ganzen Verbindung fest; eine Kabeldefinitionslinie über Verbindungen macht sie zu Adern eines Kabels. Autoverbinden verbindet gegenüberliegende Anschlüsse, Führen (A) leitet Verbindungen um Symbole herum.	15. Les points de définition de liaison sur un fil fixent le numéro, la couleur, la section et le conducteur de toute la liaison ; une ligne de définition de câble à travers des fils en fait les conducteurs d'un câble. La connexion auto relie les connexions en vis-à-vis, Router (A) fait contourner les symboles aux fils.	15. Los puntos de definición de conexión sobre un cable fijan número, color, sección y conductor de toda la conexión; una línea de definición de manguera a través de cables los convierte en conductores de una manguera. La autoconexión une los puntos de conexión enfrentados, Trazar (A) lleva los cables alrededor de los símbolos.
+16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafik: Kreise, Ellipsen, Bögen, Polygone, Bemaßungen und Bilder auf Ebenen (Navigator › Ebenen: sichtbar, gesperrt, gedruckt). Das Kennzeichen eines markierten Symbols zum Platzieren ziehen; weitere Eigenschaften werden in seinen Eigenschaften platziert.	16. Graphiques : cercles, ellipses, arcs, polygones, cotes et images sur des calques (navigateur › Calques : visible, verrouillé, imprimé). Glisser le repère d'un symbole sélectionné pour le placer ; d'autres propriétés se placent dans ses propriétés.	16. Gráficos: círculos, elipses, arcos, polígonos, cotas e imágenes en capas (navegador › Capas: visible, bloqueada, impresa). Arrastre la identificación de un símbolo seleccionado para colocarla; otras propiedades se colocan en sus propiedades.

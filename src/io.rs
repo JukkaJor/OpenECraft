@@ -38,6 +38,8 @@ pub enum Purpose {
     StructureTemplate,
     /// A file to embed as a document page.
     Document,
+    /// A bitmap to place on a page.
+    Image,
     /// Page templates (JSON) to add to the project.
     PageTemplates,
 }
@@ -54,6 +56,7 @@ impl FileKind for Purpose {
             Purpose::Forms => (tr("OpenECraft title blocks and report schemes (JSON)"), &["json"]),
             Purpose::StructureTemplate => (tr("OpenECraft structure template (JSON)"), &["json"]),
             Purpose::PageTemplates => (tr("OpenECraft page templates (JSON)"), &["json"]),
+            Purpose::Image => (tr("Images (PNG, JPEG)"), &["png", "jpg", "jpeg"]),
             Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
