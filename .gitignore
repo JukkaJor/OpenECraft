@@ -2,6 +2,7 @@
 /dist
 /parts-manager/dist
 /.idea/
+/.claude/worktrees/
 # Local parts server databases
 parts-db.json
 *.tmp

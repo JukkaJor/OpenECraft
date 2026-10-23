@@ -258,7 +258,11 @@ impl App {
     }
 
     fn export(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: String) {
-        match self.io.save_as(&name, filter, &content) {
+        self.export_bytes(ctx, name, filter, content.as_bytes());
+    }
+
+    fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
+        match self.io.save_bytes_as(&name, filter, content) {
             Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
             Ok(None) => {}
             Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
@@ -484,6 +488,32 @@ impl App {
                     let name = self.suggested_name("stp");
                     let step = crate::export3d::step(&self.prj, &name);
                     self.export(&ctx, name, ("STEP", "stp"), step);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IGES)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as B-rep solids with planar faces (IGES 5.3)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("igs");
+                    let iges = crate::export3d::iges(&self.prj, &name);
+                    self.export(&ctx, name, ("IGES", "igs"), iges);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IFC)…")))
+                    .on_hover_text(tr("Enclosures as distribution boards with their components for BIM (IFC4)"))
+                    .clicked()
+                {
+                    let name = self.suggested_name("ifc");
+                    let ifc = crate::export3d::ifc(&self.prj, &name);
+                    self.export(&ctx, name, ("IFC", "ifc"), ifc);
+                }
+                if ui
+                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (JT)…")))
+                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as triangle meshes for PLM viewers (JT)"))
+                    .clicked()
+                {
+                    let jt = crate::export3d::jt(&self.prj);
+                    self.export_bytes(&ctx, self.suggested_name("jt"), ("JT", "jt"), &jt);
                 }
                 ui.separator();
                 if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {

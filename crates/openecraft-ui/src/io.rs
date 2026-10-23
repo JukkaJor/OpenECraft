@@ -135,7 +135,8 @@ pub fn mime_type(ext: &str) -> &'static str {
         "csv" => "text/csv",
         "pdf" => "application/pdf",
         "dxf" => "application/dxf",
-        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" => "application/octet-stream",
+        "igs" | "iges" => "model/iges",
+        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" => "application/octet-stream",
         _ => "application/json",
     }
 }
