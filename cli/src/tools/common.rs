@@ -3,7 +3,7 @@
 use super::{param, Kind, Param};
 use openecraft_core::geom::P;
 use openecraft_core::model::*;
-use openecraft_core::symbols;
+use openecraft_core::{structure, symbols};
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -98,8 +98,11 @@ pub fn page_json(pg: &Page) -> Value {
         "name": pg.name,
         "description": pg.description,
         "kind": kind_name(pg.kind),
+        "structure": structure::page_structure(pg),
         "function": pg.function,
+        "installation": pg.installation,
         "location": pg.location,
+        "product": pg.product,
         "locked": pg.locked,
     })
 }

@@ -5,6 +5,7 @@ use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::model::*;
 use openecraft_core::netlist::Netlist;
+use openecraft_core::structure::{Aspect, Dt};
 use openecraft_core::{dxf_import, ops, potentials};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -13,7 +14,7 @@ pub static TOOLS: &[Tool] = &[
     Tool {
         name: "list_pages",
         help: tr_const!("Lists the pages of the project"),
-        params: &[],
+        params: &[optional("work_area", Kind::Str, tr_const!("Only the pages of this work area (list_structure)"))],
         needs_project: true,
         run: list_pages,
     },
@@ -56,7 +57,9 @@ pub static TOOLS: &[Tool] = &[
             optional("name", Kind::Str, tr_const!("New page name")),
             optional("description", Kind::Str, tr_const!("Description")),
             optional("function", Kind::Str, tr_const!("Function aspect (=) of the page; the devices on the page move along")),
+            optional("installation", Kind::Str, tr_const!("Installation site aspect (++) of the page; the devices on the page move along")),
             optional("location", Kind::Str, tr_const!("Location aspect (+) of the page; the devices on the page move along")),
+            optional("product", Kind::Str, tr_const!("Higher-level product aspect (-) of the page; the devices on the page move along")),
         ],
         needs_project: true,
         run: set_page,
@@ -70,9 +73,13 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn list_pages(s: &mut Session, _: &Args) -> Result<Value, String> {
+fn list_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
-    let pages = prj.pages.iter().map(|pg| {
+    let area = match a.str("work_area") {
+        Some(name) => Some(prj.structures.work_area(name).ok_or_else(|| tr_fmt!("No work area named {}", name))?),
+        None => None,
+    };
+    let pages = prj.pages.iter().filter(|pg| area.is_none_or(|w| w.shows_page(pg))).map(|pg| {
         let mut v = page_json(pg);
         v["symbols"] = pg.symbols.len().into();
         v["wires"] = pg.wires.len().into();
@@ -172,10 +179,14 @@ fn set_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     if let Some(d) = a.str("description") {
         prj.pages[i].description = d.into();
     }
-    if a.str("function").is_some() || a.str("location").is_some() {
-        let function = a.str("function").map(String::from).unwrap_or_else(|| prj.pages[i].function.clone());
-        let location = a.str("location").map(String::from).unwrap_or_else(|| prj.pages[i].location.clone());
-        ops::set_page_structure(prj, i, &function, &location, true);
+    if Aspect::ALL.iter().any(|asp| a.str(asp.key()).is_some()) {
+        let mut dt = Dt::of_page(&prj.pages[i]);
+        for asp in Aspect::ALL {
+            if let Some(v) = a.str(asp.key()) {
+                *dt.get_mut(asp) = v.to_string();
+            }
+        }
+        ops::set_page_structure(prj, i, &dt, true);
     }
     Ok(page_json(&prj.pages[i]))
 }

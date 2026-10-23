@@ -106,6 +106,9 @@ pub struct Project {
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub wiring_marks: Vec<crate::wiring::WiringMark>,
+    /// Structure management: defined identifiers, aspects of the pages, work areas.
+    #[serde(skip_serializing_if = "crate::structure::Structures::is_default")]
+    pub structures: crate::structure::Structures,
     pub next_id: u64,
 }
 
@@ -135,6 +138,7 @@ impl Default for Project {
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
             languages: Default::default(),
+            structures: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -269,10 +273,15 @@ pub struct Page {
     /// Page number / name as shown in cross references, e.g. "3".
     pub name: String,
     pub description: String,
-    /// Structure of the page (IEC 81346) without prefix signs: function (`=`) and
-    /// location (`+`). Devices placed on the page inherit it.
+    /// Structure of the page (IEC 81346) without prefix signs: function (`=`),
+    /// installation site (`++`), location (`+`) and higher-level product (`-`).
+    /// Devices placed on the page inherit it.
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
     /// Released page: no changes until it is unlocked.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub locked: bool,
@@ -308,7 +317,9 @@ impl Page {
             name: name.into(),
             description: description.into(),
             function: String::new(),
+            installation: String::new(),
             location: String::new(),
+            product: String::new(),
             locked: false,
             generated: false,
             title_block: String::new(),

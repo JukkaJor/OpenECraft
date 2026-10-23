@@ -710,3 +710,99 @@ Door (front)	Tür (Vorderseite)	Porte (face avant)	Puerta (frente)
 The door seen from the front: door devices and cutouts	Die Tür von vorn: Türgeräte und Ausschnitte	La porte vue de face : appareils de porte et découpes	La puerta vista de frente: equipos de la puerta y recortes
 Door (inside)	Tür (Innenseite)	Porte (face intérieure)	Puerta (interior)
 The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door	Die Tür von innen (Scharniere rechts): Kabelkanäle und die Verdrahtung hinter der Tür	La porte vue de l'intérieur (charnières à droite) : goulottes et câblage derrière la porte	La puerta vista desde dentro (bisagras a la derecha): canaletas y cableado detrás de la puerta
+Installation site	Aufstellungsort	Lieu d'installation	Lugar de instalación
+Structure management	Strukturkennzeichenverwaltung	Gestion des identificateurs de structure	Gestión de identificadores de estructura
+Structure management…	Strukturkennzeichenverwaltung…	Gestion des identificateurs de structure…	Gestión de identificadores de estructura…
+Structure identifiers (IEC 81346), templates and work areas	Strukturkennzeichen (IEC 81346), Vorlagen und Arbeitsbereiche	Identificateurs de structure (CEI 81346), modèles et zones de travail	Identificadores de estructura (IEC 81346), plantillas y áreas de trabajo
+Template	Vorlage	Modèle	Plantilla
+Apply template	Vorlage anwenden	Appliquer le modèle	Aplicar plantilla
+Sets the aspects of the pages and adds the template's identifiers	Setzt die Aspekte der Seiten und fügt die Kennzeichen der Vorlage hinzu	Définit les aspects des pages et ajoute les identificateurs du modèle	Establece los aspectos de las páginas y añade los identificadores de la plantilla
+Load template…	Vorlage laden…	Charger un modèle…	Cargar plantilla…
+Save as template…	Als Vorlage speichern…	Enregistrer comme modèle…	Guardar como plantilla…
+Aspects, identifiers and work areas as a file for other projects	Aspekte, Kennzeichen und Arbeitsbereiche als Datei für andere Projekte	Aspects, identificateurs et zones de travail dans un fichier pour d'autres projets	Aspectos, identificadores y áreas de trabajo como archivo para otros proyectos
+Aspects of the pages	Aspekte der Seiten	Aspects des pages	Aspectos de las páginas
+Identifiers	Kennzeichen	Identificateurs	Identificadores
+Define all used	Alle verwendeten definieren	Définir tous les utilisés	Definir todos los usados
+Adds the identifiers used on pages and in device tags	Fügt die auf Seiten und in Betriebsmittelkennzeichen verwendeten Kennzeichen hinzu	Ajoute les identificateurs utilisés sur les pages et dans les repères d'appareils	Añade los identificadores usados en páginas y en las referencias de dispositivos
+Remove unused	Unbenutzte entfernen	Supprimer les inutilisés	Eliminar los no usados
+Removes the definitions no page or device uses	Entfernt die Definitionen, die keine Seite und kein Betriebsmittel verwendet	Supprime les définitions qu'aucune page ni aucun appareil n'utilise	Elimina las definiciones que ninguna página ni dispositivo usa
+not defined	nicht definiert	non défini	no definido
+Rename	Umbenennen	Renommer	Renombrar
+Renames the identifier on all pages and in all device tags	Benennt das Kennzeichen auf allen Seiten und in allen Betriebsmittelkennzeichen um	Renomme l'identificateur sur toutes les pages et dans tous les repères d'appareils	Renombra el identificador en todas las páginas y en todas las referencias de dispositivos
+Rename in the whole project	Im ganzen Projekt umbenennen	Renommer dans tout le projet	Renombrar en todo el proyecto
+Define	Definieren	Définir	Definir
+Remove the definition (pages and devices keep the identifier)	Definition entfernen (Seiten und Betriebsmittel behalten das Kennzeichen)	Supprimer la définition (les pages et appareils gardent l'identificateur)	Eliminar la definición (páginas y dispositivos conservan el identificador)
+Identifiers in use that are not defined are reported by the check.	Verwendete Kennzeichen ohne Definition meldet die Prüfung.	Les identificateurs utilisés mais non définis sont signalés par la vérification.	La comprobación informa de los identificadores usados que no están definidos.
+Work areas	Arbeitsbereiche	Zones de travail	Áreas de trabajo
+Work area	Arbeitsbereich	Zone de travail	Área de trabajo
+Work area {}	Arbeitsbereich {}	Zone de travail {}	Área de trabajo {}
+➕ Work area	➕ Arbeitsbereich	➕ Zone de travail	➕ Área de trabajo
+(whole project)	(ganzes Projekt)	(projet entier)	(proyecto completo)
+A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Ein Arbeitsbereich beschränkt die Seiten und Betriebsmittel im Navigator auf einen Teil des Projekts. Filter: leer = beliebig, * = beliebige Zeichen; A1 umfasst auch A1.2.	Une zone de travail limite les pages et appareils du navigateur à une partie du projet. Filtres : vide = tout, * = caractères quelconques ; A1 couvre aussi A1.2.	Un área de trabajo limita las páginas y dispositivos del navegador a una parte del proyecto. Filtros: vacío = cualquiera, * = cualquier carácter; A1 incluye también A1.2.
+OpenECraft structure template	OpenECraft-Strukturvorlage	Modèle de structure OpenECraft	Plantilla de estructura de OpenECraft
+OpenECraft structure template (JSON)	OpenECraft-Strukturvorlage (JSON)	Modèle de structure OpenECraft (JSON)	Plantilla de estructura de OpenECraft (JSON)
+{} structure identifiers added	{} Strukturkennzeichen hinzugefügt	{} identificateurs de structure ajoutés	{} identificadores de estructura añadidos
+{} unused structure identifiers removed	{} unbenutzte Strukturkennzeichen entfernt	{} identificateurs de structure inutilisés supprimés	{} identificadores de estructura no usados eliminados
+{} renamed: {} pages and devices	{} umbenannt: {} Seiten und Betriebsmittel	{} renommé : {} pages et appareils	{} renombrado: {} páginas y dispositivos
+Identifiers of the structure management	Kennzeichen der Strukturkennzeichenverwaltung	Identificateurs de la gestion de structure	Identificadores de la gestión de estructura
+e.g. HALL1, PLANT2	z. B. HALL1, PLANT2	p. ex. HALL1, PLANT2	p. ej. HALL1, PLANT2
+e.g. U1, U1-A2	z. B. U1, U1-A2	p. ex. U1, U1-A2	p. ej. U1, U1-A2
+Function and location	Funktion und Ort	Fonction et emplacement	Función y ubicación
+Installation site and location	Aufstellungsort und Ort	Lieu d'installation et emplacement	Lugar de instalación y ubicación
+Function, installation site and location	Funktion, Aufstellungsort und Ort	Fonction, lieu d'installation et emplacement	Función, lugar de instalación y ubicación
+All aspects (with product)	Alle Aspekte (mit Produkt)	Tous les aspects (avec produit)	Todos los aspectos (con producto)
+Machine (example identifiers)	Maschine (Beispielkennzeichen)	Machine (identificateurs d'exemple)	Máquina (identificadores de ejemplo)
+Process plant (example identifiers)	Verfahrenstechnische Anlage (Beispielkennzeichen)	Installation de process (identificateurs d'exemple)	Planta de proceso (identificadores de ejemplo)
+Power supply	Einspeisung	Alimentation	Alimentación
+Control	Steuerung	Commande	Control
+Drives	Antriebe	Entraînements	Accionamientos
+Safety	Sicherheit	Sécurité	Seguridad
+Control cabinet	Schaltschrank	Armoire de commande	Armario de control
+Operator desk	Bedienpult	Pupitre de commande	Pupitre de mando
+Field devices	Feldgeräte	Appareils de terrain	Dispositivos de campo
+Supply	Versorgung	Approvisionnement	Suministro
+Pumps	Pumpen	Pompes	Bombas
+Tanks	Behälter	Réservoirs	Depósitos
+Hall 1	Halle 1	Hall 1	Nave 1
+Outdoor area	Außenbereich	Zone extérieure	Zona exterior
+Structure identifier {} is not defined in the structure management	Strukturkennzeichen {} ist in der Strukturkennzeichenverwaltung nicht definiert	L'identificateur de structure {} n'est pas défini dans la gestion de structure	El identificador de estructura {} no está definido en la gestión de estructura
+The identifier must not be empty	Das Kennzeichen darf nicht leer sein	L'identificateur ne doit pas être vide	El identificador no debe estar vacío
+The name must not be empty	Der Name darf nicht leer sein	Le nom ne doit pas être vide	El nombre no debe estar vacío
+{} exists already	{} existiert bereits	{} existe déjà	{} ya existe
+{} is not defined	{} ist nicht definiert	{} n'est pas défini	{} no está definido
+Not a structure template: {}	Keine Strukturvorlage: {}	Pas un modèle de structure : {}	No es una plantilla de estructura: {}
+Unknown aspect: {}	Unbekannter Aspekt: {}	Aspect inconnu : {}	Aspecto desconocido: {}
+Unknown structure template: {}	Unbekannte Strukturvorlage: {}	Modèle de structure inconnu : {}	Plantilla de estructura desconocida: {}
+No work area named {}	Kein Arbeitsbereich namens {}	Aucune zone de travail nommée {}	Ningún área de trabajo llamada {}
+Give either template or path	Entweder template oder path angeben	Indiquer soit template soit path	Indique template o path
+Installation site of the page	Aufstellungsort der Seite	Lieu d'installation de la page	Lugar de instalación de la página
+Higher-level product of the page	Übergeordnetes Produkt der Seite	Produit de niveau supérieur de la page	Producto de nivel superior de la página
+Description of the page's function (structure management)	Beschreibung der Funktion der Seite (Strukturkennzeichenverwaltung)	Description de la fonction de la page (gestion de structure)	Descripción de la función de la página (gestión de estructura)
+Description of the page's location (structure management)	Beschreibung des Orts der Seite (Strukturkennzeichenverwaltung)	Description de l'emplacement de la page (gestion de structure)	Descripción de la ubicación de la página (gestión de estructura)
+Installation site aspect (++) of the page; the devices on the page move along	Aspekt Aufstellungsort (++) der Seite; die Betriebsmittel der Seite ziehen mit	Aspect lieu d'installation (++) de la page ; les appareils de la page suivent	Aspecto lugar de instalación (++) de la página; los dispositivos de la página se mueven con ella
+Higher-level product aspect (-) of the page; the devices on the page move along	Aspekt übergeordnetes Produkt (-) der Seite; die Betriebsmittel der Seite ziehen mit	Aspect produit de niveau supérieur (-) de la page ; les appareils de la page suivent	Aspecto producto de nivel superior (-) de la página; los dispositivos de la página se mueven con ella
+Only the pages of this work area (list_structure)	Nur die Seiten dieses Arbeitsbereichs (list_structure)	Uniquement les pages de cette zone de travail (list_structure)	Solo las páginas de esta área de trabajo (list_structure)
+function (=), installation (++), location (+) or product (-)	function (=), installation (++), location (+) oder product (-)	function (=), installation (++), location (+) ou product (-)	function (=), installation (++), location (+) o product (-)
+Lists the structure management: aspects of the pages, defined and used identifiers, work areas	Listet die Strukturkennzeichenverwaltung: Aspekte der Seiten, definierte und verwendete Kennzeichen, Arbeitsbereiche	Liste la gestion de structure : aspects des pages, identificateurs définis et utilisés, zones de travail	Lista la gestión de estructura: aspectos de las páginas, identificadores definidos y usados, áreas de trabajo
+Defines a structure identifier or changes its description	Definiert ein Strukturkennzeichen oder ändert seine Beschreibung	Définit un identificateur de structure ou modifie sa description	Define un identificador de estructura o cambia su descripción
+Identifier, e.g. A1 or CAB1	Kennzeichen, z. B. A1 oder CAB1	Identificateur, p. ex. A1 ou CAB1	Identificador, p. ej. A1 o CAB1
+Removes the definition of a structure identifier (pages and devices keep it)	Entfernt die Definition eines Strukturkennzeichens (Seiten und Betriebsmittel behalten es)	Supprime la définition d'un identificateur de structure (les pages et appareils le gardent)	Elimina la definición de un identificador de estructura (páginas y dispositivos lo conservan)
+Renames a structure identifier in the whole project: pages, devices, cables, definition and work areas	Benennt ein Strukturkennzeichen im ganzen Projekt um: Seiten, Betriebsmittel, Kabel, Definition und Arbeitsbereiche	Renomme un identificateur de structure dans tout le projet : pages, appareils, câbles, définition et zones de travail	Renombra un identificador de estructura en todo el proyecto: páginas, dispositivos, cables, definición y áreas de trabajo
+New identifier	Neues Kennzeichen	Nouvel identificateur	Nuevo identificador
+Defines all identifiers in use and / or removes the definitions nobody uses	Definiert alle verwendeten Kennzeichen und / oder entfernt die unbenutzten Definitionen	Définit tous les identificateurs utilisés et / ou supprime les définitions inutilisées	Define todos los identificadores usados y / o elimina las definiciones sin uso
+Define the identifiers in use (default: true)	Verwendete Kennzeichen definieren (Standard: true)	Définir les identificateurs utilisés (par défaut : true)	Definir los identificadores usados (por defecto: true)
+Remove unused definitions (default: false)	Unbenutzte Definitionen entfernen (Standard: false)	Supprimer les définitions inutilisées (par défaut : false)	Eliminar las definiciones sin uso (por defecto: false)
+Lists the built-in structure templates	Listet die eingebauten Strukturvorlagen	Liste les modèles de structure intégrés	Lista las plantillas de estructura integradas
+Applies a structure template: the aspects of the pages and its identifiers	Wendet eine Strukturvorlage an: die Aspekte der Seiten und ihre Kennzeichen	Applique un modèle de structure : les aspects des pages et ses identificateurs	Aplica una plantilla de estructura: los aspectos de las páginas y sus identificadores
+Name of a built-in template (list_structure_templates)	Name einer eingebauten Vorlage (list_structure_templates)	Nom d'un modèle intégré (list_structure_templates)	Nombre de una plantilla integrada (list_structure_templates)
+Template file written by export_structure_template	Vorlagendatei von export_structure_template	Fichier de modèle écrit par export_structure_template	Archivo de plantilla escrito por export_structure_template
+Writes the structure management (aspects, identifiers, work areas) as a template file	Schreibt die Strukturkennzeichenverwaltung (Aspekte, Kennzeichen, Arbeitsbereiche) als Vorlagendatei	Écrit la gestion de structure (aspects, identificateurs, zones de travail) dans un fichier de modèle	Escribe la gestión de estructura (aspectos, identificadores, áreas de trabajo) como archivo de plantilla
+Sets the aspects the pages use	Legt die Aspekte fest, die die Seiten verwenden	Définit les aspects utilisés par les pages	Establece los aspectos que usan las páginas
+Aspects separated by commas, e.g. function,location	Aspekte durch Kommas getrennt, z. B. function,location	Aspects séparés par des virgules, p. ex. function,location	Aspectos separados por comas, p. ej. function,location
+Creates or changes a work area: only the pages and devices of its structure are shown	Legt einen Arbeitsbereich an oder ändert ihn: nur die Seiten und Betriebsmittel seiner Struktur werden gezeigt	Crée ou modifie une zone de travail : seuls les pages et appareils de sa structure sont affichés	Crea o cambia un área de trabajo: solo se muestran las páginas y dispositivos de su estructura
+Name of the work area	Name des Arbeitsbereichs	Nom de la zone de travail	Nombre del área de trabajo
+Function filter (= A1, A*; empty = any)	Funktionsfilter (= A1, A*; leer = beliebig)	Filtre de fonction (= A1, A* ; vide = tout)	Filtro de función (= A1, A*; vacío = cualquiera)
+Installation site filter (++)	Filter Aufstellungsort (++)	Filtre de lieu d'installation (++)	Filtro de lugar de instalación (++)
+Location filter (+)	Filter Ort (+)	Filtre d'emplacement (+)	Filtro de ubicación (+)
+Product filter (-)	Filter Produkt (-)	Filtre de produit (-)	Filtro de producto (-)
+Deletes a work area	Löscht einen Arbeitsbereich	Supprime une zone de travail	Elimina un área de trabajo

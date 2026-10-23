@@ -127,6 +127,7 @@ impl Analysis {
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
+        issues.extend(crate::structure::problems(prj).into_iter().map(|message| Issue { severity: Severity::Warning, message, target: None }));
         for lang in &prj.languages.targets {
             let n = crate::translation::missing(prj, lang).len();
             if n > 0 {

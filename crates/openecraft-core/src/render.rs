@@ -126,7 +126,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         d.circle(j, 0.7, 0.0, Ink::Wire, true);
     }
     draw_wire_labels(d, prj, an, page_i);
-    let structured = !page.function.is_empty() || !page.location.is_empty();
+    let structured = !structure::page_structure(page).is_empty();
     for s in &page.symbols {
         let Some(def) = symbols::get(&s.sym) else { continue };
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };

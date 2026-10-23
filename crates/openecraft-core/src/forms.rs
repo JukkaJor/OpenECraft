@@ -248,6 +248,10 @@ pub fn title_block(prj: &Project, page_i: usize) -> Cow<'_, Form> {
     find(prj, if name.is_empty() { STANDARD } else { name })
 }
 
+fn structure_description(prj: &Project, aspect: crate::structure::Aspect, id: &str) -> String {
+    prj.structures.entry(aspect, id).map(|e| e.description.clone()).unwrap_or_default()
+}
+
 /// Value of one placeholder (without braces); `None` for unknown names.
 pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
     let info = &prj.info;
@@ -267,6 +271,10 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
         "page.structure" => crate::structure::page_structure(page),
         "page.function" => page.function.clone(),
         "page.location" => page.location.clone(),
+        "page.installation" => page.installation.clone(),
+        "page.product" => page.product.clone(),
+        "page.function.description" => structure_description(prj, crate::structure::Aspect::Function, &page.function),
+        "page.location.description" => structure_description(prj, crate::structure::Aspect::Location, &page.location),
         "page.type" => match page.kind {
             PageKind::Schematic => tr("Schematic"),
             PageKind::Cover => tr("Cover"),
@@ -286,7 +294,7 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
 }
 
 /// Placeholders offered in the title block editor: (placeholder, meaning).
-pub const PLACEHOLDERS: [(&str, &str); 22] = [
+pub const PLACEHOLDERS: [(&str, &str); 26] = [
     ("{project}", tr_const!("Project name")),
     ("{project.description}", tr_const!("Project description")),
     ("{company}", tr_const!("Company")),
@@ -300,6 +308,10 @@ pub const PLACEHOLDERS: [(&str, &str); 22] = [
     ("{page.structure}", tr_const!("Page structure (=A1+CAB1)")),
     ("{page.function}", tr_const!("Function of the page")),
     ("{page.location}", tr_const!("Location of the page")),
+    ("{page.installation}", tr_const!("Installation site of the page")),
+    ("{page.product}", tr_const!("Higher-level product of the page")),
+    ("{page.function.description}", tr_const!("Description of the page's function (structure management)")),
+    ("{page.location.description}", tr_const!("Description of the page's location (structure management)")),
     ("{page.type}", tr_const!("Page type")),
     ("{sheet}", tr_const!("Sheet number")),
     ("{sheets}", tr_const!("Number of sheets")),

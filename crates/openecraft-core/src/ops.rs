@@ -342,9 +342,13 @@ pub fn cleanup_wires(page: &mut Page) {
 #[serde(default)]
 pub struct Clip {
     pub magic: String,
-    /// Function and location of the page the clip was copied from.
+    /// Structure of the page the clip was copied from.
     pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
     pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -357,7 +361,9 @@ pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
     Clip {
         magic: CLIP_MAGIC.into(),
         function: page.function.clone(),
+        installation: page.installation.clone(),
         location: page.location.clone(),
+        product: page.product.clone(),
         symbols: page.symbols.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         wires: page.wires.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
         texts: page.texts.iter().filter(|s| sel.contains(&s.id)).cloned().collect(),
@@ -366,6 +372,17 @@ pub fn copy(page: &Page, sel: &BTreeSet<u64>) -> Clip {
 }
 
 impl Clip {
+    /// Structure of the page the clip was copied from.
+    pub fn structure(&self) -> crate::structure::Dt {
+        crate::structure::Dt {
+            function: self.function.clone(),
+            installation: self.installation.clone(),
+            location: self.location.clone(),
+            product: self.product.clone(),
+            name: String::new(),
+        }
+    }
+
     pub fn to_text(&self) -> String {
         serde_json::to_string(self).unwrap_or_default()
     }
@@ -404,8 +421,8 @@ impl Clip {
 /// get new numbers (consistently for coil + contacts). Wire numbers and cable cores
 /// are not copied.
 pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u64> {
-    let source = Page { function: clip.function.clone(), location: clip.location.clone(), ..Default::default() };
-    let target = prj.pages[page_i].clone();
+    let source = clip.structure();
+    let target = crate::structure::Dt::of_page(&prj.pages[page_i]);
     let b = clip.bounds();
     if !b.is_valid() {
         return BTreeSet::new();
@@ -420,7 +437,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
         s.id = prj.new_id();
         s.pos = s.pos + d;
         if !s.tag.is_empty() {
-            s.tag = crate::structure::complete(&target, &crate::structure::relative(&source, &s.tag));
+            s.tag = target.complete(&source.relative(&s.tag));
         }
         if let Some(def) = symbols::get(&s.sym) {
             match def.func {
@@ -587,10 +604,9 @@ pub fn assign_cores(prj: &mut Project, page: usize, wires: &BTreeSet<u64>, cable
 
 /// Changes the structure of a page; with `move_devices` the devices on the page
 /// move along (all their functions, also on other pages, see [`rename_device`]).
-pub fn set_page_structure(prj: &mut Project, page: usize, function: &str, location: &str, move_devices: bool) {
+pub fn set_page_structure(prj: &mut Project, page: usize, structure: &crate::structure::Dt, move_devices: bool) {
     let old = prj.pages[page].clone();
-    prj.pages[page].function = crate::structure::clean_aspect(function);
-    prj.pages[page].location = crate::structure::clean_aspect(location);
+    structure.apply_to(&mut prj.pages[page]);
     if !move_devices {
         return;
     }
