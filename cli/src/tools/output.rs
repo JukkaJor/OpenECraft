@@ -35,9 +35,9 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML), marking (CSV), gltf or step (3D panel layout), dictionary (CSV of the project text translations)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step or dictionary")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, kbl, marking, gltf, step, iges, ifc, jt or dictionary")),
             optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
@@ -109,11 +109,12 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
             std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
             Ok(json!({ "path": path, "bytes": content.len() }))
         }
-        None => Ok(Value::String(content)),
+        None => String::from_utf8(content).map(Value::String).map_err(|_| tr("This format needs an output file (path)").to_string()),
     }
 }
 
-fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<usize>) -> Result<String, String> {
+fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<usize>) -> Result<Vec<u8>, String> {
+    let file_name = |default: &'static str| a.str("path").map(|p| p.rsplit(['/', '\\']).next().unwrap_or(p)).unwrap_or(default).to_string();
     Ok(match a.req("format") {
         "svg" => svg::page_svg(prj, page.ok_or_else(|| tr("This format needs a page").to_string())?),
         "html" => svg::print_document(prj),
@@ -127,10 +128,14 @@ fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<
         "kbl" => harness::kbl(prj, &Analysis::build(prj)),
         "marking" => openecraft_core::marking::csv(&openecraft_core::marking::markers(prj, &Analysis::build(prj).connections)),
         "gltf" => openecraft_core::export3d::gltf(prj),
-        "step" => openecraft_core::export3d::step(prj, a.str("path").map(|p| p.rsplit(['/', '\\']).next().unwrap_or(p)).unwrap_or("panel.stp")),
+        "step" => openecraft_core::export3d::step(prj, &file_name("panel.stp")),
+        "iges" => openecraft_core::export3d::iges(prj, &file_name("panel.igs")),
+        "ifc" => openecraft_core::export3d::ifc(prj, &file_name("panel.ifc")),
+        "jt" => return Ok(openecraft_core::export3d::jt(prj)),
         "dictionary" => translation::to_csv(prj),
         other => return Err(tr_fmt!("Unknown format: {}", other)),
-    })
+    }
+    .into_bytes())
 }
 
 #[cfg(test)]

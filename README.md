@@ -130,9 +130,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
     subgroup tree, filter), with general, commercial (price, price unit, packaging,
     quantity unit), technical, mounting (dimensions, weight) data, accessories and a
     **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
-  - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ or **STEP**:
+  - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ, **STEP**:
     solids and surface models of AP203 / AP214 / AP242 files, placed by their
-    assembly structure, tessellated and converted to mm);
+    assembly structure, tessellated and converted to mm; **IGES 5.3**: solids and
+    trimmed surfaces; **IFC**: tessellated, faceted and extruded bodies of all
+    products, placed and converted to mm; **JT**: the tri-strip meshes of JT 8 files);
   - **project parts**: parts are copied into the project when assigned; synchronize
     project ← database, transfer project → database, remove unused project parts;
   - **part selection** dialog with *device selection* (only parts providing the device's
@@ -220,9 +222,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
   wire processing machines; ferrules also in the BOM), report CSVs, PLC symbol tables,
   NC data of mounting plates, the **panel layout in 3D** as **glTF 2.0** (viewers, web,
-  PLM; metres, one node per enclosure and item, colours) and **STEP AP214** (MCAD;
-  faceted solids with colours, millimetres, z up) – walls, door, mounting plate,
-  rails, ducts, busbars and devices with the 3D models of their parts.
+  PLM; metres, one node per enclosure and item, colours), **STEP AP214** (MCAD;
+  faceted solids with colours, millimetres, z up), **IGES 5.3** (MCAD; B-rep solids
+  with planar faces, open shells for non-closed meshes, colours and names), **IFC4**
+  (BIM; a distribution board per enclosure with its components as triangulated
+  elements) and **JT** (PLM viewers; tri-strip meshes per item, JT 8.1 layout) –
+  walls, door, mounting plate, rails, ducts, busbars and devices with the 3D models of
+  their parts.
   **DXF import** (*File › Import DXF as page…*): old drawings as graphics on a new
   schematic page – lines, polylines, circles, arcs, ellipses, splines, texts, MTEXT,
   block references and dimensions, in their units, scaled down to the drawing area
@@ -400,7 +406,7 @@ cargo test --workspace
 | Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
 | Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
 | Revisions | *Project › Revisions…*: create (and release) revisions, lock / unlock pages, see changes |
-| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP) |
+| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
 | Import old drawings | *File › Import DXF as page…* |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
@@ -422,7 +428,8 @@ cargo test --workspace
 | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
 | `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
-| `crates/openecraft-step` | STEP import: B-rep models tessellated into part meshes (uses `monstertruck`) |
+| `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
+| `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
 | `crates/openecraft-client` | Requests to the parts server and decoding of its answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
 | `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
@@ -459,7 +466,8 @@ cargo test --workspace
 | `crates/openecraft-core/src/revision.rs` | Revisions: page snapshots, change detection, revision names |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
 | `crates/openecraft-core/src/dxf_import.rs` | DXF import as a schematic page |
-| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF and STEP export |
+| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC and JT export |
+| `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
 | `src/app/engineering.rs` | Windows for macros, terminal strips, PLC overview and revisions |
 | `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |

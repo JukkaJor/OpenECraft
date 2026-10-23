@@ -10,3 +10,4 @@ serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 openecraft-parts = { path = "../openecraft-parts" }
 openecraft-i18n = { path = "../openecraft-i18n" }
+openecraft-jt = { path = "../openecraft-jt" }

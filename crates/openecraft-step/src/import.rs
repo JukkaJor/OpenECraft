@@ -80,12 +80,16 @@ fn placed_shells(table: &Table) -> Vec<(Shell, Matrix4)> {
     out
 }
 
-fn shell_size(shell: &Shell) -> f64 {
+fn shell_size<C, S>(shell: &CompressedShell<Point3, C, S>) -> f64 {
     let bdd: BoundingBox<Point3> = shell.vertices.iter().collect();
     bdd.diameter()
 }
 
-fn tessellate(shells: &[(Shell, Matrix4)], relative: f64, unit: f64) -> Result<Mesh3d, String> {
+fn tessellate<C, S>(shells: &[(CompressedShell<Point3, C, S>, Matrix4)], relative: f64, unit: f64) -> Result<Mesh3d, String>
+where
+    CompressedShell<Point3, C, S>: RobustMeshableShape,
+    <CompressedShell<Point3, C, S> as RobustMeshableShape>::MeshedShape: MeshedShape,
+{
     let mut b = MeshBuilder::new();
     for (shell, matrix) in shells {
         let tolerance = f64::max(shell_size(shell) * relative, TOLERANCE);
@@ -107,8 +111,25 @@ fn tessellate(shells: &[(Shell, Matrix4)], relative: f64, unit: f64) -> Result<M
     b.finish()
 }
 
-/// Reads a STEP file into a mesh in mm. Fine details are tessellated more coarsely
-/// if the mesh would exceed [`MAX_TRIANGLES`].
+/// Tessellates placed shells into a mesh in mm (`unit`: mm per model unit). Fine
+/// details are tessellated more coarsely if the mesh would exceed [`MAX_TRIANGLES`].
+pub(crate) fn mesh_shells<C, S>(shells: &[(CompressedShell<Point3, C, S>, Matrix4)], unit: f64) -> Result<Mesh3d, String>
+where
+    CompressedShell<Point3, C, S>: RobustMeshableShape,
+    <CompressedShell<Point3, C, S> as RobustMeshableShape>::MeshedShape: MeshedShape,
+{
+    let mut last = String::new();
+    for relative in TOLERANCES {
+        match tessellate(shells, relative, unit) {
+            Ok(mesh) => return Ok(mesh),
+            Err(e) if e.contains(&MAX_TRIANGLES.to_string()) => last = e,
+            Err(e) => return Err(e),
+        }
+    }
+    Err(last)
+}
+
+/// Reads a STEP file into a mesh in mm.
 pub fn parse_step(bytes: &[u8]) -> Result<Mesh3d, String> {
     let table = Table::from_step_bytes(bytes).map_err(|e| format!("not a readable STEP file: {e}"))?;
     let unit = length_unit_mm(&String::from_utf8_lossy(bytes));
@@ -116,15 +137,7 @@ pub fn parse_step(bytes: &[u8]) -> Result<Mesh3d, String> {
     if shells.is_empty() {
         return Err("the STEP file contains no solids or surface models".into());
     }
-    let mut last = String::new();
-    for relative in TOLERANCES {
-        match tessellate(&shells, relative, unit) {
-            Ok(mesh) => return Ok(mesh),
-            Err(e) if e.contains(&MAX_TRIANGLES.to_string()) => last = e,
-            Err(e) => return Err(e),
-        }
-    }
-    Err(last)
+    mesh_shells(&shells, unit)
 }
 
 #[cfg(test)]

@@ -5,7 +5,7 @@
 //! - part tree filter and grouping ([`PartFilter`])
 //! - CSV / JSON import and export ([`to_csv`], [`from_csv`], [`import`]), BMEcat
 //!   catalogs with ETIM / eCl@ss features ([`from_bmecat`])
-//! - 2D / 3D models of parts with SVG, STL and OBJ import ([`Model2d`], [`Mesh3d`])
+//! - 2D / 3D models of parts with SVG, STL, OBJ and IFC import ([`Model2d`], [`Mesh3d`])
 //! - the generic example catalog ([`default_catalog`])
 //! - the HTTP API types of the parts server ([`api`])
 
@@ -16,6 +16,7 @@ mod connection;
 mod csv;
 mod filter;
 mod graphics;
+mod ifc;
 mod part;
 mod text;
 pub mod vec3;
@@ -26,6 +27,7 @@ pub use catalog::default_catalog;
 pub use connection::{default_connection_points, points_from_text, points_to_text, upper_side, ConnectionPoint, Exit};
 pub use csv::{csv_escape, from_csv, import, parse_csv, to_csv};
 pub use filter::{distinct_values, Grouping, PartFilter};
+pub use ifc::parse_ifc;
 pub use graphics::{parse_mesh, parse_obj, parse_stl, parse_svg, Mesh3d, MeshBuilder, Model2d, Prim2d, MAX_TRIANGLES};
 pub use part::*;
 pub use text::natural_cmp;

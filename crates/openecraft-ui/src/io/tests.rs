@@ -7,6 +7,8 @@ fn short_names_and_mime_types() {
     assert_eq!(short_name("plain.csv"), "plain.csv");
     assert_eq!(mime_type("csv"), "text/csv");
     assert_eq!(mime_type("json"), "application/json");
+    assert_eq!(mime_type("igs"), "model/iges");
+    assert_eq!(mime_type("jt"), "application/octet-stream");
 }
 
 #[test]
