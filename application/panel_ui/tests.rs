@@ -18,10 +18,22 @@ fn door_sides_have_their_own_tools() {
     ui.door_inside = true;
     assert!(ui.tool_allowed(&Tool::Duct) && !ui.tool_allowed(&Tool::Cutout));
     assert!(!ui.tool_allowed(&Tool::Rail) && !ui.tool_allowed(&Tool::Busbar));
-    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, panel::DOOR_DUCT_PART)));
+    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, panel::DOOR_DUCT_PART.into())));
     ui.face = Face::Plate;
     assert!(ui.tool_allowed(&Tool::Rail) && ui.tool_allowed(&Tool::Duct));
-    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, panel::DUCT_PART)));
+    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, panel::DUCT_PART.into())));
+}
+
+#[test]
+fn chosen_profile_parts_are_kept_per_kind_and_door() {
+    let mut ui = PanelUi::default();
+    ui.choose_profile_part(ItemKind::Duct, "GEN.DUCT-60X80");
+    ui.choose_profile_part(ItemKind::Rail, "GEN.RAIL-TS35X15-1M");
+    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, "GEN.DUCT-60X80".into())));
+    assert_eq!(ui.profile_here_for(&Tool::Rail), Some((ItemKind::Rail, "GEN.RAIL-TS35X15-1M".into())));
+    assert_eq!(ui.profile_here_for(&Tool::Busbar), Some((ItemKind::Busbar, panel::BUSBAR_PART.into())));
+    ui.face = Face::Door;
+    assert_eq!(ui.profile_here_for(&Tool::Duct), Some((ItemKind::Duct, panel::DOOR_DUCT_PART.into())), "the door keeps its own choice");
 }
 
 #[test]

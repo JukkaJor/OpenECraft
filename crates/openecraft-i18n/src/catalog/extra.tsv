@@ -3520,3 +3520,6 @@ DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG als Seite {} 
 ⬇ Door NC data (DWG)	⬇ Tür-NC-Daten (DWG)	⬇ Données CN de la porte (DWG)	⬇ Datos NC de la puerta (DWG)
 ⬇ NC data of this face (DWG)	⬇ NC-Daten dieser Fläche (DWG)	⬇ Données CN de cette face (DWG)	⬇ Datos CN de esta cara (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importiert eine DWG-Zeichnung (AutoCAD R12 … 2018) als Grafik (Linien, Bögen, Texte, Blöcke) auf eine neue Schaltplanseite	Importe un dessin DWG (AutoCAD R12 … 2018) comme graphique (lignes, arcs, textes, blocs) sur une nouvelle page de schéma	Importa un dibujo DWG (AutoCAD R12 … 2018) como gráfico (líneas, arcos, textos, bloques) en una nueva página de esquema
+Generic	Generisch	Générique	Genérico
+Parts store	Artikelstamm	Base d'articles	Base de artículos
+Part of the profile: generic types or parts from the parts store	Artikel des Profils: generische Typen oder Artikel aus dem Artikelstamm	Article du profilé : types génériques ou articles de la base d'articles	Artículo del perfil: tipos genéricos o artículos de la base de artículos

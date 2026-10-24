@@ -564,15 +564,85 @@ pub fn new_profile(prj: &mut Project, kind: ItemKind, part: &str, a: P, b: P) ->
 
 /// Profile width and height of rails / ducts (from the part or the defaults).
 pub fn profile(prj: &Project, kind: ItemKind, part: &str) -> (f32, f32) {
-    let def = match kind {
-        ItemKind::Rail => RAIL_PROFILE,
-        ItemKind::Busbar => BUSBAR_PROFILE,
-        _ => DUCT_PROFILE,
-    };
-    match prj.parts.iter().find(|x| x.number == part) {
+    part_profile(kind, prj.parts.iter().find(|x| x.number == part))
+}
+
+/// Profile width and height of a rail / duct part (the defaults without data).
+pub fn part_profile(kind: ItemKind, part: Option<&crate::parts::Part>) -> (f32, f32) {
+    match part {
         Some(pd) if pd.height > 0.0 && pd.depth > 0.0 => (pd.height, pd.depth),
-        _ => def,
+        _ => match kind {
+            ItemKind::Rail => RAIL_PROFILE,
+            ItemKind::Busbar => BUSBAR_PROFILE,
+            _ => DUCT_PROFILE,
+        },
     }
+}
+
+/// Product subgroup of the parts placed as profiles of this kind.
+pub fn profile_subgroup(kind: ItemKind) -> Option<&'static str> {
+    match kind {
+        ItemKind::Rail => Some("Mounting rail"),
+        ItemKind::Duct => Some("Cable duct"),
+        ItemKind::Busbar => Some("Busbar system"),
+        _ => None,
+    }
+}
+
+/// A part that can be placed as a rail, duct or busbar system.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProfileChoice {
+    pub number: String,
+    pub description: String,
+    /// Generic part of the built-in catalog (otherwise from the parts store or the
+    /// project).
+    pub generic: bool,
+}
+
+/// Parts for profiles of this kind: the generic ones of the built-in catalog and those
+/// in `sources` (parts store, project parts) of the matching subgroup, each once,
+/// generic ones first, then by part number.
+pub fn profile_choices<'a>(kind: ItemKind, sources: impl IntoIterator<Item = &'a crate::parts::Part>) -> Vec<ProfileChoice> {
+    let Some(sub) = profile_subgroup(kind) else { return Vec::new() };
+    let catalog = crate::parts::catalog();
+    let mut v: Vec<ProfileChoice> = Vec::new();
+    for pt in catalog.iter().chain(sources) {
+        if pt.subgroup == sub && !v.iter().any(|c| c.number == pt.number) {
+            let generic = catalog.iter().any(|c| c.number == pt.number);
+            v.push(ProfileChoice { number: pt.number.clone(), description: pt.description.clone(), generic });
+        }
+    }
+    v.sort_by(|a, b| b.generic.cmp(&a.generic).then(crate::model::natural_cmp(&a.number, &b.number)));
+    v
+}
+
+/// Gives a rail, duct or busbar system of enclosure `ei` another part (from the project
+/// parts): width across and height from the part data, centre line and length stay;
+/// devices on a rail follow its new height.
+pub fn change_profile(prj: &mut Project, ei: usize, id: u64, part: &str) -> bool {
+    let Some(old) = prj.layout.enclosures.get(ei).and_then(|e| e.item(id)).filter(|i| i.kind.is_profile()).cloned() else { return false };
+    let (pw, pd) = profile(prj, old.kind, part);
+    let e = &mut prj.layout.enclosures[ei];
+    let Some(it) = e.items.iter_mut().find(|i| i.id == id) else { return false };
+    let c = it.center();
+    if it.horizontal() {
+        it.y = c.y - pw / 2.0;
+        it.h = pw;
+    } else {
+        it.x = c.x - pw / 2.0;
+        it.w = pw;
+    }
+    it.d = pd;
+    it.part = part.into();
+    if old.kind == ItemKind::Rail {
+        let on_rail: Vec<usize> = (0..e.items.len()).filter(|&j| e.items[j].kind == ItemKind::Device && e.items[j].face == old.face && old.rect().contains(e.items[j].center())).collect();
+        for j in on_rail {
+            let mut dev = e.items[j].clone();
+            snap_to_rail(e, &mut dev);
+            e.items[j] = dev;
+        }
+    }
+    true
 }
 
 /// A device that can be placed: tag, size and whether the size came from part data.

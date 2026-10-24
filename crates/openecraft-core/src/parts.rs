@@ -80,12 +80,13 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
 
 // ---------------------------------------------------------------------- project
 
-/// Copies a part from the database into the project parts (if not there yet).
+/// Copies a part from the database (or the built-in catalog) into the project parts
+/// (if not there yet).
 pub fn ensure_in_project(prj: &mut Project, db: &PartsDb, number: &str) {
     if prj.parts.iter().any(|p| p.number == number) {
         return;
     }
-    if let Some(p) = db.get(number) {
+    if let Some(p) = db.get(number).or_else(|| catalog().iter().find(|p| p.number == number)) {
         prj.parts.push(p.clone());
         // Accessories come along so the BOM can resolve them later.
         for acc in p.accessories.clone() {
