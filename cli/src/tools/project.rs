@@ -26,8 +26,8 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "open_project",
-        help: tr_const!("Opens a project file"),
-        params: &[param("path", Kind::Str, tr_const!("Project file (.oec)")), DISCARD],
+        help: tr_const!("Opens a project file or archive (files of older versions are converted)"),
+        params: &[param("path", Kind::Str, tr_const!("Project file (.oec) or archive (.oecz)")), DISCARD],
         needs_project: false,
         run: open_project,
     },
@@ -110,8 +110,13 @@ fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn open_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     ensure_unsaved_ok(s, a)?;
-    s.open(a.req("path"))?;
-    summary(s)
+    let conv = s.open(a.req("path"))?;
+    let mut out = summary(s)?;
+    out["format"] = json!(conv.from);
+    if let Some(note) = conv.message() {
+        out["conversion"] = json!(note);
+    }
+    Ok(out)
 }
 
 fn save_project(s: &mut Session, a: &Args) -> Result<Value, String> {

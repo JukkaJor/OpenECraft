@@ -3124,6 +3124,7 @@ dependencies = [
 name = "openecraft-core"
 version = "0.1.0"
 dependencies = [
+ "miniz_oxide 0.8.9",
  "openecraft-i18n",
  "openecraft-jt",
  "openecraft-parts",

@@ -13,6 +13,7 @@ mod engineering;
 mod field;
 mod integration;
 mod languages;
+mod management;
 mod output;
 mod pages;
 mod panel;
@@ -51,7 +52,7 @@ pub struct Tool {
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, pages::TOOLS, sheets::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, plc::TOOLS, potentials::TOOLS, process::TOOLS, singleline::TOOLS, tables::TOOLS, engineering::TOOLS, electrical::TOOLS, panel::TOOLS, routing::TOOLS, field::TOOLS, wiring::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, plugins::TOOLS].into_iter().flatten()
+    [project::TOOLS, management::TOOLS, pages::TOOLS, sheets::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, plc::TOOLS, potentials::TOOLS, process::TOOLS, singleline::TOOLS, tables::TOOLS, engineering::TOOLS, electrical::TOOLS, panel::TOOLS, routing::TOOLS, field::TOOLS, wiring::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, plugins::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

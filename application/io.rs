@@ -50,6 +50,8 @@ pub enum Purpose {
     RuleSets,
     /// Property library (JSON) to merge into the project.
     PropertyLibrary,
+    /// Edited subproject to insert into the project.
+    Subproject,
     /// A file of an ERP, PDM, PLM, ECAD, MCAD, procurement system or wiring machine.
     Integration,
 }
@@ -57,7 +59,8 @@ pub enum Purpose {
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Project | Purpose::OutputTarget | Purpose::Compare => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
+            Purpose::Project => (tr("OpenECraft project or archive"), &[PROJECT_EXT, "oecz", "json"]),
+            Purpose::OutputTarget | Purpose::Compare | Purpose::Subproject => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),

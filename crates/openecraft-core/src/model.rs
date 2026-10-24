@@ -12,9 +12,20 @@ pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+/// Version of the project file format written by this program (see
+/// [`crate::archive::convert`]).
+pub const FORMAT: u32 = 1;
+
+fn legacy_format() -> u32 {
+    0
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Project {
+    /// File format version; files of older versions have none (0).
+    #[serde(default = "legacy_format")]
+    pub format: u32,
     pub info: ProjectInfo,
     pub pages: Vec<Page>,
     pub parts: Vec<Part>,
@@ -104,6 +115,12 @@ pub struct Project {
     /// Field wiring: plant layout, route network, bonding and cable accessories.
     #[serde(skip_serializing_if = "crate::field::Field::is_empty")]
     pub field: crate::field::Field,
+    /// Subprojects taken out of this project, or the project this one was taken from.
+    #[serde(skip_serializing_if = "crate::subproject::Subprojects::is_empty")]
+    pub subprojects: crate::subproject::Subprojects,
+    /// Options that show or hide model content.
+    #[serde(skip_serializing_if = "crate::options::ModelOptions::is_empty")]
+    pub model_options: crate::options::ModelOptions,
     /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
     #[serde(skip_serializing_if = "crate::integration::Integration::is_empty")]
     pub integration: crate::integration::Integration,
@@ -113,6 +130,7 @@ pub struct Project {
 impl Default for Project {
     fn default() -> Self {
         let mut prj = Project {
+            format: FORMAT,
             info: ProjectInfo::default(),
             pages: Vec::new(),
             parts: Vec::new(),
@@ -147,6 +165,8 @@ impl Default for Project {
             electrical: Default::default(),
             property_db: Default::default(),
             field: Default::default(),
+            subprojects: Default::default(),
+            model_options: Default::default(),
             integration: Default::default(),
             next_id: 1,
         };
@@ -913,6 +933,7 @@ impl Project {
     }
 
     pub fn normalize(&mut self) {
+        self.format = FORMAT;
         crate::symlib::register(&self.symbols);
         self.fix_next_id();
         // Make sure each symbol has a designation for each pin.
@@ -957,6 +978,7 @@ impl Project {
         let f = &self.field;
         max = f.nodes.iter().map(|x| x.id).chain(f.segments.iter().map(|x| x.id)).chain(f.outlines.iter().map(|x| x.id)).fold(max, u64::max);
         max = f.bonds.iter().map(|x| x.id).chain(f.accessories.iter().map(|x| x.id)).fold(max, u64::max);
+        max = max.max(self.model_options.max_id());
         self.next_id = self.next_id.max(max + 1);
     }
 

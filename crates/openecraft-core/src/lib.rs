@@ -2,6 +2,7 @@
 //! MCP front end: pages, symbols, devices, netlist, checks, reports, panel layout and
 //! the SVG / PDF / DXF export. Contains no UI code.
 
+pub mod archive;
 pub mod climate;
 pub mod collab;
 pub mod compare;
@@ -34,6 +35,7 @@ pub mod marking;
 pub mod model;
 pub mod netlist;
 pub mod ops;
+pub mod options;
 pub mod page_templates;
 pub mod panel;
 pub mod parts;
@@ -43,6 +45,7 @@ pub mod plc_hw;
 pub mod plugs;
 pub mod potentials;
 pub mod process;
+pub mod projects;
 pub mod production;
 pub mod properties;
 pub mod props;
@@ -62,10 +65,12 @@ pub mod singleline;
 pub mod sizing;
 pub mod strips;
 pub mod structure;
+pub mod subproject;
 pub mod svg;
 pub mod symbols;
 pub mod symlib;
 pub mod tables;
+pub mod verify;
 #[cfg(test)]
 mod testkit;
 pub mod translation;

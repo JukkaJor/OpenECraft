@@ -279,7 +279,10 @@ fn with_data(out: &mut Project, src: &Project) {
         baselines,
         electrical,
         property_db,
+        format: _,
         field,
+        subprojects,
+        model_options,
         integration,
         review: _,
         next_id: _,
@@ -316,6 +319,8 @@ fn with_data(out: &mut Project, src: &Project) {
     out.electrical = electrical.clone();
     out.property_db = property_db.clone();
     out.field = field.clone();
+    out.subprojects = subprojects.clone();
+    out.model_options = model_options.clone();
     out.integration = integration.clone();
 }
 
@@ -356,6 +361,9 @@ fn same_data(a: &Project, b: &Project) -> bool {
         electrical,
         property_db,
         field,
+        subprojects,
+        model_options,
+        format: _,
         integration,
         review: _,
         next_id: _,
@@ -393,6 +401,8 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *electrical == b.electrical
         && *property_db == b.property_db
         && *field == b.field
+        && *subprojects == b.subprojects
+        && *model_options == b.model_options
         && *integration == b.integration
 }
 

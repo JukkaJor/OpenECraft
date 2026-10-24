@@ -3,6 +3,7 @@
 //! server one for the whole connection.
 
 use crate::parts_server::Server;
+use openecraft_core::archive::{self, Conversion};
 use openecraft_api::Plugins;
 use openecraft_core::history::History;
 use openecraft_core::model::Project;
@@ -42,10 +43,14 @@ impl Session {
         self.project = Some(prj);
     }
 
-    pub fn open(&mut self, path: &str) -> Result<(), String> {
-        let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
-        self.replace(Project::from_json(&text)?, Some(PathBuf::from(path)));
-        Ok(())
+    /// Opens a project file or archive (converted to the current file format).
+    pub fn open(&mut self, path: &str) -> Result<Conversion, String> {
+        let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+        let (prj, conv) = archive::read_project(&bytes)?;
+        // Saving writes a project file, not the archive.
+        let file = (!archive::is_archive(&bytes)).then(|| PathBuf::from(path));
+        self.replace(prj, file);
+        Ok(conv)
     }
 
     /// Saves to `path`, or to the file of the project. Returns the file.

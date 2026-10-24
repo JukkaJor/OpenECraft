@@ -2936,6 +2936,188 @@ Bend radius in drag chains	Biegeradius in Energieketten	Rayon de courbure dans l
 Field wiring…	Feldverdrahtung…	Câblage de terrain…	Cableado de campo…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Anlagenlayout, Trassennetz, Feldkabelplanung, Potentialausgleich und Kabelzubehör	Plan d'installation, réseau de cheminement, planification des câbles de terrain, liaison équipotentielle et accessoires de câble	Plano de la instalación, red de recorridos, planificación de cables de campo, conexión equipotencial y accesorios de cable
 +CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1
+No option {}	Keine Option {}	Aucune option {}	No hay ninguna opción {}
+The option needs a name	Die Option braucht einen Namen	L'option doit avoir un nom	La opción necesita un nombre
+No page or page item with id {}	Keine Seite und kein Seitenelement mit der ID {}	Aucune page ni élément de page avec l'ID {}	No hay ninguna página ni elemento de página con el ID {}
+An option cannot hide all pages	Eine Option kann nicht alle Seiten ausblenden	Une option ne peut pas masquer toutes les pages	Una opción no puede ocultar todas las páginas
+The subproject needs a name	Das Teilprojekt braucht einen Namen	Le sous-projet doit avoir un nom	El subproyecto necesita un nombre
+Subproject {} is already out	Teilprojekt {} ist bereits ausgelagert	Le sous-projet {} est déjà extrait	El subproyecto {} ya está extraído
+Choose the pages of the subproject	Wählen Sie die Seiten des Teilprojekts	Choisissez les pages du sous-projet	Elija las páginas del subproyecto
+Pages of subproject {} cannot be taken out again	Seiten des Teilprojekts {} können nicht erneut ausgelagert werden	Les pages du sous-projet {} ne peuvent pas être extraites à nouveau	Las páginas del subproyecto {} no se pueden extraer de nuevo
+No page with id {}	Keine Seite mit der ID {}	Aucune page avec l'ID {}	No hay ninguna página con el ID {}
+Page {}: mounting layout pages stay in the main project	Seite {}: Aufbauplan-Seiten bleiben im Hauptprojekt	Page {} : les pages d'implantation restent dans le projet principal	Página {}: las páginas de montaje permanecen en el proyecto principal
+Activate option {} first: it hides content of these pages	Aktivieren Sie zuerst die Option {}: Sie blendet Inhalt dieser Seiten aus	Activez d'abord l'option {} : elle masque du contenu de ces pages	Active primero la opción {}: oculta contenido de estas páginas
+This project is not a subproject	Dieses Projekt ist kein Teilprojekt	Ce projet n'est pas un sous-projet	Este proyecto no es un subproyecto
+Subproject {} was not taken out of this project	Teilprojekt {} wurde nicht aus diesem Projekt ausgelagert	Le sous-projet {} n'a pas été extrait de ce projet	El subproyecto {} no se extrajo de este proyecto
+Activate option {} in the subproject first	Aktivieren Sie zuerst die Option {} im Teilprojekt	Activez d'abord l'option {} dans le sous-projet	Active primero la opción {} en el subproyecto
+No subproject {}	Kein Teilprojekt {}	Aucun sous-projet {}	No hay ningún subproyecto {}
+The file was written by a newer version (format {}): data this version does not know is lost when saving	Die Datei wurde von einer neueren Version geschrieben (Format {}): Daten, die diese Version nicht kennt, gehen beim Speichern verloren	Le fichier a été écrit par une version plus récente (format {}) : les données que cette version ne connaît pas sont perdues à l'enregistrement	El archivo fue escrito por una versión más reciente (formato {}): los datos que esta versión no conoce se pierden al guardar
+Converted from file format {} to {}: {}	Von Dateiformat {} nach {} konvertiert: {}	Converti du format de fichier {} au format {} : {}	Convertido del formato de archivo {} al {}: {}
+{} single part assignments converted to part lists	{} einzelne Artikelzuordnungen in Artikellisten umgewandelt	{} affectations d'article unique converties en listes d'articles	{} asignaciones de artículo único convertidas en listas de artículos
+{} placed properties converted to property keys	{} platzierte Eigenschaften in Eigenschaftsschlüssel umgewandelt	{} propriétés placées converties en clés de propriété	{} propiedades colocadas convertidas en claves de propiedad
+file format version added	Dateiformatversion ergänzt	version du format de fichier ajoutée	versión del formato de archivo añadida
+The archive contains no project	Das Archiv enthält kein Projekt	L'archive ne contient aucun projet	El archivo comprimido no contiene ningún proyecto
+The archive has no manifest	Das Archiv hat kein Manifest	L'archive n'a pas de manifeste	El archivo comprimido no tiene manifiesto
+The archive is damaged	Das Archiv ist beschädigt	L'archive est endommagée	El archivo comprimido está dañado
+{}: compression method not supported	{}: Kompressionsverfahren wird nicht unterstützt	{} : méthode de compression non prise en charge	{}: método de compresión no admitido
+Id {} is used more than once	Die ID {} wird mehrfach verwendet	L'ID {} est utilisé plusieurs fois	El ID {} se usa más de una vez
+The next free id is already in use	Die nächste freie ID ist bereits vergeben	Le prochain ID libre est déjà utilisé	El siguiente ID libre ya está en uso
+Page name {} is used more than once: cross references are ambiguous	Der Seitenname {} wird mehrfach verwendet: Querverweise sind nicht eindeutig	Le nom de page {} est utilisé plusieurs fois : les renvois sont ambigus	El nombre de página {} se usa más de una vez: las referencias cruzadas son ambiguas
+Page {} shows an enclosure that no longer exists	Seite {} zeigt ein Gehäuse, das nicht mehr existiert	La page {} montre une armoire qui n'existe plus	La página {} muestra un armario que ya no existe
+Page {}: unknown symbol {}	Seite {}: unbekanntes Symbol {}	Page {} : symbole inconnu {}	Página {}: símbolo desconocido {}
+Device data of {} without symbol or panel item	Gerätedaten von {} ohne Symbol oder Aufbauelement	Données d'appareil de {} sans symbole ni élément d'implantation	Datos de dispositivo de {} sin símbolo ni elemento de montaje
+Terminal strip data of {} without terminals	Klemmleistendaten von {} ohne Klemmen	Données du bornier {} sans bornes	Datos de la regleta {} sin bornes
+Plug data of {} without pins	Steckerdaten von {} ohne Pins	Données du connecteur {} sans broches	Datos del conector {} sin pines
+PLC card data of {} without PLC points	SPS-Kartendaten von {} ohne SPS-Anschlüsse	Données de la carte API {} sans points API	Datos de la tarjeta PLC {} sin puntos PLC
+{}: part {} is not in the project parts	{}: Artikel {} ist nicht in den Projektartikeln	{} : l'article {} n'est pas dans les articles du projet	{}: el artículo {} no está en los artículos del proyecto
+{}: {} values of undefined properties	{}: {} Werte nicht definierter Eigenschaften	{} : {} valeurs de propriétés non définies	{}: {} valores de propiedades no definidas
+Option {}: {}	Option {}: {}	Option {} : {}	Opción {}: {}
+Option {}: {} assigned objects no longer exist	Option {}: {} zugeordnete Objekte existieren nicht mehr	Option {} : {} objets affectés n'existent plus	Opción {}: {} objetos asignados ya no existen
+Option {} is inactive: its content is hidden	Option {} ist inaktiv: Ihr Inhalt ist ausgeblendet	L'option {} est inactive : son contenu est masqué	La opción {} está inactiva: su contenido está oculto
+Subproject {}: {} of its pages no longer exist	Teilprojekt {}: {} seiner Seiten existieren nicht mehr	Sous-projet {} : {} de ses pages n'existent plus	Subproyecto {}: {} de sus páginas ya no existen
+Subproject {} is being edited outside (since {})	Teilprojekt {} wird extern bearbeitet (seit {})	Le sous-projet {} est modifié à l'extérieur (depuis {})	El subproyecto {} se está editando fuera (desde {})
+This is subproject {} of {}	Dies ist Teilprojekt {} von {}	Ceci est le sous-projet {} de {}	Este es el subproyecto {} de {}
+{} duplicate ids renumbered	{} doppelte IDs neu nummeriert	{} ID en double renumérotés	{} ID duplicados renumerados
+{} unused device data records removed	{} unbenutzte Gerätedatensätze entfernt	{} enregistrements de données d'appareil inutilisés supprimés	{} registros de datos de dispositivo sin uso eliminados
+{} option assignments of deleted objects removed	{} Optionszuordnungen gelöschter Objekte entfernt	{} affectations d'option d'objets supprimés retirées	{} asignaciones de opción de objetos eliminados quitadas
+Not a project database: {}	Keine Projektdatenbank: {}	Pas une base de données de projets : {}	No es una base de datos de proyectos: {}
+{} cannot be renamed	{} kann nicht umbenannt werden	{} ne peut pas être renommé	{} no se puede renombrar
+{} cannot be removed	{} kann nicht entfernt werden	{} ne peut pas être supprimé	{} no se puede quitar
+Replace needs the text to find	Ersetzen braucht den zu suchenden Text	Remplacer nécessite le texte à rechercher	Reemplazar necesita el texto a buscar
+Reads the project files and archives of a folder (and its subfolders) into the project database	Liest die Projektdateien und Archive eines Ordners (und seiner Unterordner) in die Projektdatenbank ein	Lit les fichiers de projet et les archives d'un dossier (et de ses sous-dossiers) dans la base de données de projets	Lee los archivos de proyecto y los archivos comprimidos de una carpeta (y sus subcarpetas) en la base de datos de proyectos
+Folder with project files	Ordner mit Projektdateien	Dossier contenant des fichiers de projet	Carpeta con archivos de proyecto
+Project database file (JSON) to update	Zu aktualisierende Projektdatenbank-Datei (JSON)	Fichier de base de données de projets (JSON) à mettre à jour	Archivo de base de datos de proyectos (JSON) a actualizar
+Also verify each project (slower)	Jedes Projekt auch prüfen (langsamer)	Vérifier aussi chaque projet (plus lent)	Verificar también cada proyecto (más lento)
+Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Sucht Projekte in der Projektdatenbank oder einem Ordner: Begriffe durch ';' getrennt, jeweils Schlüssel=Wert, Schlüssel~Text oder einfacher Text	Recherche des projets dans la base de données de projets ou un dossier : termes séparés par ';', chacun clé=valeur, clé~texte ou texte simple	Busca proyectos en la base de datos de proyectos o en una carpeta: términos separados por ';', cada uno clave=valor, clave~texto o texto simple
+Search terms, e.g. company=ACME; customer~plant; conveyor	Suchbegriffe, z. B. company=ACME; customer~plant; conveyor	Termes de recherche, p. ex. company=ACME; customer~plant; conveyor	Términos de búsqueda, p. ej. company=ACME; customer~plant; conveyor
+Project database file (JSON)	Projektdatenbank-Datei (JSON)	Fichier de base de données de projets (JSON)	Archivo de base de datos de proyectos (JSON)
+Folder with project files (instead of a database)	Ordner mit Projektdateien (statt einer Datenbank)	Dossier contenant des fichiers de projet (au lieu d'une base de données)	Carpeta con archivos de proyecto (en lugar de una base de datos)
+Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Ändert Projekteigenschaften in vielen Projektdateien auf einmal (Felder name, description, company, creator, date, revision oder Projekteigenschaften)	Modifie les propriétés de projet de nombreux fichiers de projet en une fois (champs name, description, company, creator, date, revision ou propriétés de projet)	Cambia propiedades de proyecto en muchos archivos de proyecto a la vez (campos name, description, company, creator, date, revision o propiedades de proyecto)
+Project files, separated by ';'	Projektdateien, durch ';' getrennt	Fichiers de projet, séparés par ';'	Archivos de proyecto, separados por ';'
+All project files of a folder	Alle Projektdateien eines Ordners	Tous les fichiers de projet d'un dossier	Todos los archivos de proyecto de una carpeta
+Only the projects that match these search terms	Nur die Projekte, die zu diesen Suchbegriffen passen	Seulement les projets qui correspondent à ces termes de recherche	Solo los proyectos que coinciden con estos términos de búsqueda
+Values to set (name: value; an empty value removes a property)	Zu setzende Werte (Name: Wert; ein leerer Wert entfernt eine Eigenschaft)	Valeurs à définir (nom : valeur ; une valeur vide supprime une propriété)	Valores a establecer (nombre: valor; un valor vacío quita una propiedad)
+Properties to remove, separated by ','	Zu entfernende Eigenschaften, durch ',' getrennt	Propriétés à supprimer, séparées par ','	Propiedades a quitar, separadas por ','
+Field or property whose value is searched ('*' for all)	Feld oder Eigenschaft, deren Wert durchsucht wird ('*' für alle)	Champ ou propriété dont la valeur est recherchée ('*' pour tous)	Campo o propiedad cuyo valor se busca ('*' para todos)
+Text to replace	Zu ersetzender Text	Texte à remplacer	Texto a reemplazar
+Replacement text	Ersatztext	Texte de remplacement	Texto de reemplazo
+Properties to rename (old name: new name)	Umzubenennende Eigenschaften (alter Name: neuer Name)	Propriétés à renommer (ancien nom : nouveau nom)	Propiedades a renombrar (nombre antiguo: nombre nuevo)
+Only show the changes, write nothing	Nur die Änderungen zeigen, nichts schreiben	Afficher seulement les modifications, ne rien écrire	Solo mostrar los cambios, no escribir nada
+Verifies the project data (ids, references, options, subprojects) and runs the checks; optionally repairs what can be repaired	Prüft die Projektdaten (IDs, Verweise, Optionen, Teilprojekte) und führt die Prüfungen aus; repariert auf Wunsch, was sich reparieren lässt	Vérifie les données du projet (ID, références, options, sous-projets) et exécute les contrôles ; répare sur demande ce qui peut l'être	Verifica los datos del proyecto (ID, referencias, opciones, subproyectos) y ejecuta las comprobaciones; opcionalmente repara lo que se puede reparar
+Repair the repairable findings	Reparierbare Befunde reparieren	Réparer les constats réparables	Reparar los hallazgos reparables
+Writes the project into an archive (.oecz: project, manifest, embedded files, optionally a PDF)	Schreibt das Projekt in ein Archiv (.oecz: Projekt, Manifest, eingebettete Dateien, optional ein PDF)	Écrit le projet dans une archive (.oecz : projet, manifeste, fichiers incorporés, éventuellement un PDF)	Escribe el proyecto en un archivo comprimido (.oecz: proyecto, manifiesto, archivos incrustados, opcionalmente un PDF)
+Archive file (.oecz)	Archivdatei (.oecz)	Fichier d'archive (.oecz)	Archivo comprimido (.oecz)
+Comment stored in the archive	Im Archiv gespeicherter Kommentar	Commentaire enregistré dans l'archive	Comentario guardado en el archivo comprimido
+Add a PDF of all pages	Ein PDF aller Seiten hinzufügen	Ajouter un PDF de toutes les pages	Añadir un PDF de todas las páginas
+Leave out stored baselines and wiring marks	Gespeicherte Stände und Verdrahtungsmarkierungen weglassen	Omettre les états enregistrés et les marques de câblage	Omitir los estados guardados y las marcas de cableado
+Shows the manifest of a project archive	Zeigt das Manifest eines Projektarchivs	Affiche le manifeste d'une archive de projet	Muestra el manifiesto de un archivo comprimido de proyecto
+Converts a project file or archive of an older version to the current file format	Konvertiert eine Projektdatei oder ein Archiv einer älteren Version in das aktuelle Dateiformat	Convertit un fichier de projet ou une archive d'une version antérieure au format de fichier actuel	Convierte un archivo de proyecto o un archivo comprimido de una versión anterior al formato de archivo actual
+Project file (.oec) or archive (.oecz)	Projektdatei (.oec) oder Archiv (.oecz)	Fichier de projet (.oec) ou archive (.oecz)	Archivo de proyecto (.oec) o archivo comprimido (.oecz)
+Project file to write (default: the file itself; archives: next to it as .oec)	Zu schreibende Projektdatei (Standard: die Datei selbst; Archive: daneben als .oec)	Fichier de projet à écrire (par défaut : le fichier lui-même ; archives : à côté en .oec)	Archivo de proyecto a escribir (por defecto: el propio archivo; archivos comprimidos: al lado como .oec)
+Lists the subprojects taken out of the project, or the project it was taken from	Listet die aus dem Projekt ausgelagerten Teilprojekte auf oder das Projekt, aus dem es stammt	Liste les sous-projets extraits du projet, ou le projet dont il a été extrait	Lista los subproyectos extraídos del proyecto, o el proyecto del que se extrajo
+Takes pages out as a subproject file; they stay locked here until the subproject is inserted again	Lagert Seiten als Teilprojektdatei aus; sie bleiben hier gesperrt, bis das Teilprojekt wieder eingefügt wird	Extrait des pages dans un fichier de sous-projet ; elles restent verrouillées ici jusqu'à la réinsertion du sous-projet	Extrae páginas como archivo de subproyecto; quedan bloqueadas aquí hasta que se vuelva a insertar el subproyecto
+Subproject name	Name des Teilprojekts	Nom du sous-projet	Nombre del subproyecto
+Subproject file to write (.oec)	Zu schreibende Teilprojektdatei (.oec)	Fichier de sous-projet à écrire (.oec)	Archivo de subproyecto a escribir (.oec)
+Page names, separated by ','	Seitennamen, durch ',' getrennt	Noms de page, séparés par ','	Nombres de página, separados por ','
+Pages whose structure starts with this, e.g. =A1+CAB1	Seiten, deren Struktur damit beginnt, z. B. =A1+CAB1	Pages dont la structure commence par ceci, p. ex. =A1+CAB1	Páginas cuya estructura empieza por esto, p. ej. =A1+CAB1
+Inserts an edited subproject: its pages replace the pages taken out	Fügt ein bearbeitetes Teilprojekt ein: Seine Seiten ersetzen die ausgelagerten Seiten	Insère un sous-projet modifié : ses pages remplacent les pages extraites	Inserta un subproyecto editado: sus páginas sustituyen a las páginas extraídas
+Subproject file (.oec)	Teilprojektdatei (.oec)	Fichier de sous-projet (.oec)	Archivo de subproyecto (.oec)
+Gives up a subproject: its pages are unlocked again	Verwirft ein Teilprojekt: Seine Seiten werden wieder entsperrt	Abandonne un sous-projet : ses pages sont à nouveau déverrouillées	Descarta un subproyecto: sus páginas se desbloquean de nuevo
+Lists the project options that show or hide model content	Listet die Projektoptionen auf, die Modellinhalt ein- oder ausblenden	Liste les options de projet qui affichent ou masquent du contenu du modèle	Lista las opciones de proyecto que muestran u ocultan contenido del modelo
+Adds a project option or changes its description and condition	Fügt eine Projektoption hinzu oder ändert ihre Beschreibung und Bedingung	Ajoute une option de projet ou modifie sa description et sa condition	Añade una opción de proyecto o cambia su descripción y su condición
+Configurator condition, e.g. HEATER=yes (empty: switched by hand)	Konfigurator-Bedingung, z. B. HEATER=yes (leer: von Hand geschaltet)	Condition du configurateur, p. ex. HEATER=yes (vide : commutée à la main)	Condición del configurador, p. ej. HEATER=yes (vacía: se conmuta a mano)
+Removes a project option; its content stays in the project	Entfernt eine Projektoption; ihr Inhalt bleibt im Projekt	Supprime une option de projet ; son contenu reste dans le projet	Quita una opción de proyecto; su contenido permanece en el proyecto
+Makes pages or page items content of a project option	Macht Seiten oder Seitenelemente zum Inhalt einer Projektoption	Fait de pages ou d'éléments de page le contenu d'une option de projet	Convierte páginas o elementos de página en contenido de una opción de proyecto
+Ids of page items	IDs von Seitenelementen	ID d'éléments de page	ID de elementos de página
+Takes pages or page items out of their project option (hidden content is shown again)	Nimmt Seiten oder Seitenelemente aus ihrer Projektoption heraus (ausgeblendeter Inhalt wird wieder angezeigt)	Retire des pages ou des éléments de page de leur option de projet (le contenu masqué est à nouveau affiché)	Saca páginas o elementos de página de su opción de proyecto (el contenido oculto se vuelve a mostrar)
+Activates (shows) or deactivates (hides) the content of a project option	Aktiviert (zeigt) oder deaktiviert (verbirgt) den Inhalt einer Projektoption	Active (affiche) ou désactive (masque) le contenu d'une option de projet	Activa (muestra) o desactiva (oculta) el contenido de una opción de proyecto
+Show the content	Inhalt anzeigen	Afficher le contenu	Mostrar el contenido
+Switches the project options with a condition by the configurator options	Schaltet die Projektoptionen mit Bedingung nach den Konfigurator-Optionen	Commute les options de projet avec condition selon les options du configurateur	Conmuta las opciones de proyecto con condición según las opciones del configurador
+Pass a database or a folder	Geben Sie eine Datenbank oder einen Ordner an	Indiquez une base de données ou un dossier	Indique una base de datos o una carpeta
+Nothing to change: pass set, remove, replace or rename	Nichts zu ändern: Geben Sie set, remove, replace oder rename an	Rien à modifier : indiquez set, remove, replace ou rename	Nada que cambiar: indique set, remove, replace o rename
+Pass files or a folder	Geben Sie Dateien oder einen Ordner an	Indiquez des fichiers ou un dossier	Indique archivos o una carpeta
+Pass ids or pages	Geben Sie IDs oder Seiten an	Indiquez des ID ou des pages	Indique ID o páginas
+Opens a project file or archive (files of older versions are converted)	Öffnet eine Projektdatei oder ein Archiv (Dateien älterer Versionen werden konvertiert)	Ouvre un fichier de projet ou une archive (les fichiers de versions antérieures sont convertis)	Abre un archivo de proyecto o un archivo comprimido (los archivos de versiones anteriores se convierten)
+Set value	Wert setzen	Définir la valeur	Establecer valor
+Remove property	Eigenschaft entfernen	Supprimer la propriété	Quitar propiedad
+Replace text	Text ersetzen	Remplacer du texte	Reemplazar texto
+Rename property	Eigenschaft umbenennen	Renommer la propriété	Renombrar propiedad
+Project management	Projektverwaltung	Gestion de projets	Gestión de proyectos
+Project database	Projektdatenbank	Base de données de projets	Base de datos de proyectos
+Subprojects	Teilprojekte	Sous-projets	Subproyectos
+Archive and version	Archiv und Version	Archive et version	Archivo y versión
+Verification	Prüfung	Vérification	Verificación
+OpenECraft project archive	OpenECraft-Projektarchiv	Archive de projet OpenECraft	Archivo comprimido de proyecto OpenECraft
+The project database needs the desktop version: the browser cannot search folders.	Die Projektdatenbank braucht die Desktop-Version: Der Browser kann keine Ordner durchsuchen.	La base de données de projets nécessite la version de bureau : le navigateur ne peut pas parcourir les dossiers.	La base de datos de proyectos necesita la versión de escritorio: el navegador no puede buscar en carpetas.
+📂 Add folder…	📂 Ordner hinzufügen…	📂 Ajouter un dossier…	📂 Añadir carpeta…
+Adds the project files and archives of a folder and its subfolders	Fügt die Projektdateien und Archive eines Ordners und seiner Unterordner hinzu	Ajoute les fichiers de projet et les archives d'un dossier et de ses sous-dossiers	Añade los archivos de proyecto y los archivos comprimidos de una carpeta y sus subcarpetas
+🔄 Update all	🔄 Alle aktualisieren	🔄 Tout mettre à jour	🔄 Actualizar todo
+Verify while reading	Beim Einlesen prüfen	Vérifier à la lecture	Verificar al leer
+Remove the folder from the database	Ordner aus der Datenbank entfernen	Retirer le dossier de la base de données	Quitar la carpeta de la base de datos
+Search	Suchen	Rechercher	Buscar
+Terms separated by ';': key=value (equal), key~text (contains) or text found anywhere	Begriffe durch ';' getrennt: Schlüssel=Wert (gleich), Schlüssel~Text (enthält) oder Text an beliebiger Stelle	Termes séparés par ';' : clé=valeur (égal), clé~texte (contient) ou texte trouvé n'importe où	Términos separados por ';': clave=valor (igual), clave~texto (contiene) o texto en cualquier parte
+Select none	Nichts auswählen	Ne rien sélectionner	No seleccionar nada
+Open the project	Projekt öffnen	Ouvrir le projet	Abrir el proyecto
+{} errors, {} warnings	{} Fehler, {} Warnungen	{} erreurs, {} avertissements	{} errores, {} advertencias
+{} (archive)	{} (Archiv)	{} (archive)	{} (archivo comprimido)
+{} (subproject of {})	{} (Teilprojekt von {})	{} (sous-projet de {})	{} (subproyecto de {})
+No projects. Add a folder with project files.	Keine Projekte. Fügen Sie einen Ordner mit Projektdateien hinzu.	Aucun projet. Ajoutez un dossier contenant des fichiers de projet.	No hay proyectos. Añada una carpeta con archivos de proyecto.
+{} projects selected	{} Projekte ausgewählt	{} projets sélectionnés	{} proyectos seleccionados
+Verify selected	Ausgewählte prüfen	Vérifier la sélection	Verificar seleccionados
+Change project properties of the selected projects	Projekteigenschaften der ausgewählten Projekte ändern	Modifier les propriétés de projet des projets sélectionnés	Cambiar las propiedades de proyecto de los proyectos seleccionados
+Property	Eigenschaft	Propriété	Propiedad
+* (all)	* (alle)	* (tous)	* (todos)
+Field (name, description, company, creator, date, revision) or project property	Feld (name, description, company, creator, date, revision) oder Projekteigenschaft	Champ (name, description, company, creator, date, revision) ou propriété de projet	Campo (name, description, company, creator, date, revision) o propiedad de proyecto
+Apply to {} projects	Auf {} Projekte anwenden	Appliquer à {} projets	Aplicar a {} proyectos
+{}: {} changes in the open project (not saved yet)	{}: {} Änderungen im geöffneten Projekt (noch nicht gespeichert)	{} : {} modifications dans le projet ouvert (pas encore enregistrées)	{}: {} cambios en el proyecto abierto (aún sin guardar)
+{}: {} changes saved	{}: {} Änderungen gespeichert	{} : {} modifications enregistrées	{}: {} cambios guardados
+{}: nothing to change	{}: nichts zu ändern	{} : rien à modifier	{}: nada que cambiar
+Project properties changed in {} projects	Projekteigenschaften in {} Projekten geändert	Propriétés de projet modifiées dans {} projets	Propiedades de proyecto cambiadas en {} proyectos
+This project is subproject {} of {} (taken out {}). Save it and insert it into the main project when the work is done.	Dieses Projekt ist Teilprojekt {} von {} (ausgelagert {}). Speichern Sie es und fügen Sie es nach getaner Arbeit in das Hauptprojekt ein.	Ce projet est le sous-projet {} de {} (extrait le {}). Enregistrez-le et insérez-le dans le projet principal une fois le travail terminé.	Este proyecto es el subproyecto {} de {} (extraído el {}). Guárdelo e insértelo en el proyecto principal cuando termine el trabajo.
+No subprojects were taken out of this project.	Aus diesem Projekt wurden keine Teilprojekte ausgelagert.	Aucun sous-projet n'a été extrait de ce projet.	No se ha extraído ningún subproyecto de este proyecto.
+State	Zustand	État	Estado
+Out since {} (pages locked)	Ausgelagert seit {} (Seiten gesperrt)	Extrait depuis le {} (pages verrouillées)	Extraído desde {} (páginas bloqueadas)
+Discard	Verwerfen	Abandonner	Descartar
+Inserted {}	Eingefügt {}	Inséré le {}	Insertado el {}
+Insert edited subproject…	Bearbeitetes Teilprojekt einfügen…	Insérer le sous-projet modifié…	Insertar subproyecto editado…
+Its pages replace the pages taken out	Seine Seiten ersetzen die ausgelagerten Seiten	Ses pages remplacent les pages extraites	Sus páginas sustituyen a las páginas extraídas
+Take out a subproject	Teilprojekt auslagern	Extraire un sous-projet	Extraer un subproyecto
+Choose pages	Seiten wählen	Choisir les pages	Elegir páginas
+Chooses the pages whose structure starts with this	Wählt die Seiten, deren Struktur damit beginnt	Choisit les pages dont la structure commence par ceci	Elige las páginas cuya estructura empieza por esto
+Take out {} pages…	{} Seiten auslagern…	Extraire {} pages…	Extraer {} páginas…
+Subproject saved as {}: its pages are locked until it is inserted	Teilprojekt als {} gespeichert: Seine Seiten sind gesperrt, bis es eingefügt wird	Sous-projet enregistré sous {} : ses pages sont verrouillées jusqu'à son insertion	Subproyecto guardado como {}: sus páginas quedan bloqueadas hasta que se inserte
+Subproject {} inserted: {} pages replaced by {}	Teilprojekt {} eingefügt: {} Seiten durch {} ersetzt	Sous-projet {} inséré : {} pages remplacées par {}	Subproyecto {} insertado: {} páginas sustituidas por {}
+Content of an inactive option is hidden: it is not drawn, evaluated, reported or exported.	Inhalt einer inaktiven Option ist ausgeblendet: Er wird nicht gezeichnet, ausgewertet, berichtet oder exportiert.	Le contenu d'une option inactive est masqué : il n'est ni dessiné, ni évalué, ni listé dans les rapports, ni exporté.	El contenido de una opción inactiva está oculto: no se dibuja, evalúa, informa ni exporta.
+The current page belongs to option {}.	Die aktuelle Seite gehört zur Option {}.	La page actuelle appartient à l'option {}.	La página actual pertenece a la opción {}.
+Active	Aktiv	Active	Activa
+Condition	Bedingung	Condition	Condición
+Follows its condition: use Apply conditions	Folgt ihrer Bedingung: Verwenden Sie Bedingungen anwenden	Suit sa condition : utilisez Appliquer les conditions	Sigue su condición: use Aplicar condiciones
+{} objects, {} pages	{} Objekte, {} Seiten	{} objets, {} pages	{} objetos, {} páginas
+Assign selection	Auswahl zuordnen	Affecter la sélection	Asignar selección
+Assign page	Seite zuordnen	Affecter la page	Asignar página
+Makes the current page content of the option	Macht die aktuelle Seite zum Inhalt der Option	Fait de la page actuelle un contenu de l'option	Convierte la página actual en contenido de la opción
+Removes the option; its content stays in the project	Entfernt die Option; ihr Inhalt bleibt im Projekt	Supprime l'option ; son contenu reste dans le projet	Quita la opción; su contenido permanece en el proyecto
+New option	Neue Option	Nouvelle option	Nueva opción
+Take selection out of its option	Auswahl aus ihrer Option nehmen	Retirer la sélection de son option	Sacar la selección de su opción
+Take page out of its option	Seite aus ihrer Option nehmen	Retirer la page de son option	Sacar la página de su opción
+Apply conditions	Bedingungen anwenden	Appliquer les conditions	Aplicar condiciones
+Switches the options with a condition by the configurator options	Schaltet die Optionen mit Bedingung nach den Konfigurator-Optionen	Commute les options avec condition selon les options du configurateur	Conmuta las opciones con condición según las opciones del configurador
+{} options switched	{} Optionen geschaltet	{} options commutées	{} opciones conmutadas
+File format version {}. Files of older versions are converted when they are opened.	Dateiformatversion {}. Dateien älterer Versionen werden beim Öffnen konvertiert.	Version du format de fichier {}. Les fichiers de versions antérieures sont convertis à l'ouverture.	Versión del formato de archivo {}. Los archivos de versiones anteriores se convierten al abrirlos.
+An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Ein Archiv (.oecz) ist eine ZIP-Datei mit dem Projekt, einem Manifest und den eingebetteten Dokumenten und Bildern als eigene Dateien.	Une archive (.oecz) est un fichier ZIP contenant le projet, un manifeste ainsi que les documents et images incorporés sous forme de fichiers distincts.	Un archivo comprimido (.oecz) es un archivo ZIP con el proyecto, un manifiesto y los documentos e imágenes incrustados como archivos propios.
+📦 Archive project…	📦 Projekt archivieren…	📦 Archiver le projet…	📦 Archivar proyecto…
+📂 Open archive…	📂 Archiv öffnen…	📂 Ouvrir une archive…	📂 Abrir archivo comprimido…
+Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Prüft die Projektdaten (IDs, Verweise, Gerätedaten, Optionen, Teilprojekte) zusammen mit den Engineering-Prüfungen.	Vérifie les données du projet (ID, références, données d'appareil, options, sous-projets) avec les contrôles d'ingénierie.	Verifica los datos del proyecto (ID, referencias, datos de dispositivo, opciones, subproyectos) junto con las comprobaciones de ingeniería.
+Verify project	Projekt prüfen	Vérifier le projet	Verificar proyecto
+Repair {} findings	{} Befunde reparieren	Réparer {} constats	Reparar {} hallazgos
+{} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} Fehler, {} Warnungen, {} Hinweise in den Projektdaten; Engineering-Prüfung: {} Fehler, {} Warnungen	{} erreurs, {} avertissements, {} remarques dans les données du projet ; contrôle d'ingénierie : {} erreurs, {} avertissements	{} errores, {} advertencias, {} notas en los datos del proyecto; comprobación de ingeniería: {} errores, {} advertencias
+(repairable)	(reparierbar)	(réparable)	(reparable)
+✔ The project data is consistent.	✔ Die Projektdaten sind konsistent.	✔ Les données du projet sont cohérentes.	✔ Los datos del proyecto son coherentes.
+Project management…	Projektverwaltung…	Gestion de projets…	Gestión de proyectos…
+Project database, batch changes of project properties, subprojects, options, archives and verification	Projektdatenbank, Sammeländerungen von Projekteigenschaften, Teilprojekte, Optionen, Archive und Prüfung	Base de données de projets, modifications groupées des propriétés de projet, sous-projets, options, archives et vérification	Base de datos de proyectos, cambios en bloque de propiedades de proyecto, subproyectos, opciones, archivos comprimidos y verificación
+OpenECraft project or archive	OpenECraft-Projekt oder -Archiv	Projet ou archive OpenECraft	Proyecto o archivo comprimido OpenECraft
+=A1+CAB1	=A1+CAB1	=A1+CAB1	=A1+CAB1
+HEATER=yes	HEIZUNG=ja	CHAUFFAGE=oui	CALEFACCION=si
 (any)	(beliebig)	(quelconque)	(cualquiera)
 Collision	Kollision	Collision	Colisión
 Outside	Außerhalb	À l'extérieur	Fuera
@@ -3098,7 +3280,6 @@ Ferrule from	Aderendhülse von	Embout début	Puntera origen
 Ferrule to	Aderendhülse nach	Embout fin	Puntera destino
 Job	Auftrag	Ordre	Trabajo
 Document number	Dokumentnummer	Numéro de document	Número de documento
-State	Status	État	Estado
 Placement	Platzierung	Placement	Ubicación
 ERP item master and bill of materials (CSV)	ERP-Artikelstamm und Stückliste (CSV)	Données articles ERP et nomenclature (CSV)	Maestro de artículos ERP y lista de materiales (CSV)
 Exports the bill of materials with the item master data; imports ERP numbers, prices, stock and lead times	Exportiert die Stückliste mit den Artikelstammdaten; importiert ERP-Nummern, Preise, Bestände und Lieferzeiten	Exporte la nomenclature avec les données articles ; importe les numéros ERP, prix, stocks et délais	Exporta la lista de materiales con los datos maestros; importa números ERP, precios, existencias y plazos de entrega
@@ -3149,7 +3330,6 @@ Profiles	Profile	Profils	Perfiles
 Linked data	Verknüpfte Daten	Données liées	Datos vinculados
 Exchange log	Austauschprotokoll	Journal des échanges	Registro de intercambios
 Import a file of another system to see what it changes in the project.	Importieren Sie eine Datei eines anderen Systems, um zu sehen, was sie im Projekt ändert.	Importez un fichier d'un autre système pour voir ce qu'il modifie dans le projet.	Importe un archivo de otro sistema para ver qué cambia en el proyecto.
-Discard	Verwerfen	Abandonner	Descartar
 {} records, {} changes, {} conflicts, {} not found in the project	{} Datensätze, {} Änderungen, {} Konflikte, {} nicht im Projekt gefunden	{} enregistrements, {} modifications, {} conflits, {} introuvables dans le projet	{} registros, {} cambios, {} conflictos, {} no encontrados en el proyecto
 Not found: {}	Nicht gefunden: {}	Introuvable : {}	No encontrado: {}
 Take over {} changes	{} Änderungen übernehmen	Reprendre {} modifications	Aplicar {} cambios
