@@ -220,7 +220,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "harness", "index", "integration", "issue", "loads", "model", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
     ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table", "text"]),
     ("ext", &["analysis", "issue", "model", "params", "table"]),
-    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "params", "pdf", "plc", "reports", "svg", "translation"]),
+    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),
     // 7 output and exchange formats
     ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),

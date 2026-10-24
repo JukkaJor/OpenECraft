@@ -73,3 +73,27 @@ fn iec_global_variables_per_address_space() {
     let table = symbol_table(&prj, &nl(&prj));
     assert_eq!(import_symbol_table(&mut prj, &table).unwrap(), 0);
 }
+
+#[test]
+fn vendor_tag_formats() {
+    let prj = crate::sample::demo_project();
+    let nl = Netlist::build(&prj, true);
+    let n = tags(&prj, &nl).len();
+    assert!(n > 0);
+    let tia = tia_tags(&prj, &nl);
+    assert_eq!(tia[0][..5], ["Name", "Path", "Data Type", "Logical Address", "Comment"]);
+    assert_eq!(tia.len(), n + 1);
+    assert!(tia[1..].iter().all(|r| r[2] == "Bool" && (r[3].starts_with("%I") || r[3].starts_with("%Q"))), "{tia:?}");
+    let rw = rockwell_tags(&prj, &nl);
+    let lines: Vec<&str> = rw.lines().collect();
+    assert_eq!(lines[3], "TYPE,SCOPE,NAME,DESCRIPTION,DATATYPE,SPECIFIER,ATTRIBUTES");
+    assert_eq!(lines.len(), 4 + n);
+    assert!(lines[4].starts_with("ALIAS,,\"") && lines[4].contains("\"Local:"), "{}", lines[4]);
+    // The workbook for TIA Portal reads back.
+    let ex = crate::exporters::builtin().into_iter().find(|e| e.name == "plc_tia").unwrap();
+    let an = crate::analysis::Analysis::build(&prj);
+    let bytes = (ex.run)(&prj, &an, &crate::params::Args(&serde_json::Map::new())).unwrap().into_bytes();
+    let sheets = crate::xlsx::read(&bytes).unwrap();
+    assert_eq!(sheets[0].0, "PLC Tags");
+    assert_eq!(sheets[0].1.len(), n + 1);
+}

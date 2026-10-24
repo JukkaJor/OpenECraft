@@ -122,7 +122,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
-  tools; addresses used on several cards are reported.
+  tools, the tag table of **Siemens TIA Portal** (Excel sheet *PLC Tags*), the tag
+  import of **Rockwell Studio 5000** (aliases of the module channels) and IEC 61131-3
+  global variables (CODESYS, TwinCAT); addresses used on several cards are reported.
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
   locked pages are read only. Changes since the last released revision (added / changed /
   removed symbols, wires, texts, pages) are listed, marked on the pages with a revision

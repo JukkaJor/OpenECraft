@@ -56,6 +56,10 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv())))
     .exporter_with("plc_table", tr_const!("PLC symbol table (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::symbol_table(prj, &an.netlist))))
     .exporter_with("plc_variables", tr_const!("PLC global variables (IEC 61131-3)"), "st", false, vec![], text(|prj, an, _| Ok(crate::plc::global_variables(prj, &an.netlist))))
+    .exporter_with("plc_tia", tr_const!("PLC tag table for Siemens TIA Portal (Excel)"), "xlsx", true, vec![], |prj, an, _| {
+        Ok(Export::Binary(crate::xlsx::write(&[("PLC Tags".into(), crate::plc::tia_tags(prj, &an.netlist))])))
+    })
+    .exporter_with("plc_rockwell", tr_const!("PLC tags for Rockwell Studio 5000 (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::rockwell_tags(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
     .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
     .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::marking::csv(&crate::marking::markers(prj, &an.connections)))))
