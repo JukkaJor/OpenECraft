@@ -13,6 +13,12 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));
 const PAGE_OPT: Param = optional("page", Kind::Str, tr_const!("Page name as shown by list_pages (default: all pages)"));
 const FILE: Param = optional("file", Kind::Str, tr_const!("File name written into the file header"));
+const SCHEME: Param = optional("scheme", Kind::Str, tr_const!("Labeling scheme (default: the scheme selected in the project)"));
+
+fn marking_scheme(prj: &Project, a: &Args) -> Result<crate::marking::Scheme, String> {
+    let name = a.str("scheme").filter(|s| !s.trim().is_empty());
+    crate::marking::scheme(&prj.marking, name).ok_or_else(|| tr_fmt!("No labeling scheme named {}", name.unwrap_or_default()))
+}
 
 fn page_index(prj: &Project, a: &Args) -> Result<Option<usize>, String> {
     let Some(name) = a.str("page") else { return Ok(None) };
@@ -62,7 +68,14 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("plc_rockwell", tr_const!("PLC tags for Rockwell Studio 5000 (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::rockwell_tags(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
     .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
-    .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::marking::csv(&crate::marking::markers(prj, &an.connections)))))
+    .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![SCHEME], text(|prj, an, a| {
+        let scheme = marking_scheme(prj, a)?;
+        Ok(crate::marking::text(&crate::marking::markers(prj, &an.connections), &scheme))
+    }))
+    .exporter_with("marking_xlsx", tr_const!("Marking (Excel)"), "xlsx", true, vec![SCHEME], |prj, an, a| {
+        let scheme = marking_scheme(prj, a)?;
+        Ok(Export::Binary(crate::marking::xlsx(&crate::marking::markers(prj, &an.connections), &scheme)))
+    })
     .exporter_with("gltf", tr_const!("Panel layout in 3D (glTF)"), "gltf", false, vec![], text(|prj, _, _| {
         with_layout(prj)?;
         Ok(crate::export3d::gltf(prj))

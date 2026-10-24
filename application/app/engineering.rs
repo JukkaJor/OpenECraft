@@ -8,7 +8,7 @@ use openecraft_core::macros::{self, Macro, MacroKind};
 use openecraft_core::model::*;
 use openecraft_core::ops::Clip;
 use openecraft_core::render::{self, Draw, Ink};
-use openecraft_core::marking::{self, WireText};
+use openecraft_core::marking::{self, Category, Column, Scheme, WireText};
 use openecraft_core::{parts, plc, strips, symbols};
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
@@ -555,7 +555,7 @@ impl App {
         choices.sort_by(|a, b| a.0.cmp(&b.0));
         choices.dedup_by(|a, b| a.0 == b.0);
         let mut open = true;
-        let mut export = false;
+        let mut export: Option<bool> = None;
         let mut picked = Vec::new();
         let s = &mut self.session.prj.marking;
         egui::Window::new(tr("Marking")).open(&mut open).resizable(false).min_width(520.0).show(ctx, |ui| {
@@ -592,18 +592,32 @@ impl App {
                 }
             });
             ui.separator();
+            ui.label(RichText::new(tr("Labeling scheme")).strong());
+            scheme_editor(ui, s);
+            ui.separator();
             ui.horizontal(|ui| {
                 ui.label(tr_fmt!("{} markers", markers.iter().map(|m| m.count).sum::<u32>()));
-                export = ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked();
+                if ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
+                    export = Some(false);
+                }
+                if ui.button(tr("Export marking (Excel)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
+                    export = Some(true);
+                }
             });
         });
         self.eng.show_marking = open;
         for number in picked {
             parts::ensure_in_project(&mut self.session.prj, &self.parts_db, &number);
         }
-        if export {
-            let csv = marking::csv(&marking::markers(&self.session.prj, &self.session.analysis.connections));
-            self.export(ctx, "marking.csv".into(), ("CSV", "csv"), csv);
+        if let Some(excel) = export {
+            let scheme = marking::scheme(&self.session.prj.marking, None).unwrap_or_default();
+            let markers = marking::markers(&self.session.prj, &self.session.analysis.connections);
+            if excel {
+                self.export_bytes(ctx, "marking.xlsx".into(), ("Excel", "xlsx"), &marking::xlsx(&markers, &scheme));
+            } else {
+                let ext = if scheme.separator == "\t" { "txt" } else { "csv" };
+                self.export(ctx, format!("marking.{ext}"), ("CSV", ext), marking::text(&markers, &scheme));
+            }
         }
     }
 
@@ -708,3 +722,119 @@ impl App {
         }
     }
 }
+
+/// Choice of the labeling scheme and editing of the project's own schemes.
+fn scheme_editor(ui: &mut egui::Ui, s: &mut marking::Settings) {
+    let all = marking::schemes(s);
+    let current = marking::scheme(s, None).unwrap_or_default();
+    ui.horizontal(|ui| {
+        egui::ComboBox::from_id_salt("marking_scheme").width(260.0).selected_text(&current.name).show_ui(ui, |ui| {
+            for x in &all {
+                if ui.selectable_label(x.name == current.name, &x.name).clicked() {
+                    s.scheme = x.name.clone();
+                }
+            }
+        });
+        if ui.button(tr("Copy")).on_hover_text(tr("New project scheme from the selected one")).clicked() {
+            let mut name = tr_fmt!("{} (copy)", current.name);
+            while all.iter().any(|x| x.name == name) {
+                name.push('+');
+            }
+            s.schemes.push(Scheme { name: name.clone(), ..current.clone() });
+            s.scheme = name;
+        }
+        let own = s.schemes.iter().any(|x| x.name == current.name);
+        if own && ui.button(tr("Remove")).clicked() {
+            s.schemes.retain(|x| x.name != current.name);
+            s.scheme.clear();
+        }
+    });
+    let Some(x) = s.schemes.iter_mut().find(|x| x.name == current.name) else {
+        let cols: Vec<&str> = current.columns.iter().map(|c| c.title()).collect();
+        ui.weak(tr_fmt!("Columns: {}", cols.join(", ")));
+        ui.weak(tr("Built-in scheme: copy it to change it."));
+        return;
+    };
+    let old_name = x.name.clone();
+    egui::Grid::new("marking_scheme_grid").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
+        ui.label(tr("Name"));
+        ui.text_edit_singleline(&mut x.name);
+        ui.end_row();
+        ui.label(tr("Separator"));
+        ui.horizontal(|ui| {
+            for (sep, title) in [(";", tr("Semicolon")), (",", tr("Comma")), ("\t", tr("Tab"))] {
+                if ui.selectable_label(x.separator == sep, title).clicked() {
+                    x.separator = sep.into();
+                }
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Options"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut x.header, tr("Header row"));
+            ui.checkbox(&mut x.one_row_per_label, tr("One row per label"));
+            ui.checkbox(&mut x.bom, tr("Byte order mark"));
+        });
+        ui.end_row();
+        ui.label(tr("Markers"));
+        ui.horizontal(|ui| {
+            for c in Category::ALL {
+                let mut on = x.categories.is_empty() || x.categories.contains(&c);
+                if ui.checkbox(&mut on, c.title()).changed() {
+                    if x.categories.is_empty() {
+                        x.categories = Category::ALL.to_vec();
+                    }
+                    x.categories.retain(|k| *k != c);
+                    if on {
+                        x.categories.push(c);
+                        x.categories.sort();
+                    }
+                    if x.categories.len() == Category::ALL.len() {
+                        x.categories.clear();
+                    }
+                }
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Columns"));
+        ui.horizontal_wrapped(|ui| {
+            let mut remove = None;
+            let mut left = None;
+            for (i, c) in x.columns.iter().enumerate() {
+                ui.group(|ui| {
+                    ui.label(c.title());
+                    if i > 0 && ui.small_button("◀").on_hover_text(tr("Move left")).clicked() {
+                        left = Some(i);
+                    }
+                    if x.columns.len() > 1 && ui.small_button("✖").on_hover_text(tr("Remove")).clicked() {
+                        remove = Some(i);
+                    }
+                });
+            }
+            if let Some(i) = left {
+                x.columns.swap(i - 1, i);
+            }
+            if let Some(i) = remove {
+                x.columns.remove(i);
+            }
+            ui.menu_button("+", |ui| {
+                let missing: Vec<Column> = Column::ALL.into_iter().filter(|c| !x.columns.contains(c)).collect();
+                for c in missing {
+                    if ui.button(c.title()).clicked() {
+                        x.columns.push(c);
+                    }
+                }
+            });
+        });
+        ui.end_row();
+    });
+    let new_name = x.name.trim().to_string();
+    if new_name != old_name {
+        if new_name.is_empty() || all.iter().any(|y| y.name == new_name && y.name != old_name && !marking::is_builtin(&y.name)) {
+            x.name = old_name;
+        } else if s.scheme == old_name || s.scheme.is_empty() {
+            s.scheme = new_name;
+        }
+    }
+}
+

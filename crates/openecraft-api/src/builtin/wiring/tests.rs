@@ -115,3 +115,21 @@ fn mounting_assistant_commands() {
     assert!(run(&mut s, "mark_mounted", json!({ "item": 1, "state": "open" })).is_err() || total > 0);
     assert!(run(&mut s, "mounting_list", json!({ "enclosure": "nope" })).is_err());
 }
+
+#[test]
+fn labeling_schemes_are_listed_added_selected_and_removed() {
+    let mut s = demo();
+    let list = run(&mut s, "marking_schemes", json!({})).unwrap();
+    assert_eq!(list["selected"], "Standard");
+    assert!(list["schemes"].as_array().unwrap().len() >= 6);
+    let out = run(&mut s, "set_marking_scheme", json!({ "name": "Shop", "columns": "Text, Material", "separator": "tab", "categories": "wire", "select": true })).unwrap();
+    assert_eq!(out["selected"], "Shop");
+    let shop = out["schemes"].as_array().unwrap().iter().find(|x| x["name"] == "Shop").unwrap().clone();
+    assert_eq!(shop["columns"], json!(["Text", "Material"]));
+    assert_eq!(shop["separator"], "tab");
+    assert!(run(&mut s, "set_marking_scheme", json!({ "name": "Bad", "columns": "Colour" })).is_err());
+    assert!(run(&mut s, "set_marking_scheme", json!({ "name": "Bad", "categories": "plug" })).is_err());
+    let out = run(&mut s, "set_marking_scheme", json!({ "name": "Shop", "remove": true })).unwrap();
+    assert_eq!(out["selected"], "Standard");
+    assert!(run(&mut s, "set_marking_scheme", json!({ "name": "Shop", "remove": true })).is_err());
+}

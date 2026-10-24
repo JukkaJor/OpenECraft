@@ -8,6 +8,7 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::model::potentials::PotentialKind;
 use openecraft_core::model::{NumberScheme, Project};
 use openecraft_core::wiring::{self, Mark, Order, Status};
+use openecraft_core::marking;
 use openecraft_core::wirenum;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -65,6 +66,27 @@ pub static COMMANDS: &[Spec] = &[
             optional("note", Kind::Str, tr_const!("Note, e.g. what the problem is")),
         ],
         run: mark_wire,
+    },
+    Spec {
+        name: "marking_schemes",
+        help: tr_const!("Lists the labeling schemes for marking programs (built-in and of the project) and the selected one"),
+        params: &[],
+        run: marking_schemes,
+    },
+    Spec {
+        name: "set_marking_scheme",
+        help: tr_const!("Adds or changes a labeling scheme of the project, removes it, or selects the scheme used for the marking export"),
+        params: &[
+            param("name", Kind::Str, tr_const!("Name of the scheme")),
+            optional("columns", Kind::Str, tr_const!("Columns, comma separated: Material, Category, Text, Count, Enclosure, Group, No")),
+            optional("separator", Kind::Str, tr_const!("Separator: semicolon, comma or tab")),
+            optional("header", Kind::Bool, tr_const!("First row with the column names")),
+            optional("one_row_per_label", Kind::Bool, tr_const!("One row per printed label instead of a count")),
+            optional("categories", Kind::Str, tr_const!("Markers, comma separated: device, terminal, wire, cable (empty: all)")),
+            optional("select", Kind::Bool, tr_const!("Use this scheme for the marking export")),
+            optional("remove", Kind::Bool, tr_const!("Remove the scheme from the project")),
+        ],
+        run: set_marking_scheme,
     },
     Spec {
         name: "mounting_list",
@@ -149,6 +171,77 @@ fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
         "scheme": scheme_code(s.scheme), "format": s.format, "prefix": s.prefix, "start": s.start, "step": s.step, "digits": s.digits,
         "skip_kinds": s.skip_kinds.iter().map(|k| kind_code(*k)).collect::<Vec<_>>()
     }))
+}
+
+fn scheme_json(s: &marking::Scheme) -> Value {
+    let separator = match s.separator.as_str() {
+        "\t" => "tab",
+        "," => "comma",
+        _ => "semicolon",
+    };
+    json!({
+        "name": s.name, "builtin": marking::is_builtin(&s.name), "columns": s.columns.iter().map(|c| c.code()).collect::<Vec<_>>(), "separator": separator,
+        "header": s.header, "one_row_per_label": s.one_row_per_label, "categories": s.categories.iter().map(|c| c.code()).collect::<Vec<_>>()
+    })
+}
+
+fn marking_schemes(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    let selected = marking::scheme(&prj.marking, None).map(|s| s.name).unwrap_or_default();
+    Ok(json!({ "selected": selected, "schemes": marking::schemes(&prj.marking).iter().map(scheme_json).collect::<Vec<_>>() }))
+}
+
+fn set_marking_scheme(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let name = a.req("name").trim().to_string();
+    if name.is_empty() {
+        return Err(tr_fmt!("Parameter {} has the wrong type", "name"));
+    }
+    if a.flag("remove") {
+        let before = prj.marking.schemes.len();
+        prj.marking.schemes.retain(|s| s.name != name);
+        if prj.marking.schemes.len() == before {
+            return Err(tr_fmt!("No labeling scheme named {}", name));
+        }
+        if prj.marking.scheme == name && !marking::is_builtin(&name) {
+            prj.marking.scheme.clear();
+        }
+        return marking_schemes(prj, a);
+    }
+    let mut s = marking::scheme(&prj.marking, Some(&name)).unwrap_or_else(|| marking::Scheme { name: name.clone(), ..Default::default() });
+    let changes = ["columns", "separator", "header", "one_row_per_label", "categories"].iter().any(|k| a.value(k).is_some());
+    if let Some(cols) = a.str("columns") {
+        s.columns = cols.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Column::parse(c).ok_or_else(|| tr_fmt!("Unknown column: {}", c.trim()))).collect::<Result<_, _>>()?;
+        if s.columns.is_empty() {
+            return Err(tr_fmt!("Unknown column: {}", cols));
+        }
+    }
+    if let Some(sep) = a.str("separator") {
+        s.separator = match sep.trim() {
+            "semicolon" | ";" => ";",
+            "comma" | "," => ",",
+            "tab" => "\t",
+            other => return Err(tr_fmt!("Unknown separator: {}", other)),
+        }
+        .into();
+    }
+    if a.value("header").is_some() {
+        s.header = a.flag("header");
+    }
+    if a.value("one_row_per_label").is_some() {
+        s.one_row_per_label = a.flag("one_row_per_label");
+    }
+    if let Some(cats) = a.str("categories") {
+        s.categories = cats.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Category::parse(c).ok_or_else(|| tr_fmt!("Unknown marker category: {}", c.trim()))).collect::<Result<_, _>>()?;
+    }
+    if changes || !marking::is_builtin(&name) {
+        match prj.marking.schemes.iter_mut().find(|x| x.name == name) {
+            Some(x) => *x = s,
+            None => prj.marking.schemes.push(s),
+        }
+    }
+    if a.flag("select") {
+        prj.marking.scheme = name;
+    }
+    marking_schemes(prj, a)
 }
 
 fn mounting_list(prj: &mut Project, a: &Args) -> Result<Value, String> {

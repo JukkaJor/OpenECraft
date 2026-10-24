@@ -102,3 +102,59 @@ fn settings_are_stored_only_when_changed() {
     let back = Project::from_json(&prj.to_json()).unwrap();
     assert_eq!(back.marking, prj.marking);
 }
+
+#[test]
+fn standard_scheme_keeps_the_csv_layout() {
+    let (prj, an) = demo();
+    let markers = markers(&prj, &an.connections);
+    let csv = csv(&markers);
+    assert!(csv.starts_with("\u{feff}Material;Category;Text;Count;Enclosure;Group\n"));
+    assert_eq!(text(&markers, &scheme(&prj.marking, None).unwrap()), csv);
+}
+
+#[test]
+fn schemes_choose_columns_rows_and_markers() {
+    let (prj, an) = demo();
+    let markers = markers(&prj, &an.connections);
+    let labels: u32 = markers.iter().filter(|m| m.category == Category::Wire).map(|m| m.count).sum();
+    let s = Scheme { name: "Wires".into(), columns: vec![Column::Number, Column::Text], separator: "\t".into(), header: false, bom: false, one_row_per_label: true, categories: vec![Category::Wire] };
+    let rows = rows(&markers, &s);
+    assert_eq!(rows.len() as u32, labels, "one row per printed label");
+    assert_eq!(rows[0][0], "1");
+    assert_eq!(rows.last().unwrap()[0], labels.to_string());
+    let out = text(&markers, &s);
+    assert!(!out.starts_with('\u{feff}'));
+    assert!(out.lines().all(|l| l.split('\t').count() == 2));
+}
+
+#[test]
+fn project_schemes_replace_builtin_ones_of_the_same_name() {
+    let mut settings = Settings::default();
+    let n = schemes(&settings).len();
+    settings.schemes.push(Scheme { name: "Brady".into(), columns: vec![Column::Text], ..Scheme::default() });
+    settings.schemes.push(Scheme { name: "Own".into(), ..Scheme::default() });
+    let all = schemes(&settings);
+    assert_eq!(all.len(), n + 1);
+    assert_eq!(all.iter().find(|s| s.name == "Brady").unwrap().columns, vec![Column::Text]);
+    assert!(scheme(&settings, Some("Missing")).is_none());
+    settings.scheme = "Own".into();
+    assert_eq!(scheme(&settings, None).unwrap().name, "Own");
+    assert!(is_builtin("Partex") && !is_builtin("Own"));
+}
+
+#[test]
+fn cells_with_the_separator_are_quoted() {
+    let m = vec![Marker { category: Category::Wire, material: "A,B".into(), text: "x".into(), count: 1, enclosure: String::new(), group: String::new() }];
+    let s = Scheme { columns: vec![Column::Material, Column::Text], separator: ",".into(), header: false, bom: false, ..Scheme::default() };
+    assert_eq!(text(&m, &s), "\"A,B\",x\n");
+    let xlsx = xlsx(&m, &s);
+    assert_eq!(crate::xlsx::first_sheet_csv(&xlsx).unwrap().lines().next().unwrap(), "A,B;x");
+}
+
+#[test]
+fn columns_and_categories_parse_their_codes() {
+    assert!(Column::ALL.iter().all(|c| Column::parse(c.code()) == Some(*c)));
+    assert_eq!(Column::parse("text"), Some(Column::Text));
+    assert!(Category::ALL.iter().all(|c| Category::parse(c.code()) == Some(*c)));
+    assert_eq!(Category::parse("plug"), None);
+}

@@ -4622,3 +4622,30 @@ Lists the items of the panel layout in mounting order with place, size, part and
 Marks a panel item as mounted or as a problem, or as open again	Markiert ein Teil als montiert, als Problem oder wieder als offen	Marque un élément comme monté, comme problème ou de nouveau comme ouvert	Marca un elemento como montado, como problema o de nuevo como abierto
 Id of the panel item (from mounting_list)	Id des Teils (aus mounting_list)	Id de l'élément (de mounting_list)	Id del elemento (de mounting_list)
 mounted, problem or open	mounted, problem oder open	mounted, problem ou open	mounted, problem u open
+Built-in scheme: copy it to change it.	Mitgeliefertes Schema: zum Ändern kopieren.	Schéma intégré : copiez-le pour le modifier.	Esquema integrado: cópielo para cambiarlo.
+Byte order mark	Byte-Order-Mark	Marque d'ordre des octets	Marca de orden de bytes
+Columns: {}	Spalten: {}	Colonnes : {}	Columnas: {}
+Comma	Komma	Virgule	Coma
+Export marking (Excel)…	Beschriftung exportieren (Excel)…	Exporter le repérage (Excel)…	Exportar el marcado (Excel)…
+Header row	Kopfzeile	Ligne d'en-tête	Fila de encabezado
+Labeling scheme	Beschriftungsschema	Schéma de repérage	Esquema de marcado
+Markers	Beschriftungen	Repères	Marcadores
+Move left	Nach links	Déplacer à gauche	Mover a la izquierda
+New project scheme from the selected one	Neues Projektschema aus dem gewählten	Nouveau schéma de projet à partir du schéma choisi	Nuevo esquema de proyecto a partir del seleccionado
+One row per label	Eine Zeile je Schild	Une ligne par repère	Una fila por etiqueta
+Semicolon	Semikolon	Point-virgule	Punto y coma
+Tab	Tabulator	Tabulation	Tabulador
+Labeling scheme (default: the scheme selected in the project)	Beschriftungsschema (Standard: das im Projekt gewählte Schema)	Schéma de repérage (par défaut : le schéma choisi dans le projet)	Esquema de marcado (por defecto: el esquema elegido en el proyecto)
+Marking (Excel)	Beschriftung (Excel)	Repérage (Excel)	Marcado (Excel)
+No labeling scheme named {}	Kein Beschriftungsschema namens {}	Aucun schéma de repérage nommé {}	No hay ningún esquema de marcado llamado {}
+Adds or changes a labeling scheme of the project, removes it, or selects the scheme used for the marking export	Legt ein Beschriftungsschema des Projekts an oder ändert es, entfernt es oder wählt das Schema für den Beschriftungsexport	Ajoute ou modifie un schéma de repérage du projet, le supprime ou choisit le schéma utilisé pour l'export du repérage	Añade o cambia un esquema de marcado del proyecto, lo elimina o elige el esquema usado para exportar el marcado
+Columns, comma separated: Material, Category, Text, Count, Enclosure, Group, No	Spalten, durch Komma getrennt: Material, Category, Text, Count, Enclosure, Group, No	Colonnes, séparées par des virgules : Material, Category, Text, Count, Enclosure, Group, No	Columnas, separadas por comas: Material, Category, Text, Count, Enclosure, Group, No
+First row with the column names	Erste Zeile mit den Spaltennamen	Première ligne avec les noms des colonnes	Primera fila con los nombres de las columnas
+Lists the labeling schemes for marking programs (built-in and of the project) and the selected one	Listet die Beschriftungsschemata für Beschriftungsprogramme (mitgeliefert und des Projekts) und das gewählte	Liste les schémas de repérage pour les logiciels de marquage (intégrés et du projet) et le schéma choisi	Lista los esquemas de marcado para programas de marcado (integrados y del proyecto) y el elegido
+Markers, comma separated: device, terminal, wire, cable (empty: all)	Beschriftungen, durch Komma getrennt: device, terminal, wire, cable (leer: alle)	Repères, séparés par des virgules : device, terminal, wire, cable (vide : tous)	Marcadores, separados por comas: device, terminal, wire, cable (vacío: todos)
+One row per printed label instead of a count	Eine Zeile je gedrucktem Schild statt einer Anzahl	Une ligne par repère imprimé au lieu d'une quantité	Una fila por etiqueta impresa en lugar de una cantidad
+Remove the scheme from the project	Schema aus dem Projekt entfernen	Supprimer le schéma du projet	Eliminar el esquema del proyecto
+Separator: semicolon, comma or tab	Trennzeichen: semicolon, comma oder tab	Séparateur : semicolon, comma ou tab	Separador: semicolon, comma o tab
+Unknown marker category: {}	Unbekannte Beschriftungsart: {}	Type de repère inconnu : {}	Tipo de marcador desconocido: {}
+Unknown separator: {}	Unbekanntes Trennzeichen: {}	Séparateur inconnu : {}	Separador desconocido: {}
+Use this scheme for the marking export	Dieses Schema für den Beschriftungsexport verwenden	Utiliser ce schéma pour l'export du repérage	Usar este esquema para exportar el marcado

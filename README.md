@@ -119,6 +119,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   marker material in the order of application, as CSV for marking software (UTF-8,
   `;`, header `Material;Category;Text;Count;Enclosure;Group`); the material is in the
   bill of materials. Texts and materials are project settings (`marking`).
+  **Labeling schemes** choose the markers, the columns and their order, the separator,
+  header and one row per printed label, for CSV / text and Excel export; built-in
+  import tables for Phoenix Contact CLIP PROJECT, Weidmüller M-Print PRO, Brady,
+  Murrplastik and Partex (starting points – copy and adjust to the program version),
+  own schemes are stored in the project (commands `marking_schemes`,
+  `set_marking_scheme`, exporters `marking` / `marking_xlsx` with `scheme`).
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
@@ -829,7 +835,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/config.rs` | Configurator: options, rules, page generation from macros |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
-| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
+| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, labeling schemes, marking CSV / Excel |
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plugs.rs` | Plugs: pin order, both sides of each pin, pin count of the parts, placement check |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |

@@ -183,7 +183,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("strips", &["frame", "model", "netlist", "parts", "symbols", "text"]),
     ("plugs", &["frame", "model", "netlist", "parts", "symbols", "text"]),
     ("harness", &["analysis", "geom", "model", "netlist", "plugs", "production", "symbols"]),
-    ("marking", &["index", "model", "netlist", "panel", "strips", "structure"]),
+    ("marking", &["index", "model", "netlist", "panel", "strips", "structure", "xlsx"]),
     ("fluid", &["issue", "model", "netlist", "panel", "symbols", "wirenum"]),
     ("electrofluid", &["fluid", "index", "issue", "model", "structure", "symbols"]),
     ("process", &["index", "model", "symbols"]),

@@ -9,7 +9,7 @@ use crate::panel::Face;
 use crate::strips::{self, ElementKind};
 use crate::structure::Dt;
 use openecraft_i18n::tr;
-pub use crate::model::marking::{Settings, WireText};
+pub use crate::model::marking::{Category, Column, Scheme, Settings, WireText};
 
 impl Default for Settings {
     fn default() -> Self {
@@ -20,6 +20,8 @@ impl Default for Settings {
             terminal_material: "GEN.MARK-TB-5".into(),
             wire_material: "GEN.MARK-WIRE".into(),
             cable_material: "GEN.MARK-CABLE".into(),
+            scheme: String::new(),
+            schemes: Vec::new(),
         }
     }
 }
@@ -30,15 +32,13 @@ impl Settings {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Category {
-    Device,
-    Terminal,
-    Wire,
-    Cable,
-}
-
 impl Category {
+    pub const ALL: [Category; 4] = [Category::Device, Category::Terminal, Category::Wire, Category::Cable];
+
+    pub fn parse(code: &str) -> Option<Category> {
+        Category::ALL.into_iter().find(|c| c.code() == code.trim())
+    }
+
     /// Code in the CSV export.
     pub fn code(self) -> &'static str {
         match self {
@@ -150,20 +150,149 @@ pub fn material(markers: &[Marker]) -> Vec<(String, u32)> {
     v
 }
 
-/// CSV for marking software: semicolon separated, UTF-8 with byte order mark, one row
-/// per label, grouped by material in the order of application. The header and the
-/// category codes are not translated.
-pub fn csv(markers: &[Marker]) -> String {
-    let esc = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
+impl Column {
+    pub const ALL: [Column; 7] = [Column::Material, Column::Category, Column::Text, Column::Count, Column::Enclosure, Column::Group, Column::Number];
+
+    /// Header in the export and code in commands (not translated).
+    pub fn code(self) -> &'static str {
+        match self {
+            Column::Material => "Material",
+            Column::Category => "Category",
+            Column::Text => "Text",
+            Column::Count => "Count",
+            Column::Enclosure => "Enclosure",
+            Column::Group => "Group",
+            Column::Number => "No",
+        }
+    }
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Column::Material => tr("Material"),
+            Column::Category => tr("Category"),
+            Column::Text => tr("Text"),
+            Column::Count => tr("Count"),
+            Column::Enclosure => tr("Enclosure"),
+            Column::Group => tr("Group"),
+            Column::Number => tr("Number"),
+        }
+    }
+
+    pub fn parse(code: &str) -> Option<Column> {
+        Column::ALL.into_iter().find(|c| c.code().eq_ignore_ascii_case(code.trim()))
+    }
+}
+
+/// Name of the standard scheme (all columns, semicolon separated).
+pub const STANDARD: &str = "Standard";
+
+/// The built-in labeling schemes: the standard layout and import tables for common
+/// marking programs (one label per row; adjust a copy if a program version expects
+/// another layout).
+pub fn builtin_schemes() -> Vec<Scheme> {
+    let per_label = |name: &str, columns: Vec<Column>, separator: &str, header: bool| Scheme {
+        name: name.into(),
+        columns,
+        separator: separator.into(),
+        header,
+        bom: false,
+        one_row_per_label: true,
+        categories: Vec::new(),
+    };
+    vec![
+        Scheme { name: STANDARD.into(), ..Scheme::default() },
+        per_label("Phoenix Contact CLIP PROJECT", vec![Column::Material, Column::Text], ";", true),
+        per_label("Weidmüller M-Print PRO", vec![Column::Text], "\t", false),
+        per_label("Brady", vec![Column::Number, Column::Text, Column::Material], ",", true),
+        per_label("Murrplastik", vec![Column::Material, Column::Text], ";", true),
+        per_label("Partex", vec![Column::Text], "\t", false),
+    ]
+}
+
+/// The schemes available in the project: the built-in ones (replaced by project schemes
+/// of the same name), then the other project schemes.
+pub fn schemes(s: &Settings) -> Vec<Scheme> {
+    let mut v = builtin_schemes();
+    for own in &s.schemes {
+        match v.iter_mut().find(|b| b.name == own.name) {
+            Some(b) => *b = own.clone(),
+            None => v.push(own.clone()),
+        }
+    }
+    v
+}
+
+pub fn is_builtin(name: &str) -> bool {
+    builtin_schemes().iter().any(|s| s.name == name)
+}
+
+/// The scheme of that name (the selected one with `None`; the standard scheme if none
+/// is selected).
+pub fn scheme(s: &Settings, name: Option<&str>) -> Option<Scheme> {
+    let name = name.unwrap_or(&s.scheme);
+    let all = schemes(s);
+    if name.is_empty() {
+        return all.into_iter().next();
+    }
+    all.into_iter().find(|x| x.name == name)
+}
+
+/// Markers grouped by material in the order of first use.
+fn by_material(markers: &[Marker]) -> Vec<&Marker> {
     let mut sorted: Vec<&Marker> = markers.iter().collect();
     let order: Vec<String> = material(markers).into_iter().map(|m| m.0).collect();
     sorted.sort_by_key(|m| order.iter().position(|o| *o == m.material).unwrap_or(usize::MAX));
-    let mut out = String::from("\u{feff}Material;Category;Text;Count;Enclosure;Group\n");
-    for m in sorted {
-        out.push_str(&[esc(&m.material), m.category.code().into(), esc(&m.text), m.count.to_string(), esc(&m.enclosure), esc(&m.group)].join(";"));
+    sorted
+}
+
+/// The rows of a scheme (with the header row if it has one).
+pub fn rows(markers: &[Marker], scheme: &Scheme) -> Vec<Vec<String>> {
+    let mut out = Vec::new();
+    if scheme.header {
+        out.push(scheme.columns.iter().map(|c| c.code().to_string()).collect());
+    }
+    let mut n = 0;
+    for m in by_material(markers).into_iter().filter(|m| scheme.categories.is_empty() || scheme.categories.contains(&m.category)) {
+        let (repeat, count) = if scheme.one_row_per_label { (m.count, 1) } else { (1, m.count) };
+        for _ in 0..repeat {
+            n += 1;
+            let cell = |c: &Column| match c {
+                Column::Material => m.material.clone(),
+                Column::Category => m.category.code().into(),
+                Column::Text => m.text.clone(),
+                Column::Count => count.to_string(),
+                Column::Enclosure => m.enclosure.clone(),
+                Column::Group => m.group.clone(),
+                Column::Number => n.to_string(),
+            };
+            out.push(scheme.columns.iter().map(cell).collect());
+        }
+    }
+    out
+}
+
+/// Text export of a scheme; cells holding the separator, quotes or line breaks are quoted.
+pub fn text(markers: &[Marker], scheme: &Scheme) -> String {
+    let sep = if scheme.separator.is_empty() { ";" } else { scheme.separator.as_str() };
+    let esc = |s: &str| if s.contains(sep) || s.contains(['"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
+    let mut out = String::from(if scheme.bom { "\u{feff}" } else { "" });
+    for row in rows(markers, scheme) {
+        out.push_str(&row.iter().map(|c| esc(c)).collect::<Vec<_>>().join(sep));
         out.push('\n');
     }
     out
+}
+
+/// Excel export of a scheme (one sheet).
+pub fn xlsx(markers: &[Marker], scheme: &Scheme) -> Vec<u8> {
+    crate::xlsx::write(&[("Marking".into(), rows(markers, scheme))])
+}
+
+/// CSV for marking software in the standard scheme: semicolon separated, UTF-8 with
+/// byte order mark, grouped by material in the order of application. The header and the
+/// category codes are not translated.
+pub fn csv(markers: &[Marker]) -> String {
+    text(markers, &builtin_schemes()[0])
 }
 
 #[cfg(test)]
