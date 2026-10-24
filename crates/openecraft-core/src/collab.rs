@@ -279,7 +279,10 @@ fn with_data(out: &mut Project, src: &Project) {
         baselines,
         electrical,
         property_db,
+        format: _,
         field,
+        subprojects,
+        model_options,
         review: _,
         next_id: _,
     } = src;
@@ -315,6 +318,8 @@ fn with_data(out: &mut Project, src: &Project) {
     out.electrical = electrical.clone();
     out.property_db = property_db.clone();
     out.field = field.clone();
+    out.subprojects = subprojects.clone();
+    out.model_options = model_options.clone();
 }
 
 /// Project-wide data equal (all but page contents, review and `next_id`; the page
@@ -354,6 +359,9 @@ fn same_data(a: &Project, b: &Project) -> bool {
         electrical,
         property_db,
         field,
+        subprojects,
+        model_options,
+        format: _,
         review: _,
         next_id: _,
     } = a;
@@ -390,6 +398,8 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *electrical == b.electrical
         && *property_db == b.property_db
         && *field == b.field
+        && *subprojects == b.subprojects
+        && *model_options == b.model_options
 }
 
 /// What differs between `a` and `b`. Changes of pages that `a` does not have count

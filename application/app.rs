@@ -33,6 +33,7 @@ mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
 mod potentials_ui;
+mod projects_ui;
 mod properties_ui;
 mod structure_ui;
 mod process_ui;
@@ -87,6 +88,7 @@ pub struct App {
     work_area: String,
     structure_ui: structure_ui::StructureUi,
     properties_ui: properties_ui::PropertiesUi,
+    projects_ui: projects_ui::ProjectsUi,
     pages_ui: pages_ui::PagesUi,
     show_reports: bool,
     report_kind: ReportKind,
@@ -138,6 +140,7 @@ impl App {
         let mut remote = crate::remote::Remote::default();
         let mut macro_lib = None;
         let mut language: Option<String> = None;
+        let mut projects_ui = projects_ui::ProjectsUi::default();
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
             prj = eframe::get_value(storage, "project");
@@ -145,6 +148,9 @@ impl App {
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
             macro_lib = eframe::get_value(storage, "macros");
+            if let Some(db) = eframe::get_value(storage, "project_database") {
+                projects_ui.db = db;
+            }
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -183,6 +189,7 @@ impl App {
             work_area: String::new(),
             structure_ui: Default::default(),
             properties_ui: Default::default(),
+            projects_ui,
             pages_ui: Default::default(),
             show_reports: false,
             report_kind: ReportKind::DeviceList,
@@ -475,10 +482,17 @@ impl App {
                 }
                 return;
             }
-            match Project::from_json(&loaded.text()) {
-                Ok(prj) => {
-                    self.replace_project(prj, Some(loaded.name.clone()));
-                    self.notify(ctx, tr_fmt!("Opened {}", io::short_name(&loaded.name)));
+            if loaded.purpose == Purpose::Subproject {
+                self.insert_subproject(ctx, &loaded.bytes);
+                return;
+            }
+            match crate::archive::read_project(&loaded.bytes) {
+                Ok((prj, conv)) => {
+                    // An archive is opened like a new project: saving writes a project file.
+                    let file = (!crate::archive::is_archive(&loaded.bytes)).then(|| loaded.name.clone());
+                    self.replace_project(prj, file);
+                    let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&loaded.name)));
+                    self.notify(ctx, note);
                 }
                 Err(e) => self.notify(ctx, e),
             }
@@ -769,6 +783,9 @@ impl App {
             ui.menu_button(tr("Project"), |ui| {
                 if ui.button(tr("Project properties…")).clicked() {
                     self.show_project = true;
+                }
+                if ui.button(tr("Project management…")).on_hover_text(tr("Project database, batch changes of project properties, subprojects, options, archives and verification")).clicked() {
+                    self.projects_ui.open = true;
                 }
                 if ui.button(tr("Parts management…")).clicked() {
                     self.parts_ui.open = true;
@@ -1898,6 +1915,7 @@ impl App {
         self.languages_window(ctx);
         self.structure_window(ctx);
         self.properties_window(ctx);
+        self.projects_window(ctx);
         self.save_template_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
@@ -2301,6 +2319,7 @@ impl eframe::App for App {
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
         eframe::set_value(storage, "macros", &self.macro_lib);
+        eframe::set_value(storage, "project_database", &self.projects_ui.db);
         eframe::set_value(storage, "project_server_url", &self.remote.url);
         eframe::set_value(storage, "project_server_user", &self.remote.user);
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());

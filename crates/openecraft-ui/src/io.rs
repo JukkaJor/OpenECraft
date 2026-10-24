@@ -141,7 +141,7 @@ pub fn mime_type(ext: &str) -> &'static str {
         "pdf" => "application/pdf",
         "dxf" => "application/dxf",
         "igs" | "iges" => "model/iges",
-        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" => "application/octet-stream",
+        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" | "oecz" => "application/octet-stream",
         _ => "application/json",
     }
 }
@@ -171,6 +171,76 @@ pub fn today() -> String {
     #[cfg(target_arch = "wasm32")]
     let secs = (js_sys::Date::now() / 1000.0) as u64;
     openecraft_parts::date_from_unix(secs)
+}
+
+/// The local file system can be searched and written by path (desktop, not the
+/// browser).
+pub fn has_file_system() -> bool {
+    cfg!(not(target_arch = "wasm32"))
+}
+
+/// Asks for a folder (desktop only).
+pub fn pick_folder() -> Option<String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        rfd::FileDialog::new().pick_folder().map(|p| p.display().to_string())
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        None
+    }
+}
+
+/// Files in a folder and its subfolders whose path passes `keep`, sorted (desktop only).
+pub fn files_in(folder: &str, keep: impl Fn(&str) -> bool) -> Vec<String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut out = Vec::new();
+        let mut dirs = vec![std::path::PathBuf::from(folder)];
+        while let Some(dir) = dirs.pop() {
+            let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+            for e in entries.flatten() {
+                let path = e.path();
+                if path.is_dir() {
+                    dirs.push(path);
+                } else if keep(&path.to_string_lossy()) {
+                    out.push(path.display().to_string());
+                }
+            }
+        }
+        out.sort();
+        out
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = (folder, keep);
+        Vec::new()
+    }
+}
+
+/// Reads a file by path (desktop only).
+pub fn read_file(path: &str) -> Result<Vec<u8>, String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::fs::read(path).map_err(|e| e.to_string())
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        Err(format!("{path}: no file system in the browser"))
+    }
+}
+
+/// Writes a file by path (desktop only).
+pub fn write_file(path: &str, content: &[u8]) -> Result<(), String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::fs::write(path, content).map_err(|e| e.to_string())
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = content;
+        Err(format!("{path}: no file system in the browser"))
+    }
 }
 
 /// File name without directories, for window titles.
