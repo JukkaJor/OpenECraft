@@ -24,6 +24,7 @@ mod engineering;
 mod field_ui;
 mod forms_ui;
 mod harness_ui;
+mod integration_ui;
 mod languages_ui;
 mod config_ui;
 mod drawing_ui;
@@ -110,6 +111,7 @@ pub struct App {
     field_ui: field_ui::FieldUi,
     plugs_ui: plugs_ui::PlugsUi,
     plc_ui: plc_ui::PlcUi,
+    integration_ui: integration_ui::IntegrationUi,
     process_ui: process_ui::ProcessUi,
     electrical_ui: electrical_ui::ElectricalUi,
     singleline_ui: singleline_ui::SingleLineUi,
@@ -215,6 +217,7 @@ impl App {
             field_ui: Default::default(),
             plugs_ui: Default::default(),
             plc_ui: Default::default(),
+            integration_ui: Default::default(),
             process_ui: Default::default(),
             electrical_ui: Default::default(),
             singleline_ui: Default::default(),
@@ -454,6 +457,10 @@ impl App {
             }
             if let Purpose::Table(kind) = loaded.purpose {
                 self.import_table(ctx, kind, &loaded.text());
+                return;
+            }
+            if loaded.purpose == Purpose::Integration {
+                self.integration_file_loaded(&loaded.name, loaded.text());
                 return;
             }
             if matches!(loaded.purpose, Purpose::Aml | Purpose::DeviceDescription) {
@@ -833,6 +840,9 @@ impl App {
                 }
                 if ui.button(tr("PLC hardware and bus topology…")).on_hover_text(tr("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")).clicked() {
                     self.plc_ui.open = true;
+                }
+                if ui.button(tr("Enterprise integration…")).on_hover_text(tr("Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines")).clicked() {
+                    self.integration_ui.open = true;
                 }
                 if ui.button(tr("Compare and baselines…")).on_hover_text(tr("Compare with a baseline, a revision or another project file and take differences over")).clicked() {
                     self.compare_ui.open = true;
@@ -1906,6 +1916,7 @@ impl App {
         self.field_window(ctx);
         self.plugs_window(ctx);
         self.plc_hw_window(ctx);
+        self.integration_window(ctx);
         self.process_window(ctx);
         self.electrical_window(ctx);
         self.singleline_window(ctx);

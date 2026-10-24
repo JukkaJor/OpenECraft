@@ -3076,3 +3076,99 @@ Warnings	Warnungen	Avertissements	Advertencias
 📊 {}	📊 {}	📊 {}	📊 {}
 Panel layout checks	Schaltschrankaufbau-Prüfungen	Contrôles de l'implantation d'armoire	Comprobaciones de la disposición del armario
 Clearances, service space, heights, collision classes, thermal simulation and manufacturability of the panel layout	Abstände, Serviceraum, Höhen, Kollisionsklassen, thermische Simulation und Fertigbarkeit des Schaltschrankaufbaus	Distances, espace de service, hauteurs, classes de collision, simulation thermique et faisabilité de l'implantation d'armoire	Distancias, espacio de servicio, alturas, clases de colisión, simulación térmica y fabricabilidad de la disposición del armario
+ERP	ERP	ERP	ERP
+PDM	PDM	PDM	PDM
+PLM	PLM	PLM	PLM
+ECAD (PCB)	ECAD (Leiterplatte)	ECAD (circuit imprimé)	ECAD (PCB)
+MCAD	MCAD	CAO mécanique	MCAD
+Procurement	Einkauf	Achats	Compras
+Wiring machine	Drahtkonfektionierautomat	Machine de câblage	Máquina de cableado
+ERP number	ERP-Nummer	Numéro ERP	Número ERP
+Item ID	Teile-ID	ID d'article	ID de artículo
+Lifecycle state	Lebenszyklusstatus	État du cycle de vie	Estado del ciclo de vida
+Stock	Bestand	Stock	Existencias
+Lead time (days)	Lieferzeit (Tage)	Délai de livraison (jours)	Plazo de entrega (días)
+To order	Zu bestellen	À commander	A pedir
+Order status	Bestellstatus	État de commande	Estado del pedido
+Ordered	Bestellt	Commandé	Pedido
+Face	Fläche	Face	Cara
+Stripping from (mm)	Abisolieren von (mm)	Dénudage début (mm)	Pelado origen (mm)
+Stripping to (mm)	Abisolieren nach (mm)	Dénudage fin (mm)	Pelado destino (mm)
+Ferrule from	Aderendhülse von	Embout début	Puntera origen
+Ferrule to	Aderendhülse nach	Embout fin	Puntera destino
+Job	Auftrag	Ordre	Trabajo
+Document number	Dokumentnummer	Numéro de document	Número de documento
+State	Status	État	Estado
+Placement	Platzierung	Placement	Ubicación
+ERP item master and bill of materials (CSV)	ERP-Artikelstamm und Stückliste (CSV)	Données articles ERP et nomenclature (CSV)	Maestro de artículos ERP y lista de materiales (CSV)
+Exports the bill of materials with the item master data; imports ERP numbers, prices, stock and lead times	Exportiert die Stückliste mit den Artikelstammdaten; importiert ERP-Nummern, Preise, Bestände und Lieferzeiten	Exporte la nomenclature avec les données articles ; importe les numéros ERP, prix, stocks et délais	Exporta la lista de materiales con los datos maestros; importa números ERP, precios, existencias y plazos de entrega
+PDM documents and metadata (JSON)	PDM-Dokumente und Metadaten (JSON)	Documents et métadonnées PDM (JSON)	Documentos y metadatos PDM (JSON)
+Exports the project and page metadata with the revisions; imports document numbers, revisions and states	Exportiert die Projekt- und Seitenmetadaten mit den Revisionen; importiert Dokumentnummern, Revisionen und Status	Exporte les métadonnées du projet et des pages avec les révisions ; importe les numéros de document, révisions et états	Exporta los metadatos del proyecto y de las páginas con las revisiones; importa números de documento, revisiones y estados
+PLM engineering BOM (JSON)	PLM-Konstruktionsstückliste (JSON)	Nomenclature d'ingénierie PLM (JSON)	Lista de materiales de ingeniería PLM (JSON)
+Exports the engineering BOM (locations, devices, parts); imports item IDs, revisions and lifecycle states	Exportiert die Konstruktionsstückliste (Orte, Betriebsmittel, Artikel); importiert Teile-IDs, Revisionen und Lebenszyklusstatus	Exporte la nomenclature d'ingénierie (emplacements, appareils, articles) ; importe les ID d'article, révisions et états du cycle de vie	Exporta la lista de materiales de ingeniería (ubicaciones, equipos, artículos); importa ID de artículo, revisiones y estados del ciclo de vida
+ECAD components and netlist (JSON)	ECAD-Bauteile und Netzliste (JSON)	Composants et liste d'équipotentielles ECAD (JSON)	Componentes y lista de redes ECAD (JSON)
+Exports the devices and point-to-point connections for PCB design; imports part assignments and descriptions of the components	Exportiert die Betriebsmittel und Punkt-zu-Punkt-Verbindungen für das Leiterplattendesign; importiert Artikelzuordnungen und Bezeichnungen der Bauteile	Exporte les appareils et les liaisons point à point pour la conception de circuits imprimés ; importe les affectations d'articles et les désignations des composants	Exporta los equipos y las conexiones punto a punto para el diseño de PCB; importa asignaciones de artículos y descripciones de los componentes
+MCAD device placement (CSV)	MCAD-Geräteplatzierung (CSV)	Placement des appareils CAO mécanique (CSV)	Ubicación de equipos MCAD (CSV)
+Exports the positions and sizes of the devices in the panel layout; imports positions changed in the MCAD system	Exportiert Positionen und Größen der Geräte im Aufbau; importiert im MCAD-System geänderte Positionen	Exporte les positions et dimensions des appareils de l'implantation ; importe les positions modifiées dans le système de CAO mécanique	Exporta las posiciones y tamaños de los equipos en el montaje; importa las posiciones modificadas en el sistema MCAD
+Procurement order list (CSV)	Einkaufs-Bestellliste (CSV)	Liste de commande achats (CSV)	Lista de pedidos de compras (CSV)
+Exports the order list per supplier (required quantity less stock, rounded to packs); imports order confirmations	Exportiert die Bestellliste je Lieferant (Bedarf abzüglich Bestand, auf Verpackungseinheiten gerundet); importiert Auftragsbestätigungen	Exporte la liste de commande par fournisseur (besoin moins stock, arrondi aux conditionnements) ; importe les confirmations de commande	Exporta la lista de pedidos por proveedor (necesidad menos existencias, redondeada a envases); importa las confirmaciones de pedido
+Wiring machine job list (CSV)	Auftragsliste für Drahtkonfektionierautomaten (CSV)	Liste d'ordres pour machine de câblage (CSV)	Lista de trabajos para máquina de cableado (CSV)
+Exports the wires with cut length, stripping and ferrules for wire processing machines; imports the processing feedback as wiring marks	Exportiert die Drähte mit Schnittlänge, Abisolierung und Aderendhülsen für Drahtkonfektionierautomaten; importiert die Rückmeldung der Bearbeitung als Verdrahtungsmarkierungen	Exporte les fils avec longueur de coupe, dénudage et embouts pour les machines de traitement de fils ; importe le retour de traitement comme marques de câblage	Exporta los cables con longitud de corte, pelado y punteras para máquinas de procesado de cables; importa la respuesta del procesado como marcas de cableado
+Not a valid JSON file: {}	Keine gültige JSON-Datei: {}	Fichier JSON non valide : {}	Archivo JSON no válido: {}
+No known column in the header row	Keine bekannte Spalte in der Kopfzeile	Aucune colonne connue dans la ligne d'en-tête	Ninguna columna conocida en la fila de encabezado
+Part {} is {} in the PLM system (used by {})	Artikel {} ist im PLM-System {} (verwendet von {})	L'article {} est {} dans le système PLM (utilisé par {})	El artículo {} está {} en el sistema PLM (usado por {})
+Lists the connectors of the integration layer (ERP, PDM, PLM, ECAD, MCAD, procurement, wiring machine) with the fields they exchange, and the profiles of the project	Listet die Konnektoren der Integrationsschicht (ERP, PDM, PLM, ECAD, MCAD, Einkauf, Drahtkonfektionierautomat) mit den ausgetauschten Feldern sowie die Profile des Projekts	Liste les connecteurs de la couche d'intégration (ERP, PDM, PLM, ECAD, CAO mécanique, achats, machine de câblage) avec les champs échangés, ainsi que les profils du projet	Lista los conectores de la capa de integración (ERP, PDM, PLM, ECAD, MCAD, compras, máquina de cableado) con los campos que intercambian y los perfiles del proyecto
+Exports the project for another system with a connector, or as the neutral exchange file (connector exchange); later imports of that connector detect conflicts against this export	Exportiert das Projekt mit einem Konnektor für ein anderes System oder als neutrale Austauschdatei (Konnektor exchange); spätere Importe dieses Konnektors erkennen Konflikte gegenüber diesem Export	Exporte le projet pour un autre système avec un connecteur, ou comme fichier d'échange neutre (connecteur exchange) ; les importations ultérieures de ce connecteur détectent les conflits par rapport à cet export	Exporta el proyecto para otro sistema con un conector, o como archivo de intercambio neutro (conector exchange); las importaciones posteriores de ese conector detectan conflictos respecto a esta exportación
+erp, pdm, plm, ecad, mcad, procurement, wiring_machine or exchange	erp, pdm, plm, ecad, mcad, procurement, wiring_machine oder exchange	erp, pdm, plm, ecad, mcad, procurement, wiring_machine ou exchange	erp, pdm, plm, ecad, mcad, procurement, wiring_machine o exchange
+Date for the exchange log	Datum für das Austauschprotokoll	Date pour le journal des échanges	Fecha para el registro de intercambios
+Reads a file of another system (CSV or JSON) with a connector and lists the changes; with apply they are taken over (conflicts only with overwrite)	Liest eine Datei eines anderen Systems (CSV oder JSON) mit einem Konnektor und listet die Änderungen; mit apply werden sie übernommen (Konflikte nur mit overwrite)	Lit un fichier d'un autre système (CSV ou JSON) avec un connecteur et liste les modifications ; avec apply elles sont reprises (conflits seulement avec overwrite)	Lee un archivo de otro sistema (CSV o JSON) con un conector y lista los cambios; con apply se aplican (conflictos solo con overwrite)
+erp, pdm, plm, ecad, mcad, procurement or wiring_machine	erp, pdm, plm, ecad, mcad, procurement oder wiring_machine	erp, pdm, plm, ecad, mcad, procurement ou wiring_machine	erp, pdm, plm, ecad, mcad, procurement o wiring_machine
+File content instead of a file	Dateiinhalt statt einer Datei	Contenu du fichier au lieu d'un fichier	Contenido del archivo en lugar de un archivo
+Profile whose column mapping is used	Profil, dessen Spaltenzuordnung verwendet wird	Profil dont l'affectation des colonnes est utilisée	Perfil cuya asignación de columnas se usa
+Column mapping {field code: column name} (added to the profile's)	Spaltenzuordnung {Feldcode: Spaltenname} (ergänzt die des Profils)	Affectation des colonnes {code du champ: nom de colonne} (complète celle du profil)	Asignación de columnas {código de campo: nombre de columna} (se añade a la del perfil)
+Take the changes over (otherwise only a preview)	Änderungen übernehmen (sonst nur Vorschau)	Reprendre les modifications (sinon seulement un aperçu)	Aplicar los cambios (si no, solo vista previa)
+Also take over values changed on both sides since the last export	Auch Werte übernehmen, die seit dem letzten Export auf beiden Seiten geändert wurden	Reprendre aussi les valeurs modifiées des deux côtés depuis le dernier export	Aplicar también los valores cambiados en ambos lados desde la última exportación
+Adds, replaces or removes a profile: a connector with the column names the other system uses	Fügt ein Profil hinzu, ersetzt oder entfernt es: ein Konnektor mit den Spaltennamen des anderen Systems	Ajoute, remplace ou supprime un profil : un connecteur avec les noms de colonnes de l'autre système	Añade, sustituye o elimina un perfil: un conector con los nombres de columna del otro sistema
+Profile name, e.g. SAP	Profilname, z. B. SAP	Nom du profil, p. ex. SAP	Nombre del perfil, p. ej. SAP
+Connector id (required unless removing)	Konnektor-ID (erforderlich, außer beim Entfernen)	ID du connecteur (obligatoire sauf pour supprimer)	ID del conector (obligatorio salvo al eliminar)
+Column mapping {field code: column name}	Spaltenzuordnung {Feldcode: Spaltenname}	Affectation des colonnes {code du champ: nom de colonne}	Asignación de columnas {código de campo: nombre de columna}
+Remove the profile	Profil entfernen	Supprimer le profil	Eliminar el perfil
+Shows the data of the other systems stored in the project (part links, documents) and the exchange log	Zeigt die im Projekt gespeicherten Daten der anderen Systeme (Artikelverknüpfungen, Dokumente) und das Austauschprotokoll	Affiche les données des autres systèmes enregistrées dans le projet (liens d'articles, documents) et le journal des échanges	Muestra los datos de los otros sistemas guardados en el proyecto (vínculos de artículos, documentos) y el registro de intercambios
+Unknown connector: {}	Unbekannter Konnektor: {}	Connecteur inconnu : {}	Conector desconocido: {}
+No profile named {}	Kein Profil namens {}	Aucun profil nommé {}	Ningún perfil llamado {}
+Unknown field: {}	Unbekanntes Feld: {}	Champ inconnu : {}	Campo desconocido: {}
+Enterprise integration	Unternehmensintegration	Intégration d'entreprise	Integración empresarial
+Profile	Profil	Profil	Perfil
+(standard columns)	(Standardspalten)	(colonnes standard)	(columnas estándar)
+Write the file for the other system; later imports detect conflicts against this export	Datei für das andere System schreiben; spätere Importe erkennen Konflikte gegenüber diesem Export	Écrire le fichier pour l'autre système ; les importations ultérieures détectent les conflits par rapport à cet export	Escribir el archivo para el otro sistema; las importaciones posteriores detectan conflictos respecto a esta exportación
+Read a file of the other system (CSV or JSON) and review the changes	Datei des anderen Systems (CSV oder JSON) lesen und die Änderungen prüfen	Lire un fichier de l'autre système (CSV ou JSON) et vérifier les modifications	Leer un archivo del otro sistema (CSV o JSON) y revisar los cambios
+⬇ Neutral exchange file…	⬇ Neutrale Austauschdatei…	⬇ Fichier d'échange neutre…	⬇ Archivo de intercambio neutro…
+Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Artikel, Betriebsmittel, Platzierungen, Verbindungen, Drähte und Dokumente in einer JSON-Datei für Systeme ohne Konnektor	Articles, appareils, placements, liaisons, fils et documents dans un fichier JSON pour les systèmes sans connecteur	Artículos, equipos, ubicaciones, conexiones, cables y documentos en un archivo JSON para sistemas sin conector
+Import changes	Importänderungen	Modifications importées	Cambios importados
+Profiles	Profile	Profils	Perfiles
+Linked data	Verknüpfte Daten	Données liées	Datos vinculados
+Exchange log	Austauschprotokoll	Journal des échanges	Registro de intercambios
+Import a file of another system to see what it changes in the project.	Importieren Sie eine Datei eines anderen Systems, um zu sehen, was sie im Projekt ändert.	Importez un fichier d'un autre système pour voir ce qu'il modifie dans le projet.	Importe un archivo de otro sistema para ver qué cambia en el proyecto.
+Discard	Verwerfen	Abandonner	Descartar
+{} records, {} changes, {} conflicts, {} not found in the project	{} Datensätze, {} Änderungen, {} Konflikte, {} nicht im Projekt gefunden	{} enregistrements, {} modifications, {} conflits, {} introuvables dans le projet	{} registros, {} cambios, {} conflictos, {} no encontrados en el proyecto
+Not found: {}	Nicht gefunden: {}	Introuvable : {}	No encontrado: {}
+Take over {} changes	{} Änderungen übernehmen	Reprendre {} modifications	Aplicar {} cambios
+Check all	Alle auswählen	Tout cocher	Marcar todo
+Check none	Keine auswählen	Tout décocher	Desmarcar todo
+⚠ Conflicts: changed in the project and in the other system since the last export; checked conflicts are overwritten	⚠ Konflikte: seit dem letzten Export im Projekt und im anderen System geändert; ausgewählte Konflikte werden überschrieben	⚠ Conflits : modifiés dans le projet et dans l'autre système depuis le dernier export ; les conflits cochés sont écrasés	⚠ Conflictos: cambiados en el proyecto y en el otro sistema desde la última exportación; los conflictos marcados se sobrescriben
+In the project	Im Projekt	Dans le projet	En el proyecto
+Imported	Importiert	Importé	Importado
+⚠ conflict	⚠ Konflikt	⚠ conflit	⚠ conflicto
+A profile maps the neutral fields to the column names of a particular system (e.g. MATNR for the ERP number in SAP). Without a mapping, common names in English and German are recognized.	Ein Profil ordnet die neutralen Felder den Spaltennamen eines bestimmten Systems zu (z. B. MATNR für die ERP-Nummer in SAP). Ohne Zuordnung werden übliche englische und deutsche Namen erkannt.	Un profil affecte les champs neutres aux noms de colonnes d'un système donné (p. ex. MATNR pour le numéro ERP dans SAP). Sans affectation, les noms courants en anglais et en allemand sont reconnus.	Un perfil asigna los campos neutros a los nombres de columna de un sistema concreto (p. ej. MATNR para el número ERP en SAP). Sin asignación se reconocen los nombres habituales en inglés y alemán.
+Profile name	Profilname	Nom du profil	Nombre del perfil
+Add profile for this connector	Profil für diesen Konnektor hinzufügen	Ajouter un profil pour ce connecteur	Añadir perfil para este conector
+Remove profile	Profil entfernen	Supprimer le profil	Eliminar perfil
+No data of other systems imported yet.	Noch keine Daten anderer Systeme importiert.	Aucune donnée d'autres systèmes importée pour l'instant.	Aún no se han importado datos de otros sistemas.
+Nothing exchanged yet.	Noch nichts ausgetauscht.	Rien n'a encore été échangé.	Todavía no se ha intercambiado nada.
+Conflicts	Konflikte	Conflits	Conflictos
+Export	Export	Export	Exportación
+Import	Import	Import	Importación
+{} values taken over	{} Werte übernommen	{} valeurs reprises	{} valores aplicados
+Enterprise integration…	Unternehmensintegration…	Intégration d'entreprise…	Integración empresarial…
+Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Austausch mit ERP, PDM, PLM, ECAD, MCAD, Einkauf und Drahtkonfektionierautomaten	Échange avec ERP, PDM, PLM, ECAD, CAO mécanique, achats et machines de câblage	Intercambio con ERP, PDM, PLM, ECAD, MCAD, compras y máquinas de cableado
+Files of other systems (CSV, JSON)	Dateien anderer Systeme (CSV, JSON)	Fichiers d'autres systèmes (CSV, JSON)	Archivos de otros sistemas (CSV, JSON)

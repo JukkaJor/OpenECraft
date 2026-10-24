@@ -179,6 +179,7 @@ impl Analysis {
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(crate::singleline::problems(prj, &idx, &netlist).into_iter().map(|(severity, message, target)| Issue { severity, message, target }));
         issues.extend(check_wiring_marks(prj, &wiring));
+        issues.extend(crate::integration::problems(prj));
         issues.extend(field.issues.iter().cloned());
         issues.extend(routing.problems.iter().map(|p| {
             let severity = match p.level {
