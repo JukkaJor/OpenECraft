@@ -3352,6 +3352,159 @@ Import	Import	Import	Importación
 Enterprise integration…	Unternehmensintegration…	Intégration d'entreprise…	Integración empresarial…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Austausch mit ERP, PDM, PLM, ECAD, MCAD, Einkauf und Drahtkonfektionierautomaten	Échange avec ERP, PDM, PLM, ECAD, CAO mécanique, achats et machines de câblage	Intercambio con ERP, PDM, PLM, ECAD, MCAD, compras y máquinas de cableado
 Files of other systems (CSV, JSON)	Dateien anderer Systeme (CSV, JSON)	Fichiers d'autres systèmes (CSV, JSON)	Archivos de otros sistemas (CSV, JSON)
+Copper bar {}: {} segments need {} bends	Kupferschiene {}: {} Abschnitte brauchen {} Biegungen	Barre de cuivre {} : {} segments nécessitent {} pliages	Pletina de cobre {}: {} tramos necesitan {} dobleces
+Copper bar {}: bend {} has a radius of {} mm, at least {} mm	Kupferschiene {}: Biegung {} hat einen Radius von {} mm, mindestens {} mm	Barre de cuivre {} : le pliage {} a un rayon de {} mm, au moins {} mm	Pletina de cobre {}: el doblez {} tiene un radio de {} mm, al menos {} mm
+Copper bar {}: segment {} is {} mm straight, at least {} mm are needed for bending	Kupferschiene {}: Abschnitt {} ist {} mm gerade, zum Biegen sind mindestens {} mm nötig	Barre de cuivre {} : le segment {} est droit sur {} mm, au moins {} mm sont nécessaires pour plier	Pletina de cobre {}: el tramo {} es recto en {} mm, se necesitan al menos {} mm para doblar
+Copper bar {}: hole Ø{} at {} mm is outside the bar	Kupferschiene {}: Bohrung Ø{} bei {} mm liegt außerhalb der Schiene	Barre de cuivre {} : le trou Ø{} à {} mm est hors de la barre	Pletina de cobre {}: el taladro Ø{} a {} mm está fuera de la pletina
+Copper bar {}: hole Ø{} is too large for a {} mm wide bar	Kupferschiene {}: Bohrung Ø{} ist zu groß für eine {} mm breite Schiene	Barre de cuivre {} : le trou Ø{} est trop grand pour une barre de {} mm de large	Pletina de cobre {}: el taladro Ø{} es demasiado grande para una pletina de {} mm de ancho
+Copper bar {}: hole Ø{} at {} mm is too close to bend {}	Kupferschiene {}: Bohrung Ø{} bei {} mm liegt zu nah an Biegung {}	Barre de cuivre {} : le trou Ø{} à {} mm est trop près du pliage {}	Pletina de cobre {}: el taladro Ø{} a {} mm está demasiado cerca del doblez {}
+{} is not a busbar machine	{} ist keine Schienenbearbeitungsmaschine	{} n'est pas une machine à barres	{} no es una máquina de pletinas
+Copper bar {}: {} mm are too thick for {}	Kupferschiene {}: {} mm sind zu dick für {}	Barre de cuivre {} : {} mm sont trop épais pour {}	Pletina de cobre {}: {} mm son demasiado gruesos para {}
+Copper bar {}: no punch Ø{} on {}, drill by hand	Kupferschiene {}: kein Stempel Ø{} auf {}, von Hand bohren	Barre de cuivre {} : pas de poinçon Ø{} sur {}, percer à la main	Pletina de cobre {}: no hay punzón Ø{} en {}, taladrar a mano
+Copper bar {}: {} mm are longer than the stock length of {} mm	Kupferschiene {}: {} mm sind länger als die Lagerlänge von {} mm	Barre de cuivre {} : {} mm dépassent la longueur de stock de {} mm	Pletina de cobre {}: {} mm superan la longitud de stock de {} mm
+Invalid length {}	Ungültige Länge {}	Longueur invalide {}	Longitud no válida {}
+Invalid bend {}	Ungültige Biegung {}	Pliage invalide {}	Doblez no válido {}
+Invalid hole {}	Ungültige Bohrung {}	Trou invalide {}	Taladro no válido {}
+The configuration is not a JSON object	Die Konfiguration ist kein JSON-Objekt	La configuration n'est pas un objet JSON	La configuración no es un objeto JSON
+Invalid configuration: {}	Ungültige Konfiguration: {}	Configuration invalide : {}	Configuración no válida: {}
+Done	Erledigt	Terminé	Hecho
+Started	Begonnen	Commencé	Iniciado
+Failed	Fehlgeschlagen	Échoué	Fallido
+Rework	Nacharbeit	Reprise	Retrabajo
+Skipped	Übersprungen	Ignoré	Omitido
+no list	keine Liste	pas de liste	sin lista
+no header	keine Kopfzeile	pas d'en-tête	sin encabezado
+Completed	Abgeschlossen	Achevé	Completado
+In production	In Fertigung	En production	En producción
+Invalid feedback: {}	Ungültige Rückmeldung: {}	Retour invalide : {}	Retroalimentación no válida: {}
+Row {}: unknown status {}	Zeile {}: unbekannter Status {}	Ligne {} : état inconnu {}	Fila {}: estado desconocido {}
+Row {}: no job	Zeile {}: kein Auftrag	Ligne {} : pas d'ordre	Fila {}: sin orden
+Unknown job {}	Unbekannter Auftrag {}	Ordre inconnu {}	Orden desconocida {}
+Production of {}{} failed: {}	Fertigung von {}{} fehlgeschlagen: {}	La production de {}{} a échoué : {}	La producción de {}{} ha fallado: {}
+{}{} has to be reworked: {}	{}{} muss nachgearbeitet werden: {}	{}{} doit être repris : {}	{}{} debe retrabajarse: {}
+{}{} is {} mm off its position (tolerance {} mm)	{}{} weicht {} mm von seiner Position ab (Toleranz {} mm)	{}{} est décalé de {} mm de sa position (tolérance {} mm)	{}{} está desviado {} mm de su posición (tolerancia {} mm)
+{} has nothing to manufacture	{} hat nichts zu fertigen	{} n'a rien à fabriquer	{} no tiene nada que fabricar
+Drilling and milling centre	Bohr- und Fräszentrum	Centre de perçage et de fraisage	Centro de taladrado y fresado
+Punching machine	Stanzmaschine	Poinçonneuse	Punzonadora
+Busbar machine	Schienenbearbeitungsmaschine	Machine à barres	Máquina de pletinas
+Drill	Bohrer	Foret	Broca
+Tap	Gewindebohrer	Taraud	Macho de roscar
+End mill	Schaftfräser	Fraise à queue	Fresa de mango
+Round punch	Rundstempel	Poinçon rond	Punzón redondo
+Rectangular punch	Rechteckstempel	Poinçon rectangulaire	Punzón rectangular
+Unknown tool {}	Unbekanntes Werkzeug {}	Outil inconnu {}	Herramienta desconocida {}
+No machine {}	Keine Maschine {}	Pas de machine {}	No hay máquina {}
+Drilling	Bohren	Perçage	Taladrado
+Tapping	Gewindeschneiden	Taraudage	Roscado
+Punching	Stanzen	Poinçonnage	Punzonado
+Nibbling	Nibbeln	Grignotage	Roedura
+Circular milling	Zirkularfräsen	Fraisage circulaire	Fresado circular
+Contour milling	Konturfräsen	Fraisage de contour	Fresado de contorno
+Manual work	Handarbeit	Travail manuel	Trabajo manual
+{}: {} cannot be made on {}	{}: {} kann nicht auf {} gefertigt werden	{} : {} ne peut pas être réalisé sur {}	{}: {} no se puede fabricar en {}
+{} is a busbar machine and makes no sheets	{} ist eine Schienenbearbeitungsmaschine und fertigt keine Bleche	{} est une machine à barres et ne fabrique pas de tôles	{} es una máquina de pletinas y no fabrica chapas
+{}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) ist größer als der Arbeitsbereich von {}	{} : {} ({} x {} mm) est plus grand que la zone de travail de {}	{}: {} ({} x {} mm) es mayor que el área de trabajo de {}
+{}: the {} is {} mm thick, {} takes at most {} mm	{}: {} ist {} mm dick, {} nimmt höchstens {} mm	{} : {} a {} mm d'épaisseur, {} accepte au plus {} mm	{}: {} tiene {} mm de espesor, {} admite como máximo {} mm
+{}: {} threads on the {} are cut by hand	{}: {} Gewinde auf {} werden von Hand geschnitten	{} : {} filetages sur {} sont taraudés à la main	{}: {} roscas en {} se hacen a mano
+{} min {} s	{} min {} s	{} min {} s	{} min {} s
+{} s	{} s	{} s	{} s
+A copper bar needs at least one segment	Eine Kupferschiene braucht mindestens einen Abschnitt	Une barre de cuivre nécessite au moins un segment	Una pletina de cobre necesita al menos un tramo
+Copper bars	Kupferschienen	Barres de cuivre	Pletinas de cobre
+too long	zu lang	trop long	demasiado largo
+No copper bar {}	Keine Kupferschiene {}	Pas de barre de cuivre {}	No hay pletina de cobre {}
+Unknown face {}	Unbekannte Fläche {}	Face inconnue {}	Cara desconocida {}
+{} of job {} changed since the hand-off	{} von Auftrag {} hat sich seit der Übergabe geändert	{} de l'ordre {} a changé depuis le transfert	{} de la orden {} ha cambiado desde la entrega
+Machine id {} is not snake_case	Maschinen-ID {} ist nicht snake_case	L'identifiant de machine {} n'est pas en snake_case	El id de máquina {} no está en snake_case
+Machine {} is in use	Maschine {} wird verwendet	La machine {} est utilisée	La máquina {} está en uso
+Unknown machine kind {}	Unbekannte Maschinenart {}	Type de machine inconnu {}	Tipo de máquina desconocido {}
+Unknown program format {}	Unbekanntes Programmformat {}	Format de programme inconnu {}	Formato de programa desconocido {}
+Unknown method {}	Unbekannte Methode {}	Méthode inconnue {}	Método desconocido {}
+{} segments need {} bends	{} Abschnitte brauchen {} Biegungen	{} segments nécessitent {} pliages	{} tramos necesitan {} dobleces
+{} has no enclosure system; give one	{} hat kein Gehäusesystem; bitte eines angeben	{} n'a pas de système d'armoire ; indiquez-en un	{} no tiene sistema de armario; indique uno
+No standard size of {} holds the layout of {}	Keine Standardgröße von {} fasst den Aufbau von {}	Aucune taille standard de {} ne contient l'implantation de {}	Ningún tamaño estándar de {} admite la disposición de {}
+Face: plate, door, left, right, rear, roof or bottom	Fläche: plate, door, left, right, rear, roof oder bottom	Face : plate, door, left, right, rear, roof ou bottom	Cara: plate, door, left, right, rear, roof o bottom
+Machine id (default: the machine of the face)	Maschinen-ID (Standard: die Maschine der Fläche)	Identifiant de machine (par défaut : la machine de la face)	Id de máquina (por defecto: la máquina de la cara)
+Date (YYYY-MM-DD)	Datum (JJJJ-MM-TT)	Date (AAAA-MM-JJ)	Fecha (AAAA-MM-DD)
+Panel manufacturing	Schaltschrankfertigung	Fabrication d'armoires	Fabricación de armarios
+CNC programs for drilling, milling and punching machines, copper bar bending, enclosure configurator, hand-off to production and production feedback	CNC-Programme für Bohr-, Fräs- und Stanzmaschinen, Kupferschienenbiegen, Gehäusekonfigurator, Übergabe an die Fertigung und Fertigungsrückmeldung	Programmes CN pour perceuses, fraiseuses et poinçonneuses, pliage de barres de cuivre, configurateur d'armoires, transfert à la production et retour de production	Programas CNC para taladradoras, fresadoras y punzonadoras, doblado de pletinas de cobre, configurador de armarios, entrega a producción y retroalimentación de producción
+Lists the CNC machines (built-in and of the project) with their tools and the machine of every face	Listet die CNC-Maschinen (eingebaut und des Projekts) mit ihren Werkzeugen und die Maschine jeder Fläche	Liste les machines CN (intégrées et du projet) avec leurs outils et la machine de chaque face	Lista las máquinas CNC (integradas y del proyecto) con sus herramientas y la máquina de cada cara
+Adds or changes a machine of the project (a built-in machine of the same id is replaced) or removes it	Fügt eine Maschine des Projekts hinzu, ändert sie (eine eingebaute Maschine mit derselben ID wird ersetzt) oder entfernt sie	Ajoute ou modifie une machine du projet (une machine intégrée de même identifiant est remplacée) ou la supprime	Añade o modifica una máquina del proyecto (se sustituye una máquina integrada con el mismo id) o la elimina
+Machine id (snake_case)	Maschinen-ID (snake_case)	Identifiant de machine (snake_case)	Id de máquina (snake_case)
+Name of the machine	Name der Maschine	Nom de la machine	Nombre de la máquina
+Kind: machining, punching or busbar	Art: machining, punching oder busbar	Type : machining, punching ou busbar	Tipo: machining, punching o busbar
+Program format: iso, heidenhain, punch or csv	Programmformat: iso, heidenhain, punch oder csv	Format de programme : iso, heidenhain, punch ou csv	Formato de programa: iso, heidenhain, punch o csv
+Tools, e.g. D4.2 T1; M5 T21; F10 T30; R22.5 T101; Q92x92 T120	Werkzeuge, z. B. D4.2 T1; M5 T21; F10 T30; R22.5 T101; Q92x92 T120	Outils, p. ex. D4.2 T1; M5 T21; F10 T30; R22.5 T101; Q92x92 T120	Herramientas, p. ej. D4.2 T1; M5 T21; F10 T30; R22.5 T101; Q92x92 T120
+Working area in x, mm	Arbeitsbereich in x, mm	Zone de travail en x, mm	Área de trabajo en x, mm
+Working area in y, mm	Arbeitsbereich in y, mm	Zone de travail en y, mm	Área de trabajo en y, mm
+Thickest sheet or bar, mm	Dickstes Blech oder dickste Schiene, mm	Tôle ou barre la plus épaisse, mm	Chapa o pletina más gruesa, mm
+Rapid traverse, mm/min	Eilgang, mm/min	Avance rapide, mm/min	Avance rápido, mm/min
+Milling feed, mm/min	Fräsvorschub, mm/min	Avance de fraisage, mm/min	Avance de fresado, mm/min
+Time per drilling, punching or bending operation, s	Zeit pro Bohr-, Stanz- oder Biegevorgang, s	Temps par perçage, poinçonnage ou pliage, s	Tiempo por taladrado, punzonado o doblado, s
+Time per tool change, s	Zeit pro Werkzeugwechsel, s	Temps par changement d'outil, s	Tiempo por cambio de herramienta, s
+Correction of the time estimate	Korrektur der Zeitschätzung	Correction de l'estimation du temps	Corrección de la estimación de tiempo
+Removes the machine from the project	Entfernt die Maschine aus dem Projekt	Supprime la machine du projet	Elimina la máquina del proyecto
+Shows or changes the machining strategy and which machine makes which face	Zeigt oder ändert die Bearbeitungsstrategie und welche Maschine welche Fläche fertigt	Affiche ou modifie la stratégie d'usinage et quelle machine réalise quelle face	Muestra o cambia la estrategia de mecanizado y qué máquina fabrica cada cara
+Machine of the sheet metal faces	Maschine der Blechflächen	Machine des faces en tôle	Máquina de las caras de chapa
+Machine of the copper bars	Maschine der Kupferschienen	Machine des barres de cuivre	Máquina de las pletinas de cobre
+Machine of that face (empty: the sheet machine)	Maschine dieser Fläche (leer: die Blechmaschine)	Machine de cette face (vide : la machine à tôles)	Máquina de esa cara (vacío: la máquina de chapa)
+Openings: auto (punch of the size, else contour) or contour	Ausschnitte: auto (Stempel der Größe, sonst Kontur) oder contour	Découpes : auto (poinçon de la taille, sinon contour) ou contour	Recortes: auto (punzón del tamaño, si no contorno) o contour
+Cut threads on the machine	Gewinde auf der Maschine schneiden	Tarauder sur la machine	Roscar en la máquina
+Larger round holes are milled, mm	Größere runde Löcher werden gefräst, mm	Les trous ronds plus grands sont fraisés, mm	Los agujeros redondos mayores se fresan, mm
+Largest difference between hole and tool, mm	Größte Abweichung zwischen Loch und Werkzeug, mm	Plus grand écart entre trou et outil, mm	Mayor diferencia entre agujero y herramienta, mm
+Overlap of nibbling hits (0 … 0.9)	Überlappung der Nibbelhübe (0 … 0.9)	Recouvrement des coups de grignotage (0 … 0.9)	Solape de los golpes de roedura (0 … 0.9)
+Shortest path between the hits of a tool	Kürzester Weg zwischen den Hüben eines Werkzeugs	Chemin le plus court entre les coups d'un outil	Camino más corto entre los golpes de una herramienta
+Back to the default strategy first	Zuerst zurück zur Standardstrategie	D'abord revenir à la stratégie par défaut	Volver primero a la estrategia predeterminada
+Plans the machining of a face: operations (drilling, tapping, milling, punching, nibbling), tools, path, time and what the machine cannot make	Plant die Bearbeitung einer Fläche: Arbeitsgänge (Bohren, Gewindeschneiden, Fräsen, Stanzen, Nibbeln), Werkzeuge, Weg, Zeit und was die Maschine nicht fertigen kann	Planifie l'usinage d'une face : opérations (perçage, taraudage, fraisage, poinçonnage, grignotage), outils, trajet, temps et ce que la machine ne peut pas réaliser	Planifica el mecanizado de una cara: operaciones (taladrado, roscado, fresado, punzonado, roedura), herramientas, recorrido, tiempo y lo que la máquina no puede fabricar
+Generates the CNC program of a face for its machine (ISO G-code, Heidenhain, punching code or CSV)	Erzeugt das CNC-Programm einer Fläche für ihre Maschine (ISO-G-Code, Heidenhain, Stanzcode oder CSV)	Génère le programme CN d'une face pour sa machine (code G ISO, Heidenhain, code de poinçonnage ou CSV)	Genera el programa CNC de una cara para su máquina (código G ISO, Heidenhain, código de punzonado o CSV)
+Adds a bent and drilled copper bar (or replaces the one of the same name in the enclosure)	Fügt eine gebogene und gebohrte Kupferschiene hinzu (oder ersetzt die gleichnamige im Gehäuse)	Ajoute une barre de cuivre pliée et percée (ou remplace celle du même nom dans l'armoire)	Añade una pletina de cobre doblada y taladrada (o sustituye la del mismo nombre en el armario)
+Name of the bar, e.g. L1 -Q1	Name der Schiene, z. B. L1 -Q1	Nom de la barre, p. ex. L1 -Q1	Nombre de la pletina, p. ej. L1 -Q1
+Outer lengths of the straight segments, mm, e.g. 200, 150, 300	Außenmaße der geraden Abschnitte, mm, z. B. 200, 150, 300	Longueurs extérieures des segments droits, mm, p. ex. 200, 150, 300	Longitudes exteriores de los tramos rectos, mm, p. ej. 200, 150, 300
+Bends between the segments: angle, e for edgewise, r<radius>, e.g. 90; -90 e; 45 r10	Biegungen zwischen den Abschnitten: Winkel, e für hochkant, r<Radius>, z. B. 90; -90 e; 45 r10	Pliages entre les segments : angle, e sur chant, r<rayon>, p. ex. 90; -90 e; 45 r10	Dobleces entre los tramos: ángulo, e de canto, r<radio>, p. ej. 90; -90 e; 45 r10
+Bar width, mm (default 20)	Schienenbreite, mm (Standard 20)	Largeur de la barre, mm (par défaut 20)	Ancho de la pletina, mm (por defecto 20)
+Bar thickness, mm (default 5)	Schienendicke, mm (Standard 5)	Épaisseur de la barre, mm (par défaut 5)	Espesor de la pletina, mm (por defecto 5)
+Number of equal bars	Anzahl gleicher Schienen	Nombre de barres identiques	Número de pletinas iguales
+Holes: segment:distance:diameter, e.g. 0:20:9; 2:30:11	Bohrungen: Abschnitt:Abstand:Durchmesser, z. B. 0:20:9; 2:30:11	Trous : segment:distance:diamètre, p. ex. 0:20:9; 2:30:11	Taladros: tramo:distancia:diámetro, p. ej. 0:20:9; 2:30:11
+Diameter of a hole at both ends (0: none)	Durchmesser einer Bohrung an beiden Enden (0: keine)	Diamètre d'un trou aux deux extrémités (0 : aucun)	Diámetro de un taladro en ambos extremos (0: ninguno)
+Removes a copper bar	Entfernt eine Kupferschiene	Supprime une barre de cuivre	Elimina una pletina de cobre
+Bar id	Schienen-ID	Identifiant de la barre	Id de la pletina
+Lists the copper bars developed flat: length, bends in their order, holes, problems, and the cutting from stock lengths	Listet die abgewickelten Kupferschienen: Länge, Biegungen in ihrer Reihenfolge, Bohrungen, Probleme und den Zuschnitt aus Lagerlängen	Liste les barres de cuivre développées à plat : longueur, pliages dans leur ordre, trous, problèmes et la découpe dans les longueurs de stock	Lista las pletinas de cobre desarrolladas: longitud, dobleces en su orden, taladros, problemas y el corte desde longitudes de stock
+Shows or changes the rules of copper bars; lengths in mm	Zeigt oder ändert die Regeln für Kupferschienen; Längen in mm	Affiche ou modifie les règles des barres de cuivre ; longueurs en mm	Muestra o cambia las reglas de las pletinas de cobre; longitudes en mm
+Position of the neutral fibre (0 … 1, 0: DIN 6935)	Lage der neutralen Faser (0 … 1, 0: DIN 6935)	Position de la fibre neutre (0 … 1, 0 : DIN 6935)	Posición de la fibra neutra (0 … 1, 0: DIN 6935)
+Inner radius as a multiple of the thickness	Innenradius als Vielfaches der Dicke	Rayon intérieur en multiple de l'épaisseur	Radio interior como múltiplo del espesor
+Smallest inner radius as a multiple of the thickness	Kleinster Innenradius als Vielfaches der Dicke	Plus petit rayon intérieur en multiple de l'épaisseur	Radio interior mínimo como múltiplo del espesor
+Shortest straight length next to a bend	Kürzeste gerade Länge neben einer Biegung	Plus courte longueur droite à côté d'un pliage	Longitud recta mínima junto a un doblez
+Springback in percent of the angle	Rückfederung in Prozent des Winkels	Retour élastique en pourcentage de l'angle	Recuperación elástica en porcentaje del ángulo
+Stock length of the bars	Lagerlänge der Schienen	Longueur de stock des barres	Longitud de stock de las pletinas
+Saw cut	Sägeschnitt	Trait de scie	Corte de sierra
+End holes from the bar end as a multiple of the width	Endbohrungen vom Schienenende als Vielfaches der Breite	Trous d'extrémité depuis le bout de la barre en multiple de la largeur	Taladros finales desde el extremo como múltiplo del ancho
+Generates the program of the busbar machine: cuts, punched holes and bends	Erzeugt das Programm der Schienenbearbeitungsmaschine: Schnitte, gestanzte Löcher und Biegungen	Génère le programme de la machine à barres : coupes, trous poinçonnés et pliages	Genera el programa de la máquina de pletinas: cortes, agujeros punzonados y dobleces
+Machine id (default: the busbar machine)	Maschinen-ID (Standard: die Schienenbearbeitungsmaschine)	Identifiant de machine (par défaut : la machine à barres)	Id de máquina (por defecto: la máquina de pletinas)
+Configuration of an enclosure for the configurator of the enclosure maker: system, size, components, accessories and machining	Konfiguration eines Gehäuses für den Konfigurator des Gehäuseherstellers: System, Größe, Komponenten, Zubehör und Bearbeitung	Configuration d'une armoire pour le configurateur du fabricant : système, taille, composants, accessoires et usinage	Configuración de un armario para el configurador del fabricante: sistema, tamaño, componentes, accesorios y mecanizado
+Takes over an enclosure configured in the configurator of the enclosure maker (JSON): system, size, components, accessories and cutouts	Übernimmt ein im Konfigurator des Gehäuseherstellers konfiguriertes Gehäuse (JSON): System, Größe, Komponenten, Zubehör und Ausschnitte	Reprend une armoire configurée dans le configurateur du fabricant (JSON) : système, taille, composants, accessoires et découpes	Adopta un armario configurado en el configurador del fabricante (JSON): sistema, tamaño, componentes, accesorios y recortes
+The configuration (JSON)	Die Konfiguration (JSON)	La configuration (JSON)	La configuración (JSON)
+Only shows what would change	Zeigt nur, was sich ändern würde	Montre seulement ce qui changerait	Solo muestra lo que cambiaría
+Finds the smallest standard size of an enclosure system that holds the layout and applies it	Sucht die kleinste Standardgröße eines Gehäusesystems, die den Aufbau fasst, und wendet sie an	Trouve la plus petite taille standard d'un système d'armoire qui contient l'implantation et l'applique	Busca el menor tamaño estándar de un sistema de armario que admite la disposición y lo aplica
+Enclosure system (default: the enclosure's)	Gehäusesystem (Standard: das des Gehäuses)	Système d'armoire (par défaut : celui de l'armoire)	Sistema de armario (por defecto: el del armario)
+Hands the programs of an enclosure off to production as a job: manifest and programs of all its faces and copper bars	Übergibt die Programme eines Gehäuses als Auftrag an die Fertigung: Manifest und Programme aller Flächen und Kupferschienen	Transfère les programmes d'une armoire à la production comme ordre : manifeste et programmes de toutes ses faces et barres de cuivre	Entrega los programas de un armario a producción como orden: manifiesto y programas de todas sus caras y pletinas de cobre
+Only shows the package, no job is recorded	Zeigt nur das Paket, es wird kein Auftrag angelegt	Montre seulement le paquet, aucun ordre n'est enregistré	Solo muestra el paquete, no se registra ninguna orden
+Takes over feedback of the production (CSV or JSON): job, program, operation, item, status, deviations, time, message	Übernimmt Rückmeldungen der Fertigung (CSV oder JSON): Auftrag, Programm, Arbeitsgang, Element, Status, Abweichungen, Zeit, Meldung	Reprend les retours de la production (CSV ou JSON) : ordre, programme, opération, élément, état, écarts, temps, message	Adopta la retroalimentación de producción (CSV o JSON): orden, programa, operación, elemento, estado, desviaciones, tiempo, mensaje
+The feedback (CSV with header or JSON)	Die Rückmeldung (CSV mit Kopfzeile oder JSON)	Le retour (CSV avec en-tête ou JSON)	La retroalimentación (CSV con encabezado o JSON)
+State of the jobs handed off to production: progress, failures, rework, programs changed since the hand-off	Stand der an die Fertigung übergebenen Aufträge: Fortschritt, Fehler, Nacharbeit, seit der Übergabe geänderte Programme	État des ordres transférés à la production : avancement, échecs, reprises, programmes modifiés depuis le transfert	Estado de las órdenes entregadas a producción: progreso, fallos, retrabajos, programas cambiados desde la entrega
+Calibrates the time estimate of the machines from the actual times of the production feedback	Kalibriert die Zeitschätzung der Maschinen mit den Istzeiten der Fertigungsrückmeldung	Calibre l'estimation du temps des machines à partir des temps réels du retour de production	Calibra la estimación de tiempo de las máquinas con los tiempos reales de la retroalimentación de producción
+Stores the calibrated factors	Speichert die kalibrierten Faktoren	Enregistre les facteurs calibrés	Guarda los factores calibrados
+CNC operations	CNC-Arbeitsgänge	Opérations CN	Operaciones CNC
+Copper bar cutting list	Zuschnittliste Kupferschienen	Liste de découpe des barres de cuivre	Lista de corte de pletinas de cobre
+Production status	Fertigungsstand	État de la production	Estado de la producción
+Manufacturing package (CNC programs, JSON)	Fertigungspaket (CNC-Programme, JSON)	Paquet de fabrication (programmes CN, JSON)	Paquete de fabricación (programas CNC, JSON)
+Busbar machine program (CSV)	Programm der Schienenbearbeitungsmaschine (CSV)	Programme de la machine à barres (CSV)	Programa de la máquina de pletinas (CSV)
+Operations	Arbeitsgänge	Opérations	Operaciones
+Tools	Werkzeuge	Outils	Herramientas
+Problems	Probleme	Problèmes	Problemas
+Stock bar	Lagerstange	Barre de stock	Barra de stock
+Used (mm)	Verwendet (mm)	Utilisé (mm)	Usado (mm)
+Rest (mm)	Rest (mm)	Reste (mm)	Resto (mm)
+Programs	Programme	Programmes	Programas
+Progress (%)	Fortschritt (%)	Avancement (%)	Progreso (%)
 Export page as DWG…	Seite als DWG exportieren…	Exporter la page en DWG…	Exportar página como DWG…
 Export all pages as DWG…	Alle Seiten als DWG exportieren…	Exporter toutes les pages en DWG…	Exportar todas las páginas como DWG…
 DWG drawing	DWG-Zeichnung	Dessin DWG	Dibujo DWG

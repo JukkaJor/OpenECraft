@@ -32,6 +32,7 @@ pub mod index;
 pub mod integration;
 pub mod loads;
 pub mod macros;
+pub mod manufacturing;
 pub mod marking;
 pub mod model;
 pub mod netlist;

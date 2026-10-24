@@ -487,6 +487,9 @@ pub struct Layout {
     /// and manufacturing limits.
     #[serde(skip_serializing_if = "PanelRules::is_default")]
     pub checks: PanelRules,
+    /// Machines, machining strategy, copper bars, jobs and production feedback.
+    #[serde(skip_serializing_if = "crate::manufacturing::Manufacturing::is_default")]
+    pub manufacturing: crate::manufacturing::Manufacturing,
 }
 
 impl Default for Layout {
@@ -501,6 +504,7 @@ impl Default for Layout {
             routing: Default::default(),
             frozen: Vec::new(),
             checks: PanelRules::default(),
+            manufacturing: Default::default(),
         }
     }
 }
