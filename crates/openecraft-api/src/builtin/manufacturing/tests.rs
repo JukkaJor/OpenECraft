@@ -1,5 +1,5 @@
 use super::*;
-use crate::{Origin, Plugins};
+use crate::{Args, Origin, Plugins};
 use openecraft_core::reports::Analysis;
 use openecraft_core::sample::demo_project;
 use serde_json::Map;
@@ -100,9 +100,10 @@ fn handoff_feedback_and_status() {
     // Changes after the hand-off are found by the check.
     prj.layout.enclosures[0].items.retain(|i| i.face != Face::Door);
     assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.message.contains("CAB1_door.nc")));
-    let pkg = (p.exporter("manufacturing_package").unwrap().run)(&prj).unwrap();
+    let an = Analysis::build(&prj);
+    let pkg = (p.exporter("manufacturing_package").unwrap().run)(&prj, &an, &Args(&Map::new())).unwrap().text().unwrap();
     assert!(pkg.contains("CAB1_plate.nc"));
-    let csv = (p.exporter("copper_bar_program").unwrap().run)(&prj).unwrap();
+    let csv = (p.exporter("copper_bar_program").unwrap().run)(&prj, &an, &Args(&Map::new())).unwrap().text().unwrap();
     assert!(csv.starts_with("Bar;"));
     let cut = (p.report("copper_bar_cutting").unwrap().run)(&prj, &Analysis::build(&prj)).unwrap();
     assert!(cut.rows.is_empty());

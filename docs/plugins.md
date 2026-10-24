@@ -7,7 +7,7 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 | Command | function on the project with typed parameters, returns JSON | *Plugins* menu (form for the parameters) | a command / tool of its own |
 | Check | adds issues to the project check | *Check* tab | `check` |
 | Report | table generated from the project | *Plugins* menu | `report --kind <name>` |
-| Exporter | text file generated from the project | *Plugins* menu | `export --format <name>` |
+| Exporter | file generated from the project | *File › Export* | `export --format <name>` |
 
 Names are snake_case and unique among all plugins; commands must not take the name of
 a built-in tool. Changes a command makes to the project are one undo step.
@@ -88,11 +88,11 @@ code, with the message on stderr) is an error. `project` is the project as in a
 
 | Request | Answer |
 | --- | --- |
-| `{"method": "describe"}` | `{"commands": [{"name", "help", "params": [{"name", "kind", "required", "help"}]}], "checks": [{"name", "title"}], "reports": [{"name", "title"}], "exporters": [{"name", "title", "extension"}]}` (all lists optional) |
+| `{"method": "describe"}` | `{"commands": [{"name", "help", "params": [{"name", "kind", "required", "help"}]}], "checks": [{"name", "title"}], "reports": [{"name", "title"}], "exporters": [{"name", "title", "extension", "params"}]}` (all lists optional, `params` of exporters too) |
 | `{"method": "command", "name", "params": {…}, "project": {…}}` | `{"result": <any JSON>, "project": {…}}` – `project` only if the command changed it |
 | `{"method": "check", "name", "project"}` | `{"issues": [{"severity": "error" \| "warning" \| "info", "message", "page": <page index>, "item": <item id>}]}` – `page` / `item` optional |
 | `{"method": "report", "name", "project"}` | `{"headers": ["…"], "rows": [["…"]]}` |
-| `{"method": "export", "name", "project"}` | `{"content": "file content"}` |
+| `{"method": "export", "name", "params": {…}, "project"}` | `{"content": "file content"}` (text; `params` holds what the front end passed: by convention `page`, the name of one page, and `file`, the file name) |
 
 Parameter kinds: `str`, `int`, `num`, `bool`, `ids` (list of item ids), `points`
 (list of `[x, y]` in mm), `object` (JSON object). `required` defaults to `true`.

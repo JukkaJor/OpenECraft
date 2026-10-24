@@ -4251,3 +4251,27 @@ Fluid power and process	Fluidtechnik und Verfahrenstechnik	Fluidique et procéd�
 Wiring marks	Verdrahtungsmarkierungen	Marques de câblage	Marcas de cableado
 Project checks	Projektprüfungen	Contrôles du projet	Comprobaciones del proyecto
 Devices, wires, potentials, cables, terminal strips, PLC, panel, fluid, electrical calculations, structure and translations	Geräte, Leitungen, Potentiale, Kabel, Klemmenleisten, SPS, Schaltschrank, Fluid, elektrische Berechnungen, Struktur und Übersetzungen	Appareils, fils, potentiels, câbles, borniers, API, armoire, fluide, calculs électriques, structure et traductions	Dispositivos, hilos, potenciales, cables, regleteros, PLC, armario, fluido, cálculos eléctricos, estructura y traducciones
+Page name as shown by list_pages (default: all pages)	Seitenname wie von list_pages angezeigt (Standard: alle Seiten)	Nom de la page tel qu'affiché par list_pages (par défaut : toutes les pages)	Nombre de la página como lo muestra list_pages (por defecto: todas las páginas)
+File name written into the file header	Dateiname, der in den Dateikopf geschrieben wird	Nom de fichier écrit dans l'en-tête du fichier	Nombre de archivo escrito en la cabecera del archivo
+The project has no panel layout	Das Projekt hat keinen Schaltschrankaufbau	Le projet n'a pas d'implantation d'armoire	El proyecto no tiene diseño de armario
+SVG image (one page)	SVG-Bild (eine Seite)	Image SVG (une page)	Imagen SVG (una página)
+HTML document for printing (all pages)	HTML-Dokument zum Drucken (alle Seiten)	Document HTML pour l'impression (toutes les pages)	Documento HTML para imprimir (todas las páginas)
+PDF document (bookmarks, linked cross references)	PDF-Dokument (Lesezeichen, verlinkte Querverweise)	Document PDF (signets, renvois liés)	Documento PDF (marcadores, referencias cruzadas enlazadas)
+Production wire list (CSV)	Produktions-Leitungsliste (CSV)	Liste de fils pour la production (CSV)	Lista de hilos para producción (CSV)
+PLC symbol table (CSV)	SPS-Symboltabelle (CSV)	Table de symboles API (CSV)	Tabla de símbolos del PLC (CSV)
+PLC global variables (IEC 61131-3)	Globale SPS-Variablen (IEC 61131-3)	Variables globales API (IEC 61131-3)	Variables globales del PLC (IEC 61131-3)
+PLC hardware (AutomationML)	SPS-Hardware (AutomationML)	Matériel API (AutomationML)	Hardware del PLC (AutomationML)
+Harnesses (KBL XML)	Kabelbäume (KBL-XML)	Faisceaux (KBL XML)	Mazos de cables (KBL XML)
+Marking (CSV)	Beschriftung (CSV)	Repérage (CSV)	Marcado (CSV)
+Panel layout in 3D (glTF)	Schaltschrankaufbau in 3D (glTF)	Implantation d'armoire en 3D (glTF)	Diseño de armario en 3D (glTF)
+Panel layout in 3D (STEP)	Schaltschrankaufbau in 3D (STEP)	Implantation d'armoire en 3D (STEP)	Diseño de armario en 3D (STEP)
+Panel layout in 3D (IGES)	Schaltschrankaufbau in 3D (IGES)	Implantation d'armoire en 3D (IGES)	Diseño de armario en 3D (IGES)
+Panel layout in 3D (IFC)	Schaltschrankaufbau in 3D (IFC)	Implantation d'armoire en 3D (IFC)	Diseño de armario en 3D (IFC)
+Panel layout in 3D (JT)	Schaltschrankaufbau in 3D (JT)	Implantation d'armoire en 3D (JT)	Diseño de armario en 3D (JT)
+Translation dictionary (CSV)	Übersetzungswörterbuch (CSV)	Dictionnaire de traduction (CSV)	Diccionario de traducción (CSV)
+Lists the exports (built-in and of plugins): name for export, title, file extension and parameters	Listet die Exporte (eingebaute und von Plugins): Name für export, Titel, Dateiendung und Parameter	Liste les exports (intégrés et des plugins) : nom pour export, titre, extension de fichier et paramètres	Lista las exportaciones (integradas y de plugins): nombre para export, título, extensión de archivo y parámetros
+Exports the project in a format of list_exports; binary formats (dwg, jt) need an output file	Exportiert das Projekt in einem Format von list_exports; binäre Formate (dwg, jt) brauchen eine Ausgabedatei	Exporte le projet dans un format de list_exports ; les formats binaires (dwg, jt) ont besoin d'un fichier de sortie	Exporta el proyecto en un formato de list_exports; los formatos binarios (dwg, jt) necesitan un archivo de salida
+Export name as shown by list_exports	Name des Exports, wie von list_exports angezeigt	Nom de l'export tel qu'affiché par list_exports	Nombre de la exportación como lo muestra list_exports
+Language of the project texts and reports (a project language, default the source language)	Sprache der Projekttexte und Auswertungen (eine Projektsprache, Standard die Quellsprache)	Langue des textes du projet et des rapports (une langue du projet, par défaut la langue source)	Idioma de los textos del proyecto y de los informes (un idioma del proyecto, por defecto el idioma de origen)
+Project exports	Projektexporte	Exports du projet	Exportaciones del proyecto
+SVG, HTML, PDF, DXF and DWG of the pages, production and PLC lists, harness and PLC exchange files, the panel layout in 3D and the translation dictionary	SVG, HTML, PDF, DXF und DWG der Seiten, Produktions- und SPS-Listen, Austauschdateien für Kabelbäume und SPS, der Schaltschrankaufbau in 3D und das Übersetzungswörterbuch	SVG, HTML, PDF, DXF et DWG des pages, listes de production et API, fichiers d'échange pour faisceaux et API, l'implantation d'armoire en 3D et le dictionnaire de traduction	SVG, HTML, PDF, DXF y DWG de las páginas, listas de producción y PLC, archivos de intercambio de mazos y PLC, el diseño de armario en 3D y el diccionario de traducción

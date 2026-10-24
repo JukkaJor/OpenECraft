@@ -17,7 +17,27 @@ pub use manufacturing::PanelManufacturing;
 pub use panel::PanelChecks;
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(ProjectChecks), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+    vec![Box::new(ProjectChecks), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+}
+
+/// The built-in exports of `openecraft_core::exporters` as a plugin, so that File ›
+/// Export and the `export` tool list them next to the exports of plugins.
+pub struct ProjectExports;
+
+impl Plugin for ProjectExports {
+    fn info(&self) -> Info {
+        Info {
+            id: "project_exports".into(),
+            name: Text::Borrowed(tr_const!("Project exports")),
+            version: env!("CARGO_PKG_VERSION").into(),
+            description: Text::Borrowed(tr_const!("SVG, HTML, PDF, DXF and DWG of the pages, production and PLC lists, harness and PLC exchange files, the panel layout in 3D and the translation dictionary")),
+        }
+    }
+
+    fn register(&self, reg: &mut Registry) -> Result<(), String> {
+        reg.exporters.extend(openecraft_core::exporters::builtin());
+        Ok(())
+    }
 }
 
 /// The built-in project checks of `openecraft_core::checks` as a plugin, so that the

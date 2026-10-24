@@ -22,6 +22,7 @@ pub mod emc;
 pub mod ext;
 pub mod field;
 pub mod export3d;
+pub mod exporters;
 pub mod fluid;
 pub mod document;
 pub mod forms;

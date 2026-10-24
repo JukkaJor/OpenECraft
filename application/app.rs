@@ -15,8 +15,10 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Aspect, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, potentials, properties, sample, svg, translation, wirenum};
+use crate::{history::History, potentials, properties, sample, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
+use openecraft_api::params::{text, Args};
+use serde_json::Map;
 
 mod cables_ui;
 mod compare_ui;
@@ -357,6 +359,54 @@ impl App {
         }
     }
 
+    /// File › Export: every exporter of the registry (built-in and of plugins).
+    fn export_menu(&mut self, ui: &mut egui::Ui) {
+        let exporters: Vec<openecraft_api::Exporter> = self.plugins.exporters().cloned().collect();
+        for e in exporters {
+            if ui.button(format!("{}…", text(&e.title))).clicked() {
+                let ctx = ui.ctx().clone();
+                self.run_exporter(&ctx, &e, None);
+                ui.close();
+            }
+        }
+    }
+
+    /// Runs an exporter on the project (with its texts in `lang` if given) and saves
+    /// the file. Exporters that take a page get the current one.
+    pub(super) fn run_exporter(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>) {
+        let takes = |n: &str| e.params.iter().any(|p| p.name == n);
+        let page = self.prj.pages[self.page].name.clone();
+        let base = self.suggested_name("x");
+        let base = base.trim_end_matches(".x");
+        let mut stem = if takes("page") {
+            format!("{base}_page_{page}")
+        } else if e.extension == "csv" {
+            format!("{base}_{}", e.name)
+        } else {
+            base.to_string()
+        };
+        if let Some(l) = lang.filter(|l| *l != self.prj.languages.source) {
+            stem = format!("{stem}_{l}");
+        }
+        let name = format!("{stem}.{}", e.extension);
+        let mut args = Map::new();
+        if takes("page") {
+            args.insert("page".into(), page.into());
+        }
+        if takes("file") {
+            args.insert("file".into(), name.clone().into());
+        }
+        let result = match lang {
+            Some(l) => translation::with_language(&self.prj, l, |prj| (e.run)(prj, &Analysis::build(prj), &Args(&args))),
+            None => (e.run)(&self.prj, &self.analysis, &Args(&args)),
+        };
+        let title = text(&e.title).to_string();
+        match result {
+            Ok(out) => self.export_bytes(ctx, name, (&title, &e.extension), &out.into_bytes()),
+            Err(err) => self.notify(ctx, tr_fmt!("Export failed: {}", err)),
+        }
+    }
+
     fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
         match self.io.save_bytes_as(&name, filter, content) {
             Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
@@ -550,19 +600,7 @@ impl App {
                     self.remote.window = true;
                 }
                 ui.separator();
-                if ui.button(tr("Export page as SVG…")).clicked() {
-                    let svg = svg::page_svg(&self.prj, self.page);
-                    let name = format!("{}_page_{}.svg", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
-                    self.export(&ctx, name, (tr("SVG image"), "svg"), svg);
-                }
-                if ui.button(tr("Export all pages for printing (HTML/PDF)…")).clicked() {
-                    let html = svg::print_document(&self.prj);
-                    self.export(&ctx, self.suggested_name("html"), (tr("HTML document"), "html"), html);
-                }
-                if ui.button(tr("Export as PDF (bookmarks, linked cross references)…")).clicked() {
-                    let pdf = crate::pdf::document(&self.prj);
-                    self.export(&ctx, self.suggested_name("pdf"), (tr("PDF document"), "pdf"), pdf);
-                }
+                ui.menu_button(tr("Export"), |ui| self.export_menu(ui));
                 if !self.prj.languages.targets.is_empty() {
                     ui.menu_button(tr("Export as PDF in language"), |ui| {
                         for l in self.prj.languages.all() {
@@ -573,82 +611,8 @@ impl App {
                         }
                     });
                 }
-                if ui.button(tr("Export page as DXF…")).clicked() {
-                    let dxf = crate::dxf::pages_dxf(&self.prj, &[self.page]);
-                    let name = format!("{}_page_{}.dxf", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
-                    self.export(&ctx, name, (tr("DXF drawing"), "dxf"), dxf);
-                }
-                if ui.button(tr("Export all pages as DXF…")).clicked() {
-                    let all: Vec<usize> = (0..self.prj.pages.len()).collect();
-                    let dxf = crate::dxf::pages_dxf(&self.prj, &all);
-                    self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
-                }
-                if ui.button(tr("Export page as DWG…")).clicked() {
-                    let dwg = crate::dwg::pages_dwg(&self.prj, &[self.page]);
-                    let name = format!("{}_page_{}.dwg", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
-                    self.export_dwg(&ctx, name, dwg);
-                }
-                if ui.button(tr("Export all pages as DWG…")).clicked() {
-                    let all: Vec<usize> = (0..self.prj.pages.len()).collect();
-                    let dwg = crate::dwg::pages_dwg(&self.prj, &all);
-                    self.export_dwg(&ctx, self.suggested_name("dwg"), dwg);
-                }
                 if ui.button(tr("Import DXF / DWG as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
                     self.io.open(&ctx, Purpose::Drawing);
-                }
-                ui.separator();
-                let has_layout = !self.prj.layout.enclosures.is_empty();
-                if ui
-                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (glTF)…")))
-                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices for viewers and MCAD / PLM"))
-                    .clicked()
-                {
-                    let gltf = crate::export3d::gltf(&self.prj);
-                    self.export(&ctx, self.suggested_name("gltf"), ("glTF", "gltf"), gltf);
-                }
-                if ui
-                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (STEP)…")))
-                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as faceted solids (STEP AP214)"))
-                    .clicked()
-                {
-                    let name = self.suggested_name("stp");
-                    let step = crate::export3d::step(&self.prj, &name);
-                    self.export(&ctx, name, ("STEP", "stp"), step);
-                }
-                if ui
-                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IGES)…")))
-                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as B-rep solids with planar faces (IGES 5.3)"))
-                    .clicked()
-                {
-                    let name = self.suggested_name("igs");
-                    let iges = crate::export3d::iges(&self.prj, &name);
-                    self.export(&ctx, name, ("IGES", "igs"), iges);
-                }
-                if ui
-                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (IFC)…")))
-                    .on_hover_text(tr("Enclosures as distribution boards with their components for BIM (IFC4)"))
-                    .clicked()
-                {
-                    let name = self.suggested_name("ifc");
-                    let ifc = crate::export3d::ifc(&self.prj, &name);
-                    self.export(&ctx, name, ("IFC", "ifc"), ifc);
-                }
-                if ui
-                    .add_enabled(has_layout, egui::Button::new(tr("Export panel layout in 3D (JT)…")))
-                    .on_hover_text(tr("Enclosures with plate, rails, ducts and devices as triangle meshes for PLM viewers (JT)"))
-                    .clicked()
-                {
-                    let jt = crate::export3d::jt(&self.prj);
-                    self.export_bytes(&ctx, self.suggested_name("jt"), ("JT", "jt"), &jt);
-                }
-                ui.separator();
-                if ui.button(tr("Export production wire list (CSV)…")).on_hover_text(tr("Wire numbers, ends, colour, cross-section, routed length, cable cores")).clicked() {
-                    let csv = crate::reports::production_wire_list(&self.prj, &self.analysis).to_csv();
-                    self.export(&ctx, "wire_list.csv".into(), ("CSV", "csv"), csv);
-                }
-                if ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
-                    let csv = crate::marking::csv(&crate::marking::markers(&self.prj, &self.analysis.connections));
-                    self.export(&ctx, "marking.csv".into(), ("CSV", "csv"), csv);
                 }
                 if FileIo::has_own_window() {
                     ui.separator();

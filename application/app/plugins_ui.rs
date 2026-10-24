@@ -58,21 +58,6 @@ impl App {
                 self.show_plugin_report(name, title);
             }
         }
-        let exporters: Vec<(String, String, String)> = self.plugins.exporters().map(|e| (e.name.clone(), text(&e.title).to_string(), e.extension.clone())).collect();
-        if !exporters.is_empty() {
-            ui.separator();
-        }
-        for (name, title, ext) in exporters {
-            if ui.button(tr_fmt!("⬇ {}", title)).clicked() {
-                let ctx = ui.ctx().clone();
-                let result = self.plugins.exporter(&name).map(|e| (e.run)(&self.prj));
-                match result {
-                    Some(Ok(content)) => self.export(&ctx, format!("{}.{ext}", name), (&title, &ext), content),
-                    Some(Err(e)) => self.notify(&ctx, tr_fmt!("Export failed: {}", e)),
-                    None => {}
-                }
-            }
-        }
         ui.separator();
         if ui.button(tr("Manage plugins…")).clicked() {
             self.plugins_ui.open = true;

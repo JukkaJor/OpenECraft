@@ -13,7 +13,31 @@ use std::sync::Arc;
 pub type CommandFn = dyn Fn(&mut Project, &Args) -> Result<Value, String> + Send + Sync;
 pub type CheckFn = dyn Fn(&Project, &Analysis) -> Result<Vec<Issue>, String> + Send + Sync;
 pub type ReportFn = dyn Fn(&Project, &Analysis) -> Result<Table, String> + Send + Sync;
-pub type ExportFn = dyn Fn(&Project) -> Result<String, String> + Send + Sync;
+pub type ExportFn = dyn Fn(&Project, &Analysis, &Args) -> Result<Export, String> + Send + Sync;
+
+/// What an exporter produced: a text file or a binary one.
+#[derive(Clone, Debug, PartialEq)]
+pub enum Export {
+    Text(String),
+    Binary(Vec<u8>),
+}
+
+impl Export {
+    pub fn into_bytes(self) -> Vec<u8> {
+        match self {
+            Export::Text(t) => t.into_bytes(),
+            Export::Binary(b) => b,
+        }
+    }
+
+    /// The content of a text export; `None` for a binary one.
+    pub fn text(self) -> Option<String> {
+        match self {
+            Export::Text(t) => Some(t),
+            Export::Binary(_) => None,
+        }
+    }
+}
 
 /// A function on the project with typed parameters. Offered as command of the command
 /// line, tool of the MCP server and entry of the editor's Plugins menu; changes of the
@@ -42,13 +66,18 @@ pub struct Report {
     pub run: Arc<ReportFn>,
 }
 
-/// A text file generated from the project (editor: File › Export, command line: `export`).
+/// A file generated from the project (editor: File › Export, command line: `export`).
+/// `params` are what the host may pass (by convention `page`, the name of one page,
+/// and `file`, the name the file is written under).
 #[derive(Clone)]
 pub struct Exporter {
     pub name: String,
     pub title: Text,
     /// File extension without the dot.
     pub extension: String,
+    /// The export is binary (it can only be written to a file).
+    pub binary: bool,
+    pub params: Vec<Param>,
     pub run: Arc<ExportFn>,
 }
 
@@ -78,8 +107,22 @@ impl Registry {
         self
     }
 
+    /// A text export without parameters.
     pub fn exporter(&mut self, name: impl Into<String>, title: impl Into<Text>, extension: impl Into<String>, run: impl Fn(&Project) -> Result<String, String> + Send + Sync + 'static) -> &mut Self {
-        self.exporters.push(Exporter { name: name.into(), title: title.into(), extension: extension.into(), run: Arc::new(run) });
+        self.exporter_with(name, title, extension, false, Vec::new(), move |prj, _, _| run(prj).map(Export::Text))
+    }
+
+    /// An export with parameters, binary if `binary`.
+    pub fn exporter_with(
+        &mut self,
+        name: impl Into<String>,
+        title: impl Into<Text>,
+        extension: impl Into<String>,
+        binary: bool,
+        params: Vec<Param>,
+        run: impl Fn(&Project, &Analysis, &Args) -> Result<Export, String> + Send + Sync + 'static,
+    ) -> &mut Self {
+        self.exporters.push(Exporter { name: name.into(), title: title.into(), extension: extension.into(), binary, params, run: Arc::new(run) });
         self
     }
 

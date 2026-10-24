@@ -19,8 +19,8 @@ mod remote;
 mod wiring_ui;
 
 use openecraft_core::{
-    aml, archive, cabledef, climate, compare, config, conndef, devdesc, document, dwg, dxf, electrical, electrofluid, export3d, field, fluid, forms, frame, functions, geom, graphics, harness, history, index, integration, macros, marking, model, netlist, ops, options, page_templates, panel, parts, pdf, plc, plc_hw, plugs, potentials, process, production, projects, properties, props, render, report_blocks, reports,
-    review, revision, routing, routing3d, rules, safety, sample, singleline, strips, structure, subproject, svg, symbols, symlib, tables, translation, verify, wirenum, wiring,
+    aml, archive, cabledef, climate, compare, config, conndef, devdesc, document, dwg, electrical, electrofluid, export3d, field, fluid, forms, frame, functions, geom, graphics, harness, history, index, integration, macros, marking, model, netlist, ops, options, page_templates, panel, parts, plc, plc_hw, plugs, potentials, process, production, projects, properties, props, render, report_blocks, reports,
+    review, revision, routing, routing3d, rules, safety, sample, singleline, strips, structure, subproject, symbols, symlib, tables, translation, verify, wirenum, wiring,
 };
 
 #[cfg(not(target_arch = "wasm32"))]

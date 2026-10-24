@@ -20,10 +20,9 @@ pub struct LanguagesUi {
 impl App {
     /// PDF of all pages with the project texts and generated texts in `lang`.
     pub(super) fn export_pdf_in(&mut self, ctx: &egui::Context, lang: &str) {
-        let pdf = translation::with_language(&self.prj, lang, crate::pdf::document);
-        let base = self.suggested_name("pdf");
-        let name = if lang == self.prj.languages.source { base } else { format!("{}_{lang}.pdf", base.trim_end_matches(".pdf")) };
-        self.export(ctx, name, (tr("PDF document"), "pdf"), pdf);
+        if let Some(e) = self.plugins.exporter("pdf").cloned() {
+            self.run_exporter(ctx, &e, Some(lang));
+        }
     }
 
     pub(super) fn languages_window(&mut self, ctx: &egui::Context) {

@@ -1,5 +1,5 @@
 use super::*;
-use crate::{Origin, Plugins};
+use crate::{Args, Origin, Plugins};
 use openecraft_core::sample::demo_project;
 use serde_json::Map;
 
@@ -12,8 +12,9 @@ fn statistics_counts_the_demo_project() {
     assert_eq!(out["errors"], 0);
     let table = (p.report("project_statistics").unwrap().run)(&prj, &Analysis::checked(&prj)).unwrap();
     assert_eq!(table.rows.len(), 8);
-    let tags = (p.exporter("device_tags").unwrap().run)(&prj).unwrap();
+    let tags = (p.exporter("device_tags").unwrap().run)(&prj, &Analysis::build(&prj), &Args(&Map::new())).unwrap().text().unwrap();
     assert_eq!(tags.lines().count(), structure::device_tags(&prj).len());
+    assert!(p.exporter("pdf").is_some() && p.exporter("dwg").is_some_and(|e| e.binary), "built-in exports are offered");
     assert!(p.list().iter().any(|l| l.info.id == "statistics" && l.origin == Origin::BuiltIn));
 }
 
