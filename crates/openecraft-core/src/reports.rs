@@ -277,7 +277,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
         let Some(loc) = first else { continue };
         let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
         let (name, ftext) = inst
-            .map(|s| (prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
+            .map(|s| (prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), crate::text::function_text(prj, loc.page, s).to_string()))
             .unwrap_or_default();
         let name = if dev.mains.is_empty() && !dev.others.is_empty() {
             format!("{name} ×{}", dev.others.len())

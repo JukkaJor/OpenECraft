@@ -82,7 +82,7 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 card: s.tag.clone(),
                 address: s.label.clone(),
                 input: s.sym == "plc_in",
-                function_text: s.function_text.replace('\n', " "),
+                function_text: crate::text::function_text(prj, pi, s).replace('\n', " "),
                 connected,
                 location: crate::frame::reference(prj, pi, s.pos),
             });

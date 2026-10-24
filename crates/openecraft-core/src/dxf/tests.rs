@@ -57,3 +57,26 @@ fn project_layers_and_hidden_ones() {
     assert!(p.contains(&(1, "40")), "dimension text");
     assert!(!dxf.contains("only on screen"));
 }
+
+#[test]
+fn rotated_and_styled_texts() {
+    use crate::model::*;
+    let mut prj = Project::default();
+    prj.pages[0].texts.push(TextItem {
+        id: 90,
+        pos: crate::geom::p(100.0, 100.0),
+        text: "Up".into(),
+        angle: 90.0,
+        italic: true,
+        underline: true,
+        align: crate::symbols::Anchor::Center,
+        ..Default::default()
+    });
+    let dxf = pages_dxf(&prj, &[0]);
+    let p = pairs(&dxf);
+    let at = p.iter().position(|x| *x == (1, "%%uUp")).expect("underlined text");
+    let after: Vec<(i32, &str)> = p[at + 1..at + 6].to_vec();
+    assert!(after.contains(&(50, "90.000")), "{after:?}");
+    assert!(after.contains(&(51, "15.0")), "{after:?}");
+    assert!(after.contains(&(72, "1")) && after.contains(&(73, "2")), "{after:?}");
+}

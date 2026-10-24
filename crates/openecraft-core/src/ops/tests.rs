@@ -1,4 +1,5 @@
 use super::*;
+use crate::geom::p;
 use crate::symlib::Symbols;
 
 #[test]
@@ -234,4 +235,19 @@ fn pages_move_to_another_position() {
     assert_eq!(move_page(&mut prj, 2, 0), 0);
     assert_eq!(prj.pages.iter().map(|p| p.name.clone()).collect::<Vec<_>>(), names);
     assert_eq!(move_page(&mut prj, 99, 0), 99, "out of range: unchanged");
+}
+
+#[test]
+fn rotating_a_selection_turns_its_texts() {
+    let mut prj = crate::model::Project::default();
+    let id = prj.new_id();
+    prj.pages[0].texts.push(crate::model::TextItem { id, pos: crate::geom::p(100.0, 100.0), text: "T".into(), ..Default::default() });
+    let symbols = prj.symbol_table();
+    let sel: std::collections::BTreeSet<u64> = [id].into_iter().collect();
+    rotate(&symbols, &mut prj.pages[0], &sel);
+    assert_eq!(prj.pages[0].texts[0].angle, 270.0, "clockwise like the symbols");
+    rotate(&symbols, &mut prj.pages[0], &sel);
+    rotate(&symbols, &mut prj.pages[0], &sel);
+    rotate(&symbols, &mut prj.pages[0], &sel);
+    assert_eq!(prj.pages[0].texts[0].angle, 0.0);
 }

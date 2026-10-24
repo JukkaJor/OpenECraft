@@ -430,46 +430,46 @@ impl ReportKind {
     /// Name of the report in files, on the command line and in the registry.
     pub fn name(self) -> &'static str {
         match self {
-            ReportKind::TableOfContents => "table_of_contents",
-            ReportKind::DeviceList => "device_list",
-            ReportKind::BillOfMaterials => "bill_of_materials",
-            ReportKind::TerminalDiagram => "terminal_diagram",
-            ReportKind::TerminalLineup => "terminal_lineup",
-            ReportKind::TerminalStripOverview => "terminal_strip_overview",
-            ReportKind::TerminalConnections => "terminal_connections",
-            ReportKind::PlugDiagram => "plug_diagram",
-            ReportKind::PinConnections => "pin_connections",
-            ReportKind::ConnectionList => "connection_list",
-            ReportKind::DeviceConnections => "device_connections",
-            ReportKind::PlcAssignment => "plc_assignment",
-            ReportKind::PotentialList => "potential_list",
-            ReportKind::PanelWiring => "panel_wiring",
-            ReportKind::CableOverview => "cable_overview",
-            ReportKind::CableDiagram => "cable_diagram",
-            ReportKind::CableConnections => "cable_connections",
-            ReportKind::CableSizing => "cable_sizing",
-            ReportKind::RevisionOverview => "revision_overview",
-            ReportKind::HarnessData => "harness_data",
-            ReportKind::DuctFill => "duct_fill",
-            ReportKind::PanelLegend => "panel_legend",
-            ReportKind::Climate => "climate",
-            ReportKind::Marking => "marking",
-            ReportKind::HoseList => "hose_list",
-            ReportKind::PctLoops => "pct_loops",
-            ReportKind::FluidNetlist => "fluid_netlist",
-            ReportKind::HoseConfiguration => "hose_configuration",
-            ReportKind::TubingList => "tubing_list",
-            ReportKind::FluidDeviceGroups => "fluid_device_groups",
-            ReportKind::ElectroFluid => "electro_fluid",
-            ReportKind::RoutingList => "routing_list",
-            ReportKind::BundleList => "bundle_list",
-            ReportKind::ShortCircuit => "short_circuit",
-            ReportKind::Selectivity => "selectivity",
-            ReportKind::LoadCalculation => "load_calculation",
-            ReportKind::PowerSupplyBudget => "power_supply_budget",
-            ReportKind::SafetyFunctions => "safety_functions",
-            ReportKind::Verification => "verification",
-            ReportKind::FieldRouting => "field_routing",
+            ReportKind::TableOfContents => "table_of_contents",
+            ReportKind::DeviceList => "device_list",
+            ReportKind::BillOfMaterials => "bill_of_materials",
+            ReportKind::TerminalDiagram => "terminal_diagram",
+            ReportKind::TerminalLineup => "terminal_lineup",
+            ReportKind::TerminalStripOverview => "terminal_strip_overview",
+            ReportKind::TerminalConnections => "terminal_connections",
+            ReportKind::PlugDiagram => "plug_diagram",
+            ReportKind::PinConnections => "pin_connections",
+            ReportKind::ConnectionList => "connection_list",
+            ReportKind::DeviceConnections => "device_connections",
+            ReportKind::PlcAssignment => "plc_assignment",
+            ReportKind::PotentialList => "potential_list",
+            ReportKind::PanelWiring => "panel_wiring",
+            ReportKind::CableOverview => "cable_overview",
+            ReportKind::CableDiagram => "cable_diagram",
+            ReportKind::CableConnections => "cable_connections",
+            ReportKind::CableSizing => "cable_sizing",
+            ReportKind::RevisionOverview => "revision_overview",
+            ReportKind::HarnessData => "harness_data",
+            ReportKind::DuctFill => "duct_fill",
+            ReportKind::PanelLegend => "panel_legend",
+            ReportKind::Climate => "climate",
+            ReportKind::Marking => "marking",
+            ReportKind::HoseList => "hose_list",
+            ReportKind::PctLoops => "pct_loops",
+            ReportKind::FluidNetlist => "fluid_netlist",
+            ReportKind::HoseConfiguration => "hose_configuration",
+            ReportKind::TubingList => "tubing_list",
+            ReportKind::FluidDeviceGroups => "fluid_device_groups",
+            ReportKind::ElectroFluid => "electro_fluid",
+            ReportKind::RoutingList => "routing_list",
+            ReportKind::BundleList => "bundle_list",
+            ReportKind::ShortCircuit => "short_circuit",
+            ReportKind::Selectivity => "selectivity",
+            ReportKind::LoadCalculation => "load_calculation",
+            ReportKind::PowerSupplyBudget => "power_supply_budget",
+            ReportKind::SafetyFunctions => "safety_functions",
+            ReportKind::Verification => "verification",
+            ReportKind::FieldRouting => "field_routing",
             ReportKind::Bonding => "bonding",
         }
     }
@@ -915,22 +915,82 @@ impl Default for WireNumbering {
     }
 }
 
+/// Vertical anchor of a text at its position.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum VAnchor {
+    #[default]
+    Top,
+    Middle,
+    Bottom,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct TextItem {
     pub id: u64,
     pub pos: P,
+    /// Placeholders such as `{page}` or `{prop:Name}` are filled in when the text is
+    /// drawn (special texts, see `forms::fill`).
     pub text: String,
     pub size: f32,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub layer: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<[u8; 3]>,
+    /// Rotation in degrees, counter-clockwise (90: reads from bottom to top).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub angle: f32,
+    /// Horizontal alignment of the lines at `pos`.
+    #[serde(skip_serializing_if = "is_left", default = "default_anchor")]
+    pub align: crate::symbols::Anchor,
+    /// Which line `pos` is on: the first, the middle of the block or the last.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub valign: VAnchor,
+    /// Lines are wrapped at this width in mm; 0 = no wrapping.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub width: f32,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub bold: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub italic: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub underline: bool,
+    /// Border around the text.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub frame: bool,
+    /// Opaque background in the paper colour (covers what is behind the text).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub background: bool,
+    /// Hyperlink (URL) opened from the text.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub link: String,
+    /// Path function text: the function text of the functions in its column that
+    /// have none of their own.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub path_function: bool,
 }
 
 impl Default for TextItem {
     fn default() -> Self {
-        TextItem { id: 0, pos: P::default(), text: String::new(), size: 3.0, layer: String::new(), color: None }
+        TextItem {
+            id: 0,
+            pos: P::default(),
+            text: String::new(),
+            size: 3.0,
+            layer: String::new(),
+            color: None,
+            angle: 0.0,
+            align: crate::symbols::Anchor::Left,
+            valign: VAnchor::Top,
+            width: 0.0,
+            bold: false,
+            italic: false,
+            underline: false,
+            frame: false,
+            background: false,
+            link: String::new(),
+            path_function: false,
+        }
     }
 }
 

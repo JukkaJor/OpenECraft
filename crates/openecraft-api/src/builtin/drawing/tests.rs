@@ -114,3 +114,22 @@ fn routing_autoconnect_and_definitions() {
     assert_eq!(cable["cores"].as_array().unwrap().len(), 1);
     assert!(run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[30, 60], [50, 60]], "cable": "-W99" })).is_err());
 }
+
+#[test]
+fn texts_with_style_placeholders_and_links() {
+    let mut s = new_session();
+    let t = run(
+        &mut s,
+        "add_text",
+        json!({ "page": "1", "x": 100, "y": 100, "text": "Pump {page.name}", "angle": 90, "align": "center", "valign": "middle", "bold": true, "width": 40, "link": "https://example.org", "path_function": true }),
+    )
+    .unwrap();
+    assert_eq!((t["angle"].as_f64(), t["align"].as_str(), t["valign"].as_str(), t["bold"].as_bool()), (Some(90.0), Some("center"), Some("middle"), Some(true)));
+    let id = t["id"].as_u64().unwrap();
+    assert!(run(&mut s, "update_text", json!({ "page": "1", "id": id, "align": "sideways" })).is_err());
+    let t = run(&mut s, "update_text", json!({ "page": "1", "id": id, "italic": true, "angle": -90, "text": "Motor" })).unwrap();
+    assert_eq!((t["italic"].as_bool(), t["angle"].as_f64(), t["text"].as_str(), t["bold"].as_bool()), (Some(true), Some(270.0), Some("Motor"), Some(true)));
+    let item = s.project().unwrap().pages[0].texts.iter().find(|t| t.id == id).cloned().unwrap();
+    assert!(item.path_function && item.link == "https://example.org" && item.width == 40.0);
+    assert_eq!(run(&mut s, "update_text", json!({ "page": "1", "id": 999 })).unwrap_err(), "No text with id 999");
+}

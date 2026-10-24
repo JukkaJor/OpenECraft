@@ -4,7 +4,7 @@
 
 use crate::geom::P;
 use crate::model::Project;
-use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
+use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
@@ -27,7 +27,7 @@ fn layer(ink: Ink) -> &'static str {
         Ink::Frame | Ink::FrameText => "OEC_FRAME",
         Ink::CrossRef => "OEC_XREF",
         Ink::Error => "OEC_ERROR",
-        Ink::Plate | Ink::Fill => "OEC_FILL",
+        Ink::Plate | Ink::Fill | Ink::Paper => "OEC_FILL",
         _ => "OEC_LINES",
     }
 }
@@ -115,19 +115,31 @@ impl Draw for DxfDraw {
     }
 
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink) {
+        self.styled_text(pos, text, &TextStyle::plain(size, h, v), ink);
+    }
+
+    fn styled_text(&mut self, pos: P, text: &str, st: &TextStyle, ink: Ink) {
         if text.is_empty() {
             return;
         }
         self.entity("TEXT", ink, false);
         self.pt(10, pos);
-        // Cap height of the SVG / screen text (font size 1.25 × size).
-        let _ = write!(self.out, "40\n{:.3}\n1\n{}\n", size * 0.9, dxf_text(text));
-        let h = match h {
+        // Cap height of the SVG / screen text (font size 1.25 × size); `%%u` underlines.
+        let shown = format!("{}{}", if st.underline { "%%u" } else { "" }, dxf_text(text));
+        let _ = write!(self.out, "40\n{:.3}\n1\n{}\n", st.size * 0.9, shown);
+        if st.angle != 0.0 {
+            let _ = write!(self.out, "50\n{:.3}\n", st.angle);
+        }
+        if st.italic {
+            self.out.push_str("51\n15.0\n");
+        }
+        let h = match st.h {
             Anchor::Left => 0,
             Anchor::Center => 1,
             Anchor::Right => 2,
         };
-        let v = match v {
+        let v = match st.v {
+            VAnchor::Top => 3,
             VAnchor::Middle => 2,
             VAnchor::Bottom => 1,
         };

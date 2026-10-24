@@ -345,6 +345,9 @@ impl eframe::App for App {
                     self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.session.prj, page, &idx, &self.session.analysis);
                     let _ = out.open_properties;
+                    if let Some(url) = out.open_url {
+                        ctx.open_url(egui::OpenUrl::new_tab(url));
+                    }
                     if let Some(msg) = out.message {
                         self.notify(&ctx, msg);
                     }

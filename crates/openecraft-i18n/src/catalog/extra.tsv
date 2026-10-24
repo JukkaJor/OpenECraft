@@ -4308,3 +4308,34 @@ Property and function definitions, property values and placement schemes	Eigensc
 Options and rules of the configurator	Optionen und Regeln des Konfigurators	Options et règles du configurateur	Opciones y reglas del configurador
 Report blocks and report schemes	Auswertungsblöcke und Auswertungsschemata	Blocs et schémas de rapport	Bloques y esquemas de informe
 Subprojects, model options and the project data check	Teilprojekte, Modelloptionen und die Prüfung der Projektdaten	Sous-projets, options de modèle et contrôle des données du projet	Subproyectos, opciones de modelo y la comprobación de los datos del proyecto
+Top	Oben	Haut	Arriba
+Middle	Mitte	Milieu	Centro
+Wrap width (mm)	Umbruchbreite (mm)	Largeur de retour à la ligne (mm)	Ancho de ajuste (mm)
+0: no wrapping	0: kein Umbruch	0 : pas de retour à la ligne	0: sin ajuste
+Bold	Fett	Gras	Negrita
+Italic	Kursiv	Italique	Cursiva
+Underline	Unterstrichen	Souligné	Subrayado
+Frame	Rahmen	Cadre	Marco
+Border	Umrandung	Bordure	Borde
+Background	Hintergrund	Arrière-plan	Fondo
+Covers what is behind the text	Deckt ab, was hinter dem Text liegt	Couvre ce qui se trouve derrière le texte	Cubre lo que hay detrás del texto
+Insert placeholder…	Platzhalter einfügen…	Insérer un espace réservé…	Insertar marcador…
+Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn	Sondertext: Projekt- und Seiteneigenschaften wie {page} oder {prop:Name} werden beim Zeichnen der Seite eingesetzt	Texte spécial : les propriétés du projet et de la page telles que {page} ou {prop:Name} sont remplies au dessin de la page	Texto especial: las propiedades del proyecto y de la página como {page} o {prop:Name} se rellenan al dibujar la página
+Special text	Sondertext	Texte spécial	Texto especial
+Path function text	Pfad-Funktionstext	Texte de fonction de chemin	Texto de función de camino
+Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)	Funktionstext der Funktionen in dieser Spalte, die keinen eigenen haben (Betriebsmittelliste, Klemmen-, Stecker- und SPS-Pläne)	Texte de fonction des fonctions de cette colonne qui n'en ont pas (liste des appareils, plans de bornes, de connecteurs et d'API)	Texto de función de las funciones de esta columna que no tienen uno propio (lista de dispositivos, diagramas de bornes, conectores y PLC)
+Ctrl + click on the text opens it as well	Strg + Klick auf den Text öffnet ihn ebenfalls	Ctrl + clic sur le texte l'ouvre aussi	Ctrl + clic en el texto también lo abre
+Text; placeholders such as {page} or {prop:Name} are filled in when drawn	Text; Platzhalter wie {page} oder {prop:Name} werden beim Zeichnen eingesetzt	Texte ; les espaces réservés tels que {page} ou {prop:Name} sont remplis au dessin	Texto; los marcadores como {page} o {prop:Name} se rellenan al dibujar
+Rotation in degrees, counter-clockwise (90 reads from bottom to top)	Drehung in Grad, gegen den Uhrzeigersinn (90 liest sich von unten nach oben)	Rotation en degrés, dans le sens antihoraire (90 se lit de bas en haut)	Rotación en grados, en sentido antihorario (90 se lee de abajo arriba)
+Horizontal alignment: left, center or right	Horizontale Ausrichtung: left, center oder right	Alignement horizontal : left, center ou right	Alineación horizontal: left, center o right
+Which line the position is on: top (first), middle or bottom (last)	Zeile an der Position: top (erste), middle oder bottom (letzte)	Ligne située à la position : top (première), middle ou bottom (dernière)	Línea en la posición: top (primera), middle o bottom (última)
+Wrap width in mm (0: no wrapping)	Umbruchbreite in mm (0: kein Umbruch)	Largeur de retour à la ligne en mm (0 : aucun)	Ancho de ajuste en mm (0: sin ajuste)
+Border around the text	Umrandung um den Text	Bordure autour du texte	Borde alrededor del texto
+Opaque background in the paper colour	Deckender Hintergrund in Papierfarbe	Arrière-plan opaque de la couleur du papier	Fondo opaco del color del papel
+Hyperlink (URL)	Hyperlink (URL)	Hyperlien (URL)	Hipervínculo (URL)
+Path function text: function text of the functions in its column that have none	Pfad-Funktionstext: Funktionstext der Funktionen seiner Spalte ohne eigenen	Texte de fonction de chemin : texte de fonction des fonctions de sa colonne qui n'en ont pas	Texto de función de camino: texto de función de las funciones de su columna que no tienen uno
+Changes a text (only the given properties)	Ändert einen Text (nur die angegebenen Eigenschaften)	Modifie un texte (seulement les propriétés indiquées)	Cambia un texto (solo las propiedades indicadas)
+Id of the text	Id des Textes	Id du texte	Id del texto
+Unknown alignment: {}	Unbekannte Ausrichtung: {}	Alignement inconnu : {}	Alineación desconocida: {}
+Unknown vertical anchor: {}	Unbekannter vertikaler Anker: {}	Ancrage vertical inconnu : {}	Anclaje vertical desconocido: {}
+No text with id {}	Kein Text mit Id {}	Aucun texte avec l'id {}	Ningún texto con id {}

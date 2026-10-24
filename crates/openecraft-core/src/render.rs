@@ -10,7 +10,7 @@ use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
 use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::analysis::Analysis;
-use crate::{graphics, structure, wirenum};
+use crate::{graphics, structure, text, wirenum};
 use crate::symbols::{Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef, SymbolRef};
 use std::collections::{BTreeSet, HashSet};
 
@@ -33,24 +33,29 @@ pub enum Ink {
     Fill,
     /// Wire drawn in its own colour (RGB).
     Color([u8; 3]),
+    /// Paper colour (opaque backgrounds of texts).
+    Paper,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum VAnchor {
-    Middle,
-    Bottom,
-}
-
+pub use crate::model::VAnchor;
+pub use crate::text::TextStyle;
 pub trait Draw {
     fn line(&mut self, a: P, b: P, width: f32, ink: Ink, dashed: bool);
     fn poly(&mut self, pts: &[P], closed: bool, width: f32, ink: Ink, fill: bool);
     fn circle(&mut self, c: P, r: f32, width: f32, ink: Ink, fill: bool);
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink);
+    /// Text with rotation and style (free texts); back ends that cannot draw them
+    /// show the plain text.
+    fn styled_text(&mut self, pos: P, text: &str, style: &TextStyle, ink: Ink) {
+        self.text(pos, text, style.size, style.h, style.v, ink);
+    }
     fn rect(&mut self, a: P, b: P, width: f32, ink: Ink, fill: bool) {
         self.poly(&[a, p(b.x, a.y), b, p(a.x, b.y)], true, width, ink, fill);
     }
     /// Marks the area `min`..`max` as a link to another page (PDF export).
     fn link(&mut self, _min: P, _max: P, _page: usize) {}
+    /// Marks the area `min`..`max` as a hyperlink (PDF and SVG export).
+    fn link_url(&mut self, _min: P, _max: P, _url: &str) {}
     /// Draws a bitmap; back ends that cannot show it draw a frame with its name.
     fn image(&mut self, img: &ImageItem) {
         image_placeholder(self, img);
@@ -204,10 +209,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     for t in page.texts.iter().filter(|t| shown(&t.layer)) {
         d.layer(Some(&t.layer));
-        let ink = item_ink(t.id, t.color, &t.layer, Ink::Text);
-        for (i, line) in t.text.lines().enumerate() {
-            d.text(t.pos + p(0.0, i as f32 * t.size * 1.4), line, t.size, Anchor::Left, VAnchor::Middle, ink);
-        }
+        draw_text_item(d, prj, page_i, t, item_ink(t.id, t.color, &t.layer, Ink::Text));
     }
     d.layer(None);
     if !opts.hide_revision_marks {
@@ -215,6 +217,44 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     if opts.review {
         crate::review::draw(d, prj, page_i, opts.review_selected);
+    }
+}
+
+/// The text of a free text as shown: placeholders such as `{page}` or `{prop:Name}`
+/// (special texts) are filled in.
+pub fn text_shown(prj: &Project, page_i: usize, t: &TextItem) -> String {
+    if t.text.contains('{') {
+        crate::forms::fill(&t.text, prj, page_i)
+    } else {
+        t.text.clone()
+    }
+}
+
+/// Area of a free text as shown (picking).
+pub fn text_bounds(prj: &Project, page_i: usize, t: &TextItem) -> R {
+    text::bounds(t, &text_shown(prj, page_i, t))
+}
+
+/// Draws a free text: background and frame, its lines with rotation, alignment and
+/// style, and its hyperlink.
+pub fn draw_text_item(d: &mut dyn Draw, prj: &Project, page_i: usize, t: &TextItem, ink: Ink) {
+    let shown = text_shown(prj, page_i, t);
+    if t.background || t.frame {
+        let c = text::corners(t, &shown, 0.25);
+        if t.background {
+            d.poly(&c, true, 0.0, Ink::Paper, true);
+        }
+        if t.frame {
+            d.poly(&c, true, SYMBOL_W, if ink == Ink::Text { Ink::Line } else { ink }, false);
+        }
+    }
+    let style = TextStyle::of(t);
+    for (q, line) in text::lines(t, &shown) {
+        d.styled_text(q, &line, &style, ink);
+    }
+    if !t.link.is_empty() {
+        let b = text::bounds(t, &shown);
+        d.link_url(b.min, b.max, &t.link);
     }
 }
 

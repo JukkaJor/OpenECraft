@@ -288,6 +288,17 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
   snapping, pan and zoom.
+- **Texts**: free texts with rotation (0 … 359°, e.g. reading upwards along a terminal
+  strip), left / centred / right alignment, a vertical anchor, word wrap at a set
+  width, bold / italic / underline, a border and an opaque background, and a hyperlink
+  (Ctrl + click opens it; clickable in the PDF and SVG export). **Special texts** show
+  project and page properties anywhere on a page: placeholders such as `{page}`,
+  `{project}` or `{prop:Name}` (the same as in title blocks, Insert › Special text) are
+  filled in when the page is drawn. A **path function text** (Insert › Path function
+  text) is the function text of all functions in its column that have none of their
+  own; the device list, terminal, plug and PLC diagrams use it. Texts turn with a
+  rotated selection; DXF / DWG import keeps text rotation and alignment. Command line /
+  MCP: `add_text`, `update_text`.
 - **Schematic graphics**: lines, rectangles, circles, ellipses, arcs, polylines and
   polygons (width, colour, dashed, filled), dimensions (aligned / horizontal / vertical,
   scale, unit), PNG / JPEG images (also in the PDF and SVG export). **Layers**

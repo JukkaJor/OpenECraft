@@ -1,7 +1,7 @@
 //! Editing operations on a page: placement defaults, move, rotate, delete, copy/paste.
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
-use crate::geom::{p, P, R, GRID};
+use crate::geom::{P, R, GRID};
 use crate::model::*;
 use crate::symlib::Symbols;
 use crate::symbols::{ContactKind, Func, PinKind, SymbolDef};
@@ -188,11 +188,10 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
     s
 }
 
+/// Area of a text as written (placeholders not filled in; `render::text_bounds`
+/// knows the project).
 pub fn text_bounds(t: &TextItem) -> R {
-    let lines: Vec<&str> = t.text.lines().collect();
-    let w = lines.iter().map(|l| l.chars().count()).max().unwrap_or(1).max(1) as f32 * t.size * 0.62;
-    let h = lines.len().max(1) as f32 * t.size * 1.4;
-    R::from_points(p(t.pos.x, t.pos.y - t.size * 0.7), p(t.pos.x + w, t.pos.y - t.size * 0.7 + h))
+    crate::text::bounds(t, &t.text)
 }
 
 /// Bounding box of any item on a page.
@@ -343,6 +342,9 @@ pub fn rotate(symbols: &Symbols, page: &mut Page, sel: &BTreeSet<u64>) {
     for w in page.wires.iter_mut().filter(|w| sel.contains(&w.id)) {
         w.a = rot(w.a);
         w.b = rot(w.b);
+    }
+    for t in page.texts.iter_mut().filter(|t| sel.contains(&t.id)) {
+        t.angle = (t.angle - 90.0).rem_euclid(360.0);
     }
     map_items(page, sel, rot);
     // Attached wire ends follow their connection point.

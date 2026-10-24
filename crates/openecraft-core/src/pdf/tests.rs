@@ -77,3 +77,23 @@ fn images_become_xobjects() {
     assert!(pdf.contains("/XObject << /Im0 "));
     assert!(pdf.contains("(alpha.png) Tj"));
 }
+
+#[test]
+fn styled_texts_fonts_rotation_and_hyperlinks() {
+    use crate::geom::p;
+    use crate::model::*;
+    let mut prj = Project::default();
+    let pg = &mut prj.pages[0];
+    pg.texts.push(TextItem { id: 1, pos: p(100.0, 100.0), text: "Up".into(), angle: 90.0, bold: true, ..Default::default() });
+    pg.texts.push(TextItem { id: 2, pos: p(50.0, 50.0), text: "Docs".into(), italic: true, underline: true, link: "https://example.org/a(b)".into(), ..Default::default() });
+    let pdf = document(&prj);
+    for name in ["Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique"] {
+        assert!(pdf.contains(&format!("/BaseFont /{name}")), "{name}");
+    }
+    assert!(pdf.contains("/F2 ") && pdf.contains("/F3 ") && pdf.contains("/F4 "), "the page lists the four fonts");
+    let up = pdf.lines().find(|l| l.ends_with("(Up) Tj ET")).expect("rotated text");
+    assert!(up.contains("rg BT /F2 ") && up.contains(" 1.0000 -1.0000 ") && up.contains(" Tm "), "{up}");
+    let docs = pdf.lines().find(|l| l.ends_with("(Docs) Tj ET")).expect("italic text");
+    assert!(docs.contains("rg BT /F3 ") && docs.contains(" Td "), "{docs}");
+    assert!(pdf.contains("/A << /S /URI /URI (https://example.org/a\\(b\\)) >>"), "{pdf}");
+}

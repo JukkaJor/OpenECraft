@@ -7,7 +7,10 @@ use openecraft_core::frame::PlotFrame;
 use openecraft_core::index::Index;
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, Clip, PlaceCtx};
-use openecraft_core::render::{self, Draw, Ink, Opts, VAnchor};
+use openecraft_core::render::{self, Draw, Ink, Opts, TextStyle, VAnchor};
+use egui::emath::Rot2;
+use egui::epaint::{Tessellator, TextShape};
+use egui::Mesh;
 use openecraft_core::analysis::Analysis;
 use openecraft_core::review::{Hit, MarkupKind, Pen};
 use openecraft_core::symlib::Symbols;
@@ -176,6 +179,7 @@ impl Palette {
             Ink::Plate => self.plate,
             Ink::Fill => self.fill,
             Ink::Color([r, g, b]) => Color32::from_rgb(r, g, b),
+            Ink::Paper => self.paper,
         }
     }
 }
@@ -254,22 +258,45 @@ impl Draw for EguiDraw<'_> {
     }
 
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink) {
-        let px = size * self.zoom * 1.25;
+        self.styled_text(pos, text, &TextStyle::plain(size, h, v), ink);
+    }
+
+    fn styled_text(&mut self, pos: P, text: &str, st: &TextStyle, ink: Ink) {
+        let px = st.size * self.zoom * 1.25;
         if px < 3.0 || text.is_empty() {
             return;
         }
-        let align = Align2([
-            match h {
-                Anchor::Left => egui::Align::Min,
-                Anchor::Center => egui::Align::Center,
-                Anchor::Right => egui::Align::Max,
+        let color = self.color(ink);
+        let galley = self.painter.layout_no_wrap(text.to_string(), FontId::proportional(px), color);
+        let size = galley.size();
+        // Top left corner of the text relative to its anchor, before the rotation.
+        let off = vec2(
+            match st.h {
+                Anchor::Left => 0.0,
+                Anchor::Center => -size.x / 2.0,
+                Anchor::Right => -size.x,
             },
-            match v {
-                VAnchor::Middle => egui::Align::Center,
-                VAnchor::Bottom => egui::Align::Max,
+            match st.v {
+                VAnchor::Top => 0.0,
+                VAnchor::Middle => -size.y / 2.0,
+                VAnchor::Bottom => -size.y,
             },
-        ]);
-        self.painter.text(self.w2s(pos), align, text, FontId::proportional(px), self.color(ink));
+        );
+        // egui turns clockwise; the text's angle is counter-clockwise.
+        let angle = -st.angle.to_radians();
+        let rot = Rot2::from_angle(angle);
+        let anchor = self.w2s(pos);
+        let underline = if st.underline { Stroke::new((px * 0.06).max(1.0), color) } else { Stroke::NONE };
+        // Bold: a second copy a little to the right.
+        let copies: &[f32] = if st.bold { &[0.0, px * 0.05] } else { &[0.0] };
+        for dx in copies {
+            let shape = TextShape::new(anchor + rot * (off + vec2(*dx, 0.0)), galley.clone(), color).with_angle(angle).with_underline(underline);
+            if st.italic {
+                self.painter.add(EShape::mesh(skewed(self.painter, &shape, 0.2)));
+            } else {
+                self.painter.add(EShape::Text(shape));
+            }
+        }
     }
 
     fn image(&mut self, img: &ImageItem) {
@@ -283,6 +310,22 @@ impl Draw for EguiDraw<'_> {
             _ => render::image_placeholder(self, img),
         }
     }
+}
+
+/// Tessellates a text shape with its glyphs leaning by `k` (italic): a shear along
+/// the baseline, applied before the shape's rotation.
+fn skewed(painter: &Painter, shape: &TextShape, k: f32) -> Mesh {
+    let tex = painter.fonts(|f| f.font_image_size());
+    let options = painter.ctx().tessellation_options(|o| *o);
+    let local = TextShape::new(Pos2::ZERO, shape.galley.clone(), shape.fallback_color).with_underline(shape.underline);
+    let mut mesh = Mesh::default();
+    Tessellator::new(painter.pixels_per_point(), options, tex, Vec::new()).tessellate_text(&local, &mut mesh);
+    let h = shape.galley.size().y;
+    let rot = Rot2::from_angle(shape.angle);
+    for v in &mut mesh.vertices {
+        v.pos = shape.pos + rot * vec2(v.pos.x + (h - v.pos.y) * k, v.pos.y);
+    }
+    mesh
 }
 
 fn convex(pts: &[P]) -> bool {
@@ -366,6 +409,8 @@ pub struct Editor {
     pub show_revision_marks: bool,
     /// Layer of new graphics, texts, dimensions and images.
     pub active_layer: String,
+    /// The next text to place (path function text, special text); None: a plain text.
+    pub text_proto: Option<TextItem>,
     /// Connect facing connection points after placing or moving symbols.
     pub autoconnect: bool,
     /// The wire tool routes around symbols and other wires.
@@ -427,6 +472,7 @@ impl Default for Editor {
             frame: PlotFrame::default(),
             textures: HashMap::new(),
             route_cache: None,
+            text_proto: None,
         }
     }
 }
@@ -442,6 +488,8 @@ pub struct CanvasOutput {
     pub review: Option<ReviewInput>,
     /// Click with the select tool (world position), for picking comments and markup.
     pub clicked: Option<P>,
+    /// Hyperlink of a text the user Ctrl-clicked.
+    pub open_url: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -482,6 +530,7 @@ impl Editor {
     pub fn set_tool(&mut self, tool: Tool) {
         self.tool = tool;
         self.wire_start = None;
+        self.text_proto = None;
         self.pts.clear();
         if self.tool != Tool::Select {
             self.selection.clear();
@@ -528,7 +577,7 @@ impl Editor {
         let tol = (8.0 / self.zoom).max(0.4);
         let usable = |layer: &str| graphics::shown(prj, layer, false) && !graphics::locked(prj, layer);
         for t in page.texts.iter().rev().filter(|t| usable(&t.layer)) {
-            if ops::text_bounds(t).expand(tol * 0.5).contains(q) {
+            if render::text_bounds(prj, page_i, t).expand(tol * 0.5).contains(q) {
                 return Some(t.id);
             }
         }
@@ -1171,7 +1220,11 @@ impl Editor {
             Tool::Text => {
                 if let Some(sn) = click {
                     let id = prj.new_id();
-                    prj.pages[page_i].texts.push(TextItem { id, pos: sn, text: "Text".into(), size: 3.0, layer: self.active_layer.clone(), color: None });
+                    let mut t = self.text_proto.take().unwrap_or_else(|| TextItem { text: "Text".into(), ..Default::default() });
+                    t.id = id;
+                    t.pos = sn;
+                    t.layer = self.active_layer.clone();
+                    prj.pages[page_i].texts.push(t);
                     self.set_tool(Tool::Select);
                     self.selection.insert(id);
                     out.open_properties = true;
@@ -1305,7 +1358,13 @@ impl Editor {
         }
         if resp.clicked_by(PointerButton::Primary) {
             if let Some(w) = world {
-                match self.hit(prj, page_i, w) {
+                let hit = self.hit(prj, page_i, w);
+                let ctrl = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                if let (true, Some(link)) = (ctrl, hit.and_then(|id| prj.pages[page_i].texts.iter().find(|t| t.id == id)).map(|t| t.link.clone()).filter(|l| !l.is_empty())) {
+                    out.open_url = Some(link);
+                    return;
+                }
+                match hit {
                     Some(id) => {
                         if shift {
                             if !self.selection.remove(&id) {

@@ -115,6 +115,23 @@ impl App {
         if ui.button(tr("Text   T")).clicked() {
             self.editor.set_tool(Tool::Text);
         }
+        if ui
+            .button(tr("Path function text"))
+            .on_hover_text(tr("Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)"))
+            .clicked()
+        {
+            self.editor.set_tool(Tool::Text);
+            self.editor.text_proto = Some(openecraft_core::model::TextItem { text: "Function text".into(), path_function: true, ..Default::default() });
+        }
+        ui.menu_button(tr("Special text"), |ui| {
+            ui.label(RichText::new(tr("Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn")).weak());
+            for (ph, meaning) in openecraft_core::forms::PLACEHOLDERS.iter().filter(|(ph, _)| *ph != "{{ }}") {
+                if ui.button(format!("{}  {}", tr(meaning), ph)).clicked() {
+                    self.editor.set_tool(Tool::Text);
+                    self.editor.text_proto = Some(openecraft_core::model::TextItem { text: (*ph).to_string(), ..Default::default() });
+                }
+            }
+        });
         if ui.button(tr("Graphic line")).clicked() {
             self.editor.set_tool(Tool::Line);
         }

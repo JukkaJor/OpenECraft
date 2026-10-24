@@ -3,9 +3,9 @@
 //! per page; the files of document pages are attached to their page. The file is
 //! plain ASCII (non-ASCII text is written as WinAnsi octal escapes, attachments as hex).
 
-use crate::geom::P;
+use crate::geom::{p, P};
 use crate::model::{PageKind, Project};
-use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
+use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
@@ -78,6 +78,7 @@ fn rgb(ink: Ink) -> (f32, f32, f32) {
         Ink::Frame | Ink::FrameText => (0.33, 0.33, 0.33),
         Ink::CrossRef => (0.1, 0.24, 0.56),
         Ink::Error => (0.8, 0.0, 0.0),
+        Ink::Paper => (1.0, 1.0, 1.0),
         Ink::Plate => (0.95, 0.95, 0.95),
         Ink::Fill => (0.86, 0.86, 0.86),
         Ink::Color([r, g, b]) => (r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0),
@@ -181,6 +182,8 @@ pub struct PdfDraw {
     ops: String,
     /// (x0, y0, x1, y1 in PDF units, target page index)
     links: Vec<([f32; 4], usize)>,
+    /// (rectangle in PDF units, URL) of the hyperlinks.
+    urls: Vec<([f32; 4], String)>,
     /// Bitmaps used by the page (`/Im0`, `/Im1` …).
     images: Vec<PdfImage>,
 }
@@ -258,27 +261,53 @@ impl Draw for PdfDraw {
     }
 
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink) {
+        self.styled_text(pos, text, &TextStyle::plain(size, h, v), ink);
+    }
+
+    fn styled_text(&mut self, pos: P, text: &str, st: &TextStyle, ink: Ink) {
         if text.is_empty() {
             return;
         }
         // Same metrics as the SVG export.
-        let fs = size * 1.25 * K;
-        let w = text_width(text, fs);
-        let x0 = match h {
-            Anchor::Left => x(pos.x),
-            Anchor::Center => x(pos.x) - w / 2.0,
-            Anchor::Right => x(pos.x) - w,
+        let fs = st.size * 1.25 * K;
+        let w = text_width(text, fs) / K;
+        let dx = match st.h {
+            Anchor::Left => 0.0,
+            Anchor::Center => -w / 2.0,
+            Anchor::Right => -w,
         };
-        let base = match v {
-            VAnchor::Middle => pos.y + size * 0.35,
-            VAnchor::Bottom => pos.y - size * 0.1,
+        let dy = match st.v {
+            VAnchor::Top => st.size * 0.95,
+            VAnchor::Middle => st.size * 0.35,
+            VAnchor::Bottom => -st.size * 0.1,
+        };
+        // Start of the baseline, turned with the text around its anchor.
+        let start = pos + crate::text::rotate(p(dx, dy), st.angle);
+        let font = match (st.bold, st.italic) {
+            (false, false) => 1,
+            (true, false) => 2,
+            (false, true) => 3,
+            (true, true) => 4,
         };
         self.fill(ink);
-        let _ = writeln!(self.ops, "BT /F1 {fs:.2} Tf {x0:.2} {:.2} Td ({}) Tj ET", self.y(base), pdf_string(text));
+        if st.angle == 0.0 {
+            let _ = writeln!(self.ops, "BT /F{font} {fs:.2} Tf {:.2} {:.2} Td ({}) Tj ET", x(start.x), self.y(start.y), pdf_string(text));
+        } else {
+            let (s, c) = st.angle.to_radians().sin_cos();
+            let _ = writeln!(self.ops, "BT /F{font} {fs:.2} Tf {c:.4} {s:.4} {:.4} {c:.4} {:.2} {:.2} Tm ({}) Tj ET", -s, x(start.x), self.y(start.y), pdf_string(text));
+        }
+        if st.underline {
+            let a = start + crate::text::rotate(p(0.0, st.size * 0.15), st.angle);
+            self.line(a, a + crate::text::rotate(p(w, 0.0), st.angle), st.size * 0.06, ink, false);
+        }
     }
 
     fn link(&mut self, min: P, max: P, page: usize) {
         self.links.push(([x(min.x), self.y(max.y), x(max.x), self.y(min.y)], page));
+    }
+
+    fn link_url(&mut self, min: P, max: P, url: &str) {
+        self.urls.push(([x(min.x), self.y(max.y), x(max.x), self.y(min.y)], url.to_string()));
     }
 
     fn image(&mut self, img: &crate::model::ImageItem) {
@@ -334,6 +363,12 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
     let kids: Vec<String> = (0..n).map(|i| format!("{} 0 R", page_obj(i))).collect();
     w.obj(2, &format!("<< /Type /Pages /Kids [{}] /Count {n} >>", kids.join(" ")));
     w.obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    // Bold, italic and bold italic texts (F2 … F4).
+    let fonts = [next, next + 1, next + 2];
+    next += 3;
+    for (k, name) in ["Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique"].into_iter().enumerate() {
+        w.obj(fonts[k], &format!("<< /Type /Font /Subtype /Type1 /BaseFont /{name} /Encoding /WinAnsiEncoding >>"));
+    }
     if n > 0 {
         w.obj(4, &format!("<< /Type /Outlines /First {} 0 R /Last {} 0 R /Count {n} >>", page_obj(0) + 2, page_obj(n - 1) + 2));
     } else {
@@ -389,6 +424,19 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
             annots.push(format!("{next} 0 R"));
             next += 1;
         }
+        for (rect, url) in &d.urls {
+            let body = format!(
+                "<< /Type /Annot /Subtype /Link /Rect [{:.2} {:.2} {:.2} {:.2}] /Border [0 0 0] /A << /S /URI /URI ({}) >> >>",
+                rect[0],
+                rect[1],
+                rect[2],
+                rect[3],
+                pdf_string(url)
+            );
+            w.obj(next, &body);
+            annots.push(format!("{next} 0 R"));
+            next += 1;
+        }
         let mut xobjects = Vec::new();
         for (k, img) in d.images.iter().enumerate() {
             w.obj(
@@ -403,7 +451,10 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
         w.obj(
             po,
             &format!(
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
+                fonts[0],
+                fonts[1],
+                fonts[2],
                 po + 1,
                 annots.join(" ")
             ),

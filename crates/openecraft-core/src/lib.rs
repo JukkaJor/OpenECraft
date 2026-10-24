@@ -79,6 +79,7 @@ pub mod svg;
 pub mod symbols;
 pub mod symlib;
 pub mod table;
+pub mod text;
 pub mod tables;
 pub mod verify;
 #[cfg(test)]

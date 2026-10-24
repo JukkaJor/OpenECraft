@@ -2,7 +2,7 @@
 
 use crate::geom::P;
 use crate::model::Project;
-use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
+use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
@@ -19,6 +19,7 @@ fn color(ink: Ink) -> String {
         Ink::Plate => "#f2f2f2".into(),
         Ink::Fill => "#dcdcdc".into(),
         Ink::Color([r, g, b]) => format!("#{r:02x}{g:02x}{b:02x}"),
+        Ink::Paper => "#fff".into(),
         _ => "#000".into(),
     }
 }
@@ -55,24 +56,58 @@ impl Draw for SvgDraw {
     }
 
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink) {
-        let anchor = match h {
+        self.styled_text(pos, text, &TextStyle::plain(size, h, v), ink);
+    }
+
+    fn styled_text(&mut self, pos: P, text: &str, st: &TextStyle, ink: Ink) {
+        if text.is_empty() {
+            return;
+        }
+        let anchor = match st.h {
             Anchor::Left => "start",
             Anchor::Center => "middle",
             Anchor::Right => "end",
         };
         // Approximate vertical alignment via dy (dominant-baseline support varies).
-        let dy = match v {
-            VAnchor::Middle => size * 0.35,
-            VAnchor::Bottom => -size * 0.1,
+        let dy = match st.v {
+            VAnchor::Top => st.size * 0.95,
+            VAnchor::Middle => st.size * 0.35,
+            VAnchor::Bottom => -st.size * 0.1,
         };
+        let mut attrs = String::new();
+        if st.bold {
+            attrs.push_str(" font-weight=\"bold\"");
+        }
+        if st.italic {
+            attrs.push_str(" font-style=\"italic\"");
+        }
+        if st.underline {
+            attrs.push_str(" text-decoration=\"underline\"");
+        }
+        if st.angle != 0.0 {
+            // SVG rotates clockwise (y down); the text's angle is counter-clockwise.
+            let _ = write!(attrs, " transform=\"rotate({:.2} {:.2} {:.2})\"", -st.angle, pos.x, pos.y);
+        }
         let _ = writeln!(
             self.out,
-            "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" text-anchor=\"{anchor}\" fill=\"{}\">{}</text>",
+            "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" text-anchor=\"{anchor}\" fill=\"{}\"{attrs}>{}</text>",
             pos.x,
             pos.y + dy,
-            size * 1.25,
+            st.size * 1.25,
             color(ink),
             esc(text)
+        );
+    }
+
+    fn link_url(&mut self, min: P, max: P, url: &str) {
+        let _ = writeln!(
+            self.out,
+            "<a href=\"{}\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#000\" fill-opacity=\"0\"/></a>",
+            esc(url),
+            min.x,
+            min.y,
+            max.x - min.x,
+            max.y - min.y
         );
     }
 
@@ -165,3 +200,6 @@ pub fn print_document_with(prj: &Project, an: &Analysis) -> String {
     out.push_str("</body></html>\n");
     out
 }
+
+#[cfg(test)]
+mod tests;

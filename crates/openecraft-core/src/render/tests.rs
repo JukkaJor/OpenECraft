@@ -4,18 +4,62 @@ use super::*;
 struct Rec {
     rects: Vec<(P, P)>,
     texts: Vec<(P, String, f32, Anchor)>,
+    styled: Vec<(P, String, TextStyle)>,
+    polys: Vec<(Vec<P>, Ink, bool)>,
+    urls: Vec<(P, P, String)>,
 }
 
 impl Draw for Rec {
     fn line(&mut self, _: P, _: P, _: f32, _: Ink, _: bool) {}
-    fn poly(&mut self, _: &[P], _: bool, _: f32, _: Ink, _: bool) {}
+    fn poly(&mut self, pts: &[P], _: bool, _: f32, ink: Ink, fill: bool) {
+        self.polys.push((pts.to_vec(), ink, fill));
+    }
     fn circle(&mut self, _: P, _: f32, _: f32, _: Ink, _: bool) {}
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, _: VAnchor, _: Ink) {
         self.texts.push((pos, text.into(), size, h));
     }
+    fn styled_text(&mut self, pos: P, text: &str, style: &TextStyle, ink: Ink) {
+        self.styled.push((pos, text.into(), *style));
+        self.text(pos, text, style.size, style.h, style.v, ink);
+    }
     fn rect(&mut self, a: P, b: P, _: f32, _: Ink, _: bool) {
         self.rects.push((a, b));
     }
+    fn link_url(&mut self, min: P, max: P, url: &str) {
+        self.urls.push((min, max, url.into()));
+    }
+}
+
+#[test]
+fn free_texts_are_drawn_with_style_background_and_link() {
+    let mut prj = Project::default();
+    prj.info.name = "Pump station".into();
+    prj.pages[0].texts.push(TextItem {
+        id: 1,
+        pos: p(100.0, 100.0),
+        text: "{project}\nline 2".into(),
+        angle: 90.0,
+        bold: true,
+        background: true,
+        frame: true,
+        link: "https://example.org".into(),
+        ..Default::default()
+    });
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    let mine: Vec<_> = d.styled.iter().filter(|(_, _, st)| st.angle == 90.0).collect();
+    assert_eq!(mine.len(), 2);
+    assert_eq!(mine[0].1, "Pump station", "placeholders are filled in");
+    assert!(mine[0].2.bold && mine[0].2.v == VAnchor::Middle);
+    assert!((mine[1].0.x - 104.2).abs() < 0.01 && (mine[1].0.y - 100.0).abs() < 0.01, "second line to the right: {:?}", mine[1].0);
+    assert!(d.polys.iter().any(|(pts, ink, fill)| pts.len() == 4 && *ink == Ink::Paper && *fill), "background");
+    assert!(d.polys.iter().any(|(pts, ink, fill)| pts.len() == 4 && *ink == Ink::Line && !*fill), "frame");
+    assert_eq!(d.urls.len(), 1);
+    assert_eq!(d.urls[0].2, "https://example.org");
+    let b = text_bounds(&prj, 0, &prj.pages[0].texts[0]);
+    assert!((b.min.x - 97.9).abs() < 0.01 && (b.max.x - 106.3).abs() < 0.01, "{b:?}");
+    assert!((b.min.y - 77.68).abs() < 0.01 && (b.max.y - 100.0).abs() < 0.01, "{b:?}");
 }
 
 #[test]
