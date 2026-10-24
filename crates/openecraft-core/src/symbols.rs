@@ -10,6 +10,9 @@ use crate::geom::{p, P, R};
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
+mod iec;
+pub use iec::kind as iec_kind;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ContactKind {
     No,
@@ -145,6 +148,11 @@ pub enum Category {
     Plc,
     Potentials,
     Passive,
+    /// Electronic sensors (proximity, photoelectric) and controllers.
+    Sensors,
+    Measuring,
+    /// Transformers, converters and rectifiers.
+    Power,
     BlackBox,
     SingleLine,
     Nfpa,
@@ -157,12 +165,15 @@ pub enum Category {
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 15] = [
+    pub const ALL: [Category; 18] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
+        Category::Sensors,
         Category::Protection,
         Category::Loads,
+        Category::Measuring,
+        Category::Power,
         Category::Terminals,
         Category::Plugs,
         Category::Plc,
@@ -187,6 +198,9 @@ impl Category {
             Category::Plc => tr("PLC"),
             Category::Potentials => tr("Potentials / Connectors"),
             Category::Passive => tr("Passive components"),
+            Category::Sensors => tr("Sensors"),
+            Category::Measuring => tr("Measuring instruments"),
+            Category::Power => tr("Transformers / power supplies"),
             Category::BlackBox => tr("Black boxes / PLC boxes"),
             Category::SingleLine => tr("Single-line / overview"),
             Category::Nfpa => tr("NFPA / JIC"),
@@ -361,12 +375,14 @@ impl B {
             .l(x, 2.0, x, 4.0)
             .l(x, 2.0, x + 2.3, -2.6)
     }
-    /// Push button actuator, linked to the contact blade at `bx`.
+    /// Push button actuator (IEC 60617-02-13-05, a bracket open towards the contact),
+    /// linked to the contact blade at `bx`.
     fn push_actuator(&mut self, bx: f32) -> &mut Self {
         self.dl(bx, 0.0, -5.0, 0.0)
-            .l(-5.0, -1.5, -5.0, 1.5)
-            .l(-5.0, -1.5, -6.0, -1.5)
-            .l(-5.0, 1.5, -6.0, 1.5)
+            .l(-6.0, -1.5, -6.0, 1.5)
+            .l(-6.0, -1.5, -5.0, -1.5)
+            .l(-6.0, 1.5, -5.0, 1.5)
+            .l(-5.0, 0.0, -6.0, 0.0)
     }
     /// Circuit breaker cross at the fixed contact of a pole at x.
     fn breaker_x(&mut self, x: f32) -> &mut Self {
@@ -1317,6 +1333,7 @@ fn build_library() -> Vec<SymbolDef> {
     instrument.show_tag = true;
     v.push(instrument.build(&mut b));
 
+    iec::add(&mut v);
     v
 }
 
