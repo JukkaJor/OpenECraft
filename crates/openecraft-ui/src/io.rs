@@ -140,6 +140,7 @@ pub fn mime_type(ext: &str) -> &'static str {
         "csv" => "text/csv",
         "pdf" => "application/pdf",
         "dxf" => "application/dxf",
+        "dwg" => "image/vnd.dwg",
         "igs" | "iges" => "model/iges",
         "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" | "oecz" => "application/octet-stream",
         _ => "application/json",

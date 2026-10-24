@@ -18,6 +18,10 @@ fn reports_and_exports() {
     let out = run(&mut s, "export", json!({ "format": "dxf", "path": file.to_str().unwrap() })).unwrap();
     assert!(out["bytes"].as_u64().unwrap() > 0);
     assert!(std::fs::read_to_string(&file).unwrap().contains("SECTION"));
+    let file = dir.join("page.dwg");
+    run(&mut s, "export", json!({ "format": "dwg", "page": "2", "path": file.to_str().unwrap() })).unwrap();
+    assert!(std::fs::read(&file).unwrap().starts_with(b"AC1018"));
+    assert!(run(&mut s, "export", json!({ "format": "dwg" })).unwrap_err().contains("output file"));
     for format in ["html", "pdf", "wire_list", "plc_table", "kbl"] {
         assert!(run(&mut s, "export", json!({ "format": format })).is_ok(), "{format}");
     }

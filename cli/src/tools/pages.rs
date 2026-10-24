@@ -6,7 +6,7 @@ use crate::session::Session;
 use openecraft_core::model::*;
 use openecraft_core::netlist::Netlist;
 use openecraft_core::structure::{Aspect, Dt};
-use openecraft_core::{dxf_import, frame, ops, page_templates, potentials};
+use openecraft_core::{dwg, dxf_import, frame, ops, page_templates, potentials};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -49,7 +49,19 @@ pub static TOOLS: &[Tool] = &[
             optional("fit", Kind::Bool, tr_const!("Scale drawings down that do not fit on the page (default: true)")),
         ],
         needs_project: true,
-        run: import_dxf,
+        run: import_drawing,
+    },
+    Tool {
+        name: "import_dwg",
+        help: tr_const!("Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page"),
+        params: &[
+            param("path", Kind::Str, tr_const!("DWG file")),
+            optional("after", Kind::Str, tr_const!("Insert after this page (default: at the end)")),
+            optional("description", Kind::Str, tr_const!("Description")),
+            optional("fit", Kind::Bool, tr_const!("Scale drawings down that do not fit on the page (default: true)")),
+        ],
+        needs_project: true,
+        run: import_drawing,
     },
     Tool {
         name: "set_page",
@@ -123,9 +135,10 @@ fn get_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     Ok(v)
 }
 
-fn import_dxf(s: &mut Session, a: &Args) -> Result<Value, String> {
+/// `import_dxf` and `import_dwg`: the format is told apart by the content.
+fn import_drawing(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
     let prj = s.project_mut()?;
     let after = match a.str("after") {
         Some(n) => page_index(prj, n)?,
@@ -134,7 +147,7 @@ fn import_dxf(s: &mut Session, a: &Args) -> Result<Value, String> {
     let file = path.rsplit(['/', '\\']).next().unwrap_or(path);
     let description = a.str("description").map(String::from).unwrap_or_else(|| file.rsplit_once('.').map(|x| x.0).unwrap_or(file).to_string());
     let fit = a.0.get("fit").and_then(Value::as_bool).unwrap_or(true);
-    let r = dxf_import::import_page(prj, &text, &description, after, dxf_import::DxfOptions { fit })?;
+    let r = dwg::import_drawing(prj, &bytes, &description, after, dxf_import::DxfOptions { fit })?;
     let mut v = page_json(&prj.pages[r.page]);
     v["lines"] = json!(r.lines);
     v["texts"] = json!(r.texts);

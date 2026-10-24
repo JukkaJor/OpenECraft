@@ -5,7 +5,7 @@ use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_api::params::text;
 use openecraft_core::reports::{self, Analysis, Severity};
-use openecraft_core::{dxf, harness, pdf, plc, svg, translation, wirenum};
+use openecraft_core::{dwg, dxf, harness, pdf, plc, svg, translation, wirenum};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -37,12 +37,12 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "export",
-        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
+        help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin")),
-            optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin")),
+            optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf, dwg: language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
-            optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
+            optional("page", Kind::Str, tr_const!("Page (svg: required, dxf, dwg: default all pages)")),
         ],
         needs_project: true,
         run: export,
@@ -133,14 +133,13 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn export_content(prj: &openecraft_core::model::Project, a: &Args, page: Option<usize>) -> Result<Vec<u8>, String> {
     let file_name = |default: &'static str| a.str("path").map(|p| p.rsplit(['/', '\\']).next().unwrap_or(p)).unwrap_or(default).to_string();
+    let pages: Vec<usize> = page.map(|p| vec![p]).unwrap_or_else(|| (0..prj.pages.len()).collect());
     Ok(match a.req("format") {
         "svg" => svg::page_svg(prj, page.ok_or_else(|| tr("This format needs a page").to_string())?),
         "html" => svg::print_document(prj),
         "pdf" => pdf::document(prj),
-        "dxf" => {
-            let pages: Vec<usize> = page.map(|p| vec![p]).unwrap_or_else(|| (0..prj.pages.len()).collect());
-            dxf::pages_dxf(prj, &pages)
-        }
+        "dxf" => dxf::pages_dxf(prj, &pages),
+        "dwg" => return dwg::pages_dwg(prj, &pages),
         "wire_list" => reports::production_wire_list(prj, &Analysis::build(prj)).to_csv(),
         "plc_table" => plc::symbol_table(prj, &Analysis::build(prj).netlist),
         "plc_variables" => plc::global_variables(prj, &Analysis::build(prj).netlist),

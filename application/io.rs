@@ -22,8 +22,8 @@ pub enum Purpose {
     Symbols,
     /// Title blocks (JSON) to add to the project.
     Forms,
-    /// A drawing to import as a page.
-    Dxf,
+    /// A drawing (DXF, DWG) to import as a page.
+    Drawing,
     /// A table (CSV) changed in a spreadsheet.
     Table(crate::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
@@ -75,7 +75,7 @@ impl FileKind for Purpose {
             Purpose::Image => (tr("Images (PNG, JPEG)"), &["png", "jpg", "jpeg"]),
             Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
-            Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
+            Purpose::Drawing => (tr("Drawing (DXF, DWG)"), &["dxf", "dwg"]),
             Purpose::Aml => ("AutomationML", &["aml", "xml"]),
             Purpose::Integration => (tr("Files of other systems (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::DeviceDescription => (tr("Device description (GSDML, ESI)"), &["xml"]),

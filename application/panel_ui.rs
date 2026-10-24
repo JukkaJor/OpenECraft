@@ -54,6 +54,14 @@ pub enum View {
     ThreeD,
 }
 
+/// File of an NC export: drawing (DXF, DWG) or drilling list (CSV).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NcFormat {
+    Dxf,
+    Dwg,
+    Csv,
+}
+
 struct MoveDrag {
     start: P,
     originals: Vec<(u64, f32, f32)>,
@@ -365,8 +373,8 @@ pub struct PanelUi {
     /// Requests for the application.
     pub goto_schematic: Option<String>,
     pub add_page: Option<u64>,
-    /// NC export of an enclosure face (DXF = true, CSV = false).
-    pub export: Option<(usize, Face, bool)>,
+    /// NC export of an enclosure face.
+    pub export: Option<(usize, Face, NcFormat)>,
     pattern: Option<PatternDialog>,
     /// Name of the 3D macro being saved from the selection.
     save_macro: Option<String>,
@@ -1056,20 +1064,26 @@ impl PanelUi {
         ui.label(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts));
         ui.horizontal(|ui| {
             if ui.button(tr("⬇ NC data (DXF)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
-                self.export = Some((ei, Face::Plate, true));
+                self.export = Some((ei, Face::Plate, NcFormat::Dxf));
+            }
+            if ui.button(tr("⬇ NC data (DWG)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
+                self.export = Some((ei, Face::Plate, NcFormat::Dwg));
             }
             if ui.button(tr("⬇ Drilling list (CSV)")).clicked() {
-                self.export = Some((ei, Face::Plate, false));
+                self.export = Some((ei, Face::Plate, NcFormat::Csv));
             }
         });
         let door_devices = e.items.iter().filter(|i| i.face == Face::Door && i.kind == ItemKind::Device).count();
         ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, crate::production::openings(e, &prj.parts, Face::Door).len()));
         ui.horizontal(|ui| {
             if ui.button(tr("⬇ Door NC data (DXF)")).clicked() {
-                self.export = Some((ei, Face::Door, true));
+                self.export = Some((ei, Face::Door, NcFormat::Dxf));
+            }
+            if ui.button(tr("⬇ Door NC data (DWG)")).clicked() {
+                self.export = Some((ei, Face::Door, NcFormat::Dwg));
             }
             if ui.button(tr("⬇ Door cutouts (CSV)")).clicked() {
-                self.export = Some((ei, Face::Door, false));
+                self.export = Some((ei, Face::Door, NcFormat::Csv));
             }
         });
         if self.face.is_wall() {
@@ -1078,10 +1092,13 @@ impl PanelUi {
             ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, crate::production::openings(e, &prj.parts, face).len()));
             ui.horizontal(|ui| {
                 if ui.button(tr("⬇ NC data of this face (DXF)")).clicked() {
-                    self.export = Some((ei, face, true));
+                    self.export = Some((ei, face, NcFormat::Dxf));
+                }
+                if ui.button(tr("⬇ NC data of this face (DWG)")).clicked() {
+                    self.export = Some((ei, face, NcFormat::Dwg));
                 }
                 if ui.button(tr("⬇ Drilling list of this face (CSV)")).clicked() {
-                    self.export = Some((ei, face, false));
+                    self.export = Some((ei, face, NcFormat::Csv));
                 }
             });
         }
