@@ -45,6 +45,7 @@ pub fn builtin() -> Vec<Check> {
             crate::singleline::problems(prj, &an.index, &an.netlist).into_iter().map(|(severity, message, target)| Issue::plain(severity, message, target)).collect()
         }),
         entry("wiring_marks", tr_const!("Wiring marks"), |prj, an| check_wiring_marks(prj, &an.wiring)),
+        entry("mounting_marks", tr_const!("Mounting marks"), |prj, _| check_mounting_marks(prj)),
         entry("integration", tr_const!("Enterprise integration"), |prj, _| crate::integration::problems(prj)),
         entry("field_wiring", tr_const!("Field wiring"), |_, an| an.field.issues.clone()),
         entry("routing_3d", tr_const!("3D routing"), |_, an| check_routing(&an.routing)),
@@ -479,6 +480,30 @@ fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
     let stale = crate::wiring::stale(prj, wiring).len();
     if stale > 0 {
         v.push(crate::issue!(Severity::Info, None, "{} wiring marks belong to wires that no longer exist", stale));
+    }
+    v
+}
+
+/// Items moved or changed after they were mounted, mounting problems and marks of
+/// items that no longer exist.
+fn check_mounting_marks(prj: &Project) -> Vec<Issue> {
+    use crate::mounting::{self, Status};
+    let mut v = Vec::new();
+    for e in &prj.layout.enclosures {
+        for it in &e.items {
+            match mounting::status(prj, it) {
+                Status::Changed => v.push(crate::issue!(Severity::Warning, None, "{}: {} changed after it was mounted", e.name, mounting::item_title(it))),
+                Status::Problem => {
+                    let note = mounting::mark_of(prj, it.id).map(|m| m.note.clone()).unwrap_or_default();
+                    v.push(crate::issue!(Severity::Warning, None, "{}: mounting problem {}: {}", e.name, mounting::item_title(it), note));
+                }
+                _ => {}
+            }
+        }
+    }
+    let stale = mounting::stale(prj).len();
+    if stale > 0 {
+        v.push(crate::issue!(Severity::Info, None, "{} mounting marks belong to items that no longer exist", stale));
     }
     v
 }

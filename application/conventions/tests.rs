@@ -163,6 +163,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("arrange", &["geom", "model", "ops", "symlib"]),
     ("search", &["model", "symbols"]),
     ("unplaced", &["model", "parts", "plc", "plc_hw", "symbols"]),
+    ("mounting", &["model"]),
     ("wirenum", &["frame", "model", "netlist"]),
     ("history", &["model"]),
     ("translation", &["model"]),
@@ -218,7 +219,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("testkit", &["geom", "model", "parts", "symbols"]),
     // 6 derived data, checks, reports, registry
     ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "revision", "routing3d", "table"]),
-    ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "harness", "index", "integration", "issue", "loads", "model", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
+    ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "harness", "index", "integration", "issue", "loads", "model", "mounting", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
     ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table", "text"]),
     ("ext", &["analysis", "issue", "model", "params", "table"]),
     ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),

@@ -13,6 +13,7 @@ mod editor;
 #[cfg(test)]
 mod glyphs;
 mod io;
+mod mounting_ui;
 mod panel_ui;
 mod parts_ui;
 mod remote;

@@ -377,6 +377,8 @@ pub struct PanelUi {
     pub show_wires: bool,
     /// Wires marked as wired in the wiring assistant (drawn green in 3D).
     pub done_wires: HashSet<(String, String)>,
+    /// Items marked as mounted in the mounting assistant (drawn green in 3D).
+    pub done_items: HashSet<u64>,
     /// The door is (being) opened in the 3D view.
     pub door_open: bool,
     /// Current opening angle of the door (radians), animated towards `door_open`.
@@ -438,6 +440,7 @@ impl Default for PanelUi {
             selected_wire: None,
             show_wires: true,
             done_wires: HashSet::new(),
+            done_items: HashSet::new(),
             door_open: true,
             door_angle: DOOR_OPEN_ANGLE,
             show_fill: true,
@@ -607,6 +610,25 @@ impl PanelUi {
         let pose = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
         let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
         cam.target = pose.apply([PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z]);
+    }
+
+    /// Selects a panel item and turns the 3D view to it (mounting assistant).
+    pub fn focus_item(&mut self, prj: &Project, enclosure: usize, id: u64) {
+        let Some(e) = prj.layout.enclosures.get(enclosure) else { return };
+        let Some(it) = e.items.iter().find(|i| i.id == id) else { return };
+        if self.enclosure != enclosure {
+            self.cam = None;
+        }
+        self.enclosure = enclosure;
+        self.face = it.face;
+        self.select_item(id);
+        if it.face == Face::Door {
+            self.door_open = true;
+        }
+        let shown = self.shown_3d(prj, enclosure);
+        let pose = shown.iter().find(|s| s.0 == enclosure).map(|s| s.1).unwrap_or_default();
+        let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
+        cam.target = pose.apply([PLATE_MARGIN + it.x + it.w / 2.0, e.height - PLATE_MARGIN - it.y - it.h / 2.0, PLATE_Z]);
     }
 
     /// Selects a placed device (e.g. coming from the schematic); a valve or its coil

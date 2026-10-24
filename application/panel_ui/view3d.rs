@@ -213,6 +213,8 @@ impl PanelUi {
                     WIRE_HIGHLIGHT
                 } else if problems.contains(&it.id) {
                     Color32::from_rgb(230, 70, 70)
+                } else if self.done_items.contains(&it.id) {
+                    Color32::from_rgb(110, 185, 125)
                 } else {
                     match it.kind {
                         ItemKind::Rail => Color32::from_rgb(205, 208, 212),

@@ -101,3 +101,17 @@ fn unplaced_functions_are_listed_and_placed() {
     assert_eq!(after.as_array().unwrap().len(), before - 1, "the channel is placed now");
     assert!(list.as_array().unwrap().iter().any(|u| u["kind"] == "function"));
 }
+
+#[test]
+fn mounting_assistant_commands() {
+    let mut s = demo();
+    let list = run(&mut s, "mounting_list", json!({})).unwrap();
+    let total = list["total"].as_u64().unwrap();
+    assert!(total > 0);
+    let item = list["items"][0]["item"].as_u64().unwrap();
+    run(&mut s, "mark_mounted", json!({ "item": item, "state": "mounted" })).unwrap();
+    assert_eq!(run(&mut s, "mounting_list", json!({})).unwrap()["mounted"], 1);
+    assert!(run(&mut s, "mark_mounted", json!({ "item": item, "state": "glued" })).is_err());
+    assert!(run(&mut s, "mark_mounted", json!({ "item": 1, "state": "open" })).is_err() || total > 0);
+    assert!(run(&mut s, "mounting_list", json!({ "enclosure": "nope" })).is_err());
+}

@@ -23,6 +23,7 @@ pub fn as_template(prj: &Project) -> Project {
     t.baselines.clear();
     t.review = Default::default();
     t.wiring_marks.clear();
+    t.mounting_marks.clear();
     t.subprojects = Default::default();
     t.check_settings.accepted.clear();
     t.info.date.clear();

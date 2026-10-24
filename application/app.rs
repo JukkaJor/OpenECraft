@@ -8,6 +8,7 @@ use openecraft_core::index::Index;
 use crate::io::{self, FileIo, Loaded, Purpose, PROJECT_EXT};
 use openecraft_core::parts::{self, PartsDb};
 use crate::panel_ui::{NcFormat, PanelUi};
+use crate::mounting_ui::MountingUi;
 use crate::wiring_ui::WiringUi;
 use crate::parts_ui::{PartsAction, PartsUi};
 use openecraft_core::model::*;
@@ -108,6 +109,7 @@ pub struct App {
     workspace: Workspace,
     panel_ui: PanelUi,
     wiring_ui: WiringUi,
+    mounting_ui: MountingUi,
     show_help: bool,
     show_cables: bool,
     show_numbering: bool,
@@ -216,6 +218,7 @@ impl App {
             workspace: Workspace::Schematic,
             panel_ui: PanelUi::default(),
             wiring_ui: WiringUi::default(),
+            mounting_ui: MountingUi::default(),
             show_help: false,
             show_cables: false,
             show_numbering: false,
@@ -252,6 +255,42 @@ impl App {
             requests_ui: Default::default(),
             plugins,
             plugins_ui: Default::default(),
+        }
+    }
+
+    /// The Wiring workspace: the wiring or the mounting assistant.
+    fn wiring_workspace(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        if self.mounting_ui.active {
+            self.panel_ui.done_wires.clear();
+            self.mounting_ui.sync(&self.session.prj, &mut self.panel_ui);
+            egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
+                self.mounting_ui.mode_switch(ui);
+                self.mounting_ui.checklist(ui, &mut self.session.prj, &mut self.panel_ui);
+            });
+            egui::CentralPanel::default().show(ui, |ui| {
+                self.mounting_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            self.editor.status = self.panel_ui.status.clone();
+            if std::mem::take(&mut self.mounting_ui.export) {
+                let content = openecraft_core::mounting::csv(&self.session.prj, self.mounting_ui.enclosure);
+                self.export(ctx, "mounting.csv".into(), ("CSV", "csv"), content);
+            }
+        } else {
+            self.panel_ui.selection.clear();
+            self.panel_ui.done_items.clear();
+            self.wiring_ui.sync(&self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
+                self.mounting_ui.mode_switch(ui);
+                self.wiring_ui.checklist(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            egui::CentralPanel::default().show(ui, |ui| {
+                self.wiring_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            self.editor.status = self.panel_ui.status.clone();
+            if std::mem::take(&mut self.wiring_ui.export) {
+                let content = openecraft_core::wiring::csv(&self.session.prj, &self.session.analysis.wiring, self.wiring_ui.order);
+                self.export(ctx, "wiring.csv".into(), ("CSV", "csv"), content);
+            }
         }
     }
 
@@ -379,23 +418,10 @@ impl eframe::App for App {
                     }
                 });
             }
-            Workspace::Wiring => {
-                self.panel_ui.selection.clear();
-                self.wiring_ui.sync(&self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
-                    self.wiring_ui.checklist(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                });
-                egui::CentralPanel::default().show(ui, |ui| {
-                    self.wiring_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                });
-                self.editor.status = self.panel_ui.status.clone();
-                if std::mem::take(&mut self.wiring_ui.export) {
-                    let content = openecraft_core::wiring::csv(&self.session.prj, &self.session.analysis.wiring, self.wiring_ui.order);
-                    self.export(&ctx, "wiring.csv".into(), ("CSV", "csv"), content);
-                }
-            }
+            Workspace::Wiring => self.wiring_workspace(ui, &ctx),
             Workspace::Panel => {
                 self.panel_ui.done_wires.clear();
+                self.panel_ui.done_items.clear();
                 egui::Panel::left("panel_nav").resizable(true).default_size(250.0).show(ui, |ui| {
                     self.panel_ui.navigator(ui, &mut self.session.prj, &self.parts_db);
                 });

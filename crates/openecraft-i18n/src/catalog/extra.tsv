@@ -4591,3 +4591,34 @@ Service unit (filter, regulator, lubricator)	Wartungseinheit (Filter, Regler, Ö
 Accumulator	Hydrospeicher	Accumulateur	Acumulador
 Hydraulic motor	Hydromotor	Moteur hydraulique	Motor hidráulico
 Ball valve	Kugelhahn	Vanne à boisseau sphérique	Válvula de bola
+Mounted	Montiert	Monté	Montado
+Mounting assistant: the panel items in mounting order with their place and part	Montageassistent: die Teile des Schaltschranks in Montagereihenfolge mit Platz und Artikel	Assistant de montage : les éléments de l'armoire dans l'ordre de montage avec leur position et leur article	Asistente de montaje: los elementos del armario en orden de montaje con su posición y artículo
+Mark as mounted	Als montiert markieren	Marquer comme monté	Marcar como montado
+No panel items: place the devices in the panel layout.	Keine Teile: Geräte im Schaltschrankaufbau platzieren.	Aucun élément : placez les appareils dans l'implantation d'armoire.	No hay elementos: coloque los equipos en la disposición del armario.
+Checklist with the mounting state	Checkliste mit Montagestand	Liste de contrôle avec l'état du montage	Lista de comprobación con el estado del montaje
+Marks of items that no longer exist	Markierungen von Teilen, die es nicht mehr gibt	Marques d'éléments qui n'existent plus	Marcas de elementos que ya no existen
+✔ All items are mounted.	✔ Alle Teile sind montiert.	✔ Tous les éléments sont montés.	✔ Todos los elementos están montados.
+Select an item in the list or in the 3D view.	Teil in der Liste oder in der 3D-Ansicht wählen.	Sélectionnez un élément dans la liste ou dans la vue 3D.	Seleccione un elemento en la lista o en la vista 3D.
+✔ Mounted	✔ Montiert	✔ Monté	✔ Montado
+Mark as not mountable; describe the problem in the note	Als nicht montierbar markieren; Problem in der Notiz beschreiben	Marquer comme non montable ; décrivez le problème dans la note	Marcar como no montable; describa el problema en la nota
+Previous item	Vorheriges Teil	Élément précédent	Elemento anterior
+Next item	Nächstes Teil	Élément suivant	Elemento siguiente
+e.g. cutout too small, part missing	z. B. Ausschnitt zu klein, Artikel fehlt	p. ex. découpe trop petite, article manquant	p. ej. recorte demasiado pequeño, falta el artículo
+{} of {} items	{} von {} Teilen	{} sur {} éléments	{} de {} elementos
+{} changed since mounted · {} problems	{} seit Montage geändert · {} Probleme	{} modifiés depuis le montage · {} problèmes	{} modificados desde el montaje · {} problemas
+Position X {} mm, Y {} mm	Position X {} mm, Y {} mm	Position X {} mm, Y {} mm	Posición X {} mm, Y {} mm
+Size {} × {} mm	Größe {} × {} mm	Taille {} × {} mm	Tamaño {} × {} mm
+Changed since mounted: was at X {} mm, Y {} mm with part {}	Seit Montage geändert: war bei X {} mm, Y {} mm mit Artikel {}	Modifié depuis le montage : était à X {} mm, Y {} mm avec l'article {}	Modificado desde el montaje: estaba en X {} mm, Y {} mm con el artículo {}
+{}: {} changed after it was mounted	{}: {} wurde nach der Montage geändert	{} : {} a été modifié après le montage	{}: {} se modificó después del montaje
+{}: mounting problem {}: {}	{}: Montageproblem {}: {}	{} : problème de montage {} : {}	{}: problema de montaje {}: {}
+{} mounting marks belong to items that no longer exist	{} Montagemarkierungen gehören zu Teilen, die es nicht mehr gibt	{} marques de montage appartiennent à des éléments qui n'existent plus	{} marcas de montaje pertenecen a elementos que ya no existen
+Mounting marks	Montagemarkierungen	Marques de montage	Marcas de montaje
+Changed since mounted	Seit Montage geändert	Modifié depuis le montage	Modificado desde el montaje
+Cutouts	Ausschnitte	Découpes	Recortes
+Rails, ducts and busbars	Schienen, Kanäle und Sammelschienen	Rails, goulottes et jeux de barres	Carriles, canaletas y barras colectoras
+Door and walls	Tür und Wände	Porte et parois	Puerta y paredes
+No panel item with id {}	Kein Teil mit der Id {}	Aucun élément avec l'id {}	No hay ningún elemento con el id {}
+Lists the items of the panel layout in mounting order with place, size, part and mounting state	Listet die Teile des Schaltschrankaufbaus in Montagereihenfolge mit Platz, Größe, Artikel und Montagestand	Liste les éléments de l'implantation dans l'ordre de montage avec position, taille, article et état du montage	Lista los elementos de la disposición en orden de montaje con posición, tamaño, artículo y estado del montaje
+Marks a panel item as mounted or as a problem, or as open again	Markiert ein Teil als montiert, als Problem oder wieder als offen	Marque un élément comme monté, comme problème ou de nouveau comme ouvert	Marca un elemento como montado, como problema o de nuevo como abierto
+Id of the panel item (from mounting_list)	Id des Teils (aus mounting_list)	Id de l'élément (de mounting_list)	Id del elemento (de mounting_list)
+mounted, problem or open	mounted, problem oder open	mounted, problem ou open	mounted, problem u open

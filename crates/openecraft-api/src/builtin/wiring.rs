@@ -67,6 +67,22 @@ pub static COMMANDS: &[Spec] = &[
         run: mark_wire,
     },
     Spec {
+        name: "mounting_list",
+        help: tr_const!("Lists the items of the panel layout in mounting order with place, size, part and mounting state"),
+        params: &[optional("enclosure", Kind::Str, tr_const!("Enclosure name (all if missing)"))],
+        run: mounting_list,
+    },
+    Spec {
+        name: "mark_mounted",
+        help: tr_const!("Marks a panel item as mounted or as a problem, or as open again"),
+        params: &[
+            param("item", Kind::Int, tr_const!("Id of the panel item (from mounting_list)")),
+            param("state", Kind::Str, tr_const!("mounted, problem or open")),
+            optional("note", Kind::Str, tr_const!("Note, e.g. what the problem is")),
+        ],
+        run: mark_mounted,
+    },
+    Spec {
         name: "remove_old_wiring_marks",
         help: tr_const!("Removes the wiring marks of wires that no longer exist"),
         params: &[],
@@ -133,6 +149,47 @@ fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
         "scheme": scheme_code(s.scheme), "format": s.format, "prefix": s.prefix, "start": s.start, "step": s.step, "digits": s.digits,
         "skip_kinds": s.skip_kinds.iter().map(|k| kind_code(*k)).collect::<Vec<_>>()
     }))
+}
+
+fn mounting_list(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    use openecraft_core::mounting;
+    let enclosure = match a.str("enclosure") {
+        Some(name) => Some(prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))?),
+        None => None,
+    };
+    let code = |s: mounting::Status| match s {
+        mounting::Status::Open => "open",
+        mounting::Status::Done => "mounted",
+        mounting::Status::Changed => "changed",
+        mounting::Status::Problem => "problem",
+    };
+    let steps: Vec<Value> = mounting::steps(prj, enclosure)
+        .into_iter()
+        .map(|s| {
+            let e = &prj.layout.enclosures[s.enclosure];
+            let it = &e.items[s.item];
+            json!({
+                "enclosure": e.name, "item": it.id, "title": mounting::item_title(it), "phase": s.phase.title(), "part": it.part,
+                "face": format!("{:?}", it.face).to_lowercase(), "x": it.x, "y": it.y, "width": it.w, "height": it.h, "state": code(s.status), "note": s.note
+            })
+        })
+        .collect();
+    let p = mounting::progress(prj, enclosure);
+    Ok(json!({ "items": steps, "total": p.total, "mounted": p.done - p.changed, "changed": p.changed, "problems": p.problems }))
+}
+
+fn mark_mounted(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    use openecraft_core::mounting::{self, Mark};
+    let id = a.int("item").unwrap_or_default() as u64;
+    let it = prj.layout.enclosures.iter().flat_map(|e| e.items.iter()).find(|i| i.id == id).cloned().ok_or_else(|| tr_fmt!("No panel item with id {}", id))?;
+    let mark = match a.req("state").trim() {
+        "mounted" => Some(Mark::Done),
+        "problem" => Some(Mark::Problem),
+        "open" => None,
+        other => return Err(tr_fmt!("Unknown state: {}", other)),
+    };
+    mounting::set_mark(prj, &it, mark, a.str("note").unwrap_or_default());
+    Ok(json!({ "item": id, "state": mounting::status(prj, &it).title() }))
 }
 
 fn status_code(s: Status) -> &'static str {

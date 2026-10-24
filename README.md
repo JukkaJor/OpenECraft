@@ -428,6 +428,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   schematic after they were wired are flagged by the check. The web build opens the
   assistant directly with `…/#wiring` (desktop: `--wiring`), which makes a tablet in
   the workshop a cheap wiring station; checklist with state as CSV.
+- **Mounting assistant** (in the spirit of EPLAN Smart Mounting): the *Mounting* switch
+  of the *Wiring* workspace lists the items of the panel layout in mounting order –
+  cutouts, rails, ducts and busbars, devices, accessories, then door and walls – with
+  the current item highlighted in 3D, its place, size and part, and the progress.
+  Items are marked as mounted or as a problem (with a note); items moved or given
+  another part after they were mounted are flagged by the check. Commands
+  `mounting_list` and `mark_mounted`; checklist with state as CSV.
 - **Enterprise integration** (*Project › Enterprise integration…*): one integration
   layer with connectors for **ERP** (item master and BOM, CSV), **PDM** (project and
   page metadata, JSON), **PLM** (engineering BOM, JSON), **ECAD** (components and
@@ -795,6 +802,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
 | `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
+| `crates/openecraft-core/src/mounting.rs` | Mounting assistant: mounting order, mounted / problem marks, progress, CSV |
 | `crates/openecraft-core/src/integration.rs` | Integration layer: neutral fields, connectors (ERP, PDM, PLM, ECAD, MCAD, procurement, wiring machine), profiles, import preview, conflicts, exchange log |
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
 | `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
@@ -844,6 +852,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `application/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
 | `application/app/integration_ui.rs` | Enterprise integration window: export, import preview, profiles, linked data, log |
 | `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
+| `application/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |
