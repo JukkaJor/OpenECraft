@@ -1204,6 +1204,85 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "T1").pin(8.0, -4.0, "T2").pin(16.0, -4.0, "T3").pin(24.0, -4.0, "GND");
     v.push(def("nfpa_motor", "Motor (NFPA)", C::Nfpa, "M", MAIN).build(&mut b));
 
+    // Further NFPA / JIC devices: the open switch body with its operator.
+    let sw = |b: &mut B| {
+        b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    };
+    sw(&mut b);
+    b.l(0.6, -3.2, 0.6, 3.2).l(0.6, 0.0, -4.0, 0.0).arc(-5.5, 0.0, 1.5, 90.0, 270.0).l(-5.5, -1.5, -5.5, 1.5);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("nfpa_estop", "Emergency stop, mushroom head (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-1.0, -0.4, -4.0, -0.4).poly(&[(-4.0, -0.4), (-5.5, -1.6), (-6.0, 0.6), (-4.5, 0.8)], true, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_foot_no", "Foot switch NO (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.5, -0.2).l(-3.5, -0.2, -3.5, 1.5).circle(-3.5, 2.5, 1.0, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_fs_no", "Float switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.0, -0.2).arc(-4.5, -0.2, 1.5, 90.0, 270.0).l(-4.5, -1.7, -4.5, 1.3);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ps_no", "Pressure switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -2.5, -0.2);
+    b.poly(&[(-2.5, -0.2), (-3.0, -1.2), (-3.6, 0.8), (-4.2, -1.2), (-4.8, 0.8), (-5.3, -0.2)], false, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ts_no", "Temperature switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.0, -0.2).poly(&[(-3.0, -0.2), (-3.0, -2.2), (-5.0, -1.2)], true, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_flow_no", "Flow switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.poly(&[(-6.0, 0.0), (-4.5, -1.5), (-3.0, 0.0), (-4.5, 1.5)], true, false).l(-3.0, 0.0, -2.4, 0.0);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_prox_no", "Proximity switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).arc(0.0, -2.0, 1.0, -90.0, 90.0).arc(0.0, 0.0, 1.0, -90.0, 90.0).arc(0.0, 2.0, 1.0, -90.0, 90.0).l(0.0, 3.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2");
+    v.push(def("nfpa_sol", "Solenoid (NFPA)", C::Nfpa, "Y", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0).text(0.0, 0.0, "TR", 1.6, Center);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2");
+    v.push(def("nfpa_tr_coil", "Timer coil (NFPA)", C::Nfpa, "K", MAIN_MIRROR).build(&mut b));
+
+    for i in 0..4 {
+        let x = 1.0 + 2.0 * i as f32;
+        b.arc(x, -2.0, 1.0, 180.0, 360.0).arc(x, 2.0, 1.0, 0.0, 180.0);
+    }
+    b.l(0.0, -0.4, 8.0, -0.4).l(0.0, 0.4, 8.0, 0.4);
+    b.l(0.0, -8.0, 0.0, -2.0).l(8.0, -8.0, 8.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(8.0, 2.0, 8.0, 8.0);
+    b.pin(0.0, -8.0, "H1").pin(8.0, -8.0, "H2").pin(0.0, 8.0, "X1").pin(8.0, 8.0, "X2");
+    v.push(def("nfpa_xfmr", "Control transformer (NFPA)", C::Nfpa, "T", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -2.0).poly(&[(-2.0, -2.0), (2.0, -2.0), (3.5, 2.0), (-3.5, 2.0)], true, false).l(0.0, 2.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "X1").pin(0.0, 4.0, "X2");
+    v.push(def("nfpa_horn", "Horn (NFPA)", C::Nfpa, "P", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.arc(1.5, 0.0, 2.6, 125.0, 235.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("nfpa_cb1", "Circuit breaker 1-pole (NFPA)", C::Nfpa, "Q", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.l(-2.4, 2.4, 2.4, -2.4).text(3.0, 0.0, "OL", 1.4, Left);
+    b.pin(0.0, -4.0, "95").pin(0.0, 4.0, "96");
+    v.push(def("nfpa_ol_nc", "Overload contact NC (NFPA)", C::Nfpa, "F", Func::Aux(ContactKind::Nc)).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, -1.0).l(x - 2.2, -1.0, x + 2.2, -1.0).l(x - 2.2, 1.0, x + 2.2, 1.0).l(x, 1.0, x, 4.0);
+    }
+    b.dl(2.4, 0.0, 5.6, 0.0).dl(10.4, 0.0, 13.6, 0.0);
+    b.pin(0.0, -4.0, "L1").pin(8.0, -4.0, "L2").pin(16.0, -4.0, "L3");
+    b.pin(0.0, 4.0, "T1").pin(8.0, 4.0, "T2").pin(16.0, 4.0, "T3");
+    v.push(def("nfpa_main3", "Main contacts 3-pole (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::MainNo)).build(&mut b));
+
     // ---------------------------------------------------------------- fluid power
     // Small filled arrow head at `tip` pointing in direction (dx, dy).
     let head = |b: &mut B, tx: f32, ty: f32, dx: f32, dy: f32| {

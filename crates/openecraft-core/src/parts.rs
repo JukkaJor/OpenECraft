@@ -17,16 +17,16 @@ pub fn catalog() -> &'static [Part] {
 /// Function kind represented by a library symbol.
 pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
     Some(match key {
-        "coil" | "coil_on" | "coil_off" | "nfpa_coil" => FnKind::Coil,
-        "valve" => FnKind::Valve,
+        "coil" | "coil_on" | "coil_off" | "nfpa_coil" | "nfpa_tr_coil" => FnKind::Coil,
+        "valve" | "nfpa_sol" => FnKind::Valve,
         "no" | "nfpa_no" => FnKind::No,
-        "nc" | "ol_nc" | "nfpa_nc" => FnKind::Nc,
+        "nc" | "ol_nc" | "nfpa_nc" | "nfpa_ol_nc" => FnKind::Nc,
         "co" => FnKind::Changeover,
         "no_on" | "nfpa_notc" => FnKind::NoOnDelay,
         "nc_on" | "nfpa_ncto" => FnKind::NcOnDelay,
         "no_off" => FnKind::NoOffDelay,
         "nc_off" => FnKind::NcOffDelay,
-        "main3" => FnKind::MainContacts3,
+        "main3" | "nfpa_main3" => FnKind::MainContacts3,
         "main4" => FnKind::MainContacts4,
         "main1" => FnKind::MainContact,
         "pb_no" | "nfpa_pb_no" => FnKind::PushbuttonNo,
