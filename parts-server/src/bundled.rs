@@ -12,6 +12,7 @@ pub const INSTALLER: &str = "bundled catalog";
 const FILES: &[(&str, &str)] = &[
     ("abb", include_str!("../catalogs/abb.json")),
     ("beckhoff", include_str!("../catalogs/beckhoff.json")),
+    ("dehn", include_str!("../catalogs/dehn.json")),
     ("hager", include_str!("../catalogs/hager.json")),
     ("mdt", include_str!("../catalogs/mdt.json")),
     ("phoenix_contact", include_str!("../catalogs/phoenix_contact.json")),

@@ -467,7 +467,7 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
 - Bundled catalogs: `parts-server/catalogs/<id>.json` (a `catalog` and its `parts`,
   listed in `parts-server/src/bundled.rs`) are curated starter sets of real
   manufacturer parts: `abb` (circuit breakers, RCCB, contactors, manual motor
-  starters), `beckhoff` (EtherCAT coupler and terminals), `hager` (circuit breakers,
+  starters), `beckhoff` (EtherCAT coupler and terminals), `dehn` (surge protective devices type 1 - 3 and for data lines), `hager` (circuit breakers,
   RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
   interface / router, power supply), `phoenix_contact` (terminal blocks, relay
   modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
