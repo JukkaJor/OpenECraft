@@ -2537,3 +2537,200 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 ➕ Default value	➕ Vorgabewert	➕ Valeur par défaut	➕ Valor predeterminado
 ➕ Derive project definition	➕ Projektdefinition ableiten	➕ Dériver une définition de projet	➕ Derivar definición de proyecto
 ➕ User defined property	➕ Benutzerdefinierte Eigenschaft	➕ Propriété utilisateur	➕ Propiedad de usuario
+Plan devices in the single-line diagram, generate the schematic and keep both in sync	Geräte im Übersichtsschaltplan planen, den Stromlaufplan erzeugen und beide synchron halten	Planifier les appareils dans le schéma unifilaire, générer le schéma développé et garder les deux synchronisés	Planificar los equipos en el esquema unifilar, generar el esquema desarrollado y mantener ambos sincronizados
+Single-line / multi-line…	Einpolig / allpolig…	Unifilaire / multifilaire…	Unifilar / multifilar…
+All devices of page {} are in the schematic already	Alle Geräte der Seite {} sind bereits im Stromlaufplan	Tous les appareils de la page {} sont déjà dans le schéma développé	Todos los equipos de la página {} ya están en el esquema desarrollado
+Copies function texts between the single-line diagram and the schematic where one side is empty	Kopiert Funktionstexte zwischen Übersichtsschaltplan und Stromlaufplan, wo eine Seite leer ist	Copie les textes de fonction entre le schéma unifilaire et le schéma développé lorsqu'un côté est vide	Copia los textos de función entre el esquema unifilar y el esquema desarrollado cuando un lado está vacío
+Does not match	Passt nicht	Ne correspond pas	No coincide
+Generates a single-line diagram of the schematic's power devices that have none yet on a new overview page after a page	Erzeugt einen Übersichtsschaltplan der Leistungsgeräte des Stromlaufplans, die noch keinen haben, auf einer neuen Übersichtsseite nach einer Seite	Génère un schéma unifilaire des appareils de puissance du schéma développé qui n'en ont pas encore, sur une nouvelle page de synoptique après une page	Genera un esquema unifilar de los equipos de potencia del esquema desarrollado que aún no lo tienen, en una nueva página de vista general tras una página
+Generates the multi-line schematic (power symbols, conductors, contactor coils) for the single-line symbols of a page on a new page after it	Erzeugt den allpoligen Stromlaufplan (Leistungssymbole, Leiter, Schützspulen) für die einpoligen Symbole einer Seite auf einer neuen Seite danach	Génère le schéma développé multifilaire (symboles de puissance, conducteurs, bobines de contacteurs) pour les symboles unifilaires d'une page sur une nouvelle page après celle-ci	Genera el esquema desarrollado multifilar (símbolos de potencia, conductores, bobinas de contactores) para los símbolos unifilares de una página en una nueva página tras ella
+Lists the devices of the single-line diagram and the power devices of the schematic with their status: planned, engineered, not in the single-line diagram or not matching	Listet die Geräte des Übersichtsschaltplans und die Leistungsgeräte des Stromlaufplans mit ihrem Status: geplant, projektiert, nicht im Übersichtsschaltplan oder nicht passend	Liste les appareils du schéma unifilaire et les appareils de puissance du schéma développé avec leur état : planifié, étudié, absent du schéma unifilaire ou non concordant	Lista los equipos del esquema unifilar y los equipos de potencia del esquema desarrollado con su estado: planificado, proyectado, no en el esquema unifilar o no coincidente
+No devices to add to the single-line diagram	Keine Geräte, die in den Übersichtsschaltplan aufzunehmen sind	Aucun appareil à ajouter au schéma unifilaire	No hay equipos que añadir al esquema unifilar
+No such page	Diese Seite gibt es nicht	Cette page n'existe pas	Esta página no existe
+Not in the single-line diagram	Nicht im Übersichtsschaltplan	Absent du schéma unifilaire	No está en el esquema unifilar
+Page {} has no single-line symbols	Seite {} hat keine einpoligen Symbole	La page {} n'a pas de symboles unifilaires	La página {} no tiene símbolos unifilares
+Single-line diagram	Übersichtsschaltplan	Schéma unifilaire	Esquema unifilar
+{} (multi-line)	{} (allpolig)	{} (multifilaire)	{} (multifilar)
+{} – {}: connected in the single-line diagram but not in the schematic	{} – {}: im Übersichtsschaltplan verbunden, aber nicht im Stromlaufplan	{} – {} : reliés dans le schéma unifilaire mais pas dans le schéma développé	{} – {}: conectados en el esquema unifilar pero no en el esquema desarrollado
+{}: function texts differ in the single-line diagram and the schematic	{}: Funktionstexte in Übersichtsschaltplan und Stromlaufplan unterscheiden sich	{} : les textes de fonction diffèrent entre le schéma unifilaire et le schéma développé	{}: los textos de función difieren entre el esquema unifilar y el esquema desarrollado
+{}: not in the single-line diagram	{}: nicht im Übersichtsschaltplan	{} : absent du schéma unifilaire	{}: no está en el esquema unifilar
+{}: planned in the single-line diagram, not in the schematic yet	{}: im Übersichtsschaltplan geplant, noch nicht im Stromlaufplan	{} : planifié dans le schéma unifilaire, pas encore dans le schéma développé	{}: planificado en el esquema unifilar, aún no en el esquema desarrollado
+{}: single-line symbol '{}' does not match the schematic ('{}')	{}: einpoliges Symbol '{}' passt nicht zum Stromlaufplan ('{}')	{} : le symbole unifilaire '{}' ne correspond pas au schéma développé ('{}')	{}: el símbolo unifilar '{}' no coincide con el esquema desarrollado ('{}')
+Copies function texts between both representations where one is empty	Kopiert Funktionstexte zwischen beiden Darstellungen, wo eine leer ist	Copie les textes de fonction entre les deux représentations lorsque l'une est vide	Copia los textos de función entre ambas representaciones cuando una está vacía
+Devices are planned with single-line symbols and engineered in the multi-line schematic; both share the device tag.	Geräte werden mit einpoligen Symbolen geplant und im allpoligen Stromlaufplan projektiert; beide teilen das Betriebsmittelkennzeichen.	Les appareils sont planifiés avec des symboles unifilaires et étudiés dans le schéma développé multifilaire ; les deux partagent le repère de l'appareil.	Los equipos se planifican con símbolos unifilares y se proyectan en el esquema desarrollado multifilar; ambos comparten la identificación del equipo.
+Generate schematic from this page	Stromlaufplan aus dieser Seite erzeugen	Générer le schéma développé à partir de cette page	Generar el esquema desarrollado a partir de esta página
+Generate single-line diagram	Übersichtsschaltplan erzeugen	Générer le schéma unifilaire	Generar el esquema unifilar
+Multi-line power symbols and conductors for the single-line symbols of the current page, on a new page	Allpolige Leistungssymbole und Leiter für die einpoligen Symbole der aktuellen Seite, auf einer neuen Seite	Symboles de puissance multifilaires et conducteurs pour les symboles unifilaires de la page courante, sur une nouvelle page	Símbolos de potencia multifilares y conductores para los símbolos unifilares de la página actual, en una página nueva
+No single-line symbols and no power devices in the schematic.	Keine einpoligen Symbole und keine Leistungsgeräte im Stromlaufplan.	Aucun symbole unifilaire et aucun appareil de puissance dans le schéma développé.	No hay símbolos unifilares ni equipos de potencia en el esquema desarrollado.
+Single-line / multi-line	Einpolig / allpolig	Unifilaire / multifilaire	Unifilar / multifilar
+Single-line symbols for the power devices of the schematic that have none yet, on a new overview page	Einpolige Symbole für die Leistungsgeräte des Stromlaufplans, die noch keine haben, auf einer neuen Übersichtsseite	Symboles unifilaires pour les appareils de puissance du schéma développé qui n'en ont pas encore, sur une nouvelle page de synoptique	Símbolos unifilares para los equipos de potencia del esquema desarrollado que aún no los tienen, en una nueva página de vista general
+Single-line	Einpolig	Unifilaire	Unifilar
+Synchronize function texts	Funktionstexte abgleichen	Synchroniser les textes de fonction	Sincronizar los textos de función
+{} function texts copied	{} Funktionstexte kopiert	{} textes de fonction copiés	{} textos de función copiados
+{} symbols and {} wires generated on page {}	{} Symbole und {} Verbindungen auf Seite {} erzeugt	{} symboles et {} liaisons générés sur la page {}	{} símbolos y {} conexiones generados en la página {}
+Motor protection switch (single-line)	Motorschutzschalter (einpolig)	Disjoncteur moteur (unifilaire)	Guardamotor (unifilar)
+Overload relay (single-line)	Überlastrelais (einpolig)	Relais de surcharge (unifilaire)	Relé de sobrecarga (unifilar)
+Switch-disconnector (single-line)	Lasttrennschalter (einpolig)	Interrupteur-sectionneur (unifilaire)	Interruptor-seccionador (unifilar)
+Cable tray	Kabelpritsche	Chemin de câbles	Bandeja portacables
+Cable ladder	Kabelleiter	Échelle à câbles	Escalera portacables
+Trunking	Kabelkanal	Goulotte	Canaleta
+Conduit	Installationsrohr	Conduit	Tubo protector
+Drag chain	Energiekette	Chaîne porte-câbles	Cadena portacables
+Buried	Erdverlegt	Enterré	Enterrado
+Free run	Freie Verlegung	Pose libre	Tendido libre
+{} is not placed in the plant layout	{} ist nicht im Anlagenlayout platziert	{} n'est pas placé dans le plan d'installation	{} no está colocado en el plano de la instalación
+no path through the route network	kein Weg durch das Trassennetz	aucun chemin dans le réseau de cheminement	ningún camino por la red de recorridos
+Field segment {} refers to the missing node {}	Trassenabschnitt {} verweist auf den fehlenden Knoten {}	Le tronçon {} fait référence au nœud manquant {}	El tramo {} hace referencia al nodo inexistente {}
+{} is placed at the missing node {}	{} ist am fehlenden Knoten {} platziert	{} est placé au nœud manquant {}	{} está colocado en el nodo inexistente {}
+Field route definition refers to the unknown cable {}	Feldtrassen-Definition verweist auf das unbekannte Kabel {}	La définition de cheminement fait référence au câble inconnu {}	La definición de recorrido hace referencia al cable desconocido {}
+Field route of {} runs via the missing node {}	Feldtrasse von {} führt über den fehlenden Knoten {}	Le cheminement de {} passe par le nœud manquant {}	El recorrido de {} pasa por el nodo inexistente {}
+Field cable {}: {} is not placed in the plant layout	Feldkabel {}: {} ist nicht im Anlagenlayout platziert	Câble de terrain {} : {} n'est pas placé dans le plan d'installation	Cable de campo {}: {} no está colocado en el plano de la instalación
+Field cable {} cannot be routed from {} to {}	Feldkabel {} kann nicht von {} nach {} verlegt werden	Le câble de terrain {} ne peut pas être acheminé de {} à {}	El cable de campo {} no se puede tender de {} a {}
+Field segment {} is filled to {} % (allowed {} %)	Trassenabschnitt {} ist zu {} % gefüllt (zulässig {} %)	Le tronçon {} est rempli à {} % (admis {} %)	El tramo {} está lleno al {} % (permitido {} %)
+Field segment {} carries power together with signal cables without a divider	Trassenabschnitt {} führt Leistungs- und Signalkabel ohne Trennsteg	Le tronçon {} porte des câbles de puissance et de signal sans séparateur	El tramo {} lleva cables de potencia y de señal sin separador
+Cable {} needs a bend radius of {} mm, drag chain {} has {} mm	Kabel {} braucht einen Biegeradius von {} mm, Energiekette {} hat {} mm	Le câble {} nécessite un rayon de courbure de {} mm, la chaîne {} a {} mm	El cable {} necesita un radio de curvatura de {} mm, la cadena {} tiene {} mm
+Cable gland	Kabelverschraubung	Presse-étoupe	Prensaestopas
+EMC cable gland	EMV-Kabelverschraubung	Presse-étoupe CEM	Prensaestopas CEM
+Connector	Steckverbinder	Connecteur	Conector
+Strain relief	Zugentlastung	Serre-câble	Alivio de tracción
+Shield clamp	Schirmklemme	Collier de blindage	Abrazadera de pantalla
+Protective hose	Schutzschlauch	Gaine de protection	Manguera protectora
+End sleeve	Endhülse	Manchon d'extrémité	Manguito terminal
+Accessory {} refers to the unknown cable {}	Zubehör {} verweist auf das unbekannte Kabel {}	L'accessoire {} fait référence au câble inconnu {}	El accesorio {} hace referencia al cable desconocido {}
+Cable {} ({} mm) does not fit the clamping range of {} ({}–{} mm)	Kabel {} ({} mm) passt nicht in den Klemmbereich von {} ({}–{} mm)	Le câble {} ({} mm) ne convient pas à la plage de serrage de {} ({}–{} mm)	El cable {} ({} mm) no encaja en el rango de apriete de {} ({}–{} mm)
+Shielded cable {} has no EMC gland, shield clamp or connector at {}	Geschirmtes Kabel {} hat an {} keine EMV-Verschraubung, Schirmklemme oder Steckverbinder	Le câble blindé {} n'a ni presse-étoupe CEM, ni collier de blindage, ni connecteur à {}	El cable apantallado {} no tiene prensaestopas CEM, abrazadera de pantalla ni conector en {}
+Main bonding	Schutzpotentialausgleich	Liaison équipotentielle principale	Conexión equipotencial principal
+Supplementary bonding	Zusätzlicher Schutzpotentialausgleich	Liaison équipotentielle supplémentaire	Conexión equipotencial suplementaria
+Functional bonding	Funktionspotentialausgleich	Liaison équipotentielle fonctionnelle	Conexión equipotencial funcional
+Main earthing terminal	Haupterdungsschiene	Borne principale de terre	Borne principal de tierra
+Machine frame	Maschinengestell	Bâti de machine	Bastidor de máquina
+Metal cable carrier	Metallischer Kabelträger	Support de câbles métallique	Soporte de cables metálico
+Bonding conductor {} refers to the unknown bonding point {}	Potentialausgleichsleiter {} verweist auf den unbekannten Anschlusspunkt {}	Le conducteur d'équipotentialité {} fait référence au point inconnu {}	El conductor equipotencial {} hace referencia al punto desconocido {}
+Bonding conductor {} – {} has {} mm², at least {} mm² are required	Potentialausgleichsleiter {} – {} hat {} mm², mindestens {} mm² sind erforderlich	Le conducteur d'équipotentialité {} – {} a {} mm², au moins {} mm² sont requis	El conductor equipotencial {} – {} tiene {} mm², se requieren al menos {} mm²
+Bonding conductor {} – {} has no cross-section	Potentialausgleichsleiter {} – {} hat keinen Querschnitt	Le conducteur d'équipotentialité {} – {} n'a pas de section	El conductor equipotencial {} – {} no tiene sección
+{} ({}) is not connected to the equipotential bonding	{} ({}) ist nicht an den Potentialausgleich angeschlossen	{} ({}) n'est pas relié à la liaison équipotentielle	{} ({}) no está conectado a la conexión equipotencial
+Network (m)	Netz (m)	Réseau (m)	Red (m)
+bonded	angeschlossen	relié	conectado
+not bonded	nicht angeschlossen	non relié	no conectado
+Field cable routing	Feldkabel-Trassierung	Cheminement des câbles de terrain	Recorrido de cables de campo
+Equipotential bonding	Potentialausgleich	Liaison équipotentielle	Conexión equipotencial
+Node name or id	Knotenname oder ID	Nom ou ID du nœud	Nombre o ID del nodo
+Adds a node of the field route network (junction, penetration, where an enclosure or device is reached)	Fügt einen Knoten des Trassennetzes hinzu (Abzweig, Durchführung, Anschlusspunkt eines Schaltschranks oder Geräts)	Ajoute un nœud au réseau de cheminement (dérivation, traversée, point d'accès d'une armoire ou d'un appareil)	Añade un nodo a la red de recorridos (derivación, paso, punto de acceso de un armario o aparato)
+Position right in metres	Position nach rechts in Metern	Position vers la droite en mètres	Posición hacia la derecha en metros
+Position down in metres	Position nach unten in Metern	Position vers le bas en mètres	Posición hacia abajo en metros
+Height above the floor in metres	Höhe über dem Boden in Metern	Hauteur au-dessus du sol en mètres	Altura sobre el suelo en metros
+Adds a segment of the field route network between two nodes: cable tray, ladder, trunking, conduit, drag chain, buried or free run	Fügt einen Trassenabschnitt zwischen zwei Knoten hinzu: Kabelpritsche, Kabelleiter, Kabelkanal, Rohr, Energiekette, erdverlegt oder frei	Ajoute un tronçon entre deux nœuds : chemin de câbles, échelle, goulotte, conduit, chaîne porte-câbles, enterré ou pose libre	Añade un tramo entre dos nodos: bandeja, escalera, canaleta, tubo, cadena portacables, enterrado o tendido libre
+tray (default), ladder, trunking, conduit, drag_chain, buried or free	tray (Standard), ladder, trunking, conduit, drag_chain, buried oder free	tray (par défaut), ladder, trunking, conduit, drag_chain, buried ou free	tray (por defecto), ladder, trunking, conduit, drag_chain, buried o free
+Inner width in mm (0 = no limit)	Innenbreite in mm (0 = unbegrenzt)	Largeur intérieure en mm (0 = sans limite)	Ancho interior en mm (0 = sin límite)
+Inner height in mm (0 = no limit)	Innenhöhe in mm (0 = unbegrenzt)	Hauteur intérieure en mm (0 = sans limite)	Alto interior en mm (0 = sin límite)
+Has a divider between power and signal cables	Hat einen Trennsteg zwischen Leistungs- und Signalkabeln	Possède un séparateur entre câbles de puissance et de signal	Tiene un separador entre cables de potencia y de señal
+Part number of the carrier (per metre)	Artikelnummer des Kabelträgers (je Meter)	Référence du support (par mètre)	Referencia del soporte (por metro)
+Length in metres (default from the node positions)	Länge in Metern (Standard aus den Knotenpositionen)	Longueur en mètres (par défaut d'après la position des nœuds)	Longitud en metros (por defecto según la posición de los nodos)
+Bend radius of a drag chain in mm	Biegeradius einer Energiekette in mm	Rayon de courbure d'une chaîne porte-câbles en mm	Radio de curvatura de una cadena portacables en mm
+Places an enclosure (+CAB1), a device (-M1) or a machine location (+M1) at a node of the field route network	Platziert einen Schaltschrank (+CAB1), ein Gerät (-M1) oder einen Maschinenort (+M1) an einem Knoten des Trassennetzes	Place une armoire (+CAB1), un appareil (-M1) ou un emplacement de machine (+M1) sur un nœud du réseau de cheminement	Coloca un armario (+CAB1), un aparato (-M1) o una ubicación de máquina (+M1) en un nodo de la red de recorridos
+Location or device tag	Ortskennzeichen oder Betriebsmittelkennzeichen	Repère d'emplacement ou d'appareil	Identificación de ubicación o de aparato
+Length from the node to the device in metres	Länge vom Knoten bis zum Gerät in Metern	Longueur du nœud à l'appareil en mètres	Longitud del nodo al aparato en metros
+Adds the outline of a machine, building or area to the plant layout	Fügt die Kontur einer Maschine, eines Gebäudes oder Bereichs zum Anlagenlayout hinzu	Ajoute le contour d'une machine, d'un bâtiment ou d'une zone au plan d'installation	Añade el contorno de una máquina, edificio o zona al plano de la instalación
+Name, e.g. the location +M1	Name, z. B. der Ort +M1	Nom, p. ex. l'emplacement +M1	Nombre, p. ej. la ubicación +M1
+Corner points in metres	Eckpunkte in Metern	Sommets en mètres	Vértices en metros
+Conductive frame that needs equipotential bonding	Leitfähiges Gestell, das in den Potentialausgleich einbezogen werden muss	Bâti conducteur à relier à la liaison équipotentielle	Bastidor conductor que necesita conexión equipotencial
+Sets the field route definition of a cable: nodes it must pass and segments it must not use	Legt die Feldtrasse eines Kabels fest: zu durchlaufende Knoten und zu meidende Abschnitte	Définit le cheminement d'un câble : nœuds à traverser et tronçons à éviter	Define el recorrido de un cable: nodos por los que debe pasar y tramos que no debe usar
+Nodes to pass in this order, comma separated	Zu durchlaufende Knoten in dieser Reihenfolge, durch Komma getrennt	Nœuds à traverser dans cet ordre, séparés par des virgules	Nodos por los que pasar en este orden, separados por comas
+Segments not to use, comma separated	Nicht zu benutzende Abschnitte, durch Komma getrennt	Tronçons à ne pas utiliser, séparés par des virgules	Tramos que no se deben usar, separados por comas
+Adds an equipotential bonding conductor between two bonding points (main earthing terminal, enclosures, conductive outlines, metal carriers)	Fügt einen Potentialausgleichsleiter zwischen zwei Anschlusspunkten hinzu (Haupterdungsschiene, Schaltschränke, leitfähige Konturen, metallische Kabelträger)	Ajoute un conducteur d'équipotentialité entre deux points (borne principale de terre, armoires, contours conducteurs, supports métalliques)	Añade un conductor equipotencial entre dos puntos (borne principal de tierra, armarios, contornos conductores, soportes metálicos)
+Bonding point	Anschlusspunkt des Potentialausgleichs	Point d'équipotentialité	Punto equipotencial
+main (default), supplementary or functional	main (Standard), supplementary oder functional	main (par défaut), supplementary ou functional	main (por defecto), supplementary o functional
+Cross-section in mm²	Querschnitt in mm²	Section en mm²	Sección en mm²
+Length in metres	Länge in Metern	Longueur en mètres	Longitud en metros
+Part number of the conductor (per metre)	Artikelnummer des Leiters (je Meter)	Référence du conducteur (par mètre)	Referencia del conductor (por metro)
+Adds an accessory to a cable end: gland, EMC gland, connector, strain relief, shield clamp, protective hose, end sleeve, marker	Fügt einem Kabelende Zubehör hinzu: Verschraubung, EMV-Verschraubung, Steckverbinder, Zugentlastung, Schirmklemme, Schutzschlauch, Endhülse, Markierer	Ajoute un accessoire à une extrémité de câble : presse-étoupe, presse-étoupe CEM, connecteur, serre-câble, collier de blindage, gaine, manchon, repère	Añade un accesorio a un extremo de cable: prensaestopas, prensaestopas CEM, conector, alivio de tracción, abrazadera de pantalla, manguera, manguito, marcador
+gland, emc_gland, connector, strain_relief, shield_clamp, protective_hose, end_sleeve, marker or other	gland, emc_gland, connector, strain_relief, shield_clamp, protective_hose, end_sleeve, marker oder other	gland, emc_gland, connector, strain_relief, shield_clamp, protective_hose, end_sleeve, marker ou other	gland, emc_gland, connector, strain_relief, shield_clamp, protective_hose, end_sleeve, marker u other
+Device tag of the end (both ends if missing)	Betriebsmittelkennzeichen des Endes (ohne Angabe beide Enden)	Repère de l'appareil à l'extrémité (les deux extrémités si absent)	Identificación del aparato del extremo (ambos extremos si falta)
+Quantity per end (default 1)	Menge je Ende (Standard 1)	Quantité par extrémité (par défaut 1)	Cantidad por extremo (por defecto 1)
+Removes a node (with its segments and places), segment, place, outline, bonding conductor or accessory	Entfernt einen Knoten (mit seinen Abschnitten und Platzierungen), Abschnitt, Platzierung, Kontur, Potentialausgleichsleiter oder Zubehör	Supprime un nœud (avec ses tronçons et emplacements), un tronçon, un emplacement, un contour, un conducteur d'équipotentialité ou un accessoire	Elimina un nodo (con sus tramos y ubicaciones), tramo, ubicación, contorno, conductor equipotencial o accesorio
+node, segment, place, outline, bond or accessory	node, segment, place, outline, bond oder accessory	node, segment, place, outline, bond ou accessory	node, segment, place, outline, bond o accessory
+Name or id; the tag for places	Name oder ID; bei Platzierungen das Kennzeichen	Nom ou ID ; le repère pour les emplacements	Nombre o ID; la identificación para ubicaciones
+Shows the rules of the field cable planning and changes those given	Zeigt die Regeln der Feldkabelplanung und ändert die angegebenen	Affiche les règles de planification des câbles de terrain et modifie celles indiquées	Muestra las reglas de planificación de cables de campo y cambia las indicadas
+Length added at each cable end in metres	Zugabe je Kabelende in Metern	Longueur ajoutée à chaque extrémité de câble en mètres	Longitud añadida en cada extremo de cable en metros
+Length inside an enclosure per end in metres	Länge im Schaltschrank je Ende in Metern	Longueur dans une armoire par extrémité en mètres	Longitud dentro de un armario por extremo en metros
+Cut lengths rounded up to this step in metres	Schnittlängen auf diese Schrittweite in Metern aufgerundet	Longueurs de coupe arrondies à ce pas en mètres	Longitudes de corte redondeadas a este paso en metros
+Maximum fill of a carrier in percent	Maximale Füllung eines Kabelträgers in Prozent	Remplissage maximal d'un support en pour cent	Llenado máximo de un soporte en porcentaje
+Bend radius in drag chains as a multiple of the cable diameter	Biegeradius in Energieketten als Vielfaches des Kabeldurchmessers	Rayon de courbure dans les chaînes porte-câbles en multiple du diamètre du câble	Radio de curvatura en cadenas portacables como múltiplo del diámetro del cable
+Name of the main earthing terminal	Name der Haupterdungsschiene	Nom de la borne principale de terre	Nombre del borne principal de tierra
+Metal carriers meeting at a node are connected	Metallische Kabelträger, die sich an einem Knoten treffen, sind verbunden	Les supports métalliques qui se rejoignent à un nœud sont reliés	Los soportes metálicos que se unen en un nodo están conectados
+Plans the field cables through the route network: routes, lengths, segment fill, bonding points and problems; optionally takes the cut lengths over	Plant die Feldkabel durch das Trassennetz: Wege, Längen, Füllung der Abschnitte, Potentialausgleich und Probleme; übernimmt auf Wunsch die Schnittlängen	Planifie les câbles de terrain dans le réseau : cheminements, longueurs, remplissage des tronçons, équipotentialité et problèmes ; reprend au besoin les longueurs de coupe	Planifica los cables de campo por la red: recorridos, longitudes, llenado de tramos, conexión equipotencial y problemas; opcionalmente adopta las longitudes de corte
+Take the cut lengths over as cable lengths	Schnittlängen als Kabellängen übernehmen	Reprendre les longueurs de coupe comme longueurs de câble	Adoptar las longitudes de corte como longitudes de cable
+Unknown node: {}	Unbekannter Knoten: {}	Nœud inconnu : {}	Nodo desconocido: {}
+Unknown segment: {}	Unbekannter Abschnitt: {}	Tronçon inconnu : {}	Tramo desconocido: {}
+Node {} exists already	Knoten {} existiert bereits	Le nœud {} existe déjà	El nodo {} ya existe
+A segment needs two different nodes	Ein Abschnitt braucht zwei verschiedene Knoten	Un tronçon nécessite deux nœuds différents	Un tramo necesita dos nodos distintos
+Unknown segment kind: {}	Unbekannte Abschnittsart: {}	Type de tronçon inconnu : {}	Tipo de tramo desconocido: {}
+An outline needs {} points at least	Eine Kontur braucht mindestens {} Punkte	Un contour nécessite au moins {} points	Un contorno necesita al menos {} puntos
+Unknown cable: {}	Unbekanntes Kabel: {}	Câble inconnu : {}	Cable desconocido: {}
+Unknown bonding kind: {}	Unbekannte Art des Potentialausgleichs: {}	Type d'équipotentialité inconnu : {}	Tipo de conexión equipotencial desconocido: {}
+Unknown bonding point: {}	Unbekannter Anschlusspunkt des Potentialausgleichs: {}	Point d'équipotentialité inconnu : {}	Punto equipotencial desconocido: {}
+Unknown accessory kind: {}	Unbekannte Zubehörart: {}	Type d'accessoire inconnu : {}	Tipo de accesorio desconocido: {}
+Unknown field object: {}	Unbekanntes Feldobjekt: {}	Objet de terrain inconnu : {}	Objeto de campo desconocido: {}
+Nothing to remove: {} {}	Nichts zu entfernen: {} {}	Rien à supprimer : {} {}	Nada que eliminar: {} {}
+Field wiring	Feldverdrahtung	Câblage de terrain	Cableado de campo
+Plant layout	Anlagenlayout	Plan d'installation	Plano de la instalación
+Route network	Trassennetz	Réseau de cheminement	Red de recorridos
+Field cables	Feldkabel	Câbles de terrain	Cables de campo
+Cable accessories	Kabelzubehör	Accessoires de câble	Accesorios de cable
+{} field wiring problems (see Check)	{} Probleme der Feldverdrahtung (siehe Prüfung)	{} problèmes de câblage de terrain (voir Vérification)	{} problemas del cableado de campo (ver Comprobación)
+Select	Auswählen	Sélectionner	Seleccionar
+Select and drag nodes; drag the background to pan, scroll to zoom	Knoten auswählen und ziehen; Hintergrund ziehen zum Verschieben, Mausrad zum Zoomen	Sélectionner et déplacer des nœuds ; faire glisser le fond pour défiler, molette pour zoomer	Seleccionar y arrastrar nodos; arrastrar el fondo para desplazar, rueda para hacer zoom
+Node	Knoten	Nœud	Nodo
+Click to add a node of the route network	Klicken, um einen Knoten des Trassennetzes hinzuzufügen	Cliquer pour ajouter un nœud au réseau de cheminement	Haga clic para añadir un nodo a la red de recorridos
+Segment	Abschnitt	Tronçon	Tramo
+Click two nodes to connect them	Zwei Knoten anklicken, um sie zu verbinden	Cliquer sur deux nœuds pour les relier	Haga clic en dos nodos para unirlos
+Outline	Kontur	Contour	Contorno
+Click the corners of a machine or building, double-click to finish	Ecken einer Maschine oder eines Gebäudes anklicken, Doppelklick zum Beenden	Cliquer sur les angles d'une machine ou d'un bâtiment, double-clic pour terminer	Haga clic en las esquinas de una máquina o edificio, doble clic para terminar
+(no cable highlighted)	(kein Kabel hervorgehoben)	(aucun câble en surbrillance)	(ningún cable resaltado)
+Fit	Einpassen	Ajuster	Ajustar
+⬇ Export SVG…	⬇ SVG exportieren…	⬇ Exporter en SVG…	⬇ Exportar SVG…
+Height above the floor	Höhe über dem Boden	Hauteur au-dessus du sol	Altura sobre el suelo
+Placed here: {}	Hier platziert: {}	Placé ici : {}	Colocado aquí: {}
+Place an enclosure, device or machine location at this node	Schaltschrank, Gerät oder Maschinenort an diesem Knoten platzieren	Placer une armoire, un appareil ou un emplacement de machine sur ce nœud	Colocar un armario, aparato o ubicación de máquina en este nodo
+🗑 Delete node	🗑 Knoten löschen	🗑 Supprimer le nœud	🗑 Eliminar nodo
+SVG drawing	SVG-Zeichnung	Dessin SVG	Dibujo SVG
+Segments	Abschnitte	Tronçons	Tramos
+Width × height (mm)	Breite × Höhe (mm)	Largeur × hauteur (mm)	Ancho × alto (mm)
+Divider	Trennsteg	Séparateur	Separador
+Bend radius	Biegeradius	Rayon de courbure	Radio de curvatura
+all	alle	toutes	todas
+some	einige	certaines	algunas
+0 = from the node positions	0 = aus den Knotenpositionen	0 = d'après la position des nœuds	0 = según la posición de los nodos
+{} cables, {} %	{} Kabel, {} %	{} câbles, {} %	{} cables, {} %
+{} cables	{} Kabel	{} câbles	{} cables
+No segments yet: draw them in the plant layout.	Noch keine Abschnitte: im Anlagenlayout zeichnen.	Aucun tronçon : dessinez-les dans le plan d'installation.	Aún no hay tramos: dibújelos en el plano de la instalación.
+Enclosures (+CAB1), devices (-M1) and machine locations (+M1) at the nodes	Schaltschränke (+CAB1), Geräte (-M1) und Maschinenorte (+M1) an den Knoten	Armoires (+CAB1), appareils (-M1) et emplacements de machine (+M1) sur les nœuds	Armarios (+CAB1), aparatos (-M1) y ubicaciones de máquina (+M1) en los nodos
+Length from the node to the device	Länge vom Knoten bis zum Gerät	Longueur du nœud à l'appareil	Longitud del nodo al aparato
+Outlines	Konturen	Contours	Contornos
+Conductive frame	Leitfähiges Gestell	Bâti conducteur	Bastidor conductor
+Must be connected to the equipotential bonding	Muss an den Potentialausgleich angeschlossen werden	Doit être relié à la liaison équipotentielle	Debe conectarse a la conexión equipotencial
+{} corners	{} Ecken	{} sommets	{} vértices
+Take over cut lengths	Schnittlängen übernehmen	Reprendre les longueurs de coupe	Adoptar longitudes de corte
+Set the cable lengths to the planned cut lengths	Kabellängen auf die geplanten Schnittlängen setzen	Régler les longueurs de câble sur les longueurs de coupe prévues	Fijar las longitudes de cable en las longitudes de corte planificadas
+📊 Report	📊 Auswertung	📊 Rapport	📊 Informe
+{} parts of the network	{} Teilnetze	{} parties du réseau	{} partes de la red
+No field cables: place the enclosures and field devices at nodes of the route network.	Keine Feldkabel: Schaltschränke und Feldgeräte an Knoten des Trassennetzes platzieren.	Aucun câble de terrain : placez les armoires et les appareils de terrain sur des nœuds du réseau.	No hay cables de campo: coloque los armarios y aparatos de campo en nodos de la red de recorridos.
+Route definition of {}	Trassendefinition von {}	Définition du cheminement de {}	Definición del recorrido de {}
+Via:	Über:	Via :	Por:
+Remove	Entfernen	Retirer	Quitar
+➕ Node	➕ Knoten	➕ Nœud	➕ Nodo
+Avoid:	Meiden:	Éviter :	Evitar:
+{} cable lengths taken over	{} Kabellängen übernommen	{} longueurs de câble reprises	{} longitudes de cable adoptadas
+➕ Bonding conductor	➕ Potentialausgleichsleiter	➕ Conducteur d'équipotentialité	➕ Conductor equipotencial
+Bonding points	Anschlusspunkte des Potentialausgleichs	Points d'équipotentialité	Puntos equipotenciales
+➕ Accessory	➕ Zubehör	➕ Accessoire	➕ Accesorio
+both ends	beide Enden	les deux extrémités	ambos extremos
+No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Kein Zubehör: Verschraubungen, Steckverbinder, Schirmklemmen … gehen in die Stückliste ein und werden gegen das Kabel geprüft.	Aucun accessoire : presse-étoupes, connecteurs, colliers de blindage … entrent dans la nomenclature et sont vérifiés par rapport au câble.	Sin accesorios: prensaestopas, conectores, abrazaderas de pantalla … entran en la lista de materiales y se comprueban frente al cable.
+Reserve per cable end	Zugabe je Kabelende	Réserve par extrémité de câble	Reserva por extremo de cable
+Length inside an enclosure	Länge im Schaltschrank	Longueur dans une armoire	Longitud dentro de un armario
+Cut length step	Schrittweite der Schnittlänge	Pas de la longueur de coupe	Paso de la longitud de corte
+Maximum fill of a carrier	Maximale Füllung eines Kabelträgers	Remplissage maximal d'un support	Llenado máximo de un soporte
+Bend radius in drag chains	Biegeradius in Energieketten	Rayon de courbure dans les chaînes porte-câbles	Radio de curvatura en cadenas portacables
+Field wiring…	Feldverdrahtung…	Câblage de terrain…	Cableado de campo…
+Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Anlagenlayout, Trassennetz, Feldkabelplanung, Potentialausgleich und Kabelzubehör	Plan d'installation, réseau de cheminement, planification des câbles de terrain, liaison équipotentielle et accessoires de câble	Plano de la instalación, red de recorridos, planificación de cables de campo, conexión equipotencial y accesorios de cable
++CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1
