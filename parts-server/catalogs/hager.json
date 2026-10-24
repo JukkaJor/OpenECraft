@@ -1,0 +1,327 @@
+{
+  "catalog": {
+    "id": "hager",
+    "name": "Hager",
+    "manufacturer": "Hager",
+    "version": "2026.1",
+    "description": "Miniature circuit breakers MBN / MCN, residual current circuit breakers CDA, installation contactors ESC and switch disconnectors SBN. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "HAG.MBN106",
+      "type_number": "MBN106",
+      "order_number": "MBN106",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P B6, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "6 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MBN110",
+      "type_number": "MBN110",
+      "order_number": "MBN110",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P B10, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "10 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MBN116",
+      "type_number": "MBN116",
+      "order_number": "MBN116",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P B16, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MCN106",
+      "type_number": "MCN106",
+      "order_number": "MCN106",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C6, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "6 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MCN110",
+      "type_number": "MCN110",
+      "order_number": "MCN110",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C10, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "10 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MCN116",
+      "type_number": "MCN116",
+      "order_number": "MCN116",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C16, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MCN120",
+      "type_number": "MCN120",
+      "order_number": "MCN120",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C20, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "20 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+    },
+    {
+      "number": "HAG.MCN316",
+      "type_number": "MCN316",
+      "order_number": "MCN316",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 3P C16, 6 kA, 400 V AC, 3 modules",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 3\nModules: 3"
+    },
+    {
+      "number": "HAG.CDA440D",
+      "type_number": "CDA440D",
+      "order_number": "CDA440D",
+      "manufacturer": "Hager",
+      "description": "Residual current circuit breaker 4P 40 A, 30 mA, type A, 4 modules",
+      "group": "Safety devices",
+      "subgroup": "Residual current device",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "ResidualCurrent",
+          "pins": "1 3 5 N 2 4 6 N'"
+        }
+      ],
+      "current": "40 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4"
+    },
+    {
+      "number": "HAG.CDA463D",
+      "type_number": "CDA463D",
+      "order_number": "CDA463D",
+      "manufacturer": "Hager",
+      "description": "Residual current circuit breaker 4P 63 A, 30 mA, type A, 4 modules",
+      "group": "Safety devices",
+      "subgroup": "Residual current device",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "ResidualCurrent",
+          "pins": "1 3 5 N 2 4 6 N'"
+        }
+      ],
+      "current": "63 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4"
+    },
+    {
+      "number": "HAG.ESC225",
+      "type_number": "ESC225",
+      "order_number": "ESC225",
+      "manufacturer": "Hager",
+      "description": "Installation contactor 25 A, 2 NO, coil 230 V AC, 1 module",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContact",
+          "pins": "1 2"
+        },
+        {
+          "kind": "MainContact",
+          "pins": "3 4"
+        }
+      ],
+      "voltage": "230 V AC",
+      "current": "25 A (AC-1)",
+      "tech_data": "Modules: 1"
+    },
+    {
+      "number": "HAG.ESC425",
+      "type_number": "ESC425",
+      "order_number": "ESC425",
+      "manufacturer": "Hager",
+      "description": "Installation contactor 25 A, 4 NO, coil 230 V AC, 2 modules",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContacts4",
+          "pins": "1 3 5 7 2 4 6 8"
+        }
+      ],
+      "voltage": "230 V AC",
+      "current": "25 A (AC-1)",
+      "tech_data": "Modules: 2"
+    },
+    {
+      "number": "HAG.ESC440",
+      "type_number": "ESC440",
+      "order_number": "ESC440",
+      "manufacturer": "Hager",
+      "description": "Installation contactor 40 A, 4 NO, coil 230 V AC, 3 modules",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContacts4",
+          "pins": "1 3 5 7 2 4 6 8"
+        }
+      ],
+      "voltage": "230 V AC",
+      "current": "40 A (AC-1)",
+      "tech_data": "Modules: 3"
+    },
+    {
+      "number": "HAG.SBN340",
+      "type_number": "SBN340",
+      "order_number": "SBN340",
+      "manufacturer": "Hager",
+      "description": "Switch disconnector 3P 40 A, 400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Main switch",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Disconnector3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "40 A",
+      "voltage": "400 V AC",
+      "tech_data": "Poles: 3"
+    },
+    {
+      "number": "HAG.SBN363",
+      "type_number": "SBN363",
+      "order_number": "SBN363",
+      "manufacturer": "Hager",
+      "description": "Switch disconnector 3P 63 A, 400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Main switch",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Disconnector3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "63 A",
+      "voltage": "400 V AC",
+      "tech_data": "Poles: 3"
+    }
+  ]
+}

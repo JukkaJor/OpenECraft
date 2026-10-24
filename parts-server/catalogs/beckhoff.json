@@ -1,0 +1,533 @@
+{
+  "catalog": {
+    "id": "beckhoff",
+    "name": "Beckhoff",
+    "manufacturer": "Beckhoff",
+    "version": "2026.1",
+    "description": "EtherCAT coupler and EtherCAT terminals (digital and analog I/O, system terminals). Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "BECK.EK1100",
+      "type_number": "EK1100",
+      "order_number": "EK1100",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT coupler for EtherCAT terminals (E-bus)",
+      "group": "PLC",
+      "subgroup": "Bus coupler",
+      "identifier": "A",
+      "width": 44.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "Us 0Vs Up 0Vp PE"
+        }
+      ],
+      "tech_data": "Bus: EtherCAT\nSupply: 24 V DC"
+    },
+    {
+      "number": "BECK.EL1004",
+      "type_number": "EL1004",
+      "order_number": "EL1004",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital input 4 x 24 V DC, 3 ms",
+      "group": "PLC",
+      "subgroup": "Digital input module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcInput",
+          "pins": "DI1"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI2"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI3"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI4"
+        }
+      ],
+      "voltage": "24 V DC",
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL1008",
+      "type_number": "EL1008",
+      "order_number": "EL1008",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital input 8 x 24 V DC, 3 ms",
+      "group": "PLC",
+      "subgroup": "Digital input module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcInput",
+          "pins": "DI1"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI2"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI3"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI4"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI5"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI6"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI7"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI8"
+        }
+      ],
+      "voltage": "24 V DC",
+      "tech_data": "Bus: EtherCAT\nChannels: 8"
+    },
+    {
+      "number": "BECK.EL1809",
+      "type_number": "EL1809",
+      "order_number": "EL1809",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital input 16 x 24 V DC, 3 ms",
+      "group": "PLC",
+      "subgroup": "Digital input module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcInput",
+          "pins": "DI1"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI2"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI3"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI4"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI5"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI6"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI7"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI8"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI9"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI10"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI11"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI12"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI13"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI14"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI15"
+        },
+        {
+          "kind": "PlcInput",
+          "pins": "DI16"
+        }
+      ],
+      "voltage": "24 V DC",
+      "tech_data": "Bus: EtherCAT\nChannels: 16"
+    },
+    {
+      "number": "BECK.EL2004",
+      "type_number": "EL2004",
+      "order_number": "EL2004",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital output 4 x 24 V DC, 0.5 A",
+      "group": "PLC",
+      "subgroup": "Digital output module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcOutput",
+          "pins": "DO1"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO2"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO3"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO4"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "0.5 A",
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL2008",
+      "type_number": "EL2008",
+      "order_number": "EL2008",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital output 8 x 24 V DC, 0.5 A",
+      "group": "PLC",
+      "subgroup": "Digital output module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcOutput",
+          "pins": "DO1"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO2"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO3"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO4"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO5"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO6"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO7"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO8"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "0.5 A",
+      "tech_data": "Bus: EtherCAT\nChannels: 8"
+    },
+    {
+      "number": "BECK.EL2809",
+      "type_number": "EL2809",
+      "order_number": "EL2809",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal digital output 16 x 24 V DC, 0.5 A",
+      "group": "PLC",
+      "subgroup": "Digital output module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcOutput",
+          "pins": "DO1"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO2"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO3"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO4"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO5"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO6"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO7"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO8"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO9"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO10"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO11"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO12"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO13"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO14"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO15"
+        },
+        {
+          "kind": "PlcOutput",
+          "pins": "DO16"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "0.5 A",
+      "tech_data": "Bus: EtherCAT\nChannels: 16"
+    },
+    {
+      "number": "BECK.EL3054",
+      "type_number": "EL3054",
+      "order_number": "EL3054",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal analog input 4 x 4 - 20 mA, 12 bit",
+      "group": "PLC",
+      "subgroup": "Analog input module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI1"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI2"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI3"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI4"
+        }
+      ],
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL3064",
+      "type_number": "EL3064",
+      "order_number": "EL3064",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal analog input 4 x 0 - 10 V, 12 bit",
+      "group": "PLC",
+      "subgroup": "Analog input module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI1"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI2"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI3"
+        },
+        {
+          "kind": "PlcAnalogInput",
+          "pins": "AI4"
+        }
+      ],
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL4004",
+      "type_number": "EL4004",
+      "order_number": "EL4004",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal analog output 4 x 0 - 10 V, 12 bit",
+      "group": "PLC",
+      "subgroup": "Analog output module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO1"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO2"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO3"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO4"
+        }
+      ],
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL4024",
+      "type_number": "EL4024",
+      "order_number": "EL4024",
+      "manufacturer": "Beckhoff",
+      "description": "EtherCAT terminal analog output 4 x 4 - 20 mA, 12 bit",
+      "group": "PLC",
+      "subgroup": "Analog output module",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO1"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO2"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO3"
+        },
+        {
+          "kind": "PlcAnalogOutput",
+          "pins": "AO4"
+        }
+      ],
+      "tech_data": "Bus: EtherCAT\nChannels: 4"
+    },
+    {
+      "number": "BECK.EL9410",
+      "type_number": "EL9410",
+      "order_number": "EL9410",
+      "manufacturer": "Beckhoff",
+      "description": "Power supply terminal for E-bus and power contacts, 24 V DC",
+      "group": "PLC",
+      "subgroup": "Bus coupler",
+      "identifier": "A",
+      "width": 12.0,
+      "height": 100.0,
+      "depth": 68.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "Us 0Vs Up 0Vp"
+        }
+      ],
+      "voltage": "24 V DC",
+      "tech_data": "Bus: EtherCAT"
+    },
+    {
+      "number": "BECK.EL9011",
+      "type_number": "EL9011",
+      "order_number": "EL9011",
+      "manufacturer": "Beckhoff",
+      "description": "Bus end cover for EtherCAT terminals",
+      "group": "PLC",
+      "subgroup": "Accessories",
+      "identifier": "A",
+      "mounting": "Mounting rail 35 mm",
+      "functions": []
+    }
+  ]
+}

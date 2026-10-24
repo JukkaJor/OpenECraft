@@ -1,0 +1,293 @@
+{
+  "catalog": {
+    "id": "abb",
+    "name": "ABB",
+    "manufacturer": "ABB",
+    "version": "2026.1",
+    "description": "Miniature circuit breakers S200, residual current circuit breakers F200, contactors AF and manual motor starters MS132. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "ABB.2CDS251001R0064",
+      "type_number": "S201-C6",
+      "order_number": "2CDS251001R0064",
+      "manufacturer": "ABB",
+      "description": "Miniature circuit breaker S201-C6, 1P C6, 6 kA, 230/400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "width": 17.5,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "6 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1"
+    },
+    {
+      "number": "ABB.2CDS251001R0104",
+      "type_number": "S201-C10",
+      "order_number": "2CDS251001R0104",
+      "manufacturer": "ABB",
+      "description": "Miniature circuit breaker S201-C10, 1P C10, 6 kA, 230/400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "width": 17.5,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "10 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1"
+    },
+    {
+      "number": "ABB.2CDS251001R0164",
+      "type_number": "S201-C16",
+      "order_number": "2CDS251001R0164",
+      "manufacturer": "ABB",
+      "description": "Miniature circuit breaker S201-C16, 1P C16, 6 kA, 230/400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "width": 17.5,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1"
+    },
+    {
+      "number": "ABB.2CDS251001R0165",
+      "type_number": "S201-B16",
+      "order_number": "2CDS251001R0165",
+      "manufacturer": "ABB",
+      "description": "Miniature circuit breaker S201-B16, 1P B16, 6 kA, 230/400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "width": 17.5,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1"
+    },
+    {
+      "number": "ABB.2CDS253001R0164",
+      "type_number": "S203-C16",
+      "order_number": "2CDS253001R0164",
+      "manufacturer": "ABB",
+      "description": "Miniature circuit breaker S203-C16, 3P C16, 6 kA, 400 V AC",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "Q",
+      "width": 52.5,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 3"
+    },
+    {
+      "number": "ABB.2CSF204101R1400",
+      "type_number": "F204 A-40/0.03",
+      "order_number": "2CSF204101R1400",
+      "manufacturer": "ABB",
+      "description": "Residual current circuit breaker F204 A-40/0.03, 4P 40 A, 30 mA, type A",
+      "group": "Safety devices",
+      "subgroup": "Residual current device",
+      "identifier": "F",
+      "width": 70.0,
+      "height": 88.0,
+      "depth": 69.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "ResidualCurrent",
+          "pins": "1 3 5 N 2 4 6 N'"
+        }
+      ],
+      "current": "40 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4"
+    },
+    {
+      "number": "ABB.1SBL137001R1310",
+      "type_number": "AF09-30-10-13",
+      "order_number": "1SBL137001R1310",
+      "manufacturer": "ABB",
+      "description": "Contactor AF09-30-10-13, AC-3 9 A / 4 kW / 400 V, coil 100 - 250 V AC/DC, 1 NO",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContacts3",
+          "pins": "1 3 5 2 4 6"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        }
+      ],
+      "voltage": "100 - 250 V AC/DC",
+      "current": "9 A (AC-3)",
+      "power": "4 kW / 400 V",
+      "tech_data": "Auxiliary contacts: 1 NO"
+    },
+    {
+      "number": "ABB.1SBL157001R1310",
+      "type_number": "AF12-30-10-13",
+      "order_number": "1SBL157001R1310",
+      "manufacturer": "ABB",
+      "description": "Contactor AF12-30-10-13, AC-3 12 A / 5.5 kW / 400 V, coil 100 - 250 V AC/DC, 1 NO",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContacts3",
+          "pins": "1 3 5 2 4 6"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        }
+      ],
+      "voltage": "100 - 250 V AC/DC",
+      "current": "12 A (AC-3)",
+      "power": "5.5 kW / 400 V",
+      "tech_data": "Auxiliary contacts: 1 NO"
+    },
+    {
+      "number": "ABB.1SBL177001R1310",
+      "type_number": "AF16-30-10-13",
+      "order_number": "1SBL177001R1310",
+      "manufacturer": "ABB",
+      "description": "Contactor AF16-30-10-13, AC-3 16 A / 7.5 kW / 400 V, coil 100 - 250 V AC/DC, 1 NO",
+      "group": "Relays, contactors",
+      "subgroup": "Power contactor",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "MainContacts3",
+          "pins": "1 3 5 2 4 6"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        }
+      ],
+      "voltage": "100 - 250 V AC/DC",
+      "current": "16 A (AC-3)",
+      "power": "7.5 kW / 400 V",
+      "tech_data": "Auxiliary contacts: 1 NO"
+    },
+    {
+      "number": "ABB.MS132-4.0",
+      "type_number": "MS132-4.0",
+      "order_number": "MS132-4.0",
+      "manufacturer": "ABB",
+      "description": "Manual motor starter MS132-4.0, 2.5 - 4 A, CLASS 10",
+      "group": "Safety devices",
+      "subgroup": "Motor protection switch",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "MotorProtection",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "2.5 - 4 A",
+      "tech_data": "Trip class: CLASS 10"
+    },
+    {
+      "number": "ABB.MS132-6.3",
+      "type_number": "MS132-6.3",
+      "order_number": "MS132-6.3",
+      "manufacturer": "ABB",
+      "description": "Manual motor starter MS132-6.3, 4 - 6.3 A, CLASS 10",
+      "group": "Safety devices",
+      "subgroup": "Motor protection switch",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "MotorProtection",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "4 - 6.3 A",
+      "tech_data": "Trip class: CLASS 10"
+    },
+    {
+      "number": "ABB.MS132-10",
+      "type_number": "MS132-10",
+      "order_number": "MS132-10",
+      "manufacturer": "ABB",
+      "description": "Manual motor starter MS132-10, 6.3 - 10 A, CLASS 10",
+      "group": "Safety devices",
+      "subgroup": "Motor protection switch",
+      "identifier": "Q",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "MotorProtection",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "current": "6.3 - 10 A",
+      "tech_data": "Trip class: CLASS 10"
+    }
+  ]
+}

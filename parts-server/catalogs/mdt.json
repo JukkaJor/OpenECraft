@@ -1,0 +1,327 @@
+{
+  "catalog": {
+    "id": "mdt",
+    "name": "MDT",
+    "manufacturer": "MDT",
+    "version": "2026.1",
+    "description": "KNX switch actuators, IP interface, IP router and KNX power supply. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "MDT.AKS-0416.03",
+      "type_number": "AKS-0416.03",
+      "order_number": "AKS-0416.03",
+      "manufacturer": "MDT",
+      "description": "KNX switch actuator 4-fold, 16 A, 230 V AC, C-load, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX actuator",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX-"
+        },
+        {
+          "kind": "No",
+          "pins": "1 2"
+        },
+        {
+          "kind": "No",
+          "pins": "3 4"
+        },
+        {
+          "kind": "No",
+          "pins": "5 6"
+        },
+        {
+          "kind": "No",
+          "pins": "7 8"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230 V AC",
+      "tech_data": "Bus: KNX\nChannels: 4\nLoad: C-load",
+      "note": "Contact designations are the channel order, not the device marking."
+    },
+    {
+      "number": "MDT.AKS-0816.03",
+      "type_number": "AKS-0816.03",
+      "order_number": "AKS-0816.03",
+      "manufacturer": "MDT",
+      "description": "KNX switch actuator 8-fold, 16 A, 230 V AC, C-load, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX actuator",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX-"
+        },
+        {
+          "kind": "No",
+          "pins": "1 2"
+        },
+        {
+          "kind": "No",
+          "pins": "3 4"
+        },
+        {
+          "kind": "No",
+          "pins": "5 6"
+        },
+        {
+          "kind": "No",
+          "pins": "7 8"
+        },
+        {
+          "kind": "No",
+          "pins": "9 10"
+        },
+        {
+          "kind": "No",
+          "pins": "11 12"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        },
+        {
+          "kind": "No",
+          "pins": "15 16"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230 V AC",
+      "tech_data": "Bus: KNX\nChannels: 8\nLoad: C-load",
+      "note": "Contact designations are the channel order, not the device marking."
+    },
+    {
+      "number": "MDT.AKS-1216.03",
+      "type_number": "AKS-1216.03",
+      "order_number": "AKS-1216.03",
+      "manufacturer": "MDT",
+      "description": "KNX switch actuator 12-fold, 16 A, 230 V AC, C-load, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX actuator",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX-"
+        },
+        {
+          "kind": "No",
+          "pins": "1 2"
+        },
+        {
+          "kind": "No",
+          "pins": "3 4"
+        },
+        {
+          "kind": "No",
+          "pins": "5 6"
+        },
+        {
+          "kind": "No",
+          "pins": "7 8"
+        },
+        {
+          "kind": "No",
+          "pins": "9 10"
+        },
+        {
+          "kind": "No",
+          "pins": "11 12"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        },
+        {
+          "kind": "No",
+          "pins": "15 16"
+        },
+        {
+          "kind": "No",
+          "pins": "17 18"
+        },
+        {
+          "kind": "No",
+          "pins": "19 20"
+        },
+        {
+          "kind": "No",
+          "pins": "21 22"
+        },
+        {
+          "kind": "No",
+          "pins": "23 24"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230 V AC",
+      "tech_data": "Bus: KNX\nChannels: 12\nLoad: C-load",
+      "note": "Contact designations are the channel order, not the device marking."
+    },
+    {
+      "number": "MDT.AKS-2016.03",
+      "type_number": "AKS-2016.03",
+      "order_number": "AKS-2016.03",
+      "manufacturer": "MDT",
+      "description": "KNX switch actuator 20-fold, 16 A, 230 V AC, C-load, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX actuator",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX-"
+        },
+        {
+          "kind": "No",
+          "pins": "1 2"
+        },
+        {
+          "kind": "No",
+          "pins": "3 4"
+        },
+        {
+          "kind": "No",
+          "pins": "5 6"
+        },
+        {
+          "kind": "No",
+          "pins": "7 8"
+        },
+        {
+          "kind": "No",
+          "pins": "9 10"
+        },
+        {
+          "kind": "No",
+          "pins": "11 12"
+        },
+        {
+          "kind": "No",
+          "pins": "13 14"
+        },
+        {
+          "kind": "No",
+          "pins": "15 16"
+        },
+        {
+          "kind": "No",
+          "pins": "17 18"
+        },
+        {
+          "kind": "No",
+          "pins": "19 20"
+        },
+        {
+          "kind": "No",
+          "pins": "21 22"
+        },
+        {
+          "kind": "No",
+          "pins": "23 24"
+        },
+        {
+          "kind": "No",
+          "pins": "25 26"
+        },
+        {
+          "kind": "No",
+          "pins": "27 28"
+        },
+        {
+          "kind": "No",
+          "pins": "29 30"
+        },
+        {
+          "kind": "No",
+          "pins": "31 32"
+        },
+        {
+          "kind": "No",
+          "pins": "33 34"
+        },
+        {
+          "kind": "No",
+          "pins": "35 36"
+        },
+        {
+          "kind": "No",
+          "pins": "37 38"
+        },
+        {
+          "kind": "No",
+          "pins": "39 40"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230 V AC",
+      "tech_data": "Bus: KNX\nChannels: 20\nLoad: C-load",
+      "note": "Contact designations are the channel order, not the device marking."
+    },
+    {
+      "number": "MDT.SCN-IP000.03",
+      "type_number": "SCN-IP000.03",
+      "order_number": "SCN-IP000.03",
+      "manufacturer": "MDT",
+      "description": "KNX IP interface with management, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX system device",
+      "identifier": "A",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX- LAN"
+        }
+      ],
+      "tech_data": "Bus: KNX\nNetwork: Ethernet (KNXnet/IP)"
+    },
+    {
+      "number": "MDT.SCN-IP100.03",
+      "type_number": "SCN-IP100.03",
+      "order_number": "SCN-IP100.03",
+      "manufacturer": "MDT",
+      "description": "KNX IP router with secure, DIN rail",
+      "group": "Installation devices",
+      "subgroup": "KNX system device",
+      "identifier": "A",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "KNX+ KNX- LAN"
+        }
+      ],
+      "tech_data": "Bus: KNX\nNetwork: Ethernet (KNXnet/IP routing)"
+    },
+    {
+      "number": "MDT.STC-0640.01",
+      "type_number": "STC-0640.01",
+      "order_number": "STC-0640.01",
+      "manufacturer": "MDT",
+      "description": "KNX power supply 640 mA with choke, DIN rail",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N KNX+ KNX-"
+        }
+      ],
+      "current": "640 mA",
+      "voltage": "230 V AC",
+      "tech_data": "Bus: KNX\nOutput current: 640 mA"
+    }
+  ]
+}

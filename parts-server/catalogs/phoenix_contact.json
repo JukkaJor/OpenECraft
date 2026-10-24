@@ -1,0 +1,258 @@
+{
+  "catalog": {
+    "id": "phoenix_contact",
+    "name": "Phoenix Contact",
+    "manufacturer": "Phoenix Contact",
+    "version": "2026.1",
+    "description": "Terminal blocks PT (push-in) and UT (screw), end brackets, relay modules PLC-RSC and power supplies QUINT4. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "PXC.3209510",
+      "type_number": "PT 2,5",
+      "order_number": "3209510",
+      "manufacturer": "Phoenix Contact",
+      "description": "Feed-through terminal block PT 2,5, push-in, 2.5 mm2, grey",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3209523",
+      "type_number": "PT 2,5 BU",
+      "order_number": "3209523",
+      "manufacturer": "Phoenix Contact",
+      "description": "Feed-through terminal block PT 2,5 BU, push-in, 2.5 mm2, blue",
+      "group": "Terminals",
+      "subgroup": "N terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: N\nCross-section: 2.5 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3209536",
+      "type_number": "PT 2,5-PE",
+      "order_number": "3209536",
+      "manufacturer": "Phoenix Contact",
+      "description": "Protective conductor terminal block PT 2,5-PE, push-in, 2.5 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3044076",
+      "type_number": "UT 2,5",
+      "order_number": "3044076",
+      "manufacturer": "Phoenix Contact",
+      "description": "Feed-through terminal block UT 2,5, screw, 2.5 mm2, grey",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3044092",
+      "type_number": "UT 2,5-PE",
+      "order_number": "3044092",
+      "manufacturer": "Phoenix Contact",
+      "description": "Protective conductor terminal block UT 2,5-PE, screw, 2.5 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3044103",
+      "type_number": "UT 4",
+      "order_number": "3044103",
+      "manufacturer": "Phoenix Contact",
+      "description": "Feed-through terminal block UT 4, screw, 4 mm2, grey",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 4 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3044128",
+      "type_number": "UT 4-PE",
+      "order_number": "3044128",
+      "manufacturer": "Phoenix Contact",
+      "description": "Protective conductor terminal block UT 4-PE, screw, 4 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 4 mm2\nEnd bracket: PXC.3022218"
+    },
+    {
+      "number": "PXC.3209552",
+      "type_number": "D-PT 2,5",
+      "order_number": "3209552",
+      "manufacturer": "Phoenix Contact",
+      "description": "End cover D-PT 2,5 for terminal blocks PT 2,5",
+      "group": "Terminals",
+      "subgroup": "Accessories",
+      "identifier": "X",
+      "functions": []
+    },
+    {
+      "number": "PXC.3047028",
+      "type_number": "D-UT 2,5/10",
+      "order_number": "3047028",
+      "manufacturer": "Phoenix Contact",
+      "description": "End cover D-UT 2,5/10 for terminal blocks UT 2,5 and UT 4",
+      "group": "Terminals",
+      "subgroup": "Accessories",
+      "identifier": "X",
+      "functions": []
+    },
+    {
+      "number": "PXC.3022218",
+      "type_number": "CLIPFIX 35",
+      "order_number": "3022218",
+      "manufacturer": "Phoenix Contact",
+      "description": "End bracket CLIPFIX 35 for mounting rail NS 35",
+      "group": "Terminals",
+      "subgroup": "End bracket",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": []
+    },
+    {
+      "number": "PXC.2966171",
+      "type_number": "PLC-RSC- 24DC/21",
+      "order_number": "2966171",
+      "manufacturer": "Phoenix Contact",
+      "description": "Relay module PLC-RSC- 24DC/21, 1 CO, 24 V DC, with base and relay",
+      "group": "Relays, contactors",
+      "subgroup": "Relay",
+      "identifier": "K",
+      "width": 6.2,
+      "height": 80.0,
+      "depth": 94.0,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "6 A",
+      "tech_data": "Contacts: 1 CO"
+    },
+    {
+      "number": "PXC.2904600",
+      "type_number": "QUINT4-PS/1AC/24DC/5",
+      "order_number": "2904600",
+      "manufacturer": "Phoenix Contact",
+      "description": "Power supply QUINT4-PS/1AC/24DC/5, 1-phase input, 24 V DC / 5 A",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N PE + -"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "5 A",
+      "tech_data": "Input: 100 - 240 V AC"
+    },
+    {
+      "number": "PXC.2904601",
+      "type_number": "QUINT4-PS/1AC/24DC/10",
+      "order_number": "2904601",
+      "manufacturer": "Phoenix Contact",
+      "description": "Power supply QUINT4-PS/1AC/24DC/10, 1-phase input, 24 V DC / 10 A",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N PE + -"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "10 A",
+      "tech_data": "Input: 100 - 240 V AC"
+    },
+    {
+      "number": "PXC.2904602",
+      "type_number": "QUINT4-PS/1AC/24DC/20",
+      "order_number": "2904602",
+      "manufacturer": "Phoenix Contact",
+      "description": "Power supply QUINT4-PS/1AC/24DC/20, 1-phase input, 24 V DC / 20 A",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N PE + -"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "20 A",
+      "tech_data": "Input: 100 - 240 V AC"
+    }
+  ]
+}

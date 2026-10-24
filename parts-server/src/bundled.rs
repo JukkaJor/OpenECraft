@@ -9,7 +9,14 @@ use serde::Deserialize;
 pub const INSTALLER: &str = "bundled catalog";
 
 /// Catalog id and file content, one entry per file in `catalogs/`.
-const FILES: &[(&str, &str)] = &[("siemens", include_str!("../catalogs/siemens.json"))];
+const FILES: &[(&str, &str)] = &[
+    ("abb", include_str!("../catalogs/abb.json")),
+    ("beckhoff", include_str!("../catalogs/beckhoff.json")),
+    ("hager", include_str!("../catalogs/hager.json")),
+    ("mdt", include_str!("../catalogs/mdt.json")),
+    ("phoenix_contact", include_str!("../catalogs/phoenix_contact.json")),
+    ("siemens", include_str!("../catalogs/siemens.json")),
+];
 
 /// A catalog with its parts.
 #[derive(Clone, Debug, Default, Deserialize)]
