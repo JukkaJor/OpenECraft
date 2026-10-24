@@ -439,13 +439,24 @@ pub fn placeholder(prj: &Project, page_i: usize, name: &str) -> Option<String> {
         "rev.date" => rev.map(|r| r.date.clone()).unwrap_or_default(),
         "rev.author" => rev.map(|r| r.author.clone()).unwrap_or_default(),
         "rev.description" => rev.map(|r| r.description.clone()).unwrap_or_default(),
-        _ => info.properties.get(name.strip_prefix("prop:")?).cloned().unwrap_or_default(),
+        _ => prop_placeholder(prj, page, name.strip_prefix("prop:")?),
     };
     Some(v)
 }
 
+/// `{prop:key}`: a project or page property of the database (shown with its unit),
+/// otherwise a free project property by name.
+fn prop_placeholder(prj: &Project, page: &crate::model::Page, key: &str) -> String {
+    use crate::properties::{self, ObjectClass, Object};
+    match properties::valid_key(prj, key).map(|d| d.class) {
+        Some(ObjectClass::Project) => properties::display(prj, &Object::Project, key),
+        Some(ObjectClass::Page) => properties::display(prj, &Object::Page(page.id), key),
+        _ => prj.info.properties.get(key).cloned().unwrap_or_default(),
+    }
+}
+
 /// Placeholders offered in the title block editor: (placeholder, meaning).
-pub const PLACEHOLDERS: [(&str, &str); 26] = [
+pub const PLACEHOLDERS: [(&str, &str); 28] = [
     ("{project}", tr_const!("Project name")),
     ("{project.description}", tr_const!("Project description")),
     ("{company}", tr_const!("Company")),
@@ -471,6 +482,8 @@ pub const PLACEHOLDERS: [(&str, &str); 26] = [
     ("{rev.author}", tr_const!("Author of the last revision")),
     ("{rev.description}", tr_const!("Description of the last revision")),
     ("{prop:Name}", "Project property \"Name\""),
+    ("{prop:project.customer}", tr_const!("Project property of the property database (by key)")),
+    ("{prop:page.drawing_number}", tr_const!("Page property of the property database (by key)")),
     ("{{ }}", tr_const!("Literal braces")),
 ];
 

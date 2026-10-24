@@ -15,7 +15,7 @@ use crate::ops;
 use crate::reports::{Analysis, Severity};
 use crate::structure::{self, Aspect, Dt};
 use crate::symbols::{self, Category, Func};
-use crate::{history::History, potentials, sample, svg, translation, wirenum};
+use crate::{history::History, potentials, properties, sample, svg, translation, wirenum};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 
 mod cables_ui;
@@ -32,6 +32,7 @@ mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
 mod potentials_ui;
+mod properties_ui;
 mod structure_ui;
 mod process_ui;
 mod singleline_ui;
@@ -84,6 +85,7 @@ pub struct App {
     /// Active work area (name); empty = the whole project.
     work_area: String,
     structure_ui: structure_ui::StructureUi,
+    properties_ui: properties_ui::PropertiesUi,
     pages_ui: pages_ui::PagesUi,
     show_reports: bool,
     report_kind: ReportKind,
@@ -178,6 +180,7 @@ impl App {
             rename_device: None,
             work_area: String::new(),
             structure_ui: Default::default(),
+            properties_ui: Default::default(),
             pages_ui: Default::default(),
             show_reports: false,
             report_kind: ReportKind::DeviceList,
@@ -395,6 +398,10 @@ impl App {
                     }
                     Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
                 }
+                return;
+            }
+            if loaded.purpose == Purpose::PropertyLibrary {
+                self.import_property_library(ctx, &loaded.text());
                 return;
             }
             if loaded.purpose == Purpose::StructureTemplate {
@@ -761,6 +768,9 @@ impl App {
                 }
                 if ui.button(tr("Structure management…")).on_hover_text(tr("Structure identifiers (IEC 81346), templates and work areas")).clicked() {
                     self.structure_ui.open = true;
+                }
+                if ui.button(tr("Property database…")).on_hover_text(tr("Property definitions, function definitions, placement schemes and the values of all objects")).clicked() {
+                    self.properties_ui.open = true;
                 }
                 if ui.button(tr("Cables…")).clicked() {
                     self.show_cables = true;
@@ -1551,6 +1561,10 @@ impl App {
         if edited != s {
             self.prj.pages[pi].symbols[si] = edited.clone();
         }
+        ui.horizontal(|ui| {
+            ui.label(tr("Function definition"));
+            properties_ui::function_def_combo(ui, &mut self.prj, s.id);
+        });
 
         // Device data
         if def.func.has_tag() && !edited.tag.is_empty() {
@@ -1608,6 +1622,9 @@ impl App {
             if data != before {
                 self.prj.devices.insert(edited.tag.clone(), data.clone());
             }
+            egui::CollapsingHeader::new(tr("Device properties")).id_salt("device_props").show(ui, |ui| {
+                properties_ui::property_grid(ui, &mut self.prj, &properties::Object::Device(edited.tag.clone()), &mut self.properties_ui.device_grid, "devgrid");
+            });
             if let Some((ei, _)) = crate::panel::locate(&self.prj, &edited.tag) {
                 let enc = self.prj.layout.enclosures[ei].name.clone();
                 if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.prj, &edited.tag) {
@@ -1665,6 +1682,10 @@ impl App {
                 }
             }
         }
+
+        egui::CollapsingHeader::new(tr("Function properties")).id_salt("function_props").show(ui, |ui| {
+            properties_ui::property_grid(ui, &mut self.prj, &properties::Object::Function(s.id), &mut self.properties_ui.function_grid, "fngrid");
+        });
 
         // Potentials at the connection points
         if !def.pins.is_empty() {
@@ -1865,6 +1886,7 @@ impl App {
         self.singleline_window(ctx);
         self.languages_window(ctx);
         self.structure_window(ctx);
+        self.properties_window(ctx);
         self.save_template_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);

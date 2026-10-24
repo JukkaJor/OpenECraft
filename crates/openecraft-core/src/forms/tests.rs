@@ -140,3 +140,17 @@ fn merging_report_schemes_replaces_by_report_and_name() {
     // Old title block files without schemes still load.
     assert!(FormLibrary::from_json(r#"{"title_blocks":[]}"#).unwrap().schemes.is_empty());
 }
+
+#[test]
+fn property_database_values_fill_placeholders() {
+    use crate::properties::{set, Object};
+    let mut prj = demo_project();
+    set(&mut prj, &Object::Project, "project.customer", "ACME").unwrap();
+    set(&mut prj, &Object::Project, "project.mains_voltage", "400").unwrap();
+    let page = Object::Page(prj.pages[1].id);
+    set(&mut prj, &page, "page.drawing_number", "D-17").unwrap();
+    assert_eq!(fill("{prop:project.customer} {prop:project.mains_voltage}", &prj, 1), "ACME 400 V");
+    assert_eq!(fill("{prop:page.drawing_number}", &prj, 1), "D-17");
+    assert_eq!(fill("{prop:page.drawing_number}", &prj, 0), "");
+    assert_eq!(fill("{prop:project.pages}", &prj, 0), prj.pages.len().to_string());
+}

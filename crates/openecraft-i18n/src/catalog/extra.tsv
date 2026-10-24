@@ -2030,6 +2030,513 @@ Shield connected at: both, first, second or none	Schirm aufgelegt an: both, firs
 Outer diameter in mm, 0 = estimated	Außendurchmesser in mm, 0 = geschätzt	Diamètre extérieur en mm, 0 = estimé	Diámetro exterior en mm, 0 = estimado
 Not connected	Nicht aufgelegt	Non raccordé	No conectado
 Hose {}: length {} m shorter than its 3D route of {} m	Schlauch {}: Länge {} m kürzer als seine 3D-Verlegung von {} m	Tuyau {} : longueur {} m plus courte que son tracé 3D de {} m	Manguera {}: longitud {} m menor que su recorrido 3D de {} m
+0 = a single value; otherwise values [1] … [n]	0 = ein einzelner Wert; sonst Werte [1] … [n]	0 = une seule valeur ; sinon valeurs [1] … [n]	0 = un solo valor; si no, valores [1] … [n]
+A project definition based on this one, with its own defaults and scheme	Eine Projektdefinition auf Basis dieser, mit eigenen Vorgabewerten und Schema	Une définition de projet basée sur celle-ci, avec ses propres valeurs par défaut et son schéma	Una definición de proyecto basada en esta, con sus propios valores predeterminados y esquema
+Accuracy class	Genauigkeitsklasse	Classe de précision	Clase de precisión
+Accuracy	Genauigkeit	Précision	Precisión
+Actuation	Betätigung	Actionnement	Accionamiento
+Actuator type	Betätigerart	Type d'actionneur	Tipo de actuador
+Additional page description	Zusätzliche Seitenbeschreibung	Description de page supplémentaire	Descripción adicional de la página
+Adds the definitions and schemes of a property library file to the project	Fügt die Definitionen und Schemata einer Eigenschaftsbibliothek dem Projekt hinzu	Ajoute au projet les définitions et schémas d'un fichier de bibliothèque de propriétés	Añade al proyecto las definiciones y esquemas de un archivo de biblioteca de propiedades
+Adds user defined properties, function definitions and schemes of a property library file	Fügt benutzerdefinierte Eigenschaften, Funktionsdefinitionen und Schemata einer Eigenschaftsbibliothek hinzu	Ajoute les propriétés utilisateur, définitions de fonction et schémas d'un fichier de bibliothèque de propriétés	Añade las propiedades de usuario, definiciones de función y esquemas de un archivo de biblioteca de propiedades
+Adjustable output voltage	Einstellbare Ausgangsspannung	Tension de sortie réglable	Tensión de salida ajustable
+Alarm limit H	Alarmgrenze H	Seuil d'alarme H	Límite de alarma H
+Alarm limit HH	Alarmgrenze HH	Seuil d'alarme HH	Límite de alarma HH
+Alarm limit L	Alarmgrenze L	Seuil d'alarme L	Límite de alarma L
+Alarm limit LL	Alarmgrenze LL	Seuil d'alarme LL	Límite de alarma LL
+All groups	Alle Gruppen	Tous les groupes	Todos los grupos
+All objects	Alle Objekte	Tous les objets	Todos los objetos
+Also properties without a value	Auch Eigenschaften ohne Wert	Aussi les propriétés sans valeur	También las propiedades sin valor
+Also the groups that do not fit the function definition	Auch die Gruppen, die nicht zur Funktionsdefinition passen	Aussi les groupes qui ne correspondent pas à la définition de fonction	También los grupos que no corresponden a la definición de función
+Applied directives	Angewandte Richtlinien	Directives appliquées	Directivas aplicadas
+Approval date	Freigabedatum	Date d'approbation	Fecha de aprobación
+Approvals	Zulassungen	Homologations	Homologaciones
+Approved by	Freigegeben von	Approuvé par	Aprobado por
+Asset number	Anlagennummer	Numéro d'inventaire	Número de activo
+Assigns a function definition to a placed symbol (designations and scheme are taken over)	Weist einem platzierten Symbol eine Funktionsdefinition zu (Bezeichnungen und Schema werden übernommen)	Attribue une définition de fonction à un symbole placé (désignations et schéma repris)	Asigna una definición de función a un símbolo colocado (se adoptan designaciones y esquema)
+B10d	B10d	B10d	B10d
+Battery capacity	Batteriekapazität	Capacité de la batterie	Capacidad de la batería
+Baud rate	Baudrate	Débit en bauds	Velocidad en baudios
+Black box	Black Box	Boîte noire	Caja negra
+Black boxes	Black Boxes	Boîtes noires	Cajas negras
+Brake torque	Bremsmoment	Couple de freinage	Par de frenado
+Brake voltage	Bremsspannung	Tension du frein	Tensión del freno
+Braking chopper	Bremschopper	Hacheur de freinage	Chopper de frenado
+Braking resistor	Bremswiderstand	Résistance de freinage	Resistencia de frenado
+Bus address	Busadresse	Adresse bus	Dirección de bus
+Cable route	Kabelweg	Cheminement du câble	Recorrido del cable
+Cable type	Kabeltyp	Type de câble	Tipo de cable
+Cable weight	Kabelgewicht	Poids du câble	Peso del cable
+Cable {}	Kabel {}	Câble {}	Cable {}
+Channel	Kanal	Canal	Canal
+Checked by	Geprüft von	Vérifié par	Revisado por
+Choices	Auswahlwerte	Choix	Opciones
+Coil and timing	Spule und Zeitverhalten	Bobine et temporisation	Bobina y temporización
+Coil voltage type	Spulenspannungsart	Type de tension de bobine	Tipo de tensión de bobina
+Coil voltage	Spulenspannung	Tension de bobine	Tensión de bobina
+Commercial data	Kaufmännische Daten	Données commerciales	Datos comerciales
+Commissioning date	Inbetriebnahmedatum	Date de mise en service	Fecha de puesta en marcha
+Communication	Kommunikation	Communication	Comunicación
+Conductor class	Leiterklasse	Classe d'âme	Clase de conductor
+Conductor material	Leitermaterial	Matériau de l'âme	Material del conductor
+Connection point descriptions	Anschlussbeschreibungen	Descriptions des points de connexion	Descripciones de los puntos de conexión
+Connection point designations separated by blanks	Anschlussbezeichnungen durch Leerzeichen getrennt	Désignations des points de connexion séparées par des espaces	Designaciones de los puntos de conexión separadas por espacios
+Connection type	Anschlussart	Type de raccordement	Tipo de conexión
+Contact material	Kontaktmaterial	Matériau des contacts	Material de los contactos
+Contractor	Auftragnehmer	Entrepreneur	Contratista
+Control mode	Regelverfahren	Mode de commande	Modo de control
+Control voltage type	Steuerspannungsart	Type de tension de commande	Tipo de tensión de mando
+Control voltage	Steuerspannung	Tension de commande	Tensión de mando
+Cooling method	Kühlart	Mode de refroidissement	Método de refrigeración
+Country of origin	Ursprungsland	Pays d'origine	País de origen
+Creation date	Erstellungsdatum	Date de création	Fecha de creación
+Currency	Währung	Devise	Moneda
+Current consumption	Stromaufnahme	Consommation de courant	Consumo de corriente
+Current range	Strombereich	Plage de courant	Rango de corriente
+Current setting	Stromeinstellung	Réglage du courant	Ajuste de corriente
+Customer address	Kundenadresse	Adresse du client	Dirección del cliente
+Customer and plant	Kunde und Anlage	Client et installation	Cliente e instalación
+Customer contact	Ansprechpartner beim Kunden	Contact chez le client	Contacto del cliente
+Customer e-mail	E-Mail des Kunden	E-mail du client	Correo electrónico del cliente
+Customer number	Kundennummer	Numéro de client	Número de cliente
+Customer phone	Telefon des Kunden	Téléphone du client	Teléfono del cliente
+Customer	Kunde	Client	Cliente
+Customs tariff number	Zolltarifnummer	Numéro de tarif douanier	Número de arancel aduanero
+Data sheet	Datenblatt	Fiche technique	Hoja de datos
+Data type	Datentyp	Type de données	Tipo de datos
+Default (part data or definition)	Vorgabe (Artikeldaten oder Definition)	Par défaut (données d'article ou définition)	Predeterminado (datos del artículo o definición)
+Default property values	Vorgabewerte der Eigenschaften	Valeurs par défaut des propriétés	Valores predeterminados de las propiedades
+Default symbol key	Schlüssel des Standardsymbols	Clé du symbole par défaut	Clave del símbolo predeterminado
+Default values	Vorgabewerte	Valeurs par défaut	Valores predeterminados
+Default	Vorgabe	Par défaut	Predeterminado
+Defines a reusable project function definition or changes it	Definiert eine wiederverwendbare Projekt-Funktionsdefinition oder ändert sie	Définit une définition de fonction de projet réutilisable ou la modifie	Define una definición de función de proyecto reutilizable o la modifica
+Defines a user property or changes it	Definiert eine Benutzereigenschaft oder ändert sie	Définit une propriété utilisateur ou la modifie	Define una propiedad de usuario o la modifica
+Definition to start from	Ausgangsdefinition	Définition de départ	Definición de partida
+Degree of protection	Schutzart	Indice de protection	Grado de protección
+Delete the property and all its values	Eigenschaft mit allen Werten löschen	Supprimer la propriété et toutes ses valeurs	Eliminar la propiedad y todos sus valores
+Delivery date	Liefertermin	Date de livraison	Fecha de entrega
+Description and part	Beschreibung und Artikel	Description et article	Descripción y artículo
+Designations separated by blanks; empty: those of the symbol	Bezeichnungen durch Leerzeichen getrennt; leer: die des Symbols	Désignations séparées par des espaces ; vide : celles du symbole	Designaciones separadas por espacios; vacío: las del símbolo
+Designer	Konstrukteur	Concepteur	Proyectista
+Device description file	Gerätebeschreibungsdatei	Fichier de description d'appareil	Archivo de descripción del equipo
+Device properties	Geräteeigenschaften	Propriétés de l'appareil	Propiedades del equipo
+Diagnostic coverage (DC)	Diagnosedeckungsgrad (DC)	Couverture du diagnostic (DC)	Cobertura de diagnóstico (DC)
+Diagnostics	Diagnose	Diagnostic	Diagnóstico
+Displacement	Verdrängungsvolumen	Cylindrée	Cilindrada
+Document reference	Dokumentverweis	Référence de document	Referencia de documento
+Documentation language	Dokumentationssprache	Langue de la documentation	Idioma de la documentación
+Documentation	Dokumentation	Documentation	Documentación
+Drawing number	Zeichnungsnummer	Numéro de plan	Número de plano
+Drop-out time	Abfallzeit	Temps de retombée	Tiempo de desconexión
+Duty type	Betriebsart	Service type	Tipo de servicio
+ECLASS class	ECLASS-Klasse	Classe ECLASS	Clase ECLASS
+EMC environment	EMV-Umgebung	Environnement CEM	Entorno CEM
+ETIM class	ETIM-Klasse	Classe ETIM	Clase ETIM
+Efficiency class	Effizienzklasse	Classe de rendement	Clase de eficiencia
+Efficiency	Wirkungsgrad	Rendement	Rendimiento
+Electrical data	Elektrische Daten	Données électriques	Datos eléctricos
+Electrical endurance (operating cycles)	Elektrische Lebensdauer (Schaltspiele)	Endurance électrique (manœuvres)	Vida eléctrica (maniobras)
+Emergency stop	Not-Halt	Arrêt d'urgence	Parada de emergencia
+Encoder	Geber	Codeur	Encoder
+End customer	Endkunde	Client final	Cliente final
+Energy limitation class	Energiebegrenzungsklasse	Classe de limitation d'énergie	Clase de limitación de energía
+Engineering unit	Physikalische Einheit	Unité physique	Unidad física
+Environment	Umgebung	Environnement	Entorno
+Explosion protection marking	Ex-Kennzeichnung	Marquage de protection contre les explosions	Marcado de protección contra explosiones
+Export library…	Bibliothek exportieren…	Exporter la bibliothèque…	Exportar biblioteca…
+External target	Externes Ziel	Cible externe	Destino externo
+Fail-safe	Fehlersicher	Sécurité positive	A prueba de fallos
+Fieldbus	Feldbus	Bus de terrain	Bus de campo
+Filter rating	Filterfeinheit	Finesse de filtration	Finura de filtración
+Firmware version	Firmwareversion	Version du firmware	Versión de firmware
+Flame retardant	Flammwidrig	Ignifuge	Retardante de llama
+Flow rate	Volumenstrom	Débit	Caudal
+Fluid power	Fluidtechnik	Technique des fluides	Técnica de fluidos
+Force	Kraft	Force	Fuerza
+Frame size	Baugröße	Taille de carcasse	Tamaño constructivo
+From the function definition	Aus der Funktionsdefinition	De la définition de fonction	De la definición de función
+Full page name	Vollständiger Seitenname	Nom de page complet	Nombre completo de la página
+Function (=)	Funktion (=)	Fonction (=)	Función (=)
+Function category	Funktionskategorie	Catégorie de fonction	Categoría de función
+Function definition key	Schlüssel der Funktionsdefinition	Clé de la définition de fonction	Clave de la definición de función
+Function definition	Funktionsdefinition	Définition de fonction	Definición de función
+Function definitions	Funktionsdefinitionen	Définitions de fonction	Definiciones de función
+Function properties	Funktionseigenschaften	Propriétés de la fonction	Propiedades de la función
+Functional safety	Funktionale Sicherheit	Sécurité fonctionnelle	Seguridad funcional
+Fuse rated current	Sicherungsnennstrom	Courant assigné du fusible	Corriente nominal del fusible
+Fuse size	Sicherungsgröße	Taille du fusible	Tamaño del fusible
+GTIN	GTIN	GTIN	GTIN
+Gateway	Gateway	Passerelle	Puerta de enlace
+Gear ratio	Übersetzung	Rapport de réduction	Relación de transmisión
+Halogen free	Halogenfrei	Sans halogène	Libre de halógenos
+Hardware version	Hardwareversion	Version du matériel	Versión de hardware
+Hazardous area zone	Ex-Zone	Zone à risque d'explosion	Zona de atmósfera explosiva
+Higher-level product (-)	Übergeordnetes Produkt (-)	Produit de niveau supérieur (-)	Producto de nivel superior (-)
+Hold-up time	Netzausfallüberbrückung	Temps de maintien	Tiempo de mantenimiento
+Holding power	Halteleistung	Puissance de maintien	Potencia de mantenimiento
+Housing colour	Gehäusefarbe	Couleur du boîtier	Color de la carcasa
+Housing material	Gehäusematerial	Matériau du boîtier	Material de la carcasa
+Hysteresis	Hysterese	Hystérésis	Histéresis
+IP address	IP-Adresse	Adresse IP	Dirección IP
+Impact protection (IK)	Stoßfestigkeit (IK)	Protection contre les chocs (IK)	Protección contra impactos (IK)
+Import library…	Bibliothek importieren…	Importer une bibliothèque…	Importar biblioteca…
+Imported {} entries of the property library	{} Einträge der Eigenschaftsbibliothek importiert	{} entrées de la bibliothèque de propriétés importées	Se importaron {} entradas de la biblioteca de propiedades
+Indices	Indizes	Indices	Índices
+Initial value	Startwert	Valeur initiale	Valor inicial
+Input delay	Eingangsverzögerung	Retard d'entrée	Retardo de entrada
+Input voltage	Eingangsspannung	Tension d'entrée	Tensión de entrada
+Inrush current	Einschaltstrom	Courant d'appel	Corriente de arranque
+Installation altitude	Aufstellhöhe	Altitude d'installation	Altitud de instalación
+Installation date	Einbaudatum	Date d'installation	Fecha de instalación
+Installation devices	Installationsgeräte	Appareils d'installation	Aparatos de instalación
+Installation method	Verlegeart	Mode de pose	Método de instalación
+Installation site (++)	Anlage (++)	Site d'installation (++)	Emplazamiento (++)
+Insulation class	Isolierstoffklasse	Classe d'isolation	Clase de aislamiento
+Integer	Ganzzahl	Entier	Entero
+Integrated EMC filter	Integrierter EMV-Filter	Filtre CEM intégré	Filtro CEM integrado
+Internal target	Internes Ziel	Cible interne	Destino interno
+Invalid property key: {}	Ungültiger Eigenschaftsschlüssel: {}	Clé de propriété invalide : {}	Clave de propiedad no válida: {}
+Invalid value	Ungültiger Wert	Valeur invalide	Valor no válido
+Key	Schlüssel	Clé	Clave
+Key, e.g. user.coupling_relay	Schlüssel, z. B. user.coupling_relay	Clé, p. ex. user.coupling_relay	Clave, p. ej. user.coupling_relay
+Key, e.g. user.customer_code	Schlüssel, z. B. user.customer_code	Clé, p. ex. user.customer_code	Clave, p. ej. user.customer_code
+Keywords	Schlagwörter	Mots-clés	Palabras clave
+Lamp voltage	Lampenspannung	Tension de la lampe	Tensión de la lámpara
+Last edited by	Zuletzt bearbeitet von	Dernière modification par	Última edición por
+Last inspection	Letzte Prüfung	Dernière inspection	Última inspección
+Latching	Rastend	À accrochage	Enclavamiento
+Leakage current	Ableitstrom	Courant de fuite	Corriente de fuga
+Legend plate text	Schildtext	Texte de l'étiquette	Texto de la placa
+Level switch	Füllstandsschalter	Détecteur de niveau	Interruptor de nivel
+Library file	Bibliotheksdatei	Fichier de bibliothèque	Archivo de biblioteca
+Light source	Leuchtmittel	Source lumineuse	Fuente de luz
+Line reactor	Netzdrossel	Inductance de ligne	Reactancia de red
+Link	Verknüpfung	Lien	Enlace
+Lists the function definitions with category, function template kind, letter, default symbol and usage	Listet die Funktionsdefinitionen mit Kategorie, Funktionsschablonen-Art, Kennbuchstabe, Standardsymbol und Verwendung	Liste les définitions de fonction avec catégorie, type de modèle de fonction, lettre, symbole par défaut et utilisation	Lista las definiciones de función con categoría, tipo de plantilla de función, letra, símbolo predeterminado y uso
+Lists the placement schemes with their properties and the number of symbols using them	Listet die Platzierungsschemata mit ihren Eigenschaften und der Anzahl der Symbole, die sie verwenden	Liste les schémas de placement avec leurs propriétés et le nombre de symboles qui les utilisent	Lista los esquemas de colocación con sus propiedades y el número de símbolos que los usan
+Lists the properties of an object with their values and where they come from	Listet die Eigenschaften eines Objekts mit ihren Werten und deren Herkunft	Liste les propriétés d'un objet avec leurs valeurs et leur provenance	Lista las propiedades de un objeto con sus valores y su procedencia
+Lists the property definitions (built-in and user defined) with object class, group, type and unit	Listet die Eigenschaftsdefinitionen (eingebaut und benutzerdefiniert) mit Objektklasse, Gruppe, Typ und Einheit	Liste les définitions de propriétés (intégrées et utilisateur) avec classe d'objet, groupe, type et unité	Lista las definiciones de propiedades (integradas y de usuario) con clase de objeto, grupo, tipo y unidad
+Location (+)	Einbauort (+)	Emplacement (+)	Ubicación (+)
+MAC address	MAC-Adresse	Adresse MAC	Dirección MAC
+MTTFd	MTTFd	MTTFd	MTTFd
+Machine number	Maschinennummer	Numéro de machine	Número de máquina
+Machine	Maschine	Machine	Máquina
+Magnetic trip current	Magnetischer Auslösestrom	Courant de déclenchement magnétique	Corriente de disparo magnético
+Mains frequency	Netzfrequenz	Fréquence du réseau	Frecuencia de red
+Mains voltage	Netzspannung	Tension du réseau	Tensión de red
+Maintenance interval	Wartungsintervall	Intervalle de maintenance	Intervalo de mantenimiento
+Maintenance	Wartung	Maintenance	Mantenimiento
+Manual	Handbuch	Manuel	Manual
+Manufacturers	Hersteller	Fabricants	Fabricantes
+Maximum ambient temperature	Maximale Umgebungstemperatur	Température ambiante maximale	Temperatura ambiente máxima
+Maximum conductor cross-section	Maximaler Leiterquerschnitt	Section de conducteur maximale	Sección máxima del conductor
+Maximum installation altitude	Maximale Aufstellhöhe	Altitude d'installation maximale	Altitud de instalación máxima
+Maximum operating temperature	Maximale Betriebstemperatur	Température de service maximale	Temperatura de servicio máxima
+Maximum pressure	Maximaler Druck	Pression maximale	Presión máxima
+Measuring instruments	Messgeräte	Appareils de mesure	Instrumentos de medida
+Measuring point	Messstelle	Point de mesure	Punto de medida
+Measuring range end	Messbereichsende	Fin de la plage de mesure	Fin del rango de medida
+Measuring range start	Messbereichsanfang	Début de la plage de mesure	Inicio del rango de medida
+Measuring range	Messbereich	Plage de mesure	Rango de medida
+Mechanical data	Mechanische Daten	Données mécaniques	Datos mecánicos
+Mechanical endurance (operating cycles)	Mechanische Lebensdauer (Schaltspiele)	Endurance mécanique (manœuvres)	Vida mecánica (maniobras)
+Medium temperature range	Mediumstemperaturbereich	Plage de température du fluide	Rango de temperatura del medio
+Minimum ambient temperature	Minimale Umgebungstemperatur	Température ambiante minimale	Temperatura ambiente mínima
+Minimum bending radius	Minimaler Biegeradius	Rayon de courbure minimal	Radio de curvatura mínimo
+Minimum clearance	Mindestabstand	Distance minimale	Distancia mínima
+Minimum conductor cross-section	Minimaler Leiterquerschnitt	Section de conducteur minimale	Sección mínima del conductor
+Minimum operating temperature	Minimale Betriebstemperatur	Température de service minimale	Temperatura de servicio mínima
+Mirror contacts	Spiegelkontakte	Contacts miroirs	Contactos espejo
+Mission time	Gebrauchsdauer	Durée de mission	Tiempo de misión
+Moment of inertia	Trägheitsmoment	Moment d'inertie	Momento de inercia
+Motor data	Motordaten	Données moteur	Datos del motor
+Motor	Motor	Moteur	Motor
+Motors	Motoren	Moteurs	Motores
+Mounting arrangement	Bauform	Forme de construction	Forma constructiva
+Mounting diameter	Einbaudurchmesser	Diamètre de montage	Diámetro de montaje
+Mounting position	Einbaulage	Position de montage	Posición de montaje
+Mounting site	Montageort	Lieu de montage	Lugar de montaje
+Mounting type	Befestigungsart	Type de fixation	Tipo de montaje
+Multi-line text	Mehrzeiliger Text	Texte multiligne	Texto de varias líneas
+New scheme	Neues Schema	Nouveau schéma	Nuevo esquema
+New, empty placement scheme	Neues, leeres Platzierungsschema	Nouveau schéma de placement vide	Nuevo esquema de colocación vacío
+Next inspection	Nächste Prüfung	Prochaine inspection	Próxima inspección
+No page {}	Keine Seite {}	Aucune page {}	No hay página {}
+No project function definition {}	Keine Projekt-Funktionsdefinition {}	Aucune définition de fonction de projet {}	No hay definición de función de proyecto {}
+No such object: {}	Kein solches Objekt: {}	Objet inexistant : {}	No existe el objeto: {}
+No user defined property {}	Keine benutzerdefinierte Eigenschaft {}	Aucune propriété utilisateur {}	No hay propiedad de usuario {}
+No	Nein	Non	No
+Nominal discharge current	Nennableitstoßstrom	Courant nominal de décharge	Corriente nominal de descarga
+Not a symbol id: {}	Keine Symbol-ID: {}	Pas un identifiant de symbole : {}	No es un id de símbolo: {}
+Not a valid property library: {}	Keine gültige Eigenschaftsbibliothek: {}	Bibliothèque de propriétés invalide : {}	No es una biblioteca de propiedades válida: {}
+Notes	Notizen	Notes	Notas
+Nothing to show	Nichts anzuzeigen	Rien à afficher	Nada que mostrar
+Number of NC contacts	Anzahl Öffner	Nombre de contacts à ouverture	Número de contactos NC
+Number of NO contacts	Anzahl Schließer	Nombre de contacts à fermeture	Número de contactos NA
+Number of cables	Anzahl Kabel	Nombre de câbles	Número de cables
+Number of changeover contacts	Anzahl Wechsler	Nombre de contacts inverseurs	Número de contactos conmutados
+Number of cores	Anzahl Adern	Nombre de conducteurs	Número de conductores
+Number of devices	Anzahl Geräte	Nombre d'appareils	Número de equipos
+Number of functions	Anzahl Funktionen	Nombre de fonctions	Número de funciones
+Number of indexed values (0 = a single value)	Anzahl indizierter Werte (0 = ein einzelner Wert)	Nombre de valeurs indexées (0 = une seule valeur)	Número de valores indexados (0 = un solo valor)
+Number of motor poles	Polzahl des Motors	Nombre de pôles du moteur	Número de polos del motor
+Number of parts	Anzahl Artikel	Nombre d'articles	Número de artículos
+Number of phases	Anzahl Phasen	Nombre de phases	Número de fases
+Number of poles	Polzahl	Nombre de pôles	Número de polos
+Number of switch positions	Anzahl Schaltstellungen	Nombre de positions	Número de posiciones
+Number of symbols	Anzahl Symbole	Nombre de symboles	Número de símbolos
+Object	Objekt	Objet	Objeto
+Offset from the symbol position in mm (default: below the symbol)	Abstand von der Symbolposition in mm (Vorgabe: unter dem Symbol)	Décalage par rapport à la position du symbole en mm (par défaut : sous le symbole)	Desplazamiento desde la posición del símbolo en mm (predeterminado: debajo del símbolo)
+Oil resistant	Ölbeständig	Résistant à l'huile	Resistente al aceite
+OpenECraft property library (JSON)	OpenECraft-Eigenschaftsbibliothek (JSON)	Bibliothèque de propriétés OpenECraft (JSON)	Biblioteca de propiedades OpenECraft (JSON)
+OpenECraft property library	OpenECraft-Eigenschaftsbibliothek	Bibliothèque de propriétés OpenECraft	Biblioteca de propiedades OpenECraft
+Operating hours	Betriebsstunden	Heures de fonctionnement	Horas de funcionamiento
+Operating range of the coil	Arbeitsbereich der Spule	Plage de fonctionnement de la bobine	Rango de funcionamiento de la bobina
+Order numbers	Bestellnummern	Références de commande	Números de pedido
+Other values ({})	Weitere Werte ({})	Autres valeurs ({})	Otros valores ({})
+Output current	Ausgangsstrom	Courant de sortie	Corriente de salida
+Output frequency range	Ausgangsfrequenzbereich	Plage de fréquence de sortie	Rango de frecuencia de salida
+Output function	Ausgangsfunktion	Fonction de sortie	Función de salida
+Output power	Ausgangsleistung	Puissance de sortie	Potencia de salida
+Output signal	Ausgangssignal	Signal de sortie	Señal de salida
+Output voltage	Ausgangsspannung	Tension de sortie	Tensión de salida
+Overload auxiliary contact	Hilfskontakt Überlastrelais	Contact auxiliaire du relais de surcharge	Contacto auxiliar del relé de sobrecarga
+Overload capacity	Überlastfähigkeit	Capacité de surcharge	Capacidad de sobrecarga
+Overvoltage category	Überspannungskategorie	Catégorie de surtension	Categoría de sobretensión
+P&ID number	R&I-Nummer	Numéro P&ID	Número P&ID
+PFHd	PFHd	PFHd	PFHd
+PLC data	SPS-Daten	Données API	Datos PLC
+Page property of the property database (by key)	Seiteneigenschaft der Eigenschaftsdatenbank (über den Schlüssel)	Propriété de page de la base de propriétés (par clé)	Propiedad de página de la base de propiedades (por clave)
+Page {}	Seite {}	Page {}	Página {}
+Part data is maintained in the parts management	Artikeldaten werden in der Artikelverwaltung gepflegt	Les données d'article sont gérées dans la gestion des articles	Los datos de artículo se gestionan en la gestión de artículos
+Part description	Artikelbeschreibung	Description de l'article	Descripción del artículo
+Part note	Artikelbemerkung	Remarque sur l'article	Nota del artículo
+Part numbers	Artikelnummern	Références d'article	Números de artículo
+Part of the key or name	Teil des Schlüssels oder Namens	Partie de la clé ou du nom	Parte de la clave o del nombre
+Part {}	Artikel {}	Article {}	Artículo {}
+Performance level (PL)	Performance Level (PL)	Niveau de performance (PL)	Nivel de prestaciones (PL)
+Pick-up power	Anzugsleistung	Puissance d'appel	Potencia de atracción
+Pick-up time	Anzugszeit	Temps de fermeture	Tiempo de conexión
+Piston diameter	Kolbendurchmesser	Diamètre du piston	Diámetro del pistón
+Piston rod diameter	Kolbenstangendurchmesser	Diamètre de la tige de piston	Diámetro del vástago
+Place again at all symbols using it	An allen Symbolen, die es verwenden, neu platzieren	Replacer sur tous les symboles qui l'utilisent	Volver a colocar en todos los símbolos que lo usan
+Placement scheme	Platzierungsschema	Schéma de placement	Esquema de colocación
+Placement schemes	Platzierungsschemata	Schémas de placement	Esquemas de colocación
+Places the properties of a scheme at symbols; without ids it is placed again at all symbols using it	Platziert die Eigenschaften eines Schemas an Symbolen; ohne IDs an allen Symbolen, die es verwenden, neu	Place les propriétés d'un schéma sur des symboles ; sans identifiants, il est replacé sur tous les symboles qui l'utilisent	Coloca las propiedades de un esquema en símbolos; sin ids se vuelve a colocar en todos los símbolos que lo usan
+Plant number	Anlagennummer	Numéro d'installation	Número de instalación
+Plant	Anlage	Installation	Instalación
+Pollution degree	Verschmutzungsgrad	Degré de pollution	Grado de contaminación
+Port size	Anschlussgröße	Taille de raccord	Tamaño de conexión
+Position of the main function	Position der Hauptfunktion	Position de la fonction principale	Posición de la función principal
+Positions are relative to the lower right corner of the symbol.	Positionen beziehen sich auf die rechte untere Ecke des Symbols.	Les positions sont relatives au coin inférieur droit du symbole.	Las posiciones son relativas a la esquina inferior derecha del símbolo.
+Positively driven contacts	Zwangsgeführte Kontakte	Contacts liés mécaniquement	Contactos de guía forzada
+Potentials, interruption points	Potenziale, Unterbrechungsstellen	Potentiels, points d'interruption	Potenciales, puntos de interrupción
+Power factor	Leistungsfaktor	Facteur de puissance	Factor de potencia
+Power supplies, transformers	Netzteile, Transformatoren	Alimentations, transformateurs	Fuentes de alimentación, transformadores
+Power supply and transformers	Stromversorgung und Transformatoren	Alimentation et transformateurs	Alimentación y transformadores
+Pressure switch	Druckschalter	Pressostat	Presostato
+Primary voltage	Primärspannung	Tension primaire	Tensión primaria
+Process component	Prozesskomponente	Composant de procédé	Componente de proceso
+Process connection	Prozessanschluss	Raccord process	Conexión al proceso
+Process engineering	Verfahrenstechnik	Génie des procédés	Ingeniería de procesos
+Process function	Prozessfunktion	Fonction de procédé	Función de proceso
+Process pump	Prozesspumpe	Pompe de procédé	Bomba de proceso
+Process range end	Prozessbereichsende	Fin de la plage de procédé	Fin del rango de proceso
+Process range start	Prozessbereichsanfang	Début de la plage de procédé	Inicio del rango de proceso
+Project manager	Projektleiter	Chef de projet	Jefe de proyecto
+Project number	Projektnummer	Numéro de projet	Número de proyecto
+Project property of the property database (by key)	Projekteigenschaft der Eigenschaftsdatenbank (über den Schlüssel)	Propriété de projet de la base de propriétés (par clé)	Propiedad de proyecto de la base de propiedades (por clave)
+Proof test interval	Prüfintervall	Intervalle de test périodique	Intervalo de prueba
+Property database	Eigenschaftsdatenbank	Base de propriétés	Base de propiedades
+Property database…	Eigenschaftsdatenbank…	Base de propriétés…	Base de propiedades…
+Property definitions	Eigenschaftsdefinitionen	Définitions de propriétés	Definiciones de propiedades
+Property definitions, function definitions, placement schemes and the values of all objects	Eigenschaftsdefinitionen, Funktionsdefinitionen, Platzierungsschemata und die Werte aller Objekte	Définitions de propriétés, définitions de fonction, schémas de placement et valeurs de tous les objets	Definiciones de propiedades, definiciones de función, esquemas de colocación y los valores de todos los objetos
+Property groups	Eigenschaftsgruppen	Groupes de propriétés	Grupos de propiedades
+Property key	Eigenschaftsschlüssel	Clé de propriété	Clave de propiedad
+Property keys and values, e.g. {\"device.rated_power\": \"5.5\"}	Eigenschaftsschlüssel und Werte, z. B. {\"device.rated_power\": \"5.5\"}	Clés et valeurs de propriétés, p. ex. {\"device.rated_power\": \"5.5\"}	Claves y valores de propiedades, p. ej. {\"device.rated_power\": \"5.5\"}
+Property removed with {} values	Eigenschaft mit {} Werten entfernt	Propriété supprimée avec {} valeurs	Propiedad eliminada con {} valores
+Prospective short-circuit current	Unbeeinflusster Kurzschlussstrom	Courant de court-circuit présumé	Corriente de cortocircuito prevista
+Protection class	Schutzklasse	Classe de protection	Clase de protección
+Protection setting	Schutzeinstellung	Réglage de protection	Ajuste de protección
+Protection	Schutz	Protection	Protección
+Proximity sensor	Näherungsschalter	Détecteur de proximité	Detector de proximidad
+Pulse frequency	Pulsfrequenz	Fréquence de découpage	Frecuencia de pulsos
+Ramp-down time	Rücklaufzeit	Temps de décélération	Tiempo de deceleración
+Ramp-up time	Hochlaufzeit	Temps d'accélération	Tiempo de aceleración
+Rated apparent power	Bemessungsscheinleistung	Puissance apparente assignée	Potencia aparente nominal
+Rated burden	Bemessungsbürde	Charge assignée	Carga nominal
+Rated conditional short-circuit current	Bedingter Bemessungskurzschlussstrom	Courant de court-circuit conditionnel assigné	Corriente de cortocircuito condicional nominal
+Rated cross-section	Bemessungsquerschnitt	Section assignée	Sección nominal
+Rated current of the assembly	Bemessungsstrom der Schaltgerätekombination	Courant assigné de l'ensemble	Corriente nominal del conjunto
+Rated current of the auxiliary contacts	Bemessungsstrom der Hilfskontakte	Courant assigné des contacts auxiliaires	Corriente nominal de los contactos auxiliares
+Rated current	Bemessungsstrom	Courant assigné	Corriente nominal
+Rated diversity factor	Bemessungsbelastungsfaktor	Facteur de diversité assigné	Factor de simultaneidad nominal
+Rated frequency	Bemessungsfrequenz	Fréquence assignée	Frecuencia nominal
+Rated impulse withstand voltage	Bemessungsstoßspannungsfestigkeit	Tension assignée de tenue aux chocs	Tensión nominal soportada a impulsos
+Rated insulation voltage	Bemessungsisolationsspannung	Tension assignée d'isolement	Tensión nominal de aislamiento
+Rated power	Bemessungsleistung	Puissance assignée	Potencia nominal
+Rated residual current	Bemessungsdifferenzstrom	Courant différentiel assigné	Corriente diferencial nominal
+Rated short-circuit breaking capacity	Bemessungskurzschlussausschaltvermögen	Pouvoir de coupure assigné en court-circuit	Poder de corte nominal en cortocircuito
+Rated short-time withstand current	Bemessungskurzzeitstromfestigkeit	Courant assigné de courte durée admissible	Corriente nominal de corta duración admisible
+Rated speed	Bemessungsdrehzahl	Vitesse assignée	Velocidad nominal
+Rated torque	Bemessungsmoment	Couple assigné	Par nominal
+Rated voltage	Bemessungsspannung	Tension assignée	Tensión nominal
+Redundancy	Redundanz	Redondance	Redundancia
+Relative humidity	Relative Luftfeuchte	Humidité relative	Humedad relativa
+Relays, contactors	Relais, Schütze	Relais, contacteurs	Relés, contactores
+Released	Freigegeben	Validé	Liberado
+Remove the value	Wert entfernen	Supprimer la valeur	Eliminar el valor
+Removes a project function definition; its symbols go back to their built-in one	Entfernt eine Projekt-Funktionsdefinition; ihre Symbole erhalten wieder die eingebaute	Supprime une définition de fonction de projet ; ses symboles reprennent la définition intégrée	Elimina una definición de función de proyecto; sus símbolos vuelven a la integrada
+Removes a user property with all its values and placements	Entfernt eine Benutzereigenschaft mit allen Werten und Platzierungen	Supprime une propriété utilisateur avec toutes ses valeurs et placements	Elimina una propiedad de usuario con todos sus valores y colocaciones
+Replacement part number	Ersatzartikelnummer	Référence de remplacement	Número de artículo de sustitución
+Residual current type	Fehlerstromtyp	Type de courant différentiel	Tipo de corriente diferencial
+Resolution	Auflösung	Résolution	Resolución
+Response time	Ansprechzeit	Temps de réponse	Tiempo de respuesta
+RoHS compliant	RoHS-konform	Conforme RoHS	Conforme a RoHS
+Saddle jumper	Steckbrücke	Pont enfichable	Puente enchufable
+Safe torque off (STO)	Sicher abgeschaltetes Moment (STO)	Suppression sûre du couple (STO)	Desconexión segura del par (STO)
+Safety category	Sicherheitskategorie	Catégorie de sécurité	Categoría de seguridad
+Safety function	Sicherheitsfunktion	Fonction de sécurité	Función de seguridad
+Safety integrity level (SIL)	Sicherheits-Integritätslevel (SIL)	Niveau d'intégrité de sécurité (SIL)	Nivel de integridad de seguridad (SIL)
+Safety relay	Sicherheitsrelais	Relais de sécurité	Relé de seguridad
+Safety relevant	Sicherheitsrelevant	Relatif à la sécurité	Relevante para la seguridad
+Save as scheme	Als Schema speichern	Enregistrer comme schéma	Guardar como esquema
+Saves the placed properties as a placement scheme of the project	Speichert die platzierten Eigenschaften als Platzierungsschema des Projekts	Enregistre les propriétés placées comme schéma de placement du projet	Guarda las propiedades colocadas como esquema de colocación del proyecto
+Saves the project's own properties, function definitions and schemes for other projects	Speichert die eigenen Eigenschaften, Funktionsdefinitionen und Schemata des Projekts für andere Projekte	Enregistre les propriétés, définitions de fonction et schémas propres au projet pour d'autres projets	Guarda las propiedades, definiciones de función y esquemas propios del proyecto para otros proyectos
+Saves the properties placed at a symbol as a placement scheme	Speichert die an einem Symbol platzierten Eigenschaften als Platzierungsschema	Enregistre les propriétés placées sur un symbole comme schéma de placement	Guarda las propiedades colocadas en un símbolo como esquema de colocación
+Scaling maximum	Skalierung Maximum	Mise à l'échelle maximum	Escalado máximo
+Scaling minimum	Skalierung Minimum	Mise à l'échelle minimum	Escalado mínimo
+Scheme placed again at {} symbols	Schema an {} Symbolen neu platziert	Schéma replacé sur {} symboles	Esquema colocado de nuevo en {} símbolos
+Secondary voltage	Sekundärspannung	Tension secondaire	Tensión secundaria
+Select a function definition. Project definitions (bold) can be changed and are kept in property libraries.	Funktionsdefinition auswählen. Projektdefinitionen (fett) können geändert werden und werden in Eigenschaftsbibliotheken gespeichert.	Sélectionnez une définition de fonction. Les définitions de projet (en gras) sont modifiables et enregistrées dans les bibliothèques de propriétés.	Seleccione una definición de función. Las definiciones de proyecto (en negrita) se pueden modificar y se guardan en las bibliotecas de propiedades.
+Select a placement scheme. A scheme places properties beside symbols; symbols using it are updated when it changes.	Platzierungsschema auswählen. Ein Schema platziert Eigenschaften neben Symbolen; Symbole, die es verwenden, werden bei Änderungen aktualisiert.	Sélectionnez un schéma de placement. Un schéma place des propriétés à côté des symboles ; les symboles qui l'utilisent sont mis à jour lorsqu'il change.	Seleccione un esquema de colocación. Un esquema coloca propiedades junto a los símbolos; los símbolos que lo usan se actualizan cuando cambia.
+Selection list	Auswahlliste	Liste de sélection	Lista de selección
+Selectivity	Selektivität	Sélectivité	Selectividad
+Sensing distance	Schaltabstand	Distance de détection	Distancia de detección
+Sensing principle	Erfassungsprinzip	Principe de détection	Principio de detección
+Sensor and measurement	Sensorik und Messung	Capteurs et mesure	Sensores y medición
+Sensors	Sensoren	Capteurs	Sensores
+Serial number	Seriennummer	Numéro de série	Número de serie
+Setpoint	Sollwert	Consigne	Consigna
+Sets property values of an object; an empty value removes it	Setzt Eigenschaftswerte eines Objekts; ein leerer Wert entfernt ihn	Définit des valeurs de propriétés d'un objet ; une valeur vide la supprime	Establece valores de propiedades de un objeto; un valor vacío lo elimina
+Setting range	Einstellbereich	Plage de réglage	Rango de ajuste
+Sheath colour	Mantelfarbe	Couleur de la gaine	Color de la cubierta
+Sheath material	Mantelmaterial	Matériau de la gaine	Material de la cubierta
+Shock resistance	Schockfestigkeit	Résistance aux chocs	Resistencia a impactos
+Short-circuit voltage	Kurzschlussspannung	Tension de court-circuit	Tensión de cortocircuito
+Show as \"Name: value\"	Als \"Name: Wert\" anzeigen	Afficher comme \"Nom : valeur\"	Mostrar como \"Nombre: valor\"
+Shown as \"Name: value\"	Angezeigt als \"Name: Wert\"	Affiché comme \"Nom : valeur\"	Se muestra como \"Nombre: valor\"
+Shows a property as a text beside a symbol	Zeigt eine Eigenschaft als Text neben einem Symbol	Affiche une propriété sous forme de texte à côté d'un symbole	Muestra una propiedad como texto junto a un símbolo
+Signal and operating devices	Melde- und Bediengeräte	Appareils de signalisation et de commande	Aparatos de señalización y mando
+Signal devices	Meldegeräte	Appareils de signalisation	Aparatos de señalización
+Signal name	Signalname	Nom du signal	Nombre de la señal
+Signal range	Signalbereich	Plage du signal	Rango de la señal
+Signal type	Signalart	Type de signal	Tipo de señal
+Site address	Adresse des Aufstellorts	Adresse du site	Dirección del emplazamiento
+Sort code	Sortierkennung	Code de tri	Código de orden
+Sound level	Schallpegel	Niveau sonore	Nivel sonoro
+Spare part	Ersatzteil	Pièce de rechange	Repuesto
+Standard	Norm	Norme	Norma
+Start date	Startdatum	Date de début	Fecha de inicio
+Starting current ratio	Anlaufstromverhältnis	Rapport du courant de démarrage	Relación de corriente de arranque
+Starting torque	Anlaufmoment	Couple de démarrage	Par de arranque
+Station name (PROFINET)	Gerätename (PROFINET)	Nom de station (PROFINET)	Nombre de estación (PROFINET)
+Stop category	Stoppkategorie	Catégorie d'arrêt	Categoría de parada
+Storage temperature range	Lagertemperaturbereich	Plage de température de stockage	Rango de temperatura de almacenamiento
+Stroke	Hub	Course	Carrera
+Subnet mask	Subnetzmaske	Masque de sous-réseau	Máscara de subred
+Substitute value	Ersatzwert	Valeur de substitution	Valor sustitutivo
+Suitable for drag chains	Schleppkettentauglich	Adapté aux chaînes porte-câbles	Apto para cadenas portacables
+Supplementary field	Zusatzfeld	Champ supplémentaire	Campo adicional
+Supplementary fields	Zusatzfelder	Champs supplémentaires	Campos adicionales
+Suppliers	Lieferanten	Fournisseurs	Proveedores
+Supply network	Netzform	Schéma de liaison à la terre	Esquema de conexión a tierra
+Supply voltage	Versorgungsspannung	Tension d'alimentation	Tensión de alimentación
+Surge protection type	Überspannungsschutz-Typ	Type de parafoudre	Tipo de protección contra sobretensiones
+Surge suppressor	Überspannungsbegrenzer	Limiteur de surtension	Supresor de sobretensiones
+Switches, pushbuttons	Schalter, Taster	Interrupteurs, boutons-poussoirs	Interruptores, pulsadores
+Switching frequency	Schalthäufigkeit	Fréquence de manœuvre	Frecuencia de maniobras
+Switching output	Schaltausgang	Sortie de commutation	Salida de conmutación
+Symbol id	Symbol-ID	Identifiant du symbole	Id del símbolo
+Symbol ids	Symbol-IDs	Identifiants des symboles	Ids de los símbolos
+Symbol key	Symbolschlüssel	Clé du symbole	Clave del símbolo
+Symbolic address	Symbolische Adresse	Adresse symbolique	Dirección simbólica
+Symbols using it go back to their built-in definition	Symbole, die sie verwenden, erhalten wieder ihre eingebaute Definition	Les symboles qui l'utilisent reprennent leur définition intégrée	Los símbolos que la usan vuelven a su definición integrada
+Symbols using it keep their placed properties	Symbole, die es verwenden, behalten ihre platzierten Eigenschaften	Les symboles qui l'utilisent conservent leurs propriétés placées	Los símbolos que lo usan conservan sus propiedades colocadas
+Technical characteristics	Technische Kenngrößen	Caractéristiques techniques	Características técnicas
+Temperature range	Temperaturbereich	Plage de température	Rango de temperatura
+Temperature switch	Temperaturschalter	Thermostat	Termostato
+Terminal data	Klemmendaten	Données de bornes	Datos de bornes
+Terminal description	Klemmenbeschreibung	Description de la borne	Descripción del borne
+Terminal type	Klemmentyp	Type de borne	Tipo de borne
+Text height in mm	Texthöhe in mm	Hauteur du texte en mm	Altura del texto en mm
+The function definition needs a key and a name	Die Funktionsdefinition braucht einen Schlüssel und einen Namen	La définition de fonction a besoin d'une clé et d'un nom	La definición de función necesita una clave y un nombre
+The page is released	Die Seite ist freigegeben	La page est validée	La página está liberada
+The page needs a number	Die Seite braucht eine Nummer	La page a besoin d'un numéro	La página necesita un número
+The property needs a name	Die Eigenschaft braucht einen Namen	La propriété a besoin d'un nom	La propiedad necesita un nombre
+The scheme needs a name	Das Schema braucht einen Namen	Le schéma a besoin d'un nom	El esquema necesita un nombre
+Thermal protection	Thermischer Schutz	Protection thermique	Protección térmica
+Tightening torque	Anzugsdrehmoment	Couple de serrage	Par de apriete
+Time function	Zeitfunktion	Fonction de temporisation	Función de tiempo
+Time range	Zeitbereich	Plage de temps	Rango de tiempo
+Time setting	Zeiteinstellung	Réglage du temps	Ajuste de tiempo
+Timer relay coil, off-delay	Spule Zeitrelais, rückfallverzögert	Bobine de relais temporisé, retardé à la retombée	Bobina de relé temporizado, retardo a la desconexión
+Timer relay coil, on-delay	Spule Zeitrelais, anzugsverzögert	Bobine de relais temporisé, retardé à l'appel	Bobina de relé temporizado, retardo a la conexión
+Total price	Gesamtpreis	Prix total	Precio total
+Total weight	Gesamtgewicht	Poids total	Peso total
+Transformation ratio	Übersetzungsverhältnis	Rapport de transformation	Relación de transformación
+Trip class	Auslöseklasse	Classe de déclenchement	Clase de disparo
+Tripping characteristic	Auslösecharakteristik	Courbe de déclenchement	Característica de disparo
+Type numbers	Typnummern	Références de type	Números de tipo
+UL listed	UL-gelistet	Homologué UL	Certificado UL
+UV resistant	UV-beständig	Résistant aux UV	Resistente a los rayos UV
+Unit of measurement	Maßeinheit	Unité de mesure	Unidad de medida
+Unit, e.g. kW	Einheit, z. B. kW	Unité, p. ex. kW	Unidad, p. ej. kW
+Unknown data type: {}	Unbekannter Datentyp: {}	Type de données inconnu : {}	Tipo de datos desconocido: {}
+Unknown function definition: {}	Unbekannte Funktionsdefinition: {}	Définition de fonction inconnue : {}	Definición de función desconocida: {}
+Unknown object class: {}	Unbekannte Objektklasse: {}	Classe d'objet inconnue : {}	Clase de objeto desconocida: {}
+Unknown object: {}	Unbekanntes Objekt: {}	Objet inconnu : {}	Objeto desconocido: {}
+Unknown property: {}	Unbekannte Eigenschaft: {}	Propriété inconnue : {}	Propiedad desconocida: {}
+Unknown scheme: {}	Unbekanntes Schema: {}	Schéma inconnu : {}	Esquema desconocido: {}
+User defined	Benutzerdefiniert	Défini par l'utilisateur	Definido por el usuario
+Utilization category	Gebrauchskategorie	Catégorie d'emploi	Categoría de empleo
+Value while none is set	Wert, solange keiner gesetzt ist	Valeur tant qu'aucune n'est définie	Valor mientras no se establezca ninguno
+Values of a selection list separated by commas	Werte einer Auswahlliste durch Kommas getrennt	Valeurs d'une liste de sélection séparées par des virgules	Valores de una lista de selección separados por comas
+Values separated by commas	Werte durch Kommas getrennt	Valeurs séparées par des virgules	Valores separados por comas
+Values without a property definition (free project properties, removed definitions)	Werte ohne Eigenschaftsdefinition (freie Projekteigenschaften, entfernte Definitionen)	Valeurs sans définition de propriété (propriétés de projet libres, définitions supprimées)	Valores sin definición de propiedad (propiedades de proyecto libres, definiciones eliminadas)
+Values	Werte	Valeurs	Valores
+Valve function	Ventilfunktion	Fonction du distributeur	Función de la válvula
+Vector group	Schaltgruppe	Couplage	Grupo de conexión
+Vibration resistance	Vibrationsfestigkeit	Résistance aux vibrations	Resistencia a vibraciones
+Voltage protection level	Schutzpegel	Niveau de protection en tension	Nivel de protección de tensión
+Voltage range	Spannungsbereich	Plage de tension	Rango de tensión
+Voltage type	Spannungsart	Type de tension	Tipo de tensión
+Warranty until	Garantie bis	Garantie jusqu'au	Garantía hasta
+Wearing part	Verschleißteil	Pièce d'usure	Pieza de desgaste
+Wetted material	Werkstoff medienberührt	Matériau en contact avec le fluide	Material en contacto con el medio
+Winding connection	Wicklungsschaltung	Couplage des enroulements	Conexión del devanado
+With values only	Nur mit Werten	Uniquement avec valeurs	Solo con valores
+Writes the project's property definitions, function definitions and schemes as a library file	Schreibt die Eigenschaftsdefinitionen, Funktionsdefinitionen und Schemata des Projekts als Bibliotheksdatei	Écrit les définitions de propriétés, définitions de fonction et schémas du projet dans un fichier de bibliothèque	Escribe las definiciones de propiedades, definiciones de función y esquemas del proyecto como archivo de biblioteca
+Year of construction	Baujahr	Année de construction	Año de fabricación
+Yes / no	Ja / nein	Oui / non	Sí / no
+Yes	Ja	Oui	Sí
+computed	berechnet	calculé	calculado
+model	Modell	modèle	modelo
+project, page, device, function, terminal, plc or cable	project, page, device, function, terminal, plc oder cable	project, page, device, function, terminal, plc ou cable	project, page, device, function, terminal, plc o cable
+project, page, device, function, terminal, plc, cable or part	project, page, device, function, terminal, plc, cable oder part	project, page, device, function, terminal, plc, cable ou part	project, page, device, function, terminal, plc, cable o part
+project, page:<name>, device:<tag>, function:<symbol id>, cable:<tag> or part:<number>	project, page:<Name>, device:<BMK>, function:<Symbol-ID>, cable:<BMK> oder part:<Nummer>	project, page:<nom>, device:<repère>, function:<id du symbole>, cable:<repère> ou part:<numéro>	project, page:<nombre>, device:<identificador>, function:<id del símbolo>, cable:<identificador> o part:<número>
+text, multiline, integer, number, bool, choice, date or link (default text)	text, multiline, integer, number, bool, choice, date oder link (Vorgabe text)	text, multiline, integer, number, bool, choice, date ou link (par défaut text)	text, multiline, integer, number, bool, choice, date o link (predeterminado text)
+{} cannot be changed	{} kann nicht geändert werden	{} ne peut pas être modifié	{} no se puede modificar
+{} is a built-in function definition	{} ist eine eingebaute Funktionsdefinition	{} est une définition de fonction intégrée	{} es una definición de función integrada
+{} is a built-in property	{} ist eine eingebaute Eigenschaft	{} est une propriété intégrée	{} es una propiedad integrada
+{} is a built-in scheme	{} ist ein eingebautes Schema	{} est un schéma intégré	{} es un esquema integrado
+{} is not a property of {}	{} ist keine Eigenschaft von {}	{} n'est pas une propriété de {}	{} no es una propiedad de {}
+{} property definitions with {} values including the indexed ones	{} Eigenschaftsdefinitionen mit {} Werten einschließlich der indizierten	{} définitions de propriétés avec {} valeurs, indexées comprises	{} definiciones de propiedades con {} valores, incluidos los indexados
+{}: \"{}\" is not one of {}	{}: \"{}\" ist keiner von {}	{} : \"{}\" ne fait pas partie de {}	{}: \"{}\" no es uno de {}
+{}: invalid value \"{}\" ({})	{}: ungültiger Wert \"{}\" ({})	{} : valeur invalide \"{}\" ({})	{}: valor no válido \"{}\" ({})
+➕ Default value	➕ Vorgabewert	➕ Valeur par défaut	➕ Valor predeterminado
+➕ Derive project definition	➕ Projektdefinition ableiten	➕ Dériver une définition de projet	➕ Derivar definición de proyecto
+➕ User defined property	➕ Benutzerdefinierte Eigenschaft	➕ Propriété utilisateur	➕ Propiedad de usuario
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Geräte im Übersichtsschaltplan planen, den Stromlaufplan erzeugen und beide synchron halten	Planifier les appareils dans le schéma unifilaire, générer le schéma développé et garder les deux synchronisés	Planificar los equipos en el esquema unifilar, generar el esquema desarrollado y mantener ambos sincronizados
 Single-line / multi-line…	Einpolig / allpolig…	Unifilaire / multifilaire…	Unifilar / multifilar…
 All devices of page {} are in the schematic already	Alle Geräte der Seite {} sind bereits im Stromlaufplan	Tous les appareils de la page {} sont déjà dans le schéma développé	Todos los equipos de la página {} ya están en el esquema desarrollado
