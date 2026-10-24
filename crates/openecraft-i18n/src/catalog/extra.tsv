@@ -4478,3 +4478,24 @@ Distributes symbols, texts and graphics evenly between the first and the last on
 Distribute vertically (default horizontally)	Vertikal verteilen (Standard horizontal)	Répartir verticalement (horizontalement par défaut)	Distribuir verticalmente (horizontalmente por defecto)
 Copies items several times at a fixed distance; devices get new tags, terminals new numbers	Kopiert Elemente mehrfach in festem Abstand; Betriebsmittel erhalten neue Kennzeichen, Klemmen neue Nummern	Copie des éléments plusieurs fois à distance fixe ; les appareils reçoivent de nouveaux repères, les bornes de nouveaux numéros	Copia elementos varias veces a una distancia fija; los dispositivos reciben nuevas identificaciones, los bornes nuevos números
 Number of copies (default 1)	Anzahl Kopien (Standard 1)	Nombre de copies (1 par défaut)	Número de copias (1 por defecto)
+Cross references…	Querverweise…	Renvois…	Referencias cruzadas…
+Format of cross references, structure of the target page, interruption points, contact images	Format der Querverweise, Struktur der Zielseite, Unterbrechungspunkte, Kontaktspiegel	Format des renvois, structure de la page cible, points d'interruption, images de contacts	Formato de las referencias cruzadas, estructura de la página destino, puntos de interrupción, imágenes de contactos
+Row	Zeile	Ligne	Fila
+Show the row after the column	Zeile nach der Spalte anzeigen	Afficher la ligne après la colonne	Mostrar la fila después de la columna
+Example: {}	Beispiel: {}	Exemple : {}	Ejemplo: {}
+Structure of the target page	Struktur der Zielseite	Structure de la page cible	Estructura de la página destino
+When it differs from the page	Wenn sie von der Seite abweicht	Si elle diffère de la page	Si difiere de la página
+Always	Immer	Toujours	Siempre
+Never	Nie	Jamais	Nunca
+Interruption points refer to	Unterbrechungspunkte verweisen auf	Les points d'interruption renvoient à	Los puntos de interrupción remiten a
+All other points of the name	Alle anderen Punkte des Namens	Tous les autres points du nom	Todos los demás puntos del nombre
+Star: the first point refers to all, the others to it	Stern: der erste Punkt verweist auf alle, die anderen auf ihn	Étoile : le premier point renvoie à tous, les autres à lui	Estrella: el primer punto remite a todos, los demás a él
+Pairs in schematic order (1-2, 3-4 …)	Paare in Schaltplanreihenfolge (1-2, 3-4 …)	Paires dans l'ordre du schéma (1-2, 3-4 …)	Pares en el orden del esquema (1-2, 3-4 …)
+Contact image below coils	Kontaktspiegel unter Spulen	Image de contacts sous les bobines	Imagen de contactos bajo las bobinas
+Sets how cross references are shown (only the given settings) and shows the settings	Legt fest, wie Querverweise angezeigt werden (nur die angegebenen Einstellungen), und zeigt die Einstellungen	Définit l'affichage des renvois (seulement les réglages indiqués) et affiche les réglages	Establece cómo se muestran las referencias cruzadas (solo los ajustes indicados) y muestra los ajustes
+In front of the page name (default /)	Vor dem Seitennamen (Standard /)	Devant le nom de page (/ par défaut)	Delante del nombre de página (/ por defecto)
+Between page and column (default .)	Zwischen Seite und Spalte (Standard .)	Entre page et colonne (. par défaut)	Entre página y columna (. por defecto)
+Structure of the target page: different (default), always or never	Struktur der Zielseite: different (Standard), always oder never	Structure de la page cible : different (par défaut), always ou never	Estructura de la página destino: different (por defecto), always o never
+Interruption points refer to: all (default), star or pairs	Unterbrechungspunkte verweisen auf: all (Standard), star oder pairs	Les points d'interruption renvoient à : all (par défaut), star ou pairs	Los puntos de interrupción remiten a: all (por defecto), star o pairs
+Draw the contact image below coils (default true)	Kontaktspiegel unter Spulen zeichnen (Standard true)	Dessiner l'image de contacts sous les bobines (true par défaut)	Dibujar la imagen de contactos bajo las bobinas (true por defecto)
+Unknown setting: {}	Unbekannte Einstellung: {}	Réglage inconnu : {}	Ajuste desconocido: {}

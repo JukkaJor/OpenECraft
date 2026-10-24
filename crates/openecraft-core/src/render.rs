@@ -518,16 +518,14 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
                 refs.extend(dev.auxs.iter().map(|a| (a.reference_from(prj, page_i), Some(a.page))));
             }
         }
-        Func::Interruption => {
-            if let Some(locs) = idx.interruptions.get(&s.label) {
-                let others: Vec<&Loc> = locs.iter().filter(|l| l.sym_id != s.id).collect();
-                let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror) + p(0.0, 2.6);
-                let txt = if others.is_empty() { "?".to_string() } else { others.iter().map(|l| l.reference_from(prj, page_i)).collect::<Vec<_>>().join(" ") };
-                let ink = if others.is_empty() { Ink::Error } else { Ink::CrossRef };
-                d.text(q, &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
-                if let Some(l) = others.first() {
-                    link_text(d, q, &txt, SMALL_SIZE, Anchor::Left, l.page);
-                }
+        Func::Interruption if idx.interruptions.contains_key(&s.label) => {
+            let others: Vec<Loc> = idx.interruption_targets(prj, &s.label, s.id);
+            let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror) + p(0.0, 2.6);
+            let txt = if others.is_empty() { "?".to_string() } else { others.iter().map(|l| l.reference_from(prj, page_i)).collect::<Vec<_>>().join(" ") };
+            let ink = if others.is_empty() { Ink::Error } else { Ink::CrossRef };
+            d.text(q, &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
+            if let Some(l) = others.first() {
+                link_text(d, q, &txt, SMALL_SIZE, Anchor::Left, l.page);
             }
         }
         _ => {}
@@ -572,7 +570,9 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
     // Contact image (mirror) below coils
     if matches!(def.func, Func::Main { mirror: true }) {
         if let Some(dev) = dev {
-            draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            if !prj.xref.hide_contact_image {
+                draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            }
         }
     }
 }

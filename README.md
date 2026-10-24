@@ -163,7 +163,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   columns, their order, the heading and the rows per report page.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
-  counterparts on other pages.
+  counterparts on other pages. *Project › Cross references…* sets the format (prefix,
+  separator, row: `/3.4`, `3-4`, `/3.4.B`), when the structure of the target page is
+  shown (when it differs, always, never), what interruption points refer to (all
+  other points, star from the first point, or pairs in schematic order; the check
+  reports a point without partner) and whether coils draw a contact image. Command:
+  `set_cross_references`.
 - **Connectivity / potentials**: wires, T-junctions (with connection dots), terminals,
   potential connection points (L1, N, PE, +24V, …) and interruption points are evaluated
   into nets across pages. Selecting a wire highlights its whole potential.

@@ -65,3 +65,13 @@ fn numbering_of_wires_devices_and_pages() {
     assert_eq!(pages["pages"][0], "10");
     assert_eq!(pages["pages"][1], "20");
 }
+
+#[test]
+fn cross_reference_settings() {
+    let mut s = demo();
+    let x = run(&mut s, "set_cross_references", json!({ "row": true, "interruptions": "pairs", "contact_image": false })).unwrap();
+    assert_eq!((x["row"].as_bool(), x["interruptions"].as_str(), x["contact_image"].as_bool()), (Some(true), Some("pairs"), Some(false)));
+    assert!(run(&mut s, "set_cross_references", json!({ "structure": "sometimes" })).is_err());
+    let x = s.project().unwrap().xref.clone();
+    assert!(x.row && x.hide_contact_image);
+}

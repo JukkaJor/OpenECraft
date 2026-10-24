@@ -224,6 +224,7 @@ impl App {
     self.numbering_windows(ctx);
     self.check_settings_window(ctx);
     self.arrange_windows(ctx);
+    self.xref_window(ctx);
     self.engineering_windows(ctx);
     self.compare_window(ctx);
     self.requests_window(ctx);

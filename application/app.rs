@@ -32,6 +32,7 @@ mod numbering_ui;
 mod properties_panel;
 mod toolbar;
 mod windows;
+mod xref_ui;
 mod compare_ui;
 mod engineering;
 mod field_ui;
@@ -110,6 +111,7 @@ pub struct App {
     numbering_ui: numbering_ui::NumberingUi,
     check_ui: check_ui::CheckUi,
     arrange_ui: arrange_ui::ArrangeUi,
+    show_xref: bool,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -213,6 +215,7 @@ impl App {
             numbering_ui: Default::default(),
             check_ui: Default::default(),
             arrange_ui: Default::default(),
+            show_xref: false,
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),

@@ -206,6 +206,11 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     for (name, locs) in &idx.interruptions {
         if locs.len() == 1 {
             v.push(crate::issue!(Severity::Warning, Some((locs[0].page, locs[0].sym_id)), "Interruption point '{}' has no counterpart", name));
+        } else if prj.xref.interruptions == InterruptionMode::Pairs {
+            // In pairs the last point of an odd number has no partner.
+            if let Some(l) = locs.iter().find(|l| idx.interruption_targets(prj, name, l.sym_id).is_empty()) {
+                v.push(crate::issue!(Severity::Warning, Some((l.page, l.sym_id)), "Interruption point '{}' has no counterpart", name));
+            }
         }
     }
     for (pi, pg) in prj.pages.iter().enumerate() {

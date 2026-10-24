@@ -267,6 +267,9 @@ impl App {
         if ui.button(tr("Wire numbering…")).clicked() {
             self.show_numbering = true;
         }
+        if ui.button(tr("Cross references…")).on_hover_text(tr("Format of cross references, structure of the target page, interruption points, contact images")).clicked() {
+            self.show_xref = true;
+        }
         if ui.button(tr("Device numbering…")).on_hover_text(tr("Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)")).clicked() {
             self.numbering_ui.show_devices = true;
         }

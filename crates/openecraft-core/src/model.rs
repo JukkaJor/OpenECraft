@@ -163,6 +163,9 @@ pub struct Project {
     /// Options that show or hide model content.
     #[serde(skip_serializing_if = "options::ModelOptions::is_empty")]
     pub model_options: options::ModelOptions,
+    /// How cross references are shown (format, structure, interruption points).
+    #[serde(skip_serializing_if = "CrossRefs::is_default")]
+    pub xref: CrossRefs,
     /// Checks switched off, message levels and accepted messages of the project check.
     #[serde(skip_serializing_if = "checks::CheckSettings::is_default")]
     pub check_settings: checks::CheckSettings,
@@ -216,6 +219,7 @@ impl Default for Project {
             subprojects: Default::default(),
             model_options: Default::default(),
             check_settings: Default::default(),
+            xref: Default::default(),
             integration: Default::default(),
             next_id: 1,
             symbol_cache: Default::default(),
@@ -924,6 +928,61 @@ pub struct PlcCard {
     /// Device description (overrides the one from the parts).
     #[serde(skip_serializing_if = "String::is_empty")]
     pub device: String,
+}
+
+/// When a cross reference shows the structure of the page it points to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum XrefStructure {
+    /// Only if it differs from the page the reference is on.
+    #[default]
+    Different,
+    Always,
+    Never,
+}
+
+/// Which counterparts an interruption point refers to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum InterruptionMode {
+    /// Every other point of the same name.
+    #[default]
+    All,
+    /// The first point (in schematic order) is the source: it refers to all others,
+    /// the others to it.
+    Star,
+    /// In schematic order, the 1st and 2nd, 3rd and 4th … refer to each other.
+    Pairs,
+}
+
+/// How cross references are shown: `/3.4`, `/3.4.B`, `=A1/3.4` …
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct CrossRefs {
+    /// In front of the page name (default `/`).
+    pub prefix: String,
+    /// Between page and column (default `.`).
+    pub separator: String,
+    /// The row follows the column (`/3.4.B`).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub row: bool,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub structure: XrefStructure,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub interruptions: InterruptionMode,
+    /// Coils draw no contact image.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub hide_contact_image: bool,
+}
+
+impl Default for CrossRefs {
+    fn default() -> Self {
+        CrossRefs { prefix: "/".into(), separator: ".".into(), row: false, structure: XrefStructure::Different, interruptions: InterruptionMode::All, hide_contact_image: false }
+    }
+}
+
+impl CrossRefs {
+    pub fn is_default(&self) -> bool {
+        *self == CrossRefs::default()
+    }
 }
 
 /// Settings of the automatic wire numbering.

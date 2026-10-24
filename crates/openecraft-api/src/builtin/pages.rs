@@ -59,6 +59,19 @@ pub static COMMANDS: &[Spec] = &[
         run: delete_page,
     },
     Spec {
+        name: "set_cross_references",
+        help: tr_const!("Sets how cross references are shown (only the given settings) and shows the settings"),
+        params: &[
+            optional("prefix", Kind::Str, tr_const!("In front of the page name (default /)")),
+            optional("separator", Kind::Str, tr_const!("Between page and column (default .)")),
+            optional("row", Kind::Bool, tr_const!("Show the row after the column")),
+            optional("structure", Kind::Str, tr_const!("Structure of the target page: different (default), always or never")),
+            optional("interruptions", Kind::Str, tr_const!("Interruption points refer to: all (default), star or pairs")),
+            optional("contact_image", Kind::Bool, tr_const!("Draw the contact image below coils (default true)")),
+        ],
+        run: set_cross_references,
+    },
+    Spec {
         name: "renumber_pages",
         help: tr_const!("Numbers the pages with a start value and step; released pages keep their name"),
         params: &[
@@ -145,6 +158,49 @@ fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ops::set_page_structure(prj, i, &dt, true);
     }
     Ok(page_json(&prj.pages[i]))
+}
+
+fn set_cross_references(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let x = &mut prj.xref;
+    if let Some(v) = a.str("prefix") {
+        x.prefix = v.to_string();
+    }
+    if let Some(v) = a.str("separator") {
+        x.separator = v.to_string();
+    }
+    if let Some(v) = a.value("row").and_then(Value::as_bool) {
+        x.row = v;
+    }
+    if let Some(v) = a.value("contact_image").and_then(Value::as_bool) {
+        x.hide_contact_image = !v;
+    }
+    if let Some(v) = a.str("structure") {
+        x.structure = match v.trim().to_ascii_lowercase().as_str() {
+            "different" => XrefStructure::Different,
+            "always" => XrefStructure::Always,
+            "never" => XrefStructure::Never,
+            other => return Err(tr_fmt!("Unknown setting: {}", other)),
+        };
+    }
+    if let Some(v) = a.str("interruptions") {
+        x.interruptions = match v.trim().to_ascii_lowercase().as_str() {
+            "all" => InterruptionMode::All,
+            "star" => InterruptionMode::Star,
+            "pairs" => InterruptionMode::Pairs,
+            other => return Err(tr_fmt!("Unknown setting: {}", other)),
+        };
+    }
+    let structure = match x.structure {
+        XrefStructure::Different => "different",
+        XrefStructure::Always => "always",
+        XrefStructure::Never => "never",
+    };
+    let interruptions = match x.interruptions {
+        InterruptionMode::All => "all",
+        InterruptionMode::Star => "star",
+        InterruptionMode::Pairs => "pairs",
+    };
+    Ok(json!({ "prefix": x.prefix, "separator": x.separator, "row": x.row, "structure": structure, "interruptions": interruptions, "contact_image": !x.hide_contact_image }))
 }
 
 fn renumber_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
