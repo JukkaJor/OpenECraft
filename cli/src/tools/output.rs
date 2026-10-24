@@ -3,6 +3,7 @@
 use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
+use openecraft_api::params::text;
 use openecraft_core::reports::{self, Analysis, Severity};
 use openecraft_core::{dxf, harness, pdf, plc, svg, translation, wirenum};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
@@ -20,7 +21,7 @@ pub static TOOLS: &[Tool] = &[
         name: "report",
         help: tr_const!("Generates a report as table"),
         params: &[
-            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups or electro_fluid")),
+            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups or electro_fluid, or a report of a plugin")),
             optional("format", Kind::Str, tr_const!("json (default) or csv")),
             optional("scheme", Kind::Str, tr_const!("Report scheme: its filter, sort order and columns")),
         ],
@@ -38,7 +39,7 @@ pub static TOOLS: &[Tool] = &[
         name: "export",
         help: tr_const!("Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)"),
         params: &[
-            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary")),
+            param("format", Kind::Str, tr_const!("svg, html, pdf, dxf, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin")),
             optional("language", Kind::Str, tr_const!("svg, html, pdf, dxf: language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf: default all pages)")),
@@ -58,7 +59,9 @@ pub(super) fn severity_name(s: Severity) -> &'static str {
 
 fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     let prj = s.project()?;
-    let an = Analysis::build(prj);
+    let mut an = Analysis::build(prj);
+    an.issues.extend(s.plugins.check(prj, &an));
+    an.issues.sort_by_key(|i| i.severity);
     let issues: Vec<Value> = an
         .issues
         .iter()
@@ -77,6 +80,14 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
 
 fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
+    if let Some(r) = s.plugins.report(a.req("kind")) {
+        let table = (r.run)(prj, &Analysis::build(prj))?;
+        return match a.str("format").unwrap_or("json") {
+            "csv" => Ok(Value::String(table.to_csv())),
+            "json" => Ok(json!({ "report": r.name, "title": text(&r.title), "headers": table.header_texts(), "rows": table.rows })),
+            other => Err(tr_fmt!("Unknown format: {}", other)),
+        };
+    }
     let kind = report_kind(a.req("kind"))?;
     let an = Analysis::build(prj);
     let mut table = an.reports.get(&kind).cloned().unwrap_or_default();
@@ -115,7 +126,10 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
         }
         None => prj.languages.source.clone(),
     };
-    let content = translation::with_language(prj, &lang, |prj| export_content(prj, a, page))?;
+    let content = match s.plugins.exporter(a.req("format")) {
+        Some(e) => translation::with_language(prj, &lang, |prj| (e.run)(prj))?.into_bytes(),
+        None => translation::with_language(prj, &lang, |prj| export_content(prj, a, page))?,
+    };
     match a.str("path") {
         Some(path) => {
             std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;

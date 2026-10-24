@@ -26,7 +26,8 @@ fn lists_every_tool_with_its_schema() {
     let mut s = session();
     let r = handle(&mut s, &request(1, "tools/list", json!({}))).unwrap();
     let listed = r["result"]["tools"].as_array().unwrap();
-    assert_eq!(listed.len(), tools::all().count());
+    assert_eq!(listed.len(), tools::entries(&s).len());
+    assert!(listed.len() > tools::all().count(), "commands of the built-in plugins");
     let connect = listed.iter().find(|t| t["name"] == "connect").unwrap();
     assert!(connect["description"].as_str().unwrap().contains("connection points"));
     assert_eq!(connect["inputSchema"]["type"], "object");

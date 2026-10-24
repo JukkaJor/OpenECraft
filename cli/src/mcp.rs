@@ -53,7 +53,7 @@ pub fn handle(session: &mut Session, msg: &Value) -> Option<Value> {
     let result = match method {
         "initialize" => Ok(initialize(&params)),
         "ping" => Ok(json!({})),
-        "tools/list" => Ok(json!({ "tools": tools::all().map(describe).collect::<Vec<_>>() })),
+        "tools/list" => Ok(json!({ "tools": tools::entries(session).iter().map(describe).collect::<Vec<_>>() })),
         "tools/call" => call(session, &params),
         _ => Err((-32601, format!("method not found: {method}"))),
     };
@@ -74,13 +74,13 @@ fn initialize(params: &Value) -> Value {
     })
 }
 
-fn describe(tool: &tools::Tool) -> Value {
-    json!({ "name": tool.name, "description": tool.help, "inputSchema": tools::schema(tool) })
+fn describe(tool: &tools::Entry) -> Value {
+    json!({ "name": tool.name(), "description": tool.help(), "inputSchema": tools::schema(tool.clone()) })
 }
 
 fn call(session: &mut Session, params: &Value) -> Result<Value, (i64, String)> {
     let name = params.get("name").and_then(Value::as_str).ok_or((-32602, "missing tool name".to_string()))?;
-    let tool = tools::find(name).ok_or_else(|| (-32602, format!("unknown tool: {name}")))?;
+    let tool = tools::lookup(session, name).ok_or_else(|| (-32602, format!("unknown tool: {name}")))?;
     let args = match params.get("arguments") {
         None | Some(Value::Null) => Map::new(),
         Some(Value::Object(map)) => map.clone(),

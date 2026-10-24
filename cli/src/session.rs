@@ -3,6 +3,7 @@
 //! server one for the whole connection.
 
 use crate::parts_server::Server;
+use openecraft_api::Plugins;
 use openecraft_core::history::History;
 use openecraft_core::model::Project;
 use openecraft_i18n::{tr, tr_fmt};
@@ -15,11 +16,13 @@ pub struct Session {
     saved: Option<Project>,
     history: Option<History>,
     pub server: Server,
+    /// Built-in plugins; the command line adds the external ones (see `main`).
+    pub plugins: Plugins,
 }
 
 impl Session {
     pub fn new(server: Server) -> Session {
-        Session { project: None, path: None, saved: None, history: None, server }
+        Session { project: None, path: None, saved: None, history: None, server, plugins: Plugins::new(crate::tools::all().map(|t| t.name)) }
     }
 
     pub fn project(&self) -> Result<&Project, String> {
