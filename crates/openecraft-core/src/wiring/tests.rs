@@ -42,7 +42,7 @@ fn marks_track_progress_and_changes() {
     assert_eq!(prj.wiring_marks.len(), 1);
     assert_eq!(status(&prj, &w), Status::Problem);
     let an2 = Analysis::checked(&prj);
-    assert!(an2.issues.iter().any(|i| i.message.contains("too short")));
+    assert!(an2.issues.iter().any(|i| i.message().contains("too short")));
 
     set_mark(&mut prj, &w, None, "");
     assert!(prj.wiring_marks.is_empty());

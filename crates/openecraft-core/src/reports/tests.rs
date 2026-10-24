@@ -34,7 +34,7 @@ fn cable_reports_of_the_demo() {
 }
 
 fn messages(prj: &Project) -> Vec<String> {
-    Analysis::checked(prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(prj).issues.into_iter().map(|i| i.message()).collect()
 }
 
 fn find<'a>(msgs: &'a [String], part: &str) -> Option<&'a String> {

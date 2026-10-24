@@ -87,7 +87,7 @@ fn performance_level_of_a_safety_function() {
     assert_eq!(e.achieved, Some(Pl::C));
     let p = problems(&k.prj);
     assert_eq!(p.len(), 1);
-    assert_eq!((p[0].severity, p[0].message.as_str()), (Severity::Error, "Safety function SF1 Emergency stop reaches PL c, PL d is required"));
+    assert_eq!((p[0].severity, p[0].message().as_str()), (Severity::Error, "Safety function SF1 Emergency stop reaches PL c, PL d is required"));
 }
 
 #[test]
@@ -104,7 +104,7 @@ fn missing_data_and_category_requirements() {
     k.prj.electrical.safety[0].subsystems[2].devices.pop();
     let e = evaluate(&k.prj, &k.prj.electrical.safety[0]);
     assert_eq!(e.subsystems[2].problems, ["Output: category 3 needs measures against common cause failure"]);
-    let messages: Vec<String> = problems(&k.prj).into_iter().map(|i| i.message).collect();
+    let messages: Vec<String> = problems(&k.prj).into_iter().map(|i| i.message()).collect();
     assert!(messages.contains(&"Safety function SF1 Emergency stop: Output: category 3 needs measures against common cause failure".to_string()));
     assert_eq!(pl_text(Some(Pl::D)), "d (SIL 2)");
     assert_eq!(pl_text(None), "not reached");

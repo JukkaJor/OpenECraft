@@ -37,7 +37,11 @@ exceptions, to be removed over time.
 Layers, bottom up (a module may use its own layer and the layers below):
 
 1. Foundations without dependencies: `geom`, `xml`, `params` (typed parameters and
-   `Text`), `table` (report tables), `issue` (`Issue`, `Severity`).
+   `Text`), `table` (report tables), `issue` (`Issue`, `Severity`; a built-in check's
+   message is an English template with its arguments, `issue!(severity, target, "…",
+   args)`, translated by `Issue::message()` where it is shown, so that the analysis
+   survives a language change and MCP clients get a stable `key`; plugin and generated
+   texts are `Issue::plain`).
 2. `symbols`, `symlib`: symbol definitions. The built-in library is static
    (`symbols::builtin`); the user symbols of a project are resolved through
    `Project::symbol` / `Project::symbol_table()` (`symlib::Symbols`, a snapshot the

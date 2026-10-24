@@ -161,7 +161,7 @@ fn issue(d: IssueDesc) -> Issue {
         "info" => Severity::Info,
         _ => Severity::Warning,
     };
-    Issue { severity, message: d.message, target: d.page.zip(d.item) }
+    Issue::plain(severity, d.message, d.page.zip(d.item))
 }
 
 impl Plugin for External {

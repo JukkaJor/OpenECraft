@@ -69,7 +69,9 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
         .map(|i| {
             json!({
                 "severity": i.severity.key(),
-                "message": i.message,
+                "message": i.message(),
+                "key": i.key(),
+                "args": i.args(),
                 "page": i.target.map(|(pg, _)| prj.pages[pg].name.clone()),
                 "id": i.target.map(|(_, id)| id).filter(|id| *id != 0),
             })

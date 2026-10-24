@@ -111,8 +111,8 @@ fn plm_lifecycle_and_obsolete_parts_warning() {
     apply(&mut prj, &an, c, &p.changes, false, "");
     let issues = problems(&prj);
     assert_eq!(issues.len(), 1);
-    assert!(issues[0].message.contains(&used));
-    assert!(Analysis::checked(&prj).issues.iter().any(|i| i.message == issues[0].message));
+    assert!(issues[0].message().contains(&used));
+    assert!(Analysis::checked(&prj).issues.iter().any(|i| i.message() == issues[0].message()));
 }
 
 #[test]

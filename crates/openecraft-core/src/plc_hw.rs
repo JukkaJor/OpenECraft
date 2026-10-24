@@ -651,33 +651,32 @@ fn ranges_overlap(a: (u32, u32), b: (u32, u32)) -> bool {
 pub fn problems(prj: &Project) -> Vec<Issue> {
     let hw = &prj.plc;
     let mut v = Vec::new();
-    let err = |message: String| Issue { severity: Severity::Error, message, target: None };
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
+    let err = |message: String| Issue::plain(Severity::Error, message, None);
     let mut names = BTreeMap::new();
     for st in &hw.stations {
         *names.entry(st.name.as_str()).or_insert(0) += 1;
     }
     for (name, n) in names {
         if n > 1 {
-            v.push(err(tr_fmt!("Station name {} is used {} times", name, n)));
+            v.push(crate::issue!(Severity::Error, None, "Station name {} is used {} times", name, n));
         }
     }
     for st in &hw.stations {
         if !st.network.is_empty() && hw.network(&st.network).is_none() {
-            v.push(err(tr_fmt!("Station {}: bus system {} does not exist", st.name, st.network)));
+            v.push(crate::issue!(Severity::Error, None, "Station {}: bus system {} does not exist", st.name, st.network));
         }
         if st.kind == StationKind::IoDevice && hw.station(&st.controller).is_none() {
-            v.push(warn(tr_fmt!("Remote I/O {} has no controller", st.name)));
+            v.push(crate::issue!(Severity::Warning, None, "Remote I/O {} has no controller", st.name));
         }
     }
     for card in crate::plc::cards(prj) {
         if !hw.stations.is_empty() && prj.plc_cards.get(&card).is_none_or(|d| d.station.is_empty()) {
-            v.push(warn(tr_fmt!("PLC card {} is not assigned to a station", card)));
+            v.push(crate::issue!(Severity::Warning, None, "PLC card {} is not assigned to a station", card));
         }
     }
     for (card, data) in &prj.plc_cards {
         if !data.station.is_empty() && hw.station(&data.station).is_none() {
-            v.push(err(tr_fmt!("PLC card {}: station {} does not exist", card, data.station)));
+            v.push(crate::issue!(Severity::Error, None, "PLC card {}: station {} does not exist", card, data.station));
         }
     }
     // Slots, channels, address ranges.
@@ -688,21 +687,21 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         let mods = modules(prj, &st.name);
         for (i, a) in mods.iter().enumerate() {
             if let Some(b) = mods[i + 1..].iter().find(|b| (b.rack, b.slot) == (a.rack, a.slot)) {
-                v.push(err(tr_fmt!("{}: slot {} of rack {} is used by {} and {}", st.name, a.slot, a.rack, a.card, b.card)));
+                v.push(crate::issue!(Severity::Error, None, "{}: slot {} of rack {} is used by {} and {}", st.name, a.slot, a.rack, a.card, b.card));
             }
             if let Some(d) = &a.description {
                 if a.inputs_used > d.inputs {
-                    v.push(err(tr_fmt!("{}: {} inputs used, the module has {}", a.card, a.inputs_used, d.inputs)));
+                    v.push(crate::issue!(Severity::Error, None, "{}: {} inputs used, the module has {}", a.card, a.inputs_used, d.inputs));
                 }
                 if a.outputs_used > d.outputs {
-                    v.push(err(tr_fmt!("{}: {} outputs used, the module has {}", a.card, a.outputs_used, d.outputs)));
+                    v.push(crate::issue!(Severity::Error, None, "{}: {} outputs used, the module has {}", a.card, a.outputs_used, d.outputs));
                 }
             }
             ranges.entry(domain(prj, st)).or_default().push((a.card.clone(), (a.input_start, a.input_bytes), (a.output_start, a.output_bytes)));
         }
         if let Some(d) = station_description(prj, st).filter(|d| d.slots > 0) {
             if mods.len() as u32 > d.slots {
-                v.push(err(tr_fmt!("{}: {} modules, the head has {} slots", st.name, mods.len(), d.slots)));
+                v.push(crate::issue!(Severity::Error, None, "{}: {} modules, the head has {} slots", st.name, mods.len(), d.slots));
             }
         }
     }
@@ -710,7 +709,7 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         for (i, a) in list.iter().enumerate() {
             for b in &list[i + 1..] {
                 if ranges_overlap(a.1, b.1) || ranges_overlap(a.2, b.2) {
-                    v.push(err(tr_fmt!("Address ranges of {} and {} overlap", a.0, b.0)));
+                    v.push(crate::issue!(Severity::Error, None, "Address ranges of {} and {} overlap", a.0, b.0));
                 }
             }
         }
@@ -720,13 +719,13 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         let members: Vec<&Station> = hw.stations.iter().filter(|s| s.network == net.name).collect();
         for (i, a) in members.iter().enumerate() {
             if let Some(b) = members[i + 1..].iter().find(|b| !a.address.is_empty() && b.address == a.address) {
-                v.push(err(tr_fmt!("Address {} is used by {} and {}", a.address, a.name, b.name)));
+                v.push(crate::issue!(Severity::Error, None, "Address {} is used by {} and {}", a.address, a.name, b.name));
             }
         }
         let linked = hw.connections.iter().any(|c| c.network == net.name);
         for st in &members {
             if linked && !hw.connections.iter().any(|c| c.a.station == st.name || c.b.station == st.name) {
-                v.push(warn(tr_fmt!("Station {} is not connected to bus {}", st.name, net.name)));
+                v.push(crate::issue!(Severity::Warning, None, "Station {} is not connected to bus {}", st.name, net.name));
             }
         }
     }
@@ -738,11 +737,11 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         if !c.cable.is_empty() {
             *cable_use.entry(c.cable.as_str()).or_default() += 1;
             match prj.cable(&c.cable) {
-                None => v.push(warn(tr_fmt!("Bus connection {} - {}: cable {} does not exist", c.a, c.b, c.cable))),
+                None => v.push(crate::issue!(Severity::Warning, None, "Bus connection {} - {}: cable {} does not exist", c.a, c.b, c.cable)),
                 Some(cable) => {
                     if let (Some(cb), Some(b)) = (cable.bus, bus) {
                         if cb != b {
-                            v.push(warn(tr_fmt!("Cable {} is a {} cable on a {} connection", cable.tag, cb.title(), b.title())));
+                            v.push(crate::issue!(Severity::Warning, None, "Cable {} is a {} cable on a {} connection", cable.tag, cb.title(), b.title()));
                         }
                     }
                 }
@@ -753,15 +752,15 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
             e.0 += 1;
             e.1 = e.1.max(bus.map(|b| b.cables_per_port()).unwrap_or(1));
             let Some(st) = hw.station(&p.station) else {
-                v.push(err(tr_fmt!("Bus connection to {}: the station does not exist", p)));
+                v.push(crate::issue!(Severity::Error, None, "Bus connection to {}: the station does not exist", p));
                 continue;
             };
             let list = ports(prj, st);
             match list.iter().find(|x| x.name == p.port) {
-                None => v.push(warn(tr_fmt!("{}: the station has no port {}", st.name, p.port))),
+                None => v.push(crate::issue!(Severity::Warning, None, "{}: the station has no port {}", st.name, p.port)),
                 Some(port) => {
                     if let Some(net) = hw.network(&c.network).filter(|n| n.kind != port.bus) {
-                        v.push(warn(tr_fmt!("{}: port {} is not a {} port", st.name, p.port, net.kind.title())));
+                        v.push(crate::issue!(Severity::Warning, None, "{}: port {} is not a {} port", st.name, p.port, net.kind.title()));
                     }
                 }
             }
@@ -773,7 +772,7 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         v.push(err(if *limit > 1 { tr_fmt!("Port {} has more than {} cables", p, limit) } else { tr_fmt!("Port {} is connected more than once", p) }));
     }
     for (cable, n) in cable_use.into_iter().filter(|(_, n)| *n > 1) {
-        v.push(warn(tr_fmt!("Cable {} is used for {} bus connections", cable, n)));
+        v.push(crate::issue!(Severity::Warning, None, "Cable {} is used for {} bus connections", cable, n));
     }
     v
 }

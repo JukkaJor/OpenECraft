@@ -214,7 +214,7 @@ fn emc_check(prj: &mut Project, _: &Args) -> Result<Value, String> {
         .iter()
         .map(|c| json!({ "cable": c.cable, "drive": c.drive, "analog": c.analog, "power": c.power, "signal": c.signal, "shielded": c.shielded, "shield_both_ends": c.both_ends }))
         .collect();
-    let problems: Vec<String> = emc::problems(prj, &an.netlist, &an.connections).into_iter().map(|i| i.message).collect();
+    let problems: Vec<String> = emc::problems(prj, &an.netlist, &an.connections).into_iter().map(|i| i.message()).collect();
     Ok(json!({ "cables": cables, "problems": problems }))
 }
 
@@ -327,7 +327,7 @@ fn verify_project(prj: &mut Project, _: &Args) -> Result<Value, String> {
             })
         })
         .collect();
-    let messages: Vec<String> = rules::problems(prj, &an.netlist, &an.connections).into_iter().map(|i| i.message).collect();
+    let messages: Vec<String> = rules::problems(prj, &an.netlist, &an.connections).into_iter().map(|i| i.message()).collect();
     Ok(json!({ "checks": checks, "failed_checks": failed, "problems": messages }))
 }
 

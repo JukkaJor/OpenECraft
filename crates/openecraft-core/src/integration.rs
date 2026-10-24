@@ -960,7 +960,7 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         if devices.is_empty() {
             continue;
         }
-        out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Part {} is {} in the PLM system (used by {})", number, link.lifecycle, devices.join(", ")), target: None });
+        out.push(crate::issue!(Severity::Warning, None, "Part {} is {} in the PLM system (used by {})", number, link.lifecycle, devices.join(", ")));
     }
     out
 }

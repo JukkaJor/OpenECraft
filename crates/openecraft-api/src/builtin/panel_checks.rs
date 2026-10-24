@@ -29,7 +29,7 @@ impl Plugin for PanelChecks {
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
         reg.check("panel_layout", tr_const!("Panel layout checks"), |prj, _| {
-            Ok(prj.layout.enclosures.iter().flat_map(|e| panel::validate(prj, e)).map(|f| Issue { severity: f.severity, message: f.message, target: None }).collect())
+            Ok(prj.layout.enclosures.iter().flat_map(|e| panel::validate(prj, e)).map(|f| Issue::plain(f.severity, f.message, None)).collect())
         })
         .command(
             "check_panel",

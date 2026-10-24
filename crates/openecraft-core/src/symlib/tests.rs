@@ -135,7 +135,7 @@ fn placed_user_symbols_work_like_built_in_ones() {
     let nl = Netlist::build(&back, true);
     assert_eq!(nl.unconnected.len(), 2);
     let an = Analysis::checked(&back);
-    assert!(!an.issues.iter().any(|i| i.message.contains("Unknown symbol")), "{:?}", an.issues.iter().map(|i| &i.message).collect::<Vec<_>>());
+    assert!(!an.issues.iter().any(|i| i.message().contains("Unknown symbol")), "{:?}", an.issues.iter().map(|i| i.message()).collect::<Vec<_>>());
 }
 
 #[test]

@@ -64,7 +64,7 @@ fn too_warm_enclosures_are_reported() {
     let mut prj = demo_project();
     prj.layout.enclosures[0].climate.extra_loss = 500.0;
     let an = crate::analysis::Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.message.contains("needed")));
+    assert!(an.issues.iter().any(|i| i.message().contains("needed")));
     let t = &an.report(&prj, crate::model::ReportKind::Climate).unwrap();
     assert_eq!(t.rows.len(), prj.layout.enclosures.len());
 }

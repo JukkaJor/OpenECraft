@@ -78,12 +78,12 @@ fn demo_ducts_in_check_and_report() {
     assert!(an.duct_fill.iter().all(|f| f.percent > 0.0 && f.percent < prj.layout.duct_fill_limit));
     let report = &an.report(&prj, crate::model::ReportKind::DuctFill).unwrap();
     assert_eq!(report.rows.len(), an.duct_fill.len());
-    assert!(!an.issues.iter().any(|i| i.message.contains("cable duct at")), "demo stays below the limit");
+    assert!(!an.issues.iter().any(|i| i.message().contains("cable duct at")), "demo stays below the limit");
 
     let fullest = an.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
     prj.layout.duct_fill_limit = fullest / 2.0;
     let an = Analysis::checked(&prj);
-    let warnings: Vec<&str> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| i.message.as_str()).filter(|m| m.contains("cable duct at")).collect();
+    let warnings: Vec<String> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| i.message()).filter(|m| m.contains("cable duct at")).collect();
     assert!(!warnings.is_empty());
     assert!(warnings[0].starts_with("+CAB1: cable duct at "), "{}", warnings[0]);
     assert!(warnings[0].ends_with(&format!("(limit {:.0} %)", fullest / 2.0)));

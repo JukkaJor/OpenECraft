@@ -98,16 +98,19 @@ column to the catalog and a `Lang` variant).
 - Write texts in English in the code and pass them through `openecraft_i18n`:
   `tr("Open")` for plain texts, `tr_fmt!("Saved {}", name)` for texts with `{}`
   placeholders (the translation may reorder with `{0}`, `{1}`), `tr_const!("…")` in
-  `const` / `static` tables (translate with `tr(…)` where the text is shown).
+  `const` / `static` tables (translate with `tr(…)` where the text is shown), and
+  `openecraft_core::issue!(severity, target, "Cable {} defined {} times", tag, n)` for
+  the issues of a check (the template and its arguments are kept, `Issue::message()`
+  translates where the issue is shown; plugin and generated texts use `Issue::plain`).
   Never build sentences from translated fragments (`"Macro " + tr("saved")`); translate
   the whole sentence, one catalog entry per variant.
 - Every English text needs a line in `crates/openecraft-i18n/src/catalog/extra.tsv`
   (`English<TAB>Deutsch<TAB>Français<TAB>Español`; `\n` and `\"` as in Rust source;
   `{}` placeholders must appear in every translation). `translations.tsv` holds the
   initial set. The catalog is checked by `cargo test`: all four languages present,
-  placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` and every
-  built-in symbol name is in the catalog, and all translated characters exist in the
-  bundled fonts.
+  placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` / `issue!`
+  and every built-in symbol name is in the catalog, and all translated characters exist
+  in the bundled fonts.
 - `application/conventions/tests.rs` fails for plain string literals passed to widgets
   (`ui.button("…")`, `.label("…")`, `.on_hover_text("…")`, `Window::new("…")`, …).
 - Translate at the point where the text is shown, so that switching the language in

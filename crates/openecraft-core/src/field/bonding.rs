@@ -6,7 +6,7 @@
 use super::Field;
 use crate::model::Project;
 use crate::issue::{Issue, Severity};
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::tr;
 use std::collections::HashMap;
 pub use crate::model::field::{Bond, BondKind};
 
@@ -131,30 +131,23 @@ fn mm2(s: &str) -> Option<f32> {
 pub fn problems(prj: &Project) -> Vec<Issue> {
     let f = &prj.field;
     let mut v = Vec::new();
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
     let known = names(prj);
     for b in &f.bonds {
         for end in [&b.a, &b.b] {
             if !known.iter().any(|(n, _)| n == end) {
-                v.push(warn(tr_fmt!("Bonding conductor {} refers to the unknown bonding point {}", b.id, end)));
+                v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} refers to the unknown bonding point {}", b.id, end));
             }
         }
         match mm2(&b.cross_section) {
-            Some(cs) if cs + 1e-3 < b.kind.minimum() => v.push(warn(tr_fmt!(
-                "Bonding conductor {} – {} has {} mm², at least {} mm² are required",
-                b.a,
-                b.b,
-                format!("{cs}"),
-                format!("{}", b.kind.minimum())
-            ))),
-            None if b.kind != BondKind::Functional => v.push(warn(tr_fmt!("Bonding conductor {} – {} has no cross-section", b.a, b.b))),
+            Some(cs) if cs + 1e-3 < b.kind.minimum() => v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} – {} has {} mm², at least {} mm² are required", b.a, b.b, format!("{cs}"), format!("{}", b.kind.minimum()))),
+            None if b.kind != BondKind::Functional => v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} – {} has no cross-section", b.a, b.b)),
             _ => {}
         }
     }
     // Only checked once bonding is planned at all.
     if !f.bonds.is_empty() {
         for p in points(prj).into_iter().filter(|p| !p.bonded) {
-            v.push(warn(tr_fmt!("{} ({}) is not connected to the equipotential bonding", p.name, p.kind.title())));
+            v.push(crate::issue!(Severity::Warning, None, "{} ({}) is not connected to the equipotential bonding", p.name, p.kind.title()));
         }
     }
     v

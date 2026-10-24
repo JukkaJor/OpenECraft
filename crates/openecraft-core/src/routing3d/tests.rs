@@ -38,12 +38,12 @@ fn field_cable_runs_to_its_gland() {
     assert_eq!((w1.kind, w1.class), (RouteKind::Cable, Class::Power));
     assert!(w1.routed(), "{:?}", w1.status);
     assert_eq!(w1.ends[0].tag, "-X1");
-    assert!(an.issues.iter().any(|i| i.message.contains("no cable gland")));
+    assert!(an.issues.iter().any(|i| i.message().contains("no cable gland")));
     let an = Analysis::checked(&demo_with_gland());
     let w1 = an.routing.item("-W1").unwrap();
     assert_eq!(w1.ends[1].tag, "-M1");
     assert!(w1.ends[1].item.is_some());
-    assert!(!an.issues.iter().any(|i| i.message.contains("no cable gland")));
+    assert!(!an.issues.iter().any(|i| i.message().contains("no cable gland")));
     // Length with both cable end reserves, cut length in steps of 100 mm.
     let rules = RoutingRules::default();
     assert!(w1.length > 2.0 * rules.cable_reserve);
@@ -112,7 +112,7 @@ fn frozen_routes_survive_recalculation_until_invalid() {
     let an = Analysis::checked(&prj);
     let again = an.routing.item("-W1").unwrap();
     assert!(matches!(again.status, Status::Rerouted | Status::Unrouted(_)), "{:?}", again.status);
-    assert!(an.issues.iter().any(|i| i.message.contains("Frozen route of -W1")));
+    assert!(an.issues.iter().any(|i| i.message().contains("Frozen route of -W1")));
     // Moving the terminal strip changes the length of its wires: a change against the
     // frozen length.
     prj.layout.enclosures[0].reservations.clear();
@@ -120,7 +120,7 @@ fn frozen_routes_survive_recalculation_until_invalid() {
     prj.layout.enclosures[0].items[x1].x += 200.0;
     let an = Analysis::checked(&prj);
     assert!(!an.routing.changes.is_empty());
-    assert!(an.issues.iter().any(|i| i.message.contains("frozen routes changed")));
+    assert!(an.issues.iter().any(|i| i.message().contains("frozen routes changed")));
     // Released routes are calculated afresh.
     assert_eq!(release(&mut prj, &["-W1".to_string()]), 1);
     assert!(prj.layout.frozen.iter().all(|f| f.key != "-W1"));

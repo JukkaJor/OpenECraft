@@ -184,7 +184,7 @@ pub fn hardware_json(prj: &Project) -> Value {
             "length_m": c.length,
             "connections": plc_hw::cable_links(prj, &c.tag).len(),
         })).collect::<Vec<_>>(),
-        "problems": plc_hw::problems(prj).into_iter().map(|i| i.message).collect::<Vec<_>>(),
+        "problems": plc_hw::problems(prj).into_iter().map(|i| i.message()).collect::<Vec<_>>(),
     })
 }
 

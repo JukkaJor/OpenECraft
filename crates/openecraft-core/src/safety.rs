@@ -248,17 +248,13 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         let e = evaluate(prj, f);
         for s in &e.subsystems {
             for p in &s.problems {
-                out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Safety function {}: {}", f.name, p), target: None });
+                out.push(crate::issue!(Severity::Warning, None, "Safety function {}: {}", f.name, p));
             }
         }
         match e.achieved {
-            Some(a) if a < f.required => out.push(Issue {
-                severity: Severity::Error,
-                message: tr_fmt!("Safety function {} reaches PL {}, PL {} is required", f.name, a.title(), f.required.title()),
-                target: None,
-            }),
+            Some(a) if a < f.required => out.push(crate::issue!(Severity::Error, None, "Safety function {} reaches PL {}, PL {} is required", f.name, a.title(), f.required.title())),
             None if f.subsystems.is_empty() => {
-                out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Safety function {} has no subsystems", f.name), target: None })
+                out.push(crate::issue!(Severity::Warning, None, "Safety function {} has no subsystems", f.name))
             }
             _ => {}
         }

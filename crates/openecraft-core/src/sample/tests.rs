@@ -16,7 +16,7 @@ fn demo_is_consistent() {
     let lamp = prj.pages[2].symbols.iter().find(|s| s.tag == "-P1").unwrap();
     let net = an.netlist.pin_net[&(lamp.id, 1)];
     assert_eq!(an.netlist.nets[net].name, "0V");
-    let warnings: Vec<_> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| &i.message).collect();
+    let warnings: Vec<_> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| i.message()).collect();
     assert!(warnings.is_empty(), "{warnings:#?}");
     // Unused contacts of contactor + auxiliary block are reserves (2 NC of the block).
     let reserve = crate::parts::reserve_functions(&prj, None, "-K1");

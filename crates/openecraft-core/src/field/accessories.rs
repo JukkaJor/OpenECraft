@@ -7,7 +7,7 @@
 use super::Plan;
 use crate::model::Project;
 use crate::issue::{Issue, Severity};
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::tr;
 use std::collections::BTreeMap;
 pub use crate::model::field::{Accessory, AccessoryKind};
 
@@ -101,10 +101,9 @@ pub fn clamping_range(prj: &Project, part: &str) -> Option<(f32, f32)> {
 /// cables without a shield contact at an enclosure end where the shield is connected.
 pub fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
     let mut v = Vec::new();
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
     for a in &prj.field.accessories {
         let Some(c) = prj.cable(&a.cable) else {
-            v.push(warn(tr_fmt!("Accessory {} refers to the unknown cable {}", a.kind.title(), a.cable)));
+            v.push(crate::issue!(Severity::Warning, None, "Accessory {} refers to the unknown cable {}", a.kind.title(), a.cable));
             continue;
         };
         if !a.kind.clamps() {
@@ -113,11 +112,7 @@ pub fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
         let Some((min, max)) = clamping_range(prj, &a.part) else { continue };
         let d = crate::routing3d::cable_diameter(c);
         if d < min || d > max {
-            v.push(Issue {
-                severity: Severity::Error,
-                message: tr_fmt!("Cable {} ({} mm) does not fit the clamping range of {} ({}–{} mm)", c.tag, format!("{d:.1}"), a.part, format!("{min}"), format!("{max}")),
-                target: None,
-            });
+            v.push(crate::issue!(Severity::Error, None, "Cable {} ({} mm) does not fit the clamping range of {} ({}–{} mm)", c.tag, format!("{d:.1}"), a.part, format!("{min}"), format!("{max}")));
         }
     }
     for fc in plan.cables.iter().filter(|c| c.shielded && c.routed()) {
@@ -129,7 +124,7 @@ pub fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
             let tag = &fc.ends[k];
             let contact = prj.field.accessories.iter().any(|a| a.cable == fc.cable && a.at_end(tag) && a.kind.contacts_shield());
             if !contact {
-                v.push(warn(tr_fmt!("Shielded cable {} has no EMC gland, shield clamp or connector at {}", fc.cable, tag)));
+                v.push(crate::issue!(Severity::Warning, None, "Shielded cable {} has no EMC gland, shield clamp or connector at {}", fc.cable, tag));
             }
         }
     }

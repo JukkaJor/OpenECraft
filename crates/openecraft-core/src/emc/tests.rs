@@ -3,7 +3,7 @@ use crate::analysis::Analysis;
 use crate::testkit::Kit;
 
 fn messages(k: &Kit) -> Vec<String> {
-    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message()).collect()
 }
 
 /// L1 L2 L3 → frequency converter -T1 → cable -W1 → motor -M1.

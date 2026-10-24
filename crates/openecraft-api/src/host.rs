@@ -162,7 +162,7 @@ impl Plugins {
         for c in self.checks() {
             match (c.run)(prj, an) {
                 Ok(found) => issues.extend(found),
-                Err(e) => issues.push(Issue { severity: Severity::Error, message: tr_fmt!("Check {} failed: {}", c.name, e), target: None }),
+                Err(e) => issues.push(openecraft_core::issue!(Severity::Error, None, "Check {} failed: {}", c.name, e)),
             }
         }
         issues

@@ -5,7 +5,6 @@
 //! supplies (control voltage). Data from the parts: `Power`, `Current`, tech data
 //! `Power factor`, `Efficiency`, `Coil power`, `Current consumption`.
 
-use openecraft_i18n::tr_fmt;
 use crate::electrical::{circuits, mains, value_with_unit};
 use crate::model::*;
 use crate::netlist::Netlist;
@@ -369,34 +368,22 @@ pub fn problems(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     let mut out = Vec::new();
     for f in &calc.feeders {
         if f.current > f.rated * usable + 0.01 {
-            out.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: load {} A above the usable {} A", f.device, format!("{:.1}", f.current), format!("{:.1}", f.rated * usable)),
-                target: Some(f.target),
-            });
+            out.push(crate::issue!(Severity::Warning, Some(f.target), "{}: load {} A above the usable {} A", f.device, format!("{:.1}", f.current), format!("{:.1}", f.rated * usable)));
         }
     }
     let rated = prj.electrical.supply.rated_current;
     if rated > 0.0 && calc.demand_current > rated * usable + 0.01 {
-        out.push(Issue {
-            severity: Severity::Warning,
-            message: tr_fmt!("Demand {} A above the usable {} A of the supply", format!("{:.1}", calc.demand_current), format!("{:.1}", rated * usable)),
-            target: None,
-        });
+        out.push(crate::issue!(Severity::Warning, None, "Demand {} A above the usable {} A of the supply", format!("{:.1}", calc.demand_current), format!("{:.1}", rated * usable)));
     }
     if limits.max_unbalance > 0.0 && calc.unbalance > limits.max_unbalance {
-        out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Phase unbalance {} % above {} %", format!("{:.0}", calc.unbalance), limits.max_unbalance), target: None });
+        out.push(crate::issue!(Severity::Warning, None, "Phase unbalance {} % above {} %", format!("{:.0}", calc.unbalance), limits.max_unbalance));
     }
     for b in &calc.budgets {
         if b.current > b.rated * usable + 1e-3 {
-            out.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: load {} A above the usable {} A of the power supply", b.device, format!("{:.2}", b.current), format!("{:.2}", b.rated * usable)),
-                target: Some(b.target),
-            });
+            out.push(crate::issue!(Severity::Warning, Some(b.target), "{}: load {} A above the usable {} A of the power supply", b.device, format!("{:.2}", b.current), format!("{:.2}", b.rated * usable)));
         }
         if !b.without_data.is_empty() {
-            out.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: no consumption data for {}", b.device, b.without_data.join(", ")), target: Some(b.target) });
+            out.push(crate::issue!(Severity::Info, Some(b.target), "{}: no consumption data for {}", b.device, b.without_data.join(", ")));
         }
     }
     out

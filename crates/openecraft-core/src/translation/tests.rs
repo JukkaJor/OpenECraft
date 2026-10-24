@@ -45,7 +45,7 @@ fn dictionary_is_collected_and_cleaned() {
     prj.languages.dictionary.insert("old text".into(), BTreeMap::new());
     assert_eq!(remove_unused(&mut prj), 1);
     let an = crate::analysis::Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.message.contains("not translated into Deutsch")));
+    assert!(an.issues.iter().any(|i| i.message().contains("not translated into Deutsch")));
 }
 
 #[test]

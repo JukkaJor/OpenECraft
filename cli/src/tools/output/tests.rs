@@ -64,3 +64,13 @@ fn every_built_in_report_is_listed_and_accepted() {
     }
     assert!(names.contains(&"project_statistics".to_string()), "plugin reports are listed");
 }
+
+#[test]
+fn check_reports_the_template_and_arguments_of_an_issue() {
+    let mut s = new_session();
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100, "tag": "-K1" })).unwrap();
+    let c = run(&mut s, "check", json!({})).unwrap();
+    let issue = c["issues"].as_array().unwrap().iter().find(|i| i["args"][0] == "-K1").unwrap_or_else(|| panic!("{c}"));
+    assert!(issue["key"].as_str().unwrap().contains("{}"), "{issue}");
+    assert!(issue["message"].as_str().unwrap().starts_with("-K1"), "{issue}");
+}

@@ -91,10 +91,18 @@ fn literal_after(src: &str, from: usize) -> Option<(&str, usize)> {
     Some((&rest[start + 1..end], from + end + 1))
 }
 
-/// All texts passed to `tr("…")`, `tr_fmt!("…"`, `tr_const!("…")` and the names of the
-/// built-in symbols in `symbols.rs`.
+/// All texts passed to `tr("…")`, `tr_fmt!("…"`, `tr_const!("…")`, the templates of
+/// `issue!(severity, target, "…")` and the names of the built-in symbols in `symbols.rs`.
 fn texts_in_source(src: &str, is_symbols: bool) -> Vec<String> {
     let mut out = Vec::new();
+    // the template of an issue follows the severity and the target
+    let mut at = 0;
+    while let Some(i) = src[at..].find("issue!(") {
+        at += i + "issue!(".len();
+        if let Some((text, _)) = literal_after(src, at) {
+            out.push(unescape(text));
+        }
+    }
     for marker in ["tr(", "tr_fmt!(", "tr_const!("] {
         let mut at = 0;
         while let Some(i) = src[at..].find(marker) {

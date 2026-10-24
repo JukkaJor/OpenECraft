@@ -54,7 +54,7 @@ fn round_trip_into_an_empty_configuration() {
         assert_eq!((&a.station, &a.rack, &a.slot, a.start_byte, a.output_byte), (&b.station, &b.rack, &b.slot, b.start_byte, b.output_byte));
     }
     assert!(copy.plc.descriptions.is_empty(), "all order numbers are known");
-    assert!(plc_hw::problems(&copy).is_empty(), "{:?}", plc_hw::problems(&copy).iter().map(|i| &i.message).collect::<Vec<_>>());
+    assert!(plc_hw::problems(&copy).is_empty(), "{:?}", plc_hw::problems(&copy).iter().map(|i| i.message()).collect::<Vec<_>>());
 }
 
 #[test]

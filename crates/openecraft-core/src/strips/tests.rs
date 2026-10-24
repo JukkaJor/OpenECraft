@@ -207,7 +207,7 @@ fn jumper_problems() {
     let mut prj = demo_project();
     jumper(&mut prj, 1, &["3", "PE"]);
     let an = crate::analysis::Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.message == "-X1: jumper 1 crosses an end plate or end bracket"));
+    assert!(an.issues.iter().any(|i| i.message() == "-X1: jumper 1 crosses an end plate or end bracket"));
 }
 
 #[test]

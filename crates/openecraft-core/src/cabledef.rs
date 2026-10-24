@@ -1,6 +1,5 @@
 //! Cable definition lines: a line drawn across wires makes them cores of a cable.
 
-use openecraft_i18n::tr_fmt;
 use crate::geom::P;
 use crate::model::*;
 use crate::issue::{Issue, Severity};
@@ -120,9 +119,9 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         for def in &pg.cable_defs {
             let target = Some((pi, def.id));
             if prj.cable(&def.cable).is_none() {
-                v.push(Issue { severity: Severity::Error, message: tr_fmt!("Cable definition on page {} refers to the unknown cable {}", pg.name, def.cable), target });
+                v.push(crate::issue!(Severity::Error, target, "Cable definition on page {} refers to the unknown cable {}", pg.name, def.cable));
             } else if crossed_wires(pg, def.a, def.b).is_empty() {
-                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Cable definition {} on page {} crosses no wire", def.cable, pg.name), target });
+                v.push(crate::issue!(Severity::Warning, target, "Cable definition {} on page {} crosses no wire", def.cable, pg.name));
             }
         }
     }

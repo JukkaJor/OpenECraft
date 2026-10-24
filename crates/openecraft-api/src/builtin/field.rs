@@ -402,7 +402,7 @@ fn plan(prj: &mut Project, a: &Args) -> Result<Value, String> {
         .collect();
     let bonding: Vec<Value> = field::bonding::points(prj).into_iter().map(|b| json!({ "point": b.name, "kind": b.kind.title(), "bonded": b.bonded })).collect();
     let material: Vec<Value> = field::material(prj).into_iter().map(|(part, qty, used)| json!({ "part": part, "quantity": qty, "used_by": used })).collect();
-    let problems: Vec<&str> = p.issues.iter().map(|i| i.message.as_str()).collect();
+    let problems: Vec<String> = p.issues.iter().map(|i| i.message()).collect();
     Ok(json!({ "cables": cables, "segments": segments, "islands": p.islands, "bonding": bonding, "material": material, "problems": problems, "applied": applied }))
 }
 

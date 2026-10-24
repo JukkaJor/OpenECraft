@@ -11,6 +11,25 @@ API, both servers, both clients and the parts manager; built an intra-crate depe
 map of `openecraft-core` from its `use crate::…` lines; scanned function lengths and
 git change frequency.
 
+## Status (2026-10-24)
+
+All seven phases were carried out on the branch `worktree-refactoring`, one commit per
+phase; the three gate commands pass after each.
+
+| Phase | Commit | Result |
+| --- | --- | --- |
+| 0, 1 | ddc6d88 | Layer test `CORE_RULES`, `too_many_lines` limit, `docs/architecture.md`; `Shared<T>` for part models and embedded documents, report tables built on demand (`Analysis::report`), help text fixed. Not done: the whole-tree `cargo fmt` (decision in architecture.md); 1d is superseded by phase 5. |
+| 2a-2d | 45e7ef0, bcb427a, 2d8d78d, 28e6d99 | Registry kinds, parameters and tables in `openecraft_core::{ext, params, table}`; the built-in checks, exporters and reports are registry entries published by built-in plugins; reports are addressed by name (`ReportId`, file format 2 with a conversion step). |
+| 3a-3d | f46dd17, 229688a | Project data in `model/<feature>.rs`, logic in the feature modules; `Analysis` and `Issue` in modules of their own; the whole module graph pinned in `CORE_RULES` (8 layers, upward edges listed). No crate split: a clean `cargo check` of core takes 16 s. |
+| 4 | e5f053f | `Session` (document state, undo, analysis refresh, tested) apart from `App`; `app.rs` is the composition root, menus, files, tool bar, navigator, property panel and windows are modules of their own; the editor imports core modules explicitly. Not done: 4e (`panel_ui` split) and the full dialog-state conversion of 4c. |
+| 5 | dad56fe | `Project::symbol` / `symbol_table()` with a per-project `SymbolCache` instead of `symlib::register`: no leaking registry, no per-frame registration, `SymbolRef` for built-in and user definitions. |
+| 6 | a3f0559 | 151 project tools of the command line are commands of 23 built-in area plugins (`crates/openecraft-api/src/builtin/<area>.rs`, tested through `builtin::testing`); the command line keeps the tools that need the session or the machine, the editor's Plugins menu has one submenu per plugin. Kept in the command line on purpose: `add_page`, `set_report_block` and `set_report_scheme`, which validate report names against the registry a command cannot see. |
+| 7 | see git log | `Issue` carries a template with its arguments (`issue!`, `Issue::message()` renders it in the current language) or a plain text; the built-in checks use templates, plugin and generated texts stay plain, the `check` tool reports `key` and `args`. Not converted: problem lists that return strings (`plugs`, `structure`, `singleline`, `fluid`, `electrofluid`, `process`) and messages assembled before the issue is built. |
+
+Of the open questions below, 1 and 3 are answered by the decisions in
+`docs/architecture.md`, 2 was done (format 2 with conversion), 4 stays open: the Plugins
+menu groups the commands by plugin, a command palette would be the next step.
+
 ## 1. Summary
 
 The architecture is sound in its large shape and the project is unusually well guarded

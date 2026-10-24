@@ -32,7 +32,7 @@ and the registry kinds, parameters and tables are defined in
 
 ```rust
 use openecraft_api::{param, Info, Kind, Plugin, Registry, Table, Text};
-use openecraft_core::reports::Issue;
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_const;
 
 pub struct Spares;
@@ -47,7 +47,7 @@ impl Plugin for Spares {
             // change `prj`, return JSON
             Ok(serde_json::json!({ "part": args.req("number") }))
         })
-        .check("spares_missing", tr_const!("Spare parts"), |prj, analysis| Ok(Vec::<Issue>::new()))
+        .check("spares_missing", tr_const!("Spare parts"), |prj, analysis| Ok(vec![Issue::plain(Severity::Info, "nothing missing", None)]))
         .report("spares", tr_const!("Spare parts"), |prj, analysis| Ok(Table::new([tr_const!("Part")])))
         .exporter("spares_csv", tr_const!("Spare parts (CSV)"), "csv", |prj| Ok(String::new()));
         Ok(())
@@ -56,7 +56,11 @@ impl Plugin for Spares {
 ```
 
 Texts given as `&'static str` are English catalog entries (`tr_const!`, see AGENTS.md)
-and are shown translated.
+and are shown translated. Issues of a check carry either a finished text
+(`Issue::plain`) or, like the built-in checks, a catalog entry with its arguments
+(`openecraft_core::issue!(Severity::Warning, target, "Cable {} defined {} times", tag, n)`),
+which `Issue::message()` renders in the current language; the `check` tool reports the
+template as `key` next to the message.
 
 ## External plugins
 

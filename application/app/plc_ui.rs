@@ -102,7 +102,7 @@ impl App {
                 ui.separator();
                 egui::ScrollArea::vertical().id_salt("plcproblems").max_height(footer).show(ui, |ui| {
                     for p in problems {
-                        ui.colored_label(ui.visuals().warn_fg_color, format!("⚠ {}", p.message));
+                        ui.colored_label(ui.visuals().warn_fg_color, format!("⚠ {}", p.message()));
                     }
                 });
             }

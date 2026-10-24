@@ -202,12 +202,12 @@ fn r1(v: f32) -> f32 {
 /// Problems for the project check: work the machines cannot do, copper bars, programs
 /// changed after their hand-off, and the production feedback.
 fn issues(prj: &Project) -> Vec<Issue> {
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
+    let warn = |message: String| Issue::plain(Severity::Warning, message, None);
     let mut v: Vec<Issue> = Vec::new();
     let m = &prj.layout.manufacturing;
     for enc in 0..prj.layout.enclosures.len() {
         match handoff::programs(prj, enc) {
-            Ok(list) => v.extend(list.into_iter().flat_map(|p| p.problems).map(|message| Issue { severity: Severity::Info, message, target: None })),
+            Ok(list) => v.extend(list.into_iter().flat_map(|p| p.problems).map(|message| Issue::plain(Severity::Info, message, None))),
             Err(e) => v.push(warn(e)),
         }
     }

@@ -4,7 +4,6 @@
 //! the supply. Segregation of the routes and the termination of shields are checked
 //! by the 3D routing ([`crate::routing3d`]).
 
-use openecraft_i18n::{tr, tr_fmt};
 use crate::electrical::{mains, net_kind};
 use crate::model::*;
 use crate::netlist::{Connection, Netlist};
@@ -75,25 +74,24 @@ pub fn classes(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<CableCl
 pub fn problems(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<Issue> {
     let limits = crate::rules::limits(prj);
     let mut out = Vec::new();
-    let mut warn = |message| out.push(Issue { severity: Severity::Warning, message, target: None });
     for c in classes(prj, nl, conns) {
         if let (Some(d), true) = (&c.drive, limits.shield_drive_cables) {
             if !c.shielded {
-                warn(tr_fmt!("Motor cable {} of frequency converter {} must be shielded", c.cable, d));
+                out.push(crate::issue!(Severity::Warning, None, "Motor cable {} of frequency converter {} must be shielded", c.cable, d));
             } else if !c.both_ends {
-                warn(tr_fmt!("Shield of motor cable {} must be connected at both ends", c.cable));
+                out.push(crate::issue!(Severity::Warning, None, "Shield of motor cable {} must be connected at both ends", c.cable));
             }
         }
         if limits.shield_analog_cables && !c.analog.is_empty() && !c.shielded {
-            warn(tr_fmt!("Cable {} carries analogue signals of {} and must be shielded", c.cable, c.analog.iter().cloned().collect::<Vec<_>>().join(", ")));
+            out.push(crate::issue!(Severity::Warning, None, "Cable {} carries analogue signals of {} and must be shielded", c.cable, c.analog.iter().cloned().collect::<Vec<_>>().join(", ")));
         }
         if c.power && c.signal {
-            warn(tr_fmt!("Cable {} carries power and signal conductors together", c.cable));
+            out.push(crate::issue!(Severity::Warning, None, "Cable {} carries power and signal conductors together", c.cable));
         }
     }
     let has_spd = prj.pages.iter().flat_map(|p| p.symbols.iter()).any(|s| kind_of_symbol(&s.sym) == Some(FnKind::SurgeProtection));
     if limits.surge_protection && !has_spd && !mains(prj, nl).is_empty() {
-        warn(tr("No surge protective device at the supply (IEC 60364-4-44)").to_string());
+        out.push(crate::issue!(Severity::Warning, None, "No surge protective device at the supply (IEC 60364-4-44)"));
     }
     out
 }

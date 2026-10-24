@@ -26,7 +26,7 @@ fn faults_of(k: &Kit) -> Vec<Fault> {
 }
 
 fn messages(k: &Kit) -> Vec<String> {
-    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message()).collect()
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn selectivity_with_the_device_upstream() {
     assert_eq!(s.len(), 1);
     assert_eq!((s[0].upstream.as_str(), s[0].downstream.as_str()), ("-F0", "-F1"));
     assert!(!s[0].is_total());
-    let partial = |an: &Analysis| an.issues.iter().find(|i| i.message.starts_with("-F1 is selective to -F0 only up to")).map(|i| i.severity);
+    let partial = |an: &Analysis| an.issues.iter().find(|i| i.message().starts_with("-F1 is selective to -F0 only up to")).map(|i| i.severity);
     assert_eq!(partial(&an), Some(Severity::Info));
     assert_eq!(an.report(&k.prj, ReportKind::Selectivity).unwrap().rows.len(), 1);
     // A customer rule set asks for total selectivity.

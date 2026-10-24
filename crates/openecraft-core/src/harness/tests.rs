@@ -20,7 +20,7 @@ fn door_harness_of_the_demo() {
     // Report and check.
     let t = &an.report(&prj, crate::model::ReportKind::HarnessData).unwrap();
     assert_eq!(t.rows.len(), ws.len() + 1);
-    assert!(!an.issues.iter().any(|i| i.message.contains("harness")));
+    assert!(!an.issues.iter().any(|i| i.message().contains("harness")));
 }
 
 #[test]
@@ -87,11 +87,11 @@ fn renamed_devices_keep_and_stale_assignments_are_reported() {
     prj.harnesses[0].connections.push(key("-X9:1", "-K9:A1"));
     let an = Analysis::checked(&prj);
     assert_eq!(stale(&prj, &an), vec![("-WH1".to_string(), key("-K9:A1", "-X9:1"))]);
-    assert!(an.issues.iter().any(|i| i.message.contains("-K9:A1 – -X9:1 does not exist")));
+    assert!(an.issues.iter().any(|i| i.message().contains("-K9:A1 – -X9:1 does not exist")));
     // A harness without connections.
     prj.harnesses.push(Harness { id: 999, tag: "-WH2".into(), ..Default::default() });
     let an = Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.message == "Harness -WH2 has no wires"));
+    assert!(an.issues.iter().any(|i| i.message() == "Harness -WH2 has no wires"));
 }
 
 #[test]

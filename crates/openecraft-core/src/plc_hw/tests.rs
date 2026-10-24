@@ -7,7 +7,7 @@ fn addresses(prj: &Project) -> Vec<(String, String)> {
 }
 
 fn messages(prj: &Project) -> Vec<String> {
-    problems(prj).into_iter().map(|i| i.message).collect()
+    problems(prj).into_iter().map(|i| i.message()).collect()
 }
 
 #[test]

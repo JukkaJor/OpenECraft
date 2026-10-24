@@ -44,7 +44,7 @@ fn props(prj: &Project, wire: u64) -> WireProps {
 }
 
 fn messages(prj: &Project) -> Vec<(Severity, String)> {
-    Analysis::checked(prj).issues.into_iter().map(|i| (i.severity, i.message)).collect()
+    Analysis::checked(prj).issues.into_iter().map(|i| (i.severity, i.message())).collect()
 }
 
 #[test]

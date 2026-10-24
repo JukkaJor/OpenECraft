@@ -30,7 +30,7 @@ fn check_is_part_of_the_project_check() {
     copy.tag = "-K9".into();
     e.items.push(copy);
     let issues = p.check(&prj, &Analysis::build(&prj));
-    assert!(issues.iter().any(|i| i.severity == Severity::Warning && i.message.contains("-K9")), "{issues:?}");
+    assert!(issues.iter().any(|i| i.severity == Severity::Warning && i.message().contains("-K9")), "{issues:?}");
 }
 
 #[test]

@@ -195,7 +195,7 @@ impl App {
                         };
                         ui.horizontal_wrapped(|ui| {
                             ui.label(RichText::new(icon).color(color));
-                            let r = ui.add(egui::Label::new(&issue.message).sense(egui::Sense::click()));
+                            let r = ui.add(egui::Label::new(issue.message()).sense(egui::Sense::click()));
                             if r.on_hover_text(tr("Click to show")).clicked() {
                                 jump = issue.target;
                             }

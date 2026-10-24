@@ -84,7 +84,7 @@ fn route_definition_forces_via_points_and_avoids_segments() {
     prj.field.route_mut("-W1").avoid.push(s[1]);
     let plan = planned(&prj);
     assert_eq!(plan.cable("-W1").unwrap().status, Status::NoPath);
-    assert!(plan.issues.iter().any(|i| i.severity == Severity::Error && i.message.contains("-W1")));
+    assert!(plan.issues.iter().any(|i| i.severity == Severity::Error && i.message().contains("-W1")));
 }
 
 #[test]
@@ -103,7 +103,7 @@ fn classes_fill_and_dividers() {
     prj.field.remove_segment(s[2]);
     let plan = planned(&prj);
     assert_eq!(plan.cable("-W1").unwrap().segments, vec![s[0], s[1]]);
-    assert!(plan.issues.iter().any(|i| i.message.contains("T1") && i.message.contains("%")));
+    assert!(plan.issues.iter().any(|i| i.message().contains("T1") && i.message().contains("%")));
     // A shielded cable is a signal cable: with power in the same tray it needs a divider.
     let mut w2 = prj.cables[0].clone();
     w2.tag = "-W2".into();
@@ -117,11 +117,11 @@ fn classes_fill_and_dividers() {
     t.width = 0.0;
     let plan = planned(&prj);
     assert_eq!(plan.segment(s[0]).unwrap().classes, Class::Power.bit() | Class::Signal.bit());
-    assert!(plan.issues.iter().any(|i| i.message.contains("divider")));
+    assert!(plan.issues.iter().any(|i| i.message().contains("divider")));
     for x in prj.field.segments.iter_mut().filter(|x| x.id == s[0] || x.id == s[1]) {
         x.divider = true;
     }
-    assert!(!planned(&prj).issues.iter().any(|i| i.message.contains("divider")));
+    assert!(!planned(&prj).issues.iter().any(|i| i.message().contains("divider")));
 }
 
 #[test]
@@ -133,9 +133,9 @@ fn drag_chain_bend_radius() {
     let plan = planned(&prj);
     let need = plan.cable("-W1").unwrap().diameter * prj.field.rules.bend_factor;
     assert!(need > 50.0);
-    assert!(plan.issues.iter().any(|i| i.severity == Severity::Error && i.message.contains("bend radius")));
+    assert!(plan.issues.iter().any(|i| i.severity == Severity::Error && i.message().contains("bend radius")));
     prj.field.segments.iter_mut().find(|x| x.id == s[1]).unwrap().bend_radius = need + 1.0;
-    assert!(!planned(&prj).issues.iter().any(|i| i.message.contains("bend radius")));
+    assert!(!planned(&prj).issues.iter().any(|i| i.message().contains("bend radius")));
 }
 
 #[test]
@@ -144,14 +144,14 @@ fn unplaced_ends_and_broken_references() {
     prj.field.places.retain(|p| p.tag != "-M1");
     let plan = planned(&prj);
     assert_eq!(plan.cable("-W1").unwrap().status, Status::NotPlaced("-M1".into()));
-    assert!(plan.issues.iter().any(|i| i.message.contains("-M1")));
+    assert!(plan.issues.iter().any(|i| i.message().contains("-M1")));
     // A machine location places all its devices.
     prj.field.places.push(Place { tag: "+M1".into(), node: n[2], drop: 0.0 });
     assert_eq!(place_of(&prj, "+M1-M1"), Some((1, false)));
     assert_eq!(place_of(&prj, "-M1"), None);
     prj.field.route_mut("-W9").via.push(999);
     prj.field.places.push(Place { tag: "-Q9".into(), node: 998, drop: 0.0 });
-    let msgs: Vec<String> = planned(&prj).issues.into_iter().map(|i| i.message).collect();
+    let msgs: Vec<String> = planned(&prj).issues.into_iter().map(|i| i.message()).collect();
     assert!(msgs.iter().any(|m| m.contains("-W9")));
     assert!(msgs.iter().any(|m| m.contains("998")));
 }
@@ -184,7 +184,7 @@ fn bonding_points_and_conductors() {
     let pts = bonding::points(&prj);
     // T1 meets L1 and L2 at nodes: tray continuity bonds the ladders.
     assert!(pts.iter().filter(|p| p.name != "+M1").all(|p| p.bonded));
-    let msgs: Vec<String> = bonding::problems(&prj).into_iter().map(|i| i.message).collect();
+    let msgs: Vec<String> = bonding::problems(&prj).into_iter().map(|i| i.message()).collect();
     assert_eq!(msgs.len(), 2, "{msgs:?}");
     assert!(msgs.iter().any(|m| m.contains("4 mm²") && m.contains("6 mm²")));
     assert!(msgs.iter().any(|m| m.contains("+M1")));
@@ -192,7 +192,7 @@ fn bonding_points_and_conductors() {
     assert!(!bonding::points(&prj).iter().find(|p| p.name == "L1").unwrap().bonded);
     prj.field.rules.continuity = true;
     prj.field.bonds.push(Bond { id: 3, a: "+M1".into(), b: "L9".into(), kind: BondKind::Supplementary, cross_section: "2.5".into(), ..Default::default() });
-    assert!(bonding::problems(&prj).iter().any(|i| i.message.contains("L9")));
+    assert!(bonding::problems(&prj).iter().any(|i| i.message().contains("L9")));
     let report = &Analysis::checked(&prj).report(&prj, ReportKind::Bonding).unwrap();
     assert_eq!(report.rows.len(), 3 + names.len());
     assert!(material(&prj).iter().any(|(p, q, _)| p == "H07V-K 16" && *q == 3.0));
@@ -210,18 +210,18 @@ fn accessories_material_glands_and_shields() {
     assert!(m.contains(&("SR-1".to_string(), 2.0, vec!["-W1".to_string()])));
     assert!(m.contains(&("GEN.GLAND-M32".to_string(), 1.0, vec!["-W1".to_string()])));
     let plan = planned(&prj);
-    let misfit = plan.issues.iter().any(|i| i.message.contains("clamping range"));
+    let misfit = plan.issues.iter().any(|i| i.message().contains("clamping range"));
     assert_eq!(misfit, !(13.0..=21.0).contains(&d));
     // A shielded cable needs a shield contact at its enclosure end only.
     prj.cables[0].shielded = Some(true);
     let plan = planned(&prj);
-    let shield: Vec<&Issue> = plan.issues.iter().filter(|i| i.message.contains("Shielded cable")).collect();
+    let shield: Vec<&Issue> = plan.issues.iter().filter(|i| i.message().contains("Shielded cable")).collect();
     assert_eq!(shield.len(), 1);
-    assert!(shield[0].message.contains("-X1"));
+    assert!(shield[0].message().contains("-X1"));
     prj.field.accessories[1].kind = AccessoryKind::EmcGland;
-    assert!(!planned(&prj).issues.iter().any(|i| i.message.contains("Shielded cable")));
+    assert!(!planned(&prj).issues.iter().any(|i| i.message().contains("Shielded cable")));
     prj.field.accessories.push(Accessory { id: 3, cable: "-W7".into(), kind: AccessoryKind::Marker, ..Default::default() });
-    assert!(planned(&prj).issues.iter().any(|i| i.message.contains("-W7")));
+    assert!(planned(&prj).issues.iter().any(|i| i.message().contains("-W7")));
 }
 
 #[test]

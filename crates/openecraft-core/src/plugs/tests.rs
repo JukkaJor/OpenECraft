@@ -76,7 +76,7 @@ fn male_and_female_pins_of_one_designation_are_mated() {
     let msgs: Vec<String> = problems(&prj).into_iter().map(|x| x.0).collect();
     assert_eq!(msgs, vec!["-X10: pin 1 placed 2 times".to_string()]);
     let an = Analysis::checked(&prj);
-    assert!(!an.issues.iter().any(|i| i.message.contains("used more than once")));
+    assert!(!an.issues.iter().any(|i| i.message().contains("used more than once")));
 }
 
 #[test]
@@ -109,9 +109,9 @@ fn more_pins_than_the_parts_have_are_reported() {
     sym(&mut prj, "plug_pair", 140.0, 100.0, "-X10", "2");
     assign(&mut prj, "-X10", plug_part("ACME.PLUG1", 1));
     let an = Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.message == "-X10: 2 pins used, the plug parts have 1"));
+    assert!(an.issues.iter().any(|i| i.message() == "-X10: 2 pins used, the plug parts have 1"));
     // The generic function template check leaves plug pins to this one.
-    assert!(!an.issues.iter().any(|i| i.message.contains("Plug pin")));
+    assert!(!an.issues.iter().any(|i| i.message().contains("Plug pin")));
 }
 
 #[test]

@@ -64,7 +64,7 @@ fn issues(prj: &Project) -> Vec<Issue> {
                 (_, true) => tr_fmt!("{}: part {} is being phased out", tag, number),
                 (_, false) => tr_fmt!("{}: part {} is being phased out, successor {}", tag, number, successor),
             };
-            out.push(Issue { severity, message, target: None });
+            out.push(Issue::plain(severity, message, None));
         }
     }
     out

@@ -492,14 +492,6 @@ pub fn plan(prj: &Project, conns: &[Connection]) -> Plan {
     out
 }
 
-fn warn(message: String) -> Issue {
-    Issue { severity: Severity::Warning, message, target: None }
-}
-
-fn error(message: String) -> Issue {
-    Issue { severity: Severity::Error, message, target: None }
-}
-
 /// Problems of the field wiring: broken references, cables without a route,
 /// overfilled carriers, classes without divider, bend radii in drag chains, and the
 /// problems of the bonding and the accessories.
@@ -509,28 +501,28 @@ fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
     for s in &f.segments {
         for n in [s.a, s.b] {
             if f.node(n).is_none() {
-                v.push(error(tr_fmt!("Field segment {} refers to the missing node {}", f.segment_name(s.id), n)));
+                v.push(crate::issue!(Severity::Error, None, "Field segment {} refers to the missing node {}", f.segment_name(s.id), n));
             }
         }
     }
     for p in &f.places {
         if f.node(p.node).is_none() {
-            v.push(error(tr_fmt!("{} is placed at the missing node {}", p.tag, p.node)));
+            v.push(crate::issue!(Severity::Error, None, "{} is placed at the missing node {}", p.tag, p.node));
         }
     }
     for r in &f.routes {
         if prj.cable(&r.cable).is_none() {
-            v.push(warn(tr_fmt!("Field route definition refers to the unknown cable {}", r.cable)));
+            v.push(crate::issue!(Severity::Warning, None, "Field route definition refers to the unknown cable {}", r.cable));
         }
         for n in r.via.iter().filter(|n| f.node(**n).is_none()) {
-            v.push(warn(tr_fmt!("Field route of {} runs via the missing node {}", r.cable, n)));
+            v.push(crate::issue!(Severity::Warning, None, "Field route of {} runs via the missing node {}", r.cable, n));
         }
     }
     for c in &plan.cables {
         match &c.status {
             Status::Routed => {}
-            Status::NotPlaced(tag) => v.push(warn(tr_fmt!("Field cable {}: {} is not placed in the plant layout", c.cable, tag))),
-            Status::NoPath => v.push(error(tr_fmt!("Field cable {} cannot be routed from {} to {}", c.cable, c.ends[0], c.ends[1]))),
+            Status::NotPlaced(tag) => v.push(crate::issue!(Severity::Warning, None, "Field cable {}: {} is not placed in the plant layout", c.cable, tag)),
+            Status::NoPath => v.push(crate::issue!(Severity::Error, None, "Field cable {} cannot be routed from {} to {}", c.cable, c.ends[0], c.ends[1])),
         }
     }
     for u in &plan.segments {
@@ -538,18 +530,18 @@ fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
         let name = f.segment_name(s.id);
         if let Some(cap) = u.capacity.filter(|cap| u.area > *cap) {
             let fill = u.fill(s).unwrap_or(0.0);
-            v.push(warn(tr_fmt!("Field segment {} is filled to {} % (allowed {} %)", name, format!("{fill:.0}"), format!("{:.0}", cap / (s.width * s.height) * 100.0))));
+            v.push(crate::issue!(Severity::Warning, None, "Field segment {} is filled to {} % (allowed {} %)", name, format!("{fill:.0}"), format!("{:.0}", cap / (s.width * s.height) * 100.0)));
         }
         let apart = Class::ALL.iter().any(|c| u.classes & c.bit() != 0 && u.classes & c.apart_bits() != 0);
         if apart && !s.divider {
-            v.push(warn(tr_fmt!("Field segment {} carries power together with signal cables without a divider", name)));
+            v.push(crate::issue!(Severity::Warning, None, "Field segment {} carries power together with signal cables without a divider", name));
         }
         if s.kind == SegmentKind::DragChain && s.bend_radius > 0.0 {
             for tag in &u.cables {
                 let Some(c) = plan.cable(tag) else { continue };
                 let need = c.diameter * f.rules.bend_factor;
                 if need > s.bend_radius {
-                    v.push(error(tr_fmt!("Cable {} needs a bend radius of {} mm, drag chain {} has {} mm", tag, format!("{need:.0}"), name, format!("{:.0}", s.bend_radius))));
+                    v.push(crate::issue!(Severity::Error, None, "Cable {} needs a bend radius of {} mm, drag chain {} has {} mm", tag, format!("{need:.0}"), name, format!("{:.0}", s.bend_radius)));
                 }
             }
         }

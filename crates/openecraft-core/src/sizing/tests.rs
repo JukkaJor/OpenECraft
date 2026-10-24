@@ -81,7 +81,7 @@ fn wires_behind_a_breaker_and_its_contacts_must_carry_its_current() {
     assert_eq!(o.len(), 1, "{o:?}");
     assert_eq!((o[0].device.as_str(), o[0].rated, o[0].ampacity, o[0].target.1), ("-F1", 16.0, 13.5, load));
     let an = Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message == "Cross-section 1.5 mm² carries 13.5 A, less than the 16 A of -F1"));
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message() == "Cross-section 1.5 mm² carries 13.5 A, less than the 16 A of -F1"));
     // A smaller breaker protects them.
     let (prj, _, _) = circuit("2.5 mm²", "1.5 mm²", "10 A");
     assert!(overloads(&prj, &Netlist::build(&prj, true), &Netlist::build(&prj, false)).is_empty());
@@ -123,11 +123,11 @@ fn voltage_drop_of_a_motor_cable() {
     let (v, pct) = d.drop.unwrap();
     assert!((v - du).abs() < 1e-3 && (pct - du / 4.0).abs() < 1e-3);
     assert_eq!(d.ampacity, Some(13.5));
-    assert!(!an.issues.iter().any(|i| i.message.contains("voltage drop")));
+    assert!(!an.issues.iter().any(|i| i.message().contains("voltage drop")));
     assert_eq!(an.report(&prj, ReportKind::CableSizing).unwrap().rows.len(), 1);
 
     // 500 m of 1.5 mm² is too much.
     prj.cables[0].length = 500.0;
     let an = Analysis::checked(&prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message.starts_with("-W1: voltage drop")));
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message().starts_with("-W1: voltage drop")));
 }

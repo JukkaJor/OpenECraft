@@ -278,7 +278,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
 pub fn problems(prj: &Project, nl: &Netlist, open: &Netlist, conns: &[Connection]) -> Vec<Issue> {
     let limits = crate::rules::limits(prj);
     let mut v = Vec::new();
-    let mut issue = |error: bool, message: String, target| v.push(Issue { severity: if error { Severity::Error } else { Severity::Warning }, message, target });
+    let mut issue = |error: bool, message: String, target| v.push(Issue::plain(if error { Severity::Error } else { Severity::Warning }, message, target));
     for o in overloads(prj, nl, open) {
         let message = tr_fmt!(
             "Cross-section {} carries {} A, less than the {} A of {}",

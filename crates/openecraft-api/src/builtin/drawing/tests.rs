@@ -5,7 +5,7 @@ use openecraft_core::analysis::Analysis;
 /// Messages of the project checks (like the `check` tool of the command line).
 fn issues(s: &mut Session) -> Vec<String> {
     let prj = s.project().unwrap();
-    s.plugins.check(prj, &Analysis::build(prj)).into_iter().map(|i| i.message).collect()
+    s.plugins.check(prj, &Analysis::build(prj)).into_iter().map(|i| i.message()).collect()
 }
 
 #[test]

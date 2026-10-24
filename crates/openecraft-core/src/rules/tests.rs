@@ -71,7 +71,7 @@ fn verification_against_a_standard() {
     let parts = r.iter().find(|r| r.check.scope == Scope::Device).unwrap();
     assert_eq!(parts.failed.iter().map(|i| i.label.as_str()).collect::<Vec<_>>(), ["-M2"]);
     let an = Analysis::checked(&k.prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message == "-M1:PE – -M2:PE: Protective conductors must be green-yellow (IEC 60204-1, 13.2.2) (IEC 60204-1)"));
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message() == "-M1:PE – -M2:PE: Protective conductors must be green-yellow (IEC 60204-1, 13.2.2) (IEC 60204-1)"));
     assert!(!an.report(&k.prj, ReportKind::Verification).unwrap().rows.is_empty());
     let k = {
         let mut k = pe_wire("GNYE");
@@ -99,7 +99,7 @@ fn customer_rule_sets() {
     k.prj.info.properties.insert("Plant".into(), "P7".into());
     assert!(verify_kit(&k)[2].failed.is_empty());
     let an = Analysis::checked(&k.prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message.ends_with(": Only approved manufacturers (ACME plant)")));
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message().ends_with(": Only approved manufacturers (ACME plant)")));
 
     // Exchange as JSON: a list or a single rule set.
     let json = export(&k.prj.electrical.rule_sets);
@@ -118,7 +118,7 @@ fn minimum_cross_sections() {
     k.wire((l1, ""), (e1, "1"));
     let w = k.wire((e1, "1"), (e2, "1"));
     k.prj.pages[0].wires.iter_mut().filter(|x| x.id == w).for_each(|x| x.cross_section = "1.5 mm²".into());
-    let issues = |k: &Kit| Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message).filter(|m| m.contains("power circuits")).collect::<Vec<_>>();
+    let issues = |k: &Kit| Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message()).filter(|m| m.contains("power circuits")).collect::<Vec<_>>();
     assert!(issues(&k).is_empty());
     k.prj.electrical.standards.push("ul508a".into());
     assert_eq!(issues(&k), ["-E1:1 – -E2:1: cross-section 1.5 mm² below the 2.08 mm² of power circuits"]);

@@ -479,7 +479,7 @@ fn cross_section_problems(prj: &Project, nl: &Netlist, conns: &[Connection], l: 
             } else {
                 tr_fmt!("{}: cross-section {} below the {} mm² of control circuits", label, c.cross_section, min)
             };
-            out.push(Issue { severity: Severity::Warning, message, target: Some((c.a.page, s.id)) });
+            out.push(Issue::plain(Severity::Warning, message, Some((c.a.page, s.id))));
         }
     }
     out
@@ -490,7 +490,7 @@ pub fn problems(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<Issue>
     let mut out = cross_section_problems(prj, nl, conns, &limits(prj));
     for r in verify(prj, conns) {
         for it in &r.failed {
-            out.push(Issue { severity: r.check.level.severity(), message: tr_fmt!("{}: {} ({})", it.label, r.check.message, r.set), target: it.target.filter(|t| t.1 != 0) });
+            out.push(crate::issue!(r.check.level.severity(), it.target.filter(|t| t.1 != 0), "{}: {} ({})", it.label, r.check.message, r.set));
         }
     }
     out
