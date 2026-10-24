@@ -362,7 +362,7 @@ impl eframe::App for App {
                 });
                 egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
                     let page = self.session.page;
-                    self.editor.read_only = self.page_locked_by().is_some();
+                    self.editor.read_only = self.page_locked_by().is_some() || self.remote.viewer();
                     self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.session.prj, page, &idx, &self.session.analysis);
                     let _ = out.open_properties;

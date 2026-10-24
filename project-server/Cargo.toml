@@ -12,6 +12,7 @@ path = "src/main.rs"
 [dependencies]
 openecraft-core = { path = "../crates/openecraft-core" }
 openecraft-parts = { path = "../crates/openecraft-parts" }
+openecraft-auth = { path = "../crates/openecraft-auth" }
 axum = "0.8"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 tower-http = { version = "0.7", features = ["cors"] }

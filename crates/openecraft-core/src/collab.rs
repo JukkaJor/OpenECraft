@@ -20,9 +20,16 @@
 //! | POST | `/api/v1/projects/{name}/lock` | [`LockRequest`] → [`Status`] |
 //! | POST | `/api/v1/projects/{name}/release` | [`LockRequest`] → [`Status`] |
 //! | POST | `/api/v1/projects/{name}/close` | [`Session`] → [`Status`] (releases all locks) |
+//! | POST | `/api/v1/login` | [`LoginRequest`] → [`LoginResponse`] |
+//! | POST | `/api/v1/logout` | ends the session of the bearer token |
+//! | GET | `/api/v1/users` | [`ProjectUser`] list (administrators) |
+//! | PUT | `/api/v1/users/{name}` | [`UserUpdate`] → [`ProjectUser`] (administrators) |
+//! | DELETE | `/api/v1/users/{name}` | (administrators) |
 //!
-//! With a server token every request needs `Authorization: Bearer <token>`. Errors
-//! are returned as `openecraft_parts::api::ApiError` JSON.
+//! With a server token or user accounts every request needs `Authorization: Bearer
+//! <token>`: the server token (full access) or the session token of a signed-in user,
+//! whose role ([`ProjectRole`]) and projects decide what they may do. Errors are
+//! returned as `openecraft_parts::api::ApiError` JSON.
 
 use crate::model::{Page, Project};
 use openecraft_parts::api::encode_component;
@@ -139,6 +146,84 @@ pub struct SaveRequest {
 pub struct LockRequest {
     pub session: Session,
     pub targets: Vec<Target>,
+}
+
+/// What a user may do on the project server. Ordered by permissions.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectRole {
+    /// Open projects read-only (no locks, no saving): review and comments.
+    #[default]
+    Viewer,
+    /// Lock, change, save and create projects.
+    Editor,
+    /// Also manage the users.
+    Admin,
+}
+
+impl ProjectRole {
+    pub const ALL: [ProjectRole; 3] = [ProjectRole::Viewer, ProjectRole::Editor, ProjectRole::Admin];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            ProjectRole::Viewer => openecraft_i18n::tr("Viewer"),
+            ProjectRole::Editor => openecraft_i18n::tr("Editor"),
+            ProjectRole::Admin => openecraft_i18n::tr("Administrator"),
+        }
+    }
+}
+
+/// A user of the project server (without credentials).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ProjectUser {
+    pub name: String,
+    pub role: ProjectRole,
+    /// Projects the user may open (names, `*` and `?` wildcards); empty = all.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub projects: Vec<String>,
+}
+
+impl ProjectUser {
+    /// The user may open the project.
+    pub fn may_see(&self, project: &str) -> bool {
+        self.role == ProjectRole::Admin || self.projects.is_empty() || self.projects.iter().any(|p| crate::report_blocks::matches(p, project))
+    }
+
+    /// The user may lock, change and save the project.
+    pub fn may_edit(&self, project: &str) -> bool {
+        self.role >= ProjectRole::Editor && self.may_see(project)
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LoginRequest {
+    pub user: String,
+    pub password: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LoginResponse {
+    /// Session token for `Authorization: Bearer`.
+    pub token: String,
+    pub user: ProjectUser,
+}
+
+/// Creates or changes a user; a new user needs a password.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct UserUpdate {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password: Option<String>,
+    pub role: ProjectRole,
+    pub projects: Vec<String>,
+}
+
+/// Path of a user, e.g. `/api/v1/users/anna`.
+pub fn user_path(name: &str) -> String {
+    format!("{API_PREFIX}/users/{}", encode_component(name))
 }
 
 /// Path of a project, e.g. `/api/v1/projects/Plant%201`.

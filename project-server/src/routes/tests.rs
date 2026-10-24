@@ -10,7 +10,7 @@ use tower::ServiceExt;
 const TOKEN: &str = "secret-token";
 
 fn app(token: Option<&str>) -> Router {
-    let server = Server { store: Store::in_memory(), sessions: Sessions::default() };
+    let server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default() };
     router(AppState { server: Arc::new(Mutex::new(server)), token: token.map(String::from) })
 }
 
@@ -154,4 +154,73 @@ async fn token_is_required_for_everything() {
     let req = serde_json::to_string(&CreateRequest { name: "p".into(), user: "anna".into(), project: Project::default() }).unwrap();
     assert_eq!(call(&app, "POST", "/api/v1/projects", None, req.clone()).await.0, StatusCode::UNAUTHORIZED);
     assert_eq!(call(&app, "POST", "/api/v1/projects", Some(TOKEN), req).await.0, StatusCode::CREATED);
+}
+
+/// Request with a bearer token; returns status and body.
+async fn with(app: &Router, method: &str, uri: &str, token: &str, body: &impl Serialize) -> (StatusCode, String) {
+    call(app, method, uri, Some(token), serde_json::to_string(body).unwrap()).await
+}
+
+#[tokio::test]
+async fn users_roles_and_projects() {
+    let app = app(Some(TOKEN));
+    // The server token creates the users.
+    for (name, role, projects) in [("anna", ProjectRole::Editor, vec![]), ("vic", ProjectRole::Viewer, vec![]), ("eve", ProjectRole::Editor, vec!["Office".to_string()])] {
+        let req = UserUpdate { password: Some(format!("{name}-pw")), role, projects };
+        let (s, text) = with(&app, "PUT", &format!("/api/v1/users/{name}"), TOKEN, &req).await;
+        assert!(s.is_success(), "{s} {text}");
+    }
+    let (s, _) = with(&app, "PUT", "/api/v1/users/nopw", TOKEN, &UserUpdate::default()).await;
+    assert_eq!(s, StatusCode::BAD_REQUEST, "a new user needs a password");
+    // Without a token nothing works any more.
+    let (s, _) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    let login = |name: &str| LoginRequest { user: name.into(), password: format!("{name}-pw") };
+    let (s, _) = call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&LoginRequest { user: "anna".into(), password: "wrong".into() }).unwrap()).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    let session = |text: String| serde_json::from_str::<LoginResponse>(&text).unwrap().token;
+    let anna = session(call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&login("anna")).unwrap()).await.1);
+    let vic = session(call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&login("vic")).unwrap()).await.1);
+    let eve = session(call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&login("eve")).unwrap()).await.1);
+
+    // Anna creates the project; the user name is hers whatever the request says.
+    let req = CreateRequest { name: "Plant 1".into(), user: "someone".into(), project: two_pages() };
+    let (s, text) = with(&app, "POST", "/api/v1/projects", &anna, &req).await;
+    assert_eq!(s, StatusCode::CREATED, "{text}");
+    let opened: Opened = serde_json::from_str(&text).unwrap();
+    assert_eq!(opened.session.user, "anna");
+
+    // Vic may look, but not lock.
+    let (s, text) = with(&app, "POST", "/api/v1/projects/Plant%201/open", &vic, &OpenRequest { user: "x".into() }).await;
+    assert!(s.is_success(), "{text}");
+    let vic_session: Opened = serde_json::from_str(&text).unwrap();
+    let lock = LockRequest { session: vic_session.session.clone(), targets: vec![Target::Project] };
+    let (s, _) = with(&app, "POST", "/api/v1/projects/Plant%201/lock", &vic, &lock).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+    // Nobody uses the session of another user.
+    let (s, _) = with(&app, "POST", "/api/v1/projects/Plant%201/status", &vic, &opened.session).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+
+    // Eve only sees the office project.
+    let (_, text) = with(&app, "GET", "/api/v1/projects", &eve, &()).await;
+    assert_eq!(serde_json::from_str::<Vec<ProjectSummary>>(&text).unwrap().len(), 0);
+    let (s, _) = with(&app, "GET", "/api/v1/projects/Plant%201", &eve, &()).await;
+    assert_eq!(s, StatusCode::NOT_FOUND);
+
+    // Only administrators manage users.
+    let (s, _) = with(&app, "GET", "/api/v1/users", &anna, &()).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+    let (s, text) = with(&app, "GET", "/api/v1/users", TOKEN, &()).await;
+    assert!(s.is_success());
+    assert_eq!(serde_json::from_str::<Vec<ProjectUser>>(&text).unwrap().len(), 3);
+
+    // Signing out ends the session; deleting a user removes the account.
+    let (s, _) = with(&app, "POST", "/api/v1/logout", &vic, &()).await;
+    assert_eq!(s, StatusCode::NO_CONTENT);
+    let (s, _) = with(&app, "GET", "/api/v1/projects", &vic, &()).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    let (s, _) = with(&app, "DELETE", "/api/v1/users/eve", TOKEN, &()).await;
+    assert_eq!(s, StatusCode::NO_CONTENT);
+    let (s, _) = with(&app, "DELETE", "/api/v1/users/eve", TOKEN, &()).await;
+    assert_eq!(s, StatusCode::NOT_FOUND);
 }

@@ -611,8 +611,15 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
-  `Authorization: Bearer <token>`; without it everyone who reaches the server can
-  change its projects.
+  `Authorization: Bearer <token>`; without it and without user accounts everyone who
+  reaches the server can change its projects.
+- **User accounts** (`users.json` in the data directory, Argon2 password hashes):
+  viewers open projects read-only (comments and markup), editors lock, change, save
+  and create projects, administrators also manage the users; a user can be limited to
+  some projects (names with `*` / `?`). `--admin-user <name>` creates the first
+  administrator with the password from `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign
+  in from *File › Project server…* (user name, password, *Sign in*); the server uses
+  the account's name on the locks, whatever the request says.
 - Locks: every page and the project data (page list and order, devices, parts, panel
   layout, settings) are locked separately. Editing something you have not locked
   requests the lock automatically; if another user holds it, the change is taken back.
@@ -627,7 +634,8 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
   context menu lock and release pages.
 - REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT /projects/{name}`,
-  `POST /projects/{name}/open|status|lock|release|close` (see `openecraft_core::collab`).
+  `POST /projects/{name}/open|status|lock|release|close`, `POST /login`, `POST /logout`,
+  `GET /users`, `PUT|DELETE /users/{name}` (see `openecraft_core::collab`).
 
 ### Parts manager
 

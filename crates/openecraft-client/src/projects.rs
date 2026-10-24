@@ -1,6 +1,6 @@
 use crate::endpoint::with_content_type;
 use openecraft_core::collab::{
-    project_path, CreateRequest, LockRequest, OpenRequest, SaveRequest, Session, Target, API_PREFIX, DEFAULT_PORT,
+    project_path, user_path, CreateRequest, LockRequest, LoginRequest, OpenRequest, SaveRequest, Session, Target, UserUpdate, API_PREFIX, DEFAULT_PORT,
 };
 use openecraft_core::model::Project;
 use openecraft_parts::api;
@@ -89,6 +89,31 @@ impl ProjectEndpoint {
     /// POST /api/v1/projects/{name}/close
     pub fn close(&self, name: &str, session: &Session) -> ehttp::Request {
         self.json("POST", &format!("{}/close", project_path(name)), session)
+    }
+
+    /// POST /api/v1/login: a session token for the user.
+    pub fn login(&self, user: &str, password: &str) -> ehttp::Request {
+        self.json("POST", &format!("{API_PREFIX}/login"), &LoginRequest { user: user.into(), password: password.into() })
+    }
+
+    /// POST /api/v1/logout: ends the session of the token.
+    pub fn logout(&self) -> ehttp::Request {
+        self.json("POST", &format!("{API_PREFIX}/logout"), &())
+    }
+
+    /// GET /api/v1/users (administrators)
+    pub fn users(&self) -> ehttp::Request {
+        self.get(&format!("{API_PREFIX}/users"))
+    }
+
+    /// PUT /api/v1/users/{name} (administrators)
+    pub fn save_user(&self, name: &str, update: &UserUpdate) -> ehttp::Request {
+        self.json("PUT", &user_path(name), update)
+    }
+
+    /// DELETE /api/v1/users/{name} (administrators)
+    pub fn delete_user(&self, name: &str) -> ehttp::Request {
+        self.request(ehttp::Request::delete(&api::url(&self.url, &user_path(name))))
     }
 }
 

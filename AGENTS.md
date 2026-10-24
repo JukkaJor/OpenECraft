@@ -33,6 +33,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
 | `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
+| `openecraft-auth` | `crates/openecraft-auth` | User accounts of the servers: password hashes (Argon2), session tokens |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-parts-server` | `parts-server/` | Data portal server (axum; SQLite or JSON storage, users and roles, catalogs, files, history, web page) |

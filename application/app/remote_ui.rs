@@ -46,7 +46,7 @@ impl App {
                 Reply::Opened(_, Err(_)) | Reply::Saved(_, Err(_)) | Reply::Snapshot(_, Err(_)) | Reply::Status(_, Err(_)) => {
                     self.notify(ctx, self.remote.status.clone());
                 }
-                Reply::List(_) | Reply::Closed => {}
+                Reply::List(_) | Reply::Login(_) | Reply::Closed => {}
             }
         }
     }
@@ -144,9 +144,24 @@ impl App {
                 ui.label(tr("User name"));
                 ui.add_enabled(!connected, egui::TextEdit::singleline(&mut self.remote.user).desired_width(300.0));
                 ui.end_row();
+                ui.label(tr("Password"));
+                ui.horizontal(|ui| {
+                    let r = ui.add_enabled(!connected, egui::TextEdit::singleline(&mut self.remote.password).password(true).desired_width(200.0));
+                    let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+                    let can = !connected && !self.remote.password.is_empty() && !self.remote.user.trim().is_empty() && !self.remote.busy();
+                    if (ui.add_enabled(can, egui::Button::new(tr("Sign in"))).on_hover_text(tr("With a user account of the server; replaces the access token")).clicked() || enter) && can {
+                        self.remote.sign_in();
+                    }
+                });
+                ui.end_row();
                 ui.label(tr("Access token"));
                 ui.add_enabled(!connected, egui::TextEdit::singleline(&mut self.remote.token).password(true).desired_width(300.0));
                 ui.end_row();
+                if let Some(role) = self.remote.role {
+                    ui.label(tr("Role"));
+                    ui.label(role.title());
+                    ui.end_row();
+                }
             });
             ui.horizontal(|ui| {
                 if ui.add_enabled(!self.remote.busy(), egui::Button::new(tr("⟳ List projects"))).clicked() {
@@ -216,6 +231,9 @@ impl App {
     fn shared_section(&mut self, ui: &mut egui::Ui) {
         let Some(sh) = &self.remote.shared else { return };
         ui.label(RichText::new(tr_fmt!("Shared project {} – revision {}, user {}", sh.name, sh.revision, sh.session.user)).strong());
+        if self.remote.viewer() {
+            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may view this project: comments and markup only, no changes."));
+        }
         let mine = self.my_locks();
         let others: Vec<(Target, String)> = sh.locks.iter().filter(|l| l.session != sh.session.session).map(|l| (l.target, l.user.clone())).collect();
         let page_id = self.session.prj.pages.get(self.session.page).map(|p| p.id);

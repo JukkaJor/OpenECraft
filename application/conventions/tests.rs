@@ -233,7 +233,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("aml", &["devdesc", "model", "netlist", "parts", "plc", "plc_hw", "xml"]),
     ("integration", &["analysis", "issue", "model", "netlist", "panel", "parts", "wiring"]),
     // 8 project files, sharing, verification
-    ("collab", &["model", "review"]),
+    ("collab", &["model", "review", "report_blocks"]),
     ("archive", &["document", "model", "pdf", "zip"]),
     ("projects", &["archive", "index", "issue", "model", "properties", "verify"]),
     ("project_templates", &["model", "structure"]),

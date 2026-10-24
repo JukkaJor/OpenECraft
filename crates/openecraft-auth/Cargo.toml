@@ -1,0 +1,13 @@
+[package]
+name = "openecraft-auth"
+version = "0.1.0"
+edition = "2021"
+description = "User accounts of the OpenECraft servers: password hashes (Argon2) and session tokens"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+openecraft-parts = { path = "../openecraft-parts" }
+argon2 = "0.5"
+password-hash = { version = "0.5", features = ["getrandom"] }
+sha2 = "0.10"
+getrandom = "0.2"
