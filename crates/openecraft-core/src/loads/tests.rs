@@ -61,7 +61,7 @@ fn loads_of_the_mains_and_their_feeders() {
 #[test]
 fn overloaded_feeders_supply_and_unbalance() {
     let mut k = machine("5 kW");
-    let messages = |k: &Kit| Analysis::build(&k.prj).issues.into_iter().map(|i| i.message).collect::<Vec<_>>();
+    let messages = |k: &Kit| Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message).collect::<Vec<_>>();
     assert!(messages(&k).iter().any(|m| m == "-F1: load 21.7 A above the usable 16.0 A"));
     k.prj.parts.iter_mut().find(|p| p.power == "5 kW").unwrap().power = "1 kW".into();
     assert!(!messages(&k).iter().any(|m| m.contains("above the usable")));
@@ -110,7 +110,7 @@ fn load_budget_of_a_power_supply() {
     assert!((c.loads[0].power - 0.12 / 0.9).abs() < 1e-4);
     k.prj.parts.iter_mut().find(|p| p.number.contains("P1")).unwrap().tech_data = "Current consumption: 20 mA".into();
     k.prj.parts.iter_mut().find(|p| p.number.contains("T1")).unwrap().current = "0.1 A".into();
-    let an = Analysis::build(&k.prj);
+    let an = Analysis::checked(&k.prj);
     assert!(an.issues.iter().any(|i| i.message == "-T1: load 0.27 A above the usable 0.10 A of the power supply"));
     assert_eq!(an.report(&k.prj, ReportKind::PowerSupplyBudget).rows.len(), 3);
 }

@@ -53,7 +53,7 @@ fn pin_pairs_pass_the_potential_and_separate_the_connections() {
     let open = Netlist::build(&prj, false);
     assert_eq!(nl.net_of_wire(w2).unwrap().name, "+24V");
     assert_ne!(open.wire_net[&w1], open.wire_net[&w2]);
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let ends: Vec<(String, String)> = an.connections.iter().map(|c| (pin_designation(&prj, c.a), pin_designation(&prj, c.b))).collect();
     assert_eq!(ends, vec![("-X10:1".to_string(), "-K1:A1".to_string())]);
 }
@@ -75,7 +75,7 @@ fn male_and_female_pins_of_one_designation_are_mated() {
     sym(&mut prj, "plug_m", 300.0, 100.0, "-X10", "1");
     let msgs: Vec<String> = problems(&prj).into_iter().map(|x| x.0).collect();
     assert_eq!(msgs, vec!["-X10: pin 1 placed 2 times".to_string()]);
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.issues.iter().any(|i| i.message.contains("used more than once")));
 }
 
@@ -108,7 +108,7 @@ fn more_pins_than_the_parts_have_are_reported() {
     pair_circuit(&mut prj);
     sym(&mut prj, "plug_pair", 140.0, 100.0, "-X10", "2");
     assign(&mut prj, "-X10", plug_part("ACME.PLUG1", 1));
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(an.issues.iter().any(|i| i.message == "-X10: 2 pins used, the plug parts have 1"));
     // The generic function template check leaves plug pins to this one.
     assert!(!an.issues.iter().any(|i| i.message.contains("Plug pin")));
@@ -135,7 +135,7 @@ fn placement_numbers_pins_per_plug() {
 fn plug_diagram_report() {
     let mut prj = Project::default();
     pair_circuit(&mut prj);
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::PlugDiagram);
     assert_eq!(t.rows, vec![["-X10", "1", "=+24V", "-K1:A1", "+24V", "/1.3", ""].iter().map(|s| s.to_string()).collect::<Vec<_>>()]);
 }
@@ -147,7 +147,7 @@ fn kbl_names_the_plug_housing() {
     assign(&mut prj, "-X10", plug_part("ACME.M12-4F", 4));
     prj.harnesses.push(Harness { id: 99, tag: "-WH1".into(), length: 1.0, ..Default::default() });
     crate::harness::assign(&mut prj, "-X10:1", "-K1:A1", "-WH1");
-    let kbl = crate::harness::kbl(&prj, &Analysis::build(&prj));
+    let kbl = crate::harness::kbl(&prj, &Analysis::checked(&prj));
     assert!(kbl.contains("<Connector_housing id=\"CH1\"><Part_number>ACME.M12-4F</Part_number></Connector_housing>"), "{kbl}");
     assert!(kbl.contains("<Id>-X10</Id><Part>CH1</Part>"));
 }

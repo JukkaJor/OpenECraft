@@ -64,7 +64,7 @@ fn generation_follows_the_options_and_replaces_its_pages() {
     assert_eq!(prj.pages.len(), 3);
     assert_eq!(prj.pages[1].description, "Star-delta Conveyor L3");
     // Device tags stay unique over the generated pages.
-    let an = crate::reports::Analysis::build(&prj);
+    let an = crate::reports::Analysis::checked(&prj);
     assert!(!an.issues.iter().any(|i| i.message.contains("main function placed")), "{:?}", an.issues.iter().map(|i| &i.message).collect::<Vec<_>>());
 }
 

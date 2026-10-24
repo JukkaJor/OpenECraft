@@ -4236,3 +4236,18 @@ Transformer bank of three 1-phase transformers	Transformatorbank aus drei 1-phas
 Transformers / power supplies	Transformatoren / Stromversorgungen	Transformateurs / alimentations	Transformadores / fuentes de alimentación
 Lists the reports (built-in and of plugins): name for report and title	Listet die Auswertungen (eingebaute und von Plugins): Name für report und Titel	Liste les rapports (intégrés et des plugins) : nom pour report et titre	Lista los informes (integrados y de plugins): nombre para report y título
 Report name as shown by list_reports	Name der Auswertung, wie von list_reports angezeigt	Nom du rapport tel qu'affiché par list_reports	Nombre del informe como lo muestra list_reports
+Devices and connection points	Geräte und Anschlüsse	Appareils et points de connexion	Dispositivos y puntos de conexión
+Mounting layout pages	Montageplan-Seiten	Pages de plan d'implantation	Páginas de plano de montaje
+Cables and wire numbers	Kabel und Leitungsnummern	Câbles et numéros de fils	Cables y números de hilo
+Potential definitions	Potentialdefinitionen	Définitions de potentiels	Definiciones de potenciales
+Terminal strips and PLC addresses	Klemmenleisten und SPS-Adressen	Borniers et adresses API	Regleteros y direcciones de PLC
+Connection definitions	Verbindungsdefinitionen	Définitions de connexion	Definiciones de conexión
+Cable definitions	Kabeldefinitionen	Définitions de câbles	Definiciones de cable
+Cable sizing	Kabeldimensionierung	Dimensionnement des câbles	Dimensionado de cables
+Loads and power supplies	Verbraucher und Stromversorgungen	Charges et alimentations	Cargas y fuentes de alimentación
+EMC	EMV	CEM	CEM
+Safety functions	Sicherheitsfunktionen	Fonctions de sécurité	Funciones de seguridad
+Fluid power and process	Fluidtechnik und Verfahrenstechnik	Fluidique et procédé	Fluídica y proceso
+Wiring marks	Verdrahtungsmarkierungen	Marques de câblage	Marcas de cableado
+Project checks	Projektprüfungen	Contrôles du projet	Comprobaciones del proyecto
+Devices, wires, potentials, cables, terminal strips, PLC, panel, fluid, electrical calculations, structure and translations	Geräte, Leitungen, Potentiale, Kabel, Klemmenleisten, SPS, Schaltschrank, Fluid, elektrische Berechnungen, Struktur und Übersetzungen	Appareils, fils, potentiels, câbles, borniers, API, armoire, fluide, calculs électriques, structure et traductions	Dispositivos, hilos, potenciales, cables, regleteros, PLC, armario, fluido, cálculos eléctricos, estructura y traducciones

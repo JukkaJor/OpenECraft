@@ -72,7 +72,7 @@ fn capacity_from_the_duct_part_and_wire_sizes() {
 #[test]
 fn demo_ducts_in_check_and_report() {
     let mut prj = crate::sample::demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.duct_fill.is_empty());
     assert!(an.duct_fill.iter().all(|f| f.percent > 0.0 && f.percent < prj.layout.duct_fill_limit));
     let report = &an.report(&prj, crate::model::ReportKind::DuctFill);
@@ -81,7 +81,7 @@ fn demo_ducts_in_check_and_report() {
 
     let fullest = an.duct_fill.iter().map(|f| f.percent).fold(0.0, f32::max);
     prj.layout.duct_fill_limit = fullest / 2.0;
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let warnings: Vec<&str> = an.issues.iter().filter(|i| i.severity == Severity::Warning).map(|i| i.message.as_str()).filter(|m| m.contains("cable duct at")).collect();
     assert!(!warnings.is_empty());
     assert!(warnings[0].starts_with("+CAB1: cable duct at "), "{}", warnings[0]);
@@ -110,12 +110,12 @@ fn loads_make_full_stretches_expensive() {
 #[test]
 fn wires_avoid_overfull_ducts() {
     let mut prj = crate::sample::demo_project();
-    let before = Analysis::build(&prj);
+    let before = Analysis::checked(&prj);
     // Only wires on the mounting plate are routed again (door routes stay the shortest).
     let on_plate = |prj: &Project, f: &&DuctFill| prj.layout.enclosures[f.enclosure].item(f.duct).is_some_and(|d| d.face == crate::panel::Face::Plate);
     let fullest = before.duct_fill.iter().filter(|f| on_plate(&prj, f)).map(|f| f.percent).fold(0.0, f32::max);
     prj.layout.duct_fill_limit = fullest * 0.6;
-    let after = Analysis::build(&prj);
+    let after = Analysis::checked(&prj);
     assert_eq!(after.wiring.len(), before.wiring.len());
     let moved: Vec<&RoutedWire> = after
         .wiring

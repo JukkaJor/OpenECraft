@@ -5,7 +5,7 @@ use crate::reports::{Analysis, Severity};
 #[test]
 fn demo_is_consistent() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let errors: Vec<_> = an.issues.iter().filter(|i| i.severity == Severity::Error).collect();
     assert!(errors.is_empty(), "{errors:#?}");
     let idx = Index::build(&prj);

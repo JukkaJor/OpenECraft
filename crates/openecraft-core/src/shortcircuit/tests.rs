@@ -21,12 +21,12 @@ fn feeder(protection: (FnKind, &str, &str), cross_section: &str, length: f32) ->
 }
 
 fn faults_of(k: &Kit) -> Vec<Fault> {
-    let an = Analysis::build(&k.prj);
+    let an = Analysis::checked(&k.prj);
     faults(&k.prj, &an.netlist, &an.connections)
 }
 
 fn messages(k: &Kit) -> Vec<String> {
-    Analysis::build(&k.prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message).collect()
 }
 
 #[test]
@@ -131,7 +131,7 @@ fn selectivity_with_the_device_upstream() {
         p.current = "16 A".into();
         p.tech_data = "Characteristic: B\nBreaking capacity: 10 kA".into();
     });
-    let an = Analysis::build(&k.prj);
+    let an = Analysis::checked(&k.prj);
     let s = selectivity(&k.prj, &an.netlist, &an.connections);
     assert_eq!(s.len(), 1);
     assert_eq!((s[0].upstream.as_str(), s[0].downstream.as_str()), ("-F0", "-F1"));
@@ -146,7 +146,7 @@ fn selectivity_with_the_device_upstream() {
         limits: crate::rules::LimitOverrides { total_selectivity: Some(true), ..Default::default() },
         ..Default::default()
     });
-    assert_eq!(partial(&Analysis::build(&k.prj)), Some(Severity::Warning));
+    assert_eq!(partial(&Analysis::checked(&k.prj)), Some(Severity::Warning));
 }
 
 #[test]

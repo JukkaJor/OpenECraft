@@ -147,7 +147,7 @@ fn open_exhausts_vent_to_the_atmosphere() {
     let mut prj = pneumatics();
     let check = |prj: &Project| {
         let nl = Netlist::build(prj, true);
-        crate::reports::check(prj, &crate::index::Index::build(prj), &nl).into_iter().map(|i| i.message).collect::<Vec<_>>()
+        crate::checks::check(prj, &crate::index::Index::build(prj), &nl).into_iter().map(|i| i.message).collect::<Vec<_>>()
     };
     let msgs = messages(&prj);
     assert_eq!(msgs.iter().filter(|(s, m)| *s == Severity::Info && m.contains("open to the atmosphere")).count(), 2, "{msgs:?}");
@@ -258,7 +258,7 @@ fn hoses_run_between_bayed_enclosures_and_in_3d() {
     // the field through the bottom; the hose's own bend radius counts.
     wire_mut(&mut prj, 10).hose = Some(HoseConfig { bend_radius: 40.0, ..Default::default() });
     wire_mut(&mut prj, 10).length = 0.1;
-    let an = crate::reports::Analysis::build(&prj);
+    let an = crate::reports::Analysis::checked(&prj);
     let tubes: Vec<&crate::routing3d::RoutedItem> = an.routing.items.iter().filter(|i| i.kind == crate::routing3d::RouteKind::Tube).collect();
     assert_eq!(tubes.len(), 3);
     assert!(tubes.iter().all(|t| t.routed() && t.class == crate::routing3d::Class::Fluid), "{tubes:?}");

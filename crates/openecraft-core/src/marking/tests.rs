@@ -5,9 +5,9 @@ use crate::sample::demo_project;
 /// The demo with numbered wires, its markers and its analysis.
 fn demo() -> (Project, Analysis) {
     let mut prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     crate::wirenum::renumber(&mut prj, &an.open, &an.netlist, true);
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     (prj, an)
 }
 

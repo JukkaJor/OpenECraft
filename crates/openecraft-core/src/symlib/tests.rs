@@ -127,7 +127,7 @@ fn placed_user_symbols_work_like_built_in_ones() {
     assert_eq!(idx.devices["-A1"].mains.len(), 1);
     let nl = Netlist::build(&back, true);
     assert_eq!(nl.unconnected.len(), 2);
-    let an = Analysis::build(&back);
+    let an = Analysis::checked(&back);
     assert!(!an.issues.iter().any(|i| i.message.contains("Unknown symbol")), "{:?}", an.issues.iter().map(|i| &i.message).collect::<Vec<_>>());
 }
 

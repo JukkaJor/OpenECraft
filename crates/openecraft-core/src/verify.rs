@@ -167,7 +167,7 @@ pub fn verify(prj: &Project) -> Verification {
         push(Severity::Info, tr_fmt!("This is subproject {} of {}", p.name, p.project), None, false);
     }
 
-    let an = Analysis::build(prj);
+    let an = Analysis::checked(prj);
     let count = |sev| an.issues.iter().filter(|i| i.severity == sev).count();
     Verification { findings: v, check_errors: count(Severity::Error), check_warnings: count(Severity::Warning) }
 }

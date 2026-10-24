@@ -10,7 +10,7 @@ fn rows<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {
 #[test]
 fn terminal_connections_list_both_sides() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::TerminalConnections);
     let x1 = rows(t, "-X1");
     // Terminal 1: -K1 inside the cabinet, the motor through cable -W1 outside.
@@ -24,7 +24,7 @@ fn terminal_connections_list_both_sides() {
 #[test]
 fn cable_connections_show_every_core() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::CableConnections);
     let w1 = rows(t, "-W1");
     let cores: Vec<(&str, &str, &str)> = w1.iter().map(|r| (r[3].as_str(), r[4].as_str(), r[5].as_str())).collect();
@@ -35,7 +35,7 @@ fn cable_connections_show_every_core() {
 #[test]
 fn device_connections_list_every_connection_point() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::DeviceConnections);
     let k1 = rows(t, "-K1");
     for point in ["A1", "A2", "13", "14", "53", "54", "83", "84"] {
@@ -64,7 +64,7 @@ fn pin_connections_follow_the_plug_sides() {
         let id = prj.new_id();
         prj.pages[0].wires.push(Wire { id, a: p(100.0, y1), b: p(100.0, y2), ..Default::default() });
     }
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::PinConnections);
     let x10 = rows(t, "-X10");
     assert_eq!(x10.len(), 1, "{x10:?}");
@@ -75,7 +75,7 @@ fn pin_connections_follow_the_plug_sides() {
 #[test]
 fn terminal_lineup_and_strip_overview() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let lineup_table = an.report(&prj, ReportKind::TerminalLineup);
     let lineup = rows(&lineup_table, "-X1");
     let labels: Vec<&str> = lineup.iter().filter(|r| r[2] == "Terminal").map(|r| r[3].as_str()).collect();
@@ -94,7 +94,7 @@ fn terminal_lineup_and_strip_overview() {
 #[test]
 fn panel_legend_numbers_the_devices() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = &an.report(&prj, ReportKind::PanelLegend);
     let cab = rows(t, "+CAB1");
     let placed = prj.layout.enclosures[0].items.iter().filter(|i| i.kind == ItemKind::Device).count();

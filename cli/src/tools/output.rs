@@ -60,7 +60,7 @@ pub static TOOLS: &[Tool] = &[
 fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let mut an = Analysis::build(prj);
-    an.issues.extend(s.plugins.check(prj, &an));
+    an.issues = s.plugins.check(prj, &an);
     an.issues.sort_by_key(|i| i.severity);
     let issues: Vec<Value> = an
         .issues

@@ -2203,8 +2203,7 @@ impl eframe::App for App {
         }
         if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
             self.analysis = Analysis::build(&self.prj);
-            let found = self.plugins.check(&self.prj, &self.analysis);
-            self.analysis.issues.extend(found);
+            self.analysis.issues = self.plugins.check(&self.prj, &self.analysis);
             self.analysis.issues.sort_by_key(|i| i.severity);
             self.analysis_rev = self.history.rev;
             self.analysis_lang = openecraft_i18n::lang();

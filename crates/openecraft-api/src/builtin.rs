@@ -17,7 +17,27 @@ pub use manufacturing::PanelManufacturing;
 pub use panel::PanelChecks;
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+    vec![Box::new(ProjectChecks), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+}
+
+/// The built-in project checks of `openecraft_core::checks` as a plugin, so that the
+/// front ends list and run them like every other check.
+pub struct ProjectChecks;
+
+impl Plugin for ProjectChecks {
+    fn info(&self) -> Info {
+        Info {
+            id: "project_checks".into(),
+            name: Text::Borrowed(tr_const!("Project checks")),
+            version: env!("CARGO_PKG_VERSION").into(),
+            description: Text::Borrowed(tr_const!("Devices, wires, potentials, cables, terminal strips, PLC, panel, fluid, electrical calculations, structure and translations")),
+        }
+    }
+
+    fn register(&self, reg: &mut Registry) -> Result<(), String> {
+        reg.checks.extend(openecraft_core::checks::builtin());
+        Ok(())
+    }
 }
 
 /// Key figures of the project: as command, report and text export of the device tags.
@@ -35,7 +55,7 @@ impl Plugin for Statistics {
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
         reg.command("project_statistics", tr_const!("Key figures of the project: pages, symbols, wires, devices, parts, cables and check results"), vec![], |prj, _| {
-            Ok(figures(prj, &Analysis::build(prj)).into_iter().map(|(key, _, n)| (key.to_string(), Value::from(n))).collect::<serde_json::Map<_, _>>().into())
+            Ok(figures(prj, &Analysis::checked(prj)).into_iter().map(|(key, _, n)| (key.to_string(), Value::from(n))).collect::<serde_json::Map<_, _>>().into())
         })
         .report("project_statistics", tr_const!("Project statistics"), |prj, an| {
             let mut table = Table::new([tr_const!("Figure"), tr_const!("Count")]);

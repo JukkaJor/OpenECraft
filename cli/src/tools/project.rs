@@ -73,7 +73,9 @@ fn ensure_unsaved_ok(s: &Session, a: &Args) -> Result<(), String> {
 
 fn summary(s: &Session) -> Result<Value, String> {
     let prj = s.project()?;
-    let an = Analysis::build(prj);
+    let mut an = Analysis::build(prj);
+    an.issues = s.plugins.check(prj, &an);
+    an.issues.sort_by_key(|i| i.severity);
     let count = |sev| an.issues.iter().filter(|i| i.severity == sev).count();
     let i = &prj.info;
     Ok(json!({

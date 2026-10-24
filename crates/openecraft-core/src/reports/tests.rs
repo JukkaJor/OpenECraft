@@ -8,7 +8,7 @@ fn row<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {
 #[test]
 fn cable_reports_of_the_demo() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let overview = &an.report(&prj, ReportKind::CableOverview);
     let w1 = row(overview, "-W1");
     assert_eq!(w1.len(), 1);
@@ -34,7 +34,7 @@ fn cable_reports_of_the_demo() {
 }
 
 fn messages(prj: &Project) -> Vec<String> {
-    Analysis::build(prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(prj).issues.into_iter().map(|i| i.message).collect()
 }
 
 fn find<'a>(msgs: &'a [String], part: &str) -> Option<&'a String> {

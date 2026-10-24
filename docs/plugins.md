@@ -16,10 +16,13 @@ editor enables and disables them (remembered by the editor).
 
 ## Rust plugins
 
-Built-in plugins (project statistics, panel layout checks, panel manufacturing, part
-lifecycle) live in
+Built-in plugins (project checks, project statistics, panel layout checks, panel
+manufacturing, part lifecycle) live in
 `crates/openecraft-api/src/builtin.rs` and its submodules and are compiled into
-every front end (also the web version). A plugin implements `Plugin`:
+every front end (also the web version). The project checks themselves are registry
+entries of `openecraft_core::checks` (one `Check` per area, with a snake_case name),
+and the registry kinds, parameters and tables are defined in
+`openecraft_core::{ext, params, table}`. A plugin implements `Plugin`:
 
 ```rust
 use openecraft_api::{param, Info, Kind, Plugin, Registry, Table, Text};

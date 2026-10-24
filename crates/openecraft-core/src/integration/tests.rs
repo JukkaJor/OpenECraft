@@ -3,7 +3,7 @@ use crate::sample::demo_project;
 
 fn setup() -> (Project, Analysis) {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     (prj, an)
 }
 
@@ -112,7 +112,7 @@ fn plm_lifecycle_and_obsolete_parts_warning() {
     let issues = problems(&prj);
     assert_eq!(issues.len(), 1);
     assert!(issues[0].message.contains(&used));
-    assert!(Analysis::build(&prj).issues.iter().any(|i| i.message == issues[0].message));
+    assert!(Analysis::checked(&prj).issues.iter().any(|i| i.message == issues[0].message));
 }
 
 #[test]

@@ -23,7 +23,7 @@ fn wildcards() {
 #[test]
 fn schemes_filter_and_sort_the_rows() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let table = &an.report(&prj, ReportKind::ConnectionList);
     let form = ReportForm {
         filters: vec![RowFilter { column: "Cable".into(), op: FilterOp::Equals, value: "-w1".into() }],
@@ -59,7 +59,7 @@ fn blocks_generate_one_page_set_per_group_and_replace_them() {
     let mut prj = demo_project();
     prj.forms.schemes.push(ReportScheme { name: "Short".into(), kind: ReportKind::CableConnections, form: ReportForm { rows: 3, ..Default::default() } });
     prj.report_blocks.push(ReportBlock { scheme: "Short".into(), function: "A1".into(), ..block("Cables", ReportKind::CableConnections) });
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let before = prj.pages.len();
     // -W1 has four cores: two pages with three rows each.
     assert_eq!(generate(&mut prj, &an, 0), Ok(2));
@@ -68,7 +68,7 @@ fn blocks_generate_one_page_set_per_group_and_replace_them() {
     assert_eq!(prj.pages.len(), before + 2);
     let names: Vec<String> = pages.iter().map(|&i| prj.pages[i].name.clone()).collect();
     assert_eq!(prj.pages[pages[0]].function, "A1");
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let first = page_table(&prj, &an, pages[0]).unwrap();
     let second = page_table(&prj, &an, pages[1]).unwrap();
     assert_eq!((first.rows.len(), second.rows.len()), (3, 1));
@@ -94,7 +94,7 @@ fn group_filter_and_whole_report_blocks() {
     let pages = generate_all(&mut prj).unwrap();
     assert_eq!(pages, 1, "no strip matches -Y*, the device list fits one page");
     let all = block_pages_of(&prj, "All");
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = page_table(&prj, &an, all[0]).unwrap();
     assert_eq!(t.rows.len(), an.report(&prj, ReportKind::DeviceList).rows.len());
     // The block is saved with the project.
@@ -109,7 +109,7 @@ fn line_up_pages_draw_the_strip() {
     prj.report_blocks.push(block("Line-up", ReportKind::TerminalLineup));
     generate_all(&mut prj).unwrap();
     let page = block_pages_of(&prj, "Line-up")[0];
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let t = page_table(&prj, &an, page).unwrap();
     let labels: Vec<&str> = t.lineup.iter().filter(|b| !b.accessory).map(|b| b.label.as_str()).collect();
     assert_eq!(labels, vec!["1", "2", "3", "PE"]);
@@ -124,7 +124,7 @@ fn report_pages_are_output_into_other_projects() {
     src.info.name = "Conveyor".into();
     src.report_blocks.push(block("Terminals", ReportKind::TerminalDiagram));
     generate_all(&mut src).unwrap();
-    let an = Analysis::build(&src);
+    let an = Analysis::checked(&src);
     let pages = report_pages(&src, Some("Terminals"));
     let mut target = Project::default();
     target.info.name = "Plant".into();
@@ -135,7 +135,7 @@ fn report_pages_are_output_into_other_projects() {
     assert_eq!(frozen.source, "Conveyor");
     assert!(frozen.rows.iter().any(|r| r[1] == "PE"));
     // The fixed page does not depend on the target's schematic.
-    let an_target = Analysis::build(&target);
+    let an_target = Analysis::checked(&target);
     assert_eq!(page_table(&target, &an_target, out).unwrap().rows, frozen.rows);
     let svg = crate::svg::page_svg(&target, out);
     assert!(svg.contains("Output from project Conveyor"));

@@ -10,6 +10,7 @@ pub mod compare;
 pub mod config;
 pub mod aml;
 pub mod cabledef;
+pub mod checks;
 pub mod conndef;
 pub mod devdesc;
 pub mod dwg;

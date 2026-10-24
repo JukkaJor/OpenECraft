@@ -4,7 +4,7 @@ use crate::sample::demo_project;
 #[test]
 fn door_harness_of_the_demo() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let ws = wires(&prj, &an, "-WH1");
     assert!(!ws.is_empty());
     // Every wire has a door device at least on one connection of its potential, and
@@ -32,7 +32,7 @@ fn wire_diameters() {
 #[test]
 fn only_the_assigned_connections_belong_to_the_harness() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let door = ["-S1", "-S2", "-S3", "-S4", "-P1", "-P2"];
     let ws = wires(&prj, &an, "-WH1");
     // Every harness wire has a door device at one end ...
@@ -53,7 +53,7 @@ fn assignment_by_selected_wires() {
     for h in &mut prj.harnesses {
         h.connections.clear();
     }
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     // The wires of one connection that lies on a single page.
     let ci = an.connections.iter().position(|c| c.a.page == c.b.page).unwrap();
     let c = an.connections[ci].clone();
@@ -66,7 +66,7 @@ fn assignment_by_selected_wires() {
     let (a, b) = (pin_designation(&prj, c.a), pin_designation(&prj, c.b));
     assign(&mut prj, &a, &b, "-WH1");
     assert_eq!(of(&prj, &b, &a), "-WH1");
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert_eq!(an.connections.iter().filter(|c| c.harness == "-WH1").count(), 1);
     // The connections of a wire: those of its potential section.
     let wire = prj.pages[page].wires[0].id;
@@ -78,26 +78,26 @@ fn assignment_by_selected_wires() {
 #[test]
 fn renamed_devices_keep_and_stale_assignments_are_reported() {
     let mut prj = demo_project();
-    let before = wires(&prj, &Analysis::build(&prj), "-WH1").len();
+    let before = wires(&prj, &Analysis::checked(&prj), "-WH1").len();
     crate::ops::rename_device(&mut prj, "-S1", "-S11");
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert_eq!(wires(&prj, &an, "-WH1").len(), before);
     assert!(stale(&prj, &an).is_empty());
     // An assignment of a connection that does not exist.
     prj.harnesses[0].connections.push(key("-X9:1", "-K9:A1"));
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert_eq!(stale(&prj, &an), vec![("-WH1".to_string(), key("-K9:A1", "-X9:1"))]);
     assert!(an.issues.iter().any(|i| i.message.contains("-K9:A1 – -X9:1 does not exist")));
     // A harness without connections.
     prj.harnesses.push(Harness { id: 999, tag: "-WH2".into(), ..Default::default() });
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(an.issues.iter().any(|i| i.message == "Harness -WH2 has no wires"));
 }
 
 #[test]
 fn kbl_export() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let ws = wires(&prj, &an, "-WH1");
     let x = kbl(&prj, &an);
     assert!(x.starts_with("<?xml"));

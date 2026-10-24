@@ -120,7 +120,7 @@ fn ferrules_in_wire_list_and_bom() {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable.is_empty()) {
         w.cross_section = "0.75 mm²".into();
     }
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.wiring.is_empty());
     let list = crate::reports::production_wire_list(&prj, &an);
     let col = list.headers.iter().position(|h| *h == "Ferrule part").unwrap();
@@ -134,7 +134,7 @@ fn ferrules_in_wire_list_and_bom() {
     assert_eq!(row[1], (2 * an.wiring.iter().filter(|w| w.cross_section == "0.75 mm²").count()).to_string());
     assert!(!row[6].contains("not in project"), "described from the catalog");
     prj.layout.ferrules = false;
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.report(&prj, crate::model::ReportKind::BillOfMaterials).rows.iter().any(|r| r[3] == "GEN.FER-0.75"));
 }
 

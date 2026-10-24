@@ -5,7 +5,7 @@ use crate::sample::demo_project;
 #[test]
 fn steps_cover_the_routed_wires_in_order() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let all = steps(&prj, &an.wiring, None, Order::Device);
     assert_eq!(all.len(), an.wiring.len());
     assert!(all.iter().all(|s| s.status == Status::Open));
@@ -22,7 +22,7 @@ fn steps_cover_the_routed_wires_in_order() {
 #[test]
 fn marks_track_progress_and_changes() {
     let mut prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let w = an.wiring[0].clone();
     assert_eq!(progress(&prj, &an.wiring, None).done, 0);
     set_mark(&mut prj, &w, Some(Mark::Done), "");
@@ -41,7 +41,7 @@ fn marks_track_progress_and_changes() {
     set_mark(&mut prj, &w, Some(Mark::Problem), "too short");
     assert_eq!(prj.wiring_marks.len(), 1);
     assert_eq!(status(&prj, &w), Status::Problem);
-    let an2 = Analysis::build(&prj);
+    let an2 = Analysis::checked(&prj);
     assert!(an2.issues.iter().any(|i| i.message.contains("too short")));
 
     set_mark(&mut prj, &w, None, "");
@@ -51,7 +51,7 @@ fn marks_track_progress_and_changes() {
 #[test]
 fn marks_of_removed_wires_are_stale() {
     let mut prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let mut gone = an.wiring[0].clone();
     gone.from = "-X99:1".into();
     set_mark(&mut prj, &gone, Some(Mark::Done), "");
@@ -75,7 +75,7 @@ fn next_open_skips_wired_steps_and_wraps() {
 #[test]
 fn csv_lists_every_wire_with_its_state() {
     let mut prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     set_mark(&mut prj, &an.wiring[0], Some(Mark::Problem), "a;b");
     let text = csv(&prj, &an.wiring, Order::Number);
     assert_eq!(text.lines().count(), an.wiring.len() + 1);
