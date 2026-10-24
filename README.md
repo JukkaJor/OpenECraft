@@ -332,6 +332,25 @@ built with [egui / eframe](https://github.com/emilk/egui).
   schematic after they were wired are flagged by the check. The web build opens the
   assistant directly with `…/#wiring` (desktop: `--wiring`), which makes a tablet in
   the workshop a cheap wiring station; checklist with state as CSV.
+- **Enterprise integration** (*Project › Enterprise integration…*): one integration
+  layer with connectors for **ERP** (item master and BOM, CSV), **PDM** (project and
+  page metadata, JSON), **PLM** (engineering BOM, JSON), **ECAD** (components and
+  netlist for PCB design, JSON), **MCAD** (device placement, CSV), **procurement**
+  (order list per supplier, stock and pack sizes considered, CSV) and **wiring
+  machines** (job list with cut length, stripping and ferrules, CSV). All connectors
+  work in both directions and share one neutral field vocabulary: exports use the
+  field codes as columns / keys, imports recognise the codes, common English and
+  German column names (`Material`, `Bestand`, `refdes` …) and the column mapping of a
+  *profile* (e.g. `MATNR` → `erp_number` for SAP). Imports are shown as a list of
+  changes that are reviewed and taken over: ERP numbers, prices, stock and lead
+  times, PLM item IDs, revisions and lifecycle states (obsolete parts in use are
+  flagged by the check), PDM document numbers and states, part assignments from the
+  ECAD system, device positions from the MCAD system, order confirmations, and the
+  wire processing feedback as wiring marks. Each export stores the exported values,
+  so values changed on both sides since are reported as conflicts and values the
+  other system left unchanged never overwrite local edits. A neutral exchange file
+  (`openecraft.exchange/1`, JSON) holds everything for systems without a connector;
+  the exchange log is kept in the project.
 - **Fluid and process**: wires between the ports of fluid power and P&ID symbols are
   hoses / pipes in their own nets (not mixed with electrical potentials; a fluid port
   on an electrical net is an error), numbered apart from the wires (`H1`, `H2` …),
@@ -597,6 +616,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
 | `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
+| `crates/openecraft-core/src/integration.rs` | Integration layer: neutral fields, connectors (ERP, PDM, PLM, ECAD, MCAD, procurement, wiring machine), profiles, import preview, conflicts, exchange log |
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
 | `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
@@ -642,6 +662,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `application/app/languages_ui.rs` | Project languages window: dictionary, export per language |
 | `application/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
 | `application/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
+| `application/app/integration_ui.rs` | Enterprise integration window: export, import preview, profiles, linked data, log |
 | `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
