@@ -278,6 +278,7 @@ fn with_data(out: &mut Project, src: &Project) {
         workflow,
         baselines,
         electrical,
+        property_db,
         field,
         review: _,
         next_id: _,
@@ -312,6 +313,7 @@ fn with_data(out: &mut Project, src: &Project) {
     out.workflow = workflow.clone();
     out.baselines = baselines.clone();
     out.electrical = electrical.clone();
+    out.property_db = property_db.clone();
     out.field = field.clone();
 }
 
@@ -350,6 +352,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         workflow,
         baselines,
         electrical,
+        property_db,
         field,
         review: _,
         next_id: _,
@@ -385,6 +388,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *workflow == b.workflow
         && *baselines == b.baselines
         && *electrical == b.electrical
+        && *property_db == b.property_db
         && *field == b.field
 }
 

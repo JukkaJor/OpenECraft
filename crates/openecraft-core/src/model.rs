@@ -98,6 +98,9 @@ pub struct Project {
     /// Supply, installation conditions, safety functions and rule sets.
     #[serde(skip_serializing_if = "crate::electrical::Electrical::is_default")]
     pub electrical: crate::electrical::Electrical,
+    /// User defined properties, function definitions and placement schemes.
+    #[serde(skip_serializing_if = "crate::properties::Library::is_empty")]
+    pub property_db: crate::properties::Library,
     /// Field wiring: plant layout, route network, bonding and cable accessories.
     #[serde(skip_serializing_if = "crate::field::Field::is_empty")]
     pub field: crate::field::Field,
@@ -139,6 +142,7 @@ impl Default for Project {
             baselines: Vec::new(),
             review: Default::default(),
             electrical: Default::default(),
+            property_db: Default::default(),
             field: Default::default(),
             next_id: 1,
         };
@@ -157,7 +161,8 @@ pub struct ProjectInfo {
     pub creator: String,
     pub date: String,
     pub revision: String,
-    /// User defined project properties, shown in title blocks as `{prop:Name}`.
+    /// Project property values ([`crate::properties`]) and free project properties,
+    /// shown in title blocks as `{prop:Name}`.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub properties: BTreeMap<String, String>,
 }
@@ -399,6 +404,9 @@ pub struct Page {
     /// Cable definition lines: the wires they cross are cores of the cable.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub cable_defs: Vec<CableDef>,
+    /// Page property values.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub values: crate::properties::Values,
 }
 
 impl Default for Page {
@@ -438,6 +446,7 @@ impl Page {
             images: Vec::new(),
             conn_defs: Vec::new(),
             cable_defs: Vec::new(),
+            values: BTreeMap::new(),
         }
     }
 
@@ -477,6 +486,15 @@ pub struct SymbolInst {
     /// Further properties shown beside the symbol (part number, description …).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub props: Vec<PlacedProp>,
+    /// Placement scheme the placed properties were taken from.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub scheme: String,
+    /// Function definition; empty = the symbol's built-in one.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub function_def: String,
+    /// Function, terminal and PLC connection point property values.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub values: crate::properties::Values,
 }
 
 impl Default for SymbolInst {
@@ -493,11 +511,15 @@ impl Default for SymbolInst {
             pins: Vec::new(),
             tag_offset: None,
             props: Vec::new(),
+            scheme: String::new(),
+            function_def: String::new(),
+            values: BTreeMap::new(),
         }
     }
 }
 
-/// Property of a device that can be placed as a text beside one of its symbols.
+/// Fixed placeable properties of older files (now property keys, see
+/// [`PropKind::key`]).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum PropKind {
     #[default]
@@ -510,19 +532,28 @@ pub enum PropKind {
     Structure,
 }
 
-/// A device property shown at a position relative to its symbol.
+/// A property shown at a position relative to a symbol.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PlacedProp {
-    pub kind: PropKind,
-    /// Left end of the text relative to the symbol position.
+    /// Property key (with index), see [`crate::properties`].
+    pub key: String,
+    /// Anchor point of the text relative to the symbol position.
     pub offset: P,
     pub size: f32,
+    #[serde(skip_serializing_if = "crate::props::is_left", default = "crate::props::default_anchor")]
+    pub anchor: crate::symbols::Anchor,
+    /// Shown as `Name: value`.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub name: bool,
+    /// Fixed property of older files, converted on loading.
+    #[serde(rename = "kind", skip_serializing)]
+    pub legacy: Option<PropKind>,
 }
 
 impl Default for PlacedProp {
     fn default() -> Self {
-        PlacedProp { kind: PropKind::Description, offset: p(4.0, 4.0), size: 2.0 }
+        PlacedProp { key: String::new(), offset: p(4.0, 4.0), size: 2.0, anchor: crate::symbols::Anchor::Left, name: false, legacy: None }
     }
 }
 
@@ -594,6 +625,9 @@ pub struct Cable {
     /// Outer diameter in mm; 0 = estimated from cores and cross-section.
     #[serde(skip_serializing_if = "is_zero")]
     pub diameter: f32,
+    /// Cable property values.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub values: crate::properties::Values,
 }
 
 impl Cable {
@@ -849,6 +883,9 @@ pub struct DeviceData {
     /// Single part number of files written by older versions.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub part: String,
+    /// Device property values.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub values: crate::properties::Values,
 }
 
 impl Project {
@@ -883,6 +920,7 @@ impl Project {
                     }
                     s.pins.truncate(def.pins.len());
                 }
+                crate::props::migrate(s);
             }
         }
         self.migrate_part_assignments();

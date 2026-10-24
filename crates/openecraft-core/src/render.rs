@@ -518,9 +518,9 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
     }
 
     for pp in &s.props {
-        let t = crate::props::value(prj, s, pp.kind);
+        let t = crate::props::text(prj, page_i, s, pp);
         if !t.is_empty() {
-            d.text(s.pos + pp.offset, &t, pp.size, Anchor::Left, VAnchor::Middle, text_ink);
+            d.text(s.pos + pp.offset, &t, pp.size, pp.anchor, VAnchor::Middle, text_ink);
         }
     }
 
@@ -567,11 +567,16 @@ pub fn tag_block_bounds(prj: &Project, page_i: usize, def: &SymbolDef, s: &Symbo
 }
 
 /// Area of a placed property text.
-pub fn prop_bounds(prj: &Project, s: &SymbolInst, pp: &PlacedProp) -> R {
-    let t = crate::props::value(prj, s, pp.kind);
+pub fn prop_bounds(prj: &Project, page_i: usize, s: &SymbolInst, pp: &PlacedProp) -> R {
+    let t = crate::props::text(prj, page_i, s, pp);
     let w = t.chars().count().max(3) as f32 * pp.size * 0.62;
     let q = s.pos + pp.offset;
-    R::from_points(p(q.x, q.y - pp.size * 0.7), p(q.x + w, q.y + pp.size * 0.7))
+    let x0 = match pp.anchor {
+        Anchor::Left => q.x,
+        Anchor::Center => q.x - w / 2.0,
+        Anchor::Right => q.x - w,
+    };
+    R::from_points(p(x0, q.y - pp.size * 0.7), p(x0 + w, q.y + pp.size * 0.7))
 }
 
 /// Contact image row: kind, connection designations, cross reference and its page

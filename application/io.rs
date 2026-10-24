@@ -48,6 +48,8 @@ pub enum Purpose {
     ChangeRequests,
     /// Customer rule sets (JSON) to add to the project.
     RuleSets,
+    /// Property library (JSON) to merge into the project.
+    PropertyLibrary,
 }
 
 impl FileKind for Purpose {
@@ -64,6 +66,7 @@ impl FileKind for Purpose {
             Purpose::StructureTemplate => (tr("OpenECraft structure template (JSON)"), &["json"]),
             Purpose::PageTemplates => (tr("OpenECraft page templates (JSON)"), &["json"]),
             Purpose::RuleSets => (tr("OpenECraft rule sets (JSON)"), &["json"]),
+            Purpose::PropertyLibrary => (tr("OpenECraft property library (JSON)"), &["json"]),
             Purpose::Image => (tr("Images (PNG, JPEG)"), &["png", "jpg", "jpeg"]),
             Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
