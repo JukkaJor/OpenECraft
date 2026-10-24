@@ -29,6 +29,7 @@ mod config_ui;
 mod drawing_ui;
 mod electrical_ui;
 mod plc_ui;
+mod plugins_ui;
 mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
@@ -127,6 +128,9 @@ pub struct App {
     revisions_ui: revisions_ui::RevisionsUi,
     compare_ui: compare_ui::CompareUi,
     requests_ui: requests_ui::RequestsUi,
+    /// Built-in and external plugins (`openecraft_api`).
+    plugins: openecraft_api::Plugins,
+    plugins_ui: plugins_ui::PluginsUi,
 }
 
 impl App {
@@ -137,6 +141,7 @@ impl App {
         let mut server_url: Option<String> = None;
         let mut remote = crate::remote::Remote::default();
         let mut macro_lib = None;
+        let mut disabled_plugins: Vec<String> = Vec::new();
         let mut language: Option<String> = None;
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
@@ -145,6 +150,7 @@ impl App {
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
             macro_lib = eframe::get_value(storage, "macros");
+            disabled_plugins = eframe::get_value(storage, plugins_ui::STORAGE_KEY).unwrap_or_default();
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -162,6 +168,11 @@ impl App {
         prj.normalize();
         let history = History::new(&prj);
         let rev = history.rev;
+        let mut plugins = openecraft_api::Plugins::new(Vec::<String>::new());
+        plugins.load_env();
+        for id in &disabled_plugins {
+            plugins.set_enabled(id, false);
+        }
         App {
             prj,
             page: 0,
@@ -219,6 +230,8 @@ impl App {
             revisions_ui: Default::default(),
             compare_ui: Default::default(),
             requests_ui: Default::default(),
+            plugins,
+            plugins_ui: Default::default(),
         }
         .start_on_first_schematic()
     }
@@ -872,6 +885,7 @@ impl App {
                     self.generate_report_blocks(ui.ctx());
                 }
             });
+            ui.menu_button(tr("Plugins"), |ui| self.plugins_menu(ui));
             ui.menu_button(tr("View"), |ui| {
                 if ui.button(tr("Fit page   F")).clicked() {
                     self.editor.fit_pending = true;
@@ -1901,6 +1915,7 @@ impl App {
         self.save_template_window(ctx);
         self.tables_window(ctx);
         self.config_window(ctx);
+        self.plugins_windows(ctx);
 
         // Page properties
         if let Some(pi) = self.page_props {
@@ -2164,6 +2179,9 @@ impl eframe::App for App {
         }
         if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
             self.analysis = Analysis::build(&self.prj);
+            let found = self.plugins.check(&self.prj, &self.analysis);
+            self.analysis.issues.extend(found);
+            self.analysis.issues.sort_by_key(|i| i.severity);
             self.analysis_rev = self.history.rev;
             self.analysis_lang = openecraft_i18n::lang();
         }
@@ -2303,6 +2321,7 @@ impl eframe::App for App {
         eframe::set_value(storage, "macros", &self.macro_lib);
         eframe::set_value(storage, "project_server_url", &self.remote.url);
         eframe::set_value(storage, "project_server_user", &self.remote.user);
+        eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

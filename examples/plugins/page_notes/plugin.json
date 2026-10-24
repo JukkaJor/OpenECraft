@@ -1,0 +1,8 @@
+{
+  "id": "page_notes",
+  "name": "Page notes",
+  "version": "1.0",
+  "description": "Example external plugin: checks for pages without description, sets descriptions, lists and exports the pages",
+  "api": 1,
+  "run": ["python3", "main.py"]
+}
