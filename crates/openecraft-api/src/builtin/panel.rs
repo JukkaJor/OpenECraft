@@ -8,7 +8,7 @@ use crate::Registry;
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, thermal, ClassRule, Enclosure, PanelRules};
-use openecraft_core::reports::Issue;
+use openecraft_core::issue::Issue;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 

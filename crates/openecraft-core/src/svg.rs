@@ -3,7 +3,7 @@
 use crate::geom::P;
 use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
 
@@ -109,7 +109,7 @@ pub fn drawing_svg(w: f32, h: f32, f: impl FnOnce(&mut SvgDraw)) -> String {
 }
 
 pub fn page_svg(prj: &Project, page_i: usize) -> String {
-    page_svg_with(prj, &Analysis::build(prj), page_i)
+    page_svg_with(prj, &Analysis::with_builtin(prj), page_i)
 }
 
 /// One page as SVG, drawn with the host's analysis (its reports, its index).
@@ -130,7 +130,7 @@ pub fn page_svg_with(prj: &Project, an: &Analysis, page_i: usize) -> String {
 /// All pages in one HTML file, one page per printed sheet (A3 landscape).
 /// Open in a browser and print to PDF.
 pub fn print_document(prj: &Project) -> String {
-    print_document_with(prj, &Analysis::build(prj))
+    print_document_with(prj, &Analysis::with_builtin(prj))
 }
 
 /// All pages as HTML, drawn with the host's analysis.

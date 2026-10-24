@@ -8,7 +8,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 pub use crate::model::safety::{Category, Pl, SafetyFunction, Subsystem};
 
 impl Pl {

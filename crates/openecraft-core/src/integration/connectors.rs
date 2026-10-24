@@ -4,7 +4,7 @@
 use super::{bom, fmt_number, Field};
 use crate::model::{PageKind, Part, Project};
 use crate::netlist::pin_designation;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::wiring::{self, Order, Status};
 use openecraft_parts::csv_escape;
 use serde_json::{json, Map, Value};

@@ -1,6 +1,7 @@
 use super::*;
 use crate::panel::{DuctRun, EndKind, Enclosure, PanelItem, Route};
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 
 fn project_with_duct(part: &str) -> Project {
     let mut prj = Project::default();

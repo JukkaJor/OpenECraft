@@ -9,7 +9,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::netlist::{chained_pins, pin_designation, Net, Netlist, PinRef};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::symbols::{Category, SymbolDef};
 use std::collections::{BTreeMap, BTreeSet};
 pub use crate::model::fluid::{FluidSettings, HoseConfig, LineType, Medium};

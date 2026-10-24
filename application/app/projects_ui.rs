@@ -8,7 +8,7 @@ use crate::archive::{self, ArchiveOptions};
 use crate::io::{self, Purpose};
 use crate::model::*;
 use crate::projects::{self, Batch, Database, Entry};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::{options, subproject, verify};
 use egui::{Color32, RichText};
 use openecraft_ui::io as fs;

@@ -1,6 +1,6 @@
 use super::*;
 use crate::model::ReportKind;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 /// The demo with a cable gland in the bottom of +CAB1, below the terminal strip.

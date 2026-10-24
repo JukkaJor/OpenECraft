@@ -5,7 +5,7 @@
 
 use super::Field;
 use crate::model::Project;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::HashMap;
 pub use crate::model::field::{Bond, BondKind};

@@ -1,6 +1,6 @@
 use super::*;
 use crate::geom::p;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn rows<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {

@@ -6,7 +6,7 @@ use super::common::enclosure_index;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RoutingPath, ShieldEnds};
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};

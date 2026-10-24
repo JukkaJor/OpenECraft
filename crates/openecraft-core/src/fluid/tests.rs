@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::geom::{p, P};
 use crate::model::{DeviceData, SymbolInst, Wire};
 
@@ -258,7 +258,7 @@ fn hoses_run_between_bayed_enclosures_and_in_3d() {
     // the field through the bottom; the hose's own bend radius counts.
     wire_mut(&mut prj, 10).hose = Some(HoseConfig { bend_radius: 40.0, ..Default::default() });
     wire_mut(&mut prj, 10).length = 0.1;
-    let an = crate::reports::Analysis::checked(&prj);
+    let an = crate::analysis::Analysis::checked(&prj);
     let tubes: Vec<&crate::routing3d::RoutedItem> = an.routing.items.iter().filter(|i| i.kind == crate::routing3d::RouteKind::Tube).collect();
     assert_eq!(tubes.len(), 3);
     assert!(tubes.iter().all(|t| t.routed() && t.class == crate::routing3d::Class::Fluid), "{tubes:?}");

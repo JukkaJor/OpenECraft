@@ -7,7 +7,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::index::{Index, Loc};
 use crate::model::*;
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::symbols::{self, Category, Func, SymbolDef};
 use std::collections::BTreeMap;
 pub use crate::model::electrofluid::{DeviceGroup, GroupKind};

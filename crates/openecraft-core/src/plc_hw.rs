@@ -5,7 +5,7 @@
 
 pub use crate::devdesc::{BusKind, DescPort, DeviceDescription, ModuleKind};
 use crate::model::*;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
 pub use crate::model::plc_hw::{Address, BusConnection, BusSystem, Hardware, PortRef, Scheme, Station, StationKind};

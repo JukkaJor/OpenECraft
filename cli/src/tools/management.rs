@@ -6,7 +6,7 @@ use crate::session::Session;
 use openecraft_core::archive::{self, ArchiveOptions};
 use openecraft_core::model::Project;
 use openecraft_core::projects::{self, Batch, Database, Entry};
-use openecraft_core::reports::Severity;
+use openecraft_core::issue::Severity;
 use openecraft_core::{options, subproject, verify};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};

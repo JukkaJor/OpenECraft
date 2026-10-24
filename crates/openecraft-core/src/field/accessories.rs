@@ -6,7 +6,7 @@
 
 use super::Plan;
 use crate::model::Project;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::BTreeMap;
 pub use crate::model::field::{Accessory, AccessoryKind};

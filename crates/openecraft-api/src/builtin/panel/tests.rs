@@ -1,6 +1,7 @@
 use super::*;
 use crate::{Origin, Plugins};
-use openecraft_core::reports::{Analysis, Severity};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::issue::Severity;
 use openecraft_core::sample::demo_project;
 use serde_json::Map;
 

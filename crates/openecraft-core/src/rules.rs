@@ -11,7 +11,7 @@ use crate::electrical::net_kind;
 use crate::model::*;
 use crate::netlist::{pin_designation, Connection, Netlist};
 use crate::potentials::PotentialKind;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use std::collections::{BTreeMap, BTreeSet};
 pub use crate::model::rules::{Check, Condition, Level, LimitOverrides, Limits, Op, RuleSet, Scope};
 

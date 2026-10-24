@@ -47,7 +47,7 @@ pub fn pages_dwg(prj: &Project, pages: &[usize]) -> Result<Vec<u8>, String> {
 }
 
 /// Pages as one DWG drawing, drawn with the host's analysis.
-pub fn pages_dwg_with(prj: &Project, an: &crate::reports::Analysis, pages: &[usize]) -> Result<Vec<u8>, String> {
+pub fn pages_dwg_with(prj: &Project, an: &crate::analysis::Analysis, pages: &[usize]) -> Result<Vec<u8>, String> {
     from_dxf(&crate::dxf::pages_dxf_with(prj, an, pages))
 }
 

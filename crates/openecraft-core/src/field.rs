@@ -10,7 +10,7 @@
 
 use crate::model::Project;
 use crate::netlist::Connection;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use crate::routing3d::{self, Class};
 use openecraft_i18n::{tr, tr_fmt};
 use std::cmp::Reverse;

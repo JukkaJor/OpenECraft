@@ -5,7 +5,8 @@
 
 use crate::model::Project;
 use crate::params::{Args, Param, Text};
-use crate::reports::{Analysis, Issue};
+use crate::analysis::Analysis;
+use crate::issue::Issue;
 use crate::table::Table;
 use serde_json::Value;
 use std::sync::Arc;

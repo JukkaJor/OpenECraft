@@ -1,202 +1,96 @@
-//! Reports (device list, BOM, terminal diagram, ...) and the derived data they share
-//! ([`Analysis`]). The project checks are in [`crate::checks`].
+//! The built-in report tables (device list, BOM, terminal diagram, ...) as registry
+//! entries. The derived data they read is [`crate::analysis::Analysis`], the project
+//! checks are in [`crate::checks`].
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::ext::Report;
 use crate::index::Index;
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
-use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
+use crate::netlist::{pin_designation, Connection, Netlist, PinRef};
 use crate::params::Text;
 use crate::symbols::{self, Func};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::sync::{Arc, Mutex};
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 mod diagrams;
 mod electrical_reports;
 mod fluid_reports;
 
+pub use crate::analysis::Analysis;
+pub use crate::issue::{Issue, Severity};
 pub use crate::table::Table;
 
-/// The built-in reports as registry entries, in the order of the Reports menu.
-pub fn builtin() -> Vec<Report> {
-    ReportKind::ALL.into_iter().map(|k| Report { name: k.name().into(), title: Text::Borrowed(k.title_key()), run: Arc::new(move |prj, an| Ok(an.generate(prj, k))) }).collect()
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Severity {
-    Error,
-    Warning,
-    Info,
-}
-
-impl Severity {
-    /// Machine readable name ("error", "warning", "info").
-    pub fn key(self) -> &'static str {
-        match self {
-            Severity::Error => "error",
-            Severity::Warning => "warning",
-            Severity::Info => "info",
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Issue {
-    pub severity: Severity,
-    pub message: String,
-    pub target: Option<(usize, u64)>,
-}
-
-/// Everything derived from the project that is expensive enough to cache. The report
-/// tables are generated when they are first asked for ([`Analysis::report`]).
-#[derive(Default)]
-pub struct Analysis {
-    /// Device / cross-reference index.
-    pub index: Index,
-    pub netlist: Netlist,
-    /// Netlist with the terminal sides apart: one net per physical connection
-    /// (wire numbers, cables).
-    pub open: Netlist,
-    pub issues: Vec<Issue>,
-    /// Virtual wiring of the panel layout.
-    pub wiring: Vec<RoutedWire>,
-    /// Connections the panel layout could not route.
-    pub open_wires: Vec<OpenWire>,
-    /// Changes since the last revision (revision marks).
-    pub changes: Vec<crate::revision::PageChanges>,
-    /// Point-to-point connections.
-    pub connections: Vec<Connection>,
-    /// Fill levels of the cable ducts the wiring runs through.
-    pub duct_fill: Vec<panel::DuctFill>,
-    /// 3D routing of wires, cables and tubes.
-    pub routing: crate::routing3d::Routing,
-    /// Cables planned through the route network of the plant.
-    pub field: crate::field::Plan,
-    /// Reports the tables come from: the built-in ones until the host sets the
-    /// reports of its registry ([`Analysis::set_reports`]).
-    reports: Vec<Report>,
-    /// Generated report tables.
-    tables: Mutex<HashMap<ReportId, Arc<Table>>>,
-}
-
 impl Analysis {
-    pub fn build(prj: &Project) -> Analysis {
-        let idx = Index::build(prj);
-        let netlist = Netlist::build(prj, true);
-        let open = Netlist::build(prj, false);
-        let (mut wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
-        let conns = connections(prj, &netlist, &open);
-        let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
-        let fill = panel::duct_fill(prj, &wiring);
-        let field = crate::field::plan(prj, &conns);
-        let changes = crate::revision::pending(prj);
-        Analysis {
-            index: idx,
-            netlist,
-            open,
-            issues: Vec::new(),
-            wiring,
-            open_wires,
-            changes,
-            connections: conns,
-            duct_fill: fill,
-            routing,
-            field,
-            reports: builtin(),
-            tables: Mutex::default(),
-        }
-    }
-
-    /// The analysis with the issues of the built-in checks ([`crate::checks`]). Hosts
-    /// with plugins fill `issues` from `Plugins::check` instead, which runs the same
-    /// checks and those of the plugins.
-    pub fn checked(prj: &Project) -> Analysis {
+    /// The analysis with the built-in reports (hosts take the reports of their
+    /// registry instead, see [`Analysis::set_reports`]).
+    pub fn with_builtin(prj: &Project) -> Analysis {
         let mut an = Analysis::build(prj);
-        an.issues = crate::checks::run_builtin(prj, &an);
+        an.set_reports(builtin());
         an
     }
 
-    /// The reports the tables come from.
-    pub fn reports(&self) -> &[Report] {
-        &self.reports
+    /// The analysis with the built-in reports and the issues of the built-in checks
+    /// ([`crate::checks`]). Hosts with plugins fill `issues` from `Plugins::check`
+    /// instead, which runs the same checks and those of the plugins.
+    pub fn checked(prj: &Project) -> Analysis {
+        let mut an = Analysis::with_builtin(prj);
+        an.issues = crate::checks::run_builtin(prj, &an);
+        an
     }
+}
 
-    /// Takes the reports of the host's registry (built-in and of plugins).
-    pub fn set_reports(&mut self, reports: impl IntoIterator<Item = Report>) {
-        self.reports = reports.into_iter().collect();
-        self.clear_reports();
+/// The table of a built-in report.
+pub fn table(prj: &Project, an: &Analysis, kind: ReportKind) -> Table {
+    let (idx, netlist, open, conns) = (&an.index, &an.netlist, &an.open, &an.connections);
+    match kind {
+        ReportKind::TableOfContents => toc(prj),
+        ReportKind::DeviceList => device_list(prj, idx),
+        ReportKind::BillOfMaterials => bom(prj, idx, &an.wiring, conns),
+        ReportKind::TerminalDiagram => terminal_diagram(prj, netlist, open),
+        ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
+        ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, netlist, open),
+        ReportKind::TerminalConnections => diagrams::terminal_connections(prj, conns),
+        ReportKind::PlugDiagram => plug_diagram(prj, netlist, open),
+        ReportKind::PinConnections => diagrams::pin_connections(prj, conns),
+        ReportKind::ConnectionList => connection_list(prj, conns),
+        ReportKind::DeviceConnections => diagrams::device_connections(prj, idx, conns),
+        ReportKind::PlcAssignment => plc_list(prj, netlist),
+        ReportKind::RevisionOverview => revision_overview(prj),
+        ReportKind::PotentialList => potential_list(prj, netlist),
+        ReportKind::PanelWiring => panel_wiring(prj, &an.wiring, &an.open_wires),
+        ReportKind::CableOverview => cable_overview(prj, conns),
+        ReportKind::CableDiagram => cable_diagram(prj, conns),
+        ReportKind::CableConnections => diagrams::cable_connections_report(prj, conns),
+        ReportKind::CableSizing => cable_sizing(prj, conns),
+        ReportKind::HarnessData => harness_data(prj, an),
+        ReportKind::DuctFill => duct_fill_report(prj, &an.duct_fill),
+        ReportKind::PanelLegend => diagrams::panel_legend(prj, idx),
+        ReportKind::Climate => climate_report(prj),
+        ReportKind::Marking => marking_report(&crate::marking::markers(prj, conns)),
+        ReportKind::HoseList => hose_list(prj, open),
+        ReportKind::PctLoops => pct_loops(prj, idx),
+        ReportKind::FluidNetlist => fluid_reports::netlist(prj, open),
+        ReportKind::HoseConfiguration => fluid_reports::configuration(prj, open),
+        ReportKind::TubingList => fluid_reports::tubing(prj, open),
+        ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, idx),
+        ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, idx),
+        ReportKind::RoutingList => routing_list(prj, &an.routing),
+        ReportKind::BundleList => bundle_list(&an.routing),
+        ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, netlist, conns),
+        ReportKind::Selectivity => electrical_reports::selectivity(prj, netlist, conns),
+        ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, netlist),
+        ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, netlist),
+        ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
+        ReportKind::Verification => electrical_reports::verification(prj, conns),
+        ReportKind::FieldRouting => field_routing(prj, &an.field),
+        ReportKind::Bonding => bonding_list(prj),
     }
+}
 
-    /// The table of a report: generated on the first call (from the project the
-    /// analysis was built from) and kept. `None` for a report that is not registered.
-    pub fn report(&self, prj: &Project, id: impl Into<ReportId>) -> Option<Arc<Table>> {
-        let id = id.into();
-        if let Some(t) = self.tables.lock().ok().and_then(|m| m.get(&id).cloned()) {
-            return Some(t);
-        }
-        let r = self.reports.iter().find(|r| r.name == id.as_str())?;
-        let table = Arc::new((r.run)(prj, self).unwrap_or_default());
-        if let Ok(mut m) = self.tables.lock() {
-            m.insert(id, table.clone());
-        }
-        Some(table)
-    }
-
-    /// Forgets the generated tables (e.g. after a change of the language).
-    pub fn clear_reports(&self) {
-        if let Ok(mut m) = self.tables.lock() {
-            m.clear();
-        }
-    }
-
-    /// Generates the table of a built-in report.
-    pub(crate) fn generate(&self, prj: &Project, kind: ReportKind) -> Table {
-        let (idx, netlist, open, conns) = (&self.index, &self.netlist, &self.open, &self.connections);
-        match kind {
-            ReportKind::TableOfContents => toc(prj),
-            ReportKind::DeviceList => device_list(prj, idx),
-            ReportKind::BillOfMaterials => bom(prj, idx, &self.wiring, conns),
-            ReportKind::TerminalDiagram => terminal_diagram(prj, netlist, open),
-            ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
-            ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, netlist, open),
-            ReportKind::TerminalConnections => diagrams::terminal_connections(prj, conns),
-            ReportKind::PlugDiagram => plug_diagram(prj, netlist, open),
-            ReportKind::PinConnections => diagrams::pin_connections(prj, conns),
-            ReportKind::ConnectionList => connection_list(prj, conns),
-            ReportKind::DeviceConnections => diagrams::device_connections(prj, idx, conns),
-            ReportKind::PlcAssignment => plc_list(prj, netlist),
-            ReportKind::RevisionOverview => revision_overview(prj),
-            ReportKind::PotentialList => potential_list(prj, netlist),
-            ReportKind::PanelWiring => panel_wiring(prj, &self.wiring, &self.open_wires),
-            ReportKind::CableOverview => cable_overview(prj, conns),
-            ReportKind::CableDiagram => cable_diagram(prj, conns),
-            ReportKind::CableConnections => diagrams::cable_connections_report(prj, conns),
-            ReportKind::CableSizing => cable_sizing(prj, conns),
-            ReportKind::HarnessData => harness_data(prj, self),
-            ReportKind::DuctFill => duct_fill_report(prj, &self.duct_fill),
-            ReportKind::PanelLegend => diagrams::panel_legend(prj, idx),
-            ReportKind::Climate => climate_report(prj),
-            ReportKind::Marking => marking_report(&crate::marking::markers(prj, conns)),
-            ReportKind::HoseList => hose_list(prj, open),
-            ReportKind::PctLoops => pct_loops(prj, idx),
-            ReportKind::FluidNetlist => fluid_reports::netlist(prj, open),
-            ReportKind::HoseConfiguration => fluid_reports::configuration(prj, open),
-            ReportKind::TubingList => fluid_reports::tubing(prj, open),
-            ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, idx),
-            ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, idx),
-            ReportKind::RoutingList => routing_list(prj, &self.routing),
-            ReportKind::BundleList => bundle_list(&self.routing),
-            ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, netlist, conns),
-            ReportKind::Selectivity => electrical_reports::selectivity(prj, netlist, conns),
-            ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, netlist),
-            ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, netlist),
-            ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
-            ReportKind::Verification => electrical_reports::verification(prj, conns),
-            ReportKind::FieldRouting => field_routing(prj, &self.field),
-            ReportKind::Bonding => bonding_list(prj),
-        }
-    }
+/// The built-in reports as registry entries, in the order of the Reports menu.
+pub fn builtin() -> Vec<Report> {
+    ReportKind::ALL.into_iter().map(|k| Report { name: k.name().into(), title: Text::Borrowed(k.title_key()), run: Arc::new(move |prj, an| Ok(table(prj, an, k))) }).collect()
 }
 
 fn hose_list(prj: &Project, open: &Netlist) -> Table {

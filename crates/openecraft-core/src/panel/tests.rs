@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn device(id: u64, x: f32, y: f32, w: f32, h: f32, z: f32, d: f32) -> PanelItem {

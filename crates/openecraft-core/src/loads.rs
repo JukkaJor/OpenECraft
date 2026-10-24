@@ -11,7 +11,7 @@ use crate::model::*;
 use crate::netlist::Netlist;
 use crate::parts::{kind_of_symbol, FnKind, Part};
 use crate::potentials::PotentialKind;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use crate::sizing::{device_parts, is_protective, parse_current, parse_voltage, passes_current};
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet};

@@ -3,7 +3,7 @@ use crate::geom::p;
 use crate::harness::Harness;
 use crate::ops::{self, PlaceCtx};
 use crate::parts::{FunctionTemplate, Part, PartRef};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) -> u64 {
     let def = symbols::get(key).unwrap();

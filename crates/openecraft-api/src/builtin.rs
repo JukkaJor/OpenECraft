@@ -4,7 +4,8 @@
 use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Analysis, Severity};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::issue::Severity;
 use openecraft_core::structure;
 use openecraft_i18n::tr_const;
 use serde_json::Value;

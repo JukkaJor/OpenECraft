@@ -4,7 +4,7 @@
 use super::{optional, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::electrical::{Earthing, Insulation, Material};
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_core::rules::{self, RuleSet};
 use openecraft_core::safety::{self, SafetyFunction};
 use openecraft_core::{emc, loads, shortcircuit};

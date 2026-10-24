@@ -5,7 +5,7 @@
 
 use crate::model::{natural_cmp, Project};
 use crate::netlist::{pin_designation, PinRef};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use std::collections::BTreeSet;
 use std::fmt::Write;
 pub use crate::model::harness::Harness;

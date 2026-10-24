@@ -7,7 +7,8 @@
 //! list of [`Change`]s that is reviewed and then applied.
 
 use crate::model::{natural_cmp, PartRef, Project, ReportKind};
-use crate::reports::{Analysis, Issue, Severity};
+use crate::analysis::Analysis;
+use crate::issue::{Issue, Severity};
 use crate::wiring::{self, Mark};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde::{Deserialize, Serialize};

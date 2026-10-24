@@ -8,7 +8,7 @@ use crate::index::Index;
 use crate::model::*;
 use crate::ops::{self, Clip, PlaceCtx};
 use crate::render::{self, Draw, Ink, Opts, VAnchor};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::review::{Hit, MarkupKind, Pen};
 use crate::symbols::{self, Anchor};
 use crate::{cabledef, conndef, graphics, routing};

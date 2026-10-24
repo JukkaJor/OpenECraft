@@ -1542,7 +1542,7 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
 
 /// Item ids involved in any problem of the checks (warnings, for highlighting).
 pub fn problem_items(prj: &Project, e: &Enclosure) -> BTreeSet<u64> {
-    validate(prj, e).into_iter().filter(|f| f.severity == crate::reports::Severity::Warning).flat_map(|f| f.items).collect()
+    validate(prj, e).into_iter().filter(|f| f.severity == crate::issue::Severity::Warning).flat_map(|f| f.items).collect()
 }
 
 #[cfg(test)]

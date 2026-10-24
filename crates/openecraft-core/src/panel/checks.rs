@@ -7,7 +7,7 @@
 use super::{collisions, item_box, outside, part_by_number, Enclosure, Face, ItemKind, PanelItem, PLATE_MARGIN};
 use crate::model::Project;
 use crate::parts::{kind_of_symbol, FnKind, Part};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use std::collections::{BTreeSet, HashMap};
 pub use crate::model::panel::{ClassRule, PanelRules};

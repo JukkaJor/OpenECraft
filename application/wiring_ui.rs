@@ -7,7 +7,7 @@ use crate::model::Project;
 use crate::panel::RoutedWire;
 use crate::panel_ui::PanelUi;
 use crate::potentials::color_parts;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::wiring::{self, Mark, Order, Status, Step};
 use egui::{vec2, Color32, RichText, Stroke};
 

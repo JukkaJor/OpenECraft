@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 #[test]

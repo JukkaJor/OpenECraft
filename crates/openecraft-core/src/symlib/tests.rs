@@ -2,7 +2,7 @@ use super::*;
 use crate::index::Index;
 use crate::model::{Page, PageKind, SymbolInst};
 use crate::netlist::Netlist;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 
 fn box_symbol(key: &str) -> UserSymbol {
     UserSymbol {

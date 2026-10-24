@@ -6,7 +6,7 @@ use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_COLOR, WIRE_DONE, WIRE_HIGH
 use crate::geom::{p, P};
 use crate::model::Project;
 use crate::panel::{PLATE_MARGIN, PLATE_Z};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
 use openecraft_i18n::{tr, tr_fmt};

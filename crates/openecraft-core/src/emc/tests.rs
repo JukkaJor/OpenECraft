@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::testkit::Kit;
 
 fn messages(k: &Kit) -> Vec<String> {

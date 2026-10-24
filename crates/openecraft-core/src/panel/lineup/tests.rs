@@ -1,7 +1,7 @@
 use super::*;
 use crate::netlist::Netlist;
 use crate::panel::{new_enclosure, virtual_wiring, OpenWire, RoutedWire, ENCLOSURE_PART};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn wiring(prj: &Project) -> (Vec<RoutedWire>, Vec<OpenWire>) {

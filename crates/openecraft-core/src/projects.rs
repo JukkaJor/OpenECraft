@@ -64,8 +64,8 @@ impl Entry {
         let i = &prj.info;
         let verified = verify.then(|| {
             let v = crate::verify::verify(prj);
-            let sev = crate::reports::Severity::Error;
-            (v.count(sev) + v.check_errors, v.count(crate::reports::Severity::Warning) + v.check_warnings)
+            let sev = crate::issue::Severity::Error;
+            (v.count(sev) + v.check_errors, v.count(crate::issue::Severity::Warning) + v.check_warnings)
         });
         Entry {
             path: path.into(),

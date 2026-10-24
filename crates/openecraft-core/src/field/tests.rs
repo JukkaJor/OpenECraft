@@ -1,6 +1,6 @@
 use super::*;
 use crate::model::ReportKind;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn node(prj: &mut Project, name: &str, x: f32, y: f32, z: f32) -> u64 {

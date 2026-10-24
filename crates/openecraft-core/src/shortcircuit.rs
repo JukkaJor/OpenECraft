@@ -10,7 +10,7 @@ use crate::electrical::{circuits, Circuit, Earthing};
 use crate::model::*;
 use crate::netlist::{Connection, Netlist};
 use crate::protection::{Protection, NO_TRIP};
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use std::collections::BTreeMap;
 
 /// Voltage factors of IEC 60909-0 for low voltage (tolerance ±10 %).

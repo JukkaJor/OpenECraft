@@ -6,7 +6,8 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::forms::{self, ReportForm};
 use crate::model::*;
-use crate::reports::{Analysis, Table};
+use crate::reports::Table;
+use crate::analysis::Analysis;
 use std::collections::VecDeque;
 pub use crate::model::report_blocks::{LineupBox, PageTable, ReportBlock, ReportPart};
 

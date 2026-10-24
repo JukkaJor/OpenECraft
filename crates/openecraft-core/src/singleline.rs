@@ -11,7 +11,7 @@ use crate::geom::{on_segment_interior, p, P, GRID};
 use crate::index::{DeviceEntry, Index, Loc};
 use crate::model::*;
 use crate::netlist::Netlist;
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::structure::Dt;
 use crate::symbols::{self, Category, SymbolDef};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};

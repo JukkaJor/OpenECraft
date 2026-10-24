@@ -7,7 +7,7 @@
 use crate::ext::{Export, Exporter, Registry};
 use crate::model::Project;
 use crate::params::{optional, param, Args, Kind, Param};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 
 const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));

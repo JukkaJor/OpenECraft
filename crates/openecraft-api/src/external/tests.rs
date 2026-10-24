@@ -1,7 +1,7 @@
 use super::*;
 use crate::{Args, Origin, Plugins};
 use serde_json::Map;
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_core::sample::demo_project;
 use std::sync::Mutex;
 

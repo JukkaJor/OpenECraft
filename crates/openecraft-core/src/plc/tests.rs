@@ -55,7 +55,7 @@ fn addresses_used_on_two_cards_are_reported() {
     let s = prj.pages.iter_mut().flat_map(|p| p.symbols.iter_mut()).find(|s| s.label == "I0.2").unwrap();
     s.tag = "-A3".into();
     s.label = "I0.0".into();
-    let msgs: Vec<String> = crate::reports::Analysis::checked(&prj).issues.into_iter().map(|i| i.message).collect();
+    let msgs: Vec<String> = crate::analysis::Analysis::checked(&prj).issues.into_iter().map(|i| i.message).collect();
     assert!(msgs.iter().any(|m| m == "PLC address I0.0 used on several cards: -A1, -A3"), "{msgs:#?}");
 }
 

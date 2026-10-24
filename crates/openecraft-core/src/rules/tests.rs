@@ -1,6 +1,6 @@
 use super::*;
 use crate::parts::FnKind;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::testkit::Kit;
 
 #[test]

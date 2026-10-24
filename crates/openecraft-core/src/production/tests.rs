@@ -1,7 +1,7 @@
 use super::*;
 use crate::geom::p;
 use crate::panel::{collisions, PanelItem};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn item(id: u64, kind: ItemKind, x: f32, y: f32, w: f32, h: f32) -> PanelItem {

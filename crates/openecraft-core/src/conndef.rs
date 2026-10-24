@@ -6,7 +6,7 @@ use openecraft_i18n::tr_fmt;
 use crate::geom::{dist_to_segment, P};
 use crate::model::*;
 use crate::netlist::{Net, Netlist};
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 
 /// Wire of the page the point `q` lies on.
 pub fn wire_at(page: &Page, q: P) -> Option<&Wire> {

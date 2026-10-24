@@ -1,6 +1,6 @@
 use super::*;
 use crate::parts::{FnKind, Part};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::testkit::Kit;
 
 /// L1 → -F1 → cable -W1 (one core) → heater -E1.

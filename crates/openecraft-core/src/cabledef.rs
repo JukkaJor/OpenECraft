@@ -3,7 +3,7 @@
 use openecraft_i18n::tr_fmt;
 use crate::geom::P;
 use crate::model::*;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 
 fn cross(a: P, b: P) -> f32 {
     a.x * b.y - a.y * b.x

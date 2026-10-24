@@ -70,8 +70,11 @@ at once. New features must use and grow this system instead of bypassing it:
 
 - A new check, report, export or function on the project is registered as an extension
   of a built-in plugin (`crates/openecraft-api/src/builtin.rs`, one plugin per area),
-  not hard-wired into one front end. Front ends never special-case a built-in plugin;
-  they only show what `Plugins` offers.
+  not hard-wired into one front end. The built-in checks, report tables and exports of
+  core are registry entries too (`openecraft_core::{checks, reports, exporters}::builtin`,
+  published by the plugins `project_checks`, `project_reports`, `project_exports`):
+  a new built-in one is a new entry there. Front ends never special-case a built-in
+  plugin; they only show what `Plugins` offers.
 - When a feature needs something a plugin cannot do yet (a new kind of extension such
   as symbols, importers or project events, or more data for an existing one), add the
   extension point to `Registry` first, consume it in every front end (editor, command

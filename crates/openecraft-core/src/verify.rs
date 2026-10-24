@@ -1,13 +1,14 @@
 //! Project verification: checks the project data itself – unique ids, references
 //! between its parts, stored values, options and subprojects – beside the
-//! engineering checks of [`crate::reports::Analysis`], and repairs what can be
+//! engineering checks of [`crate::analysis::Analysis`], and repairs what can be
 //! repaired without a decision.
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::options::Item;
 use crate::properties::{self, Object};
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Debug, PartialEq)]

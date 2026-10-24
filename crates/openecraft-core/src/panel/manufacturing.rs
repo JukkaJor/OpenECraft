@@ -7,7 +7,7 @@ use super::checks::{data_number, item_name, CheckKind};
 use super::{part_by_number, Enclosure, Face, ItemKind};
 use crate::model::Project;
 use crate::production::{holes_on, openings, Opening};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use openecraft_i18n::tr_fmt;
 use std::collections::BTreeSet;
 

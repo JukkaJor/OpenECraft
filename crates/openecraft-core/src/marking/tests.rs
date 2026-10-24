@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 /// The demo with numbered wires, its markers and its analysis.

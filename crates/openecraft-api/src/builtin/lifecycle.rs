@@ -5,7 +5,7 @@ use crate::params::{optional, Args, Kind};
 use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use openecraft_core::parts::portal::Lifecycle;
 use serde_json::{json, Value};

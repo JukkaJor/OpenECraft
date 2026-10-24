@@ -5,7 +5,7 @@
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::integration::{self, Change, Profile, CONNECTORS};
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
@@ -110,7 +110,7 @@ fn write_or_return(a: &Args, content: String) -> Result<Value, String> {
 
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project_mut()?;
-    let an = Analysis::build(prj);
+    let an = Analysis::with_builtin(prj);
     if a.req("connector") == "exchange" {
         return write_or_return(a, integration::exchange(prj, &an));
     }
@@ -143,7 +143,7 @@ fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
         None => BTreeMap::new(),
     };
     map.extend(mapping(a));
-    let an = Analysis::build(prj);
+    let an = Analysis::with_builtin(prj);
     let preview = integration::import(prj, &an, c, &text, &map)?;
     let applied = if a.flag("apply") { Some(integration::apply(prj, &an, c, &preview.changes, a.flag("overwrite"), a.str("date").unwrap_or_default())) } else { None };
     Ok(json!({

@@ -36,7 +36,7 @@ fn automatic_configuration_of_the_demo() {
     // DI16 takes input bytes 0 and 1, DO16 output bytes 0 and 1.
     assert_eq!((mods[0].input_start, mods[0].input_bytes, mods[1].output_start, mods[1].output_bytes), (0, 2, 0, 2));
     assert!(messages(&prj).is_empty(), "{:?}", messages(&prj));
-    assert!(crate::reports::Analysis::checked(&prj).issues.iter().all(|i| i.severity != Severity::Error));
+    assert!(crate::analysis::Analysis::checked(&prj).issues.iter().all(|i| i.severity != Severity::Error));
     // Nothing left to do.
     assert_eq!(auto_configure(&mut prj, false), AutoResult::default());
 }
@@ -159,7 +159,7 @@ fn bus_cables_are_created_and_checked() {
     assert_eq!(create_cables(&mut prj), 0, "all connections have a cable");
 
     // Cable reports list the ports as ends and every core.
-    let an = crate::reports::Analysis::checked(&prj);
+    let an = crate::analysis::Analysis::checked(&prj);
     let overview = &an.report(&prj, ReportKind::CableOverview).unwrap();
     let row = overview.rows.iter().find(|r| r[0] == "-W2").unwrap();
     assert_eq!((row[2].as_str(), row[5].as_str(), row[6].as_str()), ("4/4", "-A0:X1 P2", "ET1:X1 P1"));

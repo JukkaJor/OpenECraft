@@ -10,7 +10,7 @@ use crate::model::*;
 use crate::netlist::{Connection, Netlist};
 use crate::parts::{kind_of_symbol, FnKind};
 use crate::potentials::PotentialKind;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use crate::routing3d::{is_shielded, ShieldEnds};
 use std::collections::{BTreeMap, BTreeSet};
 

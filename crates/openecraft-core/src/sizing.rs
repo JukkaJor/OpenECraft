@@ -9,7 +9,7 @@ use crate::model::*;
 use crate::netlist::{Connection, Netlist};
 use crate::parts::{kind_of_symbol, FnKind, Part};
 use crate::potentials::props_of;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use crate::symbols::{self, ContactKind, Func};
 use std::collections::{BTreeSet, HashSet};
 

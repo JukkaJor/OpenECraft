@@ -7,7 +7,7 @@ use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::forms::{self, ReportForm, ReportScheme};
 use openecraft_core::report_blocks::{self, ReportBlock};
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 

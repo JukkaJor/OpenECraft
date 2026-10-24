@@ -9,7 +9,7 @@ use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, Pa
 use crate::parts::{self, PartsDb};
 use crate::parts::vec3::Orbit;
 use crate::render::{self, Draw, Ink};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::routing3d;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -267,7 +267,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             ui.weak(tr("No problems found"));
         }
         for f in &findings {
-            let color = if f.severity == crate::reports::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
+            let color = if f.severity == crate::issue::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
             ui.horizontal_wrapped(|ui| {
                 ui.label(RichText::new(f.kind.title()).strong().color(color));
                 ui.label(&f.message);

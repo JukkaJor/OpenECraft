@@ -9,7 +9,7 @@ use crate::geom::{p, P};
 use crate::model::Project;
 use crate::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
 
 impl PanelUi {

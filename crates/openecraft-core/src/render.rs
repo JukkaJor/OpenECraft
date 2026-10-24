@@ -9,7 +9,7 @@ use crate::netlist;
 use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
 use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::{graphics, structure, wirenum};
 use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
 use std::collections::{BTreeSet, HashSet};

@@ -1,7 +1,8 @@
 use super::*;
 use crate::geom::p;
 use crate::parts::{FunctionTemplate, PartRef};
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) {
     let def = symbols::get(key).unwrap();

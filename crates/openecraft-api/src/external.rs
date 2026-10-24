@@ -13,7 +13,7 @@ use crate::params::{Param, Text};
 use crate::{Export, Registry, Table};
 use crate::{Info, Plugin, API_VERSION};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_fmt;
 use serde::Deserialize;
 use serde_json::{json, Value};

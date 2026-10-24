@@ -5,7 +5,7 @@
 use crate::geom::P;
 use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
 
@@ -153,7 +153,7 @@ pub fn header(out: &mut String, layers: &[(String, u8)]) {
 
 /// Pages as one DXF drawing, side by side with 20 mm gap.
 pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
-    pages_dxf_with(prj, &Analysis::build(prj), pages)
+    pages_dxf_with(prj, &Analysis::with_builtin(prj), pages)
 }
 
 /// Pages as one DXF drawing, drawn with the host's analysis.

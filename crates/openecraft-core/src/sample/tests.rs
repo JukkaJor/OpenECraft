@@ -1,6 +1,7 @@
 use super::*;
 use crate::index::Index;
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 
 #[test]
 fn demo_is_consistent() {

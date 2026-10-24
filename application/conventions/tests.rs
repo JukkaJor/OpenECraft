@@ -134,26 +134,102 @@ fn ui_texts_are_translated() {
 }
 
 /// Dependency rules inside `openecraft-core` (see `docs/architecture.md`): a module may
-/// refer only to the modules listed for it. Modules that are not listed are not
-/// checked yet; the table grows as the crate is layered.
+/// refer only to the modules listed for it, which pins the current graph so that no new
+/// edge appears unnoticed. Remove an entry from a list when you take a dependency away;
+/// add one only with a reason. The layers are the target order; entries that point
+/// upwards are the known exceptions.
 const CORE_RULES: &[(&str, &[&str])] = &[
+    // 1 foundations
     ("geom", &[]),
     ("xml", &[]),
     ("params", &[]),
     ("table", &["params"]),
+    ("issue", &[]),
+    // 2 symbols
     ("symbols", &["geom", "symlib"]),
     ("symlib", &["geom", "model", "symbols"]),
-    // The project file format: data only. `symlib` goes once the user symbols are
-    // looked up through a table instead of the process-wide registry.
+    // 3 the project file format (data only)
     ("model", &["geom", "symbols", "symlib"]),
+    // 4 evaluation of the model
+    ("index", &["frame", "geom", "model", "structure", "symbols"]),
+    ("netlist", &["geom", "harness", "model", "panel", "potentials", "strips", "symbols", "wirenum"]),
+    ("structure", &["model", "ops"]),
+    ("frame", &["geom", "model"]),
+    ("wirenum", &["frame", "model", "netlist"]),
     ("history", &["model"]),
     ("translation", &["model"]),
     ("options", &["model"]),
-    ("frame", &["geom", "model"]),
-    ("parts", &["model", "symbols"]),
+    ("potentials", &["model", "netlist", "wirenum"]),
+    ("functions", &["model", "parts", "properties", "props", "symbols"]),
+    ("properties", &["frame", "functions", "model", "parts", "props", "structure", "symbols"]),
+    ("props", &["geom", "model", "properties", "symbols"]),
+    // 5 feature logic and page editing
+    ("ops", &["electrofluid", "geom", "graphics", "harness", "model", "plc_hw", "structure", "symbols"]),
+    ("panel", &["climate", "electrofluid", "geom", "harness", "issue", "model", "netlist", "parts", "production", "strips", "symbols"]),
+    ("climate", &["model", "panel", "parts"]),
+    ("manufacturing", &["geom", "model", "panel", "parts", "production"]),
     ("routing", &["geom", "model", "symbols"]),
+    ("routing3d", &["fluid", "geom", "harness", "model", "netlist", "panel", "parts", "plc_hw", "potentials"]),
+    ("field", &["geom", "issue", "model", "netlist", "panel", "parts", "production", "render", "routing3d", "structure", "svg", "symbols"]),
+    ("strips", &["frame", "model", "netlist", "parts", "symbols"]),
+    ("plugs", &["frame", "model", "netlist", "parts", "symbols"]),
+    ("harness", &["analysis", "geom", "model", "netlist", "plugs", "production", "symbols"]),
+    ("marking", &["index", "model", "netlist", "panel", "strips", "structure"]),
+    ("fluid", &["issue", "model", "netlist", "panel", "symbols", "wirenum"]),
+    ("electrofluid", &["fluid", "index", "issue", "model", "structure", "symbols"]),
+    ("process", &["index", "model", "symbols"]),
+    ("plc", &["frame", "model", "netlist", "plc_hw", "symbols"]),
+    ("plc_hw", &["devdesc", "issue", "model", "ops", "parts", "plc"]),
     ("devdesc", &["model", "parts", "xml"]),
+    ("electrical", &["model", "netlist", "parts", "potentials", "protection", "sizing"]),
+    ("protection", &["electrical", "model", "parts", "sizing"]),
+    ("sizing", &["issue", "model", "netlist", "parts", "potentials", "production", "rules", "symbols", "wirenum"]),
+    ("shortcircuit", &["electrical", "issue", "model", "netlist", "production", "protection", "rules"]),
+    ("loads", &["electrical", "issue", "model", "netlist", "parts", "potentials", "rules", "sizing", "symbols"]),
+    ("emc", &["electrical", "issue", "model", "netlist", "parts", "potentials", "routing3d", "rules"]),
+    ("safety", &["issue", "model", "sizing"]),
+    ("rules", &["electrical", "issue", "model", "netlist", "potentials", "production", "routing3d", "sizing", "symbols"]),
+    ("singleline", &["fluid", "geom", "index", "issue", "model", "netlist", "ops", "structure", "symbols"]),
+    ("cabledef", &["geom", "issue", "model", "ops", "structure"]),
+    ("conndef", &["geom", "issue", "model", "netlist", "wirenum"]),
+    ("wiring", &["model", "panel", "production"]),
+    ("production", &["dxf", "geom", "model", "panel", "parts"]),
+    ("parts", &["model", "symbols"]),
+    ("tables", &["index", "model", "netlist", "ops", "parts", "strips", "symbols", "wirenum"]),
+    ("revision", &["compare", "geom", "model", "review", "structure"]),
+    ("review", &["geom", "model", "render", "structure", "symbols"]),
+    ("compare", &["model", "panel", "revision", "structure"]),
+    ("config", &["macros", "model"]),
+    ("macros", &["model", "ops"]),
+    ("page_templates", &["model", "ops", "structure"]),
+    ("subproject", &["model", "options", "structure", "symlib"]),
+    ("graphics", &["document", "geom", "model"]),
+    ("document", &["frame", "geom", "model", "ops", "render", "symbols"]),
+    ("forms", &["frame", "geom", "model", "params", "properties", "render", "revision", "structure", "symbols", "table"]),
+    ("report_blocks", &["analysis", "ext", "forms", "model", "ops", "reports", "strips"]),
     ("testkit", &["geom", "model", "parts", "symbols"]),
+    // 6 derived data, checks, reports, registry
+    ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "revision", "routing3d", "table"]),
+    ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "harness", "index", "integration", "issue", "loads", "model", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
+    ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table"]),
+    ("ext", &["analysis", "issue", "model", "params", "table"]),
+    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "params", "pdf", "plc", "reports", "svg", "translation"]),
+    // 7 output and exchange formats
+    ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "wirenum"]),
+    ("svg", &["analysis", "frame", "geom", "model", "render", "symbols"]),
+    ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols"]),
+    ("dxf", &["analysis", "frame", "geom", "graphics", "model", "render", "symbols"]),
+    ("dxf_import", &["frame", "geom", "model", "ops"]),
+    ("dwg", &["analysis", "dxf", "dxf_import", "model", "panel", "production"]),
+    ("export3d", &["document", "model", "panel", "parts"]),
+    ("aml", &["devdesc", "model", "netlist", "parts", "plc", "plc_hw", "xml"]),
+    ("integration", &["analysis", "issue", "model", "netlist", "panel", "parts", "wiring"]),
+    // 8 project files, sharing, verification
+    ("collab", &["model", "review"]),
+    ("archive", &["model", "pdf"]),
+    ("projects", &["archive", "index", "issue", "model", "properties", "verify"]),
+    ("verify", &["analysis", "issue", "model", "options", "properties", "structure", "symbols"]),
+    ("sample", &["geom", "harness", "model", "netlist", "ops", "panel", "parts", "potentials", "symbols", "wirenum"]),
 ];
 
 #[test]

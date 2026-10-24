@@ -8,7 +8,7 @@ use crate::{Info, Plugin, Text};
 use openecraft_core::manufacturing::{self as mf, bars, configurator, feedback, handoff, machines, post, strategy, BarRules, CopperBar, Machine, Method, Strategy};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face};
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
