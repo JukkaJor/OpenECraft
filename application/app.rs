@@ -79,6 +79,8 @@ enum LeftTab {
     Layers,
     Check,
     Review,
+    /// Functions of the project data not placed yet.
+    Unplaced,
 }
 
 pub struct App {

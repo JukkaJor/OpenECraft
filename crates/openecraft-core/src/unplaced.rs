@@ -1,0 +1,67 @@
+//! Functions that exist in the project data but are not placed in the schematic yet
+//! (in the spirit of EPLAN's navigators with unplaced functions): the channels of PLC
+//! cards with a device description that have no input / output symbol, and the
+//! functions of the parts assigned to a device that no symbol uses. Each comes with
+//! the symbol, device tag and designation to place it with.
+
+use crate::model::Project;
+use crate::parts::{self, FnKind, PartsDb};
+use std::collections::HashSet;
+
+/// Something to place: the symbol, the device tag, the label (PLC address) and the
+/// connection point designations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Unplaced {
+    pub tag: String,
+    pub symbol: &'static str,
+    pub label: String,
+    pub pins: Vec<String>,
+    /// What it is, e.g. `I0.3` or `NO 13-14`.
+    pub title: String,
+}
+
+/// The first built-in symbol that stands for a function kind.
+pub fn symbol_for(kind: FnKind) -> Option<&'static str> {
+    crate::symbols::library().iter().map(|d| d.key).find(|k| parts::kind_of_symbol(k) == Some(kind))
+}
+
+/// Channels of the PLC cards (with a device description) without a symbol, per card
+/// in address order.
+pub fn plc_channels(prj: &Project) -> Vec<Unplaced> {
+    let mut out = Vec::new();
+    for card in crate::plc::cards(prj) {
+        let Some(desc) = crate::plc_hw::description_of(prj, &card) else { continue };
+        let placed: HashSet<crate::plc::AddressKey> =
+            prj.pages.iter().flat_map(|p| p.symbols.iter()).filter(|s| s.tag == card).map(|s| crate::plc::address_key(&s.label)).collect();
+        for (input, n, symbol) in [(true, desc.inputs, "plc_in"), (false, desc.outputs, "plc_out")] {
+            for ch in 0..n {
+                let addr = crate::plc_hw::card_address(prj, &card, input, ch);
+                if !placed.contains(&crate::plc::address_key(&addr)) {
+                    out.push(Unplaced { tag: card.clone(), symbol, label: addr.clone(), pins: Vec::new(), title: addr });
+                }
+            }
+        }
+    }
+    out
+}
+
+/// Functions of the assigned parts that no placed symbol of the device uses (the
+/// reserve contacts of the contact image, coils and other main functions too).
+pub fn device_functions(prj: &Project, db: Option<&PartsDb>) -> Vec<Unplaced> {
+    let mut out = Vec::new();
+    for tag in prj.devices.keys() {
+        // Terminals, plug pins and PLC points have their own numbering (strips, plugs,
+        // PLC channels).
+        let own = |k: FnKind| matches!(k, FnKind::Terminal | FnKind::PlugPin | FnKind::PlcInput | FnKind::PlcOutput | FnKind::PlcAnalogInput | FnKind::PlcAnalogOutput);
+        for f in parts::reserve_functions(prj, db, tag).into_iter().filter(|f| !own(f.kind)) {
+            let Some(symbol) = symbol_for(f.kind) else { continue };
+            let pins = f.pin_list();
+            let title = format!("{} {}", f.kind.title(), pins.join("-")).trim().to_string();
+            out.push(Unplaced { tag: tag.clone(), symbol, label: String::new(), pins, title });
+        }
+    }
+    out
+}
+
+#[cfg(test)]
+mod tests;

@@ -417,6 +417,9 @@ pub struct Editor {
     pub active_layer: String,
     /// The next text to place (path function text, special text); None: a plain text.
     pub text_proto: Option<TextItem>,
+    /// An unplaced function to place once: label (PLC address) and connection point
+    /// designations of the next symbol; the tool returns to Select afterwards.
+    pub place_once: Option<(String, Vec<String>)>,
     /// Connect facing connection points after placing or moving symbols.
     pub autoconnect: bool,
     /// The wire tool routes around symbols and other wires.
@@ -482,6 +485,7 @@ impl Default for Editor {
             textures: HashMap::new(),
             route_cache: None,
             text_proto: None,
+            place_once: None,
         }
     }
 }
@@ -540,6 +544,7 @@ impl Editor {
         self.tool = tool;
         self.wire_start = None;
         self.text_proto = None;
+        self.place_once = None;
         self.pts.clear();
         if self.tool != Tool::Select {
             self.selection.clear();
@@ -1197,6 +1202,15 @@ impl Editor {
                     if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
                         s.tag = tag.clone();
                     }
+                    let once = self.place_once.take();
+                    if let Some((label, pins)) = &once {
+                        if !label.is_empty() {
+                            s.label = label.clone();
+                        }
+                        if pins.len() == s.pins.len() {
+                            s.pins = pins.clone();
+                        }
+                    }
                     self.place_ctx.remember(prj, &s);
                     let id = s.id;
                     prj.pages[page_i].symbols.push(s);
@@ -1205,6 +1219,11 @@ impl Editor {
                         if n > 0 {
                             out.message = Some(tr_fmt!("{} connections drawn automatically", n));
                         }
+                    }
+                    if once.is_some() {
+                        self.place_tag = None;
+                        self.set_tool(Tool::Select);
+                        self.selection.insert(id);
                     }
                 }
             }

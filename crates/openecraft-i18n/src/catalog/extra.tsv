@@ -1401,8 +1401,8 @@ Compare with a baseline, a revision or another project file and take differences
 Change requests…	Änderungsanträge…	Demandes de modification…	Solicitudes de cambio…
 Review: comments and markup	Prüfung: Kommentare und Markierungen	Révision : commentaires et annotations	Revisión: comentarios y marcas
 Revisions, approval and release	Revisionen, Genehmigung und Freigabe	Révisions, approbation et diffusion	Revisiones, aprobación y liberación
-Review ({})	Prüfung ({})	Révision ({})	Revisión ({})
-Review	Prüfung	Révision	Revisión
+Review ({})	Kommentare ({})	Révision ({})	Comentarios ({})
+Review	Kommentare	Révision	Comentarios
 Click to place a comment	Klicken, um einen Kommentar zu setzen	Cliquer pour placer un commentaire	Haga clic para colocar un comentario
 Click to place the markup text	Klicken, um den Markierungstext zu setzen	Cliquer pour placer le texte d'annotation	Haga clic para colocar el texto de la marca
 Change requests (CSV, JSON)	Änderungsanträge (CSV, JSON)	Demandes de modification (CSV, JSON)	Solicitudes de cambio (CSV, JSON)
@@ -4542,3 +4542,26 @@ Exports all parts of the parts server as CSV or EPLAN parts XML	Exportiert alle 
 csv (default) or eplan_xml	csv (Standard) oder eplan_xml	csv (par défaut) ou eplan_xml	csv (por defecto) o eplan_xml
 PLC tag table for Siemens TIA Portal (Excel)	SPS-Variablentabelle für Siemens TIA Portal (Excel)	Table de variables API pour Siemens TIA Portal (Excel)	Tabla de variables PLC para Siemens TIA Portal (Excel)
 PLC tags for Rockwell Studio 5000 (CSV)	SPS-Tags für Rockwell Studio 5000 (CSV)	Variables API pour Rockwell Studio 5000 (CSV)	Etiquetas PLC para Rockwell Studio 5000 (CSV)
+Unplaced	Nicht platziert	Non placés	No colocados
+PLC channels and functions of the assigned parts that are not in the schematic yet	SPS-Kanäle und Funktionen der zugeordneten Artikel, die noch nicht im Schaltplan sind	Canaux API et fonctions des articles affectés qui ne sont pas encore dans le schéma	Canales PLC y funciones de los artículos asignados que aún no están en el esquema
+Click an entry, then click into the page to place it.	Eintrag anklicken, dann in die Seite klicken, um ihn zu platzieren.	Cliquer sur une entrée, puis dans la page pour la placer.	Haga clic en una entrada y luego en la página para colocarla.
+PLC channels	SPS-Kanäle	Canaux API	Canales PLC
+Functions of the parts	Funktionen der Artikel	Fonctions des articles	Funciones de los artículos
+Place this function	Diese Funktion platzieren	Placer cette fonction	Colocar esta función
+Lists PLC channels and functions of the assigned parts that are not placed yet, with the symbol, tag, label and pins for place_symbol	Listet SPS-Kanäle und Funktionen der zugeordneten Artikel, die noch nicht platziert sind, mit Symbol, Kennzeichen, Beschriftung und Pins für place_symbol	Liste les canaux API et fonctions des articles affectés pas encore placés, avec symbole, repère, libellé et broches pour place_symbol	Lista los canales PLC y funciones de los artículos asignados aún no colocados, con símbolo, identificación, etiqueta y pines para place_symbol
+Empty (IEC 60204-1)	Leer (IEC 60204-1)	Vide (IEC 60204-1)	Vacío (IEC 60204-1)
+One schematic page, the potentials of IEC 60204-1	Eine Schaltplanseite, die Potenziale nach IEC 60204-1	Une page de schéma, les potentiels de l'IEC 60204-1	Una página de esquema, los potenciales de IEC 60204-1
+Cover sheet, table of contents, schematic pages with function and location, device list, bill of materials, terminal and cable diagrams	Deckblatt, Inhaltsverzeichnis, Schaltplanseiten mit Funktion und Ort, Betriebsmittelliste, Stückliste, Klemmen- und Kabelpläne	Page de garde, sommaire, pages de schéma avec fonction et emplacement, liste des appareils, nomenclature, plans de bornes et de câbles	Portada, índice, páginas de esquema con función y ubicación, lista de dispositivos, lista de materiales, diagramas de bornes y cables
+Distribution board (IEC 61439)	Verteiler (IEC 61439)	Tableau de distribution (IEC 61439)	Cuadro de distribución (IEC 61439)
+Cover sheet, single-line overview, schematic pages, bill of materials, enclosure climate and short circuit reports	Deckblatt, Übersicht einpolig, Schaltplanseiten, Stückliste, Auswertungen Gehäuseklima und Kurzschluss	Page de garde, vue unifilaire, pages de schéma, nomenclature, rapports climat d'armoire et court-circuit	Portada, vista unifilar, páginas de esquema, lista de materiales, informes de clima del armario y cortocircuito
+Incoming supply	Einspeisung	Arrivée	Acometida
+Outgoing circuits	Abgänge	Départs	Salidas
+New project from template	Neues Projekt aus Vorlage	Nouveau projet à partir d'un modèle	Nuevo proyecto desde plantilla
+From a template file…	Aus einer Vorlagendatei…	À partir d'un fichier modèle…	Desde un archivo de plantilla…
+Any project file: its settings, forms, structure, potentials and pages start the new project	Jede Projektdatei: ihre Einstellungen, Formulare, Struktur, Potenziale und Seiten beginnen das neue Projekt	Tout fichier projet : ses réglages, formulaires, structure, potentiels et pages démarrent le nouveau projet	Cualquier archivo de proyecto: sus ajustes, formularios, estructura, potenciales y páginas inician el nuevo proyecto
+Save as project template…	Als Projektvorlage speichern…	Enregistrer comme modèle de projet…	Guardar como plantilla de proyecto…
+Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Speichert das Projekt ohne Revisionen, Stände, Prüfung und Verdrahtungsmarken als Vorlage für neue Projekte	Enregistre le projet sans révisions, états de référence, revue ni marques de câblage comme modèle de nouveaux projets	Guarda el proyecto sin revisiones, líneas base, revisión ni marcas de cableado como plantilla para nuevos proyectos
+OpenECraft project template	OpenECraft-Projektvorlage	Modèle de projet OpenECraft	Plantilla de proyecto de OpenECraft
+Not a project template: {}	Keine Projektvorlage: {}	Pas un modèle de projet : {}	No es una plantilla de proyecto: {}
+Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Mit einer Projektvorlage beginnen: einer eingebauten (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) oder einer Projektdatei	Partir d'un modèle de projet : intégré (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) ou un fichier projet	Empezar desde una plantilla: una integrada (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) o un archivo de proyecto
+Unknown template {}: {}	Unbekannte Vorlage {}: {}	Modèle inconnu {} : {}	Plantilla desconocida {}: {}

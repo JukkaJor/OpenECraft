@@ -23,8 +23,29 @@ impl App {
         if ui.button(tr("New project")).clicked() {
             self.replace_project(Project::new_default(), None);
         }
+        ui.menu_button(tr("New project from template"), |ui| {
+            for (name, desc) in openecraft_core::project_templates::BUILTIN {
+                if ui.button(tr(name)).on_hover_text(tr(desc)).clicked() {
+                    if let Some(t) = openecraft_core::project_templates::builtin(name) {
+                        let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
+                        self.replace_project(prj, None);
+                    }
+                    ui.close();
+                }
+            }
+            ui.separator();
+            if ui.button(tr("From a template file…")).on_hover_text(tr("Any project file: its settings, forms, structure, potentials and pages start the new project")).clicked() {
+                self.io.open(&ctx, Purpose::ProjectTemplate);
+                ui.close();
+            }
+        });
         if ui.button(tr("Open…        Ctrl+O")).clicked() {
             self.io.open(&ctx, Purpose::Project);
+        }
+        if ui.button(tr("Save as project template…")).on_hover_text(tr("Saves the project without revisions, baselines, review and wiring marks as a template for new projects")).clicked() {
+            let t = openecraft_core::project_templates::as_template(&self.session.prj);
+            let name = format!("{}_template.oec", self.session.prj.info.name.replace(' ', "_"));
+            self.export(&ctx, name, (tr("OpenECraft project template"), "oec"), t.to_json());
         }
         if ui.button(tr("Open demo project")).clicked() {
             self.replace_project(sample::demo_project(), None);

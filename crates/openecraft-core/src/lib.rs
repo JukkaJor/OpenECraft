@@ -56,6 +56,7 @@ pub mod plc_hw;
 pub mod plugs;
 pub mod potentials;
 pub mod process;
+pub mod project_templates;
 pub mod projects;
 pub mod production;
 pub mod properties;
@@ -88,6 +89,7 @@ pub mod verify;
 #[cfg(test)]
 mod testkit;
 pub mod translation;
+pub mod unplaced;
 pub mod ttf;
 pub mod wirenum;
 pub mod wiring;

@@ -40,6 +40,12 @@ pub static COMMANDS: &[Spec] = &[
         run: rename_device,
     },
     Spec {
+        name: "list_unplaced",
+        help: tr_const!("Lists PLC channels and functions of the assigned parts that are not placed yet, with the symbol, tag, label and pins for place_symbol"),
+        params: &[],
+        run: list_unplaced,
+    },
+    Spec {
         name: "renumber_devices",
         help: tr_const!("Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)"),
         params: &[
@@ -54,6 +60,13 @@ pub static COMMANDS: &[Spec] = &[
         run: renumber_devices,
     },
 ];
+
+fn list_unplaced(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    let item = |kind: &str, u: openecraft_core::unplaced::Unplaced| json!({ "kind": kind, "tag": u.tag, "symbol": u.symbol, "label": u.label, "pins": u.pins, "title": u.title });
+    let mut v: Vec<Value> = openecraft_core::unplaced::plc_channels(prj).into_iter().map(|u| item("plc_channel", u)).collect();
+    v.extend(openecraft_core::unplaced::device_functions(prj, None).into_iter().map(|u| item("function", u)));
+    Ok(Value::Array(v))
+}
 
 /// Page indices of a comma separated list of page names.
 pub(crate) fn page_list(prj: &Project, list: Option<&str>) -> Result<Vec<usize>, String> {

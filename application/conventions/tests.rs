@@ -162,6 +162,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("numbering", &["frame", "index", "model", "ops", "structure"]),
     ("arrange", &["geom", "model", "ops", "symlib"]),
     ("search", &["model", "symbols"]),
+    ("unplaced", &["model", "parts", "plc", "plc_hw", "symbols"]),
     ("wirenum", &["frame", "model", "netlist"]),
     ("history", &["model"]),
     ("translation", &["model"]),
@@ -235,6 +236,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("collab", &["model", "review"]),
     ("archive", &["model", "pdf", "zip"]),
     ("projects", &["archive", "index", "issue", "model", "properties", "verify"]),
+    ("project_templates", &["model", "structure"]),
     ("verify", &["analysis", "issue", "model", "options", "properties", "structure", "symbols"]),
     ("sample", &["geom", "harness", "model", "netlist", "ops", "panel", "parts", "potentials", "symbols", "wirenum"]),
 ];

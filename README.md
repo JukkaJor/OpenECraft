@@ -379,6 +379,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   structure management), devices (select on page, place further functions, rename),
   connections (filter, show, select, add a connection definition), cables (cores in
   use and free, cable definitions, draw a cable definition), layers and the check.
+  The *Unplaced* tab lists what the project data has but the schematic does not: the
+  channels of PLC cards with a device description that have no input / output symbol
+  (with their address), and the functions of the assigned parts that no symbol uses
+  (coils, contacts with their designations); a click places one with tag, address and
+  designations. Command: `list_unplaced`.
 - **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
   references and report rows; texts beyond Latin-1 such as Polish, Czech, Turkish,
   Greek or Cyrillic are written with an embedded subset of the Ubuntu font, searchable
@@ -488,6 +493,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   with `language`) puts out the documentation per language – project texts from the
   dictionary, reports and title blocks in that language (English, German, French,
   Spanish; other languages get English report headings).
+- **Project templates** (in the spirit of EPLAN's basic projects): *File › New project
+  from template* starts from a built-in template (empty IEC 60204-1 project; machine
+  with cover sheet, table of contents, structured schematic pages and report pages;
+  distribution board with single-line overview, climate and short-circuit reports) or
+  from any project file; *Save as project template…* writes the current project
+  without revisions, baselines, review, wiring marks and accepted check messages.
+  Command line: `new_project --template Machine` (or a file).
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
   (app storage on desktop, local storage in the browser).
 

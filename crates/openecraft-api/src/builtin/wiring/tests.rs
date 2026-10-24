@@ -89,3 +89,15 @@ fn find_and_replace_in_the_project() {
     let hits = run(&mut s, "find", json!({ "text": "New note", "case_sensitive": true })).unwrap();
     assert_eq!(hits[0]["kind"], "text");
 }
+
+#[test]
+fn unplaced_functions_are_listed_and_placed() {
+    let mut s = demo();
+    let list = run(&mut s, "list_unplaced", json!({})).unwrap();
+    let ch = list.as_array().unwrap().iter().find(|u| u["kind"] == "plc_channel" && u["tag"] == "-A1").unwrap().clone();
+    let before = list.as_array().unwrap().len();
+    run(&mut s, "place_symbol", json!({ "page": "2", "symbol": ch["symbol"], "x": 300, "y": 84, "tag": ch["tag"], "label": ch["label"] })).unwrap();
+    let after = run(&mut s, "list_unplaced", json!({})).unwrap();
+    assert_eq!(after.as_array().unwrap().len(), before - 1, "the channel is placed now");
+    assert!(list.as_array().unwrap().iter().any(|u| u["kind"] == "function"));
+}

@@ -16,6 +16,8 @@ pub enum Purpose {
     Model(ModelKind),
     /// Macro library (JSON) to merge.
     Macros,
+    /// A project file that starts a new project (project template).
+    ProjectTemplate,
     /// PLC symbol table (CSV).
     PlcTable,
     /// Symbol library (JSON) to merge into the project.
@@ -60,6 +62,7 @@ impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
             Purpose::Project => (tr("OpenECraft project or archive"), &[PROJECT_EXT, "oecz", "json"]),
+            Purpose::ProjectTemplate => (tr("OpenECraft project template"), &[PROJECT_EXT, "oecz", "json"]),
             Purpose::OutputTarget | Purpose::Compare | Purpose::Subproject => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),

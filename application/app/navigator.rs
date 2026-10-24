@@ -18,6 +18,7 @@ impl App {
             let open = self.session.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
             let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
             ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
+            ui.selectable_value(&mut self.left_tab, LeftTab::Unplaced, tr("Unplaced")).on_hover_text(tr("PLC channels and functions of the assigned parts that are not in the schematic yet"));
         });
         let areas = &self.session.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
@@ -178,6 +179,7 @@ impl App {
             LeftTab::Cables => self.cables_tab(ui),
             LeftTab::Layers => self.layers_tab(ui),
             LeftTab::Check => self.check_tab(ui),
+            LeftTab::Unplaced => self.unplaced_tab(ui),
         }
     }
 }
@@ -251,5 +253,42 @@ impl App {
             action = PageAction::Properties(i);
         }
         action
+    }
+}
+
+impl App {
+    /// Unplaced PLC channels and part functions, grouped by device; a click places one.
+    fn unplaced_tab(&mut self, ui: &mut egui::Ui) {
+        let prj = &self.session.prj;
+        let channels = openecraft_core::unplaced::plc_channels(prj);
+        let functions = openecraft_core::unplaced::device_functions(prj, Some(&self.parts_db));
+        let mut start = None;
+        ui.weak(tr("Click an entry, then click into the page to place it."));
+        egui::ScrollArea::vertical().id_salt("unplaced").auto_shrink([false, false]).show(ui, |ui| {
+            for (title, list) in [(tr("PLC channels"), &channels), (tr("Functions of the parts"), &functions)] {
+                egui::CollapsingHeader::new(RichText::new(tr_fmt!("{} ({})", title, list.len())).strong()).id_salt(title).default_open(true).show(ui, |ui| {
+                    let mut tags: Vec<&String> = list.iter().map(|u| &u.tag).collect();
+                    tags.dedup();
+                    for tag in tags {
+                        let items: Vec<&openecraft_core::unplaced::Unplaced> = list.iter().filter(|u| &u.tag == tag).collect();
+                        egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({})", items.len())).monospace()).id_salt((title, tag)).show(ui, |ui| {
+                            for u in items {
+                                if ui.link(&u.title).on_hover_text(tr("Place this function")).clicked() {
+                                    start = Some(u.clone());
+                                }
+                            }
+                        });
+                    }
+                    if list.is_empty() {
+                        ui.weak(tr("(no entries)"));
+                    }
+                });
+            }
+        });
+        if let Some(u) = start {
+            self.editor.set_tool(Tool::Place(u.symbol));
+            self.editor.place_tag = Some(u.tag.clone());
+            self.editor.place_once = Some((u.label, u.pins));
+        }
     }
 }

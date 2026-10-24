@@ -119,6 +119,13 @@ impl App {
         let Some(loaded) = self.io.poll() else { return };
         match loaded.purpose {
             Purpose::Project => self.open_loaded_project(ctx, &loaded),
+            Purpose::ProjectTemplate => match openecraft_core::archive::read_project(&loaded.bytes) {
+                Ok((t, _)) => {
+                    let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
+                    self.replace_project(prj, None);
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a project template: {}", e)),
+            },
             Purpose::Parts => self.import_parts(ctx, &loaded.text()),
             Purpose::Model(_) => {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.session.prj) {

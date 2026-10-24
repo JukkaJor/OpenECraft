@@ -7,7 +7,7 @@ use openecraft_core::model::*;
 use openecraft_core::analysis::Analysis;
 use openecraft_core::issue::Severity;
 use openecraft_core::sample;
-use openecraft_i18n::{tr, tr_const};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
 const DISCARD: Param = optional("discard", Kind::Bool, tr_const!("Discard unsaved changes of the open project"));
@@ -20,6 +20,7 @@ pub static TOOLS: &[Tool] = &[
             optional("path", Kind::Str, tr_const!("File to save the project to (.oec)")),
             optional("name", Kind::Str, tr_const!("Project name")),
             optional("demo", Kind::Bool, tr_const!("Start from the demo project")),
+            optional("template", Kind::Str, tr_const!("Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file")),
             DISCARD,
         ],
         needs_project: false,
@@ -100,7 +101,20 @@ fn summary(s: &Session) -> Result<Value, String> {
 
 fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     ensure_unsaved_ok(s, a)?;
-    let mut prj = if a.flag("demo") { sample::demo_project() } else { Project::new_default() };
+    let mut prj = if a.flag("demo") {
+        sample::demo_project()
+    } else if let Some(t) = a.str("template") {
+        let template = match openecraft_core::project_templates::builtin(t) {
+            Some(p) => p,
+            None => {
+                let bytes = std::fs::read(t).map_err(|e| tr_fmt!("Unknown template {}: {}", t, e))?;
+                openecraft_core::archive::read_project(&bytes)?.0
+            }
+        };
+        openecraft_core::project_templates::from_template(&template, "", "")
+    } else {
+        Project::new_default()
+    };
     if let Some(name) = a.str("name") {
         prj.info.name = name.into();
     }
