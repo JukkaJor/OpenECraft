@@ -547,6 +547,20 @@ or in the `mcpServers` configuration of other clients:
 The agent can read and write any file the server process can access; start it in a
 working directory (and with a parts server token) you are fine with the agent using.
 
+### Plugins
+
+Plugins add commands, checks, reports and exports to the editor (*Plugins* menu, *Check*
+tab), the command line and the MCP server at the same time. Built-in plugins are Rust
+code in `crates/openecraft-api`; external plugins are programs in any language that
+answer JSON requests on stdin / stdout:
+
+```bash
+OPENECRAFT_PLUGINS=examples/plugins openecraft-cli -p pump.oec plugins
+openecraft-cli --plugins examples/plugins -p pump.oec report --kind page_notes
+```
+
+See [docs/plugins.md](docs/plugins.md) for the API and the protocol.
+
 ### Tests
 
 ```bash
@@ -604,6 +618,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
 | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
+| `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
 | `parts-server/` | `openecraft-parts-server`: parts database server (REST API, JSON storage) |
 | `project-server/` | `openecraft-project-server`: shared projects with page locks for several users |
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |

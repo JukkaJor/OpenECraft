@@ -10,7 +10,7 @@ name = "openecraft"
 path = "application/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "parts-server", "project-server", "parts-manager", "cli"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "parts-server", "project-server", "parts-manager", "cli"]
 exclude = ["vendor"]
 
 [dependencies]
@@ -36,6 +36,7 @@ openecraft-i18n = { path = "crates/openecraft-i18n" }
 openecraft-ui = { path = "crates/openecraft-ui" }
 openecraft-core = { path = "crates/openecraft-core" }
 openecraft-client = { path = "crates/openecraft-client" }
+openecraft-api = { path = "crates/openecraft-api" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.11"
