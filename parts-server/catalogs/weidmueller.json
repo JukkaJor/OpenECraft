@@ -1,0 +1,421 @@
+{
+  "catalog": {
+    "id": "weidmueller",
+    "name": "Weidm\u00fcller",
+    "manufacturer": "Weidm\u00fcller",
+    "version": "2026.1",
+    "description": "Terminal blocks W-Series (screw) and A-Series (push-in), end plate and bracket, relay module TERMSERIES, power supplies PRO ECO and slotted wiring ducts CD. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "WEI.1020000000",
+      "type_number": "WDU 2.5",
+      "order_number": "1020000000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Feed-through terminal WDU 2.5, screw, 2.5 mm2, beige",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1020080000",
+      "type_number": "WDU 2.5 BL",
+      "order_number": "1020080000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Feed-through terminal WDU 2.5 BL, screw, 2.5 mm2, blue",
+      "group": "Terminals",
+      "subgroup": "N terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: N\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1020100000",
+      "type_number": "WDU 4",
+      "order_number": "1020100000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Feed-through terminal WDU 4, screw, 4 mm2, beige",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 4 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1020200000",
+      "type_number": "WDU 6",
+      "order_number": "1020200000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Feed-through terminal WDU 6, screw, 6 mm2, beige",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 6 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1010000000",
+      "type_number": "WPE 2.5",
+      "order_number": "1010000000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "PE terminal WPE 2.5, screw, 2.5 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1010100000",
+      "type_number": "WPE 4",
+      "order_number": "1010100000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "PE terminal WPE 4, screw, 4 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 4 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1521850000",
+      "type_number": "A2C 2.5",
+      "order_number": "1521850000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Feed-through terminal A2C 2.5, push-in, 2.5 mm2, dark beige",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1521680000",
+      "type_number": "A2C 2.5 PE",
+      "order_number": "1521680000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "PE terminal A2C 2.5 PE, push-in, 2.5 mm2, green-yellow",
+      "group": "Terminals",
+      "subgroup": "PE terminal",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+    },
+    {
+      "number": "WEI.1050000000",
+      "type_number": "WAP 2.5-10",
+      "order_number": "1050000000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "End plate WAP 2.5-10 for terminals WDU 2.5 - WDU 10",
+      "group": "Terminals",
+      "subgroup": "Accessories",
+      "identifier": "X",
+      "functions": []
+    },
+    {
+      "number": "WEI.1061200000",
+      "type_number": "WEW 35/2",
+      "order_number": "1061200000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "End bracket WEW 35/2 for mounting rail TS 35",
+      "group": "Terminals",
+      "subgroup": "End bracket",
+      "identifier": "X",
+      "mounting": "Mounting rail 35 mm",
+      "functions": []
+    },
+    {
+      "number": "WEI.1122770000",
+      "type_number": "TRS 24VDC 1CO",
+      "order_number": "1122770000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Relay module TERMSERIES TRS 24VDC 1CO, 24 V DC, 1 CO",
+      "group": "Relays, contactors",
+      "subgroup": "Relay",
+      "identifier": "K",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "24 V DC",
+      "tech_data": "Contacts: 1 CO"
+    },
+    {
+      "number": "WEI.1469480000",
+      "type_number": "PRO ECO 120W 24V 5A",
+      "order_number": "1469480000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Power supply PRO ECO 120W 24V 5A, 1-phase input, 24 V DC / 5 A",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N PE + -"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "5 A"
+    },
+    {
+      "number": "WEI.1469490000",
+      "type_number": "PRO ECO 240W 24V 10A",
+      "order_number": "1469490000",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Power supply PRO ECO 240W 24V 10A, 1-phase input, 24 V DC / 10 A",
+      "group": "Power supplies, transformers",
+      "subgroup": "Power supply",
+      "identifier": "T",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "L N PE + -"
+        }
+      ],
+      "voltage": "24 V DC",
+      "current": "10 A"
+    },
+    {
+      "number": "WEI.CD-25X25-5-7.5-GY",
+      "type_number": "CD 25X25 5/7.5 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 25X25 5/7.5 GY, 25 x 25 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 25.0,
+      "depth": 25.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 5/7.5 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-30X25-8-12-GY",
+      "type_number": "CD 30X25 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 30X25 8/12 GY, 30 x 25 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 30.0,
+      "depth": 25.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-30X40-8-12-GY",
+      "type_number": "CD 30X40 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 30X40 8/12 GY, 30 x 40 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 30.0,
+      "depth": 40.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-30X60-8-12-GY",
+      "type_number": "CD 30X60 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 30X60 8/12 GY, 30 x 60 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 30.0,
+      "depth": 60.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-40X25-4-6-GY",
+      "type_number": "CD 40X25 4/6 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 40X25 4/6 GY, 40 x 25 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 40.0,
+      "depth": 25.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 4/6 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-80X40-8-12-GY",
+      "type_number": "CD 80X40 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 80X40 8/12 GY, 80 x 40 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 80.0,
+      "depth": 40.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-80X60-8-12-GY",
+      "type_number": "CD 80X60 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 80X60 8/12 GY, 80 x 60 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 80.0,
+      "depth": 60.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-100X40-8-12-GY",
+      "type_number": "CD 100X40 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 100X40 8/12 GY, 100 x 40 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 100.0,
+      "depth": 40.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-100X60-8-12-GY",
+      "type_number": "CD 100X60 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 100X60 8/12 GY, 100 x 60 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 100.0,
+      "depth": 60.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-150X100-8-12-GY",
+      "type_number": "CD 150X100 8/12 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Slotted wiring duct CD 150X100 8/12 GY, 150 x 100 mm, grey, 2 m",
+      "group": "Mounting",
+      "subgroup": "Cable duct",
+      "identifier": "",
+      "width": 2000.0,
+      "height": 150.0,
+      "depth": 100.0,
+      "mounting": "",
+      "functions": [],
+      "top_group": "Mechanics",
+      "tech_data": "Slot width / web width: 8/12 mm\nLength: 2 m"
+    },
+    {
+      "number": "WEI.CD-LID-25-GY",
+      "type_number": "CD-LID 25 GY",
+      "order_number": "",
+      "manufacturer": "Weidm\u00fcller",
+      "description": "Cover CD-LID 25 GY for wiring ducts 25 mm wide, grey",
+      "group": "Mounting",
+      "subgroup": "Accessories",
+      "identifier": "",
+      "functions": [],
+      "top_group": "Mechanics"
+    }
+  ]
+}

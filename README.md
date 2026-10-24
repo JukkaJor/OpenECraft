@@ -455,13 +455,29 @@ executable and runs independently of the editor.
 cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <secret>
 cargo run --release -p openecraft-parts-server -- --storage json --data parts-db.json
 cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migrate-from parts-db.json
+cargo run --release -p openecraft-parts-server -- --install-catalogs all
 ```
 
 - Storage (`--storage sqlite|json`): SQLite by default (`--data parts-db.sqlite`, one
   file with indexed parts, history, accounts and files); JSON keeps everything in one
   file written atomically on every change, with the files in `<name>.files/` next to
   it. A `.json` data file selects JSON storage. New databases are filled with the
-  example catalog; `--migrate-from` copies an existing database into a new one.
+  example catalog and the bundled manufacturer catalogs; `--migrate-from` copies an
+  existing database into a new one.
+- Bundled catalogs: `parts-server/catalogs/<id>.json` (a `catalog` and its `parts`,
+  listed in `parts-server/src/bundled.rs`) are curated starter sets of real
+  manufacturer parts: `abb` (circuit breakers, RCCB, contactors, manual motor
+  starters), `beckhoff` (EtherCAT coupler and terminals), `dehn` (surge protective devices type 1 - 3 and for data lines), `hager` (circuit breakers,
+  RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
+  interface / router, power supply), `phoenix_contact` (terminal blocks, relay
+  modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
+  starter protectors, SENTRON circuit breakers) and `weidmueller` (terminals, relay
+  module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
+  `siemens`) installs or updates them in an existing database: new parts are added,
+  parts nobody changed are updated, parts changed or deleted by users are kept. Parts
+  without models get generated ones from their mounting dimensions. Only add data
+  that may be redistributed (facts from public data sheets, no copied texts, images
+  or models).
 - Users: readers keep favorites, manufacturers change the parts and catalogs of their
   own manufacturer, editors all parts, administrators also manage the users. The
   `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`

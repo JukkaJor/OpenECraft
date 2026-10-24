@@ -1,0 +1,603 @@
+{
+  "catalog": {
+    "id": "dehn",
+    "name": "DEHN",
+    "manufacturer": "DEHN",
+    "version": "2026.1",
+    "description": "Surge protective devices: DEHNguard M (type 2), DEHNventil M (type 1 + 2), DEHNshield (type 1 + 2 + 3), DEHNrail M (type 3), BLITZDUCTOR XT for data lines, spare modules. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "DEH.952300",
+      "type_number": "DG M TNC 275",
+      "order_number": "952300",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TNC 275, TN-C system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PEN"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0",
+      "accessories": [
+        "DEH.952010"
+      ]
+    },
+    {
+      "number": "DEH.952305",
+      "type_number": "DG M TNC 275 FM",
+      "order_number": "952305",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TNC 275 FM, TN-C system, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PEN"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0\nRemote signalling: floating changeover contact",
+      "accessories": [
+        "DEH.952010"
+      ]
+    },
+    {
+      "number": "DEH.952400",
+      "type_number": "DG M TNS 275",
+      "order_number": "952400",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TNS 275, TN-S system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0",
+      "accessories": [
+        "DEH.952010"
+      ]
+    },
+    {
+      "number": "DEH.952405",
+      "type_number": "DG M TNS 275 FM",
+      "order_number": "952405",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TNS 275 FM, TN-S system, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0\nRemote signalling: floating changeover contact",
+      "accessories": [
+        "DEH.952010"
+      ]
+    },
+    {
+      "number": "DEH.952310",
+      "type_number": "DG M TT 275",
+      "order_number": "952310",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TT 275, TT system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+1",
+      "accessories": [
+        "DEH.952010",
+        "DEH.952050"
+      ]
+    },
+    {
+      "number": "DEH.952315",
+      "type_number": "DG M TT 275 FM",
+      "order_number": "952315",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TT 275 FM, TT system, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+1\nRemote signalling: floating changeover contact",
+      "accessories": [
+        "DEH.952010",
+        "DEH.952050"
+      ]
+    },
+    {
+      "number": "DEH.952200",
+      "type_number": "DG M TN 275",
+      "order_number": "952200",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TN 275, TN and TT systems, single-phase",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 1+1",
+      "accessories": [
+        "DEH.952010",
+        "DEH.952050"
+      ]
+    },
+    {
+      "number": "DEH.952205",
+      "type_number": "DG M TN 275 FM",
+      "order_number": "952205",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M DG M TN 275 FM, TN and TT systems, single-phase, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 1+1\nRemote signalling: floating changeover contact",
+      "accessories": [
+        "DEH.952010",
+        "DEH.952050"
+      ]
+    },
+    {
+      "number": "DEH.951300",
+      "type_number": "DV M TNC 255",
+      "order_number": "951300",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNventil M DV M TNC 255, TN-C system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PEN"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0",
+      "accessories": []
+    },
+    {
+      "number": "DEH.951305",
+      "type_number": "DV M TNC 255 FM",
+      "order_number": "951305",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNventil M DV M TNC 255 FM, TN-C system, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PEN"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0\nRemote signalling: floating changeover contact",
+      "accessories": []
+    },
+    {
+      "number": "DEH.951400",
+      "type_number": "DV M TNS 255",
+      "order_number": "951400",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNventil M DV M TNS 255, TN-S system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0",
+      "accessories": []
+    },
+    {
+      "number": "DEH.951310",
+      "type_number": "DV M TT 255",
+      "order_number": "951310",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNventil M DV M TT 255, TT system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+1",
+      "accessories": []
+    },
+    {
+      "number": "DEH.941300",
+      "type_number": "DSH TNC 255",
+      "order_number": "941300",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNshield DSH TNC 255, TN-C system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PEN"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PEN"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 3+0",
+      "accessories": []
+    },
+    {
+      "number": "DEH.941400",
+      "type_number": "DSH TNS 255",
+      "order_number": "941400",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNshield DSH TNS 255, TN-S system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 4+0",
+      "accessories": []
+    },
+    {
+      "number": "DEH.941310",
+      "type_number": "DSH TT 255",
+      "order_number": "941310",
+      "manufacturer": "DEHN",
+      "description": "Combined arrester DEHNshield DSH TT 255, TT system",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L1 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L2 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L3 N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "255 V AC",
+      "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 3+1",
+      "accessories": []
+    },
+    {
+      "number": "DEH.953200",
+      "type_number": "DR M 2P 255",
+      "order_number": "953200",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNrail M DR M 2P 255, type 3, single-phase",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        }
+      ],
+      "voltage": "230 V AC",
+      "tech_data": "Type: 3 (T3)\nCircuit: 1+1"
+    },
+    {
+      "number": "DEH.953205",
+      "type_number": "DR M 2P 255 FM",
+      "order_number": "953205",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNrail M DR M 2P 255 FM, type 3, single-phase, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L N"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "N PE"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ],
+      "voltage": "230 V AC",
+      "tech_data": "Type: 3 (T3)\nCircuit: 1+1"
+    },
+    {
+      "number": "DEH.952010",
+      "type_number": "DG MOD 275",
+      "order_number": "952010",
+      "manufacturer": "DEHN",
+      "description": "Spare protection module DEHNguard DG MOD 275, varistor",
+      "group": "Safety devices",
+      "subgroup": "Accessories",
+      "identifier": "F",
+      "functions": [],
+      "voltage": "275 V AC",
+      "tech_data": "Type: 2 (T2)"
+    },
+    {
+      "number": "DEH.952050",
+      "type_number": "DG MOD NPE",
+      "order_number": "952050",
+      "manufacturer": "DEHN",
+      "description": "Spare protection module DEHNguard DG MOD NPE, N-PE spark gap",
+      "group": "Safety devices",
+      "subgroup": "Accessories",
+      "identifier": "F",
+      "functions": [],
+      "tech_data": "Type: 2 (T2)"
+    },
+    {
+      "number": "DEH.920324",
+      "type_number": "BXT ML4 BD 24",
+      "order_number": "920324",
+      "manufacturer": "DEHN",
+      "description": "Surge protection module BLITZDUCTOR XT BXT ML4 BD 24, 4 cores, 24 V, for balanced data lines",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "1 2 3 4 1' 2' 3' 4'"
+        }
+      ],
+      "voltage": "24 V",
+      "tech_data": "Cores: 4\nInterface: balanced",
+      "accessories": [
+        "DEH.920300"
+      ]
+    },
+    {
+      "number": "DEH.920300",
+      "type_number": "BXT BAS",
+      "order_number": "920300",
+      "manufacturer": "DEHN",
+      "description": "Base part BLITZDUCTOR XT BXT BAS for protection modules, 4 cores",
+      "group": "Safety devices",
+      "subgroup": "Accessories",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": []
+    }
+  ]
+}
