@@ -52,12 +52,17 @@ impl Index {
     pub fn build(prj: &Project) -> Index {
         let mut idx = Index::default();
         for (pi, page) in prj.pages.iter().enumerate() {
-            if page.kind != PageKind::Schematic {
+            // Overview pages are not evaluated, only their single-line representations
+            // belong to the devices.
+            if !matches!(page.kind, PageKind::Schematic | PageKind::Overview) {
                 continue;
             }
             for s in &page.symbols {
                 let Some(def) = symbols::get(&s.sym) else { continue };
                 let loc = Loc { page: pi, sym_id: s.id, pos: s.pos };
+                if page.kind == PageKind::Overview && def.func != Func::Overview {
+                    continue;
+                }
                 match def.func {
                     Func::Interruption => idx.interruptions.entry(s.label.clone()).or_default().push(loc),
                     Func::Potential => {}

@@ -34,6 +34,7 @@ mod pages_ui;
 mod potentials_ui;
 mod structure_ui;
 mod process_ui;
+mod singleline_ui;
 mod remote_ui;
 mod requests_ui;
 mod review_ui;
@@ -106,6 +107,7 @@ pub struct App {
     plugs_ui: plugs_ui::PlugsUi,
     plc_ui: plc_ui::PlcUi,
     process_ui: process_ui::ProcessUi,
+    singleline_ui: singleline_ui::SingleLineUi,
     languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
     config_ui: config_ui::ConfigUi,
@@ -198,6 +200,7 @@ impl App {
             plugs_ui: Default::default(),
             plc_ui: Default::default(),
             process_ui: Default::default(),
+            singleline_ui: Default::default(),
             languages_ui: Default::default(),
             tables_ui: Default::default(),
             config_ui: Default::default(),
@@ -785,6 +788,9 @@ impl App {
                 }
                 if ui.button(tr("Fluid and process…")).on_hover_text(tr("Hose defaults and PCT loops of the pre-planning")).clicked() {
                     self.process_ui.open = true;
+                }
+                if ui.button(tr("Single-line / multi-line…")).on_hover_text(tr("Plan devices in the single-line diagram, generate the schematic and keep both in sync")).clicked() {
+                    self.singleline_ui.open = true;
                 }
                 if ui.button(tr("Marking…")).clicked() {
                     self.eng.show_marking = true;
@@ -1856,6 +1862,7 @@ impl App {
         self.plugs_window(ctx);
         self.plc_hw_window(ctx);
         self.process_window(ctx);
+        self.singleline_window(ctx);
         self.languages_window(ctx);
         self.structure_window(ctx);
         self.save_template_window(ctx);

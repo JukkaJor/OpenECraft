@@ -154,6 +154,7 @@ impl Analysis {
         issues.extend(crate::cabledef::problems(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
+        issues.extend(crate::singleline::problems(prj, &idx, &netlist).into_iter().map(|(severity, message, target)| Issue { severity, message, target }));
         issues.extend(check_wiring_marks(prj, &wiring));
         issues.extend(field.issues.iter().cloned());
         issues.extend(routing.problems.iter().map(|p| {
