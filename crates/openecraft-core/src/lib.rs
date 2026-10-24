@@ -28,6 +28,7 @@ pub mod geom;
 pub mod harness;
 pub mod history;
 pub mod index;
+pub mod integration;
 pub mod loads;
 pub mod macros;
 pub mod marking;

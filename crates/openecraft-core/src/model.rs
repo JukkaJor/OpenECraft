@@ -121,6 +121,9 @@ pub struct Project {
     /// Options that show or hide model content.
     #[serde(skip_serializing_if = "crate::options::ModelOptions::is_empty")]
     pub model_options: crate::options::ModelOptions,
+    /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
+    #[serde(skip_serializing_if = "crate::integration::Integration::is_empty")]
+    pub integration: crate::integration::Integration,
     pub next_id: u64,
 }
 
@@ -164,6 +167,7 @@ impl Default for Project {
             field: Default::default(),
             subprojects: Default::default(),
             model_options: Default::default(),
+            integration: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
