@@ -119,7 +119,7 @@ impl PanelUi {
                 let r = swing_dir([q[0], q[1], q[2] - e.depth]);
                 [r[0], r[1], r[2] + e.depth]
             };
-            let problems = panel::problem_items(e, &prj.parts);
+            let problems = panel::problem_items(prj, e);
             let add_box = |prims: &mut Vec<(u8, f32, Prim)>, layer: u8, min: [f32; 3], max: [f32; 3], base: Color32, item: Option<u64>, door: bool| {
                 let c = |x: usize, y: usize, z: usize| [if x == 0 { min[0] } else { max[0] }, if y == 0 { min[1] } else { max[1] }, if z == 0 { min[2] } else { max[2] }];
                 let faces: [([usize; 4], [f32; 3]); 6] = [

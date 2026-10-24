@@ -16,7 +16,8 @@ editor enables and disables them (remembered by the editor).
 
 ## Rust plugins
 
-Built-in plugins live in `crates/openecraft-api/src/builtin.rs` and are compiled into
+Built-in plugins (project statistics, panel layout checks) live in
+`crates/openecraft-api/src/builtin.rs` and its submodules and are compiled into
 every front end (also the web version). A plugin implements `Plugin`:
 
 ```rust

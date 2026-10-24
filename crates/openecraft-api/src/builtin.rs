@@ -9,8 +9,11 @@ use openecraft_core::structure;
 use openecraft_i18n::tr_const;
 use serde_json::Value;
 
+mod panel;
+pub use panel::PanelChecks;
+
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(Statistics)]
+    vec![Box::new(Statistics), Box::new(PanelChecks)]
 }
 
 /// Key figures of the project: as command, report and text export of the device tags.

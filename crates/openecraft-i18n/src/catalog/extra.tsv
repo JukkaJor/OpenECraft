@@ -2936,6 +2936,112 @@ Bend radius in drag chains	Biegeradius in Energieketten	Rayon de courbure dans l
 Field wiring…	Feldverdrahtung…	Câblage de terrain…	Cableado de campo…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Anlagenlayout, Trassennetz, Feldkabelplanung, Potentialausgleich und Kabelzubehör	Plan d'installation, réseau de cheminement, planification des câbles de terrain, liaison équipotentielle et accessoires de câble	Plano de la instalación, red de recorridos, planificación de cables de campo, conexión equipotencial y accesorios de cable
 +CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1
+(any)	(beliebig)	(quelconque)	(cualquiera)
+Collision	Kollision	Collision	Colisión
+Outside	Außerhalb	À l'extérieur	Fuera
+Ventilation clearance	Lüftungsabstand	Distance de ventilation	Distancia de ventilación
+Mounting clearance	Montageabstand	Distance de montage	Distancia de montaje
+EMC clearance	EMV-Abstand	Distance CEM	Distancia CEM
+Collision class	Kollisionsklasse	Classe de collision	Clase de colisión
+Service space	Serviceraum	Espace de service	Espacio de servicio
+Height above floor	Höhe über Boden	Hauteur au-dessus du sol	Altura sobre el suelo
+Thermal	Thermik	Thermique	Térmica
+Manufacturing	Fertigung	Fabrication	Fabricación
+{}: {} is inside the ventilation clearance of {}	{}: {} liegt im Lüftungsabstand von {}	{} : {} se trouve dans la distance de ventilation de {}	{}: {} está dentro de la distancia de ventilación de {}
+{}: {} is closer to {} than its mounting clearance of {} mm	{}: {} liegt näher an {} als dessen Montageabstand von {} mm	{} : {} est plus proche de {} que sa distance de montage de {} mm	{}: {} está más cerca de {} que su distancia de montaje de {} mm
+{}: {} is inside the EMC clearance of {} ({} mm)	{}: {} liegt im EMV-Abstand von {} ({} mm)	{} : {} se trouve dans la distance CEM de {} ({} mm)	{}: {} está dentro de la distancia CEM de {} ({} mm)
+{}: {} is closer than {} mm to a cable duct	{}: {} ist näher als {} mm an einem Kabelkanal	{} : {} est à moins de {} mm d'une goulotte	{}: {} está a menos de {} mm de una canaleta
+{}: {} is closer than {} mm to the edge of the mounting plate	{}: {} ist näher als {} mm am Rand der Montageplatte	{} : {} est à moins de {} mm du bord de la plaque de montage	{}: {} está a menos de {} mm del borde de la placa de montaje
+{}: {} blocks the service space in front of {}	{}: {} versperrt den Serviceraum vor {}	{} : {} bloque l'espace de service devant {}	{}: {} bloquea el espacio de servicio delante de {}
+{}: no service space of {} mm in front of {} (the door is too close)	{}: kein Serviceraum von {} mm vor {} (die Tür ist zu nah)	{} : pas d'espace de service de {} mm devant {} (la porte est trop proche)	{}: no hay espacio de servicio de {} mm delante de {} (la puerta está demasiado cerca)
+{}: {} ({}) and {} ({}) are {} mm apart, at least {} mm required	{}: {} ({}) und {} ({}) sind {} mm voneinander entfernt, mindestens {} mm erforderlich	{} : {} ({}) et {} ({}) sont à {} mm l'un de l'autre, au moins {} mm requis	{}: {} ({}) y {} ({}) están a {} mm, se requieren al menos {} mm
+{}: {} reaches about {} °C at its place, allowed {} °C	{}: {} erreicht an seinem Platz etwa {} °C, zulässig {} °C	{} : {} atteint environ {} °C à son emplacement, admis {} °C	{}: {} alcanza unos {} °C en su lugar, admisible {} °C
+{}: hot spot of about {} °C at x = {} mm, y = {} mm of the mounting plate (inside temperature at most {} °C)	{}: Hotspot von etwa {} °C bei x = {} mm, y = {} mm der Montageplatte (Innentemperatur höchstens {} °C)	{} : point chaud d'environ {} °C à x = {} mm, y = {} mm de la plaque de montage (température intérieure au plus {} °C)	{}: punto caliente de unos {} °C en x = {} mm, y = {} mm de la placa de montaje (temperatura interior como máximo {} °C)
+{}: terminals {} are {} mm above the floor, at least {} mm required	{}: Klemmen {} liegen {} mm über dem Boden, mindestens {} mm erforderlich	{} : les bornes {} sont à {} mm au-dessus du sol, au moins {} mm requis	{}: los bornes {} están a {} mm sobre el suelo, se requieren al menos {} mm
+{}: actuator {} is {} mm above the floor, recommended {} … {} mm	{}: Bedienteil {} liegt {} mm über dem Boden, empfohlen {} … {} mm	{} : l'organe de commande {} est à {} mm au-dessus du sol, recommandé {} … {} mm	{}: el actuador {} está a {} mm sobre el suelo, recomendado {} … {} mm
+{}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} liegt {} … {} mm über dem Boden, zulässig {} … {} mm	{} : {} est à {} … {} mm au-dessus du sol, admis {} … {} mm	{}: {} está a {} … {} mm sobre el suelo, admisible {} … {} mm
+{}: hole Ø{} of {} on the {} is {} mm from the edge, at least {} mm required	{}: Bohrung Ø{} von {} auf {} ist {} mm vom Rand entfernt, mindestens {} mm erforderlich	{} : le perçage Ø{} de {} sur {} est à {} mm du bord, au moins {} mm requis	{}: el taladro Ø{} de {} en {} está a {} mm del borde, se requieren al menos {} mm
+{}: holes of {} and {} on the {} are too close ({} mm web, at least {} mm)	{}: Bohrungen von {} und {} auf {} liegen zu nah beieinander ({} mm Steg, mindestens {} mm)	{} : les perçages de {} et {} sur {} sont trop proches ({} mm d'âme, au moins {} mm)	{}: los taladros de {} y {} en {} están demasiado cerca ({} mm de alma, al menos {} mm)
+{}: hole of {} is too close to the cutout of {} on the {}	{}: Bohrung von {} liegt zu nah am Ausschnitt von {} auf {}	{} : le perçage de {} est trop proche de la découpe de {} sur {}	{}: el taladro de {} está demasiado cerca del recorte de {} en {}
+{}: cutout of {} on the {} is {} mm from the edge, at least {} mm required	{}: Ausschnitt von {} auf {} ist {} mm vom Rand entfernt, mindestens {} mm erforderlich	{} : la découpe de {} sur {} est à {} mm du bord, au moins {} mm requis	{}: el recorte de {} en {} está a {} mm del borde, se requieren al menos {} mm
+{}: cutouts of {} and {} on the {} are too close ({} mm web, at least {} mm)	{}: Ausschnitte von {} und {} auf {} liegen zu nah beieinander ({} mm Steg, mindestens {} mm)	{} : les découpes de {} et {} sur {} sont trop proches ({} mm d'âme, au moins {} mm)	{}: los recortes de {} y {} en {} están demasiado cerca ({} mm de alma, al menos {} mm)
+{}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} mit {} mm ist kürzer als {} mm und schwer abzulängen	{} : {} de {} mm est plus court que {} mm et difficile à couper	{}: {} de {} mm es más corto que {} mm y difícil de cortar
+{}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} mit {} mm ist länger als die Lagerlänge von {} mm und muss gestoßen werden	{} : {} de {} mm dépasse la longueur de stock de {} mm et doit être raboutée	{}: {} de {} mm supera la longitud de stock de {} mm y debe empalmarse
+{}: {} overhangs the end of its mounting rail	{}: {} ragt über das Ende seiner Tragschiene	{} : {} dépasse l'extrémité de son rail de montage	{}: {} sobresale del extremo de su carril de montaje
+{}: {} is made for a mounting rail but sits directly on the plate	{}: {} ist für eine Tragschiene gedacht, sitzt aber direkt auf der Platte	{} : {} est prévu pour un rail de montage mais se trouve directement sur la plaque	{}: {} está hecho para un carril de montaje pero está directamente sobre la placa
+{}: {} kg on the {} exceed its load of {} kg	{}: {} kg auf {} überschreiten die Traglast von {} kg	{} : {} kg sur {} dépassent sa charge de {} kg	{}: {} kg en {} superan su carga de {} kg
+Layout checks	Aufbauprüfungen	Contrôles d'implantation	Comprobaciones de disposición
+Bottom of the enclosure (without plinth) above the floor; heights are checked when it is known or the enclosure stands on a plinth	Unterkante des Gehäuses (ohne Sockel) über dem Boden; die Höhen werden geprüft, wenn sie bekannt ist oder das Gehäuse auf einem Sockel steht	Bas de l'armoire (sans socle) au-dessus du sol ; les hauteurs sont contrôlées si elle est connue ou si l'armoire repose sur un socle	Parte inferior del armario (sin zócalo) sobre el suelo; las alturas se comprueban si se conoce o si el armario está sobre un zócalo
+Clearances	Abstände	Distances	Distancias
+Gap between devices	Abstand zwischen Geräten	Écart entre appareils	Separación entre aparatos
+Mounting clearance side by side; parts add theirs (Clearance left / right)	Montageabstand nebeneinander; Artikel ergänzen ihren eigenen (Clearance left / right)	Distance de montage côte à côte ; les articles ajoutent la leur (Clearance left / right)	Distancia de montaje lado a lado; los artículos añaden la suya (Clearance left / right)
+Distance to cable ducts	Abstand zu Kabelkanälen	Distance aux goulottes	Distancia a las canaletas
+Wiring space between devices and ducts	Verdrahtungsraum zwischen Geräten und Kanälen	Espace de câblage entre appareils et goulottes	Espacio de cableado entre aparatos y canaletas
+Distance to the plate edge	Abstand zum Plattenrand	Distance au bord de la plaque	Distancia al borde de la placa
+Service space in front	Serviceraum davor	Espace de service devant	Espacio de servicio delante
+Free space in front of every device on the plate up to the door; parts add theirs (Service space)	Freiraum vor jedem Gerät auf der Platte bis zur Tür; Artikel ergänzen ihren eigenen (Service space)	Espace libre devant chaque appareil de la plaque jusqu'à la porte ; les articles ajoutent le leur (Service space)	Espacio libre delante de cada aparato de la placa hasta la puerta; los artículos añaden el suyo (Service space)
+Heights above floor (IEC 60204-1)	Höhen über Boden (IEC 60204-1)	Hauteurs au-dessus du sol (CEI 60204-1)	Alturas sobre el suelo (IEC 60204-1)
+All devices between these heights (11.2.1); 0 … 0 switches the check off	Alle Geräte zwischen diesen Höhen (11.2.1); 0 … 0 schaltet die Prüfung ab	Tous les appareils entre ces hauteurs (11.2.1) ; 0 … 0 désactive le contrôle	Todos los aparatos entre estas alturas (11.2.1); 0 … 0 desactiva la comprobación
+Actuators on the door	Bedienteile in der Tür	Organes de commande sur la porte	Actuadores en la puerta
+Recommended height of manual actuators (10.1.2)	Empfohlene Höhe von Bedienteilen (10.1.2)	Hauteur recommandée des organes de commande manuels (10.1.2)	Altura recomendada de los actuadores manuales (10.1.2)
+Terminals at least	Klemmen mindestens	Bornes au moins	Bornes al menos
+Air at devices at most	Luft an Geräten höchstens	Air aux appareils au plus	Aire en los aparatos como máximo
+For parts without temperature data (Max temperature, Operating temperature); 0: not checked	Für Artikel ohne Temperaturangaben (Max temperature, Operating temperature); 0: nicht geprüft	Pour les articles sans données de température (Max temperature, Operating temperature) ; 0 : non contrôlé	Para artículos sin datos de temperatura (Max temperature, Operating temperature); 0: no se comprueba
+Stratification (factor c)	Schichtung (Faktor c)	Stratification (facteur c)	Estratificación (factor c)
+Temperature rise at the roof against the middle (IEC/TR 60890)	Temperaturerhöhung am Dach gegenüber der Mitte (IEC/TR 60890)	Échauffement au toit par rapport au milieu (CEI/TR 60890)	Aumento de temperatura en el techo respecto al centro (IEC/TR 60890)
+Web between holes	Steg zwischen Bohrungen	Âme entre perçages	Alma entre taladros
+Hole to sheet edge	Bohrung zum Blechrand	Perçage au bord de la tôle	Taladro al borde de la chapa
+Web at cutouts	Steg an Ausschnitten	Âme aux découpes	Alma en los recortes
+Shortest profile	Kürzestes Profil	Profilé le plus court	Perfil más corto
+Rails, ducts and busbars shorter than this are hard to cut	Schienen, Kanäle und Sammelschienen, die kürzer sind, lassen sich schwer ablängen	Les rails, goulottes et jeux de barres plus courts sont difficiles à couper	Los carriles, canaletas y barras más cortos son difíciles de cortar
+Stock length	Lagerlänge	Longueur de stock	Longitud de stock
+For parts without Stock length; longer profiles have to be joined	Für Artikel ohne Stock length; längere Profile müssen gestoßen werden	Pour les articles sans Stock length ; les profilés plus longs doivent être raboutés	Para artículos sin Stock length; los perfiles más largos deben empalmarse
+Collision classes	Kollisionsklassen	Classes de collision	Clases de colisión
+Distances between classes of items, or classes that may overlap	Abstände zwischen Klassen von Elementen oder Klassen, die sich überschneiden dürfen	Distances entre classes d'éléments, ou classes qui peuvent se chevaucher	Distancias entre clases de elementos, o clases que pueden solaparse
+may overlap	dürfen überlappen	chevauchement admis	pueden solaparse
+➕ Add rule	➕ Regel hinzufügen	➕ Ajouter une règle	➕ Añadir regla
+Air temperature at the devices	Lufttemperatur an den Geräten	Température de l'air aux appareils	Temperatura del aire en los aparatos
+max. {} °C	max. {} °C	max. {} °C	máx. {} °C
+No problems found	Keine Probleme gefunden	Aucun problème trouvé	No se encontraron problemas
+Automatic ({})	Automatisch ({})	Automatique ({})	Automática ({})
+own class	eigene Klasse	classe propre	clase propia
+The checks keep the distances between classes and let classes overlap as set in Layout checks	Die Prüfungen halten die Abstände zwischen Klassen ein und lassen Klassen überlappen, wie in Aufbauprüfungen eingestellt	Les contrôles respectent les distances entre classes et laissent les classes se chevaucher comme réglé dans Contrôles d'implantation	Las comprobaciones mantienen las distancias entre clases y permiten solapes según lo ajustado en Comprobaciones de disposición
+Air temperature	Lufttemperatur	Température de l'air	Temperatura del aire
+{} °C (max. {} °C)	{} °C (max. {} °C)	{} °C (max. {} °C)	{} °C (máx. {} °C)
+Heat map	Wärmebild	Carte thermique	Mapa térmico
+Estimated air temperature in front of the mounting plate (power loss of the devices, climate)	Geschätzte Lufttemperatur vor der Montageplatte (Verlustleistung der Geräte, Klima)	Température de l'air estimée devant la plaque de montage (puissance dissipée des appareils, climat)	Temperatura del aire estimada delante de la placa de montaje (pérdidas de los aparatos, clima)
+{} °C (max.)	{} °C (max.)	{} °C (max.)	{} °C (máx.)
+Air temperature {} … {} °C	Lufttemperatur {} … {} °C	Température de l'air {} … {} °C	Temperatura del aire {} … {} °C
+Collision class: power, drive, control, signal, terminal, rail, duct, busbar, cutout, accessory, an own class or * for any	Kollisionsklasse: power, drive, control, signal, terminal, rail, duct, busbar, cutout, accessory, eine eigene Klasse oder * für jede	Classe de collision : power, drive, control, signal, terminal, rail, duct, busbar, cutout, accessory, une classe propre ou * pour toutes	Clase de colisión: power, drive, control, signal, terminal, rail, duct, busbar, cutout, accessory, una clase propia o * para cualquiera
+Checks the panel layout: collisions, clearances (mounting, ventilation, EMC), service space, heights above the floor, collision classes, temperatures and manufacturability	Prüft den Schaltschrankaufbau: Kollisionen, Abstände (Montage, Lüftung, EMV), Serviceraum, Höhen über Boden, Kollisionsklassen, Temperaturen und Fertigbarkeit	Contrôle l'implantation de l'armoire : collisions, distances (montage, ventilation, CEM), espace de service, hauteurs au-dessus du sol, classes de collision, températures et faisabilité	Comprueba la disposición del armario: colisiones, distancias (montaje, ventilación, CEM), espacio de servicio, alturas sobre el suelo, clases de colisión, temperaturas y fabricabilidad
+Thermal simulation of the mounting plate: air temperatures, hot spot, heat sources and the temperature at every device	Thermische Simulation der Montageplatte: Lufttemperaturen, Hotspot, Wärmequellen und die Temperatur an jedem Gerät	Simulation thermique de la plaque de montage : températures de l'air, point chaud, sources de chaleur et température à chaque appareil	Simulación térmica de la placa de montaje: temperaturas del aire, punto caliente, fuentes de calor y la temperatura en cada aparato
+Shows or changes the rules of the panel layout checks; values in mm (temperature in °C)	Zeigt oder ändert die Regeln der Aufbauprüfungen; Werte in mm (Temperatur in °C)	Affiche ou modifie les règles des contrôles d'implantation ; valeurs en mm (température en °C)	Muestra o cambia las reglas de las comprobaciones de disposición; valores en mm (temperatura en °C)
+Gap between devices side by side	Abstand zwischen Geräten nebeneinander	Écart entre appareils côte à côte	Separación entre aparatos lado a lado
+Distance of devices to cable ducts	Abstand der Geräte zu Kabelkanälen	Distance des appareils aux goulottes	Distancia de los aparatos a las canaletas
+Distance of devices to the plate edge	Abstand der Geräte zum Plattenrand	Distance des appareils au bord de la plaque	Distancia de los aparatos al borde de la placa
+Free space in front of every device on the plate	Freiraum vor jedem Gerät auf der Platte	Espace libre devant chaque appareil de la plaque	Espacio libre delante de cada aparato de la placa
+Lowest device above the floor	Niedrigstes Gerät über dem Boden	Appareil le plus bas au-dessus du sol	Aparato más bajo sobre el suelo
+Highest device above the floor (0: not checked)	Höchstes Gerät über dem Boden (0: nicht geprüft)	Appareil le plus haut au-dessus du sol (0 : non contrôlé)	Aparato más alto sobre el suelo (0: no se comprueba)
+Lowest actuator on the door above the floor	Niedrigstes Bedienteil in der Tür über dem Boden	Organe de commande le plus bas sur la porte au-dessus du sol	Actuador más bajo de la puerta sobre el suelo
+Highest actuator on the door above the floor (0: not checked)	Höchstes Bedienteil in der Tür über dem Boden (0: nicht geprüft)	Organe de commande le plus haut sur la porte au-dessus du sol (0 : non contrôlé)	Actuador más alto de la puerta sobre el suelo (0: no se comprueba)
+Lowest terminal above the floor	Niedrigste Klemme über dem Boden	Borne la plus basse au-dessus du sol	Borne más bajo sobre el suelo
+Highest air temperature at devices without data (0: not checked)	Höchste Lufttemperatur an Geräten ohne Angaben (0: nicht geprüft)	Température de l'air maximale aux appareils sans données (0 : non contrôlé)	Temperatura del aire máxima en aparatos sin datos (0: no se comprueba)
+Temperature rise at the roof against the middle (1 … 2)	Temperaturerhöhung am Dach gegenüber der Mitte (1 … 2)	Échauffement au toit par rapport au milieu (1 … 2)	Aumento de temperatura en el techo respecto al centro (1 … 2)
+Smallest web between holes	Kleinster Steg zwischen Bohrungen	Âme minimale entre perçages	Alma mínima entre taladros
+Smallest distance of holes from the sheet edge	Kleinster Abstand der Bohrungen vom Blechrand	Distance minimale des perçages au bord de la tôle	Distancia mínima de los taladros al borde de la chapa
+Smallest web at cutouts	Kleinster Steg an Ausschnitten	Âme minimale aux découpes	Alma mínima en los recortes
+Shortest rail, duct or busbar	Kürzeste Schiene, kürzester Kanal oder kürzeste Sammelschiene	Rail, goulotte ou jeu de barres le plus court	Carril, canaleta o barra más corto
+Stock length of rails, ducts and busbars	Lagerlänge von Schienen, Kanälen und Sammelschienen	Longueur de stock des rails, goulottes et jeux de barres	Longitud de stock de carriles, canaletas y barras
+Back to the default rules first	Zuerst auf die Standardregeln zurücksetzen	Revenir d'abord aux règles par défaut	Volver primero a las reglas por defecto
+Sets the distance between two collision classes or lets them overlap; replaces the rule of the same classes	Setzt den Abstand zwischen zwei Kollisionsklassen oder lässt sie überlappen; ersetzt die Regel derselben Klassen	Définit la distance entre deux classes de collision ou les laisse se chevaucher ; remplace la règle des mêmes classes	Fija la distancia entre dos clases de colisión o permite que se solapen; sustituye la regla de las mismas clases
+Smallest distance in mm	Kleinster Abstand in mm	Distance minimale en mm	Distancia mínima en mm
+The classes may overlap (no collision)	Die Klassen dürfen überlappen (keine Kollision)	Les classes peuvent se chevaucher (pas de collision)	Las clases pueden solaparse (sin colisión)
+Removes the rule	Entfernt die Regel	Supprime la règle	Elimina la regla
+Sets the collision class of a panel item (empty: automatic)	Setzt die Kollisionsklasse eines Aufbauelements (leer: automatisch)	Définit la classe de collision d'un élément d'implantation (vide : automatique)	Fija la clase de colisión de un elemento de la disposición (vacío: automática)
+Sets the height of the enclosure's bottom above the floor (heights of devices, terminals and actuators are checked)	Setzt die Höhe der Gehäuseunterkante über dem Boden (Höhen von Geräten, Klemmen und Bedienteilen werden geprüft)	Définit la hauteur du bas de l'armoire au-dessus du sol (les hauteurs des appareils, bornes et organes de commande sont contrôlées)	Fija la altura de la parte inferior del armario sobre el suelo (se comprueban las alturas de aparatos, bornes y actuadores)
+Height in mm without plinth; negative: unknown (wall mounted)	Höhe in mm ohne Sockel; negativ: unbekannt (Wandmontage)	Hauteur en mm sans socle ; négative : inconnue (montage mural)	Altura en mm sin zócalo; negativa: desconocida (montaje mural)
+Both classes are needed	Beide Klassen werden benötigt	Les deux classes sont nécessaires	Se necesitan ambas clases
+No rule for {} and {}	Keine Regel für {} und {}	Aucune règle pour {} et {}	No hay regla para {} y {}
 Cannot read the plugin folder {}	Plugin-Ordner {} kann nicht gelesen werden	Impossible de lire le dossier de plugins {}	No se puede leer la carpeta de plugins {}
 Cannot start {}: {}	{} kann nicht gestartet werden: {}	Impossible de démarrer {} : {}	No se puede iniciar {}: {}
 Check {} failed: {}	Prüfung {} fehlgeschlagen: {}	La vérification {} a échoué : {}	La comprobación {} ha fallado: {}
@@ -2968,6 +3074,8 @@ Warnings	Warnungen	Avertissements	Advertencias
 ⟳ Update	⟳ Aktualisieren	⟳ Mettre à jour	⟳ Actualizar
 ⬇ {}	⬇ {}	⬇ {}	⬇ {}
 📊 {}	📊 {}	📊 {}	📊 {}
+Panel layout checks	Schaltschrankaufbau-Prüfungen	Contrôles de l'implantation d'armoire	Comprobaciones de la disposición del armario
+Clearances, service space, heights, collision classes, thermal simulation and manufacturability of the panel layout	Abstände, Serviceraum, Höhen, Kollisionsklassen, thermische Simulation und Fertigbarkeit des Schaltschrankaufbaus	Distances, espace de service, hauteurs, classes de collision, simulation thermique et faisabilité de l'implantation d'armoire	Distancias, espacio de servicio, alturas, clases de colisión, simulación térmica y fabricabilidad de la disposición del armario
 ERP	ERP	ERP	ERP
 PDM	PDM	PDM	PDM
 PLM	PLM	PLM	PLM
