@@ -2,7 +2,7 @@
 
 use crate::{points_from_text, points_to_text, FnKind, FunctionTemplate, Part, PartsDb, TopGroup};
 
-const CSV_FIELDS: [&str; 30] = [
+const CSV_FIELDS: [&str; 33] = [
     "Part number",
     "Type number",
     "Order number",
@@ -33,6 +33,9 @@ const CSV_FIELDS: [&str; 30] = [
     "Functions",
     "Accessories",
     "Connection points",
+    "Catalog",
+    "Lifecycle",
+    "Successor",
 ];
 
 pub fn csv_escape(s: &str) -> String {
@@ -57,6 +60,7 @@ pub fn to_csv(parts: &[Part]) -> String {
             TopGroup::Electrical => "Electrical",
             TopGroup::Fluid => "Fluid",
             TopGroup::Mechanics => "Mechanics",
+            TopGroup::Process => "Process",
         };
         let row = [
             p.number.clone(),
@@ -89,6 +93,9 @@ pub fn to_csv(parts: &[Part]) -> String {
             functions,
             p.accessories.join(","),
             points_to_text(&p.connection_points),
+            p.catalog.clone(),
+            format!("{:?}", p.lifecycle),
+            p.successor.clone(),
         ];
         out.push_str(&row.iter().map(|c| csv_escape(c)).collect::<Vec<_>>().join(";"));
         out.push('\n');
@@ -152,6 +159,7 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
         let top_group = match get(7).to_lowercase().as_str() {
             s if s.starts_with("fluid") => TopGroup::Fluid,
             s if s.starts_with("mech") => TopGroup::Mechanics,
+            s if s.starts_with("proc") => TopGroup::Process,
             _ => TopGroup::Electrical,
         };
         let functions = get(27)
@@ -196,6 +204,10 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
             model_2d: None,
             model_3d: None,
             connection_points: points_from_text(&get(29)),
+            catalog: get(30),
+            lifecycle: crate::portal::lifecycle_from_key(&get(31)).unwrap_or_default(),
+            successor: get(32),
+            ..Default::default()
         });
     }
     Ok(parts)

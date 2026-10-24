@@ -118,3 +118,78 @@ fn reloading_keeps_unsaved_changes() {
     assert_eq!(s.draft.as_ref().unwrap().part.description, "theirs");
     assert_eq!(s.apply(&Reply::Imported(Ok(ImportResult { imported: 3, revision: 6 }))), Some(FollowUp::Reload));
 }
+
+fn catalog(id: &str, name: &str) -> Catalog {
+    Catalog { id: id.into(), name: name.into(), ..Default::default() }
+}
+
+#[test]
+fn new_catalogs_get_an_id_from_their_name() {
+    let mut s = Session::default();
+    s.apply(&Reply::Catalogs(Ok(vec![catalog("acme_2026", "ACME 2026")])));
+    s.select_catalog(None, "ACME");
+    assert_eq!(s.catalog.as_ref().unwrap().catalog.manufacturer, "ACME");
+    assert_eq!(s.catalog_to_save(), Err("The catalog needs a name"));
+    s.catalog.as_mut().unwrap().catalog.name = "ACME 2026".into();
+    assert_eq!(s.catalog_to_save(), Err("A catalog with this id exists already"));
+    s.catalog.as_mut().unwrap().catalog.name = "ACME Relays 2027".into();
+    assert_eq!(s.catalog_to_save().unwrap().id, "acme_relays_2027");
+    // The open catalog may keep its id.
+    s.select_catalog(Some("acme_2026"), "");
+    assert_eq!(s.catalog_to_save().unwrap().id, "acme_2026");
+}
+
+#[test]
+fn catalog_replies_keep_the_list_and_draft_current() {
+    let mut s = Session::default();
+    s.apply(&Reply::Catalogs(Ok(vec![catalog("b", "Beta"), catalog("a", "Alpha")])));
+    s.select_catalog(Some("a"), "");
+    s.catalog.as_mut().unwrap().catalog.version = "2".into();
+    // A reload keeps local changes …
+    s.apply(&Reply::Catalogs(Ok(vec![catalog("a", "Alpha")])));
+    assert_eq!(s.catalog.as_ref().unwrap().catalog.version, "2");
+    // … saving shows the server state.
+    s.apply(&Reply::CatalogSaved(Ok(Catalog { version: "2".into(), parts: 4, ..catalog("a", "Alpha") })));
+    assert_eq!(s.catalog.as_ref().unwrap().catalog.parts, 4);
+    s.apply(&Reply::CatalogSaved(Ok(catalog("c", "Gamma"))));
+    assert_eq!(s.catalogs.iter().map(|c| c.id.as_str()).collect::<Vec<_>>(), ["a", "c"]);
+    s.apply(&Reply::CatalogDeleted("c".into(), Ok(())));
+    assert!(s.catalog.is_none());
+    assert_eq!(s.catalogs.len(), 1);
+}
+
+#[test]
+fn users_are_checked_before_saving() {
+    let mut s = Session::default();
+    let ann = User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() };
+    s.apply(&Reply::Users(Ok(vec![ann.clone()])));
+    s.select_user(None);
+    assert_eq!(s.user_problem(), Some("The user name must not be empty or contain blanks"));
+    s.user.as_mut().unwrap().name = "ANN".into();
+    assert_eq!(s.user_problem(), Some("A user with this name exists already"));
+    s.user.as_mut().unwrap().name = "max".into();
+    assert_eq!(s.user_problem(), Some("A new user needs a password"));
+    s.user.as_mut().unwrap().update = UserUpdate { role: Role::Manufacturer, manufacturer: " ".into(), password: "pw".into() };
+    assert_eq!(s.user_problem(), Some("A manufacturer user needs a manufacturer"));
+    s.user.as_mut().unwrap().update.manufacturer = "ACME".into();
+    assert_eq!(s.user_problem(), None);
+    // Existing users keep their password when none is given.
+    s.select_user(Some("ann"));
+    assert_eq!(s.user.as_ref().unwrap().update.role, Role::Editor);
+    assert_eq!(s.user_problem(), None);
+
+    s.apply(&Reply::UserSaved(Ok(User { name: "max".into(), role: Role::Manufacturer, manufacturer: "ACME".into() })));
+    assert_eq!(s.users.len(), 2);
+    assert_eq!(s.user.as_ref().unwrap().name, "max");
+    assert!(s.user.as_ref().unwrap().update.password.is_empty());
+    s.apply(&Reply::UserDeleted("max".into(), Ok(())));
+    assert!(s.user.is_none());
+    assert_eq!(s.users, [ann]);
+}
+
+#[test]
+fn history_of_the_open_part() {
+    let mut s = loaded(&["A"]);
+    s.apply(&Reply::History("A".into(), Ok(vec![HistoryEntry { revision: 3, ..Default::default() }])));
+    assert_eq!(s.history.as_ref().unwrap().1[0].revision, 3);
+}

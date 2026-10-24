@@ -7,7 +7,9 @@
 //!   catalogs with ETIM / eCl@ss features ([`from_bmecat`])
 //! - 2D / 3D models of parts with SVG, STL, OBJ and IFC import ([`Model2d`], [`Mesh3d`])
 //! - the generic example catalog ([`default_catalog`])
-//! - the HTTP API types of the parts server ([`api`])
+//! - the HTTP API types of the parts server ([`api`]), its data portal model
+//!   (catalogs, lifecycle, attachments, users, faceted search, update check: [`portal`])
+//! - the EPLAN product groups with their exchange numbers ([`productgroups`])
 
 pub mod api;
 mod bmecat;
@@ -19,6 +21,8 @@ mod graphics;
 pub mod mechanics;
 mod ifc;
 mod part;
+pub mod portal;
+pub mod productgroups;
 mod text;
 pub mod vec3;
 mod xml;

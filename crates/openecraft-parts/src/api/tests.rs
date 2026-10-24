@@ -1,5 +1,5 @@
 use super::*;
-use crate::default_catalog;
+use crate::{default_catalog, natural_cmp};
 
 #[test]
 fn query_filters_sorts_and_pages() {

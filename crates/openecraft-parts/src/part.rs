@@ -1,6 +1,7 @@
 //! Part data: product groups, function templates, commercial / technical / mounting
 //! data and the parts database container.
 
+use crate::portal::{Attachment, Lifecycle};
 use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -11,17 +12,28 @@ pub enum TopGroup {
     Electrical,
     Fluid,
     Mechanics,
+    Process,
 }
 
 impl TopGroup {
-    pub const ALL: [TopGroup; 3] = [TopGroup::Electrical, TopGroup::Fluid, TopGroup::Mechanics];
+    pub const ALL: [TopGroup; 4] = [TopGroup::Electrical, TopGroup::Fluid, TopGroup::Mechanics, TopGroup::Process];
 
     pub fn title(self) -> &'static str {
         match self {
             TopGroup::Electrical => "Electrical engineering",
             TopGroup::Fluid => "Fluid power",
             TopGroup::Mechanics => "Mechanics",
+            TopGroup::Process => "Process engineering",
         }
+    }
+
+    /// Internal value of the EPLAN generic product group.
+    pub fn eplan_id(self) -> u16 {
+        self as u16 + 1
+    }
+
+    pub fn from_eplan_id(id: u16) -> Option<TopGroup> {
+        TopGroup::ALL.into_iter().find(|t| t.eplan_id() == id)
     }
 }
 
@@ -368,6 +380,28 @@ pub struct Part {
     /// templates ([`Part::connection_points_or_default`]).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub connection_points: Vec<ConnectionPoint>,
+    // Data portal
+    /// Catalog of the parts server the part belongs to ([`crate::portal::Catalog::id`]).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub catalog: String,
+    #[serde(skip_serializing_if = "Lifecycle::is_active")]
+    pub lifecycle: Lifecycle,
+    /// Part number of the part replacing this one.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub successor: String,
+    /// Files stored on the parts server (datasheets, images, models, macros).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub attachments: Vec<Attachment>,
+    /// Server revision of the last change of this part (set by the parts server, 0: unknown).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub revision: u64,
+    /// Unix time of the last change on the parts server.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub modified: u64,
+}
+
+fn is_zero(n: &u64) -> bool {
+    *n == 0
 }
 
 impl Default for Part {
@@ -405,6 +439,12 @@ impl Default for Part {
             model_2d: None,
             model_3d: None,
             connection_points: Vec::new(),
+            catalog: String::new(),
+            lifecycle: Lifecycle::Active,
+            successor: String::new(),
+            attachments: Vec::new(),
+            revision: 0,
+            modified: 0,
         }
     }
 }
@@ -432,7 +472,7 @@ impl Part {
             return true;
         }
         let f = f.to_lowercase();
-        [&self.number, &self.type_number, &self.order_number, &self.manufacturer, &self.description, &self.group, &self.subgroup]
+        [&self.number, &self.type_number, &self.order_number, &self.manufacturer, &self.description, &self.group, &self.subgroup, &self.catalog]
             .iter()
             .any(|s| s.to_lowercase().contains(&f))
     }

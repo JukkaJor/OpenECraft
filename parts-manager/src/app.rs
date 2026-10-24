@@ -3,8 +3,9 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::session::{FollowUp, Session};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
-use openecraft_parts::{to_csv, PartFilter};
-use openecraft_ui::client::ServerClient;
+use openecraft_parts::{date_from_unix, to_csv, PartFilter};
+use openecraft_parts::portal::{AttachmentKind, Role};
+use openecraft_ui::client::{Reply, ServerClient};
 use openecraft_ui::io::{short_name, FileIo, FileKind, Loaded};
 use openecraft_ui::part_editor::{self as pe, EditorState, ModelKind};
 
@@ -15,6 +16,8 @@ pub enum Purpose {
     Parts,
     /// 2D / 3D model of the part in the editor.
     Model(ModelKind),
+    /// File stored with the part on the server (datasheet, image, macro …).
+    Attachment,
 }
 
 impl FileKind for Purpose {
@@ -22,8 +25,20 @@ impl FileKind for Purpose {
         match self {
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
+            Purpose::Attachment => (
+                tr("Part files (documents, images, models, macros)"),
+                &["pdf", "png", "jpg", "jpeg", "gif", "webp", "svg", "dxf", "dwg", "step", "stp", "igs", "iges", "stl", "obj", "jt", "ifc", "json", "xml", "txt", "csv", "zip"],
+            ),
         }
     }
+}
+
+/// What the main area shows.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum View {
+    Parts,
+    Catalogs,
+    Users,
 }
 
 /// Action waiting for confirmation.
@@ -32,6 +47,8 @@ enum Confirm {
     Discard(Option<String>),
     /// Delete this part on the server.
     Delete(String),
+    DeleteCatalog(String),
+    DeleteUser(String),
 }
 
 pub struct ManagerApp {
@@ -43,6 +60,11 @@ pub struct ManagerApp {
     confirm: Option<Confirm>,
     /// Part number a model import was requested for.
     model_target: Option<String>,
+    view: View,
+    /// Kind of the next uploaded file (`None`: by file name).
+    attach_kind: Option<AttachmentKind>,
+    user_name: String,
+    password: String,
     started: bool,
     title: String,
 }
@@ -64,17 +86,34 @@ impl ManagerApp {
             filter: PartFilter::default(),
             confirm: None,
             model_target: None,
+            view: View::Parts,
+            attach_kind: None,
+            user_name: String::new(),
+            password: String::new(),
             started: false,
             title: String::new(),
         }
     }
 
+    /// True if the signed in user (or the administrator token) may change parts.
     fn writable(&self) -> bool {
-        self.client.writable() && !self.client.busy()
+        self.client.info.as_ref().is_some_and(|i| i.can_edit()) && !self.client.busy()
+    }
+
+    fn is_admin(&self) -> bool {
+        self.client.user().is_some_and(|u| u.role == Role::Admin)
     }
 
     fn poll(&mut self, ctx: &egui::Context) {
         for reply in self.client.poll() {
+            match &reply {
+                Reply::Info(Ok(_)) => self.client.catalogs(ctx),
+                Reply::SignedIn(Ok(_)) | Reply::SignedOut => {
+                    self.password.clear();
+                    self.client.check(ctx);
+                }
+                _ => {}
+            }
             match self.session.apply(&reply) {
                 Some(FollowUp::Reload) => self.client.download(ctx),
                 Some(FollowUp::Delete(number)) => self.client.delete(ctx, &number),
@@ -89,6 +128,10 @@ impl ManagerApp {
     fn loaded(&mut self, ctx: &egui::Context, loaded: Loaded<Purpose>) {
         match loaded.purpose {
             Purpose::Parts => self.client.upload_file(ctx, loaded.bytes),
+            Purpose::Attachment => match self.model_target.take() {
+                Some(number) => self.client.attach(ctx, &number, short_name(&loaded.name), self.attach_kind, loaded.bytes),
+                None => self.client.status = tr_fmt!("{}: the part is no longer open", short_name(&loaded.name)),
+            },
             Purpose::Model(kind) => {
                 let target = self.model_target.take();
                 let draft = self.session.draft.as_mut().filter(|d| Some(&d.part.number) == target.as_ref());
@@ -150,15 +193,35 @@ impl ManagerApp {
                 self.client.check(&ctx);
             }
             ui.separator();
-            match &self.client.info {
+            match self.client.info.clone() {
                 Some(info) => {
                     ui.label(format!("{} {}", info.name, info.version));
-                    if info.writable {
-                        ui.label(RichText::new(tr("writable with token")).color(Color32::from_rgb(60, 160, 90)));
-                    } else {
-                        ui.label(RichText::new(tr("read-only server")).color(Color32::from_rgb(220, 140, 0)))
-                            .on_hover_text(tr("Start openecraft-parts-server with --token to allow changes"));
+                    match &info.user {
+                        Some(u) => {
+                            let text = if u.role == Role::Manufacturer {
+                                tr_fmt!("{} ({}, {})", u.name, tr(u.role.title()), u.manufacturer)
+                            } else {
+                                tr_fmt!("{} ({})", u.name, tr(u.role.title()))
+                            };
+                            ui.label(RichText::new(text).color(Color32::from_rgb(60, 160, 90)));
+                            if ui.add_enabled(!self.client.busy(), egui::Button::new(tr("Sign out"))).on_hover_text(tr("Ends the session and forgets the token")).clicked() {
+                                self.client.sign_out(&ctx);
+                            }
+                        }
+                        None if info.writable => {
+                            ui.add(egui::TextEdit::singleline(&mut self.user_name).desired_width(90.0).hint_text(tr("User name")));
+                            let pw = ui.add(egui::TextEdit::singleline(&mut self.password).password(true).desired_width(90.0).hint_text(tr("Password")));
+                            let enter = pw.lost_focus() && ui.input(|i| i.key_pressed(Key::Enter));
+                            if ui.add_enabled(!self.client.busy() && !self.user_name.trim().is_empty(), egui::Button::new(tr("Sign in"))).clicked() || enter {
+                                self.client.sign_in(&ctx, &self.user_name, &self.password);
+                            }
+                        }
+                        None => {
+                            ui.label(RichText::new(tr("read-only server")).color(Color32::from_rgb(220, 140, 0)))
+                                .on_hover_text(tr("Start openecraft-parts-server with --token to allow changes"));
+                        }
                     }
+                    ui.weak(tr_fmt!("{} parts, {} catalogs, {}", info.parts, info.catalogs, info.storage));
                 }
                 None => {
                     ui.weak(tr("not connected"));
@@ -185,6 +248,21 @@ impl ManagerApp {
         let has_draft = self.session.draft.is_some();
         let dirty = self.session.dirty();
         ui.horizontal_wrapped(|ui| {
+            ui.selectable_value(&mut self.view, View::Parts, tr("Parts"));
+            if ui.selectable_value(&mut self.view, View::Catalogs, tr("Catalogs")).clicked() {
+                self.client.catalogs(&ctx);
+            }
+            if self.is_admin() && ui.selectable_value(&mut self.view, View::Users, tr("Users")).clicked() {
+                self.client.users(&ctx);
+            }
+            ui.separator();
+            if self.view != View::Parts {
+                openecraft_ui::language::menu(ui);
+                if self.client.busy() {
+                    ui.spinner();
+                }
+                return;
+            }
             if ui.add_enabled(connected, egui::Button::new(tr("➕ New"))).clicked() {
                 self.open(None);
             }
@@ -278,6 +356,54 @@ impl ManagerApp {
                 ui.weak(tr_fmt!("(renamed from {})", original));
             }
         });
+        // Files and history of saved parts
+        if let Some(original) = d.original.clone() {
+            let ctx = ui.ctx().clone();
+            let can_change = self.client.info.as_ref().is_some_and(|i| i.may_edit(&d.part.manufacturer)) && !self.client.busy() && !dirty;
+            egui::CollapsingHeader::new(tr_fmt!("Files and history ({} files)", d.part.attachments.len())).id_salt("files").show(ui, |ui| {
+                let mut remove = None;
+                for a in &d.part.attachments {
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new(tr(a.kind.title())).weak());
+                        ui.hyperlink_to(&a.name, self.client.endpoint().file_url(&a.id));
+                        ui.label(RichText::new(pe::size_text(a.size)).weak());
+                        if ui.add_enabled(can_change, egui::Button::new("🗑").small()).on_hover_text(tr("Remove the file from the part")).clicked() {
+                            remove = Some(a.id.clone());
+                        }
+                    });
+                }
+                if let Some(id) = remove {
+                    self.client.detach(&ctx, &original, &id);
+                }
+                ui.horizontal(|ui| {
+                    let kind_text = self.attach_kind.map_or(tr("by file name"), |k| tr(k.title()));
+                    egui::ComboBox::from_id_salt("attach_kind").selected_text(kind_text).show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.attach_kind, None, tr("by file name"));
+                        for k in AttachmentKind::ALL {
+                            ui.selectable_value(&mut self.attach_kind, Some(k), tr(k.title()));
+                        }
+                    });
+                    let upload = ui.add_enabled(can_change, egui::Button::new(tr("⬆ Upload file…")));
+                    let upload = if dirty { upload.on_disabled_hover_text(tr("Save the part first")) } else { upload };
+                    if upload.clicked() {
+                        self.model_target = Some(original.clone());
+                        self.io.open(&ctx, Purpose::Attachment);
+                    }
+                });
+                match &self.session.history {
+                    Some((n, h)) if *n == original => {
+                        for e in h {
+                            ui.label(format!("{} · {} · {} · {}", tr_fmt!("Revision {}", e.revision), date_from_unix(e.time), tr(e.change.title()), e.user));
+                        }
+                    }
+                    _ => {
+                        if ui.add_enabled(!self.client.busy(), egui::Button::new(tr("Show history"))).clicked() {
+                            self.client.history(&ctx, &original);
+                        }
+                    }
+                }
+            });
+        }
         ui.separator();
         let duplicate = problem == Some("Part number already exists");
         if let Some(kind) = pe::part_editor(ui, &mut d.part, &mut self.editor, &numbers, duplicate) {
@@ -285,6 +411,160 @@ impl ManagerApp {
             let ctx = ui.ctx().clone();
             self.io.open(&ctx, Purpose::Model(kind));
         }
+    }
+
+    fn catalog_list(&mut self, ui: &mut egui::Ui) {
+        let manufacturer = self.client.user().map(|u| u.manufacturer.clone()).unwrap_or_default();
+        if ui.add_enabled(self.writable(), egui::Button::new(tr("➕ New catalog"))).clicked() {
+            self.session.select_catalog(None, &manufacturer);
+        }
+        ui.separator();
+        egui::ScrollArea::vertical().id_salt("catalogs").auto_shrink([false, false]).show(ui, |ui| {
+            let selected = self.session.catalog.as_ref().and_then(|d| d.original.clone());
+            let mut open = None;
+            for c in &self.session.catalogs {
+                let text = format!("{} – {} ({})", c.manufacturer, c.name, c.parts);
+                if ui.selectable_label(selected.as_deref() == Some(c.id.as_str()), text).clicked() {
+                    open = Some(c.id.clone());
+                }
+            }
+            if let Some(id) = open {
+                self.session.select_catalog(Some(&id), "");
+            }
+        });
+    }
+
+    fn catalog_editor(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        let to_save = self.session.catalog_to_save();
+        let may_edit = |m: &str| self.client.info.as_ref().is_some_and(|i| i.may_edit(m));
+        let busy = self.client.busy();
+        let Some(d) = self.session.catalog.as_mut() else {
+            ui.weak(tr("Select a catalog or create a new one. Parts belong to a catalog through their catalog id (part editor, Data portal tab)."));
+            return;
+        };
+        let editable = may_edit(&d.catalog.manufacturer) && !busy;
+        egui::Grid::new("catalog").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+            ui.label(tr("Catalog id"));
+            if d.original.is_some() {
+                ui.monospace(&d.catalog.id);
+            } else {
+                ui.add(egui::TextEdit::singleline(&mut d.catalog.id).desired_width(240.0).hint_text(tr("from the name")).font(egui::TextStyle::Monospace));
+            }
+            ui.end_row();
+            for (label, value) in [(tr("Name"), &mut d.catalog.name), (tr("Manufacturer"), &mut d.catalog.manufacturer), (tr("Version"), &mut d.catalog.version)] {
+                ui.label(label);
+                ui.add(egui::TextEdit::singleline(value).desired_width(320.0));
+                ui.end_row();
+            }
+            ui.label(tr("Description"));
+            ui.add(egui::TextEdit::multiline(&mut d.catalog.description).desired_rows(3).desired_width(320.0));
+            ui.end_row();
+            if d.original.is_some() {
+                ui.label(tr("Parts"));
+                ui.label(d.catalog.parts.to_string());
+                ui.end_row();
+                ui.label(tr("Last change"));
+                ui.label(date_from_unix(d.catalog.modified));
+                ui.end_row();
+            }
+        });
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            match &to_save {
+                Ok(c) => {
+                    if ui.add_enabled(editable, egui::Button::new(tr("✔ Save"))).clicked() {
+                        self.client.save_catalog(&ctx, c);
+                    }
+                }
+                Err(problem) => {
+                    ui.add_enabled(false, egui::Button::new(tr("✔ Save")));
+                    ui.colored_label(Color32::from_rgb(220, 140, 0), tr(problem));
+                }
+            }
+            if let Some(id) = d.original.clone() {
+                let deletable = editable && d.catalog.parts == 0;
+                let button = ui.add_enabled(deletable, egui::Button::new(tr("🗑 Delete")));
+                if d.catalog.parts > 0 {
+                    button.on_disabled_hover_text(tr("Only catalogs without parts can be deleted"));
+                } else if button.clicked() {
+                    self.confirm = Some(Confirm::DeleteCatalog(id));
+                }
+                if ui.button(tr("Show parts")).clicked() {
+                    self.filter.text = d.catalog.id.clone();
+                    self.view = View::Parts;
+                }
+            }
+        });
+    }
+
+    fn user_list(&mut self, ui: &mut egui::Ui) {
+        if ui.add_enabled(!self.client.busy(), egui::Button::new(tr("➕ New user"))).clicked() {
+            self.session.select_user(None);
+        }
+        ui.separator();
+        egui::ScrollArea::vertical().id_salt("users").auto_shrink([false, false]).show(ui, |ui| {
+            let selected = self.session.user.as_ref().filter(|d| !d.new).map(|d| d.name.clone());
+            let mut open = None;
+            for u in &self.session.users {
+                let text = format!("{} – {}", u.name, tr(u.role.title()));
+                if ui.selectable_label(selected.as_deref() == Some(u.name.as_str()), text).clicked() {
+                    open = Some(u.name.clone());
+                }
+            }
+            if let Some(n) = open {
+                self.session.select_user(Some(&n));
+            }
+        });
+    }
+
+    fn user_editor(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        let problem = self.session.user_problem();
+        let busy = self.client.busy();
+        let Some(d) = self.session.user.as_mut() else {
+            ui.weak(tr("Select a user or create a new one."));
+            ui.add_space(6.0);
+            ui.label(tr("Readers keep favorites, manufacturers maintain the parts and catalogs of their manufacturer, editors all parts, administrators also the users."));
+            return;
+        };
+        egui::Grid::new("user").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+            ui.label(tr("User name"));
+            if d.new {
+                ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(200.0));
+            } else {
+                ui.strong(&d.name);
+            }
+            ui.end_row();
+            ui.label(tr("Role"));
+            egui::ComboBox::from_id_salt("role").selected_text(tr(d.update.role.title())).show_ui(ui, |ui| {
+                for r in Role::ALL {
+                    ui.selectable_value(&mut d.update.role, r, tr(r.title()));
+                }
+            });
+            ui.end_row();
+            if d.update.role == Role::Manufacturer {
+                ui.label(tr("Manufacturer"));
+                ui.add(egui::TextEdit::singleline(&mut d.update.manufacturer).desired_width(200.0));
+                ui.end_row();
+            }
+            ui.label(if d.new { tr("Password") } else { tr("New password") });
+            ui.add(egui::TextEdit::singleline(&mut d.update.password).password(true).desired_width(200.0).hint_text(if d.new { "" } else { tr("unchanged if empty") }));
+            ui.end_row();
+        });
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            if ui.add_enabled(!busy && problem.is_none(), egui::Button::new(tr("✔ Save"))).clicked() {
+                let update = d.update.clone();
+                self.client.save_user(&ctx, d.name.trim(), &update);
+            }
+            if !d.new && ui.add_enabled(!busy, egui::Button::new(tr("🗑 Delete"))).clicked() {
+                self.confirm = Some(Confirm::DeleteUser(d.name.clone()));
+            }
+            if let Some(p) = problem {
+                ui.colored_label(Color32::from_rgb(220, 140, 0), tr(p));
+            }
+        });
     }
 
     fn dialogs(&mut self, ctx: &egui::Context) {
@@ -295,6 +575,8 @@ impl ManagerApp {
                 (tr_fmt!("Discard the unsaved changes of {}?", n), "Discard")
             }
             Confirm::Delete(n) => (tr_fmt!("Delete part {} from the server? This cannot be undone.", n), "🗑 Delete"),
+            Confirm::DeleteCatalog(id) => (tr_fmt!("Delete catalog {} from the server?", id), "🗑 Delete"),
+            Confirm::DeleteUser(n) => (tr_fmt!("Delete user {}? Their sessions and favorites are removed.", n), "🗑 Delete"),
         };
         let mut answer = None;
         egui::Modal::new(egui::Id::unique("confirm")).show(ctx, |ui| {
@@ -317,6 +599,8 @@ impl ManagerApp {
                     self.open(number);
                 }
                 Some(Confirm::Delete(number)) => self.client.delete(ctx, &number),
+                Some(Confirm::DeleteCatalog(id)) => self.client.delete_catalog(ctx, &id),
+                Some(Confirm::DeleteUser(name)) => self.client.delete_user(ctx, &name),
                 None => {}
             },
             Some(false) => self.confirm = None,
@@ -343,8 +627,23 @@ impl eframe::App for ManagerApp {
             let color = if self.client.failed() { Color32::from_rgb(220, 60, 60) } else { ui.visuals().text_color() };
             ui.label(RichText::new(&self.client.status).color(color));
         });
-        egui::Panel::left("parts").resizable(true).default_size(300.0).show(ui, |ui| self.part_list(ui));
-        egui::CentralPanel::default().show(ui, |ui| self.editor(ui));
+        if self.view == View::Users && !self.is_admin() {
+            self.view = View::Parts;
+        }
+        match self.view {
+            View::Parts => {
+                egui::Panel::left("parts").resizable(true).default_size(300.0).show(ui, |ui| self.part_list(ui));
+                egui::CentralPanel::default().show(ui, |ui| self.editor(ui));
+            }
+            View::Catalogs => {
+                egui::Panel::left("catalogs").resizable(true).default_size(300.0).show(ui, |ui| self.catalog_list(ui));
+                egui::CentralPanel::default().show(ui, |ui| self.catalog_editor(ui));
+            }
+            View::Users => {
+                egui::Panel::left("users").resizable(true).default_size(300.0).show(ui, |ui| self.user_list(ui));
+                egui::CentralPanel::default().show(ui, |ui| self.user_editor(ui));
+            }
+        }
         self.dialogs(&ctx);
 
         let title = format!("OpenECraft parts manager – {}{}", self.client.url, if self.session.dirty() { " *" } else { "" });

@@ -436,25 +436,53 @@ trunk build --release  # static files in dist/ – host them on any web server
 
 In the browser "Save" downloads the project file and "Open" uses the file picker.
 
-### Parts server
+### Parts server (data portal)
 
-`openecraft-parts-server` hosts a global parts database that all OpenECraft installations
-(desktop and web) can share. It is a separate executable and runs independently of
-the editor.
+`openecraft-parts-server` is the data portal of all OpenECraft installations (desktop
+and web), in the spirit of the EPLAN Data Portal: manufacturer catalogs with a faceted
+search, part history and lifecycle, files of the parts (datasheets, images, models,
+macros), user accounts with roles and a web page for browsing. It is a separate
+executable and runs independently of the editor.
 
 ```bash
-cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
+cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <secret>
+cargo run --release -p openecraft-parts-server -- --storage json --data parts-db.json
+cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migrate-from parts-db.json
 ```
 
-- The database is a JSON file, created with the example catalog if it does not exist,
-  and written atomically on every change.
-- Reading is open; changes need `Authorization: Bearer <token>`. Without `--token`
-  (or the `OPENECRAFT_TOKEN` environment variable) the server is read-only.
-- REST API (`/api/v1`): `GET /info`, `GET /parts?q=&group=&manufacturer=&offset=&limit=`,
-  `GET|PUT|DELETE /parts/{number}`, `POST /import` (CSV or JSON), `GET /export.csv`.
-- In the editor: *Project › Parts management › 🌐 Parts server* – enter the server URL,
-  test the connection, download all parts into the local database or upload the
-  selected part / the whole local database (needs the access token).
+- Storage (`--storage sqlite|json`): SQLite by default (`--data parts-db.sqlite`, one
+  file with indexed parts, history, accounts and files); JSON keeps everything in one
+  file written atomically on every change, with the files in `<name>.files/` next to
+  it. A `.json` data file selects JSON storage. New databases are filled with the
+  example catalog; `--migrate-from` copies an existing database into a new one.
+- Users: readers keep favorites, manufacturers change the parts and catalogs of their
+  own manufacturer, editors all parts, administrators also manage the users. The
+  `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`
+  creates an administrator account with the password from `OPENECRAFT_ADMIN_PASSWORD`.
+  Users sign in with `POST /login` and send the session token as
+  `Authorization: Bearer <token>`. Without token and accounts the server is read-only.
+- Every change is a new revision; each part keeps its revision, time of change and the
+  last 20 versions (history). Parts have a lifecycle (active, phase-out, discontinued)
+  and a successor.
+- Product groups: the EPLAN generic product groups, product groups and subgroups with
+  their exchange numbers (`openecraft_parts::productgroups`) are offered in the part
+  editor next to OpenECraft's own groups.
+- Search (`POST /search`): text (every word must occur), top group, group, subgroup,
+  manufacturer, catalog, lifecycle and technical data (voltage, current, power and the
+  `Name: value` lines of the technical data), sorted and paged, with facets that count
+  the matching parts per value.
+- Web page: `http://<server>:8090/` – search with facets, part details with files and
+  history, catalogs, sign-in and favorites, in English, German, French and Spanish.
+- REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
+  `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
+  `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
+  JSON or BMEcat), `GET /export.csv`, `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
+  `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`.
+- In the editor: *Project › Data portal…* – search the server, add parts to the local
+  database, save their files, add their macros to the macro library and check the
+  database for newer versions, phased out and discontinued parts. *Project › Parts
+  management › 🌐 Parts server* downloads all parts or uploads parts. The project check
+  warns about devices with discontinued parts; `use_successor_parts` changes them over.
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
   from outside your network.
 
@@ -502,9 +530,12 @@ cd parts-manager && trunk serve                        # web, http://127.0.0.1:8
 cd parts-manager && trunk build --release              # static files in parts-manager/dist/
 ```
 
-Enter the server URL and the access token (kept in memory only) and click *Connect*.
-Changes are saved to the server with *Save* (`Ctrl+S`); the editor asks before unsaved
-changes are discarded and before a part is deleted.
+Enter the server URL and the access token (kept in memory only) and click *Connect*, or
+sign in with a user name and password. Changes are saved to the server with *Save*
+(`Ctrl+S`); the editor asks before unsaved changes are discarded and before a part is
+deleted. *Files and history* above the part editor uploads and removes the files of a
+part and shows its changes; *Catalogs* maintains the manufacturer catalogs and *Users*
+(administrators) the accounts and roles.
 
 ### Command line and MCP server (AI agents)
 
@@ -532,7 +563,11 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
 - Parameters are `--name value` (also `--name=value`, or all at once with `--json '{…}'`);
   lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
 - Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
-  environment variables or the `parts_connect` tool; default `http://127.0.0.1:8090`.
+  environment variables or the `parts_connect` tool (also with `user` / `password`);
+  default `http://127.0.0.1:8090`. The data portal tools search with facets
+  (`parts_search`), manage catalogs, files, favorites and users (`parts_catalog_save`,
+  `parts_attach`, `parts_favorites`, `parts_user_save`, …) and compare the project parts
+  with the server (`parts_check_updates`).
 - Help and messages follow `--lang` or the system language; the MCP server answers in
   English unless `--lang` is given.
 
@@ -617,13 +652,13 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | --- | --- |
 | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
 | `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
-| `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, server API types, 3D math |
+| `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, server API types, data portal (faceted search, lifecycle, update check), 3D math |
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
 | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
-| `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
+| `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |
 | `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
-| `parts-server/` | `openecraft-parts-server`: parts database server (REST API, JSON storage) |
+| `parts-server/` | `openecraft-parts-server`: data portal server (REST API, SQLite or JSON storage, users, web page) |
 | `project-server/` | `openecraft-project-server`: shared projects with page locks for several users |
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
@@ -690,7 +725,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/collab.rs` | Shared projects: API types, lock targets and the merge rules of the project server |
 | `application/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
-| `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
+| `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
 | `application/remote.rs`, `application/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
 | `application/app.rs` | Application UI (menus, panels, dialogs); the windows in `application/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |

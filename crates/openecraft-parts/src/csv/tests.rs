@@ -30,7 +30,7 @@ fn connection_points_in_csv() {
         ConnectionPoint { pin: "14".into(), pos: [40.0, 74.0, 55.25], exit: Exit::Down },
     ];
     let csv = to_csv(std::slice::from_ref(&part));
-    assert!(csv.lines().next().unwrap().ends_with(";Connection points"));
+    assert!(csv.lines().next().unwrap().ends_with(";Connection points;Catalog;Lifecycle;Successor"));
     assert!(csv.contains("A1:5.5/0/60/up|14:40/74/55.25/down"));
     assert_eq!(from_csv(&csv).unwrap()[0].connection_points, part.connection_points);
     // Files without the column (older exports) have no points.
