@@ -227,6 +227,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),
     ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols", "text", "ttf"]),
+    ("pdf_comments", &["geom", "model", "review"]),
     ("dxf", &["analysis", "frame", "geom", "graphics", "model", "render", "symbols", "text"]),
     ("dxf_import", &["frame", "geom", "model", "ops", "symbols"]),
     ("dwg", &["analysis", "dxf", "dxf_import", "model", "panel", "production"]),

@@ -122,6 +122,9 @@ impl App {
             ui.checkbox(&mut self.editor.review_layer, tr("Show on the pages"));
             ui.checkbox(&mut self.review_ui.all_pages, tr("All pages"));
             ui.checkbox(&mut self.review_ui.show_done, tr("Done ones too"));
+            if ui.button(tr("Import PDF comments…")).on_hover_text(tr("Comments a reviewer made in a PDF export of the project (Acrobat or another PDF viewer)")).clicked() {
+                self.io.open(ui.ctx(), crate::io::Purpose::PdfComments);
+            }
         });
         if let Tool::Markup(MarkupKind::Text, _) = self.editor.tool {
             ui.add(egui::TextEdit::multiline(&mut self.review_ui.markup_text).hint_text(tr("Markup text")).desired_rows(2));

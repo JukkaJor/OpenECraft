@@ -48,6 +48,8 @@ pub enum Purpose {
     Compare,
     /// Change requests (CSV, JSON) of another system.
     ChangeRequests,
+    /// A PDF export of the project with comments of a reviewer.
+    PdfComments,
     /// Customer rule sets (JSON) to add to the project.
     RuleSets,
     /// Property library (JSON) to merge into the project.
@@ -65,6 +67,7 @@ impl FileKind for Purpose {
             Purpose::ProjectTemplate => (tr("OpenECraft project template"), &[PROJECT_EXT, "oecz", "json"]),
             Purpose::OutputTarget | Purpose::Compare | Purpose::Subproject => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
+            Purpose::PdfComments => (tr("PDF with comments"), &["pdf"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),

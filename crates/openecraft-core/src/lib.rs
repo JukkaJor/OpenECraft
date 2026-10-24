@@ -52,6 +52,7 @@ pub mod panel;
 pub mod params;
 pub mod parts;
 pub mod pdf;
+pub mod pdf_comments;
 pub mod plc;
 pub mod plc_hw;
 pub mod plugs;

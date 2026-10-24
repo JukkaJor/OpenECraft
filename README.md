@@ -152,6 +152,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   drawn on a layer of their own (shown on screen, not in exports), listed in the *Review*
   tab of the navigator and can be added to released pages and to pages another user has
   locked. On the project server they are merged record by record without locks.
+  **PDF comments** a reviewer made in a PDF export (Acrobat or another viewer: notes,
+  text boxes, highlights, shapes, replies) are imported into the review layer
+  (*Review › Import PDF comments…*, command `import_pdf_comments`); rectangles and
+  lines also become redline markup, comments imported before are skipped.
 - **Change requests**: requests from inside or outside the project (number, title,
   description, requester, origin, priority, status, affected pages and devices,
   implementing revision) with linked comments (*Project › Change requests…*). Exchange
@@ -835,6 +839,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/config.rs` | Configurator: options, rules, page generation from macros |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
+| `crates/openecraft-core/src/pdf_comments.rs` | Import of PDF comments (annotations) into the review layer; minimal PDF object reader |
 | `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, labeling schemes, marking CSV / Excel |
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plugs.rs` | Plugs: pin order, both sides of each pin, pin count of the parts, placement check |

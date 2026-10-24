@@ -4,7 +4,7 @@ use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::model::*;
-use openecraft_core::{dwg, dxf_import, frame, ops, page_templates};
+use openecraft_core::{dwg, dxf_import, frame, ops, page_templates, pdf_comments};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -47,7 +47,27 @@ pub static TOOLS: &[Tool] = &[
         needs_project: true,
         run: import_drawing,
     },
+    Tool {
+        name: "import_pdf_comments",
+        help: tr_const!("Imports the comments a reviewer made in a PDF export of the project (notes, text boxes, highlights, shapes, replies) into the review layer; comments imported before are skipped"),
+        params: &[
+            param("path", Kind::Str, tr_const!("PDF file with comments")),
+            optional("author", Kind::Str, tr_const!("Author of comments without one (default: the user name)")),
+        ],
+        needs_project: true,
+        run: import_pdf_comments,
+    },
 ];
+
+fn import_pdf_comments(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let user = std::env::var("USERNAME").or_else(|_| std::env::var("USER")).unwrap_or_default();
+    let author = a.str("author").map(String::from).unwrap_or(user);
+    let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    let r = pdf_comments::import(s.project_mut()?, &bytes, &author, &openecraft_parts::date_from_unix(secs))?;
+    Ok(json!({ "comments": r.comments, "replies": r.replies, "markups": r.markups, "skipped": r.skipped, "outside": r.outside }))
+}
 
 /// `import_dxf` and `import_dwg`: the format is told apart by the content.
 fn import_drawing(s: &mut Session, a: &Args) -> Result<Value, String> {

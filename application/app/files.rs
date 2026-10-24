@@ -192,6 +192,23 @@ impl App {
                 Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
                 Err(e) => self.notify(ctx, e),
             },
+            Purpose::PdfComments => {
+                let (user, date) = (self.user_name(), self.today());
+                match openecraft_core::pdf_comments::import(&mut self.session.prj, &loaded.bytes, &user, &date) {
+                    Ok(r) => {
+                        self.editor.review_layer = true;
+                        let mut msg = tr_fmt!("{} comments, {} replies and {} markups imported", r.comments, r.replies, r.markups);
+                        if r.skipped > 0 {
+                            msg = format!("{msg}\n{}", tr_fmt!("{} comments were imported before", r.skipped));
+                        }
+                        if r.outside > 0 {
+                            msg = format!("{msg}\n{}", tr_fmt!("{} comments are on pages the project does not have", r.outside));
+                        }
+                        self.notify(ctx, msg);
+                    }
+                    Err(e) => self.notify(ctx, e),
+                }
+            }
             Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
             Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
             Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),
