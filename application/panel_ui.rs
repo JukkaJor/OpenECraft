@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Project};
-use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
 use crate::parts::{self, PartsDb};
 use crate::parts::vec3::Orbit;
 use crate::render::{self, Draw, Ink};
@@ -387,6 +387,8 @@ pub struct PanelUi {
     pub show_heat: bool,
     /// The 3D view shows the enclosures bayed to the current one as well.
     pub show_lineup: bool,
+    /// The 3D view shows all enclosures at their places in the room.
+    pub show_site: bool,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -441,6 +443,7 @@ impl Default for PanelUi {
             show_fill: true,
             show_heat: false,
             show_lineup: true,
+            show_site: false,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -601,9 +604,9 @@ impl PanelUi {
         let n = pts.len() as f32;
         let c = p(pts.iter().map(|q| q.x).sum::<f32>() / n, pts.iter().map(|q| q.y).sum::<f32>() / n);
         let shown = self.shown_3d(prj, w.enclosure);
-        let off = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
+        let pose = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
         let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
-        cam.target = [off[0] + PLATE_MARGIN + c.x, off[1] + e.height - PLATE_MARGIN - c.y, off[2] + PLATE_Z];
+        cam.target = pose.apply([PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z]);
     }
 
     /// Selects a placed device (e.g. coming from the schematic); a valve or its coil
@@ -1165,6 +1168,7 @@ impl PanelUi {
         let (left, right) = panel::neighbours(&prj.layout, ei);
         let name = |prj: &Project, i: Option<usize>| i.map(|i| prj.layout.enclosures[i].name.clone()).unwrap_or_else(|| tr("(none)").to_string());
         let mut bay: Option<Option<usize>> = None;
+        let mut site: Option<Option<SitePlace>> = None;
         let mut add = false;
         egui::CollapsingHeader::new(tr("Line-up and cable passages")).id_salt("lineup").default_open(left.is_some() || right.is_some()).show(ui, |ui| {
             egui::Grid::new("plineup").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
@@ -1186,6 +1190,31 @@ impl PanelUi {
                 ui.end_row();
                 ui.label(tr("Right neighbour"));
                 ui.label(name(prj, right));
+                ui.end_row();
+                ui.label(tr("Place in the room"));
+                let first = panel::lineup_of(&prj.layout, ei).first().copied().unwrap_or(ei);
+                let current = prj.layout.enclosures[first].site;
+                let mut place = current.unwrap_or_else(|| {
+                    let pose = panel::site_poses(prj)[first];
+                    SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() }
+                });
+                ui.horizontal(|ui| {
+                    let mut by_hand = current.is_some();
+                    let mut changed = ui.checkbox(&mut by_hand, tr("by hand")).on_hover_text(tr("Otherwise from the plant layout, or next to the other line-ups")).changed();
+                    ui.add_enabled_ui(by_hand, |ui| {
+                        changed |= ui.add(egui::DragValue::new(&mut place.x).speed(10.0).prefix("x ").suffix(" mm")).changed();
+                        changed |= ui.add(egui::DragValue::new(&mut place.z).speed(10.0).prefix("z ").suffix(" mm")).changed();
+                        changed |= ui
+                            .add(egui::DragValue::new(&mut place.angle).speed(1.0).range(-360.0..=360.0).suffix(" °"))
+                            .on_hover_text(tr("Turn about the vertical, counter-clockwise seen from above (90 °: the fronts face to the right)"))
+                            .changed();
+                    });
+                    if changed {
+                        site = Some(by_hand.then_some(place));
+                    }
+                })
+                .response
+                .on_hover_text(tr("Rear left corner of the line-up on the floor, as in the 3D view with all enclosures"));
                 ui.end_row();
             });
             let pos = panel::positions(&prj.layout);
@@ -1215,6 +1244,9 @@ impl PanelUi {
             }
             Some(None) => panel::unbay(prj, ei),
             None => {}
+        }
+        if let Some(place) = site {
+            panel::set_site(prj, ei, place);
         }
         if add {
             let (y, z) = panel::next_passage_place(&prj.layout, ei);
@@ -1571,7 +1603,13 @@ impl PanelUi {
             if self.view == View::ThreeD {
                 self.door_button(ui);
                 if panel::lineup_of(&prj.layout, ei).len() > 1
+                    && !self.show_site
                     && ui.checkbox(&mut self.show_lineup, tr("Line-up")).on_hover_text(tr("Show the enclosures bayed to this one as well")).changed()
+                {
+                    self.cam = None;
+                }
+                if prj.layout.enclosures.len() > 1
+                    && ui.checkbox(&mut self.show_site, tr("All enclosures")).on_hover_text(tr("Show all enclosures side by side at their places in the room")).changed()
                 {
                     self.cam = None;
                 }

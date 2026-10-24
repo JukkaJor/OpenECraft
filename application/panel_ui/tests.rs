@@ -56,3 +56,20 @@ fn the_inside_of_the_door_is_mirrored() {
     ui.door_inside = true;
     assert_eq!(ui.mirror(&e), Some(600.0));
 }
+
+#[test]
+fn the_3d_view_shows_all_enclosures_at_their_places() {
+    let mut prj = Project::default();
+    for name in ["+A", "+B"] {
+        prj.layout.enclosures.push(Enclosure { name: name.into(), ..Default::default() });
+    }
+    panel::set_site(&mut prj, 1, Some(SitePlace { x: 3000.0, z: 1000.0, angle: 90.0 }));
+    let mut ui = PanelUi::default();
+    assert_eq!(ui.shown_3d(&prj, 0).iter().map(|s| s.0).collect::<Vec<_>>(), vec![0]);
+    ui.show_site = true;
+    let shown = ui.shown_3d(&prj, 0);
+    assert_eq!(shown.len(), 2);
+    assert_eq!(shown[1].1.at, [3000.0, 0.0, 1000.0]);
+    let cam = view3d::default_cam(&prj, &shown);
+    assert!(cam.target[0] > 600.0 && cam.target[2] > 0.0, "the camera looks at both");
+}

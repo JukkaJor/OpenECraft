@@ -203,3 +203,36 @@ fn the_shortest_passage_and_enclosures_between() {
     assert_eq!(w.stretches().map(|s| s.0).collect::<Vec<_>>().len(), 3);
     assert!(w.in_enclosure(2));
 }
+
+fn near(a: V3, b: V3) -> bool {
+    (0..3).all(|i| (a[i] - b[i]).abs() < 0.01)
+}
+
+#[test]
+fn line_ups_stand_at_their_places_in_the_room() {
+    let mut prj = three();
+    assert!(bay_right_of(&mut prj, 1, 0));
+    // Without places: side by side as in the line-up coordinates, on their plinths.
+    let poses = site_poses(&prj);
+    assert!(near(poses[0].at, [0.0, 100.0, 0.0]) && near(poses[1].at, [600.0, 0.0, 0.0]));
+    assert!(near(poses[2].at, [1400.0 + LINEUP_GAP, 100.0, 0.0]) && poses[2].angle == 0.0);
+    // A place set on any enclosure belongs to the left one of its line-up; the line-up
+    // turns as a whole.
+    set_site(&mut prj, 1, Some(SitePlace { x: 5000.0, z: 2000.0, angle: 90.0 }));
+    assert!(prj.layout.enclosures[0].site.is_some() && prj.layout.enclosures[1].site.is_none());
+    let poses = site_poses(&prj);
+    assert!(near(poses[0].at, [5000.0, 100.0, 2000.0]), "{:?}", poses[0]);
+    assert!(near(poses[1].at, [5000.0, 0.0, 1400.0]), "{:?}", poses[1]);
+    assert!(near(poses[0].turn([0.0, 0.0, 1.0]), [1.0, 0.0, 0.0]), "the fronts face to the right");
+    let q = [120.0, 340.0, 56.0];
+    assert!(near(poses[1].local(poses[1].apply(q)), q));
+    // From the plant layout: the centre of the footprint on the node, raised by the
+    // elevation.
+    prj.field.nodes.push(crate::field::Node { id: 9, x: 3.0, y: 4.0, ..Default::default() });
+    prj.field.places.push(crate::field::Place { tag: "C".into(), node: 9, drop: 0.0 });
+    prj.layout.enclosures[2].elevation = Some(1500.0);
+    let (w, d) = (prj.layout.enclosures[2].width, prj.layout.enclosures[2].depth);
+    assert!(near(site_poses(&prj)[2].at, [3000.0 - w / 2.0, 1600.0, 4000.0 - d / 2.0]), "{:?}", site_poses(&prj)[2]);
+    set_site(&mut prj, 0, None);
+    assert!(near(site_poses(&prj)[0].at, [0.0, 100.0, 0.0]));
+}

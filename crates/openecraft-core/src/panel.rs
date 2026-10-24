@@ -32,7 +32,7 @@ pub mod thermal;
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
 pub use fastening::{fastening_material, Fastening};
 pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
-pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, unbay, Leg, Passage, LINEUP_GAP, PASSAGE_DIAMETER};
+pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
@@ -289,6 +289,10 @@ pub struct Enclosure {
     /// for wall mounted enclosures (heights are not checked).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub elevation: Option<f32>,
+    /// Place of the line-up in the room (set on its left enclosure); otherwise from the
+    /// plant layout or next to the other line-ups ([`site_poses`]).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub site: Option<SitePlace>,
 }
 
 impl Default for Enclosure {
@@ -309,6 +313,7 @@ impl Default for Enclosure {
             paths: Vec::new(),
             reservations: Vec::new(),
             elevation: None,
+            site: None,
         }
     }
 }

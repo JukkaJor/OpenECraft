@@ -7,7 +7,7 @@ use super::routing_ui::RouteRef;
 use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
 use crate::geom::{p, P};
 use crate::model::Project;
-use crate::panel::{self, Face, ItemKind, Role, PLATE_MARGIN, PLATE_Z};
+use crate::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
 use crate::reports::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Shape, Stroke};
@@ -28,10 +28,14 @@ impl PanelUi {
         }
     }
 
-    /// Enclosures shown in the 3D view with their offsets in view coordinates (x right,
-    /// y up, z towards the door): the current one, or its whole line-up from the left
-    /// with the first one's bottom at y 0.
-    pub(super) fn shown_3d(&self, prj: &Project, ei: usize) -> Vec<(usize, [f32; 3])> {
+    /// Enclosures shown in the 3D view with their poses in view coordinates (x right,
+    /// y up, z towards the door): all of them at their places in the room, or the
+    /// current one or its whole line-up from the left with the first one's bottom at
+    /// y 0.
+    pub(super) fn shown_3d(&self, prj: &Project, ei: usize) -> Vec<(usize, SitePose)> {
+        if self.show_site {
+            return panel::site_poses(prj).into_iter().enumerate().collect();
+        }
         let lu = if self.show_lineup { panel::lineup_of(&prj.layout, ei) } else { vec![ei] };
         let pos = panel::positions(&prj.layout);
         let first = lu.first().copied().unwrap_or(ei);
@@ -40,7 +44,7 @@ impl PanelUi {
         lu.into_iter()
             .map(|k| {
                 let o = pos[k];
-                (k, [o[0] - base[0], bottom - o[1] - prj.layout.enclosures[k].height, o[2] - base[2]])
+                (k, SitePose { at: [o[0] - base[0], bottom - o[1] - prj.layout.enclosures[k].height, o[2] - base[2]], angle: 0.0 })
             })
             .collect()
     }
@@ -78,7 +82,7 @@ impl PanelUi {
         if resp.hovered() {
             let (wheel, zoom_delta) = ui.input(|i| (wheel_delta(i), i.zoom_delta()));
             let factor = zoom_delta * (wheel * 0.0025).exp();
-            cam.dist = (cam.dist / factor).clamp(100.0, 20000.0);
+            cam.dist = (cam.dist / factor).clamp(100.0, 200000.0);
         }
         let (eye_view, right, vup, fwd) = cam.basis();
         let f = rect.height() * 1.3;
@@ -103,18 +107,20 @@ impl PanelUi {
         // (layer, depth, primitive): walls and plate are always behind the equipment
         // when looking through the open door, so they are drawn in earlier layers.
         let mut prims: Vec<(u8, f32, Prim)> = Vec::new();
-        let light = norm([0.35, 0.75, 0.55]);
+        let light_view = norm([0.35, 0.75, 0.55]);
         let shown_wire = |i: usize| shown.iter().any(|(k, _)| an.wiring[i].in_enclosure(*k));
         let selected_wire = self.wire_index(an).filter(|i| shown_wire(*i));
         let wire_ends = selected_wire.map(|i| an.wiring[i].items);
         let mut wire_segs: Vec<(Pos2, Pos2, usize)> = Vec::new();
         let mut outlines: Vec<(Pos2, Pos2)> = Vec::new();
         let mut labels: Vec<(Pos2, f32, &str)> = Vec::new();
-        for &(k, off) in &shown {
+        for &(k, pose) in &shown {
             let e = &prj.layout.enclosures[k];
-            // Everything of this enclosure in its own view coordinates; the eye too.
-            let eye = sub(eye_view, off);
-            let project = |q: [f32; 3]| project_view([q[0] + off[0], q[1] + off[1], q[2] + off[2]]);
+            // Everything of this enclosure in its own view coordinates; the eye and the
+            // light too.
+            let eye = pose.local(eye_view);
+            let light = pose.unturn(light_view);
+            let project = |q: [f32; 3]| project_view(pose.apply(q));
             let swing = |q: [f32; 3]| {
                 let r = swing_dir([q[0], q[1], q[2] - e.depth]);
                 [r[0], r[1], r[2] + e.depth]
@@ -352,10 +358,13 @@ impl PanelUi {
             }
         }
         // 3D routing across the enclosures shown: routing paths, reservations, cables and
-        // tubes (and the wires routed in 3D), from layout to view coordinates.
-        let (k0, off0) = shown[0];
-        let h0 = prj.layout.enclosures[k0].height;
-        let to_view = |q: [f32; 3]| [off0[0] + q[0] - pos[k0][0], off0[1] + h0 - (q[1] - pos[k0][1]), off0[2] + q[2] - pos[k0][2]];
+        // tubes (and the wires routed in 3D), from layout to view coordinates through the
+        // enclosure a point lies in (the nearest one along the line-up).
+        let to_view = |q: [f32; 3]| {
+            let gap = |k: usize| (pos[k][0] - q[0]).max(q[0] - pos[k][0] - prj.layout.enclosures[k].width).max(0.0);
+            let (k, pose) = shown.iter().min_by(|a, b| gap(a.0).total_cmp(&gap(b.0))).copied().unwrap_or((ei, SitePose::default()));
+            pose.apply([q[0] - pos[k][0], prj.layout.enclosures[k].height - (q[1] - pos[k][1]), q[2] - pos[k][2]])
+        };
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
         let mut route_segs: Vec<(Pos2, Pos2, String)> = Vec::new();
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
@@ -469,21 +478,24 @@ impl PanelUi {
 }
 
 /// Camera looking at the enclosures shown (see [`PanelUi::shown_3d`]).
-pub(super) fn default_cam(prj: &Project, shown: &[(usize, [f32; 3])]) -> Orbit {
+pub(super) fn default_cam(prj: &Project, shown: &[(usize, SitePose)]) -> Orbit {
     let (mut min, mut max) = ([f32::INFINITY; 3], [f32::NEG_INFINITY; 3]);
-    for &(k, o) in shown {
+    for &(k, pose) in shown {
         let e = &prj.layout.enclosures[k];
-        let far = [o[0] + e.width, o[1] + e.height, o[2] + e.depth];
-        for i in 0..3 {
-            min[i] = min[i].min(o[i]);
-            max[i] = max[i].max(far[i]);
+        for c in 0..8 {
+            let q = pose.apply([if c & 1 == 0 { 0.0 } else { e.width }, if c & 2 == 0 { 0.0 } else { e.height }, if c & 4 == 0 { 0.0 } else { e.depth }]);
+            for i in 0..3 {
+                min[i] = min[i].min(q[i]);
+                max[i] = max[i].max(q[i]);
+            }
         }
     }
     if shown.is_empty() {
         (min, max) = ([0.0; 3], [600.0, 800.0, 250.0]);
     }
     let target = [0, 1, 2].map(|i| (min[i] + max[i]) / 2.0);
-    Orbit { yaw: 0.55, pitch: 0.3, dist: (max[0] - min[0]).max(max[1] - min[1]) * 1.9, target }
+    let size = (max[0] - min[0]).max(max[1] - min[1]).max(max[2] - min[2]);
+    Orbit { yaw: 0.55, pitch: 0.3, dist: size * 1.9, target }
 }
 
 fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
