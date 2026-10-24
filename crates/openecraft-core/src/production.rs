@@ -1,6 +1,7 @@
 //! Production data of the panel layout (in the spirit of EPLAN Pro Panel): drilling
 //! pattern and cutouts of the mounting plate, the door and the walls with NC export
-//! (DXF / CSV), wire end treatment (stripping length, ferrules) and clearance checks.
+//! (DXF / CSV), wire end treatment (stripping length, ferrules). The clearance checks are in
+//! [`crate::panel::validate`].
 
 use crate::geom::{p, P, R};
 use crate::model::Project;
@@ -401,41 +402,6 @@ pub fn ferrule_material(prj: &Project, wiring: &[crate::panel::RoutedWire]) -> V
             match v.iter_mut().find(|x| x.0 == f.part) {
                 Some(x) => x.1 += 2,
                 None => v.push((f.part, 2)),
-            }
-        }
-    }
-    v
-}
-
-// ---------------------------------------------------------------------- clearance
-
-/// Free space a device needs above and below (part data `Clearance: 50`, mm).
-pub fn part_clearance(parts: &[Part], part: &str) -> f32 {
-    parts.iter().find(|x| x.number == part).and_then(|x| x.tech_value("Clearance")).and_then(|v| v.trim_end_matches("mm").trim().parse().ok()).unwrap_or(0.0)
-}
-
-/// Devices whose clearance zone (above and below, e.g. for cooling air) is occupied
-/// by another item: (device, other item).
-pub fn clearance_violations(e: &Enclosure, parts: &[Part]) -> Vec<(u64, u64)> {
-    let mut v = Vec::new();
-    for dev in e.items.iter().filter(|i| i.kind == ItemKind::Device && i.face == Face::Plate) {
-        let c = part_clearance(parts, &dev.part);
-        if c <= 0.0 {
-            continue;
-        }
-        let zones = [
-            R::from_points(p(dev.x, dev.y - c), p(dev.x + dev.w, dev.y)),
-            R::from_points(p(dev.x, dev.y + dev.h), p(dev.x + dev.w, dev.y + dev.h + c)),
-        ];
-        for other in &e.items {
-            // The rail a device sits on and cutouts do not block the air flow.
-            if other.id == dev.id || other.face != Face::Plate || matches!(other.kind, ItemKind::Rail | ItemKind::Cutout) {
-                continue;
-            }
-            let r = other.rect();
-            let eps = 0.01;
-            if zones.iter().any(|z| r.min.x < z.max.x - eps && z.min.x < r.max.x - eps && r.min.y < z.max.y - eps && z.min.y < r.max.y - eps) {
-                v.push((dev.id, other.id));
             }
         }
     }

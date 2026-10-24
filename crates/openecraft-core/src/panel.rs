@@ -19,13 +19,17 @@ use crate::parts::{Exit, FnKind};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
+mod checks;
 mod fastening;
 mod fill;
 mod lineup;
 mod macros;
+mod manufacturing;
 mod placement;
 mod points;
 mod system;
+pub mod thermal;
+pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
 pub use fastening::{fastening_material, Fastening};
 pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, unbay, Leg, Passage, LINEUP_GAP, PASSAGE_DIAMETER};
@@ -206,6 +210,9 @@ pub struct PanelItem {
     /// Group (assembly) the item belongs to, 0 for none.
     #[serde(skip_serializing_if = "is_zero")]
     pub group: u64,
+    /// Collision class, empty: from the part or by kind ([`item_class`]).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub class: String,
 }
 
 impl PanelItem {
@@ -278,6 +285,10 @@ pub struct Enclosure {
     /// Space kept free, or for one class only (3D routing).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub reservations: Vec<crate::routing3d::Reservation>,
+    /// Height of the enclosure's bottom (without plinth) above the floor, mm; unknown
+    /// for wall mounted enclosures (heights are not checked).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub elevation: Option<f32>,
 }
 
 impl Default for Enclosure {
@@ -297,6 +308,7 @@ impl Default for Enclosure {
             bayed_to: 0,
             paths: Vec::new(),
             reservations: Vec::new(),
+            elevation: None,
         }
     }
 }
@@ -471,6 +483,10 @@ pub struct Layout {
     /// Routes frozen for production.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub frozen: Vec<crate::routing3d::FrozenRoute>,
+    /// Rules of the layout checks: clearances, collision classes, heights, thermal
+    /// and manufacturing limits.
+    #[serde(skip_serializing_if = "PanelRules::is_default")]
+    pub checks: PanelRules,
 }
 
 impl Default for Layout {
@@ -484,6 +500,7 @@ impl Default for Layout {
             macros: Vec::new(),
             routing: Default::default(),
             frozen: Vec::new(),
+            checks: PanelRules::default(),
         }
     }
 }
@@ -1587,12 +1604,9 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
     out
 }
 
-/// Item ids involved in any problem (for highlighting).
-pub fn problem_items(e: &Enclosure, parts: &[crate::parts::Part]) -> BTreeSet<u64> {
-    let mut s: BTreeSet<u64> = collisions(e, parts).into_iter().flat_map(|(a, b)| [a, b]).collect();
-    s.extend(outside(e));
-    s.extend(crate::production::clearance_violations(e, parts).into_iter().flat_map(|(a, b)| [a, b]));
-    s
+/// Item ids involved in any problem of the checks (warnings, for highlighting).
+pub fn problem_items(prj: &Project, e: &Enclosure) -> BTreeSet<u64> {
+    validate(prj, e).into_iter().filter(|f| f.severity == crate::reports::Severity::Warning).flat_map(|f| f.items).collect()
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::index::Index;
-use crate::panel::{self, ItemKind, OpenWire, RoutedWire};
+use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
 use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
 use crate::symbols::{self, Func};
@@ -59,6 +59,17 @@ pub enum Severity {
     Error,
     Warning,
     Info,
+}
+
+impl Severity {
+    /// Machine readable name ("error", "warning", "info").
+    pub fn key(self) -> &'static str {
+        match self {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+            Severity::Info => "info",
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -720,7 +731,8 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
     t
 }
 
-/// Panel layout checks: unplaced devices, collisions, items outside the plate.
+/// Panel layout checks: enclosures of mounting pages and unplaced devices; the
+/// checks of the layout itself are the built-in plugin `panel_checks` (openecraft-api).
 fn check_layout(prj: &Project) -> Vec<Issue> {
     let mut v = Vec::new();
     for (pi, pg) in prj.pages.iter().enumerate() {
@@ -736,28 +748,6 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
     for d in panel::devices_to_place(prj) {
         let target = prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().find(|s| s.tag == d.tag).map(|s| (pi, s.id)));
         v.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: not placed in the panel layout", d.tag), target });
-    }
-    for e in &prj.layout.enclosures {
-        let name = |id: u64| {
-            e.item(id).map(|i| if i.kind == ItemKind::Device { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default()
-        };
-        for (a, b) in panel::collisions(e, &prj.parts) {
-            v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: {} collides with {}", e.name, name(a), name(b)), target: None });
-        }
-        for id in panel::outside(e) {
-            v.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: {} outside the mounting plate / enclosure", e.name, name(id)),
-                target: None,
-            });
-        }
-        for (a, b) in crate::production::clearance_violations(e, &prj.parts) {
-            v.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: {} is inside the required clearance of {}", e.name, name(b), name(a)),
-                target: None,
-            });
-        }
     }
     v
 }

@@ -49,14 +49,6 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn severity_name(s: Severity) -> &'static str {
-    match s {
-        Severity::Error => "error",
-        Severity::Warning => "warning",
-        Severity::Info => "info",
-    }
-}
-
 fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let mut an = Analysis::build(prj);
@@ -67,7 +59,7 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
         .iter()
         .map(|i| {
             json!({
-                "severity": severity_name(i.severity),
+                "severity": i.severity.key(),
                 "message": i.message,
                 "page": i.target.map(|(pg, _)| prj.pages[pg].name.clone()),
                 "id": i.target.map(|(_, id)| id).filter(|id| *id != 0),

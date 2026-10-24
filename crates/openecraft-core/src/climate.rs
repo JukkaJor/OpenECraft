@@ -179,17 +179,10 @@ pub fn enclosure_loss(prj: &Project, e: &Enclosure) -> (f32, Vec<String>) {
     let mut loss = 0.0;
     let mut without = Vec::new();
     for it in e.items.iter().filter(|i| i.kind == ItemKind::Device) {
-        let Some(data) = prj.devices.get(&it.tag) else { continue };
-        let mut known = false;
-        for r in &data.parts {
-            let part = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == r.number);
-            if let Some(l) = part.and_then(power_loss) {
-                loss += l * r.count.max(1) as f32;
-                known = true;
-            }
-        }
-        if !known && !data.parts.is_empty() && !without.contains(&it.tag) {
-            without.push(it.tag.clone());
+        match crate::panel::thermal::device_loss(prj, &it.tag) {
+            Some(l) => loss += l,
+            None if prj.devices.get(&it.tag).is_some_and(|d| !d.parts.is_empty()) && !without.contains(&it.tag) => without.push(it.tag.clone()),
+            None => {}
         }
     }
     (loss, without)
