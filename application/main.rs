@@ -4,6 +4,7 @@
 //! Runs natively on Windows, Linux and macOS and in the browser (WebAssembly).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 mod app;
 #[cfg(test)]

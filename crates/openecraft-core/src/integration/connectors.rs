@@ -79,7 +79,7 @@ fn enclosure_of(prj: &Project, tag: &str) -> String {
 }
 
 fn items(prj: &Project, an: &Analysis) -> Vec<Row> {
-    bom(an)
+    bom(prj, an)
         .into_iter()
         .map(|l| {
             let p = part(prj, &l.part).cloned().unwrap_or_default();
@@ -285,7 +285,7 @@ pub fn mcad(prj: &Project, _: &Analysis) -> String {
 }
 
 pub fn procurement(prj: &Project, an: &Analysis) -> String {
-    let mut rows: Vec<(String, String, Row)> = bom(an)
+    let mut rows: Vec<(String, String, Row)> = bom(prj, an)
         .into_iter()
         .map(|l| {
             let p = part(prj, &l.part).cloned().unwrap_or_default();

@@ -7,8 +7,8 @@ fn setup() -> (Project, Analysis) {
     (prj, an)
 }
 
-fn first_part(an: &Analysis) -> String {
-    bom(an).first().expect("demo project has a BOM").part.clone()
+fn first_part(prj: &Project, an: &Analysis) -> String {
+    bom(prj, an).first().expect("demo project has a BOM").part.clone()
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn numbers_of_other_systems() {
 #[test]
 fn erp_import_takes_over_numbers_prices_and_stock() {
     let (mut prj, an) = setup();
-    let part = first_part(&an);
+    let part = first_part(&prj, &an);
     let c = connector("erp").unwrap();
     let text = format!("Material;Matnr;Preis;Bestand;Lieferzeit\n{part};4711;12,50;7;14\nNOPE.PART;1;1;1;1\n");
     let mapping = BTreeMap::from([("erp_number".to_string(), "Matnr".to_string())]);
@@ -82,7 +82,7 @@ fn erp_import_takes_over_numbers_prices_and_stock() {
 #[test]
 fn changes_on_both_sides_are_conflicts() {
     let (mut prj, an) = setup();
-    let part = first_part(&an);
+    let part = first_part(&prj, &an);
     let c = connector("erp").unwrap();
     export(&mut prj, &an, c, "2026-10-01");
     // Changed in the project after the export …
@@ -161,7 +161,7 @@ fn mcad_moves_devices() {
 #[test]
 fn procurement_rounds_to_packs_and_reads_confirmations() {
     let (mut prj, an) = setup();
-    let part = first_part(&an);
+    let part = first_part(&prj, &an);
     part_mut(&mut prj, &part).unwrap().pack_quantity = 50;
     let c = connector("procurement").unwrap();
     let text = (c.export)(&prj, &an);

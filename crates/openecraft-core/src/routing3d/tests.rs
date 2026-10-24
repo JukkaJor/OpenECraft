@@ -67,9 +67,9 @@ fn wires_in_ducts_form_bundles_with_branches() {
     }
     assert!(an.routing.bundles.iter().any(|b| b.items.len() >= 3));
     assert!(!an.routing.branches.is_empty());
-    let report = &an.reports[&ReportKind::RoutingList];
+    let report = &an.report(&prj, ReportKind::RoutingList);
     assert_eq!(report.rows.len(), an.routing.items.len());
-    assert_eq!(an.reports[&ReportKind::BundleList].rows.len(), an.routing.bundles.len());
+    assert_eq!(an.report(&prj, ReportKind::BundleList).rows.len(), an.routing.bundles.len());
 }
 
 #[test]

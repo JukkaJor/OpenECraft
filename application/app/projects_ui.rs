@@ -155,6 +155,7 @@ impl App {
 
     // --------------------------------------------------------------- database
 
+    #[allow(clippy::too_many_lines)]
     fn database_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         if !fs::has_file_system() {
             ui.label(tr("The project database needs the desktop version: the browser cannot search folders."));

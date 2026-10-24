@@ -712,6 +712,7 @@ impl PanelUi {
 
     // ------------------------------------------------------------------ properties
 
+    #[allow(clippy::too_many_lines)]
     pub fn properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, db: &PartsDb) {
         ui.heading(tr("Properties"));
         let Some(ei) = self.enclosure_index(prj) else { return };
@@ -1733,6 +1734,7 @@ impl PanelUi {
         p((s.x - rect.min.x - self.offset.x) / self.zoom, (s.y - rect.min.y - self.offset.y) / self.zoom)
     }
 
+    #[allow(clippy::too_many_lines)]
     fn front_view(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis, db: &PartsDb) {
         let pal = Palette::new(ui.visuals().dark_mode);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());

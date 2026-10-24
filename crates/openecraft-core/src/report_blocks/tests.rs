@@ -24,7 +24,7 @@ fn wildcards() {
 fn schemes_filter_and_sort_the_rows() {
     let prj = demo_project();
     let an = Analysis::build(&prj);
-    let table = &an.reports[&ReportKind::ConnectionList];
+    let table = &an.report(&prj, ReportKind::ConnectionList);
     let form = ReportForm {
         filters: vec![RowFilter { column: "Cable".into(), op: FilterOp::Equals, value: "-w1".into() }],
         sort: vec![SortKey { column: "Core".into(), descending: true }],
@@ -96,7 +96,7 @@ fn group_filter_and_whole_report_blocks() {
     let all = block_pages_of(&prj, "All");
     let an = Analysis::build(&prj);
     let t = page_table(&prj, &an, all[0]).unwrap();
-    assert_eq!(t.rows.len(), an.reports[&ReportKind::DeviceList].rows.len());
+    assert_eq!(t.rows.len(), an.report(&prj, ReportKind::DeviceList).rows.len());
     // The block is saved with the project.
     let back = Project::from_json(&prj.to_json()).unwrap();
     assert_eq!(back.report_blocks, prj.report_blocks);

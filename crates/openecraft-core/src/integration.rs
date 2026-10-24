@@ -800,7 +800,7 @@ pub fn current(prj: &Project, an: &Analysis, target: Target, key: &str, field: F
 /// Keys of all objects a connector's imports can change (for the baseline).
 fn keys(prj: &Project, an: &Analysis, target: Target) -> Vec<String> {
     match target {
-        Target::Part => bom(an).into_iter().map(|l| l.part).collect(),
+        Target::Part => bom(prj, an).into_iter().map(|l| l.part).collect(),
         Target::Device => prj.devices.keys().cloned().collect(),
         Target::Placement => prj.layout.enclosures.iter().flat_map(|e| &e.items).filter(|i| i.kind == crate::panel::ItemKind::Device && !i.tag.is_empty()).map(|i| i.tag.clone()).collect(),
         Target::Wire => an.wiring.iter().map(wire_key).collect(),
@@ -830,9 +830,9 @@ pub struct BomLine {
 }
 
 /// The bill of materials (as in the report) as data.
-pub fn bom(an: &Analysis) -> Vec<BomLine> {
-    let Some(t) = an.reports.get(&ReportKind::BillOfMaterials) else { return Vec::new() };
-    t.rows
+pub fn bom(prj: &Project, an: &Analysis) -> Vec<BomLine> {
+    an.report(prj, ReportKind::BillOfMaterials)
+        .rows
         .iter()
         .filter(|r| r.len() > 7 && !r[3].is_empty())
         .map(|r| BomLine {

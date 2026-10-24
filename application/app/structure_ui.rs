@@ -42,6 +42,7 @@ enum Action {
 }
 
 impl App {
+    #[allow(clippy::too_many_lines)]
     pub(super) fn structure_window(&mut self, ctx: &egui::Context) {
         if !self.structure_ui.open {
             return;

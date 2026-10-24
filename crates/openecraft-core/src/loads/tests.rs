@@ -112,5 +112,5 @@ fn load_budget_of_a_power_supply() {
     k.prj.parts.iter_mut().find(|p| p.number.contains("T1")).unwrap().current = "0.1 A".into();
     let an = Analysis::build(&k.prj);
     assert!(an.issues.iter().any(|i| i.message == "-T1: load 0.27 A above the usable 0.10 A of the power supply"));
-    assert_eq!(an.reports[&ReportKind::PowerSupplyBudget].rows.len(), 3);
+    assert_eq!(an.report(&k.prj, ReportKind::PowerSupplyBudget).rows.len(), 3);
 }

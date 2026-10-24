@@ -132,3 +132,50 @@ fn ui_texts_are_translated() {
         violations.join("\n")
     );
 }
+
+/// Dependency rules inside `openecraft-core` (see `docs/architecture.md`): a module may
+/// refer only to the modules listed for it. Modules that are not listed are not
+/// checked yet; the table grows as the crate is layered.
+const CORE_RULES: &[(&str, &[&str])] = &[
+    ("geom", &[]),
+    ("xml", &[]),
+    ("symbols", &["geom", "symlib"]),
+    ("symlib", &["geom", "model", "symbols"]),
+    ("history", &["model"]),
+    ("translation", &["model"]),
+    ("options", &["model"]),
+    ("frame", &["geom", "model"]),
+    ("parts", &["model", "symbols"]),
+    ("routing", &["geom", "model", "symbols"]),
+    ("devdesc", &["parts", "xml"]),
+    ("testkit", &["geom", "model", "parts", "symbols"]),
+];
+
+#[test]
+fn core_modules_respect_the_layer_rules() {
+    let deps = core_module_dependencies();
+    let mut violations = Vec::new();
+    for (module, allowed) in CORE_RULES {
+        let Some(found) = deps.get(*module) else {
+            violations.push(format!("{module}: no such module in openecraft-core (update CORE_RULES)"));
+            continue;
+        };
+        for dep in found {
+            if !allowed.contains(&dep.as_str()) {
+                violations.push(format!("{module} must not refer to crate::{dep}"));
+            }
+        }
+    }
+    assert!(violations.is_empty(), "layer rule violations in openecraft-core (see docs/architecture.md):
+{}", violations.join("
+"));
+}
+
+#[test]
+fn crate_references_are_parsed_from_paths_and_lists() {
+    let refs = crate_references("use crate::geom::P;
+use crate::{model, netlist::Netlist, self};
+let x = crate::panel::snap(1.0);");
+    let v: Vec<&str> = refs.iter().map(String::as_str).collect();
+    assert_eq!(v, ["geom", "model", "netlist", "panel"]);
+}

@@ -90,6 +90,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn title_block_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
         let names = forms::names(&self.prj);
@@ -288,7 +289,7 @@ impl App {
             fu.scheme.clear();
             return action;
         }
-        let Some(table) = self.analysis.reports.get(&kind) else { return action };
+        let table = self.analysis.report(&self.prj, kind);
         let headers: Vec<&str> = table.headers.clone();
         let stored = if fu.scheme.is_empty() {
             self.prj.forms.reports.get(&kind).cloned()

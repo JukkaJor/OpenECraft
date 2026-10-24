@@ -4234,3 +4234,5 @@ Autotransformer 3-phase	Spartransformator 3-phasig	Autotransformateur triphasé	
 Autotransformer 3-phase, star connection	Spartransformator 3-phasig, Sternschaltung	Autotransformateur triphasé, couplage étoile	Autotransformador trifásico, conexión en estrella
 Transformer bank of three 1-phase transformers	Transformatorbank aus drei 1-phasigen Transformatoren	Banc de trois transformateurs monophasés	Banco de tres transformadores monofásicos
 Transformers / power supplies	Transformatoren / Stromversorgungen	Transformateurs / alimentations	Transformadores / fuentes de alimentación
+Lists the reports (built-in and of plugins): name for report and title	Listet die Auswertungen (eingebaute und von Plugins): Name für report und Titel	Liste les rapports (intégrés et des plugins) : nom pour report et titre	Lista los informes (integrados y de plugins): nombre para report y título
+Report name as shown by list_reports	Name der Auswertung, wie von list_reports angezeigt	Nom du rapport tel qu'affiché par list_reports	Nombre del informe como lo muestra list_reports

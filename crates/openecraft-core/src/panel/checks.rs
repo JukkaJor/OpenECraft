@@ -338,6 +338,7 @@ pub fn heights(e: &Enclosure, it: &PanelItem) -> Option<(f32, f32)> {
 
 /// All checks of an enclosure: collisions (by class), items outside, clearances,
 /// service space, heights, thermal and manufacturability.
+#[allow(clippy::too_many_lines)]
 pub fn validate(prj: &Project, e: &Enclosure) -> Vec<Finding> {
     let rules = &prj.layout.checks;
     let kinds = device_kinds(prj);

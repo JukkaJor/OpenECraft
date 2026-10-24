@@ -595,7 +595,7 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
     ui.add_space(4.0);
     ui.label(RichText::new(tr("2D front view")).strong());
     ui.horizontal(|ui| {
-        model_2d_preview(ui, part.model_2d.as_ref(), vec2(180.0, 140.0));
+        model_2d_preview(ui, part.model_2d.as_deref(), vec2(180.0, 140.0));
         ui.vertical(|ui| {
             match &part.model_2d {
                 Some(m) => ui.label(tr_fmt!("{} × {} mm, {} elements", format!("{:.1}", m.width), format!("{:.1}", m.height), m.prims.len())),
@@ -641,14 +641,14 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
             ui.label(tr("Rotate 90°:"));
             for (axis, label) in [(0, "X"), (1, "Y"), (2, "Z")] {
                 if ui.button(label).on_hover_text(tr("Turn the model so that its front faces the viewer (+Z) and its top is +Y")).clicked() {
-                    m.rotate90(axis);
+                    m.make_mut().rotate90(axis);
                 }
             }
             ui.separator();
             ui.label(tr("Scale ×"));
             ui.add(egui::DragValue::new(model_scale).speed(0.01).range(0.001..=10000.0));
             if ui.button(tr("Apply")).on_hover_text(tr("e.g. 25.4 for models in inch, 1000 for models in metres")).clicked() {
-                m.scale(*model_scale);
+                m.make_mut().scale(*model_scale);
             }
         });
         let s = m.size();
@@ -684,7 +684,7 @@ pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -
         ModelKind::Front2d => {
             let m = parse_svg(&String::from_utf8_lossy(bytes))?;
             let msg = tr_fmt!("{}: 2D front view with {} elements assigned to {}", file, m.prims.len(), number);
-            part.model_2d = Some(m);
+            part.model_2d = Some(m.into());
             Ok(msg)
         }
         ModelKind::Mesh3d => {
@@ -697,7 +697,7 @@ pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -
                 part.height = s[1];
                 part.depth = s[2];
             }
-            part.model_3d = Some(m);
+            part.model_3d = Some(m.into());
             Ok(msg)
         }
     }

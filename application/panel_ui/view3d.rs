@@ -49,6 +49,7 @@ impl PanelUi {
             .collect()
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(super) fn view_3d(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis) {
         let shown = self.shown_3d(prj, ei);
         let pos = panel::positions(&prj.layout);

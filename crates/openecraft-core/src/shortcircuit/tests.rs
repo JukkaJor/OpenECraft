@@ -138,7 +138,7 @@ fn selectivity_with_the_device_upstream() {
     assert!(!s[0].is_total());
     let partial = |an: &Analysis| an.issues.iter().find(|i| i.message.starts_with("-F1 is selective to -F0 only up to")).map(|i| i.severity);
     assert_eq!(partial(&an), Some(Severity::Info));
-    assert_eq!(an.reports[&ReportKind::Selectivity].rows.len(), 1);
+    assert_eq!(an.report(&k.prj, ReportKind::Selectivity).rows.len(), 1);
     // A customer rule set asks for total selectivity.
     k.prj.electrical.rule_sets.push(crate::rules::RuleSet {
         name: "Customer".into(),

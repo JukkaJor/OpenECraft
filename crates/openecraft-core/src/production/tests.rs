@@ -129,13 +129,13 @@ fn ferrules_in_wire_list_and_bom() {
     let len = list.headers.iter().position(|h| *h == "Length (mm)").unwrap();
     let first_unrouted = list.rows.iter().position(|r| r[len].is_empty()).unwrap_or(list.rows.len());
     assert!(list.rows[first_unrouted..].iter().all(|r| r[len].is_empty()));
-    let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials);
     let row = bom.rows.iter().find(|r| r[3] == "GEN.FER-0.75").expect("ferrules in the BOM");
     assert_eq!(row[1], (2 * an.wiring.iter().filter(|w| w.cross_section == "0.75 mm²").count()).to_string());
     assert!(!row[6].contains("not in project"), "described from the catalog");
     prj.layout.ferrules = false;
     let an = Analysis::build(&prj);
-    assert!(!an.reports[&crate::model::ReportKind::BillOfMaterials].rows.iter().any(|r| r[3] == "GEN.FER-0.75"));
+    assert!(!an.report(&prj, crate::model::ReportKind::BillOfMaterials).rows.iter().any(|r| r[3] == "GEN.FER-0.75"));
 }
 
 #[test]

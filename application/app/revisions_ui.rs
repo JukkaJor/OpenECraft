@@ -43,6 +43,7 @@ enum Action {
 }
 
 impl App {
+    #[allow(clippy::too_many_lines)]
     pub(super) fn revisions_window(&mut self, ctx: &egui::Context) {
         if !self.eng.show_revisions {
             return;

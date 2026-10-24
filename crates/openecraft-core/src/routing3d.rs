@@ -631,6 +631,7 @@ fn wire_points(pos: &[V3], w: &RoutedWire) -> Vec<V3> {
 /// [`RoutingRules::wires_3d`] their routes are replaced by the 3D routes). Classes
 /// are routed one after the other (power first), so that later ones keep their
 /// distance; frozen routes are kept while they are still possible.
+#[allow(clippy::too_many_lines)]
 pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist) -> Routing {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);

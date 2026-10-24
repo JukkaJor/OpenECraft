@@ -495,6 +495,7 @@ pub fn bounds_of(prims: &[Prim], pins: impl Iterator<Item = P>) -> R {
 const MAIN: Func = Func::Main { mirror: false };
 const MAIN_MIRROR: Func = Func::Main { mirror: true };
 
+#[allow(clippy::too_many_lines)]
 fn build_library() -> Vec<SymbolDef> {
     use Anchor::*;
     use Category as C;

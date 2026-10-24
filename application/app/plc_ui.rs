@@ -113,6 +113,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn plc_stations(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
         let names: Vec<String> = self.prj.plc.stations.iter().map(|s| s.name.clone()).collect();
         if !names.contains(&self.plc_ui.station) {

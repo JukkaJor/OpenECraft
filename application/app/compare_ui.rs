@@ -56,6 +56,7 @@ fn take_text(k: ChangeKind) -> &'static str {
 }
 
 impl App {
+    #[allow(clippy::too_many_lines)]
     pub(super) fn compare_window(&mut self, ctx: &egui::Context) {
         if !self.compare_ui.open {
             return;

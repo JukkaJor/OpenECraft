@@ -89,7 +89,7 @@ fn virtual_wiring_of_demo() {
     // Q1 feeds the main contacts of K1 inside the cabinet.
     assert!(an.wiring.iter().any(|w| w.from.starts_with("-Q1") && w.to.starts_with("-K1")));
     // The motor is in the field: its connections stay open.
-    let report = &an.reports[&crate::model::ReportKind::PanelWiring];
+    let report = &an.report(&prj, crate::model::ReportKind::PanelWiring);
     assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
 }
 
@@ -104,7 +104,7 @@ fn layout_material_in_bom() {
     // 3380 mm of duct in 2 m pieces
     assert_eq!(get(DUCT_PART), Some(2.0));
     let an = Analysis::build(&prj);
-    let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials);
     let rail = bom.rows.iter().find(|r| r[3] == RAIL_PART).unwrap();
     assert_eq!((rail[1].as_str(), rail[2].as_str()), ("1.29", "m"));
 }
@@ -228,7 +228,7 @@ fn model_size_is_used_without_mounting_data() {
     part.depth = 0.0;
     let mut mesh = crate::parts::Mesh3d::default();
     mesh.add_box([0.0, 0.0, 0.0], [22.0, 22.0, 50.0]);
-    part.model_3d = Some(mesh);
+    part.model_3d = Some(mesh.into());
     assert_eq!(part.size(), Some([22.0, 22.0, 50.0]));
     let size = device_size(&prj, "-P1").unwrap();
     assert_eq!((size.w, size.h, size.d), (22.0, 22.0, 50.0));

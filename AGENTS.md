@@ -40,6 +40,9 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
 
+- `docs/architecture.md` describes the crate graph, the layers inside `openecraft-core`
+  and where a new feature goes; `application/conventions/tests.rs` enforces the layer
+  rules (`CORE_RULES`). Extend the table when you add or layer a module.
 - Code needed by more than one executable belongs in a library crate under `crates/`,
   never duplicated.
   - `openecraft-parts` stays free of UI and platform dependencies (only `serde` /

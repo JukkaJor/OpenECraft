@@ -1,6 +1,7 @@
 //! Headless project model of OpenECraft, shared by the editor and the command line /
 //! MCP front end: pages, symbols, devices, netlist, checks, reports, panel layout and
 //! the SVG / PDF / DXF / DWG export. Contains no UI code.
+#![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 pub mod archive;
 pub mod climate;

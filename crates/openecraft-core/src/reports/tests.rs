@@ -9,26 +9,26 @@ fn row<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {
 fn cable_reports_of_the_demo() {
     let prj = demo_project();
     let an = Analysis::build(&prj);
-    let overview = &an.reports[&ReportKind::CableOverview];
+    let overview = &an.report(&prj, ReportKind::CableOverview);
     let w1 = row(overview, "-W1");
     assert_eq!(w1.len(), 1);
     assert_eq!(w1[0][2], "4/4");
     assert_eq!((w1[0][4].as_str(), w1[0][5].as_str(), w1[0][6].as_str()), ("15", "-X1", "-M1"));
 
-    let diagram = &an.reports[&ReportKind::CableDiagram];
+    let diagram = &an.report(&prj, ReportKind::CableDiagram);
     let cores: Vec<(&str, &str, &str)> = row(diagram, "-W1").iter().map(|r| (r[1].as_str(), r[2].as_str(), r[3].as_str())).collect();
     assert_eq!(cores, vec![("BN", "-X1:1", "-M1:U1"), ("BK", "-X1:2", "-M1:V1"), ("GY", "-X1:3", "-M1:W1"), ("GNYE", "-X1:PE", "-M1:PE")]);
     assert!(row(diagram, "-W1").iter().all(|r| !r[5].is_empty()), "wire numbers");
 
     // Connection list: wire numbers and cable cores, terminal sides apart.
-    let conns = &an.reports[&ReportKind::ConnectionList];
+    let conns = &an.report(&prj, ReportKind::ConnectionList);
     let motor = conns.rows.iter().find(|r| r[3] == "-M1:U1").unwrap();
     assert_eq!((motor[2].as_str(), motor[7].as_str(), motor[8].as_str()), ("-X1:1", "-W1", "BN"));
     assert!(conns.rows.iter().all(|r| !r[0].is_empty()), "every connection is numbered");
     assert!(conns.rows.iter().all(|r| r[2] != r[3]), "no connection from a terminal to itself");
 
     // The cable is in the bill of materials by length.
-    let bom = &an.reports[&ReportKind::BillOfMaterials];
+    let bom = &an.report(&prj, ReportKind::BillOfMaterials);
     let cable = bom.rows.iter().find(|r| r[3] == "GEN.CBL-4G1.5").unwrap();
     assert_eq!((cable[1].as_str(), cable[2].as_str(), cable[7].as_str()), ("15", "m", "-W1"));
 }

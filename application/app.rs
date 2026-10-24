@@ -4,7 +4,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{symbol_icon, Editor, Tool};
 use crate::index::Index;
-use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
+use crate::io::{self, FileIo, Loaded, Purpose, PROJECT_EXT};
 use crate::parts::{self, PartsDb};
 use crate::panel_ui::{NcFormat, PanelUi};
 use crate::wiring_ui::WiringUi;
@@ -351,13 +351,7 @@ impl App {
                     let ext = name.rsplit('.').next().filter(|e| *e != name).unwrap_or("bin").to_string();
                     self.export_bytes(ctx, name.clone(), (tr("File"), &ext), &data);
                 }
-                PartsAction::ImportMacros(text) => match crate::macros::MacroLibrary::from_json(&text) {
-                    Ok(lib) => {
-                        let n = self.macro_lib.merge(lib);
-                        self.notify(ctx, tr_fmt!("Imported {} macros", n));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
-                },
+                PartsAction::ImportMacros(text) => self.import_macros(ctx, &text),
                 PartsAction::Message(m) => self.notify(ctx, m),
             }
         }
@@ -379,175 +373,134 @@ impl App {
     }
 
     fn poll_loaded(&mut self, ctx: &egui::Context) {
-        if let Some(loaded) = self.io.poll() {
-            if matches!(loaded.purpose, Purpose::Model(_)) {
+        let Some(loaded) = self.io.poll() else { return };
+        match loaded.purpose {
+            Purpose::Project => self.open_loaded_project(ctx, &loaded),
+            Purpose::Parts => self.import_parts(ctx, &loaded.text()),
+            Purpose::Model(_) => {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.prj) {
                     Ok(m) => m,
                     Err(e) => tr_fmt!("Model import failed: {}", e),
                 };
                 self.notify(ctx, msg);
-                return;
             }
-            if loaded.purpose == Purpose::Macros {
-                match crate::macros::MacroLibrary::from_json(&loaded.text()) {
-                    Ok(lib) => {
-                        let n = self.macro_lib.merge(lib);
-                        self.notify(ctx, tr_fmt!("Imported {} macros", n));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+            Purpose::Macros => self.import_macros(ctx, &loaded.text()),
+            Purpose::PlcTable => match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
+                Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
+                Err(e) => self.notify(ctx, tr_fmt!("Symbol table import failed: {}", e)),
+            },
+            Purpose::Symbols => match crate::symlib::SymbolLibrary::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let (added, replaced) = crate::symlib::merge(&mut self.prj.symbols, lib);
+                    self.symed.open = true;
+                    self.notify(ctx, tr_fmt!("{} symbols added, {} replaced", added, replaced));
                 }
-                return;
-            }
-            if loaded.purpose == Purpose::Compare {
-                match Project::from_json(&loaded.text()) {
-                    Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
-                    Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify(ctx, tr_fmt!("Not a symbol library: {}", e)),
+            },
+            Purpose::Forms => match crate::forms::FormLibrary::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let (blocks, schemes) = crate::forms::merge(&mut self.prj, lib);
+                    self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
                 }
-                return;
-            }
-            if loaded.purpose == Purpose::ChangeRequests {
-                match crate::review::import_requests(&mut self.prj, &loaded.text()) {
-                    Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
-                    Err(e) => self.notify(ctx, e),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::Symbols {
-                match crate::symlib::SymbolLibrary::from_json(&loaded.text()) {
-                    Ok(lib) => {
-                        let (added, replaced) = crate::symlib::merge(&mut self.prj.symbols, lib);
-                        self.symed.open = true;
-                        self.notify(ctx, tr_fmt!("{} symbols added, {} replaced", added, replaced));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Not a symbol library: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::Forms {
-                match crate::forms::FormLibrary::from_json(&loaded.text()) {
-                    Ok(lib) => {
-                        let (blocks, schemes) = crate::forms::merge(&mut self.prj, lib);
-                        self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::OutputTarget {
-                self.output_reports(ctx, &loaded);
-                return;
-            }
-            if loaded.purpose == Purpose::Image {
-                self.load_image(ctx, &loaded);
-                return;
-            }
-            if loaded.purpose == Purpose::Document {
-                self.load_document(ctx, &loaded);
-                return;
-            }
-            if loaded.purpose == Purpose::RuleSets {
-                self.import_rule_sets(ctx, &loaded.text());
-                return;
-            }
-            if loaded.purpose == Purpose::PageTemplates {
-                match crate::page_templates::Library::from_json(&loaded.text()) {
-                    Ok(lib) => {
-                        let n = crate::page_templates::merge(&mut self.prj, lib);
-                        self.notify(ctx, tr_fmt!("Imported {} page templates", n));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::PropertyLibrary {
-                self.import_property_library(ctx, &loaded.text());
-                return;
-            }
-            if loaded.purpose == Purpose::StructureTemplate {
-                match structure::Structures::from_json(&loaded.text()) {
-                    Ok(file) => {
-                        let n = self.prj.structures.merge(&file);
-                        self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
-                    }
-                    Err(e) => self.notify(ctx, e),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::Drawing {
-                let name = io::short_name(&loaded.name);
-                let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
-                let is_dwg = crate::dwg::is_dwg(&loaded.bytes);
-                match crate::dwg::import_drawing(&mut self.prj, &loaded.bytes, &description, self.page, Default::default()) {
-                    Ok(r) => {
-                        self.goto(r.page, 0);
-                        let page = self.prj.pages[r.page].name.clone();
-                        let msg = match (is_dwg, r.skipped.is_empty()) {
-                            (false, true) => tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
-                            (false, false) => tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
-                            (true, true) => tr_fmt!("DWG imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
-                            (true, false) => tr_fmt!("DWG imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
-                        };
-                        self.notify(ctx, msg);
-                    }
-                    Err(e) if is_dwg => self.notify(ctx, tr_fmt!("DWG import failed: {}", e)),
-                    Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
-                }
-                return;
-            }
-            if let Purpose::Table(kind) = loaded.purpose {
-                self.import_table(ctx, kind, &loaded.text());
-                return;
-            }
-            if loaded.purpose == Purpose::Integration {
-                self.integration_file_loaded(&loaded.name, loaded.text());
-                return;
-            }
-            if matches!(loaded.purpose, Purpose::Aml | Purpose::DeviceDescription) {
-                self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text());
-                return;
-            }
-            if loaded.purpose == Purpose::Dictionary {
-                match translation::from_csv(&mut self.prj, &loaded.text()) {
-                    Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
-                    Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::PlcTable {
-                match crate::plc::import_symbol_table(&mut self.prj, &loaded.text()) {
-                    Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
-                    Err(e) => self.notify(ctx, tr_fmt!("Symbol table import failed: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::Parts {
-                match parts::import(&loaded.text()) {
-                    Ok(list) => {
-                        let n = list.len();
-                        for p in list {
-                            self.parts_db.upsert(p);
-                        }
-                        self.parts_db.sort();
-                        self.notify(ctx, tr_fmt!("Imported {} parts into the database", n));
-                    }
-                    Err(e) => self.notify(ctx, tr_fmt!("Parts import failed: {}", e)),
-                }
-                return;
-            }
-            if loaded.purpose == Purpose::Subproject {
-                self.insert_subproject(ctx, &loaded.bytes);
-                return;
-            }
-            match crate::archive::read_project(&loaded.bytes) {
-                Ok((prj, conv)) => {
-                    // An archive is opened like a new project: saving writes a project file.
-                    let file = (!crate::archive::is_archive(&loaded.bytes)).then(|| loaded.name.clone());
-                    self.replace_project(prj, file);
-                    let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&loaded.name)));
-                    self.notify(ctx, note);
+                Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
+            },
+            Purpose::Drawing => self.import_drawing(ctx, &loaded),
+            Purpose::Table(kind) => self.import_table(ctx, kind, &loaded.text()),
+            Purpose::Dictionary => match translation::from_csv(&mut self.prj, &loaded.text()) {
+                Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
+                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+            },
+            Purpose::OutputTarget => self.output_reports(ctx, &loaded),
+            Purpose::Aml | Purpose::DeviceDescription => self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text()),
+            Purpose::StructureTemplate => match structure::Structures::from_json(&loaded.text()) {
+                Ok(file) => {
+                    let n = self.prj.structures.merge(&file);
+                    self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
                 }
                 Err(e) => self.notify(ctx, e),
+            },
+            Purpose::Document => self.load_document(ctx, &loaded),
+            Purpose::Image => self.load_image(ctx, &loaded),
+            Purpose::PageTemplates => match crate::page_templates::Library::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let n = crate::page_templates::merge(&mut self.prj, lib);
+                    self.notify(ctx, tr_fmt!("Imported {} page templates", n));
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
+            },
+            Purpose::Compare => match Project::from_json(&loaded.text()) {
+                Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::ChangeRequests => match crate::review::import_requests(&mut self.prj, &loaded.text()) {
+                Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
+            Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
+            Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),
+            Purpose::Integration => self.integration_file_loaded(&loaded.name, loaded.text()),
+        }
+    }
+
+    /// A project file or archive replaces the open project.
+    fn open_loaded_project(&mut self, ctx: &egui::Context, loaded: &Loaded) {
+        match crate::archive::read_project(&loaded.bytes) {
+            Ok((prj, conv)) => {
+                // An archive is opened like a new project: saving writes a project file.
+                let file = (!crate::archive::is_archive(&loaded.bytes)).then(|| loaded.name.clone());
+                self.replace_project(prj, file);
+                let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&loaded.name)));
+                self.notify(ctx, note);
             }
+            Err(e) => self.notify(ctx, e),
+        }
+    }
+
+    fn import_parts(&mut self, ctx: &egui::Context, text: &str) {
+        match parts::import(text) {
+            Ok(list) => {
+                let n = list.len();
+                for p in list {
+                    self.parts_db.upsert(p);
+                }
+                self.parts_db.sort();
+                self.notify(ctx, tr_fmt!("Imported {} parts into the database", n));
+            }
+            Err(e) => self.notify(ctx, tr_fmt!("Parts import failed: {}", e)),
+        }
+    }
+
+    /// Merges a macro library file into the macro library.
+    fn import_macros(&mut self, ctx: &egui::Context, text: &str) {
+        match crate::macros::MacroLibrary::from_json(text) {
+            Ok(lib) => {
+                let n = self.macro_lib.merge(lib);
+                self.notify(ctx, tr_fmt!("Imported {} macros", n));
+            }
+            Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+        }
+    }
+
+    /// A DXF / DWG drawing becomes a new page after the current one.
+    fn import_drawing(&mut self, ctx: &egui::Context, loaded: &Loaded) {
+        let name = io::short_name(&loaded.name);
+        let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
+        let is_dwg = crate::dwg::is_dwg(&loaded.bytes);
+        match crate::dwg::import_drawing(&mut self.prj, &loaded.bytes, &description, self.page, Default::default()) {
+            Ok(r) => {
+                self.goto(r.page, 0);
+                let page = self.prj.pages[r.page].name.clone();
+                let msg = match (is_dwg, r.skipped.is_empty()) {
+                    (false, true) => tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                    (false, false) => tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
+                    (true, true) => tr_fmt!("DWG imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                    (true, false) => tr_fmt!("DWG imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
+                };
+                self.notify(ctx, msg);
+            }
+            Err(e) if is_dwg => self.notify(ctx, tr_fmt!("DWG import failed: {}", e)),
+            Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
         }
     }
 
@@ -561,6 +514,7 @@ impl App {
 
     // ------------------------------------------------------------------ UI parts
 
+    #[allow(clippy::too_many_lines)]
     fn menu_bar(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         egui::MenuBar::new().ui(ui, |ui| {
@@ -1069,6 +1023,7 @@ impl App {
         });
     }
 
+    #[allow(clippy::too_many_lines)]
     fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index) {
         ui.horizontal_wrapped(|ui| {
             ui.selectable_value(&mut self.left_tab, LeftTab::Pages, tr("Pages"));
@@ -1322,6 +1277,7 @@ impl App {
         v
     }
 
+    #[allow(clippy::too_many_lines)]
     fn properties(&mut self, ui: &mut egui::Ui, idx: &Index) {
         ui.heading(tr("Properties"));
         let sel: Vec<u64> = self.editor.selection.iter().copied().collect();
@@ -1561,6 +1517,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn symbol_properties(&mut self, ui: &mut egui::Ui, idx: &Index, pi: usize, si: usize) {
         let s = self.prj.pages[pi].symbols[si].clone();
         let Some(def) = symbols::get(&s.sym) else {
@@ -1808,6 +1765,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn windows(&mut self, ctx: &egui::Context) {
         // Reports
         if self.show_reports {
@@ -1837,7 +1795,7 @@ impl App {
                         self.report_blocks_ui.open = true;
                     }
                 });
-                let Some(table) = self.analysis.reports.get(&kind) else { return };
+                let table = self.analysis.report(&self.prj, kind);
                 egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                     egui::Grid::new("report").striped(true).spacing([14.0, 4.0]).show(ui, |ui| {
                         for h in &table.headers {
@@ -1867,11 +1825,9 @@ impl App {
                 self.goto(pg, id);
             }
             if let Some(kind) = export {
-                if let Some(t) = self.analysis.reports.get(&kind) {
-                    let csv = t.to_csv();
-                    let name = format!("{}.csv", kind.title().replace(' ', "_").to_lowercase());
-                    self.export(ctx, name, ("CSV", "csv"), csv);
-                }
+                let csv = self.analysis.report(&self.prj, kind).to_csv();
+                let name = format!("{}.csv", kind.title().replace(' ', "_").to_lowercase());
+                self.export(ctx, name, ("CSV", "csv"), csv);
             }
             if let Some(kind) = add_page {
                 self.add_page(PageKind::Report(kind));

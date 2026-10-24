@@ -638,6 +638,7 @@ impl Editor {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn ui(&mut self, ui: &mut egui::Ui, prj: &mut Project, page_i: usize, idx: &Index, an: &Analysis) -> CanvasOutput {
         let mut out = CanvasOutput::default();
         let dark = ui.visuals().dark_mode;

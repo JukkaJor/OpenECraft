@@ -18,7 +18,7 @@ fn door_harness_of_the_demo() {
     let d = bundle_diameter(&ws);
     assert!(d > outer_diameter("1.5 mm²") && d < 50.0);
     // Report and check.
-    let t = &an.reports[&crate::model::ReportKind::HarnessData];
+    let t = &an.report(&prj, crate::model::ReportKind::HarnessData);
     assert_eq!(t.rows.len(), ws.len() + 1);
     assert!(!an.issues.iter().any(|i| i.message.contains("harness")));
 }

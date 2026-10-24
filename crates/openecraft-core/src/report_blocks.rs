@@ -190,7 +190,7 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
         return Some(frozen);
     }
     let form = forms::report_form(prj, kind, &part.scheme);
-    let table = scheme_table(an.reports.get(&kind)?, form);
+    let table = scheme_table(&an.report(prj, kind), form);
     let gc = group_column(&table, form);
     let rows: Vec<usize> = (0..table.rows.len()).filter(|&i| part.group.as_ref().is_none_or(|g| table.rows[i].get(gc) == Some(g))).collect();
     let per_page = rows_per_page(kind, form);
@@ -252,8 +252,7 @@ fn lineup_boxes(table: &Table, rows: &[usize]) -> Vec<LineupBox> {
 /// The pages of a block: (group, first row) per page.
 pub fn block_pages(prj: &Project, an: &Analysis, block: &ReportBlock) -> Vec<(Option<String>, usize)> {
     let form = forms::report_form(prj, block.kind, &block.scheme);
-    let Some(table) = an.reports.get(&block.kind) else { return vec![(None, 0)] };
-    let table = scheme_table(table, form);
+    let table = scheme_table(&an.report(prj, block.kind), form);
     let per_page = rows_per_page(block.kind, form);
     let chunks = |n: usize| (0..n.div_ceil(per_page).max(1)).map(move |k| k * per_page);
     if !block.per_group {

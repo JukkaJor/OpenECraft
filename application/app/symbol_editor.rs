@@ -79,6 +79,7 @@ enum Action {
 }
 
 impl App {
+    #[allow(clippy::too_many_lines)]
     pub(super) fn symbol_editor_window(&mut self, ctx: &egui::Context) {
         if !self.symed.open {
             return;

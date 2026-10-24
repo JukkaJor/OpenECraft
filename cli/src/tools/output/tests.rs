@@ -49,3 +49,17 @@ fn panel_layout_in_3d() {
     run(&mut s, "export", json!({ "format": "jt", "path": file.to_str().unwrap() })).unwrap();
     assert!(std::fs::read(&file).unwrap().starts_with(b"Version 8.1 JT"));
 }
+
+#[test]
+fn every_built_in_report_is_listed_and_accepted() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let listed = run(&mut s, "list_reports", json!({})).unwrap();
+    let names: Vec<String> = listed.as_array().unwrap().iter().map(|r| r["name"].as_str().unwrap().to_string()).collect();
+    for k in ReportKind::ALL {
+        let name = snake(k);
+        assert!(names.contains(&name), "{name} is not listed");
+        run(&mut s, "report", json!({ "kind": name })).unwrap_or_else(|e| panic!("{name}: {e}"));
+    }
+    assert!(names.contains(&"project_statistics".to_string()), "plugin reports are listed");
+}

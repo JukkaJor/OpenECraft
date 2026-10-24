@@ -867,6 +867,7 @@ fn draw_lineup(d: &mut dyn Draw, boxes: &[crate::report_blocks::LineupBox], orig
 /// hidden (dashed); `inside` draws the door as seen from the inside (the caller
 /// mirrors it): ducts as they are, door devices from the rear.
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_lines)]
 pub fn draw_enclosure(
     d: &mut dyn Draw,
     e: &Enclosure,

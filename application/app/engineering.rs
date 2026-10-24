@@ -141,6 +141,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn macros_window(&mut self, ctx: &egui::Context) {
         if !self.eng.show_macros {
             return;
@@ -345,6 +346,7 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn strips_window(&mut self, ctx: &egui::Context) {
         if !self.eng.show_strips {
             return;

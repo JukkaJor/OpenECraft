@@ -72,7 +72,7 @@ fn verification_against_a_standard() {
     assert_eq!(parts.failed.iter().map(|i| i.label.as_str()).collect::<Vec<_>>(), ["-M2"]);
     let an = Analysis::build(&k.prj);
     assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message == "-M1:PE – -M2:PE: Protective conductors must be green-yellow (IEC 60204-1, 13.2.2) (IEC 60204-1)"));
-    assert!(!an.reports[&ReportKind::Verification].rows.is_empty());
+    assert!(!an.report(&k.prj, ReportKind::Verification).rows.is_empty());
     let k = {
         let mut k = pe_wire("GNYE");
         k.prj.electrical.standards.push("iec60204-1".into());

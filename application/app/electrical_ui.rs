@@ -231,9 +231,8 @@ impl App {
                     *report = Some(k);
                 }
             });
-            if let Some(t) = self.analysis.reports.get(&k) {
-                table_grid(ui, id, t, jump);
-            }
+            let t = self.analysis.report(&self.prj, k);
+            table_grid(ui, id, &t, jump);
             ui.add_space(6.0);
         }
     }
@@ -247,9 +246,8 @@ impl App {
                     *report = Some(k);
                 }
             });
-            if let Some(t) = self.analysis.reports.get(&k) {
-                table_grid(ui, id, t, jump);
-            }
+            let t = self.analysis.report(&self.prj, k);
+            table_grid(ui, id, &t, jump);
             ui.add_space(6.0);
         }
     }
@@ -387,9 +385,8 @@ impl App {
                 *report = Some(ReportKind::Verification);
             }
         });
-        if let Some(t) = self.analysis.reports.get(&ReportKind::Verification) {
-            table_grid(ui, "el_verify", t, jump);
-        }
+        let t = self.analysis.report(&self.prj, ReportKind::Verification);
+        table_grid(ui, "el_verify", &t, jump);
     }
 
     /// Customer rule sets from a file: replace those of the same name.

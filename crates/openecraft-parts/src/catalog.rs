@@ -414,8 +414,8 @@ pub fn add_generated_models(p: &mut Part) {
         return;
     }
     if let Some((m2, m3)) = generated_models(p) {
-        p.model_2d = Some(m2);
-        p.model_3d = Some(m3);
+        p.model_2d = Some(m2.into());
+        p.model_3d = Some(m3.into());
     }
 }
 

@@ -7,6 +7,7 @@ use crate::model::*;
 use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::sync::{Arc, Mutex};
 
 mod diagrams;
 mod electrical_reports;
@@ -79,17 +80,21 @@ pub struct Issue {
     pub target: Option<(usize, u64)>,
 }
 
-/// Everything derived from the project that is expensive enough to cache.
+/// Everything derived from the project that is expensive enough to cache. The report
+/// tables are generated when they are first asked for ([`Analysis::report`]).
 #[derive(Default)]
 pub struct Analysis {
+    /// Device / cross-reference index.
+    pub index: Index,
     pub netlist: Netlist,
     /// Netlist with the terminal sides apart: one net per physical connection
     /// (wire numbers, cables).
     pub open: Netlist,
-    pub reports: HashMap<ReportKind, Table>,
     pub issues: Vec<Issue>,
     /// Virtual wiring of the panel layout.
     pub wiring: Vec<RoutedWire>,
+    /// Connections the panel layout could not route.
+    pub open_wires: Vec<OpenWire>,
     /// Changes since the last revision (revision marks).
     pub changes: Vec<crate::revision::PageChanges>,
     /// Point-to-point connections.
@@ -100,6 +105,8 @@ pub struct Analysis {
     pub routing: crate::routing3d::Routing,
     /// Cables planned through the route network of the plant.
     pub field: crate::field::Plan,
+    /// Generated report tables.
+    tables: Mutex<HashMap<ReportKind, Arc<Table>>>,
 }
 
 impl Analysis {
@@ -112,53 +119,6 @@ impl Analysis {
         let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
         let fill = panel::duct_fill(prj, &wiring);
         let field = crate::field::plan(prj, &conns);
-        let mut reports = HashMap::new();
-        for k in ReportKind::ALL {
-            let t = match k {
-                ReportKind::TableOfContents => toc(prj),
-                ReportKind::DeviceList => device_list(prj, &idx),
-                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
-                ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
-                ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
-                ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, &netlist, &open),
-                ReportKind::TerminalConnections => diagrams::terminal_connections(prj, &conns),
-                ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
-                ReportKind::PinConnections => diagrams::pin_connections(prj, &conns),
-                ReportKind::ConnectionList => connection_list(prj, &conns),
-                ReportKind::DeviceConnections => diagrams::device_connections(prj, &idx, &conns),
-                ReportKind::PlcAssignment => plc_list(prj, &netlist),
-                ReportKind::RevisionOverview => revision_overview(prj),
-                ReportKind::PotentialList => potential_list(prj, &netlist),
-                ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
-                ReportKind::CableOverview => cable_overview(prj, &conns),
-                ReportKind::CableDiagram => cable_diagram(prj, &conns),
-                ReportKind::CableConnections => diagrams::cable_connections_report(prj, &conns),
-                ReportKind::CableSizing => cable_sizing(prj, &conns),
-                ReportKind::HarnessData => Table::default(),
-                ReportKind::DuctFill => duct_fill_report(prj, &fill),
-                ReportKind::PanelLegend => diagrams::panel_legend(prj, &idx),
-                ReportKind::Climate => climate_report(prj),
-                ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
-                ReportKind::HoseList => hose_list(prj, &open),
-                ReportKind::PctLoops => pct_loops(prj, &idx),
-                ReportKind::FluidNetlist => fluid_reports::netlist(prj, &open),
-                ReportKind::HoseConfiguration => fluid_reports::configuration(prj, &open),
-                ReportKind::TubingList => fluid_reports::tubing(prj, &open),
-                ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, &idx),
-                ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, &idx),
-                ReportKind::RoutingList => routing_list(prj, &routing),
-                ReportKind::BundleList => bundle_list(&routing),
-                ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, &netlist, &conns),
-                ReportKind::Selectivity => electrical_reports::selectivity(prj, &netlist, &conns),
-                ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, &netlist),
-                ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, &netlist),
-                ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
-                ReportKind::Verification => electrical_reports::verification(prj, &conns),
-                ReportKind::FieldRouting => field_routing(prj, &field),
-                ReportKind::Bonding => bonding_list(prj),
-            };
-            reports.insert(k, t);
-        }
         let mut issues = check(prj, &idx, &netlist);
         issues.extend(check_layout(prj));
         issues.extend(check_wires(prj, &netlist, &open));
@@ -201,12 +161,91 @@ impl Analysis {
         }
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
-        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill, routing, field };
-        // Harness data needs the connections and the routed lengths.
-        an.reports.insert(ReportKind::HarnessData, harness_data(prj, &an));
+        let mut an = Analysis {
+            index: idx,
+            netlist,
+            open,
+            issues,
+            wiring,
+            open_wires,
+            changes,
+            connections: conns,
+            duct_fill: fill,
+            routing,
+            field,
+            tables: Mutex::default(),
+        };
+        // Harness checks need the connections and the routed lengths.
         an.issues.extend(check_harnesses(prj, &an));
         an.issues.sort_by_key(|i| i.severity);
         an
+    }
+
+    /// The table of a report: generated on the first call (from the project the
+    /// analysis was built from) and kept.
+    pub fn report(&self, prj: &Project, kind: ReportKind) -> Arc<Table> {
+        if let Some(t) = self.tables.lock().ok().and_then(|m| m.get(&kind).cloned()) {
+            return t;
+        }
+        let table = Arc::new(self.generate(prj, kind));
+        if let Ok(mut m) = self.tables.lock() {
+            m.insert(kind, table.clone());
+        }
+        table
+    }
+
+    /// Forgets the generated tables (e.g. after a change of the language).
+    pub fn clear_reports(&self) {
+        if let Ok(mut m) = self.tables.lock() {
+            m.clear();
+        }
+    }
+
+    fn generate(&self, prj: &Project, kind: ReportKind) -> Table {
+        let (idx, netlist, open, conns) = (&self.index, &self.netlist, &self.open, &self.connections);
+        match kind {
+            ReportKind::TableOfContents => toc(prj),
+            ReportKind::DeviceList => device_list(prj, idx),
+            ReportKind::BillOfMaterials => bom(prj, idx, &self.wiring, conns),
+            ReportKind::TerminalDiagram => terminal_diagram(prj, netlist, open),
+            ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
+            ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, netlist, open),
+            ReportKind::TerminalConnections => diagrams::terminal_connections(prj, conns),
+            ReportKind::PlugDiagram => plug_diagram(prj, netlist, open),
+            ReportKind::PinConnections => diagrams::pin_connections(prj, conns),
+            ReportKind::ConnectionList => connection_list(prj, conns),
+            ReportKind::DeviceConnections => diagrams::device_connections(prj, idx, conns),
+            ReportKind::PlcAssignment => plc_list(prj, netlist),
+            ReportKind::RevisionOverview => revision_overview(prj),
+            ReportKind::PotentialList => potential_list(prj, netlist),
+            ReportKind::PanelWiring => panel_wiring(prj, &self.wiring, &self.open_wires),
+            ReportKind::CableOverview => cable_overview(prj, conns),
+            ReportKind::CableDiagram => cable_diagram(prj, conns),
+            ReportKind::CableConnections => diagrams::cable_connections_report(prj, conns),
+            ReportKind::CableSizing => cable_sizing(prj, conns),
+            ReportKind::HarnessData => harness_data(prj, self),
+            ReportKind::DuctFill => duct_fill_report(prj, &self.duct_fill),
+            ReportKind::PanelLegend => diagrams::panel_legend(prj, idx),
+            ReportKind::Climate => climate_report(prj),
+            ReportKind::Marking => marking_report(&crate::marking::markers(prj, conns)),
+            ReportKind::HoseList => hose_list(prj, open),
+            ReportKind::PctLoops => pct_loops(prj, idx),
+            ReportKind::FluidNetlist => fluid_reports::netlist(prj, open),
+            ReportKind::HoseConfiguration => fluid_reports::configuration(prj, open),
+            ReportKind::TubingList => fluid_reports::tubing(prj, open),
+            ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, idx),
+            ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, idx),
+            ReportKind::RoutingList => routing_list(prj, &self.routing),
+            ReportKind::BundleList => bundle_list(&self.routing),
+            ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, netlist, conns),
+            ReportKind::Selectivity => electrical_reports::selectivity(prj, netlist, conns),
+            ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, netlist),
+            ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, netlist),
+            ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
+            ReportKind::Verification => electrical_reports::verification(prj, conns),
+            ReportKind::FieldRouting => field_routing(prj, &self.field),
+            ReportKind::Bonding => bonding_list(prj),
+        }
     }
 }
 

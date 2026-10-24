@@ -4,6 +4,7 @@ use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_api::params::text;
+use openecraft_core::model::ReportKind;
 use openecraft_core::reports::{self, Analysis, Severity};
 use openecraft_core::{dwg, dxf, harness, pdf, plc, svg, translation, wirenum};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
@@ -18,10 +19,17 @@ pub static TOOLS: &[Tool] = &[
         run: check,
     },
     Tool {
+        name: "list_reports",
+        help: tr_const!("Lists the reports (built-in and of plugins): name for report and title"),
+        params: &[],
+        needs_project: false,
+        run: list_reports,
+    },
+    Tool {
         name: "report",
         help: tr_const!("Generates a report as table"),
         params: &[
-            param("kind", Kind::Str, tr_const!("table_of_contents, device_list, bill_of_materials, terminal_diagram, terminal_lineup, terminal_strip_overview, terminal_connections, plug_diagram, pin_connections, connection_list, device_connections, plc_assignment, potential_list, panel_wiring, cable_overview, cable_diagram, cable_connections, cable_sizing, revision_overview, harness_data, duct_fill, panel_legend, climate, marking, hose_list, pct_loops, fluid_netlist, hose_configuration, tubing_list, fluid_device_groups or electro_fluid, or a report of a plugin")),
+            param("kind", Kind::Str, tr_const!("Report name as shown by list_reports")),
             optional("format", Kind::Str, tr_const!("json (default) or csv")),
             optional("scheme", Kind::Str, tr_const!("Report scheme: its filter, sort order and columns")),
         ],
@@ -70,6 +78,12 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     Ok(json!({ "errors": count(Severity::Error), "warnings": count(Severity::Warning), "issues": issues }))
 }
 
+fn list_reports(s: &mut Session, _: &Args) -> Result<Value, String> {
+    let mut out: Vec<Value> = ReportKind::ALL.iter().map(|k| json!({ "name": snake(k), "title": k.title() })).collect();
+    out.extend(s.plugins.reports().map(|r| json!({ "name": r.name, "title": text(&r.title), "plugin": true })));
+    Ok(Value::Array(out))
+}
+
 fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     if let Some(r) = s.plugins.report(a.req("kind")) {
@@ -82,7 +96,7 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     let kind = report_kind(a.req("kind"))?;
     let an = Analysis::build(prj);
-    let mut table = an.reports.get(&kind).cloned().unwrap_or_default();
+    let mut table = (*an.report(prj, kind)).clone();
     if let Some(name) = a.str("scheme") {
         let scheme = prj.forms.schemes.iter().find(|s| s.kind == kind && s.name == name).ok_or_else(|| tr_fmt!("Unknown report scheme: {}", name))?;
         let t = openecraft_core::report_blocks::scheme_table(&table, Some(&scheme.form));

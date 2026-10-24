@@ -126,6 +126,7 @@ impl App {
         self.field_ui.open = open;
     }
 
+    #[allow(clippy::too_many_lines)]
     fn field_plant(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         let mut fit = !self.field_ui.fitted;
         let mut svg = false;
