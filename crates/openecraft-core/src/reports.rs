@@ -61,6 +61,17 @@ pub enum Severity {
     Info,
 }
 
+impl Severity {
+    /// Machine readable name ("error", "warning", "info").
+    pub fn key(self) -> &'static str {
+        match self {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+            Severity::Info => "info",
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Issue {
     pub severity: Severity,
@@ -719,7 +730,8 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
     t
 }
 
-/// Panel layout checks: unplaced devices, collisions, items outside the plate.
+/// Panel layout checks: enclosures of mounting pages and unplaced devices; the
+/// checks of the layout itself are the built-in plugin `panel_checks` (openecraft-api).
 fn check_layout(prj: &Project) -> Vec<Issue> {
     let mut v = Vec::new();
     for (pi, pg) in prj.pages.iter().enumerate() {
@@ -735,9 +747,6 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
     for d in panel::devices_to_place(prj) {
         let target = prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().find(|s| s.tag == d.tag).map(|s| (pi, s.id)));
         v.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: not placed in the panel layout", d.tag), target });
-    }
-    for e in &prj.layout.enclosures {
-        v.extend(panel::validate(prj, e).into_iter().map(|f| Issue { severity: f.severity, message: f.message, target: None }));
     }
     v
 }
