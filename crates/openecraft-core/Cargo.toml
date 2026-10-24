@@ -2,7 +2,7 @@
 name = "openecraft-core"
 version = "0.1.0"
 edition = "2021"
-description = "Headless project model of OpenECraft (pages, devices, checks, reports, SVG / PDF / DXF export)"
+description = "Headless project model of OpenECraft (pages, devices, checks, reports, SVG / PDF / DXF / DWG export)"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -12,3 +12,4 @@ openecraft-parts = { path = "../openecraft-parts" }
 openecraft-i18n = { path = "../openecraft-i18n" }
 openecraft-jt = { path = "../openecraft-jt" }
 miniz_oxide = "0.8"
+acadrust = { version = "0.6.6", default-features = false }

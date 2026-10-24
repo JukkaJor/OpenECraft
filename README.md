@@ -198,7 +198,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - **drilling pattern**: rails, ducts and busbar holders get tapped holes along their
     length, devices screwed onto the plate get holes from their part data
     (`Mounting holes: M5: 9,12; 69,72`) or two default holes; **NC export** per
-    enclosure and face as DXF (outline, one layer per hole diameter, cutouts) or CSV;
+    enclosure and face as DXF or DWG (outline, one layer per hole diameter, cutouts)
+    or CSV;
   - virtual wiring: every schematic connection between placed devices is routed from
     its connection point (rotated devices, aux blocks, terminal by terminal) into the
     duct the terminal faces and through the cable duct network (shortest path) → wire
@@ -281,7 +282,7 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Schematic graphics**: lines, rectangles, circles, ellipses, arcs, polylines and
   polygons (width, colour, dashed, filled), dimensions (aligned / horizontal / vertical,
   scale, unit), PNG / JPEG images (also in the PDF and SVG export). **Layers**
-  (navigator › Layers): visible, locked, printed, colour; DXF export per layer.
+  (navigator › Layers): visible, locked, printed, colour; DXF / DWG export per layer.
 - **Connection and cable definitions**: a connection definition point on a wire sets
   number, colour and cross-section of the whole connection and the core of its wire; a
   cable definition line drawn across wires makes them cores of a cable (new cable with
@@ -297,8 +298,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   connections (filter, show, select, add a connection definition), cables (cores in
   use and free, cable definitions, draw a cable definition), layers and the check.
 - **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
-  references and report rows), **DXF** (R12, layers by kind) per page or all pages side
-  by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,
+  references and report rows), **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
+  the same drawing) per page or all pages side by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,
   ends, colour, cross-section, routed length, stripping length and ferrule per
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
   wire processing machines; ferrules also in the BOM), report CSVs, PLC symbol tables,
@@ -310,11 +311,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   elements) and **JT** (PLM viewers; tri-strip meshes per item, JT 8.1 layout) –
   walls, door, mounting plate, rails, ducts, busbars and devices with the 3D models of
   their parts.
-  **DXF import** (*File › Import DXF as page…*): old drawings as graphics on a new
-  schematic page – lines, polylines, circles, arcs, ellipses, splines, texts, MTEXT,
-  block references and dimensions, in their units, scaled down to the drawing area
-  when they are larger.
-  DWG and EPLAN's EDZ format are proprietary and not supported.
+  **DXF / DWG import** (*File › Import DXF / DWG as page…*): old drawings as graphics
+  on a new schematic page – lines, polylines, circles, arcs, ellipses, splines, texts,
+  MTEXT, block references and dimensions, in their units, scaled down to the drawing
+  area when they are larger. DWG files of AutoCAD R12 … 2018 are read (and written)
+  with the pure Rust [acadrust](https://crates.io/crates/acadrust) crate, also in the
+  browser. EPLAN's EDZ format is proprietary and not supported.
 - **Wire harnesses**: single point-to-point connections (`-S1:13 – -K1:A1`) are
   assigned to harnesses (`-WH1`), independent of the other connections of the same
   potential section; assignments follow renamed devices, missing connections are
@@ -508,7 +510,7 @@ changes are discarded and before a part is deleted.
 commands are offered to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io)
 (`openecraft-cli mcp`, JSON-RPC on stdin / stdout), so an agent can create projects, place
 symbols, draw wires between connection points, assign parts, run the check, generate
-reports and export PDF / SVG / DXF.
+reports and export PDF / SVG / DXF / DWG.
 
 ```bash
 cargo run --release -p openecraft-cli -- help                 # all commands
@@ -592,11 +594,11 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
 | Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
 | Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
-| Export | *File*: PDF, DXF (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
-| Import old drawings | *File › Import DXF as page…* |
+| Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
+| Import old drawings | *File › Import DXF / DWG as page…* |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
-| Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / CSV) |
+| Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / DWG / CSV) |
 | Door devices | panel layout: front view *Door (front)* for door devices and cutouts, *Door (inside)* (mirrored) for cable ducts and the door wiring; 3D: *Open door* / *Close door* |
 | Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
 | Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
@@ -666,6 +668,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/review.rs` | Comments, redline / greenline markup, approvals, change requests (merged without locks) |
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
 | `crates/openecraft-core/src/dxf_import.rs` | DXF import as a schematic page |
+| `crates/openecraft-core/src/dwg.rs` | DWG export and import (converted from / to DXF with `acadrust`) |
 | `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC and JT export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
