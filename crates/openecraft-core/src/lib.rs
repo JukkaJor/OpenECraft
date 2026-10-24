@@ -1,6 +1,6 @@
 //! Headless project model of OpenECraft, shared by the editor and the command line /
 //! MCP front end: pages, symbols, devices, netlist, checks, reports, panel layout and
-//! the SVG / PDF / DXF export. Contains no UI code.
+//! the SVG / PDF / DXF / DWG export. Contains no UI code.
 
 pub mod archive;
 pub mod climate;
@@ -11,6 +11,7 @@ pub mod aml;
 pub mod cabledef;
 pub mod conndef;
 pub mod devdesc;
+pub mod dwg;
 pub mod dxf;
 pub mod dxf_import;
 pub mod electrical;

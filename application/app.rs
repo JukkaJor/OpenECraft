@@ -6,7 +6,7 @@ use crate::editor::{symbol_icon, Editor, Tool};
 use crate::index::Index;
 use crate::io::{self, FileIo, Purpose, PROJECT_EXT};
 use crate::parts::{self, PartsDb};
-use crate::panel_ui::PanelUi;
+use crate::panel_ui::{NcFormat, PanelUi};
 use crate::wiring_ui::WiringUi;
 use crate::parts_ui::{PartsAction, PartsUi};
 use crate::model::*;
@@ -349,6 +349,13 @@ impl App {
         }
     }
 
+    fn export_dwg(&mut self, ctx: &egui::Context, name: String, content: Result<Vec<u8>, String>) {
+        match content {
+            Ok(dwg) => self.export_bytes(ctx, name, (tr("DWG drawing"), "dwg"), &dwg),
+            Err(e) => self.notify(ctx, e),
+        }
+    }
+
     fn poll_loaded(&mut self, ctx: &egui::Context) {
         if let Some(loaded) = self.io.poll() {
             if matches!(loaded.purpose, Purpose::Model(_)) {
@@ -444,20 +451,23 @@ impl App {
                 }
                 return;
             }
-            if loaded.purpose == Purpose::Dxf {
+            if loaded.purpose == Purpose::Drawing {
                 let name = io::short_name(&loaded.name);
                 let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
-                match crate::dxf_import::import_page(&mut self.prj, &loaded.text(), &description, self.page, Default::default()) {
+                let is_dwg = crate::dwg::is_dwg(&loaded.bytes);
+                match crate::dwg::import_drawing(&mut self.prj, &loaded.bytes, &description, self.page, Default::default()) {
                     Ok(r) => {
                         self.goto(r.page, 0);
                         let page = self.prj.pages[r.page].name.clone();
-                        let msg = if r.skipped.is_empty() {
-                            tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts)
-                        } else {
-                            tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", "))
+                        let msg = match (is_dwg, r.skipped.is_empty()) {
+                            (false, true) => tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                            (false, false) => tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
+                            (true, true) => tr_fmt!("DWG imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                            (true, false) => tr_fmt!("DWG imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
                         };
                         self.notify(ctx, msg);
                     }
+                    Err(e) if is_dwg => self.notify(ctx, tr_fmt!("DWG import failed: {}", e)),
                     Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
                 }
                 return;
@@ -597,8 +607,18 @@ impl App {
                     let dxf = crate::dxf::pages_dxf(&self.prj, &all);
                     self.export(&ctx, self.suggested_name("dxf"), (tr("DXF drawing"), "dxf"), dxf);
                 }
-                if ui.button(tr("Import DXF as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
-                    self.io.open(&ctx, Purpose::Dxf);
+                if ui.button(tr("Export page as DWG…")).clicked() {
+                    let dwg = crate::dwg::pages_dwg(&self.prj, &[self.page]);
+                    let name = format!("{}_page_{}.dwg", self.suggested_name("x").trim_end_matches(".x"), self.prj.pages[self.page].name);
+                    self.export_dwg(&ctx, name, dwg);
+                }
+                if ui.button(tr("Export all pages as DWG…")).clicked() {
+                    let all: Vec<usize> = (0..self.prj.pages.len()).collect();
+                    let dwg = crate::dwg::pages_dwg(&self.prj, &all);
+                    self.export_dwg(&ctx, self.suggested_name("dwg"), dwg);
+                }
+                if ui.button(tr("Import DXF / DWG as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
+                    self.io.open(&ctx, Purpose::Drawing);
                 }
                 ui.separator();
                 let has_layout = !self.prj.layout.enclosures.is_empty();
@@ -2106,7 +2126,7 @@ impl App {
                 ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
                 ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
                 ui.label(tr("Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project."));
-                ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / CSV). The production wire list contains stripping lengths and ferrules."));
+                ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules."));
                 ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
                 ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
                 ui.label(tr("15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols."));
@@ -2303,16 +2323,23 @@ impl eframe::App for App {
                         self.goto(loc.page, loc.sym_id);
                     }
                 }
-                if let Some((ei, face, dxf)) = self.panel_ui.export.take() {
+                if let Some((ei, face, format)) = self.panel_ui.export.take() {
                     if let Some(e) = self.prj.layout.enclosures.get(ei) {
                         let base: String = e.name.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect();
                         let what = face.key();
-                        if dxf {
-                            let content = crate::production::nc_dxf(&self.prj, ei, face);
-                            self.export(&ctx, format!("{what}{base}.dxf"), (tr("DXF drawing"), "dxf"), content);
-                        } else {
-                            let content = crate::production::nc_csv(&self.prj, ei, face);
-                            self.export(&ctx, format!("{what}{base}_drilling.csv"), ("CSV", "csv"), content);
+                        match format {
+                            NcFormat::Dxf => {
+                                let content = crate::production::nc_dxf(&self.prj, ei, face);
+                                self.export(&ctx, format!("{what}{base}.dxf"), (tr("DXF drawing"), "dxf"), content);
+                            }
+                            NcFormat::Dwg => {
+                                let content = crate::dwg::nc_dwg(&self.prj, ei, face);
+                                self.export_dwg(&ctx, format!("{what}{base}.dwg"), content);
+                            }
+                            NcFormat::Csv => {
+                                let content = crate::production::nc_csv(&self.prj, ei, face);
+                                self.export(&ctx, format!("{what}{base}_drilling.csv"), ("CSV", "csv"), content);
+                            }
                         }
                     }
                 }
