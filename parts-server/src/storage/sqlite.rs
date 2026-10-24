@@ -168,6 +168,29 @@ impl Backend for SqliteBackend {
             .map_err(err)
     }
 
+    fn file_ids(&self) -> io::Result<Vec<String>> {
+        let mut stmt = self.conn.prepare("SELECT id FROM files").map_err(err)?;
+        let ids = stmt.query_map([], |r| r.get(0)).map_err(err)?.collect::<Result<Vec<String>, _>>();
+        ids.map_err(err)
+    }
+
+    /// The attachments are part of the stored part data, so the (content hash) id is
+    /// looked up as text in the parts and the history.
+    fn unused_files(&self, ids: &[String]) -> io::Result<Vec<String>> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT EXISTS (SELECT 1 FROM parts WHERE instr(data, ?1) > 0) OR EXISTS (SELECT 1 FROM history WHERE instr(part, ?1) > 0)")
+            .map_err(err)?;
+        let mut out = Vec::new();
+        for id in ids {
+            let used: bool = stmt.query_row([id], |r| r.get(0)).map_err(err)?;
+            if !used {
+                out.push(id.clone());
+            }
+        }
+        Ok(out)
+    }
+
     fn commit(&mut self, change: Change) -> io::Result<()> {
         let tx = self.conn.transaction().map_err(err)?;
         tx.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('revision', ?)", [change.revision.to_string()]).map_err(err)?;
@@ -210,6 +233,9 @@ impl Backend for SqliteBackend {
         }
         for f in &change.files {
             tx.execute("INSERT OR IGNORE INTO files (id, name, data) VALUES (?, ?, ?)", params![f.id, f.name, f.data]).map_err(err)?;
+        }
+        for id in &change.deleted_files {
+            tx.execute("DELETE FROM files WHERE id = ?", [id]).map_err(err)?;
         }
         tx.commit().map_err(err)?;
         self.revision = change.revision;

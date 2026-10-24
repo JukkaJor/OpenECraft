@@ -62,6 +62,8 @@ pub struct Change {
     pub deleted_accounts: Vec<String>,
     pub favorites: Vec<(String, Vec<String>)>,
     pub files: Vec<StoredFile>,
+    /// Ids of files no part or history entry refers to any more.
+    pub deleted_files: Vec<String>,
 }
 
 pub trait Backend: Send {
@@ -81,6 +83,10 @@ pub trait Backend: Send {
     fn history(&self, number: &str) -> io::Result<Vec<Snapshot>>;
     fn favorites(&self, user: &str) -> io::Result<Vec<String>>;
     fn file(&self, id: &str) -> io::Result<Option<StoredFile>>;
+    /// Ids of all stored files.
+    fn file_ids(&self) -> io::Result<Vec<String>>;
+    /// Those of `ids` that no part and no history entry refers to.
+    fn unused_files(&self, ids: &[String]) -> io::Result<Vec<String>>;
     fn commit(&mut self, change: Change) -> io::Result<()>;
 }
 
@@ -160,9 +166,14 @@ impl Store {
         self.list(&PartQuery::default()).map(|(_, parts)| parts)
     }
 
-    /// Saves a change as the next revision (if it changes parts or catalogs).
+    /// Saves a change as the next revision (if it changes parts or catalogs), then
+    /// removes the files the changed parts no longer use (see [`Store::remove_unused`]).
     fn commit(&mut self, mut change: Change, new_revision: bool) -> io::Result<()> {
         change.revision = if new_revision { self.revision + 1 } else { self.revision };
+        let mut files = Vec::new();
+        for number in change.parts.iter().map(|p| &p.number).chain(&change.deleted) {
+            files.extend(self.file_refs(number)?);
+        }
         let accounts = change.accounts.clone();
         let deleted = change.deleted_accounts.clone();
         let revision = change.revision;
@@ -175,7 +186,42 @@ impl Store {
             }
         }
         self.accounts.retain(|a| !deleted.contains(&a.user.name));
+        // The change itself is saved; a file left over here is removed by the next
+        // clean-up at startup.
+        if let Err(e) = self.remove_unused(files) {
+            log::warn!("unused files not removed: {e}");
+        }
         Ok(())
+    }
+
+    /// Ids of the files a part and its history refer to.
+    fn file_refs(&self, number: &str) -> io::Result<Vec<String>> {
+        let current = self.backend.part(number)?.map(|p| p.attachments).unwrap_or_default();
+        let history = self.backend.history(number)?.into_iter().flat_map(|s| s.part.map(|p| p.attachments).unwrap_or_default());
+        Ok(current.into_iter().chain(history).map(|a| a.id).collect())
+    }
+
+    /// Deletes those of the files that no part and no history entry refers to (files
+    /// stay as long as an older version of a part in the history needs them).
+    /// Returns the number of deleted files.
+    fn remove_unused(&mut self, mut ids: Vec<String>) -> io::Result<usize> {
+        ids.sort();
+        ids.dedup();
+        if ids.is_empty() {
+            return Ok(0);
+        }
+        let unused = self.backend.unused_files(&ids)?;
+        let n = unused.len();
+        if n > 0 {
+            self.backend.commit(Change { revision: self.revision, deleted_files: unused, ..Default::default() })?;
+        }
+        Ok(n)
+    }
+
+    /// Deletes all files nothing refers to any more (e.g. left by earlier versions).
+    pub fn collect_garbage(&mut self) -> io::Result<usize> {
+        let ids = self.backend.file_ids()?;
+        self.remove_unused(ids)
     }
 
     /// Inserts or replaces parts as one revision. Parts equal to the stored version

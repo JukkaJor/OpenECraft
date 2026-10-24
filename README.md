@@ -463,7 +463,8 @@ cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migra
   `Authorization: Bearer <token>`. Without token and accounts the server is read-only.
 - Every change is a new revision; each part keeps its revision, time of change and the
   last 20 versions (history). Parts have a lifecycle (active, phase-out, discontinued)
-  and a successor.
+  and a successor. Files are stored once per content; a file is deleted as soon as
+  neither a part nor a version in the history uses it (and at startup).
 - Product groups: the EPLAN generic product groups, product groups and subgroups with
   their exchange numbers (`openecraft_parts::productgroups`) are offered in the part
   editor next to OpenECraft's own groups.

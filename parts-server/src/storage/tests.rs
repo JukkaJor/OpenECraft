@@ -167,6 +167,46 @@ fn attachments_store_files() {
 }
 
 #[test]
+fn files_are_removed_when_nothing_refers_to_them() {
+    for mut store in stores() {
+        store.put_parts("u", vec![part("A"), part("B")]).unwrap();
+        let a = store.attach("u", "A", "a.pdf", None, b"only A".to_vec()).unwrap().unwrap().attachments[0].clone();
+        // Same content with two parts: one file.
+        let shared = store.attach("u", "A", "s.pdf", None, b"shared".to_vec()).unwrap().unwrap().attachments[1].id.clone();
+        store.attach("u", "B", "s.pdf", None, b"shared".to_vec()).unwrap();
+        store.detach("u", "A", &a.id).unwrap();
+        // Older versions of A in the history still need the file.
+        assert!(store.file(&a.id).unwrap().is_some());
+        for i in 0..HISTORY_LIMIT {
+            let mut p = store.get("A").unwrap().unwrap();
+            p.note = i.to_string();
+            store.put_parts("u", vec![p]).unwrap();
+        }
+        assert!(store.file(&a.id).unwrap().is_none(), "no version of A uses the file any more");
+        // B still uses the shared file after A drops it.
+        let mut p = store.get("A").unwrap().unwrap();
+        p.attachments.clear();
+        store.put_parts("u", vec![p]).unwrap();
+        assert!(store.file(&shared).unwrap().is_some());
+        assert_eq!(store.collect_garbage().unwrap(), 0);
+    }
+}
+
+#[test]
+fn garbage_collection_removes_left_over_files() {
+    for mut store in stores() {
+        store.put_parts("u", vec![part("A")]).unwrap();
+        let used = store.attach("u", "A", "a.pdf", None, b"used".to_vec()).unwrap().unwrap().attachments[0].id.clone();
+        let orphan = StoredFile { id: sha256_hex(b"orphan"), name: "o.pdf".into(), data: b"orphan".to_vec() };
+        store.backend.commit(Change { revision: store.revision, files: vec![orphan.clone()], ..Default::default() }).unwrap();
+        assert!(store.file(&orphan.id).unwrap().is_some());
+        assert_eq!(store.collect_garbage().unwrap(), 1);
+        assert!(store.file(&orphan.id).unwrap().is_none());
+        assert!(store.file(&used).unwrap().is_some());
+    }
+}
+
+#[test]
 fn migrate_copies_everything() {
     let mut store = Store::with_backend(Box::new(JsonBackend::in_memory()), vec![part("A")]).unwrap();
     store.put_catalog(Catalog { id: "c".into(), ..Default::default() }).unwrap();

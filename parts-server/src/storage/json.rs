@@ -140,6 +140,9 @@ fn apply(db: &mut StoredDb, change: Change) {
     for f in change.files {
         db.files.insert(f.id, f.name);
     }
+    for id in &change.deleted_files {
+        db.files.remove(id);
+    }
 }
 
 impl Backend for JsonBackend {
@@ -213,17 +216,39 @@ impl Backend for JsonBackend {
         Ok(Some(StoredFile { id: id.into(), name: name.clone(), data }))
     }
 
-    /// Files first (content addressed, harmless if the rest fails), then the database.
-    /// If saving fails, memory keeps the state of the file.
+    fn file_ids(&self) -> io::Result<Vec<String>> {
+        Ok(self.db.files.keys().cloned().collect())
+    }
+
+    fn unused_files(&self, ids: &[String]) -> io::Result<Vec<String>> {
+        let snapshots = self.db.history.iter().filter_map(|s| s.part.as_ref());
+        let used: std::collections::HashSet<&str> =
+            self.db.parts.iter().chain(snapshots).flat_map(|p| p.attachments.iter().map(|a| a.id.as_str())).collect();
+        Ok(ids.iter().filter(|id| !used.contains(id.as_str())).cloned().collect())
+    }
+
+    /// New files first (content addressed, harmless if the rest fails), then the
+    /// database, then the deleted files. If saving fails, memory keeps the state of
+    /// the file.
     fn commit(&mut self, change: Change) -> io::Result<()> {
         for f in &change.files {
             self.write_file(f)?;
         }
+        let deleted = change.deleted_files.clone();
         let before = self.db.clone();
         apply(&mut self.db, change);
         if let Err(e) = self.save() {
             self.db = before;
             return Err(e);
+        }
+        for id in deleted {
+            self.memory_files.remove(&id);
+            if let Some(dir) = self.files_dir() {
+                match std::fs::remove_file(dir.join(&id)) {
+                    Err(e) if e.kind() != io::ErrorKind::NotFound => log::warn!("cannot delete file {id}: {e}"),
+                    _ => {}
+                }
+            }
         }
         Ok(())
     }

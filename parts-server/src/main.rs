@@ -94,6 +94,11 @@ async fn main() {
     if let Some(name) = &args.admin_user {
         add_admin(&mut store, name);
     }
+    match store.collect_garbage() {
+        Ok(0) => {}
+        Ok(n) => log::info!("removed {n} unused files"),
+        Err(e) => log::warn!("unused files not removed: {e}"),
+    }
     log::info!(
         "{} parts loaded from {} ({}, revision {})",
         store.count().unwrap_or(0),

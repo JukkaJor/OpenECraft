@@ -28,6 +28,27 @@ fn new_database_is_seeded_and_changes_persist() {
 }
 
 #[test]
+fn unused_files_are_deleted_from_the_folder() {
+    let path = temp_file("gc.json");
+    let mut store = Store::with_backend(Box::new(JsonBackend::open(&path).unwrap()), Vec::new()).unwrap();
+    store.put_parts("u", vec![Part { number: "A".into(), ..Default::default() }]).unwrap();
+    let id = store.attach("u", "A", "a.pdf", None, b"data".to_vec()).unwrap().unwrap().attachments[0].id.clone();
+    let file = path.with_file_name("gc.files").join(&id);
+    assert!(file.exists());
+    store.delete("u", "A").unwrap();
+    // The history of the deleted part still shows the file …
+    assert!(file.exists());
+    for i in 0..crate::storage::HISTORY_LIMIT {
+        store.put_parts("u", vec![Part { number: "A".into(), note: i.to_string(), ..Default::default() }]).unwrap();
+    }
+    // … until its last version with the file left the history.
+    assert!(!file.exists());
+    let again = Store::with_backend(Box::new(JsonBackend::open(&path).unwrap()), Vec::new()).unwrap();
+    assert!(again.file(&id).unwrap().is_none());
+    std::fs::remove_dir_all(path.parent().unwrap()).ok();
+}
+
+#[test]
 fn databases_of_earlier_versions_are_read() {
     let path = temp_file("old.json");
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
