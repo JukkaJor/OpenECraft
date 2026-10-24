@@ -6,7 +6,7 @@
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
 use crate::symbols::Func;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 /// A PLC input or output placed in the schematic.
 #[derive(Clone, Debug, PartialEq)]
@@ -55,10 +55,19 @@ pub fn cards(prj: &Project) -> Vec<String> {
     v
 }
 
+/// Page and symbol index of a pin.
+type PinAt = (usize, usize);
+
+/// Targets listed per PLC point; further ones are counted.
+const MAX_TARGETS: usize = 20;
+
 /// All PLC points, sorted by card and address.
 pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
     let symbols = prj.symbol_table();
     let mut v = Vec::new();
+    // Designations of the pins of each net, built once (nets of potentials can have
+    // thousands of pins on large projects).
+    let mut by_net: HashMap<usize, Vec<(String, PinAt)>> = HashMap::new();
     for (pi, pg) in prj.pages.iter().enumerate() {
         if pg.kind != PageKind::Schematic {
             continue;
@@ -68,11 +77,30 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 .pin_net
                 .get(&(s.id, 0))
                 .map(|&n| {
-                    let mut t: Vec<String> =
-                        nl.nets[n].pins.iter().filter(|p| (p.page, p.sym) != (pi, si)).map(|p| pin_designation(prj, *p)).collect();
-                    t.sort_by(|a, b| natural_cmp(a, b));
-                    t.dedup();
-                    t.join(", ")
+                    let list = by_net.entry(n).or_insert_with(|| {
+                        let mut t: Vec<(String, PinAt)> = nl.nets[n].pins.iter().map(|p| (pin_designation(prj, *p), (p.page, p.sym))).collect();
+                        t.sort_by(|a, b| natural_cmp(&a.0, &b.0));
+                        t
+                    });
+                    let mut shown: Vec<&str> = Vec::new();
+                    let mut more = 0;
+                    let mut last = "";
+                    for (d, _) in list.iter().filter(|(_, at)| *at != (pi, si)) {
+                        if d == last {
+                            continue;
+                        }
+                        last = d;
+                        if shown.len() < MAX_TARGETS {
+                            shown.push(d);
+                        } else {
+                            more += 1;
+                        }
+                    }
+                    let mut text = shown.join(", ");
+                    if more > 0 {
+                        text.push_str(&format!(", … (+{more})"));
+                    }
+                    text
                 })
                 .unwrap_or_default();
             v.push(Point {

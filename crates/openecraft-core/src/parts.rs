@@ -214,9 +214,36 @@ pub fn reserve_functions(prj: &Project, db: Option<&PartsDb>, tag: &str) -> Vec<
 
 /// Per function kind: (placed, available) for devices that have parts assigned.
 pub fn usage(prj: &Project, db: Option<&PartsDb>, tag: &str) -> BTreeMap<FnKind, (usize, usize)> {
+    usage_with(prj, db, tag, &placed_functions(prj, tag))
+}
+
+/// The kinds of the placed functions of every device (one pass over the project).
+pub fn placed_kinds(prj: &Project) -> std::collections::HashMap<&str, Vec<FnKind>> {
+    let mut m: std::collections::HashMap<&str, Vec<FnKind>> = std::collections::HashMap::new();
+    for s in prj.pages.iter().flat_map(|pg| pg.symbols.iter()) {
+        if let Some(k) = kind_of_symbol(&s.sym) {
+            m.entry(s.tag.as_str()).or_default().push(k);
+        }
+    }
+    m
+}
+
+/// [`usage`] with the kinds of the placed functions given (see [`placed_kinds`]).
+pub fn usage_of(prj: &Project, db: Option<&PartsDb>, tag: &str, placed: &[FnKind]) -> BTreeMap<FnKind, (usize, usize)> {
     let mut m: BTreeMap<FnKind, (usize, usize)> = BTreeMap::new();
-    for (k, _, _) in placed_functions(prj, tag) {
-        m.entry(k).or_default().0 += 1;
+    for k in placed {
+        m.entry(*k).or_default().0 += 1;
+    }
+    for f in available_functions(prj, db, tag) {
+        m.entry(f.kind).or_default().1 += 1;
+    }
+    m
+}
+
+fn usage_with(prj: &Project, db: Option<&PartsDb>, tag: &str, placed: &[(FnKind, Vec<String>, u64)]) -> BTreeMap<FnKind, (usize, usize)> {
+    let mut m: BTreeMap<FnKind, (usize, usize)> = BTreeMap::new();
+    for (k, _, _) in placed {
+        m.entry(*k).or_default().0 += 1;
     }
     for f in available_functions(prj, db, tag) {
         m.entry(f.kind).or_default().1 += 1;

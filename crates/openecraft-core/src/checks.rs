@@ -156,6 +156,7 @@ fn check_translations(prj: &Project) -> Vec<Issue> {
 /// Project check ("Prüfläufe"): finds typical engineering mistakes.
 pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     let mut v = Vec::new();
+    let placed = crate::parts::placed_kinds(prj);
     for tag in idx.sorted_tags() {
         let dev = &idx.devices[tag];
         let t = |l: &crate::index::Loc| Some((l.page, l.sym_id));
@@ -187,7 +188,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             }
         }
         // Function templates: more functions placed than the parts provide?
-        let usage = crate::parts::usage(prj, None, tag);
+        let usage = crate::parts::usage_of(prj, None, tag, placed.get(tag.as_str()).map(Vec::as_slice).unwrap_or(&[]));
         let has_templates = usage.values().any(|(_, avail)| *avail > 0);
         if has_templates {
             for (kind, (placed, avail)) in &usage {

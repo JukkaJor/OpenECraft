@@ -97,3 +97,32 @@ fn vendor_tag_formats() {
     assert_eq!(sheets[0].0, "PLC Tags");
     assert_eq!(sheets[0].1.len(), n + 1);
 }
+
+#[test]
+fn large_nets_list_twenty_targets() {
+    use crate::geom::p;
+    use crate::model::{SymbolInst, Wire};
+    let mut prj = Project::default();
+    // A PLC input on a potential with many other connection points.
+    let add = |prj: &mut Project, sym: &str, tag: &str, label: &str, x: f32| {
+        let id = prj.new_id();
+        prj.pages[0].symbols.push(SymbolInst { id, sym: sym.into(), pos: p(x, 100.0), tag: tag.into(), label: label.into(), ..Default::default() });
+    };
+    add(&mut prj, "plc_in", "-A1", "I0.0", 20.0);
+    for i in 0..30 {
+        add(&mut prj, "term", "-X1", &(i + 1).to_string(), 40.0 + 8.0 * i as f32);
+    }
+    let symbols = prj.symbol_table();
+    let pins: Vec<crate::geom::P> = prj.pages[0].symbols.iter().map(|s| symbols.get(&s.sym).unwrap().pin_world(0, s.pos, 0, false)).collect();
+    for w in pins.windows(2) {
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: w[0], b: p(w[0].x, w[0].y - 8.0), ..Default::default() });
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: p(w[0].x, w[0].y - 8.0), b: p(w[1].x, w[1].y - 8.0), ..Default::default() });
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: p(w[1].x, w[1].y - 8.0), b: w[1], ..Default::default() });
+    }
+    let point = points(&prj, &nl(&prj)).into_iter().next().unwrap();
+    assert!(point.connected.ends_with(", … (+10)"), "{}", point.connected);
+    assert_eq!(point.connected.matches("-X1:").count(), 20);
+}

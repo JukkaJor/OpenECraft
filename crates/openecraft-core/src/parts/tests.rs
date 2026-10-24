@@ -91,3 +91,13 @@ fn generic_parts_come_from_the_catalog_when_missing_in_the_database() {
     ensure_in_project(&mut prj, &PartsDb { parts: Vec::new() }, "UNKNOWN");
     assert_eq!(prj.parts.len(), 1);
 }
+
+#[test]
+fn usage_from_the_placed_kinds_of_all_devices() {
+    let prj = crate::sample::demo_project();
+    let placed = placed_kinds(&prj);
+    for tag in prj.devices.keys() {
+        let kinds = placed.get(tag.as_str()).map(Vec::as_slice).unwrap_or(&[]);
+        assert_eq!(usage_of(&prj, None, tag, kinds), usage(&prj, None, tag), "{tag}");
+    }
+}
