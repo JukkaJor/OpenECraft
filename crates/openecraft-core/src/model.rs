@@ -104,6 +104,9 @@ pub struct Project {
     /// Field wiring: plant layout, route network, bonding and cable accessories.
     #[serde(skip_serializing_if = "crate::field::Field::is_empty")]
     pub field: crate::field::Field,
+    /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
+    #[serde(skip_serializing_if = "crate::integration::Integration::is_empty")]
+    pub integration: crate::integration::Integration,
     pub next_id: u64,
 }
 
@@ -144,6 +147,7 @@ impl Default for Project {
             electrical: Default::default(),
             property_db: Default::default(),
             field: Default::default(),
+            integration: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();

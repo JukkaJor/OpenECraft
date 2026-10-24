@@ -50,6 +50,8 @@ pub enum Purpose {
     RuleSets,
     /// Property library (JSON) to merge into the project.
     PropertyLibrary,
+    /// A file of an ERP, PDM, PLM, ECAD, MCAD, procurement system or wiring machine.
+    Integration,
 }
 
 impl FileKind for Purpose {
@@ -72,6 +74,7 @@ impl FileKind for Purpose {
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Dxf => (tr("DXF drawing"), &["dxf"]),
             Purpose::Aml => ("AutomationML", &["aml", "xml"]),
+            Purpose::Integration => (tr("Files of other systems (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::DeviceDescription => (tr("Device description (GSDML, ESI)"), &["xml"]),
         }
     }
