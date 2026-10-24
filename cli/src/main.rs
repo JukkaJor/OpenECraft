@@ -40,11 +40,18 @@ fn run(argv: &[String]) -> Result<(), String> {
         openecraft_i18n::init(None);
     }
     let mut session = Session::new(parts_server::Server::from_options(&inv.options));
+    session.plugins.load_env();
+    if let Some(dir) = &inv.options.plugins {
+        session.plugins.load_dir(std::path::Path::new(dir));
+    }
+    for e in &session.plugins.errors {
+        eprintln!("{e}");
+    }
     match command {
         "help" => {
             match inv.words.first() {
-                Some(name) => print!("{}", tools::help(tools::find(name).ok_or_else(|| unknown(name))?)),
-                None => print!("{}", usage()),
+                Some(name) => print!("{}", tools::help(tools::lookup(&session, name).ok_or_else(|| unknown(name))?)),
+                None => print!("{}", usage(&session)),
             }
             Ok(())
         }
@@ -54,7 +61,7 @@ fn run(argv: &[String]) -> Result<(), String> {
             Ok(())
         }
         name => {
-            let tool = tools::find(name).ok_or_else(|| unknown(name))?;
+            let tool = tools::lookup(&session, name).ok_or_else(|| unknown(name))?;
             if let Some(word) = inv.words.first() {
                 return Err(tr_fmt!("Unexpected argument: {}", word));
             }
@@ -62,8 +69,8 @@ fn run(argv: &[String]) -> Result<(), String> {
                 print!("{}", tools::help(tool));
                 return Ok(());
             }
-            let params = tools::from_cli(tool, inv.options.json.as_deref(), &inv.params)?;
-            if tool.needs_project {
+            let params = tools::from_cli(tool.clone(), inv.options.json.as_deref(), &inv.params)?;
+            if tool.needs_project() {
                 let path = inv.options.project.as_deref().ok_or_else(|| tr("This command needs a project: --project <file>").to_string())?;
                 session.open(path)?;
             }
@@ -85,13 +92,13 @@ fn unknown(name: &str) -> String {
     tr_fmt!("Unknown command: {}. Run openecraft-cli help for a list.", name)
 }
 
-fn usage() -> String {
+fn usage(session: &Session) -> String {
     let mut out = tr(
-        "Usage: openecraft-cli [--project <file>] [--server <url>] [--token <token>] [--lang <code>] <command> [--<parameter> <value>]…\n\nopenecraft-cli mcp        runs a Model Context Protocol server on stdin / stdout\nopenecraft-cli <command> --help   shows the parameters of a command\n\nCommands:\n",
+        "Usage: openecraft-cli [--project <file>] [--server <url>] [--token <token>] [--lang <code>] [--plugins <folder>] <command> [--<parameter> <value>]…\n\nopenecraft-cli mcp        runs a Model Context Protocol server on stdin / stdout\nopenecraft-cli <command> --help   shows the parameters of a command\n\nCommands:\n",
     )
     .to_string();
-    for tool in tools::all() {
-        out.push_str(&format!("  {:<18} {}\n", tool.name, tr(tool.help)));
+    for tool in tools::entries(session) {
+        out.push_str(&format!("  {:<18} {}\n", tool.name(), tool.help_text()));
     }
     out
 }

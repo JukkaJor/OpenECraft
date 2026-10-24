@@ -1,5 +1,6 @@
 use super::*;
 use crate::testing::session;
+use serde_json::json;
 
 fn args(v: Value) -> Map<String, Value> {
     v.as_object().unwrap().clone()
@@ -15,8 +16,8 @@ fn tool_and_parameter_names_are_unique_snake_case() {
         assert!(!tool.help.is_empty());
         let mut params = std::collections::HashSet::new();
         for p in tool.params {
-            assert!(snake(p.name), "{}.{}", tool.name, p.name);
-            assert!(params.insert(p.name), "duplicate parameter {}.{}", tool.name, p.name);
+            assert!(snake(&p.name), "{}.{}", tool.name, p.name);
+            assert!(params.insert(p.name.as_ref()), "duplicate parameter {}.{}", tool.name, p.name);
             assert!(!p.help.is_empty());
         }
     }
