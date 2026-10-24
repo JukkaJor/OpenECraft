@@ -3,7 +3,7 @@ use crate::model::ReportKind;
 use crate::sample::demo_project;
 
 fn page_of(prj: &Project, kind: ReportKind) -> usize {
-    prj.pages.iter().position(|p| p.kind == crate::model::PageKind::Report(kind)).unwrap()
+    prj.pages.iter().position(|p| p.kind == crate::model::PageKind::Report(kind.into())).unwrap()
 }
 
 #[test]

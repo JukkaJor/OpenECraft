@@ -41,7 +41,7 @@ fn empty_field_plans_nothing() {
     let prj = demo_project();
     let plan = planned(&prj);
     assert!(plan.cables.is_empty() && plan.issues.is_empty());
-    assert!(Analysis::checked(&prj).report(&prj, ReportKind::FieldRouting).rows.is_empty());
+    assert!(Analysis::checked(&prj).report(&prj, ReportKind::FieldRouting).unwrap().rows.is_empty());
 }
 
 #[test]
@@ -166,7 +166,7 @@ fn lengths_are_taken_over_and_material_counted() {
     assert_eq!(apply_lengths(&mut prj, &plan), 0);
     let m = material(&prj);
     assert_eq!(m, vec![("TRAY-100".to_string(), 10.0, vec!["T1".to_string()])]);
-    let bom = &Analysis::checked(&prj).report(&prj, ReportKind::BillOfMaterials);
+    let bom = &Analysis::checked(&prj).report(&prj, ReportKind::BillOfMaterials).unwrap();
     assert!(bom.rows.iter().any(|r| r[3] == "TRAY-100" && r[1] == "10"));
 }
 
@@ -193,7 +193,7 @@ fn bonding_points_and_conductors() {
     prj.field.rules.continuity = true;
     prj.field.bonds.push(Bond { id: 3, a: "+M1".into(), b: "L9".into(), kind: BondKind::Supplementary, cross_section: "2.5".into(), ..Default::default() });
     assert!(bonding::problems(&prj).iter().any(|i| i.message.contains("L9")));
-    let report = &Analysis::checked(&prj).report(&prj, ReportKind::Bonding);
+    let report = &Analysis::checked(&prj).report(&prj, ReportKind::Bonding).unwrap();
     assert_eq!(report.rows.len(), 3 + names.len());
     assert!(material(&prj).iter().any(|(p, q, _)| p == "H07V-K 16" && *q == 3.0));
     let _ = s;
@@ -263,7 +263,7 @@ fn ids_survive_reload_and_drawing_shows_the_network() {
 #[test]
 fn field_routing_report_lists_the_cables() {
     let (prj, _, _) = plant();
-    let t = &Analysis::checked(&prj).report(&prj, ReportKind::FieldRouting);
+    let t = &Analysis::checked(&prj).report(&prj, ReportKind::FieldRouting).unwrap();
     assert_eq!(t.rows.len(), 1);
     assert_eq!(t.rows[0][0], "-W1");
     assert!(t.rows[0][4].contains("T1") && t.rows[0][4].contains("F1"));

@@ -144,7 +144,7 @@ impl App {
             }
         }
         if report {
-            self.report_kind = ReportKind::HarnessData;
+            self.report_kind = ReportKind::HarnessData.into();
             self.show_reports = true;
         }
         if kbl {

@@ -45,14 +45,14 @@ fn text(f: impl Fn(&Project, &Analysis, &Args) -> Result<String, String> + Send 
 /// The built-in exports in the order of File › Export.
 pub fn builtin() -> Vec<Exporter> {
     let mut reg = Registry::default();
-    reg.exporter_with("svg", tr_const!("SVG image (one page)"), "svg", false, vec![PAGE], text(|prj, _, a| {
+    reg.exporter_with("svg", tr_const!("SVG image (one page)"), "svg", false, vec![PAGE], text(|prj, an, a| {
         let i = page_index(prj, a)?.ok_or_else(|| tr("This format needs a page").to_string())?;
-        Ok(crate::svg::page_svg(prj, i))
+        Ok(crate::svg::page_svg_with(prj, an, i))
     }))
-    .exporter_with("html", tr_const!("HTML document for printing (all pages)"), "html", false, vec![], text(|prj, _, _| Ok(crate::svg::print_document(prj))))
-    .exporter_with("pdf", tr_const!("PDF document (bookmarks, linked cross references)"), "pdf", false, vec![], text(|prj, _, _| Ok(crate::pdf::document(prj))))
-    .exporter_with("dxf", tr_const!("DXF drawing"), "dxf", false, vec![PAGE_OPT], text(|prj, _, a| Ok(crate::dxf::pages_dxf(prj, &pages(prj, a)?))))
-    .exporter_with("dwg", tr_const!("DWG drawing"), "dwg", true, vec![PAGE_OPT], |prj, _, a| crate::dwg::pages_dwg(prj, &pages(prj, a)?).map(Export::Binary))
+    .exporter_with("html", tr_const!("HTML document for printing (all pages)"), "html", false, vec![], text(|prj, an, _| Ok(crate::svg::print_document_with(prj, an))))
+    .exporter_with("pdf", tr_const!("PDF document (bookmarks, linked cross references)"), "pdf", false, vec![], text(|prj, an, _| Ok(crate::pdf::document_with(prj, an))))
+    .exporter_with("dxf", tr_const!("DXF drawing"), "dxf", false, vec![PAGE_OPT], text(|prj, an, a| Ok(crate::dxf::pages_dxf_with(prj, an, &pages(prj, a)?))))
+    .exporter_with("dwg", tr_const!("DWG drawing"), "dwg", true, vec![PAGE_OPT], |prj, an, a| crate::dwg::pages_dwg_with(prj, an, &pages(prj, a)?).map(Export::Binary))
     .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv())))
     .exporter_with("plc_table", tr_const!("PLC symbol table (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::symbol_table(prj, &an.netlist))))
     .exporter_with("plc_variables", tr_const!("PLC global variables (IEC 61131-3)"), "st", false, vec![], text(|prj, an, _| Ok(crate::plc::global_variables(prj, &an.netlist))))

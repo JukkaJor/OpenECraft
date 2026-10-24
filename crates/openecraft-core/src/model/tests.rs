@@ -39,6 +39,6 @@ fn only_unreleased_schematic_pages_are_editable() {
     assert!(pg.is_editable());
     pg.locked = true;
     assert!(!pg.is_editable());
-    assert!(!Page::new(2, "2", "", PageKind::Report(ReportKind::DeviceList)).is_editable());
+    assert!(!Page::new(2, "2", "", PageKind::Report(ReportKind::DeviceList.into())).is_editable());
     assert!(!Page::new(3, "3", "", PageKind::Cover).is_editable());
 }

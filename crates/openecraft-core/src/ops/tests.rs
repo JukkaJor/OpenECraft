@@ -174,10 +174,10 @@ fn rename_device_updates_the_panel_layout() {
 fn add_page_numbers_after_the_highest_page() {
     let mut prj = Project::default();
     prj.pages[0].name = "7".into();
-    let at = add_page(&mut prj, PageKind::Report(ReportKind::DeviceList), 0);
+    let at = add_page(&mut prj, PageKind::Report(ReportKind::DeviceList.into()), 0);
     assert_eq!(at, 0);
     assert_eq!(prj.pages[0].name, "8");
-    assert_eq!(prj.pages[0].kind, PageKind::Report(ReportKind::DeviceList));
+    assert_eq!(prj.pages[0].kind, PageKind::Report(ReportKind::DeviceList.into()));
     assert_eq!(add_page(&mut prj, PageKind::Schematic, 99), 2);
 }
 

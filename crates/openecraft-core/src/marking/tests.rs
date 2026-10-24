@@ -85,12 +85,12 @@ fn csv_grouped_by_material() {
 fn marker_material_in_the_bill_of_materials_and_report() {
     let (prj, an) = demo();
     let markers = markers(&prj, &an.connections);
-    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials);
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap();
     for (part, n) in material(&markers) {
         let row = bom.rows.iter().find(|r| r[3] == part).unwrap_or_else(|| panic!("{part} in the BOM"));
         assert_eq!(row[1], n.to_string(), "{part}");
     }
-    assert_eq!(an.report(&prj, crate::model::ReportKind::Marking).rows.len(), markers.len());
+    assert_eq!(an.report(&prj, crate::model::ReportKind::Marking).unwrap().rows.len(), markers.len());
 }
 
 #[test]

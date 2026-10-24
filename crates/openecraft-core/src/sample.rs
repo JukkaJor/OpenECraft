@@ -154,9 +154,9 @@ pub fn demo_project() -> Project {
     g.text(220.0, 100.0, "Digital outputs -A2", 2.5);
     g.text(40.0, 112.0, "Digital inputs -A1", 2.5);
 
-    add_page(&mut prj, "5", "Bill of materials", PageKind::Report(ReportKind::BillOfMaterials));
-    add_page(&mut prj, "6", "Terminal diagram -X1", PageKind::Report(ReportKind::TerminalDiagram));
-    add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList));
+    add_page(&mut prj, "5", "Bill of materials", PageKind::Report(ReportKind::BillOfMaterials.into()));
+    add_page(&mut prj, "6", "Terminal diagram -X1", PageKind::Report(ReportKind::TerminalDiagram.into()));
+    add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList.into()));
 
     let db = PartsDb::default();
     for (tag, parts) in [

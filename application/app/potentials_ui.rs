@@ -156,7 +156,7 @@ impl App {
             self.prj.apply_preset(p);
         }
         if overview {
-            self.report_kind = ReportKind::PotentialList;
+            self.report_kind = ReportKind::PotentialList.into();
             self.show_reports = true;
         }
     }

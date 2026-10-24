@@ -6,7 +6,7 @@
 
 use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P};
-use crate::model::{PageKind, Project, ReportKind};
+use crate::model::{PageKind, Project, ReportId, ReportKind};
 use crate::params::Text;
 use crate::render::{Draw, Ink, VAnchor};
 use crate::table::header_matches;
@@ -203,13 +203,13 @@ pub struct SortKey {
 #[serde(default)]
 pub struct ReportScheme {
     pub name: String,
-    pub kind: ReportKind,
+    pub kind: ReportId,
     pub form: ReportForm,
 }
 
 impl Default for ReportScheme {
     fn default() -> Self {
-        ReportScheme { name: String::new(), kind: ReportKind::DeviceList, form: ReportForm::default() }
+        ReportScheme { name: String::new(), kind: ReportKind::DeviceList.into(), form: ReportForm::default() }
     }
 }
 
@@ -223,7 +223,7 @@ pub struct Forms {
     #[serde(skip_serializing_if = "String::is_empty")]
     pub default_title_block: String,
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub reports: BTreeMap<ReportKind, ReportForm>,
+    pub reports: BTreeMap<ReportId, ReportForm>,
     /// Named report forms.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub schemes: Vec<ReportScheme>,
@@ -270,14 +270,16 @@ pub fn merge(prj: &mut Project, lib: FormLibrary) -> (usize, usize) {
 }
 
 /// Report form of a report: the scheme of that name, otherwise the report's form.
-pub fn report_form<'a>(prj: &'a Project, kind: ReportKind, scheme: &str) -> Option<&'a ReportForm> {
+pub fn report_form<'a>(prj: &'a Project, kind: impl Into<ReportId>, scheme: &str) -> Option<&'a ReportForm> {
+    let kind = kind.into();
     let named = prj.forms.schemes.iter().find(|s| !scheme.is_empty() && s.kind == kind && s.name == scheme);
     named.map(|s| &s.form).or_else(|| prj.forms.reports.get(&kind))
 }
 
 /// Renames a scheme together with the report blocks and pages that use it. Fails for
 /// empty names and names the report already has.
-pub fn rename_scheme(prj: &mut Project, kind: ReportKind, old: &str, new: &str) -> bool {
+pub fn rename_scheme(prj: &mut Project, kind: impl Into<ReportId>, old: &str, new: &str) -> bool {
+    let kind = kind.into();
     let new = new.trim();
     if new.is_empty() || prj.forms.schemes.iter().any(|s| s.kind == kind && s.name == new) {
         return false;
@@ -296,7 +298,8 @@ pub fn rename_scheme(prj: &mut Project, kind: ReportKind, old: &str, new: &str) 
 }
 
 /// Names of the schemes of a report.
-pub fn scheme_names(prj: &Project, kind: ReportKind) -> Vec<String> {
+pub fn scheme_names(prj: &Project, kind: impl Into<ReportId>) -> Vec<String> {
+    let kind = kind.into();
     prj.forms.schemes.iter().filter(|s| s.kind == kind).map(|s| s.name.clone()).collect()
 }
 

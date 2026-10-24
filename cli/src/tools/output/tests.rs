@@ -1,5 +1,6 @@
 use super::*;
 use crate::testing::*;
+use openecraft_core::model::ReportKind;
 
 #[test]
 fn reports_and_exports() {

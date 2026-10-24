@@ -119,7 +119,7 @@ pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
     let desc = match kind {
         PageKind::Schematic => tr("Schematic").to_string(),
         PageKind::Cover => tr("Cover sheet").to_string(),
-        PageKind::Report(r) => r.title().to_string(),
+        PageKind::Report(r) => r.title(),
         PageKind::Mounting(id) => {
             let name = prj.layout.enclosures.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
             tr_fmt!("Mounting layout {}", name)

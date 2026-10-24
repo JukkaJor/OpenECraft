@@ -6,7 +6,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::electrofluid::{self, DeviceGroup, GroupKind};
 use crate::fluid::{self, LineType, Medium};
-use crate::model::ReportKind;
+use crate::model::{ReportId, ReportKind};
 use crate::process::{self, PctLoop, Status};
 use crate::symbols::Category;
 use egui::{Color32, RichText};
@@ -166,7 +166,7 @@ impl App {
         }
     }
 
-    fn hoses_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn hoses_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.weak(tr("Wires between the ports of fluid power and P&ID symbols are hoses / pipes: their own nets, numbered with the wire numbering, listed in the hose list."));
         let f = &mut self.prj.fluid;
         ui.horizontal_wrapped(|ui| {
@@ -199,7 +199,7 @@ impl App {
                 (ReportKind::FluidNetlist, tr("📊 Fluid netlist")),
             ] {
                 if ui.button(label).clicked() {
-                    *report = Some(k);
+                    *report = Some(k.into());
                 }
             }
         });
@@ -228,7 +228,7 @@ impl App {
         });
     }
 
-    fn groups_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportKind>) {
+    fn groups_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportId>) {
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("➕ Group")).clicked() {
@@ -237,7 +237,7 @@ impl App {
                 self.prj.fluid.groups.push(DeviceGroup { tag, ..Default::default() });
             }
             if ui.button(tr("📊 Fluid device groups")).clicked() {
-                *report = Some(ReportKind::FluidDeviceGroups);
+                *report = Some(ReportKind::FluidDeviceGroups.into());
             }
         });
         ui.weak(tr("Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks."));
@@ -270,14 +270,14 @@ impl App {
         }
     }
 
-    fn electro_fluid_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn electro_fluid_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("🔄 Synchronize")).on_hover_text(tr("Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts")).clicked() {
                 let s = electrofluid::synchronize(&mut self.prj);
                 self.process_ui.message = tr_fmt!("{} links created, {} function texts copied", s.linked.len(), s.texts);
             }
             if ui.button(tr("📊 Electro-fluid cross reference")).clicked() {
-                *report = Some(ReportKind::ElectroFluid);
+                *report = Some(ReportKind::ElectroFluid.into());
             }
             if !self.process_ui.message.is_empty() {
                 ui.weak(&self.process_ui.message);
@@ -330,14 +330,14 @@ impl App {
         });
     }
 
-    fn loops_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn loops_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         let idx = crate::index::Index::build(&self.prj);
         let loops = process::loops(&self.prj, &idx);
         let (mut add, mut remove, mut define) = (false, None, None);
         ui.horizontal_wrapped(|ui| {
             add = ui.button(tr("➕ Loop")).clicked();
             if ui.button(tr("📊 PCT loop overview")).clicked() {
-                *report = Some(ReportKind::PctLoops);
+                *report = Some(ReportKind::PctLoops.into());
             }
         });
         ui.weak(tr("Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic."));

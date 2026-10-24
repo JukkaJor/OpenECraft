@@ -7,7 +7,7 @@ use crate::editor::{EguiDraw, Palette};
 use crate::forms::{self, Form, FormItem, FormLibrary, ReportForm};
 use crate::geom::{p, P};
 use crate::io::Purpose;
-use crate::model::ReportKind;
+use crate::model::{ReportId, ReportKind};
 use crate::render::Ink;
 use openecraft_core::params::Text;
 use crate::symbols::Anchor;
@@ -30,7 +30,7 @@ pub struct FormsUi {
     form: String,
     item: Option<usize>,
     drag: Option<P>,
-    report: Option<ReportKind>,
+    report: Option<ReportId>,
     /// Edited report scheme; empty: the report's form.
     scheme: String,
 }
@@ -41,7 +41,7 @@ impl FormsUi {
     }
 
     /// Opens the report form of a report.
-    pub fn open_report(&mut self, kind: ReportKind) {
+    pub fn open_report(&mut self, kind: ReportId) {
         self.open = true;
         self.tab = Tab::Reports;
         self.report = Some(kind);
@@ -253,8 +253,10 @@ impl App {
 
     fn report_form_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
+        let reports = self.report_list();
         let fu = &mut self.forms_ui;
-        let kind = *fu.report.get_or_insert(ReportKind::DeviceList);
+        let kind = *fu.report.get_or_insert(ReportKind::DeviceList.into());
+        let kind_title = reports.iter().find(|(k, _)| *k == kind).map(|(_, t)| t.clone()).unwrap_or_else(|| kind.title());
         let schemes = forms::scheme_names(&self.prj, kind);
         if !schemes.contains(&fu.scheme) {
             fu.scheme.clear();
@@ -262,9 +264,9 @@ impl App {
         let (mut new_scheme, mut delete_scheme) = (false, false);
         ui.horizontal(|ui| {
             ui.label(tr("Report"));
-            egui::ComboBox::from_id_salt("rfkind").selected_text(kind.title()).width(240.0).show_ui(ui, |ui| {
-                for k in ReportKind::ALL {
-                    ui.selectable_value(&mut fu.report, Some(k), k.title());
+            egui::ComboBox::from_id_salt("rfkind").selected_text(kind_title.clone()).width(240.0).show_ui(ui, |ui| {
+                for (k, title) in &reports {
+                    ui.selectable_value(&mut fu.report, Some(*k), title);
                 }
             });
             ui.label(tr("Scheme"));
@@ -290,7 +292,7 @@ impl App {
             fu.scheme.clear();
             return action;
         }
-        let table = self.analysis.report(&self.prj, kind);
+        let Some(table) = self.analysis.report(&self.prj, kind) else { return action };
         let headers: Vec<&str> = table.header_keys();
         let titles: Vec<&str> = table.header_texts();
         let stored = if fu.scheme.is_empty() {
@@ -323,7 +325,7 @@ impl App {
                     ui.end_row();
                 }
                 ui.label(tr("Page heading"));
-                ui.add(egui::TextEdit::singleline(&mut form.title).hint_text(kind.title()).desired_width(320.0));
+                ui.add(egui::TextEdit::singleline(&mut form.title).hint_text(kind_title.clone()).desired_width(320.0));
                 ui.end_row();
                 ui.label(tr("Rows per page"));
                 let default_rows = crate::report_blocks::rows_per_page(kind, None);

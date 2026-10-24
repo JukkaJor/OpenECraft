@@ -157,6 +157,10 @@ fn import_drawing(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let report = match a.str("kind").map(|k| k.trim().to_ascii_lowercase()) {
+        Some(k) if !matches!(k.as_str(), "schematic" | "overview" | "graphic" | "graphics" | "cover") => Some(report_id(s, &k)?),
+        _ => None,
+    };
     let prj = s.project_mut()?;
     let template = match a.str("template") {
         Some(name) => Some(page_templates::find(prj, name).ok_or_else(|| tr_fmt!("No page template named {}", name))?),
@@ -168,7 +172,7 @@ fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
             "overview" => PageKind::Overview,
             "graphic" | "graphics" => PageKind::Graphic,
             "cover" => PageKind::Cover,
-            other => PageKind::Report(report_kind(other)?),
+            _ => PageKind::Report(report.unwrap_or(ReportKind::DeviceList.into())),
         },
         (None, Some(t)) => t.kind,
         (None, None) => return Err(tr("Give kind or template").into()),

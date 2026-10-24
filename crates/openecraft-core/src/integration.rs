@@ -831,8 +831,8 @@ pub struct BomLine {
 
 /// The bill of materials (as in the report) as data.
 pub fn bom(prj: &Project, an: &Analysis) -> Vec<BomLine> {
-    an.report(prj, ReportKind::BillOfMaterials)
-        .rows
+    let Some(t) = an.report(prj, ReportKind::BillOfMaterials) else { return Vec::new() };
+    t.rows
         .iter()
         .filter(|r| r.len() > 7 && !r[3].is_empty())
         .map(|r| BomLine {

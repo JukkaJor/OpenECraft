@@ -6,7 +6,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::electrical::{Earthing, Insulation, Material};
 use crate::io::Purpose;
-use crate::model::ReportKind;
+use crate::model::{ReportId, ReportKind};
 use crate::reports::Table;
 use crate::rules::{self, Check, Condition, Level, LimitOverrides, Op, RuleSet, Scope};
 use crate::safety::{self, Category, Pl, SafetyFunction, Subsystem};
@@ -222,37 +222,39 @@ impl App {
         });
     }
 
-    fn short_circuit_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn short_circuit_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.weak(tr("Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream."));
         for (k, id) in [(ReportKind::ShortCircuit, "el_sc"), (ReportKind::Selectivity, "el_sel")] {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(k.title()).strong());
                 if ui.small_button(tr("📊 Report")).clicked() {
-                    *report = Some(k);
+                    *report = Some(k.into());
                 }
             });
-            let t = self.analysis.report(&self.prj, k);
-            table_grid(ui, id, &t, jump);
+            if let Some(t) = self.analysis.report(&self.prj, k) {
+                table_grid(ui, id, &t, jump);
+            }
             ui.add_space(6.0);
         }
     }
 
-    fn loads_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn loads_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.weak(tr("Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies."));
         for (k, id) in [(ReportKind::LoadCalculation, "el_loads"), (ReportKind::PowerSupplyBudget, "el_psu")] {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(k.title()).strong());
                 if ui.small_button(tr("📊 Report")).clicked() {
-                    *report = Some(k);
+                    *report = Some(k.into());
                 }
             });
-            let t = self.analysis.report(&self.prj, k);
-            table_grid(ui, id, &t, jump);
+            if let Some(t) = self.analysis.report(&self.prj, k) {
+                table_grid(ui, id, &t, jump);
+            }
             ui.add_space(6.0);
         }
     }
 
-    fn safety_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportKind>) {
+    fn safety_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportId>) {
         ui.weak(tr("Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts."));
         ui.horizontal(|ui| {
             if ui.button(tr("➕ Safety function")).clicked() {
@@ -266,7 +268,7 @@ impl App {
                 });
             }
             if ui.button(tr("📊 Report")).clicked() {
-                *report = Some(ReportKind::SafetyFunctions);
+                *report = Some(ReportKind::SafetyFunctions.into());
             }
         });
         let evaluations: Vec<safety::Evaluation> = self.prj.electrical.safety.iter().map(|f| safety::evaluate(&self.prj, f)).collect();
@@ -323,7 +325,7 @@ impl App {
         }
     }
 
-    fn rules_tab(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportKind>) {
+    fn rules_tab(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.label(RichText::new(tr("Rule libraries")).strong());
         let standards = &mut self.prj.electrical.standards;
         for lib in rules::library() {
@@ -382,11 +384,12 @@ impl App {
         ui.horizontal(|ui| {
             ui.label(RichText::new(ReportKind::Verification.title()).strong());
             if ui.small_button(tr("📊 Report")).clicked() {
-                *report = Some(ReportKind::Verification);
+                *report = Some(ReportKind::Verification.into());
             }
         });
-        let t = self.analysis.report(&self.prj, ReportKind::Verification);
-        table_grid(ui, "el_verify", &t, jump);
+        if let Some(t) = self.analysis.report(&self.prj, ReportKind::Verification) {
+            table_grid(ui, "el_verify", &t, jump);
+        }
     }
 
     /// Customer rule sets from a file: replace those of the same name.

@@ -120,7 +120,7 @@ impl App {
             plugs::move_pin(&mut self.prj, &plug, i, up);
         }
         if diagram {
-            self.report_kind = ReportKind::PlugDiagram;
+            self.report_kind = ReportKind::PlugDiagram.into();
             self.show_reports = true;
         }
         if let Some((page, id)) = jump {

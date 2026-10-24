@@ -1,6 +1,7 @@
 //! Helpers shared by the project tools: pages by name, JSON of pages and symbols.
 
 use super::{param, Kind, Param};
+use crate::session::Session;
 use openecraft_core::geom::P;
 use openecraft_core::model::*;
 use openecraft_core::{structure, symbols};
@@ -21,16 +22,17 @@ pub fn snake(debug: impl std::fmt::Debug) -> String {
     out
 }
 
-pub fn report_kind(name: &str) -> Result<ReportKind, String> {
+/// A report of the registry (built-in or of a plugin) by name.
+pub fn report_id(s: &Session, name: &str) -> Result<ReportId, String> {
     let name = name.trim().to_ascii_lowercase().replace('-', "_");
-    ReportKind::ALL.into_iter().find(|k| snake(k) == name).ok_or_else(|| tr_fmt!("Unknown report: {}", name))
+    s.plugins.report(&name).map(|r| ReportId::new(&r.name)).ok_or_else(|| tr_fmt!("Unknown report: {}", name))
 }
 
 pub fn kind_name(kind: PageKind) -> String {
     match kind {
         PageKind::Schematic => "schematic".into(),
         PageKind::Cover => "cover".into(),
-        PageKind::Report(r) => snake(r),
+        PageKind::Report(r) => r.as_str().into(),
         PageKind::Mounting(_) => "mounting".into(),
         PageKind::Overview => "overview".into(),
         PageKind::Graphic => "graphic".into(),

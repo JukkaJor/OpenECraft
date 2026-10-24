@@ -4,17 +4,19 @@
 //! tag belong to the same device: one *main function* (e.g. the coil) and any number
 //! of *auxiliary functions* (e.g. its contacts). Cross references are derived from that.
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
 pub use crate::panel::Layout;
 pub use openecraft_parts::natural_cmp;
 pub use crate::parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
+use std::fmt;
+use std::sync::{Mutex, OnceLock};
 
 /// Version of the project file format written by this program (see
 /// [`crate::archive::convert`]).
-pub const FORMAT: u32 = 1;
+pub const FORMAT: u32 = 2;
 
 fn legacy_format() -> u32 {
     0
@@ -209,7 +211,7 @@ impl Default for ProjectInfo {
 pub enum PageKind {
     Schematic,
     Cover,
-    Report(ReportKind),
+    Report(ReportId),
     /// 2D model view of the mounting plate of an enclosure (enclosure id).
     Mounting(u64),
     /// Overview drawing (single-line, block diagram): symbols and wires are drawn
@@ -330,50 +332,183 @@ impl ReportKind {
         ReportKind::Bonding,
     ];
 
-    pub fn title(self) -> &'static str {
+    /// English catalog key of the title.
+    pub fn title_key(self) -> &'static str {
         match self {
-            ReportKind::TableOfContents => tr("Table of contents"),
-            ReportKind::DeviceList => tr("Device list"),
-            ReportKind::BillOfMaterials => tr("Bill of materials"),
-            ReportKind::TerminalDiagram => tr("Terminal diagram"),
-            ReportKind::TerminalLineup => tr("Terminal line-up"),
-            ReportKind::TerminalStripOverview => tr("Terminal strip overview"),
-            ReportKind::TerminalConnections => tr("Terminal connection diagram"),
-            ReportKind::PlugDiagram => tr("Plug diagram"),
-            ReportKind::PinConnections => tr("Pin connection diagram"),
-            ReportKind::DeviceConnections => tr("Device connection diagram"),
-            ReportKind::ConnectionList => tr("Connection list"),
-            ReportKind::PlcAssignment => tr("PLC assignment list"),
-            ReportKind::PotentialList => tr("Potential overview"),
-            ReportKind::PanelWiring => tr("Wire list (panel routing)"),
-            ReportKind::CableOverview => tr("Cable overview"),
-            ReportKind::CableDiagram => tr("Cable diagram"),
-            ReportKind::CableConnections => tr("Cable connection diagram"),
-            ReportKind::PanelLegend => tr("Panel legend"),
-            ReportKind::CableSizing => tr("Cable sizing (voltage drop)"),
-            ReportKind::RevisionOverview => tr("Revision overview (changes)"),
-            ReportKind::HarnessData => tr("Harness data"),
-            ReportKind::DuctFill => tr("Duct fill levels"),
-            ReportKind::Climate => tr("Enclosure climate"),
-            ReportKind::Marking => tr("Marking"),
-            ReportKind::HoseList => tr("Hose list"),
-            ReportKind::PctLoops => tr("PCT loop overview"),
-            ReportKind::FluidNetlist => tr("Fluid netlist"),
-            ReportKind::HoseConfiguration => tr("Hose configuration"),
-            ReportKind::TubingList => tr("Tubing / piping list"),
-            ReportKind::FluidDeviceGroups => tr("Fluid device groups"),
-            ReportKind::ElectroFluid => tr("Electro-fluid cross reference"),
-            ReportKind::RoutingList => tr("Routing list (3D)"),
-            ReportKind::BundleList => tr("Bundle list"),
-            ReportKind::ShortCircuit => tr("Short circuit and disconnection"),
-            ReportKind::Selectivity => tr("Selectivity"),
-            ReportKind::LoadCalculation => tr("Load calculation"),
-            ReportKind::PowerSupplyBudget => tr("Power supply load budget"),
-            ReportKind::SafetyFunctions => tr("Safety functions (ISO 13849-1)"),
-            ReportKind::Verification => tr("Rule set verification"),
-            ReportKind::FieldRouting => tr("Field cable routing"),
-            ReportKind::Bonding => tr("Equipotential bonding"),
+            ReportKind::TableOfContents => tr_const!("Table of contents"),
+            ReportKind::DeviceList => tr_const!("Device list"),
+            ReportKind::BillOfMaterials => tr_const!("Bill of materials"),
+            ReportKind::TerminalDiagram => tr_const!("Terminal diagram"),
+            ReportKind::TerminalLineup => tr_const!("Terminal line-up"),
+            ReportKind::TerminalStripOverview => tr_const!("Terminal strip overview"),
+            ReportKind::TerminalConnections => tr_const!("Terminal connection diagram"),
+            ReportKind::PlugDiagram => tr_const!("Plug diagram"),
+            ReportKind::PinConnections => tr_const!("Pin connection diagram"),
+            ReportKind::DeviceConnections => tr_const!("Device connection diagram"),
+            ReportKind::ConnectionList => tr_const!("Connection list"),
+            ReportKind::PlcAssignment => tr_const!("PLC assignment list"),
+            ReportKind::PotentialList => tr_const!("Potential overview"),
+            ReportKind::PanelWiring => tr_const!("Wire list (panel routing)"),
+            ReportKind::CableOverview => tr_const!("Cable overview"),
+            ReportKind::CableDiagram => tr_const!("Cable diagram"),
+            ReportKind::CableConnections => tr_const!("Cable connection diagram"),
+            ReportKind::PanelLegend => tr_const!("Panel legend"),
+            ReportKind::CableSizing => tr_const!("Cable sizing (voltage drop)"),
+            ReportKind::RevisionOverview => tr_const!("Revision overview (changes)"),
+            ReportKind::HarnessData => tr_const!("Harness data"),
+            ReportKind::DuctFill => tr_const!("Duct fill levels"),
+            ReportKind::Climate => tr_const!("Enclosure climate"),
+            ReportKind::Marking => tr_const!("Marking"),
+            ReportKind::HoseList => tr_const!("Hose list"),
+            ReportKind::PctLoops => tr_const!("PCT loop overview"),
+            ReportKind::FluidNetlist => tr_const!("Fluid netlist"),
+            ReportKind::HoseConfiguration => tr_const!("Hose configuration"),
+            ReportKind::TubingList => tr_const!("Tubing / piping list"),
+            ReportKind::FluidDeviceGroups => tr_const!("Fluid device groups"),
+            ReportKind::ElectroFluid => tr_const!("Electro-fluid cross reference"),
+            ReportKind::RoutingList => tr_const!("Routing list (3D)"),
+            ReportKind::BundleList => tr_const!("Bundle list"),
+            ReportKind::ShortCircuit => tr_const!("Short circuit and disconnection"),
+            ReportKind::Selectivity => tr_const!("Selectivity"),
+            ReportKind::LoadCalculation => tr_const!("Load calculation"),
+            ReportKind::PowerSupplyBudget => tr_const!("Power supply load budget"),
+            ReportKind::SafetyFunctions => tr_const!("Safety functions (ISO 13849-1)"),
+            ReportKind::Verification => tr_const!("Rule set verification"),
+            ReportKind::FieldRouting => tr_const!("Field cable routing"),
+            ReportKind::Bonding => tr_const!("Equipotential bonding"),
         }
+    }
+
+    /// Title in the current language.
+    pub fn title(self) -> &'static str {
+        tr(self.title_key())
+    }
+
+    /// Name of the report in files, on the command line and in the registry.
+    pub fn name(self) -> &'static str {
+        match self {
+            ReportKind::TableOfContents => "table_of_contents",
+            ReportKind::DeviceList => "device_list",
+            ReportKind::BillOfMaterials => "bill_of_materials",
+            ReportKind::TerminalDiagram => "terminal_diagram",
+            ReportKind::TerminalLineup => "terminal_lineup",
+            ReportKind::TerminalStripOverview => "terminal_strip_overview",
+            ReportKind::TerminalConnections => "terminal_connections",
+            ReportKind::PlugDiagram => "plug_diagram",
+            ReportKind::PinConnections => "pin_connections",
+            ReportKind::ConnectionList => "connection_list",
+            ReportKind::DeviceConnections => "device_connections",
+            ReportKind::PlcAssignment => "plc_assignment",
+            ReportKind::PotentialList => "potential_list",
+            ReportKind::PanelWiring => "panel_wiring",
+            ReportKind::CableOverview => "cable_overview",
+            ReportKind::CableDiagram => "cable_diagram",
+            ReportKind::CableConnections => "cable_connections",
+            ReportKind::CableSizing => "cable_sizing",
+            ReportKind::RevisionOverview => "revision_overview",
+            ReportKind::HarnessData => "harness_data",
+            ReportKind::DuctFill => "duct_fill",
+            ReportKind::PanelLegend => "panel_legend",
+            ReportKind::Climate => "climate",
+            ReportKind::Marking => "marking",
+            ReportKind::HoseList => "hose_list",
+            ReportKind::PctLoops => "pct_loops",
+            ReportKind::FluidNetlist => "fluid_netlist",
+            ReportKind::HoseConfiguration => "hose_configuration",
+            ReportKind::TubingList => "tubing_list",
+            ReportKind::FluidDeviceGroups => "fluid_device_groups",
+            ReportKind::ElectroFluid => "electro_fluid",
+            ReportKind::RoutingList => "routing_list",
+            ReportKind::BundleList => "bundle_list",
+            ReportKind::ShortCircuit => "short_circuit",
+            ReportKind::Selectivity => "selectivity",
+            ReportKind::LoadCalculation => "load_calculation",
+            ReportKind::PowerSupplyBudget => "power_supply_budget",
+            ReportKind::SafetyFunctions => "safety_functions",
+            ReportKind::Verification => "verification",
+            ReportKind::FieldRouting => "field_routing",
+            ReportKind::Bonding => "bonding",
+        }
+    }
+
+    /// The built-in kind of a name ([`ReportKind::name`]) or of the variant name that
+    /// files written before format 2 hold (`DeviceList`).
+    pub fn from_name(name: &str) -> Option<ReportKind> {
+        ReportKind::ALL.into_iter().find(|k| k.name() == name || format!("{k:?}") == name)
+    }
+}
+
+/// Name of a report: a built-in kind ([`ReportKind::name`]) or a report of a plugin.
+/// Interned, so that page kinds stay `Copy`; stored in files as the snake_case name
+/// (files written before format 2 hold the variant names of the built-in kinds).
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct ReportId(&'static str);
+
+fn intern(name: &str) -> &'static str {
+    if let Some(k) = ReportKind::from_name(name) {
+        return k.name();
+    }
+    static NAMES: OnceLock<Mutex<HashSet<&'static str>>> = OnceLock::new();
+    let mut names = NAMES.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
+    match names.get(name) {
+        Some(s) => s,
+        None => {
+            let s: &'static str = Box::leak(name.to_string().into_boxed_str());
+            names.insert(s);
+            s
+        }
+    }
+}
+
+impl ReportId {
+    pub fn new(name: &str) -> ReportId {
+        ReportId(intern(name.trim()))
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        self.0
+    }
+
+    /// The built-in kind, if it is one.
+    pub fn builtin(&self) -> Option<ReportKind> {
+        ReportKind::ALL.into_iter().find(|k| k.name() == self.0)
+    }
+
+    /// Title in the current language: of the built-in kind, otherwise the name (the
+    /// front ends know the titles of plugin reports).
+    pub fn title(&self) -> String {
+        self.builtin().map(|k| k.title().to_string()).unwrap_or_else(|| self.0.to_string())
+    }
+}
+
+impl From<ReportKind> for ReportId {
+    fn from(k: ReportKind) -> ReportId {
+        ReportId(k.name())
+    }
+}
+
+impl fmt::Debug for ReportId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "ReportId({:?})", self.0)
+    }
+}
+
+impl fmt::Display for ReportId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+impl Serialize for ReportId {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(self.0)
+    }
+}
+
+impl<'de> Deserialize<'de> for ReportId {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<ReportId, D::Error> {
+        let name = String::deserialize(d)?;
+        Ok(ReportId::new(&name))
     }
 }
 

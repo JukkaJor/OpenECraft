@@ -37,7 +37,7 @@ fn rows_include_jumpers_and_spares() {
     assert!(rows[5].terminal.is_none());
     // Spares are in the bill of materials (as feed-through terminals, PE apart).
     let an = crate::reports::Analysis::checked(&prj);
-    let qty = |part: &str| an.report(&prj, ReportKind::BillOfMaterials).rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap();
+    let qty = |part: &str| an.report(&prj, ReportKind::BillOfMaterials).unwrap().rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap();
     assert_eq!((qty("GEN.TB-2.5").as_str(), qty("GEN.TB-PE-2.5").as_str()), ("5", "1"));
 }
 
@@ -140,14 +140,14 @@ fn accessories_follow_the_terminal_parts() {
 fn accessories_are_in_the_bill_of_materials() {
     let prj = demo_project();
     let an = crate::reports::Analysis::checked(&prj);
-    let qty = |part: &str| an.report(&prj, ReportKind::BillOfMaterials).rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    let qty = |part: &str| an.report(&prj, ReportKind::BillOfMaterials).unwrap().rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
     assert_eq!((qty("GEN.EB-35").as_str(), qty("GEN.TB-END").as_str()), ("2", "2"));
     // Switched off: none, and nothing counted twice when listed by hand.
     let mut manual = prj.clone();
     manual.strips.entry("-X1".into()).or_default().manual_accessories = true;
     manual.devices.get_mut("-X1").unwrap().parts.push(crate::parts::PartRef { number: "GEN.TB-END".into(), count: 1 });
     let an = crate::reports::Analysis::checked(&manual);
-    let qty = |part: &str| an.report(&manual, ReportKind::BillOfMaterials).rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    let qty = |part: &str| an.report(&manual, ReportKind::BillOfMaterials).unwrap().rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
     assert_eq!((qty("GEN.EB-35").as_str(), qty("GEN.TB-END").as_str()), ("", "1"));
 }
 
@@ -177,7 +177,7 @@ fn jumpers_get_the_shortest_fitting_part() {
     assert_eq!((j.part.as_str(), j.poles, j.span.len()), ("GEN.JMP-2.5-10", 10, 4));
     // In the bill of materials.
     let an = crate::reports::Analysis::checked(&prj);
-    assert!(an.report(&prj, ReportKind::BillOfMaterials).rows.iter().any(|r| r[3] == "GEN.JMP-2.5-10" && r[1] == "1"));
+    assert!(an.report(&prj, ReportKind::BillOfMaterials).unwrap().rows.iter().any(|r| r[3] == "GEN.JMP-2.5-10" && r[1] == "1"));
 }
 
 #[test]
@@ -215,7 +215,7 @@ fn terminal_diagram_shows_accessories_and_jumpers() {
     let mut prj = demo_project();
     jumper(&mut prj, 1, &["1", "3"]);
     let an = crate::reports::Analysis::checked(&prj);
-    let rows = &an.report(&prj, ReportKind::TerminalDiagram).rows;
+    let rows = &an.report(&prj, ReportKind::TerminalDiagram).unwrap().rows;
     let column: Vec<&str> = rows.iter().map(|r| r[1].as_str()).collect();
     assert_eq!(column, ["End bracket", "1", "2", "3", "End plate", "PE", "End plate", "End bracket", "Jumper"]);
     let j = rows.last().unwrap();

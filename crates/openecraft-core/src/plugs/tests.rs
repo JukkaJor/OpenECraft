@@ -136,7 +136,7 @@ fn plug_diagram_report() {
     let mut prj = Project::default();
     pair_circuit(&mut prj);
     let an = Analysis::checked(&prj);
-    let t = &an.report(&prj, ReportKind::PlugDiagram);
+    let t = &an.report(&prj, ReportKind::PlugDiagram).unwrap();
     assert_eq!(t.rows, vec![["-X10", "1", "=+24V", "-K1:A1", "+24V", "/1.3", ""].iter().map(|s| s.to_string()).collect::<Vec<_>>()]);
 }
 

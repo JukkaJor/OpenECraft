@@ -267,7 +267,7 @@ fn hoses_run_between_bayed_enclosures_and_in_3d() {
     assert!(tubes.iter().filter(|t| t.ends.iter().any(|e| e.tag == "-MM1")).all(|t| t.ends[1].item.is_none() || t.ends[0].item.is_none()));
     assert!(an.issues.iter().any(|i| i.message.contains("shorter than its 3D route")), "set length 0.1 m");
     // The tubing list and the hose reports know the route.
-    let tubing = &an.report(&prj, crate::model::ReportKind::TubingList);
+    let tubing = &an.report(&prj, crate::model::ReportKind::TubingList).unwrap();
     assert!(!tubing.rows.is_empty());
 }
 

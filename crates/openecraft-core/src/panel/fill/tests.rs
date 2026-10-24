@@ -75,7 +75,7 @@ fn demo_ducts_in_check_and_report() {
     let an = Analysis::checked(&prj);
     assert!(!an.duct_fill.is_empty());
     assert!(an.duct_fill.iter().all(|f| f.percent > 0.0 && f.percent < prj.layout.duct_fill_limit));
-    let report = &an.report(&prj, crate::model::ReportKind::DuctFill);
+    let report = &an.report(&prj, crate::model::ReportKind::DuctFill).unwrap();
     assert_eq!(report.rows.len(), an.duct_fill.len());
     assert!(!an.issues.iter().any(|i| i.message.contains("cable duct at")), "demo stays below the limit");
 

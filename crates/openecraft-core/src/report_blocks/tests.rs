@@ -3,7 +3,7 @@ use crate::forms::{FilterOp, ReportScheme, RowFilter, SortKey};
 use crate::sample::demo_project;
 
 fn block(name: &str, kind: ReportKind) -> ReportBlock {
-    ReportBlock { name: name.into(), kind, ..Default::default() }
+    ReportBlock { name: name.into(), kind: kind.into(), ..Default::default() }
 }
 
 fn block_pages_of(prj: &Project, name: &str) -> Vec<usize> {
@@ -24,7 +24,7 @@ fn wildcards() {
 fn schemes_filter_and_sort_the_rows() {
     let prj = demo_project();
     let an = Analysis::checked(&prj);
-    let table = &an.report(&prj, ReportKind::ConnectionList);
+    let table = &an.report(&prj, ReportKind::ConnectionList).unwrap();
     let form = ReportForm {
         filters: vec![RowFilter { column: "Cable".into(), op: FilterOp::Equals, value: "-w1".into() }],
         sort: vec![SortKey { column: "Core".into(), descending: true }],
@@ -44,9 +44,9 @@ fn schemes_filter_and_sort_the_rows() {
 #[test]
 fn named_schemes_are_found_by_report_and_name() {
     let mut prj = Project::default();
-    prj.forms.reports.insert(ReportKind::DeviceList, ReportForm { title: "Default".into(), ..Default::default() });
+    prj.forms.reports.insert(ReportKind::DeviceList.into(), ReportForm { title: "Default".into(), ..Default::default() });
     let form = ReportForm { title: "Workshop".into(), ..Default::default() };
-    prj.forms.schemes.push(ReportScheme { name: "Workshop".into(), kind: ReportKind::DeviceList, form });
+    prj.forms.schemes.push(ReportScheme { name: "Workshop".into(), kind: ReportKind::DeviceList.into(), form });
     assert_eq!(forms::report_form(&prj, ReportKind::DeviceList, "Workshop").unwrap().title, "Workshop");
     assert_eq!(forms::report_form(&prj, ReportKind::DeviceList, "").unwrap().title, "Default");
     assert_eq!(forms::report_form(&prj, ReportKind::DeviceList, "Other").unwrap().title, "Default");
@@ -57,7 +57,7 @@ fn named_schemes_are_found_by_report_and_name() {
 #[test]
 fn blocks_generate_one_page_set_per_group_and_replace_them() {
     let mut prj = demo_project();
-    prj.forms.schemes.push(ReportScheme { name: "Short".into(), kind: ReportKind::CableConnections, form: ReportForm { rows: 3, ..Default::default() } });
+    prj.forms.schemes.push(ReportScheme { name: "Short".into(), kind: ReportKind::CableConnections.into(), form: ReportForm { rows: 3, ..Default::default() } });
     prj.report_blocks.push(ReportBlock { scheme: "Short".into(), function: "A1".into(), ..block("Cables", ReportKind::CableConnections) });
     let an = Analysis::checked(&prj);
     let before = prj.pages.len();
@@ -96,7 +96,7 @@ fn group_filter_and_whole_report_blocks() {
     let all = block_pages_of(&prj, "All");
     let an = Analysis::checked(&prj);
     let t = page_table(&prj, &an, all[0]).unwrap();
-    assert_eq!(t.rows.len(), an.report(&prj, ReportKind::DeviceList).rows.len());
+    assert_eq!(t.rows.len(), an.report(&prj, ReportKind::DeviceList).unwrap().rows.len());
     // The block is saved with the project.
     let back = Project::from_json(&prj.to_json()).unwrap();
     assert_eq!(back.report_blocks, prj.report_blocks);
@@ -155,7 +155,7 @@ fn report_pages_are_output_into_other_projects() {
 #[test]
 fn renaming_keeps_blocks_schemes_and_pages_together() {
     let mut prj = demo_project();
-    prj.forms.schemes.push(ReportScheme { name: "A".into(), kind: ReportKind::TerminalDiagram, form: ReportForm::default() });
+    prj.forms.schemes.push(ReportScheme { name: "A".into(), kind: ReportKind::TerminalDiagram.into(), form: ReportForm::default() });
     prj.report_blocks.push(ReportBlock { scheme: "A".into(), ..block("Strips", ReportKind::TerminalDiagram) });
     prj.report_blocks.push(block("Other", ReportKind::DeviceList));
     generate_all(&mut prj).unwrap();

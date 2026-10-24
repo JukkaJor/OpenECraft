@@ -22,7 +22,7 @@ fn demo_is_consistent() {
     let pins: Vec<_> = reserve.iter().map(|f| f.pins.as_str()).collect();
     assert_eq!(pins, vec!["61 62", "71 72"]);
     // BOM: -X1 has three feed-through terminals and one PE terminal.
-    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials);
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap();
     let qty = |part: &str| bom.rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
     assert_eq!((qty("GEN.TB-2.5").as_str(), qty("GEN.TB-PE-2.5").as_str()), ("3", "1"));
 }

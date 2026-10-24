@@ -50,7 +50,7 @@ pub fn builtin() -> Vec<Check> {
             crate::structure::problems(prj).into_iter().map(|message| Issue { severity: Severity::Warning, message, target: None }).collect()
         }),
         entry("translations", tr_const!("Project languages"), |prj, _| check_translations(prj)),
-        entry("harnesses", tr_const!("Harnesses"), |prj, an| check_harnesses(prj, an)),
+        entry("harnesses", tr_const!("Harnesses"), check_harnesses),
     ]
 }
 

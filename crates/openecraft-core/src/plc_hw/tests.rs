@@ -160,10 +160,10 @@ fn bus_cables_are_created_and_checked() {
 
     // Cable reports list the ports as ends and every core.
     let an = crate::reports::Analysis::checked(&prj);
-    let overview = &an.report(&prj, ReportKind::CableOverview);
+    let overview = &an.report(&prj, ReportKind::CableOverview).unwrap();
     let row = overview.rows.iter().find(|r| r[0] == "-W2").unwrap();
     assert_eq!((row[2].as_str(), row[5].as_str(), row[6].as_str()), ("4/4", "-A0:X1 P2", "ET1:X1 P1"));
-    let diagram = &an.report(&prj, ReportKind::CableDiagram);
+    let diagram = &an.report(&prj, ReportKind::CableDiagram).unwrap();
     assert_eq!(diagram.rows.iter().filter(|r| r[0] == "-W2").count(), 4);
 
     // Wrong cable kind, one cable for two links, missing cable.

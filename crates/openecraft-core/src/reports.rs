@@ -2,10 +2,12 @@
 //! ([`Analysis`]). The project checks are in [`crate::checks`].
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
+use crate::ext::Report;
 use crate::index::Index;
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
 use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
+use crate::params::Text;
 use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::{Arc, Mutex};
@@ -15,6 +17,11 @@ mod electrical_reports;
 mod fluid_reports;
 
 pub use crate::table::Table;
+
+/// The built-in reports as registry entries, in the order of the Reports menu.
+pub fn builtin() -> Vec<Report> {
+    ReportKind::ALL.into_iter().map(|k| Report { name: k.name().into(), title: Text::Borrowed(k.title_key()), run: Arc::new(move |prj, an| Ok(an.generate(prj, k))) }).collect()
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Severity {
@@ -66,8 +73,11 @@ pub struct Analysis {
     pub routing: crate::routing3d::Routing,
     /// Cables planned through the route network of the plant.
     pub field: crate::field::Plan,
+    /// Reports the tables come from: the built-in ones until the host sets the
+    /// reports of its registry ([`Analysis::set_reports`]).
+    reports: Vec<Report>,
     /// Generated report tables.
-    tables: Mutex<HashMap<ReportKind, Arc<Table>>>,
+    tables: Mutex<HashMap<ReportId, Arc<Table>>>,
 }
 
 impl Analysis {
@@ -93,6 +103,7 @@ impl Analysis {
             duct_fill: fill,
             routing,
             field,
+            reports: builtin(),
             tables: Mutex::default(),
         }
     }
@@ -106,17 +117,30 @@ impl Analysis {
         an
     }
 
+    /// The reports the tables come from.
+    pub fn reports(&self) -> &[Report] {
+        &self.reports
+    }
+
+    /// Takes the reports of the host's registry (built-in and of plugins).
+    pub fn set_reports(&mut self, reports: impl IntoIterator<Item = Report>) {
+        self.reports = reports.into_iter().collect();
+        self.clear_reports();
+    }
+
     /// The table of a report: generated on the first call (from the project the
-    /// analysis was built from) and kept.
-    pub fn report(&self, prj: &Project, kind: ReportKind) -> Arc<Table> {
-        if let Some(t) = self.tables.lock().ok().and_then(|m| m.get(&kind).cloned()) {
-            return t;
+    /// analysis was built from) and kept. `None` for a report that is not registered.
+    pub fn report(&self, prj: &Project, id: impl Into<ReportId>) -> Option<Arc<Table>> {
+        let id = id.into();
+        if let Some(t) = self.tables.lock().ok().and_then(|m| m.get(&id).cloned()) {
+            return Some(t);
         }
-        let table = Arc::new(self.generate(prj, kind));
+        let r = self.reports.iter().find(|r| r.name == id.as_str())?;
+        let table = Arc::new((r.run)(prj, self).unwrap_or_default());
         if let Ok(mut m) = self.tables.lock() {
-            m.insert(kind, table.clone());
+            m.insert(id, table.clone());
         }
-        table
+        Some(table)
     }
 
     /// Forgets the generated tables (e.g. after a change of the language).
@@ -126,7 +150,8 @@ impl Analysis {
         }
     }
 
-    fn generate(&self, prj: &Project, kind: ReportKind) -> Table {
+    /// Generates the table of a built-in report.
+    pub(crate) fn generate(&self, prj: &Project, kind: ReportKind) -> Table {
         let (idx, netlist, open, conns) = (&self.index, &self.netlist, &self.open, &self.connections);
         match kind {
             ReportKind::TableOfContents => toc(prj),

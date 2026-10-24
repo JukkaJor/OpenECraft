@@ -3,7 +3,6 @@
 //! are placed side by side.
 
 use crate::geom::P;
-use crate::index::Index;
 use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
 use crate::reports::Analysis;
@@ -154,8 +153,12 @@ pub fn header(out: &mut String, layers: &[(String, u8)]) {
 
 /// Pages as one DXF drawing, side by side with 20 mm gap.
 pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
-    let idx = Index::build(prj);
-    let an = Analysis::build(prj);
+    pages_dxf_with(prj, &Analysis::build(prj), pages)
+}
+
+/// Pages as one DXF drawing, drawn with the host's analysis.
+pub fn pages_dxf_with(prj: &Project, an: &Analysis, pages: &[usize]) -> String {
+    let idx = &an.index;
     let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0, user_layer: None };
     let mut layers: Vec<(String, u8)> = LAYERS.iter().map(|(n, c)| (n.to_string(), *c)).collect();
     for name in crate::graphics::layer_names(prj).iter().filter(|n| !n.is_empty()) {
@@ -166,7 +169,7 @@ pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
     for &i in pages {
         let (w, h) = crate::frame::of_page(prj, i).size();
         d.h = h;
-        draw_page(&mut d, prj, &idx, &an, i, &Opts::default());
+        draw_page(&mut d, prj, idx, an, i, &Opts::default());
         d.dx += w + 20.0;
     }
     d.out.push_str("0\nENDSEC\n0\nEOF\n");

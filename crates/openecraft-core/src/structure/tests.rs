@@ -139,7 +139,7 @@ fn work_areas_filter_pages_and_devices() {
     assert!(area.shows_device("=A1+CAB1-K1") && !area.shows_device("=A1+FIELD-S1") && !area.shows_device("-K1"));
     let mut pg = page("A1", "FIELD");
     assert!(!area.shows_page(&pg));
-    pg.kind = PageKind::Report(crate::model::ReportKind::DeviceList);
+    pg.kind = PageKind::Report(crate::model::ReportKind::DeviceList.into());
     assert!(area.shows_page(&pg));
 }
 

@@ -95,7 +95,7 @@ pub struct App {
     projects_ui: projects_ui::ProjectsUi,
     pages_ui: pages_ui::PagesUi,
     show_reports: bool,
-    report_kind: ReportKind,
+    report_kind: ReportId,
     show_project: bool,
     parts_db: PartsDb,
     parts_ui: PartsUi,
@@ -207,7 +207,7 @@ impl App {
             projects_ui,
             pages_ui: Default::default(),
             show_reports: false,
-            report_kind: ReportKind::DeviceList,
+            report_kind: ReportKind::DeviceList.into(),
             show_project: false,
             parts_db,
             parts_ui,
@@ -259,6 +259,16 @@ impl App {
     fn start_on_first_schematic(mut self) -> Self {
         self.page = self.prj.pages.iter().position(|p| p.kind == PageKind::Schematic).unwrap_or(0);
         self
+    }
+
+    /// The reports of the registry (built-in and of plugins): id and title.
+    fn report_list(&self) -> Vec<(ReportId, String)> {
+        self.plugins.reports().map(|r| (ReportId::new(&r.name), text(&r.title).to_string())).collect()
+    }
+
+    /// Title of a report: from the registry, otherwise of the built-in kind or the name.
+    pub(super) fn report_title(&self, id: ReportId) -> String {
+        self.plugins.report(id.as_str()).map(|r| text(&r.title).to_string()).unwrap_or_else(|| id.title())
     }
 
     fn dirty(&self) -> bool {
@@ -397,7 +407,11 @@ impl App {
             args.insert("file".into(), name.clone().into());
         }
         let result = match lang {
-            Some(l) => translation::with_language(&self.prj, l, |prj| (e.run)(prj, &Analysis::build(prj), &Args(&args))),
+            Some(l) => translation::with_language(&self.prj, l, |prj| {
+                let mut an = Analysis::build(prj);
+                an.set_reports(self.plugins.reports().cloned());
+                (e.run)(prj, &an, &Args(&args))
+            }),
             None => (e.run)(&self.prj, &self.analysis, &Args(&args)),
         };
         let title = text(&e.title).to_string();
@@ -715,8 +729,8 @@ impl App {
                     }
                 });
                 ui.menu_button(tr("New report page"), |ui| {
-                    for k in ReportKind::ALL {
-                        if ui.button(k.title()).clicked() {
+                    for (k, title) in self.report_list() {
+                        if ui.button(title).clicked() {
                             self.add_page(PageKind::Report(k));
                         }
                     }
@@ -861,8 +875,8 @@ impl App {
                 }
             });
             ui.menu_button(tr("Reports"), |ui| {
-                for k in ReportKind::ALL {
-                    if ui.button(k.title()).clicked() {
+                for (k, title) in self.report_list() {
+                    if ui.button(title).clicked() {
                         self.report_kind = k;
                         self.show_reports = true;
                     }
@@ -930,7 +944,7 @@ impl App {
                 }
                 ui.separator();
                 if ui.button(tr("📊 Reports")).clicked() {
-                    self.report_kind = ReportKind::PanelWiring;
+                    self.report_kind = ReportKind::PanelWiring.into();
                     self.show_reports = true;
                 }
                 return;
@@ -1739,8 +1753,8 @@ impl App {
             let mut add_page = None;
             egui::Window::new(tr("Reports")).open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
                 ui.horizontal_wrapped(|ui| {
-                    for k in ReportKind::ALL {
-                        ui.selectable_value(&mut self.report_kind, k, k.title());
+                    for (k, title) in self.report_list() {
+                        ui.selectable_value(&mut self.report_kind, k, title);
                     }
                 });
                 ui.separator();
@@ -1759,7 +1773,7 @@ impl App {
                         self.report_blocks_ui.open = true;
                     }
                 });
-                let table = self.analysis.report(&self.prj, kind);
+                let Some(table) = self.analysis.report(&self.prj, kind) else { return };
                 egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                     egui::Grid::new("report").striped(true).spacing([14.0, 4.0]).show(ui, |ui| {
                         for h in table.header_texts() {
@@ -1789,9 +1803,11 @@ impl App {
                 self.goto(pg, id);
             }
             if let Some(kind) = export {
-                let csv = self.analysis.report(&self.prj, kind).to_csv();
-                let name = format!("{}.csv", kind.title().replace(' ', "_").to_lowercase());
-                self.export(ctx, name, ("CSV", "csv"), csv);
+                if let Some(t) = self.analysis.report(&self.prj, kind) {
+                    let csv = t.to_csv();
+                    let name = format!("{}.csv", self.report_title(kind).replace(' ', "_").to_lowercase());
+                    self.export(ctx, name, ("CSV", "csv"), csv);
+                }
             }
             if let Some(kind) = add_page {
                 self.add_page(PageKind::Report(kind));
@@ -1916,6 +1932,7 @@ impl App {
                 let frame_names = crate::frame::names(&self.prj);
                 let page_aspects = self.prj.structures.page_aspects();
                 let structure_entries = self.prj.structures.entries.clone();
+                let reports = self.report_list();
                 egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
                     let pg = &mut self.prj.pages[pi];
                     egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
@@ -1932,8 +1949,8 @@ impl App {
                             ui.selectable_value(&mut pg.kind, PageKind::Graphic, PageKind::Graphic.label());
                             ui.selectable_value(&mut pg.kind, PageKind::Document, PageKind::Document.label());
                             ui.selectable_value(&mut pg.kind, PageKind::Cover, PageKind::Cover.label());
-                            for k in ReportKind::ALL {
-                                ui.selectable_value(&mut pg.kind, PageKind::Report(k), PageKind::Report(k).label());
+                            for (k, title) in &reports {
+                                ui.selectable_value(&mut pg.kind, PageKind::Report(*k), tr_fmt!("Report: {}", title));
                             }
                             for e in &self.prj.layout.enclosures {
                                 ui.selectable_value(&mut pg.kind, PageKind::Mounting(e.id), tr_fmt!("Mounting layout {}", e.name));
@@ -2167,6 +2184,7 @@ impl eframe::App for App {
         }
         if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
             self.analysis = Analysis::build(&self.prj);
+            self.analysis.set_reports(self.plugins.reports().cloned());
             self.analysis.issues = self.plugins.check(&self.prj, &self.analysis);
             self.analysis.issues.sort_by_key(|i| i.severity);
             self.analysis_rev = self.history.rev;

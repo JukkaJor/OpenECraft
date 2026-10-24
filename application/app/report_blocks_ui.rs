@@ -6,7 +6,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::forms;
 use crate::io::{self, Purpose};
-use crate::model::ReportKind;
+use crate::model::ReportId;
 use crate::report_blocks::{self, ReportBlock};
 use egui::RichText;
 
@@ -36,6 +36,8 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
+        let reports = self.report_list();
+        let title_of = |id: ReportId| reports.iter().find(|(k, _)| *k == id).map(|(_, t)| t.clone()).unwrap_or_else(|| id.title());
         egui::Window::new(tr("Report blocks")).open(&mut open).default_size([820.0, 460.0]).show(ctx, |ui| {
             let ru = &mut self.report_blocks_ui;
             let prj = &mut self.prj;
@@ -83,9 +85,9 @@ impl App {
                     ui.end_row();
                     ui.label(tr("Report"));
                     let kind = b.kind;
-                    egui::ComboBox::from_id_salt("rbkind").selected_text(kind.title()).width(240.0).show_ui(ui, |ui| {
-                        for k in ReportKind::ALL {
-                            ui.selectable_value(&mut b.kind, k, k.title());
+                    egui::ComboBox::from_id_salt("rbkind").selected_text(title_of(kind)).width(240.0).show_ui(ui, |ui| {
+                        for (k, title) in &reports {
+                            ui.selectable_value(&mut b.kind, *k, title);
                         }
                     });
                     if b.kind != kind {

@@ -90,6 +90,17 @@ pub fn convert(text: &str) -> Result<(Project, Conversion), String> {
         }
         steps.push(tr("file format version added").into());
     }
+    if from < 2 {
+        // Report pages, blocks and forms named the built-in kinds by their variant
+        // names; since format 2 they hold report names (also those of plugins).
+        let kinds = v["pages"].as_array().into_iter().flatten().filter(|p| p["kind"].get("Report").is_some()).count()
+            + v["report_blocks"].as_array().map(|b| b.len()).unwrap_or(0)
+            + v["forms"]["schemes"].as_array().map(|s| s.len()).unwrap_or(0)
+            + v["forms"]["reports"].as_object().map(|r| r.len()).unwrap_or(0);
+        if kinds > 0 {
+            steps.push(tr_fmt!("{} report references converted to report names", kinds));
+        }
+    }
     let prj = Project::from_json(text)?;
     Ok((prj, Conversion { from, steps }))
 }

@@ -96,10 +96,10 @@ fn report_columns_follow_the_form() {
 fn report_pages_use_their_form() {
     let mut prj = demo_project();
     let id = prj.new_id();
-    prj.pages.push(crate::model::Page::new(id, "99", "Devices", PageKind::Report(ReportKind::DeviceList)));
+    prj.pages.push(crate::model::Page::new(id, "99", "Devices", PageKind::Report(ReportKind::DeviceList.into())));
     let page = prj.pages.len() - 1;
     let form = ReportForm { title: "Our device list".into(), columns: vec!["Part number".into(), "Device tag".into()], rows: 10, ..Default::default() };
-    prj.forms.reports.insert(ReportKind::DeviceList, form);
+    prj.forms.reports.insert(ReportKind::DeviceList.into(), form);
     let svg = crate::svg::page_svg(&prj, page);
     assert!(svg.contains("Our device list"));
     let (part, tag) = (svg.find(">Part number<").unwrap(), svg.find(">Device tag<").unwrap());
@@ -130,7 +130,7 @@ fn merging_title_blocks_replaces_by_name() {
 #[test]
 fn merging_report_schemes_replaces_by_report_and_name() {
     let mut prj = Project::default();
-    let scheme = |kind, title: &str| ReportScheme { name: "Workshop".into(), kind, form: ReportForm { title: title.into(), ..Default::default() } };
+    let scheme = |kind: ReportKind, title: &str| ReportScheme { name: "Workshop".into(), kind: kind.into(), form: ReportForm { title: title.into(), ..Default::default() } };
     let lib = FormLibrary { schemes: vec![scheme(ReportKind::DeviceList, "a"), scheme(ReportKind::TerminalDiagram, "b")], ..Default::default() };
     let json = serde_json::to_string(&lib).unwrap();
     assert_eq!(merge(&mut prj, FormLibrary::from_json(&json).unwrap()), (0, 2));

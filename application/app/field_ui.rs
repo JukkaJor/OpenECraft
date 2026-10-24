@@ -496,7 +496,7 @@ impl App {
             self.notify(ctx, tr_fmt!("{} cable lengths taken over", n));
         }
         if report {
-            self.report_kind = ReportKind::FieldRouting;
+            self.report_kind = ReportKind::FieldRouting.into();
             self.show_reports = true;
         }
     }
@@ -562,7 +562,7 @@ impl App {
             }
         });
         if report {
-            self.report_kind = ReportKind::Bonding;
+            self.report_kind = ReportKind::Bonding.into();
             self.show_reports = true;
         }
         let _ = ctx;

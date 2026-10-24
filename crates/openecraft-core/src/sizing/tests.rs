@@ -123,7 +123,7 @@ fn voltage_drop_of_a_motor_cable() {
     assert!((v - du).abs() < 1e-3 && (pct - du / 4.0).abs() < 1e-3);
     assert_eq!(d.ampacity, Some(13.5));
     assert!(!an.issues.iter().any(|i| i.message.contains("voltage drop")));
-    assert_eq!(an.report(&prj, ReportKind::CableSizing).rows.len(), 1);
+    assert_eq!(an.report(&prj, ReportKind::CableSizing).unwrap().rows.len(), 1);
 
     // 500 m of 1.5 mm² is too much.
     prj.cables[0].length = 500.0;

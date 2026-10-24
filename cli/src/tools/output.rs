@@ -4,7 +4,6 @@ use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_api::params::{self, text};
-use openecraft_core::model::ReportKind;
 use openecraft_core::reports::{self, Analysis, Severity};
 use openecraft_core::{translation, wirenum};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
@@ -86,26 +85,18 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
 }
 
 fn list_reports(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let mut out: Vec<Value> = ReportKind::ALL.iter().map(|k| json!({ "name": snake(k), "title": k.title() })).collect();
-    out.extend(s.plugins.reports().map(|r| json!({ "name": r.name, "title": text(&r.title), "plugin": true })));
-    Ok(Value::Array(out))
+    Ok(Value::Array(s.plugins.reports().map(|r| json!({ "name": r.name, "title": text(&r.title) })).collect()))
 }
 
 fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let id = report_id(s, a.req("kind"))?;
     let prj = s.project()?;
-    if let Some(r) = s.plugins.report(a.req("kind")) {
-        let table = (r.run)(prj, &Analysis::build(prj))?;
-        return match a.str("format").unwrap_or("json") {
-            "csv" => Ok(Value::String(table.to_csv())),
-            "json" => Ok(json!({ "report": r.name, "title": text(&r.title), "headers": table.header_texts(), "rows": table.rows })),
-            other => Err(tr_fmt!("Unknown format: {}", other)),
-        };
-    }
-    let kind = report_kind(a.req("kind"))?;
-    let an = Analysis::build(prj);
-    let mut table = (*an.report(prj, kind)).clone();
+    let mut an = Analysis::build(prj);
+    an.set_reports(s.plugins.reports().cloned());
+    let title = s.plugins.report(id.as_str()).map(|r| text(&r.title).to_string()).unwrap_or_else(|| id.title());
+    let mut table = an.report(prj, id).map(|t| (*t).clone()).unwrap_or_default();
     if let Some(name) = a.str("scheme") {
-        let scheme = prj.forms.schemes.iter().find(|s| s.kind == kind && s.name == name).ok_or_else(|| tr_fmt!("Unknown report scheme: {}", name))?;
+        let scheme = prj.forms.schemes.iter().find(|s| s.kind == id && s.name == name).ok_or_else(|| tr_fmt!("Unknown report scheme: {}", name))?;
         let t = openecraft_core::report_blocks::scheme_table(&table, Some(&scheme.form));
         let cols = openecraft_core::forms::report_columns(Some(&scheme.form), &t.headers);
         table = reports::Table {
@@ -117,7 +108,7 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     match a.str("format").unwrap_or("json") {
         "csv" => Ok(Value::String(table.to_csv())),
-        "json" => Ok(json!({ "report": snake(kind), "title": kind.title(), "headers": table.header_texts(), "rows": table.rows })),
+        "json" => Ok(json!({ "report": id.as_str(), "title": title, "headers": table.header_texts(), "rows": table.rows })),
         other => Err(tr_fmt!("Unknown format: {}", other)),
     }
 }
@@ -160,7 +151,11 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
         args.insert("file".into(), path.rsplit(['/', '\\']).next().unwrap_or(path).into());
     }
     params::check(&e.params, &args)?;
-    let out = translation::with_language(prj, &lang, |prj| (e.run)(prj, &Analysis::build(prj), &Args(&args)))?;
+    let out = translation::with_language(prj, &lang, |prj| {
+        let mut an = Analysis::build(prj);
+        an.set_reports(s.plugins.reports().cloned());
+        (e.run)(prj, &an, &Args(&args))
+    })?;
     match a.str("path") {
         Some(path) => {
             let content = out.into_bytes();

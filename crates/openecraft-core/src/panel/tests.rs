@@ -89,7 +89,7 @@ fn virtual_wiring_of_demo() {
     // Q1 feeds the main contacts of K1 inside the cabinet.
     assert!(an.wiring.iter().any(|w| w.from.starts_with("-Q1") && w.to.starts_with("-K1")));
     // The motor is in the field: its connections stay open.
-    let report = &an.report(&prj, crate::model::ReportKind::PanelWiring);
+    let report = &an.report(&prj, crate::model::ReportKind::PanelWiring).unwrap();
     assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
 }
 
@@ -104,7 +104,7 @@ fn layout_material_in_bom() {
     // 3380 mm of duct in 2 m pieces
     assert_eq!(get(DUCT_PART), Some(2.0));
     let an = Analysis::checked(&prj);
-    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials);
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap();
     let rail = bom.rows.iter().find(|r| r[3] == RAIL_PART).unwrap();
     assert_eq!((rail[1].as_str(), rail[2].as_str()), ("1.29", "m"));
 }

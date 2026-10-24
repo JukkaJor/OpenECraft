@@ -69,13 +69,34 @@ fn old_files_are_converted() {
     assert!(conv.message().unwrap().contains("1"));
     assert_eq!(prj.format, FORMAT);
     assert_eq!(prj.devices["-K1"].parts.len(), 1);
-    assert!(prj.to_json().contains("\"format\": 1"));
+    assert!(prj.to_json().contains(&format!("\"format\": {FORMAT}")));
 
     let (_, current) = read_project(prj.to_json().as_bytes()).unwrap();
     assert_eq!(current, Conversion { from: FORMAT, steps: Vec::new() });
-    let newer = prj.to_json().replace("\"format\": 1", "\"format\": 99");
+    let newer = prj.to_json().replace(&format!("\"format\": {FORMAT}"), "\"format\": 99");
     let (_, conv) = convert(&newer).unwrap();
     assert!(conv.newer());
     assert!(conv.message().is_some());
     assert!(convert("{ nope").is_err());
+}
+
+#[test]
+fn report_names_replace_the_variant_names_of_format_1() {
+    use crate::model::{PageKind, ReportKind};
+    let old = r#"{ "format": 1, "info": { "name": "Old" },
+        "pages": [ { "id": 1, "name": "5", "kind": { "Report": "DeviceList" } } ],
+        "report_blocks": [ { "name": "b", "kind": "TerminalDiagram" } ],
+        "forms": { "reports": { "BillOfMaterials": { "title": "BOM" } } },
+        "next_id": 2 }"#;
+    let (prj, conv) = convert(old).unwrap();
+    assert_eq!(conv.from, 1);
+    assert!(conv.steps.iter().any(|s| s.starts_with("3 report references")), "{:?}", conv.steps);
+    assert_eq!(prj.pages[0].kind, PageKind::Report(ReportKind::DeviceList.into()));
+    assert_eq!(prj.report_blocks[0].kind.as_str(), "terminal_diagram");
+    assert_eq!(prj.forms.reports.keys().map(|k| k.as_str()).collect::<Vec<_>>(), ["bill_of_materials"]);
+    let json = prj.to_json();
+    assert!(json.contains("\"Report\": \"device_list\"") && json.contains("\"bill_of_materials\""), "{json}");
+    // Reports of plugins keep their names.
+    let (again, _) = convert(&json.replace("device_list", "my_plugin_report")).unwrap();
+    assert_eq!(again.pages[0].kind, PageKind::Report(crate::model::ReportId::new("my_plugin_report")));
 }

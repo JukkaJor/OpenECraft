@@ -17,7 +17,27 @@ pub use manufacturing::PanelManufacturing;
 pub use panel::PanelChecks;
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(ProjectChecks), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+}
+
+/// The built-in reports of `openecraft_core::reports` as a plugin, so that the Reports
+/// menu, report pages and the `report` tool list them next to the reports of plugins.
+pub struct ProjectReports;
+
+impl Plugin for ProjectReports {
+    fn info(&self) -> Info {
+        Info {
+            id: "project_reports".into(),
+            name: Text::Borrowed(tr_const!("Project reports")),
+            version: env!("CARGO_PKG_VERSION").into(),
+            description: Text::Borrowed(tr_const!("Device list, bill of materials, terminal, plug, cable and connection diagrams, PLC, potentials, panel, fluid, electrical and field reports")),
+        }
+    }
+
+    fn register(&self, reg: &mut Registry) -> Result<(), String> {
+        reg.reports.extend(openecraft_core::reports::builtin());
+        Ok(())
+    }
 }
 
 /// The built-in exports of `openecraft_core::exporters` as a plugin, so that File ›

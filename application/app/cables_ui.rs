@@ -103,7 +103,7 @@ impl App {
             parts::ensure_in_project(&mut self.prj, &self.parts_db, &n);
         }
         if overview {
-            self.report_kind = ReportKind::CableOverview;
+            self.report_kind = ReportKind::CableOverview.into();
             self.show_reports = true;
         }
         self.show_cables = open;

@@ -296,7 +296,7 @@ impl App {
             self.goto(pg, id);
         }
         if overview {
-            self.report_kind = ReportKind::RevisionOverview;
+            self.report_kind = ReportKind::RevisionOverview.into();
             self.show_reports = true;
         }
     }
