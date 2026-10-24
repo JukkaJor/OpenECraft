@@ -242,7 +242,10 @@ pub fn port_kind(def: &SymbolDef, label: &str) -> PortKind {
     }
     match def.key {
         "fl_source" => return PortKind::Supply,
-        "fl_pump" => return if label == "S" { PortKind::Suction } else { PortKind::Supply },
+        "fl_pump" | "fl_compressor" => return if label == "S" { PortKind::Suction } else { PortKind::Supply },
+        "fl_hyd_motor" => return PortKind::Working,
+        "fl_accumulator" => return PortKind::Pressure,
+        "fl_check" | "fl_shutoff" | "fl_flow_valve" | "fl_regulator" | "fl_frl" | "fl_cooler" => return PortKind::Passage,
         "fl_tank" => return PortKind::Return,
         "fl_silencer" => return PortKind::Exhaust,
         "fl_gauge" => return PortKind::Measuring,

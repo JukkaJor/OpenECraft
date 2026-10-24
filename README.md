@@ -155,8 +155,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   symbols (30: coils, timer coils, contacts, timed and overload contacts, main
   contacts, push buttons, emergency stop, selector, foot, limit, float, pressure,
   temperature, flow and proximity switches, breakers, disconnects, fuses, pilot lights,
-  horns, solenoids, control transformers, motors), fluid power symbols (ISO 1219: pump, cylinder, 4/2 valve, filter, gauge,
-  tank), single-line / overview symbols (cross references to the device, not part of
+  horns, solenoids, control transformers, motors), fluid power symbols (ISO 1219: pumps, compressor, hydraulic motor, single and
+  double acting cylinders, 3/2, 4/2 and 5/2 valves, non-return, relief, ball and flow
+  control valves, pressure regulator, service unit, filter, accumulator, cooler,
+  gauge, tank, silencer), single-line / overview symbols (cross references to the device, not part of
   the netlist) and black boxes / PLC boxes. Own symbols are drawn in the symbol editor
   (lines, rectangles, circles, texts, tag / label fields, connection points on the 4 mm
   grid, function such as main function, contact, terminal, PLC point), or copied from a

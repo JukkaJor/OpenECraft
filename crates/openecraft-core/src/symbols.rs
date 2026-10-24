@@ -1368,6 +1368,82 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, 4.0, "1");
     v.push(def("fl_cylinder_sa", "Cylinder, single-acting", C::Fluid, "MM", MAIN).build(&mut b));
 
+    // 3/2 directional valve, solenoid operated, spring return, normally closed.
+    b.rect(-12.0, -4.0, 0.0, 4.0, false).rect(0.0, -4.0, 12.0, 4.0, false);
+    b.l(8.0, 4.0, 4.6, -3.2);
+    head(&mut b, 4.0, -4.0, -0.5, -1.0);
+    b.l(4.0, 4.0, 4.0, 2.6).l(3.0, 2.6, 5.0, 2.6);
+    b.l(-8.0, 4.0, -8.0, -3.0);
+    head(&mut b, -8.0, -4.0, 0.0, -1.0);
+    b.l(-4.0, 4.0, -4.0, 2.6).l(-5.0, 2.6, -3.0, 2.6);
+    b.rect(-16.0, -2.0, -12.0, 2.0, false).l(-16.0, 2.0, -12.0, -2.0);
+    b.poly(&[(12.0, 0.0), (12.8, -1.5), (13.6, 1.5), (14.4, -1.5), (15.2, 1.5), (16.0, 0.0)], false, false);
+    b.l(4.0, -8.0, 4.0, -4.0).l(4.0, 4.0, 4.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
+    b.pin(4.0, -8.0, "2").pin(4.0, 8.0, "1").pin(8.0, 8.0, "3");
+    v.push(def("fl_valve32", "3/2 directional valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.7).circle(0.0, -0.5, 1.2, false).l(-1.8, -0.5, 0.0, 1.8).l(1.8, -0.5, 0.0, 1.8).l(0.0, 1.8, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_check", "Non-return valve", C::Fluid, "RM", MAIN).build(&mut b));
+
+    // Pressure relief valve: pilot from P against the spring, opens to T.
+    b.rect(-3.0, -3.0, 3.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0).l(3.0, 0.0, 4.0, 0.0);
+    b.l(-1.0, 2.0, 1.4, -1.4);
+    head(&mut b, 2.0, -2.0, 0.7, -0.7);
+    b.poly(&[(-3.0, -1.5), (-3.6, -2.4), (-4.2, -0.6), (-4.8, -2.4), (-5.4, -0.6), (-6.0, -1.5)], false, false);
+    b.dl(0.0, 3.6, -4.5, 3.6).dl(-4.5, 3.6, -4.5, 1.0);
+    b.pin(0.0, 4.0, "P").pin(4.0, 0.0, "T");
+    v.push(def("fl_relief", "Pressure relief valve", C::Fluid, "RM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).poly(&[(-2.5, -3.0), (2.5, -3.0), (0.0, 0.0)], true, false).poly(&[(-2.5, 3.0), (2.5, 3.0), (0.0, 0.0)], true, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(0.0, 0.0, -4.0, 0.0).l(-4.0, -1.2, -4.0, 1.2);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_shutoff", "Ball valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, 4.0).arc(-2.6, 0.0, 2.4, -50.0, 50.0).arc(2.6, 0.0, 2.4, 130.0, 230.0);
+    b.l(-2.6, 2.6, 2.6, -2.6);
+    head(&mut b, 3.1, -3.1, 0.7, -0.7);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_flow_valve", "Flow control valve, adjustable", C::Fluid, "RN", MAIN).build(&mut b));
+
+    b.rect(-3.0, -3.0, 3.0, 3.0, false).l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0).l(0.0, 2.0, 0.0, -1.6);
+    head(&mut b, 0.0, -2.4, 0.0, -1.0);
+    b.poly(&[(3.0, 1.5), (3.6, 0.6), (4.2, 2.4), (4.8, 0.6), (5.4, 2.4), (6.0, 1.5)], false, false);
+    b.dl(0.0, -3.6, 4.5, -3.6).dl(4.5, -3.6, 4.5, -1.0);
+    b.pin(0.0, 4.0, "1").pin(0.0, -4.0, "2");
+    v.push(def("fl_regulator", "Pressure regulator", C::Fluid, "RP", MAIN).build(&mut b));
+
+    // Service unit: filter, regulator and lubricator in one housing.
+    b.rect(-8.0, -3.0, 8.0, 3.0, false).l(-12.0, 0.0, -8.0, 0.0).l(8.0, 0.0, 12.0, 0.0);
+    b.poly(&[(-7.0, 0.0), (-5.0, -2.0), (-3.0, 0.0), (-5.0, 2.0)], true, false).dl(-7.0, 0.0, -3.0, 0.0);
+    b.l(-1.2, 1.6, 0.8, -1.2);
+    head(&mut b, 1.2, -1.8, 0.6, -0.8);
+    b.poly(&[(3.0, 0.0), (5.0, -2.0), (7.0, 0.0), (5.0, 2.0)], true, false).circle(5.0, 0.0, 0.5, true);
+    b.pin(-12.0, 0.0, "1").pin(12.0, 0.0, "2");
+    v.push(def("fl_frl", "Service unit (filter, regulator, lubricator)", C::Fluid, "AZ", MAIN).build(&mut b));
+
+    b.l(-2.5, -1.0, -2.5, 2.0).l(2.5, -1.0, 2.5, 2.0).arc(0.0, -1.0, 2.5, 180.0, 360.0).arc(0.0, 2.0, 2.5, 0.0, 180.0).l(-2.5, 0.5, 2.5, 0.5);
+    b.l(0.0, 4.5, 0.0, 8.0);
+    b.pin(0.0, 8.0, "1");
+    v.push(def("fl_accumulator", "Accumulator", C::Fluid, "CM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).poly(&[(0.0, -1.2), (-1.6, -3.66), (1.6, -3.66)], true, true);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "A").pin(0.0, 8.0, "B");
+    v.push(def("fl_hyd_motor", "Hydraulic motor", C::Fluid, "MM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).poly(&[(0.0, -4.0), (-1.6, -1.4), (1.6, -1.4)], true, false);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "P").pin(0.0, 8.0, "S");
+    v.push(def("fl_compressor", "Compressor", C::Fluid, "GQ", MAIN).build(&mut b));
+
+    b.poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-2.0, 0.0, 2.0, 0.0);
+    head(&mut b, 2.8, 0.0, 1.0, 0.0);
+    head(&mut b, -2.8, 0.0, -1.0, 0.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_cooler", "Cooler", C::Fluid, "EP", MAIN).build(&mut b));
+
     // ---------------------------------------------------------------- P&ID
     // Process equipment has ports (pipes); instruments are overview functions of the
     // device that measures or actuates (sensor, valve drive), engineered elsewhere.
