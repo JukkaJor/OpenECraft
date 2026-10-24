@@ -90,6 +90,17 @@ impl Plugin for PanelChecks {
             tr_const!("Sets the height of the enclosure's bottom above the floor (heights of devices, terminals and actuators are checked)"),
             vec![param("enclosure", Kind::Str, ENCLOSURE), param("elevation", Kind::Num, tr_const!("Height in mm without plinth; negative: unknown (wall mounted)"))],
             set_enclosure_elevation,
+        )
+        .command(
+            "set_enclosure_site",
+            tr_const!("Places the line-up of an enclosure in the room (3D view of all enclosures); without x and z it is placed from the plant layout or next to the other line-ups"),
+            vec![
+                param("enclosure", Kind::Str, ENCLOSURE),
+                optional("x", Kind::Num, tr_const!("Rear left corner of the line-up in mm, to the right")),
+                optional("z", Kind::Num, tr_const!("Rear left corner of the line-up in mm, towards the front")),
+                optional("angle", Kind::Num, tr_const!("Turn about the vertical in degrees, counter-clockwise seen from above (90: the fronts face to the right)")),
+            ],
+            set_enclosure_site,
         );
         Ok(())
     }
@@ -225,6 +236,21 @@ fn set_enclosure_elevation(prj: &mut Project, a: &Args) -> Result<Value, String>
     let e = &mut prj.layout.enclosures[ei];
     e.elevation = (v >= 0.0).then_some(v);
     Ok(json!({ "enclosure": e.name, "elevation": e.elevation, "floor_height": panel::floor_height(e) }))
+}
+
+fn set_enclosure_site(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let place = match (a.num("x"), a.num("z")) {
+        (None, None) => None,
+        (x, z) => Some(panel::SitePlace { x: x.unwrap_or_default(), z: z.unwrap_or_default(), angle: a.num("angle").unwrap_or_default() }),
+    };
+    panel::set_site(prj, ei, place);
+    let poses = panel::site_poses(prj);
+    let lineup: Vec<Value> = panel::lineup_of(&prj.layout, ei)
+        .into_iter()
+        .map(|i| json!({ "enclosure": prj.layout.enclosures[i].name, "at": poses[i].at, "angle": poses[i].angle.to_degrees() }))
+        .collect();
+    Ok(json!({ "automatic": place.is_none(), "lineup": lineup }))
 }
 
 #[cfg(test)]

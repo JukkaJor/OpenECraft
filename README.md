@@ -225,6 +225,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   - **line-ups**: enclosures bayed side by side with cable passages between them
     (cutouts in the facing side walls, or sides open to each other); the 3D view shows
     the whole line-up, wires run from one enclosure into the next;
+  - **room**: the 3D view shows all enclosures side by side at their places, each
+    line-up at its position and turn set by hand or taken from the plant layout;
   - **3D routing** of cables, tubes and (optionally) wires through the line-up: in cable
     ducts, along routing paths drawn over the mounting plate, or freely around the
     devices; segregation of the classes power, control, signal and fluid, routing

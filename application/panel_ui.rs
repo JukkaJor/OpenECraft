@@ -5,14 +5,14 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
 use crate::geom::{p, P};
 use crate::model::{natural_cmp, Project};
-use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
 use crate::parts::{self, PartsDb};
 use crate::parts::vec3::Orbit;
 use crate::render::{self, Draw, Ink};
 use crate::reports::Analysis;
 use crate::routing3d;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use view3d::default_cam;
 
 mod routing_ui;
@@ -306,6 +306,32 @@ fn accessory_parts(db: &PartsDb, prj: &Project) -> Vec<parts::Part> {
     v
 }
 
+/// Choice of the part for a rail, duct or busbar system: generic parts, then those of
+/// the parts store and the project. Returns the part picked.
+fn profile_part_combo(ui: &mut egui::Ui, salt: &str, choices: &[panel::ProfileChoice], current: &str) -> Option<String> {
+    let mut picked = None;
+    egui::ComboBox::from_id_salt(salt)
+        .selected_text(current.trim_start_matches("GEN."))
+        .width(150.0)
+        .show_ui(ui, |ui| {
+            for (generic, heading) in [(true, tr("Generic")), (false, tr("Parts store"))] {
+                let list: Vec<&panel::ProfileChoice> = choices.iter().filter(|c| c.generic == generic).collect();
+                if list.is_empty() {
+                    continue;
+                }
+                ui.label(RichText::new(heading).weak());
+                for c in list {
+                    if ui.selectable_label(c.number == current, &c.number).on_hover_text(&c.description).clicked() {
+                        picked = Some(c.number.clone());
+                    }
+                }
+            }
+        })
+        .response
+        .on_hover_text(tr("Part of the profile: generic types or parts from the parts store"));
+    picked.filter(|p| p != current)
+}
+
 /// The item and the other members of its group (assembly).
 fn with_group(e: &Enclosure, id: u64) -> Vec<u64> {
     match e.item(id).map(|i| i.group) {
@@ -361,6 +387,8 @@ pub struct PanelUi {
     pub show_heat: bool,
     /// The 3D view shows the enclosures bayed to the current one as well.
     pub show_lineup: bool,
+    /// The 3D view shows all enclosures at their places in the room.
+    pub show_site: bool,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -380,6 +408,8 @@ pub struct PanelUi {
     save_macro: Option<String>,
     /// Gap between devices lined up on a rail.
     rail_gap: f32,
+    /// Parts chosen for new rails, ducts and busbars (kind, on the door).
+    profile_parts: HashMap<(ItemKind, bool), String>,
     /// Diameter of new cable passages.
     passage_diameter: f32,
     /// Corners of the routing path being drawn (plate coordinates).
@@ -413,6 +443,7 @@ impl Default for PanelUi {
             show_fill: true,
             show_heat: false,
             show_lineup: true,
+            show_site: false,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -428,6 +459,7 @@ impl Default for PanelUi {
             pattern: None,
             save_macro: None,
             rail_gap: 0.0,
+            profile_parts: HashMap::new(),
             passage_diameter: panel::PASSAGE_DIAMETER,
             path_points: Vec::new(),
             path_height: 50.0,
@@ -516,17 +548,24 @@ impl PanelUi {
         )
     }
 
-    /// Item kind and default part of the profile tool on the face shown: the door gets
-    /// the smaller door duct.
-    fn profile_here(&self) -> Option<(ItemKind, &'static str)> {
+    /// Item kind and part of the profile tool on the face shown: the part chosen for it,
+    /// otherwise the default (the door gets the smaller door duct).
+    fn profile_here(&self) -> Option<(ItemKind, String)> {
         self.profile_here_for(&self.tool)
     }
 
-    fn profile_here_for(&self, tool: &Tool) -> Option<(ItemKind, &'static str)> {
-        match tool.profile()? {
-            (ItemKind::Duct, _) if self.face == Face::Door => Some((ItemKind::Duct, panel::DOOR_DUCT_PART)),
-            x => Some(x),
-        }
+    fn profile_here_for(&self, tool: &Tool) -> Option<(ItemKind, String)> {
+        let (kind, default) = match tool.profile()? {
+            (ItemKind::Duct, _) if self.face == Face::Door => (ItemKind::Duct, panel::DOOR_DUCT_PART),
+            x => x,
+        };
+        let chosen = self.profile_parts.get(&(kind, self.face == Face::Door));
+        Some((kind, chosen.cloned().unwrap_or_else(|| default.to_string())))
+    }
+
+    /// Part for the profiles of this kind placed from now on (on the face shown).
+    fn choose_profile_part(&mut self, kind: ItemKind, part: &str) {
+        self.profile_parts.insert((kind, self.face == Face::Door), part.to_string());
     }
 
     fn set_tool(&mut self, tool: Tool) {
@@ -565,9 +604,9 @@ impl PanelUi {
         let n = pts.len() as f32;
         let c = p(pts.iter().map(|q| q.x).sum::<f32>() / n, pts.iter().map(|q| q.y).sum::<f32>() / n);
         let shown = self.shown_3d(prj, w.enclosure);
-        let off = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
+        let pose = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
         let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
-        cam.target = [off[0] + PLATE_MARGIN + c.x, off[1] + e.height - PLATE_MARGIN - c.y, off[2] + PLATE_Z];
+        cam.target = pose.apply([PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z]);
     }
 
     /// Selects a placed device (e.g. coming from the schematic); a valve or its coil
@@ -673,7 +712,7 @@ impl PanelUi {
 
     // ------------------------------------------------------------------ properties
 
-    pub fn properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
+    pub fn properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, db: &PartsDb) {
         ui.heading(tr("Properties"));
         let Some(ei) = self.enclosure_index(prj) else { return };
         if let Some(wi) = self.wire_index(an) {
@@ -702,6 +741,11 @@ impl PanelUi {
             });
             let auto_class = prj.layout.enclosures[ei].item(id).map(|it| panel::item_class(prj, &panel::device_kinds(prj), &PanelItem { class: String::new(), ..it.clone() })).unwrap_or_default();
             let custom = custom_classes(prj);
+            let choices = match prj.layout.enclosures[ei].item(id).map(|it| it.kind) {
+                Some(k) if k.is_profile() => panel::profile_choices(k, db.parts.iter().chain(&prj.parts)),
+                _ => Vec::new(),
+            };
+            let mut new_part = None;
             let e = &mut prj.layout.enclosures[ei];
             let Some(idx) = e.items.iter().position(|i| i.id == id) else {
                 self.selection.clear();
@@ -729,7 +773,11 @@ impl PanelUi {
                     ui.end_row();
                 }
                 ui.label(tr("Part"));
-                ui.label(RichText::new(if it.part.is_empty() { "–" } else { &it.part }).monospace());
+                if it.kind.is_profile() {
+                    new_part = profile_part_combo(ui, "itempart", &choices, &it.part);
+                } else {
+                    ui.label(RichText::new(if it.part.is_empty() { "–" } else { &it.part }).monospace());
+                }
                 ui.end_row();
                 ui.label("X / Y");
                 ui.horizontal(|ui| {
@@ -916,6 +964,10 @@ impl PanelUi {
                         ungroup(e, &[id]);
                     }
                 });
+            }
+            if let Some(part) = new_part.filter(|_| !self.selection.is_empty()) {
+                parts::ensure_in_project(prj, db, &part);
+                panel::change_profile(prj, ei, id, &part);
             }
             if !self.selection.is_empty() {
                 self.selection_tools(ui, prj, ei, &sel);
@@ -1116,6 +1168,7 @@ impl PanelUi {
         let (left, right) = panel::neighbours(&prj.layout, ei);
         let name = |prj: &Project, i: Option<usize>| i.map(|i| prj.layout.enclosures[i].name.clone()).unwrap_or_else(|| tr("(none)").to_string());
         let mut bay: Option<Option<usize>> = None;
+        let mut site: Option<Option<SitePlace>> = None;
         let mut add = false;
         egui::CollapsingHeader::new(tr("Line-up and cable passages")).id_salt("lineup").default_open(left.is_some() || right.is_some()).show(ui, |ui| {
             egui::Grid::new("plineup").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
@@ -1137,6 +1190,31 @@ impl PanelUi {
                 ui.end_row();
                 ui.label(tr("Right neighbour"));
                 ui.label(name(prj, right));
+                ui.end_row();
+                ui.label(tr("Place in the room"));
+                let first = panel::lineup_of(&prj.layout, ei).first().copied().unwrap_or(ei);
+                let current = prj.layout.enclosures[first].site;
+                let mut place = current.unwrap_or_else(|| {
+                    let pose = panel::site_poses(prj)[first];
+                    SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() }
+                });
+                ui.horizontal(|ui| {
+                    let mut by_hand = current.is_some();
+                    let mut changed = ui.checkbox(&mut by_hand, tr("by hand")).on_hover_text(tr("Otherwise from the plant layout, or next to the other line-ups")).changed();
+                    ui.add_enabled_ui(by_hand, |ui| {
+                        changed |= ui.add(egui::DragValue::new(&mut place.x).speed(10.0).prefix("x ").suffix(" mm")).changed();
+                        changed |= ui.add(egui::DragValue::new(&mut place.z).speed(10.0).prefix("z ").suffix(" mm")).changed();
+                        changed |= ui
+                            .add(egui::DragValue::new(&mut place.angle).speed(1.0).range(-360.0..=360.0).suffix(" °"))
+                            .on_hover_text(tr("Turn about the vertical, counter-clockwise seen from above (90 °: the fronts face to the right)"))
+                            .changed();
+                    });
+                    if changed {
+                        site = Some(by_hand.then_some(place));
+                    }
+                })
+                .response
+                .on_hover_text(tr("Rear left corner of the line-up on the floor, as in the 3D view with all enclosures"));
                 ui.end_row();
             });
             let pos = panel::positions(&prj.layout);
@@ -1166,6 +1244,9 @@ impl PanelUi {
             }
             Some(None) => panel::unbay(prj, ei),
             None => {}
+        }
+        if let Some(place) = site {
+            panel::set_site(prj, ei, place);
         }
         if add {
             let (y, z) = panel::next_passage_place(&prj.layout, ei);
@@ -1522,7 +1603,13 @@ impl PanelUi {
             if self.view == View::ThreeD {
                 self.door_button(ui);
                 if panel::lineup_of(&prj.layout, ei).len() > 1
+                    && !self.show_site
                     && ui.checkbox(&mut self.show_lineup, tr("Line-up")).on_hover_text(tr("Show the enclosures bayed to this one as well")).changed()
+                {
+                    self.cam = None;
+                }
+                if prj.layout.enclosures.len() > 1
+                    && ui.checkbox(&mut self.show_site, tr("All enclosures")).on_hover_text(tr("Show all enclosures side by side at their places in the room")).changed()
                 {
                     self.cam = None;
                 }
@@ -1566,6 +1653,12 @@ impl PanelUi {
             }
             if let Tool::PlaceDevice(tag) = &tool {
                 ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
+            }
+            if let Some((kind, part)) = self.profile_here() {
+                let choices = panel::profile_choices(kind, db.parts.iter().chain(&prj.parts));
+                if let Some(picked) = profile_part_combo(ui, "profilepart", &choices, &part) {
+                    self.choose_profile_part(kind, &picked);
+                }
             }
             // Accessories for the face shown, 3D macros.
             let face = self.face;
@@ -1720,14 +1813,12 @@ impl PanelUi {
                     match self.start.take() {
                         None => self.start = Some(sn),
                         Some(a) if !a.same(sn) => {
-                            let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
-                            if db.get(part).is_some() {
-                                parts::ensure_in_project(prj, db, part);
-                            }
-                            if kind == ItemKind::Busbar && db.get(crate::production::BUSBAR_HOLDER).is_some() {
+                            let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART.into()));
+                            parts::ensure_in_project(prj, db, &part);
+                            if kind == ItemKind::Busbar {
                                 parts::ensure_in_project(prj, db, crate::production::BUSBAR_HOLDER);
                             }
-                            let item = PanelItem { face: self.face, ..panel::new_profile(prj, kind, part, a, sn) };
+                            let item = PanelItem { face: self.face, ..panel::new_profile(prj, kind, &part, a, sn) };
                             prj.layout.enclosures[ei].items.push(item);
                         }
                         Some(_) => {}
@@ -1953,8 +2044,9 @@ impl PanelUi {
             }
             (Tool::Rail | Tool::Duct | Tool::Busbar, Some(sn), _) => {
                 if let Some(a) = self.start {
-                    let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART));
-                    let (pw, _) = panel::profile(prj, kind, part);
+                    let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART.into()));
+                    let pd = prj.parts.iter().chain(&db.parts).chain(parts::catalog()).find(|x| x.number == part);
+                    let (pw, _) = panel::part_profile(kind, pd);
                     let horizontal = (sn.x - a.x).abs() >= (sn.y - a.y).abs();
                     let (r0, r1) = if horizontal {
                         (p(a.x.min(sn.x), a.y - pw / 2.0), p(a.x.max(sn.x), a.y + pw / 2.0))

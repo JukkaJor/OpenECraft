@@ -82,3 +82,12 @@ fn parts_are_added_to_devices() {
     add_to_device(&mut prj, &db, "-K1", "OWN.1", 1);
     assert_eq!(prj.devices["-K1"].parts.len(), 2);
 }
+
+#[test]
+fn generic_parts_come_from_the_catalog_when_missing_in_the_database() {
+    let mut prj = Project::default();
+    ensure_in_project(&mut prj, &PartsDb { parts: Vec::new() }, "GEN.DUCT-60X80");
+    assert!(prj.parts.iter().any(|p| p.number == "GEN.DUCT-60X80" && p.height == 60.0 && p.depth == 80.0));
+    ensure_in_project(&mut prj, &PartsDb { parts: Vec::new() }, "UNKNOWN");
+    assert_eq!(prj.parts.len(), 1);
+}

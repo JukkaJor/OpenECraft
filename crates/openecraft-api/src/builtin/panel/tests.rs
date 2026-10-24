@@ -59,6 +59,22 @@ fn rules_classes_and_heights() {
 }
 
 #[test]
+fn enclosures_are_placed_in_the_room() {
+    let p = Plugins::new(Vec::<String>::new());
+    let mut prj = demo_project();
+    let r = run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+CAB1", "x": 2000, "z": 500, "angle": 180 })).unwrap();
+    assert_eq!(r["automatic"], false);
+    let cab = &r["lineup"][0];
+    assert_eq!((cab["enclosure"].as_str(), cab["at"][0].as_f64(), cab["at"][2].as_f64()), (Some("+CAB1"), Some(2000.0), Some(500.0)));
+    assert!((cab["angle"].as_f64().unwrap() - 180.0).abs() < 0.01);
+    assert!(prj.layout.enclosures[0].site.is_some());
+    let r = run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+CAB1" })).unwrap();
+    assert_eq!(r["automatic"], true);
+    assert!(prj.layout.enclosures[0].site.is_none());
+    assert!(run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+NONE" })).is_err());
+}
+
+#[test]
 fn thermal_simulation() {
     let p = Plugins::new(Vec::<String>::new());
     let mut prj = demo_project();

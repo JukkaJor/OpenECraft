@@ -2308,7 +2308,7 @@ impl eframe::App for App {
                 });
                 egui::Panel::right("panel_side").resizable(true).default_size(300.0).show(ui, |ui| {
                     egui::ScrollArea::vertical().id_salt("panel_props").auto_shrink([false, false]).show(ui, |ui| {
-                        self.panel_ui.properties(ui, &mut self.prj, &self.analysis);
+                        self.panel_ui.properties(ui, &mut self.prj, &self.analysis, &self.parts_db);
                     });
                 });
                 egui::CentralPanel::default().show(ui, |ui| {

@@ -4,11 +4,14 @@
 //!
 //! Line-up coordinates are enclosure coordinates of the whole line-up: x to the
 //! right from the left end, y downwards, z from the rear walls (which are flush).
+//! In the room ([`site_poses`]) every line-up stands at its own place, turned about
+//! the vertical.
 
 use super::{item_box, route_ends, Enclosure, Face, ItemKind, Layout, PanelItem, Route, WireEnd, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
 use crate::geom::{p, P};
 use crate::model::Project;
 use crate::parts::vec3::V3;
+use serde::{Deserialize, Serialize};
 
 /// Gap between line-ups (and single enclosures) placed next to each other.
 pub const LINEUP_GAP: f32 = 200.0;
@@ -88,6 +91,99 @@ pub fn positions(layout: &Layout) -> Vec<V3> {
         }
     }
     out
+}
+
+/// Place of a line-up in the room, floor plan in mm like the 3D view (x to the right,
+/// z towards the front): the rear left corner of the line-up.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SitePlace {
+    pub x: f32,
+    pub z: f32,
+    /// Turn about the vertical in degrees, counter-clockwise seen from above: at 0 the
+    /// fronts face +z, at 90 they face +x.
+    pub angle: f32,
+}
+
+/// Where an enclosure stands in the room (3D view coordinates in mm: x right, y up
+/// from the floor, z towards the front): the rear left corner of its bottom and its
+/// turn about the vertical in radians (see [`SitePlace::angle`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct SitePose {
+    pub at: V3,
+    pub angle: f32,
+}
+
+impl SitePose {
+    /// A direction in the enclosure's 3D coordinates (x right, y up, z from the rear
+    /// wall) in the room.
+    pub fn turn(&self, v: V3) -> V3 {
+        let (s, c) = self.angle.sin_cos();
+        [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]
+    }
+
+    /// A direction in the room in the enclosure's 3D coordinates.
+    pub fn unturn(&self, v: V3) -> V3 {
+        let (s, c) = self.angle.sin_cos();
+        [v[0] * c - v[2] * s, v[1], v[0] * s + v[2] * c]
+    }
+
+    /// A point of the enclosure's 3D coordinates in the room.
+    pub fn apply(&self, q: V3) -> V3 {
+        let r = self.turn(q);
+        [self.at[0] + r[0], self.at[1] + r[1], self.at[2] + r[2]]
+    }
+
+    /// A point in the room in the enclosure's 3D coordinates.
+    pub fn local(&self, q: V3) -> V3 {
+        self.unturn([q[0] - self.at[0], q[1] - self.at[1], q[2] - self.at[2]])
+    }
+}
+
+/// Where every enclosure stands in the room. A line-up stands at the place set on its
+/// left enclosure, otherwise where the plant layout places one of its enclosures (the
+/// centre of its footprint on the node), otherwise unturned next to the other
+/// line-ups as in [`positions`]. Its enclosures stand side by side on the floor, all
+/// raised by the elevation of the left one.
+pub fn site_poses(prj: &Project) -> Vec<SitePose> {
+    let layout = &prj.layout;
+    let pos = positions(layout);
+    let mut out = vec![SitePose::default(); layout.enclosures.len()];
+    for lu in lineups(layout) {
+        let Some(&first) = lu.first() else { continue };
+        let fe = &layout.enclosures[first];
+        let lift = fe.elevation.unwrap_or(0.0);
+        // In the line-up: x from its left end, the bottom above the floor.
+        let local = |i: usize| [pos[i][0] - pos[first][0], lift + layout.enclosures[i].build.plinth, 0.0];
+        let place = fe.site.or_else(|| plant_place(prj, &lu, &local)).unwrap_or(SitePlace { x: pos[first][0], z: 0.0, angle: 0.0 });
+        let pose = SitePose { at: [place.x, 0.0, place.z], angle: place.angle.to_radians() };
+        for &i in &lu {
+            out[i] = SitePose { at: pose.apply(local(i)), angle: pose.angle };
+        }
+    }
+    out
+}
+
+fn plant_place(prj: &Project, lu: &[usize], local: &dyn Fn(usize) -> V3) -> Option<SitePlace> {
+    lu.iter().find_map(|&i| {
+        let e = &prj.layout.enclosures[i];
+        let name = e.name.trim_start_matches('+');
+        let place = prj.field.places.iter().find(|p| !name.is_empty() && p.tag.trim_start_matches('+') == name)?;
+        let n = prj.field.node(place.node)?;
+        Some(SitePlace { x: n.x * 1000.0 - local(i)[0] - e.width / 2.0, z: n.y * 1000.0 - e.depth / 2.0, angle: 0.0 })
+    })
+}
+
+/// Sets the place in the room of the line-up an enclosure belongs to (on its left
+/// enclosure); `None` places it automatically again.
+pub fn set_site(prj: &mut Project, ei: usize, place: Option<SitePlace>) {
+    let lu = lineup_of(&prj.layout, ei);
+    for &i in &lu {
+        prj.layout.enclosures[i].site = None;
+    }
+    if let Some(&first) = lu.first() {
+        prj.layout.enclosures[first].site = place;
+    }
 }
 
 fn ensure_id(prj: &mut Project, ei: usize) -> u64 {

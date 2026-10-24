@@ -319,12 +319,33 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.RAIL-TS35-1M", "Mounting rail TS 35 x 7.5, perforated, 1 m", "Mounting", "Mounting rail", "", 6.5, (1000.0, 35.0, 7.5, 0.35), &[]);
     p.quantity_unit = "m".into();
     p.mounting.clear();
+    for (number, desc, price, dims) in [
+        ("GEN.RAIL-TS35X15-1M", "Mounting rail TS 35 x 15, perforated, 1 m", 9.8, (1000.0, 35.0, 15.0, 0.6)),
+        ("GEN.RAIL-TS15-1M", "Mounting rail TS 15 x 5.5, 1 m", 5.2, (1000.0, 15.0, 5.5, 0.15)),
+        ("GEN.RAIL-G32-1M", "Mounting rail G 32, 1 m", 8.9, (1000.0, 32.0, 15.0, 0.55)),
+    ] {
+        let p = c.add(number, desc, "Mounting", "Mounting rail", "", price, dims, &[]);
+        p.quantity_unit = "m".into();
+        p.mounting.clear();
+    }
     let p = c.add("GEN.DUCT-40X60", "Cable duct 40 x 60 mm, 2 m", "Mounting", "Cable duct", "", 11.0, (2000.0, 40.0, 60.0, 0.9), &[]);
     p.pack_quantity = 10;
     p.mounting.clear();
     let p = c.add("GEN.DUCT-25X30", "Cable duct 25 x 30 mm, 2 m, for doors", "Mounting", "Cable duct", "", 6.5, (2000.0, 25.0, 30.0, 0.4), &[]);
     p.pack_quantity = 10;
     p.mounting.clear();
+    for (number, desc, price, dims) in [
+        ("GEN.DUCT-25X40", "Cable duct 25 x 40 mm, 2 m", 7.4, (2000.0, 25.0, 40.0, 0.5)),
+        ("GEN.DUCT-40X40", "Cable duct 40 x 40 mm, 2 m", 9.6, (2000.0, 40.0, 40.0, 0.7)),
+        ("GEN.DUCT-60X60", "Cable duct 60 x 60 mm, 2 m", 13.5, (2000.0, 60.0, 60.0, 1.1)),
+        ("GEN.DUCT-60X80", "Cable duct 60 x 80 mm, 2 m", 15.9, (2000.0, 60.0, 80.0, 1.3)),
+        ("GEN.DUCT-80X80", "Cable duct 80 x 80 mm, 2 m", 18.7, (2000.0, 80.0, 80.0, 1.5)),
+        ("GEN.DUCT-100X80", "Cable duct 100 x 80 mm, 2 m", 22.4, (2000.0, 100.0, 80.0, 1.8)),
+    ] {
+        let p = c.add(number, desc, "Mounting", "Cable duct", "", price, dims, &[]);
+        p.pack_quantity = 10;
+        p.mounting.clear();
+    }
     let p = c.add("GEN.ENC-600X800", "Steel enclosure 600 x 800 x 250 mm, IP66", "Mounting", "Enclosure", "", 320.0, (600.0, 800.0, 250.0, 28.0), &[]);
     p.mounting.clear();
     // Busbar system: width = length of 1 m, height = width of the system, depth = height above the plate.
@@ -332,6 +353,16 @@ Breaking capacity: 100 kA".into();
     p.quantity_unit = "m".into();
     p.mounting.clear();
     p.tech_data = "Bars: 3\nBar: Cu 12 x 5 mm\nRated current: 200 A".into();
+    for (number, desc, price, dims, data) in [
+        ("GEN.BB-3X20X5", "Busbar system 3-pole, Cu 20 x 5 mm, 60 mm centre distance", 52.0, (1000.0, 75.0, 40.0, 2.7), "Bars: 3\nBar: Cu 20 x 5 mm\nRated current: 320 A"),
+        ("GEN.BB-3X30X10", "Busbar system 3-pole, Cu 30 x 10 mm, 60 mm centre distance", 118.0, (1000.0, 90.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
+        ("GEN.BB-4X12X5", "Busbar system 4-pole, Cu 12 x 5 mm, 40 mm centre distance", 49.0, (1000.0, 135.0, 40.0, 2.1), "Bars: 4\nBar: Cu 12 x 5 mm\nRated current: 200 A"),
+    ] {
+        let p = c.add(number, desc, "Mounting", "Busbar system", "", price, dims, &[]);
+        p.quantity_unit = "m".into();
+        p.mounting.clear();
+        p.tech_data = data.into();
+    }
     let p = c.add("GEN.BB-HOLDER-3P", "Busbar holder 3-pole for 12 x 5 mm, 60 mm", "Mounting", "Busbar holder", "", 6.4, (75.0, 25.0, 40.0, 0.08), &[]);
     p.mounting.clear();
     enclosure_systems(&mut c);

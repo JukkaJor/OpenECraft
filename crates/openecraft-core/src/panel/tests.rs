@@ -506,3 +506,41 @@ fn accessories_from_parts() {
     assert!(crate::production::holes_on(e, &prj.parts, Face::Bottom).is_empty());
     assert!(layout_material(&prj).iter().any(|m| m.0 == "GEN.GLAND-M25" && m.1 == 1.0));
 }
+
+#[test]
+fn profiles_offer_generic_and_store_parts() {
+    let store = crate::parts::Part { number: "ACME.DUCT-50X75".into(), subgroup: "Cable duct".into(), height: 50.0, depth: 75.0, ..Default::default() };
+    let rail = crate::parts::Part { number: "ACME.RAIL".into(), subgroup: "Mounting rail".into(), ..Default::default() };
+    let parts = [store, rail, crate::parts::catalog().iter().find(|p| p.number == DUCT_PART).unwrap().clone()];
+    let ducts = profile_choices(ItemKind::Duct, &parts);
+    assert!(ducts.iter().any(|c| c.number == DUCT_PART && c.generic) && ducts.iter().any(|c| c.number == DOOR_DUCT_PART));
+    assert_eq!(ducts.iter().filter(|c| c.number == DUCT_PART).count(), 1, "each part once");
+    assert_eq!(ducts.last().map(|c| (c.number.as_str(), c.generic)), Some(("ACME.DUCT-50X75", false)), "store parts after the generic ones");
+    assert!(!ducts.iter().any(|c| c.number == "ACME.RAIL"));
+    for kind in [ItemKind::Rail, ItemKind::Busbar] {
+        assert!(profile_choices(kind, &[]).iter().filter(|c| c.generic).count() > 1, "several generic types of {kind:?}");
+    }
+    assert!(profile_choices(ItemKind::Device, &parts).is_empty());
+}
+
+#[test]
+fn changing_the_part_of_a_profile_keeps_its_centre_line() {
+    let mut prj = Project::default();
+    prj.parts.push(crate::parts::Part { number: "BIG".into(), height: 80.0, depth: 80.0, ..Default::default() });
+    prj.parts.push(crate::parts::Part { number: "HIGH-RAIL".into(), height: 35.0, depth: 15.0, ..Default::default() });
+    let mut e = Enclosure::default();
+    e.items.push(duct(1, 100.0, 80.0, 400.0, 40.0));
+    e.items.push(duct(2, 50.0, 100.0, 40.0, 300.0));
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Rail, x: 100.0, y: 182.5, w: 400.0, h: 35.0, d: 7.5, ..Default::default() });
+    e.items.push(device(4, 200.0, 163.0, 45.0, 74.0, 7.5, 80.0));
+    prj.layout.enclosures.push(e);
+    assert!(change_profile(&mut prj, 0, 1, "BIG") && change_profile(&mut prj, 0, 2, "BIG"));
+    let e = &prj.layout.enclosures[0];
+    let h = e.item(1).unwrap();
+    assert_eq!((h.x, h.y, h.w, h.h, h.d, h.part.as_str()), (100.0, 60.0, 400.0, 80.0, 80.0, "BIG"));
+    let v = e.item(2).unwrap();
+    assert_eq!((v.x, v.y, v.w, v.h), (30.0, 100.0, 80.0, 300.0));
+    assert!(change_profile(&mut prj, 0, 3, "HIGH-RAIL"));
+    assert_eq!(prj.layout.enclosures[0].item(4).unwrap().z, 15.0, "the device sits on the higher rail");
+    assert!(!change_profile(&mut prj, 0, 4, "BIG"), "devices are no profiles");
+}
