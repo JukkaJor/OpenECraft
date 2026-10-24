@@ -96,6 +96,19 @@ impl Draw for SvgDraw {
     }
 }
 
+/// A free drawing of `w` × `h` mm on white.
+pub fn drawing_svg(w: f32, h: f32, f: impl FnOnce(&mut SvgDraw)) -> String {
+    let mut d = SvgDraw { out: String::new() };
+    let _ = writeln!(
+        d.out,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{w:.0}mm\" height=\"{h:.0}mm\" viewBox=\"0 0 {w:.2} {h:.2}\" font-family=\"Arial, Helvetica, sans-serif\">"
+    );
+    let _ = writeln!(d.out, "<rect x=\"0\" y=\"0\" width=\"{w:.2}\" height=\"{h:.2}\" fill=\"#fff\"/>");
+    f(&mut d);
+    d.out.push_str("</svg>\n");
+    d.out
+}
+
 pub fn page_svg(prj: &Project, page_i: usize) -> String {
     let idx = Index::build(prj);
     let an = Analysis::build(prj);
