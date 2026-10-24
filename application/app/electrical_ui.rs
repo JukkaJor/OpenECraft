@@ -4,12 +4,12 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::electrical::{Earthing, Insulation, Material};
+use openecraft_core::electrical::{Earthing, Insulation, Material};
 use crate::io::Purpose;
-use crate::model::{ReportId, ReportKind};
-use crate::reports::Table;
-use crate::rules::{self, Check, Condition, Level, LimitOverrides, Op, RuleSet, Scope};
-use crate::safety::{self, Category, Pl, SafetyFunction, Subsystem};
+use openecraft_core::model::{ReportId, ReportKind};
+use openecraft_core::reports::Table;
+use openecraft_core::rules::{self, Check, Condition, Level, LimitOverrides, Op, RuleSet, Scope};
+use openecraft_core::safety::{self, Category, Pl, SafetyFunction, Subsystem};
 use egui::{Color32, RichText};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -153,7 +153,7 @@ impl App {
     }
 
     fn supply_tab(&mut self, ui: &mut egui::Ui) {
-        let el = &mut self.prj.electrical;
+        let el = &mut self.session.prj.electrical;
         ui.label(RichText::new(tr("Supply")).strong());
         egui::Grid::new("el_supply").num_columns(2).show(ui, |ui| {
             let s = &mut el.supply;
@@ -198,7 +198,7 @@ impl App {
         });
         ui.weak(tr_fmt!("Current-carrying capacity: {} × IEC 60204-1, table 6", format!("{:.2}", el.conditions.factor())));
         ui.separator();
-        let l = rules::limits(&self.prj);
+        let l = rules::limits(&self.session.prj);
         ui.label(RichText::new(tr("Limits in effect")).strong());
         let yes = |b: bool| if b { tr("yes") } else { tr("no") };
         egui::Grid::new("el_limits").num_columns(2).striped(true).show(ui, |ui| {
@@ -231,7 +231,7 @@ impl App {
                     *report = Some(k.into());
                 }
             });
-            if let Some(t) = self.analysis.report(&self.prj, k) {
+            if let Some(t) = self.session.analysis.report(&self.session.prj, k) {
                 table_grid(ui, id, &t, jump);
             }
             ui.add_space(6.0);
@@ -247,7 +247,7 @@ impl App {
                     *report = Some(k.into());
                 }
             });
-            if let Some(t) = self.analysis.report(&self.prj, k) {
+            if let Some(t) = self.session.analysis.report(&self.session.prj, k) {
                 table_grid(ui, id, &t, jump);
             }
             ui.add_space(6.0);
@@ -258,9 +258,9 @@ impl App {
         ui.weak(tr("Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts."));
         ui.horizontal(|ui| {
             if ui.button(tr("➕ Safety function")).clicked() {
-                let n = self.prj.electrical.safety.len() + 1;
+                let n = self.session.prj.electrical.safety.len() + 1;
                 let sub = |name: &str| Subsystem { name: name.into(), category: Category::Three, dc: 90.0, operations: 10000.0, ccf: true, ..Default::default() };
-                self.prj.electrical.safety.push(SafetyFunction {
+                self.session.prj.electrical.safety.push(SafetyFunction {
                     name: format!("SF{n}"),
                     required: Pl::D,
                     subsystems: vec![sub(tr("Input")), sub(tr("Logic")), sub(tr("Output"))],
@@ -271,9 +271,9 @@ impl App {
                 *report = Some(ReportKind::SafetyFunctions.into());
             }
         });
-        let evaluations: Vec<safety::Evaluation> = self.prj.electrical.safety.iter().map(|f| safety::evaluate(&self.prj, f)).collect();
+        let evaluations: Vec<safety::Evaluation> = self.session.prj.electrical.safety.iter().map(|f| safety::evaluate(&self.session.prj, f)).collect();
         let mut remove = None;
-        for (fi, (f, e)) in self.prj.electrical.safety.iter_mut().zip(&evaluations).enumerate() {
+        for (fi, (f, e)) in self.session.prj.electrical.safety.iter_mut().zip(&evaluations).enumerate() {
             ui.separator();
             ui.horizontal_wrapped(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut f.name).desired_width(160.0));
@@ -321,13 +321,13 @@ impl App {
             }
         }
         if let Some(i) = remove {
-            self.prj.electrical.safety.remove(i);
+            self.session.prj.electrical.safety.remove(i);
         }
     }
 
     fn rules_tab(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.label(RichText::new(tr("Rule libraries")).strong());
-        let standards = &mut self.prj.electrical.standards;
+        let standards = &mut self.session.prj.electrical.standards;
         for lib in rules::library() {
             let mut on = standards.contains(&lib.id);
             ui.horizontal_wrapped(|ui| {
@@ -345,20 +345,20 @@ impl App {
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Customer rule sets")).strong());
             if ui.button(tr("➕ Rule set")).clicked() {
-                let n = self.prj.electrical.rule_sets.len() + 1;
-                self.prj.electrical.rule_sets.push(RuleSet { name: tr_fmt!("Rule set {}", n), active: true, ..Default::default() });
-                self.electrical_ui.rule_set = Some(self.prj.electrical.rule_sets.len() - 1);
+                let n = self.session.prj.electrical.rule_sets.len() + 1;
+                self.session.prj.electrical.rule_sets.push(RuleSet { name: tr_fmt!("Rule set {}", n), active: true, ..Default::default() });
+                self.electrical_ui.rule_set = Some(self.session.prj.electrical.rule_sets.len() - 1);
             }
             if ui.button(tr("📂 Import…")).clicked() {
                 self.io.open(ctx, Purpose::RuleSets);
             }
-            if ui.add_enabled(!self.prj.electrical.rule_sets.is_empty(), egui::Button::new(tr("💾 Export…"))).clicked() {
-                let json = rules::export(&self.prj.electrical.rule_sets);
+            if ui.add_enabled(!self.session.prj.electrical.rule_sets.is_empty(), egui::Button::new(tr("💾 Export…"))).clicked() {
+                let json = rules::export(&self.session.prj.electrical.rule_sets);
                 self.export(ctx, "rule_sets.json".into(), (tr("OpenECraft rule sets"), "json"), json);
             }
         });
         let mut remove = None;
-        for (i, r) in self.prj.electrical.rule_sets.iter_mut().enumerate() {
+        for (i, r) in self.session.prj.electrical.rule_sets.iter_mut().enumerate() {
             ui.horizontal(|ui| {
                 ui.checkbox(&mut r.active, "").on_hover_text(tr("Verify the project against it"));
                 let selected = self.electrical_ui.rule_set == Some(i);
@@ -373,10 +373,10 @@ impl App {
             });
         }
         if let Some(i) = remove {
-            self.prj.electrical.rule_sets.remove(i);
+            self.session.prj.electrical.rule_sets.remove(i);
             self.electrical_ui.rule_set = None;
         }
-        if let Some(r) = self.electrical_ui.rule_set.and_then(|i| self.prj.electrical.rule_sets.get_mut(i)) {
+        if let Some(r) = self.electrical_ui.rule_set.and_then(|i| self.session.prj.electrical.rule_sets.get_mut(i)) {
             ui.separator();
             rule_set_editor(ui, r);
         }
@@ -387,7 +387,7 @@ impl App {
                 *report = Some(ReportKind::Verification.into());
             }
         });
-        if let Some(t) = self.analysis.report(&self.prj, ReportKind::Verification) {
+        if let Some(t) = self.session.analysis.report(&self.session.prj, ReportKind::Verification) {
             table_grid(ui, "el_verify", &t, jump);
         }
     }
@@ -398,9 +398,9 @@ impl App {
             Ok(sets) => {
                 let n = sets.len();
                 for s in sets {
-                    match self.prj.electrical.rule_sets.iter_mut().find(|r| r.name == s.name) {
+                    match self.session.prj.electrical.rule_sets.iter_mut().find(|r| r.name == s.name) {
                         Some(r) => *r = s,
-                        None => self.prj.electrical.rule_sets.push(s),
+                        None => self.session.prj.electrical.rule_sets.push(s),
                     }
                 }
                 self.notify(ctx, tr_fmt!("Imported {} rule sets", n));

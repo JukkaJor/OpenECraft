@@ -2,16 +2,16 @@
 //! drawing wires, texts, graphics, dimensions and connection / cable definitions.
 
 use openecraft_i18n::{tr, tr_fmt};
-use crate::geom::{dist_to_segment, p, P, R, GRID};
-use crate::frame::PlotFrame;
-use crate::index::Index;
-use crate::model::*;
-use crate::ops::{self, Clip, PlaceCtx};
-use crate::render::{self, Draw, Ink, Opts, VAnchor};
-use crate::analysis::Analysis;
-use crate::review::{Hit, MarkupKind, Pen};
-use crate::symbols::{self, Anchor};
-use crate::{cabledef, conndef, graphics, routing};
+use openecraft_core::geom::{dist_to_segment, p, P, R, GRID};
+use openecraft_core::frame::PlotFrame;
+use openecraft_core::index::Index;
+use openecraft_core::model::*;
+use openecraft_core::ops::{self, Clip, PlaceCtx};
+use openecraft_core::render::{self, Draw, Ink, Opts, VAnchor};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::review::{Hit, MarkupKind, Pen};
+use openecraft_core::symbols::{self, Anchor};
+use openecraft_core::{cabledef, conndef, graphics, routing};
 use egui::{pos2, vec2, Align2, Color32, FontId, Key, Painter, PointerButton, Pos2, Rect, Sense, Shape as EShape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -450,7 +450,7 @@ pub enum ReviewInput {
 }
 
 /// Cheap fingerprint of an embedded file (changes when it is replaced).
-fn fingerprint(doc: &crate::document::Document) -> u64 {
+fn fingerprint(doc: &openecraft_core::document::Document) -> u64 {
     use std::hash::{Hash, Hasher};
     let mut h = std::collections::hash_map::DefaultHasher::new();
     doc.data.len().hash(&mut h);
@@ -459,7 +459,7 @@ fn fingerprint(doc: &crate::document::Document) -> u64 {
     h.finish()
 }
 
-fn decode_image(doc: &crate::document::Document) -> Option<egui::ColorImage> {
+fn decode_image(doc: &openecraft_core::document::Document) -> Option<egui::ColorImage> {
     let bytes = doc.bytes().ok()?;
     let img = image::load_from_memory(&bytes).ok()?.to_rgba8();
     let size = [img.width() as usize, img.height() as usize];
@@ -646,7 +646,7 @@ impl Editor {
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
         self.canvas_size = rect.size();
-        let frame = crate::frame::of_page(prj, page_i);
+        let frame = openecraft_core::frame::of_page(prj, page_i);
         if frame.size() != self.frame.size() {
             self.fit_pending = true;
         }

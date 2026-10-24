@@ -4,12 +4,12 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
-use crate::geom::{p, P, GRID};
+use openecraft_core::geom::{p, P, GRID};
 use crate::io::Purpose;
-use crate::model::SymbolInst;
-use crate::render::{self, Draw, Ink, VAnchor};
-use crate::symbols::{self, Anchor, FieldKind, Func, Prim};
-use crate::symlib::{self, Hit, SymbolLibrary, UserPin, UserSymbol, DRAW_SNAP};
+use openecraft_core::model::SymbolInst;
+use openecraft_core::render::{self, Draw, Ink, VAnchor};
+use openecraft_core::symbols::{self, Anchor, FieldKind, Func, Prim};
+use openecraft_core::symlib::{self, Hit, SymbolLibrary, UserPin, UserSymbol, DRAW_SNAP};
 use egui::{pos2, vec2, Color32, Key, PointerButton, RichText, Sense, Stroke};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -86,7 +86,7 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
-        let (prj, se) = (&mut self.prj, &mut self.symed);
+        let (prj, se) = (&mut self.session.prj, &mut self.symed);
         if se.sel.as_ref().map(|k| !prj.symbols.iter().any(|u| &u.key == k)).unwrap_or(true) {
             se.sel = prj.symbols.first().map(|u| u.key.clone());
             se.hit = None;
@@ -216,12 +216,12 @@ impl App {
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::Symbols),
             Some(Action::Export) => {
-                let lib = SymbolLibrary { symbols: self.prj.symbols.clone() };
+                let lib = SymbolLibrary { symbols: self.session.prj.symbols.clone() };
                 let json = serde_json::to_string_pretty(&lib).unwrap_or_default();
                 self.export(ctx, "symbols.json".into(), (tr("OpenECraft symbol library"), "json"), json);
             }
             Some(Action::Place(key)) => {
-                symlib::register(&self.prj.symbols);
+                symlib::register(&self.session.prj.symbols);
                 if let Some(def) = symbols::get(&key) {
                     self.workspace = super::Workspace::Schematic;
                     self.editor.set_tool(Tool::Place(def.key));
@@ -229,14 +229,14 @@ impl App {
                 }
             }
             Some(Action::Duplicate(si)) => {
-                let mut copy = self.prj.symbols[si].clone();
+                let mut copy = self.session.prj.symbols[si].clone();
                 copy.name = format!("{} (copy)", copy.name);
-                copy.key = symlib::new_key(&self.prj.symbols, &copy.name);
+                copy.key = symlib::new_key(&self.session.prj.symbols, &copy.name);
                 self.symed.sel = Some(copy.key.clone());
-                self.prj.symbols.push(copy);
+                self.session.prj.symbols.push(copy);
             }
             Some(Action::Delete(si)) => {
-                self.prj.symbols.remove(si);
+                self.session.prj.symbols.remove(si);
                 self.symed.sel = None;
                 self.symed.hit = None;
             }

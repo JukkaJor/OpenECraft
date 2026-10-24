@@ -3,11 +3,11 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::document;
-use crate::frame::{self, Labels, Paper, PlotFrame};
+use openecraft_core::document;
+use openecraft_core::frame::{self, Labels, Paper, PlotFrame};
 use crate::io::{Loaded, Purpose};
-use crate::model::PageKind;
-use crate::page_templates::{self, Library};
+use openecraft_core::model::PageKind;
+use openecraft_core::page_templates::{self, Library};
 use egui::{pos2, vec2, Color32, RichText, Sense, Stroke};
 
 #[derive(Default)]
@@ -33,10 +33,10 @@ fn frame_preview(ui: &mut egui::Ui, f: &PlotFrame) {
     let k = (220.0 / w).min(160.0 / h);
     let (resp, painter) = ui.allocate_painter(vec2(w * k + 4.0, h * k + 4.0), Sense::hover());
     let o = resp.rect.min + vec2(2.0, 2.0);
-    let r = |a: crate::geom::P, b: crate::geom::P| egui::Rect::from_min_max(o + vec2(a.x, a.y) * k, o + vec2(b.x, b.y) * k);
+    let r = |a: openecraft_core::geom::P, b: openecraft_core::geom::P| egui::Rect::from_min_max(o + vec2(a.x, a.y) * k, o + vec2(b.x, b.y) * k);
     let line = Stroke::new(1.0, ui.visuals().text_color());
     let thin = Stroke::new(0.5, ui.visuals().weak_text_color());
-    painter.rect_filled(r(crate::geom::p(0.0, 0.0), crate::geom::p(w, h)), 0.0, Color32::WHITE);
+    painter.rect_filled(r(openecraft_core::geom::p(0.0, 0.0), openecraft_core::geom::p(w, h)), 0.0, Color32::WHITE);
     let (b, a) = (f.border(), f.area());
     painter.rect_stroke(r(b.min, b.max), 0.0, line, egui::StrokeKind::Inside);
     if f.strips {
@@ -56,11 +56,11 @@ fn frame_preview(ui: &mut egui::Ui, f: &PlotFrame) {
 
 impl App {
     pub(super) fn frame_tab(&mut self, ui: &mut egui::Ui) {
-        let names = frame::names(&self.prj);
+        let names = frame::names(&self.session.prj);
         let pu = &mut self.pages_ui;
-        let prj = &mut self.prj;
+        let prj = &mut self.session.prj;
         if !names.contains(&pu.frame) {
-            pu.frame = frame::page_frame_name(prj, self.page).to_string();
+            pu.frame = frame::page_frame_name(prj, self.session.page).to_string();
             pu.rename = pu.frame.clone();
         }
         let default = if prj.forms.default_frame.is_empty() { frame::DEFAULT.to_string() } else { prj.forms.default_frame.clone() };
@@ -208,7 +208,7 @@ impl App {
             if ui.button(tr("Import…")).on_hover_text(tr("Page templates (JSON) from another project")).clicked() {
                 action = Some(TemplateAction::Import);
             }
-            if ui.add_enabled(!self.prj.page_templates.is_empty(), egui::Button::new(tr("Export…"))).on_hover_text(tr("The project's own page templates as a file")).clicked() {
+            if ui.add_enabled(!self.session.prj.page_templates.is_empty(), egui::Button::new(tr("Export…"))).on_hover_text(tr("The project's own page templates as a file")).clicked() {
                 action = Some(TemplateAction::Export);
             }
         });
@@ -223,8 +223,8 @@ impl App {
                 ui.strong(tr("Content"));
                 ui.label("");
                 ui.end_row();
-                for t in page_templates::all(&self.prj) {
-                    let own = self.prj.page_templates.iter().any(|x| x.name == t.name);
+                for t in page_templates::all(&self.session.prj) {
+                    let own = self.session.prj.page_templates.iter().any(|x| x.name == t.name);
                     let name = page_templates::display_name(&t.name);
                     ui.label(if own { RichText::new(&name).strong() } else { RichText::new(tr_fmt!("{} (built-in)", name)) });
                     ui.label(t.kind.label());
@@ -248,14 +248,14 @@ impl App {
             self.insert_template(&t);
         }
         if let Some(name) = remove {
-            page_templates::remove(&mut self.prj, &name);
+            page_templates::remove(&mut self.session.prj, &name);
         }
         action
     }
 
     pub(super) fn insert_template(&mut self, t: &page_templates::PageTemplate) {
-        let at = (self.page + 1).min(self.prj.pages.len());
-        let i = page_templates::insert(&mut self.prj, t, at);
+        let at = (self.session.page + 1).min(self.session.prj.pages.len());
+        let i = page_templates::insert(&mut self.session.prj, t, at);
         self.goto(i, 0);
     }
 
@@ -263,14 +263,14 @@ impl App {
         match action {
             TemplateAction::Import => self.io.open(ctx, Purpose::PageTemplates),
             TemplateAction::Export => {
-                let lib = Library { page_templates: self.prj.page_templates.clone() };
+                let lib = Library { page_templates: self.session.prj.page_templates.clone() };
                 self.export(ctx, "page_templates.json".into(), (tr("OpenECraft page templates"), "json"), lib.to_json());
             }
         }
     }
 
     pub(super) fn open_save_template(&mut self) {
-        let pg = &self.prj.pages[self.page];
+        let pg = &self.session.prj.pages[self.session.page];
         let name = if pg.description.is_empty() { tr("My page").to_string() } else { pg.description.clone() };
         self.pages_ui.template_name = Some(name);
     }
@@ -279,7 +279,7 @@ impl App {
         let Some(mut name) = self.pages_ui.template_name.take() else { return };
         let mut open = true;
         let mut save = false;
-        let exists = self.prj.page_templates.iter().any(|t| t.name == name.trim());
+        let exists = self.session.prj.page_templates.iter().any(|t| t.name == name.trim());
         egui::Window::new(tr("Save page as template")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
             ui.label(tr("The page type, plot frame, title block, structure, description and the whole content are saved."));
             ui.horizontal(|ui| {
@@ -292,8 +292,8 @@ impl App {
             save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("Save"))).clicked();
         });
         if save {
-            let t = page_templates::from_page(&self.prj, self.page, &name);
-            page_templates::save(&mut self.prj, t);
+            let t = page_templates::from_page(&self.session.prj, self.session.page, &name);
+            page_templates::save(&mut self.session.prj, t);
             self.notify(ctx, tr_fmt!("Page template {} saved", name.trim()));
         } else if open {
             self.pages_ui.template_name = Some(name);
@@ -305,11 +305,11 @@ impl App {
     pub(super) fn load_document(&mut self, ctx: &egui::Context, loaded: &Loaded) {
         let name = crate::io::short_name(&loaded.name).to_string();
         match self.pages_ui.replace_document.take() {
-            Some(i) if i < self.prj.pages.len() && self.prj.pages[i].kind == PageKind::Document => {
-                self.prj.pages[i].document = Some(document::Document::new(&name, &loaded.bytes));
+            Some(i) if i < self.session.prj.pages.len() && self.session.prj.pages[i].kind == PageKind::Document => {
+                self.session.prj.pages[i].document = Some(document::Document::new(&name, &loaded.bytes));
             }
             _ => {
-                let i = document::add_page(&mut self.prj, self.page, &name, &loaded.bytes);
+                let i = document::add_page(&mut self.session.prj, self.session.page, &name, &loaded.bytes);
                 self.goto(i, 0);
             }
         }
@@ -317,7 +317,7 @@ impl App {
     }
 
     pub(super) fn save_document(&mut self, ctx: &egui::Context, page: usize) {
-        let Some(doc) = self.prj.pages[page].document.clone() else { return };
+        let Some(doc) = self.session.prj.pages[page].document.clone() else { return };
         match doc.bytes() {
             Ok(bytes) => {
                 let ext = doc.extension();

@@ -4,7 +4,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
-use crate::structure::{self, Aspect, Dt, WorkArea, TEMPLATES};
+use openecraft_core::structure::{self, Aspect, Dt, WorkArea, TEMPLATES};
 use egui::{Color32, RichText};
 
 pub struct StructureUi {
@@ -49,9 +49,9 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
-        let rows = structure::overview(&self.prj);
+        let rows = structure::overview(&self.session.prj);
         let st = &mut self.structure_ui;
-        let structures = &mut self.prj.structures;
+        let structures = &mut self.session.prj.structures;
         egui::Window::new(tr("Structure management")).open(&mut open).default_size([760.0, 560.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Template"));
@@ -216,23 +216,23 @@ impl App {
         self.structure_ui.open = open;
         match action {
             Some(Action::Template) => {
-                let n = structure::apply_template(&mut self.prj.structures, &TEMPLATES[self.structure_ui.template]);
+                let n = structure::apply_template(&mut self.session.prj.structures, &TEMPLATES[self.structure_ui.template]);
                 self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
             }
             Some(Action::LoadTemplate) => self.io.open(ctx, Purpose::StructureTemplate),
             Some(Action::SaveTemplate) => {
-                let json = self.prj.structures.to_json();
+                let json = self.session.prj.structures.to_json();
                 self.export(ctx, "structure.json".into(), (tr("OpenECraft structure template"), "json"), json);
             }
             Some(Action::DefineUsed) => {
-                let n = structure::define_used(&mut self.prj);
+                let n = structure::define_used(&mut self.session.prj);
                 self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
             }
             Some(Action::RemoveUnused) => {
-                let n = structure::remove_unused(&mut self.prj);
+                let n = structure::remove_unused(&mut self.session.prj);
                 self.notify(ctx, tr_fmt!("{} unused structure identifiers removed", n));
             }
-            Some(Action::Rename(a, old, new)) => match structure::rename(&mut self.prj, a, &old, &new) {
+            Some(Action::Rename(a, old, new)) => match structure::rename(&mut self.session.prj, a, &old, &new) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} renamed: {} pages and devices", a.format(&old), n)),
                 Err(e) => self.notify(ctx, e),
             },

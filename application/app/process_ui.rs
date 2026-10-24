@@ -4,11 +4,11 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::electrofluid::{self, DeviceGroup, GroupKind};
-use crate::fluid::{self, LineType, Medium};
-use crate::model::{ReportId, ReportKind};
-use crate::process::{self, PctLoop, Status};
-use crate::symbols::Category;
+use openecraft_core::electrofluid::{self, DeviceGroup, GroupKind};
+use openecraft_core::fluid::{self, LineType, Medium};
+use openecraft_core::model::{ReportId, ReportKind};
+use openecraft_core::process::{self, PctLoop, Status};
+use openecraft_core::symbols::Category;
 use egui::{Color32, RichText};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -56,25 +56,25 @@ fn tags_edit(ui: &mut egui::Ui, tags: &mut Vec<String>, hint: &str, width: f32) 
 impl App {
     /// Properties of a wire of a fluid net (hose / pipe); they apply to the whole hose.
     pub(super) fn hose_properties(&mut self, ui: &mut egui::Ui, id: u64) {
-        let Some(net) = self.analysis.open.net_of_wire(id).cloned() else { return };
-        let (medium, size, color, length) = crate::fluid::props_of(&self.prj, &net);
+        let Some(net) = self.session.analysis.open.net_of_wire(id).cloned() else { return };
+        let (medium, size, color, length) = openecraft_core::fluid::props_of(&self.session.prj, &net);
         ui.label(RichText::new(tr_fmt!("Hose / pipe {}", net.name)).strong());
-        let hoses: Vec<fluid::Hose> = fluid::hoses(&self.prj, &self.analysis.open).into_iter().filter(|h| h.net == net.name).collect();
+        let hoses: Vec<fluid::Hose> = fluid::hoses(&self.session.prj, &self.session.analysis.open).into_iter().filter(|h| h.net == net.name).collect();
         if !hoses.is_empty() {
             let lines: Vec<String> = hoses.iter().map(|h| format!("{} – {}", h.from, h.to)).collect();
             ui.label(RichText::new(lines.join("\n")).monospace());
         }
-        if let Some(line) = fluid::fluid_nets(&self.prj, &self.analysis.open).into_iter().find(|n| n.net == net.name).map(|n| n.line) {
+        if let Some(line) = fluid::fluid_nets(&self.session.prj, &self.session.analysis.open).into_iter().find(|n| n.net == net.name).map(|n| n.line) {
             ui.weak(line.title());
         }
         ui.separator();
-        let number_now = crate::wirenum::number_of(&self.prj, &net);
+        let number_now = openecraft_core::wirenum::number_of(&self.session.prj, &net);
         let mut number = number_now.clone();
-        let first = crate::wirenum::wires_of(&self.prj, &net).first().map(|w| (w.medium, w.cross_section.clone(), w.color.clone(), w.length));
+        let first = openecraft_core::wirenum::wires_of(&self.session.prj, &net).first().map(|w| (w.medium, w.cross_section.clone(), w.color.clone(), w.length));
         let (mut m, mut s, mut c, mut l) = first.clone().unwrap_or((None, String::new(), String::new(), 0.0));
-        let config_now = fluid::config_of(&self.prj, &net);
+        let config_now = fluid::config_of(&self.session.prj, &net);
         let mut cfg = config_now.clone();
-        let defaults = self.prj.fluid.clone();
+        let defaults = self.session.prj.fluid.clone();
         egui::Grid::new("hoseprops").num_columns(2).show(ui, |ui| {
             ui.label(tr("Hose number"));
             ui.add(egui::TextEdit::singleline(&mut number).hint_text(tr("not numbered")).desired_width(90.0));
@@ -123,14 +123,14 @@ impl App {
         if first != Some((m, s.clone(), c.clone(), l)) || cfg != config_now {
             let hose = (!cfg.is_default()).then(|| cfg.clone());
             for (pi, wid) in &net.wires {
-                if let Some(w) = self.prj.pages[*pi].wires.iter_mut().find(|w| w.id == *wid) {
+                if let Some(w) = self.session.prj.pages[*pi].wires.iter_mut().find(|w| w.id == *wid) {
                     (w.medium, w.cross_section, w.color, w.length) = (m, s.trim().to_string(), c.trim().to_string(), l);
                     w.hose = hose.clone();
                 }
             }
         }
         if number != number_now {
-            crate::wirenum::set(&mut self.prj, &net, number.trim(), true);
+            openecraft_core::wirenum::set(&mut self.session.prj, &net, number.trim(), true);
         }
     }
 
@@ -168,7 +168,7 @@ impl App {
 
     fn hoses_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.weak(tr("Wires between the ports of fluid power and P&ID symbols are hoses / pipes: their own nets, numbered with the wire numbering, listed in the hose list."));
-        let f = &mut self.prj.fluid;
+        let f = &mut self.session.prj.fluid;
         ui.horizontal_wrapped(|ui| {
             ui.label(tr("Default medium"));
             let mut m = Some(f.medium);
@@ -205,7 +205,7 @@ impl App {
         });
         ui.separator();
         ui.label(RichText::new(tr("Fluid netlist")).strong());
-        let nets = fluid::fluid_nets(&self.prj, &self.analysis.open);
+        let nets = fluid::fluid_nets(&self.session.prj, &self.session.analysis.open);
         egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
             egui::Grid::new("fluidnets").striped(true).num_columns(6).spacing([10.0, 4.0]).show(ui, |ui| {
                 for h in [tr("Net"), tr("Hose no."), tr("Line"), tr("Medium"), tr("Nominal size"), tr("Ports")] {
@@ -220,7 +220,7 @@ impl App {
                     ui.label(&n.size);
                     let ports: Vec<String> = n.ports.iter().map(|p| format!("{} ({})", p.designation, p.kind.title())).collect();
                     if ui.link(ports.join(", ")).clicked() {
-                        *jump = n.ports.first().map(|p| (p.pin.page, self.prj.pages[p.pin.page].symbols[p.pin.sym].id));
+                        *jump = n.ports.first().map(|p| (p.pin.page, self.session.prj.pages[p.pin.page].symbols[p.pin.sym].id));
                     }
                     ui.end_row();
                 }
@@ -232,9 +232,9 @@ impl App {
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("➕ Group")).clicked() {
-                let used = |t: &str| self.prj.fluid.groups.iter().any(|g| g.tag == t) || self.prj.all_tags().iter().any(|x| x == t);
+                let used = |t: &str| self.session.prj.fluid.groups.iter().any(|g| g.tag == t) || self.session.prj.all_tags().iter().any(|x| x == t);
                 let tag = (1..).map(|n| format!("-KH{n}")).find(|t| !used(t)).unwrap_or_default();
-                self.prj.fluid.groups.push(DeviceGroup { tag, ..Default::default() });
+                self.session.prj.fluid.groups.push(DeviceGroup { tag, ..Default::default() });
             }
             if ui.button(tr("📊 Fluid device groups")).clicked() {
                 *report = Some(ReportKind::FluidDeviceGroups.into());
@@ -247,7 +247,7 @@ impl App {
                     ui.label(RichText::new(h).strong());
                 }
                 ui.end_row();
-                for (i, g) in self.prj.fluid.groups.iter_mut().enumerate() {
+                for (i, g) in self.session.prj.fluid.groups.iter_mut().enumerate() {
                     ui.add(egui::TextEdit::singleline(&mut g.tag).desired_width(60.0));
                     egui::ComboBox::from_id_salt(("gkind", i)).selected_text(g.kind.title()).show_ui(ui, |ui| {
                         for k in GroupKind::ALL {
@@ -266,14 +266,14 @@ impl App {
             });
         });
         if let Some(i) = remove {
-            self.prj.fluid.groups.remove(i);
+            self.session.prj.fluid.groups.remove(i);
         }
     }
 
     fn electro_fluid_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("🔄 Synchronize")).on_hover_text(tr("Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts")).clicked() {
-                let s = electrofluid::synchronize(&mut self.prj);
+                let s = electrofluid::synchronize(&mut self.session.prj);
                 self.process_ui.message = tr_fmt!("{} links created, {} function texts copied", s.linked.len(), s.texts);
             }
             if ui.button(tr("📊 Electro-fluid cross reference")).clicked() {
@@ -284,12 +284,12 @@ impl App {
             }
         });
         ui.weak(tr("Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other."));
-        let idx = crate::index::Index::build(&self.prj);
+        let idx = openecraft_core::index::Index::build(&self.session.prj);
         let rows: Vec<(String, String, usize, (usize, u64))> = idx
             .sorted_tags()
             .into_iter()
             .filter_map(|t| {
-                let (def, _, loc) = electrofluid::main_of(&self.prj, &idx, t).filter(|(d, _, _)| d.category == Category::Fluid)?;
+                let (def, _, loc) = electrofluid::main_of(&self.session.prj, &idx, t).filter(|(d, _, _)| d.category == Category::Fluid)?;
                 Some((t.clone(), tr(def.name).to_string(), electrofluid::solenoids(def), (loc.page, loc.sym_id)))
             })
             .collect();
@@ -304,14 +304,14 @@ impl App {
                         *jump = Some(target);
                     }
                     ui.label(function);
-                    let mut els = electrofluid::linked(&self.prj, &tag).to_vec();
+                    let mut els = electrofluid::linked(&self.session.prj, &tag).to_vec();
                     let before = els.clone();
                     tags_edit(ui, &mut els, "-MB1", 160.0);
                     if els != before {
                         if els.is_empty() {
-                            self.prj.fluid.links.remove(&tag);
+                            self.session.prj.fluid.links.remove(&tag);
                         } else {
-                            self.prj.fluid.links.insert(tag.clone(), els.clone());
+                            self.session.prj.fluid.links.insert(tag.clone(), els.clone());
                         }
                     }
                     let missing: Vec<&String> = els.iter().filter(|e| !idx.devices.contains_key(*e)).collect();
@@ -331,8 +331,8 @@ impl App {
     }
 
     fn loops_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
-        let idx = crate::index::Index::build(&self.prj);
-        let loops = process::loops(&self.prj, &idx);
+        let idx = openecraft_core::index::Index::build(&self.session.prj);
+        let loops = process::loops(&self.session.prj, &idx);
         let (mut add, mut remove, mut define) = (false, None, None);
         ui.horizontal_wrapped(|ui| {
             add = ui.button(tr("➕ Loop")).clicked();
@@ -348,9 +348,9 @@ impl App {
                 }
                 ui.end_row();
                 for l in &loops {
-                    match self.prj.pct_loops.iter_mut().position(|d| d.name == l.name) {
+                    match self.session.prj.pct_loops.iter_mut().position(|d| d.name == l.name) {
                         Some(i) => {
-                            let d = &mut self.prj.pct_loops[i];
+                            let d = &mut self.session.prj.pct_loops[i];
                             ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(60.0));
                             ui.add(egui::TextEdit::singleline(&mut d.description).desired_width(200.0));
                             ui.add(egui::TextEdit::singleline(&mut d.range).desired_width(100.0));
@@ -383,13 +383,13 @@ impl App {
         });
         if add {
             let next = (1..).map(|n| (100 + n).to_string()).find(|n| !loops.iter().any(|l| &l.name == n)).unwrap_or_default();
-            self.prj.pct_loops.push(PctLoop { name: next, ..Default::default() });
+            self.session.prj.pct_loops.push(PctLoop { name: next, ..Default::default() });
         }
         if let Some(name) = define {
-            self.prj.pct_loops.push(PctLoop { name, ..Default::default() });
+            self.session.prj.pct_loops.push(PctLoop { name, ..Default::default() });
         }
         if let Some(name) = remove {
-            self.prj.pct_loops.retain(|l| l.name != name);
+            self.session.prj.pct_loops.retain(|l| l.name != name);
         }
     }
 }

@@ -4,8 +4,8 @@
 
 use super::{App, LeftTab};
 use crate::io::Purpose;
-use crate::review::{self, ChangeRequest, Hit, Priority, Record, RequestStatus};
-use crate::structure;
+use openecraft_core::review::{self, ChangeRequest, Hit, Priority, Record, RequestStatus};
+use openecraft_core::structure;
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
 
@@ -53,7 +53,7 @@ impl App {
             ui.separator();
             egui::Panel::left("request_list").resizable(true).default_size(330.0).show(ui, |ui| {
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    for r in review::sorted_requests(&self.prj) {
+                    for r in review::sorted_requests(&self.session.prj) {
                         if r.status.is_done() && !self.requests_ui.show_done && self.requests_ui.selected != Some(r.id) {
                             continue;
                         }
@@ -69,14 +69,14 @@ impl App {
                             self.requests_ui.selected = Some(r.id);
                         }
                     }
-                    if self.prj.review.live_requests().next().is_none() {
+                    if self.session.prj.review.live_requests().next().is_none() {
                         ui.weak(tr("No change requests yet."));
                     }
                 });
             });
             egui::CentralPanel::default().show(ui, |ui| {
                 egui::ScrollArea::vertical().id_salt("request_details").auto_shrink([false, false]).show(ui, |ui| {
-                    match self.requests_ui.selected.and_then(|id| self.prj.review.request(id).cloned()) {
+                    match self.requests_ui.selected.and_then(|id| self.session.prj.review.request(id).cloned()) {
                         Some(r) => self.request_details(ui, r),
                         None => {
                             ui.weak(tr("Select a request."));
@@ -88,15 +88,15 @@ impl App {
         self.requests_ui.open &= open;
         if new {
             let (user, date) = (self.user_name(), self.today());
-            let id = review::add_request(&mut self.prj, tr("New change request"), &user, &date);
+            let id = review::add_request(&mut self.session.prj, tr("New change request"), &user, &date);
             self.requests_ui.selected = Some(id);
         }
         if import {
             self.io.open(ctx, Purpose::ChangeRequests);
         }
         match export {
-            Some(true) => self.export(ctx, "change-requests.json".into(), ("JSON", "json"), review::requests_json(&self.prj)),
-            Some(false) => self.export(ctx, "change-requests.csv".into(), ("CSV", "csv"), review::requests_csv(&self.prj)),
+            Some(true) => self.export(ctx, "change-requests.json".into(), ("JSON", "json"), review::requests_json(&self.session.prj)),
+            Some(false) => self.export(ctx, "change-requests.csv".into(), ("CSV", "csv"), review::requests_csv(&self.session.prj)),
             None => {}
         }
     }
@@ -140,8 +140,8 @@ impl App {
             let shown = if e.revision.is_empty() { tr("(none)").to_string() } else { e.revision.clone() };
             egui::ComboBox::from_id_salt(("request_revision", r.id)).selected_text(shown).show_ui(ui, |ui| {
                 ui.selectable_value(&mut e.revision, String::new(), tr("(none)"));
-                let mut names: Vec<String> = self.prj.revisions.iter().map(|r| r.name.clone()).collect();
-                let next = crate::revision::next_name(&self.prj);
+                let mut names: Vec<String> = self.session.prj.revisions.iter().map(|r| r.name.clone()).collect();
+                let next = openecraft_core::revision::next_name(&self.session.prj);
                 if !names.contains(&next) {
                     names.push(next);
                 }
@@ -162,7 +162,7 @@ impl App {
         });
         let mut goto = None;
         egui::CollapsingHeader::new(tr_fmt!("Affected pages ({})", e.pages.len())).id_salt(("request_pages", r.id)).show(ui, |ui| {
-            for (i, pg) in self.prj.pages.iter().enumerate() {
+            for (i, pg) in self.session.prj.pages.iter().enumerate() {
                 let mut on = e.pages.contains(&pg.id);
                 ui.horizontal(|ui| {
                     if ui.checkbox(&mut on, format!("{} {}", structure::page_full_name(pg), pg.description)).changed() {
@@ -178,7 +178,7 @@ impl App {
                 });
             }
         });
-        let comments: Vec<(u64, u64, String)> = self.prj.review.live_comments().filter(|c| c.request == r.id).map(|c| (c.id, c.page, format!("#{} {}: {}", self.prj.review.comment_number(c.id), c.status.title(), c.text.lines().next().unwrap_or("")))).collect();
+        let comments: Vec<(u64, u64, String)> = self.session.prj.review.live_comments().filter(|c| c.request == r.id).map(|c| (c.id, c.page, format!("#{} {}: {}", self.session.prj.review.comment_number(c.id), c.status.title(), c.text.lines().next().unwrap_or("")))).collect();
         ui.label(RichText::new(tr_fmt!("Comments ({})", comments.len())).strong());
         let mut show_comment = None;
         for (id, page, text) in comments {
@@ -196,22 +196,22 @@ impl App {
         }
         if e != r {
             e.bump();
-            if let Some(old) = self.prj.review.requests.iter_mut().find(|o| o.id == r.id) {
+            if let Some(old) = self.session.prj.review.requests.iter_mut().find(|o| o.id == r.id) {
                 *old = e;
             }
         }
         if add_comment {
-            let page = self.prj.pages[self.page].id;
+            let page = self.session.prj.pages[self.session.page].id;
             let (user, date) = (self.user_name(), self.today());
-            let id = review::add_comment(&mut self.prj, page, crate::geom::p(20.0, 20.0), &user, &date, "");
-            if let Some(c) = self.prj.review.comment_mut(id) {
+            let id = review::add_comment(&mut self.session.prj, page, openecraft_core::geom::p(20.0, 20.0), &user, &date, "");
+            if let Some(c) = self.session.prj.review.comment_mut(id) {
                 c.request = r.id;
             }
             self.review_ui.selected = Some(Hit::Comment(id));
             self.left_tab = LeftTab::Review;
         }
         if let Some((id, page)) = show_comment {
-            if let Some(pi) = self.prj.pages.iter().position(|p| p.id == page) {
+            if let Some(pi) = self.session.prj.pages.iter().position(|p| p.id == page) {
                 self.goto(pi, 0);
             }
             self.review_ui.selected = Some(Hit::Comment(id));

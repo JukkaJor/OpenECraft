@@ -65,7 +65,7 @@ impl App {
     }
 
     fn run_plugin_command(&mut self, c: &Command, texts: &[String]) {
-        let result = form_args(&c.params, texts).and_then(|args| self.plugins.run(c, &mut self.prj, &args));
+        let result = form_args(&c.params, texts).and_then(|args| self.plugins.run(c, &mut self.session.prj, &args));
         self.plugins_ui.result = Some(result.map(|v| match v {
             Value::String(s) => s,
             Value::Null => tr("Done.").to_string(),
@@ -75,7 +75,7 @@ impl App {
 
     fn show_plugin_report(&mut self, name: String, title: String) {
         let table = match self.plugins.report(&name) {
-            Some(r) => (r.run)(&self.prj, &self.analysis),
+            Some(r) => (r.run)(&self.session.prj, &self.session.analysis),
             None => return,
         };
         self.plugins_ui.report = Some((name, title, table));
@@ -83,7 +83,7 @@ impl App {
 
     /// Plugins whose checks, reports or menu entries changed: the analysis is rebuilt.
     fn plugins_changed(&mut self) {
-        self.analysis_rev = self.history.rev.wrapping_add(1);
+        self.session.invalidate();
     }
 
     pub(super) fn plugins_windows(&mut self, ctx: &egui::Context) {

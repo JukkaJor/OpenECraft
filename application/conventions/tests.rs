@@ -260,3 +260,14 @@ let x = crate::panel::snap(1.0);");
     let v: Vec<&str> = refs.iter().map(String::as_str).collect();
     assert_eq!(v, ["geom", "model", "netlist", "panel"]);
 }
+
+/// The editor names core modules as `openecraft_core::…` instead of re-exporting
+/// them as `crate::…`, so that UI code and model code stay distinguishable.
+#[test]
+fn the_editor_names_core_modules_explicitly() {
+    let main = std::fs::read_to_string(root().join("application/main.rs")).unwrap();
+    let offending: Vec<&str> = main.lines().filter(|l| l.trim_start().starts_with("use openecraft_core::") || l.trim_start().starts_with("pub use openecraft_core::")).collect();
+    assert!(offending.is_empty(), "main.rs must not re-export core modules:
+{}", offending.join("
+"));
+}

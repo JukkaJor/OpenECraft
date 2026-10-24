@@ -1,0 +1,249 @@
+//! Files of the editor: saving, exports through the registry, imports of the files the
+//! user opens (projects, parts, libraries, drawings, tables, …).
+
+use super::*;
+
+impl App {
+    pub(super) fn suggested_name(&self, ext: &str) -> String {
+        let base: String = self
+            .session.prj
+            .info
+            .name
+            .chars()
+            .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+            .collect();
+        format!("{}.{ext}", if base.is_empty() { "project".into() } else { base })
+    }
+
+    pub(super) fn save(&mut self, ctx: &egui::Context, save_as: bool) {
+        if self.remote.shared.is_some() && !save_as {
+            self.save_remote(Vec::new());
+            return;
+        }
+        let json = self.session.prj.to_json();
+        let result = match (&self.session.file_name, save_as || !FileIo::can_save_in_place()) {
+            (Some(path), false) => self.io.save_to(path, &json).map(|_| Some(path.clone())),
+            _ => {
+                let name = self.session.file_name.as_deref().map(io::short_name).map(String::from);
+                let name = name.unwrap_or_else(|| self.suggested_name(PROJECT_EXT));
+                self.io.save_as(&name, (tr("OpenECraft project"), PROJECT_EXT), &json)
+            }
+        };
+        match result {
+            Ok(Some(path)) => {
+                self.notify(ctx, tr_fmt!("Saved {}", io::short_name(&path)));
+                self.session.file_name = Some(path);
+                self.session.mark_saved();
+            }
+            Ok(None) => {}
+            Err(e) => self.notify(ctx, tr_fmt!("Saving failed: {}", e)),
+        }
+    }
+
+    pub(super) fn export(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: String) {
+        self.export_bytes(ctx, name, filter, content.as_bytes());
+    }
+
+    pub(super) fn parts_actions(&mut self, ctx: &egui::Context, actions: Vec<PartsAction>) {
+        for action in actions {
+            match action {
+                PartsAction::Import => self.io.open(ctx, Purpose::Parts),
+                PartsAction::ImportModel(kind) => self.io.open(ctx, Purpose::Model(kind)),
+                PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
+                PartsAction::SaveFile { name, data } => {
+                    let ext = name.rsplit('.').next().filter(|e| *e != name).unwrap_or("bin").to_string();
+                    self.export_bytes(ctx, name.clone(), (tr("File"), &ext), &data);
+                }
+                PartsAction::ImportMacros(text) => self.import_macros(ctx, &text),
+                PartsAction::Message(m) => self.notify(ctx, m),
+            }
+        }
+    }
+
+    /// Runs an exporter on the project (with its texts in `lang` if given) and saves
+    /// the file. Exporters that take a page get the current one.
+    pub(super) fn run_exporter(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>) {
+        let takes = |n: &str| e.params.iter().any(|p| p.name == n);
+        let page = self.session.prj.pages[self.session.page].name.clone();
+        let base = self.suggested_name("x");
+        let base = base.trim_end_matches(".x");
+        let mut stem = if takes("page") {
+            format!("{base}_page_{page}")
+        } else if e.extension == "csv" {
+            format!("{base}_{}", e.name)
+        } else {
+            base.to_string()
+        };
+        if let Some(l) = lang.filter(|l| *l != self.session.prj.languages.source) {
+            stem = format!("{stem}_{l}");
+        }
+        let name = format!("{stem}.{}", e.extension);
+        let mut args = Map::new();
+        if takes("page") {
+            args.insert("page".into(), page.into());
+        }
+        if takes("file") {
+            args.insert("file".into(), name.clone().into());
+        }
+        let result = match lang {
+            Some(l) => translation::with_language(&self.session.prj, l, |prj| {
+                let mut an = Analysis::build(prj);
+                an.set_reports(self.plugins.reports().cloned());
+                (e.run)(prj, &an, &Args(&args))
+            }),
+            None => (e.run)(&self.session.prj, &self.session.analysis, &Args(&args)),
+        };
+        let title = text(&e.title).to_string();
+        match result {
+            Ok(out) => self.export_bytes(ctx, name, (&title, &e.extension), &out.into_bytes()),
+            Err(err) => self.notify(ctx, tr_fmt!("Export failed: {}", err)),
+        }
+    }
+
+    pub(super) fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
+        match self.io.save_bytes_as(&name, filter, content) {
+            Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
+            Ok(None) => {}
+            Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
+        }
+    }
+
+    pub(super) fn export_dwg(&mut self, ctx: &egui::Context, name: String, content: Result<Vec<u8>, String>) {
+        match content {
+            Ok(dwg) => self.export_bytes(ctx, name, (tr("DWG drawing"), "dwg"), &dwg),
+            Err(e) => self.notify(ctx, e),
+        }
+    }
+
+    pub(super) fn poll_loaded(&mut self, ctx: &egui::Context) {
+        let Some(loaded) = self.io.poll() else { return };
+        match loaded.purpose {
+            Purpose::Project => self.open_loaded_project(ctx, &loaded),
+            Purpose::Parts => self.import_parts(ctx, &loaded.text()),
+            Purpose::Model(_) => {
+                let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.session.prj) {
+                    Ok(m) => m,
+                    Err(e) => tr_fmt!("Model import failed: {}", e),
+                };
+                self.notify(ctx, msg);
+            }
+            Purpose::Macros => self.import_macros(ctx, &loaded.text()),
+            Purpose::PlcTable => match openecraft_core::plc::import_symbol_table(&mut self.session.prj, &loaded.text()) {
+                Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
+                Err(e) => self.notify(ctx, tr_fmt!("Symbol table import failed: {}", e)),
+            },
+            Purpose::Symbols => match openecraft_core::symlib::SymbolLibrary::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let (added, replaced) = openecraft_core::symlib::merge(&mut self.session.prj.symbols, lib);
+                    self.symed.open = true;
+                    self.notify(ctx, tr_fmt!("{} symbols added, {} replaced", added, replaced));
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a symbol library: {}", e)),
+            },
+            Purpose::Forms => match openecraft_core::forms::FormLibrary::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let (blocks, schemes) = openecraft_core::forms::merge(&mut self.session.prj, lib);
+                    self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
+            },
+            Purpose::Drawing => self.import_drawing(ctx, &loaded),
+            Purpose::Table(kind) => self.import_table(ctx, kind, &loaded.text()),
+            Purpose::Dictionary => match translation::from_csv(&mut self.session.prj, &loaded.text()) {
+                Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
+                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+            },
+            Purpose::OutputTarget => self.output_reports(ctx, &loaded),
+            Purpose::Aml | Purpose::DeviceDescription => self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text()),
+            Purpose::StructureTemplate => match structure::Structures::from_json(&loaded.text()) {
+                Ok(file) => {
+                    let n = self.session.prj.structures.merge(&file);
+                    self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
+                }
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::Document => self.load_document(ctx, &loaded),
+            Purpose::Image => self.load_image(ctx, &loaded),
+            Purpose::PageTemplates => match openecraft_core::page_templates::Library::from_json(&loaded.text()) {
+                Ok(lib) => {
+                    let n = openecraft_core::page_templates::merge(&mut self.session.prj, lib);
+                    self.notify(ctx, tr_fmt!("Imported {} page templates", n));
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
+            },
+            Purpose::Compare => match Project::from_json(&loaded.text()) {
+                Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::ChangeRequests => match openecraft_core::review::import_requests(&mut self.session.prj, &loaded.text()) {
+                Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
+            Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
+            Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),
+            Purpose::Integration => self.integration_file_loaded(&loaded.name, loaded.text()),
+        }
+    }
+
+    /// A project file or archive replaces the open project.
+    pub(super) fn open_loaded_project(&mut self, ctx: &egui::Context, loaded: &Loaded) {
+        match openecraft_core::archive::read_project(&loaded.bytes) {
+            Ok((prj, conv)) => {
+                // An archive is opened like a new project: saving writes a project file.
+                let file = (!openecraft_core::archive::is_archive(&loaded.bytes)).then(|| loaded.name.clone());
+                self.replace_project(prj, file);
+                let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&loaded.name)));
+                self.notify(ctx, note);
+            }
+            Err(e) => self.notify(ctx, e),
+        }
+    }
+
+    pub(super) fn import_parts(&mut self, ctx: &egui::Context, text: &str) {
+        match parts::import(text) {
+            Ok(list) => {
+                let n = list.len();
+                for p in list {
+                    self.parts_db.upsert(p);
+                }
+                self.parts_db.sort();
+                self.notify(ctx, tr_fmt!("Imported {} parts into the database", n));
+            }
+            Err(e) => self.notify(ctx, tr_fmt!("Parts import failed: {}", e)),
+        }
+    }
+
+    /// Merges a macro library file into the macro library.
+    pub(super) fn import_macros(&mut self, ctx: &egui::Context, text: &str) {
+        match openecraft_core::macros::MacroLibrary::from_json(text) {
+            Ok(lib) => {
+                let n = self.macro_lib.merge(lib);
+                self.notify(ctx, tr_fmt!("Imported {} macros", n));
+            }
+            Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+        }
+    }
+
+    /// A DXF / DWG drawing becomes a new page after the current one.
+    pub(super) fn import_drawing(&mut self, ctx: &egui::Context, loaded: &Loaded) {
+        let name = io::short_name(&loaded.name);
+        let description = name.rsplit_once('.').map(|x| x.0).unwrap_or(name).to_string();
+        let is_dwg = openecraft_core::dwg::is_dwg(&loaded.bytes);
+        match openecraft_core::dwg::import_drawing(&mut self.session.prj, &loaded.bytes, &description, self.session.page, Default::default()) {
+            Ok(r) => {
+                self.goto(r.page, 0);
+                let page = self.session.prj.pages[r.page].name.clone();
+                let msg = match (is_dwg, r.skipped.is_empty()) {
+                    (false, true) => tr_fmt!("DXF imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                    (false, false) => tr_fmt!("DXF imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
+                    (true, true) => tr_fmt!("DWG imported as page {}: {} lines, {} texts", page, r.lines, r.texts),
+                    (true, false) => tr_fmt!("DWG imported as page {}: {} lines, {} texts (not imported: {})", page, r.lines, r.texts, r.skipped.join(", ")),
+                };
+                self.notify(ctx, msg);
+            }
+            Err(e) if is_dwg => self.notify(ctx, tr_fmt!("DWG import failed: {}", e)),
+            Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
+        }
+    }
+}

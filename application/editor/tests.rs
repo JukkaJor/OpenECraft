@@ -1,6 +1,6 @@
 use super::*;
-use crate::analysis::Analysis;
-use crate::sample::demo_project;
+use openecraft_core::analysis::Analysis;
+use openecraft_core::sample::demo_project;
 use egui::{Event, Modifiers, RawInput};
 
 /// Runs one editor frame on page `page` with the given input events.
@@ -149,7 +149,7 @@ fn dimension_tool_takes_three_clicks() {
     let d = &prj.pages[0].dimensions[0];
     assert_eq!((d.a, d.b), (p(40.0, 40.0), p(80.0, 48.0)));
     assert!((d.offset - 12.0).abs() < 1e-4);
-    assert_eq!(crate::graphics::dim_text(d), "40");
+    assert_eq!(openecraft_core::graphics::dim_text(d), "40");
 }
 
 #[test]

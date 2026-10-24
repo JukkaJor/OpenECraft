@@ -3,9 +3,9 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::harness::{self, Harness};
-use crate::model::ReportKind;
-use crate::structure;
+use openecraft_core::harness::{self, Harness};
+use openecraft_core::model::ReportKind;
+use openecraft_core::structure;
 use egui::{Color32, RichText};
 
 #[derive(Default)]
@@ -25,28 +25,28 @@ impl App {
         let mut remove = None;
         let mut unassign: Option<(String, [String; 2])> = None;
         let (mut kbl, mut report) = (false, false);
-        let structure = structure::page_structure(&self.prj.pages[self.page]);
+        let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         egui::Window::new(tr("Harnesses")).open(&mut open).default_size([900.0, 460.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New harness")).on_hover_text(tr("In the structure of the current page")).clicked() {
-                    let tag = self.prj.next_tag(&structure, "WH");
-                    let id = self.prj.new_id();
+                    let tag = self.session.prj.next_tag(&structure, "WH");
+                    let id = self.session.prj.new_id();
                     self.harness_ui.sel = Some(tag.clone());
-                    self.prj.harnesses.push(Harness { id, tag, ..Default::default() });
+                    self.session.prj.harnesses.push(Harness { id, tag, ..Default::default() });
                 }
                 report = ui.button(tr("📊 Harness data")).on_hover_text(tr("Report with all harness wires")).clicked();
-                kbl = ui.add_enabled(!self.prj.harnesses.is_empty(), egui::Button::new(tr("⬇ Export KBL (XML)…"))).on_hover_text(tr("Simplified KBL (VDA 4964) for harness manufacturing")).clicked();
+                kbl = ui.add_enabled(!self.session.prj.harnesses.is_empty(), egui::Button::new(tr("⬇ Export KBL (XML)…"))).on_hover_text(tr("Simplified KBL (VDA 4964) for harness manufacturing")).clicked();
                 ui.weak(tr("Assign connections: select the wires between two devices in the schematic › Assign to harness."));
             });
             ui.separator();
-            let an = &self.analysis;
+            let an = &self.session.analysis;
             // Wires, connectors and bundle diameter per harness.
             let stats: Vec<(usize, usize, f32)> = self
-                .prj
+                .session.prj
                 .harnesses
                 .iter()
                 .map(|h| {
-                    let ws = harness::wires(&self.prj, an, &h.tag);
+                    let ws = harness::wires(&self.session.prj, an, &h.tag);
                     (ws.len(), harness::connectors(&ws).len(), harness::bundle_diameter(&ws))
                 })
                 .collect();
@@ -55,7 +55,7 @@ impl App {
                     ui.label(RichText::new(h).strong());
                 }
                 ui.end_row();
-                for (i, h) in self.prj.harnesses.iter_mut().enumerate() {
+                for (i, h) in self.session.prj.harnesses.iter_mut().enumerate() {
                     let old = h.tag.clone();
                     let sel = self.harness_ui.sel.as_deref() == Some(old.as_str());
                     ui.horizontal(|ui| {
@@ -81,22 +81,22 @@ impl App {
                     ui.end_row();
                 }
             });
-            if self.prj.harnesses.is_empty() {
+            if self.session.prj.harnesses.is_empty() {
                 ui.weak(tr("No harnesses defined."));
             }
             // Connectors of the selected harness
-            if let Some(tag) = self.harness_ui.sel.clone().filter(|t| self.prj.harnesses.iter().any(|h| &h.tag == t)) {
+            if let Some(tag) = self.harness_ui.sel.clone().filter(|t| self.session.prj.harnesses.iter().any(|h| &h.tag == t)) {
                 ui.separator();
-                let ws = harness::wires(&self.prj, an, &tag);
+                let ws = harness::wires(&self.session.prj, an, &tag);
                 let total: f32 = ws.iter().map(|w| w.length).sum();
                 ui.label(RichText::new(tr_fmt!("{}: {} wires, {} m wire in total", tag, ws.len(), format!("{:.2}", total / 1000.0))).strong());
                 if ws.iter().any(|w| w.length <= 0.0) {
                     ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Some wires have no length: place their devices in the panel layout or set the field length."));
                 }
-                let stale = harness::stale(&self.prj, an);
-                ui.collapsing(tr_fmt!("Connections ({})", self.prj.harnesses.iter().find(|h| h.tag == tag).map(|h| h.connections.len()).unwrap_or(0)), |ui| {
+                let stale = harness::stale(&self.session.prj, an);
+                ui.collapsing(tr_fmt!("Connections ({})", self.session.prj.harnesses.iter().find(|h| h.tag == tag).map(|h| h.connections.len()).unwrap_or(0)), |ui| {
                     egui::ScrollArea::vertical().id_salt("hlist").max_height(160.0).show(ui, |ui| {
-                        for k in self.prj.harnesses.iter().find(|h| h.tag == tag).map(|h| h.connections.clone()).unwrap_or_default() {
+                        for k in self.session.prj.harnesses.iter().find(|h| h.tag == tag).map(|h| h.connections.clone()).unwrap_or_default() {
                             ui.horizontal(|ui| {
                                 ui.monospace(format!("{} – {}", k[0], k[1]));
                                 if stale.iter().any(|(t, c)| *t == tag && *c == k) {
@@ -136,10 +136,10 @@ impl App {
             }
         }
         if let Some(i) = remove {
-            self.prj.harnesses.remove(i);
+            self.session.prj.harnesses.remove(i);
         }
         if let Some((tag, k)) = unassign {
-            if let Some(h) = self.prj.harnesses.iter_mut().find(|h| h.tag == tag) {
+            if let Some(h) = self.session.prj.harnesses.iter_mut().find(|h| h.tag == tag) {
                 h.connections.retain(|c| *c != k);
             }
         }
@@ -148,7 +148,7 @@ impl App {
             self.show_reports = true;
         }
         if kbl {
-            let xml = harness::kbl(&self.prj, &self.analysis);
+            let xml = harness::kbl(&self.session.prj, &self.session.analysis);
             self.export(ctx, self.suggested_name("kbl"), (tr("KBL harness data (XML)"), "kbl"), xml);
         }
         self.harness_ui.open = open;

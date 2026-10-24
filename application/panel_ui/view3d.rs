@@ -5,11 +5,11 @@
 use openecraft_i18n::tr;
 use super::routing_ui::RouteRef;
 use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
-use crate::geom::{p, P};
-use crate::model::Project;
-use crate::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
-use crate::analysis::Analysis;
+use openecraft_core::geom::{p, P};
+use openecraft_core::model::Project;
+use openecraft_core::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
+use openecraft_core::parts::vec3::{cross, dot, norm, sub, Orbit};
+use openecraft_core::analysis::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
 
 impl PanelUi {
@@ -186,7 +186,7 @@ impl PanelUi {
             let wall_layer = |outside: bool| if outside { OUTER_WALLS } else { 0 };
             let leaf_out = sub(eye, swing([w / 2.0, h / 2.0, dpt + t]));
             for c in panel::components(e) {
-                let [r, g, b] = crate::export3d::component_color(c.role);
+                let [r, g, b] = openecraft_core::export3d::component_color(c.role);
                 let color = Color32::from_rgb(r, g, b);
                 for bx in c.boxes {
                     let (min, max) = up_box(bx);
@@ -420,7 +420,7 @@ impl PanelUi {
                 let on_device = hit.and_then(|(k, id)| prj.layout.enclosures[k].item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
                 let mut candidates: Vec<(usize, f32)> = Vec::new();
                 for (a, b, wi) in &wire_segs {
-                    let d = crate::geom::dist_to_segment(p(ptr.x, ptr.y), p(a.x, a.y), p(b.x, b.y));
+                    let d = openecraft_core::geom::dist_to_segment(p(ptr.x, ptr.y), p(a.x, a.y), p(b.x, b.y));
                     if d <= 6.0 {
                         match candidates.iter_mut().find(|c| c.0 == *wi) {
                             Some(c) => c.1 = c.1.min(d),
@@ -440,9 +440,9 @@ impl PanelUi {
                         return;
                     }
                     // Cables and tubes of the 3D routing.
-                    _ if route_segs.iter().any(|(a, b, _)| crate::geom::dist_to_segment(p(ptr.x, ptr.y), p(a.x, a.y), p(b.x, b.y)) <= 6.0) => {
+                    _ if route_segs.iter().any(|(a, b, _)| openecraft_core::geom::dist_to_segment(p(ptr.x, ptr.y), p(a.x, a.y), p(b.x, b.y)) <= 6.0) => {
                         let near = route_segs.iter().min_by(|x, y| {
-                            let d = |s: &(Pos2, Pos2, String)| crate::geom::dist_to_segment(p(ptr.x, ptr.y), p(s.0.x, s.0.y), p(s.1.x, s.1.y));
+                            let d = |s: &(Pos2, Pos2, String)| openecraft_core::geom::dist_to_segment(p(ptr.x, ptr.y), p(s.0.x, s.0.y), p(s.1.x, s.1.y));
                             d(x).total_cmp(&d(y))
                         });
                         if let Some((_, _, key)) = near {

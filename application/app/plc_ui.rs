@@ -5,9 +5,9 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
-use crate::model::PlcCard;
-use crate::plc_hw::{self, BusKind, BusSystem, PortRef, Scheme, Station, StationKind};
-use crate::{aml, plc};
+use openecraft_core::model::PlcCard;
+use openecraft_core::plc_hw::{self, BusKind, BusSystem, PortRef, Scheme, Station, StationKind};
+use openecraft_core::{aml, plc};
 use egui::{pos2, vec2, Align2, Color32, RichText, Stroke};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
@@ -91,7 +91,7 @@ impl App {
                 ui.selectable_value(&mut self.plc_ui.tab, Tab::Descriptions, tr("Device descriptions"));
             });
             ui.separator();
-            let problems = plc_hw::problems(&self.prj);
+            let problems = plc_hw::problems(&self.session.prj);
             let footer = if problems.is_empty() { 0.0 } else { 24.0 + 18.0 * problems.len().min(4) as f32 };
             egui::ScrollArea::both().auto_shrink([false, false]).max_height(ui.available_height() - footer).show(ui, |ui| match self.plc_ui.tab {
                 Tab::Stations => self.plc_stations(ui, &mut actions),
@@ -115,12 +115,12 @@ impl App {
 
     #[allow(clippy::too_many_lines)]
     fn plc_stations(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
-        let names: Vec<String> = self.prj.plc.stations.iter().map(|s| s.name.clone()).collect();
+        let names: Vec<String> = self.session.prj.plc.stations.iter().map(|s| s.name.clone()).collect();
         if !names.contains(&self.plc_ui.station) {
             self.plc_ui.station = names.first().cloned().unwrap_or_default();
             self.plc_ui.rename = self.plc_ui.station.clone();
         }
-        let unassigned: Vec<String> = plc::cards(&self.prj).into_iter().filter(|c| plc_hw::station_of(&self.prj, c).is_none()).collect();
+        let unassigned: Vec<String> = plc::cards(&self.session.prj).into_iter().filter(|c| plc_hw::station_of(&self.session.prj, c).is_none()).collect();
         ui.horizontal_wrapped(|ui| {
             ui.label(tr("Station"));
             for n in &names {
@@ -138,16 +138,16 @@ impl App {
                 ui.weak(tr_fmt!("Cards without station: {}", unassigned.join(", ")));
             });
         }
-        let Some(si) = self.prj.plc.stations.iter().position(|s| s.name == self.plc_ui.station) else {
+        let Some(si) = self.session.prj.plc.stations.iter().position(|s| s.name == self.plc_ui.station) else {
             ui.weak(tr("No stations: add one or use the automatic configuration."));
             return;
         };
-        let descs = plc_hw::descriptions(&self.prj);
+        let descs = plc_hw::descriptions(&self.session.prj);
         let heads: Vec<String> = descs.iter().filter(|d| d.kind.head()).map(|d| d.id.clone()).collect();
         let modules_desc: Vec<String> = descs.iter().filter(|d| !d.kind.head()).map(|d| d.id.clone()).collect();
-        let networks: Vec<String> = self.prj.plc.networks.iter().map(|n| n.name.clone()).collect();
-        let controllers: Vec<String> = self.prj.plc.stations.iter().filter(|s| s.kind == StationKind::Controller).map(|s| s.name.clone()).collect();
-        let mut st = self.prj.plc.stations[si].clone();
+        let networks: Vec<String> = self.session.prj.plc.networks.iter().map(|n| n.name.clone()).collect();
+        let controllers: Vec<String> = self.session.prj.plc.stations.iter().filter(|s| s.kind == StationKind::Controller).map(|s| s.name.clone()).collect();
+        let mut st = self.session.prj.plc.stations[si].clone();
         let old_scheme = st.scheme;
         ui.separator();
         egui::Grid::new("plcstation").num_columns(4).spacing([10.0, 4.0]).show(ui, |ui| {
@@ -196,15 +196,15 @@ impl App {
             ui.add(egui::TextEdit::singleline(&mut st.comment).desired_width(200.0));
             ui.end_row();
         });
-        if let Some(d) = plc_hw::station_description(&self.prj, &st) {
+        if let Some(d) = plc_hw::station_description(&self.session.prj, &st) {
             ui.weak(tr_fmt!("{}: {} slots, ports {}", d.title(), d.slots, d.ports.iter().map(|p| p.name.as_str()).collect::<Vec<_>>().join(", ")));
         }
-        if st != self.prj.plc.stations[si] {
+        if st != self.session.prj.plc.stations[si] {
             if st.scheme != old_scheme {
                 actions.push(Action::Scheme(si, st.scheme));
                 st.scheme = old_scheme;
             }
-            self.prj.plc.stations[si] = st.clone();
+            self.session.prj.plc.stations[si] = st.clone();
         }
         ui.horizontal(|ui| {
             if ui.button(tr("🗑 Remove station")).clicked() {
@@ -220,7 +220,7 @@ impl App {
             }
         });
         ui.separator();
-        let modules = plc_hw::modules(&self.prj, &st.name);
+        let modules = plc_hw::modules(&self.session.prj, &st.name);
         if modules.is_empty() {
             ui.weak(tr("No modules: plug in PLC cards of the schematic."));
             return;
@@ -231,7 +231,7 @@ impl App {
             }
             ui.end_row();
             for m in &modules {
-                let mut data = self.prj.plc_cards.get(&m.card).cloned().unwrap_or_default();
+                let mut data = self.session.prj.plc_cards.get(&m.card).cloned().unwrap_or_default();
                 let before = data.clone();
                 let (mut rack, mut slot) = (m.rack, m.slot);
                 ui.add(egui::DragValue::new(&mut rack).range(0..=99));
@@ -282,7 +282,7 @@ impl App {
                 actions.push(Action::AddNetwork);
             }
         });
-        let mut nets = self.prj.plc.networks.clone();
+        let mut nets = self.session.prj.plc.networks.clone();
         egui::Grid::new("plcnets").striped(true).num_columns(4).spacing([10.0, 4.0]).show(ui, |ui| {
             for (i, n) in nets.iter_mut().enumerate() {
                 ui.label(&n.name);
@@ -298,33 +298,33 @@ impl App {
                 ui.end_row();
             }
         });
-        if nets != self.prj.plc.networks {
-            self.prj.plc.networks = nets;
+        if nets != self.session.prj.plc.networks {
+            self.session.prj.plc.networks = nets;
         }
         ui.separator();
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Connections")).strong());
-            let open = self.prj.plc.connections.iter().filter(|c| c.cable.is_empty()).count();
+            let open = self.session.prj.plc.connections.iter().filter(|c| c.cable.is_empty()).count();
             if ui.add_enabled(open > 0, egui::Button::new(tr("➕ Create bus cables"))).on_hover_text(tr("A cable of the bus type for every connection without cable")).clicked() {
                 actions.push(Action::CreateCables);
             }
         });
-        let stations: Vec<String> = self.prj.plc.stations.iter().map(|s| s.name.clone()).collect();
-        let cables: Vec<String> = self.prj.cables.iter().map(|c| c.tag.clone()).collect();
+        let stations: Vec<String> = self.session.prj.plc.stations.iter().map(|s| s.name.clone()).collect();
+        let cables: Vec<String> = self.session.prj.cables.iter().map(|c| c.tag.clone()).collect();
         let ports_of = |name: &str| -> Vec<String> {
-            self.prj.plc.station(name).map(|st| plc_hw::ports(&self.prj, st).into_iter().map(|p| p.name).collect()).unwrap_or_default()
+            self.session.prj.plc.station(name).map(|st| plc_hw::ports(&self.session.prj, st).into_iter().map(|p| p.name).collect()).unwrap_or_default()
         };
         egui::Grid::new("plcconns").striped(true).num_columns(6).spacing([10.0, 4.0]).show(ui, |ui| {
             for h in [tr("Bus system"), tr("Port A"), tr("Port B"), tr("Cable"), tr("Type"), ""] {
                 ui.label(RichText::new(h).strong());
             }
             ui.end_row();
-            for (i, c) in self.prj.plc.connections.iter().enumerate() {
+            for (i, c) in self.session.prj.plc.connections.iter().enumerate() {
                 ui.label(&c.network);
                 ui.label(c.a.to_string());
                 ui.label(c.b.to_string());
                 ui.label(&c.cable);
-                match self.prj.cable(&c.cable) {
+                match self.session.prj.cable(&c.cable) {
                     Some(cable) => ui.label(&cable.cable_type),
                     None if c.cable.is_empty() => ui.label(""),
                     None => ui.colored_label(ui.visuals().warn_fg_color, tr("missing")),
@@ -356,7 +356,7 @@ impl App {
 
     /// Stations of each bus system side by side with their ports and cables.
     fn plc_topology(&self, ui: &mut egui::Ui) {
-        let hw = &self.prj.plc;
+        let hw = &self.session.prj.plc;
         let (box_w, box_h, gap, row_h) = (130.0, 54.0, 50.0, 110.0);
         let mut rows: Vec<(String, Vec<&Station>)> = hw.networks.iter().map(|n| (format!("{} ({})", n.name, n.kind.title()), hw.stations.iter().filter(|s| s.network == n.name).collect())).collect();
         let loose: Vec<&Station> = hw.stations.iter().filter(|s| hw.network(&s.network).is_none()).collect();
@@ -384,7 +384,7 @@ impl App {
                 painter.text(rect.center_top() + vec2(0.0, 4.0), Align2::CENTER_TOP, &st.name, font.clone(), fg);
                 let sub = [st.tag.as_str(), st.address.as_str()].into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("  ");
                 painter.text(rect.center_top() + vec2(0.0, 20.0), Align2::CENTER_TOP, sub, small.clone(), weak);
-                let ports = plc_hw::ports(&self.prj, st);
+                let ports = plc_hw::ports(&self.session.prj, st);
                 for (k, p) in ports.iter().enumerate() {
                     let x = rect.left() + (k as f32 + 0.5) * box_w / ports.len() as f32;
                     let pt = pos2(x, rect.bottom());
@@ -417,7 +417,7 @@ impl App {
                 ui.label(RichText::new(h).strong());
             }
             ui.end_row();
-            for d in plc_hw::descriptions(&self.prj) {
+            for d in plc_hw::descriptions(&self.session.prj) {
                 ui.label(d.title());
                 ui.label(d.kind.title());
                 ui.label(&d.order_number);
@@ -434,70 +434,70 @@ impl App {
     fn plc_action(&mut self, ctx: &egui::Context, a: Action) {
         match a {
             Action::Auto => {
-                let r = plc_hw::auto_configure(&mut self.prj, !self.plc_ui.no_cables);
+                let r = plc_hw::auto_configure(&mut self.session.prj, !self.plc_ui.no_cables);
                 self.notify(ctx, tr_fmt!("{} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables", r.stations, r.networks, r.assigned, r.addresses, r.connections, r.cables));
             }
             Action::ExportAml => {
-                let text = aml::export(&self.prj, &self.analysis.netlist);
-                self.export(ctx, format!("{}.aml", self.prj.info.name), ("AutomationML", "aml"), text);
+                let text = aml::export(&self.session.prj, &self.session.analysis.netlist);
+                self.export(ctx, format!("{}.aml", self.session.prj.info.name), ("AutomationML", "aml"), text);
             }
             Action::ImportAml => self.io.open(ctx, Purpose::Aml),
             Action::ExportIec => {
-                let text = plc::global_variables(&self.prj, &self.analysis.netlist);
+                let text = plc::global_variables(&self.session.prj, &self.session.analysis.netlist);
                 self.export(ctx, "plc_variables.st".into(), ("IEC 61131-3", "st"), text);
             }
             Action::ImportDescriptions => self.io.open(ctx, Purpose::DeviceDescription),
             Action::AddStation => {
-                let name = (1..).map(|i| format!("PLC{i}")).find(|n| self.prj.plc.station(n).is_none()).unwrap();
-                self.prj.plc.stations.push(Station { name: name.clone(), device: "GEN.CPU-PN".into(), ..Default::default() });
+                let name = (1..).map(|i| format!("PLC{i}")).find(|n| self.session.prj.plc.station(n).is_none()).unwrap();
+                self.session.prj.plc.stations.push(Station { name: name.clone(), device: "GEN.CPU-PN".into(), ..Default::default() });
                 self.plc_ui.station = name.clone();
                 self.plc_ui.rename = name;
             }
-            Action::RemoveStation(name) => plc_hw::remove_station(&mut self.prj, &name),
+            Action::RemoveStation(name) => plc_hw::remove_station(&mut self.session.prj, &name),
             Action::Rename(old, new) => {
-                plc_hw::rename_station(&mut self.prj, &old, &new);
+                plc_hw::rename_station(&mut self.session.prj, &old, &new);
                 self.plc_ui.station = new;
             }
             Action::Scheme(i, scheme) => {
-                self.prj.plc.stations[i].scheme = scheme;
-                let n = plc_hw::convert_addresses(&mut self.prj);
+                self.session.prj.plc.stations[i].scheme = scheme;
+                let n = plc_hw::convert_addresses(&mut self.session.prj);
                 self.notify(ctx, tr_fmt!("{} addresses changed", n));
             }
             Action::AddCard(card) => {
                 let station = self.plc_ui.station.clone();
-                let slot = plc_hw::modules(&self.prj, &station).iter().map(|m| m.slot + 1).max();
-                let first = self.prj.plc.station(&station).map(|s| plc_hw::head_slot(s) + 1).unwrap_or(1);
-                let c = self.prj.plc_cards.entry(card.clone()).or_default();
+                let slot = plc_hw::modules(&self.session.prj, &station).iter().map(|m| m.slot + 1).max();
+                let first = self.session.prj.plc.station(&station).map(|s| plc_hw::head_slot(s) + 1).unwrap_or(1);
+                let c = self.session.prj.plc_cards.entry(card.clone()).or_default();
                 c.station = station;
                 c.rack = "0".into();
                 c.slot = slot.unwrap_or(first).to_string();
-                plc::readdress(&mut self.prj, &card);
+                plc::readdress(&mut self.session.prj, &card);
             }
             Action::Card(card, data) => {
-                let readdress = self.prj.plc_cards.get(&card).is_none_or(|c| (c.start_byte, c.output_byte, &c.slot) != (data.start_byte, data.output_byte, &data.slot));
-                self.prj.plc_cards.insert(card.clone(), data);
+                let readdress = self.session.prj.plc_cards.get(&card).is_none_or(|c| (c.start_byte, c.output_byte, &c.slot) != (data.start_byte, data.output_byte, &data.slot));
+                self.session.prj.plc_cards.insert(card.clone(), data);
                 if readdress {
-                    plc::readdress(&mut self.prj, &card);
+                    plc::readdress(&mut self.session.prj, &card);
                 }
             }
             Action::AddNetwork => {
-                let name = (1..).map(|i| format!("BUS_{i}")).find(|n| self.prj.plc.network(n).is_none()).unwrap();
-                self.prj.plc.networks.push(BusSystem { name, kind: BusKind::Profinet, subnet: "192.168.0.0".into() });
+                let name = (1..).map(|i| format!("BUS_{i}")).find(|n| self.session.prj.plc.network(n).is_none()).unwrap();
+                self.session.prj.plc.networks.push(BusSystem { name, kind: BusKind::Profinet, subnet: "192.168.0.0".into() });
             }
-            Action::RemoveNetwork(name) => plc_hw::remove_network(&mut self.prj, &name),
+            Action::RemoveNetwork(name) => plc_hw::remove_network(&mut self.session.prj, &name),
             Action::Connect => {
                 let (a, b, cable) = (self.plc_ui.new_a.clone(), self.plc_ui.new_b.clone(), self.plc_ui.new_cable.clone());
-                if let Err(e) = plc_hw::connect(&mut self.prj, a, b, &cable) {
+                if let Err(e) = plc_hw::connect(&mut self.session.prj, a, b, &cable) {
                     self.notify(ctx, e);
                 }
             }
             Action::CreateCables => {
-                let n = plc_hw::create_cables(&mut self.prj);
+                let n = plc_hw::create_cables(&mut self.session.prj);
                 self.notify(ctx, tr_fmt!("{} bus cables created", n));
             }
             Action::Disconnect(i) => {
-                if i < self.prj.plc.connections.len() {
-                    self.prj.plc.connections.remove(i);
+                if i < self.session.prj.plc.connections.len() {
+                    self.session.prj.plc.connections.remove(i);
                 }
             }
         }
@@ -506,14 +506,14 @@ impl App {
     /// Loaded AutomationML or device description file.
     pub(super) fn plc_file_loaded(&mut self, ctx: &egui::Context, purpose: Purpose, name: &str, text: &str) {
         match purpose {
-            Purpose::Aml => match aml::import(&mut self.prj, text) {
+            Purpose::Aml => match aml::import(&mut self.session.prj, text) {
                 Ok(r) => self.notify(ctx, tr_fmt!("Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed", r.stations, r.modules, r.networks, r.connections, r.addresses, r.texts)),
                 Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
             },
-            _ => match crate::devdesc::import(text, crate::io::short_name(name)) {
+            _ => match openecraft_core::devdesc::import(text, crate::io::short_name(name)) {
                 Ok(list) => {
                     let n = list.len();
-                    self.prj.plc.add_descriptions(list);
+                    self.session.prj.plc.add_descriptions(list);
                     self.notify(ctx, tr_fmt!("{} device descriptions imported", n));
                 }
                 Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),

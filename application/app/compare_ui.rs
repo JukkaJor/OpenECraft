@@ -3,10 +3,10 @@
 //! deleted here.
 
 use super::App;
-use crate::compare::{self, Difference, Item};
+use openecraft_core::compare::{self, Difference, Item};
 use crate::io::Purpose;
-use crate::model::Project;
-use crate::revision::ChangeKind;
+use openecraft_core::model::Project;
+use openecraft_core::revision::ChangeKind;
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::BTreeSet;
@@ -62,9 +62,9 @@ impl App {
             return;
         }
         if let Some((_, other)) = &self.compare_ui.source {
-            if self.compare_ui.diff_rev != self.history.rev {
-                self.compare_ui.diffs = compare::diff(&self.prj, other);
-                self.compare_ui.diff_rev = self.history.rev;
+            if self.compare_ui.diff_rev != self.session.history.rev {
+                self.compare_ui.diffs = compare::diff(&self.session.prj, other);
+                self.compare_ui.diff_rev = self.session.history.rev;
                 let n = self.compare_ui.diffs.len();
                 self.compare_ui.checked.retain(|i| *i < n);
             }
@@ -81,12 +81,12 @@ impl App {
                 ui.label(RichText::new(tr("Compare with")).strong());
                 let shown = self.compare_ui.source.as_ref().map(|s| s.0.clone()).unwrap_or_else(|| tr("(choose)").to_string());
                 egui::ComboBox::from_id_salt("compare_source").selected_text(shown).width(260.0).show_ui(ui, |ui| {
-                    for (i, b) in self.prj.baselines.iter().enumerate() {
+                    for (i, b) in self.session.prj.baselines.iter().enumerate() {
                         if ui.selectable_label(false, tr_fmt!("Baseline {} {}", b.name, b.date)).clicked() {
                             source = Some((tr_fmt!("Baseline {}", b.name), Some(i), None));
                         }
                     }
-                    for (i, r) in self.prj.revisions.iter().enumerate() {
+                    for (i, r) in self.session.prj.revisions.iter().enumerate() {
                         if ui.selectable_label(false, tr_fmt!("Pages of revision {}", r.name)).clicked() {
                             source = Some((tr_fmt!("Pages of revision {}", r.name), None, Some(i)));
                         }
@@ -96,10 +96,10 @@ impl App {
                     open_file = true;
                 }
             });
-            egui::CollapsingHeader::new(tr_fmt!("Baselines ({})", self.prj.baselines.len())).id_salt("baselines").show(ui, |ui| {
+            egui::CollapsingHeader::new(tr_fmt!("Baselines ({})", self.session.prj.baselines.len())).id_salt("baselines").show(ui, |ui| {
                 ui.weak(tr("A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one."));
                 egui::Grid::new("baseline_list").striped(true).num_columns(5).show(ui, |ui| {
-                    for (i, b) in self.prj.baselines.iter().enumerate() {
+                    for (i, b) in self.session.prj.baselines.iter().enumerate() {
                         ui.label(&b.name);
                         ui.label(&b.date);
                         ui.label(&b.author);
@@ -154,7 +154,7 @@ impl App {
                         ui.label(RichText::new(d.kind.title()).color(kind_color(d.kind)));
                         ui.label(RichText::new(d.item.kind_title()).weak());
                         if let Item::Page(id) = d.item {
-                            match self.prj.pages.iter().position(|p| p.id == id) {
+                            match self.session.prj.pages.iter().position(|p| p.id == id) {
                                 Some(pi) => {
                                     if ui.link(&d.name).clicked() {
                                         jump = Some(pi);
@@ -181,8 +181,8 @@ impl App {
         self.compare_ui.open &= open;
         if let Some((name, baseline, rev)) = source {
             let prj = match (baseline, rev) {
-                (Some(i), _) => self.prj.baselines[i].project.0.as_ref().clone(),
-                (_, Some(i)) => compare::with_revision_pages(&self.prj, &self.prj.revisions[i].pages),
+                (Some(i), _) => self.session.prj.baselines[i].project.0.as_ref().clone(),
+                (_, Some(i)) => compare::with_revision_pages(&self.session.prj, &self.session.prj.revisions[i].pages),
                 _ => return,
             };
             self.compare_ui.set_source(name, prj);
@@ -193,20 +193,20 @@ impl App {
         if add_baseline {
             let (user, date) = (self.user_name(), self.today());
             let name = self.compare_ui.baseline_name.trim().to_string();
-            compare::add_baseline(&mut self.prj, &name, &date, &user, self.compare_ui.baseline_description.trim());
+            compare::add_baseline(&mut self.session.prj, &name, &date, &user, self.compare_ui.baseline_description.trim());
             self.compare_ui.baseline_name.clear();
             self.compare_ui.baseline_description.clear();
             self.notify(ctx, tr_fmt!("Baseline {} created", name));
         }
         if let Some(i) = delete_baseline {
-            self.prj.baselines.remove(i);
+            self.session.prj.baselines.remove(i);
         }
         if take {
             if let Some((_, other)) = &self.compare_ui.source {
                 let items: Vec<Item> = self.compare_ui.checked.iter().filter_map(|i| self.compare_ui.diffs.get(*i)).map(|d| d.item.clone()).collect();
-                let msg = compare::take_all(&mut self.prj, other, &items);
+                let msg = compare::take_all(&mut self.session.prj, other, &items);
                 self.compare_ui.checked.clear();
-                self.page = self.page.min(self.prj.pages.len().saturating_sub(1));
+                self.session.page = self.session.page.min(self.session.prj.pages.len().saturating_sub(1));
                 self.notify(ctx, msg);
             }
         }

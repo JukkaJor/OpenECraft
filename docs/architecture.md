@@ -65,6 +65,24 @@ Known upward edges (listed in `CORE_RULES`, to be removed): `structure`, `macros
 symbols are looked up through a table (phase 5 of the plan). `analysis` and `ext`
 refer to each other (the registry kinds take an `&Analysis`).
 
+## The editor
+
+- `application/session.rs` holds the document state: the open project, its undo
+  history, the analysis (rebuilt after committed changes and language changes, with the
+  reports and checks of the registry), the device index, the saved revision and the
+  file name. It has no UI code and is unit tested; `App` adds the windows.
+- `application/app.rs` is the composition root: the `App` struct, start-up, the frame
+  loop and the handful of helpers every window needs (`notify`, `goto`,
+  `replace_project`, `add_page`). Menus (`app/menus.rs`), files (`app/files.rs`),
+  tool bar and library (`app/toolbar.rs`), navigator, property panel and the main
+  windows (`app/windows.rs`) are `impl App` blocks in modules of their own, one
+  concern each; the dialogs under `app/` follow the same pattern with a state struct
+  per dialog.
+- Rules that change the project (page order, deleting pages, renaming devices) live
+  in `openecraft_core::ops`, so the command line and the MCP server share them.
+- The editor names core modules as `openecraft_core::…`; `main.rs` re-exports
+  nothing (checked by `conventions/tests.rs`).
+
 ## Where a new feature goes
 
 1. Data that is stored in the project: a type in the model layer, a field of

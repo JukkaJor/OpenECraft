@@ -5,7 +5,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
-use crate::tables::{self, TableKind};
+use openecraft_core::tables::{self, TableKind};
 use egui::RichText;
 use std::collections::HashMap;
 
@@ -40,7 +40,7 @@ impl App {
             return;
         }
         let kind = self.tables_ui.kind;
-        let all = tables::rows(&self.prj, &self.analysis.netlist, &self.analysis.open, kind);
+        let all = tables::rows(&self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, kind);
         let rows: Vec<&tables::Row> = all.iter().filter(|r| tables::matches(r, &self.tables_ui.filter)).collect();
         let columns = kind.columns();
         let editable: Vec<usize> = (0..columns.len()).filter(|&c| columns[c].editable).collect();
@@ -138,14 +138,14 @@ impl App {
         for a in actions {
             match a {
                 Action::Set(key, c, value) => {
-                    if let Err(e) = tables::set_cell(&mut self.prj, &self.analysis.open, kind, &key, c, &value) {
+                    if let Err(e) = tables::set_cell(&mut self.session.prj, &self.session.analysis.open, kind, &key, c, &value) {
                         problems.push(e);
                     }
                 }
                 Action::Replace(fill) => {
                     let visible: Vec<tables::Row> = rows.iter().map(|r| (*r).clone()).filter(|r| !r.locked).collect();
                     let find = if fill { String::new() } else { self.tables_ui.find.clone() };
-                    let (n, p) = tables::replace(&mut self.prj, &self.analysis.open, kind, &visible, self.tables_ui.column, &find, &self.tables_ui.replace);
+                    let (n, p) = tables::replace(&mut self.session.prj, &self.session.analysis.open, kind, &visible, self.tables_ui.column, &find, &self.tables_ui.replace);
                     problems.extend(p);
                     self.notify(ctx, tr_fmt!("{} cells changed", n));
                 }
@@ -164,7 +164,7 @@ impl App {
 
     /// Applies a CSV file to the table it was exported from.
     pub(super) fn import_table(&mut self, ctx: &egui::Context, kind: TableKind, text: &str) {
-        match tables::apply_csv(&mut self.prj, &self.analysis.netlist, &self.analysis.open, kind, text) {
+        match tables::apply_csv(&mut self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, kind, text) {
             Ok((n, problems)) if problems.is_empty() => self.notify(ctx, tr_fmt!("{} cells changed", n)),
             Ok((n, problems)) => self.notify(ctx, tr_fmt!("{} cells changed, {} problems: {}", n, problems.len(), problems.join("; "))),
             Err(e) => self.notify(ctx, tr_fmt!("Table import failed: {}", e)),

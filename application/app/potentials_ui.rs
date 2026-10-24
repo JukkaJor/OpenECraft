@@ -4,8 +4,8 @@
 
 use openecraft_i18n::tr;
 use super::App;
-use crate::model::ReportKind;
-use crate::potentials::{self, PotentialDef, PotentialKind, Preset, Source, WireProps};
+use openecraft_core::model::ReportKind;
+use openecraft_core::potentials::{self, PotentialDef, PotentialKind, Preset, Source, WireProps};
 use egui::{Color32, RichText};
 use std::collections::HashMap;
 
@@ -84,14 +84,14 @@ impl App {
             return;
         }
         let mut wires: HashMap<&str, usize> = HashMap::new();
-        for net in self.analysis.netlist.nets.iter().filter(|n| n.named) {
+        for net in self.session.analysis.netlist.nets.iter().filter(|n| n.named) {
             *wires.entry(net.name.as_str()).or_default() += net.wires.len();
         }
         let mut open = true;
         let mut remove = None;
         let mut preset = None;
         let mut overview = false;
-        let prj = &mut self.prj;
+        let prj = &mut self.session.prj;
         egui::Window::new(tr("Potentials")).open(&mut open).default_size([900.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New potential")).clicked() {
@@ -150,10 +150,10 @@ impl App {
         });
         self.eng.show_potentials = open;
         if let Some(i) = remove {
-            self.prj.potentials.remove(i);
+            self.session.prj.potentials.remove(i);
         }
         if let Some(p) = preset {
-            self.prj.apply_preset(p);
+            self.session.prj.apply_preset(p);
         }
         if overview {
             self.report_kind = ReportKind::PotentialList.into();

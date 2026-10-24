@@ -3,8 +3,8 @@
 //! revision.
 
 use super::App;
-use crate::model::ReportKind;
-use crate::revision::{self, Status};
+use openecraft_core::model::ReportKind;
+use openecraft_core::revision::{self, Status};
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
 
@@ -56,13 +56,13 @@ impl App {
         let mut action = None;
         let r = &mut self.revisions_ui;
         if r.name.is_empty() {
-            r.name = revision::next_name(&self.prj);
-            r.date = self.prj.info.date.clone();
-            r.author = self.prj.info.creator.clone();
+            r.name = revision::next_name(&self.session.prj);
+            r.date = self.session.prj.info.date.clone();
+            r.author = self.session.prj.info.creator.clone();
         }
         let user = self.user_name();
-        let locked = self.prj.pages.iter().filter(|p| p.locked).count();
-        let open_rev = revision::open_revision(&self.prj);
+        let locked = self.session.prj.pages.iter().filter(|p| p.locked).count();
+        let open_rev = revision::open_revision(&self.session.prj);
         egui::Window::new(tr("Revisions")).open(&mut open).default_size([680.0, 560.0]).show(ctx, |ui| {
             egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("revs").striped(true).num_columns(5).show(ui, |ui| {
@@ -70,8 +70,8 @@ impl App {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
-                    for (i, r) in self.prj.revisions.iter().enumerate() {
-                        let s = revision::status(&self.prj, i);
+                    for (i, r) in self.session.prj.revisions.iter().enumerate() {
+                        let s = revision::status(&self.session.prj, i);
                         ui.label(&r.name);
                         ui.label(RichText::new(s.title()).color(status_color(s)));
                         ui.label(&r.date);
@@ -80,13 +80,13 @@ impl App {
                         ui.end_row();
                     }
                 });
-                if self.prj.revisions.is_empty() {
+                if self.session.prj.revisions.is_empty() {
                     ui.weak(tr("No revision yet. Changes are tracked from the first revision on."));
                 }
 
                 ui.separator();
-                egui::CollapsingHeader::new(RichText::new(tr("Approval workflow")).strong()).id_salt("workflow").default_open(self.prj.workflow.active()).show(ui, |ui| {
-                    let wf = &mut self.prj.workflow;
+                egui::CollapsingHeader::new(RichText::new(tr("Approval workflow")).strong()).id_salt("workflow").default_open(self.session.prj.workflow.active()).show(ui, |ui| {
+                    let wf = &mut self.session.prj.workflow;
                     let rui = &mut self.revisions_ui;
                     if !rui.editing_approvers {
                         rui.approvers = wf.approvers.join(", ");
@@ -114,8 +114,8 @@ impl App {
 
                 if let Some(i) = open_rev {
                     ui.separator();
-                    let rev = &self.prj.revisions[i];
-                    let s = revision::status(&self.prj, i);
+                    let rev = &self.session.prj.revisions[i];
+                    let s = revision::status(&self.session.prj, i);
                     ui.horizontal(|ui| {
                         ui.label(RichText::new(tr_fmt!("Revision {}", rev.name)).strong());
                         ui.label(RichText::new(s.title()).color(status_color(s)).strong());
@@ -123,10 +123,10 @@ impl App {
                             ui.weak(tr_fmt!("review round {}", rev.round));
                         }
                     });
-                    let decisions = revision::decisions(&self.prj, i);
+                    let decisions = revision::decisions(&self.session.prj, i);
                     if s != Status::Draft {
                         let approved = decisions.iter().filter(|a| a.approved).count();
-                        ui.label(tr_fmt!("{} of {} approvals", approved, self.prj.workflow.needed()));
+                        ui.label(tr_fmt!("{} of {} approvals", approved, self.session.prj.workflow.needed()));
                         for a in &decisions {
                             let (text, color) = if a.approved { (tr("approved"), Color32::from_rgb(60, 160, 90)) } else { (tr("rejected"), Color32::from_rgb(220, 60, 60)) };
                             ui.horizontal(|ui| {
@@ -138,11 +138,11 @@ impl App {
                             });
                         }
                     }
-                    let is_approver = self.prj.workflow.is_approver(&user);
+                    let is_approver = self.session.prj.workflow.is_approver(&user);
                     let rui = &mut self.revisions_ui;
                     ui.horizontal_wrapped(|ui| match s {
                         Status::Draft => {
-                            if self.prj.workflow.active() {
+                            if self.session.prj.workflow.active() {
                                 if ui.button(tr("Submit for review")).clicked() {
                                     action = Some(Action::Submit);
                                 }
@@ -197,7 +197,7 @@ impl App {
                         ui.text_edit_multiline(&mut rui.description);
                         ui.end_row();
                     });
-                    let label = if self.prj.workflow.active() {
+                    let label = if self.session.prj.workflow.active() {
                         tr("Create draft")
                     } else {
                         ui.checkbox(&mut rui.lock, tr("Release: lock all pages"));
@@ -208,24 +208,24 @@ impl App {
 
                 ui.separator();
                 ui.horizontal_wrapped(|ui| {
-                    ui.label(tr_fmt!("{} of {} pages locked", locked, self.prj.pages.len()));
+                    ui.label(tr_fmt!("{} of {} pages locked", locked, self.session.prj.pages.len()));
                     if ui.button(tr("Lock all")).clicked() {
                         lock = Some(true);
                     }
                     if ui.button(tr("Unlock all")).clicked() {
                         lock = Some(false);
                     }
-                    let pg = &mut self.prj.pages[self.page];
+                    let pg = &mut self.session.prj.pages[self.session.page];
                     ui.checkbox(&mut pg.locked, tr_fmt!("Page {} locked", pg.name));
                 });
                 ui.separator();
                 ui.horizontal(|ui| {
-                    let since = revision::last_released(&self.prj).map(|r| r.name.clone()).unwrap_or_default();
+                    let since = revision::last_released(&self.session.prj).map(|r| r.name.clone()).unwrap_or_default();
                     ui.label(RichText::new(if since.is_empty() { tr("Changes").to_string() } else { tr_fmt!("Changes since revision {}", since) }).strong());
                     ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
                     overview = ui.button(tr("📊 Revision overview")).clicked();
                 });
-                for pc in &self.analysis.changes {
+                for pc in &self.session.analysis.changes {
                     let title = match pc.page {
                         Some(_) => tr_fmt!("Page {} ({})", pc.name, pc.changes.len()),
                         None => tr_fmt!("Page {} (deleted)", pc.name),
@@ -246,7 +246,7 @@ impl App {
                         }
                     });
                 }
-                if self.analysis.changes.is_empty() && revision::last_released(&self.prj).is_some() {
+                if self.session.analysis.changes.is_empty() && revision::last_released(&self.session.prj).is_some() {
                     ui.weak(tr("No changes since the last revision."));
                 }
             });
@@ -255,32 +255,32 @@ impl App {
         if create {
             let r = &self.revisions_ui;
             let name = r.name.trim().to_string();
-            revision::create(&mut self.prj, &name, &r.date, &r.author, &r.description, r.lock);
-            let msg = if self.prj.workflow.active() { tr_fmt!("Draft of revision {} created", name) } else { tr_fmt!("Revision {} created", name) };
+            revision::create(&mut self.session.prj, &name, &r.date, &r.author, &r.description, r.lock);
+            let msg = if self.session.prj.workflow.active() { tr_fmt!("Draft of revision {} created", name) } else { tr_fmt!("Revision {} created", name) };
             self.notify(ctx, msg);
             self.revisions_ui.name.clear();
             self.revisions_ui.description.clear();
         }
         if let (Some(action), Some(i)) = (action, open_rev) {
-            let name = self.prj.revisions[i].name.clone();
+            let name = self.session.prj.revisions[i].name.clone();
             let result = match action {
-                Action::Submit => revision::submit(&mut self.prj, i).map(|_| tr_fmt!("Revision {} submitted for review", name)),
+                Action::Submit => revision::submit(&mut self.session.prj, i).map(|_| tr_fmt!("Revision {} submitted for review", name)),
                 Action::Withdraw => {
-                    revision::withdraw(&mut self.prj, i);
+                    revision::withdraw(&mut self.session.prj, i);
                     Ok(tr_fmt!("Revision {} withdrawn", name))
                 }
                 Action::Discard => {
-                    revision::discard(&mut self.prj, i);
+                    revision::discard(&mut self.session.prj, i);
                     self.revisions_ui.name.clear();
                     Ok(tr_fmt!("Draft of revision {} discarded", name))
                 }
                 Action::Decide(approved) => {
                     let note = std::mem::take(&mut self.revisions_ui.note);
                     let date = self.today();
-                    revision::decide(&mut self.prj, i, &user, &date, approved, note.trim())
+                    revision::decide(&mut self.session.prj, i, &user, &date, approved, note.trim())
                         .map(|_| if approved { tr_fmt!("Revision {} approved by {}", name, user) } else { tr_fmt!("Revision {} rejected by {}", name, user) })
                 }
-                Action::Release => revision::release(&mut self.prj, i, self.revisions_ui.lock).map(|_| tr_fmt!("Revision {} released", name)),
+                Action::Release => revision::release(&mut self.session.prj, i, self.revisions_ui.lock).map(|_| tr_fmt!("Revision {} released", name)),
             };
             match result {
                 Ok(msg) => self.notify(ctx, msg),
@@ -288,7 +288,7 @@ impl App {
             }
         }
         if let Some(l) = lock {
-            for pg in &mut self.prj.pages {
+            for pg in &mut self.session.prj.pages {
                 pg.locked = l;
             }
         }

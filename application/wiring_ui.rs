@@ -3,12 +3,12 @@
 //! wiring progress.
 
 use openecraft_i18n::{tr, tr_fmt};
-use crate::model::Project;
-use crate::panel::RoutedWire;
+use openecraft_core::model::Project;
+use openecraft_core::panel::RoutedWire;
 use crate::panel_ui::PanelUi;
-use crate::potentials::color_parts;
-use crate::analysis::Analysis;
-use crate::wiring::{self, Mark, Order, Status, Step};
+use openecraft_core::potentials::color_parts;
+use openecraft_core::analysis::Analysis;
+use openecraft_core::wiring::{self, Mark, Order, Status, Step};
 use egui::{vec2, Color32, RichText, Stroke};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -238,7 +238,7 @@ impl WiringUi {
         };
         let w = an.wiring[wi].clone();
         let status = wiring::status(prj, &w);
-        let ends = crate::production::end_treatment(&w.cross_section, prj.layout.ferrules);
+        let ends = openecraft_core::production::end_treatment(&w.cross_section, prj.layout.ferrules);
         egui::Frame::group(ui.style()).inner_margin(12.0).show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.horizontal(|ui| {

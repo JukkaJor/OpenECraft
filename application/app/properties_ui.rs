@@ -3,13 +3,13 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::functions::{self, FnCategory, FunctionDef};
+use openecraft_core::functions::{self, FnCategory, FunctionDef};
 use crate::io::Purpose;
-use crate::model::*;
-use crate::parts::FnKind;
-use crate::properties::{self, DataType, Group, Library, Object, ObjectClass, Origin, PropDef};
-use crate::props::{self, Scheme};
-use crate::symbols::{self, Anchor};
+use openecraft_core::model::*;
+use openecraft_core::parts::FnKind;
+use openecraft_core::properties::{self, DataType, Group, Library, Object, ObjectClass, Origin, PropDef};
+use openecraft_core::props::{self, Scheme};
+use openecraft_core::symbols::{self, Anchor};
 use egui::{Color32, RichText};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -93,7 +93,7 @@ impl App {
                 }
             });
             ui.separator();
-            let prj = &mut self.prj;
+            let prj = &mut self.session.prj;
             match st.tab {
                 Tab::Definitions => definitions_tab(ui, prj, st, &mut action),
                 Tab::Functions => functions_tab(ui, prj, st, &mut action),
@@ -105,11 +105,11 @@ impl App {
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::PropertyLibrary),
             Some(Action::Export) => {
-                let json = self.prj.property_db.to_json();
+                let json = self.session.prj.property_db.to_json();
                 self.export(ctx, "properties.json".into(), (tr("OpenECraft property library"), "json"), json);
             }
             Some(Action::Reapply(name)) => {
-                let n = props::reapply(&mut self.prj, &name);
+                let n = props::reapply(&mut self.session.prj, &name);
                 self.notify(ctx, tr_fmt!("Scheme placed again at {} symbols", n));
             }
             Some(Action::Removed(n)) => self.notify(ctx, tr_fmt!("Property removed with {} values", n)),
@@ -121,7 +121,7 @@ impl App {
     pub(super) fn import_property_library(&mut self, ctx: &egui::Context, text: &str) {
         match Library::from_json(text) {
             Ok(lib) => {
-                let n = self.prj.property_db.merge(lib);
+                let n = self.session.prj.property_db.merge(lib);
                 self.notify(ctx, tr_fmt!("Imported {} entries of the property library", n));
             }
             Err(e) => self.notify(ctx, e),
@@ -509,7 +509,7 @@ fn schemes_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, acti
         }
         if let Some(k) = added {
             let y = s.entries.iter().map(|e| e.offset.y + 2.8).fold(0.0, f32::max);
-            s.entries.push(PlacedProp { key: k, offset: crate::geom::p(0.0, y), ..Default::default() });
+            s.entries.push(PlacedProp { key: k, offset: openecraft_core::geom::p(0.0, y), ..Default::default() });
         }
         ui.weak(tr("Positions are relative to the lower right corner of the symbol."));
         ui.horizontal(|ui| {

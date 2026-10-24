@@ -215,3 +215,15 @@ Cross-section: 0.75 mm²".into();
     assert_eq!((c.part.as_str(), c.cable_type.as_str()), ("GEN.CABLE", "H05VV-F"));
     assert_eq!((c.cores.as_str(), c.cross_section.as_str()), ("BK BU GNYE", "0.75 mm²"));
 }
+
+#[test]
+fn pages_move_to_another_position() {
+    let mut prj = crate::sample::demo_project();
+    let names: Vec<String> = prj.pages.iter().map(|p| p.name.clone()).collect();
+    assert_eq!(move_page(&mut prj, 0, 2), 2);
+    assert_eq!(prj.pages[2].name, names[0]);
+    assert_eq!(prj.pages[0].name, names[1]);
+    assert_eq!(move_page(&mut prj, 2, 0), 0);
+    assert_eq!(prj.pages.iter().map(|p| p.name.clone()).collect::<Vec<_>>(), names);
+    assert_eq!(move_page(&mut prj, 99, 0), 99, "out of range: unchanged");
+}

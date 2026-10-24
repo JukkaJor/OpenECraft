@@ -3,14 +3,14 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
-use crate::geom::{p, P};
-use crate::model::{natural_cmp, Project};
-use crate::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
-use crate::parts::{self, PartsDb};
-use crate::parts::vec3::Orbit;
-use crate::render::{self, Draw, Ink};
-use crate::analysis::Analysis;
-use crate::routing3d;
+use openecraft_core::geom::{p, P};
+use openecraft_core::model::{natural_cmp, Project};
+use openecraft_core::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use openecraft_core::parts::{self, PartsDb};
+use openecraft_core::parts::vec3::Orbit;
+use openecraft_core::render::{self, Draw, Ink};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::routing3d;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use view3d::default_cam;
@@ -69,7 +69,7 @@ struct MoveDrag {
 
 /// Climate settings and result of an enclosure (IEC/TR 60890).
 fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
-    use crate::climate::{self, Cooling, Installation, Material};
+    use openecraft_core::climate::{self, Cooling, Installation, Material};
     let result = climate::calculate(prj, &prj.layout.enclosures[ei]);
     let c = &mut prj.layout.enclosures[ei].climate;
     egui::CollapsingHeader::new(tr("Climate (IEC 60890)")).id_salt("climate").show(ui, |ui| {
@@ -267,7 +267,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             ui.weak(tr("No problems found"));
         }
         for f in &findings {
-            let color = if f.severity == crate::issue::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
+            let color = if f.severity == openecraft_core::issue::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
             ui.horizontal_wrapped(|ui| {
                 ui.label(RichText::new(f.kind.title()).strong().color(color));
                 ui.label(&f.message);
@@ -1112,7 +1112,7 @@ impl PanelUi {
         ui.separator();
         ui.label(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0)));
         let problems = panel::problem_items(prj, e).len();
-        let holes = crate::production::holes(e, &prj.parts).len();
+        let holes = openecraft_core::production::holes(e, &prj.parts).len();
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
         ui.label(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts));
         ui.horizontal(|ui| {
@@ -1127,7 +1127,7 @@ impl PanelUi {
             }
         });
         let door_devices = e.items.iter().filter(|i| i.face == Face::Door && i.kind == ItemKind::Device).count();
-        ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, crate::production::openings(e, &prj.parts, Face::Door).len()));
+        ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, openecraft_core::production::openings(e, &prj.parts, Face::Door).len()));
         ui.horizontal(|ui| {
             if ui.button(tr("⬇ Door NC data (DXF)")).clicked() {
                 self.export = Some((ei, Face::Door, NcFormat::Dxf));
@@ -1141,8 +1141,8 @@ impl PanelUi {
         });
         if self.face.is_wall() {
             let face = self.face;
-            let n = crate::production::holes_on(e, &prj.parts, face).len();
-            ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, crate::production::openings(e, &prj.parts, face).len()));
+            let n = openecraft_core::production::holes_on(e, &prj.parts, face).len();
+            ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, openecraft_core::production::openings(e, &prj.parts, face).len()));
             ui.horizontal(|ui| {
                 if ui.button(tr("⬇ NC data of this face (DXF)")).clicked() {
                     self.export = Some((ei, face, NcFormat::Dxf));
@@ -1818,7 +1818,7 @@ impl PanelUi {
                             let (kind, part) = self.profile_here().unwrap_or((ItemKind::Duct, panel::DUCT_PART.into()));
                             parts::ensure_in_project(prj, db, &part);
                             if kind == ItemKind::Busbar {
-                                parts::ensure_in_project(prj, db, crate::production::BUSBAR_HOLDER);
+                                parts::ensure_in_project(prj, db, openecraft_core::production::BUSBAR_HOLDER);
                             }
                             let item = PanelItem { face: self.face, ..panel::new_profile(prj, kind, &part, a, sn) };
                             prj.layout.enclosures[ei].items.push(item);
@@ -1997,11 +1997,11 @@ impl PanelUi {
                 for pt in panel::device_points(prj, it) {
                     let c = to_screen(p(pt.pos[0], pt.pos[1]));
                     let dir = match pt.exit {
-                        crate::parts::Exit::Up => vec2(0.0, -1.0),
-                        crate::parts::Exit::Down => vec2(0.0, 1.0),
-                        crate::parts::Exit::Left => vec2(-1.0, 0.0),
-                        crate::parts::Exit::Right => vec2(1.0, 0.0),
-                        crate::parts::Exit::Front => vec2(0.0, 0.0),
+                        openecraft_core::parts::Exit::Up => vec2(0.0, -1.0),
+                        openecraft_core::parts::Exit::Down => vec2(0.0, 1.0),
+                        openecraft_core::parts::Exit::Left => vec2(-1.0, 0.0),
+                        openecraft_core::parts::Exit::Right => vec2(1.0, 0.0),
+                        openecraft_core::parts::Exit::Front => vec2(0.0, 0.0),
                     };
                     painter.line_segment([c, c + dir * 9.0], Stroke::new(1.5, WIRE_COLOR));
                     if pt.exact {
@@ -2074,7 +2074,7 @@ impl PanelUi {
                 let mut ghost = PanelItem { kind: ItemKind::Device, x: panel::snap(q.x - w / 2.0), y: panel::snap(q.y - h / 2.0), w, h, face: self.face, ..Default::default() };
                 panel::snap_to_rail(e, &mut ghost);
                 g.rect(p(ghost.x, ghost.y) + m, p(ghost.x + w, ghost.y + h) + m, 0.6, Ink::Ghost, false);
-                g.text(ghost.center() + m, tag, (w.min(h) * 0.22).clamp(3.0, 9.0), crate::symbols::Anchor::Center, render::VAnchor::Middle, Ink::Ghost);
+                g.text(ghost.center() + m, tag, (w.min(h) * 0.22).clamp(3.0, 9.0), openecraft_core::symbols::Anchor::Center, render::VAnchor::Middle, Ink::Ghost);
             }
             _ => {}
         }

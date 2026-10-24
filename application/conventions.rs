@@ -50,7 +50,7 @@ fn module_sources(src: &std::path::Path, module: &str) -> Vec<PathBuf> {
     out
 }
 
-/// First path segments after `crate::` in a source text: `crate::geom::P` → `geom`,
+/// First path segments after `crate::` in a source text: `openecraft_core::geom::P` → `geom`,
 /// `use crate::{model, netlist::Netlist}` → `model`, `netlist`.
 pub fn crate_references(text: &str) -> BTreeSet<String> {
     let mut out = BTreeSet::new();

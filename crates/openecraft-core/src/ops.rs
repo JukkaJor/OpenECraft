@@ -113,6 +113,17 @@ pub fn next_page_name(prj: &Project) -> String {
     (max + 1).to_string()
 }
 
+/// Moves the page at `from` to position `to` (both existing). Returns the index the
+/// page has afterwards.
+pub fn move_page(prj: &mut Project, from: usize, to: usize) -> usize {
+    if from >= prj.pages.len() || to >= prj.pages.len() {
+        return from;
+    }
+    let page = prj.pages.remove(from);
+    prj.pages.insert(to, page);
+    to
+}
+
 /// Inserts a new page of `kind` at position `at` (clamped). Returns its index.
 pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
     let id = prj.new_id();

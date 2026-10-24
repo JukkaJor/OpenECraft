@@ -2,8 +2,8 @@
 //! with the parts manager (`openecraft_ui::part_editor`).
 
 use openecraft_i18n::{tr, tr_fmt};
-use crate::model::Project;
-use crate::parts::{self, Part, PartFilter, PartsDb};
+use openecraft_core::model::Project;
+use openecraft_core::parts::{self, Part, PartFilter, PartsDb};
 use crate::io::{Loaded, Purpose};
 use egui::{vec2, Color32, RichText};
 use openecraft_ui::client::{FileUse, Reply, ServerClient};
