@@ -10,6 +10,7 @@ use openecraft_core::issue::Severity;
 use openecraft_i18n::tr_const;
 use serde_json::Value;
 
+pub mod check_settings;
 pub mod common;
 pub mod config;
 pub mod devices;
@@ -44,7 +45,7 @@ pub use manufacturing::PanelManufacturing;
 pub use panel_checks::PanelChecks;
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(process::Process), Box::new(properties::Properties), Box::new(reports::ReportBlocks), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(wiring::Wiring)]
+    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(check_settings::CheckSettings), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(process::Process), Box::new(properties::Properties), Box::new(reports::ReportBlocks), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(wiring::Wiring)]
 }
 
 /// The built-in reports of `openecraft_core::reports` as a plugin, so that the Reports

@@ -56,6 +56,64 @@ pub fn builtin() -> Vec<Check> {
     ]
 }
 
+/// Applies the project's check settings to the issues the checks found: changed
+/// levels (`Off` removes the message) and accepted messages. The host skips disabled
+/// checks before running them ([`is_enabled`]).
+pub fn apply_settings(prj: &Project, issues: Vec<Issue>) -> Vec<Issue> {
+    use crate::model::checks::Level;
+    let s = &prj.check_settings;
+    issues
+        .into_iter()
+        .filter_map(|mut i| {
+            match s.levels.get(&i.code()) {
+                Some(Level::Off) => return None,
+                Some(Level::Error) => i.severity = Severity::Error,
+                Some(Level::Warning) => i.severity = Severity::Warning,
+                Some(Level::Info) => i.severity = Severity::Info,
+                None => {}
+            }
+            if !s.accepted.is_empty() {
+                let id = i.fingerprint();
+                i.accepted = s.accepted.iter().any(|a| a.id == id);
+            }
+            Some(i)
+        })
+        .collect()
+}
+
+/// The check runs (not switched off in the project's check settings).
+pub fn is_enabled(prj: &Project, check: &str) -> bool {
+    !prj.check_settings.disabled.iter().any(|d| d == check)
+}
+
+/// Accepts a message as checked (or takes the acceptance back with `accept` false).
+pub fn accept(prj: &mut Project, issue: &Issue, accept: bool, note: &str, user: &str, date: &str) {
+    let id = issue.fingerprint();
+    prj.check_settings.accepted.retain(|a| a.id != id);
+    if accept {
+        prj.check_settings.accepted.push(crate::model::checks::Accepted { id, message: issue.message(), note: note.into(), user: user.into(), date: date.into() });
+    }
+}
+
+/// Accepted messages that no check reports any more (the object changed or the
+/// problem was solved).
+pub fn stale_accepted<'a>(prj: &'a Project, issues: &[Issue]) -> Vec<&'a crate::model::checks::Accepted> {
+    let live: std::collections::HashSet<String> = issues.iter().map(Issue::fingerprint).collect();
+    prj.check_settings.accepted.iter().filter(|a| !live.contains(&a.id)).collect()
+}
+
+/// The messages as CSV (`Severity;Code;Message;Page;Item;Accepted`).
+pub fn issues_csv(prj: &Project, issues: &[Issue]) -> String {
+    let cell = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
+    let mut out = String::from("Severity;Code;Message;Page;Item;Accepted\n");
+    for i in issues {
+        let page = i.target.and_then(|t| prj.pages.get(t.0)).map(|p| p.name.clone()).unwrap_or_default();
+        let item = i.target.map(|t| t.1).filter(|id| *id != 0).map(|id| id.to_string()).unwrap_or_default();
+        out.push_str(&format!("{};{};{};{};{};{}\n", i.severity.key(), cell(&i.code()), cell(&i.message()), cell(&page), item, if i.accepted { "yes" } else { "" }));
+    }
+    out
+}
+
 /// Issues of all built-in checks, errors first.
 pub fn run_builtin(prj: &Project, an: &Analysis) -> Vec<Issue> {
     let mut issues: Vec<Issue> = builtin().iter().flat_map(|c| (c.run)(prj, an).unwrap_or_default()).collect();

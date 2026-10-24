@@ -166,6 +166,16 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Project check**: aux functions without main function, duplicate main functions,
   open connection points, unpaired interruption points, short circuits between
   potentials, duplicate terminal numbers / PLC addresses, devices without part.
+  **Message management** (in the spirit of EPLAN's check schemes): every message has
+  a code per kind (`wires.3f9a1c`, the same in every language) and a fingerprint per
+  occurrence. Right click a message in the Check tab to accept it as checked (hidden
+  and not counted until it changes), to change the level of its kind (error, warning,
+  note, off) or to switch its check off; the settings (⚙) list the checks, changed
+  levels and accepted messages (with note, user, date and whether they are still
+  reported). The tab filters by level, page and text and exports the messages as CSV.
+  The settings are stored with the project. Commands: `list_checks`, `check_settings`,
+  `set_check`, `set_message_level`, `accept_message`; `check` shows codes and
+  fingerprints.
 - **Parts management** (EPLAN style):
   - a global **parts database** shared by all projects (product top group / group /
     subgroup tree, filter), with general, commercial (price, price unit, packaging,

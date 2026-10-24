@@ -23,6 +23,7 @@ use openecraft_api::params::{text, Args};
 use serde_json::Map;
 
 mod cables_ui;
+mod check_ui;
 mod files;
 mod menus;
 mod navigator;
@@ -106,6 +107,7 @@ pub struct App {
     show_cables: bool,
     show_numbering: bool,
     numbering_ui: numbering_ui::NumberingUi,
+    check_ui: check_ui::CheckUi,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -207,6 +209,7 @@ impl App {
             show_cables: false,
             show_numbering: false,
             numbering_ui: Default::default(),
+            check_ui: Default::default(),
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),

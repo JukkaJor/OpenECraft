@@ -26,6 +26,7 @@ pub mod options;
 pub mod page_templates;
 pub mod graphics;
 pub mod potentials;
+pub mod checks;
 pub mod plugs;
 pub mod harness;
 pub mod config;
@@ -162,6 +163,9 @@ pub struct Project {
     /// Options that show or hide model content.
     #[serde(skip_serializing_if = "options::ModelOptions::is_empty")]
     pub model_options: options::ModelOptions,
+    /// Checks switched off, message levels and accepted messages of the project check.
+    #[serde(skip_serializing_if = "checks::CheckSettings::is_default")]
+    pub check_settings: checks::CheckSettings,
     /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
     #[serde(skip_serializing_if = "integration::Integration::is_empty")]
     pub integration: integration::Integration,
@@ -211,6 +215,7 @@ impl Default for Project {
             field: Default::default(),
             subprojects: Default::default(),
             model_options: Default::default(),
+            check_settings: Default::default(),
             integration: Default::default(),
             next_id: 1,
             symbol_cache: Default::default(),

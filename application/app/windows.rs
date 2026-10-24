@@ -222,6 +222,7 @@ impl App {
     self.rename_device_window(ctx);
     self.numbering_window(ctx);
     self.numbering_windows(ctx);
+    self.check_settings_window(ctx);
     self.engineering_windows(ctx);
     self.compare_window(ctx);
     self.requests_window(ctx);

@@ -12,7 +12,7 @@ impl App {
             ui.selectable_value(&mut self.left_tab, LeftTab::Connections, tr("Connections"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Cables, tr("Cables"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Layers, tr("Layers"));
-            let n_err = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
+            let n_err = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error && !i.accepted).count();
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
             let open = self.session.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
@@ -176,39 +176,7 @@ impl App {
             LeftTab::Connections => self.connections_tab(ui),
             LeftTab::Cables => self.cables_tab(ui),
             LeftTab::Layers => self.layers_tab(ui),
-            LeftTab::Check => {
-                let issues = self.session.analysis.issues.clone();
-                let count = |s| issues.iter().filter(|i| i.severity == s).count();
-                ui.label(format!(
-                    "{} errors, {} warnings, {} notes",
-                    count(Severity::Error),
-                    count(Severity::Warning),
-                    count(Severity::Info)
-                ));
-                egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let mut jump = None;
-                    for issue in &issues {
-                        let (icon, color) = match issue.severity {
-                            Severity::Error => ("⛔", Color32::from_rgb(220, 60, 60)),
-                            Severity::Warning => ("⚠", Color32::from_rgb(220, 160, 0)),
-                            Severity::Info => ("ℹ", ui.visuals().weak_text_color()),
-                        };
-                        ui.horizontal_wrapped(|ui| {
-                            ui.label(RichText::new(icon).color(color));
-                            let r = ui.add(egui::Label::new(issue.message()).sense(egui::Sense::click()));
-                            if r.on_hover_text(tr("Click to show")).clicked() {
-                                jump = issue.target;
-                            }
-                        });
-                    }
-                    if issues.is_empty() {
-                        ui.label(tr("✔ No problems found."));
-                    }
-                    if let Some((pg, id)) = jump {
-                        self.goto(pg, id);
-                    }
-                });
-            }
+            LeftTab::Check => self.check_tab(ui),
         }
     }
 }

@@ -4383,3 +4383,41 @@ Released pages keep their name.	Freigegebene Seiten behalten ihren Namen.	Les pa
 {} pages renamed	{} Seiten umbenannt	{} pages renommées	{} páginas renombradas
 Placeholders: {n} counter (counted per value of the rest), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Without {n}, connections with the same text share the number.	Platzhalter: {n} Zähler (je Wert des übrigen Texts gezählt), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Ohne {n} teilen sich Verbindungen mit gleichem Text die Nummer.	Espaces réservés : {n} compteur (compté par valeur du reste), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sans {n}, les liaisons au même texte partagent le numéro.	Marcadores: {n} contador (contado por valor del resto), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sin {n}, las conexiones con el mismo texto comparten el número.
 No numbers for	Keine Nummern für	Pas de numéros pour	Sin números para
+Check settings	Prüfeinstellungen	Réglages de vérification	Ajustes de comprobación
+Switch checks off, change message levels, accept messages as checked	Prüfungen abschalten, Meldungsstufen ändern, Meldungen als geprüft akzeptieren	Désactiver des vérifications, changer le niveau des messages, accepter des messages comme vérifiés	Desactivar comprobaciones, cambiar el nivel de los mensajes, aceptar mensajes como revisados
+Shows the settings of the project check: checks switched off, changed message levels and accepted messages	Zeigt die Einstellungen der Projektprüfung: abgeschaltete Prüfungen, geänderte Meldungsstufen und akzeptierte Meldungen	Affiche les réglages de la vérification du projet : vérifications désactivées, niveaux modifiés et messages acceptés	Muestra los ajustes de la comprobación del proyecto: comprobaciones desactivadas, niveles cambiados y mensajes aceptados
+Switches a check on or off (names as shown by list_checks)	Schaltet eine Prüfung ein oder aus (Namen wie von list_checks angezeigt)	Active ou désactive une vérification (noms comme affichés par list_checks)	Activa o desactiva una comprobación (nombres como los muestra list_checks)
+Name of the check	Name der Prüfung	Nom de la vérification	Nombre de la comprobación
+Run the check	Prüfung ausführen	Exécuter la vérification	Ejecutar la comprobación
+Changes the level of a kind of message (code as shown by check)	Ändert die Stufe einer Meldungsart (Code wie von check angezeigt)	Change le niveau d'un type de message (code comme affiché par check)	Cambia el nivel de un tipo de mensaje (código como lo muestra check)
+Message code, e.g. wires.3f9a1c	Meldungscode, z. B. wires.3f9a1c	Code du message, p. ex. wires.3f9a1c	Código del mensaje, p. ej. wires.3f9a1c
+error, warning, info, off, or default to take the change back	error, warning, info, off oder default, um die Änderung zurückzunehmen	error, warning, info, off, ou default pour annuler le changement	error, warning, info, off, o default para deshacer el cambio
+Accepts a message as checked, so that it is no longer counted until it changes	Akzeptiert eine Meldung als geprüft, sodass sie nicht mehr gezählt wird, bis sie sich ändert	Accepte un message comme vérifié, il n'est plus compté tant qu'il ne change pas	Acepta un mensaje como revisado, de modo que no se cuenta mientras no cambie
+Fingerprint of the message as shown by check	Fingerabdruck der Meldung wie von check angezeigt	Empreinte du message comme affichée par check	Huella del mensaje como la muestra check
+false takes the acceptance back (default true)	false nimmt die Akzeptanz zurück (Standard true)	false annule l'acceptation (true par défaut)	false deshace la aceptación (true por defecto)
+The message text, kept for the list of accepted messages	Der Meldungstext, für die Liste der akzeptierten Meldungen	Le texte du message, conservé pour la liste des messages acceptés	El texto del mensaje, guardado para la lista de mensajes aceptados
+Why the message is accepted	Warum die Meldung akzeptiert ist	Pourquoi le message est accepté	Por qué se acepta el mensaje
+Who accepted it	Wer sie akzeptiert hat	Qui l'a accepté	Quién lo aceptó
+Date of the acceptance	Datum der Akzeptanz	Date de l'acceptation	Fecha de la aceptación
+Unknown level: {}	Unbekannte Stufe: {}	Niveau inconnu : {}	Nivel desconocido: {}
+Lists the checks of the project check (built-in and of plugins) and whether they run	Listet die Prüfungen der Projektprüfung (eingebaute und von Plugins) und ob sie laufen	Liste les vérifications du projet (intégrées et des plugins) et indique si elles s'exécutent	Lista las comprobaciones del proyecto (integradas y de plugins) y si se ejecutan
+Off	Aus	Désactivé	Desactivado
+{} errors, {} warnings, {} notes	{} Fehler, {} Warnungen, {} Hinweise	{} erreurs, {} avertissements, {} remarques	{} errores, {} advertencias, {} notas
+Show the messages accepted as checked	Als geprüft akzeptierte Meldungen anzeigen	Afficher les messages acceptés comme vérifiés	Mostrar los mensajes aceptados como revisados
+✔ {}	✔ {}	✔ {}	✔ {}
+This page	Diese Seite	Cette page	Esta página
+Only messages of the current page	Nur Meldungen der aktuellen Seite	Seulement les messages de la page courante	Solo los mensajes de la página actual
+Check settings: checks, message levels, accepted messages	Prüfeinstellungen: Prüfungen, Meldungsstufen, akzeptierte Meldungen	Réglages de vérification : vérifications, niveaux des messages, messages acceptés	Ajustes de comprobación: comprobaciones, niveles de mensajes, mensajes aceptados
+Export the messages as CSV	Meldungen als CSV exportieren	Exporter les messages en CSV	Exportar los mensajes como CSV
+{}\nClick to show, right click for more	{}\nKlicken zum Anzeigen, Rechtsklick für mehr	{}\nCliquer pour afficher, clic droit pour plus	{}\nClic para mostrar, clic derecho para más
+Take the acceptance back	Akzeptanz zurücknehmen	Annuler l'acceptation	Deshacer la aceptación
+Accept as checked	Als geprüft akzeptieren	Accepter comme vérifié	Aceptar como revisado
+Level of this kind of message	Stufe dieser Meldungsart	Niveau de ce type de message	Nivel de este tipo de mensaje
+As defined by the check	Wie von der Prüfung festgelegt	Comme défini par la vérification	Como lo define la comprobación
+Switch off the check \"{}\"	Prüfung \"{}\" abschalten	Désactiver la vérification \"{}\"	Desactivar la comprobación \"{}\"
+Changed message levels ({})	Geänderte Meldungsstufen ({})	Niveaux de message modifiés ({})	Niveles de mensaje cambiados ({})
+Right click a message in the Check tab to change its level.	Rechtsklick auf eine Meldung im Reiter Prüfung ändert ihre Stufe.	Clic droit sur un message dans l'onglet Vérification pour changer son niveau.	Clic derecho en un mensaje en la pestaña Comprobación para cambiar su nivel.
+Accepted messages ({})	Akzeptierte Meldungen ({})	Messages acceptés ({})	Mensajes aceptados ({})
+No longer reported	Wird nicht mehr gemeldet	N'est plus signalé	Ya no se notifica
+Still reported	Wird noch gemeldet	Encore signalé	Se sigue notificando
+Remove the {} messages no longer reported	Die {} nicht mehr gemeldeten Meldungen entfernen	Retirer les {} messages qui ne sont plus signalés	Quitar los {} mensajes que ya no se notifican

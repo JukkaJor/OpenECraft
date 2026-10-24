@@ -20,6 +20,13 @@ pub static TOOLS: &[Tool] = &[
         run: check,
     },
     Tool {
+        name: "list_checks",
+        help: tr_const!("Lists the checks of the project check (built-in and of plugins) and whether they run"),
+        params: &[],
+        needs_project: true,
+        run: list_checks,
+    },
+    Tool {
         name: "list_reports",
         help: tr_const!("Lists the reports (built-in and of plugins): name for report and title"),
         params: &[],
@@ -62,7 +69,7 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let mut an = Analysis::build(prj);
     an.issues = s.plugins.check(prj, &an);
-    an.issues.sort_by_key(|i| i.severity);
+    an.issues.sort_by_key(|i| (i.accepted, i.severity));
     let issues: Vec<Value> = an
         .issues
         .iter()
@@ -70,6 +77,10 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
             json!({
                 "severity": i.severity.key(),
                 "message": i.message(),
+                "check": i.check,
+                "code": i.code(),
+                "fingerprint": i.fingerprint(),
+                "accepted": i.accepted,
                 "key": i.key(),
                 "args": i.args(),
                 "page": i.target.map(|(pg, _)| prj.pages[pg].name.clone()),
@@ -77,8 +88,19 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
             })
         })
         .collect();
-    let count = |sev| an.issues.iter().filter(|i| i.severity == sev).count();
-    Ok(json!({ "errors": count(Severity::Error), "warnings": count(Severity::Warning), "issues": issues }))
+    let count = |sev| an.issues.iter().filter(|i| i.severity == sev && !i.accepted).count();
+    let accepted = an.issues.iter().filter(|i| i.accepted).count();
+    Ok(json!({ "errors": count(Severity::Error), "warnings": count(Severity::Warning), "accepted": accepted, "issues": issues }))
+}
+
+fn list_checks(s: &mut Session, _: &Args) -> Result<Value, String> {
+    let prj = s.project()?;
+    let list: Vec<Value> = s
+        .plugins
+        .checks()
+        .map(|c| json!({ "name": c.name, "title": text(&c.title), "enabled": openecraft_core::checks::is_enabled(prj, &c.name) }))
+        .collect();
+    Ok(Value::Array(list))
 }
 
 fn list_reports(s: &mut Session, _: &Args) -> Result<Value, String> {
