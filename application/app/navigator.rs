@@ -43,6 +43,7 @@ impl App {
                     if ui.button("⚙").on_hover_text(tr("Page properties")).clicked() {
                         self.page_props = Some(self.session.page);
                     }
+                    ui.toggle_value(&mut self.page_tree, "🗄").on_hover_text(tr("Group the pages by structure"));
                     if ui.add_enabled(self.session.page > 0, egui::Button::new("⏶")).clicked() {
                         self.session.prj.pages.swap(self.session.page, self.session.page - 1);
                         self.session.page -= 1;
@@ -53,42 +54,42 @@ impl App {
                     }
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let mut goto = None;
-                    let mut lock_action = None;
-                    for (i, pg) in self.session.prj.pages.iter().enumerate() {
-                        if area.as_ref().is_some_and(|w| !w.shows_page(pg)) && i != self.session.page {
-                            continue;
+                    let mut action = PageAction::None;
+                    let shown: Vec<usize> = (0..self.session.prj.pages.len())
+                        .filter(|&i| i == self.session.page || area.as_ref().is_none_or(|w| w.shows_page(&self.session.prj.pages[i])))
+                        .collect();
+                    if self.page_tree {
+                        // Groups by structure, in the order they first occur.
+                        let mut groups: Vec<(String, Vec<usize>)> = Vec::new();
+                        for &i in &shown {
+                            let st = structure::page_structure(&self.session.prj.pages[i]);
+                            match groups.iter_mut().find(|g| g.0 == st) {
+                                Some(g) => g.1.push(i),
+                                None => groups.push((st, vec![i])),
+                            }
                         }
-                        let icon = match pg.kind {
-                            PageKind::Schematic => "🗋",
-                            PageKind::Cover => "🏷",
-                            PageKind::Report(_) => "📊",
-                            PageKind::Mounting(_) => "🗄",
-                            PageKind::Overview => "🗺",
-                            PageKind::Graphic => "✏",
-                            PageKind::Document => "📎",
-                        };
-                        let mut text = egui::text::LayoutJob::default();
-                        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
-                        text.append(&format!("{icon} {}   {}", structure::page_full_name(pg), pg.description), 0.0, style.clone());
-                        if let Some((mark, color)) = self.page_lock_mark(pg.id) {
-                            text.append(&mark, 8.0, egui::TextFormat { color, ..style });
-                        }
-                        let r = ui.selectable_label(i == self.session.page, text);
-                        if r.clicked() {
-                            goto = Some(i);
-                        }
-                        if self.remote.shared.is_some() {
-                            r.context_menu(|ui| {
-                                if let Some(a) = self.page_lock_menu(ui, pg.id) {
-                                    lock_action = Some(a);
+                        for (st, pages) in groups {
+                            let title = if st.is_empty() { tr("(no structure)").to_string() } else { self.structure_title(&st) };
+                            egui::CollapsingHeader::new(title).id_salt(("ptree", st.as_str())).default_open(true).show(ui, |ui| {
+                                for i in pages {
+                                    action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
                                 }
                             });
                         }
-                        if r.double_clicked() {
-                            self.page_props = Some(i);
+                    } else {
+                        for i in shown {
+                            action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
                         }
                     }
+                    let (goto, lock_action) = match action {
+                        PageAction::Goto(i) => (Some(i), None),
+                        PageAction::Properties(i) => {
+                            self.page_props = Some(i);
+                            (None, None)
+                        }
+                        PageAction::Lock(t, r) => (None, Some((t, r))),
+                        PageAction::None => (None, None),
+                    };
                     if let Some(i) = goto {
                         self.goto(i, 0);
                     }
@@ -178,5 +179,77 @@ impl App {
             LeftTab::Layers => self.layers_tab(ui),
             LeftTab::Check => self.check_tab(ui),
         }
+    }
+}
+
+/// What a row of the page list asks for.
+enum PageAction {
+    None,
+    Goto(usize),
+    Properties(usize),
+    Lock(openecraft_core::collab::Target, bool),
+}
+
+impl PageAction {
+    fn or(self, other: PageAction) -> PageAction {
+        match self {
+            PageAction::None => other,
+            a => a,
+        }
+    }
+}
+
+impl App {
+    /// `=A1+CAB1  Pump station` (descriptions from the structure management).
+    fn structure_title(&self, st: &str) -> String {
+        let dt = Dt::parse_structure(st);
+        let s = &self.session.prj.structures;
+        let desc: Vec<String> = openecraft_core::structure::Aspect::ALL
+            .into_iter()
+            .filter_map(|a| s.entry(a, dt.get(a)).map(|e| e.description.clone()))
+            .filter(|d| !d.is_empty())
+            .collect();
+        if desc.is_empty() {
+            st.to_string()
+        } else {
+            format!("{st}  {}", desc.join(", "))
+        }
+    }
+
+    /// One page of the page list.
+    fn page_row(&self, ui: &mut egui::Ui, i: usize) -> PageAction {
+        let pg = &self.session.prj.pages[i];
+        let icon = match pg.kind {
+            PageKind::Schematic => "🗋",
+            PageKind::Cover => "🏷",
+            PageKind::Report(_) => "📊",
+            PageKind::Mounting(_) => "🗄",
+            PageKind::Overview => "🗺",
+            PageKind::Graphic => "✏",
+            PageKind::Document => "📎",
+        };
+        let mut text = egui::text::LayoutJob::default();
+        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
+        let name = if self.page_tree { pg.name.clone() } else { structure::page_full_name(pg) };
+        text.append(&format!("{icon} {name}   {}", pg.description), 0.0, style.clone());
+        if let Some((mark, color)) = self.page_lock_mark(pg.id) {
+            text.append(&mark, 8.0, egui::TextFormat { color, ..style });
+        }
+        let r = ui.selectable_label(i == self.session.page, text);
+        let mut action = PageAction::None;
+        if r.clicked() {
+            action = PageAction::Goto(i);
+        }
+        if self.remote.shared.is_some() {
+            r.context_menu(|ui| {
+                if let Some((t, release)) = self.page_lock_menu(ui, pg.id) {
+                    action = PageAction::Lock(t, release);
+                }
+            });
+        }
+        if r.double_clicked() {
+            action = PageAction::Properties(i);
+        }
+        action
     }
 }

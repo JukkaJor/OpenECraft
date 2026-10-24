@@ -26,6 +26,7 @@ mod arrange_ui;
 mod cables_ui;
 mod check_ui;
 mod files;
+mod find_ui;
 mod menus;
 mod navigator;
 mod numbering_ui;
@@ -112,6 +113,9 @@ pub struct App {
     check_ui: check_ui::CheckUi,
     arrange_ui: arrange_ui::ArrangeUi,
     show_xref: bool,
+    find_ui: find_ui::FindUi,
+    /// Pages tab grouped by structure.
+    page_tree: bool,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -216,6 +220,8 @@ impl App {
             check_ui: Default::default(),
             arrange_ui: Default::default(),
             show_xref: false,
+            find_ui: Default::default(),
+            page_tree: false,
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),

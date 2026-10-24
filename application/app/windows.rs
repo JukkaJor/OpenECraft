@@ -225,6 +225,7 @@ impl App {
     self.check_settings_window(ctx);
     self.arrange_windows(ctx);
     self.xref_window(ctx);
+    self.find_window(ctx);
     self.engineering_windows(ctx);
     self.compare_window(ctx);
     self.requests_window(ctx);
@@ -403,6 +404,9 @@ impl App {
             return;
         }
         let sc = |m, k| KeyboardShortcut::new(m, k);
+        if ctx.input_mut(|i| i.consume_shortcut(&sc(Modifiers::COMMAND, Key::F))) {
+            self.find_ui.open = true;
+        }
         let (undo, redo, redo2, save, open, pgup, pgdn, w, t) = ctx.input_mut(|i| {
             (
                 i.consume_shortcut(&sc(Modifiers::COMMAND, Key::Z)),

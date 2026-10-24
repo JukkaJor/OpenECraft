@@ -354,7 +354,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Property placement**: drag the tag block of a selected symbol; place further device
   properties (description, part / type number, manufacturer, designation, connection
   points, structure) beside it.
-- **Navigators**: pages, devices (select on page, place further functions, rename),
+- **Find** (*Edit › Find…*, `Ctrl+F`): searches the whole project (page names and
+  descriptions, device tags, function texts, free texts, wire numbers, terminals and
+  pins, cables, part numbers, descriptions) with case and whole-word options, jumps
+  to the hits and replaces text in free texts, function texts and descriptions
+  (released pages stay). Commands: `find`, `replace_text`.
+- **Navigators**: pages (optionally grouped by structure with the descriptions of the
+  structure management), devices (select on page, place further functions, rename),
   connections (filter, show, select, add a connection definition), cables (cores in
   use and free, cable definitions, draw a cable definition), layers and the check.
 - **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross

@@ -4499,3 +4499,26 @@ Structure of the target page: different (default), always or never	Struktur der 
 Interruption points refer to: all (default), star or pairs	Unterbrechungspunkte verweisen auf: all (Standard), star oder pairs	Les points d'interruption renvoient à : all (par défaut), star ou pairs	Los puntos de interrupción remiten a: all (por defecto), star o pairs
 Draw the contact image below coils (default true)	Kontaktspiegel unter Spulen zeichnen (Standard true)	Dessiner l'image de contacts sous les bobines (true par défaut)	Dibujar la imagen de contactos bajo las bobinas (true por defecto)
 Unknown setting: {}	Unbekannte Einstellung: {}	Réglage inconnu : {}	Ajuste desconocido: {}
+Find…   Ctrl+F	Suchen…   Strg+F	Rechercher…   Ctrl+F	Buscar…   Ctrl+F
+Find and replace in the whole project	Im ganzen Projekt suchen und ersetzen	Rechercher et remplacer dans tout le projet	Buscar y reemplazar en todo el proyecto
+Text to find	Zu suchender Text	Texte à rechercher	Texto a buscar
+Match case	Groß-/Kleinschreibung beachten	Respecter la casse	Distinguir mayúsculas
+Whole words	Ganze Wörter	Mots entiers	Palabras completas
+Function texts	Funktionstexte	Textes de fonction	Textos de función
+Texts	Texte	Textes	Textos
+Wire numbers	Verbindungsnummern	Numéros de fils	Números de cable
+Terminals and pins	Klemmen und Pins	Bornes et broches	Bornes y pines
+Descriptions	Beschreibungen	Descriptions	Descripciones
+Replace all	Alle ersetzen	Tout remplacer	Reemplazar todo
+Replaces in free texts, function texts, page, device and cable descriptions; released pages stay	Ersetzt in freien Texten, Funktionstexten, Seiten-, Betriebsmittel- und Kabelbeschreibungen; freigegebene Seiten bleiben	Remplace dans les textes libres, textes de fonction, descriptions de pages, d'appareils et de câbles ; les pages validées restent	Reemplaza en textos libres, textos de función, descripciones de páginas, dispositivos y cables; las páginas liberadas se mantienen
+The project changed since the search.	Das Projekt hat sich seit der Suche geändert.	Le projet a changé depuis la recherche.	El proyecto ha cambiado desde la búsqueda.
+{} found	{} gefunden	{} trouvés	{} encontrados
+{} texts changed	{} Texte geändert	{} textes modifiés	{} textos cambiados
+(no structure)	(keine Struktur)	(sans structure)	(sin estructura)
+Group the pages by structure	Seiten nach Struktur gruppieren	Grouper les pages par structure	Agrupar las páginas por estructura
+Finds text in the whole project: pages, device tags, function texts, free texts, wire numbers, terminals, cables, parts, descriptions	Sucht Text im ganzen Projekt: Seiten, Betriebsmittelkennzeichen, Funktionstexte, freie Texte, Verbindungsnummern, Klemmen, Kabel, Artikel, Beschreibungen	Recherche du texte dans tout le projet : pages, repères d'appareils, textes de fonction, textes libres, numéros de fils, bornes, câbles, articles, descriptions	Busca texto en todo el proyecto: páginas, identificaciones de dispositivos, textos de función, textos libres, números de cable, bornes, cables, artículos, descripciones
+Whole words only	Nur ganze Wörter	Mots entiers seulement	Solo palabras completas
+Only these kinds, separated by commas: page, device, function_text, text, wire_number, terminal, cable, part, description	Nur diese Arten, durch Kommas getrennt: page, device, function_text, text, wire_number, terminal, cable, part, description	Seulement ces types, séparés par des virgules : page, device, function_text, text, wire_number, terminal, cable, part, description	Solo estos tipos, separados por comas: page, device, function_text, text, wire_number, terminal, cable, part, description
+Replaces text in free texts, function texts, page, device and cable descriptions of the whole project; released pages stay	Ersetzt Text in freien Texten, Funktionstexten, Seiten-, Betriebsmittel- und Kabelbeschreibungen des ganzen Projekts; freigegebene Seiten bleiben	Remplace du texte dans les textes libres, textes de fonction, descriptions de pages, d'appareils et de câbles de tout le projet ; les pages validées restent	Reemplaza texto en textos libres, textos de función, descripciones de páginas, dispositivos y cables de todo el proyecto; las páginas liberadas se mantienen
+Only these kinds, separated by commas: page, function_text, text, description	Nur diese Arten, durch Kommas getrennt: page, function_text, text, description	Seulement ces types, séparés par des virgules : page, function_text, text, description	Solo estos tipos, separados por comas: page, function_text, text, description
+Unknown kind: {}	Unbekannte Art: {}	Type inconnu : {}	Tipo desconocido: {}

@@ -70,6 +70,7 @@ pub mod routing;
 pub mod routing3d;
 pub mod rules;
 pub mod safety;
+pub mod search;
 pub mod sample;
 pub mod shortcircuit;
 pub mod singleline;

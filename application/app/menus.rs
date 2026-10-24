@@ -92,6 +92,9 @@ impl App {
             ops::delete(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
             self.editor.selection.clear();
         }
+        if ui.button(tr("Find…   Ctrl+F")).on_hover_text(tr("Find and replace in the whole project")).clicked() {
+            self.find_ui.open = true;
+        }
         if ui.button(tr("Select all   Ctrl+A")).clicked() {
             self.editor.selection = ops::all_ids(&self.session.prj.pages[self.session.page]).into_iter().collect();
         }

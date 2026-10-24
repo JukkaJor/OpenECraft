@@ -75,3 +75,17 @@ fn cross_reference_settings() {
     let x = s.project().unwrap().xref.clone();
     assert!(x.row && x.hide_contact_image);
 }
+
+#[test]
+fn find_and_replace_in_the_project() {
+    let mut s = demo();
+    let hits = run(&mut s, "find", json!({ "text": "-K1", "kinds": "device" })).unwrap();
+    assert_eq!(hits.as_array().unwrap().len(), 1);
+    assert_eq!(hits[0]["kind"], "device");
+    assert!(run(&mut s, "find", json!({ "text": "x", "kinds": "colour" })).is_err());
+    run(&mut s, "add_text", json!({ "page": "2", "x": 40, "y": 40, "text": "Old note" })).unwrap();
+    let changed = run(&mut s, "replace_text", json!({ "text": "old", "with": "New", "kinds": "text" })).unwrap();
+    assert_eq!(changed["changed"], 1);
+    let hits = run(&mut s, "find", json!({ "text": "New note", "case_sensitive": true })).unwrap();
+    assert_eq!(hits[0]["kind"], "text");
+}
