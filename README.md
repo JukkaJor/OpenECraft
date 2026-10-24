@@ -52,6 +52,18 @@ built with [egui / eframe](https://github.com/emilk/egui).
   (`3.4.1`) or by potential name (`L1`, `+24V`), with prefix and start value; manually
   set numbers are kept. Shown on the schematic, in the connection list and the panel
   wire list; checks for conflicting and duplicate numbers.
+- **Numbering** (in the spirit of EPLAN's offline numbering): *Project › Device
+  numbering…* renumbers device tags per structure and identifying letter in schematic
+  order (page, column, top to bottom) after a format: `{letter}{n}` (`-K1`),
+  `{letter}{page}.{n}` (`-K3.1`), `{letter}{page}{column}` (`-K34`) or NFPA style
+  `{page}{column}{letter}` (`-34K`), with start value, step, letters and scope, and a
+  preview of the new tags; everything that refers to a tag follows (parts, strips,
+  plugs, PLC data, panel layout, harnesses). *Page › Renumber pages…* numbers pages
+  with start and step, restarting per structure and keeping sub-pages (`3.a`). The wire
+  numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
+  `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
+  value of the rest), counter digits and step, and potential kinds that get no number
+  (e.g. PE). Commands: `renumber_devices`, `renumber_pages`, `set_wire_numbering`.
 - **Macros**: save a selection (window macro) or a whole page (page macro) into a macro
   library (stored with the application, JSON import / export). Window macros are placed
   with the mouse (ghost preview, devices get new tags), page macros insert a page.

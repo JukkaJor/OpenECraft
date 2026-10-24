@@ -38,3 +38,30 @@ fn wrong_input_is_rejected() {
     assert!(run(&mut s, "wiring_list", json!({ "enclosure": "+NOPE" })).unwrap_err().contains("No enclosure"));
     assert_eq!(run(&mut s, "remove_old_wiring_marks", json!({})).unwrap()["removed"], 0);
 }
+
+#[test]
+fn numbering_of_wires_devices_and_pages() {
+    let mut s = demo();
+    let set = run(&mut s, "set_wire_numbering", json!({ "scheme": "format", "format": "{page}.{n}", "digits": 2, "skip_kinds": "pe" })).unwrap();
+    assert_eq!((set["scheme"].as_str(), set["digits"].as_u64()), (Some("format"), Some(2)));
+    assert_eq!(set["skip_kinds"], json!(["pe"]));
+    assert!(run(&mut s, "set_wire_numbering", json!({ "scheme": "random" })).is_err());
+    assert!(run(&mut s, "set_wire_numbering", json!({ "skip_kinds": "earth" })).is_err());
+    assert!(run(&mut s, "renumber_wires", json!({})).unwrap()["renumbered"].as_u64().unwrap() > 0);
+    let numbers: Vec<String> = s.project().unwrap().pages.iter().flat_map(|p| &p.wires).map(|w| w.number.clone()).filter(|n| !n.is_empty()).collect();
+    assert!(numbers.iter().all(|n| n.split_once('.').is_some_and(|(_, c)| c.len() >= 2)), "{numbers:?}");
+
+    let plan = run(&mut s, "renumber_devices", json!({ "format": "{letter}{page}{column}", "dry_run": true })).unwrap();
+    let renamed = plan["renamed"].as_array().unwrap().clone();
+    assert!(!renamed.is_empty());
+    let first_old = renamed[0]["old"].as_str().unwrap().to_string();
+    let first_new = renamed[0]["new"].as_str().unwrap().to_string();
+    assert!(s.project().unwrap().all_tags().contains(&first_old), "a dry run changes nothing");
+    run(&mut s, "renumber_devices", json!({ "format": "{letter}{page}{column}" })).unwrap();
+    assert!(s.project().unwrap().all_tags().contains(&first_new));
+    assert!(run(&mut s, "renumber_devices", json!({ "pages": "nope" })).is_err());
+
+    let pages = run(&mut s, "renumber_pages", json!({ "start": 10, "step": 10 })).unwrap();
+    assert_eq!(pages["pages"][0], "10");
+    assert_eq!(pages["pages"][1], "20");
+}

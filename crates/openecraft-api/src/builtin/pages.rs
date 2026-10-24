@@ -7,6 +7,7 @@ use super::{add_commands, info, Spec};
 use openecraft_core::model::*;
 use openecraft_core::netlist::Netlist;
 use openecraft_core::structure::{Aspect, Dt};
+use openecraft_core::numbering::{self, PageNumbering};
 use openecraft_core::{frame, ops, potentials};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -56,6 +57,18 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Deletes a page"),
         params: &[PAGE],
         run: delete_page,
+    },
+    Spec {
+        name: "renumber_pages",
+        help: tr_const!("Numbers the pages with a start value and step; released pages keep their name"),
+        params: &[
+            optional("start", Kind::Int, tr_const!("First page number (default 1)")),
+            optional("step", Kind::Int, tr_const!("Counting step (default 1)")),
+            optional("per_structure", Kind::Bool, tr_const!("Start again on every page whose structure differs from the page before")),
+            optional("subpages", Kind::Bool, tr_const!("Pages with a suffix (3.a) stay sub-pages of the page before (default true)")),
+            optional("pages", Kind::Str, tr_const!("Only these pages (names separated by commas)")),
+        ],
+        run: renumber_pages,
     },
 ];
 
@@ -132,6 +145,19 @@ fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ops::set_page_structure(prj, i, &dt, true);
     }
     Ok(page_json(&prj.pages[i]))
+}
+
+fn renumber_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let defaults = PageNumbering::default();
+    let opts = PageNumbering {
+        start: a.int("start").map_or(defaults.start, |v| v.max(0) as u32),
+        step: a.int("step").map_or(defaults.step, |v| v.max(1) as u32),
+        per_structure: a.flag("per_structure"),
+        subpages: a.value("subpages").and_then(Value::as_bool).unwrap_or(defaults.subpages),
+        pages: crate::builtin::devices::page_list(prj, a.str("pages"))?,
+    };
+    let n = numbering::renumber_pages(prj, &opts);
+    Ok(json!({ "renamed": n, "pages": prj.pages.iter().map(|pg| pg.name.clone()).collect::<Vec<_>>() }))
 }
 
 fn delete_page(prj: &mut Project, a: &Args) -> Result<Value, String> {

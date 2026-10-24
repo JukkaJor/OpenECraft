@@ -27,11 +27,21 @@ pub fn numbers_of(prj: &Project, net: &Net) -> Vec<String> {
     v
 }
 
+/// Where a connection starts: page, column (1-based) and row label.
+/// Schematic order: page, column, top to bottom, left to right.
+type Order = (usize, usize, i64, i64);
+
+struct Start {
+    net: usize,
+    page: usize,
+    col: usize,
+    row: String,
+}
+
 /// Connections that get a number (they have wires and connect something), in
-/// schematic order (page, column, top to bottom), with the page and column where
-/// they start.
-fn connections_in_order(prj: &Project, open: &Netlist) -> Vec<(usize, usize, usize)> {
-    let mut v: Vec<((usize, usize, i64, i64), usize)> = Vec::new();
+/// schematic order (page, column, top to bottom), with the place where they start.
+fn connections_in_order(prj: &Project, open: &Netlist) -> Vec<Start> {
+    let mut v: Vec<(Order, usize, String)> = Vec::new();
     for (ni, net) in open.nets.iter().enumerate() {
         if net.wires.is_empty() || net.pins.is_empty() {
             continue;
@@ -42,47 +52,79 @@ fn connections_in_order(prj: &Project, open: &Netlist) -> Vec<(usize, usize, usi
             .filter_map(|(pi, id)| prj.pages[*pi].wires.iter().find(|w| w.id == *id).map(|w| (*pi, w)))
             .flat_map(|(pi, w)| {
                 let frame = crate::frame::of_page(prj, pi);
-                [w.a, w.b].map(|q| (pi, frame.column_index(q) + 1, (q.y * 10.0) as i64, (q.x * 10.0) as i64))
+                [w.a, w.b].map(|q| ((pi, frame.column_index(q) + 1, (q.y * 10.0) as i64, (q.x * 10.0) as i64), frame.row_of(q)))
             })
-            .min();
-        if let Some(start) = start {
-            v.push((start, ni));
+            .min_by(|a, b| a.0.cmp(&b.0));
+        if let Some((start, row)) = start {
+            v.push((start, ni, row));
         }
     }
-    v.sort();
-    v.into_iter().map(|((page, col, _, _), ni)| (ni, page, col)).collect()
+    v.sort_by_key(|a| a.0);
+    v.into_iter().map(|((page, col, _, _), net, row)| Start { net, page, col, row }).collect()
+}
+
+/// The potential (bridged net) a connection belongs to.
+fn potential_of<'a>(prj: &Project, net: &Net, bridged: &'a Netlist) -> Option<&'a Net> {
+    let pin = net.pins[0];
+    let sym = prj.pages[pin.page].symbols[pin.sym].id;
+    bridged.pin_net.get(&(sym, pin.pin)).map(|&n| &bridged.nets[n])
+}
+
+/// Code of a potential kind in number formats.
+fn kind_code(k: crate::model::potentials::PotentialKind) -> &'static str {
+    use crate::model::potentials::PotentialKind as K;
+    match k {
+        K::L => "L",
+        K::N => "N",
+        K::Pe => "PE",
+        K::DcPlus => "+",
+        K::DcMinus => "-",
+        K::Signal => "S",
+        K::Other => "",
+    }
 }
 
 /// Numbers all connections according to the project's settings; hoses and pipes
 /// (fluid nets) are counted apart with the fluid prefix (`H1`, `H2` …). Manually set
-/// numbers stay unless `overwrite_fixed`. Returns the number of numbered connections.
+/// numbers stay unless `overwrite_fixed`. Connections of skipped potential kinds lose
+/// their automatic number. Returns the number of numbered connections.
+#[allow(clippy::too_many_lines)]
 pub fn renumber(prj: &mut Project, open: &Netlist, bridged: &Netlist, overwrite_fixed: bool) -> usize {
     let settings = prj.wire_numbering.clone();
+    let step = settings.step.max(1);
+    let digits = settings.digits as usize;
+    let count_text = |n: u32| format!("{n:0digits$}");
     let order = connections_in_order(prj, open);
     let fixed = |prj: &Project, net: &Net| wires_of(prj, net).iter().any(|w| w.number_fixed && !w.number.is_empty());
+    let def_of = |name: &str| prj.potentials.iter().find(|d| d.name == name);
     let mut used: HashSet<String> = HashSet::new();
     let mut todo = Vec::new();
-    for (ni, page, col) in order {
-        let net = &open.nets[ni];
+    let mut skipped = Vec::new();
+    for st in order {
+        let net = &open.nets[st.net];
+        let kind = potential_of(prj, net, bridged).filter(|p| p.named).and_then(|p| def_of(&p.name)).map(|d| d.kind);
         if !overwrite_fixed && fixed(prj, net) {
             used.insert(number_of(prj, net));
+        } else if !net.fluid && kind.is_some_and(|k| settings.skip_kinds.contains(&k)) {
+            skipped.push(st.net);
         } else {
-            todo.push((ni, page, col));
+            todo.push(st);
         }
     }
     let mut counter = settings.start;
     let mut next_counted = |used: &HashSet<String>| loop {
-        let n = format!("{}{counter}", settings.prefix);
-        counter += 1;
+        let n = format!("{}{}", settings.prefix, count_text(counter));
+        counter += step;
         if !used.contains(&n) {
             return n;
         }
     };
+    let mut groups: HashMap<String, u32> = HashMap::new();
     let mut per_column: HashMap<(usize, usize), u32> = HashMap::new();
     let mut numbers = Vec::new();
     let mut hoses = 0;
-    for (ni, page, col) in todo {
-        let net = &open.nets[ni];
+    for st in todo {
+        let net = &open.nets[st.net];
         let number = match settings.scheme {
             _ if net.fluid => loop {
                 hoses += 1;
@@ -93,29 +135,58 @@ pub fn renumber(prj: &mut Project, open: &Netlist, bridged: &Netlist, overwrite_
             },
             NumberScheme::Sequential => next_counted(&used),
             NumberScheme::PageColumn => loop {
-                let k = per_column.entry((page, col)).or_insert(0);
+                let k = per_column.entry((st.page, st.col)).or_insert(0);
                 *k += 1;
-                let n = format!("{}{}.{col}.{k}", settings.prefix, prj.pages[page].name);
+                let n = format!("{}{}.{}.{k}", settings.prefix, prj.pages[st.page].name, st.col);
                 if !used.contains(&n) {
                     break n;
                 }
             },
-            NumberScheme::Potential => {
-                let pin = net.pins[0];
-                let sym = prj.pages[pin.page].symbols[pin.sym].id;
-                match bridged.pin_net.get(&(sym, pin.pin)).map(|&n| &bridged.nets[n]) {
-                    // Shared on purpose by all connections of the potential.
-                    Some(pot) if pot.named => pot.name.clone(),
-                    _ => next_counted(&used),
+            NumberScheme::Potential => match potential_of(prj, net, bridged) {
+                // Shared on purpose by all connections of the potential.
+                Some(pot) if pot.named => pot.name.clone(),
+                _ => next_counted(&used),
+            },
+            NumberScheme::Format => {
+                let pot = potential_of(prj, net, bridged).filter(|p| p.named);
+                let def = pot.and_then(|p| def_of(&p.name));
+                let w = wires_of(prj, net);
+                let color = w.iter().map(|w| w.color.as_str()).find(|c| !c.is_empty()).or(def.map(|d| d.color.as_str())).unwrap_or("");
+                let cs = w.iter().map(|w| w.cross_section.as_str()).find(|c| !c.is_empty()).or(def.map(|d| d.cross_section.as_str())).unwrap_or("");
+                let format = if settings.format.trim().is_empty() { "{n}" } else { settings.format.as_str() };
+                let base = format
+                    .replace("{page}", &prj.pages[st.page].name)
+                    .replace("{column}", &st.col.to_string())
+                    .replace("{row}", &st.row)
+                    .replace("{potential}", pot.map(|p| p.name.as_str()).unwrap_or(""))
+                    .replace("{kind}", def.map(|d| kind_code(d.kind)).unwrap_or(""))
+                    .replace("{color}", color)
+                    .replace("{cross_section}", &cs.replace(' ', ""));
+                let base = format!("{}{base}", settings.prefix);
+                if base.contains("{n}") {
+                    let c = groups.entry(base.clone()).or_insert(settings.start);
+                    loop {
+                        let n = base.replace("{n}", &count_text(*c));
+                        *c += step;
+                        if !used.contains(&n) {
+                            break n;
+                        }
+                    }
+                } else {
+                    // Shared by all connections with the same text.
+                    base
                 }
             }
         };
         used.insert(number.clone());
-        numbers.push((ni, number));
+        numbers.push((st.net, number));
     }
     let count = numbers.len();
     for (ni, number) in numbers {
         set(prj, &open.nets[ni], &number, false);
+    }
+    for ni in skipped {
+        set(prj, &open.nets[ni], "", false);
     }
     count
 }

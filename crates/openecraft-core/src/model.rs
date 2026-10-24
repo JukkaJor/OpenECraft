@@ -847,16 +847,19 @@ pub enum NumberScheme {
     PageColumn,
     /// Named potentials (L1, +24V …) keep their name, other connections are counted.
     Potential,
+    /// After the format of the numbering settings (`{page}.{column}.{n}` …).
+    Format,
 }
 
 impl NumberScheme {
-    pub const ALL: [NumberScheme; 3] = [NumberScheme::Sequential, NumberScheme::PageColumn, NumberScheme::Potential];
+    pub const ALL: [NumberScheme; 4] = [NumberScheme::Sequential, NumberScheme::PageColumn, NumberScheme::Potential, NumberScheme::Format];
 
     pub fn title(self) -> &'static str {
         match self {
             NumberScheme::Sequential => tr("Sequential (1, 2, 3 …)"),
             NumberScheme::PageColumn => tr("Page / column (3.4.1)"),
             NumberScheme::Potential => tr("Potential name (L1, +24V, otherwise counted)"),
+            NumberScheme::Format => tr("Format (placeholders)"),
         }
     }
 }
@@ -907,11 +910,34 @@ pub struct WireNumbering {
     /// Put in front of counted numbers, e.g. "W".
     pub prefix: String,
     pub start: u32,
+    /// Format of the scheme `Format`: `{n}` counter (counted per value of the rest of
+    /// the format), `{page}`, `{column}`, `{row}`, `{potential}` (name of a named
+    /// potential), `{kind}` (L, N, PE … of its definition), `{color}`,
+    /// `{cross_section}`. Without `{n}`, connections with the same text share it.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub format: String,
+    /// Minimum digits of the counter (leading zeros).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub digits: u8,
+    /// Counting step.
+    #[serde(skip_serializing_if = "is_one", default = "one")]
+    pub step: u32,
+    /// Connections of potentials of these kinds get no number (e.g. PE).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub skip_kinds: Vec<potentials::PotentialKind>,
+}
+
+fn one() -> u32 {
+    1
+}
+
+fn is_one(v: &u32) -> bool {
+    *v == 1
 }
 
 impl Default for WireNumbering {
     fn default() -> Self {
-        WireNumbering { scheme: NumberScheme::Sequential, prefix: String::new(), start: 1 }
+        WireNumbering { scheme: NumberScheme::Sequential, prefix: String::new(), start: 1, format: String::new(), digits: 0, step: 1, skip_kinds: Vec::new() }
     }
 }
 

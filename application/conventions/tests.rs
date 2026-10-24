@@ -156,6 +156,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("structure", &["model", "ops"]),
     ("frame", &["geom", "model"]),
     ("text", &["frame", "geom", "model", "symbols"]),
+    ("numbering", &["frame", "index", "model", "ops", "structure"]),
     ("wirenum", &["frame", "model", "netlist"]),
     ("history", &["model"]),
     ("translation", &["model"]),

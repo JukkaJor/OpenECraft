@@ -26,6 +26,7 @@ mod cables_ui;
 mod files;
 mod menus;
 mod navigator;
+mod numbering_ui;
 mod properties_panel;
 mod toolbar;
 mod windows;
@@ -104,6 +105,7 @@ pub struct App {
     show_help: bool,
     show_cables: bool,
     show_numbering: bool,
+    numbering_ui: numbering_ui::NumberingUi,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -204,6 +206,7 @@ impl App {
             show_help: false,
             show_cables: false,
             show_numbering: false,
+            numbering_ui: Default::default(),
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),

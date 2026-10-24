@@ -179,6 +179,9 @@ impl App {
             self.pages_ui.replace_document = None;
             self.io.open(&ctx, Purpose::Document);
         }
+        if ui.button(tr("Renumber pages…")).clicked() {
+            self.numbering_ui.show_pages = true;
+        }
         ui.menu_button(tr("New page from template"), |ui| {
             for t in openecraft_core::page_templates::all(&self.session.prj) {
                 if ui.button(openecraft_core::page_templates::display_name(&t.name)).on_hover_text(t.kind.label()).clicked() {
@@ -261,6 +264,9 @@ impl App {
         }
         if ui.button(tr("Wire numbering…")).clicked() {
             self.show_numbering = true;
+        }
+        if ui.button(tr("Device numbering…")).on_hover_text(tr("Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)")).clicked() {
+            self.numbering_ui.show_devices = true;
         }
         if ui.button(tr("Harnesses…")).clicked() {
             self.harness_ui.open = true;

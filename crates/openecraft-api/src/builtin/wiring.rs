@@ -5,7 +5,8 @@ use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
 use openecraft_core::analysis::Analysis;
-use openecraft_core::model::Project;
+use openecraft_core::model::potentials::PotentialKind;
+use openecraft_core::model::{NumberScheme, Project};
 use openecraft_core::wiring::{self, Mark, Order, Status};
 use openecraft_core::wirenum;
 use openecraft_i18n::{tr_const, tr_fmt};
@@ -29,6 +30,20 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Numbers the wires by the numbering scheme of the project"),
         params: &[optional("overwrite_fixed", Kind::Bool, tr_const!("Also renumber wires with a fixed number"))],
         run: renumber_wires,
+    },
+    Spec {
+        name: "set_wire_numbering",
+        help: tr_const!("Sets the numbering scheme of the wires (only the given settings) and shows it"),
+        params: &[
+            optional("scheme", Kind::Str, tr_const!("sequential, page_column, potential or format")),
+            optional("format", Kind::Str, tr_const!("Format of the scheme format: {n} (counter), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}")),
+            optional("prefix", Kind::Str, tr_const!("Put in front of the numbers, e.g. W")),
+            optional("start", Kind::Int, tr_const!("First counter value (default 1)")),
+            optional("step", Kind::Int, tr_const!("Counting step (default 1)")),
+            optional("digits", Kind::Int, tr_const!("Minimum digits of the counter (leading zeros)")),
+            optional("skip_kinds", Kind::Str, tr_const!("Potential kinds whose connections get no number, separated by commas (l, n, pe, dc_plus, dc_minus, signal)")),
+        ],
+        run: set_wire_numbering,
     },
     Spec {
         name: "wiring_list",
@@ -63,6 +78,61 @@ fn renumber_wires(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let an = Analysis::build(prj);
     let n = wirenum::renumber(prj, &an.open, &an.netlist, a.flag("overwrite_fixed"));
     Ok(json!({ "renumbered": n }))
+}
+
+fn scheme_code(s: NumberScheme) -> &'static str {
+    match s {
+        NumberScheme::Sequential => "sequential",
+        NumberScheme::PageColumn => "page_column",
+        NumberScheme::Potential => "potential",
+        NumberScheme::Format => "format",
+    }
+}
+
+fn kind_code(k: PotentialKind) -> &'static str {
+    match k {
+        PotentialKind::L => "l",
+        PotentialKind::N => "n",
+        PotentialKind::Pe => "pe",
+        PotentialKind::DcPlus => "dc_plus",
+        PotentialKind::DcMinus => "dc_minus",
+        PotentialKind::Signal => "signal",
+        PotentialKind::Other => "other",
+    }
+}
+
+fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let s = &mut prj.wire_numbering;
+    if let Some(v) = a.str("scheme") {
+        let v = v.trim().to_ascii_lowercase();
+        s.scheme = NumberScheme::ALL.into_iter().find(|x| scheme_code(*x) == v).ok_or_else(|| tr_fmt!("Unknown numbering scheme: {}", v))?;
+    }
+    if let Some(v) = a.str("format") {
+        s.format = v.trim().to_string();
+    }
+    if let Some(v) = a.str("prefix") {
+        s.prefix = v.trim().to_string();
+    }
+    if let Some(v) = a.int("start") {
+        s.start = v.max(0) as u32;
+    }
+    if let Some(v) = a.int("step") {
+        s.step = v.max(1) as u32;
+    }
+    if let Some(v) = a.int("digits") {
+        s.digits = v.clamp(0, 9) as u8;
+    }
+    if let Some(v) = a.str("skip_kinds") {
+        let mut kinds = Vec::new();
+        for code in v.split(',').map(|c| c.trim().to_ascii_lowercase()).filter(|c| !c.is_empty()) {
+            kinds.push(PotentialKind::ALL.into_iter().find(|k| kind_code(*k) == code).ok_or_else(|| tr_fmt!("Unknown potential kind: {}", code))?);
+        }
+        s.skip_kinds = kinds;
+    }
+    Ok(json!({
+        "scheme": scheme_code(s.scheme), "format": s.format, "prefix": s.prefix, "start": s.start, "step": s.step, "digits": s.digits,
+        "skip_kinds": s.skip_kinds.iter().map(|k| kind_code(*k)).collect::<Vec<_>>()
+    }))
 }
 
 fn status_code(s: Status) -> &'static str {

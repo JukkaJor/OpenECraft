@@ -4339,3 +4339,47 @@ Id of the text	Id des Textes	Id du texte	Id del texto
 Unknown alignment: {}	Unbekannte Ausrichtung: {}	Alignement inconnu : {}	Alineación desconocida: {}
 Unknown vertical anchor: {}	Unbekannter vertikaler Anker: {}	Ancrage vertical inconnu : {}	Anclaje vertical desconocido: {}
 No text with id {}	Kein Text mit Id {}	Aucun texte avec l'id {}	Ningún texto con id {}
+Format (placeholders)	Format (Platzhalter)	Format (espaces réservés)	Formato (marcadores)
+Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)	Nummeriert die Betriebsmittelkennzeichen je Struktur und Kennbuchstabe in Schaltplanreihenfolge (Seite, Spalte, von oben nach unten)	Numérote les repères d'appareils par structure et lettre repère dans l'ordre du schéma (page, colonne, de haut en bas)	Numera las identificaciones de dispositivos por estructura y letra de código en el orden del esquema (página, columna, de arriba abajo)
+Format of the device name: {letter}, {n} (counter), {page}, {column}, {row}; default {letter}{n}	Format des Betriebsmittelnamens: {letter}, {n} (Zähler), {page}, {column}, {row}; Standard {letter}{n}	Format du nom d'appareil : {letter}, {n} (compteur), {page}, {column}, {row} ; par défaut {letter}{n}	Formato del nombre del dispositivo: {letter}, {n} (contador), {page}, {column}, {row}; por defecto {letter}{n}
+First counter value (default 1)	Erster Zählerwert (Standard 1)	Première valeur du compteur (1 par défaut)	Primer valor del contador (1 por defecto)
+Counting step (default 1)	Zählschritt (Standard 1)	Pas de comptage (1 par défaut)	Paso de conteo (1 por defecto)
+Only devices on these pages (names separated by commas)	Nur Betriebsmittel auf diesen Seiten (Namen durch Kommas getrennt)	Seulement les appareils de ces pages (noms séparés par des virgules)	Solo los dispositivos de estas páginas (nombres separados por comas)
+Only these identifying letters (separated by commas, e.g. K,Q)	Nur diese Kennbuchstaben (durch Kommas getrennt, z. B. K,Q)	Seulement ces lettres repères (séparées par des virgules, p. ex. K,Q)	Solo estas letras de código (separadas por comas, p. ej. K,Q)
+Also renumber terminal strips, plugs and PLC cards	Auch Klemmleisten, Stecker und SPS-Karten neu nummerieren	Renuméroter aussi les borniers, connecteurs et cartes d'API	Renumerar también regletas, conectores y tarjetas PLC
+Only list the new tags, change nothing	Nur die neuen Kennzeichen auflisten, nichts ändern	Seulement lister les nouveaux repères, ne rien modifier	Solo listar las nuevas identificaciones, no cambiar nada
+Numbers the pages with a start value and step; released pages keep their name	Nummeriert die Seiten mit Startwert und Schrittweite; freigegebene Seiten behalten ihren Namen	Numérote les pages avec une valeur de départ et un pas ; les pages validées gardent leur nom	Numera las páginas con un valor inicial y un paso; las páginas liberadas conservan su nombre
+First page number (default 1)	Erste Seitennummer (Standard 1)	Premier numéro de page (1 par défaut)	Primer número de página (1 por defecto)
+Start again on every page whose structure differs from the page before	Bei jeder Seite neu beginnen, deren Struktur sich von der vorherigen unterscheidet	Recommencer à chaque page dont la structure diffère de la page précédente	Empezar de nuevo en cada página cuya estructura difiera de la anterior
+Pages with a suffix (3.a) stay sub-pages of the page before (default true)	Seiten mit Zusatz (3.a) bleiben Unterseiten der vorherigen Seite (Standard true)	Les pages avec un suffixe (3.a) restent des sous-pages de la page précédente (true par défaut)	Las páginas con sufijo (3.a) siguen siendo subpáginas de la anterior (true por defecto)
+Only these pages (names separated by commas)	Nur diese Seiten (Namen durch Kommas getrennt)	Seulement ces pages (noms séparés par des virgules)	Solo estas páginas (nombres separados por comas)
+Sets the numbering scheme of the wires (only the given settings) and shows it	Setzt das Nummerierungsschema der Verbindungen (nur die angegebenen Einstellungen) und zeigt es an	Définit le schéma de numérotation des fils (seulement les réglages indiqués) et l'affiche	Establece el esquema de numeración de los cables (solo los ajustes indicados) y lo muestra
+sequential, page_column, potential or format	sequential, page_column, potential oder format	sequential, page_column, potential ou format	sequential, page_column, potential o format
+Format of the scheme format: {n} (counter), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Format des Schemas format: {n} (Zähler), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Format du schéma format : {n} (compteur), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Formato del esquema format: {n} (contador), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}
+Put in front of the numbers, e.g. W	Vor die Nummern gesetzt, z. B. W	Placé devant les numéros, p. ex. W	Se antepone a los números, p. ej. W
+Minimum digits of the counter (leading zeros)	Mindestanzahl Stellen des Zählers (führende Nullen)	Nombre minimal de chiffres du compteur (zéros en tête)	Número mínimo de dígitos del contador (ceros a la izquierda)
+Potential kinds whose connections get no number, separated by commas (l, n, pe, dc_plus, dc_minus, signal)	Potenzialarten, deren Verbindungen keine Nummer erhalten, durch Kommas getrennt (l, n, pe, dc_plus, dc_minus, signal)	Types de potentiel dont les liaisons ne sont pas numérotées, séparés par des virgules (l, n, pe, dc_plus, dc_minus, signal)	Tipos de potencial cuyas conexiones no reciben número, separados por comas (l, n, pe, dc_plus, dc_minus, signal)
+Unknown numbering scheme: {}	Unbekanntes Nummerierungsschema: {}	Schéma de numérotation inconnu : {}	Esquema de numeración desconocido: {}
+Device numbering	Betriebsmittel nummerieren	Numérotation des appareils	Numeración de dispositivos
+Device numbering…	Betriebsmittel nummerieren…	Numérotation des appareils…	Numeración de dispositivos…
+Format	Format	Format	Formato
+Step	Schrittweite	Pas	Paso
+Digits	Stellen	Chiffres	Dígitos
+Identifying letters	Kennbuchstaben	Lettres repères	Letras de código
+all, or e.g. K, Q	alle, oder z. B. K, Q	toutes, ou p. ex. K, Q	todas, o p. ej. K, Q
+Only devices on the current page	Nur Betriebsmittel auf der aktuellen Seite	Seulement les appareils de la page courante	Solo los dispositivos de la página actual
+Terminal strips, plugs and PLC cards keep their tags	Klemmleisten, Stecker und SPS-Karten behalten ihre Kennzeichen	Les borniers, connecteurs et cartes d'API gardent leurs repères	Las regletas, conectores y tarjetas PLC conservan sus identificaciones
+Placeholders: {letter} identifying letter, {n} counter, {page} page, {column} / {row} where the main function stands	Platzhalter: {letter} Kennbuchstabe, {n} Zähler, {page} Seite, {column} / {row} Ort der Hauptfunktion	Espaces réservés : {letter} lettre repère, {n} compteur, {page} page, {column} / {row} emplacement de la fonction principale	Marcadores: {letter} letra de código, {n} contador, {page} página, {column} / {row} donde está la función principal
+All devices are numbered already.	Alle Betriebsmittel sind bereits nummeriert.	Tous les appareils sont déjà numérotés.	Todos los dispositivos ya están numerados.
+{} devices get a new tag	{} Betriebsmittel erhalten ein neues Kennzeichen	{} appareils reçoivent un nouveau repère	{} dispositivos reciben una nueva identificación
+Number devices	Betriebsmittel nummerieren	Numéroter les appareils	Numerar dispositivos
+{} devices renamed	{} Betriebsmittel umbenannt	{} appareils renommés	{} dispositivos renombrados
+Renumber pages	Seiten neu nummerieren	Renuméroter les pages	Renumerar páginas
+Renumber pages…	Seiten neu nummerieren…	Renuméroter les pages…	Renumerar páginas…
+Start again when the page structure changes	Neu beginnen, wenn sich die Seitenstruktur ändert	Recommencer quand la structure de page change	Empezar de nuevo cuando cambia la estructura de página
+Keep sub-pages (3.a, 3.1) with the page before	Unterseiten (3.a, 3.1) bei der vorherigen Seite lassen	Garder les sous-pages (3.a, 3.1) avec la page précédente	Mantener las subpáginas (3.a, 3.1) con la página anterior
+Released pages keep their name.	Freigegebene Seiten behalten ihren Namen.	Les pages validées gardent leur nom.	Las páginas liberadas conservan su nombre.
+{} pages get a new name	{} Seiten erhalten einen neuen Namen	{} pages reçoivent un nouveau nom	{} páginas reciben un nuevo nombre
+{} pages renamed	{} Seiten umbenannt	{} pages renommées	{} páginas renombradas
+Placeholders: {n} counter (counted per value of the rest), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Without {n}, connections with the same text share the number.	Platzhalter: {n} Zähler (je Wert des übrigen Texts gezählt), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Ohne {n} teilen sich Verbindungen mit gleichem Text die Nummer.	Espaces réservés : {n} compteur (compté par valeur du reste), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sans {n}, les liaisons au même texte partagent le numéro.	Marcadores: {n} contador (contado por valor del resto), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sin {n}, las conexiones con el mismo texto comparten el número.
+No numbers for	Keine Nummern für	Pas de numéros pour	Sin números para

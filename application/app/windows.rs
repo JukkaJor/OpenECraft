@@ -221,6 +221,7 @@ impl App {
     self.cables_window(ctx);
     self.rename_device_window(ctx);
     self.numbering_window(ctx);
+    self.numbering_windows(ctx);
     self.engineering_windows(ctx);
     self.compare_window(ctx);
     self.requests_window(ctx);

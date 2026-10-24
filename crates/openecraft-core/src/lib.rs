@@ -42,6 +42,7 @@ pub mod manufacturing;
 pub mod marking;
 pub mod model;
 pub mod netlist;
+pub mod numbering;
 pub mod ops;
 pub mod options;
 pub mod page_templates;

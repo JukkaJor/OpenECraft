@@ -51,7 +51,8 @@ Layers, bottom up (a module may use its own layer and the layers below):
    their data types from here and keep the logic.
 4. Evaluation of the model that everything else builds on: `index`, `netlist`,
    `structure`, `frame`, `wirenum`, `history`, `translation`, `options`,
-   `potentials`, `functions`, `properties`, `props`, `text` (free texts: lines,
+   `potentials`, `functions`, `properties`, `props`, `numbering` (device and page
+   renumbering), `text` (free texts: lines,
    wrapping, rotation, path function texts).
 5. Feature logic and page editing: `ops`, `panel`, `electrical`, `fluid`, `plc`,
    `plc_hw`, `field`, `routing3d`, `strips`, `plugs`, `harness`, `marking`, `forms`,
