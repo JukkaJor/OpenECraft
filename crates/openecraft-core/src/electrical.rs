@@ -1,0 +1,370 @@
+//! Electrical design data of a project: the supply (voltage, earthing system,
+//! short-circuit currents), the installation conditions of the conductors, the
+//! safety functions and the rule libraries / customer rule sets the project is
+//! verified against. Also the circuits of the mains: the protective devices fed
+//! from the supply, the nets behind them and the device upstream of each.
+
+use openecraft_i18n::tr;
+use crate::model::*;
+use crate::netlist::Netlist;
+use crate::parts::{kind_of_symbol, FnKind};
+use crate::potentials::PotentialKind;
+use crate::protection::Protection;
+use crate::sizing::{designation_number, is_protective, passes_current, protected_nets};
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
+
+/// Earthing system of the supply (IEC 60364-1).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum Earthing {
+    #[default]
+    TnS,
+    TnC,
+    TnCS,
+    Tt,
+    It,
+}
+
+impl Earthing {
+    pub const ALL: [Earthing; 5] = [Earthing::TnS, Earthing::TnC, Earthing::TnCS, Earthing::Tt, Earthing::It];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Earthing::TnS => "TN-S",
+            Earthing::TnC => "TN-C",
+            Earthing::TnCS => "TN-C-S",
+            Earthing::Tt => "TT",
+            Earthing::It => "IT",
+        }
+    }
+}
+
+/// The supply at the incoming terminals of the machine / assembly.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Supply {
+    /// Line-to-line voltage in V.
+    pub voltage: f32,
+    pub frequency: f32,
+    pub earthing: Earthing,
+    /// Highest three-phase short-circuit current at the supply point in kA.
+    pub ik_max: f32,
+    /// Lowest single-phase fault current (line to PE) at the supply point in kA;
+    /// 0: from the highest short-circuit current.
+    pub ik_min: f32,
+    /// Rated current of the supply in A; 0: not limited.
+    pub rated_current: f32,
+}
+
+impl Default for Supply {
+    fn default() -> Self {
+        Supply { voltage: 400.0, frequency: 50.0, earthing: Earthing::TnS, ik_max: 10.0, ik_min: 0.0, rated_current: 0.0 }
+    }
+}
+
+impl Supply {
+    /// Line-to-earth voltage.
+    pub fn u0(&self) -> f32 {
+        self.voltage / 3f32.sqrt()
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum Material {
+    #[default]
+    Copper,
+    Aluminium,
+}
+
+impl Material {
+    pub const ALL: [Material; 2] = [Material::Copper, Material::Aluminium];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Material::Copper => tr("Copper"),
+            Material::Aluminium => tr("Aluminium"),
+        }
+    }
+
+    /// Resistivity at 20 °C in Ω·mm²/m.
+    pub fn rho20(self) -> f32 {
+        match self {
+            Material::Copper => 0.018,
+            Material::Aluminium => 0.0288,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum Insulation {
+    /// PVC, 70 °C.
+    #[default]
+    Pvc,
+    /// XLPE / EPR, 90 °C.
+    Xlpe,
+}
+
+impl Insulation {
+    pub const ALL: [Insulation; 2] = [Insulation::Pvc, Insulation::Xlpe];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Insulation::Pvc => tr("PVC (70 °C)"),
+            Insulation::Xlpe => tr("XLPE / EPR (90 °C)"),
+        }
+    }
+
+    /// Highest conductor temperature in operation, °C.
+    pub fn max_temperature(self) -> f32 {
+        match self {
+            Insulation::Pvc => 70.0,
+            Insulation::Xlpe => 90.0,
+        }
+    }
+}
+
+/// Installation conditions of the conductors: correct the current-carrying capacity
+/// of IEC 60204-1 table 6 (copper, PVC, 40 °C, one circuit).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Conditions {
+    /// Ambient temperature in °C.
+    pub ambient: f32,
+    /// Loaded circuits bunched together (IEC 60364-5-52, table B.52.17).
+    pub grouped: u32,
+    pub material: Material,
+    pub insulation: Insulation,
+}
+
+impl Default for Conditions {
+    fn default() -> Self {
+        Conditions { ambient: 40.0, grouped: 1, material: Material::Copper, insulation: Insulation::Pvc }
+    }
+}
+
+/// Reduction factors for bunched circuits (IEC 60364-5-52, table B.52.17, item 1).
+const GROUPING: [(u32, f32); 12] =
+    [(1, 1.0), (2, 0.8), (3, 0.7), (4, 0.65), (5, 0.6), (6, 0.57), (7, 0.54), (8, 0.52), (9, 0.5), (12, 0.45), (16, 0.41), (20, 0.38)];
+
+impl Conditions {
+    /// Factor applied to the current-carrying capacity of the table.
+    pub fn factor(&self) -> f32 {
+        let tmax = self.insulation.max_temperature();
+        let temp = ((tmax - self.ambient).max(0.0) / (tmax - 40.0)).sqrt();
+        let insulation = match self.insulation {
+            Insulation::Pvc => 1.0,
+            Insulation::Xlpe => 1.2,
+        };
+        let material = match self.material {
+            Material::Copper => 1.0,
+            Material::Aluminium => 0.78,
+        };
+        let group = GROUPING.iter().rev().find(|g| self.grouped.max(1) >= g.0).map_or(1.0, |g| g.1);
+        temp * insulation * material * group
+    }
+
+    /// Resistivity in operation (voltage drop, lowest fault current): 1.25 × ρ20
+    /// (IEC 60364-5-52, G.52.1), Ω·mm²/m.
+    pub fn rho_hot(&self) -> f32 {
+        self.material.rho20() * 1.25
+    }
+
+    /// Factor k of the adiabatic short-circuit withstand (IEC 60364-4-43, table 43A).
+    pub fn k(&self) -> f32 {
+        match (self.material, self.insulation) {
+            (Material::Copper, Insulation::Pvc) => 115.0,
+            (Material::Copper, Insulation::Xlpe) => 143.0,
+            (Material::Aluminium, Insulation::Pvc) => 76.0,
+            (Material::Aluminium, Insulation::Xlpe) => 94.0,
+        }
+    }
+}
+
+/// Electrical design data of a project.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Electrical {
+    pub supply: Supply,
+    pub conditions: Conditions,
+    /// Diversity factor of the loads; 0: rated diversity factor of IEC 61439-1,
+    /// table 101, by the number of circuits.
+    pub diversity: f32,
+    /// Safety functions (ISO 13849-1).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub safety: Vec<crate::safety::SafetyFunction>,
+    /// Ids of the built-in rule libraries the project is verified against.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub standards: Vec<String>,
+    /// Customer rule sets.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub rule_sets: Vec<crate::rules::RuleSet>,
+}
+
+impl Electrical {
+    pub fn is_default(&self) -> bool {
+        *self == Electrical::default()
+    }
+}
+
+/// Kind of the potential of a net: as defined, otherwise from its name (L1, N, PE …).
+pub fn net_kind(prj: &Project, name: &str) -> PotentialKind {
+    if let Some(d) = prj.potential(name) {
+        return d.kind;
+    }
+    match name {
+        "L" | "L1" | "L2" | "L3" | "L1'" | "L2'" | "L3'" => PotentialKind::L,
+        "N" | "N'" => PotentialKind::N,
+        "PE" | "PEN" => PotentialKind::Pe,
+        _ => PotentialKind::Other,
+    }
+}
+
+/// Pin of the other side of a pass-through or protective device (1 ↔ 2, 3 ↔ 4 …).
+fn partner_pin(s: &SymbolInst, pin: usize) -> Option<usize> {
+    let d = designation_number(s, pin)?;
+    let partner = if d % 2 == 1 { d + 1 } else { d - 1 };
+    (0..s.pins.len()).find(|&j| designation_number(s, j) == Some(partner))
+}
+
+/// Nets of the mains: the phase potentials and every net reached from them through
+/// protective devices, main contacts and other pass-through devices, with the phase
+/// potential each comes from.
+pub fn mains(prj: &Project, nl: &Netlist) -> BTreeMap<usize, String> {
+    let mut out: BTreeMap<usize, String> = BTreeMap::new();
+    let mut todo: Vec<(usize, String)> =
+        nl.nets.iter().enumerate().filter(|(_, n)| n.named && net_kind(prj, &n.name) == PotentialKind::L).map(|(i, n)| (i, n.name.clone())).collect();
+    while let Some((n, phase)) = todo.pop() {
+        if out.contains_key(&n) {
+            continue;
+        }
+        out.insert(n, phase.clone());
+        for p in &nl.nets[n].pins {
+            let s = &prj.pages[p.page].symbols[p.sym];
+            if !passes_current(s) && !is_protective(&s.sym) {
+                continue;
+            }
+            if let Some(&m) = partner_pin(s, p.pin).and_then(|j| nl.pin_net.get(&(s.id, j))) {
+                todo.push((m, phase.clone()));
+            }
+        }
+    }
+    out
+}
+
+/// A protective device of the mains and the circuit behind it.
+#[derive(Clone, Debug)]
+pub struct Circuit {
+    pub device: String,
+    pub page: usize,
+    /// Id of the protective symbol.
+    pub symbol: u64,
+    pub protection: Protection,
+    /// Nets on the line side of the device.
+    pub line: BTreeSet<usize>,
+    /// Nets behind the device ([`protected_nets`]).
+    pub nets: BTreeSet<usize>,
+    /// Phases the circuit is fed from.
+    pub phases: BTreeSet<String>,
+    /// Index of the circuit upstream.
+    pub parent: Option<usize>,
+    /// A residual current device protects the circuit, with this rated residual
+    /// current in mA.
+    pub residual: Option<f32>,
+}
+
+impl Circuit {
+    /// Final circuits (up to 32 A) must disconnect faster than distribution circuits.
+    pub fn is_final(&self) -> bool {
+        self.protection.rated <= 32.0
+    }
+}
+
+/// Rated residual current of a residual current device (mA): `Rated residual current`
+/// of the tech data or a value in mA in the description; 30 mA otherwise.
+fn residual_current(prj: &Project, tag: &str) -> f32 {
+    crate::sizing::device_parts(prj, tag)
+        .iter()
+        .find_map(|p| {
+            let text = p.tech_value("Rated residual current").map(String::from).unwrap_or_else(|| p.description.clone());
+            let i = text.find("mA")?;
+            let num: String = text[..i].trim_end().chars().rev().take_while(|c| c.is_ascii_digit() || *c == '.').collect::<Vec<_>>().into_iter().rev().collect();
+            num.parse().ok()
+        })
+        .unwrap_or(30.0)
+}
+
+/// The protective devices fed from the mains with their circuits, in schematic order.
+pub fn circuits(prj: &Project, nl: &Netlist) -> Vec<Circuit> {
+    let mains = mains(prj, nl);
+    let mut out: Vec<Circuit> = Vec::new();
+    for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
+        for (si, s) in pg.symbols.iter().enumerate() {
+            if !is_protective(&s.sym) || s.tag.is_empty() {
+                continue;
+            }
+            let line: BTreeSet<usize> =
+                (0..s.pins.len()).filter(|&i| designation_number(s, i).is_some_and(|d| d % 2 == 1)).filter_map(|i| nl.pin_net.get(&(s.id, i)).copied()).collect();
+            let phases: BTreeSet<String> = line.iter().filter_map(|n| mains.get(n).cloned()).collect();
+            if phases.is_empty() {
+                continue;
+            }
+            let nets = protected_nets(prj, nl, pi, si);
+            if let Some(c) = out.iter_mut().find(|c| c.device == s.tag) {
+                c.line.extend(line);
+                c.nets.extend(nets);
+                c.phases.extend(phases);
+                continue;
+            }
+            let Some(protection) = crate::protection::of_device(prj, &s.tag) else { continue };
+            out.push(Circuit { device: s.tag.clone(), page: pi, symbol: s.id, protection, line, nets, phases, parent: None, residual: None });
+        }
+    }
+    let rcds: Vec<(String, BTreeSet<usize>)> = prj
+        .pages
+        .iter()
+        .filter(|p| p.kind == PageKind::Schematic)
+        .flat_map(|p| p.symbols.iter())
+        .filter(|s| kind_of_symbol(&s.sym) == Some(FnKind::ResidualCurrent) && !s.tag.is_empty())
+        .map(|s| {
+            let load = (0..s.pins.len()).filter(|&i| designation_number(s, i).is_some_and(|d| d % 2 == 0));
+            (s.tag.clone(), load.filter_map(|i| nl.pin_net.get(&(s.id, i)).copied()).collect())
+        })
+        .collect();
+    for i in 0..out.len() {
+        out[i].parent = (0..out.len()).find(|&j| j != i && !out[j].nets.is_disjoint(&out[i].line));
+        let c = &out[i];
+        out[i].residual = rcds.iter().find(|(_, nets)| !nets.is_disjoint(&c.line) || !nets.is_disjoint(&c.nets)).map(|(tag, _)| residual_current(prj, tag));
+    }
+    // A residual current device upstream protects the circuits below it.
+    for i in 0..out.len() {
+        let mut p = out[i].parent;
+        let mut depth = 0;
+        while let (Some(j), None, true) = (p, out[i].residual, depth < out.len()) {
+            out[i].residual = out[j].residual;
+            p = out[j].parent;
+            depth += 1;
+        }
+    }
+    out
+}
+
+/// Value with a unit from a text: the number before `unit` ("0.75 kW" → 0.75 for "kW").
+pub fn value_with_unit(text: &str, unit: &str) -> Option<f32> {
+    let mut rest = text;
+    while let Some(i) = rest.find(unit) {
+        let before = rest[..i].trim_end();
+        let after = &rest[i + unit.len()..];
+        let num: String = before.chars().rev().take_while(|c| c.is_ascii_digit() || *c == '.' || *c == ',').collect::<Vec<_>>().into_iter().rev().collect();
+        let starts_word = before.len() == num.len() || !before[..before.len() - num.len()].ends_with(|c: char| c.is_alphanumeric());
+        if !num.is_empty() && starts_word && !after.starts_with(|c: char| c.is_alphabetic()) {
+            if let Ok(v) = num.replace(',', ".").parse() {
+                return Some(v);
+            }
+        }
+        rest = after;
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests;

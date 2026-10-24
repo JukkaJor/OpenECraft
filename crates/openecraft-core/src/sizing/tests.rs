@@ -67,7 +67,8 @@ fn ampacity_table() {
     assert_eq!(ampacity(2.5), Some(18.3));
     assert_eq!(ampacity(3.0), Some(18.3));
     assert!((ampacity(0.5).unwrap() - 7.6 * 0.5 / 0.75).abs() < 1e-4);
-    assert_eq!(ampacity(50.0), None);
+    assert_eq!(ampacity(50.0), Some(117.0));
+    assert_eq!(ampacity(150.0), None);
 }
 
 #[test]

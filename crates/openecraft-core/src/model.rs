@@ -95,6 +95,9 @@ pub struct Project {
     /// Comments, redline / greenline markup, approvals and change requests.
     #[serde(skip_serializing_if = "crate::review::Review::is_empty")]
     pub review: crate::review::Review,
+    /// Supply, installation conditions, safety functions and rule sets.
+    #[serde(skip_serializing_if = "crate::electrical::Electrical::is_default")]
+    pub electrical: crate::electrical::Electrical,
     /// User defined properties, function definitions and placement schemes.
     #[serde(skip_serializing_if = "crate::properties::Library::is_empty")]
     pub property_db: crate::properties::Library,
@@ -138,6 +141,7 @@ impl Default for Project {
             workflow: Default::default(),
             baselines: Vec::new(),
             review: Default::default(),
+            electrical: Default::default(),
             property_db: Default::default(),
             field: Default::default(),
             next_id: 1,
@@ -247,12 +251,18 @@ pub enum ReportKind {
     ElectroFluid,
     RoutingList,
     BundleList,
+    ShortCircuit,
+    Selectivity,
+    LoadCalculation,
+    PowerSupplyBudget,
+    SafetyFunctions,
+    Verification,
     FieldRouting,
     Bonding,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 35] = [
+    pub const ALL: [ReportKind; 41] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -286,6 +296,12 @@ impl ReportKind {
         ReportKind::ElectroFluid,
         ReportKind::RoutingList,
         ReportKind::BundleList,
+        ReportKind::ShortCircuit,
+        ReportKind::Selectivity,
+        ReportKind::LoadCalculation,
+        ReportKind::PowerSupplyBudget,
+        ReportKind::SafetyFunctions,
+        ReportKind::Verification,
         ReportKind::FieldRouting,
         ReportKind::Bonding,
     ];
@@ -325,6 +341,12 @@ impl ReportKind {
             ReportKind::ElectroFluid => tr("Electro-fluid cross reference"),
             ReportKind::RoutingList => tr("Routing list (3D)"),
             ReportKind::BundleList => tr("Bundle list"),
+            ReportKind::ShortCircuit => tr("Short circuit and disconnection"),
+            ReportKind::Selectivity => tr("Selectivity"),
+            ReportKind::LoadCalculation => tr("Load calculation"),
+            ReportKind::PowerSupplyBudget => tr("Power supply load budget"),
+            ReportKind::SafetyFunctions => tr("Safety functions (ISO 13849-1)"),
+            ReportKind::Verification => tr("Rule set verification"),
             ReportKind::FieldRouting => tr("Field cable routing"),
             ReportKind::Bonding => tr("Equipotential bonding"),
         }
