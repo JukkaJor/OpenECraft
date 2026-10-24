@@ -68,9 +68,14 @@ pub fn image_placeholder<D: Draw + ?Sized>(d: &mut D, img: &ImageItem) {
     d.text(r.center(), &img.file.name, 2.0, Anchor::Center, VAnchor::Middle, Ink::FrameText);
 }
 
+/// Estimated width of a text.
+fn text_width(text: &str, size: f32) -> f32 {
+    text.chars().count() as f32 * size * 0.62
+}
+
 /// Links the area of a text (estimated from its length) to a page.
 fn link_text(d: &mut dyn Draw, pos: P, text: &str, size: f32, h: Anchor, page: usize) {
-    let w = text.chars().count() as f32 * size * 0.62;
+    let w = text_width(text, size);
     let x0 = match h {
         Anchor::Left => pos.x,
         Anchor::Center => pos.x - w / 2.0,
@@ -728,15 +733,18 @@ fn draw_cover(d: &mut dyn Draw, prj: &Project, frame: &crate::frame::PlotFrame) 
         (tr("Revision"), info.revision.as_str()),
     ];
     let pages = prj.pages.len().to_string();
-    let rows = rows.iter().copied().chain(std::iter::once((tr("Number of pages"), pages.as_str())));
+    let rows: Vec<(&str, &str)> = rows.iter().copied().chain(std::iter::once((tr("Number of pages"), pages.as_str()))).collect();
+    // The rows centred in the box, which is wide enough for the longest key and value.
+    let (row, size, pad) = (9.0, 3.5, 3.0);
     let top = at(150.0);
-    for (i, (k, v)) in rows.enumerate() {
-        let y = top + 10.0 + i as f32 * 9.0;
-        d.text(p(cx - 5.0, y), k, 3.5, Anchor::Right, VAnchor::Middle, Ink::FrameText);
-        d.text(p(cx + 5.0, y), v, 3.5, Anchor::Left, VAnchor::Middle, Ink::Text);
+    for (i, (k, v)) in rows.iter().enumerate() {
+        let y = top + pad + (i as f32 + 0.5) * row;
+        d.text(p(cx - 5.0, y), k, size, Anchor::Right, VAnchor::Middle, Ink::FrameText);
+        d.text(p(cx + 5.0, y), v, size, Anchor::Left, VAnchor::Middle, Ink::Text);
     }
-    let half = (a.width() / 2.0 - 5.0).min(100.0);
-    d.rect(p(cx - half, top), p(cx + half, top + 5.0 * 9.0 + 1.0), 0.25, Ink::Frame, false);
+    let longest = rows.iter().map(|(k, v)| text_width(k, size).max(text_width(v, size))).fold(0.0, f32::max);
+    let half = (longest + 5.0 + 2.0 * pad).max(100.0).min(a.width() / 2.0 - 5.0);
+    d.rect(p(cx - half, top), p(cx + half, top + rows.len() as f32 * row + 2.0 * pad), 0.25, Ink::Frame, false);
 }
 
 pub const REPORT_ROWS_PER_PAGE: usize = crate::report_blocks::ROWS_PER_PAGE;
@@ -1213,3 +1221,6 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::f
     );
     d.text(p(x0, a.max.y - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
 }
+
+#[cfg(test)]
+mod tests;
