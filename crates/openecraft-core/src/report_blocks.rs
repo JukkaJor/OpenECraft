@@ -106,7 +106,7 @@ pub struct PageTable {
 }
 
 fn column(table: &Table, name: &str) -> Option<usize> {
-    table.headers.iter().position(|h| *h == name)
+    table.column(name)
 }
 
 /// The rows of a report filtered and sorted by a form.
@@ -197,7 +197,7 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
     let shown: Vec<usize> = rows.iter().skip(part.first).take(per_page).copied().collect();
     let more = rows.len().saturating_sub(part.first + shown.len());
     let cols = forms::report_columns(form, &table.headers);
-    let width = |c: usize| form.and_then(|f| f.widths.get(table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
+    let width = |c: usize| form.and_then(|f| forms::header_value(&f.widths, &table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
     let mut out_rows: Vec<Vec<String>> = shown.iter().map(|&i| cols.iter().map(|&c| table.rows[i].get(c).cloned().unwrap_or_default()).collect()).collect();
     if form.is_some_and(|f| f.blank_repeats) {
         for i in (1..out_rows.len()).rev() {
@@ -214,7 +214,7 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
     let lineup = if kind == ReportKind::TerminalLineup { lineup_boxes(&table, &shown) } else { Vec::new() };
     Some(PageTable {
         title,
-        headers: cols.iter().map(|&c| table.headers[c].to_string()).collect(),
+        headers: cols.iter().map(|&c| table.header_text(c).to_string()).collect(),
         widths: cols.iter().map(|&c| width(c)).collect(),
         rows: out_rows,
         targets: shown.iter().map(|&i| table.targets[i]).collect(),

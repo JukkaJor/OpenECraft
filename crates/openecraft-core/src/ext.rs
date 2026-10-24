@@ -1,8 +1,12 @@
-//! Extension points: what a plugin adds in [`crate::Plugin::register`].
+//! Extension points: what a plugin or a built-in area adds to a [`Registry`]. The
+//! front ends (editor, command line, MCP server) take commands, checks, reports and
+//! exporters from the registries of `openecraft_api::Plugins`, so an extension is
+//! available everywhere at once.
 
+use crate::model::Project;
 use crate::params::{Args, Param, Text};
-use openecraft_core::model::Project;
-use openecraft_core::reports::{self, Analysis, Issue};
+use crate::reports::{Analysis, Issue};
+use crate::table::Table;
 use serde_json::Value;
 use std::sync::Arc;
 
@@ -30,7 +34,7 @@ pub struct Check {
     pub run: Arc<CheckFn>,
 }
 
-/// A table generated from the project (editor: Plugins › reports, command line: `report`).
+/// A table generated from the project (editor: Reports, command line: `report`).
 #[derive(Clone)]
 pub struct Report {
     pub name: String,
@@ -38,7 +42,7 @@ pub struct Report {
     pub run: Arc<ReportFn>,
 }
 
-/// A text file generated from the project (editor: Plugins › export, command line: `export`).
+/// A text file generated from the project (editor: File › Export, command line: `export`).
 #[derive(Clone)]
 pub struct Exporter {
     pub name: String,
@@ -48,50 +52,8 @@ pub struct Exporter {
     pub run: Arc<ExportFn>,
 }
 
-/// Result of a report.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Table {
-    pub headers: Vec<Text>,
-    pub rows: Vec<Vec<String>>,
-    /// Optional jump target (page index, item id) per row.
-    pub targets: Vec<Option<(usize, u64)>>,
-}
-
-impl Table {
-    pub fn new(headers: impl IntoIterator<Item = impl Into<Text>>) -> Table {
-        Table { headers: headers.into_iter().map(Into::into).collect(), ..Default::default() }
-    }
-
-    pub fn push(&mut self, row: Vec<String>, target: Option<(usize, u64)>) {
-        self.rows.push(row);
-        self.targets.push(target);
-    }
-
-    /// The headers in the current language.
-    pub fn header_texts(&self) -> Vec<&str> {
-        self.headers.iter().map(crate::params::text).collect()
-    }
-
-    /// CSV like the built-in reports (`;` separated).
-    pub fn to_csv(&self) -> String {
-        let esc = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
-        let line = |cells: Vec<&str>| cells.into_iter().map(esc).collect::<Vec<_>>().join(";") + "\n";
-        let mut out = line(self.header_texts());
-        for r in &self.rows {
-            out.push_str(&line(r.iter().map(String::as_str).collect()));
-        }
-        out
-    }
-}
-
-impl From<reports::Table> for Table {
-    fn from(t: reports::Table) -> Table {
-        Table { headers: t.headers.into_iter().map(Text::Borrowed).collect(), rows: t.rows, targets: t.targets }
-    }
-}
-
 /// What one plugin adds. Names are snake_case and unique among all plugins (commands
-/// also among the built-in commands of the front ends), see [`crate::Plugins::add`].
+/// also among the built-in commands of the front ends), see `openecraft_api::Plugins::add`.
 #[derive(Clone, Default)]
 pub struct Registry {
     pub commands: Vec<Command>,
@@ -122,7 +84,7 @@ impl Registry {
     }
 
     /// Names of everything registered, with the kind (for the uniqueness check).
-    pub(crate) fn names(&self) -> impl Iterator<Item = (&'static str, &str)> {
+    pub fn names(&self) -> impl Iterator<Item = (&'static str, &str)> {
         let c = self.commands.iter().map(|x| ("command", x.name.as_str()));
         let k = self.checks.iter().map(|x| ("check", x.name.as_str()));
         let r = self.reports.iter().map(|x| ("report", x.name.as_str()));

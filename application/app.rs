@@ -1798,8 +1798,8 @@ impl App {
                 let table = self.analysis.report(&self.prj, kind);
                 egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                     egui::Grid::new("report").striped(true).spacing([14.0, 4.0]).show(ui, |ui| {
-                        for h in &table.headers {
-                            ui.label(RichText::new(*h).strong());
+                        for h in table.header_texts() {
+                            ui.label(RichText::new(h).strong());
                         }
                         ui.end_row();
                         for (row, target) in table.rows.iter().zip(&table.targets) {

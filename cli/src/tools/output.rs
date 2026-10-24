@@ -102,7 +102,7 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
         let t = openecraft_core::report_blocks::scheme_table(&table, Some(&scheme.form));
         let cols = openecraft_core::forms::report_columns(Some(&scheme.form), &t.headers);
         table = reports::Table {
-            headers: cols.iter().map(|&c| t.headers[c]).collect(),
+            headers: cols.iter().map(|&c| t.headers[c].clone()).collect(),
             widths: cols.iter().map(|&c| t.widths[c]).collect(),
             rows: t.rows.iter().map(|r| cols.iter().map(|&c| r.get(c).cloned().unwrap_or_default()).collect()).collect(),
             targets: t.targets,
@@ -110,7 +110,7 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     match a.str("format").unwrap_or("json") {
         "csv" => Ok(Value::String(table.to_csv())),
-        "json" => Ok(json!({ "report": snake(kind), "title": kind.title(), "headers": table.headers, "rows": table.rows })),
+        "json" => Ok(json!({ "report": snake(kind), "title": kind.title(), "headers": table.header_texts(), "rows": table.rows })),
         other => Err(tr_fmt!("Unknown format: {}", other)),
     }
 }

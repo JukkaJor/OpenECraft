@@ -1,7 +1,7 @@
 //! The loaded plugins of a front end and the access to their extensions.
 
 use crate::params::{self, Args};
-use crate::registry::{Check, Command, Exporter, Registry, Report};
+use crate::{Check, Command, Exporter, Registry, Report};
 use crate::{external, is_snake_case, Info, Plugin};
 use openecraft_core::model::Project;
 use openecraft_core::reports::{Analysis, Issue, Severity};

@@ -39,8 +39,8 @@ fn table_grid(ui: &mut egui::Ui, id: &str, t: &Table, jump: &mut Option<(usize, 
     egui::ScrollArea::both().id_salt(id).max_height(260.0).auto_shrink([false, true]).show(ui, |ui| {
         egui::Grid::new(id).striped(true).spacing([10.0, 3.0]).show(ui, |ui| {
             ui.label("");
-            for h in &t.headers {
-                ui.label(RichText::new(*h).strong());
+            for h in t.header_texts() {
+                ui.label(RichText::new(h).strong());
             }
             ui.end_row();
             for (row, target) in t.rows.iter().zip(&t.targets) {

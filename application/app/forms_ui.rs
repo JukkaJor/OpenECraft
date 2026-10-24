@@ -9,6 +9,7 @@ use crate::geom::{p, P};
 use crate::io::Purpose;
 use crate::model::ReportKind;
 use crate::render::Ink;
+use openecraft_core::params::Text;
 use crate::symbols::Anchor;
 use egui::{vec2, Color32, PointerButton, RichText, Sense, Stroke};
 
@@ -290,7 +291,8 @@ impl App {
             return action;
         }
         let table = self.analysis.report(&self.prj, kind);
-        let headers: Vec<&str> = table.headers.clone();
+        let headers: Vec<&str> = table.header_keys();
+        let titles: Vec<&str> = table.header_texts();
         let stored = if fu.scheme.is_empty() {
             self.prj.forms.reports.get(&kind).cloned()
         } else {
@@ -335,12 +337,12 @@ impl App {
                     .on_hover_text(tr("0 = fitted to the rows per page"));
                 ui.end_row();
                 ui.label(tr("Group column"));
-                let first = tr_fmt!("{} (first column)", headers.first().copied().unwrap_or(""));
-                let current = if form.group.is_empty() { first.clone() } else { form.group.clone() };
+                let first = tr_fmt!("{} (first column)", titles.first().copied().unwrap_or(""));
+                let current = if form.group.is_empty() { first.clone() } else { title_of(&form.group, &headers, &titles).to_string() };
                 egui::ComboBox::from_id_salt("rfgroup").selected_text(current).width(240.0).show_ui(ui, |ui| {
                     ui.selectable_value(&mut form.group, String::new(), first);
-                    for h in headers.iter().skip(1) {
-                        ui.selectable_value(&mut form.group, h.to_string(), *h);
+                    for (h, title) in headers.iter().zip(&titles).skip(1) {
+                        ui.selectable_value(&mut form.group, h.to_string(), *title);
                     }
                 })
                 .response
@@ -352,10 +354,10 @@ impl App {
             });
             ui.add_space(4.0);
             ui.columns(2, |cols| {
-                columns_editor(&mut cols[0], &mut form, &headers, &table.widths);
-                filter_editor(&mut cols[1], &mut form, &headers);
+                columns_editor(&mut cols[0], &mut form, &headers, &titles, &table.widths);
+                filter_editor(&mut cols[1], &mut form, &headers, &titles);
                 cols[1].add_space(8.0);
-                sort_editor(&mut cols[1], &mut form, &headers);
+                sort_editor(&mut cols[1], &mut form, &headers, &titles);
             });
             ui.horizontal(|ui| {
                 if ui.button(tr("Reset to standard")).clicked() {
@@ -379,10 +381,17 @@ impl App {
     }
 }
 
-/// Shown columns in their order, then the hidden ones; with their widths.
-fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], widths: &[f32]) {
+/// Title of a column stored in a form (its key, or the name of an older file).
+fn title_of<'a>(column: &'a str, headers: &[&str], titles: &[&'a str]) -> &'a str {
+    headers.iter().position(|h| *h == column).map(|i| titles[i]).unwrap_or(column)
+}
+
+/// Shown columns in their order, then the hidden ones; with their widths. `headers`
+/// are the keys stored in the form, `titles` what the user sees.
+fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str], widths: &[f32]) {
     ui.label(RichText::new(tr("Columns")).strong());
-    let shown: Vec<usize> = forms::report_columns(Some(form), headers);
+    let texts: Vec<Text> = headers.iter().map(|h| Text::Owned(h.to_string())).collect();
+    let shown: Vec<usize> = forms::report_columns(Some(form), &texts);
     let mut order: Vec<(usize, bool)> = shown.iter().map(|&c| (c, true)).collect();
     order.extend((0..headers.len()).filter(|c| !shown.contains(c)).map(|c| (c, false)));
     let mut changed = false;
@@ -405,7 +414,7 @@ fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], wi
                     form.widths.insert(h.to_string(), w);
                 }
             }
-            changed |= ui.checkbox(on, h).changed();
+            changed |= ui.checkbox(on, titles[*c]).changed();
         });
     }
     if let Some((a, b)) = swap {
@@ -419,20 +428,21 @@ fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], wi
     }
 }
 
-fn column_combo(ui: &mut egui::Ui, id: (&str, usize), column: &mut String, headers: &[&str]) {
-    egui::ComboBox::from_id_salt(id).selected_text(column.as_str()).width(160.0).show_ui(ui, |ui| {
-        for h in headers {
-            ui.selectable_value(column, h.to_string(), *h);
+fn column_combo(ui: &mut egui::Ui, id: (&str, usize), column: &mut String, headers: &[&str], titles: &[&str]) {
+    let selected = title_of(column, headers, titles).to_string();
+    egui::ComboBox::from_id_salt(id).selected_text(selected).width(160.0).show_ui(ui, |ui| {
+        for (h, title) in headers.iter().zip(titles) {
+            ui.selectable_value(column, h.to_string(), *title);
         }
     });
 }
 
-fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
+fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str]) {
     ui.label(RichText::new(tr("Filter")).strong()).on_hover_text(tr("Only rows that pass all filters are shown"));
     let mut remove = None;
     for (i, f) in form.filters.iter_mut().enumerate() {
         ui.horizontal(|ui| {
-            column_combo(ui, ("rffcol", i), &mut f.column, headers);
+            column_combo(ui, ("rffcol", i), &mut f.column, headers, titles);
             egui::ComboBox::from_id_salt(("rffop", i)).selected_text(f.op.title()).width(120.0).show_ui(ui, |ui| {
                 for op in forms::FilterOp::ALL {
                     ui.selectable_value(&mut f.op, op, op.title());
@@ -454,12 +464,12 @@ fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
     }
 }
 
-fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
+fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str]) {
     ui.label(RichText::new(tr("Sort order")).strong());
     let mut remove = None;
     for (i, k) in form.sort.iter_mut().enumerate() {
         ui.horizontal(|ui| {
-            column_combo(ui, ("rfscol", i), &mut k.column, headers);
+            column_combo(ui, ("rfscol", i), &mut k.column, headers, titles);
             ui.checkbox(&mut k.descending, tr("Descending"));
             if ui.small_button("🗑").clicked() {
                 remove = Some(i);

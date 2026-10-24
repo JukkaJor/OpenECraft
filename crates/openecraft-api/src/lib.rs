@@ -4,17 +4,22 @@
 //!
 //! Plugins are Rust types compiled in (the built-in ones: [`builtin`]) or external
 //! programs that answer JSON requests on stdin / stdout ([`external`], see
-//! `docs/plugins.md`).
+//! `docs/plugins.md`). The extension vocabulary itself (registry kinds, parameters,
+//! tables) lives in `openecraft_core::{ext, params, table}` and is re-exported here.
 
 pub mod builtin;
 pub mod external;
 mod host;
-pub mod params;
-mod registry;
+
+/// Typed parameters of commands (`openecraft_core::params`).
+pub mod params {
+    pub use openecraft_core::params::*;
+}
 
 pub use host::{Loaded, Origin, Plugins, PLUGIN_PATH_VAR};
+pub use openecraft_core::ext::{Check, Command, Exporter, Registry, Report};
+pub use openecraft_core::table::Table;
 pub use params::{optional, param, Args, Kind, Param, Text};
-pub use registry::{Check, Command, Exporter, Registry, Report, Table};
 
 use serde::{Deserialize, Serialize};
 

@@ -2,7 +2,7 @@
 //! as check, report and a command that changes devices over to the successors.
 
 use crate::params::{optional, Args, Kind};
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
 use openecraft_core::reports::{Issue, Severity};

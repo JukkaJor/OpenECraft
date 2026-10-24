@@ -10,7 +10,7 @@
 //! `{"error": "…"}` is an error. Not available in the browser (no processes).
 
 use crate::params::{Param, Text};
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, API_VERSION};
 use openecraft_core::model::Project;
 use openecraft_core::reports::{Issue, Severity};

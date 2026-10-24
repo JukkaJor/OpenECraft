@@ -3,7 +3,7 @@
 //! configurator, the hand-off of jobs to the machines and the production feedback.
 
 use crate::params::{optional, param, Args, Kind};
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::manufacturing::{self as mf, bars, configurator, feedback, handoff, machines, post, strategy, BarRules, CopperBar, Machine, Method, Strategy};
 use openecraft_core::model::Project;

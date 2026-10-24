@@ -4,7 +4,7 @@
 //! rules.
 
 use crate::params::{optional, param, Args, Kind};
-use crate::registry::Registry;
+use crate::Registry;
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, thermal, ClassRule, Enclosure, PanelRules};

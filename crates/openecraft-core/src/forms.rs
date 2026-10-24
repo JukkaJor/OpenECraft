@@ -7,7 +7,9 @@
 use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P};
 use crate::model::{PageKind, Project, ReportKind};
+use crate::params::Text;
 use crate::render::{Draw, Ink, VAnchor};
+use crate::table::header_matches;
 use crate::symbols::Anchor;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
@@ -553,15 +555,20 @@ pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P
 
 /// Indices of the report columns shown by a form (all if it chooses none or none
 /// of its columns exist).
-pub fn report_columns(form: Option<&ReportForm>, headers: &[&str]) -> Vec<usize> {
+pub fn report_columns(form: Option<&ReportForm>, headers: &[Text]) -> Vec<usize> {
     let chosen: Vec<usize> = form
-        .map(|f| f.columns.iter().filter_map(|c| headers.iter().position(|h| h == c)).collect())
+        .map(|f| f.columns.iter().filter_map(|c| headers.iter().position(|h| header_matches(h, c))).collect())
         .unwrap_or_default();
     if chosen.is_empty() {
         (0..headers.len()).collect()
     } else {
         chosen
     }
+}
+
+/// The value a form stores for a header (by key or any of its translations).
+pub fn header_value<'a, T>(map: &'a BTreeMap<String, T>, header: &Text) -> Option<&'a T> {
+    map.iter().find(|(k, _)| header_matches(header, k)).map(|(_, v)| v)
 }
 
 #[cfg(test)]

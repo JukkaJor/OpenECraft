@@ -1,7 +1,7 @@
 //! Built-in plugins, compiled into every front end. New features that add commands,
 //! checks, reports or exports register them here (see AGENTS.md, extensibility).
 
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
 use openecraft_core::reports::{Analysis, Severity};

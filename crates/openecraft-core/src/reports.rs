@@ -1,6 +1,6 @@
 //! Reports (device list, BOM, terminal diagram, ...) and the project check.
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::index::Index;
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
@@ -13,47 +13,7 @@ mod diagrams;
 mod electrical_reports;
 mod fluid_reports;
 
-#[derive(Clone, Debug, Default)]
-pub struct Table {
-    pub headers: Vec<&'static str>,
-    /// Relative column widths.
-    pub widths: Vec<f32>,
-    pub rows: Vec<Vec<String>>,
-    /// Optional jump target (page index, item id) per row.
-    pub targets: Vec<Option<(usize, u64)>>,
-}
-
-impl Table {
-    fn new(cols: &[(&'static str, f32)]) -> Table {
-        Table {
-            headers: cols.iter().map(|c| c.0).collect(),
-            widths: cols.iter().map(|c| c.1).collect(),
-            ..Default::default()
-        }
-    }
-
-    fn push(&mut self, row: Vec<String>, target: Option<(usize, u64)>) {
-        self.rows.push(row);
-        self.targets.push(target);
-    }
-
-    pub fn to_csv(&self) -> String {
-        let esc = |s: &str| {
-            if s.contains([';', '"', '\n']) {
-                format!("\"{}\"", s.replace('"', "\"\""))
-            } else {
-                s.to_string()
-            }
-        };
-        let mut out = self.headers.iter().map(|h| esc(h)).collect::<Vec<_>>().join(";");
-        out.push('\n');
-        for r in &self.rows {
-            out.push_str(&r.iter().map(|c| esc(c)).collect::<Vec<_>>().join(";"));
-            out.push('\n');
-        }
-        out
-    }
-}
+pub use crate::table::Table;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Severity {
@@ -250,15 +210,15 @@ impl Analysis {
 }
 
 fn hose_list(prj: &Project, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Hose no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Medium"), 1.1),
-        (tr("Nominal size"), 0.8),
-        (tr("Colour"), 0.6),
-        (tr("Length (m)"), 0.7),
-        (tr("Page"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Hose no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Medium"), 1.1),
+        (tr_const!("Nominal size"), 0.8),
+        (tr_const!("Colour"), 0.6),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Page"), 0.6),
     ]);
     let mut total = 0.0;
     for h in crate::fluid::hoses(prj, open) {
@@ -282,18 +242,18 @@ fn hose_list(prj: &Project, open: &Netlist) -> Table {
 /// Routing list: every routed wire, cable and tube with its ends, class, enclosures,
 /// lengths and how it is routed (cut lengths for production).
 fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
-    let mut t = Table::new(&[
-        (tr("Kind"), 0.5),
-        (tr("Designation"), 1.2),
-        (tr("From"), 1.0),
-        (tr("To"), 1.0),
-        (tr("Class"), 0.6),
-        (tr("Enclosures"), 0.9),
-        (tr("Length (mm)"), 0.7),
-        (tr("Cut length (mm)"), 0.7),
-        (tr("Free air (mm)"), 0.6),
-        (tr("Bundles"), 0.5),
-        (tr("Status"), 1.2),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Kind"), 0.5),
+        (tr_const!("Designation"), 1.2),
+        (tr_const!("From"), 1.0),
+        (tr_const!("To"), 1.0),
+        (tr_const!("Class"), 0.6),
+        (tr_const!("Enclosures"), 0.9),
+        (tr_const!("Length (mm)"), 0.7),
+        (tr_const!("Cut length (mm)"), 0.7),
+        (tr_const!("Free air (mm)"), 0.6),
+        (tr_const!("Bundles"), 0.5),
+        (tr_const!("Status"), 1.2),
     ]);
     for (i, it) in r.items.iter().enumerate() {
         let names: Vec<&str> = it.enclosures.iter().filter_map(|&k| prj.layout.enclosures.get(k)).map(|e| e.name.as_str()).collect();
@@ -322,16 +282,16 @@ fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
 /// Field cables: ends, route through the network, lengths and status.
 fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
     let f = &prj.field;
-    let mut t = Table::new(&[
-        (tr("Cable"), 0.8),
-        (tr("From"), 1.0),
-        (tr("To"), 1.0),
-        (tr("Class"), 0.6),
-        (tr("Route"), 2.6),
-        (tr("Network (m)"), 0.7),
-        (tr("Length (m)"), 0.7),
-        (tr("Cut length (m)"), 0.7),
-        (tr("Status"), 1.4),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 0.8),
+        (tr_const!("From"), 1.0),
+        (tr_const!("To"), 1.0),
+        (tr_const!("Class"), 0.6),
+        (tr_const!("Route"), 2.6),
+        (tr_const!("Network (m)"), 0.7),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Cut length (m)"), 0.7),
+        (tr_const!("Status"), 1.4),
     ]);
     for c in &plan.cables {
         let route: Vec<String> = c.segments.iter().map(|&s| f.segment_name(s)).collect();
@@ -347,7 +307,7 @@ fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
 /// Bonding conductors, then the bonding points with their connection to the main
 /// earthing terminal.
 fn bonding_list(prj: &Project) -> Table {
-    let mut t = Table::new(&[(tr("From"), 1.2), (tr("To"), 1.2), (tr("Kind"), 1.2), (tr("Cross-section"), 0.7), (tr("Length (m)"), 0.6), (tr("Part"), 1.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("From"), 1.2), (tr_const!("To"), 1.2), (tr_const!("Kind"), 1.2), (tr_const!("Cross-section"), 0.7), (tr_const!("Length (m)"), 0.6), (tr_const!("Part"), 1.0)]);
     for b in &prj.field.bonds {
         t.push(vec![b.a.clone(), b.b.clone(), b.kind.title().into(), b.cross_section.clone(), format!("{:.1}", b.length), b.part.clone()], None);
     }
@@ -361,7 +321,7 @@ fn bonding_list(prj: &Project) -> Table {
 /// Bundles: stretches shared by several wires, cables and tubes, with their
 /// diameter and the branches at their ends.
 fn bundle_list(r: &crate::routing3d::Routing) -> Table {
-    let mut t = Table::new(&[(tr("Bundle"), 0.5), (tr("Items"), 0.5), (tr("Diameter (mm)"), 0.7), (tr("Length (mm)"), 0.7), (tr("Classes"), 1.0), (tr("Branches"), 0.6), (tr("Contents"), 3.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Bundle"), 0.5), (tr_const!("Items"), 0.5), (tr_const!("Diameter (mm)"), 0.7), (tr_const!("Length (mm)"), 0.7), (tr_const!("Classes"), 1.0), (tr_const!("Branches"), 0.6), (tr_const!("Contents"), 3.0)]);
     for (bi, b) in r.bundles.iter().enumerate() {
         let classes: Vec<&str> = b.classes.iter().map(|c| c.title()).collect();
         let branches = r.branches.iter().filter(|x| x.bundles.contains(&bi)).count();
@@ -383,14 +343,14 @@ fn bundle_list(r: &crate::routing3d::Routing) -> Table {
 }
 
 fn pct_loops(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("PCT loop"), 0.6),
-        (tr("Description"), 1.6),
-        (tr("Functions"), 0.9),
-        (tr("Measured variable"), 0.9),
-        (tr("Range"), 0.9),
-        (tr("Devices"), 1.3),
-        (tr("Status"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("PCT loop"), 0.6),
+        (tr_const!("Description"), 1.6),
+        (tr_const!("Functions"), 0.9),
+        (tr_const!("Measured variable"), 0.9),
+        (tr_const!("Range"), 0.9),
+        (tr_const!("Devices"), 1.3),
+        (tr_const!("Status"), 0.9),
     ]);
     for l in crate::process::loops(prj, idx) {
         let first = l.functions.first().map(String::as_str).unwrap_or("");
@@ -435,7 +395,7 @@ fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
 }
 
 fn toc(prj: &Project) -> Table {
-    let mut t = Table::new(&[(tr("Page"), 1.0), (tr("Description"), 4.0), (tr("Type"), 2.0), (tr("Devices"), 1.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Page"), 1.0), (tr_const!("Description"), 4.0), (tr_const!("Type"), 2.0), (tr_const!("Devices"), 1.0)]);
     for (i, pg) in prj.pages.iter().enumerate() {
         t.push(
             vec![pg.name.clone(), pg.description.clone(), pg.kind.label(), pg.symbols.len().to_string()],
@@ -446,14 +406,14 @@ fn toc(prj: &Project) -> Table {
 }
 
 fn device_list(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("Device tag"), 1.2),
-        (tr("Main function"), 2.0),
-        (tr("Function text"), 2.0),
-        (tr("Location"), 1.0),
-        (tr("Aux. functions"), 1.6),
-        (tr("Part number"), 1.6),
-        (tr("Description"), 3.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Device tag"), 1.2),
+        (tr_const!("Main function"), 2.0),
+        (tr_const!("Function text"), 2.0),
+        (tr_const!("Location"), 1.0),
+        (tr_const!("Aux. functions"), 1.6),
+        (tr_const!("Part number"), 1.6),
+        (tr_const!("Description"), 3.0),
     ]);
     for tag in idx.sorted_tags() {
         let dev = &idx.devices[tag];
@@ -503,17 +463,17 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
 }
 
 fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Pos"), 0.5),
-        (tr("Qty"), 0.6),
-        (tr("Unit"), 0.5),
-        (tr("Part number"), 1.8),
-        (tr("Type number"), 1.4),
-        (tr("Manufacturer"), 1.0),
-        (tr("Description"), 3.2),
-        (tr("Devices"), 2.0),
-        (tr("Unit price"), 0.9),
-        (tr("Total"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Pos"), 0.5),
+        (tr_const!("Qty"), 0.6),
+        (tr_const!("Unit"), 0.5),
+        (tr_const!("Part number"), 1.8),
+        (tr_const!("Type number"), 1.4),
+        (tr_const!("Manufacturer"), 1.0),
+        (tr_const!("Description"), 3.2),
+        (tr_const!("Devices"), 2.0),
+        (tr_const!("Unit price"), 0.9),
+        (tr_const!("Total"), 0.9),
     ]);
     let mut groups: BTreeMap<String, (f32, Vec<String>)> = BTreeMap::new();
     for tag in idx.sorted_tags() {
@@ -642,13 +602,13 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
 }
 
 fn marking_report(markers: &[crate::marking::Marker]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Material"), 1.2),
-        (tr("Category"), 1.0),
-        (tr("Text"), 1.6),
-        (tr("Count"), 0.5),
-        (tr("Enclosure"), 0.8),
-        (tr("Belongs to"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Material"), 1.2),
+        (tr_const!("Category"), 1.0),
+        (tr_const!("Text"), 1.6),
+        (tr_const!("Count"), 0.5),
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Belongs to"), 1.6),
     ]);
     for m in markers {
         t.push(vec![m.material.clone(), m.category.title().into(), m.text.clone(), m.count.to_string(), m.enclosure.clone(), m.group.clone()], None);
@@ -668,15 +628,15 @@ fn fill_spot(prj: &Project, f: &panel::DuctFill) -> crate::geom::P {
 }
 
 fn duct_fill_report(prj: &Project, fill: &[panel::DuctFill]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.8),
-        (tr("Cable duct"), 1.2),
-        (tr("Position (mm)"), 0.9),
-        (tr("Length (mm)"), 0.8),
-        (tr("Wires"), 0.6),
-        (tr("Fullest stretch (mm)"), 1.0),
-        (tr("Fill level (%)"), 0.8),
-        (tr("Limit (%)"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Cable duct"), 1.2),
+        (tr_const!("Position (mm)"), 0.9),
+        (tr_const!("Length (mm)"), 0.8),
+        (tr_const!("Wires"), 0.6),
+        (tr_const!("Fullest stretch (mm)"), 1.0),
+        (tr_const!("Fill level (%)"), 0.8),
+        (tr_const!("Limit (%)"), 0.6),
     ]);
     for f in fill {
         let e = &prj.layout.enclosures[f.enclosure];
@@ -726,16 +686,16 @@ fn check_duct_fill(prj: &Project, fill: &[panel::DuctFill]) -> Vec<Issue> {
 }
 
 fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.8),
-        (tr("Wire no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Potential"), 0.9),
-        (tr("Colour"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Wire no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Potential"), 0.9),
+        (tr_const!("Colour"), 0.6),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.9),
-        (tr("Routing"), 1.2),
+        (tr_const!("Length (mm)"), 0.9),
+        (tr_const!("Routing"), 1.2),
     ]);
     let mut total = 0.0;
     for w in wiring {
@@ -792,15 +752,15 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
 }
 
 fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Strip"), 0.8),
-        (tr("Terminal"), 0.7),
-        (tr("Jumper"), 0.5),
-        (tr("External (top)"), 3.0),
-        (tr("Internal (bottom)"), 3.0),
-        (tr("Potential"), 1.0),
-        (tr("Location"), 0.8),
-        (tr("Function text"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Strip"), 0.8),
+        (tr_const!("Terminal"), 0.7),
+        (tr_const!("Jumper"), 0.5),
+        (tr_const!("External (top)"), 3.0),
+        (tr_const!("Internal (bottom)"), 3.0),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Location"), 0.8),
+        (tr_const!("Function text"), 1.6),
     ]);
     use crate::strips::ElementKind;
     for strip in crate::strips::strip_tags(prj) {
@@ -830,14 +790,14 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     t
 }
 fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Plug"), 0.8),
-        (tr("Pin"), 0.6),
-        (tr("Socket side"), 3.0),
-        (tr("Pin side"), 3.0),
-        (tr("Potential"), 1.0),
-        (tr("Location"), 0.8),
-        (tr("Function text"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Plug"), 0.8),
+        (tr_const!("Pin"), 0.6),
+        (tr_const!("Socket side"), 3.0),
+        (tr_const!("Pin side"), 3.0),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Location"), 0.8),
+        (tr_const!("Function text"), 1.6),
     ]);
     for plug in crate::plugs::plug_tags(prj) {
         for r in crate::plugs::rows(prj, &plug, nl, open) {
@@ -849,16 +809,16 @@ fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
 }
 
 fn connection_list(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Wire no."), 0.8),
-        (tr("Potential"), 1.0),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Page"), 0.8),
-        (tr("Colour"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Wire no."), 0.8),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Page"), 0.8),
+        (tr_const!("Colour"), 0.8),
         ("Cross-section", 1.0),
-        (tr("Cable"), 1.0),
-        (tr("Core"), 0.6),
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Core"), 0.6),
     ]);
     for c in conns {
         let s = &prj.pages[c.a.page].symbols[c.a.sym];
@@ -907,16 +867,16 @@ fn sorted_cables(prj: &Project) -> Vec<&Cable> {
 }
 
 fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 1.0),
-        (tr("Type"), 1.6),
-        (tr("Cores used"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Type"), 1.6),
+        (tr_const!("Cores used"), 0.8),
         ("Cross-section", 0.9),
-        (tr("Length (m)"), 0.8),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Part number"), 1.4),
-        (tr("Description"), 2.0),
+        (tr_const!("Length (m)"), 0.8),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Part number"), 1.4),
+        (tr_const!("Description"), 2.0),
     ]);
     for cable in sorted_cables(prj) {
         let used = cable_connections(prj, conns, &cable.tag);
@@ -957,13 +917,13 @@ fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
 }
 
 fn cable_diagram(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 1.0),
-        (tr("Core"), 0.6),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Potential"), 1.0),
-        (tr("Wire no."), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Core"), 0.6),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Wire no."), 0.8),
         ("Cross-section", 0.9),
     ]);
     for cable in sorted_cables(prj) {
@@ -1081,13 +1041,13 @@ fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
 }
 
 fn plc_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("PLC card"), 1.0),
-        (tr("Address"), 1.0),
-        (tr("Type"), 0.8),
-        (tr("Function text"), 2.5),
-        (tr("Connected to"), 3.0),
-        (tr("Location"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("PLC card"), 1.0),
+        (tr_const!("Address"), 1.0),
+        (tr_const!("Type"), 0.8),
+        (tr_const!("Function text"), 2.5),
+        (tr_const!("Connected to"), 3.0),
+        (tr_const!("Location"), 0.8),
     ]);
     for p in crate::plc::points(prj, nl) {
         let kind = if p.input { "DI" } else { "DO" };
@@ -1098,7 +1058,7 @@ fn plc_list(prj: &Project, nl: &Netlist) -> Table {
 
 fn revision_overview(prj: &Project) -> Table {
     let since = crate::revision::last_released(prj).map(|r| r.name.as_str()).unwrap_or("-");
-    let mut t = Table::new(&[(tr("Page"), 0.8), (tr("Change"), 0.8), (tr("Item"), 0.8), (if since.is_empty() { tr("Description") } else { tr("Description (since last revision)") }, 3.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Page"), 0.8), (tr_const!("Change"), 0.8), (tr_const!("Item"), 0.8), (if since.is_empty() { tr_const!("Description") } else { tr_const!("Description (since last revision)") }, 3.0)]);
     for (page, kind, what, label, target) in crate::revision::overview(prj) {
         t.push(vec![page, kind, what, label], target);
     }
@@ -1111,19 +1071,19 @@ fn revision_overview(prj: &Project) -> Table {
 /// cable core. Panel wires come first, sorted by cross-section, colour and length
 /// (machine batches).
 pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
-    let mut t = Table::new(&[
-        (tr("Wire no."), 0.8),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Colour"), 0.7),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Wire no."), 0.8),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Colour"), 0.7),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.9),
-        (tr("Strip (mm)"), 0.7),
-        (tr("Ferrule"), 1.6),
-        (tr("Ferrule part"), 1.0),
-        (tr("Cable"), 0.8),
-        (tr("Core"), 0.6),
-        (tr("Potential"), 1.0),
+        (tr_const!("Length (mm)"), 0.9),
+        (tr_const!("Strip (mm)"), 0.7),
+        (tr_const!("Ferrule"), 1.6),
+        (tr_const!("Ferrule part"), 1.0),
+        (tr_const!("Cable"), 0.8),
+        (tr_const!("Core"), 0.6),
+        (tr_const!("Potential"), 1.0),
     ]);
     // (routed length, cells, jump target)
     type Row = (Option<f32>, Vec<String>, Option<(usize, u64)>);
@@ -1172,15 +1132,15 @@ pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
 /// Harness data: per harness its wires with lengths and end treatment, and a
 /// summary row (wires, connectors, total length, bundle diameter).
 fn harness_data(prj: &Project, an: &Analysis) -> Table {
-    let mut t = Table::new(&[
-        (tr("Harness"), 0.9),
-        (tr("Wire no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Colour"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Harness"), 0.9),
+        (tr_const!("Wire no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Colour"), 0.6),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.8),
-        (tr("End treatment"), 1.6),
+        (tr_const!("Length (mm)"), 0.8),
+        (tr_const!("End treatment"), 1.6),
     ]);
     for h in &prj.harnesses {
         let ws = crate::harness::wires(prj, an, &h.tag);
@@ -1251,14 +1211,14 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     v
 }
 fn potential_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Potential"), 1.0),
-        (tr("Type"), 1.2),
-        (tr("Voltage"), 0.9),
-        (tr("Colour"), 0.6),
-        (tr("Cross-section"), 0.9),
-        (tr("Connection points"), 4.0),
-        (tr("Pages"), 1.5),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Type"), 1.2),
+        (tr_const!("Voltage"), 0.9),
+        (tr_const!("Colour"), 0.6),
+        (tr_const!("Cross-section"), 0.9),
+        (tr_const!("Connection points"), 4.0),
+        (tr_const!("Pages"), 1.5),
     ]);
     let mut nets: Vec<_> = nl.nets.iter().filter(|n| n.named).collect();
     nets.sort_by(|a, b| natural_cmp(&a.name, &b.name));
@@ -1284,16 +1244,16 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
 }
 
 fn cable_sizing(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 0.9),
-        (tr("Length (m)"), 0.7),
-        (tr("Cross-section"), 0.9),
-        (tr("Load"), 0.8),
-        (tr("Current (A)"), 0.7),
-        (tr("Voltage (V)"), 0.7),
-        (tr("Voltage drop (V)"), 0.8),
-        (tr("Voltage drop (%)"), 0.8),
-        (tr("Current capacity (A)"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 0.9),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Cross-section"), 0.9),
+        (tr_const!("Load"), 0.8),
+        (tr_const!("Current (A)"), 0.7),
+        (tr_const!("Voltage (V)"), 0.7),
+        (tr_const!("Voltage drop (V)"), 0.8),
+        (tr_const!("Voltage drop (%)"), 0.8),
+        (tr_const!("Current capacity (A)"), 0.9),
     ]);
     let num = |v: Option<f32>, digits: usize| v.map(|x| format!("{x:.digits$}")).unwrap_or_else(|| "–".into());
     for d in crate::sizing::cable_drops(prj, conns) {
@@ -1316,15 +1276,15 @@ fn cable_sizing(prj: &Project, conns: &[Connection]) -> Table {
 }
 
 fn climate_report(prj: &Project) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.9),
-        (tr("Surface (m²)"), 0.8),
-        (tr("Power loss (W)"), 0.8),
-        (tr("Inside (°C)"), 0.7),
-        (tr("Highest (°C)"), 0.7),
-        (tr("Cooling"), 1.4),
-        (tr("Heating (W)"), 0.7),
-        (tr("Devices without power loss"), 2.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.9),
+        (tr_const!("Surface (m²)"), 0.8),
+        (tr_const!("Power loss (W)"), 0.8),
+        (tr_const!("Inside (°C)"), 0.7),
+        (tr_const!("Highest (°C)"), 0.7),
+        (tr_const!("Cooling"), 1.4),
+        (tr_const!("Heating (W)"), 0.7),
+        (tr_const!("Devices without power loss"), 2.0),
     ]);
     for e in &prj.layout.enclosures {
         let r = crate::climate::calculate(prj, e);

@@ -24,8 +24,8 @@ const CONNECTION_COLS: [(&str, f32); 7] = [
 ];
 
 fn columns(first: &[(&'static str, f32)]) -> Table {
-    let cols: Vec<(&'static str, f32)> = first.iter().copied().chain(CONNECTION_COLS.iter().map(|(h, w)| (tr(h), *w))).collect();
-    Table::new(&cols)
+    let cols: Vec<(&'static str, f32)> = first.iter().copied().chain(CONNECTION_COLS.iter().copied()).collect();
+    Table::with_widths(&cols)
 }
 
 /// The connections at one connection point, as (other end, cells of the connection).
@@ -78,7 +78,7 @@ fn push_point(t: &mut Table, prj: &Project, conns: &[Connection], lead: Vec<Stri
 /// Every terminal of every strip with what is connected on its external and internal
 /// side.
 pub(super) fn terminal_connections(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = columns(&[(tr("Strip"), 0.7), (tr("Terminal"), 0.6), (tr("Side"), 0.7)]);
+    let mut t = columns(&[(tr_const!("Strip"), 0.7), (tr_const!("Terminal"), 0.6), (tr_const!("Side"), 0.7)]);
     for strip in crate::strips::strip_tags(prj) {
         for term in crate::strips::terminals(prj, &strip) {
             let pin = |pin| PinRef { page: term.page, sym: term.sym, pin };
@@ -91,7 +91,7 @@ pub(super) fn terminal_connections(prj: &Project, conns: &[Connection]) -> Table
 
 /// Every pin of every plug with what is connected on its socket and pin side.
 pub(super) fn pin_connections(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = columns(&[(tr("Plug"), 0.7), (tr("Pin"), 0.5), (tr("Side"), 0.8)]);
+    let mut t = columns(&[(tr_const!("Plug"), 0.7), (tr_const!("Pin"), 0.5), (tr_const!("Side"), 0.8)]);
     for plug in crate::plugs::plug_tags(prj) {
         let pins = crate::plugs::pins(prj, &plug);
         for label in crate::plugs::designations(prj, &plug) {
@@ -113,7 +113,7 @@ pub(super) fn pin_connections(prj: &Project, conns: &[Connection]) -> Table {
 /// Every connection point of the devices (main and auxiliary functions, PLC points;
 /// no terminals and plugs) with its connections.
 pub(super) fn device_connections(prj: &Project, idx: &Index, conns: &[Connection]) -> Table {
-    let mut t = columns(&[(tr("Device"), 0.8), (tr("Connection point"), 0.8), (tr("Function"), 1.2)]);
+    let mut t = columns(&[(tr_const!("Device"), 0.8), (tr_const!("Connection point"), 0.8), (tr_const!("Function"), 1.2)]);
     for tag in idx.sorted_tags() {
         for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
             for (si, s) in pg.symbols.iter().enumerate().filter(|(_, s)| &s.tag == tag) {
@@ -135,16 +135,16 @@ pub(super) fn device_connections(prj: &Project, idx: &Index, conns: &[Connection
 
 /// Every core of every cable with both ends, the reserve cores included.
 pub(super) fn cable_connections_report(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 0.8),
-        (tr("Type"), 1.1),
-        (tr("Length (m)"), 0.6),
-        (tr("Source"), 1.4),
-        (tr("Core"), 0.6),
-        (tr("Target"), 1.4),
-        (tr("Wire no."), 0.7),
-        (tr("Potential"), 0.9),
-        (tr("Cross-section"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 0.8),
+        (tr_const!("Type"), 1.1),
+        (tr_const!("Length (m)"), 0.6),
+        (tr_const!("Source"), 1.4),
+        (tr_const!("Core"), 0.6),
+        (tr_const!("Target"), 1.4),
+        (tr_const!("Wire no."), 0.7),
+        (tr_const!("Potential"), 0.9),
+        (tr_const!("Cross-section"), 0.8),
     ]);
     for cable in sorted_cables(prj) {
         let used = cable_connections(prj, conns, &cable.tag);
@@ -175,15 +175,15 @@ pub(super) fn cable_connections_report(prj: &Project, conns: &[Connection]) -> T
 /// The strips on the rail element by element: position, part, width and where the
 /// element sits along the strip.
 pub(super) fn terminal_lineup(prj: &Project) -> Table {
-    let mut t = Table::new(&[
-        (tr("Strip"), 0.7),
-        (tr("Pos"), 0.4),
-        (tr("Element"), 1.0),
-        (tr("Designation"), 0.8),
-        (tr("Jumper"), 0.5),
-        (tr("Part number"), 1.6),
-        (tr("Width (mm)"), 0.7),
-        (tr("Position (mm)"), 1.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Strip"), 0.7),
+        (tr_const!("Pos"), 0.4),
+        (tr_const!("Element"), 1.0),
+        (tr_const!("Designation"), 0.8),
+        (tr_const!("Jumper"), 0.5),
+        (tr_const!("Part number"), 1.6),
+        (tr_const!("Width (mm)"), 0.7),
+        (tr_const!("Position (mm)"), 1.0),
     ]);
     for strip in crate::strips::strip_tags(prj) {
         let data = prj.strips.get(&strip).cloned().unwrap_or_default();
@@ -220,17 +220,17 @@ pub(super) fn terminal_lineup(prj: &Project) -> Table {
 /// One row per strip: terminals, spares, connected terminals, jumpers, length on the
 /// rail, parts and pages.
 pub(super) fn strip_overview(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Strip"), 0.7),
-        (tr("Description"), 1.5),
-        (tr("Enclosure"), 0.7),
-        (tr("Terminals"), 0.6),
-        (tr("Spare"), 0.5),
-        (tr("Connected"), 0.6),
-        (tr("Jumpers"), 0.5),
-        (tr("Length (mm)"), 0.7),
-        (tr("Parts"), 1.6),
-        (tr("Pages"), 1.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Strip"), 0.7),
+        (tr_const!("Description"), 1.5),
+        (tr_const!("Enclosure"), 0.7),
+        (tr_const!("Terminals"), 0.6),
+        (tr_const!("Spare"), 0.5),
+        (tr_const!("Connected"), 0.6),
+        (tr_const!("Jumpers"), 0.5),
+        (tr_const!("Length (mm)"), 0.7),
+        (tr_const!("Parts"), 1.6),
+        (tr_const!("Pages"), 1.0),
     ]);
     for strip in crate::strips::strip_tags(prj) {
         let terms = crate::strips::terminals(prj, &strip);
@@ -269,15 +269,15 @@ pub(super) fn strip_overview(prj: &Project, nl: &Netlist, open: &Netlist) -> Tab
 /// Legend of the panel layout: the devices of every enclosure numbered top to bottom,
 /// left to right, with description, part and position.
 pub(super) fn panel_legend(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.7),
-        (tr("Pos"), 0.4),
-        (tr("Device tag"), 0.9),
-        (tr("Description"), 2.0),
-        (tr("Part number"), 1.4),
-        (tr("Mounting"), 0.8),
-        (tr("Position (mm)"), 0.9),
-        (tr("Size (mm)"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.7),
+        (tr_const!("Pos"), 0.4),
+        (tr_const!("Device tag"), 0.9),
+        (tr_const!("Description"), 2.0),
+        (tr_const!("Part number"), 1.4),
+        (tr_const!("Mounting"), 0.8),
+        (tr_const!("Position (mm)"), 0.9),
+        (tr_const!("Size (mm)"), 0.9),
     ]);
     for e in &prj.layout.enclosures {
         let mut items: Vec<_> = e.items.iter().filter(|i| i.kind == ItemKind::Device).collect();

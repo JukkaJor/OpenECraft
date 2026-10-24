@@ -1,5 +1,5 @@
 use super::*;
-use crate::registry::Table;
+use crate::Table;
 use crate::{param, Kind, Text};
 use openecraft_core::sample::demo_project;
 use serde_json::json;

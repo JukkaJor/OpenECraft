@@ -84,7 +84,7 @@ fn long_values_shrink_to_their_width() {
 
 #[test]
 fn report_columns_follow_the_form() {
-    let headers = ["Tag", "Name", "Part"];
+    let headers: Vec<Text> = ["Tag", "Name", "Part"].map(Text::Borrowed).to_vec();
     assert_eq!(report_columns(None, &headers), vec![0, 1, 2]);
     let f = ReportForm { columns: vec!["Part".into(), "Unknown".into(), "Tag".into()], ..Default::default() };
     assert_eq!(report_columns(Some(&f), &headers), vec![2, 0]);

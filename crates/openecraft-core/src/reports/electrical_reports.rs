@@ -4,7 +4,7 @@
 use super::Table;
 use crate::model::*;
 use crate::netlist::{Connection, Netlist};
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 
 fn num(v: f32, digits: usize) -> String {
     if v.is_finite() {
@@ -19,17 +19,17 @@ fn ok(good: bool) -> String {
 }
 
 pub(super) fn short_circuit(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Device"), 0.8),
-        (tr("Characteristic"), 0.7),
-        (tr("Rated current (A)"), 0.7),
-        (tr("Breaking capacity (kA)"), 0.8),
-        (tr("Ik max (kA)"), 0.7),
-        (tr("Cable"), 0.7),
-        (tr("Ik1 min (A)"), 0.7),
-        (tr("Disconnection (s)"), 0.8),
-        (tr("Permitted (s)"), 0.7),
-        (tr("Result"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Device"), 0.8),
+        (tr_const!("Characteristic"), 0.7),
+        (tr_const!("Rated current (A)"), 0.7),
+        (tr_const!("Breaking capacity (kA)"), 0.8),
+        (tr_const!("Ik max (kA)"), 0.7),
+        (tr_const!("Cable"), 0.7),
+        (tr_const!("Ik1 min (A)"), 0.7),
+        (tr_const!("Disconnection (s)"), 0.8),
+        (tr_const!("Permitted (s)"), 0.7),
+        (tr_const!("Result"), 0.6),
     ]);
     for f in crate::shortcircuit::faults(prj, nl, conns) {
         let p = &f.protection;
@@ -54,7 +54,7 @@ pub(super) fn short_circuit(prj: &Project, nl: &Netlist, conns: &[Connection]) -
 }
 
 pub(super) fn selectivity(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[(tr("Upstream"), 0.8), (tr("Downstream"), 0.8), (tr("Selective up to (A)"), 0.9), (tr("Ik max (A)"), 0.8), (tr("Selectivity"), 0.8)]);
+    let mut t = Table::with_widths(&[(tr_const!("Upstream"), 0.8), (tr_const!("Downstream"), 0.8), (tr_const!("Selective up to (A)"), 0.9), (tr_const!("Ik max (A)"), 0.8), (tr_const!("Selectivity"), 0.8)]);
     for s in crate::shortcircuit::selectivity(prj, nl, conns) {
         let grade = if s.is_total() { tr("Total") } else { tr("Partial") };
         t.push(vec![s.upstream.clone(), s.downstream.clone(), num(s.limit, 0), num(s.ik, 0), grade.into()], Some(s.target));
@@ -63,14 +63,14 @@ pub(super) fn selectivity(prj: &Project, nl: &Netlist, conns: &[Connection]) -> 
 }
 
 pub(super) fn load_calculation(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Device"), 0.8),
-        (tr("Kind"), 1.0),
-        (tr("Protective device"), 0.8),
-        (tr("Phases"), 0.7),
-        (tr("Power (kW)"), 0.6),
-        (tr("Apparent power (kVA)"), 0.8),
-        (tr("Current (A)"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Device"), 0.8),
+        (tr_const!("Kind"), 1.0),
+        (tr_const!("Protective device"), 0.8),
+        (tr_const!("Phases"), 0.7),
+        (tr_const!("Power (kW)"), 0.6),
+        (tr_const!("Apparent power (kVA)"), 0.8),
+        (tr_const!("Current (A)"), 0.6),
     ]);
     let c = crate::loads::calculate(prj, nl);
     for l in &c.loads {
@@ -93,7 +93,7 @@ pub(super) fn load_calculation(prj: &Project, nl: &Netlist) -> Table {
 }
 
 pub(super) fn power_supply_budget(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[(tr("Power supply"), 0.8), (tr("Device"), 0.8), (tr("Current (A)"), 0.6), (tr("Rated current (A)"), 0.7), (tr("Utilisation (%)"), 0.7)]);
+    let mut t = Table::with_widths(&[(tr_const!("Power supply"), 0.8), (tr_const!("Device"), 0.8), (tr_const!("Current (A)"), 0.6), (tr_const!("Rated current (A)"), 0.7), (tr_const!("Utilisation (%)"), 0.7)]);
     for b in crate::loads::calculate(prj, nl).budgets {
         for (tag, i) in &b.loads {
             t.push(vec![b.device.clone(), tag.clone(), num(*i, 3), String::new(), String::new()], Some(b.target));
@@ -107,15 +107,15 @@ pub(super) fn power_supply_budget(prj: &Project, nl: &Netlist) -> Table {
 }
 
 pub(super) fn safety_functions(prj: &Project) -> Table {
-    let mut t = Table::new(&[
-        (tr("Safety function"), 1.0),
-        (tr("Subsystem"), 0.9),
-        (tr("Category"), 0.5),
-        (tr("DCavg (%)"), 0.5),
-        (tr("MTTFd (years)"), 0.6),
-        (tr("PL"), 0.6),
-        (tr("Required"), 0.6),
-        (tr("Result"), 0.5),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Safety function"), 1.0),
+        (tr_const!("Subsystem"), 0.9),
+        (tr_const!("Category"), 0.5),
+        (tr_const!("DCavg (%)"), 0.5),
+        (tr_const!("MTTFd (years)"), 0.6),
+        (tr_const!("PL"), 0.6),
+        (tr_const!("Required"), 0.6),
+        (tr_const!("Result"), 0.5),
     ]);
     for f in &prj.electrical.safety {
         let e = crate::safety::evaluate(prj, f);
@@ -131,7 +131,7 @@ pub(super) fn safety_functions(prj: &Project) -> Table {
 }
 
 pub(super) fn verification(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[(tr("Rule set"), 0.8), (tr("Rule"), 2.0), (tr("Checked"), 0.5), (tr("Violations"), 0.5), (tr("Items"), 1.6)]);
+    let mut t = Table::with_widths(&[(tr_const!("Rule set"), 0.8), (tr_const!("Rule"), 2.0), (tr_const!("Checked"), 0.5), (tr_const!("Violations"), 0.5), (tr_const!("Items"), 1.6)]);
     for r in crate::rules::verify(prj, conns) {
         let mut items: Vec<String> = r.failed.iter().take(8).map(|i| i.label.clone()).collect();
         if r.failed.len() > 8 {
