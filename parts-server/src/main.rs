@@ -6,12 +6,14 @@
 //! ```text
 //! openecraft-parts-server --bind 0.0.0.0:8090 --data parts-db.sqlite --token <secret>
 //! openecraft-parts-server --storage json --data parts-db.json
+//! openecraft-parts-server --install-catalogs all
 //! ```
 //!
 //! Without `--token` (or `OPENECRAFT_TOKEN`) and without user accounts the server is
 //! read-only.
 
 mod auth;
+mod bundled;
 mod routes;
 mod storage;
 mod web;
@@ -33,7 +35,7 @@ struct Args {
     /// Storage backend. Default: JSON for a `.json` data file, SQLite otherwise.
     #[arg(long, value_enum)]
     storage: Option<StorageKind>,
-    /// Database file (created with the example catalog if missing).
+    /// Database file (created with the example and the bundled catalogs if missing).
     #[arg(long, default_value = "parts-db.sqlite")]
     data: PathBuf,
     /// Copy all data of this database into a new, empty `--data` database first
@@ -47,6 +49,10 @@ struct Args {
     /// password is read from OPENECRAFT_ADMIN_PASSWORD.
     #[arg(long)]
     admin_user: Option<String>,
+    /// Install or update bundled manufacturer catalogs at startup: `all` or ids
+    /// (e.g. `siemens`). Parts changed by users are kept.
+    #[arg(long, value_delimiter = ',')]
+    install_catalogs: Vec<String>,
 }
 
 fn fail(msg: String) -> ! {
@@ -82,6 +88,23 @@ fn add_admin(store: &mut Store, name: &str) {
     log::info!("administrator {name} ready");
 }
 
+fn install_catalogs(store: &mut Store, ids: &[String]) {
+    let ids: Vec<String> = if ids.iter().any(|i| i.eq_ignore_ascii_case("all")) { bundled::ids().into_iter().map(String::from).collect() } else { ids.to_vec() };
+    for id in ids {
+        let bundle = bundled::load(id.trim()).unwrap_or_else(|e| fail(e));
+        let name = bundle.catalog.name.clone();
+        match store.install(bundle) {
+            Ok(r) => {
+                log::info!("catalog {name}: {} parts added, {} updated, {} kept", r.added, r.updated, r.kept.len());
+                for number in &r.kept {
+                    log::info!("  kept {number} (changed on this server)");
+                }
+            }
+            Err(e) => fail(format!("cannot install catalog {name}: {e}")),
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
@@ -94,6 +117,7 @@ async fn main() {
     if let Some(name) = &args.admin_user {
         add_admin(&mut store, name);
     }
+    install_catalogs(&mut store, &args.install_catalogs);
     match store.collect_garbage() {
         Ok(0) => {}
         Ok(n) => log::info!("removed {n} unused files"),

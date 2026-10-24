@@ -237,3 +237,53 @@ fn storage_kind_from_the_file_name() {
     assert_eq!(StorageKind::resolve(None, p("parts-db.sqlite")), StorageKind::Sqlite);
     assert_eq!(StorageKind::resolve(Some(StorageKind::Json), p("parts.db")), StorageKind::Json);
 }
+
+fn bundle(version: &str, parts: Vec<Part>) -> Bundle {
+    let catalog = Catalog { id: "acme".into(), name: "ACME".into(), manufacturer: "ACME".into(), version: version.into(), ..Default::default() };
+    Bundle { parts: parts.into_iter().map(|p| Part { catalog: "acme".into(), ..p }).collect(), catalog }
+}
+
+#[test]
+fn bundled_catalogs_install_and_update() {
+    for mut store in stores() {
+        let first = bundle("1", vec![part("ACME.1"), part("ACME.2"), part("ACME.3")]);
+        assert_eq!(store.install(first.clone()).unwrap(), Installed { added: 3, ..Default::default() });
+        assert_eq!(store.catalog("acme").unwrap().unwrap().parts, 3);
+        assert_eq!(store.history("ACME.1").unwrap()[0].user, bundled::INSTALLER);
+        // Installing again changes nothing.
+        let rev = store.revision;
+        assert_eq!(store.install(first).unwrap(), Installed::default());
+        assert_eq!(store.revision, rev);
+
+        // A user changes one part and deletes another; a part of the example catalog
+        // has the number of a bundled part.
+        store.put_parts("alice", vec![Part { note: "own".into(), ..store.get("ACME.1").unwrap().unwrap() }]).unwrap();
+        store.delete("alice", "ACME.2").unwrap();
+        let newer = |p: Part| Part { description: "new".into(), ..p };
+        let next = bundle("2", vec![newer(part("ACME.1")), newer(part("ACME.2")), newer(part("ACME.3")), part("ACME.4"), newer(part("GEN.CT-9A-24DC"))]);
+        let result = store.install(next).unwrap();
+        assert_eq!((result.added, result.updated), (1, 1));
+        assert_eq!(result.kept, ["ACME.1", "ACME.2", "GEN.CT-9A-24DC"]);
+        assert_eq!(store.get("ACME.1").unwrap().unwrap().note, "own");
+        assert!(store.get("ACME.2").unwrap().is_none());
+        assert_eq!(store.get("ACME.3").unwrap().unwrap().description, "new");
+        assert_ne!(store.get("GEN.CT-9A-24DC").unwrap().unwrap().description, "new");
+        assert_eq!(store.catalog("acme").unwrap().unwrap().version, "2");
+    }
+}
+
+#[test]
+fn new_databases_get_the_bundled_catalogs() {
+    let path = temp_file("bundled.sqlite");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let store = Store::open(StorageKind::Sqlite, &path).unwrap();
+    let bundles = bundled::all().unwrap();
+    let count = default_catalog().len() + bundles.iter().map(|b| b.parts.len()).sum::<usize>();
+    assert_eq!(store.count().unwrap(), count);
+    assert!(bundles.iter().all(|b| store.catalog(&b.catalog.id).unwrap().is_some_and(|c| c.parts == b.parts.len())));
+    let rev = store.revision;
+    drop(store);
+    // Opening it again installs nothing.
+    assert_eq!(Store::open(StorageKind::Sqlite, &path).unwrap().revision, rev);
+    std::fs::remove_dir_all(path.parent().unwrap()).ok();
+}

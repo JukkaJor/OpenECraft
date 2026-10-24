@@ -402,14 +402,21 @@ Breaking capacity: 100 kA".into();
     }
 
     let mut parts = c.parts;
-    for p in &mut parts {
-        if let Some((m2, m3)) = generated_models(p) {
-            p.model_2d = Some(m2);
-            p.model_3d = Some(m3);
-        }
-    }
+    parts.iter_mut().for_each(add_generated_models);
     parts.sort_by(|a, b| natural_cmp(&a.number, &b.number));
     parts
+}
+
+/// Gives a part without models a simple 2D front view and 3D model of its mounting
+/// dimensions (nothing for parts without dimensions and mounting material).
+pub fn add_generated_models(p: &mut Part) {
+    if p.model_2d.is_some() || p.model_3d.is_some() {
+        return;
+    }
+    if let Some((m2, m3)) = generated_models(p) {
+        p.model_2d = Some(m2);
+        p.model_3d = Some(m3);
+    }
 }
 
 /// The standard sizes of the enclosure systems with their components (side panels,

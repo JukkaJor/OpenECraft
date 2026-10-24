@@ -6,6 +6,7 @@ mod json;
 mod sqlite;
 
 use crate::auth::{sha256_hex, Account};
+use crate::bundled::{self, Bundle};
 use openecraft_parts::api::PartQuery;
 use openecraft_parts::portal::{brief, content, Attachment, AttachmentKind, Catalog, ChangeKind, HistoryEntry, SearchResult};
 use openecraft_parts::{default_catalog, Part};
@@ -47,6 +48,15 @@ pub struct StoredFile {
     pub id: String,
     pub name: String,
     pub data: Vec<u8>,
+}
+
+/// What [`Store::install`] did.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Installed {
+    pub added: usize,
+    pub updated: usize,
+    /// Numbers of the parts left as they are (changed by users).
+    pub kept: Vec<String>,
 }
 
 /// Everything a request changes, saved at once (all or nothing).
@@ -109,9 +119,18 @@ pub struct Store {
 }
 
 impl Store {
-    /// Opens the database; a new one is filled with the example catalog.
+    /// Opens the database; a new one is filled with the example catalog and the
+    /// bundled manufacturer catalogs.
     pub fn open(kind: StorageKind, path: &Path) -> io::Result<Store> {
-        Store::with_backend(open_backend(kind, path)?, default_catalog())
+        let backend = open_backend(kind, path)?;
+        let new = backend.revision() == 0;
+        let mut store = Store::with_backend(backend, default_catalog())?;
+        if new {
+            for bundle in bundled::all().map_err(io::Error::other)? {
+                store.install(bundle)?;
+            }
+        }
+        Ok(store)
     }
 
     /// Opens a backend; seeds it with `seed` if it is new.
@@ -304,6 +323,40 @@ impl Store {
 
     pub fn delete_catalog(&mut self, id: &str) -> io::Result<()> {
         self.commit(Change { deleted_catalogs: vec![id.into()], ..Default::default() }, true)
+    }
+
+    /// Installs a bundled catalog: stores the catalog if it is missing or has another
+    /// version, adds its new parts and updates the parts nobody but the installer has
+    /// changed. Parts users changed or deleted, and parts of another catalog with the
+    /// same number, are kept.
+    pub fn install(&mut self, bundle: Bundle) -> io::Result<Installed> {
+        let mut result = Installed::default();
+        let Bundle { catalog, parts } = bundle;
+        if self.catalog(&catalog.id)?.is_none_or(|c| c.version != catalog.version) {
+            self.put_catalog(catalog.clone())?;
+        }
+        let mut changed = Vec::new();
+        for part in parts {
+            let old = self.backend.part(&part.number)?;
+            if old.as_ref().is_some_and(|o| content(o) == content(&part)) {
+                continue;
+            }
+            let by_user = self.backend.history(&part.number)?.first().is_some_and(|s| s.entry.user != bundled::INSTALLER);
+            let other_catalog = old.as_ref().is_some_and(|o| !o.catalog.eq_ignore_ascii_case(&catalog.id));
+            if by_user || other_catalog {
+                result.kept.push(part.number);
+                continue;
+            }
+            match old {
+                Some(_) => result.updated += 1,
+                None => result.added += 1,
+            }
+            changed.push(part);
+        }
+        if !changed.is_empty() {
+            self.put_parts(bundled::INSTALLER, changed)?;
+        }
+        Ok(result)
     }
 
     pub fn accounts(&self) -> &[Account] {
