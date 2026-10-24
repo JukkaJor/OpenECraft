@@ -470,8 +470,9 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
   starters), `beckhoff` (EtherCAT coupler and terminals), `hager` (circuit breakers,
   RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
   interface / router, power supply), `phoenix_contact` (terminal blocks, relay
-  modules, power supplies) and `siemens` (SIRIUS contactors, overload relays, motor
-  starter protectors, SENTRON circuit breakers). `--install-catalogs all` (or ids such as
+  modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
+  starter protectors, SENTRON circuit breakers) and `weidmueller` (terminals, relay
+  module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
   `siemens`) installs or updates them in an existing database: new parts are added,
   parts nobody changed are updated, parts changed or deleted by users are kept. Parts
   without models get generated ones from their mounting dimensions. Only add data
