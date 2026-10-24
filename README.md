@@ -364,6 +364,17 @@ built with [egui / eframe](https://github.com/emilk/egui).
   PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
   and the *PCT loop overview* shows whether each loop is planned, in engineering or
   engineered in the schematic.
+- **Single-line / multi-line engineering** (*Project › Single-line / multi-line…*):
+  devices are planned with single-line symbols (breaker, switch-disconnector, motor
+  protection switch, fuse, overload relay, contactor, motor, transformer) on overview
+  pages and engineered in the multi-line schematic; both share the device tag. The
+  window lists each device as planned, engineered, not in the single-line diagram or
+  not matching, and generates the schematic of a single-line page (3-pole power
+  symbols, conductors, contactor coils) or a single-line diagram of the schematic's
+  power devices (arranged from the supply to the loads). The check reports planned
+  devices, mismatching symbols, connections of the single-line diagram missing in the
+  schematic and differing function texts; *Synchronize function texts* fills empty
+  ones from the other representation.
 - **Project texts in several languages**: function texts, page descriptions, free
   texts and descriptions are written in a source language; the project's translation
   dictionary (*Project › Project languages…*) translates them line by line into any
@@ -589,6 +600,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
 | `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
+| `crates/openecraft-core/src/singleline.rs` | Single-line / multi-line engineering: device status, checks, transformation in both directions |
 | `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
 | `crates/openecraft-core/src/reports.rs` | Reports and project check |
@@ -629,6 +641,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `application/app/harness_ui.rs` | Harness window |
 | `application/app/languages_ui.rs` | Project languages window: dictionary, export per language |
 | `application/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
+| `application/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
 | `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |

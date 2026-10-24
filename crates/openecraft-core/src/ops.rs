@@ -634,6 +634,7 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     }
     crate::plc_hw::rename_device(prj, old, new);
     crate::electrofluid::rename_device(prj, old, new);
+    prj.field.rename(old, new);
 }
 
 /// Deletes a page; released pages and the last page stay.
@@ -663,6 +664,7 @@ pub fn rename_cable(prj: &mut Project, old: &str, new: &str) {
     for c in prj.plc.connections.iter_mut().filter(|c| c.cable == old) {
         c.cable = new.to_string();
     }
+    prj.field.rename(old, new);
 }
 
 /// Deletes a cable; its wires lose cable and core.

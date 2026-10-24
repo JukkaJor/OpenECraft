@@ -87,6 +87,8 @@ pub struct Analysis {
     pub duct_fill: Vec<panel::DuctFill>,
     /// 3D routing of wires, cables and tubes.
     pub routing: crate::routing3d::Routing,
+    /// Cables planned through the route network of the plant.
+    pub field: crate::field::Plan,
 }
 
 impl Analysis {
@@ -98,6 +100,7 @@ impl Analysis {
         let conns = connections(prj, &netlist, &open);
         let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
         let fill = panel::duct_fill(prj, &wiring);
+        let field = crate::field::plan(prj, &conns);
         let mut reports = HashMap::new();
         for k in ReportKind::ALL {
             let t = match k {
@@ -140,6 +143,8 @@ impl Analysis {
                 ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, &netlist),
                 ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
                 ReportKind::Verification => electrical_reports::verification(prj, &conns),
+                ReportKind::FieldRouting => field_routing(prj, &field),
+                ReportKind::Bonding => bonding_list(prj),
             };
             reports.insert(k, t);
         }
@@ -161,7 +166,9 @@ impl Analysis {
         issues.extend(crate::safety::problems(prj));
         issues.extend(crate::rules::problems(prj, &netlist, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
+        issues.extend(crate::singleline::problems(prj, &idx, &netlist).into_iter().map(|(severity, message, target)| Issue { severity, message, target }));
         issues.extend(check_wiring_marks(prj, &wiring));
+        issues.extend(field.issues.iter().cloned());
         issues.extend(routing.problems.iter().map(|p| {
             let severity = match p.level {
                 crate::routing3d::Level::Error => Severity::Error,
@@ -182,7 +189,7 @@ impl Analysis {
         }
         issues.sort_by_key(|i| i.severity);
         let changes = crate::revision::pending(prj);
-        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill, routing };
+        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill, routing, field };
         // Harness data needs the connections and the routed lengths.
         an.reports.insert(ReportKind::HarnessData, harness_data(prj, &an));
         an.issues.extend(check_harnesses(prj, &an));
@@ -257,6 +264,45 @@ fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
             ],
             None,
         );
+    }
+    t
+}
+
+/// Field cables: ends, route through the network, lengths and status.
+fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
+    let f = &prj.field;
+    let mut t = Table::new(&[
+        (tr("Cable"), 0.8),
+        (tr("From"), 1.0),
+        (tr("To"), 1.0),
+        (tr("Class"), 0.6),
+        (tr("Route"), 2.6),
+        (tr("Network (m)"), 0.7),
+        (tr("Length (m)"), 0.7),
+        (tr("Cut length (m)"), 0.7),
+        (tr("Status"), 1.4),
+    ]);
+    for c in &plan.cables {
+        let route: Vec<String> = c.segments.iter().map(|&s| f.segment_name(s)).collect();
+        let m = |v: f32| if c.routed() { format!("{v:.1}") } else { "–".into() };
+        t.push(
+            vec![c.cable.clone(), c.ends[0].clone(), c.ends[1].clone(), c.class.title().into(), route.join(" › "), m(c.network), m(c.length), m(c.cut), c.status_text()],
+            None,
+        );
+    }
+    t
+}
+
+/// Bonding conductors, then the bonding points with their connection to the main
+/// earthing terminal.
+fn bonding_list(prj: &Project) -> Table {
+    let mut t = Table::new(&[(tr("From"), 1.2), (tr("To"), 1.2), (tr("Kind"), 1.2), (tr("Cross-section"), 0.7), (tr("Length (m)"), 0.6), (tr("Part"), 1.0)]);
+    for b in &prj.field.bonds {
+        t.push(vec![b.a.clone(), b.b.clone(), b.kind.title().into(), b.cross_section.clone(), format!("{:.1}", b.length), b.part.clone()], None);
+    }
+    for p in crate::field::bonding::points(prj) {
+        let state = if p.bonded { tr("bonded") } else { tr("not bonded") };
+        t.push(vec![p.name, String::new(), p.kind.title().into(), String::new(), String::new(), state.into()], None);
     }
     t
 }
@@ -483,6 +529,12 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
         let g = groups.entry(c.part.clone()).or_default();
         g.0 += if c.length > 0.0 { c.length } else { 1.0 };
         g.1.push(c.tag.clone());
+    }
+    // Cable carriers, bonding conductors and cable accessories in the field.
+    for (part, qty, used) in crate::field::material(prj) {
+        let g = groups.entry(part).or_default();
+        g.0 += qty;
+        g.1.extend(used);
     }
     // Enclosures, rails, ducts and busbars of the panel layout.
     for (part, qty, used) in panel::layout_material(prj) {

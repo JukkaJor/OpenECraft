@@ -98,6 +98,9 @@ pub struct Project {
     /// Supply, installation conditions, safety functions and rule sets.
     #[serde(skip_serializing_if = "crate::electrical::Electrical::is_default")]
     pub electrical: crate::electrical::Electrical,
+    /// Field wiring: plant layout, route network, bonding and cable accessories.
+    #[serde(skip_serializing_if = "crate::field::Field::is_empty")]
+    pub field: crate::field::Field,
     pub next_id: u64,
 }
 
@@ -136,6 +139,7 @@ impl Default for Project {
             baselines: Vec::new(),
             review: Default::default(),
             electrical: Default::default(),
+            field: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -248,10 +252,12 @@ pub enum ReportKind {
     PowerSupplyBudget,
     SafetyFunctions,
     Verification,
+    FieldRouting,
+    Bonding,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 39] = [
+    pub const ALL: [ReportKind; 41] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -291,6 +297,8 @@ impl ReportKind {
         ReportKind::PowerSupplyBudget,
         ReportKind::SafetyFunctions,
         ReportKind::Verification,
+        ReportKind::FieldRouting,
+        ReportKind::Bonding,
     ];
 
     pub fn title(self) -> &'static str {
@@ -334,6 +342,8 @@ impl ReportKind {
             ReportKind::PowerSupplyBudget => tr("Power supply load budget"),
             ReportKind::SafetyFunctions => tr("Safety functions (ISO 13849-1)"),
             ReportKind::Verification => tr("Rule set verification"),
+            ReportKind::FieldRouting => tr("Field cable routing"),
+            ReportKind::Bonding => tr("Equipotential bonding"),
         }
     }
 }
@@ -902,6 +912,9 @@ impl Project {
         }
         max = self.cables.iter().map(|c| c.id).fold(max, u64::max);
         max = self.harnesses.iter().map(|h| h.id).fold(max, u64::max);
+        let f = &self.field;
+        max = f.nodes.iter().map(|x| x.id).chain(f.segments.iter().map(|x| x.id)).chain(f.outlines.iter().map(|x| x.id)).fold(max, u64::max);
+        max = f.bonds.iter().map(|x| x.id).chain(f.accessories.iter().map(|x| x.id)).fold(max, u64::max);
         self.next_id = self.next_id.max(max + 1);
     }
 
