@@ -145,6 +145,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("params", &[]),
     ("table", &["params"]),
     ("issue", &[]),
+    ("ttf", &[]),
     // 2 symbols
     ("symbols", &["geom"]),
     ("symlib", &["geom", "model", "symbols"]),
@@ -221,7 +222,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     // 7 output and exchange formats
     ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),
-    ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols", "text"]),
+    ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols", "text", "ttf"]),
     ("dxf", &["analysis", "frame", "geom", "graphics", "model", "render", "symbols", "text"]),
     ("dxf_import", &["frame", "geom", "model", "ops", "symbols"]),
     ("dwg", &["analysis", "dxf", "dxf_import", "model", "panel", "production"]),

@@ -3293,6 +3293,7 @@ name = "openecraft-core"
 version = "0.1.0"
 dependencies = [
  "acadrust",
+ "epaint_default_fonts",
  "miniz_oxide 0.8.9",
  "openecraft-i18n",
  "openecraft-jt",

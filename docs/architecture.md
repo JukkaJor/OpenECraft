@@ -36,7 +36,8 @@ exceptions, to be removed over time.
 
 Layers, bottom up (a module may use its own layer and the layers below):
 
-1. Foundations without dependencies: `geom`, `xml`, `params` (typed parameters and
+1. Foundations without dependencies: `geom`, `xml`, `ttf` (TrueType reader and
+   subsetter for PDF fonts), `params` (typed parameters and
    `Text`), `table` (report tables), `issue` (`Issue`, `Severity`; a built-in check's
    message is an English template with its arguments, `issue!(severity, target, "…",
    args)`, translated by `Issue::message()` where it is shown, so that the analysis

@@ -88,6 +88,7 @@ pub mod verify;
 #[cfg(test)]
 mod testkit;
 pub mod translation;
+pub mod ttf;
 pub mod wirenum;
 pub mod wiring;
 pub mod xml;

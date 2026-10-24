@@ -97,3 +97,29 @@ fn styled_texts_fonts_rotation_and_hyperlinks() {
     assert!(docs.contains("rg BT /F3 ") && docs.contains(" Td "), "{docs}");
     assert!(pdf.contains("/A << /S /URI /URI (https://example.org/a\\(b\\)) >>"), "{pdf}");
 }
+
+#[test]
+fn texts_beyond_winansi_use_the_embedded_font() {
+    use crate::geom::p;
+    use crate::model::*;
+    assert!(needs_unicode("Łódź") && needs_unicode("Ωμ") && !needs_unicode("Grüße 1.5 mm² – €") && !needs_unicode("a?"));
+    assert_eq!(ascii85(b"Man "), "9jqo^~>");
+    assert_eq!(ascii85(&[0, 0, 0, 0]), "z~>");
+    assert_eq!(ascii85(b"M"), "9`~>");
+
+    let plain = document(&Project::default());
+    assert!(!plain.contains("/F5 "), "no font without such texts");
+
+    let mut prj = Project::default();
+    prj.pages[0].texts.push(TextItem { id: 1, pos: p(50.0, 50.0), text: "Łódź Ж".into(), bold: true, ..Default::default() });
+    prj.pages[0].texts.push(TextItem { id: 2, pos: p(50.0, 70.0), text: "Wire 1.5 mm²".into(), ..Default::default() });
+    let pdf = document(&prj);
+    assert!(pdf.is_ascii(), "the file stays ASCII");
+    assert!(pdf.contains("/Subtype /Type0 /BaseFont /OECUBU+Ubuntu-Light /Encoding /Identity-H"));
+    assert!(pdf.contains("/FontFile2 ") && pdf.contains("/Filter [/ASCII85Decode /FlateDecode]"));
+    assert!(pdf.contains("/F5 ") && pdf.contains(" 2 Tr "), "bold by stroking");
+    let f = unicode_font().unwrap();
+    let l = format!("<{:04X}> <0141>", f.glyph('Ł'));
+    assert!(pdf.contains(&l), "ToUnicode maps the glyph back to the character");
+    assert!(pdf.contains("(Wire 1.5 mm\\262) Tj"), "WinAnsi texts keep Helvetica");
+}

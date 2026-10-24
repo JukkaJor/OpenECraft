@@ -364,7 +364,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
   connections (filter, show, select, add a connection definition), cables (cores in
   use and free, cable definitions, draw a cable definition), layers and the check.
 - **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
-  references and report rows), **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
+  references and report rows; texts beyond Latin-1 such as Polish, Czech, Turkish,
+  Greek or Cyrillic are written with an embedded subset of the Ubuntu font, searchable
+  and copyable), **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
   the same drawing) per page or all pages side by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,
   ends, colour, cross-section, routed length, stripping length and ferrule per
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for

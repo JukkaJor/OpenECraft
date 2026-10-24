@@ -1,14 +1,56 @@
 //! PDF export of all pages (each in the paper format of its plot frame): vector
 //! graphics, Helvetica text, clickable cross references and report rows, one bookmark
-//! per page; the files of document pages are attached to their page. The file is
-//! plain ASCII (non-ASCII text is written as WinAnsi octal escapes, attachments as hex).
+//! per page; the files of document pages are attached to their page. Texts with
+//! characters beyond WinAnsi (Polish, Czech, Turkish, Greek, Cyrillic …) use a subset
+//! of the bundled Ubuntu font, embedded with a ToUnicode map so they can be searched
+//! and copied. The file is plain ASCII (non-ASCII text is written as WinAnsi octal
+//! escapes, attachments as hex, the font compressed and ASCII85 encoded).
 
 use crate::geom::{p, P};
 use crate::model::{PageKind, Project};
 use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
+use crate::ttf::Font;
+use std::collections::BTreeMap;
 use std::fmt::Write;
+use std::sync::OnceLock;
+
+/// The embedded font for texts beyond WinAnsi.
+fn unicode_font() -> Option<&'static Font<'static>> {
+    static FONT: OnceLock<Option<Font<'static>>> = OnceLock::new();
+    FONT.get_or_init(|| Font::parse(epaint_default_fonts::UBUNTU_LIGHT)).as_ref()
+}
+
+/// The text has characters Helvetica (WinAnsi) cannot show.
+fn needs_unicode(text: &str) -> bool {
+    text.chars().any(|c| c != '?' && win_ansi(c) == b'?')
+}
+
+/// ASCII85 encoding (PDF filter `ASCII85Decode`), with the end marker.
+fn ascii85(data: &[u8]) -> String {
+    let mut out = String::with_capacity(data.len() * 5 / 4 + 4);
+    for chunk in data.chunks(4) {
+        let mut b = [0u8; 4];
+        b[..chunk.len()].copy_from_slice(chunk);
+        let v = u32::from_be_bytes(b);
+        if v == 0 && chunk.len() == 4 {
+            out.push('z');
+            continue;
+        }
+        let mut digits = [0u8; 5];
+        let mut n = v;
+        for d in digits.iter_mut().rev() {
+            *d = (n % 85) as u8 + b'!';
+            n /= 85;
+        }
+        for d in &digits[..chunk.len() + 1] {
+            out.push(*d as char);
+        }
+    }
+    out.push_str("~>");
+    out
+}
 
 /// Points per millimetre.
 const K: f32 = 72.0 / 25.4;
@@ -186,6 +228,8 @@ pub struct PdfDraw {
     urls: Vec<([f32; 4], String)>,
     /// Bitmaps used by the page (`/Im0`, `/Im1` …).
     images: Vec<PdfImage>,
+    /// Glyphs of the embedded font used on the page, with their characters.
+    glyphs: BTreeMap<u16, char>,
 }
 
 impl PdfDraw {
@@ -270,7 +314,11 @@ impl Draw for PdfDraw {
         }
         // Same metrics as the SVG export.
         let fs = st.size * 1.25 * K;
-        let w = text_width(text, fs) / K;
+        let font = unicode_font().filter(|_| needs_unicode(text));
+        let w = match font {
+            Some(f) => text.chars().map(|c| f.advance(f.glyph(c)) as f32).sum::<f32>() / f.units_per_em as f32 * fs / K,
+            None => text_width(text, fs) / K,
+        };
         let dx = match st.h {
             Anchor::Left => 0.0,
             Anchor::Center => -w / 2.0,
@@ -283,18 +331,39 @@ impl Draw for PdfDraw {
         };
         // Start of the baseline, turned with the text around its anchor.
         let start = pos + crate::text::rotate(p(dx, dy), st.angle);
-        let font = match (st.bold, st.italic) {
+        let face = match (st.bold, st.italic) {
             (false, false) => 1,
             (true, false) => 2,
             (false, true) => 3,
             (true, true) => 4,
         };
         self.fill(ink);
-        if st.angle == 0.0 {
-            let _ = writeln!(self.ops, "BT /F{font} {fs:.2} Tf {:.2} {:.2} Td ({}) Tj ET", x(start.x), self.y(start.y), pdf_string(text));
+        if let Some(f) = font {
+            // Bold: filled and stroked outlines; italic: slanted text space.
+            let mut gids = String::new();
+            for c in text.chars() {
+                let g = f.glyph(c);
+                self.glyphs.entry(g).or_insert(c);
+                let _ = write!(gids, "{g:04X}");
+            }
+            let (s, c) = st.angle.to_radians().sin_cos();
+            let k = if st.italic { 0.2 } else { 0.0 };
+            let (r, g, b) = rgb(ink);
+            let bold = if st.bold { format!("{r:.3} {g:.3} {b:.3} RG {:.3} w 2 Tr ", fs * 0.03) } else { String::new() };
+            let _ = writeln!(
+                self.ops,
+                "BT /F5 {fs:.2} Tf {bold}{c:.4} {s:.4} {:.4} {:.4} {:.2} {:.2} Tm <{gids}> Tj{} ET",
+                k * c - s,
+                k * s + c,
+                x(start.x),
+                self.y(start.y),
+                if st.bold { " 0 Tr" } else { "" }
+            );
+        } else if st.angle == 0.0 {
+            let _ = writeln!(self.ops, "BT /F{face} {fs:.2} Tf {:.2} {:.2} Td ({}) Tj ET", x(start.x), self.y(start.y), pdf_string(text));
         } else {
             let (s, c) = st.angle.to_radians().sin_cos();
-            let _ = writeln!(self.ops, "BT /F{font} {fs:.2} Tf {c:.4} {s:.4} {:.4} {c:.4} {:.2} {:.2} Tm ({}) Tj ET", -s, x(start.x), self.y(start.y), pdf_string(text));
+            let _ = writeln!(self.ops, "BT /F{face} {fs:.2} Tf {c:.4} {s:.4} {:.4} {c:.4} {:.2} {:.2} Tm ({}) Tj ET", -s, x(start.x), self.y(start.y), pdf_string(text));
         }
         if st.underline {
             let a = start + crate::text::rotate(p(0.0, st.size * 0.15), st.angle);
@@ -338,6 +407,53 @@ impl Writer {
     }
 }
 
+/// Writes the embedded font as objects `obj` … `obj + 4`: Type0 font, CID font, font
+/// descriptor, font file (subset, compressed) and ToUnicode map.
+fn write_unicode_font(w: &mut Writer, obj: usize, f: &Font, glyphs: &BTreeMap<u16, char>) {
+    const NAME: &str = "OECUBU+Ubuntu-Light";
+    let scale = 1000.0 / f.units_per_em as f32;
+    let (cid, desc, file, map) = (obj + 1, obj + 2, obj + 3, obj + 4);
+    w.obj(obj, &format!("<< /Type /Font /Subtype /Type0 /BaseFont /{NAME} /Encoding /Identity-H /DescendantFonts [{cid} 0 R] /ToUnicode {map} 0 R >>"));
+    let widths: Vec<String> = glyphs.keys().map(|g| format!("{g} [{:.0}]", f.advance(*g) as f32 * scale)).collect();
+    w.obj(
+        cid,
+        &format!(
+            "<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{NAME} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor {desc} 0 R /DW 500 /W [{}] /CIDToGIDMap /Identity >>",
+            widths.join(" ")
+        ),
+    );
+    let b = f.bbox.map(|v| (v as f32 * scale).round() as i32);
+    w.obj(
+        desc,
+        &format!(
+            "<< /Type /FontDescriptor /FontName /{NAME} /Flags 32 /FontBBox [{} {} {} {}] /ItalicAngle 0 /Ascent {:.0} /Descent {:.0} /CapHeight {:.0} /StemV 70 /FontFile2 {file} 0 R >>",
+            b[0],
+            b[1],
+            b[2],
+            b[3],
+            f.ascent as f32 * scale,
+            f.descent as f32 * scale,
+            f.cap_height as f32 * scale
+        ),
+    );
+    let subset = f.subset(&glyphs.keys().copied().collect());
+    let data = ascii85(&miniz_oxide::deflate::compress_to_vec_zlib(&subset, 9));
+    w.obj(file, &format!("<< /Length {} /Length1 {} /Filter [/ASCII85Decode /FlateDecode] >>\nstream\n{data}\nendstream", data.len() + 1, subset.len()));
+    let mut cmap = String::from("/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /OEC-UCS def /CMapType 2 def\n1 begincodespacerange <0000> <FFFF> endcodespacerange\n");
+    let entries: Vec<(&u16, &char)> = glyphs.iter().collect();
+    for chunk in entries.chunks(100) {
+        let _ = writeln!(cmap, "{} beginbfchar", chunk.len());
+        for (g, c) in chunk {
+            let mut units = [0u16; 2];
+            let hex: String = c.encode_utf16(&mut units).iter().map(|u| format!("{u:04X}")).collect();
+            let _ = writeln!(cmap, "<{g:04X}> <{hex}>");
+        }
+        cmap.push_str("endbfchar\n");
+    }
+    cmap.push_str("endcmap CMapName currentdict /CMap defineresource pop end end\n");
+    w.obj(map, &format!("<< /Length {} >>\nstream\n{cmap}endstream", cmap.len()));
+}
+
 /// All pages of the project as one PDF document.
 pub fn document(prj: &Project) -> String {
     document_with(prj, &Analysis::with_builtin(prj))
@@ -363,6 +479,17 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
     let kids: Vec<String> = (0..n).map(|i| format!("{} 0 R", page_obj(i))).collect();
     w.obj(2, &format!("<< /Type /Pages /Kids [{}] /Count {n} >>", kids.join(" ")));
     w.obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    // The embedded font (F5) with the glyphs all pages use.
+    let glyphs: BTreeMap<u16, char> = pages.iter().flat_map(|d| d.glyphs.iter().map(|(g, c)| (*g, *c))).collect();
+    let unicode = match (unicode_font(), glyphs.is_empty()) {
+        (Some(f), false) => {
+            let obj = next;
+            next += 5;
+            write_unicode_font(&mut w, obj, f, &glyphs);
+            Some(obj)
+        }
+        _ => None,
+    };
     // Bold, italic and bold italic texts (F2 … F4).
     let fonts = [next, next + 1, next + 2];
     next += 3;
@@ -451,10 +578,11 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
         w.obj(
             po,
             &format!(
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R{} >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
                 fonts[0],
                 fonts[1],
                 fonts[2],
+                unicode.map(|u| format!(" /F5 {u} 0 R")).unwrap_or_default(),
                 po + 1,
                 annots.join(" ")
             ),
