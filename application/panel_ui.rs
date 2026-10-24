@@ -126,6 +126,148 @@ fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
     });
 }
 
+/// Collision class chooser: any class, the built-in classes and the project's own.
+fn class_combo(ui: &mut egui::Ui, salt: &str, value: &mut String, custom: &[String]) {
+    egui::ComboBox::from_id_salt(salt).selected_text(panel::class_title(value)).width(100.0).show_ui(ui, |ui| {
+        ui.selectable_value(value, "*".to_string(), panel::class_title("*"));
+        for (k, _) in panel::CLASSES {
+            ui.selectable_value(value, k.to_string(), panel::class_title(k));
+        }
+        for k in custom {
+            ui.selectable_value(value, k.clone(), k.as_str());
+        }
+    });
+}
+
+/// Classes named on items or in rules that are not built in.
+fn custom_classes(prj: &Project) -> Vec<String> {
+    let mut v: Vec<String> = prj.layout.enclosures.iter().flat_map(|e| e.items.iter().map(|i| i.class.trim().to_ascii_lowercase())).collect();
+    v.extend(prj.layout.checks.classes.iter().flat_map(|r| [r.a.clone(), r.b.clone()]));
+    v.retain(|k| !k.trim().is_empty() && k.trim() != "*" && !panel::CLASSES.iter().any(|c| c.0 == k));
+    v.sort();
+    v.dedup();
+    v
+}
+
+/// Rules and results of the layout checks of an enclosure: clearances, service
+/// space, heights above the floor, collision classes, thermal and manufacturing.
+fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+    let findings = panel::validate(prj, &prj.layout.enclosures[ei]);
+    let temps = {
+        let e = &prj.layout.enclosures[ei];
+        panel::thermal::device_temperatures(prj, e, &panel::thermal::heat_map(prj, e))
+    };
+    let custom = custom_classes(prj);
+    egui::CollapsingHeader::new(tr("Layout checks")).id_salt("checks").show(ui, |ui| {
+        let e = &mut prj.layout.enclosures[ei];
+        ui.horizontal(|ui| {
+            let mut known = e.elevation.is_some();
+            let tip = tr("Bottom of the enclosure (without plinth) above the floor; heights are checked when it is known or the enclosure stands on a plinth");
+            if ui.checkbox(&mut known, tr("Height above floor")).on_hover_text(tip).changed() {
+                e.elevation = known.then_some(0.0);
+            }
+            if let Some(h) = &mut e.elevation {
+                ui.add(egui::DragValue::new(h).speed(5.0).range(0.0..=5000.0).suffix(" mm"));
+            }
+        });
+        let r = &mut prj.layout.checks;
+        let row = |ui: &mut egui::Ui, label: &str, v: &mut f32, max: f32, suffix: &str, tip: &str| {
+            ui.label(label);
+            let resp = ui.add(egui::DragValue::new(v).speed(1.0).range(0.0..=max).suffix(suffix));
+            if !tip.is_empty() {
+                resp.on_hover_text(tip);
+            }
+            ui.end_row();
+        };
+        let range = |ui: &mut egui::Ui, label: &str, a: &mut f32, b: &mut f32, tip: &str| {
+            ui.label(label);
+            ui.horizontal(|ui| {
+                ui.add(egui::DragValue::new(a).speed(5.0).range(0.0..=5000.0));
+                ui.label("…");
+                ui.add(egui::DragValue::new(b).speed(5.0).range(0.0..=5000.0).suffix(" mm"));
+            })
+            .response
+            .on_hover_text(tip);
+            ui.end_row();
+        };
+        ui.label(RichText::new(tr("Clearances")).strong());
+        egui::Grid::new("pchecks_clear").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
+            row(ui, tr("Gap between devices"), &mut r.device_gap, 200.0, " mm", tr("Mounting clearance side by side; parts add theirs (Clearance left / right)"));
+            row(ui, tr("Distance to cable ducts"), &mut r.duct_gap, 200.0, " mm", tr("Wiring space between devices and ducts"));
+            row(ui, tr("Distance to the plate edge"), &mut r.edge_distance, 200.0, " mm", "");
+            row(ui, tr("Service space in front"), &mut r.service_space, 500.0, " mm", tr("Free space in front of every device on the plate up to the door; parts add theirs (Service space)"));
+        });
+        ui.label(RichText::new(tr("Heights above floor (IEC 60204-1)")).strong());
+        egui::Grid::new("pchecks_height").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
+            range(ui, tr("Devices"), &mut r.operating_min, &mut r.operating_max, tr("All devices between these heights (11.2.1); 0 … 0 switches the check off"));
+            range(ui, tr("Actuators on the door"), &mut r.actuator_min, &mut r.actuator_max, tr("Recommended height of manual actuators (10.1.2)"));
+            row(ui, tr("Terminals at least"), &mut r.terminal_min, 2000.0, " mm", "");
+        });
+        ui.label(RichText::new(tr("Thermal")).strong());
+        egui::Grid::new("pchecks_thermal").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
+            row(ui, tr("Air at devices at most"), &mut r.device_temperature, 150.0, " °C", tr("For parts without temperature data (Max temperature, Operating temperature); 0: not checked"));
+            ui.label(tr("Stratification (factor c)"));
+            ui.add(egui::DragValue::new(&mut r.stratification).speed(0.01).range(1.0..=2.0)).on_hover_text(tr("Temperature rise at the roof against the middle (IEC/TR 60890)"));
+            ui.end_row();
+        });
+        ui.label(RichText::new(tr("Manufacturing")).strong());
+        egui::Grid::new("pchecks_mfg").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
+            row(ui, tr("Web between holes"), &mut r.hole_web, 50.0, " mm", "");
+            row(ui, tr("Hole to sheet edge"), &mut r.hole_edge, 50.0, " mm", "");
+            row(ui, tr("Web at cutouts"), &mut r.cutout_web, 100.0, " mm", "");
+            row(ui, tr("Shortest profile"), &mut r.min_profile, 500.0, " mm", tr("Rails, ducts and busbars shorter than this are hard to cut"));
+            row(ui, tr("Stock length"), &mut r.stock_length, 10000.0, " mm", tr("For parts without Stock length; longer profiles have to be joined"));
+        });
+        ui.label(RichText::new(tr("Collision classes")).strong()).on_hover_text(tr("Distances between classes of items, or classes that may overlap"));
+        let mut remove = None;
+        egui::Grid::new("pchecks_classes").num_columns(5).spacing([6.0, 4.0]).show(ui, |ui| {
+            for (i, c) in r.classes.iter_mut().enumerate() {
+                class_combo(ui, &format!("cls_a{i}"), &mut c.a, &custom);
+                class_combo(ui, &format!("cls_b{i}"), &mut c.b, &custom);
+                ui.add_enabled(!c.ignore, egui::DragValue::new(&mut c.distance).speed(1.0).range(0.0..=1000.0).suffix(" mm"));
+                ui.checkbox(&mut c.ignore, tr("may overlap"));
+                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                    remove = Some(i);
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(i) = remove {
+            r.classes.remove(i);
+        }
+        if ui.button(tr("➕ Add rule")).clicked() {
+            r.classes.push(panel::ClassRule::distance("power", "signal", 50.0));
+        }
+        if !temps.is_empty() {
+            egui::CollapsingHeader::new(tr("Air temperature at the devices")).id_salt("ptemps").show(ui, |ui| {
+                egui::Grid::new("ptemps_grid").striped(true).num_columns(3).show(ui, |ui| {
+                    for t in &temps {
+                        ui.label(RichText::new(&t.tag).monospace());
+                        let text = format!("{:.0} °C", t.temperature);
+                        if t.limit.is_some_and(|l| t.temperature > l) {
+                            ui.colored_label(Color32::from_rgb(220, 60, 60), text);
+                        } else {
+                            ui.label(text);
+                        }
+                        ui.label(t.limit.map(|l| tr_fmt!("max. {} °C", format!("{l:.0}"))).unwrap_or_default());
+                        ui.end_row();
+                    }
+                });
+            });
+        }
+        if findings.is_empty() {
+            ui.weak(tr("No problems found"));
+        }
+        for f in &findings {
+            let color = if f.severity == crate::reports::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
+            ui.horizontal_wrapped(|ui| {
+                ui.label(RichText::new(f.kind.title()).strong().color(color));
+                ui.label(&f.message);
+            });
+        }
+    });
+}
+
 struct NewEnclosure {
     name: String,
     part: String,
@@ -207,6 +349,8 @@ pub struct PanelUi {
     door_angle: f32,
     /// Cable ducts coloured by their fill level.
     pub show_fill: bool,
+    /// Estimated air temperature over the mounting plate.
+    pub show_heat: bool,
     /// The 3D view shows the enclosures bayed to the current one as well.
     pub show_lineup: bool,
     offset: Vec2,
@@ -259,6 +403,7 @@ impl Default for PanelUi {
             door_open: true,
             door_angle: DOOR_OPEN_ANGLE,
             show_fill: true,
+            show_heat: false,
             show_lineup: true,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
@@ -543,6 +688,12 @@ impl PanelUi {
             return;
         }
         if let Some(id) = sel.first().copied() {
+            let air = prj.layout.enclosures[ei].item(id).filter(|it| it.kind == ItemKind::Device && it.face == Face::Plate).and_then(|_| {
+                let e = &prj.layout.enclosures[ei];
+                panel::thermal::device_temperatures(prj, e, &panel::thermal::heat_map(prj, e)).into_iter().find(|t| t.id == id)
+            });
+            let auto_class = prj.layout.enclosures[ei].item(id).map(|it| panel::item_class(prj, &panel::device_kinds(prj), &PanelItem { class: String::new(), ..it.clone() })).unwrap_or_default();
+            let custom = custom_classes(prj);
             let e = &mut prj.layout.enclosures[ei];
             let Some(idx) = e.items.iter().position(|i| i.id == id) else {
                 self.selection.clear();
@@ -653,6 +804,37 @@ impl PanelUi {
                             .on_hover_text(tr("Rail raised on standoffs above the plate (devices on it move up)"));
                         ui.end_row();
                     }
+                }
+                ui.label(tr("Collision class"));
+                ui.horizontal(|ui| {
+                    let auto = tr_fmt!("Automatic ({})", panel::class_title(&auto_class));
+                    let shown = if it.class.is_empty() { auto.clone() } else { panel::class_title(&it.class) };
+                    egui::ComboBox::from_id_salt("itemclass").selected_text(shown).show_ui(ui, |ui| {
+                        ui.selectable_value(&mut it.class, String::new(), auto);
+                        for (k, _) in panel::CLASSES {
+                            ui.selectable_value(&mut it.class, k.to_string(), panel::class_title(k));
+                        }
+                        for k in &custom {
+                            ui.selectable_value(&mut it.class, k.clone(), k.as_str());
+                        }
+                    });
+                    ui.add(egui::TextEdit::singleline(&mut it.class).desired_width(70.0).hint_text(tr("own class")));
+                })
+                .response
+                .on_hover_text(tr("The checks keep the distances between classes and let classes overlap as set in Layout checks"));
+                ui.end_row();
+                if let Some(t) = &air {
+                    ui.label(tr("Air temperature"));
+                    let text = match t.limit {
+                        Some(l) => tr_fmt!("{} °C (max. {} °C)", format!("{:.0}", t.temperature), format!("{l:.0}")),
+                        None => format!("{:.0} °C", t.temperature),
+                    };
+                    if t.limit.is_some_and(|l| t.temperature > l) {
+                        ui.colored_label(Color32::from_rgb(220, 60, 60), text);
+                    } else {
+                        ui.label(text);
+                    }
+                    ui.end_row();
                 }
                 if it.kind != ItemKind::Cutout {
                     ui.label(tr("Fastening"));
@@ -861,13 +1043,14 @@ impl PanelUi {
         ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
         ui.checkbox(&mut prj.layout.hardware, tr("Fastening hardware in the bill of materials")).on_hover_text(tr("Screws, nuts, washers and rivet nuts of the fixing points"));
         climate_section(ui, prj, ei);
+        checks_section(ui, prj, ei);
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
         let wires: Vec<_> = an.wiring.iter().filter(|w| w.in_enclosure(ei)).collect();
         let total: f32 = wires.iter().map(|w| w.length).sum();
         ui.separator();
         ui.label(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0)));
-        let problems = panel::collisions(e, &prj.parts).len() + panel::outside(e).len() + crate::production::clearance_violations(e, &prj.parts).len();
+        let problems = panel::problem_items(prj, e).len();
         let holes = crate::production::holes(e, &prj.parts).len();
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
         ui.label(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts));
@@ -1329,6 +1512,7 @@ impl PanelUi {
             }
             ui.checkbox(&mut self.show_wires, tr("Wires"));
             ui.checkbox(&mut self.show_fill, tr("Duct fill")).on_hover_text(tr("Colour the cable ducts by their fill level"));
+            ui.checkbox(&mut self.show_heat, tr("Heat map")).on_hover_text(tr("Estimated air temperature in front of the mounting plate (power loss of the devices, climate)"));
             if ui.button(tr("⛶ Fit")).clicked() {
                 self.fit_pending = true;
                 self.cam = None;
@@ -1621,10 +1805,28 @@ impl PanelUi {
         let e = &prj.layout.enclosures[ei];
         painter.rect_filled(rect, 0.0, pal.canvas);
         let origin = rect.min + self.offset;
-        let problems = panel::problem_items(e, &prj.parts);
+        let problems = panel::problem_items(prj, e);
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror, textures: None };
         render::draw_enclosure(&mut d, e, self.face, self.door_inside, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
         let to_screen = |q: P| origin + vec2(mirror.map(|m| m - (q.x + fm)).unwrap_or(q.x + fm), q.y + fm) * self.zoom;
+        if self.show_heat && self.face == Face::Plate {
+            let map = panel::thermal::heat_map(prj, e);
+            let (pw, ph) = e.plate_size();
+            let span = (map.max - map.min).max(1.0);
+            for r in 0..map.rows {
+                for c in 0..map.cols {
+                    let (x, y) = (c as f32 * map.cell, r as f32 * map.cell);
+                    let cell = Rect::from_two_pos(to_screen(p(x, y)), to_screen(p((x + map.cell).min(pw), (y + map.cell).min(ph))));
+                    painter.rect_filled(cell, 0.0, heat_color((map.temps[r * map.cols + c] - map.min) / span).gamma_multiply(0.35));
+                }
+            }
+            let hot = to_screen(map.hottest);
+            painter.circle_stroke(hot, 6.0, Stroke::new(2.0, heat_color(1.0)));
+            let label = tr_fmt!("{} °C (max.)", format!("{:.0}", map.max));
+            painter.text(hot + vec2(9.0, 0.0), egui::Align2::LEFT_CENTER, label, egui::FontId::proportional(12.0), heat_color(1.0));
+            let range = tr_fmt!("Air temperature {} … {} °C", format!("{:.0}", map.min), format!("{:.0}", map.max));
+            painter.text(rect.left_bottom() + vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, range, egui::FontId::proportional(12.0), pal.line);
+        }
         // Cable ducts coloured by their fill level.
         if self.show_fill {
             let limit = prj.layout.duct_fill_limit;
@@ -1936,6 +2138,19 @@ fn wheel_delta(i: &egui::InputState) -> f32 {
         }
     }
     wheel
+}
+
+/// Blue (cool) over yellow to red (hot) for 0 … 1.
+fn heat_color(f: f32) -> Color32 {
+    let f = f.clamp(0.0, 1.0);
+    let lerp = |a: u8, b: u8, t: f32| (a as f32 + (b as f32 - a as f32) * t) as u8;
+    if f < 0.5 {
+        let t = f * 2.0;
+        Color32::from_rgb(lerp(40, 240, t), lerp(110, 210, t), lerp(230, 40, t))
+    } else {
+        let t = (f - 0.5) * 2.0;
+        Color32::from_rgb(lerp(240, 220, t), lerp(210, 40, t), lerp(40, 30, t))
+    }
 }
 
 /// Green below 80 % of the limit, orange up to the limit, red above.

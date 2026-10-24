@@ -2,7 +2,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::index::Index;
-use crate::panel::{self, ItemKind, OpenWire, RoutedWire};
+use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
 use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
 use crate::symbols::{self, Func};
@@ -737,26 +737,7 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
         v.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: not placed in the panel layout", d.tag), target });
     }
     for e in &prj.layout.enclosures {
-        let name = |id: u64| {
-            e.item(id).map(|i| if i.kind == ItemKind::Device { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default()
-        };
-        for (a, b) in panel::collisions(e, &prj.parts) {
-            v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: {} collides with {}", e.name, name(a), name(b)), target: None });
-        }
-        for id in panel::outside(e) {
-            v.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: {} outside the mounting plate / enclosure", e.name, name(id)),
-                target: None,
-            });
-        }
-        for (a, b) in crate::production::clearance_violations(e, &prj.parts) {
-            v.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!("{}: {} is inside the required clearance of {}", e.name, name(b), name(a)),
-                target: None,
-            });
-        }
+        v.extend(panel::validate(prj, e).into_iter().map(|f| Issue { severity: f.severity, message: f.message, target: None }));
     }
     v
 }

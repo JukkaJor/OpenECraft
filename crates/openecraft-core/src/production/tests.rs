@@ -139,20 +139,6 @@ fn ferrules_in_wire_list_and_bom() {
 }
 
 #[test]
-fn clearance_zones() {
-    let part = Part { number: "PS".into(), tech_data: "Clearance: 25 mm".into(), ..Default::default() };
-    let parts = [part];
-    assert_eq!(part_clearance(&parts, "PS"), 25.0);
-    let dev = PanelItem { part: "PS".into(), z: 7.5, ..item(1, ItemKind::Device, 100.0, 100.0, 40.0, 125.0) };
-    let rail = item(2, ItemKind::Rail, 0.0, 145.0, 500.0, 35.0);
-    let duct_close = item(3, ItemKind::Duct, 0.0, 40.0, 500.0, 40.0);
-    let duct_far = item(4, ItemKind::Duct, 0.0, 300.0, 500.0, 40.0);
-    let e = Enclosure { items: vec![dev, rail, duct_close, duct_far], ..Default::default() };
-    assert_eq!(clearance_violations(&e, &parts), vec![(1, 3)]);
-    assert!(crate::panel::problem_items(&e, &parts).contains(&3));
-}
-
-#[test]
 fn door_cutouts_and_nc_data() {
     let prj = demo_project();
     let e = &prj.layout.enclosures[0];

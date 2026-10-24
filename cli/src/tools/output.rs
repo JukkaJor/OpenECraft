@@ -48,7 +48,7 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn severity_name(s: Severity) -> &'static str {
+pub(super) fn severity_name(s: Severity) -> &'static str {
     match s {
         Severity::Error => "error",
         Severity::Warning => "warning",

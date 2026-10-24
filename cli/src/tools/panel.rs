@@ -235,7 +235,7 @@ fn enclosure_json(prj: &Project, e: &Enclosure) -> Value {
         "components": components,
         "faces": faces,
         "assemblies": e.groups.iter().map(|g| json!({ "id": g.id, "name": g.name, "items": panel::group_members(e, g.id) })).collect::<Vec<_>>(),
-        "problems": panel::problem_items(e, &prj.parts).into_iter().collect::<Vec<_>>(),
+        "problems": panel::problem_items(prj, e).into_iter().collect::<Vec<_>>(),
     })
 }
 
