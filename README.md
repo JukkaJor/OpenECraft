@@ -236,7 +236,39 @@ built with [egui / eframe](https://github.com/emilk/egui).
   table 6, method B2); cables get their voltage drop to the load with the highest rated
   current at their ends (√3 for three cores, copper at operating temperature), report
   *Cable sizing*; the check reports too thin wires and cables (errors) and voltage
-  drops above 5 %.
+  drops above 5 %. The capacity is corrected for ambient temperature, bunched
+  circuits (IEC 60364-5-52, B.52.17), aluminium and XLPE insulation.
+- **Electrical calculations and verification** (*Project › Electrical calculations…*):
+  - *Supply*: voltage, earthing system (TN-S, TN-C, TN-C-S, TT, IT), highest and lowest
+    short-circuit current at the supply point, rated current;
+  - *Short circuit and protection coordination* (IEC 60909-0 simplified, IEC 60364-4-41,
+    -4-43): the protective devices of the mains with their time-current bands
+    (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses; part tech data
+    `Characteristic`, `Breaking capacity`, `Instantaneous trip`, `Let-through energy`),
+    breaking capacity against the short-circuit current, disconnection within 0.4 s /
+    5 s (TT: 0.2 s / 1 s, residual current device needed) at the lowest fault current at
+    the end of each circuit, k²S² withstand of the cables, selectivity with the device
+    upstream (total / partial up to a current; gG fuses at a ratio of 1.6); reports
+    *Short circuit and disconnection*, *Selectivity*;
+  - *Load calculation*: motors, drives, heaters, power supplies and transformers of the
+    mains with active / apparent power and current (`Power`, `Current`, `Power factor`,
+    `Efficiency`), the load of each protective device, demand with the rated diversity
+    factor of IEC 61439-1 (table 101) or a set factor, phase currents and unbalance, and
+    the load budget of each 24 V power supply (`Coil power`, `Current consumption`);
+    reports *Load calculation*, *Power supply load budget*;
+  - *EMC*: motor cables of frequency converters shielded at both ends, analogue signals
+    in shielded cables, no power and signal conductors in one cable, surge protection;
+  - *Functional safety* (ISO 13849-1): safety functions of subsystems with their devices,
+    category, DCavg, operations per year and CCF; PL by the simplified procedure
+    (figure 5) from `MTTFd` / `B10d` of the parts or certified `PL` / `PFHd`, combined by
+    table 11, with the matching SIL; report *Safety functions*;
+  - *Rule sets*: built-in libraries (IEC 60204-1, IEC 61439-1, UL 508A / NFPA 79,
+    ISO 13849-1, EMC) and customer rule sets (JSON import / export) that tighten the
+    limits (voltage drop, disconnection times, minimum cross-sections, load reserve,
+    phase unbalance, total selectivity, shielding, surge protection) and add checks
+    "every item of a scope (project, pages, devices, parts, cables, connections,
+    potentials) that meets these conditions must meet this one"; report *Rule set
+    verification*; all results are part of the project check.
 - **Editing in tables** (*Project › Edit in table…*): devices (tag, function text,
   description, part), connections (wire number, colour, cross-section, cable, core) and
   terminals (strip, number, function text) as rows; filter, edit cells in place, fill a
@@ -567,6 +599,13 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
 | `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
 | `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices, voltage drop |
+| `crates/openecraft-core/src/electrical.rs` | Supply, installation conditions, circuits of the mains |
+| `crates/openecraft-core/src/protection.rs` | Protective devices: characteristics, time-current bands, let-through energy |
+| `crates/openecraft-core/src/shortcircuit.rs` | Short-circuit currents, disconnection, withstand, selectivity |
+| `crates/openecraft-core/src/loads.rs` | Load calculation, diversity, phase balance, power supply budgets |
+| `crates/openecraft-core/src/emc.rs` | EMC checks of the cables |
+| `crates/openecraft-core/src/safety.rs` | Safety functions and performance level (ISO 13849-1) |
+| `crates/openecraft-core/src/rules.rs` | Rule libraries, customer rule sets, limits and verification |
 | `crates/openecraft-core/src/tables.rs` | Editing devices, connections and terminals in tables, CSV round trip |
 | `crates/openecraft-core/src/config.rs` | Configurator: options, rules, page generation from macros |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |

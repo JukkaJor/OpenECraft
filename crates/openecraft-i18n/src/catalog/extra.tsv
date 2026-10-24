@@ -2030,3 +2030,210 @@ Shield connected at: both, first, second or none	Schirm aufgelegt an: both, firs
 Outer diameter in mm, 0 = estimated	Außendurchmesser in mm, 0 = geschätzt	Diamètre extérieur en mm, 0 = estimé	Diámetro exterior en mm, 0 = estimado
 Not connected	Nicht aufgelegt	Non raccordé	No conectado
 Hose {}: length {} m shorter than its 3D route of {} m	Schlauch {}: Länge {} m kürzer als seine 3D-Verlegung von {} m	Tuyau {} : longueur {} m plus courte que son tracé 3D de {} m	Manguera {}: longitud {} m menor que su recorrido 3D de {} m
+Copper	Kupfer	Cuivre	Cobre
+PVC (70 °C)	PVC (70 °C)	PVC (70 °C)	PVC (70 °C)
+XLPE / EPR (90 °C)	VPE / EPR (90 °C)	PR / EPR (90 °C)	XLPE / EPR (90 °C)
+Motor protection (class 10)	Motorschutz (Klasse 10)	Protection moteur (classe 10)	Protección de motor (clase 10)
+equals	ist gleich	est égal à	es igual a
+does not equal	ist nicht gleich	n'est pas égal à	no es igual a
+is one of	ist eines von	est l'un de	es uno de
+is none of	ist keines von	n'est aucun de	no es ninguno de
+is at least	ist mindestens	est au moins	es al menos
+is at most	ist höchstens	est au plus	es como máximo
+Error	Fehler	Erreur	Error
+Warning	Warnung	Avertissement	Advertencia
+Info	Hinweis	Info	Información
+Electrical equipment of machines: voltage drop, disconnection, cross-sections, conductor colours	Elektrische Ausrüstung von Maschinen: Spannungsfall, Abschaltung, Querschnitte, Leiterfarben	Équipement électrique des machines : chute de tension, coupure, sections, couleurs des conducteurs	Equipo eléctrico de máquinas: caída de tensión, desconexión, secciones, colores de los conductores
+Protective conductors must be green-yellow (IEC 60204-1, 13.2.2)	Schutzleiter müssen grün-gelb sein (IEC 60204-1, 13.2.2)	Les conducteurs de protection doivent être vert-jaune (IEC 60204-1, 13.2.2)	Los conductores de protección deben ser verde-amarillo (IEC 60204-1, 13.2.2)
+Neutral conductors must be light blue (IEC 60204-1, 13.2.3)	Neutralleiter müssen hellblau sein (IEC 60204-1, 13.2.3)	Les conducteurs neutres doivent être bleu clair (IEC 60204-1, 13.2.3)	Los conductores neutros deben ser azul claro (IEC 60204-1, 13.2.3)
+DC control circuits should be blue (IEC 60204-1, 13.2.4)	DC-Steuerstromkreise sollten blau sein (IEC 60204-1, 13.2.4)	Les circuits de commande en courant continu devraient être bleus (IEC 60204-1, 13.2.4)	Los circuitos de mando de CC deberían ser azules (IEC 60204-1, 13.2.4)
+Devices should have a part (IEC 60204-1, 17.2: parts list)	Betriebsmittel sollten einen Artikel haben (IEC 60204-1, 17.2: Stückliste)	Les appareils devraient avoir un article (IEC 60204-1, 17.2 : liste des pièces)	Los equipos deberían tener un artículo (IEC 60204-1, 17.2: lista de piezas)
+Low-voltage switchgear assemblies: rated diversity, temperature rise, documentation	Niederspannungs-Schaltgerätekombinationen: Bemessungsbelastungsfaktor, Erwärmung, Dokumentation	Ensembles d'appareillage à basse tension : facteur de diversité assigné, échauffement, documentation	Conjuntos de aparamenta de baja tensión: factor de diversidad asignado, calentamiento, documentación
+Parts need power-loss data for the temperature-rise verification (IEC 61439-1, 10.10)	Artikel brauchen Verlustleistungsangaben für den Erwärmungsnachweis (IEC 61439-1, 10.10)	Les articles ont besoin de la puissance dissipée pour la vérification de l'échauffement (IEC 61439-1, 10.10)	Los artículos necesitan datos de pérdidas para la verificación del calentamiento (IEC 61439-1, 10.10)
+The assembly manufacturer must be named (IEC 61439-1, 6.1)	Der Hersteller der Schaltgerätekombination muss angegeben sein (IEC 61439-1, 6.1)	Le constructeur de l'ensemble doit être indiqué (IEC 61439-1, 6.1)	El fabricante del conjunto debe indicarse (IEC 61439-1, 6.1)
+Industrial control panels for North America: listed components, AWG cross-sections, conductor colours	Industriesteuerungen für Nordamerika: gelistete Komponenten, AWG-Querschnitte, Leiterfarben	Tableaux de commande industriels pour l'Amérique du Nord : composants listés, sections AWG, couleurs des conducteurs	Cuadros de control industriales para Norteamérica: componentes listados, secciones AWG, colores de los conductores
+Components must be UL listed or recognized (UL 508A, 29)	Komponenten müssen UL-gelistet oder -anerkannt sein (UL 508A, 29)	Les composants doivent être listés ou reconnus UL (UL 508A, 29)	Los componentes deben estar listados o reconocidos por UL (UL 508A, 29)
+Equipment grounding conductors must be green (NFPA 79, 13.2.2)	Schutzleiter müssen grün sein (NFPA 79, 13.2.2)	Les conducteurs de mise à la terre doivent être verts (NFPA 79, 13.2.2)	Los conductores de puesta a tierra deben ser verdes (NFPA 79, 13.2.2)
+Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Geerdete Leiter müssen weiß oder grau sein (NFPA 79, 13.2.3)	Les conducteurs mis à la terre doivent être blancs ou gris (NFPA 79, 13.2.3)	Los conductores puestos a tierra deben ser blancos o grises (NFPA 79, 13.2.3)
+DC control circuits should be blue (NFPA 79, 13.2.4)	DC-Steuerstromkreise sollten blau sein (NFPA 79, 13.2.4)	Les circuits de commande en courant continu devraient être bleus (NFPA 79, 13.2.4)	Los circuitos de mando de CC deberían ser azules (NFPA 79, 13.2.4)
+Safety-related parts of control systems: reliability data of the safety devices	Sicherheitsbezogene Teile von Steuerungen: Zuverlässigkeitsdaten der Sicherheitsgeräte	Parties des systèmes de commande relatives à la sécurité : données de fiabilité des appareils de sécurité	Partes de los sistemas de mando relativas a la seguridad: datos de fiabilidad de los dispositivos de seguridad
+Emergency stop devices need a B10d value (ISO 13849-1, annex C)	Not-Halt-Geräte brauchen einen B10d-Wert (ISO 13849-1, Anhang C)	Les arrêts d'urgence ont besoin d'une valeur B10d (ISO 13849-1, annexe C)	Las paradas de emergencia necesitan un valor B10d (ISO 13849-1, anexo C)
+Safety relays need their performance level (ISO 13849-1, 6.3)	Sicherheitsrelais brauchen ihren Performance Level (ISO 13849-1, 6.3)	Les relais de sécurité ont besoin de leur niveau de performance (ISO 13849-1, 6.3)	Los relés de seguridad necesitan su nivel de prestaciones (ISO 13849-1, 6.3)
+Electromagnetic compatibility: shielded drive and analogue cables, surge protection	Elektromagnetische Verträglichkeit: geschirmte Antriebs- und Analogleitungen, Überspannungsschutz	Compatibilité électromagnétique : câbles de variateur et analogiques blindés, protection contre les surtensions	Compatibilidad electromagnética: cables de accionamiento y analógicos apantallados, protección contra sobretensiones
+{}: cross-section {} below the {} mm² of power circuits	{}: Querschnitt {} unter den {} mm² von Hauptstromkreisen	{} : section {} inférieure aux {} mm² des circuits de puissance	{}: sección {} inferior a los {} mm² de los circuitos de potencia
+{}: cross-section {} below the {} mm² of control circuits	{}: Querschnitt {} unter den {} mm² von Steuerstromkreisen	{} : section {} inférieure aux {} mm² des circuits de commande	{}: sección {} inferior a los {} mm² de los circuitos de mando
+{}: {} ({})	{}: {} ({})	{} : {} ({})	{}: {} ({})
+Not a valid rule set file: {}	Keine gültige Regelwerksdatei: {}	Fichier de règles non valide : {}	Archivo de reglas no válido: {}
+{}: breaking capacity {} kA below the short-circuit current {} kA	{}: Schaltvermögen {} kA unter dem Kurzschlussstrom {} kA	{} : pouvoir de coupure {} kA inférieur au courant de court-circuit {} kA	{}: poder de corte {} kA inferior a la corriente de cortocircuito {} kA
+{}: a TT system needs a residual current device	{}: ein TT-System braucht eine Fehlerstrom-Schutzeinrichtung	{} : un schéma TT nécessite un dispositif différentiel	{}: un sistema TT necesita un dispositivo diferencial
+{}: fault current {} A at {} does not disconnect within {} s (needs {} A)	{}: Fehlerstrom {} A an {} schaltet nicht innerhalb von {} s ab (benötigt {} A)	{} : le courant de défaut {} A à {} ne coupe pas en {} s (il faut {} A)	{}: la corriente de defecto {} A en {} no desconecta en {} s (necesita {} A)
+{}: lets through {} A²s, cable {} withstands {} A²s	{}: lässt {} A²s durch, Leitung {} hält {} A²s stand	{} : laisse passer {} A²s, le câble {} supporte {} A²s	{}: deja pasar {} A²s, el cable {} soporta {} A²s
+{} protective devices of the mains have no breaking capacity data	{} Schutzorgane des Netzes haben keine Angabe zum Schaltvermögen	{} appareils de protection du réseau n'ont pas de pouvoir de coupure	{} dispositivos de protección de la red no tienen datos de poder de corte
+{} and {} are not selective	{} und {} sind nicht selektiv	{} et {} ne sont pas sélectifs	{} y {} no son selectivos
+{} is selective to {} only up to {} A (short-circuit current {} A)	{} ist zu {} nur bis {} A selektiv (Kurzschlussstrom {} A)	{} n'est sélectif avec {} que jusqu'à {} A (courant de court-circuit {} A)	{} es selectivo con {} solo hasta {} A (corriente de cortocircuito {} A)
+{}: load {} A above the usable {} A	{}: Last {} A über den nutzbaren {} A	{} : charge {} A supérieure aux {} A utilisables	{}: carga {} A superior a los {} A utilizables
+Demand {} A above the usable {} A of the supply	Bedarf {} A über den nutzbaren {} A der Einspeisung	Demande {} A supérieure aux {} A utilisables de l'alimentation	Demanda {} A superior a los {} A utilizables de la alimentación
+Phase unbalance {} % above {} %	Phasenunsymmetrie {} % über {} %	Déséquilibre des phases {} % supérieur à {} %	Desequilibrio de fases {} % superior al {} %
+{}: load {} A above the usable {} A of the power supply	{}: Last {} A über den nutzbaren {} A des Netzgeräts	{} : charge {} A supérieure aux {} A utilisables de l'alimentation	{}: carga {} A superior a los {} A utilizables de la fuente de alimentación
+{}: no consumption data for {}	{}: keine Verbrauchsangaben für {}	{} : pas de consommation pour {}	{}: sin datos de consumo para {}
+Motor cable {} of frequency converter {} must be shielded	Motorleitung {} des Frequenzumrichters {} muss geschirmt sein	Le câble moteur {} du variateur {} doit être blindé	El cable de motor {} del convertidor de frecuencia {} debe estar apantallado
+Shield of motor cable {} must be connected at both ends	Schirm der Motorleitung {} muss beidseitig aufgelegt sein	Le blindage du câble moteur {} doit être raccordé aux deux extrémités	La pantalla del cable de motor {} debe conectarse en ambos extremos
+Cable {} carries analogue signals of {} and must be shielded	Leitung {} führt Analogsignale von {} und muss geschirmt sein	Le câble {} transporte des signaux analogiques de {} et doit être blindé	El cable {} lleva señales analógicas de {} y debe estar apantallado
+Cable {} carries power and signal conductors together	Leitung {} führt Leistungs- und Signalleiter gemeinsam	Le câble {} réunit des conducteurs de puissance et de signal	El cable {} lleva juntos conductores de potencia y de señal
+No surge protective device at the supply (IEC 60364-4-44)	Kein Überspannungsschutz an der Einspeisung (IEC 60364-4-44)	Pas de parafoudre à l'alimentation (IEC 60364-4-44)	Sin protector contra sobretensiones en la alimentación (IEC 60364-4-44)
+Subsystem {} has no devices	Teilsystem {} hat keine Betriebsmittel	Le sous-système {} n'a pas d'appareils	El subsistema {} no tiene equipos
+Device {} does not exist	Betriebsmittel {} existiert nicht	L'appareil {} n'existe pas	El equipo {} no existe
+{}: operations per year needed for the B10d of {}	{}: Schaltspiele pro Jahr für den B10d von {} nötig	{} : nombre de manœuvres par an nécessaire pour le B10d de {}	{}: se necesitan las maniobras por año para el B10d de {}
+{} has no MTTFd, B10d, PL or PFHd	{} hat weder MTTFd, B10d, PL noch PFHd	{} n'a ni MTTFd, ni B10d, ni PL, ni PFHd	{} no tiene MTTFd, B10d, PL ni PFHd
+{}: MTTFd {} years is below 3 years	{}: MTTFd {} Jahre liegt unter 3 Jahren	{} : MTTFd de {} ans inférieur à 3 ans	{}: MTTFd de {} años inferior a 3 años
+{}: category 1 needs a high MTTFd	{}: Kategorie 1 braucht eine hohe MTTFd	{} : la catégorie 1 exige un MTTFd élevé	{}: la categoría 1 necesita un MTTFd alto
+{}: category {} needs a DCavg of at least 60 %	{}: Kategorie {} braucht einen DCavg von mindestens 60 %	{} : la catégorie {} exige un DCavg d'au moins 60 %	{}: la categoría {} necesita un DCavg de al menos el 60 %
+{}: category 4 needs a high DCavg and MTTFd	{}: Kategorie 4 braucht einen hohen DCavg und eine hohe MTTFd	{} : la catégorie 4 exige un DCavg et un MTTFd élevés	{}: la categoría 4 necesita un DCavg y un MTTFd altos
+{}: category {} needs measures against common cause failure	{}: Kategorie {} braucht Maßnahmen gegen Ausfälle gemeinsamer Ursache	{} : la catégorie {} exige des mesures contre les défaillances de cause commune	{}: la categoría {} necesita medidas contra fallos de causa común
+Safety function {}: {}	Sicherheitsfunktion {}: {}	Fonction de sécurité {} : {}	Función de seguridad {}: {}
+Safety function {} reaches PL {}, PL {} is required	Sicherheitsfunktion {} erreicht PL {}, gefordert ist PL {}	La fonction de sécurité {} atteint PL {}, PL {} est requis	La función de seguridad {} alcanza PL {}, se requiere PL {}
+Safety function {} has no subsystems	Sicherheitsfunktion {} hat keine Teilsysteme	La fonction de sécurité {} n'a pas de sous-systèmes	La función de seguridad {} no tiene subsistemas
+not reached	nicht erreicht	non atteint	no alcanzado
+Short circuit and disconnection	Kurzschluss und Abschaltung	Court-circuit et coupure	Cortocircuito y desconexión
+Selectivity	Selektivität	Sélectivité	Selectividad
+Load calculation	Lastberechnung	Bilan de puissance	Cálculo de cargas
+Power supply load budget	Lastbilanz der Netzgeräte	Bilan de charge des alimentations	Balance de carga de las fuentes de alimentación
+Safety functions (ISO 13849-1)	Sicherheitsfunktionen (ISO 13849-1)	Fonctions de sécurité (ISO 13849-1)	Funciones de seguridad (ISO 13849-1)
+Rule set verification	Prüfung gegen Regelwerke	Vérification des règles	Verificación de reglas
+OK	OK	OK	OK
+Not OK	Nicht OK	Non conforme	No conforme
+Characteristic	Charakteristik	Caractéristique	Característica
+Rated current (A)	Bemessungsstrom (A)	Courant assigné (A)	Corriente asignada (A)
+Breaking capacity (kA)	Schaltvermögen (kA)	Pouvoir de coupure (kA)	Poder de corte (kA)
+Ik max (kA)	Ik max (kA)	Ik max (kA)	Ik máx (kA)
+Ik1 min (A)	Ik1 min (A)	Ik1 min (A)	Ik1 mín (A)
+Disconnection (s)	Abschaltung (s)	Coupure (s)	Desconexión (s)
+Permitted (s)	Zulässig (s)	Admissible (s)	Admisible (s)
+Result	Ergebnis	Résultat	Resultado
+RCD {} mA	RCD {} mA	DDR {} mA	DDR {} mA
+Upstream	Vorgeschaltet	Amont	Aguas arriba
+Downstream	Nachgeschaltet	Aval	Aguas abajo
+Selective up to (A)	Selektiv bis (A)	Sélectif jusqu'à (A)	Selectivo hasta (A)
+Ik max (A)	Ik max (A)	Ik max (A)	Ik máx (A)
+Partial	Teilweise	Partielle	Parcial
+Protective device	Schutzorgan	Appareil de protection	Dispositivo de protección
+Phases	Phasen	Phases	Fases
+Power (kW)	Leistung (kW)	Puissance (kW)	Potencia (kW)
+Apparent power (kVA)	Scheinleistung (kVA)	Puissance apparente (kVA)	Potencia aparente (kVA)
+Loads behind it: {}	Nachgeschaltete Verbraucher: {}	Charges en aval : {}	Cargas aguas abajo: {}
+Installed	Installiert	Installée	Instalada
+Demand (diversity factor {})	Bedarf (Gleichzeitigkeitsfaktor {})	Demande (facteur de simultanéité {})	Demanda (factor de simultaneidad {})
+Phase {}	Phase {}	Phase {}	Fase {}
+Unbalance {} %	Unsymmetrie {} %	Déséquilibre {} %	Desequilibrio {} %
+Utilisation (%)	Auslastung (%)	Utilisation (%)	Utilización (%)
+Safety function	Sicherheitsfunktion	Fonction de sécurité	Función de seguridad
+Subsystem	Teilsystem	Sous-système	Subsistema
+DCavg (%)	DCavg (%)	DCavg (%)	DCavg (%)
+MTTFd (years)	MTTFd (Jahre)	MTTFd (ans)	MTTFd (años)
+PL	PL	PL	PL
+Required	Gefordert	Requis	Requerido
+Rule set	Regelwerk	Jeu de règles	Conjunto de reglas
+Rule	Regel	Règle	Regla
+Checked	Geprüft	Vérifiés	Comprobados
+Violations	Verstöße	Violations	Infracciones
+Supply (voltage, earthing system, short-circuit currents) and installation conditions of the conductors; changes the given values	Einspeisung (Spannung, Netzform, Kurzschlussströme) und Verlegebedingungen der Leiter; ändert die angegebenen Werte	Alimentation (tension, schéma de liaison à la terre, courants de court-circuit) et conditions de pose des conducteurs ; modifie les valeurs indiquées	Alimentación (tensión, esquema de conexión a tierra, corrientes de cortocircuito) y condiciones de instalación de los conductores; cambia los valores indicados
+Line-to-line voltage in V	Spannung zwischen den Außenleitern in V	Tension entre phases en V	Tensión entre fases en V
+Frequency in Hz	Frequenz in Hz	Fréquence en Hz	Frecuencia en Hz
+tn_s, tn_c, tn_c_s, tt or it	tn_s, tn_c, tn_c_s, tt oder it	tn_s, tn_c, tn_c_s, tt ou it	tn_s, tn_c, tn_c_s, tt o it
+Highest three-phase short-circuit current at the supply in kA	Größter dreipoliger Kurzschlussstrom an der Einspeisung in kA	Courant de court-circuit triphasé maximal à l'alimentation en kA	Corriente de cortocircuito trifásica máxima en la alimentación en kA
+Lowest line-to-earth fault current at the supply in kA (0: from ik_max)	Kleinster Fehlerstrom Außenleiter–Erde an der Einspeisung in kA (0: aus ik_max)	Courant de défaut phase-terre minimal à l'alimentation en kA (0 : à partir de ik_max)	Corriente de defecto fase-tierra mínima en la alimentación en kA (0: a partir de ik_max)
+Rated current of the supply in A (0: not limited)	Bemessungsstrom der Einspeisung in A (0: unbegrenzt)	Courant assigné de l'alimentation en A (0 : non limité)	Corriente asignada de la alimentación en A (0: sin límite)
+Ambient temperature of the conductors in °C	Umgebungstemperatur der Leiter in °C	Température ambiante des conducteurs en °C	Temperatura ambiente de los conductores en °C
+Loaded circuits bunched together	Gehäufte belastete Stromkreise	Circuits chargés groupés	Circuitos cargados agrupados
+copper or aluminium	copper oder aluminium	copper ou aluminium	copper o aluminium
+pvc or xlpe	pvc oder xlpe	pvc ou xlpe	pvc o xlpe
+Diversity factor of the loads (0: IEC 61439-1, table 101)	Gleichzeitigkeitsfaktor der Verbraucher (0: IEC 61439-1, Tabelle 101)	Facteur de simultanéité des charges (0 : IEC 61439-1, tableau 101)	Factor de simultaneidad de las cargas (0: IEC 61439-1, tabla 101)
+Short-circuit currents, breaking capacities, disconnection times, short-circuit withstand of the cables and selectivity of the protective devices	Kurzschlussströme, Schaltvermögen, Abschaltzeiten, Kurzschlussfestigkeit der Leitungen und Selektivität der Schutzorgane	Courants de court-circuit, pouvoirs de coupure, temps de coupure, tenue au court-circuit des câbles et sélectivité des appareils de protection	Corrientes de cortocircuito, poderes de corte, tiempos de desconexión, resistencia al cortocircuito de los cables y selectividad de los dispositivos de protección
+Loads of the mains, load of each protective device, demand with the diversity factor, phase balance and power supply budgets	Verbraucher des Netzes, Last jedes Schutzorgans, Bedarf mit Gleichzeitigkeitsfaktor, Phasensymmetrie und Lastbilanz der Netzgeräte	Charges du réseau, charge de chaque appareil de protection, demande avec facteur de simultanéité, équilibre des phases et bilans des alimentations	Cargas de la red, carga de cada dispositivo de protección, demanda con factor de simultaneidad, equilibrio de fases y balances de las fuentes de alimentación
+EMC classes of the cables (drive output, analogue, power, signal, shield) and the EMC problems	EMV-Klassen der Leitungen (Umrichterausgang, analog, Leistung, Signal, Schirm) und die EMV-Probleme	Classes CEM des câbles (sortie variateur, analogique, puissance, signal, blindage) et problèmes CEM	Clases CEM de los cables (salida de convertidor, analógico, potencia, señal, pantalla) y problemas CEM
+Safety functions (ISO 13849-1) with the performance level reached; adds, replaces or removes one	Sicherheitsfunktionen (ISO 13849-1) mit dem erreichten Performance Level; fügt eine hinzu, ersetzt oder entfernt sie	Fonctions de sécurité (ISO 13849-1) avec le niveau de performance atteint ; en ajoute, remplace ou supprime une	Funciones de seguridad (ISO 13849-1) con el nivel de prestaciones alcanzado; añade, sustituye o elimina una
+Safety function to add or replace (by name): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Hinzuzufügende oder zu ersetzende Sicherheitsfunktion (nach Name): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Fonction de sécurité à ajouter ou remplacer (par nom) : {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Función de seguridad a añadir o sustituir (por nombre): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}
+Name of the safety function to remove	Name der zu entfernenden Sicherheitsfunktion	Nom de la fonction de sécurité à supprimer	Nombre de la función de seguridad a eliminar
+Rule libraries of standards and customer rule sets with the limits in effect; enables, disables, adds or removes them	Regelbibliotheken von Normen und Kundenregelwerke mit den geltenden Grenzwerten; aktiviert, deaktiviert, fügt hinzu oder entfernt sie	Bibliothèques de règles des normes et jeux de règles client avec les limites en vigueur ; les active, désactive, ajoute ou supprime	Bibliotecas de reglas de normas y conjuntos de reglas de cliente con los límites vigentes; los activa, desactiva, añade o elimina
+Library id or customer rule set name to verify against	Bibliotheks-ID oder Name des Kundenregelwerks, gegen das geprüft wird	Identifiant de bibliothèque ou nom du jeu de règles client à vérifier	Identificador de biblioteca o nombre del conjunto de reglas de cliente a verificar
+Library id or customer rule set name to no longer verify against	Bibliotheks-ID oder Name des Kundenregelwerks, gegen das nicht mehr geprüft wird	Identifiant de bibliothèque ou nom du jeu de règles client à ne plus vérifier	Identificador de biblioteca o nombre del conjunto de reglas de cliente que ya no se verifica
+Customer rule set to add or replace (by name), as exported	Hinzuzufügendes oder zu ersetzendes Kundenregelwerk (nach Name), wie exportiert	Jeu de règles client à ajouter ou remplacer (par nom), tel qu'exporté	Conjunto de reglas de cliente a añadir o sustituir (por nombre), tal como se exportó
+Name of the customer rule set to remove	Name des zu entfernenden Kundenregelwerks	Nom du jeu de règles client à supprimer	Nombre del conjunto de reglas de cliente a eliminar
+Verifies the project against the enabled rule libraries and customer rule sets	Prüft das Projekt gegen die aktivierten Regelbibliotheken und Kundenregelwerke	Vérifie le projet par rapport aux bibliothèques de règles et jeux de règles client activés	Verifica el proyecto frente a las bibliotecas de reglas y conjuntos de reglas de cliente activados
+Unknown earthing system: {}	Unbekannte Netzform: {}	Schéma de liaison à la terre inconnu : {}	Esquema de conexión a tierra desconocido: {}
+Unknown insulation: {}	Unbekannte Isolierung: {}	Isolant inconnu : {}	Aislamiento desconocido: {}
+Not a valid safety function: {}	Keine gültige Sicherheitsfunktion: {}	Fonction de sécurité non valide : {}	Función de seguridad no válida: {}
+No safety function {}	Keine Sicherheitsfunktion {}	Pas de fonction de sécurité {}	No hay función de seguridad {}
+No rule library or rule set {}	Keine Regelbibliothek und kein Regelwerk {}	Pas de bibliothèque ni de jeu de règles {}	No hay biblioteca ni conjunto de reglas {}
+Nothing to show.	Nichts anzuzeigen.	Rien à afficher.	Nada que mostrar.
+Field; tech:<name> for tech data of parts, prop:<name> for project properties	Feld; tech:<Name> für technische Daten von Artikeln, prop:<Name> für Projekteigenschaften	Champ ; tech:<nom> pour les données techniques des articles, prop:<nom> pour les propriétés du projet	Campo; tech:<nombre> para datos técnicos de artículos, prop:<nombre> para propiedades del proyecto
+Electrical calculations and verification	Elektrische Berechnungen und Prüfung	Calculs électriques et vérification	Cálculos eléctricos y verificación
+Supply and conditions	Einspeisung und Bedingungen	Alimentation et conditions	Alimentación y condiciones
+Short circuit and selectivity	Kurzschluss und Selektivität	Court-circuit et sélectivité	Cortocircuito y selectividad
+Loads	Verbraucher	Charges	Cargas
+Functional safety	Funktionale Sicherheit	Sécurité fonctionnelle	Seguridad funcional
+Rule sets and verification	Regelwerke und Prüfung	Jeux de règles et vérification	Conjuntos de reglas y verificación
+Voltage (line to line)	Spannung (Außenleiter)	Tension (entre phases)	Tensión (entre fases)
+Frequency	Frequenz	Fréquence	Frecuencia
+Earthing system	Netzform	Schéma de liaison à la terre	Esquema de conexión a tierra
+Highest short-circuit current	Größter Kurzschlussstrom	Courant de court-circuit maximal	Corriente de cortocircuito máxima
+Three-phase short-circuit current at the supply point	Dreipoliger Kurzschlussstrom am Einspeisepunkt	Courant de court-circuit triphasé au point d'alimentation	Corriente de cortocircuito trifásica en el punto de alimentación
+Lowest fault current	Kleinster Fehlerstrom	Courant de défaut minimal	Corriente de defecto mínima
+Line to PE at the supply point; 0 = from the highest short-circuit current	Außenleiter gegen PE am Einspeisepunkt; 0 = aus dem größten Kurzschlussstrom	Phase-PE au point d'alimentation ; 0 = à partir du courant de court-circuit maximal	Fase-PE en el punto de alimentación; 0 = a partir de la corriente de cortocircuito máxima
+Rated current of the supply	Bemessungsstrom der Einspeisung	Courant assigné de l'alimentation	Corriente asignada de la alimentación
+Installation conditions of the conductors	Verlegebedingungen der Leiter	Conditions de pose des conducteurs	Condiciones de instalación de los conductores
+Conductor material	Leiterwerkstoff	Matériau du conducteur	Material del conductor
+Insulation	Isolierung	Isolant	Aislamiento
+Diversity factor	Gleichzeitigkeitsfaktor	Facteur de simultanéité	Factor de simultaneidad
+0 = rated diversity factor of IEC 61439-1, table 101	0 = Bemessungsbelastungsfaktor nach IEC 61439-1, Tabelle 101	0 = facteur de diversité assigné de l'IEC 61439-1, tableau 101	0 = factor de diversidad asignado de IEC 61439-1, tabla 101
+Current-carrying capacity: {} × IEC 60204-1, table 6	Strombelastbarkeit: {} × IEC 60204-1, Tabelle 6	Courant admissible : {} × IEC 60204-1, tableau 6	Intensidad admisible: {} × IEC 60204-1, tabla 6
+Limits in effect	Geltende Grenzwerte	Limites en vigueur	Límites vigentes
+yes	ja	oui	sí
+no	nein	non	no
+Voltage drop	Spannungsfall	Chute de tension	Caída de tensión
+Disconnection of final circuits	Abschaltung von Endstromkreisen	Coupure des circuits terminaux	Desconexión de circuitos finales
+Disconnection of distribution circuits	Abschaltung von Verteilerstromkreisen	Coupure des circuits de distribution	Desconexión de circuitos de distribución
+Smallest cross-section of power circuits	Kleinster Querschnitt von Hauptstromkreisen	Section minimale des circuits de puissance	Sección mínima de los circuitos de potencia
+Smallest cross-section of control circuits	Kleinster Querschnitt von Steuerstromkreisen	Section minimale des circuits de commande	Sección mínima de los circuitos de mando
+Load reserve	Lastreserve	Réserve de charge	Reserva de carga
+Highest phase unbalance	Größte Phasenunsymmetrie	Déséquilibre des phases maximal	Desequilibrio de fases máximo
+Total selectivity	Vollselektivität	Sélectivité totale	Selectividad total
+Shielded drive cables	Geschirmte Antriebsleitungen	Câbles de variateur blindés	Cables de accionamiento apantallados
+Shielded analogue cables	Geschirmte Analogleitungen	Câbles analogiques blindés	Cables analógicos apantallados
+Surge protection	Überspannungsschutz	Protection contre les surtensions	Protección contra sobretensiones
+Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Schaltvermögen gegen den Kurzschlussstrom an jedem Schutzorgan des Netzes, Abschaltung beim kleinsten Fehlerstrom am Ende seines Stromkreises, Kurzschlussfestigkeit der Leitungen und Selektivität zum vorgeschalteten Schutzorgan.	Pouvoir de coupure face au courant de court-circuit à chaque appareil de protection du réseau, coupure au courant de défaut minimal en bout de circuit, tenue au court-circuit des câbles et sélectivité avec l'appareil amont.	Poder de corte frente a la corriente de cortocircuito en cada dispositivo de protección de la red, desconexión con la corriente de defecto mínima al final de su circuito, resistencia al cortocircuito de los cables y selectividad con el dispositivo aguas arriba.
+📊 Report	📊 Bericht	📊 Rapport	📊 Informe
+Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Leistung und Strom der Verbraucher des Netzes (Motoren, Antriebe, Heizungen, Netzgeräte, Transformatoren), die Last jedes Schutzorgans, der Bedarf mit Gleichzeitigkeitsfaktor und die Lastbilanz der Netzgeräte.	Puissance et courant des charges du réseau (moteurs, variateurs, chauffages, alimentations, transformateurs), charge de chaque appareil de protection, demande avec facteur de simultanéité et bilan de charge des alimentations.	Potencia y corriente de las cargas de la red (motores, accionamientos, calefactores, fuentes de alimentación, transformadores), carga de cada dispositivo de protección, demanda con factor de simultaneidad y balance de carga de las fuentes de alimentación.
+Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Sicherheitsfunktionen nach ISO 13849-1: jedes Teilsystem (Eingang, Logik, Ausgang) mit den Betriebsmitteln eines Kanals, seiner Kategorie, dem Diagnosedeckungsgrad und den Schaltspielen pro Jahr. Betriebsmittel zählen mit PL / PFHd, MTTFd oder B10d ihrer Artikel.	Fonctions de sécurité de l'ISO 13849-1 : chaque sous-système (entrée, logique, sortie) avec les appareils d'un canal, sa catégorie, sa couverture de diagnostic et ses manœuvres par an. Les appareils comptent avec le PL / PFHd, le MTTFd ou le B10d de leurs articles.	Funciones de seguridad de ISO 13849-1: cada subsistema (entrada, lógica, salida) con los equipos de un canal, su categoría, cobertura de diagnóstico y maniobras por año. Los equipos cuentan con el PL / PFHd, MTTFd o B10d de sus artículos.
+➕ Safety function	➕ Sicherheitsfunktion	➕ Fonction de sécurité	➕ Función de seguridad
+Input	Eingang	Entrée	Entrada
+Logic	Logik	Logique	Lógica
+Output	Ausgang	Sortie	Salida
+reached: PL {}	erreicht: PL {}	atteint : PL {}	alcanzado: PL {}
+Operations / year	Schaltspiele / Jahr	Manœuvres / an	Maniobras / año
+CCF	CCF	CCF	CCF
+0 = from the devices	0 = aus den Betriebsmitteln	0 = à partir des appareils	0 = a partir de los equipos
+Measures against common cause failure (at least 65 points)	Maßnahmen gegen Ausfälle gemeinsamer Ursache (mindestens 65 Punkte)	Mesures contre les défaillances de cause commune (au moins 65 points)	Medidas contra fallos de causa común (al menos 65 puntos)
+➕ Subsystem	➕ Teilsystem	➕ Sous-système	➕ Subsistema
+Subsystem {}	Teilsystem {}	Sous-système {}	Subsistema {}
+Rule libraries	Regelbibliotheken	Bibliothèques de règles	Bibliotecas de reglas
+Customer rule sets	Kundenregelwerke	Jeux de règles client	Conjuntos de reglas de cliente
+➕ Rule set	➕ Regelwerk	➕ Jeu de règles	➕ Conjunto de reglas
+Rule set {}	Regelwerk {}	Jeu de règles {}	Conjunto de reglas {}
+💾 Export…	💾 Exportieren…	💾 Exporter…	💾 Exportar…
+OpenECraft rule sets	OpenECraft-Regelwerke	Jeux de règles OpenECraft	Conjuntos de reglas de OpenECraft
+Verify the project against it	Projekt dagegen prüfen	Vérifier le projet par rapport à celui-ci	Verificar el proyecto frente a él
+{} checks	{} Prüfungen	{} vérifications	{} comprobaciones
+Imported {} rule sets	{} Regelwerke importiert	{} jeux de règles importés	{} conjuntos de reglas importados
+Customer, plant or standard	Kunde, Werk oder Norm	Client, usine ou norme	Cliente, planta o norma
+Limits	Grenzwerte	Limites	Límites
+Checks	Prüfungen	Vérifications	Comprobaciones
+Every item of the scope that meets the conditions must meet the requirement.	Jedes Element des Bereichs, das die Bedingungen erfüllt, muss die Anforderung erfüllen.	Chaque élément de la portée qui remplit les conditions doit remplir l'exigence.	Cada elemento del ámbito que cumple las condiciones debe cumplir el requisito.
+Message	Meldung	Message	Mensaje
+if	wenn	si	si
+then	dann	alors	entonces
+➕ Condition	➕ Bedingung	➕ Condition	➕ Condición
+➕ Check	➕ Prüfung	➕ Vérification	➕ Comprobación
+OpenECraft rule sets (JSON)	OpenECraft-Regelwerke (JSON)	Jeux de règles OpenECraft (JSON)	Conjuntos de reglas de OpenECraft (JSON)
+Electrical calculations…	Elektrische Berechnungen…	Calculs électriques…	Cálculos eléctricos…
+Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Kurzschluss, Selektivität, Lasten, EMV, funktionale Sicherheit und Prüfung gegen Regelwerke	Court-circuit, sélectivité, charges, CEM, sécurité fonctionnelle et vérification par rapport aux jeux de règles	Cortocircuito, selectividad, cargas, CEM, seguridad funcional y verificación frente a conjuntos de reglas

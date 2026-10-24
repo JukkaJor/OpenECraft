@@ -128,7 +128,7 @@ fn electrical_sizing(s: &mut Session, _: &Args) -> Result<Value, String> {
             })
         })
         .collect();
-    Ok(json!({ "too_thin": overloads, "cables": cables, "voltage_drop_limit_percent": sizing::VOLTAGE_DROP_LIMIT }))
+    Ok(json!({ "too_thin": overloads, "cables": cables, "voltage_drop_limit_percent": openecraft_core::rules::limits(prj).voltage_drop }))
 }
 
 #[cfg(test)]

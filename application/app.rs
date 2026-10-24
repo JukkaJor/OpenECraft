@@ -26,6 +26,7 @@ mod harness_ui;
 mod languages_ui;
 mod config_ui;
 mod drawing_ui;
+mod electrical_ui;
 mod plc_ui;
 mod plugs_ui;
 mod tables_ui;
@@ -104,6 +105,7 @@ pub struct App {
     plugs_ui: plugs_ui::PlugsUi,
     plc_ui: plc_ui::PlcUi,
     process_ui: process_ui::ProcessUi,
+    electrical_ui: electrical_ui::ElectricalUi,
     languages_ui: languages_ui::LanguagesUi,
     tables_ui: tables_ui::TablesUi,
     config_ui: config_ui::ConfigUi,
@@ -195,6 +197,7 @@ impl App {
             plugs_ui: Default::default(),
             plc_ui: Default::default(),
             process_ui: Default::default(),
+            electrical_ui: Default::default(),
             languages_ui: Default::default(),
             tables_ui: Default::default(),
             config_ui: Default::default(),
@@ -379,6 +382,10 @@ impl App {
             }
             if loaded.purpose == Purpose::Document {
                 self.load_document(ctx, &loaded);
+                return;
+            }
+            if loaded.purpose == Purpose::RuleSets {
+                self.import_rule_sets(ctx, &loaded.text());
                 return;
             }
             if loaded.purpose == Purpose::PageTemplates {
@@ -761,6 +768,9 @@ impl App {
                 }
                 if ui.button(tr("Potentials…")).clicked() {
                     self.eng.show_potentials = true;
+                }
+                if ui.button(tr("Electrical calculations…")).on_hover_text(tr("Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets")).clicked() {
+                    self.electrical_ui.open = true;
                 }
                 if ui.button(tr("Wire numbering…")).clicked() {
                     self.show_numbering = true;
@@ -1849,6 +1859,7 @@ impl App {
         self.plugs_window(ctx);
         self.plc_hw_window(ctx);
         self.process_window(ctx);
+        self.electrical_window(ctx);
         self.languages_window(ctx);
         self.structure_window(ctx);
         self.save_template_window(ctx);

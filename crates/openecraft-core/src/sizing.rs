@@ -1,7 +1,8 @@
 //! Electrical sizing: current-carrying capacity of the wires behind protective
-//! devices (IEC 60204-1, table 6, installation method B2, copper, PVC, 40 °C) and the
-//! voltage drop of cables to their loads. Rated currents come from the parts
-//! (`Current` field, e.g. "16 A" or the setting range "2.5 - 4 A").
+//! devices (IEC 60204-1, table 6, installation method B2, copper, PVC, 40 °C,
+//! corrected for the installation conditions of the project) and the voltage drop of
+//! cables to their loads. Rated currents come from the parts (`Current` field, e.g.
+//! "16 A" or the setting range "2.5 - 4 A").
 
 use openecraft_i18n::tr_fmt;
 use crate::model::*;
@@ -13,13 +14,25 @@ use crate::symbols::{self, ContactKind, Func};
 use std::collections::{BTreeSet, HashSet};
 
 /// Current-carrying capacity (A) per cross-section (mm²), IEC 60204-1 table 6, B2.
-const AMPACITY: [(f32, f32); 10] = [(0.75, 7.6), (1.0, 10.4), (1.5, 13.5), (2.5, 18.3), (4.0, 25.0), (6.0, 32.0), (10.0, 44.0), (16.0, 60.0), (25.0, 77.0), (35.0, 97.0)];
+const AMPACITY: [(f32, f32); 14] = [
+    (0.75, 7.6),
+    (1.0, 10.4),
+    (1.5, 13.5),
+    (2.5, 18.3),
+    (4.0, 25.0),
+    (6.0, 32.0),
+    (10.0, 44.0),
+    (16.0, 60.0),
+    (25.0, 77.0),
+    (35.0, 97.0),
+    (50.0, 117.0),
+    (70.0, 149.0),
+    (95.0, 180.0),
+    (120.0, 208.0),
+];
 
 /// Highest voltage drop from the supply to a load (IEC 60204-1, 13.5): 5 %.
 pub const VOLTAGE_DROP_LIMIT: f32 = 5.0;
-
-/// Resistivity of copper at operating temperature (Ω·mm²/m).
-const RHO_CU: f32 = 0.0225;
 
 /// Current-carrying capacity of a copper cross-section; `None` above the table.
 /// Smaller sections than the table are scaled down from 0.75 mm².
@@ -31,6 +44,11 @@ pub fn ampacity(mm2: f32) -> Option<f32> {
         return Some(AMPACITY[0].1 * mm2 / AMPACITY[0].0);
     }
     AMPACITY.iter().rev().find(|(cs, _)| mm2 >= *cs - 0.001).filter(|_| mm2 <= AMPACITY[AMPACITY.len() - 1].0 + 0.001).map(|x| x.1)
+}
+
+/// Current-carrying capacity under the installation conditions of the project.
+pub fn capacity(prj: &Project, mm2: f32) -> Option<f32> {
+    ampacity(mm2).map(|i| i * prj.electrical.conditions.factor())
 }
 
 /// Rated current from a current text: the largest value given in A ("2.5 - 4 A" → 4,
@@ -72,23 +90,23 @@ pub fn parse_voltage(text: &str) -> Option<f32> {
     num.replace(',', ".").parse().ok()
 }
 
-fn part<'a>(prj: &'a Project, number: &str) -> Option<&'a Part> {
+pub(crate) fn part<'a>(prj: &'a Project, number: &str) -> Option<&'a Part> {
     prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == number)
 }
 
-fn device_parts<'a>(prj: &'a Project, tag: &str) -> Vec<&'a Part> {
+pub(crate) fn device_parts<'a>(prj: &'a Project, tag: &str) -> Vec<&'a Part> {
     prj.devices.get(tag).map(|d| d.parts.iter().filter_map(|r| part(prj, &r.number)).collect()).unwrap_or_default()
 }
 
-const PROTECTIVE: [FnKind; 7] =
+pub(crate) const PROTECTIVE: [FnKind; 7] =
     [FnKind::Breaker1, FnKind::Breaker2, FnKind::Breaker3, FnKind::Breaker4, FnKind::MotorProtection, FnKind::Fuse, FnKind::Fuse3];
 
-fn is_protective(key: &str) -> bool {
+pub(crate) fn is_protective(key: &str) -> bool {
     kind_of_symbol(key).is_some_and(|k| PROTECTIVE.contains(&k))
 }
 
 /// The current passes through these from one designation to the next (1 → 2).
-fn passes_current(s: &SymbolInst) -> bool {
+pub(crate) fn passes_current(s: &SymbolInst) -> bool {
     matches!(
         kind_of_symbol(&s.sym),
         Some(FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact | FnKind::Overload | FnKind::Disconnector3 | FnKind::ResidualCurrent)
@@ -106,7 +124,7 @@ pub fn protective_current(prj: &Project, tag: &str) -> Option<f32> {
         .reduce(f32::max)
 }
 
-fn designation_number(s: &SymbolInst, pin: usize) -> Option<u32> {
+pub(crate) fn designation_number(s: &SymbolInst, pin: usize) -> Option<u32> {
     s.pins.get(pin)?.trim().parse().ok()
 }
 
@@ -176,7 +194,7 @@ pub fn overloads(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Overload> {
                         continue;
                     }
                     let cs = cross_section_of(prj, nl, &open.nets[on]);
-                    let Some(iz) = crate::production::cross_section_mm2(&cs).and_then(ampacity) else { continue };
+                    let Some(iz) = crate::production::cross_section_mm2(&cs).and_then(|a| capacity(prj, a)) else { continue };
                     if iz + 0.01 < rated {
                         out.push(Overload { device: s.tag.clone(), rated, cross_section: cs, ampacity: iz, target: (*wp, *wid) });
                     }
@@ -236,7 +254,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
         let current = load.as_ref().map(|l| l.1);
         let drop = match (current, voltage, mm2) {
             (Some(i), Some(u), Some(a)) if cable.length > 0.0 && u > 0.0 => {
-                let du = if three_phase { 3f32.sqrt() } else { 2.0 } * i * cable.length * RHO_CU / a;
+                let du = if three_phase { 3f32.sqrt() } else { 2.0 } * i * cable.length * prj.electrical.conditions.rho_hot() / a;
                 Some((du, du / u * 100.0))
             }
             _ => None,
@@ -250,7 +268,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
             voltage,
             three_phase,
             drop,
-            ampacity: mm2.and_then(ampacity),
+            ampacity: mm2.and_then(|a| capacity(prj, a)),
         });
     }
     out
@@ -258,6 +276,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
 
 /// Check messages: wires and cables too thin (errors), voltage drops above the limit.
 pub fn problems(prj: &Project, nl: &Netlist, open: &Netlist, conns: &[Connection]) -> Vec<Issue> {
+    let limits = crate::rules::limits(prj);
     let mut v = Vec::new();
     let mut issue = |error: bool, message: String, target| v.push(Issue { severity: if error { Severity::Error } else { Severity::Warning }, message, target });
     for o in overloads(prj, nl, open) {
@@ -276,8 +295,8 @@ pub fn problems(prj: &Project, nl: &Netlist, open: &Netlist, conns: &[Connection
                 issue(true, tr_fmt!("{}: {} carries {} A, the load {} needs {} A", d.cable, d.cross_section, format!("{iz:.1}"), d.load, format!("{i}")), None);
             }
         }
-        if let Some((du, pct)) = d.drop.filter(|x| x.1 > VOLTAGE_DROP_LIMIT) {
-            issue(false, tr_fmt!("{}: voltage drop {} V ({} %) above {} %", d.cable, format!("{du:.1}"), format!("{pct:.1}"), VOLTAGE_DROP_LIMIT), None);
+        if let Some((du, pct)) = d.drop.filter(|x| x.1 > limits.voltage_drop) {
+            issue(false, tr_fmt!("{}: voltage drop {} V ({} %) above {} %", d.cable, format!("{du:.1}"), format!("{pct:.1}"), limits.voltage_drop), None);
         }
     }
     v

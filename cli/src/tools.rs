@@ -7,6 +7,7 @@ mod common;
 mod config;
 mod devices;
 mod drawing;
+mod electrical;
 mod engineering;
 mod languages;
 mod output;
@@ -70,7 +71,7 @@ pub const fn optional(name: &'static str, kind: Kind, help: &'static str) -> Par
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, pages::TOOLS, sheets::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, plc::TOOLS, potentials::TOOLS, process::TOOLS, tables::TOOLS, engineering::TOOLS, panel::TOOLS, routing::TOOLS, wiring::TOOLS, languages::TOOLS, structure::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS].into_iter().flatten()
+    [project::TOOLS, pages::TOOLS, sheets::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, plc::TOOLS, potentials::TOOLS, process::TOOLS, tables::TOOLS, engineering::TOOLS, electrical::TOOLS, panel::TOOLS, routing::TOOLS, wiring::TOOLS, languages::TOOLS, structure::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

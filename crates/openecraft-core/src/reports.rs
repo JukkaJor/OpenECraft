@@ -9,6 +9,7 @@ use crate::symbols::{self, Func};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 mod diagrams;
+mod electrical_reports;
 mod fluid_reports;
 
 #[derive(Clone, Debug, Default)]
@@ -133,6 +134,12 @@ impl Analysis {
                 ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, &idx),
                 ReportKind::RoutingList => routing_list(prj, &routing),
                 ReportKind::BundleList => bundle_list(&routing),
+                ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, &netlist, &conns),
+                ReportKind::Selectivity => electrical_reports::selectivity(prj, &netlist, &conns),
+                ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, &netlist),
+                ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, &netlist),
+                ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
+                ReportKind::Verification => electrical_reports::verification(prj, &conns),
             };
             reports.insert(k, t);
         }
@@ -148,6 +155,11 @@ impl Analysis {
         issues.extend(crate::conndef::problems(prj, &open));
         issues.extend(crate::cabledef::problems(prj));
         issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
+        issues.extend(crate::shortcircuit::problems(prj, &netlist, &conns));
+        issues.extend(crate::loads::problems(prj, &netlist));
+        issues.extend(crate::emc::problems(prj, &netlist, &conns));
+        issues.extend(crate::safety::problems(prj));
+        issues.extend(crate::rules::problems(prj, &netlist, &conns));
         issues.extend(check_fluid_and_process(prj, &idx, &open));
         issues.extend(check_wiring_marks(prj, &wiring));
         issues.extend(routing.problems.iter().map(|p| {

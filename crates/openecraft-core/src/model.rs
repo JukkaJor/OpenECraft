@@ -95,6 +95,9 @@ pub struct Project {
     /// Comments, redline / greenline markup, approvals and change requests.
     #[serde(skip_serializing_if = "crate::review::Review::is_empty")]
     pub review: crate::review::Review,
+    /// Supply, installation conditions, safety functions and rule sets.
+    #[serde(skip_serializing_if = "crate::electrical::Electrical::is_default")]
+    pub electrical: crate::electrical::Electrical,
     pub next_id: u64,
 }
 
@@ -132,6 +135,7 @@ impl Default for Project {
             workflow: Default::default(),
             baselines: Vec::new(),
             review: Default::default(),
+            electrical: Default::default(),
             next_id: 1,
         };
         let id = prj.new_id();
@@ -238,10 +242,16 @@ pub enum ReportKind {
     ElectroFluid,
     RoutingList,
     BundleList,
+    ShortCircuit,
+    Selectivity,
+    LoadCalculation,
+    PowerSupplyBudget,
+    SafetyFunctions,
+    Verification,
 }
 
 impl ReportKind {
-    pub const ALL: [ReportKind; 33] = [
+    pub const ALL: [ReportKind; 39] = [
         ReportKind::TableOfContents,
         ReportKind::DeviceList,
         ReportKind::BillOfMaterials,
@@ -275,6 +285,12 @@ impl ReportKind {
         ReportKind::ElectroFluid,
         ReportKind::RoutingList,
         ReportKind::BundleList,
+        ReportKind::ShortCircuit,
+        ReportKind::Selectivity,
+        ReportKind::LoadCalculation,
+        ReportKind::PowerSupplyBudget,
+        ReportKind::SafetyFunctions,
+        ReportKind::Verification,
     ];
 
     pub fn title(self) -> &'static str {
@@ -312,6 +328,12 @@ impl ReportKind {
             ReportKind::ElectroFluid => tr("Electro-fluid cross reference"),
             ReportKind::RoutingList => tr("Routing list (3D)"),
             ReportKind::BundleList => tr("Bundle list"),
+            ReportKind::ShortCircuit => tr("Short circuit and disconnection"),
+            ReportKind::Selectivity => tr("Selectivity"),
+            ReportKind::LoadCalculation => tr("Load calculation"),
+            ReportKind::PowerSupplyBudget => tr("Power supply load budget"),
+            ReportKind::SafetyFunctions => tr("Safety functions (ISO 13849-1)"),
+            ReportKind::Verification => tr("Rule set verification"),
         }
     }
 }
