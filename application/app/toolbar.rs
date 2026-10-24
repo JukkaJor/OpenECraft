@@ -42,6 +42,7 @@ impl App {
             tbtn(ui, Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)"));
             tbtn(ui, Tool::Wire, tr("✏ Wire"), tr("Draw connections (W)"));
             tbtn(ui, Tool::Text, tr("T Text"), tr("Place text (T)"));
+            self.coordinate_field(ui);
             self.drawing_toolbar(ui);
             self.review_tools(ui);
             if let Tool::Place(key) = tool {

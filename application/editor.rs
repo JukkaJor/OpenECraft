@@ -398,6 +398,12 @@ pub struct Editor {
     pub place_rot: u8,
     pub place_mirror: bool,
     pub show_grid: bool,
+    /// Snap and drawing grid in mm (EPLAN grid sizes; connection points are on 4 mm).
+    pub grid: f32,
+    /// A point typed into the coordinate field: used like a click of the current tool.
+    pub typed: Option<P>,
+    /// Last point clicked or typed (relative coordinates `@dx dy`).
+    pub last_point: Option<P>,
     pub show_pins: bool,
     pub place_ctx: PlaceCtx,
     pub fit_pending: bool,
@@ -448,6 +454,9 @@ impl Default for Editor {
             place_rot: 0,
             place_mirror: false,
             show_grid: true,
+            grid: GRID,
+            typed: None,
+            last_point: None,
             show_pins: false,
             place_ctx: PlaceCtx::default(),
             fit_pending: true,
@@ -744,7 +753,7 @@ impl Editor {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
-        let snapped = world.map(|w| w.snap(GRID));
+        let snapped = world.map(|w| w.snap(self.grid));
         self.hover = world;
 
         // ------------------------------------------------------------ keyboard
@@ -771,7 +780,7 @@ impl Editor {
         let page_rect = Rect::from_min_max(self.w2s(rect, p(0.0, 0.0)), self.w2s(rect, p(self.frame.width(), self.frame.height())));
         painter.rect_filled(page_rect.translate(vec2(3.0, 3.0)), 0.0, Color32::from_black_alpha(60));
         painter.rect_filled(page_rect, 0.0, pal.paper);
-        if self.show_grid && editable && self.zoom * GRID >= 7.0 {
+        if self.show_grid && editable && self.zoom * self.grid >= 7.0 {
             self.draw_grid(&painter, rect, &pal);
         }
 
@@ -963,15 +972,16 @@ impl Editor {
     fn draw_grid(&self, painter: &Painter, rect: Rect, pal: &Palette) {
         let tl = self.s2w(rect, rect.min);
         let br = self.s2w(rect, rect.max);
-        let x0 = (tl.x.max(0.0) / GRID).ceil() as i32;
-        let x1 = (br.x.min(self.frame.width()) / GRID).floor() as i32;
-        let y0 = (tl.y.max(0.0) / GRID).ceil() as i32;
-        let y1 = (br.y.min(self.frame.height()) / GRID).floor() as i32;
+        let g = self.grid;
+        let x0 = (tl.x.max(0.0) / g).ceil() as i32;
+        let x1 = (br.x.min(self.frame.width()) / g).floor() as i32;
+        let y0 = (tl.y.max(0.0) / g).ceil() as i32;
+        let y1 = (br.y.min(self.frame.height()) / g).floor() as i32;
         let mut mesh = egui::Mesh::default();
-        let r = if self.zoom * GRID > 20.0 { 1.0 } else { 0.6 };
+        let r = if self.zoom * g > 20.0 { 1.0 } else { 0.6 };
         for gx in x0..=x1 {
             for gy in y0..=y1 {
-                let c = self.w2s(rect, p(gx as f32 * GRID, gy as f32 * GRID));
+                let c = self.w2s(rect, p(gx as f32 * g, gy as f32 * g));
                 mesh.add_colored_rect(Rect::from_center_size(c, vec2(r * 2.0, r * 2.0)), pal.grid);
             }
         }
@@ -980,6 +990,7 @@ impl Editor {
 
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>, out: &mut CanvasOutput) {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
+        let g = self.grid;
         let (esc, enter, r, m, a, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
@@ -993,10 +1004,10 @@ impl Editor {
                 k(Key::F) || k(Key::Home),
                 i.modifiers.command && i.key_pressed(Key::A),
                 [
-                    (i.key_pressed(Key::ArrowLeft), p(-GRID, 0.0)),
-                    (i.key_pressed(Key::ArrowRight), p(GRID, 0.0)),
-                    (i.key_pressed(Key::ArrowUp), p(0.0, -GRID)),
-                    (i.key_pressed(Key::ArrowDown), p(0.0, GRID)),
+                    (i.key_pressed(Key::ArrowLeft), p(-g, 0.0)),
+                    (i.key_pressed(Key::ArrowRight), p(g, 0.0)),
+                    (i.key_pressed(Key::ArrowUp), p(0.0, -g)),
+                    (i.key_pressed(Key::ArrowDown), p(0.0, g)),
                 ],
                 i.events.clone(),
             )
@@ -1163,7 +1174,10 @@ impl Editor {
                 self.set_tool(Tool::Select);
             }
         }
-        let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten();
+        let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten().or_else(|| self.typed.take());
+        if click.is_some() {
+            self.last_point = click;
+        }
         match self.tool.clone() {
             Tool::Select => self.select_mouse(ui, resp, prj, page_i, rect, world, shift, out),
             Tool::Insert => {
@@ -1304,7 +1318,7 @@ impl Editor {
         if resp.dragged_by(PointerButton::Primary) {
             match (&mut self.drag, world) {
                 (Drag::Move { start, applied, attached }, Some(w)) => {
-                    let total = (w - *start).snap(GRID);
+                    let total = (w - *start).snap(self.grid);
                     let delta = total - *applied;
                     if delta.x != 0.0 || delta.y != 0.0 {
                         ops::translate(&mut prj.pages[page_i], &self.selection, attached, delta);

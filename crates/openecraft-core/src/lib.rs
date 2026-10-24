@@ -4,6 +4,7 @@
 #![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 pub mod archive;
+pub mod arrange;
 pub mod climate;
 pub mod collab;
 pub mod compare;

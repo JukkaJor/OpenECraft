@@ -4446,3 +4446,35 @@ No terminal strip {}	Keine Klemmleiste {}	Aucun bornier {}	Ninguna regleta {}
 No terminal {} on strip {}	Keine Klemme {} auf Leiste {}	Aucune borne {} sur le bornier {}	Ningún borne {} en la regleta {}
 Unknown jumper kind: {}	Unbekannte Brückenart: {}	Type de pont inconnu : {}	Tipo de puente desconocido: {}
 Level of a multi-level terminal: upper levels sit on the block of the terminal before	Etage einer Etagenklemme: obere Etagen sitzen auf dem Block der Klemme davor	Étage d'une borne à étages : les étages supérieurs sont sur le bloc de la borne précédente	Piso de un borne de varios pisos: los pisos superiores están en el bloque del borne anterior
+Left edges	Linke Kanten	Bords gauches	Bordes izquierdos
+Horizontal centres	Horizontale Mitten	Centres horizontaux	Centros horizontales
+Right edges	Rechte Kanten	Bords droits	Bordes derechos
+Top edges	Obere Kanten	Bords supérieurs	Bordes superiores
+Vertical centres	Vertikale Mitten	Centres verticaux	Centros verticales
+Bottom edges	Untere Kanten	Bords inférieurs	Bordes inferiores
+x y	x y	x y	x y
+Type a point and press Enter: x y in mm, or @dx dy relative to the last point; it acts like a click of the current tool	Punkt eingeben und Enter drücken: x y in mm oder @dx dy relativ zum letzten Punkt; wirkt wie ein Klick des aktuellen Werkzeugs	Saisir un point puis Entrée : x y en mm, ou @dx dy relatif au dernier point ; agit comme un clic de l'outil courant	Escriba un punto y pulse Intro: x y en mm, o @dx dy relativo al último punto; actúa como un clic de la herramienta actual
+Not a point: type x y or @dx dy	Kein Punkt: x y oder @dx dy eingeben	Pas un point : saisir x y ou @dx dy	No es un punto: escriba x y o @dx dy
+Grid size	Rastergröße	Taille de la grille	Tamaño de rejilla
+mm	mm	mm	mm
+Align	Ausrichten	Aligner	Alinear
+Distribute	Verteilen	Répartir	Distribuir
+Horizontally	Horizontal	Horizontalement	Horizontalmente
+Vertically	Vertikal	Verticalement	Verticalmente
+Move selection by…	Auswahl verschieben um…	Déplacer la sélection de…	Mover la selección…
+Multiple copy…	Mehrfach kopieren…	Copie multiple…	Copia múltiple…
+Move selection by	Auswahl verschieben um	Déplacer la sélection de	Mover la selección
+Horizontal (mm)	Horizontal (mm)	Horizontal (mm)	Horizontal (mm)
+Vertical (mm, downwards)	Vertikal (mm, nach unten)	Vertical (mm, vers le bas)	Vertical (mm, hacia abajo)
+Move	Verschieben	Déplacer	Mover
+Multiple copy	Mehrfach kopieren	Copie multiple	Copia múltiple
+Copies the selection several times; devices get new tags, terminals new numbers.	Kopiert die Auswahl mehrfach; Betriebsmittel erhalten neue Kennzeichen, Klemmen neue Nummern.	Copie la sélection plusieurs fois ; les appareils reçoivent de nouveaux repères, les bornes de nouveaux numéros.	Copia la selección varias veces; los dispositivos reciben nuevas identificaciones, los bornes nuevos números.
+Copies	Kopien	Copies	Copias
+Copy	Kopieren	Copier	Copiar
+{} items copied	{} Elemente kopiert	{} éléments copiés	{} elementos copiados
+Aligns symbols, texts and graphics to a common edge or centre; connected wire ends follow	Richtet Symbole, Texte und Grafik an einer gemeinsamen Kante oder Mitte aus; angeschlossene Verbindungsenden folgen	Aligne symboles, textes et graphiques sur un bord ou un centre commun ; les extrémités de fils raccordées suivent	Alinea símbolos, textos y gráficos a un borde o centro común; los extremos de cables conectados siguen
+left, center, right, top, middle or bottom	left, center, right, top, middle oder bottom	left, center, right, top, middle ou bottom	left, center, right, top, middle o bottom
+Distributes symbols, texts and graphics evenly between the first and the last one	Verteilt Symbole, Texte und Grafik gleichmäßig zwischen dem ersten und dem letzten	Répartit symboles, textes et graphiques régulièrement entre le premier et le dernier	Distribuye símbolos, textos y gráficos uniformemente entre el primero y el último
+Distribute vertically (default horizontally)	Vertikal verteilen (Standard horizontal)	Répartir verticalement (horizontalement par défaut)	Distribuir verticalmente (horizontalmente por defecto)
+Copies items several times at a fixed distance; devices get new tags, terminals new numbers	Kopiert Elemente mehrfach in festem Abstand; Betriebsmittel erhalten neue Kennzeichen, Klemmen neue Nummern	Copie des éléments plusieurs fois à distance fixe ; les appareils reçoivent de nouveaux repères, les bornes de nouveaux numéros	Copia elementos varias veces a una distancia fija; los dispositivos reciben nuevas identificaciones, los bornes nuevos números
+Number of copies (default 1)	Anzahl Kopien (Standard 1)	Nombre de copies (1 par défaut)	Número de copias (1 por defecto)

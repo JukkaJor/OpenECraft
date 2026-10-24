@@ -97,6 +97,8 @@ impl App {
         }
         ui.label(RichText::new(tr("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V")).weak());
         ui.separator();
+        self.arrange_menu_entries(ui);
+        ui.separator();
         self.edit_menu_entries(ui);
         ui.separator();
         if ui.add_enabled(has_sel, egui::Button::new(tr("Save selection as macro…"))).clicked() {
@@ -359,6 +361,7 @@ impl App {
             self.editor.fit_pending = true;
         }
         ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
+        self.grid_menu(ui);
         ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
         ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
         ui.checkbox(&mut self.session.prj.wire_colors, tr("Wire colours"))

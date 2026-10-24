@@ -12,6 +12,7 @@ use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
 use openecraft_core::symbols::{self, Anchor, Func, SymbolRef};
 use openecraft_core::symlib::Symbols;
+use openecraft_core::arrange::{self, Align};
 use openecraft_core::{cabledef, conndef, routing};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -163,6 +164,34 @@ pub static COMMANDS: &[Spec] = &[
             param("dy", Kind::Num, tr_const!("Distance in Y (mm)")),
         ],
         run: move_items,
+    },
+    Spec {
+        name: "align_items",
+        help: tr_const!("Aligns symbols, texts and graphics to a common edge or centre; connected wire ends follow"),
+        params: &[
+            PAGE,
+            param("ids", Kind::Ids, tr_const!("Item ids")),
+            param("align", Kind::Str, tr_const!("left, center, right, top, middle or bottom")),
+        ],
+        run: align_items,
+    },
+    Spec {
+        name: "distribute_items",
+        help: tr_const!("Distributes symbols, texts and graphics evenly between the first and the last one"),
+        params: &[PAGE, param("ids", Kind::Ids, tr_const!("Item ids")), optional("vertical", Kind::Bool, tr_const!("Distribute vertically (default horizontally)"))],
+        run: distribute_items,
+    },
+    Spec {
+        name: "copy_items",
+        help: tr_const!("Copies items several times at a fixed distance; devices get new tags, terminals new numbers"),
+        params: &[
+            PAGE,
+            param("ids", Kind::Ids, tr_const!("Item ids")),
+            optional("count", Kind::Int, tr_const!("Number of copies (default 1)")),
+            param("dx", Kind::Num, tr_const!("Distance in X (mm)")),
+            param("dy", Kind::Num, tr_const!("Distance in Y (mm)")),
+        ],
+        run: copy_items,
     },
     Spec {
         name: "delete_items",
@@ -554,6 +583,32 @@ fn move_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let attached = ops::attached_wire_ends(&symbols, page, &sel);
     ops::translate(page, &sel, &attached, d);
     Ok(json!({ "moved": sel.len(), "dx": d.x, "dy": d.y }))
+}
+
+fn align_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let symbols = prj.symbol_table();
+    let i = editable(prj, a.req("page"))?;
+    let how = Align::from_code(a.req("align")).ok_or_else(|| tr_fmt!("Unknown alignment: {}", a.req("align")))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let n = arrange::align(&symbols, &mut prj.pages[i], &sel, how);
+    Ok(json!({ "moved": n }))
+}
+
+fn distribute_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let symbols = prj.symbol_table();
+    let i = editable(prj, a.req("page"))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let n = arrange::distribute(&symbols, &mut prj.pages[i], &sel, !a.flag("vertical"));
+    Ok(json!({ "moved": n }))
+}
+
+fn copy_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let i = editable(prj, a.req("page"))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let count = a.int("count").unwrap_or(1).clamp(1, 100) as usize;
+    let d = p(a.num("dx").unwrap_or_default(), a.num("dy").unwrap_or_default());
+    let ids = arrange::multiple_copy(prj, i, &sel, count, d);
+    Ok(json!({ "ids": ids }))
 }
 
 fn delete_items(prj: &mut Project, a: &Args) -> Result<Value, String> {

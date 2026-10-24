@@ -317,7 +317,12 @@ built with [egui / eframe](https://github.com/emilk/egui).
   stay unchanged. Renaming a device moves its strip, plug and PLC card data along.
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
-  snapping, pan and zoom.
+  snapping, pan and zoom. Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View); a
+  coordinate field in the tool bar (`x y` absolute or `@dx dy` relative to the last
+  point, Enter acts like a click of the current tool); *Edit › Align* (edges or
+  centres), *Distribute* (evenly, horizontally or vertically), *Move selection by…*
+  and *Multiple copy…* (n copies at a fixed distance, new tags and terminal numbers);
+  attached wire ends follow. Commands: `align_items`, `distribute_items`, `copy_items`.
 - **Texts**: free texts with rotation (0 … 359°, e.g. reading upwards along a terminal
   strip), left / centred / right alignment, a vertical anchor, word wrap at a set
   width, bold / italic / underline, a border and an opaque background, and a hyperlink

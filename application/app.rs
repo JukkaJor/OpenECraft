@@ -22,6 +22,7 @@ use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 use openecraft_api::params::{text, Args};
 use serde_json::Map;
 
+mod arrange_ui;
 mod cables_ui;
 mod check_ui;
 mod files;
@@ -108,6 +109,7 @@ pub struct App {
     show_numbering: bool,
     numbering_ui: numbering_ui::NumberingUi,
     check_ui: check_ui::CheckUi,
+    arrange_ui: arrange_ui::ArrangeUi,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -210,6 +212,7 @@ impl App {
             show_numbering: false,
             numbering_ui: Default::default(),
             check_ui: Default::default(),
+            arrange_ui: Default::default(),
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),
