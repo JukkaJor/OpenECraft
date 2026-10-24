@@ -564,6 +564,7 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     let mut t = Table::with_widths(&[
         (tr_const!("Strip"), 0.8),
         (tr_const!("Terminal"), 0.7),
+        (tr_const!("Level"), 0.4),
         (tr_const!("Jumper"), 0.5),
         (tr_const!("External (top)"), 3.0),
         (tr_const!("Internal (bottom)"), 3.0),
@@ -576,14 +577,17 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
         let mut rows = crate::strips::rows(prj, &strip, nl, open);
         // In the order of the strip on the rail, with its end brackets and end plates.
         for e in crate::strips::strip_layout(prj, &strip) {
-            let accessory = |title: &str| vec![strip.clone(), title.to_string(), String::new(), e.part.clone(), String::new(), String::new(), String::new(), String::new()];
+            let accessory = |title: &str| vec![strip.clone(), title.to_string(), String::new(), String::new(), e.part.clone(), String::new(), String::new(), String::new(), String::new()];
             match &e.kind {
-                ElementKind::Terminal(label) | ElementKind::Spare(label) => {
-                    if let Some(i) = rows.iter().position(|r| &r.label == label) {
+                ElementKind::Terminal(_) | ElementKind::Spare(_) => {
+                    // Every level of a multi-level block, the bottom level first.
+                    for label in e.designations() {
+                        let Some(i) = rows.iter().position(|r| r.label == label) else { continue };
                         let r = rows.remove(i);
                         let target = r.terminal.as_ref().map(|t| (t.page, t.id));
                         let jumper = if r.jumper > 0 { r.jumper.to_string() } else { String::new() };
-                        t.push(vec![strip.clone(), r.label, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
+                        let level = if e.levels.is_empty() { String::new() } else { r.level.to_string() };
+                        t.push(vec![strip.clone(), r.label, level, jumper, r.external, r.internal, r.potential, r.location, r.function_text], target);
                     }
                 }
                 ElementKind::EndBracket => t.push(accessory(tr("End bracket")), None),
@@ -592,7 +596,8 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
         }
         // Jumpers: part, length and the teeth to break off.
         for j in crate::strips::strip_jumpers(prj, &strip) {
-            let row = vec![strip.clone(), tr("Jumper").into(), j.number.to_string(), j.part.clone(), j.length_text(), String::new(), j.broken_text(), j.span_text()];
+            let level = if j.level > 1 { j.level.to_string() } else { String::new() };
+            let row = vec![strip.clone(), crate::strips::jumper_kind_title(j.kind).into(), level, j.number.to_string(), j.part.clone(), j.length_text(), String::new(), j.broken_text(), j.span_text()];
             t.push(row, None);
         }
     }

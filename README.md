@@ -94,6 +94,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
   bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check;
   the terminal strip window shows the strip on the rail with its jumpers and has a
   switch for the automatic accessories.
+  **Multi-level terminals**: a terminal on level 2 or higher sits on the block of the
+  terminal before it (one part per block, tech data `Levels: 2`); the terminal
+  diagram lists every level, the rail layout and the bill of materials count blocks,
+  and the check reports more levels than the part has. **Jumper kinds**: plug-in
+  jumpers (tech data `Jumper`), saddle jumpers (`Saddle jumper`) and wire jumpers (any
+  level, no part); plug-in and saddle jumpers must stay on one level. Commands:
+  `list_strips`, `get_strip`, `set_terminal`, `set_jumper_kind`, `set_strip`,
+  `renumber_strip`.
 - **Plugs** (*Project › Plugs…*, symbol group *Plugs*): pin and socket (mated pair, two
   connection points), male pin and female socket (one each); tag = plug (`-X10`),
   designation = pin. Male and female pins of the same designation are mated: the

@@ -398,6 +398,7 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
             let severity = if j.problem == Some(crate::strips::JumperProblem::NoPart) { Severity::Info } else { Severity::Warning };
             v.push(Issue::plain(severity, message, None));
         }
+        v.extend(crate::strips::level_problems(prj, strip).into_iter().map(|m| Issue::plain(Severity::Warning, m, None)));
     }
     for (addr, points) in crate::plc::duplicate_addresses(prj, nl) {
         let mut cards: Vec<&str> = points.iter().map(|p| p.card.as_str()).collect();

@@ -217,9 +217,9 @@ fn terminal_diagram_shows_accessories_and_jumpers() {
     let an = crate::analysis::Analysis::checked(&prj);
     let rows = &an.report(&prj, ReportKind::TerminalDiagram).unwrap().rows;
     let column: Vec<&str> = rows.iter().map(|r| r[1].as_str()).collect();
-    assert_eq!(column, ["End bracket", "1", "2", "3", "End plate", "PE", "End plate", "End bracket", "Jumper"]);
+    assert_eq!(column, ["End bracket", "1", "2", "3", "End plate", "PE", "End plate", "End bracket", "Plug-in jumper"]);
     let j = rows.last().unwrap();
-    assert_eq!((j[3].as_str(), j[4].as_str(), j[6].as_str(), j[7].as_str()), ("GEN.JMP-2.5-3", "3 poles", "break off at 2", "terminals 1 – 3"));
+    assert_eq!((j[4].as_str(), j[5].as_str(), j[7].as_str(), j[8].as_str()), ("GEN.JMP-2.5-3", "3 poles", "break off at 2", "terminals 1 – 3"));
 }
 
 #[test]
@@ -235,3 +235,84 @@ fn texts_for_lists() {
     assert_eq!(cut.length_text(), "cut from 10 to 2 poles");
 }
 
+
+/// The demo strip with terminal 2 on level 2 of terminal 1's block, 3 on level 1 of the
+/// next block, and the terminal part declared as a double-level terminal.
+fn two_levels(levels: u8) -> Project {
+    let mut prj = demo_project();
+    prj.strips.entry("-X1".into()).or_default().levels.insert("2".into(), 2);
+    let p = prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap();
+    p.tech_data.push_str(&format!("\nLevels: {levels}"));
+    prj
+}
+
+#[test]
+fn multi_level_terminals_share_a_block() {
+    let prj = two_levels(2);
+    let layout = strip_layout(&prj, "-X1");
+    let blocks: Vec<Vec<&str>> = layout.iter().filter(|e| matches!(e.kind, ElementKind::Terminal(_))).map(|e| e.designations()).collect();
+    assert_eq!(blocks, [vec!["1", "2"], vec!["3"], vec!["PE"]]);
+    let first = layout.iter().find(|e| e.kind == ElementKind::Terminal("1".into())).unwrap();
+    assert_eq!((first.at_level(1), first.at_level(2), first.at_level(3)), (Some("1"), Some("2"), None));
+    assert_eq!(level(&prj, "-X1", "2"), 2);
+    assert_eq!(level(&prj, "-X1", "1"), 1);
+    assert!(level_problems(&prj, "-X1").is_empty());
+
+    // One terminal part less in the bill of materials than before.
+    let single = demo_project();
+    let count = |prj: &Project| strip_layout(prj, "-X1").iter().filter(|e| e.part == "GEN.TB-2.5").count();
+    assert_eq!(count(&prj) + 1, count(&single));
+
+    // The terminal diagram lists both levels of the block.
+    let an = crate::analysis::Analysis::checked(&prj);
+    let rows = &an.report(&prj, ReportKind::TerminalDiagram).unwrap().rows;
+    let at = |label: &str| rows.iter().find(|r| r[1] == label).map(|r| r[2].clone()).unwrap();
+    assert_eq!((at("1"), at("2"), at("3")), ("1".to_string(), "2".to_string(), String::new()));
+
+    // A single-level part cannot carry two levels.
+    let wrong = two_levels(1);
+    let problems = level_problems(&wrong, "-X1");
+    assert_eq!(problems, ["-X1: terminal 1 uses 2 levels, its part GEN.TB-2.5 has 1"]);
+    let an = crate::analysis::Analysis::checked(&wrong);
+    assert!(an.issues.iter().any(|i| i.message() == problems[0]));
+
+    // Renumbering keeps the levels with their terminals.
+    let mut prj = two_levels(2);
+    move_terminal(&mut prj, "-X1", 2, true);
+    renumber(&mut prj, "-X1");
+    assert_eq!(prj.strips["-X1"].levels.get("3"), Some(&2));
+}
+
+#[test]
+fn jumper_kinds() {
+    let mut prj = two_levels(2);
+    let data = prj.strips.get_mut("-X1").unwrap();
+    data.jumpers.insert("1".into(), 1);
+    data.jumpers.insert("3".into(), 1);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.kind, j.level), (JumperKind::PlugIn, 1));
+    assert_eq!(j.span, ["1", "3"], "the plug-in jumper bridges level 1 of both blocks");
+    assert_eq!(j.problem, None);
+
+    // Across levels only a wire jumper fits.
+    let data = prj.strips.get_mut("-X1").unwrap();
+    data.jumpers.insert("2".into(), 1);
+    assert_eq!(strip_jumpers(&prj, "-X1")[0].problem, Some(JumperProblem::DifferentLevels));
+    prj.strips.get_mut("-X1").unwrap().jumper_kinds.insert(1, JumperKind::Wire);
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.problem.as_ref(), j.part.as_str(), j.length_text()), (None, "", "2 wires".to_string()));
+    assert!(j.broken.is_empty());
+
+    // Saddle jumpers take the parts of the tech data `Saddle jumper`.
+    let mut prj = demo_project();
+    let data = prj.strips.entry("-X1".into()).or_default();
+    data.jumpers.insert("1".into(), 2);
+    data.jumpers.insert("2".into(), 2);
+    data.jumper_kinds.insert(2, JumperKind::Saddle);
+    assert_eq!(strip_jumpers(&prj, "-X1")[0].problem, Some(JumperProblem::NoPart));
+    let p = prj.parts.iter_mut().find(|p| p.number == "GEN.TB-2.5").unwrap();
+    p.tech_data.push_str("\nSaddle jumper: GEN.JMP-2.5-2");
+    let j = &strip_jumpers(&prj, "-X1")[0];
+    assert_eq!((j.problem.as_ref(), j.part.as_str()), (None, "GEN.JMP-2.5-2"));
+    assert_eq!(jumper_kind_title(JumperKind::Saddle), "Saddle jumper");
+}

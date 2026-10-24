@@ -885,6 +885,25 @@ pub struct StripData {
     /// End brackets and end plates are not placed automatically.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub manual_accessories: bool,
+    /// Terminal designation -> level of a multi-level terminal (missing = 1). A terminal
+    /// on level 2 or higher sits on the block of the terminal before it in strip order.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub levels: BTreeMap<String, u8>,
+    /// Jumper number -> kind of jumper (missing = plug-in jumper).
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub jumper_kinds: BTreeMap<u32, JumperKind>,
+}
+
+/// How the terminals of a jumper are bridged.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum JumperKind {
+    /// Plug-in (centre) jumper, cut to length (tech data `Jumper: …` of the terminal part).
+    #[default]
+    PlugIn,
+    /// Saddle (screw) jumper (tech data `Saddle jumper: …`).
+    Saddle,
+    /// Wire jumper: a wire from terminal to terminal, any level, no jumper part.
+    Wire,
 }
 
 /// PLC card (I/O module) data.

@@ -359,6 +359,7 @@ impl App {
         let rows = strips::rows(&self.session.prj, &strip, &self.session.analysis.netlist, &self.session.analysis.open);
         let layout = strips::strip_layout(&self.session.prj, &strip);
         let jumpers = strips::strip_jumpers(&self.session.prj, &strip);
+        let level_problems = strips::level_problems(&self.session.prj, &strip);
         let mut data = self.session.prj.strips.get(&strip).cloned().unwrap_or_default();
         let before = data.clone();
         let mut open = true;
@@ -414,6 +415,19 @@ impl App {
                 for j in &jumpers {
                     ui.horizontal_wrapped(|ui| {
                         ui.label(tr_fmt!("Jumper {}", j.number));
+                        let mut kind = j.kind;
+                        egui::ComboBox::from_id_salt(("jkind", j.number)).selected_text(strips::jumper_kind_title(kind)).show_ui(ui, |ui| {
+                            for k in [JumperKind::PlugIn, JumperKind::Saddle, JumperKind::Wire] {
+                                ui.selectable_value(&mut kind, k, strips::jumper_kind_title(k));
+                            }
+                        });
+                        if kind != j.kind {
+                            if kind == JumperKind::PlugIn {
+                                data.jumper_kinds.remove(&j.number);
+                            } else {
+                                data.jumper_kinds.insert(j.number, kind);
+                            }
+                        }
                         ui.label(RichText::new(if j.part.is_empty() { "–" } else { &j.part }).monospace());
                         ui.label(j.length_text());
                         ui.label(j.span_text());
@@ -426,11 +440,14 @@ impl App {
                     });
                 }
             });
+            for problem in &level_problems {
+                ui.colored_label(Color32::from_rgb(220, 120, 0), problem);
+            }
             ui.weak(tr("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials."));
             ui.separator();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
-                egui::Grid::new("strip").striped(true).num_columns(8).spacing([10.0, 4.0]).show(ui, |ui| {
-                    for h in ["", tr("Terminal"), tr("Jumper"), tr("External (top)"), tr("Internal (bottom)"), tr("Potential"), tr("Function text"), tr("Location")] {
+                egui::Grid::new("strip").striped(true).num_columns(9).spacing([10.0, 4.0]).show(ui, |ui| {
+                    for h in ["", tr("Terminal"), tr("Level"), tr("Jumper"), tr("External (top)"), tr("Internal (bottom)"), tr("Potential"), tr("Function text"), tr("Location")] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -439,6 +456,7 @@ impl App {
                         let Some(t) = &r.terminal else {
                             ui.label("");
                             ui.weak(&r.label);
+                            ui.label("");
                             ui.label("");
                             ui.weak(tr("spare"));
                             ui.end_row();
@@ -456,6 +474,14 @@ impl App {
                         ui.add_sized([50.0, 20.0], egui::TextEdit::singleline(&mut label));
                         if label != r.label {
                             relabel.push((t.page, t.sym, r.label.clone(), label));
+                        }
+                        let mut level = r.level;
+                        if ui.add(egui::DragValue::new(&mut level).range(1..=4)).on_hover_text(tr("Level of a multi-level terminal: upper levels sit on the block of the terminal before")).changed() {
+                            if level <= 1 {
+                                data.levels.remove(&r.label);
+                            } else {
+                                data.levels.insert(r.label.clone(), level);
+                            }
                         }
                         let mut j = data.jumpers.get(&r.label).copied().unwrap_or(0);
                         if ui.add(egui::DragValue::new(&mut j).range(0..=99)).on_hover_text(tr("0 = no jumper")).changed() {
@@ -486,6 +512,9 @@ impl App {
             if let Some(d) = self.session.prj.strips.get_mut(&strip) {
                 if let Some(j) = d.jumpers.remove(&old) {
                     d.jumpers.insert(new.clone(), j);
+                }
+                if let Some(l) = d.levels.remove(&old) {
+                    d.levels.insert(new.clone(), l);
                 }
                 for o in d.order.iter_mut().filter(|o| **o == old) {
                     *o = new.clone();
