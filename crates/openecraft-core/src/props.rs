@@ -1,60 +1,207 @@
-//! Property placement: device properties shown as texts beside a symbol, and the
-//! position of the tag block.
+//! Property placement: properties shown as texts beside a symbol, the position of
+//! the tag block, and placement schemes – named arrangements of properties that are
+//! applied to symbols and updated on all symbols using them.
 
-use openecraft_i18n::{tr, tr_const};
-use crate::geom::P;
+use openecraft_i18n::{tr, tr_const, tr_fmt};
+use crate::geom::{p, P};
 use crate::model::*;
+use crate::properties;
+use crate::symbols::Anchor;
+use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 impl PropKind {
-    pub const ALL: [PropKind; 7] = [
-        PropKind::Description,
-        PropKind::PartNumber,
-        PropKind::TypeNumber,
-        PropKind::Manufacturer,
-        PropKind::Label,
-        PropKind::Pins,
-        PropKind::Structure,
-    ];
+    pub const ALL: [PropKind; 7] =
+        [PropKind::Description, PropKind::PartNumber, PropKind::TypeNumber, PropKind::Manufacturer, PropKind::Label, PropKind::Pins, PropKind::Structure];
 
-    pub fn title(self) -> &'static str {
-        tr(match self {
-            PropKind::Description => tr_const!("Device description"),
-            PropKind::PartNumber => tr_const!("Part number"),
-            PropKind::TypeNumber => tr_const!("Type number"),
-            PropKind::Manufacturer => tr_const!("Manufacturer"),
-            PropKind::Label => tr_const!("Designation"),
-            PropKind::Pins => tr_const!("Connection points"),
-            PropKind::Structure => tr_const!("Structure"),
-        })
+    /// Property key of the fixed properties of older files.
+    pub fn key(self) -> &'static str {
+        match self {
+            PropKind::Description => "device.description",
+            PropKind::PartNumber => "device.parts",
+            PropKind::TypeNumber => "device.type_numbers",
+            PropKind::Manufacturer => "device.manufacturers",
+            PropKind::Label => "function.label",
+            PropKind::Pins => "function.pins",
+            PropKind::Structure => "device.structure",
+        }
     }
 }
 
-/// Text of a property of the symbol's device.
-pub fn value(prj: &Project, s: &SymbolInst, kind: PropKind) -> String {
-    let dev = prj.devices.get(&s.tag);
-    let parts: Vec<&Part> = dev
-        .map(|d| d.parts.iter().filter_map(|r| prj.parts.iter().find(|p| p.number == r.number)).collect())
-        .unwrap_or_default();
-    let join = |v: Vec<&str>| {
-        let mut v: Vec<&str> = v.into_iter().filter(|t| !t.is_empty()).collect();
-        v.dedup();
-        v.join(", ")
-    };
-    match kind {
-        PropKind::Description => dev.map(|d| d.description.clone()).unwrap_or_default(),
-        PropKind::PartNumber => join(dev.map(|d| d.parts.iter().map(|r| r.number.as_str()).collect()).unwrap_or_default()),
-        PropKind::TypeNumber => join(parts.iter().map(|p| p.type_number.as_str()).collect()),
-        PropKind::Manufacturer => join(parts.iter().map(|p| p.manufacturer.as_str()).collect()),
-        PropKind::Label => s.label.clone(),
-        PropKind::Pins => s.pins.iter().filter(|p| !p.is_empty()).cloned().collect::<Vec<_>>().join(" "),
-        PropKind::Structure => crate::structure::Dt::parse(&s.tag).structure(),
+/// Converts the placed properties of older files (fixed kinds) to property keys.
+pub fn migrate(s: &mut SymbolInst) {
+    for pp in &mut s.props {
+        if let Some(kind) = pp.legacy.take() {
+            if pp.key.is_empty() {
+                pp.key = kind.key().into();
+            }
+        }
     }
 }
 
-/// Adds a property text below the symbol (below the ones already placed).
-pub fn add(s: &mut SymbolInst, kind: PropKind, below: P) {
+/// Text of a placed property ("" if it has no value).
+pub fn text(prj: &Project, page_i: usize, s: &SymbolInst, pp: &PlacedProp) -> String {
+    let Some(d) = properties::valid_key(prj, &pp.key) else { return String::new() };
+    let Some(obj) = properties::object_at_symbol(prj, page_i, s, d.class) else { return String::new() };
+    let v = properties::display(prj, &obj, &pp.key);
+    if v.is_empty() || !pp.name {
+        v
+    } else {
+        format!("{}: {v}", d.title_of(&pp.key))
+    }
+}
+
+/// Reference point of placed properties and schemes: right of and below the
+/// symbol graphics, relative to the symbol position.
+pub fn reference(s: &SymbolInst) -> P {
+    crate::symbols::get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror).max - s.pos + p(1.5, 2.0)).unwrap_or_default()
+}
+
+/// Adds a property text below the ones already placed.
+pub fn add(s: &mut SymbolInst, key: &str) {
+    let below = reference(s);
     let y = s.props.iter().map(|p| p.offset.y + 2.8).fold(below.y, f32::max);
-    s.props.push(PlacedProp { kind, offset: crate::geom::p(below.x, y), size: 2.0 });
+    s.props.push(PlacedProp { key: key.into(), offset: p(below.x, y), ..Default::default() });
+}
+
+// ------------------------------------------------------------------- schemes
+
+/// A placement scheme: properties with their positions relative to [`reference`].
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Scheme {
+    pub name: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub description: String,
+    pub entries: Vec<PlacedProp>,
+    #[serde(skip)]
+    pub builtin: bool,
+}
+
+impl Scheme {
+    pub fn title(&self) -> String {
+        if self.builtin { tr_static(&self.name) } else { self.name.clone() }
+    }
+}
+
+const BUILTIN: &[(&str, &[&str])] = &[
+    (tr_const!("Description"), &["device.description"]),
+    (tr_const!("Description and part"), &["device.description", "device.parts"]),
+    (tr_const!("Part data"), &["device.parts", "device.type_numbers", "device.manufacturers"]),
+    (tr_const!("Technical data"), &["device.rated_voltage", "device.rated_current", "device.rated_power"]),
+    (tr_const!("Motor data"), &["device.rated_power", "device.rated_current", "device.speed"]),
+    (tr_const!("Protection setting"), &["device.characteristic", "device.rated_current", "device.current_setting"]),
+    (tr_const!("PLC data"), &["plc.symbolic", "plc.comment"]),
+    (tr_const!("Terminal data"), &["terminal.description", "terminal.cross_section"]),
+];
+
+fn tr_static(name: &str) -> String {
+    BUILTIN.iter().find(|b| b.0 == name).map(|b| tr(b.0).to_string()).unwrap_or_else(|| name.to_string())
+}
+
+/// The built-in schemes.
+pub fn builtin_schemes() -> &'static [Scheme] {
+    static SCHEMES: OnceLock<Vec<Scheme>> = OnceLock::new();
+    SCHEMES.get_or_init(|| {
+        BUILTIN
+            .iter()
+            .map(|(name, keys)| Scheme {
+                name: name.to_string(),
+                description: String::new(),
+                entries: keys.iter().enumerate().map(|(i, k)| PlacedProp { key: k.to_string(), offset: p(0.0, i as f32 * 2.8), ..Default::default() }).collect(),
+                builtin: true,
+            })
+            .collect()
+    })
+}
+
+pub fn builtin_scheme(name: &str) -> Option<&'static Scheme> {
+    builtin_schemes().iter().find(|s| s.name == name)
+}
+
+/// A scheme by name: built-in or the project's.
+pub fn scheme<'a>(prj: &'a Project, name: &str) -> Option<&'a Scheme> {
+    builtin_scheme(name).or_else(|| prj.property_db.schemes.iter().find(|s| s.name == name))
+}
+
+pub fn all_schemes(prj: &Project) -> impl Iterator<Item = &Scheme> {
+    builtin_schemes().iter().chain(prj.property_db.schemes.iter())
+}
+
+/// A scheme from the properties placed at a symbol.
+pub fn capture(s: &SymbolInst, name: &str) -> Scheme {
+    let r = reference(s);
+    let entries = s.props.iter().map(|pp| PlacedProp { offset: pp.offset - r, ..pp.clone() }).collect();
+    Scheme { name: name.trim().into(), description: String::new(), entries, builtin: false }
+}
+
+/// Places the properties of a scheme at a symbol (replacing the ones placed so far).
+pub fn apply_scheme(s: &mut SymbolInst, scheme: &Scheme) {
+    let r = reference(s);
+    s.props = scheme.entries.iter().map(|e| PlacedProp { offset: e.offset + r, ..e.clone() }).collect();
+    s.scheme = scheme.name.clone();
+}
+
+/// Adds or replaces a project scheme.
+pub fn define_scheme(prj: &mut Project, scheme: Scheme) -> Result<(), String> {
+    if scheme.name.trim().is_empty() {
+        return Err(tr("The scheme needs a name").into());
+    }
+    if builtin_scheme(&scheme.name).is_some() {
+        return Err(tr_fmt!("{} is a built-in scheme", scheme.name));
+    }
+    if let Some(e) = scheme.entries.iter().find(|e| properties::valid_key(prj, &e.key).is_none()) {
+        return Err(tr_fmt!("Unknown property: {}", e.key));
+    }
+    let scheme = Scheme { builtin: false, ..scheme };
+    match prj.property_db.schemes.iter_mut().find(|s| s.name == scheme.name) {
+        Some(s) => *s = scheme,
+        None => prj.property_db.schemes.push(scheme),
+    }
+    Ok(())
+}
+
+/// Removes a project scheme; symbols using it keep their placed properties.
+pub fn remove_scheme(prj: &mut Project, name: &str) {
+    prj.property_db.schemes.retain(|s| s.name != name);
+    for s in prj.pages.iter_mut().flat_map(|pg| pg.symbols.iter_mut()).filter(|s| s.scheme == name) {
+        s.scheme.clear();
+    }
+}
+
+/// Places the scheme again at all symbols of editable pages that use it. Returns
+/// the number of symbols updated.
+pub fn reapply(prj: &mut Project, name: &str) -> usize {
+    let Some(scheme) = scheme(prj, name).cloned() else { return 0 };
+    let mut n = 0;
+    for pg in prj.pages.iter_mut().filter(|pg| pg.is_editable()) {
+        for s in pg.symbols.iter_mut().filter(|s| s.scheme == name) {
+            apply_scheme(s, &scheme);
+            n += 1;
+        }
+    }
+    n
+}
+
+/// Applies a scheme to symbols by id (on editable pages). Returns the number changed.
+pub fn apply_to(prj: &mut Project, name: &str, ids: &[u64]) -> Result<usize, String> {
+    let scheme = scheme(prj, name).cloned().ok_or_else(|| tr_fmt!("Unknown scheme: {}", name))?;
+    let mut n = 0;
+    for pg in prj.pages.iter_mut().filter(|pg| pg.is_editable()) {
+        for s in pg.symbols.iter_mut().filter(|s| ids.contains(&s.id)) {
+            apply_scheme(s, &scheme);
+            n += 1;
+        }
+    }
+    Ok(n)
+}
+
+pub fn default_anchor() -> Anchor {
+    Anchor::Left
+}
+
+pub fn is_left(a: &Anchor) -> bool {
+    *a == Anchor::Left
 }
 
 #[cfg(test)]

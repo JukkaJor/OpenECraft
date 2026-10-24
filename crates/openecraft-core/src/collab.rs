@@ -277,6 +277,7 @@ fn with_data(out: &mut Project, src: &Project) {
         layers,
         workflow,
         baselines,
+        property_db,
         review: _,
         next_id: _,
     } = src;
@@ -309,6 +310,7 @@ fn with_data(out: &mut Project, src: &Project) {
     out.layers = layers.clone();
     out.workflow = workflow.clone();
     out.baselines = baselines.clone();
+    out.property_db = property_db.clone();
 }
 
 /// Project-wide data equal (all but page contents, review and `next_id`; the page
@@ -345,6 +347,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         layers,
         workflow,
         baselines,
+        property_db,
         review: _,
         next_id: _,
     } = a;
@@ -378,6 +381,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *layers == b.layers
         && *workflow == b.workflow
         && *baselines == b.baselines
+        && *property_db == b.property_db
 }
 
 /// What differs between `a` and `b`. Changes of pages that `a` does not have count

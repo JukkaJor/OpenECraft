@@ -570,7 +570,7 @@ impl Editor {
         let page = &prj.pages[page_i];
         for s in page.symbols.iter().filter(|s| self.selection.contains(&s.id)) {
             for (i, pp) in s.props.iter().enumerate() {
-                if render::prop_bounds(prj, s, pp).expand(0.3).contains(q) {
+                if render::prop_bounds(prj, page_i, s, pp).expand(0.3).contains(q) {
                     return Some((s.id, Some(i)));
                 }
             }
@@ -772,7 +772,7 @@ impl Editor {
         if self.tool == Tool::Select && self.selection.len() == 1 {
             let page = &prj.pages[page_i];
             if let Some(s) = page.symbols.iter().find(|s| self.selection.contains(&s.id)) {
-                let mut boxes: Vec<R> = s.props.iter().map(|pp| render::prop_bounds(prj, s, pp)).collect();
+                let mut boxes: Vec<R> = s.props.iter().map(|pp| render::prop_bounds(prj, page_i, s, pp)).collect();
                 if let Some(r) = symbols::get(&s.sym).and_then(|def| render::tag_block_bounds(prj, page_i, def, s)) {
                     boxes.push(r);
                 }

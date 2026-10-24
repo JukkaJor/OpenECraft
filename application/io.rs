@@ -46,6 +46,8 @@ pub enum Purpose {
     Compare,
     /// Change requests (CSV, JSON) of another system.
     ChangeRequests,
+    /// Property library (JSON) to merge into the project.
+    PropertyLibrary,
 }
 
 impl FileKind for Purpose {
@@ -61,6 +63,7 @@ impl FileKind for Purpose {
             Purpose::Forms => (tr("OpenECraft title blocks and report schemes (JSON)"), &["json"]),
             Purpose::StructureTemplate => (tr("OpenECraft structure template (JSON)"), &["json"]),
             Purpose::PageTemplates => (tr("OpenECraft page templates (JSON)"), &["json"]),
+            Purpose::PropertyLibrary => (tr("OpenECraft property library (JSON)"), &["json"]),
             Purpose::Image => (tr("Images (PNG, JPEG)"), &["png", "jpg", "jpeg"]),
             Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
             Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),

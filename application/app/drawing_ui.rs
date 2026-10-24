@@ -9,7 +9,7 @@ use crate::graphics::{self, Layer};
 use crate::io::Loaded;
 use crate::model::*;
 use crate::netlist::pin_designation;
-use crate::{cabledef, conndef, ops, props, routing, structure, wirenum};
+use crate::{cabledef, conndef, ops, properties, props, routing, structure, wirenum};
 use egui::RichText;
 
 /// Selection of the layer of an item ("" is the default layer).
@@ -426,12 +426,20 @@ impl App {
         }
     }
 
-    /// Tag position and placed properties of a symbol.
+    /// Tag position, placed properties and placement scheme of a symbol.
     pub(super) fn placement_properties(&mut self, ui: &mut egui::Ui, pi: usize, si: usize) {
         let s = &self.prj.pages[pi].symbols[si];
-        let values: Vec<String> = s.props.iter().map(|pp| props::value(&self.prj, s, pp.kind)).collect();
-        let below = crate::symbols::get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror).max - s.pos + crate::geom::p(1.5, 2.0)).unwrap_or_default();
-        egui::CollapsingHeader::new(tr("Property placement")).id_salt("placement").default_open(!s.props.is_empty() || s.tag_offset.is_some()).show(ui, |ui| {
+        let values: Vec<String> = s.props.iter().map(|pp| props::text(&self.prj, pi, s, pp)).collect();
+        let titles: Vec<String> = s.props.iter().map(|pp| properties::def(&self.prj, &pp.key).map(|d| d.title_of(&pp.key)).unwrap_or_else(|| pp.key.clone())).collect();
+        let schemes: Vec<(String, String)> = props::all_schemes(&self.prj).map(|x| (x.name.clone(), x.title())).collect();
+        let classes = properties::Object::Function(s.id).classes(&self.prj);
+        let classes: Vec<properties::ObjectClass> =
+            [properties::ObjectClass::Device, properties::ObjectClass::Part].into_iter().filter(|_| !s.tag.is_empty()).chain(classes).chain([properties::ObjectClass::Page, properties::ObjectClass::Project]).collect();
+        let open = !s.props.is_empty() || s.tag_offset.is_some();
+        egui::CollapsingHeader::new(tr("Property placement")).id_salt("placement").default_open(open).show(ui, |ui| {
+            let added = super::properties_ui::key_picker(ui, &self.prj, &classes, false, tr("➕ Place property"));
+            let mut save_scheme = None;
+            let mut apply_scheme = None;
             let s = &mut self.prj.pages[pi].symbols[si];
             ui.horizontal(|ui| {
                 if s.tag_offset.is_some() {
@@ -446,17 +454,17 @@ impl App {
             let mut remove = None;
             egui::Grid::new("pprops").num_columns(4).show(ui, |ui| {
                 for (i, pp) in s.props.iter_mut().enumerate() {
-                    egui::ComboBox::from_id_salt(("ppkind", i)).selected_text(pp.kind.title()).show_ui(ui, |ui| {
-                        for k in PropKind::ALL {
-                            ui.selectable_value(&mut pp.kind, k, k.title());
-                        }
+                    ui.label(&titles[i]).on_hover_text(&pp.key);
+                    ui.horizontal(|ui| {
+                        ui.add(egui::DragValue::new(&mut pp.size).range(1.0..=10.0).speed(0.1).suffix(" mm"));
+                        super::properties_ui::anchor_combo(ui, ("ppanchor", i), &mut pp.anchor);
+                        ui.checkbox(&mut pp.name, "").on_hover_text(tr("Shown as \"Name: value\""));
                     });
-                    ui.add(egui::DragValue::new(&mut pp.size).range(1.0..=10.0).speed(0.1).suffix(" mm"));
                     let v = values.get(i).cloned().unwrap_or_default();
                     if v.is_empty() {
                         ui.weak(tr("(empty)"));
                     } else {
-                        ui.label(v);
+                        ui.add(egui::Label::new(v).truncate());
                     }
                     if ui.small_button("🗑").clicked() {
                         remove = Some(i);
@@ -467,13 +475,41 @@ impl App {
             if let Some(i) = remove {
                 s.props.remove(i);
             }
-            ui.menu_button(tr("➕ Place property"), |ui| {
-                for k in PropKind::ALL {
-                    if ui.button(k.title()).clicked() {
-                        props::add(s, k, below);
+            if let Some(k) = added {
+                props::add(s, &k);
+            }
+            ui.horizontal(|ui| {
+                ui.label(tr("Scheme"));
+                let shown = schemes.iter().find(|x| x.0 == s.scheme).map(|x| x.1.clone()).unwrap_or_else(|| tr("(none)").into());
+                egui::ComboBox::from_id_salt("ppscheme").selected_text(shown).show_ui(ui, |ui| {
+                    for (name, title) in &schemes {
+                        if ui.selectable_label(*name == s.scheme, title).clicked() {
+                            apply_scheme = Some(name.clone());
+                        }
                     }
+                });
+                let id = ui.scope_id().with("new_scheme");
+                let mut name: String = ui.data_mut(|d| d.get_temp(id)).unwrap_or_default();
+                ui.add(egui::TextEdit::singleline(&mut name).hint_text(tr("Scheme name")).desired_width(90.0));
+                if ui.add_enabled(!s.props.is_empty() && !name.trim().is_empty(), egui::Button::new(tr("Save as scheme"))).on_hover_text(tr("Saves the placed properties as a placement scheme of the project")).clicked() {
+                    save_scheme = Some(props::capture(s, &name));
+                    name.clear();
                 }
+                ui.data_mut(|d| d.insert_temp(id, name));
             });
+            if let Some(name) = apply_scheme {
+                let ids = [self.prj.pages[pi].symbols[si].id];
+                if let Err(e) = props::apply_to(&mut self.prj, &name, &ids) {
+                    self.message = Some((e, ui.ctx().input(|i| i.time)));
+                }
+            }
+            if let Some(scheme) = save_scheme {
+                let name = scheme.name.clone();
+                match props::define_scheme(&mut self.prj, scheme) {
+                    Ok(()) => self.prj.pages[pi].symbols[si].scheme = name,
+                    Err(e) => self.message = Some((e, ui.ctx().input(|i| i.time))),
+                }
+            }
         });
     }
 
