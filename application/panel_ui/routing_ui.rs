@@ -3,11 +3,11 @@
 //! routes for production.
 
 use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
-use crate::geom::{p, P};
-use crate::model::Project;
-use crate::panel::{PLATE_MARGIN, PLATE_Z};
-use crate::reports::Analysis;
-use crate::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
+use openecraft_core::geom::{p, P};
+use openecraft_core::model::Project;
+use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
 use openecraft_i18n::{tr, tr_fmt};
 
@@ -111,7 +111,7 @@ impl PanelUi {
         if !self.show_wires && self.selected_route.is_none() {
             return;
         }
-        let pos = crate::panel::positions(&prj.layout);
+        let pos = openecraft_core::panel::positions(&prj.layout);
         for it in an.routing.items.iter().filter(|i| i.kind != RouteKind::Wire && i.enclosures.contains(&ei)) {
             let selected = self.selected_route.as_deref() == Some(it.key.as_str());
             if !self.show_wires && !selected {
@@ -127,7 +127,7 @@ impl PanelUi {
     /// coordinates): routing paths and reservations of the enclosures shown, the routed
     /// cables and tubes, and the wires when they are routed in 3D.
     pub(super) fn routing_lines_3d(&self, prj: &Project, an: &Analysis, shown: &[usize], to_view: &dyn Fn([f32; 3]) -> [f32; 3], selected_wire: Option<usize>) -> Vec<RouteLine> {
-        let pos = crate::panel::positions(&prj.layout);
+        let pos = openecraft_core::panel::positions(&prj.layout);
         let mut out = Vec::new();
         for &k in shown {
             let e = &prj.layout.enclosures[k];

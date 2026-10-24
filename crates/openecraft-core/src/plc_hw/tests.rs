@@ -7,7 +7,7 @@ fn addresses(prj: &Project) -> Vec<(String, String)> {
 }
 
 fn messages(prj: &Project) -> Vec<String> {
-    problems(prj).into_iter().map(|i| i.message).collect()
+    problems(prj).into_iter().map(|i| i.message()).collect()
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn automatic_configuration_of_the_demo() {
     // DI16 takes input bytes 0 and 1, DO16 output bytes 0 and 1.
     assert_eq!((mods[0].input_start, mods[0].input_bytes, mods[1].output_start, mods[1].output_bytes), (0, 2, 0, 2));
     assert!(messages(&prj).is_empty(), "{:?}", messages(&prj));
-    assert!(crate::reports::Analysis::build(&prj).issues.iter().all(|i| i.severity != Severity::Error));
+    assert!(crate::analysis::Analysis::checked(&prj).issues.iter().all(|i| i.severity != Severity::Error));
     // Nothing left to do.
     assert_eq!(auto_configure(&mut prj, false), AutoResult::default());
 }
@@ -89,8 +89,8 @@ fn schemes_change_the_addresses_of_the_points() {
     convert_addresses(&mut prj);
     let mut ctx = crate::ops::PlaceCtx::default();
     ctx.last_plc.insert("plc_in".into(), "-A1".into());
-    let def = crate::symbols::get("plc_in").unwrap();
-    let s = crate::ops::new_symbol(&mut prj, 0, &ctx, def, crate::geom::p(200.0, 200.0), 0, false);
+    let def = prj.symbol("plc_in").unwrap();
+    let s = crate::ops::new_symbol(&mut prj, 0, &ctx, &def, crate::geom::p(200.0, 200.0), 0, false);
     assert_eq!((s.tag.as_str(), s.label.as_str()), ("-A1", "%IX0.3"));
 }
 
@@ -159,11 +159,11 @@ fn bus_cables_are_created_and_checked() {
     assert_eq!(create_cables(&mut prj), 0, "all connections have a cable");
 
     // Cable reports list the ports as ends and every core.
-    let an = crate::reports::Analysis::build(&prj);
-    let overview = &an.reports[&ReportKind::CableOverview];
+    let an = crate::analysis::Analysis::checked(&prj);
+    let overview = &an.report(&prj, ReportKind::CableOverview).unwrap();
     let row = overview.rows.iter().find(|r| r[0] == "-W2").unwrap();
     assert_eq!((row[2].as_str(), row[5].as_str(), row[6].as_str()), ("4/4", "-A0:X1 P2", "ET1:X1 P1"));
-    let diagram = &an.reports[&ReportKind::CableDiagram];
+    let diagram = &an.report(&prj, ReportKind::CableDiagram).unwrap();
     assert_eq!(diagram.rows.iter().filter(|r| r[0] == "-W2").count(), 4);
 
     // Wrong cable kind, one cable for two links, missing cable.

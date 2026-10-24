@@ -1,6 +1,7 @@
 use super::*;
-use crate::{Origin, Plugins};
-use openecraft_core::reports::Analysis;
+use crate::{Args, Origin, Plugins};
+use serde_json::Map;
+use openecraft_core::analysis::Analysis;
 use openecraft_core::sample::demo_project;
 use std::sync::Mutex;
 
@@ -53,7 +54,7 @@ fn external_plugins_answer_json_requests() {
 
     let table = (p.report("titles").unwrap().run)(&prj, &Analysis::default()).unwrap();
     assert_eq!(table.rows, [["Plant 7"]]);
-    assert_eq!((p.exporter("title_txt").unwrap().run)(&prj).unwrap(), "title");
+    assert_eq!((p.exporter("title_txt").unwrap().run)(&prj, &Analysis::default(), &Args(&Map::new())).unwrap().text().unwrap(), "title");
 }
 
 #[test]

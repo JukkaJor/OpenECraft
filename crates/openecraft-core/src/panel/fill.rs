@@ -4,6 +4,7 @@
 use super::{profile, ItemKind, Route, RoutedWire};
 use crate::model::Project;
 use std::collections::HashMap;
+pub use crate::model::panel::Stretch;
 
 /// Fill level of one cable duct.
 #[derive(Clone, Debug, PartialEq)]
@@ -22,13 +23,6 @@ pub struct DuctFill {
     pub wires: usize,
     /// All wires that run through the duct somewhere.
     pub total_wires: usize,
-}
-
-/// A wire's stretch in a duct.
-struct Stretch {
-    from: f32,
-    to: f32,
-    area: f32,
 }
 
 /// The fullest stretch of a duct: (wire area, from, to, number of wires). At the same

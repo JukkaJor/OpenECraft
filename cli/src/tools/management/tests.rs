@@ -1,5 +1,6 @@
 use super::*;
 use crate::testing::*;
+use openecraft_core::model::Project;
 
 fn demo_session() -> Session {
     let mut s = session();
@@ -71,8 +72,8 @@ fn projects_are_archived_converted_and_verified() {
     let old = dir.join("old.oec");
     std::fs::write(&old, r#"{ "info": { "name": "Old" }, "pages": [], "next_id": 1 }"#).unwrap();
     let c = run(&mut s, "convert_project", json!({ "path": old.display().to_string() })).unwrap();
-    assert_eq!((c["from"].as_u64(), c["to"].as_u64()), (Some(0), Some(1)));
-    assert!(std::fs::read_to_string(&old).unwrap().contains("\"format\": 1"));
+    assert_eq!((c["from"].as_u64(), c["to"].as_u64()), (Some(0), Some(u64::from(openecraft_core::model::FORMAT))));
+    assert!(std::fs::read_to_string(&old).unwrap().contains(&format!("\"format\": {}", openecraft_core::model::FORMAT)));
     let c = run(&mut s, "convert_project", json!({ "path": path })).unwrap();
     assert!(c["output"].as_str().unwrap().ends_with("demo.oec"));
 }

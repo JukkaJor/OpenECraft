@@ -4,7 +4,6 @@
 use crate::geom::p;
 use crate::model::*;
 use crate::parts::{FnKind, FunctionTemplate, PartRef};
-use crate::symbols;
 
 pub struct Kit {
     pub prj: Project,
@@ -24,7 +23,7 @@ impl Kit {
 
     /// Places a symbol, returns its id.
     pub fn sym(&mut self, key: &str, x: f32, y: f32, tag: &str, label: &str) -> u64 {
-        let def = symbols::get(key).unwrap();
+        let def = self.prj.symbol(key).unwrap();
         let id = self.prj.new_id();
         self.prj.pages[0].symbols.push(SymbolInst {
             id,
@@ -41,7 +40,7 @@ impl Kit {
     fn pin_at(&self, id: u64, pin: &str) -> crate::geom::P {
         let s = self.prj.pages[0].symbols.iter().find(|s| s.id == id).unwrap();
         let i = s.pins.iter().position(|x| x == pin).unwrap_or_else(|| panic!("no pin {pin} on {}", s.tag));
-        symbols::get(&s.sym).unwrap().pin_world(i, s.pos, s.rot, s.mirror)
+        self.prj.symbol(&s.sym).unwrap().pin_world(i, s.pos, s.rot, s.mirror)
     }
 
     /// Wire between two pins (symbol id, designation), returns its id.

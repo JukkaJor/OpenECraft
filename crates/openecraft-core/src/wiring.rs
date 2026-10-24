@@ -8,32 +8,8 @@ use openecraft_i18n::tr;
 use crate::model::{natural_cmp, Project};
 use crate::panel::RoutedWire;
 use crate::production::{cross_section_mm2, end_treatment, EndTreatment};
-use serde::{Deserialize, Serialize};
 use std::fmt::Write;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Mark {
-    #[default]
-    Done,
-    /// Could not be wired (wrong length, missing part …), see the note.
-    Problem,
-}
-
-/// Mark of a wire, keyed by its two ends.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct WiringMark {
-    pub from: String,
-    pub to: String,
-    pub mark: Mark,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub note: String,
-    /// Properties of the wire when it was marked.
-    pub color: String,
-    pub cross_section: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub number: String,
-}
+pub use crate::model::wiring::{Mark, WiringMark};
 
 impl WiringMark {
     fn matches(&self, w: &RoutedWire) -> bool {

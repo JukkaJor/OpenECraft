@@ -1,6 +1,6 @@
 use super::*;
 use crate::geom::p;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn rows<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {
@@ -10,8 +10,8 @@ fn rows<'a>(t: &'a Table, first: &str) -> Vec<&'a Vec<String>> {
 #[test]
 fn terminal_connections_list_both_sides() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
-    let t = &an.reports[&ReportKind::TerminalConnections];
+    let an = Analysis::checked(&prj);
+    let t = &an.report(&prj, ReportKind::TerminalConnections).unwrap();
     let x1 = rows(t, "-X1");
     // Terminal 1: -K1 inside the cabinet, the motor through cable -W1 outside.
     let one: Vec<(&str, &str, &str)> = x1.iter().filter(|r| r[1] == "1").map(|r| (r[2].as_str(), r[3].as_str(), r[5].as_str())).collect();
@@ -24,8 +24,8 @@ fn terminal_connections_list_both_sides() {
 #[test]
 fn cable_connections_show_every_core() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
-    let t = &an.reports[&ReportKind::CableConnections];
+    let an = Analysis::checked(&prj);
+    let t = &an.report(&prj, ReportKind::CableConnections).unwrap();
     let w1 = rows(t, "-W1");
     let cores: Vec<(&str, &str, &str)> = w1.iter().map(|r| (r[3].as_str(), r[4].as_str(), r[5].as_str())).collect();
     assert_eq!(cores, vec![("-X1:1", "BN", "-M1:U1"), ("-X1:2", "BK", "-M1:V1"), ("-X1:3", "GY", "-M1:W1"), ("-X1:PE", "GNYE", "-M1:PE")]);
@@ -35,8 +35,8 @@ fn cable_connections_show_every_core() {
 #[test]
 fn device_connections_list_every_connection_point() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
-    let t = &an.reports[&ReportKind::DeviceConnections];
+    let an = Analysis::checked(&prj);
+    let t = &an.report(&prj, ReportKind::DeviceConnections).unwrap();
     let k1 = rows(t, "-K1");
     for point in ["A1", "A2", "13", "14", "53", "54", "83", "84"] {
         assert!(k1.iter().any(|r| r[1] == point), "{point} missing: {k1:?}");
@@ -45,7 +45,7 @@ fn device_connections_list_every_connection_point() {
     // Every connection appears once at each of its device ends.
     let device_ends = an.connections.iter().flat_map(|c| [c.a, c.b]).filter(|p| {
         let s = &prj.pages[p.page].symbols[p.sym];
-        !matches!(crate::symbols::get(&s.sym).map(|d| d.func), Some(Func::Terminal | Func::Plug(_)))
+        !matches!(prj.symbol(&s.sym).map(|d| d.func), Some(Func::Terminal | Func::Plug(_)))
     });
     assert_eq!(t.rows.iter().filter(|r| !r[3].is_empty()).count(), device_ends.count());
     assert!(t.rows.iter().all(|r| r.len() == t.headers.len()));
@@ -55,7 +55,7 @@ fn device_connections_list_every_connection_point() {
 fn pin_connections_follow_the_plug_sides() {
     let mut prj = Project::default();
     for (key, x, y, tag, label) in [("pot_24", 100.0, 76.0, "", "+24V"), ("plug_pair", 100.0, 100.0, "-X10", "1"), ("coil", 100.0, 120.0, "-K1", "")] {
-        let def = crate::symbols::get(key).unwrap();
+        let def = prj.symbol(key).unwrap();
         let id = prj.new_id();
         let pins = def.pins.iter().map(|x| x.label.to_string()).collect();
         prj.pages[0].symbols.push(SymbolInst { id, sym: key.into(), pos: p(x, y), tag: tag.into(), label: label.into(), pins, ..Default::default() });
@@ -64,8 +64,8 @@ fn pin_connections_follow_the_plug_sides() {
         let id = prj.new_id();
         prj.pages[0].wires.push(Wire { id, a: p(100.0, y1), b: p(100.0, y2), ..Default::default() });
     }
-    let an = Analysis::build(&prj);
-    let t = &an.reports[&ReportKind::PinConnections];
+    let an = Analysis::checked(&prj);
+    let t = &an.report(&prj, ReportKind::PinConnections).unwrap();
     let x10 = rows(t, "-X10");
     assert_eq!(x10.len(), 1, "{x10:?}");
     assert_eq!((x10[0][1].as_str(), x10[0][3].as_str()), ("1", "-K1:A1"));
@@ -75,15 +75,17 @@ fn pin_connections_follow_the_plug_sides() {
 #[test]
 fn terminal_lineup_and_strip_overview() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
-    let lineup = rows(&an.reports[&ReportKind::TerminalLineup], "-X1");
+    let an = Analysis::checked(&prj);
+    let lineup_table = an.report(&prj, ReportKind::TerminalLineup).unwrap();
+    let lineup = rows(&lineup_table, "-X1");
     let labels: Vec<&str> = lineup.iter().filter(|r| r[2] == "Terminal").map(|r| r[3].as_str()).collect();
     assert_eq!(labels, vec!["1", "2", "3", "PE"]);
     // Positions follow one another along the rail.
     let width: f32 = lineup.iter().map(|r| r[6].parse::<f32>().unwrap()).sum();
     assert!(lineup.last().unwrap()[7].ends_with(&format!("{width:.1}")), "{lineup:?}");
 
-    let overview = rows(&an.reports[&ReportKind::TerminalStripOverview], "-X1");
+    let overview_table = an.report(&prj, ReportKind::TerminalStripOverview).unwrap();
+    let overview = rows(&overview_table, "-X1");
     assert_eq!(overview.len(), 1);
     assert_eq!((overview[0][3].as_str(), overview[0][5].as_str()), ("4", "4"));
     assert_eq!(overview[0][7], format!("{width:.1}"));
@@ -92,8 +94,8 @@ fn terminal_lineup_and_strip_overview() {
 #[test]
 fn panel_legend_numbers_the_devices() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
-    let t = &an.reports[&ReportKind::PanelLegend];
+    let an = Analysis::checked(&prj);
+    let t = &an.report(&prj, ReportKind::PanelLegend).unwrap();
     let cab = rows(t, "+CAB1");
     let placed = prj.layout.enclosures[0].items.iter().filter(|i| i.kind == ItemKind::Device).count();
     assert!(placed > 0);

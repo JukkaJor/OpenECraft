@@ -7,25 +7,8 @@ use super::{snap_to_rail, Enclosure, ItemKind, PanelItem, SNAP};
 use crate::geom::R;
 use crate::model::Project;
 use openecraft_i18n::tr;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-/// Placement along one axis of a face.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub enum Align {
-    /// Where it was put.
-    #[default]
-    Free,
-    /// Distance of the item's start (left / top edge) from the face's start.
-    Start(f32),
-    /// Offset of the item's centre from the face's centre.
-    Center(f32),
-    /// Distance of the item's end (right / bottom edge) from the face's end.
-    End(f32),
-    /// From the face's start to its end with these distances: the item's length
-    /// follows the face (cable ducts, rails).
-    Stretch(f32, f32),
-}
+pub use crate::model::panel::{Align, Anchor};
 
 impl Align {
     pub const KINDS: [Align; 5] = [Align::Free, Align::Start(0.0), Align::Center(0.0), Align::End(0.0), Align::Stretch(0.0, 0.0)];
@@ -91,14 +74,6 @@ impl Align {
             Align::Stretch(a, b) => format!("stretch:{a},{b}"),
         }
     }
-}
-
-/// Parametric position of an item on its face.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Anchor {
-    pub x: Align,
-    pub y: Align,
 }
 
 impl Anchor {

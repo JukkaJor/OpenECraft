@@ -3,8 +3,8 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::config::{self, ConfigOption, Rule};
-use crate::macros::MacroKind;
+use openecraft_core::config::{self, ConfigOption, Rule};
+use openecraft_core::macros::MacroKind;
 use egui::{Color32, RichText};
 
 #[derive(Default)]
@@ -19,11 +19,11 @@ impl App {
         }
         let page_macros: Vec<(String, Vec<String>)> =
             self.macro_lib.macros.iter().filter(|m| m.kind == MacroKind::Page).map(|m| (m.name.clone(), m.variant_names())).collect();
-        let problems = config::problems(&self.prj.configuration, &self.macro_lib);
-        let generated = self.prj.pages.iter().filter(|p| p.generated).count();
+        let problems = config::problems(&self.session.prj.configuration, &self.macro_lib);
+        let generated = self.session.prj.pages.iter().filter(|p| p.generated).count();
         let mut open = true;
         let mut generate = false;
-        let cfg = &mut self.prj.configuration;
+        let cfg = &mut self.session.prj.configuration;
         egui::Window::new(tr("Configurator")).open(&mut open).default_size([900.0, 480.0]).show(ctx, |ui| {
             ui.weak(tr("Rules insert page macros when their condition holds. Generating replaces the pages generated before; option values fill {OPTION} placeholders."));
             ui.separator();
@@ -113,11 +113,11 @@ impl App {
         });
         self.config_ui.open = open;
         if generate {
-            match config::generate(&mut self.prj, &self.macro_lib) {
+            match config::generate(&mut self.session.prj, &self.macro_lib) {
                 Ok(g) => self.notify(ctx, tr_fmt!("{} pages removed, {} pages generated", g.removed, g.pages.len())),
                 Err(e) => self.notify(ctx, tr_fmt!("Generation failed: {}", e)),
             }
-            self.page = self.page.min(self.prj.pages.len() - 1);
+            self.session.page = self.session.page.min(self.session.prj.pages.len() - 1);
             self.editor.selection.clear();
         }
     }

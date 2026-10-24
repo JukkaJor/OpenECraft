@@ -1,13 +1,14 @@
 //! Project verification: checks the project data itself – unique ids, references
 //! between its parts, stored values, options and subprojects – beside the
-//! engineering checks of [`crate::reports::Analysis`], and repairs what can be
+//! engineering checks of [`crate::analysis::Analysis`], and repairs what can be
 //! repaired without a decision.
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::options::Item;
 use crate::properties::{self, Object};
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -105,7 +106,7 @@ pub fn verify(prj: &Project) -> Verification {
             }
         }
         for s in &pg.symbols {
-            if crate::symbols::get(&s.sym).is_none() {
+            if prj.symbol(&s.sym).is_none() {
                 push(Severity::Error, tr_fmt!("Page {}: unknown symbol {}", pg.name, s.sym), Some((pi, s.id)), false);
             }
         }
@@ -167,7 +168,7 @@ pub fn verify(prj: &Project) -> Verification {
         push(Severity::Info, tr_fmt!("This is subproject {} of {}", p.name, p.project), None, false);
     }
 
-    let an = Analysis::build(prj);
+    let an = Analysis::checked(prj);
     let count = |sev| an.issues.iter().filter(|i| i.severity == sev).count();
     Verification { findings: v, check_errors: count(Severity::Error), check_warnings: count(Severity::Warning) }
 }

@@ -1,7 +1,7 @@
 use super::*;
 use crate::{Origin, Plugins};
 use openecraft_core::parts::Part;
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_core::sample::demo_project;
 use serde_json::Map;
 
@@ -33,10 +33,10 @@ fn discontinued_parts_are_reported_per_device() {
     let p = Plugins::new(Vec::<String>::new());
     let mut prj = demo_project();
     let (tag, number) = discontinued(&mut prj, "NEW.1");
-    let found: Vec<Issue> = p.check(&prj, &Analysis::build(&prj)).into_iter().filter(|i| i.message.contains(&number)).collect();
+    let found: Vec<Issue> = p.check(&prj, &Analysis::build(&prj)).into_iter().filter(|i| i.message().contains(&number)).collect();
     assert!(!found.is_empty());
     assert!(found.iter().all(|i| i.severity == Severity::Warning));
-    assert!(found.iter().any(|i| i.message.starts_with(&tag) && i.message.ends_with("NEW.1")));
+    assert!(found.iter().any(|i| i.message().starts_with(&tag) && i.message().ends_with("NEW.1")));
     let table = (p.report("part_lifecycle").unwrap().run)(&prj, &Analysis::build(&prj)).unwrap();
     assert_eq!(table.rows[0][0], number);
     assert!(table.rows[0][3].contains(&tag));
@@ -59,5 +59,5 @@ fn devices_change_over_to_successors() {
     let out = run(&p, &mut prj, "use_successor_parts", json!({ "number": number })).unwrap();
     assert!(out["changed"].as_array().unwrap().iter().any(|c| c["device"] == tag.as_str()));
     assert!(prj.devices[&tag].parts.iter().any(|r| r.number == "NEW.1"));
-    assert!(issues(&prj).iter().all(|i| !i.message.contains(&number)));
+    assert!(issues(&prj).iter().all(|i| !i.message().contains(&number)));
 }

@@ -1,7 +1,7 @@
 use super::*;
 use crate::geom::p;
 use crate::panel::{collisions, PanelItem};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn item(id: u64, kind: ItemKind, x: f32, y: f32, w: f32, h: f32) -> PanelItem {
@@ -120,7 +120,7 @@ fn ferrules_in_wire_list_and_bom() {
     for w in prj.pages.iter_mut().flat_map(|pg| pg.wires.iter_mut()).filter(|w| w.cable.is_empty()) {
         w.cross_section = "0.75 mm²".into();
     }
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.wiring.is_empty());
     let list = crate::reports::production_wire_list(&prj, &an);
     let col = list.headers.iter().position(|h| *h == "Ferrule part").unwrap();
@@ -129,13 +129,13 @@ fn ferrules_in_wire_list_and_bom() {
     let len = list.headers.iter().position(|h| *h == "Length (mm)").unwrap();
     let first_unrouted = list.rows.iter().position(|r| r[len].is_empty()).unwrap_or(list.rows.len());
     assert!(list.rows[first_unrouted..].iter().all(|r| r[len].is_empty()));
-    let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap();
     let row = bom.rows.iter().find(|r| r[3] == "GEN.FER-0.75").expect("ferrules in the BOM");
     assert_eq!(row[1], (2 * an.wiring.iter().filter(|w| w.cross_section == "0.75 mm²").count()).to_string());
     assert!(!row[6].contains("not in project"), "described from the catalog");
     prj.layout.ferrules = false;
-    let an = Analysis::build(&prj);
-    assert!(!an.reports[&crate::model::ReportKind::BillOfMaterials].rows.iter().any(|r| r[3] == "GEN.FER-0.75"));
+    let an = Analysis::checked(&prj);
+    assert!(!an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap().rows.iter().any(|r| r[3] == "GEN.FER-0.75"));
 }
 
 #[test]

@@ -38,16 +38,19 @@ fn form_args(params: &[Param], texts: &[String]) -> Result<Map<String, Value>, S
 
 impl App {
     pub(super) fn plugins_menu(&mut self, ui: &mut egui::Ui) {
-        let commands: Vec<Command> = self.plugins.commands().cloned().collect();
-        for c in commands {
-            if ui.button(&c.name).on_hover_text(text(&c.help)).clicked() {
-                let texts = vec![String::new(); c.params.len()];
-                self.plugins_ui.result = None;
-                if c.params.is_empty() {
-                    self.run_plugin_command(&c, &[]);
+        // One submenu per plugin with commands (the built-in areas first, then the
+        // external plugins in load order).
+        let groups: Vec<(String, Vec<Command>)> =
+            self.plugins.list().iter().filter(|l| l.enabled && !l.registry.commands.is_empty()).map(|l| (text(&l.info.name).to_string(), l.registry.commands.clone())).collect();
+        for (name, commands) in groups {
+            ui.menu_button(name, |ui| {
+                for c in commands {
+                    if ui.button(&c.name).on_hover_text(text(&c.help)).clicked() {
+                        self.start_plugin_command(c);
+                        ui.close();
+                    }
                 }
-                self.plugins_ui.command = Some((c, texts));
-            }
+            });
         }
         let reports: Vec<(String, String)> = self.plugins.reports().map(|r| (r.name.clone(), text(&r.title).to_string())).collect();
         if !reports.is_empty() {
@@ -58,29 +61,24 @@ impl App {
                 self.show_plugin_report(name, title);
             }
         }
-        let exporters: Vec<(String, String, String)> = self.plugins.exporters().map(|e| (e.name.clone(), text(&e.title).to_string(), e.extension.clone())).collect();
-        if !exporters.is_empty() {
-            ui.separator();
-        }
-        for (name, title, ext) in exporters {
-            if ui.button(tr_fmt!("⬇ {}", title)).clicked() {
-                let ctx = ui.ctx().clone();
-                let result = self.plugins.exporter(&name).map(|e| (e.run)(&self.prj));
-                match result {
-                    Some(Ok(content)) => self.export(&ctx, format!("{}.{ext}", name), (&title, &ext), content),
-                    Some(Err(e)) => self.notify(&ctx, tr_fmt!("Export failed: {}", e)),
-                    None => {}
-                }
-            }
-        }
         ui.separator();
         if ui.button(tr("Manage plugins…")).clicked() {
             self.plugins_ui.open = true;
         }
     }
 
+    /// Opens the parameter form of a command (runs it at once when it has none).
+    fn start_plugin_command(&mut self, c: Command) {
+        let texts = vec![String::new(); c.params.len()];
+        self.plugins_ui.result = None;
+        if c.params.is_empty() {
+            self.run_plugin_command(&c, &[]);
+        }
+        self.plugins_ui.command = Some((c, texts));
+    }
+
     fn run_plugin_command(&mut self, c: &Command, texts: &[String]) {
-        let result = form_args(&c.params, texts).and_then(|args| self.plugins.run(c, &mut self.prj, &args));
+        let result = form_args(&c.params, texts).and_then(|args| self.plugins.run(c, &mut self.session.prj, &args));
         self.plugins_ui.result = Some(result.map(|v| match v {
             Value::String(s) => s,
             Value::Null => tr("Done.").to_string(),
@@ -90,7 +88,7 @@ impl App {
 
     fn show_plugin_report(&mut self, name: String, title: String) {
         let table = match self.plugins.report(&name) {
-            Some(r) => (r.run)(&self.prj, &self.analysis),
+            Some(r) => (r.run)(&self.session.prj, &self.session.analysis),
             None => return,
         };
         self.plugins_ui.report = Some((name, title, table));
@@ -98,7 +96,7 @@ impl App {
 
     /// Plugins whose checks, reports or menu entries changed: the analysis is rebuilt.
     fn plugins_changed(&mut self) {
-        self.analysis_rev = self.history.rev.wrapping_add(1);
+        self.session.invalidate();
     }
 
     pub(super) fn plugins_windows(&mut self, ctx: &egui::Context) {

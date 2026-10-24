@@ -11,33 +11,12 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::functions::{self, FunctionDef};
 use crate::model::*;
-use crate::symbols::{self, Func};
-use serde::{Deserialize, Serialize};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::OnceLock;
+pub use crate::model::properties::{DataType, Group, Library, ObjectClass, PropDef, Values};
 
 mod builtin;
-
-/// Property values of an object, keyed by property key (with index).
-pub type Values = BTreeMap<String, String>;
-
-/// The kind of object a property belongs to.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum ObjectClass {
-    Project,
-    Page,
-    #[default]
-    Device,
-    /// A single function (placed symbol) of a device.
-    Function,
-    /// Functions that are terminals.
-    Terminal,
-    /// Functions that are PLC connection points.
-    PlcPoint,
-    Cable,
-    /// Part data (read only; shown for devices through their assigned parts).
-    Part,
-}
 
 impl ObjectClass {
     pub const ALL: [ObjectClass; 8] = [
@@ -81,37 +60,6 @@ impl ObjectClass {
     pub fn from_key(key: &str) -> Option<ObjectClass> {
         ObjectClass::ALL.into_iter().find(|c| c.key() == key.trim())
     }
-}
-
-/// Group of properties in the property editor.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum Group {
-    #[default]
-    General,
-    Customer,
-    Structure,
-    Commercial,
-    Electrical,
-    Control,
-    Contacts,
-    Protection,
-    Motor,
-    Drive,
-    Sensor,
-    Signal,
-    PowerSupply,
-    Plc,
-    Mechanical,
-    Environment,
-    Safety,
-    Communication,
-    Fluid,
-    Process,
-    Maintenance,
-    Documentation,
-    Supplementary,
-    /// User defined properties without a group of their own.
-    User,
 }
 
 impl Group {
@@ -180,22 +128,6 @@ impl Group {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum DataType {
-    #[default]
-    Text,
-    MultiLine,
-    Integer,
-    Real,
-    Bool,
-    /// One of the definition's choices.
-    Choice,
-    /// `YYYY-MM-DD`.
-    Date,
-    /// File name or URL.
-    Link,
-}
-
 impl DataType {
     pub const ALL: [DataType; 8] =
         [DataType::Text, DataType::MultiLine, DataType::Integer, DataType::Real, DataType::Bool, DataType::Choice, DataType::Date, DataType::Link];
@@ -229,43 +161,6 @@ impl DataType {
     pub fn from_key(key: &str) -> Option<DataType> {
         DataType::ALL.into_iter().find(|t| t.key() == key.trim())
     }
-}
-
-/// Definition of a property.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct PropDef {
-    pub key: String,
-    /// English name of a built-in property, the name of a user defined one.
-    pub name: String,
-    pub class: ObjectClass,
-    pub group: Group,
-    #[serde(rename = "type")]
-    pub ty: DataType,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub unit: String,
-    /// Values of a selection list.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub choices: Vec<String>,
-    /// Number of indices (`key[1]` … `key[n]`); 0 = a single value.
-    #[serde(skip_serializing_if = "crate::model::is_zero")]
-    pub indices: u16,
-    /// Value while none is set.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub default: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub description: String,
-    #[serde(skip)]
-    pub builtin: bool,
-    /// Computed or taken from the model, cannot be changed.
-    #[serde(skip)]
-    pub read_only: bool,
-    /// Taken from a field of the model, which is changed instead of a stored value.
-    #[serde(skip)]
-    pub field: bool,
-    /// Property of the same object read while no value is set.
-    #[serde(skip)]
-    pub fallback: String,
 }
 
 impl PropDef {
@@ -374,19 +269,6 @@ pub fn builtin() -> &'static [PropDef] {
             })
             .collect()
     })
-}
-
-/// User defined properties, function definitions and placement schemes of a
-/// project; also the format of a property library file shared between projects.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Library {
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub properties: Vec<PropDef>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub functions: Vec<FunctionDef>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub schemes: Vec<crate::props::Scheme>,
 }
 
 impl Library {
@@ -557,7 +439,7 @@ impl Object {
             Object::Device(tag) => tr_fmt!("Device {}", tag),
             Object::Function(id) => match find_symbol(prj, *id) {
                 Some((_, s)) => {
-                    let name = symbols::get(&s.sym).map(|d| tr(d.name)).unwrap_or("?");
+                    let name = prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?");
                     format!("{} {name} {}", s.tag, if s.label.is_empty() { s.pins.join("-") } else { s.label.clone() }).trim().to_string()
                 }
                 None => String::new(),
@@ -586,7 +468,7 @@ impl Object {
             Object::Page(_) => vec![ObjectClass::Page],
             Object::Device(_) => vec![ObjectClass::Device, ObjectClass::Part],
             Object::Function(id) => {
-                let func = find_symbol(prj, *id).and_then(|(_, s)| symbols::get(&s.sym)).map(|d| d.func);
+                let func = find_symbol(prj, *id).and_then(|(_, s)| prj.symbol(&s.sym)).map(|d| d.func);
                 match func {
                     Some(Func::Terminal) => vec![ObjectClass::Function, ObjectClass::Terminal],
                     Some(Func::Plc) => vec![ObjectClass::Function, ObjectClass::PlcPoint],
@@ -629,7 +511,7 @@ fn find_symbol_mut(prj: &mut Project, id: u64) -> Option<&mut SymbolInst> {
 /// The symbols of a device, main functions first.
 fn device_symbols<'a>(prj: &'a Project, tag: &str) -> Vec<(usize, &'a SymbolInst)> {
     let mut v: Vec<(usize, &SymbolInst)> = prj.pages.iter().enumerate().flat_map(|(pi, pg)| pg.symbols.iter().filter(|s| s.tag == tag).map(move |s| (pi, s))).collect();
-    v.sort_by_key(|(_, s)| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Main { .. })));
+    v.sort_by_key(|(_, s)| !matches!(prj.symbol(&s.sym).map(|d| d.func), Some(Func::Main { .. })));
     v
 }
 
@@ -930,7 +812,7 @@ fn computed(prj: &Project, obj: &Object, key: &str) -> Option<String> {
         }
         Object::Function(id) => {
             let (pi, s) = find_symbol(prj, *id)?;
-            let sd = symbols::get(&s.sym);
+            let sd = prj.symbol(&s.sym);
             Some(match key {
                 "function.label" | "terminal.number" | "plc.address" => s.label.clone(),
                 "function.function_text" => s.function_text.clone(),

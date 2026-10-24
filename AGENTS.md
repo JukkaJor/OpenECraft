@@ -40,6 +40,9 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
 
+- `docs/architecture.md` describes the crate graph, the layers inside `openecraft-core`
+  and where a new feature goes; `application/conventions/tests.rs` enforces the layer
+  rules (`CORE_RULES`). Extend the table when you add or layer a module.
 - Code needed by more than one executable belongs in a library crate under `crates/`,
   never duplicated.
   - `openecraft-parts` stays free of UI and platform dependencies (only `serde` /
@@ -67,8 +70,11 @@ at once. New features must use and grow this system instead of bypassing it:
 
 - A new check, report, export or function on the project is registered as an extension
   of a built-in plugin (`crates/openecraft-api/src/builtin.rs`, one plugin per area),
-  not hard-wired into one front end. Front ends never special-case a built-in plugin;
-  they only show what `Plugins` offers.
+  not hard-wired into one front end. The built-in checks, report tables and exports of
+  core are registry entries too (`openecraft_core::{checks, reports, exporters}::builtin`,
+  published by the plugins `project_checks`, `project_reports`, `project_exports`):
+  a new built-in one is a new entry there. Front ends never special-case a built-in
+  plugin; they only show what `Plugins` offers.
 - When a feature needs something a plugin cannot do yet (a new kind of extension such
   as symbols, importers or project events, or more data for an existing one), add the
   extension point to `Registry` first, consume it in every front end (editor, command
@@ -92,16 +98,19 @@ column to the catalog and a `Lang` variant).
 - Write texts in English in the code and pass them through `openecraft_i18n`:
   `tr("Open")` for plain texts, `tr_fmt!("Saved {}", name)` for texts with `{}`
   placeholders (the translation may reorder with `{0}`, `{1}`), `tr_const!("…")` in
-  `const` / `static` tables (translate with `tr(…)` where the text is shown).
+  `const` / `static` tables (translate with `tr(…)` where the text is shown), and
+  `openecraft_core::issue!(severity, target, "Cable {} defined {} times", tag, n)` for
+  the issues of a check (the template and its arguments are kept, `Issue::message()`
+  translates where the issue is shown; plugin and generated texts use `Issue::plain`).
   Never build sentences from translated fragments (`"Macro " + tr("saved")`); translate
   the whole sentence, one catalog entry per variant.
 - Every English text needs a line in `crates/openecraft-i18n/src/catalog/extra.tsv`
   (`English<TAB>Deutsch<TAB>Français<TAB>Español`; `\n` and `\"` as in Rust source;
   `{}` placeholders must appear in every translation). `translations.tsv` holds the
   initial set. The catalog is checked by `cargo test`: all four languages present,
-  placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` and every
-  built-in symbol name is in the catalog, and all translated characters exist in the
-  bundled fonts.
+  placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` / `issue!`
+  and every built-in symbol name is in the catalog, and all translated characters exist
+  in the bundled fonts.
 - `application/conventions/tests.rs` fails for plain string literals passed to widgets
   (`ui.button("…")`, `.label("…")`, `.on_hover_text("…")`, `Window::new("…")`, …).
 - Translate at the point where the text is shown, so that switching the language in
@@ -162,10 +171,14 @@ violations. Do not weaken or delete that test to make a change pass.
   `Project`, no explicit undo bookkeeping is needed.
 - **Platform code:** keep `#[cfg(target_arch = "wasm32")]` branches confined to
   `crates/openecraft-ui/src/io.rs` and the `main.rs` files.
-- **Command line / MCP:** every command is a `Tool` in `cli/src/tools/<area>.rs` (parameters,
-  help text, run function); the command line and the MCP server are generated from that
-  list, so add new functions there once. Help texts use `tr_const!` and need catalog
-  entries; MCP clients get them in English.
+- **Command line / MCP:** every operation on the project is a command of a built-in
+  plugin in `crates/openecraft-api/src/builtin/<area>.rs` (an entry of the area's
+  `COMMANDS` table: name, help text, parameters, `fn(&mut Project, &Args)`); the command
+  line, the MCP server and the editor's Plugins menu take it from there, so add new
+  functions there once. Only tools that need the session or the machine (project files,
+  undo, exports to files, the parts server, plugins) are `Tool`s in
+  `cli/src/tools/<area>.rs`. Help texts use `tr_const!` and need catalog entries; MCP
+  clients get them in English.
 - **Parts manager:** keep its editing rules (drafts, renames, unsaved changes) in
   `parts-manager/src/session.rs` (no UI code, unit tested); `app.rs` only draws.
 - **Style:** match the surrounding code; keep comments as sparse as the existing ones.

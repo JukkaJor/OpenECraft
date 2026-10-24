@@ -1,7 +1,7 @@
 use super::*;
 use crate::netlist::Netlist;
 use crate::panel::{new_enclosure, virtual_wiring, OpenWire, RoutedWire, ENCLOSURE_PART};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn wiring(prj: &Project) -> (Vec<RoutedWire>, Vec<OpenWire>) {
@@ -144,7 +144,7 @@ fn wires_cross_into_the_neighbouring_enclosure() {
     let (y, z) = next_passage_place(&prj.layout, 0);
     add_passage(&mut prj, 0, y, z, PASSAGE_DIAMETER);
     assert!(reasons(&prj).is_empty());
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let w = an.wiring.iter().find(|w| w.from.starts_with("-X1") || w.to.starts_with("-X1")).unwrap();
     assert_eq!(w.legs.len(), 1);
     assert_ne!(w.enclosure, w.last_enclosure());

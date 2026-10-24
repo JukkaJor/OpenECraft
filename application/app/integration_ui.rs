@@ -3,7 +3,7 @@
 //! as a list of changes (conflicts unchecked) and the checked ones are taken over.
 
 use super::App;
-use crate::integration::{self, Direction, Field, Preview, Profile, CONNECTORS};
+use openecraft_core::integration::{self, Direction, Field, Preview, Profile, CONNECTORS};
 use crate::io::Purpose;
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
@@ -70,7 +70,7 @@ impl App {
                     }
                 });
                 ui.label(tr("Profile"));
-                let profiles: Vec<String> = self.prj.integration.profiles.iter().filter(|p| p.connector == c.id).map(|p| p.name.clone()).collect();
+                let profiles: Vec<String> = self.session.prj.integration.profiles.iter().filter(|p| p.connector == c.id).map(|p| p.name.clone()).collect();
                 if !profiles.contains(&ui_state.profile) {
                     ui_state.profile.clear();
                 }
@@ -116,12 +116,12 @@ impl App {
     }
 
     fn refresh_integration_preview(&mut self) {
-        let rev = self.history.rev;
+        let rev = self.session.history.rev;
         let Some(imp) = &mut self.integration_ui.import else { return };
         if imp.rev == rev {
             return;
         }
-        imp.preview = integration::import(&self.prj, &self.analysis, &CONNECTORS[imp.connector], &imp.text, &imp.mapping);
+        imp.preview = integration::import(&self.session.prj, &self.session.analysis, &CONNECTORS[imp.connector], &imp.text, &imp.mapping);
         imp.rev = rev;
         imp.checked = match &imp.preview {
             Ok(p) => (0..p.changes.len()).filter(|&i| !p.changes[i].conflict).collect(),
@@ -183,7 +183,7 @@ impl App {
                             imp.checked.remove(&i);
                         }
                     }
-                    let key = if ch.key.is_empty() { self.prj.info.name.clone() } else { ch.key.replace('|', " – ") };
+                    let key = if ch.key.is_empty() { self.session.prj.info.name.clone() } else { ch.key.replace('|', " – ") };
                     ui.label(format!("{} {}", ch.target.title(), key));
                     ui.label(ch.field.title());
                     ui.label(&ch.old);
@@ -204,7 +204,7 @@ impl App {
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut self.integration_ui.new_profile).hint_text(tr("Profile name")).desired_width(160.0));
             let name = self.integration_ui.new_profile.trim();
-            let ok = !name.is_empty() && self.prj.integration.profile(name).is_none();
+            let ok = !name.is_empty() && self.session.prj.integration.profile(name).is_none();
             if ui.add_enabled(ok, egui::Button::new(tr("Add profile for this connector"))).clicked() {
                 actions.push(Action::AddProfile);
             }
@@ -212,7 +212,7 @@ impl App {
         ui.separator();
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
             let mut changed: Option<(usize, Profile)> = None;
-            for (pi, p) in self.prj.integration.profiles.iter().enumerate() {
+            for (pi, p) in self.session.prj.integration.profiles.iter().enumerate() {
                 let title = integration::connector(&p.connector).map(|c| tr(c.title)).unwrap_or_default();
                 egui::CollapsingHeader::new(RichText::new(format!("{} – {}", p.name, title)).strong()).id_salt(("integration_profile", pi)).show(ui, |ui| {
                     let accepts: Vec<Field> = integration::connector(&p.connector).map(|c| c.accepts.to_vec()).unwrap_or_default();
@@ -241,13 +241,13 @@ impl App {
                 });
             }
             if let Some((i, p)) = changed {
-                self.prj.integration.profiles[i] = p;
+                self.session.prj.integration.profiles[i] = p;
             }
         });
     }
 
     fn integration_linked(&mut self, ui: &mut egui::Ui) {
-        let i = &self.prj.integration;
+        let i = &self.session.prj.integration;
         if i.items.is_empty() && i.documents.is_empty() && i.project.is_default() {
             ui.label(tr("No data of other systems imported yet."));
             return;
@@ -288,7 +288,7 @@ impl App {
                         ui.label(RichText::new(f.title()).strong());
                     }
                     ui.end_row();
-                    let project = (self.prj.info.name.clone(), &i.project);
+                    let project = (self.session.prj.info.name.clone(), &i.project);
                     for (name, d) in std::iter::once(project).chain(i.documents.iter().map(|(k, v)| (k.clone(), v))) {
                         if d.is_default() {
                             continue;
@@ -305,7 +305,7 @@ impl App {
     }
 
     fn integration_log(&mut self, ui: &mut egui::Ui) {
-        let log = &self.prj.integration.log;
+        let log = &self.session.prj.integration.log;
         if log.is_empty() {
             ui.label(tr("Nothing exchanged yet."));
             return;
@@ -336,14 +336,14 @@ impl App {
         match a {
             Action::Export => {
                 let today = self.today();
-                let text = integration::export(&mut self.prj, &self.analysis, c, &today);
-                let name = format!("{}_{}.{}", self.prj.info.name, c.id, c.extension);
+                let text = integration::export(&mut self.session.prj, &self.session.analysis, c, &today);
+                let name = format!("{}_{}.{}", self.session.prj.info.name, c.id, c.extension);
                 let filter = if c.extension == "csv" { "CSV" } else { "JSON" };
                 self.export(ctx, name, (filter, c.extension), text);
             }
             Action::ExportExchange => {
-                let text = integration::exchange(&self.prj, &self.analysis);
-                self.export(ctx, format!("{}_exchange.json", self.prj.info.name), ("JSON", "json"), text);
+                let text = integration::exchange(&self.session.prj, &self.session.analysis);
+                self.export(ctx, format!("{}_exchange.json", self.session.prj.info.name), ("JSON", "json"), text);
             }
             Action::Import => self.io.open(ctx, Purpose::Integration),
             Action::Apply => {
@@ -352,19 +352,19 @@ impl App {
                 let picked: Vec<_> = imp.checked.iter().filter_map(|&i| p.changes.get(i).cloned()).collect();
                 // Checked conflicts were chosen to overwrite the project's values.
                 let today = self.today();
-                let n = integration::apply(&mut self.prj, &self.analysis, &CONNECTORS[imp.connector], &picked, true, &today);
+                let n = integration::apply(&mut self.session.prj, &self.session.analysis, &CONNECTORS[imp.connector], &picked, true, &today);
                 self.notify(ctx, tr_fmt!("{} values taken over", n));
             }
             Action::Discard => self.integration_ui.import = None,
             Action::AddProfile => {
                 let name = self.integration_ui.new_profile.trim().to_string();
-                self.prj.integration.profiles.push(Profile { name: name.clone(), connector: c.id.to_string(), mapping: BTreeMap::new() });
+                self.session.prj.integration.profiles.push(Profile { name: name.clone(), connector: c.id.to_string(), mapping: BTreeMap::new() });
                 self.integration_ui.profile = name;
                 self.integration_ui.new_profile.clear();
             }
             Action::RemoveProfile(i) => {
-                if i < self.prj.integration.profiles.len() {
-                    self.prj.integration.profiles.remove(i);
+                if i < self.session.prj.integration.profiles.len() {
+                    self.session.prj.integration.profiles.remove(i);
                 }
             }
         }
@@ -374,7 +374,7 @@ impl App {
     pub(super) fn integration_file_loaded(&mut self, name: &str, text: String) {
         let ui_state = &mut self.integration_ui;
         let connector = ui_state.connector.min(CONNECTORS.len() - 1);
-        let mapping = self.prj.integration.profile(&ui_state.profile).map(|p| p.mapping.clone()).unwrap_or_default();
+        let mapping = self.session.prj.integration.profile(&ui_state.profile).map(|p| p.mapping.clone()).unwrap_or_default();
         ui_state.import = Some(Import { connector, name: crate::io::short_name(name).to_string(), text, mapping, preview: Ok(Preview::default()), rev: u64::MAX, checked: BTreeSet::new() });
         ui_state.tab = Tab::Exchange;
         ui_state.open = true;

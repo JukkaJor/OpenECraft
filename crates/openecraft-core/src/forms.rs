@@ -6,12 +6,15 @@
 
 use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P};
-use crate::model::{PageKind, Project, ReportKind};
+use crate::model::{PageKind, Project, ReportId, ReportKind};
+use crate::params::Text;
 use crate::render::{Draw, Ink, VAnchor};
+use crate::table::header_matches;
 use crate::symbols::Anchor;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
+pub use crate::model::forms::{FilterOp, Form, FormItem, Forms, ReportForm, ReportScheme, RowFilter, SortKey};
 
 /// Size of the title block area (origin at its top left corner).
 pub const AREA_W: f32 = crate::frame::TITLE_W;
@@ -20,35 +23,6 @@ pub const AREA_H: f32 = crate::frame::TITLE_H;
 pub const STANDARD: &str = "Standard";
 pub const COMPACT: &str = "Compact";
 pub const NONE: &str = "None";
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub enum FormItem {
-    Line {
-        a: P,
-        b: P,
-        width: f32,
-    },
-    Rect {
-        a: P,
-        b: P,
-        width: f32,
-        #[serde(default)]
-        fill: bool,
-    },
-    /// Text with placeholders. `label` texts are drawn in the frame colour;
-    /// `max_width` > 0 shrinks long values to fit.
-    Text {
-        pos: P,
-        text: String,
-        size: f32,
-        anchor: Anchor,
-        #[serde(default)]
-        label: bool,
-        #[serde(default)]
-        max_width: f32,
-    },
-}
 
 impl FormItem {
     pub fn kind_name(&self) -> &'static str {
@@ -92,55 +66,6 @@ impl FormItem {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Form {
-    pub name: String,
-    pub items: Vec<FormItem>,
-}
-
-/// Layout of a report page.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ReportForm {
-    /// Heading of the page; empty: the name of the report.
-    pub title: String,
-    /// Columns shown, in this order (header names); empty: all columns.
-    pub columns: Vec<String>,
-    /// Rows per page; 0: the default.
-    pub rows: usize,
-    /// Only rows that pass all filters are shown.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub filters: Vec<RowFilter>,
-    /// Sort order (first key first); empty: the order of the report.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub sort: Vec<SortKey>,
-    /// Column that groups the rows: report blocks start new pages for every value;
-    /// empty: the first column.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub group: String,
-    /// Values of the first shown column that repeat the row above are left blank.
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub blank_repeats: bool,
-    /// Relative column widths by header name (instead of the report's).
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub widths: BTreeMap<String, f32>,
-    /// Text size of the rows (mm); 0: fitted to the rows per page.
-    pub text_size: f32,
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub enum FilterOp {
-    #[default]
-    Contains,
-    NotContains,
-    Equals,
-    NotEquals,
-    StartsWith,
-    Empty,
-    NotEmpty,
-}
-
 impl FilterOp {
     pub const ALL: [FilterOp; 7] =
         [FilterOp::Contains, FilterOp::NotContains, FilterOp::Equals, FilterOp::NotEquals, FilterOp::StartsWith, FilterOp::Empty, FilterOp::NotEmpty];
@@ -163,15 +88,6 @@ impl FilterOp {
     }
 }
 
-/// Keeps the rows whose cell in `column` passes (case-insensitive).
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct RowFilter {
-    pub column: String,
-    pub op: FilterOp,
-    pub value: String,
-}
-
 impl RowFilter {
     pub fn passes(&self, cell: &str) -> bool {
         let (c, v) = (cell.to_lowercase(), self.value.trim().to_lowercase());
@@ -187,50 +103,10 @@ impl RowFilter {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct SortKey {
-    pub column: String,
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub descending: bool,
-}
-
-/// A named report form of one report, e.g. "Terminals for the workshop"; report
-/// blocks choose it by name.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ReportScheme {
-    pub name: String,
-    pub kind: ReportKind,
-    pub form: ReportForm,
-}
-
 impl Default for ReportScheme {
     fn default() -> Self {
-        ReportScheme { name: String::new(), kind: ReportKind::DeviceList, form: ReportForm::default() }
+        ReportScheme { name: String::new(), kind: ReportKind::DeviceList.into(), form: ReportForm::default() }
     }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Forms {
-    /// Title blocks defined for the project.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub title_blocks: Vec<Form>,
-    /// Title block of pages that do not choose one; empty: the standard one.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub default_title_block: String,
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub reports: BTreeMap<ReportKind, ReportForm>,
-    /// Named report forms.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub schemes: Vec<ReportScheme>,
-    /// Plot frames defined for the project.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub frames: Vec<crate::frame::PlotFrame>,
-    /// Plot frame of pages that do not choose one; empty: A3 landscape.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub default_frame: String,
 }
 
 /// File format for exchanging title blocks and report schemes.
@@ -268,14 +144,16 @@ pub fn merge(prj: &mut Project, lib: FormLibrary) -> (usize, usize) {
 }
 
 /// Report form of a report: the scheme of that name, otherwise the report's form.
-pub fn report_form<'a>(prj: &'a Project, kind: ReportKind, scheme: &str) -> Option<&'a ReportForm> {
+pub fn report_form<'a>(prj: &'a Project, kind: impl Into<ReportId>, scheme: &str) -> Option<&'a ReportForm> {
+    let kind = kind.into();
     let named = prj.forms.schemes.iter().find(|s| !scheme.is_empty() && s.kind == kind && s.name == scheme);
     named.map(|s| &s.form).or_else(|| prj.forms.reports.get(&kind))
 }
 
 /// Renames a scheme together with the report blocks and pages that use it. Fails for
 /// empty names and names the report already has.
-pub fn rename_scheme(prj: &mut Project, kind: ReportKind, old: &str, new: &str) -> bool {
+pub fn rename_scheme(prj: &mut Project, kind: impl Into<ReportId>, old: &str, new: &str) -> bool {
+    let kind = kind.into();
     let new = new.trim();
     if new.is_empty() || prj.forms.schemes.iter().any(|s| s.kind == kind && s.name == new) {
         return false;
@@ -294,7 +172,8 @@ pub fn rename_scheme(prj: &mut Project, kind: ReportKind, old: &str, new: &str) 
 }
 
 /// Names of the schemes of a report.
-pub fn scheme_names(prj: &Project, kind: ReportKind) -> Vec<String> {
+pub fn scheme_names(prj: &Project, kind: impl Into<ReportId>) -> Vec<String> {
+    let kind = kind.into();
     prj.forms.schemes.iter().filter(|s| s.kind == kind).map(|s| s.name.clone()).collect()
 }
 
@@ -553,15 +432,20 @@ pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P
 
 /// Indices of the report columns shown by a form (all if it chooses none or none
 /// of its columns exist).
-pub fn report_columns(form: Option<&ReportForm>, headers: &[&str]) -> Vec<usize> {
+pub fn report_columns(form: Option<&ReportForm>, headers: &[Text]) -> Vec<usize> {
     let chosen: Vec<usize> = form
-        .map(|f| f.columns.iter().filter_map(|c| headers.iter().position(|h| h == c)).collect())
+        .map(|f| f.columns.iter().filter_map(|c| headers.iter().position(|h| header_matches(h, c))).collect())
         .unwrap_or_default();
     if chosen.is_empty() {
         (0..headers.len()).collect()
     } else {
         chosen
     }
+}
+
+/// The value a form stores for a header (by key or any of its translations).
+pub fn header_value<'a, T>(map: &'a BTreeMap<String, T>, header: &Text) -> Option<&'a T> {
+    map.iter().find(|(k, _)| header_matches(header, k)).map(|(_, v)| v)
 }
 
 #[cfg(test)]

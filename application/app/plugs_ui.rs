@@ -3,9 +3,9 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::model::ReportKind;
-use crate::plugs;
-use crate::symbols::PinKind;
+use openecraft_core::model::ReportKind;
+use openecraft_core::plugs;
+use openecraft_core::symbols::PinKind;
 use egui::RichText;
 
 #[derive(Default)]
@@ -34,14 +34,14 @@ impl App {
         if !self.plugs_ui.open {
             return;
         }
-        let tags = plugs::plug_tags(&self.prj);
+        let tags = plugs::plug_tags(&self.session.prj);
         if !tags.contains(&self.plugs_ui.plug) {
             self.plugs_ui.plug = tags.first().cloned().unwrap_or_default();
         }
         let plug = self.plugs_ui.plug.clone();
-        let rows = plugs::rows(&self.prj, &plug, &self.analysis.netlist, &self.analysis.open);
-        let capacity = plugs::capacity(&self.prj, &plug);
-        let parts: Vec<String> = self.prj.devices.get(&plug).map(|d| d.parts.iter().map(|r| r.number.clone()).collect()).unwrap_or_default();
+        let rows = plugs::rows(&self.session.prj, &plug, &self.session.analysis.netlist, &self.session.analysis.open);
+        let capacity = plugs::capacity(&self.session.prj, &plug);
+        let parts: Vec<String> = self.session.prj.devices.get(&plug).map(|d| d.parts.iter().map(|r| r.number.clone()).collect()).unwrap_or_default();
         let used = rows.iter().filter(|r| !r.pins.is_empty()).count();
         let mut open = true;
         let (mut sort, mut moved, mut jump, mut diagram) = (false, None, None, false);
@@ -114,13 +114,13 @@ impl App {
         });
         self.plugs_ui.open = open;
         if sort {
-            plugs::sort(&mut self.prj, &plug);
+            plugs::sort(&mut self.session.prj, &plug);
         }
         if let Some((i, up)) = moved {
-            plugs::move_pin(&mut self.prj, &plug, i, up);
+            plugs::move_pin(&mut self.session.prj, &plug, i, up);
         }
         if diagram {
-            self.report_kind = ReportKind::PlugDiagram;
+            self.report_kind = ReportKind::PlugDiagram.into();
             self.show_reports = true;
         }
         if let Some((page, id)) = jump {

@@ -5,28 +5,10 @@
 
 use crate::model::{natural_cmp, Project};
 use crate::netlist::{pin_designation, PinRef};
-use crate::reports::Analysis;
-use serde::{Deserialize, Serialize};
+use crate::analysis::Analysis;
 use std::collections::BTreeSet;
 use std::fmt::Write;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Harness {
-    pub id: u64,
-    /// Complete device tag, e.g. `=A1-WH1`.
-    pub tag: String,
-    pub description: String,
-    /// Length in metres of wires that are not routed in the panel layout (field
-    /// wiring); 0 = unknown.
-    pub length: f32,
-    /// Part number of the finished harness (bill of materials).
-    pub part: String,
-    /// Connections of the harness: both ends as connection point designations
-    /// (`-S1:13`), in [`key`] order.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub connections: Vec<[String; 2]>,
-}
+pub use crate::model::harness::Harness;
 
 /// Order independent key of a connection.
 pub fn key(a: &str, b: &str) -> [String; 2] {
@@ -82,7 +64,7 @@ pub fn connections_at(prj: &Project, an: &Analysis, page: usize, wires: &BTreeSe
     let ends: Vec<crate::geom::P> = prj.pages[page].wires.iter().filter(|w| wires.contains(&w.id)).flat_map(|w| [w.a, w.b]).collect();
     let pos = |pin: PinRef| {
         let s = &prj.pages[pin.page].symbols[pin.sym];
-        crate::symbols::get(&s.sym).map(|d| d.pin_world(pin.pin, s.pos, s.rot, s.mirror))
+        prj.symbol(&s.sym).map(|d| d.pin_world(pin.pin, s.pos, s.rot, s.mirror))
     };
     let touched = |pin: PinRef| pin.page == page && pos(pin).map(|q| ends.iter().any(|e| e.same(q))).unwrap_or(false);
     (0..an.connections.len()).filter(|&i| touched(an.connections[i].a) && touched(an.connections[i].b)).collect()

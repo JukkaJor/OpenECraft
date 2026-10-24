@@ -7,7 +7,8 @@
 //! list of [`Change`]s that is reviewed and then applied.
 
 use crate::model::{natural_cmp, PartRef, Project, ReportKind};
-use crate::reports::{Analysis, Issue, Severity};
+use crate::analysis::Analysis;
+use crate::issue::{Issue, Severity};
 use crate::wiring::{self, Mark};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde::{Deserialize, Serialize};
@@ -17,6 +18,7 @@ use std::collections::BTreeMap;
 mod connectors;
 
 pub use connectors::exchange;
+pub use crate::model::integration::{Direction, DocLink, Field, Integration, ItemLink, Profile, SyncEntry};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum System {
@@ -43,63 +45,6 @@ impl System {
             System::WiringMachine => tr("Wiring machine"),
         }
     }
-}
-
-/// Neutral field of the exchange. The code is the column / key name in exported
-/// files; imports also accept the aliases.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Field {
-    PartNumber,
-    ErpNumber,
-    ItemId,
-    Revision,
-    Lifecycle,
-    Description,
-    Manufacturer,
-    TypeNumber,
-    OrderNumber,
-    Supplier,
-    Quantity,
-    Unit,
-    Price,
-    Currency,
-    Stock,
-    LeadTime,
-    ToOrder,
-    Total,
-    OrderStatus,
-    Ordered,
-    Delivery,
-    Tag,
-    /// Devices that use a part (lists, not a key).
-    Devices,
-    Enclosure,
-    Face,
-    X,
-    Y,
-    Z,
-    Width,
-    Height,
-    Depth,
-    Net,
-    From,
-    To,
-    WireNumber,
-    Color,
-    CrossSection,
-    Length,
-    StripFrom,
-    StripTo,
-    FerruleFrom,
-    FerruleTo,
-    Cable,
-    Core,
-    Job,
-    Status,
-    Note,
-    Document,
-    DocumentNumber,
-    State,
 }
 
 impl Field {
@@ -454,100 +399,8 @@ pub fn connector(id: &str) -> Option<&'static Connector> {
     CONNECTORS.iter().find(|c| c.id == id.trim())
 }
 
-/// Data of a part in the other systems.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ItemLink {
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub erp_number: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub item_id: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub revision: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub lifecycle: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stock: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lead_time: Option<u32>,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub order_status: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ordered: Option<f32>,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub delivery: String,
-}
-
-/// Number, revision and state of a document (the project or a page) in the PDM system.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct DocLink {
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub number: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub revision: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub state: String,
-}
-
-/// Settings of a connection to one system: the connector and the column names the
-/// other system uses for the neutral fields.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Profile {
-    pub name: String,
-    pub connector: String,
-    /// Field code → column name of the other system.
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub mapping: BTreeMap<String, String>,
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Direction {
-    #[default]
-    Export,
-    Import,
-}
-
-/// One exchange with another system.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct SyncEntry {
-    pub date: String,
-    pub connector: String,
-    pub direction: Direction,
-    /// Exported records or applied changes.
-    pub count: usize,
-    #[serde(skip_serializing_if = "is_zero")]
-    pub conflicts: usize,
-}
-
-fn is_zero(n: &usize) -> bool {
-    *n == 0
-}
-
 /// Most entries kept in the log.
 pub const LOG_SIZE: usize = 200;
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Integration {
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub profiles: Vec<Profile>,
-    /// Links of the parts, by part number.
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub items: BTreeMap<String, ItemLink>,
-    /// Links of the pages, by page name.
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub documents: BTreeMap<String, DocLink>,
-    #[serde(skip_serializing_if = "DocLink::is_default")]
-    pub project: DocLink,
-    /// Values at the last export, per connector: `target|key|field` → value.
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub baseline: BTreeMap<String, BTreeMap<String, String>>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub log: Vec<SyncEntry>,
-}
 
 impl DocLink {
     pub fn is_default(&self) -> bool {
@@ -800,7 +653,7 @@ pub fn current(prj: &Project, an: &Analysis, target: Target, key: &str, field: F
 /// Keys of all objects a connector's imports can change (for the baseline).
 fn keys(prj: &Project, an: &Analysis, target: Target) -> Vec<String> {
     match target {
-        Target::Part => bom(an).into_iter().map(|l| l.part).collect(),
+        Target::Part => bom(prj, an).into_iter().map(|l| l.part).collect(),
         Target::Device => prj.devices.keys().cloned().collect(),
         Target::Placement => prj.layout.enclosures.iter().flat_map(|e| &e.items).filter(|i| i.kind == crate::panel::ItemKind::Device && !i.tag.is_empty()).map(|i| i.tag.clone()).collect(),
         Target::Wire => an.wiring.iter().map(wire_key).collect(),
@@ -830,8 +683,8 @@ pub struct BomLine {
 }
 
 /// The bill of materials (as in the report) as data.
-pub fn bom(an: &Analysis) -> Vec<BomLine> {
-    let Some(t) = an.reports.get(&ReportKind::BillOfMaterials) else { return Vec::new() };
+pub fn bom(prj: &Project, an: &Analysis) -> Vec<BomLine> {
+    let Some(t) = an.report(prj, ReportKind::BillOfMaterials) else { return Vec::new() };
     t.rows
         .iter()
         .filter(|r| r.len() > 7 && !r[3].is_empty())
@@ -1107,7 +960,7 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         if devices.is_empty() {
             continue;
         }
-        out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Part {} is {} in the PLM system (used by {})", number, link.lifecycle, devices.join(", ")), target: None });
+        out.push(crate::issue!(Severity::Warning, None, "Part {} is {} in the PLM system (used by {})", number, link.lifecycle, devices.join(", ")));
     }
     out
 }

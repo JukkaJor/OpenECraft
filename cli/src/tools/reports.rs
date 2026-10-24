@@ -7,18 +7,12 @@ use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::forms::{self, ReportForm, ReportScheme};
 use openecraft_core::report_blocks::{self, ReportBlock};
-use openecraft_core::reports::Analysis;
+use openecraft_core::analysis::Analysis;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
+use openecraft_api::builtin::reports::{block_json};
 
 pub static TOOLS: &[Tool] = &[
-    Tool {
-        name: "list_report_blocks",
-        help: tr_const!("Lists the report blocks with their report, scheme, groups and generated pages"),
-        params: &[],
-        needs_project: true,
-        run: list_report_blocks,
-    },
     Tool {
         name: "set_report_block",
         help: tr_const!("Creates or changes a report block (report pages generated together, e.g. one terminal diagram per strip)"),
@@ -35,25 +29,11 @@ pub static TOOLS: &[Tool] = &[
         run: set_report_block,
     },
     Tool {
-        name: "remove_report_block",
-        help: tr_const!("Removes a report block; the pages it generated stay"),
-        params: &[param("name", Kind::Str, tr_const!("Name of the block"))],
-        needs_project: true,
-        run: remove_report_block,
-    },
-    Tool {
         name: "generate_report_blocks",
         help: tr_const!("Generates the pages of the report blocks again (replacing the pages they generated before)"),
         params: &[optional("name", Kind::Str, tr_const!("Only this block"))],
         needs_project: true,
         run: generate_report_blocks,
-    },
-    Tool {
-        name: "list_report_schemes",
-        help: tr_const!("Lists the report schemes (named report forms) with their settings"),
-        params: &[],
-        needs_project: true,
-        run: list_report_schemes,
     },
     Tool {
         name: "set_report_scheme",
@@ -78,37 +58,18 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn block_json(prj: &openecraft_core::model::Project, b: &ReportBlock) -> Value {
-    let pages: Vec<String> = report_blocks::report_pages(prj, Some(&b.name)).into_iter().map(|i| prj.pages[i].name.clone()).collect();
-    json!({
-        "name": b.name,
-        "kind": snake(b.kind),
-        "scheme": b.scheme,
-        "per_group": b.per_group,
-        "groups": b.groups,
-        "function": b.function,
-        "location": b.location,
-        "pages": pages,
-    })
-}
-
-fn list_report_blocks(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let prj = s.project()?;
-    Ok(Value::Array(prj.report_blocks.iter().map(|b| block_json(prj, b)).collect()))
-}
-
 fn set_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let kind = a.str("kind").map(|k| report_id(&s.plugins, k)).transpose()?;
     let prj = s.project_mut()?;
     let name = a.req("name").trim().to_string();
     let index = match prj.report_blocks.iter().position(|b| b.name == name) {
         Some(i) => i,
         None => {
-            let kind = report_kind(a.str("kind").ok_or_else(|| tr_fmt!("New report block {} needs a kind", name))?)?;
+            let kind = kind.ok_or_else(|| tr_fmt!("New report block {} needs a kind", name))?;
             prj.report_blocks.push(ReportBlock { name: name.clone(), kind, ..Default::default() });
             prj.report_blocks.len() - 1
         }
     };
-    let kind = a.str("kind").map(report_kind).transpose()?;
     let b = &mut prj.report_blocks[index];
     if let Some(k) = kind.filter(|k| *k != b.kind) {
         b.kind = k;
@@ -132,35 +93,24 @@ fn set_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
     Ok(block_json(prj, &b))
 }
 
-fn remove_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let prj = s.project_mut()?;
-    let name = a.req("name");
-    let i = prj.report_blocks.iter().position(|b| b.name == name).ok_or_else(|| tr_fmt!("No report block named {}", name))?;
-    prj.report_blocks.remove(i);
-    Ok(json!({ "removed": name }))
-}
-
 fn generate_report_blocks(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let reports: Vec<openecraft_api::Report> = s.plugins.reports().cloned().collect();
     let prj = s.project_mut()?;
     let pages = match a.str("name") {
         Some(name) => {
             let i = prj.report_blocks.iter().position(|b| b.name == name).ok_or_else(|| tr_fmt!("No report block named {}", name))?;
-            let an = Analysis::build(prj);
+            let mut an = Analysis::build(prj);
+            an.set_reports(reports);
             report_blocks::generate(prj, &an, i)?
         }
-        None => report_blocks::generate_all(prj)?,
+        None => report_blocks::generate_all_with(prj, reports)?,
     };
     Ok(json!({ "pages": pages }))
 }
 
-fn list_report_schemes(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let prj = s.project()?;
-    Ok(Value::Array(prj.forms.schemes.iter().map(|s| json!({ "name": s.name, "kind": snake(s.kind), "form": s.form })).collect()))
-}
-
 fn set_report_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let kind = report_id(&s.plugins, a.req("kind"))?;
     let prj = s.project_mut()?;
-    let kind = report_kind(a.req("kind"))?;
     let name = a.req("name").trim().to_string();
     let form: ReportForm = serde_json::from_value(a.value("form").cloned().unwrap_or_default()).map_err(|e| tr_fmt!("Invalid form: {}", e))?;
     let scheme = ReportScheme { name: name.clone(), kind, form };
@@ -168,7 +118,7 @@ fn set_report_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
         Some(s) => *s = scheme,
         None => prj.forms.schemes.push(scheme),
     }
-    Ok(json!({ "name": name, "kind": snake(kind) }))
+    Ok(json!({ "name": name, "kind": kind.as_str() }))
 }
 
 fn output_reports(s: &mut Session, a: &Args) -> Result<Value, String> {
@@ -180,7 +130,9 @@ fn output_reports(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     let pages = report_blocks::report_pages(prj, block);
     let text = std::fs::read_to_string(target).map_err(|e| tr_fmt!("Cannot read {}: {}", target, e))?;
-    let (json, n) = report_blocks::output_to_file(prj, &Analysis::build(prj), &pages, &text)?;
+    let mut an = Analysis::build(prj);
+    an.set_reports(s.plugins.reports().cloned());
+    let (json, n) = report_blocks::output_to_file(prj, &an, &pages, &text)?;
     std::fs::write(target, json).map_err(|e| tr_fmt!("Cannot write {}: {}", target, e))?;
     Ok(json!({ "target": target, "pages": n }))
 }

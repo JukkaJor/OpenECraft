@@ -4,10 +4,10 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::forms;
+use openecraft_core::forms;
 use crate::io::{self, Purpose};
-use crate::model::ReportKind;
-use crate::report_blocks::{self, ReportBlock};
+use openecraft_core::model::ReportId;
+use openecraft_core::report_blocks::{self, ReportBlock};
 use egui::RichText;
 
 #[derive(Default)]
@@ -36,9 +36,11 @@ impl App {
         }
         let mut open = true;
         let mut action = None;
+        let reports = self.report_list();
+        let title_of = |id: ReportId| reports.iter().find(|(k, _)| *k == id).map(|(_, t)| t.clone()).unwrap_or_else(|| id.title());
         egui::Window::new(tr("Report blocks")).open(&mut open).default_size([820.0, 460.0]).show(ctx, |ui| {
             let ru = &mut self.report_blocks_ui;
-            let prj = &mut self.prj;
+            let prj = &mut self.session.prj;
             ui.horizontal(|ui| {
                 if ui.button(tr("➕ New block")).clicked() {
                     let name = (1..).map(|i| tr_fmt!("Block {}", i)).find(|n| !prj.report_blocks.iter().any(|b| &b.name == n)).unwrap_or_default();
@@ -83,9 +85,9 @@ impl App {
                     ui.end_row();
                     ui.label(tr("Report"));
                     let kind = b.kind;
-                    egui::ComboBox::from_id_salt("rbkind").selected_text(kind.title()).width(240.0).show_ui(ui, |ui| {
-                        for k in ReportKind::ALL {
-                            ui.selectable_value(&mut b.kind, k, k.title());
+                    egui::ComboBox::from_id_salt("rbkind").selected_text(title_of(kind)).width(240.0).show_ui(ui, |ui| {
+                        for (k, title) in &reports {
+                            ui.selectable_value(&mut b.kind, *k, title);
                         }
                     });
                     if b.kind != kind {
@@ -121,7 +123,7 @@ impl App {
                         ru.name = old;
                     }
                 }
-                let n = report_blocks::block_pages(prj, &self.analysis, &prj.report_blocks[i]).len();
+                let n = report_blocks::block_pages(prj, &self.session.analysis, &prj.report_blocks[i]).len();
                 ui.weak(tr_fmt!("Generates {} pages", n));
                 ui.horizontal(|ui| {
                     if ui.button(tr("⟳ Generate")).on_hover_text(tr("Replaces the pages of this block")).clicked() {
@@ -149,21 +151,21 @@ impl App {
         self.report_blocks_ui.open = open;
         match action {
             Some(Action::Generate(i)) => {
-                let name = self.prj.report_blocks[i].name.clone();
-                match report_blocks::generate(&mut self.prj, &self.analysis, i) {
+                let name = self.session.prj.report_blocks[i].name.clone();
+                match report_blocks::generate(&mut self.session.prj, &self.session.analysis, i) {
                     Ok(n) => self.notify(ctx, tr_fmt!("Report block {}: {} pages generated", name, n)),
                     Err(e) => self.notify(ctx, e),
                 }
             }
             Some(Action::GenerateAll) => self.generate_report_blocks(ctx),
             Some(Action::Delete(i)) => {
-                self.prj.report_blocks.remove(i);
+                self.session.prj.report_blocks.remove(i);
                 self.report_blocks_ui.selected = None;
             }
             Some(Action::Output) => {
                 let ru = &self.report_blocks_ui;
-                let block = ru.selected.filter(|_| ru.output_block).map(|i| self.prj.report_blocks[i].name.clone());
-                let pages = report_blocks::report_pages(&self.prj, block.as_deref());
+                let block = ru.selected.filter(|_| ru.output_block).map(|i| self.session.prj.report_blocks[i].name.clone());
+                let pages = report_blocks::report_pages(&self.session.prj, block.as_deref());
                 if pages.is_empty() {
                     self.notify(ctx, tr("No report pages to output").to_string());
                 } else {
@@ -173,21 +175,21 @@ impl App {
             }
             None => {}
         }
-        self.page = self.page.min(self.prj.pages.len() - 1);
+        self.session.page = self.session.page.min(self.session.prj.pages.len() - 1);
     }
 
     pub(super) fn generate_report_blocks(&mut self, ctx: &egui::Context) {
-        match report_blocks::generate_all(&mut self.prj) {
+        match report_blocks::generate_all(&mut self.session.prj) {
             Ok(n) => self.notify(ctx, tr_fmt!("Report blocks updated: {} pages", n)),
             Err(e) => self.notify(ctx, e),
         }
-        self.page = self.page.min(self.prj.pages.len() - 1);
+        self.session.page = self.session.page.min(self.session.prj.pages.len() - 1);
     }
 
     /// Writes the chosen report pages into the loaded project file.
     pub(super) fn output_reports(&mut self, ctx: &egui::Context, loaded: &io::Loaded) {
-        let pages = self.report_blocks_ui.pending_output.take().unwrap_or_else(|| report_blocks::report_pages(&self.prj, None));
-        let result = report_blocks::output_to_file(&self.prj, &self.analysis, &pages, &loaded.text())
+        let pages = self.report_blocks_ui.pending_output.take().unwrap_or_else(|| report_blocks::report_pages(&self.session.prj, None));
+        let result = report_blocks::output_to_file(&self.session.prj, &self.session.analysis, &pages, &loaded.text())
             .and_then(|(json, n)| self.io.save_to(&loaded.name, &json).map(|_| n));
         match result {
             Ok(n) => self.notify(ctx, tr_fmt!("{} report pages output to {}", n, io::short_name(&loaded.name))),

@@ -8,16 +8,7 @@ use crate::geom::{p, P};
 use crate::model::{PageKind, Project};
 use crate::render::{Draw, Ink, VAnchor};
 use crate::symbols::Anchor;
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Document {
-    /// File name, e.g. `datasheet.pdf`.
-    pub name: String,
-    /// File content, base64 encoded.
-    pub data: String,
-}
+pub use crate::model::document::Document;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -48,7 +39,7 @@ impl Kind {
 
 impl Document {
     pub fn new(name: &str, bytes: &[u8]) -> Document {
-        Document { name: name.to_string(), data: base64_encode(bytes) }
+        Document { name: name.to_string(), data: base64_encode(bytes).into() }
     }
 
     pub fn bytes(&self) -> Result<Vec<u8>, String> {

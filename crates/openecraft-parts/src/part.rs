@@ -2,7 +2,7 @@
 //! data and the parts database container.
 
 use crate::portal::{Attachment, Lifecycle};
-use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d};
+use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d, Shared};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -372,10 +372,11 @@ pub struct Part {
     // Graphics
     /// Front view for mounting layouts.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_2d: Option<Model2d>,
-    /// 3D model for the panel layout.
+    pub model_2d: Option<Shared<Model2d>>,
+    /// 3D model for the panel layout (shared: project snapshots compare and clone it
+    /// by pointer).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_3d: Option<Mesh3d>,
+    pub model_3d: Option<Shared<Mesh3d>>,
     /// Terminals for wiring in the panel layout; empty: generated from the function
     /// templates ([`Part::connection_points_or_default`]).
     #[serde(skip_serializing_if = "Vec::is_empty")]

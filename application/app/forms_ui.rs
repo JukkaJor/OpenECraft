@@ -4,12 +4,13 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette};
-use crate::forms::{self, Form, FormItem, FormLibrary, ReportForm};
-use crate::geom::{p, P};
+use openecraft_core::forms::{self, Form, FormItem, FormLibrary, ReportForm};
+use openecraft_core::geom::{p, P};
 use crate::io::Purpose;
-use crate::model::ReportKind;
-use crate::render::Ink;
-use crate::symbols::Anchor;
+use openecraft_core::model::{ReportId, ReportKind};
+use openecraft_core::render::Ink;
+use openecraft_core::params::Text;
+use openecraft_core::symbols::Anchor;
 use egui::{vec2, Color32, PointerButton, RichText, Sense, Stroke};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
@@ -29,7 +30,7 @@ pub struct FormsUi {
     form: String,
     item: Option<usize>,
     drag: Option<P>,
-    report: Option<ReportKind>,
+    report: Option<ReportId>,
     /// Edited report scheme; empty: the report's form.
     scheme: String,
 }
@@ -40,7 +41,7 @@ impl FormsUi {
     }
 
     /// Opens the report form of a report.
-    pub fn open_report(&mut self, kind: ReportKind) {
+    pub fn open_report(&mut self, kind: ReportId) {
         self.open = true;
         self.tab = Tab::Reports;
         self.report = Some(kind);
@@ -82,7 +83,7 @@ impl App {
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::Forms),
             Some(Action::Export) => {
-                let lib = FormLibrary { title_blocks: self.prj.forms.title_blocks.clone(), schemes: self.prj.forms.schemes.clone() };
+                let lib = FormLibrary { title_blocks: self.session.prj.forms.title_blocks.clone(), schemes: self.session.prj.forms.schemes.clone() };
                 let json = serde_json::to_string_pretty(&lib).unwrap_or_default();
                 self.export(ctx, "title_blocks.json".into(), (tr("OpenECraft title blocks"), "json"), json);
             }
@@ -90,11 +91,12 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn title_block_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
-        let names = forms::names(&self.prj);
+        let names = forms::names(&self.session.prj);
         let fu = &mut self.forms_ui;
-        let prj = &mut self.prj;
+        let prj = &mut self.session.prj;
         if !names.contains(&fu.form) {
             fu.form = if prj.forms.default_title_block.is_empty() { forms::STANDARD.into() } else { prj.forms.default_title_block.clone() };
             fu.item = None;
@@ -160,7 +162,7 @@ impl App {
         let used = (0..prj.pages.len()).filter(|&i| forms::title_block(prj, i).name == fu.form).count();
         ui.weak(tr_fmt!("Used on {} of {} pages", used, prj.pages.len()));
         let custom = prj.forms.title_blocks.iter().position(|f| f.name == fu.form);
-        let page = self.page.min(prj.pages.len().saturating_sub(1));
+        let page = self.session.page.min(prj.pages.len().saturating_sub(1));
         match custom {
             None => {
                 ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Built-in title blocks are read only – use “Copy as new” to make your own."));
@@ -251,18 +253,20 @@ impl App {
 
     fn report_form_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
+        let reports = self.report_list();
         let fu = &mut self.forms_ui;
-        let kind = *fu.report.get_or_insert(ReportKind::DeviceList);
-        let schemes = forms::scheme_names(&self.prj, kind);
+        let kind = *fu.report.get_or_insert(ReportKind::DeviceList.into());
+        let kind_title = reports.iter().find(|(k, _)| *k == kind).map(|(_, t)| t.clone()).unwrap_or_else(|| kind.title());
+        let schemes = forms::scheme_names(&self.session.prj, kind);
         if !schemes.contains(&fu.scheme) {
             fu.scheme.clear();
         }
         let (mut new_scheme, mut delete_scheme) = (false, false);
         ui.horizontal(|ui| {
             ui.label(tr("Report"));
-            egui::ComboBox::from_id_salt("rfkind").selected_text(kind.title()).width(240.0).show_ui(ui, |ui| {
-                for k in ReportKind::ALL {
-                    ui.selectable_value(&mut fu.report, Some(k), k.title());
+            egui::ComboBox::from_id_salt("rfkind").selected_text(kind_title.clone()).width(240.0).show_ui(ui, |ui| {
+                for (k, title) in &reports {
+                    ui.selectable_value(&mut fu.report, Some(*k), title);
                 }
             });
             ui.label(tr("Scheme"));
@@ -288,24 +292,25 @@ impl App {
             fu.scheme.clear();
             return action;
         }
-        let Some(table) = self.analysis.reports.get(&kind) else { return action };
-        let headers: Vec<&str> = table.headers.clone();
+        let Some(table) = self.session.analysis.report(&self.session.prj, kind) else { return action };
+        let headers: Vec<&str> = table.header_keys();
+        let titles: Vec<&str> = table.header_texts();
         let stored = if fu.scheme.is_empty() {
-            self.prj.forms.reports.get(&kind).cloned()
+            self.session.prj.forms.reports.get(&kind).cloned()
         } else {
-            self.prj.forms.schemes.iter().find(|s| s.kind == kind && s.name == fu.scheme).map(|s| s.form.clone())
+            self.session.prj.forms.schemes.iter().find(|s| s.kind == kind && s.name == fu.scheme).map(|s| s.form.clone())
         };
         let stored = stored.unwrap_or_default();
         let mut form = stored.clone();
         if new_scheme {
             let name = (1..).map(|i| tr_fmt!("Scheme {}", i)).find(|n| !schemes.contains(n)).unwrap_or_default();
-            self.prj.forms.schemes.push(forms::ReportScheme { name: name.clone(), kind, form: form.clone() });
+            self.session.prj.forms.schemes.push(forms::ReportScheme { name: name.clone(), kind, form: form.clone() });
             fu.scheme = name;
             return action;
         }
         if delete_scheme {
             let name = std::mem::take(&mut fu.scheme);
-            self.prj.forms.schemes.retain(|s| !(s.kind == kind && s.name == name));
+            self.session.prj.forms.schemes.retain(|s| !(s.kind == kind && s.name == name));
             return action;
         }
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
@@ -314,16 +319,16 @@ impl App {
                     ui.label(tr("Scheme name"));
                     let mut name = fu.scheme.clone();
                     let resp = ui.add(egui::TextEdit::singleline(&mut name).desired_width(320.0));
-                    if resp.lost_focus() && name != fu.scheme && forms::rename_scheme(&mut self.prj, kind, &fu.scheme, &name) {
+                    if resp.lost_focus() && name != fu.scheme && forms::rename_scheme(&mut self.session.prj, kind, &fu.scheme, &name) {
                         fu.scheme = name.trim().to_string();
                     }
                     ui.end_row();
                 }
                 ui.label(tr("Page heading"));
-                ui.add(egui::TextEdit::singleline(&mut form.title).hint_text(kind.title()).desired_width(320.0));
+                ui.add(egui::TextEdit::singleline(&mut form.title).hint_text(kind_title.clone()).desired_width(320.0));
                 ui.end_row();
                 ui.label(tr("Rows per page"));
-                let default_rows = crate::report_blocks::rows_per_page(kind, None);
+                let default_rows = openecraft_core::report_blocks::rows_per_page(kind, None);
                 let mut rows = if form.rows == 0 { default_rows } else { form.rows };
                 if ui.add(egui::DragValue::new(&mut rows).range(5..=80)).changed() {
                     form.rows = if rows == default_rows { 0 } else { rows };
@@ -334,12 +339,12 @@ impl App {
                     .on_hover_text(tr("0 = fitted to the rows per page"));
                 ui.end_row();
                 ui.label(tr("Group column"));
-                let first = tr_fmt!("{} (first column)", headers.first().copied().unwrap_or(""));
-                let current = if form.group.is_empty() { first.clone() } else { form.group.clone() };
+                let first = tr_fmt!("{} (first column)", titles.first().copied().unwrap_or(""));
+                let current = if form.group.is_empty() { first.clone() } else { title_of(&form.group, &headers, &titles).to_string() };
                 egui::ComboBox::from_id_salt("rfgroup").selected_text(current).width(240.0).show_ui(ui, |ui| {
                     ui.selectable_value(&mut form.group, String::new(), first);
-                    for h in headers.iter().skip(1) {
-                        ui.selectable_value(&mut form.group, h.to_string(), *h);
+                    for (h, title) in headers.iter().zip(&titles).skip(1) {
+                        ui.selectable_value(&mut form.group, h.to_string(), *title);
                     }
                 })
                 .response
@@ -351,10 +356,10 @@ impl App {
             });
             ui.add_space(4.0);
             ui.columns(2, |cols| {
-                columns_editor(&mut cols[0], &mut form, &headers, &table.widths);
-                filter_editor(&mut cols[1], &mut form, &headers);
+                columns_editor(&mut cols[0], &mut form, &headers, &titles, &table.widths);
+                filter_editor(&mut cols[1], &mut form, &headers, &titles);
                 cols[1].add_space(8.0);
-                sort_editor(&mut cols[1], &mut form, &headers);
+                sort_editor(&mut cols[1], &mut form, &headers, &titles);
             });
             ui.horizontal(|ui| {
                 if ui.button(tr("Reset to standard")).clicked() {
@@ -365,23 +370,30 @@ impl App {
         });
         if form != stored {
             if !fu.scheme.is_empty() {
-                if let Some(s) = self.prj.forms.schemes.iter_mut().find(|s| s.kind == kind && s.name == fu.scheme) {
+                if let Some(s) = self.session.prj.forms.schemes.iter_mut().find(|s| s.kind == kind && s.name == fu.scheme) {
                     s.form = form;
                 }
             } else if form == ReportForm::default() {
-                self.prj.forms.reports.remove(&kind);
+                self.session.prj.forms.reports.remove(&kind);
             } else {
-                self.prj.forms.reports.insert(kind, form);
+                self.session.prj.forms.reports.insert(kind, form);
             }
         }
         action
     }
 }
 
-/// Shown columns in their order, then the hidden ones; with their widths.
-fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], widths: &[f32]) {
+/// Title of a column stored in a form (its key, or the name of an older file).
+fn title_of<'a>(column: &'a str, headers: &[&str], titles: &[&'a str]) -> &'a str {
+    headers.iter().position(|h| *h == column).map(|i| titles[i]).unwrap_or(column)
+}
+
+/// Shown columns in their order, then the hidden ones; with their widths. `headers`
+/// are the keys stored in the form, `titles` what the user sees.
+fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str], widths: &[f32]) {
     ui.label(RichText::new(tr("Columns")).strong());
-    let shown: Vec<usize> = forms::report_columns(Some(form), headers);
+    let texts: Vec<Text> = headers.iter().map(|h| Text::Owned(h.to_string())).collect();
+    let shown: Vec<usize> = forms::report_columns(Some(form), &texts);
     let mut order: Vec<(usize, bool)> = shown.iter().map(|&c| (c, true)).collect();
     order.extend((0..headers.len()).filter(|c| !shown.contains(c)).map(|c| (c, false)));
     let mut changed = false;
@@ -404,7 +416,7 @@ fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], wi
                     form.widths.insert(h.to_string(), w);
                 }
             }
-            changed |= ui.checkbox(on, h).changed();
+            changed |= ui.checkbox(on, titles[*c]).changed();
         });
     }
     if let Some((a, b)) = swap {
@@ -418,20 +430,21 @@ fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], wi
     }
 }
 
-fn column_combo(ui: &mut egui::Ui, id: (&str, usize), column: &mut String, headers: &[&str]) {
-    egui::ComboBox::from_id_salt(id).selected_text(column.as_str()).width(160.0).show_ui(ui, |ui| {
-        for h in headers {
-            ui.selectable_value(column, h.to_string(), *h);
+fn column_combo(ui: &mut egui::Ui, id: (&str, usize), column: &mut String, headers: &[&str], titles: &[&str]) {
+    let selected = title_of(column, headers, titles).to_string();
+    egui::ComboBox::from_id_salt(id).selected_text(selected).width(160.0).show_ui(ui, |ui| {
+        for (h, title) in headers.iter().zip(titles) {
+            ui.selectable_value(column, h.to_string(), *title);
         }
     });
 }
 
-fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
+fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str]) {
     ui.label(RichText::new(tr("Filter")).strong()).on_hover_text(tr("Only rows that pass all filters are shown"));
     let mut remove = None;
     for (i, f) in form.filters.iter_mut().enumerate() {
         ui.horizontal(|ui| {
-            column_combo(ui, ("rffcol", i), &mut f.column, headers);
+            column_combo(ui, ("rffcol", i), &mut f.column, headers, titles);
             egui::ComboBox::from_id_salt(("rffop", i)).selected_text(f.op.title()).width(120.0).show_ui(ui, |ui| {
                 for op in forms::FilterOp::ALL {
                     ui.selectable_value(&mut f.op, op, op.title());
@@ -453,12 +466,12 @@ fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
     }
 }
 
-fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
+fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], titles: &[&str]) {
     ui.label(RichText::new(tr("Sort order")).strong());
     let mut remove = None;
     for (i, k) in form.sort.iter_mut().enumerate() {
         ui.horizontal(|ui| {
-            column_combo(ui, ("rfscol", i), &mut k.column, headers);
+            column_combo(ui, ("rfscol", i), &mut k.column, headers, titles);
             ui.checkbox(&mut k.descending, tr("Descending"));
             if ui.small_button("🗑").clicked() {
                 remove = Some(i);
@@ -475,7 +488,7 @@ fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str]) {
 
 /// Title block drawn with the values of the current page; with `edit` its items
 /// can be picked and dragged.
-fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &crate::model::Project, page: usize, form: &mut Form, edit: bool) {
+fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &openecraft_core::model::Project, page: usize, form: &mut Form, edit: bool) {
     let width = ui.available_width().clamp(400.0, 1400.0);
     let zoom = width / forms::AREA_W;
     let (resp, painter) = ui.allocate_painter(vec2(width, forms::AREA_H * zoom + 8.0), Sense::click_and_drag());
@@ -591,11 +604,11 @@ fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, form: &mut Form,
     if resp.drag_started_by(PointerButton::Primary) {
         if let Some(q) = ui.input(|i| i.pointer.press_origin()).map(to_mm) {
             fu.item = nearest(form, q);
-            fu.drag = fu.item.map(|_| crate::symlib::snap(q, 0.5));
+            fu.drag = fu.item.map(|_| openecraft_core::symlib::snap(q, 0.5));
         }
     }
     if let (Some(last), Some(i), Some(q)) = (fu.drag, fu.item, resp.interact_pointer_pos().map(to_mm)) {
-        let q = crate::symlib::snap(q, 0.5);
+        let q = openecraft_core::symlib::snap(q, 0.5);
         let d = q - last;
         if (d.x != 0.0 || d.y != 0.0) && i < form.items.len() {
             form.items[i].translate(d);

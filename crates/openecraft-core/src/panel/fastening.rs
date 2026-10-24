@@ -7,26 +7,7 @@ use crate::model::Project;
 use crate::parts::mechanics::{nut_number, rivet_nut_number, screw_number, thread, washer_number};
 use crate::parts::Part;
 use openecraft_i18n::tr;
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Fastening {
-    /// From the part data, otherwise by kind and face (see [`Fastening::resolve`]).
-    #[default]
-    Auto,
-    /// Screwed into a tapped hole.
-    Tapped,
-    /// Screw through a clearance hole with nut and washers.
-    Through,
-    /// Screwed into a rivet nut.
-    RivetNut,
-    /// Nut on a welded threaded stud (no hole).
-    Stud,
-    /// Snapped on (rails), clamped into its cutout (door devices, fans, glands).
-    Clip,
-    /// Glued (self-adhesive ducts and bases).
-    Adhesive,
-}
+pub use crate::model::panel::Fastening;
 
 impl Fastening {
     pub const ALL: [Fastening; 7] =

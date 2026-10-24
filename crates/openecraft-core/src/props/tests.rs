@@ -47,21 +47,23 @@ fn older_fixed_kinds_are_converted_to_keys() {
 
 #[test]
 fn added_properties_stack_downwards() {
+    let symbols = Symbols::default();
     let mut s = SymbolInst { sym: "coil".into(), ..Default::default() };
-    add(&mut s, "device.description");
-    add(&mut s, "device.parts");
-    assert_eq!(s.props[0].offset, reference(&s));
+    add(&symbols, &mut s, "device.description");
+    add(&symbols, &mut s, "device.parts");
+    assert_eq!(s.props[0].offset, reference(&symbols, &s));
     assert!((s.props[1].offset.y - s.props[0].offset.y - 2.8).abs() < 1e-4);
 }
 
 #[test]
 fn schemes_are_captured_applied_and_updated() {
     let mut prj = project();
+    let symbols = prj.symbol_table();
     let mut s = prj.pages[0].symbols[0].clone();
-    add(&mut s, "device.description");
-    add(&mut s, "device.rated_voltage");
+    add(&symbols, &mut s, "device.description");
+    add(&symbols, &mut s, "device.rated_voltage");
     s.props[1].name = true;
-    let scheme = capture(&s, "Mine");
+    let scheme = capture(&symbols, &s, "Mine");
     assert_eq!(scheme.entries[0].offset, p(0.0, 0.0));
     define_scheme(&mut prj, scheme).unwrap();
     assert!(define_scheme(&mut prj, Scheme { name: "Part data".into(), ..Default::default() }).is_err());
@@ -74,7 +76,7 @@ fn schemes_are_captured_applied_and_updated() {
     assert_eq!(t.scheme, "Mine");
     assert_eq!(t.props.len(), 2);
     assert!(t.props[1].name);
-    assert_eq!(t.props[0].offset, reference(t));
+    assert_eq!(t.props[0].offset, reference(&symbols, t));
 
     // Changing the scheme updates every symbol using it.
     let mut changed = scheme_of(&prj, "Mine");

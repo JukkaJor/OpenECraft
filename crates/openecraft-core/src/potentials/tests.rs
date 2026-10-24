@@ -1,9 +1,10 @@
 use super::*;
 use crate::geom::p;
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) {
-    let def = crate::symbols::get(key).unwrap();
+    let def = prj.symbol(key).unwrap();
     let id = prj.new_id();
     prj.pages[0].symbols.push(SymbolInst {
         id,
@@ -43,7 +44,7 @@ fn props(prj: &Project, wire: u64) -> WireProps {
 }
 
 fn messages(prj: &Project) -> Vec<(Severity, String)> {
-    Analysis::build(prj).issues.into_iter().map(|i| (i.severity, i.message)).collect()
+    Analysis::checked(prj).issues.into_iter().map(|i| (i.severity, i.message())).collect()
 }
 
 #[test]
@@ -127,7 +128,7 @@ fn connections_carry_the_automatic_values() {
     sym(&mut prj, "coil", 140.0, 120.0, "-K1", "");
     wire(&mut prj, 100.0, 100.0, 140.0, 100.0);
     wire(&mut prj, 140.0, 100.0, 140.0, 116.0);
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let c = an.connections.iter().find(|c| c.net == "+24V").unwrap();
     assert_eq!((c.color.as_str(), c.cross_section.as_str()), ("BU", "0.75 mm²"));
 }

@@ -12,21 +12,7 @@
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::model::{natural_cmp, Page, PageKind, Project};
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-
-/// Aspect of a structure identifier.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum Aspect {
-    /// `=` what the system does.
-    Function,
-    /// `++` the plant, building or area.
-    Installation,
-    /// `+` where it is mounted (enclosure, field).
-    Location,
-    /// `-` the higher-level product (assembly) the device belongs to.
-    Product,
-}
 
 impl Aspect {
     pub const ALL: [Aspect; 4] = [Aspect::Function, Aspect::Installation, Aspect::Location, Aspect::Product];
@@ -69,23 +55,6 @@ impl Aspect {
     pub fn format(self, id: &str) -> String {
         format!("{}{id}", self.prefix())
     }
-}
-
-/// A device tag split into its aspects (stored without the prefix signs, except
-/// the device name which keeps its `-`). Product levels are separated by `-`.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Dt {
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub function: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub installation: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub location: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub product: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub name: String,
 }
 
 impl Dt {
@@ -245,28 +214,6 @@ pub fn relative(page: &Page, tag: &str) -> String {
     Dt::of_page(page).relative(tag)
 }
 
-/// Structure management of the project.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Structures {
-    /// Aspects the pages use; empty = function and location.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub aspects: Vec<Aspect>,
-    /// Defined identifiers with their descriptions.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub entries: Vec<Entry>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub work_areas: Vec<WorkArea>,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Entry {
-    pub aspect: Aspect,
-    pub id: String,
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub description: String,
-}
-
 impl Structures {
     pub fn is_default(&self) -> bool {
         *self == Structures::default()
@@ -349,17 +296,6 @@ impl Structures {
     }
 }
 
-/// A defined part of the project: only the pages and devices whose structure
-/// matches the filter are shown.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct WorkArea {
-    pub name: String,
-    /// Pattern per aspect: empty = any, `*` = any characters; without `*` the
-    /// identifier and its sub-levels (`A1.2`, `U1-A3`) match.
-    pub filter: Dt,
-}
-
 impl WorkArea {
     pub fn contains(&self, dt: &Dt) -> bool {
         Aspect::ALL.into_iter().all(|a| matches(self.filter.get(a), dt.get(a)))
@@ -406,6 +342,7 @@ pub struct Template {
 }
 
 use Aspect::{Function as F, Installation as I, Location as L, Product as P};
+pub use crate::model::structure::{Aspect, Dt, Entry, Structures, WorkArea};
 
 pub static TEMPLATES: &[Template] = &[
     Template { name: tr_const!("Function and location"), aspects: &[F, L], entries: &[] },

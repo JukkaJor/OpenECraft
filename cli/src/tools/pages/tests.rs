@@ -29,7 +29,6 @@ fn released_pages_are_not_deleted() {
     assert!(run(&mut s, "set_page", json!({ "page": "2", "name": "9" })).unwrap_err().contains("locked"));
 }
 
-
 #[test]
 fn dxf_drawings_are_imported_as_pages() {
     let mut s = session();

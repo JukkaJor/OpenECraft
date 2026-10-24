@@ -4,12 +4,12 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::archive::{self, ArchiveOptions};
+use openecraft_core::archive::{self, ArchiveOptions};
 use crate::io::{self, Purpose};
-use crate::model::*;
-use crate::projects::{self, Batch, Database, Entry};
-use crate::reports::Severity;
-use crate::{options, subproject, verify};
+use openecraft_core::model::*;
+use openecraft_core::projects::{self, Batch, Database, Entry};
+use openecraft_core::issue::Severity;
+use openecraft_core::{options, subproject, verify};
 use egui::{Color32, RichText};
 use openecraft_ui::io as fs;
 use std::collections::BTreeSet;
@@ -145,7 +145,7 @@ impl App {
             Some(Action::Archive) => {
                 let st = &self.projects_ui;
                 let opts = ArchiveOptions { comment: st.comment.clone(), date: fs::today(), pdf: st.pdf, compact: st.compact };
-                let bytes = archive::archive(&self.prj, &opts);
+                let bytes = archive::archive(&self.session.prj, &opts);
                 self.export_bytes(ctx, self.suggested_name(archive::ARCHIVE_EXT), (tr("OpenECraft project archive"), archive::ARCHIVE_EXT), &bytes);
             }
             Some(Action::Batch(paths)) => self.run_batch(ctx, paths),
@@ -155,6 +155,7 @@ impl App {
 
     // --------------------------------------------------------------- database
 
+    #[allow(clippy::too_many_lines)]
     fn database_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         if !fs::has_file_system() {
             ui.label(tr("The project database needs the desktop version: the browser cannot search folders."));
@@ -201,7 +202,7 @@ impl App {
             }
         });
         let found: Vec<Entry> = st.db.search(&st.query).into_iter().cloned().collect();
-        let open_file = self.file_name.clone();
+        let open_file = self.session.file_name.clone();
         egui::ScrollArea::vertical().id_salt("project_db").max_height(260.0).auto_shrink([false, true]).show(ui, |ui| {
             egui::Grid::new("project_db_grid").striped(true).num_columns(9).show(ui, |ui| {
                 ui.label("");
@@ -332,8 +333,8 @@ impl App {
         for path in paths {
             let name = io::short_name(&path).to_string();
             // The open project is changed in the editor (one undo step), not in its file.
-            if self.file_name.as_deref() == Some(path.as_str()) {
-                match b.apply(&mut self.prj) {
+            if self.session.file_name.as_deref() == Some(path.as_str()) {
+                match b.apply(&mut self.session.prj) {
                     Ok(c) => log.push(tr_fmt!("{}: {} changes in the open project (not saved yet)", name, c.len())),
                     Err(e) => log.push(format!("{name}: {e}")),
                 }
@@ -362,13 +363,13 @@ impl App {
     fn subprojects_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
         let st = &mut self.projects_ui;
-        if let Some(p) = &self.prj.subprojects.parent {
+        if let Some(p) = &self.session.prj.subprojects.parent {
             ui.label(tr_fmt!("This project is subproject {} of {} (taken out {}). Save it and insert it into the main project when the work is done.", p.name, p.project, p.exported));
             ui.separator();
         }
-        let page_name = |id: &u64| self.prj.pages.iter().find(|p| p.id == *id).map(|p| p.name.clone()).unwrap_or_else(|| "?".into());
+        let page_name = |id: &u64| self.session.prj.pages.iter().find(|p| p.id == *id).map(|p| p.name.clone()).unwrap_or_else(|| "?".into());
         let mut discard = None;
-        if self.prj.subprojects.children.is_empty() {
+        if self.session.prj.subprojects.children.is_empty() {
             ui.label(tr("No subprojects were taken out of this project."));
         } else {
             egui::Grid::new("subprojects_grid").striped(true).num_columns(4).show(ui, |ui| {
@@ -376,7 +377,7 @@ impl App {
                     ui.strong(h);
                 }
                 ui.end_row();
-                for c in &self.prj.subprojects.children {
+                for c in &self.session.prj.subprojects.children {
                     ui.label(&c.name).on_hover_text(&c.description);
                     ui.label(c.pages.iter().map(page_name).collect::<Vec<_>>().join(", "));
                     if c.out {
@@ -393,7 +394,7 @@ impl App {
             });
         }
         if let Some(name) = discard {
-            if let Err(e) = subproject::discard(&mut self.prj, &name) {
+            if let Err(e) = subproject::discard(&mut self.session.prj, &name) {
                 action = Some(Action::Notify(e));
             }
         }
@@ -413,7 +414,7 @@ impl App {
             ui.horizontal(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut st.sub_structure).hint_text(tr("=A1+CAB1")).desired_width(140.0));
                 if ui.button(tr("Choose pages")).on_hover_text(tr("Chooses the pages whose structure starts with this")).clicked() {
-                    if let Ok(ids) = subproject::select_pages(&self.prj, &[], &st.sub_structure) {
+                    if let Ok(ids) = subproject::select_pages(&self.session.prj, &[], &st.sub_structure) {
                         st.sub_pages = ids.into_iter().collect();
                     }
                 }
@@ -421,12 +422,12 @@ impl App {
             ui.end_row();
         });
         egui::ScrollArea::vertical().id_salt("sub_pages").max_height(180.0).show(ui, |ui| {
-            for pg in &self.prj.pages {
+            for pg in &self.session.prj.pages {
                 if matches!(pg.kind, PageKind::Mounting(_)) {
                     continue;
                 }
                 let mut on = st.sub_pages.contains(&pg.id);
-                let label = format!("{} {}", crate::structure::page_full_name(pg), pg.description);
+                let label = format!("{} {}", openecraft_core::structure::page_full_name(pg), pg.description);
                 if ui.add_enabled(!pg.locked || on, egui::Checkbox::new(&mut on, label)).changed() {
                     if on {
                         st.sub_pages.insert(pg.id);
@@ -445,8 +446,8 @@ impl App {
 
     fn extract_subproject(&mut self, ctx: &egui::Context) {
         let st = &self.projects_ui;
-        let pages: Vec<u64> = self.prj.pages.iter().filter(|p| st.sub_pages.contains(&p.id)).map(|p| p.id).collect();
-        let mut edited = self.prj.clone();
+        let pages: Vec<u64> = self.session.prj.pages.iter().filter(|p| st.sub_pages.contains(&p.id)).map(|p| p.id).collect();
+        let mut edited = self.session.prj.clone();
         let sub = match subproject::extract(&mut edited, &st.sub_name, &st.sub_description, &pages, &fs::today()) {
             Ok(s) => s,
             Err(e) => return self.notify(ctx, e),
@@ -454,7 +455,7 @@ impl App {
         let name: String = st.sub_name.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' }).collect();
         match self.io.save_as(&format!("{name}.{}", crate::io::PROJECT_EXT), (tr("OpenECraft project"), crate::io::PROJECT_EXT), &sub.to_json()) {
             Ok(Some(path)) => {
-                self.prj = edited;
+                self.session.prj = edited;
                 self.projects_ui.sub_pages.clear();
                 self.notify(ctx, tr_fmt!("Subproject saved as {}: its pages are locked until it is inserted", io::short_name(&path)));
             }
@@ -464,7 +465,7 @@ impl App {
     }
 
     pub(super) fn insert_subproject(&mut self, ctx: &egui::Context, bytes: &[u8]) {
-        let result = archive::read_project(bytes).and_then(|(sub, _)| subproject::insert(&mut self.prj, &sub, &fs::today()));
+        let result = archive::read_project(bytes).and_then(|(sub, _)| subproject::insert(&mut self.session.prj, &sub, &fs::today()));
         match result {
             Ok(r) => {
                 self.editor.selection.clear();
@@ -480,24 +481,24 @@ impl App {
     fn options_tab(&mut self, ui: &mut egui::Ui) -> Option<Action> {
         let mut action = None;
         ui.label(tr("Content of an inactive option is hidden: it is not drawn, evaluated, reported or exported."));
-        let page_id = self.prj.pages.get(self.page).map(|p| p.id).unwrap_or(0);
+        let page_id = self.session.prj.pages.get(self.session.page).map(|p| p.id).unwrap_or(0);
         let selection: Vec<u64> = self.editor.selection.iter().copied().collect();
-        if let Some(o) = self.prj.model_options.option_of(page_id) {
+        if let Some(o) = self.session.prj.model_options.option_of(page_id) {
             ui.label(tr_fmt!("The current page belongs to option {}.", o.name));
         }
         let mut set_active = None;
         let mut assign = None;
         let mut remove = None;
-        let config = self.prj.configuration.clone();
-        let names: Vec<String> = self.prj.model_options.options.iter().map(|o| o.name.clone()).collect();
+        let config = self.session.prj.configuration.clone();
+        let names: Vec<String> = self.session.prj.model_options.options.iter().map(|o| o.name.clone()).collect();
         egui::Grid::new("model_options").striped(true).num_columns(6).show(ui, |ui| {
             for h in [tr("Active"), tr("Name"), tr("Description"), tr("Condition"), tr("Content"), ""] {
                 ui.strong(h);
             }
             ui.end_row();
             for (i, name) in names.iter().enumerate() {
-                let pages = options::page_count(&self.prj, &self.prj.model_options.options[i]);
-                let o = &mut self.prj.model_options.options[i];
+                let pages = options::page_count(&self.session.prj, &self.session.prj.model_options.options[i]);
+                let o = &mut self.session.prj.model_options.options[i];
                 let mut active = o.active;
                 let by_hand = o.condition.trim().is_empty();
                 if ui.add_enabled(by_hand, egui::Checkbox::new(&mut active, "")).on_disabled_hover_text(tr("Follows its condition: use Apply conditions")).changed() {
@@ -531,30 +532,30 @@ impl App {
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut st.new_option).hint_text(tr("New option")).desired_width(160.0));
             if ui.add_enabled(!st.new_option.trim().is_empty(), egui::Button::new(tr("➕ Add"))).clicked() {
-                match options::define(&mut self.prj, &st.new_option, "", "") {
+                match options::define(&mut self.session.prj, &st.new_option, "", "") {
                     Ok(()) => st.new_option.clear(),
                     Err(e) => action = Some(Action::Notify(e)),
                 }
             }
             if ui.add_enabled(!selection.is_empty(), egui::Button::new(tr("Take selection out of its option"))).clicked() {
-                options::unassign(&mut self.prj, &selection);
+                options::unassign(&mut self.session.prj, &selection);
             }
             if ui.button(tr("Take page out of its option")).clicked() {
-                options::unassign(&mut self.prj, &[page_id]);
+                options::unassign(&mut self.session.prj, &[page_id]);
             }
             if ui.button(tr("Apply conditions")).on_hover_text(tr("Switches the options with a condition by the configurator options")).clicked() {
-                match options::apply_conditions(&mut self.prj) {
+                match options::apply_conditions(&mut self.session.prj) {
                     Ok(s) => action = Some(Action::Notify(tr_fmt!("{} options switched", s.len()))),
                     Err(e) => action = Some(Action::Notify(e)),
                 }
             }
         });
         let result = if let Some((name, active)) = set_active {
-            options::set_active(&mut self.prj, &name, active).map(|_| ())
+            options::set_active(&mut self.session.prj, &name, active).map(|_| ())
         } else if let Some((name, ids)) = assign {
-            options::assign(&mut self.prj, &name, &ids).map(|_| ())
+            options::assign(&mut self.session.prj, &name, &ids).map(|_| ())
         } else if let Some(name) = remove {
-            options::remove(&mut self.prj, &name)
+            options::remove(&mut self.session.prj, &name)
         } else {
             Ok(())
         };
@@ -562,7 +563,7 @@ impl App {
             action = Some(Action::Notify(e));
         }
         // Hidden objects can no longer be selected.
-        let prj = &self.prj;
+        let prj = &self.session.prj;
         self.editor.selection.retain(|id| options::in_pages(prj, *id));
         action
     }
@@ -600,13 +601,13 @@ impl App {
         ui.label(tr("Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks."));
         ui.horizontal(|ui| {
             if ui.button(tr("Verify project")).clicked() {
-                self.projects_ui.result = Some(verify::verify(&self.prj));
+                self.projects_ui.result = Some(verify::verify(&self.session.prj));
                 self.projects_ui.repaired.clear();
             }
             let repairable = self.projects_ui.result.as_ref().map_or(0, |v| v.repairable());
             if ui.add_enabled(repairable > 0, egui::Button::new(tr_fmt!("Repair {} findings", repairable))).clicked() {
-                self.projects_ui.repaired = verify::repair(&mut self.prj);
-                self.projects_ui.result = Some(verify::verify(&self.prj));
+                self.projects_ui.repaired = verify::repair(&mut self.session.prj);
+                self.projects_ui.result = Some(verify::verify(&self.session.prj));
             }
         });
         let st = &self.projects_ui;

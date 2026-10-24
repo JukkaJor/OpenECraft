@@ -1,6 +1,6 @@
 use super::*;
-use crate::reports::Analysis;
-use crate::sample::demo_project;
+use openecraft_core::analysis::Analysis;
+use openecraft_core::sample::demo_project;
 use egui::{Event, Modifiers, RawInput};
 
 /// Runs one editor frame on page `page` with the given input events.
@@ -149,7 +149,7 @@ fn dimension_tool_takes_three_clicks() {
     let d = &prj.pages[0].dimensions[0];
     assert_eq!((d.a, d.b), (p(40.0, 40.0), p(80.0, 48.0)));
     assert!((d.offset - 12.0).abs() < 1e-4);
-    assert_eq!(crate::graphics::dim_text(d), "40");
+    assert_eq!(openecraft_core::graphics::dim_text(d), "40");
 }
 
 #[test]
@@ -197,8 +197,8 @@ fn tag_block_is_dragged_into_place() {
     let mut ed = Editor::default();
     ready(&mut ed, &ctx, &mut prj);
     ed.selection.insert(7);
-    let def = symbols::get("coil").unwrap();
-    let block = render::tag_block_bounds(&prj, 0, def, &prj.pages[0].symbols[0]).unwrap();
+    let def = prj.symbol("coil").unwrap();
+    let block = render::tag_block_bounds(&prj, 0, &def, &prj.pages[0].symbols[0]).unwrap();
     let from = ed.w2s(SCREEN, block.center());
     let to = ed.w2s(SCREEN, block.center() + p(-20.0, 10.0));
     frame(&mut ed, &ctx, &mut prj, 0, vec![Event::PointerMoved(from)]);

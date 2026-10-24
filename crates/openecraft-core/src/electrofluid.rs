@@ -7,20 +7,10 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::index::{Index, Loc};
 use crate::model::*;
-use crate::reports::Severity;
-use crate::symbols::{self, Category, Func, SymbolDef};
-use serde::{Deserialize, Serialize};
+use crate::issue::Severity;
+use crate::symbols::{Category, Func, SymbolDef, SymbolRef};
 use std::collections::BTreeMap;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
-pub enum GroupKind {
-    #[default]
-    ValveTerminal,
-    ServiceUnit,
-    Manifold,
-    PowerUnit,
-    Other,
-}
+pub use crate::model::electrofluid::{DeviceGroup, GroupKind};
 
 impl GroupKind {
     pub const ALL: [GroupKind; 5] = [GroupKind::ValveTerminal, GroupKind::ServiceUnit, GroupKind::Manifold, GroupKind::PowerUnit, GroupKind::Other];
@@ -51,23 +41,6 @@ impl GroupKind {
     }
 }
 
-/// Fluid devices mounted together: the valves of a valve terminal in slot order, the
-/// components of a service unit.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct DeviceGroup {
-    /// Device tag of the group, e.g. `-KH1`.
-    pub tag: String,
-    pub kind: GroupKind,
-    pub description: String,
-    /// Device tags of the members in slot order.
-    pub members: Vec<String>,
-    /// Places of the group (valve terminal); 0 = not limited.
-    pub slots: u32,
-    /// Part number of the base (sub-base, manifold block).
-    pub part: String,
-}
-
 /// Solenoids of a fluid symbol.
 pub fn solenoids(def: &SymbolDef) -> usize {
     match def.key {
@@ -81,10 +54,10 @@ pub fn is_valve(def: &SymbolDef) -> bool {
 }
 
 /// Main function of a device: its symbol definition, instance and location.
-pub fn main_of<'a>(prj: &'a Project, idx: &Index, tag: &str) -> Option<(&'static SymbolDef, &'a SymbolInst, Loc)> {
+pub fn main_of<'a>(prj: &'a Project, idx: &Index, tag: &str) -> Option<(SymbolRef, &'a SymbolInst, Loc)> {
     let loc = *idx.devices.get(tag)?.mains.first()?;
     let s = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id)?;
-    Some((symbols::get(&s.sym)?, s, loc))
+    Some((prj.symbol(&s.sym)?, s, loc))
 }
 
 /// Device whose main function is a fluid power or process symbol.
@@ -154,7 +127,7 @@ pub fn entries(prj: &Project, idx: &Index) -> Vec<Entry> {
     for tag in idx.sorted_tags() {
         let Some((def, _, loc)) = main_of(prj, idx, tag).filter(|(d, _, _)| d.category == Category::Fluid) else { continue };
         let links = linked(prj, tag);
-        if solenoids(def) == 0 && links.is_empty() {
+        if solenoids(&def) == 0 && links.is_empty() {
             continue;
         }
         let electrical = links
@@ -164,7 +137,7 @@ pub fn entries(prj: &Project, idx: &Index) -> Vec<Entry> {
                 None => (t.clone(), String::new(), String::new()),
             })
             .collect();
-        v.push(Entry { tag: tag.clone(), function: tr(def.name).into(), location: loc.reference(prj), solenoids: solenoids(def), electrical, target: Some((loc.page, loc.sym_id)) });
+        v.push(Entry { tag: tag.clone(), function: tr(def.name).into(), location: loc.reference(prj), solenoids: solenoids(&def), electrical, target: Some((loc.page, loc.sym_id)) });
     }
     v
 }
@@ -188,7 +161,7 @@ pub fn problems(prj: &Project, idx: &Index) -> Vec<crate::fluid::Problem> {
             match main_of(prj, idx, m) {
                 None => v.push((Severity::Warning, tr_fmt!("Device group {}: {} is not in the schematic", g.tag, m), None)),
                 Some((d, _, _)) if !d.is_fluid() => v.push((Severity::Warning, tr_fmt!("Device group {}: {} is not a fluid device", g.tag, m), target(m))),
-                Some((d, _, _)) if g.kind == GroupKind::ValveTerminal && !is_valve(d) => {
+                Some((d, _, _)) if g.kind == GroupKind::ValveTerminal && !is_valve(&d) => {
                     v.push((Severity::Warning, tr_fmt!("Device group {}: {} is not a valve", g.tag, m), target(m)))
                 }
                 _ => {}
@@ -215,7 +188,7 @@ pub fn problems(prj: &Project, idx: &Index) -> Vec<crate::fluid::Problem> {
     for tag in idx.sorted_tags() {
         let Some((def, _, _)) = main_of(prj, idx, tag) else { continue };
         let coils = linked(prj, tag).iter().filter(|t| main_of(prj, idx, t).is_some_and(|(d, _, _)| d.category == Category::Coils)).count();
-        let n = solenoids(def);
+        let n = solenoids(&def);
         if n > 0 && coils == 0 {
             v.push((Severity::Warning, tr_fmt!("{}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)", tag), target(tag)));
         } else if n > 0 && coils > n {
@@ -252,7 +225,7 @@ pub fn synchronize(prj: &mut Project) -> Sync {
     let mut sync = Sync::default();
     for tag in idx.sorted_tags() {
         let Some((def, _, _)) = main_of(prj, &idx, tag) else { continue };
-        if solenoids(def) == 0 || linked(prj, tag).iter().any(|t| main_of(prj, &idx, t).is_some_and(|(d, _, _)| d.category == Category::Coils)) {
+        if solenoids(&def) == 0 || linked(prj, tag).iter().any(|t| main_of(prj, &idx, t).is_some_and(|(d, _, _)| d.category == Category::Coils)) {
             continue;
         }
         let Some(coil) = with_letters(tag, "MB") else { continue };

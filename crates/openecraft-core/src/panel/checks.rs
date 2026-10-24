@@ -7,50 +7,10 @@
 use super::{collisions, item_box, outside, part_by_number, Enclosure, Face, ItemKind, PanelItem, PLATE_MARGIN};
 use crate::model::Project;
 use crate::parts::{kind_of_symbol, FnKind, Part};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
-
-/// Rules of the panel layout checks ([`super::Layout::checks`]).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PanelRules {
-    /// Free gap between devices side by side (mounting clearance), mm.
-    pub device_gap: f32,
-    /// Free space between devices and cable ducts for the wiring, mm.
-    pub duct_gap: f32,
-    /// Distance of devices from the edge of the mounting plate, mm.
-    pub edge_distance: f32,
-    /// Free space in front of every device on the plate for operation and
-    /// replacement, mm.
-    pub service_space: f32,
-    /// Devices between these heights above the floor (IEC 60204-1 11.2.1), mm;
-    /// 0: not checked.
-    pub operating_min: f32,
-    pub operating_max: f32,
-    /// Manual actuators on the door (IEC 60204-1 10.1.2), mm; 0: not checked.
-    pub actuator_min: f32,
-    pub actuator_max: f32,
-    /// Terminals at least this high above the floor, mm.
-    pub terminal_min: f32,
-    /// Highest air temperature at devices whose parts have no data, °C; 0: not checked.
-    pub device_temperature: f32,
-    /// Temperature rise at the roof against the middle (IEC/TR 60890 factor c).
-    pub stratification: f32,
-    /// Smallest web of sheet between holes and from holes to cutouts, mm.
-    pub hole_web: f32,
-    /// Smallest distance of a hole's edge from the edge of the sheet, mm.
-    pub hole_edge: f32,
-    /// Smallest web between cutouts and from cutouts to the edge of the sheet, mm.
-    pub cutout_web: f32,
-    /// Shortest rail, duct or busbar to cut, mm.
-    pub min_profile: f32,
-    /// Stock length of rails, ducts and busbars whose parts give none, mm.
-    pub stock_length: f32,
-    /// Distances between collision classes, and classes that may overlap.
-    pub classes: Vec<ClassRule>,
-}
+pub use crate::model::panel::{ClassRule, PanelRules};
 
 impl Default for PanelRules {
     fn default() -> Self {
@@ -85,20 +45,6 @@ impl PanelRules {
     pub fn rule(&self, a: &str, b: &str) -> Option<&ClassRule> {
         self.classes.iter().find(|r| r.matches(a, b))
     }
-}
-
-/// What applies between the items of two collision classes.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ClassRule {
-    /// Class keys, `*` for any class.
-    pub a: String,
-    pub b: String,
-    /// Smallest distance between the items, mm.
-    pub distance: f32,
-    /// The items may overlap (mounted into each other): no collision.
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub ignore: bool,
 }
 
 impl ClassRule {
@@ -338,6 +284,7 @@ pub fn heights(e: &Enclosure, it: &PanelItem) -> Option<(f32, f32)> {
 
 /// All checks of an enclosure: collisions (by class), items outside, clearances,
 /// service space, heights, thermal and manufacturability.
+#[allow(clippy::too_many_lines)]
 pub fn validate(prj: &Project, e: &Enclosure) -> Vec<Finding> {
     let rules = &prj.layout.checks;
     let kinds = device_kinds(prj);

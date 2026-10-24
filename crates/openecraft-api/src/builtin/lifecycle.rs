@@ -2,10 +2,10 @@
 //! as check, report and a command that changes devices over to the successors.
 
 use crate::params::{optional, Args, Kind};
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use openecraft_core::parts::portal::Lifecycle;
 use serde_json::{json, Value};
@@ -64,7 +64,7 @@ fn issues(prj: &Project) -> Vec<Issue> {
                 (_, true) => tr_fmt!("{}: part {} is being phased out", tag, number),
                 (_, false) => tr_fmt!("{}: part {} is being phased out, successor {}", tag, number, successor),
             };
-            out.push(Issue { severity, message, target: None });
+            out.push(Issue::plain(severity, message, None));
         }
     }
     out

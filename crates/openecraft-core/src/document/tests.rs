@@ -22,7 +22,7 @@ fn documents_know_type_and_size() {
     assert_eq!(Document::new("plan.xlsx", b"").kind(), Kind::Excel);
     assert_eq!(Document::new("notes", b"").kind(), Kind::Other);
     assert_eq!(size_text(2048), "2.0 kB");
-    let broken = Document { name: "x.pdf".into(), data: "!!".into() };
+    let broken = Document { name: "x.pdf".into(), data: String::from("!!").into() };
     assert!(broken.bytes().unwrap_err().contains("x.pdf"));
 }
 

@@ -9,8 +9,8 @@ use crate::model::*;
 use crate::netlist::{Connection, Netlist};
 use crate::parts::{kind_of_symbol, FnKind, Part};
 use crate::potentials::props_of;
-use crate::reports::{Issue, Severity};
-use crate::symbols::{self, ContactKind, Func};
+use crate::issue::{Issue, Severity};
+use crate::symbols::{ContactKind, Func};
 use std::collections::{BTreeSet, HashSet};
 
 /// Current-carrying capacity (A) per cross-section (mm²), IEC 60204-1 table 6, B2.
@@ -106,12 +106,12 @@ pub(crate) fn is_protective(key: &str) -> bool {
 }
 
 /// The current passes through these from one designation to the next (1 → 2).
-pub(crate) fn passes_current(s: &SymbolInst) -> bool {
+pub(crate) fn passes_current(prj: &Project, s: &SymbolInst) -> bool {
     matches!(
         kind_of_symbol(&s.sym),
         Some(FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact | FnKind::Overload | FnKind::Disconnector3 | FnKind::ResidualCurrent)
     )
-        || symbols::get(&s.sym).is_some_and(|d| d.func == Func::Aux(ContactKind::MainNo))
+        || prj.symbol(&s.sym).is_some_and(|d| d.func == Func::Aux(ContactKind::MainNo))
 }
 
 /// Rated current of a protective device: the largest rated current of its parts
@@ -141,7 +141,7 @@ pub fn protected_nets(prj: &Project, nl: &Netlist, page: usize, sym: usize) -> B
         }
         for p in &nl.nets[n].pins {
             let other = &prj.pages[p.page].symbols[p.sym];
-            if other.id == s.id || !passes_current(other) {
+            if other.id == s.id || !passes_current(prj, other) {
                 continue;
             }
             let Some(d) = designation_number(other, p.pin) else { continue };
@@ -233,7 +233,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
         for c in &on {
             for p in [c.a, c.b] {
                 let s = &prj.pages[p.page].symbols[p.sym];
-                let func = symbols::get(&s.sym).map(|d| d.func);
+                let func = prj.symbol(&s.sym).map(|d| d.func);
                 if func.is_some_and(|f| f.is_feedthrough()) || is_protective(&s.sym) || tags.contains(&s.tag.as_str()) {
                     continue;
                 }
@@ -278,7 +278,7 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
 pub fn problems(prj: &Project, nl: &Netlist, open: &Netlist, conns: &[Connection]) -> Vec<Issue> {
     let limits = crate::rules::limits(prj);
     let mut v = Vec::new();
-    let mut issue = |error: bool, message: String, target| v.push(Issue { severity: if error { Severity::Error } else { Severity::Warning }, message, target });
+    let mut issue = |error: bool, message: String, target| v.push(Issue::plain(if error { Severity::Error } else { Severity::Warning }, message, target));
     for o in overloads(prj, nl, open) {
         let message = tr_fmt!(
             "Cross-section {} carries {} A, less than the {} A of {}",

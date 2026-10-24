@@ -1,5 +1,6 @@
 use super::*;
 use crate::testing::*;
+use openecraft_core::model::ReportKind;
 
 #[test]
 fn reports_and_exports() {
@@ -48,4 +49,28 @@ fn panel_layout_in_3d() {
     let file = temp_dir("export-3d").join("panel.jt");
     run(&mut s, "export", json!({ "format": "jt", "path": file.to_str().unwrap() })).unwrap();
     assert!(std::fs::read(&file).unwrap().starts_with(b"Version 8.1 JT"));
+}
+
+#[test]
+fn every_built_in_report_is_listed_and_accepted() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let listed = run(&mut s, "list_reports", json!({})).unwrap();
+    let names: Vec<String> = listed.as_array().unwrap().iter().map(|r| r["name"].as_str().unwrap().to_string()).collect();
+    for k in ReportKind::ALL {
+        let name = snake(k);
+        assert!(names.contains(&name), "{name} is not listed");
+        run(&mut s, "report", json!({ "kind": name })).unwrap_or_else(|e| panic!("{name}: {e}"));
+    }
+    assert!(names.contains(&"project_statistics".to_string()), "plugin reports are listed");
+}
+
+#[test]
+fn check_reports_the_template_and_arguments_of_an_issue() {
+    let mut s = new_session();
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100, "tag": "-K1" })).unwrap();
+    let c = run(&mut s, "check", json!({})).unwrap();
+    let issue = c["issues"].as_array().unwrap().iter().find(|i| i["args"][0] == "-K1").unwrap_or_else(|| panic!("{c}"));
+    assert!(issue["key"].as_str().unwrap().contains("{}"), "{issue}");
+    assert!(issue["message"].as_str().unwrap().starts_with("-K1"), "{issue}");
 }

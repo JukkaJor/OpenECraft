@@ -3,13 +3,13 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::functions::{self, FnCategory, FunctionDef};
+use openecraft_core::functions::{self, FnCategory, FunctionDef};
 use crate::io::Purpose;
-use crate::model::*;
-use crate::parts::FnKind;
-use crate::properties::{self, DataType, Group, Library, Object, ObjectClass, Origin, PropDef};
-use crate::props::{self, Scheme};
-use crate::symbols::{self, Anchor};
+use openecraft_core::model::*;
+use openecraft_core::parts::FnKind;
+use openecraft_core::properties::{self, DataType, Group, Library, Object, ObjectClass, Origin, PropDef};
+use openecraft_core::props::{self, Scheme};
+use openecraft_core::symbols::{self, Anchor};
 use egui::{Color32, RichText};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -93,7 +93,7 @@ impl App {
                 }
             });
             ui.separator();
-            let prj = &mut self.prj;
+            let prj = &mut self.session.prj;
             match st.tab {
                 Tab::Definitions => definitions_tab(ui, prj, st, &mut action),
                 Tab::Functions => functions_tab(ui, prj, st, &mut action),
@@ -105,11 +105,11 @@ impl App {
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::PropertyLibrary),
             Some(Action::Export) => {
-                let json = self.prj.property_db.to_json();
+                let json = self.session.prj.property_db.to_json();
                 self.export(ctx, "properties.json".into(), (tr("OpenECraft property library"), "json"), json);
             }
             Some(Action::Reapply(name)) => {
-                let n = props::reapply(&mut self.prj, &name);
+                let n = props::reapply(&mut self.session.prj, &name);
                 self.notify(ctx, tr_fmt!("Scheme placed again at {} symbols", n));
             }
             Some(Action::Removed(n)) => self.notify(ctx, tr_fmt!("Property removed with {} values", n)),
@@ -121,7 +121,7 @@ impl App {
     pub(super) fn import_property_library(&mut self, ctx: &egui::Context, text: &str) {
         match Library::from_json(text) {
             Ok(lib) => {
-                let n = self.prj.property_db.merge(lib);
+                let n = self.session.prj.property_db.merge(lib);
                 self.notify(ctx, tr_fmt!("Imported {} entries of the property library", n));
             }
             Err(e) => self.notify(ctx, e),
@@ -319,7 +319,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
             ui.label(&d.letter);
             ui.end_row();
             ui.label(tr("Symbol"));
-            ui.label(symbols::get(&d.symbol).map(|s| tr(s.name)).unwrap_or(""));
+            ui.label(prj.symbol(&d.symbol).map(|s| tr(s.name)).unwrap_or(""));
             ui.end_row();
         });
         ui.label(RichText::new(tr("Property groups")).strong());
@@ -336,6 +336,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
     let schemes: Vec<(String, String)> = props::all_schemes(prj).map(|s| (s.name.clone(), s.title())).collect();
     let pdefs: Vec<(String, Option<PropDef>)> = d.defaults.keys().map(|k| (k.clone(), properties::valid_key(prj, k).cloned())).collect();
     let classes = [ObjectClass::Device, ObjectClass::Function, ObjectClass::Terminal, ObjectClass::PlcPoint];
+    let symbol_name = prj.property_db.functions.iter().find(|x| x.key == d.key).and_then(|x| prj.symbol(&x.symbol)).map(|s| tr(s.name)).unwrap_or("");
     let Some(def) = prj.property_db.functions.iter_mut().find(|x| x.key == d.key) else { return };
     egui::Grid::new("fn_edit").num_columns(2).show(ui, |ui| {
         ui.label(tr("Name"));
@@ -359,7 +360,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
         ui.add(egui::TextEdit::singleline(&mut def.letter).desired_width(50.0));
         ui.end_row();
         ui.label(tr("Symbol"));
-        egui::ComboBox::from_id_salt("fn_sym").selected_text(symbols::get(&def.symbol).map(|s| tr(s.name)).unwrap_or("")).height(320.0).show_ui(ui, |ui| {
+        egui::ComboBox::from_id_salt("fn_sym").selected_text(symbol_name).height(320.0).show_ui(ui, |ui| {
             for s in symbols::library() {
                 ui.selectable_value(&mut def.symbol, s.key.to_string(), tr(s.name));
             }
@@ -509,7 +510,7 @@ fn schemes_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, acti
         }
         if let Some(k) = added {
             let y = s.entries.iter().map(|e| e.offset.y + 2.8).fold(0.0, f32::max);
-            s.entries.push(PlacedProp { key: k, offset: crate::geom::p(0.0, y), ..Default::default() });
+            s.entries.push(PlacedProp { key: k, offset: openecraft_core::geom::p(0.0, y), ..Default::default() });
         }
         ui.weak(tr("Positions are relative to the lower right corner of the symbol."));
         ui.horizontal(|ui| {

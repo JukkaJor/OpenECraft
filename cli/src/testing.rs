@@ -232,9 +232,10 @@ pub fn temp_dir(name: &str) -> PathBuf {
     dir
 }
 
-/// Runs a tool with JSON arguments.
+/// Runs a tool or a command of a plugin with JSON arguments.
 pub fn run(s: &mut Session, tool: &str, args: serde_json::Value) -> Result<serde_json::Value, String> {
-    crate::tools::call(s, crate::tools::find(tool).unwrap(), args.as_object().unwrap())
+    let entry = crate::tools::lookup(s, tool).unwrap_or_else(|| panic!("no tool or command {tool}"));
+    crate::tools::call(s, entry, args.as_object().unwrap())
 }
 
 /// Session with a new, empty project.

@@ -12,11 +12,10 @@
 
 use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
-use crate::model::{is_zero, Project};
+use crate::model::Project;
 use crate::netlist::{connections, Netlist};
 use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
 use crate::parts::{Exit, FnKind};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod checks;
@@ -37,6 +36,7 @@ pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
+pub use crate::model::panel::{Enclosure, Face, ItemKind, Layout, PanelItem};
 
 /// Distance between enclosure wall and mounting plate edge.
 pub const PLATE_MARGIN: f32 = 25.0;
@@ -64,24 +64,6 @@ pub const BUSBAR_PART: &str = "GEN.BB-3X12X5";
 pub const DOOR_FRAME: f32 = 20.0;
 /// Wire loop across the door hinge.
 pub const DOOR_LOOP: f32 = 150.0;
-
-/// Mounting surface of an item.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Face {
-    #[default]
-    Plate,
-    Door,
-    /// Left side wall, seen from the left (the front is on the right).
-    Left,
-    /// Right side wall, seen from the right (the front is on the left).
-    Right,
-    /// Rear wall, seen from behind.
-    Rear,
-    /// Roof, seen from above (the front at the bottom).
-    Roof,
-    /// Bottom (gland plate), seen from below (the front at the bottom).
-    Bottom,
-}
 
 impl Face {
     pub const ALL: [Face; 7] = [Face::Plate, Face::Door, Face::Left, Face::Right, Face::Rear, Face::Roof, Face::Bottom];
@@ -132,25 +114,6 @@ impl Face {
     }
 }
 
-fn is_plate(f: &Face) -> bool {
-    *f == Face::Plate
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum ItemKind {
-    #[default]
-    Device,
-    Rail,
-    Duct,
-    /// Copper busbar system (several parallel bars on holders).
-    Busbar,
-    /// Opening in the mounting plate (rectangular or round).
-    Cutout,
-    /// Enclosure accessory without a device tag (fan, filter, cable gland, light,
-    /// handle, PE bar).
-    Accessory,
-}
-
 impl ItemKind {
     pub fn title(self) -> &'static str {
         match self {
@@ -179,40 +142,6 @@ impl ItemKind {
     pub fn is_profile(self) -> bool {
         matches!(self, ItemKind::Rail | ItemKind::Duct | ItemKind::Busbar)
     }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PanelItem {
-    pub id: u64,
-    pub kind: ItemKind,
-    /// Device tag (devices only).
-    pub tag: String,
-    pub part: String,
-    pub x: f32,
-    pub y: f32,
-    pub w: f32,
-    pub h: f32,
-    /// Height of the item (extent away from the plate).
-    pub d: f32,
-    /// Base height above the plate (devices on a rail sit on the rail).
-    pub z: f32,
-    /// Round cutout (diameter = width).
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub round: bool,
-    #[serde(skip_serializing_if = "is_plate")]
-    pub face: Face,
-    #[serde(skip_serializing_if = "Fastening::is_auto")]
-    pub fastening: Fastening,
-    /// Parametric position relative to the edges of its face.
-    #[serde(skip_serializing_if = "Anchor::is_free")]
-    pub anchor: Anchor,
-    /// Group (assembly) the item belongs to, 0 for none.
-    #[serde(skip_serializing_if = "is_zero")]
-    pub group: u64,
-    /// Collision class, empty: from the part or by kind ([`item_class`]).
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub class: String,
 }
 
 impl PanelItem {
@@ -251,48 +180,6 @@ impl PanelItem {
         self.x = c.x - self.w / 2.0;
         self.y = c.y - self.h / 2.0;
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Enclosure {
-    pub id: u64,
-    /// Location designation, e.g. "+CAB1".
-    pub name: String,
-    pub part: String,
-    pub width: f32,
-    pub height: f32,
-    pub depth: f32,
-    /// Space kept free behind the door (door-mounted devices, handles), mm.
-    pub door_clearance: f32,
-    pub items: Vec<PanelItem>,
-    /// Installation and temperatures for the climate calculation.
-    #[serde(skip_serializing_if = "crate::climate::Climate::is_default")]
-    pub climate: crate::climate::Climate,
-    /// Enclosure system and its components (plinth, side panels, gland plate).
-    #[serde(skip_serializing_if = "Build::is_default")]
-    pub build: Build,
-    /// Groups (assemblies) of items.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub groups: Vec<ItemGroup>,
-    /// Id of the enclosure this one is bayed to with its left side: it stands right of
-    /// that one in a line-up. 0 for none.
-    #[serde(skip_serializing_if = "is_zero")]
-    pub bayed_to: u64,
-    /// Routing paths through the free space (3D routing).
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub paths: Vec<crate::routing3d::RoutingPath>,
-    /// Space kept free, or for one class only (3D routing).
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub reservations: Vec<crate::routing3d::Reservation>,
-    /// Height of the enclosure's bottom (without plinth) above the floor, mm; unknown
-    /// for wall mounted enclosures (heights are not checked).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub elevation: Option<f32>,
-    /// Place of the line-up in the room (set on its left enclosure); otherwise from the
-    /// plant layout or next to the other line-ups ([`site_poses`]).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub site: Option<SitePlace>,
 }
 
 impl Default for Enclosure {
@@ -465,36 +352,6 @@ pub fn item_surface(e: &Enclosure, it: &PanelItem, parts: &[crate::parts::Part])
             box_triangles(min, max)
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Layout {
-    pub enclosures: Vec<Enclosure>,
-    /// Additional wire length per connection (stripping, reserve loops) in mm.
-    pub wire_reserve: f32,
-    /// Wire ends get ferrules (production wire list, bill of materials).
-    pub ferrules: bool,
-    /// Highest fill level of the cable ducts in percent (project check).
-    pub duct_fill_limit: f32,
-    /// Screws, nuts and rivet nuts of the fastening systems in the bill of materials.
-    pub hardware: bool,
-    /// 3D macros of the project (groups of items to insert again).
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub macros: Vec<PanelMacro>,
-    /// Rules of the 3D routing.
-    #[serde(skip_serializing_if = "crate::routing3d::RoutingRules::is_default")]
-    pub routing: crate::routing3d::RoutingRules,
-    /// Routes frozen for production.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub frozen: Vec<crate::routing3d::FrozenRoute>,
-    /// Rules of the layout checks: clearances, collision classes, heights, thermal
-    /// and manufacturing limits.
-    #[serde(skip_serializing_if = "PanelRules::is_default")]
-    pub checks: PanelRules,
-    /// Machines, machining strategy, copper bars, jobs and production feedback.
-    #[serde(skip_serializing_if = "crate::manufacturing::Manufacturing::is_default")]
-    pub manufacturing: crate::manufacturing::Manufacturing,
 }
 
 impl Default for Layout {
@@ -1447,7 +1304,7 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
         let mut end = |ei: usize, it: &PanelItem, s, pin| {
             let e = &prj.layout.enclosures[ei];
             let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));
-            let point = point_of(placed, s, pin);
+            let point = point_of(prj, placed, s, pin);
             let kind = match point {
                 None => EndKind::Centre,
                 Some(pt) if pt.exact => EndKind::Exact,
@@ -1685,7 +1542,7 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
 
 /// Item ids involved in any problem of the checks (warnings, for highlighting).
 pub fn problem_items(prj: &Project, e: &Enclosure) -> BTreeSet<u64> {
-    validate(prj, e).into_iter().filter(|f| f.severity == crate::reports::Severity::Warning).flat_map(|f| f.items).collect()
+    validate(prj, e).into_iter().filter(|f| f.severity == crate::issue::Severity::Warning).flat_map(|f| f.items).collect()
 }
 
 #[cfg(test)]

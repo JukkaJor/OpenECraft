@@ -9,60 +9,14 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P};
-use crate::model::{is_zero, natural_cmp, Page, Project};
-use serde::{Deserialize, Serialize};
+use crate::model::{natural_cmp, Page, Project};
 use std::sync::Arc;
-
-/// Pages of a revision. Shared, so that undo snapshots of the project stay cheap.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Snapshot(pub Arc<Vec<Page>>);
+pub use crate::model::revision::{Revision, Snapshot, State, Workflow};
 
 impl PartialEq for Snapshot {
     fn eq(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.0, &other.0) || self.0 == other.0
     }
-}
-
-/// Stored state of a revision; approved / rejected follow from the approvals
-/// ([`status`]).
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum State {
-    Draft,
-    InReview,
-    #[default]
-    Released,
-}
-
-fn is_released(s: &State) -> bool {
-    *s == State::Released
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Revision {
-    /// Revision index, e.g. "A", "B" or "01".
-    pub name: String,
-    pub date: String,
-    pub author: String,
-    pub description: String,
-    pub pages: Snapshot,
-    #[serde(skip_serializing_if = "is_released")]
-    pub state: State,
-    /// Review round: counts the submissions; approvals of earlier rounds are void.
-    #[serde(skip_serializing_if = "is_zero")]
-    pub round: u32,
-}
-
-/// Who approves revisions before they are released.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Workflow {
-    /// User names of the approvers; empty = revisions are released directly.
-    pub approvers: Vec<String>,
-    /// Approvals needed; 0 = all approvers.
-    pub required: usize,
 }
 
 impl Workflow {

@@ -1,6 +1,7 @@
 //! Headless project model of OpenECraft, shared by the editor and the command line /
 //! MCP front end: pages, symbols, devices, netlist, checks, reports, panel layout and
 //! the SVG / PDF / DXF / DWG export. Contains no UI code.
+#![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 pub mod archive;
 pub mod climate;
@@ -8,7 +9,9 @@ pub mod collab;
 pub mod compare;
 pub mod config;
 pub mod aml;
+pub mod analysis;
 pub mod cabledef;
+pub mod checks;
 pub mod conndef;
 pub mod devdesc;
 pub mod dwg;
@@ -17,8 +20,10 @@ pub mod dxf_import;
 pub mod electrical;
 pub mod electrofluid;
 pub mod emc;
+pub mod ext;
 pub mod field;
 pub mod export3d;
+pub mod exporters;
 pub mod fluid;
 pub mod document;
 pub mod forms;
@@ -30,6 +35,7 @@ pub mod harness;
 pub mod history;
 pub mod index;
 pub mod integration;
+pub mod issue;
 pub mod loads;
 pub mod macros;
 pub mod manufacturing;
@@ -40,6 +46,7 @@ pub mod ops;
 pub mod options;
 pub mod page_templates;
 pub mod panel;
+pub mod params;
 pub mod parts;
 pub mod pdf;
 pub mod plc;
@@ -71,6 +78,7 @@ pub mod subproject;
 pub mod svg;
 pub mod symbols;
 pub mod symlib;
+pub mod table;
 pub mod tables;
 pub mod verify;
 #[cfg(test)]

@@ -4,22 +4,10 @@
 
 use crate::model::Project;
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
+pub use crate::model::manufacturing::{Dialect, Machine, MachineKind, Tool, ToolKind};
 
 pub const DEFAULT_SHEET: &str = "drill_mill_iso";
 pub const DEFAULT_BAR: &str = "busbar_cnc";
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum MachineKind {
-    /// Drilling and milling centre for sheets.
-    #[default]
-    Machining,
-    /// Punching machine (turret or single punch) for sheets.
-    Punching,
-    /// Cutting, punching and bending of copper bars.
-    Busbar,
-}
 
 impl MachineKind {
     pub const ALL: [MachineKind; 3] = [MachineKind::Machining, MachineKind::Punching, MachineKind::Busbar];
@@ -43,21 +31,6 @@ impl MachineKind {
     pub fn from_key(s: &str) -> Option<MachineKind> {
         MachineKind::ALL.into_iter().find(|k| k.key() == s.trim())
     }
-}
-
-/// Program format of the machine's controller.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Dialect {
-    /// ISO G-code (DIN 66025) with drilling and tapping cycles.
-    #[default]
-    Iso,
-    /// Heidenhain conversational (Klartext) with cycles 200 and 207.
-    Heidenhain,
-    /// ISO punching code: one hit per block.
-    Punch,
-    /// Neutral operation list (CSV), also for busbar machines.
-    Csv,
 }
 
 impl Dialect {
@@ -87,19 +60,6 @@ impl Dialect {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ToolKind {
-    #[default]
-    Drill,
-    Tap,
-    /// End mill: round contours and rectangular cutouts.
-    Mill,
-    PunchRound,
-    /// Rectangular or square punch (width × height).
-    PunchRect,
-}
-
 impl ToolKind {
     pub fn title(self) -> &'static str {
         match self {
@@ -121,18 +81,6 @@ impl ToolKind {
             ToolKind::PunchRect => 'Q',
         }
     }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Tool {
-    /// Tool number (pocket / station).
-    pub number: u32,
-    pub kind: ToolKind,
-    /// Diameter, width of rectangular punches, nominal diameter of taps.
-    pub diameter: f32,
-    /// Height of rectangular punches.
-    pub height: f32,
 }
 
 impl Tool {
@@ -189,31 +137,6 @@ pub fn parse_tools(text: &str) -> Result<Vec<Tool>, String> {
 /// Tool list as text (the inverse of [`parse_tools`]).
 pub fn tools_text(tools: &[Tool]) -> String {
     tools.iter().map(|t| format!("{} T{}", t.name(), t.number)).collect::<Vec<_>>().join("; ")
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Machine {
-    /// Unique, snake_case.
-    pub id: String,
-    pub name: String,
-    pub kind: MachineKind,
-    pub dialect: Dialect,
-    /// Working area (x × y) in mm; the length of bars on busbar machines.
-    pub area: (f32, f32),
-    /// Thickest sheet or bar in mm.
-    pub max_thickness: f32,
-    pub tools: Vec<Tool>,
-    /// Rapid traverse, mm/min.
-    pub rapid: f32,
-    /// Milling feed, mm/min.
-    pub feed: f32,
-    /// Time of one drilling, tapping, punching or bending operation, s.
-    pub hit_time: f32,
-    /// Time of a tool change, s.
-    pub tool_change: f32,
-    /// Correction of the time estimate, calibrated from the production feedback.
-    pub time_factor: f32,
 }
 
 impl Default for Machine {

@@ -7,52 +7,8 @@ use super::{bars, checksum, machines, post, strategy};
 use crate::model::Project;
 use crate::panel::Face;
 use openecraft_i18n::tr_fmt;
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-
-/// A program of a job.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Program {
-    /// File name.
-    pub name: String,
-    pub machine: String,
-    /// The face; None for the copper bars.
-    pub face: Option<Face>,
-    pub operations: usize,
-    /// Estimated machine time, s.
-    pub time: f32,
-    /// Time factor of the machine in the estimate.
-    pub factor: f32,
-    pub problems: Vec<String>,
-    pub content: String,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ProgramRef {
-    pub name: String,
-    pub machine: String,
-    /// Face key, `bars` for the copper bars.
-    pub face: String,
-    pub operations: usize,
-    pub time: f32,
-    /// Time factor of the machine in the estimate.
-    pub factor: f32,
-    pub checksum: String,
-}
-
-/// A manufacturing job handed off to production.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Job {
-    /// `CAB1-1`, `CAB1-2`, …
-    pub id: String,
-    pub enclosure: String,
-    pub date: String,
-    /// Project revision at the hand-off.
-    pub revision: String,
-    pub programs: Vec<ProgramRef>,
-}
+pub use crate::model::manufacturing::{Job, Program, ProgramRef};
 
 /// The programs of an enclosure: one per face with machining, and one for its copper
 /// bars and busbar systems.

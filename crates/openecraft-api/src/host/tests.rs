@@ -1,5 +1,5 @@
 use super::*;
-use crate::registry::Table;
+use crate::Table;
 use crate::{param, Kind, Text};
 use openecraft_core::sample::demo_project;
 use serde_json::json;
@@ -16,7 +16,7 @@ impl Plugin for Test {
             prj.info.name = a.req("name").into();
             Ok(json!(prj.info.name))
         })
-        .check(format!("{}_check", self.1), "Check", |prj, _| Ok(vec![Issue { severity: Severity::Info, message: prj.info.name.clone(), target: None }]))
+        .check(format!("{}_check", self.1), "Check", |prj, _| Ok(vec![Issue::plain(Severity::Info, prj.info.name.clone(), None)]))
         .check(format!("{}_broken", self.1), "Broken", |_, _| Err("no".into()))
         .report(self.1, "Report", |_, _| Ok(Table::new(["A"])));
         Ok(())
@@ -49,9 +49,9 @@ fn checks_add_issues_and_report_failures() {
     let prj = demo_project();
     let issues = p.check(&prj, &Analysis::default());
     assert_eq!(issues.len(), 2);
-    assert_eq!(issues[0].message, prj.info.name);
+    assert_eq!(issues[0].message(), prj.info.name);
     assert_eq!(issues[1].severity, Severity::Error);
-    assert!(issues[1].message.contains("rename_broken"), "{}", issues[1].message);
+    assert!(issues[1].message().contains("rename_broken"), "{}", issues[1].message());
 }
 
 #[test]

@@ -2,17 +2,18 @@ use super::*;
 
 #[test]
 fn every_library_symbol_has_a_definition() {
+    let prj = Project::default();
     for sym in symbols::library() {
-        let d = default_for_symbol(sym.key);
+        let d = default_for_symbol(&prj, sym.key);
         assert!(!d.title().is_empty());
         // Symbols of a known function kind get a definition of that kind.
         if let Some(kind) = crate::parts::kind_of_symbol(sym.key) {
             assert_eq!(d.kind, kind, "{}", sym.key);
         }
     }
-    assert_eq!(default_for_symbol("pot_l1").key, "fn.potential");
-    assert_eq!(default_for_symbol("box2").key, "fn.black_box");
-    assert_eq!(default_for_symbol("no-such-symbol").key, "fn.generic");
+    assert_eq!(default_for_symbol(&prj, "pot_l1").key, "fn.potential");
+    assert_eq!(default_for_symbol(&prj, "box2").key, "fn.black_box");
+    assert_eq!(default_for_symbol(&prj, "no-such-symbol").key, "fn.generic");
 }
 
 #[test]
@@ -20,7 +21,7 @@ fn builtin_definitions_are_consistent() {
     let mut keys = std::collections::HashSet::new();
     for d in builtin() {
         assert!(keys.insert(d.key.as_str()), "duplicate {}", d.key);
-        assert!(d.symbol.is_empty() || symbols::get(&d.symbol).is_some(), "{}", d.key);
+        assert!(d.symbol.is_empty() || crate::symbols::builtin(&d.symbol).is_some(), "{}", d.key);
     }
     for c in FnCategory::ALL {
         assert!(!c.title().is_empty());

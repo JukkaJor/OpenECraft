@@ -1,225 +1,108 @@
-//! Reports (device list, BOM, terminal diagram, ...) and the project check.
+//! The built-in report tables (device list, BOM, terminal diagram, ...) as registry
+//! entries. The derived data they read is [`crate::analysis::Analysis`], the project
+//! checks are in [`crate::checks`].
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
+use crate::ext::Report;
 use crate::index::Index;
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
-use crate::netlist::{connections, pin_designation, Connection, Netlist, PinRef};
-use crate::symbols::{self, Func};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use crate::netlist::{pin_designation, Connection, Netlist, PinRef};
+use crate::params::Text;
+use crate::symbols::Func;
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 mod diagrams;
 mod electrical_reports;
 mod fluid_reports;
 
-#[derive(Clone, Debug, Default)]
-pub struct Table {
-    pub headers: Vec<&'static str>,
-    /// Relative column widths.
-    pub widths: Vec<f32>,
-    pub rows: Vec<Vec<String>>,
-    /// Optional jump target (page index, item id) per row.
-    pub targets: Vec<Option<(usize, u64)>>,
-}
-
-impl Table {
-    fn new(cols: &[(&'static str, f32)]) -> Table {
-        Table {
-            headers: cols.iter().map(|c| c.0).collect(),
-            widths: cols.iter().map(|c| c.1).collect(),
-            ..Default::default()
-        }
-    }
-
-    fn push(&mut self, row: Vec<String>, target: Option<(usize, u64)>) {
-        self.rows.push(row);
-        self.targets.push(target);
-    }
-
-    pub fn to_csv(&self) -> String {
-        let esc = |s: &str| {
-            if s.contains([';', '"', '\n']) {
-                format!("\"{}\"", s.replace('"', "\"\""))
-            } else {
-                s.to_string()
-            }
-        };
-        let mut out = self.headers.iter().map(|h| esc(h)).collect::<Vec<_>>().join(";");
-        out.push('\n');
-        for r in &self.rows {
-            out.push_str(&r.iter().map(|c| esc(c)).collect::<Vec<_>>().join(";"));
-            out.push('\n');
-        }
-        out
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Severity {
-    Error,
-    Warning,
-    Info,
-}
-
-impl Severity {
-    /// Machine readable name ("error", "warning", "info").
-    pub fn key(self) -> &'static str {
-        match self {
-            Severity::Error => "error",
-            Severity::Warning => "warning",
-            Severity::Info => "info",
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Issue {
-    pub severity: Severity,
-    pub message: String,
-    pub target: Option<(usize, u64)>,
-}
-
-/// Everything derived from the project that is expensive enough to cache.
-#[derive(Default)]
-pub struct Analysis {
-    pub netlist: Netlist,
-    /// Netlist with the terminal sides apart: one net per physical connection
-    /// (wire numbers, cables).
-    pub open: Netlist,
-    pub reports: HashMap<ReportKind, Table>,
-    pub issues: Vec<Issue>,
-    /// Virtual wiring of the panel layout.
-    pub wiring: Vec<RoutedWire>,
-    /// Changes since the last revision (revision marks).
-    pub changes: Vec<crate::revision::PageChanges>,
-    /// Point-to-point connections.
-    pub connections: Vec<Connection>,
-    /// Fill levels of the cable ducts the wiring runs through.
-    pub duct_fill: Vec<panel::DuctFill>,
-    /// 3D routing of wires, cables and tubes.
-    pub routing: crate::routing3d::Routing,
-    /// Cables planned through the route network of the plant.
-    pub field: crate::field::Plan,
-}
+pub use crate::analysis::Analysis;
+pub use crate::issue::{Issue, Severity};
+pub use crate::table::Table;
 
 impl Analysis {
-    pub fn build(prj: &Project) -> Analysis {
-        let idx = Index::build(prj);
-        let netlist = Netlist::build(prj, true);
-        let open = Netlist::build(prj, false);
-        let (mut wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
-        let conns = connections(prj, &netlist, &open);
-        let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
-        let fill = panel::duct_fill(prj, &wiring);
-        let field = crate::field::plan(prj, &conns);
-        let mut reports = HashMap::new();
-        for k in ReportKind::ALL {
-            let t = match k {
-                ReportKind::TableOfContents => toc(prj),
-                ReportKind::DeviceList => device_list(prj, &idx),
-                ReportKind::BillOfMaterials => bom(prj, &idx, &wiring, &conns),
-                ReportKind::TerminalDiagram => terminal_diagram(prj, &netlist, &open),
-                ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
-                ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, &netlist, &open),
-                ReportKind::TerminalConnections => diagrams::terminal_connections(prj, &conns),
-                ReportKind::PlugDiagram => plug_diagram(prj, &netlist, &open),
-                ReportKind::PinConnections => diagrams::pin_connections(prj, &conns),
-                ReportKind::ConnectionList => connection_list(prj, &conns),
-                ReportKind::DeviceConnections => diagrams::device_connections(prj, &idx, &conns),
-                ReportKind::PlcAssignment => plc_list(prj, &netlist),
-                ReportKind::RevisionOverview => revision_overview(prj),
-                ReportKind::PotentialList => potential_list(prj, &netlist),
-                ReportKind::PanelWiring => panel_wiring(prj, &wiring, &open_wires),
-                ReportKind::CableOverview => cable_overview(prj, &conns),
-                ReportKind::CableDiagram => cable_diagram(prj, &conns),
-                ReportKind::CableConnections => diagrams::cable_connections_report(prj, &conns),
-                ReportKind::CableSizing => cable_sizing(prj, &conns),
-                ReportKind::HarnessData => Table::default(),
-                ReportKind::DuctFill => duct_fill_report(prj, &fill),
-                ReportKind::PanelLegend => diagrams::panel_legend(prj, &idx),
-                ReportKind::Climate => climate_report(prj),
-                ReportKind::Marking => marking_report(&crate::marking::markers(prj, &conns)),
-                ReportKind::HoseList => hose_list(prj, &open),
-                ReportKind::PctLoops => pct_loops(prj, &idx),
-                ReportKind::FluidNetlist => fluid_reports::netlist(prj, &open),
-                ReportKind::HoseConfiguration => fluid_reports::configuration(prj, &open),
-                ReportKind::TubingList => fluid_reports::tubing(prj, &open),
-                ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, &idx),
-                ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, &idx),
-                ReportKind::RoutingList => routing_list(prj, &routing),
-                ReportKind::BundleList => bundle_list(&routing),
-                ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, &netlist, &conns),
-                ReportKind::Selectivity => electrical_reports::selectivity(prj, &netlist, &conns),
-                ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, &netlist),
-                ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, &netlist),
-                ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
-                ReportKind::Verification => electrical_reports::verification(prj, &conns),
-                ReportKind::FieldRouting => field_routing(prj, &field),
-                ReportKind::Bonding => bonding_list(prj),
-            };
-            reports.insert(k, t);
-        }
-        let mut issues = check(prj, &idx, &netlist);
-        issues.extend(check_layout(prj));
-        issues.extend(check_wires(prj, &netlist, &open));
-        issues.extend(check_potentials(prj, &netlist, &open));
-        issues.extend(crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue { severity: Severity::Warning, message, target }));
-        issues.extend(check_strips_and_plc(prj, &netlist));
-        issues.extend(crate::plc_hw::problems(prj));
-        issues.extend(check_duct_fill(prj, &fill));
-        issues.extend(check_climate(prj));
-        issues.extend(crate::conndef::problems(prj, &open));
-        issues.extend(crate::cabledef::problems(prj));
-        issues.extend(crate::sizing::problems(prj, &netlist, &open, &conns));
-        issues.extend(crate::shortcircuit::problems(prj, &netlist, &conns));
-        issues.extend(crate::loads::problems(prj, &netlist));
-        issues.extend(crate::emc::problems(prj, &netlist, &conns));
-        issues.extend(crate::safety::problems(prj));
-        issues.extend(crate::rules::problems(prj, &netlist, &conns));
-        issues.extend(check_fluid_and_process(prj, &idx, &open));
-        issues.extend(crate::singleline::problems(prj, &idx, &netlist).into_iter().map(|(severity, message, target)| Issue { severity, message, target }));
-        issues.extend(check_wiring_marks(prj, &wiring));
-        issues.extend(crate::integration::problems(prj));
-        issues.extend(field.issues.iter().cloned());
-        issues.extend(routing.problems.iter().map(|p| {
-            let severity = match p.level {
-                crate::routing3d::Level::Error => Severity::Error,
-                crate::routing3d::Level::Warning => Severity::Warning,
-                crate::routing3d::Level::Info => Severity::Info,
-            };
-            Issue { severity, message: p.message.clone(), target: None }
-        }));
-        if !routing.changes.is_empty() {
-            issues.push(Issue { severity: Severity::Info, message: tr_fmt!("{} frozen routes changed their length", routing.changes.len()), target: None });
-        }
-        issues.extend(crate::structure::problems(prj).into_iter().map(|message| Issue { severity: Severity::Warning, message, target: None }));
-        for lang in &prj.languages.targets {
-            let n = crate::translation::missing(prj, lang).len();
-            if n > 0 {
-                issues.push(Issue { severity: Severity::Info, message: tr_fmt!("{} texts are not translated into {}", n, crate::translation::language_name(lang)), target: None });
-            }
-        }
-        issues.sort_by_key(|i| i.severity);
-        let changes = crate::revision::pending(prj);
-        let mut an = Analysis { netlist, open, reports, issues, wiring, changes, connections: conns, duct_fill: fill, routing, field };
-        // Harness data needs the connections and the routed lengths.
-        an.reports.insert(ReportKind::HarnessData, harness_data(prj, &an));
-        an.issues.extend(check_harnesses(prj, &an));
-        an.issues.sort_by_key(|i| i.severity);
+    /// The analysis with the built-in reports (hosts take the reports of their
+    /// registry instead, see [`Analysis::set_reports`]).
+    pub fn with_builtin(prj: &Project) -> Analysis {
+        let mut an = Analysis::build(prj);
+        an.set_reports(builtin());
+        an
+    }
+
+    /// The analysis with the built-in reports and the issues of the built-in checks
+    /// ([`crate::checks`]). Hosts with plugins fill `issues` from `Plugins::check`
+    /// instead, which runs the same checks and those of the plugins.
+    pub fn checked(prj: &Project) -> Analysis {
+        let mut an = Analysis::with_builtin(prj);
+        an.issues = crate::checks::run_builtin(prj, &an);
         an
     }
 }
 
+/// The table of a built-in report.
+pub fn table(prj: &Project, an: &Analysis, kind: ReportKind) -> Table {
+    let (idx, netlist, open, conns) = (&an.index, &an.netlist, &an.open, &an.connections);
+    match kind {
+        ReportKind::TableOfContents => toc(prj),
+        ReportKind::DeviceList => device_list(prj, idx),
+        ReportKind::BillOfMaterials => bom(prj, idx, &an.wiring, conns),
+        ReportKind::TerminalDiagram => terminal_diagram(prj, netlist, open),
+        ReportKind::TerminalLineup => diagrams::terminal_lineup(prj),
+        ReportKind::TerminalStripOverview => diagrams::strip_overview(prj, netlist, open),
+        ReportKind::TerminalConnections => diagrams::terminal_connections(prj, conns),
+        ReportKind::PlugDiagram => plug_diagram(prj, netlist, open),
+        ReportKind::PinConnections => diagrams::pin_connections(prj, conns),
+        ReportKind::ConnectionList => connection_list(prj, conns),
+        ReportKind::DeviceConnections => diagrams::device_connections(prj, idx, conns),
+        ReportKind::PlcAssignment => plc_list(prj, netlist),
+        ReportKind::RevisionOverview => revision_overview(prj),
+        ReportKind::PotentialList => potential_list(prj, netlist),
+        ReportKind::PanelWiring => panel_wiring(prj, &an.wiring, &an.open_wires),
+        ReportKind::CableOverview => cable_overview(prj, conns),
+        ReportKind::CableDiagram => cable_diagram(prj, conns),
+        ReportKind::CableConnections => diagrams::cable_connections_report(prj, conns),
+        ReportKind::CableSizing => cable_sizing(prj, conns),
+        ReportKind::HarnessData => harness_data(prj, an),
+        ReportKind::DuctFill => duct_fill_report(prj, &an.duct_fill),
+        ReportKind::PanelLegend => diagrams::panel_legend(prj, idx),
+        ReportKind::Climate => climate_report(prj),
+        ReportKind::Marking => marking_report(&crate::marking::markers(prj, conns)),
+        ReportKind::HoseList => hose_list(prj, open),
+        ReportKind::PctLoops => pct_loops(prj, idx),
+        ReportKind::FluidNetlist => fluid_reports::netlist(prj, open),
+        ReportKind::HoseConfiguration => fluid_reports::configuration(prj, open),
+        ReportKind::TubingList => fluid_reports::tubing(prj, open),
+        ReportKind::FluidDeviceGroups => fluid_reports::groups(prj, idx),
+        ReportKind::ElectroFluid => fluid_reports::electro_fluid(prj, idx),
+        ReportKind::RoutingList => routing_list(prj, &an.routing),
+        ReportKind::BundleList => bundle_list(&an.routing),
+        ReportKind::ShortCircuit => electrical_reports::short_circuit(prj, netlist, conns),
+        ReportKind::Selectivity => electrical_reports::selectivity(prj, netlist, conns),
+        ReportKind::LoadCalculation => electrical_reports::load_calculation(prj, netlist),
+        ReportKind::PowerSupplyBudget => electrical_reports::power_supply_budget(prj, netlist),
+        ReportKind::SafetyFunctions => electrical_reports::safety_functions(prj),
+        ReportKind::Verification => electrical_reports::verification(prj, conns),
+        ReportKind::FieldRouting => field_routing(prj, &an.field),
+        ReportKind::Bonding => bonding_list(prj),
+    }
+}
+
+/// The built-in reports as registry entries, in the order of the Reports menu.
+pub fn builtin() -> Vec<Report> {
+    ReportKind::ALL.into_iter().map(|k| Report { name: k.name().into(), title: Text::Borrowed(k.title_key()), run: Arc::new(move |prj, an| Ok(table(prj, an, k))) }).collect()
+}
+
 fn hose_list(prj: &Project, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Hose no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Medium"), 1.1),
-        (tr("Nominal size"), 0.8),
-        (tr("Colour"), 0.6),
-        (tr("Length (m)"), 0.7),
-        (tr("Page"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Hose no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Medium"), 1.1),
+        (tr_const!("Nominal size"), 0.8),
+        (tr_const!("Colour"), 0.6),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Page"), 0.6),
     ]);
     let mut total = 0.0;
     for h in crate::fluid::hoses(prj, open) {
@@ -243,18 +126,18 @@ fn hose_list(prj: &Project, open: &Netlist) -> Table {
 /// Routing list: every routed wire, cable and tube with its ends, class, enclosures,
 /// lengths and how it is routed (cut lengths for production).
 fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
-    let mut t = Table::new(&[
-        (tr("Kind"), 0.5),
-        (tr("Designation"), 1.2),
-        (tr("From"), 1.0),
-        (tr("To"), 1.0),
-        (tr("Class"), 0.6),
-        (tr("Enclosures"), 0.9),
-        (tr("Length (mm)"), 0.7),
-        (tr("Cut length (mm)"), 0.7),
-        (tr("Free air (mm)"), 0.6),
-        (tr("Bundles"), 0.5),
-        (tr("Status"), 1.2),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Kind"), 0.5),
+        (tr_const!("Designation"), 1.2),
+        (tr_const!("From"), 1.0),
+        (tr_const!("To"), 1.0),
+        (tr_const!("Class"), 0.6),
+        (tr_const!("Enclosures"), 0.9),
+        (tr_const!("Length (mm)"), 0.7),
+        (tr_const!("Cut length (mm)"), 0.7),
+        (tr_const!("Free air (mm)"), 0.6),
+        (tr_const!("Bundles"), 0.5),
+        (tr_const!("Status"), 1.2),
     ]);
     for (i, it) in r.items.iter().enumerate() {
         let names: Vec<&str> = it.enclosures.iter().filter_map(|&k| prj.layout.enclosures.get(k)).map(|e| e.name.as_str()).collect();
@@ -283,16 +166,16 @@ fn routing_list(prj: &Project, r: &crate::routing3d::Routing) -> Table {
 /// Field cables: ends, route through the network, lengths and status.
 fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
     let f = &prj.field;
-    let mut t = Table::new(&[
-        (tr("Cable"), 0.8),
-        (tr("From"), 1.0),
-        (tr("To"), 1.0),
-        (tr("Class"), 0.6),
-        (tr("Route"), 2.6),
-        (tr("Network (m)"), 0.7),
-        (tr("Length (m)"), 0.7),
-        (tr("Cut length (m)"), 0.7),
-        (tr("Status"), 1.4),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 0.8),
+        (tr_const!("From"), 1.0),
+        (tr_const!("To"), 1.0),
+        (tr_const!("Class"), 0.6),
+        (tr_const!("Route"), 2.6),
+        (tr_const!("Network (m)"), 0.7),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Cut length (m)"), 0.7),
+        (tr_const!("Status"), 1.4),
     ]);
     for c in &plan.cables {
         let route: Vec<String> = c.segments.iter().map(|&s| f.segment_name(s)).collect();
@@ -308,7 +191,7 @@ fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
 /// Bonding conductors, then the bonding points with their connection to the main
 /// earthing terminal.
 fn bonding_list(prj: &Project) -> Table {
-    let mut t = Table::new(&[(tr("From"), 1.2), (tr("To"), 1.2), (tr("Kind"), 1.2), (tr("Cross-section"), 0.7), (tr("Length (m)"), 0.6), (tr("Part"), 1.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("From"), 1.2), (tr_const!("To"), 1.2), (tr_const!("Kind"), 1.2), (tr_const!("Cross-section"), 0.7), (tr_const!("Length (m)"), 0.6), (tr_const!("Part"), 1.0)]);
     for b in &prj.field.bonds {
         t.push(vec![b.a.clone(), b.b.clone(), b.kind.title().into(), b.cross_section.clone(), format!("{:.1}", b.length), b.part.clone()], None);
     }
@@ -322,7 +205,7 @@ fn bonding_list(prj: &Project) -> Table {
 /// Bundles: stretches shared by several wires, cables and tubes, with their
 /// diameter and the branches at their ends.
 fn bundle_list(r: &crate::routing3d::Routing) -> Table {
-    let mut t = Table::new(&[(tr("Bundle"), 0.5), (tr("Items"), 0.5), (tr("Diameter (mm)"), 0.7), (tr("Length (mm)"), 0.7), (tr("Classes"), 1.0), (tr("Branches"), 0.6), (tr("Contents"), 3.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Bundle"), 0.5), (tr_const!("Items"), 0.5), (tr_const!("Diameter (mm)"), 0.7), (tr_const!("Length (mm)"), 0.7), (tr_const!("Classes"), 1.0), (tr_const!("Branches"), 0.6), (tr_const!("Contents"), 3.0)]);
     for (bi, b) in r.bundles.iter().enumerate() {
         let classes: Vec<&str> = b.classes.iter().map(|c| c.title()).collect();
         let branches = r.branches.iter().filter(|x| x.bundles.contains(&bi)).count();
@@ -344,14 +227,14 @@ fn bundle_list(r: &crate::routing3d::Routing) -> Table {
 }
 
 fn pct_loops(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("PCT loop"), 0.6),
-        (tr("Description"), 1.6),
-        (tr("Functions"), 0.9),
-        (tr("Measured variable"), 0.9),
-        (tr("Range"), 0.9),
-        (tr("Devices"), 1.3),
-        (tr("Status"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("PCT loop"), 0.6),
+        (tr_const!("Description"), 1.6),
+        (tr_const!("Functions"), 0.9),
+        (tr_const!("Measured variable"), 0.9),
+        (tr_const!("Range"), 0.9),
+        (tr_const!("Devices"), 1.3),
+        (tr_const!("Status"), 0.9),
     ]);
     for l in crate::process::loops(prj, idx) {
         let first = l.functions.first().map(String::as_str).unwrap_or("");
@@ -363,40 +246,12 @@ fn pct_loops(prj: &Project, idx: &Index) -> Table {
     t
 }
 
-/// Hoses, fluid device groups, electro-fluid links, P&ID instruments and PCT loops of
-/// the pre-planning.
-fn check_fluid_and_process(prj: &Project, idx: &Index, open: &Netlist) -> Vec<Issue> {
-    let fluid = crate::fluid::problems(prj, open).into_iter().chain(crate::electrofluid::problems(prj, idx)).map(|(severity, message, target)| Issue { severity, message, target });
-    let process = crate::process::problems(prj, idx).into_iter().map(|(message, warning, target)| Issue { severity: if warning { Severity::Warning } else { Severity::Info }, message, target });
-    fluid.chain(process).collect()
-}
-
-/// Wires changed after they were wired, and problems reported from the workshop.
-fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
-    let mut v = Vec::new();
-    for w in wiring {
-        match crate::wiring::status(prj, w) {
-            crate::wiring::Status::Changed => v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Wire {} – {} changed after it was wired", w.from, w.to), target: None }),
-            crate::wiring::Status::Problem => {
-                let note = crate::wiring::mark_of(prj, w).map(|m| m.note.clone()).unwrap_or_default();
-                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Wiring problem {} – {}: {}", w.from, w.to, note), target: None });
-            }
-            _ => {}
-        }
-    }
-    let stale = crate::wiring::stale(prj, wiring).len();
-    if stale > 0 {
-        v.push(Issue { severity: Severity::Info, message: tr_fmt!("{} wiring marks belong to wires that no longer exist", stale), target: None });
-    }
-    v
-}
-
-fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
+pub(crate) fn loc_str(prj: &Project, page: usize, pos: crate::geom::P) -> String {
     crate::frame::reference(prj, page, pos)
 }
 
 fn toc(prj: &Project) -> Table {
-    let mut t = Table::new(&[(tr("Page"), 1.0), (tr("Description"), 4.0), (tr("Type"), 2.0), (tr("Devices"), 1.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Page"), 1.0), (tr_const!("Description"), 4.0), (tr_const!("Type"), 2.0), (tr_const!("Devices"), 1.0)]);
     for (i, pg) in prj.pages.iter().enumerate() {
         t.push(
             vec![pg.name.clone(), pg.description.clone(), pg.kind.label(), pg.symbols.len().to_string()],
@@ -407,14 +262,14 @@ fn toc(prj: &Project) -> Table {
 }
 
 fn device_list(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("Device tag"), 1.2),
-        (tr("Main function"), 2.0),
-        (tr("Function text"), 2.0),
-        (tr("Location"), 1.0),
-        (tr("Aux. functions"), 1.6),
-        (tr("Part number"), 1.6),
-        (tr("Description"), 3.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Device tag"), 1.2),
+        (tr_const!("Main function"), 2.0),
+        (tr_const!("Function text"), 2.0),
+        (tr_const!("Location"), 1.0),
+        (tr_const!("Aux. functions"), 1.6),
+        (tr_const!("Part number"), 1.6),
+        (tr_const!("Description"), 3.0),
     ]);
     for tag in idx.sorted_tags() {
         let dev = &idx.devices[tag];
@@ -422,7 +277,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
         let Some(loc) = first else { continue };
         let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
         let (name, ftext) = inst
-            .map(|s| (symbols::get(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
+            .map(|s| (prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
             .unwrap_or_default();
         let name = if dev.mains.is_empty() && !dev.others.is_empty() {
             format!("{name} ×{}", dev.others.len())
@@ -464,17 +319,17 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
 }
 
 fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Pos"), 0.5),
-        (tr("Qty"), 0.6),
-        (tr("Unit"), 0.5),
-        (tr("Part number"), 1.8),
-        (tr("Type number"), 1.4),
-        (tr("Manufacturer"), 1.0),
-        (tr("Description"), 3.2),
-        (tr("Devices"), 2.0),
-        (tr("Unit price"), 0.9),
-        (tr("Total"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Pos"), 0.5),
+        (tr_const!("Qty"), 0.6),
+        (tr_const!("Unit"), 0.5),
+        (tr_const!("Part number"), 1.8),
+        (tr_const!("Type number"), 1.4),
+        (tr_const!("Manufacturer"), 1.0),
+        (tr_const!("Description"), 3.2),
+        (tr_const!("Devices"), 2.0),
+        (tr_const!("Unit price"), 0.9),
+        (tr_const!("Total"), 0.9),
     ]);
     let mut groups: BTreeMap<String, (f32, Vec<String>)> = BTreeMap::new();
     for tag in idx.sorted_tags() {
@@ -492,7 +347,7 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
                     .symbols
                     .iter()
                     .find(|s| s.id == l.sym_id)
-                    .and_then(|s| symbols::get(&s.sym))
+                    .and_then(|s| prj.symbol(&s.sym))
                     .map(|d| d.func == Func::Terminal)
                     .unwrap_or(false)
             })
@@ -603,13 +458,13 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
 }
 
 fn marking_report(markers: &[crate::marking::Marker]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Material"), 1.2),
-        (tr("Category"), 1.0),
-        (tr("Text"), 1.6),
-        (tr("Count"), 0.5),
-        (tr("Enclosure"), 0.8),
-        (tr("Belongs to"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Material"), 1.2),
+        (tr_const!("Category"), 1.0),
+        (tr_const!("Text"), 1.6),
+        (tr_const!("Count"), 0.5),
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Belongs to"), 1.6),
     ]);
     for m in markers {
         t.push(vec![m.material.clone(), m.category.title().into(), m.text.clone(), m.count.to_string(), m.enclosure.clone(), m.group.clone()], None);
@@ -618,7 +473,7 @@ fn marking_report(markers: &[crate::marking::Marker]) -> Table {
 }
 
 /// Middle of the fullest stretch of a duct, on its centre line (plate coordinates).
-fn fill_spot(prj: &Project, f: &panel::DuctFill) -> crate::geom::P {
+pub(crate) fn fill_spot(prj: &Project, f: &panel::DuctFill) -> crate::geom::P {
     let e = &prj.layout.enclosures[f.enclosure];
     let mid = (f.from + f.to) / 2.0;
     match e.item(f.duct) {
@@ -629,15 +484,15 @@ fn fill_spot(prj: &Project, f: &panel::DuctFill) -> crate::geom::P {
 }
 
 fn duct_fill_report(prj: &Project, fill: &[panel::DuctFill]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.8),
-        (tr("Cable duct"), 1.2),
-        (tr("Position (mm)"), 0.9),
-        (tr("Length (mm)"), 0.8),
-        (tr("Wires"), 0.6),
-        (tr("Fullest stretch (mm)"), 1.0),
-        (tr("Fill level (%)"), 0.8),
-        (tr("Limit (%)"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Cable duct"), 1.2),
+        (tr_const!("Position (mm)"), 0.9),
+        (tr_const!("Length (mm)"), 0.8),
+        (tr_const!("Wires"), 0.6),
+        (tr_const!("Fullest stretch (mm)"), 1.0),
+        (tr_const!("Fill level (%)"), 0.8),
+        (tr_const!("Limit (%)"), 0.6),
     ]);
     for f in fill {
         let e = &prj.layout.enclosures[f.enclosure];
@@ -660,43 +515,17 @@ fn duct_fill_report(prj: &Project, fill: &[panel::DuctFill]) -> Table {
     t
 }
 
-/// Ducts above the fill limit (warning) or close to it (above 80 % of it, hint).
-fn check_duct_fill(prj: &Project, fill: &[panel::DuctFill]) -> Vec<Issue> {
-    let limit = prj.layout.duct_fill_limit;
-    let mut v = Vec::new();
-    for f in fill {
-        let severity = if f.percent > limit {
-            Severity::Warning
-        } else if f.percent > 0.8 * limit {
-            Severity::Info
-        } else {
-            continue;
-        };
-        let at = fill_spot(prj, f);
-        let name = &prj.layout.enclosures[f.enclosure].name;
-        let message = tr_fmt!(
-            "{}: cable duct at {} mm filled {} % (limit {} %)",
-            name,
-            format!("{:.0} / {:.0}", at.x, at.y),
-            format!("{:.0}", f.percent),
-            format!("{limit:.0}")
-        );
-        v.push(Issue { severity, message, target: None });
-    }
-    v
-}
-
 fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.8),
-        (tr("Wire no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Potential"), 0.9),
-        (tr("Colour"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.8),
+        (tr_const!("Wire no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Potential"), 0.9),
+        (tr_const!("Colour"), 0.6),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.9),
-        (tr("Routing"), 1.2),
+        (tr_const!("Length (mm)"), 0.9),
+        (tr_const!("Routing"), 1.2),
     ]);
     let mut total = 0.0;
     for w in wiring {
@@ -731,37 +560,16 @@ fn panel_wiring(prj: &Project, wiring: &[RoutedWire], open: &[OpenWire]) -> Tabl
     t
 }
 
-/// Panel layout checks: enclosures of mounting pages and unplaced devices; the
-/// checks of the layout itself are the built-in plugin `panel_checks` (openecraft-api).
-fn check_layout(prj: &Project) -> Vec<Issue> {
-    let mut v = Vec::new();
-    for (pi, pg) in prj.pages.iter().enumerate() {
-        if let PageKind::Mounting(id) = pg.kind {
-            if !prj.layout.enclosures.iter().any(|e| e.id == id) {
-                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Page {}: its enclosure no longer exists", pg.name), target: Some((pi, 0)) });
-            }
-        }
-    }
-    if prj.layout.enclosures.is_empty() {
-        return v;
-    }
-    for d in panel::devices_to_place(prj) {
-        let target = prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().find(|s| s.tag == d.tag).map(|s| (pi, s.id)));
-        v.push(Issue { severity: Severity::Info, message: tr_fmt!("{}: not placed in the panel layout", d.tag), target });
-    }
-    v
-}
-
 fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Strip"), 0.8),
-        (tr("Terminal"), 0.7),
-        (tr("Jumper"), 0.5),
-        (tr("External (top)"), 3.0),
-        (tr("Internal (bottom)"), 3.0),
-        (tr("Potential"), 1.0),
-        (tr("Location"), 0.8),
-        (tr("Function text"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Strip"), 0.8),
+        (tr_const!("Terminal"), 0.7),
+        (tr_const!("Jumper"), 0.5),
+        (tr_const!("External (top)"), 3.0),
+        (tr_const!("Internal (bottom)"), 3.0),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Location"), 0.8),
+        (tr_const!("Function text"), 1.6),
     ]);
     use crate::strips::ElementKind;
     for strip in crate::strips::strip_tags(prj) {
@@ -791,14 +599,14 @@ fn terminal_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
     t
 }
 fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Plug"), 0.8),
-        (tr("Pin"), 0.6),
-        (tr("Socket side"), 3.0),
-        (tr("Pin side"), 3.0),
-        (tr("Potential"), 1.0),
-        (tr("Location"), 0.8),
-        (tr("Function text"), 1.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Plug"), 0.8),
+        (tr_const!("Pin"), 0.6),
+        (tr_const!("Socket side"), 3.0),
+        (tr_const!("Pin side"), 3.0),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Location"), 0.8),
+        (tr_const!("Function text"), 1.6),
     ]);
     for plug in crate::plugs::plug_tags(prj) {
         for r in crate::plugs::rows(prj, &plug, nl, open) {
@@ -810,16 +618,16 @@ fn plug_diagram(prj: &Project, nl: &Netlist, open: &Netlist) -> Table {
 }
 
 fn connection_list(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Wire no."), 0.8),
-        (tr("Potential"), 1.0),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Page"), 0.8),
-        (tr("Colour"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Wire no."), 0.8),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Page"), 0.8),
+        (tr_const!("Colour"), 0.8),
         ("Cross-section", 1.0),
-        (tr("Cable"), 1.0),
-        (tr("Core"), 0.6),
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Core"), 0.6),
     ]);
     for c in conns {
         let s = &prj.pages[c.a.page].symbols[c.a.sym];
@@ -868,16 +676,16 @@ fn sorted_cables(prj: &Project) -> Vec<&Cable> {
 }
 
 fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 1.0),
-        (tr("Type"), 1.6),
-        (tr("Cores used"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Type"), 1.6),
+        (tr_const!("Cores used"), 0.8),
         ("Cross-section", 0.9),
-        (tr("Length (m)"), 0.8),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Part number"), 1.4),
-        (tr("Description"), 2.0),
+        (tr_const!("Length (m)"), 0.8),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Part number"), 1.4),
+        (tr_const!("Description"), 2.0),
     ]);
     for cable in sorted_cables(prj) {
         let used = cable_connections(prj, conns, &cable.tag);
@@ -918,13 +726,13 @@ fn cable_overview(prj: &Project, conns: &[Connection]) -> Table {
 }
 
 fn cable_diagram(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 1.0),
-        (tr("Core"), 0.6),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Potential"), 1.0),
-        (tr("Wire no."), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 1.0),
+        (tr_const!("Core"), 0.6),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Wire no."), 0.8),
         ("Cross-section", 0.9),
     ]);
     for cable in sorted_cables(prj) {
@@ -971,84 +779,14 @@ fn cable_diagram(prj: &Project, conns: &[Connection]) -> Table {
     t
 }
 
-/// Cable assignments, wire numbers and device tags.
-fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
-    let mut v = Vec::new();
-    let mut issue = |severity, message: String, target| v.push(Issue { severity, message, target });
-    let mut tags: HashMap<&str, usize> = HashMap::new();
-    for c in &prj.cables {
-        *tags.entry(c.tag.as_str()).or_default() += 1;
-        if c.tag.trim().is_empty() {
-            issue(Severity::Error, tr("Cable without tag").into(), None);
-        }
-    }
-    for (tag, n) in tags.iter().filter(|(t, n)| **n > 1 && !t.is_empty()) {
-        issue(Severity::Error, tr_fmt!("Cable {} defined {} times", tag, n), None);
-    }
-    // Cable cores: known cable, listed core, one connection per core.
-    let mut core_use: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
-    for (ni, net) in open.nets.iter().enumerate() {
-        for (pi, id) in &net.wires {
-            let Some(w) = prj.pages[*pi].wires.iter().find(|w| w.id == *id) else { continue };
-            if w.cable.is_empty() {
-                continue;
-            }
-            let at = Some((*pi, w.id));
-            match prj.cable(&w.cable) {
-                None => issue(Severity::Error, tr_fmt!("Wire assigned to unknown cable {}", w.cable), at),
-                Some(_) if w.core.is_empty() => issue(Severity::Warning, tr_fmt!("{}: wire without core designation", w.cable), at),
-                Some(c) if !c.core_list().contains(&w.core) => {
-                    issue(Severity::Warning, tr_fmt!("{}: core {} is not a core of the cable ({})", w.cable, w.core, c.cores), at)
-                }
-                Some(_) => {}
-            }
-            let users = core_use.entry((w.cable.clone(), w.core.clone())).or_default();
-            if !users.contains(&ni) {
-                users.push(ni);
-            }
-        }
-    }
-    for ((cable, core), nets) in &core_use {
-        if nets.len() > 1 && !core.is_empty() {
-            let at = open.nets[nets[1]].wires.first().copied();
-            issue(Severity::Error, tr_fmt!("{}: core {} used for {} connections", cable, core, nets.len()), at);
-        }
-    }
-    // Wire numbers: one per connection, not shared by different potentials.
-    let mut by_number: BTreeMap<String, BTreeSet<usize>> = BTreeMap::new();
-    for net in &open.nets {
-        let numbers = crate::wirenum::numbers_of(prj, net);
-        let at = net.wires.first().copied();
-        if numbers.len() > 1 {
-            issue(Severity::Warning, tr_fmt!("Different wire numbers in one connection: {}", numbers.join(", ")), at);
-        }
-        let potential = net.pins.first().and_then(|p| nl.pin_net.get(&(prj.pages[p.page].symbols[p.sym].id, p.pin)).copied());
-        if let (Some(n), Some(pot)) = (numbers.first(), potential) {
-            by_number.entry(n.clone()).or_default().insert(pot);
-        }
-    }
-    for (number, pots) in by_number.iter().filter(|(_, p)| p.len() > 1) {
-        issue(Severity::Warning, tr_fmt!("Wire number {} is used for {} different potentials", number, pots.len()), None);
-    }
-    // Device tags need a device name after the structure.
-    for (pi, pg) in prj.pages.iter().enumerate() {
-        for s in pg.symbols.iter().filter(|s| !s.tag.is_empty()) {
-            if crate::structure::Dt::parse(&s.tag).name.is_empty() {
-                issue(Severity::Error, tr_fmt!("{}: device tag without device name", s.tag), Some((pi, s.id)));
-            }
-        }
-    }
-    v
-}
-
 fn plc_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("PLC card"), 1.0),
-        (tr("Address"), 1.0),
-        (tr("Type"), 0.8),
-        (tr("Function text"), 2.5),
-        (tr("Connected to"), 3.0),
-        (tr("Location"), 0.8),
+    let mut t = Table::with_widths(&[
+        (tr_const!("PLC card"), 1.0),
+        (tr_const!("Address"), 1.0),
+        (tr_const!("Type"), 0.8),
+        (tr_const!("Function text"), 2.5),
+        (tr_const!("Connected to"), 3.0),
+        (tr_const!("Location"), 0.8),
     ]);
     for p in crate::plc::points(prj, nl) {
         let kind = if p.input { "DI" } else { "DO" };
@@ -1059,7 +797,7 @@ fn plc_list(prj: &Project, nl: &Netlist) -> Table {
 
 fn revision_overview(prj: &Project) -> Table {
     let since = crate::revision::last_released(prj).map(|r| r.name.as_str()).unwrap_or("-");
-    let mut t = Table::new(&[(tr("Page"), 0.8), (tr("Change"), 0.8), (tr("Item"), 0.8), (if since.is_empty() { tr("Description") } else { tr("Description (since last revision)") }, 3.0)]);
+    let mut t = Table::with_widths(&[(tr_const!("Page"), 0.8), (tr_const!("Change"), 0.8), (tr_const!("Item"), 0.8), (if since.is_empty() { tr_const!("Description") } else { tr_const!("Description (since last revision)") }, 3.0)]);
     for (page, kind, what, label, target) in crate::revision::overview(prj) {
         t.push(vec![page, kind, what, label], target);
     }
@@ -1072,19 +810,19 @@ fn revision_overview(prj: &Project) -> Table {
 /// cable core. Panel wires come first, sorted by cross-section, colour and length
 /// (machine batches).
 pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
-    let mut t = Table::new(&[
-        (tr("Wire no."), 0.8),
-        (tr("From"), 1.6),
-        (tr("To"), 1.6),
-        (tr("Colour"), 0.7),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Wire no."), 0.8),
+        (tr_const!("From"), 1.6),
+        (tr_const!("To"), 1.6),
+        (tr_const!("Colour"), 0.7),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.9),
-        (tr("Strip (mm)"), 0.7),
-        (tr("Ferrule"), 1.6),
-        (tr("Ferrule part"), 1.0),
-        (tr("Cable"), 0.8),
-        (tr("Core"), 0.6),
-        (tr("Potential"), 1.0),
+        (tr_const!("Length (mm)"), 0.9),
+        (tr_const!("Strip (mm)"), 0.7),
+        (tr_const!("Ferrule"), 1.6),
+        (tr_const!("Ferrule part"), 1.0),
+        (tr_const!("Cable"), 0.8),
+        (tr_const!("Core"), 0.6),
+        (tr_const!("Potential"), 1.0),
     ]);
     // (routed length, cells, jump target)
     type Row = (Option<f32>, Vec<String>, Option<(usize, u64)>);
@@ -1133,15 +871,15 @@ pub fn production_wire_list(prj: &Project, an: &Analysis) -> Table {
 /// Harness data: per harness its wires with lengths and end treatment, and a
 /// summary row (wires, connectors, total length, bundle diameter).
 fn harness_data(prj: &Project, an: &Analysis) -> Table {
-    let mut t = Table::new(&[
-        (tr("Harness"), 0.9),
-        (tr("Wire no."), 0.7),
-        (tr("From"), 1.4),
-        (tr("To"), 1.4),
-        (tr("Colour"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Harness"), 0.9),
+        (tr_const!("Wire no."), 0.7),
+        (tr_const!("From"), 1.4),
+        (tr_const!("To"), 1.4),
+        (tr_const!("Colour"), 0.6),
         ("Cross-section", 0.9),
-        (tr("Length (mm)"), 0.8),
-        (tr("End treatment"), 1.6),
+        (tr_const!("Length (mm)"), 0.8),
+        (tr_const!("End treatment"), 1.6),
     ]);
     for h in &prj.harnesses {
         let ws = crate::harness::wires(prj, an, &h.tag);
@@ -1168,58 +906,15 @@ fn harness_data(prj: &Project, an: &Analysis) -> Table {
     t
 }
 
-/// Assigned connections that no longer exist, harnesses without wires.
-fn check_harnesses(prj: &Project, an: &Analysis) -> Vec<Issue> {
-    let mut v = Vec::new();
-    for (tag, [a, b]) in crate::harness::stale(prj, an) {
-        v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Harness {}: connection {} – {} does not exist in the schematic", tag, a, b), target: None });
-    }
-    for h in &prj.harnesses {
-        if !an.connections.iter().any(|c| c.harness == h.tag) {
-            v.push(Issue { severity: Severity::Info, message: tr_fmt!("Harness {} has no wires", h.tag), target: None });
-        }
-    }
-    v
-}
-
-/// Jumpers on missing terminals, PLC addresses used on several cards.
-fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
-    let mut v = Vec::new();
-    for (strip, data) in &prj.strips {
-        let labels: Vec<String> = crate::strips::terminals(prj, strip).into_iter().map(|t| t.label).collect();
-        for (label, j) in data.jumpers.iter().filter(|(_, j)| **j > 0) {
-            if !labels.contains(label) {
-                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("{}: jumper {} on terminal {}, which is not placed", strip, j, label), target: None });
-            }
-        }
-        for j in crate::strips::strip_jumpers(prj, strip) {
-            let Some(message) = j.problem_text(strip) else { continue };
-            let severity = if j.problem == Some(crate::strips::JumperProblem::NoPart) { Severity::Info } else { Severity::Warning };
-            v.push(Issue { severity, message, target: None });
-        }
-    }
-    for (addr, points) in crate::plc::duplicate_addresses(prj, nl) {
-        let mut cards: Vec<&str> = points.iter().map(|p| p.card.as_str()).collect();
-        cards.dedup();
-        if cards.len() > 1 {
-            v.push(Issue {
-                severity: Severity::Error,
-                message: tr_fmt!("PLC address {} used on several cards: {}", addr, cards.join(", ")),
-                target: Some((points[1].page, points[1].id)),
-            });
-        }
-    }
-    v
-}
 fn potential_list(prj: &Project, nl: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Potential"), 1.0),
-        (tr("Type"), 1.2),
-        (tr("Voltage"), 0.9),
-        (tr("Colour"), 0.6),
-        (tr("Cross-section"), 0.9),
-        (tr("Connection points"), 4.0),
-        (tr("Pages"), 1.5),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Potential"), 1.0),
+        (tr_const!("Type"), 1.2),
+        (tr_const!("Voltage"), 0.9),
+        (tr_const!("Colour"), 0.6),
+        (tr_const!("Cross-section"), 0.9),
+        (tr_const!("Connection points"), 4.0),
+        (tr_const!("Pages"), 1.5),
     ]);
     let mut nets: Vec<_> = nl.nets.iter().filter(|n| n.named).collect();
     nets.sort_by(|a, b| natural_cmp(&a.name, &b.name));
@@ -1229,7 +924,7 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
             .iter()
             .filter(|p| {
                 let s = &prj.pages[p.page].symbols[p.sym];
-                symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
+                prj.symbol(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
             })
             .map(|p| pin_designation(prj, *p))
             .collect();
@@ -1245,16 +940,16 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
 }
 
 fn cable_sizing(prj: &Project, conns: &[Connection]) -> Table {
-    let mut t = Table::new(&[
-        (tr("Cable"), 0.9),
-        (tr("Length (m)"), 0.7),
-        (tr("Cross-section"), 0.9),
-        (tr("Load"), 0.8),
-        (tr("Current (A)"), 0.7),
-        (tr("Voltage (V)"), 0.7),
-        (tr("Voltage drop (V)"), 0.8),
-        (tr("Voltage drop (%)"), 0.8),
-        (tr("Current capacity (A)"), 0.9),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Cable"), 0.9),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Cross-section"), 0.9),
+        (tr_const!("Load"), 0.8),
+        (tr_const!("Current (A)"), 0.7),
+        (tr_const!("Voltage (V)"), 0.7),
+        (tr_const!("Voltage drop (V)"), 0.8),
+        (tr_const!("Voltage drop (%)"), 0.8),
+        (tr_const!("Current capacity (A)"), 0.9),
     ]);
     let num = |v: Option<f32>, digits: usize| v.map(|x| format!("{x:.digits$}")).unwrap_or_else(|| "–".into());
     for d in crate::sizing::cable_drops(prj, conns) {
@@ -1277,15 +972,15 @@ fn cable_sizing(prj: &Project, conns: &[Connection]) -> Table {
 }
 
 fn climate_report(prj: &Project) -> Table {
-    let mut t = Table::new(&[
-        (tr("Enclosure"), 0.9),
-        (tr("Surface (m²)"), 0.8),
-        (tr("Power loss (W)"), 0.8),
-        (tr("Inside (°C)"), 0.7),
-        (tr("Highest (°C)"), 0.7),
-        (tr("Cooling"), 1.4),
-        (tr("Heating (W)"), 0.7),
-        (tr("Devices without power loss"), 2.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Enclosure"), 0.9),
+        (tr_const!("Surface (m²)"), 0.8),
+        (tr_const!("Power loss (W)"), 0.8),
+        (tr_const!("Inside (°C)"), 0.7),
+        (tr_const!("Highest (°C)"), 0.7),
+        (tr_const!("Cooling"), 1.4),
+        (tr_const!("Heating (W)"), 0.7),
+        (tr_const!("Devices without power loss"), 2.0),
     ]);
     for e in &prj.layout.enclosures {
         let r = crate::climate::calculate(prj, e);
@@ -1304,192 +999,6 @@ fn climate_report(prj: &Project) -> Table {
         );
     }
     t
-}
-
-/// Enclosures that get too warm without cooling.
-fn check_climate(prj: &Project) -> Vec<Issue> {
-    use crate::climate::Cooling;
-    let mut v = Vec::new();
-    for e in &prj.layout.enclosures {
-        let r = crate::climate::calculate(prj, e);
-        if r.cooling != Cooling::None {
-            v.push(Issue {
-                severity: Severity::Warning,
-                message: tr_fmt!(
-                    "{}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed",
-                    e.name,
-                    format!("{:.0}", r.loss),
-                    format!("{:.0}", r.inside),
-                    format!("{:.0}", e.climate.inside_max),
-                    r.cooling.text()
-                ),
-                target: None,
-            });
-        }
-    }
-    v
-}
-
-/// Potential definitions and the colours / cross-sections of the connections.
-fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
-    use crate::potentials::{is_protective, normalize_color, props_of, Source};
-    let mut v = Vec::new();
-    let mut issue = |severity, message: String, target| v.push(Issue { severity, message, target });
-    let mut names: HashMap<&str, usize> = HashMap::new();
-    for d in &prj.potentials {
-        *names.entry(d.name.as_str()).or_default() += 1;
-    }
-    for (name, n) in names.iter().filter(|(_, n)| **n > 1) {
-        issue(Severity::Error, tr_fmt!("Potential {} defined {} times", name, n), None);
-    }
-    if !prj.potentials.is_empty() {
-        let mut undefined: BTreeMap<String, (usize, u64)> = BTreeMap::new();
-        for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
-            for s in &pg.symbols {
-                let pot = symbols::get(&s.sym).map(|d| d.func == Func::Potential).unwrap_or(false);
-                if pot && !s.label.is_empty() && prj.potential(&s.label).is_none() {
-                    undefined.entry(s.label.clone()).or_insert((pi, s.id));
-                }
-            }
-        }
-        for (name, at) in undefined {
-            issue(Severity::Info, tr_fmt!("Potential {} has no definition (Project › Potentials)", name), Some(at));
-        }
-    }
-    for net in open.nets.iter().filter(|n| !n.fluid) {
-        let Some(&(pi, wid)) = net.wires.first() else { continue };
-        let at = Some((pi, wid));
-        let p = props_of(prj, nl, net);
-        if p.potential.contains(" / ") || crate::wirenum::wires_of(prj, net).iter().any(|w| !w.cable.is_empty()) {
-            continue;
-        }
-        let color = normalize_color(&p.color);
-        if is_protective(prj, &p.potential) {
-            if !color.is_empty() && color != "GNYE" {
-                issue(Severity::Error, tr_fmt!("Protective conductor {} with wire colour {} (must be GNYE)", p.potential, p.color), at);
-            }
-        } else if color == "GNYE" {
-            let name = if p.potential.is_empty() { net.name.clone() } else { p.potential.clone() };
-            issue(Severity::Error, tr_fmt!("Wire colour GNYE is reserved for protective conductors ({})", name), at);
-        }
-        let Some(def) = prj.potential(&p.potential) else { continue };
-        if p.color_source == Source::Manual && !def.color.is_empty() && color != normalize_color(&def.color) {
-            issue(Severity::Warning, tr_fmt!("{}: wire colour {} differs from the potential definition ({})", def.name, p.color, def.color), at);
-        }
-        let mm2 = crate::production::cross_section_mm2;
-        if p.cross_section_source == Source::Manual && !def.cross_section.is_empty() && mm2(&p.cross_section) != mm2(&def.cross_section) {
-            issue(
-                Severity::Warning,
-                tr_fmt!("{}: cross-section {} differs from the potential definition ({})", def.name, p.cross_section, def.cross_section),
-                at,
-            );
-        }
-    }
-    v
-}
-
-/// Project check ("Prüfläufe"): finds typical engineering mistakes.
-pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
-    let mut v = Vec::new();
-    let mut issue = |severity, message: String, target| v.push(Issue { severity, message, target });
-    for tag in idx.sorted_tags() {
-        let dev = &idx.devices[tag];
-        let t = |l: &crate::index::Loc| Some((l.page, l.sym_id));
-        if dev.mains.is_empty() && !dev.auxs.is_empty() {
-            issue(Severity::Error, tr_fmt!("{}: auxiliary function(s) without main function", tag), t(&dev.auxs[0]));
-        }
-        if dev.mains.len() > 1 {
-            issue(Severity::Error, tr_fmt!("{}: main function placed {} times", tag, dev.mains.len()), t(&dev.mains[1]));
-        }
-        if !dev.others.is_empty() {
-            // Duplicate terminal numbers / PLC addresses (plug pins: see `plugs::problems`)
-            let mut seen: HashMap<String, usize> = HashMap::new();
-            for l in &dev.others {
-                let s = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id);
-                if let Some(s) = s.filter(|s| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Plug(_)))) {
-                    let c = seen.entry(s.label.clone()).or_default();
-                    *c += 1;
-                    if *c == 2 {
-                        issue(Severity::Warning, tr_fmt!("{}: designation '{}' used more than once", tag, s.label), t(l));
-                    }
-                }
-            }
-        }
-        let data = prj.devices.get(tag);
-        for r in data.map(|d| d.parts.as_slice()).unwrap_or(&[]) {
-            if !prj.parts.iter().any(|p| p.number == r.number) {
-                let l = dev.mains.first().or(dev.others.first()).or(dev.auxs.first());
-                issue(
-                    Severity::Error,
-                    tr_fmt!("{}: part {} is not in the project parts (Parts management › synchronize)", tag, r.number),
-                    l.and_then(t),
-                );
-            }
-        }
-        // Function templates: more functions placed than the parts provide?
-        let usage = crate::parts::usage(prj, None, tag);
-        let has_templates = usage.values().any(|(_, avail)| *avail > 0);
-        if has_templates {
-            for (kind, (placed, avail)) in &usage {
-                if !matches!(kind, crate::parts::FnKind::Terminal | crate::parts::FnKind::PlugPin) && placed > avail {
-                    let l = dev.mains.first().or(dev.auxs.first()).or(dev.others.first());
-                    issue(
-                        Severity::Warning,
-                        tr_fmt!("{}: {}× {} placed, assigned parts provide {}", tag, placed, tr(kind.title()), avail),
-                        l.and_then(t),
-                    );
-                }
-            }
-        }
-        let has_part = data.map(|d| !d.parts.is_empty()).unwrap_or(false);
-        if !has_part && (!dev.mains.is_empty() || !dev.others.is_empty()) {
-            let l = dev.mains.first().or(dev.others.first()).unwrap();
-            issue(Severity::Info, tr_fmt!("{}: no part assigned", tag), t(l));
-        }
-    }
-    for (name, locs) in &idx.interruptions {
-        if locs.len() == 1 {
-            issue(
-                Severity::Warning,
-                tr_fmt!("Interruption point '{}' has no counterpart", name),
-                Some((locs[0].page, locs[0].sym_id)),
-            );
-        }
-    }
-    for (pi, pg) in prj.pages.iter().enumerate() {
-        for s in &pg.symbols {
-            let Some(def) = symbols::get(&s.sym) else {
-                issue(Severity::Error, tr_fmt!("Unknown symbol '{}'", s.sym), Some((pi, s.id)));
-                continue;
-            };
-            if def.func.has_tag() && s.tag.trim().is_empty() {
-                issue(Severity::Error, tr_fmt!("{} without device tag on page {}", def.name, pg.name), Some((pi, s.id)));
-            }
-        }
-    }
-    let mut unconnected: Vec<_> = nl.unconnected.clone();
-    unconnected.sort();
-    for (pi, sid, pin) in unconnected {
-        if let Some((si, s)) = prj.pages[pi].symbols.iter().enumerate().find(|(_, s)| s.id == sid) {
-            if crate::fluid::vents(prj, PinRef { page: pi, sym: si, pin }) {
-                continue; // reported by the fluid check
-            }
-            let d = pin_designation(prj, PinRef { page: pi, sym: si, pin });
-            issue(
-                Severity::Warning,
-                tr_fmt!("Open connection point {} ({})", d, loc_str(prj, pi, s.pos)),
-                Some((pi, sid)),
-            );
-        }
-    }
-    for net in &nl.nets {
-        if net.name.contains(" / ") {
-            let target = net.pins.first().map(|p| (p.page, prj.pages[p.page].symbols[p.sym].id));
-            issue(Severity::Error, tr_fmt!("Short circuit between potentials {}", net.name), target);
-        }
-    }
-    v.sort_by_key(|i| i.severity);
-    v
 }
 
 #[cfg(test)]

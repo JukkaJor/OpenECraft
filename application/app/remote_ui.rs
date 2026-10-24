@@ -3,7 +3,7 @@
 //! request it; changes of what another user has locked are taken back.
 
 use super::App;
-use crate::history::History;
+use openecraft_core::history::History;
 use crate::remote::{Remote, Reply};
 use egui::{Color32, RichText};
 use openecraft_core::collab::{valid_name, Shared, Snapshot, Target};
@@ -18,12 +18,12 @@ impl App {
                     let (shared, prj) = Shared::open(&name, *opened);
                     let next_id = prj.next_id;
                     self.replace_project(prj, None);
-                    self.prj.next_id = next_id;
+                    self.session.prj.next_id = next_id;
                     // Undo must not go back to the project opened before.
-                    let rev = self.history.rev + 1;
-                    self.history = History::new(&self.prj);
-                    self.history.rev = rev;
-                    self.saved_rev = rev;
+                    let rev = self.session.history.rev + 1;
+                    self.session.history = History::new(&self.session.prj);
+                    self.session.history.rev = rev;
+                    self.session.saved_rev = rev;
                     self.remote.checked_rev = rev;
                     self.remote.shared = Some(shared);
                     self.remote.window = false;
@@ -39,7 +39,7 @@ impl App {
                 Reply::Locked(_, targets, Err(_)) => {
                     if let Some(sh) = &mut self.remote.shared {
                         sh.denied(&targets);
-                        self.prj = sh.revert(&self.prj, &targets);
+                        self.session.prj = sh.revert(&self.session.prj, &targets);
                     }
                     self.notify(ctx, self.remote.status.clone());
                 }
@@ -53,16 +53,16 @@ impl App {
 
     /// Takes a newer state of the server; undo steps keep the changes of others.
     fn take_snapshot(&mut self, ctx: &egui::Context, snapshot: Snapshot, saved: bool) {
-        let clean = !self.dirty() || (saved && self.history.rev == self.remote.saving_rev);
+        let clean = !self.session.dirty() || (saved && self.session.history.rev == self.remote.saving_rev);
         let Some(sh) = &mut self.remote.shared else { return };
         let (lost, apply) = sh.update(snapshot);
-        let lost: Vec<String> = lost.iter().map(|t| Remote::describe(&self.prj, *t)).collect();
-        self.history.rebase(&mut self.prj, apply);
-        self.remote.checked_rev = self.history.rev;
+        let lost: Vec<String> = lost.iter().map(|t| Remote::describe(&self.session.prj, *t)).collect();
+        self.session.history.rebase(&mut self.session.prj, apply);
+        self.remote.checked_rev = self.session.history.rev;
         if clean {
-            self.saved_rev = self.history.rev;
+            self.session.mark_saved();
         }
-        self.page = self.page.min(self.prj.pages.len().saturating_sub(1));
+        self.session.page = self.session.page.min(self.session.prj.pages.len().saturating_sub(1));
         if !lost.is_empty() {
             self.notify(ctx, tr_fmt!("Changed by another user in the meantime, your change was replaced: {}", lost.join(", ")));
         }
@@ -71,18 +71,18 @@ impl App {
     /// Requests the locks for new changes; changes of what others have locked are
     /// taken back. Call after the history has committed the frame's changes.
     pub(super) fn check_locks(&mut self, ctx: &egui::Context) {
-        if self.remote.checked_rev == self.history.rev {
+        if self.remote.checked_rev == self.session.history.rev {
             return;
         }
-        self.remote.checked_rev = self.history.rev;
+        self.remote.checked_rev = self.session.history.rev;
         let Some(sh) = &self.remote.shared else { return };
-        let (held, free): (Vec<Target>, Vec<Target>) = sh.unlocked_changes(&self.prj).into_iter().partition(|t| sh.holder(*t).is_some());
+        let (held, free): (Vec<Target>, Vec<Target>) = sh.unlocked_changes(&self.session.prj).into_iter().partition(|t| sh.holder(*t).is_some());
         if !held.is_empty() {
             let who: Vec<String> = held
                 .iter()
-                .map(|t| tr_fmt!("{} (locked by {})", Remote::describe(&self.prj, *t), sh.holder(*t).map(|l| l.user.as_str()).unwrap_or_default()))
+                .map(|t| tr_fmt!("{} (locked by {})", Remote::describe(&self.session.prj, *t), sh.holder(*t).map(|l| l.user.as_str()).unwrap_or_default()))
                 .collect();
-            self.prj = sh.revert(&self.prj, &held);
+            self.session.prj = sh.revert(&self.session.prj, &held);
             self.notify(ctx, tr_fmt!("Not changed: {}", who.join(", ")));
         }
         if !free.is_empty() {
@@ -92,8 +92,8 @@ impl App {
 
     /// Saves to the project server; `release` locks are released afterwards.
     pub(super) fn save_remote(&mut self, release: Vec<Target>) {
-        self.remote.saving_rev = self.history.rev;
-        self.remote.save(&self.prj, release);
+        self.remote.saving_rev = self.session.history.rev;
+        self.remote.save(&self.session.prj, release);
     }
 
     fn my_locks(&self) -> Vec<Target> {
@@ -112,7 +112,7 @@ impl App {
 
     /// The user holding the lock of the current page (another session).
     pub(super) fn page_locked_by(&self) -> Option<String> {
-        let id = self.prj.pages.get(self.page)?.id;
+        let id = self.session.prj.pages.get(self.session.page)?.id;
         Some(self.remote.shared.as_ref()?.holder(Target::Page(id))?.user.clone())
     }
 
@@ -191,7 +191,7 @@ impl App {
                 }
             });
         });
-        if self.dirty() {
+        if self.session.dirty() {
             ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Opening a project replaces the current one, its unsaved changes are lost."));
         }
         if let Some(name) = open {
@@ -208,7 +208,7 @@ impl App {
                 .clicked()
             {
                 let name = self.remote.new_name.clone();
-                self.remote.create(&name, &self.prj);
+                self.remote.create(&name, &self.session.prj);
             }
         });
     }
@@ -218,7 +218,7 @@ impl App {
         ui.label(RichText::new(tr_fmt!("Shared project {} – revision {}, user {}", sh.name, sh.revision, sh.session.user)).strong());
         let mine = self.my_locks();
         let others: Vec<(Target, String)> = sh.locks.iter().filter(|l| l.session != sh.session.session).map(|l| (l.target, l.user.clone())).collect();
-        let page_id = self.prj.pages.get(self.page).map(|p| p.id);
+        let page_id = self.session.prj.pages.get(self.session.page).map(|p| p.id);
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("💾 Save")).clicked() {
                 self.save_remote(Vec::new());
@@ -244,13 +244,13 @@ impl App {
         }
         for t in &mine {
             ui.horizontal(|ui| {
-                ui.label(format!("✏ {}", Remote::describe(&self.prj, *t)));
+                ui.label(format!("✏ {}", Remote::describe(&self.session.prj, *t)));
                 if ui.small_button(tr("Save and release")).clicked() {
                     self.save_remote(vec![*t]);
                 }
                 if ui.small_button(tr("Release without saving")).on_hover_text(tr("Your unsaved changes of it are taken back")).clicked() {
                     if let Some(sh) = &self.remote.shared {
-                        self.prj = sh.revert(&self.prj, &[*t]);
+                        self.session.prj = sh.revert(&self.session.prj, &[*t]);
                     }
                     self.remote.release(vec![*t]);
                 }
@@ -262,7 +262,7 @@ impl App {
             ui.weak(tr("None"));
         }
         for (t, user) in &others {
-            ui.label(format!("🔒 {} – {}", Remote::describe(&self.prj, *t), user));
+            ui.label(format!("🔒 {} – {}", Remote::describe(&self.session.prj, *t), user));
         }
         ui.separator();
         if ui.button(tr("Close shared project")).on_hover_text(tr("Releases all locks; the project stays open as a local copy")).clicked() {

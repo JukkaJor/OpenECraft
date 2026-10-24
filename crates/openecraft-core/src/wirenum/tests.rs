@@ -1,6 +1,6 @@
 use super::*;
 use crate::sample::demo_project;
-use crate::symbols::{self, Func};
+use crate::symbols::{Func};
 
 fn nets(prj: &Project) -> (Netlist, Netlist) {
     (Netlist::build(prj, false), Netlist::build(prj, true))
@@ -18,7 +18,7 @@ fn number_at(prj: &Project, pred: impl Fn(&SymbolInst) -> bool, pin: usize) -> S
 }
 
 fn is_terminal(s: &SymbolInst, label: &str) -> bool {
-    symbols::get(&s.sym).map(|d| d.func) == Some(Func::Terminal) && s.label == label
+    crate::symbols::builtin(&s.sym).map(|d| d.func) == Some(Func::Terminal) && s.label == label
 }
 
 #[test]

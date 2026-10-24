@@ -9,19 +9,7 @@ use crate::model::Project;
 use crate::panel::{Face, Fastening, ItemKind, PLATE_THICKNESS};
 use crate::production::{holes_on, openings};
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
-
-/// How openings without a matching single tool are made.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Method {
-    /// A punch of the opening's size if there is one, else the contour (milled on
-    /// machining centres, nibbled on punching machines).
-    #[default]
-    Auto,
-    /// Always the contour, also when a punch of the size exists.
-    Contour,
-}
+pub use crate::model::manufacturing::{Method, OpKind, Operation, Strategy};
 
 impl Method {
     pub fn key(self) -> &'static str {
@@ -36,44 +24,10 @@ impl Method {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Strategy {
-    pub cutouts: Method,
-    /// Threads are cut on the machine; otherwise they are only drilled.
-    pub tap: bool,
-    /// Round holes larger than this are milled although a drill exists, mm.
-    pub drill_max: f32,
-    /// Largest difference between a hole and its drill or punch, mm.
-    pub tolerance: f32,
-    /// Overlap of neighbouring nibbling hits (0 … 0.9 of the tool size).
-    pub nibble_overlap: f32,
-    /// Improves the path between the hits of a tool (2-opt) after the nearest neighbour.
-    pub optimize: bool,
-}
-
 impl Default for Strategy {
     fn default() -> Self {
         Strategy { cutouts: Method::Auto, tap: true, drill_max: 13.0, tolerance: 0.1, nibble_overlap: 0.2, optimize: true }
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum OpKind {
-    Drill { diameter: f32 },
-    Tap { thread: String },
-    /// One hit of a punch (round or rectangular; `turned`: by 90°).
-    Punch { turned: bool },
-    /// Hits along the contour of an opening, in order.
-    Nibble { hits: Vec<P> },
-    /// Circular milling of a round opening (centre at the operation's position).
-    MillCircle { diameter: f32 },
-    /// Contour milling of a rectangular opening.
-    MillRect { w: f32, h: f32 },
-    /// Weld stud: set by the stud welder, not on the machine.
-    Stud { thread: String },
-    /// The machine cannot make it.
-    Manual { what: String },
 }
 
 impl OpKind {
@@ -99,18 +53,6 @@ impl OpKind {
             _ => 0,
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Operation {
-    /// Sequence number in the program, from 1.
-    pub seq: usize,
-    pub item: u64,
-    /// Tool number, None for studs and manual work.
-    pub tool: Option<u32>,
-    /// Face coordinates (origin top left, y down).
-    pub pos: P,
-    pub kind: OpKind,
 }
 
 /// Machining of one face on one machine.

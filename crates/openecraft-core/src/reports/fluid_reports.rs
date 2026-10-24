@@ -7,21 +7,21 @@ use crate::fluid::{self, length_text};
 use crate::index::Index;
 use crate::model::*;
 use crate::netlist::Netlist;
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 
 fn pressure_text(bar: f32) -> String {
     if bar > 0.0 { format!("{bar}") } else { "–".into() }
 }
 
 pub(super) fn netlist(prj: &Project, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Net"), 0.5),
-        (tr("Hose no."), 0.6),
-        (tr("Line"), 1.1),
-        (tr("Medium"), 1.0),
-        (tr("Nominal size"), 0.7),
-        (tr("Ports"), 3.0),
-        (tr("Branches"), 0.6),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Net"), 0.5),
+        (tr_const!("Hose no."), 0.6),
+        (tr_const!("Line"), 1.1),
+        (tr_const!("Medium"), 1.0),
+        (tr_const!("Nominal size"), 0.7),
+        (tr_const!("Ports"), 3.0),
+        (tr_const!("Branches"), 0.6),
     ]);
     for n in fluid::fluid_nets(prj, open) {
         let ports: Vec<String> = n.ports.iter().map(|p| format!("{} ({})", p.designation, p.kind.title())).collect();
@@ -33,18 +33,18 @@ pub(super) fn netlist(prj: &Project, open: &Netlist) -> Table {
 }
 
 pub(super) fn configuration(prj: &Project, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Hose no."), 0.6),
-        (tr("Type"), 0.6),
-        (tr("From"), 1.1),
-        (tr("Fitting"), 1.0),
-        (tr("To"), 1.1),
-        (tr("Fitting"), 1.0),
-        (tr("Nominal size"), 0.7),
-        (tr("Part"), 1.0),
-        (tr("Length (m)"), 0.7),
-        (tr("Cut length (m)"), 0.7),
-        (tr("Max. pressure (bar)"), 0.7),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Hose no."), 0.6),
+        (tr_const!("Type"), 0.6),
+        (tr_const!("From"), 1.1),
+        (tr_const!("Fitting"), 1.0),
+        (tr_const!("To"), 1.1),
+        (tr_const!("Fitting"), 1.0),
+        (tr_const!("Nominal size"), 0.7),
+        (tr_const!("Part"), 1.0),
+        (tr_const!("Length (m)"), 0.7),
+        (tr_const!("Cut length (m)"), 0.7),
+        (tr_const!("Max. pressure (bar)"), 0.7),
     ]);
     for h in fluid::hoses(prj, open) {
         let c = &h.config;
@@ -74,15 +74,15 @@ pub(super) fn configuration(prj: &Project, open: &Netlist) -> Table {
 }
 
 pub(super) fn tubing(prj: &Project, open: &Netlist) -> Table {
-    let mut t = Table::new(&[
-        (tr("Type"), 0.6),
-        (tr("Nominal size"), 0.7),
-        (tr("Medium"), 1.0),
-        (tr("Part"), 1.1),
-        (tr("Pieces"), 0.5),
-        (tr("Total length (m)"), 0.8),
-        (tr("Bends"), 0.5),
-        (tr("Fittings"), 2.2),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Type"), 0.6),
+        (tr_const!("Nominal size"), 0.7),
+        (tr_const!("Medium"), 1.0),
+        (tr_const!("Part"), 1.1),
+        (tr_const!("Pieces"), 0.5),
+        (tr_const!("Total length (m)"), 0.8),
+        (tr_const!("Bends"), 0.5),
+        (tr_const!("Fittings"), 2.2),
     ]);
     for m in fluid::tubing(prj, &fluid::hoses(prj, open)) {
         let fittings: Vec<String> = m.fittings.iter().map(|(f, n)| format!("{n}× {f}")).collect();
@@ -95,22 +95,22 @@ pub(super) fn tubing(prj: &Project, open: &Netlist) -> Table {
 }
 
 pub(super) fn groups(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("Group"), 0.7),
-        (tr("Kind"), 1.0),
-        (tr("Place"), 0.4),
-        (tr("Device"), 0.7),
-        (tr("Function"), 1.4),
-        (tr("Actuated by"), 1.0),
-        (tr("Location"), 0.7),
-        (tr("Part"), 1.0),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Group"), 0.7),
+        (tr_const!("Kind"), 1.0),
+        (tr_const!("Place"), 0.4),
+        (tr_const!("Device"), 0.7),
+        (tr_const!("Function"), 1.4),
+        (tr_const!("Actuated by"), 1.0),
+        (tr_const!("Location"), 0.7),
+        (tr_const!("Part"), 1.0),
     ]);
     for g in &prj.fluid.groups {
         t.push(vec![g.tag.clone(), g.kind.title().into(), String::new(), String::new(), g.description.clone(), String::new(), String::new(), g.part.clone()], None);
         for (i, m) in g.members.iter().enumerate() {
             let main = electrofluid::main_of(prj, idx, m);
-            let function = main.map(|(d, s, _)| if s.function_text.is_empty() { tr(d.name).to_string() } else { s.function_text.clone() }).unwrap_or_default();
-            let location = main.map(|(_, _, l)| l.reference(prj)).unwrap_or_else(|| "?".into());
+            let function = main.as_ref().map(|(d, s, _)| if s.function_text.is_empty() { tr(d.name).to_string() } else { s.function_text.clone() }).unwrap_or_default();
+            let location = main.as_ref().map(|(_, _, l)| l.reference(prj)).unwrap_or_else(|| "?".into());
             let parts: Vec<String> = prj.devices.get(m).map(|d| d.parts.iter().map(|p| p.number.clone()).collect()).unwrap_or_default();
             t.push(
                 vec![String::new(), String::new(), (i + 1).to_string(), m.clone(), function, electrofluid::linked(prj, m).join(", "), location, parts.join(", ")],
@@ -122,14 +122,14 @@ pub(super) fn groups(prj: &Project, idx: &Index) -> Table {
 }
 
 pub(super) fn electro_fluid(prj: &Project, idx: &Index) -> Table {
-    let mut t = Table::new(&[
-        (tr("Fluid device"), 0.8),
-        (tr("Function"), 1.2),
-        (tr("Location"), 0.7),
-        (tr("Electrical device"), 0.8),
-        (tr("Function"), 1.2),
-        (tr("Location"), 0.7),
-        (tr("Status"), 1.2),
+    let mut t = Table::with_widths(&[
+        (tr_const!("Fluid device"), 0.8),
+        (tr_const!("Function"), 1.2),
+        (tr_const!("Location"), 0.7),
+        (tr_const!("Electrical device"), 0.8),
+        (tr_const!("Function"), 1.2),
+        (tr_const!("Location"), 0.7),
+        (tr_const!("Status"), 1.2),
     ]);
     for e in electrofluid::entries(prj, idx) {
         let mut first = true;

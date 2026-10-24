@@ -11,7 +11,7 @@ use super::{item_box, route_ends, Enclosure, Face, ItemKind, Layout, PanelItem, 
 use crate::geom::{p, P};
 use crate::model::Project;
 use crate::parts::vec3::V3;
-use serde::{Deserialize, Serialize};
+pub use crate::model::panel::SitePlace;
 
 /// Gap between line-ups (and single enclosures) placed next to each other.
 pub const LINEUP_GAP: f32 = 200.0;
@@ -91,18 +91,6 @@ pub fn positions(layout: &Layout) -> Vec<V3> {
         }
     }
     out
-}
-
-/// Place of a line-up in the room, floor plan in mm like the 3D view (x to the right,
-/// z towards the front): the rear left corner of the line-up.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct SitePlace {
-    pub x: f32,
-    pub z: f32,
-    /// Turn about the vertical in degrees, counter-clockwise seen from above: at 0 the
-    /// fronts face +z, at 90 they face +x.
-    pub angle: f32,
 }
 
 /// Where an enclosure stands in the room (3D view coordinates in mm: x right, y up

@@ -1,16 +1,13 @@
-//! The commands of the command line and the MCP server. A tool has typed parameters
+//! The tools of the command line and the MCP server that need the session or the
+//! machine (files, parts server, undo); the operations on the project are commands
+//! of the built-in plugins (`openecraft_api::builtin`). A tool has typed parameters
 //! (from which the JSON schema and the command line parsing follow) and returns JSON.
 //! Help texts are English (`tr_const!`); the command line shows them translated, MCP
 //! clients get them as they are. The commands of plugins (`openecraft_api`) follow the
 //! built-in tools.
 
-mod common;
 mod config;
 mod devices;
-mod drawing;
-mod electrical;
-mod engineering;
-mod field;
 mod integration;
 mod languages;
 mod management;
@@ -20,20 +17,17 @@ mod panel;
 mod parts;
 mod plc;
 mod plugins;
-mod plugs;
-mod potentials;
-mod process;
 mod reports;
 mod project;
 mod properties;
-mod routing;
 mod sheets;
-mod singleline;
 mod structure;
 mod tables;
-mod wiring;
+#[cfg(test)]
+mod workflows;
 
 use crate::session::Session;
+use openecraft_api::builtin::common;
 use openecraft_api::params;
 pub use openecraft_api::params::{optional, param, Args, Kind, Param};
 use openecraft_api::Command;
@@ -52,7 +46,7 @@ pub struct Tool {
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, management::TOOLS, pages::TOOLS, sheets::TOOLS, drawing::TOOLS, devices::TOOLS, plugs::TOOLS, plc::TOOLS, potentials::TOOLS, process::TOOLS, singleline::TOOLS, tables::TOOLS, engineering::TOOLS, electrical::TOOLS, panel::TOOLS, routing::TOOLS, field::TOOLS, wiring::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, plugins::TOOLS].into_iter().flatten()
+    [project::TOOLS, management::TOOLS, pages::TOOLS, sheets::TOOLS, devices::TOOLS, plc::TOOLS, tables::TOOLS, panel::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, plugins::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

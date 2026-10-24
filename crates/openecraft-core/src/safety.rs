@@ -8,19 +8,8 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
-use crate::reports::{Issue, Severity};
-use serde::{Deserialize, Serialize};
-
-/// Performance level.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Default)]
-pub enum Pl {
-    A,
-    B,
-    C,
-    #[default]
-    D,
-    E,
-}
+use crate::issue::{Issue, Severity};
+pub use crate::model::safety::{Category, Pl, SafetyFunction, Subsystem};
 
 impl Pl {
     pub const ALL: [Pl; 5] = [Pl::A, Pl::B, Pl::C, Pl::D, Pl::E];
@@ -67,16 +56,6 @@ impl Pl {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Default)]
-pub enum Category {
-    B,
-    One,
-    Two,
-    #[default]
-    Three,
-    Four,
-}
-
 impl Category {
     pub const ALL: [Category; 5] = [Category::B, Category::One, Category::Two, Category::Three, Category::Four];
 
@@ -94,33 +73,6 @@ impl Category {
 /// Band of a value: 0 none / too low, 1 low, 2 medium, 3 high.
 fn band(v: f32, limits: [f32; 3]) -> usize {
     limits.iter().filter(|l| v >= **l - 1e-6).count()
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Subsystem {
-    pub name: String,
-    /// Device tags of a channel.
-    pub devices: Vec<String>,
-    pub category: Category,
-    /// Average diagnostic coverage, %.
-    pub dc: f32,
-    /// Operations per year (MTTFd from B10d).
-    pub operations: f32,
-    /// MTTFd of a channel in years; 0: from the devices.
-    pub mttfd: f32,
-    /// Measures against common cause failure (at least 65 points, annex F).
-    pub ccf: bool,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct SafetyFunction {
-    pub name: String,
-    pub description: String,
-    /// Required performance level (PLr).
-    pub required: Pl,
-    pub subsystems: Vec<Subsystem>,
 }
 
 /// Number of a reliability value ("150 a", "2.5E-9", "1 000 000").
@@ -296,17 +248,13 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         let e = evaluate(prj, f);
         for s in &e.subsystems {
             for p in &s.problems {
-                out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Safety function {}: {}", f.name, p), target: None });
+                out.push(crate::issue!(Severity::Warning, None, "Safety function {}: {}", f.name, p));
             }
         }
         match e.achieved {
-            Some(a) if a < f.required => out.push(Issue {
-                severity: Severity::Error,
-                message: tr_fmt!("Safety function {} reaches PL {}, PL {} is required", f.name, a.title(), f.required.title()),
-                target: None,
-            }),
+            Some(a) if a < f.required => out.push(crate::issue!(Severity::Error, None, "Safety function {} reaches PL {}, PL {} is required", f.name, a.title(), f.required.title())),
             None if f.subsystems.is_empty() => {
-                out.push(Issue { severity: Severity::Warning, message: tr_fmt!("Safety function {} has no subsystems", f.name), target: None })
+                out.push(crate::issue!(Severity::Warning, None, "Safety function {} has no subsystems", f.name))
             }
             _ => {}
         }

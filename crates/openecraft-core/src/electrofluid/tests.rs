@@ -3,7 +3,7 @@ use crate::geom::{p, P};
 use crate::model::SymbolInst;
 
 fn sym(id: u64, key: &str, pos: P, tag: &str) -> SymbolInst {
-    let def = crate::symbols::get(key).unwrap();
+    let def = crate::symbols::builtin(key).unwrap();
     SymbolInst { id, sym: key.into(), pos, tag: tag.into(), pins: def.pins.iter().map(|x| x.label.to_string()).collect(), ..Default::default() }
 }
 

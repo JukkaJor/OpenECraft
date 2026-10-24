@@ -5,7 +5,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
-use crate::translation::{self, language_name, normalize_code};
+use openecraft_core::translation::{self, language_name, normalize_code};
 use egui::RichText;
 
 #[derive(Default)]
@@ -20,10 +20,9 @@ pub struct LanguagesUi {
 impl App {
     /// PDF of all pages with the project texts and generated texts in `lang`.
     pub(super) fn export_pdf_in(&mut self, ctx: &egui::Context, lang: &str) {
-        let pdf = translation::with_language(&self.prj, lang, crate::pdf::document);
-        let base = self.suggested_name("pdf");
-        let name = if lang == self.prj.languages.source { base } else { format!("{}_{lang}.pdf", base.trim_end_matches(".pdf")) };
-        self.export(ctx, name, (tr("PDF document"), "pdf"), pdf);
+        if let Some(e) = self.plugins.exporter("pdf").cloned() {
+            self.run_exporter(ctx, &e, Some(lang));
+        }
     }
 
     pub(super) fn languages_window(&mut self, ctx: &egui::Context) {
@@ -33,9 +32,9 @@ impl App {
         let mut open = true;
         let (mut collect, mut clean, mut export_csv, mut import_csv, mut pdf) = (false, false, false, false, None);
         let mut remove_lang = None;
-        let missing: Vec<(String, usize)> = self.prj.languages.targets.iter().map(|l| (l.clone(), translation::missing(&self.prj, l).len())).collect();
+        let missing: Vec<(String, usize)> = self.session.prj.languages.targets.iter().map(|l| (l.clone(), translation::missing(&self.session.prj, l).len())).collect();
         let ui_state = &mut self.languages_ui;
-        let langs = &mut self.prj.languages;
+        let langs = &mut self.session.prj.languages;
         egui::Window::new(tr("Project languages")).open(&mut open).default_size([860.0, 520.0]).show(ctx, |ui| {
             ui.weak(tr("Project texts (function texts, page descriptions, free texts, descriptions) are written in the source language; the dictionary translates them line by line. Reports and title blocks follow the output language."));
             ui.horizontal_wrapped(|ui| {
@@ -128,18 +127,18 @@ impl App {
         });
         self.languages_ui.open = open;
         if let Some(l) = remove_lang {
-            self.prj.languages.targets.retain(|x| *x != l);
+            self.session.prj.languages.targets.retain(|x| *x != l);
         }
         if collect {
-            let n = translation::collect(&mut self.prj);
+            let n = translation::collect(&mut self.session.prj);
             self.notify(ctx, tr_fmt!("{} new texts in the dictionary", n));
         }
         if clean {
-            let n = translation::remove_unused(&mut self.prj);
+            let n = translation::remove_unused(&mut self.session.prj);
             self.notify(ctx, tr_fmt!("{} unused entries removed", n));
         }
         if export_csv {
-            let csv = translation::to_csv(&self.prj);
+            let csv = translation::to_csv(&self.session.prj);
             self.export(ctx, "dictionary.csv".into(), ("CSV", "csv"), csv);
         }
         if import_csv {

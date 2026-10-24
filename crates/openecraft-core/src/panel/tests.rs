@@ -1,5 +1,5 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn device(id: u64, x: f32, y: f32, w: f32, h: f32, z: f32, d: f32) -> PanelItem {
@@ -79,7 +79,7 @@ fn routing_follows_the_ducts() {
 #[test]
 fn virtual_wiring_of_demo() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     assert!(!an.wiring.is_empty());
     for w in &an.wiring {
         // Wires between door devices stay on the door.
@@ -89,7 +89,7 @@ fn virtual_wiring_of_demo() {
     // Q1 feeds the main contacts of K1 inside the cabinet.
     assert!(an.wiring.iter().any(|w| w.from.starts_with("-Q1") && w.to.starts_with("-K1")));
     // The motor is in the field: its connections stay open.
-    let report = &an.reports[&crate::model::ReportKind::PanelWiring];
+    let report = &an.report(&prj, crate::model::ReportKind::PanelWiring).unwrap();
     assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
 }
 
@@ -103,8 +103,8 @@ fn layout_material_in_bom() {
     assert_eq!(get(RAIL_PART), Some(1.29));
     // 3380 mm of duct in 2 m pieces
     assert_eq!(get(DUCT_PART), Some(2.0));
-    let an = Analysis::build(&prj);
-    let bom = &an.reports[&crate::model::ReportKind::BillOfMaterials];
+    let an = Analysis::checked(&prj);
+    let bom = &an.report(&prj, crate::model::ReportKind::BillOfMaterials).unwrap();
     let rail = bom.rows.iter().find(|r| r[3] == RAIL_PART).unwrap();
     assert_eq!((rail[1].as_str(), rail[2].as_str()), ("1.29", "m"));
 }
@@ -132,7 +132,7 @@ fn mounting_page_renders() {
 #[test]
 fn wire_hit_test_and_cycling() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     // Keys identify wires uniquely (selection survives re-analysis).
     let mut keys: Vec<_> = an.wiring.iter().map(|w| w.key()).collect();
     keys.sort();
@@ -228,7 +228,7 @@ fn model_size_is_used_without_mounting_data() {
     part.depth = 0.0;
     let mut mesh = crate::parts::Mesh3d::default();
     mesh.add_box([0.0, 0.0, 0.0], [22.0, 22.0, 50.0]);
-    part.model_3d = Some(mesh);
+    part.model_3d = Some(mesh.into());
     assert_eq!(part.size(), Some([22.0, 22.0, 50.0]));
     let size = device_size(&prj, "-P1").unwrap();
     assert_eq!((size.w, size.h, size.d), (22.0, 22.0, 50.0));
@@ -304,7 +304,7 @@ fn door_devices() {
 #[test]
 fn door_wires_run_over_the_hinge() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let e = &prj.layout.enclosures[0];
     let s2 = e.items.iter().find(|i| i.tag == "-S2").unwrap();
     let s3 = e.items.iter().find(|i| i.tag == "-S3").unwrap();
@@ -380,7 +380,7 @@ fn routes_record_their_duct_runs() {
 #[test]
 fn demo_wires_start_at_the_connection_points() {
     let prj = demo_project();
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let centre: Vec<String> = an.wiring.iter().filter(|w| w.ends.0 == EndKind::Centre || w.ends.1 == EndKind::Centre).map(|w| format!("{} - {}", w.from, w.to)).collect();
     assert!(centre.is_empty(), "wires from device centres: {centre:?}");
     // -K1:A1 is at the top edge of the contactor and leaves upwards.
@@ -396,13 +396,13 @@ fn demo_wires_start_at_the_connection_points() {
 #[test]
 fn own_connection_points_make_exact_ends() {
     let mut prj = demo_project();
-    let before = Analysis::build(&prj).wiring;
+    let before = Analysis::checked(&prj).wiring;
     let part = prj.parts.iter_mut().find(|p| p.number == "GEN.MCB-1P-C6").unwrap();
     part.connection_points = vec![
         crate::parts::ConnectionPoint { pin: "1".into(), pos: [9.0, 0.0, 10.0], exit: Exit::Up },
         crate::parts::ConnectionPoint { pin: "2".into(), pos: [9.0, 90.0, 10.0], exit: Exit::Down },
     ];
-    let after = Analysis::build(&prj).wiring;
+    let after = Analysis::checked(&prj).wiring;
     let f1 = |w: &&RoutedWire| w.from.starts_with("-F1:") || w.to.starts_with("-F1:");
     let w = after.iter().find(f1).unwrap();
     let kind = if w.from.starts_with("-F1:") { w.ends.0 } else { w.ends.1 };

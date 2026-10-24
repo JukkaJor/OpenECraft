@@ -8,31 +8,8 @@ use super::{apply_one_anchor, part_by_number, snap_to_rail, Align, Anchor, Face,
 use crate::geom::P;
 use crate::model::Project;
 use openecraft_i18n::{tr, tr_const};
-use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-
-/// A group (assembly) of items in an enclosure.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ItemGroup {
-    pub id: u64,
-    pub name: String,
-    /// Macro it was inserted from.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub source: String,
-}
-
-/// A 3D macro: items with their positions relative to each other (and anchors).
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PanelMacro {
-    pub name: String,
-    pub description: String,
-    /// The face whose items are placed relative to the insertion point.
-    #[serde(skip_serializing_if = "super::is_plate")]
-    pub face: Face,
-    pub items: Vec<PanelItem>,
-}
+pub use crate::model::panel::{ItemGroup, PanelMacro};
 
 /// Names of the built-in macros (English; translated where shown).
 const BUILTIN: [&str; 5] = [

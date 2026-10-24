@@ -1,10 +1,9 @@
 //! SVG export (single page) and a printable HTML document (all pages).
 
 use crate::geom::P;
-use crate::index::Index;
 use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
 
@@ -110,12 +109,12 @@ pub fn drawing_svg(w: f32, h: f32, f: impl FnOnce(&mut SvgDraw)) -> String {
 }
 
 pub fn page_svg(prj: &Project, page_i: usize) -> String {
-    let idx = Index::build(prj);
-    let an = Analysis::build(prj);
-    page_svg_with(prj, &idx, &an, page_i)
+    page_svg_with(prj, &Analysis::with_builtin(prj), page_i)
 }
 
-fn page_svg_with(prj: &Project, idx: &Index, an: &Analysis, page_i: usize) -> String {
+/// One page as SVG, drawn with the host's analysis (its reports, its index).
+pub fn page_svg_with(prj: &Project, an: &Analysis, page_i: usize) -> String {
+    let idx = &an.index;
     let mut d = SvgDraw { out: String::new() };
     let (w, h) = crate::frame::of_page(prj, page_i).size();
     let _ = writeln!(
@@ -131,8 +130,11 @@ fn page_svg_with(prj: &Project, idx: &Index, an: &Analysis, page_i: usize) -> St
 /// All pages in one HTML file, one page per printed sheet (A3 landscape).
 /// Open in a browser and print to PDF.
 pub fn print_document(prj: &Project) -> String {
-    let idx = Index::build(prj);
-    let an = Analysis::build(prj);
+    print_document_with(prj, &Analysis::with_builtin(prj))
+}
+
+/// All pages as HTML, drawn with the host's analysis.
+pub fn print_document_with(prj: &Project, an: &Analysis) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
@@ -157,7 +159,7 @@ pub fn print_document(prj: &Project) -> String {
     for (i, (w, h)) in sizes.iter().enumerate() {
         let n = distinct.iter().position(|s| s == &(*w, *h)).unwrap_or(0);
         let _ = writeln!(out, "<div class=\"page\" style=\"page: s{n}; width: {w}mm; height: {h}mm\">");
-        out.push_str(&page_svg_with(prj, &idx, &an, i));
+        out.push_str(&page_svg_with(prj, an, i));
         out.push_str("</div>\n");
     }
     out.push_str("</body></html>\n");

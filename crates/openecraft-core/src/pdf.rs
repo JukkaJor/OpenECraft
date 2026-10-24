@@ -4,10 +4,9 @@
 //! plain ASCII (non-ASCII text is written as WinAnsi octal escapes, attachments as hex).
 
 use crate::geom::P;
-use crate::index::Index;
 use crate::model::{PageKind, Project};
 use crate::render::{draw_page, Draw, Ink, Opts, VAnchor};
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use std::fmt::Write;
 
@@ -312,12 +311,16 @@ impl Writer {
 
 /// All pages of the project as one PDF document.
 pub fn document(prj: &Project) -> String {
-    let idx = Index::build(prj);
-    let an = Analysis::build(prj);
+    document_with(prj, &Analysis::with_builtin(prj))
+}
+
+/// All pages as PDF, drawn with the host's analysis (its reports, its index).
+pub fn document_with(prj: &Project, an: &Analysis) -> String {
+    let idx = &an.index;
     let pages: Vec<PdfDraw> = (0..prj.pages.len())
         .map(|i| {
             let mut d = PdfDraw { h: crate::frame::of_page(prj, i).height(), ..Default::default() };
-            draw_page(&mut d, prj, &idx, &an, i, &Opts::default());
+            draw_page(&mut d, prj, idx, an, i, &Opts::default());
             d
         })
         .collect();

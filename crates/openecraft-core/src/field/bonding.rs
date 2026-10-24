@@ -5,21 +5,10 @@
 
 use super::Field;
 use crate::model::Project;
-use crate::reports::{Issue, Severity};
-use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
+use crate::issue::{Issue, Severity};
+use openecraft_i18n::tr;
 use std::collections::HashMap;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum BondKind {
-    /// Protective bonding to the main earthing terminal (IEC 60364-5-54).
-    #[default]
-    Main,
-    /// Supplementary protective bonding between conductive parts.
-    Supplementary,
-    /// Functional bonding (EMC, no protective function).
-    Functional,
-}
+pub use crate::model::field::{Bond, BondKind};
 
 impl BondKind {
     pub const ALL: [BondKind; 3] = [BondKind::Main, BondKind::Supplementary, BondKind::Functional];
@@ -52,22 +41,6 @@ impl BondKind {
             BondKind::Functional => 0.0,
         }
     }
-}
-
-/// A bonding conductor between two bonding points (names of [`points`]).
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Bond {
-    pub id: u64,
-    pub a: String,
-    pub b: String,
-    pub kind: BondKind,
-    /// Cross-section in mm², e.g. "6" or "16".
-    pub cross_section: String,
-    /// Length in metres.
-    pub length: f32,
-    /// Part number of the conductor (bill of materials per metre).
-    pub part: String,
 }
 
 /// What a bonding point is.
@@ -158,30 +131,23 @@ fn mm2(s: &str) -> Option<f32> {
 pub fn problems(prj: &Project) -> Vec<Issue> {
     let f = &prj.field;
     let mut v = Vec::new();
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
     let known = names(prj);
     for b in &f.bonds {
         for end in [&b.a, &b.b] {
             if !known.iter().any(|(n, _)| n == end) {
-                v.push(warn(tr_fmt!("Bonding conductor {} refers to the unknown bonding point {}", b.id, end)));
+                v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} refers to the unknown bonding point {}", b.id, end));
             }
         }
         match mm2(&b.cross_section) {
-            Some(cs) if cs + 1e-3 < b.kind.minimum() => v.push(warn(tr_fmt!(
-                "Bonding conductor {} – {} has {} mm², at least {} mm² are required",
-                b.a,
-                b.b,
-                format!("{cs}"),
-                format!("{}", b.kind.minimum())
-            ))),
-            None if b.kind != BondKind::Functional => v.push(warn(tr_fmt!("Bonding conductor {} – {} has no cross-section", b.a, b.b))),
+            Some(cs) if cs + 1e-3 < b.kind.minimum() => v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} – {} has {} mm², at least {} mm² are required", b.a, b.b, format!("{cs}"), format!("{}", b.kind.minimum()))),
+            None if b.kind != BondKind::Functional => v.push(crate::issue!(Severity::Warning, None, "Bonding conductor {} – {} has no cross-section", b.a, b.b)),
             _ => {}
         }
     }
     // Only checked once bonding is planned at all.
     if !f.bonds.is_empty() {
         for p in points(prj).into_iter().filter(|p| !p.bonded) {
-            v.push(warn(tr_fmt!("{} ({}) is not connected to the equipotential bonding", p.name, p.kind.title())));
+            v.push(crate::issue!(Severity::Warning, None, "{} ({}) is not connected to the equipotential bonding", p.name, p.kind.title()));
         }
     }
     v

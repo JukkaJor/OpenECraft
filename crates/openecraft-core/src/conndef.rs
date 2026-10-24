@@ -2,11 +2,10 @@
 //! and cross-section of the whole connection and the cable core of that wire. The
 //! wires take the values when a point is placed, changed or applied again.
 
-use openecraft_i18n::tr_fmt;
 use crate::geom::{dist_to_segment, P};
 use crate::model::*;
 use crate::netlist::{Net, Netlist};
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 
 /// Wire of the page the point `q` lies on.
 pub fn wire_at(page: &Page, q: P) -> Option<&Wire> {
@@ -116,7 +115,7 @@ pub fn problems(prj: &Project, open: &Netlist) -> Vec<Issue> {
         for cd in &pg.conn_defs {
             let target = Some((pi, cd.id));
             let Some(w) = wire_at(pg, cd.pos) else {
-                v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Connection definition point on page {} is not on a wire", pg.name), target });
+                v.push(crate::issue!(Severity::Warning, target, "Connection definition point on page {} is not on a wire", pg.name));
                 continue;
             };
             let Some(&n) = open.wire_net.get(&w.id) else { continue };
@@ -124,13 +123,13 @@ pub fn problems(prj: &Project, open: &Netlist) -> Vec<Issue> {
                 let other = prj.pages[opi].conn_defs.iter().find(|c| c.id == oid);
                 let same = other.is_some_and(|o| o.number == cd.number && o.color == cd.color && o.cross_section == cd.cross_section);
                 if !same {
-                    v.push(Issue { severity: Severity::Warning, message: tr_fmt!("Connection {} has contradicting connection definition points", crate::wirenum::number_of(prj, &open.nets[n])), target });
+                    v.push(crate::issue!(Severity::Warning, target, "Connection {} has contradicting connection definition points", crate::wirenum::number_of(prj, &open.nets[n])));
                 }
             } else {
                 seen.push((n, pi, cd.id));
             }
             if differs(prj, pi, cd, &open.nets[n]) {
-                v.push(Issue { severity: Severity::Info, message: tr_fmt!("Connection definition point on page {} is not applied to its connection", pg.name), target });
+                v.push(crate::issue!(Severity::Info, target, "Connection definition point on page {} is not applied to its connection", pg.name));
             }
         }
     }

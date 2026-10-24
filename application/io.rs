@@ -25,7 +25,7 @@ pub enum Purpose {
     /// A drawing (DXF, DWG) to import as a page.
     Drawing,
     /// A table (CSV) changed in a spreadsheet.
-    Table(crate::tables::TableKind),
+    Table(openecraft_core::tables::TableKind),
     /// Translation dictionary (CSV) of the project texts.
     Dictionary,
     /// Another project that gets report pages of this one.

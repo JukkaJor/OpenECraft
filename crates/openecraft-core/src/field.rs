@@ -10,10 +10,9 @@
 
 use crate::model::Project;
 use crate::netlist::Connection;
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use crate::routing3d::{self, Class};
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BinaryHeap, HashMap};
 
@@ -22,33 +21,9 @@ pub mod bonding;
 pub mod draw;
 pub use accessories::{Accessory, AccessoryKind};
 pub use bonding::{Bond, BondKind};
+pub use crate::model::field::{Field, FieldRules, Node, Outline, Place, RouteDef, Segment, SegmentKind};
 
 // ---------------------------------------------------------------------- model
-
-/// Field wiring data of the project.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Field {
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub nodes: Vec<Node>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub segments: Vec<Segment>,
-    /// Enclosures, field devices and machine parts at the nodes.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub places: Vec<Place>,
-    /// Outlines of machines, buildings and areas.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub outlines: Vec<Outline>,
-    /// Route definitions of single cables.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub routes: Vec<RouteDef>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub bonds: Vec<Bond>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub accessories: Vec<Accessory>,
-    #[serde(skip_serializing_if = "FieldRules::is_default")]
-    pub rules: FieldRules,
-}
 
 impl Field {
     pub fn is_empty(&self) -> bool {
@@ -149,34 +124,6 @@ impl Field {
     }
 }
 
-/// A point of the route network: junction, branch, wall or floor penetration, the
-/// point where an enclosure or a device is reached. Coordinates in metres, z is the
-/// height above the floor.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Node {
-    pub id: u64,
-    pub name: String,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum SegmentKind {
-    #[default]
-    Tray,
-    Ladder,
-    Trunking,
-    Conduit,
-    /// Drag chain (energy chain) of a moving machine axis.
-    DragChain,
-    /// Laid in the ground.
-    Buried,
-    /// Free run without carrier (clipped to the machine frame).
-    Free,
-}
-
 impl SegmentKind {
     pub const ALL: [SegmentKind; 7] = [SegmentKind::Tray, SegmentKind::Ladder, SegmentKind::Trunking, SegmentKind::Conduit, SegmentKind::DragChain, SegmentKind::Buried, SegmentKind::Free];
 
@@ -219,32 +166,6 @@ impl SegmentKind {
     }
 }
 
-/// A stretch of the route network between two nodes.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Segment {
-    pub id: u64,
-    pub name: String,
-    pub a: u64,
-    pub b: u64,
-    pub kind: SegmentKind,
-    /// Inner width and height in mm; 0 = no limit.
-    pub width: f32,
-    pub height: f32,
-    /// Allowed classes ([`Class::bit`]); 0 = all.
-    pub classes: u8,
-    /// Has a divider between the classes that must be kept apart.
-    pub divider: bool,
-    /// Share of the cross-section kept free, percent.
-    pub reserve: f32,
-    /// Part number of the carrier (bill of materials per metre).
-    pub part: String,
-    /// Length in metres; 0 = from the node positions.
-    pub length: f32,
-    /// Bend radius of the carrier in mm (drag chains); 0 = none.
-    pub bend_radius: f32,
-}
-
 impl Segment {
     pub fn accepts(&self, class: Class) -> bool {
         self.classes == 0 || self.classes & class.bit() != 0
@@ -256,64 +177,10 @@ impl Segment {
     }
 }
 
-/// An enclosure (location `+CAB1`), a device (`-M1`) or a machine part (`+M1`) at a
-/// node of the network.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Place {
-    pub tag: String,
-    pub node: u64,
-    /// Length from the node to the device or into the enclosure, metres.
-    pub drop: f32,
-}
-
-/// Outline of a machine, building or area of the plant layout.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Outline {
-    pub id: u64,
-    pub name: String,
-    /// Corner points in metres.
-    pub points: Vec<[f32; 2]>,
-    /// Conductive frame that must be connected to the equipotential bonding.
-    pub conductive: bool,
-}
-
-/// Route definition of a cable: nodes it must pass in this order and segments it must
-/// not use.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct RouteDef {
-    pub cable: String,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub via: Vec<u64>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub avoid: Vec<u64>,
-}
-
 impl RouteDef {
     pub fn is_empty(&self) -> bool {
         self.via.is_empty() && self.avoid.is_empty()
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct FieldRules {
-    /// Length added at each cable end, metres.
-    pub reserve: f32,
-    /// Length inside an enclosure from the cable entry to the terminals, metres.
-    pub cabinet: f32,
-    /// Cut lengths rounded up to this step, metres.
-    pub cut: f32,
-    /// Maximum fill of a carrier, percent of its cross-section.
-    pub fill: f32,
-    /// Bend radius of cables in drag chains as a multiple of the diameter.
-    pub bend_factor: f32,
-    /// Name of the main earthing terminal.
-    pub main_earth: String,
-    /// Metal carriers that meet at a node are connected to each other.
-    pub continuity: bool,
 }
 
 impl Default for FieldRules {
@@ -625,14 +492,6 @@ pub fn plan(prj: &Project, conns: &[Connection]) -> Plan {
     out
 }
 
-fn warn(message: String) -> Issue {
-    Issue { severity: Severity::Warning, message, target: None }
-}
-
-fn error(message: String) -> Issue {
-    Issue { severity: Severity::Error, message, target: None }
-}
-
 /// Problems of the field wiring: broken references, cables without a route,
 /// overfilled carriers, classes without divider, bend radii in drag chains, and the
 /// problems of the bonding and the accessories.
@@ -642,28 +501,28 @@ fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
     for s in &f.segments {
         for n in [s.a, s.b] {
             if f.node(n).is_none() {
-                v.push(error(tr_fmt!("Field segment {} refers to the missing node {}", f.segment_name(s.id), n)));
+                v.push(crate::issue!(Severity::Error, None, "Field segment {} refers to the missing node {}", f.segment_name(s.id), n));
             }
         }
     }
     for p in &f.places {
         if f.node(p.node).is_none() {
-            v.push(error(tr_fmt!("{} is placed at the missing node {}", p.tag, p.node)));
+            v.push(crate::issue!(Severity::Error, None, "{} is placed at the missing node {}", p.tag, p.node));
         }
     }
     for r in &f.routes {
         if prj.cable(&r.cable).is_none() {
-            v.push(warn(tr_fmt!("Field route definition refers to the unknown cable {}", r.cable)));
+            v.push(crate::issue!(Severity::Warning, None, "Field route definition refers to the unknown cable {}", r.cable));
         }
         for n in r.via.iter().filter(|n| f.node(**n).is_none()) {
-            v.push(warn(tr_fmt!("Field route of {} runs via the missing node {}", r.cable, n)));
+            v.push(crate::issue!(Severity::Warning, None, "Field route of {} runs via the missing node {}", r.cable, n));
         }
     }
     for c in &plan.cables {
         match &c.status {
             Status::Routed => {}
-            Status::NotPlaced(tag) => v.push(warn(tr_fmt!("Field cable {}: {} is not placed in the plant layout", c.cable, tag))),
-            Status::NoPath => v.push(error(tr_fmt!("Field cable {} cannot be routed from {} to {}", c.cable, c.ends[0], c.ends[1]))),
+            Status::NotPlaced(tag) => v.push(crate::issue!(Severity::Warning, None, "Field cable {}: {} is not placed in the plant layout", c.cable, tag)),
+            Status::NoPath => v.push(crate::issue!(Severity::Error, None, "Field cable {} cannot be routed from {} to {}", c.cable, c.ends[0], c.ends[1])),
         }
     }
     for u in &plan.segments {
@@ -671,18 +530,18 @@ fn problems(prj: &Project, plan: &Plan) -> Vec<Issue> {
         let name = f.segment_name(s.id);
         if let Some(cap) = u.capacity.filter(|cap| u.area > *cap) {
             let fill = u.fill(s).unwrap_or(0.0);
-            v.push(warn(tr_fmt!("Field segment {} is filled to {} % (allowed {} %)", name, format!("{fill:.0}"), format!("{:.0}", cap / (s.width * s.height) * 100.0))));
+            v.push(crate::issue!(Severity::Warning, None, "Field segment {} is filled to {} % (allowed {} %)", name, format!("{fill:.0}"), format!("{:.0}", cap / (s.width * s.height) * 100.0)));
         }
         let apart = Class::ALL.iter().any(|c| u.classes & c.bit() != 0 && u.classes & c.apart_bits() != 0);
         if apart && !s.divider {
-            v.push(warn(tr_fmt!("Field segment {} carries power together with signal cables without a divider", name)));
+            v.push(crate::issue!(Severity::Warning, None, "Field segment {} carries power together with signal cables without a divider", name));
         }
         if s.kind == SegmentKind::DragChain && s.bend_radius > 0.0 {
             for tag in &u.cables {
                 let Some(c) = plan.cable(tag) else { continue };
                 let need = c.diameter * f.rules.bend_factor;
                 if need > s.bend_radius {
-                    v.push(error(tr_fmt!("Cable {} needs a bend radius of {} mm, drag chain {} has {} mm", tag, format!("{need:.0}"), name, format!("{:.0}", s.bend_radius))));
+                    v.push(crate::issue!(Severity::Error, None, "Cable {} needs a bend radius of {} mm, drag chain {} has {} mm", tag, format!("{need:.0}"), name, format!("{:.0}", s.bend_radius)));
                 }
             }
         }

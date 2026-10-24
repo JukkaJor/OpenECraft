@@ -1,7 +1,7 @@
 use super::*;
 
 fn inst(id: u64, key: &str, x: f32, y: f32, tag: &str) -> SymbolInst {
-    let def = symbols::get(key).unwrap();
+    let def = crate::symbols::builtin(key).unwrap();
     SymbolInst { id, sym: key.into(), pos: p(x, y), tag: tag.into(), pins: def.pins.iter().map(|x| x.label.to_string()).collect(), ..Default::default() }
 }
 
@@ -34,9 +34,9 @@ fn net(prj: &Project, nl: &Netlist, tag: &str, key: &str, pin: &str) -> usize {
 #[test]
 fn every_single_line_symbol_maps_onto_a_power_symbol_and_back() {
     for (single, multi, extra) in MAPPING {
-        assert_eq!(symbols::get(single).unwrap().category, Category::SingleLine, "{single}");
-        assert!(symbols::get(multi).is_some(), "{multi}");
-        assert!(extra.is_none_or(|e| symbols::get(e).is_some()));
+        assert_eq!(crate::symbols::builtin(single).unwrap().category, Category::SingleLine, "{single}");
+        assert!(crate::symbols::builtin(multi).is_some(), "{multi}");
+        assert!(extra.is_none_or(|e| crate::symbols::builtin(e).is_some()));
         assert_eq!(single_of(multi), Some(single));
         assert_eq!(multi_of(single), Some(multi));
     }
@@ -139,7 +139,7 @@ fn differences_between_both_representations_are_reported() {
     prj.pages[0].symbols[0].sym = "sl_fuse".into();
     // The motor is no longer connected in the schematic.
     let motor = prj.pages[1].symbols.iter().find(|s| s.tag == "-M1").unwrap().id;
-    let def = symbols::get("motor3").unwrap();
+    let def = crate::symbols::builtin("motor3").unwrap();
     let pins: Vec<P> = {
         let s = prj.pages[1].symbols.iter().find(|s| s.id == motor).unwrap();
         (0..def.pins.len()).map(|i| def.pin_world(i, s.pos, s.rot, s.mirror)).collect()

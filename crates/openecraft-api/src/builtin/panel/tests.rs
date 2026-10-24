@@ -1,87 +1,65 @@
 use super::*;
-use crate::{Origin, Plugins};
-use openecraft_core::reports::{Analysis, Severity};
-use openecraft_core::sample::demo_project;
-use serde_json::Map;
+use crate::builtin::testing::*;
 
-fn run(p: &Plugins, prj: &mut Project, name: &str, args: Value) -> Result<Value, String> {
-    let args: Map<String, Value> = args.as_object().cloned().unwrap_or_default();
-    p.run(p.command(name).ok_or("no command")?, prj, &args)
-}
-
-fn findings(p: &Plugins, prj: &mut Project) -> Vec<Value> {
-    run(p, prj, "check_panel", json!({})).unwrap()["findings"].as_array().unwrap().clone()
+fn demo() -> Session {
+    let mut s = demo_session();
+    s.project_mut().unwrap().info.name = "Demo".into();
+    s
 }
 
 #[test]
-fn check_is_part_of_the_project_check() {
-    let p = Plugins::new(Vec::<String>::new());
-    assert!(p.list().iter().any(|l| l.info.id == "panel_checks" && l.origin == Origin::BuiltIn));
-    let mut prj = demo_project();
-    let an = Analysis::build(&prj);
-    assert!(p.check(&prj, &an).iter().all(|i| i.severity != Severity::Warning));
-    assert_eq!(run(&p, &mut prj, "check_panel", json!({})).unwrap()["warnings"], 0);
-    assert!(run(&p, &mut prj, "check_panel", json!({ "enclosure": "+CAB9" })).unwrap_err().contains("+CAB9"));
-    // Two devices on top of each other: a collision in the project check.
-    let e = &mut prj.layout.enclosures[0];
-    let mut copy = e.items.iter().find(|i| i.tag == "-K1").unwrap().clone();
-    copy.id = 99_999;
-    copy.tag = "-K9".into();
-    e.items.push(copy);
-    let issues = p.check(&prj, &Analysis::build(&prj));
-    assert!(issues.iter().any(|i| i.severity == Severity::Warning && i.message.contains("-K9")), "{issues:?}");
+fn enclosures_bayed_with_a_cable_passage() {
+    let mut s = demo();
+    run(&mut s, "add_enclosure", json!({ "name": "+CAB2" })).unwrap();
+    assert!(run(&mut s, "add_cable_passage", json!({ "enclosure": "+CAB1" })).unwrap_err().contains("no enclosure bayed"));
+    let r = run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2", "right_of": "+CAB1" })).unwrap();
+    assert_eq!(r["lineup"], json!(["+CAB1", "+CAB2"]));
+    assert!(run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2", "right_of": "+CAB2" })).unwrap_err().contains("itself"));
+    let p = run(&mut s, "add_cable_passage", json!({ "enclosure": "+CAB1", "y": 200, "diameter": 50 })).unwrap();
+    assert_eq!((p["cutouts"].as_array().unwrap().len(), p["to"].as_str()), (2, Some("+CAB2")));
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB1" })).unwrap()[0];
+    assert_eq!(e["lineup"]["left_of"], "+CAB2");
+    let passages = e["lineup"]["passages_right"].as_array().unwrap();
+    assert_eq!(passages.len(), 1);
+    assert!((passages[0]["y"].as_f64().unwrap() - 200.0).abs() < 0.01);
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB2" })).unwrap()[0];
+    assert_eq!((e["lineup"]["right_of"].as_str(), e["lineup"]["position"][0].as_f64()), (Some("+CAB1"), Some(600.0)));
+    let r = run(&mut s, "bay_enclosure", json!({ "enclosure": "+CAB2" })).unwrap();
+    assert_eq!(r["lineup"], json!(["+CAB2"]));
 }
 
 #[test]
-fn rules_classes_and_heights() {
-    let p = Plugins::new(Vec::<String>::new());
-    let mut prj = demo_project();
-    let r = run(&p, &mut prj, "panel_rules", json!({ "device_gap": 30, "stratification": 5 })).unwrap();
-    assert_eq!((r["device_gap"].as_f64(), r["stratification"].as_f64()), (Some(30.0), Some(2.0)));
-    assert!(findings(&p, &mut prj).iter().any(|f| f["check"] == "mounting"));
-    run(&p, &mut prj, "panel_rules", json!({ "reset": true })).unwrap();
-    assert!(prj.layout.checks.is_default());
-    // Contactor and PLC close together: a power / control rule of 50 mm.
-    let r = run(&p, &mut prj, "set_collision_rule", json!({ "a": "power", "b": "control", "distance": 50 })).unwrap();
-    assert_eq!(r["classes"].as_array().unwrap().len(), 2);
-    assert!(findings(&p, &mut prj).iter().any(|f| f["check"] == "class_distance"));
-    run(&p, &mut prj, "set_collision_rule", json!({ "a": "control", "b": "power", "remove": true })).unwrap();
-    assert!(run(&p, &mut prj, "set_collision_rule", json!({ "a": "control", "b": "power", "remove": true })).is_err());
-    let id = prj.layout.find_device("-K1").unwrap().1.id;
-    let r = run(&p, &mut prj, "set_item_class", json!({ "enclosure": "+CAB1", "id": id, "class": "" })).unwrap();
-    assert_eq!((r["class"].as_str(), r["automatic"].as_bool()), (Some("power"), Some(true)));
-    let r = run(&p, &mut prj, "set_item_class", json!({ "enclosure": "+CAB1", "id": id, "class": "Noisy" })).unwrap();
-    assert_eq!(r["class"], "noisy");
-    // Wall mounted at 1.9 m: devices reach above 2 m.
-    let r = run(&p, &mut prj, "set_enclosure_elevation", json!({ "enclosure": "+CAB1", "elevation": 1900 })).unwrap();
-    assert_eq!(r["floor_height"].as_f64(), Some(1900.0));
-    assert!(findings(&p, &mut prj).iter().any(|f| f["check"] == "height"));
+fn accessories_items_and_arranging() {
+    let mut s = demo();
+    let g = run(&mut s, "place_accessory", json!({ "enclosure": "+CAB1", "part": "GEN.GLAND-M25", "face": "bottom", "anchor_x": "center:0", "y": 60 })).unwrap();
+    assert_eq!((g["face"].as_str(), g["fastening"].as_str()), (Some("bottom"), Some("clip")));
+    assert_eq!(g["x"], (600.0 - 36.0) / 2.0);
+    assert!(run(&mut s, "place_accessory", json!({ "enclosure": "+CAB1", "part": "GEN.HANDLE-SWING", "face": "roof" })).unwrap_err().contains("cannot be mounted"));
+    assert!(run(&mut s, "place_accessory", json!({ "enclosure": "+CAB1", "part": "GEN.GLAND-M25", "face": "lid" })).unwrap_err().contains("Unknown face"));
+    let id = g["id"].as_u64().unwrap();
+    let r = run(&mut s, "arrange_panel_items", json!({ "enclosure": "+CAB1", "ids": [id], "action": "pattern", "columns": 4, "pitch_x": 50 })).unwrap();
+    assert_eq!(r["created"].as_array().unwrap().len(), 3);
+    let m = run(&mut s, "set_panel_item", json!({ "enclosure": "+CAB1", "id": id, "fastening": "rivet_nut", "anchor_y": "end:40" })).unwrap();
+    assert_eq!((m["fastening"].as_str(), m["anchor"][1].as_str()), (Some("rivet_nut"), Some("end:40")));
+    assert!(run(&mut s, "arrange_panel_items", json!({ "enclosure": "+CAB1", "ids": [id], "action": "spin" })).unwrap_err().contains("Unknown action"));
 }
 
 #[test]
-fn enclosures_are_placed_in_the_room() {
-    let p = Plugins::new(Vec::<String>::new());
-    let mut prj = demo_project();
-    let r = run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+CAB1", "x": 2000, "z": 500, "angle": 180 })).unwrap();
-    assert_eq!(r["automatic"], false);
-    let cab = &r["lineup"][0];
-    assert_eq!((cab["enclosure"].as_str(), cab["at"][0].as_f64(), cab["at"][2].as_f64()), (Some("+CAB1"), Some(2000.0), Some(500.0)));
-    assert!((cab["angle"].as_f64().unwrap() - 180.0).abs() < 0.01);
-    assert!(prj.layout.enclosures[0].site.is_some());
-    let r = run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+CAB1" })).unwrap();
-    assert_eq!(r["automatic"], true);
-    assert!(prj.layout.enclosures[0].site.is_none());
-    assert!(run(&p, &mut prj, "set_enclosure_site", json!({ "enclosure": "+NONE" })).is_err());
-}
-
-#[test]
-fn thermal_simulation() {
-    let p = Plugins::new(Vec::<String>::new());
-    let mut prj = demo_project();
-    let r = run(&p, &mut prj, "panel_thermal", json!({ "enclosure": "+CAB1" })).unwrap();
-    assert!(r["max_c"].as_f64().unwrap() >= r["min_c"].as_f64().unwrap());
-    assert!(r["top_c"].as_f64().unwrap() > r["bottom_c"].as_f64().unwrap());
-    let devices = r["devices"].as_array().unwrap();
-    assert!(devices.iter().any(|d| d["device"] == "-K1"), "{r:#}");
-    assert!(devices.iter().all(|d| d["too_warm"] == false), "{r:#}");
+fn assemblies_and_macros() {
+    let mut s = demo();
+    let list = run(&mut s, "list_panel_macros", json!({})).unwrap();
+    assert!(list.as_array().unwrap().iter().any(|m| m["name"] == "Filter fan with outlet filter" && m["faces"] == json!(["left", "right"])));
+    let r = run(&mut s, "insert_panel_macro", json!({ "enclosure": "+CAB1", "macro": "Cable entry 5 x M25", "x": 100, "y": 60 })).unwrap();
+    let ids: Vec<u64> = r["items"].as_array().unwrap().iter().map(|i| i["id"].as_u64().unwrap()).collect();
+    assert_eq!(ids.len(), 5);
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB1" })).unwrap()[0];
+    assert_eq!(e["assemblies"][0]["items"].as_array().unwrap().len(), 5);
+    run(&mut s, "save_panel_macro", json!({ "enclosure": "+CAB1", "ids": &ids[..2], "name": "Two glands" })).unwrap();
+    let list = run(&mut s, "list_panel_macros", json!({})).unwrap();
+    assert_eq!(list[0]["name"], "Two glands");
+    assert_eq!(list[0]["built_in"], false);
+    let g = run(&mut s, "group_panel_items", json!({ "enclosure": "+CAB1", "ids": ids })).unwrap();
+    assert_eq!(g["group"], 0);
+    let e = &run(&mut s, "list_enclosures", json!({ "enclosure": "+CAB1" })).unwrap()[0];
+    assert!(e["assemblies"].as_array().unwrap().is_empty());
 }

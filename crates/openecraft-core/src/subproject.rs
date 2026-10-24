@@ -7,51 +7,11 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+pub use crate::model::subproject::{Child, Parent, Subprojects};
 
 /// Ids reserved for the new objects of one subproject.
 const ID_RANGE: u64 = 1 << 20;
-
-/// A subproject taken out of this project.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Child {
-    pub name: String,
-    pub description: String,
-    /// Ids of the pages taken out.
-    pub pages: Vec<u64>,
-    pub exported: String,
-    /// Date of the last insertion; empty: not inserted yet.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub inserted: String,
-    /// Being edited in the subproject: its pages are locked here.
-    pub out: bool,
-    /// Pages that were locked before the subproject was taken out.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub locked_before: Vec<u64>,
-}
-
-/// The project a subproject was taken from.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Parent {
-    /// Name of the main project.
-    pub project: String,
-    /// Name of the subproject in the main project.
-    pub name: String,
-    pub pages: Vec<u64>,
-    pub exported: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Subprojects {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent: Option<Parent>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub children: Vec<Child>,
-}
 
 impl Subprojects {
     pub fn is_empty(&self) -> bool {

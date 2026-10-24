@@ -9,25 +9,10 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::netlist::{chained_pins, pin_designation, Net, Netlist, PinRef};
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::symbols::{Category, SymbolDef};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, Default)]
-pub enum Medium {
-    #[default]
-    CompressedAir,
-    Vacuum,
-    HydraulicOil,
-    Water,
-    Coolant,
-    Lubricant,
-    Gas,
-    Steam,
-    /// Product of the process plant.
-    Product,
-}
+pub use crate::model::fluid::{FluidSettings, HoseConfig, LineType, Medium};
 
 impl Medium {
     pub const ALL: [Medium; 9] = [
@@ -82,16 +67,6 @@ impl Medium {
     }
 }
 
-/// Hose (flexible, with fittings), tube (cut to length, push-in or compression
-/// fittings) or pipe (rigid piping).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, Default)]
-pub enum LineType {
-    #[default]
-    Hose,
-    Tube,
-    Pipe,
-}
-
 impl LineType {
     pub const ALL: [LineType; 3] = [LineType::Hose, LineType::Tube, LineType::Pipe];
 
@@ -117,51 +92,10 @@ impl LineType {
     }
 }
 
-/// Configuration of a hose / tube / pipe, stored on its wires (all wires of the
-/// connection carry the same).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct HoseConfig {
-    pub line: LineType,
-    /// Part number of the hose / tube / pipe (sold by the metre).
-    pub part: String,
-    /// End fittings at the start and the end of the hose.
-    pub fitting_a: String,
-    pub fitting_b: String,
-    /// Maximum operating pressure in bar; 0 = not set.
-    pub pressure: f32,
-    /// Smallest bend radius in mm; 0 = not set.
-    pub bend_radius: f32,
-}
-
 impl HoseConfig {
     pub fn is_default(&self) -> bool {
         *self == HoseConfig::default()
     }
-}
-
-/// Defaults of hoses that do not set their own values, the hose numbering, device
-/// groups and the links to the electrical devices.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct FluidSettings {
-    pub medium: Medium,
-    /// Nominal size, e.g. "8 mm" (outer diameter) or "DN25".
-    pub size: String,
-    pub color: String,
-    /// Put in front of the counted hose numbers, e.g. "H".
-    pub prefix: String,
-    /// Operating pressure of the system in bar; 0 = not set (ratings are not checked).
-    pub pressure: f32,
-    /// Added to each end of a tube for its cut length (insertion depth), mm.
-    pub allowance: f32,
-    /// Valve terminals, service units, manifolds.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub groups: Vec<crate::electrofluid::DeviceGroup>,
-    /// Fluid device tag → electrical devices that actuate or monitor it (solenoid
-    /// coils, position and pressure switches).
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub links: BTreeMap<String, Vec<String>>,
 }
 
 impl Default for FluidSettings {
@@ -330,8 +264,8 @@ pub fn port_kind(def: &SymbolDef, label: &str) -> PortKind {
 /// Function of a connected pin, if it is a port of a fluid symbol.
 pub fn kind_of_pin(prj: &Project, pin: PinRef) -> Option<PortKind> {
     let s = &prj.pages[pin.page].symbols[pin.sym];
-    let def = crate::symbols::get(&s.sym).filter(|d| d.is_fluid())?;
-    Some(port_kind(def, s.pins.get(pin.pin).map(String::as_str).unwrap_or("")))
+    let def = prj.symbol(&s.sym).filter(|d| d.is_fluid())?;
+    Some(port_kind(&def, s.pins.get(pin.pin).map(String::as_str).unwrap_or("")))
 }
 
 /// A port in the fluid netlist.
@@ -377,22 +311,11 @@ pub fn fluid_nets(prj: &Project, open: &Netlist) -> Vec<FluidNet> {
             .filter_map(|pin| Some(Port { pin, designation: pin_designation(prj, pin), kind: kind_of_pin(prj, pin)? }))
             .collect();
         let kinds: Vec<PortKind> = ports.iter().map(|p| p.kind).collect();
-        let process = net.pins.iter().any(|p| crate::symbols::get(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.category == Category::Process));
+        let process = net.pins.iter().any(|p| prj.symbol(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.category == Category::Process));
         let (medium, size, _, _) = props_of(prj, net);
         out.push(FluidNet { index, net: net.name.clone(), number: crate::wirenum::number_of(prj, net), line: LineKind::of(&kinds, process), medium, size, ports });
     }
     out
-}
-
-/// Way of a tube through the ducts of an enclosure (or of the enclosures of a
-/// line-up, through their cable passages).
-#[derive(Clone, Debug, PartialEq)]
-pub struct TubeRoute {
-    /// Enclosure name; "+CAB1 / +CAB2" across bayed enclosures.
-    pub enclosure: String,
-    /// Metres, including the way to the plate and the reserve.
-    pub length: f32,
-    pub bends: usize,
 }
 
 /// Routes a hose between two placed devices through the ducts (like the virtual
@@ -427,26 +350,6 @@ pub fn route(prj: &Project, a: PinRef, b: PinRef) -> Option<TubeRoute> {
     };
     let mm = plate + la + lb + prj.layout.wire_reserve;
     Some(TubeRoute { enclosure, length: mm / 1000.0, bends: n })
-}
-
-/// A hose (or tube, pipe) between two ports.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Hose {
-    pub number: String,
-    /// Fluid net (`F1` …).
-    pub net: String,
-    pub a: PinRef,
-    pub b: PinRef,
-    pub from: String,
-    pub to: String,
-    pub medium: Medium,
-    pub size: String,
-    pub color: String,
-    /// Metres set on the wires; 0 = not set.
-    pub length: f32,
-    pub config: HoseConfig,
-    /// Route through the panel layout.
-    pub routed: Option<TubeRoute>,
 }
 
 impl Hose {
@@ -618,7 +521,7 @@ pub fn problems(prj: &Project, open: &Netlist) -> Vec<Problem> {
     for fnet in &nets {
         for p in fnet.ports.iter().filter(|p| p.kind != PortKind::Pilot) {
             let s = &prj.pages[p.pin.page].symbols[p.pin.sym];
-            if crate::symbols::get(&s.sym).is_some_and(|d| d.category == Category::Fluid) {
+            if prj.symbol(&s.sym).is_some_and(|d| d.category == Category::Fluid) {
                 let e = device_media.entry(s.tag.as_str()).or_insert_with(|| (BTreeSet::new(), p.pin));
                 e.0.insert(fnet.medium);
             }
@@ -648,6 +551,37 @@ pub fn length_text(length: f32) -> String {
 
 /// (severity, message, jump target)
 pub type Problem = (Severity, String, Option<(usize, u64)>);
+
+/// A hose (or tube, pipe) between two ports.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Hose {
+    pub number: String,
+    /// Fluid net (`F1` …).
+    pub net: String,
+    pub a: PinRef,
+    pub b: PinRef,
+    pub from: String,
+    pub to: String,
+    pub medium: Medium,
+    pub size: String,
+    pub color: String,
+    /// Metres set on the wires; 0 = not set.
+    pub length: f32,
+    pub config: HoseConfig,
+    /// Route through the panel layout.
+    pub routed: Option<TubeRoute>,
+}
+
+/// Way of a tube through the ducts of an enclosure (or of the enclosures of a
+/// line-up, through their cable passages).
+#[derive(Clone, Debug, PartialEq)]
+pub struct TubeRoute {
+    /// Enclosure name; "+CAB1 / +CAB2" across bayed enclosures.
+    pub enclosure: String,
+    /// Metres, including the way to the plate and the reserve.
+    pub length: f32,
+    pub bends: usize,
+}
 
 #[cfg(test)]
 mod tests;

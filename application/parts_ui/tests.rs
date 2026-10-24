@@ -1,5 +1,5 @@
 use super::*;
-use crate::sample::demo_project;
+use openecraft_core::sample::demo_project;
 
 fn loaded(kind: ModelKind, name: &str, bytes: &[u8]) -> Loaded {
     Loaded { purpose: Purpose::Model(kind), name: name.into(), bytes: bytes.to_vec() }

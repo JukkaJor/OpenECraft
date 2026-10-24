@@ -1,10 +1,11 @@
 //! The loaded plugins of a front end and the access to their extensions.
 
 use crate::params::{self, Args};
-use crate::registry::{Check, Command, Exporter, Registry, Report};
+use crate::{Check, Command, Exporter, Registry, Report};
 use crate::{external, is_snake_case, Info, Plugin};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Analysis, Issue, Severity};
+use openecraft_core::analysis::Analysis;
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_fmt;
 use serde_json::{Map, Value};
 use std::path::{Path, PathBuf};
@@ -161,7 +162,7 @@ impl Plugins {
         for c in self.checks() {
             match (c.run)(prj, an) {
                 Ok(found) => issues.extend(found),
-                Err(e) => issues.push(Issue { severity: Severity::Error, message: tr_fmt!("Check {} failed: {}", c.name, e), target: None }),
+                Err(e) => issues.push(openecraft_core::issue!(Severity::Error, None, "Check {} failed: {}", c.name, e)),
             }
         }
         issues

@@ -1,10 +1,11 @@
 use super::*;
 use crate::geom::p;
 use crate::parts::{FunctionTemplate, PartRef};
-use crate::reports::{Analysis, Severity};
+use crate::analysis::Analysis;
+use crate::issue::Severity;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) {
-    let def = symbols::get(key).unwrap();
+    let def = prj.symbol(key).unwrap();
     let id = prj.new_id();
     prj.pages[0].symbols.push(SymbolInst {
         id,
@@ -79,8 +80,8 @@ fn wires_behind_a_breaker_and_its_contacts_must_carry_its_current() {
     let o = overloads(&prj, &nl, &open);
     assert_eq!(o.len(), 1, "{o:?}");
     assert_eq!((o[0].device.as_str(), o[0].rated, o[0].ampacity, o[0].target.1), ("-F1", 16.0, 13.5, load));
-    let an = Analysis::build(&prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message == "Cross-section 1.5 mm² carries 13.5 A, less than the 16 A of -F1"));
+    let an = Analysis::checked(&prj);
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Error && i.message() == "Cross-section 1.5 mm² carries 13.5 A, less than the 16 A of -F1"));
     // A smaller breaker protects them.
     let (prj, _, _) = circuit("2.5 mm²", "1.5 mm²", "10 A");
     assert!(overloads(&prj, &Netlist::build(&prj, true), &Netlist::build(&prj, false)).is_empty());
@@ -113,7 +114,7 @@ fn voltage_drop_of_a_motor_cable() {
     sym(&mut prj, "motor3", 100.0, 200.0, "-M1", "");
     assign(&mut prj, "-M1", "ACME.MOT", FnKind::Motor3, "U1 V1 W1 PE", "1.9 A", "400 V");
     prj.cables.push(Cable { id: 900, tag: "-W1".into(), cores: "BN BK GY GNYE".into(), cross_section: "1.5 mm²".into(), length: 50.0, ..Default::default() });
-    let an = Analysis::build(&prj);
+    let an = Analysis::checked(&prj);
     let d = cable_drops(&prj, &an.connections);
     assert_eq!(d.len(), 1);
     let d = &d[0];
@@ -122,11 +123,11 @@ fn voltage_drop_of_a_motor_cable() {
     let (v, pct) = d.drop.unwrap();
     assert!((v - du).abs() < 1e-3 && (pct - du / 4.0).abs() < 1e-3);
     assert_eq!(d.ampacity, Some(13.5));
-    assert!(!an.issues.iter().any(|i| i.message.contains("voltage drop")));
-    assert_eq!(an.reports[&ReportKind::CableSizing].rows.len(), 1);
+    assert!(!an.issues.iter().any(|i| i.message().contains("voltage drop")));
+    assert_eq!(an.report(&prj, ReportKind::CableSizing).unwrap().rows.len(), 1);
 
     // 500 m of 1.5 mm² is too much.
     prj.cables[0].length = 500.0;
-    let an = Analysis::build(&prj);
-    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message.starts_with("-W1: voltage drop")));
+    let an = Analysis::checked(&prj);
+    assert!(an.issues.iter().any(|i| i.severity == Severity::Warning && i.message().starts_with("-W1: voltage drop")));
 }

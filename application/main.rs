@@ -4,6 +4,7 @@
 //! Runs natively on Windows, Linux and macOS and in the browser (WebAssembly).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 mod app;
 #[cfg(test)]
@@ -15,12 +16,8 @@ mod io;
 mod panel_ui;
 mod parts_ui;
 mod remote;
+mod session;
 mod wiring_ui;
-
-use openecraft_core::{
-    aml, archive, cabledef, climate, compare, config, conndef, devdesc, document, dwg, dxf, electrical, electrofluid, export3d, field, fluid, forms, frame, functions, geom, graphics, harness, history, index, integration, macros, marking, model, netlist, ops, options, page_templates, panel, parts, pdf, plc, plc_hw, plugs, potentials, process, production, projects, properties, props, render, report_blocks, reports,
-    review, revision, routing, routing3d, rules, safety, sample, singleline, strips, structure, subproject, svg, symbols, symlib, tables, translation, verify, wirenum, wiring,
-};
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {

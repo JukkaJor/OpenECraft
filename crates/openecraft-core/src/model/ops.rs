@@ -1,0 +1,30 @@
+//! Data of `crate::ops` that the project file holds (see `docs/architecture.md`).
+
+use super::*;
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Clip {
+    pub magic: String,
+    /// Structure of the page the clip was copied from.
+    pub function: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub installation: String,
+    pub location: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub product: String,
+    pub symbols: Vec<SymbolInst>,
+    pub wires: Vec<Wire>,
+    pub texts: Vec<TextItem>,
+    pub shapes: Vec<Shape>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub dimensions: Vec<Dimension>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub images: Vec<ImageItem>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub conn_defs: Vec<ConnDef>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub cable_defs: Vec<CableDef>,
+}

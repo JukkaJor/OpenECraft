@@ -8,7 +8,7 @@ use crate::climate::Material;
 use crate::parts::mechanics::{self, SystemData};
 use crate::parts::vec3::V3;
 use openecraft_i18n::tr;
-use serde::{Deserialize, Serialize};
+pub use crate::model::panel::Build;
 
 /// An enclosure system of the catalog.
 #[derive(Debug, PartialEq)]
@@ -50,21 +50,6 @@ impl System {
 
 pub fn by_id(id: &str) -> Option<&'static System> {
     SYSTEMS.iter().find(|s| s.data.id == id)
-}
-
-/// How an enclosure is built: its system and the optional components.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Build {
-    /// Enclosure system ("compact", "baying", …), empty for a plain enclosure.
-    pub system: String,
-    /// Plinth height (mm), 0 without plinth.
-    pub plinth: f32,
-    /// Side bayed to the neighbouring enclosure: no side panel, a baying kit instead.
-    pub left_open: bool,
-    pub right_open: bool,
-    /// The bottom is a removable gland plate.
-    pub gland_plate: bool,
 }
 
 impl Build {

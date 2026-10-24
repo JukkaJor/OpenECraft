@@ -1,6 +1,6 @@
 use super::*;
-use crate::{Origin, Plugins};
-use openecraft_core::reports::Analysis;
+use crate::{Args, Origin, Plugins};
+use openecraft_core::analysis::Analysis;
 use openecraft_core::sample::demo_project;
 use serde_json::Map;
 
@@ -58,7 +58,7 @@ fn copper_bars_and_configurator() {
     assert_eq!(prog["content"].as_str().unwrap().lines().filter(|l| l.contains(";bend;")).count(), 2);
     let rules = run(&p, &mut prj, "copper_bar_rules", json!({ "stock_length": 300 })).unwrap();
     assert_eq!(rules["stock_length"], 300.0);
-    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.message.contains("stock length")));
+    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.message().contains("stock length")));
     let id = prj.layout.manufacturing.bars[0].id;
     run(&p, &mut prj, "remove_copper_bar", json!({ "id": id })).unwrap();
     assert!(prj.layout.manufacturing.bars.is_empty());
@@ -92,17 +92,18 @@ fn handoff_feedback_and_status() {
     assert_eq!(fb["jobs"][0]["state"], "Problem");
     let st = run(&p, &mut prj, "production_status", json!({})).unwrap();
     assert!(st["changed"].as_array().unwrap().is_empty());
-    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.severity == Severity::Warning && i.message.contains("failed")));
+    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.severity == Severity::Warning && i.message().contains("failed")));
     let cal = run(&p, &mut prj, "calibrate_machines", json!({ "apply": true })).unwrap();
     assert_eq!(cal[0]["machine"], "drill_mill_iso");
     let table = (p.report("production_status").unwrap().run)(&prj, &Analysis::build(&prj)).unwrap();
     assert_eq!(table.rows[0][4], "1");
     // Changes after the hand-off are found by the check.
     prj.layout.enclosures[0].items.retain(|i| i.face != Face::Door);
-    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.message.contains("CAB1_door.nc")));
-    let pkg = (p.exporter("manufacturing_package").unwrap().run)(&prj).unwrap();
+    assert!(p.check(&prj, &Analysis::build(&prj)).iter().any(|i| i.message().contains("CAB1_door.nc")));
+    let an = Analysis::build(&prj);
+    let pkg = (p.exporter("manufacturing_package").unwrap().run)(&prj, &an, &Args(&Map::new())).unwrap().text().unwrap();
     assert!(pkg.contains("CAB1_plate.nc"));
-    let csv = (p.exporter("copper_bar_program").unwrap().run)(&prj).unwrap();
+    let csv = (p.exporter("copper_bar_program").unwrap().run)(&prj, &an, &Args(&Map::new())).unwrap().text().unwrap();
     assert!(csv.starts_with("Bar;"));
     let cut = (p.report("copper_bar_cutting").unwrap().run)(&prj, &Analysis::build(&prj)).unwrap();
     assert!(cut.rows.is_empty());

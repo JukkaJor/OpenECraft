@@ -4,11 +4,12 @@
 
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
-use openecraft_core::integration::{self, Change, Profile, CONNECTORS};
-use openecraft_core::reports::Analysis;
+use openecraft_core::integration::{self, Change, CONNECTORS};
+use openecraft_core::analysis::Analysis;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
+use openecraft_api::builtin::integration::{connector, mapping};
 
 pub static TOOLS: &[Tool] = &[
     Tool {
@@ -45,35 +46,7 @@ pub static TOOLS: &[Tool] = &[
         needs_project: true,
         run: import,
     },
-    Tool {
-        name: "set_integration_profile",
-        help: tr_const!("Adds, replaces or removes a profile: a connector with the column names the other system uses"),
-        params: &[
-            param("name", Kind::Str, tr_const!("Profile name, e.g. SAP")),
-            optional("connector", Kind::Str, tr_const!("Connector id (required unless removing)")),
-            optional("mapping", Kind::Object, tr_const!("Column mapping {field code: column name}")),
-            optional("remove", Kind::Bool, tr_const!("Remove the profile")),
-        ],
-        needs_project: true,
-        run: set_profile,
-    },
-    Tool {
-        name: "integration_status",
-        help: tr_const!("Shows the data of the other systems stored in the project (part links, documents) and the exchange log"),
-        params: &[],
-        needs_project: true,
-        run: status,
-    },
 ];
-
-fn connector(a: &Args) -> Result<&'static integration::Connector, String> {
-    let id = a.req("connector");
-    integration::connector(id).ok_or_else(|| tr_fmt!("Unknown connector: {}", id))
-}
-
-fn mapping(a: &Args) -> BTreeMap<String, String> {
-    a.value("mapping").and_then(Value::as_object).map(|m| m.iter().filter_map(|(k, v)| Some((k.clone(), v.as_str()?.to_string()))).collect()).unwrap_or_default()
-}
 
 fn connectors(s: &mut Session, _: &Args) -> Result<Value, String> {
     let list: Vec<Value> = CONNECTORS
@@ -110,7 +83,7 @@ fn write_or_return(a: &Args, content: String) -> Result<Value, String> {
 
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     let prj = s.project_mut()?;
-    let an = Analysis::build(prj);
+    let an = Analysis::with_builtin(prj);
     if a.req("connector") == "exchange" {
         return write_or_return(a, integration::exchange(prj, &an));
     }
@@ -143,7 +116,7 @@ fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
         None => BTreeMap::new(),
     };
     map.extend(mapping(a));
-    let an = Analysis::build(prj);
+    let an = Analysis::with_builtin(prj);
     let preview = integration::import(prj, &an, c, &text, &map)?;
     let applied = if a.flag("apply") { Some(integration::apply(prj, &an, c, &preview.changes, a.flag("overwrite"), a.str("date").unwrap_or_default())) } else { None };
     Ok(json!({
@@ -152,40 +125,6 @@ fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
         "conflicts": preview.conflicts(),
         "unmatched": preview.unmatched,
         "applied": applied,
-    }))
-}
-
-fn set_profile(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let name = a.req("name").trim().to_string();
-    let prj = s.project_mut()?;
-    let profiles = &mut prj.integration.profiles;
-    if a.flag("remove") {
-        let before = profiles.len();
-        profiles.retain(|p| p.name != name);
-        return Ok(json!({ "removed": before - profiles.len() }));
-    }
-    let id = a.str("connector").ok_or_else(|| tr_fmt!("Missing parameter: {}", "connector"))?;
-    integration::connector(id).ok_or_else(|| tr_fmt!("Unknown connector: {}", id))?;
-    let map = mapping(a);
-    if let Some(bad) = map.keys().find(|k| integration::Field::from_code(k).is_none()) {
-        return Err(tr_fmt!("Unknown field: {}", bad));
-    }
-    let p = Profile { name: name.clone(), connector: id.to_string(), mapping: map };
-    match profiles.iter_mut().find(|p| p.name == name) {
-        Some(old) => *old = p,
-        None => profiles.push(p),
-    }
-    Ok(json!({ "profiles": profiles.len() }))
-}
-
-fn status(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let i = &s.project()?.integration;
-    Ok(json!({
-        "items": i.items,
-        "documents": i.documents,
-        "project": i.project,
-        "profiles": i.profiles,
-        "log": i.log,
     }))
 }
 

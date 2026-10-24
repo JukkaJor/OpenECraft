@@ -241,10 +241,11 @@ pub fn apply_designations(prj: &mut Project, db: Option<&PartsDb>, tag: &str) ->
         a.0.cmp(&b.0).then(sa.pos.x.total_cmp(&sb.pos.x)).then(sa.pos.y.total_cmp(&sb.pos.y))
     });
     let mut changed = 0;
+    let symbols = prj.symbol_table();
     for (pi, si) in placed {
         let s = &mut prj.pages[pi].symbols[si];
         let Some(kind) = kind_of_symbol(&s.sym) else { continue };
-        let n_pins = symbols::get(&s.sym).map(|d| d.pins.len()).unwrap_or(0);
+        let n_pins = symbols.get(&s.sym).map(|d| d.pins.len()).unwrap_or(0);
         if let Some(i) = avail.iter().position(|f| f.kind == kind && f.pin_list().len() == n_pins) {
             let pins = avail.remove(i).pin_list();
             if s.pins != pins {
@@ -274,7 +275,7 @@ pub fn main_kind(prj: &Project, tag: &str) -> Option<FnKind> {
         .iter()
         .flat_map(|pg| pg.symbols.iter())
         .filter(|s| s.tag == tag)
-        .find(|s| symbols::get(&s.sym).map(|d| matches!(d.func, Func::Main { .. })).unwrap_or(false))
+        .find(|s| prj.symbol(&s.sym).map(|d| matches!(d.func, Func::Main { .. })).unwrap_or(false))
         .and_then(|s| kind_of_symbol(&s.sym))
 }
 

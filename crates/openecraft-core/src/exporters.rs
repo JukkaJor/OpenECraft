@@ -1,0 +1,87 @@
+//! The built-in exports as registry entries ([`Exporter`]): drawings of the pages
+//! (SVG, HTML, PDF, DXF, DWG), production and PLC lists, exchange files (AutomationML,
+//! KBL), the panel layout in 3D (glTF, STEP, IGES, IFC, JT) and the translation
+//! dictionary. The front ends offer them next to the exports of plugins; the language
+//! of the texts is the host's business (`translation::with_language`).
+
+use crate::ext::{Export, Exporter, Registry};
+use crate::model::Project;
+use crate::params::{optional, param, Args, Kind, Param};
+use crate::analysis::Analysis;
+use openecraft_i18n::{tr, tr_const, tr_fmt};
+
+const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));
+const PAGE_OPT: Param = optional("page", Kind::Str, tr_const!("Page name as shown by list_pages (default: all pages)"));
+const FILE: Param = optional("file", Kind::Str, tr_const!("File name written into the file header"));
+
+fn page_index(prj: &Project, a: &Args) -> Result<Option<usize>, String> {
+    let Some(name) = a.str("page") else { return Ok(None) };
+    prj.pages.iter().position(|pg| pg.name == name).map(Some).ok_or_else(|| tr_fmt!("No page named {}", name))
+}
+
+/// The page given, otherwise all pages.
+fn pages(prj: &Project, a: &Args) -> Result<Vec<usize>, String> {
+    Ok(match page_index(prj, a)? {
+        Some(i) => vec![i],
+        None => (0..prj.pages.len()).collect(),
+    })
+}
+
+fn with_layout(prj: &Project) -> Result<(), String> {
+    if prj.layout.enclosures.is_empty() {
+        return Err(tr("The project has no panel layout").into());
+    }
+    Ok(())
+}
+
+fn file_name<'a>(a: &'a Args, default: &'a str) -> &'a str {
+    a.str("file").filter(|f| !f.trim().is_empty()).unwrap_or(default)
+}
+
+fn text(f: impl Fn(&Project, &Analysis, &Args) -> Result<String, String> + Send + Sync + 'static) -> impl Fn(&Project, &Analysis, &Args) -> Result<Export, String> + Send + Sync + 'static {
+    move |prj, an, a| f(prj, an, a).map(Export::Text)
+}
+
+/// The built-in exports in the order of File › Export.
+pub fn builtin() -> Vec<Exporter> {
+    let mut reg = Registry::default();
+    reg.exporter_with("svg", tr_const!("SVG image (one page)"), "svg", false, vec![PAGE], text(|prj, an, a| {
+        let i = page_index(prj, a)?.ok_or_else(|| tr("This format needs a page").to_string())?;
+        Ok(crate::svg::page_svg_with(prj, an, i))
+    }))
+    .exporter_with("html", tr_const!("HTML document for printing (all pages)"), "html", false, vec![], text(|prj, an, _| Ok(crate::svg::print_document_with(prj, an))))
+    .exporter_with("pdf", tr_const!("PDF document (bookmarks, linked cross references)"), "pdf", false, vec![], text(|prj, an, _| Ok(crate::pdf::document_with(prj, an))))
+    .exporter_with("dxf", tr_const!("DXF drawing"), "dxf", false, vec![PAGE_OPT], text(|prj, an, a| Ok(crate::dxf::pages_dxf_with(prj, an, &pages(prj, a)?))))
+    .exporter_with("dwg", tr_const!("DWG drawing"), "dwg", true, vec![PAGE_OPT], |prj, an, a| crate::dwg::pages_dwg_with(prj, an, &pages(prj, a)?).map(Export::Binary))
+    .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv())))
+    .exporter_with("plc_table", tr_const!("PLC symbol table (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::symbol_table(prj, &an.netlist))))
+    .exporter_with("plc_variables", tr_const!("PLC global variables (IEC 61131-3)"), "st", false, vec![], text(|prj, an, _| Ok(crate::plc::global_variables(prj, &an.netlist))))
+    .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
+    .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
+    .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::marking::csv(&crate::marking::markers(prj, &an.connections)))))
+    .exporter_with("gltf", tr_const!("Panel layout in 3D (glTF)"), "gltf", false, vec![], text(|prj, _, _| {
+        with_layout(prj)?;
+        Ok(crate::export3d::gltf(prj))
+    }))
+    .exporter_with("step", tr_const!("Panel layout in 3D (STEP)"), "stp", false, vec![FILE], text(|prj, _, a| {
+        with_layout(prj)?;
+        Ok(crate::export3d::step(prj, file_name(a, "panel.stp")))
+    }))
+    .exporter_with("iges", tr_const!("Panel layout in 3D (IGES)"), "igs", false, vec![FILE], text(|prj, _, a| {
+        with_layout(prj)?;
+        Ok(crate::export3d::iges(prj, file_name(a, "panel.igs")))
+    }))
+    .exporter_with("ifc", tr_const!("Panel layout in 3D (IFC)"), "ifc", false, vec![FILE], text(|prj, _, a| {
+        with_layout(prj)?;
+        Ok(crate::export3d::ifc(prj, file_name(a, "panel.ifc")))
+    }))
+    .exporter_with("jt", tr_const!("Panel layout in 3D (JT)"), "jt", true, vec![], |prj, _, _| {
+        with_layout(prj)?;
+        Ok(Export::Binary(crate::export3d::jt(prj)))
+    })
+    .exporter_with("dictionary", tr_const!("Translation dictionary (CSV)"), "csv", false, vec![], text(|prj, _, _| Ok(crate::translation::to_csv(prj))));
+    reg.exporters
+}
+
+#[cfg(test)]
+mod tests;

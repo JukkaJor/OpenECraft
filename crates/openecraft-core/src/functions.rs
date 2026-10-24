@@ -7,35 +7,10 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::model::*;
 use crate::parts::FnKind;
-use crate::properties::{Group, Values};
+use crate::properties::Group;
 use crate::symbols::{self, Func};
-use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum FnCategory {
-    Relays,
-    Contacts,
-    Switches,
-    Sensors,
-    Protection,
-    Motors,
-    Drives,
-    Signal,
-    Measuring,
-    PowerSupply,
-    Installation,
-    Terminals,
-    Plugs,
-    Plc,
-    Passive,
-    BlackBox,
-    Potentials,
-    Fluid,
-    Process,
-    #[default]
-    General,
-}
+pub use crate::model::functions::{FnCategory, FunctionDef};
 
 impl FnCategory {
     pub const ALL: [FnCategory; 20] = [
@@ -107,35 +82,6 @@ impl FnCategory {
             FnCategory::BlackBox | FnCategory::General => &Group::ALL,
         }
     }
-}
-
-/// A function definition.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct FunctionDef {
-    pub key: String,
-    /// English name of a built-in definition, the name of a project one.
-    pub name: String,
-    pub category: FnCategory,
-    /// Kind in the function templates of parts.
-    pub kind: FnKind,
-    /// Identifying letter of new devices (IEC 81346-2).
-    pub letter: String,
-    /// Default symbol (library key).
-    pub symbol: String,
-    /// Connection point designations separated by blanks; empty: the symbol's.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub pins: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub description: String,
-    /// Default property values of objects with this definition.
-    #[serde(skip_serializing_if = "Values::is_empty")]
-    pub defaults: Values,
-    /// Placement scheme applied when the definition is assigned.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub scheme: String,
-    #[serde(skip)]
-    pub builtin: bool,
 }
 
 impl FunctionDef {
@@ -284,10 +230,10 @@ pub fn all(prj: &Project) -> impl Iterator<Item = &FunctionDef> {
 }
 
 /// Built-in definition a library symbol stands for.
-pub fn default_for_symbol(sym: &str) -> &'static FunctionDef {
+pub fn default_for_symbol(prj: &Project, sym: &str) -> &'static FunctionDef {
     let by_list = ROWS.iter().position(|r| r.5.contains(&sym));
     let i = by_list.or_else(|| {
-        let def = symbols::get(sym)?;
+        let def = prj.symbol(sym)?;
         let key = match def.func {
             Func::Potential => "fn.potential",
             Func::Interruption => "fn.interruption",
@@ -314,13 +260,13 @@ pub fn of_symbol<'a>(prj: &'a Project, s: &SymbolInst) -> Option<&'a FunctionDef
             return Some(d);
         }
     }
-    Some(default_for_symbol(&s.sym))
+    Some(default_for_symbol(prj, &s.sym))
 }
 
 /// Definitions a symbol can take: those for the same kind of function (built-in
 /// ones of its symbol family and the project's ones with the same kind or symbol).
 pub fn fitting<'a>(prj: &'a Project, s: &SymbolInst) -> Vec<&'a FunctionDef> {
-    let own = default_for_symbol(&s.sym);
+    let own = default_for_symbol(prj, &s.sym);
     all(prj).filter(|d| d.key == own.key || d.symbol == s.sym || (d.kind == own.kind && (d.kind != FnKind::Generic || !d.builtin))).collect()
 }
 
@@ -332,7 +278,7 @@ pub fn define(prj: &mut Project, d: FunctionDef) -> Result<(), String> {
     if builtin_def(&d.key).is_some() {
         return Err(tr_fmt!("{} is a built-in function definition", d.key));
     }
-    if !d.symbol.is_empty() && symbols::get(&d.symbol).is_none() {
+    if !d.symbol.is_empty() && prj.symbol(&d.symbol).is_none() {
         return Err(tr_fmt!("Unknown symbol {}", d.symbol));
     }
     for k in d.defaults.keys() {
@@ -376,6 +322,7 @@ pub fn remove(prj: &mut Project, key: &str) -> usize {
 /// are taken over when the definition has them. The symbol's built-in definition
 /// is stored as "none".
 pub fn assign(prj: &mut Project, symbol_id: u64, key: &str) -> Result<(), String> {
+    let symbols = prj.symbol_table();
     let d = get(prj, key).ok_or_else(|| tr_fmt!("Unknown function definition: {}", key))?.clone();
     let (pi, si) = prj
         .pages
@@ -384,7 +331,7 @@ pub fn assign(prj: &mut Project, symbol_id: u64, key: &str) -> Result<(), String
         .find_map(|(pi, pg)| pg.symbols.iter().position(|s| s.id == symbol_id).map(|si| (pi, si)))
         .ok_or_else(|| tr_fmt!("No symbol with id {}", symbol_id))?;
     let s = &prj.pages[pi].symbols[si];
-    let builtin_own = default_for_symbol(&s.sym).key == d.key;
+    let builtin_own = default_for_symbol(prj, &s.sym).key == d.key;
     let scheme = (!d.scheme.is_empty()).then(|| crate::props::scheme(prj, &d.scheme).cloned()).flatten();
     let s = &mut prj.pages[pi].symbols[si];
     s.function_def = if builtin_own { String::new() } else { d.key.clone() };
@@ -395,7 +342,7 @@ pub fn assign(prj: &mut Project, symbol_id: u64, key: &str) -> Result<(), String
         }
     }
     if let Some(scheme) = scheme {
-        crate::props::apply_scheme(s, &scheme);
+        crate::props::apply_scheme(&symbols, s, &scheme);
     }
     Ok(())
 }

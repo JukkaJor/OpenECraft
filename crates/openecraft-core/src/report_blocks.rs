@@ -6,57 +6,21 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::forms::{self, ReportForm};
 use crate::model::*;
-use crate::reports::{Analysis, Table};
-use serde::{Deserialize, Serialize};
+use crate::reports::Table;
+use crate::analysis::Analysis;
 use std::collections::VecDeque;
+pub use crate::model::report_blocks::{LineupBox, PageTable, ReportBlock, ReportPart};
 
 /// Rows per report page if the form sets none.
 pub const ROWS_PER_PAGE: usize = 40;
 /// Rows per page of the terminal line-up (the drawing of the strip takes space).
 pub const LINEUP_ROWS_PER_PAGE: usize = 24;
 
-/// What a report page shows.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ReportPart {
-    /// Report block that generated the page (output pages: source project and block).
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub block: String,
-    /// Report scheme; empty: the form of the report.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub scheme: String,
-    /// Only the rows of this value of the group column; none: all rows.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub group: Option<String>,
-    /// First row shown.
-    pub first: usize,
-    /// Fixed content output from another project.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub frozen: Option<PageTable>,
-}
-
-/// A set of report pages generated together.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ReportBlock {
-    pub name: String,
-    pub kind: ReportKind,
-    /// Report scheme; empty: the form of the report.
-    pub scheme: String,
-    /// New pages for every value of the group column (strip, plug, cable, device …).
-    pub per_group: bool,
-    /// Groups to generate (`-X*`, several separated by `,`); empty: all.
-    pub groups: String,
-    /// Structure of the generated pages.
-    pub function: String,
-    pub location: String,
-}
-
 impl Default for ReportBlock {
     fn default() -> Self {
         ReportBlock {
             name: String::new(),
-            kind: ReportKind::TerminalDiagram,
+            kind: ReportKind::TerminalDiagram.into(),
             scheme: String::new(),
             per_group: true,
             groups: String::new(),
@@ -66,47 +30,8 @@ impl Default for ReportBlock {
     }
 }
 
-/// One element of the terminal line-up drawing.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct LineupBox {
-    pub label: String,
-    pub width: f32,
-    pub jumper: u32,
-    /// End bracket or end plate.
-    pub accessory: bool,
-    pub spare: bool,
-}
-
-/// The content of one report page, ready to draw.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PageTable {
-    pub title: String,
-    pub headers: Vec<String>,
-    /// Relative column widths.
-    pub widths: Vec<f32>,
-    pub rows: Vec<Vec<String>>,
-    #[serde(skip)]
-    pub targets: Vec<Option<(usize, u64)>>,
-    /// Rows the row height is fitted to.
-    pub per_page: usize,
-    /// Text size of the rows (mm); 0: fitted.
-    pub text_size: f32,
-    /// Rows of the report that follow this page.
-    pub more: usize,
-    /// The rows continue on the next page of the report block.
-    pub continued: bool,
-    /// Terminal line-up drawn above the table.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lineup: Vec<LineupBox>,
-    /// Project the page was output from.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub source: String,
-}
-
 fn column(table: &Table, name: &str) -> Option<usize> {
-    table.headers.iter().position(|h| *h == name)
+    table.column(name)
 }
 
 /// The rows of a report filtered and sorted by a form.
@@ -142,8 +67,8 @@ pub fn group_column(table: &Table, form: Option<&ReportForm>) -> usize {
     form.and_then(|f| column(table, &f.group)).unwrap_or(0)
 }
 
-pub fn rows_per_page(kind: ReportKind, form: Option<&ReportForm>) -> usize {
-    let default = if kind == ReportKind::TerminalLineup { LINEUP_ROWS_PER_PAGE } else { ROWS_PER_PAGE };
+pub fn rows_per_page(kind: impl Into<ReportId>, form: Option<&ReportForm>) -> usize {
+    let default = if kind.into() == ReportId::from(ReportKind::TerminalLineup) { LINEUP_ROWS_PER_PAGE } else { ROWS_PER_PAGE };
     form.map(|f| f.rows).filter(|r| *r > 0).unwrap_or(default)
 }
 
@@ -190,14 +115,15 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
         return Some(frozen);
     }
     let form = forms::report_form(prj, kind, &part.scheme);
-    let table = scheme_table(an.reports.get(&kind)?, form);
+    let table = an.report(prj, kind)?;
+    let table = scheme_table(&table, form);
     let gc = group_column(&table, form);
     let rows: Vec<usize> = (0..table.rows.len()).filter(|&i| part.group.as_ref().is_none_or(|g| table.rows[i].get(gc) == Some(g))).collect();
     let per_page = rows_per_page(kind, form);
     let shown: Vec<usize> = rows.iter().skip(part.first).take(per_page).copied().collect();
     let more = rows.len().saturating_sub(part.first + shown.len());
     let cols = forms::report_columns(form, &table.headers);
-    let width = |c: usize| form.and_then(|f| f.widths.get(table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
+    let width = |c: usize| form.and_then(|f| forms::header_value(&f.widths, &table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
     let mut out_rows: Vec<Vec<String>> = shown.iter().map(|&i| cols.iter().map(|&c| table.rows[i].get(c).cloned().unwrap_or_default()).collect()).collect();
     if form.is_some_and(|f| f.blank_repeats) {
         for i in (1..out_rows.len()).rev() {
@@ -206,15 +132,16 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
             }
         }
     }
-    let base = form.map(|f| f.title.as_str()).filter(|t| !t.is_empty()).unwrap_or(kind.title());
+    let kind_title = kind.title();
+    let base = form.map(|f| f.title.as_str()).filter(|t| !t.is_empty()).unwrap_or(&kind_title);
     let title = match part.group.as_deref() {
         Some(g) if !g.is_empty() => format!("{base} {g}"),
         _ => base.to_string(),
     };
-    let lineup = if kind == ReportKind::TerminalLineup { lineup_boxes(&table, &shown) } else { Vec::new() };
+    let lineup = if kind == ReportId::from(ReportKind::TerminalLineup) { lineup_boxes(&table, &shown) } else { Vec::new() };
     Some(PageTable {
         title,
-        headers: cols.iter().map(|&c| table.headers[c].to_string()).collect(),
+        headers: cols.iter().map(|&c| table.header_text(c).to_string()).collect(),
         widths: cols.iter().map(|&c| width(c)).collect(),
         rows: out_rows,
         targets: shown.iter().map(|&i| table.targets[i]).collect(),
@@ -252,8 +179,8 @@ fn lineup_boxes(table: &Table, rows: &[usize]) -> Vec<LineupBox> {
 /// The pages of a block: (group, first row) per page.
 pub fn block_pages(prj: &Project, an: &Analysis, block: &ReportBlock) -> Vec<(Option<String>, usize)> {
     let form = forms::report_form(prj, block.kind, &block.scheme);
-    let Some(table) = an.reports.get(&block.kind) else { return vec![(None, 0)] };
-    let table = scheme_table(table, form);
+    let Some(table) = an.report(prj, block.kind) else { return vec![(None, 0)] };
+    let table = scheme_table(&table, form);
     let per_page = rows_per_page(block.kind, form);
     let chunks = |n: usize| (0..n.div_ceil(per_page).max(1)).map(move |k| k * per_page);
     if !block.per_group {
@@ -286,7 +213,7 @@ pub fn generate(prj: &mut Project, an: &Analysis, block: usize) -> Result<usize,
     let mine = |p: &Page| p.report.as_ref().is_some_and(|r| r.frozen.is_none() && r.block == b.name);
     let (at, mut names) = take_pages(prj, mine)?;
     let pages = block_pages(prj, an, &b);
-    let title = forms::report_form(prj, b.kind, &b.scheme).map(|f| f.title.clone()).filter(|t| !t.is_empty()).unwrap_or_else(|| b.kind.title().to_string());
+    let title = forms::report_form(prj, b.kind, &b.scheme).map(|f| f.title.clone()).filter(|t| !t.is_empty()).unwrap_or_else(|| b.kind.title());
     for (i, (group, first)) in pages.iter().enumerate() {
         let name = names.pop_front().unwrap_or_else(|| crate::ops::next_page_name(prj));
         let description = match group {
@@ -317,9 +244,15 @@ pub fn rename_block(prj: &mut Project, old: &str, new: &str) -> bool {
     true
 }
 
-/// Generates all report blocks. Returns the number of pages.
+/// Generates all report blocks with the built-in reports. Returns the number of pages.
 pub fn generate_all(prj: &mut Project) -> Result<usize, String> {
-    let an = Analysis::build(prj);
+    generate_all_with(prj, crate::reports::builtin())
+}
+
+/// Generates all report blocks with the reports of a registry (built-in and of plugins).
+pub fn generate_all_with(prj: &mut Project, reports: Vec<crate::ext::Report>) -> Result<usize, String> {
+    let mut an = Analysis::build(prj);
+    an.set_reports(reports);
     let mut n = 0;
     for i in 0..prj.report_blocks.len() {
         n += generate(prj, &an, i)?;

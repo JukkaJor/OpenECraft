@@ -8,7 +8,7 @@
 use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 
 mod iec;
 pub use iec::kind as iec_kind;
@@ -495,6 +495,7 @@ pub fn bounds_of(prims: &[Prim], pins: impl Iterator<Item = P>) -> R {
 const MAIN: Func = Func::Main { mirror: false };
 const MAIN_MIRROR: Func = Func::Main { mirror: true };
 
+#[allow(clippy::too_many_lines)]
 fn build_library() -> Vec<SymbolDef> {
     use Anchor::*;
     use Category as C;
@@ -1343,9 +1344,29 @@ pub fn library() -> &'static [SymbolDef] {
     LIB.get_or_init(build_library)
 }
 
-/// Built-in or registered user symbol.
-pub fn get(key: &str) -> Option<&'static SymbolDef> {
-    library().iter().find(|d| d.key == key).or_else(|| crate::symlib::lookup(key))
+/// A built-in symbol. User symbols of a project are found with
+/// [`Project::symbol`](crate::model::Project::symbol), which looks here first.
+pub fn builtin(key: &str) -> Option<&'static SymbolDef> {
+    library().iter().find(|d| d.key == key)
+}
+
+/// A symbol definition: a built-in one or a user symbol of a project (shared with
+/// the project's symbol table).
+#[derive(Clone, Debug)]
+pub enum SymbolRef {
+    Builtin(&'static SymbolDef),
+    User(Arc<SymbolDef>),
+}
+
+impl std::ops::Deref for SymbolRef {
+    type Target = SymbolDef;
+
+    fn deref(&self) -> &SymbolDef {
+        match self {
+            SymbolRef::Builtin(d) => d,
+            SymbolRef::User(d) => d,
+        }
+    }
 }
 
 #[cfg(test)]

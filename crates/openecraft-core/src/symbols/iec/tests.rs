@@ -41,7 +41,7 @@ const OVERVIEW: &[&str] = &[
 
 #[test]
 fn the_iec_overview_is_complete() {
-    let missing: Vec<_> = OVERVIEW.iter().filter(|k| get(k).is_none()).collect();
+    let missing: Vec<_> = OVERVIEW.iter().filter(|k| builtin(k).is_none()).collect();
     assert!(missing.is_empty(), "missing symbols: {missing:?}");
 }
 
@@ -61,21 +61,22 @@ fn symbols_have_a_function_kind() {
     assert_eq!(crate::parts::kind_of_symbol("estop_turn_nc"), Some(FnKind::PushbuttonNc));
     assert_eq!(kind("coil"), None, "built-in symbols keep their own mapping");
     // Every symbol of this library with a kind can be assigned a function definition of it.
+    let prj = crate::model::Project::default();
     for (key, k) in KINDS.get().unwrap() {
-        assert_eq!(crate::functions::default_for_symbol(key).kind, *k, "{key}");
+        assert_eq!(crate::functions::default_for_symbol(&prj, key).kind, *k, "{key}");
     }
 }
 
 #[test]
 fn multi_pole_symbols_number_their_poles() {
     for key in ["cb3_tm", "fuse_swdisc3", "isol3_lock", "rcd3", "olm3", "main3_trip"] {
-        let labels: Vec<_> = get(key).unwrap().pins.iter().map(|p| p.label).collect();
+        let labels: Vec<_> = builtin(key).unwrap().pins.iter().map(|p| p.label).collect();
         assert_eq!(labels, ["1", "3", "5", "2", "4", "6"], "{key}");
     }
-    let co = get("co_on").unwrap();
+    let co = builtin("co_on").unwrap();
     assert_eq!(co.contact_kind(), Some(ContactKind::Changeover));
     assert_eq!(co.pins.len(), 3);
-    assert_eq!(get("trafo3_yyd").unwrap().pins.len(), 9);
+    assert_eq!(builtin("trafo3_yyd").unwrap().pins.len(), 9);
 }
 
 #[test]
@@ -83,7 +84,7 @@ fn push_and_pull_operators_differ() {
     // Pushing: the bracket opens towards the contact (its back at x = -6); pulling:
     // away from it (its back at x = -5).
     let back = |key: &str| {
-        get(key).unwrap().prims.iter().any(|prim| matches!(prim, Prim::Line { a, b, dashed: false } if a.x == -6.0 && b.x == -6.0 && a.y == -1.5 && b.y == 1.5))
+        builtin(key).unwrap().prims.iter().any(|prim| matches!(prim, Prim::Line { a, b, dashed: false } if a.x == -6.0 && b.x == -6.0 && a.y == -1.5 && b.y == 1.5))
     };
     assert!(back("pb_no") && back("pb_nc") && back("pb_no_m"));
     assert!(!back("pull_no") && !back("pull_nc_m"));

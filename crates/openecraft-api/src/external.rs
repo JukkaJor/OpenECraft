@@ -10,10 +10,10 @@
 //! `{"error": "…"}` is an error. Not available in the browser (no processes).
 
 use crate::params::{Param, Text};
-use crate::registry::{Registry, Table};
+use crate::{Export, Registry, Table};
 use crate::{Info, Plugin, API_VERSION};
 use openecraft_core::model::Project;
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_fmt;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -71,6 +71,8 @@ struct ExporterDesc {
     #[serde(default)]
     title: String,
     extension: String,
+    #[serde(default)]
+    params: Vec<Param>,
 }
 
 pub struct External {
@@ -159,7 +161,7 @@ fn issue(d: IssueDesc) -> Issue {
         "info" => Severity::Info,
         _ => Severity::Warning,
     };
-    Issue { severity, message: d.message, target: d.page.zip(d.item) }
+    Issue::plain(severity, d.message, d.page.zip(d.item))
 }
 
 impl Plugin for External {
@@ -206,9 +208,9 @@ impl Plugin for External {
         }
         for e in desc.exporters {
             let (t, name) = (self.transport.clone(), e.name.clone());
-            reg.exporter(e.name.clone(), text(e.title, &e.name), e.extension, move |prj| {
-                let answer = ask(&t, json!({ "method": "export", "name": name, "project": project_value(prj) }))?;
-                answer.get("content").and_then(Value::as_str).map(String::from).ok_or_else(|| tr_fmt!("Invalid answer of the plugin: {}", "content"))
+            reg.exporter_with(e.name.clone(), text(e.title, &e.name), e.extension, false, e.params, move |prj, _, args| {
+                let answer = ask(&t, json!({ "method": "export", "name": name, "params": args.0, "project": project_value(prj) }))?;
+                answer.get("content").and_then(Value::as_str).map(|s| Export::Text(s.to_string())).ok_or_else(|| tr_fmt!("Invalid answer of the plugin: {}", "content"))
             });
         }
         Ok(())

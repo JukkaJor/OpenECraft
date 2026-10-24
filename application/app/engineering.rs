@@ -4,12 +4,12 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
 use crate::io::Purpose;
-use crate::macros::{self, Macro, MacroKind};
-use crate::model::*;
-use crate::ops::Clip;
-use crate::render::{self, Draw, Ink};
-use crate::marking::{self, WireText};
-use crate::{parts, plc, strips, symbols};
+use openecraft_core::macros::{self, Macro, MacroKind};
+use openecraft_core::model::*;
+use openecraft_core::ops::Clip;
+use openecraft_core::render::{self, Draw, Ink};
+use openecraft_core::marking::{self, WireText};
+use openecraft_core::{parts, plc, strips, symbols};
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
 
@@ -44,7 +44,7 @@ enum MacroAction {
 }
 
 /// Scaled drawing of a macro's items.
-fn clip_preview(ui: &mut egui::Ui, clip: &Clip, size: egui::Vec2) {
+fn clip_preview(ui: &mut egui::Ui, prj: &Project, clip: &Clip, size: egui::Vec2) {
     let (resp, painter) = ui.allocate_painter(size, egui::Sense::hover());
     let pal = Palette::new(ui.visuals().dark_mode);
     painter.rect_filled(resp.rect, 4.0, pal.paper);
@@ -62,8 +62,8 @@ fn clip_preview(ui: &mut egui::Ui, clip: &Clip, size: egui::Vec2) {
         render::draw_shape(&mut d, s, Ink::Line);
     }
     for s in &clip.symbols {
-        if let Some(def) = symbols::get(&s.sym) {
-            render::draw_symbol(&mut d, def, s, Ink::Line);
+        if let Some(def) = prj.symbol(&s.sym) {
+            render::draw_symbol(&mut d, &def, s, Ink::Line);
         }
     }
     for t in &clip.texts {
@@ -84,7 +84,7 @@ impl App {
 
     /// Opens the save dialog for the selection (window macro) or the page (page macro).
     pub(super) fn save_as_macro(&mut self, whole_page: bool) {
-        let page = &self.prj.pages[self.page];
+        let page = &self.session.prj.pages[self.session.page];
         let m = if whole_page {
             macros::from_page(page, &page.description)
         } else {
@@ -141,13 +141,14 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn macros_window(&mut self, ctx: &egui::Context) {
         if !self.eng.show_macros {
             return;
         }
         let mut open = true;
         let mut action = None;
-        let can_save_selection = !self.editor.selection.is_empty() && self.prj.pages[self.page].kind == PageKind::Schematic;
+        let can_save_selection = !self.editor.selection.is_empty() && self.session.prj.pages[self.session.page].kind == PageKind::Schematic;
         let mut save = None;
         egui::Window::new(tr("Macros")).open(&mut open).default_size([820.0, 480.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -247,7 +248,7 @@ impl App {
                             }
                         });
                         ui.weak(shown.summary());
-                        clip_preview(ui, &shown.clip, vec2(420.0, 200.0));
+                        clip_preview(ui, &self.session.prj, &shown.clip, vec2(420.0, 200.0));
                         let placeholders = shown.placeholders();
                         if !placeholders.is_empty() {
                             ui.separator();
@@ -319,9 +320,9 @@ impl App {
             Some(MacroAction::Insert(i)) => {
                 let m = self.macro_lib.macros[i].with_variant(&self.eng.macro_variant).unwrap_or_else(|| self.macro_lib.macros[i].clone());
                 if m.kind == MacroKind::Page {
-                    let at = macros::insert_page(&mut self.prj, self.page, &m, &self.eng.macro_values);
+                    let at = macros::insert_page(&mut self.session.prj, self.session.page, &m, &self.eng.macro_values);
                     self.goto(at, 0);
-                    self.notify(ctx, tr_fmt!("Page macro {} inserted as page {}", m.name, self.prj.pages[at].name));
+                    self.notify(ctx, tr_fmt!("Page macro {} inserted as page {}", m.name, self.session.prj.pages[at].name));
                 } else {
                     self.editor.insert = Some(m.resolve(&self.eng.macro_values));
                     self.editor.set_tool(Tool::Insert);
@@ -345,19 +346,20 @@ impl App {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn strips_window(&mut self, ctx: &egui::Context) {
         if !self.eng.show_strips {
             return;
         }
-        let tags = strips::strip_tags(&self.prj);
+        let tags = strips::strip_tags(&self.session.prj);
         if !tags.contains(&self.eng.strip) {
             self.eng.strip = tags.first().cloned().unwrap_or_default();
         }
         let strip = self.eng.strip.clone();
-        let rows = strips::rows(&self.prj, &strip, &self.analysis.netlist, &self.analysis.open);
-        let layout = strips::strip_layout(&self.prj, &strip);
-        let jumpers = strips::strip_jumpers(&self.prj, &strip);
-        let mut data = self.prj.strips.get(&strip).cloned().unwrap_or_default();
+        let rows = strips::rows(&self.session.prj, &strip, &self.session.analysis.netlist, &self.session.analysis.open);
+        let layout = strips::strip_layout(&self.session.prj, &strip);
+        let jumpers = strips::strip_jumpers(&self.session.prj, &strip);
+        let mut data = self.session.prj.strips.get(&strip).cloned().unwrap_or_default();
         let before = data.clone();
         let mut open = true;
         let (mut renumber, mut sort) = (false, false);
@@ -477,11 +479,11 @@ impl App {
         });
         self.eng.show_strips = open;
         if data != before {
-            self.prj.strips.insert(strip.clone(), data);
+            self.session.prj.strips.insert(strip.clone(), data);
         }
         for (page, sym, old, new) in relabel {
-            self.prj.pages[page].symbols[sym].label = new.clone();
-            if let Some(d) = self.prj.strips.get_mut(&strip) {
+            self.session.prj.pages[page].symbols[sym].label = new.clone();
+            if let Some(d) = self.session.prj.strips.get_mut(&strip) {
                 if let Some(j) = d.jumpers.remove(&old) {
                     d.jumpers.insert(new.clone(), j);
                 }
@@ -491,15 +493,15 @@ impl App {
             }
         }
         if let Some((i, up)) = moved {
-            strips::move_terminal(&mut self.prj, &strip, i, up);
+            strips::move_terminal(&mut self.session.prj, &strip, i, up);
         }
         if sort {
-            if let Some(d) = self.prj.strips.get_mut(&strip) {
+            if let Some(d) = self.session.prj.strips.get_mut(&strip) {
                 d.order.clear();
             }
         }
         if renumber {
-            let n = strips::renumber(&mut self.prj, &strip);
+            let n = strips::renumber(&mut self.session.prj, &strip);
             self.notify(ctx, tr_fmt!("{}: {} terminals renumbered", strip, n));
         }
         if let Some((pg, id)) = jump {
@@ -511,7 +513,7 @@ impl App {
         if !self.eng.show_marking {
             return;
         }
-        let markers = marking::markers(&self.prj, &self.analysis.connections);
+        let markers = marking::markers(&self.session.prj, &self.session.analysis.connections);
         let material = marking::material(&markers);
         let mut choices: Vec<(String, String)> = self
             .parts_db
@@ -526,7 +528,7 @@ impl App {
         let mut open = true;
         let mut export = false;
         let mut picked = Vec::new();
-        let s = &mut self.prj.marking;
+        let s = &mut self.session.prj.marking;
         egui::Window::new(tr("Marking")).open(&mut open).resizable(false).min_width(520.0).show(ctx, |ui| {
             ui.label(RichText::new(tr("Wire markers")).strong());
             ui.radio_value(&mut s.wire_text, WireText::Number, tr("Wire number on both ends"));
@@ -568,10 +570,10 @@ impl App {
         });
         self.eng.show_marking = open;
         for number in picked {
-            parts::ensure_in_project(&mut self.prj, &self.parts_db, &number);
+            parts::ensure_in_project(&mut self.session.prj, &self.parts_db, &number);
         }
         if export {
-            let csv = marking::csv(&marking::markers(&self.prj, &self.analysis.connections));
+            let csv = marking::csv(&marking::markers(&self.session.prj, &self.session.analysis.connections));
             self.export(ctx, "marking.csv".into(), ("CSV", "csv"), csv);
         }
     }
@@ -580,14 +582,14 @@ impl App {
         if !self.eng.show_plc {
             return;
         }
-        let cards = plc::cards(&self.prj);
+        let cards = plc::cards(&self.session.prj);
         if !self.eng.card.is_empty() && !cards.contains(&self.eng.card) {
             self.eng.card.clear();
         }
         let card = self.eng.card.clone();
         let points: Vec<plc::Point> =
-            plc::points(&self.prj, &self.analysis.netlist).into_iter().filter(|p| card.is_empty() || p.card == card).collect();
-        let mut data = self.prj.plc_cards.get(&card).cloned().unwrap_or_default();
+            plc::points(&self.session.prj, &self.session.analysis.netlist).into_iter().filter(|p| card.is_empty() || p.card == card).collect();
+        let mut data = self.session.prj.plc_cards.get(&card).cloned().unwrap_or_default();
         let before = data.clone();
         let mut open = true;
         let (mut readdress, mut export, mut import) = (false, false, false);
@@ -650,10 +652,10 @@ impl App {
         });
         self.eng.show_plc = open;
         if data != before {
-            self.prj.plc_cards.insert(card.clone(), data);
+            self.session.prj.plc_cards.insert(card.clone(), data);
         }
         for (page, sym, addr, text) in edits {
-            let s = &mut self.prj.pages[page].symbols[sym];
+            let s = &mut self.session.prj.pages[page].symbols[sym];
             if let Some(a) = addr {
                 s.label = a;
             }
@@ -662,11 +664,11 @@ impl App {
             }
         }
         if readdress {
-            let n = plc::readdress(&mut self.prj, &card);
+            let n = plc::readdress(&mut self.session.prj, &card);
             self.notify(ctx, tr_fmt!("{}: {} addresses changed", card, n));
         }
         if export {
-            let csv = plc::symbol_table(&self.prj, &self.analysis.netlist);
+            let csv = plc::symbol_table(&self.session.prj, &self.session.analysis.netlist);
             self.export(ctx, "plc_symbols.csv".into(), ("CSV", "csv"), csv);
         }
         if import {

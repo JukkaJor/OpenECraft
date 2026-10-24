@@ -3,7 +3,7 @@ use crate::model::ReportKind;
 use crate::sample::demo_project;
 
 fn page_of(prj: &Project, kind: ReportKind) -> usize {
-    prj.pages.iter().position(|p| p.kind == crate::model::PageKind::Report(kind)).unwrap()
+    prj.pages.iter().position(|p| p.kind == crate::model::PageKind::Report(kind.into())).unwrap()
 }
 
 #[test]
@@ -44,8 +44,8 @@ fn dictionary_is_collected_and_cleaned() {
     assert_eq!(missing(&prj, "de").len(), lines.len());
     prj.languages.dictionary.insert("old text".into(), BTreeMap::new());
     assert_eq!(remove_unused(&mut prj), 1);
-    let an = crate::reports::Analysis::build(&prj);
-    assert!(an.issues.iter().any(|i| i.message.contains("not translated into Deutsch")));
+    let an = crate::analysis::Analysis::checked(&prj);
+    assert!(an.issues.iter().any(|i| i.message().contains("not translated into Deutsch")));
 }
 
 #[test]

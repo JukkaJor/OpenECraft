@@ -5,10 +5,10 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette};
-use crate::field::{self, Accessory, AccessoryKind, Bond, BondKind, Node, Outline, Place, Segment, SegmentKind};
-use crate::geom::p;
-use crate::model::ReportKind;
-use crate::routing3d::Class;
+use openecraft_core::field::{self, Accessory, AccessoryKind, Bond, BondKind, Node, Outline, Place, Segment, SegmentKind};
+use openecraft_core::geom::p;
+use openecraft_core::model::ReportKind;
+use openecraft_core::routing3d::Class;
 use egui::{pos2, vec2, Color32, Pos2, RichText};
 
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
@@ -109,7 +109,7 @@ impl App {
                     ui.selectable_value(&mut self.field_ui.tab, t, name);
                 }
             });
-            let problems = self.analysis.field.issues.len();
+            let problems = self.session.analysis.field.issues.len();
             if problems > 0 {
                 ui.colored_label(Color32::from_rgb(220, 140, 0), tr_fmt!("{} field wiring problems (see Check)", problems));
             }
@@ -126,6 +126,7 @@ impl App {
         self.field_ui.open = open;
     }
 
+    #[allow(clippy::too_many_lines)]
     fn field_plant(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         let mut fit = !self.field_ui.fitted;
         let mut svg = false;
@@ -153,7 +154,7 @@ impl App {
                 let shown = fu.cable.clone().unwrap_or_else(|| tr("(no cable highlighted)").to_string());
                 egui::ComboBox::from_id_salt("fcable").selected_text(shown).show_ui(ui, |ui| {
                     ui.selectable_value(&mut fu.cable, None, tr("(no cable highlighted)"));
-                    for c in &self.analysis.field.cables {
+                    for c in &self.session.analysis.field.cables {
                         ui.selectable_value(&mut fu.cable, Some(c.cable.clone()), &c.cable);
                     }
                 });
@@ -162,11 +163,11 @@ impl App {
             });
         }
         // Selected node: name, position, places, delete.
-        if let Some(id) = self.field_ui.node.filter(|id| self.prj.field.node(*id).is_some()) {
+        if let Some(id) = self.field_ui.node.filter(|id| self.session.prj.field.node(*id).is_some()) {
             let mut remove = false;
             let mut place = None;
-            let here: Vec<String> = self.prj.field.places.iter().filter(|p| p.node == id).map(|p| p.tag.clone()).collect();
-            let n = self.prj.field.nodes.iter_mut().find(|n| n.id == id).expect("checked");
+            let here: Vec<String> = self.session.prj.field.places.iter().filter(|p| p.node == id).map(|p| p.tag.clone()).collect();
+            let n = self.session.prj.field.nodes.iter_mut().find(|n| n.id == id).expect("checked");
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Name"));
                 ui.add(egui::TextEdit::singleline(&mut n.name).desired_width(80.0).hint_text(format!("N{id}")));
@@ -183,12 +184,12 @@ impl App {
                 remove = ui.button(tr("🗑 Delete node")).clicked();
             });
             if let Some(tag) = place {
-                self.prj.field.places.retain(|p| p.tag != tag);
-                self.prj.field.places.push(Place { tag, node: id, drop: 0.0 });
+                self.session.prj.field.places.retain(|p| p.tag != tag);
+                self.session.prj.field.places.push(Place { tag, node: id, drop: 0.0 });
                 self.field_ui.tag.clear();
             }
             if remove {
-                self.prj.field.remove_node(id);
+                self.session.prj.field.remove_node(id);
                 self.field_ui.node = None;
             }
         }
@@ -199,7 +200,7 @@ impl App {
         painter.rect_filled(rect, 2.0, pal.paper);
         let fu = &mut self.field_ui;
         if fit {
-            if let Some((min, max)) = field::draw::bounds(&self.prj) {
+            if let Some((min, max)) = field::draw::bounds(&self.session.prj) {
                 let (w, h) = (((max.x - min.x) * UNITS).max(10.0), ((max.y - min.y) * UNITS).max(10.0));
                 fu.zoom = ((rect.width() - 80.0) / w).min((rect.height() - 80.0) / h).clamp(0.05, 50.0);
                 fu.pan = vec2(40.0 - min.x * UNITS * fu.zoom, 40.0 - min.y * UNITS * fu.zoom);
@@ -224,12 +225,12 @@ impl App {
             gy += step;
         }
         let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None, textures: None };
-        field::draw::draw(&mut d, &self.prj, &self.analysis.field, p(0.0, 0.0), UNITS, fu.cable.as_deref());
+        field::draw::draw(&mut d, &self.session.prj, &self.session.analysis.field, p(0.0, 0.0), UNITS, fu.cable.as_deref());
         let hl = Color32::from_rgb(230, 120, 20);
-        if let Some(n) = fu.node.and_then(|id| self.prj.field.node(id)) {
+        if let Some(n) = fu.node.and_then(|id| self.session.prj.field.node(id)) {
             painter.circle_stroke(to_screen(n.x, n.y), 7.0, (2.0, hl));
         }
-        if let Some(n) = fu.start.and_then(|id| self.prj.field.node(id)) {
+        if let Some(n) = fu.start.and_then(|id| self.session.prj.field.node(id)) {
             painter.circle_filled(to_screen(n.x, n.y), 5.0, hl);
         }
         if fu.outline.len() > 1 {
@@ -238,7 +239,7 @@ impl App {
         }
 
         // Interaction
-        let nodes: Vec<(u64, Pos2)> = self.prj.field.nodes.iter().map(|n| (n.id, to_screen(n.x, n.y))).collect();
+        let nodes: Vec<(u64, Pos2)> = self.session.prj.field.nodes.iter().map(|n| (n.id, to_screen(n.x, n.y))).collect();
         let hit = |q: Pos2| nodes.iter().map(|(id, s)| (*id, s.distance(q))).filter(|(_, d)| *d < 9.0).min_by(|a, b| a.1.total_cmp(&b.1)).map(|x| x.0);
         if let Some(h) = resp.hover_pos() {
             let scroll = ui.input(|i| i.smooth_scroll_delta.y);
@@ -261,7 +262,7 @@ impl App {
             match (fu.dragging, pointer) {
                 (Some(id), Some(q)) => {
                     let (x, y) = to_world(q);
-                    if let Some(n) = self.prj.field.nodes.iter_mut().find(|n| n.id == id) {
+                    if let Some(n) = self.session.prj.field.nodes.iter_mut().find(|n| n.id == id) {
                         (n.x, n.y) = (snap(x), snap(y));
                     }
                 }
@@ -272,24 +273,24 @@ impl App {
             fu.dragging = None;
         }
         if resp.double_clicked() && fu.tool == CanvasTool::Outline && fu.outline.len() >= 3 {
-            let id = self.prj.new_id();
-            let name = format!("+M{}", self.prj.field.outlines.len() + 1);
-            self.prj.field.outlines.push(Outline { id, name, points: std::mem::take(&mut fu.outline), conductive: true });
+            let id = self.session.prj.new_id();
+            let name = format!("+M{}", self.session.prj.field.outlines.len() + 1);
+            self.session.prj.field.outlines.push(Outline { id, name, points: std::mem::take(&mut fu.outline), conductive: true });
         } else if resp.clicked() {
             if let Some(q) = pointer {
                 let (x, y) = to_world(q);
                 match fu.tool {
                     CanvasTool::Select => fu.node = hit(q),
                     CanvasTool::Node => {
-                        let id = self.prj.new_id();
-                        self.prj.field.nodes.push(Node { id, name: String::new(), x: snap(x), y: snap(y), z: 0.0 });
+                        let id = self.session.prj.new_id();
+                        self.session.prj.field.nodes.push(Node { id, name: String::new(), x: snap(x), y: snap(y), z: 0.0 });
                         fu.node = Some(id);
                     }
                     CanvasTool::Segment => match (fu.start, hit(q)) {
                         (None, h) => fu.start = h,
                         (Some(a), Some(b)) if a != b => {
-                            let id = self.prj.new_id();
-                            self.prj.field.segments.push(Segment { id, a, b, kind: fu.kind, ..Default::default() });
+                            let id = self.session.prj.new_id();
+                            self.session.prj.field.segments.push(Segment { id, a, b, kind: fu.kind, ..Default::default() });
                             fu.start = Some(b);
                         }
                         _ => fu.start = None,
@@ -303,13 +304,13 @@ impl App {
             fu.outline.clear();
         }
         if svg {
-            let s = field::draw::svg(&self.prj, &self.analysis.field, self.field_ui.cable.as_deref(), 400.0);
+            let s = field::draw::svg(&self.session.prj, &self.session.analysis.field, self.field_ui.cable.as_deref(), 400.0);
             self.export(ctx, self.suggested_name("svg"), (tr("SVG drawing"), "svg"), s);
         }
     }
 
     fn field_network(&mut self, ui: &mut egui::Ui) {
-        let f = &mut self.prj.field;
+        let f = &mut self.session.prj.field;
         let names: Vec<(u64, String)> = f.nodes.iter().map(|n| (n.id, f.node_name(n.id))).collect();
         let node_combo = |ui: &mut egui::Ui, salt: (&str, usize), v: &mut u64| {
             let shown = names.iter().find(|n| n.0 == *v).map(|n| n.1.clone()).unwrap_or_else(|| "?".into());
@@ -319,7 +320,7 @@ impl App {
                 }
             });
         };
-        let fill = |id: u64| self.analysis.field.segment(id);
+        let fill = |id: u64| self.session.analysis.field.segment(id);
         egui::ScrollArea::vertical().id_salt("fnet").show(ui, |ui| {
             ui.label(RichText::new(tr("Segments")).strong());
             let mut remove = None;
@@ -405,8 +406,8 @@ impl App {
     }
 
     fn field_cables(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
-        let plan = &self.analysis.field;
-        let f = &self.prj.field;
+        let plan = &self.session.analysis.field;
+        let f = &self.session.prj.field;
         let mut apply = false;
         let mut report = false;
         ui.horizontal(|ui| {
@@ -447,10 +448,10 @@ impl App {
             self.field_ui.cable = Some(c);
         }
         // Route definition of the selected cable.
-        if let Some(tag) = self.field_ui.cable.clone().filter(|t| self.prj.cable(t).is_some()) {
+        if let Some(tag) = self.field_ui.cable.clone().filter(|t| self.session.prj.cable(t).is_some()) {
             ui.separator();
             ui.label(RichText::new(tr_fmt!("Route definition of {}", tag)).strong());
-            let f = &mut self.prj.field;
+            let f = &mut self.session.prj.field;
             let names: Vec<(u64, String)> = f.nodes.iter().map(|n| (n.id, f.node_name(n.id))).collect();
             let segs: Vec<(u64, String)> = f.segments.iter().map(|s| (s.id, f.segment_name(s.id))).collect();
             let def = f.route_mut(&tag);
@@ -491,17 +492,17 @@ impl App {
             f.routes.retain(|r| !r.is_empty());
         }
         if apply {
-            let n = field::apply_lengths(&mut self.prj, &self.analysis.field);
+            let n = field::apply_lengths(&mut self.session.prj, &self.session.analysis.field);
             self.notify(ctx, tr_fmt!("{} cable lengths taken over", n));
         }
         if report {
-            self.report_kind = ReportKind::FieldRouting;
+            self.report_kind = ReportKind::FieldRouting.into();
             self.show_reports = true;
         }
     }
 
     fn field_bonding(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
-        let points = field::bonding::points(&self.prj);
+        let points = field::bonding::points(&self.session.prj);
         let names: Vec<String> = points.iter().map(|p| p.name.clone()).collect();
         let point_combo = |ui: &mut egui::Ui, salt: (&str, usize), v: &mut String| {
             egui::ComboBox::from_id_salt(salt).width(100.0).selected_text(v.clone()).show_ui(ui, |ui| {
@@ -513,10 +514,10 @@ impl App {
         let mut report = false;
         ui.horizontal(|ui| {
             if ui.button(tr("➕ Bonding conductor")).clicked() {
-                let id = self.prj.new_id();
-                let a = self.prj.field.rules.main_earth.clone();
+                let id = self.session.prj.new_id();
+                let a = self.session.prj.field.rules.main_earth.clone();
                 let b = names.iter().find(|n| **n != a).cloned().unwrap_or_default();
-                self.prj.field.bonds.push(Bond { id, a, b, kind: BondKind::Main, cross_section: "6".into(), ..Default::default() });
+                self.session.prj.field.bonds.push(Bond { id, a, b, kind: BondKind::Main, cross_section: "6".into(), ..Default::default() });
             }
             report = ui.button(tr("📊 Report")).clicked();
         });
@@ -526,7 +527,7 @@ impl App {
                 ui.label(RichText::new(h).strong());
             }
             ui.end_row();
-            for (i, b) in self.prj.field.bonds.iter_mut().enumerate() {
+            for (i, b) in self.session.prj.field.bonds.iter_mut().enumerate() {
                 point_combo(ui, ("fba", i), &mut b.a);
                 point_combo(ui, ("fbb", i), &mut b.b);
                 egui::ComboBox::from_id_salt(("fbk", i)).selected_text(b.kind.title()).show_ui(ui, |ui| {
@@ -544,7 +545,7 @@ impl App {
             }
         });
         if let Some(i) = remove {
-            self.prj.field.bonds.remove(i);
+            self.session.prj.field.bonds.remove(i);
         }
         ui.separator();
         ui.label(RichText::new(tr("Bonding points")).strong());
@@ -561,19 +562,19 @@ impl App {
             }
         });
         if report {
-            self.report_kind = ReportKind::Bonding;
+            self.report_kind = ReportKind::Bonding.into();
             self.show_reports = true;
         }
         let _ = ctx;
     }
 
     fn field_accessories(&mut self, ui: &mut egui::Ui) {
-        let cables: Vec<String> = self.prj.cables.iter().map(|c| c.tag.clone()).collect();
-        let ends = |cable: &str| self.analysis.field.cable(cable).map(|c| c.ends.clone());
+        let cables: Vec<String> = self.session.prj.cables.iter().map(|c| c.tag.clone()).collect();
+        let ends = |cable: &str| self.session.analysis.field.cable(cable).map(|c| c.ends.clone());
         if ui.add_enabled(!cables.is_empty(), egui::Button::new(tr("➕ Accessory"))).clicked() {
-            let id = self.prj.new_id();
+            let id = self.session.prj.new_id();
             let cable = self.field_ui.cable.clone().filter(|c| cables.contains(c)).unwrap_or_else(|| cables[0].clone());
-            self.prj.field.accessories.push(Accessory { id, cable, count: 1, ..Default::default() });
+            self.session.prj.field.accessories.push(Accessory { id, cable, count: 1, ..Default::default() });
         }
         let mut remove = None;
         egui::ScrollArea::vertical().id_salt("facc").show(ui, |ui| {
@@ -582,7 +583,7 @@ impl App {
                     ui.label(RichText::new(h).strong());
                 }
                 ui.end_row();
-                for (i, a) in self.prj.field.accessories.iter_mut().enumerate() {
+                for (i, a) in self.session.prj.field.accessories.iter_mut().enumerate() {
                     egui::ComboBox::from_id_salt(("fac", i)).width(80.0).selected_text(a.cable.clone()).show_ui(ui, |ui| {
                         for c in &cables {
                             ui.selectable_value(&mut a.cable, c.clone(), c);
@@ -610,15 +611,15 @@ impl App {
             });
         });
         if let Some(i) = remove {
-            self.prj.field.accessories.remove(i);
+            self.session.prj.field.accessories.remove(i);
         }
-        if self.prj.field.accessories.is_empty() {
+        if self.session.prj.field.accessories.is_empty() {
             ui.weak(tr("No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable."));
         }
     }
 
     fn field_rules(&mut self, ui: &mut egui::Ui) {
-        let r = &mut self.prj.field.rules;
+        let r = &mut self.session.prj.field.rules;
         egui::Grid::new("frules").num_columns(2).spacing([12.0, 6.0]).show(ui, |ui| {
             ui.label(tr("Reserve per cable end"));
             ui.add(egui::DragValue::new(&mut r.reserve).speed(0.1).range(0.0..=20.0).suffix(" m"));

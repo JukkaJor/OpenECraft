@@ -11,67 +11,9 @@ use crate::electrical::net_kind;
 use crate::model::*;
 use crate::netlist::{pin_designation, Connection, Netlist};
 use crate::potentials::PotentialKind;
-use crate::reports::{Issue, Severity};
-use serde::{Deserialize, Serialize};
+use crate::issue::{Issue, Severity};
 use std::collections::{BTreeMap, BTreeSet};
-
-/// Limits a rule set sets; unset ones keep the value of the other rule sets.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct LimitOverrides {
-    /// Highest voltage drop from the supply to a load, %.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub voltage_drop: Option<f32>,
-    /// Longest disconnection time of final circuits (up to 32 A), s.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub disconnect_final: Option<f32>,
-    /// Longest disconnection time of distribution circuits, s.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub disconnect_distribution: Option<f32>,
-    /// Smallest cross-section of power circuits (mains), mm².
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub min_cross_section_power: Option<f32>,
-    /// Smallest cross-section of control circuits, mm².
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub min_cross_section_control: Option<f32>,
-    /// Reserve to keep on protective devices, the supply and power supplies, %.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub load_reserve: Option<f32>,
-    /// Highest unbalance of the phase currents, %.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_unbalance: Option<f32>,
-    /// Protective devices must be selective up to the short-circuit current.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub total_selectivity: Option<bool>,
-    /// Motor cables of frequency converters must be shielded at both ends.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shield_drive_cables: Option<bool>,
-    /// Cables of analogue signals must be shielded.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shield_analog_cables: Option<bool>,
-    /// The supply needs a surge protective device.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub surge_protection: Option<bool>,
-}
-
-/// The limits in effect: the defaults (IEC 60204-1, IEC 60364-4-41) tightened by
-/// the active rule sets.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Limits {
-    pub voltage_drop: f32,
-    pub disconnect_final: f32,
-    pub disconnect_distribution: f32,
-    /// 0: no minimum.
-    pub min_cross_section_power: f32,
-    pub min_cross_section_control: f32,
-    pub load_reserve: f32,
-    /// 0: not checked.
-    pub max_unbalance: f32,
-    pub total_selectivity: bool,
-    pub shield_drive_cables: bool,
-    pub shield_analog_cables: bool,
-    pub surge_protection: bool,
-}
+pub use crate::model::rules::{Check, Condition, Level, LimitOverrides, Limits, Op, RuleSet, Scope};
 
 impl Default for Limits {
     fn default() -> Self {
@@ -126,20 +68,6 @@ impl Limits {
     }
 }
 
-/// What a check looks at.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Scope {
-    Project,
-    Page,
-    #[default]
-    Device,
-    /// Parts used in the project.
-    Part,
-    Cable,
-    Connection,
-    Potential,
-}
-
 impl Scope {
     pub const ALL: [Scope; 7] = [Scope::Project, Scope::Page, Scope::Device, Scope::Part, Scope::Cable, Scope::Connection, Scope::Potential];
 
@@ -169,23 +97,6 @@ impl Scope {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Op {
-    #[default]
-    NotEmpty,
-    Empty,
-    Equals,
-    NotEquals,
-    Contains,
-    NotContains,
-    StartsWith,
-    /// One of a comma separated list.
-    OneOf,
-    NoneOf,
-    AtLeast,
-    AtMost,
-}
-
 impl Op {
     pub const ALL: [Op; 11] = [Op::NotEmpty, Op::Empty, Op::Equals, Op::NotEquals, Op::Contains, Op::NotContains, Op::StartsWith, Op::OneOf, Op::NoneOf, Op::AtLeast, Op::AtMost];
 
@@ -208,14 +119,6 @@ impl Op {
     pub fn needs_value(self) -> bool {
         !matches!(self, Op::NotEmpty | Op::Empty)
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Condition {
-    pub field: String,
-    pub op: Op,
-    pub value: String,
 }
 
 /// First number of a text ("1.5 mm²" → 1.5).
@@ -258,14 +161,6 @@ impl Condition {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Level {
-    Error,
-    #[default]
-    Warning,
-    Info,
-}
-
 impl Level {
     pub const ALL: [Level; 3] = [Level::Error, Level::Warning, Level::Info];
 
@@ -286,18 +181,6 @@ impl Level {
     }
 }
 
-/// Every item of `scope` that meets all conditions of `when` must meet `require`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Check {
-    pub scope: Scope,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub when: Vec<Condition>,
-    pub require: Condition,
-    pub level: Level,
-    pub message: String,
-}
-
 impl Check {
     fn new(scope: Scope, when: &[(&str, Op, &str)], require: (&str, Op, &str), level: Level, message: &str) -> Check {
         Check {
@@ -308,20 +191,6 @@ impl Check {
             message: message.into(),
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct RuleSet {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    /// Standard, customer or plant the rules come from.
-    pub source: String,
-    /// Customer rule sets: the project is verified against it.
-    pub active: bool,
-    pub limits: LimitOverrides,
-    pub checks: Vec<Check>,
 }
 
 /// Built-in rule libraries.
@@ -478,7 +347,7 @@ pub fn items(prj: &Project, conns: &[Connection], scope: Scope) -> Vec<Item> {
             let mut seen = BTreeSet::new();
             for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
                 for s in &pg.symbols {
-                    if s.tag.is_empty() || !crate::symbols::get(&s.sym).is_some_and(|d| d.func.has_tag()) || !seen.insert(s.tag.clone()) {
+                    if s.tag.is_empty() || !prj.symbol(&s.sym).is_some_and(|d| d.func.has_tag()) || !seen.insert(s.tag.clone()) {
                         continue;
                     }
                     let d = prj.devices.get(&s.tag);
@@ -610,7 +479,7 @@ fn cross_section_problems(prj: &Project, nl: &Netlist, conns: &[Connection], l: 
             } else {
                 tr_fmt!("{}: cross-section {} below the {} mm² of control circuits", label, c.cross_section, min)
             };
-            out.push(Issue { severity: Severity::Warning, message, target: Some((c.a.page, s.id)) });
+            out.push(Issue::plain(Severity::Warning, message, Some((c.a.page, s.id))));
         }
     }
     out
@@ -621,7 +490,7 @@ pub fn problems(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<Issue>
     let mut out = cross_section_problems(prj, nl, conns, &limits(prj));
     for r in verify(prj, conns) {
         for it in &r.failed {
-            out.push(Issue { severity: r.check.level.severity(), message: tr_fmt!("{}: {} ({})", it.label, r.check.message, r.set), target: it.target.filter(|t| t.1 != 0) });
+            out.push(crate::issue!(r.check.level.severity(), it.target.filter(|t| t.1 != 0), "{}: {} ({})", it.label, r.check.message, r.set));
         }
     }
     out

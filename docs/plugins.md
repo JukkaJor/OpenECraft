@@ -4,10 +4,10 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 
 | Extension | What it is | Editor | Command line / MCP |
 | --- | --- | --- | --- |
-| Command | function on the project with typed parameters, returns JSON | *Plugins* menu (form for the parameters) | a command / tool of its own |
+| Command | function on the project with typed parameters, returns JSON | *Plugins* menu (one submenu per plugin, a form for the parameters) | a command / tool of its own |
 | Check | adds issues to the project check | *Check* tab | `check` |
-| Report | table generated from the project | *Plugins* menu | `report --kind <name>` |
-| Exporter | text file generated from the project | *Plugins* menu | `export --format <name>` |
+| Report | table generated from the project | *Reports* menu, report pages and report blocks | `report --kind <name>` |
+| Exporter | file generated from the project | *File › Export* | `export --format <name>` |
 
 Names are snake_case and unique among all plugins; commands must not take the name of
 a built-in tool. Changes a command makes to the project are one undo step.
@@ -16,14 +16,23 @@ editor enables and disables them (remembered by the editor).
 
 ## Rust plugins
 
-Built-in plugins (project statistics, panel layout checks, panel manufacturing, part
-lifecycle) live in
-`crates/openecraft-api/src/builtin.rs` and its submodules and are compiled into
-every front end (also the web version). A plugin implements `Plugin`:
+Built-in plugins live in `crates/openecraft-api/src/builtin.rs` and its submodules and
+are compiled into every front end (also the web version): the project checks, reports
+and exports of `openecraft-core`, project statistics, panel layout checks, panel
+manufacturing, part lifecycle, and one plugin per area of project commands (pages,
+sheets, drawing, devices, plugs, PLC, potentials, process engineering, single-line
+diagrams, tables, engineering, electrical engineering, panel layout, routing, field
+wiring, wiring, integration, languages, structure, properties, configurator, report
+blocks, project management). An area lists its commands in a `COMMANDS` table of
+`Spec`s (`builtin/<area>.rs`); the command line and the MCP server offer them as tools
+next to the session tools of `cli/`. The project checks themselves are registry
+entries of `openecraft_core::checks` (one `Check` per area, with a snake_case name),
+and the registry kinds, parameters and tables are defined in
+`openecraft_core::{ext, params, table}`. A plugin implements `Plugin`:
 
 ```rust
 use openecraft_api::{param, Info, Kind, Plugin, Registry, Table, Text};
-use openecraft_core::reports::Issue;
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_const;
 
 pub struct Spares;
@@ -38,7 +47,7 @@ impl Plugin for Spares {
             // change `prj`, return JSON
             Ok(serde_json::json!({ "part": args.req("number") }))
         })
-        .check("spares_missing", tr_const!("Spare parts"), |prj, analysis| Ok(Vec::<Issue>::new()))
+        .check("spares_missing", tr_const!("Spare parts"), |prj, analysis| Ok(vec![Issue::plain(Severity::Info, "nothing missing", None)]))
         .report("spares", tr_const!("Spare parts"), |prj, analysis| Ok(Table::new([tr_const!("Part")])))
         .exporter("spares_csv", tr_const!("Spare parts (CSV)"), "csv", |prj| Ok(String::new()));
         Ok(())
@@ -47,7 +56,11 @@ impl Plugin for Spares {
 ```
 
 Texts given as `&'static str` are English catalog entries (`tr_const!`, see AGENTS.md)
-and are shown translated.
+and are shown translated. Issues of a check carry either a finished text
+(`Issue::plain`) or, like the built-in checks, a catalog entry with its arguments
+(`openecraft_core::issue!(Severity::Warning, target, "Cable {} defined {} times", tag, n)`),
+which `Issue::message()` renders in the current language; the `check` tool reports the
+template as `key` next to the message.
 
 ## External plugins
 
@@ -85,11 +98,11 @@ code, with the message on stderr) is an error. `project` is the project as in a
 
 | Request | Answer |
 | --- | --- |
-| `{"method": "describe"}` | `{"commands": [{"name", "help", "params": [{"name", "kind", "required", "help"}]}], "checks": [{"name", "title"}], "reports": [{"name", "title"}], "exporters": [{"name", "title", "extension"}]}` (all lists optional) |
+| `{"method": "describe"}` | `{"commands": [{"name", "help", "params": [{"name", "kind", "required", "help"}]}], "checks": [{"name", "title"}], "reports": [{"name", "title"}], "exporters": [{"name", "title", "extension", "params"}]}` (all lists optional, `params` of exporters too) |
 | `{"method": "command", "name", "params": {…}, "project": {…}}` | `{"result": <any JSON>, "project": {…}}` – `project` only if the command changed it |
 | `{"method": "check", "name", "project"}` | `{"issues": [{"severity": "error" \| "warning" \| "info", "message", "page": <page index>, "item": <item id>}]}` – `page` / `item` optional |
 | `{"method": "report", "name", "project"}` | `{"headers": ["…"], "rows": [["…"]]}` |
-| `{"method": "export", "name", "project"}` | `{"content": "file content"}` |
+| `{"method": "export", "name", "params": {…}, "project"}` | `{"content": "file content"}` (text; `params` holds what the front end passed: by convention `page`, the name of one page, and `file`, the file name) |
 
 Parameter kinds: `str`, `int`, `num`, `bool`, `ids` (list of item ids), `points`
 (list of `[x, y]` in mm), `object` (JSON object). `required` defaults to `true`.

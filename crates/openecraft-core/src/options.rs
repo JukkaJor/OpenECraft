@@ -6,43 +6,13 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct ModelOption {
-    pub name: String,
-    pub description: String,
-    /// Configurator condition (`OPTION=value & …`); empty: switched by hand.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub condition: String,
-    pub active: bool,
-    /// Ids of the pages and page items that belong to the option.
-    pub members: BTreeSet<u64>,
-    /// Content of the inactive option, in the order it was taken out.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub parked: Vec<Parked>,
-}
+pub use crate::model::options::{Item, ModelOption, ModelOptions, Parked};
 
 impl Default for ModelOption {
     fn default() -> Self {
         ModelOption { name: String::new(), description: String::new(), condition: String::new(), active: true, members: BTreeSet::new(), parked: Vec::new() }
     }
-}
-
-/// Content of an inactive option.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum Item {
-    Page(Box<Page>),
-    Symbol(Box<SymbolInst>),
-    Wire(Box<Wire>),
-    Text(TextItem),
-    Shape(Shape),
-    Dimension(Dimension),
-    Image(ImageItem),
-    ConnDef(ConnDef),
-    CableDef(CableDef),
 }
 
 impl Item {
@@ -59,21 +29,6 @@ impl Item {
             Item::CableDef(x) => x.id,
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Parked {
-    /// Page the item was on; pages: the page before it (0 = the first page).
-    pub page: u64,
-    /// Position in its list.
-    pub index: usize,
-    pub item: Item,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct ModelOptions {
-    pub options: Vec<ModelOption>,
 }
 
 impl ModelOptions {

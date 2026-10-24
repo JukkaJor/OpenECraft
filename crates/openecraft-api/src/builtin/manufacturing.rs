@@ -3,12 +3,12 @@
 //! configurator, the hand-off of jobs to the machines and the production feedback.
 
 use crate::params::{optional, param, Args, Kind};
-use crate::registry::{Registry, Table};
+use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::manufacturing::{self as mf, bars, configurator, feedback, handoff, machines, post, strategy, BarRules, CopperBar, Machine, Method, Strategy};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face};
-use openecraft_core::reports::{Issue, Severity};
+use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -202,12 +202,12 @@ fn r1(v: f32) -> f32 {
 /// Problems for the project check: work the machines cannot do, copper bars, programs
 /// changed after their hand-off, and the production feedback.
 fn issues(prj: &Project) -> Vec<Issue> {
-    let warn = |message: String| Issue { severity: Severity::Warning, message, target: None };
+    let warn = |message: String| Issue::plain(Severity::Warning, message, None);
     let mut v: Vec<Issue> = Vec::new();
     let m = &prj.layout.manufacturing;
     for enc in 0..prj.layout.enclosures.len() {
         match handoff::programs(prj, enc) {
-            Ok(list) => v.extend(list.into_iter().flat_map(|p| p.problems).map(|message| Issue { severity: Severity::Info, message, target: None })),
+            Ok(list) => v.extend(list.into_iter().flat_map(|p| p.problems).map(|message| Issue::plain(Severity::Info, message, None))),
             Err(e) => v.push(warn(e)),
         }
     }

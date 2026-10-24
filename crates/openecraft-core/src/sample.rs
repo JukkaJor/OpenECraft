@@ -3,7 +3,6 @@
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::parts::PartsDb;
-use crate::symbols;
 
 struct Pg<'a> {
     prj: &'a mut Project,
@@ -13,7 +12,7 @@ struct Pg<'a> {
 impl Pg<'_> {
     #[allow(clippy::too_many_arguments)]
     fn sym(&mut self, key: &str, x: f32, y: f32, rot: u8, tag: &str, label: &str, ftext: &str) -> &mut Self {
-        let def = symbols::get(key).expect("symbol");
+        let def = self.prj.symbol(key).expect("symbol");
         let id = self.prj.new_id();
         let s = SymbolInst {
             id,
@@ -154,9 +153,9 @@ pub fn demo_project() -> Project {
     g.text(220.0, 100.0, "Digital outputs -A2", 2.5);
     g.text(40.0, 112.0, "Digital inputs -A1", 2.5);
 
-    add_page(&mut prj, "5", "Bill of materials", PageKind::Report(ReportKind::BillOfMaterials));
-    add_page(&mut prj, "6", "Terminal diagram -X1", PageKind::Report(ReportKind::TerminalDiagram));
-    add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList));
+    add_page(&mut prj, "5", "Bill of materials", PageKind::Report(ReportKind::BillOfMaterials.into()));
+    add_page(&mut prj, "6", "Terminal diagram -X1", PageKind::Report(ReportKind::TerminalDiagram.into()));
+    add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList.into()));
 
     let db = PartsDb::default();
     for (tag, parts) in [

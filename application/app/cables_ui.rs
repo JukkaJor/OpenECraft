@@ -3,8 +3,8 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use crate::model::*;
-use crate::{ops, parts, structure, wirenum};
+use openecraft_core::model::*;
+use openecraft_core::{ops, parts, structure, wirenum};
 use egui::RichText;
 
 impl App {
@@ -18,18 +18,18 @@ impl App {
         let mut picked: Vec<String> = Vec::new();
         let mut overview = false;
         let mut used: std::collections::HashMap<String, std::collections::BTreeSet<String>> = Default::default();
-        for w in self.prj.pages.iter().flat_map(|pg| pg.wires.iter()).filter(|w| !w.cable.is_empty()) {
+        for w in self.session.prj.pages.iter().flat_map(|pg| pg.wires.iter()).filter(|w| !w.cable.is_empty()) {
             used.entry(w.cable.clone()).or_default().insert(w.core.clone());
         }
         let mut bus_links: std::collections::HashMap<String, usize> = Default::default();
-        for l in self.prj.plc.connections.iter().filter(|l| !l.cable.is_empty()) {
+        for l in self.session.prj.plc.connections.iter().filter(|l| !l.cable.is_empty()) {
             *bus_links.entry(l.cable.clone()).or_default() += 1;
         }
-        let structure = structure::page_structure(&self.prj.pages[self.page]);
+        let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
-                    ops::add_cable(&mut self.prj, &structure);
+                    ops::add_cable(&mut self.session.prj, &structure);
                 }
                 if ui.button(tr("📊 Cable overview")).clicked() {
                     overview = true;
@@ -44,7 +44,7 @@ impl App {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
-                    for (i, c) in self.prj.cables.iter_mut().enumerate() {
+                    for (i, c) in self.session.prj.cables.iter_mut().enumerate() {
                         let old = c.tag.clone();
                         ui.add_sized([100.0, 20.0], egui::TextEdit::singleline(&mut c.tag).font(egui::TextStyle::Monospace));
                         if c.tag != old {
@@ -53,7 +53,7 @@ impl App {
                         ui.add_sized([120.0, 20.0], egui::TextEdit::singleline(&mut c.cable_type));
                         egui::ComboBox::from_id_salt(("cablebus", i)).width(90.0).selected_text(c.bus.map(|b| b.title()).unwrap_or("–")).show_ui(ui, |ui| {
                             ui.selectable_value(&mut c.bus, None, "–").on_hover_text(tr("Ordinary cable"));
-                            for b in crate::plc_hw::BusKind::ALL {
+                            for b in openecraft_core::plc_hw::BusKind::ALL {
                                 ui.selectable_value(&mut c.bus, Some(b), b.title());
                             }
                         });
@@ -88,22 +88,22 @@ impl App {
                         ui.end_row();
                     }
                 });
-                if self.prj.cables.is_empty() {
+                if self.session.prj.cables.is_empty() {
                     ui.weak(tr("No cables defined."));
                 }
             });
         });
         for (old, new) in renamed {
-            ops::rename_cable(&mut self.prj, &old, &new);
+            ops::rename_cable(&mut self.session.prj, &old, &new);
         }
         if let Some(i) = remove {
-            ops::remove_cable(&mut self.prj, i);
+            ops::remove_cable(&mut self.session.prj, i);
         }
         for n in picked {
-            parts::ensure_in_project(&mut self.prj, &self.parts_db, &n);
+            parts::ensure_in_project(&mut self.session.prj, &self.parts_db, &n);
         }
         if overview {
-            self.report_kind = ReportKind::CableOverview;
+            self.report_kind = ReportKind::CableOverview.into();
             self.show_reports = true;
         }
         self.show_cables = open;
@@ -115,11 +115,11 @@ impl App {
         }
         let mut open = true;
         let (mut number, mut remove) = (false, false);
-        let nets: Vec<&crate::netlist::Net> = self.analysis.open.nets.iter().filter(|n| !n.wires.is_empty() && !n.pins.is_empty()).collect();
-        let numbered = nets.iter().filter(|n| !wirenum::number_of(&self.prj, n).is_empty()).count();
+        let nets: Vec<&openecraft_core::netlist::Net> = self.session.analysis.open.nets.iter().filter(|n| !n.wires.is_empty() && !n.pins.is_empty()).collect();
+        let numbered = nets.iter().filter(|n| !wirenum::number_of(&self.session.prj, n).is_empty()).count();
         let total = nets.len();
         egui::Window::new(tr("Wire numbering")).open(&mut open).resizable(false).show(ctx, |ui| {
-            let s = &mut self.prj.wire_numbering;
+            let s = &mut self.session.prj.wire_numbering;
             ui.label(tr("Every connection gets one number for all its wires; the two sides of a terminal are separate connections."));
             ui.add_space(4.0);
             for scheme in NumberScheme::ALL {
@@ -141,11 +141,11 @@ impl App {
             });
         });
         if number {
-            let n = wirenum::renumber(&mut self.prj, &self.analysis.open, &self.analysis.netlist, self.numbering_overwrite);
+            let n = wirenum::renumber(&mut self.session.prj, &self.session.analysis.open, &self.session.analysis.netlist, self.numbering_overwrite);
             self.notify(ctx, tr_fmt!("{} connections numbered", n));
         }
         if remove {
-            let n = wirenum::clear(&mut self.prj, self.numbering_overwrite);
+            let n = wirenum::clear(&mut self.session.prj, self.numbering_overwrite);
             self.notify(ctx, tr_fmt!("Numbers removed from {} wires", n));
         }
         self.show_numbering = open;

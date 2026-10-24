@@ -1,10 +1,10 @@
 use super::*;
-use crate::reports::Severity;
+use crate::issue::Severity;
 use crate::geom::{p, P};
 use crate::model::{DeviceData, SymbolInst, Wire};
 
 fn sym(id: u64, key: &str, pos: P, tag: &str) -> SymbolInst {
-    let def = crate::symbols::get(key).unwrap();
+    let def = crate::symbols::builtin(key).unwrap();
     SymbolInst { id, sym: key.into(), pos, tag: tag.into(), pins: def.pins.iter().map(|x| x.label.to_string()).collect(), ..Default::default() }
 }
 
@@ -126,7 +126,7 @@ fn the_fluid_netlist_classifies_ports_and_lines() {
     let working: Vec<&FluidNet> = nets.iter().filter(|n| n.line == LineKind::Working).collect();
     assert_eq!(working.len(), 2);
     assert!(working.iter().all(|n| n.branches() == 0 && n.medium == Medium::CompressedAir));
-    let def = crate::symbols::get("fl_valve42").unwrap();
+    let def = crate::symbols::builtin("fl_valve42").unwrap();
     assert_eq!([port_kind(def, "T"), port_kind(def, "X"), port_kind(def, "A")], [PortKind::Return, PortKind::Pilot, PortKind::Working]);
 }
 
@@ -147,7 +147,7 @@ fn open_exhausts_vent_to_the_atmosphere() {
     let mut prj = pneumatics();
     let check = |prj: &Project| {
         let nl = Netlist::build(prj, true);
-        crate::reports::check(prj, &crate::index::Index::build(prj), &nl).into_iter().map(|i| i.message).collect::<Vec<_>>()
+        crate::checks::check(prj, &crate::index::Index::build(prj), &nl).into_iter().map(|i| i.message()).collect::<Vec<_>>()
     };
     let msgs = messages(&prj);
     assert_eq!(msgs.iter().filter(|(s, m)| *s == Severity::Info && m.contains("open to the atmosphere")).count(), 2, "{msgs:?}");
@@ -258,16 +258,16 @@ fn hoses_run_between_bayed_enclosures_and_in_3d() {
     // the field through the bottom; the hose's own bend radius counts.
     wire_mut(&mut prj, 10).hose = Some(HoseConfig { bend_radius: 40.0, ..Default::default() });
     wire_mut(&mut prj, 10).length = 0.1;
-    let an = crate::reports::Analysis::build(&prj);
+    let an = crate::analysis::Analysis::checked(&prj);
     let tubes: Vec<&crate::routing3d::RoutedItem> = an.routing.items.iter().filter(|i| i.kind == crate::routing3d::RouteKind::Tube).collect();
     assert_eq!(tubes.len(), 3);
     assert!(tubes.iter().all(|t| t.routed() && t.class == crate::routing3d::Class::Fluid), "{tubes:?}");
     let across = tubes.iter().find(|t| t.enclosures.len() == 2).expect("supply hose across");
     assert!(across.ends.iter().any(|e| e.tag == "-GQ1"));
     assert!(tubes.iter().filter(|t| t.ends.iter().any(|e| e.tag == "-MM1")).all(|t| t.ends[1].item.is_none() || t.ends[0].item.is_none()));
-    assert!(an.issues.iter().any(|i| i.message.contains("shorter than its 3D route")), "set length 0.1 m");
+    assert!(an.issues.iter().any(|i| i.message().contains("shorter than its 3D route")), "set length 0.1 m");
     // The tubing list and the hose reports know the route.
-    let tubing = &an.reports[&crate::model::ReportKind::TubingList];
+    let tubing = &an.report(&prj, crate::model::ReportKind::TubingList).unwrap();
     assert!(!tubing.rows.is_empty());
 }
 

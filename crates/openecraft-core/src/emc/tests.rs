@@ -1,9 +1,9 @@
 use super::*;
-use crate::reports::Analysis;
+use crate::analysis::Analysis;
 use crate::testkit::Kit;
 
 fn messages(k: &Kit) -> Vec<String> {
-    Analysis::build(&k.prj).issues.into_iter().map(|i| i.message).collect()
+    Analysis::checked(&k.prj).issues.into_iter().map(|i| i.message()).collect()
 }
 
 /// L1 L2 L3 → frequency converter -T1 → cable -W1 → motor -M1.
@@ -24,7 +24,7 @@ fn drive() -> Kit {
 #[test]
 fn motor_cables_of_frequency_converters_are_shielded_at_both_ends() {
     let mut k = drive();
-    let c = &classes(&k.prj, &Analysis::build(&k.prj).netlist, &Analysis::build(&k.prj).connections)[0];
+    let c = &classes(&k.prj, &Analysis::checked(&k.prj).netlist, &Analysis::checked(&k.prj).connections)[0];
     assert_eq!((c.drive.as_deref(), c.power, c.signal, c.shielded), (Some("-T1"), true, false, false));
     assert!(messages(&k).contains(&"Motor cable -W1 of frequency converter -T1 must be shielded".to_string()));
     k.prj.cables[0].shielded = Some(true);

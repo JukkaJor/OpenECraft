@@ -42,10 +42,10 @@ fn generated_models_keep_existing_models() {
     add_generated_models(&mut p);
     assert_eq!(p.model_3d.as_ref().unwrap().size(), [45.0, 57.5, 73.0]);
     let own = Model2d { width: 1.0, height: 1.0, prims: Vec::new() };
-    let mut q = Part { model_2d: Some(own.clone()), ..p.clone() };
+    let mut q = Part { model_2d: Some(own.clone().into()), ..p.clone() };
     q.model_3d = None;
     add_generated_models(&mut q);
-    assert_eq!((q.model_2d, q.model_3d), (Some(own), None));
+    assert_eq!((q.model_2d, q.model_3d), (Some(own.into()), None));
     let mut none = Part { number: "X.2".into(), ..Default::default() };
     add_generated_models(&mut none);
     assert!(none.model_2d.is_none());

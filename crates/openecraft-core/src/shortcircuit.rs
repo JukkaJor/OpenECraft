@@ -10,7 +10,7 @@ use crate::electrical::{circuits, Circuit, Earthing};
 use crate::model::*;
 use crate::netlist::{Connection, Netlist};
 use crate::protection::{Protection, NO_TRIP};
-use crate::reports::{Issue, Severity};
+use crate::issue::{Issue, Severity};
 use std::collections::BTreeMap;
 
 /// Voltage factors of IEC 60909-0 for low voltage (tolerance ±10 %).
@@ -255,42 +255,26 @@ fn amps(a: f32) -> String {
 pub fn problems(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<Issue> {
     let limits = crate::rules::limits(prj);
     let mut out = Vec::new();
-    let mut issue = |severity, message, target| out.push(Issue { severity, message, target: Some(target) });
     let faults = faults(prj, nl, conns);
     let mut without = 0;
     for f in &faults {
         match f.breaks() {
-            Some(false) => issue(
-                Severity::Error,
-                tr_fmt!("{}: breaking capacity {} kA below the short-circuit current {} kA", f.device, format!("{}", f.protection.breaking.unwrap_or(0.0)), ka(f.ik_max)),
-                f.target,
-            ),
+            Some(false) => out.push(crate::issue!(Severity::Error, Some(f.target), "{}: breaking capacity {} kA below the short-circuit current {} kA", f.device, format!("{}", f.protection.breaking.unwrap_or(0.0)), ka(f.ik_max))),
             None => without += 1,
             _ => {}
         }
         if f.needs_rcd {
-            issue(Severity::Error, tr_fmt!("{}: a TT system needs a residual current device", f.device), f.target);
+            out.push(crate::issue!(Severity::Error, Some(f.target), "{}: a TT system needs a residual current device", f.device));
         } else if !f.disconnects() {
             let at = if f.cable.is_empty() { f.device.clone() } else { f.cable.clone() };
-            issue(
-                Severity::Error,
-                tr_fmt!(
-                    "{}: fault current {} A at {} does not disconnect within {} s (needs {} A)",
-                    f.device,
-                    amps(f.ik_min_end),
-                    at,
-                    format!("{}", f.limit.unwrap_or(0.0)),
-                    amps(f.trip_current)
-                ),
-                f.target,
-            );
+            out.push(crate::issue!(Severity::Error, Some(f.target), "{}: fault current {} A at {} does not disconnect within {} s (needs {} A)", f.device, amps(f.ik_min_end), at, format!("{}", f.limit.unwrap_or(0.0)), amps(f.trip_current)));
         }
         if let Some((e, k)) = f.energy.filter(|_| !f.withstands()) {
-            issue(Severity::Error, tr_fmt!("{}: lets through {} A²s, cable {} withstands {} A²s", f.device, format!("{e:.0}"), f.cable, format!("{k:.0}")), f.target);
+            out.push(crate::issue!(Severity::Error, Some(f.target), "{}: lets through {} A²s, cable {} withstands {} A²s", f.device, format!("{e:.0}"), f.cable, format!("{k:.0}")));
         }
     }
     if without > 0 {
-        out.push(Issue { severity: Severity::Info, message: tr_fmt!("{} protective devices of the mains have no breaking capacity data", without), target: None });
+        out.push(crate::issue!(Severity::Info, None, "{} protective devices of the mains have no breaking capacity data", without));
     }
     let downs: BTreeMap<&str, &Protection> = faults.iter().map(|f| (f.device.as_str(), &f.protection)).collect();
     for s in selectivity(prj, nl, conns) {
@@ -304,7 +288,7 @@ pub fn problems(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Vec<Issue>
         } else {
             tr_fmt!("{} is selective to {} only up to {} A (short-circuit current {} A)", s.downstream, s.upstream, amps(s.limit), amps(s.ik))
         };
-        out.push(Issue { severity, message, target: Some(s.target) });
+        out.push(Issue::plain(severity, message, Some(s.target)));
     }
     out
 }

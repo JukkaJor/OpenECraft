@@ -5,11 +5,11 @@
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::Tool;
-use crate::graphics::{self, Layer};
+use openecraft_core::graphics::{self, Layer};
 use crate::io::Loaded;
-use crate::model::*;
-use crate::netlist::pin_designation;
-use crate::{cabledef, conndef, ops, properties, props, routing, structure, wirenum};
+use openecraft_core::model::*;
+use openecraft_core::netlist::pin_designation;
+use openecraft_core::{cabledef, conndef, ops, properties, props, routing, structure, wirenum};
 use egui::RichText;
 
 /// Selection of the layer of an item ("" is the default layer).
@@ -81,7 +81,7 @@ impl App {
         if ui.selectable_label(tool == Tool::CableDef, tr("Cable def.")).on_hover_text(tr("Cable definition: draw a line across the wires that are cores of a cable")).clicked() {
             self.editor.set_tool(Tool::CableDef);
         }
-        let names = graphics::layer_names(&self.prj);
+        let names = graphics::layer_names(&self.session.prj);
         if !names.is_empty() || !self.editor.active_layer.is_empty() {
             ui.label(tr("Layer"));
             layer_combo(ui, "active_layer", &mut self.editor.active_layer, &names);
@@ -131,16 +131,17 @@ impl App {
         let has_sel = !self.editor.selection.is_empty();
         let ctx = ui.ctx().clone();
         if ui.add_enabled(has_sel, egui::Button::new(tr("Auto-connect selection"))).on_hover_text(tr("Connects free connection points of the selected symbols with facing ones")).clicked() {
-            let n = routing::apply_autoconnect(&mut self.prj, self.page, &self.editor.selection);
+            let n = routing::apply_autoconnect(&mut self.session.prj, self.session.page, &self.editor.selection);
             self.notify(&ctx, tr_fmt!("{} connections drawn automatically", n));
         }
         if ui.button(tr("Join collinear wires")).on_hover_text(tr("Joins wire pieces in a line where nothing else connects (current page)")).clicked() {
-            let n = routing::merge_collinear(&mut self.prj.pages[self.page]);
+            let symbols = self.session.prj.symbol_table();
+            let n = routing::merge_collinear(&symbols, &mut self.session.prj.pages[self.session.page]);
             self.editor.selection.clear();
             self.notify(&ctx, tr_fmt!("{} wire pieces joined", n));
         }
         if ui.button(tr("Apply connection definitions")).on_hover_text(tr("All connections take the values of their connection definition points")).clicked() {
-            let n = conndef::apply_all(&mut self.prj);
+            let n = conndef::apply_all(&mut self.session.prj);
             self.notify(&ctx, tr_fmt!("{} wires changed", n));
         }
     }
@@ -154,9 +155,9 @@ impl App {
         };
         let size = graphics::image_size(px, 60.0);
         let img = ImageItem {
-            a: crate::geom::p(0.0, 0.0),
+            a: openecraft_core::geom::p(0.0, 0.0),
             b: size,
-            file: crate::document::Document::new(&name, &loaded.bytes),
+            file: openecraft_core::document::Document::new(&name, &loaded.bytes),
             px,
             layer: self.editor.active_layer.clone(),
             ..Default::default()
@@ -169,10 +170,10 @@ impl App {
     /// Properties of texts, graphics, dimensions, images and definitions. Returns
     /// false if `id` is none of them.
     pub(super) fn graphic_properties(&mut self, ui: &mut egui::Ui, id: u64) -> bool {
-        let pi = self.page;
-        let names = graphics::layer_names(&self.prj);
-        let cables: Vec<(String, Vec<String>)> = self.prj.cables.iter().map(|c| (c.tag.clone(), c.core_list())).collect();
-        let pg = &mut self.prj.pages[pi];
+        let pi = self.session.page;
+        let names = graphics::layer_names(&self.session.prj);
+        let cables: Vec<(String, Vec<String>)> = self.session.prj.cables.iter().map(|c| (c.tag.clone(), c.core_list())).collect();
+        let pg = &mut self.session.prj.pages[pi];
         if let Some(t) = pg.texts.iter_mut().find(|t| t.id == id) {
             ui.label(tr("Text"));
             ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
@@ -212,7 +213,7 @@ impl App {
                     ui.label(tr("Radius"));
                     let mut r = s.a.dist(s.b);
                     if ui.add(egui::DragValue::new(&mut r).range(0.5..=500.0).speed(0.5).suffix(" mm")).changed() {
-                        s.b = s.a + crate::geom::p(r, 0.0);
+                        s.b = s.a + openecraft_core::geom::p(r, 0.0);
                     }
                     ui.end_row();
                 }
@@ -265,7 +266,7 @@ impl App {
         if let Some(img) = pg.images.iter_mut().find(|i| i.id == id) {
             ui.label(RichText::new(tr("Image")).strong());
             ui.label(RichText::new(&img.file.name).monospace());
-            ui.weak(tr_fmt!("{} × {} pixels, {}", img.px[0], img.px[1], crate::document::size_text(img.file.size())));
+            ui.weak(tr_fmt!("{} × {} pixels, {}", img.px[0], img.px[1], openecraft_core::document::size_text(img.file.size())));
             let (mut w, mut h) = (img.b.x - img.a.x, img.b.y - img.a.y);
             egui::Grid::new("imgprops").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Width"));
@@ -280,7 +281,7 @@ impl App {
                     w = h * img.px[0] as f32 / img.px[1] as f32;
                 }
                 if cw || ch {
-                    img.b = img.a + crate::geom::p(w, h);
+                    img.b = img.a + openecraft_core::geom::p(w, h);
                 }
                 ui.label(tr("Layer"));
                 layer_combo(ui, "ilayer", &mut img.layer, &names);
@@ -301,13 +302,13 @@ impl App {
     }
 
     fn conn_def_properties(&mut self, ui: &mut egui::Ui, id: u64, cables: &[(String, Vec<String>)]) {
-        let pi = self.page;
+        let pi = self.session.page;
         ui.label(RichText::new(tr("Connection definition point")).strong());
-        let pg = &self.prj.pages[pi];
+        let pg = &self.session.prj.pages[pi];
         let Some(before) = pg.conn_defs.iter().find(|c| c.id == id).cloned() else { return };
         let on_wire = conndef::wire_at(pg, before.pos).map(|w| w.id);
-        if let Some(net) = on_wire.and_then(|w| self.analysis.open.net_of_wire(w)) {
-            let mut v: Vec<String> = net.pins.iter().map(|p| pin_designation(&self.prj, *p)).collect();
+        if let Some(net) = on_wire.and_then(|w| self.session.analysis.open.net_of_wire(w)) {
+            let mut v: Vec<String> = net.pins.iter().map(|p| pin_designation(&self.session.prj, *p)).collect();
             v.sort_by(|a, b| natural_cmp(a, b));
             v.dedup();
             ui.label(tr("Connection:"));
@@ -315,7 +316,7 @@ impl App {
         } else {
             ui.colored_label(egui::Color32::from_rgb(220, 140, 0), tr("Not on a wire"));
         }
-        let auto = on_wire.map(|w| crate::potentials::props_of_wire(&self.prj, &self.analysis.netlist, &self.analysis.open, w)).unwrap_or_default();
+        let auto = on_wire.map(|w| openecraft_core::potentials::props_of_wire(&self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, w)).unwrap_or_default();
         let mut cd = before.clone();
         egui::Grid::new("cdprops").num_columns(2).show(ui, |ui| {
             ui.label(tr("Wire number"));
@@ -352,19 +353,19 @@ impl App {
         });
         let reapply = ui.button(tr("Apply to the connection")).on_hover_text(tr("The wires of the connection take these values again")).clicked();
         let changed = cd != before;
-        if let Some(c) = self.prj.pages[pi].conn_defs.iter_mut().find(|c| c.id == id) {
+        if let Some(c) = self.session.prj.pages[pi].conn_defs.iter_mut().find(|c| c.id == id) {
             *c = cd;
         }
         if changed || reapply {
-            conndef::apply(&mut self.prj, &self.analysis.open, pi, id);
+            conndef::apply(&mut self.session.prj, &self.session.analysis.open, pi, id);
         }
     }
 
     fn cable_def_properties(&mut self, ui: &mut egui::Ui, id: u64, cables: &[(String, Vec<String>)]) {
-        let pi = self.page;
+        let pi = self.session.page;
         ui.label(RichText::new(tr("Cable definition")).strong());
-        let Some(mut def) = self.prj.pages[pi].cable_defs.iter().find(|c| c.id == id).cloned() else { return };
-        let crossed = cabledef::crossed_wires(&self.prj.pages[pi], def.a, def.b);
+        let Some(mut def) = self.session.prj.pages[pi].cable_defs.iter().find(|c| c.id == id).cloned() else { return };
+        let crossed = cabledef::crossed_wires(&self.session.prj.pages[pi], def.a, def.b);
         let mut apply = false;
         egui::Grid::new("cbdprops").num_columns(2).show(ui, |ui| {
             ui.label(tr("Cable"));
@@ -384,7 +385,7 @@ impl App {
             ui.label(crossed.len().to_string());
             ui.end_row();
         });
-        if let Some(c) = self.prj.cables.iter_mut().find(|c| c.tag == def.cable) {
+        if let Some(c) = self.session.prj.cables.iter_mut().find(|c| c.tag == def.cable) {
             ui.separator();
             egui::Grid::new("cbdcable_data").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Type"));
@@ -416,11 +417,11 @@ impl App {
                 self.editor.set_tool(Tool::CableDef);
             }
         });
-        if let Some(c) = self.prj.pages[pi].cable_defs.iter_mut().find(|c| c.id == id) {
+        if let Some(c) = self.session.prj.pages[pi].cable_defs.iter_mut().find(|c| c.id == id) {
             *c = def;
         }
         if apply {
-            let n = cabledef::apply(&mut self.prj, pi, id);
+            let n = cabledef::apply(&mut self.session.prj, pi, id);
             let ctx = ui.ctx().clone();
             self.notify(&ctx, tr_fmt!("{} wires are cores of the cable", n));
         }
@@ -428,19 +429,20 @@ impl App {
 
     /// Tag position, placed properties and placement scheme of a symbol.
     pub(super) fn placement_properties(&mut self, ui: &mut egui::Ui, pi: usize, si: usize) {
-        let s = &self.prj.pages[pi].symbols[si];
-        let values: Vec<String> = s.props.iter().map(|pp| props::text(&self.prj, pi, s, pp)).collect();
-        let titles: Vec<String> = s.props.iter().map(|pp| properties::def(&self.prj, &pp.key).map(|d| d.title_of(&pp.key)).unwrap_or_else(|| pp.key.clone())).collect();
-        let schemes: Vec<(String, String)> = props::all_schemes(&self.prj).map(|x| (x.name.clone(), x.title())).collect();
-        let classes = properties::Object::Function(s.id).classes(&self.prj);
+        let symbols = self.session.prj.symbol_table();
+        let s = &self.session.prj.pages[pi].symbols[si];
+        let values: Vec<String> = s.props.iter().map(|pp| props::text(&self.session.prj, pi, s, pp)).collect();
+        let titles: Vec<String> = s.props.iter().map(|pp| properties::def(&self.session.prj, &pp.key).map(|d| d.title_of(&pp.key)).unwrap_or_else(|| pp.key.clone())).collect();
+        let schemes: Vec<(String, String)> = props::all_schemes(&self.session.prj).map(|x| (x.name.clone(), x.title())).collect();
+        let classes = properties::Object::Function(s.id).classes(&self.session.prj);
         let classes: Vec<properties::ObjectClass> =
             [properties::ObjectClass::Device, properties::ObjectClass::Part].into_iter().filter(|_| !s.tag.is_empty()).chain(classes).chain([properties::ObjectClass::Page, properties::ObjectClass::Project]).collect();
         let open = !s.props.is_empty() || s.tag_offset.is_some();
         egui::CollapsingHeader::new(tr("Property placement")).id_salt("placement").default_open(open).show(ui, |ui| {
-            let added = super::properties_ui::key_picker(ui, &self.prj, &classes, false, tr("➕ Place property"));
+            let added = super::properties_ui::key_picker(ui, &self.session.prj, &classes, false, tr("➕ Place property"));
             let mut save_scheme = None;
             let mut apply_scheme = None;
-            let s = &mut self.prj.pages[pi].symbols[si];
+            let s = &mut self.session.prj.pages[pi].symbols[si];
             ui.horizontal(|ui| {
                 if s.tag_offset.is_some() {
                     ui.weak(tr("Tag placed by hand"));
@@ -476,7 +478,7 @@ impl App {
                 s.props.remove(i);
             }
             if let Some(k) = added {
-                props::add(s, &k);
+                props::add(&symbols, s, &k);
             }
             ui.horizontal(|ui| {
                 ui.label(tr("Scheme"));
@@ -492,21 +494,21 @@ impl App {
                 let mut name: String = ui.data_mut(|d| d.get_temp(id)).unwrap_or_default();
                 ui.add(egui::TextEdit::singleline(&mut name).hint_text(tr("Scheme name")).desired_width(90.0));
                 if ui.add_enabled(!s.props.is_empty() && !name.trim().is_empty(), egui::Button::new(tr("Save as scheme"))).on_hover_text(tr("Saves the placed properties as a placement scheme of the project")).clicked() {
-                    save_scheme = Some(props::capture(s, &name));
+                    save_scheme = Some(props::capture(&symbols, s, &name));
                     name.clear();
                 }
                 ui.data_mut(|d| d.insert_temp(id, name));
             });
             if let Some(name) = apply_scheme {
-                let ids = [self.prj.pages[pi].symbols[si].id];
-                if let Err(e) = props::apply_to(&mut self.prj, &name, &ids) {
+                let ids = [self.session.prj.pages[pi].symbols[si].id];
+                if let Err(e) = props::apply_to(&mut self.session.prj, &name, &ids) {
                     self.message = Some((e, ui.ctx().input(|i| i.time)));
                 }
             }
             if let Some(scheme) = save_scheme {
                 let name = scheme.name.clone();
-                match props::define_scheme(&mut self.prj, scheme) {
-                    Ok(()) => self.prj.pages[pi].symbols[si].scheme = name,
+                match props::define_scheme(&mut self.session.prj, scheme) {
+                    Ok(()) => self.session.prj.pages[pi].symbols[si].scheme = name,
                     Err(e) => self.message = Some((e, ui.ctx().input(|i| i.time))),
                 }
             }
@@ -519,21 +521,21 @@ impl App {
         ui.horizontal(|ui| {
             if ui.button(tr("➕ Layer")).clicked() {
                 let mut n = 1;
-                while graphics::layer(&self.prj, &tr_fmt!("Layer {}", n)).is_some() {
+                while graphics::layer(&self.session.prj, &tr_fmt!("Layer {}", n)).is_some() {
                     n += 1;
                 }
-                self.prj.layers.push(Layer::new(&tr_fmt!("Layer {}", n)));
+                self.session.prj.layers.push(Layer::new(&tr_fmt!("Layer {}", n)));
             }
         });
         ui.add(egui::Label::new(RichText::new(tr("Layers of graphics, texts, dimensions and images")).weak()).wrap());
         // Layers only used by items get a definition so they can be switched.
-        for name in graphics::layer_names(&self.prj) {
-            if graphics::layer(&self.prj, &name).is_none() {
-                self.prj.layers.push(Layer::new(&name));
+        for name in graphics::layer_names(&self.session.prj) {
+            if graphics::layer(&self.session.prj, &name).is_none() {
+                self.session.prj.layers.push(Layer::new(&name));
             }
         }
-        let counts: Vec<usize> = self.prj.layers.iter().map(|l| graphics::layer_count(&self.prj, &l.name)).collect();
-        let default_count = graphics::layer_count(&self.prj, "");
+        let counts: Vec<usize> = self.session.prj.layers.iter().map(|l| graphics::layer_count(&self.session.prj, &l.name)).collect();
+        let default_count = graphics::layer_count(&self.session.prj, "");
         let mut rename: Option<(String, String)> = None;
         let mut remove: Option<String> = None;
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
@@ -549,7 +551,7 @@ impl App {
                 ui.label(tr("(default)"));
                 ui.weak(default_count.to_string());
                 ui.end_row();
-                for (i, l) in self.prj.layers.iter_mut().enumerate() {
+                for (i, l) in self.session.prj.layers.iter_mut().enumerate() {
                     ui.radio_value(&mut self.editor.active_layer, l.name.clone(), "").on_hover_text(tr("New items go onto this layer"));
                     let mut name = l.name.clone();
                     if ui.add(egui::TextEdit::singleline(&mut name).desired_width(90.0)).changed() && !name.is_empty() {
@@ -576,22 +578,22 @@ impl App {
             });
         });
         if let Some((old, new)) = rename {
-            if graphics::layer(&self.prj, &new).is_none() {
-                graphics::rename_layer(&mut self.prj, &old, &new);
+            if graphics::layer(&self.session.prj, &new).is_none() {
+                graphics::rename_layer(&mut self.session.prj, &old, &new);
                 if self.editor.active_layer == old {
                     self.editor.active_layer = new;
                 }
             }
         }
         if let Some(name) = remove {
-            graphics::remove_layer(&mut self.prj, &name);
+            graphics::remove_layer(&mut self.session.prj, &name);
             if self.editor.active_layer == name {
                 self.editor.active_layer.clear();
             }
         }
         // Selected items on hidden or locked layers are deselected.
-        let page = &self.prj.pages[self.page];
-        let prj = &self.prj;
+        let page = &self.session.prj.pages[self.session.page];
+        let prj = &self.session.prj;
         self.editor.selection.retain(|id| graphics::item_layer(page, *id).is_none_or(|l| graphics::shown(prj, l, false) && !graphics::locked(prj, l)));
     }
 
@@ -601,9 +603,9 @@ impl App {
         // Number, connected points, first wire and all wires (page, id).
         type Row = (String, String, (usize, u64), Vec<(usize, u64)>);
         let mut rows: Vec<Row> = Vec::new();
-        for net in self.analysis.open.nets.iter().filter(|n| !n.wires.is_empty()) {
-            let number = wirenum::number_of(&self.prj, net);
-            let mut pins: Vec<String> = net.pins.iter().map(|p| pin_designation(&self.prj, *p)).collect();
+        for net in self.session.analysis.open.nets.iter().filter(|n| !n.wires.is_empty()) {
+            let number = wirenum::number_of(&self.session.prj, net);
+            let mut pins: Vec<String> = net.pins.iter().map(|p| pin_designation(&self.session.prj, *p)).collect();
             pins.sort_by(|a, b| natural_cmp(a, b));
             pins.dedup();
             let text = pins.join(" – ");
@@ -641,25 +643,25 @@ impl App {
             self.goto(pg, id);
         }
         if let Some(wires) = select {
-            self.editor.selection = wires.iter().filter(|w| w.0 == self.page).map(|w| w.1).collect();
+            self.editor.selection = wires.iter().filter(|w| w.0 == self.session.page).map(|w| w.1).collect();
         }
         if let Some((pg, wid)) = define {
-            if let Some(w) = self.prj.pages[pg].wires.iter().find(|w| w.id == wid) {
-                let mid = crate::geom::p((w.a.x + w.b.x) / 2.0, (w.a.y + w.b.y) / 2.0);
-                let mut cd = conndef::adopt(&self.prj, &self.analysis.open, pg, mid);
-                cd.id = self.prj.new_id();
+            if let Some(w) = self.session.prj.pages[pg].wires.iter().find(|w| w.id == wid) {
+                let mid = openecraft_core::geom::p((w.a.x + w.b.x) / 2.0, (w.a.y + w.b.y) / 2.0);
+                let mut cd = conndef::adopt(&self.session.prj, &self.session.analysis.open, pg, mid);
+                cd.id = self.session.prj.new_id();
                 let id = cd.id;
-                self.prj.pages[pg].conn_defs.push(cd);
+                self.session.prj.pages[pg].conn_defs.push(cd);
                 self.goto(pg, id);
             }
         }
     }
 
     pub(super) fn cables_tab(&mut self, ui: &mut egui::Ui) {
-        let structure = structure::page_structure(&self.prj.pages[self.page]);
+        let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         ui.horizontal_wrapped(|ui| {
             if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
-                let tag = ops::add_cable(&mut self.prj, &structure);
+                let tag = ops::add_cable(&mut self.session.prj, &structure);
                 self.editor.cable_target = tag;
             }
             if ui.button(tr("Cables…")).clicked() {
@@ -668,13 +670,13 @@ impl App {
         });
         // Cores in use: cable -> (core, page, wire id)
         let mut cores: std::collections::HashMap<&str, Vec<(String, usize, u64)>> = Default::default();
-        for (pi, pg) in self.prj.pages.iter().enumerate() {
+        for (pi, pg) in self.session.prj.pages.iter().enumerate() {
             for w in pg.wires.iter().filter(|w| !w.cable.is_empty()) {
                 cores.entry(w.cable.as_str()).or_default().push((w.core.clone(), pi, w.id));
             }
         }
         let defs: Vec<(String, usize, u64)> = self
-            .prj
+            .session.prj
             .pages
             .iter()
             .enumerate()
@@ -683,7 +685,7 @@ impl App {
         let mut jump = None;
         let mut draw = None;
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-            for c in &self.prj.cables {
+            for c in &self.session.prj.cables {
                 let used = cores.get(c.tag.as_str()).cloned().unwrap_or_default();
                 let total = c.core_list().len();
                 let head = format!("{}   {}/{}  {}", c.tag, used.len(), total, c.cable_type);
@@ -695,7 +697,7 @@ impl App {
                     let mut used = used.clone();
                     used.sort_by(|a, b| natural_cmp(&a.0, &b.0));
                     for (core, pi, wid) in &used {
-                        let page = structure::page_full_name(&self.prj.pages[*pi]);
+                        let page = structure::page_full_name(&self.session.prj.pages[*pi]);
                         if ui.link(tr_fmt!("{}  ›  page {}", core, page)).clicked() {
                             jump = Some((*pi, *wid));
                         }
@@ -704,7 +706,7 @@ impl App {
                         ui.weak(tr_fmt!("{}  (free)", free));
                     }
                     for (_, pi, id) in defs.iter().filter(|d| d.0 == c.tag) {
-                        let page = structure::page_full_name(&self.prj.pages[*pi]);
+                        let page = structure::page_full_name(&self.session.prj.pages[*pi]);
                         if ui.link(tr_fmt!("Cable definition on page {}", page)).clicked() {
                             jump = Some((*pi, *id));
                         }
@@ -716,7 +718,7 @@ impl App {
                     }
                 });
             }
-            if self.prj.cables.is_empty() {
+            if self.session.prj.cables.is_empty() {
                 ui.weak(tr("No cables yet. Draw a cable definition across wires or add a cable."));
             }
         });
@@ -732,7 +734,7 @@ impl App {
     pub(super) fn device_action(&mut self, tag: &str, action: DeviceAction) {
         match action {
             DeviceAction::Select => {
-                self.editor.selection = self.prj.pages[self.page].symbols.iter().filter(|s| s.tag == tag).map(|s| s.id).collect();
+                self.editor.selection = self.session.prj.pages[self.session.page].symbols.iter().filter(|s| s.tag == tag).map(|s| s.id).collect();
             }
             DeviceAction::Place => self.editor.place_tag = Some(tag.to_string()),
             DeviceAction::StopPlacing => self.editor.place_tag = None,
@@ -748,13 +750,13 @@ impl App {
         egui::Window::new(tr("Rename device")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
             ui.label(tr_fmt!("New tag for {}", old));
             let r = ui.text_edit_singleline(&mut new);
-            let exists = new != old && self.prj.all_tags().contains(&new);
+            let exists = new != old && self.session.prj.all_tags().contains(&new);
             if exists {
                 ui.colored_label(egui::Color32::from_rgb(220, 60, 60), tr("This tag is already used"));
             }
             let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
             if (ui.add_enabled(!exists && !new.is_empty(), egui::Button::new(tr("Rename"))).clicked() || (enter && !exists && !new.is_empty())) && new != old {
-                ops::rename_device(&mut self.prj, &old, &new);
+                ops::rename_device(&mut self.session.prj, &old, &new);
                 done = true;
             }
         });

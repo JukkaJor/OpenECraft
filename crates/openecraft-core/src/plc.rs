@@ -5,7 +5,7 @@
 
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, HashSet};
 
 /// A PLC input or output placed in the schematic.
@@ -23,8 +23,8 @@ pub struct Point {
     pub location: String,
 }
 
-fn is_plc(s: &SymbolInst) -> bool {
-    symbols::get(&s.sym).map(|d| d.func) == Some(Func::Plc)
+fn is_plc(symbols: &crate::symlib::Symbols, s: &SymbolInst) -> bool {
+    symbols.get(&s.sym).map(|d| d.func) == Some(Func::Plc)
 }
 
 /// Prefix, byte and bit of an address.
@@ -46,8 +46,9 @@ pub fn address_key(addr: &str) -> AddressKey {
 
 /// Tags of all PLC cards.
 pub fn cards(prj: &Project) -> Vec<String> {
+    let symbols = prj.symbol_table();
     let mut v: Vec<String> =
-        prj.pages.iter().flat_map(|p| p.symbols.iter()).filter(|s| is_plc(s) && !s.tag.is_empty()).map(|s| s.tag.clone()).collect();
+        prj.pages.iter().flat_map(|p| p.symbols.iter()).filter(|s| is_plc(&symbols, s) && !s.tag.is_empty()).map(|s| s.tag.clone()).collect();
     v.extend(prj.plc_cards.keys().cloned());
     v.sort_by(|a, b| natural_cmp(a, b));
     v.dedup();
@@ -56,12 +57,13 @@ pub fn cards(prj: &Project) -> Vec<String> {
 
 /// All PLC points, sorted by card and address.
 pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
+    let symbols = prj.symbol_table();
     let mut v = Vec::new();
     for (pi, pg) in prj.pages.iter().enumerate() {
         if pg.kind != PageKind::Schematic {
             continue;
         }
-        for (si, s) in pg.symbols.iter().enumerate().filter(|(_, s)| is_plc(s)) {
+        for (si, s) in pg.symbols.iter().enumerate().filter(|(_, s)| is_plc(&symbols, s)) {
             let connected = nl
                 .pin_net
                 .get(&(s.id, 0))
@@ -94,12 +96,13 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
 /// outputs separately, in schematic order) in the address scheme of its station.
 /// Returns the number of changed addresses.
 pub fn readdress(prj: &mut Project, card: &str) -> usize {
+    let symbols = prj.symbol_table();
     let mut changed = 0;
     for input in [true, false] {
         let mut list: Vec<(usize, usize)> = Vec::new();
         for (pi, pg) in prj.pages.iter().enumerate() {
             for (si, s) in pg.symbols.iter().enumerate() {
-                if is_plc(s) && s.tag == card && (s.sym == "plc_in") == input {
+                if is_plc(&symbols, s) && s.tag == card && (s.sym == "plc_in") == input {
                     list.push((pi, si));
                 }
             }
@@ -226,10 +229,11 @@ pub fn import_symbol_table(prj: &mut Project, text: &str) -> Result<usize, Strin
 /// space `domain` if given). A leading card tag (as in exported comments) is dropped.
 /// Returns the number of changed points.
 pub fn apply_texts(prj: &mut Project, domain: Option<&str>, texts: &BTreeMap<AddressKey, String>) -> usize {
+    let symbols = prj.symbol_table();
     let cards: HashSet<String> = cards(prj).into_iter().filter(|c| domain.is_none_or(|d| crate::plc_hw::card_domain(prj, c) == d)).collect();
     let mut n = 0;
     for pg in &mut prj.pages {
-        for s in pg.symbols.iter_mut().filter(|s| is_plc(s) && (domain.is_none() || cards.contains(&s.tag))) {
+        for s in pg.symbols.iter_mut().filter(|s| is_plc(&symbols, s) && (domain.is_none() || cards.contains(&s.tag))) {
             if let Some(t) = texts.get(&address_key(&s.label)) {
                 let t = t.strip_prefix(&format!("{} ", s.tag)).unwrap_or(t).trim();
                 if !t.is_empty() && s.function_text != t {
