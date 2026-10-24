@@ -1,0 +1,149 @@
+//! Hand-off to the manufacturing machines: the programs of an enclosure (each face on
+//! its machine, the copper bars on the busbar machine) as a job with a manifest. A
+//! released job keeps the checksums of its programs, so that changes of the layout
+//! after the hand-off are found.
+
+use super::{bars, checksum, machines, post, strategy};
+use crate::model::Project;
+use crate::panel::Face;
+use openecraft_i18n::tr_fmt;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+
+/// A program of a job.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Program {
+    /// File name.
+    pub name: String,
+    pub machine: String,
+    /// The face; None for the copper bars.
+    pub face: Option<Face>,
+    pub operations: usize,
+    /// Estimated machine time, s.
+    pub time: f32,
+    /// Time factor of the machine in the estimate.
+    pub factor: f32,
+    pub problems: Vec<String>,
+    pub content: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ProgramRef {
+    pub name: String,
+    pub machine: String,
+    /// Face key, `bars` for the copper bars.
+    pub face: String,
+    pub operations: usize,
+    pub time: f32,
+    /// Time factor of the machine in the estimate.
+    pub factor: f32,
+    pub checksum: String,
+}
+
+/// A manufacturing job handed off to production.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Job {
+    /// `CAB1-1`, `CAB1-2`, …
+    pub id: String,
+    pub enclosure: String,
+    pub date: String,
+    /// Project revision at the hand-off.
+    pub revision: String,
+    pub programs: Vec<ProgramRef>,
+}
+
+/// The programs of an enclosure: one per face with machining, and one for its copper
+/// bars and busbar systems.
+pub fn programs(prj: &Project, enc: usize) -> Result<Vec<Program>, String> {
+    let mf = &prj.layout.manufacturing;
+    let e = &prj.layout.enclosures[enc];
+    let mut v = Vec::new();
+    for face in Face::ALL {
+        if crate::production::holes_on(e, &prj.parts, face).is_empty() && crate::production::openings(e, &prj.parts, face).is_empty() {
+            continue;
+        }
+        let m = machines::get(prj, mf.machine_of(face))?;
+        let plan = strategy::plan(prj, enc, face, &m, &mf.strategy);
+        let content = post::program(&plan, &m);
+        v.push(Program { name: post::file_name(&plan, &m), machine: m.id.clone(), face: Some(face), operations: plan.ops.len(), time: plan.time, factor: m.time_factor, problems: plan.problems, content });
+    }
+    let has_bars = bars::pieces(prj).iter().any(|p| p.enclosure == e.name);
+    if has_bars {
+        let m = machines::get(prj, &mf.bar_machine)?;
+        let (content, problems) = bars::program(prj, &m, Some(&e.name));
+        let operations = content.lines().count().saturating_sub(1);
+        let time = operations as f32 * m.hit_time * m.time_factor.max(0.01);
+        let name = format!("{}_bars.{}", super::file_stem(&e.name), m.dialect.extension());
+        v.push(Program { name, machine: m.id.clone(), face: None, operations, time, factor: m.time_factor, problems, content });
+    }
+    Ok(v)
+}
+
+fn reference(p: &Program) -> ProgramRef {
+    ProgramRef { name: p.name.clone(), machine: p.machine.clone(), face: p.face.map(|f| f.key().to_string()).unwrap_or_else(|| "bars".into()), operations: p.operations, time: p.time, factor: p.factor, checksum: checksum(&p.content) }
+}
+
+/// Releases the programs of an enclosure as a new job.
+pub fn release(prj: &mut Project, enc: usize, date: &str) -> Result<(Job, Vec<Program>), String> {
+    let list = programs(prj, enc)?;
+    let e = &prj.layout.enclosures[enc];
+    if list.is_empty() {
+        return Err(tr_fmt!("{} has nothing to manufacture", e.name));
+    }
+    let n = prj.layout.manufacturing.jobs.iter().filter(|j| j.enclosure == e.name).count() + 1;
+    let job = Job { id: format!("{}-{n}", super::file_stem(&e.name)), enclosure: e.name.clone(), date: date.into(), revision: prj.info.revision.clone(), programs: list.iter().map(reference).collect() };
+    prj.layout.manufacturing.jobs.push(job.clone());
+    Ok((job, list))
+}
+
+/// The package handed to the machines: manifest and programs.
+pub fn package(prj: &Project, job: Option<&Job>, list: &[Program]) -> Value {
+    json!({
+        "format": "openecraft-manufacturing/1",
+        "project": prj.info.name,
+        "revision": prj.info.revision,
+        "job": job.map(|j| j.id.as_str()),
+        "date": job.map(|j| j.date.as_str()),
+        "programs": list.iter().map(|p| {
+            let r = reference(p);
+            json!({ "file": p.name, "machine": p.machine, "face": r.face, "operations": p.operations, "time_s": p.time.round(), "checksum": r.checksum, "problems": p.problems, "content": p.content })
+        }).collect::<Vec<_>>(),
+    })
+}
+
+/// Package of all enclosures (not released as a job).
+pub fn package_all(prj: &Project) -> Result<Value, String> {
+    let mut list = Vec::new();
+    for enc in 0..prj.layout.enclosures.len() {
+        list.extend(programs(prj, enc)?);
+    }
+    Ok(package(prj, None, &list))
+}
+
+/// Latest job of each enclosure whose programs differ from the current layout: (job,
+/// program file).
+pub fn changed(prj: &Project) -> Vec<(String, String)> {
+    let jobs = &prj.layout.manufacturing.jobs;
+    let mut v = Vec::new();
+    for (i, job) in jobs.iter().enumerate() {
+        if jobs[i + 1..].iter().any(|j| j.enclosure == job.enclosure) {
+            continue;
+        }
+        let Some(enc) = super::enclosure_index(prj, &job.enclosure) else { continue };
+        let now: Vec<ProgramRef> = programs(prj, enc).map(|l| l.iter().map(reference).collect()).unwrap_or_default();
+        for r in &job.programs {
+            if !now.iter().any(|n| n.name == r.name && n.checksum == r.checksum) {
+                v.push((job.id.clone(), r.name.clone()));
+            }
+        }
+        for n in now.iter().filter(|n| !job.programs.iter().any(|r| r.name == n.name)) {
+            v.push((job.id.clone(), n.name.clone()));
+        }
+    }
+    v
+}
+
+#[cfg(test)]
+mod tests;
