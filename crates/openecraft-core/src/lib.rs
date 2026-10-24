@@ -47,6 +47,7 @@ pub mod revision;
 pub mod routing;
 pub mod routing3d;
 pub mod sample;
+pub mod singleline;
 pub mod sizing;
 pub mod strips;
 pub mod structure;

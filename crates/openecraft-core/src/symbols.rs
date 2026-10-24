@@ -1056,6 +1056,23 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
     v.push(def("sl_cb", "Circuit breaker (single-line)", C::SingleLine, "Q", OVERVIEW).build(&mut b));
 
+    b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).disconnector_bar(0.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_disc", "Switch-disconnector (single-line)", C::SingleLine, "Q", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).breaker_x(0.0);
+    b.dl(-1.0, 0.0, -4.0, 0.0).rect(-11.0, -1.5, -4.0, 1.5, false).text(-7.5, 0.0, "I> θ>", 1.4, Center);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_mps", "Motor protection switch (single-line)", C::SingleLine, "Q", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -3.0).rect(-2.0, -3.0, 2.0, 3.0, false).l(0.0, 3.0, 0.0, 8.0);
+    b.poly(&[(0.0, -3.0), (0.0, -1.0), (1.2, -1.0), (1.2, 1.0), (0.0, 1.0), (0.0, 3.0)], false, false);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_ol", "Overload relay (single-line)", C::SingleLine, "F", OVERVIEW).build(&mut b));
+
     b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).arc(0.0, -1.3, 0.7, 180.0, 360.0);
     three(&mut b);
     b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
