@@ -588,6 +588,17 @@ fn cable_ends(prj: &Project, conns: &[&Connection]) -> Option<(String, String)> 
     Some((a, b))
 }
 
+/// The two end tags of a cable: from its cores, bus cables between the stations of
+/// their bus connection.
+pub fn cable_end_tags(prj: &Project, c: &Cable, cores: &[&Connection]) -> Option<(String, String)> {
+    let bus = || {
+        let link = crate::plc_hw::cable_links(prj, &c.tag).into_iter().next()?;
+        let tag = |s: &str| prj.plc.station(s).map(|s| s.tag.clone()).filter(|t| !t.is_empty());
+        Some((tag(&link.a.station)?, tag(&link.b.station)?))
+    };
+    cable_ends(prj, cores).or_else(bus)
+}
+
 /// The ends of a cable or tube between two devices: placed devices, or the cable
 /// entry of the enclosure the other end is in. `None` if neither end is placed.
 fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str) -> Option<[End; 2]> {
@@ -629,13 +640,7 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
     // Cables
     for c in &prj.cables {
         let cores: Vec<&Connection> = conns.iter().filter(|x| x.cable == c.tag).collect();
-        // Bus cables run between the stations of their bus connection.
-        let bus = || {
-            let link = crate::plc_hw::cable_links(prj, &c.tag).into_iter().next()?;
-            let tag = |s: &str| prj.plc.station(s).map(|s| s.tag.clone()).filter(|t| !t.is_empty());
-            Some((tag(&link.a.station)?, tag(&link.b.station)?))
-        };
-        let Some((a, b)) = cable_ends(prj, &cores).or_else(bus) else { continue };
+        let Some((a, b)) = cable_end_tags(prj, c, &cores) else { continue };
         let Some(ends) = ends_between(prj, &pos, &a, &b) else { continue };
         let shielded = is_shielded(c);
         jobs.push(Job {

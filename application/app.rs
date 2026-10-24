@@ -21,6 +21,7 @@ use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 mod cables_ui;
 mod compare_ui;
 mod engineering;
+mod field_ui;
 mod forms_ui;
 mod harness_ui;
 mod languages_ui;
@@ -102,6 +103,7 @@ pub struct App {
     forms_ui: forms_ui::FormsUi,
     report_blocks_ui: report_blocks_ui::ReportBlocksUi,
     harness_ui: harness_ui::HarnessUi,
+    field_ui: field_ui::FieldUi,
     plugs_ui: plugs_ui::PlugsUi,
     plc_ui: plc_ui::PlcUi,
     process_ui: process_ui::ProcessUi,
@@ -194,6 +196,7 @@ impl App {
             forms_ui: Default::default(),
             report_blocks_ui: Default::default(),
             harness_ui: Default::default(),
+            field_ui: Default::default(),
             plugs_ui: Default::default(),
             plc_ui: Default::default(),
             process_ui: Default::default(),
@@ -770,6 +773,9 @@ impl App {
                 }
                 if ui.button(tr("Harnesses…")).clicked() {
                     self.harness_ui.open = true;
+                }
+                if ui.button(tr("Field wiring…")).on_hover_text(tr("Plant layout, route network, field cable planning, equipotential bonding and cable accessories")).clicked() {
+                    self.field_ui.open = true;
                 }
                 if ui.button(tr("Terminal strips…")).clicked() {
                     self.eng.show_strips = true;
@@ -1852,6 +1858,7 @@ impl App {
         self.forms_window(ctx);
         self.report_blocks_window(ctx);
         self.harness_window(ctx);
+        self.field_window(ctx);
         self.plugs_window(ctx);
         self.plc_hw_window(ctx);
         self.process_window(ctx);
