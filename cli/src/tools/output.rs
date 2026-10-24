@@ -38,8 +38,9 @@ pub static TOOLS: &[Tool] = &[
         help: tr_const!("Generates a report as table"),
         params: &[
             param("kind", Kind::Str, tr_const!("Report name as shown by list_reports")),
-            optional("format", Kind::Str, tr_const!("json (default) or csv")),
+            optional("format", Kind::Str, tr_const!("json (default), csv or xlsx (Excel, needs path)")),
             optional("scheme", Kind::Str, tr_const!("Report scheme: its filter, sort order and columns")),
+            optional("path", Kind::Str, tr_const!("File to write (xlsx)")),
         ],
         needs_project: true,
         run: report,
@@ -128,6 +129,12 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     match a.str("format").unwrap_or("json") {
         "csv" => Ok(Value::String(table.to_csv())),
         "json" => Ok(json!({ "report": id.as_str(), "title": title, "headers": table.header_texts(), "rows": table.rows })),
+        "xlsx" => {
+            let path = a.str("path").ok_or_else(|| tr("The format xlsx needs a path").to_string())?;
+            let bytes = openecraft_core::xlsx::write(&[(title, table.sheet_rows())]);
+            std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            Ok(json!({ "path": path, "rows": table.rows.len() }))
+        }
         other => Err(tr_fmt!("Unknown format: {}", other)),
     }
 }

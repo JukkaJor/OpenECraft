@@ -66,6 +66,7 @@ impl App {
         let mut open = true;
         let mut jump = None;
         let mut export = None;
+        let mut export_xlsx = None;
         let mut add_page = None;
         egui::Window::new(tr("Reports")).open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -78,6 +79,9 @@ impl App {
             ui.horizontal(|ui| {
                 if ui.button(tr("⬇ Export CSV")).clicked() {
                     export = Some(kind);
+                }
+                if ui.button(tr("⬇ Export Excel")).clicked() {
+                    export_xlsx = Some(kind);
                 }
                 if ui.button(tr("➕ Insert as report page")).clicked() {
                     add_page = Some(kind);
@@ -117,6 +121,14 @@ impl App {
         self.show_reports = open;
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
+        }
+        if let Some(kind) = export_xlsx {
+            if let Some(t) = self.session.analysis.report(&self.session.prj, kind) {
+                let title = self.report_title(kind);
+                let bytes = openecraft_core::xlsx::write(&[(title.clone(), t.sheet_rows())]);
+                let name = format!("{}.xlsx", title.replace(' ', "_").to_lowercase());
+                self.export_bytes(ctx, name, ("Excel", "xlsx"), &bytes);
+            }
         }
         if let Some(kind) = export {
             if let Some(t) = self.session.analysis.report(&self.session.prj, kind) {

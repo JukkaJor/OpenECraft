@@ -30,6 +30,7 @@ enum Action {
     Set(String, usize, String),
     Replace(bool),
     Export,
+    ExportXlsx,
     Import,
     Jump(usize, u64),
 }
@@ -66,7 +67,10 @@ impl App {
                 if ui.button(tr("Export CSV…")).clicked() {
                     actions.push(Action::Export);
                 }
-                if ui.button(tr("Import CSV…")).on_hover_text(tr("Changed cells of a CSV exported here (rows by their key)")).clicked() {
+                if ui.button(tr("Export Excel…")).clicked() {
+                    actions.push(Action::ExportXlsx);
+                }
+                if ui.button(tr("Import CSV / Excel…")).on_hover_text(tr("Changed cells of a CSV or Excel file exported here (rows by their key)")).clicked() {
                     actions.push(Action::Import);
                 }
             });
@@ -152,6 +156,11 @@ impl App {
                 Action::Export => {
                     let csv = tables::to_csv(kind, &all);
                     self.export(ctx, format!("{}.csv", kind.key()), ("CSV", "csv"), csv);
+                }
+                Action::ExportXlsx => {
+                    let rows = openecraft_core::xlsx::rows_of_csv(&tables::to_csv(kind, &all));
+                    let bytes = openecraft_core::xlsx::write(&[(kind.title().to_string(), rows)]);
+                    self.export_bytes(ctx, format!("{}.xlsx", kind.key()), ("Excel", "xlsx"), &bytes);
                 }
                 Action::Import => self.io.open(ctx, Purpose::Table(kind)),
                 Action::Jump(page, id) => self.goto(page, id),

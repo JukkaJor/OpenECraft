@@ -11,6 +11,12 @@ fn reports_and_exports() {
     assert!(!bom["rows"].as_array().unwrap().is_empty());
     assert!(run(&mut s, "report", json!({ "kind": "device_list", "format": "csv" })).unwrap().as_str().unwrap().contains(';'));
     assert!(run(&mut s, "report", json!({ "kind": "parts" })).is_err());
+    let xlsx = dir.join("devices.xlsx");
+    assert!(run(&mut s, "report", json!({ "kind": "device_list", "format": "xlsx" })).is_err(), "xlsx needs a path");
+    run(&mut s, "report", json!({ "kind": "device_list", "format": "xlsx", "path": xlsx.to_str().unwrap() })).unwrap();
+    let sheets = openecraft_core::xlsx::read(&std::fs::read(&xlsx).unwrap()).unwrap();
+    assert_eq!(sheets[0].1[0][0], "Device tag");
+    assert!(sheets[0].1.len() > 3);
 
     let svg = run(&mut s, "export", json!({ "format": "svg", "page": "1" })).unwrap();
     assert!(svg.as_str().unwrap().contains("<svg"));

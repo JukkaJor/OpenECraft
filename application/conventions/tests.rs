@@ -142,6 +142,8 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     // 1 foundations
     ("geom", &[]),
     ("xml", &[]),
+    ("zip", &[]),
+    ("xlsx", &["xml", "zip"]),
     ("params", &[]),
     ("table", &["params"]),
     ("issue", &[]),
@@ -231,7 +233,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("integration", &["analysis", "issue", "model", "netlist", "panel", "parts", "wiring"]),
     // 8 project files, sharing, verification
     ("collab", &["model", "review"]),
-    ("archive", &["model", "pdf"]),
+    ("archive", &["model", "pdf", "zip"]),
     ("projects", &["archive", "index", "issue", "model", "properties", "verify"]),
     ("verify", &["analysis", "issue", "model", "options", "properties", "structure", "symbols"]),
     ("sample", &["geom", "harness", "model", "netlist", "ops", "panel", "parts", "potentials", "symbols", "wirenum"]),

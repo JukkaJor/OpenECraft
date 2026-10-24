@@ -148,7 +148,13 @@ impl App {
                 Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
             },
             Purpose::Drawing => self.import_drawing(ctx, &loaded),
-            Purpose::Table(kind) => self.import_table(ctx, kind, &loaded.text()),
+            Purpose::Table(kind) => {
+                let text = if openecraft_core::archive::is_archive(&loaded.bytes) { openecraft_core::xlsx::first_sheet_csv(&loaded.bytes) } else { Ok(loaded.text()) };
+                match text {
+                    Ok(text) => self.import_table(ctx, kind, &text),
+                    Err(e) => self.notify(ctx, tr_fmt!("Table import failed: {}", e)),
+                }
+            }
             Purpose::Dictionary => match translation::from_csv(&mut self.session.prj, &loaded.text()) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
                 Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),

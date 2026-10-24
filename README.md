@@ -325,6 +325,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   column or find and replace in the filtered rows; CSV export / import for changes in a
   spreadsheet (rows by key, only changed cells are applied); rows on released pages
   stay unchanged. Renaming a device moves its strip, plug and PLC card data along.
+  The round trip also works with **Excel** files (`.xlsx`: export, change, import);
+  report tables export as Excel workbooks from the Reports window and with `report
+  --format xlsx --path …` (bold, frozen header row with filter, numbers as numbers,
+  codes such as `007` kept as text).
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
   snapping, pan and zoom. Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View); a

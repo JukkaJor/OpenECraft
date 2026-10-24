@@ -91,4 +91,6 @@ pub mod translation;
 pub mod ttf;
 pub mod wirenum;
 pub mod wiring;
+pub mod xlsx;
 pub mod xml;
+pub mod zip;
