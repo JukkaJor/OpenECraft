@@ -1,24 +1,50 @@
 //! Built-in plugins, compiled into every front end. New features that add commands,
 //! checks, reports or exports register them here (see AGENTS.md, extensibility).
 
+use crate::params::{Args, Param};
 use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
 use openecraft_core::model::Project;
 use openecraft_core::analysis::Analysis;
 use openecraft_core::issue::Severity;
-use openecraft_core::structure;
 use openecraft_i18n::tr_const;
 use serde_json::Value;
 
+pub mod common;
+pub mod config;
+pub mod devices;
+pub mod drawing;
+pub mod electrical;
+pub mod engineering;
+pub mod field;
+pub mod integration;
+pub mod languages;
+pub mod management;
+pub mod pages;
+pub mod panel;
+pub mod plc;
+pub mod plugs;
+pub mod potentials;
+pub mod process;
+pub mod properties;
+pub mod reports;
+pub mod routing;
+pub mod sheets;
+pub mod singleline;
+pub mod structure;
+pub mod tables;
+pub mod wiring;
 mod lifecycle;
+#[cfg(test)]
+pub mod testing;
 mod manufacturing;
-mod panel;
+mod panel_checks;
 pub use lifecycle::PartLifecycle;
 pub use manufacturing::PanelManufacturing;
-pub use panel::PanelChecks;
+pub use panel_checks::PanelChecks;
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle)]
+    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(process::Process), Box::new(properties::Properties), Box::new(reports::ReportBlocks), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(wiring::Wiring)]
 }
 
 /// The built-in reports of `openecraft_core::reports` as a plugin, so that the Reports
@@ -105,7 +131,7 @@ impl Plugin for Statistics {
             }
             Ok(table)
         })
-        .exporter("device_tags", tr_const!("Device tags (text)"), "txt", |prj| Ok(structure::device_tags(prj).into_iter().map(|t| t + "\n").collect()));
+        .exporter("device_tags", tr_const!("Device tags (text)"), "txt", |prj| Ok(openecraft_core::structure::device_tags(prj).into_iter().map(|t| t + "\n").collect()));
         Ok(())
     }
 }
@@ -117,12 +143,34 @@ fn figures(prj: &Project, an: &Analysis) -> Vec<(&'static str, &'static str, usi
         ("pages", tr_const!("Pages"), prj.pages.len()),
         ("symbols", tr_const!("Symbols"), prj.pages.iter().map(|p| p.symbols.len()).sum()),
         ("wires", tr_const!("Wires"), prj.pages.iter().map(|p| p.wires.len()).sum()),
-        ("devices", tr_const!("Devices"), structure::device_tags(prj).len()),
+        ("devices", tr_const!("Devices"), openecraft_core::structure::device_tags(prj).len()),
         ("parts", tr_const!("Parts"), prj.parts.len()),
         ("cables", tr_const!("Cables"), prj.cables.len()),
         ("errors", tr_const!("Errors"), count(Severity::Error)),
         ("warnings", tr_const!("Warnings"), count(Severity::Warning)),
     ]
+}
+
+/// A built-in command: the data of one `Registry::command` call, so that an area lists
+/// its commands in a table (`COMMANDS`) like the tools of the command line.
+pub struct Spec {
+    pub name: &'static str,
+    pub help: &'static str,
+    pub params: &'static [Param],
+    pub run: fn(&mut Project, &Args) -> Result<Value, String>,
+}
+
+/// Registers the commands of a table.
+pub fn add_commands(reg: &mut Registry, specs: &[Spec]) -> Result<(), String> {
+    for s in specs {
+        reg.command(s.name, s.help, s.params.to_vec(), s.run);
+    }
+    Ok(())
+}
+
+/// Info of a built-in plugin, with the version of this crate.
+pub fn info(id: &str, name: &'static str, description: &'static str) -> Info {
+    Info { id: id.into(), name: Text::Borrowed(name), version: env!("CARGO_PKG_VERSION").into(), description: Text::Borrowed(description) }
 }
 
 #[cfg(test)]

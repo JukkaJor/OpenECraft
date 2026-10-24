@@ -4,7 +4,7 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 
 | Extension | What it is | Editor | Command line / MCP |
 | --- | --- | --- | --- |
-| Command | function on the project with typed parameters, returns JSON | *Plugins* menu (form for the parameters) | a command / tool of its own |
+| Command | function on the project with typed parameters, returns JSON | *Plugins* menu (one submenu per plugin, a form for the parameters) | a command / tool of its own |
 | Check | adds issues to the project check | *Check* tab | `check` |
 | Report | table generated from the project | *Reports* menu, report pages and report blocks | `report --kind <name>` |
 | Exporter | file generated from the project | *File › Export* | `export --format <name>` |
@@ -16,10 +16,16 @@ editor enables and disables them (remembered by the editor).
 
 ## Rust plugins
 
-Built-in plugins (project checks, project statistics, panel layout checks, panel
-manufacturing, part lifecycle) live in
-`crates/openecraft-api/src/builtin.rs` and its submodules and are compiled into
-every front end (also the web version). The project checks themselves are registry
+Built-in plugins live in `crates/openecraft-api/src/builtin.rs` and its submodules and
+are compiled into every front end (also the web version): the project checks, reports
+and exports of `openecraft-core`, project statistics, panel layout checks, panel
+manufacturing, part lifecycle, and one plugin per area of project commands (pages,
+sheets, drawing, devices, plugs, PLC, potentials, process engineering, single-line
+diagrams, tables, engineering, electrical engineering, panel layout, routing, field
+wiring, wiring, integration, languages, structure, properties, configurator, report
+blocks, project management). An area lists its commands in a `COMMANDS` table of
+`Spec`s (`builtin/<area>.rs`); the command line and the MCP server offer them as tools
+next to the session tools of `cli/`. The project checks themselves are registry
 entries of `openecraft_core::checks` (one `Check` per area, with a snake_case name),
 and the registry kinds, parameters and tables are defined in
 `openecraft_core::{ext, params, table}`. A plugin implements `Plugin`:

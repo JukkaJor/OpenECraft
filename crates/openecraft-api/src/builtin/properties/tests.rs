@@ -1,0 +1,100 @@
+use super::*;
+use crate::builtin::testing::*;
+
+fn motor_session() -> (Session, u64) {
+    let mut s = new_session();
+    let m = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "motor3", "x": 100, "y": 100 })).unwrap();
+    (s, m["id"].as_u64().unwrap())
+}
+
+#[test]
+fn definitions_are_listed_and_defined() {
+    let (mut s, _) = motor_session();
+    let all = run(&mut s, "list_property_definitions", json!({})).unwrap();
+    assert!(all.as_array().unwrap().len() > 300);
+    let motor = run(&mut s, "list_property_definitions", json!({ "class": "device", "filter": "speed" })).unwrap();
+    assert_eq!(motor[0]["key"], "device.speed");
+    assert_eq!(motor[0]["unit"], "rpm");
+    assert!(run(&mut s, "list_property_definitions", json!({ "class": "planet" })).is_err());
+
+    let d = run(&mut s, "define_property", json!({ "key": "user.zone", "name": "Zone", "class": "device", "type": "choice", "choices": "A, B" })).unwrap();
+    assert_eq!(d["choices"], json!(["A", "B"]));
+    assert!(run(&mut s, "define_property", json!({ "key": "device.note", "name": "x", "class": "device" })).is_err());
+    assert!(run(&mut s, "define_property", json!({ "key": "user.x", "name": "x", "class": "device", "type": "blob" })).is_err());
+    run(&mut s, "set_properties", json!({ "object": "device:-M1", "values": { "user.zone": "b" } })).unwrap();
+    let r = run(&mut s, "remove_property_definition", json!({ "key": "user.zone" })).unwrap();
+    assert_eq!(r["values_removed"], 1);
+}
+
+#[test]
+fn values_are_set_and_read() {
+    let (mut s, id) = motor_session();
+    let out = run(&mut s, "set_properties", json!({ "object": "device:-M1", "values": { "device.rated_power": 5.5, "device.description": "Pump", "device.sto": true } })).unwrap();
+    assert_eq!(out["values"]["device.rated_power"], "5.5");
+    assert_eq!(out["values"]["device.sto"], "true");
+    assert!(run(&mut s, "set_properties", json!({ "object": "device:-M1", "values": { "device.poles": "many" } })).is_err());
+    assert!(run(&mut s, "set_properties", json!({ "object": "device:-M9", "values": {} })).is_err());
+
+    let v = run(&mut s, "get_properties", json!({ "object": "device:-M1" })).unwrap();
+    assert_eq!(v["function_definition"], "fn.motor3");
+    let props = v["properties"].as_array().unwrap();
+    let power = props.iter().find(|p| p["key"] == "device.rated_power").unwrap();
+    assert_eq!((power["display"].as_str(), power["origin"].as_str()), (Some("5.5 kW"), Some("set")));
+    assert!(props.iter().any(|p| p["key"] == "device.description" && p["origin"] == "model"));
+    assert!(!props.iter().any(|p| p["key"] == "device.speed"));
+    let all = run(&mut s, "get_properties", json!({ "object": "device:-M1", "all": true, "filter": "rated speed" })).unwrap();
+    assert_eq!(all["properties"].as_array().unwrap().len(), 1);
+
+    run(&mut s, "set_properties", json!({ "object": format!("function:{id}"), "values": { "function.note": "check" } })).unwrap();
+    run(&mut s, "set_properties", json!({ "object": "page:1", "values": { "page.drawing_number": "D-1" } })).unwrap();
+    run(&mut s, "set_properties", json!({ "object": "project", "values": { "project.customer": "ACME" } })).unwrap();
+    assert_eq!(s.project().unwrap().info.properties["project.customer"], "ACME");
+}
+
+#[test]
+fn function_definitions_are_defined_and_assigned() {
+    let (mut s, id) = motor_session();
+    let list = run(&mut s, "list_function_definitions", json!({ "filter": "motor" })).unwrap();
+    let m3 = list.as_array().unwrap().iter().find(|d| d["key"] == "fn.motor3").unwrap();
+    assert_eq!(m3["used"], 1);
+    let d = run(
+        &mut s,
+        "define_function",
+        json!({ "key": "user.pump_motor", "from": "fn.motor3", "name": "Pump motor", "scheme": "Motor data", "defaults": { "device.rated_power": "7,5", "device.efficiency_class": "IE3" } }),
+    )
+    .unwrap();
+    assert_eq!(d["defaults"]["device.rated_power"], "7.5");
+    assert_eq!(d["letter"], "M");
+    assert!(run(&mut s, "define_function", json!({ "key": "user.x", "scheme": "Nope" })).is_err());
+    assert!(run(&mut s, "define_function", json!({ "key": "user.x", "defaults": { "device.ip": "IP99" } })).is_err());
+
+    let a = run(&mut s, "assign_function_definition", json!({ "id": id, "function": "user.pump_motor" })).unwrap();
+    assert_eq!((a["function"].as_str(), a["scheme"].as_str()), (Some("user.pump_motor"), Some("Motor data")));
+    let v = run(&mut s, "get_properties", json!({ "object": "device:-M1", "filter": "efficiency class" })).unwrap();
+    assert_eq!(v["properties"][0]["origin"], "function_definition");
+    let r = run(&mut s, "remove_function_definition", json!({ "key": "user.pump_motor" })).unwrap();
+    assert_eq!(r["symbols_reset"], 1);
+    assert!(run(&mut s, "remove_function_definition", json!({ "key": "fn.motor3" })).is_err());
+}
+
+#[test]
+fn properties_are_placed_and_schemes_reused() {
+    let (mut s, id) = motor_session();
+    run(&mut s, "set_properties", json!({ "object": "device:-M1", "values": { "device.rated_power": "4", "device.speed": "1450" } })).unwrap();
+    let p = run(&mut s, "place_property", json!({ "id": id, "key": "device.rated_power", "name": true })).unwrap();
+    assert_eq!(p["text"], "Rated power: 4 kW");
+    run(&mut s, "place_property", json!({ "id": id, "key": "device.supplementary[3]" })).unwrap();
+    assert!(run(&mut s, "place_property", json!({ "id": id, "key": "device.supplementary[300]" })).is_err());
+    let sc = run(&mut s, "save_property_scheme", json!({ "name": "Motor plate", "id": id })).unwrap();
+    assert_eq!(sc["entries"].as_array().unwrap().len(), 2);
+
+    let m2 = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "motor3", "x": 200, "y": 100 })).unwrap()["id"].as_u64().unwrap();
+    let r = run(&mut s, "apply_property_scheme", json!({ "name": "Motor plate", "ids": [m2] })).unwrap();
+    assert_eq!(r["symbols"], 1);
+    let r = run(&mut s, "apply_property_scheme", json!({ "name": "Motor plate" })).unwrap();
+    assert_eq!(r["symbols"], 2);
+    let list = run(&mut s, "list_property_schemes", json!({})).unwrap();
+    let mine = list.as_array().unwrap().iter().find(|x| x["name"] == "Motor plate").unwrap();
+    assert_eq!(mine["used"], 2);
+    assert!(run(&mut s, "apply_property_scheme", json!({ "name": "Nope" })).is_err());
+}

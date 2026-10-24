@@ -97,8 +97,13 @@ refer to each other (the registry kinds take an `&Analysis`).
    offer them at once. A built-in check goes into `openecraft_core::checks::builtin`,
    a built-in report into `reports::builtin` (one `ReportKind` with a name and title
    key), a built-in export into `exporters::builtin`; the built-in plugins of
-   `openecraft-api` publish these lists. Front ends never special-case one of them:
-   they enumerate `Plugins`.
+   `openecraft-api` publish these lists. A command on the project is an entry of the
+   `COMMANDS` table of its area in `crates/openecraft-api/src/builtin/<area>.rs`
+   (`fn(&mut Project, &Args) -> Result<Value, String>`, tested through the
+   `builtin::testing` session). Only tools that need the session or the machine
+   (project files, undo, exports to files, the parts server) stay `Tool`s in
+   `cli/src/tools/`. Front ends never special-case one of them: they enumerate
+   `Plugins`.
 4. UI: a module under `application/app/` that draws and sends actions; rules that
    change the project go to core (`ops` or the feature module) so the command line can
    use them.

@@ -1,256 +1,456 @@
-//! Panel layout checks: collisions, clearances (mounting, ventilation, EMC), service
-//! space, heights above the floor, collision classes, the thermal simulation and
-//! manufacturability ([`openecraft_core::panel::validate`]), with commands for their
-//! rules.
+//! Panel layout commands: enclosure systems and their components, accessories on the
+//! plate, the door and the walls, fastening, parametric placement (anchors, patterns,
+//! aligning, rails), assemblies and 3D macros.
 
+use crate::builtin::common::enclosure_index;
 use crate::params::{optional, param, Args, Kind};
-use crate::Registry;
-use crate::{Info, Plugin, Text};
+use crate::{Info, Plugin, Registry};
+use super::{add_commands, info, Spec};
+use openecraft_core::geom::p;
 use openecraft_core::model::Project;
-use openecraft_core::panel::{self, thermal, ClassRule, Enclosure, PanelRules};
-use openecraft_core::issue::Issue;
-use openecraft_i18n::{tr, tr_const, tr_fmt};
+use openecraft_core::panel::{self, Align, AlignTo, Anchor, Enclosure, Face, Fastening, ItemGroup, PanelItem};
+use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 
-const ENCLOSURE: &str = tr_const!("Enclosure (location, e.g. +CAB1)");
-const CLASS: &str = tr_const!("Collision class: power, drive, control, signal, terminal, rail, duct, busbar, cutout, accessory, an own class or * for any");
+pub struct Panel;
 
-pub struct PanelChecks;
-
-impl Plugin for PanelChecks {
+impl Plugin for Panel {
     fn info(&self) -> Info {
-        Info {
-            id: "panel_checks".into(),
-            name: Text::Borrowed(tr_const!("Panel layout checks")),
-            version: env!("CARGO_PKG_VERSION").into(),
-            description: Text::Borrowed(tr_const!("Clearances, service space, heights, collision classes, thermal simulation and manufacturability of the panel layout")),
-        }
+        info("panel", tr_const!("Panel layout"), tr_const!("Enclosures, panel items, accessories and panel macros"))
     }
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
-        reg.check("panel_layout", tr_const!("Panel layout checks"), |prj, _| {
-            Ok(prj.layout.enclosures.iter().flat_map(|e| panel::validate(prj, e)).map(|f| Issue { severity: f.severity, message: f.message, target: None }).collect())
-        })
-        .command(
-            "check_panel",
-            tr_const!("Checks the panel layout: collisions, clearances (mounting, ventilation, EMC), service space, heights above the floor, collision classes, temperatures and manufacturability"),
-            vec![optional("enclosure", Kind::Str, ENCLOSURE)],
-            |prj, a| check_panel(prj, a),
-        )
-        .command(
-            "panel_thermal",
-            tr_const!("Thermal simulation of the mounting plate: air temperatures, hot spot, heat sources and the temperature at every device"),
-            vec![param("enclosure", Kind::Str, ENCLOSURE)],
-            |prj, a| panel_thermal(prj, a),
-        )
-        .command(
-            "panel_rules",
-            tr_const!("Shows or changes the rules of the panel layout checks; values in mm (temperature in °C)"),
-            vec![
-                optional("device_gap", Kind::Num, tr_const!("Gap between devices side by side")),
-                optional("duct_gap", Kind::Num, tr_const!("Distance of devices to cable ducts")),
-                optional("edge_distance", Kind::Num, tr_const!("Distance of devices to the plate edge")),
-                optional("service_space", Kind::Num, tr_const!("Free space in front of every device on the plate")),
-                optional("operating_min", Kind::Num, tr_const!("Lowest device above the floor")),
-                optional("operating_max", Kind::Num, tr_const!("Highest device above the floor (0: not checked)")),
-                optional("actuator_min", Kind::Num, tr_const!("Lowest actuator on the door above the floor")),
-                optional("actuator_max", Kind::Num, tr_const!("Highest actuator on the door above the floor (0: not checked)")),
-                optional("terminal_min", Kind::Num, tr_const!("Lowest terminal above the floor")),
-                optional("device_temperature", Kind::Num, tr_const!("Highest air temperature at devices without data (0: not checked)")),
-                optional("stratification", Kind::Num, tr_const!("Temperature rise at the roof against the middle (1 … 2)")),
-                optional("hole_web", Kind::Num, tr_const!("Smallest web between holes")),
-                optional("hole_edge", Kind::Num, tr_const!("Smallest distance of holes from the sheet edge")),
-                optional("cutout_web", Kind::Num, tr_const!("Smallest web at cutouts")),
-                optional("min_profile", Kind::Num, tr_const!("Shortest rail, duct or busbar")),
-                optional("stock_length", Kind::Num, tr_const!("Stock length of rails, ducts and busbars")),
-                optional("reset", Kind::Bool, tr_const!("Back to the default rules first")),
-            ],
-            panel_rules,
-        )
-        .command(
-            "set_collision_rule",
-            tr_const!("Sets the distance between two collision classes or lets them overlap; replaces the rule of the same classes"),
-            vec![
-                param("a", Kind::Str, CLASS),
-                param("b", Kind::Str, CLASS),
-                optional("distance", Kind::Num, tr_const!("Smallest distance in mm")),
-                optional("ignore", Kind::Bool, tr_const!("The classes may overlap (no collision)")),
-                optional("remove", Kind::Bool, tr_const!("Removes the rule")),
-            ],
-            set_collision_rule,
-        )
-        .command(
-            "set_item_class",
-            tr_const!("Sets the collision class of a panel item (empty: automatic)"),
-            vec![param("enclosure", Kind::Str, ENCLOSURE), param("id", Kind::Int, tr_const!("Item id")), param("class", Kind::Str, CLASS)],
-            set_item_class,
-        )
-        .command(
-            "set_enclosure_elevation",
-            tr_const!("Sets the height of the enclosure's bottom above the floor (heights of devices, terminals and actuators are checked)"),
-            vec![param("enclosure", Kind::Str, ENCLOSURE), param("elevation", Kind::Num, tr_const!("Height in mm without plinth; negative: unknown (wall mounted)"))],
-            set_enclosure_elevation,
-        )
-        .command(
-            "set_enclosure_site",
-            tr_const!("Places the line-up of an enclosure in the room (3D view of all enclosures); without x and z it is placed from the plant layout or next to the other line-ups"),
-            vec![
-                param("enclosure", Kind::Str, ENCLOSURE),
-                optional("x", Kind::Num, tr_const!("Rear left corner of the line-up in mm, to the right")),
-                optional("z", Kind::Num, tr_const!("Rear left corner of the line-up in mm, towards the front")),
-                optional("angle", Kind::Num, tr_const!("Turn about the vertical in degrees, counter-clockwise seen from above (90: the fronts face to the right)")),
-            ],
-            set_enclosure_site,
-        );
-        Ok(())
+        add_commands(reg, COMMANDS)
     }
 }
 
-fn enclosure_index(prj: &Project, name: &str) -> Result<usize, String> {
-    prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))
+pub static COMMANDS: &[Spec] = &[
+    Spec {
+        name: "list_enclosures",
+        help: tr_const!("Lists the enclosures with their system, components (assembly), items per face and assemblies"),
+        params: &[optional("enclosure", Kind::Str, ENCLOSURE)],
+        run: list_enclosures,
+    },
+    Spec {
+        name: "add_enclosure",
+        help: tr_const!("Adds an enclosure: of a system in one of its sizes (or a custom size), or from an enclosure part"),
+        params: &[
+            param("name", Kind::Str, ENCLOSURE),
+            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box or plastic")),
+            optional("part", Kind::Str, tr_const!("Enclosure part number")),
+            optional("width", Kind::Num, tr_const!("Width in mm")),
+            optional("height", Kind::Num, tr_const!("Height in mm")),
+            optional("depth", Kind::Num, tr_const!("Depth in mm")),
+        ],
+        run: add_enclosure,
+    },
+    Spec {
+        name: "set_enclosure",
+        help: tr_const!("Changes the system, size and components of an enclosure (plinth, bayed sides, gland plate); anchored items follow"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box or plastic; empty for none")),
+            optional("width", Kind::Num, tr_const!("Width in mm")),
+            optional("height", Kind::Num, tr_const!("Height in mm")),
+            optional("depth", Kind::Num, tr_const!("Depth in mm")),
+            optional("plinth", Kind::Num, tr_const!("Plinth height in mm, 0 without plinth")),
+            optional("left_open", Kind::Bool, tr_const!("Left side bayed (no side panel)")),
+            optional("right_open", Kind::Bool, tr_const!("Right side bayed (no side panel)")),
+            optional("gland_plate", Kind::Bool, tr_const!("Bottom with removable gland plate")),
+        ],
+        run: set_enclosure,
+    },
+    Spec {
+        name: "bay_enclosure",
+        help: tr_const!("Bays an enclosure side by side to the right of another one (line-up); without right_of it leaves its line-up"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            optional("right_of", Kind::Str, tr_const!("Enclosure it stands right of; empty to take it out of its line-up")),
+        ],
+        run: bay_enclosure,
+    },
+    Spec {
+        name: "add_cable_passage",
+        help: tr_const!("Adds a cable passage to the right neighbour: round cutouts facing each other in both side walls; wires between the enclosures run through it"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            optional("y", Kind::Num, tr_const!("Centre from the top of the enclosure in mm")),
+            optional("z", Kind::Num, tr_const!("Centre from the rear wall in mm")),
+            optional("diameter", Kind::Num, tr_const!("Diameter in mm")),
+        ],
+        run: add_cable_passage,
+    },
+    Spec {
+        name: "place_accessory",
+        help: tr_const!("Places an enclosure accessory (fan, filter, cable gland, light, handle, PE bar) on a face"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            param("part", Kind::Str, tr_const!("Accessory part number, e.g. GEN.GLAND-M25")),
+            param("face", Kind::Str, FACE),
+            optional("x", Kind::Num, tr_const!("Left edge on the face in mm")),
+            optional("y", Kind::Num, tr_const!("Top edge on the face in mm")),
+            optional("anchor_x", Kind::Str, ANCHOR),
+            optional("anchor_y", Kind::Str, ANCHOR),
+            optional("fastening", Kind::Str, tr_const!("auto, tapped, through, rivet_nut, stud, clip or adhesive")),
+        ],
+        run: place_accessory,
+    },
+    Spec {
+        name: "set_panel_item",
+        help: tr_const!("Changes position, face, fastening or anchors of a panel item"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            param("id", Kind::Int, tr_const!("Item id")),
+            optional("x", Kind::Num, tr_const!("Left edge on the face in mm")),
+            optional("y", Kind::Num, tr_const!("Top edge on the face in mm")),
+            optional("z", Kind::Num, tr_const!("Distance from the face in mm (rails: standoff height)")),
+            optional("face", Kind::Str, FACE),
+            optional("anchor_x", Kind::Str, ANCHOR),
+            optional("anchor_y", Kind::Str, ANCHOR),
+            optional("fastening", Kind::Str, tr_const!("auto, tapped, through, rivet_nut, stud, clip or adhesive")),
+        ],
+        run: set_panel_item,
+    },
+    Spec {
+        name: "arrange_panel_items",
+        help: tr_const!("Aligns items, spaces them evenly, lines devices up on a rail or copies items in a pattern"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            param("ids", Kind::Ids, IDS),
+            param("action", Kind::Str, tr_const!("left, center_x, right, top, center_y, bottom, distribute_x, distribute_y, rail or pattern")),
+            optional("rail", Kind::Int, tr_const!("Rail id (action rail)")),
+            optional("gap", Kind::Num, tr_const!("Gap between the devices on the rail in mm")),
+            optional("columns", Kind::Int, tr_const!("Columns of the pattern")),
+            optional("rows", Kind::Int, tr_const!("Rows of the pattern")),
+            optional("pitch_x", Kind::Num, tr_const!("Horizontal pitch of the pattern in mm")),
+            optional("pitch_y", Kind::Num, tr_const!("Vertical pitch of the pattern in mm")),
+        ],
+        run: arrange_panel_items,
+    },
+    Spec {
+        name: "group_panel_items",
+        help: tr_const!("Groups items into an assembly that is selected and moved together; without a name the items leave their assemblies"),
+        params: &[param("enclosure", Kind::Str, ENCLOSURE), param("ids", Kind::Ids, IDS), optional("name", Kind::Str, tr_const!("Name of the assembly"))],
+        run: group_panel_items,
+    },
+    Spec {
+        name: "list_panel_macros",
+        help: tr_const!("Lists the 3D macros: the project's own and the built-in ones"),
+        params: &[],
+        run: list_panel_macros,
+    },
+    Spec {
+        name: "save_panel_macro",
+        help: tr_const!("Saves items of an enclosure as a 3D macro of the project"),
+        params: &[param("enclosure", Kind::Str, ENCLOSURE), param("ids", Kind::Ids, IDS), param("name", Kind::Str, tr_const!("Macro name"))],
+        run: save_panel_macro,
+    },
+    Spec {
+        name: "insert_panel_macro",
+        help: tr_const!("Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face"),
+        params: &[
+            param("enclosure", Kind::Str, ENCLOSURE),
+            param("macro", Kind::Str, tr_const!("Macro name")),
+            optional("face", Kind::Str, FACE),
+            optional("x", Kind::Num, tr_const!("Left edge on the face in mm")),
+            optional("y", Kind::Num, tr_const!("Top edge on the face in mm")),
+        ],
+        run: insert_panel_macro,
+    },
+];
+
+const ENCLOSURE: &str = tr_const!("Enclosure (location, e.g. +CAB1)");
+
+const IDS: &str = tr_const!("Item ids");
+
+const FACE: &str = tr_const!("plate, door, left, right, rear, roof or bottom");
+
+const ANCHOR: &str = tr_const!("Anchor along the axis: free, start:<mm>, center:<mm>, end:<mm> or stretch:<mm>,<mm>");
+
+fn face_arg(a: &Args, name: &str) -> Result<Option<Face>, String> {
+    a.str(name).map(|f| Face::from_key(f).ok_or_else(|| tr_fmt!("Unknown face: {}", f))).transpose()
 }
 
-fn rules_json(r: &PanelRules) -> Value {
+fn align_arg(a: &Args, name: &str) -> Result<Option<Align>, String> {
+    a.str(name).map(|v| Align::parse(v).ok_or_else(|| tr_fmt!("Unknown anchor: {}", v))).transpose()
+}
+
+fn fastening_arg(a: &Args) -> Result<Option<Fastening>, String> {
+    a.str("fastening").map(|v| Fastening::from_key(v).ok_or_else(|| tr_fmt!("Unknown fastening: {}", v))).transpose()
+}
+
+fn bool_arg(a: &Args, name: &str) -> Option<bool> {
+    a.value(name).and_then(Value::as_bool)
+}
+
+fn item_json(prj: &Project, it: &PanelItem) -> Value {
+    let part = prj.parts.iter().chain(openecraft_core::parts::catalog()).find(|p| p.number == it.part);
     json!({
-        "device_gap": r.device_gap,
-        "duct_gap": r.duct_gap,
-        "edge_distance": r.edge_distance,
-        "service_space": r.service_space,
-        "operating": [r.operating_min, r.operating_max],
-        "actuator": [r.actuator_min, r.actuator_max],
-        "terminal_min": r.terminal_min,
-        "device_temperature": r.device_temperature,
-        "stratification": r.stratification,
-        "hole_web": r.hole_web,
-        "hole_edge": r.hole_edge,
-        "cutout_web": r.cutout_web,
-        "min_profile": r.min_profile,
-        "stock_length": r.stock_length,
-        "classes": r.classes.iter().map(|c| json!({ "a": c.a, "b": c.b, "distance": c.distance, "ignore": c.ignore })).collect::<Vec<_>>(),
+        "id": it.id,
+        "kind": format!("{:?}", it.kind).to_lowercase(),
+        "tag": it.tag,
+        "part": it.part,
+        "face": it.face.key(),
+        "x": it.x, "y": it.y, "w": it.w, "h": it.h, "z": it.z, "d": it.d,
+        "fastening": Fastening::resolve(it, part).key(),
+        "anchor": [it.anchor.x.text(), it.anchor.y.text()],
+        "group": it.group,
     })
 }
 
-fn findings_json(prj: &Project, e: &Enclosure) -> Vec<Value> {
-    panel::validate(prj, e)
+/// Line-up of an enclosure: neighbours and the cable passages to the right one.
+fn lineup_json(prj: &Project, ei: usize) -> Value {
+    let (left, right) = panel::neighbours(&prj.layout, ei);
+    let name = |i: Option<usize>| i.map(|i| prj.layout.enclosures[i].name.clone());
+    let pos = panel::positions(&prj.layout);
+    let passages: Vec<Value> = panel::passages(&prj.layout, &pos, ei)
         .into_iter()
-        .map(|f| json!({ "enclosure": e.name, "check": f.kind.key(), "severity": f.severity.key(), "items": f.items, "message": f.message }))
-        .collect()
+        .map(|x| json!({ "y": x.at[1] - pos[ei][1], "z": x.at[2] - pos[ei][2], "cutouts": [x.cutouts.0, x.cutouts.1] }))
+        .collect();
+    json!({ "right_of": name(left), "left_of": name(right), "position": pos[ei], "passages_right": passages })
 }
 
-fn check_panel(prj: &Project, a: &Args) -> Result<Value, String> {
-    let list: Vec<&Enclosure> = match a.str("enclosure") {
+fn enclosure_json(prj: &Project, e: &Enclosure) -> Value {
+    let components: Vec<Value> = panel::components(e).into_iter().map(|c| json!({ "role": c.role.title(), "part": c.part, "count": c.count })).collect();
+    let faces: Vec<Value> = Face::ALL
+        .into_iter()
+        .filter_map(|f| {
+            let items: Vec<Value> = e.items.iter().filter(|i| i.face == f).map(|i| item_json(prj, i)).collect();
+            (!items.is_empty()).then(|| json!({ "face": f.key(), "items": items }))
+        })
+        .collect();
+    let ei = prj.layout.enclosures.iter().position(|x| std::ptr::eq(x, e)).unwrap_or(0);
+    json!({
+        "name": e.name,
+        "lineup": lineup_json(prj, ei),
+        "system": e.build.system,
+        "part": e.part,
+        "size": [e.width, e.height, e.depth],
+        "plinth": e.build.plinth,
+        "bayed": [e.build.left_open, e.build.right_open],
+        "gland_plate": e.build.gland_plate,
+        "components": components,
+        "faces": faces,
+        "assemblies": e.groups.iter().map(|g| json!({ "id": g.id, "name": g.name, "items": panel::group_members(e, g.id) })).collect::<Vec<_>>(),
+        "problems": panel::problem_items(prj, e).into_iter().collect::<Vec<_>>(),
+    })
+}
+
+fn list_enclosures(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let list = match a.str("enclosure") {
         Some(name) => vec![&prj.layout.enclosures[enclosure_index(prj, name)?]],
         None => prj.layout.enclosures.iter().collect(),
     };
-    let findings: Vec<Value> = list.into_iter().flat_map(|e| findings_json(prj, e)).collect();
-    let warnings = findings.iter().filter(|f| f["severity"] == "warning").count();
-    Ok(json!({ "warnings": warnings, "findings": findings }))
+    Ok(Value::Array(list.into_iter().map(|e| enclosure_json(prj, e)).collect()))
 }
 
-fn panel_thermal(prj: &Project, a: &Args) -> Result<Value, String> {
-    let e = &prj.layout.enclosures[enclosure_index(prj, a.req("enclosure"))?];
-    let map = thermal::heat_map(prj, e);
-    let tag = |id: u64| panel::item_name(e, id);
-    let round = |v: f32| (v * 10.0).round() / 10.0;
-    Ok(json!({
-        "mean_c": round(map.mean),
-        "bottom_c": round(map.bottom),
-        "top_c": round(map.top),
-        "min_c": round(map.min),
-        "max_c": round(map.max),
-        "hottest": [round(map.hottest.x), round(map.hottest.y)],
-        "sources": map.sources.iter().map(|s| json!({ "device": tag(s.id), "power_loss_w": s.loss, "rise_k": round(s.rise) })).collect::<Vec<_>>(),
-        "devices": thermal::device_temperatures(prj, e, &map)
-            .into_iter()
-            .map(|t| json!({ "device": t.tag, "air_c": round(t.temperature), "limit_c": t.limit, "too_warm": t.limit.is_some_and(|l| t.temperature > l) }))
-            .collect::<Vec<_>>(),
-    }))
-}
-
-fn panel_rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let r = &mut prj.layout.checks;
-    if a.flag("reset") {
-        *r = PanelRules::default();
+fn add_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let name = a.req("name").to_string();
+    if prj.layout.enclosures.iter().any(|e| e.name == name) {
+        return Err(tr_fmt!("Enclosure {} exists already", name));
     }
-    for (name, field) in [
-        ("device_gap", &mut r.device_gap),
-        ("duct_gap", &mut r.duct_gap),
-        ("edge_distance", &mut r.edge_distance),
-        ("service_space", &mut r.service_space),
-        ("operating_min", &mut r.operating_min),
-        ("operating_max", &mut r.operating_max),
-        ("actuator_min", &mut r.actuator_min),
-        ("actuator_max", &mut r.actuator_max),
-        ("terminal_min", &mut r.terminal_min),
-        ("device_temperature", &mut r.device_temperature),
-        ("hole_web", &mut r.hole_web),
-        ("hole_edge", &mut r.hole_edge),
-        ("cutout_web", &mut r.cutout_web),
-        ("min_profile", &mut r.min_profile),
-        ("stock_length", &mut r.stock_length),
-    ] {
+    let mut e = panel::new_enclosure(prj, a.str("part").unwrap_or(""), &name);
+    if let Some(system) = a.str("system") {
+        if panel::SYSTEMS.iter().all(|x| x.id() != system) {
+            return Err(tr_fmt!("Unknown enclosure system: {}", system));
+        }
+        let size = e.system().filter(|x| x.id() == system).map(|_| (e.width, e.height, e.depth));
+        let size = size.or_else(|| panel::SYSTEMS.iter().find(|x| x.id() == system).and_then(|x| x.data.sizes.first().copied()));
+        panel::apply_system(&mut e, system, size);
+    }
+    resize(&mut e, a);
+    prj.layout.enclosures.push(e);
+    Ok(enclosure_json(prj, prj.layout.enclosures.last().unwrap()))
+}
+
+fn resize(e: &mut Enclosure, a: &Args) {
+    for (name, field) in [("width", &mut e.width), ("height", &mut e.height), ("depth", &mut e.depth)] {
         if let Some(v) = a.num(name) {
-            *field = v.max(0.0);
+            *field = v.max(50.0);
         }
     }
-    if let Some(v) = a.num("stratification") {
-        r.stratification = v.clamp(1.0, 2.0);
-    }
-    Ok(rules_json(r))
+    panel::sync_part(e);
+    panel::apply_anchors(e);
 }
 
-fn set_collision_rule(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let (ca, cb) = (a.req("a").trim().to_ascii_lowercase(), a.req("b").trim().to_ascii_lowercase());
-    if ca.is_empty() || cb.is_empty() {
-        return Err(tr("Both classes are needed").to_string());
+fn set_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let e = &mut prj.layout.enclosures[ei];
+    if let Some(system) = a.str("system") {
+        if !system.is_empty() && panel::SYSTEMS.iter().all(|x| x.id() != system) {
+            return Err(tr_fmt!("Unknown enclosure system: {}", system));
+        }
+        panel::apply_system(e, system, None);
     }
-    let classes = &mut prj.layout.checks.classes;
-    let same = |r: &ClassRule| (r.a == ca && r.b == cb) || (r.a == cb && r.b == ca);
-    let at = classes.iter().position(same);
-    if a.flag("remove") {
-        let i = at.ok_or_else(|| tr_fmt!("No rule for {} and {}", ca, cb))?;
-        classes.remove(i);
-    } else {
-        let rule = ClassRule { a: ca, b: cb, distance: a.num("distance").unwrap_or(0.0).max(0.0), ignore: a.flag("ignore") };
-        match at {
-            Some(i) => classes[i] = rule,
-            None => classes.push(rule),
+    if let Some(v) = a.num("plinth") {
+        e.build.plinth = v.max(0.0);
+    }
+    for (name, field) in [("left_open", &mut e.build.left_open), ("right_open", &mut e.build.right_open), ("gland_plate", &mut e.build.gland_plate)] {
+        if let Some(v) = bool_arg(a, name) {
+            *field = v;
         }
     }
-    Ok(rules_json(&prj.layout.checks))
+    resize(e, a);
+    Ok(enclosure_json(prj, &prj.layout.enclosures[ei]))
 }
 
-fn set_item_class(prj: &mut Project, a: &Args) -> Result<Value, String> {
+fn bay_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    match a.str("right_of").filter(|n| !n.trim().is_empty()) {
+        Some(left) => {
+            let li = enclosure_index(prj, left.trim())?;
+            if !panel::bay_right_of(prj, ei, li) {
+                return Err(tr_fmt!("{} cannot be bayed to itself", prj.layout.enclosures[ei].name));
+            }
+        }
+        None => panel::unbay(prj, ei),
+    }
+    let lineup: Vec<&str> = panel::lineup_of(&prj.layout, ei).into_iter().map(|i| prj.layout.enclosures[i].name.as_str()).collect();
+    Ok(json!({ "lineup": lineup }))
+}
+
+fn add_cable_passage(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let Some(right) = panel::neighbours(&prj.layout, ei).1 else {
+        return Err(tr_fmt!("{} has no enclosure bayed to its right side", prj.layout.enclosures[ei].name));
+    };
+    let (y, z) = panel::next_passage_place(&prj.layout, ei);
+    let (y, z) = (a.num("y").unwrap_or(y), a.num("z").unwrap_or(z));
+    let ids = panel::add_passage(prj, ei, y, z, a.num("diameter").unwrap_or(panel::PASSAGE_DIAMETER).max(1.0));
+    let (left_name, right_name) = (prj.layout.enclosures[ei].name.clone(), prj.layout.enclosures[right].name.clone());
+    Ok(json!({ "cutouts": ids, "from": left_name, "to": right_name, "lineup": lineup_json(prj, ei) }))
+}
+
+fn place_accessory(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let face = face_arg(a, "face")?.unwrap_or_default();
+    let part = a.req("part").to_string();
+    let known = prj.parts.iter().chain(openecraft_core::parts::catalog()).find(|p| p.number == part).cloned();
+    let pd = known.ok_or_else(|| tr_fmt!("Unknown part: {}", part))?;
+    if !panel::allowed_faces(&pd).contains(&face) {
+        return Err(tr_fmt!("{} cannot be mounted on the {}", part, face.title()));
+    }
+    let mut it = panel::new_accessory(prj, &part, face, p(a.num("x").unwrap_or(0.0), a.num("y").unwrap_or(0.0)));
+    it.fastening = fastening_arg(a)?.unwrap_or_default();
+    it.anchor = Anchor { x: align_arg(a, "anchor_x")?.unwrap_or_default(), y: align_arg(a, "anchor_y")?.unwrap_or_default() };
+    let e = &mut prj.layout.enclosures[ei];
+    panel::apply_one_anchor(e, &mut it);
+    let id = it.id;
+    e.items.push(it);
+    Ok(item_json(prj, prj.layout.enclosures[ei].item(id).unwrap()))
+}
+
+fn set_panel_item(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ei = enclosure_index(prj, a.req("enclosure"))?;
     let id = a.int("id").unwrap_or(0) as u64;
-    let it = prj.layout.enclosures[ei].items.iter_mut().find(|i| i.id == id).ok_or_else(|| tr_fmt!("No item {}", id))?;
-    it.class = a.req("class").trim().to_ascii_lowercase();
-    let it = &prj.layout.enclosures[ei].items.iter().find(|i| i.id == id).unwrap();
-    let class = panel::item_class(prj, &panel::device_kinds(prj), it);
-    Ok(json!({ "id": id, "class": class, "automatic": it.class.is_empty() }))
-}
-
-fn set_enclosure_elevation(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let ei = enclosure_index(prj, a.req("enclosure"))?;
-    let v = a.num("elevation").unwrap_or(-1.0);
+    let (face, fastening, ax, ay) = (face_arg(a, "face")?, fastening_arg(a)?, align_arg(a, "anchor_x")?, align_arg(a, "anchor_y")?);
     let e = &mut prj.layout.enclosures[ei];
-    e.elevation = (v >= 0.0).then_some(v);
-    Ok(json!({ "enclosure": e.name, "elevation": e.elevation, "floor_height": panel::floor_height(e) }))
+    let idx = e.items.iter().position(|i| i.id == id).ok_or_else(|| tr_fmt!("No item {}", id))?;
+    let mut it = e.items[idx].clone();
+    let moved = a.num("x").is_some() || a.num("y").is_some();
+    for (name, field) in [("x", &mut it.x), ("y", &mut it.y), ("z", &mut it.z)] {
+        if let Some(v) = a.num(name) {
+            *field = v;
+        }
+    }
+    if let Some(f) = face {
+        it.face = f;
+    }
+    if let Some(f) = fastening {
+        it.fastening = f;
+    }
+    if moved && ax.is_none() && ay.is_none() {
+        it.anchor = it.anchor.capture(&it, e.face_size(it.face));
+    }
+    it.anchor = Anchor { x: ax.unwrap_or(it.anchor.x), y: ay.unwrap_or(it.anchor.y) };
+    panel::apply_one_anchor(e, &mut it);
+    panel::snap_to_rail(e, &mut it);
+    e.items[idx] = it;
+    Ok(item_json(prj, &prj.layout.enclosures[ei].items[idx]))
 }
 
-fn set_enclosure_site(prj: &mut Project, a: &Args) -> Result<Value, String> {
+fn arrange_panel_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ei = enclosure_index(prj, a.req("enclosure"))?;
-    let place = match (a.num("x"), a.num("z")) {
-        (None, None) => None,
-        (x, z) => Some(panel::SitePlace { x: x.unwrap_or_default(), z: z.unwrap_or_default(), angle: a.num("angle").unwrap_or_default() }),
+    let ids = a.ids("ids");
+    let action = a.req("action").to_string();
+    let mut created = Vec::new();
+    let e = &mut prj.layout.enclosures[ei];
+    match action.as_str() {
+        "distribute_x" => panel::distribute(e, &ids, true),
+        "distribute_y" => panel::distribute(e, &ids, false),
+        "rail" => {
+            let rail = a.int("rail").unwrap_or(0) as u64;
+            if e.item(rail).is_none() {
+                return Err(tr_fmt!("No item {}", rail));
+            }
+            if !panel::arrange_on_rail(e, rail, &ids, a.num("gap").unwrap_or(0.0)) {
+                return Err(tr_fmt!("The devices do not fit onto rail {}", rail));
+            }
+        }
+        "pattern" => {
+            let (nx, ny) = (a.int("columns").unwrap_or(1).max(1) as usize, a.int("rows").unwrap_or(1).max(1) as usize);
+            created = panel::pattern_copy(prj, ei, &ids, nx, ny, a.num("pitch_x").unwrap_or(0.0), a.num("pitch_y").unwrap_or(0.0));
+        }
+        other => {
+            let to = AlignTo::ALL.into_iter().find(|t| t.key() == other).ok_or_else(|| tr_fmt!("Unknown action: {}", other))?;
+            panel::align(e, &ids, to);
+        }
+    }
+    let e = &prj.layout.enclosures[ei];
+    let items: Vec<Value> = e.items.iter().filter(|i| ids.contains(&i.id) || created.contains(&i.id)).map(|i| item_json(prj, i)).collect();
+    Ok(json!({ "items": items, "created": created }))
+}
+
+fn group_panel_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let ids = a.ids("ids");
+    let group = match a.str("name").filter(|n| !n.trim().is_empty()) {
+        Some(name) => {
+            let id = prj.new_id();
+            prj.layout.enclosures[ei].groups.push(ItemGroup { id, name: name.trim().into(), source: String::new() });
+            id
+        }
+        None => 0,
     };
-    panel::set_site(prj, ei, place);
-    let poses = panel::site_poses(prj);
-    let lineup: Vec<Value> = panel::lineup_of(&prj.layout, ei)
-        .into_iter()
-        .map(|i| json!({ "enclosure": prj.layout.enclosures[i].name, "at": poses[i].at, "angle": poses[i].angle.to_degrees() }))
-        .collect();
-    Ok(json!({ "automatic": place.is_none(), "lineup": lineup }))
+    let e = &mut prj.layout.enclosures[ei];
+    for it in e.items.iter_mut().filter(|i| ids.contains(&i.id)) {
+        it.group = group;
+    }
+    let used: Vec<u64> = e.items.iter().map(|i| i.group).collect();
+    e.groups.retain(|g| used.contains(&g.id));
+    Ok(json!({ "group": group, "items": panel::group_members(e, group) }))
+}
+
+fn list_panel_macros(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    Ok(Value::Array(
+        panel::all_macros(prj)
+            .into_iter()
+            .map(|m| {
+                let faces: Vec<&str> = Face::ALL.into_iter().filter(|f| m.items.iter().any(|i| i.face == *f)).map(|f| f.key()).collect();
+                json!({ "name": m.name, "title": m.title(), "built_in": m.is_builtin(), "description": m.description, "face": m.face.key(), "faces": faces, "items": m.items.len() })
+            })
+            .collect(),
+    ))
+}
+
+fn save_panel_macro(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let name = a.req("name").trim().to_string();
+    let m = panel::macro_from_items(&prj.layout.enclosures[ei], &a.ids("ids"), &name).ok_or_else(|| tr_fmt!("No items to save in {}", name))?;
+    let n = m.items.len();
+    prj.layout.macros.retain(|x| x.name != name);
+    prj.layout.macros.push(m);
+    Ok(json!({ "name": name, "items": n }))
+}
+
+fn insert_panel_macro(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ei = enclosure_index(prj, a.req("enclosure"))?;
+    let name = a.req("macro");
+    let m = panel::all_macros(prj).into_iter().find(|m| m.name == name || m.title() == name).ok_or_else(|| tr_fmt!("No macro named {}", name))?;
+    let face = face_arg(a, "face")?.unwrap_or(m.face);
+    let ids = panel::insert_macro(prj, ei, &m, face, p(a.num("x").unwrap_or(0.0), a.num("y").unwrap_or(0.0)));
+    let e = &prj.layout.enclosures[ei];
+    Ok(json!({ "items": ids.iter().filter_map(|id| e.item(*id)).map(|i| item_json(prj, i)).collect::<Vec<_>>() }))
 }
 
 #[cfg(test)]

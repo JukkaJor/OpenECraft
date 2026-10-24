@@ -1,0 +1,141 @@
+//! Page commands: list, show, add, change and delete pages.
+
+use crate::builtin::common::*;
+use crate::params::{optional, Args, Kind};
+use crate::{Info, Plugin, Registry};
+use super::{add_commands, info, Spec};
+use openecraft_core::model::*;
+use openecraft_core::netlist::Netlist;
+use openecraft_core::structure::{Aspect, Dt};
+use openecraft_core::{frame, ops, potentials};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
+use serde_json::{json, Value};
+
+pub struct Pages;
+
+impl Plugin for Pages {
+    fn info(&self) -> Info {
+        info("pages", tr_const!("Pages"), tr_const!("Lists, changes and deletes pages"))
+    }
+
+    fn register(&self, reg: &mut Registry) -> Result<(), String> {
+        add_commands(reg, COMMANDS)
+    }
+}
+
+pub static COMMANDS: &[Spec] = &[
+    Spec {
+        name: "list_pages",
+        help: tr_const!("Lists the pages of the project"),
+        params: &[optional("work_area", Kind::Str, tr_const!("Only the pages of this work area (list_structure)"))],
+        run: list_pages,
+    },
+    Spec {
+        name: "get_page",
+        help: tr_const!("Shows the content of a page: symbols with their connection point positions, wires and texts"),
+        params: &[PAGE],
+        run: get_page,
+    },
+    Spec {
+        name: "set_page",
+        help: tr_const!("Changes name, description or structure of a page"),
+        params: &[
+            PAGE,
+            optional("name", Kind::Str, tr_const!("New page name")),
+            optional("description", Kind::Str, tr_const!("Description")),
+            optional("frame", Kind::Str, tr_const!("Plot frame (list_frames); empty = the project default")),
+            optional("function", Kind::Str, tr_const!("Function aspect (=) of the page; the devices on the page move along")),
+            optional("installation", Kind::Str, tr_const!("Installation site aspect (++) of the page; the devices on the page move along")),
+            optional("location", Kind::Str, tr_const!("Location aspect (+) of the page; the devices on the page move along")),
+            optional("product", Kind::Str, tr_const!("Higher-level product aspect (-) of the page; the devices on the page move along")),
+        ],
+        run: set_page,
+    },
+    Spec {
+        name: "delete_page",
+        help: tr_const!("Deletes a page"),
+        params: &[PAGE],
+        run: delete_page,
+    },
+];
+
+fn list_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let area = match a.str("work_area") {
+        Some(name) => Some(prj.structures.work_area(name).ok_or_else(|| tr_fmt!("No work area named {}", name))?),
+        None => None,
+    };
+    let pages = prj.pages.iter().filter(|pg| area.is_none_or(|w| w.shows_page(pg))).map(|pg| {
+        let mut v = page_json(pg);
+        v["symbols"] = pg.symbols.len().into();
+        v["wires"] = pg.wires.len().into();
+        v["texts"] = pg.texts.len().into();
+        v
+    });
+    Ok(Value::Array(pages.collect()))
+}
+
+fn get_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let pg = &prj.pages[page_index(prj, a.req("page"))?];
+    let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
+    let mut v = page_json(pg);
+    let symbols = prj.symbol_table();
+    v["symbols"] = pg.symbols.iter().map(|s| symbol_json(&symbols, s)).collect();
+    v["wires"] = pg
+        .wires
+        .iter()
+        .map(|w| {
+            let auto = potentials::props_of_wire(prj, &nl, &open, w.id);
+            json!({
+                "id": w.id,
+                "from": xy(w.a),
+                "to": xy(w.b),
+                "number": w.number,
+                "color": w.color,
+                "cross_section": w.cross_section,
+                "cable": w.cable,
+                "core": w.core,
+                "potential": auto.potential,
+                "resulting_color": auto.color,
+                "resulting_cross_section": auto.cross_section,
+            })
+        })
+        .collect();
+    v["texts"] = pg.texts.iter().map(|t| json!({ "id": t.id, "x": t.pos.x, "y": t.pos.y, "text": t.text, "size": t.size })).collect();
+    v["shapes"] = serde_json::to_value(&pg.shapes).unwrap_or_default();
+    Ok(v)
+}
+
+fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let i = unlocked(prj, a.req("page"))?;
+    if let Some(name) = a.str("name") {
+        if prj.pages.iter().enumerate().any(|(j, pg)| j != i && pg.name == name) {
+            return Err(tr_fmt!("A page named {} already exists", name));
+        }
+        prj.pages[i].name = name.into();
+    }
+    if let Some(d) = a.str("description") {
+        prj.pages[i].description = d.into();
+    }
+    if let Some(f) = a.str("frame") {
+        if !f.is_empty() && !frame::names(prj).iter().any(|n| n == f) {
+            return Err(tr_fmt!("No plot frame named {}", f));
+        }
+        prj.pages[i].frame = f.into();
+    }
+    if Aspect::ALL.iter().any(|asp| a.str(asp.key()).is_some()) {
+        let mut dt = Dt::of_page(&prj.pages[i]);
+        for asp in Aspect::ALL {
+            if let Some(v) = a.str(asp.key()) {
+                *dt.get_mut(asp) = v.to_string();
+            }
+        }
+        ops::set_page_structure(prj, i, &dt, true);
+    }
+    Ok(page_json(&prj.pages[i]))
+}
+
+fn delete_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let i = page_index(prj, a.req("page"))?;
+    let pg = ops::delete_page(prj, i).map_err(tr)?;
+    Ok(json!({ "deleted": pg.name }))
+}

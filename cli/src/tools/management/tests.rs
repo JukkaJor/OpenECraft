@@ -1,5 +1,6 @@
 use super::*;
 use crate::testing::*;
+use openecraft_core::model::Project;
 
 fn demo_session() -> Session {
     let mut s = session();

@@ -10,15 +10,9 @@ use openecraft_core::report_blocks::{self, ReportBlock};
 use openecraft_core::analysis::Analysis;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
+use openecraft_api::builtin::reports::{block_json};
 
 pub static TOOLS: &[Tool] = &[
-    Tool {
-        name: "list_report_blocks",
-        help: tr_const!("Lists the report blocks with their report, scheme, groups and generated pages"),
-        params: &[],
-        needs_project: true,
-        run: list_report_blocks,
-    },
     Tool {
         name: "set_report_block",
         help: tr_const!("Creates or changes a report block (report pages generated together, e.g. one terminal diagram per strip)"),
@@ -35,25 +29,11 @@ pub static TOOLS: &[Tool] = &[
         run: set_report_block,
     },
     Tool {
-        name: "remove_report_block",
-        help: tr_const!("Removes a report block; the pages it generated stay"),
-        params: &[param("name", Kind::Str, tr_const!("Name of the block"))],
-        needs_project: true,
-        run: remove_report_block,
-    },
-    Tool {
         name: "generate_report_blocks",
         help: tr_const!("Generates the pages of the report blocks again (replacing the pages they generated before)"),
         params: &[optional("name", Kind::Str, tr_const!("Only this block"))],
         needs_project: true,
         run: generate_report_blocks,
-    },
-    Tool {
-        name: "list_report_schemes",
-        help: tr_const!("Lists the report schemes (named report forms) with their settings"),
-        params: &[],
-        needs_project: true,
-        run: list_report_schemes,
     },
     Tool {
         name: "set_report_scheme",
@@ -78,27 +58,8 @@ pub static TOOLS: &[Tool] = &[
     },
 ];
 
-fn block_json(prj: &openecraft_core::model::Project, b: &ReportBlock) -> Value {
-    let pages: Vec<String> = report_blocks::report_pages(prj, Some(&b.name)).into_iter().map(|i| prj.pages[i].name.clone()).collect();
-    json!({
-        "name": b.name,
-        "kind": b.kind.as_str(),
-        "scheme": b.scheme,
-        "per_group": b.per_group,
-        "groups": b.groups,
-        "function": b.function,
-        "location": b.location,
-        "pages": pages,
-    })
-}
-
-fn list_report_blocks(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let prj = s.project()?;
-    Ok(Value::Array(prj.report_blocks.iter().map(|b| block_json(prj, b)).collect()))
-}
-
 fn set_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let kind = a.str("kind").map(|k| report_id(s, k)).transpose()?;
+    let kind = a.str("kind").map(|k| report_id(&s.plugins, k)).transpose()?;
     let prj = s.project_mut()?;
     let name = a.req("name").trim().to_string();
     let index = match prj.report_blocks.iter().position(|b| b.name == name) {
@@ -132,14 +93,6 @@ fn set_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
     Ok(block_json(prj, &b))
 }
 
-fn remove_report_block(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let prj = s.project_mut()?;
-    let name = a.req("name");
-    let i = prj.report_blocks.iter().position(|b| b.name == name).ok_or_else(|| tr_fmt!("No report block named {}", name))?;
-    prj.report_blocks.remove(i);
-    Ok(json!({ "removed": name }))
-}
-
 fn generate_report_blocks(s: &mut Session, a: &Args) -> Result<Value, String> {
     let reports: Vec<openecraft_api::Report> = s.plugins.reports().cloned().collect();
     let prj = s.project_mut()?;
@@ -155,13 +108,8 @@ fn generate_report_blocks(s: &mut Session, a: &Args) -> Result<Value, String> {
     Ok(json!({ "pages": pages }))
 }
 
-fn list_report_schemes(s: &mut Session, _: &Args) -> Result<Value, String> {
-    let prj = s.project()?;
-    Ok(Value::Array(prj.forms.schemes.iter().map(|s| json!({ "name": s.name, "kind": s.kind.as_str(), "form": s.form })).collect()))
-}
-
 fn set_report_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let kind = report_id(s, a.req("kind"))?;
+    let kind = report_id(&s.plugins, a.req("kind"))?;
     let prj = s.project_mut()?;
     let name = a.req("name").trim().to_string();
     let form: ReportForm = serde_json::from_value(a.value("form").cloned().unwrap_or_default()).map_err(|e| tr_fmt!("Invalid form: {}", e))?;

@@ -168,10 +168,14 @@ violations. Do not weaken or delete that test to make a change pass.
   `Project`, no explicit undo bookkeeping is needed.
 - **Platform code:** keep `#[cfg(target_arch = "wasm32")]` branches confined to
   `crates/openecraft-ui/src/io.rs` and the `main.rs` files.
-- **Command line / MCP:** every command is a `Tool` in `cli/src/tools/<area>.rs` (parameters,
-  help text, run function); the command line and the MCP server are generated from that
-  list, so add new functions there once. Help texts use `tr_const!` and need catalog
-  entries; MCP clients get them in English.
+- **Command line / MCP:** every operation on the project is a command of a built-in
+  plugin in `crates/openecraft-api/src/builtin/<area>.rs` (an entry of the area's
+  `COMMANDS` table: name, help text, parameters, `fn(&mut Project, &Args)`); the command
+  line, the MCP server and the editor's Plugins menu take it from there, so add new
+  functions there once. Only tools that need the session or the machine (project files,
+  undo, exports to files, the parts server, plugins) are `Tool`s in
+  `cli/src/tools/<area>.rs`. Help texts use `tr_const!` and need catalog entries; MCP
+  clients get them in English.
 - **Parts manager:** keep its editing rules (drafts, renames, unsaved changes) in
   `parts-manager/src/session.rs` (no UI code, unit tested); `app.rs` only draws.
 - **Style:** match the surrounding code; keep comments as sparse as the existing ones.

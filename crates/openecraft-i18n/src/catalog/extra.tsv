@@ -4278,3 +4278,33 @@ SVG, HTML, PDF, DXF and DWG of the pages, production and PLC lists, harness and 
 {} report references converted to report names	{} Auswertungsverweise in Auswertungsnamen umgewandelt	{} références de rapport converties en noms de rapport	{} referencias de informe convertidas en nombres de informe
 Project reports	Projektauswertungen	Rapports du projet	Informes del proyecto
 Device list, bill of materials, terminal, plug, cable and connection diagrams, PLC, potentials, panel, fluid, electrical and field reports	Geräteliste, Stückliste, Klemmen-, Stecker-, Kabel- und Verbindungspläne, SPS, Potentiale, Schaltschrank, Fluid, elektrische und Feld-Auswertungen	Liste des appareils, nomenclature, schémas de bornes, de connecteurs, de câbles et de connexions, API, potentiels, armoire, fluide, rapports électriques et de terrain	Lista de dispositivos, lista de materiales, diagramas de bornes, conectores, cables y conexiones, PLC, potenciales, armario, fluido, informes eléctricos y de campo
+Lists, changes and deletes pages	Listet, ändert und löscht Seiten	Liste, modifie et supprime des pages	Lista, cambia y elimina páginas
+Sheets	Blätter	Feuilles	Hojas
+Plot frames and page templates of the project	Zeichnungsrahmen und Seitenvorlagen des Projekts	Cadres de dessin et modèles de page du projet	Marcos de dibujo y plantillas de página del proyecto
+Symbols, wires, texts, cable and connection definitions on schematic pages	Symbole, Verbindungen, Texte, Kabel- und Verbindungsdefinitionen auf Schaltplanseiten	Symboles, fils, textes, définitions de câbles et de connexions sur les pages de schéma	Símbolos, cables, textos, definiciones de cable y de conexión en páginas de esquema
+Lists and renames devices	Listet Betriebsmittel und benennt sie um	Liste et renomme les appareils	Lista y renombra dispositivos
+Plugs and their pins	Stecker und ihre Kontakte	Connecteurs et leurs broches	Conectores y sus pines
+PLC hardware: stations, cards, bus systems and port connections	SPS-Hardware: Stationen, Karten, Bussysteme und Portverbindungen	Matériel API : stations, cartes, systèmes de bus et connexions de ports	Hardware PLC: estaciones, tarjetas, sistemas de bus y conexiones de puertos
+Potential definitions, wire defaults and wire colours	Potentialdefinitionen, Vorgaben und Farben der Verbindungen	Définitions de potentiels, valeurs par défaut et couleurs des fils	Definiciones de potencial, valores predeterminados y colores de los cables
+Hoses, fluid nets and groups, electro-fluid links and PCT loops	Schläuche, Fluidnetze und -gruppen, Elektro-Fluid-Verknüpfungen und PCT-Kreise	Flexibles, réseaux et groupes fluidiques, liens électro-fluidiques et boucles PCT	Mangueras, redes y grupos de fluidos, enlaces electrofluidos y lazos PCT
+Single-line diagrams	Übersichtsschaltpläne	Schémas unifilaires	Diagramas unifilares
+Single-line pages and their multi-line counterparts	Übersichtsseiten und ihre mehrpoligen Gegenstücke	Pages unifilaires et leurs équivalents multifilaires	Páginas unifilares y sus equivalentes multifilares
+Tables	Tabellen	Tableaux	Tablas
+Changes the device, connection and terminal tables	Ändert die Betriebsmittel-, Verbindungs- und Klemmentabellen	Modifie les tableaux des appareils, des connexions et des bornes	Cambia las tablas de dispositivos, conexiones y bornes
+Engineering	Engineering	Ingénierie	Ingeniería
+Enclosure climate and electrical sizing	Schrankklima und elektrische Dimensionierung	Climatisation d'armoire et dimensionnement électrique	Clima del armario y dimensionamiento eléctrico
+Short circuit, load, EMC and safety calculations, rule sets and project verification	Kurzschluss-, Last-, EMV- und Sicherheitsberechnungen, Regelwerke und Projektprüfung	Calculs de court-circuit, de charge, CEM et de sécurité, jeux de règles et vérification du projet	Cálculos de cortocircuito, carga, CEM y seguridad, conjuntos de reglas y verificación del proyecto
+Panel layout	Schaltschrankaufbau	Implantation d'armoire	Diseño del armario
+Enclosures, panel items, accessories and panel macros	Schränke, Aufbauelemente, Zubehör und Aufbaumakros	Armoires, éléments d'implantation, accessoires et macros d'implantation	Armarios, elementos del armario, accesorios y macros de armario
+Routing rules, paths, reservations, frozen routes and cable shields	Verlegeregeln, Verlegewege, Reservierungen, eingefrorene Verlegungen und Kabelschirme	Règles de routage, chemins, réservations, routes figées et blindages de câbles	Reglas de enrutamiento, trayectos, reservas, rutas congeladas y pantallas de cable
+Field plan: nodes, segments, outlines, routes, bonds and accessories	Feldplan: Knoten, Abschnitte, Umrisse, Verlegungen, Potentialausgleich und Zubehör	Plan de terrain : nœuds, segments, contours, routes, liaisons équipotentielles et accessoires	Plano de campo: nodos, segmentos, contornos, rutas, enlaces equipotenciales y accesorios
+Wire numbering and wiring marks	Verbindungsnummerierung und Verdrahtungsmarkierungen	Numérotation des fils et marques de câblage	Numeración de cables y marcas de cableado
+Integration	Integration	Intégration	Integración
+Integration profiles and status	Integrationsprofile und -status	Profils et état d'intégration	Perfiles y estado de integración
+Languages	Sprachen	Langues	Idiomas
+Project languages, dictionary and translations	Projektsprachen, Wörterbuch und Übersetzungen	Langues du projet, dictionnaire et traductions	Idiomas del proyecto, diccionario y traducciones
+Structure identifiers, aspects and work areas	Strukturkennzeichen, Aspekte und Arbeitsbereiche	Identifiants de structure, aspects et zones de travail	Identificadores de estructura, aspectos y áreas de trabajo
+Property and function definitions, property values and placement schemes	Eigenschafts- und Funktionsdefinitionen, Eigenschaftswerte und Platzierungsschemata	Définitions de propriétés et de fonctions, valeurs de propriétés et schémas de placement	Definiciones de propiedades y funciones, valores de propiedades y esquemas de colocación
+Options and rules of the configurator	Optionen und Regeln des Konfigurators	Options et règles du configurateur	Opciones y reglas del configurador
+Report blocks and report schemes	Auswertungsblöcke und Auswertungsschemata	Blocs et schémas de rapport	Bloques y esquemas de informe
+Subprojects, model options and the project data check	Teilprojekte, Modelloptionen und die Prüfung der Projektdaten	Sous-projets, options de modèle et contrôle des données du projet	Subproyectos, opciones de modelo y la comprobación de los datos del proyecto

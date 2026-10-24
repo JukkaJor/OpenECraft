@@ -7,7 +7,7 @@ use openecraft_api::params::{self, text};
 use openecraft_core::reports::self;
 use openecraft_core::analysis::Analysis;
 use openecraft_core::issue::Severity;
-use openecraft_core::{translation, wirenum};
+use openecraft_core::translation;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Map, Value};
 
@@ -36,13 +36,6 @@ pub static TOOLS: &[Tool] = &[
         ],
         needs_project: true,
         run: report,
-    },
-    Tool {
-        name: "renumber_wires",
-        help: tr_const!("Numbers the wires by the numbering scheme of the project"),
-        params: &[optional("overwrite_fixed", Kind::Bool, tr_const!("Also renumber wires with a fixed number"))],
-        needs_project: true,
-        run: renumber_wires,
     },
     Tool {
         name: "list_exports",
@@ -91,7 +84,7 @@ fn list_reports(s: &mut Session, _: &Args) -> Result<Value, String> {
 }
 
 fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let id = report_id(s, a.req("kind"))?;
+    let id = report_id(&s.plugins, a.req("kind"))?;
     let prj = s.project()?;
     let mut an = Analysis::build(prj);
     an.set_reports(s.plugins.reports().cloned());
@@ -113,13 +106,6 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
         "json" => Ok(json!({ "report": id.as_str(), "title": title, "headers": table.header_texts(), "rows": table.rows })),
         other => Err(tr_fmt!("Unknown format: {}", other)),
     }
-}
-
-fn renumber_wires(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let prj = s.project_mut()?;
-    let an = Analysis::build(prj);
-    let n = wirenum::renumber(prj, &an.open, &an.netlist, a.flag("overwrite_fixed"));
-    Ok(json!({ "renumbered": n }))
 }
 
 fn list_exports(s: &mut Session, _: &Args) -> Result<Value, String> {
