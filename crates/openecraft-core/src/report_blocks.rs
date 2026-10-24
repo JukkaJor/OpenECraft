@@ -68,8 +68,29 @@ pub fn group_column(table: &Table, form: Option<&ReportForm>) -> usize {
 }
 
 pub fn rows_per_page(kind: impl Into<ReportId>, form: Option<&ReportForm>) -> usize {
-    let default = if kind.into() == ReportId::from(ReportKind::TerminalLineup) { LINEUP_ROWS_PER_PAGE } else { ROWS_PER_PAGE };
+    let kind = kind.into();
+    let default = if is_graphic(kind, form) {
+        GRAPHIC_ROWS_PER_PAGE
+    } else if kind == ReportId::from(ReportKind::TerminalLineup) {
+        LINEUP_ROWS_PER_PAGE
+    } else {
+        ROWS_PER_PAGE
+    };
     form.map(|f| f.rows).filter(|r| *r > 0).unwrap_or(default)
+}
+
+/// Rows per page of graphical report pages.
+pub const GRAPHIC_ROWS_PER_PAGE: usize = 26;
+
+/// The report has a graphical form (terminal and cable diagrams).
+pub fn has_graphic(kind: impl Into<ReportId>) -> bool {
+    let kind = kind.into();
+    kind == ReportId::from(ReportKind::TerminalDiagram) || kind == ReportId::from(ReportKind::CableDiagram)
+}
+
+/// The form asks for the graphical form and the report has one.
+pub fn is_graphic(kind: impl Into<ReportId>, form: Option<&ReportForm>) -> bool {
+    form.is_some_and(|f| f.graphic) && has_graphic(kind)
 }
 
 /// Values of the group column in order of appearance.
@@ -122,10 +143,12 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
     let per_page = rows_per_page(kind, form);
     let shown: Vec<usize> = rows.iter().skip(part.first).take(per_page).copied().collect();
     let more = rows.len().saturating_sub(part.first + shown.len());
-    let cols = forms::report_columns(form, &table.headers);
+    let graphic = is_graphic(kind, form);
+    // Graphical forms read the columns in the report's own order.
+    let cols = if graphic { (0..table.headers.len()).collect() } else { forms::report_columns(form, &table.headers) };
     let width = |c: usize| form.and_then(|f| forms::header_value(&f.widths, &table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
     let mut out_rows: Vec<Vec<String>> = shown.iter().map(|&i| cols.iter().map(|&c| table.rows[i].get(c).cloned().unwrap_or_default()).collect()).collect();
-    if form.is_some_and(|f| f.blank_repeats) {
+    if form.is_some_and(|f| f.blank_repeats) && !graphic {
         for i in (1..out_rows.len()).rev() {
             if !out_rows[i].is_empty() && out_rows[i][0] == out_rows[i - 1][0] {
                 out_rows[i][0].clear();
@@ -151,6 +174,7 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
         continued: more > 0 && !part.block.is_empty(),
         lineup,
         source: String::new(),
+        graphic,
     })
 }
 

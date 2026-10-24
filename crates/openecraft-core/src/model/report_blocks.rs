@@ -49,6 +49,9 @@ pub struct PageTable {
     /// Project the page was output from.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub source: String,
+    /// Drawn by the graphical form of the report (all columns in the report's order).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub graphic: bool,
 }
 
 /// One element of the terminal line-up drawing.

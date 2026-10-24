@@ -89,6 +89,8 @@ fn link_text(d: &mut dyn Draw, pos: P, text: &str, size: f32, h: Anchor, page: u
     d.link(p(x0, pos.y - size * 0.7), p(x0 + w, pos.y + size * 0.7), page);
 }
 
+mod report_graphics;
+
 pub const SYMBOL_W: f32 = 0.25;
 pub const WIRE_W: f32 = 0.35;
 pub const TAG_SIZE: f32 = 2.5;
@@ -119,9 +121,11 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     let frame = crate::frame::of_page(prj, page_i);
     match page.kind {
         PageKind::Cover => draw_cover(d, prj, &frame),
-        PageKind::Report(_) => {
+        PageKind::Report(kind) => {
             if let Some(t) = crate::report_blocks::page_table(prj, an, page_i) {
-                draw_report(d, &t, &frame);
+                if !(t.graphic && report_graphics::draw(d, kind, &t, &frame)) {
+                    draw_report(d, &t, &frame);
+                }
             }
         }
         PageKind::Mounting(id) => draw_mounting_page(d, prj, id, &frame),

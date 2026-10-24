@@ -86,3 +86,46 @@ fn cover_rows_sit_centred_inside_their_box() {
     let last = rows.iter().map(|t| t.0.y).fold(f32::NEG_INFINITY, f32::max);
     assert!(((first - a.y) - (b.y - last)).abs() < 0.01);
 }
+
+#[test]
+fn graphical_terminal_and_cable_diagrams() {
+    use crate::forms::ReportForm;
+    use crate::model::ReportKind;
+    let mut prj = crate::sample::demo_project();
+    let data = prj.strips.entry("-X1".into()).or_default();
+    data.jumpers.insert("1".into(), 1);
+    data.jumpers.insert("2".into(), 1);
+    for kind in [ReportKind::TerminalDiagram, ReportKind::CableDiagram] {
+        prj.forms.reports.insert(kind.into(), ReportForm { graphic: true, ..Default::default() });
+    }
+    let at = prj.pages.len();
+    crate::ops::add_page(&mut prj, PageKind::Report(ReportKind::TerminalDiagram.into()), at);
+    crate::ops::add_page(&mut prj, PageKind::Report(ReportKind::CableDiagram.into()), at + 1);
+    let an = Analysis::with_builtin(&prj);
+    let table = crate::report_blocks::page_table(&prj, &an, at).unwrap();
+    assert!(table.graphic);
+    assert_eq!(table.per_page, crate::report_blocks::GRAPHIC_ROWS_PER_PAGE);
+
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, at, &Opts::default());
+    let texts: Vec<&str> = d.texts.iter().map(|t| t.1.as_str()).collect();
+    assert!(texts.contains(&"-X1"), "strip heading");
+    for label in ["1", "2", "3", "PE"] {
+        assert!(texts.contains(&label), "terminal {label}");
+    }
+    assert!(texts.iter().any(|t| t.starts_with("Plug-in jumper")), "jumper listed below: {texts:?}");
+    // A box per terminal (4) and a bar per end bracket / end plate (4), and the frame.
+    assert!(d.rects.len() >= 8, "{} boxes", d.rects.len());
+    assert!(!texts.contains(&"External (top)"), "no table header");
+
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, at + 1, &Opts::default());
+    let texts: Vec<&str> = d.texts.iter().map(|t| t.1.as_str()).collect();
+    assert!(texts.iter().any(|t| t.starts_with("-W1")), "cable band heading: {texts:?}");
+
+    // Without the switch the table is drawn.
+    prj.forms.reports.clear();
+    let an = Analysis::with_builtin(&prj);
+    assert!(!crate::report_blocks::page_table(&prj, &an, at).unwrap().graphic);
+    assert!(crate::report_blocks::has_graphic(ReportKind::CableDiagram) && !crate::report_blocks::has_graphic(ReportKind::DeviceList));
+}

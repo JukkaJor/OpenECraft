@@ -67,6 +67,9 @@ pub struct ReportForm {
     pub widths: BTreeMap<String, f32>,
     /// Text size of the rows (mm); 0: fitted to the rows per page.
     pub text_size: f32,
+    /// Drawn as a graphic (terminal and cable diagrams) instead of a table.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub graphic: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
