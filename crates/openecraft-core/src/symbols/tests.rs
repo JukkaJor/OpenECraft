@@ -39,8 +39,8 @@ fn extra_libraries_are_complete() {
 fn overview_symbols_refer_to_the_main_function_but_stay_out_of_the_netlist() {
     use crate::model::{Page, PageKind, Project, SymbolInst};
     let mut prj = Project { pages: vec![Page::new(1, "1", "", PageKind::Schematic), Page::new(2, "2", "", PageKind::Schematic)], next_id: 10, ..Default::default() };
-    let motor = get("motor3").unwrap();
-    let overview = get("sl_motor").unwrap();
+    let motor = builtin("motor3").unwrap();
+    let overview = builtin("sl_motor").unwrap();
     let inst = |id, sym: &str, x| SymbolInst { id, sym: sym.into(), pos: p(x, 60.0), tag: "-M1".into(), ..Default::default() };
     let mut m = inst(2, "motor3", 100.0);
     m.pins = motor.pins.iter().map(|x| x.label.to_string()).collect();

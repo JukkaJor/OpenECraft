@@ -286,6 +286,7 @@ fn with_data(out: &mut Project, src: &Project) {
         integration,
         review: _,
         next_id: _,
+        symbol_cache: _,
     } = src;
     out.info = info.clone();
     out.parts = parts.clone();
@@ -367,6 +368,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         integration,
         review: _,
         next_id: _,
+        symbol_cache: _,
     } = a;
     pages.iter().map(|p| p.id).eq(b.pages.iter().map(|p| p.id))
         && *info == b.info

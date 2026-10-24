@@ -197,8 +197,8 @@ fn tag_block_is_dragged_into_place() {
     let mut ed = Editor::default();
     ready(&mut ed, &ctx, &mut prj);
     ed.selection.insert(7);
-    let def = symbols::get("coil").unwrap();
-    let block = render::tag_block_bounds(&prj, 0, def, &prj.pages[0].symbols[0]).unwrap();
+    let def = prj.symbol("coil").unwrap();
+    let block = render::tag_block_bounds(&prj, 0, &def, &prj.pages[0].symbols[0]).unwrap();
     let from = ed.w2s(SCREEN, block.center());
     let to = ed.w2s(SCREEN, block.center() + p(-20.0, 10.0));
     frame(&mut ed, &ctx, &mut prj, 0, vec![Event::PointerMoved(from)]);

@@ -109,7 +109,8 @@ fn get_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     let pg = &prj.pages[page_index(prj, a.req("page"))?];
     let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
     let mut v = page_json(pg);
-    v["symbols"] = pg.symbols.iter().map(symbol_json).collect();
+    let symbols = prj.symbol_table();
+    v["symbols"] = pg.symbols.iter().map(|s| symbol_json(&symbols, s)).collect();
     v["wires"] = pg
         .wires
         .iter()

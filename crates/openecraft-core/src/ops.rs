@@ -3,7 +3,8 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P, R, GRID};
 use crate::model::*;
-use crate::symbols::{self, ContactKind, Func, PinKind, SymbolDef};
+use crate::symlib::Symbols;
+use crate::symbols::{ContactKind, Func, PinKind, SymbolDef};
 use std::collections::{BTreeSet, HashMap};
 pub use crate::model::ops::Clip;
 
@@ -19,8 +20,8 @@ pub struct PlaceCtx {
 }
 
 impl PlaceCtx {
-    pub fn remember(&mut self, s: &SymbolInst) {
-        let Some(def) = symbols::get(&s.sym) else { return };
+    pub fn remember(&mut self, prj: &Project, s: &SymbolInst) {
+        let Some(def) = prj.symbol(&s.sym) else { return };
         if s.tag.is_empty() {
             return;
         }
@@ -50,7 +51,7 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
         if Some(s.id) == exclude {
             continue;
         }
-        if let Some(def) = symbols::get(&s.sym) {
+        if let Some(def) = prj.symbol(&s.sym) {
             if def.auto_number || matches!(def.func, Func::Main { .. }) {
                 for pin in &s.pins {
                     if pin.len() == 2 {
@@ -75,7 +76,7 @@ pub fn next_contact_pins(prj: &Project, tag: &str, kind: ContactKind, exclude: O
 
 fn next_terminal(prj: &Project, strip: &str) -> String {
     let max = symbols_with_tag(prj, strip)
-        .filter(|s| symbols::get(&s.sym).map(|d| d.func) == Some(Func::Terminal))
+        .filter(|s| prj.symbol(&s.sym).map(|d| d.func) == Some(Func::Terminal))
         .filter_map(|s| s.label.parse::<u32>().ok())
         .max()
         .unwrap_or(0);
@@ -85,7 +86,7 @@ fn next_terminal(prj: &Project, strip: &str) -> String {
 /// Next free pin number of a plug for pins of this kind (a pair counts as both).
 fn next_plug_pin(prj: &Project, plug: &str, kind: PinKind) -> String {
     let max = symbols_with_tag(prj, plug)
-        .filter(|s| match symbols::get(&s.sym).map(|d| d.func) {
+        .filter(|s| match prj.symbol(&s.sym).map(|d| d.func) {
             Some(Func::Plug(k)) => k == kind || k == PinKind::Pair || kind == PinKind::Pair,
             _ => false,
         })
@@ -195,9 +196,9 @@ pub fn text_bounds(t: &TextItem) -> R {
 }
 
 /// Bounding box of any item on a page.
-pub fn item_bounds(page: &Page, id: u64) -> Option<R> {
+pub fn item_bounds(symbols: &Symbols, page: &Page, id: u64) -> Option<R> {
     if let Some(s) = page.symbols.iter().find(|s| s.id == id) {
-        return symbols::get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror));
+        return symbols.get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror));
     }
     if let Some(w) = page.wires.iter().find(|w| w.id == id) {
         return Some(R::from_points(w.a, w.b));
@@ -263,10 +264,10 @@ fn map_items(page: &mut Page, sel: &BTreeSet<u64>, f: impl Fn(P) -> P) {
 
 /// World positions of all connection points of the selected symbols and the end
 /// points of the selected wires.
-pub fn selection_points(page: &Page, sel: &BTreeSet<u64>) -> Vec<P> {
+pub fn selection_points(symbols: &Symbols, page: &Page, sel: &BTreeSet<u64>) -> Vec<P> {
     let mut pts = Vec::new();
     for s in page.symbols.iter().filter(|s| sel.contains(&s.id)) {
-        if let Some(def) = symbols::get(&s.sym) {
+        if let Some(def) = symbols.get(&s.sym) {
             for i in 0..def.pins.len() {
                 pts.push(def.pin_world(i, s.pos, s.rot, s.mirror));
             }
@@ -281,8 +282,8 @@ pub fn selection_points(page: &Page, sel: &BTreeSet<u64>) -> Vec<P> {
 
 /// Wire ends (wire id, is end `a`) of unselected wires touching the selection, so they
 /// can be stretched ("rubber band") while moving.
-pub fn attached_wire_ends(page: &Page, sel: &BTreeSet<u64>) -> Vec<(u64, bool)> {
-    let pts = selection_points(page, sel);
+pub fn attached_wire_ends(symbols: &Symbols, page: &Page, sel: &BTreeSet<u64>) -> Vec<(u64, bool)> {
+    let pts = selection_points(symbols, page, sel);
     let mut v = Vec::new();
     for w in page.wires.iter().filter(|w| !sel.contains(&w.id)) {
         if pts.iter().any(|q| q.same(w.a)) {
@@ -319,10 +320,10 @@ pub fn translate(page: &mut Page, sel: &BTreeSet<u64>, attached: &[(u64, bool)],
 }
 
 /// Rotates the selection by 90° clockwise around its (grid snapped) centre.
-pub fn rotate(page: &mut Page, sel: &BTreeSet<u64>) {
+pub fn rotate(symbols: &Symbols, page: &mut Page, sel: &BTreeSet<u64>) {
     let mut bounds = R::nothing();
     for &id in sel {
-        if let Some(b) = item_bounds(page, id) {
+        if let Some(b) = item_bounds(symbols, page, id) {
             bounds.union(b);
         }
     }
@@ -332,8 +333,8 @@ pub fn rotate(page: &mut Page, sel: &BTreeSet<u64>) {
     // A single symbol rotates around its own origin.
     let single = page.symbols.iter().find(|s| sel.contains(&s.id)).filter(|_| sel.len() == 1);
     let c = single.map(|s| s.pos).unwrap_or_else(|| bounds.center().snap(GRID));
-    let attached = attached_wire_ends(page, sel);
-    let before = selection_points(page, sel);
+    let attached = attached_wire_ends(symbols, page, sel);
+    let before = selection_points(symbols, page, sel);
     let rot = |q: P| c + (q - c).transform(1, false);
     for s in page.symbols.iter_mut().filter(|s| sel.contains(&s.id)) {
         s.pos = rot(s.pos);
@@ -497,7 +498,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
         if !s.tag.is_empty() {
             s.tag = target.complete(&source.relative(&s.tag));
         }
-        if let Some(def) = symbols::get(&s.sym) {
+        if let Some(def) = prj.symbol(&s.sym) {
             match def.func {
                 Func::Main { .. } | Func::Aux(_) if existing.contains(&s.tag) => {
                     if let Some(n) = rename.get(&s.tag) {

@@ -6,7 +6,7 @@ use crate::parts::{FunctionTemplate, Part, PartRef};
 use crate::analysis::Analysis;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) -> u64 {
-    let def = symbols::get(key).unwrap();
+    let def = prj.symbol(key).unwrap();
     let id = prj.new_id();
     prj.pages[0].symbols.push(SymbolInst {
         id,
@@ -118,16 +118,17 @@ fn more_pins_than_the_parts_have_are_reported() {
 fn placement_numbers_pins_per_plug() {
     let mut prj = Project::default();
     let mut ctx = PlaceCtx::default();
-    let pair = symbols::get("plug_pair").unwrap();
-    let a = ops::new_symbol(&mut prj, 0, &ctx, pair, p(100.0, 100.0), 0, false);
+    let pair = prj.symbol("plug_pair").unwrap();
+    let a = ops::new_symbol(&mut prj, 0, &ctx, &pair, p(100.0, 100.0), 0, false);
     assert_eq!((a.tag.as_str(), a.label.as_str()), ("-X1", "1"));
-    ctx.remember(&a);
+    ctx.remember(&prj, &a);
     prj.pages[0].symbols.push(a);
-    let b = ops::new_symbol(&mut prj, 0, &ctx, pair, p(120.0, 100.0), 0, false);
+    let b = ops::new_symbol(&mut prj, 0, &ctx, &pair, p(120.0, 100.0), 0, false);
     assert_eq!((b.tag.as_str(), b.label.as_str()), ("-X1", "2"));
     prj.pages[0].symbols.push(b);
     // Single sided pins continue after the pairs.
-    let m = ops::new_symbol(&mut prj, 0, &ctx, symbols::get("plug_m").unwrap(), p(140.0, 100.0), 0, false);
+    let male = prj.symbol("plug_m").unwrap();
+    let m = ops::new_symbol(&mut prj, 0, &ctx, &male, p(140.0, 100.0), 0, false);
     assert_eq!(m.label, "3");
 }
 

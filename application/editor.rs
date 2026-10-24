@@ -10,7 +10,8 @@ use openecraft_core::ops::{self, Clip, PlaceCtx};
 use openecraft_core::render::{self, Draw, Ink, Opts, VAnchor};
 use openecraft_core::analysis::Analysis;
 use openecraft_core::review::{Hit, MarkupKind, Pen};
-use openecraft_core::symbols::{self, Anchor};
+use openecraft_core::symlib::Symbols;
+use openecraft_core::symbols::{Anchor};
 use openecraft_core::{cabledef, conndef, graphics, routing};
 use egui::{pos2, vec2, Align2, Color32, FontId, Key, Painter, PointerButton, Pos2, Rect, Sense, Shape as EShape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -533,7 +534,7 @@ impl Editor {
         }
         let mut best: Option<(f32, u64)> = None;
         for s in page.symbols.iter().rev() {
-            let Some(def) = symbols::get(&s.sym) else { continue };
+            let Some(def) = prj.symbol(&s.sym) else { continue };
             let b = def.world_bounds(s.pos, s.rot, s.mirror);
             if b.expand(tol * 0.5).contains(q) {
                 let d = b.center().dist(q) / (b.width() + b.height()).max(1.0);
@@ -574,8 +575,8 @@ impl Editor {
                     return Some((s.id, Some(i)));
                 }
             }
-            let Some(def) = symbols::get(&s.sym) else { continue };
-            if render::tag_block_bounds(prj, page_i, def, s).is_some_and(|r| r.expand(0.3).contains(q)) {
+            let Some(def) = prj.symbol(&s.sym) else { continue };
+            if render::tag_block_bounds(prj, page_i, &def, s).is_some_and(|r| r.expand(0.3).contains(q)) {
                 return Some((s.id, None));
             }
         }
@@ -583,23 +584,23 @@ impl Editor {
     }
 
     /// Does `q` touch a connection point or an existing wire (to end a wire there)?
-    fn is_connection(page: &Page, q: P) -> bool {
+    fn is_connection(symbols: &Symbols, page: &Page, q: P) -> bool {
         let pin = page.symbols.iter().any(|s| {
-            symbols::get(&s.sym)
+            symbols.get(&s.sym)
                 .map(|d| (0..d.pins.len()).any(|i| d.pin_world(i, s.pos, s.rot, s.mirror).same(q)))
                 .unwrap_or(false)
         });
         pin || page.wires.iter().any(|w| dist_to_segment(q, w.a, w.b) < 0.01)
     }
 
-    fn wire_path(&mut self, page: &Page, a: P, b: P) -> Vec<P> {
+    fn wire_path(&mut self, prj: &Project, page: &Page, a: P, b: P) -> Vec<P> {
         if self.autoroute {
             if let Some((ca, cb, path)) = &self.route_cache {
                 if ca.same(a) && cb.same(b) {
                     return path.clone();
                 }
             }
-            let path = routing::route(page, self.frame.area(), a, b);
+            let path = routing::route(&prj.symbol_table(), page, self.frame.area(), a, b);
             self.route_cache = Some((a, b, path.clone()));
             return path;
         }
@@ -754,7 +755,8 @@ impl Editor {
             }
         }
         if let (Some(sn), Some(w), true) = (snapped, world, editable) {
-            self.previews(&painter, &pal, origin, &prj.pages[page_i], w, sn);
+            let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
+            self.previews(&mut g, prj, &prj.pages[page_i], w, sn);
             if self.tool != Tool::Select {
                 let c = self.w2s(rect, sn);
                 let st = Stroke::new(1.0, pal.ghost);
@@ -774,7 +776,7 @@ impl Editor {
             let page = &prj.pages[page_i];
             if let Some(s) = page.symbols.iter().find(|s| self.selection.contains(&s.id)) {
                 let mut boxes: Vec<R> = s.props.iter().map(|pp| render::prop_bounds(prj, page_i, s, pp)).collect();
-                if let Some(r) = symbols::get(&s.sym).and_then(|def| render::tag_block_bounds(prj, page_i, def, s)) {
+                if let Some(r) = prj.symbol(&s.sym).and_then(|def| render::tag_block_bounds(prj, page_i, &def, s)) {
                     boxes.push(r);
                 }
                 for r in boxes {
@@ -795,7 +797,7 @@ impl Editor {
                 if let Some(id) = self.hit(prj, page_i, w) {
                     let page = &prj.pages[page_i];
                     if let Some(sym) = page.symbols.iter().find(|s| s.id == id) {
-                        let name = symbols::get(&sym.sym).map(|d| tr(d.name)).unwrap_or("?");
+                        let name = prj.symbol(&sym.sym).map(|d| tr(d.name)).unwrap_or("?");
                         s += &format!("   |  {} {} {}", sym.tag, name, sym.label);
                     } else if let Some(net) = an.netlist.net_of_wire(id) {
                         s += &tr_fmt!("   |  Potential {}", net.name);
@@ -815,11 +817,10 @@ impl Editor {
         out
     }
 
-    fn previews(&mut self, painter: &Painter, pal: &Palette, origin: Pos2, page: &Page, world: P, sn: P) {
-        let mut g = EguiDraw { painter, origin, zoom: self.zoom, pal, force: Some(Ink::Ghost), mirror: None, textures: None };
+    fn previews(&mut self, g: &mut EguiDraw<'_>, prj: &Project, page: &Page, world: P, sn: P) {
         match self.tool.clone() {
             Tool::Place(key) => {
-                if let Some(def) = symbols::get(key) {
+                if let Some(def) = prj.symbol(key) {
                     let inst = SymbolInst {
                         sym: def.key.into(),
                         pos: sn,
@@ -828,13 +829,12 @@ impl Editor {
                         label: def.default_label.into(),
                         ..Default::default()
                     };
-                    render::draw_symbol(&mut g, def, &inst, Ink::Ghost);
+                    render::draw_symbol(g, &def, &inst, Ink::Ghost);
                 }
             }
             Tool::Wire => {
                 if let Some(a) = self.wire_start {
-                    let path = self.wire_path(page, a, sn);
-                    let mut g = EguiDraw { painter, origin, zoom: self.zoom, pal, force: Some(Ink::Ghost), mirror: None, textures: None };
+                    let path = self.wire_path(prj, page, a, sn);
                     for w in path.windows(2) {
                         g.line(w[0], w[1], render::WIRE_W, Ink::Ghost, false);
                     }
@@ -842,12 +842,12 @@ impl Editor {
             }
             Tool::Line | Tool::Rect | Tool::Circle | Tool::Ellipse => {
                 if let (Some(&a), Some(kind)) = (self.pts.first(), self.tool.shape_kind()) {
-                    ghost_shape(&mut g, kind, a, sn, Vec::new(), 0.0);
+                    ghost_shape(g, kind, a, sn, Vec::new(), 0.0);
                 }
             }
             Tool::Arc => match self.pts.as_slice() {
                 [c] => g.line(*c, sn, render::SYMBOL_W, Ink::Ghost, true),
-                [c, s] => ghost_shape(&mut g, ShapeKind::Arc, *c, *s, Vec::new(), sweep(*c, *s, sn)),
+                [c, s] => ghost_shape(g, ShapeKind::Arc, *c, *s, Vec::new(), sweep(*c, *s, sn)),
                 _ => {}
             },
             Tool::Polyline | Tool::Polygon => {
@@ -855,7 +855,7 @@ impl Editor {
                     let mut pts = self.pts.clone();
                     pts.push(sn);
                     let kind = self.tool.shape_kind().unwrap_or_default();
-                    ghost_shape(&mut g, kind, P::default(), P::default(), pts, 0.0);
+                    ghost_shape(g, kind, P::default(), P::default(), pts, 0.0);
                 }
             }
             Tool::Dimension(kind) => match self.pts.as_slice() {
@@ -863,7 +863,7 @@ impl Editor {
                 [a, b] => {
                     let mut dm = Dimension { kind, a: *a, b: *b, ..Default::default() };
                     dm.offset = graphics::dim_offset_through(&dm, sn);
-                    render::draw_dimension(&mut g, &dm, Ink::Ghost);
+                    render::draw_dimension(g, &dm, Ink::Ghost);
                 }
                 _ => {}
             },
@@ -889,9 +889,9 @@ impl Editor {
                     // Same offset as ops::paste
                     let d = (sn - clip.bounds().min).snap(GRID);
                     for s in &clip.symbols {
-                        if let Some(def) = symbols::get(&s.sym) {
+                        if let Some(def) = prj.symbol(&s.sym) {
                             let inst = SymbolInst { pos: s.pos + d, ..s.clone() };
-                            render::draw_symbol(&mut g, def, &inst, Ink::Ghost);
+                            render::draw_symbol(g, &def, &inst, Ink::Ghost);
                         }
                     }
                     for w in &clip.wires {
@@ -900,7 +900,7 @@ impl Editor {
                     for s in &clip.shapes {
                         let mut s = s.clone();
                         graphics::map_shape(&mut s, |q| q + d);
-                        render::draw_shape(&mut g, &s, Ink::Ghost);
+                        render::draw_shape(g, &s, Ink::Ghost);
                     }
                     for i in &clip.images {
                         g.rect(i.a + d, i.b + d, render::SYMBOL_W, Ink::Ghost, false);
@@ -975,12 +975,13 @@ impl Editor {
             self.autoroute = !self.autoroute;
             self.route_cache = None;
         }
+        let symbols = prj.symbol_table();
         let page = &mut prj.pages[page_i];
         if r {
             if matches!(self.tool, Tool::Place(_)) {
                 self.place_rot = (self.place_rot + 1) % 4;
             } else if !self.selection.is_empty() {
-                ops::rotate(page, &self.selection);
+                ops::rotate(&symbols, page, &self.selection);
             }
         }
         if m {
@@ -1001,15 +1002,17 @@ impl Editor {
             let page = &prj.pages[page_i];
             self.selection = ops::all_ids(page).into_iter().filter(|id| graphics::item_layer(page, *id).is_none_or(|l| !graphics::locked(prj, l))).collect();
         }
-        let page = &mut prj.pages[page_i];
-        if !self.selection.is_empty() {
+        if !self.selection.is_empty() && arrows.iter().any(|(pressed, _)| *pressed) {
+            let symbols = prj.symbol_table();
+            let page = &mut prj.pages[page_i];
             for (pressed, d) in arrows {
                 if pressed {
-                    let att = ops::attached_wire_ends(page, &self.selection);
+                    let att = ops::attached_wire_ends(&symbols, page, &self.selection);
                     ops::translate(page, &self.selection, &att, d);
                 }
             }
         }
+        let page = &mut prj.pages[page_i];
         for ev in events {
             match ev {
                 egui::Event::Copy | egui::Event::Cut if !self.selection.is_empty() => {
@@ -1122,16 +1125,16 @@ impl Editor {
                 }
             }
             Tool::Place(key) => {
-                if let (Some(sn), Some(def)) = (click, symbols::get(key)) {
+                if let (Some(sn), Some(def)) = (click, prj.symbol(key)) {
                     let mut ctx = self.place_ctx.clone();
                     if let Some(tag) = &self.place_tag {
                         ctx.last_main.insert(def.letter.to_string(), tag.clone());
                     }
-                    let mut s = ops::new_symbol(prj, page_i, &ctx, def, sn, self.place_rot, self.place_mirror);
+                    let mut s = ops::new_symbol(prj, page_i, &ctx, &def, sn, self.place_rot, self.place_mirror);
                     if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
                         s.tag = tag.clone();
                     }
-                    self.place_ctx.remember(&s);
+                    self.place_ctx.remember(prj, &s);
                     let id = s.id;
                     prj.pages[page_i].symbols.push(s);
                     if self.autoconnect {
@@ -1149,8 +1152,8 @@ impl Editor {
                         None => self.wire_start = Some(sn),
                         Some(a) if a.same(sn) => self.wire_start = None,
                         Some(a) => {
-                            let ends_on_connection = Self::is_connection(&prj.pages[page_i], sn);
-                            let path = self.wire_path(&prj.pages[page_i], a, sn);
+                            let ends_on_connection = Self::is_connection(&prj.symbol_table(), &prj.pages[page_i], sn);
+                            let path = self.wire_path(prj, &prj.pages[page_i], a, sn);
                             for seg in path.windows(2) {
                                 let id = prj.new_id();
                                 prj.pages[page_i].wires.push(Wire { id, a: seg[0], b: seg[1], ..Default::default() });
@@ -1227,7 +1230,7 @@ impl Editor {
                 let orig = match (s, handle.1) {
                     (Some(s), Some(i)) => s.props[i].offset,
                     (Some(s), None) => s.tag_offset.unwrap_or_else(|| {
-                        symbols::get(&s.sym).and_then(|def| render::tag_block_bounds(prj, page_i, def, s)).map(|r| r.min - s.pos).unwrap_or_default()
+                        prj.symbol(&s.sym).and_then(|def| render::tag_block_bounds(prj, page_i, &def, s)).map(|r| r.min - s.pos).unwrap_or_default()
                     }),
                     _ => P::default(),
                 };
@@ -1239,7 +1242,7 @@ impl Editor {
                     }
                     self.selection.insert(id);
                 }
-                let attached = ops::attached_wire_ends(&prj.pages[page_i], &self.selection);
+                let attached = ops::attached_wire_ends(&prj.symbol_table(), &prj.pages[page_i], &self.selection);
                 self.drag = Drag::Move { start: ow, applied: p(0.0, 0.0), attached };
             } else {
                 self.drag = Drag::Box { start: origin };
@@ -1277,10 +1280,11 @@ impl Editor {
                         if !shift {
                             self.selection.clear();
                         }
+                        let symbols = prj.symbol_table();
                         let page = &prj.pages[page_i];
                         for id in ops::all_ids(page) {
                             let usable = graphics::item_layer(page, id).is_none_or(|l| graphics::shown(prj, l, false) && !graphics::locked(prj, l));
-                            if usable && ops::item_bounds(page, id).is_some_and(|bb| sel.contains_rect(&bb)) {
+                            if usable && ops::item_bounds(&symbols, page, id).is_some_and(|bb| sel.contains_rect(&bb)) {
                                 self.selection.insert(id);
                             }
                         }
@@ -1312,7 +1316,7 @@ impl Editor {
                             self.selection.insert(id);
                         }
                         if let Some(s) = prj.pages[page_i].symbols.iter().find(|s| s.id == id) {
-                            self.place_ctx.remember(s);
+                            self.place_ctx.remember(prj, s);
                         }
                     }
                     None if !shift => self.selection.clear(),
@@ -1344,9 +1348,9 @@ impl Editor {
 }
 
 /// Draws a symbol preview into a small rectangle (symbol library).
-pub fn symbol_icon(ui: &mut egui::Ui, key: &str, size: Vec2) -> egui::Response {
+pub fn symbol_icon(ui: &mut egui::Ui, prj: &Project, key: &str, size: Vec2) -> egui::Response {
     let (resp, painter) = ui.allocate_painter(size, Sense::click());
-    let Some(def) = symbols::get(key) else { return resp };
+    let Some(def) = prj.symbol(key) else { return resp };
     let pal = Palette::new(ui.visuals().dark_mode);
     let b = def.bounds;
     let zoom = ((size.x - 6.0) / b.width()).min((size.y - 6.0) / b.height()).min(3.2);
@@ -1354,7 +1358,7 @@ pub fn symbol_icon(ui: &mut egui::Ui, key: &str, size: Vec2) -> egui::Response {
     let origin = center - vec2(b.center().x, b.center().y) * zoom;
     let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None, textures: None };
     let inst = SymbolInst { sym: key.into(), label: def.default_label.into(), ..Default::default() };
-    render::draw_symbol(&mut d, def, &inst, Ink::Line);
+    render::draw_symbol(&mut d, &def, &inst, Ink::Line);
     resp
 }
 

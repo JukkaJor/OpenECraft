@@ -52,7 +52,8 @@ fn ambiguous_connection_points_need_an_id() {
     let err = run(&mut s, "connect", json!({ "page": "1", "from": format!("-X1:{pin}"), "to": format!("-X1:{pin}") })).unwrap_err();
     assert!(err.contains("ambiguous"), "{err}");
     let by_id = format!("#{}:{pin}", a["id"]);
-    assert!(pin_position(&s.project().unwrap().pages[0], &by_id).is_ok());
+    let prj = s.project().unwrap();
+    assert!(pin_position(&prj.symbol_table(), &prj.pages[0], &by_id).is_ok());
 }
 
 #[test]

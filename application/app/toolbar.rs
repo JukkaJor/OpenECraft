@@ -45,7 +45,7 @@ impl App {
             self.drawing_toolbar(ui);
             self.review_tools(ui);
             if let Tool::Place(key) = tool {
-                if let Some(def) = symbols::get(key) {
+                if let Some(def) = self.session.prj.symbol(key) {
                     ui.label(RichText::new(tr_fmt!("Placing: {}", tr(def.name))).strong());
                 }
             }
@@ -58,7 +58,7 @@ impl App {
             }
             let has_sel = !self.editor.selection.is_empty();
             if ui.add_enabled(has_sel, egui::Button::new("⟳")).on_hover_text(tr("Rotate (R)")).clicked() {
-                ops::rotate(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
+                ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[self.session.page], &self.editor.selection);
             }
             if ui.add_enabled(has_sel, egui::Button::new("🗑")).on_hover_text(tr("Delete (Del)")).clicked() {
                 ops::delete(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
@@ -97,7 +97,7 @@ impl App {
         egui::ScrollArea::vertical().id_salt("lib").max_height(ui.available_height() * 0.45).auto_shrink([false, true]).show(ui, |ui| {
             let groups = libs
                 .iter()
-                .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().copied().filter(|d| d.library == *lib).collect::<Vec<_>>()))
+                .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().map(|d| &**d).filter(|d| d.library == *lib).collect::<Vec<_>>()))
                 .chain(Category::ALL.into_iter().map(|cat| (cat.title().to_string(), symbols::library().iter().filter(|d| d.category == cat).collect())));
             for (title, defs) in groups {
                 let defs: Vec<&symbols::SymbolDef> = defs.into_iter().filter(|d| f.is_empty() || (d.name.to_lowercase().contains(&f) || tr(d.name).to_lowercase().contains(&f))).collect();
@@ -110,7 +110,7 @@ impl App {
                     for def in defs {
                         let active = self.editor.tool == Tool::Place(def.key);
                         ui.horizontal(|ui| {
-                            let icon = symbol_icon(ui, def.key, egui::vec2(40.0, 30.0));
+                            let icon = symbol_icon(ui, &self.session.prj, def.key, egui::vec2(40.0, 30.0));
                             let lbl = ui.selectable_label(active, format!("{}  ({})", tr(def.name), if def.letter.is_empty() { "–" } else { def.letter }));
                             if icon.clicked() || lbl.clicked() {
                                 self.editor.set_tool(Tool::Place(def.key));
@@ -125,8 +125,8 @@ impl App {
     }
 
     /// Registered symbols of the project symbol library, sorted by library and name.
-    pub(super) fn user_symbols(&self) -> Vec<&'static symbols::SymbolDef> {
-        let mut v: Vec<&'static symbols::SymbolDef> = self.session.prj.symbols.iter().filter_map(|u| symbols::get(&u.key)).collect();
+    pub(super) fn user_symbols(&self) -> Vec<symbols::SymbolRef> {
+        let mut v: Vec<symbols::SymbolRef> = self.session.prj.symbols.iter().filter_map(|u| self.session.prj.symbol(&u.key)).collect();
         v.sort_by(|a, b| a.library.cmp(b.library).then(natural_cmp(a.name, b.name)));
         v
     }

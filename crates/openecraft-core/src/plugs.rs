@@ -6,11 +6,11 @@ use openecraft_i18n::tr_fmt;
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
 use crate::parts::FnKind;
-use crate::symbols::{self, Func, PinKind};
+use crate::symbols::{Func, PinKind};
 pub use crate::model::plugs::{Pin, PlugData};
 
-fn pin_kind(s: &SymbolInst) -> Option<PinKind> {
-    match symbols::get(&s.sym).map(|d| d.func) {
+fn pin_kind(prj: &Project, s: &SymbolInst) -> Option<PinKind> {
+    match prj.symbol(&s.sym).map(|d| d.func) {
         Some(Func::Plug(k)) => Some(k),
         _ => None,
     }
@@ -23,7 +23,7 @@ pub fn plug_tags(prj: &Project) -> Vec<String> {
         .iter()
         .filter(|p| p.kind == PageKind::Schematic)
         .flat_map(|p| p.symbols.iter())
-        .filter(|s| pin_kind(s).is_some() && !s.tag.is_empty())
+        .filter(|s| pin_kind(prj, s).is_some() && !s.tag.is_empty())
         .map(|s| s.tag.clone())
         .collect();
     v.sort_by(|a, b| natural_cmp(a, b));
@@ -37,7 +37,7 @@ pub fn pins(prj: &Project, plug: &str) -> Vec<Pin> {
     let mut v = Vec::new();
     for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
         for (si, s) in pg.symbols.iter().enumerate() {
-            if let (true, Some(kind)) = (s.tag == plug, pin_kind(s)) {
+            if let (true, Some(kind)) = (s.tag == plug, pin_kind(prj, s)) {
                 v.push(Pin { page: pi, sym: si, id: s.id, label: s.label.clone(), kind });
             }
         }

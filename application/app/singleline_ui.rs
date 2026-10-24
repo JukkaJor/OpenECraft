@@ -82,7 +82,7 @@ impl App {
                         for side in [&d.single, &d.multi] {
                             match side {
                                 Some((key, at)) => {
-                                    let name = openecraft_core::symbols::get(key).map(|s| tr(s.name)).unwrap_or_default();
+                                    let name = self.session.prj.symbol(key).map(|s| tr(s.name)).unwrap_or_default();
                                     let text = format!("{} ({})", name, self.session.prj.pages[at.0].name);
                                     if ui.link(text).clicked() {
                                         jump = Some(*at);

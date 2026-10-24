@@ -135,7 +135,8 @@ impl App {
             self.notify(&ctx, tr_fmt!("{} connections drawn automatically", n));
         }
         if ui.button(tr("Join collinear wires")).on_hover_text(tr("Joins wire pieces in a line where nothing else connects (current page)")).clicked() {
-            let n = routing::merge_collinear(&mut self.session.prj.pages[self.session.page]);
+            let symbols = self.session.prj.symbol_table();
+            let n = routing::merge_collinear(&symbols, &mut self.session.prj.pages[self.session.page]);
             self.editor.selection.clear();
             self.notify(&ctx, tr_fmt!("{} wire pieces joined", n));
         }
@@ -428,6 +429,7 @@ impl App {
 
     /// Tag position, placed properties and placement scheme of a symbol.
     pub(super) fn placement_properties(&mut self, ui: &mut egui::Ui, pi: usize, si: usize) {
+        let symbols = self.session.prj.symbol_table();
         let s = &self.session.prj.pages[pi].symbols[si];
         let values: Vec<String> = s.props.iter().map(|pp| props::text(&self.session.prj, pi, s, pp)).collect();
         let titles: Vec<String> = s.props.iter().map(|pp| properties::def(&self.session.prj, &pp.key).map(|d| d.title_of(&pp.key)).unwrap_or_else(|| pp.key.clone())).collect();
@@ -476,7 +478,7 @@ impl App {
                 s.props.remove(i);
             }
             if let Some(k) = added {
-                props::add(s, &k);
+                props::add(&symbols, s, &k);
             }
             ui.horizontal(|ui| {
                 ui.label(tr("Scheme"));
@@ -492,7 +494,7 @@ impl App {
                 let mut name: String = ui.data_mut(|d| d.get_temp(id)).unwrap_or_default();
                 ui.add(egui::TextEdit::singleline(&mut name).hint_text(tr("Scheme name")).desired_width(90.0));
                 if ui.add_enabled(!s.props.is_empty() && !name.trim().is_empty(), egui::Button::new(tr("Save as scheme"))).on_hover_text(tr("Saves the placed properties as a placement scheme of the project")).clicked() {
-                    save_scheme = Some(props::capture(s, &name));
+                    save_scheme = Some(props::capture(&symbols, s, &name));
                     name.clear();
                 }
                 ui.data_mut(|d| d.insert_temp(id, name));

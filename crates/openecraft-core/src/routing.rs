@@ -2,16 +2,16 @@
 //! wires, and automatic connections between connection points facing each other.
 
 use crate::geom::{dist_to_segment, on_segment_interior, p, P, R, GRID};
+use crate::symlib::Symbols;
 use crate::model::*;
-use crate::symbols;
 use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap, HashMap};
 
 /// Connection points of the symbols on a page with their outward direction.
-fn pins(page: &Page) -> Vec<(u64, P, P)> {
+fn pins(symbols: &Symbols, page: &Page) -> Vec<(u64, P, P)> {
     let mut v = Vec::new();
     for s in &page.symbols {
-        let Some(def) = symbols::get(&s.sym) else { continue };
+        let Some(def) = symbols.get(&s.sym) else { continue };
         let c = def.world_bounds(s.pos, s.rot, s.mirror).center();
         for i in 0..def.pins.len() {
             let q = def.pin_world(i, s.pos, s.rot, s.mirror);
@@ -36,7 +36,7 @@ fn pin_used(page: &Page, all: &[(u64, P, P)], sym: u64, q: P) -> bool {
 }
 
 /// Can a wire run from `a` to `b` without touching anything but its end points?
-fn clear(page: &Page, all: &[(u64, P, P)], a: P, b: P, ends: [u64; 2]) -> bool {
+fn clear(symbols: &Symbols, page: &Page, all: &[(u64, P, P)], a: P, b: P, ends: [u64; 2]) -> bool {
     let inner = |q: P| on_segment_interior(q, a, b);
     if all.iter().any(|(_, q, _)| inner(*q)) {
         return false;
@@ -47,7 +47,7 @@ fn clear(page: &Page, all: &[(u64, P, P)], a: P, b: P, ends: [u64; 2]) -> bool {
         }
     }
     for s in page.symbols.iter().filter(|s| !ends.contains(&s.id)) {
-        let Some(def) = symbols::get(&s.sym) else { continue };
+        let Some(def) = symbols.get(&s.sym) else { continue };
         let r = def.world_bounds(s.pos, s.rot, s.mirror);
         let mid = p((a.x + b.x) / 2.0, (a.y + b.y) / 2.0);
         // Axis aligned segment against the box.
@@ -62,8 +62,8 @@ fn clear(page: &Page, all: &[(u64, P, P)], a: P, b: P, ends: [u64; 2]) -> bool {
 
 /// Wires that connect free connection points of the selected symbols with free
 /// connection points of other symbols lying straight ahead and facing them.
-pub fn autoconnect(page: &Page, sel: &BTreeSet<u64>, max_len: f32) -> Vec<(P, P)> {
-    let all = pins(page);
+pub fn autoconnect(symbols: &Symbols, page: &Page, sel: &BTreeSet<u64>, max_len: f32) -> Vec<(P, P)> {
+    let all = pins(symbols, page);
     let mut out: Vec<(P, P)> = Vec::new();
     let mut taken: Vec<P> = Vec::new();
     for (sym, q, dir) in all.iter().filter(|(id, _, _)| sel.contains(id)) {
@@ -87,7 +87,7 @@ pub fn autoconnect(page: &Page, sel: &BTreeSet<u64>, max_len: f32) -> Vec<(P, P)
             best = Some((along, *osym, *o));
         }
         let Some((_, osym, o)) = best else { continue };
-        if clear(page, &all, *q, o, [*sym, osym]) && !out.iter().any(|(a, b)| dist_to_segment(*q, *a, *b) < 0.01) {
+        if clear(symbols, page, &all, *q, o, [*sym, osym]) && !out.iter().any(|(a, b)| dist_to_segment(*q, *a, *b) < 0.01) {
             out.push((*q, o));
             taken.push(*q);
             taken.push(o);
@@ -98,7 +98,7 @@ pub fn autoconnect(page: &Page, sel: &BTreeSet<u64>, max_len: f32) -> Vec<(P, P)
 
 /// Adds the wires found by [`autoconnect`]. Returns their number.
 pub fn apply_autoconnect(prj: &mut Project, page: usize, sel: &BTreeSet<u64>) -> usize {
-    let segs = autoconnect(&prj.pages[page], sel, 400.0);
+    let segs = autoconnect(&prj.symbol_table(), &prj.pages[page], sel, 400.0);
     for (a, b) in &segs {
         let id = prj.new_id();
         prj.pages[page].wires.push(Wire { id, a: *a, b: *b, ..Default::default() });
@@ -112,8 +112,8 @@ const BEND: u32 = 4;
 /// Orthogonal path on the grid from `a` to `b` inside `area` that avoids symbols,
 /// other connection points, wire ends and running along other wires (crossing them
 /// is allowed). Falls back to a single corner when there is no such path.
-pub fn route(page: &Page, area: R, a: P, b: P) -> Vec<P> {
-    search(page, area, a, b).unwrap_or_else(|| {
+pub fn route(symbols: &Symbols, page: &Page, area: R, a: P, b: P) -> Vec<P> {
+    search(symbols, page, area, a, b).unwrap_or_else(|| {
         if a.x == b.x || a.y == b.y {
             vec![a, b]
         } else {
@@ -122,7 +122,7 @@ pub fn route(page: &Page, area: R, a: P, b: P) -> Vec<P> {
     })
 }
 
-fn search(page: &Page, area: R, a: P, b: P) -> Option<Vec<P>> {
+fn search(symbols: &Symbols, page: &Page, area: R, a: P, b: P) -> Option<Vec<P>> {
     let cell = |q: P| ((q.x / GRID).round() as i32, (q.y / GRID).round() as i32);
     let at = |c: (i32, i32)| p(c.0 as f32 * GRID, c.1 as f32 * GRID);
     let (x0, y0) = cell(area.min);
@@ -131,11 +131,11 @@ fn search(page: &Page, area: R, a: P, b: P) -> Option<Vec<P>> {
     if !at(start).same(a) || !at(goal).same(b) {
         return None;
     }
-    let all = pins(page);
+    let all = pins(symbols, page);
     let boxes: Vec<R> = page
         .symbols
         .iter()
-        .filter_map(|s| symbols::get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror)))
+        .filter_map(|s| symbols.get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror)))
         .collect();
     let blocked = |c: (i32, i32)| {
         if c == start || c == goal {
@@ -215,10 +215,10 @@ fn search(page: &Page, area: R, a: P, b: P) -> Option<Vec<P>> {
 
 /// Joins collinear wires that meet end to end where nothing else connects. Returns
 /// the number of wires removed.
-pub fn merge_collinear(page: &mut Page) -> usize {
+pub fn merge_collinear(symbols: &Symbols, page: &mut Page) -> usize {
     let mut removed = 0;
     loop {
-        let all = pins(page);
+        let all = pins(symbols, page);
         let mut merged = None;
         'outer: for i in 0..page.wires.len() {
             for j in i + 1..page.wires.len() {

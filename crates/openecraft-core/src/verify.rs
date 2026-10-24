@@ -106,7 +106,7 @@ pub fn verify(prj: &Project) -> Verification {
             }
         }
         for s in &pg.symbols {
-            if crate::symbols::get(&s.sym).is_none() {
+            if prj.symbol(&s.sym).is_none() {
                 push(Severity::Error, tr_fmt!("Page {}: unknown symbol {}", pg.name, s.sym), Some((pi, s.id)), false);
             }
         }

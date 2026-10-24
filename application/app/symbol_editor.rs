@@ -221,8 +221,7 @@ impl App {
                 self.export(ctx, "symbols.json".into(), (tr("OpenECraft symbol library"), "json"), json);
             }
             Some(Action::Place(key)) => {
-                symlib::register(&self.session.prj.symbols);
-                if let Some(def) = symbols::get(&key) {
+                if let Some(def) = self.session.prj.symbol(&key) {
                     self.workspace = super::Workspace::Schematic;
                     self.editor.set_tool(Tool::Place(def.key));
                     self.notify(ctx, tr_fmt!("Click into the page to place {}", tr(def.name)));

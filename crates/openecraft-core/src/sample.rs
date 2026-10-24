@@ -3,7 +3,6 @@
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::parts::PartsDb;
-use crate::symbols;
 
 struct Pg<'a> {
     prj: &'a mut Project,
@@ -13,7 +12,7 @@ struct Pg<'a> {
 impl Pg<'_> {
     #[allow(clippy::too_many_arguments)]
     fn sym(&mut self, key: &str, x: f32, y: f32, rot: u8, tag: &str, label: &str, ftext: &str) -> &mut Self {
-        let def = symbols::get(key).expect("symbol");
+        let def = self.prj.symbol(key).expect("symbol");
         let id = self.prj.new_id();
         let s = SymbolInst {
             id,

@@ -9,7 +9,7 @@ use crate::panel::{self, OpenWire, RoutedWire};
 use crate::model::*;
 use crate::netlist::{pin_designation, Connection, Netlist, PinRef};
 use crate::params::Text;
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
@@ -277,7 +277,7 @@ fn device_list(prj: &Project, idx: &Index) -> Table {
         let Some(loc) = first else { continue };
         let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
         let (name, ftext) = inst
-            .map(|s| (symbols::get(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
+            .map(|s| (prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?").to_string(), s.function_text.clone()))
             .unwrap_or_default();
         let name = if dev.mains.is_empty() && !dev.others.is_empty() {
             format!("{name} ×{}", dev.others.len())
@@ -347,7 +347,7 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
                     .symbols
                     .iter()
                     .find(|s| s.id == l.sym_id)
-                    .and_then(|s| symbols::get(&s.sym))
+                    .and_then(|s| prj.symbol(&s.sym))
                     .map(|d| d.func == Func::Terminal)
                     .unwrap_or(false)
             })
@@ -924,7 +924,7 @@ fn potential_list(prj: &Project, nl: &Netlist) -> Table {
             .iter()
             .filter(|p| {
                 let s = &prj.pages[p.page].symbols[p.sym];
-                symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
+                prj.symbol(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
             })
             .map(|p| pin_designation(prj, *p))
             .collect();

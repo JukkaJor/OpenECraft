@@ -38,7 +38,10 @@ Layers, bottom up (a module may use its own layer and the layers below):
 
 1. Foundations without dependencies: `geom`, `xml`, `params` (typed parameters and
    `Text`), `table` (report tables), `issue` (`Issue`, `Severity`).
-2. `symbols`, `symlib`: symbol definitions.
+2. `symbols`, `symlib`: symbol definitions. The built-in library is static
+   (`symbols::builtin`); the user symbols of a project are resolved through
+   `Project::symbol` / `Project::symbol_table()` (`symlib::Symbols`, a snapshot the
+   editing functions take as a parameter), never through process-wide state.
 3. `model` with its data submodules (`model/panel.rs`, `model/forms.rs`, …): the
    project file format. Data only, serde, no evaluation. The feature modules re-export
    their data types from here and keep the logic.
@@ -61,8 +64,8 @@ Layers, bottom up (a module may use its own layer and the layers below):
 Known upward edges (listed in `CORE_RULES`, to be removed): `structure`, `macros`,
 `page_templates` and `document` use `ops`; `field`, `document` and `review` draw with
 `render` (and `field` with `svg`); `production` writes DXF; `panel` uses `analysis`
-(routed wiring), `plc_hw` uses `ops`; `model` calls `symlib::register` until the user
-symbols are looked up through a table (phase 5 of the plan). `analysis` and `ext`
+(routed wiring), `plc_hw` uses `ops`; `model` and `symlib` refer to each other
+(`Project` carries the `symlib::SymbolCache` of its user symbols). `analysis` and `ext`
 refer to each other (the registry kinds take an `&Analysis`).
 
 ## The editor

@@ -64,7 +64,7 @@ pub fn connections_at(prj: &Project, an: &Analysis, page: usize, wires: &BTreeSe
     let ends: Vec<crate::geom::P> = prj.pages[page].wires.iter().filter(|w| wires.contains(&w.id)).flat_map(|w| [w.a, w.b]).collect();
     let pos = |pin: PinRef| {
         let s = &prj.pages[pin.page].symbols[pin.sym];
-        crate::symbols::get(&s.sym).map(|d| d.pin_world(pin.pin, s.pos, s.rot, s.mirror))
+        prj.symbol(&s.sym).map(|d| d.pin_world(pin.pin, s.pos, s.rot, s.mirror))
     };
     let touched = |pin: PinRef| pin.page == page && pos(pin).map(|q| ends.iter().any(|e| e.same(q))).unwrap_or(false);
     (0..an.connections.len()).filter(|&i| touched(an.connections[i].a) && touched(an.connections[i].b)).collect()

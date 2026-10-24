@@ -4,7 +4,7 @@ use crate::analysis::Analysis;
 use crate::issue::Severity;
 
 fn sym(prj: &mut Project, key: &str, x: f32, y: f32, tag: &str, label: &str) {
-    let def = crate::symbols::get(key).unwrap();
+    let def = prj.symbol(key).unwrap();
     let id = prj.new_id();
     prj.pages[0].symbols.push(SymbolInst {
         id,

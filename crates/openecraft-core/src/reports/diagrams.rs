@@ -7,7 +7,7 @@ use crate::model::*;
 use crate::netlist::{pin_designation, Connection, Netlist, PinRef};
 use crate::panel::ItemKind;
 use crate::strips::ElementKind;
-use crate::symbols::{self, Func, PinKind};
+use crate::symbols::{Func, PinKind};
 use openecraft_i18n::{tr, tr_const};
 use std::collections::BTreeMap;
 
@@ -117,7 +117,7 @@ pub(super) fn device_connections(prj: &Project, idx: &Index, conns: &[Connection
     for tag in idx.sorted_tags() {
         for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
             for (si, s) in pg.symbols.iter().enumerate().filter(|(_, s)| &s.tag == tag) {
-                let Some(def) = symbols::get(&s.sym) else { continue };
+                let Some(def) = prj.symbol(&s.sym) else { continue };
                 if matches!(def.func, Func::Terminal | Func::Plug(_) | Func::Overview | Func::Potential | Func::Interruption) {
                     continue;
                 }

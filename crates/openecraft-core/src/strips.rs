@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
 use crate::parts::FnKind;
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 
 /// A terminal of a strip as placed in the schematic.
 #[derive(Clone, Debug, PartialEq)]
@@ -16,14 +16,14 @@ pub struct Terminal {
     pub label: String,
 }
 
-fn is_terminal(s: &SymbolInst) -> bool {
-    symbols::get(&s.sym).map(|d| d.func) == Some(Func::Terminal)
+fn is_terminal(prj: &Project, s: &SymbolInst) -> bool {
+    prj.symbol(&s.sym).map(|d| d.func) == Some(Func::Terminal)
 }
 
 /// Tags of all terminal strips.
 pub fn strip_tags(prj: &Project) -> Vec<String> {
     let mut v: Vec<String> =
-        prj.pages.iter().flat_map(|p| p.symbols.iter()).filter(|s| is_terminal(s) && !s.tag.is_empty()).map(|s| s.tag.clone()).collect();
+        prj.pages.iter().flat_map(|p| p.symbols.iter()).filter(|s| is_terminal(prj, s) && !s.tag.is_empty()).map(|s| s.tag.clone()).collect();
     v.extend(prj.strips.keys().cloned());
     v.sort_by(|a, b| natural_cmp(a, b));
     v.dedup();
@@ -39,7 +39,7 @@ pub fn terminals(prj: &Project, strip: &str) -> Vec<Terminal> {
             continue;
         }
         for (si, s) in pg.symbols.iter().enumerate() {
-            if s.tag == strip && is_terminal(s) {
+            if s.tag == strip && is_terminal(prj, s) {
                 v.push(Terminal { page: pi, sym: si, id: s.id, label: s.label.clone() });
             }
         }

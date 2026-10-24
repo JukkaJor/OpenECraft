@@ -273,7 +273,7 @@ impl App {
         self.editor.selection.clear();
         if id != 0 {
             self.editor.selection.insert(id);
-            if let Some(b) = ops::item_bounds(&self.session.prj.pages[page], id) {
+            if let Some(b) = ops::item_bounds(&self.session.prj.symbol_table(), &self.session.prj.pages[page], id) {
                 if self.editor.zoom < 3.0 {
                     self.editor.zoom = 4.0;
                 }
@@ -306,11 +306,6 @@ impl eframe::App for App {
         self.shortcuts(&ctx);
         self.session.clamp_page();
 
-        // User symbols are rebuilt when they change (not while one is dragged in the
-        // symbol editor).
-        if !self.symed.busy() {
-            openecraft_core::symlib::register(&self.session.prj.symbols);
-        }
         // The device index follows every committed change; while an edit may be in
         // progress (mouse down, text field focused, drag) it is rebuilt every frame.
         let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();

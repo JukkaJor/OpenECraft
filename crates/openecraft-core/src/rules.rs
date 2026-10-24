@@ -347,7 +347,7 @@ pub fn items(prj: &Project, conns: &[Connection], scope: Scope) -> Vec<Item> {
             let mut seen = BTreeSet::new();
             for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
                 for s in &pg.symbols {
-                    if s.tag.is_empty() || !crate::symbols::get(&s.sym).is_some_and(|d| d.func.has_tag()) || !seen.insert(s.tag.clone()) {
+                    if s.tag.is_empty() || !prj.symbol(&s.sym).is_some_and(|d| d.func.has_tag()) || !seen.insert(s.tag.clone()) {
                         continue;
                     }
                     let d = prj.devices.get(&s.tag);

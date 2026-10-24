@@ -264,8 +264,8 @@ pub fn port_kind(def: &SymbolDef, label: &str) -> PortKind {
 /// Function of a connected pin, if it is a port of a fluid symbol.
 pub fn kind_of_pin(prj: &Project, pin: PinRef) -> Option<PortKind> {
     let s = &prj.pages[pin.page].symbols[pin.sym];
-    let def = crate::symbols::get(&s.sym).filter(|d| d.is_fluid())?;
-    Some(port_kind(def, s.pins.get(pin.pin).map(String::as_str).unwrap_or("")))
+    let def = prj.symbol(&s.sym).filter(|d| d.is_fluid())?;
+    Some(port_kind(&def, s.pins.get(pin.pin).map(String::as_str).unwrap_or("")))
 }
 
 /// A port in the fluid netlist.
@@ -311,7 +311,7 @@ pub fn fluid_nets(prj: &Project, open: &Netlist) -> Vec<FluidNet> {
             .filter_map(|pin| Some(Port { pin, designation: pin_designation(prj, pin), kind: kind_of_pin(prj, pin)? }))
             .collect();
         let kinds: Vec<PortKind> = ports.iter().map(|p| p.kind).collect();
-        let process = net.pins.iter().any(|p| crate::symbols::get(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.category == Category::Process));
+        let process = net.pins.iter().any(|p| prj.symbol(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.category == Category::Process));
         let (medium, size, _, _) = props_of(prj, net);
         out.push(FluidNet { index, net: net.name.clone(), number: crate::wirenum::number_of(prj, net), line: LineKind::of(&kinds, process), medium, size, ports });
     }
@@ -521,7 +521,7 @@ pub fn problems(prj: &Project, open: &Netlist) -> Vec<Problem> {
     for fnet in &nets {
         for p in fnet.ports.iter().filter(|p| p.kind != PortKind::Pilot) {
             let s = &prj.pages[p.pin.page].symbols[p.pin.sym];
-            if crate::symbols::get(&s.sym).is_some_and(|d| d.category == Category::Fluid) {
+            if prj.symbol(&s.sym).is_some_and(|d| d.category == Category::Fluid) {
                 let e = device_media.entry(s.tag.as_str()).or_insert_with(|| (BTreeSet::new(), p.pin));
                 e.0.insert(fnet.medium);
             }

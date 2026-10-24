@@ -130,7 +130,7 @@ impl App {
                                 for loc in locs {
                                     let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
                                     let Some(inst) = inst else { continue };
-                                    let name = symbols::get(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
+                                    let name = self.session.prj.symbol(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
                                     let extra = if inst.label.is_empty() { inst.pins.join("-") } else { inst.label.clone() };
                                     let text = format!("{} {kind} {name} {extra}", loc.reference(prj));
                                     if ui.link(text.trim()).clicked() {

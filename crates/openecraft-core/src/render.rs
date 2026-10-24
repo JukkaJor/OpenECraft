@@ -11,7 +11,7 @@ use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::analysis::Analysis;
 use crate::{graphics, structure, wirenum};
-use crate::symbols::{self, Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef};
+use crate::symbols::{Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef, SymbolRef};
 use std::collections::{BTreeSet, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -173,21 +173,21 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
             _ => d.line(w.a, w.b, WIRE_W, ink, false),
         }
     }
-    for j in netlist::junctions(page) {
+    for j in netlist::junctions(prj, page) {
         d.circle(j, 0.7, 0.0, Ink::Wire, true);
     }
     draw_wire_labels(d, prj, an, page_i);
     let structured = !structure::page_structure(page).is_empty();
     for s in &page.symbols {
-        let Some(def) = symbols::get(&s.sym) else { continue };
+        let Some(def) = prj.symbol(&s.sym) else { continue };
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
         if structured {
             let shown = SymbolInst { tag: structure::relative(page, &s.tag), ..s.clone() };
-            draw_symbol(d, def, &shown, ink);
+            draw_symbol(d, &def, &shown, ink);
         } else {
-            draw_symbol(d, def, s, ink);
+            draw_symbol(d, &def, s, ink);
         }
-        draw_annotations(d, prj, idx, page_i, def, s, ink);
+        draw_annotations(d, prj, idx, page_i, &def, s, ink);
         if opts.show_pins {
             for i in 0..def.pins.len() {
                 d.circle(def.pin_world(i, s.pos, s.rot, s.mirror), 0.6, 0.15, Ink::Pin, false);
@@ -385,8 +385,8 @@ fn rotated_anchor(a: Anchor, s: &SymbolInst) -> Anchor {
     }
 }
 
-fn find_symbol(prj: &Project, loc: &Loc) -> Option<&'static SymbolDef> {
-    prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id).and_then(|s| symbols::get(&s.sym))
+fn find_symbol(prj: &Project, loc: &Loc) -> Option<SymbolRef> {
+    prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id).and_then(|s| prj.symbol(&s.sym))
 }
 
 fn find_inst<'a>(prj: &'a Project, loc: &Loc) -> Option<&'a SymbolInst> {

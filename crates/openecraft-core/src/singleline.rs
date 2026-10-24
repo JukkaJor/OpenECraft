@@ -13,7 +13,7 @@ use crate::model::*;
 use crate::netlist::Netlist;
 use crate::issue::Severity;
 use crate::structure::Dt;
-use crate::symbols::{self, Category, SymbolDef};
+use crate::symbols::{Category, SymbolDef, SymbolRef};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 /// Single-line symbol, the multi-line power symbol generated for it and a further
@@ -42,8 +42,8 @@ pub fn single_of(multi: &str) -> Option<&'static str> {
     MAPPING.iter().find(|m| m.1 == multi).map(|m| m.0).or_else(|| ALSO.iter().find(|m| m.0 == multi).map(|m| m.1))
 }
 
-fn is_single_line(sym: &str) -> bool {
-    symbols::get(sym).is_some_and(|d| d.category == Category::SingleLine)
+fn is_single_line(prj: &Project, sym: &str) -> bool {
+    prj.symbol(sym).is_some_and(|d| d.category == Category::SingleLine)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -86,7 +86,7 @@ fn sym_at<'a>(prj: &'a Project, l: &Loc) -> Option<&'a SymbolInst> {
 
 /// First single-line representation of a device.
 fn single_loc<'a>(prj: &'a Project, dev: &DeviceEntry) -> Option<(&'a SymbolInst, Loc)> {
-    dev.overviews.iter().find_map(|l| sym_at(prj, l).filter(|s| is_single_line(&s.sym)).map(|s| (s, *l)))
+    dev.overviews.iter().find_map(|l| sym_at(prj, l).filter(|s| is_single_line(prj, &s.sym)).map(|s| (s, *l)))
 }
 
 /// First multi-line power symbol of a device.
@@ -148,7 +148,7 @@ impl Points {
 }
 
 /// Connected pins of the single-line symbols of a page: groups of (symbol id, pin).
-fn single_line_nets(page: &Page) -> Vec<Vec<(u64, usize)>> {
+fn single_line_nets(prj: &Project, page: &Page) -> Vec<Vec<(u64, usize)>> {
     let mut pts = Points::default();
     let ends: Vec<P> = page.wires.iter().flat_map(|w| [w.a, w.b]).collect();
     for w in &page.wires {
@@ -160,8 +160,8 @@ fn single_line_nets(page: &Page) -> Vec<Vec<(u64, usize)>> {
         }
     }
     let mut groups: BTreeMap<usize, Vec<(u64, usize)>> = BTreeMap::new();
-    for s in page.symbols.iter().filter(|s| is_single_line(&s.sym)) {
-        let def = symbols::get(&s.sym).unwrap();
+    for s in page.symbols.iter().filter(|s| is_single_line(prj, &s.sym)) {
+        let def = prj.symbol(&s.sym).unwrap();
         for i in 0..def.pins.len() {
             let q = def.pin_world(i, s.pos, s.rot, s.mirror);
             let n = pts.node(q);
@@ -178,7 +178,7 @@ pub fn single_line_links(prj: &Project) -> Vec<(String, String, (usize, u64))> {
     let mut v = Vec::new();
     for (pi, page) in prj.pages.iter().enumerate().filter(|(_, pg)| matches!(pg.kind, PageKind::Schematic | PageKind::Overview)) {
         let tag_of = |id: u64| page.symbols.iter().find(|s| s.id == id).map(|s| s.tag.clone()).unwrap_or_default();
-        for net in single_line_nets(page) {
+        for net in single_line_nets(prj, page) {
             for (i, a) in net.iter().enumerate() {
                 for b in &net[i + 1..] {
                     let (ta, tb) = (tag_of(a.0), tag_of(b.0));
@@ -201,7 +201,7 @@ fn power_nets(prj: &Project, nl: &Netlist, dev: &DeviceEntry) -> BTreeSet<usize>
     let mut v = BTreeSet::new();
     for l in dev.mains.iter().chain(&dev.auxs) {
         let Some(s) = sym_at(prj, l).filter(|s| single_of(&s.sym).is_some()) else { continue };
-        let n = symbols::get(&s.sym).map(|d| d.pins.len()).unwrap_or(0);
+        let n = prj.symbol(&s.sym).map(|d| d.pins.len()).unwrap_or(0);
         v.extend((0..n).filter_map(|i| nl.pin_net.get(&(s.id, i)).copied()));
     }
     v
@@ -218,7 +218,7 @@ pub fn problems(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Problem> {
     let devices = devices(prj, idx);
     let uses_single_line = devices.iter().any(|d| d.single.is_some());
     for d in &devices {
-        let name = |key: &str| symbols::get(key).map(|s| tr(s.name)).unwrap_or_default();
+        let name = |key: &str| prj.symbol(key).map(|s| tr(s.name)).unwrap_or_default();
         match (d.status, &d.single, &d.multi) {
             (Status::Planned, Some((_, at)), _) => {
                 v.push((Severity::Info, tr_fmt!("{}: planned in the single-line diagram, not in the schematic yet", d.tag), Some(*at)));
@@ -351,7 +351,7 @@ pub fn to_multiline(prj: &mut Project, from: usize) -> Result<Generated, String>
     let src = prj.pages.get(from).ok_or_else(|| tr("No such page"))?.clone();
     let mut skipped = Vec::new();
     let mut todo: Vec<(&SymbolInst, &'static str, Option<&'static str>)> = Vec::new();
-    for s in src.symbols.iter().filter(|s| is_single_line(&s.sym) && !s.tag.is_empty()) {
+    for s in src.symbols.iter().filter(|s| is_single_line(prj, &s.sym) && !s.tag.is_empty()) {
         let Some(m) = MAPPING.iter().find(|m| m.0 == s.sym) else {
             skipped.push(s.tag.clone());
             continue;
@@ -363,7 +363,7 @@ pub fn to_multiline(prj: &mut Project, from: usize) -> Result<Generated, String>
         todo.push((s, m.1, m.2));
     }
     if todo.is_empty() {
-        return Err(if src.symbols.iter().any(|s| is_single_line(&s.sym)) {
+        return Err(if src.symbols.iter().any(|s| is_single_line(prj, &s.sym)) {
             tr_fmt!("All devices of page {} are in the schematic already", src.name)
         } else {
             tr_fmt!("Page {} has no single-line symbols", src.name)
@@ -381,35 +381,36 @@ pub fn to_multiline(prj: &mut Project, from: usize) -> Result<Generated, String>
 
     let mut out = Generated { page: at, skipped, ..Default::default() };
     // Single-line symbol id -> generated power symbol (def, position, rotation, mirror).
-    let mut placed: HashMap<u64, (&'static SymbolDef, P, u8, bool)> = HashMap::new();
+    let mut placed: HashMap<u64, (SymbolRef, P, u8, bool)> = HashMap::new();
     let mut coils = Vec::new();
     for (s, multi, extra) in &todo {
-        let Some(def) = symbols::get(multi) else { continue };
+        let Some(def) = prj.symbol(multi) else { continue };
         let pos = place(s.pos);
-        let inst = new_inst(prj, def, pos, s.rot, s.mirror, &s.tag, &s.function_text);
+        let inst = new_inst(prj, &def, pos, s.rot, s.mirror, &s.tag, &s.function_text);
         prj.pages[at].symbols.push(inst);
         placed.insert(s.id, (def, pos, s.rot, s.mirror));
         out.symbols += 1;
-        if let Some(def) = extra.and_then(symbols::get) {
+        if let Some(def) = extra.and_then(|k| prj.symbol(k)) {
             coils.push((def, s.tag.clone()));
         }
     }
     let bottom = placed.values().map(|(d, q, ..)| q.y + d.bounds.max.y).fold(y0, f32::max);
     for (i, (def, tag)) in coils.into_iter().enumerate() {
         let pos = p(x0 + i as f32 * 6.0 * GRID, bottom + 10.0 * GRID).snap(GRID);
-        let inst = new_inst(prj, def, pos, 0, false, &tag, "");
+        let inst = new_inst(prj, &def, pos, 0, false, &tag, "");
         prj.pages[at].symbols.push(inst);
         out.symbols += 1;
     }
 
-    let single_def = |id: u64| src.symbols.iter().find(|s| s.id == id).and_then(|s| symbols::get(&s.sym));
-    for net in single_line_nets(&src) {
+    let symbols = prj.symbol_table();
+    let single_def = |id: u64| src.symbols.iter().find(|s| s.id == id).and_then(|s| symbols.get(&s.sym));
+    for net in single_line_nets(prj, &src) {
         let net: Vec<(u64, usize)> = net.into_iter().filter(|(id, _)| placed.contains_key(id)).collect();
         let Some((first, rest)) = net.split_first() else { continue };
         let pins = |(id, pin): (u64, usize)| -> Vec<P> {
-            let (Some(sd), Some(&(def, pos, rot, mirror))) = (single_def(id), placed.get(&id)) else { return Vec::new() };
+            let (Some(sd), Some((def, pos, rot, mirror))) = (single_def(id), placed.get(&id)) else { return Vec::new() };
             let upper = sd.pins[pin].pos.y < 0.0;
-            side_pins(def, upper).into_iter().map(|i| def.pin_world(i, pos, rot, mirror)).collect()
+            side_pins(def, upper).into_iter().map(|i| def.pin_world(i, *pos, *rot, *mirror)).collect()
         };
         let a = pins(*first);
         for b in rest {
@@ -443,8 +444,8 @@ pub fn to_singleline(prj: &mut Project, after: usize) -> Result<Generated, Strin
             skipped.push(tag.clone());
             continue;
         }
-        let (Some(single), Some(def)) = (single_of(&s.sym), symbols::get(&s.sym)) else { continue };
-        let nets = |upper: bool| side_pins(def, upper).into_iter().filter_map(|i| nl.pin_net.get(&(s.id, i)).copied()).collect::<BTreeSet<_>>();
+        let (Some(single), Some(def)) = (single_of(&s.sym), prj.symbol(&s.sym)) else { continue };
+        let nets = |upper: bool| side_pins(&def, upper).into_iter().filter_map(|i| nl.pin_net.get(&(s.id, i)).copied()).collect::<BTreeSet<_>>();
         let (upper, lower) = (nets(true), nets(false));
         let lower = if lower == upper { BTreeSet::new() } else { lower };
         let text = text_loc(prj, dev).and_then(|l| sym_at(prj, &l)).map(|s| s.function_text.clone()).unwrap_or_default();
@@ -500,16 +501,16 @@ pub fn to_singleline(prj: &mut Project, after: usize) -> Result<Generated, Strin
     let mut out = Generated { page: at, skipped, ..Default::default() };
     let pos = |(col, row): (f32, f32)| p(10.0 * GRID + col * 8.0 * GRID, 10.0 * GRID + row * 9.0 * GRID);
     for (n, node) in nodes.iter().enumerate() {
-        let Some(def) = symbols::get(node.single) else { continue };
-        let inst = new_inst(prj, def, pos(cell[n]), 0, false, &node.tag, &node.text);
+        let Some(def) = prj.symbol(node.single) else { continue };
+        let inst = new_inst(prj, &def, pos(cell[n]), 0, false, &node.tag, &node.text);
         prj.pages[at].symbols.push(inst);
         out.symbols += 1;
     }
     let mut drawn = HashSet::new();
     for b in 0..nodes.len() {
         let Some(a) = parent[b] else { continue };
-        let (Some(da), Some(db)) = (symbols::get(nodes[a].single), symbols::get(nodes[b].single)) else { continue };
-        let (Some(&ia), Some(&ib)) = (side_pins(da, false).first(), side_pins(db, true).first()) else { continue };
+        let (Some(da), Some(db)) = (prj.symbol(nodes[a].single), prj.symbol(nodes[b].single)) else { continue };
+        let (Some(&ia), Some(&ib)) = (side_pins(&da, false).first(), side_pins(&db, true).first()) else { continue };
         let pa = da.pin_world(ia, pos(cell[a]), 0, false);
         let pb = db.pin_world(ib, pos(cell[b]), 0, false);
         if (pa.x - pb.x).abs() < 0.01 {

@@ -6,7 +6,7 @@
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
-use crate::symbols::Anchor;
+use crate::symbols::{Anchor, SymbolRef};
 pub use panel::Layout;
 pub use openecraft_parts::natural_cmp;
 pub use openecraft_parts::{Part, PartRef};
@@ -166,6 +166,9 @@ pub struct Project {
     #[serde(skip_serializing_if = "integration::Integration::is_empty")]
     pub integration: integration::Integration,
     pub next_id: u64,
+    /// Lookup table of the user symbols (not stored, never compared).
+    #[serde(skip)]
+    pub symbol_cache: crate::symlib::SymbolCache,
 }
 
 impl Default for Project {
@@ -210,6 +213,7 @@ impl Default for Project {
             model_options: Default::default(),
             integration: Default::default(),
             next_id: 1,
+            symbol_cache: Default::default(),
         };
         let id = prj.new_id();
         prj.pages.push(Page::new(id, "1", "Schematic", PageKind::Schematic));
@@ -1124,6 +1128,17 @@ pub fn is_left(a: &Anchor) -> bool {
 }
 
 impl Project {
+    /// A symbol this project can place: a built-in one or one of its user symbols.
+    pub fn symbol(&self, key: &str) -> Option<SymbolRef> {
+        self.symbol_table().get(key)
+    }
+
+    /// The symbols this project can place, as a snapshot that does not borrow the
+    /// project (for loops that change it).
+    pub fn symbol_table(&self) -> crate::symlib::Symbols {
+        self.symbol_cache.table(&self.symbols)
+    }
+
     pub fn new_id(&mut self) -> u64 {
         let id = self.next_id;
         self.next_id += 1;
@@ -1145,12 +1160,12 @@ impl Project {
 
     pub fn normalize(&mut self) {
         self.format = FORMAT;
-        crate::symlib::register(&self.symbols);
         self.fix_next_id();
         // Make sure each symbol has a designation for each pin.
+        let symbols = self.symbol_table();
         for pg in &mut self.pages {
             for s in &mut pg.symbols {
-                if let Some(def) = crate::symbols::get(&s.sym) {
+                if let Some(def) = symbols.get(&s.sym) {
                     while s.pins.len() < def.pins.len() {
                         s.pins.push(def.pins[s.pins.len()].label.to_string());
                     }

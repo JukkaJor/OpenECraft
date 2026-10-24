@@ -5,7 +5,7 @@
 
 use crate::geom::{on_segment_interior, P};
 use crate::model::{Page, PageKind, Project};
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -102,7 +102,7 @@ fn wire_ends(page: &Page) -> HashMap<(i64, i64), (P, usize)> {
 }
 
 /// Positions where a connection dot must be drawn (three or more connections).
-pub fn junctions(page: &Page) -> Vec<P> {
+pub fn junctions(prj: &Project, page: &Page) -> Vec<P> {
     let ends = wire_ends(page);
     let mut count: HashMap<(i64, i64), (P, usize)> = ends.clone();
     // Ends by their x and y key: a horizontal or vertical wire (the usual case) only
@@ -132,7 +132,7 @@ pub fn junctions(page: &Page) -> Vec<P> {
         }
     }
     for s in &page.symbols {
-        if let Some(def) = symbols::get(&s.sym) {
+        if let Some(def) = prj.symbol(&s.sym) {
             for i in 0..def.pins.len() {
                 let q = def.pin_world(i, s.pos, s.rot, s.mirror);
                 if let Some(c) = count.get_mut(&q.key()) {
@@ -180,7 +180,7 @@ impl Netlist {
                 wire_nodes.push((pi, w.id, na));
             }
             for (si, s) in page.symbols.iter().enumerate() {
-                let Some(def) = symbols::get(&s.sym) else { continue };
+                let Some(def) = prj.symbol(&s.sym) else { continue };
                 if def.func == Func::Overview {
                     continue;
                 }
@@ -376,13 +376,13 @@ pub fn chained_pins(prj: &Project, net: &Net) -> Vec<PinRef> {
         .iter()
         .filter(|p| {
             let s = &prj.pages[p.page].symbols[p.sym];
-            symbols::get(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
+            prj.symbol(&s.sym).map(|d| d.func.has_tag()).unwrap_or(false)
         })
         .copied()
         .collect();
     let at = |p: &PinRef| {
         let s = &prj.pages[p.page].symbols[p.sym];
-        symbols::get(&s.sym).map(|d| d.pin_world(p.pin, s.pos, s.rot, s.mirror)).unwrap_or(s.pos)
+        prj.symbol(&s.sym).map(|d| d.pin_world(p.pin, s.pos, s.rot, s.mirror)).unwrap_or(s.pos)
     };
     pins.sort_by(|a, b| {
         let (qa, qb) = (at(a), at(b));
@@ -394,7 +394,7 @@ pub fn chained_pins(prj: &Project, net: &Net) -> Vec<PinRef> {
 /// Human readable designation of a pin: `-K1:A1`, `=L1`, `-X1:3`.
 pub fn pin_designation(prj: &Project, pin: PinRef) -> String {
     let s = &prj.pages[pin.page].symbols[pin.sym];
-    let Some(def) = symbols::get(&s.sym) else { return "?".into() };
+    let Some(def) = prj.symbol(&s.sym) else { return "?".into() };
     match def.func {
         Func::Potential => format!("={}", s.label),
         Func::Interruption => format!("»{}", s.label),

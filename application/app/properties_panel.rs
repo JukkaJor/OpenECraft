@@ -31,7 +31,7 @@ impl App {
             ui.label(tr_fmt!("{} objects selected", sel.len()));
             ui.horizontal(|ui| {
                 if ui.button(tr("⟳ Rotate")).clicked() {
-                    ops::rotate(&mut self.session.prj.pages[pi], &self.editor.selection);
+                    ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[pi], &self.editor.selection);
                 }
                 if ui.button(tr("🗑 Delete")).clicked() {
                     ops::delete(&mut self.session.prj.pages[pi], &self.editor.selection);
@@ -246,7 +246,7 @@ impl App {
     #[allow(clippy::too_many_lines)]
     pub(super) fn symbol_properties(&mut self, ui: &mut egui::Ui, idx: &Index, pi: usize, si: usize) {
         let s = self.session.prj.pages[pi].symbols[si].clone();
-        let Some(def) = symbols::get(&s.sym) else {
+        let Some(def) = self.session.prj.symbol(&s.sym) else {
             ui.label(tr_fmt!("Unknown symbol {}", s.sym));
             return;
         };
@@ -448,7 +448,7 @@ impl App {
                     for loc in locs {
                         let inst = self.session.prj.pages[loc.page].symbols.iter().find(|x| x.id == loc.sym_id);
                         let Some(inst) = inst else { continue };
-                        let dname = symbols::get(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
+                        let dname = self.session.prj.symbol(&inst.sym).map(|d| tr(d.name)).unwrap_or("?");
                         let extra = if inst.label.is_empty() { inst.pins.join("-") } else { inst.label.clone() };
                         let me = if loc.sym_id == s.id { " ◀" } else { "" };
                         if ui.link(format!("{} {kind} {dname} {extra}{me}", loc.reference(&self.session.prj))).clicked() {

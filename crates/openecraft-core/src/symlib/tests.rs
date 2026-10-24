@@ -16,21 +16,28 @@ fn box_symbol(key: &str) -> UserSymbol {
 }
 
 #[test]
-fn registered_symbols_are_found_and_updated() {
-    let mut u = box_symbol("user:test_registry");
-    register(std::slice::from_ref(&u));
-    let def = symbols::get("user:test_registry").expect("registered");
+fn user_symbols_are_looked_up_per_project() {
+    let mut prj = crate::model::Project::default();
+    let u = box_symbol("user:test_table");
+    prj.symbols.push(u.clone());
+    let def = prj.symbol("user:test_table").expect("found");
     assert_eq!(def.category, Category::User);
-    assert_eq!(def.pins.len(), 2);
-    assert_eq!(def.library, "User");
-    // Unchanged symbols keep their definition, changed ones get a new one.
-    register(std::slice::from_ref(&u));
-    assert!(std::ptr::eq(def, symbols::get("user:test_registry").unwrap()));
-    u.pins.push(UserPin { pos: p(8.0, 8.0), label: "3".into() });
-    register(std::slice::from_ref(&u));
-    assert_eq!(symbols::get("user:test_registry").unwrap().pins.len(), 3);
-    // Keys without the prefix never reach the user registry.
-    assert!(lookup("coil").is_none());
+    assert_eq!((def.pins.len(), def.library), (2, "User"));
+    // Another project with the same key has a definition of its own.
+    let mut other = crate::model::Project::default();
+    let mut v = u.clone();
+    v.pins.push(UserPin { pos: p(8.0, 8.0), label: "3".into() });
+    other.symbols.push(v);
+    assert_eq!(other.symbol("user:test_table").unwrap().pins.len(), 3);
+    assert_eq!(prj.symbol("user:test_table").unwrap().pins.len(), 2);
+    // Edits are seen at once, removed symbols are gone, built-in ones stay.
+    prj.symbols[0].pins.push(UserPin { pos: p(8.0, 8.0), label: "3".into() });
+    assert_eq!(prj.symbol("user:test_table").unwrap().pins.len(), 3);
+    prj.symbols.clear();
+    assert!(prj.symbol("user:test_table").is_none());
+    assert!(prj.symbol("coil").is_some());
+    // Keys without the prefix never reach the user table.
+    assert!(prj.symbol_table().get("test_table").is_none());
 }
 
 #[test]
@@ -45,7 +52,7 @@ fn keys_are_unique_slugs() {
 
 #[test]
 fn copy_of_builtin_keeps_function_and_pins() {
-    let coil = symbols::get("coil").unwrap();
+    let coil = symbols::builtin("coil").unwrap();
     let u = from_def(coil, &[]);
     assert!(u.key.starts_with(PREFIX));
     assert_eq!(u.func, coil.func);

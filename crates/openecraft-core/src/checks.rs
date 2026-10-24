@@ -12,7 +12,7 @@ use crate::panel::{self, RoutedWire};
 use crate::reports::{fill_spot, loc_str};
 use crate::analysis::Analysis;
 use crate::issue::{Issue, Severity};
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 
@@ -113,7 +113,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             let mut seen: HashMap<String, usize> = HashMap::new();
             for l in &dev.others {
                 let s = prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id);
-                if let Some(s) = s.filter(|s| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Plug(_)))) {
+                if let Some(s) = s.filter(|s| !matches!(prj.symbol(&s.sym).map(|d| d.func), Some(Func::Plug(_)))) {
                     let c = seen.entry(s.label.clone()).or_default();
                     *c += 1;
                     if *c == 2 {
@@ -165,7 +165,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     }
     for (pi, pg) in prj.pages.iter().enumerate() {
         for s in &pg.symbols {
-            let Some(def) = symbols::get(&s.sym) else {
+            let Some(def) = prj.symbol(&s.sym) else {
                 issue(Severity::Error, tr_fmt!("Unknown symbol '{}'", s.sym), Some((pi, s.id)));
                 continue;
             };
@@ -306,7 +306,7 @@ fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
         let mut undefined: BTreeMap<String, (usize, u64)> = BTreeMap::new();
         for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic) {
             for s in &pg.symbols {
-                let pot = symbols::get(&s.sym).map(|d| d.func == Func::Potential).unwrap_or(false);
+                let pot = prj.symbol(&s.sym).map(|d| d.func == Func::Potential).unwrap_or(false);
                 if pot && !s.label.is_empty() && prj.potential(&s.label).is_none() {
                     undefined.entry(s.label.clone()).or_insert((pi, s.id));
                 }

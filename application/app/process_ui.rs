@@ -290,7 +290,7 @@ impl App {
             .into_iter()
             .filter_map(|t| {
                 let (def, _, loc) = electrofluid::main_of(&self.session.prj, &idx, t).filter(|(d, _, _)| d.category == Category::Fluid)?;
-                Some((t.clone(), tr(def.name).to_string(), electrofluid::solenoids(def), (loc.page, loc.sym_id)))
+                Some((t.clone(), tr(def.name).to_string(), electrofluid::solenoids(&def), (loc.page, loc.sym_id)))
             })
             .collect();
         egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {

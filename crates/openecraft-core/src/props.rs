@@ -6,6 +6,7 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::properties;
+use crate::symlib::Symbols;
 use std::sync::OnceLock;
 pub use crate::model::{default_anchor, is_left, migrate};
 pub use crate::model::props::Scheme;
@@ -24,13 +25,13 @@ pub fn text(prj: &Project, page_i: usize, s: &SymbolInst, pp: &PlacedProp) -> St
 
 /// Reference point of placed properties and schemes: right of and below the
 /// symbol graphics, relative to the symbol position.
-pub fn reference(s: &SymbolInst) -> P {
-    crate::symbols::get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror).max - s.pos + p(1.5, 2.0)).unwrap_or_default()
+pub fn reference(symbols: &Symbols, s: &SymbolInst) -> P {
+    symbols.get(&s.sym).map(|d| d.world_bounds(s.pos, s.rot, s.mirror).max - s.pos + p(1.5, 2.0)).unwrap_or_default()
 }
 
 /// Adds a property text below the ones already placed.
-pub fn add(s: &mut SymbolInst, key: &str) {
-    let below = reference(s);
+pub fn add(symbols: &Symbols, s: &mut SymbolInst, key: &str) {
+    let below = reference(symbols, s);
     let y = s.props.iter().map(|p| p.offset.y + 2.8).fold(below.y, f32::max);
     s.props.push(PlacedProp { key: key.into(), offset: p(below.x, y), ..Default::default() });
 }
@@ -88,15 +89,15 @@ pub fn all_schemes(prj: &Project) -> impl Iterator<Item = &Scheme> {
 }
 
 /// A scheme from the properties placed at a symbol.
-pub fn capture(s: &SymbolInst, name: &str) -> Scheme {
-    let r = reference(s);
+pub fn capture(symbols: &Symbols, s: &SymbolInst, name: &str) -> Scheme {
+    let r = reference(symbols, s);
     let entries = s.props.iter().map(|pp| PlacedProp { offset: pp.offset - r, ..pp.clone() }).collect();
     Scheme { name: name.trim().into(), description: String::new(), entries, builtin: false }
 }
 
 /// Places the properties of a scheme at a symbol (replacing the ones placed so far).
-pub fn apply_scheme(s: &mut SymbolInst, scheme: &Scheme) {
-    let r = reference(s);
+pub fn apply_scheme(symbols: &Symbols, s: &mut SymbolInst, scheme: &Scheme) {
+    let r = reference(symbols, s);
     s.props = scheme.entries.iter().map(|e| PlacedProp { offset: e.offset + r, ..e.clone() }).collect();
     s.scheme = scheme.name.clone();
 }
@@ -131,11 +132,12 @@ pub fn remove_scheme(prj: &mut Project, name: &str) {
 /// Places the scheme again at all symbols of editable pages that use it. Returns
 /// the number of symbols updated.
 pub fn reapply(prj: &mut Project, name: &str) -> usize {
+    let symbols = prj.symbol_table();
     let Some(scheme) = scheme(prj, name).cloned() else { return 0 };
     let mut n = 0;
     for pg in prj.pages.iter_mut().filter(|pg| pg.is_editable()) {
         for s in pg.symbols.iter_mut().filter(|s| s.scheme == name) {
-            apply_scheme(s, &scheme);
+            apply_scheme(&symbols, s, &scheme);
             n += 1;
         }
     }
@@ -144,11 +146,12 @@ pub fn reapply(prj: &mut Project, name: &str) -> usize {
 
 /// Applies a scheme to symbols by id (on editable pages). Returns the number changed.
 pub fn apply_to(prj: &mut Project, name: &str, ids: &[u64]) -> Result<usize, String> {
+    let symbols = prj.symbol_table();
     let scheme = scheme(prj, name).cloned().ok_or_else(|| tr_fmt!("Unknown scheme: {}", name))?;
     let mut n = 0;
     for pg in prj.pages.iter_mut().filter(|pg| pg.is_editable()) {
         for s in pg.symbols.iter_mut().filter(|s| ids.contains(&s.id)) {
-            apply_scheme(s, &scheme);
+            apply_scheme(&symbols, s, &scheme);
             n += 1;
         }
     }

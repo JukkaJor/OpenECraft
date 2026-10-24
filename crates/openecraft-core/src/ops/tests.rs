@@ -1,28 +1,31 @@
 use super::*;
+use crate::symlib::Symbols;
 
 #[test]
 fn contact_numbering_and_tag_follow_coil() {
     let mut prj = Project::default();
     let mut ctx = PlaceCtx::default();
-    let coil = symbols::get("coil").unwrap();
-    let s = new_symbol(&mut prj, 0, &ctx, coil, p(40.0, 40.0), 0, false);
+    let coil = prj.symbol("coil").unwrap();
+    let s = new_symbol(&mut prj, 0, &ctx, &coil, p(40.0, 40.0), 0, false);
     assert_eq!(s.tag, "-K1");
-    ctx.remember(&s);
+    ctx.remember(&prj, &s);
     prj.pages[0].symbols.push(s);
-    let no = symbols::get("no").unwrap();
-    let c1 = new_symbol(&mut prj, 0, &ctx, no, p(80.0, 40.0), 0, false);
+    let no = prj.symbol("no").unwrap();
+    let c1 = new_symbol(&mut prj, 0, &ctx, &no, p(80.0, 40.0), 0, false);
     assert_eq!(c1.tag, "-K1");
     assert_eq!(c1.pins, vec!["13", "14"]);
     prj.pages[0].symbols.push(c1);
-    let nc = symbols::get("nc").unwrap();
-    let c2 = new_symbol(&mut prj, 0, &ctx, nc, p(120.0, 40.0), 0, false);
+    let nc = prj.symbol("nc").unwrap();
+    let c2 = new_symbol(&mut prj, 0, &ctx, &nc, p(120.0, 40.0), 0, false);
     assert_eq!(c2.pins, vec!["21", "22"]);
     prj.pages[0].symbols.push(c2);
     // Time-delayed contacts: x7/x8 (NO) and x5/x6 (NC).
-    let c3 = new_symbol(&mut prj, 0, &ctx, symbols::get("no_on").unwrap(), p(160.0, 40.0), 0, false);
+    let c3_def = prj.symbol("no_on").unwrap();
+    let c3 = new_symbol(&mut prj, 0, &ctx, &c3_def, p(160.0, 40.0), 0, false);
     assert_eq!((c3.tag.as_str(), c3.pins.clone()), ("-K1", vec!["37".to_string(), "38".to_string()]));
     prj.pages[0].symbols.push(c3);
-    let c4 = new_symbol(&mut prj, 0, &ctx, symbols::get("nc_off").unwrap(), p(200.0, 40.0), 0, false);
+    let c4_def = prj.symbol("nc_off").unwrap();
+    let c4 = new_symbol(&mut prj, 0, &ctx, &c4_def, p(200.0, 40.0), 0, false);
     assert_eq!(c4.pins, vec!["45", "46"]);
 }
 
@@ -30,11 +33,11 @@ fn contact_numbering_and_tag_follow_coil() {
 fn plc_addresses_increment() {
     let mut prj = Project::default();
     let mut ctx = PlaceCtx::default();
-    let di = symbols::get("plc_in").unwrap();
+    let di = prj.symbol("plc_in").unwrap();
     for expect in ["I0.0", "I0.1"] {
-        let s = new_symbol(&mut prj, 0, &ctx, di, p(40.0, 40.0), 0, false);
+        let s = new_symbol(&mut prj, 0, &ctx, &di, p(40.0, 40.0), 0, false);
         assert_eq!(s.label, expect);
-        ctx.remember(&s);
+        ctx.remember(&prj, &s);
         prj.pages[0].symbols.push(s);
     }
 }
@@ -43,8 +46,8 @@ fn plc_addresses_increment() {
 fn paste_renames_existing_devices() {
     let mut prj = Project::default();
     let ctx = PlaceCtx::default();
-    let coil = symbols::get("coil").unwrap();
-    let s = new_symbol(&mut prj, 0, &ctx, coil, p(40.0, 40.0), 0, false);
+    let coil = prj.symbol("coil").unwrap();
+    let s = new_symbol(&mut prj, 0, &ctx, &coil, p(40.0, 40.0), 0, false);
     let id = s.id;
     prj.pages[0].symbols.push(s);
     let clip = copy(&prj.pages[0], &BTreeSet::from([id]));
@@ -57,10 +60,11 @@ fn paste_renames_existing_devices() {
 fn rotate_single_symbol_keeps_origin() {
     let mut prj = Project::default();
     let ctx = PlaceCtx::default();
-    let s = new_symbol(&mut prj, 0, &ctx, symbols::get("no").unwrap(), p(40.0, 40.0), 0, false);
+    let s_def = prj.symbol("no").unwrap();
+    let s = new_symbol(&mut prj, 0, &ctx, &s_def, p(40.0, 40.0), 0, false);
     let id = s.id;
     prj.pages[0].symbols.push(s);
-    rotate(&mut prj.pages[0], &BTreeSet::from([id]));
+    rotate(&Symbols::default(), &mut prj.pages[0], &BTreeSet::from([id]));
     let s = &prj.pages[0].symbols[0];
     assert_eq!((s.pos, s.rot), (p(40.0, 40.0), 1));
 }
@@ -80,22 +84,23 @@ fn structured() -> Project {
 fn devices_get_the_page_structure() {
     let mut prj = structured();
     let ctx = PlaceCtx::default();
-    let coil = symbols::get("coil").unwrap();
-    let a = new_symbol(&mut prj, 1, &ctx, coil, p(40.0, 40.0), 0, false);
+    let coil = prj.symbol("coil").unwrap();
+    let a = new_symbol(&mut prj, 1, &ctx, &coil, p(40.0, 40.0), 0, false);
     assert_eq!(a.tag, "=A1+CAB1-K1");
     prj.pages[1].symbols.push(a);
     // Numbering is per structure.
-    assert_eq!(new_symbol(&mut prj, 1, &ctx, coil, p(80.0, 40.0), 0, false).tag, "=A1+CAB1-K2");
-    assert_eq!(new_symbol(&mut prj, 0, &ctx, coil, p(80.0, 40.0), 0, false).tag, "-K1");
-    let term = symbols::get("term").unwrap();
-    assert_eq!(new_symbol(&mut prj, 1, &ctx, term, p(80.0, 40.0), 0, false).tag, "=A1+CAB1-X1");
+    assert_eq!(new_symbol(&mut prj, 1, &ctx, &coil, p(80.0, 40.0), 0, false).tag, "=A1+CAB1-K2");
+    assert_eq!(new_symbol(&mut prj, 0, &ctx, &coil, p(80.0, 40.0), 0, false).tag, "-K1");
+    let term = prj.symbol("term").unwrap();
+    assert_eq!(new_symbol(&mut prj, 1, &ctx, &term, p(80.0, 40.0), 0, false).tag, "=A1+CAB1-X1");
 }
 
 #[test]
 fn paste_moves_devices_into_the_target_structure() {
     let mut prj = structured();
     let ctx = PlaceCtx::default();
-    let s = new_symbol(&mut prj, 0, &ctx, symbols::get("coil").unwrap(), p(40.0, 40.0), 0, false);
+    let s_def = prj.symbol("coil").unwrap();
+    let s = new_symbol(&mut prj, 0, &ctx, &s_def, p(40.0, 40.0), 0, false);
     let id = s.id;
     prj.pages[0].symbols.push(s);
     let clip = copy(&prj.pages[0], &BTreeSet::from([id]));
@@ -108,10 +113,12 @@ fn paste_moves_devices_into_the_target_structure() {
 fn page_structure_change_renames_its_devices() {
     let mut prj = structured();
     let ctx = PlaceCtx::default();
-    let s = new_symbol(&mut prj, 1, &ctx, symbols::get("coil").unwrap(), p(40.0, 40.0), 0, false);
+    let s_def = prj.symbol("coil").unwrap();
+    let s = new_symbol(&mut prj, 1, &ctx, &s_def, p(40.0, 40.0), 0, false);
     prj.pages[1].symbols.push(s);
     // A contact of the coil on the other page follows the device.
-    let mut contact = new_symbol(&mut prj, 0, &ctx, symbols::get("no").unwrap(), p(80.0, 40.0), 0, false);
+    let contact_def = prj.symbol("no").unwrap();
+    let mut contact = new_symbol(&mut prj, 0, &ctx, &contact_def, p(80.0, 40.0), 0, false);
     contact.tag = "=A1+CAB1-K1".into();
     prj.pages[0].symbols.push(contact);
     prj.devices.insert("=A1+CAB1-K1".into(), DeviceData { description: "pump".into(), ..Default::default() });
@@ -125,7 +132,8 @@ fn page_structure_change_renames_its_devices() {
     assert_eq!(prj.all_tags(), vec!["=A2+CAB1-K1".to_string()]);
     // Installation site and product move along as well.
     set_page_structure(&mut prj, 1, &dt("=A2++HALL1+CAB1-U1"), false);
-    let mut s = new_symbol(&mut prj, 1, &ctx, symbols::get("coil").unwrap(), p(40.0, 80.0), 0, false);
+    let s_def = prj.symbol("coil").unwrap();
+    let mut s = new_symbol(&mut prj, 1, &ctx, &s_def, p(40.0, 80.0), 0, false);
     s.tag = "=A2++HALL1+CAB1-U1-K2".into();
     prj.pages[1].symbols.push(s);
     set_page_structure(&mut prj, 1, &dt("=A2++HALL2+CAB1-U3"), true);

@@ -4,7 +4,8 @@ use super::{param, Kind, Param};
 use crate::session::Session;
 use openecraft_core::geom::P;
 use openecraft_core::model::*;
-use openecraft_core::{structure, symbols};
+use openecraft_core::structure;
+use openecraft_core::symlib::Symbols;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -69,8 +70,8 @@ pub fn xy(q: P) -> Value {
 
 /// Connection point designations and page positions of a placed symbol. Points
 /// without designation (terminals) are numbered 1, 2, …
-pub fn pins_of(s: &SymbolInst) -> Vec<(String, P)> {
-    let Some(def) = symbols::get(&s.sym) else { return Vec::new() };
+pub fn pins_of(symbols: &Symbols, s: &SymbolInst) -> Vec<(String, P)> {
+    let Some(def) = symbols.get(&s.sym) else { return Vec::new() };
     def.pins
         .iter()
         .enumerate()
@@ -82,8 +83,8 @@ pub fn pins_of(s: &SymbolInst) -> Vec<(String, P)> {
         .collect()
 }
 
-pub fn symbol_json(s: &SymbolInst) -> Value {
-    let pins: Vec<Value> = pins_of(s).into_iter().map(|(label, q)| json!({ "pin": label, "x": q.x, "y": q.y })).collect();
+pub fn symbol_json(symbols: &Symbols, s: &SymbolInst) -> Value {
+    let pins: Vec<Value> = pins_of(symbols, s).into_iter().map(|(label, q)| json!({ "pin": label, "x": q.x, "y": q.y })).collect();
     json!({
         "id": s.id,
         "symbol": s.sym,

@@ -319,7 +319,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
             ui.label(&d.letter);
             ui.end_row();
             ui.label(tr("Symbol"));
-            ui.label(symbols::get(&d.symbol).map(|s| tr(s.name)).unwrap_or(""));
+            ui.label(prj.symbol(&d.symbol).map(|s| tr(s.name)).unwrap_or(""));
             ui.end_row();
         });
         ui.label(RichText::new(tr("Property groups")).strong());
@@ -336,6 +336,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
     let schemes: Vec<(String, String)> = props::all_schemes(prj).map(|s| (s.name.clone(), s.title())).collect();
     let pdefs: Vec<(String, Option<PropDef>)> = d.defaults.keys().map(|k| (k.clone(), properties::valid_key(prj, k).cloned())).collect();
     let classes = [ObjectClass::Device, ObjectClass::Function, ObjectClass::Terminal, ObjectClass::PlcPoint];
+    let symbol_name = prj.property_db.functions.iter().find(|x| x.key == d.key).and_then(|x| prj.symbol(&x.symbol)).map(|s| tr(s.name)).unwrap_or("");
     let Some(def) = prj.property_db.functions.iter_mut().find(|x| x.key == d.key) else { return };
     egui::Grid::new("fn_edit").num_columns(2).show(ui, |ui| {
         ui.label(tr("Name"));
@@ -359,7 +360,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
         ui.add(egui::TextEdit::singleline(&mut def.letter).desired_width(50.0));
         ui.end_row();
         ui.label(tr("Symbol"));
-        egui::ComboBox::from_id_salt("fn_sym").selected_text(symbols::get(&def.symbol).map(|s| tr(s.name)).unwrap_or("")).height(320.0).show_ui(ui, |ui| {
+        egui::ComboBox::from_id_salt("fn_sym").selected_text(symbol_name).height(320.0).show_ui(ui, |ui| {
             for s in symbols::library() {
                 ui.selectable_value(&mut def.symbol, s.key.to_string(), tr(s.name));
             }

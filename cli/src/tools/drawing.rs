@@ -9,7 +9,8 @@ use openecraft_core::geom::{p, P, GRID};
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
 use openecraft_core::fluid::Medium;
-use openecraft_core::symbols::{self, Func, SymbolDef};
+use openecraft_core::symlib::Symbols;
+use openecraft_core::symbols::{self, Func, SymbolRef};
 use openecraft_core::{cabledef, conndef, routing};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -195,8 +196,8 @@ fn func_name(f: Func) -> &'static str {
     }
 }
 
-fn symbol_def(key: &str) -> Result<&'static SymbolDef, String> {
-    symbols::get(key).ok_or_else(|| tr_fmt!("Unknown symbol: {}", key))
+fn symbol_def(prj: &Project, key: &str) -> Result<SymbolRef, String> {
+    prj.symbol(key).ok_or_else(|| tr_fmt!("Unknown symbol: {}", key))
 }
 
 fn rotation(a: &Args) -> Result<Option<u8>, String> {
@@ -247,7 +248,7 @@ fn push_path(prj: &mut Project, page: usize, pts: &[P]) -> Vec<u64> {
 }
 
 /// Position of a connection point `TAG:PIN` / `#ID:PIN` / `POTENTIAL:PIN` on a page.
-fn pin_position(pg: &Page, spec: &str) -> Result<P, String> {
+fn pin_position(symbols: &Symbols, pg: &Page, spec: &str) -> Result<P, String> {
     let (dev, pin) = spec.rsplit_once(':').ok_or_else(|| tr_fmt!("{} is not a connection point (TAG:PIN)", spec))?;
     let id = dev.strip_prefix('#').and_then(|n| n.parse::<u64>().ok());
     let mut found: Vec<P> = Vec::new();
@@ -255,10 +256,10 @@ fn pin_position(pg: &Page, spec: &str) -> Result<P, String> {
         let named = |f: Func| matches!(f, Func::Potential | Func::Interruption) && s.label == dev;
         let hit = match id {
             Some(id) => s.id == id,
-            None => s.tag == dev || symbols::get(&s.sym).is_some_and(|d| named(d.func)),
+            None => s.tag == dev || symbols.get(&s.sym).is_some_and(|d| named(d.func)),
         };
         if hit {
-            for (label, q) in pins_of(s) {
+            for (label, q) in pins_of(symbols, s) {
                 if label == pin && !found.iter().any(|f| f.same(q)) {
                     found.push(q);
                 }
@@ -298,9 +299,10 @@ fn selection(pg: &Page, a: &Args) -> Result<BTreeSet<u64>, String> {
 fn list_symbols(s: &mut Session, a: &Args) -> Result<Value, String> {
     let query = a.str("query").unwrap_or_default().to_lowercase();
     let category = a.str("category").map(|c| c.trim().to_ascii_lowercase());
-    let user: Vec<&SymbolDef> = s.project().map(|prj| prj.symbols.iter().filter_map(|u| symbols::get(&u.key)).collect()).unwrap_or_default();
+    let user: Vec<SymbolRef> = s.project().map(|prj| prj.symbols.iter().filter_map(|u| prj.symbol(&u.key)).collect()).unwrap_or_default();
     let list = symbols::library()
         .iter()
+        .map(SymbolRef::Builtin)
         .chain(user)
         .filter(|d| query.is_empty() || d.key.to_lowercase().contains(&query) || d.name.to_lowercase().contains(&query))
         .filter(|d| category.as_ref().is_none_or(|c| snake(d.category) == *c))
@@ -320,9 +322,10 @@ fn list_symbols(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn place_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let prj = s.project_mut()?;
     let i = editable(prj, a.req("page"))?;
-    let def = symbol_def(a.req("symbol"))?;
+    let def = symbol_def(prj, a.req("symbol"))?;
     // A given tag decides the device the new function belongs to, like the last
     // placed main function in the editor.
     let mut ctx = PlaceCtx::default();
@@ -340,17 +343,18 @@ fn place_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
         }
     }
     let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
-    let mut sym = ops::new_symbol(prj, i, &ctx, def, pos, rotation(a)?.unwrap_or(0), a.flag("mirror"));
+    let mut sym = ops::new_symbol(prj, i, &ctx, &def, pos, rotation(a)?.unwrap_or(0), a.flag("mirror"));
     if let Some(tag) = a.str("tag").filter(|_| def.func.has_tag()) {
         sym.tag = tag.into();
     }
     apply_symbol_params(&mut sym, a)?;
-    let out = symbol_json(&sym);
+    let out = symbol_json(&symbols, &sym);
     prj.pages[i].symbols.push(sym);
     Ok(out)
 }
 
 fn update_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let prj = s.project_mut()?;
     let i = editable(prj, a.req("page"))?;
     let id = a.int("id").unwrap_or_default() as u64;
@@ -359,7 +363,7 @@ fn update_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
     let to = snapped(a.num("x").unwrap_or(old.x), a.num("y").unwrap_or(old.y));
     if !to.same(old) {
         let sel = BTreeSet::from([id]);
-        let attached = ops::attached_wire_ends(page, &sel);
+        let attached = ops::attached_wire_ends(&symbols, page, &sel);
         ops::translate(page, &sel, &attached, to - old);
     }
     let sym = page.symbols.iter_mut().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?;
@@ -367,7 +371,7 @@ fn update_symbol(s: &mut Session, a: &Args) -> Result<Value, String> {
         sym.tag = tag.into();
     }
     apply_symbol_params(sym, a)?;
-    Ok(symbol_json(sym))
+    Ok(symbol_json(&symbols, sym))
 }
 
 fn add_wire(s: &mut Session, a: &Args) -> Result<Value, String> {
@@ -381,10 +385,11 @@ fn add_wire(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn connect(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let prj = s.project_mut()?;
     let i = editable(prj, a.req("page"))?;
-    let from = pin_position(&prj.pages[i], a.req("from"))?;
-    let to = pin_position(&prj.pages[i], a.req("to"))?;
+    let from = pin_position(&symbols, &prj.pages[i], a.req("from"))?;
+    let to = pin_position(&symbols, &prj.pages[i], a.req("to"))?;
     let mut pts = vec![from];
     pts.extend(a.points("via").into_iter().map(|[x, y]| snapped(x, y)));
     pts.push(to);
@@ -428,12 +433,13 @@ fn add_text(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn move_items(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let prj = s.project_mut()?;
     let i = editable(prj, a.req("page"))?;
     let page = &mut prj.pages[i];
     let sel = selection(page, a)?;
     let d = snapped(a.num("dx").unwrap_or_default(), a.num("dy").unwrap_or_default());
-    let attached = ops::attached_wire_ends(page, &sel);
+    let attached = ops::attached_wire_ends(&symbols, page, &sel);
     ops::translate(page, &sel, &attached, d);
     Ok(json!({ "moved": sel.len(), "dx": d.x, "dy": d.y }))
 }
@@ -447,12 +453,13 @@ fn delete_items(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn route(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let prj = s.project_mut()?;
     let i = editable(prj, a.req("page"))?;
-    let from = pin_position(&prj.pages[i], a.req("from"))?;
-    let to = pin_position(&prj.pages[i], a.req("to"))?;
+    let from = pin_position(&symbols, &prj.pages[i], a.req("from"))?;
+    let to = pin_position(&symbols, &prj.pages[i], a.req("to"))?;
     let area = openecraft_core::frame::of_page(prj, i).area();
-    let path = routing::route(&prj.pages[i], area, from, to);
+    let path = routing::route(&prj.symbol_table(), &prj.pages[i], area, from, to);
     let ids = push_path(prj, i, &path);
     Ok(json!({ "ids": ids, "points": path.into_iter().map(xy).collect::<Vec<_>>() }))
 }

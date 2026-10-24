@@ -60,7 +60,7 @@ pub fn instruments(prj: &Project) -> Vec<Instrument> {
     let mut v = Vec::new();
     for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, pg)| pg.kind == PageKind::Schematic) {
         for s in &pg.symbols {
-            let Some(def) = symbols::get(&s.sym) else { continue };
+            let Some(def) = prj.symbol(&s.sym) else { continue };
             if def.category != symbols::Category::Process || def.func != Func::Overview {
                 continue;
             }

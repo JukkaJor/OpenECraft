@@ -1,15 +1,16 @@
 //! Project symbol library: user defined symbols (symbol editor). They are stored in
 //! the project, shared as library files and placed like built-in symbols; placed
-//! instances refer to them by key. [`register`] makes them known to
-//! [`symbols::get`](crate::symbols::get).
+//! instances refer to them by key; a project's [`SymbolCache`] resolves them for
+//! [`Project::symbol`](crate::model::Project::symbol).
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{dist_to_segment, p, P, GRID};
 use crate::model::Project;
-use crate::symbols::{self, Anchor, Category, FieldKind, Func, PinDef, Prim, SymbolDef};
+use crate::symbols::{self, Anchor, Category, FieldKind, Func, PinDef, Prim, SymbolDef, SymbolRef};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::sync::{OnceLock, RwLock};
+use std::collections::{HashMap, HashSet};
+use std::hash::{Hash, Hasher};
+use std::sync::{Arc, Mutex, OnceLock};
 pub use crate::model::symlib::{UserPin, UserSymbol};
 
 /// Keys of user symbols start with this prefix.
@@ -56,21 +57,34 @@ impl SymbolLibrary {
     }
 }
 
-/// Symbol definition of a user symbol. Its texts are leaked to get the `'static`
-/// lifetime of the built-in definitions, so it is only built when a symbol changed.
-fn to_def(u: &UserSymbol) -> SymbolDef {
-    let leak = |s: &str| -> &'static str { Box::leak(s.to_string().into_boxed_str()) };
+/// Interned copy of a string: user symbols need `&'static str` like the built-in
+/// definitions; equal strings share one allocation, so editing leaks nothing new.
+fn intern(s: &str) -> &'static str {
+    static NAMES: OnceLock<Mutex<HashSet<&'static str>>> = OnceLock::new();
+    let mut names = NAMES.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
+    match names.get(s) {
+        Some(n) => n,
+        None => {
+            let n: &'static str = Box::leak(s.to_string().into_boxed_str());
+            names.insert(n);
+            n
+        }
+    }
+}
+
+/// Definition of a user symbol as the editor and the netlist see it.
+pub(crate) fn to_def(u: &UserSymbol) -> SymbolDef {
     SymbolDef {
-        key: leak(&u.key),
-        name: leak(&u.name),
+        key: intern(&u.key),
+        name: intern(&u.name),
         category: Category::User,
-        library: leak(&u.library),
-        letter: leak(&u.letter),
+        library: intern(&u.library),
+        letter: intern(&u.letter),
         func: u.func,
         prims: u.prims.clone(),
-        pins: u.pins.iter().map(|x| PinDef { pos: x.pos, label: leak(&x.label) }).collect(),
+        pins: u.pins.iter().map(|x| PinDef { pos: x.pos, label: intern(&x.label) }).collect(),
         bridges: u.bridges.iter().copied().filter(|(a, b)| *a < u.pins.len() && *b < u.pins.len()).collect(),
-        default_label: leak(&u.default_label),
+        default_label: intern(&u.default_label),
         auto_number: u.auto_number,
         show_tag: u.show_tag && u.func.has_tag(),
         show_pin_labels: u.show_pin_labels,
@@ -78,37 +92,119 @@ fn to_def(u: &UserSymbol) -> SymbolDef {
     }
 }
 
-type Registry = RwLock<HashMap<String, (UserSymbol, &'static SymbolDef)>>;
-
-fn registry() -> &'static Registry {
-    static REG: OnceLock<Registry> = OnceLock::new();
-    REG.get_or_init(Default::default)
+fn hash_point(q: P, h: &mut impl Hasher) {
+    q.x.to_bits().hash(h);
+    q.y.to_bits().hash(h);
 }
 
-/// Makes the user symbols known to the symbol lookup. Unchanged symbols are kept;
-/// symbols removed from the project stay known so that open drawings still render.
-pub fn register(list: &[UserSymbol]) {
-    let changed: Vec<&UserSymbol> = {
-        let Ok(reg) = registry().read() else { return };
-        list.iter().filter(|u| reg.get(&u.key).map(|(old, _)| old != *u).unwrap_or(true)).collect()
-    };
-    if changed.is_empty() {
-        return;
-    }
-    let Ok(mut reg) = registry().write() else { return };
-    for u in changed {
-        // Definitions live as long as the program (`&'static`), like the built-in
-        // ones; only changed symbols are rebuilt.
-        let def: &'static SymbolDef = Box::leak(Box::new(to_def(u)));
-        reg.insert(u.key.clone(), (u.clone(), def));
+fn hash_prim(prim: &Prim, h: &mut impl Hasher) {
+    std::mem::discriminant(prim).hash(h);
+    match prim {
+        Prim::Line { a, b, dashed } => {
+            hash_point(*a, h);
+            hash_point(*b, h);
+            dashed.hash(h);
+        }
+        Prim::Poly { pts, closed, fill } => {
+            for q in pts {
+                hash_point(*q, h);
+            }
+            (closed, fill).hash(h);
+        }
+        Prim::Circle { c, r, fill } => {
+            hash_point(*c, h);
+            r.to_bits().hash(h);
+            fill.hash(h);
+        }
+        Prim::Text { pos, text, size, anchor } => {
+            hash_point(*pos, h);
+            text.hash(h);
+            size.to_bits().hash(h);
+            std::mem::discriminant(anchor).hash(h);
+        }
+        Prim::Field { pos, size, anchor, kind } => {
+            hash_point(*pos, h);
+            size.to_bits().hash(h);
+            std::mem::discriminant(anchor).hash(h);
+            std::mem::discriminant(kind).hash(h);
+        }
     }
 }
 
-pub fn lookup(key: &str) -> Option<&'static SymbolDef> {
-    if !key.starts_with(PREFIX) {
-        return None;
+/// Fingerprint of a symbol list: changes whenever a symbol is added, removed or
+/// edited (so that a project's symbol table is rebuilt exactly then).
+pub fn fingerprint(list: &[UserSymbol]) -> u64 {
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    list.len().hash(&mut h);
+    for u in list {
+        (&u.key, &u.name, &u.library, &u.letter, &u.default_label, u.auto_number, u.show_tag, u.show_pin_labels).hash(&mut h);
+        format!("{:?}", u.func).hash(&mut h);
+        for p in &u.prims {
+            hash_prim(p, &mut h);
+        }
+        for pin in &u.pins {
+            hash_point(pin.pos, &mut h);
+            pin.label.hash(&mut h);
+        }
+        u.bridges.hash(&mut h);
     }
-    registry().read().ok()?.get(key).map(|(_, d)| *d)
+    h.finish()
+}
+
+/// User symbol definitions by key.
+type Defs = Arc<HashMap<String, Arc<SymbolDef>>>;
+
+/// The user symbols of one project by key, rebuilt when the list changes. A
+/// [`Project`] carries one; clones of a project share it until their symbols differ.
+#[derive(Clone, Default)]
+pub struct SymbolCache(Arc<Mutex<Option<(u64, Defs)>>>);
+
+impl SymbolCache {
+    /// The symbols of a project with the user symbols `list`, as a snapshot.
+    pub fn table(&self, list: &[UserSymbol]) -> Symbols {
+        if list.is_empty() {
+            return Symbols::default();
+        }
+        let fp = fingerprint(list);
+        let mut cache = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        if cache.as_ref().is_none_or(|(have, _)| *have != fp) {
+            let defs = list.iter().map(|u| (u.key.clone(), Arc::new(to_def(u)))).collect();
+            *cache = Some((fp, Arc::new(defs)));
+        }
+        Symbols { user: cache.as_ref().map(|(_, defs)| defs.clone()) }
+    }
+}
+
+/// The symbols a project can place: the built-in ones and its user symbols. A cheap
+/// snapshot without a borrow of the project (for loops that change the project).
+#[derive(Clone, Default)]
+pub struct Symbols {
+    user: Option<Defs>,
+}
+
+impl Symbols {
+    pub fn get(&self, key: &str) -> Option<SymbolRef> {
+        if let Some(d) = symbols::builtin(key) {
+            return Some(SymbolRef::Builtin(d));
+        }
+        if !key.starts_with(PREFIX) {
+            return None;
+        }
+        self.user.as_ref()?.get(key).cloned().map(SymbolRef::User)
+    }
+}
+
+impl PartialEq for SymbolCache {
+    /// Caches never make projects differ.
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+
+impl std::fmt::Debug for SymbolCache {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SymbolCache")
+    }
 }
 
 /// A new unique key for a symbol name, e.g. `user:motor_starter_2`.

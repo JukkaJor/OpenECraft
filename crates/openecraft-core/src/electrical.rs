@@ -163,7 +163,7 @@ pub fn mains(prj: &Project, nl: &Netlist) -> BTreeMap<usize, String> {
         out.insert(n, phase.clone());
         for p in &nl.nets[n].pins {
             let s = &prj.pages[p.page].symbols[p.sym];
-            if !passes_current(s) && !is_protective(&s.sym) {
+            if !passes_current(prj, s) && !is_protective(&s.sym) {
                 continue;
             }
             if let Some(&m) = partner_pin(s, p.pin).and_then(|j| nl.pin_net.get(&(s.id, j))) {

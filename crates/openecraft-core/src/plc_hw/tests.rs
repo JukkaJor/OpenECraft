@@ -89,8 +89,8 @@ fn schemes_change_the_addresses_of_the_points() {
     convert_addresses(&mut prj);
     let mut ctx = crate::ops::PlaceCtx::default();
     ctx.last_plc.insert("plc_in".into(), "-A1".into());
-    let def = crate::symbols::get("plc_in").unwrap();
-    let s = crate::ops::new_symbol(&mut prj, 0, &ctx, def, crate::geom::p(200.0, 200.0), 0, false);
+    let def = prj.symbol("plc_in").unwrap();
+    let s = crate::ops::new_symbol(&mut prj, 0, &ctx, &def, crate::geom::p(200.0, 200.0), 0, false);
     assert_eq!((s.tag.as_str(), s.label.as_str()), ("-A1", "%IX0.3"));
 }
 

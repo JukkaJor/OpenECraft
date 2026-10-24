@@ -3,7 +3,7 @@ use crate::geom::p;
 use crate::model::{SymbolInst, Wire};
 
 fn sym(id: u64, key: &str, pos: P, tag: &str, label: &str) -> SymbolInst {
-    let def = symbols::get(key).unwrap();
+    let def = crate::symbols::builtin(key).unwrap();
     SymbolInst {
         id,
         sym: key.into(),
@@ -39,7 +39,7 @@ fn t_junction_connects() {
     page.wires.push(Wire { id: 2, a: p(20.0, 0.0), b: p(20.0, 20.0), ..Default::default() });
     let nl = Netlist::build(&prj, true);
     assert_eq!(nl.wire_net[&1], nl.wire_net[&2]);
-    assert_eq!(junctions(&prj.pages[0]).len(), 1);
+    assert_eq!(junctions(&prj, &prj.pages[0]).len(), 1);
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn junctions_match_the_exhaustive_count() {
         .filter(|(q, n)| n + 2 * page.wires.iter().filter(|w| on_segment_interior(*q, w.a, w.b)).count() >= 3)
         .map(|(q, _)| q.key())
         .collect();
-    let mut got: Vec<(i64, i64)> = junctions(&page).iter().map(|q| q.key()).collect();
+    let mut got: Vec<(i64, i64)> = junctions(&Project::default(), &page).iter().map(|q| q.key()).collect();
     expected.sort();
     got.sort();
     assert!(expected.len() > 5, "{expected:?}");

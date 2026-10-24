@@ -4,7 +4,7 @@ use crate::geom::{p, P};
 use crate::model::{DeviceData, SymbolInst, Wire};
 
 fn sym(id: u64, key: &str, pos: P, tag: &str) -> SymbolInst {
-    let def = crate::symbols::get(key).unwrap();
+    let def = crate::symbols::builtin(key).unwrap();
     SymbolInst { id, sym: key.into(), pos, tag: tag.into(), pins: def.pins.iter().map(|x| x.label.to_string()).collect(), ..Default::default() }
 }
 
@@ -126,7 +126,7 @@ fn the_fluid_netlist_classifies_ports_and_lines() {
     let working: Vec<&FluidNet> = nets.iter().filter(|n| n.line == LineKind::Working).collect();
     assert_eq!(working.len(), 2);
     assert!(working.iter().all(|n| n.branches() == 0 && n.medium == Medium::CompressedAir));
-    let def = crate::symbols::get("fl_valve42").unwrap();
+    let def = crate::symbols::builtin("fl_valve42").unwrap();
     assert_eq!([port_kind(def, "T"), port_kind(def, "X"), port_kind(def, "A")], [PortKind::Return, PortKind::Pilot, PortKind::Working]);
 }
 

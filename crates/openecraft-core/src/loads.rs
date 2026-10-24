@@ -13,7 +13,7 @@ use crate::parts::{kind_of_symbol, FnKind, Part};
 use crate::potentials::PotentialKind;
 use crate::issue::{Issue, Severity};
 use crate::sizing::{device_parts, is_protective, parse_current, parse_voltage, passes_current};
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Functions that draw power from the mains.
@@ -189,10 +189,10 @@ fn is_consumer(prj: &Project, tag: &str) -> bool {
 }
 
 /// Symbols the control voltage passes through: contacts, switches, protective devices.
-fn switches(s: &SymbolInst) -> bool {
-    passes_current(s)
+fn switches(prj: &Project, s: &SymbolInst) -> bool {
+    passes_current(prj, s)
         || is_protective(&s.sym)
-        || symbols::get(&s.sym).is_some_and(|d| matches!(d.func, Func::Aux(_)))
+        || prj.symbol(&s.sym).is_some_and(|d| matches!(d.func, Func::Aux(_)))
         || matches!(
             kind_of_symbol(&s.sym),
             Some(
@@ -244,10 +244,10 @@ fn budgets(prj: &Project, nl: &Netlist) -> Vec<Budget> {
                     if o.tag == s.tag || o.tag.is_empty() {
                         continue;
                     }
-                    if switches(o) {
+                    if switches(prj, o) {
                         todo.extend((0..o.pins.len()).filter(|&j| j != pr.pin).filter_map(|j| nl.pin_net.get(&(o.id, j)).copied()));
                     }
-                    if symbols::get(&o.sym).is_some_and(|d| !d.func.is_feedthrough()) && !is_protective(&o.sym) {
+                    if prj.symbol(&o.sym).is_some_and(|d| !d.func.is_feedthrough()) && !is_protective(&o.sym) {
                         tags.insert(o.tag.clone());
                     }
                 }

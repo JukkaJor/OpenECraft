@@ -1304,7 +1304,7 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
         let mut end = |ei: usize, it: &PanelItem, s, pin| {
             let e = &prj.layout.enclosures[ei];
             let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));
-            let point = point_of(placed, s, pin);
+            let point = point_of(prj, placed, s, pin);
             let kind = match point {
                 None => EndKind::Centre,
                 Some(pt) if pt.exact => EndKind::Exact,

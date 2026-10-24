@@ -6,7 +6,7 @@ use super::{ItemKind, PanelItem};
 use crate::model::{Project, SymbolInst};
 use crate::parts::vec3::V3;
 use crate::parts::{Exit, FnKind, Part};
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 
 /// A connection point of a placed device.
 #[derive(Clone, Debug, PartialEq)]
@@ -117,8 +117,8 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
 /// The placed point of connection point `pin` (index) of schematic symbol `s`:
 /// terminals by terminal number and side, PLC points by their address, other
 /// functions by designation (as in `netlist::pin_designation`).
-pub fn point_of<'a>(points: &'a [PlacedPoint], s: &SymbolInst, pin: usize) -> Option<&'a PlacedPoint> {
-    let def = symbols::get(&s.sym)?;
+pub fn point_of<'a>(prj: &Project, points: &'a [PlacedPoint], s: &SymbolInst, pin: usize) -> Option<&'a PlacedPoint> {
+    let def = prj.symbol(&s.sym)?;
     if def.func == Func::Terminal {
         let side = (pin + 1).to_string();
         return points.iter().find(|p| p.terminal == s.label && p.pin == side);

@@ -45,7 +45,7 @@ fn device_connections_list_every_connection_point() {
     // Every connection appears once at each of its device ends.
     let device_ends = an.connections.iter().flat_map(|c| [c.a, c.b]).filter(|p| {
         let s = &prj.pages[p.page].symbols[p.sym];
-        !matches!(crate::symbols::get(&s.sym).map(|d| d.func), Some(Func::Terminal | Func::Plug(_)))
+        !matches!(prj.symbol(&s.sym).map(|d| d.func), Some(Func::Terminal | Func::Plug(_)))
     });
     assert_eq!(t.rows.iter().filter(|r| !r[3].is_empty()).count(), device_ends.count());
     assert!(t.rows.iter().all(|r| r.len() == t.headers.len()));
@@ -55,7 +55,7 @@ fn device_connections_list_every_connection_point() {
 fn pin_connections_follow_the_plug_sides() {
     let mut prj = Project::default();
     for (key, x, y, tag, label) in [("pot_24", 100.0, 76.0, "", "+24V"), ("plug_pair", 100.0, 100.0, "-X10", "1"), ("coil", 100.0, 120.0, "-K1", "")] {
-        let def = crate::symbols::get(key).unwrap();
+        let def = prj.symbol(key).unwrap();
         let id = prj.new_id();
         let pins = def.pins.iter().map(|x| x.label.to_string()).collect();
         prj.pages[0].symbols.push(SymbolInst { id, sym: key.into(), pos: p(x, y), tag: tag.into(), label: label.into(), pins, ..Default::default() });

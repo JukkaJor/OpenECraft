@@ -44,7 +44,7 @@ enum MacroAction {
 }
 
 /// Scaled drawing of a macro's items.
-fn clip_preview(ui: &mut egui::Ui, clip: &Clip, size: egui::Vec2) {
+fn clip_preview(ui: &mut egui::Ui, prj: &Project, clip: &Clip, size: egui::Vec2) {
     let (resp, painter) = ui.allocate_painter(size, egui::Sense::hover());
     let pal = Palette::new(ui.visuals().dark_mode);
     painter.rect_filled(resp.rect, 4.0, pal.paper);
@@ -62,8 +62,8 @@ fn clip_preview(ui: &mut egui::Ui, clip: &Clip, size: egui::Vec2) {
         render::draw_shape(&mut d, s, Ink::Line);
     }
     for s in &clip.symbols {
-        if let Some(def) = symbols::get(&s.sym) {
-            render::draw_symbol(&mut d, def, s, Ink::Line);
+        if let Some(def) = prj.symbol(&s.sym) {
+            render::draw_symbol(&mut d, &def, s, Ink::Line);
         }
     }
     for t in &clip.texts {
@@ -248,7 +248,7 @@ impl App {
                             }
                         });
                         ui.weak(shown.summary());
-                        clip_preview(ui, &shown.clip, vec2(420.0, 200.0));
+                        clip_preview(ui, &self.session.prj, &shown.clip, vec2(420.0, 200.0));
                         let placeholders = shown.placeholders();
                         if !placeholders.is_empty() {
                             ui.separator();

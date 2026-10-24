@@ -367,10 +367,11 @@ fn list_schemes(s: &mut Session, _: &Args) -> Result<Value, String> {
 }
 
 fn save_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let id = symbol_id(a)?;
     let prj = s.project_mut()?;
     let (_, sym) = properties::find_symbol(prj, id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?;
-    let scheme = props::capture(sym, a.req("name"));
+    let scheme = props::capture(&symbols, sym, a.req("name"));
     let name = scheme.name.clone();
     props::define_scheme(prj, scheme)?;
     if let Some(sym) = prj.pages.iter_mut().flat_map(|p| p.symbols.iter_mut()).find(|x| x.id == id) {
@@ -395,6 +396,7 @@ fn apply_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn place_property(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let symbols = s.project()?.symbol_table();
     let id = symbol_id(a)?;
     let prj = s.project_mut()?;
     let key = a.req("key");
@@ -411,7 +413,7 @@ fn place_property(s: &mut Session, a: &Args) -> Result<Value, String> {
         return Err(tr("The page is released").into());
     }
     let sym = &mut prj.pages[pi].symbols[si];
-    props::add(sym, key);
+    props::add(&symbols, sym, key);
     let pp: &mut PlacedProp = sym.props.last_mut().unwrap();
     if let Some(dx) = a.num("dx") {
         pp.offset.x = dx;

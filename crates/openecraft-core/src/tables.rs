@@ -7,7 +7,7 @@ use crate::index::Index;
 use crate::model::*;
 use crate::netlist::{pin_designation, Net, Netlist};
 use crate::parts::PartRef;
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum TableKind {
@@ -148,7 +148,7 @@ pub fn rows(prj: &Project, nl: &Netlist, open: &Netlist, kind: TableKind) -> Vec
                 let mut ends: Vec<String> = net
                     .pins
                     .iter()
-                    .filter(|p| symbols::get(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.func.has_tag()))
+                    .filter(|p| prj.symbol(&prj.pages[p.page].symbols[p.sym].sym).is_some_and(|d| d.func.has_tag()))
                     .map(|p| pin_designation(prj, *p))
                     .collect();
                 ends.sort_by(|a, b| natural_cmp(a, b));
@@ -288,10 +288,11 @@ fn set(prj: &mut Project, open: &Netlist, kind: TableKind, key: &str, column: us
         }
         TableKind::Terminals => {
             let id: u64 = key.parse().map_err(|_| tr_fmt!("No terminal {}", key))?;
+            let symbols = prj.symbol_table();
             let Some(s) = prj.pages.iter_mut().flat_map(|pg| pg.symbols.iter_mut()).find(|s| s.id == id) else {
                 return Err(tr_fmt!("No terminal {}", key));
             };
-            if symbols::get(&s.sym).map(|d| d.func) != Some(Func::Terminal) {
+            if symbols.get(&s.sym).map(|d| d.func) != Some(Func::Terminal) {
                 return Err(tr_fmt!("No terminal {}", key));
             }
             let field = match column {

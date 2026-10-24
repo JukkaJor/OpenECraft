@@ -11,7 +11,7 @@
 use openecraft_i18n::{tr, tr_fmt};
 use crate::functions::{self, FunctionDef};
 use crate::model::*;
-use crate::symbols::{self, Func};
+use crate::symbols::Func;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::OnceLock;
 pub use crate::model::properties::{DataType, Group, Library, ObjectClass, PropDef, Values};
@@ -439,7 +439,7 @@ impl Object {
             Object::Device(tag) => tr_fmt!("Device {}", tag),
             Object::Function(id) => match find_symbol(prj, *id) {
                 Some((_, s)) => {
-                    let name = symbols::get(&s.sym).map(|d| tr(d.name)).unwrap_or("?");
+                    let name = prj.symbol(&s.sym).map(|d| tr(d.name)).unwrap_or("?");
                     format!("{} {name} {}", s.tag, if s.label.is_empty() { s.pins.join("-") } else { s.label.clone() }).trim().to_string()
                 }
                 None => String::new(),
@@ -468,7 +468,7 @@ impl Object {
             Object::Page(_) => vec![ObjectClass::Page],
             Object::Device(_) => vec![ObjectClass::Device, ObjectClass::Part],
             Object::Function(id) => {
-                let func = find_symbol(prj, *id).and_then(|(_, s)| symbols::get(&s.sym)).map(|d| d.func);
+                let func = find_symbol(prj, *id).and_then(|(_, s)| prj.symbol(&s.sym)).map(|d| d.func);
                 match func {
                     Some(Func::Terminal) => vec![ObjectClass::Function, ObjectClass::Terminal],
                     Some(Func::Plc) => vec![ObjectClass::Function, ObjectClass::PlcPoint],
@@ -511,7 +511,7 @@ fn find_symbol_mut(prj: &mut Project, id: u64) -> Option<&mut SymbolInst> {
 /// The symbols of a device, main functions first.
 fn device_symbols<'a>(prj: &'a Project, tag: &str) -> Vec<(usize, &'a SymbolInst)> {
     let mut v: Vec<(usize, &SymbolInst)> = prj.pages.iter().enumerate().flat_map(|(pi, pg)| pg.symbols.iter().filter(|s| s.tag == tag).map(move |s| (pi, s))).collect();
-    v.sort_by_key(|(_, s)| !matches!(symbols::get(&s.sym).map(|d| d.func), Some(Func::Main { .. })));
+    v.sort_by_key(|(_, s)| !matches!(prj.symbol(&s.sym).map(|d| d.func), Some(Func::Main { .. })));
     v
 }
 
@@ -812,7 +812,7 @@ fn computed(prj: &Project, obj: &Object, key: &str) -> Option<String> {
         }
         Object::Function(id) => {
             let (pi, s) = find_symbol(prj, *id)?;
-            let sd = symbols::get(&s.sym);
+            let sd = prj.symbol(&s.sym);
             Some(match key {
                 "function.label" | "terminal.number" | "plc.address" => s.label.clone(),
                 "function.function_text" => s.function_text.clone(),

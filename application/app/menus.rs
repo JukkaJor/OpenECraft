@@ -83,7 +83,7 @@ impl App {
         ui.separator();
         let has_sel = !self.editor.selection.is_empty();
         if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate   R"))).clicked() {
-            ops::rotate(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
+            ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[self.session.page], &self.editor.selection);
         }
         if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror   M"))).clicked() {
             ops::mirror(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
