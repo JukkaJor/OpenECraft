@@ -3157,7 +3157,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openecraft-project-server"
+name = "openecraft-parts-server"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -3165,7 +3165,6 @@ dependencies = [
  "env_logger",
  "http-body-util",
  "log",
- "openecraft-core",
  "openecraft-parts",
  "serde",
  "serde_json",
@@ -3175,7 +3174,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openecraft-server"
+name = "openecraft-project-server"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -3183,6 +3182,7 @@ dependencies = [
  "env_logger",
  "http-body-util",
  "log",
+ "openecraft-core",
  "openecraft-parts",
  "serde",
  "serde_json",

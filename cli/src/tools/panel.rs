@@ -2,6 +2,7 @@
 //! plate, the door and the walls, fastening, parametric placement (anchors, patterns,
 //! aligning, rails), assemblies and 3D macros.
 
+use super::common::enclosure_index;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::geom::p;
@@ -168,10 +169,6 @@ pub static TOOLS: &[Tool] = &[
         run: insert_panel_macro,
     },
 ];
-
-fn enclosure_index(prj: &Project, name: &str) -> Result<usize, String> {
-    prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))
-}
 
 fn face_arg(a: &Args, name: &str) -> Result<Option<Face>, String> {
     a.str(name).map(|f| Face::from_key(f).ok_or_else(|| tr_fmt!("Unknown face: {}", f))).transpose()

@@ -15,7 +15,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 ```
 
 - Desktop: `cargo run --release`
-- Parts server: `cargo run -p openecraft-server -- --token <secret>` (http://127.0.0.1:8090)
+- Parts server: `cargo run -p openecraft-parts-server -- --token <secret>` (http://127.0.0.1:8090)
 - Project server: `cargo run -p openecraft-project-server -- --token <secret>` (http://127.0.0.1:8091)
 - Parts manager: `cargo run -p openecraft-parts-manager`; web: `cd parts-manager && trunk serve` (http://127.0.0.1:8082)
 - Command line / MCP server: `cargo run -p openecraft-cli -- help`, `cargo run -p openecraft-cli -- mcp`
@@ -26,7 +26,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 
 | Crate | Path | Purpose |
 | --- | --- | --- |
-| `openecraft` | `.` (`src/`) | Editor (desktop + web) – the root package, built by trunk |
+| `openecraft` | `.` (`application/`) | Editor (desktop + web) – the root package, built by trunk |
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
@@ -34,7 +34,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
-| `openecraft-server` | `server/` | Standalone parts database server (axum, JSON file storage) |
+| `openecraft-parts-server` | `parts-server/` | Standalone parts database server (axum, JSON file storage) |
 | `openecraft-project-server` | `project-server/` | Project server: shared projects, page locks for several users (axum, project files) |
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
@@ -75,7 +75,7 @@ column to the catalog and a `Lang` variant).
   placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` and every
   built-in symbol name is in the catalog, and all translated characters exist in the
   bundled fonts.
-- `src/conventions/tests.rs` fails for plain string literals passed to widgets
+- `application/conventions/tests.rs` fails for plain string literals passed to widgets
   (`ui.button("…")`, `.label("…")`, `.on_hover_text("…")`, `Window::new("…")`, …).
 - Translate at the point where the text is shown, so that switching the language in
   View › Language (or the parts manager's toolbar) takes effect immediately. Texts
@@ -93,10 +93,10 @@ column to the catalog and a `Lang` variant).
 separate file next to it:
 
 ```
-src/geom.rs          ← module code, ends with:
+application/geom.rs        ← module code, ends with:
                          #[cfg(test)]
                          mod tests;
-src/geom/tests.rs    ← the tests, starting with `use super::*;`
+application/geom/tests.rs  ← the tests, starting with `use super::*;`
 ```
 
 Rules (for every crate of the workspace):
@@ -113,14 +113,14 @@ Rules (for every crate of the workspace):
    not add an inline block "for now".
 6. New behaviour gets a test. Bug fixes get a regression test.
 
-These rules are enforced by `src/conventions/tests.rs` – `cargo test` fails on
+These rules are enforced by `application/conventions/tests.rs` – `cargo test` fails on
 violations. Do not weaken or delete that test to make a change pass.
 
 ## Other conventions
 
 - **Glyphs:** every character used in a string literal must exist in the bundled
   egui fonts. Native builds have no font fallback, so missing characters render as
-  empty boxes (the browser hides the problem). `src/glyphs/tests.rs` checks this for
+  empty boxes (the browser hides the problem). `application/glyphs/tests.rs` checks this for
   every workspace member; if
   it fails, pick a character the fonts contain instead of disabling the check. Keep
   the egui feature `monochrome_emoji_fonts` enabled.

@@ -9,7 +9,7 @@
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, ItemKind, PLATE_Z};
-use crate::parts::vec3::V3;
+use crate::parts::vec3::{dist, V3};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
@@ -470,10 +470,6 @@ impl Space {
     pub fn classes_at(&self, cells: &[usize]) -> u8 {
         cells.iter().fold(0, |m, &i| m | self.occ[i])
     }
-}
-
-fn dist(a: V3, b: V3) -> f32 {
-    ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2) + (a[2] - b[2]).powi(2)).sqrt()
 }
 
 fn dist_to_segment(q: V3, a: V3, b: V3) -> f32 {

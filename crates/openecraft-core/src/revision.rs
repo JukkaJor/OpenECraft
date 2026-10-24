@@ -9,7 +9,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::geom::{p, P};
-use crate::model::{natural_cmp, Page, Project};
+use crate::model::{is_zero, natural_cmp, Page, Project};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -37,10 +37,6 @@ pub enum State {
 
 fn is_released(s: &State) -> bool {
     *s == State::Released
-}
-
-fn is_zero(v: &u32) -> bool {
-    *v == 0
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]

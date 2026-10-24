@@ -12,7 +12,7 @@
 
 use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
-use crate::model::Project;
+use crate::model::{is_zero, Project};
 use crate::netlist::{connections, Netlist};
 use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
 use crate::parts::{Exit, FnKind};
@@ -206,10 +206,6 @@ pub struct PanelItem {
     /// Group (assembly) the item belongs to, 0 for none.
     #[serde(skip_serializing_if = "is_zero")]
     pub group: u64,
-}
-
-fn is_zero(v: &u64) -> bool {
-    *v == 0
 }
 
 impl PanelItem {

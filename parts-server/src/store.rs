@@ -2,6 +2,7 @@
 
 use openecraft_parts::{default_catalog, Part};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -91,8 +92,15 @@ impl Store {
         let n = new.len();
         if n > 0 {
             self.change(|parts| {
+                let mut index: HashMap<String, usize> = parts.iter().enumerate().map(|(i, p)| (p.number.clone(), i)).collect();
                 for p in new {
-                    put(parts, p);
+                    match index.get(&p.number) {
+                        Some(&i) => parts[i] = p,
+                        None => {
+                            index.insert(p.number.clone(), parts.len());
+                            parts.push(p);
+                        }
+                    }
                 }
             })?;
         }

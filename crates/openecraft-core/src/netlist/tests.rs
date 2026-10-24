@@ -53,3 +53,34 @@ fn devices_in_the_cabinet_are_chained_before_field_devices() {
     assert!(pairs.contains(&("-P2:X2".into(), "-Y1:A2".into())));
     assert!(!pairs.iter().any(|(a, b)| a == "-Y1:A2" || (b == "-Y1:A2" && a == "-P1:X2")));
 }
+
+/// Pseudo-random wires (straight and diagonal, sharing end points): the row / column
+/// shortcut of `junctions` finds the same dots as testing every end against every wire.
+#[test]
+fn junctions_match_the_exhaustive_count() {
+    let mut page = Page::new(1, "1", "", PageKind::Schematic);
+    let mut seed = 12345u64;
+    let mut next = || {
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        ((seed >> 33) % 13) as f32 * 4.0
+    };
+    for id in 1..=120u64 {
+        let a = p(next(), next());
+        let b = match id % 3 {
+            0 => p(a.x, next()),
+            1 => p(next(), a.y),
+            _ => p(next(), next()),
+        };
+        page.wires.push(Wire { id, a, b, ..Default::default() });
+    }
+    let mut expected: Vec<(i64, i64)> = wire_ends(&page)
+        .values()
+        .filter(|(q, n)| n + 2 * page.wires.iter().filter(|w| on_segment_interior(*q, w.a, w.b)).count() >= 3)
+        .map(|(q, _)| q.key())
+        .collect();
+    let mut got: Vec<(i64, i64)> = junctions(&page).iter().map(|q| q.key()).collect();
+    expected.sort();
+    got.sort();
+    assert!(expected.len() > 5, "{expected:?}");
+    assert_eq!(got, expected);
+}

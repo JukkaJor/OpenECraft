@@ -46,3 +46,10 @@ fn box_surfaces() {
     let x = box_triangles([-5.0, 4.0, 4.0], [15.0, 6.0, 6.0]);
     assert!(surfaces_intersect(&a, &x));
 }
+
+#[test]
+fn sums_and_distances() {
+    assert_eq!(add([1.0, 2.0, 3.0], [4.0, 5.0, 6.0]), [5.0, 7.0, 9.0]);
+    assert_eq!(dist([1.0, 2.0, 3.0], [4.0, 6.0, 3.0]), 5.0);
+    assert_eq!(manhattan([1.0, 2.0, 3.0], [4.0, 0.0, 3.0]), 5.0);
+}

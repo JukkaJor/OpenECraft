@@ -78,14 +78,14 @@ fn tests_path(module_file: &str) -> String {
 #[test]
 fn all_workspace_crates_are_checked() {
     let dirs = source_dirs();
-    for member in ["src", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "server/src", "parts-manager/src"] {
+    for member in ["application", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "parts-server/src", "parts-manager/src"] {
         assert!(dirs.iter().any(|d| d.ends_with(member)), "{member} missing in {dirs:?}");
     }
 }
 
 /// UI crates (the others have no user-visible texts of their own).
 fn ui_source_files() -> Vec<PathBuf> {
-    ["src", "crates/openecraft-ui/src", "parts-manager/src"]
+    ["application", "crates/openecraft-ui/src", "parts-manager/src"]
         .iter()
         .flat_map(|d| rust_files(&root().join(d)))
         .filter(|p| !is_test_file(p))

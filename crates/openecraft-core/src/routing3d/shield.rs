@@ -4,7 +4,7 @@
 
 use super::{Bundle, Class, Level, Problem, RouteKind, RoutedItem};
 use crate::model::{Cable, Project};
-use crate::parts::vec3::V3;
+use crate::parts::vec3::manhattan;
 use openecraft_i18n::{tr, tr_fmt};
 
 /// The cable has an overall shield: as set, otherwise bus cables and cable types
@@ -51,10 +51,6 @@ pub struct ShieldInfo {
     pub cable: String,
     pub bus: bool,
     pub ends: [ShieldEnd; 2],
-}
-
-fn manhattan(a: V3, b: V3) -> f32 {
-    (a[0] - b[0]).abs() + (a[1] - b[1]).abs() + (a[2] - b[2]).abs()
 }
 
 /// Shield terminations of the routed shielded cables, and their problems: bus cables

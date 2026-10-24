@@ -42,3 +42,13 @@ fn error_text_prefers_the_server_message() {
     assert_eq!(error_text(401, "Unauthorized", br#"{"error":"invalid token"}"#), "invalid token");
     assert_eq!(error_text(502, "Bad Gateway", b"<html>"), "502 Bad Gateway");
 }
+
+#[test]
+fn bearer_tokens() {
+    assert_eq!(bearer_token("Bearer abc"), Some("abc"));
+    assert_eq!(bearer_token("Bearer  abc "), Some("abc"));
+    assert_eq!(bearer_token("Basic abc"), None);
+    assert!(token_matches("abc", "abc"));
+    assert!(!token_matches("abc", "abd"));
+    assert!(!token_matches("abc", "abcd"));
+}

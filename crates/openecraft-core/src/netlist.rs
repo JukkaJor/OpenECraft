@@ -105,10 +105,29 @@ fn wire_ends(page: &Page) -> HashMap<(i64, i64), (P, usize)> {
 pub fn junctions(page: &Page) -> Vec<P> {
     let ends = wire_ends(page);
     let mut count: HashMap<(i64, i64), (P, usize)> = ends.clone();
+    // Ends by their x and y key: a horizontal or vertical wire (the usual case) only
+    // passes through ends in its own row or column (±1 key for the 0.01 mm tolerance
+    // of `on_segment_interior`), so only those are tested against it.
+    let mut by_x: HashMap<i64, Vec<(i64, i64)>> = HashMap::new();
+    let mut by_y: HashMap<i64, Vec<(i64, i64)>> = HashMap::new();
+    for k in ends.keys() {
+        by_x.entry(k.0).or_default().push(*k);
+        by_y.entry(k.1).or_default().push(*k);
+    }
+    let all: Vec<(i64, i64)> = ends.keys().copied().collect();
+    let near = |by: &HashMap<i64, Vec<(i64, i64)>>, c: i64| (c - 1..=c + 1).flat_map(|c| by.get(&c).into_iter().flatten().copied()).collect::<Vec<_>>();
     for w in &page.wires {
-        for (k, (q, _)) in &ends {
-            if on_segment_interior(*q, w.a, w.b) {
-                count.get_mut(k).unwrap().1 += 2;
+        let (a, b) = (w.a.key(), w.b.key());
+        let candidates = if a.0 == b.0 {
+            near(&by_x, a.0)
+        } else if a.1 == b.1 {
+            near(&by_y, a.1)
+        } else {
+            all.clone()
+        };
+        for k in candidates {
+            if on_segment_interior(ends[&k].0, w.a, w.b) {
+                count.get_mut(&k).unwrap().1 += 2;
             }
         }
     }

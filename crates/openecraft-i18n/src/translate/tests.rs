@@ -152,7 +152,8 @@ fn all_texts_used_in_the_sources_are_in_the_catalog() {
     let members = manifest.split("members = [").nth(1).and_then(|r| r.split(']').next()).expect("workspace members");
     let mut files = Vec::new();
     for member in members.split(',').map(|m| m.trim().trim_matches('"')).filter(|m| !m.is_empty()) {
-        source_files(&root.join(member).join("src"), &mut files);
+        let dir = if member == "." { root.join("application") } else { root.join(member).join("src") };
+        source_files(&dir, &mut files);
     }
     let mut missing = Vec::new();
     let mut checked = 0;

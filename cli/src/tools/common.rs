@@ -111,3 +111,7 @@ pub fn page_json(pg: &Page) -> Value {
         "document": pg.document.as_ref().map(|d| d.name.clone()),
     })
 }
+
+pub fn enclosure_index(prj: &Project, name: &str) -> Result<usize, String> {
+    prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))
+}

@@ -8,7 +8,7 @@ pub fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// `src` directories of all workspace members (from `[workspace] members` in Cargo.toml).
+/// Source directories of all workspace members (from `[workspace] members` in Cargo.toml).
 pub fn source_dirs() -> Vec<PathBuf> {
     let manifest = std::fs::read_to_string(root().join("Cargo.toml")).unwrap();
     let members = manifest.split("members = [").nth(1).and_then(|r| r.split(']').next()).expect("workspace members");
@@ -16,7 +16,7 @@ pub fn source_dirs() -> Vec<PathBuf> {
         .split(',')
         .map(|m| m.trim().trim_matches('"'))
         .filter(|m| !m.is_empty())
-        .map(|m| root().join(m).join("src"))
+        .map(|m| if m == "." { root().join("application") } else { root().join(m).join("src") })
         .collect();
     assert!(dirs.len() >= 2, "workspace members not found");
     dirs

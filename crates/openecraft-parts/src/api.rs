@@ -140,5 +140,15 @@ pub fn url(base: &str, path: &str) -> String {
     format!("{}{path}", base.trim().trim_end_matches('/'))
 }
 
+/// The token of an `Authorization: Bearer <token>` header value.
+pub fn bearer_token(header: &str) -> Option<&str> {
+    header.strip_prefix("Bearer ").map(str::trim)
+}
+
+/// Compares a presented token with the expected one in constant time.
+pub fn token_matches(presented: &str, expected: &str) -> bool {
+    presented.len() == expected.len() && presented.bytes().zip(expected.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+}
+
 #[cfg(test)]
 mod tests;

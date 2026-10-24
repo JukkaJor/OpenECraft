@@ -129,10 +129,3 @@ async fn cors_preflight_allows_authorization_header() {
     assert!(h(header::ACCESS_CONTROL_ALLOW_HEADERS).contains("authorization"));
     assert!(h(header::ACCESS_CONTROL_ALLOW_METHODS).contains("post"));
 }
-
-#[test]
-fn token_comparison() {
-    assert!(same("abc", "abc"));
-    assert!(!same("abc", "abd"));
-    assert!(!same("abc", "abcd"));
-}

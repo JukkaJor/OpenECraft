@@ -221,6 +221,15 @@ built with [egui / eframe](https://github.com/emilk/egui).
     inside temperatures → inside temperature, filter fan air flow or cooling unit
     output, heater output; report *Enclosure climate*, the check warns when cooling is
     needed.
+  - **line-ups**: enclosures bayed side by side with cable passages between them
+    (cutouts in the facing side walls, or sides open to each other); the 3D view shows
+    the whole line-up, wires run from one enclosure into the next;
+  - **3D routing** of cables, tubes and (optionally) wires through the line-up: in cable
+    ducts, along routing paths drawn over the mounting plate, or freely around the
+    devices; segregation of the classes power, control, signal and fluid, routing
+    reservations, bend radii, cable bundles with their branches, shield terminations
+    (shield clamp rail, pigtail) and their checks; routes can be frozen for production
+    and stay as they are until they become invalid;
 - **Electrical sizing** (IEC 60204-1): the wires behind a protective device – from its
   load side through main contacts and overload relays – must carry its rated current
   (part `Current`, the upper value of a setting range; current-carrying capacity per
@@ -363,12 +372,12 @@ In the browser "Save" downloads the project file and "Open" uses the file picker
 
 ### Parts server
 
-`openecraft-server` hosts a global parts database that all OpenECraft installations
+`openecraft-parts-server` hosts a global parts database that all OpenECraft installations
 (desktop and web) can share. It is a separate executable and runs independently of
 the editor.
 
 ```bash
-cargo run --release -p openecraft-server -- --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
+cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
 ```
 
 - The database is a JSON file, created with the example catalog if it does not exist,
@@ -480,7 +489,11 @@ working directory (and with a parts server token) you are fine with the agent us
 
 ```bash
 cargo test --workspace
+cargo clippy --workspace --all-targets
+cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown
 ```
+
+All three must pass without warnings (CI runs them with `-D warnings`).
 
 ## Usage
 
@@ -529,7 +542,7 @@ cargo test --workspace
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
 | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, file dialogs |
-| `server/` | `openecraft-server`: parts database server (REST API, JSON storage) |
+| `parts-server/` | `openecraft-parts-server`: parts database server (REST API, JSON storage) |
 | `project-server/` | `openecraft-project-server`: shared projects with page locks for several users |
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
@@ -548,7 +561,7 @@ cargo test --workspace
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
 | `crates/openecraft-core/src/reports.rs` | Reports and project check |
 | `crates/openecraft-core/src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
-| `src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
+| `application/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
 | `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
@@ -570,19 +583,22 @@ cargo test --workspace
 | `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC and JT export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
-| `src/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
-| `src/app/revisions_ui.rs` | Revisions window with the approval workflow |
-| `src/app/compare_ui.rs`, `src/app/review_ui.rs`, `src/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
-| `src/app/symbol_editor.rs` / `src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
-| `src/app/harness_ui.rs` | Harness window |
-| `src/app/languages_ui.rs` | Project languages window: dictionary, export per language |
-| `src/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
-| `src/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
+| `application/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
+| `application/app/revisions_ui.rs` | Revisions window with the approval workflow |
+| `application/app/compare_ui.rs`, `application/app/review_ui.rs`, `application/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
+| `application/app/symbol_editor.rs` / `application/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
+| `application/app/harness_ui.rs` | Harness window |
+| `application/app/languages_ui.rs` | Project languages window: dictionary, export per language |
+| `application/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
+| `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
-| `src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, 3D view, properties |
+| `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
+| `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |
+| `crates/openecraft-core/src/collab.rs` | Shared projects: API types, lock targets and the merge rules of the project server |
+| `application/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
-| `src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
-| `src/remote.rs`, `src/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
-| `src/app.rs` | Application UI (menus, panels, dialogs) |
+| `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel |
+| `application/remote.rs`, `application/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
+| `application/app.rs` | Application UI (menus, panels, dialogs); the windows in `application/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |
-| `src/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |
+| `application/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |

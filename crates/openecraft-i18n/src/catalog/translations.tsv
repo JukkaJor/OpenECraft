@@ -218,10 +218,10 @@ Enclosure not found - choose another one in the page properties	Gehäuse nicht g
 Enclosures	Gehäuse	Enveloppes	Envolventes
 End	Ende	Fin	Fin
 End treatment	Endenbehandlung	Traitement des extrémités	Tratamiento de extremos
-Enter the address of an openecraft-server and click Connect.	Gib die Adresse eines openecraft-server ein und klicke auf Verbinden.	Saisissez l'adresse d'un openecraft-server et cliquez sur Connecter.	Introduce la dirección de un openecraft-server y haz clic en Conectar.
+Enter the address of an openecraft-parts-server and click Connect.	Gib die Adresse eines openecraft-parts-server ein und klicke auf Verbinden.	Saisissez l'adresse d'un openecraft-parts-server et cliquez sur Connecter.	Introduce la dirección de un openecraft-parts-server y haz clic en Conectar.
 Esc	Esc	Échap	Esc
 Every connection gets one number for all its wires; the two sides of a terminal are separate connections.	Jede Verbindung erhält eine Nummer für alle ihre Leitungen; die beiden Seiten einer Klemme sind getrennte Verbindungen.	Chaque liaison reçoit un numéro pour tous ses fils ; les deux côtés d'une borne sont des liaisons distinctes.	Cada conexión recibe un número para todos sus hilos; los dos lados de un borne son conexiones distintas.
-Exchange parts with a global parts database (openecraft-server)	Artikel mit einer globalen Artikeldatenbank austauschen (openecraft-server)	Échanger des articles avec une base d'articles globale (openecraft-server)	Intercambiar artículos con una base de datos global de artículos (openecraft-server)
+Exchange parts with a global parts database (openecraft-parts-server)	Artikel mit einer globalen Artikeldatenbank austauschen (openecraft-parts-server)	Échanger des articles avec une base d'articles globale (openecraft-parts-server)	Intercambiar artículos con una base de datos global de artículos (openecraft-parts-server)
 Export all pages as DXF…	Alle Seiten als DXF exportieren…	Exporter toutes les pages en DXF…	Exportar todas las páginas como DXF…
 Export all pages for printing (HTML/PDF)…	Alle Seiten für den Druck exportieren (HTML/PDF)…	Exporter toutes les pages pour l'impression (HTML/PDF)…	Exportar todas las páginas para imprimir (HTML/PDF)…
 Export as CSV…	Als CSV exportieren…	Exporter en CSV…	Exportar como CSV…
@@ -636,10 +636,10 @@ Space	Leertaste	Espace	Espacio
 Space behind the door that devices must keep free (door-mounted devices, handles)	Raum hinter der Tür, den Betriebsmittel freihalten müssen (Türeinbaugeräte, Griffe)	Espace derrière la porte à laisser libre (appareils en porte, poignées)	Espacio detrás de la puerta que los dispositivos deben dejar libre (dispositivos en puerta, manetas)
 Spare terminals	Reserveklemmen	Bornes de réserve	Bornes de reserva
 Start	Start	Départ	Inicio
-Start a server with:  openecraft-server --token <secret>	Starte einen Server mit:  openecraft-server --token <secret>	Démarrez un serveur avec :  openecraft-server --token <secret>	Inicia un servidor con:  openecraft-server --token <secret>
+Start a server with:  openecraft-parts-server --token <secret>	Starte einen Server mit:  openecraft-parts-server --token <secret>	Démarrez un serveur avec :  openecraft-parts-server --token <secret>	Inicia un servidor con:  openecraft-parts-server --token <secret>
 Start at	Beginnen bei	Commencer à	Empezar en
 Start byte	Startbyte	Octet de départ	Byte inicial
-Start openecraft-server with --token to allow changes	Starte openecraft-server mit --token, um Änderungen zu erlauben	Démarrez openecraft-server avec --token pour autoriser les modifications	Inicia openecraft-server con --token para permitir cambios
+Start openecraft-parts-server with --token to allow changes	Starte openecraft-parts-server mit --token, um Änderungen zu erlauben	Démarrez openecraft-parts-server avec --token pour autoriser les modifications	Inicia openecraft-parts-server con --token para permitir cambios
 Strip	Abisolierung	Dénudage	Pelado
 Strip (mm)	Abisolierung (mm)	Dénudage (mm)	Pelado (mm)
 Structure (IEC 81346)	Struktur (IEC 81346)	Structure (CEI 81346)	Estructura (IEC 81346)

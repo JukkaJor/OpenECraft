@@ -2,9 +2,9 @@
 //! cables and tubes with their bundles, branches and shields, and freezing routes
 //! for production.
 
+use super::common::enclosure_index;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
-use openecraft_core::model::Project;
 use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
 use openecraft_core::reports::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RoutingPath, ShieldEnds};
@@ -104,10 +104,6 @@ pub static TOOLS: &[Tool] = &[
         run: set_cable_shield,
     },
 ];
-
-fn enclosure_index(prj: &Project, name: &str) -> Result<usize, String> {
-    prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))
-}
 
 fn rules_json(r: &routing3d::RoutingRules) -> Value {
     serde_json::to_value(r).unwrap_or(Value::Null)

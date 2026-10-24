@@ -1,4 +1,4 @@
-//! Client for the global parts server (`openecraft-server`). Requests run in the
+//! Client for the global parts server (`openecraft-parts-server`). Requests run in the
 //! background (thread on desktop, fetch in the browser); results are collected with
 //! [`ServerClient::poll`]. The requests themselves are built by `openecraft_client`.
 

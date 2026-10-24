@@ -125,6 +125,11 @@ impl<K> FileIo<K> {
     pub fn can_save_in_place() -> bool {
         cfg!(not(target_arch = "wasm32"))
     }
+
+    /// The app runs in a window of its own (desktop), not in a browser tab.
+    pub fn has_own_window() -> bool {
+        cfg!(not(target_arch = "wasm32"))
+    }
 }
 
 /// MIME type of a download by file extension.

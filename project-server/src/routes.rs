@@ -11,7 +11,7 @@ use openecraft_core::collab::{
     merge, valid_name, CreateRequest, LockRequest, OpenRequest, Opened, Owned, ProjectSummary, SaveRequest, ServerInfo, Session, Snapshot,
     Status, Target, API_PREFIX,
 };
-use openecraft_parts::api::ApiError;
+use openecraft_parts::api::{bearer_token, token_matches, ApiError};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Instant;
 use tower_http::cors::{Any, CorsLayer};
@@ -87,20 +87,14 @@ fn cors() -> CorsLayer {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
 }
 
-/// Constant time comparison of the presented token.
-fn same(a: &str, b: &str) -> bool {
-    a.len() == b.len() && a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
-}
-
 /// Checks the token and returns the server with expired sessions removed.
 fn server<'a>(state: &'a AppState, headers: &HeaderMap) -> Result<MutexGuard<'a, Server>> {
     if let Some(token) = &state.token {
         let presented = headers
             .get(header::AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.strip_prefix("Bearer "))
-            .map(str::trim);
-        if !presented.is_some_and(|p| same(p, token)) {
+            .and_then(bearer_token);
+        if !presented.is_some_and(|p| token_matches(p, token)) {
             return Err(AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into()));
         }
     }
@@ -205,8 +199,8 @@ async fn open(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
 /// Merges what the session has locked into the stored project.
 async fn save(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<SaveRequest>) -> Result<Json<Snapshot>> {
     let mut server = server(&state, &headers)?;
-    let stored = server.store.get(&name).ok_or_else(|| not_found(&name))?.project.clone();
     server.sessions.touch(&name, &req.session, Instant::now())?;
+    let stored = server.store.get(&name).ok_or_else(|| not_found(&name))?.project.clone();
     let locks = server.sessions.locks(&name);
     let owned = Owned::of(&locks, &req.session.session);
     if owned.project {

@@ -2,7 +2,7 @@
 //! installations (desktop and web). Runs independently of the editor.
 //!
 //! ```text
-//! openecraft-server --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
+//! openecraft-parts-server --bind 0.0.0.0:8090 --data parts-db.json --token <secret>
 //! ```
 //!
 //! Without `--token` (or `OPENECRAFT_TOKEN`) the server is read-only.

@@ -528,8 +528,9 @@ pub struct Wire {
     pub core: String,
 }
 
-fn is_zero(v: &f32) -> bool {
-    *v == 0.0
+/// `skip_serializing_if` for numbers at their default.
+pub(crate) fn is_zero<T: Default + PartialEq>(v: &T) -> bool {
+    *v == T::default()
 }
 
 /// A cable; its cores are assigned to wires (`Wire::cable` / `Wire::core`).

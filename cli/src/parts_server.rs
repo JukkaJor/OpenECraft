@@ -1,4 +1,4 @@
-//! Blocking client for the parts server (`openecraft-server`). The requests come from
+//! Blocking client for the parts server (`openecraft-parts-server`). The requests come from
 //! `openecraft_client`; the transport is a trait so that the tools can be tested
 //! against an in-memory server.
 

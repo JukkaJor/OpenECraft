@@ -12,7 +12,7 @@
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist};
 use crate::panel::{self, Face, ItemKind, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::V3;
+use crate::parts::vec3::{add, manhattan, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
@@ -550,18 +550,6 @@ fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
             End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None }
         }
     }
-}
-
-fn add(a: V3, b: V3) -> V3 {
-    [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
-}
-
-fn sub(a: V3, b: V3) -> V3 {
-    [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
-}
-
-fn manhattan(a: V3, b: V3) -> f32 {
-    (a[0] - b[0]).abs() + (a[1] - b[1]).abs() + (a[2] - b[2]).abs()
 }
 
 /// What is to be routed.

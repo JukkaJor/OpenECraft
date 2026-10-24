@@ -1,4 +1,5 @@
 use super::*;
+use crate::parts::vec3::V3;
 use crate::routing3d::{End, ShieldEnds, Status};
 
 fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {

@@ -66,3 +66,21 @@ fn failed_save_keeps_the_previous_state() {
     assert_eq!(store.revision, 5);
     std::fs::remove_dir_all(dir.parent().unwrap()).ok();
 }
+
+#[test]
+fn import_replaces_parts_in_place() {
+    let mut store = Store::in_memory(vec![
+        Part { number: "A".into(), description: "old".into(), ..Default::default() },
+        Part { number: "B".into(), ..Default::default() },
+    ]);
+    let new = vec![
+        Part { number: "C".into(), ..Default::default() },
+        Part { number: "A".into(), description: "new".into(), ..Default::default() },
+        Part { number: "C".into(), description: "last wins".into(), ..Default::default() },
+    ];
+    assert_eq!(store.import(new).unwrap(), 3);
+    let numbers: Vec<&str> = store.parts.iter().map(|p| p.number.as_str()).collect();
+    assert_eq!(numbers, ["A", "B", "C"]);
+    assert_eq!(store.parts[0].description, "new");
+    assert_eq!(store.parts[2].description, "last wins");
+}

@@ -6,7 +6,7 @@ use axum::http::{header, HeaderMap, Method, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use openecraft_parts::api::{ApiError, ImportResult, PartList, PartQuery, ServerInfo, API_PREFIX};
+use openecraft_parts::api::{bearer_token, token_matches, ApiError, ImportResult, PartList, PartQuery, ServerInfo, API_PREFIX};
 use openecraft_parts::{import, to_csv, Part};
 use std::sync::{Arc, RwLock};
 use tower_http::cors::{Any, CorsLayer};
@@ -58,11 +58,6 @@ fn cors() -> CorsLayer {
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
 }
 
-/// Constant time comparison of the presented token.
-fn same(a: &str, b: &str) -> bool {
-    a.len() == b.len() && a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
-}
-
 fn authorize(state: &AppState, headers: &HeaderMap) -> Result<()> {
     let Some(token) = &state.token else {
         return Err(AppError(StatusCode::FORBIDDEN, "server is read-only (start it with --token to allow changes)".into()));
@@ -70,10 +65,9 @@ fn authorize(state: &AppState, headers: &HeaderMap) -> Result<()> {
     let presented = headers
         .get(header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.strip_prefix("Bearer "))
-        .map(str::trim);
+        .and_then(bearer_token);
     match presented {
-        Some(p) if same(p, token) => Ok(()),
+        Some(p) if token_matches(p, token) => Ok(()),
         _ => Err(AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into())),
     }
 }
@@ -126,14 +120,14 @@ async fn put_part(
     Json(mut part): Json<Part>,
 ) -> Result<(StatusCode, Json<Part>)> {
     authorize(&state, &headers)?;
+    if number.trim().is_empty() {
+        return Err(AppError(StatusCode::BAD_REQUEST, "part number must not be empty".into()));
+    }
     if part.number.is_empty() {
         part.number = number.clone();
     }
     if part.number != number {
         return Err(AppError(StatusCode::BAD_REQUEST, "part number in URL and body differ".into()));
-    }
-    if number.trim().is_empty() {
-        return Err(AppError(StatusCode::BAD_REQUEST, "part number must not be empty".into()));
     }
     let created = write(&state).upsert(part.clone())?;
     log::info!("{} part {number}", if created { "created" } else { "updated" });

@@ -242,7 +242,7 @@ impl PartsUi {
                 });
                 ui.separator();
                 ui.toggle_value(&mut self.show_server, tr("🌐 Parts server"))
-                    .on_hover_text(tr("Exchange parts with a global parts database (openecraft-server)"));
+                    .on_hover_text(tr("Exchange parts with a global parts database (openecraft-parts-server)"));
             });
             ui.separator();
             if self.show_server {

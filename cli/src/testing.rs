@@ -12,7 +12,7 @@ use std::rc::Rc;
 pub const URL: &str = "http://parts.test";
 pub const TOKEN: &str = "secret";
 
-/// Parts server with the routes of `openecraft-server`, holding its parts in memory.
+/// Parts server with the routes of `openecraft-parts-server`, holding its parts in memory.
 #[derive(Clone, Default)]
 pub struct FakeServer {
     pub parts: Rc<RefCell<Vec<Part>>>,

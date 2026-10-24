@@ -7,10 +7,10 @@ license = "MIT OR Apache-2.0"
 
 [[bin]]
 name = "openecraft"
-path = "src/main.rs"
+path = "application/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "server", "project-server", "parts-manager", "cli"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "parts-server", "project-server", "parts-manager", "cli"]
 exclude = ["vendor"]
 
 [dependencies]
@@ -25,7 +25,7 @@ eframe = { version = "0.37", default-features = false, features = [
     "x11",
 ] }
 # Bundle the symbol / emoji fonts: native builds have no browser font fallback,
-# so icons used in the UI must be in the bundled fonts (see src/glyphs.rs).
+# so icons used in the UI must be in the bundled fonts (see application/glyphs.rs).
 egui = { version = "0.37", features = ["monochrome_emoji_fonts"] }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"

@@ -6,6 +6,20 @@ pub fn sub(a: V3, b: V3) -> V3 {
     [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 }
 
+pub fn add(a: V3, b: V3) -> V3 {
+    [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
+}
+
+/// Euclidean distance.
+pub fn dist(a: V3, b: V3) -> f32 {
+    dot(sub(a, b), sub(a, b)).sqrt()
+}
+
+/// Manhattan distance (sum of the axis distances).
+pub fn manhattan(a: V3, b: V3) -> f32 {
+    (a[0] - b[0]).abs() + (a[1] - b[1]).abs() + (a[2] - b[2]).abs()
+}
+
 pub fn dot(a: V3, b: V3) -> f32 {
     a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }

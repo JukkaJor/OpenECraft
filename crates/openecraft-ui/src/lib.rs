@@ -1,7 +1,7 @@
 //! egui components shared by the OpenECraft applications (editor and parts manager).
 //!
 //! - [`part_editor`] – part tree, tabbed part editor, 2D / 3D model previews
-//! - [`client`] – client of the parts server (`openecraft-server`)
+//! - [`client`] – client of the parts server (`openecraft-parts-server`)
 //! - [`io`] – file dialogs on desktop, file picker and downloads in the browser
 //! - [`language`] – language menu (UI texts are translated with `openecraft-i18n`)
 

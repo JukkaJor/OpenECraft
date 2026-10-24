@@ -157,7 +157,7 @@ impl ManagerApp {
                         ui.label(RichText::new(tr("writable with token")).color(Color32::from_rgb(60, 160, 90)));
                     } else {
                         ui.label(RichText::new(tr("read-only server")).color(Color32::from_rgb(220, 140, 0)))
-                            .on_hover_text(tr("Start openecraft-server with --token to allow changes"));
+                            .on_hover_text(tr("Start openecraft-parts-server with --token to allow changes"));
                     }
                 }
                 None => {
@@ -253,10 +253,10 @@ impl ManagerApp {
             ui.vertical_centered(|ui| {
                 ui.add_space(60.0);
                 ui.heading(tr("Connect to a parts server"));
-                ui.label(tr("Enter the address of an openecraft-server and click Connect."));
+                ui.label(tr("Enter the address of an openecraft-parts-server and click Connect."));
                 ui.label(tr("The access token is only needed for changes; it is not stored."));
                 ui.add_space(8.0);
-                ui.weak(tr("Start a server with:  openecraft-server --token <secret>"));
+                ui.weak(tr("Start a server with:  openecraft-parts-server --token <secret>"));
             });
             return;
         }

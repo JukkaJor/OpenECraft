@@ -1,5 +1,5 @@
 //! OpenECraft parts manager – creates, edits and deletes the parts of an OpenECraft
-//! parts server (`openecraft-server`).
+//! parts server (`openecraft-parts-server`).
 //!
 //! Runs natively on Windows, Linux and macOS and in the browser (WebAssembly).
 

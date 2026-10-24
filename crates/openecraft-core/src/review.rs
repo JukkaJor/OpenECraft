@@ -6,7 +6,7 @@
 //! records are kept as marks ([`merge`]).
 
 use crate::geom::{dist_to_segment, p, P, R};
-use crate::model::{natural_cmp, Project};
+use crate::model::{is_zero, natural_cmp, Project};
 use crate::render::{Draw, Ink, VAnchor};
 use crate::symbols::Anchor;
 use openecraft_i18n::{tr, tr_fmt};
@@ -168,10 +168,6 @@ pub struct Comment {
     pub request: u64,
 }
 record!(Comment);
-
-fn is_zero(v: &u64) -> bool {
-    *v == 0
-}
 
 /// Adds a comment; returns its id.
 pub fn add_comment(prj: &mut Project, page: u64, pos: P, author: &str, date: &str, text: &str) -> u64 {

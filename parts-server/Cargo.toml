@@ -1,12 +1,12 @@
 [package]
-name = "openecraft-server"
+name = "openecraft-parts-server"
 version = "0.1.0"
 edition = "2021"
 description = "Global parts database server for OpenECraft"
 license = "MIT OR Apache-2.0"
 
 [[bin]]
-name = "openecraft-server"
+name = "openecraft-parts-server"
 path = "src/main.rs"
 
 [dependencies]
