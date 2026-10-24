@@ -32,6 +32,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
 | `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
+| `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-parts-server` | `parts-server/` | Standalone parts database server (axum, JSON file storage) |
@@ -48,12 +49,38 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
     on egui or an application crate.
   - `openecraft-ui` holds egui widgets and platform code shared by the editor and the
     parts manager. It must not depend on an application crate.
+  - `openecraft-api` depends only on `openecraft-core`, `openecraft-i18n`, `serde` and
+    `serde_json`: no UI, no application crate, no `cfg(target_arch)` branches.
 - API types and request paths of the parts server live in `openecraft_parts::api`, the
   requests in `openecraft-client`; change server and client together. The same holds
   for the project server with `openecraft_core::collab`, which also holds the merge and
   lock rules of shared projects.
 - New crates are added to `[workspace] members` in the root `Cargo.toml`; the
   convention, glyph and catalog tests read that list, so their rules apply to every member.
+
+## Extensibility – mandatory for every feature
+
+OpenECraft is extended through `openecraft-api` (see `docs/plugins.md`). Plugins add
+commands, checks, reports and exporters to a `Registry`; the editor, the command line
+and the MCP server take them from `Plugins`, so an extension is available everywhere
+at once. New features must use and grow this system instead of bypassing it:
+
+- A new check, report, export or function on the project is registered as an extension
+  of a built-in plugin (`crates/openecraft-api/src/builtin.rs`, one plugin per area),
+  not hard-wired into one front end. Front ends never special-case a built-in plugin;
+  they only show what `Plugins` offers.
+- When a feature needs something a plugin cannot do yet (a new kind of extension such
+  as symbols, importers or project events, or more data for an existing one), add the
+  extension point to `Registry` first, consume it in every front end (editor, command
+  line / MCP) and in the external protocol (`external.rs`, `docs/plugins.md`), then
+  build the feature on it. Built-in and third-party plugins have the same powers.
+- Command parameters use `openecraft_api::params` (`param`, `optional`, `Kind`); the
+  built-in tools of `cli/` share it. Names of plugins, commands, checks, reports and
+  exporters are snake_case and unique (`Plugins::add` refuses duplicates).
+- Changes to the external protocol stay backwards compatible; a breaking change raises
+  `API_VERSION`. Update `docs/plugins.md` with every change of the API.
+- Extensions are tested like other code: register them in a `Plugins` in the test and
+  run them through it (see `crates/openecraft-api/src/host/tests.rs`).
 
 ## Languages – mandatory for every feature
 

@@ -3072,6 +3072,7 @@ dependencies = [
  "env_logger",
  "image",
  "log",
+ "openecraft-api",
  "openecraft-client",
  "openecraft-core",
  "openecraft-i18n",
@@ -3085,9 +3086,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "openecraft-api"
+version = "0.1.0"
+dependencies = [
+ "openecraft-core",
+ "openecraft-i18n",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "openecraft-cli"
 version = "0.1.0"
 dependencies = [
+ "openecraft-api",
  "openecraft-client",
  "openecraft-core",
  "openecraft-i18n",
