@@ -74,7 +74,7 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "fl_filter" | "fl_gauge" | "fl_tank" | "fl_source" | "fl_silencer" | "fl_throttle" | "pid_vessel" | "pid_valve"
         | "pid_control_valve" | "pid_check_valve" | "pid_heat_exchanger" => FnKind::FluidComponent,
         "res" | "cap" | "diode" | "led" | "inductor" | "varistor" | "potentiometer" => FnKind::Generic,
-        _ => return None,
+        _ => return symbols::iec_kind(key),
     })
 }
 

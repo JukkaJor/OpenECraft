@@ -3989,3 +3989,248 @@ Use macros	Makros übernehmen	Utiliser les macros	Usar macros
 ⬇ Add to the parts database	⬇ In die Artikeldatenbank übernehmen	⬇ Ajouter à la base d'articles	⬇ Añadir a la base de datos de artículos
 🔄 Check the parts database for updates	🔄 Artikeldatenbank auf Aktualisierungen prüfen	🔄 Vérifier les mises à jour de la base d'articles	🔄 Comprobar actualizaciones de la base de datos de artículos
 🔎 Search	🔎 Suchen	🔎 Rechercher	🔎 Buscar
+Relay coil, AC	Relaisspule, Wechselstrom	Bobine de relais, courant alternatif	Bobina de relé, corriente alterna
+Relay coil, high-speed	Relaisspule, schnell schaltend	Bobine de relais, rapide	Bobina de relé, de acción rápida
+Relay coil, mechanically latched	Relaisspule, mechanisch verklinkt	Bobine de relais, à accrochage mécanique	Bobina de relé, con enclavamiento mecánico
+Relay coil, latching	Relaisspule, Stromstoß	Bobine de relais, bistable	Bobina de relé, biestable
+Relay coil with LED	Relaisspule mit LED	Bobine de relais avec LED	Bobina de relé con LED
+Relay coil, resonant	Relaisspule, Resonanz	Bobine de relais, à résonance	Bobina de relé, de resonancia
+Relay coil, thermal	Relaisspule, thermisch	Bobine de relais, thermique	Bobina de relé, térmica
+Relay coil with indicator	Relaisspule mit Anzeige	Bobine de relais avec indicateur	Bobina de relé con indicador
+Relay coil, flashing	Relaisspule, Blinker	Bobine de relais, clignotante	Bobina de relé, intermitente
+Relay coil with suppressor diode	Relaisspule mit Freilaufdiode	Bobine de relais avec diode de roue libre	Bobina de relé con diodo supresor
+Relay coil, remanent	Relaisspule, remanent	Bobine de relais, à rémanence	Bobina de relé, de remanencia
+Relay coil, polarized	Relaisspule, gepolt	Bobine de relais, polarisée	Bobina de relé, polarizada
+Relay coil, AC resistant	Relaisspule, wechselstromfest	Bobine de relais, insensible au courant alternatif	Bobina de relé, insensible a la corriente alterna
+Timer coil, on- and off-delay	Zeitrelaisspule, ein- und ausschaltverzögert	Bobine temporisée, à l'appel et à la chute	Bobina temporizada, a la conexión y desconexión
+Time switch (electronic)	Zeitschaltuhr (elektronisch)	Horloge de commutation (électronique)	Reloj programador (electrónico)
+Overvoltage relay	Überspannungsrelais	Relais à maximum de tension	Relé de sobretensión
+Undervoltage relay	Unterspannungsrelais	Relais à minimum de tension	Relé de subtensión
+Pulse counter	Impulszähler	Compteur d'impulsions	Contador de impulsos
+Pulse counter, manual reset	Impulszähler, Rückstellung von Hand	Compteur d'impulsions, remise à zéro manuelle	Contador de impulsos, puesta a cero manual
+Pulse counter, electrical reset	Impulszähler, elektrische Rückstellung	Compteur d'impulsions, remise à zéro électrique	Contador de impulsos, puesta a cero eléctrica
+Preset counter, 1 stage	Vorwahlzähler, 1-stufig	Compteur à présélection, 1 seuil	Contador preseleccionable, 1 etapa
+Preset counter, 2 stages	Vorwahlzähler, 2-stufig	Compteur à présélection, 2 seuils	Contador preseleccionable, 2 etapas
+Clutch (electromagnetic)	Kupplung (elektromagnetisch)	Embrayage (électromagnétique)	Embrague (electromagnético)
+Solenoid actuator	Hubmagnet	Électroaimant de commande	Electroimán de accionamiento
+NO contact, early closing	Schließer, voreilend	Contact NO, à fermeture anticipée	Contacto NA, de cierre adelantado
+NO contact, late closing	Schließer, nacheilend	Contact NO, à fermeture retardée	Contacto NA, de cierre retrasado
+NC contact, early opening	Öffner, voreilend	Contact NF, à ouverture anticipée	Contacto NC, de apertura adelantada
+NC contact, late opening	Öffner, nacheilend	Contact NF, à ouverture retardée	Contacto NC, de apertura retrasada
+Passing NO contact, on actuation	Wischkontakt Schließer, beim Betätigen	Contact NO de passage, à l'actionnement	Contacto NA de paso, al accionar
+Passing NO contact, on release	Wischkontakt Schließer, beim Rückfall	Contact NO de passage, au relâchement	Contacto NA de paso, al soltar
+Passing NO contact, both directions	Wischkontakt Schließer, in beiden Richtungen	Contact NO de passage, dans les deux sens	Contacto NA de paso, en ambos sentidos
+Changeover contact, make before break	Wechsler, ohne Unterbrechung	Contact inverseur, chevauchant	Contacto conmutado, sin interrupción
+Changeover contact, passing make	Wechsler mit Wischkontakt	Contact inverseur avec contact de passage	Contacto conmutado con contacto de paso
+Changeover contact, on-delay	Wechsler, einschaltverzögert	Contact inverseur, temporisé à l'appel	Contacto conmutado, temporizado a la conexión
+Changeover contact, off-delay	Wechsler, ausschaltverzögert	Contact inverseur, temporisé à la chute	Contacto conmutado, temporizado a la desconexión
+Changeover contact, on- and off-delay	Wechsler, ein- und ausschaltverzögert	Contact inverseur, temporisé à l'appel et à la chute	Contacto conmutado, temporizado a la conexión y desconexión
+NO contact, on- and off-delay	Schließer, ein- und ausschaltverzögert	Contact NO, temporisé à l'appel et à la chute	Contacto NA, temporizado a la conexión y desconexión
+NC contact, on- and off-delay	Öffner, ein- und ausschaltverzögert	Contact NF, temporisé à l'appel et à la chute	Contacto NC, temporizado a la conexión y desconexión
+Time switch contact NO	Zeitschaltuhr Schließer	Contact NO d'horloge	Contacto NA de reloj programador
+Time switch contact NC	Zeitschaltuhr Öffner	Contact NF d'horloge	Contacto NC de reloj programador
+Counter contact NO	Zählerkontakt Schließer	Contact NO de compteur	Contacto NA de contador
+Counter contact NC	Zählerkontakt Öffner	Contact NF de compteur	Contacto NC de contador
+Counter contact NO, cam operated	Zählerkontakt Schließer, nockenbetätigt	Contact NO de compteur, à came	Contacto NA de contador, accionado por leva
+Counter contact NC, cam operated	Zählerkontakt Öffner, nockenbetätigt	Contact NF de compteur, à came	Contacto NC de contador, accionado por leva
+Main contacts 3-pole NC	Hauptkontakte 3-polig Öffner	Contacts principaux 3 pôles NF	Contactos principales 3 polos NC
+Main contacts 3-pole, automatic tripping	Hauptkontakte 3-polig, selbsttätige Auslösung	Contacts principaux 3 pôles, à déclenchement automatique	Contactos principales 3 polos, con disparo automático
+Semiconductor contactor 3-pole	Halbleiterschütz 3-polig	Contacteur statique 3 pôles	Contactor estático 3 polos
+Manual switch NO	Handschalter Schließer	Commutateur manuel NO	Interruptor manual NA
+Manual switch NC	Handschalter Öffner	Commutateur manuel NF	Interruptor manual NC
+Manual switch NO, latching	Handschalter Schließer, rastend	Commutateur manuel NO, à accrochage	Interruptor manual NA, con enclavamiento
+Manual switch NC, latching	Handschalter Öffner, rastend	Commutateur manuel NF, à accrochage	Interruptor manual NC, con enclavamiento
+Push button NO, latching	Taster Schließer, rastend	Bouton-poussoir NO, à accrochage	Pulsador NA, con enclavamiento
+Push button NC, latching	Taster Öffner, rastend	Bouton-poussoir NF, à accrochage	Pulsador NC, con enclavamiento
+Pull button NO	Zugtaster Schließer	Bouton à tirer NO	Pulsador de tracción NA
+Pull button NC	Zugtaster Öffner	Bouton à tirer NF	Pulsador de tracción NC
+Pull button NO, latching	Zugtaster Schließer, rastend	Bouton à tirer NO, à accrochage	Pulsador de tracción NA, con enclavamiento
+Pull button NC, latching	Zugtaster Öffner, rastend	Bouton à tirer NF, à accrochage	Pulsador de tracción NC, con enclavamiento
+Key switch NC	Schlüsselschalter Öffner	Commutateur à clé NF	Interruptor de llave NC
+Key switch NO, latching	Schlüsselschalter Schließer, rastend	Commutateur à clé NO, à accrochage	Interruptor de llave NA, con enclavamiento
+Key switch NC, latching	Schlüsselschalter Öffner, rastend	Commutateur à clé NF, à accrochage	Interruptor de llave NC, con enclavamiento
+Push button with key NO, latching	Taster mit Schlüssel Schließer, rastend	Bouton-poussoir à clé NO, à accrochage	Pulsador con llave NA, con enclavamiento
+Push button with key NC, latching	Taster mit Schlüssel Öffner, rastend	Bouton-poussoir à clé NF, à accrochage	Pulsador con llave NC, con enclavamiento
+Emergency stop NO	Not-Halt Schließer	Arrêt d'urgence NO	Parada de emergencia NA
+Emergency stop NO, turn to reset	Not-Halt Schließer, Entriegelung durch Drehen	Arrêt d'urgence NO, déverrouillage par rotation	Parada de emergencia NA, desbloqueo por giro
+Emergency stop NC, turn to reset	Not-Halt Öffner, Entriegelung durch Drehen	Arrêt d'urgence NF, déverrouillage par rotation	Parada de emergencia NC, desbloqueo por giro
+Emergency stop NO, pull to reset	Not-Halt Schließer, Entriegelung durch Ziehen	Arrêt d'urgence NO, déverrouillage par traction	Parada de emergencia NA, desbloqueo por tracción
+Emergency stop NC, pull to reset	Not-Halt Öffner, Entriegelung durch Ziehen	Arrêt d'urgence NF, déverrouillage par traction	Parada de emergencia NC, desbloqueo por tracción
+Emergency stop NO, key reset	Not-Halt Schließer, Entriegelung mit Schlüssel	Arrêt d'urgence NO, déverrouillage par clé	Parada de emergencia NA, desbloqueo con llave
+Emergency stop NC, key reset	Not-Halt Öffner, Entriegelung mit Schlüssel	Arrêt d'urgence NF, déverrouillage par clé	Parada de emergencia NC, desbloqueo con llave
+Selector switch NO, latching	Wahlschalter Schließer, rastend	Sélecteur NO, à accrochage	Selector NA, con enclavamiento
+Selector switch NC, latching	Wahlschalter Öffner, rastend	Sélecteur NF, à accrochage	Selector NC, con enclavamiento
+Foot switch NO	Fußschalter Schließer	Interrupteur à pédale NO	Interruptor de pedal NA
+Foot switch NC	Fußschalter Öffner	Interrupteur à pédale NF	Interruptor de pedal NC
+Counter switch NO	Zählschalter Schließer	Commutateur de comptage NO	Interruptor de conteo NA
+Counter switch NC	Zählschalter Öffner	Commutateur de comptage NF	Interruptor de conteo NC
+Bimetal switch NO	Bimetallschalter Schließer	Interrupteur bilame NO	Interruptor bimetálico NA
+Bimetal switch NC	Bimetallschalter Öffner	Interrupteur bilame NF	Interruptor bimetálico NC
+Pressure switch NC	Druckschalter Öffner	Pressostat NF	Presostato NC
+Flow switch NO	Strömungsschalter Schließer	Contrôleur de débit NO	Interruptor de caudal NA
+Flow switch NC	Strömungsschalter Öffner	Contrôleur de débit NF	Interruptor de caudal NC
+Gas flow switch NO	Gasströmungsschalter Schließer	Contrôleur de débit de gaz NO	Interruptor de caudal de gas NA
+Gas flow switch NC	Gasströmungsschalter Öffner	Contrôleur de débit de gaz NF	Interruptor de caudal de gas NC
+Float switch NC	Schwimmerschalter Öffner	Interrupteur à flotteur NF	Interruptor de flotador NC
+Cam switch NO	Nockenschalter Schließer	Interrupteur à came NO	Interruptor de leva NA
+Cam switch NC	Nockenschalter Öffner	Interrupteur à came NF	Interruptor de leva NC
+Roller switch NO	Rollenschalter Schließer	Interrupteur à galet NO	Interruptor de rodillo NA
+Roller switch NC	Rollenschalter Öffner	Interrupteur à galet NF	Interruptor de rodillo NC
+Cam profile switch NO	Kurvenschalter Schließer	Interrupteur à profil de came NO	Interruptor de perfil de leva NA
+Cam profile switch NC	Kurvenschalter Öffner	Interrupteur à profil de came NF	Interruptor de perfil de leva NC
+Selector switch NO, position diagram A	Wahlschalter Schließer, Stellungsdiagramm A	Sélecteur NO, diagramme de positions A	Selector NA, diagrama de posiciones A
+Selector switch NO, position diagram B	Wahlschalter Schließer, Stellungsdiagramm B	Sélecteur NO, diagramme de positions B	Selector NA, diagrama de posiciones B
+Selector switch NC, position diagram A	Wahlschalter Öffner, Stellungsdiagramm A	Sélecteur NF, diagramme de positions A	Selector NC, diagrama de posiciones A
+Selector switch NC, position diagram B	Wahlschalter Öffner, Stellungsdiagramm B	Sélecteur NF, diagramme de positions B	Selector NC, diagrama de posiciones B
+Selector switch NO, latching, with position diagram	Wahlschalter Schließer, rastend, mit Stellungsdiagramm	Sélecteur NO, à accrochage, avec diagramme de positions	Selector NA, con enclavamiento, con diagrama de posiciones
+Selector switch NC, latching, with position diagram	Wahlschalter Öffner, rastend, mit Stellungsdiagramm	Sélecteur NF, à accrochage, avec diagramme de positions	Selector NC, con enclavamiento, con diagrama de posiciones
+Selector switch 3 positions NO, spring return to middle, middle off	Wahlschalter 3 Stellungen Schließer, tastend in die Mitte, Mitte aus	Sélecteur 3 positions NO, rappel au centre, centre arrêt	Selector 3 posiciones NA, retorno al centro, centro desconectado
+Selector switch 3 positions NC, spring return to middle, middle off	Wahlschalter 3 Stellungen Öffner, tastend in die Mitte, Mitte aus	Sélecteur 3 positions NF, rappel au centre, centre arrêt	Selector 3 posiciones NC, retorno al centro, centro desconectado
+Selector switch 3 positions NO, return to off, latching	Wahlschalter 3 Stellungen Schließer, tastend nach Aus, rastend	Sélecteur 3 positions NO, rappel en position arrêt, à accrochage	Selector 3 posiciones NA, retorno a desconectado, con enclavamiento
+Selector switch 3 positions NC, return to off, latching	Wahlschalter 3 Stellungen Öffner, tastend nach Aus, rastend	Sélecteur 3 positions NF, rappel en position arrêt, à accrochage	Selector 3 posiciones NC, retorno a desconectado, con enclavamiento
+Selector switch 3 positions NO, latching, middle off	Wahlschalter 3 Stellungen Schließer, rastend, Mitte aus	Sélecteur 3 positions NO, à accrochage, centre arrêt	Selector 3 posiciones NA, con enclavamiento, centro desconectado
+Selector switch 3 positions NC, latching, middle off	Wahlschalter 3 Stellungen Öffner, rastend, Mitte aus	Sélecteur 3 positions NF, à accrochage, centre arrêt	Selector 3 posiciones NC, con enclavamiento, centro desconectado
+Selector switch 3 positions NO, spring return, middle latching	Wahlschalter 3 Stellungen Schließer, tastend, Mitte rastend	Sélecteur 3 positions NO, à rappel, centre à accrochage	Selector 3 posiciones NA, con retorno, centro con enclavamiento
+Selector switch 3 positions NC, spring return, middle latching	Wahlschalter 3 Stellungen Öffner, tastend, Mitte rastend	Sélecteur 3 positions NF, à rappel, centre à accrochage	Selector 3 posiciones NC, con retorno, centro con enclavamiento
+Selector switch 3 positions NO, spring return, two positions latching	Wahlschalter 3 Stellungen Schließer, tastend, zwei Stellungen rastend	Sélecteur 3 positions NO, à rappel, deux positions à accrochage	Selector 3 posiciones NA, con retorno, dos posiciones con enclavamiento
+Selector switch 3 positions NC, spring return, two positions latching	Wahlschalter 3 Stellungen Öffner, tastend, zwei Stellungen rastend	Sélecteur 3 positions NF, à rappel, deux positions à accrochage	Selector 3 posiciones NC, con retorno, dos posiciones con enclavamiento
+Selector switch 3 positions NO, latching	Wahlschalter 3 Stellungen Schließer, rastend	Sélecteur 3 positions NO, à accrochage	Selector 3 posiciones NA, con enclavamiento
+Selector switch 3 positions NC, latching	Wahlschalter 3 Stellungen Öffner, rastend	Sélecteur 3 positions NF, à accrochage	Selector 3 posiciones NC, con enclavamiento
+Changeover switch, cam operated	Umschalter, nockenbetätigt	Inverseur, à came	Conmutador, accionado por leva
+Changeover switch, roller operated	Umschalter, rollenbetätigt	Inverseur, à galet	Conmutador, accionado por rodillo
+Changeover switch, cam profile operated	Umschalter, kurvenbetätigt	Inverseur, à profil de came	Conmutador, accionado por perfil de leva
+Disconnector 1-pole	Trennschalter 1-polig	Sectionneur 1 pôle	Seccionador 1 polo
+Disconnector 2-pole	Trennschalter 2-polig	Sectionneur 2 pôles	Seccionador 2 polos
+Disconnector 3-pole	Trennschalter 3-polig	Sectionneur 3 pôles	Seccionador 3 polos
+Disconnector 1-pole, lockable	Trennschalter 1-polig, abschließbar	Sectionneur 1 pôle, cadenassable	Seccionador 1 polo, bloqueable
+Disconnector 2-pole, lockable	Trennschalter 2-polig, abschließbar	Sectionneur 2 pôles, cadenassable	Seccionador 2 polos, bloqueable
+Disconnector 3-pole, lockable	Trennschalter 3-polig, abschließbar	Sectionneur 3 pôles, cadenassable	Seccionador 3 polos, bloqueable
+Switch-disconnector 1-pole	Lasttrennschalter 1-polig	Interrupteur-sectionneur 1 pôle	Interruptor-seccionador 1 polo
+Switch-disconnector 2-pole	Lasttrennschalter 2-polig	Interrupteur-sectionneur 2 pôles	Interruptor-seccionador 2 polos
+Switch-disconnector 3-pole	Lasttrennschalter 3-polig	Interrupteur-sectionneur 3 pôles	Interruptor-seccionador 3 polos
+Switch-disconnector 1-pole, automatic tripping	Lasttrennschalter 1-polig, selbsttätige Auslösung	Interrupteur-sectionneur 1 pôle, à déclenchement automatique	Interruptor-seccionador 1 polo, con disparo automático
+Switch-disconnector 2-pole, automatic tripping	Lasttrennschalter 2-polig, selbsttätige Auslösung	Interrupteur-sectionneur 2 pôles, à déclenchement automatique	Interruptor-seccionador 2 polos, con disparo automático
+Switch-disconnector 3-pole, automatic tripping	Lasttrennschalter 3-polig, selbsttätige Auslösung	Interrupteur-sectionneur 3 pôles, à déclenchement automatique	Interruptor-seccionador 3 polos, con disparo automático
+Main switch 1-pole	Hauptschalter 1-polig	Interrupteur principal 1 pôle	Interruptor principal 1 polo
+Main switch 2-pole	Hauptschalter 2-polig	Interrupteur principal 2 pôles	Interruptor principal 2 polos
+Inductive sensor, 3-wire	Induktiver Sensor, 3-Leiter	Capteur inductif, 3 fils	Sensor inductivo, 3 hilos
+Capacitive sensor, 3-wire	Kapazitiver Sensor, 3-Leiter	Capteur capacitif, 3 fils	Sensor capacitivo, 3 hilos
+Magnetic sensor	Magnetsensor	Capteur magnétique	Sensor magnético
+Touch sensor, 3-wire	Berührungssensor, 3-Leiter	Capteur tactile, 3 fils	Sensor táctil, 3 hilos
+Photoelectric sensor, retro-reflective, 3-wire	Reflexions-Lichtschranke, 3-Leiter	Barrière photoélectrique reflex, 3 fils	Fotocélula réflex, 3 hilos
+Photoelectric sensor, retro-reflective, 4-wire	Reflexions-Lichtschranke, 4-Leiter	Barrière photoélectrique reflex, 4 fils	Fotocélula réflex, 4 hilos
+Photoelectric sensor, diffuse, 3-wire	Reflexions-Lichttaster, 3-Leiter	Détecteur photoélectrique en mode diffus, 3 fils	Fotocélula de detección directa, 3 hilos
+Photoelectric sensor, diffuse, 4-wire	Reflexions-Lichttaster, 4-Leiter	Détecteur photoélectrique en mode diffus, 4 fils	Fotocélula de detección directa, 4 hilos
+Through-beam receiver, 3-wire	Einweg-Lichtschranke Empfänger, 3-Leiter	Récepteur de barrière photoélectrique, 3 fils	Receptor de barrera fotoeléctrica, 3 hilos
+Through-beam receiver, 4-wire	Einweg-Lichtschranke Empfänger, 4-Leiter	Récepteur de barrière photoélectrique, 4 fils	Receptor de barrera fotoeléctrica, 4 hilos
+Inductive sensor, 2-wire	Induktiver Sensor, 2-Leiter	Capteur inductif, 2 fils	Sensor inductivo, 2 hilos
+Capacitive sensor, 2-wire	Kapazitiver Sensor, 2-Leiter	Capteur capacitif, 2 fils	Sensor capacitivo, 2 hilos
+Touch sensor, 2-wire	Berührungssensor, 2-Leiter	Capteur tactile, 2 fils	Sensor táctil, 2 hilos
+Through-beam transmitter	Einweg-Lichtschranke Sender	Émetteur de barrière photoélectrique	Emisor de barrera fotoeléctrica
+Through-beam sensor, 3-wire	Einweg-Lichtschranke Sender und Empfänger, 3-Leiter	Barrière photoélectrique émetteur et récepteur, 3 fils	Barrera fotoeléctrica emisor y receptor, 3 hilos
+Through-beam sensor, 4-wire	Einweg-Lichtschranke Sender und Empfänger, 4-Leiter	Barrière photoélectrique émetteur et récepteur, 4 fils	Barrera fotoeléctrica emisor y receptor, 4 hilos
+Temperature controller	Temperaturregler	Régulateur de température	Regulador de temperatura
+Circuit breaker 1-pole, thermal-magnetic	Leistungsschalter 1-polig, thermisch-magnetisch	Disjoncteur 1 pôle, magnétothermique	Interruptor automático 1 polo, magnetotérmico
+Circuit breaker 2-pole, thermal-magnetic	Leistungsschalter 2-polig, thermisch-magnetisch	Disjoncteur 2 pôles, magnétothermique	Interruptor automático 2 polos, magnetotérmico
+Circuit breaker 3-pole, thermal-magnetic	Leistungsschalter 3-polig, thermisch-magnetisch	Disjoncteur 3 pôles, magnétothermique	Interruptor automático 3 polos, magnetotérmico
+Motor protection switch 1-pole	Motorschutzschalter 1-polig	Disjoncteur-moteur 1 pôle	Guardamotor 1 polo
+Motor protection switch 2-pole	Motorschutzschalter 2-polig	Disjoncteur-moteur 2 pôles	Guardamotor 2 polos
+Residual current device 1-pole	Fehlerstromschutzschalter 1-polig	Interrupteur différentiel 1 pôle	Interruptor diferencial 1 polo
+Residual current device 2-pole	Fehlerstromschutzschalter 2-polig	Interrupteur différentiel 2 pôles	Interruptor diferencial 2 polos
+Residual current device 3-pole	Fehlerstromschutzschalter 3-polig	Interrupteur différentiel 3 pôles	Interruptor diferencial 3 polos
+Fuse 2-pole	Sicherung 2-polig	Fusible 2 pôles	Fusible 2 polos
+Fuse, LV HBC, 1-pole	NH-Sicherung 1-polig	Fusible BT HPC, 1 pôle	Fusible BT APR, 1 polo
+Fuse, LV HBC, 2-pole	NH-Sicherung 2-polig	Fusible BT HPC, 2 pôles	Fusible BT APR, 2 polos
+Fuse, LV HBC, 3-pole	NH-Sicherung 3-polig	Fusible BT HPC, 3 pôles	Fusible BT APR, 3 polos
+Fuse switch 1-pole	Sicherungsschalter 1-polig	Interrupteur-fusible 1 pôle	Interruptor-fusible 1 polo
+Fuse switch 2-pole	Sicherungsschalter 2-polig	Interrupteur-fusible 2 pôles	Interruptor-fusible 2 polos
+Fuse switch 3-pole	Sicherungsschalter 3-polig	Interrupteur-fusible 3 pôles	Interruptor-fusible 3 polos
+Fuse disconnector 1-pole	Sicherungstrennschalter 1-polig	Sectionneur-fusible 1 pôle	Seccionador-fusible 1 polo
+Fuse disconnector 2-pole	Sicherungstrennschalter 2-polig	Sectionneur-fusible 2 pôles	Seccionador-fusible 2 polos
+Fuse disconnector 3-pole	Sicherungstrennschalter 3-polig	Sectionneur-fusible 3 pôles	Seccionador-fusible 3 polos
+Fuse switch-disconnector 1-pole	Sicherungslasttrennschalter 1-polig	Interrupteur-sectionneur-fusible 1 pôle	Interruptor-seccionador-fusible 1 polo
+Fuse switch-disconnector 2-pole	Sicherungslasttrennschalter 2-polig	Interrupteur-sectionneur-fusible 2 pôles	Interruptor-seccionador-fusible 2 polos
+Fuse switch-disconnector 3-pole	Sicherungslasttrennschalter 3-polig	Interrupteur-sectionneur-fusible 3 pôles	Interruptor-seccionador-fusible 3 polos
+Fuse disconnector with motor circuit breaker 1-pole	Sicherungstrennschalter mit Motorschutzschalter 1-polig	Sectionneur-fusible avec disjoncteur-moteur 1 pôle	Seccionador-fusible con guardamotor 1 polo
+Fuse disconnector with motor circuit breaker 2-pole	Sicherungstrennschalter mit Motorschutzschalter 2-polig	Sectionneur-fusible avec disjoncteur-moteur 2 pôles	Seccionador-fusible con guardamotor 2 polos
+Fuse disconnector with motor circuit breaker 3-pole	Sicherungstrennschalter mit Motorschutzschalter 3-polig	Sectionneur-fusible avec disjoncteur-moteur 3 pôles	Seccionador-fusible con guardamotor 3 polos
+Thermal overload relay 1-pole	Thermisches Überlastrelais 1-polig	Relais thermique 1 pôle	Relé térmico de sobrecarga 1 polo
+Thermal overload relay 2-pole	Thermisches Überlastrelais 2-polig	Relais thermique 2 pôles	Relé térmico de sobrecarga 2 polos
+Overload relay 1-pole, thermal and magnetic	Überlastrelais 1-polig, thermisch und magnetisch	Relais de surcharge 1 pôle, thermique et magnétique	Relé de sobrecarga 1 polo, térmico y magnético
+Overload relay 2-pole, thermal and magnetic	Überlastrelais 2-polig, thermisch und magnetisch	Relais de surcharge 2 pôles, thermique et magnétique	Relé de sobrecarga 2 polos, térmico y magnético
+Overload relay 3-pole, thermal and magnetic	Überlastrelais 3-polig, thermisch und magnetisch	Relais de surcharge 3 pôles, thermique et magnétique	Relé de sobrecarga 3 polos, térmico y magnético
+Indicator lamp, flashing	Meldeleuchte, blinkend	Voyant lumineux, clignotant	Piloto luminoso, intermitente
+Indicator lamp with transformer	Meldeleuchte mit Transformator	Voyant lumineux avec transformateur	Piloto luminoso con transformador
+Beacon, rotating	Rundumleuchte	Gyrophare	Baliza giratoria
+Siren	Sirene	Sirène	Sirena
+Buzzer	Summer	Ronfleur	Zumbador
+Motor DC, shunt-wound	Gleichstrommotor, Nebenschluss	Moteur à courant continu, à excitation shunt	Motor de corriente continua, excitación en derivación
+Motor, electronically commutated (brushless DC)	Motor, elektronisch kommutiert (bürstenlos)	Moteur à commutation électronique (sans balais)	Motor de conmutación electrónica (sin escobillas)
+Motor 1-phase, 2 terminals	Motor 1-phasig, 2 Anschlüsse	Moteur monophasé, 2 bornes	Motor monofásico, 2 bornes
+Motor 1-phase, series-wound (universal)	Motor 1-phasig, Reihenschluss (Universalmotor)	Moteur monophasé, à excitation série (universel)	Motor monofásico, excitación en serie (universal)
+Motor 1-phase with auxiliary winding	Motor 1-phasig mit Hilfswicklung	Moteur monophasé avec enroulement auxiliaire	Motor monofásico con devanado auxiliar
+Fan 1-phase	Lüfter 1-phasig	Ventilateur monophasé	Ventilador monofásico
+Motor 3-phase, 6 terminals	Motor 3-phasig, 6 Anschlüsse	Moteur triphasé, 6 bornes	Motor trifásico, 6 bornes
+Motor 3-phase, series-wound	Motor 3-phasig, Reihenschluss	Moteur triphasé, à excitation série	Motor trifásico, excitación en serie
+Motor 3-phase, slip-ring rotor	Motor 3-phasig, Schleifringläufer	Moteur triphasé, à rotor bobiné	Motor trifásico, de rotor bobinado
+Linear motor 3-phase	Linearmotor 3-phasig	Moteur linéaire triphasé	Motor lineal trifásico
+Fan 3-phase	Lüfter 3-phasig	Ventilateur triphasé	Ventilador trifásico
+Fan 3-phase, 6 terminals	Lüfter 3-phasig, 6 Anschlüsse	Ventilateur triphasé, 6 bornes	Ventilador trifásico, 6 bornes
+Ammeter, reactive current	Strommesser, Blindstrom	Ampèremètre, courant réactif	Amperímetro, corriente reactiva
+Varmeter	Blindleistungsmesser	Varmètre	Varímetro
+Frequency meter	Frequenzmesser	Fréquencemètre	Frecuencímetro
+Voltmeter, differential	Spannungsmesser, Differenzspannung	Voltmètre différentiel	Voltímetro diferencial
+Salinity meter	Salzgehaltmesser	Salinomètre	Salinómetro
+Tachometer	Drehzahlmesser	Tachymètre	Tacómetro
+Power factor meter	Leistungsfaktormesser	Phasemètre (cos φ)	Medidor de factor de potencia
+Phase meter	Phasenwinkelmesser	Phasemètre	Fasímetro
+Wavemeter	Wellenlängenmesser	Ondemètre	Ondámetro
+Thermometer / pyrometer	Thermometer / Pyrometer	Thermomètre / pyromètre	Termómetro / pirómetro
+Wattmeter	Leistungsmesser	Wattmètre	Vatímetro
+Ohmmeter	Widerstandsmesser	Ohmmètre	Óhmetro
+Galvanometer	Galvanometer	Galvanomètre	Galvanómetro
+Wattmeter, recording	Leistungsschreiber	Wattmètre enregistreur	Vatímetro registrador
+Wattmeter and varmeter, recording	Wirk- und Blindleistungsschreiber	Wattmètre et varmètre enregistreurs	Vatímetro y varímetro registradores
+Hour meter	Betriebsstundenzähler	Compteur horaire	Contador de horas
+Ampere-hour meter	Amperestundenzähler	Compteur d'ampères-heures	Contador de amperios-hora
+Watt-hour meter	Wirkenergiezähler	Compteur d'énergie active	Contador de energía activa
+Var-hour meter	Blindenergiezähler	Compteur d'énergie réactive	Contador de energía reactiva
+Watt-hour meter, one direction	Wirkenergiezähler, eine Energierichtung	Compteur d'énergie active, un sens	Contador de energía activa, un sentido
+Watt-hour meter, energy from the busbar	Wirkenergiezähler, Energie aus der Sammelschiene	Compteur d'énergie active, énergie sortant du jeu de barres	Contador de energía activa, energía desde la barra
+Watt-hour meter, energy to the busbar	Wirkenergiezähler, Energie zur Sammelschiene	Compteur d'énergie active, énergie vers le jeu de barres	Contador de energía activa, energía hacia la barra
+Watt-hour meter, energy from and to the busbar	Wirkenergiezähler, Energie aus der und zur Sammelschiene	Compteur d'énergie active, énergie depuis et vers le jeu de barres	Contador de energía activa, energía desde y hacia la barra
+Watt-hour meter, multi-rate	Wirkenergiezähler, Mehrtarif	Compteur d'énergie active, multitarif	Contador de energía activa, multitarifa
+Watt-hour meter, excess energy	Wirkenergiezähler, Überverbrauch	Compteur d'énergie active, dépassement	Contador de energía activa, exceso de energía
+Watt-hour meter with transmitter	Wirkenergiezähler mit Impulsgeber	Compteur d'énergie active avec émetteur	Contador de energía activa con emisor
+Watt-hour meter, slave (repeater)	Wirkenergiezähler, Nebenzähler	Compteur d'énergie active, répétiteur	Contador de energía activa, repetidor
+Watt-hour meter, slave with printer	Wirkenergiezähler, Nebenzähler mit Drucker	Compteur d'énergie active, répétiteur avec imprimante	Contador de energía activa, repetidor con impresora
+Watt-hour meter with maximum demand indicator	Wirkenergiezähler mit Maximumanzeiger	Compteur d'énergie active avec indicateur de maximum	Contador de energía activa con indicador de máxima demanda
+Watt-hour meter with maximum demand recorder	Wirkenergiezähler mit Maximumschreiber	Compteur d'énergie active avec enregistreur de maximum	Contador de energía activa con registrador de máxima demanda
+Current transformer, 2 cores	Stromwandler, 2 Kerne	Transformateur de courant, 2 noyaux	Transformador de corriente, 2 núcleos
+Current transformer, 2 secondary windings	Stromwandler, 2 Sekundärwicklungen	Transformateur de courant, 2 enroulements secondaires	Transformador de corriente, 2 devanados secundarios
+Inverter DC/AC	Wechselrichter DC/AC	Onduleur DC/AC	Inversor DC/AC
+DC/DC converter	Gleichspannungswandler DC/DC	Convertisseur DC/DC	Convertidor DC/DC
+Rectifier / inverter AC/DC, bidirectional	Gleich- / Wechselrichter AC/DC, bidirektional	Redresseur / onduleur AC/DC, bidirectionnel	Rectificador / inversor AC/DC, bidireccional
+Bridge rectifier	Brückengleichrichter	Pont redresseur	Puente rectificador
+Bridge rectifier, form B	Brückengleichrichter, Form B	Pont redresseur, forme B	Puente rectificador, forma B
+Bridge rectifier, form C	Brückengleichrichter, Form C	Pont redresseur, forme C	Puente rectificador, forma C
+Bridge rectifier, form D	Brückengleichrichter, Form D	Pont redresseur, forme D	Puente rectificador, forma D
+Transformer 1-phase, variable coupling	Transformator 1-phasig, veränderbare Kopplung	Transformateur monophasé, couplage variable	Transformador monofásico, acoplamiento variable
+Transformer 1-phase with screen	Transformator 1-phasig mit Schirm	Transformateur monophasé avec écran	Transformador monofásico con pantalla
+Transformer 1-phase, centre tap	Transformator 1-phasig, Mittelanzapfung	Transformateur monophasé, prise médiane	Transformador monofásico, toma central
+Transformer 1-phase, multiple taps	Transformator 1-phasig, mehrere Anzapfungen	Transformateur monophasé, prises multiples	Transformador monofásico, varias tomas
+Transformer, 3 windings	Transformator, 3 Wicklungen	Transformateur, 3 enroulements	Transformador, 3 devanados
+Autotransformer 1-phase	Spartransformator 1-phasig	Autotransformateur monophasé	Autotransformador monofásico
+Autotransformer 1-phase, adjustable	Spartransformator 1-phasig, einstellbar	Autotransformateur monophasé, réglable	Autotransformador monofásico, regulable
+Transformer 3-phase	Transformator 3-phasig	Transformateur triphasé	Transformador trifásico
+Transformer 3-phase, delta / delta	Transformator 3-phasig, Dreieck / Dreieck	Transformateur triphasé, triangle / triangle	Transformador trifásico, triángulo / triángulo
+Transformer 3-phase, star / star	Transformator 3-phasig, Stern / Stern	Transformateur triphasé, étoile / étoile	Transformador trifásico, estrella / estrella
+Transformer 3-phase, delta / star	Transformator 3-phasig, Dreieck / Stern	Transformateur triphasé, triangle / étoile	Transformador trifásico, triángulo / estrella
+Transformer 3-phase, star / delta	Transformator 3-phasig, Stern / Dreieck	Transformateur triphasé, étoile / triangle	Transformador trifásico, estrella / triángulo
+Transformer 3-phase, star / zigzag	Transformator 3-phasig, Stern / Zickzack	Transformateur triphasé, étoile / zigzag	Transformador trifásico, estrella / zigzag
+Transformer 3-phase, star / star / delta	Transformator 3-phasig, Stern / Stern / Dreieck	Transformateur triphasé, étoile / étoile / triangle	Transformador trifásico, estrella / estrella / triángulo
+Transformer 3-phase, multiple taps	Transformator 3-phasig, mehrere Anzapfungen	Transformateur triphasé, prises multiples	Transformador trifásico, varias tomas
+Autotransformer 3-phase	Spartransformator 3-phasig	Autotransformateur triphasé	Autotransformador trifásico
+Autotransformer 3-phase, star connection	Spartransformator 3-phasig, Sternschaltung	Autotransformateur triphasé, couplage étoile	Autotransformador trifásico, conexión en estrella
+Transformer bank of three 1-phase transformers	Transformatorbank aus drei 1-phasigen Transformatoren	Banc de trois transformateurs monophasés	Banco de tres transformadores monofásicos
+Transformers / power supplies	Transformatoren / Stromversorgungen	Transformateurs / alimentations	Transformadores / fuentes de alimentación

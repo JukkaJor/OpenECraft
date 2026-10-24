@@ -16,6 +16,13 @@ fn pins_on_grid_and_keys_unique() {
 }
 
 #[test]
+fn symbol_names_are_translated() {
+    let known: std::collections::HashSet<&str> = openecraft_i18n::catalog_entries().into_iter().map(|e| e[0]).collect();
+    let missing: Vec<_> = library().iter().map(|d| d.name).chain(Category::ALL.iter().map(|c| c.title())).filter(|n| !known.contains(n)).collect();
+    assert!(missing.is_empty(), "missing in the translation catalog: {missing:#?}");
+}
+
+#[test]
 fn extra_libraries_are_complete() {
     for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid, Category::Process] {
         let n = library().iter().filter(|d| d.category == cat).count();
