@@ -1,5 +1,6 @@
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_parts::api::{self, PartQuery, API_PREFIX, DEFAULT_PORT};
+use openecraft_parts::portal::{AttachmentKind, Catalog};
 use openecraft_parts::Part;
 use serde::de::DeserializeOwned;
 
@@ -29,9 +30,106 @@ impl Endpoint {
         req
     }
 
-    /// GET /api/v1/info
+    fn json<T: serde::Serialize + ?Sized>(&self, method: ehttp::Method, path: &str, body: &T) -> ehttp::Request {
+        let mut req = ehttp::Request::post(self.url(path), serde_json::to_vec(body).unwrap_or_default());
+        req.method = method;
+        self.authorized(with_content_type(req, "application/json"))
+    }
+
+    /// GET /api/v1/info, with the token so that the answer names the user.
     pub fn info(&self) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{API_PREFIX}/info")))
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/info"))))
+    }
+
+    /// POST /api/v1/search: parts with facets.
+    pub fn search(&self, query: &PartQuery) -> ehttp::Request {
+        self.json(ehttp::Method::POST, &format!("{API_PREFIX}/search"), query)
+    }
+
+    /// GET /api/v1/parts/{number}/history
+    pub fn history(&self, number: &str) -> ehttp::Request {
+        ehttp::Request::get(self.url(&format!("{}/history", api::part_path(number))))
+    }
+
+    /// GET /api/v1/parts/{number}/history/{revision}: the part as of a change.
+    pub fn history_part(&self, number: &str, revision: u64) -> ehttp::Request {
+        ehttp::Request::get(self.url(&format!("{}/history/{revision}", api::part_path(number))))
+    }
+
+    /// POST /api/v1/parts/{number}/attachments: stores a file with the part.
+    pub fn attach(&self, number: &str, name: &str, kind: Option<AttachmentKind>, data: Vec<u8>) -> ehttp::Request {
+        let mut path = format!("{}/attachments?name={}", api::part_path(number), api::encode_component(name));
+        if let Some(k) = kind {
+            path.push_str(&format!("&kind={k:?}"));
+        }
+        self.authorized(with_content_type(ehttp::Request::post(self.url(&path), data), "application/octet-stream"))
+    }
+
+    /// DELETE /api/v1/parts/{number}/attachments/{id}
+    pub fn detach(&self, number: &str, id: &str) -> ehttp::Request {
+        let path = format!("{}/attachments/{}", api::part_path(number), api::encode_component(id));
+        self.authorized(ehttp::Request::delete(&self.url(&path)))
+    }
+
+    /// Address of an attachment's file (for downloads or the browser).
+    pub fn file_url(&self, id: &str) -> String {
+        self.url(&api::file_path(id))
+    }
+
+    /// GET /api/v1/files/{id}
+    pub fn file(&self, id: &str) -> ehttp::Request {
+        ehttp::Request::get(self.file_url(id))
+    }
+
+    /// GET /api/v1/catalogs
+    pub fn catalogs(&self) -> ehttp::Request {
+        ehttp::Request::get(self.url(&format!("{API_PREFIX}/catalogs")))
+    }
+
+    /// PUT /api/v1/catalogs/{id}
+    pub fn save_catalog(&self, catalog: &Catalog) -> ehttp::Request {
+        self.json(ehttp::Method::PUT, &api::catalog_path(&catalog.id), catalog)
+    }
+
+    /// DELETE /api/v1/catalogs/{id}
+    pub fn delete_catalog(&self, id: &str) -> ehttp::Request {
+        self.authorized(ehttp::Request::delete(&self.url(&api::catalog_path(id))))
+    }
+
+    /// POST /api/v1/login (no token needed) → [`api::Session`]
+    pub fn login(&self, name: &str, password: &str) -> ehttp::Request {
+        let body = api::Login { name: name.trim().into(), password: password.into() };
+        Endpoint { token: String::new(), ..self.clone() }.json(ehttp::Method::POST, &format!("{API_PREFIX}/login"), &body)
+    }
+
+    /// POST /api/v1/logout: ends the session of the token.
+    pub fn logout(&self) -> ehttp::Request {
+        self.authorized(ehttp::Request::post(self.url(&format!("{API_PREFIX}/logout")), Vec::new()))
+    }
+
+    /// GET /api/v1/favorites
+    pub fn favorites(&self) -> ehttp::Request {
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/favorites"))))
+    }
+
+    /// PUT /api/v1/favorites
+    pub fn set_favorites(&self, numbers: &[String]) -> ehttp::Request {
+        self.json(ehttp::Method::PUT, &format!("{API_PREFIX}/favorites"), numbers)
+    }
+
+    /// GET /api/v1/users (administrator)
+    pub fn users(&self) -> ehttp::Request {
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/users"))))
+    }
+
+    /// PUT /api/v1/users/{name} (administrator)
+    pub fn save_user(&self, name: &str, update: &api::UserUpdate) -> ehttp::Request {
+        self.json(ehttp::Method::PUT, &api::user_path(name), update)
+    }
+
+    /// DELETE /api/v1/users/{name} (administrator)
+    pub fn delete_user(&self, name: &str) -> ehttp::Request {
+        self.authorized(ehttp::Request::delete(&self.url(&api::user_path(name))))
     }
 
     /// GET /api/v1/parts?…

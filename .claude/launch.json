@@ -22,6 +22,12 @@
     {
       "name": "parts-server",
       "runtimeExecutable": "cargo",
+      "runtimeArgs": ["run", "-p", "openecraft-parts-server", "--", "--token", "local-test-token", "--data", "target/parts-db-dev.sqlite"],
+      "port": 8090
+    },
+    {
+      "name": "parts-server-json",
+      "runtimeExecutable": "cargo",
       "runtimeArgs": ["run", "-p", "openecraft-parts-server", "--", "--token", "local-test-token", "--data", "target/parts-db-dev.json"],
       "port": 8090
     }

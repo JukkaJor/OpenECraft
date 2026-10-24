@@ -3,7 +3,8 @@
 use crate::parts_server::{Server, Transport};
 use crate::session::Session;
 use openecraft_client::{ehttp, Endpoint};
-use openecraft_parts::api::{ApiError, ImportResult, PartQuery, ServerInfo, API_PREFIX};
+use openecraft_parts::api::{ApiError, ImportResult, Login, PartQuery, ServerInfo, Session as ApiSession, UserUpdate, API_PREFIX};
+use openecraft_parts::portal::{Attachment, AttachmentKind, Catalog, ChangeKind, HistoryEntry, Role, User};
 use openecraft_parts::{import, to_csv, Part};
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -12,11 +13,19 @@ use std::rc::Rc;
 pub const URL: &str = "http://parts.test";
 pub const TOKEN: &str = "secret";
 
-/// Parts server with the routes of `openecraft-parts-server`, holding its parts in memory.
+/// Parts server with the routes of `openecraft-parts-server`, holding its data in
+/// memory. The user `ann` (password `pw`) signs in with the token [`TOKEN`].
 #[derive(Clone, Default)]
 pub struct FakeServer {
     pub parts: Rc<RefCell<Vec<Part>>>,
+    pub catalogs: Rc<RefCell<Vec<Catalog>>>,
+    pub users: Rc<RefCell<Vec<User>>>,
+    pub favorites: Rc<RefCell<Vec<String>>>,
+    pub files: Rc<RefCell<Vec<FakeFile>>>,
 }
+
+/// Attachment file: id, name and content.
+pub type FakeFile = (String, String, Vec<u8>);
 
 fn response(status: u16, bytes: Vec<u8>) -> ehttp::Response {
     ehttp::Response {
@@ -59,9 +68,64 @@ impl Transport for FakeServer {
         let (path, query) = rest.split_once('?').unwrap_or((rest, ""));
         let path = path.strip_prefix(API_PREFIX).ok_or("no API path")?;
         let authorized = req.headers.get("Authorization") == Some(format!("Bearer {TOKEN}").as_str());
-        let write = !matches!(req.method, ehttp::Method::GET);
+        let write = !matches!(req.method, ehttp::Method::GET) && path != "/login" && path != "/search";
         if write && !authorized {
             return Ok(error(401, "invalid token"));
+        }
+        if path == "/login" {
+            let login: Login = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+            return Ok(if login.name == "ann" && login.password == "pw" {
+                json(&ApiSession { token: TOKEN.into(), user: User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() } })
+            } else {
+                error(401, "wrong user name or password")
+            });
+        }
+        if let Some(rest) = path.strip_prefix("/parts/").filter(|r| r.contains('/')) {
+            return Ok(self.part_route(rest, query, req));
+        }
+        let segments: Vec<String> = path.split('/').skip(1).map(decode).collect();
+        match (segments.iter().map(String::as_str).collect::<Vec<_>>().as_slice(), &req.method) {
+            (["search"], _) => {
+                let q: PartQuery = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                return Ok(json(&q.search(&self.parts.borrow(), 1)));
+            }
+            (["catalogs"], _) => return Ok(json(&*self.catalogs.borrow())),
+            (["catalogs", id], ehttp::Method::PUT) => {
+                let c: Catalog = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                self.catalogs.borrow_mut().retain(|x| x.id != *id);
+                self.catalogs.borrow_mut().push(c.clone());
+                return Ok(json(&c));
+            }
+            (["catalogs", id], ehttp::Method::DELETE) => {
+                self.catalogs.borrow_mut().retain(|x| x.id != *id);
+                return Ok(response(204, Vec::new()));
+            }
+            (["favorites"], ehttp::Method::GET) if !authorized => return Ok(error(401, "invalid token")),
+            (["favorites"], ehttp::Method::GET) => return Ok(json(&*self.favorites.borrow())),
+            (["favorites"], _) => {
+                *self.favorites.borrow_mut() = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                return Ok(json(&*self.favorites.borrow()));
+            }
+            (["users"], _) => return Ok(json(&*self.users.borrow())),
+            (["users", name], ehttp::Method::PUT) => {
+                let u: UserUpdate = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                let user = User { name: name.to_string(), role: u.role, manufacturer: u.manufacturer };
+                self.users.borrow_mut().retain(|x| x.name != *name);
+                self.users.borrow_mut().push(user.clone());
+                return Ok(json(&user));
+            }
+            (["users", name], ehttp::Method::DELETE) => {
+                self.users.borrow_mut().retain(|x| x.name != *name);
+                return Ok(response(204, Vec::new()));
+            }
+            (["files", id], _) => {
+                let files = self.files.borrow();
+                return Ok(match files.iter().find(|f| f.0 == *id) {
+                    Some(f) => response(200, f.2.clone()),
+                    None => error(404, "file not found"),
+                });
+            }
+            _ => {}
         }
         let mut parts = self.parts.borrow_mut();
         Ok(match (path, &req.method) {
@@ -116,6 +180,34 @@ impl Transport for FakeServer {
                 }
             }
         })
+    }
+}
+
+impl FakeServer {
+    /// `/parts/{number}/history[/{revision}]` and `/parts/{number}/attachments[/{id}]`.
+    fn part_route(&self, rest: &str, query: &str, req: &ehttp::Request) -> ehttp::Response {
+        let segments: Vec<String> = rest.split('/').map(decode).collect();
+        let mut parts = self.parts.borrow_mut();
+        let Some(part) = parts.iter_mut().find(|p| p.number == segments[0]) else { return error(404, "part not found") };
+        match (segments[1].as_str(), segments.get(2)) {
+            ("history", None) => json(&vec![HistoryEntry { revision: 1, time: 0, user: "ann".into(), change: ChangeKind::Created }]),
+            ("history", Some(rev)) if rev == "1" => json(&*part),
+            ("history", Some(_)) => error(404, "no such version"),
+            ("attachments", None) => {
+                let param = |key: &str| query.split('&').filter_map(|kv| kv.split_once('=')).find(|(k, _)| *k == key).map(|(_, v)| decode(v));
+                let name = param("name").unwrap_or_default();
+                let kind = param("kind").and_then(|k| AttachmentKind::ALL.into_iter().find(|x| format!("{x:?}") == k)).unwrap_or_else(|| AttachmentKind::guess(&name));
+                let id = format!("f{}", self.files.borrow().len() + 1);
+                part.attachments.push(Attachment { id: id.clone(), name: name.clone(), kind, size: req.body.len() as u64 });
+                self.files.borrow_mut().push((id, name, req.body.clone()));
+                json(&*part)
+            }
+            ("attachments", Some(id)) => {
+                part.attachments.retain(|a| a.id != *id);
+                json(&*part)
+            }
+            _ => error(404, "unknown path"),
+        }
     }
 }
 

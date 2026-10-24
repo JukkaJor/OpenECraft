@@ -1,6 +1,9 @@
-//! Local copy of the server's parts and the part being edited. No UI code, so the
-//! editing rules (new parts, renames, unsaved changes) are unit testable.
+//! Local copy of the server's parts, catalogs and users and what is being edited.
+//! No UI code, so the editing rules (new parts, renames, unsaved changes, catalogs,
+//! users) are unit testable.
 
+use openecraft_parts::api::UserUpdate;
+use openecraft_parts::portal::{catalog_id, Catalog, HistoryEntry, Role, User};
 use openecraft_parts::{natural_cmp, unique_number, Part, PartsDb};
 use openecraft_ui::client::Reply;
 
@@ -21,6 +24,21 @@ pub enum FollowUp {
     Delete(String),
 }
 
+/// A catalog being edited; `original` is its id on the server (`None`: new).
+#[derive(Clone, Debug, PartialEq)]
+pub struct CatalogDraft {
+    pub original: Option<String>,
+    pub catalog: Catalog,
+}
+
+/// A user being edited. An empty password keeps the current one.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct UserDraft {
+    pub new: bool,
+    pub name: String,
+    pub update: UserUpdate,
+}
+
 #[derive(Default)]
 pub struct Session {
     /// Parts on the server (as of the last download).
@@ -28,6 +46,12 @@ pub struct Session {
     pub revision: u64,
     pub loaded: bool,
     pub draft: Option<Draft>,
+    pub catalogs: Vec<Catalog>,
+    pub catalog: Option<CatalogDraft>,
+    pub users: Vec<User>,
+    pub user: Option<UserDraft>,
+    /// Changes of the open part (loaded on request).
+    pub history: Option<(String, Vec<HistoryEntry>)>,
 }
 
 impl Session {
@@ -104,6 +128,58 @@ impl Session {
         PartsDb { parts: self.parts.clone() }
     }
 
+    /// Opens a server catalog, or starts a new one (`None`) for `manufacturer`.
+    pub fn select_catalog(&mut self, id: Option<&str>, manufacturer: &str) {
+        self.catalog = match id {
+            Some(id) => self.catalogs.iter().find(|c| c.id == id).map(|c| CatalogDraft { original: Some(c.id.clone()), catalog: c.clone() }),
+            None => Some(CatalogDraft { original: None, catalog: Catalog { manufacturer: manufacturer.into(), ..Default::default() } }),
+        };
+    }
+
+    /// The catalog to save, with an id derived from the name for new catalogs; or
+    /// why it cannot be saved.
+    pub fn catalog_to_save(&self) -> Result<Catalog, &'static str> {
+        let d = self.catalog.as_ref().ok_or("No catalog open")?;
+        let mut c = d.catalog.clone();
+        if c.id.trim().is_empty() {
+            c.id = catalog_id(&c.name);
+        }
+        if c.id.is_empty() {
+            return Err("The catalog needs a name");
+        }
+        if d.original.as_deref() != Some(c.id.as_str()) && self.catalogs.iter().any(|x| x.id.eq_ignore_ascii_case(&c.id)) {
+            return Err("A catalog with this id exists already");
+        }
+        Ok(c)
+    }
+
+    pub fn select_user(&mut self, name: Option<&str>) {
+        self.user = match name {
+            Some(n) => self.users.iter().find(|u| u.name == n).map(|u| UserDraft {
+                new: false,
+                name: u.name.clone(),
+                update: UserUpdate { role: u.role, manufacturer: u.manufacturer.clone(), password: String::new() },
+            }),
+            None => Some(UserDraft { new: true, ..Default::default() }),
+        };
+    }
+
+    /// Why the user cannot be saved, if it cannot.
+    pub fn user_problem(&self) -> Option<&'static str> {
+        let d = self.user.as_ref()?;
+        if d.name.trim().is_empty() || d.name.chars().any(char::is_whitespace) {
+            Some("The user name must not be empty or contain blanks")
+        } else if d.new && self.users.iter().any(|u| u.name.eq_ignore_ascii_case(d.name.trim())) {
+            Some("A user with this name exists already")
+        } else if d.new && d.update.password.is_empty() {
+            Some("A new user needs a password")
+        } else if d.update.role == Role::Manufacturer && d.update.manufacturer.trim().is_empty() {
+            Some("A manufacturer user needs a manufacturer")
+        } else {
+            None
+        }
+    }
+
     /// Updates the local copy with a server reply.
     pub fn apply(&mut self, reply: &Reply) -> Option<FollowUp> {
         match reply {
@@ -148,6 +224,52 @@ impl Session {
                 None
             }
             Reply::Imported(Ok(_)) => Some(FollowUp::Reload),
+            Reply::History(number, Ok(h)) => {
+                self.history = Some((number.clone(), h.clone()));
+                None
+            }
+            Reply::Catalogs(Ok(list)) => {
+                self.catalogs = list.clone();
+                if let Some(original) = self.catalog.as_ref().and_then(|d| d.original.clone()) {
+                    let changed = self.catalog.as_ref().is_some_and(|d| self.catalogs.iter().find(|c| c.id == original) != Some(&d.catalog));
+                    if !changed {
+                        self.select_catalog(Some(&original), "");
+                    }
+                }
+                None
+            }
+            Reply::CatalogSaved(Ok(c)) => {
+                self.catalogs.retain(|x| !x.id.eq_ignore_ascii_case(&c.id));
+                self.catalogs.push(c.clone());
+                self.catalogs.sort_by_key(|c| c.name.to_lowercase());
+                self.catalog = Some(CatalogDraft { original: Some(c.id.clone()), catalog: c.clone() });
+                None
+            }
+            Reply::CatalogDeleted(id, Ok(())) => {
+                self.catalogs.retain(|c| &c.id != id);
+                if self.catalog.as_ref().is_some_and(|d| d.original.as_ref() == Some(id)) {
+                    self.catalog = None;
+                }
+                None
+            }
+            Reply::Users(Ok(list)) => {
+                self.users = list.clone();
+                None
+            }
+            Reply::UserSaved(Ok(u)) => {
+                self.users.retain(|x| x.name != u.name);
+                self.users.push(u.clone());
+                self.users.sort_by_key(|u| u.name.to_lowercase());
+                self.select_user(Some(&u.name));
+                None
+            }
+            Reply::UserDeleted(name, Ok(())) => {
+                self.users.retain(|u| &u.name != name);
+                if self.user.as_ref().is_some_and(|d| &d.name == name) {
+                    self.user = None;
+                }
+                None
+            }
             _ => None,
         }
     }

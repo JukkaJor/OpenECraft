@@ -6,8 +6,9 @@ use crate::model::Project;
 use crate::parts::{self, Part, PartFilter, PartsDb};
 use crate::io::{Loaded, Purpose};
 use egui::{vec2, Color32, RichText};
-use openecraft_ui::client::{Reply, ServerClient};
+use openecraft_ui::client::{FileUse, Reply, ServerClient};
 use openecraft_ui::part_editor::{self as pe, EditorState, ModelKind, PartTab};
+use openecraft_ui::portal::{self, Browser, BrowserEvent};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Source {
@@ -21,6 +22,10 @@ pub enum PartsAction {
     /// Pick a 2D / 3D model file for the selected part.
     ImportModel(ModelKind),
     Export { name: String, filter: (&'static str, &'static str), content: String },
+    /// A file downloaded from the data portal.
+    SaveFile { name: String, data: Vec<u8> },
+    /// A macro library (JSON) downloaded from the data portal.
+    ImportMacros(String),
     Message(String),
 }
 
@@ -41,6 +46,9 @@ pub struct PartsUi {
     /// Connection to the global parts server.
     pub server: ServerClient,
     show_server: bool,
+    /// Data portal window (search on the parts server).
+    pub show_portal: bool,
+    portal: Browser,
     /// Part (source, number) that receives the next imported model.
     model_target: Option<(Source, String)>,
 }
@@ -59,6 +67,8 @@ impl Default for PartsUi {
             sel_part: None,
             server: ServerClient::default(),
             show_server: false,
+            show_portal: false,
+            portal: Browser::new(),
             model_target: None,
         }
     }
@@ -78,18 +88,61 @@ impl PartsUi {
     }
 
     /// Applies finished parts server requests (call every frame). Downloaded parts
-    /// are merged into the database.
-    pub fn poll_server(&mut self, db: &mut PartsDb) -> Option<String> {
-        let mut message = None;
+    /// are merged into the database; downloaded files are handed to the application.
+    pub fn poll_server(&mut self, ctx: &egui::Context, db: &mut PartsDb) -> Vec<PartsAction> {
+        let mut actions = Vec::new();
         for reply in self.server.poll() {
-            if let Reply::Parts(Ok(list)) = reply {
-                let n = list.parts.len();
-                let (added, updated) = db.merge(list.parts);
-                self.server.status = tr_fmt!("Downloaded {} parts (revision {}): {} new, {} updated", n, list.revision, added, updated);
+            self.portal.apply(&reply, &db.parts);
+            match reply {
+                Reply::Parts(Ok(list)) => {
+                    let n = list.parts.len();
+                    let (added, updated) = db.merge(list.parts);
+                    self.server.status = tr_fmt!("Downloaded {} parts (revision {}): {} new, {} updated", n, list.revision, added, updated);
+                }
+                Reply::File(name, FileUse::Save, Ok(data)) => actions.push(PartsAction::SaveFile { name, data }),
+                Reply::File(name, FileUse::Macros, Ok(data)) => match String::from_utf8(data) {
+                    Ok(text) => actions.push(PartsAction::ImportMacros(text)),
+                    Err(_) => self.server.status = tr_fmt!("Not a macro file: {}", name),
+                },
+                Reply::SignedIn(Ok(_)) => self.server.favorites(ctx),
+                _ => {}
             }
-            message = Some(self.server.status.clone());
+            // Searches and other background requests of the browser are not reported.
+            if !self.show_portal || self.server.failed() {
+                actions.push(PartsAction::Message(self.server.status.clone()));
+            }
         }
-        message
+        actions
+    }
+
+    /// The data portal window: faceted search on the parts server, adding parts to
+    /// the database and the update check of the database.
+    pub fn portal(&mut self, ctx: &egui::Context, db: &mut PartsDb) -> Vec<PartsAction> {
+        let mut actions = Vec::new();
+        if !self.show_portal {
+            return actions;
+        }
+        let mut open = true;
+        egui::Window::new(tr("Data portal")).open(&mut open).default_size([1100.0, 640.0]).show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(tr("Server URL"));
+                ui.add(egui::TextEdit::singleline(&mut self.server.url).desired_width(280.0));
+                if ui.add_enabled(!self.server.busy(), egui::Button::new(tr("Test connection"))).clicked() {
+                    self.server.check(ctx);
+                    self.portal.refresh();
+                }
+            });
+            ui.separator();
+            if let Some(BrowserEvent::ApplyUpdates) = portal::browser(ui, &mut self.portal, &mut self.server, &db.parts) {
+                if let Some(updates) = &self.portal.updates {
+                    let n = parts::portal::apply_updates(&mut db.parts, &self.portal.remote, updates);
+                    actions.push(PartsAction::Message(tr_fmt!("{} parts of the database updated – synchronize the project parts in parts management", n)));
+                }
+                self.portal.updates_applied();
+            }
+        });
+        self.show_portal = open;
+        actions
     }
 
     /// Server URL, token and transfer buttons.
@@ -243,6 +296,8 @@ impl PartsUi {
                 ui.separator();
                 ui.toggle_value(&mut self.show_server, tr("🌐 Parts server"))
                     .on_hover_text(tr("Exchange parts with a global parts database (openecraft-parts-server)"));
+                ui.toggle_value(&mut self.show_portal, tr("🔎 Data portal"))
+                    .on_hover_text(tr("Search the parts server by catalog, product group and technical data, add parts and check the database for updates"));
             });
             ui.separator();
             if self.show_server {

@@ -9,6 +9,8 @@ use openecraft_parts::{
     default_connection_points, distinct_values, parse_mesh, parse_svg, natural_cmp, ConnectionPoint, Exit, FnKind, FunctionTemplate, Grouping,
     Mesh3d, Model2d, Part, PartFilter, Prim2d, TopGroup, PRODUCT_GROUPS,
 };
+use openecraft_parts::portal::{Attachment, Lifecycle};
+use openecraft_parts::{date_from_unix, productgroups};
 use std::collections::BTreeMap;
 
 /// Graphics file of a part.
@@ -51,6 +53,7 @@ pub enum PartTab {
     Connections,
     Accessories,
     Graphics,
+    Portal,
 }
 
 /// Editor settings kept between frames.
@@ -207,6 +210,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             (PartTab::Connections, tr("Connection points")),
             (PartTab::Accessories, tr("Accessories")),
             (PartTab::Graphics, tr("Graphics")),
+            (PartTab::Portal, tr("Data portal")),
         ] {
             ui.selectable_value(&mut state.tab, t, name);
         }
@@ -231,37 +235,24 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 ui.add(egui::TextEdit::multiline(&mut part.description).desired_rows(2).desired_width(f32::INFINITY));
                 ui.end_row();
                 ui.label(tr("Product top group"));
-                egui::ComboBox::from_id_salt("top").selected_text(part.top_group.title()).show_ui(ui, |ui| {
+                egui::ComboBox::from_id_salt("top").selected_text(tr(part.top_group.title())).show_ui(ui, |ui| {
                     for t in TopGroup::ALL {
-                        ui.selectable_value(&mut part.top_group, t, t.title());
+                        ui.selectable_value(&mut part.top_group, t, tr(t.title()));
                     }
                 });
                 ui.end_row();
                 ui.label(tr("Product group"));
                 ui.horizontal(|ui| {
                     ui.add(egui::TextEdit::singleline(&mut part.group).desired_width(200.0));
-                    egui::ComboBox::from_id_salt("grp").selected_text("…").width(24.0).show_ui(ui, |ui| {
-                        for (g, _) in PRODUCT_GROUPS {
-                            if ui.selectable_label(part.group == *g, *g).clicked() {
-                                part.group = g.to_string();
-                            }
-                        }
-                    });
+                    let own: Vec<&'static str> = PRODUCT_GROUPS.iter().map(|(g, _)| *g).collect();
+                    group_choice(ui, "grp", &mut part.group, &own, productgroups::GROUPS);
                 });
                 ui.end_row();
                 ui.label(tr("Product subgroup"));
                 ui.horizontal(|ui| {
                     ui.add(egui::TextEdit::singleline(&mut part.subgroup).desired_width(200.0));
-                    let subs = PRODUCT_GROUPS.iter().find(|(g, _)| *g == part.group).map(|(_, s)| *s).unwrap_or(&[]);
-                    if !subs.is_empty() {
-                        egui::ComboBox::from_id_salt("sub").selected_text("…").width(24.0).show_ui(ui, |ui| {
-                            for s in subs {
-                                if ui.selectable_label(part.subgroup == *s, *s).clicked() {
-                                    part.subgroup = s.to_string();
-                                }
-                            }
-                        });
-                    }
+                    let own = PRODUCT_GROUPS.iter().find(|(g, _)| *g == part.group).map(|(_, s)| *s).unwrap_or(&[]);
+                    group_choice(ui, "sub", &mut part.subgroup, own, productgroups::SUBGROUPS);
                 });
                 ui.end_row();
                 ui.label(tr("Identifier"));
@@ -375,8 +366,97 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
         }
         PartTab::Connections => connections_tab(ui, part, &mut state.point),
         PartTab::Graphics => request = graphics_tab(ui, part, &mut state.model_scale),
+        PartTab::Portal => portal_tab(ui, part, all_numbers),
     });
     request
+}
+
+/// Menu next to a group field: OpenECraft's suggestions, then the EPLAN product
+/// groups with their numbers. Names are stored in English and shown translated.
+fn group_choice(ui: &mut egui::Ui, id: &str, value: &mut String, own: &[&'static str], eplan: &[(u16, &'static str)]) {
+    egui::ComboBox::from_id_salt(id).selected_text("…").width(24.0).height(420.0).show_ui(ui, |ui| {
+        for &g in own {
+            if ui.selectable_label(value == g, tr(g)).clicked() {
+                *value = g.to_string();
+            }
+        }
+        ui.menu_button(tr("EPLAN product groups"), |ui| {
+            egui::ScrollArea::vertical().max_height(400.0).show(ui, |ui| {
+                for &(n, g) in eplan.iter().filter(|(n, _)| *n != 0) {
+                    if ui.selectable_label(value == g, format!("{n:>3}  {}", tr(g))).clicked() {
+                        *value = g.to_string();
+                        ui.close();
+                    }
+                }
+            });
+        });
+    });
+}
+
+/// Data portal: catalog, lifecycle and successor; server bookkeeping and files are
+/// shown read only (files are managed with the parts manager).
+fn portal_tab(ui: &mut egui::Ui, part: &mut Part, all_numbers: &[String]) {
+    egui::Grid::new("pp").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+        text_row(ui, tr("Catalog"), &mut part.catalog);
+        ui.label(tr("Lifecycle"));
+        egui::ComboBox::from_id_salt("life").selected_text(tr(part.lifecycle.title())).show_ui(ui, |ui| {
+            for l in Lifecycle::ALL {
+                ui.selectable_value(&mut part.lifecycle, l, tr(l.title()));
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Successor"));
+        ui.horizontal(|ui| {
+            ui.add(egui::TextEdit::singleline(&mut part.successor).desired_width(200.0).font(egui::TextStyle::Monospace));
+            egui::ComboBox::from_id_salt("succ").selected_text("…").width(24.0).height(320.0).show_ui(ui, |ui| {
+                for n in all_numbers.iter().filter(|n| **n != part.number) {
+                    if ui.selectable_label(part.successor == *n, n).clicked() {
+                        part.successor = n.clone();
+                    }
+                }
+            });
+        });
+        ui.end_row();
+        let c = productgroups::classify(part);
+        ui.label(tr("EPLAN numbers"));
+        ui.label(tr_fmt!("Top group {}, product group {}, subgroup {}", c.top_group, c.group, c.subgroup))
+            .on_hover_text(tr("Internal values of the EPLAN part exchange (0: undefined)"));
+        ui.end_row();
+        if part.revision > 0 {
+            ui.label(tr("Server revision"));
+            ui.label(tr_fmt!("{} (changed {})", part.revision, date_from_unix(part.modified)));
+            ui.end_row();
+        }
+    });
+    if !part.successor.is_empty() && !all_numbers.contains(&part.successor) {
+        ui.colored_label(Color32::from_rgb(220, 140, 40), tr("The successor is not in this parts list"));
+    }
+    if !part.attachments.is_empty() {
+        ui.add_space(8.0);
+        ui.label(RichText::new(tr("Files")).strong());
+        attachment_list(ui, &part.attachments);
+    }
+}
+
+/// Files of a part: kind, name and size.
+pub fn attachment_list(ui: &mut egui::Ui, attachments: &[Attachment]) {
+    egui::Grid::new(ui.next_auto_id()).num_columns(3).striped(true).show(ui, |ui| {
+        for a in attachments {
+            ui.label(tr(a.kind.title()));
+            ui.label(&a.name);
+            ui.label(RichText::new(size_text(a.size)).weak());
+            ui.end_row();
+        }
+    });
+}
+
+/// File size as "12 kB" / "3.4 MB".
+pub fn size_text(bytes: u64) -> String {
+    if bytes >= 1_000_000 {
+        format!("{:.1} MB", bytes as f64 / 1_000_000.0)
+    } else {
+        format!("{} kB", bytes.div_ceil(1000).max(1))
+    }
 }
 
 fn exit_title(exit: Exit) -> &'static str {
@@ -742,6 +822,8 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
             (tr("Dimensions"), tr_fmt!("{} × {} × {} mm", p.width, p.height, p.depth)),
             (tr("Functions"), p.template_summary()),
             (tr("Accessories"), p.accessories.join(", ")),
+            (tr("Lifecycle"), if p.lifecycle.is_active() { String::new() } else { tr(p.lifecycle.title()).to_string() }),
+            (tr("Successor"), p.successor.clone()),
         ] {
             if !v.trim().is_empty() && v.trim() != "/" {
                 ui.label(RichText::new(k).weak());

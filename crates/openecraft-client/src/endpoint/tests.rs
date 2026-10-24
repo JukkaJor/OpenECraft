@@ -24,8 +24,45 @@ fn requests_of_the_api() {
     assert_eq!(e.list(&q).url, "http://host:8090/api/v1/parts?group=Fuses&limit=5");
     assert_eq!(e.part("A B").url, "http://host:8090/api/v1/parts/A%20B");
     assert_eq!(e.export().url, "http://host:8090/api/v1/export.csv");
-    // Reading needs no token.
-    assert_eq!(e.info().headers.get("Authorization"), None);
+    // Reading needs no token; the info names the user of the token.
+    assert_eq!(e.list(&q).headers.get("Authorization"), None);
+    assert_eq!(e.info().headers.get("Authorization"), Some("Bearer secret"));
+    assert_eq!(e.history("A/1").url, "http://host:8090/api/v1/parts/A%2F1/history");
+    assert_eq!(e.history_part("A", 7).url, "http://host:8090/api/v1/parts/A/history/7");
+    assert_eq!(e.file_url("ab12"), "http://host:8090/api/v1/files/ab12");
+    assert_eq!(e.catalogs().url, "http://host:8090/api/v1/catalogs");
+}
+
+#[test]
+fn portal_requests() {
+    let e = endpoint();
+    let q = PartQuery { attributes: vec![("Poles".into(), "3".into())], ..Default::default() };
+    let search = e.search(&q);
+    assert_eq!((search.method, search.url.as_str()), (ehttp::Method::POST, "http://host:8090/api/v1/search"));
+    assert_eq!(serde_json::from_slice::<PartQuery>(&search.body).unwrap(), q);
+
+    let attach = e.attach("A 1", "data sheet.pdf", Some(AttachmentKind::Datasheet), vec![1, 2]);
+    assert_eq!(attach.url, "http://host:8090/api/v1/parts/A%201/attachments?name=data%20sheet.pdf&kind=Datasheet");
+    assert_eq!(attach.headers.get_all("Content-Type").collect::<Vec<_>>(), ["application/octet-stream"]);
+    assert_eq!(attach.headers.get("Authorization"), Some("Bearer secret"));
+    assert_eq!(e.detach("A", "f1").method, ehttp::Method::DELETE);
+
+    let c = Catalog { id: "acme 1".into(), ..Default::default() };
+    let save = e.save_catalog(&c);
+    assert_eq!((save.method, save.url.as_str()), (ehttp::Method::PUT, "http://host:8090/api/v1/catalogs/acme%201"));
+    assert_eq!(e.delete_catalog("x").headers.get("Authorization"), Some("Bearer secret"));
+
+    // Signing in never sends an old token.
+    let login = e.login(" ann ", "pw");
+    assert_eq!(login.headers.get("Authorization"), None);
+    assert_eq!(serde_json::from_slice::<api::Login>(&login.body).unwrap(), api::Login { name: "ann".into(), password: "pw".into() });
+    assert_eq!(e.logout().headers.get("Authorization"), Some("Bearer secret"));
+    let fav = e.set_favorites(&["A".into()]);
+    assert_eq!((fav.method, fav.body.as_slice()), (ehttp::Method::PUT, br#"["A"]"#.as_slice()));
+    assert_eq!(e.users().headers.get("Authorization"), Some("Bearer secret"));
+    let user = e.save_user("bob", &api::UserUpdate::default());
+    assert_eq!(user.url, "http://host:8090/api/v1/users/bob");
+    assert_eq!(e.delete_user("bob").method, ehttp::Method::DELETE);
 }
 
 #[test]

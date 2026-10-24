@@ -341,6 +341,28 @@ impl App {
         self.export_bytes(ctx, name, filter, content.as_bytes());
     }
 
+    fn parts_actions(&mut self, ctx: &egui::Context, actions: Vec<PartsAction>) {
+        for action in actions {
+            match action {
+                PartsAction::Import => self.io.open(ctx, Purpose::Parts),
+                PartsAction::ImportModel(kind) => self.io.open(ctx, Purpose::Model(kind)),
+                PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
+                PartsAction::SaveFile { name, data } => {
+                    let ext = name.rsplit('.').next().filter(|e| *e != name).unwrap_or("bin").to_string();
+                    self.export_bytes(ctx, name.clone(), (tr("File"), &ext), &data);
+                }
+                PartsAction::ImportMacros(text) => match crate::macros::MacroLibrary::from_json(&text) {
+                    Ok(lib) => {
+                        let n = self.macro_lib.merge(lib);
+                        self.notify(ctx, tr_fmt!("Imported {} macros", n));
+                    }
+                    Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+                },
+                PartsAction::Message(m) => self.notify(ctx, m),
+            }
+        }
+    }
+
     fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
         match self.io.save_bytes_as(&name, filter, content) {
             Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
@@ -829,6 +851,9 @@ impl App {
                 }
                 if ui.button(tr("Parts management…")).clicked() {
                     self.parts_ui.open = true;
+                }
+                if ui.button(tr("Data portal…")).on_hover_text(tr("Search the parts server by catalog, product group and technical data, add parts and check the database for updates")).clicked() {
+                    self.parts_ui.show_portal = true;
                 }
                 if ui.button(tr("Structure management…")).on_hover_text(tr("Structure identifiers (IEC 81346), templates and work areas")).clicked() {
                     self.structure_ui.open = true;
@@ -1930,14 +1955,9 @@ impl App {
         }
 
         // Parts management and part selection
-        for action in self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.prj) {
-            match action {
-                PartsAction::Import => self.io.open(ctx, Purpose::Parts),
-                PartsAction::ImportModel(kind) => self.io.open(ctx, Purpose::Model(kind)),
-                PartsAction::Export { name, filter, content } => self.export(ctx, name, filter, content),
-                PartsAction::Message(m) => self.notify(ctx, m),
-            }
-        }
+        let mut actions = self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.prj);
+        actions.extend(self.parts_ui.portal(ctx, &mut self.parts_db));
+        self.parts_actions(ctx, actions);
         self.parts_ui.selector(ctx, &self.parts_db, &mut self.prj);
 
         self.cables_window(ctx);
@@ -2215,9 +2235,8 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
         self.poll_remote(&ctx);
-        if let Some(msg) = self.parts_ui.poll_server(&mut self.parts_db) {
-            self.notify(&ctx, msg);
-        }
+        let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
+        self.parts_actions(&ctx, actions);
         self.shortcuts(&ctx);
         self.page = self.page.min(self.prj.pages.len().saturating_sub(1));
 

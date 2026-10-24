@@ -3533,3 +3533,459 @@ Places the line-up of an enclosure in the room (3D view of all enclosures); with
 Rear left corner of the line-up in mm, to the right	Hintere linke Ecke der Anreihung in mm, nach rechts	Coin arrière gauche de la juxtaposition en mm, vers la droite	Esquina trasera izquierda de la alineación en mm, hacia la derecha
 Rear left corner of the line-up in mm, towards the front	Hintere linke Ecke der Anreihung in mm, nach vorn	Coin arrière gauche de la juxtaposition en mm, vers l'avant	Esquina trasera izquierda de la alineación en mm, hacia delante
 Turn about the vertical in degrees, counter-clockwise seen from above (90: the fronts face to the right)	Drehung um die Senkrechte in Grad, von oben gesehen gegen den Uhrzeigersinn (90: die Fronten zeigen nach rechts)	Rotation autour de la verticale en degrés, dans le sens antihoraire vu d'en haut (90 : les façades sont tournées vers la droite)	Giro alrededor de la vertical en grados, en sentido antihorario visto desde arriba (90: los frentes miran a la derecha)
+# EPLAN product groups (openecraft-parts productgroups.rs)
+Undefined	Undefiniert	Non défini	Indefinido
+Electrical engineering	Elektrotechnik	Electrotechnique	Electrotecnia
+Mechanics	Mechanik	Mécanique	Mecánica
+Converters	Umformer	Convertisseurs	Convertidores
+Protection devices	Schutzeinrichtungen	Dispositifs de protection	Dispositivos de protección
+Semiconductors	Röhren, Halbleiter	Semi-conducteurs	Semiconductores
+Measuring instruments, test devices	Messgeräte, Prüfeinrichtungen	Instruments de mesure, dispositifs de contrôle	Instrumentos de medición, equipos de comprobación
+Resistors	Widerstände	Résistances	Resistencias
+Sensor, switch, and pushbutton	Sensorik, Schalter und Taster	Technologie des capteurs, interrupteur, bouton-poussoir	Sensores, conmutadores y pulsadores
+Transformers	Transformatoren	Transformateurs	Transformadores
+Modulators	Modulatoren	Modulateurs	Moduladores
+Electrically-operated mechanical devices	Elektrisch betätigte mechanische Einrichtungen	Dispositifs mécaniques à actionnement électrique	Dispositivos mecánicos accionados eléctricamente
+Electrical engineering - special items	Elektrotechnik Sonderbauteile	Eléments spéciaux électroniques	Componentes especiales de electrotecnia
+Miscellaneous	Verschiedenes	Divers	Varios
+Capacitors	Kondensatoren	Condensateurs	Condensadores
+Logic items	Logikbauteile	Éléments logiques	Componentes lógicos
+Voltage source and generator	Spannungsquelle und Generator	Source de tension et générateur	Fuente de voltaje y generador
+Inductors	Induktivitäten	Inductances	Inductividades
+Amplifiers, controllers	Verstärker, Regler	Amplificateurs, régulateurs	Amplificadores, reguladores
+Power switchgear	Starkstrom-Schaltgeräte	Appareillage électrique courant secteur	Conmutadores de alta tensión
+Terminators, filters	Abschlüsse, Filter	Fins, filtres	Terminaciones, filtro
+Transmission paths	Übertragungswege	Trajets de transmission	Rutas de transmisión
+Power units and plants	Aggregate und Anlagen	Unités de puissance et installations	Unidades de motor e instalaciones
+Actuators, general	Aktoren, allgemein	Actionneurs, général	Activadores, general
+Fluid motor	Fluidmotor	Moteur hydraulique	Motor de fluido
+Filters	Filter	Filtre	Filtros
+Fluid Control Terminal	Fluid Control Terminal	Fluid Control Terminal	Fluid Control Terminal
+Couplings	Kupplungen	Accouplements	Acoplamientos
+Measuring connection points	Messanschlüsse	Raccords de mesure	Conexiones de medición
+Fluid power - special items	Fluid Sonderbauteile	Eléments spéciaux fluide	Componentes especiales de fluido
+Accumulators	Speicher	Accumulateurs	Acumuladores
+Valves	Ventile	Vannes	Válvulas
+Heat exchangers	Wärmetauscher	Echangeurs de chaleur	Intercambiadores de calor
+Sub-plates	Anschlussplatten	Plaques de raccordement	Placas de conexión
+Housing	Gehäuse	Boîtiers	Envolventes
+Housing accessories, external extension	Gehäusezubehör Außenanbau	Accessoires boîtier, extension externe	Anexo exterior de accesorios de carcasa
+Housing accessories, internal extension	Gehäusezubehör Innenanbau	Accessoires boîtier, extension interne	Anexo interior de accesorios de carcasa
+Lock systems	Verschlusssysteme	Systèmes d'obturation	Sistemas de cierre
+Cable ducts	Kabelkanäle	Goulottes	Conductos de cable
+Busbars	Sammelschienen	Barres de bus	Barras de distribución
+Extraction hood	Abzugshaube	Hotte d'extraction	Campana de salida
+Electrolysis cell	Elektrolysezelle	Cellule électrolytique	Célula de electrólisis
+Suspension	Lagerung	Entrepôt	Alojamiento
+Chimney	Schornstein	Cheminée	Chimenea
+Engine	Antriebsmaschine	Moteur d'entraînement	Accionamiento
+Shut-off control valve	Absperrarmatur	Armature d'arrêt	Dispositivo de cierre
+Three-way control valve	Dreiwegearmatur	Armature trois voies	Dispositivo de tres vías
+Check control valve	Rückschlagarmatur	Armature anti-retour	Dispositivo de retención
+Container	Behälter	Récipient	Recipientes
+Container connection point	Behälteranschluss	Raccordement récipient	Conexión de recipiente
+Separator	Abscheider	Collecteur	Colector
+Strainer	Sieb	Crible	Criba
+Conveyor	Förderer	Convoyeur	Transportador
+Lifter	Heber	Préleveur	Elevador
+Transporter	Transporter	Transporteur	Medio de transporte
+Container sheath	Behälter-Mantel	Chemise du récipient	Revestimiento del recipiente
+Container pipe coil	Behälter-Rohrschlange	Serpentin du récipient	Serpentín del recipiente
+Steam boiler	Dampfkessel	Générateur de vapeur	Caldera de vapor
+Cooler	Kühler	Refroidisseur	Refrigerador
+Furnace	Ofen	Four	Horno
+Dryer	Trockner	Dessicateur	Secador
+Evaporator	Verdampfer	Evaporateur	Evaporador
+Kneader	Kneter	Pétrisseur	Amasadora
+Mixer	Mischer	Mélangeur	Mezcladora
+Stirrer	Rührer	Agitateur	Agitador
+Compressor	Kompressor / Verdichter	Compresseur / Compresseur	Compresor / condensador
+Vacuum pump	Vakuumpumpe	Pompe à vide	Bomba de vacío
+Ventilator	Ventilator	Ventilateur	Ventilador
+Piping part	Rohrleitungsteil	Partie de conduite	Pieza de tubería
+Centrifuge	Zentrifuge	Centrifugeuse	Máquina centrifugadora
+Measurement system	Messeinrichtung	Equipement de mesure	Dispositivo de medición
+Former	Formgeber	Formeuse	Moldeadora
+Sifter	Sichter	Cribleuse	Separador
+Sorter	Sortierer	Trieuse	Clasificador
+Crusher	Zerkleinerer	Broyeur	Trituradora
+Metering hopper	Zuteiler	Répartiteur	Dosificador
+Field distribution device	Feldverteiler	Répartiteur	Repartidor
+Mounting panels	Montageplatten	Plaques de montage	Placas de montaje
+Cylinders	Zylinder	Cylindres	Cilindros
+Rectifier	Gleichrichter	Redresseur	Rectificador
+Pressure intensifiers	Druckübersetzer	Surpresseurs	Traductores de presión
+Connection splicer / line connector	Leitungsverteiler / -verbinder	Répartiteurs / Connecteurs de conduits	Distribuidor / conector de líneas
+User-defined rail	Benutzerdefinierte Schiene	Rail défini par l'utilisateur	Carril definido por el usuario
+19-inch module technology	19 Zoll-Ausbautechnik	Concept 19 pouces	Diseño de 19 pulgadas
+Routing path (topology)	Strecke (Topologie)	Tracé du circuit (topologie)	Ruta (topología)
+Routing point (topology)	Verlegepunkt (Topologie)	Point de parcours (topologie)	Punto de enrutamiento (topología)
+Routing accessories	Verlegezubehör	Accessoires de circuit	Accesorios de enrutamiento
+Hook-up	Montageanordnung	Disposition de montage	Distribución del montaje
+Lines / conduits	Leitungen / Pakete	Conduites / Conduits	Líneas / paquetes
+Contactors	Schütze	Contacteurs	Contactores
+Auxiliary block	Hilfsblock	Bloc auxiliaire	Bloque auxiliar
+End clamp	Endwinkel	Angle final	Ángulo final
+Terminal label	Klemmenschild	Plaque de bornes	Portarrótulo de bornes
+Other labels	Weitere Schilder	Autres plaques	Otros rótulos
+Strip label	Leistenschild	Plaque de borniers	Rótulo de regletas
+Cross-connector	Querverbinder	Section de connecteur	Conexiones transversales
+Rails	Schienen	Rails	Guías
+Terminator	Abschluss	Fin	Terminación
+Partition	Trennwand	Séparation	Pared de separación
+Plug housing	Steckergehäuse	Boîtier de connecteur	Envolvente de conexión
+Plug accessories	Steckerzubehör	Accessoires de connecteur	Accesorios de conector
+Test accessories	Testzubehör	Accessoires de test	Accesorios de prueba
+Part (source)	Artikel (Quelle)	Source de l'article (article de câble au niveau de la source)	Artículo Origen (artículo de cable en el origen)
+Part (target)	Artikel (Ziel)	Destination de l'article (article de câble au niveau de la destination)	Artículo Destino (artículo de cable en el destino)
+High-pressure systems	Hochdruckanlagen	Installations haute pression	Instalaciones de alta presión
+High-pressure tanks	Hochdrucktanks	Réservoirs haute pression	Depósitos de alta presión
+Hydraulic tanks	Hydrauliktanks	Réservoirs hydrauliques	Depósitos hidráulicos
+Complete power units	Komplettaggregate	Unités complètes	Unidades de motor completas
+Cooling units	Kühlaggregate	Unités de refroidissement	Unidades de refrigeración
+Enclosure cooling devices	Schaltschrankkühlgeräte	Appareils de l'armoire de distribution	Unidades de refrigeración de armario
+Screw spindle compressors	Schraubenspindelkompressoren	Compresseurs à vis	Compresores de husillo roscado
+Scroll compressors	Scrollkompressoren	Compresseurs à spirale	Compresores de deslizamiento
+Central lubrication power units	Zentralschmieraggregate	Unités centrales de lubrification	Unidades de motor de lubricación central
+Cover plates	Abdeckplatten	Plaques de couverture	Placas de protección
+Adapter plates	Adapterplatten	Plaques adaptatrices	Placas de adaptador
+Block ball valves	Blockkugelhähne	Robinets blocs à boisseaux sphériques	Válvulas de bola de bloque
+Flanges	Flansche	Flasques	Bridas
+Ball valves	Kugelhähne	Robinets à boisseaux	Válvulas de bola
+Reducing plates	Reduzierplatten	Plaques de réduction	Placas de reducción
+Serial sub-plates	Reihenanschlussplatten	Sous-plaques de raccordement	Placas de conexión en serie
+Control blocks	Steuerblöcke	Blocs de contrôle	Bloques de control
+Intermediate plates	Zwischenplatten	Plaques intermédiaires	Placas intermedias
+Hydraulic motors	Hydromotoren	Moteurs hydrauliques	Motores hidráulicos
+Swivel drives	Schwenkantriebe	Entraînements pivotants	Accionamientos giratorios
+Ventilation filters	Belüftungsfilter	Filtres d'aération	Filtros de ventilación
+Duplex switch filters	Doppelumschaltfilter	Filtres à deux étages	Filtros de distribución doble
+Compressed air filters	Druckluftfilter	Filtres à air comprimé	Filtros de aire comprimido
+Single-stage filters	Einfachfilter	Filtres unipolaires	Filtros sencillos
+Line filters	Leitungsfilter	Filtres de conduite	Filtros de línea
+Line return filters	Rücklauffilter	Filtres anti-retour	Filtros de retorno
+Return flushing filters, all-autom.	Rückspülfilter vollautomatisch	Filtres à lavage à contre-courant automatiques	Filtros de relavado totalmente automático
+Coupling motor pumps	Kupplung-Motorpumpen	Accouplement de moteurs hydrauliques	Bombas de motor de acoplamiento
+Measuring couplings	Messkupplungen	Accouplements de mesure	Acoplamientos de medición
+Locking couplings	Verschlusskupplungen	Obturateurs express	Acoplamientos de bloqueo
+Pressure gauges	Manometer	Manomètres	Manómetros
+Thermometers	Thermometer	Thermomètres	Termómetros
+Compressors	Kompressoren	Compresseurs	Compresores
+Fixed displacement pumps	Konstantpumpen	Pompes à débit constant	Bombas de desplazamiento fijo
+Centrifugal pumps	Kreiselpumpen	Pompes centrifuges	Bombas centrífugas
+Screw pumps	Schraubenspindelpumpen	Pompes à vis	Bombas de husillo roscado
+Variable displacement pumps	Verstellpumpen	Pompes de réglage	Bombas de desplazamiento variable
+Pressure switches	Druckschalter	Interrupteurs de pression	Pulsador de presión
+Level switches	Füllstandsschalter	Interrupteurs de niveau	Interruptor de nivel
+Sensors - pressure gauges	Signalaufnehmer-Manometer	Manomètres de capteur	Manómetros-captadores de señal
+Proximity switches	Näherungsschalter	Détecteur de proximité	Interruptor de proximidad
+Flow monitors	Strömungswächter	Contrôleurs de flux	Monitor de caudal
+Temperature sensors	Temperatursensoren	Capteurs de température	Sensores de temperatura
+Shut-off accumulators	Absperrspeicher	Accumulateurs d'arrêt	Acumuladores de cierre
+Pressure accumulators	Druckspeicher	Accumulateurs de pression	Acumuladores de presión
+Piston-type accumulators	Kolbenspeicher	Accumulateurs à piston	Acumuladores del pistón
+Safety accumulators	Sicherheitsspeicher	Accumulateurs de sécurité	Acumuladores de seguridad
+Accumulator blocks	Speicherblöcke	Blocs d'accumulateurs	Bloques de acumulador
+Pressure valves	Druckventile	Vannes de pression	Válvulas de presión
+Exhaust valves	Entlüftungsventile	Soupapes de décharge	Válvulas de ventilación
+Piston distributors	Kolbenverteiler	Distributeurs à piston	Distribuidor del pistón
+Ball valve pneumatic	Kugelhahn pneumatisch	Robinet à boisseau pneumatique	Válvulas de bola neumática
+Pressure gauge protection valves	Manometerschutzventile	Vannes de protection de manomètre	Válvula de protección del manómetro
+Pressure gauge selector switches	Manometerwahlschalter	Interrupteurs de sélection de manomètre	Conmutador de manómetro
+Progressive feeders	Progressivverteiler	Distributeurs progressifs	Distribuidor progresivo
+Non-return valves	Rückschlagventile	Clapets anti-retour	Válvulas de retención
+Isolating valves	Sperrventile	Soupapes d'arrêt	Válvulas de bloqueo
+Flow control valves	Stromventile	Régulateurs de débit	Válvulas de control de caudal
+Flow dividing valves	Stromverteilerventile	Répartiteurs de courant	Válvulas de distribución de corriente
+Thermostat valves	Thermostatventile	Soupapes à thermostat	Válvulas de termostato
+Directional control valves, coaxial	Wegekoaxialventile	Distributeurs coaxiaux	Válvulas coaxiales de vías
+Directional control valves	Wegeventile	Distributeurs	Válvulas de distribución
+Pump brackets	Pumpenträger	Supports pour pompes	Porta bombas
+Silencers	Schalldämpfer	Amortisseurs	Silenciadores
+Screw connections	Verschraubungen	Vissages	Uniones roscadas
+Water traps	Wasserabscheider	Séparateurs d'eau	Colectores de agua
+Drawings box	Zeichnungsbehälter	Boîtes graphiques	Cajas de diseño
+Rear / side panel	Rück- / Seitenwand	Plaque arrière / paroi latérale	Pared posterior / lateral
+Top cover	Dach	Toit	Techo
+Floor	Boden	Fond	Suelo
+Base	Sockel	Socle	Zócalo
+Cable clamp rails	Kabelabfangschienen	Rails serre-câbles	Carriles de fijación de cables
+Support rails	Gleitschienen	Glissières	Carril de deslizamiento
+C horizontal rails	C-Profilschienen	Rails profilés en C	Guías horizontales C
+Support	Halter	Support	Soporte
+Adapter	Adapter	Adaptateurs	Adaptador
+Component	Einzelteil	Pièce détachée	Componente
+Body	Korpus	Corps	Carcasa
+PLC input card analog	SPS-Eingangskarte analog	Carte d'entrée API analogique	Tarjeta de entrada PLC analógica
+PLC input card digital	SPS-Eingangskarte digital	Carte d'entrée API numérique	Tarjeta de entrada PLC digital
+PLC output card analog	SPS-Ausgangskarte analog	Carte de sortie API analogique	Tarjeta de salida PLC analógica
+PLC output card digital	SPS-Ausgangskarte digital	Carte de sortie API numérique	Tarjeta de salida PLC digital
+Bunker	Bunker	Réservoir	Tolva
+Silo	Silo	Silo	Silo
+Reactor	Reaktor	Réacteur	Reactor
+Shut-off flap	Absperrklappe	Clapet d'arrêt	Mariposa de cierre
+Non-return valve	Rückschlagventil	Clapet anti-retour	Válvula de retención
+Check flap	Rückschlagklappe	Clapet anti-retour	Mariposa de retención
+Three-way valve	Dreiwegeventil	Soupape à trois voies	Válvula de distribución de tres vías
+Three-way flap	Dreiwegeklappe	Clapet à trois voies	Válvula de tres vías
+Throttle plate	Drosselscheibe	Diaphragme	Estrangulador
+Dummy plate	Blindscheibe	Joint plein	Disco ciego
+Funnel	Trichter	Trémie	Embudo
+Outlet	Auslass	Sortie	Descarga
+Sight glass	Schauglas	Voyant (indicateur de niveau)	Mirilla
+Mixing nozzle	Mischdüse	Tuyère de mélange	Tobera mezcladora
+Dirt trap	Schmutzfänger	Filtre anti-impuretés	Colector de suciedad
+Condensate drain	Kondensatableiter	Purgeur vapeur	Purgador de agua de vapor
+Flange pair	Flanschpaar	Paire de flasques	Par de bridas
+Reducer	Reduzierung	Réduction	Reducción
+Siphon	Syphon	Syphon	Sifón
+Press	Presse	Presse	Prensa
+Prefabricated	Vorkonfektioniert	Préfabriqué	Preconfeccionado
+Display device	Anzeigegerät	Afficheur	Indicador
+Signal lamp	Meldeleuchte	Témoin d'avertissement	Luz de aviso
+Data recorder	Messwertschreiber	Enregistreur de données	Registro de valor medido
+Signal device, acoustic	Meldeeinrichtung, akustisch	Unité d'alarme, acoustique	Dispositivo de avisos acústicos
+Ground fault voltage circuit-breaker	Fehlerspannungs-Schutzschalter	Disjoncteur protecteur de défaut de tension	Interruptor de protección fallo de tensión
+Ground fault current circuit breaker	Fehlerstrom-Schutzschalter	Disjoncteur protecteur de défaut de courant	Interruptor de protección fallo de corriente
+Motor overload switch	Motorschutzschalter	Disjoncteur-protecteur moteur	Interruptor guardamotor
+Safety fuse	Schmelzsicherung	Fusible de sécurité	Fusible
+Safety switch	Schutzschalter	Disjoncteur protecteur	Interruptor de protección
+Circuit breaker	Sicherungsautomat	Disjoncteur	Interruptor automático
+Signal device, optical	Meldeeinrichtung, optisch	Unité d'alarme, optique	Dispositivo de avisos ópticos
+Logic item	Logikbauteil	Elément logique	Componente lógico
+Valve / distributor	Ventil / Verteiler	Vanne / répartiteur	Válvula / Distribuidor
+Overload	Schutzrelais	Relais de sécurité	Relé de protección
+Analog sensor	Analoger Sensor	Capteur analogique	Sensor analógico
+Digital sensor, general	Digitaler Sensor, allgemein	Capteur numérique, général	Sensor digital, general
+Limit switch	Endschalter	Interrupteur de fin de course	Final de carrera
+Level detector	Grenzwertgeber	Détecteur de niveau	Detector de nivel
+Light barrier	Lichtschranke	Barrière lumineuse	Protección fotoeléctrica
+Switch / pushbutton	Schalter / Taster	Interrupteur / bouton-poussoir	Conmutador / Pulsador
+Generator	Generator	Générateur	Generador
+Voltage source	Spannungsquelle	Source de tension	Fuente de voltaje
+Busbar cover	Sammelschienen-Abdeckung	Couverture de barres de bus	Protector de barra de distribución
+Pivoting frame	Schwenkrahmen	Cadre pivotant	Marco giratorio
+Mounting chassis	Montage-Chassis	Châssis de montage	Chasis de montaje
+Punched rail	Montageschiene	Rail de montage	Carril de montaje
+Male insert	Stifteinsatz	Contact mâle	Bloque de clavijas
+Female insert	Buchseneinsatz	Contact femelle	Bloque de bases
+Pipes	Rohre	Tubes	Tuberías
+Switching lock	Schaltsperre	Blocage commutation	Bloqueo de interruptor
+Switching jumper	Schaltbrücke	Pont de commutation	Puente de conmutación
+Attachment nut	Steckaufsatz	Embout	Artículo de conexión
+Rail	Schiene	Rail	Carril
+Cable / tubing clamp	Kabel- / Schlauchbefestigung	Fixation de câble / tuyau flexible	Sujeción de cables / tubos flexibles
+Cable / tubing tie	Kabel- / Schlauchbinder	Collier de serrage de câble / tuyau	Brida de sujeción
+Cable / tubing protection	Kabel- / Schlauchschutz	Protection de câble / tuyau	Protección para cables / tubos
+Ribbon cables	Flachbandkabel	Câbles plats	Cables planos
+Crimp contact	Crimpkontakt	Contact à sertir	Contacto de crimpado
+Contact insert	Kontakteinsatz	Insert de contacts	Inserto de contactos
+# Data portal (parts server, web page)
+Add to favorites	Zu Favoriten hinzufügen	Ajouter aux favoris	Añadir a favoritos
+All parts	Alle Artikel	Tous les articles	Todos los artículos
+Back to the results	Zurück zu den Ergebnissen	Retour aux résultats	Volver a los resultados
+Catalog	Katalog	Catalogue	Catálogo
+Catalogs	Kataloge	Catalogues	Catálogos
+Clear filters	Filter zurücksetzen	Effacer les filtres	Borrar filtros
+Datasheet	Datenblatt	Fiche technique	Hoja de datos
+Export (CSV)	Export (CSV)	Exporter (CSV)	Exportar (CSV)
+Favorites	Favoriten	Favoris	Favoritos
+Files	Dateien	Fichiers	Archivos
+Has 2D model	Hat 2D-Modell	Possède un modèle 2D	Tiene modelo 2D
+Has 3D model	Hat 3D-Modell	Possède un modèle 3D	Tiene modelo 3D
+History	Verlauf	Historique	Historial
+Last change	Letzte Änderung	Dernière modification	Último cambio
+Lifecycle	Lebenszyklus	Cycle de vie	Ciclo de vida
+Loading…	Wird geladen…	Chargement…	Cargando…
+Next	Weiter	Suivant	Siguiente
+No parts found	Keine Artikel gefunden	Aucun article trouvé	No se encontraron artículos
+OpenECraft data portal	OpenECraft Data Portal	Portail de données OpenECraft	Portal de datos de OpenECraft
+Page {} of {}	Seite {} von {}	Page {} sur {}	Página {} de {}
+Password	Passwort	Mot de passe	Contraseña
+Previous	Zurück	Précédent	Anterior
+Remove from favorites	Aus Favoriten entfernen	Retirer des favoris	Quitar de favoritos
+Replaced by {}	Ersetzt durch {}	Remplacé par {}	Sustituido por {}
+Search parts	Artikel suchen	Rechercher des articles	Buscar artículos
+Show parts	Artikel anzeigen	Afficher les articles	Mostrar artículos
+Sign in to keep favorites	Melden Sie sich an, um Favoriten zu speichern	Connectez-vous pour enregistrer des favoris	Inicie sesión para guardar favoritos
+Sign in	Anmelden	Se connecter	Iniciar sesión
+Sign out	Abmelden	Se déconnecter	Cerrar sesión
+Signed in as {}	Angemeldet als {}	Connecté en tant que {}	Sesión iniciada como {}
+Sort by	Sortieren nach	Trier par	Ordenar por
+Successor	Nachfolger	Successeur	Sucesor
+The server cannot be reached	Der Server ist nicht erreichbar	Le serveur est injoignable	No se puede acceder al servidor
+Version	Version	Version	Versión
+{} parts in {} catalogs, revision {}	{} Artikel in {} Katalogen, Revision {}	{} articles dans {} catalogues, révision {}	{} artículos en {} catálogos, revisión {}
+Phase-out	Auslaufend	En fin de série	En retirada
+Discontinued	Abgekündigt	Arrêté	Descatalogado
+Certificate	Zertifikat	Certificat	Certificado
+Drawing	Zeichnung	Dessin	Dibujo
+Macro	Makro	Macro	Macro
+Other file	Andere Datei	Autre fichier	Otro archivo
+Reader	Leser	Lecteur	Lector
+Editor	Bearbeiter	Éditeur	Editor
+Administrator	Administrator	Administrateur	Administrador
+Created	Erstellt	Créé	Creado
+Changed	Geändert	Modifié	Modificado
+Deleted	Gelöscht	Supprimé	Eliminado
+Newer version	Neuere Version	Version plus récente	Versión más reciente
+Removed from the server	Vom Server entfernt	Supprimé du serveur	Eliminado del servidor
+# Product groups of the part editor (PRODUCT_GROUPS)
+Power contactor	Leistungsschütz	Contacteur de puissance	Contactor de potencia
+Auxiliary contact block	Hilfsschalterblock	Bloc de contacts auxiliaires	Bloque de contactos auxiliares
+Relay	Relais	Relais	Relé
+Timer relay	Zeitrelais	Relais temporisé	Relé temporizador
+Safety devices	Schutzeinrichtungen	Dispositifs de protection	Dispositivos de protección
+Auxiliary switch	Hilfsschalter	Contact auxiliaire	Interruptor auxiliar
+Main switch	Hauptschalter	Interrupteur principal	Interruptor principal
+Sensors, switches, pushbuttons	Sensorik, Schalter und Taster	Capteurs, interrupteurs, boutons-poussoirs	Sensores, conmutadores y pulsadores
+Pushbutton	Taster	Bouton-poussoir	Pulsador
+Selector switch	Wahlschalter	Commutateur de sélection	Selector
+Key switch	Schlüsselschalter	Interrupteur à clé	Interruptor de llave
+Position switch	Positionsschalter	Interrupteur de position	Interruptor de posición
+Transmitter	Messumformer	Transmetteur	Transmisor
+Contact block	Kontaktelement	Bloc de contacts	Bloque de contactos
+Horn	Hupe	Avertisseur sonore	Bocina
+Three-phase motor	Drehstrommotor	Moteur triphasé	Motor trifásico
+Single-phase motor	Wechselstrommotor	Moteur monophasé	Motor monofásico
+Brake motor	Bremsmotor	Moteur-frein	Motor freno
+DC motor	Gleichstrommotor	Moteur à courant continu	Motor de corriente continua
+Enclosure heater	Schaltschrankheizung	Chauffage d'armoire	Calefacción de armario
+Feed-through terminal	Durchgangsklemme	Borne de passage	Borne de paso
+Plug connector	Steckverbinder	Connecteur	Conector enchufable
+Solenoid valve	Magnetventil	Électrovanne	Electroválvula
+Fluid power components	Fluidtechnik-Komponenten	Composants fluidiques	Componentes de fluidos
+Busbar holder	Sammelschienenhalter	Support de jeu de barres	Soporte de barras
+Power cable	Leistungskabel	Câble de puissance	Cable de potencia
+Control cable	Steuerleitung	Câble de commande	Cable de control
+Wiring material	Verdrahtungsmaterial	Matériel de câblage	Material de cableado
+# Data portal (editor, parts manager, command line)
+Catalog id	Katalog-ID	Identifiant du catalogue	ID del catálogo
+Data portal…	Data Portal…	Portail de données…	Portal de datos…
+Delete catalog {} from the server?	Katalog {} vom Server löschen?	Supprimer le catalogue {} du serveur ?	¿Eliminar el catálogo {} del servidor?
+Delete user {}? Their sessions and favorites are removed.	Benutzer {} löschen? Seine Sitzungen und Favoriten werden entfernt.	Supprimer l'utilisateur {} ? Ses sessions et favoris seront supprimés.	¿Eliminar el usuario {}? Se eliminarán sus sesiones y favoritos.
+Ends the session and forgets the token	Beendet die Sitzung und verwirft das Token	Termine la session et oublie le jeton	Cierra la sesión y descarta el token
+Files and history ({} files)	Dateien und Verlauf ({} Dateien)	Fichiers et historique ({} fichiers)	Archivos e historial ({} archivos)
+New password	Neues Passwort	Nouveau mot de passe	Nueva contraseña
+Only catalogs without parts can be deleted	Nur Kataloge ohne Artikel können gelöscht werden	Seuls les catalogues sans articles peuvent être supprimés	Solo se pueden eliminar catálogos sin artículos
+Part files (documents, images, models, macros)	Artikeldateien (Dokumente, Bilder, Modelle, Makros)	Fichiers d'article (documents, images, modèles, macros)	Archivos de artículo (documentos, imágenes, modelos, macros)
+Readers keep favorites, manufacturers maintain the parts and catalogs of their manufacturer, editors all parts, administrators also the users.	Leser speichern Favoriten, Hersteller pflegen die Artikel und Kataloge ihres Herstellers, Bearbeiter alle Artikel, Administratoren auch die Benutzer.	Les lecteurs gèrent leurs favoris, les fabricants les articles et catalogues de leur fabricant, les éditeurs tous les articles, les administrateurs aussi les utilisateurs.	Los lectores guardan favoritos, los fabricantes mantienen los artículos y catálogos de su fabricante, los editores todos los artículos y los administradores también los usuarios.
+Remove the file from the part	Datei vom Artikel entfernen	Retirer le fichier de l'article	Quitar el archivo del artículo
+Role	Rolle	Rôle	Rol
+Save the part first	Speichern Sie zuerst den Artikel	Enregistrez d'abord l'article	Guarde primero el artículo
+Search the parts server by catalog, product group and technical data, add parts and check the database for updates	Den Artikelserver nach Katalog, Produktgruppe und technischen Daten durchsuchen, Artikel übernehmen und die Datenbank auf Aktualisierungen prüfen	Rechercher sur le serveur d'articles par catalogue, groupe de produits et données techniques, ajouter des articles et vérifier les mises à jour de la base	Buscar en el servidor de artículos por catálogo, grupo de productos y datos técnicos, añadir artículos y comprobar actualizaciones de la base de datos
+Select a catalog or create a new one. Parts belong to a catalog through their catalog id (part editor, Data portal tab).	Wählen Sie einen Katalog oder legen Sie einen neuen an. Artikel gehören über ihre Katalog-ID zu einem Katalog (Artikeleditor, Registerkarte Data Portal).	Sélectionnez un catalogue ou créez-en un. Les articles appartiennent à un catalogue par leur identifiant de catalogue (éditeur d'articles, onglet Portail de données).	Seleccione un catálogo o cree uno nuevo. Los artículos pertenecen a un catálogo mediante su ID de catálogo (editor de artículos, pestaña Portal de datos).
+Select a user or create a new one.	Wählen Sie einen Benutzer oder legen Sie einen neuen an.	Sélectionnez un utilisateur ou créez-en un.	Seleccione un usuario o cree uno nuevo.
+Show history	Verlauf anzeigen	Afficher l'historique	Mostrar historial
+by file name	nach Dateiname	d'après le nom de fichier	según el nombre del archivo
+from the name	aus dem Namen	d'après le nom	a partir del nombre
+unchanged if empty	unverändert, wenn leer	inchangé si vide	sin cambios si está vacío
+{} ({})	{} ({})	{} ({})	{} ({})
+{} ({}, {})	{} ({}, {})	{} ({}, {})	{} ({}, {})
+{} parts, {} catalogs, {}	{} Artikel, {} Kataloge, {}	{} articles, {} catalogues, {}	{} artículos, {} catálogos, {}
+➕ New catalog	➕ Neuer Katalog	➕ Nouveau catalogue	➕ Nuevo catálogo
+➕ New user	➕ Neuer Benutzer	➕ Nouvel utilisateur	➕ Nuevo usuario
+⬆ Upload file…	⬆ Datei hochladen…	⬆ Téléverser un fichier…	⬆ Subir archivo…
+Checking for part updates…	Artikel werden auf Aktualisierungen geprüft…	Recherche de mises à jour des articles…	Buscando actualizaciones de artículos…
+Compared with {} parts of the server	Mit {} Artikeln des Servers verglichen	Comparé avec {} articles du serveur	Comparado con {} artículos del servidor
+Connected: {} {} – {} parts, revision {}, {}	Verbunden: {} {} – {} Artikel, Revision {}, {}	Connecté : {} {} – {} articles, révision {}, {}	Conectado: {} {} – {} artículos, revisión {}, {}
+Deleted catalog {}	Katalog {} gelöscht	Catalogue {} supprimé	Catálogo {} eliminado
+Deleted user {}	Benutzer {} gelöscht	Utilisateur {} supprimé	Usuario {} eliminado
+Downloaded {} ({} bytes)	{} heruntergeladen ({} Bytes)	{} téléchargé ({} octets)	{} descargado ({} bytes)
+Downloading {}…	{} wird heruntergeladen…	Téléchargement de {}…	Descargando {}…
+Loading catalogs…	Kataloge werden geladen…	Chargement des catalogues…	Cargando catálogos…
+Loading favorites…	Favoriten werden geladen…	Chargement des favoris…	Cargando favoritos…
+Loading the history…	Verlauf wird geladen…	Chargement de l'historique…	Cargando el historial…
+Loading users…	Benutzer werden geladen…	Chargement des utilisateurs…	Cargando usuarios…
+Removing the file…	Datei wird entfernt…	Suppression du fichier…	Quitando el archivo…
+Saved catalog {}	Katalog {} gespeichert	Catalogue {} enregistré	Catálogo {} guardado
+Saved user {}	Benutzer {} gespeichert	Utilisateur {} enregistré	Usuario {} guardado
+Saving favorites…	Favoriten werden gespeichert…	Enregistrement des favoris…	Guardando favoritos…
+Searching…	Suche läuft…	Recherche…	Buscando…
+Signed in as {} ({})	Angemeldet als {} ({})	Connecté en tant que {} ({})	Sesión iniciada como {} ({})
+Signed out	Abgemeldet	Déconnecté	Sesión cerrada
+Signing in…	Anmeldung…	Connexion…	Iniciando sesión…
+Signing out…	Abmeldung…	Déconnexion…	Cerrando sesión…
+signed in as {} ({})	angemeldet als {} ({})	connecté en tant que {} ({})	sesión iniciada como {} ({})
+{} catalogs	{} Kataloge	{} catalogues	{} catálogos
+{} changes of part {}	{} Änderungen von Artikel {}	{} modifications de l'article {}	{} cambios del artículo {}
+{} favorites	{} Favoriten	{} favoris	{} favoritos
+{} parts found	{} Artikel gefunden	{} articles trouvés	{} artículos encontrados
+{} users	{} Benutzer	{} utilisateurs	{} usuarios
+Changes devices with phased out or discontinued parts over to the successor parts (the successors must be project parts)	Stellt Geräte mit auslaufenden oder abgekündigten Artikeln auf die Nachfolgeartikel um (die Nachfolger müssen Projektartikel sein)	Remplace dans les appareils les articles en fin de série ou arrêtés par leurs successeurs (les successeurs doivent être des articles du projet)	Cambia los dispositivos con artículos en retirada o descatalogados a los artículos sucesores (los sucesores deben ser artículos del proyecto)
+Devices with parts that are phased out or discontinued, and their change to the successors	Geräte mit auslaufenden oder abgekündigten Artikeln und ihre Umstellung auf die Nachfolger	Appareils avec des articles en fin de série ou arrêtés et leur passage aux successeurs	Dispositivos con artículos en retirada o descatalogados y su cambio a los sucesores
+Only this part number	Nur diese Artikelnummer	Seulement ce numéro d'article	Solo este número de artículo
+Part lifecycle	Artikel-Lebenszyklus	Cycle de vie des articles	Ciclo de vida de los artículos
+Parts phased out or discontinued	Auslaufende oder abgekündigte Artikel	Articles en fin de série ou arrêtés	Artículos en retirada o descatalogados
+{}: part {} is being phased out	{}: Artikel {} läuft aus	{} : l'article {} est en fin de série	{}: el artículo {} está en retirada
+{}: part {} is being phased out, successor {}	{}: Artikel {} läuft aus, Nachfolger {}	{} : l'article {} est en fin de série, successeur {}	{}: el artículo {} está en retirada, sucesor {}
+{}: part {} is discontinued	{}: Artikel {} ist abgekündigt	{} : l'article {} est arrêté	{}: el artículo {} está descatalogado
+{}: part {} is discontinued, successor {}	{}: Artikel {} ist abgekündigt, Nachfolger {}	{} : l'article {} est arrêté, successeur {}	{}: el artículo {} está descatalogado, sucesor {}
+Data portal	Data Portal	Portail de données	Portal de datos
+EPLAN numbers	EPLAN-Nummern	Numéros EPLAN	Números EPLAN
+EPLAN product groups	EPLAN-Produktgruppen	Groupes de produits EPLAN	Grupos de productos EPLAN
+Internal values of the EPLAN part exchange (0: undefined)	Interne Werte des EPLAN-Artikelaustauschs (0: undefiniert)	Valeurs internes de l'échange d'articles EPLAN (0 : non défini)	Valores internos del intercambio de artículos de EPLAN (0: indefinido)
+Server revision	Server-Revision	Révision du serveur	Revisión del servidor
+The successor is not in this parts list	Der Nachfolger ist nicht in dieser Artikelliste	Le successeur n'est pas dans cette liste d'articles	El sucesor no está en esta lista de artículos
+Top group {}, product group {}, subgroup {}	Hauptgruppe {}, Produktgruppe {}, Untergruppe {}	Groupe principal {}, groupe de produits {}, sous-groupe {}	Grupo principal {}, grupo de productos {}, subgrupo {}
+{} (changed {})	{} (geändert {})	{} (modifié le {})	{} (modificado {})
+Also return the facets: values of groups, manufacturers, catalogs, lifecycle and technical data with their counts	Auch die Facetten zurückgeben: Werte von Gruppen, Herstellern, Katalogen, Lebenszyklus und technischen Daten mit ihrer Anzahl	Renvoyer aussi les facettes : valeurs des groupes, fabricants, catalogues, cycle de vie et données techniques avec leur nombre	Devolver también las facetas: valores de grupos, fabricantes, catálogos, ciclo de vida y datos técnicos con su número
+Catalog data; without id it is derived from the name	Katalogdaten; ohne ID wird sie aus dem Namen gebildet	Données du catalogue ; sans identifiant, il est dérivé du nom	Datos del catálogo; sin ID se deriva del nombre
+Compares the project parts with the parts server: newer versions, phase-out, discontinued and removed parts	Vergleicht die Projektartikel mit dem Artikelserver: neuere Versionen, auslaufende, abgekündigte und entfernte Artikel	Compare les articles du projet avec le serveur d'articles : versions plus récentes, articles en fin de série, arrêtés et supprimés	Compara los artículos del proyecto con el servidor de artículos: versiones más recientes, artículos en retirada, descatalogados y eliminados
+Creates or changes a catalog on the parts server (id, name, manufacturer, version, description)	Legt einen Katalog auf dem Artikelserver an oder ändert ihn (ID, Name, Hersteller, Version, Beschreibung)	Crée ou modifie un catalogue sur le serveur d'articles (identifiant, nom, fabricant, version, description)	Crea o modifica un catálogo en el servidor de artículos (ID, nombre, fabricante, versión, descripción)
+Creates or changes a user of the parts server (administrators only)	Legt einen Benutzer des Artikelservers an oder ändert ihn (nur Administratoren)	Crée ou modifie un utilisateur du serveur d'articles (administrateurs uniquement)	Crea o modifica un usuario del servidor de artículos (solo administradores)
+Datasheet, Image, Manual, Certificate, Drawing, Model3d, Macro or Other (default: by file name)	Datasheet, Image, Manual, Certificate, Drawing, Model3d, Macro oder Other (Standard: nach Dateiname)	Datasheet, Image, Manual, Certificate, Drawing, Model3d, Macro ou Other (par défaut : d'après le nom de fichier)	Datasheet, Image, Manual, Certificate, Drawing, Model3d, Macro u Other (predeterminado: según el nombre del archivo)
+Deletes a catalog without parts from the parts server	Löscht einen Katalog ohne Artikel vom Artikelserver	Supprime un catalogue sans articles du serveur d'articles	Elimina un catálogo sin artículos del servidor de artículos
+Deletes a user of the parts server (administrators only)	Löscht einen Benutzer des Artikelservers (nur Administratoren)	Supprime un utilisateur du serveur d'articles (administrateurs uniquement)	Elimina un usuario del servidor de artículos (solo administradores)
+Descending order	Absteigende Reihenfolge	Ordre décroissant	Orden descendente
+Downloads a file of a part from the parts server	Lädt eine Datei eines Artikels vom Artikelserver herunter	Télécharge un fichier d'un article depuis le serveur d'articles	Descarga un archivo de un artículo del servidor de artículos
+File id (see the attachments of parts_get)	Datei-ID (siehe die attachments von parts_get)	Identifiant du fichier (voir les attachments de parts_get)	ID del archivo (ver los attachments de parts_get)
+File to upload	Hochzuladende Datei	Fichier à téléverser	Archivo que se subirá
+Lifecycle: Active, PhaseOut or Discontinued	Lebenszyklus: Active, PhaseOut oder Discontinued	Cycle de vie : Active, PhaseOut ou Discontinued	Ciclo de vida: Active, PhaseOut o Discontinued
+Lists the catalogs of the parts server with their number of parts	Listet die Kataloge des Artikelservers mit ihrer Artikelanzahl	Liste les catalogues du serveur d'articles avec leur nombre d'articles	Lista los catálogos del servidor de artículos con su número de artículos
+Lists the users of the parts server (administrators only)	Listet die Benutzer des Artikelservers (nur Administratoren)	Liste les utilisateurs du serveur d'articles (administrateurs uniquement)	Lista los usuarios del servidor de artículos (solo administradores)
+Manufacturer whose parts a manufacturer user maintains	Hersteller, dessen Artikel ein Hersteller-Benutzer pflegt	Fabricant dont un utilisateur fabricant gère les articles	Fabricante cuyos artículos mantiene un usuario fabricante
+Not a valid catalog: {}	Kein gültiger Katalog: {}	Catalogue non valide : {}	Catálogo no válido: {}
+Order: Number, Manufacturer, Description, Price or Modified	Reihenfolge: Number, Manufacturer, Description, Price oder Modified	Ordre : Number, Manufacturer, Description, Price ou Modified	Orden: Number, Manufacturer, Description, Price o Modified
+Part number to add	Hinzuzufügende Artikelnummer	Numéro d'article à ajouter	Número de artículo que se añadirá
+Part number to remove	Zu entfernende Artikelnummer	Numéro d'article à retirer	Número de artículo que se quitará
+Part {} has no version {}	Artikel {} hat keine Version {}	L'article {} n'a pas de version {}	El artículo {} no tiene la versión {}
+Password (needed for new users; empty keeps the current one)	Passwort (für neue Benutzer nötig; leer behält das bisherige)	Mot de passe (requis pour les nouveaux utilisateurs ; vide conserve l'actuel)	Contraseña (necesaria para usuarios nuevos; vacía mantiene la actual)
+Password of the user	Passwort des Benutzers	Mot de passe de l'utilisateur	Contraseña del usuario
+Product top group: Electrical, Fluid, Mechanics or Process	Produkthauptgruppe: Electrical, Fluid, Mechanics oder Process	Groupe de produits principal : Electrical, Fluid, Mechanics ou Process	Grupo principal de productos: Electrical, Fluid, Mechanics o Process
+Reader, Manufacturer, Editor or Admin	Reader, Manufacturer, Editor oder Admin	Reader, Manufacturer, Editor ou Admin	Reader, Manufacturer, Editor o Admin
+Removes a file from a part on the parts server	Entfernt eine Datei von einem Artikel auf dem Artikelserver	Retire un fichier d'un article sur le serveur d'articles	Quita un archivo de un artículo en el servidor de artículos
+Replace the project parts by their newer server versions	Die Projektartikel durch ihre neueren Serverversionen ersetzen	Remplacer les articles du projet par leurs versions plus récentes du serveur	Sustituir los artículos del proyecto por sus versiones más recientes del servidor
+Revision of the change; returns the part as it was	Revision der Änderung; gibt den Artikel in diesem Stand zurück	Révision de la modification ; renvoie l'article tel qu'il était	Revisión del cambio; devuelve el artículo tal como era
+Searches the parts on the parts server (data portal) by text, groups, catalog, lifecycle and technical data	Sucht Artikel auf dem Artikelserver (Data Portal) nach Text, Gruppen, Katalog, Lebenszyklus und technischen Daten	Recherche des articles sur le serveur d'articles (portail de données) par texte, groupes, catalogue, cycle de vie et données techniques	Busca artículos en el servidor de artículos (portal de datos) por texto, grupos, catálogo, ciclo de vida y datos técnicos
+Sets the parts server (URL and access token, or user and password) and shows its state	Legt den Artikelserver fest (URL und Zugriffstoken oder Benutzer und Passwort) und zeigt seinen Zustand	Définit le serveur d'articles (URL et jeton d'accès, ou utilisateur et mot de passe) et affiche son état	Establece el servidor de artículos (URL y token de acceso, o usuario y contraseña) y muestra su estado
+Shows the changes of a part on the parts server, or the part as of one change	Zeigt die Änderungen eines Artikels auf dem Artikelserver oder den Artikel im Stand einer Änderung	Affiche les modifications d'un article sur le serveur d'articles, ou l'article tel qu'à une modification	Muestra los cambios de un artículo en el servidor de artículos, o el artículo tal como era en un cambio
+Shows the favorites of the signed in user, optionally adding or removing a part	Zeigt die Favoriten des angemeldeten Benutzers und fügt optional einen Artikel hinzu oder entfernt ihn	Affiche les favoris de l'utilisateur connecté, en ajoutant ou retirant éventuellement un article	Muestra los favoritos del usuario con sesión iniciada, añadiendo o quitando opcionalmente un artículo
+Stores a file (datasheet, image, model, macro …) with a part on the parts server	Speichert eine Datei (Datenblatt, Bild, Modell, Makro …) zu einem Artikel auf dem Artikelserver	Enregistre un fichier (fiche technique, image, modèle, macro …) avec un article sur le serveur d'articles	Guarda un archivo (hoja de datos, imagen, modelo, macro …) con un artículo en el servidor de artículos
+Technical data that must match, e.g. {\"Voltage\": \"24 V DC\", \"Poles\": \"3\"}	Technische Daten, die passen müssen, z. B. {\"Voltage\": \"24 V DC\", \"Poles\": \"3\"}	Données techniques qui doivent correspondre, p. ex. {\"Voltage\": \"24 V DC\", \"Poles\": \"3\"}	Datos técnicos que deben coincidir, p. ej. {\"Voltage\": \"24 V DC\", \"Poles\": \"3\"}
+Text in number, type, manufacturer, description, groups or catalog; every word must occur	Text in Nummer, Typ, Hersteller, Beschreibung, Gruppen oder Katalog; jedes Wort muss vorkommen	Texte dans le numéro, le type, le fabricant, la description, les groupes ou le catalogue ; chaque mot doit apparaître	Texto en número, tipo, fabricante, descripción, grupos o catálogo; cada palabra debe aparecer
+The catalog needs a name	Der Katalog braucht einen Namen	Le catalogue doit avoir un nom	El catálogo necesita un nombre
+Unknown {}: {} (possible: {})	Unbekannt für {}: {} (möglich: {})	{} inconnu : {} (possibles : {})	{} desconocido: {} (posibles: {})
+User name to sign in with	Benutzername für die Anmeldung	Nom d'utilisateur pour la connexion	Nombre de usuario para iniciar sesión
+{} parts of the database updated – synchronize the project parts in parts management	{} Artikel der Datenbank aktualisiert – synchronisieren Sie die Projektartikel in der Artikelverwaltung	{} articles de la base mis à jour – synchronisez les articles du projet dans la gestion des articles	{} artículos de la base de datos actualizados – sincronice los artículos del proyecto en la gestión de artículos
+🔎 Data portal	🔎 Data Portal	🔎 Portail de données	🔎 Portal de datos
+Adds the macros of the file to the macro library	Fügt die Makros der Datei der Makrobibliothek hinzu	Ajoute les macros du fichier à la bibliothèque de macros	Añade las macros del archivo a la biblioteca de macros
+All parts are up to date	Alle Artikel sind aktuell	Tous les articles sont à jour	Todos los artículos están actualizados
+Already in the parts database	Bereits in der Artikeldatenbank	Déjà dans la base d'articles	Ya está en la base de datos de artículos
+Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts	Vergleicht die lokalen Artikel mit dem Artikelserver: neuere Versionen, auslaufende, abgekündigte und entfernte Artikel	Compare les articles locaux avec le serveur d'articles : versions plus récentes, articles en fin de série, arrêtés et supprimés	Compara los artículos locales con el servidor de artículos: versiones más recientes, artículos en retirada, descatalogados y eliminados
+Connect to a parts server and search.	Verbinden Sie sich mit einem Artikelserver und suchen Sie.	Connectez-vous à un serveur d'articles et lancez une recherche.	Conéctese a un servidor de artículos y busque.
+Mark for adding to the parts database	Zum Übernehmen in die Artikeldatenbank markieren	Marquer pour l'ajout à la base d'articles	Marcar para añadir a la base de datos de artículos
+Open in the browser	Im Browser öffnen	Ouvrir dans le navigateur	Abrir en el navegador
+Save the file	Datei speichern	Enregistrer le fichier	Guardar el archivo
+Select a part to see its details.	Wählen Sie einen Artikel, um seine Details zu sehen.	Sélectionnez un article pour voir ses détails.	Seleccione un artículo para ver sus detalles.
+Successor {}	Nachfolger {}	Successeur {}	Sucesor {}
+Use macros	Makros übernehmen	Utiliser les macros	Usar macros
+★ Favorites	★ Favoriten	★ Favoris	★ Favoritos
+★ Remove from favorites	★ Aus Favoriten entfernen	★ Retirer des favoris	★ Quitar de favoritos
+☆ Add to favorites	☆ Zu Favoriten hinzufügen	☆ Ajouter aux favoris	☆ Añadir a favoritos
+✔ Apply {} updates	✔ {} Aktualisierungen übernehmen	✔ Appliquer {} mises à jour	✔ Aplicar {} actualizaciones
+➡ Successor {}	➡ Nachfolger {}	➡ Successeur {}	➡ Sucesor {}
+⬇ Add marked parts to the parts database ({})	⬇ Markierte Artikel in die Artikeldatenbank übernehmen ({})	⬇ Ajouter les articles marqués à la base d'articles ({})	⬇ Añadir los artículos marcados a la base de datos de artículos ({})
+⬇ Add to the parts database	⬇ In die Artikeldatenbank übernehmen	⬇ Ajouter à la base d'articles	⬇ Añadir a la base de datos de artículos
+🔄 Check the parts database for updates	🔄 Artikeldatenbank auf Aktualisierungen prüfen	🔄 Vérifier les mises à jour de la base d'articles	🔄 Comprobar actualizaciones de la base de datos de artículos
+🔎 Search	🔎 Suchen	🔎 Rechercher	🔎 Buscar

@@ -28,14 +28,14 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | --- | --- | --- |
 | `openecraft` | `.` (`application/`) | Editor (desktop + web) – the root package, built by trunk |
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF / DWG export |
-| `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, parts server API types |
+| `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, parts server API types, data portal rules (faceted search, lifecycle, update check) |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
 | `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
 | `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
-| `openecraft-parts-server` | `parts-server/` | Standalone parts database server (axum, JSON file storage) |
+| `openecraft-parts-server` | `parts-server/` | Data portal server (axum; SQLite or JSON storage, users and roles, catalogs, files, history, web page) |
 | `openecraft-project-server` | `project-server/` | Project server: shared projects, page locks for several users (axum, project files) |
 | `openecraft-cli` | `cli/` | Command line and MCP server (AI agents) on top of `openecraft-core` |
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
