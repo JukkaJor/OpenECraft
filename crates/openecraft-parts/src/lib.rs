@@ -4,7 +4,8 @@
 //!   product groups, commercial / technical / mounting data, function templates)
 //! - part tree filter and grouping ([`PartFilter`])
 //! - CSV / JSON import and export ([`to_csv`], [`from_csv`], [`import`]), BMEcat
-//!   catalogs with ETIM / eCl@ss features ([`from_bmecat`])
+//!   catalogs with ETIM / eCl@ss features ([`from_bmecat`]), EPLAN parts XML
+//!   ([`from_eplan_xml`], [`to_eplan_xml`])
 //! - 2D / 3D models of parts with SVG, STL, OBJ and IFC import ([`Model2d`], [`Mesh3d`])
 //! - the generic example catalog ([`default_catalog`])
 //! - the HTTP API types of the parts server ([`api`]), its data portal model
@@ -16,6 +17,7 @@ mod bmecat;
 mod catalog;
 mod connection;
 mod csv;
+mod eplan;
 mod filter;
 mod graphics;
 pub mod mechanics;
@@ -32,6 +34,7 @@ pub use bmecat::{from_bmecat, is_bmecat};
 pub use catalog::{add_generated_models, default_catalog};
 pub use connection::{default_connection_points, points_from_text, points_to_text, upper_side, ConnectionPoint, Exit};
 pub use csv::{csv_escape, from_csv, import, parse_csv, to_csv};
+pub use eplan::{from_eplan_xml, is_eplan_xml, language_text, to_eplan_xml};
 pub use filter::{distinct_values, Grouping, PartFilter};
 pub use ifc::parse_ifc;
 pub use graphics::{parse_mesh, parse_obj, parse_stl, parse_svg, Mesh3d, MeshBuilder, Model2d, Prim2d, MAX_TRIANGLES};

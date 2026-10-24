@@ -218,6 +218,8 @@ pub fn import(text: &str) -> Result<Vec<Part>, String> {
     let t = text.trim_start_matches('\u{feff}').trim_start();
     if crate::bmecat::is_bmecat(t) {
         crate::bmecat::from_bmecat(t)
+    } else if crate::eplan::is_eplan_xml(t) {
+        crate::eplan::from_eplan_xml(t)
     } else if t.starts_with('{') {
         serde_json::from_str::<PartsDb>(t).map(|d| d.parts).map_err(|e| e.to_string())
     } else if t.starts_with('[') {

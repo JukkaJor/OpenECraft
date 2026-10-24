@@ -4535,3 +4535,8 @@ CSV or Excel	CSV oder Excel	CSV ou Excel	CSV o Excel
 json (default), csv or xlsx (Excel, needs path)	json (Standard), csv oder xlsx (Excel, braucht path)	json (par défaut), csv ou xlsx (Excel, nécessite path)	json (por defecto), csv o xlsx (Excel, necesita path)
 File to write (xlsx)	Zu schreibende Datei (xlsx)	Fichier à écrire (xlsx)	Archivo a escribir (xlsx)
 The format xlsx needs a path	Das Format xlsx braucht einen Pfad	Le format xlsx nécessite un chemin	El formato xlsx necesita una ruta
+Export as EPLAN parts XML…	Als EPLAN-Artikel-XML exportieren…	Exporter en XML d'articles EPLAN…	Exportar como XML de artículos EPLAN…
+For the import into EPLAN parts management (P_ARTICLE_* attributes, texts in en_US)	Für den Import in die EPLAN-Artikelverwaltung (P_ARTICLE_*-Attribute, Texte in en_US)	Pour l'import dans la gestion d'articles EPLAN (attributs P_ARTICLE_*, textes en en_US)	Para importar en la gestión de artículos de EPLAN (atributos P_ARTICLE_*, textos en en_US)
+Parts (CSV, JSON, BMEcat, EPLAN XML)	Artikel (CSV, JSON, BMEcat, EPLAN-XML)	Articles (CSV, JSON, BMEcat, XML EPLAN)	Artículos (CSV, JSON, BMEcat, XML de EPLAN)
+Exports all parts of the parts server as CSV or EPLAN parts XML	Exportiert alle Artikel des Artikelservers als CSV oder EPLAN-Artikel-XML	Exporte tous les articles du serveur d'articles en CSV ou en XML d'articles EPLAN	Exporta todos los artículos del servidor de artículos como CSV o XML de artículos EPLAN
+csv (default) or eplan_xml	csv (Standard) oder eplan_xml	csv (par défaut) ou eplan_xml	csv (por defecto) o eplan_xml

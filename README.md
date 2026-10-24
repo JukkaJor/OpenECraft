@@ -217,6 +217,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
     door devices from the rear, PLC modules at the bottom). Edited in the part editor
     (tab *Connection points*: table, click into the front view to place one); the
     panel layout wires to them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
+  - **EPLAN parts XML**: the parts management export of EPLAN (`<part>` with
+    `P_ARTICLE_*` attributes and variants, multi-language texts, product groups by
+    their exchange numbers) is imported like the other formats, and parts export as
+    EPLAN parts XML for the way back (parts management, `parts_export --format
+    eplan_xml`);
   - import / export as CSV (`;` separated, header names) or JSON, import of **BMEcat**
     catalogs (1.2 / 2005, as published by manufacturers and wholesalers, e.g. from the
     EPLAN Data Portal or ETIM / eCl@ss data pools): identification, description, price,

@@ -251,6 +251,9 @@ impl PartsUi {
                     if ui.button(tr("Export as CSV…")).clicked() {
                         actions.push(PartsAction::Export { name: format!("{base}.csv"), filter: ("CSV", "csv"), content: parts::to_csv(&src) });
                     }
+                    if ui.button(tr("Export as EPLAN parts XML…")).on_hover_text(tr("For the import into EPLAN parts management (P_ARTICLE_* attributes, texts in en_US)")).clicked() {
+                        actions.push(PartsAction::Export { name: format!("{base}.xml"), filter: ("XML", "xml"), content: openecraft_parts::to_eplan_xml(&src) });
+                    }
                     if ui.button(tr("Export as JSON…")).clicked() {
                         let json = serde_json::to_string_pretty(&PartsDb { parts: src }).unwrap_or_default();
                         actions.push(PartsAction::Export { name: format!("{base}.json"), filter: ("JSON", "json"), content: json });

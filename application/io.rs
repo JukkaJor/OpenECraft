@@ -62,7 +62,7 @@ impl FileKind for Purpose {
             Purpose::Project => (tr("OpenECraft project or archive"), &[PROJECT_EXT, "oecz", "json"]),
             Purpose::OutputTarget | Purpose::Compare | Purpose::Subproject => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
-            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
