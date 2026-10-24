@@ -100,3 +100,13 @@ fn report_names_replace_the_variant_names_of_format_1() {
     let (again, _) = convert(&json.replace("device_list", "my_plugin_report")).unwrap();
     assert_eq!(again.pages[0].kind, PageKind::Report(crate::model::ReportId::new("my_plugin_report")));
 }
+
+#[test]
+fn packed_projects_are_small_and_read_back() {
+    let prj = crate::sample::demo_project();
+    let packed = pack(&prj);
+    assert!(packed.len() * 4 < prj.to_json().len(), "{} vs {}", packed.len(), prj.to_json().len());
+    assert_eq!(unpack(&packed).unwrap().pages.len(), prj.pages.len());
+    assert!(unpack("{}").is_err());
+    assert!(unpack("oec-deflate-base64:!!").is_err());
+}

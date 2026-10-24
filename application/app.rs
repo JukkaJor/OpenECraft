@@ -165,7 +165,8 @@ impl App {
         let mut projects_ui = projects_ui::ProjectsUi::default();
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
-            prj = eframe::get_value(storage, "project");
+            // Packed; stores written before have the plain project.
+            prj = storage.get_string("project_packed").and_then(|s| openecraft_core::archive::unpack(&s).ok()).or_else(|| eframe::get_value(storage, "project"));
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
@@ -462,7 +463,9 @@ impl eframe::App for App {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, "project", &self.session.prj);
+        // Packed: large projects would not fit the browser's local storage as text.
+        storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+        storage.set_string("project", String::new());
         eframe::set_value(storage, "file_name", &self.session.file_name);
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);

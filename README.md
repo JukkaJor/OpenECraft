@@ -501,6 +501,7 @@ built with [egui / eframe](https://github.com/emilk/egui).
   without revisions, baselines, review, wiring marks and accepted check messages.
   Command line: `new_project --template Machine` (or a file).
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
+  (compressed, so large projects fit the browser's local storage)
   (app storage on desktop, local storage in the browser).
 
 ## Build & run

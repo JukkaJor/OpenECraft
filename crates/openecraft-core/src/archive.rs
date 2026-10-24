@@ -199,5 +199,23 @@ pub fn manifest(bytes: &[u8]) -> Result<Manifest, String> {
     serde_json::from_slice(&m.1).map_err(|e| e.to_string())
 }
 
+/// Prefix of a packed project (see [`pack`]).
+const PACKED: &str = "oec-deflate-base64:";
+
+/// The project file compressed (deflate) and as base64 text: about a tenth of the
+/// JSON, for stores with a size limit such as the browser's local storage.
+pub fn pack(prj: &Project) -> String {
+    let json = prj.to_json();
+    format!("{PACKED}{}", crate::document::base64_encode(&miniz_oxide::deflate::compress_to_vec(json.as_bytes(), 6)))
+}
+
+/// A project packed by [`pack`].
+pub fn unpack(text: &str) -> Result<Project, String> {
+    let data = text.strip_prefix(PACKED).ok_or_else(|| tr("Not a packed project").to_string())?;
+    let bytes = crate::document::base64_decode(data).ok_or_else(|| tr("Not a packed project").to_string())?;
+    let json = miniz_oxide::inflate::decompress_to_vec(&bytes).map_err(|_| tr("Not a packed project").to_string())?;
+    Project::from_json(&String::from_utf8_lossy(&json))
+}
+
 #[cfg(test)]
 mod tests;
