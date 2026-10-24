@@ -139,15 +139,20 @@ fn ui_texts_are_translated() {
 const CORE_RULES: &[(&str, &[&str])] = &[
     ("geom", &[]),
     ("xml", &[]),
+    ("params", &[]),
+    ("table", &["params"]),
     ("symbols", &["geom", "symlib"]),
     ("symlib", &["geom", "model", "symbols"]),
+    // The project file format: data only. `symlib` goes once the user symbols are
+    // looked up through a table instead of the process-wide registry.
+    ("model", &["geom", "symbols", "symlib"]),
     ("history", &["model"]),
     ("translation", &["model"]),
     ("options", &["model"]),
     ("frame", &["geom", "model"]),
     ("parts", &["model", "symbols"]),
     ("routing", &["geom", "model", "symbols"]),
-    ("devdesc", &["parts", "xml"]),
+    ("devdesc", &["model", "parts", "xml"]),
     ("testkit", &["geom", "model", "parts", "symbols"]),
 ];
 

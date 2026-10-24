@@ -8,23 +8,8 @@ use super::Plan;
 use crate::model::Project;
 use crate::reports::{Issue, Severity};
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum AccessoryKind {
-    #[default]
-    Gland,
-    /// Cable gland with shield contact.
-    EmcGland,
-    Connector,
-    StrainRelief,
-    ShieldClamp,
-    ProtectiveHose,
-    EndSleeve,
-    Marker,
-    Other,
-}
+pub use crate::model::field::{Accessory, AccessoryKind};
 
 impl AccessoryKind {
     pub const ALL: [AccessoryKind; 9] = [
@@ -80,20 +65,6 @@ impl AccessoryKind {
     pub fn clamps(self) -> bool {
         matches!(self, AccessoryKind::Gland | AccessoryKind::EmcGland | AccessoryKind::StrainRelief)
     }
-}
-
-/// An accessory of a cable at one end (device tag of the end) or at both ends.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Accessory {
-    pub id: u64,
-    pub cable: String,
-    /// Device tag of the end; empty = at both ends.
-    pub at: String,
-    pub kind: AccessoryKind,
-    pub part: String,
-    /// Quantity per end.
-    pub count: u32,
 }
 
 impl Accessory {

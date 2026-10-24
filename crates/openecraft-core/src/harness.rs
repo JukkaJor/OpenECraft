@@ -6,27 +6,9 @@
 use crate::model::{natural_cmp, Project};
 use crate::netlist::{pin_designation, PinRef};
 use crate::reports::Analysis;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use std::fmt::Write;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Harness {
-    pub id: u64,
-    /// Complete device tag, e.g. `=A1-WH1`.
-    pub tag: String,
-    pub description: String,
-    /// Length in metres of wires that are not routed in the panel layout (field
-    /// wiring); 0 = unknown.
-    pub length: f32,
-    /// Part number of the finished harness (bill of materials).
-    pub part: String,
-    /// Connections of the harness: both ends as connection point designations
-    /// (`-S1:13`), in [`key`] order.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub connections: Vec<[String; 2]>,
-}
+pub use crate::model::harness::Harness;
 
 /// Order independent key of a connection.
 pub fn key(a: &str, b: &str) -> [String; 2] {

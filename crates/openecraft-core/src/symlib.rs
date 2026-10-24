@@ -10,39 +10,12 @@ use crate::symbols::{self, Anchor, Category, FieldKind, Func, PinDef, Prim, Symb
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{OnceLock, RwLock};
+pub use crate::model::symlib::{UserPin, UserSymbol};
 
 /// Keys of user symbols start with this prefix.
 pub const PREFIX: &str = "user:";
 /// Snap of graphics in the symbol editor (pins snap to the 4 mm grid).
 pub const DRAW_SNAP: f32 = 0.5;
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct UserPin {
-    pub pos: P,
-    /// Default connection point designation.
-    pub label: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct UserSymbol {
-    pub key: String,
-    pub name: String,
-    /// Library (group in the symbol list), e.g. the company name.
-    pub library: String,
-    /// Identifying letter(s) for new device tags.
-    pub letter: String,
-    pub func: Func,
-    pub default_label: String,
-    pub auto_number: bool,
-    pub show_tag: bool,
-    pub show_pin_labels: bool,
-    pub prims: Vec<Prim>,
-    pub pins: Vec<UserPin>,
-    /// Pins that are connected inside the symbol (terminals).
-    pub bridges: Vec<(usize, usize)>,
-}
 
 impl Default for UserSymbol {
     fn default() -> Self {

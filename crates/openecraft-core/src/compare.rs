@@ -7,30 +7,14 @@
 use crate::model::{natural_cmp, Page, Project};
 use crate::revision::{ChangeKind, Snapshot};
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
-
-/// Stored project. Shared, so that undo snapshots stay cheap.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Stored(pub Arc<Project>);
+pub use crate::model::compare::{Baseline, Stored};
 
 impl PartialEq for Stored {
     fn eq(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.0, &other.0) || self.0 == other.0
     }
-}
-
-/// A named state of the whole project.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Baseline {
-    pub name: String,
-    pub date: String,
-    pub author: String,
-    pub description: String,
-    pub project: Stored,
 }
 
 /// The project as stored in a baseline: without revisions, baselines and review.

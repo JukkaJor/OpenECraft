@@ -6,9 +6,10 @@
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
-pub use crate::panel::Layout;
+use crate::symbols::Anchor;
+pub use panel::Layout;
 pub use openecraft_parts::natural_cmp;
-pub use crate::parts::{Part, PartRef};
+pub use openecraft_parts::{Part, PartRef};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::fmt;
@@ -16,6 +17,44 @@ use std::sync::{Mutex, OnceLock};
 
 /// Version of the project file format written by this program (see
 /// [`crate::archive::convert`]).
+pub mod translation;
+pub mod wiring;
+pub mod marking;
+pub mod fluid;
+pub mod process;
+pub mod options;
+pub mod page_templates;
+pub mod graphics;
+pub mod potentials;
+pub mod plugs;
+pub mod harness;
+pub mod config;
+pub mod structure;
+pub mod subproject;
+pub mod review;
+pub mod revision;
+pub mod compare;
+pub mod properties;
+pub mod electrical;
+pub mod integration;
+pub mod field;
+pub mod plc_hw;
+pub mod devdesc;
+pub mod symlib;
+pub mod forms;
+pub mod report_blocks;
+pub mod document;
+pub mod routing3d;
+pub mod panel;
+pub mod ops;
+pub mod functions;
+pub mod safety;
+pub mod rules;
+pub mod electrofluid;
+pub mod frame;
+pub mod manufacturing;
+pub mod climate;
+pub mod props;
 pub const FORMAT: u32 = 2;
 
 fn legacy_format() -> u32 {
@@ -39,10 +78,10 @@ pub struct Project {
     pub wire_numbering: WireNumbering,
     /// Potential definitions (kind, voltage, wire colour and cross-section).
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub potentials: Vec<crate::potentials::PotentialDef>,
+    pub potentials: Vec<potentials::PotentialDef>,
     /// Wire colour and cross-section of nets without a defined potential.
-    #[serde(skip_serializing_if = "crate::potentials::WireDefaults::is_default")]
-    pub wire_defaults: crate::potentials::WireDefaults,
+    #[serde(skip_serializing_if = "potentials::WireDefaults::is_default")]
+    pub wire_defaults: potentials::WireDefaults,
     /// Wires are drawn in their colour (schematic, PDF, SVG).
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub wire_colors: bool,
@@ -51,81 +90,81 @@ pub struct Project {
     pub strips: BTreeMap<String, StripData>,
     /// Plug data (pin order) keyed by plug tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub plugs: BTreeMap<String, crate::plugs::PlugData>,
+    pub plugs: BTreeMap<String, plugs::PlugData>,
     /// PLC card data (start address, rack / slot) keyed by card tag.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub plc_cards: BTreeMap<String, PlcCard>,
     /// PLC stations, bus systems, bus connections and device descriptions.
-    #[serde(skip_serializing_if = "crate::plc_hw::Hardware::is_empty")]
-    pub plc: crate::plc_hw::Hardware,
+    #[serde(skip_serializing_if = "plc_hw::Hardware::is_empty")]
+    pub plc: plc_hw::Hardware,
     /// Released revisions, oldest first.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub revisions: Vec<crate::revision::Revision>,
+    pub revisions: Vec<revision::Revision>,
     /// Wire harnesses with the connections they contain.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub harnesses: Vec<crate::harness::Harness>,
+    pub harnesses: Vec<harness::Harness>,
     /// Project symbol library (user symbols).
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub symbols: Vec<crate::symlib::UserSymbol>,
+    pub symbols: Vec<symlib::UserSymbol>,
     /// Title blocks and report forms.
-    pub forms: crate::forms::Forms,
+    pub forms: forms::Forms,
     /// Report blocks: report pages generated and updated together.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub report_blocks: Vec<crate::report_blocks::ReportBlock>,
+    pub report_blocks: Vec<report_blocks::ReportBlock>,
     /// Options and generation rules of the configurator.
-    #[serde(skip_serializing_if = "crate::config::Configuration::is_empty")]
-    pub configuration: crate::config::Configuration,
+    #[serde(skip_serializing_if = "config::Configuration::is_empty")]
+    pub configuration: config::Configuration,
     /// Marker texts and materials.
-    #[serde(skip_serializing_if = "crate::marking::Settings::is_default")]
-    pub marking: crate::marking::Settings,
+    #[serde(skip_serializing_if = "marking::Settings::is_default")]
+    pub marking: marking::Settings,
     /// Defaults and numbering of hoses / pipes.
-    #[serde(skip_serializing_if = "crate::fluid::FluidSettings::is_default")]
-    pub fluid: crate::fluid::FluidSettings,
+    #[serde(skip_serializing_if = "fluid::FluidSettings::is_default")]
+    pub fluid: fluid::FluidSettings,
     /// PCT loops of the pre-planning.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub pct_loops: Vec<crate::process::PctLoop>,
+    pub pct_loops: Vec<process::PctLoop>,
     /// Source and target languages of the project texts with their dictionary.
-    #[serde(skip_serializing_if = "crate::translation::Languages::is_default")]
-    pub languages: crate::translation::Languages,
+    #[serde(skip_serializing_if = "translation::Languages::is_default")]
+    pub languages: translation::Languages,
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub wiring_marks: Vec<crate::wiring::WiringMark>,
+    pub wiring_marks: Vec<wiring::WiringMark>,
     /// Structure management: defined identifiers, aspects of the pages, work areas.
-    #[serde(skip_serializing_if = "crate::structure::Structures::is_default")]
-    pub structures: crate::structure::Structures,
+    #[serde(skip_serializing_if = "structure::Structures::is_default")]
+    pub structures: structure::Structures,
     /// Page templates defined for the project.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub page_templates: Vec<crate::page_templates::PageTemplate>,
+    pub page_templates: Vec<page_templates::PageTemplate>,
     /// Layers of graphics, texts, dimensions and images (visibility, locking, print).
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub layers: Vec<crate::graphics::Layer>,
+    pub layers: Vec<graphics::Layer>,
     /// Approvers of revisions (release workflow).
-    #[serde(skip_serializing_if = "crate::revision::Workflow::is_default")]
-    pub workflow: crate::revision::Workflow,
+    #[serde(skip_serializing_if = "revision::Workflow::is_default")]
+    pub workflow: revision::Workflow,
     /// Stored states of the whole project (compare, take over).
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub baselines: Vec<crate::compare::Baseline>,
+    pub baselines: Vec<compare::Baseline>,
     /// Comments, redline / greenline markup, approvals and change requests.
-    #[serde(skip_serializing_if = "crate::review::Review::is_empty")]
-    pub review: crate::review::Review,
+    #[serde(skip_serializing_if = "review::Review::is_empty")]
+    pub review: review::Review,
     /// Supply, installation conditions, safety functions and rule sets.
-    #[serde(skip_serializing_if = "crate::electrical::Electrical::is_default")]
-    pub electrical: crate::electrical::Electrical,
+    #[serde(skip_serializing_if = "electrical::Electrical::is_default")]
+    pub electrical: electrical::Electrical,
     /// User defined properties, function definitions and placement schemes.
-    #[serde(skip_serializing_if = "crate::properties::Library::is_empty")]
-    pub property_db: crate::properties::Library,
+    #[serde(skip_serializing_if = "properties::Library::is_empty")]
+    pub property_db: properties::Library,
     /// Field wiring: plant layout, route network, bonding and cable accessories.
-    #[serde(skip_serializing_if = "crate::field::Field::is_empty")]
-    pub field: crate::field::Field,
+    #[serde(skip_serializing_if = "field::Field::is_empty")]
+    pub field: field::Field,
     /// Subprojects taken out of this project, or the project this one was taken from.
-    #[serde(skip_serializing_if = "crate::subproject::Subprojects::is_empty")]
-    pub subprojects: crate::subproject::Subprojects,
+    #[serde(skip_serializing_if = "subproject::Subprojects::is_empty")]
+    pub subprojects: subproject::Subprojects,
     /// Options that show or hide model content.
-    #[serde(skip_serializing_if = "crate::options::ModelOptions::is_empty")]
-    pub model_options: crate::options::ModelOptions,
+    #[serde(skip_serializing_if = "options::ModelOptions::is_empty")]
+    pub model_options: options::ModelOptions,
     /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
-    #[serde(skip_serializing_if = "crate::integration::Integration::is_empty")]
-    pub integration: crate::integration::Integration,
+    #[serde(skip_serializing_if = "integration::Integration::is_empty")]
+    pub integration: integration::Integration,
     pub next_id: u64,
 }
 
@@ -542,12 +581,12 @@ pub struct Page {
     pub frame: String,
     /// File of a document page.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub document: Option<crate::document::Document>,
+    pub document: Option<document::Document>,
     pub kind: PageKind,
     /// Report pages: what part of the report the page shows (report blocks, pages
     /// output from other projects); none: the first rows of the whole report.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub report: Option<crate::report_blocks::ReportPart>,
+    pub report: Option<report_blocks::ReportPart>,
     pub symbols: Vec<SymbolInst>,
     pub wires: Vec<Wire>,
     pub texts: Vec<TextItem>,
@@ -565,7 +604,7 @@ pub struct Page {
     pub cable_defs: Vec<CableDef>,
     /// Page property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub values: crate::properties::Values,
+    pub values: properties::Values,
 }
 
 impl Default for Page {
@@ -653,7 +692,7 @@ pub struct SymbolInst {
     pub function_def: String,
     /// Function, terminal and PLC connection point property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub values: crate::properties::Values,
+    pub values: properties::Values,
 }
 
 impl Default for SymbolInst {
@@ -700,7 +739,7 @@ pub struct PlacedProp {
     /// Anchor point of the text relative to the symbol position.
     pub offset: P,
     pub size: f32,
-    #[serde(skip_serializing_if = "crate::props::is_left", default = "crate::props::default_anchor")]
+    #[serde(skip_serializing_if = "is_left", default = "default_anchor")]
     pub anchor: crate::symbols::Anchor,
     /// Shown as `Name: value`.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
@@ -730,13 +769,13 @@ pub struct Wire {
     pub cross_section: String,
     /// Medium of a hose / pipe; None = the project's default.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub medium: Option<crate::fluid::Medium>,
+    pub medium: Option<fluid::Medium>,
     /// Length of a hose / pipe in metres; 0 = not set.
     #[serde(skip_serializing_if = "is_zero")]
     pub length: f32,
     /// Hose / tube / pipe configuration (line type, part, fittings, rating).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub hose: Option<crate::fluid::HoseConfig>,
+    pub hose: Option<fluid::HoseConfig>,
     /// Wire (connection) number; all wires of a connection carry the same number.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub number: String,
@@ -774,19 +813,19 @@ pub struct Cable {
     pub description: String,
     /// Network / bus cable for this bus system (`None`: ordinary cable).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub bus: Option<crate::devdesc::BusKind>,
+    pub bus: Option<devdesc::BusKind>,
     /// The cable has an overall shield; `None`: from the cable type and the bus.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shielded: Option<bool>,
     /// Ends at which the shield is connected.
-    #[serde(skip_serializing_if = "crate::routing3d::ShieldEnds::is_both")]
-    pub shield_ends: crate::routing3d::ShieldEnds,
+    #[serde(skip_serializing_if = "routing3d::ShieldEnds::is_both")]
+    pub shield_ends: routing3d::ShieldEnds,
     /// Outer diameter in mm; 0 = estimated from cores and cross-section.
     #[serde(skip_serializing_if = "is_zero")]
     pub diameter: f32,
     /// Cable property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub values: crate::properties::Values,
+    pub values: properties::Values,
 }
 
 impl Cable {
@@ -991,7 +1030,7 @@ pub struct ImageItem {
     pub id: u64,
     pub a: P,
     pub b: P,
-    pub file: crate::document::Document,
+    pub file: document::Document,
     /// Pixel size of the bitmap (keeps the aspect ratio when resized).
     pub px: [u32; 2],
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -1044,7 +1083,44 @@ pub struct DeviceData {
     pub part: String,
     /// Device property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub values: crate::properties::Values,
+    pub values: properties::Values,
+}
+
+impl PropKind {
+    pub const ALL: [PropKind; 7] =
+        [PropKind::Description, PropKind::PartNumber, PropKind::TypeNumber, PropKind::Manufacturer, PropKind::Label, PropKind::Pins, PropKind::Structure];
+
+    /// Property key of the fixed properties of older files.
+    pub fn key(self) -> &'static str {
+        match self {
+            PropKind::Description => "device.description",
+            PropKind::PartNumber => "device.parts",
+            PropKind::TypeNumber => "device.type_numbers",
+            PropKind::Manufacturer => "device.manufacturers",
+            PropKind::Label => "function.label",
+            PropKind::Pins => "function.pins",
+            PropKind::Structure => "device.structure",
+        }
+    }
+}
+
+/// Converts the placed properties of older files (fixed kinds) to property keys.
+pub fn migrate(s: &mut SymbolInst) {
+    for pp in &mut s.props {
+        if let Some(kind) = pp.legacy.take() {
+            if pp.key.is_empty() {
+                pp.key = kind.key().into();
+            }
+        }
+    }
+}
+
+pub fn default_anchor() -> Anchor {
+    Anchor::Left
+}
+
+pub fn is_left(a: &Anchor) -> bool {
+    *a == Anchor::Left
 }
 
 impl Project {
@@ -1080,7 +1156,7 @@ impl Project {
                     }
                     s.pins.truncate(def.pins.len());
                 }
-                crate::props::migrate(s);
+                migrate(s);
             }
         }
         self.migrate_part_assignments();
@@ -1120,7 +1196,7 @@ impl Project {
     /// Converts single part assignments of older files to part lists; old generic
     /// part numbers are mapped onto the catalog ("CT-9A-24DC" → "GEN.CT-9A-24DC").
     fn migrate_part_assignments(&mut self) {
-        let catalog = crate::parts::default_catalog();
+        let catalog = openecraft_parts::default_catalog();
         let mut remapped = Vec::new();
         for dev in self.devices.values_mut() {
             let legacy = std::mem::take(&mut dev.part);

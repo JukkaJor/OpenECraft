@@ -9,70 +9,8 @@ use super::num;
 use crate::model::Project;
 use crate::panel::ItemKind;
 use openecraft_i18n::tr_fmt;
-use serde::{Deserialize, Serialize};
 use std::fmt::Write;
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Bend {
-    /// Bend angle in degrees (deviation from straight); negative bends the other way.
-    pub angle: f32,
-    /// Bent about the bar's thickness (on edge) instead of flat.
-    pub edgewise: bool,
-    /// Inner radius in mm, 0: from the rules.
-    pub radius: f32,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct BarHole {
-    /// Straight segment of the bar (from 0).
-    pub segment: usize,
-    /// Distance from the start of the segment (outer dimension), mm.
-    pub at: f32,
-    pub diameter: f32,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct CopperBar {
-    pub id: u64,
-    /// Enclosure the bar is mounted in (name).
-    pub enclosure: String,
-    pub name: String,
-    pub width: f32,
-    pub thickness: f32,
-    /// Number of equal bars (e.g. one per phase).
-    pub count: u32,
-    /// Outer lengths of the straight segments (up to the virtual sharps), mm.
-    pub segments: Vec<f32>,
-    /// One bend between two segments.
-    pub bends: Vec<Bend>,
-    pub holes: Vec<BarHole>,
-    /// Diameter of a hole at both ends (0: none).
-    pub end_holes: f32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct BarRules {
-    /// Position of the neutral fibre (0 … 1 of the thickness); 0: DIN 6935.
-    pub k_factor: f32,
-    /// Inner radius of bends without one, as a multiple of the thickness.
-    pub radius: f32,
-    /// Smallest inner radius, multiple of the thickness.
-    pub min_radius: f32,
-    /// Shortest straight length next to a bend, mm.
-    pub min_flange: f32,
-    /// Springback of copper, percent of the angle.
-    pub springback: f32,
-    /// Stock length of the bars, mm.
-    pub stock_length: f32,
-    /// Saw cut, mm.
-    pub kerf: f32,
-    /// Centre of the end holes from the bar end, multiple of the width (0.5 … 2).
-    pub end_distance: f32,
-}
+pub use crate::model::manufacturing::{BarHole, BarRules, Bend, CopperBar};
 
 impl Default for BarRules {
     fn default() -> Self {

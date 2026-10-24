@@ -5,20 +5,7 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::model::*;
 use crate::netlist::{Net, Netlist};
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum PotentialKind {
-    /// Phase conductor.
-    L,
-    N,
-    Pe,
-    DcPlus,
-    DcMinus,
-    Signal,
-    #[default]
-    Other,
-}
+pub use crate::model::potentials::{PotentialDef, PotentialKind, WireDefaults};
 
 impl PotentialKind {
     pub const ALL: [PotentialKind; 7] = [
@@ -42,29 +29,6 @@ impl PotentialKind {
             PotentialKind::Other => tr("Other"),
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct PotentialDef {
-    /// Potential name as on the potential connection points, e.g. `L1`.
-    pub name: String,
-    pub kind: PotentialKind,
-    /// e.g. "400 V AC".
-    pub voltage: String,
-    /// Wire colour (IEC 60757 code, e.g. "BK").
-    pub color: String,
-    /// e.g. "2.5 mm²".
-    pub cross_section: String,
-    pub description: String,
-}
-
-/// Colour and cross-section of wires whose net has no defined potential.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct WireDefaults {
-    pub color: String,
-    pub cross_section: String,
 }
 
 impl WireDefaults {

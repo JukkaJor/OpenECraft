@@ -8,19 +8,8 @@
 
 use openecraft_i18n::{tr, Lang};
 use crate::model::Project;
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Languages {
-    /// Language the project texts are written in (ISO 639-1 code).
-    pub source: String,
-    /// Further languages of the documentation.
-    pub targets: Vec<String>,
-    /// Source line → language code → translation.
-    pub dictionary: BTreeMap<String, BTreeMap<String, String>>,
-}
+pub use crate::model::translation::Languages;
 
 impl Default for Languages {
     fn default() -> Self {

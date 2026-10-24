@@ -6,19 +6,7 @@
 use super::handoff::Job;
 use crate::model::Project;
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Status {
-    #[default]
-    Done,
-    Started,
-    Failed,
-    /// Made, but has to be reworked.
-    Rework,
-    Skipped,
-}
+pub use crate::model::manufacturing::{Feedback, Status};
 
 impl Status {
     pub const ALL: [Status; 5] = [Status::Done, Status::Started, Status::Failed, Status::Rework, Status::Skipped];
@@ -54,26 +42,6 @@ impl Status {
             _ => None,
         }
     }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Feedback {
-    pub job: String,
-    /// Program file; empty for the whole job.
-    pub program: String,
-    /// Operation (sequence number); 0 for the whole program.
-    pub seq: usize,
-    /// Device tag or item the feedback is about.
-    pub item: String,
-    pub status: Status,
-    /// Measured deviation of the position, mm.
-    pub dx: f32,
-    pub dy: f32,
-    /// Actual machine time, s (0: unknown).
-    pub time: f32,
-    pub message: String,
-    pub date: String,
 }
 
 impl Feedback {

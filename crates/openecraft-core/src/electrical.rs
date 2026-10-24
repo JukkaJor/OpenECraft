@@ -11,19 +11,8 @@ use crate::parts::{kind_of_symbol, FnKind};
 use crate::potentials::PotentialKind;
 use crate::protection::Protection;
 use crate::sizing::{designation_number, is_protective, passes_current, protected_nets};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
-
-/// Earthing system of the supply (IEC 60364-1).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Earthing {
-    #[default]
-    TnS,
-    TnC,
-    TnCS,
-    Tt,
-    It,
-}
+pub use crate::model::electrical::{Conditions, Earthing, Electrical, Insulation, Material, Supply};
 
 impl Earthing {
     pub const ALL: [Earthing; 5] = [Earthing::TnS, Earthing::TnC, Earthing::TnCS, Earthing::Tt, Earthing::It];
@@ -39,23 +28,6 @@ impl Earthing {
     }
 }
 
-/// The supply at the incoming terminals of the machine / assembly.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Supply {
-    /// Line-to-line voltage in V.
-    pub voltage: f32,
-    pub frequency: f32,
-    pub earthing: Earthing,
-    /// Highest three-phase short-circuit current at the supply point in kA.
-    pub ik_max: f32,
-    /// Lowest single-phase fault current (line to PE) at the supply point in kA;
-    /// 0: from the highest short-circuit current.
-    pub ik_min: f32,
-    /// Rated current of the supply in A; 0: not limited.
-    pub rated_current: f32,
-}
-
 impl Default for Supply {
     fn default() -> Self {
         Supply { voltage: 400.0, frequency: 50.0, earthing: Earthing::TnS, ik_max: 10.0, ik_min: 0.0, rated_current: 0.0 }
@@ -67,13 +39,6 @@ impl Supply {
     pub fn u0(&self) -> f32 {
         self.voltage / 3f32.sqrt()
     }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Material {
-    #[default]
-    Copper,
-    Aluminium,
 }
 
 impl Material {
@@ -95,15 +60,6 @@ impl Material {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum Insulation {
-    /// PVC, 70 °C.
-    #[default]
-    Pvc,
-    /// XLPE / EPR, 90 °C.
-    Xlpe,
-}
-
 impl Insulation {
     pub const ALL: [Insulation; 2] = [Insulation::Pvc, Insulation::Xlpe];
 
@@ -121,19 +77,6 @@ impl Insulation {
             Insulation::Xlpe => 90.0,
         }
     }
-}
-
-/// Installation conditions of the conductors: correct the current-carrying capacity
-/// of IEC 60204-1 table 6 (copper, PVC, 40 °C, one circuit).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Conditions {
-    /// Ambient temperature in °C.
-    pub ambient: f32,
-    /// Loaded circuits bunched together (IEC 60364-5-52, table B.52.17).
-    pub grouped: u32,
-    pub material: Material,
-    pub insulation: Insulation,
 }
 
 impl Default for Conditions {
@@ -178,26 +121,6 @@ impl Conditions {
             (Material::Aluminium, Insulation::Xlpe) => 94.0,
         }
     }
-}
-
-/// Electrical design data of a project.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Electrical {
-    pub supply: Supply,
-    pub conditions: Conditions,
-    /// Diversity factor of the loads; 0: rated diversity factor of IEC 61439-1,
-    /// table 101, by the number of circuits.
-    pub diversity: f32,
-    /// Safety functions (ISO 13849-1).
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub safety: Vec<crate::safety::SafetyFunction>,
-    /// Ids of the built-in rule libraries the project is verified against.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub standards: Vec<String>,
-    /// Customer rule sets.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rule_sets: Vec<crate::rules::RuleSet>,
 }
 
 impl Electrical {

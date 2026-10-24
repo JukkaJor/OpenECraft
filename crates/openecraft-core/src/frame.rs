@@ -5,7 +5,7 @@
 use openecraft_i18n::{tr, tr_const};
 use crate::geom::{p, P, R};
 use crate::model::{PageKind, Project};
-use serde::{Deserialize, Serialize};
+pub use crate::model::frame::{Labels, Paper, PlotFrame};
 
 /// Width of the title block forms at scale 1 (they shrink on narrower frames).
 pub const TITLE_W: f32 = 400.0;
@@ -14,20 +14,6 @@ pub const TITLE_H: f32 = 32.0;
 
 /// Frame of pages that do not choose one and whose project sets no default.
 pub const DEFAULT: &str = "A3 landscape";
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Paper {
-    A0,
-    A1,
-    A2,
-    A3,
-    A4,
-    Letter,
-    Legal,
-    Tabloid,
-    /// Width and height from [`PlotFrame::custom`].
-    Custom,
-}
 
 impl Paper {
     pub const ALL: [Paper; 9] = [Paper::A0, Paper::A1, Paper::A2, Paper::A3, Paper::A4, Paper::Letter, Paper::Legal, Paper::Tabloid, Paper::Custom];
@@ -66,15 +52,6 @@ impl Paper {
     }
 }
 
-/// How columns or rows are labelled.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Labels {
-    /// 1, 2, 3 …
-    Numbers,
-    /// A, B, … Z, AA, AB …
-    Letters,
-}
-
 impl Labels {
     pub fn label(self, i: usize) -> String {
         match self {
@@ -97,26 +74,6 @@ impl Labels {
             Labels::Letters => tr("Letters (A, B, C)"),
         }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PlotFrame {
-    pub name: String,
-    pub paper: Paper,
-    pub landscape: bool,
-    /// Width and height (as drawn) of custom paper in mm.
-    pub custom: [f32; 2],
-    /// Distance of the border from the paper edge.
-    pub margin: f32,
-    /// Width of the column and row strips.
-    pub strip: f32,
-    pub columns: usize,
-    pub rows: usize,
-    pub column_labels: Labels,
-    pub row_labels: Labels,
-    /// Column / row strips (cross references) on schematic and overview pages.
-    pub strips: bool,
 }
 
 impl Default for PlotFrame {

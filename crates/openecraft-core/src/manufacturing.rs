@@ -23,35 +23,8 @@ pub use strategy::{Method, OpKind, Operation, Plan, Strategy};
 
 use crate::model::Project;
 use crate::panel::Face;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-
-/// Manufacturing data of the panel layout ([`crate::panel::Layout::manufacturing`]).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Manufacturing {
-    /// Machines of the project; they replace built-in machines of the same id.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub machines: Vec<Machine>,
-    /// Machine for the sheet metal faces (plate, door, walls).
-    pub sheet_machine: String,
-    /// Machine for faces that are not made on the sheet machine, by face key.
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub face_machines: BTreeMap<String, String>,
-    /// Machine for copper bars.
-    pub bar_machine: String,
-    pub strategy: Strategy,
-    /// Bent and drilled copper bars.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub bars: Vec<CopperBar>,
-    pub bar_rules: BarRules,
-    /// Jobs handed off to production.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub jobs: Vec<Job>,
-    /// Feedback of the production, oldest first.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub feedback: Vec<Feedback>,
-}
+pub use crate::model::manufacturing::Manufacturing;
 
 impl Default for Manufacturing {
     fn default() -> Self {

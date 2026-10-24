@@ -54,7 +54,9 @@ fn module_sources(src: &std::path::Path, module: &str) -> Vec<PathBuf> {
 /// `use crate::{model, netlist::Netlist}` → `model`, `netlist`.
 pub fn crate_references(text: &str) -> BTreeSet<String> {
     let mut out = BTreeSet::new();
-    let mut rest = text;
+    // Comments (also doc links) are not dependencies.
+    let code: String = text.lines().filter(|l| !l.trim_start().starts_with("//")).map(|l| format!("{l}\n")).collect();
+    let mut rest = code.as_str();
     while let Some(i) = rest.find("crate::") {
         rest = &rest[i + "crate::".len()..];
         if let Some(list) = rest.strip_prefix('{') {

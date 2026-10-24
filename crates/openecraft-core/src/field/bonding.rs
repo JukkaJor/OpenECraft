@@ -7,19 +7,8 @@ use super::Field;
 use crate::model::Project;
 use crate::reports::{Issue, Severity};
 use openecraft_i18n::{tr, tr_fmt};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum BondKind {
-    /// Protective bonding to the main earthing terminal (IEC 60364-5-54).
-    #[default]
-    Main,
-    /// Supplementary protective bonding between conductive parts.
-    Supplementary,
-    /// Functional bonding (EMC, no protective function).
-    Functional,
-}
+pub use crate::model::field::{Bond, BondKind};
 
 impl BondKind {
     pub const ALL: [BondKind; 3] = [BondKind::Main, BondKind::Supplementary, BondKind::Functional];
@@ -52,22 +41,6 @@ impl BondKind {
             BondKind::Functional => 0.0,
         }
     }
-}
-
-/// A bonding conductor between two bonding points (names of [`points`]).
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Bond {
-    pub id: u64,
-    pub a: String,
-    pub b: String,
-    pub kind: BondKind,
-    /// Cross-section in mm², e.g. "6" or "16".
-    pub cross_section: String,
-    /// Length in metres.
-    pub length: f32,
-    /// Part number of the conductor (bill of materials per metre).
-    pub part: String,
 }
 
 /// What a bonding point is.

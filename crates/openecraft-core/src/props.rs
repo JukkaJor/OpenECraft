@@ -6,38 +6,9 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::properties;
-use crate::symbols::Anchor;
-use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
-
-impl PropKind {
-    pub const ALL: [PropKind; 7] =
-        [PropKind::Description, PropKind::PartNumber, PropKind::TypeNumber, PropKind::Manufacturer, PropKind::Label, PropKind::Pins, PropKind::Structure];
-
-    /// Property key of the fixed properties of older files.
-    pub fn key(self) -> &'static str {
-        match self {
-            PropKind::Description => "device.description",
-            PropKind::PartNumber => "device.parts",
-            PropKind::TypeNumber => "device.type_numbers",
-            PropKind::Manufacturer => "device.manufacturers",
-            PropKind::Label => "function.label",
-            PropKind::Pins => "function.pins",
-            PropKind::Structure => "device.structure",
-        }
-    }
-}
-
-/// Converts the placed properties of older files (fixed kinds) to property keys.
-pub fn migrate(s: &mut SymbolInst) {
-    for pp in &mut s.props {
-        if let Some(kind) = pp.legacy.take() {
-            if pp.key.is_empty() {
-                pp.key = kind.key().into();
-            }
-        }
-    }
-}
+pub use crate::model::{default_anchor, is_left, migrate};
+pub use crate::model::props::Scheme;
 
 /// Text of a placed property ("" if it has no value).
 pub fn text(prj: &Project, page_i: usize, s: &SymbolInst, pp: &PlacedProp) -> String {
@@ -65,18 +36,6 @@ pub fn add(s: &mut SymbolInst, key: &str) {
 }
 
 // ------------------------------------------------------------------- schemes
-
-/// A placement scheme: properties with their positions relative to [`reference`].
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct Scheme {
-    pub name: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub description: String,
-    pub entries: Vec<PlacedProp>,
-    #[serde(skip)]
-    pub builtin: bool,
-}
 
 impl Scheme {
     pub fn title(&self) -> String {
@@ -194,14 +153,6 @@ pub fn apply_to(prj: &mut Project, name: &str, ids: &[u64]) -> Result<usize, Str
         }
     }
     Ok(n)
-}
-
-pub fn default_anchor() -> Anchor {
-    Anchor::Left
-}
-
-pub fn is_left(a: &Anchor) -> bool {
-    *a == Anchor::Left
 }
 
 #[cfg(test)]

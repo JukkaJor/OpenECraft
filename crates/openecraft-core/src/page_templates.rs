@@ -8,24 +8,7 @@ use crate::ops::{self, Clip};
 use crate::structure::Dt;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct PageTemplate {
-    pub name: String,
-    pub kind: PageKind,
-    /// Plot frame; empty = the project default.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub frame: String,
-    /// Title block; empty = the project default.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub title_block: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub description: String,
-    pub structure: Dt,
-    /// Items placed on the new page (positions kept).
-    pub content: Clip,
-}
+pub use crate::model::page_templates::PageTemplate;
 
 impl Default for PageTemplate {
     fn default() -> Self {

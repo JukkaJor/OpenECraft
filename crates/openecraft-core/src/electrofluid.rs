@@ -9,18 +9,8 @@ use crate::index::{Index, Loc};
 use crate::model::*;
 use crate::reports::Severity;
 use crate::symbols::{self, Category, Func, SymbolDef};
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
-pub enum GroupKind {
-    #[default]
-    ValveTerminal,
-    ServiceUnit,
-    Manifold,
-    PowerUnit,
-    Other,
-}
+pub use crate::model::electrofluid::{DeviceGroup, GroupKind};
 
 impl GroupKind {
     pub const ALL: [GroupKind; 5] = [GroupKind::ValveTerminal, GroupKind::ServiceUnit, GroupKind::Manifold, GroupKind::PowerUnit, GroupKind::Other];
@@ -49,23 +39,6 @@ impl GroupKind {
         let c = code.trim().to_ascii_lowercase().replace([' ', '-'], "_");
         GroupKind::ALL.into_iter().find(|k| k.code() == c)
     }
-}
-
-/// Fluid devices mounted together: the valves of a valve terminal in slot order, the
-/// components of a service unit.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-#[serde(default)]
-pub struct DeviceGroup {
-    /// Device tag of the group, e.g. `-KH1`.
-    pub tag: String,
-    pub kind: GroupKind,
-    pub description: String,
-    /// Device tags of the members in slot order.
-    pub members: Vec<String>,
-    /// Places of the group (valve terminal); 0 = not limited.
-    pub slots: u32,
-    /// Part number of the base (sub-base, manifold block).
-    pub part: String,
 }
 
 /// Solenoids of a fluid symbol.

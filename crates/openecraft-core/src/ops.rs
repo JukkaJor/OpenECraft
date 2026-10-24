@@ -4,8 +4,8 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P, R, GRID};
 use crate::model::*;
 use crate::symbols::{self, ContactKind, Func, PinKind, SymbolDef};
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
+pub use crate::model::ops::Clip;
 
 /// Context remembered between placements (e.g. the coil contacts belong to).
 #[derive(Default, Clone)]
@@ -370,31 +370,6 @@ pub fn cleanup_wires(page: &mut Page) {
         let k = if a <= b { (a, b) } else { (b, a) };
         seen.insert(k)
     });
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Clip {
-    pub magic: String,
-    /// Structure of the page the clip was copied from.
-    pub function: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub installation: String,
-    pub location: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub product: String,
-    pub symbols: Vec<SymbolInst>,
-    pub wires: Vec<Wire>,
-    pub texts: Vec<TextItem>,
-    pub shapes: Vec<Shape>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub dimensions: Vec<Dimension>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub images: Vec<ImageItem>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub conn_defs: Vec<ConnDef>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub cable_defs: Vec<CableDef>,
 }
 
 const CLIP_MAGIC: &str = "openecraft-clipboard-v1";
