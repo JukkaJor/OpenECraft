@@ -800,7 +800,7 @@ pub fn mesh_preview(ui: &mut egui::Ui, mesh: &Mesh3d, size: egui::Vec2) {
     }
     tris.sort_by(|a, b| b.0.total_cmp(&a.0));
     for (_, pts, color) in tris {
-        painter.add(Shape::convex_polygon(pts.to_vec(), color, Stroke::new(0.5, color)));
+        painter.add(crate::faces::face(pts.to_vec(), color, Stroke::new(0.5, color)));
     }
     if resp.hovered() {
         painter.text(resp.rect.left_bottom() + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, "drag to rotate", egui::FontId::proportional(10.0), Color32::GRAY);

@@ -10,7 +10,7 @@ use crate::model::Project;
 use crate::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use crate::parts::vec3::{cross, dot, norm, sub, Orbit};
 use crate::reports::Analysis;
-use egui::{vec2, Color32, PointerButton, Pos2, Sense, Shape, Stroke};
+use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
 
 impl PanelUi {
     /// Opens or closes the door in the 3D view.
@@ -390,7 +390,7 @@ impl PanelUi {
                 Prim::Face { pts, color, item, outline } => {
                     // Mesh triangles get a hairline in their own colour to close the seams.
                     let stroke = if *outline { Stroke::new(0.6, color.gamma_multiply(0.6)) } else { Stroke::new(0.5, *color) };
-                    painter.add(Shape::convex_polygon(pts.clone(), *color, stroke));
+                    painter.add(openecraft_ui::faces::face(pts.clone(), *color, stroke));
                     if let Some(item) = item {
                         pick.push((*depth, pts.clone(), *item));
                     }
