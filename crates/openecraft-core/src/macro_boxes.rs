@@ -113,8 +113,17 @@ pub fn update(prj: &mut Project, lib: &MacroLibrary) -> Updated {
         let clip = m.resolve(&b.values);
         let at = bounds(prj, pi, &b).map(|r| r.min).unwrap_or_else(|| clip.bounds().min);
         let old = live_items(&prj.pages[pi], &b);
+        // Device tags of the old symbols (renamed when placed) by symbol and place.
+        let old_tags: Vec<(String, crate::geom::P, String)> =
+            prj.pages[pi].symbols.iter().filter(|s| old.contains(&s.id) && !s.tag.is_empty()).map(|s| (s.sym.clone(), s.pos - at, s.tag.clone())).collect();
         ops::delete(&mut prj.pages[pi], &old);
         let ids = ops::paste(prj, pi, &clip, at);
+        for s in prj.pages[pi].symbols.iter_mut().filter(|s| ids.contains(&s.id) && !s.tag.is_empty()) {
+            let rel = s.pos - at;
+            if let Some((_, _, tag)) = old_tags.iter().find(|(sym, q, _)| *sym == s.sym && (q.x - rel.x).abs() < 1.0 && (q.y - rel.y).abs() < 1.0) {
+                s.tag = tag.clone();
+            }
+        }
         if let Some(x) = prj.pages[pi].macro_boxes.iter_mut().find(|x| x.id == id) {
             x.items = ids.into_iter().collect();
             x.source = fingerprint(&m.clip);

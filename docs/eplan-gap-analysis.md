@@ -64,7 +64,7 @@ missing relative to an EPLAN user's expectations):
 | Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended); content |
 | Terminals, plugs, cables, potentials | good | medium | 3.4 | good (multi-level, jumper kinds) |
 | Navigators, find, dialogs | partial | large | 3.5 | good (find, page tree, unplaced); drag-and-drop navigators open |
-| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal / cable diagrams); form editor open |
+| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal, cable, plug and PLC forms); form editor open |
 | Project check and message management | good (messages), missing (management) | medium | 3.7 | good |
 | Pages, plot frames, title blocks, templates | good | small | 3.8 | good (project templates) |
 | Structure identifiers (IEC 81346) | good | small | 3.8 | good |
@@ -686,7 +686,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | --- | --- | --- | --- | --- |
 | 1 | Text formatting and placement | done: rotation, alignment, styles, text boxes, path function texts, special texts, hyperlinks | 0da4422 | – |
 | 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
-| 3 | Graphical report forms | partly: graphical terminal and cable diagrams | d7e57f2 | form editor, graphical plug and PLC diagrams |
+| 3 | Graphical report forms | partly: graphical terminal, cable and plug diagrams and PLC assignment | d7e57f2, eca317c | form editor |
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches | 42d8f5b | check schemes as files |
 | 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced functions with placement | 0d77ed5, 57c6af6 | drag-and-drop navigators for strips, PLC, plugs, potentials |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
@@ -695,7 +695,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
 | 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
 | 11 | Typed mounting data | done | 11794d0 | part variants, assemblies |
-| 12 | Templates, master data, macros | partly: project templates; macro boxes with update from the library and saving back | 57c6af6, 341a108 | settings schemes, master data synchronisation |
+| 12 | Templates, master data, macros | partly: project templates; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108 | settings schemes, master data synchronisation |
 | 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
 | 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY) | 93fdeb6, 7e3fb7b | PLC navigator, GX Works / PLCnext formats |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |

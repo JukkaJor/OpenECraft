@@ -187,8 +187,7 @@ built with [egui / eframe](https://github.com/emilk/egui).
   override per page (built-in: Standard, Compact, None). Report forms choose the
   columns, their order, the heading and the rows per report page.
   **Graphical forms**: a report form of the terminal, cable or plug diagram or the PLC
-  assignment can switch to
-  its graphical form – the strip drawn with a box per terminal (levels marked), end
+  assignment can switch to its graphical form – the strip drawn with a box per terminal (levels marked), end
   brackets and end plates, jumper bridges and the external and internal targets with
   potential, function text and linked location; or each cable as a band with its cores
   from end to end (potential, wire number, reserve cores dashed); the plug diagram as

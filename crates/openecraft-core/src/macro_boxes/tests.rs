@@ -6,8 +6,9 @@ use crate::sample::demo_project;
 /// the first symbol (with a wire) of page 2.
 fn setup() -> (Project, MacroLibrary) {
     let mut prj = demo_project();
-    let src = prj.pages.iter().position(|p| !p.symbols.is_empty() && !p.wires.is_empty()).unwrap();
-    let sel: BTreeSet<u64> = [prj.pages[src].symbols[0].id, prj.pages[src].wires[0].id].into();
+    let src = prj.pages.iter().position(|p| p.symbols.iter().any(|s| s.tag.starts_with("-K")) && !p.wires.is_empty()).unwrap();
+    let sym = prj.pages[src].symbols.iter().find(|s| s.tag.starts_with("-K")).unwrap().id;
+    let sel: BTreeSet<u64> = [sym, prj.pages[src].wires[0].id].into();
     let m = from_selection(&prj.pages[src], &sel, "Unit");
     let id = prj.new_id();
     prj.pages.push(crate::model::Page::new(id, "99", "Macro test", crate::model::PageKind::Schematic));
@@ -74,4 +75,25 @@ fn missing_macros_locked_pages_and_empty_boxes() {
     ops::delete(&mut prj.pages[pi], &ids);
     assert_eq!(remove_empty(&mut prj), 1);
     assert!(prj.pages[pi].macro_boxes.is_empty());
+}
+
+#[test]
+fn renamed_devices_keep_their_tags_when_updated() {
+    let (mut prj, mut lib) = setup();
+    let pi = prj.pages.len() - 1;
+    let m = lib.get("Unit").unwrap().clone();
+    place(&mut prj, pi, &m, &BTreeMap::new(), p(50.0, 50.0));
+    // The second copy gets a new tag: the macro's tag is taken.
+    let ids = place(&mut prj, pi, &m, &BTreeMap::new(), p(50.0, 150.0));
+    let tag_of = |prj: &Project, ids: &[u64]| prj.pages[pi].symbols.iter().find(|s| ids.contains(&s.id)).map(|s| s.tag.clone()).unwrap();
+    let second: Vec<u64> = ids.into_iter().collect();
+    let renamed = tag_of(&prj, &second);
+    assert_ne!(renamed, m.clip.symbols[0].tag, "renamed when placed");
+    assert!(!renamed.is_empty());
+    let mut changed = m.clone();
+    changed.clip.texts.push(crate::model::TextItem { id: 1, pos: m.clip.bounds().min, text: "NEW".into(), size: 3.0, ..Default::default() });
+    lib.upsert(changed);
+    assert_eq!(update(&mut prj, &lib).updated, 2);
+    let b = prj.pages[pi].macro_boxes[1].clone();
+    assert_eq!(tag_of(&prj, &b.items), renamed, "the renamed tag stays");
 }
