@@ -3,6 +3,7 @@
 
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
+use openecraft_client::{Endpoint, PortalKind};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use openecraft_parts::api::{PartQuery, UserUpdate};
 use openecraft_parts::portal::{self, catalog_id, AttachmentKind, Catalog, Facet, Lifecycle, Role, Sort};
@@ -16,6 +17,7 @@ pub static TOOLS: &[Tool] = &[
         name: "parts_connect",
         help: tr_const!("Sets the parts server (URL and access token, or user and password) and shows its state"),
         params: &[
+            optional("kind", Kind::Str, tr_const!("Kind of server: OpenECraft (parts server) or Eplan (EPLAN Data Portal: searching and reading only, the token is the personal access token of the EPLAN account)")),
             optional("url", Kind::Str, tr_const!("Server URL, e.g. http://127.0.0.1:8090")),
             optional("token", Kind::Str, tr_const!("Access token for changes")),
             optional("user", Kind::Str, tr_const!("User name to sign in with")),
@@ -187,6 +189,10 @@ pub static TOOLS: &[Tool] = &[
 ];
 
 fn connect(s: &mut Session, a: &Args) -> Result<Value, String> {
+    if let Some(kind) = optional_choice(a, "kind", &PortalKind::ALL)?.filter(|k| *k != s.server.kind) {
+        s.server.kind = kind;
+        s.server.endpoint = Endpoint { url: kind.default_url(), token: String::new() };
+    }
     if let Some(url) = a.str("url") {
         s.server.endpoint.url = url.into();
     }
@@ -197,7 +203,7 @@ fn connect(s: &mut Session, a: &Args) -> Result<Value, String> {
         s.server.login(user, a.str("password").unwrap_or(""))?;
     }
     let info = s.server.info()?;
-    Ok(json!({ "url": s.server.endpoint.url, "info": info }))
+    Ok(json!({ "kind": s.server.kind, "url": s.server.endpoint.url, "info": info }))
 }
 
 /// A value of an enumeration by its name (case insensitive), e.g. `PhaseOut`.
