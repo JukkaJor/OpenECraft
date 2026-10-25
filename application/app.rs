@@ -19,7 +19,7 @@ use openecraft_core::issue::Severity;
 use openecraft_core::structure::{self, Aspect, Dt};
 use openecraft_core::symbols::{self, Category, Func};
 use openecraft_core::{potentials, properties, sample, translation, wirenum};
-use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
+use egui::{Color32, Key, RichText};
 use openecraft_api::params::{text, Args};
 use serde_json::Map;
 
@@ -111,6 +111,9 @@ pub struct App {
     wiring_ui: WiringUi,
     mounting_ui: MountingUi,
     show_help: bool,
+    show_shortcuts: bool,
+    /// Action whose new shortcut is being recorded.
+    recording: Option<crate::shortcuts::Action>,
     show_cables: bool,
     show_numbering: bool,
     numbering_ui: numbering_ui::NumberingUi,
@@ -164,6 +167,7 @@ impl App {
         let mut macro_lib = None;
         let mut disabled_plugins: Vec<String> = Vec::new();
         let mut language: Option<String> = None;
+        let mut shortcuts = crate::shortcuts::Shortcuts::default();
         let mut projects_ui = projects_ui::ProjectsUi::default();
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
@@ -177,6 +181,9 @@ impl App {
                 projects_ui.db = db;
             }
             disabled_plugins = eframe::get_value(storage, plugins_ui::STORAGE_KEY).unwrap_or_default();
+            if let Some(stored) = eframe::get_value(storage, crate::shortcuts::STORAGE_KEY) {
+                shortcuts = crate::shortcuts::Shortcuts::from_storage(&stored);
+            }
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -198,7 +205,11 @@ impl App {
         }
         App {
             session: Session::new(prj, file_name),
-            editor: Editor::default(),
+            editor: {
+                let mut editor = Editor::default();
+                editor.shortcuts = shortcuts;
+                editor
+            },
             io: FileIo::default(),
             left_tab: LeftTab::Pages,
             lib_filter: String::new(),
@@ -220,6 +231,8 @@ impl App {
             wiring_ui: WiringUi::default(),
             mounting_ui: MountingUi::default(),
             show_help: false,
+            show_shortcuts: false,
+            recording: None,
             show_cables: false,
             show_numbering: false,
             numbering_ui: Default::default(),
@@ -500,6 +513,7 @@ impl eframe::App for App {
         eframe::set_value(storage, "project_server_url", &self.remote.url);
         eframe::set_value(storage, "project_server_user", &self.remote.user);
         eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
+        eframe::set_value(storage, crate::shortcuts::STORAGE_KEY, &self.editor.shortcuts.to_storage());
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

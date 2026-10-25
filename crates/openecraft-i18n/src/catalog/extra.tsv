@@ -4671,3 +4671,29 @@ Mounting holes	Befestigungsbohrungen	Trous de fixation	Agujeros de fijación
 Moves lines such as Power loss: 3 W into the typed fields	Verschiebt Zeilen wie Power loss: 3 W in die typisierten Felder	Déplace les lignes telles que Power loss: 3 W dans les champs typés	Mueve líneas como Power loss: 3 W a los campos tipados
 Outside the face	Außerhalb der Fläche	À l'extérieur de la face	Fuera de la cara
 Take {} values from the technical data	{} Werte aus den technischen Daten übernehmen	Reprendre {} valeurs des données techniques	Tomar {} valores de los datos técnicos
+Find…	Suchen…	Rechercher…	Buscar…
+Keyboard shortcuts…	Tastenkürzel…	Raccourcis clavier…	Atajos de teclado…
+Open…	Öffnen…	Ouvrir…	Abrir…
+Redo	Wiederholen	Rétablir	Rehacer
+Rotate	Drehen	Pivoter	Girar
+Save to project server	Auf dem Projektserver speichern	Enregistrer sur le serveur de projets	Guardar en el servidor de proyectos
+Undo	Rückgängig	Annuler	Deshacer
+Find and replace	Suchen und ersetzen	Rechercher et remplacer	Buscar y reemplazar
+Finish polyline or polygon	Polylinie oder Polygon abschließen	Terminer la polyligne ou le polygone	Terminar la polilínea o el polígono
+Mirror (selection or symbol being placed)	Spiegeln (Auswahl oder zu platzierendes Symbol)	Miroir (sélection ou symbole en cours de placement)	Reflejar (selección o símbolo que se coloca)
+Next page	Nächste Seite	Page suivante	Página siguiente
+Open project	Projekt öffnen	Ouvrir le projet	Abrir proyecto
+Previous page	Vorherige Seite	Page précédente	Página anterior
+Rotate (selection or symbol being placed)	Drehen (Auswahl oder zu platzierendes Symbol)	Pivoter (sélection ou symbole en cours de placement)	Girar (selección o símbolo que se coloca)
+Save project	Projekt speichern	Enregistrer le projet	Guardar proyecto
+Text tool	Textwerkzeug	Outil texte	Herramienta de texto
+Toggle routing around symbols (wire tool)	Führung um Symbole ein / aus (Verbindungswerkzeug)	Activer / désactiver le contournement des symboles (outil fil)	Activar / desactivar el trazado alrededor de símbolos (herramienta de cable)
+Wire tool	Verbindungswerkzeug	Outil fil	Herramienta de cable
+Clear	Leeren	Effacer	Borrar
+Keyboard shortcuts	Tastenkürzel	Raccourcis clavier	Atajos de teclado
+No shortcut	Kein Tastenkürzel	Aucun raccourci	Sin atajo
+Press a key…	Taste drücken…	Appuyez sur une touche…	Pulse una tecla…
+Record	Aufnehmen	Enregistrer	Grabar
+Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Aufnehmen: die neue Taste mit ihren Zusatztasten drücken (Esc bricht ab). Esc, Entf, die Pfeiltasten und Kopieren / Einfügen bleiben fest.	Enregistrer : appuyez sur la nouvelle touche avec ses modificateurs (Échap annule). Échap, Suppr, les flèches et copier / coller restent fixes.	Grabar: pulse la nueva tecla con sus modificadores (Esc cancela). Esc, Supr, las flechas y copiar / pegar no cambian.
+Reset all to the defaults	Alle auf die Vorgaben zurücksetzen	Tout réinitialiser aux valeurs par défaut	Restablecer todo a los valores predeterminados
+{} is used by: {}	{} wird verwendet von: {}	{} est utilisé par : {}	{} lo usan: {}

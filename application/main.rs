@@ -15,6 +15,7 @@ mod glyphs;
 mod io;
 mod mounting_ui;
 mod panel_ui;
+mod shortcuts;
 mod parts_ui;
 mod remote;
 mod session;

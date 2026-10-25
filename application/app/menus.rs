@@ -1,6 +1,7 @@
 //! The menu bar of the editor: one method per menu.
 
 use super::*;
+use crate::shortcuts::Action;
 
 impl App {
     #[allow(clippy::too_many_lines)]
@@ -39,7 +40,7 @@ impl App {
                 ui.close();
             }
         });
-        if ui.button(tr("Open…        Ctrl+O")).clicked() {
+        if ui.add(egui::Button::new(tr("Open…")).shortcut_text(self.editor.shortcuts.text(Action::Open))).clicked() {
             self.io.open(&ctx, Purpose::Project);
         }
         if ui.button(tr("Save as project template…")).on_hover_text(tr("Saves the project without revisions, baselines, review and wiring marks as a template for new projects")).clicked() {
@@ -52,13 +53,13 @@ impl App {
         }
         ui.separator();
         let save_label = if self.remote.shared.is_some() {
-            tr("Save to project server   Ctrl+S")
+            tr("Save to project server")
         } else if FileIo::can_save_in_place() {
-            tr("Save          Ctrl+S")
+            tr("Save")
         } else {
-            tr("Download project   Ctrl+S")
+            tr("Download project")
         };
-        if ui.button(save_label).clicked() {
+        if ui.add(egui::Button::new(save_label).shortcut_text(self.editor.shortcuts.text(Action::Save))).clicked() {
             self.save(&ctx, false);
         }
         if self.remote.shared.is_some() && !FileIo::can_save_in_place() && ui.button(tr("Download project")).clicked() {
@@ -95,28 +96,29 @@ impl App {
     }
 
     pub(super) fn edit_menu(&mut self, ui: &mut egui::Ui) {
-        if ui.add_enabled(self.session.history.can_undo(), egui::Button::new(tr("Undo   Ctrl+Z"))).clicked() {
+        let keys = |a| self.editor.shortcuts.text(a);
+        if ui.add_enabled(self.session.history.can_undo(), egui::Button::new(tr("Undo")).shortcut_text(keys(Action::Undo))).clicked() {
             self.session.undo();
         }
-        if ui.add_enabled(self.session.history.can_redo(), egui::Button::new(tr("Redo   Ctrl+Y"))).clicked() {
+        if ui.add_enabled(self.session.history.can_redo(), egui::Button::new(tr("Redo")).shortcut_text(keys(Action::Redo))).clicked() {
             self.session.redo();
         }
         ui.separator();
         let has_sel = !self.editor.selection.is_empty();
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate   R"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate")).shortcut_text(keys(Action::Rotate))).clicked() {
             ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[self.session.page], &self.editor.selection);
         }
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror   M"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror")).shortcut_text(keys(Action::Mirror))).clicked() {
             ops::mirror(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
         }
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Delete   Del"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Delete")).shortcut_text(tr("Del"))).clicked() {
             ops::delete(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
             self.editor.selection.clear();
         }
-        if ui.button(tr("Find…   Ctrl+F")).on_hover_text(tr("Find and replace in the whole project")).clicked() {
+        if ui.add(egui::Button::new(tr("Find…")).shortcut_text(keys(Action::Find))).on_hover_text(tr("Find and replace in the whole project")).clicked() {
             self.find_ui.open = true;
         }
-        if ui.button(tr("Select all   Ctrl+A")).clicked() {
+        if ui.add(egui::Button::new(tr("Select all")).shortcut_text(keys(Action::SelectAll))).clicked() {
             self.editor.selection = ops::all_ids(&self.session.prj.pages[self.session.page]).into_iter().collect();
         }
         ui.label(RichText::new(tr("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V")).weak());
@@ -384,7 +386,7 @@ impl App {
     }
 
     pub(super) fn view_menu(&mut self, ui: &mut egui::Ui) {
-        if ui.button(tr("Fit page   F")).clicked() {
+        if ui.add(egui::Button::new(tr("Fit page")).shortcut_text(self.editor.shortcuts.text(Action::FitPage))).clicked() {
             self.editor.fit_pending = true;
         }
         ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
@@ -394,6 +396,9 @@ impl App {
         ui.checkbox(&mut self.session.prj.wire_colors, tr("Wire colours"))
             .on_hover_text(tr("Draw wires in their colour (also in PDF and SVG); saved with the project"));
         ui.separator();
+        if ui.button(tr("Keyboard shortcuts…")).clicked() {
+            self.show_shortcuts = true;
+        }
         openecraft_ui::language::menu(ui);
         let mut pref = ui.ctx().options(|o| o.theme_preference);
         ui.horizontal(|ui| {

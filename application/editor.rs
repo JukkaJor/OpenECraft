@@ -1,6 +1,7 @@
 //! Interactive schematic canvas: pan/zoom, selection, moving, placing symbols,
 //! drawing wires, texts, graphics, dimensions and connection / cable definitions.
 
+use crate::shortcuts::Action;
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_core::geom::{dist_to_segment, p, P, R, GRID};
 use openecraft_core::frame::PlotFrame;
@@ -445,6 +446,8 @@ pub struct Editor {
     textures: Textures,
     /// Wire routing preview: from, to and the path.
     route_cache: Option<(P, P, Vec<P>)>,
+    /// The user's keyboard shortcuts.
+    pub shortcuts: crate::shortcuts::Shortcuts,
 }
 
 impl Default for Editor {
@@ -471,6 +474,7 @@ impl Default for Editor {
             active_layer: String::new(),
             autoconnect: true,
             autoroute: false,
+            shortcuts: Default::default(),
             cable_target: String::new(),
             place_tag: None,
             read_only: false,
@@ -996,18 +1000,19 @@ impl Editor {
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>, out: &mut CanvasOutput) {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let g = self.grid;
+        let sc = &self.shortcuts;
         let (esc, enter, r, m, a, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
                 i.key_pressed(Key::Escape),
-                k(Key::Enter),
-                k(Key::R),
-                k(Key::M),
-                k(Key::A),
+                sc.pressed(i, Action::FinishPolyline),
+                sc.pressed(i, Action::Rotate),
+                sc.pressed(i, Action::Mirror),
+                sc.pressed(i, Action::Autoroute),
                 i.key_pressed(Key::Delete) || k(Key::Backspace),
-                k(Key::Space),
-                k(Key::F) || k(Key::Home),
-                i.modifiers.command && i.key_pressed(Key::A),
+                sc.pressed(i, Action::WireCorner),
+                sc.pressed(i, Action::FitPage),
+                sc.pressed(i, Action::SelectAll),
                 [
                     (i.key_pressed(Key::ArrowLeft), p(-g, 0.0)),
                     (i.key_pressed(Key::ArrowRight), p(g, 0.0)),
