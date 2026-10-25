@@ -198,7 +198,12 @@ bill of materials.
   double acting cylinders, 3/2, 4/2 and 5/2 valves, non-return, relief, ball and flow
   control valves, pressure regulator, service unit, filter, accumulator, cooler,
   gauge, tank, silencer), single-line / overview symbols (cross references to the device, not part of
-  the netlist) and black boxes / PLC boxes. Own symbols are drawn in the symbol editor
+  the netlist) and black boxes / PLC boxes. National sets for China (GB), Russia and
+  the CIS (GOST) and Japan (JIS) carry the device letters of GB/T 7159 (`KM`, `KA`,
+  `QF`, `SB`, `HL` …), GOST 2.710 (`KM`, `KK`, `QF`, `SB`, `HL` …) and JIS C 0401
+  (`MC`, `MCCB`, `PBS`, `PL`, `THR` …), so placed devices are numbered `-KM1`,
+  `-MCCB1`; they are drawn like the IEC symbols, which GB/T 4728 and JIS C 0617 adopt
+  (the ESKD proportions of the GOST drawings are not reproduced). Own symbols are drawn in the symbol editor
   (lines, rectangles, circles, texts, tag / label fields, connection points on the 4 mm
   grid, function such as main function, contact, terminal, PLC point), or copied from a
   built-in symbol; they are stored in the project and exchanged as library files.
@@ -214,6 +219,13 @@ bill of materials.
   from end to end (potential, wire number, reserve cores dashed); the plug diagram as
   a housing with socket and pin half per pin; the PLC assignment as a module per card
   with the inputs coming in from the left and the outputs going out to the right.
+  **Drawn forms**: any report (also those of plugins) can be drawn with an own form –
+  graphics drawn once per page and a row drawing repeated for every row, downwards for
+  lists or sideways (e.g. one terminal beside the other); its texts take the columns as
+  placeholders (`{Device tag}`, `{Part number}` …), `{report}` and the title block
+  placeholders. The form editor (*Report forms › Own drawn form*) starts from the
+  report's table and shows the page with its real rows while lines, rectangles and
+  texts are added and dragged.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
   counterparts on other pages. *Project › Cross references…* sets the format (prefix,
@@ -584,9 +596,10 @@ bill of materials.
   from any project file; *Save as project template…* writes the current project
   without revisions, baselines, review, wiring marks and accepted check messages.
   Command line: `new_project --template Machine` (or a file).
-- **Storage**: JSON project files (`.oec`); the current project is also auto-saved
-  (compressed, so large projects fit the browser's local storage)
-  (app storage on desktop, local storage in the browser).
+- **Storage**: JSON project files (`.oec`); the current project and the parts
+  database are also auto-saved (compressed) in the app's data folder on the desktop and
+  in IndexedDB in the browser, whose local storage holds only about 5 MB (until the
+  first write to IndexedDB succeeds they are kept in local storage as well).
 
 ## Build & run
 
@@ -835,7 +848,8 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
 | Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
 | Settings scheme | *Project › Settings scheme*: export the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file and take them into other projects (tools `export_settings`, `import_settings`) |
-| Workspaces | *View › Workspaces*: save the workspace, the navigator tab and the open windows under a name and restore them with one click (kept by the app) |
+| Docking panels | Drag the tab of a navigator, the symbols, the properties or the page to dock it beside, above or below another one or as a tab among others; *View › Panels* shows or hides each and resets the layout (kept by the app) |
+| Workspaces | *View › Workspaces*: save the workspace, the arrangement of the panels and the open windows under a name and restore them with one click (kept by the app) |
 | Keyboard shortcuts | *View › Keyboard shortcuts…*: record, clear or reset the keys of open, save, undo / redo, find, select all, page up / down, fit, wire and text tool, rotate, mirror, wire corner, routing and finishing polylines; conflicts are shown, the keys are kept by the app and shown in the menus and the help |
 | Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
 | Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
@@ -870,7 +884,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `cli/` | `openecraft-cli`: command line and MCP server; one tool list (`src/tools/`) for both |
 | `parts-manager/` | `openecraft-parts-manager`: standalone parts server maintenance (desktop + web) |
 | `crates/openecraft-core/src/model.rs` | Project data model (pages, symbols, wires, parts) and page layout constants |
-| `crates/openecraft-core/src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, fluid power, P&ID, single-line, black boxes) |
+| `crates/openecraft-core/src/symbols.rs` | Built-in symbol libraries (IEC, NFPA, GB / GOST / JIS, fluid power, P&ID, single-line, black boxes) |
 | `crates/openecraft-core/src/symlib.rs` | User symbols: registry, editing helpers, library files |
 | `crates/openecraft-core/src/forms.rs` | Title blocks (placeholders) and report forms |
 | `crates/openecraft-core/src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |

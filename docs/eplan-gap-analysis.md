@@ -12,7 +12,8 @@ rather than something read in the code, it is marked "not verified".
 the roadmap and several Tier 3 / 4 items have been implemented since. Section 6 lists
 what was done and what is still open; the scorecard below has a column for the state
 after that work, and section 4 now has measured performance figures. Sections 2 and 3
-describe the state at the time of the analysis.
+describe the state at the time of the analysis; section 7 covers the six gaps left after
+that work.
 
 ## 1. Summary
 
@@ -61,10 +62,10 @@ missing relative to an EPLAN user's expectations):
 | --- | --- | --- | --- | --- |
 | Schematic editor: texts, graphics, editing aids | partial | large | 3.1 | good (printing through the browser) |
 | Device tags, numbering, cross references | partial | large | 3.2 | good |
-| Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended); content |
+| Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended, GB / GOST / JIS letter sets); content |
 | Terminals, plugs, cables, potentials | good | medium | 3.4 | good (multi-level, jumper kinds) |
 | Navigators, find, dialogs | partial | large | 3.5 | good (find, page tree, unplaced, PLC, strips / plugs with drag-and-drop) |
-| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal, cable, plug and PLC forms); form editor open |
+| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal, cable, plug and PLC forms; drawn forms for every report) |
 | Project check and message management | good (messages), missing (management) | medium | 3.7 | good |
 | Pages, plot frames, title blocks, templates | good | small | 3.8 | good (project templates) |
 | Structure identifiers (IEC 81346) | good | small | 3.8 | good |
@@ -80,7 +81,7 @@ missing relative to an EPLAN user's expectations):
 | API, scripting, automation | good | small | 3.18 | good |
 | Enterprise integration | good | small | 3.18 | good |
 | Harness, field wiring, mounting instructions | partial | medium | 3.19 | good (nailboards, mounting assistant) |
-| Performance and scale | unknown | risk | 4 | measured, fixed hot spots (section 4) |
+| Performance and scale | unknown | risk | 4 | measured; incremental analysis, parallel checks, IndexedDB (sections 4, 7) |
 | Documentation, training, ecosystem | missing | large | 4 | missing |
 
 ## 2. What is already at EPLAN level or beyond
@@ -604,7 +605,7 @@ large projects"); the 9 MB JSON would exceed browser local storage, so the autos
 now stores the project deflate-compressed ("Autosave the project compressed"). The
 analysis after every committed change (about a quarter second plus the checks) is the
 remaining limit for very large projects; per-page dirty tracking for the analysis and
-IndexedDB / the File System Access API for browser storage are the next mitigations.
+IndexedDB for browser storage were the next mitigations and are done (section 7).
 
 **Robustness of free-text conventions.** Several features key off strings in
 technical data (`Terminal type: PE`, `Clearance:`, `Mounting holes:`,
@@ -628,7 +629,7 @@ DEHN, Hager, MDT, Phoenix Contact, Siemens, Weidmüller) are the start.
 
 **UI customisation.** Keyboard shortcuts can be changed (*View › Keyboard
 shortcuts…*) and window arrangements saved as workspaces (*View › Workspaces*);
-panels are fixed, no docking, no toolbar customisation, no ribbon.
+panels of the schematic workspace dock (section 7); no toolbar customisation, no ribbon.
 Minor for parity, matters for migration comfort.
 
 ## 5. Prioritised roadmap
@@ -688,24 +689,24 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | --- | --- | --- | --- | --- |
 | 1 | Text formatting and placement | done: rotation, alignment, styles, text boxes, path function texts, special texts, hyperlinks | 0da4422 | – |
 | 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
-| 3 | Graphical report forms | partly: graphical terminal, cable and plug diagrams and PLC assignment | d7e57f2, eca317c | form editor |
+| 3 | Graphical report forms | done: graphical terminal, cable and plug diagrams and PLC assignment; drawn forms with a form editor for every report (section 7) | d7e57f2, eca317c | several row kinds per drawn form |
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches, check schemes as files | 42d8f5b, 9f7367b | – |
 | 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, 84181bd, 1463540 | – |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
 | 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print; File › Print through the browser's print dialog; mounting layout pages show all faces with items | b0ae357, 9ec50c4, 8b876cb | print without the browser |
 | 8 | PDF with Unicode fonts, UI font fallback | done: embedded font subset for texts beyond WinAnsi; system CJK fonts as fallback on the desktop, on screen and embedded in PDF exports | c336a16, 9eca2c8 | – |
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
-| 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
+| 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import (needs sample exports, section 7) |
 | 11 | Typed mounting data, assemblies | done: typed mounting data; assemblies with components in the bill of materials | 11794d0, ed86e62 | part variants |
 | 12 | Templates, master data, macros | partly: project templates; settings schemes; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108, c76948c | master data synchronisation |
 | 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
 | 14 | PLC exchange formats, navigator | done: PLC navigator; TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY), GX Works device comments | 93fdeb6, 7e3fb7b, 294e3dc, 84181bd | PLCnext |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
 | 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
-| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols | 31f4166, b2b4e88, cceabce, 3e46498 | GB, GOST, JIS |
+| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols; GB, GOST and JIS sets with national device letters (section 7) | 31f4166, b2b4e88, cceabce, 3e46498 | ESKD proportions, older JIS symbols, more symbols per set |
 | 18–20 | Catalogs, manual, languages | partly: getting-started tutorial (docs/tutorial.md) | 5eeb5a1 | catalogs, full manual with pictures, more languages |
-| 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
-| 22 | UI customisation | partly: configurable keyboard shortcuts, workspaces (saved window arrangements) | 9898711, 738440b | docking, toolbar customisation |
+| 21 | Performance, browser storage | done: measured; check hot spots fixed; compressed autosave; incremental netlist per page, parallel checks; IndexedDB (section 7) | 0a895b0, f492586 | incremental checks, analysis off the UI thread |
+| 22 | UI customisation | partly: configurable keyboard shortcuts, workspaces (saved window arrangements), docking panels (section 7) | 9898711, 738440b | toolbar customisation |
 | 23 | Nailboards, Smart Mounting | done: nailboard drawings to scale; mounting assistant | a2fcb96, 7f8e7bb | 3D harness routing |
 
 Also done beyond the roadmap list: property level change tracking in the revision
@@ -718,6 +719,104 @@ templates (CLIP PROJECT, M-Print PRO, Brady, Murrplastik, Partex) and the PDF co
 import follow the published or commonly used layouts of these programs, but were not
 tested against the vendor software; the labeling schemes are starting points meant to
 be copied and adjusted.
+
+## 7. The remaining gaps (October 2026)
+
+After the work of section 6 six gaps were left, each large or in need of design
+decisions: a graphical form editor, an importer for EPLAN projects, incremental
+analysis for very large projects, browser storage beyond local storage, docking panels,
+and GB / GOST / JIS symbol sets. They were taken in this order: what limits users of
+large projects first (measurable, so the effect can be shown), then what an EPLAN user
+misses in daily work, then content, and last what cannot be built without material from
+outside the project.
+
+| Order | Gap | State | Why in this order |
+| --- | --- | --- | --- |
+| 1 | Incremental analysis | done | Every committed change paid for the whole analysis and all checks (half a second at 1,000 pages); a risk for adoption with large projects |
+| 2 | Browser storage | done | A large project does not fit local storage (about 5 MB); small and self-contained |
+| 3 | Docking panels | done | Migration comfort; `egui_tiles` supports egui 0.37 (`egui_dock` does not yet) |
+| 4 | Form editor | done (drawn forms) | Builds on the title block editor; works for every report, also those of plugins |
+| 5 | GB / GOST / JIS | partly (letters and names) | Content; GB/T 4728 and JIS C 0617 adopt the IEC graphics, so the national device letters are what users miss first |
+| 6 | EPLAN project import | open | Needs export files from an EPLAN installation to build and test against (see below) |
+
+**Incremental analysis.** The netlist is built from a scan per page (its connection
+points joined by wires and symbol bridges), kept in `analysis::Cache` with a fingerprint
+of the page's wires and symbols; only changed pages are scanned again, the assembly of
+the nets over the pages stays global. The point-to-point connections are computed once
+(the panel wiring took its own copy before), the two netlists are built at the same
+time and the checks run on several threads where the platform has them (sequential in
+the browser, without a `cfg` branch: `std::thread::available_parallelism` fails there).
+Measured with `cargo run --release -p openecraft-api --example scale -- <pages>`
+(copies of the demo schematic pages with device tags of their own, release build,
+desktop with 32 threads):
+
+| Step | 1,000 pages before | 1,000 pages after | 5,000 pages after |
+| --- | --- | --- | --- |
+| Analysis, first build | 252 ms | 152 ms | 829 ms |
+| Analysis after a change of one page | 252 ms | 104 ms | 786 ms |
+| All checks | 246 ms | 62 ms | 352 ms |
+
+The netlist itself is incremental: after a change of one page of the 5,000-page
+project it takes 73 ms instead of 259 ms. Still global after a change: the assembly of
+the nets over the pages, the point-to-point connections (322 ms at 5,000 pages, linear
+in the number of connections), the panel wiring, the 3D routing and every check; the
+analysis runs on the UI thread, so at 5,000 pages a committed change costs about 1.3 s. Per-check caching would need checks to declare what they read (a change of
+the `Check` registry kind); moving the analysis to a worker thread needs the editor to
+cope with an analysis of an older project state (page and symbol indices). Both are
+the next steps if projects beyond 5,000 pages appear. A pathological case remains: when
+the ducts are far over their fill limit the panel wiring reroutes every wire (seconds at
+10,000 routed wires).
+
+**Browser storage.** The autosaved project and parts database go to the app's store
+(`openecraft_ui::io::Store`): IndexedDB in the browser, a file per key in the app's data
+folder on the desktop. Values are read back asynchronously at start-up and replace the
+start-up ones only if nothing was changed meanwhile; until the first write succeeds
+both stay in local storage too (private windows without IndexedDB keep working as
+before). The File System Access API (saving in place in the browser) is not used: it
+exists only in Chromium browsers.
+
+**Docking panels.** In the schematic workspace the page, each navigator tab, the symbol
+library and the properties are panes of a tile tree: tabs are dragged beside, above or
+below another pane or among its tabs, panes can be closed and shown again (*View ›
+Panels*, also *Reset panel layout*). The arrangement is kept by the app and in saved
+workspaces. Open: the panel layout and wiring workspaces keep their fixed panels;
+toolbar customisation.
+
+**Form editor.** A report form can be an own drawing: graphics drawn once per page and
+a row drawing repeated for every row with a step that runs downwards (lists) or sideways
+(e.g. terminals side by side); texts take the report's columns as placeholders, by
+their English name or the one shown, besides `{report}` and the title block
+placeholders. The editor starts from the report's table, shows the page with its real
+rows and edits lines, rectangles and texts by list, properties and dragging. Drawn
+forms work for every report, also those of plugins, and in report blocks, PDF and
+print. Open: several row kinds per form (group headers, sub-rows), symbols in forms
+(EPLAN draws terminals with symbols), and a library of ready-made drawn forms.
+
+**GB / GOST / JIS.** Three sets of 26 symbols each (coils, contacts, push buttons,
+switches, protective devices, motor, lamp, horn, transformer, valve coil, terminal) with
+the device letters of GB/T 7159, GOST 2.710 and JIS C 0401, so placed devices are
+numbered `-KM1`, `-QF1`, `-MCCB1`, and terminals start strips `-XT1` / `-TB1`. They
+are drawn like the IEC symbols, which GB/T 4728 and JIS C 0617 adopt; the ESKD
+proportions of GOST 2.755 / 2.756 and the older JIS symbols still common in Japanese
+sequence diagrams are not reproduced. More symbols per set and drawings checked by
+users of these standards are the next steps (community content, section 4).
+
+**EPLAN project import: what it needs.** EPLAN keeps projects in a proprietary database
+(`.elk` with the `.edb` folder) without a published format; reading it directly would
+mean reverse engineering and is not planned. The viable route is EPLAN's own export of
+the project data as XML (and the `.zw1` / `.pxf` exchange archives), whose structure is
+documented only inside EPLAN. An importer needs sample exports from an EPLAN
+installation (several projects: IEC and NFPA, with terminals, cables, PLC and macros)
+to build and test against, and a mapping of EPLAN symbol libraries (symbol names and
+variants) to OpenECraft symbols. The import would then map pages with their structure
+identifiers, placed functions to symbols, the connections (EPLAN connects by geometry
+as OpenECraft does; connection definition points carry number, colour and
+cross-section), devices with their parts (the EPLAN parts XML importer exists),
+terminal strips, cables and PLC cards. Until then archived EPLAN projects can be
+migrated in parts: the pages as DWG / DXF (*File › Import DXF / DWG as page*), device,
+terminal and connection lists as Excel exports (table import), parts as EPLAN parts
+XML. Decision for the maintainers: obtaining sample exports (an EPLAN licence is needed
+to produce them) and which symbol libraries the mapping covers first.
 
 ## Appendix: inventory used for this comparison
 

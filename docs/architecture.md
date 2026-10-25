@@ -81,7 +81,16 @@ refer to each other (the registry kinds take an `&Analysis`).
 - `application/session.rs` holds the document state: the open project, its undo
   history, the analysis (rebuilt after committed changes and language changes, with the
   reports and checks of the registry), the device index, the saved revision and the
-  file name. It has no UI code and is unit tested; `App` adds the windows.
+  file name. It has no UI code and is unit tested; `App` adds the windows. The
+  analysis is incremental: `analysis::Cache` keeps the netlist scan of every page
+  (`netlist::Scans`, keyed by page id and a fingerprint of its wires and symbols), so
+  a change scans only the changed pages again; the checks run on several threads where
+  the platform has them (`analysis::par_map`, sequential in the browser).
+- `application/autosave.rs` keeps the autosaved project and parts database in the
+  app's `openecraft_ui::io::Store` (a file per key on the desktop, IndexedDB in the
+  browser) and decides when a value read back at start-up may replace the start-up
+  one. `application/dock.rs` is the arrangement of the docked panes of the schematic
+  workspace (`egui_tiles`); `app/dock_ui.rs` draws them.
 - `application/app.rs` is the composition root: the `App` struct, start-up, the frame
   loop and the handful of helpers every window needs (`notify`, `goto`,
   `replace_project`, `add_page`). Menus (`app/menus.rs`), files (`app/files.rs`),
