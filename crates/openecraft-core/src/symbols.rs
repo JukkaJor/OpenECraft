@@ -1026,6 +1026,107 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "1").pin(4.0, 0.0, "2").pin(0.0, 4.0, "3");
     v.push(def("potentiometer", "Potentiometer", C::Passive, "R", MAIN).build(&mut b));
 
+    // ---------------------------------------------------------------- electronics (IEC 60617)
+    // Small filled arrow head at `tip` pointing in direction (dx, dy).
+    let arrow = |b: &mut B, tx: f32, ty: f32, dx: f32, dy: f32| {
+        let (nx, ny) = (-dy, dx);
+        b.poly(&[(tx, ty), (tx - dx * 1.2 + nx * 0.5, ty - dy * 1.2 + ny * 0.5), (tx - dx * 1.2 - nx * 0.5, ty - dy * 1.2 - ny * 0.5)], true, true);
+    };
+    let diode_body = |b: &mut B| {
+        b.l(0.0, -4.0, 0.0, -1.5).poly(&[(-1.8, -1.5), (1.8, -1.5), (0.0, 1.5)], true, false);
+    };
+
+    // Electrolytic capacitor: the negative plate filled, + at the positive one.
+    b.l(0.0, -4.0, 0.0, -0.8).l(-2.5, -0.8, 2.5, -0.8).rect(-2.5, 0.6, 2.5, 1.2, true).l(0.0, 1.2, 0.0, 4.0);
+    b.text(2.2, -2.2, "+", 1.8, Left);
+    b.pin(0.0, -4.0, "+").pin(0.0, 4.0, "-");
+    v.push(def("cap_pol", "Capacitor, polarized", C::Passive, "C", MAIN).build(&mut b));
+
+    diode_body(&mut b);
+    b.l(-1.8, 2.2, -1.8, 1.5).l(-1.8, 1.5, 1.8, 1.5).l(1.8, 1.5, 1.8, 0.8).l(0.0, 1.5, 0.0, 4.0);
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
+    v.push(def("zener", "Zener diode", C::Passive, "V", MAIN).build(&mut b));
+
+    diode_body(&mut b);
+    b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0);
+    for y in [-1.6, 0.0] {
+        b.l(4.0, y - 1.4, 2.4, y);
+        arrow(&mut b, 2.2, y + 0.2, -0.75, 0.66);
+    }
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
+    v.push(def("photodiode", "Photodiode", C::Passive, "B", MAIN).build(&mut b));
+
+    // Bipolar transistors: base on the left, collector up, emitter down.
+    for (key, name, pnp) in [("npn", "Transistor NPN", false), ("pnp", "Transistor PNP", true)] {
+        b.circle(0.0, 0.0, 3.2, false).l(-4.0, 0.0, -1.2, 0.0).l(-1.2, -2.0, -1.2, 2.0);
+        b.l(-1.2, -0.9, 0.0, -2.2).l(0.0, -2.2, 0.0, -4.0).l(-1.2, 0.9, 0.0, 2.2).l(0.0, 2.2, 0.0, 4.0);
+        if pnp {
+            arrow(&mut b, -1.1, 1.0, -0.68, -0.73);
+        } else {
+            arrow(&mut b, 0.0, 2.2, 0.68, 0.73);
+        }
+        b.pin(-4.0, 0.0, "B").pin(0.0, -4.0, "C").pin(0.0, 4.0, "E");
+        v.push(def(key, name, C::Passive, "V", MAIN).build(&mut b));
+    }
+
+    // N-channel MOSFET (enhancement): gate left, drain up, source down, body to source.
+    b.circle(0.0, 0.0, 3.2, false).l(-4.0, 0.0, -1.8, 0.0).l(-1.8, -1.8, -1.8, 1.8);
+    for (y0, y1) in [(-2.0, -1.0), (-0.5, 0.5), (1.0, 2.0)] {
+        b.l(-1.0, y0, -1.0, y1);
+    }
+    b.l(-1.0, -1.5, 0.0, -1.5).l(0.0, -1.5, 0.0, -4.0).l(-1.0, 1.5, 0.0, 1.5).l(0.0, 1.5, 0.0, 4.0).l(-0.6, 0.0, 0.0, 0.0).l(0.0, 0.0, 0.0, 1.5);
+    arrow(&mut b, -1.0, 0.0, -1.0, 0.0);
+    b.pin(-4.0, 0.0, "G").pin(0.0, -4.0, "D").pin(0.0, 4.0, "S");
+    v.push(def("nmos", "MOSFET N-channel", C::Passive, "V", MAIN).build(&mut b));
+
+    // Thyristor: diode with the gate at the cathode.
+    diode_body(&mut b);
+    b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0).l(0.9, 1.5, 4.0, 4.0);
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K").pin(4.0, 4.0, "G");
+    v.push(def("thyristor", "Thyristor", C::Passive, "V", MAIN).build(&mut b));
+
+    // Triac: two triangles in antiparallel between two bars, gate at the bottom.
+    b.l(0.0, -4.0, 0.0, -1.5).l(-2.6, -1.5, 2.6, -1.5).l(-2.6, 1.5, 2.6, 1.5).l(0.0, 1.5, 0.0, 4.0);
+    b.poly(&[(-2.6, -1.5), (0.0, -1.5), (-1.3, 1.5)], true, false).poly(&[(0.0, 1.5), (2.6, 1.5), (1.3, -1.5)], true, false);
+    b.l(1.3, 1.5, 4.0, 4.0);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2").pin(4.0, 4.0, "G");
+    v.push(def("triac", "Triac", C::Passive, "V", MAIN).build(&mut b));
+
+    // NTC thermistor: resistor with the non-linear stroke and the sign of the coefficient.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-3.2, 2.6, -2.2, 2.6).l(-2.2, 2.6, 2.2, -2.6).text(2.0, 2.4, "-t°", 1.4, Left);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("ntc", "Thermistor NTC", C::Passive, "R", MAIN).build(&mut b));
+
+    // Photoresistor (LDR): resistor with two incoming arrows.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    for y in [-2.2, -0.4] {
+        b.l(4.0, y - 1.4, 2.0, y);
+        arrow(&mut b, 1.8, y + 0.2, -0.75, 0.66);
+    }
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("ldr", "Photoresistor (LDR)", C::Passive, "R", MAIN).build(&mut b));
+
+    // Optocoupler: LED and phototransistor in a common housing.
+    b.drect(-7.0, -5.5, 7.0, 5.5);
+    b.l(-4.0, -8.0, -4.0, -1.5).poly(&[(-5.8, -1.5), (-2.2, -1.5), (-4.0, 1.5)], true, false).l(-5.8, 1.5, -2.2, 1.5).l(-4.0, 1.5, -4.0, 8.0);
+    for y in [-1.2, 0.6] {
+        b.l(-1.6, y, 0.6, y);
+        arrow(&mut b, 0.8, y, 1.0, 0.0);
+    }
+    b.l(2.0, -2.0, 2.0, 2.0).l(2.0, -0.9, 4.0, -2.4).l(4.0, -2.4, 4.0, -8.0).l(2.0, 0.9, 4.0, 2.4).l(4.0, 2.4, 4.0, 8.0);
+    arrow(&mut b, 4.0, 2.4, 0.8, 0.6);
+    b.pin(-4.0, -8.0, "A").pin(-4.0, 8.0, "K").pin(4.0, -8.0, "C").pin(4.0, 8.0, "E");
+    v.push(def("optocoupler", "Optocoupler", C::Passive, "U", MAIN).build(&mut b));
+
+    // Bridge rectifier: the four diodes as one block, AC on the sides, + up, - down.
+    b.rect(-4.0, -4.0, 4.0, 4.0, false);
+    b.poly(&[(-1.4, -0.6), (1.4, -0.6), (0.0, -2.4)], true, false).l(-1.4, -2.4, 1.4, -2.4);
+    b.text(-2.6, 2.4, "~", 1.8, Center).text(2.6, 2.4, "~", 1.8, Center);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(-8.0, 0.0, -4.0, 0.0).l(4.0, 0.0, 8.0, 0.0);
+    b.pin(-8.0, 0.0, "~1").pin(8.0, 0.0, "~2").pin(0.0, -8.0, "+").pin(0.0, 8.0, "-");
+    v.push(def("bridge_rect", "Bridge rectifier", C::Passive, "T", MAIN).build(&mut b));
+
     // ---------------------------------------------------------------- black boxes
     b.drect(-4.0, -4.0, 12.0, 4.0);
     b.l(0.0, -8.0, 0.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(8.0, 4.0, 8.0, 8.0);

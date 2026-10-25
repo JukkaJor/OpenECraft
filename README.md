@@ -10,7 +10,7 @@ built with [egui / eframe](https://github.com/emilk/egui).
   parts manager remember the choice and start in the system / browser language if supported).
 - **Projects with pages**: multi-line schematic pages (A3, 10 columns / 6 rows, title block),
   cover sheet and generated report pages. Page navigator with reordering.
-- **IEC 60617 symbol library** (~320 symbols): relay coils (AC, latching, polarized,
+- **IEC 60617 symbol library** (~330 symbols): relay coils (AC, latching, polarized,
   timers, time switches, counters, over- / undervoltage relays), NO/NC/changeover contacts
   (early / late, passing, on- / off-delay), push / pull / key / foot / selector switches
   with spring return or latching and position diagrams, emergency stops with turn / pull /
@@ -20,7 +20,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   protection switches, overload relays, AC / DC / EC motors and fans, signal lamps,
   beacons, sirens, indicating, recording and integrating meters, current transformers,
   1- and 3-phase transformers (vector groups) and autotransformers, rectifiers and
-  converters, terminals, PLC inputs/outputs, potentials, interruption points, R/C/diode.
+  converters, terminals, PLC inputs/outputs, potentials, interruption points, and
+  electronics: resistors, capacitors (also polarized), diodes, Zener and photodiodes, LEDs,
+  NPN / PNP transistors, N-channel MOSFET, thyristor, triac, NTC thermistor,
+  photoresistor, optocoupler and bridge rectifier.
 - **Device-oriented engineering**: device tags (`-K1`, `-S3`, …) are assigned automatically.
   Main function (coil) + auxiliary functions (contacts) form one device. Select a coil and
   place contacts: they are assigned to it and numbered (13/14, 21/22, …).
