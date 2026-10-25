@@ -1,0 +1,25 @@
+# Flatpak of OpenECraft, built by `installer/linux/build.sh flatpak` from the binaries
+# it installed into files/ next to the copy of this manifest. The other programs run
+# with `flatpak run --command=openecraft-cli io.github.nilres.OpenECraft mcp`.
+id: io.github.nilres.OpenECraft
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: openecraft
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Parts server, project server, Autodesk Vault, EPLAN Data Portal.
+  - --share=network
+  # Projects are opened by path (recent files, command line, linked documents).
+  - --filesystem=home
+modules:
+  - name: openecraft
+    buildsystem: simple
+    build-commands:
+      - cp -a bin share /app/
+    sources:
+      - type: dir
+        path: files

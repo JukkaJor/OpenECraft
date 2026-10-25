@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.nilres.OpenECraft</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT OR Apache-2.0</project_license>
+  <name>OpenECraft</name>
+  <summary>Electrical CAE: schematics, panel layouts and reports</summary>
+  <summary xml:lang="de">Elektro-CAE: Stromlaufpläne, Schaltschrankaufbauten und Auswertungen</summary>
+  <summary xml:lang="fr">CAO électrique : schémas, implantations d'armoires et rapports</summary>
+  <summary xml:lang="es">CAE eléctrico: esquemas, montajes de armarios e informes</summary>
+  <developer id="io.github.nilres">
+    <name>OpenECraft</name>
+  </developer>
+  <description>
+    <p>OpenECraft is an open electrical CAE editor in the spirit of EPLAN Electric P8.</p>
+    <p xml:lang="de">OpenECraft ist ein offener Elektro-CAE-Editor nach dem Vorbild von EPLAN Electric P8.</p>
+    <p xml:lang="fr">OpenECraft est un éditeur de CAO électrique libre dans l'esprit d'EPLAN Electric P8.</p>
+    <p xml:lang="es">OpenECraft es un editor de CAE eléctrico abierto al estilo de EPLAN Electric P8.</p>
+    <ul>
+      <li>Schematic pages with device tags, cross references and a netlist</li>
+      <li xml:lang="de">Stromlaufplanseiten mit Betriebsmittelkennzeichen, Querverweisen und Netzliste</li>
+      <li xml:lang="fr">Pages de schéma avec repères d'appareils, renvois et liste des connexions</li>
+      <li xml:lang="es">Páginas de esquema con identificadores de equipos, referencias cruzadas y lista de conexiones</li>
+      <li>Panel layout in 2D and 3D, wiring assistant</li>
+      <li xml:lang="de">Schaltschrankaufbau in 2D und 3D, Verdrahtungsassistent</li>
+      <li xml:lang="fr">Implantation d'armoire en 2D et 3D, assistant de câblage</li>
+      <li xml:lang="es">Montaje de armario en 2D y 3D, asistente de cableado</li>
+      <li>Checks, reports and exports to PDF, SVG, DXF, DWG, STEP and JT</li>
+      <li xml:lang="de">Prüfungen, Auswertungen und Exporte nach PDF, SVG, DXF, DWG, STEP und JT</li>
+      <li xml:lang="fr">Contrôles, rapports et exports en PDF, SVG, DXF, DWG, STEP et JT</li>
+      <li xml:lang="es">Comprobaciones, informes y exportaciones a PDF, SVG, DXF, DWG, STEP y JT</li>
+      <li>Parts from a shared parts server and EPLAN Data Portal archives</li>
+      <li xml:lang="de">Artikel von einem gemeinsamen Artikelserver und aus Archiven des EPLAN Data Portal</li>
+      <li xml:lang="fr">Articles d'un serveur d'articles partagé et d'archives de l'EPLAN Data Portal</li>
+      <li xml:lang="es">Artículos de un servidor de artículos compartido y de archivos del EPLAN Data Portal</li>
+      <li>Command line and MCP server for AI agents</li>
+      <li xml:lang="de">Kommandozeile und MCP-Server für KI-Agenten</li>
+      <li xml:lang="fr">Ligne de commande et serveur MCP pour les agents IA</li>
+      <li xml:lang="es">Línea de comandos y servidor MCP para agentes de IA</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.nilres.OpenECraft.desktop</launchable>
+  <url type="homepage">https://github.com/nilres/OpenECraft</url>
+  <url type="bugtracker">https://github.com/nilres/OpenECraft/issues</url>
+  <url type="vcs-browser">https://github.com/nilres/OpenECraft</url>
+  <categories>
+    <category>Graphics</category>
+    <category>Engineering</category>
+    <category>Electronics</category>
+  </categories>
+  <keywords>
+    <keyword>schematic</keyword>
+    <keyword>electrical</keyword>
+    <keyword>CAE</keyword>
+    <keyword>EPLAN</keyword>
+  </keywords>
+  <provides>
+    <binary>openecraft</binary>
+    <binary>openecraft-parts-manager</binary>
+    <binary>openecraft-cli</binary>
+    <binary>openecraft-parts-server</binary>
+    <binary>openecraft-project-server</binary>
+    <mediatype>application/x-openecraft-project</mediatype>
+    <mediatype>application/x-openecraft-archive</mediatype>
+  </provides>
+  <branding>
+    <color type="primary" scheme_preference="light">#2c72cc</color>
+    <color type="primary" scheme_preference="dark">#154586</color>
+  </branding>
+  <content_rating type="oars-1.1"/>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-10-25"/>
+  </releases>
+</component>

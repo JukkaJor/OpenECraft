@@ -23,6 +23,11 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 - Windows installer: `powershell -ExecutionPolicy Bypass -File installer/windows/build.ps1`
   (Inno Setup 6, script `installer/windows/openecraft.iss`, output `target/installer/`);
   installer texts are in all four languages too (`[CustomMessages]`)
+- Linux packages: `bash installer/linux/build.sh [tar.gz] [deb] [rpm] [appimage] [flatpak] [snap]`
+  (desktop entries, MIME types and AppStream metainfo in `installer/linux/`, translated
+  into all four languages; a new version needs a `<release>` in the metainfo)
+- macOS disk image: `bash installer/macos/build.sh` (universal app bundles, output
+  `target/installer/`)
 - The web target needs `rustup target add wasm32-unknown-unknown` and `cargo install trunk --locked`.
 
 ## Workspace layout

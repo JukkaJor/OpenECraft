@@ -1,0 +1,47 @@
+# Snap of OpenECraft, built by `installer/linux/build.sh snap` from the binaries it
+# installed into files/usr; @VERSION@ is replaced with the version of Cargo.toml.
+name: openecraft
+title: OpenECraft
+version: '@VERSION@'
+summary: Electrical CAE editor - schematics, panel layouts and reports
+description: |
+  OpenECraft is an open electrical CAE editor in the spirit of EPLAN Electric P8:
+  schematic pages with device tags, cross references and a netlist, panel layout
+  in 2D and 3D, checks, reports and exports.
+
+  Commands: openecraft (editor), openecraft.parts-manager, openecraft.cli (command
+  line and MCP server for AI agents), openecraft.parts-server, openecraft.project-server.
+license: MIT OR Apache-2.0
+website: https://github.com/nilres/OpenECraft
+source-code: https://github.com/nilres/OpenECraft
+issues: https://github.com/nilres/OpenECraft/issues
+icon: snap/gui/openecraft.png
+base: core24
+grade: stable
+confinement: strict
+
+parts:
+  openecraft:
+    plugin: dump
+    source: files
+
+apps:
+  openecraft:
+    command: usr/bin/openecraft
+    desktop: usr/share/applications/io.github.nilres.OpenECraft.desktop
+    extensions: [gnome]
+    plugs: [home, removable-media, network, opengl]
+  parts-manager:
+    command: usr/bin/openecraft-parts-manager
+    desktop: usr/share/applications/io.github.nilres.OpenECraft.PartsManager.desktop
+    extensions: [gnome]
+    plugs: [home, removable-media, network, opengl]
+  cli:
+    command: usr/bin/openecraft-cli
+    plugs: [home, removable-media, network, network-bind]
+  parts-server:
+    command: usr/bin/openecraft-parts-server
+    plugs: [home, network, network-bind]
+  project-server:
+    command: usr/bin/openecraft-project-server
+    plugs: [home, network, network-bind]
