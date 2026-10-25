@@ -2,7 +2,7 @@
 name = "openecraft-auth"
 version = "0.1.0"
 edition = "2021"
-description = "User accounts of the OpenECraft servers: password hashes (Argon2) and session tokens"
+description = "Access control of the OpenECraft servers: password hashes (Argon2), session tokens, Active Directory / LDAP sign-in, access settings"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -11,3 +11,10 @@ argon2 = "0.5"
 password-hash = { version = "0.5", features = ["getrandom"] }
 sha2 = "0.10"
 getrandom = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+ldap3 = { version = "0.12", default-features = false, features = ["tls-rustls-ring"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }

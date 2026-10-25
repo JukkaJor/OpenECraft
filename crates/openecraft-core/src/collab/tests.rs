@@ -100,6 +100,7 @@ fn shared(locks: Vec<Lock>) -> (Shared, Project) {
         session: Session { user: "me".into(), session: "s1".into() },
         first_id: 2_000_000,
         snapshot: Snapshot { revision: 3, project: project(), locks },
+        rights: Vec::new(),
     };
     Shared::open("plant", opened)
 }
@@ -217,12 +218,29 @@ fn review_records_need_no_lock() {
 
 #[test]
 fn roles_and_projects_of_users() {
-    let viewer = ProjectUser { name: "v".into(), role: ProjectRole::Viewer, projects: vec![] };
-    assert!(viewer.may_see("Plant 1") && !viewer.may_edit("Plant 1"));
-    let editor = ProjectUser { name: "e".into(), role: ProjectRole::Editor, projects: vec!["Plant*".into()] };
-    assert!(editor.may_edit("Plant 2") && !editor.may_see("Office"));
-    let admin = ProjectUser { name: "a".into(), role: ProjectRole::Admin, projects: vec!["none".into()] };
-    assert!(admin.may_edit("Office"), "administrators see everything");
-    assert!(ProjectRole::Viewer < ProjectRole::Editor && ProjectRole::Editor < ProjectRole::Admin);
+    let rights = |u: &ProjectUser, project: &str| Policy::<ProjectRight>::default().access(&u.identity(), &u.grants()).rights(project);
+    let user = |role, projects: &[&str]| ProjectUser { name: "u".into(), role, projects: projects.iter().map(|p| p.to_string()).collect(), ..Default::default() };
+    let viewer = user(Some(ProjectRole::Viewer), &[]);
+    assert_eq!(rights(&viewer, "Plant 1").into_iter().collect::<Vec<_>>(), [ProjectRight::View]);
+    let editor = user(Some(ProjectRole::Editor), &["Plant*"]);
+    assert!(rights(&editor, "Plant 2").contains(&ProjectRight::EditPages));
+    assert!(rights(&editor, "Office").is_empty());
+    let admin = user(Some(ProjectRole::Admin), &["none"]);
+    assert!(rights(&admin, "Office").contains(&ProjectRight::Delete), "administrators see everything");
+    assert!(rights(&admin, SERVER).contains(&ProjectRight::Administer));
+    assert!(user(None, &[]).grants().is_empty(), "directory users start without rights");
+    assert!(ProjectRole::Viewer < ProjectRole::Reviewer && ProjectRole::Editor < ProjectRole::Manager && ProjectRole::Manager < ProjectRole::Admin);
+    for role in ProjectRole::ALL {
+        assert_eq!(ProjectRight::role(role.name()), Some(role.rights()));
+    }
+    assert_eq!(ProjectRight::ROLES, ProjectRole::ALL.map(ProjectRole::name));
     assert_eq!(user_path("anna b"), "/api/v1/users/anna%20b");
+    assert_eq!(access_path("Plant 1"), "/api/v1/projects/Plant%201/access");
+}
+
+#[test]
+fn old_user_files_keep_their_role() {
+    let u: ProjectUser = serde_json::from_str(r#"{"name":"anna","role":"editor","projects":["Plant*"]}"#).unwrap();
+    assert_eq!(u.role, Some(ProjectRole::Editor));
+    assert_eq!(serde_json::to_string(&ProjectUser { name: "x".into(), ..Default::default() }).unwrap(), r#"{"name":"x"}"#);
 }

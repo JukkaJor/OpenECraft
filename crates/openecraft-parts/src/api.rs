@@ -22,13 +22,19 @@
 //! | GET / PUT | `/api/v1/favorites` | part numbers of the caller (signed in) |
 //! | GET | `/api/v1/users` | [`User`] list (administrator) |
 //! | PUT / DELETE | `/api/v1/users/{name}` | [`UserUpdate`] (administrator) |
+//! | GET | `/api/v1/access` | [`Settings`](crate::access::Settings) of [`PartsRight`] (administrator) |
+//! | PUT | `/api/v1/access` | [`Policy`](crate::access::Policy) of [`PartsRight`] (administrator) |
 //! | GET | `/api/v1/texts?lang=de` | translations of the web portal |
 //!
 //! Requests of a user carry `Authorization: Bearer <token>`: the token of a
-//! [`Session`] or the server's administrator token (`--token`). Errors are returned
+//! [`Session`] or the server's administrator token (`--token`). Users sign in with a
+//! local account or with a directory of the server (Active Directory, LDAP). What
+//! they may do comes from their role and the grants of the server's policy
+//! ([`crate::access`]); the scope of a right is the manufacturer. Errors are returned
 //! as [`ApiError`] JSON.
 
-use crate::portal::{Lifecycle, Role, Sort, User};
+use crate::access::{Access, SERVER};
+use crate::portal::{Lifecycle, PartsRight, Role, Sort, User};
 use crate::TopGroup;
 use serde::{Deserialize, Serialize};
 
@@ -52,17 +58,38 @@ pub struct ServerInfo {
     pub storage: String,
     /// The user of the request's token (`None`: anonymous).
     pub user: Option<User>,
+    /// What the caller may do (role and grants of the server's policy).
+    pub access: Access<PartsRight>,
 }
 
 impl ServerInfo {
+    /// The caller's rights; from the user's role if the server sends none (older
+    /// servers).
+    pub fn rights(&self) -> Access<PartsRight> {
+        match &self.user {
+            Some(u) if self.access.entries.is_empty() => u.access(),
+            _ => self.access.clone(),
+        }
+    }
+
+    /// True if the caller has the right on parts or catalogs of this manufacturer.
+    pub fn may(&self, right: PartsRight, manufacturer: &str) -> bool {
+        self.rights().allows(manufacturer.trim(), right)
+    }
+
     /// True if the caller may change parts of this manufacturer.
     pub fn may_edit(&self, manufacturer: &str) -> bool {
-        self.user.as_ref().is_some_and(|u| u.may_edit(manufacturer))
+        self.may(PartsRight::EditParts, manufacturer)
     }
 
     /// True if the caller may change any parts at all.
     pub fn can_edit(&self) -> bool {
-        self.user.as_ref().is_some_and(|u| u.role >= Role::Manufacturer)
+        self.rights().anywhere(PartsRight::EditParts)
+    }
+
+    /// True if the caller manages users, roles and grants.
+    pub fn is_admin(&self) -> bool {
+        self.rights().allows(SERVER, PartsRight::Administer)
     }
 }
 
@@ -94,6 +121,9 @@ pub struct ApiError {
 pub struct Login {
     pub name: String,
     pub password: String,
+    /// Directory to sign in with; empty = the local accounts, then every directory.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub provider: String,
 }
 
 /// A signed in user and the token for its requests.
@@ -102,16 +132,22 @@ pub struct Login {
 pub struct Session {
     pub token: String,
     pub user: User,
+    /// What the user may do.
+    pub access: Access<PartsRight>,
 }
 
-/// Creates or changes a user. An empty password keeps the current one (a new user
-/// needs one).
+/// Creates or changes a user. An empty password keeps the current one (a new local
+/// user needs one; users of a directory have none on the server).
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct UserUpdate {
     pub role: Role,
     pub manufacturer: String,
     pub password: String,
+    /// Local groups of the user; `None` keeps them. Groups of directory users come
+    /// from the directory.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub groups: Option<Vec<String>>,
 }
 
 /// Query parameters of `GET /api/v1/parts`, body of `POST /api/v1/search`.

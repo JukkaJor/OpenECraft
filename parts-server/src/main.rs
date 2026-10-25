@@ -9,8 +9,11 @@
 //! openecraft-parts-server --install-catalogs all
 //! ```
 //!
-//! Without `--token` (or `OPENECRAFT_TOKEN`) and without user accounts the server is
-//! read-only.
+//! Without `--token` (or `OPENECRAFT_TOKEN`), user accounts and directories the
+//! server is read-only. Users sign in with a local account or with a directory
+//! (Active Directory, LDAP) of the access settings (`--access`, default
+//! `<data>.access.json`); their rights per manufacturer come from their role and the
+//! grants to them and their groups.
 
 mod auth;
 mod bundled;
@@ -23,7 +26,6 @@ use openecraft_parts::api::DEFAULT_PORT;
 use openecraft_parts::portal::{Role, User};
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use storage::{StorageKind, Store};
 
 #[derive(Parser)]
@@ -53,6 +55,10 @@ struct Args {
     /// (e.g. `siemens`). Parts changed by users are kept.
     #[arg(long, value_delimiter = ',')]
     install_catalogs: Vec<String>,
+    /// Access settings: directories (Active Directory, LDAP), roles and grants.
+    /// Default: `<data>.access.json` next to the database.
+    #[arg(long)]
+    access: Option<PathBuf>,
 }
 
 fn fail(msg: String) -> ! {
@@ -79,7 +85,7 @@ fn add_admin(store: &mut Store, name: &str) {
         fail("--admin-user needs the password in OPENECRAFT_ADMIN_PASSWORD".into());
     }
     let mut account = store.account(name).cloned().unwrap_or_default();
-    account.user = User { name: name.trim().into(), role: Role::Admin, manufacturer: String::new() };
+    account.user = User { name: name.trim().into(), role: Role::Admin, manufacturer: String::new(), ..Default::default() };
     account.password = auth::hash_password(&password).unwrap_or_else(|e| fail(e));
     account.sessions.clear();
     if let Err(e) = store.put_account(account) {
@@ -130,11 +136,16 @@ async fn main() {
         store.kind(),
         store.revision
     );
-    let token = args.token.filter(|t| !t.trim().is_empty());
-    if token.is_none() && store.accounts().is_empty() {
-        log::warn!("no access token and no users: the server is read-only");
+    let access_path = args.access.unwrap_or_else(|| args.data.with_extension("access.json"));
+    let access = openecraft_auth::AccessFile::open(&access_path, routes::default_access()).unwrap_or_else(|e| fail(format!("cannot read the access settings: {e}")));
+    for d in &access.config.directories {
+        log::info!("sign-in with directory {} ({})", d.id, d.url);
     }
-    let state = routes::AppState { store: Arc::new(Mutex::new(store)), token };
+    let token = args.token.filter(|t| !t.trim().is_empty());
+    if token.is_none() && store.accounts().is_empty() && access.config.directories.is_empty() {
+        log::warn!("no access token, users or directories: the server is read-only");
+    }
+    let state = routes::AppState::new(store, token, access);
     let listener = tokio::net::TcpListener::bind(args.bind).await.unwrap_or_else(|e| fail(format!("cannot listen on {}: {e}", args.bind)));
     log::info!("listening on http://{}", args.bind);
     let shutdown = async {

@@ -9,10 +9,12 @@ use axum::http::{header, HeaderMap, Method, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
+use openecraft_auth::{AccessFile, SignInError};
+use openecraft_parts::access::{Access, Policy, Right, Settings, SERVER};
 use openecraft_parts::api::{
     bearer_token, token_matches, ApiError, ImportResult, Login, PartList, PartQuery, ServerInfo, Session, UserUpdate, API_PREFIX,
 };
-use openecraft_parts::portal::{content_type, AttachmentKind, Catalog, HistoryEntry, Role, SearchResult, User};
+use openecraft_parts::portal::{content_type, AttachmentKind, Catalog, HistoryEntry, PartsRight, Role, SearchResult, User};
 use openecraft_parts::{import, to_csv, Part};
 use serde::Deserialize;
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -24,9 +26,22 @@ pub const ADMIN: &str = "admin";
 #[derive(Clone)]
 pub struct AppState {
     pub store: Arc<Mutex<Store>>,
-    /// Administrator token (`--token`). Without it and without user accounts the
-    /// server is read-only.
+    /// Administrator token (`--token`). Without it, user accounts and directories
+    /// the server is read-only.
     pub token: Option<String>,
+    /// Directories, roles and grants (`--access`). Always locked after `store`.
+    pub access: Arc<Mutex<AccessFile<PartsRight>>>,
+}
+
+impl AppState {
+    pub fn new(store: Store, token: Option<String>, access: AccessFile<PartsRight>) -> AppState {
+        AppState { store: Arc::new(Mutex::new(store)), token, access: Arc::new(Mutex::new(access)) }
+    }
+}
+
+/// Access settings of a parts server without a file: anonymous requests may read.
+pub fn default_access() -> openecraft_auth::AccessConfig<PartsRight> {
+    openecraft_auth::AccessConfig { policy: Policy { anonymous: Role::Reader.name().into(), ..Default::default() }, ..Default::default() }
 }
 
 pub struct AppError(StatusCode, String);
@@ -81,6 +96,7 @@ pub fn router(state: AppState) -> Router {
         .route(&api("/favorites"), get(favorites).put(set_favorites))
         .route(&api("/users"), get(users))
         .route(&api("/users/{name}"), axum::routing::put(put_user).delete(delete_user))
+        .route(&api("/access"), get(access).put(save_access))
         .layer(DefaultBodyLimit::max(32 * 1024 * 1024))
         .layer(cors())
         .with_state(state)
@@ -100,55 +116,88 @@ fn store(state: &AppState) -> MutexGuard<'_, Store> {
     state.store.lock().unwrap_or_else(|e| e.into_inner())
 }
 
+fn access_file(state: &AppState) -> MutexGuard<'_, AccessFile<PartsRight>> {
+    state.access.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 fn presented(headers: &HeaderMap) -> Option<&str> {
     headers.get(header::AUTHORIZATION).and_then(|v| v.to_str().ok()).and_then(bearer_token).filter(|t| !t.is_empty())
 }
 
-/// The user of the request's token: the administrator token or a session.
-fn caller(state: &AppState, headers: &HeaderMap) -> Option<User> {
-    let token = presented(headers)?;
-    if state.token.as_deref().is_some_and(|t| token_matches(token, t)) {
-        return Some(User { name: ADMIN.into(), role: Role::Admin, manufacturer: String::new() });
+/// Who makes a request and what they may do.
+struct Caller {
+    /// The signed-in user; the administrator token is the user `admin`.
+    user: Option<User>,
+    access: Access<PartsRight>,
+}
+
+/// The caller of a request: the administrator token, a session or (also for unknown
+/// tokens) an anonymous caller.
+fn caller(state: &AppState, headers: &HeaderMap) -> Caller {
+    let token = presented(headers);
+    if token.is_some_and(|p| state.token.as_deref().is_some_and(|t| token_matches(p, t))) {
+        return Caller { user: Some(User { name: ADMIN.into(), role: Role::Admin, ..Default::default() }), access: Access::full() };
     }
-    store(state).session(token).map(|a| a.user.clone())
+    let user = token.and_then(|t| store(state).session(t).map(|a| a.user.clone()));
+    let file = access_file(state);
+    let policy = &file.config.policy;
+    match user {
+        Some(u) => Caller { access: policy.access(&u.identity(), &u.grants()).with(policy.anonymous_access()), user: Some(u) },
+        None => Caller { user: None, access: policy.anonymous_access() },
+    }
 }
 
 /// True if anybody can change the database.
 fn writable(state: &AppState, store: &Store) -> bool {
-    state.token.is_some() || store.accounts().iter().any(|a| a.user.role >= Role::Manufacturer)
+    state.token.is_some() || !store.accounts().is_empty() || !access_file(state).config.directories.is_empty()
 }
 
-/// The signed in user (any role).
-fn user(state: &AppState, headers: &HeaderMap) -> Result<User> {
-    if let Some(u) = caller(state, headers) {
-        return Ok(u);
+/// The signed in user (any role) and their rights.
+fn user(state: &AppState, headers: &HeaderMap) -> Result<(User, Access<PartsRight>)> {
+    let c = caller(state, headers);
+    if let Some(u) = c.user {
+        return Ok((u, c.access));
     }
-    if state.token.is_none() && store(state).accounts().is_empty() {
+    if !writable(state, &store(state)) {
         return Err(forbidden("server is read-only (start it with --token to allow changes)"));
     }
     Err(AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into()))
 }
 
-fn with_role(state: &AppState, headers: &HeaderMap, role: Role) -> Result<User> {
-    let u = user(state, headers)?;
-    if u.role < role {
-        return Err(forbidden(format!("user '{}' is not allowed to do this", u.name)));
-    }
-    Ok(u)
+/// The signed in user if they have the right on the manufacturer's data.
+fn with_right(state: &AppState, headers: &HeaderMap, right: PartsRight, manufacturer: &str) -> Result<(User, Access<PartsRight>)> {
+    let (u, access) = user(state, headers)?;
+    need(&u, &access, right, manufacturer)?;
+    Ok((u, access))
 }
 
-fn may_edit(user: &User, manufacturer: &str) -> Result<()> {
-    if user.may_edit(manufacturer) {
+fn need(user: &User, access: &Access<PartsRight>, right: PartsRight, manufacturer: &str) -> Result<()> {
+    if access.allows(manufacturer.trim(), right) {
         Ok(())
-    } else if user.role == Role::Manufacturer {
+    } else if right.server_wide() {
+        Err(forbidden(format!("user '{}' is not allowed to do this", user.name)))
+    } else if user.role == Role::Manufacturer && !access.anywhere(right) {
         Err(forbidden(format!("user '{}' may only change data of manufacturer '{}'", user.name, user.manufacturer)))
     } else {
-        Err(forbidden(format!("user '{}' may not change parts", user.name)))
+        Err(forbidden(format!("user '{}' lacks the right '{}' for manufacturer '{}'", user.name, right.name(), manufacturer.trim())))
+    }
+}
+
+/// Reading needs the right to read: anonymous requests have it unless the policy
+/// takes it away (`anonymous` role).
+fn reader(state: &AppState, headers: &HeaderMap) -> Result<()> {
+    let c = caller(state, headers);
+    if c.access.allows(SERVER, PartsRight::Read) {
+        Ok(())
+    } else if c.user.is_none() {
+        Err(AppError(StatusCode::UNAUTHORIZED, "sign in to read the parts".into()))
+    } else {
+        Err(forbidden("you may not read the parts"))
     }
 }
 
 async fn info(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<ServerInfo>> {
-    let user = caller(&state, &headers);
+    let Caller { user, access } = caller(&state, &headers);
     let store = store(&state);
     Ok(Json(ServerInfo {
         name: "OpenECraft parts server".into(),
@@ -159,16 +208,19 @@ async fn info(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<
         catalogs: store.catalogs()?.len(),
         storage: store.kind().into(),
         user,
+        access,
     }))
 }
 
-async fn list(State(state): State<AppState>, Query(query): Query<PartQuery>) -> Result<Json<PartList>> {
+async fn list(State(state): State<AppState>, headers: HeaderMap, Query(query): Query<PartQuery>) -> Result<Json<PartList>> {
+    reader(&state, &headers)?;
     let store = store(&state);
     let (total, parts) = store.list(&query)?;
     Ok(Json(PartList { revision: store.revision, total, offset: query.offset.unwrap_or(0), parts }))
 }
 
-async fn search(State(state): State<AppState>, Json(query): Json<PartQuery>) -> Result<Json<SearchResult>> {
+async fn search(State(state): State<AppState>, headers: HeaderMap, Json(query): Json<PartQuery>) -> Result<Json<SearchResult>> {
+    reader(&state, &headers)?;
     Ok(Json(store(&state).search(&query)?))
 }
 
@@ -176,7 +228,8 @@ fn part_of(store: &Store, number: &str) -> Result<Part> {
     store.get(number)?.ok_or_else(|| not_found(format!("part '{number}' not found")))
 }
 
-async fn get_part(State(state): State<AppState>, Path(number): Path<String>) -> Result<Json<Part>> {
+async fn get_part(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<Json<Part>> {
+    reader(&state, &headers)?;
     part_of(&store(&state), &number).map(Json)
 }
 
@@ -186,7 +239,7 @@ async fn put_part(
     Path(number): Path<String>,
     Json(mut part): Json<Part>,
 ) -> Result<(StatusCode, Json<Part>)> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     if number.trim().is_empty() {
         return Err(bad("part number must not be empty"));
     }
@@ -200,9 +253,9 @@ async fn put_part(
         return Err(bad("a part cannot be its own successor"));
     }
     let mut store = store(&state);
-    may_edit(&user, &part.manufacturer)?;
+    need(&user, &access, PartsRight::EditParts, &part.manufacturer)?;
     if let Some(old) = store.get(&number)? {
-        may_edit(&user, &old.manufacturer)?;
+        need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
     }
     let (stored, created) = store.put_parts(&user.name, vec![part])?.pop().expect("one part");
     log::info!("{} part {number} ({})", if created { "created" } else { "updated" }, user.name);
@@ -210,20 +263,22 @@ async fn put_part(
 }
 
 async fn delete_part(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<StatusCode> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     let mut store = store(&state);
     let old = part_of(&store, &number)?;
-    may_edit(&user, &old.manufacturer)?;
+    need(&user, &access, PartsRight::DeleteParts, &old.manufacturer)?;
     store.delete(&user.name, &number)?;
     log::info!("deleted part {number} ({})", user.name);
     Ok(StatusCode::NO_CONTENT)
 }
 
-async fn history(State(state): State<AppState>, Path(number): Path<String>) -> Result<Json<Vec<HistoryEntry>>> {
+async fn history(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<Json<Vec<HistoryEntry>>> {
+    reader(&state, &headers)?;
     Ok(Json(store(&state).history(&number)?))
 }
 
-async fn history_part(State(state): State<AppState>, Path((number, revision)): Path<(String, u64)>) -> Result<Json<Part>> {
+async fn history_part(State(state): State<AppState>, headers: HeaderMap, Path((number, revision)): Path<(String, u64)>) -> Result<Json<Part>> {
+    reader(&state, &headers)?;
     store(&state).history_part(&number, revision)?.map(Json).ok_or_else(|| not_found(format!("no version {revision} of part '{number}'")))
 }
 
@@ -245,7 +300,7 @@ async fn attach(
     Query(q): Query<AttachQuery>,
     body: Bytes,
 ) -> Result<Json<Part>> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     let name = file_name(&q.name);
     if name.is_empty() {
         return Err(bad("the file needs a name"));
@@ -254,20 +309,21 @@ async fn attach(
         return Err(bad("the file is empty"));
     }
     let mut store = store(&state);
-    may_edit(&user, &part_of(&store, &number)?.manufacturer)?;
+    need(&user, &access, PartsRight::EditParts, &part_of(&store, &number)?.manufacturer)?;
     let part = store.attach(&user.name, &number, name, q.kind, body.to_vec())?.ok_or_else(|| not_found(format!("part '{number}' not found")))?;
     log::info!("attached {name} to part {number} ({})", user.name);
     Ok(Json(part))
 }
 
 async fn detach(State(state): State<AppState>, headers: HeaderMap, Path((number, id)): Path<(String, String)>) -> Result<Json<Part>> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     let mut store = store(&state);
-    may_edit(&user, &part_of(&store, &number)?.manufacturer)?;
+    need(&user, &access, PartsRight::EditParts, &part_of(&store, &number)?.manufacturer)?;
     store.detach(&user.name, &number, &id)?.map(Json).ok_or_else(|| not_found(format!("part '{number}' has no file '{id}'")))
 }
 
-async fn file(State(state): State<AppState>, Path(id): Path<String>) -> Result<Response> {
+async fn file(State(state): State<AppState>, headers: HeaderMap, Path(id): Path<String>) -> Result<Response> {
+    reader(&state, &headers)?;
     let f = store(&state).file(&id)?.ok_or_else(|| not_found(format!("file '{id}' not found")))?;
     let disposition = format!("inline; filename=\"{}\"", f.name.replace(['"', '\\', '\r', '\n'], "_"));
     Ok(([(header::CONTENT_TYPE, content_type(&f.name).to_string()), (header::CONTENT_DISPOSITION, disposition)], f.data).into_response())
@@ -275,16 +331,19 @@ async fn file(State(state): State<AppState>, Path(id): Path<String>) -> Result<R
 
 /// Body: CSV (header names as in the export), JSON (parts database or part list) or BMEcat.
 async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: String) -> Result<Json<ImportResult>> {
-    let user = with_role(&state, &headers, Role::Manufacturer)?;
+    let (user, access) = user(&state, &headers)?;
+    if !access.anywhere(PartsRight::EditParts) {
+        return Err(forbidden(format!("user '{}' is not allowed to do this", user.name)));
+    }
     let parts = import(&body).map_err(|e| bad(format!("invalid parts data: {e}")))?;
     if parts.iter().any(|p| p.number.trim().is_empty()) {
         return Err(bad("every part needs a part number"));
     }
     let mut store = store(&state);
     for p in &parts {
-        may_edit(&user, &p.manufacturer)?;
+        need(&user, &access, PartsRight::EditParts, &p.manufacturer)?;
         if let Some(old) = store.get(&p.number)? {
-            may_edit(&user, &old.manufacturer)?;
+            need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
         }
     }
     let imported = store.put_parts(&user.name, parts)?.len();
@@ -292,21 +351,24 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     Ok(Json(ImportResult { imported, revision: store.revision }))
 }
 
-async fn export_csv(State(state): State<AppState>) -> Result<impl IntoResponse> {
+async fn export_csv(State(state): State<AppState>, headers: HeaderMap) -> Result<impl IntoResponse> {
+    reader(&state, &headers)?;
     let parts = store(&state).all()?;
     Ok(([(header::CONTENT_TYPE, "text/csv; charset=utf-8"), (header::CONTENT_DISPOSITION, "attachment; filename=\"parts.csv\"")], to_csv(&parts)))
 }
 
-async fn catalogs(State(state): State<AppState>) -> Result<Json<Vec<Catalog>>> {
+async fn catalogs(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<Catalog>>> {
+    reader(&state, &headers)?;
     Ok(Json(store(&state).catalogs()?))
 }
 
-async fn get_catalog(State(state): State<AppState>, Path(id): Path<String>) -> Result<Json<Catalog>> {
+async fn get_catalog(State(state): State<AppState>, headers: HeaderMap, Path(id): Path<String>) -> Result<Json<Catalog>> {
+    reader(&state, &headers)?;
     store(&state).catalog(&id)?.map(Json).ok_or_else(|| not_found(format!("catalog '{id}' not found")))
 }
 
 async fn put_catalog(State(state): State<AppState>, headers: HeaderMap, Path(id): Path<String>, Json(mut catalog): Json<Catalog>) -> Result<Json<Catalog>> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     if id.trim().is_empty() || id.chars().any(|c| c.is_whitespace() || c.is_control()) {
         return Err(bad("a catalog id must not be empty or contain blanks"));
     }
@@ -320,9 +382,9 @@ async fn put_catalog(State(state): State<AppState>, headers: HeaderMap, Path(id)
         catalog.name = catalog.id.clone();
     }
     let mut store = store(&state);
-    may_edit(&user, &catalog.manufacturer)?;
+    need(&user, &access, PartsRight::EditCatalogs, &catalog.manufacturer)?;
     if let Some(old) = store.catalog(&id)? {
-        may_edit(&user, &old.manufacturer)?;
+        need(&user, &access, PartsRight::EditCatalogs, &old.manufacturer)?;
         catalog.id = old.id;
     }
     log::info!("saved catalog {id} ({})", user.name);
@@ -330,10 +392,10 @@ async fn put_catalog(State(state): State<AppState>, headers: HeaderMap, Path(id)
 }
 
 async fn delete_catalog(State(state): State<AppState>, headers: HeaderMap, Path(id): Path<String>) -> Result<StatusCode> {
-    let user = user(&state, &headers)?;
+    let (user, access) = user(&state, &headers)?;
     let mut store = store(&state);
     let old = store.catalog(&id)?.ok_or_else(|| not_found(format!("catalog '{id}' not found")))?;
-    may_edit(&user, &old.manufacturer)?;
+    need(&user, &access, PartsRight::EditCatalogs, &old.manufacturer)?;
     if old.parts > 0 {
         return Err(AppError(StatusCode::CONFLICT, format!("catalog '{id}' still has {} parts", old.parts)));
     }
@@ -342,18 +404,45 @@ async fn delete_catalog(State(state): State<AppState>, headers: HeaderMap, Path(
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Signs in with a local account or, if the server has none of that name, with its
+/// directories; a directory user gets an account (reader, groups, sessions) on the
+/// first sign-in.
 async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Result<Json<Session>> {
-    let mut store = store(&state);
-    let account = store.account(login.name.trim()).filter(|a| verify_password(&login.password, &a.password)).cloned();
-    let Some(mut account) = account else {
-        log::warn!("failed login of '{}'", login.name);
-        return Err(AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into()));
+    let refused = || AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into());
+    let local = store(&state).account(login.name.trim()).filter(|a| a.user.provider.is_empty() && login.provider.trim().is_empty()).cloned();
+    let mut account = match local {
+        Some(a) if verify_password(&login.password, &a.password) => a,
+        Some(_) => {
+            log::warn!("failed login of '{}'", login.name);
+            return Err(refused());
+        }
+        None => {
+            let directories = access_file(&state).config.directories.clone();
+            let identity = match openecraft_auth::sign_in(&directories, &login.provider, &login.name, &login.password).await {
+                Ok(identity) => identity,
+                Err(SignInError::Unavailable(e)) => return Err(AppError(StatusCode::SERVICE_UNAVAILABLE, e)),
+                Err(_) => {
+                    log::warn!("failed login of '{}'", login.name);
+                    return Err(refused());
+                }
+            };
+            let mut account = match store(&state).account(&identity.name).cloned() {
+                Some(a) if a.user.provider.eq_ignore_ascii_case(&identity.provider) => a,
+                Some(_) => return Err(AppError(StatusCode::CONFLICT, format!("the name '{}' belongs to another account", identity.name))),
+                None => Account { user: User { name: identity.name.clone(), provider: identity.provider.clone(), ..Default::default() }, ..Default::default() },
+            };
+            account.user.groups = identity.groups;
+            account
+        }
     };
     let token = account.start_session();
     let user = account.user.clone();
-    store.put_account(account)?;
+    store(&state).put_account(account)?;
     log::info!("{} signed in", user.name);
-    Ok(Json(Session { token, user }))
+    let file = access_file(&state);
+    let policy = &file.config.policy;
+    let access = policy.access(&user.identity(), &user.grants()).with(policy.anonymous_access());
+    Ok(Json(Session { token, user, access }))
 }
 
 async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<StatusCode> {
@@ -367,12 +456,12 @@ async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<Sta
 }
 
 async fn favorites(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<String>>> {
-    let user = user(&state, &headers)?;
+    let (user, _) = with_right(&state, &headers, PartsRight::Read, SERVER)?;
     Ok(Json(store(&state).favorites(&user.name)?))
 }
 
 async fn set_favorites(State(state): State<AppState>, headers: HeaderMap, Json(mut numbers): Json<Vec<String>>) -> Result<Json<Vec<String>>> {
-    let user = user(&state, &headers)?;
+    let (user, _) = with_right(&state, &headers, PartsRight::Read, SERVER)?;
     numbers.retain(|n| !n.trim().is_empty());
     numbers.dedup();
     store(&state).set_favorites(&user.name, numbers.clone())?;
@@ -380,17 +469,20 @@ async fn set_favorites(State(state): State<AppState>, headers: HeaderMap, Json(m
 }
 
 async fn users(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<User>>> {
-    with_role(&state, &headers, Role::Admin)?;
+    with_right(&state, &headers, PartsRight::Administer, SERVER)?;
     Ok(Json(store(&state).accounts().iter().map(|a| a.user.clone()).collect()))
 }
 
 /// True if removing / demoting `name` would leave nobody who can manage users.
 fn last_admin(state: &AppState, store: &Store, name: &str) -> bool {
-    state.token.is_none() && !store.accounts().iter().any(|a| a.user.role == Role::Admin && !a.user.name.eq_ignore_ascii_case(name))
+    let file = access_file(state);
+    let policy = &file.config.policy;
+    let admin = |u: &User| policy.access(&u.identity(), &u.grants()).allows(SERVER, PartsRight::Administer);
+    state.token.is_none() && !store.accounts().iter().any(|a| !a.user.name.eq_ignore_ascii_case(name) && admin(&a.user))
 }
 
 async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(update): Json<UserUpdate>) -> Result<Json<User>> {
-    let admin = with_role(&state, &headers, Role::Admin)?;
+    let (admin, _) = with_right(&state, &headers, PartsRight::Administer, SERVER)?;
     let name = name.trim().to_string();
     if name.is_empty() || name.chars().any(|c| c.is_whitespace() || c.is_control()) || name.eq_ignore_ascii_case(ADMIN) && state.token.is_some() {
         return Err(bad(format!("'{name}' cannot be used as a user name")));
@@ -404,11 +496,18 @@ async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name):
         None if update.password.is_empty() => return Err(bad("a new user needs a password")),
         None => Account { user: User { name: name.clone(), ..Default::default() }, ..Default::default() },
     };
-    if account.user.role == Role::Admin && update.role != Role::Admin && last_admin(&state, &store, &name) {
-        return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be demoted".into()));
+    if !account.user.provider.is_empty() && !update.password.is_empty() {
+        return Err(bad(format!("'{name}' signs in with directory {}, which keeps the password", account.user.provider)));
     }
+    let was_admin = account.user.role == Role::Admin;
     account.user.role = update.role;
     account.user.manufacturer = update.manufacturer.trim().to_string();
+    if let Some(groups) = update.groups.filter(|_| account.user.provider.is_empty()) {
+        account.user.groups = groups.into_iter().map(|g| g.trim().to_string()).filter(|g| !g.is_empty()).collect();
+    }
+    if was_admin && update.role != Role::Admin && last_admin(&state, &store, &name) {
+        return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be demoted".into()));
+    }
     if !update.password.is_empty() {
         account.password = hash_password(&update.password).map_err(|e| AppError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
         account.sessions.clear();
@@ -420,7 +519,7 @@ async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name):
 }
 
 async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<StatusCode> {
-    let admin = with_role(&state, &headers, Role::Admin)?;
+    let (admin, _) = with_right(&state, &headers, PartsRight::Administer, SERVER)?;
     let mut store = store(&state);
     let account = store.account(&name).cloned().ok_or_else(|| not_found(format!("user '{name}' not found")))?;
     if account.user.role == Role::Admin && last_admin(&state, &store, &account.user.name) {
@@ -429,6 +528,19 @@ async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(nam
     store.delete_account(&account.user.name)?;
     log::info!("deleted user {} ({})", account.user.name, admin.name);
     Ok(StatusCode::NO_CONTENT)
+}
+
+async fn access(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Settings<PartsRight>>> {
+    with_right(&state, &headers, PartsRight::Administer, SERVER)?;
+    Ok(Json(access_file(&state).settings()))
+}
+
+async fn save_access(State(state): State<AppState>, headers: HeaderMap, Json(policy): Json<Policy<PartsRight>>) -> Result<Json<Settings<PartsRight>>> {
+    let (admin, _) = with_right(&state, &headers, PartsRight::Administer, SERVER)?;
+    let mut file = access_file(&state);
+    file.set_policy(policy).map_err(bad)?;
+    log::info!("access settings changed ({})", admin.name);
+    Ok(Json(file.settings()))
 }
 
 #[cfg(test)]

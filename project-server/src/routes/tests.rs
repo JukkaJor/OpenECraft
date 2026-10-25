@@ -10,7 +10,7 @@ use tower::ServiceExt;
 const TOKEN: &str = "secret-token";
 
 fn app(token: Option<&str>) -> Router {
-    let server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default() };
+    let server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()) };
     router(AppState { server: Arc::new(Mutex::new(server)), token: token.map(String::from) })
 }
 
@@ -166,7 +166,7 @@ async fn users_roles_and_projects() {
     let app = app(Some(TOKEN));
     // The server token creates the users.
     for (name, role, projects) in [("anna", ProjectRole::Editor, vec![]), ("vic", ProjectRole::Viewer, vec![]), ("eve", ProjectRole::Editor, vec!["Office".to_string()])] {
-        let req = UserUpdate { password: Some(format!("{name}-pw")), role, projects };
+        let req = UserUpdate { password: Some(format!("{name}-pw")), role: Some(role), projects, groups: None };
         let (s, text) = with(&app, "PUT", &format!("/api/v1/users/{name}"), TOKEN, &req).await;
         assert!(s.is_success(), "{s} {text}");
     }
@@ -175,8 +175,8 @@ async fn users_roles_and_projects() {
     // Without a token nothing works any more.
     let (s, _) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
     assert_eq!(s, StatusCode::UNAUTHORIZED);
-    let login = |name: &str| LoginRequest { user: name.into(), password: format!("{name}-pw") };
-    let (s, _) = call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&LoginRequest { user: "anna".into(), password: "wrong".into() }).unwrap()).await;
+    let login = |name: &str| LoginRequest { user: name.into(), password: format!("{name}-pw"), ..Default::default() };
+    let (s, _) = call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&LoginRequest { user: "anna".into(), password: "wrong".into(), ..Default::default() }).unwrap()).await;
     assert_eq!(s, StatusCode::UNAUTHORIZED);
     let session = |text: String| serde_json::from_str::<LoginResponse>(&text).unwrap().token;
     let anna = session(call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&login("anna")).unwrap()).await.1);
@@ -223,4 +223,155 @@ async fn users_roles_and_projects() {
     assert_eq!(s, StatusCode::NO_CONTENT);
     let (s, _) = with(&app, "DELETE", "/api/v1/users/eve", TOKEN, &()).await;
     assert_eq!(s, StatusCode::NOT_FOUND);
+}
+
+/// Creates local users (`<name>-pw`) with the server token and signs them in.
+async fn sign_in(app: &Router, users: &[(&str, Option<ProjectRole>, &[&str])]) -> Vec<String> {
+    let mut tokens = Vec::new();
+    for (name, role, groups) in users {
+        let req = UserUpdate { password: Some(format!("{name}-pw")), role: *role, projects: vec![], groups: Some(groups.iter().map(|g| g.to_string()).collect()) };
+        let (s, text) = with(app, "PUT", &format!("/api/v1/users/{name}"), TOKEN, &req).await;
+        assert!(s.is_success(), "{s} {text}");
+        let login = LoginRequest { user: name.to_string(), password: format!("{name}-pw"), ..Default::default() };
+        let (s, text) = call(app, "POST", "/api/v1/login", None, serde_json::to_string(&login).unwrap()).await;
+        assert!(s.is_success(), "{s} {text}");
+        tokens.push(serde_json::from_str::<LoginResponse>(&text).unwrap().token);
+    }
+    tokens
+}
+
+#[tokio::test]
+async fn rights_per_project() {
+    let app = app(Some(TOKEN));
+    let t = sign_in(&app, &[("olga", Some(ProjectRole::Editor), &[]), ("rita", None, &["qa"]), ("max", None, &["qa", "externals"])]).await;
+    let (olga, rita, max) = (&t[0], &t[1], &t[2]);
+
+    // Olga creates the project and manages it from then on.
+    let req = CreateRequest { name: "Plant 1".into(), user: String::new(), project: two_pages() };
+    let (s, text) = with(&app, "POST", "/api/v1/projects", olga, &req).await;
+    assert_eq!(s, StatusCode::CREATED, "{text}");
+    let opened: Opened = serde_json::from_str(&text).unwrap();
+    assert!(opened.rights.contains(&ProjectRight::ManageAccess) && opened.rights.contains(&ProjectRight::Delete));
+
+    // Users without role or grant see nothing.
+    let (_, text) = with(&app, "GET", "/api/v1/projects", rita, &()).await;
+    assert!(serde_json::from_str::<Vec<ProjectSummary>>(&text).unwrap().is_empty());
+
+    // Olga lets the QA group review, but not the externals among them.
+    let (s, text) = with(&app, "GET", "/api/v1/projects/Plant%201/access", olga, &()).await;
+    assert!(s.is_success(), "{text}");
+    let access: ProjectAccess = serde_json::from_str(&text).unwrap();
+    assert!(access.roles.contains(&"reviewer".to_string()) && !access.roles.contains(&"admin".to_string()));
+    assert_eq!(access.grants, [Grant::new(Subject::User("olga".into()), "manager", "Plant 1")]);
+    let mut grants = access.grants.clone();
+    grants.push(Grant::new(Subject::Group("qa".into()), "reviewer", "ignored"));
+    grants.push(Grant { deny: true, ..Grant::new(Subject::Group("externals".into()), "viewer", "") });
+    let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", olga, &grants).await;
+    assert!(s.is_success(), "{text}");
+    let stored = serde_json::from_str::<ProjectAccess>(&text).unwrap().grants;
+    assert_eq!(stored.len(), 3);
+    assert!(stored.iter().all(|g| g.scope == "Plant 1"));
+    let (s, _) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", olga, &vec![Grant::new(Subject::User("rita".into()), "admin", "")]).await;
+    assert_eq!(s, StatusCode::FORBIDDEN, "nobody gives rights they do not have");
+    let (s, _) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", rita, &grants).await;
+    assert_eq!(s, StatusCode::FORBIDDEN, "reviewers do not manage access");
+
+    // Rita reviews: she saves comments, but locks nothing.
+    let (_, text) = with(&app, "GET", "/api/v1/projects", rita, &()).await;
+    let list: Vec<ProjectSummary> = serde_json::from_str(&text).unwrap();
+    assert_eq!(list[0].rights, [ProjectRight::View, ProjectRight::Review]);
+    let (_, text) = with(&app, "POST", "/api/v1/projects/Plant%201/open", rita, &OpenRequest::default()).await;
+    let rita_session: Opened = serde_json::from_str(&text).unwrap();
+    let lock = LockRequest { session: rita_session.session.clone(), targets: vec![Target::Page(opened.snapshot.project.pages[0].id)] };
+    let (s, _) = with(&app, "POST", "/api/v1/projects/Plant%201/lock", rita, &lock).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+    let mut changed = rita_session.snapshot.project.clone();
+    changed.info.name = "renamed".into();
+    let save = SaveRequest { session: rita_session.session.clone(), project: changed, release: vec![] };
+    let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201", rita, &save).await;
+    assert!(s.is_success(), "{text}");
+    assert_eq!(serde_json::from_str::<Snapshot>(&text).unwrap().project.info.name, opened.snapshot.project.info.name, "only reviews are taken");
+
+    // Max is in QA, but an external: denied.
+    let (s, _) = with(&app, "GET", "/api/v1/projects/Plant%201", max, &()).await;
+    assert_eq!(s, StatusCode::NOT_FOUND);
+
+    // Open projects are not deleted; deleting removes their grants.
+    let (s, _) = with(&app, "DELETE", "/api/v1/projects/Plant%201", rita, &()).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+    let (s, _) = with(&app, "DELETE", "/api/v1/projects/Plant%201", olga, &()).await;
+    assert_eq!(s, StatusCode::CONFLICT);
+    for (who, session) in [(olga, &opened.session), (rita, &rita_session.session)] {
+        with(&app, "POST", "/api/v1/projects/Plant%201/close", who, session).await;
+    }
+    let (s, text) = with(&app, "DELETE", "/api/v1/projects/Plant%201", olga, &()).await;
+    assert_eq!(s, StatusCode::NO_CONTENT, "{text}");
+    let (_, text) = with(&app, "GET", "/api/v1/access", TOKEN, &()).await;
+    assert!(serde_json::from_str::<Settings<ProjectRight>>(&text).unwrap().policy.grants.is_empty());
+}
+
+#[tokio::test]
+async fn access_settings_and_anonymous_requests() {
+    let app = app(Some(TOKEN));
+    let t = sign_in(&app, &[("ann", Some(ProjectRole::Editor), &[]), ("root", Some(ProjectRole::Admin), &[])]).await;
+    create_with(&app, TOKEN).await;
+    let (s, _) = with(&app, "GET", "/api/v1/access", &t[0], &()).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+    let policy = Policy::<ProjectRight> {
+        anonymous: "viewer".into(),
+        roles: vec![openecraft_parts::access::Role { name: "Checker".into(), description: String::new(), rights: [ProjectRight::View, ProjectRight::Review].into() }],
+        grants: vec![Grant::new(Subject::User("ann".into()), "checker", "Office*")],
+    };
+    let (s, text) = with(&app, "PUT", "/api/v1/access", &t[1], &policy).await;
+    assert!(s.is_success(), "{text}");
+    assert_eq!(serde_json::from_str::<Settings<ProjectRight>>(&text).unwrap().policy, policy);
+    let invalid = Policy::<ProjectRight> { grants: vec![Grant::new(Subject::User("x".into()), "nobody", "")], ..Default::default() };
+    let (s, _) = with(&app, "PUT", "/api/v1/access", &t[1], &invalid).await;
+    assert_eq!(s, StatusCode::BAD_REQUEST);
+
+    // Everyone may look now, without signing in; wrong tokens are still refused.
+    let (s, text) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
+    assert!(s.is_success(), "{text}");
+    assert_eq!(serde_json::from_str::<Vec<ProjectSummary>>(&text).unwrap()[0].rights, [ProjectRight::View]);
+    let (s, _) = call(&app, "GET", "/api/v1/projects", Some("wrong"), String::new()).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    let lock = LockRequest { session: Session { user: "x".into(), session: "1".into() }, targets: vec![Target::Project] };
+    let (s, _) = call(&app, "POST", "/api/v1/projects/Plant%201/lock", None, serde_json::to_string(&lock).unwrap()).await;
+    assert_eq!(s, StatusCode::FORBIDDEN);
+}
+
+async fn create_with(app: &Router, token: &str) {
+    let req = CreateRequest { name: "Plant 1".into(), user: "admin".into(), project: two_pages() };
+    let (s, text) = with(app, "POST", "/api/v1/projects", token, &req).await;
+    assert_eq!(s, StatusCode::CREATED, "{text}");
+}
+
+#[tokio::test]
+async fn directory_sign_in() {
+    let mut server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()) };
+    let corp = openecraft_auth::Directory {
+        id: "corp".into(),
+        url: "ldap://127.0.0.1:1".into(),
+        bind_dn: "CN=svc".into(),
+        base_dn: "DC=corp".into(),
+        timeout_secs: 1,
+        ..Default::default()
+    };
+    server.access.config.directories.push(corp);
+    server.users.set_admin("root", "root-pw").unwrap();
+    let app = router(AppState { server: Arc::new(Mutex::new(server)), token: None });
+    // A directory alone makes the server private.
+    let (s, _) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    // Local accounts come first; unknown names go to the directory.
+    let login = |user: &str, password: &str| serde_json::to_string(&LoginRequest { user: user.into(), password: password.into(), ..Default::default() }).unwrap();
+    let (s, _) = call(&app, "POST", "/api/v1/login", None, login("root", "wrong")).await;
+    assert_eq!(s, StatusCode::UNAUTHORIZED);
+    let (s, text) = call(&app, "POST", "/api/v1/login", None, login("root", "root-pw")).await;
+    assert!(s.is_success(), "{text}");
+    assert!(serde_json::from_str::<LoginResponse>(&text).unwrap().access.allows(SERVER, ProjectRight::Administer));
+    let (s, text) = call(&app, "POST", "/api/v1/login", None, login("anna", "pw")).await;
+    assert_eq!(s, StatusCode::SERVICE_UNAVAILABLE, "{text}");
+    let (_, text) = call(&app, "POST", "/api/v1/login", None, login("anna", "")).await;
+    assert!(text.contains("wrong password"), "{text}");
 }

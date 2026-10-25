@@ -12,7 +12,7 @@ fn accounts_are_stored_and_found() {
     users.save().unwrap();
     let back = Users::open(&dir).unwrap();
     let a = back.by_token(&token).unwrap();
-    assert_eq!((a.user.name.as_str(), a.user.role), ("Anna", ProjectRole::Admin));
+    assert_eq!((a.user.name.as_str(), a.user.role), ("Anna", Some(ProjectRole::Admin)));
     assert!(openecraft_auth::verify_password("pw", &a.password));
     assert!(back.by_token("nope").is_none());
     std::fs::write(dir.join("users.json"), "not json").unwrap();

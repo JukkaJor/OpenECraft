@@ -33,6 +33,12 @@ fn create_save_and_reload() {
     // The project file is a normal project file.
     let text = std::fs::read_to_string(dir.join("Plant 1.oec")).unwrap();
     assert_eq!(Project::from_json(&text).unwrap().info.name, "Plant (changed)");
+
+    let mut store = reloaded;
+    store.delete("Plant 1").unwrap();
+    assert!(store.delete("Plant 1").is_err());
+    assert!(!dir.join("Plant 1.oec").exists() && !dir.join("Plant 1.state.json").exists());
+    assert!(Store::open(&dir).unwrap().projects.is_empty());
     let _ = std::fs::remove_dir_all(&dir);
 }
 

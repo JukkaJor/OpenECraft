@@ -701,7 +701,12 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
   `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`
   creates an administrator account with the password from `OPENECRAFT_ADMIN_PASSWORD`.
   Users sign in with `POST /login` and send the session token as
-  `Authorization: Bearer <token>`. Without token and accounts the server is read-only.
+  `Authorization: Bearer <token>`. Without token, accounts and directories the server
+  is read-only.
+- Access control (`<data>.access.json`, `--access`): sign-in with Active Directory or
+  LDAP directories next to the local accounts, roles defined by administrators and
+  grants of roles to users and groups per manufacturer, with deny grants; anonymous
+  reading can be switched off. See [docs/access-control.md](docs/access-control.md).
 - Every change is a new revision; each part keeps its revision, time of change and the
   last 20 versions (history). Parts have a lifecycle (active, phase-out, discontinued)
   and a successor. Files are stored once per content; a file is deleted as soon as
@@ -719,7 +724,7 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
   `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
   `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
   JSON or BMEcat), `GET /export.csv`, `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
-  `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`.
+  `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
 - In the editor: *Project › Data portal…* – search the server, add parts to the local
   database, save their files, add their macros to the macro library and check the
   database for newer versions, phased out and discontinued parts. *Project › Parts
@@ -771,15 +776,23 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
-  `Authorization: Bearer <token>`; without it and without user accounts everyone who
-  reaches the server can change its projects.
+  `Authorization: Bearer <token>`; without it, user accounts and directories everyone
+  who reaches the server can change its projects.
 - **User accounts** (`users.json` in the data directory, Argon2 password hashes):
-  viewers open projects read-only (comments and markup), editors lock, change, save
-  and create projects, administrators also manage the users; a user can be limited to
-  some projects (names with `*` / `?`). `--admin-user <name>` creates the first
-  administrator with the password from `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign
-  in from *File › Project server…* (user name, password, *Sign in*); the server uses
-  the account's name on the locks, whatever the request says.
+  viewers open projects read-only, reviewers also save comments, markup and approvals,
+  editors lock, change, save and create projects, project managers also delete
+  projects and manage who may use them, administrators also manage the users; a user's
+  role can be limited to some projects (names with `*` / `?`). `--admin-user <name>`
+  creates the first administrator with the password from
+  `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign in from *File › Project server…*
+  (user name, password, *Sign in*); the server uses the account's name on the locks,
+  whatever the request says.
+- **Access control** (`access.json` in the data directory, `--access`): users sign in
+  with a local account or with Active Directory / LDAP directories; roles (built-in or
+  defined by administrators) are granted to users and directory groups per project,
+  deny grants take rights away. Whoever creates a project manages it; project managers
+  edit its grants in the *Project access* section of the project server window. See
+  [docs/access-control.md](docs/access-control.md).
 - Locks: every page and the project data (page list and order, devices, parts, panel
   layout, settings) are locked separately. Editing something you have not locked
   requests the lock automatically; if another user holds it, the change is taken back.
@@ -793,9 +806,10 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   token, list the projects and open one, or upload the current project. While a shared
   project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
   context menu lock and release pages.
-- REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT /projects/{name}`,
-  `POST /projects/{name}/open|status|lock|release|close`, `POST /login`, `POST /logout`,
-  `GET /users`, `PUT|DELETE /users/{name}` (see `openecraft_core::collab`).
+- REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT|DELETE /projects/{name}`,
+  `POST /projects/{name}/open|status|lock|release|close`, `GET|PUT /projects/{name}/access`,
+  `POST /login`, `POST /logout`, `GET /users`, `PUT|DELETE /users/{name}`, `GET|PUT /access`
+  (see `openecraft_core::collab`).
 
 ### Parts manager
 

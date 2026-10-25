@@ -4970,6 +4970,55 @@ Next row	Nächste Zeile	Ligne suivante	Fila siguiente
 Offset from one row to the next: downwards for lists, sideways for rows side by side	Versatz von einer Zeile zur nächsten: nach unten für Listen, seitlich für nebeneinanderliegende Zeilen	Décalage d'une ligne à la suivante : vers le bas pour les listes, sur le côté pour des lignes côte à côte	Desplazamiento de una fila a la siguiente: hacia abajo para listas, hacia el lado para filas una junto a otra
 Report name (page heading)	Name der Auswertung (Seitenüberschrift)	Nom du rapport (titre de la page)	Nombre del informe (título de la página)
 CSV, JSON, BMEcat, EPLAN XML or EDZ file	CSV-, JSON-, BMEcat-, EPLAN-XML- oder EDZ-Datei	Fichier CSV, JSON, BMEcat, XML EPLAN ou EDZ	Archivo CSV, JSON, BMEcat, XML de EPLAN o EDZ
+Rights	Rechte	Droits	Derechos
+You may review this project: comments, markup and approvals, no other changes.	Sie dürfen dieses Projekt prüfen: Kommentare, Markierungen und Freigaben, keine anderen Änderungen.	Vous pouvez réviser ce projet : commentaires, annotations et approbations, aucune autre modification.	Puede revisar este proyecto: comentarios, marcas y aprobaciones, ningún otro cambio.
+You may only view this project.	Sie dürfen dieses Projekt nur ansehen.	Vous pouvez seulement consulter ce projet.	Solo puede ver este proyecto.
+Project access	Projektzugriff	Accès au projet	Acceso al proyecto
+Show who may use the project	Anzeigen, wer das Projekt nutzen darf	Afficher qui peut utiliser le projet	Mostrar quién puede usar el proyecto
+User / group	Benutzer / Gruppe	Utilisateur / groupe	Usuario / grupo
+Deny	Verweigern	Refuser	Denegar
+User	Benutzer	Utilisateur	Usuario
+e.g. corp:Engineering	z. B. corp:Konstruktion	p. ex. corp:Ingenierie	p. ej. corp:Ingenieria
+Takes the rights of the role away, whatever other grants give	Entzieht die Rechte der Rolle, unabhängig davon, was andere Freigaben geben	Retire les droits du rôle, quoi que donnent les autres attributions	Retira los derechos del rol, den lo que den otras asignaciones
+Add user	Benutzer hinzufügen	Ajouter un utilisateur	Añadir usuario
+Add group	Gruppe hinzufügen	Ajouter un groupe	Añadir grupo
+Save access	Zugriff speichern	Enregistrer l'accès	Guardar acceso
+Loading the project access…	Projektzugriff wird geladen…	Chargement de l'accès au projet…	Cargando el acceso al proyecto…
+Saving the project access…	Projektzugriff wird gespeichert…	Enregistrement de l'accès au projet…	Guardando el acceso al proyecto…
+{} grants on the project	{} Zuweisungen für das Projekt	{} attributions sur le projet	{} asignaciones en el proyecto
+Reviewer	Prüfer	Réviseur	Revisor
+View projects	Projekte ansehen	Consulter les projets	Ver proyectos
+Save reviews	Prüfungen speichern	Enregistrer les révisions	Guardar revisiones
+Edit pages	Seiten bearbeiten	Modifier les pages	Editar páginas
+Edit project data	Projektdaten bearbeiten	Modifier les données du projet	Editar datos del proyecto
+Create projects	Projekte anlegen	Créer des projets	Crear proyectos
+Delete projects	Projekte löschen	Supprimer des projets	Eliminar proyectos
+Manage project access	Projektzugriff verwalten	Gérer l'accès au projet	Gestionar el acceso al proyecto
+Administer the server	Server verwalten	Administrer le serveur	Administrar el servidor
+Read parts	Artikel lesen	Lire les articles	Leer artículos
+Edit parts	Artikel bearbeiten	Modifier les articles	Editar artículos
+Delete parts	Artikel löschen	Supprimer des articles	Eliminar artículos
+Edit catalogs	Kataloge bearbeiten	Modifier les catalogues	Editar catálogos
+separated by commas	durch Kommas getrennt	séparés par des virgules	separados por comas
+Grants of the server's access settings can refer to them	Zuweisungen der Zugriffseinstellungen des Servers können sich darauf beziehen	Les attributions des paramètres d'accès du serveur peuvent s'y référer	Las asignaciones de la configuración de acceso del servidor pueden referirse a ellos
+Directory	Verzeichnisdienst	Annuaire	Directorio
+The directory checks the password and sets the groups at every sign-in	Der Verzeichnisdienst prüft das Passwort und setzt die Gruppen bei jeder Anmeldung	L'annuaire vérifie le mot de passe et définit les groupes à chaque connexion	El directorio comprueba la contraseña y establece los grupos en cada inicio de sesión
+No grant of {} found	Keine Zuweisung für {} gefunden	Aucune attribution pour {} trouvée	No se encontró ninguna asignación de {}
+No role {} defined	Keine Rolle {} definiert	Aucun rôle {} défini	No hay ningún rol {} definido
+Local groups of the user, separated by commas	Lokale Gruppen des Benutzers, durch Kommas getrennt	Groupes locaux de l'utilisateur, séparés par des virgules	Grupos locales del usuario, separados por comas
+Shows the roles, grants and directories of the parts server, optionally setting the role of anonymous requests (administrators only)	Zeigt die Rollen, Zuweisungen und Verzeichnisdienste des Artikelservers und setzt optional die Rolle anonymer Anfragen (nur Administratoren)	Affiche les rôles, attributions et annuaires du serveur d'articles et définit éventuellement le rôle des requêtes anonymes (administrateurs uniquement)	Muestra los roles, asignaciones y directorios del servidor de artículos y opcionalmente establece el rol de las solicitudes anónimas (solo administradores)
+Role of requests without sign-in; none: sign-in needed for reading	Rolle von Anfragen ohne Anmeldung; none: Lesen nur nach Anmeldung	Rôle des requêtes sans connexion ; none : connexion nécessaire pour lire	Rol de las solicitudes sin inicio de sesión; none: se necesita iniciar sesión para leer
+user or group	user oder group	user ou group	user o group
+User or group name (wildcards; directory groups as directory:group)	Benutzer- oder Gruppenname (Platzhalter; Gruppen eines Verzeichnisdienstes als verzeichnis:gruppe)	Nom d'utilisateur ou de groupe (jokers ; groupes d'un annuaire sous la forme annuaire:groupe)	Nombre de usuario o grupo (comodines; grupos de un directorio como directorio:grupo)
+Role: reader, manufacturer, editor, admin or a defined role	Rolle: reader, manufacturer, editor, admin oder eine definierte Rolle	Rôle : reader, manufacturer, editor, admin ou un rôle défini	Rol: reader, manufacturer, editor, admin o un rol definido
+Manufacturer (wildcards); default * (everything)	Hersteller (Platzhalter); Standard * (alles)	Fabricant (jokers) ; par défaut * (tout)	Fabricante (comodines); por defecto * (todo)
+Take the rights of the role away instead	Stattdessen die Rechte der Rolle entziehen	Retirer plutôt les droits du rôle	Retirar en su lugar los derechos del rol
+Role name	Rollenname	Nom du rôle	Nombre del rol
+Rights separated by commas: read, edit_parts, delete_parts, edit_catalogs, administer	Rechte durch Kommas getrennt: read, edit_parts, delete_parts, edit_catalogs, administer	Droits séparés par des virgules : read, edit_parts, delete_parts, edit_catalogs, administer	Derechos separados por comas: read, edit_parts, delete_parts, edit_catalogs, administer
+Gives a user or group a role on a manufacturer (scope) of the parts server, with deny takes its rights away, with revoke removes grants (administrators only)	Gibt einem Benutzer oder einer Gruppe eine Rolle für einen Hersteller (Bereich) des Artikelservers, entzieht mit deny deren Rechte, entfernt mit revoke Zuweisungen (nur Administratoren)	Donne à un utilisateur ou un groupe un rôle sur un fabricant (portée) du serveur d'articles, avec deny lui retire ses droits, avec revoke supprime des attributions (administrateurs uniquement)	Da a un usuario o grupo un rol sobre un fabricante (ámbito) del servidor de artículos, con deny le retira sus derechos, con revoke elimina asignaciones (solo administradores)
+Remove the grants of the user or group (only of this role and scope, if given)	Die Zuweisungen des Benutzers oder der Gruppe entfernen (nur dieser Rolle und dieses Bereichs, falls angegeben)	Supprimer les attributions de l'utilisateur ou du groupe (seulement de ce rôle et de cette portée, s'ils sont indiqués)	Eliminar las asignaciones del usuario o grupo (solo de este rol y ámbito, si se indican)
+Defines, changes or deletes a role of the parts server (administrators only)	Definiert, ändert oder löscht eine Rolle des Artikelservers (nur Administratoren)	Définit, modifie ou supprime un rôle du serveur d'articles (administrateurs uniquement)	Define, modifica o elimina un rol del servidor de artículos (solo administradores)
+Delete the role	Die Rolle löschen	Supprimer le rôle	Eliminar el rol
 Electronic (LSI)	Elektronisch (LSI)	Électronique (LSI)	Electrónico (LSI)
 Manufacturer's table	Herstellertabelle	Tableau du fabricant	Tabla del fabricante
 Fuse ratio 1.6	Sicherungsverhältnis 1,6	Rapport des fusibles 1,6	Relación de fusibles 1,6

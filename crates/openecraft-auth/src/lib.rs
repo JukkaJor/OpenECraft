@@ -1,7 +1,14 @@
-//! User accounts of the OpenECraft servers (parts server, project server): password
+//! Access control of the OpenECraft servers (parts server, project server): password
 //! hashes (Argon2), random session tokens and the lists of session token hashes an
-//! account keeps. Native only (the servers); the clients just send tokens.
+//! account keeps, sign-in with directories (Active Directory, LDAP) and the access
+//! settings file (directories, roles, grants). The rules of roles and grants are in
+//! `openecraft_parts::access`, shared with the clients. Native only (the servers); the
+//! clients just send tokens.
 
 mod account;
+mod config;
+mod directory;
 
 pub use account::*;
+pub use config::{AccessConfig, AccessFile};
+pub use directory::{common_name, sign_in, Directory, DirectoryKind, SignInError};
