@@ -4831,3 +4831,13 @@ Parts this part is assembled from; the bill of materials lists them under it	Art
 ➕ Add component	➕ Bestandteil hinzufügen	➕ Ajouter un composant	➕ Añadir componente
 in {}	in {}	dans {}	en {}
 incl.	inkl.	incl.	incl.
+Check scheme (JSON)	Prüfschema (JSON)	Schéma de vérification (JSON)	Esquema de comprobación (JSON)
+Checks switched off and message levels as a file for other projects	Abgeschaltete Prüfungen und Meldungsstufen als Datei für andere Projekte	Vérifications désactivées et niveaux des messages dans un fichier pour d'autres projets	Comprobaciones desactivadas y niveles de mensajes en un archivo para otros proyectos
+Export check scheme…	Prüfschema exportieren…	Exporter le schéma de vérification…	Exportar el esquema de comprobación…
+Import check scheme…	Prüfschema importieren…	Importer un schéma de vérification…	Importar un esquema de comprobación…
+Not a check scheme: {}	Kein Prüfschema: {}	Ce n'est pas un schéma de vérification : {}	No es un esquema de comprobación: {}
+Check scheme file (JSON)	Prüfschema-Datei (JSON)	Fichier de schéma de vérification (JSON)	Archivo de esquema de comprobación (JSON)
+Output file (JSON)	Ausgabedatei (JSON)	Fichier de sortie (JSON)	Archivo de salida (JSON)
+Takes the checks switched off and the message levels of a check scheme file	Übernimmt die abgeschalteten Prüfungen und die Meldungsstufen einer Prüfschema-Datei	Reprend les vérifications désactivées et les niveaux des messages d'un fichier de schéma de vérification	Toma las comprobaciones desactivadas y los niveles de mensajes de un archivo de esquema de comprobación
+Writes the check scheme of the project (checks switched off, message levels) to a file	Schreibt das Prüfschema des Projekts (abgeschaltete Prüfungen, Meldungsstufen) in eine Datei	Écrit le schéma de vérification du projet (vérifications désactivées, niveaux des messages) dans un fichier	Escribe el esquema de comprobación del proyecto (comprobaciones desactivadas, niveles de mensajes) en un archivo
+Check scheme taken over	Prüfschema übernommen	Schéma de vérification repris	Esquema de comprobación aplicado

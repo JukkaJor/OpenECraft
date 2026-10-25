@@ -156,8 +156,13 @@ impl App {
         let mut open = true;
         let checks: Vec<(String, String)> = self.plugins.checks().map(|c| (c.name.clone(), text(&c.title).to_string())).collect();
         let stale: Vec<String> = checks::stale_accepted(&self.session.prj, &self.session.analysis.issues).into_iter().map(|a| a.id.clone()).collect();
+        let (mut export, mut import) = (false, false);
         let s = &mut self.session.prj.check_settings;
         egui::Window::new(tr("Check settings")).open(&mut open).resizable(true).default_width(460.0).show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                export = ui.button(tr("Export check scheme…")).on_hover_text(tr("Checks switched off and message levels as a file for other projects")).clicked();
+                import = ui.button(tr("Import check scheme…")).clicked();
+            });
             egui::CollapsingHeader::new(tr("Checks")).default_open(true).show(ui, |ui| {
                 egui::ScrollArea::vertical().id_salt("checks").max_height(220.0).show(ui, |ui| {
                     for (name, title) in &checks {
@@ -214,5 +219,11 @@ impl App {
             });
         });
         self.check_ui.show_settings = open;
+        if export {
+            self.export(ctx, "check_scheme.json".into(), (tr("Check scheme (JSON)"), "json"), checks::scheme_json(&self.session.prj));
+        }
+        if import {
+            self.io.open(ctx, crate::io::Purpose::CheckScheme);
+        }
     }
 }

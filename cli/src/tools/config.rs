@@ -17,6 +17,20 @@ pub static TOOLS: &[Tool] = &[
         run: generate_pages,
     },
     Tool {
+        name: "export_check_scheme",
+        help: tr_const!("Writes the check scheme of the project (checks switched off, message levels) to a file"),
+        params: &[param("path", Kind::Str, tr_const!("Output file (JSON)"))],
+        needs_project: true,
+        run: export_check_scheme,
+    },
+    Tool {
+        name: "import_check_scheme",
+        help: tr_const!("Takes the checks switched off and the message levels of a check scheme file"),
+        params: &[param("path", Kind::Str, tr_const!("Check scheme file (JSON)"))],
+        needs_project: true,
+        run: import_check_scheme,
+    },
+    Tool {
         name: "update_macro_boxes",
         help: tr_const!("Replaces the content of the macro boxes whose macro changed in a macro library file"),
         params: &[param("macros", Kind::Str, tr_const!("Macro library file (JSON, exported by the editor)"))],
@@ -41,6 +55,20 @@ pub static TOOLS: &[Tool] = &[
         run: generate_preplanning_pages,
     },
 ];
+
+fn export_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    std::fs::write(path, openecraft_core::checks::scheme_json(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    Ok(json!({ "path": path }))
+}
+
+fn import_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let prj = s.project_mut()?;
+    openecraft_core::checks::apply_scheme(prj, &text)?;
+    Ok(json!({ "disabled": prj.check_settings.disabled, "levels": prj.check_settings.levels.len() }))
+}
 
 fn update_macro_boxes(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("macros");

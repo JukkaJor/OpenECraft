@@ -52,6 +52,8 @@ pub enum Purpose {
     PdfComments,
     /// Pre-planning segments and devices (CSV, Excel).
     Preplanning,
+    /// Check scheme (JSON): checks switched off and message levels.
+    CheckScheme,
     /// Customer rule sets (JSON) to add to the project.
     RuleSets,
     /// Property library (JSON) to merge into the project.
@@ -71,6 +73,7 @@ impl FileKind for Purpose {
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::PdfComments => (tr("PDF with comments"), &["pdf"]),
             Purpose::Preplanning => (tr("Pre-planning (CSV, Excel)"), &["csv", "xlsx", "txt"]),
+            Purpose::CheckScheme => (tr("Check scheme (JSON)"), &["json"]),
             Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),

@@ -270,6 +270,10 @@ impl App {
                 }
             }
             Purpose::Preplanning => self.import_preplanning(ctx, &loaded.bytes),
+            Purpose::CheckScheme => match openecraft_core::checks::apply_scheme(&mut self.session.prj, &loaded.text()) {
+                Ok(()) => self.notify(ctx, tr("Check scheme taken over")),
+                Err(e) => self.notify(ctx, e),
+            },
             Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
             Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
             Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),

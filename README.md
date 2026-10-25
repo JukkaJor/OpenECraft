@@ -224,8 +224,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   note, off) or to switch its check off; the settings (⚙) list the checks, changed
   levels and accepted messages (with note, user, date and whether they are still
   reported). The tab filters by level, page and text and exports the messages as CSV.
-  The settings are stored with the project. Commands: `list_checks`, `check_settings`,
-  `set_check`, `set_message_level`, `accept_message`; `check` shows codes and
+  The settings are stored with the project; the checks switched off and the changed
+  levels are exchanged as a **check scheme** file (JSON) between projects. Commands:
+  `list_checks`, `check_settings`, `set_check`, `set_message_level`, `accept_message`;
+  tools `export_check_scheme`, `import_check_scheme`; `check` shows codes and
   fingerprints.
 - **Parts management** (EPLAN style):
   - a global **parts database** shared by all projects (product top group / group /

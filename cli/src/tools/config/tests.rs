@@ -67,3 +67,15 @@ fn macro_boxes_are_updated_from_a_library_file() {
     assert_eq!(r["updated"], 1);
     assert!(s.project().unwrap().pages[1].texts.iter().any(|t| t.text == "NEW"));
 }
+
+#[test]
+fn check_schemes_are_written_and_read() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    s.project_mut().unwrap().check_settings.disabled.push("cables".into());
+    let file = temp_dir("check-scheme").join("scheme.json");
+    run(&mut s, "export_check_scheme", json!({ "path": file.to_str().unwrap() })).unwrap();
+    s.project_mut().unwrap().check_settings.disabled.clear();
+    let r = run(&mut s, "import_check_scheme", json!({ "path": file.to_str().unwrap() })).unwrap();
+    assert_eq!(r["disabled"], json!(["cables"]));
+}

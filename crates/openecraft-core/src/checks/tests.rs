@@ -21,3 +21,20 @@ fn build_leaves_the_issues_to_the_checks() {
     assert_eq!(an.issues.len(), run_builtin(&prj, &an).len());
     assert!(an.issues.windows(2).all(|w| w[0].severity <= w[1].severity), "sorted by severity");
 }
+
+#[test]
+fn check_schemes_are_exchanged_without_the_accepted_messages() {
+    let mut a = crate::sample::demo_project();
+    a.check_settings.disabled.push("cables".into());
+    a.check_settings.levels.insert("devices.abc123".into(), crate::model::checks::Level::Info);
+    a.check_settings.accepted.push(crate::model::checks::Accepted { id: "x".into(), message: "m".into(), ..Default::default() });
+    let json = scheme_json(&a);
+    assert!(!json.contains("accepted"));
+    let mut b = crate::sample::demo_project();
+    b.check_settings.accepted.push(crate::model::checks::Accepted { id: "y".into(), ..Default::default() });
+    apply_scheme(&mut b, &json).unwrap();
+    assert_eq!(b.check_settings.disabled, vec!["cables".to_string()]);
+    assert_eq!(b.check_settings.levels.len(), 1);
+    assert_eq!(b.check_settings.accepted.len(), 1, "own acceptances stay");
+    assert!(apply_scheme(&mut b, "[1, 2]").is_err());
+}

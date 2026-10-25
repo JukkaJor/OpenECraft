@@ -99,6 +99,23 @@ pub fn accept(prj: &mut Project, issue: &Issue, accept: bool, note: &str, user: 
 
 /// Accepted messages that no check reports any more (the object changed or the
 /// problem was solved).
+/// The check scheme of the project as a file: checks switched off and changed message
+/// levels (the accepted messages belong to the project and stay out).
+pub fn scheme_json(prj: &Project) -> String {
+    let s = &prj.check_settings;
+    let scheme = crate::model::checks::CheckSettings { disabled: s.disabled.clone(), levels: s.levels.clone(), accepted: Vec::new() };
+    serde_json::to_string_pretty(&scheme).unwrap_or_default()
+}
+
+/// Takes the checks switched off and the message levels of a scheme file; the
+/// accepted messages of the project stay.
+pub fn apply_scheme(prj: &mut Project, json: &str) -> Result<(), String> {
+    let scheme: crate::model::checks::CheckSettings = serde_json::from_str(json).map_err(|e| openecraft_i18n::tr_fmt!("Not a check scheme: {}", e))?;
+    prj.check_settings.disabled = scheme.disabled;
+    prj.check_settings.levels = scheme.levels;
+    Ok(())
+}
+
 pub fn stale_accepted<'a>(prj: &'a Project, issues: &[Issue]) -> Vec<&'a crate::model::checks::Accepted> {
     let live: std::collections::HashSet<String> = issues.iter().map(Issue::fingerprint).collect();
     prj.check_settings.accepted.iter().filter(|a| !live.contains(&a.id)).collect()
