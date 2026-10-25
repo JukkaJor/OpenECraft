@@ -33,8 +33,8 @@ impl App {
         }
         let mut open = true;
         let (mut import, mut export, mut generate) = (false, None, false);
-        egui::Window::new(tr("Pre-planning")).open(&mut open).default_size([980.0, 520.0]).show(ctx, |ui| {
-            ui.horizontal(|ui| {
+        egui::Window::new(tr("Pre-planning")).open(&mut open).default_size([760.0, 520.0]).show(ctx, |ui| {
+            ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ Segment")).on_hover_text(tr("At the top level")).clicked() {
                     let n = self.session.prj.preplanning.segments.iter().filter(|s| s.parent == 0).count() + 1;
                     self.preplanning_ui.selected = Some(pp::add_segment(&mut self.session.prj, 0, &tr_fmt!("Segment {}", n)));
@@ -66,9 +66,13 @@ impl App {
                 ui.weak(&self.preplanning_ui.message);
             }
             ui.separator();
-            ui.columns(2, |cols| {
-                self.preplanning_tree(&mut cols[0]);
-                self.preplanning_segment(&mut cols[1]);
+            ui.horizontal_top(|ui| {
+                ui.vertical(|ui| {
+                    ui.set_width(220.0);
+                    self.preplanning_tree(ui);
+                });
+                ui.separator();
+                ui.vertical(|ui| self.preplanning_segment(ui));
             });
         });
         self.preplanning_ui.open = open;
