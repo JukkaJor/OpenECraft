@@ -3,7 +3,7 @@
 //! collects the answers. The rules of shared editing are in `openecraft_core::collab`.
 
 use openecraft_client::{decode, ehttp, ProjectEndpoint};
-use openecraft_core::collab::{LoginResponse, Opened, ProjectRole, ProjectSummary, Shared, Snapshot, Status, Target};
+use openecraft_core::collab::{Grant, LoginResponse, Opened, ProjectAccess, ProjectRight, ProjectRole, ProjectSummary, Shared, Snapshot, Status, Target};
 use openecraft_core::model::Project;
 use openecraft_i18n::{tr, tr_fmt};
 use std::sync::{Arc, Mutex};
@@ -20,13 +20,15 @@ pub enum Reply {
     /// Requested targets and the answer.
     Locked(String, Vec<Target>, Result<Status, String>),
     Login(Result<LoginResponse, String>),
+    /// Grants on the open project (loaded or saved).
+    Access(String, Result<ProjectAccess, String>),
     Closed,
 }
 
 impl Reply {
     fn session(&self) -> Option<&str> {
         match self {
-            Reply::Saved(s, _) | Reply::Snapshot(s, _) | Reply::Status(s, _) | Reply::Locked(s, _, _) => Some(s),
+            Reply::Saved(s, _) | Reply::Snapshot(s, _) | Reply::Status(s, _) | Reply::Locked(s, _, _) | Reply::Access(s, _) => Some(s),
             Reply::List(_) | Reply::Opened(..) | Reply::Login(_) | Reply::Closed => None,
         }
     }
@@ -39,8 +41,13 @@ pub struct Remote {
     pub user: String,
     /// Password of a user account (kept until signing in).
     pub password: String,
-    /// Role of the signed-in user; None without user account (token or open server).
+    /// Role of the signed-in user; None without user account (token or open server)
+    /// or without built-in role (rights from grants only).
     pub role: Option<ProjectRole>,
+    /// What the user may do with the open project; empty from older servers.
+    pub rights: Vec<ProjectRight>,
+    /// Grants on the open project, as edited by a project manager.
+    pub access: Option<ProjectAccess>,
     /// Projects on the server (last list).
     pub projects: Vec<ProjectSummary>,
     /// The open shared project.
@@ -73,6 +80,8 @@ impl Default for Remote {
             user,
             password: String::new(),
             role: None,
+            rights: Vec::new(),
+            access: None,
             projects: Vec::new(),
             shared: None,
             new_name: String::new(),
@@ -124,9 +133,34 @@ impl Remote {
         self.send(req, tr("Signing in…").into(), |r| Reply::Login(decode(r)));
     }
 
-    /// A viewer may only look at shared projects.
+    /// The user may do this with the open project. Older servers send no rights: then
+    /// the role decides (none: token or open server, everything).
+    pub fn may(&self, right: ProjectRight) -> bool {
+        if self.rights.is_empty() {
+            return self.role.is_none_or(|r| r.rights().contains(&right));
+        }
+        self.rights.contains(&right)
+    }
+
+    /// A viewer (or reviewer) may not change shared projects.
     pub fn viewer(&self) -> bool {
-        self.shared.is_some() && self.role == Some(ProjectRole::Viewer)
+        self.shared.is_some() && !self.may(ProjectRight::EditPages) && !self.may(ProjectRight::EditProject)
+    }
+
+    /// Loads the grants on the open project.
+    pub fn load_access(&mut self) {
+        let Some(sh) = &self.shared else { return };
+        let req = self.endpoint().project_access(&sh.name);
+        let s = self.session_id();
+        self.send(req, tr("Loading the project access…").into(), move |r| Reply::Access(s, decode(r)));
+    }
+
+    /// Replaces the grants on the open project.
+    pub fn save_access(&mut self, grants: &[Grant]) {
+        let Some(sh) = &self.shared else { return };
+        let req = self.endpoint().save_project_access(&sh.name, grants);
+        let s = self.session_id();
+        self.send(req, tr("Saving the project access…").into(), move |r| Reply::Access(s, decode(r)));
     }
 
     /// Lists the projects of the server.
@@ -211,8 +245,13 @@ impl Remote {
                 Reply::List(Ok(list)) => tr_fmt!("{} projects on the server", list.len()),
                 Reply::Opened(name, Ok(_)) => tr_fmt!("Opened {} from the project server", name),
                 Reply::Saved(_, Ok(s)) => tr_fmt!("Saved to the project server (revision {})", s.revision),
-                Reply::Login(Ok(r)) => tr_fmt!("Signed in as {} ({})", r.user.name, r.user.role.title()),
+                Reply::Login(Ok(r)) => match r.user.role {
+                    Some(role) => tr_fmt!("Signed in as {} ({})", r.user.name, role.title()),
+                    None => tr_fmt!("Signed in as {}", r.user.name),
+                },
                 Reply::Login(Err(e)) => tr_fmt!("Project server: {}", e),
+                Reply::Access(_, Ok(a)) => tr_fmt!("{} grants on the project", a.grants.len()),
+                Reply::Access(_, Err(e)) => tr_fmt!("Project server: {}", e),
                 Reply::List(Err(e))
                 | Reply::Opened(_, Err(e))
                 | Reply::Saved(_, Err(e))
@@ -227,8 +266,15 @@ impl Remote {
             if let Reply::Login(Ok(r)) = &reply {
                 self.token = r.token.clone();
                 self.user = r.user.name.clone();
-                self.role = Some(r.user.role);
+                self.role = r.user.role;
                 self.list();
+            }
+            if let Reply::Opened(_, Ok(o)) = &reply {
+                self.rights = o.rights.clone();
+                self.access = None;
+            }
+            if let Reply::Access(_, Ok(a)) = &reply {
+                self.access = Some(a.clone());
             }
             out.push(reply);
         }

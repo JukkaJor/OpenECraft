@@ -1,6 +1,6 @@
 //! User accounts of the project server, stored in `users.json` of the data directory
-//! (written atomically on every change): the user with role and projects, the
-//! password hash and the hashes of the session tokens.
+//! (written atomically on every change): the user with role, projects and groups, the
+//! password hash (none for users of a directory) and the hashes of the session tokens.
 
 use openecraft_core::collab::ProjectUser;
 use serde::{Deserialize, Serialize};
@@ -56,11 +56,12 @@ impl Users {
     /// Creates or replaces the account of an administrator (start-up option).
     pub fn set_admin(&mut self, name: &str, password: &str) -> Result<(), String> {
         let hash = openecraft_auth::hash_password(password)?;
-        let user = ProjectUser { name: name.trim().to_string(), role: openecraft_core::collab::ProjectRole::Admin, projects: Vec::new() };
+        let user = ProjectUser { name: name.trim().to_string(), role: Some(openecraft_core::collab::ProjectRole::Admin), ..Default::default() };
         match self.find_mut(name) {
             Some(a) => {
                 a.user = user;
                 a.password = hash;
+                a.sessions.clear();
             }
             None => self.accounts.push(Account { user, password: hash, sessions: Vec::new() }),
         }

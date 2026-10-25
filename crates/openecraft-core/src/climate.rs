@@ -1,7 +1,9 @@
 //! Enclosure climate (IEC/TR 60890, DIN VDE 0660-507): power loss of the devices in
 //! an enclosure, the effective surface by installation type, the temperature rise
-//! and the fan or cooling unit (or heater) needed to keep the inside temperature.
-//! Power losses come from the tech data of the parts (`Power loss: 7.5 W`).
+//! and the fan, heat exchanger (sealed enclosures) or cooling unit needed to keep the
+//! inside temperature, with the air flow corrected for the altitude; the heater keeps
+//! the lowest inside temperature and the dew point of the ambient air. Power losses
+//! come from the tech data of the parts (`Power loss: 7.5 W`).
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::Project;
@@ -79,6 +81,9 @@ impl Default for Climate {
             inside_max: 35.0,
             inside_min: 5.0,
             extra_loss: 0.0,
+            altitude: 0.0,
+            sealed: false,
+            humidity: 0.0,
         }
     }
 }
@@ -91,8 +96,22 @@ impl Climate {
 
 /// Air flow factor of filter fans at sea level (m³·K/(W·h)).
 const FAN_FACTOR: f32 = 3.1;
-/// Fans need at least this difference between inside and ambient temperature (K).
+/// Fans and heat exchangers need at least this difference between inside and
+/// ambient temperature (K).
 const FAN_MIN_DIFFERENCE: f32 = 5.0;
+
+/// Density of the air at an altitude relative to sea level (ISA troposphere).
+pub fn air_density(altitude: f32) -> f32 {
+    (1.0 - 2.25577e-5 * altitude.max(0.0)).max(0.1).powf(4.2559)
+}
+
+/// Dew point of air at a temperature (°C) and relative humidity (%), Magnus formula
+/// (17.62, 243.12 °C).
+pub fn dew_point(t: f32, humidity: f32) -> f32 {
+    let (a, b) = (17.62, 243.12);
+    let g = (humidity.clamp(1.0, 100.0) / 100.0).ln() + a * t / (b + t);
+    b * g / (a - g)
+}
 
 /// What keeps the enclosure below its highest inside temperature.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -101,6 +120,8 @@ pub enum Cooling {
     None,
     /// Filter fan with this air flow (m³/h).
     Fan(f32),
+    /// Air/air heat exchanger with this specific output (W/K).
+    HeatExchanger(f32),
     /// Cooling unit with this useful cooling output (W).
     CoolingUnit(f32),
 }
@@ -117,8 +138,11 @@ pub struct ClimateResult {
     /// Inside temperature without cooling at the highest ambient temperature (°C).
     pub inside: f32,
     pub cooling: Cooling,
-    /// Heater output to keep the lowest inside temperature, devices switched off (W).
+    /// Heater output to keep the lowest inside temperature and the dew point, devices
+    /// switched off (W).
     pub heating: f32,
+    /// Dew point of the ambient air (°C), when the humidity is given.
+    pub dew_point: Option<f32>,
 }
 
 /// Power loss of a part from its tech data (`Power loss: 7.5 W`).
@@ -153,23 +177,31 @@ pub fn calculate(prj: &Project, e: &Enclosure) -> ClimateResult {
     let inside = c.ambient_max + loss / ka;
     // Heat that the walls cannot give off at the highest inside temperature.
     let excess = loss - ka * (c.inside_max - c.ambient_max);
+    let difference = c.inside_max - c.ambient_max;
     let cooling = if excess <= 0.0 {
         Cooling::None
-    } else if c.inside_max - c.ambient_max >= FAN_MIN_DIFFERENCE {
-        Cooling::Fan(FAN_FACTOR * excess / (c.inside_max - c.ambient_max))
+    } else if difference >= FAN_MIN_DIFFERENCE && c.sealed {
+        Cooling::HeatExchanger(excess / difference)
+    } else if difference >= FAN_MIN_DIFFERENCE {
+        Cooling::Fan(FAN_FACTOR / air_density(c.altitude) * excess / difference)
     } else {
         Cooling::CoolingUnit(excess)
     };
-    let heating = (ka * (c.inside_min - c.ambient_min)).max(0.0);
-    ClimateResult { surface, loss, without_data, inside, cooling, heating }
+    // Moist air must not condense when the devices are off at the lowest ambient
+    // temperature: the heater keeps the inside above its dew point.
+    let dew_point = (c.humidity > 0.0).then(|| dew_point(c.ambient_max, c.humidity));
+    let lowest = dew_point.map_or(c.inside_min, |d| d.max(c.inside_min));
+    let heating = (ka * (lowest - c.ambient_min)).max(0.0);
+    ClimateResult { surface, loss, without_data, inside, cooling, heating, dew_point }
 }
 
 impl Cooling {
-    /// "–", "filter fan 120 m³/h", "cooling unit 450 W".
+    /// "–", "filter fan 120 m³/h", "heat exchanger 25 W/K", "cooling unit 450 W".
     pub fn text(self) -> String {
         match self {
             Cooling::None => "–".into(),
             Cooling::Fan(v) => tr_fmt!("filter fan {} m³/h", format!("{v:.0}")),
+            Cooling::HeatExchanger(q) => tr_fmt!("heat exchanger {} W/K", format!("{q:.1}")),
             Cooling::CoolingUnit(q) => tr_fmt!("cooling unit {} W", format!("{q:.0}")),
         }
     }

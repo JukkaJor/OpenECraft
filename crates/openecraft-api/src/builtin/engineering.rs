@@ -36,6 +36,9 @@ pub static COMMANDS: &[Spec] = &[
             optional("inside_max", Kind::Num, tr_const!("Highest inside temperature in °C")),
             optional("inside_min", Kind::Num, tr_const!("Lowest inside temperature in °C")),
             optional("extra_loss", Kind::Num, tr_const!("Additional power loss in W")),
+            optional("altitude", Kind::Num, tr_const!("Altitude of the site in m")),
+            optional("sealed", Kind::Bool, tr_const!("Keep the degree of protection: heat exchanger or cooling unit instead of filter fans")),
+            optional("humidity", Kind::Num, tr_const!("Relative humidity of the ambient air in % (0: no condensation check)")),
         ],
         run: enclosure_climate,
     },
@@ -76,10 +79,16 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
             ("inside_max", &mut c.inside_max),
             ("inside_min", &mut c.inside_min),
             ("extra_loss", &mut c.extra_loss),
+            ("altitude", &mut c.altitude),
+            ("humidity", &mut c.humidity),
         ] {
             if let Some(v) = a.num(name) {
                 *field = v;
             }
+        }
+        c.humidity = c.humidity.clamp(0.0, 100.0);
+        if let Some(v) = a.value("sealed").and_then(Value::as_bool) {
+            c.sealed = v;
         }
     }
     let out: Vec<Value> = prj
@@ -89,10 +98,11 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
         .map(|e| {
             let r = climate::calculate(prj, e);
             let c = &e.climate;
-            let (fan, unit) = match r.cooling {
-                Cooling::None => (None, None),
-                Cooling::Fan(v) => (Some(v), None),
-                Cooling::CoolingUnit(q) => (None, Some(q)),
+            let (fan, exchanger, unit) = match r.cooling {
+                Cooling::None => (None, None, None),
+                Cooling::Fan(v) => (Some(v), None, None),
+                Cooling::HeatExchanger(q) => (None, Some(q), None),
+                Cooling::CoolingUnit(q) => (None, None, Some(q)),
             };
             json!({
                 "enclosure": e.name,
@@ -103,9 +113,14 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
                 "surface_m2": r.surface,
                 "power_loss_w": r.loss,
                 "inside_without_cooling": r.inside,
+                "altitude_m": c.altitude,
+                "sealed": c.sealed,
+                "humidity_percent": c.humidity,
                 "fan_m3_per_h": fan,
+                "heat_exchanger_w_per_k": exchanger,
                 "cooling_unit_w": unit,
                 "heating_w": r.heating,
+                "dew_point": r.dew_point,
                 "devices_without_power_loss": r.without_data,
             })
         })

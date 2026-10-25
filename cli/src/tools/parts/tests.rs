@@ -146,6 +146,32 @@ fn sign_in_favorites_and_users() {
 }
 
 #[test]
+fn roles_and_grants() {
+    let srv = server();
+    let mut s = session_with(&srv);
+    let r = run(&mut s, "parts_role", json!({ "name": "buyer", "rights": "read, edit_parts" })).unwrap();
+    assert_eq!(r["policy"]["roles"][0]["rights"], json!(["read", "edit_parts"]));
+    assert!(run(&mut s, "parts_role", json!({ "name": "x", "rights": "fly" })).unwrap_err().contains("fly"));
+    run(&mut s, "parts_grant", json!({ "subject": "group", "name": "corp:Purchasing", "role": "buyer", "scope": "ACME" })).unwrap();
+    run(&mut s, "parts_grant", json!({ "subject": "group", "name": "corp:Purchasing", "role": "buyer", "scope": "acme" })).unwrap();
+    run(&mut s, "parts_grant", json!({ "subject": "user", "name": "max", "role": "reader", "deny": true })).unwrap();
+    assert!(run(&mut s, "parts_grant", json!({ "subject": "team", "name": "x", "role": "reader" })).is_err());
+    assert!(run(&mut s, "parts_grant", json!({ "subject": "user", "name": "x", "role": "nobody" })).unwrap_err().contains("nobody"));
+    let grants = srv.policy.borrow().grants.clone();
+    assert_eq!(grants.len(), 2, "the same grant once");
+    assert!(grants[1].deny && grants[1].scope == "*");
+    assert!(run(&mut s, "parts_role", json!({ "name": "buyer", "delete": true })).is_err(), "still granted");
+    run(&mut s, "parts_grant", json!({ "subject": "group", "name": "corp:Purchasing", "revoke": true })).unwrap();
+    assert!(run(&mut s, "parts_grant", json!({ "subject": "group", "name": "corp:Purchasing", "revoke": true })).is_err());
+    run(&mut s, "parts_role", json!({ "name": "buyer", "delete": true })).unwrap();
+    assert!(run(&mut s, "parts_role", json!({ "name": "buyer", "delete": true })).is_err());
+    run(&mut s, "parts_access", json!({ "anonymous": "none" })).unwrap();
+    let shown = run(&mut s, "parts_access", json!({})).unwrap();
+    assert_eq!(shown["policy"]["grants"].as_array().unwrap().len(), 1);
+    assert!(shown["policy"].get("anonymous").is_none());
+}
+
+#[test]
 fn catalogs_files_and_history() {
     let dir = temp_dir("parts-portal");
     let srv = server();

@@ -1,6 +1,7 @@
 use crate::endpoint::with_content_type;
 use openecraft_core::collab::{
-    project_path, user_path, CreateRequest, LockRequest, LoginRequest, OpenRequest, SaveRequest, Session, Target, UserUpdate, API_PREFIX, DEFAULT_PORT,
+    access_path, project_path, user_path, CreateRequest, Grant, LockRequest, LoginRequest, OpenRequest, Policy, ProjectRight, SaveRequest, Session, Target,
+    UserUpdate, API_PREFIX, DEFAULT_PORT,
 };
 use openecraft_core::model::Project;
 use openecraft_parts::api;
@@ -93,7 +94,7 @@ impl ProjectEndpoint {
 
     /// POST /api/v1/login: a session token for the user.
     pub fn login(&self, user: &str, password: &str) -> ehttp::Request {
-        self.json("POST", &format!("{API_PREFIX}/login"), &LoginRequest { user: user.into(), password: password.into() })
+        self.json("POST", &format!("{API_PREFIX}/login"), &LoginRequest { user: user.into(), password: password.into(), ..Default::default() })
     }
 
     /// POST /api/v1/logout: ends the session of the token.
@@ -114,6 +115,31 @@ impl ProjectEndpoint {
     /// DELETE /api/v1/users/{name} (administrators)
     pub fn delete_user(&self, name: &str) -> ehttp::Request {
         self.request(ehttp::Request::delete(&api::url(&self.url, &user_path(name))))
+    }
+
+    /// DELETE /api/v1/projects/{name}: deletes a project nobody has open.
+    pub fn delete(&self, name: &str) -> ehttp::Request {
+        self.request(ehttp::Request::delete(&api::url(&self.url, &project_path(name))))
+    }
+
+    /// GET /api/v1/projects/{name}/access: the grants on the project.
+    pub fn project_access(&self, name: &str) -> ehttp::Request {
+        self.get(&access_path(name))
+    }
+
+    /// PUT /api/v1/projects/{name}/access: replaces the grants on the project.
+    pub fn save_project_access(&self, name: &str, grants: &[Grant]) -> ehttp::Request {
+        self.json("PUT", &access_path(name), &grants)
+    }
+
+    /// GET /api/v1/access: roles, grants and directories (administrators)
+    pub fn access(&self) -> ehttp::Request {
+        self.get(&format!("{API_PREFIX}/access"))
+    }
+
+    /// PUT /api/v1/access: replaces roles and grants (administrators)
+    pub fn save_access(&self, policy: &Policy<ProjectRight>) -> ehttp::Request {
+        self.json("PUT", &format!("{API_PREFIX}/access"), policy)
     }
 }
 

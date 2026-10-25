@@ -5,7 +5,8 @@ use crate::params::{optional, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
 use openecraft_core::analysis::Analysis;
-use openecraft_core::electrical::{Earthing, Insulation, Material};
+use openecraft_core::electrical::{Coordination, Earthing, Insulation, Material, Transformer};
+use openecraft_core::shortcircuit::Basis;
 use openecraft_core::model::Project;
 use openecraft_core::rules::{self, RuleSet};
 use openecraft_core::safety::{self, SafetyFunction};
@@ -36,6 +37,13 @@ pub static COMMANDS: &[Spec] = &[
             optional("ik_max", Kind::Num, tr_const!("Highest three-phase short-circuit current at the supply in kA")),
             optional("ik_min", Kind::Num, tr_const!("Lowest line-to-earth fault current at the supply in kA (0: from ik_max)")),
             optional("rated_current", Kind::Num, tr_const!("Rated current of the supply in A (0: not limited)")),
+            optional("rx", Kind::Num, tr_const!("R/X ratio of the supply impedance")),
+            optional("transformer_kva", Kind::Num, tr_const!("Rated power of the transformer feeding the supply in kVA (0: none, the short-circuit currents are given)")),
+            optional("transformer_uk", Kind::Num, tr_const!("Short-circuit voltage of the transformer in %")),
+            optional("transformer_losses", Kind::Num, tr_const!("Load losses of the transformer in W (0: typical)")),
+            optional("network_mva", Kind::Num, tr_const!("Short-circuit power of the network upstream of the transformer in MVA (0: infinite)")),
+            optional("motors", Kind::Bool, tr_const!("Asynchronous motors add to the short-circuit current")),
+            optional("neutral", Kind::Bool, tr_const!("IT system with distributed neutral")),
             optional("ambient", Kind::Num, tr_const!("Ambient temperature of the conductors in °C")),
             optional("grouped", Kind::Int, tr_const!("Loaded circuits bunched together")),
             optional("material", Kind::Str, tr_const!("copper or aluminium")),
@@ -49,6 +57,18 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Short-circuit currents, breaking capacities, disconnection times, short-circuit withstand of the cables and selectivity of the protective devices"),
         params: &[],
         run: short_circuit,
+    },
+    Spec {
+        name: "coordination_table",
+        help: tr_const!("Selectivity and back-up protection of device pairs from the manufacturers' tables, by part number; adds, replaces or removes an entry"),
+        params: &[
+            optional("upstream", Kind::Str, tr_const!("Part number of the upstream device")),
+            optional("downstream", Kind::Str, tr_const!("Part number of the downstream device")),
+            optional("selectivity_ka", Kind::Num, tr_const!("Selective up to this short-circuit current in kA (0: not given)")),
+            optional("backup_ka", Kind::Num, tr_const!("Back-up protection up to this short-circuit current in kA (0: not given)")),
+            optional("remove", Kind::Bool, tr_const!("Remove the entry of upstream and downstream")),
+        ],
+        run: coordination_table,
     },
     Spec {
         name: "load_calculation",
@@ -66,7 +86,7 @@ pub static COMMANDS: &[Spec] = &[
         name: "safety_functions",
         help: tr_const!("Safety functions (ISO 13849-1) with the performance level reached; adds, replaces or removes one"),
         params: &[
-            optional("set", Kind::Object, tr_const!("Safety function to add or replace (by name): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}")),
+            optional("set", Kind::Object, tr_const!("Safety function to add or replace (by name): {name, description, required: A…E, subsystems: [{name, devices, channel2, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}")),
             optional("remove", Kind::Str, tr_const!("Name of the safety function to remove")),
         ],
         run: safety_functions,
@@ -123,13 +143,41 @@ fn electrical_settings(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(v) = a.int("grouped") {
         el.conditions.grouped = v.max(1) as u32;
     }
+    if let Some(v) = a.num("rx") {
+        el.supply.rx = v.max(0.0);
+    }
+    if let Some(v) = a.num("transformer_kva") {
+        el.supply.transformer = (v > 0.0).then(|| Transformer { power: v, ..el.supply.transformer.clone().unwrap_or_default() });
+    }
+    for name in ["transformer_uk", "transformer_losses", "network_mva"] {
+        let Some(v) = a.num(name) else { continue };
+        let t = el.supply.transformer.as_mut().ok_or_else(|| tr_fmt!("No transformer: set {} first", "transformer_kva"))?;
+        let field = match name {
+            "transformer_uk" => &mut t.uk,
+            "transformer_losses" => &mut t.losses,
+            _ => &mut t.network,
+        };
+        *field = v.max(0.0);
+    }
+    for (name, field) in [("motors", &mut el.supply.motors), ("neutral", &mut el.supply.neutral)] {
+        if let Some(v) = a.value(name).and_then(Value::as_bool) {
+            *field = v;
+        }
+    }
     let el = &prj.electrical;
+    let src = shortcircuit::Source::of(&el.supply);
     Ok(json!({
         "voltage": el.supply.voltage,
         "frequency": el.supply.frequency,
         "earthing": EARTHING.iter().find(|x| x.1 == el.supply.earthing).map(|x| x.0),
         "ik_max_ka": el.supply.ik_max,
         "ik_min_ka": el.supply.ik_min,
+        "rx": el.supply.rx,
+        "transformer": el.supply.transformer.as_ref().map(|t| json!({ "kva": t.power, "uk_percent": t.uk, "losses_w": t.load_losses(), "network_mva": t.network })),
+        "motors": el.supply.motors,
+        "neutral": el.supply.neutral,
+        "supply_ik3_ka": src.ik3 / 1000.0,
+        "supply_ik1_ka": src.ik1 / 1000.0,
         "rated_current_a": el.supply.rated_current,
         "ambient": el.conditions.ambient,
         "grouped": el.conditions.grouped,
@@ -158,10 +206,16 @@ fn short_circuit(prj: &mut Project, _: &Args) -> Result<Value, String> {
                 "characteristic": f.protection.characteristic.title(),
                 "rated_a": f.protection.rated,
                 "breaking_capacity_ka": f.protection.breaking,
+                "making_capacity_ka": f.protection.making,
                 "ik_max_a": f.ik_max,
+                "ip_a": f.ip,
+                "motors_a": f.ik_motors,
+                "feeders": f.feeders,
                 "cable": f.cable,
                 "ik_max_end_a": f.ik_max_end,
                 "ik_min_end_a": f.ik_min_end,
+                "second_fault": f.second_fault,
+                "backup_by": f.backup,
                 "disconnection_s": finite(f.time),
                 "permitted_s": f.limit,
                 "trip_current_a": finite(f.trip_current),
@@ -169,6 +223,7 @@ fn short_circuit(prj: &mut Project, _: &Args) -> Result<Value, String> {
                 "energy_a2s": f.energy.map(|e| e.0),
                 "withstand_a2s": f.energy.map(|e| e.1),
                 "breaks": f.breaks(),
+                "makes": f.makes(),
                 "disconnects": f.disconnects(),
                 "withstands": f.withstands(),
             })
@@ -176,9 +231,44 @@ fn short_circuit(prj: &mut Project, _: &Args) -> Result<Value, String> {
         .collect();
     let selectivity: Vec<Value> = shortcircuit::selectivity(prj, &an.netlist, &an.connections)
         .iter()
-        .map(|x| json!({ "upstream": x.upstream, "downstream": x.downstream, "selective_up_to_a": x.limit, "ik_max_a": x.ik, "total": x.is_total() }))
+        .map(|x| {
+            let basis = match x.basis {
+                Basis::Table => "table",
+                Basis::FuseRatio => "fuse_ratio",
+                Basis::Energy => "pre_arcing_energy",
+                Basis::Curves => "curves",
+            };
+            json!({ "upstream": x.upstream, "downstream": x.downstream, "selective_up_to_a": x.limit, "ik_max_a": x.ik, "total": x.is_total(), "basis": basis })
+        })
         .collect();
-    Ok(json!({ "devices": faults, "selectivity": selectivity }))
+    let src = shortcircuit::Source::of(&prj.electrical.supply);
+    Ok(json!({ "supply_ik3_a": src.ik3, "supply_ik1_a": src.ik1, "devices": faults, "selectivity": selectivity }))
+}
+
+fn coordination_table(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let table = &mut prj.electrical.coordination;
+    match (a.str("upstream"), a.str("downstream")) {
+        (Some(up), Some(down)) => {
+            let at = table.iter().position(|c| c.upstream == up && c.downstream == down);
+            if a.flag("remove") {
+                table.remove(at.ok_or_else(|| tr_fmt!("No entry for {} and {}", up, down))?);
+            } else {
+                let i = at.unwrap_or_else(|| {
+                    table.push(Coordination { upstream: up.into(), downstream: down.into(), ..Default::default() });
+                    table.len() - 1
+                });
+                if let Some(v) = a.num("selectivity_ka") {
+                    table[i].selectivity = v.max(0.0);
+                }
+                if let Some(v) = a.num("backup_ka") {
+                    table[i].backup = v.max(0.0);
+                }
+            }
+        }
+        (None, None) => {}
+        _ => return Err(tr_fmt!("{} and {} are needed together", "upstream", "downstream")),
+    }
+    Ok(Value::Array(prj.electrical.coordination.iter().map(|c| json!({ "upstream": c.upstream, "downstream": c.downstream, "selectivity_ka": c.selectivity, "backup_ka": c.backup })).collect()))
 }
 
 fn load_calculation(prj: &mut Project, _: &Args) -> Result<Value, String> {
@@ -241,11 +331,16 @@ fn safety_functions(prj: &mut Project, a: &Args) -> Result<Value, String> {
         .iter()
         .map(|f| {
             let e = safety::evaluate(prj, f);
-            let subs: Vec<Value> = e.subsystems.iter().map(|r| json!({ "name": r.name, "mttfd_years": r.mttfd, "pl": r.pl.map(|p| p.title()), "problems": r.problems })).collect();
+            let subs: Vec<Value> = e
+                .subsystems
+                .iter()
+                .map(|r| json!({ "name": r.name, "mttfd_years": r.mttfd, "dc_avg": r.dc, "pfh": r.pfh, "pl": r.pl.map(|p| p.title()), "problems": r.problems, "notes": r.notes }))
+                .collect();
             json!({
                 "name": f.name,
                 "required": f.required.title(),
                 "achieved": e.achieved.map(|p| p.title()),
+                "pfh": e.pfh,
                 "sil": e.achieved.and_then(|p| p.sil()),
                 "met": e.is_met(),
                 "subsystems": subs,

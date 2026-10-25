@@ -159,7 +159,7 @@ fn panel_thermal(prj: &Project, a: &Args) -> Result<Value, String> {
         "min_c": round(map.min),
         "max_c": round(map.max),
         "hottest": [round(map.hottest.x), round(map.hottest.y)],
-        "sources": map.sources.iter().map(|s| json!({ "device": tag(s.id), "power_loss_w": s.loss, "rise_k": round(s.rise) })).collect::<Vec<_>>(),
+        "sources": map.sources.iter().map(|s| json!({ "device": tag(s.id), "power_loss_w": s.loss, "rise_k": round(s.rise), "duct_above_mm": s.ceiling.map(round) })).collect::<Vec<_>>(),
         "devices": thermal::device_temperatures(prj, e, &map)
             .into_iter()
             .map(|t| json!({ "device": t.tag, "air_c": round(t.temperature), "limit_c": t.limit, "too_warm": t.limit.is_some_and(|l| t.temperature > l) }))

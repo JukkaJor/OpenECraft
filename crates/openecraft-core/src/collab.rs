@@ -20,18 +20,28 @@
 //! | POST | `/api/v1/projects/{name}/lock` | [`LockRequest`] → [`Status`] |
 //! | POST | `/api/v1/projects/{name}/release` | [`LockRequest`] → [`Status`] |
 //! | POST | `/api/v1/projects/{name}/close` | [`Session`] → [`Status`] (releases all locks) |
+//! | DELETE | `/api/v1/projects/{name}` | deletes a project without sessions ([`ProjectRight::Delete`]) |
+//! | GET | `/api/v1/projects/{name}/access` | [`ProjectAccess`] ([`ProjectRight::ManageAccess`]) |
+//! | PUT | `/api/v1/projects/{name}/access` | [`Grant`] list → [`ProjectAccess`] |
 //! | POST | `/api/v1/login` | [`LoginRequest`] → [`LoginResponse`] |
 //! | POST | `/api/v1/logout` | ends the session of the bearer token |
 //! | GET | `/api/v1/users` | [`ProjectUser`] list (administrators) |
 //! | PUT | `/api/v1/users/{name}` | [`UserUpdate`] → [`ProjectUser`] (administrators) |
 //! | DELETE | `/api/v1/users/{name}` | (administrators) |
+//! | GET | `/api/v1/access` | `Settings` of [`ProjectRight`] (administrators) |
+//! | PUT | `/api/v1/access` | `Policy` of [`ProjectRight`] (administrators) |
 //!
-//! With a server token or user accounts every request needs `Authorization: Bearer
-//! <token>`: the server token (full access) or the session token of a signed-in user,
-//! whose role ([`ProjectRole`]) and projects decide what they may do. Errors are
+//! With a server token, user accounts or directories every request needs
+//! `Authorization: Bearer <token>`: the server token (full access) or the session
+//! token of a user signed in with a local account or a directory (Active Directory,
+//! LDAP). Their rights ([`ProjectRight`]) come from their built-in role
+//! ([`ProjectRole`]) and the grants of the server's policy to them and their groups
+//! (`openecraft_parts::access`); the scope of a grant is a project name. Errors are
 //! returned as `openecraft_parts::api::ApiError` JSON.
 
 use crate::model::{Page, Project};
+use openecraft_i18n::tr_const;
+pub use openecraft_parts::access::{Access, Grant, Identity, Policy, Right, Settings, Subject, SERVER};
 use openecraft_parts::api::encode_component;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -90,6 +100,8 @@ pub struct ProjectSummary {
     pub revision: u64,
     /// Users working on the project.
     pub users: Vec<String>,
+    /// What the caller may do with the project.
+    pub rights: Vec<ProjectRight>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -123,6 +135,8 @@ pub struct Opened {
     /// First object id of the session; ids up to `first_id + ID_BLOCK` are its own.
     pub first_id: u64,
     pub snapshot: Snapshot,
+    /// What the user may do with the project; empty from older servers.
+    pub rights: Vec<ProjectRight>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -148,27 +162,125 @@ pub struct LockRequest {
     pub targets: Vec<Target>,
 }
 
-/// What a user may do on the project server. Ordered by permissions.
+/// What may be done on the project server. The scope of a right is the project
+/// name; administering applies to the whole server.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectRight {
+    /// See the project in the list, open it read-only.
+    View,
+    /// Save review records (comments, markup, approvals) without locks.
+    Review,
+    /// Lock and change pages.
+    EditPages,
+    /// Lock and change the project-wide data (page list, devices, parts, settings).
+    EditProject,
+    /// Create projects (the scope is the new name).
+    Create,
+    Delete,
+    /// Give and take rights on the project.
+    ManageAccess,
+    /// Manage users, roles and all grants.
+    Administer,
+}
+
+impl Right for ProjectRight {
+    const ALL: &'static [ProjectRight] = &[
+        ProjectRight::View,
+        ProjectRight::Review,
+        ProjectRight::EditPages,
+        ProjectRight::EditProject,
+        ProjectRight::Create,
+        ProjectRight::Delete,
+        ProjectRight::ManageAccess,
+        ProjectRight::Administer,
+    ];
+    const ROLES: &'static [&'static str] = &["viewer", "reviewer", "editor", "manager", "admin"];
+
+    fn role(name: &str) -> Option<&'static [ProjectRight]> {
+        ProjectRole::ALL.into_iter().find(|r| r.name().eq_ignore_ascii_case(name.trim())).map(ProjectRole::rights)
+    }
+
+    fn name(self) -> &'static str {
+        match self {
+            ProjectRight::View => "view",
+            ProjectRight::Review => "review",
+            ProjectRight::EditPages => "edit_pages",
+            ProjectRight::EditProject => "edit_project",
+            ProjectRight::Create => "create",
+            ProjectRight::Delete => "delete",
+            ProjectRight::ManageAccess => "manage_access",
+            ProjectRight::Administer => "administer",
+        }
+    }
+
+    fn title(self) -> &'static str {
+        match self {
+            ProjectRight::View => tr_const!("View projects"),
+            ProjectRight::Review => tr_const!("Save reviews"),
+            ProjectRight::EditPages => tr_const!("Edit pages"),
+            ProjectRight::EditProject => tr_const!("Edit project data"),
+            ProjectRight::Create => tr_const!("Create projects"),
+            ProjectRight::Delete => tr_const!("Delete projects"),
+            ProjectRight::ManageAccess => tr_const!("Manage project access"),
+            ProjectRight::Administer => tr_const!("Administer the server"),
+        }
+    }
+
+    fn server_wide(self) -> bool {
+        self == ProjectRight::Administer
+    }
+}
+
+/// Built-in roles of the project server. Ordered by permissions.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectRole {
-    /// Open projects read-only (no locks, no saving): review and comments.
+    /// Open projects read-only (no locks, no saving).
     #[default]
     Viewer,
+    /// Also save review records: comments, markup, approvals.
+    Reviewer,
     /// Lock, change, save and create projects.
     Editor,
-    /// Also manage the users.
+    /// Also delete projects and manage who may use them.
+    Manager,
+    /// Also manage the users, roles and all grants.
     Admin,
 }
 
 impl ProjectRole {
-    pub const ALL: [ProjectRole; 3] = [ProjectRole::Viewer, ProjectRole::Editor, ProjectRole::Admin];
+    pub const ALL: [ProjectRole; 5] = [ProjectRole::Viewer, ProjectRole::Reviewer, ProjectRole::Editor, ProjectRole::Manager, ProjectRole::Admin];
 
     pub fn title(self) -> &'static str {
         match self {
             ProjectRole::Viewer => openecraft_i18n::tr("Viewer"),
+            ProjectRole::Reviewer => openecraft_i18n::tr("Reviewer"),
             ProjectRole::Editor => openecraft_i18n::tr("Editor"),
+            ProjectRole::Manager => openecraft_i18n::tr("Project manager"),
             ProjectRole::Admin => openecraft_i18n::tr("Administrator"),
+        }
+    }
+
+    /// Name in grants and JSON.
+    pub fn name(self) -> &'static str {
+        match self {
+            ProjectRole::Viewer => "viewer",
+            ProjectRole::Reviewer => "reviewer",
+            ProjectRole::Editor => "editor",
+            ProjectRole::Manager => "manager",
+            ProjectRole::Admin => "admin",
+        }
+    }
+
+    pub fn rights(self) -> &'static [ProjectRight] {
+        use ProjectRight::*;
+        match self {
+            ProjectRole::Viewer => &[View],
+            ProjectRole::Reviewer => &[View, Review],
+            ProjectRole::Editor => &[View, Review, EditPages, EditProject, Create],
+            ProjectRole::Manager => &[View, Review, EditPages, EditProject, Create, Delete, ManageAccess],
+            ProjectRole::Admin => ProjectRight::ALL,
         }
     }
 }
@@ -178,21 +290,35 @@ impl ProjectRole {
 #[serde(default)]
 pub struct ProjectUser {
     pub name: String,
-    pub role: ProjectRole,
-    /// Projects the user may open (names, `*` and `?` wildcards); empty = all.
+    /// Built-in role on `projects`; none: only the grants of the server's policy count
+    /// (the default for users of a directory).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<ProjectRole>,
+    /// Projects the role applies to (names, `*` and `?` wildcards); empty = all.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub projects: Vec<String>,
+    /// Directory the user signs in with; empty for a local account.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub provider: String,
+    /// Groups for the grants (directory groups as `directory:group`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<String>,
 }
 
 impl ProjectUser {
-    /// The user may open the project.
-    pub fn may_see(&self, project: &str) -> bool {
-        self.role == ProjectRole::Admin || self.projects.is_empty() || self.projects.iter().any(|p| crate::report_blocks::matches(p, project))
+    pub fn identity(&self) -> Identity {
+        Identity { name: self.name.clone(), provider: self.provider.clone(), groups: self.groups.clone() }
     }
 
-    /// The user may lock, change and save the project.
-    pub fn may_edit(&self, project: &str) -> bool {
-        self.role >= ProjectRole::Editor && self.may_see(project)
+    /// What the built-in role gives: its rights on `projects` (an administrator's
+    /// on everything).
+    pub fn grants(&self) -> Vec<Grant> {
+        let Some(role) = self.role else { return Vec::new() };
+        let me = || Subject::User(self.name.clone());
+        if role == ProjectRole::Admin || self.projects.iter().all(|p| p.trim().is_empty()) {
+            return vec![Grant::new(me(), role.name(), SERVER)];
+        }
+        self.projects.iter().filter(|p| !p.trim().is_empty()).map(|p| Grant::new(me(), role.name(), p)).collect()
     }
 }
 
@@ -201,6 +327,9 @@ impl ProjectUser {
 pub struct LoginRequest {
     pub user: String,
     pub password: String,
+    /// Directory to sign in with; empty = the local accounts, then every directory.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub provider: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -209,21 +338,43 @@ pub struct LoginResponse {
     /// Session token for `Authorization: Bearer`.
     pub token: String,
     pub user: ProjectUser,
+    /// What the user may do.
+    pub access: Access<ProjectRight>,
 }
 
-/// Creates or changes a user; a new user needs a password.
+/// Creates or changes a user; a new local user needs a password (users of a
+/// directory have none on the server).
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct UserUpdate {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
-    pub role: ProjectRole,
+    pub role: Option<ProjectRole>,
     pub projects: Vec<String>,
+    /// Local groups; `None` keeps them. Groups of directory users come from the
+    /// directory.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub groups: Option<Vec<String>>,
+}
+
+/// Who may use a project (`GET /api/v1/projects/{name}/access`; `PUT` takes the grants).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ProjectAccess {
+    /// The grants on exactly this project.
+    pub grants: Vec<Grant>,
+    /// Roles that can be granted.
+    pub roles: Vec<String>,
 }
 
 /// Path of a user, e.g. `/api/v1/users/anna`.
 pub fn user_path(name: &str) -> String {
     format!("{API_PREFIX}/users/{}", encode_component(name))
+}
+
+/// Path of the grants of a project, e.g. `/api/v1/projects/Plant%201/access`.
+pub fn access_path(name: &str) -> String {
+    format!("{}/access", project_path(name))
 }
 
 /// Path of a project, e.g. `/api/v1/projects/Plant%201`.

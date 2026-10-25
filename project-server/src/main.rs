@@ -6,10 +6,12 @@
 //! openecraft-project-server --bind 0.0.0.0:8091 --data projects --token <secret>
 //! ```
 //!
-//! Without `--token` (or `OPENECRAFT_PROJECT_TOKEN`) and without user accounts
-//! everyone who reaches the server can open and change its projects. Users (viewer,
-//! editor, administrator; optionally limited to some projects) sign in with a
-//! password; `--admin-user` creates the first administrator.
+//! Without `--token` (or `OPENECRAFT_PROJECT_TOKEN`), user accounts and directories
+//! everyone who reaches the server can open and change its projects. Users sign in
+//! with a local account or with a directory (Active Directory, LDAP) of the access
+//! settings (`--access`, default `access.json` in the data directory). Their rights per
+//! project come from their built-in role and the grants to them and their groups;
+//! `--admin-user` creates the first administrator.
 
 mod routes;
 mod sessions;
@@ -38,6 +40,10 @@ struct Args {
     /// OPENECRAFT_PROJECT_ADMIN_PASSWORD.
     #[arg(long)]
     admin_user: Option<String>,
+    /// Access settings: directories (Active Directory, LDAP), roles and grants.
+    /// Default: `access.json` in the data directory.
+    #[arg(long)]
+    access: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -71,11 +77,22 @@ async fn main() {
         }
         log::info!("administrator {name} set");
     }
-    let token = args.token.filter(|t| !t.trim().is_empty());
-    if token.is_none() && users.accounts.is_empty() {
-        log::warn!("no access token and no user accounts: everyone who reaches the server can change its projects");
+    let access_path = args.access.unwrap_or_else(|| args.data.join("access.json"));
+    let access = match openecraft_auth::AccessFile::open(&access_path, Default::default()) {
+        Ok(a) => a,
+        Err(e) => {
+            log::error!("cannot read the access settings: {e}");
+            std::process::exit(1);
+        }
+    };
+    for d in &access.config.directories {
+        log::info!("sign-in with directory {} ({})", d.id, d.url);
     }
-    let server = routes::Server { store, sessions: Default::default(), users };
+    let token = args.token.filter(|t| !t.trim().is_empty());
+    if token.is_none() && users.accounts.is_empty() && access.config.directories.is_empty() {
+        log::warn!("no access token, user accounts or directories: everyone who reaches the server can change its projects");
+    }
+    let server = routes::Server { store, sessions: Default::default(), users, access };
     let state = routes::AppState { server: Arc::new(Mutex::new(server)), token };
     let listener = match tokio::net::TcpListener::bind(args.bind).await {
         Ok(l) => l,

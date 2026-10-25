@@ -41,6 +41,19 @@ pub struct UserDraft {
     pub new: bool,
     pub name: String,
     pub update: UserUpdate,
+    /// Directory of the user; empty for a local account.
+    pub provider: String,
+    /// Local groups, separated by commas (a directory sets the groups of its users).
+    pub groups: String,
+}
+
+impl UserDraft {
+    /// The request to save the user.
+    pub fn request(&self) -> UserUpdate {
+        let groups = self.groups.split(',').map(str::trim).filter(|g| !g.is_empty()).map(String::from).collect();
+        let local = self.provider.is_empty();
+        UserUpdate { groups: local.then_some(groups), password: if local { self.update.password.clone() } else { String::new() }, ..self.update.clone() }
+    }
 }
 
 #[derive(Default)]
@@ -164,7 +177,9 @@ impl Session {
             Some(n) => self.users.iter().find(|u| u.name == n).map(|u| UserDraft {
                 new: false,
                 name: u.name.clone(),
-                update: UserUpdate { role: u.role, manufacturer: u.manufacturer.clone(), password: String::new() },
+                update: UserUpdate { role: u.role, manufacturer: u.manufacturer.clone(), password: String::new(), groups: None },
+                provider: u.provider.clone(),
+                groups: u.groups.join(", "),
             }),
             None => Some(UserDraft { new: true, ..Default::default() }),
         };

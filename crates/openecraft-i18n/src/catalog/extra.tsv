@@ -2150,7 +2150,7 @@ Short-circuit currents, breaking capacities, disconnection times, short-circuit 
 Loads of the mains, load of each protective device, demand with the diversity factor, phase balance and power supply budgets	Verbraucher des Netzes, Last jedes Schutzorgans, Bedarf mit Gleichzeitigkeitsfaktor, Phasensymmetrie und Lastbilanz der Netzgeräte	Charges du réseau, charge de chaque appareil de protection, demande avec facteur de simultanéité, équilibre des phases et bilans des alimentations	Cargas de la red, carga de cada dispositivo de protección, demanda con factor de simultaneidad, equilibrio de fases y balances de las fuentes de alimentación
 EMC classes of the cables (drive output, analogue, power, signal, shield) and the EMC problems	EMV-Klassen der Leitungen (Umrichterausgang, analog, Leistung, Signal, Schirm) und die EMV-Probleme	Classes CEM des câbles (sortie variateur, analogique, puissance, signal, blindage) et problèmes CEM	Clases CEM de los cables (salida de convertidor, analógico, potencia, señal, pantalla) y problemas CEM
 Safety functions (ISO 13849-1) with the performance level reached; adds, replaces or removes one	Sicherheitsfunktionen (ISO 13849-1) mit dem erreichten Performance Level; fügt eine hinzu, ersetzt oder entfernt sie	Fonctions de sécurité (ISO 13849-1) avec le niveau de performance atteint ; en ajoute, remplace ou supprime une	Funciones de seguridad (ISO 13849-1) con el nivel de prestaciones alcanzado; añade, sustituye o elimina una
-Safety function to add or replace (by name): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Hinzuzufügende oder zu ersetzende Sicherheitsfunktion (nach Name): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Fonction de sécurité à ajouter ou remplacer (par nom) : {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Función de seguridad a añadir o sustituir (por nombre): {name, description, required: A…E, subsystems: [{name, devices, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}
+Safety function to add or replace (by name): {name, description, required: A…E, subsystems: [{name, devices, channel2, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Hinzuzufügende oder zu ersetzende Sicherheitsfunktion (nach Name): {name, description, required: A…E, subsystems: [{name, devices, channel2, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Fonction de sécurité à ajouter ou remplacer (par nom) : {name, description, required: A…E, subsystems: [{name, devices, channel2, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}	Función de seguridad a añadir o sustituir (por nombre): {name, description, required: A…E, subsystems: [{name, devices, channel2, category: B|One|Two|Three|Four, dc, operations, mttfd, ccf}]}
 Name of the safety function to remove	Name der zu entfernenden Sicherheitsfunktion	Nom de la fonction de sécurité à supprimer	Nombre de la función de seguridad a eliminar
 Rule libraries of standards and customer rule sets with the limits in effect; enables, disables, adds or removes them	Regelbibliotheken von Normen und Kundenregelwerke mit den geltenden Grenzwerten; aktiviert, deaktiviert, fügt hinzu oder entfernt sie	Bibliothèques de règles des normes et jeux de règles client avec les limites en vigueur ; les active, désactive, ajoute ou supprime	Bibliotecas de reglas de normas y conjuntos de reglas de cliente con los límites vigentes; los activa, desactiva, añade o elimina
 Library id or customer rule set name to verify against	Bibliotheks-ID oder Name des Kundenregelwerks, gegen das geprüft wird	Identifiant de bibliothèque ou nom du jeu de règles client à vérifier	Identificador de biblioteca o nombre del conjunto de reglas de cliente a verificar
@@ -4970,6 +4970,117 @@ Next row	Nächste Zeile	Ligne suivante	Fila siguiente
 Offset from one row to the next: downwards for lists, sideways for rows side by side	Versatz von einer Zeile zur nächsten: nach unten für Listen, seitlich für nebeneinanderliegende Zeilen	Décalage d'une ligne à la suivante : vers le bas pour les listes, sur le côté pour des lignes côte à côte	Desplazamiento de una fila a la siguiente: hacia abajo para listas, hacia el lado para filas una junto a otra
 Report name (page heading)	Name der Auswertung (Seitenüberschrift)	Nom du rapport (titre de la page)	Nombre del informe (título de la página)
 CSV, JSON, BMEcat, EPLAN XML or EDZ file	CSV-, JSON-, BMEcat-, EPLAN-XML- oder EDZ-Datei	Fichier CSV, JSON, BMEcat, XML EPLAN ou EDZ	Archivo CSV, JSON, BMEcat, XML de EPLAN o EDZ
+Rights	Rechte	Droits	Derechos
+You may review this project: comments, markup and approvals, no other changes.	Sie dürfen dieses Projekt prüfen: Kommentare, Markierungen und Freigaben, keine anderen Änderungen.	Vous pouvez réviser ce projet : commentaires, annotations et approbations, aucune autre modification.	Puede revisar este proyecto: comentarios, marcas y aprobaciones, ningún otro cambio.
+You may only view this project.	Sie dürfen dieses Projekt nur ansehen.	Vous pouvez seulement consulter ce projet.	Solo puede ver este proyecto.
+Project access	Projektzugriff	Accès au projet	Acceso al proyecto
+Show who may use the project	Anzeigen, wer das Projekt nutzen darf	Afficher qui peut utiliser le projet	Mostrar quién puede usar el proyecto
+User / group	Benutzer / Gruppe	Utilisateur / groupe	Usuario / grupo
+Deny	Verweigern	Refuser	Denegar
+User	Benutzer	Utilisateur	Usuario
+e.g. corp:Engineering	z. B. corp:Konstruktion	p. ex. corp:Ingenierie	p. ej. corp:Ingenieria
+Takes the rights of the role away, whatever other grants give	Entzieht die Rechte der Rolle, unabhängig davon, was andere Freigaben geben	Retire les droits du rôle, quoi que donnent les autres attributions	Retira los derechos del rol, den lo que den otras asignaciones
+Add user	Benutzer hinzufügen	Ajouter un utilisateur	Añadir usuario
+Add group	Gruppe hinzufügen	Ajouter un groupe	Añadir grupo
+Save access	Zugriff speichern	Enregistrer l'accès	Guardar acceso
+Loading the project access…	Projektzugriff wird geladen…	Chargement de l'accès au projet…	Cargando el acceso al proyecto…
+Saving the project access…	Projektzugriff wird gespeichert…	Enregistrement de l'accès au projet…	Guardando el acceso al proyecto…
+{} grants on the project	{} Zuweisungen für das Projekt	{} attributions sur le projet	{} asignaciones en el proyecto
+Reviewer	Prüfer	Réviseur	Revisor
+View projects	Projekte ansehen	Consulter les projets	Ver proyectos
+Save reviews	Prüfungen speichern	Enregistrer les révisions	Guardar revisiones
+Edit pages	Seiten bearbeiten	Modifier les pages	Editar páginas
+Edit project data	Projektdaten bearbeiten	Modifier les données du projet	Editar datos del proyecto
+Create projects	Projekte anlegen	Créer des projets	Crear proyectos
+Delete projects	Projekte löschen	Supprimer des projets	Eliminar proyectos
+Manage project access	Projektzugriff verwalten	Gérer l'accès au projet	Gestionar el acceso al proyecto
+Administer the server	Server verwalten	Administrer le serveur	Administrar el servidor
+Read parts	Artikel lesen	Lire les articles	Leer artículos
+Edit parts	Artikel bearbeiten	Modifier les articles	Editar artículos
+Delete parts	Artikel löschen	Supprimer des articles	Eliminar artículos
+Edit catalogs	Kataloge bearbeiten	Modifier les catalogues	Editar catálogos
+separated by commas	durch Kommas getrennt	séparés par des virgules	separados por comas
+Grants of the server's access settings can refer to them	Zuweisungen der Zugriffseinstellungen des Servers können sich darauf beziehen	Les attributions des paramètres d'accès du serveur peuvent s'y référer	Las asignaciones de la configuración de acceso del servidor pueden referirse a ellos
+Directory	Verzeichnisdienst	Annuaire	Directorio
+The directory checks the password and sets the groups at every sign-in	Der Verzeichnisdienst prüft das Passwort und setzt die Gruppen bei jeder Anmeldung	L'annuaire vérifie le mot de passe et définit les groupes à chaque connexion	El directorio comprueba la contraseña y establece los grupos en cada inicio de sesión
+No grant of {} found	Keine Zuweisung für {} gefunden	Aucune attribution pour {} trouvée	No se encontró ninguna asignación de {}
+No role {} defined	Keine Rolle {} definiert	Aucun rôle {} défini	No hay ningún rol {} definido
+Local groups of the user, separated by commas	Lokale Gruppen des Benutzers, durch Kommas getrennt	Groupes locaux de l'utilisateur, séparés par des virgules	Grupos locales del usuario, separados por comas
+Shows the roles, grants and directories of the parts server, optionally setting the role of anonymous requests (administrators only)	Zeigt die Rollen, Zuweisungen und Verzeichnisdienste des Artikelservers und setzt optional die Rolle anonymer Anfragen (nur Administratoren)	Affiche les rôles, attributions et annuaires du serveur d'articles et définit éventuellement le rôle des requêtes anonymes (administrateurs uniquement)	Muestra los roles, asignaciones y directorios del servidor de artículos y opcionalmente establece el rol de las solicitudes anónimas (solo administradores)
+Role of requests without sign-in; none: sign-in needed for reading	Rolle von Anfragen ohne Anmeldung; none: Lesen nur nach Anmeldung	Rôle des requêtes sans connexion ; none : connexion nécessaire pour lire	Rol de las solicitudes sin inicio de sesión; none: se necesita iniciar sesión para leer
+user or group	user oder group	user ou group	user o group
+User or group name (wildcards; directory groups as directory:group)	Benutzer- oder Gruppenname (Platzhalter; Gruppen eines Verzeichnisdienstes als verzeichnis:gruppe)	Nom d'utilisateur ou de groupe (jokers ; groupes d'un annuaire sous la forme annuaire:groupe)	Nombre de usuario o grupo (comodines; grupos de un directorio como directorio:grupo)
+Role: reader, manufacturer, editor, admin or a defined role	Rolle: reader, manufacturer, editor, admin oder eine definierte Rolle	Rôle : reader, manufacturer, editor, admin ou un rôle défini	Rol: reader, manufacturer, editor, admin o un rol definido
+Manufacturer (wildcards); default * (everything)	Hersteller (Platzhalter); Standard * (alles)	Fabricant (jokers) ; par défaut * (tout)	Fabricante (comodines); por defecto * (todo)
+Take the rights of the role away instead	Stattdessen die Rechte der Rolle entziehen	Retirer plutôt les droits du rôle	Retirar en su lugar los derechos del rol
+Role name	Rollenname	Nom du rôle	Nombre del rol
+Rights separated by commas: read, edit_parts, delete_parts, edit_catalogs, administer	Rechte durch Kommas getrennt: read, edit_parts, delete_parts, edit_catalogs, administer	Droits séparés par des virgules : read, edit_parts, delete_parts, edit_catalogs, administer	Derechos separados por comas: read, edit_parts, delete_parts, edit_catalogs, administer
+Gives a user or group a role on a manufacturer (scope) of the parts server, with deny takes its rights away, with revoke removes grants (administrators only)	Gibt einem Benutzer oder einer Gruppe eine Rolle für einen Hersteller (Bereich) des Artikelservers, entzieht mit deny deren Rechte, entfernt mit revoke Zuweisungen (nur Administratoren)	Donne à un utilisateur ou un groupe un rôle sur un fabricant (portée) du serveur d'articles, avec deny lui retire ses droits, avec revoke supprime des attributions (administrateurs uniquement)	Da a un usuario o grupo un rol sobre un fabricante (ámbito) del servidor de artículos, con deny le retira sus derechos, con revoke elimina asignaciones (solo administradores)
+Remove the grants of the user or group (only of this role and scope, if given)	Die Zuweisungen des Benutzers oder der Gruppe entfernen (nur dieser Rolle und dieses Bereichs, falls angegeben)	Supprimer les attributions de l'utilisateur ou du groupe (seulement de ce rôle et de cette portée, s'ils sont indiqués)	Eliminar las asignaciones del usuario o grupo (solo de este rol y ámbito, si se indican)
+Defines, changes or deletes a role of the parts server (administrators only)	Definiert, ändert oder löscht eine Rolle des Artikelservers (nur Administratoren)	Définit, modifie ou supprime un rôle du serveur d'articles (administrateurs uniquement)	Define, modifica o elimina un rol del servidor de artículos (solo administradores)
+Delete the role	Die Rolle löschen	Supprimer le rôle	Eliminar el rol
+Electronic (LSI)	Elektronisch (LSI)	Électronique (LSI)	Electrónico (LSI)
+Manufacturer's table	Herstellertabelle	Tableau du fabricant	Tabla del fabricante
+Fuse ratio 1.6	Sicherungsverhältnis 1,6	Rapport des fusibles 1,6	Relación de fusibles 1,6
+Pre-arcing energy	Schmelzenergie	Énergie de préarc	Energía de prearco
+Time-current curves	Zeit-Strom-Kennlinien	Courbes temps-courant	Curvas tiempo-corriente
+{}: making capacity {} kA below the peak short-circuit current {} kA	{}: Einschaltvermögen {} kA unter dem Stoßkurzschlussstrom {} kA	{} : pouvoir de fermeture {} kA inférieur au courant de court-circuit de crête {} kA	{}: poder de cierre {} kA inferior a la corriente de cortocircuito de cresta {} kA
+{}: second fault current {} A at {} does not disconnect within {} s (needs {} A)	{}: Doppelfehlerstrom {} A an {} schaltet nicht innerhalb von {} s ab (benötigt {} A)	{} : le courant de double défaut {} A à {} ne coupe pas en {} s (il faut {} A)	{}: la corriente de doble falta {} A en {} no desconecta en {} s (se necesitan {} A)
+heat exchanger {} W/K	Wärmetauscher {} W/K	échangeur thermique {} W/K	intercambiador de calor {} W/K
+{}: replace {} after {} years (T10d)	{}: {} nach {} Jahren austauschen (T10d)	{} : remplacer {} après {} ans (T10d)	{}: sustituir {} tras {} años (T10d)
+ip (kA)	ip (kA)	ip (kA)	ip (kA)
+back-up {}	Back-up {}	protection d'accompagnement {}	respaldo {}
+Basis	Grundlage	Base	Base
+PFHd (1/h)	PFHd (1/h)	PFHd (1/h)	PFHd (1/h)
+Dew point (°C)	Taupunkt (°C)	Point de rosée (°C)	Punto de rocío (°C)
+R/X ratio of the supply impedance	R/X-Verhältnis der Netzimpedanz	Rapport R/X de l'impédance de l'alimentation	Relación R/X de la impedancia de la alimentación
+Rated power of the transformer feeding the supply in kVA (0: none, the short-circuit currents are given)	Bemessungsleistung des speisenden Transformators in kVA (0: keiner, die Kurzschlussströme sind vorgegeben)	Puissance assignée du transformateur d'alimentation en kVA (0 : aucun, les courants de court-circuit sont donnés)	Potencia asignada del transformador de alimentación en kVA (0: ninguno, se dan las corrientes de cortocircuito)
+Short-circuit voltage of the transformer in %	Kurzschlussspannung des Transformators in %	Tension de court-circuit du transformateur en %	Tensión de cortocircuito del transformador en %
+Load losses of the transformer in W (0: typical)	Kurzschlussverluste des Transformators in W (0: typisch)	Pertes dues à la charge du transformateur en W (0 : typiques)	Pérdidas en carga del transformador en W (0: típicas)
+Short-circuit power of the network upstream of the transformer in MVA (0: infinite)	Kurzschlussleistung des vorgelagerten Netzes in MVA (0: unendlich)	Puissance de court-circuit du réseau en amont du transformateur en MVA (0 : infinie)	Potencia de cortocircuito de la red aguas arriba del transformador en MVA (0: infinita)
+Asynchronous motors add to the short-circuit current	Asynchronmotoren tragen zum Kurzschlussstrom bei	Les moteurs asynchrones contribuent au courant de court-circuit	Los motores asíncronos contribuyen a la corriente de cortocircuito
+IT system with distributed neutral	IT-System mit mitgeführtem Neutralleiter	Schéma IT avec neutre distribué	Sistema IT con neutro distribuido
+No transformer: set {} first	Kein Transformator: zuerst {} setzen	Pas de transformateur : définir d'abord {}	Sin transformador: defina primero {}
+Selectivity and back-up protection of device pairs from the manufacturers' tables, by part number; adds, replaces or removes an entry	Selektivität und Back-up-Schutz von Gerätepaaren aus den Tabellen der Hersteller, nach Artikelnummer; fügt einen Eintrag hinzu, ersetzt oder entfernt ihn	Sélectivité et protection d'accompagnement de paires d'appareils d'après les tableaux des fabricants, par référence ; ajoute, remplace ou supprime une entrée	Selectividad y protección de respaldo de pares de aparatos según las tablas de los fabricantes, por referencia; añade, sustituye o elimina una entrada
+Part number of the upstream device	Artikelnummer des vorgeschalteten Geräts	Référence de l'appareil amont	Referencia del aparato aguas arriba
+Part number of the downstream device	Artikelnummer des nachgeschalteten Geräts	Référence de l'appareil aval	Referencia del aparato aguas abajo
+Selective up to this short-circuit current in kA (0: not given)	Selektiv bis zu diesem Kurzschlussstrom in kA (0: nicht angegeben)	Sélectif jusqu'à ce courant de court-circuit en kA (0 : non indiqué)	Selectivo hasta esta corriente de cortocircuito en kA (0: no indicado)
+Back-up protection up to this short-circuit current in kA (0: not given)	Back-up-Schutz bis zu diesem Kurzschlussstrom in kA (0: nicht angegeben)	Protection d'accompagnement jusqu'à ce courant de court-circuit en kA (0 : non indiqué)	Protección de respaldo hasta esta corriente de cortocircuito en kA (0: no indicado)
+Remove the entry of upstream and downstream	Eintrag von upstream und downstream entfernen	Supprimer l'entrée de upstream et downstream	Eliminar la entrada de upstream y downstream
+No entry for {} and {}	Kein Eintrag für {} und {}	Aucune entrée pour {} et {}	No hay ninguna entrada para {} y {}
+{} and {} are needed together	{} und {} werden zusammen benötigt	{} et {} sont nécessaires ensemble	{} y {} se necesitan juntos
+Altitude of the site in m	Aufstellungshöhe in m	Altitude du site en m	Altitud del emplazamiento en m
+Keep the degree of protection: heat exchanger or cooling unit instead of filter fans	Schutzart erhalten: Wärmetauscher oder Kühlgerät statt Filterlüfter	Conserver l'indice de protection : échangeur thermique ou climatiseur au lieu de ventilateurs à filtre	Mantener el grado de protección: intercambiador de calor o equipo de refrigeración en lugar de ventiladores con filtro
+Relative humidity of the ambient air in % (0: no condensation check)	Relative Feuchte der Umgebungsluft in % (0: keine Prüfung auf Kondensation)	Humidité relative de l'air ambiant en % (0 : pas de contrôle de condensation)	Humedad relativa del aire ambiente en % (0: sin comprobación de condensación)
+Distributed neutral	Neutralleiter mitgeführt	Neutre distribué	Neutro distribuido
+The second fault is checked at the line-to-earth voltage	Der Doppelfehler wird mit der Spannung Leiter–Erde geprüft	Le double défaut est vérifié à la tension phase-terre	La doble falta se comprueba con la tensión fase-tierra
+Short-circuit currents	Kurzschlussströme	Courants de court-circuit	Corrientes de cortocircuito
+Load losses	Kurzschlussverluste	Pertes dues à la charge	Pérdidas en carga
+0 = typical value of the rated power	0 = typischer Wert der Bemessungsleistung	0 = valeur typique de la puissance assignée	0 = valor típico de la potencia asignada
+Short-circuit power of the network	Kurzschlussleistung des Netzes	Puissance de court-circuit du réseau	Potencia de cortocircuito de la red
+0 = infinite	0 = unendlich	0 = infinie	0 = infinita
+R/X of the supply	R/X der Einspeisung	R/X de l'alimentation	R/X de la alimentación
+Motors feed the short circuit	Motoren speisen den Kurzschluss	Les moteurs alimentent le court-circuit	Los motores alimentan el cortocircuito
+Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Asynchronmotoren am Netz erhöhen den größten Kurzschlussstrom (IEC 60909-0)	Les moteurs asynchrones sur le réseau augmentent le courant de court-circuit maximal (CEI 60909-0)	Los motores asíncronos de la red aumentan la corriente de cortocircuito máxima (IEC 60909-0)
+At the supply point: Ik3 max {} kA, Ik1 min {} kA	Am Einspeisepunkt: Ik3 max {} kA, Ik1 min {} kA	Au point d'alimentation : Ik3 max {} kA, Ik1 min {} kA	En el punto de alimentación: Ik3 máx {} kA, Ik1 mín {} kA
+Manufacturer's coordination tables	Koordinationstabellen der Hersteller	Tableaux de coordination des fabricants	Tablas de coordinación de los fabricantes
+➕ Entry	➕ Eintrag	➕ Entrée	➕ Entrada
+Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selektivität und Back-up-Schutz von Gerätepaaren, wie vom Hersteller geprüft, nach Artikelnummer. Sie ersetzen die Abschätzung aus den Zeit-Strom-Kennlinien.	Sélectivité et protection d'accompagnement de paires d'appareils telles que testées par le fabricant, par référence. Elles remplacent l'estimation tirée des courbes temps-courant.	Selectividad y protección de respaldo de pares de aparatos según los ensayos del fabricante, por referencia. Sustituyen la estimación a partir de las curvas tiempo-corriente.
+Upstream part	Vorgeschalteter Artikel	Article amont	Artículo aguas arriba
+Downstream part	Nachgeschalteter Artikel	Article aval	Artículo aguas abajo
+Selective up to (kA)	Selektiv bis (kA)	Sélectif jusqu'à (kA)	Selectivo hasta (kA)
+Back-up up to (kA)	Back-up bis (kA)	Accompagnement jusqu'à (kA)	Respaldo hasta (kA)
+0 = not given	0 = nicht angegeben	0 = non indiqué	0 = no indicado
+Second channel	Zweiter Kanal	Deuxième canal	Segundo canal
+Devices of a channel	Geräte eines Kanals	Appareils d'un canal	Aparatos de un canal
+Devices of the second channel; empty = like the first	Geräte des zweiten Kanals; leer = wie der erste	Appareils du deuxième canal ; vide = comme le premier	Aparatos del segundo canal; vacío = como el primero
+0 = from the DC of the devices ({} %)	0 = aus dem DC der Geräte ({} %)	0 = d'après le DC des appareils ({} %)	0 = a partir del DC de los aparatos ({} %)
+Altitude	Aufstellungshöhe	Altitude	Altitud
+Thinner air needs more air flow	Dünnere Luft braucht mehr Luftvolumenstrom	Un air plus rare demande plus de débit d'air	El aire más enrarecido necesita más caudal de aire
+At the highest ambient temperature; the heater keeps the dew point. 0 = not considered	Bei der höchsten Umgebungstemperatur; die Heizung hält den Taupunkt. 0 = nicht berücksichtigt	À la température ambiante maximale ; le chauffage maintient le point de rosée. 0 = non pris en compte	A la temperatura ambiente máxima; la calefacción mantiene el punto de rocío. 0 = no se considera
+Keep the degree of protection	Schutzart erhalten	Conserver l'indice de protection	Mantener el grado de protección
+No filter fans: an air/air heat exchanger or a cooling unit	Keine Filterlüfter: ein Luft/Luft-Wärmetauscher oder ein Kühlgerät	Pas de ventilateurs à filtre : un échangeur thermique air/air ou un climatiseur	Sin ventiladores con filtro: un intercambiador de calor aire/aire o un equipo de refrigeración
+Dew point	Taupunkt	Point de rosée	Punto de rocío
 access denied – check the personal access token	Zugriff verweigert – prüfen Sie das persönliche Zugriffstoken	accès refusé – vérifiez le jeton d'accès personnel	acceso denegado – compruebe el token de acceso personal
 The EPLAN Data Portal only offers searching and reading parts	Das EPLAN Data Portal bietet nur das Suchen und Lesen von Artikeln	L'EPLAN Data Portal permet seulement de rechercher et de lire des articles	El EPLAN Data Portal solo permite buscar y leer artículos
 The EPLAN Data Portal only offers searching and reading parts: open the data portal window to add its parts.	Das EPLAN Data Portal bietet nur das Suchen und Lesen von Artikeln: Öffnen Sie das Datenportal-Fenster, um seine Artikel zu übernehmen.	L'EPLAN Data Portal permet seulement de rechercher et de lire des articles : ouvrez la fenêtre du portail de données pour ajouter ses articles.	El EPLAN Data Portal solo permite buscar y leer artículos: abra la ventana del portal de datos para añadir sus artículos.
