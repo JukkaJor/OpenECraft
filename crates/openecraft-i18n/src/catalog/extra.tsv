@@ -4849,3 +4849,7 @@ Strips / plugs	Klemmleisten / Stecker	Borniers / connecteurs	Regletas / conector
 Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page	Klemmleisten und Stecker: eine platzierte Klemme oder einen Pin anklicken, um ihn zu zeigen, eine freie in die Seite ziehen	Borniers et connecteurs : cliquez sur une borne ou une broche placée pour l'afficher, faites glisser une libre dans la page	Regletas y conectores: haga clic en un borne o pin colocado para mostrarlo, arrastre uno libre a la página
 {} (spare)	{} (Reserve)	{} (réserve)	{} (reserva)
 {} (unused)	{} (unbenutzt)	{} (inutilisée)	{} (sin usar)
+All pages…	Alle Seiten…	Toutes les pages…	Todas las páginas…
+Current page…	Aktuelle Seite…	Page courante…	Página actual…
+Opens the pages for printing in the browser with its print dialog	Öffnet die Seiten zum Drucken im Browser mit dessen Druckdialog	Ouvre les pages pour l'impression dans le navigateur avec sa boîte de dialogue d'impression	Abre las páginas para imprimir en el navegador con su diálogo de impresión
+Printing failed: {}	Drucken fehlgeschlagen: {}	Échec de l'impression : {}	Error al imprimir: {}

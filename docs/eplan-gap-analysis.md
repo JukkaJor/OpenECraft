@@ -59,7 +59,7 @@ missing relative to an EPLAN user's expectations):
 
 | Area | Coverage | Gap | Section | After `eplan-parity` |
 | --- | --- | --- | --- | --- |
-| Schematic editor: texts, graphics, editing aids | partial | large | 3.1 | good; native print dialog open |
+| Schematic editor: texts, graphics, editing aids | partial | large | 3.1 | good (printing through the browser) |
 | Device tags, numbering, cross references | partial | large | 3.2 | good |
 | Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended); content |
 | Terminals, plugs, cables, potentials | good | medium | 3.4 | good (multi-level, jumper kinds) |
@@ -616,7 +616,8 @@ free text.
 
 **Documentation and training.** EPLAN has a help system, training courses,
 certification, a user forum and consultants. OpenECraft has the README (long and
-good), `docs/plugins.md` and an in-app shortcut list. A user manual with pictures,
+good), `docs/plugins.md`, an in-app shortcut list and now a getting-started tutorial
+(`docs/tutorial.md`). A user manual with pictures,
 tutorials from first page to BOM, a reference of properties, checks and tools, and
 sample projects beyond the one demo are needed for adoption.
 
@@ -690,7 +691,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches, check schemes as files | 42d8f5b, 9f7367b | – |
 | 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, 84181bd, 1463540 | – |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
-| 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print | b0ae357, 9ec50c4 | native print dialog, print of panel layout faces |
+| 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print; File › Print through the browser's print dialog | b0ae357, 9ec50c4, see log | print without the browser, print of panel layout faces |
 | 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
 | 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |

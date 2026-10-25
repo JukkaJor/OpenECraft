@@ -84,6 +84,24 @@ impl App {
                 }
             });
         }
+        ui.menu_button(tr("Print"), |ui| {
+            let sel = if ui.button(tr("All pages…")).clicked() {
+                Some((0..self.session.prj.pages.len()).collect::<Vec<_>>())
+            } else if ui.button(tr("Current page…")).clicked() {
+                Some(vec![self.session.page])
+            } else {
+                None
+            };
+            if let Some(sel) = sel {
+                let html = openecraft_core::svg::print_document_pages(&self.session.prj, &self.session.analysis, &sel);
+                if let Err(e) = openecraft_ui::io::print_html(&html) {
+                    self.notify(&ctx, tr_fmt!("Printing failed: {}", e));
+                }
+                ui.close();
+            }
+        })
+        .response
+        .on_hover_text(tr("Opens the pages for printing in the browser with its print dialog"));
         if ui.button(tr("Import DXF / DWG as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
             self.io.open(&ctx, Purpose::Drawing);
         }

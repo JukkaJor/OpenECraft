@@ -133,6 +133,8 @@ panel layout. Most steps below can be tried on it.
   DWG, SVG, the production wire list, marking (with labeling schemes for marking
   programs), harness KBL and nailboard drawings, PLC tables, AutomationML and 3D
   formats. Exports with options ask for them first.
+- *File › Print* opens all pages or the current page in the browser with its print
+  dialog.
 - *File › Export as PDF in language* writes the PDF in one of the project languages
   (*Project › Project languages…*).
 

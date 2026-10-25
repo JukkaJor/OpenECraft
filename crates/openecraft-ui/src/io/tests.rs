@@ -34,3 +34,11 @@ fn files_are_found_read_and_written_by_path() {
     assert!(has_file_system());
     assert_eq!(mime_type("oecz"), "application/octet-stream");
 }
+
+#[test]
+fn the_print_script_goes_before_the_end_of_the_body() {
+    let html = with_print_script("<html><body><p>x</p></body></html>");
+    assert!(html.contains("window.print()"));
+    assert!(html.find("window.print()").unwrap() < html.find("</body>").unwrap());
+    assert!(with_print_script("<p>x</p>").ends_with("</script>"));
+}

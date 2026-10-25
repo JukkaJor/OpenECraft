@@ -442,7 +442,8 @@ bill of materials.
   into the page) to place it with tag, address and designations. Command:
   `list_unplaced`.
 - **Output / data exchange**: **PDF** of all pages or a page selection (`1-3, 5`;
-  also for the HTML print document) with bookmarks per page, clickable cross
+  also for the HTML print document; *File › Print* opens all or the current page in the
+  browser with its print dialog) with bookmarks per page, clickable cross
   references and report rows (links to pages left out are dropped); texts beyond Latin-1 such as Polish, Czech, Turkish,
   Greek or Cyrillic are written with an embedded subset of the Ubuntu font, searchable
   and copyable, **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
