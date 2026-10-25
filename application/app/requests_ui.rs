@@ -208,14 +208,14 @@ impl App {
                 c.request = r.id;
             }
             self.review_ui.selected = Some(Hit::Comment(id));
-            self.left_tab = LeftTab::Review;
+            self.show_tab(LeftTab::Review);
         }
         if let Some((id, page)) = show_comment {
             if let Some(pi) = self.session.prj.pages.iter().position(|p| p.id == page) {
                 self.goto(pi, 0);
             }
             self.review_ui.selected = Some(Hit::Comment(id));
-            self.left_tab = LeftTab::Review;
+            self.show_tab(LeftTab::Review);
         }
         if let Some(i) = goto {
             self.goto(i, 0);

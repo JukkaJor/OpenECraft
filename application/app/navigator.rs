@@ -1,27 +1,12 @@
-//! The navigator on the left: pages, devices, connections, cables, layers, check and
-//! review tabs.
+//! The navigator tabs: pages, devices, connections, cables, layers, check, review,
+//! unplaced functions, strips / plugs and PLC (each a docked pane).
 
 use super::*;
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index) {
-        ui.horizontal_wrapped(|ui| {
-            ui.selectable_value(&mut self.left_tab, LeftTab::Pages, tr("Pages"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Devices, tr("Devices"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Connections, tr("Connections"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Cables, tr("Cables"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Layers, tr("Layers"));
-            let n_err = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error && !i.accepted).count();
-            let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
-            ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
-            let open = self.session.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
-            let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
-            ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
-            ui.selectable_value(&mut self.left_tab, LeftTab::Unplaced, tr("Unplaced")).on_hover_text(tr("PLC channels and functions of the assigned parts that are not in the schematic yet"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Strips, tr("Strips / plugs")).on_hover_text(tr("Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page"));
-            ui.selectable_value(&mut self.left_tab, LeftTab::Plc, tr("PLC")).on_hover_text(tr("PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page"));
-        });
+    /// One navigator tab (a docked pane), with the work area chooser above it.
+    pub(super) fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index, tab: LeftTab) {
         let areas = &self.session.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
             ui.horizontal(|ui| {
@@ -37,7 +22,7 @@ impl App {
         }
         let area = self.session.prj.structures.work_area(&self.work_area).cloned();
         ui.separator();
-        match self.left_tab {
+        match tab {
             LeftTab::Pages => {
                 ui.horizontal(|ui| {
                     if ui.button(tr("+ Page")).on_hover_text(tr("New schematic page after the current one")).clicked() {

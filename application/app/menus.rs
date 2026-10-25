@@ -377,7 +377,7 @@ impl App {
         }
         if ui.button(tr("Review: comments and markup")).clicked() {
             self.workspace = Workspace::Schematic;
-            self.left_tab = LeftTab::Review;
+            self.show_tab(LeftTab::Review);
         }
         if ui.button(tr("Revisions…")).on_hover_text(tr("Revisions, approval and release")).clicked() {
             self.eng.show_revisions = true;
@@ -402,7 +402,7 @@ impl App {
             self.report_blocks_ui.open = true;
         }
         if ui.button(tr("Check project")).clicked() {
-            self.left_tab = LeftTab::Check;
+            self.show_tab(LeftTab::Check);
         }
     }
 
@@ -437,6 +437,7 @@ impl App {
         if ui.button(tr("Keyboard shortcuts…")).clicked() {
             self.show_shortcuts = true;
         }
+        ui.menu_button(tr("Panels"), |ui| self.panels_menu(ui));
         ui.menu_button(tr("Workspaces"), |ui| self.workspaces_menu(ui));
         openecraft_ui::language::menu(ui);
         let mut pref = ui.ctx().options(|o| o.theme_preference);

@@ -26,6 +26,7 @@ use serde_json::Map;
 mod arrange_ui;
 mod cables_ui;
 mod check_ui;
+mod dock_ui;
 mod files;
 mod find_ui;
 mod menus;
@@ -38,6 +39,7 @@ mod xref_ui;
 mod compare_ui;
 mod engineering;
 mod field_ui;
+mod form_layout_ui;
 mod forms_ui;
 mod harness_ui;
 mod integration_ui;
@@ -73,29 +75,15 @@ enum Workspace {
     Wiring,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum LeftTab {
-    Pages,
-    Devices,
-    Connections,
-    Cables,
-    Layers,
-    Check,
-    Review,
-    /// Functions of the project data not placed yet.
-    Unplaced,
-    /// PLC cards with their channels.
-    Plc,
-    /// Terminal strips and plugs with their terminals and pins.
-    Strips,
-}
+use crate::dock::{LeftTab, Pane};
 
 pub struct App {
     /// The open project with its history, analysis and saved state.
     session: Session,
     editor: Editor,
     io: FileIo,
-    left_tab: LeftTab,
+    /// Arrangement of the docked panes of the schematic workspace.
+    dock: egui_tiles::Tree<Pane>,
     lib_filter: String,
     device_filter: String,
     connection_filter: String,
@@ -168,6 +156,8 @@ pub struct App {
     /// Built-in and external plugins (`openecraft_api`).
     plugins: openecraft_api::Plugins,
     plugins_ui: plugins_ui::PluginsUi,
+    /// The autosaved project and parts database (IndexedDB in the browser).
+    autosave: crate::autosave::Autosave,
 }
 
 impl App {
@@ -191,6 +181,7 @@ impl App {
         let mut shortcuts = crate::shortcuts::Shortcuts::default();
         let mut layouts: Vec<crate::workspaces::Layout> = Vec::new();
         let mut projects_ui = projects_ui::ProjectsUi::default();
+        let mut dock = None;
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
             // Packed; stores written before have the plain project.
@@ -207,6 +198,7 @@ impl App {
                 shortcuts = crate::shortcuts::Shortcuts::from_storage(&stored);
             }
             layouts = eframe::get_value(storage, crate::workspaces::STORAGE_KEY).unwrap_or_default();
+            dock = storage.get_string(crate::dock::STORAGE_KEY).and_then(|s| crate::dock::from_json(&s));
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -216,17 +208,19 @@ impl App {
         }
         openecraft_i18n::init(language.as_deref());
         let parts_db = parts_db.unwrap_or_default();
+        let autosave = crate::autosave::Autosave::start(openecraft_ui::io::Store::new("OpenECraft"), &cc.egui_ctx, &parts_db);
         let mut parts_ui = PartsUi::default();
         if let Some(url) = server_url {
             parts_ui.server.url = url;
         }
         let prj = prj.unwrap_or_else(sample::demo_project);
+        let dock = dock.unwrap_or_else(crate::dock::default_tree);
         let mut plugins = openecraft_api::Plugins::new(Vec::<String>::new());
         plugins.load_env();
         for id in &disabled_plugins {
             plugins.set_enabled(id, false);
         }
-        App {
+        let mut app = App {
             session: Session::new(prj, file_name),
             editor: {
                 let mut editor = Editor::default();
@@ -234,7 +228,7 @@ impl App {
                 editor
             },
             io: FileIo::default(),
-            left_tab: LeftTab::Pages,
+            dock,
             lib_filter: String::new(),
             device_filter: String::new(),
             connection_filter: String::new(),
@@ -295,7 +289,11 @@ impl App {
             requests_ui: Default::default(),
             plugins,
             plugins_ui: Default::default(),
-        }
+            autosave,
+        };
+        // On the desktop the stored values are there at once.
+        app.autosave.poll(&mut app.session, &mut app.parts_db);
+        app
     }
 
     /// The Wiring workspace: the wiring or the mounting assistant.
@@ -401,6 +399,7 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
         self.poll_remote(&ctx);
+        self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
         self.shortcuts(&ctx);
@@ -433,30 +432,8 @@ impl eframe::App for App {
         });
         match self.workspace {
             Workspace::Schematic => {
-                egui::Panel::left("nav").resizable(true).default_size(230.0).show(ui, |ui| self.navigator(ui, &idx));
-                egui::Panel::right("side").resizable(true).default_size(300.0).show(ui, |ui| {
-                    self.library(ui);
-                    ui.separator();
-                    egui::ScrollArea::vertical().id_salt("props").auto_shrink([false, false]).show(ui, |ui| self.properties(ui, &idx));
-                });
-                egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
-                    let page = self.session.page;
-                    self.editor.read_only = self.page_locked_by().is_some() || self.remote.viewer();
-                    self.editor.review_selected = self.review_ui.selected;
-                    let out = self.editor.ui(ui, &mut self.session.prj, page, &idx, &self.session.analysis);
-                    let _ = out.open_properties;
-                    if let Some(url) = out.open_url {
-                        ctx.open_url(egui::OpenUrl::new_tab(url));
-                    }
-                    if let Some(msg) = out.message {
-                        self.notify(&ctx, msg);
-                    }
-                    if let Some(input) = out.review {
-                        self.review_input(input);
-                    } else if let Some(at) = out.clicked {
-                        self.review_pick(at);
-                    }
-                });
+                let fill = ui.visuals().panel_fill;
+                egui::CentralPanel::default().frame(egui::Frame::NONE.fill(fill)).show(ui, |ui| self.docked(ui, &idx));
             }
             Workspace::Wiring => self.wiring_workspace(ui, &ctx),
             Workspace::Panel => {
@@ -529,11 +506,17 @@ impl eframe::App for App {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        // Packed: large projects would not fit the browser's local storage as text.
-        storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+        // The project and the parts database go to the app's store (IndexedDB in the
+        // browser); until it works they are also kept here, the project packed.
+        if self.autosave.save(&self.session, &self.parts_db) {
+            storage.set_string("project_packed", String::new());
+            storage.set_string("parts_db", String::new());
+        } else {
+            storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+            eframe::set_value(storage, "parts_db", &self.parts_db);
+        }
         storage.set_string("project", String::new());
         eframe::set_value(storage, "file_name", &self.session.file_name);
-        eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
         eframe::set_value(storage, "macros", &self.macro_lib);
         eframe::set_value(storage, "project_database", &self.projects_ui.db);
@@ -542,6 +525,7 @@ impl eframe::App for App {
         eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
         eframe::set_value(storage, crate::shortcuts::STORAGE_KEY, &self.editor.shortcuts.to_storage());
         eframe::set_value(storage, crate::workspaces::STORAGE_KEY, &self.layouts);
+        storage.set_string(crate::dock::STORAGE_KEY, crate::dock::to_json(&self.dock));
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

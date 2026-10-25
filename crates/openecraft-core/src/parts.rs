@@ -14,8 +14,10 @@ pub fn catalog() -> &'static [Part] {
     CATALOG.get_or_init(default_catalog)
 }
 
-/// Function kind represented by a library symbol.
+/// Function kind represented by a library symbol (the symbols of the national sets
+/// as the IEC symbols they are drawn like).
 pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
+    let key = symbols::iec_equivalent(key).unwrap_or(key);
     Some(match key {
         "coil" | "coil_on" | "coil_off" | "nfpa_coil" | "nfpa_tr_coil" => FnKind::Coil,
         "valve" | "nfpa_sol" => FnKind::Valve,

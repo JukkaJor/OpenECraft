@@ -36,6 +36,31 @@ fn files_are_found_read_and_written_by_path() {
 }
 
 #[test]
+fn the_store_keeps_values_by_key() {
+    let dir = std::env::temp_dir().join(format!("openecraft-ui-store-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let store = Store::at(dir.display().to_string());
+    let ctx = egui::Context::default();
+    assert!(!store.works());
+    store.store("project", b"one".to_vec());
+    store.store("project", b"two".to_vec());
+    store.store("parts/db", vec![0, 255]);
+    assert!(store.works());
+    store.load(&ctx, "project");
+    store.load(&ctx, "parts/db");
+    store.load(&ctx, "none");
+    assert_eq!(store.poll(), Some(("project".into(), Some(b"two".to_vec()))));
+    assert_eq!(store.poll(), Some(("parts/db".into(), Some(vec![0, 255]))));
+    assert_eq!(store.poll(), Some(("none".into(), None)));
+    assert_eq!(store.poll(), None);
+    // Another store of the same place sees the values (next start of the app).
+    let again = Store::at(dir.display().to_string());
+    again.load(&ctx, "project");
+    assert_eq!(again.poll().and_then(|(_, v)| v), Some(b"two".to_vec()));
+    assert!(data_dir("OpenECraft").ends_with(std::path::Path::new("OpenECraft").join("data")));
+}
+
+#[test]
 fn the_print_script_goes_before_the_end_of_the_body() {
     let html = with_print_script("<html><body><p>x</p></body></html>");
     assert!(html.contains("window.print()"));

@@ -14,7 +14,7 @@ use crate::symbols::Anchor;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
-pub use crate::model::forms::{FilterOp, Form, FormItem, Forms, ReportForm, ReportScheme, RowFilter, SortKey};
+pub use crate::model::forms::{FilterOp, Form, FormItem, FormLayout, Forms, ReportForm, ReportScheme, RowFilter, SortKey};
 
 /// Size of the title block area (origin at its top left corner).
 pub const AREA_W: f32 = crate::frame::TITLE_W;
@@ -405,8 +405,14 @@ pub fn draw(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize) {
 
 /// Draws a title block with its top left corner at `o`, scaled by `k`.
 pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P, k: f32) {
+    draw_items(d, &form.items, o, k, &|text| fill(text, prj, page_i));
+}
+
+/// Draws form items with their origin at `o`, scaled by `k`; `value` fills the
+/// placeholders of the texts.
+pub fn draw_items(d: &mut dyn Draw, items: &[FormItem], o: P, k: f32, value: &dyn Fn(&str) -> String) {
     let at = |q: P| o + q * k;
-    for item in &form.items {
+    for item in items {
         match item {
             FormItem::Line { a, b, width } => d.line(at(*a), at(*b), width * k, Ink::Frame, false),
             FormItem::Rect { a, b, width, fill } => {
@@ -419,7 +425,7 @@ pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P
             }
             FormItem::Text { pos, text, size, anchor, label, max_width } => {
                 let ink = if *label { Ink::FrameText } else { Ink::Text };
-                let value = fill(text, prj, page_i);
+                let value = value(text);
                 for (i, l) in value.lines().enumerate() {
                     let w = text_width(l, *size);
                     let size = if *max_width > 0.0 && w > *max_width { (size * max_width / w).max(1.0) } else { *size };
@@ -428,6 +434,102 @@ pub fn draw_at(d: &mut dyn Draw, form: &Form, prj: &Project, page_i: usize, o: P
             }
         }
     }
+}
+
+/// Replaces the column placeholders of a text with the cells of a report row; a
+/// placeholder names a column by its key (`keys`, English) or its title (`headers`).
+/// Other placeholders stay as they are.
+pub fn fill_row(text: &str, keys: &[String], headers: &[String], row: &[String]) -> String {
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(start) = rest.find('{') {
+        out.push_str(&rest[..start]);
+        let after = &rest[start..];
+        if let Some(escaped) = after.strip_prefix("{{") {
+            out.push_str("{{");
+            rest = escaped;
+            continue;
+        }
+        let Some(end) = after.find('}') else {
+            out.push_str(after);
+            return out;
+        };
+        let name = after[1..end].trim();
+        let col = keys.iter().position(|k| k == name).or_else(|| headers.iter().position(|h| h == name));
+        match col {
+            Some(i) => out.push_str(&row.get(i).map(|c| c.replace('{', "{{").replace('}', "}}")).unwrap_or_default()),
+            None => out.push_str(&after[..=end]),
+        }
+        rest = &after[end + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Draws a report page with the user's form: the header once, the row drawing for
+/// every row (`o`: top left corner of the drawing area). Rows link to where their
+/// entry is in the schematic.
+pub fn draw_layout(d: &mut dyn Draw, layout: &FormLayout, t: &crate::model::report_blocks::PageTable, prj: &Project, page_i: usize, o: P) {
+    let page_value = |text: &str| fill(&text.replace("{report}", &t.title.replace('{', "{{").replace('}', "}}")), prj, page_i);
+    draw_items(d, &layout.header, o, 1.0, &page_value);
+    let bounds = items_bounds(&layout.row);
+    for (ri, row) in t.rows.iter().enumerate() {
+        let at = o + layout.first_row + layout.step * ri as f32;
+        draw_items(d, &layout.row, at, 1.0, &|text| page_value(&fill_row(text, &t.keys, &t.headers, row)));
+        if let (Some(Some((page, _))), Some((a, b))) = (t.targets.get(ri), bounds) {
+            d.link(at + a, at + b, *page);
+        }
+    }
+}
+
+/// Smallest rectangle around form items (texts by their estimated width).
+pub fn items_bounds(items: &[FormItem]) -> Option<(P, P)> {
+    let mut pts = Vec::new();
+    for it in items {
+        match it {
+            FormItem::Line { a, b, .. } | FormItem::Rect { a, b, .. } => pts.extend([*a, *b]),
+            FormItem::Text { pos, text, size, anchor, .. } => {
+                let w = text_width(text, *size);
+                let x = match anchor {
+                    Anchor::Left => pos.x,
+                    Anchor::Center => pos.x - w / 2.0,
+                    Anchor::Right => pos.x - w,
+                };
+                pts.extend([p(x, pos.y - size / 2.0), p(x + w, pos.y + size / 2.0)]);
+            }
+        }
+    }
+    let first = *pts.first()?;
+    Some(pts.iter().fold((first, first), |(lo, hi), q| (p(lo.x.min(q.x), lo.y.min(q.y)), p(hi.x.max(q.x), hi.y.max(q.y)))))
+}
+
+/// A form to start from: the report's columns (`keys` with their `titles`) as a
+/// table of `width` mm, a heading with the report name, column titles and one line
+/// per row.
+pub fn starting_layout(keys: &[&str], titles: &[&str], widths: &[f32], width: f32) -> FormLayout {
+    let total: f32 = widths.iter().sum::<f32>().max(0.01);
+    let mut xs = vec![0.0];
+    for w in widths {
+        xs.push(xs.last().unwrap_or(&0.0) + w / total * width);
+    }
+    let (top, row_h) = (19.0, 6.0);
+    let mut header = vec![
+        FormItem::Text { pos: p(0.0, 9.0), text: "{report}".into(), size: 6.0, anchor: Anchor::Left, label: false, max_width: 0.0 },
+        FormItem::Rect { a: p(0.0, top), b: p(width, top + row_h), width: 0.35, fill: false },
+    ];
+    let mut row = vec![FormItem::Line { a: p(0.0, row_h), b: p(width, row_h), width: 0.1 }];
+    for (i, key) in keys.iter().enumerate() {
+        let (x, w) = (xs[i], xs[i + 1] - xs[i]);
+        let title = titles.get(i).copied().unwrap_or(key);
+        header.push(FormItem::Text { pos: p(x + 1.2, top + row_h / 2.0), text: title.into(), size: 2.4, anchor: Anchor::Left, label: true, max_width: w - 2.0 });
+        row.push(FormItem::Text { pos: p(x + 1.2, row_h / 2.0), text: format!("{{{key}}}"), size: 2.2, anchor: Anchor::Left, label: false, max_width: w - 2.0 });
+        if i > 0 {
+            row.push(FormItem::Line { a: p(x, 0.0), b: p(x, row_h), width: 0.15 });
+        }
+    }
+    row.push(FormItem::Line { a: p(0.0, 0.0), b: p(0.0, row_h), width: 0.3 });
+    row.push(FormItem::Line { a: p(width, 0.0), b: p(width, row_h), width: 0.3 });
+    FormLayout { header, row, first_row: p(0.0, top + row_h), step: p(0.0, row_h) }
 }
 
 /// Indices of the report columns shown by a form (all if it chooses none or none

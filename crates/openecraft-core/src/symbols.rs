@@ -11,7 +11,9 @@ use serde::{Deserialize, Serialize};
 use std::sync::{Arc, OnceLock};
 
 mod iec;
+mod national;
 pub use iec::kind as iec_kind;
+pub use national::iec_equivalent;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ContactKind {
@@ -161,13 +163,19 @@ pub enum Category {
     Process,
     /// Building installation plans (IEC 60617-11).
     Installation,
+    /// China (GB/T 4728, device letters of GB/T 7159).
+    Gb,
+    /// Russia and the CIS (ESKD, device letters of GOST 2.710).
+    Gost,
+    /// Japan (JIS C 0617, device letters of JIS C 0401).
+    Jis,
     /// Symbols of the project symbol library (symbol editor).
     User,
 }
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 19] = [
+    pub const ALL: [Category; 22] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
@@ -187,6 +195,9 @@ impl Category {
         Category::Fluid,
         Category::Process,
         Category::Installation,
+        Category::Gb,
+        Category::Gost,
+        Category::Jis,
     ];
 
     pub fn title(self) -> &'static str {
@@ -210,6 +221,9 @@ impl Category {
             Category::Fluid => tr("Fluid power (ISO 1219)"),
             Category::Process => tr("P&ID / process (ISO 10628)"),
             Category::Installation => tr("Installation plan (IEC 60617-11)"),
+            Category::Gb => tr("GB (GB/T 4728)"),
+            Category::Gost => tr("GOST (ESKD)"),
+            Category::Jis => tr("JIS (JIS C 0617)"),
             Category::User => tr("User symbols"),
         }
     }
@@ -1658,6 +1672,7 @@ fn build_library() -> Vec<SymbolDef> {
     v.push(instrument.build(&mut b));
 
     iec::add(&mut v);
+    national::add(&mut v);
     v
 }
 

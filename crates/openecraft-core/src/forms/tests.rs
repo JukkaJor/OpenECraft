@@ -154,3 +154,51 @@ fn property_database_values_fill_placeholders() {
     assert_eq!(fill("{prop:page.drawing_number}", &prj, 0), "");
     assert_eq!(fill("{prop:project.pages}", &prj, 0), prj.pages.len().to_string());
 }
+
+#[test]
+fn row_placeholders_take_the_cells_by_key_or_title() {
+    let keys = vec!["Tag".to_string(), "Part".to_string()];
+    let headers = vec!["Kennz.".to_string(), "Artikel".to_string()];
+    let row = vec!["-K1".to_string(), "{odd}".to_string()];
+    assert_eq!(fill_row("{Tag}: {Artikel}", &keys, &headers, &row), "-K1: {{odd}}");
+    assert_eq!(fill_row("{project} {Missing} {{x}}", &keys, &headers, &row), "{project} {Missing} {{x}}");
+    assert_eq!(fill_row("open {", &keys, &headers, &row), "open {");
+}
+
+#[test]
+fn a_drawn_form_replaces_the_table_of_a_report_page() {
+    let mut prj = demo_project();
+    let page = prj.pages.iter().position(|p| p.kind == PageKind::Report(ReportKind::DeviceList.into())).unwrap();
+    let an = crate::analysis::Analysis::with_builtin(&prj);
+    let table = an.report(&prj, ReportKind::DeviceList).unwrap();
+    let keys = table.header_keys();
+    let mut layout = starting_layout(&keys, &table.header_texts(), &table.widths, 380.0);
+    // A mark only the drawn form has, with a column and a project placeholder.
+    layout.row.push(FormItem::Text { pos: p(300.0, 3.0), text: format!("#{{{}}}@{{project}}", keys[0]), size: 2.0, anchor: Anchor::Left, label: false, max_width: 0.0 });
+    prj.forms.reports.insert(ReportKind::DeviceList.into(), ReportForm { layout: Some(layout.clone()), ..Default::default() });
+    let t = crate::report_blocks::page_table(&prj, &an, page).unwrap();
+    assert_eq!(t.layout.as_ref(), Some(&layout));
+    assert_eq!(t.keys.len(), t.headers.len());
+    let first = &t.rows[0][0];
+    let svg = crate::svg::page_svg_with(&prj, &an, page);
+    assert!(svg.contains(&format!("#{first}@Demo conveyor")), "row placeholders filled");
+    assert!(svg.contains(&tr("Device list").to_string()), "{{report}} is the page heading");
+    let (a, b) = items_bounds(&layout.row).unwrap();
+    assert!(a.x <= 0.0 && b.x >= 300.0);
+    // Without the layout the page is the table again.
+    prj.forms.reports.clear();
+    assert!(!crate::svg::page_svg_with(&prj, &an, page).contains(&format!("#{first}@")));
+}
+
+#[test]
+fn the_starting_layout_has_a_placeholder_per_column() {
+    let layout = starting_layout(&["Tag", "Part"], &["Kennz."], &[1.0, 3.0], 200.0);
+    let texts: Vec<&str> = layout.row.iter().filter_map(|i| match i { FormItem::Text { text, .. } => Some(text.as_str()), _ => None }).collect();
+    assert_eq!(texts, ["{Tag}", "{Part}"]);
+    let labels: Vec<&str> = layout.header.iter().filter_map(|i| match i { FormItem::Text { text, label: true, .. } => Some(text.as_str()), _ => None }).collect();
+    assert_eq!(labels, ["Kennz.", "Part"], "titles in the current language, keys where none is given");
+    assert_eq!(layout.step, p(0.0, 6.0));
+    let json = serde_json::to_string(&ReportForm { layout: Some(layout.clone()), ..Default::default() }).unwrap();
+    assert_eq!(serde_json::from_str::<ReportForm>(&json).unwrap().layout, Some(layout));
+    assert!(!serde_json::to_string(&ReportForm::default()).unwrap().contains("layout"));
+}

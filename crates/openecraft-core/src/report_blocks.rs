@@ -143,12 +143,13 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
     let per_page = rows_per_page(kind, form);
     let shown: Vec<usize> = rows.iter().skip(part.first).take(per_page).copied().collect();
     let more = rows.len().saturating_sub(part.first + shown.len());
-    let graphic = is_graphic(kind, form);
-    // Graphical forms read the columns in the report's own order.
-    let cols = if graphic { (0..table.headers.len()).collect() } else { forms::report_columns(form, &table.headers) };
+    let layout = form.and_then(|f| f.layout.clone());
+    let graphic = layout.is_none() && is_graphic(kind, form);
+    // Graphical and drawn forms read the columns in the report's own order.
+    let cols = if graphic || layout.is_some() { (0..table.headers.len()).collect() } else { forms::report_columns(form, &table.headers) };
     let width = |c: usize| form.and_then(|f| forms::header_value(&f.widths, &table.headers[c])).copied().filter(|w| *w > 0.0).unwrap_or(table.widths[c]);
     let mut out_rows: Vec<Vec<String>> = shown.iter().map(|&i| cols.iter().map(|&c| table.rows[i].get(c).cloned().unwrap_or_default()).collect()).collect();
-    if form.is_some_and(|f| f.blank_repeats) && !graphic {
+    if form.is_some_and(|f| f.blank_repeats) && !graphic && layout.is_none() {
         for i in (1..out_rows.len()).rev() {
             if !out_rows[i].is_empty() && out_rows[i][0] == out_rows[i - 1][0] {
                 out_rows[i][0].clear();
@@ -175,6 +176,8 @@ pub fn page_table(prj: &Project, an: &Analysis, page_i: usize) -> Option<PageTab
         lineup,
         source: String::new(),
         graphic,
+        keys: if layout.is_some() { table.header_keys().into_iter().map(String::from).collect() } else { Vec::new() },
+        layout,
     })
 }
 

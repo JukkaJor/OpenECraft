@@ -13,7 +13,7 @@
 use openecraft_i18n::tr;
 use crate::geom::{p, P, R};
 use crate::model::Project;
-use crate::netlist::{connections, Netlist};
+use crate::netlist::Connection;
 use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
 use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -1280,16 +1280,15 @@ pub struct OpenWire {
     pub reason: &'static str,
 }
 
-/// Virtual wiring: routes every point-to-point connection of the schematic between
-/// placed devices through the cable ducts (`nl`: potentials, `wired`: netlist with
-/// the terminal sides apart, see [`connections`]).
-pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<RoutedWire>, Vec<OpenWire>) {
+/// Virtual wiring: routes the point-to-point connections of the schematic (see
+/// [`connections`]) between placed devices through the cable ducts.
+pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
     let mut ends = Vec::new();
     let mut open = Vec::new();
     let mut points: HashMap<u64, Vec<PlacedPoint>> = HashMap::new();
     let pos = positions(&prj.layout);
-    for c in connections(prj, nl, wired) {
+    for c in conns {
         let sa = &prj.pages[c.a.page].symbols[c.a.sym];
         let sb = &prj.pages[c.b.page].symbols[c.b.sym];
         let from = crate::netlist::pin_designation(prj, c.a);
@@ -1348,10 +1347,10 @@ pub fn virtual_wiring(prj: &Project, nl: &Netlist, wired: &Netlist) -> (Vec<Rout
             enclosure: ea,
             from,
             to,
-            net: c.net,
-            color: c.color,
-            cross_section: c.cross_section,
-            number: c.number,
+            net: c.net.clone(),
+            color: c.color.clone(),
+            cross_section: c.cross_section.clone(),
+            number: c.number.clone(),
             route: r,
             length,
             items: (ia.id, ib.id),

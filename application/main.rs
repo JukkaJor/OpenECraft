@@ -7,6 +7,8 @@
 #![cfg_attr(not(test), warn(clippy::too_many_lines))]
 
 mod app;
+mod autosave;
+mod dock;
 #[cfg(test)]
 mod conventions;
 mod editor;

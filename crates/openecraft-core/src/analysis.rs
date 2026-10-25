@@ -7,7 +7,7 @@ use crate::ext::Report;
 use crate::index::Index;
 pub use crate::issue::{Issue, Severity};
 use crate::model::{Project, ReportId};
-use crate::netlist::{connections, Connection, Netlist};
+use crate::netlist::{connections, Connection, Netlist, Scans};
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::table::Table;
 use std::collections::HashMap;
@@ -45,13 +45,35 @@ pub struct Analysis {
     tables: Mutex<HashMap<ReportId, Arc<Table>>>,
 }
 
+/// What an analysis keeps for the next one of the same project: the scans of the pages
+/// that did not change are reused (see [`Analysis::build_with`]).
+#[derive(Clone, Default)]
+pub struct Cache {
+    netlist: Scans,
+    open: Scans,
+}
+
+impl Cache {
+    /// Pages scanned again by the last build (both netlists).
+    pub fn scanned(&self) -> usize {
+        self.netlist.scanned + self.open.scanned
+    }
+}
+
 impl Analysis {
     pub fn build(prj: &Project) -> Analysis {
+        Analysis::build_with(prj, &mut Cache::default())
+    }
+
+    /// Like [`Analysis::build`], taking from `cache` what did not change since the last
+    /// build with it. On machines with several cores the two netlists are built at
+    /// the same time.
+    pub fn build_with(prj: &Project, cache: &mut Cache) -> Analysis {
+        let Cache { netlist: bridged, open: apart } = cache;
+        let (netlist, open) = join(|| Netlist::build_with(prj, true, bridged), || Netlist::build_with(prj, false, apart));
         let idx = Index::build(prj);
-        let netlist = Netlist::build(prj, true);
-        let open = Netlist::build(prj, false);
-        let (mut wiring, open_wires) = panel::virtual_wiring(prj, &netlist, &open);
         let conns = connections(prj, &netlist, &open);
+        let (mut wiring, open_wires) = panel::virtual_wiring(prj, &conns);
         let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
         let fill = panel::duct_fill(prj, &wiring);
         let field = crate::field::plan(prj, &conns);
@@ -108,3 +130,56 @@ impl Analysis {
     }
 
 }
+
+/// Number of threads work may be spread over: 1 where the platform has none (browser).
+pub fn threads() -> usize {
+    std::thread::available_parallelism().map_or(1, |n| n.get())
+}
+
+/// Runs `a` and `b`, on two threads where the platform has them. The language of
+/// generated texts carries over to the other thread.
+pub fn join<A: Send, B: Send>(a: impl FnOnce() -> A + Send, b: impl FnOnce() -> B + Send) -> (A, B) {
+    if threads() < 2 {
+        return (a(), b());
+    }
+    let lang = openecraft_i18n::lang();
+    std::thread::scope(|s| {
+        let a = s.spawn(move || openecraft_i18n::with_lang(lang, a));
+        let b = b();
+        (a.join().unwrap_or_else(|e| std::panic::resume_unwind(e)), b)
+    })
+}
+
+/// `f` of every item, in the order of `items`, spread over the available threads
+/// (e.g. the checks of a project, which do not depend on each other).
+pub fn par_map<T: Sync, R: Send>(items: &[T], f: impl Fn(&T) -> R + Sync) -> Vec<R> {
+    let n = threads().min(items.len());
+    if n < 2 {
+        return items.iter().map(f).collect();
+    }
+    let lang = openecraft_i18n::lang();
+    let next = std::sync::atomic::AtomicUsize::new(0);
+    let mut done: Vec<(usize, R)> = std::thread::scope(|s| {
+        let workers: Vec<_> = (0..n)
+            .map(|_| {
+                s.spawn(|| {
+                    openecraft_i18n::with_lang(lang, || {
+                        let mut out = Vec::new();
+                        loop {
+                            let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            let Some(item) = items.get(i) else { break };
+                            out.push((i, f(item)));
+                        }
+                        out
+                    })
+                })
+            })
+            .collect();
+        workers.into_iter().flat_map(|w| w.join().unwrap_or_else(|e| std::panic::resume_unwind(e))).collect()
+    });
+    done.sort_by_key(|(i, _)| *i);
+    done.into_iter().map(|(_, r)| r).collect()
+}
+
+#[cfg(test)]
+mod tests;
