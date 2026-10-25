@@ -82,7 +82,9 @@ pub fn tree(prj: &Project) -> Vec<(usize, &Segment)> {
     let mut out = Vec::new();
     let ids: HashSet<u64> = all.iter().map(|s| s.id).collect();
     // Segments whose parent is gone count as top level.
-    let roots: Vec<u64> = all.iter().filter(|s| s.parent != 0 && !ids.contains(&s.parent)).map(|s| s.parent).collect();
+    let mut roots: Vec<u64> = all.iter().filter(|s| s.parent != 0 && !ids.contains(&s.parent)).map(|s| s.parent).collect();
+    roots.sort_unstable();
+    roots.dedup();
     walk(all, 0, 0, &mut out);
     for r in roots {
         walk(all, r, 0, &mut out);

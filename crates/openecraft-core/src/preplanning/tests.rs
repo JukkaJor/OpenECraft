@@ -107,3 +107,12 @@ fn pages_are_generated_from_page_macros() {
     let pg = prj.pages.iter().find(|p| p.name == new[0]).unwrap();
     assert_eq!(pg.function, "A9");
 }
+
+#[test]
+fn segments_of_a_missing_parent_are_listed_once() {
+    let mut prj = demo_project();
+    add_segment(&mut prj, 4242, "A");
+    add_segment(&mut prj, 4242, "B");
+    let names: Vec<String> = tree(&prj).into_iter().map(|(_, s)| s.name.clone()).collect();
+    assert_eq!(names, ["A", "B"]);
+}
