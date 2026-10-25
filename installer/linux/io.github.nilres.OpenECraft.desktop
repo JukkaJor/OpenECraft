@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=OpenECraft
+GenericName=Electrical CAE
+GenericName[de]=Elektro-CAE
+GenericName[fr]=CAO électrique
+GenericName[es]=CAE eléctrico
+Comment=Draw electrical schematics, panel layouts and reports
+Comment[de]=Stromlaufpläne, Schaltschrankaufbauten und Auswertungen erstellen
+Comment[fr]=Dessiner des schémas électriques, des implantations d'armoires et des rapports
+Comment[es]=Dibujar esquemas eléctricos, montajes de armarios e informes
+Keywords=schematic;electrical;CAE;EPLAN;wiring;panel;cabinet;
+Keywords[de]=Stromlaufplan;Elektro;CAE;EPLAN;Verdrahtung;Schaltschrank;
+Keywords[fr]=schéma;électrique;CAO;EPLAN;câblage;armoire;
+Keywords[es]=esquema;eléctrico;CAE;EPLAN;cableado;armario;
+Exec=openecraft %f
+Icon=io.github.nilres.OpenECraft
+Terminal=false
+Categories=Graphics;Science;Engineering;Electronics;
+MimeType=application/x-openecraft-project;application/x-openecraft-archive;
+StartupNotify=true
+StartupWMClass=OpenECraft

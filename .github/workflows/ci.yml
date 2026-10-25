@@ -50,6 +50,78 @@ jobs:
           name: openecraft-windows-installer
           path: target/installer/*.exe
 
+  # Built on Debian 12, so the binaries run on distributions with glibc 2.36 or newer.
+  linux-packages:
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git build-essential pkg-config file dpkg-dev rpm \
+            libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: bash installer/linux/build.sh tar.gz deb rpm appimage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-linux-packages
+          path: |
+            target/installer/*.tar.gz
+            target/installer/*.deb
+            target/installer/*.rpm
+            target/installer/*.AppImage
+
+  flatpak:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      - run: bash installer/linux/build.sh flatpak
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-flatpak
+          path: target/installer/*.flatpak
+
+  # core24 is Ubuntu 24.04, so snapcraft builds on the runner itself.
+  snap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+          sudo snap install snapcraft --classic
+      - run: bash installer/linux/build.sh snap
+        env:
+          SNAPCRAFT: sudo snapcraft
+          SNAPCRAFT_ARGS: --destructive-mode
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-snap
+          path: target/installer/*.snap
+
+  macos-dmg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - run: bash installer/macos/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-macos-dmg
+          path: target/installer/*.dmg
+
   web:
     runs-on: ubuntu-latest
     steps:

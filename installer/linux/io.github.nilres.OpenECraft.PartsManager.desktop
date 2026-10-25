@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Application
+Name=OpenECraft parts manager
+Name[de]=OpenECraft-Artikelverwaltung
+Name[fr]=Gestionnaire d'articles OpenECraft
+Name[es]=Gestor de artículos de OpenECraft
+Comment=Maintains the parts of an OpenECraft parts server
+Comment[de]=Pflegt die Artikel eines OpenECraft-Artikelservers
+Comment[fr]=Gère les articles d'un serveur d'articles OpenECraft
+Comment[es]=Mantiene los artículos de un servidor de artículos de OpenECraft
+Keywords=parts;catalog;data portal;EDZ;
+Keywords[de]=Artikel;Katalog;Datenportal;EDZ;
+Keywords[fr]=articles;catalogue;portail de données;EDZ;
+Keywords[es]=artículos;catálogo;portal de datos;EDZ;
+Exec=openecraft-parts-manager
+Icon=io.github.nilres.OpenECraft
+Terminal=false
+Categories=Graphics;Science;Engineering;Electronics;
+StartupNotify=true
+StartupWMClass=OpenECraft parts manager

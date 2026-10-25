@@ -1,0 +1,12 @@
+#!/bin/sh
+# Starts the editor. `OpenECraft-<version>-<arch>.AppImage <program> [arguments]` starts
+# one of the other programs: parts-manager, cli, parts-server, project-server.
+here="$(dirname "$(readlink -f "$0")")"
+case "${1:-}" in
+    parts-manager | cli | parts-server | project-server)
+        program="openecraft-$1"
+        shift
+        exec "$here/usr/bin/$program" "$@"
+        ;;
+esac
+exec "$here/usr/bin/openecraft" "$@"

@@ -698,7 +698,60 @@ For unattended installation (software distribution) run the setup with
 `/VERYSILENT /SUPPRESSMSGBOXES`, add `/ALLUSERS` for all users and select parts with
 `/COMPONENTS="main,partsmanager,cli,servers"` and `/TASKS="fileassoc,addtopath"`. The
 installer is not code signed yet, so SmartScreen asks for confirmation on first run.
-`installer/icon.py` draws the application icon (`assets/icon.png`, `assets/icon.ico`).
+`installer/icon.py` draws the application icon (`assets/icon.png`, `assets/icon.ico`,
+`assets/icon.icns`, `assets/icon.svg`).
+
+### Linux packages
+
+`installer/linux/build.sh` builds the packages for the architecture of the build machine
+into `target/installer/`. Each contains the editor and the parts manager (with menu
+entries in English, German, French and Spanish), the command line / MCP server and the
+parts and project servers. With deb, rpm, Flatpak and tar.gz `.oec` / `.oecz` files open
+by double-click.
+
+```bash
+bash installer/linux/build.sh                        # tar.gz, deb, rpm, AppImage
+bash installer/linux/build.sh flatpak snap           # sandboxed packages
+```
+
+| Package | File | Install | Build tool |
+| --- | --- | --- | --- |
+| Debian, Ubuntu | `openecraft_<version>_amd64.deb` | `sudo apt install ./openecraft_*.deb` | `dpkg-dev` |
+| Fedora, RHEL, openSUSE | `openecraft-<version>-1.x86_64.rpm` | `sudo dnf install ./openecraft-*.rpm` | `rpmbuild` |
+| Any distribution | `OpenECraft-<version>-x86_64.AppImage` | `chmod +x`, start it | `appimagetool` (downloaded) |
+| Any distribution | `OpenECraft-<version>-x86_64.flatpak` | `flatpak install --user OpenECraft-*.flatpak` | `flatpak-builder` |
+| Any distribution | `openecraft_<version>_amd64.snap` | `sudo snap install --dangerous openecraft_*.snap` | `snapcraft` |
+| Any distribution | `OpenECraft-<version>-linux-x86_64.tar.gz` | `./install.sh` (to `~/.local`) | `tar` |
+
+The programs are `openecraft`, `openecraft-parts-manager`, `openecraft-cli`,
+`openecraft-parts-server` and `openecraft-project-server`. In the AppImage they are
+started with `OpenECraft-*.AppImage parts-manager|cli|parts-server|project-server …`, in
+the Flatpak with `flatpak run --command=openecraft-cli io.github.nilres.OpenECraft …`
+and in the snap as `openecraft.cli`, `openecraft.parts-manager`, … CI builds them on every
+push (artifacts `openecraft-linux-packages`, `openecraft-flatpak`, `openecraft-snap`);
+deb, rpm, AppImage and tar.gz are built on Debian 12 and run with glibc 2.36 or newer.
+The desktop entries, MIME types and AppStream data (`io.github.nilres.OpenECraft`) are
+in `installer/linux/`; a new version needs a `<release>` in the metainfo file.
+
+### macOS disk image
+
+`installer/macos/build.sh` builds `OpenECraft-<version>-macos.dmg` (macOS 11 or newer,
+universal binaries for Apple silicon and Intel) with the apps *OpenECraft* and
+*OpenECraft Parts Manager*; drag them to *Applications*. The command line and the servers
+are in the app bundle:
+
+```bash
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+bash installer/macos/build.sh                        # → target/installer/
+/Applications/OpenECraft.app/Contents/MacOS/openecraft-cli help
+```
+
+Without `MACOS_SIGN_IDENTITY` the apps are signed ad hoc, so Gatekeeper asks for
+confirmation on first start (*System Settings › Privacy & Security › Open Anyway*). With
+a Developer ID certificate (`MACOS_SIGN_IDENTITY="Developer ID Application: …"`) and a
+`notarytool` keychain profile (`MACOS_NOTARY_PROFILE`) the image is signed and notarized.
+Projects are opened with *File › Open*; opening them by double-click in the Finder is not
+supported yet. CI builds the image on every push (artifact `openecraft-macos-dmg`).
 
 ### Web (WebAssembly)
 
