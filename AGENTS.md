@@ -32,7 +32,8 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft` | `.` (`application/`) | Editor (desktop + web) – the root package, built by trunk |
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF / DWG export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, parts server API types, data portal rules (faceted search, lifecycle, update check), role based access control of both servers (`access`) |
-| `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
+| `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish and 16 further languages); no dependencies |
+| `openecraft-fonts` | `crates/openecraft-fonts` | Bundled Chinese, Japanese and Korean fonts (Noto Sans subsets, `subset.py`) and the order of the fallback fonts, used on screen (`openecraft-ui`) and in PDF exports (`openecraft-core`); no dependencies |
 | `openecraft-step` | `crates/openecraft-step` | STEP, IGES and Parasolid import (B-rep → part mesh) with the `monstertruck` CAD kernel (Parasolid parsed by `parasolid-core`); kept out of `openecraft-parts` because of its size |
 | `openecraft-edz` | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): unpacks the 7-Zip archive and reads its parts XML with `openecraft-parts`; kept out of `openecraft-parts` because of the 7-Zip dependency |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
@@ -98,8 +99,20 @@ at once. New features must use and grow this system instead of bypassing it:
 
 The app is available in **English, German, French and Spanish**. All four are required:
 a feature, menu entry, dialog, message, tooltip, report heading or placeholder text is
-not done until it is available in all of them. Further languages are optional (add a
-column to the catalog and a `Lang` variant).
+not done until it is available in all of them.
+
+It is also available in 16 further languages (`Lang::ALL`): Portuguese (Brazil), Italian,
+Dutch, Polish, Czech, Russian, Ukrainian, Turkish, Swedish, Danish, Finnish, Hungarian,
+Romanian, Chinese (Simplified), Japanese and Korean. Each has its own catalog,
+`crates/openecraft-i18n/src/catalog/lang/<code>.tsv` (`English<TAB>translation`); a
+text without a line there is shown in English. Add the new texts of a feature to them
+too when you can (same placeholders and leading / trailing spaces; the tests check
+this). Chinese, Japanese and Korean use the bundled fonts of `openecraft-fonts`: after
+a translation into one of them gained characters, run `crates/openecraft-fonts/subset.py`
+(see its header) or `application/glyphs/tests.rs` fails. A new language is a `Lang`
+variant, a catalog file in `catalog.rs` and, for a script the bundled fonts lack, a font
+in `openecraft-fonts`. Scripts written right to left or needing complex shaping (Arabic,
+Hebrew, Indic scripts, Thai) cannot be drawn by egui.
 
 - Write texts in English in the code and pass them through `openecraft_i18n`:
   `tr("Open")` for plain texts, `tr_fmt!("Saved {}", name)` for texts with `{}`

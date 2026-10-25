@@ -10,6 +10,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 openecraft-parts = { path = "../openecraft-parts" }
 openecraft-i18n = { path = "../openecraft-i18n" }
+openecraft-fonts = { path = "../openecraft-fonts" }
 openecraft-jt = { path = "../openecraft-jt" }
 openecraft-xt = { path = "../openecraft-xt" }
 miniz_oxide = "0.8"

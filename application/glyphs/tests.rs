@@ -1,5 +1,6 @@
 use super::*;
-use egui::epaint::text::{FontDefinitions, Fonts, TextOptions};
+use egui::epaint::text::{Fonts, TextOptions};
+use openecraft_i18n::Lang;
 use egui::{FontFamily, FontId};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -23,7 +24,7 @@ fn source_files(dir: &Path) -> Vec<PathBuf> {
 
 #[test]
 fn all_ui_characters_exist_in_bundled_fonts() {
-    let mut fonts = Fonts::new(TextOptions::default(), FontDefinitions::default());
+    let mut fonts = bundled_fonts();
     let font = FontId::new(14.0, FontFamily::Proportional);
     // Every crate of the workspace (catalog texts of the parts library are shown, too).
     let root = crate::conventions::root();
@@ -65,23 +66,34 @@ fn scanner_finds_literals_and_skips_comments() {
 
 #[test]
 fn translations_only_use_characters_of_the_bundled_fonts() {
-    let mut fonts = Fonts::new(TextOptions::default(), FontDefinitions::default());
+    let mut fonts = bundled_fonts();
     let font = FontId::new(14.0, FontFamily::Proportional);
     let mut missing: BTreeMap<char, String> = BTreeMap::new();
     let mut checked = 0;
+    // (language, English, text) of all catalogs.
+    let mut texts: Vec<(&str, &str, &str)> = Vec::new();
     for entry in openecraft_i18n::catalog_entries() {
-        for text in entry {
-            for c in text.chars().filter(|c| !c.is_ascii() && !c.is_whitespace()) {
-                checked += 1;
-                if !fonts.has_glyph(&font, c) {
-                    missing.entry(c).or_insert_with(|| entry[0].to_string());
-                }
+        texts.extend(entry.iter().map(|t| ("en/de/fr/es", entry[0], *t)));
+    }
+    for lang in Lang::ALL.into_iter().filter(|l| !l.is_required()) {
+        texts.extend(openecraft_i18n::catalog_translations(lang).into_iter().map(|(en, t)| (lang.code(), en, t)));
+    }
+    for (lang, en, text) in texts {
+        for c in text.chars().filter(|c| !c.is_ascii() && !c.is_whitespace()) {
+            checked += 1;
+            if !fonts.has_glyph(&font, c) {
+                missing.entry(c).or_insert_with(|| format!("{lang}: {en:?}"));
             }
         }
     }
     assert!(checked > 100, "no non-ASCII characters in the catalog – check broken?");
-    let report: Vec<String> = missing.iter().map(|(c, text)| format!("'{c}' (U+{:04X}) in the translation of {text:?}", *c as u32)).collect();
-    assert!(missing.is_empty(), "translation characters without glyph in the bundled fonts:
+    let report: Vec<String> = missing.iter().map(|(c, text)| format!("'{c}' (U+{:04X}) in the translation of {text}", *c as u32)).collect();
+    assert!(missing.is_empty(), "translation characters without glyph in the bundled fonts (Chinese, Japanese, Korean: run crates/openecraft-fonts/subset.py):
 {}", report.join("
 "));
+}
+
+/// The default egui fonts and the bundled ones (`openecraft_fonts`), without system fonts.
+fn bundled_fonts() -> Fonts {
+    Fonts::new(TextOptions::default(), openecraft_ui::fonts::definitions(Lang::En, &[]))
 }

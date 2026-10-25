@@ -2,8 +2,6 @@
 
 use openecraft_i18n::{tr, lang, set_lang, Lang};
 
-
-
 /// Key under which the applications persist the language code.
 pub const STORAGE_KEY: &str = "language";
 
@@ -17,5 +15,9 @@ pub fn menu(ui: &mut egui::Ui) -> bool {
             }
         }
     });
-    lang() != before
+    let changed = lang() != before;
+    if changed {
+        crate::fonts::follow_language(ui.ctx());
+    }
+    changed
 }

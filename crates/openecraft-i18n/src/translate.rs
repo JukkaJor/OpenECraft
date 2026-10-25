@@ -14,10 +14,51 @@ pub enum Lang {
     De,
     Fr,
     Es,
+    Pt,
+    It,
+    Nl,
+    Pl,
+    Cs,
+    Ru,
+    Uk,
+    Tr,
+    Sv,
+    Da,
+    Fi,
+    Hu,
+    Ro,
+    Zh,
+    Ja,
+    Ko,
 }
 
 impl Lang {
-    pub const ALL: [Lang; 4] = [Lang::En, Lang::De, Lang::Fr, Lang::Es];
+    pub const ALL: [Lang; 20] = [
+        Lang::En,
+        Lang::De,
+        Lang::Fr,
+        Lang::Es,
+        Lang::Pt,
+        Lang::It,
+        Lang::Nl,
+        Lang::Pl,
+        Lang::Cs,
+        Lang::Ru,
+        Lang::Uk,
+        Lang::Tr,
+        Lang::Sv,
+        Lang::Da,
+        Lang::Fi,
+        Lang::Hu,
+        Lang::Ro,
+        Lang::Zh,
+        Lang::Ja,
+        Lang::Ko,
+    ];
+
+    /// The languages every text must be translated into (see `AGENTS.md`); the others
+    /// show texts they lack in English.
+    pub const REQUIRED: [Lang; 4] = [Lang::En, Lang::De, Lang::Fr, Lang::Es];
 
     /// ISO 639-1 code, also used for persisting the choice.
     pub fn code(self) -> &'static str {
@@ -26,6 +67,22 @@ impl Lang {
             Lang::De => "de",
             Lang::Fr => "fr",
             Lang::Es => "es",
+            Lang::Pt => "pt",
+            Lang::It => "it",
+            Lang::Nl => "nl",
+            Lang::Pl => "pl",
+            Lang::Cs => "cs",
+            Lang::Ru => "ru",
+            Lang::Uk => "uk",
+            Lang::Tr => "tr",
+            Lang::Sv => "sv",
+            Lang::Da => "da",
+            Lang::Fi => "fi",
+            Lang::Hu => "hu",
+            Lang::Ro => "ro",
+            Lang::Zh => "zh",
+            Lang::Ja => "ja",
+            Lang::Ko => "ko",
         }
     }
 
@@ -36,7 +93,28 @@ impl Lang {
             Lang::De => "Deutsch",
             Lang::Fr => "Français",
             Lang::Es => "Español",
+            Lang::Pt => "Português",
+            Lang::It => "Italiano",
+            Lang::Nl => "Nederlands",
+            Lang::Pl => "Polski",
+            Lang::Cs => "Čeština",
+            Lang::Ru => "Русский",
+            Lang::Uk => "Українська",
+            Lang::Tr => "Türkçe",
+            Lang::Sv => "Svenska",
+            Lang::Da => "Dansk",
+            Lang::Fi => "Suomi",
+            Lang::Hu => "Magyar",
+            Lang::Ro => "Română",
+            Lang::Zh => "简体中文",
+            Lang::Ja => "日本語",
+            Lang::Ko => "한국어",
         }
+    }
+
+    /// Whether the language is one of [`Lang::REQUIRED`].
+    pub fn is_required(self) -> bool {
+        Lang::REQUIRED.contains(&self)
     }
 
     /// Language for an ISO code or a locale such as `de_DE.UTF-8` / `fr-CA`.
@@ -103,9 +181,20 @@ pub fn catalog_entries() -> Vec<[&'static str; 4]> {
     catalog::all().map(|(en, de, fr, es)| [en, de, fr, es]).collect()
 }
 
+/// The translations of a further language (not [`Lang::REQUIRED`]) as `(English, translation)`.
+pub fn catalog_translations(lang: Lang) -> Vec<(&'static str, &'static str)> {
+    catalog::further(lang.code()).flatten().collect()
+}
+
 fn table() -> &'static HashMap<&'static str, [&'static str; 3]> {
     static TABLE: OnceLock<HashMap<&'static str, [&'static str; 3]>> = OnceLock::new();
     TABLE.get_or_init(|| catalog::all().map(|(en, de, fr, es)| (en, [de, fr, es])).collect())
+}
+
+/// The table of a further language, read when the language is first used.
+fn further_table(lang: Lang) -> &'static HashMap<&'static str, &'static str> {
+    static TABLES: [OnceLock<HashMap<&'static str, &'static str>>; Lang::ALL.len()] = [const { OnceLock::new() }; Lang::ALL.len()];
+    TABLES[lang.index() as usize].get_or_init(|| catalog::further(lang.code()).flatten().collect())
 }
 
 /// Translation of the English text `en` into the current language; unknown texts are
@@ -117,7 +206,8 @@ pub fn tr(en: &'static str) -> &'static str {
 pub fn translate(en: &'static str, lang: Lang) -> &'static str {
     match lang {
         Lang::En => en,
-        _ => table().get(en).map(|t| t[lang.index() as usize - 1]).unwrap_or(en),
+        Lang::De | Lang::Fr | Lang::Es => table().get(en).map(|t| t[lang.index() as usize - 1]).unwrap_or(en),
+        _ => further_table(lang).get(en).copied().unwrap_or(en),
     }
 }
 

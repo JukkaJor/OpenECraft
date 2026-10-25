@@ -7,7 +7,70 @@ fn lang_codes_round_trip() {
     }
     assert_eq!(Lang::from_code("de_DE.UTF-8"), Some(Lang::De));
     assert_eq!(Lang::from_code("fr-CA"), Some(Lang::Fr));
-    assert_eq!(Lang::from_code("ja"), None);
+    assert_eq!(Lang::from_code("pt-BR"), Some(Lang::Pt));
+    assert_eq!(Lang::from_code("zh_CN.UTF-8"), Some(Lang::Zh));
+    assert_eq!(Lang::from_code("tlh"), None);
+}
+
+#[test]
+fn every_further_language_has_a_catalog() {
+    for l in Lang::ALL.into_iter().filter(|l| !l.is_required()) {
+        assert!(!catalog_translations(l).is_empty(), "no translations for {}", l.code());
+    }
+    assert!(catalog::further("de").next().is_none(), "the required languages are in the main catalog");
+}
+
+#[test]
+fn further_languages_translate_and_fall_back_to_english() {
+    assert_eq!(translate("no such text", Lang::Ja), "no such text");
+    for l in Lang::ALL.into_iter().filter(|l| !l.is_required()) {
+        let (en, t) = catalog_translations(l)[0];
+        assert_eq!(translate(en, l), t);
+    }
+}
+
+/// `{}` / `{0}` … placeholders and named template fields (`{page}`) of a text.
+fn placeholders(s: &str) -> (usize, Vec<&str>) {
+    let mut positional = 0;
+    let mut named = Vec::new();
+    let mut rest = s;
+    while let Some(start) = rest.find('{') {
+        let Some(end) = rest[start..].find('}') else { break };
+        let key = &rest[start + 1..start + end];
+        if key.is_empty() || key.chars().all(|c| c.is_ascii_digit()) {
+            positional += 1;
+        } else if !key.contains(char::is_whitespace) {
+            named.push(key);
+        }
+        rest = &rest[start + end + 1..];
+    }
+    named.sort_unstable();
+    (positional, named)
+}
+
+#[test]
+fn further_catalogs_are_consistent() {
+    let known: std::collections::HashSet<&str> = catalog::all().map(|e| e.0).collect();
+    for l in Lang::ALL.into_iter().filter(|l| !l.is_required()) {
+        let code = l.code();
+        let bad = catalog::further(code).filter(|e| e.is_none()).count();
+        assert_eq!(bad, 0, "{bad} malformed lines in catalog/lang/{code}.tsv (need English<TAB>translation)");
+        let mut seen = std::collections::HashSet::new();
+        for (en, t) in catalog_translations(l) {
+            assert!(seen.insert(en), "{code}: duplicate entry: {en}");
+            assert!(known.contains(en), "{code}: not in the main catalog: {en}");
+            assert!(!t.trim().is_empty(), "{code}: empty translation: {en}");
+            assert_eq!(placeholders(en), placeholders(t), "{code}: placeholders differ: {en}");
+            assert_eq!(en.starts_with(' '), t.starts_with(' '), "{code}: leading space differs: {en}");
+            assert_eq!(en.ends_with(' '), t.ends_with(' '), "{code}: trailing space differs: {en}");
+        }
+    }
+}
+
+#[test]
+fn placeholders_are_counted_and_named() {
+    assert_eq!(placeholders("{} of {1} on {page}"), (2, vec!["page"]));
+    assert_eq!(placeholders("{name, description}"), (0, vec![]));
 }
 
 #[test]
