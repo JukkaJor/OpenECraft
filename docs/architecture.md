@@ -12,7 +12,7 @@ openecraft-parts ─┼─► openecraft-jt / openecraft-step / openecraft-edz
                   └─► openecraft-core ─► openecraft-api ─► editor, cli
                            │                 ▲
 openecraft-client ─► openecraft-ui ──────────┘ (editor, parts-manager)
-parts-server (parts, i18n)        project-server (core, parts)
+openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core, parts)
 ```
 
 - Library crates live under `crates/`; executables are the root package (editor,
@@ -23,7 +23,11 @@ parts-server (parts, i18n)        project-server (core, parts)
   and the `main.rs` files.
 - Protocol types sit beside the logic that both sides share: parts server API in
   `openecraft_parts::api` / `portal`, project server API and merge rules in
-  `openecraft_core::collab`.
+  `openecraft_core::collab`, roles, grants and their evaluation for both servers in
+  `openecraft_parts::access` (the servers check, the clients offer what is allowed).
+- `openecraft-auth` is native only and used by the servers alone: password hashes,
+  session tokens, sign-in with directories (Active Directory, LDAP) and the access
+  settings file. See [access-control.md](access-control.md).
 
 ## Layers inside `openecraft-core`
 

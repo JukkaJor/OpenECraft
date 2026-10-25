@@ -1,11 +1,13 @@
 //! Parts server tools: the functions of the parts manager and the data portal
-//! (faceted search, catalogs, files, users, favorites, update check) without a window.
+//! (faceted search, catalogs, files, users, roles and grants, favorites, update check)
+//! without a window.
 
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_i18n::{tr, tr_const, tr_fmt};
+use openecraft_parts::access::{Grant, Policy, Right, Role as DefinedRole, Subject, SERVER};
 use openecraft_parts::api::{PartQuery, UserUpdate};
-use openecraft_parts::portal::{self, catalog_id, AttachmentKind, Catalog, Facet, Lifecycle, Role, Sort};
+use openecraft_parts::portal::{self, catalog_id, AttachmentKind, Catalog, Facet, Lifecycle, PartsRight, Role, Sort};
 use openecraft_parts::{Part, TopGroup};
 use serde_json::{json, Value};
 
@@ -121,6 +123,7 @@ pub static TOOLS: &[Tool] = &[
             param("role", Kind::Str, tr_const!("Reader, Manufacturer, Editor or Admin")),
             optional("manufacturer", Kind::Str, tr_const!("Manufacturer whose parts a manufacturer user maintains")),
             optional("password", Kind::Str, tr_const!("Password (needed for new users; empty keeps the current one)")),
+            optional("groups", Kind::Str, tr_const!("Local groups of the user, separated by commas")),
         ],
         needs_project: false,
         run: user_save,
@@ -131,6 +134,39 @@ pub static TOOLS: &[Tool] = &[
         params: &[param("name", Kind::Str, tr_const!("User name"))],
         needs_project: false,
         run: user_delete,
+    },
+    Tool {
+        name: "parts_access",
+        help: tr_const!("Shows the roles, grants and directories of the parts server, optionally setting the role of anonymous requests (administrators only)"),
+        params: &[optional("anonymous", Kind::Str, tr_const!("Role of requests without sign-in; none: sign-in needed for reading"))],
+        needs_project: false,
+        run: access,
+    },
+    Tool {
+        name: "parts_grant",
+        help: tr_const!("Gives a user or group a role on a manufacturer (scope) of the parts server, with deny takes its rights away, with revoke removes grants (administrators only)"),
+        params: &[
+            param("subject", Kind::Str, tr_const!("user or group")),
+            param("name", Kind::Str, tr_const!("User or group name (wildcards; directory groups as directory:group)")),
+            optional("role", Kind::Str, tr_const!("Role: reader, manufacturer, editor, admin or a defined role")),
+            optional("scope", Kind::Str, tr_const!("Manufacturer (wildcards); default * (everything)")),
+            optional("deny", Kind::Bool, tr_const!("Take the rights of the role away instead")),
+            optional("revoke", Kind::Bool, tr_const!("Remove the grants of the user or group (only of this role and scope, if given)")),
+        ],
+        needs_project: false,
+        run: grant,
+    },
+    Tool {
+        name: "parts_role",
+        help: tr_const!("Defines, changes or deletes a role of the parts server (administrators only)"),
+        params: &[
+            param("name", Kind::Str, tr_const!("Role name")),
+            optional("rights", Kind::Str, tr_const!("Rights separated by commas: read, edit_parts, delete_parts, edit_catalogs, administer")),
+            optional("description", Kind::Str, tr_const!("Description")),
+            optional("delete", Kind::Bool, tr_const!("Delete the role")),
+        ],
+        needs_project: false,
+        run: role,
     },
     Tool {
         name: "parts_check_updates",
@@ -347,6 +383,7 @@ fn user_save(s: &mut Session, a: &Args) -> Result<Value, String> {
         role: choice(&Role::ALL, "role", a.req("role"))?,
         manufacturer: a.str("manufacturer").unwrap_or("").into(),
         password: a.str("password").unwrap_or("").into(),
+        groups: a.str("groups").map(list),
     };
     Ok(serde_json::to_value(s.server.save_user(a.req("name"), &update)?).unwrap_or_default())
 }
@@ -355,6 +392,82 @@ fn user_delete(s: &mut Session, a: &Args) -> Result<Value, String> {
     let name = a.req("name");
     s.server.delete_user(name)?;
     Ok(json!({ "deleted": name }))
+}
+
+/// Comma separated values without blanks.
+fn list(text: &str) -> Vec<String> {
+    text.split(',').map(str::trim).filter(|v| !v.is_empty()).map(String::from).collect()
+}
+
+fn subject(a: &Args) -> Result<Subject, String> {
+    let name = a.req("name").trim().to_string();
+    match a.req("subject").trim().to_lowercase().as_str() {
+        "user" => Ok(Subject::User(name)),
+        "group" => Ok(Subject::Group(name)),
+        other => Err(tr_fmt!("Unknown {}: {} (possible: {})", "subject", other, "user, group")),
+    }
+}
+
+/// Changes the policy of the server and returns the new settings.
+fn change_policy(s: &mut Session, change: impl FnOnce(&mut Policy<PartsRight>) -> Result<(), String>) -> Result<Value, String> {
+    let mut policy = s.server.access()?.policy;
+    change(&mut policy)?;
+    Ok(serde_json::to_value(s.server.save_access(&policy)?).unwrap_or_default())
+}
+
+fn access(s: &mut Session, a: &Args) -> Result<Value, String> {
+    match a.str("anonymous") {
+        Some(role) => change_policy(s, |p| {
+            p.anonymous = if role.trim().eq_ignore_ascii_case("none") { String::new() } else { role.trim().into() };
+            Ok(())
+        }),
+        None => Ok(serde_json::to_value(s.server.access()?).unwrap_or_default()),
+    }
+}
+
+fn grant(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let subject = subject(a)?;
+    let (role, scope) = (a.str("role").map(str::trim), a.str("scope").map(str::trim));
+    if a.flag("revoke") {
+        return change_policy(s, |p| {
+            let before = p.grants.len();
+            p.grants.retain(|g| !(g.subject == subject && role.is_none_or(|r| g.role.eq_ignore_ascii_case(r)) && scope.is_none_or(|sc| g.scope().eq_ignore_ascii_case(sc))));
+            if p.grants.len() == before {
+                return Err(tr_fmt!("No grant of {} found", subject.name()));
+            }
+            Ok(())
+        });
+    }
+    let grant = Grant { deny: a.flag("deny"), ..Grant::new(subject, role.unwrap_or(""), scope.unwrap_or(SERVER)) };
+    change_policy(s, |p| {
+        p.grants.retain(|g| !(g.subject == grant.subject && g.role.eq_ignore_ascii_case(&grant.role) && g.scope().eq_ignore_ascii_case(grant.scope())));
+        p.grants.push(grant);
+        Ok(())
+    })
+}
+
+fn role(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let name = a.req("name").trim().to_string();
+    if a.flag("delete") {
+        return change_policy(s, |p| {
+            let before = p.roles.len();
+            p.roles.retain(|r| !r.name.eq_ignore_ascii_case(&name));
+            if p.roles.len() == before {
+                return Err(tr_fmt!("No role {} defined", name));
+            }
+            Ok(())
+        });
+    }
+    let rights = list(a.str("rights").unwrap_or(""))
+        .iter()
+        .map(|r| PartsRight::from_name(r).ok_or_else(|| tr_fmt!("Unknown {}: {} (possible: {})", "right", r, PartsRight::ALL.iter().map(|x| x.name()).collect::<Vec<_>>().join(", "))))
+        .collect::<Result<_, _>>()?;
+    let role = DefinedRole { name, description: a.str("description").unwrap_or("").into(), rights };
+    change_policy(s, |p| {
+        p.roles.retain(|r| !r.name.eq_ignore_ascii_case(&role.name));
+        p.roles.push(role);
+        Ok(())
+    })
 }
 
 fn check_updates(s: &mut Session, a: &Args) -> Result<Value, String> {

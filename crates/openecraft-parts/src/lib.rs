@@ -8,10 +8,12 @@
 //!   ([`from_eplan_xml`], [`to_eplan_xml`])
 //! - 2D / 3D models of parts with SVG, STL, OBJ and IFC import ([`Model2d`], [`Mesh3d`])
 //! - the generic example catalog ([`default_catalog`])
+//! - role based access control of the servers ([`access`])
 //! - the HTTP API types of the parts server ([`api`]), its data portal model
 //!   (catalogs, lifecycle, attachments, users, faceted search, update check: [`portal`])
 //! - the EPLAN product groups with their exchange numbers ([`productgroups`])
 
+pub mod access;
 pub mod api;
 mod bmecat;
 mod catalog;

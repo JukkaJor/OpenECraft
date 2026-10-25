@@ -1,0 +1,101 @@
+//! Access settings of a server in a JSON file (`access.json`): the directories users
+//! sign in with and the policy (defined roles, grants, role of anonymous requests).
+//! Written atomically when an administrator changes the policy.
+//!
+//! ```json
+//! {
+//!   "directories": [{ "id": "corp", "url": "ldaps://dc1.corp.example", "base_dn": "DC=corp,DC=example",
+//!                     "bind_dn": "CN=svc-openecraft,OU=Service,DC=corp,DC=example",
+//!                     "bind_password_env": "OPENECRAFT_LDAP_PASSWORD", "nested_groups": true }],
+//!   "roles": [{ "name": "checker", "rights": ["view", "review"] }],
+//!   "grants": [{ "subject": { "group": "corp:Engineering" }, "role": "editor", "scope": "Plant*" },
+//!              { "subject": { "group": "corp:Contractors" }, "role": "editor", "scope": "Secret*", "deny": true }]
+//! }
+//! ```
+
+use crate::directory::Directory;
+use openecraft_parts::access::{Policy, Right, Settings};
+use serde::{Deserialize, Serialize};
+use std::io;
+use std::path::{Path, PathBuf};
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default, bound = "R: Right")]
+pub struct AccessConfig<R: Right> {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub directories: Vec<Directory>,
+    #[serde(flatten)]
+    pub policy: Policy<R>,
+}
+
+impl<R: Right> Default for AccessConfig<R> {
+    fn default() -> Self {
+        AccessConfig { directories: Vec::new(), policy: Policy::default() }
+    }
+}
+
+impl<R: Right> AccessConfig<R> {
+    pub fn check(&self) -> Result<(), String> {
+        self.policy.validate()?;
+        for (i, d) in self.directories.iter().enumerate() {
+            d.check()?;
+            if self.directories[..i].iter().any(|o| o.id.trim().eq_ignore_ascii_case(d.id.trim())) {
+                return Err(format!("directory '{}' is defined twice", d.id.trim()));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// The access settings of a server and where they are stored.
+#[derive(Clone, Debug)]
+pub struct AccessFile<R: Right> {
+    path: Option<PathBuf>,
+    pub config: AccessConfig<R>,
+}
+
+impl<R: Right> AccessFile<R> {
+    /// Settings that are not stored (tests).
+    pub fn in_memory(config: AccessConfig<R>) -> AccessFile<R> {
+        AccessFile { path: None, config }
+    }
+
+    /// Reads the file; a missing file gives `default` (written on the first change).
+    pub fn open(path: &Path, default: AccessConfig<R>) -> io::Result<AccessFile<R>> {
+        let invalid = |e: String| io::Error::new(io::ErrorKind::InvalidData, format!("{}: {e}", path.display()));
+        let config = match std::fs::read_to_string(path) {
+            Ok(text) => serde_json::from_str::<AccessConfig<R>>(&text).map_err(|e| invalid(e.to_string()))?,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => default,
+            Err(e) => return Err(e),
+        };
+        config.check().map_err(invalid)?;
+        Ok(AccessFile { path: Some(path.to_path_buf()), config })
+    }
+
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
+    }
+
+    pub fn save(&self) -> io::Result<()> {
+        let Some(path) = &self.path else { return Ok(()) };
+        let tmp = path.with_extension("json.tmp");
+        std::fs::write(&tmp, serde_json::to_string_pretty(&self.config).unwrap_or_default())?;
+        std::fs::rename(&tmp, path)
+    }
+
+    /// Replaces the policy (checked) and stores it.
+    pub fn set_policy(&mut self, policy: Policy<R>) -> Result<(), String> {
+        policy.validate()?;
+        self.config.policy = policy;
+        self.save().map_err(|e| format!("cannot store the access settings: {e}"))
+    }
+
+    /// What administrators see: the policy and the directories (without their
+    /// settings).
+    pub fn settings(&self) -> Settings<R> {
+        Settings { policy: self.config.policy.clone(), providers: self.config.directories.iter().map(Directory::provider).collect() }
+    }
+}
+
+#[cfg(test)]
+mod tests;

@@ -1,10 +1,11 @@
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_parts::access::Policy;
 use openecraft_parts::api::{self, PartQuery, API_PREFIX, DEFAULT_PORT};
-use openecraft_parts::portal::{AttachmentKind, Catalog};
+use openecraft_parts::portal::{AttachmentKind, Catalog, PartsRight};
 use openecraft_parts::Part;
 use serde::de::DeserializeOwned;
 
-/// Server address and access token; builds the requests of the API. Changes carry
+/// Server address and access token; builds the requests of the API. Requests carry
 /// the token as `Authorization: Bearer …`.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Endpoint {
@@ -48,12 +49,12 @@ impl Endpoint {
 
     /// GET /api/v1/parts/{number}/history
     pub fn history(&self, number: &str) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{}/history", api::part_path(number))))
+        self.authorized(ehttp::Request::get(self.url(&format!("{}/history", api::part_path(number)))))
     }
 
     /// GET /api/v1/parts/{number}/history/{revision}: the part as of a change.
     pub fn history_part(&self, number: &str, revision: u64) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{}/history/{revision}", api::part_path(number))))
+        self.authorized(ehttp::Request::get(self.url(&format!("{}/history/{revision}", api::part_path(number)))))
     }
 
     /// POST /api/v1/parts/{number}/attachments: stores a file with the part.
@@ -78,12 +79,12 @@ impl Endpoint {
 
     /// GET /api/v1/files/{id}
     pub fn file(&self, id: &str) -> ehttp::Request {
-        ehttp::Request::get(self.file_url(id))
+        self.authorized(ehttp::Request::get(self.file_url(id)))
     }
 
     /// GET /api/v1/catalogs
     pub fn catalogs(&self) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{API_PREFIX}/catalogs")))
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/catalogs"))))
     }
 
     /// PUT /api/v1/catalogs/{id}
@@ -98,7 +99,7 @@ impl Endpoint {
 
     /// POST /api/v1/login (no token needed) → [`api::Session`]
     pub fn login(&self, name: &str, password: &str) -> ehttp::Request {
-        let body = api::Login { name: name.trim().into(), password: password.into() };
+        let body = api::Login { name: name.trim().into(), password: password.into(), ..Default::default() };
         Endpoint { token: String::new(), ..self.clone() }.json(ehttp::Method::POST, &format!("{API_PREFIX}/login"), &body)
     }
 
@@ -132,14 +133,24 @@ impl Endpoint {
         self.authorized(ehttp::Request::delete(&self.url(&api::user_path(name))))
     }
 
+    /// GET /api/v1/access: roles, grants and directories (administrator)
+    pub fn access(&self) -> ehttp::Request {
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/access"))))
+    }
+
+    /// PUT /api/v1/access: replaces roles and grants (administrator)
+    pub fn save_access(&self, policy: &Policy<PartsRight>) -> ehttp::Request {
+        self.json(ehttp::Method::PUT, &format!("{API_PREFIX}/access"), policy)
+    }
+
     /// GET /api/v1/parts?…
     pub fn list(&self, query: &PartQuery) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{API_PREFIX}/parts{}", query.to_query_string())))
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/parts{}", query.to_query_string()))))
     }
 
     /// GET /api/v1/parts/{number}
     pub fn part(&self, number: &str) -> ehttp::Request {
-        ehttp::Request::get(self.url(&api::part_path(number)))
+        self.authorized(ehttp::Request::get(self.url(&api::part_path(number))))
     }
 
     /// PUT /api/v1/parts/{number}: creates or replaces a part.
@@ -160,7 +171,7 @@ impl Endpoint {
 
     /// GET /api/v1/export.csv
     pub fn export(&self) -> ehttp::Request {
-        ehttp::Request::get(self.url(&format!("{API_PREFIX}/export.csv")))
+        self.authorized(ehttp::Request::get(self.url(&format!("{API_PREFIX}/export.csv"))))
     }
 }
 

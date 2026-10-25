@@ -4,8 +4,9 @@
 
 use crate::args::Options;
 use openecraft_client::{check, decode, decode_found, ehttp, text, Endpoint};
+use openecraft_parts::access::{Policy, Settings};
 use openecraft_parts::api::{ImportResult, PartQuery, ServerInfo, Session, UserUpdate};
-use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
+use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, PartsRight, SearchResult, User};
 use openecraft_parts::Part;
 
 pub trait Transport {
@@ -130,5 +131,13 @@ impl Server {
 
     pub fn delete_user(&self, name: &str) -> Result<(), String> {
         check(self.fetch(self.endpoint.delete_user(name))).map(|_| ())
+    }
+
+    pub fn access(&self) -> Result<Settings<PartsRight>, String> {
+        decode(self.fetch(self.endpoint.access()))
+    }
+
+    pub fn save_access(&self, policy: &Policy<PartsRight>) -> Result<Settings<PartsRight>, String> {
+        decode(self.fetch(self.endpoint.save_access(policy)))
     }
 }

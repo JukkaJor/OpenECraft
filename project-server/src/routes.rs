@@ -8,11 +8,14 @@ use axum::http::{header, HeaderMap, Method, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post, put};
 use axum::{Json, Router};
+use openecraft_auth::{AccessFile, SignInError};
 use openecraft_core::collab::{
-    merge, valid_name, CreateRequest, LockRequest, LoginRequest, LoginResponse, OpenRequest, Opened, Owned, ProjectRole, ProjectSummary,
-    ProjectUser, SaveRequest, ServerInfo, Session, Snapshot, Status, Target, UserUpdate, API_PREFIX,
+    merge, valid_name, Access, CreateRequest, Grant, LockRequest, LoginRequest, LoginResponse, OpenRequest, Opened, Owned, Policy, ProjectAccess,
+    ProjectRight, ProjectRole, ProjectSummary, ProjectUser, Right, SaveRequest, ServerInfo, Session, Settings, Snapshot, Status, Subject, Target,
+    UserUpdate, API_PREFIX, SERVER,
 };
 use openecraft_parts::api::{bearer_token, token_matches, ApiError};
+use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Instant;
 use tower_http::cors::{Any, CorsLayer};
@@ -21,71 +24,79 @@ pub struct Server {
     pub store: Store,
     pub sessions: Sessions,
     pub users: Users,
+    pub access: AccessFile<ProjectRight>,
 }
 
-/// Who makes a request.
+impl Server {
+    /// Without token, accounts and directories everyone may do everything.
+    fn open_access(&self, token: &Option<String>) -> bool {
+        token.is_none() && self.users.accounts.is_empty() && self.access.config.directories.is_empty()
+    }
+
+    /// What a user may do: their role, the grants to them and their groups and what
+    /// anonymous requests may do.
+    fn access_of(&self, user: &ProjectUser) -> Access<ProjectRight> {
+        let policy = &self.access.config.policy;
+        policy.access(&user.identity(), &user.grants()).with(policy.anonymous_access())
+    }
+}
+
+/// Who makes a request and what they may do.
 #[derive(Clone, Debug, PartialEq)]
-pub enum Caller {
-    /// The server token: full access.
-    Admin,
-    /// A signed-in user.
-    User(ProjectUser),
-    /// A server without token and accounts: everyone may do everything.
-    Open,
+pub struct Caller {
+    /// A signed-in user; `None` for the server token, open servers and anonymous requests.
+    user: Option<String>,
+    access: Access<ProjectRight>,
 }
 
 impl Caller {
-    fn may_see(&self, project: &str) -> bool {
-        match self {
-            Caller::User(u) => u.may_see(project),
-            _ => true,
-        }
+    fn rights(&self, project: &str) -> BTreeSet<ProjectRight> {
+        self.access.rights(project)
     }
 
-    fn may_edit(&self, project: &str) -> bool {
-        match self {
-            Caller::User(u) => u.may_edit(project),
-            _ => true,
-        }
-    }
-
-    fn is_admin(&self) -> bool {
-        match self {
-            Caller::User(u) => u.role == ProjectRole::Admin,
-            _ => true,
-        }
+    fn may(&self, project: &str, right: ProjectRight) -> bool {
+        self.access.allows(project, right)
     }
 
     /// The user name of a request: a signed-in user's own name, otherwise the one sent.
     fn name(&self, sent: &str) -> Result<String> {
-        match self {
-            Caller::User(u) => Ok(u.name.clone()),
-            _ => user(sent),
+        match &self.user {
+            Some(u) => Ok(u.clone()),
+            None => user(sent),
         }
     }
 
     /// A signed-in user may only use their own sessions.
     fn owns(&self, session: &Session) -> Result<()> {
-        match self {
-            Caller::User(u) if !u.name.eq_ignore_ascii_case(&session.user) => Err(AppError(StatusCode::FORBIDDEN, "the session belongs to another user".into())),
+        match &self.user {
+            Some(u) if !u.eq_ignore_ascii_case(&session.user) => Err(AppError(StatusCode::FORBIDDEN, "the session belongs to another user".into())),
             _ => Ok(()),
         }
     }
 
+    /// Projects the caller may not view do not exist for them.
     fn see(&self, project: &str) -> Result<()> {
-        if self.may_see(project) {
+        if self.may(project, ProjectRight::View) {
             Ok(())
         } else {
             Err(not_found(project))
         }
     }
 
-    fn edit(&self, project: &str) -> Result<()> {
+    fn need(&self, project: &str, right: ProjectRight) -> Result<()> {
         self.see(project)?;
-        if self.may_edit(project) {
+        if self.may(project, right) {
             Ok(())
         } else {
-            Err(AppError(StatusCode::FORBIDDEN, format!("you may only view project '{project}'")))
+            Err(AppError(StatusCode::FORBIDDEN, format!("you lack the right '{}' on project '{project}'", right.name())))
+        }
+    }
+
+    fn admin(&self) -> Result<()> {
+        if self.may(SERVER, ProjectRight::Administer) {
+            Ok(())
+        } else {
+            Err(AppError(StatusCode::FORBIDDEN, "only administrators manage users and access".into()))
         }
     }
 }
@@ -130,22 +141,28 @@ fn describe(target: Target) -> String {
     }
 }
 
+fn bad(msg: impl Into<String>) -> AppError {
+    AppError(StatusCode::BAD_REQUEST, msg.into())
+}
+
 pub fn router(state: AppState) -> Router {
     let project = format!("{API_PREFIX}/projects/{{name}}");
     Router::new()
         .route("/", get(index))
         .route(&format!("{API_PREFIX}/info"), get(info))
         .route(&format!("{API_PREFIX}/projects"), get(list).post(create))
-        .route(&project, get(snapshot).put(save))
+        .route(&project, get(snapshot).put(save).delete(delete_project))
         .route(&format!("{project}/open"), post(open))
         .route(&format!("{project}/status"), post(status))
         .route(&format!("{project}/lock"), post(lock))
         .route(&format!("{project}/release"), post(release))
         .route(&format!("{project}/close"), post(close))
+        .route(&format!("{project}/access"), get(project_access).put(save_project_access))
         .route(&format!("{API_PREFIX}/login"), post(login))
         .route(&format!("{API_PREFIX}/logout"), post(logout))
         .route(&format!("{API_PREFIX}/users"), get(list_users))
         .route(&format!("{API_PREFIX}/users/{{name}}"), put(save_user).delete(delete_user))
+        .route(&format!("{API_PREFIX}/access"), get(access).put(save_access))
         .layer(DefaultBodyLimit::max(256 * 1024 * 1024))
         .layer(cors())
         .with_state(state)
@@ -161,21 +178,25 @@ fn cors() -> CorsLayer {
 }
 
 fn presented(headers: &HeaderMap) -> Option<&str> {
-    headers.get(header::AUTHORIZATION).and_then(|v| v.to_str().ok()).and_then(bearer_token)
+    headers.get(header::AUTHORIZATION).and_then(|v| v.to_str().ok()).and_then(bearer_token).filter(|t| !t.is_empty())
+}
+
+fn lock_server(state: &AppState) -> MutexGuard<'_, Server> {
+    state.server.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 /// Checks the token (the server token or the session of a user) and returns the
 /// server with expired sessions removed and who is calling.
 fn server<'a>(state: &'a AppState, headers: &HeaderMap) -> Result<(MutexGuard<'a, Server>, Caller)> {
-    let mut server = state.server.lock().unwrap_or_else(|e| e.into_inner());
+    let mut server = lock_server(state);
     server.sessions.expire(Instant::now());
     let token = presented(headers);
-    let caller = if token.is_some_and(|p| state.token.as_ref().is_some_and(|t| token_matches(p, t))) {
-        Caller::Admin
+    let caller = if token.is_some_and(|p| state.token.as_ref().is_some_and(|t| token_matches(p, t))) || server.open_access(&state.token) {
+        Caller { user: None, access: Access::full() }
     } else if let Some(a) = token.and_then(|t| server.users.by_token(t)) {
-        Caller::User(a.user.clone())
-    } else if state.token.is_none() && server.users.accounts.is_empty() {
-        Caller::Open
+        Caller { user: Some(a.user.name.clone()), access: server.access_of(&a.user) }
+    } else if token.is_none() && !server.access.config.policy.anonymous_access().is_empty() {
+        Caller { user: None, access: server.access.config.policy.anonymous_access() }
     } else {
         return Err(AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into()));
     };
@@ -189,7 +210,7 @@ fn not_found(name: &str) -> AppError {
 fn user(name: &str) -> Result<String> {
     let user = name.trim();
     if user.is_empty() {
-        return Err(AppError(StatusCode::BAD_REQUEST, "a user name is required".into()));
+        return Err(bad("a user name is required"));
     }
     Ok(user.to_string())
 }
@@ -205,24 +226,31 @@ impl Server {
         Ok(Status { revision: entry.revision, locks: self.sessions.locks(name) })
     }
 
-    fn open(&mut self, name: &str, user: &str) -> Result<Opened> {
+    fn open(&mut self, name: &str, user: &str, rights: BTreeSet<ProjectRight>) -> Result<Opened> {
         if self.store.get(name).is_none() {
             return Err(not_found(name));
         }
         let first_id = self.store.reserve_ids(name)?;
         let session = self.sessions.open(name, user, Instant::now());
         log::info!("{user} opened {name}");
-        Ok(Opened { session, first_id, snapshot: self.snapshot(name)? })
+        Ok(Opened { session, first_id, snapshot: self.snapshot(name)?, rights: rights.into_iter().collect() })
+    }
+
+    /// The grants on a project and the roles `caller` may give.
+    fn project_access(&self, name: &str, caller: &Caller) -> ProjectAccess {
+        let policy = &self.access.config.policy;
+        let roles = policy.role_names().into_iter().filter(|r| policy.rights_of(r).is_some_and(|rights| rights.iter().all(|x| caller.may(name, *x)))).collect();
+        ProjectAccess { grants: policy.grants_on(name), roles }
     }
 }
 
 async fn index(State(state): State<AppState>) -> String {
-    let server = state.server.lock().unwrap_or_else(|e| e.into_inner());
+    let server = lock_server(&state);
     format!(
         "OpenECraft project server {}\n\n{} projects, {}\n\nAPI: {API_PREFIX}/info, {API_PREFIX}/projects, {API_PREFIX}/projects/{{name}}\n",
         env!("CARGO_PKG_VERSION"),
         server.store.projects.len(),
-        if state.token.is_some() || !server.users.accounts.is_empty() { "access with token or user account" } else { "open access" }
+        if server.open_access(&state.token) { "open access" } else { "access with token or user account" }
     )
 }
 
@@ -241,31 +269,61 @@ async fn list(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<
         .store
         .projects
         .iter()
-        .filter(|(name, _)| caller.may_see(name))
+        .filter(|(name, _)| caller.may(name, ProjectRight::View))
         .map(|(name, e)| ProjectSummary {
             name: name.clone(),
             title: e.project.info.name.clone(),
             pages: e.project.pages.len(),
             revision: e.revision,
             users: server.sessions.users(name),
+            rights: caller.rights(name).into_iter().collect(),
         })
         .collect();
     Ok(Json(list))
 }
 
 async fn create(State(state): State<AppState>, headers: HeaderMap, Json(req): Json<CreateRequest>) -> Result<(StatusCode, Json<Opened>)> {
-    let (mut server, caller) = server(&state, &headers)?;
+    let (mut server, mut caller) = server(&state, &headers)?;
     let user = caller.name(&req.user)?;
-    caller.edit(&req.name)?;
+    if !caller.may(&req.name, ProjectRight::Create) {
+        return Err(AppError(StatusCode::FORBIDDEN, format!("you may not create project '{}'", req.name)));
+    }
     if !valid_name(&req.name) {
-        return Err(AppError(StatusCode::BAD_REQUEST, format!("'{}' is not a valid project name", req.name)));
+        return Err(bad(format!("'{}' is not a valid project name", req.name)));
     }
     if server.store.get(&req.name).is_some() {
         return Err(AppError(StatusCode::CONFLICT, format!("project '{}' already exists", req.name)));
     }
     server.store.create(&req.name, req.project)?;
     log::info!("{user} created {}", req.name);
-    Ok((StatusCode::CREATED, Json(server.open(&req.name, &user)?)))
+    // A signed-in user manages the projects they create.
+    if let Some(owner) = caller.user.clone().filter(|_| !caller.may(&req.name, ProjectRight::ManageAccess)) {
+        let mut policy = server.access.config.policy.clone();
+        let owner_grant = Grant::new(Subject::User(owner), ProjectRole::Manager.name(), &req.name);
+        policy.grants.push(owner_grant.clone());
+        server.access.set_policy(policy).map_err(|e| AppError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
+        caller.access = caller.access.with(Policy::default().access(&Default::default(), &[owner_grant]));
+    }
+    let rights = caller.rights(&req.name);
+    Ok((StatusCode::CREATED, Json(server.open(&req.name, &user, rights)?)))
+}
+
+async fn delete_project(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<StatusCode> {
+    let (mut server, caller) = server(&state, &headers)?;
+    caller.need(&name, ProjectRight::Delete)?;
+    server.status(&name)?;
+    let users = server.sessions.users(&name);
+    if !users.is_empty() {
+        return Err(AppError(StatusCode::CONFLICT, format!("project '{name}' is open ({})", users.join(", "))));
+    }
+    server.store.delete(&name)?;
+    let mut policy = server.access.config.policy.clone();
+    if !policy.grants_on(&name).is_empty() {
+        policy.set_grants_on(&name, Vec::new());
+        server.access.set_policy(policy).map_err(|e| AppError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    }
+    log::info!("{} deleted {name}", caller.user.as_deref().unwrap_or("token"));
+    Ok(StatusCode::NO_CONTENT)
 }
 
 async fn snapshot(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<Json<Snapshot>> {
@@ -278,19 +336,24 @@ async fn open(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
     let (mut server, caller) = server(&state, &headers)?;
     caller.see(&name)?;
     let user = caller.name(&req.user)?;
-    Ok(Json(server.open(&name, &user)?))
+    Ok(Json(server.open(&name, &user, caller.rights(&name))?))
 }
 
-/// Merges what the session has locked into the stored project.
+/// Merges what the session has locked (and the review records) into the stored project.
 async fn save(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<SaveRequest>) -> Result<Json<Snapshot>> {
     let (mut server, caller) = server(&state, &headers)?;
-    caller.edit(&name)?;
+    caller.see(&name)?;
     caller.owns(&req.session)?;
+    let rights = caller.rights(&name);
+    if ![ProjectRight::Review, ProjectRight::EditPages, ProjectRight::EditProject].iter().any(|r| rights.contains(r)) {
+        return Err(AppError(StatusCode::FORBIDDEN, format!("you may only view project '{name}'")));
+    }
     server.sessions.touch(&name, &req.session, Instant::now())?;
     let stored = server.store.get(&name).ok_or_else(|| not_found(&name))?.project.clone();
     let locks = server.sessions.locks(&name);
     let owned = Owned::of(&locks, &req.session.session);
     if owned.project {
+        caller.need(&name, ProjectRight::EditProject)?;
         let removed = locks.iter().find(|l| match l.target {
             Target::Page(id) => l.session != req.session.session && !req.project.pages.iter().any(|p| p.id == id),
             Target::Project => false,
@@ -298,6 +361,9 @@ async fn save(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
         if let Some(l) = removed {
             return Err(AppError(StatusCode::CONFLICT, format!("{} cannot be deleted, it is locked by {}", describe(l.target), l.user)));
         }
+    }
+    if !owned.pages.is_empty() {
+        caller.need(&name, ProjectRight::EditPages)?;
     }
     let merged = merge(&stored, &req.project, &owned);
     let revision = server.store.save(&name, merged)?;
@@ -317,8 +383,11 @@ async fn status(State(state): State<AppState>, headers: HeaderMap, Path(name): P
 
 async fn lock(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<LockRequest>) -> Result<Json<Status>> {
     let (mut server, caller) = server(&state, &headers)?;
-    caller.edit(&name)?;
+    caller.see(&name)?;
     caller.owns(&req.session)?;
+    for t in &req.targets {
+        caller.need(&name, if *t == Target::Project { ProjectRight::EditProject } else { ProjectRight::EditPages })?;
+    }
     let entry = server.store.get(&name).ok_or_else(|| not_found(&name))?;
     if let Some(missing) = req.targets.iter().find(|t| match t {
         Target::Page(id) => !entry.project.pages.iter().any(|p| p.id == *id),
@@ -349,23 +418,85 @@ async fn close(State(state): State<AppState>, headers: HeaderMap, Path(name): Pa
     Ok(Json(server.status(&name)?))
 }
 
-async fn login(State(state): State<AppState>, Json(req): Json<LoginRequest>) -> Result<Json<LoginResponse>> {
-    let mut server = state.server.lock().unwrap_or_else(|e| e.into_inner());
-    let refused = || AppError(StatusCode::UNAUTHORIZED, "unknown user or wrong password".into());
-    let account = server.users.find_mut(&req.user).ok_or_else(refused)?;
-    if !openecraft_auth::verify_password(&req.password, &account.password) {
-        return Err(refused());
+async fn project_access(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<Json<ProjectAccess>> {
+    let (server, caller) = server(&state, &headers)?;
+    caller.need(&name, ProjectRight::ManageAccess)?;
+    server.status(&name)?;
+    Ok(Json(server.project_access(&name, &caller)))
+}
+
+/// Replaces the grants on the project. Nobody gives rights they do not have.
+async fn save_project_access(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(grants): Json<Vec<Grant>>) -> Result<Json<ProjectAccess>> {
+    let (mut server, caller) = server(&state, &headers)?;
+    caller.need(&name, ProjectRight::ManageAccess)?;
+    server.status(&name)?;
+    let allowed = server.project_access(&name, &caller).roles;
+    let old = server.access.config.policy.grants_on(&name);
+    for g in grants.iter().chain(&old) {
+        if !allowed.iter().any(|r| r.eq_ignore_ascii_case(g.role.trim())) {
+            return Err(AppError(StatusCode::FORBIDDEN, format!("you may not give or take the role '{}'", g.role.trim())));
+        }
     }
+    let mut policy = server.access.config.policy.clone();
+    policy.set_grants_on(&name, grants);
+    server.access.set_policy(policy).map_err(bad)?;
+    log::info!("access to {name} changed by {}", caller.user.as_deref().unwrap_or("token"));
+    Ok(Json(server.project_access(&name, &caller)))
+}
+
+/// Signs in with a local account or, if the server has none of that name, with its
+/// directories; a directory user gets an account (role, groups, sessions) on the
+/// first sign-in.
+async fn login(State(state): State<AppState>, Json(req): Json<LoginRequest>) -> Result<Json<LoginResponse>> {
+    let refused = || AppError(StatusCode::UNAUTHORIZED, "unknown user or wrong password".into());
+    let directories = {
+        let mut server = lock_server(&state);
+        let local = req.provider.trim().is_empty() && server.users.find_mut(&req.user).is_some_and(|a| a.user.provider.is_empty());
+        if local {
+            let account = server.users.find_mut(&req.user).ok_or_else(refused)?;
+            if !openecraft_auth::verify_password(&req.password, &account.password) {
+                log::warn!("failed sign-in of '{}'", req.user.trim());
+                return Err(refused());
+            }
+            let token = openecraft_auth::start_session(&mut account.sessions);
+            let user = account.user.clone();
+            server.users.save()?;
+            log::info!("{} signed in", user.name);
+            let access = server.access_of(&user);
+            return Ok(Json(LoginResponse { token, user, access }));
+        }
+        server.access.config.directories.clone()
+    };
+    let identity = match openecraft_auth::sign_in(&directories, &req.provider, &req.user, &req.password).await {
+        Ok(identity) => identity,
+        Err(SignInError::Unavailable(e)) => return Err(AppError(StatusCode::SERVICE_UNAVAILABLE, e)),
+        Err(_) => {
+            log::warn!("failed sign-in of '{}'", req.user.trim());
+            return Err(refused());
+        }
+    };
+    let mut server = lock_server(&state);
+    let account = match server.users.find_mut(&identity.name) {
+        Some(a) if a.user.provider.eq_ignore_ascii_case(&identity.provider) => a,
+        Some(_) => return Err(AppError(StatusCode::CONFLICT, format!("the name '{}' belongs to another account", identity.name))),
+        None => {
+            let user = ProjectUser { name: identity.name.clone(), provider: identity.provider.clone(), ..Default::default() };
+            server.users.accounts.push(Account { user, password: String::new(), sessions: Vec::new() });
+            server.users.accounts.last_mut().expect("just added")
+        }
+    };
+    account.user.groups = identity.groups;
     let token = openecraft_auth::start_session(&mut account.sessions);
     let user = account.user.clone();
     server.users.save()?;
-    log::info!("{} signed in", user.name);
-    Ok(Json(LoginResponse { token, user }))
+    log::info!("{} signed in with {}", user.name, user.provider);
+    let access = server.access_of(&user);
+    Ok(Json(LoginResponse { token, user, access }))
 }
 
 async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<StatusCode> {
     let token = presented(&headers).ok_or_else(|| AppError(StatusCode::UNAUTHORIZED, "no session".into()))?.to_string();
-    let mut server = state.server.lock().unwrap_or_else(|e| e.into_inner());
+    let mut server = lock_server(&state);
     let ended = server.users.accounts.iter_mut().any(|a| openecraft_auth::end_session(&mut a.sessions, &token));
     if ended {
         server.users.save()?;
@@ -373,42 +504,44 @@ async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<Sta
     Ok(StatusCode::NO_CONTENT)
 }
 
-fn admin_only(caller: &Caller) -> Result<()> {
-    if caller.is_admin() {
-        Ok(())
-    } else {
-        Err(AppError(StatusCode::FORBIDDEN, "only administrators manage users".into()))
-    }
-}
-
 async fn list_users(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<ProjectUser>>> {
     let (server, caller) = server(&state, &headers)?;
-    admin_only(&caller)?;
+    caller.admin()?;
     Ok(Json(server.users.accounts.iter().map(|a| a.user.clone()).collect()))
 }
 
 async fn save_user(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<UserUpdate>) -> Result<Json<ProjectUser>> {
     let (mut server, caller) = server(&state, &headers)?;
-    admin_only(&caller)?;
+    caller.admin()?;
     let name = user(&name)?;
     let hash = match req.password.as_deref().filter(|p| !p.is_empty()) {
         Some(p) => Some(openecraft_auth::hash_password(p).map_err(|e| AppError(StatusCode::INTERNAL_SERVER_ERROR, e))?),
         None => None,
     };
-    let user = ProjectUser { name: name.clone(), role: req.role, projects: req.projects };
-    match server.users.find_mut(&name) {
+    let groups = req.groups.map(|g| g.into_iter().map(|g| g.trim().to_string()).filter(|g| !g.is_empty()).collect::<Vec<_>>());
+    let user = match server.users.find_mut(&name) {
         Some(a) => {
-            a.user = user.clone();
+            if !a.user.provider.is_empty() && hash.is_some() {
+                return Err(bad(format!("'{name}' signs in with directory {}, which keeps the password", a.user.provider)));
+            }
+            a.user.role = req.role;
+            a.user.projects = req.projects;
+            if let Some(g) = groups.filter(|_| a.user.provider.is_empty()) {
+                a.user.groups = g;
+            }
             if let Some(h) = hash {
                 a.password = h;
                 a.sessions.clear();
             }
+            a.user.clone()
         }
         None => {
-            let password = hash.ok_or_else(|| AppError(StatusCode::BAD_REQUEST, "a new user needs a password".into()))?;
+            let password = hash.ok_or_else(|| bad("a new user needs a password"))?;
+            let user = ProjectUser { name: name.clone(), role: req.role, projects: req.projects, groups: groups.unwrap_or_default(), ..Default::default() };
             server.users.accounts.push(Account { user: user.clone(), password, sessions: Vec::new() });
+            user
         }
-    }
+    };
     server.users.save()?;
     log::info!("user {name} saved");
     Ok(Json(user))
@@ -416,7 +549,7 @@ async fn save_user(State(state): State<AppState>, headers: HeaderMap, Path(name)
 
 async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<StatusCode> {
     let (mut server, caller) = server(&state, &headers)?;
-    admin_only(&caller)?;
+    caller.admin()?;
     let before = server.users.accounts.len();
     server.users.accounts.retain(|a| !a.user.name.eq_ignore_ascii_case(name.trim()));
     if server.users.accounts.len() == before {
@@ -424,6 +557,20 @@ async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(nam
     }
     server.users.save()?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+async fn access(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Settings<ProjectRight>>> {
+    let (server, caller) = server(&state, &headers)?;
+    caller.admin()?;
+    Ok(Json(server.access.settings()))
+}
+
+async fn save_access(State(state): State<AppState>, headers: HeaderMap, Json(policy): Json<Policy<ProjectRight>>) -> Result<Json<Settings<ProjectRight>>> {
+    let (mut server, caller) = server(&state, &headers)?;
+    caller.admin()?;
+    server.access.set_policy(policy).map_err(bad)?;
+    log::info!("access settings changed by {}", caller.user.as_deref().unwrap_or("token"));
+    Ok(Json(server.access.settings()))
 }
 
 #[cfg(test)]

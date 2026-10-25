@@ -18,6 +18,13 @@ fn requests_of_the_api() {
     assert_eq!(e.status("p", &session()).url, "http://host:8091/api/v1/projects/p/status");
     assert_eq!(e.release("p", &session(), Vec::new()).url, "http://host:8091/api/v1/projects/p/release");
     assert_eq!(e.close("p", &session()).url, "http://host:8091/api/v1/projects/p/close");
+    assert_eq!(e.delete("Plant 1").method, ehttp::Method::DELETE);
+    assert_eq!(e.project_access("Plant 1").url, "http://host:8091/api/v1/projects/Plant%201/access");
+    let grants = [Grant::new(openecraft_core::collab::Subject::Group("corp:QA".into()), "reviewer", "Plant 1")];
+    let put = e.save_project_access("Plant 1", &grants);
+    assert_eq!((put.method, serde_json::from_slice::<Vec<Grant>>(&put.body).unwrap()), (ehttp::Method::PUT, grants.to_vec()));
+    assert_eq!(e.access().url, "http://host:8091/api/v1/access");
+    assert_eq!(e.save_access(&Policy::default()).method, ehttp::Method::PUT);
     // Every request carries the token.
     assert_eq!(e.list().headers.get("Authorization"), Some("Bearer secret"));
     let anonymous = ProjectEndpoint { token: " ".into(), ..endpoint() };

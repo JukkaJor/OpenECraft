@@ -30,8 +30,8 @@ fn signing_in_and_out_changes_the_token() {
     use openecraft_parts::api::Session;
     use openecraft_parts::portal::{Role, User};
     let mut client = ServerClient { pending: 3, token: "old".into(), info: Some(ServerInfo::default()), ..Default::default() };
-    let user = User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() };
-    client.inbox.lock().unwrap().push(Reply::SignedIn(Ok(Session { token: "session".into(), user: user.clone() })));
+    let user = User { name: "ann".into(), role: Role::Editor, manufacturer: String::new(), ..Default::default() };
+    client.inbox.lock().unwrap().push(Reply::SignedIn(Ok(Session { token: "session".into(), user: user.clone(), ..Default::default() })));
     client.poll();
     assert_eq!(client.token, "session");
     assert_eq!(client.user(), Some(&user));

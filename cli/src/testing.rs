@@ -3,8 +3,9 @@
 use crate::parts_server::{Server, Transport};
 use crate::session::Session;
 use openecraft_client::{ehttp, Endpoint};
+use openecraft_parts::access::{Policy, Settings};
 use openecraft_parts::api::{ApiError, ImportResult, Login, PartQuery, ServerInfo, Session as ApiSession, UserUpdate, API_PREFIX};
-use openecraft_parts::portal::{Attachment, AttachmentKind, Catalog, ChangeKind, HistoryEntry, Role, User};
+use openecraft_parts::portal::{Attachment, AttachmentKind, Catalog, ChangeKind, HistoryEntry, PartsRight, Role, User};
 use openecraft_parts::{import, to_csv, Part};
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -22,6 +23,7 @@ pub struct FakeServer {
     pub users: Rc<RefCell<Vec<User>>>,
     pub favorites: Rc<RefCell<Vec<String>>>,
     pub files: Rc<RefCell<Vec<FakeFile>>>,
+    pub policy: Rc<RefCell<Policy<PartsRight>>>,
 }
 
 /// Attachment file: id, name and content.
@@ -75,7 +77,7 @@ impl Transport for FakeServer {
         if path == "/login" {
             let login: Login = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
             return Ok(if login.name == "ann" && login.password == "pw" {
-                json(&ApiSession { token: TOKEN.into(), user: User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() } })
+                json(&ApiSession { token: TOKEN.into(), user: User { name: "ann".into(), role: Role::Editor, manufacturer: String::new(), ..Default::default() }, ..Default::default() })
             } else {
                 error(401, "wrong user name or password")
             });
@@ -109,7 +111,7 @@ impl Transport for FakeServer {
             (["users"], _) => return Ok(json(&*self.users.borrow())),
             (["users", name], ehttp::Method::PUT) => {
                 let u: UserUpdate = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
-                let user = User { name: name.to_string(), role: u.role, manufacturer: u.manufacturer };
+                let user = User { name: name.to_string(), role: u.role, manufacturer: u.manufacturer, ..Default::default() };
                 self.users.borrow_mut().retain(|x| x.name != *name);
                 self.users.borrow_mut().push(user.clone());
                 return Ok(json(&user));
@@ -117,6 +119,19 @@ impl Transport for FakeServer {
             (["users", name], ehttp::Method::DELETE) => {
                 self.users.borrow_mut().retain(|x| x.name != *name);
                 return Ok(response(204, Vec::new()));
+            }
+            (["access"], method) => {
+                if !authorized {
+                    return Ok(error(401, "invalid token"));
+                }
+                if *method == ehttp::Method::PUT {
+                    let policy: Policy<PartsRight> = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                    if let Err(e) = policy.validate() {
+                        return Ok(error(400, &e));
+                    }
+                    *self.policy.borrow_mut() = policy;
+                }
+                return Ok(json(&Settings { policy: self.policy.borrow().clone(), providers: Vec::new() }));
             }
             (["files", id], _) => {
                 let files = self.files.borrow();

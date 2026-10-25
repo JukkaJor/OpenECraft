@@ -161,7 +161,7 @@ fn catalog_replies_keep_the_list_and_draft_current() {
 #[test]
 fn users_are_checked_before_saving() {
     let mut s = Session::default();
-    let ann = User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() };
+    let ann = User { name: "ann".into(), role: Role::Editor, manufacturer: String::new(), ..Default::default() };
     s.apply(&Reply::Users(Ok(vec![ann.clone()])));
     s.select_user(None);
     assert_eq!(s.user_problem(), Some("The user name must not be empty or contain blanks"));
@@ -169,7 +169,7 @@ fn users_are_checked_before_saving() {
     assert_eq!(s.user_problem(), Some("A user with this name exists already"));
     s.user.as_mut().unwrap().name = "max".into();
     assert_eq!(s.user_problem(), Some("A new user needs a password"));
-    s.user.as_mut().unwrap().update = UserUpdate { role: Role::Manufacturer, manufacturer: " ".into(), password: "pw".into() };
+    s.user.as_mut().unwrap().update = UserUpdate { role: Role::Manufacturer, manufacturer: " ".into(), password: "pw".into(), groups: None };
     assert_eq!(s.user_problem(), Some("A manufacturer user needs a manufacturer"));
     s.user.as_mut().unwrap().update.manufacturer = "ACME".into();
     assert_eq!(s.user_problem(), None);
@@ -178,13 +178,31 @@ fn users_are_checked_before_saving() {
     assert_eq!(s.user.as_ref().unwrap().update.role, Role::Editor);
     assert_eq!(s.user_problem(), None);
 
-    s.apply(&Reply::UserSaved(Ok(User { name: "max".into(), role: Role::Manufacturer, manufacturer: "ACME".into() })));
+    s.apply(&Reply::UserSaved(Ok(User { name: "max".into(), role: Role::Manufacturer, manufacturer: "ACME".into(), ..Default::default() })));
     assert_eq!(s.users.len(), 2);
     assert_eq!(s.user.as_ref().unwrap().name, "max");
     assert!(s.user.as_ref().unwrap().update.password.is_empty());
     s.apply(&Reply::UserDeleted("max".into(), Ok(())));
     assert!(s.user.is_none());
     assert_eq!(s.users, [ann]);
+}
+
+#[test]
+fn groups_of_local_and_directory_users() {
+    let mut s = Session::default();
+    let ann = User { name: "ann".into(), groups: vec!["qa".into(), "buyers".into()], ..Default::default() };
+    let dir = User { name: "dora".into(), provider: "corp".into(), groups: vec!["corp:Staff".into()], ..Default::default() };
+    s.apply(&Reply::Users(Ok(vec![ann, dir])));
+    s.select_user(Some("ann"));
+    let d = s.user.as_mut().unwrap();
+    assert_eq!(d.groups, "qa, buyers");
+    d.groups = "qa, , purchasing ,".into();
+    assert_eq!(d.request().groups, Some(vec!["qa".to_string(), "purchasing".into()]));
+    s.select_user(Some("dora"));
+    let d = s.user.as_mut().unwrap();
+    assert_eq!(d.provider, "corp");
+    d.update.password = "typed".into();
+    assert_eq!((d.request().groups, d.request().password), (None, String::new()), "the directory keeps groups and password");
 }
 
 #[test]
