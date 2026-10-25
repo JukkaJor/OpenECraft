@@ -709,8 +709,9 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 23 | Nailboards, Smart Mounting | done: nailboard drawings to scale; mounting assistant | a2fcb96, 7f8e7bb | 3D harness routing |
 
 Also done beyond the roadmap list: property level change tracking in the revision
-overview (old and new value per property, c465254), and parameters of exports in the
-editor (a form for exporter parameters) and on the command line (`--options`).
+overview (old and new value per property, c465254), parameters of exports in the
+editor (a form for exporter parameters) and on the command line (`--options`), and
+sub-pages (`3.1`, *Page › New sub-page*, kept by page renumbering) from section 3.8.
 
 Notes on the vendor formats: the PLC exports (SDF, TcGVL, XSY), the labeling scheme
 templates (CLIP PROJECT, M-Print PRO, Brady, Murrplastik, Partex) and the PDF comment

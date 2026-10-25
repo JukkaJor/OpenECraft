@@ -68,7 +68,8 @@ bill of materials.
   `{page}{column}{letter}` (`-34K`), with start value, step, letters and scope, and a
   preview of the new tags; everything that refers to a tag follows (parts, strips,
   plugs, PLC data, panel layout, harnesses). *Page › Renumber pages…* numbers pages
-  with start and step, restarting per structure and keeping sub-pages (`3.a`). The wire
+  with start and step, restarting per structure and keeping sub-pages (`3.a`; *Page › New
+  sub-page* inserts `3.1`, `3.2`, … after the current page). The wire
   numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
   `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
   value of the rest), counter digits and step, and potential kinds that get no number

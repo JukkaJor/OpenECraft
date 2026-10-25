@@ -30,7 +30,8 @@ panel layout. Most steps below can be tried on it.
   function (`=A1`) and location (`+CAB1`). Devices placed on the page take this
   structure (`=A1+CAB1-K1`); on the page only the part that differs is shown.
 - The 🗄 button of the *Pages* tab groups the pages by structure; *Page › Renumber
-  pages…* renumbers them.
+  pages…* renumbers them. *Page › New sub-page* inserts `3.1`, `3.2`, … after the
+  current page; renumbering keeps them sub-pages of their page.
 
 ## 3. Placing symbols
 

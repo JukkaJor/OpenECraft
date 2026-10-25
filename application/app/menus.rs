@@ -212,6 +212,10 @@ impl App {
         if ui.button(tr("New schematic page")).clicked() {
             self.add_page(PageKind::Schematic);
         }
+        if ui.button(tr("New sub-page")).on_hover_text(tr("A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering")).clicked() {
+            let at = ops::add_subpage(&mut self.session.prj, self.session.page);
+            self.goto(at, 0);
+        }
         if ui.button(tr("New cover sheet")).clicked() {
             self.add_page(PageKind::Cover);
         }

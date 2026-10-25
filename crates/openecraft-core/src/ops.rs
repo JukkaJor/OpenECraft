@@ -146,6 +146,24 @@ pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
     at
 }
 
+/// Inserts a schematic sub-page of page `of` (`3` → `3.1`, then `3.2`, …) after the
+/// page and its sub-pages, in the page's structure; returns its index.
+pub fn add_subpage(prj: &mut Project, of: usize) -> usize {
+    let main = prj.pages[of].name.split_once('.').map_or(prj.pages[of].name.as_str(), |(m, _)| m).to_string();
+    let is_sub = |name: &str| name.split_once('.').is_some_and(|(m, _)| m == main);
+    let next = prj.pages.iter().filter(|p| is_sub(&p.name)).filter_map(|p| p.name.split_once('.').and_then(|(_, n)| n.parse::<u32>().ok())).max().unwrap_or(0) + 1;
+    let mut at = of + 1;
+    while at < prj.pages.len() && is_sub(&prj.pages[at].name) {
+        at += 1;
+    }
+    let at = add_page(prj, PageKind::Schematic, at);
+    let structure = crate::structure::Dt::of_page(&prj.pages[of]);
+    let pg = &mut prj.pages[at];
+    pg.name = format!("{main}.{next}");
+    structure.apply_to(pg);
+    at
+}
+
 /// Creates a symbol instance for a page with sensible defaults (tag in the page's
 /// structure, numbering, ...).
 pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDef, pos: P, rot: u8, mirror: bool) -> SymbolInst {

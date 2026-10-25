@@ -4860,3 +4860,5 @@ Saves the workspace, the navigator tab and the open windows	Speichert den Arbeit
 {} windows	{} Fenster	{} fenêtres	{} ventanas
 Save current…	Aktuellen speichern…	Enregistrer l'actuel…	Guardar el actual…
 Save workspace	Arbeitsbereich speichern	Enregistrer l'espace de travail	Guardar espacio de trabajo
+New sub-page	Neue Unterseite	Nouvelle sous-page	Nueva subpágina
+A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering	Eine Schaltplanseite 3.1, 3.2, … nach der aktuellen Seite, die beim Umnummerieren Unterseite bleibt	Une page de schéma 3.1, 3.2, … après la page courante, qui reste sous-page lors de la renumérotation	Una página de esquema 3.1, 3.2, … tras la página actual, que sigue siendo subpágina al renumerar
