@@ -285,6 +285,18 @@ impl App {
     }
 
     pub(super) fn project_menu(&mut self, ui: &mut egui::Ui) {
+        ui.menu_button(tr("Settings scheme"), |ui| {
+            let ctx = ui.ctx().clone();
+            if ui.button(tr("Export settings…")).on_hover_text(tr("Wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and the check scheme as one file")).clicked() {
+                let json = openecraft_core::settings_scheme::export(&self.session.prj);
+                self.export(&ctx, "settings_scheme.json".into(), (tr("Settings scheme (JSON)"), "json"), json);
+                ui.close();
+            }
+            if ui.button(tr("Import settings…")).clicked() {
+                self.io.open(&ctx, Purpose::SettingsScheme);
+                ui.close();
+            }
+        });
         if ui.button(tr("Project properties…")).clicked() {
             self.show_project = true;
         }

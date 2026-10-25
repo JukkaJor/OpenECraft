@@ -4862,3 +4862,16 @@ Save current…	Aktuellen speichern…	Enregistrer l'actuel…	Guardar el actual
 Save workspace	Arbeitsbereich speichern	Enregistrer l'espace de travail	Guardar espacio de trabajo
 New sub-page	Neue Unterseite	Nouvelle sous-page	Nueva subpágina
 A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering	Eine Schaltplanseite 3.1, 3.2, … nach der aktuellen Seite, die beim Umnummerieren Unterseite bleibt	Une page de schéma 3.1, 3.2, … après la page courante, qui reste sous-page lors de la renumérotation	Una página de esquema 3.1, 3.2, … tras la página actual, que sigue siendo subpágina al renumerar
+Settings scheme file (JSON)	Einstellungsschema-Datei (JSON)	Fichier de schéma de paramètres (JSON)	Archivo de esquema de ajustes (JSON)
+Takes the settings a settings scheme file carries	Übernimmt die Einstellungen einer Einstellungsschema-Datei	Reprend les paramètres d'un fichier de schéma de paramètres	Toma los ajustes de un archivo de esquema de ajustes
+Writes the settings of the project (wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references, check scheme) to a file	Schreibt die Einstellungen des Projekts (Verbindungsnummerierung, Potenziale, Leitungsvorgaben und -farben, Beschriftung, Schlauchvorgaben, Querverweise, Prüfschema) in eine Datei	Écrit les paramètres du projet (numérotation des fils, potentiels, valeurs par défaut et couleurs des fils, repérage, valeurs par défaut des flexibles, renvois, schéma de vérification) dans un fichier	Escribe los ajustes del proyecto (numeración de cables, potenciales, valores y colores de cables, marcado, valores de mangueras, referencias cruzadas, esquema de comprobación) en un archivo
+Settings taken over: {}	Einstellungen übernommen: {}	Paramètres repris : {}	Ajustes aplicados: {}
+Settings scheme (JSON)	Einstellungsschema (JSON)	Schéma de paramètres (JSON)	Esquema de ajustes (JSON)
+Export settings…	Einstellungen exportieren…	Exporter les paramètres…	Exportar ajustes…
+Import settings…	Einstellungen importieren…	Importer des paramètres…	Importar ajustes…
+Settings scheme	Einstellungsschema	Schéma de paramètres	Esquema de ajustes
+Wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and the check scheme as one file	Verbindungsnummerierung, Potenziale, Leitungsvorgaben und -farben, Beschriftung, Schlauchvorgaben, Querverweise und Prüfschema als eine Datei	Numérotation des fils, potentiels, valeurs par défaut et couleurs des fils, repérage, valeurs par défaut des flexibles, renvois et schéma de vérification dans un fichier	Numeración de cables, potenciales, valores y colores de cables, marcado, valores de mangueras, referencias cruzadas y esquema de comprobación en un archivo
+Hose defaults	Schlauchvorgaben	Valeurs par défaut des flexibles	Valores predeterminados de mangueras
+Message levels	Meldungsstufen	Niveaux des messages	Niveles de mensajes
+Not a settings scheme: {}	Kein Einstellungsschema: {}	Ce n'est pas un schéma de paramètres : {}	No es un esquema de ajustes: {}
+Wire defaults	Leitungsvorgaben	Valeurs par défaut des fils	Valores predeterminados de cables

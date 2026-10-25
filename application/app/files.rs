@@ -270,6 +270,13 @@ impl App {
                 }
             }
             Purpose::Preplanning => self.import_preplanning(ctx, &loaded.bytes),
+            Purpose::SettingsScheme => match openecraft_core::settings_scheme::apply(&mut self.session.prj, &loaded.text()) {
+                Ok(parts) => {
+                    let names: Vec<&str> = parts.iter().map(|p| tr(p)).collect();
+                    self.notify(ctx, tr_fmt!("Settings taken over: {}", names.join(", ")));
+                }
+                Err(e) => self.notify(ctx, e),
+            },
             Purpose::CheckScheme => match openecraft_core::checks::apply_scheme(&mut self.session.prj, &loaded.text()) {
                 Ok(()) => self.notify(ctx, tr("Check scheme taken over")),
                 Err(e) => self.notify(ctx, e),

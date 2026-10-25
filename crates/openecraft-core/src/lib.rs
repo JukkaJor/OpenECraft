@@ -56,6 +56,7 @@ pub mod nailboard;
 pub mod page_select;
 pub mod pdf;
 pub mod preplanning;
+pub mod settings_scheme;
 pub mod pdf_comments;
 pub mod plc;
 pub mod plc_hw;

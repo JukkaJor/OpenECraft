@@ -17,6 +17,20 @@ pub static TOOLS: &[Tool] = &[
         run: generate_pages,
     },
     Tool {
+        name: "export_settings",
+        help: tr_const!("Writes the settings of the project (wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references, check scheme) to a file"),
+        params: &[param("path", Kind::Str, tr_const!("Output file (JSON)"))],
+        needs_project: true,
+        run: export_settings,
+    },
+    Tool {
+        name: "import_settings",
+        help: tr_const!("Takes the settings a settings scheme file carries"),
+        params: &[param("path", Kind::Str, tr_const!("Settings scheme file (JSON)"))],
+        needs_project: true,
+        run: import_settings,
+    },
+    Tool {
         name: "export_check_scheme",
         help: tr_const!("Writes the check scheme of the project (checks switched off, message levels) to a file"),
         params: &[param("path", Kind::Str, tr_const!("Output file (JSON)"))],
@@ -55,6 +69,19 @@ pub static TOOLS: &[Tool] = &[
         run: generate_preplanning_pages,
     },
 ];
+
+fn export_settings(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    std::fs::write(path, openecraft_core::settings_scheme::export(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    Ok(json!({ "path": path }))
+}
+
+fn import_settings(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let taken = openecraft_core::settings_scheme::apply(s.project_mut()?, &text)?;
+    Ok(json!({ "taken": taken }))
+}
 
 fn export_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");

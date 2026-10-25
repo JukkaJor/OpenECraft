@@ -79,3 +79,14 @@ fn check_schemes_are_written_and_read() {
     let r = run(&mut s, "import_check_scheme", json!({ "path": file.to_str().unwrap() })).unwrap();
     assert_eq!(r["disabled"], json!(["cables"]));
 }
+
+#[test]
+fn settings_schemes_are_written_and_read() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let file = temp_dir("settings-scheme").join("settings.json");
+    run(&mut s, "export_settings", json!({ "path": file.to_str().unwrap() })).unwrap();
+    run(&mut s, "new_project", json!({ "discard": true })).unwrap();
+    let r = run(&mut s, "import_settings", json!({ "path": file.to_str().unwrap() })).unwrap();
+    assert_eq!(r["taken"].as_array().unwrap().len(), 9);
+}

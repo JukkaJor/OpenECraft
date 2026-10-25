@@ -230,6 +230,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols", "text", "ttf"]),
     ("pdf_comments", &["geom", "model", "review"]),
     ("page_select", &["model", "structure"]),
+    ("settings_scheme", &["model"]),
     ("macro_boxes", &["geom", "macros", "model", "ops"]),
     ("preplanning", &["index", "issue", "macros", "model", "structure"]),
     ("dxf", &["analysis", "frame", "geom", "graphics", "model", "render", "symbols", "text"]),

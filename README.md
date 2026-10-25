@@ -831,6 +831,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Revisions | *Project › Revisions…*: create (and release) revisions, approval workflow, lock / unlock pages, see changes |
 | Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
 | Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
+| Settings scheme | *Project › Settings scheme*: export the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file and take them into other projects (tools `export_settings`, `import_settings`) |
 | Workspaces | *View › Workspaces*: save the workspace, the navigator tab and the open windows under a name and restore them with one click (kept by the app) |
 | Keyboard shortcuts | *View › Keyboard shortcuts…*: record, clear or reset the keys of open, save, undo / redo, find, select all, page up / down, fit, wire and text tool, rotate, mirror, wire corner, routing and finishing polylines; conflicts are shown, the keys are kept by the app and shown in the menus and the help |
 | Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
