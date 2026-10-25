@@ -693,7 +693,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, 84181bd, 1463540 | – |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
 | 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print; File › Print through the browser's print dialog; mounting layout pages show all faces with items | b0ae357, 9ec50c4, 8b876cb | print without the browser |
-| 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
+| 8 | PDF with Unicode fonts, UI font fallback | done: embedded font subset for texts beyond WinAnsi; system CJK fonts as UI fallback on the desktop | c336a16, see log | – (desktop uses system CJK fonts as fallback) |
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
 | 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
 | 11 | Typed mounting data, assemblies | done: typed mounting data; assemblies with components in the bill of materials | 11794d0, ed86e62 | part variants |

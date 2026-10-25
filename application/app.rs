@@ -172,6 +172,7 @@ pub struct App {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> App {
+        openecraft_ui::fonts::install_system_fallbacks(&cc.egui_ctx);
         let mut prj: Option<Project> = None;
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
