@@ -129,3 +129,31 @@ fn graphical_terminal_and_cable_diagrams() {
     assert!(!crate::report_blocks::page_table(&prj, &an, at).unwrap().graphic);
     assert!(crate::report_blocks::has_graphic(ReportKind::CableDiagram) && !crate::report_blocks::has_graphic(ReportKind::DeviceList));
 }
+
+#[test]
+fn graphical_plug_diagram_and_plc_assignment() {
+    use crate::forms::ReportForm;
+    use crate::model::ReportKind;
+    let mut prj = crate::sample::demo_project();
+    for kind in [ReportKind::PlugDiagram, ReportKind::PlcAssignment] {
+        prj.forms.reports.insert(kind.into(), ReportForm { graphic: true, ..Default::default() });
+    }
+    let at = prj.pages.len();
+    crate::ops::add_page(&mut prj, PageKind::Report(ReportKind::PlugDiagram.into()), at);
+    crate::ops::add_page(&mut prj, PageKind::Report(ReportKind::PlcAssignment.into()), at + 1);
+    let an = Analysis::with_builtin(&prj);
+    for (page, heading) in [(at, "Socket side"), (at + 1, "Inputs from")] {
+        let table = crate::report_blocks::page_table(&prj, &an, page).unwrap();
+        assert!(table.graphic);
+        let mut d = Rec::default();
+        draw_page(&mut d, &prj, &an.index, &an, page, &Opts::default());
+        let texts: Vec<&str> = d.texts.iter().map(|t| t.1.as_str()).collect();
+        assert!(texts.contains(&heading), "{texts:?}");
+        if let Some(first) = table.rows.first() {
+            assert!(texts.contains(&first[0].as_str()), "group heading {}", first[0]);
+        }
+    }
+    let plc = crate::report_blocks::page_table(&prj, &an, at + 1).unwrap();
+    assert!(!plc.rows.is_empty(), "the demo has PLC points");
+    assert!(crate::report_blocks::has_graphic(ReportKind::PlugDiagram) && crate::report_blocks::has_graphic(ReportKind::PlcAssignment));
+}

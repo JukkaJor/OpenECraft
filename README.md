@@ -186,11 +186,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
   edited in the title block editor and shared as files; one per project with an
   override per page (built-in: Standard, Compact, None). Report forms choose the
   columns, their order, the heading and the rows per report page.
-  **Graphical forms**: a report form of the terminal or cable diagram can switch to
+  **Graphical forms**: a report form of the terminal, cable or plug diagram or the PLC
+  assignment can switch to
   its graphical form – the strip drawn with a box per terminal (levels marked), end
   brackets and end plates, jumper bridges and the external and internal targets with
   potential, function text and linked location; or each cable as a band with its cores
-  from end to end (potential, wire number, reserve cores dashed).
+  from end to end (potential, wire number, reserve cores dashed); the plug diagram as
+  a housing with socket and pin half per pin; the PLC assignment as a module per card
+  with the inputs coming in from the left and the outputs going out to the right.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
   counterparts on other pages. *Project › Cross references…* sets the format (prefix,

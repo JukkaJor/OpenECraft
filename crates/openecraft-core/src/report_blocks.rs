@@ -82,10 +82,10 @@ pub fn rows_per_page(kind: impl Into<ReportId>, form: Option<&ReportForm>) -> us
 /// Rows per page of graphical report pages.
 pub const GRAPHIC_ROWS_PER_PAGE: usize = 26;
 
-/// The report has a graphical form (terminal and cable diagrams).
+/// The report has a graphical form (terminal, cable and plug diagrams, PLC assignment).
 pub fn has_graphic(kind: impl Into<ReportId>) -> bool {
     let kind = kind.into();
-    kind == ReportId::from(ReportKind::TerminalDiagram) || kind == ReportId::from(ReportKind::CableDiagram)
+    [ReportKind::TerminalDiagram, ReportKind::CableDiagram, ReportKind::PlugDiagram, ReportKind::PlcAssignment].into_iter().any(|k| kind == ReportId::from(k))
 }
 
 /// The form asks for the graphical form and the report has one.
