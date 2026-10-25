@@ -65,3 +65,30 @@ fn devices_in_the_plume_get_too_warm() {
     let f = crate::panel::validate(&prj, &prj.layout.enclosures[0]);
     assert!(!f.iter().any(|f| f.kind == crate::panel::CheckKind::Thermal && f.items == vec![2]), "{f:#?}");
 }
+
+#[test]
+fn a_duct_above_holds_the_plume_back() {
+    let mut prj = project();
+    let free = heat_map(&prj, &prj.layout.enclosures[0]);
+    let duct = PanelItem { id: 3, kind: ItemKind::Duct, x: 0.0, y: 440.0, w: 500.0, h: 40.0, d: 60.0, ..Default::default() };
+    prj.layout.enclosures[0].items.push(duct);
+    let e = &prj.layout.enclosures[0];
+    let held = heat_map(&prj, e);
+    assert_eq!(held.sources[0].ceiling, Some(480.0));
+    // Warmer between the supply and the duct, cooler above the duct.
+    let (below, above) = (p(130.0, 482.0), p(130.0, 400.0));
+    assert!(held.air(below, 0) > free.air(below, 0) + 0.5, "{} {}", held.air(below, 0), free.air(below, 0));
+    assert!(held.air(above, 0) < free.air(above, 0) - 1.0, "{} {}", held.air(above, 0), free.air(above, 0));
+    // The PLC above the duct gets less of it.
+    let plc = |m: &HeatMap| device_temperatures(&prj, e, m).into_iter().find(|t| t.tag == "-A1").unwrap().temperature;
+    assert!(plc(&held) < plc(&free));
+}
+
+#[test]
+fn forced_air_weakens_the_plumes() {
+    let mut prj = project();
+    let still = heat_map(&prj, &prj.layout.enclosures[0]).sources[0].rise;
+    prj.layout.enclosures[0].climate.extra_loss = 500.0;
+    let forced = heat_map(&prj, &prj.layout.enclosures[0]).sources[0].rise;
+    assert!((forced - still * 0.5).abs() < 1e-4, "{forced} {still}");
+}

@@ -68,3 +68,41 @@ fn too_warm_enclosures_are_reported() {
     let t = &an.report(&prj, crate::model::ReportKind::Climate).unwrap();
     assert_eq!(t.rows.len(), prj.layout.enclosures.len());
 }
+
+#[test]
+fn altitude_and_sealed_enclosures() {
+    let prj = Project::default();
+    let mut e = enclosure();
+    e.climate.extra_loss = 168.31;
+    e.climate.altitude = 2000.0;
+    // The air at 2000 m has about 82 % of the density at sea level.
+    assert!((air_density(2000.0) - 0.8216).abs() < 1e-3, "{}", air_density(2000.0));
+    match calculate(&prj, &e).cooling {
+        Cooling::Fan(v) => assert!((v - 31.0 / air_density(2000.0)).abs() < 0.1, "{v}"),
+        c => panic!("{c:?}"),
+    }
+    // A sealed enclosure gets a heat exchanger of 100 W / 10 K.
+    e.climate.sealed = true;
+    match calculate(&prj, &e).cooling {
+        Cooling::HeatExchanger(q) => assert!((q - 10.0).abs() < 0.01, "{q}"),
+        c => panic!("{c:?}"),
+    }
+    assert_eq!(Cooling::HeatExchanger(10.0).text(), "heat exchanger 10.0 W/K");
+    e.climate.ambient_max = 33.0;
+    assert!(matches!(calculate(&prj, &e).cooling, Cooling::CoolingUnit(_)));
+}
+
+#[test]
+fn the_heater_keeps_the_dew_point() {
+    assert!((dew_point(25.0, 60.0) - 16.7).abs() < 0.1, "{}", dew_point(25.0, 60.0));
+    assert!((dew_point(20.0, 100.0) - 20.0).abs() < 0.01);
+    let prj = Project::default();
+    let mut e = enclosure();
+    e.climate.ambient_min = 10.0;
+    assert_eq!(calculate(&prj, &e).heating, 0.0);
+    // 25 °C at 60 %: the inside must stay above 16.7 °C when it is 10 °C outside.
+    e.climate.humidity = 60.0;
+    let r = calculate(&prj, &e);
+    assert!((r.dew_point.unwrap() - 16.7).abs() < 0.1);
+    assert!((r.heating - 6.831 * (r.dew_point.unwrap() - 10.0)).abs() < 0.1, "{}", r.heating);
+}

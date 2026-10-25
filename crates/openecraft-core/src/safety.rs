@@ -2,9 +2,13 @@
 //! output), each with its devices, category, diagnostic coverage and common cause
 //! measures. The performance level of a subsystem follows from the simplified
 //! procedure (figure 5: category, DCavg, MTTFd of a channel); the PL of the function
-//! from the combination of its subsystems (table 11). Devices with a certified PL or
-//! PFHd (`PL: e`, `PFHd: 2.5E-9`) count with that; others with their `MTTFd` (years)
-//! or `B10d` (cycles) and the operations per year of the subsystem.
+//! from the combination of its subsystems (table 11), or from the sum of their PFHd
+//! where every subsystem has one. Devices with a certified PL or PFHd (`PL: e`,
+//! `PFHd: 2.5E-9`) count with that; others with their `MTTFd` (years) or `B10d`
+//! (cycles) and the operations per year of the subsystem. Two channels of different
+//! devices are symmetrised (annex D, D.2); the DCavg comes from the `DC` (%) of the
+//! devices when the subsystem has none (annex E); devices that reach their T10d
+//! within the mission time must be replaced in time.
 
 use openecraft_i18n::{tr, tr_fmt};
 use crate::model::*;
@@ -91,6 +95,9 @@ fn parse_number(text: &str) -> Option<f32> {
     num.trim_end_matches(['e', 'E', '-', '+']).parse().ok()
 }
 
+/// Mission time of ISO 13849-1, years.
+pub const MISSION_TIME: f32 = 20.0;
+
 /// Reliability data of a device.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct DeviceData {
@@ -98,6 +105,8 @@ struct DeviceData {
     pfh: Option<f32>,
     mttfd: Option<f32>,
     b10d: Option<f32>,
+    /// Diagnostic coverage, %.
+    dc: Option<f32>,
 }
 
 fn device_data(prj: &Project, tag: &str) -> DeviceData {
@@ -107,6 +116,7 @@ fn device_data(prj: &Project, tag: &str) -> DeviceData {
         d.pfh = d.pfh.or_else(|| p.tech_value("PFHd").and_then(parse_number));
         d.mttfd = d.mttfd.or_else(|| p.tech_value("MTTFd").and_then(parse_number));
         d.b10d = d.b10d.or_else(|| p.tech_value("B10d").and_then(parse_number));
+        d.dc = d.dc.or_else(|| p.tech_value("DC").and_then(parse_number));
     }
     d
 }
@@ -114,10 +124,16 @@ fn device_data(prj: &Project, tag: &str) -> DeviceData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct SubsystemResult {
     pub name: String,
-    /// MTTFd of a channel (capped), years.
+    /// MTTFd of a channel (capped, symmetrised for two channels), years.
     pub mttfd: Option<f32>,
+    /// DCavg used, %.
+    pub dc: f32,
+    /// PFHd of the subsystem: the sum of its devices' when all have one.
+    pub pfh: Option<f32>,
     pub pl: Option<Pl>,
     pub problems: Vec<String>,
+    /// Hints that do not lower the PL (replacement before the T10d).
+    pub notes: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -125,6 +141,8 @@ pub struct Evaluation {
     pub function: String,
     pub required: Pl,
     pub achieved: Option<Pl>,
+    /// PFHd of the function: the sum of its subsystems' when all have one.
+    pub pfh: Option<f32>,
     pub subsystems: Vec<SubsystemResult>,
 }
 
@@ -149,56 +167,97 @@ fn figure5(cat: Category, dc: usize, mttfd: usize) -> Option<Pl> {
     row[mttfd.checked_sub(1)?]
 }
 
+/// Sums over the devices of a channel without certified data.
+#[derive(Clone, Copy, Debug, Default)]
+struct Channel {
+    /// Σ 1 / MTTFd.
+    inv: f32,
+    /// Σ DC / MTTFd.
+    dc: f32,
+    computed: bool,
+}
+
+/// MTTFd of two channels as one (annex D, equation D.2).
+pub fn symmetrise(c1: f32, c2: f32) -> f32 {
+    2.0 / 3.0 * (c1 + c2 - 1.0 / (1.0 / c1 + 1.0 / c2))
+}
+
 fn evaluate_subsystem(prj: &Project, s: &Subsystem) -> SubsystemResult {
-    let mut r = SubsystemResult { name: s.name.clone(), mttfd: None, pl: None, problems: Vec::new() };
+    let mut r = SubsystemResult { name: s.name.clone(), mttfd: None, dc: s.dc, pfh: None, pl: None, problems: Vec::new(), notes: Vec::new() };
     if s.devices.is_empty() {
         r.problems.push(tr_fmt!("Subsystem {} has no devices", s.name));
         return r;
     }
     let mut certified: Option<Pl> = None;
-    // Sum of 1 / MTTFd of the devices without certified data.
-    let mut inv = 0.0;
-    let mut computed = false;
+    let mut pfh = Some(0.0);
     let mut missing = false;
-    for tag in &s.devices {
-        if !prj.devices.contains_key(tag) && !prj.pages.iter().any(|p| p.symbols.iter().any(|x| &x.tag == tag)) {
-            r.problems.push(tr_fmt!("Device {} does not exist", tag));
-            missing = true;
-            continue;
-        }
-        let d = device_data(prj, tag);
-        if let Some(pl) = d.pl.or_else(|| d.pfh.and_then(Pl::of_pfh)) {
-            certified = Some(certified.map_or(pl, |c| c.min(pl)));
-            continue;
-        }
-        computed = true;
-        match (d.mttfd, d.b10d) {
-            (Some(m), _) if m > 0.0 => inv += 1.0 / m,
-            (_, Some(b)) if s.operations > 0.0 => inv += 0.1 * s.operations / b,
-            (_, Some(_)) => {
-                r.problems.push(tr_fmt!("{}: operations per year needed for the B10d of {}", s.name, tag));
+    let mut channels = Vec::new();
+    for devices in [&s.devices, &s.channel2].into_iter().filter(|d| !d.is_empty()) {
+        let mut ch = Channel::default();
+        for tag in devices {
+            if !prj.devices.contains_key(tag) && !prj.pages.iter().any(|p| p.symbols.iter().any(|x| &x.tag == tag)) {
+                r.problems.push(tr_fmt!("Device {} does not exist", tag));
                 missing = true;
+                continue;
             }
-            _ if s.mttfd > 0.0 => {}
-            _ => {
-                r.problems.push(tr_fmt!("{} has no MTTFd, B10d, PL or PFHd", tag));
-                missing = true;
+            let d = device_data(prj, tag);
+            pfh = pfh.zip(d.pfh).map(|(a, b)| a + b);
+            if let Some(pl) = d.pl.or_else(|| d.pfh.and_then(Pl::of_pfh)) {
+                certified = Some(certified.map_or(pl, |c| c.min(pl)));
+                continue;
+            }
+            ch.computed = true;
+            let mttfd = match (d.mttfd, d.b10d) {
+                (Some(m), _) if m > 0.0 => Some(m),
+                (_, Some(b)) if s.operations > 0.0 => {
+                    let t10d = b / s.operations;
+                    if t10d < MISSION_TIME {
+                        r.notes.push(tr_fmt!("{}: replace {} after {} years (T10d)", s.name, tag, format!("{t10d:.1}")));
+                    }
+                    Some(b / (0.1 * s.operations))
+                }
+                (_, Some(_)) => {
+                    r.problems.push(tr_fmt!("{}: operations per year needed for the B10d of {}", s.name, tag));
+                    missing = true;
+                    None
+                }
+                _ if s.mttfd > 0.0 => None,
+                _ => {
+                    r.problems.push(tr_fmt!("{} has no MTTFd, B10d, PL or PFHd", tag));
+                    missing = true;
+                    None
+                }
+            };
+            if let Some(m) = mttfd {
+                ch.inv += 1.0 / m;
+                ch.dc += d.dc.unwrap_or(0.0) / m;
             }
         }
-    }
-    if s.mttfd > 0.0 && computed {
-        inv = 1.0 / s.mttfd;
+        channels.push(ch);
     }
     if missing {
         return r;
     }
+    r.pfh = pfh;
     let mut pl = certified;
-    if computed {
+    if channels.iter().any(|c| c.computed) {
         let cap = if s.category == Category::Four { 2500.0 } else { 100.0 };
-        let mttfd = if inv > 0.0 { (1.0 / inv).min(cap) } else { cap };
+        let channel = |c: &Channel| match (s.mttfd > 0.0 && c.computed, c.inv > 0.0) {
+            (true, _) => s.mttfd.min(cap),
+            (_, true) => (1.0 / c.inv).min(cap),
+            _ => cap,
+        };
+        let mttfd = match channels.as_slice() {
+            [a, b] => symmetrise(channel(a), channel(b)),
+            _ => channel(&channels[0]),
+        };
         r.mttfd = Some(mttfd);
+        let inv: f32 = channels.iter().map(|c| c.inv).sum();
+        if s.dc <= 0.0 && inv > 0.0 {
+            r.dc = channels.iter().map(|c| c.dc).sum::<f32>() / inv;
+        }
         let m = band(mttfd, [3.0, 10.0, 30.0]);
-        let dc = band(s.dc, [60.0, 90.0, 99.0]);
+        let dc = band(r.dc, [60.0, 90.0, 99.0]);
         let before = r.problems.len();
         if m == 0 {
             r.problems.push(tr_fmt!("{}: MTTFd {} years is below 3 years", s.name, format!("{mttfd:.1}")));
@@ -237,8 +296,15 @@ pub fn combine(pls: &[Pl]) -> Option<Pl> {
 pub fn evaluate(prj: &Project, f: &SafetyFunction) -> Evaluation {
     let subsystems: Vec<SubsystemResult> = f.subsystems.iter().map(|s| evaluate_subsystem(prj, s)).collect();
     let pls: Option<Vec<Pl>> = subsystems.iter().map(|s| s.pl).collect();
-    let achieved = pls.filter(|p| !p.is_empty()).and_then(|p| combine(&p));
-    Evaluation { function: f.name.clone(), required: f.required, achieved, subsystems }
+    let pls = pls.filter(|p| !p.is_empty());
+    let pfh: Option<f32> = subsystems.iter().map(|s| s.pfh).sum::<Option<f32>>().filter(|_| !subsystems.is_empty());
+    // The sum of the PFHd replaces table 11, the PL of each subsystem still caps it.
+    let achieved = match (&pls, pfh) {
+        (Some(p), Some(sum)) => Pl::of_pfh(sum).zip(p.iter().min().copied()).map(|(a, b)| a.min(b)),
+        (Some(p), None) => combine(p),
+        _ => None,
+    };
+    Evaluation { function: f.name.clone(), required: f.required, achieved, pfh, subsystems }
 }
 
 /// Check messages of the safety functions.
@@ -249,6 +315,9 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
         for s in &e.subsystems {
             for p in &s.problems {
                 out.push(crate::issue!(Severity::Warning, None, "Safety function {}: {}", f.name, p));
+            }
+            for p in &s.notes {
+                out.push(crate::issue!(Severity::Info, None, "Safety function {}: {}", f.name, p));
             }
         }
         match e.achieved {

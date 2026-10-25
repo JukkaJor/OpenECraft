@@ -25,6 +25,7 @@ pub(super) fn short_circuit(prj: &Project, nl: &Netlist, conns: &[Connection]) -
         (tr_const!("Rated current (A)"), 0.7),
         (tr_const!("Breaking capacity (kA)"), 0.8),
         (tr_const!("Ik max (kA)"), 0.7),
+        (tr_const!("ip (kA)"), 0.6),
         (tr_const!("Cable"), 0.7),
         (tr_const!("Ik1 min (A)"), 0.7),
         (tr_const!("Disconnection (s)"), 0.8),
@@ -34,18 +35,25 @@ pub(super) fn short_circuit(prj: &Project, nl: &Netlist, conns: &[Connection]) -
     for f in crate::shortcircuit::faults(prj, nl, conns) {
         let p = &f.protection;
         let disconnection = if f.residual.is_some() { tr_fmt!("RCD {} mA", f.residual.unwrap_or(0.0)) } else { num(f.time, 2) };
+        let breaking = match (&f.backup, p.breaking) {
+            (Some(up), _) => tr_fmt!("back-up {}", up),
+            (None, Some(b)) => num(b, 1),
+            _ => "–".into(),
+        };
+        let cable = if f.feeders.is_empty() { f.cable.clone() } else { format!("{}, {}", f.feeders.join(", "), f.cable) };
         t.push(
             vec![
                 f.device.clone(),
                 p.characteristic.title().into(),
                 num(p.rated, 1),
-                p.breaking.map(|b| num(b, 1)).unwrap_or_else(|| "–".into()),
+                breaking,
                 num(f.ik_max / 1000.0, 2),
-                f.cable.clone(),
+                num(f.ip / 1000.0, 2),
+                cable,
                 num(f.ik_min_end, 0),
                 disconnection,
-                f.limit.map(|l| num(l, 1)).unwrap_or_else(|| "IT".into()),
-                ok(f.breaks() != Some(false) && f.disconnects() && f.withstands()),
+                f.limit.map(|l| num(l, 2)).unwrap_or_else(|| "–".into()),
+                ok(f.is_ok()),
             ],
             Some(f.target),
         );
@@ -54,10 +62,17 @@ pub(super) fn short_circuit(prj: &Project, nl: &Netlist, conns: &[Connection]) -
 }
 
 pub(super) fn selectivity(prj: &Project, nl: &Netlist, conns: &[Connection]) -> Table {
-    let mut t = Table::with_widths(&[(tr_const!("Upstream"), 0.8), (tr_const!("Downstream"), 0.8), (tr_const!("Selective up to (A)"), 0.9), (tr_const!("Ik max (A)"), 0.8), (tr_const!("Selectivity"), 0.8)]);
+    let mut t = Table::with_widths(&[
+        (tr_const!("Upstream"), 0.8),
+        (tr_const!("Downstream"), 0.8),
+        (tr_const!("Selective up to (A)"), 0.9),
+        (tr_const!("Ik max (A)"), 0.8),
+        (tr_const!("Selectivity"), 0.8),
+        (tr_const!("Basis"), 1.0),
+    ]);
     for s in crate::shortcircuit::selectivity(prj, nl, conns) {
         let grade = if s.is_total() { tr("Total") } else { tr("Partial") };
-        t.push(vec![s.upstream.clone(), s.downstream.clone(), num(s.limit, 0), num(s.ik, 0), grade.into()], Some(s.target));
+        t.push(vec![s.upstream.clone(), s.downstream.clone(), num(s.limit, 0), num(s.ik, 0), grade.into(), s.basis.title().into()], Some(s.target));
     }
     t
 }
@@ -113,19 +128,34 @@ pub(super) fn safety_functions(prj: &Project) -> Table {
         (tr_const!("Category"), 0.5),
         (tr_const!("DCavg (%)"), 0.5),
         (tr_const!("MTTFd (years)"), 0.6),
+        (tr_const!("PFHd (1/h)"), 0.6),
         (tr_const!("PL"), 0.6),
         (tr_const!("Required"), 0.6),
         (tr_const!("Result"), 0.5),
     ]);
+    let pfh = |p: Option<f32>| p.map(|p| format!("{p:.2e}")).unwrap_or_else(|| "–".into());
     for f in &prj.electrical.safety {
         let e = crate::safety::evaluate(prj, f);
         for (s, r) in f.subsystems.iter().zip(&e.subsystems) {
             t.push(
-                vec![f.name.clone(), s.name.clone(), s.category.title().into(), num(s.dc, 0), r.mttfd.map(|m| num(m, 1)).unwrap_or_else(|| "–".into()), crate::safety::pl_text(r.pl), String::new(), String::new()],
+                vec![
+                    f.name.clone(),
+                    s.name.clone(),
+                    s.category.title().into(),
+                    num(r.dc, 0),
+                    r.mttfd.map(|m| num(m, 1)).unwrap_or_else(|| "–".into()),
+                    pfh(r.pfh),
+                    crate::safety::pl_text(r.pl),
+                    String::new(),
+                    String::new(),
+                ],
                 None,
             );
         }
-        t.push(vec![f.name.clone(), tr("Safety function").into(), String::new(), String::new(), String::new(), crate::safety::pl_text(e.achieved), crate::safety::pl_text(Some(f.required)), ok(e.is_met())], None);
+        t.push(
+            vec![f.name.clone(), tr("Safety function").into(), String::new(), String::new(), String::new(), pfh(e.pfh), crate::safety::pl_text(e.achieved), crate::safety::pl_text(Some(f.required)), ok(e.is_met())],
+            None,
+        );
     }
     t
 }

@@ -70,3 +70,44 @@ fn energy_let_through() {
     assert!(f.energy(1000.0).is_some());
     assert_eq!(f.energy(10.0), None);
 }
+
+#[test]
+fn curves_of_the_manufacturer() {
+    let tech = "Characteristic: C\nTrip curve max: 1.45: 3600; 3: 20; 10: 0.01\nTrip curve min: 1.13: 3600; 5: 0.005\nLet-through energy: 1 kA: 8000; 6 kA: 25000\nMaking capacity: 10.5 kA";
+    let p = Protection::of_part(&part("X.Y", "", "10 A", tech), FnKind::Breaker1).unwrap();
+    assert_eq!((p.curve_max.len(), p.curve_min.len(), p.making), (3, 2, Some(10.5)));
+    // Log-log between the points, no tripping below the first.
+    let (lo, hi) = p.trip_time(12.0);
+    let f = (1.2f32 / 1.13).ln() / (5.0f32 / 1.13).ln();
+    assert!((lo - (3600.0f32.ln() + f * (0.005f32 / 3600.0).ln()).exp()).abs() < 1e-3 * lo, "{lo}");
+    assert_eq!(hi, NO_TRIP);
+    let t = p.trip_time(55.0).1;
+    let f = (5.5f32 / 3.0).ln() / (10.0f32 / 3.0).ln();
+    assert!((t - (20.0f32.ln() + f * (0.01f32 / 20.0).ln()).exp()).abs() < 1e-3 * t, "{t}");
+    // The last value beyond the last point.
+    assert_eq!(p.trip_time(1000.0).1, 0.01);
+    assert_eq!(p.let_through, None);
+    assert!((p.energy(3000.0).unwrap() - (8000.0f32.ln() + 3f32.ln() / 6f32.ln() * (25000.0f32 / 8000.0).ln()).exp()).abs() < 1.0);
+    // Beyond the curve the manufacturer gives nothing.
+    assert_eq!(p.energy(10000.0), None);
+}
+
+#[test]
+fn electronic_trip_unit() {
+    let tech = "Characteristic: LSI\nLong-time delay: 10 s\nShort-time pickup: 6\nShort-time delay: 0.2 s\nInstantaneous trip: 15";
+    let p = Protection::of_part(&part("X.ACB", "", "400 A", tech), FnKind::Breaker3).unwrap();
+    assert_eq!(p.characteristic, Characteristic::Electronic);
+    assert_eq!(p.trip_unit, Some(TripUnit { long_delay: 10.0, short_pickup: Some(6.0), short_delay: 0.2 }));
+    // Long time: 10 s at 6 × Ir (±20 %), I²t = constant.
+    let (lo, hi) = p.trip_time(3.0 * 400.0);
+    assert!((lo - 32.0).abs() < 1e-3 && (hi - 48.0).abs() < 1e-3, "{lo} {hi}");
+    assert_eq!(p.trip_time(1.1 * 400.0).1, NO_TRIP);
+    // Short time at the set delay, cleared within 0.1 s more.
+    let (lo, hi) = p.trip_time(8.0 * 400.0);
+    assert!((lo - 0.2).abs() < 1e-6 && (hi - 0.3).abs() < 1e-6, "{lo} {hi}");
+    // Instantaneous from 15 × In (±10 %).
+    assert_eq!(p.trip_time(17.0 * 400.0), (0.0, 0.05));
+    // Recognised by its settings, too.
+    let p = Protection::of_part(&part("X.MCCB", "", "250 A", "Short-time pickup: 8"), FnKind::Breaker3).unwrap();
+    assert_eq!((p.characteristic, p.trip_unit.map(|u| u.long_delay)), (Characteristic::Electronic, Some(10.0)));
+}
