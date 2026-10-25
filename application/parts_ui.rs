@@ -92,7 +92,11 @@ impl PartsUi {
     pub fn poll_server(&mut self, ctx: &egui::Context, db: &mut PartsDb) -> Vec<PartsAction> {
         let mut actions = Vec::new();
         for reply in self.server.poll() {
-            self.portal.apply(&reply, &db.parts);
+            if self.server.read_only() && matches!(reply, Reply::Versions(_)) {
+                self.portal.apply(&reply, &self.server.kind.update_candidates(&db.parts));
+            } else {
+                self.portal.apply(&reply, &db.parts);
+            }
             match reply {
                 Reply::Parts(Ok(list)) => {
                     let n = list.parts.len();

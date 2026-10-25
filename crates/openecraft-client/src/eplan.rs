@@ -10,17 +10,19 @@
 //! | --- | --- |
 //! | `GET /info` | `GET /parts?page[limit]=1` (number of parts) |
 //! | `POST /search` | `GET /parts?search=&filter[manufacturer]=&filter[catalog_eplan]=&sort=&page[offset]=&page[limit]=` |
-//! | `POST /search` with numbers | `POST /parts`, part numbers separated by commas |
-//! | `GET /parts/{number}` | `GET /parts/{number}` |
+//! | `POST /search` with numbers | `POST /parts` with the portal ids ([`Part::portal_id`]) separated by commas |
+//! | `GET /parts/{number}` | `GET /parts?search="{number}"` (the portal finds parts by id only) |
 //! | `GET /files/{id}` | `GET /download/commercial_data/part/{id}`, `GET /download/dxf_data/part/{id}`, picture previews |
 //!
-//! Product groups are filtered by the EPLAN catalog UID: generic product group (two
-//! digits), product group and subgroup (four digits each), e.g. `0100020003`.
+//! Manufacturers are filtered by their short name, product groups by the id of the
+//! EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
+//! (subgroup + 1) with the numbers of the EPLAN part exchange, 0 for a level that is not
+//! chosen, e.g. `200050000` for electrical engineering / plugs.
 
 use crate::endpoint::with_content_type;
 use openecraft_i18n::{lang, tr, tr_fmt};
 use openecraft_parts::api::{self, encode_component, PartQuery, ServerInfo};
-use openecraft_parts::portal::{Attachment, AttachmentKind, Facet, SearchResult, Sort};
+use openecraft_parts::portal::{Attachment, AttachmentKind, Facet, Lifecycle, SearchResult, Sort};
 use openecraft_parts::productgroups::{self, Classification};
 use openecraft_parts::{unix_from_date, Part};
 use serde_json::{Map, Value};
@@ -30,6 +32,10 @@ pub const EPLAN_URL: &str = "https://dataportal.eplan.com/api";
 pub const EPLAN_NAME: &str = "EPLAN Data Portal";
 /// Parts per request if the query sets no limit.
 const LIMIT: usize = 50;
+/// Parts a search for one number may return (numbers that contain it come as well).
+const FIND_LIMIT: usize = 20;
+/// Related resources the answers include: names of manufacturer and groups, pictures.
+const INCLUDE: &str = "manufacturer,product_top_group,product_group,product_sub_group,picture_file.preview";
 /// The facets the portal can filter by.
 const FACETS: [&str; 4] = ["top_group", "group", "subgroup", "manufacturer"];
 
@@ -44,6 +50,11 @@ impl Default for EplanEndpoint {
     fn default() -> Self {
         EplanEndpoint { url: EPLAN_URL.into(), token: String::new() }
     }
+}
+
+fn params(list: &[(&str, String)]) -> String {
+    let list: Vec<String> = list.iter().map(|(k, v)| format!("{}={}", encode_component(k), encode_component(v))).collect();
+    format!("?{}", list.join("&"))
 }
 
 impl EplanEndpoint {
@@ -62,29 +73,39 @@ impl EplanEndpoint {
         req
     }
 
+    fn get(&self, path: &str) -> ehttp::Request {
+        self.authorized(ehttp::Request::get(self.url(path)))
+    }
+
     /// The first part: checks address and token, the answer counts the parts.
     pub fn info(&self) -> ehttp::Request {
-        self.authorized(ehttp::Request::get(self.url(&format!("/parts?{}=1", encode_component("page[limit]")))))
+        self.get(&format!("/parts{}", params(&[("page[limit]", "1".into())])))
     }
 
-    /// Search with text, manufacturer, product groups, order and page of the query;
-    /// a query with part numbers loads these parts.
+    /// Search with text, manufacturer, product groups, order and page of the query.
     pub fn search(&self, query: &PartQuery) -> ehttp::Request {
-        if !query.numbers.is_empty() {
-            return self.parts(&query.numbers);
-        }
-        self.authorized(ehttp::Request::get(self.url(&format!("/parts{}", query_string(query)))))
+        self.get(&format!("/parts{}", query_string(query)))
     }
 
-    /// POST /parts: the parts with these numbers.
-    pub fn parts(&self, numbers: &[String]) -> ehttp::Request {
-        let req = ehttp::Request::post(self.url("/parts"), numbers.join(",").into_bytes());
+    /// POST /parts: the parts with these portal ids.
+    pub fn parts(&self, ids: &[String]) -> ehttp::Request {
+        let req = ehttp::Request::post(self.url(&format!("/parts{}", params(&[("include", INCLUDE.into())]))), ids.join(",").into_bytes());
         self.authorized(with_content_type(req, "text/plain"))
     }
 
-    /// GET /parts/{number}
+    /// Search for exactly this part number ([`decode_part`] picks the part).
     pub fn part(&self, number: &str) -> ehttp::Request {
-        self.authorized(ehttp::Request::get(self.url(&format!("/parts/{}", encode_component(number)))))
+        let query = [("search", format!("\"{}\"", number.trim().replace('"', ""))), ("include", INCLUDE.into()), ("page[limit]", FIND_LIMIT.to_string())];
+        self.get(&format!("/parts{}", params(&query)))
+    }
+
+    /// The parts with these numbers: by the portal ids known for them (`ids`), without
+    /// ids a search for the first number.
+    pub fn lookup(&self, numbers: &[String], ids: &[String]) -> ehttp::Request {
+        match (ids.is_empty(), numbers.first()) {
+            (true, Some(number)) => self.part(number),
+            _ => self.parts(ids),
+        }
     }
 
     /// Address of a file of a part ([`Attachment::id`]: a path of the API or an address).
@@ -115,43 +136,45 @@ impl EplanEndpoint {
 }
 
 /// Query parameters of `GET /parts`. Catalogs, lifecycle and technical data are not
-/// known to the portal.
+/// known to the portal; a text search keeps the portal's order by relevance unless
+/// another order is chosen.
 pub fn query_string(query: &PartQuery) -> String {
-    let mut params: Vec<(&str, String)> = Vec::new();
-    if let Some(q) = query.q.as_deref().map(str::trim).filter(|q| !q.is_empty()) {
-        params.push(("search", q.to_string()));
+    let mut list: Vec<(&str, String)> = Vec::new();
+    let text = query.q.as_deref().map(str::trim).filter(|q| !q.is_empty());
+    if let Some(q) = text {
+        list.push(("search", q.to_string()));
     }
     if let Some(m) = query.manufacturer.as_deref().map(str::trim).filter(|m| !m.is_empty()) {
-        params.push(("filter[manufacturer]", m.to_string()));
+        list.push(("filter[manufacturer]", m.to_string()));
     }
-    if let Some(uid) = catalog_uid(query) {
-        params.push(("filter[catalog_eplan]", uid));
+    if let Some(id) = catalog_id(query) {
+        list.push(("filter[catalog_eplan]", id));
     }
     let sort = match query.sort {
-        Sort::Manufacturer => "manufacturer.short_name",
-        _ => "part_number",
+        Sort::Manufacturer => Some("manufacturer.short_name"),
+        Sort::Number if text.is_some() && !query.descending => None,
+        _ => Some("part_number"),
     };
-    params.push(("sort", format!("{}{sort}", if query.descending { "-" } else { "" })));
-    params.push(("page[offset]", query.offset.unwrap_or(0).to_string()));
-    params.push(("page[limit]", query.limit.unwrap_or(LIMIT).to_string()));
-    let params: Vec<String> = params.iter().map(|(k, v)| format!("{}={}", encode_component(k), encode_component(v))).collect();
-    format!("?{}", params.join("&"))
+    if let Some(sort) = sort {
+        list.push(("sort", format!("{}{sort}", if query.descending { "-" } else { "" })));
+    }
+    list.push(("include", INCLUDE.into()));
+    list.push(("page[offset]", query.offset.unwrap_or(0).to_string()));
+    list.push(("page[limit]", query.limit.unwrap_or(LIMIT).to_string()));
+    params(&list)
 }
 
-/// EPLAN catalog UID of the product groups of the query (the generic product group
-/// defaults to electrical engineering).
-pub fn catalog_uid(query: &PartQuery) -> Option<String> {
+/// Id of the EPLAN catalog entry of the query's product groups (the generic product
+/// group defaults to electrical engineering).
+pub fn catalog_id(query: &PartQuery) -> Option<String> {
     let group = query.group.as_deref().and_then(productgroups::group_id).filter(|g| *g != 0);
     let sub = query.subgroup.as_deref().and_then(productgroups::subgroup_id).filter(|s| *s != 0);
     if query.top_group.is_none() && group.is_none() {
         return None;
     }
-    let top = query.top_group.unwrap_or_default().eplan_id();
-    Some(match (group, sub) {
-        (Some(g), Some(s)) => format!("{top:02}{g:04}{s:04}"),
-        (Some(g), None) => format!("{top:02}{g:04}"),
-        _ => format!("{top:02}"),
-    })
+    let top = u32::from(query.top_group.unwrap_or_default().eplan_id()) + 1;
+    let level = |n: Option<u16>| n.map_or(0, |n| u32::from(n) + 1);
+    Some((top * 100_000_000 + level(group) * 10_000 + if group.is_some() { level(sub) } else { 0 }).to_string())
 }
 
 /// Message of a failed request: access denied, the JSON:API `errors`, otherwise the
@@ -191,8 +214,8 @@ pub fn decode_info(result: ehttp::Result<ehttp::Response>) -> Result<ServerInfo,
     Ok(ServerInfo { name: EPLAN_NAME.into(), version: "API".into(), parts: total(&doc, shown), storage: "eplan".into(), ..Default::default() })
 }
 
-/// Answer of [`EplanEndpoint::search`] for `query`. The facets count the parts of the
-/// answer (the portal does not count them).
+/// Answer of [`EplanEndpoint::search`] or [`EplanEndpoint::lookup`] for `query`. The
+/// facets count the parts of the answer (the portal does not count them).
 pub fn decode_search(query: &PartQuery, result: ehttp::Result<ehttp::Response>) -> Result<SearchResult, String> {
     let doc = document(result)?;
     let mut parts = parts(&doc);
@@ -206,12 +229,13 @@ pub fn decode_search(query: &PartQuery, result: ehttp::Result<ehttp::Response>) 
     Ok(SearchResult { revision: 0, total, offset, facets: facets(query, &parts), attributes: Vec::new(), parts })
 }
 
-/// Answer of [`EplanEndpoint::part`]; `None` if the portal does not know the part.
-pub fn decode_part(result: ehttp::Result<ehttp::Response>) -> Result<Option<Part>, String> {
+/// Answer of [`EplanEndpoint::part`]: the part with exactly this number, `None` if the
+/// portal does not know it.
+pub fn decode_part(number: &str, result: ehttp::Result<ehttp::Response>) -> Result<Option<Part>, String> {
     if result.as_ref().is_ok_and(|r| r.status == 404) {
         return Ok(None);
     }
-    Ok(parts(&document(result)?).into_iter().next())
+    Ok(parts(&document(result)?).into_iter().find(|p| p.number.eq_ignore_ascii_case(number.trim())))
 }
 
 /// Answer of [`EplanEndpoint::file`].
@@ -227,7 +251,7 @@ fn number(v: &Value) -> Option<usize> {
 /// a link to the next page.
 fn total(doc: &Value, fallback: usize) -> usize {
     let meta = &doc["meta"];
-    [&meta["total"], &meta["total_count"], &meta["totalCount"], &meta["count"], &meta["page"]["total"], &meta["pagination"]["total"]]
+    [&meta["page"]["total"], &meta["total"], &meta["count"]]
         .into_iter()
         .find_map(number)
         .unwrap_or_else(|| fallback + usize::from(!doc["links"]["next"].is_null()))
@@ -275,14 +299,18 @@ fn first(v: &Value, keys: &[&str]) -> String {
     }
 }
 
-/// A resource with its attributes and `id` in one object; a resource identifier
-/// (`{"type", "id"}`) is looked up in `included`.
-fn flat(res: &Value, included: &[Value]) -> Value {
-    let res = if res.get("attributes").is_none() && res.get("type").is_some() {
+/// A resource identifier (`{"type", "id"}`) looked up in `included`.
+fn lookup<'a>(res: &'a Value, included: &'a [Value]) -> &'a Value {
+    if res.get("attributes").is_none() && res.get("type").is_some() {
         included.iter().find(|i| i["type"] == res["type"] && i["id"] == res["id"]).unwrap_or(res)
     } else {
         res
-    };
+    }
+}
+
+/// A resource with its attributes and `id` in one object.
+fn flat(res: &Value, included: &[Value]) -> Value {
+    let res = lookup(res, included);
     match res.get("attributes") {
         Some(Value::Object(attributes)) => {
             let mut out = attributes.clone();
@@ -295,7 +323,10 @@ fn flat(res: &Value, included: &[Value]) -> Value {
     }
 }
 
-fn resolve(v: &Value, included: &[Value]) -> Value {
+/// An attribute of a resource, or one of its relationships.
+fn field(res: &Value, included: &[Value], name: &str) -> Value {
+    let attribute = &res["attributes"][name];
+    let v = if attribute.is_null() { &res["relationships"][name]["data"] } else { attribute };
     match v {
         Value::Array(list) => Value::Array(list.iter().map(|x| flat(x, included)).collect()),
         Value::Object(_) => flat(v, included),
@@ -303,14 +334,9 @@ fn resolve(v: &Value, included: &[Value]) -> Value {
     }
 }
 
-/// An attribute of a resource, or one of its relationships.
-fn field(res: &Value, included: &[Value], name: &str) -> Value {
-    let attribute = &res["attributes"][name];
-    if attribute.is_null() {
-        resolve(&res["relationships"][name]["data"], included)
-    } else {
-        resolve(attribute, included)
-    }
+/// The resource a to-one relationship points to.
+fn related<'a>(res: &'a Value, included: &'a [Value], name: &str) -> &'a Value {
+    lookup(&res["relationships"][name]["data"], included)
 }
 
 /// The parts of a JSON:API document (`data` is one resource or a list).
@@ -325,23 +351,16 @@ pub fn parts(doc: &Value) -> Vec<Part> {
 }
 
 /// EPLAN number and name of a product group: `level` 0 generic product group, 1 product
-/// group, 2 subgroup. The id may be the catalog UID of all three levels.
+/// group, 2 subgroup. The id of a catalog entry holds all three levels, each + 1.
 fn group(v: &Value, level: usize) -> (u16, String) {
-    let name = first(v, &["name", "designation", "description"]);
-    let id = first(v, &["id", "uid"]);
-    let digits = !id.is_empty() && id.bytes().all(|b| b.is_ascii_digit());
-    let segment = [0..2, 2..6, 6..10][level].clone();
-    let by_id = match id.len() {
-        10 if digits => id[segment].parse().ok(),
-        _ if digits => id.parse().ok(),
-        _ => None,
-    };
+    let name = first(v, &["name"]);
+    let by_id = first(v, &["id"]).parse::<u64>().ok().map(|id| [id / 100_000_000, id / 10_000 % 10_000, id % 10_000][level]).filter(|n| *n > 1);
     let by_name = || match level {
         0 => productgroups::TOP_GROUPS.iter().find(|(_, n)| n.eq_ignore_ascii_case(&name)).map(|(i, _)| *i),
         1 => productgroups::group_id(&name),
         _ => productgroups::subgroup_id(&name),
     };
-    (by_id.filter(|n| *n != 0).or_else(by_name).unwrap_or(0), name)
+    (by_id.and_then(|n| u16::try_from(n - 1).ok()).or_else(by_name).unwrap_or(0), name)
 }
 
 /// Lower case names of the data types of a part (`commercial_data`, `dxf_data`, …).
@@ -351,7 +370,19 @@ fn data_types(v: &Value) -> Vec<String> {
         Value::Null => Vec::new(),
         other => vec![other.clone()],
     };
-    list.iter().map(|t| first(t, &["name", "id", "type"]).to_lowercase().replace([' ', '-'], "_")).filter(|t| !t.is_empty()).collect()
+    list.iter().map(|t| first(t, &["id", "name"]).to_lowercase()).filter(|t| !t.is_empty()).collect()
+}
+
+/// Lifecycle of the portal (`{"value": 0, "name": "Active"}`).
+fn lifecycle(v: &Value) -> Lifecycle {
+    let name = first(v, &["name"]).to_lowercase();
+    if name.contains("phase") {
+        Lifecycle::PhaseOut
+    } else if name.contains("discontinued") || name.contains("obsolete") || name.contains("inactive") {
+        Lifecycle::Discontinued
+    } else {
+        Lifecycle::Active
+    }
 }
 
 /// A part number as part of a file name.
@@ -369,9 +400,11 @@ pub fn part(res: &Value, included: &[Value]) -> Part {
     let mut part = Part {
         type_number: attr("type_number"),
         order_number: attr("order_number"),
-        manufacturer: first(&field(res, included, "manufacturer"), &["short_name", "name", "long_name", "id"]),
+        manufacturer: first(&field(res, included, "manufacturer"), &["short_name", "name"]),
         note: if designation.is_empty() || description == designation { String::new() } else { description.clone() },
         description: if designation.is_empty() { description } else { designation },
+        lifecycle: lifecycle(&field(res, included, "lifecycle")),
+        portal_id: id.clone(),
         ..Default::default()
     };
     let [top, grp, sub] = [("product_top_group", 0), ("product_group", 1), ("product_sub_group", 2)].map(|(name, level)| group(&field(res, included, name), level));
@@ -383,7 +416,7 @@ pub fn part(res: &Value, included: &[Value]) -> Part {
         }
     }
     if let Value::Array(list) = field(res, included, "accessories") {
-        part.accessories = list.iter().map(|a| first(a, &["part_number", "id"])).filter(|n| !n.is_empty()).collect();
+        part.accessories = list.iter().map(|a| first(a, &["part_number"])).filter(|n| !n.is_empty()).collect();
     }
     part.modified = unix_from_date(&attr("update_date")).unwrap_or(0);
     part.revision = part.modified;
@@ -394,16 +427,17 @@ pub fn part(res: &Value, included: &[Value]) -> Part {
         if types.is_empty() || has("commercial_data") {
             part.attachments.push(Attachment { id: format!("download/commercial_data/part/{pid}"), name: format!("{stem}_commercial_data.csv"), kind: AttachmentKind::Other, size: 0 });
         }
-        if has("dxf_data") {
+        // The portal also makes DXF drawings of the 2D macros.
+        if has("dxf_data") || has("2d_graphical_data") {
             part.attachments.push(Attachment { id: format!("download/dxf_data/part/{pid}"), name: format!("{stem}_dxf.zip"), kind: AttachmentKind::Drawing, size: 0 });
         }
     }
-    let picture = field(res, included, "picture_file");
-    let preview = first(&picture["preview"], &["512", "96"]);
-    if preview.contains("://") {
-        let path = first(&picture, &["id"]);
+    let preview = field(related(res, included, "picture_file"), included, "preview");
+    let url = first(&preview, &["512", "96"]);
+    if url.contains("://") {
+        let path = first(&preview, &["id"]);
         let name = path.rsplit(['/', '\\']).next().filter(|n| n.contains('.')).map_or_else(|| format!("{}.png", file_stem(&number)), str::to_string);
-        part.attachments.push(Attachment { id: preview, name, kind: AttachmentKind::Image, size: 0 });
+        part.attachments.push(Attachment { id: url, name, kind: AttachmentKind::Image, size: 0 });
     }
     part.number = number;
     part

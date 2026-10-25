@@ -89,6 +89,18 @@ impl Server {
         self.call(self.connection().search(query))
     }
 
+    /// The server versions of local parts (update check); the EPLAN Data Portal finds
+    /// them by their portal ids.
+    pub fn versions(&self, local: &[Part]) -> Result<Vec<Part>, String> {
+        let local = self.kind.update_candidates(local);
+        let numbers: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
+        let ids: Vec<String> = local.iter().map(|p| p.portal_id.clone()).filter(|id| !id.is_empty()).collect();
+        if numbers.is_empty() || (self.kind.read_only() && ids.is_empty()) {
+            return Ok(Vec::new());
+        }
+        Ok(self.call(self.connection().find(&numbers, &ids))?.parts)
+    }
+
     pub fn history(&self, number: &str) -> Result<Vec<HistoryEntry>, String> {
         decode(self.fetch(self.full()?.history(number)))
     }

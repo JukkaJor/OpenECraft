@@ -506,13 +506,12 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
             client.fetch(&ctx, &marked);
             b.marked.clear();
         }
-        let from_server: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
         if ui
-            .add_enabled(!busy && !from_server.is_empty(), egui::Button::new(tr("🔄 Check the parts database for updates")))
+            .add_enabled(!busy && !local.is_empty(), egui::Button::new(tr("🔄 Check the parts database for updates")))
             .on_hover_text(tr("Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts"))
             .clicked()
         {
-            client.versions(&ctx, &from_server);
+            client.versions(&ctx, local);
         }
         if let Some(updates) = &b.updates {
             let applicable = updates.iter().filter(|u| u.kind != openecraft_parts::portal::UpdateKind::Removed).count();

@@ -721,12 +721,17 @@ pictures, adding parts to the local database and the update check of the databas
   history or download of the whole database. The facets count the parts of the shown
   page, as the portal does not count them; catalogs, lifecycle and technical data
   cannot be filtered.
-- Product groups are filtered by the EPLAN catalog UID (generic product group with
-  two digits, product group and subgroup with four digits each, e.g. `0100020002`).
+- The portal finds parts by its own ids, not by number: a part loaded from it keeps
+  the id (`portal_id`), so adding marked parts and the update check load them in one
+  request. The update check compares only the parts that came from the portal; a
+  single part number is found by an exact search.
+- Manufacturers are filtered by their short name, product groups by the id of the
+  EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
+  (subgroup + 1), e.g. `200050000` for electrical engineering / plugs.
 - Parts in EPLAN format (macros, connection points) come as EDZ files from the portal
   web page; import them like other parts files (see the parts formats above).
-- The web version can only reach the portal if it allows the browser's cross-origin
-  requests; the desktop version is not affected.
+- Only the desktop version and the command line reach the portal: it allows no
+  cross-origin requests from browsers, so the web version would need a proxy.
 
 ### Project server (several users)
 

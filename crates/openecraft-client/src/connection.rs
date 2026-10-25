@@ -61,6 +61,12 @@ impl PortalKind {
     pub fn read_only(self) -> bool {
         self == PortalKind::Eplan
     }
+
+    /// The local parts an update check compares: on the EPLAN Data Portal the parts
+    /// that were loaded from there.
+    pub fn update_candidates(self, local: &[Part]) -> Vec<Part> {
+        local.iter().filter(|p| self == PortalKind::OpenECraft || !p.portal_id.is_empty()).cloned().collect()
+    }
 }
 
 /// A parts server of either kind.
@@ -101,10 +107,12 @@ impl Connection {
         }
     }
 
-    /// Faceted search; a query with part numbers loads these parts.
+    /// Faceted search; a query with part numbers loads these parts (the EPLAN Data
+    /// Portal only the first one, see [`Connection::find`]).
     pub fn search(&self, query: &PartQuery) -> Call<SearchResult> {
         match self {
             Connection::Parts(e) => Call::new(e.search(query), decode),
+            Connection::Eplan(_) if !query.numbers.is_empty() => self.find(&query.numbers, &[]),
             Connection::Eplan(e) => {
                 let q = query.clone();
                 Call::new(e.search(query), move |r| eplan::decode_search(&q, r))
@@ -112,11 +120,25 @@ impl Connection {
         }
     }
 
+    /// The parts with these numbers. The EPLAN Data Portal finds several parts only by
+    /// their portal ids (`ids`, from [`Part::portal_id`]); without ids it loads the
+    /// first number.
+    pub fn find(&self, numbers: &[String], ids: &[String]) -> Call<SearchResult> {
+        let query = PartQuery { numbers: numbers.to_vec(), ..Default::default() };
+        match self {
+            Connection::Parts(e) => Call::new(e.search(&query), decode),
+            Connection::Eplan(e) => Call::new(e.lookup(numbers, ids), move |r| eplan::decode_search(&query, r)),
+        }
+    }
+
     /// The part, `None` if the server does not know it.
     pub fn part(&self, number: &str) -> Call<Option<Part>> {
         match self {
             Connection::Parts(e) => Call::new(e.part(number), decode_found),
-            Connection::Eplan(e) => Call::new(e.part(number), eplan::decode_part),
+            Connection::Eplan(e) => {
+                let n = number.to_string();
+                Call::new(e.part(number), move |r| eplan::decode_part(&n, r))
+            }
         }
     }
 

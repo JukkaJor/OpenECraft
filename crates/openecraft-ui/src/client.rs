@@ -9,6 +9,7 @@ use openecraft_client::{check, decode, ehttp, Call, Connection, Endpoint, Portal
 use openecraft_parts::api::{ImportResult, PartList, PartQuery, ServerInfo, Session, UserUpdate};
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
 use openecraft_parts::Part;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 /// Result of a finished request.
@@ -120,6 +121,9 @@ pub struct ServerClient {
     pub status: String,
     /// Address and token of the other kind of server.
     other: (String, String),
+    /// Portal ids of the parts the EPLAN Data Portal sent, by number (it loads
+    /// several parts only by id).
+    portal_ids: HashMap<String, String>,
     /// The last finished request failed (`status` shows why).
     failed: bool,
     pending: usize,
@@ -136,6 +140,7 @@ impl Default for ServerClient {
             info: None,
             status: String::new(),
             other: (PortalKind::Eplan.default_url(), String::new()),
+            portal_ids: HashMap::new(),
             failed: false,
             pending: 0,
             inbox: Arc::default(),
@@ -254,7 +259,8 @@ impl ServerClient {
 
     /// Loads the parts with these numbers (e.g. to add them to the project).
     pub fn fetch(&mut self, ctx: &egui::Context, numbers: &[String]) {
-        let call = self.connection().search(&PartQuery { numbers: numbers.to_vec(), ..Default::default() });
+        let ids: Vec<String> = numbers.iter().filter_map(|n| self.portal_ids.get(n)).cloned().collect();
+        let call = self.connection().find(numbers, &ids);
         self.send(ctx, Ok(call), tr("Downloading parts…").into(), |r| {
             Reply::Parts(r.map(|s| PartList { revision: s.revision, total: s.total, offset: s.offset, parts: s.parts }))
         });
@@ -266,10 +272,18 @@ impl ServerClient {
         self.send(ctx, Ok(call), tr("Searching…").into(), Reply::Search);
     }
 
-    /// Loads the server versions of local parts for an update check.
-    pub fn versions(&mut self, ctx: &egui::Context, numbers: &[String]) {
-        let call = self.connection().search(&PartQuery { numbers: numbers.to_vec(), ..Default::default() });
-        self.send(ctx, Ok(call), tr("Checking for part updates…").into(), Reply::Versions);
+    /// Loads the server versions of local parts for an update check; on the EPLAN Data
+    /// Portal of the parts loaded from there ([`PortalKind::update_candidates`]).
+    pub fn versions(&mut self, ctx: &egui::Context, local: &[Part]) {
+        let local = self.kind.update_candidates(local);
+        let numbers: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
+        let ids: Vec<String> = local.iter().map(|p| p.portal_id.clone()).filter(|id| !id.is_empty()).collect();
+        let call = if self.read_only() && ids.is_empty() {
+            Err(tr("No part of the database comes from the EPLAN Data Portal").to_string())
+        } else {
+            Ok(self.connection().find(&numbers, &ids))
+        };
+        self.send(ctx, call, tr("Checking for part updates…").into(), Reply::Versions);
     }
 
     /// Uploads parts as JSON (needs the access token).
@@ -377,6 +391,14 @@ impl ServerClient {
         let replies: Vec<Reply> = self.inbox.lock().map(|mut i| std::mem::take(&mut *i)).unwrap_or_default();
         for reply in &replies {
             self.pending = self.pending.saturating_sub(1);
+            let found = match reply {
+                Reply::Search(Ok(r)) | Reply::Versions(Ok(r)) => r.parts.as_slice(),
+                Reply::Parts(Ok(list)) => list.parts.as_slice(),
+                _ => &[],
+            };
+            for p in found.iter().filter(|p| !p.portal_id.is_empty()) {
+                self.portal_ids.insert(p.number.clone(), p.portal_id.clone());
+            }
             match reply {
                 Reply::Info(Ok(info)) => self.info = Some(info.clone()),
                 Reply::Info(Err(_)) => self.info = None,

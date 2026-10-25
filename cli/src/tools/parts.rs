@@ -364,12 +364,9 @@ fn user_delete(s: &mut Session, a: &Args) -> Result<Value, String> {
 }
 
 fn check_updates(s: &mut Session, a: &Args) -> Result<Value, String> {
-    let numbers: Vec<String> = s.project()?.parts.iter().map(|p| p.number.clone()).collect();
-    if numbers.is_empty() {
-        return Ok(json!({ "updates": [], "applied": 0 }));
-    }
-    let remote = s.server.search(&PartQuery { numbers, ..Default::default() })?.parts;
-    let updates = portal::check_updates(&s.project()?.parts, &remote);
+    let local = s.server.kind.update_candidates(&s.project()?.parts);
+    let remote = s.server.versions(&local)?;
+    let updates = portal::check_updates(&local, &remote);
     let applied = if a.flag("apply") { portal::apply_updates(&mut s.project_mut()?.parts, &remote, &updates) } else { 0 };
     Ok(json!({ "updates": updates, "applied": applied }))
 }
