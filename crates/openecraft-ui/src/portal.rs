@@ -3,6 +3,7 @@
 //! state (no UI code, unit tested); [`browser`] draws it and sends the requests.
 
 use crate::client::{FileUse, Reply, ServerClient};
+use openecraft_client::PortalKind;
 use crate::part_editor::{part_summary, size_text};
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
@@ -258,6 +259,28 @@ fn facet_list(ui: &mut egui::Ui, f: &Facet, title: String, selected: Option<&str
     clicked
 }
 
+/// Choice of the kind of server (OpenECraft parts server or EPLAN Data Portal).
+/// Returns true if it changed.
+pub fn kind_choice(ui: &mut egui::Ui, client: &mut ServerClient) -> bool {
+    let mut kind = client.kind;
+    egui::ComboBox::from_id_salt("parts_server_kind").selected_text(tr(kind.title())).show_ui(ui, |ui| {
+        for k in PortalKind::ALL {
+            ui.selectable_value(&mut kind, k, tr(k.title()));
+        }
+    });
+    let changed = kind != client.kind;
+    client.set_kind(kind);
+    changed
+}
+
+/// Label and hint of the token field for the kind of server.
+pub fn token_texts(client: &ServerClient) -> (&'static str, &'static str) {
+    match client.kind {
+        PortalKind::OpenECraft => (tr("Access token"), tr("only needed for uploads")),
+        PortalKind::Eplan => (tr("Personal access token"), tr("created in your EPLAN account (ePulse)")),
+    }
+}
+
 /// The data portal browser. `local`: the parts the update check compares (the
 /// local parts database). Requests are sent through `client`.
 pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, local: &[Part]) -> Option<BrowserEvent> {
@@ -286,8 +309,11 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
         if before != (b.query.sort, b.query.descending) {
             b.restart();
         }
-        ui.separator();
+        if !client.read_only() {
+            ui.separator();
+        }
         match &signed_in {
+            _ if client.read_only() => {}
             Some(u) => {
                 ui.label(tr_fmt!("Signed in as {}", u.name));
                 if ui.add_enabled(!busy, egui::Button::new(tr("Sign out"))).clicked() {
@@ -436,7 +462,9 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         ui.horizontal(|ui| {
                             ui.label(RichText::new(tr(a.kind.title())).weak());
                             ui.label(&a.name);
-                            ui.label(RichText::new(size_text(a.size)).weak());
+                            if a.size > 0 {
+                                ui.label(RichText::new(size_text(a.size)).weak());
+                            }
                             if ui.add_enabled(!busy, egui::Button::new("💾").small()).on_hover_text(tr("Save the file")).clicked() {
                                 client.download_file(&ctx, &a.id, &a.name, FileUse::Save);
                             }
@@ -445,7 +473,9 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                             {
                                 client.download_file(&ctx, &a.id, &a.name, FileUse::Macros);
                             }
-                            ui.hyperlink_to("🔗", client.endpoint().file_url(&a.id)).on_hover_text(tr("Open in the browser"));
+                            if let Some(link) = client.file_link(&a.id) {
+                                ui.hyperlink_to("🔗", link).on_hover_text(tr("Open in the browser"));
+                            }
                         });
                     }
                 }
@@ -457,6 +487,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                             ui.label(format!("{} · {} · {} · {}", tr_fmt!("Revision {}", e.revision), date_from_unix(e.time), tr(e.change.title()), e.user));
                         }
                     }
+                    _ if client.read_only() => {}
                     _ => {
                         if ui.add_enabled(!busy, egui::Button::new(tr("Show history"))).clicked() {
                             client.history(&ctx, &p.number);
@@ -475,13 +506,12 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
             client.fetch(&ctx, &marked);
             b.marked.clear();
         }
-        let from_server: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
         if ui
-            .add_enabled(!busy && !from_server.is_empty(), egui::Button::new(tr("🔄 Check the parts database for updates")))
+            .add_enabled(!busy && !local.is_empty(), egui::Button::new(tr("🔄 Check the parts database for updates")))
             .on_hover_text(tr("Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts"))
             .clicked()
         {
-            client.versions(&ctx, &from_server);
+            client.versions(&ctx, local);
         }
         if let Some(updates) = &b.updates {
             let applicable = updates.iter().filter(|u| u.kind != openecraft_parts::portal::UpdateKind::Removed).count();

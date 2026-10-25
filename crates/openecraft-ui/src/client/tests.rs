@@ -43,3 +43,31 @@ fn signing_in_and_out_changes_the_token() {
     client.poll();
     assert!(client.token.is_empty() && client.user().is_none());
 }
+
+#[test]
+fn each_kind_keeps_its_address_and_token() {
+    let mut client = ServerClient { token: "admin".into(), info: Some(ServerInfo::default()), ..Default::default() };
+    client.set_kind(PortalKind::Eplan);
+    assert_eq!((client.url.as_str(), client.token.as_str()), (openecraft_client::eplan::EPLAN_URL, ""));
+    assert!(client.read_only() && client.info.is_none());
+    client.token = "pat".into();
+    client.set_url_of(PortalKind::OpenECraft, "http://other:8090".into());
+    assert_eq!(client.url_of(PortalKind::OpenECraft), "http://other:8090");
+    client.set_kind(PortalKind::OpenECraft);
+    assert_eq!((client.url.as_str(), client.token.as_str()), ("http://other:8090", "admin"));
+    client.set_kind(PortalKind::Eplan);
+    assert_eq!(client.token, "pat");
+}
+
+#[test]
+fn the_eplan_data_portal_refuses_changes() {
+    let ctx = egui::Context::default();
+    let mut client = ServerClient::default();
+    client.set_kind(PortalKind::Eplan);
+    client.catalogs(&ctx);
+    client.save(&ctx, &Part::default());
+    let replies = client.poll();
+    assert!(matches!(replies[0], Reply::Catalogs(Err(_))) && matches!(replies[1], Reply::Saved(Err(_))));
+    assert!(client.failed() && !client.busy());
+    assert_eq!(client.file_link("download/dxf_data/part/1"), None);
+}

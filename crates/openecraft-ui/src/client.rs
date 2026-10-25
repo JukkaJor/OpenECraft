@@ -1,13 +1,15 @@
-//! Client for the global parts server (`openecraft-parts-server`, the data portal).
+//! Client for the global parts server (`openecraft-parts-server`, the data portal) or
+//! the EPLAN Data Portal.
 //! Requests run in the background (thread on desktop, fetch in the browser); results
 //! are collected with [`ServerClient::poll`]. The requests themselves are built by
 //! `openecraft_client`.
 
 use openecraft_i18n::{tr, tr_fmt};
-use openecraft_client::{check, decode, ehttp, Endpoint};
+use openecraft_client::{check, decode, ehttp, Call, Connection, Endpoint, PortalKind};
 use openecraft_parts::api::{ImportResult, PartList, PartQuery, ServerInfo, Session, UserUpdate};
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
 use openecraft_parts::Part;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 /// Result of a finished request.
@@ -108,12 +110,20 @@ impl Reply {
 }
 
 pub struct ServerClient {
+    /// Kind of the server: the OpenECraft parts server or the EPLAN Data Portal (read
+    /// through `openecraft_client::eplan`, so the part handling works the same).
+    pub kind: PortalKind,
     pub url: String,
-    /// Access token for changes: the administrator token or the token of a session
-    /// (kept in memory only).
+    /// Access token for changes: the administrator token or the token of a session;
+    /// for the EPLAN Data Portal the personal access token (kept in memory only).
     pub token: String,
     pub info: Option<ServerInfo>,
     pub status: String,
+    /// Address and token of the other kind of server.
+    other: (String, String),
+    /// Portal ids of the parts the EPLAN Data Portal sent, by number (it loads
+    /// several parts only by id).
+    portal_ids: HashMap<String, String>,
     /// The last finished request failed (`status` shows why).
     failed: bool,
     pending: usize,
@@ -123,7 +133,18 @@ pub struct ServerClient {
 impl Default for ServerClient {
     fn default() -> Self {
         let Endpoint { url, token } = Endpoint::default();
-        ServerClient { url, token, info: None, status: String::new(), failed: false, pending: 0, inbox: Arc::default() }
+        ServerClient {
+            kind: PortalKind::OpenECraft,
+            url,
+            token,
+            info: None,
+            status: String::new(),
+            other: (PortalKind::Eplan.default_url(), String::new()),
+            portal_ids: HashMap::new(),
+            failed: false,
+            pending: 0,
+            inbox: Arc::default(),
+        }
     }
 }
 
@@ -137,6 +158,11 @@ impl ServerClient {
         self.info.as_ref().is_some_and(|i| i.writable)
     }
 
+    /// The server only offers searching and reading parts (EPLAN Data Portal).
+    pub fn read_only(&self) -> bool {
+        self.kind.read_only()
+    }
+
     /// The signed in user (as of the last connection check or sign-in).
     pub fn user(&self) -> Option<&User> {
         self.info.as_ref().and_then(|i| i.user.as_ref())
@@ -146,156 +172,218 @@ impl ServerClient {
         Endpoint { url: self.url.clone(), token: self.token.clone() }
     }
 
-    fn send(
+    pub fn connection(&self) -> Connection {
+        Connection::new(self.kind, &self.url, &self.token)
+    }
+
+    /// Switches the kind of server; the address and token of each kind are kept.
+    pub fn set_kind(&mut self, kind: PortalKind) {
+        if kind == self.kind {
+            return;
+        }
+        let current = (std::mem::take(&mut self.url), std::mem::take(&mut self.token));
+        (self.url, self.token) = std::mem::replace(&mut self.other, current);
+        self.kind = kind;
+        self.info = None;
+        self.status.clear();
+        self.failed = false;
+    }
+
+    /// The address of a kind of server (stored with the settings).
+    pub fn url_of(&self, kind: PortalKind) -> &str {
+        if kind == self.kind {
+            &self.url
+        } else {
+            &self.other.0
+        }
+    }
+
+    pub fn set_url_of(&mut self, kind: PortalKind, url: String) {
+        if kind == self.kind {
+            self.url = url;
+        } else {
+            self.other.0 = url;
+        }
+    }
+
+    /// Address of a file for the web browser (`None`: it needs the access token).
+    pub fn file_link(&self, id: &str) -> Option<String> {
+        self.connection().file_link(id)
+    }
+
+    /// Sends the call; a refused call (`Err`) is answered at once.
+    fn send<T: 'static>(
         &mut self,
         ctx: &egui::Context,
-        request: ehttp::Request,
+        call: Result<Call<T>, String>,
         status: String,
-        wrap: impl 'static + Send + FnOnce(ehttp::Result<ehttp::Response>) -> Reply,
+        wrap: impl 'static + Send + FnOnce(Result<T, String>) -> Reply,
     ) {
         self.status = status;
         self.pending += 1;
         let inbox = self.inbox.clone();
         let ctx = ctx.clone();
-        ehttp::fetch(request, move |result| {
+        let deliver = move |reply| {
             if let Ok(mut inbox) = inbox.lock() {
-                inbox.push(wrap(result));
+                inbox.push(reply);
             }
             ctx.request_repaint();
-        });
+        };
+        match call {
+            Ok(Call { request, decode }) => ehttp::fetch(request, move |result| deliver(wrap(decode(result)))),
+            Err(e) => deliver(wrap(Err(e))),
+        }
+    }
+
+    /// A function only the OpenECraft parts server offers.
+    fn server<T: 'static>(
+        &self,
+        request: impl FnOnce(&Endpoint) -> ehttp::Request,
+        decode: impl FnOnce(ehttp::Result<ehttp::Response>) -> Result<T, String> + Send + 'static,
+    ) -> Result<Call<T>, String> {
+        let connection = self.connection();
+        Ok(Call::new(request(connection.parts_server()?), decode))
     }
 
     /// Checks the connection (server info).
     pub fn check(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().info();
-        self.send(ctx, req, tr("Connecting…").into(), |r| Reply::Info(decode(r)));
+        let call = self.connection().info();
+        self.send(ctx, Ok(call), tr("Connecting…").into(), Reply::Info);
     }
 
     /// Loads all parts.
     pub fn download(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().list(&PartQuery::default());
-        self.send(ctx, req, tr("Downloading parts…").into(), |r| Reply::Parts(decode(r)));
+        let call = self.server(|e| e.list(&PartQuery::default()), decode);
+        self.send(ctx, call, tr("Downloading parts…").into(), Reply::Parts);
     }
 
     /// Loads the parts with these numbers (e.g. to add them to the project).
     pub fn fetch(&mut self, ctx: &egui::Context, numbers: &[String]) {
-        let query = PartQuery { numbers: numbers.to_vec(), ..Default::default() };
-        let req = self.endpoint().search(&query);
-        self.send(ctx, req, tr("Downloading parts…").into(), |r| {
-            Reply::Parts(decode::<SearchResult>(r).map(|s| PartList { revision: s.revision, total: s.total, offset: s.offset, parts: s.parts }))
+        let ids: Vec<String> = numbers.iter().filter_map(|n| self.portal_ids.get(n)).cloned().collect();
+        let call = self.connection().find(numbers, &ids);
+        self.send(ctx, Ok(call), tr("Downloading parts…").into(), |r| {
+            Reply::Parts(r.map(|s| PartList { revision: s.revision, total: s.total, offset: s.offset, parts: s.parts }))
         });
     }
 
     /// Faceted search (part lists without models).
     pub fn search(&mut self, ctx: &egui::Context, query: &PartQuery) {
-        let req = self.endpoint().search(&PartQuery { brief: true, ..query.clone() });
-        self.send(ctx, req, tr("Searching…").into(), |r| Reply::Search(decode(r)));
+        let call = self.connection().search(&PartQuery { brief: true, ..query.clone() });
+        self.send(ctx, Ok(call), tr("Searching…").into(), Reply::Search);
     }
 
-    /// Loads the server versions of local parts for an update check.
-    pub fn versions(&mut self, ctx: &egui::Context, numbers: &[String]) {
-        let req = self.endpoint().search(&PartQuery { numbers: numbers.to_vec(), ..Default::default() });
-        self.send(ctx, req, tr("Checking for part updates…").into(), |r| Reply::Versions(decode(r)));
+    /// Loads the server versions of local parts for an update check; on the EPLAN Data
+    /// Portal of the parts loaded from there ([`PortalKind::update_candidates`]).
+    pub fn versions(&mut self, ctx: &egui::Context, local: &[Part]) {
+        let local = self.kind.update_candidates(local);
+        let numbers: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
+        let ids: Vec<String> = local.iter().map(|p| p.portal_id.clone()).filter(|id| !id.is_empty()).collect();
+        let call = if self.read_only() && ids.is_empty() {
+            Err(tr("No part of the database comes from the EPLAN Data Portal").to_string())
+        } else {
+            Ok(self.connection().find(&numbers, &ids))
+        };
+        self.send(ctx, call, tr("Checking for part updates…").into(), Reply::Versions);
     }
 
     /// Uploads parts as JSON (needs the access token).
     pub fn upload(&mut self, ctx: &egui::Context, parts: &[Part]) {
-        let req = self.endpoint().import(serde_json::to_vec(parts).unwrap_or_default(), "application/json");
-        self.send(ctx, req, tr_fmt!("Uploading {} parts…", parts.len()), |r| Reply::Imported(decode(r)));
+        let call = self.server(|e| e.import(serde_json::to_vec(parts).unwrap_or_default(), "application/json"), decode);
+        self.send(ctx, call, tr_fmt!("Uploading {} parts…", parts.len()), Reply::Imported);
     }
 
     /// Uploads the content of a CSV or JSON parts file.
     pub fn upload_file(&mut self, ctx: &egui::Context, content: Vec<u8>) {
-        let req = self.endpoint().import(content, "text/plain; charset=utf-8");
-        self.send(ctx, req, tr("Uploading parts file…").into(), |r| Reply::Imported(decode(r)));
+        let call = self.server(|e| e.import(content, "text/plain; charset=utf-8"), decode);
+        self.send(ctx, call, tr("Uploading parts file…").into(), Reply::Imported);
     }
 
     /// Creates or replaces a part.
     pub fn save(&mut self, ctx: &egui::Context, part: &Part) {
-        let req = self.endpoint().save(part);
-        self.send(ctx, req, tr_fmt!("Saving {}…", part.number), |r| Reply::Saved(decode(r).map(Box::new)));
+        let call = self.server(|e| e.save(part), decode);
+        self.send(ctx, call, tr_fmt!("Saving {}…", part.number), |r| Reply::Saved(r.map(Box::new)));
     }
 
     pub fn delete(&mut self, ctx: &egui::Context, number: &str) {
-        let req = self.endpoint().delete(number);
+        let call = self.server(|e| e.delete(number), |r| check(r).map(|_| ()));
         let n = number.to_string();
-        self.send(ctx, req, tr_fmt!("Deleting {}…", number), move |r| Reply::Deleted(n, check(r).map(|_| ())));
+        self.send(ctx, call, tr_fmt!("Deleting {}…", number), move |r| Reply::Deleted(n, r));
     }
 
     pub fn history(&mut self, ctx: &egui::Context, number: &str) {
-        let req = self.endpoint().history(number);
+        let call = self.server(|e| e.history(number), decode);
         let n = number.to_string();
-        self.send(ctx, req, tr("Loading the history…").into(), move |r| Reply::History(n, decode(r)));
+        self.send(ctx, call, tr("Loading the history…").into(), move |r| Reply::History(n, r));
     }
 
     /// Stores a file with a part.
     pub fn attach(&mut self, ctx: &egui::Context, number: &str, name: &str, kind: Option<AttachmentKind>, data: Vec<u8>) {
-        let req = self.endpoint().attach(number, name, kind, data);
-        self.send(ctx, req, tr_fmt!("Uploading {}…", name), |r| Reply::Saved(decode(r).map(Box::new)));
+        let call = self.server(|e| e.attach(number, name, kind, data), decode);
+        self.send(ctx, call, tr_fmt!("Uploading {}…", name), |r| Reply::Saved(r.map(Box::new)));
     }
 
     pub fn detach(&mut self, ctx: &egui::Context, number: &str, id: &str) {
-        let req = self.endpoint().detach(number, id);
-        self.send(ctx, req, tr("Removing the file…").into(), |r| Reply::Saved(decode(r).map(Box::new)));
+        let call = self.server(|e| e.detach(number, id), decode);
+        self.send(ctx, call, tr("Removing the file…").into(), |r| Reply::Saved(r.map(Box::new)));
     }
 
     pub fn download_file(&mut self, ctx: &egui::Context, id: &str, name: &str, purpose: FileUse) {
-        let req = self.endpoint().file(id);
+        let call = self.connection().file(id);
         let n = name.to_string();
-        self.send(ctx, req, tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, check(r).map(|resp| resp.bytes)));
+        self.send(ctx, Ok(call), tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, r));
     }
 
     pub fn catalogs(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().catalogs();
-        self.send(ctx, req, tr("Loading catalogs…").into(), |r| Reply::Catalogs(decode(r)));
+        let call = self.server(Endpoint::catalogs, decode);
+        self.send(ctx, call, tr("Loading catalogs…").into(), Reply::Catalogs);
     }
 
     pub fn save_catalog(&mut self, ctx: &egui::Context, catalog: &Catalog) {
-        let req = self.endpoint().save_catalog(catalog);
-        self.send(ctx, req, tr_fmt!("Saving {}…", catalog.name), |r| Reply::CatalogSaved(decode(r)));
+        let call = self.server(|e| e.save_catalog(catalog), decode);
+        self.send(ctx, call, tr_fmt!("Saving {}…", catalog.name), Reply::CatalogSaved);
     }
 
     pub fn delete_catalog(&mut self, ctx: &egui::Context, id: &str) {
-        let req = self.endpoint().delete_catalog(id);
+        let call = self.server(|e| e.delete_catalog(id), |r| check(r).map(|_| ()));
         let id = id.to_string();
-        self.send(ctx, req, tr_fmt!("Deleting {}…", id), move |r| Reply::CatalogDeleted(id, check(r).map(|_| ())));
+        self.send(ctx, call, tr_fmt!("Deleting {}…", id), move |r| Reply::CatalogDeleted(id, r));
     }
 
     /// Signs in; the session's token replaces [`ServerClient::token`].
     pub fn sign_in(&mut self, ctx: &egui::Context, name: &str, password: &str) {
-        let req = self.endpoint().login(name, password);
-        self.send(ctx, req, tr("Signing in…").into(), |r| Reply::SignedIn(decode(r)));
+        let call = self.server(|e| e.login(name, password), decode);
+        self.send(ctx, call, tr("Signing in…").into(), Reply::SignedIn);
     }
 
     pub fn sign_out(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().logout();
-        self.send(ctx, req, tr("Signing out…").into(), |_| Reply::SignedOut);
+        let call = self.server(Endpoint::logout, |_| Ok(()));
+        self.send(ctx, call, tr("Signing out…").into(), |_| Reply::SignedOut);
     }
 
     pub fn favorites(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().favorites();
-        self.send(ctx, req, tr("Loading favorites…").into(), |r| Reply::Favorites(decode(r)));
+        let call = self.server(Endpoint::favorites, decode);
+        self.send(ctx, call, tr("Loading favorites…").into(), Reply::Favorites);
     }
 
     pub fn set_favorites(&mut self, ctx: &egui::Context, numbers: &[String]) {
-        let req = self.endpoint().set_favorites(numbers);
-        self.send(ctx, req, tr("Saving favorites…").into(), |r| Reply::Favorites(decode(r)));
+        let call = self.server(|e| e.set_favorites(numbers), decode);
+        self.send(ctx, call, tr("Saving favorites…").into(), Reply::Favorites);
     }
 
     pub fn users(&mut self, ctx: &egui::Context) {
-        let req = self.endpoint().users();
-        self.send(ctx, req, tr("Loading users…").into(), |r| Reply::Users(decode(r)));
+        let call = self.server(Endpoint::users, decode);
+        self.send(ctx, call, tr("Loading users…").into(), Reply::Users);
     }
 
     pub fn save_user(&mut self, ctx: &egui::Context, name: &str, update: &UserUpdate) {
-        let req = self.endpoint().save_user(name, update);
-        self.send(ctx, req, tr_fmt!("Saving {}…", name), |r| Reply::UserSaved(decode(r)));
+        let call = self.server(|e| e.save_user(name, update), decode);
+        self.send(ctx, call, tr_fmt!("Saving {}…", name), Reply::UserSaved);
     }
 
     pub fn delete_user(&mut self, ctx: &egui::Context, name: &str) {
-        let req = self.endpoint().delete_user(name);
+        let call = self.server(|e| e.delete_user(name), |r| check(r).map(|_| ()));
         let n = name.to_string();
-        self.send(ctx, req, tr_fmt!("Deleting {}…", name), move |r| Reply::UserDeleted(n, check(r).map(|_| ())));
+        self.send(ctx, call, tr_fmt!("Deleting {}…", name), move |r| Reply::UserDeleted(n, r));
     }
 
     /// Takes the finished requests and updates `status`, `info` and the token.
@@ -303,6 +391,14 @@ impl ServerClient {
         let replies: Vec<Reply> = self.inbox.lock().map(|mut i| std::mem::take(&mut *i)).unwrap_or_default();
         for reply in &replies {
             self.pending = self.pending.saturating_sub(1);
+            let found = match reply {
+                Reply::Search(Ok(r)) | Reply::Versions(Ok(r)) => r.parts.as_slice(),
+                Reply::Parts(Ok(list)) => list.parts.as_slice(),
+                _ => &[],
+            };
+            for p in found.iter().filter(|p| !p.portal_id.is_empty()) {
+                self.portal_ids.insert(p.number.clone(), p.portal_id.clone());
+            }
             match reply {
                 Reply::Info(Ok(info)) => self.info = Some(info.clone()),
                 Reply::Info(Err(_)) => self.info = None,

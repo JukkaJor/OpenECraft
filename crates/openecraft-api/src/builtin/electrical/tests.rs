@@ -25,6 +25,31 @@ fn settings_and_calculations_of_the_demo() {
 }
 
 #[test]
+fn transformer_source_and_coordination_tables() {
+    let mut s = demo_session();
+    assert!(run(&mut s, "electrical_settings", json!({ "transformer_uk": 4.0 })).unwrap_err().contains("No transformer"));
+    let e = run(&mut s, "electrical_settings", json!({ "transformer_kva": 400.0, "transformer_uk": 4.0, "network_mva": 0.0, "motors": false })).unwrap();
+    assert_eq!((e["transformer"]["kva"].as_f64(), e["transformer"]["uk_percent"].as_f64(), e["motors"].as_bool()), (Some(400.0), Some(4.0), Some(false)));
+    // 577 A / 4 % with c max and the correction of the transformer.
+    let ik = e["supply_ik3_ka"].as_f64().unwrap();
+    assert!(ik > 14.0 && ik < 17.0, "{ik}");
+    let sc = run(&mut s, "short_circuit", json!({})).unwrap();
+    assert!((sc["supply_ik3_a"].as_f64().unwrap() / 1000.0 - ik).abs() < 1e-3);
+    let devices = sc["devices"].as_array().unwrap();
+    assert!(devices.iter().all(|d| d["ip_a"].as_f64().unwrap() > d["ik_max_a"].as_f64().unwrap()));
+    let e = run(&mut s, "electrical_settings", json!({ "transformer_kva": 0.0 })).unwrap();
+    assert!(e["transformer"].is_null());
+
+    let t = run(&mut s, "coordination_table", json!({ "upstream": "A.Q1", "downstream": "B.F1", "selectivity_ka": 4.5 })).unwrap();
+    assert_eq!(t, json!([{ "upstream": "A.Q1", "downstream": "B.F1", "selectivity_ka": 4.5, "backup_ka": 0.0 }]));
+    let t = run(&mut s, "coordination_table", json!({ "upstream": "A.Q1", "downstream": "B.F1", "backup_ka": 25.0 })).unwrap();
+    assert_eq!((t[0]["selectivity_ka"].as_f64(), t[0]["backup_ka"].as_f64()), (Some(4.5), Some(25.0)));
+    assert!(run(&mut s, "coordination_table", json!({ "upstream": "A.Q1" })).is_err());
+    assert_eq!(run(&mut s, "coordination_table", json!({ "upstream": "A.Q1", "downstream": "B.F1", "remove": true })).unwrap(), json!([]));
+    assert!(run(&mut s, "coordination_table", json!({ "upstream": "A.Q1", "downstream": "B.F1", "remove": true })).is_err());
+}
+
+#[test]
 fn safety_functions_and_rule_sets() {
     let mut s = demo_session();
     let f = json!({

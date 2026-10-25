@@ -2,7 +2,7 @@
 
 use crate::parts_server::{Server, Transport};
 use crate::session::Session;
-use openecraft_client::{ehttp, Endpoint};
+use openecraft_client::{ehttp, Endpoint, PortalKind};
 use openecraft_parts::access::{Policy, Settings};
 use openecraft_parts::api::{ApiError, ImportResult, Login, PartQuery, ServerInfo, Session as ApiSession, UserUpdate, API_PREFIX};
 use openecraft_parts::portal::{Attachment, AttachmentKind, Catalog, ChangeKind, HistoryEntry, PartsRight, Role, User};
@@ -232,7 +232,7 @@ pub fn part(number: &str, group: &str) -> Part {
 
 /// Session connected to `server` (with the write token).
 pub fn session_with(server: &FakeServer) -> Session {
-    Session::new(Server { endpoint: Endpoint { url: URL.into(), token: TOKEN.into() }, transport: Box::new(server.clone()) })
+    Session::new(Server { endpoint: Endpoint { url: URL.into(), token: TOKEN.into() }, kind: PortalKind::OpenECraft, transport: Box::new(server.clone()) })
 }
 
 pub fn session() -> Session {

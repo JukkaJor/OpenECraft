@@ -51,6 +51,7 @@ fn machine() -> Kit {
     let sub = |name: &str, devices: &[&str], operations: f32| Subsystem {
         name: name.into(),
         devices: devices.iter().map(|d| d.to_string()).collect(),
+        channel2: Vec::new(),
         category: Category::Three,
         dc: 90.0,
         operations,
@@ -85,9 +86,51 @@ fn performance_level_of_a_safety_function() {
     assert!((e.subsystems[2].mttfd.unwrap() - 6.5).abs() < 0.01);
     assert_eq!(e.subsystems[2].pl, Some(Pl::C));
     assert_eq!(e.achieved, Some(Pl::C));
-    let p = problems(&k.prj);
+    // The contactors reach their T10d (1.3 years) long before the mission time.
+    assert_eq!(e.subsystems[2].notes, ["Output: replace -K1 after 1.3 years (T10d)", "Output: replace -K2 after 1.3 years (T10d)"]);
+    let (p, notes): (Vec<Issue>, Vec<Issue>) = problems(&k.prj).into_iter().partition(|i| i.severity != Severity::Info);
     assert_eq!(p.len(), 1);
     assert_eq!((p[0].severity, p[0].message().as_str()), (Severity::Error, "Safety function SF1 Emergency stop reaches PL c, PL d is required"));
+    assert_eq!(notes.len(), 2);
+}
+
+#[test]
+fn two_channels_and_the_diagnostic_coverage_of_the_devices() {
+    assert!((symmetrise(100.0, 20.0) - 2.0 / 3.0 * (120.0 - 1.0 / 0.06)).abs() < 1e-3);
+    assert!((symmetrise(50.0, 50.0) - 50.0).abs() < 1e-3);
+    let mut k = machine();
+    k.prj.parts[2].tech_data = "B10d: 1300000\nDC: 99".into();
+    k.prj.parts[3].tech_data = "MTTFd: 20\nDC: 60".into();
+    let output = &mut k.prj.electrical.safety[0].subsystems[2];
+    output.devices = vec!["-K1".into()];
+    output.channel2 = vec!["-K2".into()];
+    let e = evaluate(&k.prj, &k.prj.electrical.safety[0]);
+    // Channel 1: 260 years capped at 100, channel 2: 20 years.
+    assert!((e.subsystems[2].mttfd.unwrap() - symmetrise(100.0, 20.0)).abs() < 1e-3);
+    assert_eq!(e.subsystems[2].dc, 90.0);
+    // Without a DCavg of the subsystem: weighted by 1 / MTTFd (annex E).
+    k.prj.electrical.safety[0].subsystems[2].dc = 0.0;
+    let e = evaluate(&k.prj, &k.prj.electrical.safety[0]);
+    let dc = (99.0 / 260.0 + 60.0 / 20.0) / (1.0 / 260.0 + 1.0 / 20.0);
+    assert!((e.subsystems[2].dc - dc).abs() < 0.01, "{}", e.subsystems[2].dc);
+    assert_eq!(e.subsystems[2].pl, Some(Pl::D));
+}
+
+#[test]
+fn the_pfhd_of_the_subsystems_add_up() {
+    let mut k = machine();
+    k.prj.parts[0].tech_data = "PFHd: 5E-8".into();
+    k.prj.parts[2].tech_data = "PFHd: 6E-8".into();
+    k.prj.parts[3].tech_data = "PFHd: 6E-8".into();
+    let e = evaluate(&k.prj, &k.prj.electrical.safety[0]);
+    assert!(e.subsystems.iter().all(|s| s.pl == Some(Pl::E)));
+    assert!((e.subsystems[2].pfh.unwrap() - 1.2e-7).abs() < 1e-12);
+    // Table 11 would give e, the sum 1.725E-7 gives d.
+    assert!((e.pfh.unwrap() - 1.725e-7).abs() < 1e-12);
+    assert_eq!(e.achieved, Some(Pl::D));
+    // A device without a PFHd leaves table 11.
+    k.prj.parts[0].tech_data = "PL: e".into();
+    assert_eq!(evaluate(&k.prj, &k.prj.electrical.safety[0]).achieved, Some(Pl::E));
 }
 
 #[test]

@@ -3,8 +3,11 @@
 //! with the cooling it asks for), stratified from the bottom to the roof (factor c
 //! of [`super::PanelRules::stratification`]); every device with power loss data adds
 //! a plume of warm air that rises above it and widens, and decays quickly below it.
-//! Devices are checked against their highest ambient temperature (part data
-//! `Max temperature: 55 °C` or `Operating temperature: -25 … 60 °C`).
+//! A horizontal cable duct above a device holds its plume back: the warm air gathers
+//! and spreads below the duct, only part of it passes. Fans and cooling units mix the
+//! air and weaken the plumes. Devices are checked against their highest ambient
+//! temperature (part data `Max temperature: 55 °C` or `Operating temperature:
+//! -25 … 60 °C`).
 
 use super::checks::data_number;
 use super::{part_by_number, Enclosure, Face, ItemKind, PanelItem};
@@ -27,6 +30,12 @@ const PLUME_SPREAD: f32 = 15.0;
 const PLUME_WIDEN: f32 = 0.25;
 const PLUME_RISE: f32 = 200.0;
 const PLUME_BELOW: f32 = 20.0;
+/// Share of a plume that passes a duct above the device; below the duct the plume
+/// decays this many times slower and widens as fast.
+const DUCT_PASS: f32 = 0.35;
+const TRAPPED: f32 = 2.0;
+/// Share of the rise of a plume left with forced air circulation.
+const FORCED: f32 = 0.5;
 
 /// A device giving off heat.
 #[derive(Clone, Debug, PartialEq)]
@@ -37,6 +46,8 @@ pub struct Source {
     pub rect: R,
     /// Rise of the air right above it, K.
     pub rise: f32,
+    /// Lower edge of the duct right above it, mm.
+    pub ceiling: Option<f32>,
 }
 
 impl Source {
@@ -45,7 +56,12 @@ impl Source {
         let r = &self.rect;
         let dx = (r.min.x - q.x).max(q.x - r.max.x).max(0.0);
         let (fy, along) = if q.y < r.min.y {
-            ((-(r.min.y - q.y) / PLUME_RISE).exp(), r.min.y - q.y)
+            let along = r.min.y - q.y;
+            match self.ceiling {
+                Some(c) if q.y >= c => ((-along / (PLUME_RISE * TRAPPED)).exp(), along * TRAPPED),
+                Some(c) => (DUCT_PASS * (-(r.min.y - c) / (PLUME_RISE * TRAPPED) - (c - q.y) / PLUME_RISE).exp(), along + (r.min.y - c) * (TRAPPED - 1.0)),
+                None => ((-along / PLUME_RISE).exp(), along),
+            }
         } else if q.y > r.max.y {
             ((-(q.y - r.max.y) / PLUME_BELOW).exp(), 0.0)
         } else {
@@ -54,6 +70,17 @@ impl Source {
         let spread = PLUME_SPREAD + PLUME_WIDEN * along;
         self.rise * fy * (-(dx / spread).powi(2)).exp()
     }
+}
+
+/// Lower edge of the nearest horizontal duct above an area of the plate.
+fn ceiling(e: &Enclosure, r: &R) -> Option<f32> {
+    e.items
+        .iter()
+        .filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate && i.w > i.h)
+        .map(|i| i.rect())
+        .filter(|d| d.max.y <= r.min.y + 0.5 && d.min.x < r.max.x && d.max.x > r.min.x)
+        .map(|d| d.max.y)
+        .reduce(f32::max)
 }
 
 /// Air temperatures in front of the mounting plate.
@@ -126,13 +153,15 @@ pub fn heat_map(prj: &Project, e: &Enclosure) -> HeatMap {
     let rise = (mean - c.ambient_max).max(0.0);
     let k = prj.layout.checks.stratification.clamp(1.0, 2.0);
     let (pw, ph) = e.plate_size();
+    let forced = if result.cooling == Cooling::None { 1.0 } else { FORCED };
     let sources: Vec<Source> = e
         .items
         .iter()
         .filter(|i| i.kind == ItemKind::Device && i.face == Face::Plate)
         .filter_map(|i| {
             let loss = device_loss(prj, &i.tag).filter(|l| *l > 0.0)?;
-            Some(Source { id: i.id, loss, rect: i.rect(), rise: plume_rise(i, loss) })
+            let rect = i.rect();
+            Some(Source { id: i.id, loss, rect, rise: plume_rise(i, loss) * forced, ceiling: ceiling(e, &rect) })
         })
         .collect();
     let (cols, rows) = ((pw / CELL).ceil().max(1.0) as usize, (ph / CELL).ceil().max(1.0) as usize);

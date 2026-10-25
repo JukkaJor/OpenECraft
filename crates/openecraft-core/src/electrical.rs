@@ -12,7 +12,7 @@ use crate::potentials::PotentialKind;
 use crate::protection::Protection;
 use crate::sizing::{designation_number, is_protective, passes_current, protected_nets};
 use std::collections::{BTreeMap, BTreeSet};
-pub use crate::model::electrical::{Conditions, Earthing, Electrical, Insulation, Material, Supply};
+pub use crate::model::electrical::{Conditions, Coordination, Earthing, Electrical, Insulation, Material, Supply, Transformer};
 
 impl Earthing {
     pub const ALL: [Earthing; 5] = [Earthing::TnS, Earthing::TnC, Earthing::TnCS, Earthing::Tt, Earthing::It];
@@ -30,7 +30,36 @@ impl Earthing {
 
 impl Default for Supply {
     fn default() -> Self {
-        Supply { voltage: 400.0, frequency: 50.0, earthing: Earthing::TnS, ik_max: 10.0, ik_min: 0.0, rated_current: 0.0 }
+        Supply {
+            voltage: 400.0,
+            frequency: 50.0,
+            earthing: Earthing::TnS,
+            ik_max: 10.0,
+            ik_min: 0.0,
+            rated_current: 0.0,
+            rx: 0.1,
+            transformer: None,
+            motors: true,
+            neutral: false,
+        }
+    }
+}
+
+impl Default for Transformer {
+    fn default() -> Self {
+        Transformer { power: 630.0, uk: 6.0, losses: 0.0, network: 500.0 }
+    }
+}
+
+impl Transformer {
+    /// Load losses: as given, otherwise about 1.1 % of the rated power (oil-immersed
+    /// distribution transformers of EN 50588-1).
+    pub fn load_losses(&self) -> f32 {
+        if self.losses > 0.0 {
+            self.losses
+        } else {
+            self.power * 11.0
+        }
     }
 }
 

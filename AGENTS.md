@@ -35,7 +35,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
 | `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
 | `openecraft-auth` | `crates/openecraft-auth` | Access control of the servers: password hashes (Argon2), session tokens, Active Directory / LDAP sign-in, access settings file (roles and grants: `openecraft_parts::access`) |
-| `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line |
+| `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers (ehttp), shared by the UI client and the command line; `eplan` wraps the EPLAN Data Portal API as a read-only parts server (`Connection`) |
 | `openecraft-ui` | `crates/openecraft-ui` | Shared egui library: part tree / editor / previews, parts server client, file dialogs, language menu |
 | `openecraft-parts-server` | `parts-server/` | Data portal server (axum; SQLite or JSON storage, users and roles, catalogs, files, history, web page) |
 | `openecraft-project-server` | `project-server/` | Project server: shared projects, page locks for several users (axum, project files) |

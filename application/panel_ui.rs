@@ -106,6 +106,15 @@ fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             ui.add(egui::DragValue::new(&mut c.extra_loss).speed(1.0).range(0.0..=100000.0).suffix(" W"))
                 .on_hover_text(tr("Power loss not covered by the parts (tech data Power loss: 7.5 W)"));
             ui.end_row();
+            ui.label(tr("Altitude"));
+            ui.add(egui::DragValue::new(&mut c.altitude).speed(10.0).range(0.0..=5000.0).suffix(" m")).on_hover_text(tr("Thinner air needs more air flow"));
+            ui.end_row();
+            ui.label(tr("Relative humidity"));
+            ui.add(egui::DragValue::new(&mut c.humidity).speed(1.0).range(0.0..=100.0).suffix(" %")).on_hover_text(tr("At the highest ambient temperature; the heater keeps the dew point. 0 = not considered"));
+            ui.end_row();
+            ui.label("");
+            ui.checkbox(&mut c.sealed, tr("Keep the degree of protection")).on_hover_text(tr("No filter fans: an air/air heat exchanger or a cooling unit"));
+            ui.end_row();
             ui.label(tr("Power loss"));
             ui.label(format!("{:.0} W", result.loss));
             ui.end_row();
@@ -127,6 +136,11 @@ fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             ui.label(tr("Heating"));
             ui.label(if result.heating > 0.0 { format!("{:.0} W", result.heating) } else { "–".into() });
             ui.end_row();
+            if let Some(d) = result.dew_point {
+                ui.label(tr("Dew point"));
+                ui.label(format!("{d:.1} °C"));
+                ui.end_row();
+            }
         });
         if !result.without_data.is_empty() {
             ui.weak(tr_fmt!("Without power loss data: {}", result.without_data.join(", ")));

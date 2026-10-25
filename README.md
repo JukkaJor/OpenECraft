@@ -352,9 +352,14 @@ bill of materials.
     from the tech data of their parts (`Power loss: 7.5 W`) plus an additional loss,
     effective surface by installation type (single, in a suite, free-standing, wall
     mounted, roof covered), material (heat transfer coefficient), ambient and allowed
-    inside temperatures → inside temperature, filter fan air flow or cooling unit
-    output, heater output; report *Enclosure climate*, the check warns when cooling is
-    needed.
+    inside temperatures → inside temperature, filter fan air flow (corrected for the
+    altitude of the site), air/air heat exchanger (W/K, when the degree of protection
+    must be kept) or cooling unit output, heater output that also keeps the inside
+    above the dew point of the ambient air (relative humidity); report *Enclosure
+    climate*, the check warns when cooling is needed. The heat map of the mounting
+    plate stratifies the mean temperature and adds a plume above every device with
+    power loss data; horizontal ducts hold plumes back (warm air gathers below them),
+    fans and cooling units weaken them.
   - **line-ups**: enclosures bayed side by side with cable passages between them
     (cutouts in the facing side walls, or sides open to each other); the 3D view shows
     the whole line-up, wires run from one enclosure into the next;
@@ -377,15 +382,31 @@ bill of materials.
 - **Electrical calculations and verification** (*Project › Electrical calculations…*):
   - *Supply*: voltage, earthing system (TN-S, TN-C, TN-C-S, TT, IT), highest and lowest
     short-circuit current at the supply point, rated current;
-  - *Short circuit and protection coordination* (IEC 60909-0 simplified, IEC 60364-4-41,
-    -4-43): the protective devices of the mains with their time-current bands
-    (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses; part tech data
-    `Characteristic`, `Breaking capacity`, `Instantaneous trip`, `Let-through energy`),
-    breaking capacity against the short-circuit current, disconnection within 0.4 s /
-    5 s (TT: 0.2 s / 1 s, residual current device needed) at the lowest fault current at
-    the end of each circuit, k²S² withstand of the cables, selectivity with the device
-    upstream (total / partial up to a current; gG fuses at a ratio of 1.6); reports
-    *Short circuit and disconnection*, *Selectivity*;
+  - *Short circuit and protection coordination* (IEC 60909-0 for radial networks,
+    IEC 60364-4-41, -4-43): the source from the short-circuit currents at the supply
+    point (with its R/X) or from a transformer (rated power, uk, load losses, correction
+    factor KT) and the network upstream (S''kQ); the cables from the supply to each
+    protective device and on to the end of its circuit; asynchronous motors on the
+    mains add ILR / IrM = 5 (or `Locked rotor current`) when they exceed 1 % of the
+    supply's current. The protective devices of the mains with their time-current bands
+    (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses, electronic
+    LSI trip units with `Long-time delay`, `Short-time pickup`, `Short-time delay`; part
+    tech data `Characteristic`, `Breaking capacity`, `Making capacity`, `Instantaneous
+    trip`, `Let-through energy`, `Pre-arcing energy`), replaced by the manufacturer's
+    curves where given (`Trip curve min` / `Trip curve max`: `1.5: 600; 3: 20; 10: 0.01`
+    in multiples of In, `Let-through energy: 1 kA: 8000; 6 kA: 25000`). Checked: breaking
+    capacity against the short-circuit current and making capacity against its peak
+    (κ from R/X), disconnection at the lowest fault current at the end of each circuit
+    within the times of table 41.1 by U0 (TN 0.8 / 0.4 / 0.2 / 0.1 s, TT 0.3 / 0.2 /
+    0.07 / 0.04 s, distribution circuits 5 s / 1 s; TT: residual current device needed;
+    IT: the second fault, at U or with a distributed neutral at U0), k²S² withstand of
+    the cables, selectivity with the device upstream (total / partial up to a current)
+    from the manufacturer's coordination table, gG fuses at a ratio of 1.6, the
+    pre-arcing energy of a fuse upstream or the time-current bands; back-up protection
+    from the coordination table covers a too low breaking capacity. The coordination
+    tables (selectivity and back-up limits in kA by part number) are edited in the
+    window and with `coordination_table`. Reports *Short circuit and disconnection*,
+    *Selectivity* (with its basis);
   - *Load calculation*: motors, drives, heaters, power supplies and transformers of the
     mains with active / apparent power and current (`Power`, `Current`, `Power factor`,
     `Efficiency`), the load of each protective device, demand with the rated diversity
@@ -397,7 +418,11 @@ bill of materials.
   - *Functional safety* (ISO 13849-1): safety functions of subsystems with their devices,
     category, DCavg, operations per year and CCF; PL by the simplified procedure
     (figure 5) from `MTTFd` / `B10d` of the parts or certified `PL` / `PFHd`, combined by
-    table 11, with the matching SIL; report *Safety functions*;
+    table 11 or, where every subsystem has a PFHd, by their sum, with the matching SIL;
+    a second channel of other devices is symmetrised (D.2), the DCavg comes from the
+    `DC` of the devices when the subsystem gives none (annex E), devices whose T10d
+    falls within the mission time of 20 years are named for replacement; report
+    *Safety functions*;
   - *Rule sets*: built-in libraries (IEC 60204-1, IEC 61439-1, UL 508A / NFPA 79,
     ISO 13849-1, EMC) and customer rule sets (JSON import / export) that tighten the
     limits (voltage drop, disconnection times, minimum cross-sections, load reserve,
@@ -708,6 +733,36 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
   from outside your network.
 
+#### EPLAN Data Portal
+
+The parts handling also connects to the EPLAN Data Portal: choose *EPLAN Data Portal*
+as the server type in the data portal window or in *Parts management › 🌐 Parts
+server*, keep the address `https://dataportal.eplan.com/api` and enter a personal
+access token (created for the Data Portal in the profile of your EPLAN account,
+ePulse). The portal then works like a parts server: search by text, manufacturer and
+product group, part details with the commercial data (CSV), DXF drawings and
+pictures, adding parts to the local database and the update check of the database.
+
+- `openecraft_client::eplan` wraps the portal's REST API (JSON:API): it builds the
+  portal's requests from the parts server's queries and turns the answers into
+  `ServerInfo`, `SearchResult` and `Part`. `openecraft_client::Connection` offers the
+  reading functions of both kinds of server; the editor and the command line use it.
+- The connection is read-only: no uploads, catalogs, users, sign-in, favorites,
+  history or download of the whole database. The facets count the parts of the shown
+  page, as the portal does not count them; catalogs, lifecycle and technical data
+  cannot be filtered.
+- The portal finds parts by its own ids, not by number: a part loaded from it keeps
+  the id (`portal_id`), so adding marked parts and the update check load them in one
+  request. The update check compares only the parts that came from the portal; a
+  single part number is found by an exact search.
+- Manufacturers are filtered by their short name, product groups by the id of the
+  EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
+  (subgroup + 1), e.g. `200050000` for electrical engineering / plugs.
+- Parts in EPLAN format (macros, connection points) come as EDZ files from the portal
+  web page; import them like other parts files (see the parts formats above).
+- Only the desktop version and the command line reach the portal: it allows no
+  cross-origin requests from browsers, so the web version would need a proxy.
+
 ### Project server (several users)
 
 `openecraft-project-server` stores projects for a team. Several users open the same
@@ -804,7 +859,9 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
   lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
 - Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
   environment variables or the `parts_connect` tool (also with `user` / `password`);
-  default `http://127.0.0.1:8090`. The data portal tools search with facets
+  default `http://127.0.0.1:8090`. `parts_connect` with `kind: Eplan` reads the EPLAN
+  Data Portal instead (the token is the personal access token; searching, `parts_get`,
+  `parts_file` and `parts_check_updates` only). The data portal tools search with facets
   (`parts_search`), manage catalogs, files, favorites and users (`parts_catalog_save`,
   `parts_attach`, `parts_favorites`, `parts_user_save`, …) and compare the project parts
   with the server (`parts_check_updates`).
@@ -900,7 +957,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): parts with connection points and mounting holes, pictures and macros (7-Zip with `sevenz-rust2`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
-| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
+| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line; wrapper of the EPLAN Data Portal API (`eplan`) |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |
 | `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
 | `parts-server/` | `openecraft-parts-server`: data portal server (REST API, SQLite or JSON storage, users, web page) |

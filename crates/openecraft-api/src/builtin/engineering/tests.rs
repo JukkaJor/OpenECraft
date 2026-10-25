@@ -13,6 +13,11 @@ fn climate_and_sizing_of_the_demo() {
     assert_eq!(c[0]["material"], "plastic");
     assert!(c[0]["fan_m3_per_h"].as_f64().unwrap() > 0.0);
     assert!(run(&mut s, "enclosure_climate", json!({ "enclosure": name, "material": "wood" })).unwrap_err().contains("Unknown material"));
+    let c = run(&mut s, "enclosure_climate", json!({ "enclosure": name, "sealed": true, "humidity": 60.0, "altitude": 1500.0 })).unwrap();
+    assert!(c[0]["fan_m3_per_h"].is_null() && c[0]["heat_exchanger_w_per_k"].as_f64().unwrap() > 0.0);
+    let dew = climate::dew_point(c[0]["ambient"][1].as_f64().unwrap() as f32, 60.0);
+    assert!((c[0]["dew_point"].as_f64().unwrap() as f32 - dew).abs() < 0.01, "{}", c[0]["dew_point"]);
+    assert_eq!((c[0]["sealed"].as_bool(), c[0]["altitude_m"].as_f64()), (Some(true), Some(1500.0)));
 
     let z = run(&mut s, "electrical_sizing", json!({})).unwrap();
     assert_eq!(z["too_thin"], json!([]));

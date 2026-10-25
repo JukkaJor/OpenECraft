@@ -107,7 +107,9 @@ For calibration, these areas need no catch-up work and are not discussed further
   `production.rs`, `manufacturing/`, `export3d.rs`). This is at Pro Panel level and
   in copper and CNC beyond the base Pro Panel licence.
 - Electrical calculations and rule sets: sizing (IEC 60204-1), short circuit and
-  protection coordination (IEC 60909-0 simplified, IEC 60364), selectivity, load
+  protection coordination (IEC 60909-0 for radial networks with transformer, cable
+  chain and motor contribution, IEC 60364), selectivity with manufacturer curves and
+  coordination tables, load
   calculation (IEC 61439-1), EMC, functional safety (ISO 13849-1), customer rule
   sets (`sizing.rs`, `shortcircuit.rs`, `protection.rs`, `loads.rs`, `emc.rs`,
   `safety.rs`, `rules.rs`). EPLAN has none of this natively.

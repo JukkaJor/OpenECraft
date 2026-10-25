@@ -1004,6 +1004,7 @@ fn climate_report(prj: &Project) -> Table {
         (tr_const!("Highest (°C)"), 0.7),
         (tr_const!("Cooling"), 1.4),
         (tr_const!("Heating (W)"), 0.7),
+        (tr_const!("Dew point (°C)"), 0.7),
         (tr_const!("Devices without power loss"), 2.0),
     ]);
     for e in &prj.layout.enclosures {
@@ -1017,6 +1018,7 @@ fn climate_report(prj: &Project) -> Table {
                 format!("{:.0}", e.climate.inside_max),
                 r.cooling.text(),
                 if r.heating > 0.0 { format!("{:.0}", r.heating) } else { "–".into() },
+                r.dew_point.map(|d| format!("{d:.1}")).unwrap_or_else(|| "–".into()),
                 r.without_data.join(", "),
             ],
             None,
