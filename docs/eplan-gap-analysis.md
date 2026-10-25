@@ -705,7 +705,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols | 31f4166, b2b4e88, cceabce, 3e46498 | GB, GOST, JIS |
 | 18–20 | Catalogs, manual, languages | partly: getting-started tutorial (docs/tutorial.md) | 5eeb5a1 | catalogs, full manual with pictures, more languages |
 | 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
-| 22 | UI customisation | partly: configurable keyboard shortcuts, workspaces (saved window arrangements) | 9898711, see log | docking, toolbar customisation |
+| 22 | UI customisation | partly: configurable keyboard shortcuts, workspaces (saved window arrangements) | 9898711, 738440b | docking, toolbar customisation |
 | 23 | Nailboards, Smart Mounting | done: nailboard drawings to scale; mounting assistant | a2fcb96, 7f8e7bb | 3D harness routing |
 
 Also done beyond the roadmap list: property level change tracking in the revision
