@@ -8,6 +8,12 @@ workspace (model, core modules, editor, CLI, servers, README) and matching every
 area against what EPLAN offers in that area. Where a statement is an inference
 rather than something read in the code, it is marked "not verified".
 
+**Update (branch `eplan-parity`, October 2026):** most of the Tier 1 and Tier 2 items of
+the roadmap and several Tier 3 / 4 items have been implemented since. Section 6 lists
+what was done and what is still open; the scorecard below has a column for the state
+after that work, and section 4 now has measured performance figures. Sections 2 and 3
+describe the state at the time of the analysis.
+
 ## 1. Summary
 
 OpenECraft covers an unusually wide slice of the EPLAN Platform for a 130-commit
@@ -51,31 +57,31 @@ The gaps are therefore not in breadth but in three places:
 Scorecard (coverage of the EPLAN function area by OpenECraft; "gap" is what is
 missing relative to an EPLAN user's expectations):
 
-| Area | Coverage | Gap | Section |
-| --- | --- | --- | --- |
-| Schematic editor: texts, graphics, editing aids | partial | large | 3.1 |
-| Device tags, numbering, cross references | partial | large | 3.2 |
-| Symbol libraries and symbol editor | partial | large (content) | 3.3 |
-| Terminals, plugs, cables, potentials | good | medium | 3.4 |
-| Navigators, find, dialogs | partial | large | 3.5 |
-| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 |
-| Project check and message management | good (messages), missing (management) | medium | 3.7 |
-| Pages, plot frames, title blocks, templates | good | small | 3.8 |
-| Structure identifiers (IEC 81346) | good | small | 3.8 |
-| Macros, placeholders, variants, configurator, options | good | small | 3.9 |
-| Parts management and data portal | good (software), missing (content) | large (content) | 3.10 |
-| Panel layout (Pro Panel) | very good | small | 3.11 |
-| PLC, bus, AutomationML | good | medium | 3.12 |
-| Fluid, P&ID, pre-planning | partial | medium | 3.13 |
-| Revisions, review, compare, change requests | very good | small | 3.14 |
-| Multi-user, rights, cloud | partial | medium | 3.15 |
-| Import / export, migration | good (formats), missing (EPLAN, Excel, PDF import) | medium | 3.16 |
-| Translation and languages | good | medium | 3.17 |
-| API, scripting, automation | good | small | 3.18 |
-| Enterprise integration | good | small | 3.18 |
-| Harness, field wiring, mounting instructions | partial | medium | 3.19 |
-| Performance and scale | unknown | risk | 4 |
-| Documentation, training, ecosystem | missing | large | 4 |
+| Area | Coverage | Gap | Section | After `eplan-parity` |
+| --- | --- | --- | --- | --- |
+| Schematic editor: texts, graphics, editing aids | partial | large | 3.1 | good; native print dialog open |
+| Device tags, numbering, cross references | partial | large | 3.2 | good |
+| Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended); content |
+| Terminals, plugs, cables, potentials | good | medium | 3.4 | good (multi-level, jumper kinds) |
+| Navigators, find, dialogs | partial | large | 3.5 | good (find, page tree, unplaced); drag-and-drop navigators open |
+| Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal / cable diagrams); form editor open |
+| Project check and message management | good (messages), missing (management) | medium | 3.7 | good |
+| Pages, plot frames, title blocks, templates | good | small | 3.8 | good (project templates) |
+| Structure identifiers (IEC 81346) | good | small | 3.8 | good |
+| Macros, placeholders, variants, configurator, options | good | small | 3.9 | very good (macro boxes, update) |
+| Parts management and data portal | good (software), missing (content) | large (content) | 3.10 | good (typed mounting data, EPLAN XML); content |
+| Panel layout (Pro Panel) | very good | small | 3.11 | very good (mounting assistant) |
+| PLC, bus, AutomationML | good | medium | 3.12 | good (5 vendor formats); PLC navigator open |
+| Fluid, P&ID, pre-planning | partial | medium | 3.13 | good (pre-planning module) |
+| Revisions, review, compare, change requests | very good | small | 3.14 | very good (PDF comments, property changes) |
+| Multi-user, rights, cloud | partial | medium | 3.15 | good (accounts, roles, viewer) |
+| Import / export, migration | good (formats), missing (EPLAN, Excel, PDF import) | medium | 3.16 | good (xlsx, EPLAN parts XML); EPLAN project import open |
+| Translation and languages | good | medium | 3.17 | good |
+| API, scripting, automation | good | small | 3.18 | good |
+| Enterprise integration | good | small | 3.18 | good |
+| Harness, field wiring, mounting instructions | partial | medium | 3.19 | good (nailboards, mounting assistant) |
+| Performance and scale | unknown | risk | 4 | measured, fixed hot spots (section 4) |
+| Documentation, training, ecosystem | missing | large | 4 | missing |
 
 ## 2. What is already at EPLAN level or beyond
 
@@ -573,22 +579,40 @@ missing (section 3.11). Size: L (nailboards).
 
 ## 4. Non-feature gaps and risks
 
-**Performance at scale (not measured).** Undo works by cloning the whole project and
-comparing it every frame (`history.rs`); the analysis (netlist, index, all checks)
-is rebuilt completely after every committed change (`app.rs`); the project is one
-JSON document kept in memory and in browser local storage. This is simple and
-correct, and fine for the demo project, but EPLAN projects routinely have 500 to
-5,000 pages with tens of thousands of connections. Before promising parity, measure
-a synthetic 1,000-page project: frame time while editing, time of `Analysis::build`,
-save / load time, memory, browser local storage limit (typically 5 to 10 MB, which a
-large project with embedded images or documents exceeds). Likely mitigations:
-per-page dirty tracking for the analysis, structural sharing or per-page snapshots
-for undo, and IndexedDB or the File System Access API instead of local storage.
+**Performance at scale.** Undo works by cloning the whole project and comparing it
+every frame (`history.rs`); the analysis (netlist, index, all checks) is rebuilt
+completely after every committed change (`app.rs`); the project is one JSON document
+kept in memory and in browser local storage. EPLAN projects routinely have 500 to
+5,000 pages with tens of thousands of connections.
+
+Measured on branch `eplan-parity` with a synthetic 1,000-page project (copies of the
+demo schematic pages, release build, desktop):
+
+| Step | Time / size |
+| --- | --- |
+| Analysis (netlist, index, routing) | 232 ms |
+| All checks, before / after the fixes | 2.8 s / about 0.25 s |
+| of which terminal strips and PLC, before / after | 2.27 s / 24 ms |
+| of which devices, before / after | 224 ms / 49 ms |
+| Project clone and compare (undo snapshot) | 15 ms |
+| Save / load (JSON) | 32 ms / 42 ms |
+| Project as JSON | 9 MB |
+| PDF of all pages | 2.3 s |
+
+The check hot spots were quadratic searches (fixed in "Speed up the project check on
+large projects"); the 9 MB JSON would exceed browser local storage, so the autosave
+now stores the project deflate-compressed ("Autosave the project compressed"). The
+analysis after every committed change (about a quarter second plus the checks) is the
+remaining limit for very large projects; per-page dirty tracking for the analysis and
+IndexedDB / the File System Access API for browser storage are the next mitigations.
 
 **Robustness of free-text conventions.** Several features key off strings in
 technical data (`Terminal type: PE`, `Clearance:`, `Mounting holes:`,
-`Characteristic:`, `Power loss:`). They need typed fields with import mappings
-before third parties supply data at scale.
+`Characteristic:`, `Power loss:`). The mounting and placement values (clearances,
+holes, cutouts, power loss, fastening, faces, collision class, terminal type) are now
+typed fields with CSV columns and migration of the old lines ("Add typed mounting data
+to parts"); electrical values such as `Characteristic:` or `Coil power:` are still
+free text.
 
 **Documentation and training.** EPLAN has a help system, training courses,
 certification, a user forum and consultants. OpenECraft has the README (long and
@@ -601,9 +625,9 @@ for as much as the software; see sections 3.3, 3.6 and 3.10. A community library
 format and a contribution path (pull requests of catalogs exist: ABB, Beckhoff,
 DEHN, Hager, MDT, Phoenix Contact, Siemens, Weidmüller) are the start.
 
-**UI customisation.** Shortcuts are fixed (`app.rs`), panels are fixed, no
-workspaces, no toolbar customisation, no ribbon. Minor for parity, matters for
-migration comfort.
+**UI customisation.** Keyboard shortcuts can be changed now (*View › Keyboard
+shortcuts…*); panels are fixed, no workspaces, no toolbar customisation, no ribbon.
+Minor for parity, matters for migration comfort.
 
 ## 5. Prioritised roadmap
 
@@ -653,6 +677,44 @@ Ordered by what an EPLAN user hits first; sizes as in section 3.
     storage (M to L).
 22. UI customisation: shortcuts, workspaces, docking (M).
 23. Harness nailboard drawings, Smart Mounting instructions (L, M).
+
+## 6. Progress on branch `eplan-parity`
+
+One commit per item, in roadmap order. "Open" lists what of the item is still missing.
+
+| # | Roadmap item | State | Commit | Open |
+| --- | --- | --- | --- | --- |
+| 1 | Text formatting and placement | done: rotation, alignment, styles, text boxes, path function texts, special texts, hyperlinks | 0da4422 | – |
+| 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
+| 3 | Graphical report forms | partly: graphical terminal and cable diagrams | d7e57f2 | form editor, graphical plug and PLC diagrams |
+| 4 | Check message management | done: message codes, levels per check, acceptance, check switches | 42d8f5b | check schemes as files |
+| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced functions with placement | 0d77ed5, 57c6af6 | drag-and-drop navigators for strips, PLC, plugs, potentials |
+| 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
+| 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print | b0ae357, 9ec50c4 | native print dialog, print of panel layout faces |
+| 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
+| 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
+| 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
+| 11 | Typed mounting data | done | 11794d0 | part variants, assemblies |
+| 12 | Templates, master data, macros | partly: project templates; macro boxes with update from the library and saving back | 57c6af6, 341a108 | settings schemes, master data synchronisation |
+| 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
+| 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY) | 93fdeb6, 7e3fb7b | PLC navigator, GX Works / PLCnext formats |
+| 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
+| 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
+| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols | 31f4166, b2b4e88 | GB, GOST, JIS, electronics, installation |
+| 18–20 | Catalogs, manual, languages | open | – | content work |
+| 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
+| 22 | UI customisation | partly: configurable keyboard shortcuts | 9898711 | workspaces, docking |
+| 23 | Nailboards, Smart Mounting | done: nailboard drawings to scale; mounting assistant | a2fcb96, 7f8e7bb | 3D harness routing |
+
+Also done beyond the roadmap list: property level change tracking in the revision
+overview (old and new value per property, c465254), and parameters of exports in the
+editor (a form for exporter parameters) and on the command line (`--options`).
+
+Notes on the vendor formats: the PLC exports (SDF, TcGVL, XSY), the labeling scheme
+templates (CLIP PROJECT, M-Print PRO, Brady, Murrplastik, Partex) and the PDF comment
+import follow the published or commonly used layouts of these programs, but were not
+tested against the vendor software; the labeling schemes are starting points meant to
+be copied and adjusted.
 
 ## Appendix: inventory used for this comparison
 
