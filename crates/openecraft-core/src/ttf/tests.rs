@@ -37,3 +37,30 @@ fn subsets_keep_the_used_outlines() {
     assert_eq!(checksum(&sub), 0xB1B0_AFBA, "head checksum adjustment");
     assert_eq!(s.glyph('A'), 0, "a subset has no character map");
 }
+
+#[test]
+fn collections_hold_several_fonts() {
+    let single = epaint_default_fonts::UBUNTU_LIGHT;
+    // A collection of the same font twice: header, two offsets, then the font data
+    // with its table offsets moved by the header size.
+    let head = 12 + 8;
+    let mut ttc = b"ttcf".to_vec();
+    ttc.extend_from_slice(&0x0001_0000u32.to_be_bytes());
+    ttc.extend_from_slice(&2u32.to_be_bytes());
+    ttc.extend_from_slice(&(head as u32).to_be_bytes());
+    ttc.extend_from_slice(&(head as u32).to_be_bytes());
+    let mut font = single.to_vec();
+    let n = u16::from_be_bytes([font[4], font[5]]) as usize;
+    for i in 0..n {
+        let rec = 12 + 16 * i + 8;
+        let off = u32::from_be_bytes(font[rec..rec + 4].try_into().unwrap()) + head as u32;
+        font[rec..rec + 4].copy_from_slice(&off.to_be_bytes());
+    }
+    ttc.extend_from_slice(&font);
+    let a = Font::parse_collection(&ttc, 1).unwrap();
+    let b = Font::parse(single).unwrap();
+    assert_eq!((a.num_glyphs, a.glyph('A')), (b.num_glyphs, b.glyph('A')));
+    assert!(a.has_outlines());
+    assert!(Font::parse_collection(&ttc, 2).is_none());
+    assert_eq!(Font::parse_collection(single, 0).unwrap().num_glyphs, b.num_glyphs);
+}

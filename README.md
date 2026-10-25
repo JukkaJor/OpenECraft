@@ -12,7 +12,8 @@ bill of materials.
 - **Languages**: English, German, French and Spanish (View › Language; the editor and the
   parts manager remember the choice and start in the system / browser language if supported).
   Project texts in scripts the bundled fonts lack (Chinese, Japanese, Korean) use the
-  system's CJK fonts on the desktop as fallback.
+  system's CJK fonts on the desktop as fallback, on screen and in PDF exports (embedded
+  as a subset).
 - **Projects with pages**: multi-line schematic pages (A3, 10 columns / 6 rows, title block),
   cover sheet and generated report pages. Page navigator with reordering.
 - **IEC 60617 symbol library** (~330 symbols): relay coils (AC, latching, polarized,

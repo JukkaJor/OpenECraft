@@ -136,3 +136,20 @@ fn selected_pages_only_with_links_among_them() {
     assert_eq!(pages(&two), 2);
     assert_eq!(pages(&all), prj.pages.len());
 }
+
+#[test]
+fn characters_the_bundled_font_lacks_use_the_fallback_font() {
+    // The Hack font of egui stands in for a system CJK font: it has glyphs the
+    // Ubuntu font lacks.
+    let fb = Font::parse(epaint_default_fonts::HACK_REGULAR).unwrap();
+    let primary = unicode_font().unwrap();
+    let c = ('\u{2000}'..='\u{2BFF}').find(|c| primary.glyph(*c) == 0 && fb.glyph(*c) != 0).unwrap();
+    assert!(set_fallback_font(epaint_default_fonts::HACK_REGULAR.to_vec()) || fallback_font().is_some());
+    let mut prj = demo_project();
+    let id = prj.new_id();
+    prj.pages[1].texts.push(crate::model::TextItem { id, pos: crate::geom::p(50.0, 50.0), text: format!("A{c}b"), size: 3.0, ..Default::default() });
+    let an = Analysis::checked(&prj);
+    let pdf = document_with(&prj, &an);
+    assert!(pdf.contains("/F6 "), "fallback font used");
+    assert!(pdf.contains("OECFBK+Fallback"));
+}

@@ -172,7 +172,14 @@ pub struct App {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> App {
-        openecraft_ui::fonts::install_system_fallbacks(&cc.egui_ctx);
+        // System fonts for scripts the bundled fonts lack, on screen and in PDF exports.
+        let system_fonts = openecraft_ui::fonts::system_fallbacks();
+        openecraft_ui::fonts::install(&cc.egui_ctx, &system_fonts);
+        for (_, bytes) in system_fonts {
+            if openecraft_core::pdf::set_fallback_font(bytes) {
+                break;
+            }
+        }
         let mut prj: Option<Project> = None;
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;

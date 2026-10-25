@@ -31,16 +31,25 @@ pub fn load_first(paths: &[&str], max: usize, read: impl Fn(&str) -> Option<Vec<
     paths.iter().filter_map(|p| read(p).filter(|b| b.len() > 1024).map(|b| (p.to_string(), b))).take(max).collect()
 }
 
+/// The system fallback fonts found: (path, file content).
+pub fn system_fallbacks() -> Vec<(String, Vec<u8>)> {
+    load_first(CANDIDATES, MAX_FALLBACKS, |p| std::fs::read(p).ok())
+}
+
+/// Adds fonts as fallbacks of the proportional and monospace fonts.
+pub fn install(ctx: &egui::Context, fonts: &[(String, Vec<u8>)]) {
+    for (path, bytes) in fonts {
+        let families = [FontFamily::Proportional, FontFamily::Monospace].into_iter().map(|family| InsertFontFamily { family, priority: FontPriority::Lowest }).collect();
+        ctx.add_font(FontInsert { name: format!("system:{path}"), data: FontData::from_owned(bytes.clone()), families });
+    }
+}
+
 /// Adds the system fonts found as fallbacks of the proportional and monospace fonts;
 /// returns how many were added.
 pub fn install_system_fallbacks(ctx: &egui::Context) -> usize {
-    let found = load_first(CANDIDATES, MAX_FALLBACKS, |p| std::fs::read(p).ok());
-    let n = found.len();
-    for (path, bytes) in found {
-        let families = [FontFamily::Proportional, FontFamily::Monospace].into_iter().map(|family| InsertFontFamily { family, priority: FontPriority::Lowest }).collect();
-        ctx.add_font(FontInsert { name: format!("system:{path}"), data: FontData::from_owned(bytes), families });
-    }
-    n
+    let found = system_fallbacks();
+    install(ctx, &found);
+    found.len()
 }
 
 #[cfg(test)]

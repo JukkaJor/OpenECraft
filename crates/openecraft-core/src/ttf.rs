@@ -35,10 +35,29 @@ pub struct Font<'a> {
 
 impl<'a> Font<'a> {
     pub fn parse(data: &'a [u8]) -> Option<Font<'a>> {
-        let n = u16_at(data, 4)? as usize;
+        Self::parse_at(data, 0)
+    }
+
+    /// Font `index` of a font collection (`.ttc`), or the font of a single font file.
+    pub fn parse_collection(data: &'a [u8], index: u32) -> Option<Font<'a>> {
+        if data.starts_with(b"ttcf") {
+            let n = u32_at(data, 8)?;
+            if index >= n {
+                return None;
+            }
+            Self::parse_at(data, u32_at(data, 12 + 4 * index as usize)? as usize)
+        } else {
+            Self::parse(data)
+        }
+    }
+
+    /// The font whose table directory starts at `base` (table offsets are from the start
+    /// of the file, also in collections).
+    fn parse_at(data: &'a [u8], base: usize) -> Option<Font<'a>> {
+        let n = u16_at(data, base + 4)? as usize;
         let mut tables = HashMap::new();
         for i in 0..n {
-            let rec = 12 + 16 * i;
+            let rec = base + 12 + 16 * i;
             let tag: [u8; 4] = data.get(rec..rec + 4)?.try_into().ok()?;
             let (off, len) = (u32_at(data, rec + 8)? as usize, u32_at(data, rec + 12)? as usize);
             if off + len > data.len() {
@@ -84,6 +103,11 @@ impl<'a> Font<'a> {
             cap_height,
             tables,
         })
+    }
+
+    /// The font has TrueType outlines (`glyf`), which the PDF export can embed.
+    pub fn has_outlines(&self) -> bool {
+        self.tables.contains_key(b"glyf") && self.tables.contains_key(b"loca")
     }
 
     fn table(&self, tag: &[u8; 4]) -> Option<&'a [u8]> {

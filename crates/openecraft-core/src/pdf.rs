@@ -22,6 +22,32 @@ fn unicode_font() -> Option<&'static Font<'static>> {
     FONT.get_or_init(|| Font::parse(epaint_default_fonts::UBUNTU_LIGHT)).as_ref()
 }
 
+static FALLBACK: OnceLock<Option<Font<'static>>> = OnceLock::new();
+
+/// Sets a second embedded font (F6) for characters the bundled font lacks, e.g. a
+/// system font with Chinese, Japanese or Korean glyphs (`.ttf` or the first font of a
+/// `.ttc`). Only fonts with TrueType outlines are taken; it can be set once. Returns
+/// whether the font is used.
+pub fn set_fallback_font(data: Vec<u8>) -> bool {
+    let data: &'static [u8] = Box::leak(data.into_boxed_slice());
+    let font = Font::parse_collection(data, 0).filter(|f| f.has_outlines());
+    let ok = font.is_some();
+    ok && FALLBACK.set(font).is_ok()
+}
+
+fn fallback_font() -> Option<&'static Font<'static>> {
+    FALLBACK.get().and_then(|f| f.as_ref())
+}
+
+/// The font a character of a Unicode text is written with: the bundled one, or the
+/// fallback if only that has the glyph.
+fn font_of(primary: &'static Font<'static>, c: char) -> (bool, &'static Font<'static>) {
+    match fallback_font() {
+        Some(fb) if primary.glyph(c) == 0 && fb.glyph(c) != 0 => (true, fb),
+        _ => (false, primary),
+    }
+}
+
 /// The text has characters Helvetica (WinAnsi) cannot show.
 fn needs_unicode(text: &str) -> bool {
     text.chars().any(|c| c != '?' && win_ansi(c) == b'?')
@@ -230,6 +256,8 @@ pub struct PdfDraw {
     images: Vec<PdfImage>,
     /// Glyphs of the embedded font used on the page, with their characters.
     glyphs: BTreeMap<u16, char>,
+    /// Glyphs of the fallback font (F6) used on the page.
+    fallback_glyphs: BTreeMap<u16, char>,
 }
 
 impl PdfDraw {
@@ -316,7 +344,16 @@ impl Draw for PdfDraw {
         let fs = st.size * 1.25 * K;
         let font = unicode_font().filter(|_| needs_unicode(text));
         let w = match font {
-            Some(f) => text.chars().map(|c| f.advance(f.glyph(c)) as f32).sum::<f32>() / f.units_per_em as f32 * fs / K,
+            Some(f) => {
+                text.chars()
+                    .map(|c| {
+                        let (_, ff) = font_of(f, c);
+                        ff.advance(ff.glyph(c)) as f32 / ff.units_per_em as f32
+                    })
+                    .sum::<f32>()
+                    * fs
+                    / K
+            }
             None => text_width(text, fs) / K,
         };
         let dx = match st.h {
@@ -339,25 +376,37 @@ impl Draw for PdfDraw {
         };
         self.fill(ink);
         if let Some(f) = font {
-            // Bold: filled and stroked outlines; italic: slanted text space.
-            let mut gids = String::new();
+            // Runs of the bundled font (F5) and of the fallback font (F6).
+            let mut runs: Vec<(bool, String)> = Vec::new();
             for c in text.chars() {
-                let g = f.glyph(c);
-                self.glyphs.entry(g).or_insert(c);
-                let _ = write!(gids, "{g:04X}");
+                let (fallback, ff) = font_of(f, c);
+                let g = ff.glyph(c);
+                if fallback {
+                    self.fallback_glyphs.entry(g).or_insert(c);
+                } else {
+                    self.glyphs.entry(g).or_insert(c);
+                }
+                match runs.last_mut() {
+                    Some((fb, hex)) if *fb == fallback => {
+                        let _ = write!(hex, "{g:04X}");
+                    }
+                    _ => runs.push((fallback, format!("{g:04X}"))),
+                }
             }
+            let gids: String = runs.iter().map(|(fb, hex)| format!("/F{} {fs:.2} Tf <{hex}> Tj ", if *fb { 6 } else { 5 })).collect();
+            // Bold: filled and stroked outlines; italic: slanted text space.
             let (s, c) = st.angle.to_radians().sin_cos();
             let k = if st.italic { 0.2 } else { 0.0 };
             let (r, g, b) = rgb(ink);
             let bold = if st.bold { format!("{r:.3} {g:.3} {b:.3} RG {:.3} w 2 Tr ", fs * 0.03) } else { String::new() };
             let _ = writeln!(
                 self.ops,
-                "BT /F5 {fs:.2} Tf {bold}{c:.4} {s:.4} {:.4} {:.4} {:.2} {:.2} Tm <{gids}> Tj{} ET",
+                "BT {bold}{c:.4} {s:.4} {:.4} {:.4} {:.2} {:.2} Tm {gids}{}ET",
                 k * c - s,
                 k * s + c,
                 x(start.x),
                 self.y(start.y),
-                if st.bold { " 0 Tr" } else { "" }
+                if st.bold { "0 Tr " } else { "" }
             );
         } else if st.angle == 0.0 {
             let _ = writeln!(self.ops, "BT /F{face} {fs:.2} Tf {:.2} {:.2} Td ({}) Tj ET", x(start.x), self.y(start.y), pdf_string(text));
@@ -409,16 +458,27 @@ impl Writer {
 
 /// Writes the embedded font as objects `obj` … `obj + 4`: Type0 font, CID font, font
 /// descriptor, font file (subset, compressed) and ToUnicode map.
-fn write_unicode_font(w: &mut Writer, obj: usize, f: &Font, glyphs: &BTreeMap<u16, char>) {
-    const NAME: &str = "OECUBU+Ubuntu-Light";
+/// Embeds a font with the glyphs used (five objects from `next`); `None` without font
+/// or glyphs.
+fn embed_font(w: &mut Writer, next: &mut usize, font: Option<&Font>, glyphs: &BTreeMap<u16, char>, name: &str) -> Option<usize> {
+    let f = font.filter(|_| !glyphs.is_empty())?;
+    let obj = *next;
+    *next += 5;
+    write_unicode_font(w, obj, f, glyphs, name);
+    Some(obj)
+}
+
+fn write_unicode_font(w: &mut Writer, obj: usize, f: &Font, glyphs: &BTreeMap<u16, char>, name: &str) {
+    let name = name.replace(' ', "");
+    let name = name.as_str();
     let scale = 1000.0 / f.units_per_em as f32;
     let (cid, desc, file, map) = (obj + 1, obj + 2, obj + 3, obj + 4);
-    w.obj(obj, &format!("<< /Type /Font /Subtype /Type0 /BaseFont /{NAME} /Encoding /Identity-H /DescendantFonts [{cid} 0 R] /ToUnicode {map} 0 R >>"));
+    w.obj(obj, &format!("<< /Type /Font /Subtype /Type0 /BaseFont /{name} /Encoding /Identity-H /DescendantFonts [{cid} 0 R] /ToUnicode {map} 0 R >>"));
     let widths: Vec<String> = glyphs.keys().map(|g| format!("{g} [{:.0}]", f.advance(*g) as f32 * scale)).collect();
     w.obj(
         cid,
         &format!(
-            "<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{NAME} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor {desc} 0 R /DW 500 /W [{}] /CIDToGIDMap /Identity >>",
+            "<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{name} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor {desc} 0 R /DW 500 /W [{}] /CIDToGIDMap /Identity >>",
             widths.join(" ")
         ),
     );
@@ -426,7 +486,7 @@ fn write_unicode_font(w: &mut Writer, obj: usize, f: &Font, glyphs: &BTreeMap<u1
     w.obj(
         desc,
         &format!(
-            "<< /Type /FontDescriptor /FontName /{NAME} /Flags 32 /FontBBox [{} {} {} {}] /ItalicAngle 0 /Ascent {:.0} /Descent {:.0} /CapHeight {:.0} /StemV 70 /FontFile2 {file} 0 R >>",
+            "<< /Type /FontDescriptor /FontName /{name} /Flags 32 /FontBBox [{} {} {} {}] /ItalicAngle 0 /Ascent {:.0} /Descent {:.0} /CapHeight {:.0} /StemV 70 /FontFile2 {file} 0 R >>",
             b[0],
             b[1],
             b[2],
@@ -488,15 +548,10 @@ pub fn document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
     w.obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
     // The embedded font (F5) with the glyphs all pages use.
     let glyphs: BTreeMap<u16, char> = pages.iter().flat_map(|d| d.glyphs.iter().map(|(g, c)| (*g, *c))).collect();
-    let unicode = match (unicode_font(), glyphs.is_empty()) {
-        (Some(f), false) => {
-            let obj = next;
-            next += 5;
-            write_unicode_font(&mut w, obj, f, &glyphs);
-            Some(obj)
-        }
-        _ => None,
-    };
+    let unicode = embed_font(&mut w, &mut next, unicode_font(), &glyphs, "OECUBU+Ubuntu-Light");
+    // The fallback font (F6) for glyphs the bundled font lacks.
+    let fallback_glyphs: BTreeMap<u16, char> = pages.iter().flat_map(|d| d.fallback_glyphs.iter().map(|(g, c)| (*g, *c))).collect();
+    let fallback = embed_font(&mut w, &mut next, fallback_font(), &fallback_glyphs, "OECFBK+Fallback");
     // Bold, italic and bold italic texts (F2 … F4).
     let fonts = [next, next + 1, next + 2];
     next += 3;
@@ -584,11 +639,12 @@ pub fn document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
         w.obj(
             po,
             &format!(
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R{} >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R{}{} >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
                 fonts[0],
                 fonts[1],
                 fonts[2],
                 unicode.map(|u| format!(" /F5 {u} 0 R")).unwrap_or_default(),
+                fallback.map(|u| format!(" /F6 {u} 0 R")).unwrap_or_default(),
                 po + 1,
                 annots.join(" ")
             ),
