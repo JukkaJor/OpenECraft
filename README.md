@@ -142,7 +142,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   import of **Rockwell Studio 5000** (aliases of the module channels), the symbol table
   of **Siemens STEP 7 classic** (SDF), a global variable list for **Beckhoff TwinCAT 3**
   (TcGVL, `AT %I*` / `AT %Q*`), variables for **Schneider Control Expert** (XSY, `EBOOL`
-  with topological addresses) and IEC 61131-3 global variables (CODESYS); addresses
+  with topological addresses), device comments for **Mitsubishi GX Works** (CSV, `X` / `Y`
+  in octal) and IEC 61131-3 global variables (CODESYS); addresses
   used on several cards are reported.
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
   locked pages are read only. Changes since the last released revision (added / changed /

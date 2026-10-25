@@ -151,3 +151,15 @@ fn step7_twincat_and_schneider_exports() {
     assert!(xsy.matches("<variables ").count() >= 1);
     assert!(xsy.contains("typeName=\"EBOOL\" topologicalAddress=\"%"));
 }
+
+#[test]
+fn mitsubishi_devices_are_octal() {
+    let prj = crate::sample::demo_project();
+    let an = crate::analysis::Analysis::checked(&prj);
+    let csv = mitsubishi_comments(&prj, &an.netlist);
+    let mut lines = csv.lines();
+    assert_eq!(lines.next(), Some("\"Device Name\",\"Comment\""));
+    let devices: Vec<&str> = lines.map(|l| l.split(',').next().unwrap().trim_matches('"')).collect();
+    assert!(!devices.is_empty());
+    assert!(devices.iter().all(|d| (d.starts_with('X') || d.starts_with('Y')) && d[1..].chars().all(|c| ('0'..='7').contains(&c))), "{devices:?}");
+}

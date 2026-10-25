@@ -297,6 +297,20 @@ pub fn step7_sdf(prj: &Project, nl: &Netlist) -> String {
     out
 }
 
+/// Mitsubishi GX Works device comments (CSV): inputs `X` and outputs `Y` numbered in
+/// octal (byte · 8 + bit), the comment from card and function text.
+pub fn mitsubishi_comments(prj: &Project, nl: &Netlist) -> String {
+    let q = |s: &str| format!("\"{}\"", s.replace('"', "\"\""));
+    let mut out = String::from("\"Device Name\",\"Comment\"\r\n");
+    for (_, p) in tags(prj, nl) {
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
+        let device = format!("{}{:o}", if input { 'X' } else { 'Y' }, byte * 8 + bit);
+        let comment: String = tag_comment(&p).chars().take(32).collect();
+        out.push_str(&format!("{},{}\r\n", q(&device), q(&comment)));
+    }
+    out
+}
+
 /// Beckhoff TwinCAT 3 global variable list (`.TcGVL`): the points as `AT %I*` /
 /// `AT %Q*` variables, linked to the terminals in the I/O configuration.
 pub fn twincat_gvl(prj: &Project, nl: &Netlist) -> String {
