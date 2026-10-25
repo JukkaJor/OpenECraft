@@ -21,6 +21,7 @@ use openecraft_core::symbols::{self, Category, Func};
 use openecraft_core::{potentials, properties, sample, translation, wirenum};
 use egui::{Color32, Key, RichText};
 use openecraft_api::params::{text, Args};
+use openecraft_client::PortalKind;
 use serde_json::Map;
 
 mod arrange_ui;
@@ -178,6 +179,8 @@ impl App {
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
         let mut server_url: Option<String> = None;
+        let mut eplan_url: Option<String> = None;
+        let mut server_kind: Option<PortalKind> = None;
         let mut remote = crate::remote::Remote::default();
         let mut vault = crate::vault::Vault::default();
         let mut macro_lib = None;
@@ -194,6 +197,8 @@ impl App {
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
+            eplan_url = eframe::get_value(storage, "eplan_portal_url");
+            server_kind = eframe::get_value(storage, "parts_server_kind");
             macro_lib = eframe::get_value(storage, "macros");
             if let Some(db) = eframe::get_value(storage, "project_database") {
                 projects_ui.db = db;
@@ -225,8 +230,12 @@ impl App {
         let autosave = crate::autosave::Autosave::start(openecraft_ui::io::Store::new("OpenECraft"), &cc.egui_ctx, &parts_db);
         let mut parts_ui = PartsUi::default();
         if let Some(url) = server_url {
-            parts_ui.server.url = url;
+            parts_ui.server.set_url_of(PortalKind::OpenECraft, url);
         }
+        if let Some(url) = eplan_url {
+            parts_ui.server.set_url_of(PortalKind::Eplan, url);
+        }
+        parts_ui.server.set_kind(server_kind.unwrap_or_default());
         let prj = prj.unwrap_or_else(sample::demo_project);
         let dock = dock.unwrap_or_else(crate::dock::default_tree);
         let mut plugins = openecraft_api::Plugins::new(Vec::<String>::new());
@@ -537,7 +546,9 @@ impl eframe::App for App {
         }
         storage.set_string("project", String::new());
         eframe::set_value(storage, "file_name", &self.session.file_name);
-        eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
+        eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url_of(PortalKind::OpenECraft));
+        eframe::set_value(storage, "eplan_portal_url", &self.parts_ui.server.url_of(PortalKind::Eplan));
+        eframe::set_value(storage, "parts_server_kind", &self.parts_ui.server.kind);
         eframe::set_value(storage, "macros", &self.macro_lib);
         eframe::set_value(storage, "project_database", &self.projects_ui.db);
         eframe::set_value(storage, "project_server_url", &self.remote.url);

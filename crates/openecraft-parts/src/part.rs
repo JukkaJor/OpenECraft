@@ -436,6 +436,10 @@ pub struct Part {
     /// Unix time of the last change on the parts server.
     #[serde(skip_serializing_if = "is_zero")]
     pub modified: u64,
+    /// Id of the part on the EPLAN Data Portal it was loaded from (the portal finds
+    /// parts by this id, not by number).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub portal_id: String,
 }
 
 fn is_zero(n: &u64) -> bool {
@@ -485,6 +489,7 @@ impl Default for Part {
             attachments: Vec::new(),
             revision: 0,
             modified: 0,
+            portal_id: String::new(),
         }
     }
 }
