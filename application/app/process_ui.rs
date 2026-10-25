@@ -41,7 +41,7 @@ fn medium_combo(ui: &mut egui::Ui, id: &str, value: &mut Option<Medium>, default
 fn status_color(s: Status) -> Color32 {
     match s {
         Status::Planned => Color32::GRAY,
-        Status::InProgress => Color32::from_rgb(230, 150, 30),
+        Status::InProgress => crate::style::warning(),
         Status::Engineered => Color32::from_rgb(50, 170, 80),
     }
 }
@@ -134,13 +134,9 @@ impl App {
         }
     }
 
-    pub(super) fn process_window(&mut self, ctx: &egui::Context) {
-        if !self.process_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn process_pane(&mut self, ui: &mut egui::Ui) {
         let (mut jump, mut report) = (None, None);
-        egui::Window::new(tr("Fluid and process")).open(&mut open).default_size([900.0, 460.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 let tab = &mut self.process_ui.tab;
                 ui.selectable_value(tab, Tab::Hoses, tr("Hoses and pipes"));
@@ -156,7 +152,6 @@ impl App {
                 Tab::Loops => self.loops_tab(ui, &mut jump, &mut report),
             }
         });
-        self.process_ui.open = open;
         if let Some(k) = report {
             self.report_kind = k;
             self.show_reports = true;
@@ -316,9 +311,9 @@ impl App {
                     }
                     let missing: Vec<&String> = els.iter().filter(|e| !idx.devices.contains_key(*e)).collect();
                     if solenoids > 0 && els.is_empty() {
-                        ui.colored_label(Color32::from_rgb(230, 150, 30), tr("Solenoid not linked"));
+                        ui.colored_label(crate::style::warning(), tr("Solenoid not linked"));
                     } else if !missing.is_empty() {
-                        ui.colored_label(Color32::from_rgb(230, 150, 30), tr("Not in the schematic"));
+                        ui.colored_label(crate::style::warning(), tr("Not in the schematic"));
                     } else if !els.is_empty() {
                         ui.colored_label(Color32::from_rgb(50, 170, 80), tr("Linked"));
                     } else {

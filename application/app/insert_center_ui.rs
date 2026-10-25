@@ -1,0 +1,284 @@
+//! The Insert center pane (see `crate::insert_center`): search, favorites, recently
+//! used, and the tree of symbols, macros, devices and unplaced functions. A click starts
+//! placing, a drag of an unplaced function places it at the drop point.
+
+use super::*;
+use crate::insert_center::Entry;
+use openecraft_core::macros::MacroKind;
+
+impl Entry {
+    /// The key of a symbol entry, as the editor places it.
+    fn symbol_key(&self, prj: &Project) -> Option<&'static str> {
+        match self {
+            Entry::Symbol(k) => prj.symbol(k).map(|d| d.key),
+            _ => None,
+        }
+    }
+}
+
+/// What a row of the Insert center asks for.
+enum Pick {
+    Insert(Entry),
+    Favorite(Entry),
+    Unplaced(openecraft_core::unplaced::Unplaced),
+}
+
+impl App {
+    /// Registered symbols of the project symbol library, sorted by library and name.
+    pub(super) fn user_symbols(&self) -> Vec<symbols::SymbolRef> {
+        let mut v: Vec<symbols::SymbolRef> = self.session.prj.symbols.iter().filter_map(|u| self.session.prj.symbol(&u.key)).collect();
+        v.sort_by(|a, b| a.library.cmp(b.library).then(natural_cmp(a.name, b.name)));
+        v
+    }
+
+    /// Title, further texts to search and icon of an entry.
+    fn entry_texts(&self, e: &Entry) -> Option<(String, String, Icon)> {
+        match e {
+            Entry::Symbol(k) => self.session.prj.symbol(k).map(|d| (tr(d.name).to_string(), format!("{} {} {}", d.name, d.letter, d.category.title()), Icon::Symbol)),
+            Entry::Macro(n) => self.macro_lib.get(n).map(|m| (m.name.clone(), format!("{} {}", m.category, m.description), Icon::Macro)),
+            Entry::Part(n) => parts::lookup(&self.session.prj, Some(&self.parts_db), n).map(|p| (p.number.clone(), format!("{} {} {}", p.description, p.manufacturer, p.group), Icon::Parts)),
+        }
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn insert_center_pane(&mut self, ui: &mut egui::Ui) {
+        let mut pick: Option<Pick> = None;
+        ui.horizontal(|ui| {
+            icons::show(ui, Icon::Find, 16.0);
+            let r = ui.add(egui::TextEdit::singleline(&mut self.insert_center.query).hint_text(tr("Search (* and ? as placeholders)…")).desired_width(ui.available_width() - 60.0));
+            if r.changed() && !self.insert_center.query.is_empty() {
+                self.lib_filter.clear();
+            }
+            let (icon, tip) = if self.insert_center.tiles { (Icon::List, tr("Show as list")) } else { (Icon::Grid, tr("Show as tiles")) };
+            if icons::button(ui, icon, tip).clicked() {
+                self.insert_center.tiles = !self.insert_center.tiles;
+            }
+            let r = icons::button(ui, Icon::Dots, tr("Favorites"));
+            egui::Popup::menu(&r).show(|ui| {
+                let ctx = ui.ctx().clone();
+                if ui.button(tr("Export favorites…")).clicked() {
+                    let json = self.insert_center.favorites_json();
+                    self.export(&ctx, "favorites.json".into(), (tr("Favorites (JSON)"), "json"), json);
+                    ui.close();
+                }
+                if ui.button(tr("Import favorites…")).clicked() {
+                    self.io.open(&ctx, Purpose::Favorites);
+                    ui.close();
+                }
+            });
+        });
+        let searching = !self.insert_center.query.trim().is_empty();
+        egui::ScrollArea::vertical().id_salt("insert_center").auto_shrink([false, false]).show(ui, |ui| {
+            if !searching {
+                for (title, list) in [(tr("Favorites"), self.insert_center.favorites()), (tr("Recently used"), self.insert_center.recent())] {
+                    if list.is_empty() {
+                        continue;
+                    }
+                    ui.label(RichText::new(title).strong());
+                    self.entry_tiles(ui, &list, &mut pick);
+                    ui.separator();
+                }
+            }
+            // Symbols: the user's libraries, then the built-in categories.
+            let user = self.user_symbols();
+            let mut libs: Vec<&str> = user.iter().map(|d| d.library).collect();
+            libs.dedup();
+            let groups = libs
+                .iter()
+                .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().map(|d| &**d).filter(|d| d.library == *lib).collect::<Vec<_>>()))
+                .chain(Category::ALL.into_iter().map(|cat| (cat.title().to_string(), symbols::library().iter().filter(|d| d.category == cat).collect())));
+            egui::CollapsingHeader::new(RichText::new(tr("Symbols")).strong()).id_salt("ic_symbols").default_open(true).open(searching.then_some(true)).show(ui, |ui| {
+                for (title, defs) in groups {
+                    let defs: Vec<&symbols::SymbolDef> =
+                        defs.into_iter().filter(|d| !searching || self.insert_center.matches(&[d.name, tr(d.name), d.letter, &title])).collect();
+                    if defs.is_empty() {
+                        continue;
+                    }
+                    // The extra libraries and the long ones start collapsed.
+                    let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::Process | Category::SingleLine | Category::BlackBox | Category::Installation | Category::Gb | Category::Gost | Category::Jis) && defs.len() <= 24;
+                    egui::CollapsingHeader::new(&title).id_salt(("ic_cat", &title)).default_open(main).open(searching.then_some(true)).show(ui, |ui| {
+                        let list: Vec<Entry> = defs.iter().map(|d| Entry::Symbol(d.key.to_string())).collect();
+                        self.entry_rows(ui, &list, &mut pick);
+                    });
+                }
+            });
+            // Macros of the macro library.
+            let macros: Vec<Entry> = self
+                .macro_lib
+                .macros
+                .iter()
+                .filter(|m| !searching || self.insert_center.matches(&[&m.name, &m.category, &m.description]))
+                .map(|m| Entry::Macro(m.name.clone()))
+                .collect();
+            egui::CollapsingHeader::new(RichText::new(tr_fmt!("Macros ({})", macros.len())).strong()).id_salt("ic_macros").open(searching.then_some(!macros.is_empty())).show(ui, |ui| {
+                self.entry_rows(ui, &macros, &mut pick);
+                if macros.is_empty() {
+                    ui.weak(tr("(no entries)"));
+                }
+            });
+            // Devices: parts with function templates (the first function is placed).
+            let mut devices: Vec<Entry> = Vec::new();
+            for p in self.session.prj.parts.iter().chain(self.parts_db.parts.iter()) {
+                if p.functions.is_empty() || devices.len() >= 200 {
+                    continue;
+                }
+                if searching && !self.insert_center.matches(&[&p.number, &p.description, &p.manufacturer, &p.group]) {
+                    continue;
+                }
+                let e = Entry::Part(p.number.clone());
+                if !devices.contains(&e) {
+                    devices.push(e);
+                }
+            }
+            egui::CollapsingHeader::new(RichText::new(tr_fmt!("Devices ({})", devices.len())).strong())
+                .id_salt("ic_devices")
+                .open(searching.then_some(!devices.is_empty()))
+                .show(ui, |ui| {
+                    ui.weak(tr("Parts with functions: the device gets the part, its first function is placed."));
+                    self.entry_rows(ui, &devices, &mut pick);
+                });
+            // Unplaced functions of the project.
+            let prj = &self.session.prj;
+            let mut unplaced = openecraft_core::unplaced::device_functions(prj, Some(&self.parts_db));
+            unplaced.extend(openecraft_core::unplaced::plc_channels(prj));
+            unplaced.extend(openecraft_core::unplaced::potentials(prj));
+            unplaced.retain(|u| !searching || self.insert_center.matches(&[&u.tag, &u.title, &u.label]));
+            egui::CollapsingHeader::new(RichText::new(tr_fmt!("Unplaced ({})", unplaced.len())).strong())
+                .id_salt("ic_unplaced")
+                .open(searching.then_some(!unplaced.is_empty()))
+                .show(ui, |ui| {
+                    ui.weak(tr("Drag an entry into the page, or click it and then click into the page."));
+                    for u in unplaced {
+                        let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
+                        let r = ui.dnd_drag_source(ui.make_persistent_id(("ic_unplaced", &u.tag, &u.title)), payload, |ui| ui.link(format!("{}  {}", u.tag, u.title)));
+                        if r.inner.clicked() {
+                            pick = Some(Pick::Unplaced(u));
+                        }
+                    }
+                });
+        });
+        match pick {
+            Some(Pick::Insert(e)) => self.insert_entry(e),
+            Some(Pick::Favorite(e)) => self.insert_center.toggle_favorite(&e),
+            Some(Pick::Unplaced(u)) => {
+                self.set_tool(Tool::Place(u.symbol));
+                self.editor.place_tag = Some(u.tag.clone());
+                self.editor.place_once = Some((u.label, u.pins));
+            }
+            None => {}
+        }
+    }
+
+    /// Entries as rows with a small preview; right click or the star adds a favorite.
+    fn entry_rows(&self, ui: &mut egui::Ui, list: &[Entry], pick: &mut Option<Pick>) {
+        if self.insert_center.tiles {
+            self.entry_tiles(ui, list, pick);
+            return;
+        }
+        let active = match &self.editor.tool {
+            Tool::Place(k) => Some(Entry::Symbol(k.to_string())),
+            _ => None,
+        };
+        for e in list {
+            let Some((title, _, icon)) = self.entry_texts(e) else { continue };
+            ui.horizontal(|ui| {
+                let preview = match e {
+                    Entry::Symbol(k) => symbol_icon(ui, &self.session.prj, k, egui::vec2(36.0, 26.0)),
+                    _ => icons::show(ui, icon, 22.0).interact(egui::Sense::click()),
+                };
+                let extra = match e {
+                    Entry::Symbol(k) => self.session.prj.symbol(k).map(|d| if d.letter.is_empty() { "–".to_string() } else { d.letter.to_string() }).unwrap_or_default(),
+                    Entry::Part(n) => parts::lookup(&self.session.prj, Some(&self.parts_db), n).map(|p| p.description.clone()).unwrap_or_default(),
+                    Entry::Macro(n) => self.macro_lib.get(n).map(|m| m.description.clone()).unwrap_or_default(),
+                };
+                let text = format!("{title}  ({extra})");
+                let selected = active.as_ref() == Some(e);
+                // Symbols can be dragged into the page as well.
+                let lbl = match e.symbol_key(&self.session.prj) {
+                    Some(symbol) => {
+                        let payload = crate::editor::PlacePayload { symbol, tag: String::new(), label: String::new(), pins: Vec::new() };
+                        ui.dnd_drag_source(ui.make_persistent_id(("ic_drag", symbol)), payload, |ui| ui.selectable_label(selected, text)).inner
+                    }
+                    None => ui.selectable_label(selected, text),
+                };
+                let fav = self.insert_center.is_favorite(e);
+                let star = icons::toggle_button(ui, if fav { Icon::StarFilled } else { Icon::Star }, tr("Favorite"), fav);
+                if preview.clicked() || lbl.clicked() {
+                    *pick = Some(Pick::Insert(e.clone()));
+                }
+                if star.clicked() {
+                    *pick = Some(Pick::Favorite(e.clone()));
+                }
+                lbl.context_menu(|ui| {
+                    if ui.button(if fav { tr("Remove from favorites") } else { tr("Add to favorites") }).clicked() {
+                        *pick = Some(Pick::Favorite(e.clone()));
+                        ui.close();
+                    }
+                });
+            });
+        }
+    }
+
+    /// Entries as tiles (favorites, recently used, tile view).
+    fn entry_tiles(&self, ui: &mut egui::Ui, list: &[Entry], pick: &mut Option<Pick>) {
+        ui.horizontal_wrapped(|ui| {
+            for e in list {
+                let Some((title, _, icon)) = self.entry_texts(e) else { continue };
+                ui.vertical(|ui| {
+                    ui.set_width(64.0);
+                    let r = match e {
+                        Entry::Symbol(k) => symbol_icon(ui, &self.session.prj, k, egui::vec2(56.0, 40.0)),
+                        _ => icons::show(ui, icon, 40.0).interact(egui::Sense::click()),
+                    };
+                    let short: String = title.chars().take(14).collect();
+                    ui.label(RichText::new(short).small());
+                    let r = r.on_hover_text(&title);
+                    if r.clicked() {
+                        *pick = Some(Pick::Insert(e.clone()));
+                    }
+                    let fav = self.insert_center.is_favorite(e);
+                    r.context_menu(|ui| {
+                        if ui.button(if fav { tr("Remove from favorites") } else { tr("Add to favorites") }).clicked() {
+                            *pick = Some(Pick::Favorite(e.clone()));
+                            ui.close();
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    /// Starts placing an entry.
+    fn insert_entry(&mut self, e: Entry) {
+        match &e {
+            Entry::Symbol(k) => {
+                let Some(key) = self.session.prj.symbol(k).map(|d| d.key) else { return };
+                self.set_tool(Tool::Place(key));
+                self.editor.place_rot = 0;
+                self.editor.place_mirror = false;
+            }
+            Entry::Macro(n) => {
+                let Some(m) = self.macro_lib.get(n).cloned() else { return };
+                let values = Default::default();
+                if m.kind == MacroKind::Page {
+                    let at = openecraft_core::macros::insert_page(&mut self.session.prj, self.session.page, &m, &values);
+                    self.goto(at, 0);
+                } else {
+                    self.set_tool(Tool::Insert);
+                    self.editor.insert = Some(m.resolve(&values));
+                    self.editor.insert_macro = Some((m, values));
+                }
+            }
+            Entry::Part(n) => {
+                let Some(p) = parts::lookup(&self.session.prj, Some(&self.parts_db), n) else { return };
+                let Some(f) = p.functions.iter().find(|f| openecraft_core::unplaced::symbol_for(f.kind).is_some()) else { return };
+                let Some(sym) = openecraft_core::unplaced::symbol_for(f.kind) else { return };
+                let pins = f.pin_list();
+                self.set_tool(Tool::Place(sym));
+                self.editor.place_once = Some((String::new(), pins));
+                self.pending_part = Some(n.clone());
+            }
+        }
+        self.insert_center.used(&e);
+    }
+}

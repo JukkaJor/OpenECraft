@@ -60,13 +60,10 @@ fn combo(ui: &mut egui::Ui, id: impl std::hash::Hash + std::fmt::Debug, value: &
 }
 
 impl App {
-    pub(super) fn plc_hw_window(&mut self, ctx: &egui::Context) {
-        if !self.plc_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn plc_hw_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut actions = Vec::new();
-        egui::Window::new(tr("PLC hardware")).open(&mut open).default_size([980.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("⚙ Automatic configuration")).on_hover_text(tr("Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology")).clicked() {
                     actions.push(Action::Auto);
@@ -107,7 +104,6 @@ impl App {
                 });
             }
         });
-        self.plc_ui.open = open;
         for a in actions {
             self.plc_action(ctx, a);
         }

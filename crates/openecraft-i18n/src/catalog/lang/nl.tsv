@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	{} inchecken in Vault
 Panel layout in 3D (Parasolid XT)	Kastlay-out in 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Terug
+Back to the project (Esc)	Terug naar het project (Esc)
+Recent projects	Recente projecten
+No projects opened yet.	Nog geen projecten geopend.
+Remove from the list	Uit de lijst verwijderen
+unsaved	niet opgeslagen
+Project: {}	Project: {}
+Find a command	Een opdracht zoeken
+Drilling list (CSV)	Boorlijst (CSV)
+Pane menu	Paneelmenu
+Float	Losmaken
+Show the pane as a window	Het paneel als venster tonen
+Close	Sluiten
+Dock	Vastzetten
+Put the pane back into the workspace	Het paneel terugzetten in de werkruimte
+Messages ({})	Meldingen ({})
+{} favorites added	{} favorieten toegevoegd
+Quick guide	Snelgids
+About OpenECraft	Over OpenECraft
+Tutorial	Tutorial
+Introduction	Inleiding
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Een open elektrische CAE-editor in de geest van EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Het lint: Bestand opent, slaat op, importeert, exporteert en drukt af; de tabbladen bevatten de opdrachten per onderwerp. Alt toont de toegangstoetsen, Ctrl+Shift+P vindt elke opdracht, F6 wisselt tussen de panelen, F1 opent deze help.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Invoegen › Invoegcentrum (Ins): zoek een symbool, een macro of een apparaat en klik in de pagina om het te plaatsen. Apparaataanduidingen (-K1, -S2 …) worden automatisch toegekend.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Wijs artikelen toe in de eigenschappen (tabblad Artikelen); de rapporten (Start › Rapporten) tonen apparaten, stuklijst, klemmen, verbindingen en PLC en worden als rapportpagina's ingevoegd.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabels: Verbindingen › Kabels, selecteer draden en gebruik Aan kabel toewijzen. Draadnummers: Verbindingen › Draadnummering, of typ een nummer in de draadeigenschappen.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Macro's: selecteer elementen, rechtsklik › Selectie opslaan als macro; voeg ze in via het invoegcentrum of Invoegen › Macro. Plaatshouders {NAME} worden uit waardensets ingevuld.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Apparaten › Klemmenstroken, Apparaten › PLC-overzicht en Projectgegevens › Revisies: klemvolgorde, bruggen en reserves; PLC-adressen en symbooltabellen; revisies met wijzigingsmarkeringen en vrijgegeven (vergrendelde) pagina's.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Stamgegevens › Symbooleditor: teken eigen symbolen (of kopieer meegeleverde) met aansluitpunten en functie; ze worden in het project opgeslagen en kunnen als bibliotheekbestanden worden uitgewisseld.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Stamgegevens › Formulieren: eigen titelblokken met plaatshouders ({project}, {page}, {prop:Name} …) en de kolommen van rapportpagina's; Projectgegevens › Rapportblokken maken rapportpagina's per klemmenstrook, stekker, kabel of apparaat.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Kastlay-out (werkruimte Kastlay-out, tabblad Montageruimte): kasten, rails, goten, rails en uitsparingen; Montageruimte › NC-gegevens exporteert het boorpatroon (DXF / DWG / CSV). De productiedraadlijst bevat striplengtes en adereindhulzen.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbomen: Verbindingen › Kabelbomen; selecteer de draden tussen twee apparaten › Aan kabelboom toewijzen, of per verbinding in de draadeigenschappen. Kabelboomrapport met lengtes, stekkers en bundeldiameter, KBL-export.
+Key tips of the ribbon	Toegangstoetsen van het lint
+Version {}	Versie {}
+Search (* and ? as placeholders)…	Zoeken (* en ? als jokertekens)…
+Show as list	Als lijst tonen
+Show as tiles	Als tegels tonen
+Export favorites…	Favorieten exporteren…
+Import favorites…	Favorieten importeren…
+Recently used	Recent gebruikt
+Parts with functions: the device gets the part, its first function is placed.	Artikelen met functies: het apparaat krijgt het artikel, de eerste functie wordt geplaatst.
+Favorite	Favoriet
+Macros ({})	Macro's ({})
+Devices ({})	Apparaten ({})
+Unplaced ({})	Niet geplaatst ({})
+(several)	(meerdere)
+{} symbols	{} symbolen
+Parts of {}	Artikelen van {}
+Undo list	Ongedaan-maken-lijst
+Show the ribbon	Het lint tonen
+Undo {} steps	{} stappen ongedaan maken
+Find a command ({})	Een opdracht zoeken ({})
+Further project settings	Overige projectinstellingen
+Ribbon	Lint
+Servers	Servers
+These settings are edited in their panes:	Deze instellingen worden in hun panelen bewerkt:
+Addresses and sign-in of the servers are set in their panes:	Adressen en aanmelding van de servers worden in hun panelen ingesteld:
+Hide the groups you do not need and put the commands you use most into own groups.	Verberg de groepen die u niet nodig hebt en zet de meest gebruikte opdrachten in eigen groepen.
+Reset the ribbon	Het lint herstellen
+Groups shown	Getoonde groepen
+Own groups	Eigen groepen
+Delete the group	De groep verwijderen
+Remove from the group	Uit de groep verwijderen
+Add a command	Een opdracht toevoegen
+New group	Nieuwe groep
+Ribbon imported	Lint geïmporteerd
+Welcome to OpenECraft	Welkom bij OpenECraft
+Getting started	Aan de slag
+A new project	Een nieuw project
+Placing symbols	Symbolen plaatsen
+Wires and potentials	Draden en potentialen
+The project check	De projectcontrole
+What is new	Nieuw
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Het lint met het tabblad Bestand vervangt de menu's; Ctrl+Shift+P vindt elke opdracht.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Elk hulpmiddel is een paneel: sleep het tabblad naast de pagina, naar de navigators of los als venster.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Werkruimten voor het schema, de kastlay-out, de bedradings- en montageassistenten, de review en de voorplanning.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Het invoegcentrum vindt symbolen, macro's, apparaten en niet geplaatste functies; favorieten en recent gebruikte komen eerst.
+Close the start page	De startpagina sluiten
+Position of the cursor	Positie van de cursor
+Messages of this session	Meldingen van deze sessie
+Grid {} mm	Raster {} mm
+Layer: {}	Laag: {}
+Export Excel	Excel exporteren
+Insert as report page	Als rapportpagina invoegen
+Open, save, import, export, print and the settings	Openen, opslaan, importeren, exporteren, afdrukken en de instellingen
+Start page	Startpagina
+Check in to Vault	Inchecken in Vault
+Import parts…	Artikelen importeren…
+Import symbol library…	Symboolbibliotheek importeren…
+Import page templates…	Paginasjablonen importeren…
+Print all pages…	Alle pagina's afdrukken…
+Print current page…	Huidige pagina afdrukken…
+Settings…	Instellingen…
+Project and user settings in one dialog	Project- en gebruikersinstellingen in één dialoogvenster
+Cut	Knippen
+Paste	Plakken
+New page	Nieuwe pagina
+Cover sheet, overview, graphics, report, mounting layout or a page template	Voorblad, overzicht, grafiek, rapport, montagelay-out of een paginasjabloon
+Find a command…	Een opdracht zoeken…
+Every command of the editor and of the plugins by name	Elke opdracht van de editor en van de plugins op naam
+Markup	Markering
+Properties…	Eigenschappen…
+The properties of the selection in a window beside the page	De eigenschappen van de selectie in een venster naast de pagina
+Rename device…	Apparaat hernoemen…
+Part selection…	Artikelkeuze…
+Next pane	Volgend paneel
+Previous pane	Vorig paneel
+Next page tab	Volgend paginatabblad
+Previous page tab	Vorig paginatabblad
+Close page tab	Paginatabblad sluiten
+Panes	Panelen
+Show or hide panes; drag a tab to dock it elsewhere	Panelen tonen of verbergen; sleep een tabblad om het elders vast te zetten
+Save workspace…	Werkruimte opslaan…
+The panes of this workspace at their default places	De panelen van deze werkruimte op hun standaardplaatsen
+Theme	Thema
+UI scale	Schaal van de interface
+Minimize the ribbon	Het lint minimaliseren
+Update report blocks	Rapportblokken bijwerken
+Customize the ribbon…	Het lint aanpassen…
+Messages	Meldingen
+Results of the project check	Resultaten van de projectcontrole
+Comments and markup	Opmerkingen en markeringen
+Functions of the project data not placed yet	Functies van de projectgegevens die nog niet geplaatst zijn
+Insert center	Invoegcentrum
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbolen, macro's, apparaten en niet geplaatste functies: zoeken, favorieten, recent gebruikt
+Find results	Zoekresultaten
+Quick guide, tutorial and shortcuts	Snelgids, tutorial en sneltoetsen
+Layout spaces	Montageruimten
+Enclosures, devices to place and placed devices	Kasten, te plaatsen en geplaatste apparaten
+Layout properties	Lay-outeigenschappen
+Checklist	Checklist
+Workbench	Werkbank
+3D view	3D-weergave
+NC data	NC-gegevens
+Drilling pattern of the face shown as DXF, DWG or CSV	Boorpatroon van het getoonde vlak als DXF, DWG of CSV
+Panel wiring report	Rapport kastbedrading
+Tablet mode	Tabletmodus
+Larger texts and buttons for a touch screen at the workbench	Grotere teksten en knoppen voor een aanraakscherm aan de werkbank
+Ribbon (JSON)	Lint (JSON)
+Favorites (JSON)	Favorieten (JSON)
+Home	Start
+Clipboard	Klembord
+Navigators	Navigators
+Arrange	Schikken
+Zoom	Zoom
+Appearance	Weergave
+Numbering	Nummering
+Project data	Projectgegevens
+Management	Beheer
+Calculations	Berekeningen
+Collaboration	Samenwerking
+Automation	Automatisering
+Master data	Stamgegevens
+Forms	Formulieren
+Templates	Sjablonen
+Layout space	Montageruimte
+Draw	Tekenen
+Mode	Modus
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Toont een tabel (apparaten, verbindingen, klemmen, kabels, stekkers, PLC, pagina's of artikelen) met de rijen; de sleutel van een rij dient om deze te wijzigen
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages of parts
+Not a number: {}	Geen getal: {}
+Cable {} already exists	Kabel {} bestaat al
+No connection point {}	Geen aansluitpunt {}
+No part {}	Geen artikel {}
+Code	Code
+Click to show, right click for more	Klik om te tonen, rechtsklik voor meer
+{} errors	{} fouten
+{} warnings	{} waarschuwingen
+{} notes	{} opmerkingen
+Open in a new page tab	In een nieuw paginatabblad openen
+Project information	Projectinformatie

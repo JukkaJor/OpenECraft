@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Vrátit {} se změnami do Vault
 Panel layout in 3D (Parasolid XT)	Rozvržení rozváděče ve 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Zpět
+Back to the project (Esc)	Zpět k projektu (Esc)
+Recent projects	Poslední projekty
+No projects opened yet.	Zatím nebyl otevřen žádný projekt.
+Remove from the list	Odebrat ze seznamu
+unsaved	neuloženo
+Project: {}	Projekt: {}
+Find a command	Najít příkaz
+Drilling list (CSV)	Seznam vrtání (CSV)
+Pane menu	Nabídka panelu
+Float	Uvolnit
+Show the pane as a window	Zobrazit panel jako okno
+Close	Zavřít
+Dock	Ukotvit
+Put the pane back into the workspace	Vrátit panel do pracovního prostoru
+Messages ({})	Zprávy ({})
+{} favorites added	Přidáno oblíbených: {}
+Quick guide	Stručný průvodce
+About OpenECraft	O aplikaci OpenECraft
+Tutorial	Výukový kurz
+Introduction	Úvod
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Otevřený elektrotechnický CAE editor v duchu EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Pás karet: Soubor otevírá, ukládá, importuje, exportuje a tiskne; karty seskupují příkazy podle témat. Alt zobrazí přístupové klávesy, Ctrl+Shift+P najde libovolný příkaz, F6 přepíná mezi panely, F1 otevře tuto nápovědu.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Vložit › Centrum vkládání (Ins): vyhledejte symbol, makro nebo přístroj a klepněte do stránky, kam jej umístit. Označení přístrojů (-K1, -S2 …) se přidělují automaticky.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Přiřaďte artikly ve vlastnostech (karta Artikly); výkazy (Domů › Výkazy) uvádějí přístroje, kusovník, svorky, spojení a PLC a vkládají se jako stránky výkazů.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabely: Spojení › Kabely, vyberte vodiče a použijte Přiřadit ke kabelu. Čísla vodičů: Spojení › Číslování vodičů, nebo zadejte číslo ve vlastnostech vodiče.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makra: vyberte prvky, pravé tlačítko › Uložit výběr jako makro; vkládejte je z centra vkládání nebo přes Vložit › Makro. Zástupné symboly {NAME} se plní ze sad hodnot.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Přístroje › Svorkovnice, Přístroje › Přehled PLC a Data projektu › Revize: pořadí svorek, propojky a rezervy; adresy PLC a tabulky symbolů; revize se značkami změn a uvolněnými (zamčenými) stránkami.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Kmenová data › Editor symbolů: kreslete vlastní symboly (nebo kopírujte dodané) s připojovacími body a funkcí; ukládají se v projektu a lze je vyměňovat jako soubory knihoven.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Kmenová data › Formuláře: vlastní rohová razítka se zástupnými symboly ({project}, {page}, {prop:Name} …) a sloupce stránek výkazů; Data projektu › Bloky výkazů vytvářejí stránky výkazů pro každou svorkovnici, konektor, kabel nebo přístroj.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Rozvržení rozváděče (pracovní prostor Rozvržení rozváděče, karta Montážní prostor): skříně, lišty, žlaby, přípojnice a výřezy; Montážní prostor › Data NC exportuje vrtací obrazec (DXF / DWG / CSV). Výrobní seznam vodičů obsahuje délky odizolování a dutinky.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelové svazky: Spojení › Kabelové svazky; vyberte vodiče mezi dvěma přístroji › Přiřadit ke svazku, nebo pro každé spojení ve vlastnostech vodiče. Výkaz svazku s délkami, konektory a průměrem svazku, export KBL.
+Key tips of the ribbon	Přístupové klávesy pásu karet
+Version {}	Verze {}
+Search (* and ? as placeholders)…	Hledat (* a ? jako zástupné znaky)…
+Show as list	Zobrazit jako seznam
+Show as tiles	Zobrazit jako dlaždice
+Export favorites…	Exportovat oblíbené…
+Import favorites…	Importovat oblíbené…
+Recently used	Naposledy použité
+Parts with functions: the device gets the part, its first function is placed.	Artikly s funkcemi: přístroj dostane artikl, jeho první funkce se umístí.
+Favorite	Oblíbené
+Macros ({})	Makra ({})
+Devices ({})	Přístroje ({})
+Unplaced ({})	Neumístěné ({})
+(several)	(více)
+{} symbols	Symboly: {}
+Parts of {}	Artikly {}
+Undo list	Seznam zpět
+Show the ribbon	Zobrazit pás karet
+Undo {} steps	Vrátit kroky: {}
+Find a command ({})	Najít příkaz ({})
+Further project settings	Další nastavení projektu
+Ribbon	Pás karet
+Servers	Servery
+These settings are edited in their panes:	Tato nastavení se upravují v jejich panelech:
+Addresses and sign-in of the servers are set in their panes:	Adresy a přihlášení serverů se nastavují v jejich panelech:
+Hide the groups you do not need and put the commands you use most into own groups.	Skryjte skupiny, které nepotřebujete, a nejpoužívanější příkazy dejte do vlastních skupin.
+Reset the ribbon	Obnovit pás karet
+Groups shown	Zobrazené skupiny
+Own groups	Vlastní skupiny
+Delete the group	Odstranit skupinu
+Remove from the group	Odebrat ze skupiny
+Add a command	Přidat příkaz
+New group	Nová skupina
+Ribbon imported	Pás karet importován
+Welcome to OpenECraft	Vítejte v OpenECraft
+Getting started	Začínáme
+A new project	Nový projekt
+Placing symbols	Umístění symbolů
+Wires and potentials	Vodiče a potenciály
+The project check	Kontrola projektu
+What is new	Co je nového
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Pás karet s kartou Soubor nahrazuje nabídky; Ctrl+Shift+P najde libovolný příkaz.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Každý nástroj je panel: přetáhněte jeho kartu vedle stránky, k navigátorům nebo ven jako okno.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Pracovní prostory pro schéma, rozvržení rozváděče, asistenty zapojování a montáže, komentáře a předběžné plánování.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Centrum vkládání najde symboly, makra, přístroje a neumístěné funkce; oblíbené a naposledy použité jsou první.
+Close the start page	Zavřít úvodní stránku
+Position of the cursor	Poloha kurzoru
+Messages of this session	Zprávy této relace
+Grid {} mm	Rastr {} mm
+Layer: {}	Vrstva: {}
+Export Excel	Exportovat do Excelu
+Insert as report page	Vložit jako stránku výkazu
+Open, save, import, export, print and the settings	Otevřít, uložit, importovat, exportovat, tisknout a nastavení
+Start page	Úvodní stránka
+Check in to Vault	Vrátit do Vaultu
+Import parts…	Importovat artikly…
+Import symbol library…	Importovat knihovnu symbolů…
+Import page templates…	Importovat šablony stránek…
+Print all pages…	Tisknout všechny stránky…
+Print current page…	Tisknout aktuální stránku…
+Settings…	Nastavení…
+Project and user settings in one dialog	Nastavení projektu a uživatele v jednom dialogu
+Cut	Vyjmout
+Paste	Vložit ze schránky
+New page	Nová stránka
+Cover sheet, overview, graphics, report, mounting layout or a page template	Titulní list, přehled, grafika, výkaz, montážní rozvržení nebo šablona stránky
+Find a command…	Najít příkaz…
+Every command of the editor and of the plugins by name	Každý příkaz editoru a pluginů podle názvu
+Markup	Značky
+Properties…	Vlastnosti…
+The properties of the selection in a window beside the page	Vlastnosti výběru v okně vedle stránky
+Rename device…	Přejmenovat přístroj…
+Part selection…	Výběr artiklu…
+Next pane	Další panel
+Previous pane	Předchozí panel
+Next page tab	Další karta stránky
+Previous page tab	Předchozí karta stránky
+Close page tab	Zavřít kartu stránky
+Panes	Panely
+Show or hide panes; drag a tab to dock it elsewhere	Zobrazit nebo skrýt panely; přetažením karty ji ukotvíte jinde
+Save workspace…	Uložit pracovní prostor…
+The panes of this workspace at their default places	Panely tohoto pracovního prostoru na výchozích místech
+Theme	Motiv
+UI scale	Měřítko rozhraní
+Minimize the ribbon	Minimalizovat pás karet
+Update report blocks	Aktualizovat bloky výkazů
+Customize the ribbon…	Přizpůsobit pás karet…
+Messages	Zprávy
+Results of the project check	Výsledky kontroly projektu
+Comments and markup	Komentáře a značky
+Functions of the project data not placed yet	Funkce dat projektu, které ještě nejsou umístěny
+Insert center	Centrum vkládání
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symboly, makra, přístroje a neumístěné funkce: hledání, oblíbené, naposledy použité
+Find results	Výsledky hledání
+Quick guide, tutorial and shortcuts	Stručný průvodce, výukový kurz a klávesové zkratky
+Layout spaces	Montážní prostory
+Enclosures, devices to place and placed devices	Skříně, přístroje k umístění a umístěné přístroje
+Layout properties	Vlastnosti rozvržení
+Checklist	Kontrolní seznam
+Workbench	Pracovní stůl
+3D view	3D pohled
+NC data	Data NC
+Drilling pattern of the face shown as DXF, DWG or CSV	Vrtací obrazec zobrazené plochy jako DXF, DWG nebo CSV
+Panel wiring report	Výkaz zapojení rozváděče
+Tablet mode	Režim tabletu
+Larger texts and buttons for a touch screen at the workbench	Větší texty a tlačítka pro dotykovou obrazovku u pracovního stolu
+Ribbon (JSON)	Pás karet (JSON)
+Favorites (JSON)	Oblíbené (JSON)
+Home	Domů
+Clipboard	Schránka
+Navigators	Navigátory
+Arrange	Uspořádat
+Zoom	Lupa
+Appearance	Vzhled
+Numbering	Číslování
+Project data	Data projektu
+Management	Správa
+Calculations	Výpočty
+Collaboration	Spolupráce
+Automation	Automatizace
+Master data	Kmenová data
+Forms	Formuláře
+Templates	Šablony
+Layout space	Montážní prostor
+Draw	Kreslit
+Mode	Režim
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Zobrazí tabulku (přístroje, spojení, svorky, kabely, konektory, PLC, stránky nebo artikly) s jejími řádky; řádek se mění pomocí jeho klíče
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages nebo parts
+Not a number: {}	Není číslo: {}
+Cable {} already exists	Kabel {} již existuje
+No connection point {}	Žádný připojovací bod {}
+No part {}	Žádný artikl {}
+Code	Kód
+Click to show, right click for more	Klepnutím zobrazit, pravým tlačítkem další
+{} errors	Chyby: {}
+{} warnings	Varování: {}
+{} notes	Poznámky: {}
+Open in a new page tab	Otevřít v nové kartě stránky
+Project information	Informace o projektu

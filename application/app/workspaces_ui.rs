@@ -1,75 +1,19 @@
-//! View › Workspaces: saving and restoring the arrangement of the editor.
+//! View › Workspaces: saving and restoring the arrangement of the editor (workspace,
+//! panes and ribbon).
 
 use super::*;
 use crate::workspaces::{self, Layout};
 
-impl Workspace {
-    fn key(self) -> &'static str {
-        match self {
-            Workspace::Schematic => "schematic",
-            Workspace::Panel => "panel",
-            Workspace::Wiring => "wiring",
-        }
-    }
-
-    fn from_key(k: &str) -> Option<Workspace> {
-        [Workspace::Schematic, Workspace::Panel, Workspace::Wiring].into_iter().find(|w| w.key() == k)
-    }
-}
-
 impl App {
-    /// The windows a workspace remembers, by id.
-    fn window_flags(&mut self) -> Vec<(&'static str, &mut bool)> {
-        vec![
-            ("reports", &mut self.show_reports),
-            ("project", &mut self.show_project),
-            ("cables", &mut self.show_cables),
-            ("wire_numbering", &mut self.show_numbering),
-            ("cross_references", &mut self.show_xref),
-            ("device_numbering", &mut self.numbering_ui.show_devices),
-            ("page_numbering", &mut self.numbering_ui.show_pages),
-            ("check_settings", &mut self.check_ui.show_settings),
-            ("macros", &mut self.eng.show_macros),
-            ("terminal_strips", &mut self.eng.show_strips),
-            ("potentials", &mut self.eng.show_potentials),
-            ("plc_overview", &mut self.eng.show_plc),
-            ("revisions", &mut self.eng.show_revisions),
-            ("marking", &mut self.eng.show_marking),
-            ("find", &mut self.find_ui.open),
-            ("forms", &mut self.forms_ui.open),
-            ("report_blocks", &mut self.report_blocks_ui.open),
-            ("harnesses", &mut self.harness_ui.open),
-            ("field_wiring", &mut self.field_ui.open),
-            ("plugs", &mut self.plugs_ui.open),
-            ("plc_hardware", &mut self.plc_ui.open),
-            ("integration", &mut self.integration_ui.open),
-            ("process", &mut self.process_ui.open),
-            ("preplanning", &mut self.preplanning_ui.open),
-            ("electrical", &mut self.electrical_ui.open),
-            ("single_line", &mut self.singleline_ui.open),
-            ("languages", &mut self.languages_ui.open),
-            ("tables", &mut self.tables_ui.open),
-            ("configurator", &mut self.config_ui.open),
-            ("compare", &mut self.compare_ui.open),
-            ("change_requests", &mut self.requests_ui.open),
-            ("structure", &mut self.structure_ui.open),
-            ("property_database", &mut self.properties_ui.open),
-            ("projects", &mut self.projects_ui.open),
-            ("parts", &mut self.parts_ui.open),
-            ("symbol_editor", &mut self.symed.open),
-        ]
-    }
-
     fn current_layout(&mut self, name: &str) -> Layout {
-        let workspace = self.workspace.key().to_string();
         let left_tab = crate::dock::active_tab(&self.dock).unwrap_or(LeftTab::Pages).key().to_string();
-        let windows = workspaces::open_windows(&self.window_flags());
-        Layout { name: name.into(), workspace, left_tab, windows, dock: crate::dock::to_json(&self.dock) }
+        let ribbon = if self.ribbon.custom == crate::ribbon::Custom::default() { String::new() } else { self.ribbon.custom.to_json() };
+        Layout { name: name.into(), workspace: self.workspace.key().to_string(), left_tab, windows: Vec::new(), dock: crate::dock::to_json(&self.dock), ribbon }
     }
 
     fn apply_layout(&mut self, layout: &Layout) {
         if let Some(w) = Workspace::from_key(&layout.workspace) {
-            self.workspace = w;
+            self.set_workspace(w);
         }
         if let Some(tree) = crate::dock::from_json(&layout.dock) {
             self.dock = tree;
@@ -77,19 +21,26 @@ impl App {
         if let Some(t) = LeftTab::from_key(&layout.left_tab) {
             self.show_tab(t);
         }
-        workspaces::apply_windows(layout, &mut self.window_flags());
+        // Workspaces of the earlier editor list the windows that were open.
+        for t in workspaces::window_panes(layout) {
+            self.show_pane(Pane::Tool(t));
+        }
+        if let Ok(c) = crate::ribbon::Custom::from_json(&layout.ribbon) {
+            self.ribbon.custom = c;
+        }
     }
 
-    /// The Workspaces submenu of the View menu.
+    /// The saved workspaces (View › Workspaces).
     pub(super) fn workspaces_menu(&mut self, ui: &mut egui::Ui) {
         let mut apply = None;
         let mut remove = None;
         for l in &self.layouts {
             ui.horizontal(|ui| {
-                if ui.button(&l.name).on_hover_text(tr_fmt!("{} windows", l.windows.len())).clicked() {
+                let ws = Workspace::from_key(&l.workspace).map(|w| tr(w.title())).unwrap_or("");
+                if ui.button(&l.name).on_hover_text(ws).clicked() {
                     apply = Some(l.clone());
                 }
-                if ui.small_button("✖").on_hover_text(tr("Delete this workspace")).clicked() {
+                if icons::button(ui, Icon::Close, tr("Delete this workspace")).clicked() {
                     remove = Some(l.name.clone());
                 }
             });

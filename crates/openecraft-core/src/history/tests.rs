@@ -1,6 +1,22 @@
 use super::*;
 
 #[test]
+fn steps_are_counted_for_the_undo_list() {
+    let mut prj = Project::default();
+    let mut h = History::new(&prj);
+    assert_eq!((h.undo_steps(), h.redo_steps()), (0, 0));
+    for name in ["A", "B", "C"] {
+        prj.info.name = name.into();
+        h.track(&prj, true);
+    }
+    assert_eq!(h.undo_steps(), 3);
+    h.undo(&mut prj);
+    h.undo(&mut prj);
+    assert_eq!((h.undo_steps(), h.redo_steps()), (1, 2));
+    assert_eq!(prj.info.name, "A");
+}
+
+#[test]
 fn undo_redo_roundtrip() {
     let mut prj = Project::default();
     let mut h = History::new(&prj);

@@ -63,8 +63,8 @@ fn icon(s: Status) -> (&'static str, Color32) {
     match s {
         Status::Open => ("☐", Color32::GRAY),
         Status::Done => ("✔", Color32::from_rgb(50, 170, 80)),
-        Status::Changed => ("⟳", Color32::from_rgb(230, 150, 30)),
-        Status::Problem => ("⚠", Color32::from_rgb(220, 60, 60)),
+        Status::Changed => ("⟳", crate::style::warning()),
+        Status::Problem => ("⚠", crate::style::error()),
     }
 }
 
@@ -142,7 +142,7 @@ impl MountingUi {
                 .text(RichText::new(tr_fmt!("{} of {} items", prog.done - prog.changed, prog.total)).strong()),
         );
         if prog.changed > 0 || prog.problems > 0 {
-            ui.colored_label(Color32::from_rgb(230, 150, 30), tr_fmt!("{} changed since mounted · {} problems", prog.changed, prog.problems));
+            ui.colored_label(crate::style::warning(), tr_fmt!("{} changed since mounted · {} problems", prog.changed, prog.problems));
         }
         ui.separator();
         let all = tr("All enclosures");
@@ -254,14 +254,14 @@ impl MountingUi {
                 if let Some(m) = mounting::mark_of(prj, it.id) {
                     let part = if m.part.is_empty() { "–" } else { &m.part };
                     ui.colored_label(
-                        Color32::from_rgb(230, 150, 30),
+                        crate::style::warning(),
                         tr_fmt!("Changed since mounted: was at X {} mm, Y {} mm with part {}", format!("{:.0}", m.x), format!("{:.0}", m.y), part),
                     );
                 }
             }
             ui.horizontal_wrapped(|ui| {
                 let big = |t: &str| RichText::new(t).size(20.0);
-                if ui.add(egui::Button::new(big(tr("✔ Mounted"))).fill(Color32::from_rgb(40, 140, 70)).min_size(vec2(160.0, 52.0))).clicked() {
+                if ui.add(egui::Button::new(big(tr("✔ Mounted"))).fill(crate::style::ok()).min_size(vec2(160.0, 52.0))).clicked() {
                     mounting::set_mark(prj, &it, Some(Mark::Done), &self.note);
                     self.advance(prj, panel, at);
                 }

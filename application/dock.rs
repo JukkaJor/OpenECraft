@@ -1,8 +1,11 @@
-//! Docking panels of the schematic workspace: the page, each navigator tab, the symbol
-//! library and the properties are panes of a tile tree that the user rearranges by
-//! dragging tabs (side by side, stacked, as tabs of one another). The tree is saved by
-//! the app and in workspaces. No UI code; `app/dock_ui.rs` draws the panes.
+//! Docking panes of the editor: the page, the navigators, the Insert center, the
+//! properties, the panel layout, the wiring assistant and every tool (reports, cables,
+//! revisions, parts, …) are panes of a tile tree that the user rearranges by dragging
+//! tabs (side by side, stacked, as tabs of one another). Each workspace has its own
+//! tree; the trees are saved by the app and in workspaces. No UI code:
+//! `app/dock_ui.rs` draws the panes.
 
+use crate::workspaces::Workspace;
 use egui_tiles::{Container, Linear, LinearDir, Tile, TileId, Tiles, Tree};
 use serde::{Deserialize, Serialize};
 
@@ -10,13 +13,14 @@ use serde::{Deserialize, Serialize};
 pub const STORAGE_KEY: &str = "dock";
 
 /// Tabs of the navigator.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum LeftTab {
     Pages,
     Devices,
     Connections,
     Cables,
     Layers,
+    /// The messages of the project check.
     Check,
     Review,
     /// Functions of the project data not placed yet.
@@ -62,49 +66,220 @@ impl LeftTab {
     }
 }
 
+/// The tools of the editor that are panes (they were windows before).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ToolPane {
+    Start,
+    Help,
+    Reports,
+    Tables,
+    Find,
+    Cables,
+    Potentials,
+    TerminalStrips,
+    Plugs,
+    PlcOverview,
+    PlcHardware,
+    Macros,
+    Harnesses,
+    FieldWiring,
+    Revisions,
+    Compare,
+    ChangeRequests,
+    Preplanning,
+    SingleLine,
+    Process,
+    Electrical,
+    Integration,
+    Languages,
+    Configurator,
+    Projects,
+    Structure,
+    PropertyDatabase,
+    SymbolEditor,
+    Forms,
+    ReportBlocks,
+    Parts,
+    DataPortal,
+    ProjectServer,
+    Vault,
+    Plugins,
+}
+
+impl ToolPane {
+    pub const ALL: [ToolPane; 35] = [
+        ToolPane::Start,
+        ToolPane::Help,
+        ToolPane::Reports,
+        ToolPane::Tables,
+        ToolPane::Find,
+        ToolPane::Cables,
+        ToolPane::Potentials,
+        ToolPane::TerminalStrips,
+        ToolPane::Plugs,
+        ToolPane::PlcOverview,
+        ToolPane::PlcHardware,
+        ToolPane::Macros,
+        ToolPane::Harnesses,
+        ToolPane::FieldWiring,
+        ToolPane::Revisions,
+        ToolPane::Compare,
+        ToolPane::ChangeRequests,
+        ToolPane::Preplanning,
+        ToolPane::SingleLine,
+        ToolPane::Process,
+        ToolPane::Electrical,
+        ToolPane::Integration,
+        ToolPane::Languages,
+        ToolPane::Configurator,
+        ToolPane::Projects,
+        ToolPane::Structure,
+        ToolPane::PropertyDatabase,
+        ToolPane::SymbolEditor,
+        ToolPane::Forms,
+        ToolPane::ReportBlocks,
+        ToolPane::Parts,
+        ToolPane::DataPortal,
+        ToolPane::ProjectServer,
+        ToolPane::Vault,
+        ToolPane::Plugins,
+    ];
+
+    /// Narrow tools open beside the navigators and the properties; the others are wide
+    /// and open as tabs beside the page.
+    pub fn is_side(self) -> bool {
+        matches!(self, ToolPane::Find | ToolPane::ProjectServer | ToolPane::Vault | ToolPane::Plugins)
+    }
+}
+
 /// What a pane shows.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Pane {
-    /// The page being edited; it cannot be closed.
+    /// The page being edited.
     Page,
     Navigator(LeftTab),
-    /// Symbol library.
+    /// The Insert center (symbols, macros, devices, unplaced functions).
     Library,
     Properties,
+    Tool(ToolPane),
+    /// Panel layout: enclosures, devices to place and placed devices.
+    LayoutSpaces,
+    /// Panel layout: the front view or the 3D view.
+    LayoutView,
+    /// Panel layout: the properties of the selection.
+    LayoutProperties,
+    /// Wiring and mounting assistant: the list of steps.
+    WiringChecklist,
+    /// Wiring and mounting assistant: the 3D view with the current step.
+    WiringWorkbench,
+}
+
+/// Where a pane opens when it is shown.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Area {
+    Left,
+    Center,
+    Right,
+    Bottom,
 }
 
 impl Pane {
-    /// Every pane, in the order of the View › Panels menu.
+    /// Every pane, in the order of the View › Panes menu.
     pub fn all() -> Vec<Pane> {
         let mut v = vec![Pane::Page];
         v.extend(LeftTab::ALL.map(Pane::Navigator));
         v.extend([Pane::Library, Pane::Properties]);
+        v.extend([Pane::LayoutSpaces, Pane::LayoutView, Pane::LayoutProperties, Pane::WiringChecklist, Pane::WiringWorkbench]);
+        v.extend(ToolPane::ALL.map(Pane::Tool));
         v
+    }
+
+    pub fn area(self) -> Area {
+        match self {
+            Pane::Navigator(LeftTab::Check) => Area::Bottom,
+            Pane::Navigator(_) | Pane::LayoutSpaces | Pane::WiringChecklist => Area::Left,
+            Pane::Library | Pane::Properties | Pane::LayoutProperties => Area::Right,
+            Pane::Tool(t) if t.is_side() => Area::Right,
+            _ => Area::Center,
+        }
+    }
+
+    /// The page cannot be closed while it is the only document of the workspace.
+    pub fn is_document(self) -> bool {
+        self.area() == Area::Center
     }
 }
 
-/// The arrangement of the editor before any change: the navigator tabs on the left,
-/// the page in the middle, library above properties on the right.
-pub fn default_tree() -> Tree<Pane> {
+fn tabs(tiles: &mut Tiles<Pane>, panes: &[Pane]) -> TileId {
+    let ids: Vec<TileId> = panes.iter().map(|p| tiles.insert_pane(*p)).collect();
+    tiles.insert_tab_tile(ids)
+}
+
+fn linear(tiles: &mut Tiles<Pane>, dir: LinearDir, children: &[(TileId, f32)]) -> TileId {
+    let mut l = Linear::new(dir, children.iter().map(|c| c.0).collect());
+    for (id, share) in children {
+        l.shares.set_share(*id, *share);
+    }
+    tiles.insert_container(l)
+}
+
+const NAVIGATORS: [Pane; 9] = [
+    Pane::Navigator(LeftTab::Pages),
+    Pane::Navigator(LeftTab::Devices),
+    Pane::Navigator(LeftTab::Connections),
+    Pane::Navigator(LeftTab::Cables),
+    Pane::Navigator(LeftTab::Strips),
+    Pane::Navigator(LeftTab::Plc),
+    Pane::Navigator(LeftTab::Unplaced),
+    Pane::Navigator(LeftTab::Layers),
+    Pane::Navigator(LeftTab::Review),
+];
+
+/// The arrangement of a workspace before any change.
+pub fn default_tree_for(workspace: Workspace) -> Tree<Pane> {
     let mut tiles = Tiles::default();
-    let navs: Vec<TileId> = LeftTab::ALL.into_iter().map(|t| tiles.insert_pane(Pane::Navigator(t))).collect();
-    let nav = tiles.insert_tab_tile(navs);
-    let page = tiles.insert_pane(Pane::Page);
-    let page = tiles.insert_tab_tile(vec![page]);
-    let library = tiles.insert_pane(Pane::Library);
-    let library = tiles.insert_tab_tile(vec![library]);
-    let props = tiles.insert_pane(Pane::Properties);
-    let props = tiles.insert_tab_tile(vec![props]);
-    let mut side = Linear::new(LinearDir::Vertical, vec![library, props]);
-    side.shares.set_share(library, 1.0);
-    side.shares.set_share(props, 2.0);
-    let side = tiles.insert_container(side);
-    let mut root = Linear::new(LinearDir::Horizontal, vec![nav, page, side]);
-    root.shares.set_share(nav, 230.0);
-    root.shares.set_share(page, 910.0);
-    root.shares.set_share(side, 300.0);
-    let root = tiles.insert_container(root);
-    Tree::new(egui::Id::unique("dock"), root, tiles)
+    let root = match workspace {
+        Workspace::Schematic => {
+            let nav = tabs(&mut tiles, &NAVIGATORS);
+            let page = tabs(&mut tiles, &[Pane::Page]);
+            let messages = tabs(&mut tiles, &[Pane::Navigator(LeftTab::Check)]);
+            let center = linear(&mut tiles, LinearDir::Vertical, &[(page, 4.0), (messages, 1.0)]);
+            let library = tabs(&mut tiles, &[Pane::Library]);
+            let props = tabs(&mut tiles, &[Pane::Properties]);
+            let side = linear(&mut tiles, LinearDir::Vertical, &[(library, 1.0), (props, 1.2)]);
+            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 230.0), (center, 910.0), (side, 300.0)])
+        }
+        Workspace::Panel => {
+            let nav = tabs(&mut tiles, &[Pane::LayoutSpaces, Pane::Navigator(LeftTab::Devices)]);
+            let view = tabs(&mut tiles, &[Pane::LayoutView, Pane::Page]);
+            let props = tabs(&mut tiles, &[Pane::LayoutProperties]);
+            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 250.0), (view, 900.0), (props, 300.0)])
+        }
+        Workspace::Wiring | Workspace::Mounting => {
+            let list = tabs(&mut tiles, &[Pane::WiringChecklist]);
+            let bench = tabs(&mut tiles, &[Pane::WiringWorkbench]);
+            linear(&mut tiles, LinearDir::Horizontal, &[(list, 380.0), (bench, 1000.0)])
+        }
+        Workspace::Review => {
+            let nav = tabs(&mut tiles, &[Pane::Navigator(LeftTab::Review), Pane::Navigator(LeftTab::Pages), Pane::Navigator(LeftTab::Check)]);
+            let page = tabs(&mut tiles, &[Pane::Page, Pane::Tool(ToolPane::Revisions), Pane::Tool(ToolPane::ChangeRequests)]);
+            let props = tabs(&mut tiles, &[Pane::Properties]);
+            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 300.0), (page, 900.0), (props, 280.0)])
+        }
+        Workspace::Preplanning => {
+            let nav = tabs(&mut tiles, &[Pane::Navigator(LeftTab::Pages), Pane::Navigator(LeftTab::Devices)]);
+            let page = tabs(&mut tiles, &[Pane::Tool(ToolPane::Preplanning), Pane::Tool(ToolPane::SingleLine), Pane::Page]);
+            let props = tabs(&mut tiles, &[Pane::Properties]);
+            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 230.0), (page, 950.0), (props, 280.0)])
+        }
+    };
+    Tree::new(egui::Id::unique(("dock", workspace.key())), root, tiles)
+}
+
+/// The arrangement of the schematic workspace before any change.
+#[cfg(test)]
+pub fn default_tree() -> Tree<Pane> {
+    default_tree_for(Workspace::Schematic)
 }
 
 /// The tile of a pane, if it is in the tree.
@@ -112,14 +287,54 @@ pub fn find(tree: &Tree<Pane>, pane: Pane) -> Option<TileId> {
     tree.tiles.find_pane(&pane)
 }
 
-/// Shows a pane: makes it the active tab where it is, or adds it as a tab beside the
-/// navigator (or beside the page) if it was closed.
+/// The panes of the tree in their order.
+pub fn panes(tree: &Tree<Pane>) -> Vec<Pane> {
+    let mut out = Vec::new();
+    let mut open: Vec<TileId> = tree.root().into_iter().collect();
+    while let Some(id) = open.pop() {
+        match tree.tiles.get(id) {
+            Some(Tile::Pane(p)) => out.push(*p),
+            Some(Tile::Container(c)) => open.extend(c.children_vec().into_iter().rev()),
+            None => {}
+        }
+    }
+    out
+}
+
+/// The panes that are shown (active tabs), in their order.
+pub fn visible(tree: &Tree<Pane>) -> Vec<Pane> {
+    let active = tree.active_tiles();
+    panes(tree).into_iter().filter(|p| find(tree, *p).is_some_and(|id| active.contains(&id))).collect()
+}
+
+/// The tab container a pane of `area` joins: the parent of a pane of the same area.
+fn container_for(tree: &Tree<Pane>, pane: Pane) -> Option<TileId> {
+    let area = pane.area();
+    let order: Vec<Pane> = panes(tree);
+    // Prefer a pane of the same kind (navigator beside navigator, tool beside the page).
+    let candidates = order
+        .iter()
+        .filter(|p| p.area() == area)
+        .chain(order.iter().filter(|p| area == Area::Bottom && p.area() == Area::Center))
+        .chain(order.iter().filter(|p| area == Area::Left && p.area() == Area::Center));
+    for p in candidates {
+        let Some(id) = find(tree, *p) else { continue };
+        if let Some(parent) = tree.tiles.parent_of(id) {
+            if matches!(tree.tiles.get(parent), Some(Tile::Container(Container::Tabs(_)))) {
+                return Some(parent);
+            }
+        }
+    }
+    None
+}
+
+/// Shows a pane: makes it the active tab where it is, or adds it as a tab of the area it
+/// belongs to (navigators on the left, tools beside the page, …) if it was closed.
 pub fn show(tree: &mut Tree<Pane>, pane: Pane) {
     if find(tree, pane).is_none() {
-        let near = LeftTab::ALL.into_iter().find_map(|t| find(tree, Pane::Navigator(t))).or_else(|| find(tree, Pane::Page));
-        let tabs = near.and_then(|t| tree.tiles.parent_of(t)).filter(|p| matches!(tree.tiles.get(*p), Some(Tile::Container(Container::Tabs(_)))));
+        let parent = container_for(tree, pane);
         let id = tree.tiles.insert_pane(pane);
-        match tabs {
+        match parent {
             Some(parent) => {
                 if let Some(Tile::Container(c)) = tree.tiles.get_mut(parent) {
                     c.add_child(id);
@@ -128,6 +343,8 @@ pub fn show(tree: &mut Tree<Pane>, pane: Pane) {
             None => {
                 let tabs = tree.tiles.insert_tab_tile(vec![id]);
                 let root = match tree.root() {
+                    Some(old) if pane.area() == Area::Right => tree.tiles.insert_horizontal_tile(vec![old, tabs]),
+                    Some(old) if pane.area() == Area::Bottom => tree.tiles.insert_vertical_tile(vec![old, tabs]),
                     Some(old) => tree.tiles.insert_horizontal_tile(vec![tabs, old]),
                     None => tabs,
                 };
@@ -138,9 +355,9 @@ pub fn show(tree: &mut Tree<Pane>, pane: Pane) {
     tree.make_active(|_, tile| matches!(tile, Tile::Pane(p) if *p == pane));
 }
 
-/// Closes a pane (not the page).
+/// Closes a pane; the last document of a tree stays.
 pub fn close(tree: &mut Tree<Pane>, pane: Pane) {
-    if pane == Pane::Page {
+    if !can_close(tree, pane) {
         return;
     }
     if let Some(id) = find(tree, pane) {
@@ -148,22 +365,29 @@ pub fn close(tree: &mut Tree<Pane>, pane: Pane) {
     }
 }
 
-/// The navigator tab shown first: the active one of the first navigator pane found.
+/// A pane can be closed unless it is the only document left.
+pub fn can_close(tree: &Tree<Pane>, pane: Pane) -> bool {
+    !pane.is_document() || panes(tree).iter().filter(|p| p.is_document()).count() > 1
+}
+
+/// The navigator tab shown first: the active one of the navigators on the left.
 pub fn active_tab(tree: &Tree<Pane>) -> Option<LeftTab> {
     let active = tree.active_tiles();
-    LeftTab::ALL.into_iter().find(|t| find(tree, Pane::Navigator(*t)).is_some_and(|id| active.contains(&id)))
+    LeftTab::ALL.into_iter().filter(|t| Pane::Navigator(*t).area() == Area::Left).find(|t| find(tree, Pane::Navigator(*t)).is_some_and(|id| active.contains(&id)))
 }
 
 pub fn to_json(tree: &Tree<Pane>) -> String {
     serde_json::to_string(tree).unwrap_or_default()
 }
 
-/// A saved arrangement; `None` if it cannot be read or has no page (or more than one).
+/// A saved arrangement; `None` if it cannot be read, is empty or has a pane twice.
 pub fn from_json(text: &str) -> Option<Tree<Pane>> {
     let tree: Tree<Pane> = serde_json::from_str(text).ok()?;
-    let pages = tree.tiles.tiles().filter(|t| matches!(t, Tile::Pane(Pane::Page))).count();
     let root = tree.root()?;
-    (pages == 1 && tree.tiles.get(root).is_some()).then_some(tree)
+    tree.tiles.get(root)?;
+    let all: Vec<Pane> = tree.tiles.tiles().filter_map(|t| if let Tile::Pane(p) = t { Some(*p) } else { None }).collect();
+    let unique = all.iter().all(|p| all.iter().filter(|q| *q == p).count() == 1);
+    (unique && all.iter().any(|p| p.is_document())).then_some(tree)
 }
 
 #[cfg(test)]

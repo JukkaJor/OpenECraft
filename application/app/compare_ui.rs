@@ -40,8 +40,8 @@ impl CompareUi {
 
 fn kind_color(k: ChangeKind) -> Color32 {
     match k {
-        ChangeKind::Added => Color32::from_rgb(60, 160, 90),
-        ChangeKind::Removed => Color32::from_rgb(220, 60, 60),
+        ChangeKind::Added => crate::style::ok(),
+        ChangeKind::Removed => crate::style::error(),
         ChangeKind::Modified => Color32::from_rgb(70, 130, 220),
     }
 }
@@ -57,10 +57,8 @@ fn take_text(k: ChangeKind) -> &'static str {
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn compare_window(&mut self, ctx: &egui::Context) {
-        if !self.compare_ui.open {
-            return;
-        }
+    pub(super) fn compare_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         if let Some((_, other)) = &self.compare_ui.source {
             if self.compare_ui.diff_rev != self.session.history.rev {
                 self.compare_ui.diffs = compare::diff(&self.session.prj, other);
@@ -69,14 +67,13 @@ impl App {
                 self.compare_ui.checked.retain(|i| *i < n);
             }
         }
-        let mut open = true;
         let mut source = None;
         let mut open_file = false;
         let mut add_baseline = false;
         let mut delete_baseline = None;
         let mut take = false;
         let mut jump = None;
-        egui::Window::new(tr("Compare and baselines")).open(&mut open).default_size([760.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.label(RichText::new(tr("Compare with")).strong());
                 let shown = self.compare_ui.source.as_ref().map(|s| s.0.clone()).unwrap_or_else(|| tr("(choose)").to_string());
@@ -178,7 +175,6 @@ impl App {
                 }
             });
         });
-        self.compare_ui.open &= open;
         if let Some((name, baseline, rev)) = source {
             let prj = match (baseline, rev) {
                 (Some(i), _) => self.session.prj.baselines[i].project.0.as_ref().clone(),

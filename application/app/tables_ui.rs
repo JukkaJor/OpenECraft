@@ -35,11 +35,20 @@ enum Action {
     Jump(usize, u64),
 }
 
-impl App {
-    pub(super) fn tables_window(&mut self, ctx: &egui::Context) {
-        if !self.tables_ui.open {
-            return;
+impl TablesUi {
+    /// Shows a kind of rows (from a navigator), filtered.
+    pub fn show(&mut self, kind: TableKind, filter: &str) {
+        if self.kind != kind {
+            self.buffer.clear();
         }
+        self.kind = kind;
+        self.filter = filter.to_string();
+    }
+}
+
+impl App {
+    pub(super) fn tables_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let kind = self.tables_ui.kind;
         let all = tables::rows(&self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, kind);
         let rows: Vec<&tables::Row> = all.iter().filter(|r| tables::matches(r, &self.tables_ui.filter)).collect();
@@ -48,10 +57,9 @@ impl App {
         if !editable.contains(&self.tables_ui.column) {
             self.tables_ui.column = editable[0];
         }
-        let mut open = true;
         let mut actions: Vec<Action> = Vec::new();
         let ui_state = &mut self.tables_ui;
-        egui::Window::new(tr("Edit in table")).open(&mut open).default_size([1000.0, 520.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 for k in TableKind::ALL {
                     if ui.selectable_label(ui_state.kind == k, k.title()).clicked() && ui_state.kind != k {
@@ -137,7 +145,6 @@ impl App {
             });
             ui.weak(tr("Rows on released pages cannot be changed. A line break in a text is written as \\n."));
         });
-        self.tables_ui.open = open;
         let mut problems: Vec<String> = Vec::new();
         for a in actions {
             match a {

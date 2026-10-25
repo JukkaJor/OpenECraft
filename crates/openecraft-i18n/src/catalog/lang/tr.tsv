@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	{} öğesini Vault'a iade et
 Panel layout in 3D (Parasolid XT)	3D pano yerleşimi (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Geri
+Back to the project (Esc)	Projeye dön (Esc)
+Recent projects	Son projeler
+No projects opened yet.	Henüz açılmış proje yok.
+Remove from the list	Listeden kaldır
+unsaved	kaydedilmedi
+Project: {}	Proje: {}
+Find a command	Komut bul
+Drilling list (CSV)	Delik listesi (CSV)
+Pane menu	Panel menüsü
+Float	Ayır
+Show the pane as a window	Paneli pencere olarak göster
+Close	Kapat
+Dock	Yerleştir
+Put the pane back into the workspace	Paneli çalışma alanına geri koy
+Messages ({})	Mesajlar ({})
+{} favorites added	{} favori eklendi
+Quick guide	Hızlı kılavuz
+About OpenECraft	OpenECraft hakkında
+Tutorial	Eğitim
+Introduction	Giriş
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	EPLAN Electric P8 anlayışında açık bir elektrik CAE düzenleyicisi.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Şerit: Dosya açar, kaydeder, içe ve dışa aktarır ve yazdırır; sekmeler komutları konuya göre toplar. Alt erişim tuşlarını gösterir, Ctrl+Shift+P her komutu bulur, F6 paneller arasında geçiş yapar, F1 bu yardımı açar.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Ekle › Ekleme merkezi (Ins): bir sembol, makro veya cihaz arayın ve yerleştirmek için sayfaya tıklayın. Cihaz etiketleri (-K1, -S2 …) otomatik atanır.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Parçaları özelliklerde atayın (Parçalar sekmesi); raporlar (Giriş › Raporlar) cihazları, malzeme listesini, klemensleri, bağlantıları ve PLC'yi listeler ve rapor sayfaları olarak eklenir.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kablolar: Bağlantılar › Kablolar, telleri seçin ve Kabloya ata'yı kullanın. Tel numaraları: Bağlantılar › Tel numaralandırma veya tel özelliklerine bir numara yazın.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makrolar: öğeleri seçin, sağ tık › Seçimi makro olarak kaydet; ekleme merkezinden veya Ekle › Makro ile ekleyin. {NAME} yer tutucuları değer kümelerinden doldurulur.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Cihazlar › Klemens şeritleri, Cihazlar › PLC genel bakışı ve Proje verileri › Revizyonlar: klemens sırası, köprüler ve yedekler; PLC adresleri ve sembol tabloları; değişiklik işaretli revizyonlar ve onaylanmış (kilitli) sayfalar.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Ana veriler › Sembol düzenleyici: bağlantı noktaları ve fonksiyonla kendi sembollerinizi çizin (veya hazır olanları kopyalayın); projeye kaydedilir ve kütüphane dosyası olarak paylaşılabilir.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Ana veriler › Formlar: yer tutuculu ({project}, {page}, {prop:Name} …) kendi antetleriniz ve rapor sayfalarının sütunları; Proje verileri › Rapor blokları her şerit, fiş, kablo veya cihaz için rapor sayfaları üretir.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Pano yerleşimi (Pano yerleşimi çalışma alanı, Montaj alanı sekmesi): kabinler, raylar, kanallar, baralar ve kesimler; Montaj alanı › NC verileri delik desenini dışa aktarır (DXF / DWG / CSV). Üretim tel listesi soyma uzunluklarını ve yüksükleri içerir.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kablo demetleri: Bağlantılar › Kablo demetleri; iki cihaz arasındaki telleri seçin › Kablo demetine ata veya tel özelliklerinde bağlantı bazında. Uzunluklar, konektörler ve demet çapıyla demet raporu, KBL dışa aktarımı.
+Key tips of the ribbon	Şeridin erişim tuşları
+Version {}	Sürüm {}
+Search (* and ? as placeholders)…	Ara (* ve ? joker karakter olarak)…
+Show as list	Liste olarak göster
+Show as tiles	Döşeme olarak göster
+Export favorites…	Favorileri dışa aktar…
+Import favorites…	Favorileri içe aktar…
+Recently used	Son kullanılanlar
+Parts with functions: the device gets the part, its first function is placed.	Fonksiyonlu parçalar: cihaz parçayı alır, ilk fonksiyonu yerleştirilir.
+Favorite	Favori
+Macros ({})	Makrolar ({})
+Devices ({})	Cihazlar ({})
+Unplaced ({})	Yerleştirilmemiş ({})
+(several)	(çeşitli)
+{} symbols	{} sembol
+Parts of {}	{} parçaları
+Undo list	Geri alma listesi
+Show the ribbon	Şeridi göster
+Undo {} steps	{} adımı geri al
+Find a command ({})	Komut bul ({})
+Further project settings	Diğer proje ayarları
+Ribbon	Şerit
+Servers	Sunucular
+These settings are edited in their panes:	Bu ayarlar kendi panellerinde düzenlenir:
+Addresses and sign-in of the servers are set in their panes:	Sunucuların adresleri ve oturum açma bilgileri kendi panellerinde ayarlanır:
+Hide the groups you do not need and put the commands you use most into own groups.	İhtiyacınız olmayan grupları gizleyin, en çok kullandığınız komutları kendi gruplarınıza koyun.
+Reset the ribbon	Şeridi sıfırla
+Groups shown	Gösterilen gruplar
+Own groups	Kendi gruplar
+Delete the group	Grubu sil
+Remove from the group	Gruptan kaldır
+Add a command	Komut ekle
+New group	Yeni grup
+Ribbon imported	Şerit içe aktarıldı
+Welcome to OpenECraft	OpenECraft'a hoş geldiniz
+Getting started	Başlarken
+A new project	Yeni bir proje
+Placing symbols	Sembolleri yerleştirme
+Wires and potentials	Teller ve potansiyeller
+The project check	Proje kontrolü
+What is new	Yenilikler
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Dosya sekmeli şerit menülerin yerini alır; Ctrl+Shift+P her komutu bulur.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Her araç bir paneldir: sekmesini sayfanın yanına, gezginlere veya dışarı pencere olarak sürükleyin.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Şema, pano yerleşimi, kablolama ve montaj asistanları, inceleme ve ön planlama için çalışma alanları.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Ekleme merkezi sembolleri, makroları, cihazları ve yerleştirilmemiş fonksiyonları bulur; favoriler ve son kullanılanlar önce gelir.
+Close the start page	Başlangıç sayfasını kapat
+Position of the cursor	İmlecin konumu
+Messages of this session	Bu oturumun mesajları
+Grid {} mm	Izgara {} mm
+Layer: {}	Katman: {}
+Export Excel	Excel'e aktar
+Insert as report page	Rapor sayfası olarak ekle
+Open, save, import, export, print and the settings	Açma, kaydetme, içe ve dışa aktarma, yazdırma ve ayarlar
+Start page	Başlangıç sayfası
+Check in to Vault	Vault'a teslim et
+Import parts…	Parçaları içe aktar…
+Import symbol library…	Sembol kütüphanesini içe aktar…
+Import page templates…	Sayfa şablonlarını içe aktar…
+Print all pages…	Tüm sayfaları yazdır…
+Print current page…	Geçerli sayfayı yazdır…
+Settings…	Ayarlar…
+Project and user settings in one dialog	Proje ve kullanıcı ayarları tek iletişim kutusunda
+Cut	Kes
+Paste	Yapıştır
+New page	Yeni sayfa
+Cover sheet, overview, graphics, report, mounting layout or a page template	Kapak sayfası, genel bakış, grafik, rapor, montaj yerleşimi veya bir sayfa şablonu
+Find a command…	Komut bul…
+Every command of the editor and of the plugins by name	Düzenleyicinin ve eklentilerin her komutu adıyla
+Markup	İşaretleme
+Properties…	Özellikler…
+The properties of the selection in a window beside the page	Seçimin özellikleri sayfanın yanındaki bir pencerede
+Rename device…	Cihazı yeniden adlandır…
+Part selection…	Parça seçimi…
+Next pane	Sonraki panel
+Previous pane	Önceki panel
+Next page tab	Sonraki sayfa sekmesi
+Previous page tab	Önceki sayfa sekmesi
+Close page tab	Sayfa sekmesini kapat
+Panes	Paneller
+Show or hide panes; drag a tab to dock it elsewhere	Panelleri göster veya gizle; başka yere yerleştirmek için bir sekmeyi sürükleyin
+Save workspace…	Çalışma alanını kaydet…
+The panes of this workspace at their default places	Bu çalışma alanının panelleri varsayılan yerlerinde
+Theme	Tema
+UI scale	Arayüz ölçeği
+Minimize the ribbon	Şeridi küçült
+Update report blocks	Rapor bloklarını güncelle
+Customize the ribbon…	Şeridi özelleştir…
+Messages	Mesajlar
+Results of the project check	Proje kontrolünün sonuçları
+Comments and markup	Yorumlar ve işaretlemeler
+Functions of the project data not placed yet	Proje verilerinin henüz yerleştirilmemiş fonksiyonları
+Insert center	Ekleme merkezi
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Semboller, makrolar, cihazlar ve yerleştirilmemiş fonksiyonlar: arama, favoriler, son kullanılanlar
+Find results	Arama sonuçları
+Quick guide, tutorial and shortcuts	Hızlı kılavuz, eğitim ve kısayollar
+Layout spaces	Montaj alanları
+Enclosures, devices to place and placed devices	Kabinler, yerleştirilecek ve yerleştirilmiş cihazlar
+Layout properties	Yerleşim özellikleri
+Checklist	Kontrol listesi
+Workbench	Tezgâh
+3D view	3B görünüm
+NC data	NC verileri
+Drilling pattern of the face shown as DXF, DWG or CSV	Gösterilen yüzün delik deseni DXF, DWG veya CSV olarak
+Panel wiring report	Pano kablolama raporu
+Tablet mode	Tablet modu
+Larger texts and buttons for a touch screen at the workbench	Tezgâhtaki dokunmatik ekran için daha büyük metinler ve düğmeler
+Ribbon (JSON)	Şerit (JSON)
+Favorites (JSON)	Favoriler (JSON)
+Home	Giriş
+Clipboard	Pano
+Navigators	Gezginler
+Arrange	Düzenle
+Zoom	Yakınlaştır
+Appearance	Görünüş
+Numbering	Numaralandırma
+Project data	Proje verileri
+Management	Yönetim
+Calculations	Hesaplamalar
+Collaboration	İş birliği
+Automation	Otomasyon
+Master data	Ana veriler
+Forms	Formlar
+Templates	Şablonlar
+Layout space	Montaj alanı
+Draw	Çiz
+Mode	Mod
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Bir tabloyu (cihazlar, bağlantılar, klemensler, kablolar, fişler, PLC, sayfalar veya parçalar) satırlarıyla gösterir; bir satırın anahtarı onu değiştirmek için kullanılır
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages veya parts
+Not a number: {}	Sayı değil: {}
+Cable {} already exists	{} kablosu zaten var
+No connection point {}	{} bağlantı noktası yok
+No part {}	{} parçası yok
+Code	Kod
+Click to show, right click for more	Göstermek için tıklayın, daha fazlası için sağ tıklayın
+{} errors	{} hata
+{} warnings	{} uyarı
+{} notes	{} not
+Open in a new page tab	Yeni bir sayfa sekmesinde aç
+Project information	Proje bilgileri

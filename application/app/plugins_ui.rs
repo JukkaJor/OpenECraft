@@ -37,38 +37,8 @@ pub(super) fn form_args(params: &[Param], texts: &[String]) -> Result<Map<String
 }
 
 impl App {
-    pub(super) fn plugins_menu(&mut self, ui: &mut egui::Ui) {
-        // One submenu per plugin with commands (the built-in areas first, then the
-        // external plugins in load order).
-        let groups: Vec<(String, Vec<Command>)> =
-            self.plugins.list().iter().filter(|l| l.enabled && !l.registry.commands.is_empty()).map(|l| (text(&l.info.name).to_string(), l.registry.commands.clone())).collect();
-        for (name, commands) in groups {
-            ui.menu_button(name, |ui| {
-                for c in commands {
-                    if ui.button(&c.name).on_hover_text(text(&c.help)).clicked() {
-                        self.start_plugin_command(c);
-                        ui.close();
-                    }
-                }
-            });
-        }
-        let reports: Vec<(String, String)> = self.plugins.reports().map(|r| (r.name.clone(), text(&r.title).to_string())).collect();
-        if !reports.is_empty() {
-            ui.separator();
-        }
-        for (name, title) in reports {
-            if ui.button(tr_fmt!("📊 {}", title)).clicked() {
-                self.show_plugin_report(name, title);
-            }
-        }
-        ui.separator();
-        if ui.button(tr("Manage plugins…")).clicked() {
-            self.plugins_ui.open = true;
-        }
-    }
-
     /// Opens the parameter form of a command (runs it at once when it has none).
-    fn start_plugin_command(&mut self, c: Command) {
+    pub(super) fn start_plugin_command(&mut self, c: Command) {
         let texts = vec![String::new(); c.params.len()];
         self.plugins_ui.result = None;
         if c.params.is_empty() {
@@ -102,12 +72,12 @@ impl App {
     pub(super) fn plugins_windows(&mut self, ctx: &egui::Context) {
         self.plugin_command_window(ctx);
         self.plugin_report_window(ctx);
-        if !self.plugins_ui.open {
-            return;
-        }
-        let mut open = true;
+    }
+
+    /// Manage plugins: the plugins with what they add, switched on and off.
+    pub(super) fn plugins_pane(&mut self, ui: &mut egui::Ui) {
         let mut toggled = Vec::new();
-        egui::Window::new(tr("Plugins")).open(&mut open).default_size([620.0, 420.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.weak(tr_fmt!("Plugins add commands, checks, reports and exports. External plugins are loaded from the folders in the environment variable {} (one subfolder with a plugin.json per plugin).", PLUGIN_PATH_VAR));
             ui.separator();
             egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
@@ -132,11 +102,10 @@ impl App {
                     });
                 }
                 for e in &self.plugins.errors {
-                    ui.label(RichText::new(e).color(egui::Color32::from_rgb(220, 60, 60)));
+                    ui.label(RichText::new(e).color(crate::style::error()));
                 }
             });
         });
-        self.plugins_ui.open = open;
         if !toggled.is_empty() {
             for (id, on) in toggled {
                 self.plugins.set_enabled(&id, on);
@@ -176,7 +145,7 @@ impl App {
                 }
                 Some(Err(e)) => {
                     ui.separator();
-                    ui.label(RichText::new(e).color(egui::Color32::from_rgb(220, 60, 60)));
+                    ui.label(RichText::new(e).color(crate::style::error()));
                 }
                 None => {}
             }
@@ -226,7 +195,7 @@ impl App {
                     });
                 }
                 Err(e) => {
-                    ui.label(RichText::new(e).color(egui::Color32::from_rgb(220, 60, 60)));
+                    ui.label(RichText::new(e).color(crate::style::error()));
                 }
             }
         });

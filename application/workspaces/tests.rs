@@ -13,13 +13,25 @@ fn layouts_are_saved_by_name_and_replaced() {
 }
 
 #[test]
-fn applying_opens_the_saved_windows_and_closes_the_others() {
-    let (mut a, mut b, mut c) = (true, false, false);
-    let layout = Layout { windows: vec!["b".into(), "c".into(), "gone".into()], ..Default::default() };
-    {
-        let mut flags = [("a", &mut a), ("b", &mut b), ("c", &mut c)];
-        apply_windows(&layout, &mut flags);
-        assert_eq!(open_windows(&flags), vec!["b".to_string(), "c".to_string()]);
+fn windows_of_earlier_workspaces_become_panes() {
+    use crate::dock::ToolPane;
+    let layout = Layout { windows: vec!["reports".into(), "check_settings".into(), "symbol_editor".into(), "gone".into()], ..Default::default() };
+    assert_eq!(window_panes(&layout), vec![ToolPane::Reports, ToolPane::SymbolEditor]);
+}
+
+#[test]
+fn workspace_keys_round_trip() {
+    for w in Workspace::ALL {
+        assert_eq!(Workspace::from_key(w.key()), Some(w));
     }
-    assert!(!a && b && c);
+    assert_eq!(Workspace::from_key("cockpit"), None);
+    assert!(Workspace::Mounting.is_workshop() && !Workspace::Panel.is_workshop());
+}
+
+#[test]
+fn layouts_of_the_earlier_editor_are_read() {
+    let old = r#"{"name":"Mine","workspace":"panel","left_tab":"devices","windows":["reports"]}"#;
+    let l: Layout = serde_json::from_str(old).unwrap();
+    assert_eq!(l.workspace, "panel");
+    assert!(l.dock.is_empty() && l.ribbon.is_empty());
 }

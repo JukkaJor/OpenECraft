@@ -25,17 +25,14 @@ impl App {
         }
     }
 
-    pub(super) fn languages_window(&mut self, ctx: &egui::Context) {
-        if !self.languages_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn languages_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let (mut collect, mut clean, mut export_csv, mut import_csv, mut pdf) = (false, false, false, false, None);
         let mut remove_lang = None;
         let missing: Vec<(String, usize)> = self.session.prj.languages.targets.iter().map(|l| (l.clone(), translation::missing(&self.session.prj, l).len())).collect();
         let ui_state = &mut self.languages_ui;
         let langs = &mut self.session.prj.languages;
-        egui::Window::new(tr("Project languages")).open(&mut open).default_size([860.0, 520.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.weak(tr("Project texts (function texts, page descriptions, free texts, descriptions) are written in the source language; the dictionary translates them line by line. Reports and title blocks follow the output language."));
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Source language"));
@@ -125,7 +122,6 @@ impl App {
                 });
             });
         });
-        self.languages_ui.open = open;
         if let Some(l) = remove_lang {
             self.session.prj.languages.targets.retain(|x| *x != l);
         }

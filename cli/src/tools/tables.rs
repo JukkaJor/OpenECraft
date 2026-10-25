@@ -12,7 +12,7 @@ use openecraft_api::builtin::tables::{KIND, kind};
 pub static TOOLS: &[Tool] = &[
     Tool {
         name: "table_get",
-        help: tr_const!("Shows a table (devices, connections or terminals) with its rows; the key of a row is used to change it"),
+        help: tr_const!("Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it"),
         params: &[KIND, optional("filter", Kind::Str, tr_const!("Only rows containing this text")), optional("path", Kind::Str, tr_const!("Write the table as CSV to this file"))],
         needs_project: true,
         run: table_get,

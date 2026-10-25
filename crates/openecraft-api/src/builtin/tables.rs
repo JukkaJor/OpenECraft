@@ -1,4 +1,4 @@
-//! Table commands: devices, connections and terminals as rows to read and change in bulk,
+//! Table commands: devices, connections, terminals, cables, plug pins, PLC points, pages and parts as rows to read and change in bulk,
 //! and the CSV round trip.
 
 use crate::params::{optional, param, Args, Kind, Param};
@@ -67,7 +67,7 @@ pub static COMMANDS: &[Spec] = &[
     },
 ];
 
-pub const KIND: Param = param("table", Kind::Str, tr_const!("devices, connections or terminals"));
+pub const KIND: Param = param("table", Kind::Str, tr_const!("devices, connections, terminals, cables, plugs, plc, pages or parts"));
 
 pub fn kind(a: &Args) -> Result<TableKind, String> {
     TableKind::from_key(a.req("table")).ok_or_else(|| tr_fmt!("Unknown table: {}", a.req("table")))

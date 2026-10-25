@@ -16,7 +16,11 @@ fn tables_are_read_changed_and_round_tripped() {
     let r = run(&mut s, "table_set", json!({ "table": "devices", "key": "-K1", "column": "description", "value": "Main contactor" })).unwrap();
     assert_eq!(r["changed"], true);
     assert!(run(&mut s, "table_set", json!({ "table": "devices", "key": "-K1", "column": "Colour", "value": "x" })).unwrap_err().contains("Unknown column"));
-    assert!(run(&mut s, "table_get", json!({ "table": "cables" })).unwrap_err().contains("Unknown table"));
+    assert!(run(&mut s, "table_get", json!({ "table": "rockets" })).unwrap_err().contains("Unknown table"));
+    let cables = run(&mut s, "table_get", json!({ "table": "cables" })).unwrap();
+    assert_eq!(cables["rows"][0]["Cable"], "-W1");
+    let r = run(&mut s, "table_set", json!({ "table": "cables", "key": cables["rows"][0]["key"].as_str().unwrap(), "column": "Length", "value": "20" })).unwrap();
+    assert_eq!(r["changed"], true);
 
     let r = run(&mut s, "table_replace", json!({ "table": "devices", "column": "Description", "find": "Main", "replace": "Motor" })).unwrap();
     assert_eq!(r["changed"], 1);

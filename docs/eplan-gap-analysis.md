@@ -789,7 +789,9 @@ library and the properties are panes of a tile tree: tabs are dragged beside, ab
 below another pane or among its tabs, panes can be closed and shown again (*View ›
 Panels*, also *Reset panel layout*). The arrangement is kept by the app and in saved
 workspaces. Open: the panel layout and wiring workspaces keep their fixed panels;
-toolbar customisation.
+toolbar customisation. *Update (UX workplan, `docs/ux-workplan.md`):* both are done; every
+workspace and every tool is a pane, and the ribbon that replaced the menus and the tool
+bar can be customised.
 
 **Form editor.** A report form can be an own drawing: graphics drawn once per page and
 a row drawing repeated for every row with a step that runs downwards (lists) or sideways

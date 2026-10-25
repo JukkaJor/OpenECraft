@@ -32,6 +32,60 @@ fn devices_are_renamed_described_and_get_parts() {
 }
 
 #[test]
+fn every_kind_has_an_editable_column_and_a_key() {
+    let prj = demo_project();
+    for k in TableKind::ALL {
+        assert!(k.columns().iter().any(|c| c.editable), "{k:?}");
+        assert_eq!(TableKind::from_key(k.key()), Some(k));
+        for r in table(&prj, k) {
+            assert_eq!(r.cells.len(), k.columns().len(), "{k:?}");
+        }
+    }
+}
+
+#[test]
+fn cables_pages_and_parts_are_changed_in_the_table() {
+    let mut prj = demo_project();
+    prj.cables.push(Cable { id: 900, tag: "-W90".into(), cores: "3G1.5".into(), ..Default::default() });
+    let (_, open) = nets(&prj);
+    assert!(set_cell(&mut prj, &open, TableKind::Cables, "900", 4, "12,5").unwrap());
+    assert_eq!(prj.cable("-W90").unwrap().length, 12.5);
+    assert!(set_cell(&mut prj, &open, TableKind::Cables, "900", 4, "x").unwrap_err().contains("Not a number"));
+    assert!(set_cell(&mut prj, &open, TableKind::Cables, "900", 0, "-W91").unwrap());
+    assert!(prj.cable("-W91").is_some() && prj.cable("-W90").is_none());
+    assert!(set_cell(&mut prj, &open, TableKind::Cables, "900", 7, "3").is_err(), "the wire count is read only");
+
+    let page = prj.pages[0].id.to_string();
+    assert!(set_cell(&mut prj, &open, TableKind::Pages, &page, 1, "Cover").unwrap());
+    assert_eq!(prj.pages[0].description, "Cover");
+    prj.pages[0].locked = true;
+    assert!(set_cell(&mut prj, &open, TableKind::Pages, &page, 1, "Other").is_err());
+
+    if let Some(part) = prj.parts.first().map(|p| p.number.clone()) {
+        assert!(set_cell(&mut prj, &open, TableKind::Parts, &part, 5, "19.90").unwrap());
+        assert!((prj.parts[0].price - 19.9).abs() < 1e-4);
+        let row = table(&prj, TableKind::Parts).into_iter().find(|r| r.key == part).unwrap();
+        assert_eq!(row.cells[5], "19.9");
+    }
+    assert!(set_cell(&mut prj, &open, TableKind::Parts, "NO-SUCH-PART", 1, "x").is_err());
+}
+
+#[test]
+fn plc_points_and_plug_pins_get_addresses_and_texts() {
+    let mut prj = demo_project();
+    let (_, open) = nets(&prj);
+    if let Some(p) = table(&prj, TableKind::Plc).into_iter().next() {
+        assert!(set_cell(&mut prj, &open, TableKind::Plc, &p.key, 3, "Conveyor running").unwrap());
+        let row = table(&prj, TableKind::Plc).into_iter().find(|r| r.key == p.key).unwrap();
+        assert_eq!(row.cells[3], "Conveyor running");
+        assert!(set_cell(&mut prj, &open, TableKind::Plc, &p.key, 2, "x").is_err(), "the direction is read only");
+    }
+    for r in table(&prj, TableKind::Plugs) {
+        assert!(!r.cells[0].is_empty() && r.target.is_some());
+    }
+}
+
+#[test]
 fn renaming_a_strip_keeps_its_data() {
     let mut prj = demo_project();
     prj.strips.entry("-X1".into()).or_default().spares = 3;

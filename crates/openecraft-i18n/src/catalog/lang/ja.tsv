@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	{} を Vault にチェックイン
 Panel layout in 3D (Parasolid XT)	盤レイアウト 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D モデル (STL、OBJ、STEP、IGES、Parasolid、IFC、JT)
+Back	戻る
+Back to the project (Esc)	プロジェクトに戻る (Esc)
+Recent projects	最近のプロジェクト
+No projects opened yet.	まだプロジェクトを開いていません。
+Remove from the list	一覧から削除
+unsaved	未保存
+Project: {}	プロジェクト: {}
+Find a command	コマンドを検索
+Drilling list (CSV)	穴あけリスト (CSV)
+Pane menu	ペインメニュー
+Float	フロート
+Show the pane as a window	ペインをウィンドウとして表示
+Close	閉じる
+Dock	ドッキング
+Put the pane back into the workspace	ペインをワークスペースに戻す
+Messages ({})	メッセージ ({})
+{} favorites added	お気に入りを {} 件追加しました
+Quick guide	クイックガイド
+About OpenECraft	OpenECraft について
+Tutorial	チュートリアル
+Introduction	はじめに
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	EPLAN Electric P8 の考え方に基づくオープンな電気 CAE エディター。
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	リボン: ファイルで開く、保存、インポート、エクスポート、印刷を行い、タブにはテーマ別のコマンドがあります。Alt でアクセスキーを表示し、Ctrl+Shift+P で任意のコマンドを検索し、F6 でペインを切り替え、F1 でこのヘルプを開きます。
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 挿入 › 挿入センター (Ins): シンボル、マクロ、デバイスを検索し、ページをクリックして配置します。デバイスタグ (-K1, -S2 …) は自動で割り当てられます。
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. プロパティ (部品タブ) で部品を割り当てます。レポート (ホーム › レポート) はデバイス、部品表、端子、接続、PLC を一覧表示し、レポートページとして挿入されます。
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. ケーブル: 接続 › ケーブルで電線を選択し、ケーブルに割り当てを使います。電線番号: 接続 › 電線番号付け、または電線のプロパティに番号を入力します。
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. マクロ: 要素を選択し、右クリック › 選択範囲をマクロとして保存。挿入センターまたは 挿入 › マクロ から挿入します。プレースホルダー {NAME} は値セットから埋められます。
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. デバイス › 端子台、デバイス › PLC 概要、プロジェクトデータ › リビジョン: 端子の順序、ジャンパーと予備、PLC アドレスとシンボルテーブル、変更マーク付きのリビジョンとリリース済み (ロック) ページ。
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. マスターデータ › シンボルエディター: 接続点と機能を持つ独自のシンボルを描きます (または組み込みのものをコピー)。プロジェクトに保存され、ライブラリファイルとして交換できます。
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. マスターデータ › フォーム: プレースホルダー ({project}, {page}, {prop:Name} …) 付きの独自の表題欄とレポートページの列。プロジェクトデータ › レポートブロック は端子台、プラグ、ケーブル、デバイスごとにレポートページを生成します。
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 盤レイアウト (ワークスペース 盤レイアウト、タブ レイアウト空間): 筐体、レール、ダクト、ブスバー、切り欠き。レイアウト空間 › NC データ で穴あけパターンをエクスポート (DXF / DWG / CSV)。製造用電線リストには剥離長とフェルールが含まれます。
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. ハーネス: 接続 › ハーネス。2 つのデバイス間の電線を選択 › ハーネスに割り当て、または電線のプロパティで接続ごとに割り当て。長さ、コネクター、束径を含むハーネスレポート、KBL エクスポート。
+Key tips of the ribbon	リボンのアクセスキー
+Version {}	バージョン {}
+Search (* and ? as placeholders)…	検索 (* と ? はワイルドカード)…
+Show as list	一覧で表示
+Show as tiles	タイルで表示
+Export favorites…	お気に入りをエクスポート…
+Import favorites…	お気に入りをインポート…
+Recently used	最近使用したもの
+Parts with functions: the device gets the part, its first function is placed.	機能付きの部品: デバイスに部品が割り当てられ、最初の機能が配置されます。
+Favorite	お気に入り
+Macros ({})	マクロ ({})
+Devices ({})	デバイス ({})
+Unplaced ({})	未配置 ({})
+(several)	(複数)
+{} symbols	{} 個のシンボル
+Parts of {}	{} の部品
+Undo list	元に戻す一覧
+Show the ribbon	リボンを表示
+Undo {} steps	{} ステップ元に戻す
+Find a command ({})	コマンドを検索 ({})
+Further project settings	その他のプロジェクト設定
+Ribbon	リボン
+Servers	サーバー
+These settings are edited in their panes:	これらの設定は各ペインで編集します:
+Addresses and sign-in of the servers are set in their panes:	サーバーのアドレスとサインインは各ペインで設定します:
+Hide the groups you do not need and put the commands you use most into own groups.	不要なグループを非表示にし、よく使うコマンドを独自のグループにまとめます。
+Reset the ribbon	リボンをリセット
+Groups shown	表示するグループ
+Own groups	独自のグループ
+Delete the group	グループを削除
+Remove from the group	グループから削除
+Add a command	コマンドを追加
+New group	新しいグループ
+Ribbon imported	リボンをインポートしました
+Welcome to OpenECraft	OpenECraft へようこそ
+Getting started	はじめに使う
+A new project	新しいプロジェクト
+Placing symbols	シンボルの配置
+Wires and potentials	電線と電位
+The project check	プロジェクトのチェック
+What is new	新機能
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	ファイルタブ付きのリボンがメニューに代わります。Ctrl+Shift+P で任意のコマンドを検索できます。
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	すべてのツールはペインです。タブをページの横、ナビゲーター、またはウィンドウとして外へドラッグします。
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	回路図、盤レイアウト、配線と取付のアシスタント、レビュー、事前計画のためのワークスペース。
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	挿入センターはシンボル、マクロ、デバイス、未配置の機能を検索します。お気に入りと最近使用したものが先頭に来ます。
+Close the start page	スタートページを閉じる
+Position of the cursor	カーソルの位置
+Messages of this session	このセッションのメッセージ
+Grid {} mm	グリッド {} mm
+Layer: {}	レイヤー: {}
+Export Excel	Excel をエクスポート
+Insert as report page	レポートページとして挿入
+Open, save, import, export, print and the settings	開く、保存、インポート、エクスポート、印刷と設定
+Start page	スタートページ
+Check in to Vault	Vault にチェックイン
+Import parts…	部品をインポート…
+Import symbol library…	シンボルライブラリをインポート…
+Import page templates…	ページテンプレートをインポート…
+Print all pages…	すべてのページを印刷…
+Print current page…	現在のページを印刷…
+Settings…	設定…
+Project and user settings in one dialog	プロジェクトとユーザーの設定を 1 つのダイアログで
+Cut	切り取り
+Paste	貼り付け
+New page	新しいページ
+Cover sheet, overview, graphics, report, mounting layout or a page template	表紙、概要、グラフィック、レポート、取付レイアウト、またはページテンプレート
+Find a command…	コマンドを検索…
+Every command of the editor and of the plugins by name	エディターとプラグインのすべてのコマンドを名前で
+Markup	マークアップ
+Properties…	プロパティ…
+The properties of the selection in a window beside the page	ページの横のウィンドウに選択範囲のプロパティ
+Rename device…	デバイス名を変更…
+Part selection…	部品の選択…
+Next pane	次のペイン
+Previous pane	前のペイン
+Next page tab	次のページタブ
+Previous page tab	前のページタブ
+Close page tab	ページタブを閉じる
+Panes	ペイン
+Show or hide panes; drag a tab to dock it elsewhere	ペインの表示と非表示。タブをドラッグすると別の場所にドッキングします
+Save workspace…	ワークスペースを保存…
+The panes of this workspace at their default places	このワークスペースのペインを既定の位置に
+Theme	テーマ
+UI scale	UI の拡大率
+Minimize the ribbon	リボンを最小化
+Update report blocks	レポートブロックを更新
+Customize the ribbon…	リボンのカスタマイズ…
+Messages	メッセージ
+Results of the project check	プロジェクトのチェック結果
+Comments and markup	コメントとマークアップ
+Functions of the project data not placed yet	まだ配置されていないプロジェクトデータの機能
+Insert center	挿入センター
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	シンボル、マクロ、デバイス、未配置の機能: 検索、お気に入り、最近使用したもの
+Find results	検索結果
+Quick guide, tutorial and shortcuts	クイックガイド、チュートリアル、ショートカット
+Layout spaces	レイアウト空間
+Enclosures, devices to place and placed devices	筐体、配置するデバイスと配置済みのデバイス
+Layout properties	レイアウトのプロパティ
+Checklist	チェックリスト
+Workbench	作業台
+3D view	3D ビュー
+NC data	NC データ
+Drilling pattern of the face shown as DXF, DWG or CSV	表示中の面の穴あけパターンを DXF、DWG、CSV で
+Panel wiring report	盤配線レポート
+Tablet mode	タブレットモード
+Larger texts and buttons for a touch screen at the workbench	作業台のタッチスクリーン用に文字とボタンを大きく
+Ribbon (JSON)	リボン (JSON)
+Favorites (JSON)	お気に入り (JSON)
+Home	ホーム
+Clipboard	クリップボード
+Navigators	ナビゲーター
+Arrange	整列
+Zoom	ズーム
+Appearance	外観
+Numbering	番号付け
+Project data	プロジェクトデータ
+Management	管理
+Calculations	計算
+Collaboration	共同作業
+Automation	自動化
+Master data	マスターデータ
+Forms	フォーム
+Templates	テンプレート
+Layout space	レイアウト空間
+Draw	作図
+Mode	モード
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	表 (デバイス、接続、端子、ケーブル、プラグ、PLC、ページ、部品) を行とともに表示します。行のキーで変更します
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages または parts
+Not a number: {}	数値ではありません: {}
+Cable {} already exists	ケーブル {} は既に存在します
+No connection point {}	接続点 {} がありません
+No part {}	部品 {} がありません
+Code	コード
+Click to show, right click for more	クリックで表示、右クリックでその他
+{} errors	{} 件のエラー
+{} warnings	{} 件の警告
+{} notes	{} 件の注記
+Open in a new page tab	新しいページタブで開く
+Project information	プロジェクト情報

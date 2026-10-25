@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Kirjaa {} sisään Vaultiin
 Panel layout in 3D (Parasolid XT)	Kaappiasennus 3D-muodossa (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-malli (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Takaisin
+Back to the project (Esc)	Takaisin projektiin (Esc)
+Recent projects	Viimeisimmät projektit
+No projects opened yet.	Projekteja ei ole vielä avattu.
+Remove from the list	Poista luettelosta
+unsaved	tallentamaton
+Project: {}	Projekti: {}
+Find a command	Etsi komento
+Drilling list (CSV)	Porausluettelo (CSV)
+Pane menu	Ruudun valikko
+Float	Irrota
+Show the pane as a window	Näytä ruutu ikkunana
+Close	Sulje
+Dock	Telakoi
+Put the pane back into the workspace	Palauta ruutu työtilaan
+Messages ({})	Viestit ({})
+{} favorites added	Suosikkeja lisätty: {}
+Quick guide	Pikaopas
+About OpenECraft	Tietoja OpenECraftista
+Tutorial	Opetusohjelma
+Introduction	Johdanto
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Avoin sähkösuunnittelun CAE-editori EPLAN Electric P8:n hengessä.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Valintanauha: Tiedosto avaa, tallentaa, tuo, vie ja tulostaa; välilehdet ryhmittelevät komennot aiheittain. Alt näyttää pikanäppäimet, Ctrl+Shift+P löytää minkä tahansa komennon, F6 vaihtaa ruutujen välillä, F1 avaa tämän ohjeen.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Lisää › Lisäyskeskus (Ins): etsi symboli, makro tai laite ja napsauta sivua sijoittaaksesi sen. Laitetunnukset (-K1, -S2 …) annetaan automaattisesti.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Määritä osat ominaisuuksissa (välilehti Osat); raportit (Aloitus › Raportit) luettelevat laitteet, osaluettelon, riviliittimet, yhteydet ja PLC:n, ja ne lisätään raporttisivuina.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kaapelit: Yhteydet › Kaapelit, valitse johtimet ja käytä Määritä kaapeliin. Johdinnumerot: Yhteydet › Johtojen numerointi, tai kirjoita numero johtimen ominaisuuksiin.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makrot: valitse kohteet, hiiren oikea painike › Tallenna valinta makrona; lisää ne lisäyskeskuksesta tai kohdasta Lisää › Makro. Paikkamerkit {NAME} täytetään arvojoukoista.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Laitteet › Riviliitinrimat, Laitteet › PLC-yleiskatsaus ja Projektitiedot › Revisiot: liitinjärjestys, siltaukset ja varaukset; PLC-osoitteet ja symbolitaulukot; revisiot muutosmerkintöineen ja julkaistut (lukitut) sivut.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Perustiedot › Symbolieditori: piirrä omia symboleja (tai kopioi valmiita) liitäntäpisteineen ja toimintoineen; ne tallennetaan projektiin ja niitä voi vaihtaa kirjastotiedostoina.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Perustiedot › Lomakkeet: omat nimiökentät paikkamerkein ({project}, {page}, {prop:Name} …) ja raporttisivujen sarakkeet; Projektitiedot › Raporttilohkot luovat raporttisivut rimaa, pistoliitintä, kaapelia tai laitetta kohden.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Kaappiasennus (työtila Kaappiasennus, välilehti Asennustila): kaapit, kiskot, johtokanavat, kiskot ja aukot; Asennustila › NC-tiedot vie porauskuvion (DXF / DWG / CSV). Tuotannon johdinluettelo sisältää kuorintapituudet ja pääteholkit.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Johtosarjat: Yhteydet › Johtosarjat; valitse johtimet kahden laitteen välillä › Määritä johtosarjaan, tai yhteyskohtaisesti johtimen ominaisuuksissa. Johtosarjaraportti pituuksineen, liittimineen ja nippuhalkaisijoineen, KBL-vienti.
+Key tips of the ribbon	Valintanauhan pikanäppäimet
+Version {}	Versio {}
+Search (* and ? as placeholders)…	Hae (* ja ? jokerimerkkeinä)…
+Show as list	Näytä luettelona
+Show as tiles	Näytä ruutuina
+Export favorites…	Vie suosikit…
+Import favorites…	Tuo suosikit…
+Recently used	Viimeksi käytetyt
+Parts with functions: the device gets the part, its first function is placed.	Osat toimintoineen: laite saa osan, sen ensimmäinen toiminto sijoitetaan.
+Favorite	Suosikki
+Macros ({})	Makrot ({})
+Devices ({})	Laitteet ({})
+Unplaced ({})	Sijoittamattomat ({})
+(several)	(useita)
+{} symbols	Symboleja: {}
+Parts of {}	Osat: {}
+Undo list	Kumoamisluettelo
+Show the ribbon	Näytä valintanauha
+Undo {} steps	Kumoa vaiheita: {}
+Find a command ({})	Etsi komento ({})
+Further project settings	Muut projektin asetukset
+Ribbon	Valintanauha
+Servers	Palvelimet
+These settings are edited in their panes:	Näitä asetuksia muokataan omissa ruuduissaan:
+Addresses and sign-in of the servers are set in their panes:	Palvelinten osoitteet ja kirjautuminen asetetaan omissa ruuduissaan:
+Hide the groups you do not need and put the commands you use most into own groups.	Piilota ryhmät, joita et tarvitse, ja kokoa useimmin käyttämäsi komennot omiin ryhmiin.
+Reset the ribbon	Palauta valintanauha
+Groups shown	Näytettävät ryhmät
+Own groups	Omat ryhmät
+Delete the group	Poista ryhmä
+Remove from the group	Poista ryhmästä
+Add a command	Lisää komento
+New group	Uusi ryhmä
+Ribbon imported	Valintanauha tuotu
+Welcome to OpenECraft	Tervetuloa OpenECraftiin
+Getting started	Aloitus
+A new project	Uusi projekti
+Placing symbols	Symbolien sijoittaminen
+Wires and potentials	Johtimet ja potentiaalit
+The project check	Projektin tarkistus
+What is new	Uutta
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Valintanauha Tiedosto-välilehtineen korvaa valikot; Ctrl+Shift+P löytää minkä tahansa komennon.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Jokainen työkalu on ruutu: vedä sen välilehti sivun viereen, navigaattoreihin tai ulos ikkunaksi.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Työtilat kaaviolle, kaappiasennukselle, johdotus- ja asennusavustajille, kommentoinnille ja esisuunnittelulle.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Lisäyskeskus löytää symbolit, makrot, laitteet ja sijoittamattomat toiminnot; suosikit ja viimeksi käytetyt tulevat ensin.
+Close the start page	Sulje aloitussivu
+Position of the cursor	Kohdistimen sijainti
+Messages of this session	Tämän istunnon viestit
+Grid {} mm	Ruudukko {} mm
+Layer: {}	Taso: {}
+Export Excel	Vie Exceliin
+Insert as report page	Lisää raporttisivuna
+Open, save, import, export, print and the settings	Avaa, tallenna, tuo, vie, tulosta ja asetukset
+Start page	Aloitussivu
+Check in to Vault	Kirjaa sisään Vaultiin
+Import parts…	Tuo osia…
+Import symbol library…	Tuo symbolikirjasto…
+Import page templates…	Tuo sivumalleja…
+Print all pages…	Tulosta kaikki sivut…
+Print current page…	Tulosta nykyinen sivu…
+Settings…	Asetukset…
+Project and user settings in one dialog	Projektin ja käyttäjän asetukset yhdessä valintaikkunassa
+Cut	Leikkaa
+Paste	Liitä
+New page	Uusi sivu
+Cover sheet, overview, graphics, report, mounting layout or a page template	Kansilehti, yleiskuva, grafiikka, raportti, asennuskuva tai sivumalli
+Find a command…	Etsi komento…
+Every command of the editor and of the plugins by name	Editorin ja laajennusten kaikki komennot nimen mukaan
+Markup	Merkinnät
+Properties…	Ominaisuudet…
+The properties of the selection in a window beside the page	Valinnan ominaisuudet ikkunassa sivun vieressä
+Rename device…	Nimeä laite uudelleen…
+Part selection…	Osan valinta…
+Next pane	Seuraava ruutu
+Previous pane	Edellinen ruutu
+Next page tab	Seuraava sivuvälilehti
+Previous page tab	Edellinen sivuvälilehti
+Close page tab	Sulje sivuvälilehti
+Panes	Ruudut
+Show or hide panes; drag a tab to dock it elsewhere	Näytä tai piilota ruutuja; vedä välilehteä telakoidaksesi sen muualle
+Save workspace…	Tallenna työtila…
+The panes of this workspace at their default places	Tämän työtilan ruudut oletuspaikoillaan
+Theme	Teema
+UI scale	Käyttöliittymän koko
+Minimize the ribbon	Pienennä valintanauha
+Update report blocks	Päivitä raporttilohkot
+Customize the ribbon…	Mukauta valintanauhaa…
+Messages	Viestit
+Results of the project check	Projektin tarkistuksen tulokset
+Comments and markup	Kommentit ja merkinnät
+Functions of the project data not placed yet	Projektitietojen toiminnot, joita ei ole vielä sijoitettu
+Insert center	Lisäyskeskus
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbolit, makrot, laitteet ja sijoittamattomat toiminnot: haku, suosikit, viimeksi käytetyt
+Find results	Hakutulokset
+Quick guide, tutorial and shortcuts	Pikaopas, opetusohjelma ja pikanäppäimet
+Layout spaces	Asennustilat
+Enclosures, devices to place and placed devices	Kaapit, sijoitettavat ja sijoitetut laitteet
+Layout properties	Asennuskuvan ominaisuudet
+Checklist	Tarkistuslista
+Workbench	Työpenkki
+3D view	3D-näkymä
+NC data	NC-tiedot
+Drilling pattern of the face shown as DXF, DWG or CSV	Näytetyn pinnan porauskuvio DXF-, DWG- tai CSV-muodossa
+Panel wiring report	Kaapin johdotusraportti
+Tablet mode	Tablettitila
+Larger texts and buttons for a touch screen at the workbench	Suuremmat tekstit ja painikkeet työpenkin kosketusnäytölle
+Ribbon (JSON)	Valintanauha (JSON)
+Favorites (JSON)	Suosikit (JSON)
+Home	Aloitus
+Clipboard	Leikepöytä
+Navigators	Navigaattorit
+Arrange	Järjestä
+Zoom	Zoomaus
+Appearance	Ulkoasu
+Numbering	Numerointi
+Project data	Projektitiedot
+Management	Hallinta
+Calculations	Laskelmat
+Collaboration	Yhteistyö
+Automation	Automaatio
+Master data	Perustiedot
+Forms	Lomakkeet
+Templates	Mallit
+Layout space	Asennustila
+Draw	Piirrä
+Mode	Tila
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Näyttää taulukon (laitteet, yhteydet, riviliittimet, kaapelit, pistoliittimet, PLC, sivut tai osat) riveineen; rivin avainta käytetään sen muuttamiseen
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages tai parts
+Not a number: {}	Ei luku: {}
+Cable {} already exists	Kaapeli {} on jo olemassa
+No connection point {}	Ei liitäntäpistettä {}
+No part {}	Ei osaa {}
+Code	Koodi
+Click to show, right click for more	Näytä napsauttamalla, lisää hiiren oikealla painikkeella
+{} errors	Virheitä: {}
+{} warnings	Varoituksia: {}
+{} notes	Huomautuksia: {}
+Open in a new page tab	Avaa uudessa sivuvälilehdessä
+Project information	Projektin tiedot

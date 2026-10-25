@@ -30,10 +30,7 @@ fn kind_text(kinds: &[PinKind]) -> String {
 }
 
 impl App {
-    pub(super) fn plugs_window(&mut self, ctx: &egui::Context) {
-        if !self.plugs_ui.open {
-            return;
-        }
+    pub(super) fn plugs_pane(&mut self, ui: &mut egui::Ui) {
         let tags = plugs::plug_tags(&self.session.prj);
         if !tags.contains(&self.plugs_ui.plug) {
             self.plugs_ui.plug = tags.first().cloned().unwrap_or_default();
@@ -43,9 +40,8 @@ impl App {
         let capacity = plugs::capacity(&self.session.prj, &plug);
         let parts: Vec<String> = self.session.prj.devices.get(&plug).map(|d| d.parts.iter().map(|r| r.number.clone()).collect()).unwrap_or_default();
         let used = rows.iter().filter(|r| !r.pins.is_empty()).count();
-        let mut open = true;
         let (mut sort, mut moved, mut jump, mut diagram) = (false, None, None, false);
-        egui::Window::new(tr("Plugs")).open(&mut open).default_size([900.0, 400.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             if tags.is_empty() {
                 ui.weak(tr("No plugs: place plug pins (symbol group Plugs) in a schematic first."));
                 return;
@@ -112,7 +108,6 @@ impl App {
                 });
             });
         });
-        self.plugs_ui.open = open;
         if sort {
             plugs::sort(&mut self.session.prj, &plug);
         }

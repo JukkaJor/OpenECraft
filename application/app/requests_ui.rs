@@ -22,23 +22,20 @@ pub struct RequestsUi {
 
 fn status_color(s: RequestStatus) -> Color32 {
     match s {
-        RequestStatus::New => Color32::from_rgb(230, 140, 0),
+        RequestStatus::New => crate::style::lock(),
         RequestStatus::Accepted | RequestStatus::InWork => Color32::from_rgb(70, 130, 220),
-        RequestStatus::Implemented => Color32::from_rgb(60, 160, 90),
+        RequestStatus::Implemented => crate::style::ok(),
         RequestStatus::Rejected | RequestStatus::Closed => Color32::GRAY,
     }
 }
 
 impl App {
-    pub(super) fn requests_window(&mut self, ctx: &egui::Context) {
-        if !self.requests_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn requests_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut new = false;
         let mut import = false;
         let mut export = None;
-        egui::Window::new(tr("Change requests")).open(&mut open).default_size([820.0, 520.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 new = ui.button(tr("➕ New request")).clicked();
                 import = ui.button(tr("📂 Import…")).on_hover_text(tr("CSV or JSON from another system; known numbers are updated")).clicked();
@@ -62,7 +59,7 @@ impl App {
                         job.append(&format!("{} ", r.number), 0.0, egui::TextFormat { color: ui.visuals().strong_text_color(), ..normal.clone() });
                         job.append(&format!("• {} ", r.status.title()), 0.0, egui::TextFormat { color: status_color(r.status), ..normal.clone() });
                         if r.priority == Priority::High {
-                            job.append("! ", 0.0, egui::TextFormat { color: Color32::from_rgb(220, 60, 60), ..normal.clone() });
+                            job.append("! ", 0.0, egui::TextFormat { color: crate::style::error(), ..normal.clone() });
                         }
                         job.append(&r.title, 0.0, normal);
                         if ui.selectable_label(self.requests_ui.selected == Some(r.id), job).clicked() {
@@ -85,7 +82,6 @@ impl App {
                 });
             });
         });
-        self.requests_ui.open &= open;
         if new {
             let (user, date) = (self.user_name(), self.today());
             let id = review::add_request(&mut self.session.prj, tr("New change request"), &user, &date);

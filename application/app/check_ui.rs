@@ -1,13 +1,17 @@
-//! The Check tab (messages with filters, accepting, levels) and the check settings
-//! window (checks switched off, changed levels, accepted messages).
+//! The Messages pane (the messages of the project check as a sortable table with
+//! filters, accepting, levels) and the check settings (checks switched off, changed
+//! levels, accepted messages).
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
+use openecraft_core::model::natural_cmp;
+use openecraft_core::structure;
+use openecraft_ui::icons::{self, Icon};
 use openecraft_api::params::text;
 use openecraft_core::checks;
 use openecraft_core::issue::{Issue, Severity};
 use openecraft_core::model::checks::Level;
-use egui::{Color32, RichText};
+use egui::RichText;
 
 pub struct CheckUi {
     pub show_settings: bool,
@@ -17,11 +21,13 @@ pub struct CheckUi {
     accepted: bool,
     current_page: bool,
     filter: String,
+    /// Column sorted by and descending.
+    sort: (usize, bool),
 }
 
 impl Default for CheckUi {
     fn default() -> Self {
-        CheckUi { show_settings: false, errors: true, warnings: true, notes: true, accepted: false, current_page: false, filter: String::new() }
+        CheckUi { show_settings: false, errors: true, warnings: true, notes: true, accepted: false, current_page: false, filter: String::new(), sort: (0, false) }
     }
 }
 
@@ -42,27 +48,34 @@ enum Action {
 }
 
 impl App {
+    /// The Messages pane: the messages of the project check as a table with filters;
+    /// a click on a column sorts, a click on a row shows the object, right click for more.
+    #[allow(clippy::too_many_lines)]
     pub(super) fn check_tab(&mut self, ui: &mut egui::Ui) {
         let issues = self.session.analysis.issues.clone();
         let open = |s| issues.iter().filter(|i| i.severity == s && !i.accepted).count();
-        ui.label(tr_fmt!("{} errors, {} warnings, {} notes", open(Severity::Error), open(Severity::Warning), open(Severity::Info)));
         let accepted = issues.iter().filter(|i| i.accepted).count();
-        let st = &mut self.check_ui;
-        ui.horizontal_wrapped(|ui| {
-            ui.toggle_value(&mut st.errors, "⛔").on_hover_text(tr("Errors"));
-            ui.toggle_value(&mut st.warnings, "⚠").on_hover_text(tr("Warnings"));
-            ui.toggle_value(&mut st.notes, "ℹ").on_hover_text(tr("Notes"));
-            ui.toggle_value(&mut st.accepted, tr_fmt!("✔ {}", accepted)).on_hover_text(tr("Show the messages accepted as checked"));
-            ui.toggle_value(&mut st.current_page, tr("This page")).on_hover_text(tr("Only messages of the current page"));
-        });
+        let colors = crate::style::colors(self.dark);
         let mut export = false;
-        ui.horizontal(|ui| {
-            ui.add(egui::TextEdit::singleline(&mut st.filter).hint_text(tr("Filter")).desired_width(120.0));
-            if ui.button("⚙").on_hover_text(tr("Check settings: checks, message levels, accepted messages")).clicked() {
-                st.show_settings = true;
-            }
-            export = ui.button("⬇").on_hover_text(tr("Export the messages as CSV")).clicked();
-        });
+        let mut settings = false;
+        {
+            let st = &mut self.check_ui;
+            ui.horizontal_wrapped(|ui| {
+                let e = RichText::new(tr_fmt!("{} errors", open(Severity::Error))).color(colors.error);
+                ui.toggle_value(&mut st.errors, e).on_hover_text(tr("Errors"));
+                let w = RichText::new(tr_fmt!("{} warnings", open(Severity::Warning))).color(colors.warning);
+                ui.toggle_value(&mut st.warnings, w).on_hover_text(tr("Warnings"));
+                ui.toggle_value(&mut st.notes, tr_fmt!("{} notes", open(Severity::Info))).on_hover_text(tr("Notes"));
+                ui.toggle_value(&mut st.accepted, tr_fmt!("✔ {}", accepted)).on_hover_text(tr("Show the messages accepted as checked"));
+                ui.toggle_value(&mut st.current_page, tr("This page")).on_hover_text(tr("Only messages of the current page"));
+                ui.add(egui::TextEdit::singleline(&mut st.filter).hint_text(tr("Filter")).desired_width(140.0));
+                settings = icons::button(ui, Icon::Settings, tr("Check settings: checks, message levels, accepted messages")).clicked();
+                export = icons::button(ui, Icon::Download, tr("Export the messages as CSV")).clicked();
+            });
+        }
+        if settings {
+            self.check_ui.show_settings = true;
+        }
         if export {
             let csv = checks::issues_csv(&self.session.prj, &issues);
             self.export(ui.ctx(), "check.csv".into(), ("CSV", "csv"), csv);
@@ -70,7 +83,10 @@ impl App {
         let st = &self.check_ui;
         let page = self.session.page;
         let filter = st.filter.to_lowercase();
-        let shown: Vec<&Issue> = issues
+        let titles: Vec<(String, String)> = self.plugins.checks().map(|c| (c.name.clone(), text(&c.title).to_string())).collect();
+        let prj = &self.session.prj;
+        // Row: issue, page name, object (tag of the symbol), check title.
+        let mut rows: Vec<(&Issue, String, String, String)> = issues
             .iter()
             .filter(|i| match i.severity {
                 Severity::Error => st.errors,
@@ -79,28 +95,71 @@ impl App {
             })
             .filter(|i| st.accepted || !i.accepted)
             .filter(|i| !st.current_page || i.target.is_some_and(|t| t.0 == page))
-            .filter(|i| filter.is_empty() || i.message().to_lowercase().contains(&filter) || i.code().contains(&filter))
-            .collect();
-        let titles: Vec<(String, String)> = self.plugins.checks().map(|c| (c.name.clone(), text(&c.title).to_string())).collect();
-        let mut action = None;
-        egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-            for issue in &shown {
-                let (icon, color) = match issue.severity {
-                    Severity::Error => ("⛔", Color32::from_rgb(220, 60, 60)),
-                    Severity::Warning => ("⚠", Color32::from_rgb(220, 160, 0)),
-                    Severity::Info => ("ℹ", ui.visuals().weak_text_color()),
+            .map(|i| {
+                let (pg, obj) = match i.target {
+                    Some((p, id)) => {
+                        let name = prj.pages.get(p).map(structure::page_full_name).unwrap_or_default();
+                        let obj = prj.pages.get(p).and_then(|pg| pg.symbols.iter().find(|s| s.id == id)).map(|s| s.tag.clone()).unwrap_or_default();
+                        (name, obj)
+                    }
+                    None => (String::new(), String::new()),
                 };
-                ui.horizontal_wrapped(|ui| {
-                    ui.label(RichText::new(if issue.accepted { "✔" } else { icon }).color(color));
+                let check = titles.iter().find(|t| t.0 == i.check).map_or(i.check.clone(), |t| t.1.clone());
+                (i, pg, obj, check)
+            })
+            .filter(|(i, pg, obj, check)| filter.is_empty() || [i.message().to_lowercase(), i.code(), pg.to_lowercase(), obj.to_lowercase(), check.to_lowercase()].iter().any(|t| t.contains(&filter)))
+            .collect();
+        let sort = st.sort;
+        rows.sort_by(|a, b| {
+            let o = match sort.0 {
+                1 => a.0.code().cmp(&b.0.code()),
+                2 => a.0.message().cmp(&b.0.message()),
+                3 => natural_cmp(&a.1, &b.1),
+                4 => natural_cmp(&a.2, &b.2),
+                5 => a.3.cmp(&b.3),
+                _ => (a.0.severity as u8).cmp(&(b.0.severity as u8)),
+            };
+            if sort.1 { o.reverse() } else { o }
+        });
+        let mut action = None;
+        let mut sort_by = None;
+        egui::ScrollArea::both().id_salt("messages").auto_shrink([false, false]).show(ui, |ui| {
+            egui::Grid::new("messages_table").striped(true).num_columns(6).spacing([12.0, 3.0]).show(ui, |ui| {
+                for (c, title) in [(0, ""), (1, tr("Code")), (2, tr("Message")), (3, tr("Page")), (4, tr("Object")), (5, tr("Check"))] {
+                    let arrow = if sort.0 == c { if sort.1 { " ⏶" } else { " ⏷" } } else { "" };
+                    if ui.add(egui::Button::new(RichText::new(format!("{title}{arrow}")).strong()).frame(false)).clicked() {
+                        sort_by = Some(c);
+                    }
+                }
+                ui.end_row();
+                for (issue, pg, obj, check) in &rows {
+                    let (icon, color) = match issue.severity {
+                        Severity::Error => (Icon::Error, colors.error),
+                        Severity::Warning => (Icon::Warning, colors.warning),
+                        Severity::Info => (Icon::Info, ui.visuals().weak_text_color()),
+                    };
+                    let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+                    icons::paint(ui.painter(), rect, if issue.accepted { Icon::Check } else { icon }, color);
+                    ui.monospace(issue.code());
                     let msg = if issue.accepted { RichText::new(issue.message()).weak() } else { RichText::new(issue.message()) };
                     let r = ui.add(egui::Label::new(msg).sense(egui::Sense::click()));
-                    let r = r.on_hover_text(tr_fmt!("{}\nClick to show, right click for more", issue.code()));
+                    ui.label(pg);
+                    ui.monospace(obj);
+                    ui.weak(check);
+                    ui.end_row();
+                    let r = r.on_hover_text(tr("Click to show, right click for more"));
                     if r.clicked() {
                         if let Some((pg, id)) = issue.target {
                             action = Some(Action::Jump(pg, id));
                         }
                     }
                     r.context_menu(|ui| {
+                        if issue.target.is_some() && ui.button(tr("Show")).clicked() {
+                            if let Some((pg, id)) = issue.target {
+                                action = Some(Action::Jump(pg, id));
+                            }
+                            ui.close();
+                        }
                         let label = if issue.accepted { tr("Take the acceptance back") } else { tr("Accept as checked") };
                         if ui.button(label).clicked() {
                             action = Some(Action::Accept((*issue).clone(), !issue.accepted));
@@ -118,20 +177,21 @@ impl App {
                                 ui.close();
                             }
                         });
-                        if !issue.check.is_empty() {
-                            let title = titles.iter().find(|t| t.0 == issue.check).map_or(issue.check.as_str(), |t| t.1.as_str());
-                            if ui.button(tr_fmt!("Switch off the check \"{}\"", title)).clicked() {
-                                action = Some(Action::Disable(issue.check.clone()));
-                                ui.close();
-                            }
+                        if !issue.check.is_empty() && ui.button(tr_fmt!("Switch off the check \"{}\"", check)).clicked() {
+                            action = Some(Action::Disable(issue.check.clone()));
+                            ui.close();
                         }
                     });
-                });
-            }
-            if shown.is_empty() {
+                }
+            });
+            if rows.is_empty() {
                 ui.label(tr("✔ No problems found."));
             }
         });
+        if let Some(c) = sort_by {
+            let st = &mut self.check_ui;
+            st.sort = if st.sort.0 == c { (c, !st.sort.1) } else { (c, false) };
+        }
         match action {
             Some(Action::Jump(pg, id)) => self.goto(pg, id),
             Some(Action::Accept(issue, on)) => {
@@ -149,16 +209,13 @@ impl App {
         }
     }
 
-    pub(super) fn check_settings_window(&mut self, ctx: &egui::Context) {
-        if !self.check_ui.show_settings {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn check_settings_body(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let checks: Vec<(String, String)> = self.plugins.checks().map(|c| (c.name.clone(), text(&c.title).to_string())).collect();
         let stale: Vec<String> = checks::stale_accepted(&self.session.prj, &self.session.analysis.issues).into_iter().map(|a| a.id.clone()).collect();
         let (mut export, mut import) = (false, false);
         let s = &mut self.session.prj.check_settings;
-        egui::Window::new(tr("Check settings")).open(&mut open).resizable(true).default_width(460.0).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 export = ui.button(tr("Export check scheme…")).on_hover_text(tr("Checks switched off and message levels as a file for other projects")).clicked();
                 import = ui.button(tr("Import check scheme…")).clicked();
@@ -218,7 +275,6 @@ impl App {
                 }
             });
         });
-        self.check_ui.show_settings = open;
         if export {
             self.export(ctx, "check_scheme.json".into(), (tr("Check scheme (JSON)"), "json"), checks::scheme_json(&self.session.prj));
         }

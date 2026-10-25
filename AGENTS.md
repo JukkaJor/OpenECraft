@@ -198,11 +198,17 @@ violations. Do not weaken or delete that test to make a change pass.
 - **Command line / MCP:** every operation on the project is a command of a built-in
   plugin in `crates/openecraft-api/src/builtin/<area>.rs` (an entry of the area's
   `COMMANDS` table: name, help text, parameters, `fn(&mut Project, &Args)`); the command
-  line, the MCP server and the editor's Plugins menu take it from there, so add new
+  line, the MCP server and the editor's Plugins tab take it from there, so add new
   functions there once. Only tools that need the session or the machine (project files,
   undo, exports to files, the parts server, plugins) are `Tool`s in
   `cli/src/tools/<area>.rs`. Help texts use `tr_const!` and need catalog entries; MCP
   clients get them in English.
+- **Editor shell:** every function of the editor is a command of
+  `application/commands.rs` with a place in the ribbon, the backstage or View › Panes
+  (`application/ribbon.rs`); a tool is a pane (`ToolPane` in `application/dock.rs`)
+  shown by a command. The tests of both modules fail for a command without a place
+  or a pane without a command. Icons are vector paths in `openecraft_ui::icons`
+  (no new glyphs); state colours come from `application/style.rs`.
 - **Parts manager:** keep its editing rules (drafts, renames, unsaved changes) in
   `parts-manager/src/session.rs` (no UI code, unit tested); `app.rs` only draws.
 - **Style:** match the surrounding code; keep comments as sparse as the existing ones.

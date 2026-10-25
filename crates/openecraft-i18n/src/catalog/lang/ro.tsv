@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Check-in {} în Vault
 Panel layout in 3D (Parasolid XT)	Amplasare în tablou în 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Model 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Înapoi
+Back to the project (Esc)	Înapoi la proiect (Esc)
+Recent projects	Proiecte recente
+No projects opened yet.	Niciun proiect deschis încă.
+Remove from the list	Eliminare din listă
+unsaved	nesalvat
+Project: {}	Proiect: {}
+Find a command	Căutare comandă
+Drilling list (CSV)	Listă de găuri (CSV)
+Pane menu	Meniul panoului
+Float	Detașare
+Show the pane as a window	Afișarea panoului ca fereastră
+Close	Închidere
+Dock	Andocare
+Put the pane back into the workspace	Readucerea panoului în spațiul de lucru
+Messages ({})	Mesaje ({})
+{} favorites added	Favorite adăugate: {}
+Quick guide	Ghid rapid
+About OpenECraft	Despre OpenECraft
+Tutorial	Tutorial
+Introduction	Introducere
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Un editor CAE electric deschis, în spiritul EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Panglica: Fișier deschide, salvează, importă, exportă și tipărește; filele grupează comenzile pe teme. Alt afișează tastele de acces, Ctrl+Shift+P găsește orice comandă, F6 trece de la un panou la altul, F1 deschide acest ajutor.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Inserare › Centru de inserare (Ins): căutați un simbol, o macro sau un dispozitiv și faceți clic în pagină pentru a-l plasa. Identificatorii (-K1, -S2 …) se atribuie automat.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Atribuiți articole în proprietăți (fila Articole); rapoartele (Pornire › Rapoarte) listează dispozitive, lista de materiale, borne, conexiuni și PLC și se inserează ca pagini de raport.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Cabluri: Conexiuni › Cabluri, selectați conductoarele și folosiți Atribuire la cablu. Numere de conductoare: Conexiuni › Numerotare conductoare sau scrieți un număr în proprietățile conductorului.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Macro-uri: selectați elementele, clic dreapta › Salvare selecție ca macro; inserați-le din centrul de inserare sau prin Inserare › Macro. Substituenții {NAME} se completează din seturi de valori.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Dispozitive › Șiruri de borne, Dispozitive › Prezentare PLC și Date proiect › Revizii: ordinea bornelor, punți și rezerve; adrese PLC și tabele de simboluri; revizii cu marcaje de modificare și pagini eliberate (blocate).
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Date de bază › Editor de simboluri: desenați simboluri proprii (sau copiați-le pe cele incluse) cu puncte de conectare și funcție; se salvează în proiect și pot fi schimbate ca fișiere de bibliotecă.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Date de bază › Formulare: cartușe proprii cu substituenți ({project}, {page}, {prop:Name} …) și coloanele paginilor de raport; Date proiect › Blocuri de raport generează pagini de raport pentru fiecare șir, conector, cablu sau dispozitiv.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Amplasare în tablou (spațiul de lucru Amplasare în tablou, fila Spațiu de montaj): dulapuri, șine, canale, bare colectoare și decupaje; Spațiu de montaj › Date CN exportă modelul de găurire (DXF / DWG / CSV). Lista de conductoare pentru producție conține lungimile de dezizolare și papucii.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Cablaje: Conexiuni › Cablaje; selectați conductoarele dintre două dispozitive › Atribuire la cablaj sau pe conexiune în proprietățile conductorului. Raport de cablaj cu lungimi, conectori și diametrul mănunchiului, export KBL.
+Key tips of the ribbon	Tastele de acces ale panglicii
+Version {}	Versiune {}
+Search (* and ? as placeholders)…	Căutare (* și ? ca metacaractere)…
+Show as list	Afișare ca listă
+Show as tiles	Afișare ca dale
+Export favorites…	Export favorite…
+Import favorites…	Import favorite…
+Recently used	Folosite recent
+Parts with functions: the device gets the part, its first function is placed.	Articole cu funcții: dispozitivul primește articolul, iar prima sa funcție este plasată.
+Favorite	Favorit
+Macros ({})	Macro-uri ({})
+Devices ({})	Dispozitive ({})
+Unplaced ({})	Neplasate ({})
+(several)	(diverse)
+{} symbols	Simboluri: {}
+Parts of {}	Articole pentru {}
+Undo list	Listă de anulare
+Show the ribbon	Afișarea panglicii
+Undo {} steps	Anulare pași: {}
+Find a command ({})	Căutare comandă ({})
+Further project settings	Alte setări ale proiectului
+Ribbon	Panglică
+Servers	Servere
+These settings are edited in their panes:	Aceste setări se editează în panourile lor:
+Addresses and sign-in of the servers are set in their panes:	Adresele și autentificarea serverelor se setează în panourile lor:
+Hide the groups you do not need and put the commands you use most into own groups.	Ascundeți grupurile de care nu aveți nevoie și puneți comenzile cele mai folosite în grupuri proprii.
+Reset the ribbon	Resetarea panglicii
+Groups shown	Grupuri afișate
+Own groups	Grupuri proprii
+Delete the group	Ștergerea grupului
+Remove from the group	Eliminare din grup
+Add a command	Adăugare comandă
+New group	Grup nou
+Ribbon imported	Panglică importată
+Welcome to OpenECraft	Bun venit în OpenECraft
+Getting started	Primii pași
+A new project	Un proiect nou
+Placing symbols	Plasarea simbolurilor
+Wires and potentials	Conductoare și potențiale
+The project check	Verificarea proiectului
+What is new	Noutăți
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Panglica cu fila Fișier înlocuiește meniurile; Ctrl+Shift+P găsește orice comandă.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Fiecare instrument este un panou: trageți fila lui lângă pagină, la navigatoare sau afară ca fereastră.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Spații de lucru pentru schemă, amplasarea în tablou, asistenții de cablare și montaj, comentarii și preplanificare.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Centrul de inserare găsește simboluri, macro-uri, dispozitive și funcții neplasate; favoritele și cele folosite recent apar primele.
+Close the start page	Închiderea paginii de start
+Position of the cursor	Poziția cursorului
+Messages of this session	Mesajele acestei sesiuni
+Grid {} mm	Grilă {} mm
+Layer: {}	Strat: {}
+Export Excel	Export Excel
+Insert as report page	Inserare ca pagină de raport
+Open, save, import, export, print and the settings	Deschidere, salvare, import, export, tipărire și setări
+Start page	Pagina de start
+Check in to Vault	Depunere în Vault
+Import parts…	Import articole…
+Import symbol library…	Import bibliotecă de simboluri…
+Import page templates…	Import șabloane de pagină…
+Print all pages…	Tipărire toate paginile…
+Print current page…	Tipărire pagina curentă…
+Settings…	Setări…
+Project and user settings in one dialog	Setările proiectului și ale utilizatorului într-un singur dialog
+Cut	Decupare
+Paste	Lipire
+New page	Pagină nouă
+Cover sheet, overview, graphics, report, mounting layout or a page template	Copertă, prezentare generală, grafică, raport, amplasare de montaj sau un șablon de pagină
+Find a command…	Căutare comandă…
+Every command of the editor and of the plugins by name	Orice comandă a editorului și a pluginurilor, după nume
+Markup	Marcaje
+Properties…	Proprietăți…
+The properties of the selection in a window beside the page	Proprietățile selecției într-o fereastră lângă pagină
+Rename device…	Redenumire dispozitiv…
+Part selection…	Selecție articol…
+Next pane	Panoul următor
+Previous pane	Panoul anterior
+Next page tab	Fila de pagină următoare
+Previous page tab	Fila de pagină anterioară
+Close page tab	Închidere filă de pagină
+Panes	Panouri
+Show or hide panes; drag a tab to dock it elsewhere	Afișare sau ascundere panouri; trageți o filă pentru a o andoca în altă parte
+Save workspace…	Salvare spațiu de lucru…
+The panes of this workspace at their default places	Panourile acestui spațiu de lucru în locurile lor implicite
+Theme	Temă
+UI scale	Scara interfeței
+Minimize the ribbon	Minimizarea panglicii
+Update report blocks	Actualizare blocuri de raport
+Customize the ribbon…	Personalizarea panglicii…
+Messages	Mesaje
+Results of the project check	Rezultatele verificării proiectului
+Comments and markup	Comentarii și marcaje
+Functions of the project data not placed yet	Funcții ale datelor proiectului încă neplasate
+Insert center	Centru de inserare
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Simboluri, macro-uri, dispozitive și funcții neplasate: căutare, favorite, folosite recent
+Find results	Rezultatele căutării
+Quick guide, tutorial and shortcuts	Ghid rapid, tutorial și comenzi rapide
+Layout spaces	Spații de montaj
+Enclosures, devices to place and placed devices	Dulapuri, dispozitive de plasat și dispozitive plasate
+Layout properties	Proprietățile amplasării
+Checklist	Listă de verificare
+Workbench	Bancă de lucru
+3D view	Vedere 3D
+NC data	Date CN
+Drilling pattern of the face shown as DXF, DWG or CSV	Modelul de găurire al feței afișate ca DXF, DWG sau CSV
+Panel wiring report	Raport de cablare a tabloului
+Tablet mode	Mod tabletă
+Larger texts and buttons for a touch screen at the workbench	Texte și butoane mai mari pentru un ecran tactil la banca de lucru
+Ribbon (JSON)	Panglică (JSON)
+Favorites (JSON)	Favorite (JSON)
+Home	Pornire
+Clipboard	Clipboard
+Navigators	Navigatoare
+Arrange	Aranjare
+Zoom	Zoom
+Appearance	Aspect
+Numbering	Numerotare
+Project data	Date proiect
+Management	Gestionare
+Calculations	Calcule
+Collaboration	Colaborare
+Automation	Automatizare
+Master data	Date de bază
+Forms	Formulare
+Templates	Șabloane
+Layout space	Spațiu de montaj
+Draw	Desenare
+Mode	Mod
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Afișează un tabel (dispozitive, conexiuni, borne, cabluri, conectori, PLC, pagini sau articole) cu rândurile lui; cheia unui rând servește la modificarea lui
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages sau parts
+Not a number: {}	Nu este un număr: {}
+Cable {} already exists	Cablul {} există deja
+No connection point {}	Niciun punct de conectare {}
+No part {}	Niciun articol {}
+Code	Cod
+Click to show, right click for more	Clic pentru afișare, clic dreapta pentru mai multe
+{} errors	Erori: {}
+{} warnings	Avertismente: {}
+{} notes	Note: {}
+Open in a new page tab	Deschidere într-o filă de pagină nouă
+Project information	Informații despre proiect

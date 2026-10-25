@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::config::{self, ConfigOption, Rule};
 use openecraft_core::macros::MacroKind;
-use egui::{Color32, RichText};
+use egui::RichText;
 
 #[derive(Default)]
 pub struct ConfigUi {
@@ -13,18 +13,15 @@ pub struct ConfigUi {
 }
 
 impl App {
-    pub(super) fn config_window(&mut self, ctx: &egui::Context) {
-        if !self.config_ui.open {
-            return;
-        }
+    pub(super) fn config_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let page_macros: Vec<(String, Vec<String>)> =
             self.macro_lib.macros.iter().filter(|m| m.kind == MacroKind::Page).map(|m| (m.name.clone(), m.variant_names())).collect();
         let problems = config::problems(&self.session.prj.configuration, &self.macro_lib);
         let generated = self.session.prj.pages.iter().filter(|p| p.generated).count();
-        let mut open = true;
         let mut generate = false;
         let cfg = &mut self.session.prj.configuration;
-        egui::Window::new(tr("Configurator")).open(&mut open).default_size([900.0, 480.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.weak(tr("Rules insert page macros when their condition holds. Generating replaces the pages generated before; option values fill {OPTION} placeholders."));
             ui.separator();
             ui.label(RichText::new(tr("Options")).strong());
@@ -104,14 +101,13 @@ impl App {
             });
             ui.separator();
             for p in &problems {
-                ui.colored_label(Color32::from_rgb(220, 120, 0), p);
+                ui.colored_label(crate::style::lock(), p);
             }
             ui.horizontal(|ui| {
                 generate = ui.add_enabled(problems.is_empty() && !cfg.rules.is_empty(), egui::Button::new(tr("⚙ Generate pages"))).clicked();
                 ui.weak(tr_fmt!("{} generated pages in the project (changes on them are replaced)", generated));
             });
         });
-        self.config_ui.open = open;
         if generate {
             match config::generate(&mut self.session.prj, &self.macro_lib) {
                 Ok(g) => self.notify(ctx, tr_fmt!("{} pages removed, {} pages generated", g.removed, g.pages.len())),

@@ -5287,3 +5287,174 @@ Clip	Clip	Clip	Clip
 Cable tie	Kabelbinder	Collier de serrage	Brida
 Grommet	Tülle	Passe-fil	Pasacables
 Bracket	Halter	Support	Soporte
+Back	Zurück	Retour	Atrás
+Back to the project (Esc)	Zurück zum Projekt (Esc)	Retour au projet (Échap)	Volver al proyecto (Esc)
+Recent projects	Zuletzt verwendete Projekte	Projets récents	Proyectos recientes
+No projects opened yet.	Noch keine Projekte geöffnet.	Aucun projet ouvert pour l'instant.	Todavía no se ha abierto ningún proyecto.
+Remove from the list	Aus der Liste entfernen	Retirer de la liste	Quitar de la lista
+unsaved	nicht gespeichert	non enregistré	sin guardar
+Project: {}	Projekt: {}	Projet : {}	Proyecto: {}
+Find a command	Befehl suchen	Rechercher une commande	Buscar un comando
+Drilling list (CSV)	Bohrliste (CSV)	Liste de perçage (CSV)	Lista de taladros (CSV)
+Pane menu	Fenstermenü	Menu du panneau	Menú del panel
+Float	Abdocken	Détacher	Desacoplar
+Show the pane as a window	Das Fenster frei schwebend anzeigen	Afficher le panneau dans une fenêtre	Mostrar el panel como ventana
+Close	Schließen	Fermer	Cerrar
+Dock	Andocken	Ancrer	Acoplar
+Put the pane back into the workspace	Das Fenster wieder im Arbeitsbereich andocken	Remettre le panneau dans l'espace de travail	Volver a acoplar el panel en el espacio de trabajo
+Messages ({})	Meldungen ({})	Messages ({})	Mensajes ({})
+{} favorites added	{} Favoriten hinzugefügt	{} favoris ajoutés	{} favoritos añadidos
+Quick guide	Kurzanleitung	Guide rapide	Guía rápida
+About OpenECraft	Über OpenECraft	À propos d'OpenECraft	Acerca de OpenECraft
+Tutorial	Tutorial	Tutoriel	Tutorial
+Introduction	Einführung	Introduction	Introducción
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Ein offener Elektro-CAE-Editor im Sinne von EPLAN Electric P8.	Un éditeur CAO électrique ouvert dans l'esprit d'EPLAN Electric P8.	Un editor CAE eléctrico abierto al estilo de EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Das Menüband: Datei öffnet, speichert, importiert, exportiert und druckt; die Registerkarten enthalten die Befehle nach Themen. Alt zeigt die Zugriffstasten, Strg+Umschalt+P findet jeden Befehl, F6 wechselt zwischen den Fenstern, F1 öffnet diese Hilfe.	Le ruban : Fichier ouvre, enregistre, importe, exporte et imprime ; les onglets regroupent les commandes par thème. Alt affiche les touches d'accès, Ctrl+Maj+P trouve n'importe quelle commande, F6 passe d'un panneau à l'autre, F1 ouvre cette aide.	La cinta de opciones: Archivo abre, guarda, importa, exporta e imprime; las pestañas agrupan los comandos por tema. Alt muestra las teclas de acceso, Ctrl+Mayús+P encuentra cualquier comando, F6 pasa de un panel a otro, F1 abre esta ayuda.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Einfügen › Einfügezentrum (Einfg): ein Symbol, ein Makro oder ein Betriebsmittel suchen und in die Seite klicken, um es zu platzieren. Betriebsmittelkennzeichen (-K1, -S2 …) werden automatisch vergeben.	1. Insertion › Centre d'insertion (Inser) : rechercher un symbole, une macro ou un appareil et cliquer dans la page pour le placer. Les repères (-K1, -S2 …) sont attribués automatiquement.	1. Insertar › Centro de inserción (Insert): buscar un símbolo, una macro o un dispositivo y hacer clic en la página para colocarlo. Las designaciones (-K1, -S2 …) se asignan automáticamente.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Artikel in den Eigenschaften zuordnen (Registerkarte Artikel); die Berichte (Start › Berichte) listen Betriebsmittel, Stückliste, Klemmen, Verbindungen und SPS auf und werden als Berichtsseiten eingefügt.	5. Affecter les articles dans les propriétés (onglet Articles) ; les rapports (Accueil › Rapports) listent appareils, nomenclature, bornes, liaisons et API et sont insérés comme pages de rapport.	5. Asignar artículos en las propiedades (pestaña Artículos); los informes (Inicio › Informes) listan dispositivos, lista de materiales, bornes, conexiones y PLC y se insertan como páginas de informe.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabel: Verbindungen › Kabel, Leitungen markieren und Kabel zuordnen wählen. Verbindungsnummern: Verbindungen › Verbindungsnummerierung oder eine Nummer in den Leitungseigenschaften eingeben.	7. Câbles : Liaisons › Câbles, sélectionner des fils et utiliser Affecter au câble. Numéros de fil : Liaisons › Numérotation des fils, ou saisir un numéro dans les propriétés du fil.	7. Cables: Conexiones › Cables, seleccionar hilos y usar Asignar a cable. Números de hilo: Conexiones › Numeración de hilos, o escribir un número en las propiedades del hilo.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makros: Elemente markieren, Rechtsklick › Auswahl als Makro speichern; aus dem Einfügezentrum oder über Einfügen › Makro einfügen. Platzhalter {NAME} werden aus Wertesätzen gefüllt.	8. Macros : sélectionner des éléments, clic droit › Enregistrer la sélection comme macro ; les insérer depuis le centre d'insertion ou Insertion › Macro. Les variables {NAME} sont remplies à partir de jeux de valeurs.	8. Macros: seleccionar elementos, clic derecho › Guardar selección como macro; insertarlas desde el centro de inserción o Insertar › Macro. Los marcadores {NAME} se rellenan a partir de conjuntos de valores.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Betriebsmittel › Klemmleisten, Betriebsmittel › SPS-Übersicht und Projektdaten › Revisionen: Klemmenreihenfolge, Brücken und Reserven; SPS-Adressen und Symboltabellen; Revisionen mit Änderungsmarkierungen und freigegebenen (gesperrten) Seiten.	9. Appareils › Borniers, Appareils › Vue d'ensemble API et Données de projet › Révisions : ordre des bornes, ponts et réserves ; adresses API et tables de symboles ; révisions avec marques de modification et pages validées (verrouillées).	9. Dispositivos › Regletas, Dispositivos › Vista general de PLC y Datos de proyecto › Revisiones: orden de bornes, puentes y reservas; direcciones PLC y tablas de símbolos; revisiones con marcas de cambio y páginas liberadas (bloqueadas).
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Stammdaten › Symboleditor: eigene Symbole zeichnen (oder mitgelieferte kopieren) mit Anschlusspunkten und Funktion; sie werden im Projekt gespeichert und können als Bibliotheksdateien ausgetauscht werden.	10. Données de base › Éditeur de symboles : dessiner vos propres symboles (ou copier ceux fournis) avec points de connexion et fonction ; ils sont enregistrés dans le projet et peuvent être échangés comme fichiers de bibliothèque.	10. Datos maestros › Editor de símbolos: dibujar símbolos propios (o copiar los incluidos) con puntos de conexión y función; se guardan en el proyecto y se pueden intercambiar como archivos de biblioteca.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Stammdaten › Formulare: eigene Schriftfelder mit Platzhaltern ({project}, {page}, {prop:Name} …) und die Spalten der Berichtsseiten; Projektdaten › Berichtsblöcke erzeugen Berichtsseiten je Klemmleiste, Stecker, Kabel oder Betriebsmittel.	11. Données de base › Formulaires : cartouches propres avec variables ({project}, {page}, {prop:Name} …) et colonnes des pages de rapport ; Données de projet › Blocs de rapport génèrent des pages de rapport par bornier, connecteur, câble ou appareil.	11. Datos maestros › Formularios: cajetines propios con marcadores ({project}, {page}, {prop:Name} …) y las columnas de las páginas de informe; Datos de proyecto › Bloques de informe generan páginas de informe por regleta, conector, cable o dispositivo.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Schaltschrankaufbau (Arbeitsbereich Schaltschrankaufbau, Registerkarte Layoutbereich): Gehäuse, Tragschienen, Kanäle, Sammelschienen und Ausschnitte; Layoutbereich › NC-Daten exportiert das Bohrbild (DXF / DWG / CSV). Die Fertigungs-Leitungsliste enthält Abisolierlängen und Aderendhülsen.	12. Implantation d'armoire (espace de travail Implantation d'armoire, onglet Espace de montage) : armoires, rails, goulottes, barres et découpes ; Espace de montage › Données CN exporte le plan de perçage (DXF / DWG / CSV). La liste de fils de production contient les longueurs de dénudage et les embouts.	12. Diseño del armario (espacio de trabajo Diseño del armario, pestaña Espacio de montaje): envolventes, carriles, canaletas, pletinas y recortes; Espacio de montaje › Datos CN exporta el patrón de taladrado (DXF / DWG / CSV). La lista de hilos de producción contiene longitudes de pelado y punteras.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbäume: Verbindungen › Kabelbäume; die Leitungen zwischen zwei Betriebsmitteln markieren › Kabelbaum zuordnen, oder je Verbindung in den Leitungseigenschaften. Kabelbaumbericht mit Längen, Steckern und Bündeldurchmesser, KBL-Export.	13. Faisceaux : Liaisons › Faisceaux ; sélectionner les fils entre deux appareils › Affecter au faisceau, ou par liaison dans les propriétés du fil. Rapport de faisceau avec longueurs, connecteurs et diamètre du toron, export KBL.	13. Mazos: Conexiones › Mazos; seleccionar los hilos entre dos dispositivos › Asignar a mazo, o por conexión en las propiedades del hilo. Informe de mazo con longitudes, conectores y diámetro del haz, exportación KBL.
+Key tips of the ribbon	Zugriffstasten des Menübands	Touches d'accès du ruban	Teclas de acceso de la cinta
+Version {}	Version {}	Version {}	Versión {}
+Search (* and ? as placeholders)…	Suchen (* und ? als Platzhalter)…	Rechercher (* et ? comme jokers)…	Buscar (* y ? como comodines)…
+Show as list	Als Liste anzeigen	Afficher en liste	Mostrar como lista
+Show as tiles	Als Kacheln anzeigen	Afficher en vignettes	Mostrar como mosaico
+Export favorites…	Favoriten exportieren…	Exporter les favoris…	Exportar favoritos…
+Import favorites…	Favoriten importieren…	Importer les favoris…	Importar favoritos…
+Recently used	Zuletzt verwendet	Utilisés récemment	Usados recientemente
+Parts with functions: the device gets the part, its first function is placed.	Artikel mit Funktionen: das Betriebsmittel erhält den Artikel, seine erste Funktion wird platziert.	Articles avec fonctions : l'appareil reçoit l'article, sa première fonction est placée.	Artículos con funciones: el dispositivo recibe el artículo y se coloca su primera función.
+Favorite	Favorit	Favori	Favorito
+Macros ({})	Makros ({})	Macros ({})	Macros ({})
+Devices ({})	Betriebsmittel ({})	Appareils ({})	Dispositivos ({})
+Unplaced ({})	Nicht platziert ({})	Non placés ({})	No colocados ({})
+(several)	(mehrere)	(plusieurs)	(varios)
+{} symbols	{} Symbole	{} symboles	{} símbolos
+Parts of {}	Artikel von {}	Articles de {}	Artículos de {}
+Undo list	Rückgängig-Liste	Liste d'annulation	Lista de deshacer
+Show the ribbon	Menüband anzeigen	Afficher le ruban	Mostrar la cinta de opciones
+Undo {} steps	{} Schritte rückgängig	Annuler {} étapes	Deshacer {} pasos
+Find a command ({})	Befehl suchen ({})	Rechercher une commande ({})	Buscar un comando ({})
+Further project settings	Weitere Projekteinstellungen	Autres paramètres du projet	Más ajustes del proyecto
+Ribbon	Menüband	Ruban	Cinta de opciones
+Servers	Server	Serveurs	Servidores
+These settings are edited in their panes:	Diese Einstellungen werden in ihren Fenstern bearbeitet:	Ces paramètres se modifient dans leurs panneaux :	Estos ajustes se editan en sus paneles:
+Addresses and sign-in of the servers are set in their panes:	Adressen und Anmeldung der Server werden in ihren Fenstern eingestellt:	Les adresses et la connexion des serveurs se règlent dans leurs panneaux :	Las direcciones y el inicio de sesión de los servidores se ajustan en sus paneles:
+Hide the groups you do not need and put the commands you use most into own groups.	Nicht benötigte Gruppen ausblenden und die meistgenutzten Befehle in eigene Gruppen legen.	Masquez les groupes inutiles et placez les commandes les plus utilisées dans vos propres groupes.	Oculte los grupos que no necesita y ponga los comandos que más usa en grupos propios.
+Reset the ribbon	Menüband zurücksetzen	Réinitialiser le ruban	Restablecer la cinta de opciones
+Groups shown	Angezeigte Gruppen	Groupes affichés	Grupos mostrados
+Own groups	Eigene Gruppen	Groupes personnels	Grupos propios
+Delete the group	Gruppe löschen	Supprimer le groupe	Eliminar el grupo
+Remove from the group	Aus der Gruppe entfernen	Retirer du groupe	Quitar del grupo
+Add a command	Befehl hinzufügen	Ajouter une commande	Añadir un comando
+New group	Neue Gruppe	Nouveau groupe	Nuevo grupo
+Ribbon imported	Menüband importiert	Ruban importé	Cinta de opciones importada
+Welcome to OpenECraft	Willkommen bei OpenECraft	Bienvenue dans OpenECraft	Bienvenido a OpenECraft
+Getting started	Erste Schritte	Premiers pas	Primeros pasos
+A new project	Ein neues Projekt	Un nouveau projet	Un proyecto nuevo
+Placing symbols	Symbole platzieren	Placer des symboles	Colocar símbolos
+Wires and potentials	Leitungen und Potenziale	Fils et potentiels	Hilos y potenciales
+The project check	Die Projektprüfung	Le contrôle du projet	La revisión del proyecto
+What is new	Neuigkeiten	Nouveautés	Novedades
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Das Menüband mit der Registerkarte Datei ersetzt die Menüs; Strg+Umschalt+P findet jeden Befehl.	Le ruban avec l'onglet Fichier remplace les menus ; Ctrl+Maj+P trouve n'importe quelle commande.	La cinta de opciones con la pestaña Archivo sustituye a los menús; Ctrl+Mayús+P encuentra cualquier comando.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Jedes Werkzeug ist ein Fenster: seine Registerkarte neben die Seite, zu den Navigatoren oder als eigenes Fenster ziehen.	Chaque outil est un panneau : faites glisser son onglet à côté de la page, dans les navigateurs ou hors de la fenêtre.	Cada herramienta es un panel: arrastre su pestaña junto a la página, a los navegadores o fuera como ventana.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Arbeitsbereiche für den Schaltplan, den Schaltschrankaufbau, die Verdrahtungs- und Montageassistenten, die Kommentierung und die Vorplanung.	Espaces de travail pour le schéma, l'implantation d'armoire, les assistants de câblage et de montage, la révision et la préplanification.	Espacios de trabajo para el esquema, el diseño del armario, los asistentes de cableado y montaje, la revisión y la preplanificación.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Das Einfügezentrum findet Symbole, Makros, Betriebsmittel und nicht platzierte Funktionen; Favoriten und zuletzt verwendete stehen vorn.	Le centre d'insertion trouve symboles, macros, appareils et fonctions non placées ; les favoris et les éléments récents viennent en premier.	El centro de inserción encuentra símbolos, macros, dispositivos y funciones no colocadas; los favoritos y los usados recientemente aparecen primero.
+Close the start page	Startseite schließen	Fermer la page d'accueil	Cerrar la página de inicio
+Position of the cursor	Position des Mauszeigers	Position du curseur	Posición del cursor
+Messages of this session	Meldungen dieser Sitzung	Messages de cette session	Mensajes de esta sesión
+Grid {} mm	Raster {} mm	Grille {} mm	Cuadrícula {} mm
+Layer: {}	Ebene: {}	Calque : {}	Capa: {}
+Export Excel	Excel exportieren	Exporter en Excel	Exportar Excel
+Insert as report page	Als Berichtsseite einfügen	Insérer comme page de rapport	Insertar como página de informe
+Open, save, import, export, print and the settings	Öffnen, Speichern, Importieren, Exportieren, Drucken und die Einstellungen	Ouvrir, enregistrer, importer, exporter, imprimer et les paramètres	Abrir, guardar, importar, exportar, imprimir y los ajustes
+Start page	Startseite	Page d'accueil	Página de inicio
+Check in to Vault	In Vault einchecken	Archiver dans Vault	Registrar en Vault
+Import parts…	Artikel importieren…	Importer des articles…	Importar artículos…
+Import symbol library…	Symbolbibliothek importieren…	Importer une bibliothèque de symboles…	Importar biblioteca de símbolos…
+Import page templates…	Seitenvorlagen importieren…	Importer des modèles de page…	Importar plantillas de página…
+Print all pages…	Alle Seiten drucken…	Imprimer toutes les pages…	Imprimir todas las páginas…
+Print current page…	Aktuelle Seite drucken…	Imprimer la page actuelle…	Imprimir la página actual…
+Settings…	Einstellungen…	Paramètres…	Ajustes…
+Project and user settings in one dialog	Projekt- und Benutzereinstellungen in einem Dialog	Paramètres du projet et de l'utilisateur dans une seule boîte de dialogue	Ajustes del proyecto y del usuario en un solo diálogo
+Cut	Ausschneiden	Couper	Cortar
+Paste	Einfügen	Coller	Pegar
+New page	Neue Seite	Nouvelle page	Nueva página
+Cover sheet, overview, graphics, report, mounting layout or a page template	Deckblatt, Übersicht, Grafik, Bericht, Montageaufbau oder eine Seitenvorlage	Page de garde, vue d'ensemble, graphique, rapport, implantation ou modèle de page	Portada, vista general, gráficos, informe, montaje o una plantilla de página
+Find a command…	Befehl suchen…	Rechercher une commande…	Buscar un comando…
+Every command of the editor and of the plugins by name	Jeder Befehl des Editors und der Plugins nach Namen	Toutes les commandes de l'éditeur et des plugins par leur nom	Todos los comandos del editor y de los plugins por nombre
+Markup	Markierung	Annotation	Marcado
+Properties…	Eigenschaften…	Propriétés…	Propiedades…
+The properties of the selection in a window beside the page	Die Eigenschaften der Auswahl in einem Fenster neben der Seite	Les propriétés de la sélection dans une fenêtre à côté de la page	Las propiedades de la selección en una ventana junto a la página
+Rename device…	Betriebsmittel umbenennen…	Renommer l'appareil…	Renombrar dispositivo…
+Part selection…	Artikelauswahl…	Sélection d'article…	Selección de artículo…
+Next pane	Nächstes Fenster	Panneau suivant	Panel siguiente
+Previous pane	Vorheriges Fenster	Panneau précédent	Panel anterior
+Next page tab	Nächste Seitenregisterkarte	Onglet de page suivant	Pestaña de página siguiente
+Previous page tab	Vorherige Seitenregisterkarte	Onglet de page précédent	Pestaña de página anterior
+Close page tab	Seitenregisterkarte schließen	Fermer l'onglet de page	Cerrar la pestaña de página
+Panes	Fenster	Panneaux	Paneles
+Show or hide panes; drag a tab to dock it elsewhere	Fenster ein- oder ausblenden; eine Registerkarte ziehen, um sie woanders anzudocken	Afficher ou masquer des panneaux ; faire glisser un onglet pour l'ancrer ailleurs	Mostrar u ocultar paneles; arrastre una pestaña para acoplarla en otro lugar
+Save workspace…	Arbeitsbereich speichern…	Enregistrer l'espace de travail…	Guardar espacio de trabajo…
+The panes of this workspace at their default places	Die Fenster dieses Arbeitsbereichs an ihren Standardplätzen	Les panneaux de cet espace de travail à leur place par défaut	Los paneles de este espacio de trabajo en su lugar predeterminado
+Theme	Farbschema	Thème	Tema
+UI scale	Skalierung der Oberfläche	Échelle de l'interface	Escala de la interfaz
+Minimize the ribbon	Menüband minimieren	Réduire le ruban	Minimizar la cinta de opciones
+Update report blocks	Berichtsblöcke aktualisieren	Mettre à jour les blocs de rapport	Actualizar bloques de informe
+Customize the ribbon…	Menüband anpassen…	Personnaliser le ruban…	Personalizar la cinta de opciones…
+Messages	Meldungen	Messages	Mensajes
+Results of the project check	Ergebnisse der Projektprüfung	Résultats du contrôle du projet	Resultados de la revisión del proyecto
+Comments and markup	Kommentare und Markierungen	Commentaires et annotations	Comentarios y marcados
+Functions of the project data not placed yet	Funktionen der Projektdaten, die noch nicht platziert sind	Fonctions des données de projet pas encore placées	Funciones de los datos del proyecto aún no colocadas
+Insert center	Einfügezentrum	Centre d'insertion	Centro de inserción
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbole, Makros, Betriebsmittel und nicht platzierte Funktionen: Suche, Favoriten, zuletzt verwendet	Symboles, macros, appareils et fonctions non placées : recherche, favoris, récents	Símbolos, macros, dispositivos y funciones no colocadas: búsqueda, favoritos, recientes
+Find results	Suchergebnisse	Résultats de recherche	Resultados de búsqueda
+Quick guide, tutorial and shortcuts	Kurzanleitung, Tutorial und Tastenkürzel	Guide rapide, tutoriel et raccourcis	Guía rápida, tutorial y atajos
+Layout spaces	Layoutbereiche	Espaces de montage	Espacios de montaje
+Enclosures, devices to place and placed devices	Gehäuse, zu platzierende und platzierte Betriebsmittel	Armoires, appareils à placer et appareils placés	Envolventes, dispositivos por colocar y colocados
+Layout properties	Layout-Eigenschaften	Propriétés de l'implantation	Propiedades del montaje
+Checklist	Checkliste	Liste de contrôle	Lista de verificación
+Workbench	Werkbank	Établi	Banco de trabajo
+3D view	3D-Ansicht	Vue 3D	Vista 3D
+NC data	NC-Daten	Données CN	Datos CN
+Drilling pattern of the face shown as DXF, DWG or CSV	Bohrbild der angezeigten Fläche als DXF, DWG oder CSV	Plan de perçage de la face affichée en DXF, DWG ou CSV	Patrón de taladrado de la cara mostrada como DXF, DWG o CSV
+Panel wiring report	Bericht Schaltschrankverdrahtung	Rapport de câblage de l'armoire	Informe de cableado del armario
+Tablet mode	Tablet-Modus	Mode tablette	Modo tableta
+Larger texts and buttons for a touch screen at the workbench	Größere Texte und Schaltflächen für einen Touchscreen an der Werkbank	Textes et boutons plus grands pour un écran tactile à l'établi	Textos y botones más grandes para una pantalla táctil en el banco de trabajo
+Ribbon (JSON)	Menüband (JSON)	Ruban (JSON)	Cinta de opciones (JSON)
+Favorites (JSON)	Favoriten (JSON)	Favoris (JSON)	Favoritos (JSON)
+Home	Start	Accueil	Inicio
+Clipboard	Zwischenablage	Presse-papiers	Portapapeles
+Navigators	Navigatoren	Navigateurs	Navegadores
+Arrange	Anordnen	Disposer	Organizar
+Zoom	Zoom	Zoom	Zoom
+Appearance	Erscheinungsbild	Apparence	Apariencia
+Numbering	Nummerierung	Numérotation	Numeración
+Project data	Projektdaten	Données de projet	Datos de proyecto
+Management	Verwaltung	Gestion	Gestión
+Calculations	Berechnungen	Calculs	Cálculos
+Collaboration	Zusammenarbeit	Collaboration	Colaboración
+Automation	Automatisierung	Automatisation	Automatización
+Master data	Stammdaten	Données de base	Datos maestros
+Forms	Formulare	Formulaires	Formularios
+Templates	Vorlagen	Modèles	Plantillas
+Layout space	Layoutbereich	Espace de montage	Espacio de montaje
+Draw	Zeichnen	Dessiner	Dibujar
+Mode	Modus	Mode	Modo
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Zeigt eine Tabelle (Betriebsmittel, Verbindungen, Klemmen, Kabel, Stecker, SPS, Seiten oder Artikel) mit ihren Zeilen; über den Schlüssel einer Zeile wird sie geändert	Affiche un tableau (appareils, liaisons, bornes, câbles, connecteurs, API, pages ou articles) avec ses lignes ; la clé d'une ligne sert à la modifier	Muestra una tabla (dispositivos, conexiones, bornes, cables, conectores, PLC, páginas o artículos) con sus filas; la clave de una fila sirve para cambiarla
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages oder parts	devices, connections, terminals, cables, plugs, plc, pages ou parts	devices, connections, terminals, cables, plugs, plc, pages o parts
+Not a number: {}	Keine Zahl: {}	Pas un nombre : {}	No es un número: {}
+Cable {} already exists	Kabel {} existiert bereits	Le câble {} existe déjà	El cable {} ya existe
+No connection point {}	Kein Anschlusspunkt {}	Pas de point de connexion {}	No hay punto de conexión {}
+No part {}	Kein Artikel {}	Pas d'article {}	No hay artículo {}
+Code	Code	Code	Código
+Click to show, right click for more	Klicken zum Anzeigen, Rechtsklick für mehr	Cliquer pour afficher, clic droit pour plus	Clic para mostrar, clic derecho para más
+{} errors	{} Fehler	{} erreurs	{} errores
+{} warnings	{} Warnungen	{} avertissements	{} advertencias
+{} notes	{} Hinweise	{} remarques	{} notas
+Open in a new page tab	In einer neuen Seitenregisterkarte öffnen	Ouvrir dans un nouvel onglet de page	Abrir en una nueva pestaña de página
+Project information	Projektinformationen	Informations sur le projet	Información del proyecto

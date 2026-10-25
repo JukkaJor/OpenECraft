@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Tjek {} ind i Vault
 Panel layout in 3D (Parasolid XT)	Tavlelayout i 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Tilbage
+Back to the project (Esc)	Tilbage til projektet (Esc)
+Recent projects	Seneste projekter
+No projects opened yet.	Ingen projekter åbnet endnu.
+Remove from the list	Fjern fra listen
+unsaved	ikke gemt
+Project: {}	Projekt: {}
+Find a command	Find en kommando
+Drilling list (CSV)	Boreliste (CSV)
+Pane menu	Panelmenu
+Float	Frigør
+Show the pane as a window	Vis panelet som et vindue
+Close	Luk
+Dock	Fastgør
+Put the pane back into the workspace	Sæt panelet tilbage i arbejdsområdet
+Messages ({})	Meddelelser ({})
+{} favorites added	{} favoritter tilføjet
+Quick guide	Hurtigvejledning
+About OpenECraft	Om OpenECraft
+Tutorial	Selvstudium
+Introduction	Indledning
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	En åben el-CAE-editor i ånden fra EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Båndet: Filer åbner, gemmer, importerer, eksporterer og udskriver; fanerne samler kommandoerne efter emne. Alt viser genvejstasterne, Ctrl+Shift+P finder enhver kommando, F6 skifter mellem panelerne, F1 åbner denne hjælp.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Indsæt › Indsætningscenter (Ins): søg et symbol, en makro eller en enhed, og klik på siden for at placere den. Enhedsmærkninger (-K1, -S2 …) tildeles automatisk.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Tildel artikler i egenskaberne (fanen Artikler); rapporterne (Hjem › Rapporter) viser enheder, styklisten, klemmer, forbindelser og PLC og indsættes som rapportsider.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabler: Forbindelser › Kabler, markér ledninger og brug Tildel til kabel. Ledningsnumre: Forbindelser › Ledningsnummerering, eller skriv et nummer i ledningens egenskaber.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makroer: markér elementer, højreklik › Gem markering som makro; indsæt dem fra indsætningscentret eller via Indsæt › Makro. Pladsholdere {NAME} udfyldes fra værdisæt.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Enheder › Klemrækker, Enheder › PLC-oversigt og Projektdata › Revisioner: klemrækkefølge, broer og reserver; PLC-adresser og symboltabeller; revisioner med ændringsmarkeringer og frigivne (låste) sider.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Stamdata › Symboleditor: tegn egne symboler (eller kopiér de indbyggede) med tilslutningspunkter og funktion; de gemmes i projektet og kan udveksles som biblioteksfiler.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Stamdata › Formularer: egne titelblokke med pladsholdere ({project}, {page}, {prop:Name} …) og rapportsidernes kolonner; Projektdata › Rapportblokke danner rapportsider pr. klemrække, stik, kabel eller enhed.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Tavlelayout (arbejdsområdet Tavlelayout, fanen Monteringsrum): skabe, skinner, kabelkanaler, samleskinner og udskæringer; Monteringsrum › NC-data eksporterer boremønsteret (DXF / DWG / CSV). Produktionsledningslisten indeholder afisoleringslængder og terminalrør.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Ledningsnet: Forbindelser › Ledningsnet; markér ledningerne mellem to enheder › Tildel til ledningsnet, eller pr. forbindelse i ledningens egenskaber. Ledningsnetrapport med længder, stik og bundtdiameter, KBL-eksport.
+Key tips of the ribbon	Båndets genvejstaster
+Version {}	Version {}
+Search (* and ? as placeholders)…	Søg (* og ? som jokertegn)…
+Show as list	Vis som liste
+Show as tiles	Vis som felter
+Export favorites…	Eksportér favoritter…
+Import favorites…	Importér favoritter…
+Recently used	Senest brugt
+Parts with functions: the device gets the part, its first function is placed.	Artikler med funktioner: enheden får artiklen, dens første funktion placeres.
+Favorite	Favorit
+Macros ({})	Makroer ({})
+Devices ({})	Enheder ({})
+Unplaced ({})	Ikke placeret ({})
+(several)	(flere)
+{} symbols	{} symboler
+Parts of {}	Artikler for {}
+Undo list	Fortryd-liste
+Show the ribbon	Vis båndet
+Undo {} steps	Fortryd {} trin
+Find a command ({})	Find en kommando ({})
+Further project settings	Øvrige projektindstillinger
+Ribbon	Bånd
+Servers	Servere
+These settings are edited in their panes:	Disse indstillinger redigeres i deres paneler:
+Addresses and sign-in of the servers are set in their panes:	Servernes adresser og login indstilles i deres paneler:
+Hide the groups you do not need and put the commands you use most into own groups.	Skjul de grupper, du ikke har brug for, og læg de mest brugte kommandoer i egne grupper.
+Reset the ribbon	Nulstil båndet
+Groups shown	Viste grupper
+Own groups	Egne grupper
+Delete the group	Slet gruppen
+Remove from the group	Fjern fra gruppen
+Add a command	Tilføj en kommando
+New group	Ny gruppe
+Ribbon imported	Bånd importeret
+Welcome to OpenECraft	Velkommen til OpenECraft
+Getting started	Kom i gang
+A new project	Et nyt projekt
+Placing symbols	Placering af symboler
+Wires and potentials	Ledninger og potentialer
+The project check	Projektkontrollen
+What is new	Nyheder
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Båndet med fanen Filer erstatter menuerne; Ctrl+Shift+P finder enhver kommando.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Hvert værktøj er et panel: træk dets fane ved siden af siden, til navigatorerne eller ud som et vindue.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Arbejdsområder til diagrammet, tavlelayoutet, lednings- og monteringsassistenterne, gennemsynet og forprojekteringen.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Indsætningscentret finder symboler, makroer, enheder og ikke-placerede funktioner; favoritter og senest brugte kommer først.
+Close the start page	Luk startsiden
+Position of the cursor	Markørens position
+Messages of this session	Meddelelser fra denne session
+Grid {} mm	Gitter {} mm
+Layer: {}	Lag: {}
+Export Excel	Eksportér Excel
+Insert as report page	Indsæt som rapportside
+Open, save, import, export, print and the settings	Åbn, gem, importér, eksportér, udskriv og indstillingerne
+Start page	Startside
+Check in to Vault	Tjek ind i Vault
+Import parts…	Importér artikler…
+Import symbol library…	Importér symbolbibliotek…
+Import page templates…	Importér sideskabeloner…
+Print all pages…	Udskriv alle sider…
+Print current page…	Udskriv den aktuelle side…
+Settings…	Indstillinger…
+Project and user settings in one dialog	Projekt- og brugerindstillinger i én dialog
+Cut	Klip
+Paste	Sæt ind
+New page	Ny side
+Cover sheet, overview, graphics, report, mounting layout or a page template	Forside, oversigt, grafik, rapport, monteringslayout eller en sideskabelon
+Find a command…	Find en kommando…
+Every command of the editor and of the plugins by name	Alle kommandoer i editoren og i plugins efter navn
+Markup	Markering
+Properties…	Egenskaber…
+The properties of the selection in a window beside the page	Markeringens egenskaber i et vindue ved siden af siden
+Rename device…	Omdøb enhed…
+Part selection…	Artikelvalg…
+Next pane	Næste panel
+Previous pane	Forrige panel
+Next page tab	Næste sidefane
+Previous page tab	Forrige sidefane
+Close page tab	Luk sidefane
+Panes	Paneler
+Show or hide panes; drag a tab to dock it elsewhere	Vis eller skjul paneler; træk en fane for at fastgøre den et andet sted
+Save workspace…	Gem arbejdsområde…
+The panes of this workspace at their default places	Panelerne i dette arbejdsområde på deres standardpladser
+Theme	Tema
+UI scale	Skalering af brugerfladen
+Minimize the ribbon	Minimér båndet
+Update report blocks	Opdatér rapportblokke
+Customize the ribbon…	Tilpas båndet…
+Messages	Meddelelser
+Results of the project check	Resultater af projektkontrollen
+Comments and markup	Kommentarer og markeringer
+Functions of the project data not placed yet	Funktioner i projektdata, der endnu ikke er placeret
+Insert center	Indsætningscenter
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symboler, makroer, enheder og ikke-placerede funktioner: søgning, favoritter, senest brugt
+Find results	Søgeresultater
+Quick guide, tutorial and shortcuts	Hurtigvejledning, selvstudium og genveje
+Layout spaces	Monteringsrum
+Enclosures, devices to place and placed devices	Skabe, enheder der skal placeres og placerede enheder
+Layout properties	Layoutegenskaber
+Checklist	Tjekliste
+Workbench	Arbejdsbord
+3D view	3D-visning
+NC data	NC-data
+Drilling pattern of the face shown as DXF, DWG or CSV	Boremønster for den viste flade som DXF, DWG eller CSV
+Panel wiring report	Rapport over tavleledningsføring
+Tablet mode	Tablettilstand
+Larger texts and buttons for a touch screen at the workbench	Større tekster og knapper til en berøringsskærm ved arbejdsbordet
+Ribbon (JSON)	Bånd (JSON)
+Favorites (JSON)	Favoritter (JSON)
+Home	Hjem
+Clipboard	Udklipsholder
+Navigators	Navigatorer
+Arrange	Arrangér
+Zoom	Zoom
+Appearance	Udseende
+Numbering	Nummerering
+Project data	Projektdata
+Management	Administration
+Calculations	Beregninger
+Collaboration	Samarbejde
+Automation	Automatisering
+Master data	Stamdata
+Forms	Formularer
+Templates	Skabeloner
+Layout space	Monteringsrum
+Draw	Tegn
+Mode	Tilstand
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Viser en tabel (enheder, forbindelser, klemmer, kabler, stik, PLC, sider eller artikler) med dens rækker; en rækkes nøgle bruges til at ændre den
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages eller parts
+Not a number: {}	Ikke et tal: {}
+Cable {} already exists	Kablet {} findes allerede
+No connection point {}	Intet tilslutningspunkt {}
+No part {}	Ingen artikel {}
+Code	Kode
+Click to show, right click for more	Klik for at vise, højreklik for mere
+{} errors	{} fejl
+{} warnings	{} advarsler
+{} notes	{} bemærkninger
+Open in a new page tab	Åbn i en ny sidefane
+Project information	Projektinformation

@@ -1,18 +1,117 @@
-//! The property editor on the right: the selected symbol, wire, text or page.
+//! The property editor (pane and window, F2): the selected symbol in tabs (device,
+//! display, parts, properties, connections), the wires, texts and graphics, the common
+//! fields of a multiple selection, or the page.
 
 use super::*;
 
+/// The tabs of a symbol's properties.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum PropTab {
+    #[default]
+    Device,
+    Display,
+    Parts,
+    Properties,
+    Connections,
+}
+
+impl PropTab {
+    fn title(self) -> &'static str {
+        match self {
+            PropTab::Device => tr("Device"),
+            PropTab::Display => tr("Display"),
+            PropTab::Parts => tr("Parts"),
+            PropTab::Properties => tr("Properties"),
+            PropTab::Connections => tr("Connections"),
+        }
+    }
+}
+
 impl App {
+    /// The properties of the selection in a window beside the page (F2, double click).
+    pub(super) fn properties_float_window(&mut self, ctx: &egui::Context) {
+        if !self.props_window {
+            return;
+        }
+        let idx = std::mem::take(&mut self.session.index);
+        let mut open = true;
+        egui::Window::new(tr("Properties")).id(egui::Id::unique("properties_window")).open(&mut open).default_size([380.0, 520.0]).show(ctx, |ui| {
+            egui::ScrollArea::vertical().id_salt("props_window").auto_shrink([false, false]).show(ui, |ui| self.properties(ui, &idx));
+        });
+        self.session.index = idx;
+        self.props_window = open;
+    }
+
+    /// The tab bar of a symbol's properties; returns the tab shown.
+    fn props_tab_bar(&mut self, ui: &mut egui::Ui, device: bool, pins: bool, display: bool) -> PropTab {
+        let tabs: Vec<PropTab> = [
+            (PropTab::Device, true),
+            (PropTab::Display, display),
+            (PropTab::Parts, device),
+            (PropTab::Properties, true),
+            (PropTab::Connections, pins || device),
+        ]
+        .into_iter()
+        .filter(|(_, on)| *on)
+        .map(|(t, _)| t)
+        .collect();
+        if !tabs.contains(&self.props_tab) {
+            self.props_tab = PropTab::Device;
+        }
+        ui.horizontal_wrapped(|ui| {
+            for t in tabs {
+                ui.selectable_value(&mut self.props_tab, t, t.title());
+            }
+        });
+        ui.separator();
+        self.props_tab
+    }
+
+    /// The fields the selected symbols share: a value that differs shows "(several)".
+    fn common_symbol_fields(&mut self, ui: &mut egui::Ui, pi: usize) {
+        let syms: Vec<usize> = self.session.prj.pages[pi].symbols.iter().enumerate().filter(|(_, s)| self.editor.selection.contains(&s.id)).map(|(i, _)| i).collect();
+        if syms.len() < 2 {
+            return;
+        }
+        ui.separator();
+        ui.label(tr_fmt!("{} symbols", syms.len()));
+        let page = &self.session.prj.pages[pi];
+        let first = page.symbols[syms[0]].function_text.clone();
+        let same = syms.iter().all(|&i| page.symbols[i].function_text == first);
+        let key = ui.scope_id().with("common_function_text");
+        let mut text: String = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| if same { first.clone() } else { String::new() });
+        let mirror_all = syms.iter().all(|&i| page.symbols[i].mirror);
+        egui::Grid::new("common_props").num_columns(2).show(ui, |ui| {
+            ui.label(tr("Function text"));
+            let r = ui.add(egui::TextEdit::multiline(&mut text).desired_rows(2).desired_width(160.0).hint_text(if same { "" } else { tr("(several)") }));
+            if r.changed() {
+                for &i in &syms {
+                    self.session.prj.pages[pi].symbols[i].function_text = text.clone();
+                }
+            }
+            ui.end_row();
+            ui.label(tr("Mirror"));
+            let mut m = mirror_all;
+            if ui.checkbox(&mut m, if mirror_all || syms.iter().all(|&i| !self.session.prj.pages[pi].symbols[i].mirror) { "" } else { tr("(several)") }).changed() {
+                for &i in &syms {
+                    self.session.prj.pages[pi].symbols[i].mirror = m;
+                }
+            }
+            ui.end_row();
+        });
+        ui.data_mut(|d| d.insert_temp(key, text));
+    }
+
     #[allow(clippy::too_many_lines)]
     pub(super) fn properties(&mut self, ui: &mut egui::Ui, idx: &Index) {
         ui.heading(tr("Properties"));
         let sel: Vec<u64> = self.editor.selection.iter().copied().collect();
         let pi = self.session.page;
         if self.session.prj.pages[pi].locked {
-            ui.label(RichText::new(tr("🔒 Released page – read only")).color(Color32::from_rgb(220, 140, 0)));
+            ui.label(RichText::new(tr("🔒 Released page – read only")).color(crate::style::lock()));
             ui.disable();
         } else if let Some(user) = self.page_locked_by() {
-            ui.label(RichText::new(tr_fmt!("🔒 Locked by {} – read only", user)).color(Color32::from_rgb(220, 140, 0)));
+            ui.label(RichText::new(tr_fmt!("🔒 Locked by {} – read only", user)).color(crate::style::lock()));
             ui.disable();
         }
         if sel.is_empty() {
@@ -30,14 +129,16 @@ impl App {
         if sel.len() > 1 {
             ui.label(tr_fmt!("{} objects selected", sel.len()));
             ui.horizontal(|ui| {
-                if ui.button(tr("⟳ Rotate")).clicked() {
-                    ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[pi], &self.editor.selection);
-                }
-                if ui.button(tr("🗑 Delete")).clicked() {
-                    ops::delete(&mut self.session.prj.pages[pi], &self.editor.selection);
-                    self.editor.selection.clear();
+                for c in [Cmd::Rotate, Cmd::Mirror, Cmd::Delete, Cmd::Align, Cmd::Distribute] {
+                    if crate::commands::def(c).kind == crate::commands::Kind::Menu {
+                        let r = icons::button(ui, crate::commands::def(c).icon, tr(crate::commands::def(c).title));
+                        egui::Popup::menu(&r).show(|ui| self.cmd_menu(ui, c));
+                    } else {
+                        self.icon_cmd(ui, c);
+                    }
                 }
             });
+            self.common_symbol_fields(ui, pi);
             let wires: Vec<u64> = self.session.prj.pages[pi].wires.iter().filter(|w| self.editor.selection.contains(&w.id)).map(|w| w.id).collect();
             if !wires.is_empty() {
                 ui.separator();
@@ -251,8 +352,11 @@ impl App {
             return;
         };
         ui.label(RichText::new(tr(def.name)).strong());
+        let device = def.func.has_tag() && !s.tag.is_empty();
+        let tab = self.props_tab_bar(ui, device, !def.pins.is_empty(), def.show_tag);
         let mut edited = s.clone();
         let here = Dt::of_page(&self.session.prj.pages[pi]);
+        if tab == PropTab::Device {
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
                 ui.label(match def.func {
@@ -337,26 +441,32 @@ impl App {
                 edited.pins = ops::next_contact_pins(&self.session.prj, &edited.tag, kind, Some(s.id));
             }
         }
+        }
         if edited != s {
             self.session.prj.pages[pi].symbols[si] = edited.clone();
         }
-        ui.horizontal(|ui| {
-            ui.label(tr("Function definition"));
-            properties_ui::function_def_combo(ui, &mut self.session.prj, s.id);
-        });
+        if tab == PropTab::Device {
+            ui.horizontal(|ui| {
+                ui.label(tr("Function definition"));
+                properties_ui::function_def_combo(ui, &mut self.session.prj, s.id);
+            });
+        }
 
         // Device data
         if def.func.has_tag() && !edited.tag.is_empty() {
-            ui.separator();
-            ui.label(RichText::new(tr_fmt!("Device {}", edited.tag)).strong());
             let mut data = self.session.prj.devices.get(&edited.tag).cloned().unwrap_or_default();
             let before = data.clone();
-            ui.horizontal(|ui| {
-                ui.label(tr("Description"));
-                ui.text_edit_singleline(&mut data.description);
-            });
+            if tab == PropTab::Device {
+                ui.separator();
+                ui.label(RichText::new(tr_fmt!("Device {}", edited.tag)).strong());
+                ui.horizontal(|ui| {
+                    ui.label(tr("Description"));
+                    ui.text_edit_singleline(&mut data.description);
+                });
+            }
             // Part assignment (several parts per device, e.g. contactor + auxiliary block)
-            ui.label(RichText::new(tr("Parts")).strong());
+            if tab == PropTab::Parts {
+            ui.label(RichText::new(tr_fmt!("Parts of {}", edited.tag)).strong());
             let mut remove = None;
             let mut show_part = None;
             egui::Grid::new("devparts").num_columns(2).striped(true).show(ui, |ui| {
@@ -372,7 +482,7 @@ impl App {
                     }
                     ui.horizontal(|ui| {
                         ui.add(egui::DragValue::new(&mut r.count).range(1..=999).prefix("× "));
-                        if ui.small_button("🗑").on_hover_text(tr("Remove part")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Remove part")).clicked() {
                             remove = Some(i);
                         }
                     });
@@ -398,27 +508,32 @@ impl App {
                     parts::apply_designations(&mut self.session.prj, Some(&self.parts_db), &edited.tag);
                 }
             });
+            }
             if data != before {
                 self.session.prj.devices.insert(edited.tag.clone(), data.clone());
             }
-            egui::CollapsingHeader::new(tr("Device properties")).id_salt("device_props").show(ui, |ui| {
+            if tab == PropTab::Properties {
+                ui.label(RichText::new(tr("Device properties")).strong());
                 properties_ui::property_grid(ui, &mut self.session.prj, &properties::Object::Device(edited.tag.clone()), &mut self.properties_ui.device_grid, "devgrid");
-            });
-            if let Some((ei, _)) = openecraft_core::panel::locate(&self.session.prj, &edited.tag) {
-                let enc = self.session.prj.layout.enclosures[ei].name.clone();
-                if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.session.prj, &edited.tag) {
-                    self.workspace = Workspace::Panel;
+            }
+            if tab == PropTab::Device {
+                if let Some((ei, _)) = openecraft_core::panel::locate(&self.session.prj, &edited.tag) {
+                    let enc = self.session.prj.layout.enclosures[ei].name.clone();
+                    if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.session.prj, &edited.tag) {
+                        self.set_workspace(Workspace::Panel);
+                        self.show_pane(Pane::LayoutView);
+                    }
                 }
             }
             // Functions placed vs. provided by the parts' function templates
             let usage = parts::usage(&self.session.prj, None, &edited.tag);
-            if usage.values().any(|(_, a)| *a > 0) {
+            if tab == PropTab::Parts && usage.values().any(|(_, a)| *a > 0) {
                 ui.horizontal_wrapped(|ui| {
                     ui.spacing_mut().item_spacing.x = 10.0;
                     for (kind, (placed, avail)) in &usage {
                         let txt = format!("{} {placed}/{avail}", tr(kind.title()));
                         let color = if placed > avail && !matches!(kind, parts::FnKind::Terminal | parts::FnKind::PlugPin) {
-                            Color32::from_rgb(220, 60, 60)
+                            crate::style::error()
                         } else if placed < avail {
                             ui.visuals().weak_text_color()
                         } else {
@@ -429,6 +544,7 @@ impl App {
                 });
             }
             // Rename the complete device
+            if tab == PropTab::Device {
             let rename_id = ui.scope_id().with("rename");
             let mut new_tag: String = ui.data_mut(|d| d.get_temp(rename_id)).unwrap_or_else(|| edited.tag.clone());
             ui.horizontal(|ui| {
@@ -438,9 +554,10 @@ impl App {
                 }
             });
             ui.data_mut(|d| d.insert_temp(rename_id, new_tag));
+            }
 
             // Cross references
-            if let Some(dev) = idx.devices.get(&edited.tag) {
+            if let (PropTab::Connections, Some(dev)) = (tab, idx.devices.get(&edited.tag)) {
                 ui.separator();
                 ui.label(RichText::new(tr("Cross references")).strong());
                 let mut jump = None;
@@ -462,12 +579,14 @@ impl App {
             }
         }
 
-        egui::CollapsingHeader::new(tr("Function properties")).id_salt("function_props").show(ui, |ui| {
+        if tab == PropTab::Properties {
+            ui.separator();
+            ui.label(RichText::new(tr("Function properties")).strong());
             properties_ui::property_grid(ui, &mut self.session.prj, &properties::Object::Function(s.id), &mut self.properties_ui.function_grid, "fngrid");
-        });
+        }
 
         // Potentials at the connection points
-        if !def.pins.is_empty() {
+        if tab == PropTab::Connections && !def.pins.is_empty() {
             ui.separator();
             ui.label(RichText::new(tr("Connections")).strong());
             egui::Grid::new("pinnets").num_columns(2).striped(true).show(ui, |ui| {
@@ -477,7 +596,7 @@ impl App {
                     let net = self.session.analysis.netlist.pin_net.get(&(s.id, i)).map(|&n| self.session.analysis.netlist.nets[n].name.clone());
                     let unconnected = self.session.analysis.netlist.unconnected.iter().any(|&(_, id, p)| id == s.id && p == i);
                     if unconnected {
-                        ui.label(RichText::new(tr("open")).color(Color32::from_rgb(220, 120, 0)));
+                        ui.label(RichText::new(tr("open")).color(crate::style::lock()));
                     } else {
                         ui.label(net.unwrap_or_default());
                     }
@@ -485,8 +604,7 @@ impl App {
                 }
             });
         }
-        if self.session.prj.pages[pi].symbols.get(si).is_some_and(|x| x.id == s.id) && def.show_tag {
-            ui.separator();
+        if tab == PropTab::Display && self.session.prj.pages[pi].symbols.get(si).is_some_and(|x| x.id == s.id) && def.show_tag {
             self.placement_properties(ui, pi, si);
         }
     }

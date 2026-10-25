@@ -1,6 +1,7 @@
 //! Interactive schematic canvas: pan/zoom, selection, moving, placing symbols,
 //! drawing wires, texts, graphics, dimensions and connection / cable definitions.
 
+use crate::commands::Cmd;
 use crate::shortcuts::Action;
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_core::geom::{dist_to_segment, p, P, R, GRID};
@@ -463,6 +464,10 @@ pub struct Editor {
     route_cache: Option<(P, P, Vec<P>)>,
     /// The user's keyboard shortcuts.
     pub shortcuts: crate::shortcuts::Shortcuts,
+    /// The page is the document worked in: it takes the keys.
+    pub keys_active: bool,
+    /// The items copied or cut last (Home › Paste).
+    pub clip: Option<Clip>,
 }
 
 impl Default for Editor {
@@ -507,6 +512,8 @@ impl Default for Editor {
             route_cache: None,
             text_proto: None,
             place_once: None,
+            keys_active: true,
+            clip: None,
         }
     }
 }
@@ -524,6 +531,10 @@ pub struct CanvasOutput {
     pub clicked: Option<P>,
     /// Hyperlink of a text the user Ctrl-clicked.
     pub open_url: Option<String>,
+    /// A symbol was placed (its id).
+    pub placed: Option<u64>,
+    /// The canvas with the select tool, for the context menu.
+    pub response: Option<egui::Response>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -783,7 +794,7 @@ impl Editor {
         self.hover = world;
 
         // ------------------------------------------------------------ keyboard
-        let kb = !ui.ctx().egui_wants_keyboard_input();
+        let kb = self.keys_active && !ui.ctx().egui_wants_keyboard_input();
         if kb {
             self.keyboard(ui, prj, page_i, snapped, &mut out);
         }
@@ -791,6 +802,17 @@ impl Editor {
         // ------------------------------------------------------------ mouse
         if self.tool == Tool::Select && resp.clicked_by(PointerButton::Primary) {
             out.clicked = world;
+        }
+        // Right click selects what is under the cursor; the app shows the context menu.
+        if self.tool == Tool::Select {
+            if resp.secondary_clicked() {
+                if let Some(id) = world.and_then(|w| self.hit(prj, page_i, w)) {
+                    if !self.selection.contains(&id) {
+                        self.selection = BTreeSet::from([id]);
+                    }
+                }
+            }
+            out.response = Some(resp.clone());
         }
         if self.tool.is_review() {
             self.review_mouse(&resp, world, &mut out);
@@ -1023,14 +1045,14 @@ impl Editor {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
                 i.key_pressed(Key::Escape),
-                sc.pressed(i, Action::FinishPolyline),
-                sc.pressed(i, Action::Rotate),
-                sc.pressed(i, Action::Mirror),
-                sc.pressed(i, Action::Autoroute),
+                sc.action_pressed(i, Action::FinishPolyline),
+                sc.cmd_pressed(i, Cmd::Rotate),
+                sc.cmd_pressed(i, Cmd::Mirror),
+                sc.action_pressed(i, Action::Autoroute),
                 i.key_pressed(Key::Delete) || k(Key::Backspace),
-                sc.pressed(i, Action::WireCorner),
-                sc.pressed(i, Action::FitPage),
-                sc.pressed(i, Action::SelectAll),
+                sc.action_pressed(i, Action::WireCorner),
+                sc.cmd_pressed(i, Cmd::FitPage),
+                sc.cmd_pressed(i, Cmd::SelectAll),
                 [
                     (i.key_pressed(Key::ArrowLeft), p(-g, 0.0)),
                     (i.key_pressed(Key::ArrowRight), p(g, 0.0)),
@@ -1106,6 +1128,7 @@ impl Editor {
                 egui::Event::Copy | egui::Event::Cut if !self.selection.is_empty() => {
                     let clip = ops::copy(page, &self.selection);
                     ui.ctx().copy_text(clip.to_text());
+                    self.clip = Some(clip);
                     if ev == egui::Event::Cut {
                         ops::delete(page, &self.selection);
                         self.selection.clear();
@@ -1201,6 +1224,7 @@ impl Editor {
         self.place_ctx.remember(prj, &s);
         let id = s.id;
         prj.pages[page_i].symbols.push(s);
+        out.placed = Some(id);
         if self.autoconnect {
             let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
             if n > 0 {
@@ -1241,7 +1265,8 @@ impl Editor {
         }
         if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PlacePayload>()) {
             self.set_tool(Tool::Place(pl.symbol));
-            self.place_tag = Some(pl.tag.clone());
+            // A symbol without a device (Insert center) gets its tag as when placed by click.
+            self.place_tag = (!pl.tag.is_empty()).then(|| pl.tag.clone());
             self.place_once = Some((pl.label.clone(), pl.pins.clone()));
             self.place_at(prj, page_i, pl.symbol, sn, out);
             return;

@@ -11,7 +11,7 @@ bill of materials.
 
 - **Languages**: English, German, French, Spanish, Portuguese (Brazil), Italian, Dutch,
   Polish, Czech, Russian, Ukrainian, Turkish, Swedish, Danish, Finnish, Hungarian, Romanian,
-  Chinese (Simplified), Japanese and Korean (View › Language; the editor and the parts
+  Chinese (Simplified), Japanese and Korean (*View › Language*; the editor and the parts
   manager remember the choice and start in the system / browser language if supported).
   Chinese, Japanese and Korean come with bundled fonts (subsets of Noto Sans SC / JP / KR);
   project texts in these scripts also use the system's CJK fonts on the desktop, on screen
@@ -49,7 +49,7 @@ bill of materials.
   cores in order); cores and the cable tag are shown on the schematic. Cable overview and
   cable diagram reports, cables in the BOM by length, checks for unknown cables, cores
   used twice or not in the cable.
-- **Potential definitions** (*Project › Potentials…*): kind (L, N, PE, DC +/−, signal),
+- **Potential definitions** (*Connections › Potentials…*): kind (L, N, PE, DC +/−, signal),
   voltage, wire colour (IEC 60757 codes) and cross-section per potential; presets
   IEC 60204-1 (machinery, new projects) and IEC 60445 (phase colours). Wires without
   their own colour / cross-section take them from the potential of their connection
@@ -66,14 +66,14 @@ bill of materials.
   (`3.4.1`) or by potential name (`L1`, `+24V`), with prefix and start value; manually
   set numbers are kept. Shown on the schematic, in the connection list and the panel
   wire list; checks for conflicting and duplicate numbers.
-- **Numbering** (in the spirit of EPLAN's offline numbering): *Project › Device
+- **Numbering** (in the spirit of EPLAN's offline numbering): *Devices › Device
   numbering…* renumbers device tags per structure and identifying letter in schematic
   order (page, column, top to bottom) after a format: `{letter}{n}` (`-K1`),
   `{letter}{page}.{n}` (`-K3.1`), `{letter}{page}{column}` (`-K34`) or NFPA style
   `{page}{column}{letter}` (`-34K`), with start value, step, letters and scope, and a
   preview of the new tags; everything that refers to a tag follows (parts, strips,
-  plugs, PLC data, panel layout, harnesses). *Page › Renumber pages…* numbers pages
-  with start and step, restarting per structure and keeping sub-pages (`3.a`; *Page › New
+  plugs, PLC data, panel layout, harnesses). *Home › Renumber pages…* numbers pages
+  with start and step, restarting per structure and keeping sub-pages (`3.a`; *Home › New page › New
   sub-page* inserts `3.1`, `3.2`, … after the current page). The wire
   numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
   `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
@@ -91,7 +91,7 @@ bill of materials.
   *Macros › Macro boxes › Update changed macros* replaces the content of boxes whose
   macro changed in the library, a box edited on the page is saved back into the
   library (command `list_macro_boxes`, tool `update_macro_boxes`).
-- **Configurator** (*Project › Configurator…*): options with their choices (e.g.
+- **Configurator** (*Project data › Configurator…*): options with their choices (e.g.
   `STARTER` = DOL / SD) and rules that insert a page macro in a variant with
   placeholder values (`NAME=Pump; POWER={POWER}`) when their condition holds
   (`STARTER=DOL & LINE!=2`, `LINE=1|2`). *Generate pages* replaces the pages generated
@@ -121,7 +121,7 @@ bill of materials.
   level, no part); plug-in and saddle jumpers must stay on one level. Commands:
   `list_strips`, `get_strip`, `set_terminal`, `set_jumper_kind`, `set_strip`,
   `renumber_strip`.
-- **Plugs** (*Project › Plugs…*, symbol group *Plugs*): pin and socket (mated pair, two
+- **Plugs** (*Devices › Plugs…*, symbol group *Plugs*): pin and socket (mated pair, two
   connection points), male pin and female socket (one each); tag = plug (`-X10`),
   designation = pin. Male and female pins of the same designation are mated: the
   potential passes through, the two sides are separate connections (wire numbers,
@@ -131,8 +131,8 @@ bill of materials.
   listed as spare). The check reports pins placed twice and more pins than the plug
   parts have; the KBL export names the housing part of plug connectors with all
   cavities of the part.
-- **Marking** (*Project › Marking…*: wire marker text, material per kind with piece
-  counts and export; *File › Export marking (CSV)…*, report *Marking*): device markers (legend
+- **Marking** (*Connections › Marking…*: wire marker text, material per kind with piece
+  counts and export; *File › Export › Export marking (CSV)…*, report *Marking*): device markers (legend
   plates for door devices; the enclosure's location left out of the tag), terminal markers
   in rail order with the strip marker, wire markers (wire number on both ends, or
   destination marking: each end shows the other end), cable markers; grouped by
@@ -167,14 +167,14 @@ bill of materials.
   removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
   triangle and reported in the *revision overview*; changed items name the changed
   properties with old and new value (`Device tag: -K1 › -K2; Position`).
-- **Release workflow**: with approvers defined (*Project › Revisions… › Approval
+- **Release workflow**: with approvers defined (*Project data › Revisions… › Approval
   workflow*: user names and the number of approvals needed) a new revision starts as a
   draft, is submitted for review, approved or rejected by the approvers (recorded with
   user, date and note) and released once approved. Pages changed after the submission
   block the release until the revision is submitted again (earlier approvals become void).
 - **Baselines and compare / merge**: a baseline stores the whole project (pages, devices,
   parts, cables, panel layout, settings); releasing a revision stores one automatically.
-  *Project › Compare and baselines…* compares the project with a baseline, the pages of a
+  *Project data › Compare and baselines…* compares the project with a baseline, the pages of a
   revision or another project file: added / removed / changed pages (with the changed
   items), devices, parts, potentials, cables, harnesses, enclosures, terminal strips,
   plugs, PLC cards and settings sections. Selected differences are taken over.
@@ -190,7 +190,7 @@ bill of materials.
   lines also become redline markup, comments imported before are skipped.
 - **Change requests**: requests from inside or outside the project (number, title,
   description, requester, origin, priority, status, affected pages and devices,
-  implementing revision) with linked comments (*Project › Change requests…*). Exchange
+  implementing revision) with linked comments (*Project data › Change requests…*). Exchange
   with other systems as CSV (`Number;Title;Description;Requester;Origin;Date;Priority;
   Status;Pages;Devices;Revision`) or JSON; importing updates requests with a known number.
 - **Symbol editor and libraries**: besides the IEC symbols there are NFPA / JIC
@@ -231,7 +231,7 @@ bill of materials.
   texts are added and dragged.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
-  counterparts on other pages. *Project › Cross references…* sets the format (prefix,
+  counterparts on other pages. *Connections › Cross references…* sets the format (prefix,
   separator, row: `/3.4`, `3-4`, `/3.4.B`), when the structure of the target page is
   shown (when it differs, always, never), what interruption points refer to (all
   other points, star from the first point, or pairs in schematic order; the check
@@ -385,7 +385,7 @@ bill of materials.
   *Cable sizing*; the check reports too thin wires and cables (errors) and voltage
   drops above 5 %. The capacity is corrected for ambient temperature, bunched
   circuits (IEC 60364-5-52, B.52.17), aluminium and XLPE insulation.
-- **Electrical calculations and verification** (*Project › Electrical calculations…*):
+- **Electrical calculations and verification** (*Tools › Electrical calculations…*):
   - *Supply*: voltage, earthing system (TN-S, TN-C, TN-C-S, TT, IT), highest and lowest
     short-circuit current at the supply point, rated current;
   - *Short circuit and protection coordination* (IEC 60909-0 for radial networks,
@@ -436,7 +436,7 @@ bill of materials.
     "every item of a scope (project, pages, devices, parts, cables, connections,
     potentials) that meets these conditions must meet this one"; report *Rule set
     verification*; all results are part of the project check.
-- **Editing in tables** (*Project › Edit in table…*): devices (tag, function text,
+- **Editing in tables** (*Project data › Edit in table…*): devices (tag, function text,
   description, part), connections (wire number, colour, cross-section, cable, core) and
   terminals (strip, number, function text) as rows; filter, edit cells in place, fill a
   column or find and replace in the filtered rows; CSV export / import for changes in a
@@ -450,7 +450,7 @@ bill of materials.
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
   snapping, pan and zoom. Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View); a
   coordinate field in the tool bar (`x y` absolute or `@dx dy` relative to the last
-  point, Enter acts like a click of the current tool); *Edit › Align* (edges or
+  point, Enter acts like a click of the current tool); *Home › Align* (edges or
   centres), *Distribute* (evenly, horizontally or vertically), *Move selection by…*
   and *Multiple copy…* (n copies at a fixed distance, new tags and terminal numbers);
   attached wire ends follow. Commands: `align_items`, `distribute_items`, `copy_items`.
@@ -480,7 +480,7 @@ bill of materials.
 - **Property placement**: drag the tag block of a selected symbol; place further device
   properties (description, part / type number, manufacturer, designation, connection
   points, structure) beside it.
-- **Find** (*Edit › Find…*, `Ctrl+F`): searches the whole project (page names and
+- **Find** (*Home › Find…*, `Ctrl+F`): searches the whole project (page names and
   descriptions, device tags, function texts, free texts, wire numbers, terminals and
   pins, cables, part numbers, descriptions) with case and whole-word options, jumps
   to the hits and replaces text in free texts, function texts and descriptions
@@ -517,7 +517,7 @@ bill of materials.
   triangles are merged into planar faces, open meshes a sheet body) –
   walls, door, mounting plate, rails, ducts, busbars and devices with the 3D models of
   their parts.
-  **DXF / DWG import** (*File › Import DXF / DWG as page…*): old drawings as graphics
+  **DXF / DWG import** (*File › Import › Import DXF / DWG as page…*): old drawings as graphics
   on a new schematic page – lines, polylines, circles, arcs, ellipses, splines, texts,
   MTEXT, block references and dimensions, in their units, scaled down to the drawing
   area when they are larger. DWG files of AutoCAD R12 … 2018 are read (and written)
@@ -571,7 +571,7 @@ bill of materials.
   Items are marked as mounted or as a problem (with a note); items moved or given
   another part after they were mounted are flagged by the check. Commands
   `mounting_list` and `mark_mounted`; checklist with state as CSV.
-- **Enterprise integration** (*Project › Enterprise integration…*): one integration
+- **Enterprise integration** (*Tools › Enterprise integration…*): one integration
   layer with connectors for **ERP** (item master and BOM, CSV), **PDM** (project and
   page metadata, JSON), **PLM** (engineering BOM, JSON), **ECAD** (components and
   netlist for PCB design, JSON), **MCAD** (device placement, CSV), **procurement**
@@ -619,10 +619,10 @@ bill of materials.
     device groups*, *electro-fluid cross reference*. P&ID
   symbols (ISO 10628: vessel, pumps, valves, heat exchanger, instruments) support
   pre-planning: instruments carry function letters and loop number (`TIC 101`), the
-  PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
+  PCT loops of the pre-planning (*Tools › Fluid and process…*) list their devices,
   and the *PCT loop overview* shows whether each loop is planned, in engineering or
   engineered in the schematic.
-- **Pre-planning** (*Project › Pre-planning…*): the plant as a tree of segments
+- **Pre-planning** (*Devices › Pre-planning…*): the plant as a tree of segments
   (plant, area, unit, …) with function and location inherited down the tree and the
   devices planned in them (tag, kind, description, power, voltage, part, page macro);
   the planned power per segment, segment templates, the state of every planned device
@@ -631,7 +631,7 @@ bill of materials.
   devices not engineered yet, and the exchange as CSV / Excel (commands
   `preplanning`, `add_segment`, `plan_device`, …; tools `import_preplanning`,
   `generate_preplanning_pages`).
-- **Single-line / multi-line engineering** (*Project › Single-line / multi-line…*):
+- **Single-line / multi-line engineering** (*Devices › Single-line / multi-line…*):
   devices are planned with single-line symbols (breaker, switch-disconnector, motor
   protection switch, fuse, overload relay, contactor, motor, transformer) on overview
   pages and engineered in the multi-line schematic; both share the device tag. The
@@ -644,13 +644,13 @@ bill of materials.
   ones from the other representation.
 - **Project texts in several languages**: function texts, page descriptions, free
   texts and descriptions are written in a source language; the project's translation
-  dictionary (*Project › Project languages…*) translates them line by line into any
+  dictionary (*Project data › Project languages…*) translates them line by line into any
   number of target languages, with CSV export / import for translators and a check
-  for untranslated texts. *File › Export as PDF in language* (command line: `export`
+  for untranslated texts. *Project data › Export as PDF in language* (command line: `export`
   with `language`) puts out the documentation per language – project texts from the
   dictionary, reports and title blocks in that language (English, German, French,
   Spanish; other languages get English report headings).
-- **Project templates** (in the spirit of EPLAN's basic projects): *File › New project
+- **Project templates** (in the spirit of EPLAN's basic projects): *File › New › New project
   from template* starts from a built-in template (empty IEC 60204-1 project; machine
   with cover sheet, table of contents, structured schematic pages and report pages;
   distribution board with single-line overview, climate and short-circuit reports) or
@@ -752,7 +752,7 @@ Without `MACOS_SIGN_IDENTITY` the apps are signed ad hoc, so Gatekeeper asks for
 confirmation on first start (*System Settings › Privacy & Security › Open Anyway*). With
 a Developer ID certificate (`MACOS_SIGN_IDENTITY="Developer ID Application: …"`) and a
 `notarytool` keychain profile (`MACOS_NOTARY_PROFILE`) the image is signed and notarized.
-Projects are opened with *File › Open*; opening them by double-click in the Finder is not
+Projects are opened with *File › Open project*; opening them by double-click in the Finder is not
 supported yet. CI builds the image on every push (artifact `openecraft-macos-dmg`).
 
 ### Web (WebAssembly)
@@ -830,9 +830,9 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
   `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
   JSON or BMEcat), `GET /export.csv`, `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
   `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
-- In the editor: *Project › Data portal…* – search the server, add parts to the local
+- In the editor: *Devices › Data portal…* – search the server, add parts to the local
   database, save their files, add their macros to the macro library and check the
-  database for newer versions, phased out and discontinued parts. *Project › Parts
+  database for newer versions, phased out and discontinued parts. *Devices › Parts
   management › 🌐 Parts server* downloads all parts or uploads parts. The project check
   warns about devices with discontinued parts; `use_successor_parts` changes them over.
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
@@ -889,7 +889,7 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   projects and manage who may use them, administrators also manage the users; a user's
   role can be limited to some projects (names with `*` / `?`). `--admin-user <name>`
   creates the first administrator with the password from
-  `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign in from *File › Project server…*
+  `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign in from *Tools › Project server…*
   (user name, password, *Sign in*); the server uses the account's name on the locks,
   whatever the request says.
 - **Access control** (`access.json` in the data directory, `--access`): users sign in
@@ -907,7 +907,7 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
 - Saving merges only what you have locked into the server's project; everything else
   comes from the server. Changes of other users are loaded automatically.
 - Each session gets its own range of object ids, so users never create the same id.
-- In the editor: *File › Project server…* – enter the server URL, your user name and the
+- In the editor: *Tools › Project server…* – enter the server URL, your user name and the
   token, list the projects and open one, or upload the current project. While a shared
   project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
   context menu lock and release pages.
@@ -922,7 +922,7 @@ OpenECraft connects to Autodesk Vault Professional 2025.2 or newer through the V
 Data API (REST, `/AutodeskDM/Services/api/vault/v2`), so projects, documents and 3D
 models are exchanged with the PDM system directly instead of through files.
 
-- In the editor: *File › Autodesk Vault…* – enter the server address, the knowledge
+- In the editor: *Tools › Autodesk Vault…* – enter the server address, the knowledge
   vault, user name and password (or the access token of a Vault session or an Autodesk
   account) and *Sign in*. Browse the folders and search the file properties below the
   folder shown.
@@ -937,7 +937,7 @@ models are exchanged with the PDM system directly instead of through files.
   plugins) and the connector exports go into the folder shown. A file of the same name
   there gets a new version (checked out, uploaded in parts, checked in with the
   comment; the checkout is undone when something fails), otherwise the file is added.
-  A project opened from the vault is checked in again with *File › Check in … to Vault*.
+  A project opened from the vault is checked in again with *File › Save (Check in … to Vault)*.
 - **Items**: *Update part links from Vault items* finds the Vault item of every project
   part (by item number or by its *Part Number* property) and shows the item numbers,
   revisions and lifecycle states as changes of the PLM connector for review, with the
@@ -1057,43 +1057,59 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 
 ## Usage
 
+The editor is laid out like EPLAN: a **ribbon** with the File tab (backstage: new,
+open, save, import, export, print, settings) and the tabs *Home*, *Insert*, *Edit*,
+*View*, *Devices*, *Connections*, *Project data*, *Tools*, *Master data*, *Plugins* and
+*Help*, plus the context tabs *Layout space* (panel layout) and *Wiring* (assistants);
+a **quick access row** above it (save, undo list, page switch, workspace, command
+search); dockable **panes** for the page, the navigators, the Insert center, the
+properties, the messages and every tool; a **status bar** with position, grid, layer,
+zoom, language, check results and the messages of the session.
+
 | Action | How |
 | --- | --- |
-| Place symbol | pick it in the library (right), click into the page; `R` rotate, `M` mirror, `Esc` stop |
-| Draw wires | `W`, click start and corner points, ends automatically on a connection point; `Space` flips the corner |
-| Select / move | click, `Shift`+click, drag on empty space for window selection, drag items to move |
-| Edit properties | right panel: tag, function text, connection point designations, part, cross references |
-| Page structure | *Page › Page properties…*: function (`=`) and location (`+`) |
-| Cables | *Project › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
-| Wire numbers | *Project › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
-| Macros | select items › *Edit › Save selection as macro…*; *Insert › Macro…* to place one |
-| Configurator | *Project › Configurator…*: options, rules with page macros, *Generate pages* |
-| Bulk changes | *Project › Edit in table…*: filter, edit, fill, find and replace, CSV |
+| Find any command | `Ctrl+Shift+P` or the search box of the quick access row: every command of the editor and of the plugins by name, tooltip or place |
+| Key tips | `Alt` (or `F10`) shows a letter on each tab, a second letter runs a command; `Esc` goes back |
+| Place symbol | *Insert › Insert center* (`Ins`): search (`*` and `?` as placeholders), favorites, recently used, symbols, macros, devices from parts, unplaced functions; click, then click into the page; `R` rotate, `M` mirror, `Esc` stop |
+| Draw wires | `W` (*Insert › Wire*), click start and corner points, ends automatically on a connection point; `Space` flips the corner |
+| Select / move | click, `Shift`+click, drag on empty space for window selection, drag items to move; right click for the commands of the selection |
+| Edit properties | *Properties* pane with the tabs *Device*, *Display*, *Parts*, *Properties*, *Connections*; `F2` or a double click shows them in a window; several symbols: their common fields |
+| Page structure | *Home › Page properties…* (or right click on a page): function (`=`) and location (`+`) |
+| Page tabs | the pages opened lately are tabs above the page; `Ctrl+Tab` / `Ctrl+Shift+Tab` switch, `Ctrl+W` closes |
+| Cables | *Connections › Cables…*; select wires › *Assign to cable*; single wire: cable and core |
+| Wire numbers | *Connections › Wire numbering…*; single wire: type a number (kept by automatic numbering) |
+| Macros | select items, right click › *Save selection as macro…*; place them from the Insert center or *Insert › Macro…* |
+| Configurator | *Project data › Configurator…*: options, rules with page macros, *Generate pages* |
+| Bulk changes | *Project data › Edit in table…* (or the table button of a navigator): devices, connections, terminals, cables, plug pins, PLC points, pages and parts; filter, edit, fill, find and replace, CSV |
+| Project check | *Messages* pane (`F4`): sortable table of the messages; click shows the object, right click accepts, changes the level or switches the check off |
 | Enclosure climate | panel layout: select the enclosure › *Climate (IEC 60890)* |
-| Terminal strips / PLC | *Project › Terminal strips…* / *Project › PLC overview…* |
-| Plugs | place pins from the symbol group *Plugs*; *Project › Plugs…* for pin order and both sides |
-| Revisions | *Project › Revisions…*: create (and release) revisions, approval workflow, lock / unlock pages, see changes |
-| Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
-| Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
-| Settings scheme | *Project › Settings scheme*: export the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file and take them into other projects (tools `export_settings`, `import_settings`) |
-| Docking panels | Drag the tab of a navigator, the symbols, the properties or the page to dock it beside, above or below another one or as a tab among others; *View › Panels* shows or hides each and resets the layout (kept by the app) |
-| Workspaces | *View › Workspaces*: save the workspace, the arrangement of the panels and the open windows under a name and restore them with one click (kept by the app) |
-| Keyboard shortcuts | *View › Keyboard shortcuts…*: record, clear or reset the keys of open, save, undo / redo, find, select all, page up / down, fit, wire and text tool, rotate, mirror, wire corner, routing and finishing polylines; conflicts are shown, the keys are kept by the app and shown in the menus and the help |
-| Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
-| Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT / Parasolid) |
-| Import old drawings | *File › Import DXF / DWG as page…* |
-| Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
-| Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
-| Panel production | panel layout: *Busbar* / *Cutout* tools; enclosure properties: NC data (DXF / DWG / CSV) |
-| Door devices | panel layout: front view *Door (front)* for door devices and cutouts, *Door (inside)* (mirrored) for cable ducts and the door wiring; 3D: *Open door* / *Close door* |
-| Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
-| Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
-| Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties and configuration in the wire properties; *Project › Fluid and process…* (hoses, device groups, electro-fluid links and *Synchronize*, PCT loops) |
-| Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; 3D topology, protections, fixings, end treatment, KBL, harness interface and 3D export in the window |
+| Terminal strips / PLC | *Devices › Terminal strips…* / *Devices › PLC overview…* |
+| Plugs | place pins from the symbol group *Plugs*; *Devices › Plugs…* for pin order and both sides |
+| Revisions | *Project data › Revisions…*: create (and release) revisions, approval workflow, lock / unlock pages, see changes |
+| Compare | *Project data › Compare and baselines…*: create baselines, compare, take differences over |
+| Review | *Review* workspace or navigator, *Insert › Comment* and *Insert › Markup* (redline / greenline) |
+| Settings | *File › Settings*: project settings (wire numbering, cross references, checks, marking, settings scheme) and user settings (appearance, UI scale, language, keyboard shortcuts, ribbon, servers) in one dialog |
+| Settings scheme | *Project data › Export settings… / Import settings…*: the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file for other projects (tools `export_settings`, `import_settings`) |
+| Panes | drag the tab of any pane (page, navigators, Insert center, properties, messages, tools) beside, above or below another one or among its tabs; the pane menu (`⋯`) floats a pane as a window or closes it; *View › Panes* shows or hides each and resets the layout; `F6` moves between the panes |
+| Workspaces | *View › Workspaces* or the chooser in the quick access row: *Schematic*, *Panel layout*, *Wiring*, *Mounting*, *Review*, *Pre-planning*, each with its own arrangement of the panes; *Save workspace…* keeps the arrangement and the ribbon under a name (kept by the app) |
+| Ribbon | double click a tab or the arrow at the right minimizes it; *File › Settings › Ribbon* hides groups, adds own groups of commands and exports / imports them |
+| Keyboard shortcuts | *File › Settings › Keyboard shortcuts*: record, clear or reset the keys of every command; conflicts are shown, the keys are kept by the app and shown in the tooltips and the help |
+| Change requests | *Project data › Change requests…*: requests, CSV / JSON import and export |
+| Export | *File › Export*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT / Parasolid) |
+| Import old drawings | *File › Import › Import DXF / DWG as page…* |
+| Own symbols | *Master data › Symbol editor…*; they appear under *User symbols* in the Insert center |
+| Title blocks / report forms | *Master data › Title blocks, plot frames and page templates…*; per page in the page properties |
+| Panel production | *Layout space* tab: *Busbar*, *Cutout*, *NC data* (DXF / DWG / CSV) |
+| Door devices | *Layout space › Door (front)* for door devices and cutouts, *Door (inside)* (mirrored) for cable ducts and the door wiring; 3D: *Open door* / *Close door* |
+| Wiring the panel | *Wiring* workspace: pick a wire in the list or in 3D, *Wired* / *Problem*; *Wiring › Tablet mode* for touch screens; web: open with `#wiring` |
+| Project texts in several languages | *Project data › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *Project data › Export as PDF in language* |
+| Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties and configuration in the wire properties; *Tools › Fluid and process…* (hoses, device groups, electro-fluid links and *Synchronize*, PCT loops) |
+| Harnesses | *Connections › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; 3D topology, protections, fixings, end treatment, KBL, harness interface and 3D export in the pane |
+| Help | `F1` opens the help of the pane in use: quick guide, tutorial, keyboard shortcuts; *Help › Start page* |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
-| Pages | `Page Up` / `Page Down`, navigator on the left |
-| Undo / redo | `Ctrl+Z` / `Ctrl+Y` |
-| Copy / paste | `Ctrl+C` / `Ctrl+X` / `Ctrl+V` |
+| Pages | `Page Up` / `Page Down`, *Pages* navigator, page switch of the quick access row |
+| Undo / redo | `Ctrl+Z` / `Ctrl+Y`; the undo list of the quick access row undoes several steps |
+| Copy / paste | `Ctrl+C` / `Ctrl+X` / `Ctrl+V`, *Home › Cut* / *Copy* / *Paste* |
 
 ## Code structure
 

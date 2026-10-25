@@ -1,5 +1,5 @@
-//! Editing in tables: devices, connections and terminals as rows with editable
-//! columns, for changing many at once (filter, fill, find and replace) and for the
+//! Editing in tables: devices, connections, terminals, cables, plug pins, PLC points,
+//! pages and the project parts as rows with editable columns, for changing many at once (filter, fill, find and replace) and for the
 //! round trip through a spreadsheet (CSV with the row key in the first column).
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
@@ -14,6 +14,11 @@ pub enum TableKind {
     Devices,
     Connections,
     Terminals,
+    Cables,
+    Plugs,
+    Plc,
+    Pages,
+    Parts,
 }
 
 /// A column: English name (CSV header, translated where shown) and whether it can be changed.
@@ -41,15 +46,57 @@ const CONNECTIONS: [Column; 9] = [
     col(tr_const!("Pages"), false),
 ];
 const TERMINALS: [Column; 4] = [col(tr_const!("Strip"), true), col(tr_const!("Terminal"), true), col(tr_const!("Function text"), true), col(tr_const!("Pages"), false)];
+const CABLES: [Column; 8] = [
+    col(tr_const!("Cable"), true),
+    col(tr_const!("Type"), true),
+    col(tr_const!("Cores"), true),
+    col(tr_const!("Cross-section"), true),
+    col(tr_const!("Length"), true),
+    col(tr_const!("Part"), true),
+    col(tr_const!("Description"), true),
+    col(tr_const!("Wires"), false),
+];
+const PLUGS: [Column; 6] = [
+    col(tr_const!("Plug"), false),
+    col(tr_const!("Pin"), true),
+    col(tr_const!("Function text"), true),
+    col(tr_const!("Socket side"), false),
+    col(tr_const!("Pin side"), false),
+    col(tr_const!("Potential"), false),
+];
+const PLC: [Column; 6] = [
+    col(tr_const!("PLC card"), false),
+    col(tr_const!("Address"), true),
+    col(tr_const!("Direction"), false),
+    col(tr_const!("Function text"), true),
+    col(tr_const!("Connected"), false),
+    col(tr_const!("Page"), false),
+];
+const PAGES: [Column; 4] = [col(tr_const!("Page"), true), col(tr_const!("Description"), true), col(tr_const!("Page type"), false), col(tr_const!("Released"), false)];
+const PARTS: [Column; 7] = [
+    col(tr_const!("Part number"), false),
+    col(tr_const!("Description"), true),
+    col(tr_const!("Manufacturer"), true),
+    col(tr_const!("Supplier"), true),
+    col(tr_const!("Order number"), true),
+    col(tr_const!("Price"), true),
+    col(tr_const!("Devices"), false),
+];
 
 impl TableKind {
-    pub const ALL: [TableKind; 3] = [TableKind::Devices, TableKind::Connections, TableKind::Terminals];
+    pub const ALL: [TableKind; 8] =
+        [TableKind::Devices, TableKind::Connections, TableKind::Terminals, TableKind::Cables, TableKind::Plugs, TableKind::Plc, TableKind::Pages, TableKind::Parts];
 
     pub fn title(self) -> &'static str {
         match self {
             TableKind::Devices => tr("Devices"),
             TableKind::Connections => tr("Connections"),
             TableKind::Terminals => tr("Terminals"),
+            TableKind::Cables => tr("Cables"),
+            TableKind::Plugs => tr("Plugs"),
+            TableKind::Plc => tr("PLC"),
+            TableKind::Pages => tr("Pages"),
+            TableKind::Parts => tr("Parts"),
         }
     }
 
@@ -59,6 +106,11 @@ impl TableKind {
             TableKind::Devices => "devices",
             TableKind::Connections => "connections",
             TableKind::Terminals => "terminals",
+            TableKind::Cables => "cables",
+            TableKind::Plugs => "plugs",
+            TableKind::Plc => "plc",
+            TableKind::Pages => "pages",
+            TableKind::Parts => "parts",
         }
     }
 
@@ -71,6 +123,11 @@ impl TableKind {
             TableKind::Devices => &DEVICES,
             TableKind::Connections => &CONNECTIONS,
             TableKind::Terminals => &TERMINALS,
+            TableKind::Cables => &CABLES,
+            TableKind::Plugs => &PLUGS,
+            TableKind::Plc => &PLC,
+            TableKind::Pages => &PAGES,
+            TableKind::Parts => &PARTS,
         }
     }
 
@@ -188,8 +245,104 @@ pub fn rows(prj: &Project, nl: &Netlist, open: &Netlist, kind: TableKind) -> Vec
                 }
             }
         }
+        TableKind::Cables => {
+            for c in &prj.cables {
+                let wires: Vec<(usize, u64)> =
+                    prj.pages.iter().enumerate().flat_map(|(pi, pg)| pg.wires.iter().filter(|w| w.cable == c.tag).map(move |w| (pi, w.id))).collect();
+                out.push(Row {
+                    key: c.id.to_string(),
+                    cells: vec![
+                        c.tag.clone(),
+                        c.cable_type.clone(),
+                        c.cores.clone(),
+                        c.cross_section.clone(),
+                        if c.length > 0.0 { format!("{}", c.length) } else { String::new() },
+                        c.part.clone(),
+                        c.description.clone(),
+                        wires.len().to_string(),
+                    ],
+                    target: wires.first().copied(),
+                    locked: false,
+                });
+            }
+        }
+        TableKind::Plugs => {
+            for plug in crate::plugs::plug_tags(prj) {
+                for r in crate::plugs::rows(prj, &plug, nl, open) {
+                    let Some(first) = r.pins.first() else { continue };
+                    out.push(Row {
+                        key: first.id.to_string(),
+                        cells: vec![plug.clone(), r.label.clone(), r.function_text.clone(), r.socket.clone(), r.pin.clone(), r.potential.clone()],
+                        target: Some((first.page, first.id)),
+                        locked: r.pins.iter().any(|p| prj.pages[p.page].locked),
+                    });
+                }
+            }
+        }
+        TableKind::Plc => {
+            for p in crate::plc::points(prj, nl) {
+                let dir = if p.input { tr("Input") } else { tr("Output") };
+                out.push(Row {
+                    key: p.id.to_string(),
+                    cells: vec![p.card.clone(), p.address.clone(), dir.to_string(), p.function_text.clone(), p.connected.clone(), prj.pages[p.page].name.clone()],
+                    target: Some((p.page, p.id)),
+                    locked: prj.pages[p.page].locked,
+                });
+            }
+        }
+        TableKind::Pages => {
+            for (i, pg) in prj.pages.iter().enumerate() {
+                out.push(Row {
+                    key: pg.id.to_string(),
+                    cells: vec![pg.name.clone(), pg.description.clone(), pg.kind.label(), if pg.locked { tr("yes").to_string() } else { String::new() }],
+                    target: Some((i, 0)),
+                    locked: pg.locked,
+                });
+            }
+        }
+        TableKind::Parts => {
+            for part in &prj.parts {
+                let used = prj.devices.values().filter(|d| d.parts.iter().any(|r| r.number == part.number)).count();
+                out.push(Row {
+                    key: part.number.clone(),
+                    cells: vec![
+                        part.number.clone(),
+                        part.description.clone(),
+                        part.manufacturer.clone(),
+                        part.supplier.clone(),
+                        part.order_number.clone(),
+                        if part.price > 0.0 { format!("{}", part.price) } else { String::new() },
+                        used.to_string(),
+                    ],
+                    target: None,
+                    locked: false,
+                });
+            }
+        }
     }
     out
+}
+
+/// A number typed into a cell (`1,5` or `1.5`; empty is 0).
+fn number(value: &str) -> Result<f32, String> {
+    if value.is_empty() {
+        return Ok(0.0);
+    }
+    value.replace(',', ".").parse::<f32>().map_err(|_| tr_fmt!("Not a number: {}", value))
+}
+
+/// Sets a text field; whether it changed.
+fn set_text(field: &mut String, value: &str) -> bool {
+    if field == value {
+        return false;
+    }
+    *field = value.to_string();
+    true
+}
+
+/// A placed symbol by its id: page and index.
+fn symbol_at(prj: &Project, id: u64) -> Option<(usize, usize)> {
+    prj.pages.iter().enumerate().find_map(|(pi, pg)| pg.symbols.iter().position(|s| s.id == id).map(|si| (pi, si)))
 }
 
 fn locked_error() -> String {
@@ -197,6 +350,7 @@ fn locked_error() -> String {
 }
 
 /// Changes one cell. Returns whether something changed.
+#[allow(clippy::too_many_lines)]
 fn set(prj: &mut Project, open: &Netlist, kind: TableKind, key: &str, column: usize, value: &str) -> Result<bool, String> {
     let Some(c) = kind.columns().get(column) else { return Err(tr_fmt!("Unknown column: {}", column)) };
     if !c.editable {
@@ -305,6 +459,68 @@ fn set(prj: &mut Project, open: &Netlist, kind: TableKind, key: &str, column: us
                 return Ok(false);
             }
             *field = text;
+        }
+        TableKind::Cables => {
+            let id: u64 = key.parse().map_err(|_| tr_fmt!("No cable {}", key))?;
+            let Some(i) = prj.cables.iter().position(|c| c.id == id) else { return Err(tr_fmt!("No cable {}", key)) };
+            if column == 0 {
+                let old = prj.cables[i].tag.clone();
+                if value == old {
+                    return Ok(false);
+                }
+                if value.is_empty() || prj.cable(value).is_some() {
+                    return Err(tr_fmt!("Cable {} already exists", value));
+                }
+                prj.cables[i].tag = value.to_string();
+                crate::ops::rename_cable(prj, &old, value);
+                return Ok(true);
+            }
+            let c = &mut prj.cables[i];
+            return Ok(match column {
+                1 => set_text(&mut c.cable_type, value),
+                2 => set_text(&mut c.cores, value),
+                3 => set_text(&mut c.cross_section, value),
+                4 => {
+                    let v = number(value)?;
+                    let changed = (c.length - v).abs() > f32::EPSILON;
+                    c.length = v;
+                    changed
+                }
+                5 => set_text(&mut c.part, value),
+                _ => set_text(&mut c.description, value),
+            });
+        }
+        TableKind::Plugs | TableKind::Plc => {
+            let id: u64 = key.parse().map_err(|_| tr_fmt!("No connection point {}", key))?;
+            let Some((pi, si)) = symbol_at(prj, id) else { return Err(tr_fmt!("No connection point {}", key)) };
+            if prj.pages[pi].locked {
+                return Err(locked_error());
+            }
+            let s = &mut prj.pages[pi].symbols[si];
+            return Ok(if column == 1 { set_text(&mut s.label, value) } else { set_text(&mut s.function_text, &value.replace("\\n", "\n")) });
+        }
+        TableKind::Pages => {
+            let id: u64 = key.parse().map_err(|_| tr_fmt!("No page {}", key))?;
+            let Some(pg) = prj.pages.iter_mut().find(|p| p.id == id) else { return Err(tr_fmt!("No page {}", key)) };
+            if pg.locked {
+                return Err(locked_error());
+            }
+            return Ok(if column == 0 { set_text(&mut pg.name, value) } else { set_text(&mut pg.description, value) });
+        }
+        TableKind::Parts => {
+            let Some(part) = prj.parts.iter_mut().find(|p| p.number == key) else { return Err(tr_fmt!("No part {}", key)) };
+            return Ok(match column {
+                1 => set_text(&mut part.description, value),
+                2 => set_text(&mut part.manufacturer, value),
+                3 => set_text(&mut part.supplier, value),
+                4 => set_text(&mut part.order_number, value),
+                _ => {
+                    let v = number(value)?;
+                    let changed = (part.price - v).abs() > f32::EPSILON;
+                    part.price = v;
+                    changed
+                }
+            });
         }
     }
     Ok(true)

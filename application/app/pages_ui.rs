@@ -287,7 +287,7 @@ impl App {
                 ui.text_edit_singleline(&mut name);
             });
             if exists {
-                ui.colored_label(Color32::from_rgb(220, 140, 0), tr("A template of this name is replaced."));
+                ui.colored_label(crate::style::lock(), tr("A template of this name is replaced."));
             }
             save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("Save"))).clicked();
         });

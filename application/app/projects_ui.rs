@@ -95,20 +95,17 @@ fn scan(folder: &str, verify: bool) -> Vec<Entry> {
 
 fn severity_icon(ui: &egui::Ui, s: Severity) -> RichText {
     match s {
-        Severity::Error => RichText::new("⛔").color(Color32::from_rgb(220, 60, 60)),
+        Severity::Error => RichText::new("⛔").color(crate::style::error()),
         Severity::Warning => RichText::new("⚠").color(Color32::from_rgb(220, 160, 0)),
         Severity::Info => RichText::new("ℹ").color(ui.visuals().weak_text_color()),
     }
 }
 
 impl App {
-    pub(super) fn projects_window(&mut self, ctx: &egui::Context) {
-        if !self.projects_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn projects_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
-        egui::Window::new(tr("Project management")).open(&mut open).default_size([900.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 let st = &mut self.projects_ui;
                 ui.selectable_value(&mut st.tab, Tab::Database, tr("Project database"));
@@ -126,9 +123,6 @@ impl App {
                 Tab::Verification => self.verification_tab(ui),
             };
         });
-        if !open {
-            self.projects_ui.open = false;
-        }
         match action {
             Some(Action::Open(path)) => match fs::read_file(&path).and_then(|b| archive::read_project(&b).map(|r| (r, archive::is_archive(&b)))) {
                 Ok(((prj, conv), is_archive)) => {
@@ -220,7 +214,7 @@ impl App {
                         }
                     }
                     if !e.error.is_empty() {
-                        ui.colored_label(Color32::from_rgb(220, 60, 60), &e.error);
+                        ui.colored_label(crate::style::error(), &e.error);
                         for _ in 0..6 {
                             ui.label("");
                         }
@@ -510,7 +504,7 @@ impl App {
                 if !o.condition.trim().is_empty() {
                     if let Err(e) = config.holds(&o.condition) {
                         r.on_hover_text(e);
-                        ui.colored_label(Color32::from_rgb(220, 60, 60), "⚠");
+                        ui.colored_label(crate::style::error(), "⚠");
                     }
                 }
                 ui.label(tr_fmt!("{} objects, {} pages", o.members.len(), pages));

@@ -52,14 +52,11 @@ enum Action {
 }
 
 impl App {
-    pub(super) fn integration_window(&mut self, ctx: &egui::Context) {
-        if !self.integration_ui.open {
-            return;
-        }
+    pub(super) fn integration_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         self.refresh_integration_preview();
-        let mut open = true;
         let mut actions = Vec::new();
-        egui::Window::new(tr("Enterprise integration")).open(&mut open).default_size([900.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             let ui_state = &mut self.integration_ui;
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Connector"));
@@ -109,7 +106,6 @@ impl App {
                 Tab::Log => self.integration_log(ui),
             }
         });
-        self.integration_ui.open = open;
         for a in actions {
             self.integration_action(ctx, a);
         }

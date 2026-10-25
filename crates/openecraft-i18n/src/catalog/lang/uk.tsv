@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Повернути {} у Vault
 Panel layout in 3D (Parasolid XT)	Компонування шафи в 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-модель (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Назад
+Back to the project (Esc)	Назад до проєкту (Esc)
+Recent projects	Останні проєкти
+No projects opened yet.	Проєкти ще не відкривалися.
+Remove from the list	Вилучити зі списку
+unsaved	не збережено
+Project: {}	Проєкт: {}
+Find a command	Знайти команду
+Drilling list (CSV)	Список отворів (CSV)
+Pane menu	Меню панелі
+Float	Відкріпити
+Show the pane as a window	Показати панель в окремому вікні
+Close	Закрити
+Dock	Закріпити
+Put the pane back into the workspace	Повернути панель у робочий простір
+Messages ({})	Повідомлення ({})
+{} favorites added	Додано до вибраного: {}
+Quick guide	Короткий посібник
+About OpenECraft	Про OpenECraft
+Tutorial	Навчальний посібник
+Introduction	Вступ
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Відкритий електротехнічний САПР-редактор у дусі EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Стрічка: Файл відкриває, зберігає, імпортує, експортує та друкує; вкладки групують команди за темами. Alt показує клавіші доступу, Ctrl+Shift+P знаходить будь-яку команду, F6 перемикає панелі, F1 відкриває цю довідку.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Вставити › Центр вставлення (Ins): знайдіть символ, макрос або пристрій і клацніть на сторінці, щоб розмістити його. Позначення пристроїв (-K1, -S2 …) призначаються автоматично.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Призначте вироби у властивостях (вкладка Вироби); звіти (Основне › Звіти) містять пристрої, специфікацію, клеми, з’єднання та ПЛК і вставляються як сторінки звітів.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Кабелі: З’єднання › Кабелі, виділіть проводи й виберіть Призначити кабелю. Номери проводів: З’єднання › Нумерація проводів або введіть номер у властивостях проводу.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Макроси: виділіть елементи, права кнопка › Зберегти виділене як макрос; вставляйте їх із центру вставлення або через Вставити › Макрос. Заповнювачі {NAME} заповнюються з наборів значень.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Пристрої › Клемні колодки, Пристрої › Огляд ПЛК і Дані проєкту › Ревізії: порядок клем, перемички й резерви; адреси ПЛК і таблиці символів; ревізії з позначками змін і випущеними (заблокованими) сторінками.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Основні дані › Редактор символів: малюйте власні символи (або копіюйте вбудовані) з точками підключення та функцією; вони зберігаються в проєкті й передаються як файли бібліотек.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Основні дані › Форми: власні основні написи із заповнювачами ({project}, {page}, {prop:Name} …) і стовпці сторінок звітів; Дані проєкту › Блоки звітів створюють сторінки звітів для кожної колодки, штекера, кабелю чи пристрою.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Компонування шафи (робочий простір Компонування шафи, вкладка Монтажний простір): шафи, рейки, кабельні канали, шини й вирізи; Монтажний простір › Дані ЧПК експортує схему свердління (DXF / DWG / CSV). Виробничий список проводів містить довжини зачищення та наконечники.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Джгути: З’єднання › Джгути; виділіть проводи між двома пристроями › Призначити джгуту або для кожного з’єднання у властивостях проводу. Звіт джгута з довжинами, роз’ємами й діаметром пучка, експорт KBL.
+Key tips of the ribbon	Клавіші доступу стрічки
+Version {}	Версія {}
+Search (* and ? as placeholders)…	Пошук (* і ? як символи підстановки)…
+Show as list	Показати списком
+Show as tiles	Показати плитками
+Export favorites…	Експорт вибраного…
+Import favorites…	Імпорт вибраного…
+Recently used	Нещодавно використані
+Parts with functions: the device gets the part, its first function is placed.	Вироби з функціями: пристрій отримує виріб, його перша функція розміщується.
+Favorite	Вибране
+Macros ({})	Макроси ({})
+Devices ({})	Пристрої ({})
+Unplaced ({})	Не розміщено ({})
+(several)	(різні)
+{} symbols	Символів: {}
+Parts of {}	Вироби {}
+Undo list	Список скасування
+Show the ribbon	Показати стрічку
+Undo {} steps	Скасувати кроків: {}
+Find a command ({})	Знайти команду ({})
+Further project settings	Інші параметри проєкту
+Ribbon	Стрічка
+Servers	Сервери
+These settings are edited in their panes:	Ці параметри змінюються в їхніх панелях:
+Addresses and sign-in of the servers are set in their panes:	Адреси та вхід на сервери задаються в їхніх панелях:
+Hide the groups you do not need and put the commands you use most into own groups.	Сховайте непотрібні групи й розмістіть найуживаніші команди у власних групах.
+Reset the ribbon	Скинути стрічку
+Groups shown	Показані групи
+Own groups	Власні групи
+Delete the group	Видалити групу
+Remove from the group	Вилучити з групи
+Add a command	Додати команду
+New group	Нова група
+Ribbon imported	Стрічку імпортовано
+Welcome to OpenECraft	Ласкаво просимо до OpenECraft
+Getting started	Початок роботи
+A new project	Новий проєкт
+Placing symbols	Розміщення символів
+Wires and potentials	Проводи та потенціали
+The project check	Перевірка проєкту
+What is new	Що нового
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Стрічка з вкладкою Файл замінює меню; Ctrl+Shift+P знаходить будь-яку команду.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Кожен інструмент — це панель: перетягніть її вкладку поруч зі сторінкою, до навігаторів або назовні як вікно.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Робочі простори для схеми, компонування шафи, помічників монтажу проводів і складання, коментарів та попереднього планування.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Центр вставлення знаходить символи, макроси, пристрої та нерозміщені функції; вибрані й нещодавні йдуть першими.
+Close the start page	Закрити початкову сторінку
+Position of the cursor	Положення курсору
+Messages of this session	Повідомлення цього сеансу
+Grid {} mm	Сітка {} мм
+Layer: {}	Шар: {}
+Export Excel	Експорт до Excel
+Insert as report page	Вставити як сторінку звіту
+Open, save, import, export, print and the settings	Відкриття, збереження, імпорт, експорт, друк і параметри
+Start page	Початкова сторінка
+Check in to Vault	Помістити у Vault
+Import parts…	Імпорт виробів…
+Import symbol library…	Імпорт бібліотеки символів…
+Import page templates…	Імпорт шаблонів сторінок…
+Print all pages…	Друк усіх сторінок…
+Print current page…	Друк поточної сторінки…
+Settings…	Параметри…
+Project and user settings in one dialog	Параметри проєкту й користувача в одному діалозі
+Cut	Вирізати
+Paste	Вставити з буфера
+New page	Нова сторінка
+Cover sheet, overview, graphics, report, mounting layout or a page template	Титульна сторінка, огляд, графіка, звіт, монтажне компонування або шаблон сторінки
+Find a command…	Знайти команду…
+Every command of the editor and of the plugins by name	Будь-яка команда редактора та плагінів за назвою
+Markup	Позначки
+Properties…	Властивості…
+The properties of the selection in a window beside the page	Властивості виділеного у вікні поруч зі сторінкою
+Rename device…	Перейменувати пристрій…
+Part selection…	Вибір виробу…
+Next pane	Наступна панель
+Previous pane	Попередня панель
+Next page tab	Наступна вкладка сторінки
+Previous page tab	Попередня вкладка сторінки
+Close page tab	Закрити вкладку сторінки
+Panes	Панелі
+Show or hide panes; drag a tab to dock it elsewhere	Показати або сховати панелі; перетягніть вкладку, щоб закріпити її деінде
+Save workspace…	Зберегти робочий простір…
+The panes of this workspace at their default places	Панелі цього робочого простору на типових місцях
+Theme	Тема
+UI scale	Масштаб інтерфейсу
+Minimize the ribbon	Згорнути стрічку
+Update report blocks	Оновити блоки звітів
+Customize the ribbon…	Налаштувати стрічку…
+Messages	Повідомлення
+Results of the project check	Результати перевірки проєкту
+Comments and markup	Коментарі та позначки
+Functions of the project data not placed yet	Ще не розміщені функції даних проєкту
+Insert center	Центр вставлення
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Символи, макроси, пристрої та нерозміщені функції: пошук, вибране, нещодавні
+Find results	Результати пошуку
+Quick guide, tutorial and shortcuts	Короткий посібник, навчальний посібник і сполучення клавіш
+Layout spaces	Монтажні простори
+Enclosures, devices to place and placed devices	Шафи, пристрої для розміщення та розміщені пристрої
+Layout properties	Властивості компонування
+Checklist	Контрольний список
+Workbench	Робоче місце
+3D view	3D-вигляд
+NC data	Дані ЧПК
+Drilling pattern of the face shown as DXF, DWG or CSV	Схема свердління показаної сторони у DXF, DWG або CSV
+Panel wiring report	Звіт про монтаж проводів шафи
+Tablet mode	Режим планшета
+Larger texts and buttons for a touch screen at the workbench	Більші тексти й кнопки для сенсорного екрана на робочому місці
+Ribbon (JSON)	Стрічка (JSON)
+Favorites (JSON)	Вибране (JSON)
+Home	Основне
+Clipboard	Буфер обміну
+Navigators	Навігатори
+Arrange	Упорядкувати
+Zoom	Масштаб
+Appearance	Вигляд інтерфейсу
+Numbering	Нумерація
+Project data	Дані проєкту
+Management	Керування
+Calculations	Розрахунки
+Collaboration	Співпраця
+Automation	Автоматизація
+Master data	Основні дані
+Forms	Форми
+Templates	Шаблони
+Layout space	Монтажний простір
+Draw	Малювати
+Mode	Режим
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Показує таблицю (пристрої, з’єднання, клеми, кабелі, штекери, ПЛК, сторінки або вироби) з її рядками; ключ рядка слугує для його зміни
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages або parts
+Not a number: {}	Не число: {}
+Cable {} already exists	Кабель {} уже існує
+No connection point {}	Немає точки підключення {}
+No part {}	Немає виробу {}
+Code	Код
+Click to show, right click for more	Клацніть, щоб показати, права кнопка — більше
+{} errors	Помилок: {}
+{} warnings	Попереджень: {}
+{} notes	Приміток: {}
+Open in a new page tab	Відкрити в новій вкладці сторінки
+Project information	Відомості про проєкт
