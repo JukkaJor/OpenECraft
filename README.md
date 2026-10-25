@@ -650,6 +650,30 @@ On Linux you need the usual windowing / dialog libraries, e.g. on Debian/Ubuntu:
 sudo apt install libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
 ```
 
+A project file given on the command line is opened at start (`openecraft plant.oec`).
+
+### Windows installer
+
+`OpenECraft-<version>-setup.exe` installs the editor with a Start menu entry, without
+administrator rights (or for all users in Program Files), in English, German, French or
+Spanish after the Windows language. Optional: the parts manager, the command line / MCP
+server (added to the `PATH` on request), the parts and project servers, a desktop
+shortcut, and opening `.oec` / `.oecz` files by double-click. It is uninstalled in
+*Settings › Apps*; projects and settings are kept. CI builds it on every push (artifact
+`openecraft-windows-installer`); locally it needs
+[Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`):
+
+```bash
+powershell -ExecutionPolicy Bypass -File installer/windows/build.ps1   # → target/installer/
+```
+
+The binaries link the C runtime statically, so no Visual C++ redistributable is needed.
+For unattended installation (software distribution) run the setup with
+`/VERYSILENT /SUPPRESSMSGBOXES`, add `/ALLUSERS` for all users and select parts with
+`/COMPONENTS="main,partsmanager,cli,servers"` and `/TASKS="fileassoc,addtopath"`. The
+installer is not code signed yet, so SmartScreen asks for confirmation on first run.
+`installer/icon.py` draws the application icon (`assets/icon.png`, `assets/icon.ico`).
+
 ### Web (WebAssembly)
 
 ```bash

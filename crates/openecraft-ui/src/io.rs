@@ -40,11 +40,6 @@ impl<K> Clone for FileIo<K> {
 }
 
 impl<K: FileKind> FileIo<K> {
-    /// Takes a file that finished loading (the web picker is asynchronous).
-    pub fn poll(&self) -> Option<Loaded<K>> {
-        self.inbox.lock().ok()?.pop()
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
     pub fn open(&self, _ctx: &egui::Context, purpose: K) {
         let (name, ext) = purpose.filter();
@@ -54,14 +49,7 @@ impl<K: FileKind> FileIo<K> {
         else {
             return;
         };
-        match std::fs::read(&path) {
-            Ok(bytes) => {
-                if let Ok(mut inbox) = self.inbox.lock() {
-                    inbox.push(Loaded { purpose, name: path.display().to_string(), bytes });
-                }
-            }
-            Err(e) => log::error!("Could not read {}: {e}", path.display()),
-        }
+        self.open_path(&path.display().to_string(), purpose);
     }
 
     #[cfg(target_arch = "wasm32")]
@@ -87,6 +75,23 @@ impl<K: FileKind> FileIo<K> {
 }
 
 impl<K> FileIo<K> {
+    /// Takes a file that finished loading (the web picker is asynchronous).
+    pub fn poll(&self) -> Option<Loaded<K>> {
+        self.inbox.lock().ok()?.pop()
+    }
+
+    /// Reads a file by path, e.g. a project passed on the command line (desktop only).
+    pub fn open_path(&self, path: &str, purpose: K) {
+        match read_file(path) {
+            Ok(bytes) => {
+                if let Ok(mut inbox) = self.inbox.lock() {
+                    inbox.push(Loaded { purpose, name: path.to_string(), bytes });
+                }
+            }
+            Err(e) => log::error!("Could not read {path}: {e}"),
+        }
+    }
+
     /// Asks for a location and writes the file. Returns the chosen path / name.
     pub fn save_as(&self, suggested: &str, filter: (&str, &str), content: &str) -> Result<Option<String>, String> {
         self.save_bytes_as(suggested, filter, content.as_bytes())

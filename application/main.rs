@@ -31,12 +31,22 @@ fn main() -> eframe::Result {
         viewport: egui::ViewportBuilder::default()
             .with_title("OpenECraft")
             .with_inner_size([1440.0, 900.0])
-            .with_min_inner_size([800.0, 500.0]),
+            .with_min_inner_size([800.0, 500.0])
+            .with_icon(icon()),
         ..Default::default()
     };
-    // `--wiring` opens the wiring assistant (touch screens in the workshop).
+    // `--wiring` opens the wiring assistant (touch screens in the workshop), another
+    // argument is a project file to open (file association of the installer).
     let wiring = std::env::args().any(|a| a == "--wiring");
-    eframe::run_native("OpenECraft", options, Box::new(move |cc| Ok(Box::new(app::App::new(cc).start_wiring(wiring)))))
+    let file = std::env::args().skip(1).find(|a| !a.starts_with("--"));
+    eframe::run_native("OpenECraft", options, Box::new(move |cc| Ok(Box::new(app::App::new(cc).start(wiring, file)))))
+}
+
+/// Window and taskbar icon (`assets/icon.png`, generated with `installer/icon.py`).
+#[cfg(not(target_arch = "wasm32"))]
+fn icon() -> egui::IconData {
+    let img = image::load_from_memory(include_bytes!("../assets/icon.png")).expect("bundled icon").into_rgba8();
+    egui::IconData { width: img.width(), height: img.height(), rgba: img.into_raw() }
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -56,7 +66,7 @@ fn main() {
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .expect("not a canvas");
         let result = eframe::WebRunner::new()
-            .start(canvas, eframe::WebOptions::default(), Box::new(move |cc| Ok(Box::new(app::App::new(cc).start_wiring(wiring)))))
+            .start(canvas, eframe::WebOptions::default(), Box::new(move |cc| Ok(Box::new(app::App::new(cc).start(wiring, None)))))
             .await;
         if let Some(loading) = document.get_element_by_id("loading") {
             match result {

@@ -20,6 +20,9 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 - Parts manager: `cargo run -p openecraft-parts-manager`; web: `cd parts-manager && trunk serve` (http://127.0.0.1:8082)
 - Command line / MCP server: `cargo run -p openecraft-cli -- help`, `cargo run -p openecraft-cli -- mcp`
 - Web: `trunk serve` (dev server on http://127.0.0.1:8080), `trunk build --release`
+- Windows installer: `powershell -ExecutionPolicy Bypass -File installer/windows/build.ps1`
+  (Inno Setup 6, script `installer/windows/openecraft.iss`, output `target/installer/`);
+  installer texts are in all four languages too (`[CustomMessages]`)
 - The web target needs `rustup target add wasm32-unknown-unknown` and `cargo install trunk --locked`.
 
 ## Workspace layout
