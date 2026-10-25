@@ -106,7 +106,7 @@ impl App {
                     continue;
                 }
                 // The extra libraries and the long ones start collapsed.
-                let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::Process | Category::SingleLine | Category::BlackBox | Category::Installation) && defs.len() <= 24;
+                let main = !matches!(defs[0].category, Category::Nfpa | Category::Fluid | Category::Process | Category::SingleLine | Category::BlackBox | Category::Installation | Category::Gb | Category::Gost | Category::Jis) && defs.len() <= 24;
                 egui::CollapsingHeader::new(title).default_open(!f.is_empty() || main).show(ui, |ui| {
                     for def in defs {
                         let active = self.editor.tool == Tool::Place(def.key);

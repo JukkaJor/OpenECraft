@@ -188,7 +188,8 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
             }
         }
         Func::Terminal => {
-            s.tag = ctx.last_strip.clone().unwrap_or_else(|| format!("{structure}-X1"));
+            let letter = if def.letter.is_empty() { "X" } else { def.letter };
+            s.tag = ctx.last_strip.clone().unwrap_or_else(|| format!("{structure}-{letter}1"));
             if def.default_label.chars().all(|c| c.is_ascii_digit()) {
                 s.label = next_terminal(prj, &s.tag);
             }
