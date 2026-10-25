@@ -159,19 +159,23 @@ impl Plugins {
     /// Issues of all checks; a failing check is reported as error.
     /// Runs the enabled checks; the project's check settings change levels, hide
     /// switched off messages and mark accepted ones.
+    /// The checks run at the same time where the platform has threads.
     pub fn check(&self, prj: &Project, an: &Analysis) -> Vec<Issue> {
-        let mut issues = Vec::new();
-        for c in self.checks().filter(|c| openecraft_core::checks::is_enabled(prj, &c.name)) {
+        let checks: Vec<&Check> = self.checks().filter(|c| openecraft_core::checks::is_enabled(prj, &c.name)).collect();
+        let found = openecraft_core::analysis::par_map(&checks, |c| {
             let found = match (c.run)(prj, an) {
                 Ok(found) => found,
                 Err(e) => vec![openecraft_core::issue!(Severity::Error, None, "Check {} failed: {}", c.name, e)],
             };
-            issues.extend(found.into_iter().map(|mut i| {
-                i.check = c.name.clone();
-                i
-            }));
-        }
-        openecraft_core::checks::apply_settings(prj, issues)
+            found
+                .into_iter()
+                .map(|mut i| {
+                    i.check = c.name.clone();
+                    i
+                })
+                .collect::<Vec<_>>()
+        });
+        openecraft_core::checks::apply_settings(prj, found.into_iter().flatten().collect())
     }
 }
 

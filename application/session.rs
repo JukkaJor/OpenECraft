@@ -3,7 +3,7 @@
 //! page, when the analysis is rebuilt) are unit tested; `App` adds the windows.
 
 use openecraft_api::Plugins;
-use openecraft_core::analysis::Analysis;
+use openecraft_core::analysis::{Analysis, Cache};
 use openecraft_core::history::History;
 use openecraft_core::index::Index;
 use openecraft_core::model::{PageKind, Project};
@@ -14,6 +14,8 @@ pub struct Session {
     pub page: usize,
     pub history: History,
     pub analysis: Analysis,
+    /// Page scans of the last analysis: only changed pages are scanned again.
+    cache: Cache,
     analysis_rev: u64,
     analysis_lang: openecraft_i18n::Lang,
     /// Device index; while an edit is in progress it follows every frame.
@@ -32,7 +34,7 @@ impl Session {
         let history = History::new(&prj);
         let rev = history.rev;
         let page = first_schematic(&prj);
-        Session { prj, page, history, analysis: Analysis::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved_rev: rev, file_name }
+        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved_rev: rev, file_name }
     }
 
     /// Replaces the project (one undo step); the replacement counts as saved.
@@ -70,7 +72,7 @@ impl Session {
     /// change or, while `editing`, every frame.
     pub fn refresh(&mut self, plugins: &Plugins, editing: bool) {
         if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
-            self.analysis = Analysis::build(&self.prj);
+            self.analysis = Analysis::build_with(&self.prj, &mut self.cache);
             self.analysis.set_reports(plugins.reports().cloned());
             self.analysis.issues = plugins.check(&self.prj, &self.analysis);
             self.analysis.issues.sort_by_key(|i| i.severity);

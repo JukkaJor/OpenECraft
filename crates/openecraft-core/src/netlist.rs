@@ -7,6 +7,8 @@ use crate::geom::{on_segment_interior, P};
 use crate::model::{Page, PageKind, Project};
 use crate::symbols::Func;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PinRef {
@@ -64,30 +66,136 @@ impl Uf {
     }
 }
 
-struct Builder {
-    uf: Uf,
-    points: HashMap<(usize, i64, i64), usize>,
-    named: HashMap<String, usize>,
+/// What one schematic page contributes to a netlist: its connection points joined by
+/// wires and by the bridges inside symbols. It depends only on the page and the symbol
+/// definitions, so [`Scans`] keeps it while both stay the same.
+#[derive(Clone, Default)]
+struct PageScan {
+    /// Groups of connected points on the page (local nodes `0..nodes`).
+    nodes: usize,
+    /// (symbol index, symbol id, pin, node, fluid port, touches nothing else)
+    pins: Vec<(usize, u64, usize, usize, bool, bool)>,
+    /// (wire id, node)
+    wires: Vec<(u64, usize)>,
+    /// (strip, terminal designation) -> node
+    terminals: Vec<((String, String), usize)>,
+    /// (plug, pin designation) -> node
+    plug_pins: Vec<((String, String), usize)>,
+    /// `pot:` / `int:` names -> node
+    named: Vec<(String, usize)>,
 }
 
-impl Builder {
-    fn point(&mut self, page: usize, q: P) -> usize {
-        let (x, y) = q.key();
-        if let Some(&n) = self.points.get(&(page, x, y)) {
-            return n;
+impl PageScan {
+    fn new(prj: &Project, page: &Page, bridge_terminals: bool) -> PageScan {
+        let mut uf = Uf { parent: Vec::new() };
+        let mut points: HashMap<(i64, i64), usize> = HashMap::new();
+        let mut point = |uf: &mut Uf, q: P| *points.entry(q.key()).or_insert_with(|| uf.add());
+        // Number of things touching each point (to find unconnected pins).
+        let mut degree: HashMap<usize, usize> = HashMap::new();
+        let mut pins = Vec::new();
+        let mut wires = Vec::new();
+        let mut scan = PageScan::default();
+        let ends = wire_ends(page);
+        for w in &page.wires {
+            let na = point(&mut uf, w.a);
+            let nb = point(&mut uf, w.b);
+            uf.union(na, nb);
+            *degree.entry(na).or_default() += 1;
+            *degree.entry(nb).or_default() += 1;
+            for (q, _) in ends.values() {
+                if on_segment_interior(*q, w.a, w.b) {
+                    let nq = point(&mut uf, *q);
+                    uf.union(na, nq);
+                    *degree.entry(nq).or_default() += 2;
+                }
+            }
+            wires.push((w.id, na));
         }
-        let n = self.uf.add();
-        self.points.insert((page, x, y), n);
-        n
-    }
-    fn named(&mut self, name: String) -> usize {
-        if let Some(&n) = self.named.get(&name) {
-            return n;
+        for (si, s) in page.symbols.iter().enumerate() {
+            let Some(def) = prj.symbol(&s.sym) else { continue };
+            if def.func == Func::Overview {
+                continue;
+            }
+            let mut nodes = Vec::new();
+            for i in 0..def.pins.len() {
+                let q = def.pin_world(i, s.pos, s.rot, s.mirror);
+                let n = point(&mut uf, q);
+                *degree.entry(n).or_default() += 1;
+                nodes.push(n);
+                pins.push((si, s.id, i, n, def.is_fluid()));
+            }
+            if bridge_terminals || !def.func.is_feedthrough() {
+                for &(x, y) in &def.bridges {
+                    uf.union(nodes[x], nodes[y]);
+                }
+            }
+            if def.func == Func::Terminal && !nodes.is_empty() {
+                scan.terminals.push(((s.tag.clone(), s.label.clone()), nodes[0]));
+            }
+            if matches!(def.func, Func::Plug(_)) && !nodes.is_empty() && !s.tag.is_empty() {
+                scan.plug_pins.push(((s.tag.clone(), s.label.clone()), nodes[0]));
+            }
+            match def.func {
+                Func::Potential if !s.label.is_empty() => scan.named.push((format!("pot:{}", s.label), nodes[0])),
+                Func::Interruption if !s.label.is_empty() => scan.named.push((format!("int:{}", s.label), nodes[0])),
+                _ => {}
+            }
         }
-        let n = self.uf.add();
-        self.named.insert(name, n);
-        n
+        // Local nodes: one per group of connected points.
+        let mut local: HashMap<usize, usize> = HashMap::new();
+        let mut node = |uf: &mut Uf, n: usize| {
+            let r = uf.find(n);
+            let next = local.len();
+            *local.entry(r).or_insert(next)
+        };
+        scan.pins = pins.into_iter().map(|(si, id, i, n, fluid)| (si, id, i, node(&mut uf, n), fluid, degree.get(&n).copied().unwrap_or(0) <= 1)).collect();
+        scan.wires = wires.into_iter().map(|(id, n)| (id, node(&mut uf, n))).collect();
+        for n in scan.terminals.iter_mut().chain(&mut scan.plug_pins).map(|(_, n)| n).chain(scan.named.iter_mut().map(|(_, n)| n)) {
+            *n = node(&mut uf, *n);
+        }
+        scan.nodes = local.len();
+        scan
     }
+}
+
+/// The page scans of a netlist, kept between builds: a page is scanned again only when
+/// it or the symbol definitions changed (incremental analysis of large projects).
+#[derive(Clone, Default)]
+pub struct Scans {
+    symbols: u64,
+    /// Page id -> (fingerprint of the page, scan)
+    pages: HashMap<u64, (u64, Arc<PageScan>)>,
+    /// Pages scanned by the last build (not taken from earlier builds).
+    pub scanned: usize,
+}
+
+impl Scans {
+    fn get(&mut self, prj: &Project, page: &Page, bridge_terminals: bool) -> Arc<PageScan> {
+        let fp = page_fingerprint(page);
+        if let Some((have, scan)) = self.pages.get(&page.id) {
+            if *have == fp {
+                return scan.clone();
+            }
+        }
+        self.scanned += 1;
+        let scan = Arc::new(PageScan::new(prj, page, bridge_terminals));
+        self.pages.insert(page.id, (fp, scan.clone()));
+        scan
+    }
+}
+
+/// Fingerprint of what a page scan reads from the page.
+fn page_fingerprint(page: &Page) -> u64 {
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    page.wires.len().hash(&mut h);
+    for w in &page.wires {
+        (w.id, w.a.key(), w.b.key()).hash(&mut h);
+    }
+    page.symbols.len().hash(&mut h);
+    for s in &page.symbols {
+        (s.id, &s.sym, s.pos.key(), s.rot, s.mirror, &s.tag, &s.label).hash(&mut h);
+    }
+    h.finish()
 }
 
 /// End points of all wires on a page plus the number of wires ending at each point.
@@ -149,84 +257,67 @@ impl Netlist {
     /// are kept as separate nets (used for terminal diagrams and wire numbers); with
     /// `true` the jumpers of terminal strips connect their terminals as well.
     pub fn build(prj: &Project, bridge_terminals: bool) -> Netlist {
-        let mut b = Builder { uf: Uf { parent: Vec::new() }, points: HashMap::new(), named: HashMap::new() };
-        let mut pin_nodes: Vec<(PinRef, u64, usize, bool)> = Vec::new();
-        let mut wire_nodes: Vec<(usize, u64, usize)> = Vec::new();
-        // Number of things touching each point node (to find unconnected pins).
-        let mut degree: HashMap<usize, usize> = HashMap::new();
+        Netlist::build_with(prj, bridge_terminals, &mut Scans::default())
+    }
+
+    /// Like [`Netlist::build`], scanning only the pages that changed since the last
+    /// build with the same `scans` (and the same `bridge_terminals`).
+    pub fn build_with(prj: &Project, bridge_terminals: bool, scans: &mut Scans) -> Netlist {
+        let symbols = crate::symlib::fingerprint(&prj.symbols);
+        if scans.symbols != symbols {
+            *scans = Scans { symbols, ..Scans::default() };
+        }
+        scans.scanned = 0;
+        let pages: Vec<(usize, Arc<PageScan>)> =
+            prj.pages.iter().enumerate().filter(|(_, p)| p.kind == PageKind::Schematic).map(|(pi, p)| (pi, scans.get(prj, p, bridge_terminals))).collect();
+        if scans.pages.len() > pages.len() {
+            let ids: std::collections::HashSet<u64> = prj.pages.iter().map(|p| p.id).collect();
+            scans.pages.retain(|id, _| ids.contains(id));
+        }
+
+        let mut uf = Uf { parent: Vec::new() };
+        let mut named: HashMap<String, usize> = HashMap::new();
+        // (page index, scan, first node of the page)
+        let mut offsets = Vec::with_capacity(pages.len());
         // (strip, terminal designation) -> node, for jumpers
         let mut terminals: HashMap<(String, String), usize> = HashMap::new();
         // (plug, pin designation) -> nodes of its pins (male and female are mated)
         let mut plug_pins: HashMap<(String, String), Vec<usize>> = HashMap::new();
-
-        for (pi, page) in prj.pages.iter().enumerate() {
-            if page.kind != PageKind::Schematic {
-                continue;
+        for (pi, scan) in &pages {
+            let first = uf.parent.len();
+            for _ in 0..scan.nodes {
+                uf.add();
             }
-            let ends = wire_ends(page);
-            for w in &page.wires {
-                let na = b.point(pi, w.a);
-                let nb = b.point(pi, w.b);
-                b.uf.union(na, nb);
-                *degree.entry(na).or_default() += 1;
-                *degree.entry(nb).or_default() += 1;
-                for (q, _) in ends.values() {
-                    if on_segment_interior(*q, w.a, w.b) {
-                        let nq = b.point(pi, *q);
-                        b.uf.union(na, nq);
-                        *degree.entry(nq).or_default() += 2;
-                    }
-                }
-                wire_nodes.push((pi, w.id, na));
+            for (key, n) in &scan.terminals {
+                terminals.insert(key.clone(), first + n);
             }
-            for (si, s) in page.symbols.iter().enumerate() {
-                let Some(def) = prj.symbol(&s.sym) else { continue };
-                if def.func == Func::Overview {
-                    continue;
-                }
-                let mut nodes = Vec::new();
-                for i in 0..def.pins.len() {
-                    let q = def.pin_world(i, s.pos, s.rot, s.mirror);
-                    let n = b.point(pi, q);
-                    *degree.entry(n).or_default() += 1;
-                    nodes.push(n);
-                    pin_nodes.push((PinRef { page: pi, sym: si, pin: i }, s.id, n, def.is_fluid()));
-                }
-                if bridge_terminals || !def.func.is_feedthrough() {
-                    for &(x, y) in &def.bridges {
-                        b.uf.union(nodes[x], nodes[y]);
-                    }
-                }
-                if def.func == Func::Terminal && !nodes.is_empty() {
-                    terminals.insert((s.tag.clone(), s.label.clone()), nodes[0]);
-                }
-                if matches!(def.func, Func::Plug(_)) && !nodes.is_empty() && !s.tag.is_empty() {
-                    plug_pins.entry((s.tag.clone(), s.label.clone())).or_default().push(nodes[0]);
-                }
-                match def.func {
-                    Func::Potential if !s.label.is_empty() => {
-                        let n = b.named(format!("pot:{}", s.label));
-                        b.uf.union(n, nodes[0]);
-                    }
-                    Func::Interruption if !s.label.is_empty() => {
-                        let n = b.named(format!("int:{}", s.label));
-                        b.uf.union(n, nodes[0]);
-                    }
-                    _ => {}
-                }
+            for (key, n) in &scan.plug_pins {
+                plug_pins.entry(key.clone()).or_default().push(first + n);
             }
+            for (name, n) in &scan.named {
+                let node = match named.get(name) {
+                    Some(&node) => node,
+                    None => {
+                        let node = uf.add();
+                        named.insert(name.clone(), node);
+                        node
+                    }
+                };
+                uf.union(node, first + n);
+            }
+            offsets.push((*pi, scan, first));
         }
 
         if bridge_terminals {
             for nodes in plug_pins.values() {
                 for w in nodes.windows(2) {
-                    b.uf.union(w[0], w[1]);
+                    uf.union(w[0], w[1]);
                 }
             }
             for (strip, labels) in crate::strips::jumper_groups(prj) {
                 let nodes: Vec<usize> = labels.iter().filter_map(|l| terminals.get(&(strip.clone(), l.clone())).copied()).collect();
                 for w in nodes.windows(2) {
-                    b.uf.union(w[0], w[1]);
+                    uf.union(w[0], w[1]);
                 }
             }
         }
@@ -241,24 +332,28 @@ impl Netlist {
             })
         };
         let mut electric = vec![];
-        for (pin, sym_id, node, fluid) in &pin_nodes {
-            let ni = net_for(&mut b.uf, &mut nl.nets, *node);
-            nl.nets[ni].pins.push(*pin);
-            electric.resize(nl.nets.len(), false);
-            if *fluid {
-                nl.nets[ni].fluid = true;
-            } else {
-                electric[ni] = true;
-            }
-            nl.pin_net.insert((*sym_id, pin.pin), ni);
-            if degree.get(node).copied().unwrap_or(0) <= 1 {
-                nl.unconnected.push((pin.page, *sym_id, pin.pin));
+        for (pi, scan, first) in &offsets {
+            for &(si, sym_id, pin, node, fluid, unconnected) in &scan.pins {
+                let ni = net_for(&mut uf, &mut nl.nets, first + node);
+                nl.nets[ni].pins.push(PinRef { page: *pi, sym: si, pin });
+                electric.resize(nl.nets.len(), false);
+                if fluid {
+                    nl.nets[ni].fluid = true;
+                } else {
+                    electric[ni] = true;
+                }
+                nl.pin_net.insert((sym_id, pin), ni);
+                if unconnected {
+                    nl.unconnected.push((*pi, sym_id, pin));
+                }
             }
         }
-        for (pi, wid, node) in &wire_nodes {
-            let ni = net_for(&mut b.uf, &mut nl.nets, *node);
-            nl.nets[ni].wires.push((*pi, *wid));
-            nl.wire_net.insert(*wid, ni);
+        for (pi, scan, first) in &offsets {
+            for &(wid, node) in &scan.wires {
+                let ni = net_for(&mut uf, &mut nl.nets, first + node);
+                nl.nets[ni].wires.push((*pi, wid));
+                nl.wire_net.insert(wid, ni);
+            }
         }
         for (ni, net) in nl.nets.iter_mut().enumerate() {
             net.mixed = net.fluid && electric.get(ni).copied().unwrap_or(false);
@@ -267,8 +362,8 @@ impl Netlist {
         // one net stay visible as "A / B" (short circuit).
         let mut pots: HashMap<usize, Vec<String>> = HashMap::new();
         let mut ints: HashMap<usize, Vec<String>> = HashMap::new();
-        for (name, node) in &b.named {
-            let r = b.uf.find(*node);
+        for (name, node) in &named {
+            let r = uf.find(*node);
             if let Some(&ni) = root_net.get(&r) {
                 match name.split_once(':') {
                     Some(("pot", n)) => pots.entry(ni).or_default().push(n.to_string()),

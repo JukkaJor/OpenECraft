@@ -155,7 +155,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("model", &["geom", "symbols", "symlib"]),
     // 4 evaluation of the model
     ("index", &["frame", "geom", "model", "structure", "symbols"]),
-    ("netlist", &["geom", "harness", "model", "panel", "potentials", "strips", "symbols", "wirenum"]),
+    ("netlist", &["geom", "harness", "model", "panel", "potentials", "strips", "symbols", "symlib", "wirenum"]),
     ("structure", &["model", "ops"]),
     ("frame", &["geom", "model"]),
     ("text", &["frame", "geom", "model", "symbols"]),

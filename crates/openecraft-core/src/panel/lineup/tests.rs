@@ -5,7 +5,7 @@ use crate::analysis::Analysis;
 use crate::sample::demo_project;
 
 fn wiring(prj: &Project) -> (Vec<RoutedWire>, Vec<OpenWire>) {
-    virtual_wiring(prj, &Netlist::build(prj, true), &Netlist::build(prj, false))
+    virtual_wiring(prj, &crate::netlist::connections(prj, &Netlist::build(prj, true), &Netlist::build(prj, false)))
 }
 
 fn three() -> Project {
