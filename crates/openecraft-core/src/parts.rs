@@ -74,7 +74,8 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "fl_filter" | "fl_gauge" | "fl_tank" | "fl_source" | "fl_silencer" | "fl_throttle" | "pid_vessel" | "pid_valve"
         | "pid_control_valve" | "pid_check_valve" | "pid_heat_exchanger" => FnKind::FluidComponent,
         "res" | "cap" | "diode" | "led" | "inductor" | "varistor" | "potentiometer" | "cap_pol" | "zener" | "photodiode" | "npn" | "pnp" | "nmos" | "thyristor" | "triac" | "ntc" | "ldr"
-        | "optocoupler" | "bridge_rect" => FnKind::Generic,
+        | "optocoupler" | "bridge_rect" | "inst_switch" | "inst_switch2" | "inst_dimmer" | "inst_push" | "inst_lamp" | "inst_luminaire" | "inst_socket2" | "inst_junction" | "inst_motion"
+        | "inst_board" => FnKind::Generic,
         _ => return symbols::iec_kind(key),
     })
 }

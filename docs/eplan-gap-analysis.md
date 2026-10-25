@@ -700,7 +700,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY) | 93fdeb6, 7e3fb7b | PLC navigator, GX Works / PLCnext formats |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
 | 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
-| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics | 31f4166, b2b4e88, cceabce | GB, GOST, JIS, installation |
+| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols | 31f4166, b2b4e88, cceabce, see log | GB, GOST, JIS |
 | 18–20 | Catalogs, manual, languages | open | – | content work |
 | 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
 | 22 | UI customisation | partly: configurable keyboard shortcuts | 9898711 | workspaces, docking |

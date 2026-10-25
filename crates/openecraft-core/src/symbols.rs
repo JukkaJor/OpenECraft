@@ -159,13 +159,15 @@ pub enum Category {
     Fluid,
     /// Piping and instrumentation diagrams (ISO 10628, ISA 5.1).
     Process,
+    /// Building installation plans (IEC 60617-11).
+    Installation,
     /// Symbols of the project symbol library (symbol editor).
     User,
 }
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 18] = [
+    pub const ALL: [Category; 19] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
@@ -184,6 +186,7 @@ impl Category {
         Category::Nfpa,
         Category::Fluid,
         Category::Process,
+        Category::Installation,
     ];
 
     pub fn title(self) -> &'static str {
@@ -206,6 +209,7 @@ impl Category {
             Category::Nfpa => tr("NFPA / JIC"),
             Category::Fluid => tr("Fluid power (ISO 1219)"),
             Category::Process => tr("P&ID / process (ISO 10628)"),
+            Category::Installation => tr("Installation plan (IEC 60617-11)"),
             Category::User => tr("User symbols"),
         }
     }
@@ -1126,6 +1130,69 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(-8.0, 0.0, -4.0, 0.0).l(4.0, 0.0, 8.0, 0.0);
     b.pin(-8.0, 0.0, "~1").pin(8.0, 0.0, "~2").pin(0.0, -8.0, "+").pin(0.0, 8.0, "-");
     v.push(def("bridge_rect", "Bridge rectifier", C::Passive, "T", MAIN).build(&mut b));
+
+    // ---------------------------------------------------------------- installation plan
+    // Single-line symbols of building installation plans with one connection point
+    // (the cable from the distribution) at the top.
+    let feed = |b: &mut B, to: f32| {
+        b.l(0.0, -4.0, 0.0, to);
+    };
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_switch", "Switch, 1-pole (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4).l(-0.7, 0.7, -3.2, 3.2).l(-3.2, 3.2, -4.0, 2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_switch2", "Two-way switch (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4).l(-2.6, 2.0, 1.6, -2.2);
+    b.poly(&[(1.6, -2.2), (0.6, -1.9), (1.3, -1.2)], true, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_dimmer", "Dimmer (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.6);
+    b.circle(0.0, 0.0, 1.6, false).circle(0.0, 0.0, 0.5, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_push", "Push button (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -2.5);
+    b.circle(0.0, 0.0, 2.5, false).l(-1.77, -1.77, 1.77, 1.77).l(-1.77, 1.77, 1.77, -1.77);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_lamp", "Lighting outlet", C::Installation, "E", MAIN).build(&mut b));
+
+    feed(&mut b, 0.0);
+    b.rect(-6.0, 0.0, 6.0, 1.2, true).l(-6.0, -1.2, -6.0, 2.4).l(6.0, -1.2, 6.0, 2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_luminaire", "Luminaire, fluorescent", C::Installation, "E", MAIN).build(&mut b));
+
+    // Double socket outlet with protective contact: two cups side by side.
+    feed(&mut b, 0.0);
+    for x in [-2.6, 2.6] {
+        b.arc(x, 0.0, 2.4, 0.0, 180.0).l(x - 2.4, 0.0, x + 2.4, 0.0);
+    }
+    b.l(-5.0, -0.9, 5.0, -0.9).l(0.0, 0.0, 0.0, -0.9);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_socket2", "Double socket outlet with PE", C::Installation, "X", MAIN).build(&mut b));
+
+    feed(&mut b, -1.2);
+    b.circle(0.0, 0.0, 1.2, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_junction", "Junction box", C::Installation, "X", MAIN).build(&mut b));
+
+    // Motion detector: a half circle with the detection arcs.
+    feed(&mut b, -2.0);
+    b.l(-2.0, -2.0, 2.0, -2.0).arc(0.0, -2.0, 2.0, 0.0, 180.0).arc(0.0, -2.0, 3.2, 30.0, 150.0).arc(0.0, -2.0, 4.4, 40.0, 140.0);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_motion", "Motion detector", C::Installation, "B", MAIN).build(&mut b));
+
+    // Distribution board: a box half filled.
+    feed(&mut b, -2.0);
+    b.rect(-4.0, -2.0, 4.0, 2.0, false).poly(&[(-4.0, 2.0), (4.0, -2.0), (4.0, 2.0)], true, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_board", "Distribution board", C::Installation, "A", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- black boxes
     b.drect(-4.0, -4.0, 12.0, 4.0);

@@ -24,6 +24,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
   electronics: resistors, capacitors (also polarized), diodes, Zener and photodiodes, LEDs,
   NPN / PNP transistors, N-channel MOSFET, thyristor, triac, NTC thermistor,
   photoresistor, optocoupler and bridge rectifier.
+- **Installation plan symbols** (IEC 60617-11): 1-pole and two-way switches, dimmer, push
+  button, lighting outlet, fluorescent luminaire, double socket outlet with PE, junction box,
+  motion detector and distribution board, each with one connection point for the cable.
 - **Device-oriented engineering**: device tags (`-K1`, `-S3`, …) are assigned automatically.
   Main function (coil) + auxiliary functions (contacts) form one device. Select a coil and
   place contacts: they are assigned to it and numbered (13/14, 21/22, …).
