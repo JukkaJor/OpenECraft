@@ -65,7 +65,8 @@ panel layout. Most steps below can be tried on it.
 - *Project › Parts management…* opens the parts database (product groups, filter,
   part editor with commercial, technical and typed mounting data, function templates,
   connection points, 2D / 3D models, assemblies). Parts are imported from CSV,
-  BMEcat, EPLAN parts XML or the data portal (*Project › Data portal…*).
+  BMEcat, EPLAN parts XML, EDZ files of the EPLAN Data Portal or the data portal
+  (*Project › Data portal…*).
 - Assign parts in the property panel of a device (*Add part…*); the device selection
   offers only parts that provide the device's main function. *Apply designations*
   takes the connection point designations from the part.

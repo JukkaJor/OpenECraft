@@ -54,3 +54,57 @@ fn round_trip_through_eplan_xml() {
         assert_eq!((&a.number, &a.description, a.price, a.width, &a.group), (&b.number, &b.description, b.price, b.width, &b.group));
     }
 }
+
+#[test]
+fn language_neutral_texts() {
+    assert_eq!(language_text("??_??@{{LOGO! 24 CE}};//??_??@LOGO! 24 CE;"), "LOGO! 24 CE");
+    assert_eq!(language_text("??_??@{{Neutral}};de_DE@Deutsch;"), "Deutsch", "German comes before neutral texts");
+}
+
+const DEVICE: &str = r#"<partsmanagement>
+ <part P_ARTICLE_PARTNR="SE.DRIVE" P_ARTICLE_HEIGHT="250" P_ARTICLE_WIDTH="90" P_ARTICLE_MOUNTINGSITE="0"
+       P_ARTICLE_SPACING_ABOVE="50" P_ARTICLE_SPACING_BELOW="40" P_ARTICLE_SPACING_LEFT="1"
+       P_ARTICLE_REF_TERMINAL_NAME="SE.DRIVE" P_ARTICLE_REF_CONSTRUCTION_NAME="SE.DRIVE">
+  <variant P_ARTICLE_POWERDISSIPATION="240 W">
+   <functiontemplate functiondefcategory="301" functiondefgroup="1" functiondefid="1"/>
+   <functiontemplate connectionDesignation="L1C" functiondefcategory="1302" functiondefgroup="1" functiondefid="1"/>
+   <functiontemplate connectionDesignation="1" connectiondescription="DO4+" functiondefcategory="300" functiondefgroup="1" functiondefid="3" terminalNr="CN1"/>
+   <functiontemplate connectionDesignation="8" connectiondescription="DI4" functiondefcategory="300" functiondefgroup="1" functiondefid="2" terminalNr="CN1"/>
+   <functiontemplate connectionDesignation="18" connectiondescription="AI2" functiondefcategory="300" functiondefgroup="1" functiondefid="4" terminalNr="CN1"/>
+   <functiontemplate connectionDesignation="31" connectiondescription="AO1" functiondefcategory="300" functiondefgroup="1" functiondefid="5" terminalNr="CN1"/>
+   <functiontemplate connectionDesignation="44" connectiondescription="OCZ" functiondefcategory="300" functiondefgroup="1" functiondefid="6" terminalNr="CN1"/>
+  </variant>
+ </part>
+</partsmanagement>"#;
+
+const DEVICE_POINTS: &str = r#"<partsmanagement>
+ <terminal P_PART_TERMINAL_NAME="SE.DRIVE">
+  <terminalPosition name="L1C" xdir="-1" xpos="18.75" ydir="0" ypos="226" zdir="0" zpos="215"/>
+  <terminalPosition name="PE" xdir="0" xpos="56.75" ydir="0" ypos="9" zdir="1" zpos="232"/>
+ </terminal>
+ <construction P_PART_CONSTRUCTION_NAME="SE.DRIVE">
+  <drillingPosition dimension1="5" xpos="6" ypos="4.75"/>
+  <drillingPosition dimension1="5" xpos="84" ypos="245.25"/>
+ </construction>
+</partsmanagement>"#;
+
+#[test]
+fn function_templates_connection_points_and_holes() {
+    let parts = from_eplan_documents(&[DEVICE, DEVICE_POINTS]).unwrap();
+    let p = &parts[0];
+    let f: Vec<(crate::FnKind, &str)> = p.functions.iter().map(|f| (f.kind, f.pins.as_str())).collect();
+    use crate::FnKind::*;
+    assert_eq!(f, [(Generic, "L1C"), (PlcOutput, "CN1.1"), (PlcInput, "CN1.8"), (PlcAnalogInput, "CN1.18"), (PlcAnalogOutput, "CN1.31"), (Generic, "CN1.44")]);
+    assert_eq!(p.functions[1].description, "DO4+");
+    let cp: Vec<(&str, [f32; 3], crate::Exit)> = p.connection_points.iter().map(|c| (c.pin.as_str(), c.pos, c.exit)).collect();
+    assert_eq!(cp, [("L1C", [18.75, 24.0, 215.0], crate::Exit::Left), ("PE", [56.75, 241.0, 232.0], crate::Exit::Front)]);
+    let md = &p.mounting_data;
+    assert_eq!(md.holes, vec![[6.0, 245.25], [84.0, 4.75]], "y down from the upper edge");
+    assert_eq!(md.hole_thread, "Ø5");
+    assert_eq!((md.clearance_top, md.clearance_bottom, md.clearance_left), (50.0, 40.0, 1.0));
+    assert!(p.mounting.is_empty());
+    assert_eq!(p.tech_value("Power loss"), Some("240 W"));
+    // In one file, and without the other documents.
+    assert_eq!(from_eplan_xml(&format!("<root>{}{}</root>", &DEVICE[DEVICE.find("<part ").unwrap()..DEVICE.find("</partsmanagement>").unwrap()], &DEVICE_POINTS[DEVICE_POINTS.find("<terminal ").unwrap()..DEVICE_POINTS.find("</partsmanagement>").unwrap()])).unwrap()[0].connection_points.len(), 2);
+    assert!(from_eplan_xml(DEVICE).unwrap()[0].connection_points.is_empty());
+}

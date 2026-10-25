@@ -31,6 +31,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, parts server API types, data portal rules (faceted search, lifecycle, update check) |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
 | `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
+| `openecraft-edz` | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): unpacks the 7-Zip archive and reads its parts XML with `openecraft-parts`; kept out of `openecraft-parts` because of the 7-Zip dependency |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
 | `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
 | `openecraft-auth` | `crates/openecraft-auth` | User accounts of the servers: password hashes (Argon2), session tokens |

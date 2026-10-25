@@ -169,8 +169,8 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "parts_import",
-        help: tr_const!("Imports a CSV or JSON parts file into the parts server"),
-        params: &[param("path", Kind::Str, tr_const!("CSV or JSON file"))],
+        help: tr_const!("Imports a parts file into the parts server; the pictures and macros of an EDZ file are stored with their parts"),
+        params: &[param("path", Kind::Str, tr_const!("CSV, JSON, BMEcat, EPLAN XML or EDZ file"))],
         needs_project: false,
         run: import,
     },
@@ -412,8 +412,18 @@ fn delete(s: &mut Session, a: &Args) -> Result<Value, String> {
 fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
     let content = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
-    let result = s.server.import(content)?;
-    Ok(json!({ "imported": result.imported, "revision": result.revision }))
+    if !openecraft_edz::is_edz(&content) {
+        let result = s.server.import(content)?;
+        return Ok(json!({ "imported": result.imported, "revision": result.revision }));
+    }
+    let edz = openecraft_edz::read(&content)?;
+    let result = s.server.import(serde_json::to_vec(&edz.parts).unwrap_or_default())?;
+    let mut attached = Vec::new();
+    for f in edz.files {
+        s.server.attach(&f.part, &f.name, Some(f.kind), f.data)?;
+        attached.push(json!({ "number": f.part, "file": f.name }));
+    }
+    Ok(json!({ "imported": result.imported, "revision": result.revision, "attached": attached }))
 }
 
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {

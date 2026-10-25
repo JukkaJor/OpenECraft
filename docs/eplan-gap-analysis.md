@@ -527,7 +527,10 @@ Export is broad (PDF with bookmarks and links, DXF R12, DWG, SVG, HTML, CSV repo
 3D formats, AML, KBL, marking CSV, symbol tables, NC data). Import covers DXF / DWG as
 graphics, BMEcat, AML, GSDML / ESI, CSV / JSON parts and tables, dictionaries.
 
-- Gap: no importer for EPLAN projects. EDZ is proprietary, but EPLAN P8 can export a
+- Done: EDZ files of the EPLAN Data Portal are imported as parts (parts XML with
+  function templates, connection points and drilling patterns; pictures and macros
+  stored with the part, macros not drawn).
+- Gap: no importer for EPLAN projects. EPLAN P8 can export a
   project as XML (pages, functions, connections, parts) and EPLAN parts as
   parts-XML (`.xml` of the parts database); readers for both would be the migration
   path and are the single most asked-for feature of any EPLAN alternative. DXF

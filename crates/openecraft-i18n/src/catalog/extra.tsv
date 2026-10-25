@@ -65,7 +65,7 @@ Exports the project: svg (one page), html, pdf, dxf, wire_list (CSV), plc_table 
 File to save the project to (.oec)	Datei, in die das Projekt gespeichert wird (.oec)	Fichier dans lequel enregistrer le projet (.oec)	Archivo en el que se guarda el proyecto (.oec)
 Function aspect (=) of the page; the devices on the page move along	Funktionsaspekt (=) der Seite; die Betriebsmittel der Seite wandern mit	Aspect fonction (=) de la page ; les appareils de la page suivent	Aspecto de función (=) de la página; los equipos de la página lo siguen
 Generates a report as table	Erzeugt eine Auswertung als Tabelle	Génère un rapport sous forme de tableau	Genera un informe como tabla
-Imports a CSV or JSON parts file into the parts server	Importiert eine CSV- oder JSON-Artikeldatei in den Artikelserver	Importe un fichier d'articles CSV ou JSON dans le serveur d'articles	Importa un archivo de artículos CSV o JSON al servidor de artículos
+Imports a parts file into the parts server; the pictures and macros of an EDZ file are stored with their parts	Importiert eine Artikeldatei in den Artikelserver; die Bilder und Makros einer EDZ-Datei werden bei ihren Artikeln gespeichert	Importe un fichier d'articles dans le serveur d'articles ; les images et les macros d'un fichier EDZ sont enregistrées avec leurs articles	Importa un archivo de artículos al servidor de artículos; las imágenes y las macros de un archivo EDZ se guardan con sus artículos
 Insert after this page (default: at the end)	Nach dieser Seite einfügen (Standard: am Ende)	Insérer après cette page (par défaut : à la fin)	Insertar después de esta página (por defecto: al final)
 Item id	Element-ID	ID de l'élément	ID del elemento
 Item ids	Element-IDs	ID des éléments	ID de los elementos
@@ -4537,7 +4537,7 @@ File to write (xlsx)	Zu schreibende Datei (xlsx)	Fichier à écrire (xlsx)	Archi
 The format xlsx needs a path	Das Format xlsx braucht einen Pfad	Le format xlsx nécessite un chemin	El formato xlsx necesita una ruta
 Export as EPLAN parts XML…	Als EPLAN-Artikel-XML exportieren…	Exporter en XML d'articles EPLAN…	Exportar como XML de artículos EPLAN…
 For the import into EPLAN parts management (P_ARTICLE_* attributes, texts in en_US)	Für den Import in die EPLAN-Artikelverwaltung (P_ARTICLE_*-Attribute, Texte in en_US)	Pour l'import dans la gestion d'articles EPLAN (attributs P_ARTICLE_*, textes en en_US)	Para importar en la gestión de artículos de EPLAN (atributos P_ARTICLE_*, textos en en_US)
-Parts (CSV, JSON, BMEcat, EPLAN XML)	Artikel (CSV, JSON, BMEcat, EPLAN-XML)	Articles (CSV, JSON, BMEcat, XML EPLAN)	Artículos (CSV, JSON, BMEcat, XML de EPLAN)
+Parts (CSV, JSON, BMEcat, EPLAN XML, EDZ)	Artikel (CSV, JSON, BMEcat, EPLAN-XML, EDZ)	Articles (CSV, JSON, BMEcat, XML EPLAN, EDZ)	Artículos (CSV, JSON, BMEcat, XML de EPLAN, EDZ)
 Exports all parts of the parts server as CSV or EPLAN parts XML	Exportiert alle Artikel des Artikelservers als CSV oder EPLAN-Artikel-XML	Exporte tous les articles du serveur d'articles en CSV ou en XML d'articles EPLAN	Exporta todos los artículos del servidor de artículos como CSV o XML de artículos EPLAN
 csv (default) or eplan_xml	csv (Standard) oder eplan_xml	csv (par défaut) ou eplan_xml	csv (por defecto) o eplan_xml
 PLC tag table for Siemens TIA Portal (Excel)	SPS-Variablentabelle für Siemens TIA Portal (Excel)	Table de variables API pour Siemens TIA Portal (Excel)	Tabla de variables PLC para Siemens TIA Portal (Excel)
@@ -4969,3 +4969,4 @@ First row	Erste Zeile	Première ligne	Primera fila
 Next row	Nächste Zeile	Ligne suivante	Fila siguiente
 Offset from one row to the next: downwards for lists, sideways for rows side by side	Versatz von einer Zeile zur nächsten: nach unten für Listen, seitlich für nebeneinanderliegende Zeilen	Décalage d'une ligne à la suivante : vers le bas pour les listes, sur le côté pour des lignes côte à côte	Desplazamiento de una fila a la siguiente: hacia abajo para listas, hacia el lado para filas una junto a otra
 Report name (page heading)	Name der Auswertung (Seitenüberschrift)	Nom du rapport (titre de la page)	Nombre del informe (título de la página)
+CSV, JSON, BMEcat, EPLAN XML or EDZ file	CSV-, JSON-, BMEcat-, EPLAN-XML- oder EDZ-Datei	Fichier CSV, JSON, BMEcat, XML EPLAN ou EDZ	Archivo CSV, JSON, BMEcat, XML de EPLAN o EDZ

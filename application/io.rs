@@ -77,7 +77,7 @@ impl FileKind for Purpose {
             Purpose::Preplanning => (tr("Pre-planning (CSV, Excel)"), &["csv", "xlsx", "txt"]),
             Purpose::CheckScheme => (tr("Check scheme (JSON)"), &["json"]),
             Purpose::SettingsScheme => (tr("Settings scheme (JSON)"), &["json"]),
-            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML, EDZ)"), &["csv", "json", "xml", "txt", "edz"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),

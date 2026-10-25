@@ -186,7 +186,7 @@ impl App {
                 }
                 Err(e) => self.notify(ctx, tr_fmt!("Not a project template: {}", e)),
             },
-            Purpose::Parts => self.import_parts(ctx, &loaded.text()),
+            Purpose::Parts => self.import_parts(ctx, &loaded.bytes),
             Purpose::Model(_) => {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.session.prj) {
                     Ok(m) => m,
@@ -302,8 +302,9 @@ impl App {
         }
     }
 
-    pub(super) fn import_parts(&mut self, ctx: &egui::Context, text: &str) {
-        match parts::import(text) {
+    /// Imports a parts file (CSV, JSON, BMEcat, EPLAN XML or EDZ) into the database.
+    pub(super) fn import_parts(&mut self, ctx: &egui::Context, bytes: &[u8]) {
+        match openecraft_edz::import(bytes) {
             Ok(list) => {
                 let n = list.len();
                 for p in list {

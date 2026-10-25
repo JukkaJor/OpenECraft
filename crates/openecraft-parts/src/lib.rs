@@ -29,13 +29,13 @@ pub mod productgroups;
 mod shared;
 mod text;
 pub mod vec3;
-mod xml;
+pub mod xml;
 
 pub use bmecat::{from_bmecat, is_bmecat};
 pub use catalog::{add_generated_models, default_catalog};
 pub use connection::{default_connection_points, points_from_text, points_to_text, upper_side, ConnectionPoint, Exit};
 pub use csv::{csv_escape, from_csv, import, parse_csv, to_csv};
-pub use eplan::{from_eplan_xml, is_eplan_xml, language_text, to_eplan_xml};
+pub use eplan::{from_eplan_documents, from_eplan_xml, is_eplan_xml, language_text, to_eplan_xml};
 pub use filter::{distinct_values, Grouping, PartFilter};
 pub use ifc::parse_ifc;
 pub use mounting::{Cutout, MountingData, MOUNTING_KEYS};

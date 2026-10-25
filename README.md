@@ -294,7 +294,14 @@ bill of materials.
     `P_ARTICLE_*` attributes and variants, multi-language texts, product groups by
     their exchange numbers) is imported like the other formats, and parts export as
     EPLAN parts XML for the way back (parts management, `parts_export --format
-    eplan_xml`);
+    eplan_xml`). Function templates become function templates (PLC inputs and
+    outputs as PLC functions), connection point definitions connection points
+    (connection points on plugs as `X10.1`), drilling patterns mounting holes;
+  - **EDZ** (EPLAN Data Portal archives, 7-Zip): the parts XML inside is read as
+    above, together with clearances, power loss and the datasheet link. Parts
+    management and the editor import the parts; the parts manager and `parts_import`
+    also store the picture and the EPLAN macros (`.ema`, kept as they are, not shown)
+    with the part on the parts server;
   - import / export as CSV (`;` separated, header names) or JSON, import of **BMEcat**
     catalogs (1.2 / 2005, as published by manufacturers and wholesalers, e.g. from the
     EPLAN Data Portal or ETIM / eCl@ss data pools): identification, description, price,
@@ -481,7 +488,8 @@ bill of materials.
   MTEXT, block references and dimensions, in their units, scaled down to the drawing
   area when they are larger. DWG files of AutoCAD R12 … 2018 are read (and written)
   with the pure Rust [acadrust](https://crates.io/crates/acadrust) crate, also in the
-  browser. EPLAN's EDZ format is proprietary and not supported.
+  browser. EDZ files of the EPLAN Data Portal are read as parts (see the parts
+  formats above); their macros are kept but not drawn.
 - **Wire harnesses**: single point-to-point connections (`-S1:13 – -K1:A1`) are
   assigned to harnesses (`-WH1`), independent of the other connections of the same
   potential section; assignments follow renamed devices, missing connections are
@@ -772,6 +780,7 @@ openecraft-cli -p pump.oec connect --page 1 --from -S1:14 --to -K1:A1
 openecraft-cli -p pump.oec check
 openecraft-cli -p pump.oec export --format pdf --path pump.pdf
 openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --path parts.csv
+openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --path 6ED1052-1CC08-0BA3.edz
 ```
 
 - On the command line every change is written back to `--project` at once. In an MCP
@@ -875,6 +884,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, server API types, data portal (faceted search, lifecycle, update check), 3D math |
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
+| `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): parts with connection points and mounting holes, pictures and macros (7-Zip with `sevenz-rust2`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
 | `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |

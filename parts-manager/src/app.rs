@@ -23,7 +23,7 @@ pub enum Purpose {
 impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
-            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML, EDZ)"), &["csv", "json", "xml", "txt", "edz"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Attachment => (
                 tr("Part files (documents, images, models, macros)"),
@@ -118,6 +118,12 @@ impl ManagerApp {
             match self.session.apply(&reply) {
                 Some(FollowUp::Reload) => self.client.download(ctx),
                 Some(FollowUp::Delete(number)) => self.client.delete(ctx, &number),
+                Some(FollowUp::Attach(files)) => {
+                    self.client.download(ctx);
+                    for f in files {
+                        self.client.attach(ctx, &f.part, &f.name, Some(f.kind), f.data);
+                    }
+                }
                 None => {}
             }
         }
@@ -128,6 +134,10 @@ impl ManagerApp {
 
     fn loaded(&mut self, ctx: &egui::Context, loaded: Loaded<Purpose>) {
         match loaded.purpose {
+            Purpose::Parts if openecraft_edz::is_edz(&loaded.bytes) => match self.session.import_edz(&loaded.bytes) {
+                Ok(parts) => self.client.upload(ctx, &parts),
+                Err(e) => self.client.status = tr_fmt!("Parts import failed: {}", e),
+            },
             Purpose::Parts => self.client.upload_file(ctx, loaded.bytes),
             Purpose::Attachment => match self.model_target.take() {
                 Some(number) => self.client.attach(ctx, &number, short_name(&loaded.name), self.attach_kind, loaded.bytes),

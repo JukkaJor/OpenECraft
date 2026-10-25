@@ -77,6 +77,31 @@ fn import_and_export_files() {
 }
 
 #[test]
+fn edz_files_are_imported_with_their_pictures_and_macros() {
+    let dir = temp_dir("parts-edz");
+    let srv = server();
+    let mut s = session_with(&srv);
+    let part = r#"<partsmanagement><part P_ARTICLE_PARTNR="SIE.LOGO" P_ARTICLE_DESCR1="en_US@Logic module;" /></partsmanagement>"#;
+    let manifest = r#"<manifest><packages><package type="part" key="SIE.LOGO"><items>
+        <item type="partxml" locator="SIE.LOGO.part.xml"/><item type="picture" locator="Siemens\logo.png"/><item type="macro" locator="Siemens\logo.ema"/>
+        </items></package></packages></manifest>"#;
+    let mut w = sevenz_rust2::ArchiveWriter::new(std::io::Cursor::new(Vec::new())).unwrap();
+    for (name, data) in [("manifest.xml", manifest.as_bytes()), ("items/partxml/SIE.LOGO.part.xml", part.as_bytes()), ("items/picture/Siemens/logo.png", b"PNG"), ("items/macro/Siemens/logo.ema", b"<EplanPxfRoot/>")] {
+        w.push_archive_entry(sevenz_rust2::ArchiveEntry::new_file(name), Some(data)).unwrap();
+    }
+    let file = dir.join("logo.edz");
+    std::fs::write(&file, w.finish().unwrap().into_inner()).unwrap();
+    let r = run(&mut s, "parts_import", json!({ "path": file.to_str().unwrap() })).unwrap();
+    assert_eq!(r["imported"], 1);
+    assert_eq!(r["attached"], json!([{ "number": "SIE.LOGO", "file": "logo.png" }, { "number": "SIE.LOGO", "file": "logo.ema" }]));
+    let parts = srv.parts.borrow();
+    let logo = parts.iter().find(|p| p.number == "SIE.LOGO").unwrap();
+    assert_eq!(logo.description, "Logic module");
+    let files: Vec<(&str, AttachmentKind)> = logo.attachments.iter().map(|a| (a.name.as_str(), a.kind)).collect();
+    assert_eq!(files, [("logo.png", AttachmentKind::Image), ("logo.ema", AttachmentKind::Other)]);
+}
+
+#[test]
 fn search_with_portal_filters_and_facets() {
     let srv = server();
     {

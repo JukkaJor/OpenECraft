@@ -193,3 +193,17 @@ fn history_of_the_open_part() {
     s.apply(&Reply::History("A".into(), Ok(vec![HistoryEntry { revision: 3, ..Default::default() }])));
     assert_eq!(s.history.as_ref().unwrap().1[0].revision, 3);
 }
+
+#[test]
+fn files_of_an_edz_file_are_attached_after_its_parts_are_uploaded() {
+    let mut s = loaded(&[]);
+    let file = EdzFile { part: "SIE.LOGO".into(), name: "logo.png".into(), kind: openecraft_parts::portal::AttachmentKind::Image, data: vec![1] };
+    s.pending_files = vec![file.clone()];
+    assert_eq!(s.apply(&Reply::Imported(Ok(ImportResult::default()))), Some(FollowUp::Attach(vec![file.clone()])));
+    assert!(s.pending_files.is_empty());
+    assert_eq!(s.apply(&Reply::Imported(Ok(ImportResult::default()))), Some(FollowUp::Reload), "a later upload attaches nothing");
+    s.pending_files = vec![file];
+    assert_eq!(s.apply(&Reply::Imported(Err("denied".into()))), None);
+    assert!(s.pending_files.is_empty(), "a failed upload drops the files");
+    assert!(s.import_edz(b"no archive").is_err());
+}

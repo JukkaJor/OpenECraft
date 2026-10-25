@@ -1,0 +1,13 @@
+[package]
+name = "openecraft-edz"
+version = "0.1.0"
+edition = "2021"
+description = "EDZ import of OpenECraft: parts, connection points, drilling patterns, pictures and macros of EPLAN Data Portal archives"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+openecraft-parts = { path = "../openecraft-parts" }
+sevenz-rust2 = { version = "0.24", default-features = false }
+
+[dev-dependencies]
+sevenz-rust2 = { version = "0.24", default-features = false, features = ["compress"] }

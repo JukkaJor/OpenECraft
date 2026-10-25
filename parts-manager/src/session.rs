@@ -5,6 +5,7 @@
 use openecraft_parts::api::UserUpdate;
 use openecraft_parts::portal::{catalog_id, Catalog, HistoryEntry, Role, User};
 use openecraft_parts::{natural_cmp, unique_number, Part, PartsDb};
+use openecraft_edz::EdzFile;
 use openecraft_ui::client::Reply;
 
 /// The part in the editor.
@@ -22,6 +23,9 @@ pub enum FollowUp {
     Reload,
     /// Remove the old number of a renamed part.
     Delete(String),
+    /// Load all parts again and store these files with their parts (pictures and
+    /// macros of an imported EDZ file).
+    Attach(Vec<EdzFile>),
 }
 
 /// A catalog being edited; `original` is its id on the server (`None`: new).
@@ -52,6 +56,8 @@ pub struct Session {
     pub user: Option<UserDraft>,
     /// Changes of the open part (loaded on request).
     pub history: Option<(String, Vec<HistoryEntry>)>,
+    /// Files of an EDZ file being uploaded, stored with their parts once the parts are.
+    pub pending_files: Vec<EdzFile>,
 }
 
 impl Session {
@@ -181,6 +187,13 @@ impl Session {
     }
 
     /// Updates the local copy with a server reply.
+    /// The parts of an EDZ file to upload; its files wait for the upload.
+    pub fn import_edz(&mut self, bytes: &[u8]) -> Result<Vec<Part>, String> {
+        let edz = openecraft_edz::read(bytes)?;
+        self.pending_files = edz.files;
+        Ok(edz.parts)
+    }
+
     pub fn apply(&mut self, reply: &Reply) -> Option<FollowUp> {
         match reply {
             Reply::Info(Ok(info)) if !self.loaded || info.revision != self.revision => Some(FollowUp::Reload),
@@ -223,7 +236,12 @@ impl Session {
                 }
                 None
             }
+            Reply::Imported(Ok(_)) if !self.pending_files.is_empty() => Some(FollowUp::Attach(std::mem::take(&mut self.pending_files))),
             Reply::Imported(Ok(_)) => Some(FollowUp::Reload),
+            Reply::Imported(Err(_)) => {
+                self.pending_files.clear();
+                None
+            }
             Reply::History(number, Ok(h)) => {
                 self.history = Some((number.clone(), h.clone()));
                 None

@@ -10,7 +10,7 @@ name = "openecraft"
 path = "application/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-edz", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
 exclude = ["vendor"]
 
 [dependencies]
@@ -33,6 +33,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 log = "0.4"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+openecraft-edz = { path = "crates/openecraft-edz" }
 openecraft-parts = { path = "crates/openecraft-parts" }
 openecraft-i18n = { path = "crates/openecraft-i18n" }
 openecraft-ui = { path = "crates/openecraft-ui" }

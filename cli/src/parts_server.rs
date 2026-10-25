@@ -59,7 +59,7 @@ impl Server {
         check(self.fetch(self.endpoint.delete(number))).map(|_| ())
     }
 
-    /// Uploads the content of a CSV or JSON parts file.
+    /// Uploads the content of a parts file (CSV, JSON, BMEcat, EPLAN XML).
     pub fn import(&self, content: Vec<u8>) -> Result<ImportResult, String> {
         decode(self.fetch(self.endpoint.import(content, "text/plain; charset=utf-8")))
     }
