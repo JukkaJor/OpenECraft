@@ -4970,3 +4970,83 @@ Next row	Nächste Zeile	Ligne suivante	Fila siguiente
 Offset from one row to the next: downwards for lists, sideways for rows side by side	Versatz von einer Zeile zur nächsten: nach unten für Listen, seitlich für nebeneinanderliegende Zeilen	Décalage d'une ligne à la suivante : vers le bas pour les listes, sur le côté pour des lignes côte à côte	Desplazamiento de una fila a la siguiente: hacia abajo para listas, hacia el lado para filas una junto a otra
 Report name (page heading)	Name der Auswertung (Seitenüberschrift)	Nom du rapport (titre de la page)	Nombre del informe (título de la página)
 CSV, JSON, BMEcat, EPLAN XML or EDZ file	CSV-, JSON-, BMEcat-, EPLAN-XML- oder EDZ-Datei	Fichier CSV, JSON, BMEcat, XML EPLAN ou EDZ	Archivo CSV, JSON, BMEcat, XML de EPLAN o EDZ
+Vault did not continue the upload	Vault hat das Hochladen nicht fortgesetzt	Vault n'a pas poursuivi l'envoi	Vault no continuó la subida
+The upload is finished	Das Hochladen ist abgeschlossen	L'envoi est terminé	La subida ha terminado
+Uploading {} to Vault ({} %)…	{} wird in Vault hochgeladen ({} %)…	Envoi de {} vers Vault ({} %)…	Subiendo {} a Vault ({} %)…
+Uploading {} to Vault…	{} wird in Vault hochgeladen…	Envoi de {} vers Vault…	Subiendo {} a Vault…
+The project has no parts	Das Projekt hat keine Artikel	Le projet n'a pas d'articles	El proyecto no tiene artículos
+Reading Vault items ({} of {})…	Vault-Elemente werden gelesen ({} von {})…	Lecture des éléments Vault ({} sur {})…	Leyendo elementos de Vault ({} de {})…
+Not connected to a vault: use vault_connect first	Nicht mit einem Vault verbunden: zuerst vault_connect verwenden	Non connecté à un Vault : utilisez d'abord vault_connect	No hay conexión con un Vault: use primero vault_connect
+Connects to Autodesk Vault (Vault Data API, Vault Professional 2025.2 or newer): signs in with a Vault account or uses an access token, and shows the connection	Verbindet mit Autodesk Vault (Vault Data API, Vault Professional 2025.2 oder neuer): meldet sich mit einem Vault-Konto an oder verwendet ein Zugriffstoken und zeigt die Verbindung	Se connecte à Autodesk Vault (Vault Data API, Vault Professional 2025.2 ou plus récent) : ouvre une session avec un compte Vault ou utilise un jeton d'accès, et affiche la connexion	Se conecta a Autodesk Vault (Vault Data API, Vault Professional 2025.2 o posterior): inicia sesión con una cuenta de Vault o usa un token de acceso, y muestra la conexión
+Address of the Vault server, e.g. https://vault.example.com	Adresse des Vault-Servers, z. B. https://vault.example.com	Adresse du serveur Vault, p. ex. https://vault.example.com	Dirección del servidor de Vault, p. ej. https://vault.example.com
+Name of the knowledge vault (default Vault)	Name des Vaults (Standard Vault)	Nom du coffre Vault (par défaut Vault)	Nombre del almacén de Vault (por defecto Vault)
+Vault user name (signs in)	Vault-Benutzername (meldet an)	Nom d'utilisateur Vault (ouvre une session)	Nombre de usuario de Vault (inicia sesión)
+Password of the Vault user	Passwort des Vault-Benutzers	Mot de passe de l'utilisateur Vault	Contraseña del usuario de Vault
+Access token of a Vault session or an Autodesk account instead of user and password	Zugriffstoken einer Vault-Sitzung oder eines Autodesk-Kontos statt Benutzer und Passwort	Jeton d'accès d'une session Vault ou d'un compte Autodesk au lieu de l'utilisateur et du mot de passe	Token de acceso de una sesión de Vault o de una cuenta de Autodesk en lugar de usuario y contraseña
+Id of the knowledge vault (taken from the session if not given)	ID des Vaults (ohne Angabe aus der Sitzung)	ID du coffre Vault (repris de la session s'il manque)	ID del almacén de Vault (tomado de la sesión si no se indica)
+Lists the folders and files of a Vault folder, or searches the file properties below it (or in the whole vault)	Listet die Ordner und Dateien eines Vault-Ordners oder durchsucht die Dateieigenschaften darunter (oder im ganzen Vault)	Liste les dossiers et fichiers d'un dossier Vault, ou recherche dans les propriétés des fichiers en dessous (ou dans tout le Vault)	Lista las carpetas y archivos de una carpeta de Vault, o busca en las propiedades de los archivos que contiene (o en todo el Vault)
+Folder id (default root)	Ordner-ID (Standard root)	ID du dossier (par défaut root)	ID de la carpeta (por defecto root)
+Text to search for	Zu suchender Text	Texte à rechercher	Texto a buscar
+Searches the items of the vault (number, title, revision, lifecycle state, part number)	Durchsucht die Elemente des Vaults (Nummer, Titel, Revision, Lebenszyklusstatus, Artikelnummer)	Recherche les éléments du Vault (numéro, titre, révision, état du cycle de vie, référence d'article)	Busca los elementos del Vault (número, título, revisión, estado del ciclo de vida, número de artículo)
+Downloads a file version from the vault	Lädt eine Dateiversion aus dem Vault herunter	Télécharge une version de fichier depuis le Vault	Descarga una versión de archivo del Vault
+Id of the file version (version_id of vault_browse)	ID der Dateiversion (version_id von vault_browse)	ID de la version du fichier (version_id de vault_browse)	ID de la versión del archivo (version_id de vault_browse)
+File to write	Zu schreibende Datei	Fichier à écrire	Archivo a escribir
+Opens a project file or archive from the vault; vault_upload without a target checks in a new version of it	Öffnet eine Projektdatei oder ein Archiv aus dem Vault; vault_upload ohne Ziel checkt eine neue Version davon ein	Ouvre un fichier ou une archive de projet depuis le Vault ; vault_upload sans cible en archive une nouvelle version	Abre un archivo o un archivo comprimido de proyecto del Vault; vault_upload sin destino protege una nueva versión
+Also save the project in this local file	Das Projekt zusätzlich in dieser lokalen Datei speichern	Enregistrer aussi le projet dans ce fichier local	Guardar también el proyecto en este archivo local
+Puts the project, an export, a connector export or a local file into the vault; a file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Legt das Projekt, einen Export, einen Konnektor-Export oder eine lokale Datei im Vault ab; eine gleichnamige Datei im Ordner erhält eine neue Version (aus- und eingecheckt), sonst wird die Datei hinzugefügt	Place le projet, un export, un export de connecteur ou un fichier local dans le Vault ; un fichier du même nom dans le dossier reçoit une nouvelle version (extrait puis archivé), sinon le fichier est ajouté	Coloca el proyecto, una exportación, una exportación de conector o un archivo local en el Vault; un archivo con el mismo nombre en la carpeta recibe una nueva versión (desprotegido y protegido), si no el archivo se añade
+Target folder id (root for the top folder); default the folder the project was opened from	ID des Zielordners (root für den obersten Ordner); Standard ist der Ordner, aus dem das Projekt geöffnet wurde	ID du dossier cible (root pour le dossier racine) ; par défaut le dossier d'où le projet a été ouvert	ID de la carpeta de destino (root para la carpeta raíz); por defecto la carpeta desde la que se abrió el proyecto
+Id of a file (file_id of vault_browse) that gets a new version	ID einer Datei (file_id von vault_browse), die eine neue Version erhält	ID d'un fichier (file_id de vault_browse) qui reçoit une nouvelle version	ID de un archivo (file_id de vault_browse) que recibe una nueva versión
+File name in the vault	Dateiname im Vault	Nom du fichier dans le Vault	Nombre del archivo en el Vault
+Local file to put into the vault	Lokale Datei, die im Vault abgelegt wird	Fichier local à placer dans le Vault	Archivo local a colocar en el Vault
+Export name as shown by list_exports, e.g. pdf or step	Exportname wie von list_exports angezeigt, z. B. pdf oder step	Nom de l'export tel qu'affiché par list_exports, p. ex. pdf ou step	Nombre de la exportación como lo muestra list_exports, p. ej. pdf o step
+Page of the export	Seite des Exports	Page de l'export	Página de la exportación
+Language of the export (a project language)	Sprache des Exports (eine Projektsprache)	Langue de l'export (une langue du projet)	Idioma de la exportación (un idioma del proyecto)
+Further parameters of the export as name=value, separated by commas	Weitere Parameter des Exports als name=wert, durch Kommas getrennt	Autres paramètres de l'export sous la forme nom=valeur, séparés par des virgules	Otros parámetros de la exportación como nombre=valor, separados por comas
+Connector export instead: erp, pdm, plm, ecad, mcad, procurement, wiring_machine or exchange	Stattdessen Konnektor-Export: erp, pdm, plm, ecad, mcad, procurement, wiring_machine oder exchange	Export de connecteur à la place : erp, pdm, plm, ecad, mcad, procurement, wiring_machine ou exchange	Exportación de conector en su lugar: erp, pdm, plm, ecad, mcad, procurement, wiring_machine o exchange
+Check-in comment	Kommentar zum Einchecken	Commentaire d'archivage	Comentario de protección
+Keep the file checked out after the check-in	Die Datei nach dem Einchecken ausgecheckt lassen	Garder le fichier extrait après l'archivage	Mantener el archivo desprotegido después de protegerlo
+Finds the Vault items of the project parts (by item number or Part Number property) and lists the changes of item ID, revision and lifecycle state; with apply they are taken over	Sucht die Vault-Elemente der Projektartikel (über die Elementnummer oder die Eigenschaft Part Number) und listet die Änderungen von Teile-ID, Revision und Lebenszyklusstatus; mit apply werden sie übernommen	Trouve les éléments Vault des articles du projet (par numéro d'élément ou propriété Part Number) et liste les modifications de l'ID d'article, de la révision et de l'état du cycle de vie ; avec apply, elles sont reprises	Busca los elementos de Vault de los artículos del proyecto (por número de elemento o propiedad Part Number) y lista los cambios de ID de artículo, revisión y estado del ciclo de vida; con apply se aplican
+No Vault item matches a part of the project	Kein Vault-Element passt zu einem Artikel des Projekts	Aucun élément Vault ne correspond à un article du projet	Ningún elemento de Vault coincide con un artículo del proyecto
+Open as project	Als Projekt öffnen	Ouvrir comme projet	Abrir como proyecto
+Import into the parts database	In die Artikeldatenbank importieren	Importer dans la base d'articles	Importar en la base de datos de artículos
+Model of a part (2D / 3D)	Modell eines Artikels (2D / 3D)	Modèle d'un article (2D / 3D)	Modelo de un artículo (2D / 3D)
+Drawing as new page	Zeichnung als neue Seite	Dessin comme nouvelle page	Dibujo como página nueva
+Embed as document page	Als Dokumentseite einbetten	Incorporer comme page de document	Incrustar como página de documento
+File of another system (connector)	Datei eines anderen Systems (Konnektor)	Fichier d'un autre système (connecteur)	Archivo de otro sistema (conector)
+Save as local file	Als lokale Datei speichern	Enregistrer comme fichier local	Guardar como archivo local
+Signed out of Vault	Von Vault abgemeldet	Déconnecté de Vault	Sesión de Vault cerrada
+Reading the folder…	Ordner wird gelesen…	Lecture du dossier…	Leyendo la carpeta…
+Vault: the session names no vault	Vault: Die Sitzung nennt keinen Vault	Vault : la session n'indique aucun coffre	Vault: la sesión no indica ningún almacén
+Signed in to {} as {}	Bei {} angemeldet als {}	Connecté à {} en tant que {}	Sesión iniciada en {} como {}
+{} entries in {}	{} Einträge in {}	{} entrées dans {}	{} entradas en {}
+Added {} to Vault	{} zu Vault hinzugefügt	{} ajouté à Vault	{} añadido a Vault
+Checked in {} as version {}	{} als Version {} eingecheckt	{} archivé en version {}	{} protegido como versión {}
+Downloaded {} (version {})	{} heruntergeladen (Version {})	{} téléchargé (version {})	{} descargado (versión {})
+{} Vault items found for the project parts	{} Vault-Elemente zu den Projektartikeln gefunden	{} éléments Vault trouvés pour les articles du projet	{} elementos de Vault encontrados para los artículos del proyecto
+Vault: {}	Vault: {}	Vault : {}	Vault: {}
+{} Vault items found: review the changes in the integration window	{} Vault-Elemente gefunden: Änderungen im Integrationsfenster prüfen	{} éléments Vault trouvés : vérifiez les modifications dans la fenêtre d'intégration	{} elementos de Vault encontrados: revise los cambios en la ventana de integración
+Opened {} from Vault (version {})	{} aus Vault geöffnet (Version {})	{} ouvert depuis Vault (version {})	{} abierto desde Vault (versión {})
+Autodesk Vault	Autodesk Vault	Autodesk Vault	Autodesk Vault
+Update part links from Vault items	Artikelverknüpfungen aus Vault-Elementen aktualisieren	Mettre à jour les liens d'articles depuis les éléments Vault	Actualizar los vínculos de artículos desde elementos de Vault
+Finds the Vault items of the project parts by item number or Part Number property and shows the changes of item ID, revision and lifecycle state for review	Sucht die Vault-Elemente der Projektartikel über die Elementnummer oder die Eigenschaft Part Number und zeigt die Änderungen von Teile-ID, Revision und Lebenszyklusstatus zur Prüfung	Trouve les éléments Vault des articles du projet par numéro d'élément ou propriété Part Number et affiche les modifications de l'ID d'article, de la révision et de l'état du cycle de vie pour vérification	Busca los elementos de Vault de los artículos del proyecto por número de elemento o propiedad Part Number y muestra los cambios de ID de artículo, revisión y estado del ciclo de vida para revisarlos
+Vault	Vault	Coffre	Almacén
+Instead of user name and password	Statt Benutzername und Passwort	Au lieu du nom d'utilisateur et du mot de passe	En lugar de nombre de usuario y contraseña
+Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 oder neuer (Vault Data API)	Vault Professional 2025.2 ou plus récent (Vault Data API)	Vault Professional 2025.2 o posterior (Vault Data API)
+⟳ Refresh	⟳ Aktualisieren	⟳ Actualiser	⟳ Actualizar
+Search below this folder	Unterhalb dieses Ordners suchen	Rechercher sous ce dossier	Buscar debajo de esta carpeta
+🔍 Search	🔍 Suchen	🔍 Rechercher	🔍 Buscar
+Checked out	Ausgecheckt	Extrait	Desprotegido
+{} of {} entries shown: search to narrow the list	{} von {} Einträgen angezeigt: suchen, um die Liste einzugrenzen	{} entrées sur {} affichées : recherchez pour réduire la liste	{} de {} entradas mostradas: busque para acotar la lista
+Select a file to import it	Datei auswählen, um sie zu importieren	Sélectionnez un fichier pour l'importer	Seleccione un archivo para importarlo
+(choose a part)	(Artikel wählen)	(choisir un article)	(elegir un artículo)
+⬇ Import	⬇ Importieren	⬇ Importer	⬇ Importar
+Project file	Projektdatei	Fichier de projet	Archivo de proyecto
+⬆ Check in project as new version of {}	⬆ Projekt als neue Version von {} einchecken	⬆ Archiver le projet comme nouvelle version de {}	⬆ Proteger el proyecto como nueva versión de {}
+Puts the project into the folder it was opened from	Legt das Projekt in dem Ordner ab, aus dem es geöffnet wurde	Place le projet dans le dossier d'où il a été ouvert	Coloca el proyecto en la carpeta desde la que se abrió
+Put into the vault	Im Vault ablegen	Placer dans le Vault	Colocar en el Vault
+File name	Dateiname	Nom du fichier	Nombre del archivo
+⬆ Upload to {}	⬆ Hochladen nach {}	⬆ Envoyer vers {}	⬆ Subir a {}
+A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Eine gleichnamige Datei im Ordner erhält eine neue Version (aus- und eingecheckt), sonst wird die Datei hinzugefügt	Un fichier du même nom dans le dossier reçoit une nouvelle version (extrait puis archivé), sinon le fichier est ajouté	Un archivo con el mismo nombre en la carpeta recibe una nueva versión (desprotegido y protegido), si no el archivo se añade
+Autodesk Vault…	Autodesk Vault…	Autodesk Vault…	Autodesk Vault…
+Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projekte und Dateien aus Autodesk Vault öffnen, das Projekt, Exporte und 3D-Modelle im Vault ablegen	Ouvrir des projets et fichiers depuis Autodesk Vault, placer le projet, les exports et les modèles 3D dans le Vault	Abrir proyectos y archivos de Autodesk Vault, colocar el proyecto, las exportaciones y los modelos 3D en el Vault
+Check in {} to Vault	{} in Vault einchecken	Archiver {} dans Vault	Proteger {} en Vault

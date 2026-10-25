@@ -152,6 +152,20 @@ fn list_exports(s: &mut Session, _: &Args) -> Result<Value, String> {
 /// Runs an exporter of the registry: `page` and the file name of `path` are passed
 /// on if the exporter takes them; the texts are generated in `language`.
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let out = export_content(s, a, a.str("path"))?;
+    match a.str("path") {
+        Some(path) => {
+            let content = out.into_bytes();
+            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            Ok(json!({ "path": path, "bytes": content.len() }))
+        }
+        None => out.text().map(Value::String).ok_or_else(|| tr("This format needs an output file (path)").to_string()),
+    }
+}
+
+/// Runs the exporter `format` with `language`, `page` and `options`; `file` is the
+/// name of the file it goes to.
+pub(super) fn export_content(s: &Session, a: &Args, file: Option<&str>) -> Result<openecraft_api::Export, String> {
     let prj = s.project()?;
     let name = a.req("format");
     let e = s.plugins.exporter(name).cloned().ok_or_else(|| tr_fmt!("Unknown format: {}", name))?;
@@ -167,7 +181,7 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     if let Some(page) = a.str("page").filter(|_| takes("page")) {
         args.insert("page".into(), page.into());
     }
-    if let Some(path) = a.str("path").filter(|_| takes("file")) {
+    if let Some(path) = file.filter(|_| takes("file")) {
         args.insert("file".into(), path.rsplit(['/', '\\']).next().unwrap_or(path).into());
     }
     for opt in a.str("options").unwrap_or_default().split(',').filter(|o| !o.trim().is_empty()) {
@@ -177,19 +191,11 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
         args.insert(k.trim().to_string(), value);
     }
     params::check(&e.params, &args)?;
-    let out = translation::with_language(prj, &lang, |prj| {
+    translation::with_language(prj, &lang, |prj| {
         let mut an = Analysis::build(prj);
         an.set_reports(s.plugins.reports().cloned());
         (e.run)(prj, &an, &Args(&args))
-    })?;
-    match a.str("path") {
-        Some(path) => {
-            let content = out.into_bytes();
-            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
-            Ok(json!({ "path": path, "bytes": content.len() }))
-        }
-        None => out.text().map(Value::String).ok_or_else(|| tr("This format needs an output file (path)").to_string()),
-    }
+    })
 }
 
 #[cfg(test)]

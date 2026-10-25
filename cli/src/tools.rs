@@ -1,5 +1,5 @@
 //! The tools of the command line and the MCP server that need the session or the
-//! machine (files, parts server, undo); the operations on the project are commands
+//! machine (files, parts server, Autodesk Vault, undo); the operations on the project are commands
 //! of the built-in plugins (`openecraft_api::builtin`). A tool has typed parameters
 //! (from which the JSON schema and the command line parsing follow) and returns JSON.
 //! Help texts are English (`tr_const!`); the command line shows them translated, MCP
@@ -23,6 +23,7 @@ mod properties;
 mod sheets;
 mod structure;
 mod tables;
+mod vault;
 #[cfg(test)]
 mod workflows;
 
@@ -46,7 +47,7 @@ pub struct Tool {
 }
 
 pub fn all() -> impl Iterator<Item = &'static Tool> {
-    [project::TOOLS, management::TOOLS, pages::TOOLS, sheets::TOOLS, devices::TOOLS, plc::TOOLS, tables::TOOLS, panel::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, plugins::TOOLS].into_iter().flatten()
+    [project::TOOLS, management::TOOLS, pages::TOOLS, sheets::TOOLS, devices::TOOLS, plc::TOOLS, tables::TOOLS, panel::TOOLS, integration::TOOLS, languages::TOOLS, structure::TOOLS, properties::TOOLS, config::TOOLS, output::TOOLS, reports::TOOLS, parts::TOOLS, vault::TOOLS, plugins::TOOLS].into_iter().flatten()
 }
 
 pub fn find(name: &str) -> Option<&'static Tool> {

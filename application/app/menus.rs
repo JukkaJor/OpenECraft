@@ -52,17 +52,22 @@ impl App {
             self.replace_project(sample::demo_project(), None);
         }
         ui.separator();
+        // A project opened from the vault and not saved locally is saved back to the vault.
+        let vault_origin = self.vault.origin.clone().filter(|_| self.vault.signed_in);
+        let check_in = vault_origin.as_ref().filter(|_| self.remote.shared.is_none() && self.session.file_name.is_none());
         let save_label = if self.remote.shared.is_some() {
-            tr("Save to project server")
+            tr("Save to project server").to_string()
+        } else if let Some(o) = check_in {
+            tr_fmt!("Check in {} to Vault", o.name)
         } else if FileIo::can_save_in_place() {
-            tr("Save")
+            tr("Save").to_string()
         } else {
-            tr("Download project")
+            tr("Download project").to_string()
         };
-        if ui.add(egui::Button::new(save_label).shortcut_text(self.editor.shortcuts.text(Action::Save))).clicked() {
+        if ui.add_enabled(check_in.is_none() || !self.vault.busy(), egui::Button::new(save_label).shortcut_text(self.editor.shortcuts.text(Action::Save))).clicked() {
             self.save(&ctx, false);
         }
-        if self.remote.shared.is_some() && !FileIo::can_save_in_place() && ui.button(tr("Download project")).clicked() {
+        if (self.remote.shared.is_some() || check_in.is_some()) && !FileIo::can_save_in_place() && ui.button(tr("Download project")).clicked() {
             self.save(&ctx, true);
         }
         if FileIo::can_save_in_place() && ui.button(tr("Save as…")).clicked() {
@@ -71,6 +76,15 @@ impl App {
         ui.separator();
         if ui.button(tr("Project server…")).on_hover_text(tr("Open and save shared projects, lock pages")).clicked() {
             self.remote.window = true;
+        }
+        if ui.button(tr("Autodesk Vault…")).on_hover_text(tr("Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault")).clicked() {
+            self.vault.window = true;
+        }
+        let saves_to_vault = check_in.is_some();
+        if let Some(o) = vault_origin.filter(|_| !saves_to_vault) {
+            if ui.add_enabled(!self.vault.busy(), egui::Button::new(tr_fmt!("Check in {} to Vault", o.name))).clicked() {
+                self.check_in_project();
+            }
         }
         ui.separator();
         ui.menu_button(tr("Export"), |ui| self.export_menu(ui));

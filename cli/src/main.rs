@@ -12,6 +12,7 @@ mod session;
 #[cfg(test)]
 mod testing;
 mod tools;
+mod vault;
 
 use openecraft_i18n::{tr, tr_fmt, Lang};
 use session::Session;
@@ -40,6 +41,7 @@ fn run(argv: &[String]) -> Result<(), String> {
         openecraft_i18n::init(None);
     }
     let mut session = Session::new(parts_server::Server::from_options(&inv.options));
+    session.vault = vault::Vault::from_env();
     session.plugins.load_env();
     if let Some(dir) = &inv.options.plugins {
         session.plugins.load_dir(std::path::Path::new(dir));

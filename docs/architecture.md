@@ -24,6 +24,11 @@ parts-server (parts, i18n)        project-server (core, parts)
 - Protocol types sit beside the logic that both sides share: parts server API in
   `openecraft_parts::api` / `portal`, project server API and merge rules in
   `openecraft_core::collab`.
+- Autodesk Vault is a server of another vendor: its requests, answer types and the
+  operations of several requests (`Job`: uploads with checkout and check-in, the item
+  lookup) live in `openecraft_client::vault`. The editor (`application/vault.rs`) runs
+  the jobs in the background, the command line (`cli/src/vault.rs`) blocking; item
+  links reach the project through the PLM connector of `openecraft_core::integration`.
 
 ## Layers inside `openecraft-core`
 

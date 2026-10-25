@@ -742,6 +742,49 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   `POST /projects/{name}/open|status|lock|release|close`, `POST /login`, `POST /logout`,
   `GET /users`, `PUT|DELETE /users/{name}` (see `openecraft_core::collab`).
 
+### Autodesk Vault
+
+OpenECraft connects to Autodesk Vault Professional 2025.2 or newer through the Vault
+Data API (REST, `/AutodeskDM/Services/api/vault/v2`), so projects, documents and 3D
+models are exchanged with the PDM system directly instead of through files.
+
+- In the editor: *File › Autodesk Vault…* – enter the server address, the knowledge
+  vault, user name and password (or the access token of a Vault session or an Autodesk
+  account) and *Sign in*. Browse the folders and search the file properties below the
+  folder shown.
+- **Import**: a selected file is opened as the project (`.oec`, `.oecz`), imported into
+  the parts database (CSV, JSON, BMEcat, EPLAN XML, EDZ), assigned as 2D / 3D model of a
+  part (SVG, STEP, IGES, JT, IFC, STL, OBJ – e.g. models of the mechanical design kept
+  in the vault), inserted as a page (DXF, DWG) or as a document page (PDF, Office files,
+  images), read with a connector of the enterprise integration layer, or saved as a
+  local file. The file name suggests the use.
+- **Export**: the project file, every export of *File › Export* (PDF, DXF / DWG, the
+  panel layout in 3D as STEP, IGES, JT, glTF or IFC, reports, PLC tables, exports of
+  plugins) and the connector exports go into the folder shown. A file of the same name
+  there gets a new version (checked out, uploaded in parts, checked in with the
+  comment; the checkout is undone when something fails), otherwise the file is added.
+  A project opened from the vault is checked in again with *File › Check in … to Vault*.
+- **Items**: *Update part links from Vault items* finds the Vault item of every project
+  part (by item number or by its *Part Number* property) and shows the item numbers,
+  revisions and lifecycle states as changes of the PLM connector for review, with the
+  same conflict detection as file imports.
+- Command line / MCP: `vault_connect`, `vault_browse`, `vault_items`, `vault_download`,
+  `vault_open`, `vault_upload`, `vault_sync_items`. An MCP session signs in once with
+  `vault_connect`; the command line starts a session per call and takes server, token
+  and vault id from `OPENECRAFT_VAULT_URL`, `OPENECRAFT_VAULT_TOKEN` and
+  `OPENECRAFT_VAULT_ID` (`vault_connect` shows the token and vault id of a sign-in).
+
+```bash
+openecraft-cli vault_connect --url https://vault.example.com --user anna --password …
+export OPENECRAFT_VAULT_URL=https://vault.example.com OPENECRAFT_VAULT_TOKEN=V:… OPENECRAFT_VAULT_ID=101
+openecraft-cli vault_browse --query "Plant 1"
+openecraft-cli -p plant.oec vault_upload --folder 42 --format step --comment "Panel layout"
+```
+
+- Passwords are not stored and the token is kept in memory only. The browser version
+  needs a Vault server (or a reverse proxy in front of it) that allows cross-origin
+  requests from the editor's address.
+
 ### Parts manager
 
 `openecraft-parts-manager` is a standalone application that maintains the parts of a
@@ -886,7 +929,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): parts with connection points and mounting holes, pictures and macros (7-Zip with `sevenz-rust2`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
-| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
+| `crates/openecraft-client` | Requests to the parts and project servers and to Autodesk Vault (Vault Data API, uploads and check-ins, item lookup) and decoding of their answers, shared by the applications and the command line |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |
 | `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
 | `parts-server/` | `openecraft-parts-server`: data portal server (REST API, SQLite or JSON storage, users, web page) |
@@ -962,6 +1005,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
 | `application/remote.rs`, `application/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
+| `application/vault.rs`, `application/app/vault_ui.rs` | Autodesk Vault client and window: browsing, imports, uploads and check-ins, item links; requests in `crates/openecraft-client/src/vault.rs` |
 | `application/app.rs` | Application UI (menus, panels, dialogs); the windows in `application/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |
 | `application/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |
