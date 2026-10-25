@@ -65,7 +65,8 @@ Layers, bottom up (a module may use its own layer and the layers below):
    entries), `exporters` (the built-in exports as `Exporter` entries), `ext` (the
    registry kinds).
 7. Output and exchange formats: `render`, `svg`, `pdf`, `dxf`, `dxf_import`, `dwg`,
-   `export3d`, `aml`, `integration`.
+   `export3d`, `aml`, `integration`, `kbl` (harness data as KBL / VDA 4964),
+   `harness_export` (harness interface: JSON, wire processing list, 3D bundle).
 8. Project files, sharing, verification: `archive`, `collab`, `projects`, `verify`,
    `sample`.
 

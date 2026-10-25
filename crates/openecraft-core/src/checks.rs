@@ -536,6 +536,18 @@ fn check_harnesses(prj: &Project, an: &Analysis) -> Vec<Issue> {
         if !an.connections.iter().any(|c| c.harness == h.tag) {
             v.push(crate::issue!(Severity::Info, None, "Harness {} has no wires", h.tag));
         }
+        use crate::harness::topology::Problem;
+        for p in crate::harness::topology::problems(prj, an, h) {
+            v.push(match p {
+                Problem::DuplicateId(id) => crate::issue!(Severity::Error, None, "Harness {}: the id {} is used more than once", h.tag, id),
+                Problem::UnknownNode(seg, node) => crate::issue!(Severity::Error, None, "Harness {}: segment {} ends at node {}, which does not exist", h.tag, seg, node),
+                Problem::UnknownSegment(id, seg) => crate::issue!(Severity::Error, None, "Harness {}: {} lies on segment {}, which does not exist", h.tag, id, seg),
+                Problem::OutOfRange(id) => crate::issue!(Severity::Warning, None, "Harness {}: the location of {} is outside the segment (0 … 1)", h.tag, id),
+                Problem::ConnectorWithoutNode(dev) => crate::issue!(Severity::Warning, None, "Harness {}: connector {} is at no node of the topology", h.tag, dev),
+                Problem::NotRouted(number, a, b) => crate::issue!(Severity::Warning, None, "Harness {}: wire {} ({} – {}) has no way through the segments", h.tag, number, a, b),
+                Problem::BendRadius(node, r, min) => crate::issue!(Severity::Warning, None, "Harness {}: bend radius {} mm at node {} is below the smallest bend radius {} mm of the bundle", h.tag, format!("{r:.0}"), node, format!("{min:.0}")),
+            });
+        }
     }
     v
 }

@@ -122,7 +122,7 @@ impl App {
         }
     }
 
-    fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
+    pub(super) fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
         let takes = |n: &str| e.params.iter().any(|p| p.name == n);
         let page = self.session.prj.pages[self.session.page].name.clone();
         let base = self.suggested_name("x");

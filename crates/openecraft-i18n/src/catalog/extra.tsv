@@ -5043,3 +5043,116 @@ Server type	Servertyp	Type de serveur	Tipo de servidor
 Exchange parts with a global parts database (openecraft-parts-server) or read the EPLAN Data Portal	Artikel mit einer globalen Artikeldatenbank (openecraft-parts-server) austauschen oder das EPLAN Data Portal lesen	Échanger des articles avec une base d'articles globale (openecraft-parts-server) ou lire l'EPLAN Data Portal	Intercambiar artículos con una base de datos global (openecraft-parts-server) o leer el EPLAN Data Portal
 Kind of server: OpenECraft (parts server) or Eplan (EPLAN Data Portal: searching and reading only, the token is the personal access token of the EPLAN account)	Art des Servers: OpenECraft (Artikelserver) oder Eplan (EPLAN Data Portal: nur Suchen und Lesen, das Token ist das persönliche Zugriffstoken des EPLAN-Kontos)	Type de serveur : OpenECraft (serveur d'articles) ou Eplan (EPLAN Data Portal : recherche et lecture seulement, le jeton est le jeton d'accès personnel du compte EPLAN)	Tipo de servidor: OpenECraft (servidor de artículos) o Eplan (EPLAN Data Portal: solo búsqueda y lectura, el token es el token de acceso personal de la cuenta EPLAN)
 No part of the database comes from the EPLAN Data Portal	Kein Artikel der Datenbank stammt aus dem EPLAN Data Portal	Aucun article de la base ne provient de l'EPLAN Data Portal	Ningún artículo de la base de datos procede del EPLAN Data Portal
+⬇ All as KBL (ZIP)…	⬇ Alle als KBL (ZIP)…	⬇ Tout en KBL (ZIP)…	⬇ Todos como KBL (ZIP)…
+One KBL file (VDA 4964) per harness	Eine KBL-Datei (VDA 4964) je Kabelbaum	Un fichier KBL (VDA 4964) par faisceau	Un archivo KBL (VDA 4964) por mazo de cables
+⬇ Wire processing list (CSV)…	⬇ Leitungsfertigungsliste (CSV)…	⬇ Liste de fabrication des fils (CSV)…	⬇ Lista de procesado de cables (CSV)…
+All harness wires in processing order for cutting, stripping and crimping machines	Alle Kabelbaumleitungen in Fertigungsreihenfolge für Schneide-, Abisolier- und Crimpautomaten	Tous les fils des faisceaux dans l'ordre de fabrication pour les machines de coupe, de dénudage et de sertissage	Todos los cables de los mazos en orden de procesado para máquinas de corte, pelado y crimpado
+⬇ KBL (XML)…	⬇ KBL (XML)…	⬇ KBL (XML)…	⬇ KBL (XML)…
+KBL (VDA 4964) for harness manufacturing: parts, connectors, wires, connections and the 3D topology	KBL (VDA 4964) für die Kabelbaumfertigung: Artikel, Steckverbinder, Leitungen, Verbindungen und die 3D-Topologie	KBL (VDA 4964) pour la fabrication des faisceaux : articles, connecteurs, fils, connexions et topologie 3D	KBL (VDA 4964) para la fabricación de mazos: artículos, conectores, cables, conexiones y la topología 3D
+⬇ Harness interface (JSON)…	⬇ Kabelbaum-Schnittstelle (JSON)…	⬇ Interface faisceau (JSON)…	⬇ Interfaz del mazo (JSON)…
+Complete harness data for machines and tools	Vollständige Kabelbaumdaten für Maschinen und Werkzeuge	Données complètes du faisceau pour machines et outils	Datos completos del mazo para máquinas y herramientas
+⬇ 3D (glTF)…	⬇ 3D (glTF)…	⬇ 3D (glTF)…	⬇ 3D (glTF)…
+The bundle with protections, fixings and connectors in 3D	Das Bündel mit Schutz, Befestigungen und Steckverbindern in 3D	Le faisceau avec protections, fixations et connecteurs en 3D	El mazo con protecciones, fijaciones y conectores en 3D
+3D topology	3D-Topologie	Topologie 3D	Topología 3D
+End treatment of the connectors	Leitungsenden an den Steckverbindern	Traitement des extrémités aux connecteurs	Tratamiento de los extremos en los conectores
+Stored and edited in the harness	Im Kabelbaum gespeichert und bearbeitet	Enregistrée et modifiée dans le faisceau	Guardada y editada en el mazo
+Derived from the routes of the panel layout	Aus den Verlegewegen des Aufbaus abgeleitet	Déduite des cheminements de l'implantation	Derivada de los recorridos del montaje
+Generated around a common node (no connector in the panel layout)	Um einen gemeinsamen Knoten erzeugt (kein Steckverbinder im Aufbau)	Générée autour d'un nœud commun (aucun connecteur dans l'implantation)	Generada alrededor de un nodo común (ningún conector en el montaje)
+⟳ Derive again	⟳ Neu ableiten	⟳ Déduire à nouveau	⟳ Derivar de nuevo
+Drops the stored topology	Verwirft die gespeicherte Topologie	Abandonne la topologie enregistrée	Descarta la topología guardada
+✏ Store for editing	✏ Zum Bearbeiten speichern	✏ Enregistrer pour modifier	✏ Guardar para editar
+Stores the derived topology in the harness, so nodes and segments can be edited	Speichert die abgeleitete Topologie im Kabelbaum, damit Knoten und Segmente bearbeitet werden können	Enregistre la topologie déduite dans le faisceau pour pouvoir modifier nœuds et segments	Guarda la topología derivada en el mazo para poder editar nodos y segmentos
+Front	Vorne	Avant	Frente
+Nodes	Knoten	Nœuds	Nodos
+Formboard length	Formbrettlänge	Longueur sur planche	Longitud en tablero
+Centre curve	Mittellinie	Ligne médiane	Línea central
+0: the length of the centre curve	0: die Länge der Mittellinie	0 : la longueur de la ligne médiane	0: la longitud de la línea central
+All segments	Alle Segmente	Tous les segments	Todos los segmentos
+Segment ids of a derived topology may change: store the topology before placing parts on single segments.	Segment-IDs einer abgeleiteten Topologie können sich ändern: Topologie speichern, bevor Teile auf einzelne Segmente gesetzt werden.	Les identifiants de segment d'une topologie déduite peuvent changer : enregistrer la topologie avant de placer des éléments sur des segments.	Los ID de segmento de una topología derivada pueden cambiar: guarde la topología antes de colocar piezas en segmentos concretos.
+Location along the segment, 0 … 1	Position entlang des Segments, 0 … 1	Position le long du segment, 0 … 1	Posición a lo largo del segmento, 0 … 1
+➕ Protection	➕ Schutz	➕ Protection	➕ Protección
+➕ Fixing	➕ Befestigung	➕ Fixation	➕ Fijación
+Seal	Einzeladerabdichtung	Joint	Junta
+Cavity plug	Blindstopfen	Bouchon d'alvéole	Tapón de cavidad
+KBL usage	KBL-Verwendung	Usage KBL	Uso KBL
+from the cross-section	aus dem Querschnitt	selon la section	según la sección
+Protections and fixings ({})	Schutz und Befestigungen ({})	Protections et fixations ({})	Protecciones y fijaciones ({})
+{} nodes, {} segments, {} m bundle	{} Knoten, {} Segmente, {} m Bündel	{} nœuds, {} segments, {} m de faisceau	{} nodos, {} segmentos, {} m de mazo
+{} problems: see the check results	{} Probleme: siehe Prüfergebnisse	{} problèmes : voir les résultats de vérification	{} problemas: vea los resultados de la verificación
+Harness {}: the id {} is used more than once	Kabelbaum {}: die ID {} wird mehrfach verwendet	Faisceau {} : l'identifiant {} est utilisé plusieurs fois	Mazo {}: el ID {} se usa más de una vez
+Harness {}: segment {} ends at node {}, which does not exist	Kabelbaum {}: Segment {} endet an Knoten {}, der nicht existiert	Faisceau {} : le segment {} se termine au nœud {}, qui n'existe pas	Mazo {}: el segmento {} termina en el nodo {}, que no existe
+Harness {}: {} lies on segment {}, which does not exist	Kabelbaum {}: {} liegt auf Segment {}, das nicht existiert	Faisceau {} : {} se trouve sur le segment {}, qui n'existe pas	Mazo {}: {} está en el segmento {}, que no existe
+Harness {}: the location of {} is outside the segment (0 … 1)	Kabelbaum {}: die Position von {} liegt außerhalb des Segments (0 … 1)	Faisceau {} : la position de {} est hors du segment (0 … 1)	Mazo {}: la posición de {} está fuera del segmento (0 … 1)
+Harness {}: connector {} is at no node of the topology	Kabelbaum {}: Steckverbinder {} liegt an keinem Knoten der Topologie	Faisceau {} : le connecteur {} n'est à aucun nœud de la topologie	Mazo {}: el conector {} no está en ningún nodo de la topología
+Harness {}: wire {} ({} – {}) has no way through the segments	Kabelbaum {}: Leitung {} ({} – {}) hat keinen Weg durch die Segmente	Faisceau {} : le fil {} ({} – {}) n'a aucun chemin à travers les segments	Mazo {}: el cable {} ({} – {}) no tiene camino por los segmentos
+Harness {}: bend radius {} mm at node {} is below the smallest bend radius {} mm of the bundle	Kabelbaum {}: Biegeradius {} mm an Knoten {} ist kleiner als der kleinste Biegeradius {} mm des Bündels	Faisceau {} : le rayon de courbure {} mm au nœud {} est inférieur au rayon minimal {} mm du faisceau	Mazo {}: el radio de curvatura {} mm en el nodo {} es menor que el radio mínimo {} mm del mazo
+Harness tag, e.g. -WH1 (default: the only harness of the project)	Kabelbaum-BMK, z. B. -WH1 (Vorgabe: der einzige Kabelbaum des Projekts)	Repère du faisceau, p. ex. -WH1 (par défaut : le seul faisceau du projet)	Identificador del mazo, p. ej. -WH1 (por defecto: el único mazo del proyecto)
+Harness tag, e.g. -WH1 (default: all harnesses)	Kabelbaum-BMK, z. B. -WH1 (Vorgabe: alle Kabelbäume)	Repère du faisceau, p. ex. -WH1 (par défaut : tous les faisceaux)	Identificador del mazo, p. ej. -WH1 (por defecto: todos los mazos)
+Harness (KBL, VDA 4964)	Kabelbaum (KBL, VDA 4964)	Faisceau (KBL, VDA 4964)	Mazo de cables (KBL, VDA 4964)
+All harnesses as KBL files (ZIP)	Alle Kabelbäume als KBL-Dateien (ZIP)	Tous les faisceaux en fichiers KBL (ZIP)	Todos los mazos como archivos KBL (ZIP)
+Harness interface for machines and tools (JSON)	Kabelbaum-Schnittstelle für Maschinen und Werkzeuge (JSON)	Interface faisceau pour machines et outils (JSON)	Interfaz del mazo para máquinas y herramientas (JSON)
+Wire processing list for cutting and crimping machines (CSV)	Leitungsfertigungsliste für Schneide- und Crimpautomaten (CSV)	Liste de fabrication des fils pour machines de coupe et de sertissage (CSV)	Lista de procesado de cables para máquinas de corte y crimpado (CSV)
+Harnesses in 3D (glTF)	Kabelbäume in 3D (glTF)	Faisceaux en 3D (glTF)	Mazos en 3D (glTF)
+Harnesses in 3D (JT)	Kabelbäume in 3D (JT)	Faisceaux en 3D (JT)	Mazos en 3D (JT)
+No harness {}	Kein Kabelbaum {}	Aucun faisceau {}	Ningún mazo {}
+The project has no harnesses	Das Projekt hat keine Kabelbäume	Le projet n'a aucun faisceau	El proyecto no tiene mazos
+The project has several harnesses: {}	Das Projekt hat mehrere Kabelbäume: {}	Le projet a plusieurs faisceaux : {}	El proyecto tiene varios mazos: {}
+A new segment needs its start and end node	Ein neues Segment braucht Start- und Endknoten	Un nouveau segment a besoin de ses nœuds de début et de fin	Un segmento nuevo necesita su nodo inicial y final
+{} must be between 0 and 1	{} muss zwischen 0 und 1 liegen	{} doit être compris entre 0 et 1	{} debe estar entre 0 y 1
+No node {}	Kein Knoten {}	Aucun nœud {}	Ningún nodo {}
+Not a point: {}	Kein Punkt: {}	Pas un point : {}	No es un punto: {}
+Unknown protection: {}	Unbekannter Schutz: {}	Protection inconnue : {}	Protección desconocida: {}
+No protection {}	Kein Schutz {}	Aucune protection {}	Ninguna protección {}
+Unknown fixing: {}	Unbekannte Befestigung: {}	Fixation inconnue : {}	Fijación desconocida: {}
+No fixing {}	Keine Befestigung {}	Aucune fixation {}	Ninguna fijación {}
+Unknown usage: {}	Unbekannte Verwendung: {}	Usage inconnu : {}	Uso desconocido: {}
+Unknown part kind: {}	Unbekannte Teileart: {}	Type de pièce inconnu : {}	Tipo de pieza desconocido: {}
+Harness data for machines and tools, 3D topology, protections, fixings and end treatment	Kabelbaumdaten für Maschinen und Werkzeuge, 3D-Topologie, Schutz, Befestigungen und Leitungsenden	Données de faisceau pour machines et outils, topologie 3D, protections, fixations et extrémités	Datos de mazos para máquinas y herramientas, topología 3D, protecciones, fijaciones y extremos
+Remove it	Entfernen	Le supprimer	Eliminarlo
+Lists the harnesses with wires, connectors, wire length, bundle diameter and where their 3D topology comes from	Listet die Kabelbäume mit Leitungen, Steckverbindern, Leitungslänge, Bündeldurchmesser und der Herkunft ihrer 3D-Topologie	Liste les faisceaux avec fils, connecteurs, longueur de fil, diamètre et l'origine de leur topologie 3D	Lista los mazos con cables, conectores, longitud de cable, diámetro del mazo y el origen de su topología 3D
+Harness interface for machines and tools: connectors with end treatment, wires with lengths and cut lengths, 3D topology, protections, fixings and parts (JSON format openecraft.harness)	Kabelbaum-Schnittstelle für Maschinen und Werkzeuge: Steckverbinder mit Leitungsenden, Leitungen mit Längen und Schnittlängen, 3D-Topologie, Schutz, Befestigungen und Teile (JSON-Format openecraft.harness)	Interface faisceau pour machines et outils : connecteurs avec extrémités, fils avec longueurs et longueurs de coupe, topologie 3D, protections, fixations et pièces (format JSON openecraft.harness)	Interfaz del mazo para máquinas y herramientas: conectores con extremos, cables con longitudes y longitudes de corte, topología 3D, protecciones, fijaciones y piezas (formato JSON openecraft.harness)
+3D topology of a harness: nodes, segments with centre curve, length and bundle diameter, the way of each wire and the problems	3D-Topologie eines Kabelbaums: Knoten, Segmente mit Mittellinie, Länge und Bündeldurchmesser, der Weg jeder Leitung und die Probleme	Topologie 3D d'un faisceau : nœuds, segments avec ligne médiane, longueur et diamètre, le chemin de chaque fil et les problèmes	Topología 3D de un mazo: nodos, segmentos con línea central, longitud y diámetro, el recorrido de cada cable y los problemas
+Stores the derived 3D topology of a harness for editing (replaces a stored one)	Speichert die abgeleitete 3D-Topologie eines Kabelbaums zum Bearbeiten (ersetzt eine gespeicherte)	Enregistre la topologie 3D déduite d'un faisceau pour la modifier (remplace celle enregistrée)	Guarda la topología 3D derivada de un mazo para editarla (sustituye una guardada)
+Drops the stored 3D topology of a harness; it is derived from the panel layout again	Verwirft die gespeicherte 3D-Topologie eines Kabelbaums; sie wird wieder aus dem Aufbau abgeleitet	Abandonne la topologie 3D enregistrée d'un faisceau ; elle est à nouveau déduite de l'implantation	Descarta la topología 3D guardada de un mazo; se deriva de nuevo del montaje
+Adds or changes a node of the stored topology (the derived one is stored first), or removes it	Fügt einen Knoten der gespeicherten Topologie hinzu oder ändert oder entfernt ihn (die abgeleitete wird zuerst gespeichert)	Ajoute, modifie ou supprime un nœud de la topologie enregistrée (la topologie déduite est enregistrée d'abord)	Añade, cambia o elimina un nodo de la topología guardada (primero se guarda la derivada)
+Node id, e.g. N1	Knoten-ID, z. B. N1	Identifiant du nœud, p. ex. N1	ID del nodo, p. ej. N1
+Position x, mm	Position x, mm	Position x, mm	Posición x, mm
+Position y, mm	Position y, mm	Position y, mm	Posición y, mm
+Position z, mm	Position z, mm	Position z, mm	Posición z, mm
+Device tags of the connectors at the node, separated by commas	BMK der Steckverbinder am Knoten, durch Kommas getrennt	Repères des connecteurs au nœud, séparés par des virgules	Identificadores de los conectores en el nodo, separados por comas
+Bend radius of the bundle at the node, mm	Biegeradius des Bündels am Knoten, mm	Rayon de courbure du faisceau au nœud, mm	Radio de curvatura del mazo en el nodo, mm
+Adds or changes a segment of the stored topology (the derived one is stored first), or removes it	Fügt ein Segment der gespeicherten Topologie hinzu oder ändert oder entfernt es (die abgeleitete wird zuerst gespeichert)	Ajoute, modifie ou supprime un segment de la topologie enregistrée (la topologie déduite est enregistrée d'abord)	Añade, cambia o elimina un segmento de la topología guardada (primero se guarda la derivada)
+Segment id, e.g. S1	Segment-ID, z. B. S1	Identifiant du segment, p. ex. S1	ID del segmento, p. ej. S1
+Node id at the start	Knoten-ID am Anfang	Identifiant du nœud au début	ID del nodo al inicio
+Node id at the end	Knoten-ID am Ende	Identifiant du nœud à la fin	ID del nodo al final
+Points of the centre curve between the nodes: x,y,z separated by semicolons, mm	Punkte der Mittellinie zwischen den Knoten: x,y,z durch Semikolons getrennt, mm	Points de la ligne médiane entre les nœuds : x,y,z séparés par des points-virgules, mm	Puntos de la línea central entre los nodos: x,y,z separados por punto y coma, mm
+Formboard length, mm (0: length of the centre curve)	Formbrettlänge, mm (0: Länge der Mittellinie)	Longueur sur planche, mm (0 : longueur de la ligne médiane)	Longitud en tablero, mm (0: longitud de la línea central)
+Adds or changes a wire protection on a segment (or on all segments), or removes it	Fügt einen Leitungsschutz auf einem Segment (oder allen Segmenten) hinzu oder ändert oder entfernt ihn	Ajoute, modifie ou supprime une protection de fils sur un segment (ou sur tous)	Añade, cambia o elimina una protección de cables en un segmento (o en todos)
+Id of the protection, e.g. P1	ID des Schutzes, z. B. P1	Identifiant de la protection, p. ex. P1	ID de la protección, p. ej. P1
+tape, tube, corrugated_tube, sleeve or heat_shrink	tape, tube, corrugated_tube, sleeve oder heat_shrink	tape, tube, corrugated_tube, sleeve ou heat_shrink	tape, tube, corrugated_tube, sleeve o heat_shrink
+Segment id (empty: all segments)	Segment-ID (leer: alle Segmente)	Identifiant du segment (vide : tous les segments)	ID del segmento (vacío: todos los segmentos)
+Start along the segment, 0 … 1	Anfang entlang des Segments, 0 … 1	Début le long du segment, 0 … 1	Inicio a lo largo del segmento, 0 … 1
+End along the segment, 0 … 1	Ende entlang des Segments, 0 … 1	Fin le long du segment, 0 … 1	Fin a lo largo del segmento, 0 … 1
+Adds or changes a fixing on a segment, or removes it	Fügt eine Befestigung auf einem Segment hinzu oder ändert oder entfernt sie	Ajoute, modifie ou supprime une fixation sur un segment	Añade, cambia o elimina una fijación en un segmento
+Id of the fixing, e.g. F1	ID der Befestigung, z. B. F1	Identifiant de la fixation, p. ex. F1	ID de la fijación, p. ej. F1
+clip, cable_tie, grommet or bracket	clip, cable_tie, grommet oder bracket	clip, cable_tie, grommet ou bracket	clip, cable_tie, grommet o bracket
+Segment id	Segment-ID	Identifiant du segment	ID del segmento
+Sets the end treatment of a connector or of one of its pins: terminal, seal, cavity plug, stripping length, KBL usage	Legt die Leitungsenden eines Steckverbinders oder eines seiner Pins fest: Kontakt, Abdichtung, Blindstopfen, Abisolierlänge, KBL-Verwendung	Définit le traitement des extrémités d'un connecteur ou d'une de ses broches : contact, joint, bouchon d'alvéole, longueur de dénudage, usage KBL	Define el tratamiento de los extremos de un conector o de uno de sus pines: terminal, junta, tapón de cavidad, longitud de pelado, uso KBL
+Device tag of the connector	BMK des Steckverbinders	Repère du connecteur	Identificador del conector
+Connection point (empty: all pins of the device)	Anschluss (leer: alle Pins des Geräts)	Point de connexion (vide : toutes les broches de l'appareil)	Punto de conexión (vacío: todos los pines del dispositivo)
+Part number of the terminal (crimp contact, ferrule, ring terminal)	Artikelnummer des Kontakts (Crimpkontakt, Aderendhülse, Ringkabelschuh)	Référence du contact (contact à sertir, embout, cosse à œillet)	Referencia del terminal (contacto de crimpado, puntera, terminal de anillo)
+Part number of the single wire seal	Artikelnummer der Einzeladerabdichtung	Référence du joint de fil	Referencia de la junta del cable
+Part number of the plugs of unused cavities	Artikelnummer der Blindstopfen freier Kammern	Référence des bouchons des alvéoles libres	Referencia de los tapones de las cavidades libres
+Stripping length, mm (0: from the cross-section)	Abisolierlänge, mm (0: aus dem Querschnitt)	Longueur de dénudage, mm (0 : selon la section)	Longitud de pelado, mm (0: según la sección)
+KBL usage: no end, ring terminal, splice or dangler (empty: none)	KBL-Verwendung: no end, ring terminal, splice oder dangler (leer: keine)	Usage KBL : no end, ring terminal, splice ou dangler (vide : aucun)	Uso KBL: no end, ring terminal, splice o dangler (vacío: ninguno)
+Adds or changes a further part of a harness (accessory, co-pack part, assembly, component), or removes it	Fügt ein weiteres Teil eines Kabelbaums hinzu (Zubehör, Beipackteil, Baugruppe, Bauteil) oder ändert oder entfernt es	Ajoute, modifie ou supprime une autre pièce d'un faisceau (accessoire, pièce jointe, sous-ensemble, composant)	Añade, cambia o elimina otra pieza de un mazo (accesorio, pieza adjunta, conjunto, componente)
+accessory, co_pack, assembly or component	accessory, co_pack, assembly oder component	accessory, co_pack, assembly ou component	accessory, co_pack, assembly o component
+Node id the part sits at	Knoten-ID, an dem das Teil sitzt	Identifiant du nœud où se trouve la pièce	ID del nodo donde está la pieza
+Tape	Band	Ruban	Cinta
+Corrugated tube	Wellrohr	Gaine annelée	Tubo corrugado
+Braided sleeve	Geflechtschlauch	Gaine tressée	Funda trenzada
+Heat shrink tube	Schrumpfschlauch	Gaine thermorétractable	Tubo termorretráctil
+Clip	Clip	Clip	Clip
+Cable tie	Kabelbinder	Collier de serrage	Brida
+Grommet	Tülle	Passe-fil	Pasacables
+Bracket	Halter	Support	Soporte

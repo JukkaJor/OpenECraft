@@ -145,7 +145,11 @@ fn normal(t: &Tri) -> Option<[f32; 3]> {
 
 /// The scene as JT: a group per enclosure with a tri-strip set shape per solid.
 pub fn jt(prj: &Project) -> Vec<u8> {
-    let scenes = scene(prj);
+    jt_of(if prj.info.name.is_empty() { "Panel layout" } else { &prj.info.name }, &scene(prj))
+}
+
+/// Scenes as JT: a group per scene with a tri-strip set shape per solid.
+pub fn jt_of(title: &str, scenes: &[EnclosureScene]) -> Vec<u8> {
     let tris: Vec<Vec<Vec<Tri>>> = scenes.iter().map(|es| es.solids.iter().map(|s| z_up(es, s)).collect()).collect();
     let groups: Vec<openecraft_jt::Group> = scenes
         .iter()
@@ -155,7 +159,7 @@ pub fn jt(prj: &Project) -> Vec<u8> {
             bodies: es.solids.iter().zip(tris).map(|(s, t)| openecraft_jt::Body { name: &s.name, color: s.color, transparent: s.transparent, triangles: t }).collect(),
         })
         .collect();
-    openecraft_jt::write_jt(if prj.info.name.is_empty() { "Panel layout" } else { &prj.info.name }, &groups)
+    openecraft_jt::write_jt(title, &groups)
 }
 
 fn json_str(s: &str) -> String {
@@ -165,12 +169,16 @@ fn json_str(s: &str) -> String {
 /// The scene as glTF 2.0 (JSON, buffer embedded as data URI): a node per enclosure
 /// with a child node and mesh per solid, flat normals, one material per colour.
 pub fn gltf(prj: &Project) -> String {
-    let scenes = scene(prj);
+    gltf_of(&prj.info.name, &scene(prj))
+}
+
+/// Scenes as glTF 2.0: a node per scene with a child node and mesh per solid.
+pub fn gltf_of(title: &str, scenes: &[EnclosureScene]) -> String {
     let mut bin: Vec<u8> = Vec::new();
     let (mut views, mut accessors, mut meshes, mut nodes, mut materials) = (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new());
     let mut material_of: HashMap<([u8; 3], bool), usize> = HashMap::new();
     let mut roots = Vec::new();
-    for es in &scenes {
+    for es in scenes {
         let mut children = Vec::new();
         for s in es.solids.iter().filter(|s| !s.triangles.is_empty()) {
             let mut pos: Vec<f32> = Vec::with_capacity(s.triangles.len() * 9);
@@ -215,7 +223,7 @@ pub fn gltf(prj: &Project) -> String {
     }
     let roots = roots.iter().map(|r| r.to_string()).collect::<Vec<_>>().join(",");
     let mut out = String::from("{");
-    let _ = write!(out, r#""asset":{{"version":"2.0","generator":"OpenECraft"}},"scene":0,"scenes":[{{"name":{},"nodes":[{roots}]}}],"#, json_str(&prj.info.name));
+    let _ = write!(out, r#""asset":{{"version":"2.0","generator":"OpenECraft"}},"scene":0,"scenes":[{{"name":{},"nodes":[{roots}]}}],"#, json_str(title));
     let _ = write!(out, r#""nodes":[{}],"meshes":[{}],"materials":[{}],"#, nodes.join(","), meshes.join(","), materials.join(","));
     let _ = write!(out, r#""accessors":[{}],"bufferViews":[{}],"#, accessors.join(","), views.join(","));
     let _ = write!(out, r#""buffers":[{{"byteLength":{},"uri":"data:application/octet-stream;base64,{}"}}]}}"#, bin.len(), crate::document::base64_encode(&bin));

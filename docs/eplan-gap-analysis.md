@@ -577,9 +577,12 @@ Teamcenter, Windchill) are left to the CSV / JSON profile. Size: M.
 
 ### 3.19 Harness, field wiring and mounting instructions
 
-Harness: assignment, lengths, connectors, bundle diameter and KBL export exist.
-EPLAN Harness proD adds 3D harness routing on the machine model, nailboard /
-formboard drawings to scale, splices, grommets and tape / sleeve coverings. Field
+Harness: assignment, lengths, connectors, bundle diameter, nailboards to scale, a 3D
+topology (derived from the panel routes or edited: nodes, segments, bend radii),
+tape / tube / sleeve coverings, clips and grommets, end treatment, a KBL export
+following the KBL 2.4 SR-1 schema and a JSON / CSV interface for machines exist.
+EPLAN Harness proD adds interactive 3D harness routing on the machine model (MCAD
+geometry) and splices inside the bundle. Field
 wiring (route network, bonding, accessories) matches FieldSys. Smart Mounting is
 missing (section 3.11). Size: L (nailboards).
 

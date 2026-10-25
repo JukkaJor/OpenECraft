@@ -127,7 +127,8 @@ bill of materials.
   diagram* report list the pins in plug order with the socket side, the pin side and
   the potential; parts with `Plug pin` functions give the pin count (unused pins are
   listed as spare). The check reports pins placed twice and more pins than the plug
-  parts have; KBL export names the housing part of plug connectors.
+  parts have; the KBL export names the housing part of plug connectors with all
+  cavities of the part.
 - **Marking** (*Project › Marking…*: wire marker text, material per kind with piece
   counts and export; *File › Export marking (CSV)…*, report *Marking*): device markers (legend
   plates for door devices; the enclosure's location left out of the tag), terminal markers
@@ -521,8 +522,27 @@ bill of materials.
   reported by the check; the *harness data*
   report lists their wires with length (routed in the panel layout or the harness's
   field length) and end treatment, the harness window shows the connectors with their
-  pin assignment and the bundle diameter; export as simplified **KBL** (VDA 4964, XML)
-  for harness manufacturing. **Nailboard drawings** (formboards) to scale: the bundle as
+  pin assignment and the bundle diameter. **KBL** (VDA 4964, schema KBL 2.4 SR-1,
+  checked against the schema in the tests): one container per harness with general
+  wires and cables (cores), connector housings with slots and cavities, terminals,
+  seals and cavity plugs, wire protections, fixings, accessories, co-pack parts,
+  assemblies and components, the connections between contact points, schematic
+  connections (potentials), wiring groups, project options as modules, revisions,
+  approvals, units, default tolerances and the 3D topology (exporters `kbl`,
+  `kbl_zip`). **3D harness geometry**: nodes and segments with centre curves derived
+  from the 3D routes of the panel layout (connectors outside it placed around a
+  common node), or stored in the harness and edited (positions, bend radii, formboard
+  lengths, control points); every wire is routed through the segments, each segment
+  has its bundle diameter; tape, tubes, corrugated tubes, sleeves and heat shrink on
+  (parts of) segments, clips, cable ties, grommets and brackets at locations; the
+  check reports broken topologies and too small bend radii; export of the bundle in
+  3D (glTF, JT). **Harness interface** for machines and tools
+  ([docs/harness-interface.md](docs/harness-interface.md)): the complete harness data
+  as JSON (`harness_json`, command `harness_data`) and the wire processing list for
+  cutting, stripping and crimping machines (`harness_processing`, CSV in processing
+  order with cut lengths, stripping lengths, terminals and seals); the plugin
+  *Harnesses* edits topology, protections, fixings, end treatment and further parts
+  from the command line and MCP. **Nailboard drawings** (formboards) to scale: the bundle as
   branches from a common node to the connectors, each as long as the wire lengths
   require and as thick as its bundle, with nails, branch lengths and the pin table of
   every connector, on A3 at the smallest standard scale that fits (harness window
@@ -927,7 +947,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Wiring the panel | toolbar *Wiring*: pick a wire in the list or in 3D, *Wired* / *Problem*; web: open with `#wiring` |
 | Project texts in several languages | *Project › Project languages…*: target languages, *Collect texts from the project*, translate (or CSV for translators); *File › Export as PDF in language* |
 | Hoses / PCT loops | draw wires between fluid / P&ID ports; hose properties and configuration in the wire properties; *Project › Fluid and process…* (hoses, device groups, electro-fluid links and *Synchronize*, PCT loops) |
-| Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; KBL export in the window |
+| Harnesses | *Project › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; 3D topology, protections, fixings, end treatment, KBL, harness interface and 3D export in the window |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
 | Pages | `Page Up` / `Page Down`, navigator on the left |
 | Undo / redo | `Ctrl+Z` / `Ctrl+Y` |
@@ -955,7 +975,9 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/symlib.rs` | User symbols: registry, editing helpers, library files |
 | `crates/openecraft-core/src/forms.rs` | Title blocks (placeholders) and report forms |
 | `crates/openecraft-core/src/production.rs` | Panel production: drilling pattern, door cutouts, NC export, wire end treatment, clearances |
-| `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
+| `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, end treatment; `harness/topology.rs`: 3D topology |
+| `crates/openecraft-core/src/kbl.rs` | KBL export (VDA 4964, KBL 2.4 SR-1) |
+| `crates/openecraft-core/src/harness_export.rs` | Harness interface: JSON, wire processing list, bundle in 3D |
 | `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
 | `crates/openecraft-core/src/mounting.rs` | Mounting assistant: mounting order, mounted / problem marks, progress, CSV |
