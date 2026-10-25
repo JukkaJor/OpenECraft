@@ -572,8 +572,9 @@ Gaps noted in AGENTS.md itself: no extension points for symbols, importers and
 project events; plugins cannot add UI (dialogs, navigators, toolbar buttons) or
 react to events (page opened, project saved, property changed); no in-process
 scripting language for end users (EPLAN: C# scripts without a licence, full API with
-licence). Enterprise integration is broad; connector-specific adapters (SAP IDoc,
-Teamcenter, Windchill) are left to the CSV / JSON profile. Size: M.
+licence). Enterprise integration is broad and Autodesk Vault is connected directly
+(Vault Data API: browsing, imports, check-ins, item links); other connector-specific
+adapters (SAP IDoc, Teamcenter, Windchill) are left to the CSV / JSON profile. Size: M.
 
 ### 3.19 Harness, field wiring and mounting instructions
 

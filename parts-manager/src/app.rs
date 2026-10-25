@@ -27,7 +27,7 @@ impl FileKind for Purpose {
             Purpose::Model(kind) => kind.filter(),
             Purpose::Attachment => (
                 tr("Part files (documents, images, models, macros)"),
-                &["pdf", "png", "jpg", "jpeg", "gif", "webp", "svg", "dxf", "dwg", "step", "stp", "igs", "iges", "stl", "obj", "jt", "ifc", "json", "xml", "txt", "csv", "zip"],
+                &["pdf", "png", "jpg", "jpeg", "gif", "webp", "svg", "dxf", "dwg", "step", "stp", "igs", "iges", "x_t", "x_b", "stl", "obj", "jt", "ifc", "json", "xml", "txt", "csv", "zip"],
             ),
         }
     }

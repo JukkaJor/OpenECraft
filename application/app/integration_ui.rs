@@ -371,6 +371,17 @@ impl App {
     }
 
     /// Loaded file of another system: shown as import preview.
+    /// Reviews a file of another system with the connector `id` (e.g. Vault items for plm).
+    pub(super) fn integration_review(&mut self, id: &str, name: &str, text: String) {
+        if let Some(i) = CONNECTORS.iter().position(|c| c.id == id) {
+            if i != self.integration_ui.connector {
+                self.integration_ui.connector = i;
+                self.integration_ui.profile.clear();
+            }
+        }
+        self.integration_file_loaded(name, text);
+    }
+
     pub(super) fn integration_file_loaded(&mut self, name: &str, text: String) {
         let ui_state = &mut self.integration_ui;
         let connector = ui_state.connector.min(CONNECTORS.len() - 1);

@@ -8,7 +8,7 @@ is in [architecture-analysis.md](architecture-analysis.md).
 
 ```
 openecraft-i18n ──┐
-openecraft-parts ─┼─► openecraft-jt / openecraft-step / openecraft-edz
+openecraft-parts ─┼─► openecraft-jt / openecraft-xt / openecraft-step / openecraft-edz
                   └─► openecraft-core ─► openecraft-api ─► editor, cli
                            │                 ▲
 openecraft-client ─► openecraft-ui ──────────┘ (editor, parts-manager)
@@ -28,6 +28,11 @@ openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core,
 - `openecraft-auth` is native only and used by the servers alone: password hashes,
   session tokens, sign-in with directories (Active Directory, LDAP) and the access
   settings file. See [access-control.md](access-control.md).
+- Autodesk Vault is a server of another vendor: its requests, answer types and the
+  operations of several requests (`Job`: uploads with checkout and check-in, the item
+  lookup) live in `openecraft_client::vault`. The editor (`application/vault.rs`) runs
+  the jobs in the background, the command line (`cli/src/vault.rs`) blocking; item
+  links reach the project through the PLM connector of `openecraft_core::integration`.
 
 ## Layers inside `openecraft-core`
 

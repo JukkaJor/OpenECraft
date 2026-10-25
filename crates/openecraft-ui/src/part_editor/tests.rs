@@ -28,13 +28,13 @@ fn models_are_assigned_to_the_part() {
 #[test]
 fn model_file_filters() {
     assert_eq!(ModelKind::Front2d.filter().1, &["svg"]);
-    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj", "step", "stp", "igs", "iges", "ifc", "jt"]);
+    assert_eq!(ModelKind::Mesh3d.filter().1, &["stl", "obj", "step", "stp", "igs", "iges", "x_t", "x_b", "xmt_txt", "xmt_bin", "ifc", "jt"]);
 }
 
 #[test]
 fn files_go_to_the_reader_of_their_format() {
     let mut part = Part::default();
-    for (name, format) in [("Model.STEP", "STEP"), ("model.stp", "STEP"), ("model.IGS", "IGES"), ("model.iges", "IGES"), ("model.ifc", "IFC"), ("model.jt", "JT")] {
+    for (name, format) in [("Model.STEP", "STEP"), ("model.stp", "STEP"), ("model.IGS", "IGES"), ("model.iges", "IGES"), ("model.x_t", "Parasolid"), ("model.X_B", "Parasolid"), ("model.ifc", "IFC"), ("model.jt", "JT")] {
         let err = apply_model(&mut part, ModelKind::Mesh3d, name, b"garbage").unwrap_err();
         assert!(err.contains(format), "{name}: {err}");
     }

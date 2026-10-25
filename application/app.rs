@@ -67,6 +67,7 @@ mod review_ui;
 mod revisions_ui;
 mod report_blocks_ui;
 mod symbol_editor;
+mod vault_ui;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Workspace {
@@ -149,6 +150,9 @@ pub struct App {
     title: String,
     /// Project server: shared projects and locks.
     remote: crate::remote::Remote,
+    /// Autodesk Vault: browsing, imports and check-ins.
+    vault: crate::vault::Vault,
+    vault_ui: vault_ui::VaultUi,
     /// Comments and markup.
     review_ui: review_ui::ReviewUi,
     revisions_ui: revisions_ui::RevisionsUi,
@@ -178,6 +182,7 @@ impl App {
         let mut eplan_url: Option<String> = None;
         let mut server_kind: Option<PortalKind> = None;
         let mut remote = crate::remote::Remote::default();
+        let mut vault = crate::vault::Vault::default();
         let mut macro_lib = None;
         let mut disabled_plugins: Vec<String> = Vec::new();
         let mut language: Option<String> = None;
@@ -209,6 +214,15 @@ impl App {
             }
             if let Some(user) = eframe::get_value::<String>(storage, "project_server_user").filter(|u| !u.is_empty()) {
                 remote.user = user;
+            }
+            if let Some(url) = eframe::get_value(storage, "vault_url") {
+                vault.url = url;
+            }
+            if let Some(name) = eframe::get_value::<String>(storage, "vault_name").filter(|n| !n.is_empty()) {
+                vault.vault_name = name;
+            }
+            if let Some(user) = eframe::get_value(storage, "vault_user") {
+                vault.user = user;
             }
         }
         openecraft_i18n::init(language.as_deref());
@@ -292,6 +306,8 @@ impl App {
             message: None,
             title: String::new(),
             remote,
+            vault,
+            vault_ui: Default::default(),
             review_ui: Default::default(),
             revisions_ui: Default::default(),
             compare_ui: Default::default(),
@@ -365,6 +381,8 @@ impl App {
 
     fn replace_project(&mut self, prj: Project, file_name: Option<String>) {
         self.remote.close();
+        // Another project must not be checked in as a version of the vault's file.
+        self.vault.origin = None;
         self.session.replace(prj, file_name);
         self.editor.selection.clear();
         self.editor.cancel();
@@ -408,6 +426,7 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
         self.poll_remote(&ctx);
+        self.poll_vault(&ctx);
         self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
@@ -496,6 +515,7 @@ impl eframe::App for App {
         }
         self.windows(&ctx);
         self.remote_window(&ctx);
+        self.vault_window(&ctx);
 
         // Commit finished edits as one undo step.
         let can_commit = !ctx.input(|i| i.pointer.any_down()) && ctx.memory(|m| m.focused().is_none()) && !self.editor.busy() && !self.panel_ui.busy() && !self.symed.busy() && !self.forms_ui.busy();
@@ -533,6 +553,9 @@ impl eframe::App for App {
         eframe::set_value(storage, "project_database", &self.projects_ui.db);
         eframe::set_value(storage, "project_server_url", &self.remote.url);
         eframe::set_value(storage, "project_server_user", &self.remote.user);
+        eframe::set_value(storage, "vault_url", &self.vault.url);
+        eframe::set_value(storage, "vault_name", &self.vault.vault_name);
+        eframe::set_value(storage, "vault_user", &self.vault.user);
         eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
         eframe::set_value(storage, crate::shortcuts::STORAGE_KEY, &self.editor.shortcuts.to_storage());
         eframe::set_value(storage, crate::workspaces::STORAGE_KEY, &self.layouts);

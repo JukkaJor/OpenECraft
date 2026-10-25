@@ -1,8 +1,9 @@
 //! State the tools work on: the open project (with its file, undo history and saved
-//! state) and the parts server. The command line uses one session per call, the MCP
-//! server one for the whole connection.
+//! state), the parts server and Autodesk Vault. The command line uses one session per
+//! call, the MCP server one for the whole connection.
 
-use crate::parts_server::Server;
+use crate::parts_server::{Http, Server};
+use crate::vault::Vault;
 use openecraft_core::archive::{self, Conversion};
 use openecraft_api::Plugins;
 use openecraft_core::history::History;
@@ -17,13 +18,15 @@ pub struct Session {
     saved: Option<Project>,
     history: Option<History>,
     pub server: Server,
+    pub vault: Vault,
     /// Built-in plugins; the command line adds the external ones (see `main`).
     pub plugins: Plugins,
 }
 
 impl Session {
     pub fn new(server: Server) -> Session {
-        Session { project: None, path: None, saved: None, history: None, server, plugins: Plugins::new(crate::tools::all().map(|t| t.name)) }
+        let vault = Vault::new(Box::new(Http));
+        Session { project: None, path: None, saved: None, history: None, server, vault, plugins: Plugins::new(crate::tools::all().map(|t| t.name)) }
     }
 
     pub fn project(&self) -> Result<&Project, String> {

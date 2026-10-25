@@ -21,6 +21,7 @@ mod shortcuts;
 mod workspaces;
 mod parts_ui;
 mod remote;
+mod vault;
 mod session;
 mod wiring_ui;
 

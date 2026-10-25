@@ -20,6 +20,11 @@ impl App {
             self.save_remote(Vec::new());
             return;
         }
+        // A project opened from the vault (and not saved locally since) goes back to it.
+        if self.vault.origin.is_some() && self.vault.signed_in && self.session.file_name.is_none() && !save_as {
+            self.check_in_project();
+            return;
+        }
         let json = self.session.prj.to_json();
         let result = match (&self.session.file_name, save_as || !FileIo::can_save_in_place()) {
             (Some(path), false) => self.io.save_to(path, &json).map(|_| Some(path.clone())),
@@ -123,6 +128,15 @@ impl App {
     }
 
     fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
+        let title = text(&e.title).to_string();
+        match self.exporter_output(e, lang, extra) {
+            Ok((name, out)) => self.export_bytes(ctx, name, (&title, &e.extension), &out),
+            Err(err) => self.notify(ctx, tr_fmt!("Export failed: {}", err)),
+        }
+    }
+
+    /// File name and content of an export; exporters that take a page get the current one.
+    pub(super) fn exporter_output(&self, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) -> Result<(String, Vec<u8>), String> {
         let takes = |n: &str| e.params.iter().any(|p| p.name == n);
         let page = self.session.prj.pages[self.session.page].name.clone();
         let base = self.suggested_name("x");
@@ -153,11 +167,7 @@ impl App {
             }),
             None => (e.run)(&self.session.prj, &self.session.analysis, &Args(&args)),
         };
-        let title = text(&e.title).to_string();
-        match result {
-            Ok(out) => self.export_bytes(ctx, name, (&title, &e.extension), &out.into_bytes()),
-            Err(err) => self.notify(ctx, tr_fmt!("Export failed: {}", err)),
-        }
+        result.map(|out| (name, out.into_bytes()))
     }
 
     pub(super) fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {

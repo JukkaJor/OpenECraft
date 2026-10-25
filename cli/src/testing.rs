@@ -259,3 +259,212 @@ pub fn new_session() -> Session {
     run(&mut s, "new_project", serde_json::json!({ "name": "Test" })).unwrap();
     s
 }
+
+pub const VAULT_URL: &str = "http://vault.test";
+pub const VAULT_TOKEN: &str = "V:session";
+
+/// A file of the fake vault: master id, folder, name, versions (id, content) and
+/// whether it is checked out.
+#[derive(Clone, Debug)]
+pub struct VaultFile {
+    pub id: String,
+    pub folder: String,
+    pub name: String,
+    pub versions: Vec<(String, Vec<u8>)>,
+    pub checked_out: bool,
+}
+
+/// Autodesk Vault with the routes of the Vault Data API the tools use, holding its
+/// data in memory. The user `anna` (password `pw`) signs in to the vault `Vault`
+/// (id 1) with the token [`VAULT_TOKEN`]; uploads come in parts of 4 bytes.
+#[derive(Clone, Default)]
+pub struct FakeVault {
+    /// Folder id, parent id, name.
+    pub folders: Rc<RefCell<Vec<(String, String, String)>>>,
+    pub files: Rc<RefCell<Vec<VaultFile>>>,
+    pub items: Rc<RefCell<Vec<serde_json::Value>>>,
+    uploads: Rc<RefCell<Vec<Vec<u8>>>>,
+    next_id: Rc<RefCell<u32>>,
+}
+
+impl FakeVault {
+    fn id(&self) -> String {
+        let mut n = self.next_id.borrow_mut();
+        *n += 1;
+        format!("{}", 100 + *n)
+    }
+
+    /// Adds a file with one version to a folder; returns the file id.
+    pub fn add(&self, folder: &str, name: &str, content: &[u8]) -> String {
+        let (id, version) = (self.id(), self.id());
+        self.files.borrow_mut().push(VaultFile { id: id.clone(), folder: folder.into(), name: name.into(), versions: vec![(version, content.to_vec())], checked_out: false });
+        id
+    }
+
+    fn version_json(f: &VaultFile, index: usize) -> serde_json::Value {
+        serde_json::json!({
+            "entityType": "FileVersion",
+            "id": f.versions[index].0,
+            "name": f.name,
+            "version": index + 1,
+            "revision": "A",
+            "state": "Work in Progress",
+            "isCheckedOut": f.checked_out,
+            "parentFolderId": f.folder,
+            "file": { "id": f.id },
+        })
+    }
+
+    fn contents(&self, folder: &str, q: Option<&str>) -> serde_json::Value {
+        let folder = if folder == "root" { "1" } else { folder };
+        let mut results: Vec<serde_json::Value> = Vec::new();
+        if q.is_none() {
+            for (id, _, name) in self.folders.borrow().iter().filter(|f| f.1 == folder) {
+                results.push(serde_json::json!({ "entityType": "Folder", "id": id, "name": name, "fullName": format!("$/{name}") }));
+            }
+        }
+        for f in self.files.borrow().iter() {
+            let hit = match q {
+                Some(q) => f.name.to_lowercase().contains(&q.to_lowercase()),
+                None => f.folder == folder,
+            };
+            if hit {
+                results.push(Self::version_json(f, f.versions.len() - 1));
+            }
+        }
+        serde_json::json!({ "pagination": { "limit": 1000, "totalResults": results.len() }, "results": results })
+    }
+
+    fn route(&self, method: &ehttp::Method, path: &str, query: &str, req: &ehttp::Request) -> Result<ehttp::Response, String> {
+        let param = |key: &str| query.split('&').filter_map(|kv| kv.split_once('=')).find(|(k, _)| *k == key).map(|(_, v)| decode(v));
+        let body: serde_json::Value = serde_json::from_slice(&req.body).unwrap_or_default();
+        let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
+        let mut files = self.files.borrow_mut();
+        let version = |files: &[VaultFile], vid: &str| files.iter().find_map(|f| f.versions.iter().position(|v| v.0 == vid).map(|i| (f.clone(), i)));
+        Ok(match (method, segments.as_slice()) {
+            (ehttp::Method::GET, ["sessions", "@current"]) => json(&serde_json::json!({ "accessToken": VAULT_TOKEN, "vaultInformation": { "id": "1", "name": "Vault" }, "userInformation": { "name": "anna" } })),
+            (ehttp::Method::GET, ["vaults", "1", "folders", folder, "contents"]) => {
+                drop(files);
+                json(&self.contents(folder, param("q").as_deref()))
+            }
+            (ehttp::Method::GET, ["vaults", "1", "search-results"]) => {
+                drop(files);
+                json(&self.contents("", Some(&param("q").unwrap_or_default())))
+            }
+            (ehttp::Method::GET, ["vaults", "1", "item-versions"]) => {
+                let q = param("q").unwrap_or_default();
+                let hits: Vec<serde_json::Value> = self.items.borrow().iter().filter(|i| i.to_string().contains(&q)).cloned().collect();
+                json(&serde_json::json!({ "results": hits }))
+            }
+            (ehttp::Method::GET, ["vaults", "1", "file-versions", vid]) => match version(&files, vid) {
+                Some((f, i)) => json(&Self::version_json(&f, i)),
+                None => vault_error(404, "File version not found"),
+            },
+            (ehttp::Method::GET, ["vaults", "1", "file-versions", vid, "content"]) => match version(&files, vid) {
+                Some((f, i)) => response(200, f.versions[i].1.clone()),
+                None => vault_error(404, "File version not found"),
+            },
+            (ehttp::Method::GET, ["vaults", "1", "files", id]) => match files.iter().find(|f| f.id == *id) {
+                Some(f) => json(&serde_json::json!({ "id": f.id, "fileVersion": Self::version_json(f, f.versions.len() - 1) })),
+                None => vault_error(404, "File not found"),
+            },
+            (ehttp::Method::POST, ["vaults", "1", "files"]) => {
+                let ticket = body["uploadTicket"].as_str().unwrap_or_default().to_string();
+                let content = ticket.parse::<usize>().ok().and_then(|i| self.uploads.borrow().get(i).cloned()).ok_or("unknown ticket")?;
+                let folder = body["folderId"].as_i64().unwrap_or(1).to_string();
+                let name = body["name"].as_str().unwrap_or_default().to_string();
+                if files.iter().any(|f| f.folder == folder && f.name.eq_ignore_ascii_case(&name)) {
+                    return Ok(vault_error(409, "A file of this name exists"));
+                }
+                let (id, vid) = (self.id(), self.id());
+                let f = VaultFile { id: id.clone(), folder, name, versions: vec![(vid, content)], checked_out: false };
+                let out = serde_json::json!({ "id": id, "fileVersion": Self::version_json(&f, 0) });
+                files.push(f);
+                let mut r = json(&out);
+                r.status = 201;
+                r
+            }
+            (ehttp::Method::POST, ["vaults", "1", "files", action]) => {
+                let (id, verb) = action.split_once(':').ok_or("no action")?;
+                let Some(f) = files.iter_mut().find(|f| f.id == id) else { return Ok(vault_error(404, "File not found")) };
+                match verb {
+                    "checkout" if f.checked_out => vault_error(409, "The file is checked out"),
+                    "checkout" => {
+                        f.checked_out = true;
+                        json(&Self::version_json(f, f.versions.len() - 1))
+                    }
+                    "undo-checkout" => {
+                        f.checked_out = false;
+                        json(&Self::version_json(f, f.versions.len() - 1))
+                    }
+                    "checkin" if !f.checked_out => vault_error(409, "The file is not checked out"),
+                    "checkin" => {
+                        let ticket = body["uploadTicket"].as_str().unwrap_or_default();
+                        let content = ticket.parse::<usize>().ok().and_then(|i| self.uploads.borrow().get(i).cloned()).ok_or("unknown ticket")?;
+                        let vid = self.id();
+                        f.versions.push((vid, content));
+                        f.checked_out = body["keepCheckedOut"].as_bool().unwrap_or(false);
+                        json(&Self::version_json(f, f.versions.len() - 1))
+                    }
+                    _ => vault_error(404, "unknown action"),
+                }
+            }
+            (ehttp::Method::POST, ["vaults", "1", "file-uploads"]) => {
+                let mut uploads = self.uploads.borrow_mut();
+                uploads.push(Vec::new());
+                json(&serde_json::json!({ "uploadId": (uploads.len() - 1).to_string(), "uploadSessionToken": "s0", "maxPartSize": 4 }))
+            }
+            (ehttp::Method::PUT, ["vaults", "1", "file-uploads", upload, "parts", index]) => {
+                let i: usize = index.parse().map_err(|_| "bad part")?;
+                if req.headers.get("X-Vault-Upload-Session") != Some(format!("s{i}").as_str()) {
+                    return Ok(vault_error(400, "Wrong upload session"));
+                }
+                let mut uploads = self.uploads.borrow_mut();
+                let u: usize = upload.parse().map_err(|_| "bad upload")?;
+                uploads[u].extend_from_slice(&req.body);
+                json(&serde_json::json!({ "uploadId": upload, "uploadSessionToken": format!("s{}", i + 1), "maxPartSize": 4 }))
+            }
+            (ehttp::Method::POST, ["vaults", "1", "file-uploads", action]) => {
+                let upload = action.strip_suffix(":complete").ok_or("no action")?;
+                json(&serde_json::json!({ "uploadId": upload, "state": "completed", "uploadTicket": upload }))
+            }
+            _ => vault_error(404, "unknown path"),
+        })
+    }
+}
+
+fn vault_error(status: u16, detail: &str) -> ehttp::Response {
+    response(status, serde_json::to_vec(&serde_json::json!({ "statusCode": status, "errorCode": "Error", "title": "Vault", "detail": detail })).unwrap())
+}
+
+impl Transport for FakeVault {
+    fn fetch(&self, req: &ehttp::Request) -> Result<ehttp::Response, String> {
+        let rest = req.url.strip_prefix(VAULT_URL).ok_or("host not found")?;
+        let rest = rest.strip_prefix(openecraft_client::vault::API_PATH).ok_or("no API path")?;
+        let (path, query) = rest.split_once('?').unwrap_or((rest, ""));
+        match (&req.method, path) {
+            (ehttp::Method::GET, "/server-info") => return Ok(json(&serde_json::json!({ "name": "Vault Professional", "productVersion": "31.0.0" }))),
+            (ehttp::Method::POST, "/sessions") => {
+                let body: serde_json::Value = serde_json::from_slice(&req.body).map_err(|e| e.to_string())?;
+                let input = &body["input"];
+                return Ok(if input["userName"] == "anna" && input["password"] == "pw" && input["vault"] == "Vault" {
+                    json(&serde_json::json!({ "id": "9", "accessToken": VAULT_TOKEN, "vaultInformation": { "id": "1", "name": "Vault" }, "userInformation": { "name": "anna" } }))
+                } else {
+                    vault_error(401, "The user name or password is wrong.")
+                });
+            }
+            _ => {}
+        }
+        if req.headers.get("Authorization") != Some(format!("Bearer {VAULT_TOKEN}").as_str()) {
+            return Ok(vault_error(401, "Not signed in"));
+        }
+        self.route(&req.method, path, query, req)
+    }
+}
+
+/// Session with the fake vault as its Vault (not signed in yet).
+pub fn session_with_vault(vault: &FakeVault) -> Session {
+    let mut s = session();
+    s.vault = crate::vault::Vault::new(Box::new(vault.clone()));
+    s
+}

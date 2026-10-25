@@ -142,6 +142,8 @@ pub fn mime_type(ext: &str) -> &'static str {
         "dxf" => "application/dxf",
         "dwg" => "image/vnd.dwg",
         "igs" | "iges" => "model/iges",
+        "x_t" => "model/vnd.parasolid.transmit.text",
+        "x_b" => "model/vnd.parasolid.transmit.binary",
         "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "zip" | "jt" | "ifc" | "oecz" => "application/octet-stream",
         _ => "application/json",
     }

@@ -275,8 +275,11 @@ bill of materials.
   - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ, **STEP**:
     solids and surface models of AP203 / AP214 / AP242 files, placed by their
     assembly structure, tessellated and converted to mm; **IGES 5.3**: solids and
-    trimmed surfaces; **IFC**: tessellated, faceted and extruded bodies of all
-    products, placed and converted to mm; **JT**: the tri-strip meshes of JT 8 files);
+    trimmed surfaces; **Parasolid** (`.x_t` / `.x_b`): bodies of V13 and newer
+    transmit files, planes, cylinders, cones, spheres, tori and B-surfaces tessellated
+    exactly, blends and other procedural faces filled from their boundary; **IFC**:
+    tessellated, faceted and extruded bodies of all products, placed and converted to
+    mm; **JT**: the tri-strip meshes of JT 8 files);
   - **project parts**: parts are copied into the project when assigned; synchronize
     project ← database, transfer project → database, remove unused project parts;
   - **part selection** dialog with *device selection* (only parts providing the device's
@@ -505,7 +508,10 @@ bill of materials.
   faceted solids with colours, millimetres, z up), **IGES 5.3** (MCAD; B-rep solids
   with planar faces, open shells for non-closed meshes, colours and names), **IFC4**
   (BIM; a distribution board per enclosure with its components as triangulated
-  elements) and **JT** (PLM viewers; tri-strip meshes per item, JT 8.1 layout) –
+  elements), **JT** (PLM viewers; tri-strip meshes per item, JT 8.1 layout) and
+  **Parasolid XT** (MCAD such as SolidWorks, NX, Solid Edge, Onshape; transmit text of
+  schema V13 in metres, every closed part a faceted solid body whose coplanar
+  triangles are merged into planar faces, open meshes a sheet body) –
   walls, door, mounting plate, rails, ducts, busbars and devices with the 3D models of
   their parts.
   **DXF / DWG import** (*File › Import DXF / DWG as page…*): old drawings as graphics
@@ -811,6 +817,49 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   `POST /login`, `POST /logout`, `GET /users`, `PUT|DELETE /users/{name}`, `GET|PUT /access`
   (see `openecraft_core::collab`).
 
+### Autodesk Vault
+
+OpenECraft connects to Autodesk Vault Professional 2025.2 or newer through the Vault
+Data API (REST, `/AutodeskDM/Services/api/vault/v2`), so projects, documents and 3D
+models are exchanged with the PDM system directly instead of through files.
+
+- In the editor: *File › Autodesk Vault…* – enter the server address, the knowledge
+  vault, user name and password (or the access token of a Vault session or an Autodesk
+  account) and *Sign in*. Browse the folders and search the file properties below the
+  folder shown.
+- **Import**: a selected file is opened as the project (`.oec`, `.oecz`), imported into
+  the parts database (CSV, JSON, BMEcat, EPLAN XML, EDZ), assigned as 2D / 3D model of a
+  part (SVG, STEP, IGES, Parasolid, JT, IFC, STL, OBJ – e.g. models of the mechanical design kept
+  in the vault), inserted as a page (DXF, DWG) or as a document page (PDF, Office files,
+  images), read with a connector of the enterprise integration layer, or saved as a
+  local file. The file name suggests the use.
+- **Export**: the project file, every export of *File › Export* (PDF, DXF / DWG, the
+  panel layout in 3D as STEP, IGES, Parasolid, JT, glTF or IFC, reports, PLC tables, exports of
+  plugins) and the connector exports go into the folder shown. A file of the same name
+  there gets a new version (checked out, uploaded in parts, checked in with the
+  comment; the checkout is undone when something fails), otherwise the file is added.
+  A project opened from the vault is checked in again with *File › Check in … to Vault*.
+- **Items**: *Update part links from Vault items* finds the Vault item of every project
+  part (by item number or by its *Part Number* property) and shows the item numbers,
+  revisions and lifecycle states as changes of the PLM connector for review, with the
+  same conflict detection as file imports.
+- Command line / MCP: `vault_connect`, `vault_browse`, `vault_items`, `vault_download`,
+  `vault_open`, `vault_upload`, `vault_sync_items`. An MCP session signs in once with
+  `vault_connect`; the command line starts a session per call and takes server, token
+  and vault id from `OPENECRAFT_VAULT_URL`, `OPENECRAFT_VAULT_TOKEN` and
+  `OPENECRAFT_VAULT_ID` (`vault_connect` shows the token and vault id of a sign-in).
+
+```bash
+openecraft-cli vault_connect --url https://vault.example.com --user anna --password …
+export OPENECRAFT_VAULT_URL=https://vault.example.com OPENECRAFT_VAULT_TOKEN=V:… OPENECRAFT_VAULT_ID=101
+openecraft-cli vault_browse --query "Plant 1"
+openecraft-cli -p plant.oec vault_upload --folder 42 --format step --comment "Panel layout"
+```
+
+- Passwords are not stored and the token is kept in memory only. The browser version
+  needs a Vault server (or a reverse proxy in front of it) that allows cross-origin
+  requests from the editor's address.
+
 ### Parts manager
 
 `openecraft-parts-manager` is a standalone application that maintains the parts of a
@@ -932,7 +981,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Workspaces | *View › Workspaces*: save the workspace, the arrangement of the panels and the open windows under a name and restore them with one click (kept by the app) |
 | Keyboard shortcuts | *View › Keyboard shortcuts…*: record, clear or reset the keys of open, save, undo / redo, find, select all, page up / down, fit, wire and text tool, rotate, mirror, wire corner, routing and finishing polylines; conflicts are shown, the keys are kept by the app and shown in the menus and the help |
 | Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
-| Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
+| Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT / Parasolid) |
 | Import old drawings | *File › Import DXF / DWG as page…* |
 | Own symbols | *Project › Symbol editor…*; they appear under *User symbols* in the symbol list |
 | Title blocks / report forms | *Project › Title blocks and report forms…*; per page in the page properties |
@@ -954,10 +1003,11 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); catalog in `src/catalog/*.tsv` |
 | `crates/openecraft-core` | Headless project model shared by the editor and the command line: pages, devices, netlist, checks, reports, export |
 | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, server API types, data portal (faceted search, lifecycle, update check), 3D math |
-| `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
+| `crates/openecraft-step` | STEP, IGES and Parasolid import: B-rep models tessellated into part meshes (uses `monstertruck`; Parasolid parsed by `parasolid-core`) |
 | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): parts with connection points and mounting holes, pictures and macros (7-Zip with `sevenz-rust2`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
-| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line; wrapper of the EPLAN Data Portal API (`eplan`) |
+| `crates/openecraft-xt` | Parasolid XT writer: triangle meshes as faceted solid and sheet bodies (transmit text, schema V13, own implementation) |
+| `crates/openecraft-client` | Requests to the parts and project servers and to Autodesk Vault (Vault Data API, uploads and check-ins, item lookup) and decoding of their answers, shared by the applications and the command line; wrapper of the EPLAN Data Portal API (`eplan`) |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |
 | `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
 | `parts-server/` | `openecraft-parts-server`: data portal server (REST API, SQLite or JSON storage, users, web page) |
@@ -1011,7 +1061,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/pdf.rs` / `dxf.rs` | PDF and DXF export (through the `render::Draw` trait) |
 | `crates/openecraft-core/src/dxf_import.rs` | DXF import as a schematic page |
 | `crates/openecraft-core/src/dwg.rs` | DWG export and import (converted from / to DXF with `acadrust`) |
-| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC and JT export |
+| `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC, JT and Parasolid export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
 | `application/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
@@ -1033,6 +1083,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
 | `application/remote.rs`, `application/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
+| `application/vault.rs`, `application/app/vault_ui.rs` | Autodesk Vault client and window: browsing, imports, uploads and check-ins, item links; requests in `crates/openecraft-client/src/vault.rs` |
 | `application/app.rs` | Application UI (menus, panels, dialogs); the windows in `application/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |
 | `application/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |
