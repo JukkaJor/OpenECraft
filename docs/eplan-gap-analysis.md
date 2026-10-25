@@ -688,7 +688,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
 | 3 | Graphical report forms | partly: graphical terminal, cable and plug diagrams and PLC assignment | d7e57f2, eca317c | form editor |
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches, check schemes as files | 42d8f5b, 9f7367b | – |
-| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, see log | – |
+| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, 84181bd, 1463540 | – |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
 | 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print | b0ae357, 9ec50c4 | native print dialog, print of panel layout faces |
 | 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
