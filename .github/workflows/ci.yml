@@ -37,6 +37,19 @@ jobs:
             target/release/openecraft-cli
             target/release/openecraft-cli.exe
 
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Inno Setup
+        run: choco install innosetup --no-progress -y
+      - run: powershell -ExecutionPolicy Bypass -File installer\windows\build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openecraft-windows-installer
+          path: target/installer/*.exe
+
   web:
     runs-on: ubuntu-latest
     steps:

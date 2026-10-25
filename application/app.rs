@@ -357,10 +357,14 @@ impl App {
         }
     }
 
-    /// Opens the wiring assistant instead of the schematic.
-    pub fn start_wiring(mut self, wiring: bool) -> Self {
+    /// Opens the wiring assistant instead of the schematic and a project file, e.g. one
+    /// double-clicked in the file manager (desktop).
+    pub fn start(mut self, wiring: bool, file: Option<String>) -> Self {
         if wiring {
             self.workspace = Workspace::Wiring;
+        }
+        if let Some(path) = file {
+            self.io.open_path(&path, Purpose::Project);
         }
         self
     }
