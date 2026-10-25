@@ -19,6 +19,7 @@ impl App {
             let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
             ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
             ui.selectable_value(&mut self.left_tab, LeftTab::Unplaced, tr("Unplaced")).on_hover_text(tr("PLC channels and functions of the assigned parts that are not in the schematic yet"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Strips, tr("Strips / plugs")).on_hover_text(tr("Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Plc, tr("PLC")).on_hover_text(tr("PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page"));
         });
         let areas = &self.session.prj.structures.work_areas;
@@ -182,6 +183,7 @@ impl App {
             LeftTab::Check => self.check_tab(ui),
             LeftTab::Unplaced => self.unplaced_tab(ui),
             LeftTab::Plc => self.plc_tab(ui),
+            LeftTab::Strips => self.strips_tab(ui),
         }
     }
 }
@@ -354,6 +356,101 @@ impl App {
             self.editor.set_tool(Tool::Place(u.symbol));
             self.editor.place_tag = Some(u.tag.clone());
             self.editor.place_once = Some((u.label, u.pins));
+        }
+    }
+
+    /// Terminal strips (terminals in rail order, spares) and plugs (pins, unused pins of
+    /// the plug parts): a click shows a placed one, spare ones are dragged into the page.
+    fn strips_tab(&mut self, ui: &mut egui::Ui) {
+        use openecraft_core::strips::{self, ElementKind};
+        let prj = &self.session.prj;
+        let mut jump = None;
+        let mut start: Option<crate::editor::PlacePayload> = None;
+        // Placed terminal symbols by strip and designation.
+        let placed = |tag: &str, label: &str| {
+            prj.pages.iter().enumerate().find_map(|(pi, pg)| {
+                pg.symbols.iter().find(|s| s.tag == tag && s.label == label && prj.symbol(&s.sym).is_some_and(|d| d.func == openecraft_core::symbols::Func::Terminal)).map(|s| (pi, s.id))
+            })
+        };
+        let free = |ui: &mut egui::Ui, id: (&str, &str, &str), payload: crate::editor::PlacePayload, text: String| -> bool {
+            let r = ui.dnd_drag_source(ui.make_persistent_id(id), payload, |ui| {
+                ui.add(egui::Label::new(RichText::new(text).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
+            });
+            r.inner.clicked()
+        };
+        egui::ScrollArea::vertical().id_salt("strips_nav").auto_shrink([false, false]).show(ui, |ui| {
+            ui.label(RichText::new(tr("Terminal strips")).strong());
+            let tags = strips::strip_tags(prj);
+            if tags.is_empty() {
+                ui.weak(tr("(no entries)"));
+            }
+            for tag in &tags {
+                let layout = strips::strip_layout(prj, tag);
+                let n = layout.iter().filter(|e| matches!(e.kind, ElementKind::Terminal(_) | ElementKind::Spare(_))).count();
+                egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({n})")).monospace()).id_salt(("strip_nav", tag)).show(ui, |ui| {
+                    for e in &layout {
+                        match &e.kind {
+                            ElementKind::Terminal(label) => {
+                                let levels = e.designations().join(" / ");
+                                let text = if e.levels.is_empty() { label.clone() } else { levels };
+                                match placed(tag, label) {
+                                    Some(at) => {
+                                        if ui.selectable_label(false, text).clicked() {
+                                            jump = Some(at);
+                                        }
+                                    }
+                                    None => {
+                                        ui.weak(text);
+                                    }
+                                }
+                            }
+                            ElementKind::Spare(label) => {
+                                let payload = crate::editor::PlacePayload { symbol: "term", tag: tag.clone(), label: label.clone(), pins: Vec::new() };
+                                if free(ui, ("strip_free", tag, label), payload.clone(), tr_fmt!("{} (spare)", label)) {
+                                    start = Some(payload);
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                });
+            }
+            ui.add_space(6.0);
+            ui.label(RichText::new(tr("Plugs")).strong());
+            let plugs = openecraft_core::plugs::plug_tags(prj);
+            if plugs.is_empty() {
+                ui.weak(tr("(no entries)"));
+            }
+            for plug in &plugs {
+                let rows = openecraft_core::plugs::rows(prj, plug, &self.session.analysis.netlist, &self.session.analysis.open);
+                egui::CollapsingHeader::new(RichText::new(format!("{plug}  ({})", rows.len())).monospace()).id_salt(("plug_nav", plug)).show(ui, |ui| {
+                    for r in &rows {
+                        match r.pins.first() {
+                            Some(p) => {
+                                let targets = [r.socket.as_str(), r.pin.as_str()].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join(" | ");
+                                let text = if targets.is_empty() { r.label.clone() } else { format!("{}  › {targets}", r.label) };
+                                if ui.selectable_label(false, text).clicked() {
+                                    jump = Some((p.page, p.id));
+                                }
+                            }
+                            None => {
+                                let payload = crate::editor::PlacePayload { symbol: "plug_pair", tag: plug.clone(), label: r.label.clone(), pins: Vec::new() };
+                                if free(ui, ("plug_free", plug, &r.label), payload.clone(), tr_fmt!("{} (unused)", r.label)) {
+                                    start = Some(payload);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        if let Some((page, id)) = jump {
+            self.goto(page, id);
+        }
+        if let Some(pl) = start {
+            self.editor.set_tool(Tool::Place(pl.symbol));
+            self.editor.place_tag = Some(pl.tag);
+            self.editor.place_once = Some((pl.label, pl.pins));
         }
     }
 }

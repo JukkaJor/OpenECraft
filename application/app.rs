@@ -85,6 +85,8 @@ enum LeftTab {
     Unplaced,
     /// PLC cards with their channels.
     Plc,
+    /// Terminal strips and plugs with their terminals and pins.
+    Strips,
 }
 
 pub struct App {

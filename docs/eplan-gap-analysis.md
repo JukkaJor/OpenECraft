@@ -63,7 +63,7 @@ missing relative to an EPLAN user's expectations):
 | Device tags, numbering, cross references | partial | large | 3.2 | good |
 | Symbol libraries and symbol editor | partial | large (content) | 3.3 | partial (NFPA, fluid extended); content |
 | Terminals, plugs, cables, potentials | good | medium | 3.4 | good (multi-level, jumper kinds) |
-| Navigators, find, dialogs | partial | large | 3.5 | good (find, page tree, unplaced); drag-and-drop navigators open |
+| Navigators, find, dialogs | partial | large | 3.5 | good (find, page tree, unplaced, PLC, strips / plugs with drag-and-drop) |
 | Reports and forms | good (tables), missing (graphical forms) | large | 3.6 | good (graphical terminal, cable, plug and PLC forms); form editor open |
 | Project check and message management | good (messages), missing (management) | medium | 3.7 | good |
 | Pages, plot frames, title blocks, templates | good | small | 3.8 | good (project templates) |
@@ -688,7 +688,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
 | 3 | Graphical report forms | partly: graphical terminal, cable and plug diagrams and PLC assignment | d7e57f2, eca317c | form editor |
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches, check schemes as files | 42d8f5b, 9f7367b | – |
-| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels and part functions with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7 | navigators for strips, plugs and potentials with drag-and-drop |
+| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels, part functions and potentials, PLC and strip / plug navigators, all with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7, see log | – |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
 | 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print | b0ae357, 9ec50c4 | native print dialog, print of panel layout faces |
 | 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |

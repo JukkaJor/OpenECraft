@@ -135,6 +135,10 @@ built with [egui / eframe](https://github.com/emilk/egui).
   Murrplastik and Partex (starting points – copy and adjust to the program version),
   own schemes are stored in the project (commands `marking_schemes`,
   `set_marking_scheme`, exporters `marking` / `marking_xlsx` with `scheme`).
+- **Strip and plug navigator** (navigator tab *Strips / plugs*): the terminal strips with
+  their terminals in rail order (levels of multi-level blocks) and spares, the plugs with
+  their pins and targets and the unused pins of the plug parts; a click shows a placed
+  one, spares and unused pins are dragged into the page.
 - **PLC navigator** (navigator tab *PLC*): the cards with their channels in address
   order, placed ones with function text and connected devices (a click shows the
   symbol), free channels of cards with a device description to drag into the page.

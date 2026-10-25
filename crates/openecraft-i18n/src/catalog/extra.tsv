@@ -4845,3 +4845,7 @@ PLC device comments for Mitsubishi GX Works (CSV)	SPS-Operandenkommentare für M
 No PLC cards in the project.	Keine SPS-Karten im Projekt.	Aucune carte API dans le projet.	No hay tarjetas PLC en el proyecto.
 PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page	SPS-Karten mit ihren Kanälen: einen platzierten Kanal anklicken, um ihn zu zeigen, einen freien in die Seite ziehen	Cartes API avec leurs voies : cliquez sur une voie placée pour l'afficher, faites glisser une voie libre dans la page	Tarjetas PLC con sus canales: haga clic en un canal colocado para mostrarlo, arrastre uno libre a la página
 {}  ({} placed, {} free)	{}  ({} platziert, {} frei)	{}  ({} placées, {} libres)	{}  ({} colocados, {} libres)
+Strips / plugs	Klemmleisten / Stecker	Borniers / connecteurs	Regletas / conectores
+Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page	Klemmleisten und Stecker: eine platzierte Klemme oder einen Pin anklicken, um ihn zu zeigen, eine freie in die Seite ziehen	Borniers et connecteurs : cliquez sur une borne ou une broche placée pour l'afficher, faites glisser une libre dans la page	Regletas y conectores: haga clic en un borne o pin colocado para mostrarlo, arrastre uno libre a la página
+{} (spare)	{} (Reserve)	{} (réserve)	{} (reserva)
+{} (unused)	{} (unbenutzt)	{} (inutilisée)	{} (sin usar)
