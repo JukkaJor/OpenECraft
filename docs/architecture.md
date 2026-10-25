@@ -8,6 +8,7 @@ is in [architecture-analysis.md](architecture-analysis.md).
 
 ```
 openecraft-i18n ──┐
+openecraft-fonts ─┤
 openecraft-parts ─┼─► openecraft-jt / openecraft-xt / openecraft-step / openecraft-edz
                   └─► openecraft-core ─► openecraft-api ─► editor, cli
                            │                 ▲
@@ -135,7 +136,8 @@ refer to each other (the registry kinds take an `&Analysis`).
    change the project go to core (`ops` or the feature module) so the command line can
    use them.
 5. Texts: English in the code, through `tr` / `tr_fmt!` / `tr_const!`, with catalog
-   entries in all four languages (see AGENTS.md).
+   entries in the four required languages and, where possible, the further ones (see
+   AGENTS.md).
 
 ## Decisions
 

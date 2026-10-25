@@ -3524,6 +3524,7 @@ dependencies = [
  "acadrust",
  "epaint_default_fonts",
  "miniz_oxide 0.8.9",
+ "openecraft-fonts",
  "openecraft-i18n",
  "openecraft-jt",
  "openecraft-parts",
@@ -3539,6 +3540,10 @@ dependencies = [
  "openecraft-parts",
  "sevenz-rust2",
 ]
+
+[[package]]
+name = "openecraft-fonts"
+version = "0.1.0"
 
 [[package]]
 name = "openecraft-i18n"
@@ -3642,6 +3647,7 @@ dependencies = [
  "js-sys",
  "log",
  "openecraft-client",
+ "openecraft-fonts",
  "openecraft-i18n",
  "openecraft-jt",
  "openecraft-parts",

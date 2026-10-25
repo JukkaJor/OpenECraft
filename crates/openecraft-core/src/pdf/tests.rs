@@ -153,3 +153,15 @@ fn characters_the_bundled_font_lacks_use_the_fallback_font() {
     assert!(pdf.contains("/F6 "), "fallback font used");
     assert!(pdf.contains("OECFBK+Fallback"));
 }
+
+#[test]
+fn chinese_japanese_and_korean_texts_use_the_bundled_fonts() {
+    let mut prj = demo_project();
+    let id = prj.new_id();
+    prj.pages[1].texts.push(crate::model::TextItem { id, pos: crate::geom::p(50.0, 50.0), text: "日本語 한국어".into(), size: 3.0, ..Default::default() });
+    let an = Analysis::checked(&prj);
+    let pdf = openecraft_i18n::with_lang(openecraft_i18n::Lang::Ja, || document_with(&prj, &an));
+    assert!(pdf.contains("OECCJK+NotoSansJP"), "the font of the language comes first");
+    assert!(pdf.contains("OECCJK+NotoSansKR"));
+    assert!(pdf.contains("/F9 "));
+}

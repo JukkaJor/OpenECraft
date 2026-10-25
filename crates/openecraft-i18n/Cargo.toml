@@ -2,7 +2,7 @@
 name = "openecraft-i18n"
 version = "0.1.0"
 edition = "2021"
-description = "Language selection and UI translations (English, German, French, Spanish) of OpenECraft"
+description = "Language selection and UI translations (English, German, French, Spanish and 16 further languages) of OpenECraft"
 license = "MIT OR Apache-2.0"
 
 [dependencies]

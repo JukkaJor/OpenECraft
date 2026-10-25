@@ -226,6 +226,7 @@ impl App {
             }
         }
         openecraft_i18n::init(language.as_deref());
+        openecraft_ui::fonts::follow_language(&cc.egui_ctx);
         let parts_db = parts_db.unwrap_or_default();
         let autosave = crate::autosave::Autosave::start(openecraft_ui::io::Store::new("OpenECraft"), &cc.egui_ctx, &parts_db);
         let mut parts_ui = PartsUi::default();

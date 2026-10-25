@@ -73,9 +73,9 @@ const URL_KEY: &str = "server_url";
 
 impl ManagerApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> ManagerApp {
-        openecraft_ui::fonts::install_system_fallbacks(&cc.egui_ctx);
         let mut client = ServerClient::default();
         openecraft_i18n::init(cc.storage.and_then(|s| eframe::get_value::<String>(s, openecraft_ui::language::STORAGE_KEY)).as_deref());
+        openecraft_ui::fonts::install_system_fallbacks(&cc.egui_ctx);
         if let Some(url) = cc.storage.and_then(|s| eframe::get_value::<String>(s, URL_KEY)) {
             client.url = url;
         }

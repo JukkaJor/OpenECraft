@@ -15,6 +15,17 @@ fn the_first_readable_fonts_are_taken() {
 }
 
 #[test]
+fn bundled_and_system_fonts_follow_the_default_fonts() {
+    let system = [("sys.ttf".to_string(), Arc::new(FontData::from_static(&[])))];
+    let defs = definitions(Lang::Ja, &system);
+    let family = &defs.families[&FontFamily::Proportional];
+    let default = FontDefinitions::default().families[&FontFamily::Proportional].len();
+    assert_eq!(&family[default..], ["bundled:Noto Sans JP", "system:sys.ttf", "bundled:Noto Sans SC", "bundled:Noto Sans KR"]);
+    assert!(defs.families[&FontFamily::Monospace].contains(&"bundled:Noto Sans KR".to_string()));
+    assert_eq!(definitions(Lang::De, &system).families[&FontFamily::Proportional][default], "system:sys.ttf");
+}
+
+#[test]
 fn installing_without_system_fonts_changes_nothing() {
     let ctx = egui::Context::default();
     // Whatever the machine has, the count stays within the limit.

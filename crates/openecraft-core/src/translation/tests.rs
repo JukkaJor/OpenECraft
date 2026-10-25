@@ -14,7 +14,8 @@ fn codes_are_normalized() {
     assert_eq!(normalize_code("german"), None);
     assert_eq!(normalize_code("d"), None);
     assert_eq!(language_name("de"), "Deutsch (de)");
-    assert_eq!(language_name("pl"), "pl");
+    assert_eq!(language_name("pl"), "Polski (pl)");
+    assert_eq!(language_name("el"), "el");
 }
 
 #[test]
@@ -51,9 +52,9 @@ fn dictionary_is_collected_and_cleaned() {
 #[test]
 fn output_is_generated_in_the_target_language() {
     let mut prj = demo_project();
-    prj.languages.targets = vec!["de".into(), "pl".into()];
+    prj.languages.targets = vec!["de".into(), "el".into()];
     set(&mut prj, "Power supply conveyor motor", "de", "Einspeisung Förderbandmotor");
-    set(&mut prj, "Power supply conveyor motor", "pl", "Zasilanie silnika przenośnika");
+    set(&mut prj, "Power supply conveyor motor", "el", "Τροφοδοσία κινητήρα μεταφορέα");
     let page = prj.pages.iter().position(|p| p.description == "Power supply conveyor motor").unwrap();
     let de = with_language(&prj, "de", |p| crate::svg::page_svg(p, page));
     assert!(de.contains("Einspeisung Förderbandmotor"));
@@ -62,7 +63,7 @@ fn output_is_generated_in_the_target_language() {
     let title = openecraft_i18n::translate("Device list", Lang::De);
     assert_ne!(title, "Device list");
     assert!(with_language(&prj, "de", |p| crate::svg::page_svg(p, report)).contains(title));
-    assert!(with_language(&prj, "pl", |p| crate::svg::page_svg(p, report)).contains("Device list"));
+    assert!(with_language(&prj, "el", |p| crate::svg::page_svg(p, report)).contains("Device list"));
     assert_eq!(prj.pages[page].description, "Power supply conveyor motor");
     assert!(with_language(&prj, "en", |p| crate::svg::page_svg(p, page)).contains("Power supply conveyor motor"));
     let pdf = with_language(&prj, "de", crate::pdf::document);

@@ -1,11 +1,15 @@
-//! Fallback fonts of the operating system for scripts the bundled fonts do not cover
-//! (Chinese, Japanese, Korean, …): project texts in these scripts would otherwise show
-//! as empty boxes on the desktop. The bundled fonts stay first; the system fonts are
-//! only used for glyphs they lack. In the browser the files cannot be read and nothing
-//! changes (the browser has its own fallback).
+//! Fonts for scripts the default egui fonts do not cover. The bundled Chinese,
+//! Japanese and Korean fonts (`openecraft_fonts`) hold the characters of the
+//! translations; fallback fonts of the operating system cover project texts in these
+//! scripts, which would otherwise show as empty boxes on the desktop. The default fonts
+//! stay first; the others are only used for glyphs they lack, in the order of
+//! `openecraft_fonts::fallback_order`. In the browser the system files cannot be read.
 
-use egui::epaint::text::{FontData, FontInsert, FontPriority, InsertFontFamily};
+use egui::epaint::text::{FontData, FontDefinitions};
 use egui::FontFamily;
+use openecraft_fonts::Fallback;
+use openecraft_i18n::Lang;
+use std::sync::{Arc, OnceLock};
 
 /// Font files tried in this order (Windows, macOS, Linux).
 pub const CANDIDATES: &[&str] = &[
@@ -36,16 +40,41 @@ pub fn system_fallbacks() -> Vec<(String, Vec<u8>)> {
     load_first(CANDIDATES, MAX_FALLBACKS, |p| std::fs::read(p).ok())
 }
 
-/// Adds fonts as fallbacks of the proportional and monospace fonts.
-pub fn install(ctx: &egui::Context, fonts: &[(String, Vec<u8>)]) {
-    for (path, bytes) in fonts {
-        let families = [FontFamily::Proportional, FontFamily::Monospace].into_iter().map(|family| InsertFontFamily { family, priority: FontPriority::Lowest }).collect();
-        ctx.add_font(FontInsert { name: format!("system:{path}"), data: FontData::from_owned(bytes.clone()), families });
+/// The default fonts followed by the bundled and the `system` fonts for the UI language
+/// `lang`, for the proportional and the monospace family.
+pub fn definitions(lang: Lang, system: &[(String, Arc<FontData>)]) -> FontDefinitions {
+    let mut defs = FontDefinitions::default();
+    let mut names = Vec::new();
+    for font in openecraft_fonts::fallback_order(lang.code(), system) {
+        let (name, data) = match font {
+            Fallback::Bundled(f) => (format!("bundled:{}", f.name), Arc::new(FontData::from_static(f.data))),
+            Fallback::System((path, data)) => (format!("system:{path}"), data.clone()),
+        };
+        defs.font_data.insert(name.clone(), data);
+        names.push(name);
     }
+    for family in [FontFamily::Proportional, FontFamily::Monospace] {
+        defs.families.entry(family).or_default().extend(names.iter().cloned());
+    }
+    defs
 }
 
-/// Adds the system fonts found as fallbacks of the proportional and monospace fonts;
-/// returns how many were added.
+/// The system fonts installed last, kept to reorder the fonts when the language changes.
+static SYSTEM: OnceLock<Vec<(String, Arc<FontData>)>> = OnceLock::new();
+
+/// Installs the bundled fonts and the `system` fonts as fallbacks of the default fonts.
+pub fn install(ctx: &egui::Context, system: &[(String, Vec<u8>)]) {
+    let system = SYSTEM.get_or_init(|| system.iter().map(|(p, b)| (p.clone(), Arc::new(FontData::from_owned(b.clone())))).collect());
+    ctx.set_fonts(definitions(openecraft_i18n::lang(), system));
+}
+
+/// Puts the bundled font of the current language first (after a language change).
+pub fn follow_language(ctx: &egui::Context) {
+    ctx.set_fonts(definitions(openecraft_i18n::lang(), SYSTEM.get().map(Vec::as_slice).unwrap_or_default()));
+}
+
+/// Installs the bundled fonts and the system fonts found; returns how many system
+/// fonts were added.
 pub fn install_system_fallbacks(ctx: &egui::Context) -> usize {
     let found = system_fallbacks();
     install(ctx, &found);

@@ -3,7 +3,8 @@
 //! per page; the files of document pages are attached to their page. Texts with
 //! characters beyond WinAnsi (Polish, Czech, Turkish, Greek, Cyrillic …) use a subset
 //! of the bundled Ubuntu font, embedded with a ToUnicode map so they can be searched
-//! and copied. The file is plain ASCII (non-ASCII text is written as WinAnsi octal
+//! and copied; characters it lacks come from a system fallback font or the bundled
+//! Chinese, Japanese and Korean fonts. The file is plain ASCII (non-ASCII text is written as WinAnsi octal
 //! escapes, attachments as hex, the font compressed and ASCII85 encoded).
 
 use crate::geom::{p, P};
@@ -12,6 +13,7 @@ use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
 use crate::ttf::Font;
+use openecraft_fonts::Fallback;
 use std::collections::BTreeMap;
 use std::fmt::Write;
 use std::sync::OnceLock;
@@ -39,13 +41,38 @@ fn fallback_font() -> Option<&'static Font<'static>> {
     FALLBACK.get().and_then(|f| f.as_ref())
 }
 
-/// The font a character of a Unicode text is written with: the bundled one, or the
-/// fallback if only that has the glyph.
-fn font_of(primary: &'static Font<'static>, c: char) -> (bool, &'static Font<'static>) {
-    match fallback_font() {
-        Some(fb) if primary.glyph(c) == 0 && fb.glyph(c) != 0 => (true, fb),
-        _ => (false, primary),
+/// Number of the system fallback font (`/F6`); the bundled CJK fonts follow (F7 …).
+const FALLBACK_SLOT: u8 = 6;
+
+/// The bundled Chinese, Japanese and Korean fonts (F7, F8, F9).
+fn cjk_fonts() -> &'static [Option<Font<'static>>] {
+    static FONTS: OnceLock<Vec<Option<Font<'static>>>> = OnceLock::new();
+    FONTS.get_or_init(|| openecraft_fonts::CJK.iter().map(|f| Font::parse(f.data)).collect())
+}
+
+/// The fonts for characters the bundled Ubuntu font lacks with their numbers, in the
+/// order they are tried (`openecraft_fonts::fallback_order`, as on screen).
+fn fallbacks() -> Vec<(u8, &'static Font<'static>)> {
+    let system = fallback_font().map(|f| (FALLBACK_SLOT, f));
+    openecraft_fonts::fallback_order(openecraft_i18n::lang().code(), system)
+        .into_iter()
+        .filter_map(|f| match f {
+            Fallback::System(s) => Some(s),
+            Fallback::Bundled(b) => {
+                let i = openecraft_fonts::CJK.iter().position(|c| c == b)?;
+                Some((FALLBACK_SLOT + 1 + i as u8, cjk_fonts()[i].as_ref()?))
+            }
+        })
+        .collect()
+}
+
+/// The font a character of a Unicode text is written with: the bundled one (5), or the
+/// first fallback that has the glyph.
+fn font_of(primary: &'static Font<'static>, c: char, fallbacks: &[(u8, &'static Font<'static>)]) -> (u8, &'static Font<'static>) {
+    if primary.glyph(c) != 0 {
+        return (5, primary);
     }
+    fallbacks.iter().find(|(_, f)| f.glyph(c) != 0).copied().unwrap_or((5, primary))
 }
 
 /// The text has characters Helvetica (WinAnsi) cannot show.
@@ -256,8 +283,8 @@ pub struct PdfDraw {
     images: Vec<PdfImage>,
     /// Glyphs of the embedded font used on the page, with their characters.
     glyphs: BTreeMap<u16, char>,
-    /// Glyphs of the fallback font (F6) used on the page.
-    fallback_glyphs: BTreeMap<u16, char>,
+    /// Glyphs of the fallback fonts (F6 …) used on the page, by font number.
+    fallback_glyphs: BTreeMap<u8, BTreeMap<u16, char>>,
 }
 
 impl PdfDraw {
@@ -343,11 +370,12 @@ impl Draw for PdfDraw {
         // Same metrics as the SVG export.
         let fs = st.size * 1.25 * K;
         let font = unicode_font().filter(|_| needs_unicode(text));
+        let fallbacks = if font.is_some() { fallbacks() } else { Vec::new() };
         let w = match font {
             Some(f) => {
                 text.chars()
                     .map(|c| {
-                        let (_, ff) = font_of(f, c);
+                        let (_, ff) = font_of(f, c, &fallbacks);
                         ff.advance(ff.glyph(c)) as f32 / ff.units_per_em as f32
                     })
                     .sum::<f32>()
@@ -376,24 +404,24 @@ impl Draw for PdfDraw {
         };
         self.fill(ink);
         if let Some(f) = font {
-            // Runs of the bundled font (F5) and of the fallback font (F6).
-            let mut runs: Vec<(bool, String)> = Vec::new();
+            // Runs of the bundled font (F5) and of the fallback fonts (F6 …).
+            let mut runs: Vec<(u8, String)> = Vec::new();
             for c in text.chars() {
-                let (fallback, ff) = font_of(f, c);
+                let (slot, ff) = font_of(f, c, &fallbacks);
                 let g = ff.glyph(c);
-                if fallback {
-                    self.fallback_glyphs.entry(g).or_insert(c);
-                } else {
+                if slot == 5 {
                     self.glyphs.entry(g).or_insert(c);
+                } else {
+                    self.fallback_glyphs.entry(slot).or_default().entry(g).or_insert(c);
                 }
                 match runs.last_mut() {
-                    Some((fb, hex)) if *fb == fallback => {
+                    Some((s, hex)) if *s == slot => {
                         let _ = write!(hex, "{g:04X}");
                     }
-                    _ => runs.push((fallback, format!("{g:04X}"))),
+                    _ => runs.push((slot, format!("{g:04X}"))),
                 }
             }
-            let gids: String = runs.iter().map(|(fb, hex)| format!("/F{} {fs:.2} Tf <{hex}> Tj ", if *fb { 6 } else { 5 })).collect();
+            let gids: String = runs.iter().map(|(slot, hex)| format!("/F{slot} {fs:.2} Tf <{hex}> Tj ")).collect();
             // Bold: filled and stroked outlines; italic: slanted text space.
             let (s, c) = st.angle.to_radians().sin_cos();
             let k = if st.italic { 0.2 } else { 0.0 };
@@ -466,6 +494,27 @@ fn embed_font(w: &mut Writer, next: &mut usize, font: Option<&Font>, glyphs: &BT
     *next += 5;
     write_unicode_font(w, obj, f, glyphs, name);
     Some(obj)
+}
+
+/// Embeds the fallback fonts the pages use; returns their font resources (`/F6 n 0 R` …).
+fn embed_fallback_fonts(w: &mut Writer, next: &mut usize, pages: &[PdfDraw]) -> String {
+    let mut fallback_glyphs: BTreeMap<u8, BTreeMap<u16, char>> = BTreeMap::new();
+    for d in pages {
+        for (slot, glyphs) in &d.fallback_glyphs {
+            fallback_glyphs.entry(*slot).or_default().extend(glyphs.iter().map(|(g, c)| (*g, *c)));
+        }
+    }
+    let mut refs = String::new();
+    for (slot, glyphs) in &fallback_glyphs {
+        let (font, name) = match slot.checked_sub(FALLBACK_SLOT + 1) {
+            None => (fallback_font(), "OECFBK+Fallback".to_string()),
+            Some(i) => (cjk_fonts()[i as usize].as_ref(), format!("OECCJK+{}", openecraft_fonts::CJK[i as usize].name)),
+        };
+        if let Some(obj) = embed_font(w, next, font, glyphs, &name) {
+            let _ = write!(refs, " /F{slot} {obj} 0 R");
+        }
+    }
+    refs
 }
 
 fn write_unicode_font(w: &mut Writer, obj: usize, f: &Font, glyphs: &BTreeMap<u16, char>, name: &str) {
@@ -549,9 +598,8 @@ pub fn document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
     // The embedded font (F5) with the glyphs all pages use.
     let glyphs: BTreeMap<u16, char> = pages.iter().flat_map(|d| d.glyphs.iter().map(|(g, c)| (*g, *c))).collect();
     let unicode = embed_font(&mut w, &mut next, unicode_font(), &glyphs, "OECUBU+Ubuntu-Light");
-    // The fallback font (F6) for glyphs the bundled font lacks.
-    let fallback_glyphs: BTreeMap<u16, char> = pages.iter().flat_map(|d| d.fallback_glyphs.iter().map(|(g, c)| (*g, *c))).collect();
-    let fallback = embed_font(&mut w, &mut next, fallback_font(), &fallback_glyphs, "OECFBK+Fallback");
+    // The fallback fonts (F6 …) for glyphs the bundled font lacks.
+    let fallback_refs = embed_fallback_fonts(&mut w, &mut next, &pages);
     // Bold, italic and bold italic texts (F2 … F4).
     let fonts = [next, next + 1, next + 2];
     next += 3;
@@ -639,12 +687,11 @@ pub fn document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
         w.obj(
             po,
             &format!(
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R{}{} >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {width:.2} {height:.2}] /Resources << /Font << /F1 3 0 R /F2 {} 0 R /F3 {} 0 R /F4 {} 0 R{}{fallback_refs} >>{xobject} >> /Contents {} 0 R /Annots [{}] >>",
                 fonts[0],
                 fonts[1],
                 fonts[2],
                 unicode.map(|u| format!(" /F5 {u} 0 R")).unwrap_or_default(),
-                fallback.map(|u| format!(" /F6 {u} 0 R")).unwrap_or_default(),
                 po + 1,
                 annots.join(" ")
             ),
