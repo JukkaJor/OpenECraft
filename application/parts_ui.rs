@@ -92,7 +92,11 @@ impl PartsUi {
     pub fn poll_server(&mut self, ctx: &egui::Context, db: &mut PartsDb) -> Vec<PartsAction> {
         let mut actions = Vec::new();
         for reply in self.server.poll() {
-            self.portal.apply(&reply, &db.parts);
+            if self.server.read_only() && matches!(reply, Reply::Versions(_)) {
+                self.portal.apply(&reply, &self.server.kind.update_candidates(&db.parts));
+            } else {
+                self.portal.apply(&reply, &db.parts);
+            }
             match reply {
                 Reply::Parts(Ok(list)) => {
                     let n = list.parts.len();
@@ -124,9 +128,17 @@ impl PartsUi {
         }
         let mut open = true;
         egui::Window::new(tr("Data portal")).open(&mut open).default_size([1100.0, 640.0]).show(ctx, |ui| {
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
+                if portal::kind_choice(ui, &mut self.server) {
+                    self.portal = Browser::new();
+                }
                 ui.label(tr("Server URL"));
                 ui.add(egui::TextEdit::singleline(&mut self.server.url).desired_width(280.0));
+                if self.server.read_only() {
+                    let (label, hint) = portal::token_texts(&self.server);
+                    ui.label(label);
+                    ui.add(egui::TextEdit::singleline(&mut self.server.token).password(true).desired_width(160.0).hint_text(hint));
+                }
                 if ui.add_enabled(!self.server.busy(), egui::Button::new(tr("Test connection"))).clicked() {
                     self.server.check(ctx);
                     self.portal.refresh();
@@ -149,33 +161,41 @@ impl PartsUi {
     fn server_panel(&mut self, ui: &mut egui::Ui, db: &PartsDb, selected: Option<Part>) {
         let ctx = ui.ctx().clone();
         egui::Grid::new("server").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+            ui.label(tr("Server type"));
+            if portal::kind_choice(ui, &mut self.server) {
+                self.portal = Browser::new();
+            }
+            ui.end_row();
             ui.label(tr("Server URL"));
             ui.add(egui::TextEdit::singleline(&mut self.server.url).desired_width(320.0));
             ui.end_row();
-            ui.label(tr("Access token"));
-            ui.add(egui::TextEdit::singleline(&mut self.server.token).password(true).desired_width(320.0).hint_text(tr("only needed for uploads")));
+            let (label, hint) = portal::token_texts(&self.server);
+            ui.label(label);
+            ui.add(egui::TextEdit::singleline(&mut self.server.token).password(true).desired_width(320.0).hint_text(hint));
             ui.end_row();
         });
         let busy = self.server.busy();
+        // The EPLAN Data Portal is read in the data portal window.
+        let full = !self.server.read_only();
         ui.horizontal_wrapped(|ui| {
             if ui.add_enabled(!busy, egui::Button::new(tr("Test connection"))).clicked() {
                 self.server.check(&ctx);
             }
             if ui
-                .add_enabled(!busy, egui::Button::new(tr("⬇ Download into database")))
+                .add_enabled(!busy && full, egui::Button::new(tr("⬇ Download into database")))
                 .on_hover_text(tr("Adds new parts and updates existing ones in the local parts database"))
                 .clicked()
             {
                 self.server.download(&ctx);
             }
-            let upload_one = ui.add_enabled(!busy && selected.is_some(), egui::Button::new(tr("⬆ Upload selected part")));
+            let upload_one = ui.add_enabled(!busy && full && selected.is_some(), egui::Button::new(tr("⬆ Upload selected part")));
             if upload_one.clicked() {
                 if let Some(p) = &selected {
                     self.server.upload(&ctx, std::slice::from_ref(p));
                 }
             }
             if ui
-                .add_enabled(!busy && !db.parts.is_empty(), egui::Button::new(tr_fmt!("⬆ Upload database ({})", db.parts.len())))
+                .add_enabled(!busy && full && !db.parts.is_empty(), egui::Button::new(tr_fmt!("⬆ Upload database ({})", db.parts.len())))
                 .on_hover_text(tr("Adds / replaces all parts of the local database on the server"))
                 .clicked()
             {
@@ -185,6 +205,9 @@ impl PartsUi {
                 ui.spinner();
             }
         });
+        if !full {
+            ui.weak(tr("The EPLAN Data Portal only offers searching and reading parts: open the data portal window to add its parts."));
+        }
         if !self.server.status.is_empty() {
             let ok = !self.server.failed();
             let color = if ok { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) };
@@ -298,7 +321,7 @@ impl PartsUi {
                 });
                 ui.separator();
                 ui.toggle_value(&mut self.show_server, tr("🌐 Parts server"))
-                    .on_hover_text(tr("Exchange parts with a global parts database (openecraft-parts-server)"));
+                    .on_hover_text(tr("Exchange parts with a global parts database (openecraft-parts-server) or read the EPLAN Data Portal"));
                 ui.toggle_value(&mut self.show_portal, tr("🔎 Data portal"))
                     .on_hover_text(tr("Search the parts server by catalog, product group and technical data, add parts and check the database for updates"));
             });

@@ -728,6 +728,36 @@ cargo run --release -p openecraft-parts-server -- --install-catalogs all
 - The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
   from outside your network.
 
+#### EPLAN Data Portal
+
+The parts handling also connects to the EPLAN Data Portal: choose *EPLAN Data Portal*
+as the server type in the data portal window or in *Parts management › 🌐 Parts
+server*, keep the address `https://dataportal.eplan.com/api` and enter a personal
+access token (created for the Data Portal in the profile of your EPLAN account,
+ePulse). The portal then works like a parts server: search by text, manufacturer and
+product group, part details with the commercial data (CSV), DXF drawings and
+pictures, adding parts to the local database and the update check of the database.
+
+- `openecraft_client::eplan` wraps the portal's REST API (JSON:API): it builds the
+  portal's requests from the parts server's queries and turns the answers into
+  `ServerInfo`, `SearchResult` and `Part`. `openecraft_client::Connection` offers the
+  reading functions of both kinds of server; the editor and the command line use it.
+- The connection is read-only: no uploads, catalogs, users, sign-in, favorites,
+  history or download of the whole database. The facets count the parts of the shown
+  page, as the portal does not count them; catalogs, lifecycle and technical data
+  cannot be filtered.
+- The portal finds parts by its own ids, not by number: a part loaded from it keeps
+  the id (`portal_id`), so adding marked parts and the update check load them in one
+  request. The update check compares only the parts that came from the portal; a
+  single part number is found by an exact search.
+- Manufacturers are filtered by their short name, product groups by the id of the
+  EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
+  (subgroup + 1), e.g. `200050000` for electrical engineering / plugs.
+- Parts in EPLAN format (macros, connection points) come as EDZ files from the portal
+  web page; import them like other parts files (see the parts formats above).
+- Only the desktop version and the command line reach the portal: it allows no
+  cross-origin requests from browsers, so the web version would need a proxy.
+
 ### Project server (several users)
 
 `openecraft-project-server` stores projects for a team. Several users open the same
@@ -815,7 +845,9 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
   lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
 - Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
   environment variables or the `parts_connect` tool (also with `user` / `password`);
-  default `http://127.0.0.1:8090`. The data portal tools search with facets
+  default `http://127.0.0.1:8090`. `parts_connect` with `kind: Eplan` reads the EPLAN
+  Data Portal instead (the token is the personal access token; searching, `parts_get`,
+  `parts_file` and `parts_check_updates` only). The data portal tools search with facets
   (`parts_search`), manage catalogs, files, favorites and users (`parts_catalog_save`,
   `parts_attach`, `parts_favorites`, `parts_user_save`, …) and compare the project parts
   with the server (`parts_check_updates`).
@@ -911,7 +943,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-step` | STEP and IGES import: B-rep models tessellated into part meshes (uses `monstertruck`) |
 | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): parts with connection points and mounting holes, pictures and macros (7-Zip with `sevenz-rust2`) |
 | `crates/openecraft-jt` | JT writer and reader for triangle meshes (JT 8.1 layout, own implementation) |
-| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line |
+| `crates/openecraft-client` | Requests to the parts and project servers and decoding of their answers, shared by the applications and the command line; wrapper of the EPLAN Data Portal API (`eplan`) |
 | `crates/openecraft-ui` | Shared egui library: part editor and previews, parts server client, data portal browser, file dialogs |
 | `crates/openecraft-api` | Extension API: plugins with commands, checks, reports and exports for all front ends; external plugins over JSON |
 | `parts-server/` | `openecraft-parts-server`: data portal server (REST API, SQLite or JSON storage, users, web page) |
