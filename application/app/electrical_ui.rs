@@ -114,18 +114,15 @@ fn result_color(ok: bool) -> Color32 {
     if ok {
         Color32::from_rgb(50, 170, 80)
     } else {
-        Color32::from_rgb(220, 60, 60)
+        crate::style::error()
     }
 }
 
 impl App {
-    pub(super) fn electrical_window(&mut self, ctx: &egui::Context) {
-        if !self.electrical_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn electrical_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let (mut jump, mut report) = (None, None);
-        egui::Window::new(tr("Electrical calculations and verification")).open(&mut open).default_size([980.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 let tab = &mut self.electrical_ui.tab;
                 ui.selectable_value(tab, Tab::Supply, tr("Supply and conditions"));
@@ -143,7 +140,6 @@ impl App {
                 Tab::Rules => self.rules_tab(ctx, ui, &mut jump, &mut report),
             });
         });
-        self.electrical_ui.open = open;
         if let Some(k) = report {
             self.report_kind = k;
             self.show_reports = true;

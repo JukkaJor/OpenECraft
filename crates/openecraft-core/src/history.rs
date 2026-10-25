@@ -51,6 +51,15 @@ impl History {
         !self.redo.is_empty()
     }
 
+    /// Steps that can be undone (the undo list of the quick access row).
+    pub fn undo_steps(&self) -> usize {
+        self.undo.len()
+    }
+
+    pub fn redo_steps(&self) -> usize {
+        self.redo.len()
+    }
+
     pub fn undo(&mut self, prj: &mut Project) {
         if let Some(prev) = self.undo.pop() {
             self.redo.push(std::mem::replace(&mut self.committed, prev));

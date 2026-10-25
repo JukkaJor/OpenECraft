@@ -7,39 +7,20 @@ impl App {
     #[allow(clippy::too_many_lines)]
     /// One navigator tab (a docked pane), with the work area chooser above it.
     pub(super) fn navigator(&mut self, ui: &mut egui::Ui, idx: &Index, tab: LeftTab) {
-        let areas = &self.session.prj.structures.work_areas;
-        if !areas.is_empty() || !self.work_area.is_empty() {
-            ui.horizontal(|ui| {
-                ui.label(tr("Work area"));
-                let shown = if self.work_area.is_empty() { tr("(whole project)").to_string() } else { self.work_area.clone() };
-                egui::ComboBox::from_id_salt("work_area").selected_text(shown).show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.work_area, String::new(), tr("(whole project)"));
-                    for w in areas {
-                        ui.selectable_value(&mut self.work_area, w.name.clone(), &w.name).on_hover_text(w.filter.structure());
-                    }
-                });
-            });
-        }
         let area = self.session.prj.structures.work_area(&self.work_area).cloned();
-        ui.separator();
+        self.navigator_header(ui, tab);
         match tab {
             LeftTab::Pages => {
                 ui.horizontal(|ui| {
-                    if ui.button(tr("+ Page")).on_hover_text(tr("New schematic page after the current one")).clicked() {
-                        self.add_page(PageKind::Schematic);
+                    self.icon_cmd(ui, Cmd::NewSchematicPage);
+                    self.icon_cmd(ui, Cmd::PageProperties);
+                    let tree = self.page_tree;
+                    if icons::toggle_button(ui, Icon::Tree, tr("Group the pages by structure"), tree).clicked() {
+                        self.page_tree = !tree;
                     }
-                    if ui.button("⚙").on_hover_text(tr("Page properties")).clicked() {
-                        self.page_props = Some(self.session.page);
-                    }
-                    ui.toggle_value(&mut self.page_tree, "🗄").on_hover_text(tr("Group the pages by structure"));
-                    if ui.add_enabled(self.session.page > 0, egui::Button::new("⏶")).clicked() {
-                        self.session.prj.pages.swap(self.session.page, self.session.page - 1);
-                        self.session.page -= 1;
-                    }
-                    if ui.add_enabled(self.session.page + 1 < self.session.prj.pages.len(), egui::Button::new("⏷")).clicked() {
-                        self.session.prj.pages.swap(self.session.page, self.session.page + 1);
-                        self.session.page += 1;
-                    }
+                    self.icon_cmd(ui, Cmd::MovePageUp);
+                    self.icon_cmd(ui, Cmd::MovePageDown);
+                    self.icon_cmd(ui, Cmd::RenumberPages);
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut action = PageAction::None;
@@ -76,6 +57,10 @@ impl App {
                             (None, None)
                         }
                         PageAction::Lock(t, r) => (None, Some((t, r))),
+                        PageAction::Table => {
+                            self.open_table(openecraft_core::tables::TableKind::Pages, "");
+                            (None, None)
+                        }
                         PageAction::None => (None, None),
                     };
                     if let Some(i) = goto {
@@ -109,12 +94,19 @@ impl App {
                     let structured = groups.iter().any(|g| !g.0.is_empty());
                     let prj = &self.session.prj;
                     let placing = self.editor.place_tag.clone();
+                    let selected = self.selected_tag();
+                    let scroll = self.scroll_nav;
                     let mut menu: Option<(String, drawing_ui::DeviceAction)> = None;
                     let mut device = |ui: &mut egui::Ui, tag: &String| {
                         let dev = &idx.devices[tag];
                         let title = if structured { Dt::parse(tag).name } else { tag.clone() };
                         let title = if placing.as_deref() == Some(tag.as_str()) { format!("{title}  ✏") } else { title };
-                        let header = egui::CollapsingHeader::new(RichText::new(title).monospace().strong()).id_salt(tag).show(ui, |ui| {
+                        let is_sel = selected.as_deref() == Some(tag.as_str());
+                        let mut text = RichText::new(title).monospace().strong();
+                        if is_sel {
+                            text = text.background_color(ui.visuals().selection.bg_fill);
+                        }
+                        let header = egui::CollapsingHeader::new(text).id_salt(tag).show(ui, |ui| {
                             for (kind, locs) in [(tr("Main"), &dev.mains), (tr("Aux"), &dev.auxs), ("", &dev.others)] {
                                 for loc in locs {
                                     let inst = prj.pages[loc.page].symbols.iter().find(|s| s.id == loc.sym_id);
@@ -128,6 +120,9 @@ impl App {
                                 }
                             }
                         });
+                        if is_sel && scroll {
+                            header.header_response.scroll_to_me(None);
+                        }
                         header.header_response.context_menu(|ui| {
                             if let Some(a) = drawing_ui::device_menu(ui, placing.as_deref() == Some(tag.as_str())) {
                                 menu = Some((tag.clone(), a));
@@ -173,12 +168,49 @@ impl App {
     }
 }
 
+impl App {
+    /// Title of a navigator with its Edit in table and help buttons.
+    fn navigator_header(&mut self, ui: &mut egui::Ui, tab: LeftTab) {
+        use openecraft_core::tables::TableKind;
+        let table = match tab {
+            LeftTab::Pages => Some(TableKind::Pages),
+            LeftTab::Devices => Some(TableKind::Devices),
+            LeftTab::Connections => Some(TableKind::Connections),
+            LeftTab::Cables => Some(TableKind::Cables),
+            LeftTab::Plc => Some(TableKind::Plc),
+            LeftTab::Strips => Some(TableKind::Terminals),
+            _ => None,
+        };
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(self.pane_title(Pane::Navigator(tab)).text()).strong());
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if icons::button(ui, Icon::Help, tr("Help")).clicked() {
+                    self.help_for(Pane::Navigator(tab));
+                }
+                if let Some(k) = table {
+                    if icons::button(ui, Icon::Table, tr("Edit in table…")).clicked() {
+                        self.open_table(k, "");
+                    }
+                }
+            });
+        });
+        ui.separator();
+    }
+
+    /// Opens Edit in table with a kind of rows (and a filter).
+    pub(super) fn open_table(&mut self, kind: openecraft_core::tables::TableKind, filter: &str) {
+        self.tables_ui.show(kind, filter);
+        self.show_pane(Pane::Tool(ToolPane::Tables));
+    }
+}
+
 /// What a row of the page list asks for.
 enum PageAction {
     None,
     Goto(usize),
     Properties(usize),
     Lock(openecraft_core::collab::Target, bool),
+    Table,
 }
 
 impl PageAction {
@@ -227,17 +259,33 @@ impl App {
             text.append(&mark, 8.0, egui::TextFormat { color, ..style });
         }
         let r = ui.selectable_label(i == self.session.page, text);
+        if i == self.session.page && self.scroll_nav {
+            r.scroll_to_me(None);
+        }
         let mut action = PageAction::None;
         if r.clicked() {
             action = PageAction::Goto(i);
         }
-        if self.remote.shared.is_some() {
-            r.context_menu(|ui| {
+        r.context_menu(|ui| {
+            if ui.button(tr("Page properties…")).clicked() {
+                action = PageAction::Properties(i);
+                ui.close();
+            }
+            if ui.button(tr("Open in a new page tab")).clicked() {
+                action = PageAction::Goto(i);
+                ui.close();
+            }
+            if ui.button(tr("Edit in table…")).clicked() {
+                action = PageAction::Table;
+                ui.close();
+            }
+            if self.remote.shared.is_some() {
+                ui.separator();
                 if let Some((t, release)) = self.page_lock_menu(ui, pg.id) {
                     action = PageAction::Lock(t, release);
                 }
-            });
-        }
+            }
+        });
         if r.double_clicked() {
             action = PageAction::Properties(i);
         }

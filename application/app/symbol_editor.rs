@@ -10,7 +10,7 @@ use openecraft_core::model::SymbolInst;
 use openecraft_core::render::{self, Draw, Ink, VAnchor};
 use openecraft_core::symbols::{self, Anchor, FieldKind, Func, Prim};
 use openecraft_core::symlib::{self, Hit, SymbolLibrary, UserPin, UserSymbol, DRAW_SNAP};
-use egui::{pos2, vec2, Color32, Key, PointerButton, RichText, Sense, Stroke};
+use egui::{pos2, vec2, Key, PointerButton, RichText, Sense, Stroke};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum SymTool {
@@ -80,18 +80,15 @@ enum Action {
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn symbol_editor_window(&mut self, ctx: &egui::Context) {
-        if !self.symed.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn symbol_editor_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
         let (prj, se) = (&mut self.session.prj, &mut self.symed);
         if se.sel.as_ref().map(|k| !prj.symbols.iter().any(|u| &u.key == k)).unwrap_or(true) {
             se.sel = prj.symbols.first().map(|u| u.key.clone());
             se.hit = None;
         }
-        egui::Window::new(tr("Symbol editor")).open(&mut open).default_size([960.0, 520.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_top(|ui| {
                 // ------------------------------------------------ symbol list
                 ui.vertical(|ui| {
@@ -193,7 +190,7 @@ impl App {
                         element_properties(ui, se, u);
                         ui.separator();
                         for msg in symlib::problems(u) {
-                            ui.colored_label(Color32::from_rgb(220, 140, 0), format!("⚠ {msg}"));
+                            ui.colored_label(crate::style::lock(), format!("⚠ {msg}"));
                         }
                         ui.label(tr_fmt!("Placed {}× in the project", usage));
                         ui.horizontal(|ui| {
@@ -212,7 +209,6 @@ impl App {
                 });
             });
         });
-        self.symed.open = open;
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::Symbols),
             Some(Action::Export) => {

@@ -1,0 +1,474 @@
+//! The ribbon (see `crate::ribbon`): the quick access row, the tabs with the File tab
+//! that opens the backstage, the command groups of the active tab, the plugin tab
+//! filled from the registry, the user's own groups and the key tips (Alt or F10).
+
+use super::*;
+use crate::commands::{self, Kind};
+use crate::ribbon::{self, Item, TabId, TABS};
+
+/// Key tips shown: on the tabs, or on the commands of a tab.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Tips {
+    Tabs,
+    Commands(TabId),
+}
+
+pub(super) struct RibbonUi {
+    pub tab: TabId,
+    pub custom: ribbon::Custom,
+    pub tips: Option<Tips>,
+    alt_down: bool,
+    alt_used: bool,
+}
+
+impl Default for RibbonUi {
+    fn default() -> Self {
+        RibbonUi { tab: TabId::Home, custom: Default::default(), tips: None, alt_down: false, alt_used: false }
+    }
+}
+
+impl RibbonUi {
+    /// The context tab of a workspace comes to the front, a hidden one goes.
+    pub fn follow_workspace(&mut self, w: Workspace) {
+        match w {
+            Workspace::Panel => self.tab = TabId::LayoutSpace,
+            Workspace::Wiring | Workspace::Mounting => self.tab = TabId::Wiring,
+            _ if ribbon::tab(self.tab).context => self.tab = TabId::Home,
+            _ => {}
+        }
+    }
+}
+
+/// Height of a small button; a group is three of them high.
+const ROW: f32 = 22.0;
+const LARGE_W: f32 = 54.0;
+
+impl App {
+    /// Context tabs shown: the layout space while the panel layout is open, the wiring
+    /// tab while the assistants are open.
+    fn tab_visible(&self, id: TabId) -> bool {
+        match id {
+            TabId::LayoutSpace => self.workspace == Workspace::Panel || [Pane::LayoutView, Pane::LayoutSpaces].iter().any(|p| self.pane_shown(*p)),
+            TabId::Wiring => self.workspace.is_workshop() || [Pane::WiringChecklist, Pane::WiringWorkbench].iter().any(|p| self.pane_shown(*p)),
+            _ => true,
+        }
+    }
+
+    /// The quick access row, the tabs and the groups of the active tab.
+    pub(super) fn ribbon_bar(&mut self, ui: &mut egui::Ui) {
+        if !self.tab_visible(self.ribbon.tab) {
+            self.ribbon.tab = TabId::Home;
+        }
+        self.quick_access(ui);
+        self.tab_row(ui);
+        let peek = matches!(self.ribbon.tips, Some(Tips::Commands(_)));
+        if (!self.shell.ribbon_minimized || peek) && self.backstage.is_none() {
+            ui.add_space(2.0);
+            egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]).show(ui, |ui| {
+                ui.horizontal(|ui| self.ribbon_groups(ui));
+            });
+        }
+        ui.add_space(2.0);
+    }
+
+    fn quick_access(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            for &cmd in ribbon::QUICK_ACCESS.iter().filter(|c| **c != Cmd::Backstage) {
+                self.icon_cmd(ui, cmd);
+                if cmd == Cmd::Undo && self.session.history.undo_steps() > 1 {
+                    let r = icons::button(ui, Icon::ChevronDown, tr("Undo list"));
+                    egui::Popup::menu(&r).show(|ui| {
+                        let n = self.session.history.undo_steps().min(15);
+                        for k in 1..=n {
+                            if ui.button(tr_fmt!("Undo {} steps", k)).clicked() {
+                                self.editor.cancel();
+                                for _ in 0..k {
+                                    self.session.undo();
+                                }
+                                ui.close();
+                            }
+                        }
+                    });
+                }
+                if cmd == Cmd::PreviousPage {
+                    let name = self.session.prj.pages.get(self.session.page).map(structure::page_full_name).unwrap_or_default();
+                    let r = ui.add(egui::Button::new(RichText::new(name).monospace()).frame(false)).on_hover_text(tr("Pages"));
+                    egui::Popup::menu(&r).show(|ui| {
+                        egui::ScrollArea::vertical().max_height(400.0).show(ui, |ui| {
+                            for i in 0..self.session.prj.pages.len() {
+                                let pg = &self.session.prj.pages[i];
+                                let label = format!("{}  {}", structure::page_full_name(pg), pg.description);
+                                if ui.selectable_label(i == self.session.page, label).clicked() {
+                                    self.goto(i, 0);
+                                    ui.close();
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+            ui.separator();
+            let current = self.workspace;
+            egui::ComboBox::from_id_salt("workspace").selected_text(tr(current.title())).width(130.0).show_ui(ui, |ui| {
+                for w in Workspace::ALL {
+                    if ui.selectable_label(w == current, tr(w.title())).clicked() {
+                        self.set_workspace(w);
+                    }
+                }
+            })
+            .response
+            .on_hover_text(tr("Workspaces"));
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let dirty = if self.session.dirty() { " *" } else { "" };
+                ui.weak(format!("{}{}", self.session.prj.info.name, dirty));
+                ui.separator();
+                let hint = tr_fmt!("Find a command ({})", self.editor.shortcuts.cmd_text(Cmd::CommandSearch));
+                let r = icons::text_button(ui, Icon::Find, &hint);
+                if r.clicked() {
+                    self.search.open();
+                }
+            });
+        });
+    }
+
+    fn tab_row(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            let tips_on_tabs = self.ribbon.tips == Some(Tips::Tabs);
+            let file = ui.add(egui::Button::new(RichText::new(tr("File")).strong().color(ui.visuals().selection.stroke.color)).selected(self.backstage.is_some()));
+            if tips_on_tabs {
+                key_tip(ui, file.rect, 'F');
+            }
+            if file.on_hover_text(tr(commands::def(Cmd::Backstage).tip)).clicked() {
+                self.run(&ui.ctx().clone(), Cmd::Backstage);
+            }
+            for t in TABS {
+                if !self.tab_visible(t.id) {
+                    continue;
+                }
+                if t.id == TabId::Plugins && self.plugin_groups().is_empty() {
+                    continue;
+                }
+                let selected = self.ribbon.tab == t.id && self.backstage.is_none();
+                let mut text = RichText::new(tr(t.title));
+                if t.context {
+                    text = text.color(ui.visuals().warn_fg_color).strong();
+                }
+                let r = ui.selectable_label(selected, text);
+                if tips_on_tabs {
+                    key_tip(ui, r.rect, t.key_tip);
+                }
+                if r.clicked() {
+                    self.ribbon.tab = t.id;
+                    self.backstage = None;
+                    if self.shell.ribbon_minimized {
+                        self.ribbon.tips = Some(Tips::Commands(t.id));
+                    }
+                }
+                if r.double_clicked() {
+                    self.shell.ribbon_minimized = !self.shell.ribbon_minimized;
+                }
+            }
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let (icon, tip) = if self.shell.ribbon_minimized { (Icon::ChevronDown, tr("Show the ribbon")) } else { (Icon::ChevronUp, tr("Minimize the ribbon")) };
+                if icons::button(ui, icon, tip).clicked() {
+                    self.shell.ribbon_minimized = !self.shell.ribbon_minimized;
+                }
+                if icons::button(ui, Icon::Help, tr("Help")).clicked() {
+                    self.run(&ui.ctx().clone(), Cmd::Help);
+                }
+            });
+        });
+    }
+
+    /// The commands of the active tab: built-in groups, the user's groups, plugin groups.
+    fn ribbon_groups(&mut self, ui: &mut egui::Ui) {
+        let tab = ribbon::tab(self.ribbon.tab);
+        let mut groups: Vec<(String, Vec<Item>)> = tab
+            .groups
+            .iter()
+            .filter(|g| !self.ribbon.custom.is_hidden(tab, g))
+            .map(|g| (tr(g.title).to_string(), g.items.to_vec()))
+            .collect();
+        for (_, g, cmds) in self.ribbon.custom.groups_of(tab) {
+            groups.push((g.title.clone(), cmds.into_iter().map(Item::Small).collect()));
+        }
+        let tips: Vec<char> = if self.ribbon.tips == Some(Tips::Commands(tab.id)) {
+            let titles: Vec<String> = groups.iter().flat_map(|(_, items)| items.iter().map(|i| tr(commands::def(i.cmd()).title).to_string())).collect();
+            ribbon::key_tips(&titles, &[])
+        } else {
+            Vec::new()
+        };
+        let mut k = 0;
+        for (title, items) in groups {
+            let n = items.len();
+            let tip_slice: Vec<char> = tips.get(k..k + n).map(|s| s.to_vec()).unwrap_or_default();
+            k += n;
+            self.ribbon_group(ui, &title, &items, &tip_slice);
+        }
+        if tab.id == TabId::Plugins {
+            self.plugin_tab(ui);
+        }
+    }
+
+    fn ribbon_group(&mut self, ui: &mut egui::Ui, title: &str, items: &[Item], tips: &[char]) {
+        ui.vertical(|ui| {
+            let row = ui.horizontal_top(|ui| {
+                ui.spacing_mut().item_spacing = egui::vec2(2.0, 0.0);
+                let mut i = 0;
+                while i < items.len() {
+                    match items[i] {
+                        Item::Large(c) => {
+                            self.large_button(ui, c, tips.get(i).copied());
+                            i += 1;
+                        }
+                        Item::Small(_) => {
+                            let start = i;
+                            while i < items.len() && i - start < 3 && matches!(items[i], Item::Small(_)) {
+                                i += 1;
+                            }
+                            ui.vertical(|ui| {
+                                ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+                                for (j, item) in items.iter().enumerate().take(i).skip(start) {
+                                    self.small_button(ui, item.cmd(), tips.get(j).copied());
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            group_title(ui, title, row.response.rect.width());
+        });
+        ui.separator();
+    }
+
+    fn large_button(&mut self, ui: &mut egui::Ui, cmd: Cmd, tip: Option<char>) {
+        let def = commands::def(cmd);
+        let title = tr(def.title).trim_end_matches('…').to_string();
+        let font = egui::TextStyle::Small.resolve(ui.style());
+        let galley = ui.painter().layout(title.clone(), font, ui.visuals().text_color(), LARGE_W + 16.0);
+        let w = (galley.size().x + 8.0).max(LARGE_W);
+        let enabled = self.cmd_enabled(cmd);
+        let (rect, resp) = ui.allocate_exact_size(egui::vec2(w, ROW * 3.0), egui::Sense::click());
+        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, &title));
+        let on = self.cmd_checked(cmd).unwrap_or(false);
+        self.paint_cmd_frame(ui, &resp, rect, on, enabled);
+        let color = if enabled { ui.visuals().text_color() } else { ui.visuals().weak_text_color() };
+        let icon_rect = egui::Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + 15.0), egui::Vec2::splat(24.0));
+        icons::paint(ui.painter(), icon_rect, def.icon, color);
+        let text_pos = egui::pos2(rect.center().x - galley.size().x / 2.0, rect.min.y + 31.0);
+        ui.painter().galley_with_override_text_color(text_pos, galley, color);
+        if def.kind == Kind::Menu {
+            icons::paint(ui.painter(), egui::Rect::from_center_size(egui::pos2(rect.max.x - 6.0, rect.min.y + 6.0), egui::Vec2::splat(8.0)), Icon::ChevronDown, color);
+        }
+        if let Some(c) = tip {
+            key_tip(ui, rect, c);
+        }
+        self.cmd_response(ui, cmd, resp);
+    }
+
+    fn small_button(&mut self, ui: &mut egui::Ui, cmd: Cmd, tip: Option<char>) {
+        let def = commands::def(cmd);
+        let title = tr(def.title).to_string();
+        let font = egui::TextStyle::Button.resolve(ui.style());
+        let galley = ui.painter().layout_no_wrap(title.clone(), font, ui.visuals().text_color());
+        let menu = def.kind == Kind::Menu;
+        let w = ROW + galley.size().x + 8.0 + if menu { 12.0 } else { 0.0 };
+        let enabled = self.cmd_enabled(cmd);
+        let (rect, resp) = ui.allocate_exact_size(egui::vec2(w, ROW), egui::Sense::click());
+        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, &title));
+        let on = self.cmd_checked(cmd).unwrap_or(false);
+        self.paint_cmd_frame(ui, &resp, rect, on, enabled);
+        let color = if enabled { ui.visuals().text_color() } else { ui.visuals().weak_text_color() };
+        icons::paint(ui.painter(), egui::Rect::from_min_size(rect.min, egui::Vec2::splat(ROW)).shrink(3.5), def.icon, color);
+        let text_pos = egui::pos2(rect.min.x + ROW + 2.0, rect.center().y - galley.size().y / 2.0);
+        ui.painter().galley_with_override_text_color(text_pos, galley, color);
+        if menu {
+            icons::paint(ui.painter(), egui::Rect::from_center_size(egui::pos2(rect.max.x - 7.0, rect.center().y), egui::Vec2::splat(10.0)), Icon::ChevronDown, color);
+        }
+        if let Some(c) = tip {
+            key_tip(ui, rect, c);
+        }
+        self.cmd_response(ui, cmd, resp);
+    }
+
+    fn paint_cmd_frame(&self, ui: &egui::Ui, resp: &egui::Response, rect: egui::Rect, on: bool, enabled: bool) {
+        let v = ui.visuals();
+        if on {
+            ui.painter().rect_filled(rect, 3.0, v.selection.bg_fill.gamma_multiply(0.6));
+        }
+        if enabled && (resp.hovered() || resp.has_focus()) {
+            ui.painter().rect_stroke(rect, 3.0, v.widgets.hovered.bg_stroke, egui::StrokeKind::Inside);
+        }
+    }
+
+    /// Tooltip with shortcut, click runs the command or opens its menu.
+    fn cmd_response(&mut self, ui: &mut egui::Ui, cmd: Cmd, resp: egui::Response) {
+        let def = commands::def(cmd);
+        let keys = self.editor.shortcuts.cmd_text(cmd);
+        let resp = resp.on_hover_ui(|ui| {
+            ui.label(RichText::new(tr(def.title)).strong());
+            if !def.tip.is_empty() {
+                ui.label(tr(def.tip));
+            }
+            if !keys.is_empty() {
+                ui.weak(keys.clone());
+            }
+        });
+        if def.kind == Kind::Menu {
+            if self.cmd_enabled(cmd) {
+                egui::Popup::menu(&resp).show(|ui| self.cmd_menu(ui, cmd));
+            }
+        } else if resp.clicked() {
+            let ctx = ui.ctx().clone();
+            self.run(&ctx, cmd);
+        }
+    }
+
+    /// A command as an icon button (quick access row, pane headers).
+    pub(super) fn icon_cmd(&mut self, ui: &mut egui::Ui, cmd: Cmd) {
+        let def = commands::def(cmd);
+        let keys = self.editor.shortcuts.cmd_text(cmd);
+        let label = if keys.is_empty() { tr(def.title).to_string() } else { format!("{} ({keys})", tr(def.title)) };
+        let enabled = self.cmd_enabled(cmd);
+        let on = self.cmd_checked(cmd).unwrap_or(false);
+        let r = ui.add_enabled_ui(enabled, |ui| icons::toggle_button(ui, def.icon, &label, on)).inner;
+        if r.clicked() {
+            let ctx = ui.ctx().clone();
+            self.run(&ctx, cmd);
+        }
+    }
+
+    // ------------------------------------------------------------------ plugins
+
+    /// The plugins with commands: name and commands (built-in areas first).
+    pub(super) fn plugin_groups(&self) -> Vec<(String, Vec<openecraft_api::Command>)> {
+        self.plugins.list().iter().filter(|l| l.enabled && !l.registry.commands.is_empty()).map(|l| (text(&l.info.name).to_string(), l.registry.commands.clone())).collect()
+    }
+
+    fn plugin_tab(&mut self, ui: &mut egui::Ui) {
+        for (name, commands) in self.plugin_groups() {
+            ui.vertical(|ui| {
+                let row = ui.horizontal_top(|ui| {
+                    for chunk in commands.chunks(3) {
+                        ui.vertical(|ui| {
+                            ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+                            for c in chunk {
+                                let r = icons::text_button(ui, Icon::Plugin, &humanize(&c.name)).on_hover_text(text(&c.help));
+                                if r.clicked() {
+                                    self.start_plugin_command(c.clone());
+                                }
+                            }
+                        });
+                    }
+                });
+                group_title(ui, &name, row.response.rect.width());
+            });
+            ui.separator();
+        }
+        ui.vertical(|ui| {
+            self.large_button(ui, Cmd::ManagePlugins, None);
+        });
+    }
+
+    // ------------------------------------------------------------------ key tips
+
+    /// Alt (released alone) or F10 shows the key tips; a letter picks a tab, a second
+    /// letter runs a command of it; Esc goes back.
+    pub(super) fn key_tips(&mut self, ctx: &egui::Context) {
+        let (alt, keys, f10, esc, clicked) = ctx.input(|i| {
+            let keys: Vec<Key> = i.events.iter().filter_map(|e| if let egui::Event::Key { key, pressed: true, .. } = e { Some(*key) } else { None }).collect();
+            (i.modifiers.alt, keys, i.key_pressed(Key::F10), i.key_pressed(Key::Escape), i.pointer.any_pressed())
+        });
+        if alt && !self.ribbon.alt_down {
+            self.ribbon.alt_used = false;
+        }
+        if alt && (!keys.is_empty() || clicked) {
+            self.ribbon.alt_used = true;
+        }
+        let toggle = (!alt && self.ribbon.alt_down && !self.ribbon.alt_used) || f10;
+        self.ribbon.alt_down = alt;
+        if clicked && !alt {
+            self.ribbon.tips = None;
+        }
+        if toggle && !ctx.egui_wants_keyboard_input() {
+            self.ribbon.tips = if self.ribbon.tips.is_some() { None } else { Some(Tips::Tabs) };
+            return;
+        }
+        let Some(tips) = self.ribbon.tips else { return };
+        self.editor.keys_active = false;
+        self.panel_ui.keys_active = false;
+        if esc {
+            self.ribbon.tips = match tips {
+                Tips::Commands(_) => Some(Tips::Tabs),
+                Tips::Tabs => None,
+            };
+            return;
+        }
+        let Some(letter) = keys.iter().filter_map(|k| key_char(*k)).next() else { return };
+        ctx.input_mut(|i| i.events.retain(|e| !matches!(e, egui::Event::Key { .. } | egui::Event::Text(_))));
+        match tips {
+            Tips::Tabs => {
+                if letter == 'F' {
+                    self.backstage = Some(crate::ribbon::Page::Home);
+                    self.ribbon.tips = None;
+                } else if let Some(t) = TABS.iter().find(|t| t.key_tip == letter && self.tab_visible(t.id)) {
+                    self.ribbon.tab = t.id;
+                    self.backstage = None;
+                    self.ribbon.tips = Some(Tips::Commands(t.id));
+                }
+            }
+            Tips::Commands(id) => {
+                let tab = ribbon::tab(id);
+                let mut cmds: Vec<Cmd> = tab.groups.iter().filter(|g| !self.ribbon.custom.is_hidden(tab, g)).flat_map(|g| g.items.iter().map(|i| i.cmd())).collect();
+                for (_, _, c) in self.ribbon.custom.groups_of(tab) {
+                    cmds.extend(c);
+                }
+                let titles: Vec<String> = cmds.iter().map(|c| tr(commands::def(*c).title).to_string()).collect();
+                let tips = ribbon::key_tips(&titles, &[]);
+                if let Some(at) = tips.iter().position(|c| *c == letter) {
+                    self.ribbon.tips = None;
+                    self.run(ctx, cmds[at]);
+                }
+            }
+        }
+    }
+}
+
+/// The title below a group, as wide as the group.
+fn group_title(ui: &mut egui::Ui, title: &str, width: f32) {
+    ui.allocate_ui_with_layout(egui::vec2(width.max(32.0), 14.0), egui::Layout::top_down(egui::Align::Center), |ui| {
+        ui.set_width(width.max(32.0));
+        ui.label(RichText::new(title).small().weak());
+    });
+}
+
+/// The letter or digit of a key.
+fn key_char(k: Key) -> Option<char> {
+    let name = k.name();
+    let mut chars = name.chars();
+    match (chars.next(), chars.next()) {
+        (Some(c), None) if c.is_ascii_alphanumeric() => Some(c.to_ascii_uppercase()),
+        _ => None,
+    }
+}
+
+/// A key tip badge on a button.
+fn key_tip(ui: &egui::Ui, rect: egui::Rect, c: char) {
+    let pos = egui::pos2(rect.center().x, rect.max.y - 6.0);
+    let font = egui::FontId::monospace(11.0);
+    let galley = ui.painter().layout_no_wrap(c.to_string(), font, ui.visuals().strong_text_color());
+    let r = egui::Rect::from_center_size(pos, galley.size() + egui::vec2(6.0, 2.0));
+    let layer = ui.painter().clone().with_layer_id(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("key_tip")));
+    layer.rect(r, 2.0, ui.visuals().extreme_bg_color, ui.visuals().widgets.active.bg_stroke, egui::StrokeKind::Inside);
+    layer.galley(r.min + egui::vec2(3.0, 1.0), galley, ui.visuals().strong_text_color());
+}
+
+/// `set_wire_defaults` → `Set wire defaults`.
+pub(super) fn humanize(name: &str) -> String {
+    let s = name.replace('_', " ");
+    let mut c = s.chars();
+    match c.next() {
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+        None => s,
+    }
+}

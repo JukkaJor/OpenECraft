@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	{} beadása a Vaultba
 Panel layout in 3D (Parasolid XT)	Szekrényelrendezés 3D-ben (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-modell (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Vissza
+Back to the project (Esc)	Vissza a projekthez (Esc)
+Recent projects	Legutóbbi projektek
+No projects opened yet.	Még nincs megnyitott projekt.
+Remove from the list	Eltávolítás a listából
+unsaved	nincs mentve
+Project: {}	Projekt: {}
+Find a command	Parancs keresése
+Drilling list (CSV)	Furatlista (CSV)
+Pane menu	Panelmenü
+Float	Leválasztás
+Show the pane as a window	A panel megjelenítése ablakként
+Close	Bezárás
+Dock	Rögzítés
+Put the pane back into the workspace	A panel visszahelyezése a munkaterületre
+Messages ({})	Üzenetek ({})
+{} favorites added	Hozzáadott kedvencek: {}
+Quick guide	Gyors útmutató
+About OpenECraft	Az OpenECraft névjegye
+Tutorial	Oktatóanyag
+Introduction	Bevezetés
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Nyílt elektrotechnikai CAE-szerkesztő az EPLAN Electric P8 szellemében.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	A menüszalag: a Fájl megnyit, ment, importál, exportál és nyomtat; a lapok témák szerint csoportosítják a parancsokat. Az Alt megjeleníti a gyorsbillentyűket, a Ctrl+Shift+P bármely parancsot megtalál, az F6 a panelek között vált, az F1 megnyitja ezt a súgót.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Beszúrás › Beszúrási központ (Ins): keressen szimbólumot, makrót vagy készüléket, és kattintson az oldalra az elhelyezéshez. A készülékazonosítók (-K1, -S2 …) automatikusan kerülnek kiosztásra.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Rendeljen alkatrészeket a tulajdonságokban (Alkatrészek lap); a kimutatások (Kezdőlap › Kimutatások) felsorolják a készülékeket, az anyagjegyzéket, a sorkapcsokat, az összeköttetéseket és a PLC-t, és kimutatásoldalként szúrhatók be.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kábelek: Összeköttetések › Kábelek, jelölje ki a vezetékeket, és használja a Hozzárendelés kábelhez parancsot. Vezetékszámok: Összeköttetések › Vezetékszámozás, vagy írjon be számot a vezeték tulajdonságaiba.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makrók: jelölje ki az elemeket, jobb kattintás › Kijelölés mentése makróként; beszúrás a beszúrási központból vagy a Beszúrás › Makró paranccsal. A {NAME} helyőrzők értékkészletekből töltődnek ki.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Készülékek › Sorkapocslécek, Készülékek › PLC-áttekintés és Projektadatok › Revíziók: sorkapocssorrend, áthidalások és tartalékok; PLC-címek és szimbólumtáblák; revíziók változásjelölésekkel és kiadott (zárolt) oldalakkal.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Törzsadatok › Szimbólumszerkesztő: rajzoljon saját szimbólumokat (vagy másolja a beépítetteket) csatlakozási pontokkal és funkcióval; a projektbe mentődnek, és könyvtárfájlként cserélhetők.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Törzsadatok › Űrlapok: saját szövegmezők helyőrzőkkel ({project}, {page}, {prop:Name} …) és a kimutatásoldalak oszlopai; a Projektadatok › Kimutatásblokkok léckénként, dugónként, kábelenként vagy készülékenként hoznak létre kimutatásoldalakat.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Szekrényelrendezés (Szekrényelrendezés munkaterület, Szerelési tér lap): szekrények, sínek, kábelcsatornák, gyűjtősínek és kivágások; a Szerelési tér › NC-adatok exportálja a furatképet (DXF / DWG / CSV). A gyártási vezetéklista tartalmazza a csupaszolási hosszakat és az érvéghüvelyeket.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kábelkötegek: Összeköttetések › Kábelkötegek; jelölje ki két készülék közötti vezetékeket › Hozzárendelés kábelköteghez, vagy összeköttetésenként a vezeték tulajdonságaiban. Kötegkimutatás hosszakkal, csatlakozókkal és kötegátmérővel, KBL-export.
+Key tips of the ribbon	A menüszalag gyorsbillentyűi
+Version {}	Verzió {}
+Search (* and ? as placeholders)…	Keresés (* és ? helyettesítő karakterként)…
+Show as list	Megjelenítés listaként
+Show as tiles	Megjelenítés csempékként
+Export favorites…	Kedvencek exportálása…
+Import favorites…	Kedvencek importálása…
+Recently used	Legutóbb használt
+Parts with functions: the device gets the part, its first function is placed.	Funkciókkal rendelkező alkatrészek: a készülék megkapja az alkatrészt, első funkciója elhelyezésre kerül.
+Favorite	Kedvenc
+Macros ({})	Makrók ({})
+Devices ({})	Készülékek ({})
+Unplaced ({})	Nincs elhelyezve ({})
+(several)	(több)
+{} symbols	Szimbólumok: {}
+Parts of {}	{} alkatrészei
+Undo list	Visszavonási lista
+Show the ribbon	A menüszalag megjelenítése
+Undo {} steps	Visszavonandó lépések: {}
+Find a command ({})	Parancs keresése ({})
+Further project settings	További projektbeállítások
+Ribbon	Menüszalag
+Servers	Kiszolgálók
+These settings are edited in their panes:	Ezek a beállítások a saját paneljükön szerkeszthetők:
+Addresses and sign-in of the servers are set in their panes:	A kiszolgálók címe és bejelentkezése a saját paneljükön állítható be:
+Hide the groups you do not need and put the commands you use most into own groups.	Rejtse el a szükségtelen csoportokat, a leggyakrabban használt parancsokat pedig tegye saját csoportokba.
+Reset the ribbon	A menüszalag visszaállítása
+Groups shown	Megjelenített csoportok
+Own groups	Saját csoportok
+Delete the group	A csoport törlése
+Remove from the group	Eltávolítás a csoportból
+Add a command	Parancs hozzáadása
+New group	Új csoport
+Ribbon imported	Menüszalag importálva
+Welcome to OpenECraft	Üdvözli az OpenECraft
+Getting started	Első lépések
+A new project	Új projekt
+Placing symbols	Szimbólumok elhelyezése
+Wires and potentials	Vezetékek és potenciálok
+The project check	A projekt ellenőrzése
+What is new	Újdonságok
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	A Fájl lappal rendelkező menüszalag felváltja a menüket; a Ctrl+Shift+P bármely parancsot megtalál.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Minden eszköz egy panel: húzza a lapját az oldal mellé, a navigátorokhoz vagy ki ablakként.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Munkaterületek a kapcsolási rajzhoz, a szekrényelrendezéshez, a huzalozási és szerelési asszisztensekhez, a véleményezéshez és az előtervezéshez.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	A beszúrási központ szimbólumokat, makrókat, készülékeket és el nem helyezett funkciókat talál; a kedvencek és a legutóbb használtak kerülnek előre.
+Close the start page	A kezdőlap bezárása
+Position of the cursor	A kurzor helyzete
+Messages of this session	A munkamenet üzenetei
+Grid {} mm	Rács {} mm
+Layer: {}	Réteg: {}
+Export Excel	Exportálás Excelbe
+Insert as report page	Beszúrás kimutatásoldalként
+Open, save, import, export, print and the settings	Megnyitás, mentés, importálás, exportálás, nyomtatás és a beállítások
+Start page	Kezdőlap
+Check in to Vault	Bejelentkeztetés a Vaultba
+Import parts…	Alkatrészek importálása…
+Import symbol library…	Szimbólumkönyvtár importálása…
+Import page templates…	Oldalsablonok importálása…
+Print all pages…	Összes oldal nyomtatása…
+Print current page…	Aktuális oldal nyomtatása…
+Settings…	Beállítások…
+Project and user settings in one dialog	Projekt- és felhasználói beállítások egy párbeszédablakban
+Cut	Kivágás
+Paste	Beillesztés
+New page	Új oldal
+Cover sheet, overview, graphics, report, mounting layout or a page template	Fedőlap, áttekintés, grafika, kimutatás, szerelési elrendezés vagy oldalsablon
+Find a command…	Parancs keresése…
+Every command of the editor and of the plugins by name	A szerkesztő és a bővítmények minden parancsa név szerint
+Markup	Jelölés
+Properties…	Tulajdonságok…
+The properties of the selection in a window beside the page	A kijelölés tulajdonságai az oldal melletti ablakban
+Rename device…	Készülék átnevezése…
+Part selection…	Alkatrész kiválasztása…
+Next pane	Következő panel
+Previous pane	Előző panel
+Next page tab	Következő oldallap
+Previous page tab	Előző oldallap
+Close page tab	Oldallap bezárása
+Panes	Panelek
+Show or hide panes; drag a tab to dock it elsewhere	Panelek megjelenítése vagy elrejtése; húzzon egy lapot a máshová rögzítéshez
+Save workspace…	Munkaterület mentése…
+The panes of this workspace at their default places	A munkaterület panelei az alapértelmezett helyükön
+Theme	Téma
+UI scale	A felület mérete
+Minimize the ribbon	A menüszalag kis méretre állítása
+Update report blocks	Kimutatásblokkok frissítése
+Customize the ribbon…	A menüszalag testreszabása…
+Messages	Üzenetek
+Results of the project check	A projekt ellenőrzésének eredményei
+Comments and markup	Megjegyzések és jelölések
+Functions of the project data not placed yet	A projektadatok még el nem helyezett funkciói
+Insert center	Beszúrási központ
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Szimbólumok, makrók, készülékek és el nem helyezett funkciók: keresés, kedvencek, legutóbb használt
+Find results	Találatok
+Quick guide, tutorial and shortcuts	Gyors útmutató, oktatóanyag és billentyűparancsok
+Layout spaces	Szerelési terek
+Enclosures, devices to place and placed devices	Szekrények, elhelyezendő és elhelyezett készülékek
+Layout properties	Elrendezés tulajdonságai
+Checklist	Ellenőrzőlista
+Workbench	Munkapad
+3D view	3D nézet
+NC data	NC-adatok
+Drilling pattern of the face shown as DXF, DWG or CSV	A megjelenített felület furatképe DXF, DWG vagy CSV formátumban
+Panel wiring report	Szekrényhuzalozási kimutatás
+Tablet mode	Táblagép mód
+Larger texts and buttons for a touch screen at the workbench	Nagyobb szövegek és gombok a munkapad érintőképernyőjéhez
+Ribbon (JSON)	Menüszalag (JSON)
+Favorites (JSON)	Kedvencek (JSON)
+Home	Kezdőlap
+Clipboard	Vágólap
+Navigators	Navigátorok
+Arrange	Elrendezés
+Zoom	Nagyítás
+Appearance	Megjelenés
+Numbering	Számozás
+Project data	Projektadatok
+Management	Kezelés
+Calculations	Számítások
+Collaboration	Együttműködés
+Automation	Automatizálás
+Master data	Törzsadatok
+Forms	Űrlapok
+Templates	Sablonok
+Layout space	Szerelési tér
+Draw	Rajzolás
+Mode	Mód
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Megjelenít egy táblázatot (készülékek, összeköttetések, sorkapcsok, kábelek, dugók, PLC, oldalak vagy alkatrészek) a soraival; egy sor a kulcsa alapján módosítható
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages vagy parts
+Not a number: {}	Nem szám: {}
+Cable {} already exists	A(z) {} kábel már létezik
+No connection point {}	Nincs {} csatlakozási pont
+No part {}	Nincs {} alkatrész
+Code	Kód
+Click to show, right click for more	Kattintás: megjelenítés, jobb kattintás: továbbiak
+{} errors	Hibák: {}
+{} warnings	Figyelmeztetések: {}
+{} notes	Megjegyzések: {}
+Open in a new page tab	Megnyitás új oldallapon
+Project information	Projektinformációk

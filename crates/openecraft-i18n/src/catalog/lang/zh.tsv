@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	将 {} 签入 Vault
 Panel layout in 3D (Parasolid XT)	3D 安装板布局 (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D 模型 (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	返回
+Back to the project (Esc)	返回项目 (Esc)
+Recent projects	最近的项目
+No projects opened yet.	尚未打开任何项目。
+Remove from the list	从列表中移除
+unsaved	未保存
+Project: {}	项目：{}
+Find a command	查找命令
+Drilling list (CSV)	钻孔列表 (CSV)
+Pane menu	窗格菜单
+Float	浮动
+Show the pane as a window	将窗格显示为窗口
+Close	关闭
+Dock	停靠
+Put the pane back into the workspace	将窗格放回工作区
+Messages ({})	消息 ({})
+{} favorites added	已添加 {} 个收藏
+Quick guide	快速指南
+About OpenECraft	关于 OpenECraft
+Tutorial	教程
+Introduction	简介
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	一款秉承 EPLAN Electric P8 理念的开放式电气 CAE 编辑器。
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	功能区：文件用于打开、保存、导入、导出和打印；各选项卡按主题汇集命令。Alt 显示访问键，Ctrl+Shift+P 可查找任意命令，F6 在窗格之间切换，F1 打开本帮助。
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 插入 › 插入中心 (Ins)：搜索符号、宏或设备，然后单击页面进行放置。设备标识符 (-K1, -S2 …) 会自动分配。
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. 在属性中分配部件（部件选项卡）；报表（开始 › 报表）列出设备、物料清单、端子、连接和 PLC，并可作为报表页插入。
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. 电缆：连接 › 电缆，选择导线并使用“分配给电缆”。导线编号：连接 › 导线编号，或在导线属性中输入编号。
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. 宏：选择对象，右键 › 将所选内容另存为宏；从插入中心或通过插入 › 宏插入。占位符 {NAME} 由值集填充。
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 设备 › 端子排、设备 › PLC 概览和项目数据 › 修订：端子顺序、跳线和备用；PLC 地址和符号表；带更改标记和已发布（锁定）页的修订。
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 主数据 › 符号编辑器：绘制自己的符号（或复制内置符号），包含连接点和功能；它们保存在项目中，并可作为库文件交换。
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. 主数据 › 表单：带占位符 ({project}, {page}, {prop:Name} …) 的自定义标题栏和报表页的列；项目数据 › 报表块为每个端子排、插头、电缆或设备生成报表页。
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 安装板布局（工作区“安装板布局”，选项卡“布局空间”）：机柜、导轨、线槽、汇流排和开孔；布局空间 › NC 数据导出钻孔图 (DXF / DWG / CSV)。生产导线列表包含剥线长度和端子套管。
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 线束：连接 › 线束；选择两个设备之间的导线 › 分配给线束，或在导线属性中按连接分配。线束报表包含长度、连接器和线束直径，并可导出 KBL。
+Key tips of the ribbon	功能区访问键
+Version {}	版本 {}
+Search (* and ? as placeholders)…	搜索（* 和 ? 作为通配符）…
+Show as list	以列表显示
+Show as tiles	以图块显示
+Export favorites…	导出收藏…
+Import favorites…	导入收藏…
+Recently used	最近使用
+Parts with functions: the device gets the part, its first function is placed.	带功能的部件：设备获得该部件，并放置其第一个功能。
+Favorite	收藏
+Macros ({})	宏 ({})
+Devices ({})	设备 ({})
+Unplaced ({})	未放置 ({})
+(several)	（多个）
+{} symbols	{} 个符号
+Parts of {}	{} 的部件
+Undo list	撤销列表
+Show the ribbon	显示功能区
+Undo {} steps	撤销 {} 步
+Find a command ({})	查找命令 ({})
+Further project settings	其他项目设置
+Ribbon	功能区
+Servers	服务器
+These settings are edited in their panes:	这些设置在各自的窗格中编辑：
+Addresses and sign-in of the servers are set in their panes:	服务器的地址和登录在各自的窗格中设置：
+Hide the groups you do not need and put the commands you use most into own groups.	隐藏不需要的组，并将最常用的命令放入自定义组。
+Reset the ribbon	重置功能区
+Groups shown	显示的组
+Own groups	自定义组
+Delete the group	删除组
+Remove from the group	从组中移除
+Add a command	添加命令
+New group	新建组
+Ribbon imported	功能区已导入
+Welcome to OpenECraft	欢迎使用 OpenECraft
+Getting started	入门
+A new project	新项目
+Placing symbols	放置符号
+Wires and potentials	导线和电位
+The project check	项目检查
+What is new	新功能
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	带“文件”选项卡的功能区取代了菜单；Ctrl+Shift+P 可查找任意命令。
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	每个工具都是一个窗格：将其选项卡拖到页面旁、导航器中或作为窗口拖出。
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	用于原理图、安装板布局、接线和安装助手、审阅以及预规划的工作区。
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	插入中心可查找符号、宏、设备和未放置的功能；收藏和最近使用的排在前面。
+Close the start page	关闭开始页
+Position of the cursor	光标位置
+Messages of this session	本次会话的消息
+Grid {} mm	栅格 {} mm
+Layer: {}	图层：{}
+Export Excel	导出 Excel
+Insert as report page	作为报表页插入
+Open, save, import, export, print and the settings	打开、保存、导入、导出、打印和设置
+Start page	开始页
+Check in to Vault	签入到 Vault
+Import parts…	导入部件…
+Import symbol library…	导入符号库…
+Import page templates…	导入页模板…
+Print all pages…	打印所有页…
+Print current page…	打印当前页…
+Settings…	设置…
+Project and user settings in one dialog	在一个对话框中进行项目和用户设置
+Cut	剪切
+Paste	粘贴
+New page	新建页
+Cover sheet, overview, graphics, report, mounting layout or a page template	封面、概览、图形、报表、安装布局或页模板
+Find a command…	查找命令…
+Every command of the editor and of the plugins by name	按名称查找编辑器和插件的所有命令
+Markup	标记
+Properties…	属性…
+The properties of the selection in a window beside the page	在页面旁的窗口中显示所选内容的属性
+Rename device…	重命名设备…
+Part selection…	选择部件…
+Next pane	下一个窗格
+Previous pane	上一个窗格
+Next page tab	下一个页选项卡
+Previous page tab	上一个页选项卡
+Close page tab	关闭页选项卡
+Panes	窗格
+Show or hide panes; drag a tab to dock it elsewhere	显示或隐藏窗格；拖动选项卡可将其停靠到别处
+Save workspace…	保存工作区…
+The panes of this workspace at their default places	此工作区的窗格位于默认位置
+Theme	主题
+UI scale	界面缩放
+Minimize the ribbon	最小化功能区
+Update report blocks	更新报表块
+Customize the ribbon…	自定义功能区…
+Messages	消息
+Results of the project check	项目检查的结果
+Comments and markup	批注和标记
+Functions of the project data not placed yet	项目数据中尚未放置的功能
+Insert center	插入中心
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	符号、宏、设备和未放置的功能：搜索、收藏、最近使用
+Find results	查找结果
+Quick guide, tutorial and shortcuts	快速指南、教程和快捷键
+Layout spaces	布局空间
+Enclosures, devices to place and placed devices	机柜、待放置和已放置的设备
+Layout properties	布局属性
+Checklist	检查清单
+Workbench	工作台
+3D view	3D 视图
+NC data	NC 数据
+Drilling pattern of the face shown as DXF, DWG or CSV	所示面的钻孔图，格式为 DXF、DWG 或 CSV
+Panel wiring report	机柜接线报表
+Tablet mode	平板模式
+Larger texts and buttons for a touch screen at the workbench	为工作台触摸屏提供更大的文字和按钮
+Ribbon (JSON)	功能区 (JSON)
+Favorites (JSON)	收藏 (JSON)
+Home	开始
+Clipboard	剪贴板
+Navigators	导航器
+Arrange	排列
+Zoom	缩放
+Appearance	外观
+Numbering	编号
+Project data	项目数据
+Management	管理
+Calculations	计算
+Collaboration	协作
+Automation	自动化
+Master data	主数据
+Forms	表单
+Templates	模板
+Layout space	布局空间
+Draw	绘制
+Mode	模式
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	显示表格（设备、连接、端子、电缆、插头、PLC、页或部件）及其各行；通过行的键对其进行更改
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages 或 parts
+Not a number: {}	不是数字：{}
+Cable {} already exists	电缆 {} 已存在
+No connection point {}	没有连接点 {}
+No part {}	没有部件 {}
+Code	代码
+Click to show, right click for more	单击显示，右键查看更多
+{} errors	{} 个错误
+{} warnings	{} 个警告
+{} notes	{} 个提示
+Open in a new page tab	在新的页选项卡中打开
+Project information	项目信息

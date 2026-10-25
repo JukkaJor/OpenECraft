@@ -105,9 +105,9 @@ impl App {
     pub(super) fn page_lock_mark(&self, id: u64) -> Option<(String, Color32)> {
         let sh = self.remote.shared.as_ref()?;
         if let Some(l) = sh.holder(Target::Page(id)) {
-            return Some((format!("🔒 {}", l.user), Color32::from_rgb(220, 140, 0)));
+            return Some((format!("🔒 {}", l.user), crate::style::lock()));
         }
-        sh.owns(Target::Page(id)).then(|| ("✏".to_string(), Color32::from_rgb(60, 160, 90)))
+        sh.owns(Target::Page(id)).then(|| ("✏".to_string(), crate::style::ok()))
     }
 
     /// The user holding the lock of the current page (another session).
@@ -130,12 +130,8 @@ impl App {
         }
     }
 
-    pub(super) fn remote_window(&mut self, ctx: &egui::Context) {
-        if !self.remote.window {
-            return;
-        }
-        let mut open = true;
-        egui::Window::new(tr("Project server")).open(&mut open).default_width(520.0).show(ctx, |ui| {
+    pub(super) fn remote_pane(&mut self, ui: &mut egui::Ui) {
+        ui.scope(|ui| {
             let connected = self.remote.shared.is_some();
             egui::Grid::new("remote_login").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Server"));
@@ -185,13 +181,12 @@ impl App {
                 self.projects_section(ui);
             }
         });
-        self.remote.window &= open;
     }
 
     fn projects_section(&mut self, ui: &mut egui::Ui) {
         let has_user = !self.remote.user.trim().is_empty();
         if !has_user {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Enter a user name: other users see it on your locks."));
+            ui.colored_label(crate::style::lock(), tr("Enter a user name: other users see it on your locks."));
         }
         let mut open = None;
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
@@ -213,7 +208,7 @@ impl App {
             });
         });
         if self.session.dirty() {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Opening a project replaces the current one, its unsaved changes are lost."));
+            ui.colored_label(crate::style::lock(), tr("Opening a project replaces the current one, its unsaved changes are lost."));
         }
         if let Some(name) = open {
             self.remote.open(&name);
@@ -238,9 +233,9 @@ impl App {
         let Some(sh) = &self.remote.shared else { return };
         ui.label(RichText::new(tr_fmt!("Shared project {} – revision {}, user {}", sh.name, sh.revision, sh.session.user)).strong());
         if self.remote.viewer() && self.remote.may(ProjectRight::Review) {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may review this project: comments, markup and approvals, no other changes."));
+            ui.colored_label(crate::style::lock(), tr("You may review this project: comments, markup and approvals, no other changes."));
         } else if self.remote.viewer() {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may only view this project."));
+            ui.colored_label(crate::style::lock(), tr("You may only view this project."));
         }
         let mine = self.my_locks();
         let others: Vec<(Target, String)> = sh.locks.iter().filter(|l| l.session != sh.session.session).map(|l| (l.target, l.user.clone())).collect();

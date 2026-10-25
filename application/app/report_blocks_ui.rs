@@ -30,15 +30,12 @@ enum Action {
 }
 
 impl App {
-    pub(super) fn report_blocks_window(&mut self, ctx: &egui::Context) {
-        if !self.report_blocks_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn report_blocks_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
         let reports = self.report_list();
         let title_of = |id: ReportId| reports.iter().find(|(k, _)| *k == id).map(|(_, t)| t.clone()).unwrap_or_else(|| id.title());
-        egui::Window::new(tr("Report blocks")).open(&mut open).default_size([820.0, 460.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             let ru = &mut self.report_blocks_ui;
             let prj = &mut self.session.prj;
             ui.horizontal(|ui| {
@@ -148,7 +145,6 @@ impl App {
                 }
             });
         });
-        self.report_blocks_ui.open = open;
         match action {
             Some(Action::Generate(i)) => {
                 let name = self.session.prj.report_blocks[i].name.clone();

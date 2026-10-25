@@ -8,12 +8,14 @@
 
 mod app;
 mod autosave;
+mod commands;
 mod dock;
 #[cfg(test)]
 mod conventions;
 mod editor;
 #[cfg(test)]
 mod glyphs;
+mod insert_center;
 mod io;
 mod mounting_ui;
 mod panel_ui;
@@ -21,6 +23,8 @@ mod shortcuts;
 mod workspaces;
 mod parts_ui;
 mod remote;
+mod ribbon;
+mod style;
 mod vault;
 mod session;
 mod wiring_ui;

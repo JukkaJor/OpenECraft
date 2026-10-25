@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use openecraft_core::model::Project;
 use openecraft_core::parts::{self, Part, PartFilter, PartsDb};
 use crate::io::{Loaded, Purpose};
-use egui::{vec2, Color32, RichText};
+use egui::{vec2, RichText};
 use openecraft_ui::client::{FileUse, Reply, ServerClient};
 use openecraft_ui::part_editor::{self as pe, EditorState, ModelKind, PartTab};
 use openecraft_ui::portal::{self, Browser, BrowserEvent};
@@ -121,13 +121,10 @@ impl PartsUi {
 
     /// The data portal window: faceted search on the parts server, adding parts to
     /// the database and the update check of the database.
-    pub fn portal(&mut self, ctx: &egui::Context, db: &mut PartsDb) -> Vec<PartsAction> {
+    pub fn portal(&mut self, ui: &mut egui::Ui, db: &mut PartsDb) -> Vec<PartsAction> {
+        let ctx = &ui.ctx().clone();
         let mut actions = Vec::new();
-        if !self.show_portal {
-            return actions;
-        }
-        let mut open = true;
-        egui::Window::new(tr("Data portal")).open(&mut open).default_size([1100.0, 640.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 if portal::kind_choice(ui, &mut self.server) {
                     self.portal = Browser::new();
@@ -153,7 +150,6 @@ impl PartsUi {
                 self.portal.updates_applied();
             }
         });
-        self.show_portal = open;
         actions
     }
 
@@ -210,7 +206,7 @@ impl PartsUi {
         }
         if !self.server.status.is_empty() {
             let ok = !self.server.failed();
-            let color = if ok { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) };
+            let color = if ok { ui.visuals().text_color() } else { crate::style::error() };
             ui.label(RichText::new(&self.server.status).color(color));
         }
     }
@@ -228,13 +224,9 @@ impl PartsUi {
         self.sel_part = None;
     }
 
-    pub fn manager(&mut self, ctx: &egui::Context, db: &mut PartsDb, prj: &mut Project) -> Vec<PartsAction> {
+    pub fn manager(&mut self, ui: &mut egui::Ui, db: &mut PartsDb, prj: &mut Project) -> Vec<PartsAction> {
         let mut actions = Vec::new();
-        if !self.open {
-            return actions;
-        }
-        let mut open = true;
-        egui::Window::new(tr("Parts management")).open(&mut open).default_size([1000.0, 620.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             // ---------------------------------------------------------- toolbar
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.source, Source::Database, tr("🗄 Parts database"));
@@ -377,7 +369,6 @@ impl PartsUi {
                 });
             });
         });
-        self.open = open;
         actions
     }
 

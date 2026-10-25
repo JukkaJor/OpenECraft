@@ -11,7 +11,7 @@ use openecraft_core::model::{ReportId, ReportKind};
 use openecraft_core::render::Ink;
 use openecraft_core::params::Text;
 use openecraft_core::symbols::Anchor;
-use egui::{vec2, Color32, PointerButton, RichText, Sense, Stroke};
+use egui::{vec2, PointerButton, RichText, Sense, Stroke};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
 enum Tab {
@@ -64,14 +64,11 @@ enum Action {
 }
 
 impl App {
-    pub(super) fn forms_window(&mut self, ctx: &egui::Context) {
-        if !self.forms_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn forms_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
         let mut template_action = None;
-        egui::Window::new(tr("Forms – title blocks, frames and templates")).open(&mut open).default_size([1150.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.forms_ui.tab, Tab::TitleBlocks, RichText::new(tr("Title blocks")).strong());
                 ui.selectable_value(&mut self.forms_ui.tab, Tab::Reports, RichText::new(tr("Report forms")).strong());
@@ -86,7 +83,6 @@ impl App {
                 Tab::PageTemplates => template_action = self.template_tab(ui),
             }
         });
-        self.forms_ui.open = open;
         if let Some(a) = template_action {
             self.template_action(ctx, a);
         }
@@ -175,7 +171,7 @@ impl App {
         let page = self.session.page.min(prj.pages.len().saturating_sub(1));
         match custom {
             None => {
-                ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Built-in title blocks are read only – use “Copy as new” to make your own."));
+                ui.colored_label(crate::style::lock(), tr("Built-in title blocks are read only – use “Copy as new” to make your own."));
                 let mut form = forms::find(prj, &fu.form).into_owned();
                 preview(ui, fu, prj, page, &mut form, false);
             }

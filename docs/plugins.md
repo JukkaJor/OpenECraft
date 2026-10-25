@@ -4,14 +4,14 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 
 | Extension | What it is | Editor | Command line / MCP |
 | --- | --- | --- | --- |
-| Command | function on the project with typed parameters, returns JSON | *Plugins* menu (one submenu per plugin, a form for the parameters) | a command / tool of its own |
-| Check | adds issues to the project check | *Check* tab | `check` |
-| Report | table generated from the project | *Reports* menu, report pages and report blocks | `report --kind <name>` |
+| Command | function on the project with typed parameters, returns JSON | *Plugins* tab of the ribbon (one group per plugin, a form for the parameters) and the command search | a command / tool of its own |
+| Check | adds issues to the project check | *Messages* pane | `check` |
+| Report | table generated from the project | *Reports* pane, report pages and report blocks | `report --kind <name>` |
 | Exporter | file generated from the project | *File › Export* | `export --format <name>` |
 
 Names are snake_case and unique among all plugins; commands must not take the name of
 a built-in tool. Changes a command makes to the project are one undo step.
-`openecraft-cli plugins` lists the loaded plugins, *Plugins › Manage plugins…* in the
+`openecraft-cli plugins` lists the loaded plugins, *Tools › Manage plugins…* in the
 editor enables and disables them (remembered by the editor).
 
 ## Rust plugins

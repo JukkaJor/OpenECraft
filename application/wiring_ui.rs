@@ -66,8 +66,8 @@ fn icon(s: Status) -> (&'static str, Color32) {
     match s {
         Status::Open => ("☐", Color32::GRAY),
         Status::Done => ("✔", Color32::from_rgb(50, 170, 80)),
-        Status::Changed => ("⟳", Color32::from_rgb(230, 150, 30)),
-        Status::Problem => ("⚠", Color32::from_rgb(220, 60, 60)),
+        Status::Changed => ("⟳", crate::style::warning()),
+        Status::Problem => ("⚠", crate::style::error()),
     }
 }
 
@@ -153,7 +153,7 @@ impl WiringUi {
         );
         ui.label(tr_fmt!("{} m of {} m wired", format!("{:.1}", prog.length_done / 1000.0), format!("{:.1}", prog.length_total / 1000.0)));
         if prog.changed > 0 || prog.problems > 0 {
-            ui.colored_label(Color32::from_rgb(230, 150, 30), tr_fmt!("{} changed since wired · {} problems", prog.changed, prog.problems));
+            ui.colored_label(crate::style::warning(), tr_fmt!("{} changed since wired · {} problems", prog.changed, prog.problems));
         }
         ui.separator();
         let all = tr("All enclosures");
@@ -274,14 +274,14 @@ impl WiringUi {
             if status == Status::Changed {
                 if let Some(m) = wiring::mark_of(prj, &w) {
                     ui.colored_label(
-                        Color32::from_rgb(230, 150, 30),
+                        crate::style::warning(),
                         tr_fmt!("Changed since wired: was {} · {} · {}", m.color, m.cross_section, if m.number.is_empty() { "–" } else { &m.number }),
                     );
                 }
             }
             ui.horizontal_wrapped(|ui| {
                 let big = |t: &str| RichText::new(t).size(20.0);
-                if ui.add(egui::Button::new(big(tr("✔ Wired"))).fill(Color32::from_rgb(40, 140, 70)).min_size(vec2(160.0, 52.0))).clicked() {
+                if ui.add(egui::Button::new(big(tr("✔ Wired"))).fill(crate::style::ok()).min_size(vec2(160.0, 52.0))).clicked() {
                     wiring::set_mark(prj, &w, Some(Mark::Done), &self.note);
                     self.advance(prj, an, panel, wi);
                 }

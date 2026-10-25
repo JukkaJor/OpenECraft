@@ -125,7 +125,7 @@ fn climate_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             let hot = result.cooling != Cooling::None;
             let text = format!("{:.1} °C", result.inside);
             if hot {
-                ui.colored_label(Color32::from_rgb(220, 120, 0), text);
+                ui.colored_label(crate::style::lock(), text);
             } else {
                 ui.label(text);
             }
@@ -267,7 +267,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
                         ui.label(RichText::new(&t.tag).monospace());
                         let text = format!("{:.0} °C", t.temperature);
                         if t.limit.is_some_and(|l| t.temperature > l) {
-                            ui.colored_label(Color32::from_rgb(220, 60, 60), text);
+                            ui.colored_label(crate::style::error(), text);
                         } else {
                             ui.label(text);
                         }
@@ -281,7 +281,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
             ui.weak(tr("No problems found"));
         }
         for f in &findings {
-            let color = if f.severity == openecraft_core::issue::Severity::Info { ui.visuals().weak_text_color() } else { Color32::from_rgb(220, 120, 0) };
+            let color = if f.severity == openecraft_core::issue::Severity::Info { ui.visuals().weak_text_color() } else { crate::style::lock() };
             ui.horizontal_wrapped(|ui| {
                 ui.label(RichText::new(f.kind.title()).strong().color(color));
                 ui.label(&f.message);
@@ -440,6 +440,8 @@ pub struct PanelUi {
     pub selected_route: Option<String>,
     /// Selected routing path or reservation (its id).
     selected_object: Option<u64>,
+    /// The layout view is the document worked in: it takes the keys.
+    pub keys_active: bool,
 }
 
 impl Default for PanelUi {
@@ -485,6 +487,7 @@ impl Default for PanelUi {
             reserve_mode: routing3d::ReserveMode::Keepout,
             selected_route: None,
             selected_object: None,
+            keys_active: true,
         }
     }
 }
@@ -664,18 +667,8 @@ impl PanelUi {
     pub fn navigator(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
         ui.horizontal(|ui| {
             ui.heading(tr("Enclosures"));
-            if ui.button("➕").on_hover_text(tr("New enclosure")).clicked() {
-                let part = if db.get(panel::ENCLOSURE_PART).is_some() { panel::ENCLOSURE_PART } else { "" };
-                let mut ne = NewEnclosure {
-                    name: format!("+CAB{}", prj.layout.enclosures.len() + 1),
-                    part: part.into(),
-                    system: String::new(),
-                    width: 600.0,
-                    height: 800.0,
-                    depth: 250.0,
-                };
-                apply_enclosure_part(&mut ne, db);
-                self.new_enclosure = Some(ne);
+            if openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Plus, tr("New enclosure")).clicked() {
+                self.new_enclosure_dialog(prj, db);
             }
         });
         let mut remove = None;
@@ -923,7 +916,7 @@ impl PanelUi {
                         None => format!("{:.0} °C", t.temperature),
                     };
                     if t.limit.is_some_and(|l| t.temperature > l) {
-                        ui.colored_label(Color32::from_rgb(220, 60, 60), text);
+                        ui.colored_label(crate::style::error(), text);
                     } else {
                         ui.label(text);
                     }
@@ -1192,7 +1185,7 @@ impl PanelUi {
             });
         }
         if problems > 0 {
-            ui.colored_label(Color32::from_rgb(220, 60, 60), tr_fmt!("{} placement problems (red) – see Check", problems));
+            ui.colored_label(crate::style::error(), tr_fmt!("{} placement problems (red) – see Check", problems));
         }
         if ui.button(tr("➕ Insert mounting layout page")).clicked() {
             self.add_page = Some(e.id);
@@ -1261,7 +1254,7 @@ impl PanelUi {
                 let cutouts = list.iter().filter(|x| x.cutouts != (None, None)).count();
                 let other = &prj.layout.enclosures[other].name;
                 if list.is_empty() {
-                    ui.colored_label(Color32::from_rgb(220, 120, 0), tr_fmt!("No cable passage to {}: wires to it are not routed", other));
+                    ui.colored_label(crate::style::lock(), tr_fmt!("No cable passage to {}: wires to it are not routed", other));
                 } else if cutouts == 0 {
                     ui.label(tr_fmt!("Open to {}: wires cross beside the mounting plates", other));
                 } else {
@@ -1602,93 +1595,10 @@ impl PanelUi {
             return;
         };
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.view, View::Front, tr("Front view (2D)"));
-            ui.selectable_value(&mut self.view, View::ThreeD, "3D");
-            ui.separator();
-            if self.view == View::Front {
-                ui.separator();
-                for (face, inside, label, tip) in [
-                    (Face::Plate, false, Face::Plate.title(), ""),
-                    (Face::Door, false, tr("Door (front)"), tr("The door seen from the front: door devices and cutouts")),
-                    (Face::Door, true, tr("Door (inside)"), tr("The door seen from the inside (hinges on the right): cable ducts and the wiring behind the door")),
-                ] {
-                    let current = self.face == face && (face == Face::Plate || self.door_inside == inside);
-                    let resp = ui.selectable_label(current, label);
-                    let resp = if tip.is_empty() { resp } else { resp.on_hover_text(tip) };
-                    if resp.clicked() && !current {
-                        self.show_face(face, inside);
-                    }
-                }
-                let wall = if self.face.is_wall() { self.face.title() } else { tr("Walls") };
-                let mut picked = None;
-                egui::ComboBox::from_id_salt("wallface")
-                    .selected_text(RichText::new(wall).strong().color(if self.face.is_wall() { ui.visuals().strong_text_color() } else { ui.visuals().text_color() }))
-                    .show_ui(ui, |ui| {
-                        for f in Face::WALLS {
-                            if ui.selectable_label(self.face == f, f.title()).clicked() {
-                                picked = Some(f);
-                            }
-                        }
-                    })
-                    .response
-                    .on_hover_text(tr("Side walls, rear wall, roof and bottom seen from the outside: fans, cable glands, cutouts"));
-                if let Some(f) = picked {
-                    self.show_face(f, false);
-                }
-                ui.separator();
-            }
             if self.view == View::ThreeD {
                 self.door_button(ui);
-                if panel::lineup_of(&prj.layout, ei).len() > 1
-                    && !self.show_site
-                    && ui.checkbox(&mut self.show_lineup, tr("Line-up")).on_hover_text(tr("Show the enclosures bayed to this one as well")).changed()
-                {
-                    self.cam = None;
-                }
-                if prj.layout.enclosures.len() > 1
-                    && ui.checkbox(&mut self.show_site, tr("All enclosures")).on_hover_text(tr("Show all enclosures side by side at their places in the room")).changed()
-                {
-                    self.cam = None;
-                }
             }
-            ui.checkbox(&mut self.show_wires, tr("Wires"));
-            ui.checkbox(&mut self.show_fill, tr("Duct fill")).on_hover_text(tr("Colour the cable ducts by their fill level"));
-            ui.checkbox(&mut self.show_heat, tr("Heat map")).on_hover_text(tr("Estimated air temperature in front of the mounting plate (power loss of the devices, climate)"));
-            if ui.button(tr("⛶ Fit")).clicked() {
-                self.fit_pending = true;
-                self.cam = None;
-            }
-        });
-        if self.view == View::Front {
-            ui.horizontal_wrapped(|ui| self.tool_bar(ui, prj, db));
-        }
-        ui.separator();
-        match self.view {
-            View::Front => self.front_view(ui, prj, ei, an, db),
-            View::ThreeD => self.view_3d(ui, prj, ei, an),
-        }
-    }
-
-    /// Editing tools of the front view: profiles, cutouts, accessories, 3D macros.
-    fn tool_bar(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
-            let tool = self.tool.clone();
-            for (t, label, tip) in [
-                (Tool::Select, tr("⬉ Select"), tr("Select / move (Esc)")),
-                (Tool::Rail, tr("Mounting rail"), tr("Click start and end point")),
-                (Tool::Duct, tr("Cable duct"), tr("Click start and end point")),
-                (Tool::Busbar, tr("Busbar"), tr("Copper busbar system: click start and end point")),
-                (Tool::Cutout, tr("Cutout"), tr("Opening in the mounting plate / door: click two corners (round: in the properties)")),
-                (Tool::RoutingPath, tr("Routing path"), tr("Path for cables, tubes or wires over the plate: click the corners, double-click or Enter to finish")),
-                (Tool::Reservation, tr("Reservation"), tr("Space kept free of routes, or for one class only: click two corners")),
-            ] {
-                if !self.tool_allowed(&t) {
-                    continue;
-                }
-                if ui.selectable_label(tool == t, label).on_hover_text(tip).clicked() {
-                    self.set_tool(t);
-                }
-            }
-            if let Tool::PlaceDevice(tag) = &tool {
+            if let Tool::PlaceDevice(tag) = &self.tool {
                 ui.label(RichText::new(tr_fmt!("Placing {}", tag)).strong());
             }
             if let Some((kind, part)) = self.profile_here() {
@@ -1697,54 +1607,117 @@ impl PanelUi {
                     self.choose_profile_part(kind, &picked);
                 }
             }
-            // Accessories for the face shown, 3D macros.
-            let face = self.face;
-            let accessories: Vec<parts::Part> = accessory_parts(db, prj).into_iter().filter(|p| panel::allowed_faces(p).contains(&face)).collect();
-            let current = match &tool {
-                Tool::Accessory(part) => accessories.iter().find(|p| &p.number == part).map(|p| p.subgroup.clone()).unwrap_or(part.clone()),
-                _ => tr("Accessory").to_string(),
-            };
-            egui::ComboBox::from_id_salt("accessory")
-                .selected_text(current)
-                .width(130.0)
-                .show_ui(ui, |ui| {
-                    for p in &accessories {
-                        let active = tool == Tool::Accessory(p.number.clone());
-                        if ui.selectable_label(active, format!("{} – {}", p.subgroup, p.number)).on_hover_text(&p.description).clicked() {
-                            self.set_tool(Tool::Accessory(p.number.clone()));
-                        }
-                    }
-                })
-                .response
-                .on_hover_text(tr("Fans, filters, cable glands, lights, handles: choose one, then click where it goes"));
-            let macros = panel::all_macros(prj);
-            let current = match &tool {
-                Tool::Macro(name) => macros.iter().find(|m| &m.name == name).map(|m| m.title().to_string()).unwrap_or(name.clone()),
-                _ => tr("3D macro").to_string(),
-            };
-            let mut remove = None;
-            egui::ComboBox::from_id_salt("macro")
-                .selected_text(current)
-                .width(130.0)
-                .show_ui(ui, |ui| {
-                    for m in &macros {
-                        ui.horizontal(|ui| {
-                            let active = tool == Tool::Macro(m.name.clone());
-                            let text = if m.is_builtin() { m.title().to_string() } else { format!("★ {}", m.name) };
-                            if ui.selectable_label(active, text).on_hover_text(&m.description).clicked() {
-                                self.set_tool(Tool::Macro(m.name.clone()));
-                            }
-                            if !m.is_builtin() && ui.small_button("🗑").on_hover_text(tr("Delete macro")).clicked() {
-                                remove = Some(m.name.clone());
-                            }
-                        });
-                    }
-                })
-                .response
-                .on_hover_text(tr("Insert a group of items (anchored items go to their place, the others where you click)"));
-            if let Some(name) = remove {
-                prj.layout.macros.retain(|m| m.name != name);
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let what = match self.view {
+                    View::ThreeD => "3D".to_string(),
+                    View::Front if self.face == Face::Door && self.door_inside => tr("Door (inside)").to_string(),
+                    View::Front if self.face == Face::Door => tr("Door (front)").to_string(),
+                    View::Front => self.face.title().to_string(),
+                };
+                ui.weak(format!("{}  ·  {}", prj.layout.enclosures[ei].name, what));
+            });
+        });
+        ui.separator();
+        match self.view {
+            View::Front => self.front_view(ui, prj, ei, an, db),
+            View::ThreeD => self.view_3d(ui, prj, ei, an),
+        }
+    }
+
+    /// Chooses a tool (Layout space tab of the ribbon); drawing tools show the front view.
+    pub fn choose_tool(&mut self, tool: Tool) {
+        if tool != Tool::Select {
+            self.view = View::Front;
+        }
+        if self.tool_allowed(&tool) {
+            self.set_tool(tool);
+        }
+    }
+
+    /// Shows a face in the front view (Layout space › View).
+    pub fn front_face(&mut self, face: Face, inside: bool) {
+        self.view = View::Front;
+        self.show_face(face, inside);
+    }
+
+    pub fn toggle_lineup(&mut self) {
+        self.show_lineup = !self.show_lineup;
+        self.cam = None;
+    }
+
+    pub fn toggle_site(&mut self) {
+        self.show_site = !self.show_site;
+        self.cam = None;
+    }
+
+    pub fn fit(&mut self) {
+        self.fit_pending = true;
+        self.cam = None;
+    }
+
+    /// Opens the dialog for a new enclosure.
+    pub fn new_enclosure_dialog(&mut self, prj: &Project, db: &PartsDb) {
+        let part = if db.get(panel::ENCLOSURE_PART).is_some() { panel::ENCLOSURE_PART } else { "" };
+        let mut ne = NewEnclosure {
+            name: format!("+CAB{}", prj.layout.enclosures.len() + 1),
+            part: part.into(),
+            system: String::new(),
+            width: 600.0,
+            height: 800.0,
+            depth: 250.0,
+        };
+        apply_enclosure_part(&mut ne, db);
+        self.new_enclosure = Some(ne);
+    }
+
+    /// The walls of the enclosure (Layout space › View › Walls).
+    pub fn walls_menu(&mut self, ui: &mut egui::Ui) {
+        for f in Face::WALLS {
+            if ui.selectable_label(self.face == f && self.view == View::Front, f.title()).clicked() {
+                self.front_face(f, false);
+                ui.close();
             }
+        }
+    }
+
+    /// Fans, filters, cable glands, lights and handles for the face shown.
+    pub fn accessory_menu(&mut self, ui: &mut egui::Ui, prj: &Project, db: &PartsDb) {
+        let face = self.face;
+        let accessories: Vec<parts::Part> = accessory_parts(db, prj).into_iter().filter(|p| panel::allowed_faces(p).contains(&face)).collect();
+        for p in &accessories {
+            let active = self.tool == Tool::Accessory(p.number.clone());
+            if ui.selectable_label(active, format!("{} – {}", p.subgroup, p.number)).on_hover_text(&p.description).clicked() {
+                self.view = View::Front;
+                self.set_tool(Tool::Accessory(p.number.clone()));
+                ui.close();
+            }
+        }
+        if accessories.is_empty() {
+            ui.weak(tr("(no entries)"));
+        }
+    }
+
+    /// The 3D macros: built-in and the project's own (which can be deleted).
+    pub fn macro_menu(&mut self, ui: &mut egui::Ui, prj: &mut Project) {
+        let macros = panel::all_macros(prj);
+        let mut remove = None;
+        for m in &macros {
+            ui.horizontal(|ui| {
+                let active = self.tool == Tool::Macro(m.name.clone());
+                let text = if m.is_builtin() { m.title().to_string() } else { format!("★ {}", m.name) };
+                if ui.selectable_label(active, text).on_hover_text(&m.description).clicked() {
+                    self.view = View::Front;
+                    self.set_tool(Tool::Macro(m.name.clone()));
+                    ui.close();
+                }
+                if !m.is_builtin() && openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Delete, tr("Delete macro")).clicked() {
+                    remove = Some(m.name.clone());
+                }
+            });
+        }
+        if let Some(name) = remove {
+            prj.layout.macros.retain(|m| m.name != name);
+        }
     }
 
     /// Shows a face in the front view.
@@ -1805,7 +1778,7 @@ impl PanelUi {
         let snapped = plate.map(|q| p(panel::snap(q.x), panel::snap(q.y)));
 
         // Keyboard
-        if !ui.ctx().egui_wants_keyboard_input() {
+        if self.keys_active && !ui.ctx().egui_wants_keyboard_input() {
             let (esc, del, r, f) = ui.input(|i| {
                 (i.key_pressed(Key::Escape), i.key_pressed(Key::Delete), i.key_pressed(Key::R) && i.modifiers.is_none(), i.key_pressed(Key::F) && i.modifiers.is_none())
             });
@@ -2303,11 +2276,11 @@ fn heat_color(f: f32) -> Color32 {
 /// Green below 80 % of the limit, orange up to the limit, red above.
 fn fill_color(percent: f32, limit: f32) -> Color32 {
     if percent > limit {
-        Color32::from_rgb(220, 60, 60)
+        crate::style::error()
     } else if percent > 0.8 * limit {
-        Color32::from_rgb(230, 150, 30)
+        crate::style::warning()
     } else {
-        Color32::from_rgb(60, 170, 90)
+        crate::style::ok()
     }
 }
 

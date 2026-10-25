@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	{}을(를) Vault에 체크 인
 Panel layout in 3D (Parasolid XT)	3D 패널 레이아웃(Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D 모델(STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	뒤로
+Back to the project (Esc)	프로젝트로 돌아가기 (Esc)
+Recent projects	최근 프로젝트
+No projects opened yet.	아직 연 프로젝트가 없습니다.
+Remove from the list	목록에서 제거
+unsaved	저장되지 않음
+Project: {}	프로젝트: {}
+Find a command	명령 찾기
+Drilling list (CSV)	드릴 목록 (CSV)
+Pane menu	창 메뉴
+Float	분리
+Show the pane as a window	창을 별도 창으로 표시
+Close	닫기
+Dock	도킹
+Put the pane back into the workspace	창을 작업 공간으로 되돌리기
+Messages ({})	메시지 ({})
+{} favorites added	즐겨찾기 {}개 추가됨
+Quick guide	빠른 안내
+About OpenECraft	OpenECraft 정보
+Tutorial	튜토리얼
+Introduction	소개
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	EPLAN Electric P8의 방식을 따르는 개방형 전기 CAE 편집기입니다.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	리본: 파일에서 열기, 저장, 가져오기, 내보내기, 인쇄를 하고, 탭은 주제별로 명령을 모읍니다. Alt는 액세스 키를 표시하고, Ctrl+Shift+P는 모든 명령을 찾으며, F6은 창 사이를 이동하고, F1은 이 도움말을 엽니다.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 삽입 › 삽입 센터 (Ins): 심볼, 매크로 또는 장치를 검색하고 페이지를 클릭하여 배치합니다. 장치 태그 (-K1, -S2 …)는 자동으로 지정됩니다.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. 속성 (부품 탭)에서 부품을 지정합니다. 보고서 (홈 › 보고서)는 장치, 부품 목록, 단자, 연결 및 PLC를 나열하며 보고서 페이지로 삽입됩니다.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. 케이블: 연결 › 케이블에서 전선을 선택하고 케이블에 지정을 사용합니다. 전선 번호: 연결 › 전선 번호 지정, 또는 전선 속성에 번호를 입력합니다.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. 매크로: 항목을 선택하고 마우스 오른쪽 버튼 › 선택 항목을 매크로로 저장. 삽입 센터나 삽입 › 매크로에서 삽입합니다. 자리 표시자 {NAME}은 값 세트에서 채워집니다.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 장치 › 단자대, 장치 › PLC 개요, 프로젝트 데이터 › 개정: 단자 순서, 점퍼와 예비, PLC 주소와 심볼 테이블, 변경 표시가 있는 개정과 릴리스된 (잠긴) 페이지.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 마스터 데이터 › 심볼 편집기: 연결 지점과 기능이 있는 자신만의 심볼을 그립니다 (또는 기본 제공 심볼을 복사). 프로젝트에 저장되며 라이브러리 파일로 교환할 수 있습니다.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. 마스터 데이터 › 양식: 자리 표시자 ({project}, {page}, {prop:Name} …)가 있는 자체 표제란과 보고서 페이지의 열. 프로젝트 데이터 › 보고서 블록은 단자대, 플러그, 케이블 또는 장치별로 보고서 페이지를 생성합니다.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 패널 레이아웃 (작업 공간 패널 레이아웃, 탭 레이아웃 공간): 외함, 레일, 덕트, 부스바, 개구부. 레이아웃 공간 › NC 데이터는 드릴 패턴을 내보냅니다 (DXF / DWG / CSV). 생산 전선 목록에는 탈피 길이와 페룰이 포함됩니다.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 하네스: 연결 › 하네스. 두 장치 사이의 전선을 선택 › 하네스에 지정, 또는 전선 속성에서 연결별로 지정합니다. 길이, 커넥터, 다발 지름이 포함된 하네스 보고서, KBL 내보내기.
+Key tips of the ribbon	리본의 액세스 키
+Version {}	버전 {}
+Search (* and ? as placeholders)…	검색 (* 와 ? 는 와일드카드)…
+Show as list	목록으로 표시
+Show as tiles	타일로 표시
+Export favorites…	즐겨찾기 내보내기…
+Import favorites…	즐겨찾기 가져오기…
+Recently used	최근 사용
+Parts with functions: the device gets the part, its first function is placed.	기능이 있는 부품: 장치가 부품을 받고 첫 번째 기능이 배치됩니다.
+Favorite	즐겨찾기
+Macros ({})	매크로 ({})
+Devices ({})	장치 ({})
+Unplaced ({})	배치되지 않음 ({})
+(several)	(여러 개)
+{} symbols	심볼 {}개
+Parts of {}	{}의 부품
+Undo list	실행 취소 목록
+Show the ribbon	리본 표시
+Undo {} steps	{}단계 실행 취소
+Find a command ({})	명령 찾기 ({})
+Further project settings	기타 프로젝트 설정
+Ribbon	리본
+Servers	서버
+These settings are edited in their panes:	이 설정은 각 창에서 편집합니다:
+Addresses and sign-in of the servers are set in their panes:	서버의 주소와 로그인은 각 창에서 설정합니다:
+Hide the groups you do not need and put the commands you use most into own groups.	필요 없는 그룹은 숨기고 자주 쓰는 명령은 자체 그룹에 넣습니다.
+Reset the ribbon	리본 초기화
+Groups shown	표시되는 그룹
+Own groups	자체 그룹
+Delete the group	그룹 삭제
+Remove from the group	그룹에서 제거
+Add a command	명령 추가
+New group	새 그룹
+Ribbon imported	리본을 가져왔습니다
+Welcome to OpenECraft	OpenECraft에 오신 것을 환영합니다
+Getting started	시작하기
+A new project	새 프로젝트
+Placing symbols	심볼 배치
+Wires and potentials	전선과 전위
+The project check	프로젝트 검사
+What is new	새로운 기능
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	파일 탭이 있는 리본이 메뉴를 대신합니다. Ctrl+Shift+P로 모든 명령을 찾을 수 있습니다.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	모든 도구는 창입니다. 탭을 페이지 옆, 탐색기 안 또는 바깥으로 끌어 별도 창으로 만듭니다.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	회로도, 패널 레이아웃, 배선 및 장착 도우미, 검토, 사전 계획을 위한 작업 공간.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	삽입 센터는 심볼, 매크로, 장치, 배치되지 않은 기능을 찾습니다. 즐겨찾기와 최근 사용한 항목이 먼저 표시됩니다.
+Close the start page	시작 페이지 닫기
+Position of the cursor	커서 위치
+Messages of this session	이 세션의 메시지
+Grid {} mm	그리드 {} mm
+Layer: {}	레이어: {}
+Export Excel	Excel 내보내기
+Insert as report page	보고서 페이지로 삽입
+Open, save, import, export, print and the settings	열기, 저장, 가져오기, 내보내기, 인쇄 및 설정
+Start page	시작 페이지
+Check in to Vault	Vault에 체크인
+Import parts…	부품 가져오기…
+Import symbol library…	심볼 라이브러리 가져오기…
+Import page templates…	페이지 템플릿 가져오기…
+Print all pages…	모든 페이지 인쇄…
+Print current page…	현재 페이지 인쇄…
+Settings…	설정…
+Project and user settings in one dialog	프로젝트 설정과 사용자 설정을 한 대화 상자에서
+Cut	잘라내기
+Paste	붙여넣기
+New page	새 페이지
+Cover sheet, overview, graphics, report, mounting layout or a page template	표지, 개요, 그래픽, 보고서, 장착 레이아웃 또는 페이지 템플릿
+Find a command…	명령 찾기…
+Every command of the editor and of the plugins by name	편집기와 플러그인의 모든 명령을 이름으로
+Markup	마크업
+Properties…	속성…
+The properties of the selection in a window beside the page	페이지 옆 창에 표시되는 선택 항목의 속성
+Rename device…	장치 이름 바꾸기…
+Part selection…	부품 선택…
+Next pane	다음 창
+Previous pane	이전 창
+Next page tab	다음 페이지 탭
+Previous page tab	이전 페이지 탭
+Close page tab	페이지 탭 닫기
+Panes	창
+Show or hide panes; drag a tab to dock it elsewhere	창 표시 또는 숨기기. 탭을 끌어 다른 곳에 도킹합니다
+Save workspace…	작업 공간 저장…
+The panes of this workspace at their default places	이 작업 공간의 창을 기본 위치로
+Theme	테마
+UI scale	UI 배율
+Minimize the ribbon	리본 최소화
+Update report blocks	보고서 블록 업데이트
+Customize the ribbon…	리본 사용자 지정…
+Messages	메시지
+Results of the project check	프로젝트 검사 결과
+Comments and markup	주석과 마크업
+Functions of the project data not placed yet	아직 배치되지 않은 프로젝트 데이터의 기능
+Insert center	삽입 센터
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	심볼, 매크로, 장치, 배치되지 않은 기능: 검색, 즐겨찾기, 최근 사용
+Find results	검색 결과
+Quick guide, tutorial and shortcuts	빠른 안내, 튜토리얼, 바로 가기 키
+Layout spaces	레이아웃 공간
+Enclosures, devices to place and placed devices	외함, 배치할 장치와 배치된 장치
+Layout properties	레이아웃 속성
+Checklist	체크리스트
+Workbench	작업대
+3D view	3D 보기
+NC data	NC 데이터
+Drilling pattern of the face shown as DXF, DWG or CSV	표시된 면의 드릴 패턴 (DXF, DWG 또는 CSV)
+Panel wiring report	패널 배선 보고서
+Tablet mode	태블릿 모드
+Larger texts and buttons for a touch screen at the workbench	작업대 터치스크린을 위한 더 큰 글자와 버튼
+Ribbon (JSON)	리본 (JSON)
+Favorites (JSON)	즐겨찾기 (JSON)
+Home	홈
+Clipboard	클립보드
+Navigators	탐색기
+Arrange	정렬
+Zoom	확대/축소
+Appearance	모양
+Numbering	번호 지정
+Project data	프로젝트 데이터
+Management	관리
+Calculations	계산
+Collaboration	협업
+Automation	자동화
+Master data	마스터 데이터
+Forms	양식
+Templates	템플릿
+Layout space	레이아웃 공간
+Draw	그리기
+Mode	모드
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	표 (장치, 연결, 단자, 케이블, 플러그, PLC, 페이지 또는 부품)를 행과 함께 표시합니다. 행의 키로 변경합니다
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages 또는 parts
+Not a number: {}	숫자가 아님: {}
+Cable {} already exists	케이블 {}이(가) 이미 있습니다
+No connection point {}	연결 지점 {} 없음
+No part {}	부품 {} 없음
+Code	코드
+Click to show, right click for more	클릭하면 표시, 마우스 오른쪽 버튼은 추가 기능
+{} errors	오류 {}개
+{} warnings	경고 {}개
+{} notes	참고 {}개
+Open in a new page tab	새 페이지 탭에서 열기
+Project information	프로젝트 정보

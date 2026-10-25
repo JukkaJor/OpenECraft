@@ -79,20 +79,16 @@ pub(super) fn wire_fields(ui: &mut egui::Ui, color: &mut String, cross_section: 
 }
 
 impl App {
-    pub(super) fn potentials_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_potentials {
-            return;
-        }
+    pub(super) fn potentials_pane(&mut self, ui: &mut egui::Ui) {
         let mut wires: HashMap<&str, usize> = HashMap::new();
         for net in self.session.analysis.netlist.nets.iter().filter(|n| n.named) {
             *wires.entry(net.name.as_str()).or_default() += net.wires.len();
         }
-        let mut open = true;
         let mut remove = None;
         let mut preset = None;
         let mut overview = false;
         let prj = &mut self.session.prj;
-        egui::Window::new(tr("Potentials")).open(&mut open).default_size([900.0, 360.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New potential")).clicked() {
                     prj.potentials.push(PotentialDef { name: format!("P{}", prj.potentials.len() + 1), ..Default::default() });
@@ -148,7 +144,6 @@ impl App {
                 ui.add(egui::TextEdit::singleline(&mut prj.wire_defaults.cross_section).hint_text(tr("e.g. 1.5 mm²")).desired_width(80.0));
             });
         });
-        self.eng.show_potentials = open;
         if let Some(i) = remove {
             self.session.prj.potentials.remove(i);
         }

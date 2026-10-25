@@ -100,15 +100,33 @@ refer to each other (the registry kinds take an `&Analysis`).
 - `application/autosave.rs` keeps the autosaved project and parts database in the
   app's `openecraft_ui::io::Store` (a file per key on the desktop, IndexedDB in the
   browser) and decides when a value read back at start-up may replace the start-up
-  one. `application/dock.rs` is the arrangement of the docked panes of the schematic
-  workspace (`egui_tiles`); `app/dock_ui.rs` draws them.
+  one.
+- The shell (see `docs/ux-workplan.md`) is described by four modules without UI code,
+  each unit tested: `application/commands.rs` is the table of every command of the
+  editor (id, title, tooltip, icon, kind, default keys, the pane it shows);
+  `application/ribbon.rs` places the commands in the tabs and groups of the ribbon,
+  the backstage pages and the quick access row, assigns key tips and holds the user's
+  customisation; `application/dock.rs` lists the panes (page, navigators, Insert
+  center, properties, panel layout and wiring panes, and every tool as a `ToolPane`)
+  with the default arrangement of each workspace (`egui_tiles`, one tree per
+  workspace); `application/workspaces.rs` the built-in and saved workspaces.
+  `application/insert_center.rs` holds the search, favorites and recently used
+  entries of the Insert center, `application/shortcuts.rs` the keys of every command,
+  `application/style.rs` the state colours (light and dark, tested for contrast).
+  The tests check that every command has a place in the shell and every pane a
+  command, so a new feature cannot be unreachable. Icons are vector paths in
+  `openecraft_ui::icons`.
 - `application/app.rs` is the composition root: the `App` struct, start-up, the frame
-  loop and the handful of helpers every window needs (`notify`, `goto`,
-  `replace_project`, `add_page`). Menus (`app/menus.rs`), files (`app/files.rs`),
-  tool bar and library (`app/toolbar.rs`), navigator, property panel and the main
-  windows (`app/windows.rs`) are `impl App` blocks in modules of their own, one
-  concern each; the dialogs under `app/` follow the same pattern with a state struct
-  per dialog.
+  loop and the handful of helpers every pane needs (`notify`, `goto`, `show_pane`,
+  `set_workspace`, `replace_project`, `add_page`). The ribbon and quick access row
+  (`app/ribbon_ui.rs`), the backstage (`app/backstage.rs`), the status bar, the command
+  search, the settings dialog, the start page, the help pane, the Insert center and
+  the running of commands (`app/commands_ui.rs`) are `impl App` blocks in modules of
+  their own; `app/dock_ui.rs` draws the panes, the page tabs and the panes floating
+  as windows. Each tool is a pane function (`fn …_pane(&mut self, ui)`) in its module
+  under `app/` with a state struct; its `open` flag asks for the pane to be shown.
+  Small one-shot dialogs (rename, move by, save as macro, part selection, export
+  parameters) stay windows (`app/windows.rs`).
 - Rules that change the project (page order, deleting pages, renaming devices) live
   in `openecraft_core::ops`, so the command line and the MCP server share them.
 - The editor names core modules as `openecraft_core::…`; `main.rs` re-exports
@@ -134,7 +152,9 @@ refer to each other (the registry kinds take an `&Analysis`).
    `Plugins`.
 4. UI: a module under `application/app/` that draws and sends actions; rules that
    change the project go to core (`ops` or the feature module) so the command line can
-   use them.
+   use them. A new tool is a pane: a `ToolPane` variant, a command in
+   `application/commands.rs` that shows it and a place in a group of
+   `application/ribbon.rs` (the tests fail otherwise).
 5. Texts: English in the code, through `tr` / `tr_fmt!` / `tr_const!`, with catalog
    entries in the four required languages and, where possible, the further ones (see
    AGENTS.md).

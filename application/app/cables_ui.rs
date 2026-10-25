@@ -11,11 +11,7 @@ use egui::RichText;
 const FORMAT_HINT: &str = "{page}.{column}.{n}";
 
 impl App {
-    pub(super) fn cables_window(&mut self, ctx: &egui::Context) {
-        if !self.show_cables {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn cables_pane(&mut self, ui: &mut egui::Ui) {
         let mut renamed: Vec<(String, String)> = Vec::new();
         let mut remove = None;
         let mut picked: Vec<String> = Vec::new();
@@ -29,7 +25,7 @@ impl App {
             *bus_links.entry(l.cable.clone()).or_default() += 1;
         }
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
-        egui::Window::new(tr("Cables")).open(&mut open).default_size([1000.0, 360.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
                     ops::add_cable(&mut self.session.prj, &structure);
@@ -109,19 +105,15 @@ impl App {
             self.report_kind = ReportKind::CableOverview.into();
             self.show_reports = true;
         }
-        self.show_cables = open;
     }
 
-    pub(super) fn numbering_window(&mut self, ctx: &egui::Context) {
-        if !self.show_numbering {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn wire_numbering_body(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let (mut number, mut remove) = (false, false);
         let nets: Vec<&openecraft_core::netlist::Net> = self.session.analysis.open.nets.iter().filter(|n| !n.wires.is_empty() && !n.pins.is_empty()).collect();
         let numbered = nets.iter().filter(|n| !wirenum::number_of(&self.session.prj, n).is_empty()).count();
         let total = nets.len();
-        egui::Window::new(tr("Wire numbering")).open(&mut open).resizable(false).show(ctx, |ui| {
+        ui.scope(|ui| {
             let s = &mut self.session.prj.wire_numbering;
             ui.label(tr("Every connection gets one number for all its wires; the two sides of a terminal are separate connections."));
             ui.add_space(4.0);
@@ -177,6 +169,5 @@ impl App {
             let n = wirenum::clear(&mut self.session.prj, self.numbering_overwrite);
             self.notify(ctx, tr_fmt!("Numbers removed from {} wires", n));
         }
-        self.show_numbering = open;
     }
 }

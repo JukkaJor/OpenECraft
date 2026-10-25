@@ -9,10 +9,18 @@ fn shortcuts_parse_and_print() {
     assert_eq!(Shortcut::parse("alt + F1").unwrap().text(), "Alt+F1");
     assert_eq!(Shortcut::parse("Hyper+Z"), None);
     assert_eq!(Shortcut::parse("Ctrl+"), None);
-    for a in Action::ALL {
-        for k in a.defaults() {
-            assert_eq!(Shortcut::parse(&k.text()), Some(k), "{a:?}");
+    for id in binding_ids() {
+        for k in defaults(id) {
+            assert_eq!(Shortcut::parse(&k.text()), Some(k), "{id}");
         }
+    }
+}
+
+#[test]
+fn every_default_key_of_the_command_table_is_read() {
+    for d in commands::ALL {
+        let written = d.keys.split('|').filter(|k| !k.is_empty()).count();
+        assert_eq!(d.default_keys().len(), written, "{}: {}", d.id, d.keys);
     }
 }
 
@@ -26,28 +34,37 @@ fn modifiers_must_match_exactly() {
 
 #[test]
 fn defaults_have_no_conflicts_and_ids_are_unique() {
-    assert!(Shortcuts::default().conflicts().is_empty());
-    let ids: std::collections::BTreeSet<&str> = Action::ALL.iter().map(|a| a.id()).collect();
-    assert_eq!(ids.len(), Action::ALL.len());
+    assert_eq!(Shortcuts::default().conflicts(), Vec::new());
+    let ids = binding_ids();
+    let unique: std::collections::BTreeSet<&str> = ids.iter().copied().collect();
+    assert_eq!(unique.len(), ids.len());
+}
+
+#[test]
+fn ids_of_earlier_versions_still_name_the_same_function() {
+    for id in ["open", "save", "undo", "redo", "find", "select_all", "previous_page", "next_page", "fit_page", "wire_tool", "text_tool", "rotate", "mirror", "wire_corner", "autoroute", "finish_polyline"] {
+        assert!(!defaults(id).is_empty(), "{id} lost its keys");
+    }
 }
 
 #[test]
 fn changed_keys_are_stored_and_conflicts_found() {
     let mut s = Shortcuts::default();
-    s.set(Action::Rotate, vec![Shortcut::parse("Ctrl+R").unwrap()]);
-    s.set(Action::TextTool, vec![Shortcut::parse("W").unwrap()]);
-    s.set(Action::Autoroute, vec![]);
-    assert_eq!(s.text(Action::Rotate), "Ctrl+R");
-    assert_eq!(s.text(Action::Autoroute), "");
-    assert_eq!(s.text(Action::Redo), "Ctrl+Y / Ctrl+Shift+Z");
+    s.set("rotate", vec![Shortcut::parse("Ctrl+R").unwrap()]);
+    s.set("text_tool", vec![Shortcut::parse("W").unwrap()]);
+    s.set("autoroute", vec![]);
+    assert_eq!(s.text("rotate"), "Ctrl+R");
+    assert_eq!(s.text("autoroute"), "");
+    assert_eq!(s.text("redo"), "Ctrl+Y / Ctrl+Shift+Z");
+    assert_eq!(s.cmd_text(Cmd::Undo), "Ctrl+Z");
     let conflicts = s.conflicts();
     assert_eq!(conflicts.len(), 1);
-    assert_eq!(conflicts[0].1, vec![Action::WireTool, Action::TextTool]);
+    assert_eq!(conflicts[0].1, vec!["wire_tool", "text_tool"]);
     let stored = s.to_storage();
     assert_eq!(stored.len(), 3);
     assert_eq!(Shortcuts::from_storage(&stored), s);
-    s.set(Action::Rotate, Action::Rotate.defaults());
-    assert!(s.is_default(Action::Rotate), "setting the defaults again removes the change");
+    s.set("rotate", defaults("rotate"));
+    assert!(s.is_default("rotate"), "setting the defaults again removes the change");
     s.reset_all();
     assert_eq!(s, Shortcuts::default());
 }
@@ -56,5 +73,6 @@ fn changed_keys_are_stored_and_conflicts_found() {
 fn unknown_stored_entries_are_ignored() {
     let stored: BTreeMap<String, Vec<String>> = [("teleport".to_string(), vec!["X".to_string()]), ("rotate".to_string(), vec!["Bogus+R".to_string(), "E".to_string()])].into();
     let s = Shortcuts::from_storage(&stored);
-    assert_eq!(s.text(Action::Rotate), "E");
+    assert_eq!(s.text("rotate"), "E");
+    assert_eq!(s.to_storage().len(), 1);
 }

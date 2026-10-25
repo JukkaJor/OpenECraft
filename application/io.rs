@@ -64,6 +64,10 @@ pub enum Purpose {
     Subproject,
     /// A file of an ERP, PDM, PLM, ECAD, MCAD, procurement system or wiring machine.
     Integration,
+    /// Ribbon customisation (JSON) exported before.
+    Ribbon,
+    /// Favorites of the Insert center (JSON) exported before.
+    Favorites,
 }
 
 impl FileKind for Purpose {
@@ -95,6 +99,8 @@ impl FileKind for Purpose {
             Purpose::Aml => ("AutomationML", &["aml", "xml"]),
             Purpose::Integration => (tr("Files of other systems (CSV, JSON)"), &["csv", "json", "txt"]),
             Purpose::DeviceDescription => (tr("Device description (GSDML, ESI)"), &["xml"]),
+            Purpose::Ribbon => (tr("Ribbon (JSON)"), &["json"]),
+            Purpose::Favorites => (tr("Favorites (JSON)"), &["json"]),
         }
     }
 }

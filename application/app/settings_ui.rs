@@ -1,0 +1,344 @@
+//! The settings dialog: one window with a tree of the project settings (wire numbering,
+//! cross references, checks, marking, settings scheme, and the tools that keep further
+//! project settings) and the user settings (appearance, keyboard shortcuts, ribbon,
+//! servers).
+
+use super::*;
+use crate::commands;
+use crate::ribbon::{self, CustomGroup, TABS};
+use crate::shortcuts;
+
+/// UI scales offered.
+pub(super) const SCALES: [f32; 7] = [0.75, 0.9, 1.0, 1.1, 1.25, 1.5, 2.0];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Node {
+    WireNumbering,
+    CrossReferences,
+    Checks,
+    Marking,
+    Scheme,
+    ProjectTools,
+    Appearance,
+    Shortcuts,
+    Ribbon,
+    Servers,
+}
+
+impl Node {
+    const PROJECT: [Node; 6] = [Node::WireNumbering, Node::CrossReferences, Node::Checks, Node::Marking, Node::Scheme, Node::ProjectTools];
+    const USER: [Node; 4] = [Node::Appearance, Node::Shortcuts, Node::Ribbon, Node::Servers];
+
+    fn title(self) -> &'static str {
+        match self {
+            Node::WireNumbering => tr("Wire numbering"),
+            Node::CrossReferences => tr("Cross references"),
+            Node::Checks => tr("Check settings"),
+            Node::Marking => tr("Marking"),
+            Node::Scheme => tr("Settings scheme"),
+            Node::ProjectTools => tr("Further project settings"),
+            Node::Appearance => tr("Appearance"),
+            Node::Shortcuts => tr("Keyboard shortcuts"),
+            Node::Ribbon => tr("Ribbon"),
+            Node::Servers => tr("Servers"),
+        }
+    }
+}
+
+pub(super) struct SettingsUi {
+    open: bool,
+    node: Node,
+    filter: String,
+    /// Title of a new own group and its tab.
+    new_group: String,
+    /// Command search of the own groups.
+    add_filter: String,
+    ribbon_tab: usize,
+}
+
+impl Default for SettingsUi {
+    fn default() -> Self {
+        SettingsUi { open: false, node: Node::Appearance, filter: String::new(), new_group: String::new(), add_filter: String::new(), ribbon_tab: 0 }
+    }
+}
+
+impl SettingsUi {
+    pub fn open_at(&mut self, node: Node) {
+        self.open = true;
+        self.node = node;
+    }
+}
+
+impl App {
+    pub(super) fn settings_window(&mut self, ctx: &egui::Context) {
+        if !self.settings.open {
+            self.recording = None;
+            return;
+        }
+        let mut open = true;
+        egui::Window::new(tr("Settings")).open(&mut open).default_size([860.0, 560.0]).show(ctx, |ui| {
+            egui::Panel::left("settings_tree").resizable(true).default_size(200.0).show(ui, |ui| {
+                ui.label(RichText::new(tr("Project")).strong());
+                for n in Node::PROJECT {
+                    if ui.selectable_label(self.settings.node == n, n.title()).clicked() {
+                        self.settings.node = n;
+                    }
+                }
+                ui.add_space(8.0);
+                ui.label(RichText::new(tr("User")).strong());
+                for n in Node::USER {
+                    if ui.selectable_label(self.settings.node == n, n.title()).clicked() {
+                        self.settings.node = n;
+                    }
+                }
+            });
+            egui::CentralPanel::default().show(ui, |ui| {
+                ui.heading(self.settings.node.title());
+                ui.separator();
+                egui::ScrollArea::vertical().id_salt("settings_body").auto_shrink([false, false]).show(ui, |ui| match self.settings.node {
+                    Node::WireNumbering => self.wire_numbering_body(ui),
+                    Node::CrossReferences => self.xref_body(ui),
+                    Node::Checks => self.check_settings_body(ui),
+                    Node::Marking => self.marking_body(ui),
+                    Node::Scheme => self.scheme_settings(ui),
+                    Node::ProjectTools => self.project_tool_links(ui),
+                    Node::Appearance => self.appearance_settings(ui),
+                    Node::Shortcuts => self.shortcut_settings(ui),
+                    Node::Ribbon => self.ribbon_settings(ui),
+                    Node::Servers => self.server_links(ui),
+                });
+            });
+        });
+        self.settings.open = open;
+    }
+
+    fn scheme_settings(&mut self, ui: &mut egui::Ui) {
+        ui.label(tr(commands::def(Cmd::ExportSettings).tip));
+        ui.horizontal(|ui| {
+            for c in [Cmd::ExportSettings, Cmd::ImportSettings] {
+                let d = commands::def(c);
+                if icons::text_button(ui, d.icon, tr(d.title)).clicked() {
+                    self.run(&ui.ctx().clone(), c);
+                }
+            }
+        });
+    }
+
+    /// The tools that hold further project settings, as links.
+    fn project_tool_links(&mut self, ui: &mut egui::Ui) {
+        ui.weak(tr("These settings are edited in their panes:"));
+        for c in [Cmd::Potentials, Cmd::Structure, Cmd::PropertyDatabase, Cmd::ProjectLanguages, Cmd::Forms, Cmd::Process, Cmd::Configurator, Cmd::ProjectProperties] {
+            let d = commands::def(c);
+            ui.horizontal(|ui| {
+                if icons::text_button(ui, d.icon, tr(d.title)).clicked() {
+                    self.settings.open = false;
+                    self.run(&ui.ctx().clone(), c);
+                }
+                if !d.tip.is_empty() {
+                    ui.weak(tr(d.tip));
+                }
+            });
+        }
+    }
+
+    fn server_links(&mut self, ui: &mut egui::Ui) {
+        ui.weak(tr("Addresses and sign-in of the servers are set in their panes:"));
+        for c in [Cmd::DataPortal, Cmd::ProjectServer, Cmd::Vault, Cmd::ManagePlugins] {
+            let d = commands::def(c);
+            ui.horizontal(|ui| {
+                if icons::text_button(ui, d.icon, tr(d.title)).clicked() {
+                    self.settings.open = false;
+                    self.run(&ui.ctx().clone(), c);
+                }
+                if !d.tip.is_empty() {
+                    ui.weak(tr(d.tip));
+                }
+            });
+        }
+    }
+
+    fn appearance_settings(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        egui::Grid::new("appearance").num_columns(2).spacing([16.0, 8.0]).show(ui, |ui| {
+            ui.label(tr("Theme"));
+            ui.horizontal(|ui| self.cmd_menu(ui, Cmd::Theme));
+            ui.end_row();
+            ui.label(tr("UI scale"));
+            ui.horizontal_wrapped(|ui| {
+                for s in SCALES {
+                    ui.selectable_value(&mut self.shell.ui_scale, s, format!("{:.0} %", s * 100.0));
+                }
+            });
+            ui.end_row();
+            ui.label(tr("Tablet mode"));
+            ui.checkbox(&mut self.shell.tablet, tr(commands::def(Cmd::TabletMode).tip));
+            ui.end_row();
+            ui.label(tr("Ribbon"));
+            ui.checkbox(&mut self.shell.ribbon_minimized, tr("Minimize the ribbon"));
+            ui.end_row();
+            ui.label(tr("Language"));
+            ui.vertical(|ui| {
+                egui::ScrollArea::vertical().id_salt("langs").max_height(220.0).show(ui, |ui| {
+                    for l in openecraft_i18n::Lang::ALL {
+                        if ui.selectable_label(openecraft_i18n::lang() == l, l.native_name()).clicked() {
+                            openecraft_i18n::set_lang(l);
+                            openecraft_ui::fonts::follow_language(&ctx);
+                        }
+                    }
+                });
+            });
+            ui.end_row();
+        });
+    }
+
+    /// Every command and key of the page editor with its keys: record, clear, default.
+    fn shortcut_settings(&mut self, ui: &mut egui::Ui) {
+        ui.weak(tr("Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed."));
+        ui.add(egui::TextEdit::singleline(&mut self.settings.filter).hint_text(tr("Filter…")));
+        let conflicts = self.editor.shortcuts.conflicts();
+        let f = self.settings.filter.to_lowercase();
+        egui::Grid::new("shortcut_grid").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+            for id in shortcuts::binding_ids() {
+                let title = tr(shortcuts::title(id));
+                let text = self.editor.shortcuts.text(id);
+                if !f.is_empty() && !title.to_lowercase().contains(&f) && !text.to_lowercase().contains(&f) {
+                    continue;
+                }
+                ui.label(title);
+                let clash = conflicts.iter().any(|(_, v)| v.contains(&id));
+                let shown = if self.recording == Some(id) {
+                    RichText::new(tr("Press a key…")).italics()
+                } else if text.is_empty() {
+                    RichText::new("–").weak()
+                } else {
+                    RichText::new(text).monospace()
+                };
+                ui.label(if clash { shown.color(crate::style::colors(self.dark).error) } else { shown });
+                ui.horizontal(|ui| {
+                    if ui.small_button(tr("Record")).clicked() {
+                        self.recording = Some(id);
+                    }
+                    if ui.small_button(tr("Clear")).on_hover_text(tr("No shortcut")).clicked() {
+                        self.editor.shortcuts.set(id, Vec::new());
+                    }
+                    if ui.add_enabled(!self.editor.shortcuts.is_default(id), egui::Button::new(tr("Default")).small()).clicked() {
+                        self.editor.shortcuts.reset(id);
+                    }
+                });
+                ui.end_row();
+            }
+        });
+        for (key, ids) in &conflicts {
+            let names: Vec<&str> = ids.iter().map(|id| tr(shortcuts::title(id))).collect();
+            ui.colored_label(crate::style::colors(self.dark).error, tr_fmt!("{} is used by: {}", key.text(), names.join(", ")));
+        }
+        ui.separator();
+        if ui.button(tr("Reset all to the defaults")).clicked() {
+            self.editor.shortcuts.reset_all();
+        }
+    }
+
+    /// Hide groups, own groups of commands, export and import of the customisation.
+    #[allow(clippy::too_many_lines)]
+    fn ribbon_settings(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        ui.weak(tr("Hide the groups you do not need and put the commands you use most into own groups."));
+        ui.horizontal(|ui| {
+            if icons::text_button(ui, Icon::Upload, tr("Export…")).clicked() {
+                let json = self.ribbon.custom.to_json();
+                self.export(&ctx, "ribbon.json".into(), (tr("Ribbon (JSON)"), "json"), json);
+            }
+            if icons::text_button(ui, Icon::Download, tr("Import…")).clicked() {
+                self.io.open(&ctx, Purpose::Ribbon);
+            }
+            if ui.button(tr("Reset the ribbon")).clicked() {
+                self.ribbon.custom = Default::default();
+            }
+        });
+        ui.separator();
+        let tabs: Vec<&ribbon::Tab> = TABS.iter().filter(|t| !t.groups.is_empty()).collect();
+        ui.horizontal_wrapped(|ui| {
+            for (i, t) in tabs.iter().enumerate() {
+                ui.selectable_value(&mut self.settings.ribbon_tab, i, tr(t.title));
+            }
+        });
+        let tab = tabs[self.settings.ribbon_tab.min(tabs.len() - 1)];
+        ui.label(RichText::new(tr("Groups shown")).strong());
+        for g in tab.groups {
+            let mut shown = !self.ribbon.custom.is_hidden(tab, g);
+            if ui.checkbox(&mut shown, tr(g.title)).changed() {
+                self.ribbon.custom.set_hidden(tab, g, !shown);
+            }
+        }
+        ui.separator();
+        ui.label(RichText::new(tr("Own groups")).strong());
+        let mut remove = None;
+        let mut add: Option<(usize, String)> = None;
+        let mut drop: Option<(usize, usize)> = None;
+        for (gi, g, cmds) in self.ribbon.custom.groups_of(tab) {
+            ui.group(|ui| {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(&g.title).strong());
+                    if icons::button(ui, Icon::Delete, tr("Delete the group")).clicked() {
+                        remove = Some(gi);
+                    }
+                });
+                for (ci, c) in cmds.iter().enumerate() {
+                    ui.horizontal(|ui| {
+                        icons::show(ui, commands::def(*c).icon, 16.0);
+                        ui.label(tr(commands::def(*c).title));
+                        if icons::button(ui, Icon::Close, tr("Remove from the group")).clicked() {
+                            drop = Some((gi, ci));
+                        }
+                    });
+                }
+                let r = icons::text_button(ui, Icon::Plus, tr("Add a command"));
+                egui::Popup::menu(&r).show(|ui| {
+                    ui.add(egui::TextEdit::singleline(&mut self.settings.add_filter).hint_text(tr("Filter…")));
+                    let f = self.settings.add_filter.to_lowercase();
+                    egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
+                        for d in commands::ALL.iter().filter(|d| f.is_empty() || tr(d.title).to_lowercase().contains(&f)) {
+                            if ui.button(tr(d.title)).clicked() {
+                                add = Some((gi, d.id.to_string()));
+                                ui.close();
+                            }
+                        }
+                    });
+                });
+            });
+        }
+        if let Some(gi) = remove {
+            self.ribbon.custom.groups.remove(gi);
+        }
+        if let Some((gi, id)) = add {
+            if !self.ribbon.custom.groups[gi].commands.contains(&id) {
+                self.ribbon.custom.groups[gi].commands.push(id);
+            }
+        }
+        if let Some((gi, ci)) = drop {
+            // The visible commands skip unknown ids; remove by the shown index.
+            let known: Vec<usize> = self.ribbon.custom.groups[gi].commands.iter().enumerate().filter(|(_, id)| commands::by_id(id).is_some()).map(|(i, _)| i).collect();
+            if let Some(&i) = known.get(ci) {
+                self.ribbon.custom.groups[gi].commands.remove(i);
+            }
+        }
+        ui.horizontal(|ui| {
+            ui.add(egui::TextEdit::singleline(&mut self.settings.new_group).hint_text(tr("name")).desired_width(160.0));
+            if ui.add_enabled(!self.settings.new_group.trim().is_empty(), egui::Button::new(tr("New group"))).clicked() {
+                self.ribbon.custom.groups.push(CustomGroup { tab: tab.key.to_string(), title: self.settings.new_group.trim().to_string(), commands: Vec::new() });
+                self.settings.new_group.clear();
+            }
+        });
+    }
+
+    /// A ribbon customisation file was opened.
+    pub(super) fn import_ribbon(&mut self, ctx: &egui::Context, text: &str) {
+        match ribbon::Custom::from_json(text) {
+            Ok(c) => {
+                self.ribbon.custom = c;
+                self.notify(ctx, tr("Ribbon imported"));
+            }
+            Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+        }
+    }
+}

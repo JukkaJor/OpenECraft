@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Zaewidencjonuj {} w Vault
 Panel layout in 3D (Parasolid XT)	Zabudowa szafy w 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Model 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Wstecz
+Back to the project (Esc)	Powrót do projektu (Esc)
+Recent projects	Ostatnie projekty
+No projects opened yet.	Nie otwarto jeszcze żadnego projektu.
+Remove from the list	Usuń z listy
+unsaved	niezapisany
+Project: {}	Projekt: {}
+Find a command	Znajdź polecenie
+Drilling list (CSV)	Lista otworów (CSV)
+Pane menu	Menu panelu
+Float	Odepnij
+Show the pane as a window	Pokaż panel jako okno
+Close	Zamknij
+Dock	Zadokuj
+Put the pane back into the workspace	Przywróć panel do obszaru roboczego
+Messages ({})	Komunikaty ({})
+{} favorites added	Dodano ulubione: {}
+Quick guide	Krótki przewodnik
+About OpenECraft	O programie OpenECraft
+Tutorial	Samouczek
+Introduction	Wprowadzenie
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	Otwarty edytor elektrotechnicznego CAE w duchu EPLAN Electric P8.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Wstążka: Plik otwiera, zapisuje, importuje, eksportuje i drukuje; karty grupują polecenia tematycznie. Alt pokazuje klawisze dostępu, Ctrl+Shift+P znajduje dowolne polecenie, F6 przełącza panele, F1 otwiera tę pomoc.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Wstaw › Centrum wstawiania (Ins): wyszukaj symbol, makro lub urządzenie i kliknij na stronie, aby je umieścić. Oznaczenia urządzeń (-K1, -S2 …) są nadawane automatycznie.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Przypisz artykuły we właściwościach (karta Artykuły); raporty (Narzędzia główne › Raporty) zawierają urządzenia, zestawienie materiałów, zaciski, połączenia i PLC i są wstawiane jako strony raportów.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kable: Połączenia › Kable, zaznacz przewody i użyj Przypisz do kabla. Numery przewodów: Połączenia › Numeracja przewodów albo wpisz numer we właściwościach przewodu.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makra: zaznacz elementy, prawy przycisk › Zapisz zaznaczenie jako makro; wstawiaj je z centrum wstawiania lub przez Wstaw › Makro. Symbole zastępcze {NAME} są wypełniane z zestawów wartości.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Urządzenia › Listwy zaciskowe, Urządzenia › Przegląd PLC i Dane projektu › Rewizje: kolejność zacisków, mostki i rezerwy; adresy PLC i tablice symboli; rewizje ze znacznikami zmian i zwolnionymi (zablokowanymi) stronami.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Dane podstawowe › Edytor symboli: rysuj własne symbole (lub kopiuj wbudowane) z punktami przyłączeniowymi i funkcją; są zapisywane w projekcie i mogą być wymieniane jako pliki bibliotek.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Dane podstawowe › Formularze: własne tabliczki rysunkowe z symbolami zastępczymi ({project}, {page}, {prop:Name} …) i kolumny stron raportów; Dane projektu › Bloki raportów generują strony raportów dla listwy, wtyku, kabla lub urządzenia.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Zabudowa szafy (obszar roboczy Zabudowa szafy, karta Przestrzeń montażowa): obudowy, szyny, korytka, szyny zbiorcze i wycięcia; Przestrzeń montażowa › Dane NC eksportuje wzór wierceń (DXF / DWG / CSV). Produkcyjna lista przewodów zawiera długości odizolowania i tulejki.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Wiązki przewodów: Połączenia › Wiązki przewodów; zaznacz przewody między dwoma urządzeniami › Przypisz do wiązki albo dla każdego połączenia we właściwościach przewodu. Raport wiązki z długościami, złączami i średnicą wiązki, eksport KBL.
+Key tips of the ribbon	Klawisze dostępu wstążki
+Version {}	Wersja {}
+Search (* and ? as placeholders)…	Szukaj (* i ? jako symbole wieloznaczne)…
+Show as list	Pokaż jako listę
+Show as tiles	Pokaż jako kafelki
+Export favorites…	Eksportuj ulubione…
+Import favorites…	Importuj ulubione…
+Recently used	Ostatnio używane
+Parts with functions: the device gets the part, its first function is placed.	Artykuły z funkcjami: urządzenie otrzymuje artykuł, a jego pierwsza funkcja zostaje umieszczona.
+Favorite	Ulubione
+Macros ({})	Makra ({})
+Devices ({})	Urządzenia ({})
+Unplaced ({})	Nieumieszczone ({})
+(several)	(różne)
+{} symbols	Symbole: {}
+Parts of {}	Artykuły {}
+Undo list	Lista cofania
+Show the ribbon	Pokaż wstążkę
+Undo {} steps	Cofnij kroki: {}
+Find a command ({})	Znajdź polecenie ({})
+Further project settings	Dalsze ustawienia projektu
+Ribbon	Wstążka
+Servers	Serwery
+These settings are edited in their panes:	Te ustawienia edytuje się w ich panelach:
+Addresses and sign-in of the servers are set in their panes:	Adresy i logowanie serwerów ustawia się w ich panelach:
+Hide the groups you do not need and put the commands you use most into own groups.	Ukryj grupy, których nie potrzebujesz, a najczęściej używane polecenia umieść we własnych grupach.
+Reset the ribbon	Przywróć wstążkę
+Groups shown	Wyświetlane grupy
+Own groups	Własne grupy
+Delete the group	Usuń grupę
+Remove from the group	Usuń z grupy
+Add a command	Dodaj polecenie
+New group	Nowa grupa
+Ribbon imported	Zaimportowano wstążkę
+Welcome to OpenECraft	Witamy w OpenECraft
+Getting started	Pierwsze kroki
+A new project	Nowy projekt
+Placing symbols	Umieszczanie symboli
+Wires and potentials	Przewody i potencjały
+The project check	Kontrola projektu
+What is new	Co nowego
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Wstążka z kartą Plik zastępuje menu; Ctrl+Shift+P znajduje dowolne polecenie.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Każde narzędzie jest panelem: przeciągnij jego kartę obok strony, do nawigatorów lub na zewnątrz jako okno.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Obszary robocze dla schematu, zabudowy szafy, asystentów okablowania i montażu, komentarzy i planowania wstępnego.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Centrum wstawiania znajduje symbole, makra, urządzenia i nieumieszczone funkcje; ulubione i ostatnio używane są na początku.
+Close the start page	Zamknij stronę startową
+Position of the cursor	Położenie kursora
+Messages of this session	Komunikaty tej sesji
+Grid {} mm	Siatka {} mm
+Layer: {}	Warstwa: {}
+Export Excel	Eksportuj do Excela
+Insert as report page	Wstaw jako stronę raportu
+Open, save, import, export, print and the settings	Otwieranie, zapisywanie, import, eksport, drukowanie i ustawienia
+Start page	Strona startowa
+Check in to Vault	Zaewidencjonuj w Vault
+Import parts…	Importuj artykuły…
+Import symbol library…	Importuj bibliotekę symboli…
+Import page templates…	Importuj szablony stron…
+Print all pages…	Drukuj wszystkie strony…
+Print current page…	Drukuj bieżącą stronę…
+Settings…	Ustawienia…
+Project and user settings in one dialog	Ustawienia projektu i użytkownika w jednym oknie dialogowym
+Cut	Wytnij
+Paste	Wklej
+New page	Nowa strona
+Cover sheet, overview, graphics, report, mounting layout or a page template	Strona tytułowa, przegląd, grafika, raport, zabudowa lub szablon strony
+Find a command…	Znajdź polecenie…
+Every command of the editor and of the plugins by name	Każde polecenie edytora i wtyczek według nazwy
+Markup	Oznaczenia
+Properties…	Właściwości…
+The properties of the selection in a window beside the page	Właściwości zaznaczenia w oknie obok strony
+Rename device…	Zmień nazwę urządzenia…
+Part selection…	Wybór artykułu…
+Next pane	Następny panel
+Previous pane	Poprzedni panel
+Next page tab	Następna karta strony
+Previous page tab	Poprzednia karta strony
+Close page tab	Zamknij kartę strony
+Panes	Panele
+Show or hide panes; drag a tab to dock it elsewhere	Pokaż lub ukryj panele; przeciągnij kartę, aby zadokować ją w innym miejscu
+Save workspace…	Zapisz obszar roboczy…
+The panes of this workspace at their default places	Panele tego obszaru roboczego w domyślnych miejscach
+Theme	Motyw
+UI scale	Skala interfejsu
+Minimize the ribbon	Minimalizuj wstążkę
+Update report blocks	Aktualizuj bloki raportów
+Customize the ribbon…	Dostosuj wstążkę…
+Messages	Komunikaty
+Results of the project check	Wyniki kontroli projektu
+Comments and markup	Komentarze i oznaczenia
+Functions of the project data not placed yet	Funkcje danych projektu jeszcze nieumieszczone
+Insert center	Centrum wstawiania
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbole, makra, urządzenia i nieumieszczone funkcje: wyszukiwanie, ulubione, ostatnio używane
+Find results	Wyniki wyszukiwania
+Quick guide, tutorial and shortcuts	Krótki przewodnik, samouczek i skróty
+Layout spaces	Przestrzenie montażowe
+Enclosures, devices to place and placed devices	Obudowy, urządzenia do umieszczenia i umieszczone
+Layout properties	Właściwości zabudowy
+Checklist	Lista kontrolna
+Workbench	Stół roboczy
+3D view	Widok 3D
+NC data	Dane NC
+Drilling pattern of the face shown as DXF, DWG or CSV	Wzór wierceń pokazanej ściany jako DXF, DWG lub CSV
+Panel wiring report	Raport okablowania szafy
+Tablet mode	Tryb tabletu
+Larger texts and buttons for a touch screen at the workbench	Większe teksty i przyciski dla ekranu dotykowego przy stole roboczym
+Ribbon (JSON)	Wstążka (JSON)
+Favorites (JSON)	Ulubione (JSON)
+Home	Narzędzia główne
+Clipboard	Schowek
+Navigators	Nawigatory
+Arrange	Rozmieść
+Zoom	Powiększenie
+Appearance	Wygląd
+Numbering	Numeracja
+Project data	Dane projektu
+Management	Zarządzanie
+Calculations	Obliczenia
+Collaboration	Współpraca
+Automation	Automatyzacja
+Master data	Dane podstawowe
+Forms	Formularze
+Templates	Szablony
+Layout space	Przestrzeń montażowa
+Draw	Rysuj
+Mode	Tryb
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Pokazuje tabelę (urządzenia, połączenia, zaciski, kable, wtyki, PLC, strony lub artykuły) z jej wierszami; klucz wiersza służy do jego zmiany
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages lub parts
+Not a number: {}	To nie jest liczba: {}
+Cable {} already exists	Kabel {} już istnieje
+No connection point {}	Brak punktu przyłączeniowego {}
+No part {}	Brak artykułu {}
+Code	Kod
+Click to show, right click for more	Kliknij, aby pokazać, prawy przycisk – więcej
+{} errors	Błędy: {}
+{} warnings	Ostrzeżenia: {}
+{} notes	Uwagi: {}
+Open in a new page tab	Otwórz w nowej karcie strony
+Project information	Informacje o projekcie

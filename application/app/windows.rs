@@ -1,102 +1,60 @@
-//! The windows of the main application (reports, project and page properties, parts,
-//! help) and the keyboard shortcuts.
+//! The dialogs that stay windows (project and page properties, part selection, export
+//! parameters, workspaces), the Reports pane and the keyboard shortcuts.
 
 use super::*;
-use crate::shortcuts::{Action, Shortcut};
+use crate::shortcuts::Shortcut;
 
 impl App {
-    #[allow(clippy::too_many_lines)]
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
-        self.shortcuts_window(ctx);
         self.export_form_window(ctx);
         self.save_layout_window(ctx);
-        self.reports_window(ctx);
         self.project_properties_window(ctx);
         self.parts_management_and_part_selection_window(ctx);
         self.page_properties_window(ctx);
-        if self.show_help {
-            let mut open = true;
-            egui::Window::new(tr("OpenECraft – usage")).open(&mut open).default_width(520.0).show(ctx, |ui| {
-                ui.label(RichText::new(tr("Workflow")).strong());
-                ui.label(tr("1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically."));
-                ui.label(tr("2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live."));
-                ui.label(tr("3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot."));
-                ui.label(tr("4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential."));
-                ui.label(tr("5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages."));
-                ui.label(tr("6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown."));
-                ui.label(tr("7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties."));
-                ui.label(tr("8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets."));
-                ui.label(tr("9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."));
-                ui.label(tr("10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."));
-                ui.label(tr("11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages."));
-                ui.label(tr("Reports › Report blocks: generate report pages per strip, plug, cable or device with a named scheme (filter, sort order, grouping) and update them; output report pages into another project."));
-                ui.label(tr("12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules."));
-                ui.label(tr("13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."));
-                ui.label(tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."));
-                ui.label(tr("15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols."));
-                ui.label(tr("16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties."));
-                ui.separator();
-                ui.label(RichText::new(tr("Shortcuts")).strong());
-                egui::Grid::new("keys").striped(true).show(ui, |ui| {
-                    let sc = &self.editor.shortcuts;
-                    let configured: Vec<(String, &str)> = Action::ALL.iter().map(|a| (sc.text(*a), a.title())).filter(|(k, _)| !k.is_empty()).collect();
-                    let fixed: Vec<(String, &str)> = [
-                        (tr("Esc"), tr("Cancel / select tool / clear selection")),
-                        (tr("Del"), tr("Delete selection")),
-                        (tr("Arrows"), tr("Move selection by one grid step")),
-                        (tr("Ctrl+C / X / V"), tr("Copy / cut / paste (devices get new tags)")),
-                        (tr("Wheel / right or middle drag"), tr("Zoom / pan")),
-                        (tr("Shift + click / drag"), tr("Add to selection")),
-                    ]
-                    .into_iter()
-                    .map(|(k, v)| (k.to_string(), v))
-                    .collect();
-                    for (k, v) in configured.into_iter().chain(fixed) {
-                        ui.label(RichText::new(k).monospace());
-                        ui.label(v);
-                        ui.end_row();
-                    }
-                });
-            });
-            self.show_help = open;
-        }
     }
 
-    /// Reports.
-    pub(super) fn reports_window(&mut self, ctx: &egui::Context) {
-    if self.show_reports {
-        let mut open = true;
+    /// The Reports pane: the reports of the registry on the left, the table on the right.
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn reports_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut jump = None;
         let mut export = None;
         let mut export_xlsx = None;
         let mut add_page = None;
-        egui::Window::new(tr("Reports")).open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
-            ui.horizontal_wrapped(|ui| {
-                for (k, title) in self.report_list() {
-                    ui.selectable_value(&mut self.report_kind, k, title);
+        let reports = self.report_list();
+        egui::Panel::left("report_list").resizable(true).default_size(220.0).show(ui, |ui| {
+            ui.add(egui::TextEdit::singleline(&mut self.report_filter).hint_text(tr("Filter…")).desired_width(f32::INFINITY));
+            let f = self.report_filter.to_lowercase();
+            egui::ScrollArea::vertical().id_salt("report_list").auto_shrink([false, false]).show(ui, |ui| {
+                for (k, title) in reports.iter().filter(|(_, t)| f.is_empty() || t.to_lowercase().contains(&f)) {
+                    ui.selectable_value(&mut self.report_kind, *k, title);
                 }
             });
-            ui.separator();
+        });
+        egui::CentralPanel::default().show(ui, |ui| {
             let kind = self.report_kind;
-            ui.horizontal(|ui| {
-                if ui.button(tr("⬇ Export CSV")).clicked() {
+            ui.horizontal_wrapped(|ui| {
+                ui.heading(self.report_title(kind));
+                ui.separator();
+                if icons::text_button(ui, Icon::Download, tr("Export CSV")).clicked() {
                     export = Some(kind);
                 }
-                if ui.button(tr("⬇ Export Excel")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Export Excel")).clicked() {
                     export_xlsx = Some(kind);
                 }
-                if ui.button(tr("➕ Insert as report page")).clicked() {
+                if icons::text_button(ui, Icon::FileNew, tr("Insert as report page")).clicked() {
                     add_page = Some(kind);
                 }
-                if ui.button(tr("Form…")).on_hover_text(tr("Columns, filter, sort order and rows of the report pages")).clicked() {
+                if icons::text_button(ui, Icon::Forms, tr("Form…")).on_hover_text(tr("Columns, filter, sort order and rows of the report pages")).clicked() {
                     self.forms_ui.open_report(kind);
                 }
-                if ui.button(tr("Report blocks…")).on_hover_text(tr("Generate report pages per strip, plug, cable or device")).clicked() {
+                if icons::text_button(ui, Icon::Report, tr("Report blocks…")).on_hover_text(tr("Generate report pages per strip, plug, cable or device")).clicked() {
                     self.report_blocks_ui.open = true;
                 }
             });
+            ui.separator();
             let Some(table) = self.session.analysis.report(&self.session.prj, kind) else { return };
-            egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
+            egui::ScrollArea::both().id_salt("report_table").auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("report").striped(true).spacing([14.0, 4.0]).show(ui, |ui| {
                     for h in table.header_texts() {
                         ui.label(RichText::new(h).strong());
@@ -120,7 +78,6 @@ impl App {
                 }
             });
         });
-        self.show_reports = open;
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
         }
@@ -142,8 +99,6 @@ impl App {
         if let Some(kind) = add_page {
             self.add_page(PageKind::Report(kind));
         }
-    }
-
     }
 
     /// Project properties.
@@ -225,45 +180,33 @@ impl App {
 
     }
 
-    /// Parts management and part selection.
+    /// The part selection and the small dialogs of the tools (they stay windows).
     pub(super) fn parts_management_and_part_selection_window(&mut self, ctx: &egui::Context) {
-    let mut actions = self.parts_ui.manager(ctx, &mut self.parts_db, &mut self.session.prj);
-    actions.extend(self.parts_ui.portal(ctx, &mut self.parts_db));
-    self.parts_actions(ctx, actions);
-    self.parts_ui.selector(ctx, &self.parts_db, &mut self.session.prj);
+        self.parts_ui.selector(ctx, &self.parts_db, &mut self.session.prj);
+        self.rename_device_window(ctx);
+        self.numbering_windows(ctx);
+        self.arrange_windows(ctx);
+        self.save_macro_dialog(ctx);
+        self.save_template_window(ctx);
+        self.plugins_windows(ctx);
+        self.properties_float_window(ctx);
+        self.settings_window(ctx);
+        self.command_search_window(ctx);
+        self.floating_panes(ctx);
+    }
 
-    self.cables_window(ctx);
-    self.rename_device_window(ctx);
-    self.numbering_window(ctx);
-    self.numbering_windows(ctx);
-    self.check_settings_window(ctx);
-    self.arrange_windows(ctx);
-    self.xref_window(ctx);
-    self.find_window(ctx);
-    self.engineering_windows(ctx);
-    self.compare_window(ctx);
-    self.requests_window(ctx);
-    self.symbol_editor_window(ctx);
-    self.forms_window(ctx);
-    self.report_blocks_window(ctx);
-    self.harness_window(ctx);
-    self.field_window(ctx);
-    self.plugs_window(ctx);
-    self.plc_hw_window(ctx);
-    self.integration_window(ctx);
-    self.process_window(ctx);
-    self.preplanning_window(ctx);
-    self.electrical_window(ctx);
-    self.singleline_window(ctx);
-    self.languages_window(ctx);
-    self.structure_window(ctx);
-    self.properties_window(ctx);
-    self.projects_window(ctx);
-    self.save_template_window(ctx);
-    self.tables_window(ctx);
-    self.config_window(ctx);
-    self.plugins_windows(ctx);
+    /// The parts management (database and project parts) as a pane.
+    pub(super) fn parts_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        let actions = self.parts_ui.manager(ui, &mut self.parts_db, &mut self.session.prj);
+        self.parts_actions(&ctx, actions);
+    }
 
+    /// The data portal (parts server) as a pane.
+    pub(super) fn portal_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        let actions = self.parts_ui.portal(ui, &mut self.parts_db);
+        self.parts_actions(&ctx, actions);
     }
 
     /// Page properties.
@@ -345,7 +288,7 @@ impl App {
                 if matches!(pg.kind, PageKind::Overview | PageKind::Graphic) {
                     ui.weak(tr("Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports)."));
                 } else if !pg.kind.is_drawing() && !pg.is_empty() {
-                    ui.colored_label(Color32::from_rgb(220, 140, 0), tr("This page contains schematic content which is not evaluated on non-schematic pages."));
+                    ui.colored_label(crate::style::lock(), tr("This page contains schematic content which is not evaluated on non-schematic pages."));
                 }
                 if pg.generated {
                     ui.checkbox(&mut pg.generated, tr("Generated by the configurator"))
@@ -414,65 +357,10 @@ impl App {
 
     }
 
-    pub(super) fn shortcuts(&mut self, ctx: &egui::Context) {
-        if self.recording.is_some() {
-            self.record_shortcut(ctx);
-            return;
-        }
-        if ctx.egui_wants_keyboard_input() {
-            return;
-        }
-        let sc = self.editor.shortcuts.clone();
-        if ctx.input_mut(|i| sc.consume(i, Action::Find)) {
-            self.find_ui.open = true;
-        }
-        let (undo, redo, save, open, pgup, pgdn, w, t) = ctx.input_mut(|i| {
-            (
-                sc.consume(i, Action::Undo),
-                sc.consume(i, Action::Redo),
-                sc.consume(i, Action::Save),
-                sc.consume(i, Action::Open),
-                sc.pressed(i, Action::PreviousPage),
-                sc.pressed(i, Action::NextPage),
-                sc.pressed(i, Action::WireTool),
-                sc.pressed(i, Action::TextTool),
-            )
-        });
-        if undo {
-            self.editor.cancel();
-            self.session.undo();
-        }
-        if redo {
-            self.editor.cancel();
-            self.session.redo();
-        }
-        if save {
-            self.save(ctx, false);
-        }
-        if open {
-            self.io.open(ctx, Purpose::Project);
-        }
-        if self.workspace != Workspace::Schematic {
-            return;
-        }
-        if pgup && self.session.page > 0 {
-            self.goto(self.session.page - 1, 0);
-        }
-        if pgdn && self.session.page + 1 < self.session.prj.pages.len() {
-            self.goto(self.session.page + 1, 0);
-        }
-        if w {
-            self.editor.set_tool(Tool::Wire);
-        }
-        if t {
-            self.editor.set_tool(Tool::Text);
-        }
-    }
-
-    /// Takes the next key press (with modifiers) as the shortcut of the action being
+    /// Takes the next key press (with modifiers) as the shortcut of the binding being
     /// recorded; Esc cancels. Key presses do not reach the editor meanwhile.
-    fn record_shortcut(&mut self, ctx: &egui::Context) {
-        let Some(action) = self.recording else { return };
+    pub(super) fn record_shortcut(&mut self, ctx: &egui::Context) {
+        let Some(id) = self.recording else { return };
         let pressed = ctx.input_mut(|i| {
             let key = i.events.iter().find_map(|e| match e {
                 egui::Event::Key { key, pressed: true, modifiers, .. } => Some((*key, *modifiers)),
@@ -485,59 +373,10 @@ impl App {
             Some((Key::Escape, m)) if m.is_none() => self.recording = None,
             Some((key, m)) => {
                 let s = Shortcut { command: m.command, shift: m.shift, alt: m.alt, key };
-                self.editor.shortcuts.set(action, vec![s]);
+                self.editor.shortcuts.set(id, vec![s]);
                 self.recording = None;
             }
             None => {}
         }
-    }
-
-    /// View › Keyboard shortcuts: the actions with their keys, record, clear, reset.
-    pub(super) fn shortcuts_window(&mut self, ctx: &egui::Context) {
-        if !self.show_shortcuts {
-            self.recording = None;
-            return;
-        }
-        let mut open = true;
-        let conflicts = self.editor.shortcuts.conflicts();
-        egui::Window::new(tr("Keyboard shortcuts")).open(&mut open).resizable(false).show(ctx, |ui| {
-            ui.weak(tr("Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed."));
-            egui::Grid::new("shortcut_grid").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
-                for a in Action::ALL {
-                    ui.label(a.title());
-                    let text = self.editor.shortcuts.text(a);
-                    let clash = conflicts.iter().any(|(_, v)| v.contains(&a));
-                    let shown = if self.recording == Some(a) {
-                        RichText::new(tr("Press a key…")).italics()
-                    } else if text.is_empty() {
-                        RichText::new("–").weak()
-                    } else {
-                        RichText::new(text).monospace()
-                    };
-                    ui.label(if clash { shown.color(Color32::from_rgb(220, 60, 60)) } else { shown });
-                    ui.horizontal(|ui| {
-                        if ui.small_button(tr("Record")).clicked() {
-                            self.recording = Some(a);
-                        }
-                        if ui.small_button(tr("Clear")).on_hover_text(tr("No shortcut")).clicked() {
-                            self.editor.shortcuts.set(a, Vec::new());
-                        }
-                        if ui.add_enabled(!self.editor.shortcuts.is_default(a), egui::Button::new(tr("Default")).small()).clicked() {
-                            self.editor.shortcuts.reset(a);
-                        }
-                    });
-                    ui.end_row();
-                }
-            });
-            for (key, actions) in &conflicts {
-                let names: Vec<&str> = actions.iter().map(|a| a.title()).collect();
-                ui.colored_label(Color32::from_rgb(220, 60, 60), tr_fmt!("{} is used by: {}", key.text(), names.join(", ")));
-            }
-            ui.separator();
-            if ui.button(tr("Reset all to the defaults")).clicked() {
-                self.editor.shortcuts.reset_all();
-            }
-        });
-        self.show_shortcuts = open;
     }
 }

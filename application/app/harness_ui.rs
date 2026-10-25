@@ -29,11 +29,8 @@ struct TopologyAction {
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn harness_window(&mut self, ctx: &egui::Context) {
-        if !self.harness_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn harness_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut renamed: Vec<(String, String)> = Vec::new();
         let mut remove = None;
         let mut unassign: Option<(String, [String; 2])> = None;
@@ -42,7 +39,7 @@ impl App {
         let mut nailboard: Option<String> = None;
         let mut action = TopologyAction::default();
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
-        egui::Window::new(tr("Harnesses")).open(&mut open).default_size([900.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("➕ New harness")).on_hover_text(tr("In the structure of the current page")).clicked() {
                     let tag = self.session.prj.next_tag(&structure, "WH");
@@ -127,7 +124,7 @@ impl App {
                     }
                 });
                 if ws.iter().any(|w| w.length <= 0.0) {
-                    ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Some wires have no length: place their devices in the panel layout or set the field length."));
+                    ui.colored_label(crate::style::lock(), tr("Some wires have no length: place their devices in the panel layout or set the field length."));
                 }
                 let stale = harness::stale(&self.session.prj, an);
                 ui.collapsing(tr_fmt!("Connections ({})", self.session.prj.harnesses.iter().find(|h| h.tag == tag).map(|h| h.connections.len()).unwrap_or(0)), |ui| {
@@ -136,7 +133,7 @@ impl App {
                             ui.horizontal(|ui| {
                                 ui.monospace(format!("{} – {}", k[0], k[1]));
                                 if stale.iter().any(|(t, c)| *t == tag && *c == k) {
-                                    ui.colored_label(Color32::from_rgb(220, 140, 0), tr("not in the schematic"));
+                                    ui.colored_label(crate::style::lock(), tr("not in the schematic"));
                                 }
                                 if ui.small_button("🗑").on_hover_text(tr("Remove from the harness")).clicked() {
                                     unassign = Some((tag.clone(), k.clone()));
@@ -212,7 +209,6 @@ impl App {
                 self.run_exporter_with(ctx, &e, None, args);
             }
         }
-        self.harness_ui.open = open;
     }
 }
 
@@ -234,7 +230,7 @@ fn topology_section(ui: &mut egui::Ui, view: &mut usize, h: &mut Harness, t: &To
             action.store = ui.button(tr("✏ Store for editing")).on_hover_text(tr("Stores the derived topology in the harness, so nodes and segments can be edited")).clicked();
         }
         if problems > 0 {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr_fmt!("{} problems: see the check results", problems));
+            ui.colored_label(crate::style::lock(), tr_fmt!("{} problems: see the check results", problems));
         }
     });
     ui.horizontal(|ui| {

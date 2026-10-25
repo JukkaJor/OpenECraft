@@ -11,7 +11,7 @@ use openecraft_core::ops::Clip;
 use openecraft_core::render::{self, Draw, Ink};
 use openecraft_core::marking::{self, Category, Column, Scheme, WireText};
 use openecraft_core::{parts, plc, strips, symbols};
-use egui::{vec2, Color32, RichText};
+use egui::{vec2, RichText};
 use std::collections::BTreeMap;
 
 #[derive(Default)]
@@ -77,16 +77,6 @@ fn clip_preview(ui: &mut egui::Ui, prj: &Project, clip: &Clip, size: egui::Vec2)
 }
 
 impl App {
-    pub(super) fn engineering_windows(&mut self, ctx: &egui::Context) {
-        self.save_macro_dialog(ctx);
-        self.macros_window(ctx);
-        self.strips_window(ctx);
-        self.potentials_window(ctx);
-        self.plc_window(ctx);
-        self.revisions_window(ctx);
-        self.marking_window(ctx);
-    }
-
     /// Opens the save dialog for the selection (window macro) or the page (page macro).
     pub(super) fn save_as_macro(&mut self, whole_page: bool) {
         let page = &self.session.prj.pages[self.session.page];
@@ -99,7 +89,7 @@ impl App {
         self.eng.saving_variant.clear();
     }
 
-    fn save_macro_dialog(&mut self, ctx: &egui::Context) {
+    pub(super) fn save_macro_dialog(&mut self, ctx: &egui::Context) {
         let Some(m) = &mut self.eng.saving else { return };
         let (mut save, mut cancel) = (false, false);
         egui::Window::new(tr("Save as macro")).collapsible(false).resizable(false).show(ctx, |ui| {
@@ -147,15 +137,12 @@ impl App {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn macros_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_macros {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn macros_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
         let can_save_selection = !self.editor.selection.is_empty() && self.session.prj.pages[self.session.page].kind == PageKind::Schematic;
         let mut save = None;
-        egui::Window::new(tr("Macros")).open(&mut open).default_size([820.0, 480.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut self.eng.macro_filter).hint_text(tr("Filter…")).desired_width(160.0));
                 if ui.add_enabled(can_save_selection, egui::Button::new(tr("💾 Save selection as macro…"))).clicked() {
@@ -191,8 +178,8 @@ impl App {
                             let page = &self.session.prj.pages[*pi].name;
                             let (state, color) = match st {
                                 macro_boxes::State::Current => (tr("current"), ui.visuals().weak_text_color()),
-                                macro_boxes::State::Outdated => (tr("changed in the library"), Color32::from_rgb(230, 150, 30)),
-                                macro_boxes::State::Missing => (tr("not in the library"), Color32::from_rgb(220, 60, 60)),
+                                macro_boxes::State::Outdated => (tr("changed in the library"), crate::style::warning()),
+                                macro_boxes::State::Missing => (tr("not in the library"), crate::style::error()),
                             };
                             ui.horizontal(|ui| {
                                 if ui.small_button("➡").on_hover_text(tr("Show")).clicked() {
@@ -355,7 +342,6 @@ impl App {
                 });
             });
         });
-        self.eng.show_macros = open;
         if let Some(whole_page) = save {
             self.save_as_macro(whole_page);
         }
@@ -414,10 +400,8 @@ impl App {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn strips_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_strips {
-            return;
-        }
+    pub(super) fn strips_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let tags = strips::strip_tags(&self.session.prj);
         if !tags.contains(&self.eng.strip) {
             self.eng.strip = tags.first().cloned().unwrap_or_default();
@@ -429,12 +413,11 @@ impl App {
         let level_problems = strips::level_problems(&self.session.prj, &strip);
         let mut data = self.session.prj.strips.get(&strip).cloned().unwrap_or_default();
         let before = data.clone();
-        let mut open = true;
         let (mut renumber, mut sort) = (false, false);
         let mut moved = None;
         let mut relabel: Vec<(usize, usize, String, String)> = Vec::new();
         let mut jump = None;
-        egui::Window::new(tr("Terminal strips")).open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             if tags.is_empty() {
                 ui.weak(tr("No terminal strips: place terminals in a schematic first."));
                 return;
@@ -502,13 +485,13 @@ impl App {
                             ui.label(j.broken_text());
                         }
                         if let Some(problem) = j.problem_text(&strip) {
-                            ui.colored_label(Color32::from_rgb(220, 120, 0), problem);
+                            ui.colored_label(crate::style::lock(), problem);
                         }
                     });
                 }
             });
             for problem in &level_problems {
-                ui.colored_label(Color32::from_rgb(220, 120, 0), problem);
+                ui.colored_label(crate::style::lock(), problem);
             }
             ui.weak(tr("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials."));
             ui.separator();
@@ -570,7 +553,6 @@ impl App {
                 });
             });
         });
-        self.eng.show_strips = open;
         if data != before {
             self.session.prj.strips.insert(strip.clone(), data);
         }
@@ -605,10 +587,8 @@ impl App {
         }
     }
 
-    fn marking_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_marking {
-            return;
-        }
+    pub(super) fn marking_body(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let markers = marking::markers(&self.session.prj, &self.session.analysis.connections);
         let material = marking::material(&markers);
         let mut choices: Vec<(String, String)> = self
@@ -621,11 +601,10 @@ impl App {
             .collect();
         choices.sort_by(|a, b| a.0.cmp(&b.0));
         choices.dedup_by(|a, b| a.0 == b.0);
-        let mut open = true;
         let mut export: Option<bool> = None;
         let mut picked = Vec::new();
         let s = &mut self.session.prj.marking;
-        egui::Window::new(tr("Marking")).open(&mut open).resizable(false).min_width(520.0).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.label(RichText::new(tr("Wire markers")).strong());
             ui.radio_value(&mut s.wire_text, WireText::Number, tr("Wire number on both ends"));
             ui.radio_value(&mut s.wire_text, WireText::Destination, tr("Destination: each end shows the connection point at the other end"));
@@ -672,7 +651,6 @@ impl App {
                 }
             });
         });
-        self.eng.show_marking = open;
         for number in picked {
             parts::ensure_in_project(&mut self.session.prj, &self.parts_db, &number);
         }
@@ -688,10 +666,8 @@ impl App {
         }
     }
 
-    fn plc_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_plc {
-            return;
-        }
+    pub(super) fn plc_overview_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let cards = plc::cards(&self.session.prj);
         if !self.eng.card.is_empty() && !cards.contains(&self.eng.card) {
             self.eng.card.clear();
@@ -701,11 +677,10 @@ impl App {
             plc::points(&self.session.prj, &self.session.analysis.netlist).into_iter().filter(|p| card.is_empty() || p.card == card).collect();
         let mut data = self.session.prj.plc_cards.get(&card).cloned().unwrap_or_default();
         let before = data.clone();
-        let mut open = true;
         let (mut readdress, mut export, mut import) = (false, false, false);
         let mut edits: Vec<(usize, usize, Option<String>, Option<String>)> = Vec::new();
         let mut jump = None;
-        egui::Window::new(tr("PLC overview")).open(&mut open).default_size([900.0, 420.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Card"));
                 egui::ComboBox::from_id_salt("plccard").selected_text(if card.is_empty() { "all cards" } else { &card }).show_ui(ui, |ui| {
@@ -760,7 +735,6 @@ impl App {
                 }
             });
         });
-        self.eng.show_plc = open;
         if data != before {
             self.session.prj.plc_cards.insert(card.clone(), data);
         }

@@ -22,13 +22,9 @@ pub fn interruption_title(m: InterruptionMode) -> &'static str {
 }
 
 impl App {
-    pub(super) fn xref_window(&mut self, ctx: &egui::Context) {
-        if !self.show_xref {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn xref_body(&mut self, ui: &mut egui::Ui) {
         let x = &mut self.session.prj.xref;
-        egui::Window::new(tr("Cross references")).open(&mut open).resizable(false).show(ctx, |ui| {
+        ui.scope(|ui| {
             egui::Grid::new("xref").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Prefix"));
                 ui.add(egui::TextEdit::singleline(&mut x.prefix).desired_width(40.0));
@@ -58,6 +54,5 @@ impl App {
                 x.hide_contact_image = !image;
             }
         });
-        self.show_xref = open;
     }
 }

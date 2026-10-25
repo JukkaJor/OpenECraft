@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
 use openecraft_core::structure::{self, Aspect, Dt, WorkArea, TEMPLATES};
-use egui::{Color32, RichText};
+use egui::RichText;
 
 pub struct StructureUi {
     pub open: bool,
@@ -43,16 +43,13 @@ enum Action {
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn structure_window(&mut self, ctx: &egui::Context) {
-        if !self.structure_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn structure_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
         let rows = structure::overview(&self.session.prj);
         let st = &mut self.structure_ui;
         let structures = &mut self.session.prj.structures;
-        egui::Window::new(tr("Structure management")).open(&mut open).default_size([760.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.label(tr("Template"));
                 egui::ComboBox::from_id_salt("structure_template").selected_text(tr(TEMPLATES[st.template].name)).show_ui(ui, |ui| {
@@ -130,7 +127,7 @@ impl App {
                                 ui.add(egui::TextEdit::singleline(&mut e.description).min_size(egui::vec2(220.0, 0.0)));
                             }
                             None => {
-                                ui.colored_label(Color32::from_rgb(220, 140, 0), tr("not defined"));
+                                ui.colored_label(crate::style::lock(), tr("not defined"));
                             }
                         }
                         ui.label(r.pages.to_string());
@@ -213,7 +210,6 @@ impl App {
                 structures.work_areas.push(WorkArea { name: n, filter: Dt::default() });
             }
         });
-        self.structure_ui.open = open;
         match action {
             Some(Action::Template) => {
                 let n = structure::apply_template(&mut self.session.prj.structures, &TEMPLATES[self.structure_ui.template]);

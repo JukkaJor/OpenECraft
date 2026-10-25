@@ -37,6 +37,7 @@ impl App {
         match result {
             Ok(Some(path)) => {
                 self.notify(ctx, tr_fmt!("Saved {}", io::short_name(&path)));
+                self.remember_recent(&path);
                 self.session.file_name = Some(path);
                 self.session.mark_saved();
             }
@@ -295,6 +296,11 @@ impl App {
             Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
             Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),
             Purpose::Integration => self.integration_file_loaded(&loaded.name, loaded.text()),
+            Purpose::Ribbon => self.import_ribbon(ctx, &loaded.text()),
+            Purpose::Favorites => match self.insert_center.import_favorites(&loaded.text()) {
+                Ok(n) => self.notify(ctx, tr_fmt!("{} favorites added", n)),
+                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+            },
         }
     }
 

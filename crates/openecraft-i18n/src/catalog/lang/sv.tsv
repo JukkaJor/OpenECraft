@@ -6061,3 +6061,174 @@ Open projects and files from Autodesk Vault, put the project, exports and 3D mod
 Check in {} to Vault	Checka in {} i Vault
 Panel layout in 3D (Parasolid XT)	Skåplayout i 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-modell (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
+Back	Tillbaka
+Back to the project (Esc)	Tillbaka till projektet (Esc)
+Recent projects	Senaste projekt
+No projects opened yet.	Inga projekt har öppnats än.
+Remove from the list	Ta bort från listan
+unsaved	inte sparat
+Project: {}	Projekt: {}
+Find a command	Sök ett kommando
+Drilling list (CSV)	Borrlista (CSV)
+Pane menu	Panelmeny
+Float	Lossa
+Show the pane as a window	Visa panelen som ett fönster
+Close	Stäng
+Dock	Docka
+Put the pane back into the workspace	Lägg tillbaka panelen i arbetsytan
+Messages ({})	Meddelanden ({})
+{} favorites added	{} favoriter tillagda
+Quick guide	Snabbguide
+About OpenECraft	Om OpenECraft
+Tutorial	Handledning
+Introduction	Inledning
+An open electrical CAE editor in the spirit of EPLAN Electric P8.	En öppen el-CAE-redigerare i EPLAN Electric P8:s anda.
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Menyfliksområdet: Arkiv öppnar, sparar, importerar, exporterar och skriver ut; flikarna samlar kommandona per ämne. Alt visar snabbtangenterna, Ctrl+Shift+P hittar alla kommandon, F6 växlar mellan panelerna, F1 öppnar denna hjälp.
+1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Infoga › Infogningscenter (Ins): sök en symbol, ett makro eller en apparat och klicka på sidan för att placera den. Apparatbeteckningar (-K1, -S2 …) tilldelas automatiskt.
+5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Tilldela artiklar i egenskaperna (fliken Artiklar); rapporterna (Start › Rapporter) listar apparater, materiallista, plintar, förbindelser och PLC och infogas som rapportsidor.
+7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kablar: Förbindelser › Kablar, markera ledningar och använd Tilldela kabel. Ledningsnummer: Förbindelser › Ledningsnumrering, eller skriv ett nummer i ledningens egenskaper.
+8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makron: markera objekt, högerklick › Spara markering som makro; infoga dem från infogningscentret eller via Infoga › Makro. Platshållare {NAME} fylls från värdeuppsättningar.
+9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Apparater › Plintrader, Apparater › PLC-översikt och Projektdata › Revisioner: plintordning, byglar och reserver; PLC-adresser och symboltabeller; revisioner med ändringsmarkeringar och frisläppta (låsta) sidor.
+10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Grunddata › Symbolredigerare: rita egna symboler (eller kopiera inbyggda) med anslutningspunkter och funktion; de sparas i projektet och kan utbytas som biblioteksfiler.
+11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Grunddata › Formulär: egna namnrutor med platshållare ({project}, {page}, {prop:Name} …) och rapportsidornas kolumner; Projektdata › Rapportblock skapar rapportsidor per plintrad, kontaktdon, kabel eller apparat.
+12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Skåplayout (arbetsytan Skåplayout, fliken Monteringsutrymme): skåp, skenor, kabelkanaler, samlingsskenor och urtag; Monteringsutrymme › NC-data exporterar borrmönstret (DXF / DWG / CSV). Produktionsledningslistan innehåller avskalningslängder och ändhylsor.
+13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelstammar: Förbindelser › Kabelstammar; markera ledningarna mellan två apparater › Tilldela kabelstam, eller per förbindelse i ledningens egenskaper. Kabelstamsrapport med längder, kontaktdon och knippediameter, KBL-export.
+Key tips of the ribbon	Menyfliksområdets snabbtangenter
+Version {}	Version {}
+Search (* and ? as placeholders)…	Sök (* och ? som jokertecken)…
+Show as list	Visa som lista
+Show as tiles	Visa som rutor
+Export favorites…	Exportera favoriter…
+Import favorites…	Importera favoriter…
+Recently used	Senast använda
+Parts with functions: the device gets the part, its first function is placed.	Artiklar med funktioner: apparaten får artikeln, dess första funktion placeras.
+Favorite	Favorit
+Macros ({})	Makron ({})
+Devices ({})	Apparater ({})
+Unplaced ({})	Oplacerade ({})
+(several)	(flera)
+{} symbols	{} symboler
+Parts of {}	Artiklar för {}
+Undo list	Ångralista
+Show the ribbon	Visa menyfliksområdet
+Undo {} steps	Ångra {} steg
+Find a command ({})	Sök ett kommando ({})
+Further project settings	Övriga projektinställningar
+Ribbon	Menyfliksområde
+Servers	Servrar
+These settings are edited in their panes:	Dessa inställningar redigeras i sina paneler:
+Addresses and sign-in of the servers are set in their panes:	Servrarnas adresser och inloggning ställs in i sina paneler:
+Hide the groups you do not need and put the commands you use most into own groups.	Dölj de grupper du inte behöver och lägg de mest använda kommandona i egna grupper.
+Reset the ribbon	Återställ menyfliksområdet
+Groups shown	Visade grupper
+Own groups	Egna grupper
+Delete the group	Ta bort gruppen
+Remove from the group	Ta bort från gruppen
+Add a command	Lägg till ett kommando
+New group	Ny grupp
+Ribbon imported	Menyfliksområdet importerat
+Welcome to OpenECraft	Välkommen till OpenECraft
+Getting started	Kom igång
+A new project	Ett nytt projekt
+Placing symbols	Placera symboler
+Wires and potentials	Ledningar och potentialer
+The project check	Projektkontrollen
+What is new	Nyheter
+The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Menyfliksområdet med fliken Arkiv ersätter menyerna; Ctrl+Shift+P hittar alla kommandon.
+Every tool is a pane: drag its tab beside the page, into the navigators or out as a window.	Varje verktyg är en panel: dra dess flik bredvid sidan, till navigatorerna eller ut som ett fönster.
+Workspaces for the schematic, the panel layout, the wiring and mounting assistants, the review and the pre-planning.	Arbetsytor för schemat, skåplayouten, inkopplings- och monteringsassistenterna, granskningen och förplaneringen.
+The Insert center finds symbols, macros, devices and unplaced functions; favorites and recently used ones come first.	Infogningscentret hittar symboler, makron, apparater och oplacerade funktioner; favoriter och senast använda kommer först.
+Close the start page	Stäng startsidan
+Position of the cursor	Markörens position
+Messages of this session	Meddelanden från denna session
+Grid {} mm	Rutnät {} mm
+Layer: {}	Lager: {}
+Export Excel	Exportera Excel
+Insert as report page	Infoga som rapportsida
+Open, save, import, export, print and the settings	Öppna, spara, importera, exportera, skriva ut och inställningarna
+Start page	Startsida
+Check in to Vault	Checka in i Vault
+Import parts…	Importera artiklar…
+Import symbol library…	Importera symbolbibliotek…
+Import page templates…	Importera sidmallar…
+Print all pages…	Skriv ut alla sidor…
+Print current page…	Skriv ut aktuell sida…
+Settings…	Inställningar…
+Project and user settings in one dialog	Projekt- och användarinställningar i en dialogruta
+Cut	Klipp ut
+Paste	Klistra in
+New page	Ny sida
+Cover sheet, overview, graphics, report, mounting layout or a page template	Försättsblad, översikt, grafik, rapport, monteringslayout eller en sidmall
+Find a command…	Sök ett kommando…
+Every command of the editor and of the plugins by name	Alla kommandon i redigeraren och i plugins efter namn
+Markup	Markering
+Properties…	Egenskaper…
+The properties of the selection in a window beside the page	Markeringens egenskaper i ett fönster bredvid sidan
+Rename device…	Byt namn på apparat…
+Part selection…	Artikelval…
+Next pane	Nästa panel
+Previous pane	Föregående panel
+Next page tab	Nästa sidflik
+Previous page tab	Föregående sidflik
+Close page tab	Stäng sidflik
+Panes	Paneler
+Show or hide panes; drag a tab to dock it elsewhere	Visa eller dölj paneler; dra en flik för att docka den på annat ställe
+Save workspace…	Spara arbetsyta…
+The panes of this workspace at their default places	Panelerna i denna arbetsyta på sina standardplatser
+Theme	Tema
+UI scale	Gränssnittets skala
+Minimize the ribbon	Minimera menyfliksområdet
+Update report blocks	Uppdatera rapportblock
+Customize the ribbon…	Anpassa menyfliksområdet…
+Messages	Meddelanden
+Results of the project check	Resultat av projektkontrollen
+Comments and markup	Kommentarer och markeringar
+Functions of the project data not placed yet	Funktioner i projektdata som inte är placerade än
+Insert center	Infogningscenter
+Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symboler, makron, apparater och oplacerade funktioner: sökning, favoriter, senast använda
+Find results	Sökresultat
+Quick guide, tutorial and shortcuts	Snabbguide, handledning och kortkommandon
+Layout spaces	Monteringsutrymmen
+Enclosures, devices to place and placed devices	Skåp, apparater att placera och placerade apparater
+Layout properties	Layoutegenskaper
+Checklist	Checklista
+Workbench	Arbetsbänk
+3D view	3D-vy
+NC data	NC-data
+Drilling pattern of the face shown as DXF, DWG or CSV	Borrmönster för den visade sidan som DXF, DWG eller CSV
+Panel wiring report	Rapport skåpinkoppling
+Tablet mode	Surfplatteläge
+Larger texts and buttons for a touch screen at the workbench	Större texter och knappar för en pekskärm vid arbetsbänken
+Ribbon (JSON)	Menyfliksområde (JSON)
+Favorites (JSON)	Favoriter (JSON)
+Home	Start
+Clipboard	Urklipp
+Navigators	Navigatorer
+Arrange	Ordna
+Zoom	Zooma
+Appearance	Utseende
+Numbering	Numrering
+Project data	Projektdata
+Management	Hantering
+Calculations	Beräkningar
+Collaboration	Samarbete
+Automation	Automatisering
+Master data	Grunddata
+Forms	Formulär
+Templates	Mallar
+Layout space	Monteringsutrymme
+Draw	Rita
+Mode	Läge
+Shows a table (devices, connections, terminals, cables, plugs, PLC, pages or parts) with its rows; the key of a row is used to change it	Visar en tabell (apparater, förbindelser, plintar, kablar, kontaktdon, PLC, sidor eller artiklar) med dess rader; en rads nyckel används för att ändra den
+devices, connections, terminals, cables, plugs, plc, pages or parts	devices, connections, terminals, cables, plugs, plc, pages eller parts
+Not a number: {}	Inte ett tal: {}
+Cable {} already exists	Kabeln {} finns redan
+No connection point {}	Ingen anslutningspunkt {}
+No part {}	Ingen artikel {}
+Code	Kod
+Click to show, right click for more	Klicka för att visa, högerklicka för mer
+{} errors	{} fel
+{} warnings	{} varningar
+{} notes	{} anmärkningar
+Open in a new page tab	Öppna i en ny sidflik
+Project information	Projektinformation

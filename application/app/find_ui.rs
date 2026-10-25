@@ -31,17 +31,14 @@ pub fn kind_title(k: Kind) -> &'static str {
 }
 
 impl App {
-    pub(super) fn find_window(&mut self, ctx: &egui::Context) {
-        if !self.find_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn find_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut search_now = false;
         let mut replace = false;
         let mut jump = None;
         let rev = self.session.history.rev;
         let st = &mut self.find_ui;
-        egui::Window::new(tr("Find")).open(&mut open).resizable(true).default_width(460.0).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.horizontal(|ui| {
                 let r = ui.add(egui::TextEdit::singleline(&mut st.query.text).hint_text(tr("Text to find")).desired_width(240.0));
                 if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
@@ -114,6 +111,5 @@ impl App {
         if let Some((p, id)) = jump {
             self.goto(p, id);
         }
-        self.find_ui.open = open;
     }
 }

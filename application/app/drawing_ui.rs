@@ -10,7 +10,7 @@ use crate::io::Loaded;
 use openecraft_core::model::*;
 use openecraft_core::netlist::pin_designation;
 use openecraft_core::symbols::Anchor;
-use openecraft_core::{cabledef, conndef, forms, ops, properties, props, routing, structure, wirenum};
+use openecraft_core::{cabledef, conndef, forms, ops, properties, props, structure, wirenum};
 use egui::RichText;
 
 /// Selection of the layer of an item ("" is the default layer).
@@ -130,115 +130,6 @@ fn text_properties(ui: &mut egui::Ui, t: &mut TextItem, names: &[String]) {
 }
 
 impl App {
-    /// Drawing tools, definition tools and editing options of the toolbar.
-    pub(super) fn drawing_toolbar(&mut self, ui: &mut egui::Ui) {
-        let tool = self.editor.tool.clone();
-        let draw_tools = [
-            (Tool::Line, tr("Line")),
-            (Tool::Rect, tr("Rectangle")),
-            (Tool::Circle, tr("Circle")),
-            (Tool::Ellipse, tr("Ellipse")),
-            (Tool::Arc, tr("Arc")),
-            (Tool::Polyline, tr("Polyline")),
-            (Tool::Polygon, tr("Polygon")),
-        ];
-        let active = draw_tools.iter().find(|(t, _)| *t == tool).map(|(_, n)| *n);
-        let label = match active {
-            Some(n) => tr_fmt!("✏ Draw: {}", n),
-            None => tr("✏ Draw").to_string(),
-        };
-        ui.menu_button(label, |ui| {
-            for (t, name) in draw_tools {
-                if ui.selectable_label(tool == t, name).clicked() {
-                    self.editor.set_tool(t);
-                    ui.close();
-                }
-            }
-        })
-        .response
-        .on_hover_text(tr("Graphics: lines, rectangles, circles, ellipses, arcs, polylines and polygons"));
-        let dims = [(DimKind::Aligned, tr("Aligned")), (DimKind::Horizontal, tr("Horizontal")), (DimKind::Vertical, tr("Vertical"))];
-        ui.menu_button(tr("↔ Dimension"), |ui| {
-            for (k, name) in dims {
-                if ui.selectable_label(tool == Tool::Dimension(k), name).clicked() {
-                    self.editor.set_tool(Tool::Dimension(k));
-                    ui.close();
-                }
-            }
-        })
-        .response
-        .on_hover_text(tr("Dimension lines"));
-        if ui.selectable_label(tool == Tool::ConnDef, tr("Conn. def.")).on_hover_text(tr("Connection definition point: defines number, colour, cross-section and cable core of a connection")).clicked() {
-            self.editor.set_tool(Tool::ConnDef);
-        }
-        if ui.selectable_label(tool == Tool::CableDef, tr("Cable def.")).on_hover_text(tr("Cable definition: draw a line across the wires that are cores of a cable")).clicked() {
-            self.editor.set_tool(Tool::CableDef);
-        }
-        let names = graphics::layer_names(&self.session.prj);
-        if !names.is_empty() || !self.editor.active_layer.is_empty() {
-            ui.label(tr("Layer"));
-            layer_combo(ui, "active_layer", &mut self.editor.active_layer, &names);
-        }
-        ui.toggle_value(&mut self.editor.autoconnect, tr("Auto-connect"))
-            .on_hover_text(tr("Draw connections between facing connection points when symbols are placed or moved"));
-        if ui.toggle_value(&mut self.editor.autoroute, tr("Route")).on_hover_text(tr("The wire tool routes around symbols and other wires (A)")).changed() {
-            self.editor.cancel();
-        }
-    }
-
-    /// Entries of the Insert menu for graphics, dimensions and definitions.
-    pub(super) fn insert_menu_entries(&mut self, ui: &mut egui::Ui) {
-        ui.menu_button(tr("Graphics"), |ui| {
-            for (t, name) in [
-                (Tool::Circle, tr("Circle")),
-                (Tool::Ellipse, tr("Ellipse")),
-                (Tool::Arc, tr("Arc")),
-                (Tool::Polyline, tr("Polyline")),
-                (Tool::Polygon, tr("Polygon")),
-            ] {
-                if ui.button(name).clicked() {
-                    self.editor.set_tool(t);
-                }
-            }
-        });
-        ui.menu_button(tr("Dimension"), |ui| {
-            for (k, name) in [(DimKind::Aligned, tr("Aligned")), (DimKind::Horizontal, tr("Horizontal")), (DimKind::Vertical, tr("Vertical"))] {
-                if ui.button(name).clicked() {
-                    self.editor.set_tool(Tool::Dimension(k));
-                }
-            }
-        });
-        if ui.button(tr("Image…")).on_hover_text(tr("PNG or JPEG bitmap, e.g. a logo or a photo")).clicked() {
-            self.io.open(ui.ctx(), crate::io::Purpose::Image);
-        }
-        if ui.button(tr("Connection definition point")).clicked() {
-            self.editor.set_tool(Tool::ConnDef);
-        }
-        if ui.button(tr("Cable definition")).clicked() {
-            self.editor.set_tool(Tool::CableDef);
-        }
-    }
-
-    /// Entries of the Edit menu for routing and definitions.
-    pub(super) fn edit_menu_entries(&mut self, ui: &mut egui::Ui) {
-        let has_sel = !self.editor.selection.is_empty();
-        let ctx = ui.ctx().clone();
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Auto-connect selection"))).on_hover_text(tr("Connects free connection points of the selected symbols with facing ones")).clicked() {
-            let n = routing::apply_autoconnect(&mut self.session.prj, self.session.page, &self.editor.selection);
-            self.notify(&ctx, tr_fmt!("{} connections drawn automatically", n));
-        }
-        if ui.button(tr("Join collinear wires")).on_hover_text(tr("Joins wire pieces in a line where nothing else connects (current page)")).clicked() {
-            let symbols = self.session.prj.symbol_table();
-            let n = routing::merge_collinear(&symbols, &mut self.session.prj.pages[self.session.page]);
-            self.editor.selection.clear();
-            self.notify(&ctx, tr_fmt!("{} wire pieces joined", n));
-        }
-        if ui.button(tr("Apply connection definitions")).on_hover_text(tr("All connections take the values of their connection definition points")).clicked() {
-            let n = conndef::apply_all(&mut self.session.prj);
-            self.notify(&ctx, tr_fmt!("{} wires changed", n));
-        }
-    }
-
     /// An image file was picked: it is inserted at the next click.
     pub(super) fn load_image(&mut self, ctx: &egui::Context, loaded: &Loaded) {
         let name = crate::io::short_name(&loaded.name).to_string();
@@ -401,7 +292,7 @@ impl App {
             ui.label(tr("Connection:"));
             ui.label(RichText::new(v.join(" – ")).monospace());
         } else {
-            ui.colored_label(egui::Color32::from_rgb(220, 140, 0), tr("Not on a wire"));
+            ui.colored_label(crate::style::lock(), tr("Not on a wire"));
         }
         let auto = on_wire.map(|w| openecraft_core::potentials::props_of_wire(&self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, w)).unwrap_or_default();
         let mut cd = before.clone();
@@ -839,7 +730,7 @@ impl App {
             let r = ui.text_edit_singleline(&mut new);
             let exists = new != old && self.session.prj.all_tags().contains(&new);
             if exists {
-                ui.colored_label(egui::Color32::from_rgb(220, 60, 60), tr("This tag is already used"));
+                ui.colored_label(crate::style::error(), tr("This tag is already used"));
             }
             let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
             if (ui.add_enabled(!exists && !new.is_empty(), egui::Button::new(tr("Rename"))).clicked() || (enter && !exists && !new.is_empty())) && new != old {

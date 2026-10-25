@@ -91,12 +91,9 @@ fn classes_ui(ui: &mut egui::Ui, bits: &mut u8) {
 }
 
 impl App {
-    pub(super) fn field_window(&mut self, ctx: &egui::Context) {
-        if !self.field_ui.open {
-            return;
-        }
-        let mut open = true;
-        egui::Window::new(tr("Field wiring")).open(&mut open).default_size([1000.0, 620.0]).show(ctx, |ui| {
+    pub(super) fn field_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
+        ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 for (t, name) in [
                     (Tab::Plant, tr("Plant layout")),
@@ -111,7 +108,7 @@ impl App {
             });
             let problems = self.session.analysis.field.issues.len();
             if problems > 0 {
-                ui.colored_label(Color32::from_rgb(220, 140, 0), tr_fmt!("{} field wiring problems (see Check)", problems));
+                ui.colored_label(crate::style::lock(), tr_fmt!("{} field wiring problems (see Check)", problems));
             }
             ui.separator();
             match self.field_ui.tab {
@@ -123,7 +120,6 @@ impl App {
                 Tab::Rules => self.field_rules(ui),
             }
         });
-        self.field_ui.open = open;
     }
 
     #[allow(clippy::too_many_lines)]
@@ -554,9 +550,9 @@ impl App {
                 ui.monospace(&p.name);
                 ui.label(p.kind.title());
                 if p.bonded {
-                    ui.colored_label(Color32::from_rgb(60, 160, 80), tr("bonded"));
+                    ui.colored_label(crate::style::ok(), tr("bonded"));
                 } else {
-                    ui.colored_label(Color32::from_rgb(220, 140, 0), tr("not bonded"));
+                    ui.colored_label(crate::style::lock(), tr("not bonded"));
                 }
                 ui.end_row();
             }

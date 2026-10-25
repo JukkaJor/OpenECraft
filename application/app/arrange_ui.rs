@@ -12,8 +12,8 @@ pub const GRIDS: [f32; 5] = [1.0, 2.0, 4.0, 8.0, 16.0];
 
 pub struct ArrangeUi {
     coord: String,
-    show_move: bool,
-    show_copy: bool,
+    pub show_move: bool,
+    pub show_copy: bool,
     dx: f32,
     dy: f32,
     count: usize,
@@ -25,7 +25,7 @@ impl Default for ArrangeUi {
     }
 }
 
-fn align_title(a: Align) -> &'static str {
+pub(super) fn align_title(a: Align) -> &'static str {
     match a {
         Align::Left => tr("Left edges"),
         Align::Center => tr("Horizontal centres"),
@@ -53,52 +53,6 @@ impl App {
                     self.notify(&ctx, tr("Not a point: type x y or @dx dy"));
                 }
             }
-        }
-    }
-
-    /// Grid size (View menu).
-    pub(super) fn grid_menu(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
-            ui.label(tr("Grid size"));
-            for g in GRIDS {
-                ui.selectable_value(&mut self.editor.grid, g, format!("{g:.0}"));
-            }
-            ui.label(tr("mm"));
-        });
-    }
-
-    /// Align, distribute, move and copy (Edit menu).
-    pub(super) fn arrange_menu_entries(&mut self, ui: &mut egui::Ui) {
-        let n = self.editor.selection.len();
-        let symbols = self.session.prj.symbol_table();
-        let page = self.session.page;
-        ui.add_enabled_ui(n >= 2, |ui| {
-            ui.menu_button(tr("Align"), |ui| {
-                for a in Align::ALL {
-                    if ui.button(align_title(a)).clicked() {
-                        arrange::align(&symbols, &mut self.session.prj.pages[page], &self.editor.selection, a);
-                        ui.close();
-                    }
-                }
-            });
-        });
-        ui.add_enabled_ui(n >= 3, |ui| {
-            ui.menu_button(tr("Distribute"), |ui| {
-                if ui.button(tr("Horizontally")).clicked() {
-                    arrange::distribute(&symbols, &mut self.session.prj.pages[page], &self.editor.selection, true);
-                    ui.close();
-                }
-                if ui.button(tr("Vertically")).clicked() {
-                    arrange::distribute(&symbols, &mut self.session.prj.pages[page], &self.editor.selection, false);
-                    ui.close();
-                }
-            });
-        });
-        if ui.add_enabled(n > 0, egui::Button::new(tr("Move selection by…"))).clicked() {
-            self.arrange_ui.show_move = true;
-        }
-        if ui.add_enabled(n > 0, egui::Button::new(tr("Multiple copy…"))).clicked() {
-            self.arrange_ui.show_copy = true;
         }
     }
 

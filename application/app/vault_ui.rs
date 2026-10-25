@@ -125,13 +125,10 @@ impl App {
         }
     }
 
-    pub(super) fn vault_window(&mut self, ctx: &egui::Context) {
-        if !self.vault.window {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn vault_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut actions = Vec::new();
-        egui::Window::new(tr("Autodesk Vault")).open(&mut open).default_size([760.0, 600.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             self.vault_login(ui, &mut actions);
             if self.vault.signed_in {
                 ui.separator();
@@ -157,7 +154,6 @@ impl App {
                 ui.label(RichText::new(&self.vault.status).weak());
             });
         });
-        self.vault.window = open;
         for a in actions {
             self.vault_action(ctx, a);
         }

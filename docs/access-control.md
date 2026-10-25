@@ -141,7 +141,7 @@ Values are escaped for LDAP filters and DNs. Keep the service account read-only.
 
 ## Clients
 
-- Editor, *File › Project server…*: shows the rights on the open project; viewers and
+- Editor, *Tools › Project server…*: shows the rights on the open project; viewers and
   reviewers cannot change it, project managers edit the grants on it in the *Project
   access* section.
 - Parts manager: the user editor shows the directory and groups of a user and edits the

@@ -27,8 +27,8 @@ pub fn status_color(s: Status) -> Color32 {
     match s {
         Status::Draft => Color32::GRAY,
         Status::InReview => Color32::from_rgb(70, 130, 220),
-        Status::Approved => Color32::from_rgb(60, 160, 90),
-        Status::Rejected => Color32::from_rgb(220, 60, 60),
+        Status::Approved => crate::style::ok(),
+        Status::Rejected => crate::style::error(),
         Status::Released => Color32::from_rgb(140, 140, 160),
     }
 }
@@ -44,11 +44,8 @@ enum Action {
 
 impl App {
     #[allow(clippy::too_many_lines)]
-    pub(super) fn revisions_window(&mut self, ctx: &egui::Context) {
-        if !self.eng.show_revisions {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn revisions_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut create = false;
         let mut lock = None;
         let mut jump = None;
@@ -63,7 +60,7 @@ impl App {
         let user = self.user_name();
         let locked = self.session.prj.pages.iter().filter(|p| p.locked).count();
         let open_rev = revision::open_revision(&self.session.prj);
-        egui::Window::new(tr("Revisions")).open(&mut open).default_size([680.0, 560.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                 egui::Grid::new("revs").striped(true).num_columns(5).show(ui, |ui| {
                     for h in [tr("Index"), tr("Status"), tr("Date"), tr("Author"), tr("Description")] {
@@ -128,7 +125,7 @@ impl App {
                         let approved = decisions.iter().filter(|a| a.approved).count();
                         ui.label(tr_fmt!("{} of {} approvals", approved, self.session.prj.workflow.needed()));
                         for a in &decisions {
-                            let (text, color) = if a.approved { (tr("approved"), Color32::from_rgb(60, 160, 90)) } else { (tr("rejected"), Color32::from_rgb(220, 60, 60)) };
+                            let (text, color) = if a.approved { (tr("approved"), crate::style::ok()) } else { (tr("rejected"), crate::style::error()) };
                             ui.horizontal(|ui| {
                                 ui.label(RichText::new(text).color(color));
                                 ui.label(format!("{} {}", a.user, a.date));
@@ -251,7 +248,6 @@ impl App {
                 }
             });
         });
-        self.eng.show_revisions = open;
         if create {
             let r = &self.revisions_ui;
             let name = r.name.trim().to_string();

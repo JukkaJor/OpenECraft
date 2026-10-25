@@ -10,7 +10,7 @@ use openecraft_core::parts::FnKind;
 use openecraft_core::properties::{self, DataType, Group, Library, Object, ObjectClass, Origin, PropDef};
 use openecraft_core::props::{self, Scheme};
 use openecraft_core::symbols::{self, Anchor};
-use egui::{Color32, RichText};
+use egui::RichText;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 enum Tab {
@@ -71,13 +71,10 @@ enum Action {
 }
 
 impl App {
-    pub(super) fn properties_window(&mut self, ctx: &egui::Context) {
-        if !self.properties_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn property_db_pane(&mut self, ui: &mut egui::Ui) {
+        let ctx = &ui.ctx().clone();
         let mut action = None;
-        egui::Window::new(tr("Property database")).open(&mut open).default_size([860.0, 600.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             let st = &mut self.properties_ui;
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut st.tab, Tab::Definitions, tr("Property definitions"));
@@ -101,7 +98,6 @@ impl App {
                 Tab::Values => values_tab(ui, prj, st),
             }
         });
-        self.properties_ui.open = open;
         match action {
             Some(Action::Import) => self.io.open(ctx, Purpose::PropertyLibrary),
             Some(Action::Export) => {
@@ -602,7 +598,7 @@ pub(super) fn property_grid(ui: &mut egui::Ui, prj: &mut Project, obj: &Object, 
         }
     });
     if let Some(e) = &st.error {
-        ui.colored_label(Color32::from_rgb(220, 60, 60), e);
+        ui.colored_label(crate::style::error(), e);
     }
     let f = st.filter.to_lowercase();
     let keys: Vec<(String, PropDef)> = properties::keys_of(prj, obj, !st.all, st.filled)

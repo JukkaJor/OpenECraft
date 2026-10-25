@@ -24,9 +24,9 @@ pub struct ReviewUi {
 
 pub fn status_color(s: Status) -> Color32 {
     match s {
-        Status::Open => Color32::from_rgb(230, 140, 0),
+        Status::Open => crate::style::lock(),
         Status::InProgress => Color32::from_rgb(70, 130, 220),
-        Status::Resolved => Color32::from_rgb(60, 160, 90),
+        Status::Resolved => crate::style::ok(),
         Status::Rejected => Color32::GRAY,
     }
 }
@@ -81,38 +81,6 @@ impl App {
         if self.review_ui.selected.is_some() {
             self.editor.selection.clear();
             self.show_tab(LeftTab::Review);
-        }
-    }
-
-    /// Comment and markup tools of the toolbar.
-    pub(super) fn review_tools(&mut self, ui: &mut egui::Ui) {
-        ui.separator();
-        let tool = self.editor.tool.clone();
-        if ui.selectable_label(tool == Tool::Comment, tr("💬 Comment")).on_hover_text(tr("Place a comment on the page")).clicked() {
-            self.editor.set_tool(Tool::Comment);
-        }
-        let pen = self.review_ui.pen;
-        egui::ComboBox::from_id_salt("markup_pen")
-            .selected_text(RichText::new(pen.title()).color(pen_color(pen)))
-            .width(90.0)
-            .show_ui(ui, |ui| {
-                for p in [Pen::Red, Pen::Green] {
-                    ui.selectable_value(&mut self.review_ui.pen, p, RichText::new(p.title()).color(pen_color(p)));
-                }
-            })
-            .response
-            .on_hover_text(tr("Redline: to be changed · Greenline: changed as built"));
-        for kind in MarkupKind::ALL {
-            let t = Tool::Markup(kind, self.review_ui.pen);
-            if ui.selectable_label(tool == t, RichText::new(kind.title()).color(pen_color(self.review_ui.pen))).clicked() {
-                self.editor.set_tool(t);
-            }
-        }
-        // Switching the pen keeps the markup tool.
-        if let Tool::Markup(kind, p) = tool {
-            if p != self.review_ui.pen {
-                self.editor.set_tool(Tool::Markup(kind, self.review_ui.pen));
-            }
         }
     }
 
@@ -256,7 +224,7 @@ impl App {
     }
 }
 
-fn pen_color(pen: Pen) -> Color32 {
+pub(super) fn pen_color(pen: Pen) -> Color32 {
     match pen {
         Pen::Red => Color32::from_rgb(220, 40, 40),
         Pen::Green => Color32::from_rgb(30, 160, 70),

@@ -205,7 +205,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("wiring", &["model", "panel", "production"]),
     ("production", &["dxf", "geom", "model", "panel", "parts"]),
     ("parts", &["model", "symbols"]),
-    ("tables", &["index", "model", "netlist", "ops", "parts", "strips", "symbols", "wirenum"]),
+    ("tables", &["index", "model", "netlist", "ops", "parts", "plc", "plugs", "strips", "symbols", "wirenum"]),
     ("revision", &["compare", "geom", "model", "review", "structure"]),
     ("review", &["geom", "model", "render", "structure", "symbols"]),
     ("compare", &["model", "panel", "revision", "structure"]),

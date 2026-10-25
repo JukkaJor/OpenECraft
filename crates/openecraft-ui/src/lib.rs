@@ -10,6 +10,7 @@
 pub mod client;
 pub mod faces;
 pub mod fonts;
+pub mod icons;
 pub mod io;
 pub mod language;
 pub mod part_editor;

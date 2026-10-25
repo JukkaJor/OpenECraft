@@ -17,19 +17,15 @@ fn status_color(s: Status) -> Color32 {
     match s {
         Status::Planned => Color32::GRAY,
         Status::Engineered => Color32::from_rgb(50, 170, 80),
-        Status::NotInSingleLine => Color32::from_rgb(230, 150, 30),
-        Status::Mismatch => Color32::from_rgb(220, 60, 60),
+        Status::NotInSingleLine => crate::style::warning(),
+        Status::Mismatch => crate::style::error(),
     }
 }
 
 impl App {
-    pub(super) fn singleline_window(&mut self, ctx: &egui::Context) {
-        if !self.singleline_ui.open {
-            return;
-        }
-        let mut open = true;
+    pub(super) fn singleline_pane(&mut self, ui: &mut egui::Ui) {
         let mut jump = None;
-        egui::Window::new(tr("Single-line / multi-line")).open(&mut open).default_size([640.0, 420.0]).show(ctx, |ui| {
+        ui.scope(|ui| {
             ui.weak(tr("Devices are planned with single-line symbols and engineered in the multi-line schematic; both share the device tag."));
             let page = self.session.page;
             let can_edit = !self.session.prj.pages[page].locked;
@@ -99,7 +95,6 @@ impl App {
                 });
             });
         });
-        self.singleline_ui.open = open;
         if let Some((page, id)) = jump {
             self.goto(page, id);
         }
