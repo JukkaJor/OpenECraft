@@ -16,6 +16,14 @@ pub struct Climate {
     pub inside_min: f32,
     /// Power loss not covered by the parts (W), e.g. devices without data.
     pub extra_loss: f32,
+    /// Altitude of the site (m): thinner air needs more air flow.
+    pub altitude: f32,
+    /// The degree of protection must be kept: no filter fans, an air/air heat
+    /// exchanger or a cooling unit instead.
+    pub sealed: bool,
+    /// Relative humidity of the ambient air at the highest ambient temperature (%);
+    /// 0: condensation is not considered.
+    pub humidity: f32,
 }
 
 /// How the enclosure is installed: decides which of its faces give off heat.

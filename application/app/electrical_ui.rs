@@ -4,7 +4,8 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
-use openecraft_core::electrical::{Earthing, Insulation, Material};
+use openecraft_core::electrical::{Coordination, Earthing, Insulation, Material, Transformer};
+use openecraft_core::shortcircuit::Source;
 use crate::io::Purpose;
 use openecraft_core::model::{ReportId, ReportKind};
 use openecraft_core::reports::Table;
@@ -166,16 +167,57 @@ impl App {
             ui.label(tr("Earthing system"));
             combo(ui, "el_earthing", &mut s.earthing, &Earthing::ALL, |e| e.title().into());
             ui.end_row();
-            ui.label(tr("Highest short-circuit current"));
-            ui.add(egui::DragValue::new(&mut s.ik_max).speed(0.1).range(0.1..=200.0).suffix(" kA")).on_hover_text(tr("Three-phase short-circuit current at the supply point"));
+            if s.earthing == Earthing::It {
+                ui.label("");
+                ui.checkbox(&mut s.neutral, tr("Distributed neutral")).on_hover_text(tr("The second fault is checked at the line-to-earth voltage"));
+                ui.end_row();
+            }
+            let mut fed = s.transformer.is_some();
+            ui.label(tr("Source"));
+            ui.horizontal(|ui| {
+                ui.radio_value(&mut fed, false, tr("Short-circuit currents"));
+                ui.radio_value(&mut fed, true, tr("Transformer"));
+            });
             ui.end_row();
-            ui.label(tr("Lowest fault current"));
-            ui.add(egui::DragValue::new(&mut s.ik_min).speed(0.01).range(0.0..=200.0).suffix(" kA")).on_hover_text(tr("Line to PE at the supply point; 0 = from the highest short-circuit current"));
+            if fed != s.transformer.is_some() {
+                s.transformer = fed.then(Transformer::default);
+            }
+            match &mut s.transformer {
+                Some(t) => {
+                    ui.label(tr("Rated power"));
+                    ui.add(egui::DragValue::new(&mut t.power).speed(10.0).range(1.0..=10000.0).suffix(" kVA"));
+                    ui.end_row();
+                    ui.label(tr("Short-circuit voltage"));
+                    ui.add(egui::DragValue::new(&mut t.uk).speed(0.1).range(0.5..=20.0).suffix(" %"));
+                    ui.end_row();
+                    ui.label(tr("Load losses"));
+                    ui.add(egui::DragValue::new(&mut t.losses).speed(10.0).range(0.0..=200000.0).suffix(" W")).on_hover_text(tr("0 = typical value of the rated power"));
+                    ui.end_row();
+                    ui.label(tr("Short-circuit power of the network"));
+                    ui.add(egui::DragValue::new(&mut t.network).speed(10.0).range(0.0..=100000.0).suffix(" MVA")).on_hover_text(tr("0 = infinite"));
+                    ui.end_row();
+                }
+                None => {
+                    ui.label(tr("Highest short-circuit current"));
+                    ui.add(egui::DragValue::new(&mut s.ik_max).speed(0.1).range(0.1..=200.0).suffix(" kA")).on_hover_text(tr("Three-phase short-circuit current at the supply point"));
+                    ui.end_row();
+                    ui.label(tr("Lowest fault current"));
+                    ui.add(egui::DragValue::new(&mut s.ik_min).speed(0.01).range(0.0..=200.0).suffix(" kA")).on_hover_text(tr("Line to PE at the supply point; 0 = from the highest short-circuit current"));
+                    ui.end_row();
+                    ui.label(tr("R/X of the supply"));
+                    ui.add(egui::DragValue::new(&mut s.rx).speed(0.01).range(0.0..=10.0));
+                    ui.end_row();
+                }
+            }
+            ui.label("");
+            ui.checkbox(&mut s.motors, tr("Motors feed the short circuit")).on_hover_text(tr("Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)"));
             ui.end_row();
             ui.label(tr("Rated current of the supply"));
             ui.add(egui::DragValue::new(&mut s.rated_current).speed(1.0).range(0.0..=10000.0).suffix(" A")).on_hover_text(tr("0 = not limited"));
             ui.end_row();
         });
+        let src = Source::of(&el.supply);
+        ui.weak(tr_fmt!("At the supply point: Ik3 max {} kA, Ik1 min {} kA", format!("{:.2}", src.ik3 / 1000.0), format!("{:.2}", src.ik1 / 1000.0)));
         ui.separator();
         ui.label(RichText::new(tr("Installation conditions of the conductors")).strong());
         egui::Grid::new("el_conditions").num_columns(2).show(ui, |ui| {
@@ -236,6 +278,38 @@ impl App {
             }
             ui.add_space(6.0);
         }
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(tr("Manufacturer's coordination tables")).strong());
+            if ui.small_button(tr("➕ Entry")).clicked() {
+                self.session.prj.electrical.coordination.push(Coordination::default());
+            }
+        });
+        ui.weak(tr("Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves."));
+        let table = &mut self.session.prj.electrical.coordination;
+        if table.is_empty() {
+            return;
+        }
+        let mut remove = None;
+        egui::Grid::new("el_coordination").striped(true).spacing([8.0, 3.0]).show(ui, |ui| {
+            for h in [tr("Upstream part"), tr("Downstream part"), tr("Selective up to (kA)"), tr("Back-up up to (kA)"), ""] {
+                ui.label(RichText::new(h).strong());
+            }
+            ui.end_row();
+            for (i, c) in table.iter_mut().enumerate() {
+                ui.add(egui::TextEdit::singleline(&mut c.upstream).desired_width(150.0));
+                ui.add(egui::TextEdit::singleline(&mut c.downstream).desired_width(150.0));
+                ui.add(egui::DragValue::new(&mut c.selectivity).speed(0.1).range(0.0..=200.0)).on_hover_text(tr("0 = not given"));
+                ui.add(egui::DragValue::new(&mut c.backup).speed(0.1).range(0.0..=200.0)).on_hover_text(tr("0 = not given"));
+                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                    remove = Some(i);
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(i) = remove {
+            table.remove(i);
+        }
     }
 
     fn loads_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
@@ -287,25 +361,28 @@ impl App {
             });
             let mut remove_sub = None;
             egui::Grid::new(("sf_subs", fi)).striped(true).spacing([8.0, 3.0]).show(ui, |ui| {
-                for h in [tr("Subsystem"), tr("Devices"), tr("Category"), tr("DCavg (%)"), tr("Operations / year"), tr("MTTFd (years)"), tr("CCF"), tr("PL"), ""] {
+                for h in [tr("Subsystem"), tr("Devices"), tr("Second channel"), tr("Category"), tr("DCavg (%)"), tr("Operations / year"), tr("MTTFd (years)"), tr("CCF"), tr("PL"), ""] {
                     ui.label(RichText::new(h).strong());
                 }
                 ui.end_row();
                 for (si, (s, r)) in f.subsystems.iter_mut().zip(&e.subsystems).enumerate() {
                     ui.add(egui::TextEdit::singleline(&mut s.name).desired_width(90.0));
-                    let mut text = s.devices.join(" ");
-                    if ui.add(egui::TextEdit::singleline(&mut text).hint_text("-S1 -K1").desired_width(140.0)).changed() {
-                        s.devices = text.split_whitespace().map(String::from).collect();
+                    for (list, hint, tip) in [(&mut s.devices, "-S1 -K1", tr("Devices of a channel")), (&mut s.channel2, "-K2", tr("Devices of the second channel; empty = like the first"))] {
+                        let mut text = list.join(" ");
+                        if ui.add(egui::TextEdit::singleline(&mut text).hint_text(hint).desired_width(120.0)).on_hover_text(tip).changed() {
+                            *list = text.split_whitespace().map(String::from).collect();
+                        }
                     }
                     combo(ui, ("sf_cat", fi, si), &mut s.category, &Category::ALL, |c| c.title().into());
-                    ui.add(egui::DragValue::new(&mut s.dc).speed(1.0).range(0.0..=100.0));
+                    ui.add(egui::DragValue::new(&mut s.dc).speed(1.0).range(0.0..=100.0)).on_hover_text(tr_fmt!("0 = from the DC of the devices ({} %)", format!("{:.0}", r.dc)));
                     ui.add(egui::DragValue::new(&mut s.operations).speed(100.0).range(0.0..=1e8));
                     ui.add(egui::DragValue::new(&mut s.mttfd).speed(1.0).range(0.0..=2500.0)).on_hover_text(tr("0 = from the devices"));
                     ui.checkbox(&mut s.ccf, "").on_hover_text(tr("Measures against common cause failure (at least 65 points)"));
                     let text = r.mttfd.map(|m| format!("{} · MTTFd {m:.0}", safety::pl_text(r.pl))).unwrap_or_else(|| safety::pl_text(r.pl));
                     let label = ui.label(RichText::new(text).color(result_color(r.problems.is_empty() && r.pl.is_some())));
-                    if !r.problems.is_empty() {
-                        label.on_hover_text(r.problems.join("\n"));
+                    let hints: Vec<&str> = r.problems.iter().chain(&r.notes).map(String::as_str).collect();
+                    if !hints.is_empty() {
+                        label.on_hover_text(hints.join("\n"));
                     }
                     if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
                         remove_sub = Some(si);

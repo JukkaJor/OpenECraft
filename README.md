@@ -352,9 +352,14 @@ bill of materials.
     from the tech data of their parts (`Power loss: 7.5 W`) plus an additional loss,
     effective surface by installation type (single, in a suite, free-standing, wall
     mounted, roof covered), material (heat transfer coefficient), ambient and allowed
-    inside temperatures → inside temperature, filter fan air flow or cooling unit
-    output, heater output; report *Enclosure climate*, the check warns when cooling is
-    needed.
+    inside temperatures → inside temperature, filter fan air flow (corrected for the
+    altitude of the site), air/air heat exchanger (W/K, when the degree of protection
+    must be kept) or cooling unit output, heater output that also keeps the inside
+    above the dew point of the ambient air (relative humidity); report *Enclosure
+    climate*, the check warns when cooling is needed. The heat map of the mounting
+    plate stratifies the mean temperature and adds a plume above every device with
+    power loss data; horizontal ducts hold plumes back (warm air gathers below them),
+    fans and cooling units weaken them.
   - **line-ups**: enclosures bayed side by side with cable passages between them
     (cutouts in the facing side walls, or sides open to each other); the 3D view shows
     the whole line-up, wires run from one enclosure into the next;
@@ -377,15 +382,31 @@ bill of materials.
 - **Electrical calculations and verification** (*Project › Electrical calculations…*):
   - *Supply*: voltage, earthing system (TN-S, TN-C, TN-C-S, TT, IT), highest and lowest
     short-circuit current at the supply point, rated current;
-  - *Short circuit and protection coordination* (IEC 60909-0 simplified, IEC 60364-4-41,
-    -4-43): the protective devices of the mains with their time-current bands
-    (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses; part tech data
-    `Characteristic`, `Breaking capacity`, `Instantaneous trip`, `Let-through energy`),
-    breaking capacity against the short-circuit current, disconnection within 0.4 s /
-    5 s (TT: 0.2 s / 1 s, residual current device needed) at the lowest fault current at
-    the end of each circuit, k²S² withstand of the cables, selectivity with the device
-    upstream (total / partial up to a current; gG fuses at a ratio of 1.6); reports
-    *Short circuit and disconnection*, *Selectivity*;
+  - *Short circuit and protection coordination* (IEC 60909-0 for radial networks,
+    IEC 60364-4-41, -4-43): the source from the short-circuit currents at the supply
+    point (with its R/X) or from a transformer (rated power, uk, load losses, correction
+    factor KT) and the network upstream (S''kQ); the cables from the supply to each
+    protective device and on to the end of its circuit; asynchronous motors on the
+    mains add ILR / IrM = 5 (or `Locked rotor current`) when they exceed 1 % of the
+    supply's current. The protective devices of the mains with their time-current bands
+    (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses, electronic
+    LSI trip units with `Long-time delay`, `Short-time pickup`, `Short-time delay`; part
+    tech data `Characteristic`, `Breaking capacity`, `Making capacity`, `Instantaneous
+    trip`, `Let-through energy`, `Pre-arcing energy`), replaced by the manufacturer's
+    curves where given (`Trip curve min` / `Trip curve max`: `1.5: 600; 3: 20; 10: 0.01`
+    in multiples of In, `Let-through energy: 1 kA: 8000; 6 kA: 25000`). Checked: breaking
+    capacity against the short-circuit current and making capacity against its peak
+    (κ from R/X), disconnection at the lowest fault current at the end of each circuit
+    within the times of table 41.1 by U0 (TN 0.8 / 0.4 / 0.2 / 0.1 s, TT 0.3 / 0.2 /
+    0.07 / 0.04 s, distribution circuits 5 s / 1 s; TT: residual current device needed;
+    IT: the second fault, at U or with a distributed neutral at U0), k²S² withstand of
+    the cables, selectivity with the device upstream (total / partial up to a current)
+    from the manufacturer's coordination table, gG fuses at a ratio of 1.6, the
+    pre-arcing energy of a fuse upstream or the time-current bands; back-up protection
+    from the coordination table covers a too low breaking capacity. The coordination
+    tables (selectivity and back-up limits in kA by part number) are edited in the
+    window and with `coordination_table`. Reports *Short circuit and disconnection*,
+    *Selectivity* (with its basis);
   - *Load calculation*: motors, drives, heaters, power supplies and transformers of the
     mains with active / apparent power and current (`Power`, `Current`, `Power factor`,
     `Efficiency`), the load of each protective device, demand with the rated diversity
@@ -397,7 +418,11 @@ bill of materials.
   - *Functional safety* (ISO 13849-1): safety functions of subsystems with their devices,
     category, DCavg, operations per year and CCF; PL by the simplified procedure
     (figure 5) from `MTTFd` / `B10d` of the parts or certified `PL` / `PFHd`, combined by
-    table 11, with the matching SIL; report *Safety functions*;
+    table 11 or, where every subsystem has a PFHd, by their sum, with the matching SIL;
+    a second channel of other devices is symmetrised (D.2), the DCavg comes from the
+    `DC` of the devices when the subsystem gives none (annex E), devices whose T10d
+    falls within the mission time of 20 years are named for replacement; report
+    *Safety functions*;
   - *Rule sets*: built-in libraries (IEC 60204-1, IEC 61439-1, UL 508A / NFPA 79,
     ISO 13849-1, EMC) and customer rule sets (JSON import / export) that tighten the
     limits (voltage drop, disconnection times, minimum cross-sections, load reserve,

@@ -18,8 +18,12 @@ pub struct Subsystem {
     pub name: String,
     /// Device tags of a channel.
     pub devices: Vec<String>,
+    /// Device tags of the second channel of a redundant subsystem; empty: like the
+    /// first.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub channel2: Vec<String>,
     pub category: Category,
-    /// Average diagnostic coverage, %.
+    /// Average diagnostic coverage, %; 0: from the `DC` of the devices.
     pub dc: f32,
     /// Operations per year (MTTFd from B10d).
     pub operations: f32,
