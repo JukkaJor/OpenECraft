@@ -4,6 +4,9 @@ An open source electrical CAE editor written in Rust, in the spirit of EPLAN Ele
 One code base runs natively on **Windows, Linux and macOS** and in the **browser** (WebAssembly),
 built with [egui / eframe](https://github.com/emilk/egui).
 
+New to OpenECraft? [docs/tutorial.md](docs/tutorial.md) walks from the first page to the
+bill of materials.
+
 ## Features
 
 - **Languages**: English, German, French and Spanish (View › Language; the editor and the

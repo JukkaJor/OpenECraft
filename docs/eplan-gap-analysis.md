@@ -701,7 +701,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
 | 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
 | 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols | 31f4166, b2b4e88, cceabce, 3e46498 | GB, GOST, JIS |
-| 18–20 | Catalogs, manual, languages | open | – | content work |
+| 18–20 | Catalogs, manual, languages | partly: getting-started tutorial (docs/tutorial.md) | see log | catalogs, full manual with pictures, more languages |
 | 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
 | 22 | UI customisation | partly: configurable keyboard shortcuts | 9898711 | workspaces, docking |
 | 23 | Nailboards, Smart Mounting | done: nailboard drawings to scale; mounting assistant | a2fcb96, 7f8e7bb | 3D harness routing |
