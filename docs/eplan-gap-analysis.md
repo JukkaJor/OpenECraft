@@ -688,7 +688,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 2 | Offline numbering | done: device tags with schemes, page renumbering, wire number formats | 820fc98 | – |
 | 3 | Graphical report forms | partly: graphical terminal, cable and plug diagrams and PLC assignment | d7e57f2, eca317c | form editor |
 | 4 | Check message management | done: message codes, levels per check, acceptance, check switches | 42d8f5b | check schemes as files |
-| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels and part functions with drag-and-drop placement | 0d77ed5, 57c6af6 | navigators for strips, plugs and potentials with drag-and-drop |
+| 5 | Navigators and find | partly: project-wide find and replace, page tree by structure, navigator of unplaced PLC channels and part functions with drag-and-drop placement | 0d77ed5, 57c6af6, 44732b7 | navigators for strips, plugs and potentials with drag-and-drop |
 | 6 | Multi-level terminals, jumper kinds | done | 787dc48 | – |
 | 7 | Editing aids, printing | done: grid sizes, typed points, align, distribute, multiple copy; page selection for PDF / print | b0ae357, 9ec50c4 | native print dialog, print of panel layout faces |
 | 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
@@ -700,7 +700,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY) | 93fdeb6, 7e3fb7b | PLC navigator, GX Works / PLCnext formats |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
 | 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
-| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics | 31f4166, b2b4e88, see log | GB, GOST, JIS, installation |
+| 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics | 31f4166, b2b4e88, cceabce | GB, GOST, JIS, installation |
 | 18–20 | Catalogs, manual, languages | open | – | content work |
 | 21 | Performance, browser storage | measured; check hot spots fixed; compressed autosave | 0a895b0, f492586 | per-page analysis, IndexedDB |
 | 22 | UI customisation | partly: configurable keyboard shortcuts | 9898711 | workspaces, docking |
