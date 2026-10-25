@@ -436,7 +436,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   report lists their wires with length (routed in the panel layout or the harness's
   field length) and end treatment, the harness window shows the connectors with their
   pin assignment and the bundle diameter; export as simplified **KBL** (VDA 4964, XML)
-  for harness manufacturing.
+  for harness manufacturing. **Nailboard drawings** (formboards) to scale: the bundle as
+  branches from a common node to the connectors, each as long as the wire lengths
+  require and as thick as its bundle, with nails, branch lengths and the pin table of
+  every connector, on A3 at the smallest standard scale that fits (harness window
+  › *Nailboard (SVG)…*, exporter `nailboard`, command `harness_nailboard`).
 - **Wiring assistant** (in the spirit of EPLAN Smart Wiring): the *Wiring* workspace
   turns the routed wires of the panel layout into a touch-friendly checklist for the
   workshop – ordered by device, position, cross-section or wire number – with the

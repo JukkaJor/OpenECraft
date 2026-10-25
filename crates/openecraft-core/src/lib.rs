@@ -51,6 +51,7 @@ pub mod page_templates;
 pub mod panel;
 pub mod params;
 pub mod parts;
+pub mod nailboard;
 pub mod pdf;
 pub mod pdf_comments;
 pub mod plc;

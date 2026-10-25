@@ -60,6 +60,7 @@ pub static TOOLS: &[Tool] = &[
             optional("language", Kind::Str, tr_const!("Language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf, dwg: default all pages)")),
+            optional("options", Kind::Str, tr_const!("Further parameters of the export as name=value, separated by commas (see list_exports), e.g. harness=-WH1")),
         ],
         needs_project: true,
         run: export,
@@ -168,6 +169,12 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     if let Some(path) = a.str("path").filter(|_| takes("file")) {
         args.insert("file".into(), path.rsplit(['/', '\\']).next().unwrap_or(path).into());
+    }
+    for opt in a.str("options").unwrap_or_default().split(',').filter(|o| !o.trim().is_empty()) {
+        let (k, v) = opt.split_once('=').ok_or_else(|| tr_fmt!("Option {} needs the form name=value", opt.trim()))?;
+        let p = e.params.iter().find(|p| p.name == k.trim()).ok_or_else(|| tr_fmt!("Unknown parameter: {}", k.trim()))?;
+        let value = p.kind.parse(v.trim()).ok_or_else(|| tr_fmt!("Parameter {} has the wrong type", k.trim()))?;
+        args.insert(k.trim().to_string(), value);
     }
     params::check(&e.params, &args)?;
     let out = translation::with_language(prj, &lang, |prj| {

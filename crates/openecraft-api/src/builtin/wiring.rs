@@ -68,6 +68,12 @@ pub static COMMANDS: &[Spec] = &[
         run: mark_wire,
     },
     Spec {
+        name: "harness_nailboard",
+        help: tr_const!("Nailboard layout of a harness: the branches from the common node to the connectors with length, direction, bundle diameter and pins, and the drawing scale"),
+        params: &[param("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1"))],
+        run: harness_nailboard,
+    },
+    Spec {
         name: "marking_schemes",
         help: tr_const!("Lists the labeling schemes for marking programs (built-in and of the project) and the selected one"),
         params: &[],
@@ -171,6 +177,21 @@ fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
         "scheme": scheme_code(s.scheme), "format": s.format, "prefix": s.prefix, "start": s.start, "step": s.step, "digits": s.digits,
         "skip_kinds": s.skip_kinds.iter().map(|k| kind_code(*k)).collect::<Vec<_>>()
     }))
+}
+
+fn harness_nailboard(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let tag = a.req("harness");
+    let an = Analysis::checked(prj);
+    let nb = openecraft_core::nailboard::layout(prj, &an, tag).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))?;
+    let branches: Vec<Value> = nb
+        .branches
+        .iter()
+        .map(|b| {
+            let pins: Vec<Value> = b.pins.iter().map(|p| json!({ "pin": p[0], "wire": p[1], "color": p[2], "cross_section": p[3], "to": p[4] })).collect();
+            json!({ "connector": b.device, "length": b.length.round(), "assumed": b.assumed, "angle": b.angle.round(), "diameter": (b.diameter * 10.0).round() / 10.0, "pins": pins })
+        })
+        .collect();
+    Ok(json!({ "harness": nb.tag, "wires": nb.wires, "diameter": (nb.diameter * 10.0).round() / 10.0, "scale": format!("1:{}", openecraft_core::nailboard::scale(&nb)), "branches": branches }))
 }
 
 fn scheme_json(s: &marking::Scheme) -> Value {

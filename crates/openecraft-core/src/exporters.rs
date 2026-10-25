@@ -13,6 +13,7 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));
 const PAGE_OPT: Param = optional("page", Kind::Str, tr_const!("Page name as shown by list_pages (default: all pages)"));
 const FILE: Param = optional("file", Kind::Str, tr_const!("File name written into the file header"));
+const HARNESS: Param = param("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1"));
 const SCHEME: Param = optional("scheme", Kind::Str, tr_const!("Labeling scheme (default: the scheme selected in the project)"));
 
 fn marking_scheme(prj: &Project, a: &Args) -> Result<crate::marking::Scheme, String> {
@@ -68,6 +69,10 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("plc_rockwell", tr_const!("PLC tags for Rockwell Studio 5000 (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::rockwell_tags(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
     .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
+    .exporter_with("nailboard", tr_const!("Harness nailboard drawing to scale (SVG)"), "svg", false, vec![HARNESS], text(|prj, an, a| {
+        let tag = a.req("harness");
+        crate::nailboard::layout(prj, an, tag).map(|nb| crate::nailboard::svg(&nb)).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))
+    }))
     .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![SCHEME], text(|prj, an, a| {
         let scheme = marking_scheme(prj, a)?;
         Ok(crate::marking::text(&crate::marking::markers(prj, &an.connections), &scheme))

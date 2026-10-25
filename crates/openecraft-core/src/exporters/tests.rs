@@ -14,7 +14,10 @@ fn every_built_in_export_runs_on_the_demo_project() {
     for e in builtin() {
         assert!(names.insert(e.name.clone()), "duplicate export {}", e.name);
         assert!(!e.extension.is_empty() && !e.title.is_empty());
-        let a = if e.params.iter().any(|p| p.name == "page") { args(json!({ "page": "1" })) } else { Map::new() };
+        let mut a = if e.params.iter().any(|p| p.name == "page") { args(json!({ "page": "1" })) } else { Map::new() };
+        if e.params.iter().any(|p| p.name == "harness") {
+            a.insert("harness".into(), json!("-WH1"));
+        }
         crate::params::check(&e.params, &a).unwrap();
         let out = (e.run)(&prj, &an, &Args(&a)).unwrap_or_else(|err| panic!("{}: {err}", e.name));
         match out {

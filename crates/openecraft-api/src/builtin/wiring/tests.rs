@@ -133,3 +133,12 @@ fn labeling_schemes_are_listed_added_selected_and_removed() {
     assert_eq!(out["selected"], "Standard");
     assert!(run(&mut s, "set_marking_scheme", json!({ "name": "Shop", "remove": true })).is_err());
 }
+
+#[test]
+fn nailboard_of_the_demo_harness() {
+    let mut s = demo();
+    let nb = run(&mut s, "harness_nailboard", json!({ "harness": "-WH1" })).unwrap();
+    assert!(nb["branches"].as_array().unwrap().len() >= 2);
+    assert!(nb["scale"].as_str().unwrap().starts_with("1:"));
+    assert!(run(&mut s, "harness_nailboard", json!({ "harness": "-WH7" })).is_err());
+}

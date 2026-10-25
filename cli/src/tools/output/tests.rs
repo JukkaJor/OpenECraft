@@ -80,3 +80,16 @@ fn check_reports_the_template_and_arguments_of_an_issue() {
     assert!(issue["key"].as_str().unwrap().contains("{}"), "{issue}");
     assert!(issue["message"].as_str().unwrap().starts_with("-K1"), "{issue}");
 }
+
+#[test]
+fn exporter_parameters_are_passed_as_options() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let svg = run(&mut s, "export", json!({ "format": "nailboard", "options": "harness=-WH1" })).unwrap();
+    assert!(svg.as_str().unwrap().starts_with("<svg"));
+    assert!(run(&mut s, "export", json!({ "format": "nailboard" })).unwrap_err().contains("harness"));
+    let csv = run(&mut s, "export", json!({ "format": "marking", "options": "scheme=Partex" })).unwrap();
+    assert!(!csv.as_str().unwrap().starts_with('\u{feff}'), "Partex has no byte order mark");
+    assert!(run(&mut s, "export", json!({ "format": "marking", "options": "colour=red" })).unwrap_err().contains("colour"));
+    assert!(run(&mut s, "export", json!({ "format": "marking", "options": "scheme" })).unwrap_err().contains("name=value"));
+}
