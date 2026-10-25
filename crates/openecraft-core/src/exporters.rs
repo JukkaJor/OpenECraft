@@ -72,6 +72,9 @@ pub fn builtin() -> Vec<Exporter> {
         Ok(Export::Binary(crate::xlsx::write(&[("PLC Tags".into(), crate::plc::tia_tags(prj, &an.netlist))])))
     })
     .exporter_with("plc_rockwell", tr_const!("PLC tags for Rockwell Studio 5000 (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::rockwell_tags(prj, &an.netlist))))
+    .exporter_with("plc_step7", tr_const!("PLC symbol table for Siemens STEP 7 classic (SDF)"), "sdf", false, vec![], text(|prj, an, _| Ok(crate::plc::step7_sdf(prj, &an.netlist))))
+    .exporter_with("plc_twincat", tr_const!("PLC global variable list for Beckhoff TwinCAT 3 (TcGVL)"), "TcGVL", false, vec![], text(|prj, an, _| Ok(crate::plc::twincat_gvl(prj, &an.netlist))))
+    .exporter_with("plc_schneider", tr_const!("PLC variables for Schneider Control Expert (XSY)"), "xsy", false, vec![], text(|prj, an, _| Ok(crate::plc::schneider_xsy(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
     .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
     .exporter_with("nailboard", tr_const!("Harness nailboard drawing to scale (SVG)"), "svg", false, vec![HARNESS], text(|prj, an, a| {

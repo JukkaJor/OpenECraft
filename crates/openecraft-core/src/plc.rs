@@ -251,6 +251,16 @@ pub fn tia_tags(prj: &Project, nl: &Netlist) -> Vec<Vec<String>> {
     rows
 }
 
+/// Input or output, slot of the card (otherwise 1) and channel on the card of a point
+/// with a byte / bit address.
+fn channel(prj: &Project, p: &Point) -> Option<(bool, u32, u32)> {
+    let a = crate::plc_hw::parse_address(&p.address)?;
+    let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
+    let start = if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) };
+    let slot: u32 = data.slot.trim().parse().unwrap_or(1);
+    Some((a.input, slot, a.byte.saturating_sub(start) * 8 + a.bit))
+}
+
 /// Rockwell Studio 5000 tag import (CSV): every point as an alias of its module
 /// channel (`Local:3:I.Data.5`; the slot from the card, otherwise 1).
 pub fn rockwell_tags(prj: &Project, nl: &Netlist) -> String {
@@ -261,14 +271,68 @@ pub fn rockwell_tags(prj: &Project, nl: &Netlist) -> String {
         let specifier = if a.slot.is_some() {
             p.address.trim().trim_start_matches('%').to_string()
         } else {
-            let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
-            let start = if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) };
-            let slot: u32 = data.slot.trim().parse().unwrap_or(1);
-            let channel = a.byte.saturating_sub(start) * 8 + a.bit;
-            format!("Local:{slot}:{}.Data.{channel}", if a.input { 'I' } else { 'O' })
+            let Some((input, slot, channel)) = channel(prj, &p) else { continue };
+            format!("Local:{slot}:{}.Data.{channel}", if input { 'I' } else { 'O' })
         };
         out.push_str(&format!("ALIAS,,{},{},,{},{}\n", q(&name), q(&tag_comment(&p)), q(&specifier), q("(RADIX := Decimal, ExternalAccess := Read/Write)")));
     }
+    out
+}
+
+/// Siemens STEP 7 (classic) symbol table to import into the symbol editor (`.sdf`):
+/// per point the quoted, blank padded fields symbol (24), address (12), data type (10)
+/// and comment (80).
+pub fn step7_sdf(prj: &Project, nl: &Netlist) -> String {
+    let field = |s: &str, w: usize| {
+        let t: String = s.replace('"', "'").chars().take(w).collect();
+        format!("\"{t:<w$}\"")
+    };
+    let mut out = String::new();
+    for (name, p) in tags(prj, nl) {
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
+        let addr = format!("{:<4}{byte:>4}.{bit}", if input { "I" } else { "Q" });
+        out.push_str(&[field(&name, 24), field(&addr, 12), field("BOOL", 10), field(&tag_comment(&p), 80)].join(","));
+        out.push_str("\r\n");
+    }
+    out
+}
+
+/// Beckhoff TwinCAT 3 global variable list (`.TcGVL`): the points as `AT %I*` /
+/// `AT %Q*` variables, linked to the terminals in the I/O configuration.
+pub fn twincat_gvl(prj: &Project, nl: &Netlist) -> String {
+    let mut decl = String::from("{attribute 'qualified_only'}\nVAR_GLOBAL\n");
+    for (name, p) in tags(prj, nl) {
+        let Some((input, _, _)) = absolute(prj, &p) else { continue };
+        let comment = tag_comment(&p).replace('\n', " ");
+        decl.push_str(&format!("    {name} AT %{}* : BOOL; // {comment}\n", if input { 'I' } else { 'Q' }));
+    }
+    decl.push_str("END_VAR\n");
+    let decl = decl.replace("]]>", "]] >");
+    format!(
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TcPlcObject Version=\"1.1.0.1\" ProductVersion=\"3.1.4024.0\">\n  <GVL Name=\"GVL_IO\">\n    <Declaration><![CDATA[{decl}]]></Declaration>\n  </GVL>\n</TcPlcObject>\n"
+    )
+}
+
+fn xml_attr(s: &str) -> String {
+    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+}
+
+/// Schneider Electric Control Expert (Unity Pro) variables (`.xsy`): `EBOOL` variables
+/// with the topological address `%I0.<slot>.<channel>` of their card.
+pub fn schneider_xsy(prj: &Project, nl: &Netlist) -> String {
+    let mut out = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<VariablesExchangeFile>\n");
+    out.push_str("<fileHeader company=\"OpenECraft\" product=\"OpenECraft\" content=\"Variable source file\" DTDVersion=\"41\"></fileHeader>\n");
+    out.push_str(&format!("<contentHeader name=\"{}\" version=\"0.0.000\"></contentHeader>\n<dataBlock>\n", xml_attr(&prj.info.name)));
+    for (name, p) in tags(prj, nl) {
+        let Some((input, slot, ch)) = channel(prj, &p) else { continue };
+        out.push_str(&format!(
+            "<variables name=\"{}\" typeName=\"EBOOL\" topologicalAddress=\"%{}0.{slot}.{ch}\"><comment>{}</comment></variables>\n",
+            xml_attr(&name),
+            if input { 'I' } else { 'Q' },
+            xml_attr(&tag_comment(&p))
+        ));
+    }
+    out.push_str("</dataBlock>\n</VariablesExchangeFile>\n");
     out
 }
 

@@ -126,3 +126,28 @@ fn large_nets_list_twenty_targets() {
     assert!(point.connected.ends_with(", … (+10)"), "{}", point.connected);
     assert_eq!(point.connected.matches("-X1:").count(), 20);
 }
+
+#[test]
+fn step7_twincat_and_schneider_exports() {
+    let prj = crate::sample::demo_project();
+    let an = crate::analysis::Analysis::checked(&prj);
+    let nl = &an.netlist;
+    let n = tags(&prj, nl).iter().filter(|(_, p)| absolute(&prj, p).is_some()).count();
+    assert!(n > 0);
+    let sdf = step7_sdf(&prj, nl);
+    assert_eq!(sdf.lines().count(), n);
+    let first = sdf.lines().next().unwrap();
+    let fields: Vec<&str> = first.split("\",\"").collect();
+    assert_eq!(fields.len(), 4, "{first}");
+    assert_eq!(fields[0].trim_start_matches('"').len(), 24);
+    assert_eq!(fields[1].len(), 12);
+    assert!(fields[1].starts_with('I') || fields[1].starts_with('Q'));
+    assert_eq!(fields[2], "BOOL      ");
+    let gvl = twincat_gvl(&prj, nl);
+    assert!(gvl.contains("<TcPlcObject") && gvl.contains("VAR_GLOBAL") && gvl.contains("END_VAR"));
+    assert_eq!(gvl.matches(" AT %").count(), n);
+    let xsy = schneider_xsy(&prj, nl);
+    assert!(xsy.starts_with("<?xml") && xsy.contains("<VariablesExchangeFile>"));
+    assert!(xsy.matches("<variables ").count() >= 1);
+    assert!(xsy.contains("typeName=\"EBOOL\" topologicalAddress=\"%"));
+}

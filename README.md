@@ -129,8 +129,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
   tools, the tag table of **Siemens TIA Portal** (Excel sheet *PLC Tags*), the tag
-  import of **Rockwell Studio 5000** (aliases of the module channels) and IEC 61131-3
-  global variables (CODESYS, TwinCAT); addresses used on several cards are reported.
+  import of **Rockwell Studio 5000** (aliases of the module channels), the symbol table
+  of **Siemens STEP 7 classic** (SDF), a global variable list for **Beckhoff TwinCAT 3**
+  (TcGVL, `AT %I*` / `AT %Q*`), variables for **Schneider Control Expert** (XSY, `EBOOL`
+  with topological addresses) and IEC 61131-3 global variables (CODESYS); addresses
+  used on several cards are reported.
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
   locked pages are read only. Changes since the last released revision (added / changed /
   removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
