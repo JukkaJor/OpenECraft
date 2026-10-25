@@ -55,7 +55,7 @@ impl Fastening {
         if it.fastening != Fastening::Auto {
             return it.fastening;
         }
-        if let Some(f) = part.and_then(|p| p.tech_value("Fastening")).and_then(Fastening::from_key).filter(|f| *f != Fastening::Auto) {
+        if let Some(f) = part.and_then(|p| p.data_value("Fastening")).and_then(|v| Fastening::from_key(&v)).filter(|f| *f != Fastening::Auto) {
             return f;
         }
         match (it.kind, it.face) {

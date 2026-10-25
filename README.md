@@ -216,6 +216,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
     subgroup tree, filter), with general, commercial (price, price unit, packaging,
     quantity unit), technical, mounting (dimensions, weight) data, accessories and a
     **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
+  - **typed mounting data** per part (tab *Mounting*): clearances (top, bottom, left,
+    right, front, EMC, service space), mounting holes with thread, door and face
+    cutouts, power loss, how far an accessory sticks out, fastening, faces, collision
+    class and terminal type. They drive the panel checks, drilling, cutouts and the
+    climate calculation; CSV has a column per value (`Power loss`, `Mounting holes`,
+    …). Older parts with these values as `Key: value` lines in the technical data
+    still work; imports and the built-in catalog move such lines into the typed
+    fields, the part editor offers it for existing parts;
   - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ, **STEP**:
     solids and surface models of AP203 / AP214 / AP242 files, placed by their
     assembly structure, tessellated and converted to mm; **IGES 5.3**: solids and

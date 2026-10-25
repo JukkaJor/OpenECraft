@@ -754,13 +754,13 @@ pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Fa
 
 /// Technical value of a part as a number ("Outside: 25" → 25).
 pub fn tech_number(part: &crate::parts::Part, name: &str) -> Option<f32> {
-    part.tech_value(name)?.trim().trim_end_matches("mm").trim().replace(',', ".").parse().ok()
+    part.data_value(name)?.trim().trim_end_matches("mm").trim().replace(',', ".").parse().ok()
 }
 
 /// Faces an accessory can be mounted on (part data `Faces: Left, Right`); all faces
 /// without data.
 pub fn allowed_faces(part: &crate::parts::Part) -> Vec<Face> {
-    match part.tech_value("Faces") {
+    match part.data_value("Faces").as_deref() {
         Some(list) => list.split([',', ';']).filter_map(Face::from_key).collect(),
         None => Face::ALL.to_vec(),
     }

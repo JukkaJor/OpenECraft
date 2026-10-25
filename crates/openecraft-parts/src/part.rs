@@ -2,7 +2,7 @@
 //! data and the parts database container.
 
 use crate::portal::{Attachment, Lifecycle};
-use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d, Shared};
+use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d, MountingData, Shared};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -365,6 +365,9 @@ pub struct Part {
     pub depth: f32,
     pub weight: f32,
     pub mounting: String,
+    /// Typed mounting and placement data (clearances, holes, cutouts, power loss, …).
+    #[serde(skip_serializing_if = "MountingData::is_empty")]
+    pub mounting_data: MountingData,
     // Logic
     pub functions: Vec<FunctionTemplate>,
     /// Part numbers of accessories.
@@ -435,6 +438,7 @@ impl Default for Part {
             depth: 0.0,
             weight: 0.0,
             mounting: String::new(),
+            mounting_data: MountingData::default(),
             functions: Vec::new(),
             accessories: Vec::new(),
             model_2d: None,

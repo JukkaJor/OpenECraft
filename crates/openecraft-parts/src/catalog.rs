@@ -403,6 +403,9 @@ Breaking capacity: 100 kA".into();
 
     let mut parts = c.parts;
     parts.iter_mut().for_each(add_generated_models);
+    parts.iter_mut().for_each(|p| {
+        p.migrate_tech_data();
+    });
     parts.sort_by(|a, b| natural_cmp(&a.number, &b.number));
     parts
 }

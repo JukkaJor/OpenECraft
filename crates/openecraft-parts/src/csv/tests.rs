@@ -30,7 +30,8 @@ fn connection_points_in_csv() {
         ConnectionPoint { pin: "14".into(), pos: [40.0, 74.0, 55.25], exit: Exit::Down },
     ];
     let csv = to_csv(std::slice::from_ref(&part));
-    assert!(csv.lines().next().unwrap().ends_with(";Connection points;Catalog;Lifecycle;Successor"));
+    let header = csv.lines().next().unwrap();
+    assert!(header.contains(";Connection points;Catalog;Lifecycle;Successor;Clearance top;") && header.ends_with(";Terminal type"));
     assert!(csv.contains("A1:5.5/0/60/up|14:40/74/55.25/down"));
     assert_eq!(from_csv(&csv).unwrap()[0].connection_points, part.connection_points);
     // Files without the column (older exports) have no points.
@@ -40,3 +41,27 @@ OWN.K2;Relay
     assert!(from_csv(old).unwrap()[0].connection_points.is_empty());
 }
 
+
+#[test]
+fn typed_mounting_data_in_csv() {
+    let mut part = Part { number: "X.1".into(), ..Default::default() };
+    part.mounting_data.power_loss = 7.5;
+    part.mounting_data.set("Mounting holes", "M5: 9,12; 69,72");
+    part.mounting_data.set("Door cutout", "Ø30.5");
+    let csv = to_csv(std::slice::from_ref(&part));
+    let back = from_csv(&csv).unwrap();
+    assert_eq!(back[0].mounting_data, part.mounting_data);
+    // Values that cannot be read stay in the technical data.
+    let text = "Part number;Power loss;Door cutout\nY.1;a lot;Ø22.5\n";
+    let y = &from_csv(text).unwrap()[0];
+    assert_eq!(y.mounting_data.door_cutout, Some(crate::Cutout::Round { d: 22.5 }));
+    assert_eq!(y.tech_data, "Power loss: a lot");
+}
+
+#[test]
+fn import_moves_technical_data_into_typed_fields() {
+    let text = "Part number;Technical data\nZ.1;\"Power loss: 4 W\nCoil voltage: 24 V\"\n";
+    let z = &crate::import(text).unwrap()[0];
+    assert_eq!(z.mounting_data.power_loss, 4.0);
+    assert_eq!(z.tech_data, "Coil voltage: 24 V");
+}

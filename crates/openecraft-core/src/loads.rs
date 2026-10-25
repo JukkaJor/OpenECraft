@@ -173,7 +173,7 @@ fn consumption(prj: &Project, tag: &str, u: f32) -> Option<f32> {
             }
         }
         if kinds.iter().any(|k| matches!(k, FnKind::Coil | FnKind::Valve | FnKind::Brake)) {
-            let w = p.tech_value("Coil power").and_then(parse_power).or_else(|| value_with_unit(&p.description, "W")).or_else(|| p.tech_value("Power loss").and_then(parse_power));
+            let w = p.tech_value("Coil power").and_then(parse_power).or_else(|| value_with_unit(&p.description, "W")).or_else(|| p.data_value("Power loss").and_then(|v| parse_power(&v)));
             if let Some(w) = w {
                 return Some(w / u.max(1.0));
             }

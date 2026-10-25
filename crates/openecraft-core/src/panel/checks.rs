@@ -118,7 +118,7 @@ pub fn item_class(prj: &Project, kinds: &HashMap<&str, BTreeSet<FnKind>>, it: &P
     if !it.class.trim().is_empty() {
         return it.class.trim().to_ascii_lowercase();
     }
-    if let Some(c) = part_by_number(prj, &it.part).and_then(|p| p.tech_value("Collision class")).filter(|c| !c.trim().is_empty()) {
+    if let Some(c) = part_by_number(prj, &it.part).and_then(|p| p.data_value("Collision class")).filter(|c| !c.trim().is_empty()) {
         return c.trim().to_ascii_lowercase();
     }
     match it.kind {
@@ -134,7 +134,7 @@ pub fn item_class(prj: &Project, kinds: &HashMap<&str, BTreeSet<FnKind>>, it: &P
 
 /// First number of a part data value ("25 mm (above and below)" → 25).
 pub fn data_number(part: &Part, name: &str) -> Option<f32> {
-    let v = part.tech_value(name)?.trim();
+    let v = part.data_value(name)?;
     let num: String = v.chars().take_while(|c| c.is_ascii_digit() || matches!(c, '.' | ',' | '-' | '+')).collect();
     num.replace(',', ".").parse().ok()
 }

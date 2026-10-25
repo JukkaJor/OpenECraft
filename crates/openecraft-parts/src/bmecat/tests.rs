@@ -68,8 +68,14 @@ fn products_with_etim_and_eclass_features() {
     assert_eq!(p.tech_value("EF000123"), Some("1, 2"));
     assert_eq!(p.tech_value("EF000999"), None);
     assert_eq!(p.tech_data.matches("Power loss").count(), 1);
-    // The general parts import recognises the format.
-    assert_eq!(crate::import(CATALOG_2005).unwrap(), parts);
+    // The general parts import recognises the format and moves the power loss into the
+    // typed mounting data.
+    let mut typed = parts.clone();
+    typed.iter_mut().for_each(|p| {
+        p.migrate_tech_data();
+    });
+    assert_eq!(typed[0].mounting_data.power_loss, 2.4);
+    assert_eq!(crate::import(CATALOG_2005).unwrap(), typed);
 }
 
 #[test]

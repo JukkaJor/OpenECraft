@@ -65,7 +65,7 @@ pub fn line_positions(len: f32, end: f32, pitch: f32) -> Vec<f32> {
 /// Mounting holes from the part data: `Mounting holes: M4: 5,5; 40,85` (positions
 /// relative to the top left corner of the part, front view).
 pub fn part_holes(part: &Part) -> Option<(String, Vec<P>)> {
-    let spec = part.tech_value("Mounting holes")?;
+    let spec = part.data_value("Mounting holes")?;
     let (thread, list) = spec.split_once(':')?;
     let pts: Vec<P> = list
         .split(';')
@@ -212,7 +212,7 @@ pub fn parse_cutout(spec: &str) -> Option<(bool, f32, f32)> {
 /// (rectangular); without data Ø22.5 for command and signal devices, otherwise the
 /// device outline less 2 mm on each side. Returns (round, width, height).
 pub fn door_cutout(part: Option<&Part>, it: &PanelItem) -> (bool, f32, f32) {
-    if let Some(c) = part.and_then(|p| p.tech_value("Door cutout").or_else(|| p.tech_value("Cutout"))).and_then(parse_cutout) {
+    if let Some(c) = part.and_then(|p| p.data_value("Door cutout").or_else(|| p.data_value("Cutout"))).and_then(|v| parse_cutout(&v)) {
         return c;
     }
     let command = part.map(|p| p.group == "Sensors, switches, pushbuttons" || p.group == "Signal devices").unwrap_or(false);
@@ -237,7 +237,7 @@ pub fn openings(e: &Enclosure, parts: &[Part], face: Face) -> Vec<Opening> {
                 v.push(Opening { item: it.id, center: it.center(), w, h, round });
             }
             ItemKind::Device | ItemKind::Accessory => {
-                if let Some((round, w, h)) = part().and_then(|p| p.tech_value("Cutout")).and_then(parse_cutout) {
+                if let Some((round, w, h)) = part().and_then(|p| p.data_value("Cutout")).and_then(|v| parse_cutout(&v)) {
                     // Quarter-turned items turn their cutout.
                     let (w, h) = if (it.w - it.h).abs() > 0.5 && part().is_some_and(|p| (p.width - it.h).abs() < 0.5) { (h, w) } else { (w, h) };
                     v.push(Opening { item: it.id, center: it.center(), w, h, round });

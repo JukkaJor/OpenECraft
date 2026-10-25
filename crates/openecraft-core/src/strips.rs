@@ -161,7 +161,7 @@ const PE_SYMBOL: &str = "term_pe";
 
 /// A protective earth terminal part (tech data `Terminal type: PE`).
 pub fn is_pe_part(part: &Part) -> bool {
-    part.tech_value("Terminal type").is_some_and(|t| t.eq_ignore_ascii_case("PE"))
+    part.data_value("Terminal type").is_some_and(|t| t.eq_ignore_ascii_case("PE"))
 }
 
 /// A part whose functions are all terminals.
