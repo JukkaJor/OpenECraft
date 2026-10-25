@@ -9,6 +9,7 @@ impl App {
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
         self.shortcuts_window(ctx);
         self.export_form_window(ctx);
+        self.save_layout_window(ctx);
         self.reports_window(ctx);
         self.project_properties_window(ctx);
         self.parts_management_and_part_selection_window(ctx);

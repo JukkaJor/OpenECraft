@@ -421,6 +421,7 @@ impl App {
         if ui.button(tr("Keyboard shortcuts…")).clicked() {
             self.show_shortcuts = true;
         }
+        ui.menu_button(tr("Workspaces"), |ui| self.workspaces_menu(ui));
         openecraft_ui::language::menu(ui);
         let mut pref = ui.ctx().options(|o| o.theme_preference);
         ui.horizontal(|ui| {

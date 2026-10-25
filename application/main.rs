@@ -16,6 +16,7 @@ mod io;
 mod mounting_ui;
 mod panel_ui;
 mod shortcuts;
+mod workspaces;
 mod parts_ui;
 mod remote;
 mod session;

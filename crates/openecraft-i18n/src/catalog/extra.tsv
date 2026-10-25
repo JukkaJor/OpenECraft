@@ -4853,3 +4853,10 @@ All pages…	Alle Seiten…	Toutes les pages…	Todas las páginas…
 Current page…	Aktuelle Seite…	Page courante…	Página actual…
 Opens the pages for printing in the browser with its print dialog	Öffnet die Seiten zum Drucken im Browser mit dessen Druckdialog	Ouvre les pages pour l'impression dans le navigateur avec sa boîte de dialogue d'impression	Abre las páginas para imprimir en el navegador con su diálogo de impresión
 Printing failed: {}	Drucken fehlgeschlagen: {}	Échec de l'impression : {}	Error al imprimir: {}
+Workspaces	Arbeitsbereiche	Espaces de travail	Espacios de trabajo
+Delete this workspace	Diesen Arbeitsbereich löschen	Supprimer cet espace de travail	Eliminar este espacio de trabajo
+No saved workspaces yet.	Noch keine gespeicherten Arbeitsbereiche.	Aucun espace de travail enregistré.	Aún no hay espacios de trabajo guardados.
+Saves the workspace, the navigator tab and the open windows	Speichert den Arbeitsbereich, den Navigator-Reiter und die offenen Fenster	Enregistre l'espace de travail, l'onglet du navigateur et les fenêtres ouvertes	Guarda el espacio de trabajo, la pestaña del navegador y las ventanas abiertas
+{} windows	{} Fenster	{} fenêtres	{} ventanas
+Save current…	Aktuellen speichern…	Enregistrer l'actuel…	Guardar el actual…
+Save workspace	Arbeitsbereich speichern	Enregistrer l'espace de travail	Guardar espacio de trabajo

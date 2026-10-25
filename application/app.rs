@@ -55,6 +55,7 @@ mod projects_ui;
 mod properties_ui;
 mod structure_ui;
 mod preplanning_ui;
+mod workspaces_ui;
 mod process_ui;
 mod singleline_ui;
 mod remote_ui;
@@ -117,6 +118,10 @@ pub struct App {
     mounting_ui: MountingUi,
     show_help: bool,
     show_shortcuts: bool,
+    /// Saved workspaces (View › Workspaces) and the name typed for a new one.
+    layouts: Vec<crate::workspaces::Layout>,
+    /// Name of the workspace being saved (the window is open while it is set).
+    layout_name: Option<String>,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
     export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Action whose new shortcut is being recorded.
@@ -176,6 +181,7 @@ impl App {
         let mut disabled_plugins: Vec<String> = Vec::new();
         let mut language: Option<String> = None;
         let mut shortcuts = crate::shortcuts::Shortcuts::default();
+        let mut layouts: Vec<crate::workspaces::Layout> = Vec::new();
         let mut projects_ui = projects_ui::ProjectsUi::default();
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
@@ -192,6 +198,7 @@ impl App {
             if let Some(stored) = eframe::get_value(storage, crate::shortcuts::STORAGE_KEY) {
                 shortcuts = crate::shortcuts::Shortcuts::from_storage(&stored);
             }
+            layouts = eframe::get_value(storage, crate::workspaces::STORAGE_KEY).unwrap_or_default();
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -240,6 +247,8 @@ impl App {
             mounting_ui: MountingUi::default(),
             show_help: false,
             show_shortcuts: false,
+            layouts,
+            layout_name: None,
             export_form: None,
             recording: None,
             show_cables: false,
@@ -524,6 +533,7 @@ impl eframe::App for App {
         eframe::set_value(storage, "project_server_user", &self.remote.user);
         eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
         eframe::set_value(storage, crate::shortcuts::STORAGE_KEY, &self.editor.shortcuts.to_storage());
+        eframe::set_value(storage, crate::workspaces::STORAGE_KEY, &self.layouts);
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }
