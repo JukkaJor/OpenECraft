@@ -168,6 +168,8 @@ pub struct App {
     /// Built-in and external plugins (`openecraft_api`).
     plugins: openecraft_api::Plugins,
     plugins_ui: plugins_ui::PluginsUi,
+    /// The autosaved project and parts database (IndexedDB in the browser).
+    autosave: crate::autosave::Autosave,
 }
 
 impl App {
@@ -216,6 +218,7 @@ impl App {
         }
         openecraft_i18n::init(language.as_deref());
         let parts_db = parts_db.unwrap_or_default();
+        let autosave = crate::autosave::Autosave::start(openecraft_ui::io::Store::new("OpenECraft"), &cc.egui_ctx, &parts_db);
         let mut parts_ui = PartsUi::default();
         if let Some(url) = server_url {
             parts_ui.server.url = url;
@@ -226,7 +229,7 @@ impl App {
         for id in &disabled_plugins {
             plugins.set_enabled(id, false);
         }
-        App {
+        let mut app = App {
             session: Session::new(prj, file_name),
             editor: {
                 let mut editor = Editor::default();
@@ -295,7 +298,11 @@ impl App {
             requests_ui: Default::default(),
             plugins,
             plugins_ui: Default::default(),
-        }
+            autosave,
+        };
+        // On the desktop the stored values are there at once.
+        app.autosave.poll(&mut app.session, &mut app.parts_db);
+        app
     }
 
     /// The Wiring workspace: the wiring or the mounting assistant.
@@ -401,6 +408,7 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         self.poll_loaded(&ctx);
         self.poll_remote(&ctx);
+        self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
         self.shortcuts(&ctx);
@@ -529,11 +537,17 @@ impl eframe::App for App {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        // Packed: large projects would not fit the browser's local storage as text.
-        storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+        // The project and the parts database go to the app's store (IndexedDB in the
+        // browser); until it works they are also kept here, the project packed.
+        if self.autosave.save(&self.session, &self.parts_db) {
+            storage.set_string("project_packed", String::new());
+            storage.set_string("parts_db", String::new());
+        } else {
+            storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+            eframe::set_value(storage, "parts_db", &self.parts_db);
+        }
         storage.set_string("project", String::new());
         eframe::set_value(storage, "file_name", &self.session.file_name);
-        eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
         eframe::set_value(storage, "macros", &self.macro_lib);
         eframe::set_value(storage, "project_database", &self.projects_ui.db);
