@@ -10,7 +10,7 @@ name = "openecraft"
 path = "application/main.rs"
 
 [workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-edz", "crates/openecraft-jt","crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
+members = [".", "crates/openecraft-i18n", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-edz", "crates/openecraft-jt", "crates/openecraft-xt", "crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
 exclude = ["vendor"]
 
 [dependencies]

@@ -79,7 +79,7 @@ impl AttachmentKind {
         match ext {
             "png" | "jpg" | "jpeg" | "gif" | "webp" | "bmp" => AttachmentKind::Image,
             "svg" | "dxf" | "dwg" => AttachmentKind::Drawing,
-            "step" | "stp" | "iges" | "igs" | "stl" | "obj" | "jt" | "ifc" => AttachmentKind::Model3d,
+            "step" | "stp" | "iges" | "igs" | "x_t" | "x_b" | "xmt_txt" | "xmt_bin" | "stl" | "obj" | "jt" | "ifc" => AttachmentKind::Model3d,
             "json" if lower.contains("macro") => AttachmentKind::Macro,
             "pdf" if lower.contains("manual") || lower.contains("handbuch") => AttachmentKind::Manual,
             "pdf" if lower.contains("cert") || lower.contains("zert") => AttachmentKind::Certificate,
@@ -104,6 +104,8 @@ pub fn content_type(name: &str) -> &'static str {
         "xml" => "application/xml",
         "zip" => "application/zip",
         "step" | "stp" => "model/step",
+        "x_t" => "model/vnd.parasolid.transmit.text",
+        "x_b" => "model/vnd.parasolid.transmit.binary",
         "stl" => "model/stl",
         "obj" => "model/obj",
         _ => "application/octet-stream",

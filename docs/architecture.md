@@ -8,7 +8,7 @@ is in [architecture-analysis.md](architecture-analysis.md).
 
 ```
 openecraft-i18n ──┐
-openecraft-parts ─┼─► openecraft-jt / openecraft-step / openecraft-edz
+openecraft-parts ─┼─► openecraft-jt / openecraft-xt / openecraft-step / openecraft-edz
                   └─► openecraft-core ─► openecraft-api ─► editor, cli
                            │                 ▲
 openecraft-client ─► openecraft-ui ──────────┘ (editor, parts-manager)

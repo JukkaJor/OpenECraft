@@ -5061,3 +5061,5 @@ A file of the same name in the folder gets a new version (checked out and in), o
 Autodesk Vault…	Autodesk Vault…	Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projekte und Dateien aus Autodesk Vault öffnen, das Projekt, Exporte und 3D-Modelle im Vault ablegen	Ouvrir des projets et fichiers depuis Autodesk Vault, placer le projet, les exports et les modèles 3D dans le Vault	Abrir proyectos y archivos de Autodesk Vault, colocar el proyecto, las exportaciones y los modelos 3D en el Vault
 Check in {} to Vault	{} in Vault einchecken	Archiver {} dans Vault	Proteger {} en Vault
+Panel layout in 3D (Parasolid XT)	Schaltschrankaufbau in 3D (Parasolid XT)	Implantation d'armoire en 3D (Parasolid XT)	Diseño de armario en 3D (Parasolid XT)
+3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-Modell (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Modèle 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Modelo 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)

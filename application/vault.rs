@@ -47,7 +47,7 @@ impl Use {
         match ext.as_str() {
             "oec" | "oecz" => Use::Project,
             "edz" | "xml" => Use::Parts,
-            "stl" | "obj" | "step" | "stp" | "igs" | "iges" | "ifc" | "jt" | "svg" => Use::Model,
+            "stl" | "obj" | "step" | "stp" | "igs" | "iges" | "x_t" | "x_b" | "xmt_txt" | "xmt_bin" | "ifc" | "jt" | "svg" => Use::Model,
             "dxf" | "dwg" => Use::Drawing,
             "pdf" | "docx" | "doc" | "xlsx" | "xls" | "pptx" | "odt" | "ods" | "png" | "jpg" | "jpeg" | "txt" => Use::Document,
             "csv" | "json" => Use::Integration,

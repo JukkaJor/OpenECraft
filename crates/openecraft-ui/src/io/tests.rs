@@ -8,6 +8,7 @@ fn short_names_and_mime_types() {
     assert_eq!(mime_type("csv"), "text/csv");
     assert_eq!(mime_type("json"), "application/json");
     assert_eq!(mime_type("igs"), "model/iges");
+    assert_eq!(mime_type("x_t"), "model/vnd.parasolid.transmit.text");
     assert_eq!(mime_type("jt"), "application/octet-stream");
 }
 

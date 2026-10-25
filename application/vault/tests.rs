@@ -18,6 +18,7 @@ fn uses_follow_the_file_name() {
     assert_eq!(Use::guess("Siemens.EDZ"), Use::Parts);
     assert_eq!(Use::guess("motor.STEP"), Use::Model);
     assert_eq!(Use::guess("housing.jt"), Use::Model);
+    assert_eq!(Use::guess("contactor.X_T"), Use::Model);
     assert_eq!(Use::guess("old.dwg"), Use::Drawing);
     assert_eq!(Use::guess("manual.pdf"), Use::Document);
     assert_eq!(Use::guess("bom.csv"), Use::Integration);

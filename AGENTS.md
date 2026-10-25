@@ -30,9 +30,10 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF / DWG export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, parts server API types, data portal rules (faceted search, lifecycle, update check) |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish); no dependencies |
-| `openecraft-step` | `crates/openecraft-step` | STEP and IGES import (B-rep → part mesh) with the `monstertruck` CAD kernel; kept out of `openecraft-parts` because of its size |
+| `openecraft-step` | `crates/openecraft-step` | STEP, IGES and Parasolid import (B-rep → part mesh) with the `monstertruck` CAD kernel (Parasolid parsed by `parasolid-core`); kept out of `openecraft-parts` because of its size |
 | `openecraft-edz` | `crates/openecraft-edz` | EDZ import (EPLAN Data Portal archives): unpacks the 7-Zip archive and reads its parts XML with `openecraft-parts`; kept out of `openecraft-parts` because of the 7-Zip dependency |
 | `openecraft-jt` | `crates/openecraft-jt` | JT writer (panel layout export) and reader (part models) for triangle meshes |
+| `openecraft-xt` | `crates/openecraft-xt` | Parasolid XT writer (panel layout export): meshes as faceted B-rep bodies; no dependencies |
 | `openecraft-api` | `crates/openecraft-api` | Extension API: `Plugin` trait, registry of commands, checks, reports and exporters, external (process) plugins, built-in plugins, shared command parameters |
 | `openecraft-auth` | `crates/openecraft-auth` | User accounts of the servers: password hashes (Argon2), session tokens |
 | `openecraft-client` | `crates/openecraft-client` | Requests to the parts and project servers and to Autodesk Vault (`vault`) and decoding of their answers (ehttp), shared by the UI client and the command line; `eplan` wraps the EPLAN Data Portal API as a read-only parts server |

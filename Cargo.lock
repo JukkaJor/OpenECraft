@@ -3332,6 +3332,7 @@ dependencies = [
  "openecraft-i18n",
  "openecraft-jt",
  "openecraft-parts",
+ "openecraft-xt",
  "serde",
  "serde_json",
 ]
@@ -3434,6 +3435,8 @@ dependencies = [
  "monstertruck-topology",
  "openecraft-core",
  "openecraft-parts",
+ "openecraft-xt",
+ "parasolid-core",
 ]
 
 [[package]]
@@ -3454,6 +3457,13 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "openecraft-xt"
+version = "0.1.0"
+dependencies = [
+ "parasolid-core",
 ]
 
 [[package]]
@@ -3485,6 +3495,12 @@ dependencies = [
  "libc",
  "windows-sys 0.61.2",
 ]
+
+[[package]]
+name = "parasolid-core"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ff3cbb9817406ac809cd989e47454deee4af89a30b57b436561b676f98af37e"
 
 [[package]]
 name = "parking"

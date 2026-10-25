@@ -2,7 +2,7 @@
 name = "openecraft-step"
 version = "0.1.0"
 edition = "2021"
-description = "STEP / IGES import of OpenECraft: B-rep models of STEP (ISO 10303-21) and IGES 5.3 files tessellated into part meshes"
+description = "STEP / IGES import of OpenECraft: B-rep models of STEP (ISO 10303-21), IGES 5.3 and Parasolid XT files tessellated into part meshes"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -13,7 +13,9 @@ cadmpeg-codec-iges = "0.4"
 cadmpeg-ir = "0.4"
 monstertruck-meshing = "0.4"
 monstertruck-topology = "0.4"
+monstertruck-modeling = "0.4"
+parasolid-core = "0.3.7"
 
 [dev-dependencies]
-monstertruck-modeling = "0.4"
 openecraft-core = { path = "../openecraft-core" }
+openecraft-xt = { path = "../openecraft-xt" }

@@ -126,6 +126,7 @@ fn attachment_kinds_and_media_types() {
     assert_eq!(AttachmentKind::guess("K1 datasheet.PDF"), AttachmentKind::Datasheet);
     assert_eq!(AttachmentKind::guess("manual_de.pdf"), AttachmentKind::Manual);
     assert_eq!(AttachmentKind::guess("model.stp"), AttachmentKind::Model3d);
+    assert_eq!(AttachmentKind::guess("contactor.x_t"), AttachmentKind::Model3d);
     assert_eq!(AttachmentKind::guess("motor-macros.json"), AttachmentKind::Macro);
     assert_eq!(AttachmentKind::guess("photo.jpeg"), AttachmentKind::Image);
     assert_eq!(content_type("a.PDF"), "application/pdf");

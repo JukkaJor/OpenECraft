@@ -205,6 +205,22 @@ fn jt_holds_every_solid() {
 }
 
 #[test]
+fn parasolid_has_a_body_per_closed_part() {
+    let prj = demo_project();
+    let text = parasolid(&prj);
+    assert!(text.starts_with("**ABCDEFGHIJKLMNOPQRSTUVWXYZ") && text.contains("SCH=SCH_1300000_13006;"));
+    assert!(text.lines().all(|l| l.len() <= 80));
+    // The stream (newlines are not significant) starts with the root list of bodies.
+    let stream: String = text.lines().skip_while(|l| !l.starts_with("T51")).collect();
+    let tokens: Vec<&str> = stream.split_once("SCH_1300000_13006").unwrap().1.split(' ').collect();
+    assert_eq!((tokens[0], tokens[1]), ("0", "74"));
+    let bodies: usize = tokens[2].parse().unwrap();
+    // Every box of a wall, plate, rail or device is a solid of its own.
+    let solids = scene(&prj).iter().flat_map(|e| &e.solids).count();
+    assert!(bodies >= solids, "{bodies} bodies for {solids} solids");
+}
+
+#[test]
 fn empty_layouts_export_empty_files() {
     let prj = Project::default();
     let v: serde_json::Value = serde_json::from_str(&gltf(&prj)).unwrap();
@@ -213,6 +229,7 @@ fn empty_layouts_export_empty_files() {
     assert!(!ifc(&prj, "x.ifc").contains("IFCRELCONTAINEDINSPATIALSTRUCTURE"));
     assert_eq!(iges_sections(&iges(&prj, "x.igs")).0.len(), 0);
     assert!(openecraft_jt::parse_jt(&jt(&prj)).is_err());
+    assert!(parasolid(&prj).trim_end().ends_with("1 0"));
 }
 
 #[test]
