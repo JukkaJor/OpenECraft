@@ -95,7 +95,7 @@ impl App {
         let user = self.user_symbols();
         let mut libs: Vec<&str> = user.iter().map(|d| d.library).collect();
         libs.dedup();
-        egui::ScrollArea::vertical().id_salt("lib").max_height(ui.available_height() * 0.45).auto_shrink([false, true]).show(ui, |ui| {
+        egui::ScrollArea::vertical().id_salt("lib").auto_shrink([false, false]).show(ui, |ui| {
             let groups = libs
                 .iter()
                 .map(|lib| (format!("{}: {lib}", Category::User.title()), user.iter().map(|d| &**d).filter(|d| d.library == *lib).collect::<Vec<_>>()))

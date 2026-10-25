@@ -65,6 +65,12 @@ impl App {
     pub(super) fn docked(&mut self, ui: &mut egui::Ui, idx: &Index) {
         let mut tree = std::mem::replace(&mut self.dock, egui_tiles::Tree::empty(egui::Id::unique("dock")));
         tree.ui(&mut Docked { app: self, idx }, ui);
+        // egui_tiles shows the grab hand over tabs, which Windows draws as the move cross.
+        ui.ctx().output_mut(|o| {
+            if o.cursor_icon == egui::CursorIcon::Grab {
+                o.cursor_icon = egui::CursorIcon::Default;
+            }
+        });
         if dock::find(&tree, Pane::Page).is_none() {
             tree = dock::default_tree();
         }
