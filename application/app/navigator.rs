@@ -262,10 +262,11 @@ impl App {
         let prj = &self.session.prj;
         let channels = openecraft_core::unplaced::plc_channels(prj);
         let functions = openecraft_core::unplaced::device_functions(prj, Some(&self.parts_db));
+        let potentials = openecraft_core::unplaced::potentials(prj);
         let mut start = None;
         ui.weak(tr("Drag an entry into the page, or click it and then click into the page."));
         egui::ScrollArea::vertical().id_salt("unplaced").auto_shrink([false, false]).show(ui, |ui| {
-            for (title, list) in [(tr("PLC channels"), &channels), (tr("Functions of the parts"), &functions)] {
+            for (title, list) in [(tr("PLC channels"), &channels), (tr("Functions of the parts"), &functions), (tr("Defined potentials"), &potentials)] {
                 egui::CollapsingHeader::new(RichText::new(tr_fmt!("{} ({})", title, list.len())).strong()).id_salt(title).default_open(true).show(ui, |ui| {
                     let mut tags: Vec<&String> = list.iter().map(|u| &u.tag).collect();
                     tags.dedup();

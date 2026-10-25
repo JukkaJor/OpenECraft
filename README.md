@@ -418,7 +418,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
   The *Unplaced* tab lists what the project data has but the schematic does not: the
   channels of PLC cards with a device description that have no input / output symbol
   (with their address), and the functions of the assigned parts that no symbol uses
-  (coils, contacts with their designations); drag one into the page (or click it, then
+  (coils, contacts with their designations), and the potentials defined in the project
+  that no potential connection point carries yet; drag one into the page (or click it, then
   into the page) to place it with tag, address and designations. Command:
   `list_unplaced`.
 - **Output / data exchange**: **PDF** of all pages or a page selection (`1-3, 5`;

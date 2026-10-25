@@ -65,6 +65,7 @@ fn list_unplaced(prj: &mut Project, _: &Args) -> Result<Value, String> {
     let item = |kind: &str, u: openecraft_core::unplaced::Unplaced| json!({ "kind": kind, "tag": u.tag, "symbol": u.symbol, "label": u.label, "pins": u.pins, "title": u.title });
     let mut v: Vec<Value> = openecraft_core::unplaced::plc_channels(prj).into_iter().map(|u| item("plc_channel", u)).collect();
     v.extend(openecraft_core::unplaced::device_functions(prj, None).into_iter().map(|u| item("function", u)));
+    v.extend(openecraft_core::unplaced::potentials(prj).into_iter().map(|u| item("potential", u)));
     Ok(Value::Array(v))
 }
 

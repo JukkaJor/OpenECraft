@@ -63,5 +63,30 @@ pub fn device_functions(prj: &Project, db: Option<&PartsDb>) -> Vec<Unplaced> {
     out
 }
 
+/// Potentials defined in the project that no potential connection point carries yet,
+/// with the potential symbol of their name (the custom one otherwise).
+pub fn potentials(prj: &Project) -> Vec<Unplaced> {
+    let used: HashSet<&str> = prj
+        .pages
+        .iter()
+        .flat_map(|p| p.symbols.iter())
+        .filter(|s| prj.symbol(&s.sym).is_some_and(|d| d.func == crate::symbols::Func::Potential))
+        .map(|s| s.label.as_str())
+        .collect();
+    prj.potentials
+        .iter()
+        .filter(|p| !p.name.trim().is_empty() && !used.contains(p.name.as_str()))
+        .map(|p| {
+            let symbol = crate::symbols::library()
+                .iter()
+                .find(|d| d.func == crate::symbols::Func::Potential && d.key.starts_with("pot") && d.default_label == p.name)
+                .map(|d| d.key)
+                .unwrap_or("pot");
+            let title = if p.description.is_empty() { p.name.clone() } else { format!("{}  {}", p.name, p.description) };
+            Unplaced { tag: String::new(), symbol, label: p.name.clone(), pins: Vec::new(), title }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests;

@@ -25,3 +25,20 @@ fn part_functions_not_used_yet() {
     assert_eq!(symbol_for(FnKind::No), Some("no"));
     assert_eq!(symbol_for(FnKind::Coil), Some("coil"));
 }
+
+#[test]
+fn defined_potentials_without_a_connection_point_are_unplaced() {
+    let mut prj = crate::sample::demo_project();
+    for pg in &mut prj.pages {
+        pg.symbols.retain(|s| s.label != "L2");
+    }
+    prj.potentials.retain(|p| p.name != "L2");
+    let before = potentials(&prj).len();
+    prj.potentials.push(crate::model::potentials::PotentialDef { name: "L2".into(), description: "Phase 2".into(), ..Default::default() });
+    prj.potentials.push(crate::model::potentials::PotentialDef { name: "+48V".into(), ..Default::default() });
+    let list = potentials(&prj);
+    assert_eq!(list.len(), before + 2);
+    let l2 = list.iter().find(|u| u.label == "L2").unwrap();
+    assert_eq!((l2.symbol, l2.title.as_str()), ("pot_l2", "L2  Phase 2"));
+    assert_eq!(list.iter().find(|u| u.label == "+48V").unwrap().symbol, "pot");
+}
