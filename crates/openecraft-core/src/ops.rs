@@ -1,7 +1,7 @@
 //! Editing operations on a page: placement defaults, move, rotate, delete, copy/paste.
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
-use crate::geom::{p, P, R, GRID};
+use crate::geom::{P, R, GRID};
 use crate::model::*;
 use crate::symlib::Symbols;
 use crate::symbols::{ContactKind, Func, PinKind, SymbolDef};
@@ -146,6 +146,24 @@ pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
     at
 }
 
+/// Inserts a schematic sub-page of page `of` (`3` → `3.1`, then `3.2`, …) after the
+/// page and its sub-pages, in the page's structure; returns its index.
+pub fn add_subpage(prj: &mut Project, of: usize) -> usize {
+    let main = prj.pages[of].name.split_once('.').map_or(prj.pages[of].name.as_str(), |(m, _)| m).to_string();
+    let is_sub = |name: &str| name.split_once('.').is_some_and(|(m, _)| m == main);
+    let next = prj.pages.iter().filter(|p| is_sub(&p.name)).filter_map(|p| p.name.split_once('.').and_then(|(_, n)| n.parse::<u32>().ok())).max().unwrap_or(0) + 1;
+    let mut at = of + 1;
+    while at < prj.pages.len() && is_sub(&prj.pages[at].name) {
+        at += 1;
+    }
+    let at = add_page(prj, PageKind::Schematic, at);
+    let structure = crate::structure::Dt::of_page(&prj.pages[of]);
+    let pg = &mut prj.pages[at];
+    pg.name = format!("{main}.{next}");
+    structure.apply_to(pg);
+    at
+}
+
 /// Creates a symbol instance for a page with sensible defaults (tag in the page's
 /// structure, numbering, ...).
 pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDef, pos: P, rot: u8, mirror: bool) -> SymbolInst {
@@ -188,11 +206,10 @@ pub fn new_symbol(prj: &mut Project, page: usize, ctx: &PlaceCtx, def: &SymbolDe
     s
 }
 
+/// Area of a text as written (placeholders not filled in; `render::text_bounds`
+/// knows the project).
 pub fn text_bounds(t: &TextItem) -> R {
-    let lines: Vec<&str> = t.text.lines().collect();
-    let w = lines.iter().map(|l| l.chars().count()).max().unwrap_or(1).max(1) as f32 * t.size * 0.62;
-    let h = lines.len().max(1) as f32 * t.size * 1.4;
-    R::from_points(p(t.pos.x, t.pos.y - t.size * 0.7), p(t.pos.x + w, t.pos.y - t.size * 0.7 + h))
+    crate::text::bounds(t, &t.text)
 }
 
 /// Bounding box of any item on a page.
@@ -343,6 +360,9 @@ pub fn rotate(symbols: &Symbols, page: &mut Page, sel: &BTreeSet<u64>) {
     for w in page.wires.iter_mut().filter(|w| sel.contains(&w.id)) {
         w.a = rot(w.a);
         w.b = rot(w.b);
+    }
+    for t in page.texts.iter_mut().filter(|t| sel.contains(&t.id)) {
+        t.angle = (t.angle - 90.0).rem_euclid(360.0);
     }
     map_items(page, sel, rot);
     // Attached wire ends follow their connection point.

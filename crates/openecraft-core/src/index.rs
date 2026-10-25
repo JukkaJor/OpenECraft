@@ -1,7 +1,7 @@
 //! Device / cross-reference index of a project.
 
 use crate::geom::P;
-use crate::model::{natural_cmp, PageKind, Project};
+use crate::model::{natural_cmp, InterruptionMode, PageKind, Project, XrefStructure};
 use crate::structure;
 use crate::symbols::Func;
 use std::collections::{BTreeMap, HashMap};
@@ -24,11 +24,22 @@ impl Loc {
     /// pages have the same.
     pub fn reference_from(&self, prj: &Project, from: usize) -> String {
         let (page, here) = (&prj.pages[self.page], &prj.pages[from]);
-        if structure::page_structure(page) == structure::page_structure(here) {
-            crate::frame::reference(prj, self.page, self.pos)
-        } else {
+        let full = match prj.xref.structure {
+            XrefStructure::Always => true,
+            XrefStructure::Never => false,
+            XrefStructure::Different => structure::page_structure(page) != structure::page_structure(here),
+        };
+        if full {
             self.reference(prj)
+        } else {
+            crate::frame::reference(prj, self.page, self.pos)
         }
+    }
+
+    /// Schematic order: page, column, top to bottom, left to right.
+    fn order(&self, prj: &Project) -> (usize, usize, i64, i64) {
+        let col = crate::frame::of_page(prj, self.page).column_index(self.pos);
+        (self.page, col, (self.pos.y * 10.0) as i64, (self.pos.x * 10.0) as i64)
     }
 }
 
@@ -83,6 +94,24 @@ impl Index {
         idx
     }
 
+    /// The counterparts an interruption point refers to (see [`InterruptionMode`]), in
+    /// schematic order.
+    pub fn interruption_targets(&self, prj: &Project, name: &str, me: u64) -> Vec<Loc> {
+        let Some(locs) = self.interruptions.get(name) else { return Vec::new() };
+        let mut all: Vec<Loc> = locs.clone();
+        all.sort_by_key(|l| l.order(prj));
+        let Some(at) = all.iter().position(|l| l.sym_id == me) else { return Vec::new() };
+        match prj.xref.interruptions {
+            InterruptionMode::All => all.into_iter().filter(|l| l.sym_id != me).collect(),
+            InterruptionMode::Star if at == 0 => all.into_iter().skip(1).collect(),
+            InterruptionMode::Star => vec![all[0]],
+            InterruptionMode::Pairs => {
+                let partner = if at % 2 == 0 { at + 1 } else { at - 1 };
+                all.get(partner).copied().into_iter().collect()
+            }
+        }
+    }
+
     /// Device tags in natural order.
     pub fn sorted_tags(&self) -> Vec<&String> {
         let mut v: Vec<&String> = self.devices.keys().collect();
@@ -90,3 +119,6 @@ impl Index {
         v
     }
 }
+
+#[cfg(test)]
+mod tests;

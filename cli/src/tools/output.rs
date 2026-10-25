@@ -20,6 +20,13 @@ pub static TOOLS: &[Tool] = &[
         run: check,
     },
     Tool {
+        name: "list_checks",
+        help: tr_const!("Lists the checks of the project check (built-in and of plugins) and whether they run"),
+        params: &[],
+        needs_project: true,
+        run: list_checks,
+    },
+    Tool {
         name: "list_reports",
         help: tr_const!("Lists the reports (built-in and of plugins): name for report and title"),
         params: &[],
@@ -31,8 +38,9 @@ pub static TOOLS: &[Tool] = &[
         help: tr_const!("Generates a report as table"),
         params: &[
             param("kind", Kind::Str, tr_const!("Report name as shown by list_reports")),
-            optional("format", Kind::Str, tr_const!("json (default) or csv")),
+            optional("format", Kind::Str, tr_const!("json (default), csv or xlsx (Excel, needs path)")),
             optional("scheme", Kind::Str, tr_const!("Report scheme: its filter, sort order and columns")),
+            optional("path", Kind::Str, tr_const!("File to write (xlsx)")),
         ],
         needs_project: true,
         run: report,
@@ -52,6 +60,7 @@ pub static TOOLS: &[Tool] = &[
             optional("language", Kind::Str, tr_const!("Language of the project texts and reports (a project language, default the source language)")),
             optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
             optional("page", Kind::Str, tr_const!("Page (svg: required, dxf, dwg: default all pages)")),
+            optional("options", Kind::Str, tr_const!("Further parameters of the export as name=value, separated by commas (see list_exports), e.g. harness=-WH1")),
         ],
         needs_project: true,
         run: export,
@@ -62,7 +71,7 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
     let prj = s.project()?;
     let mut an = Analysis::build(prj);
     an.issues = s.plugins.check(prj, &an);
-    an.issues.sort_by_key(|i| i.severity);
+    an.issues.sort_by_key(|i| (i.accepted, i.severity));
     let issues: Vec<Value> = an
         .issues
         .iter()
@@ -70,6 +79,10 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
             json!({
                 "severity": i.severity.key(),
                 "message": i.message(),
+                "check": i.check,
+                "code": i.code(),
+                "fingerprint": i.fingerprint(),
+                "accepted": i.accepted,
                 "key": i.key(),
                 "args": i.args(),
                 "page": i.target.map(|(pg, _)| prj.pages[pg].name.clone()),
@@ -77,8 +90,19 @@ fn check(s: &mut Session, _: &Args) -> Result<Value, String> {
             })
         })
         .collect();
-    let count = |sev| an.issues.iter().filter(|i| i.severity == sev).count();
-    Ok(json!({ "errors": count(Severity::Error), "warnings": count(Severity::Warning), "issues": issues }))
+    let count = |sev| an.issues.iter().filter(|i| i.severity == sev && !i.accepted).count();
+    let accepted = an.issues.iter().filter(|i| i.accepted).count();
+    Ok(json!({ "errors": count(Severity::Error), "warnings": count(Severity::Warning), "accepted": accepted, "issues": issues }))
+}
+
+fn list_checks(s: &mut Session, _: &Args) -> Result<Value, String> {
+    let prj = s.project()?;
+    let list: Vec<Value> = s
+        .plugins
+        .checks()
+        .map(|c| json!({ "name": c.name, "title": text(&c.title), "enabled": openecraft_core::checks::is_enabled(prj, &c.name) }))
+        .collect();
+    Ok(Value::Array(list))
 }
 
 fn list_reports(s: &mut Session, _: &Args) -> Result<Value, String> {
@@ -106,6 +130,12 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
     match a.str("format").unwrap_or("json") {
         "csv" => Ok(Value::String(table.to_csv())),
         "json" => Ok(json!({ "report": id.as_str(), "title": title, "headers": table.header_texts(), "rows": table.rows })),
+        "xlsx" => {
+            let path = a.str("path").ok_or_else(|| tr("The format xlsx needs a path").to_string())?;
+            let bytes = openecraft_core::xlsx::write(&[(title, table.sheet_rows())]);
+            std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            Ok(json!({ "path": path, "rows": table.rows.len() }))
+        }
         other => Err(tr_fmt!("Unknown format: {}", other)),
     }
 }
@@ -139,6 +169,12 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     if let Some(path) = a.str("path").filter(|_| takes("file")) {
         args.insert("file".into(), path.rsplit(['/', '\\']).next().unwrap_or(path).into());
+    }
+    for opt in a.str("options").unwrap_or_default().split(',').filter(|o| !o.trim().is_empty()) {
+        let (k, v) = opt.split_once('=').ok_or_else(|| tr_fmt!("Option {} needs the form name=value", opt.trim()))?;
+        let p = e.params.iter().find(|p| p.name == k.trim()).ok_or_else(|| tr_fmt!("Unknown parameter: {}", k.trim()))?;
+        let value = p.kind.parse(v.trim()).ok_or_else(|| tr_fmt!("Parameter {} has the wrong type", k.trim()))?;
+        args.insert(k.trim().to_string(), value);
     }
     params::check(&e.params, &args)?;
     let out = translation::with_language(prj, &lang, |prj| {

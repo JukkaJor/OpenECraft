@@ -353,6 +353,12 @@ impl App {
                 ui.label("");
                 ui.checkbox(&mut form.blank_repeats, tr("Leave repeated values of the first column blank"));
                 ui.end_row();
+                if openecraft_core::report_blocks::has_graphic(kind) {
+                    ui.label("");
+                    ui.checkbox(&mut form.graphic, tr("Graphical form"))
+                        .on_hover_text(tr("Draws the strip with its terminals and jumpers, or the cables with their cores, instead of a table; the columns of the form are not used"));
+                    ui.end_row();
+                }
             });
             ui.add_space(4.0);
             ui.columns(2, |cols| {

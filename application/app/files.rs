@@ -62,7 +62,67 @@ impl App {
 
     /// Runs an exporter on the project (with its texts in `lang` if given) and saves
     /// the file. Exporters that take a page get the current one.
+    /// Runs an export; exports with parameters beyond the page and the file name ask
+    /// for them first.
     pub(super) fn run_exporter(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>) {
+        if e.params.iter().any(|p| p.name != "page" && p.name != "file") {
+            let page = self.session.prj.pages[self.session.page].name.clone();
+            let harness = self.harness_ui.sel.clone().or_else(|| self.session.prj.harnesses.first().map(|h| h.tag.clone())).unwrap_or_default();
+            let texts = e
+                .params
+                .iter()
+                .map(|p| match p.name.as_ref() {
+                    "page" => page.clone(),
+                    "harness" => harness.clone(),
+                    _ => String::new(),
+                })
+                .collect();
+            self.export_form = Some((e.clone(), lang.map(String::from), texts));
+            return;
+        }
+        self.run_exporter_with(ctx, e, lang, Map::new());
+    }
+
+    /// The window with the parameters of an export.
+    pub(super) fn export_form_window(&mut self, ctx: &egui::Context) {
+        let Some((e, lang, mut texts)) = self.export_form.take() else { return };
+        let mut open = true;
+        let mut run = false;
+        egui::Window::new(text(&e.title).to_string()).open(&mut open).resizable(false).show(ctx, |ui| {
+            egui::Grid::new("export_params").num_columns(2).show(ui, |ui| {
+                for (p, t) in e.params.iter().zip(texts.iter_mut()).filter(|(p, _)| p.name != "file") {
+                    let name = if p.required { format!("{} *", p.name) } else { p.name.to_string() };
+                    ui.label(name).on_hover_text(text(&p.help));
+                    if p.kind == openecraft_api::params::Kind::Bool {
+                        let mut on = t.trim() == "true";
+                        if ui.checkbox(&mut on, "").changed() {
+                            *t = on.to_string();
+                        }
+                    } else {
+                        ui.add(egui::TextEdit::singleline(t).hint_text(text(&p.help)).desired_width(320.0));
+                    }
+                    ui.end_row();
+                }
+            });
+            run = ui.button(tr("⬇ Export…")).clicked();
+        });
+        if run {
+            let params: Vec<openecraft_api::params::Param> = e.params.iter().filter(|p| p.name != "file").cloned().collect();
+            let shown: Vec<String> = e.params.iter().zip(&texts).filter(|(p, _)| p.name != "file").map(|(_, t)| t.clone()).collect();
+            match super::plugins_ui::form_args(&params, &shown) {
+                Ok(args) => {
+                    self.run_exporter_with(ctx, &e, lang.as_deref(), args);
+                    return;
+                }
+                Err(err) => self.notify(ctx, err),
+            }
+        }
+        if open {
+            self.export_form = Some((e, lang, texts));
+        }
+    }
+
+    fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
         let takes = |n: &str| e.params.iter().any(|p| p.name == n);
         let page = self.session.prj.pages[self.session.page].name.clone();
         let base = self.suggested_name("x");
@@ -78,8 +138,8 @@ impl App {
             stem = format!("{stem}_{l}");
         }
         let name = format!("{stem}.{}", e.extension);
-        let mut args = Map::new();
-        if takes("page") {
+        let mut args = extra;
+        if takes("page") && !args.contains_key("page") {
             args.insert("page".into(), page.into());
         }
         if takes("file") {
@@ -119,6 +179,13 @@ impl App {
         let Some(loaded) = self.io.poll() else { return };
         match loaded.purpose {
             Purpose::Project => self.open_loaded_project(ctx, &loaded),
+            Purpose::ProjectTemplate => match openecraft_core::archive::read_project(&loaded.bytes) {
+                Ok((t, _)) => {
+                    let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
+                    self.replace_project(prj, None);
+                }
+                Err(e) => self.notify(ctx, tr_fmt!("Not a project template: {}", e)),
+            },
             Purpose::Parts => self.import_parts(ctx, &loaded.text()),
             Purpose::Model(_) => {
                 let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.session.prj) {
@@ -148,7 +215,13 @@ impl App {
                 Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
             },
             Purpose::Drawing => self.import_drawing(ctx, &loaded),
-            Purpose::Table(kind) => self.import_table(ctx, kind, &loaded.text()),
+            Purpose::Table(kind) => {
+                let text = if openecraft_core::archive::is_archive(&loaded.bytes) { openecraft_core::xlsx::first_sheet_csv(&loaded.bytes) } else { Ok(loaded.text()) };
+                match text {
+                    Ok(text) => self.import_table(ctx, kind, &text),
+                    Err(e) => self.notify(ctx, tr_fmt!("Table import failed: {}", e)),
+                }
+            }
             Purpose::Dictionary => match translation::from_csv(&mut self.session.prj, &loaded.text()) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
                 Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
@@ -177,6 +250,35 @@ impl App {
             },
             Purpose::ChangeRequests => match openecraft_core::review::import_requests(&mut self.session.prj, &loaded.text()) {
                 Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::PdfComments => {
+                let (user, date) = (self.user_name(), self.today());
+                match openecraft_core::pdf_comments::import(&mut self.session.prj, &loaded.bytes, &user, &date) {
+                    Ok(r) => {
+                        self.editor.review_layer = true;
+                        let mut msg = tr_fmt!("{} comments, {} replies and {} markups imported", r.comments, r.replies, r.markups);
+                        if r.skipped > 0 {
+                            msg = format!("{msg}\n{}", tr_fmt!("{} comments were imported before", r.skipped));
+                        }
+                        if r.outside > 0 {
+                            msg = format!("{msg}\n{}", tr_fmt!("{} comments are on pages the project does not have", r.outside));
+                        }
+                        self.notify(ctx, msg);
+                    }
+                    Err(e) => self.notify(ctx, e),
+                }
+            }
+            Purpose::Preplanning => self.import_preplanning(ctx, &loaded.bytes),
+            Purpose::SettingsScheme => match openecraft_core::settings_scheme::apply(&mut self.session.prj, &loaded.text()) {
+                Ok(parts) => {
+                    let names: Vec<&str> = parts.iter().map(|p| tr(p)).collect();
+                    self.notify(ctx, tr_fmt!("Settings taken over: {}", names.join(", ")));
+                }
+                Err(e) => self.notify(ctx, e),
+            },
+            Purpose::CheckScheme => match openecraft_core::checks::apply_scheme(&mut self.session.prj, &loaded.text()) {
+                Ok(()) => self.notify(ctx, tr("Check scheme taken over")),
                 Err(e) => self.notify(ctx, e),
             },
             Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),

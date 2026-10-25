@@ -22,6 +22,12 @@ impl Plugin for Configurator {
 
 pub static COMMANDS: &[Spec] = &[
     Spec {
+        name: "list_macro_boxes",
+        help: tr_const!("Lists the window macros placed on the pages (macro boxes) with macro, variant, placeholder values and number of items"),
+        params: &[],
+        run: list_macro_boxes,
+    },
+    Spec {
         name: "get_configuration",
         help: tr_const!("Shows the options and rules of the configurator"),
         params: &[],
@@ -123,4 +129,15 @@ fn delete_rule(prj: &mut Project, a: &Args) -> Result<Value, String> {
     }
     cfg.rules.remove(n as usize - 1);
     configuration(prj)
+}
+
+fn list_macro_boxes(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    let boxes: Vec<Value> = openecraft_core::macro_boxes::all(prj)
+        .into_iter()
+        .map(|(pi, b)| {
+            let items = openecraft_core::macro_boxes::live_items(&prj.pages[pi], b).len();
+            json!({ "page": prj.pages[pi].name, "macro": b.name, "variant": b.variant, "values": b.values, "items": items })
+        })
+        .collect();
+    Ok(Value::Array(boxes))
 }

@@ -264,9 +264,13 @@ pub fn set(prj: &mut Project, frame: PlotFrame) {
     }
 }
 
-/// Cross reference of a page position: `/3.4` (page name and column).
+/// Cross reference of a page position: `/3.4` (page name and column), formatted after
+/// the project's cross reference settings (prefix, separator, row).
 pub fn reference(prj: &Project, page_i: usize, pos: P) -> String {
-    format!("/{}.{}", prj.pages[page_i].name, of_page(prj, page_i).column_of(pos))
+    let x = &prj.xref;
+    let frame = of_page(prj, page_i);
+    let row = if x.row { format!("{}{}", x.separator, frame.row_of(pos)) } else { String::new() };
+    format!("{}{}{}{}{row}", x.prefix, prj.pages[page_i].name, x.separator, frame.column_of(pos))
 }
 
 #[cfg(test)]

@@ -123,7 +123,7 @@ pub struct ClimateResult {
 
 /// Power loss of a part from its tech data (`Power loss: 7.5 W`).
 pub fn power_loss(part: &crate::parts::Part) -> Option<f32> {
-    let v = part.tech_value("Power loss")?;
+    let v = part.data_value("Power loss")?;
     let num: String = v.chars().take_while(|c| c.is_ascii_digit() || *c == '.' || *c == ',').collect();
     num.replace(',', ".").parse().ok()
 }

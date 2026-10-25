@@ -5,8 +5,10 @@ use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
 use openecraft_core::analysis::Analysis;
-use openecraft_core::model::Project;
+use openecraft_core::model::potentials::PotentialKind;
+use openecraft_core::model::{NumberScheme, Project};
 use openecraft_core::wiring::{self, Mark, Order, Status};
+use openecraft_core::marking;
 use openecraft_core::wirenum;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -31,6 +33,20 @@ pub static COMMANDS: &[Spec] = &[
         run: renumber_wires,
     },
     Spec {
+        name: "set_wire_numbering",
+        help: tr_const!("Sets the numbering scheme of the wires (only the given settings) and shows it"),
+        params: &[
+            optional("scheme", Kind::Str, tr_const!("sequential, page_column, potential or format")),
+            optional("format", Kind::Str, tr_const!("Format of the scheme format: {n} (counter), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}")),
+            optional("prefix", Kind::Str, tr_const!("Put in front of the numbers, e.g. W")),
+            optional("start", Kind::Int, tr_const!("First counter value (default 1)")),
+            optional("step", Kind::Int, tr_const!("Counting step (default 1)")),
+            optional("digits", Kind::Int, tr_const!("Minimum digits of the counter (leading zeros)")),
+            optional("skip_kinds", Kind::Str, tr_const!("Potential kinds whose connections get no number, separated by commas (l, n, pe, dc_plus, dc_minus, signal)")),
+        ],
+        run: set_wire_numbering,
+    },
+    Spec {
         name: "wiring_list",
         help: tr_const!("Lists the routed wires of the panel layout as a wiring checklist with end treatment, state and progress"),
         params: &[
@@ -52,6 +68,49 @@ pub static COMMANDS: &[Spec] = &[
         run: mark_wire,
     },
     Spec {
+        name: "harness_nailboard",
+        help: tr_const!("Nailboard layout of a harness: the branches from the common node to the connectors with length, direction, bundle diameter and pins, and the drawing scale"),
+        params: &[param("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1"))],
+        run: harness_nailboard,
+    },
+    Spec {
+        name: "marking_schemes",
+        help: tr_const!("Lists the labeling schemes for marking programs (built-in and of the project) and the selected one"),
+        params: &[],
+        run: marking_schemes,
+    },
+    Spec {
+        name: "set_marking_scheme",
+        help: tr_const!("Adds or changes a labeling scheme of the project, removes it, or selects the scheme used for the marking export"),
+        params: &[
+            param("name", Kind::Str, tr_const!("Name of the scheme")),
+            optional("columns", Kind::Str, tr_const!("Columns, comma separated: Material, Category, Text, Count, Enclosure, Group, No")),
+            optional("separator", Kind::Str, tr_const!("Separator: semicolon, comma or tab")),
+            optional("header", Kind::Bool, tr_const!("First row with the column names")),
+            optional("one_row_per_label", Kind::Bool, tr_const!("One row per printed label instead of a count")),
+            optional("categories", Kind::Str, tr_const!("Markers, comma separated: device, terminal, wire, cable (empty: all)")),
+            optional("select", Kind::Bool, tr_const!("Use this scheme for the marking export")),
+            optional("remove", Kind::Bool, tr_const!("Remove the scheme from the project")),
+        ],
+        run: set_marking_scheme,
+    },
+    Spec {
+        name: "mounting_list",
+        help: tr_const!("Lists the items of the panel layout in mounting order with place, size, part and mounting state"),
+        params: &[optional("enclosure", Kind::Str, tr_const!("Enclosure name (all if missing)"))],
+        run: mounting_list,
+    },
+    Spec {
+        name: "mark_mounted",
+        help: tr_const!("Marks a panel item as mounted or as a problem, or as open again"),
+        params: &[
+            param("item", Kind::Int, tr_const!("Id of the panel item (from mounting_list)")),
+            param("state", Kind::Str, tr_const!("mounted, problem or open")),
+            optional("note", Kind::Str, tr_const!("Note, e.g. what the problem is")),
+        ],
+        run: mark_mounted,
+    },
+    Spec {
         name: "remove_old_wiring_marks",
         help: tr_const!("Removes the wiring marks of wires that no longer exist"),
         params: &[],
@@ -63,6 +122,188 @@ fn renumber_wires(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let an = Analysis::build(prj);
     let n = wirenum::renumber(prj, &an.open, &an.netlist, a.flag("overwrite_fixed"));
     Ok(json!({ "renumbered": n }))
+}
+
+fn scheme_code(s: NumberScheme) -> &'static str {
+    match s {
+        NumberScheme::Sequential => "sequential",
+        NumberScheme::PageColumn => "page_column",
+        NumberScheme::Potential => "potential",
+        NumberScheme::Format => "format",
+    }
+}
+
+fn kind_code(k: PotentialKind) -> &'static str {
+    match k {
+        PotentialKind::L => "l",
+        PotentialKind::N => "n",
+        PotentialKind::Pe => "pe",
+        PotentialKind::DcPlus => "dc_plus",
+        PotentialKind::DcMinus => "dc_minus",
+        PotentialKind::Signal => "signal",
+        PotentialKind::Other => "other",
+    }
+}
+
+fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let s = &mut prj.wire_numbering;
+    if let Some(v) = a.str("scheme") {
+        let v = v.trim().to_ascii_lowercase();
+        s.scheme = NumberScheme::ALL.into_iter().find(|x| scheme_code(*x) == v).ok_or_else(|| tr_fmt!("Unknown numbering scheme: {}", v))?;
+    }
+    if let Some(v) = a.str("format") {
+        s.format = v.trim().to_string();
+    }
+    if let Some(v) = a.str("prefix") {
+        s.prefix = v.trim().to_string();
+    }
+    if let Some(v) = a.int("start") {
+        s.start = v.max(0) as u32;
+    }
+    if let Some(v) = a.int("step") {
+        s.step = v.max(1) as u32;
+    }
+    if let Some(v) = a.int("digits") {
+        s.digits = v.clamp(0, 9) as u8;
+    }
+    if let Some(v) = a.str("skip_kinds") {
+        let mut kinds = Vec::new();
+        for code in v.split(',').map(|c| c.trim().to_ascii_lowercase()).filter(|c| !c.is_empty()) {
+            kinds.push(PotentialKind::ALL.into_iter().find(|k| kind_code(*k) == code).ok_or_else(|| tr_fmt!("Unknown potential kind: {}", code))?);
+        }
+        s.skip_kinds = kinds;
+    }
+    Ok(json!({
+        "scheme": scheme_code(s.scheme), "format": s.format, "prefix": s.prefix, "start": s.start, "step": s.step, "digits": s.digits,
+        "skip_kinds": s.skip_kinds.iter().map(|k| kind_code(*k)).collect::<Vec<_>>()
+    }))
+}
+
+fn harness_nailboard(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let tag = a.req("harness");
+    let an = Analysis::checked(prj);
+    let nb = openecraft_core::nailboard::layout(prj, &an, tag).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))?;
+    let branches: Vec<Value> = nb
+        .branches
+        .iter()
+        .map(|b| {
+            let pins: Vec<Value> = b.pins.iter().map(|p| json!({ "pin": p[0], "wire": p[1], "color": p[2], "cross_section": p[3], "to": p[4] })).collect();
+            json!({ "connector": b.device, "length": b.length.round(), "assumed": b.assumed, "angle": b.angle.round(), "diameter": (b.diameter * 10.0).round() / 10.0, "pins": pins })
+        })
+        .collect();
+    Ok(json!({ "harness": nb.tag, "wires": nb.wires, "diameter": (nb.diameter * 10.0).round() / 10.0, "scale": format!("1:{}", openecraft_core::nailboard::scale(&nb)), "branches": branches }))
+}
+
+fn scheme_json(s: &marking::Scheme) -> Value {
+    let separator = match s.separator.as_str() {
+        "\t" => "tab",
+        "," => "comma",
+        _ => "semicolon",
+    };
+    json!({
+        "name": s.name, "builtin": marking::is_builtin(&s.name), "columns": s.columns.iter().map(|c| c.code()).collect::<Vec<_>>(), "separator": separator,
+        "header": s.header, "one_row_per_label": s.one_row_per_label, "categories": s.categories.iter().map(|c| c.code()).collect::<Vec<_>>()
+    })
+}
+
+fn marking_schemes(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    let selected = marking::scheme(&prj.marking, None).map(|s| s.name).unwrap_or_default();
+    Ok(json!({ "selected": selected, "schemes": marking::schemes(&prj.marking).iter().map(scheme_json).collect::<Vec<_>>() }))
+}
+
+fn set_marking_scheme(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let name = a.req("name").trim().to_string();
+    if name.is_empty() {
+        return Err(tr_fmt!("Parameter {} has the wrong type", "name"));
+    }
+    if a.flag("remove") {
+        let before = prj.marking.schemes.len();
+        prj.marking.schemes.retain(|s| s.name != name);
+        if prj.marking.schemes.len() == before {
+            return Err(tr_fmt!("No labeling scheme named {}", name));
+        }
+        if prj.marking.scheme == name && !marking::is_builtin(&name) {
+            prj.marking.scheme.clear();
+        }
+        return marking_schemes(prj, a);
+    }
+    let mut s = marking::scheme(&prj.marking, Some(&name)).unwrap_or_else(|| marking::Scheme { name: name.clone(), ..Default::default() });
+    let changes = ["columns", "separator", "header", "one_row_per_label", "categories"].iter().any(|k| a.value(k).is_some());
+    if let Some(cols) = a.str("columns") {
+        s.columns = cols.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Column::parse(c).ok_or_else(|| tr_fmt!("Unknown column: {}", c.trim()))).collect::<Result<_, _>>()?;
+        if s.columns.is_empty() {
+            return Err(tr_fmt!("Unknown column: {}", cols));
+        }
+    }
+    if let Some(sep) = a.str("separator") {
+        s.separator = match sep.trim() {
+            "semicolon" | ";" => ";",
+            "comma" | "," => ",",
+            "tab" => "\t",
+            other => return Err(tr_fmt!("Unknown separator: {}", other)),
+        }
+        .into();
+    }
+    if a.value("header").is_some() {
+        s.header = a.flag("header");
+    }
+    if a.value("one_row_per_label").is_some() {
+        s.one_row_per_label = a.flag("one_row_per_label");
+    }
+    if let Some(cats) = a.str("categories") {
+        s.categories = cats.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Category::parse(c).ok_or_else(|| tr_fmt!("Unknown marker category: {}", c.trim()))).collect::<Result<_, _>>()?;
+    }
+    if changes || !marking::is_builtin(&name) {
+        match prj.marking.schemes.iter_mut().find(|x| x.name == name) {
+            Some(x) => *x = s,
+            None => prj.marking.schemes.push(s),
+        }
+    }
+    if a.flag("select") {
+        prj.marking.scheme = name;
+    }
+    marking_schemes(prj, a)
+}
+
+fn mounting_list(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    use openecraft_core::mounting;
+    let enclosure = match a.str("enclosure") {
+        Some(name) => Some(prj.layout.enclosures.iter().position(|e| e.name == name).ok_or_else(|| tr_fmt!("No enclosure named {}", name))?),
+        None => None,
+    };
+    let code = |s: mounting::Status| match s {
+        mounting::Status::Open => "open",
+        mounting::Status::Done => "mounted",
+        mounting::Status::Changed => "changed",
+        mounting::Status::Problem => "problem",
+    };
+    let steps: Vec<Value> = mounting::steps(prj, enclosure)
+        .into_iter()
+        .map(|s| {
+            let e = &prj.layout.enclosures[s.enclosure];
+            let it = &e.items[s.item];
+            json!({
+                "enclosure": e.name, "item": it.id, "title": mounting::item_title(it), "phase": s.phase.title(), "part": it.part,
+                "face": format!("{:?}", it.face).to_lowercase(), "x": it.x, "y": it.y, "width": it.w, "height": it.h, "state": code(s.status), "note": s.note
+            })
+        })
+        .collect();
+    let p = mounting::progress(prj, enclosure);
+    Ok(json!({ "items": steps, "total": p.total, "mounted": p.done - p.changed, "changed": p.changed, "problems": p.problems }))
+}
+
+fn mark_mounted(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    use openecraft_core::mounting::{self, Mark};
+    let id = a.int("item").unwrap_or_default() as u64;
+    let it = prj.layout.enclosures.iter().flat_map(|e| e.items.iter()).find(|i| i.id == id).cloned().ok_or_else(|| tr_fmt!("No panel item with id {}", id))?;
+    let mark = match a.req("state").trim() {
+        "mounted" => Some(Mark::Done),
+        "problem" => Some(Mark::Problem),
+        "open" => None,
+        other => return Err(tr_fmt!("Unknown state: {}", other)),
+    };
+    mounting::set_mark(prj, &it, mark, a.str("note").unwrap_or_default());
+    Ok(json!({ "item": id, "state": mounting::status(prj, &it).title() }))
 }
 
 fn status_code(s: Status) -> &'static str {

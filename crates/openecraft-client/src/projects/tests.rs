@@ -47,3 +47,16 @@ fn bodies_are_json() {
     let body: CreateRequest = serde_json::from_slice(&create.body).unwrap();
     assert_eq!((body.name.as_str(), body.user.as_str()), ("p", "anna"));
 }
+
+#[test]
+fn account_requests() {
+    let e = ProjectEndpoint { url: "http://server:8091/".into(), token: "t".into() };
+    let login = e.login("anna", "pw");
+    assert_eq!((login.method, login.url.as_str()), (ehttp::Method::POST, "http://server:8091/api/v1/login"));
+    assert!(String::from_utf8_lossy(&login.body).contains("\"password\":\"pw\""));
+    assert_eq!(e.logout().url, "http://server:8091/api/v1/logout");
+    assert_eq!(e.users().url, "http://server:8091/api/v1/users");
+    let del = e.delete_user("anna b");
+    assert_eq!((del.method, del.url.as_str()), (ehttp::Method::DELETE, "http://server:8091/api/v1/users/anna%20b"));
+    assert_eq!(e.save_user("anna", &Default::default()).method, ehttp::Method::PUT);
+}

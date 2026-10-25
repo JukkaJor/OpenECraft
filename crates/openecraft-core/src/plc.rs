@@ -1,12 +1,12 @@
 //! PLC overview: inputs / outputs per card, addressing from the card's start byte and
 //! symbol table exchange with PLC programming tools (CSV: name, data type, address,
-//! comment; IEC 61131-3 global variables). The hardware (stations, racks, buses) is in
-//! `plc_hw`.
+//! comment; IEC 61131-3 global variables; Siemens TIA Portal tag tables; Rockwell
+//! Studio 5000 tags). The hardware (stations, racks, buses) is in `plc_hw`.
 
 use crate::model::*;
 use crate::netlist::{pin_designation, Netlist};
 use crate::symbols::Func;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 /// A PLC input or output placed in the schematic.
 #[derive(Clone, Debug, PartialEq)]
@@ -55,10 +55,19 @@ pub fn cards(prj: &Project) -> Vec<String> {
     v
 }
 
+/// Page and symbol index of a pin.
+type PinAt = (usize, usize);
+
+/// Targets listed per PLC point; further ones are counted.
+const MAX_TARGETS: usize = 20;
+
 /// All PLC points, sorted by card and address.
 pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
     let symbols = prj.symbol_table();
     let mut v = Vec::new();
+    // Designations of the pins of each net, built once (nets of potentials can have
+    // thousands of pins on large projects).
+    let mut by_net: HashMap<usize, Vec<(String, PinAt)>> = HashMap::new();
     for (pi, pg) in prj.pages.iter().enumerate() {
         if pg.kind != PageKind::Schematic {
             continue;
@@ -68,11 +77,30 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 .pin_net
                 .get(&(s.id, 0))
                 .map(|&n| {
-                    let mut t: Vec<String> =
-                        nl.nets[n].pins.iter().filter(|p| (p.page, p.sym) != (pi, si)).map(|p| pin_designation(prj, *p)).collect();
-                    t.sort_by(|a, b| natural_cmp(a, b));
-                    t.dedup();
-                    t.join(", ")
+                    let list = by_net.entry(n).or_insert_with(|| {
+                        let mut t: Vec<(String, PinAt)> = nl.nets[n].pins.iter().map(|p| (pin_designation(prj, *p), (p.page, p.sym))).collect();
+                        t.sort_by(|a, b| natural_cmp(&a.0, &b.0));
+                        t
+                    });
+                    let mut shown: Vec<&str> = Vec::new();
+                    let mut more = 0;
+                    let mut last = "";
+                    for (d, _) in list.iter().filter(|(_, at)| *at != (pi, si)) {
+                        if d == last {
+                            continue;
+                        }
+                        last = d;
+                        if shown.len() < MAX_TARGETS {
+                            shown.push(d);
+                        } else {
+                            more += 1;
+                        }
+                    }
+                    let mut text = shown.join(", ");
+                    if more > 0 {
+                        text.push_str(&format!(", … (+{more})"));
+                    }
+                    text
                 })
                 .unwrap_or_default();
             v.push(Point {
@@ -82,7 +110,7 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
                 card: s.tag.clone(),
                 address: s.label.clone(),
                 input: s.sym == "plc_in",
-                function_text: s.function_text.replace('\n', " "),
+                function_text: crate::text::function_text(prj, pi, s).replace('\n', " "),
                 connected,
                 location: crate::frame::reference(prj, pi, s.pos),
             });
@@ -174,16 +202,10 @@ pub fn symbol_table(prj: &Project, nl: &Netlist) -> String {
 pub fn global_variables(prj: &Project, nl: &Netlist) -> String {
     let mut groups: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for (name, p) in tags(prj, nl) {
-        let Some(a) = crate::plc_hw::parse_address(&p.address) else { continue };
-        let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
-        // Module relative addresses (Rockwell) are placed at the card's start byte.
-        let byte = match a.slot {
-            Some(_) => a.byte + if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) },
-            None => a.byte,
-        };
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
         let comment = tag_comment(&p).replace("*)", "* )");
-        let dir = if a.input { 'I' } else { 'Q' };
-        let line = format!("    {name} AT %{dir}X{byte}.{} : BOOL; (* {comment} *)", a.bit);
+        let dir = if input { 'I' } else { 'Q' };
+        let line = format!("    {name} AT %{dir}X{byte}.{bit} : BOOL; (* {comment} *)");
         groups.entry(crate::plc_hw::card_domain(prj, &p.card)).or_default().push(line);
     }
     let mut out = String::new();
@@ -198,6 +220,133 @@ pub fn global_variables(prj: &Project, nl: &Netlist) -> String {
         }
         out.push_str("END_VAR\n\n");
     }
+    out
+}
+
+/// Direction, byte and bit of a point in the process image: module relative
+/// addresses (Rockwell) are placed at the card's start byte.
+fn absolute(prj: &Project, p: &Point) -> Option<(bool, u32, u32)> {
+    let a = crate::plc_hw::parse_address(&p.address)?;
+    let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
+    let byte = match a.slot {
+        Some(_) => a.byte + if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) },
+        None => a.byte,
+    };
+    Some((a.input, byte, a.bit))
+}
+
+/// Rows of a Siemens TIA Portal PLC tag table (sheet `PLC Tags`, header first):
+/// name, path (tag table), data type, logical address (`%I0.0`), comment and the HMI
+/// flags.
+pub fn tia_tags(prj: &Project, nl: &Netlist) -> Vec<Vec<String>> {
+    let header = ["Name", "Path", "Data Type", "Logical Address", "Comment", "Hmi Visible", "Hmi Accessible", "Hmi Writeable", "Typeobject ID", "Version ID"];
+    let mut rows = vec![header.iter().map(|h| h.to_string()).collect::<Vec<_>>()];
+    for (name, p) in tags(prj, nl) {
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
+        let station = crate::plc_hw::card_domain(prj, &p.card);
+        let path = if station.is_empty() { "Default tag table".to_string() } else { station };
+        let addr = format!("%{}{byte}.{bit}", if input { 'I' } else { 'Q' });
+        rows.push([name, path, "Bool".into(), addr, tag_comment(&p), "True".into(), "True".into(), "True".into(), String::new(), String::new()].to_vec());
+    }
+    rows
+}
+
+/// Input or output, slot of the card (otherwise 1) and channel on the card of a point
+/// with a byte / bit address.
+fn channel(prj: &Project, p: &Point) -> Option<(bool, u32, u32)> {
+    let a = crate::plc_hw::parse_address(&p.address)?;
+    let data = prj.plc_cards.get(&p.card).cloned().unwrap_or_default();
+    let start = if a.input { data.start_byte } else { data.output_byte.unwrap_or(data.start_byte) };
+    let slot: u32 = data.slot.trim().parse().unwrap_or(1);
+    Some((a.input, slot, a.byte.saturating_sub(start) * 8 + a.bit))
+}
+
+/// Rockwell Studio 5000 tag import (CSV): every point as an alias of its module
+/// channel (`Local:3:I.Data.5`; the slot from the card, otherwise 1).
+pub fn rockwell_tags(prj: &Project, nl: &Netlist) -> String {
+    let q = |s: &str| format!("\"{}\"", s.replace('"', "\"\""));
+    let mut out = String::from("remark,\"CSV-Import-Export\"\nremark,\"Generated by OpenECraft\"\n0.3\nTYPE,SCOPE,NAME,DESCRIPTION,DATATYPE,SPECIFIER,ATTRIBUTES\n");
+    for (name, p) in tags(prj, nl) {
+        let Some(a) = crate::plc_hw::parse_address(&p.address) else { continue };
+        let specifier = if a.slot.is_some() {
+            p.address.trim().trim_start_matches('%').to_string()
+        } else {
+            let Some((input, slot, channel)) = channel(prj, &p) else { continue };
+            format!("Local:{slot}:{}.Data.{channel}", if input { 'I' } else { 'O' })
+        };
+        out.push_str(&format!("ALIAS,,{},{},,{},{}\n", q(&name), q(&tag_comment(&p)), q(&specifier), q("(RADIX := Decimal, ExternalAccess := Read/Write)")));
+    }
+    out
+}
+
+/// Siemens STEP 7 (classic) symbol table to import into the symbol editor (`.sdf`):
+/// per point the quoted, blank padded fields symbol (24), address (12), data type (10)
+/// and comment (80).
+pub fn step7_sdf(prj: &Project, nl: &Netlist) -> String {
+    let field = |s: &str, w: usize| {
+        let t: String = s.replace('"', "'").chars().take(w).collect();
+        format!("\"{t:<w$}\"")
+    };
+    let mut out = String::new();
+    for (name, p) in tags(prj, nl) {
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
+        let addr = format!("{:<4}{byte:>4}.{bit}", if input { "I" } else { "Q" });
+        out.push_str(&[field(&name, 24), field(&addr, 12), field("BOOL", 10), field(&tag_comment(&p), 80)].join(","));
+        out.push_str("\r\n");
+    }
+    out
+}
+
+/// Mitsubishi GX Works device comments (CSV): inputs `X` and outputs `Y` numbered in
+/// octal (byte · 8 + bit), the comment from card and function text.
+pub fn mitsubishi_comments(prj: &Project, nl: &Netlist) -> String {
+    let q = |s: &str| format!("\"{}\"", s.replace('"', "\"\""));
+    let mut out = String::from("\"Device Name\",\"Comment\"\r\n");
+    for (_, p) in tags(prj, nl) {
+        let Some((input, byte, bit)) = absolute(prj, &p) else { continue };
+        let device = format!("{}{:o}", if input { 'X' } else { 'Y' }, byte * 8 + bit);
+        let comment: String = tag_comment(&p).chars().take(32).collect();
+        out.push_str(&format!("{},{}\r\n", q(&device), q(&comment)));
+    }
+    out
+}
+
+/// Beckhoff TwinCAT 3 global variable list (`.TcGVL`): the points as `AT %I*` /
+/// `AT %Q*` variables, linked to the terminals in the I/O configuration.
+pub fn twincat_gvl(prj: &Project, nl: &Netlist) -> String {
+    let mut decl = String::from("{attribute 'qualified_only'}\nVAR_GLOBAL\n");
+    for (name, p) in tags(prj, nl) {
+        let Some((input, _, _)) = absolute(prj, &p) else { continue };
+        let comment = tag_comment(&p).replace('\n', " ");
+        decl.push_str(&format!("    {name} AT %{}* : BOOL; // {comment}\n", if input { 'I' } else { 'Q' }));
+    }
+    decl.push_str("END_VAR\n");
+    let decl = decl.replace("]]>", "]] >");
+    format!(
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TcPlcObject Version=\"1.1.0.1\" ProductVersion=\"3.1.4024.0\">\n  <GVL Name=\"GVL_IO\">\n    <Declaration><![CDATA[{decl}]]></Declaration>\n  </GVL>\n</TcPlcObject>\n"
+    )
+}
+
+fn xml_attr(s: &str) -> String {
+    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+}
+
+/// Schneider Electric Control Expert (Unity Pro) variables (`.xsy`): `EBOOL` variables
+/// with the topological address `%I0.<slot>.<channel>` of their card.
+pub fn schneider_xsy(prj: &Project, nl: &Netlist) -> String {
+    let mut out = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<VariablesExchangeFile>\n");
+    out.push_str("<fileHeader company=\"OpenECraft\" product=\"OpenECraft\" content=\"Variable source file\" DTDVersion=\"41\"></fileHeader>\n");
+    out.push_str(&format!("<contentHeader name=\"{}\" version=\"0.0.000\"></contentHeader>\n<dataBlock>\n", xml_attr(&prj.info.name)));
+    for (name, p) in tags(prj, nl) {
+        let Some((input, slot, ch)) = channel(prj, &p) else { continue };
+        out.push_str(&format!(
+            "<variables name=\"{}\" typeName=\"EBOOL\" topologicalAddress=\"%{}0.{slot}.{ch}\"><comment>{}</comment></variables>\n",
+            xml_attr(&name),
+            if input { 'I' } else { 'Q' },
+            xml_attr(&tag_comment(&p))
+        ));
+    }
+    out.push_str("</dataBlock>\n</VariablesExchangeFile>\n");
     out
 }
 

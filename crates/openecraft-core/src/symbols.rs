@@ -159,13 +159,15 @@ pub enum Category {
     Fluid,
     /// Piping and instrumentation diagrams (ISO 10628, ISA 5.1).
     Process,
+    /// Building installation plans (IEC 60617-11).
+    Installation,
     /// Symbols of the project symbol library (symbol editor).
     User,
 }
 
 impl Category {
     /// Categories of the built-in libraries.
-    pub const ALL: [Category; 18] = [
+    pub const ALL: [Category; 19] = [
         Category::Coils,
         Category::Contacts,
         Category::Switches,
@@ -184,6 +186,7 @@ impl Category {
         Category::Nfpa,
         Category::Fluid,
         Category::Process,
+        Category::Installation,
     ];
 
     pub fn title(self) -> &'static str {
@@ -206,6 +209,7 @@ impl Category {
             Category::Nfpa => tr("NFPA / JIC"),
             Category::Fluid => tr("Fluid power (ISO 1219)"),
             Category::Process => tr("P&ID / process (ISO 10628)"),
+            Category::Installation => tr("Installation plan (IEC 60617-11)"),
             Category::User => tr("User symbols"),
         }
     }
@@ -1026,6 +1030,170 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "1").pin(4.0, 0.0, "2").pin(0.0, 4.0, "3");
     v.push(def("potentiometer", "Potentiometer", C::Passive, "R", MAIN).build(&mut b));
 
+    // ---------------------------------------------------------------- electronics (IEC 60617)
+    // Small filled arrow head at `tip` pointing in direction (dx, dy).
+    let arrow = |b: &mut B, tx: f32, ty: f32, dx: f32, dy: f32| {
+        let (nx, ny) = (-dy, dx);
+        b.poly(&[(tx, ty), (tx - dx * 1.2 + nx * 0.5, ty - dy * 1.2 + ny * 0.5), (tx - dx * 1.2 - nx * 0.5, ty - dy * 1.2 - ny * 0.5)], true, true);
+    };
+    let diode_body = |b: &mut B| {
+        b.l(0.0, -4.0, 0.0, -1.5).poly(&[(-1.8, -1.5), (1.8, -1.5), (0.0, 1.5)], true, false);
+    };
+
+    // Electrolytic capacitor: the negative plate filled, + at the positive one.
+    b.l(0.0, -4.0, 0.0, -0.8).l(-2.5, -0.8, 2.5, -0.8).rect(-2.5, 0.6, 2.5, 1.2, true).l(0.0, 1.2, 0.0, 4.0);
+    b.text(2.2, -2.2, "+", 1.8, Left);
+    b.pin(0.0, -4.0, "+").pin(0.0, 4.0, "-");
+    v.push(def("cap_pol", "Capacitor, polarized", C::Passive, "C", MAIN).build(&mut b));
+
+    diode_body(&mut b);
+    b.l(-1.8, 2.2, -1.8, 1.5).l(-1.8, 1.5, 1.8, 1.5).l(1.8, 1.5, 1.8, 0.8).l(0.0, 1.5, 0.0, 4.0);
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
+    v.push(def("zener", "Zener diode", C::Passive, "V", MAIN).build(&mut b));
+
+    diode_body(&mut b);
+    b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0);
+    for y in [-1.6, 0.0] {
+        b.l(4.0, y - 1.4, 2.4, y);
+        arrow(&mut b, 2.2, y + 0.2, -0.75, 0.66);
+    }
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K");
+    v.push(def("photodiode", "Photodiode", C::Passive, "B", MAIN).build(&mut b));
+
+    // Bipolar transistors: base on the left, collector up, emitter down.
+    for (key, name, pnp) in [("npn", "Transistor NPN", false), ("pnp", "Transistor PNP", true)] {
+        b.circle(0.0, 0.0, 3.2, false).l(-4.0, 0.0, -1.2, 0.0).l(-1.2, -2.0, -1.2, 2.0);
+        b.l(-1.2, -0.9, 0.0, -2.2).l(0.0, -2.2, 0.0, -4.0).l(-1.2, 0.9, 0.0, 2.2).l(0.0, 2.2, 0.0, 4.0);
+        if pnp {
+            arrow(&mut b, -1.1, 1.0, -0.68, -0.73);
+        } else {
+            arrow(&mut b, 0.0, 2.2, 0.68, 0.73);
+        }
+        b.pin(-4.0, 0.0, "B").pin(0.0, -4.0, "C").pin(0.0, 4.0, "E");
+        v.push(def(key, name, C::Passive, "V", MAIN).build(&mut b));
+    }
+
+    // N-channel MOSFET (enhancement): gate left, drain up, source down, body to source.
+    b.circle(0.0, 0.0, 3.2, false).l(-4.0, 0.0, -1.8, 0.0).l(-1.8, -1.8, -1.8, 1.8);
+    for (y0, y1) in [(-2.0, -1.0), (-0.5, 0.5), (1.0, 2.0)] {
+        b.l(-1.0, y0, -1.0, y1);
+    }
+    b.l(-1.0, -1.5, 0.0, -1.5).l(0.0, -1.5, 0.0, -4.0).l(-1.0, 1.5, 0.0, 1.5).l(0.0, 1.5, 0.0, 4.0).l(-0.6, 0.0, 0.0, 0.0).l(0.0, 0.0, 0.0, 1.5);
+    arrow(&mut b, -1.0, 0.0, -1.0, 0.0);
+    b.pin(-4.0, 0.0, "G").pin(0.0, -4.0, "D").pin(0.0, 4.0, "S");
+    v.push(def("nmos", "MOSFET N-channel", C::Passive, "V", MAIN).build(&mut b));
+
+    // Thyristor: diode with the gate at the cathode.
+    diode_body(&mut b);
+    b.l(-1.8, 1.5, 1.8, 1.5).l(0.0, 1.5, 0.0, 4.0).l(0.9, 1.5, 4.0, 4.0);
+    b.pin(0.0, -4.0, "A").pin(0.0, 4.0, "K").pin(4.0, 4.0, "G");
+    v.push(def("thyristor", "Thyristor", C::Passive, "V", MAIN).build(&mut b));
+
+    // Triac: two triangles in antiparallel between two bars, gate at the bottom.
+    b.l(0.0, -4.0, 0.0, -1.5).l(-2.6, -1.5, 2.6, -1.5).l(-2.6, 1.5, 2.6, 1.5).l(0.0, 1.5, 0.0, 4.0);
+    b.poly(&[(-2.6, -1.5), (0.0, -1.5), (-1.3, 1.5)], true, false).poly(&[(0.0, 1.5), (2.6, 1.5), (1.3, -1.5)], true, false);
+    b.l(1.3, 1.5, 4.0, 4.0);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2").pin(4.0, 4.0, "G");
+    v.push(def("triac", "Triac", C::Passive, "V", MAIN).build(&mut b));
+
+    // NTC thermistor: resistor with the non-linear stroke and the sign of the coefficient.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-3.2, 2.6, -2.2, 2.6).l(-2.2, 2.6, 2.2, -2.6).text(2.0, 2.4, "-t°", 1.4, Left);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("ntc", "Thermistor NTC", C::Passive, "R", MAIN).build(&mut b));
+
+    // Photoresistor (LDR): resistor with two incoming arrows.
+    b.l(0.0, -4.0, 0.0, -3.0).rect(-1.2, -3.0, 1.2, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
+    for y in [-2.2, -0.4] {
+        b.l(4.0, y - 1.4, 2.0, y);
+        arrow(&mut b, 1.8, y + 0.2, -0.75, 0.66);
+    }
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("ldr", "Photoresistor (LDR)", C::Passive, "R", MAIN).build(&mut b));
+
+    // Optocoupler: LED and phototransistor in a common housing.
+    b.drect(-7.0, -5.5, 7.0, 5.5);
+    b.l(-4.0, -8.0, -4.0, -1.5).poly(&[(-5.8, -1.5), (-2.2, -1.5), (-4.0, 1.5)], true, false).l(-5.8, 1.5, -2.2, 1.5).l(-4.0, 1.5, -4.0, 8.0);
+    for y in [-1.2, 0.6] {
+        b.l(-1.6, y, 0.6, y);
+        arrow(&mut b, 0.8, y, 1.0, 0.0);
+    }
+    b.l(2.0, -2.0, 2.0, 2.0).l(2.0, -0.9, 4.0, -2.4).l(4.0, -2.4, 4.0, -8.0).l(2.0, 0.9, 4.0, 2.4).l(4.0, 2.4, 4.0, 8.0);
+    arrow(&mut b, 4.0, 2.4, 0.8, 0.6);
+    b.pin(-4.0, -8.0, "A").pin(-4.0, 8.0, "K").pin(4.0, -8.0, "C").pin(4.0, 8.0, "E");
+    v.push(def("optocoupler", "Optocoupler", C::Passive, "U", MAIN).build(&mut b));
+
+    // Bridge rectifier: the four diodes as one block, AC on the sides, + up, - down.
+    b.rect(-4.0, -4.0, 4.0, 4.0, false);
+    b.poly(&[(-1.4, -0.6), (1.4, -0.6), (0.0, -2.4)], true, false).l(-1.4, -2.4, 1.4, -2.4);
+    b.text(-2.6, 2.4, "~", 1.8, Center).text(2.6, 2.4, "~", 1.8, Center);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(-8.0, 0.0, -4.0, 0.0).l(4.0, 0.0, 8.0, 0.0);
+    b.pin(-8.0, 0.0, "~1").pin(8.0, 0.0, "~2").pin(0.0, -8.0, "+").pin(0.0, 8.0, "-");
+    v.push(def("bridge_rect", "Bridge rectifier", C::Passive, "T", MAIN).build(&mut b));
+
+    // ---------------------------------------------------------------- installation plan
+    // Single-line symbols of building installation plans with one connection point
+    // (the cable from the distribution) at the top.
+    let feed = |b: &mut B, to: f32| {
+        b.l(0.0, -4.0, 0.0, to);
+    };
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_switch", "Switch, 1-pole (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4).l(-0.7, 0.7, -3.2, 3.2).l(-3.2, 3.2, -4.0, 2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_switch2", "Two-way switch (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.0);
+    b.circle(0.0, 0.0, 1.0, false).l(0.7, -0.7, 3.2, -3.2).l(3.2, -3.2, 4.0, -2.4).l(-2.6, 2.0, 1.6, -2.2);
+    b.poly(&[(1.6, -2.2), (0.6, -1.9), (1.3, -1.2)], true, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_dimmer", "Dimmer (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -1.6);
+    b.circle(0.0, 0.0, 1.6, false).circle(0.0, 0.0, 0.5, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_push", "Push button (installation)", C::Installation, "S", MAIN).build(&mut b));
+
+    feed(&mut b, -2.5);
+    b.circle(0.0, 0.0, 2.5, false).l(-1.77, -1.77, 1.77, 1.77).l(-1.77, 1.77, 1.77, -1.77);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_lamp", "Lighting outlet", C::Installation, "E", MAIN).build(&mut b));
+
+    feed(&mut b, 0.0);
+    b.rect(-6.0, 0.0, 6.0, 1.2, true).l(-6.0, -1.2, -6.0, 2.4).l(6.0, -1.2, 6.0, 2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_luminaire", "Luminaire, fluorescent", C::Installation, "E", MAIN).build(&mut b));
+
+    // Double socket outlet with protective contact: two cups side by side.
+    feed(&mut b, 0.0);
+    for x in [-2.6, 2.6] {
+        b.arc(x, 0.0, 2.4, 0.0, 180.0).l(x - 2.4, 0.0, x + 2.4, 0.0);
+    }
+    b.l(-5.0, -0.9, 5.0, -0.9).l(0.0, 0.0, 0.0, -0.9);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_socket2", "Double socket outlet with PE", C::Installation, "X", MAIN).build(&mut b));
+
+    feed(&mut b, -1.2);
+    b.circle(0.0, 0.0, 1.2, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_junction", "Junction box", C::Installation, "X", MAIN).build(&mut b));
+
+    // Motion detector: a half circle with the detection arcs.
+    feed(&mut b, -2.0);
+    b.l(-2.0, -2.0, 2.0, -2.0).arc(0.0, -2.0, 2.0, 0.0, 180.0).arc(0.0, -2.0, 3.2, 30.0, 150.0).arc(0.0, -2.0, 4.4, 40.0, 140.0);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_motion", "Motion detector", C::Installation, "B", MAIN).build(&mut b));
+
+    // Distribution board: a box half filled.
+    feed(&mut b, -2.0);
+    b.rect(-4.0, -2.0, 4.0, 2.0, false).poly(&[(-4.0, 2.0), (4.0, -2.0), (4.0, 2.0)], true, true);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("inst_board", "Distribution board", C::Installation, "A", MAIN).build(&mut b));
+
     // ---------------------------------------------------------------- black boxes
     b.drect(-4.0, -4.0, 12.0, 4.0);
     b.l(0.0, -8.0, 0.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
@@ -1204,6 +1372,85 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "T1").pin(8.0, -4.0, "T2").pin(16.0, -4.0, "T3").pin(24.0, -4.0, "GND");
     v.push(def("nfpa_motor", "Motor (NFPA)", C::Nfpa, "M", MAIN).build(&mut b));
 
+    // Further NFPA / JIC devices: the open switch body with its operator.
+    let sw = |b: &mut B| {
+        b.l(0.0, -4.0, 0.0, -3.1).circle(0.0, -2.5, 0.6, false).circle(0.0, 2.5, 0.6, false).l(0.0, 3.1, 0.0, 4.0);
+    };
+    sw(&mut b);
+    b.l(0.6, -3.2, 0.6, 3.2).l(0.6, 0.0, -4.0, 0.0).arc(-5.5, 0.0, 1.5, 90.0, 270.0).l(-5.5, -1.5, -5.5, 1.5);
+    b.pin(0.0, -4.0, "11").pin(0.0, 4.0, "12");
+    v.push(def("nfpa_estop", "Emergency stop, mushroom head (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-1.0, -0.4, -4.0, -0.4).poly(&[(-4.0, -0.4), (-5.5, -1.6), (-6.0, 0.6), (-4.5, 0.8)], true, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_foot_no", "Foot switch NO (NFPA)", C::Nfpa, "S", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.5, -0.2).l(-3.5, -0.2, -3.5, 1.5).circle(-3.5, 2.5, 1.0, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_fs_no", "Float switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.0, -0.2).arc(-4.5, -0.2, 1.5, 90.0, 270.0).l(-4.5, -1.7, -4.5, 1.3);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ps_no", "Pressure switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -2.5, -0.2);
+    b.poly(&[(-2.5, -0.2), (-3.0, -1.2), (-3.6, 0.8), (-4.2, -1.2), (-4.8, 0.8), (-5.3, -0.2)], false, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_ts_no", "Temperature switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.l(0.5, 2.0, -2.0, -2.4).l(-0.8, -0.2, -3.0, -0.2).poly(&[(-3.0, -0.2), (-3.0, -2.2), (-5.0, -1.2)], true, false);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_flow_no", "Flow switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.poly(&[(-6.0, 0.0), (-4.5, -1.5), (-3.0, 0.0), (-4.5, 1.5)], true, false).l(-3.0, 0.0, -2.4, 0.0);
+    b.pin(0.0, -4.0, "13").pin(0.0, 4.0, "14");
+    v.push(def("nfpa_prox_no", "Proximity switch NO (NFPA)", C::Nfpa, "B", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).arc(0.0, -2.0, 1.0, -90.0, 90.0).arc(0.0, 0.0, 1.0, -90.0, 90.0).arc(0.0, 2.0, 1.0, -90.0, 90.0).l(0.0, 3.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2");
+    v.push(def("nfpa_sol", "Solenoid (NFPA)", C::Nfpa, "Y", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0).text(0.0, 0.0, "TR", 1.6, Center);
+    b.pin(0.0, -4.0, "A1").pin(0.0, 4.0, "A2");
+    v.push(def("nfpa_tr_coil", "Timer coil (NFPA)", C::Nfpa, "K", MAIN_MIRROR).build(&mut b));
+
+    for i in 0..4 {
+        let x = 1.0 + 2.0 * i as f32;
+        b.arc(x, -2.0, 1.0, 180.0, 360.0).arc(x, 2.0, 1.0, 0.0, 180.0);
+    }
+    b.l(0.0, -0.4, 8.0, -0.4).l(0.0, 0.4, 8.0, 0.4);
+    b.l(0.0, -8.0, 0.0, -2.0).l(8.0, -8.0, 8.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(8.0, 2.0, 8.0, 8.0);
+    b.pin(0.0, -8.0, "H1").pin(8.0, -8.0, "H2").pin(0.0, 8.0, "X1").pin(8.0, 8.0, "X2");
+    v.push(def("nfpa_xfmr", "Control transformer (NFPA)", C::Nfpa, "T", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -2.0).poly(&[(-2.0, -2.0), (2.0, -2.0), (3.5, 2.0), (-3.5, 2.0)], true, false).l(0.0, 2.0, 0.0, 4.0);
+    b.pin(0.0, -4.0, "X1").pin(0.0, 4.0, "X2");
+    v.push(def("nfpa_horn", "Horn (NFPA)", C::Nfpa, "P", MAIN).build(&mut b));
+
+    sw(&mut b);
+    b.arc(1.5, 0.0, 2.6, 125.0, 235.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("nfpa_cb1", "Circuit breaker 1-pole (NFPA)", C::Nfpa, "Q", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.0).l(-2.2, -1.0, 2.2, -1.0).l(-2.2, 1.0, 2.2, 1.0).l(0.0, 1.0, 0.0, 4.0);
+    b.l(-2.4, 2.4, 2.4, -2.4).text(3.0, 0.0, "OL", 1.4, Left);
+    b.pin(0.0, -4.0, "95").pin(0.0, 4.0, "96");
+    v.push(def("nfpa_ol_nc", "Overload contact NC (NFPA)", C::Nfpa, "F", Func::Aux(ContactKind::Nc)).build(&mut b));
+
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, -1.0).l(x - 2.2, -1.0, x + 2.2, -1.0).l(x - 2.2, 1.0, x + 2.2, 1.0).l(x, 1.0, x, 4.0);
+    }
+    b.dl(2.4, 0.0, 5.6, 0.0).dl(10.4, 0.0, 13.6, 0.0);
+    b.pin(0.0, -4.0, "L1").pin(8.0, -4.0, "L2").pin(16.0, -4.0, "L3");
+    b.pin(0.0, 4.0, "T1").pin(8.0, 4.0, "T2").pin(16.0, 4.0, "T3");
+    v.push(def("nfpa_main3", "Main contacts 3-pole (NFPA)", C::Nfpa, "K", Func::Aux(ContactKind::MainNo)).build(&mut b));
+
     // ---------------------------------------------------------------- fluid power
     // Small filled arrow head at `tip` pointing in direction (dx, dy).
     let head = |b: &mut B, tx: f32, ty: f32, dx: f32, dy: f32| {
@@ -1288,6 +1535,82 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(0.0, 0.0, 0.0, 4.0);
     b.pin(0.0, 4.0, "1");
     v.push(def("fl_cylinder_sa", "Cylinder, single-acting", C::Fluid, "MM", MAIN).build(&mut b));
+
+    // 3/2 directional valve, solenoid operated, spring return, normally closed.
+    b.rect(-12.0, -4.0, 0.0, 4.0, false).rect(0.0, -4.0, 12.0, 4.0, false);
+    b.l(8.0, 4.0, 4.6, -3.2);
+    head(&mut b, 4.0, -4.0, -0.5, -1.0);
+    b.l(4.0, 4.0, 4.0, 2.6).l(3.0, 2.6, 5.0, 2.6);
+    b.l(-8.0, 4.0, -8.0, -3.0);
+    head(&mut b, -8.0, -4.0, 0.0, -1.0);
+    b.l(-4.0, 4.0, -4.0, 2.6).l(-5.0, 2.6, -3.0, 2.6);
+    b.rect(-16.0, -2.0, -12.0, 2.0, false).l(-16.0, 2.0, -12.0, -2.0);
+    b.poly(&[(12.0, 0.0), (12.8, -1.5), (13.6, 1.5), (14.4, -1.5), (15.2, 1.5), (16.0, 0.0)], false, false);
+    b.l(4.0, -8.0, 4.0, -4.0).l(4.0, 4.0, 4.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
+    b.pin(4.0, -8.0, "2").pin(4.0, 8.0, "1").pin(8.0, 8.0, "3");
+    v.push(def("fl_valve32", "3/2 directional valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -1.7).circle(0.0, -0.5, 1.2, false).l(-1.8, -0.5, 0.0, 1.8).l(1.8, -0.5, 0.0, 1.8).l(0.0, 1.8, 0.0, 4.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_check", "Non-return valve", C::Fluid, "RM", MAIN).build(&mut b));
+
+    // Pressure relief valve: pilot from P against the spring, opens to T.
+    b.rect(-3.0, -3.0, 3.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0).l(3.0, 0.0, 4.0, 0.0);
+    b.l(-1.0, 2.0, 1.4, -1.4);
+    head(&mut b, 2.0, -2.0, 0.7, -0.7);
+    b.poly(&[(-3.0, -1.5), (-3.6, -2.4), (-4.2, -0.6), (-4.8, -2.4), (-5.4, -0.6), (-6.0, -1.5)], false, false);
+    b.dl(0.0, 3.6, -4.5, 3.6).dl(-4.5, 3.6, -4.5, 1.0);
+    b.pin(0.0, 4.0, "P").pin(4.0, 0.0, "T");
+    v.push(def("fl_relief", "Pressure relief valve", C::Fluid, "RM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, -3.0).poly(&[(-2.5, -3.0), (2.5, -3.0), (0.0, 0.0)], true, false).poly(&[(-2.5, 3.0), (2.5, 3.0), (0.0, 0.0)], true, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(0.0, 0.0, -4.0, 0.0).l(-4.0, -1.2, -4.0, 1.2);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_shutoff", "Ball valve", C::Fluid, "QM", MAIN).build(&mut b));
+
+    b.l(0.0, -4.0, 0.0, 4.0).arc(-2.6, 0.0, 2.4, -50.0, 50.0).arc(2.6, 0.0, 2.4, 130.0, 230.0);
+    b.l(-2.6, 2.6, 2.6, -2.6);
+    head(&mut b, 3.1, -3.1, 0.7, -0.7);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_flow_valve", "Flow control valve, adjustable", C::Fluid, "RN", MAIN).build(&mut b));
+
+    b.rect(-3.0, -3.0, 3.0, 3.0, false).l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0).l(0.0, 2.0, 0.0, -1.6);
+    head(&mut b, 0.0, -2.4, 0.0, -1.0);
+    b.poly(&[(3.0, 1.5), (3.6, 0.6), (4.2, 2.4), (4.8, 0.6), (5.4, 2.4), (6.0, 1.5)], false, false);
+    b.dl(0.0, -3.6, 4.5, -3.6).dl(4.5, -3.6, 4.5, -1.0);
+    b.pin(0.0, 4.0, "1").pin(0.0, -4.0, "2");
+    v.push(def("fl_regulator", "Pressure regulator", C::Fluid, "RP", MAIN).build(&mut b));
+
+    // Service unit: filter, regulator and lubricator in one housing.
+    b.rect(-8.0, -3.0, 8.0, 3.0, false).l(-12.0, 0.0, -8.0, 0.0).l(8.0, 0.0, 12.0, 0.0);
+    b.poly(&[(-7.0, 0.0), (-5.0, -2.0), (-3.0, 0.0), (-5.0, 2.0)], true, false).dl(-7.0, 0.0, -3.0, 0.0);
+    b.l(-1.2, 1.6, 0.8, -1.2);
+    head(&mut b, 1.2, -1.8, 0.6, -0.8);
+    b.poly(&[(3.0, 0.0), (5.0, -2.0), (7.0, 0.0), (5.0, 2.0)], true, false).circle(5.0, 0.0, 0.5, true);
+    b.pin(-12.0, 0.0, "1").pin(12.0, 0.0, "2");
+    v.push(def("fl_frl", "Service unit (filter, regulator, lubricator)", C::Fluid, "AZ", MAIN).build(&mut b));
+
+    b.l(-2.5, -1.0, -2.5, 2.0).l(2.5, -1.0, 2.5, 2.0).arc(0.0, -1.0, 2.5, 180.0, 360.0).arc(0.0, 2.0, 2.5, 0.0, 180.0).l(-2.5, 0.5, 2.5, 0.5);
+    b.l(0.0, 4.5, 0.0, 8.0);
+    b.pin(0.0, 8.0, "1");
+    v.push(def("fl_accumulator", "Accumulator", C::Fluid, "CM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).poly(&[(0.0, -1.2), (-1.6, -3.66), (1.6, -3.66)], true, true);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "A").pin(0.0, 8.0, "B");
+    v.push(def("fl_hyd_motor", "Hydraulic motor", C::Fluid, "MM", MAIN).build(&mut b));
+
+    b.circle(0.0, 0.0, 4.0, false).poly(&[(0.0, -4.0), (-1.6, -1.4), (1.6, -1.4)], true, false);
+    b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "P").pin(0.0, 8.0, "S");
+    v.push(def("fl_compressor", "Compressor", C::Fluid, "GQ", MAIN).build(&mut b));
+
+    b.poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-2.0, 0.0, 2.0, 0.0);
+    head(&mut b, 2.8, 0.0, 1.0, 0.0);
+    head(&mut b, -2.8, 0.0, -1.0, 0.0);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_cooler", "Cooler", C::Fluid, "EP", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- P&ID
     // Process equipment has ports (pipes); instruments are overview functions of the

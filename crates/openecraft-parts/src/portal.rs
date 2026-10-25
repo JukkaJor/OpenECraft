@@ -274,6 +274,11 @@ pub fn attributes(part: &Part) -> Vec<(String, String)> {
             }
         }
     }
+    for key in crate::MOUNTING_KEYS {
+        if let Some(v) = part.mounting_data.get(key).filter(|_| !out.iter().any(|(n, _)| n.eq_ignore_ascii_case(key))) {
+            out.push((key.to_string(), v));
+        }
+    }
     out
 }
 

@@ -7,9 +7,9 @@
 //! (`review::Approval`, recorded with user and date) and released once approved.
 //! Releasing stores a baseline of the whole project.
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
-use crate::model::{natural_cmp, Page, Project};
+use crate::model::{natural_cmp, Page, Project, Shape, SymbolInst, TextItem, Wire};
 use std::sync::Arc;
 pub use crate::model::revision::{Revision, Snapshot, State, Workflow};
 
@@ -92,6 +92,88 @@ pub struct Change {
     pub label: String,
     /// Where to put the revision mark.
     pub pos: P,
+    /// Changed properties of a changed item.
+    pub details: Vec<Detail>,
+}
+
+/// A changed property: its name (English, translated where shown), old and new value.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Detail {
+    pub field: &'static str,
+    pub old: String,
+    pub new: String,
+}
+
+impl Change {
+    /// The changed properties as text: `Device tag: -K1 › -K2; Position`.
+    pub fn details_text(&self) -> String {
+        self.details
+            .iter()
+            .map(|d| if d.old.is_empty() && d.new.is_empty() { tr(d.field).to_string() } else { format!("{}: {} › {}", tr(d.field), shown(&d.old), shown(&d.new)) })
+            .collect::<Vec<_>>()
+            .join("; ")
+    }
+}
+
+fn shown(s: &str) -> &str {
+    if s.is_empty() { "–" } else { s }
+}
+
+/// Details of the fields that differ: (name, old, new).
+fn changed(fields: &[(&'static str, String, String)]) -> Vec<Detail> {
+    fields.iter().filter(|(_, a, b)| a != b).map(|(f, a, b)| Detail { field: f, old: a.clone(), new: b.clone() }).collect()
+}
+
+fn xy(q: P) -> String {
+    format!("{:.0} / {:.0}", q.x, q.y)
+}
+
+fn symbol_details(o: &SymbolInst, n: &SymbolInst) -> Vec<Detail> {
+    let mut d = changed(&[
+        (tr_const!("Symbol"), o.sym.clone(), n.sym.clone()),
+        (tr_const!("Device tag"), o.tag.clone(), n.tag.clone()),
+        (tr_const!("Designation"), o.label.clone(), n.label.clone()),
+        (tr_const!("Function text"), o.function_text.clone(), n.function_text.clone()),
+        (tr_const!("Connection points"), o.pins.join(" "), n.pins.join(" ")),
+        (tr_const!("Position"), xy(o.pos), xy(n.pos)),
+        (tr_const!("Rotation"), format!("{}°", o.rot as u32 * 90), format!("{}°", n.rot as u32 * 90)),
+        (tr_const!("Mirrored"), o.mirror.to_string(), n.mirror.to_string()),
+        (tr_const!("Function definition"), o.function_def.clone(), n.function_def.clone()),
+    ]);
+    let keys: std::collections::BTreeSet<&String> = o.values.keys().chain(n.values.keys()).collect();
+    for k in keys {
+        let (a, b) = (o.values.get(k).cloned().unwrap_or_default(), n.values.get(k).cloned().unwrap_or_default());
+        if a != b {
+            d.push(Detail { field: tr_const!("Property"), old: format!("{k} = {}", shown(&a)), new: format!("{k} = {}", shown(&b)) });
+        }
+    }
+    if d.is_empty() {
+        // Placement of the tag or the shown properties.
+        d.push(Detail { field: tr_const!("Display"), old: String::new(), new: String::new() });
+    }
+    d
+}
+
+fn wire_details(o: &Wire, n: &Wire) -> Vec<Detail> {
+    let d = changed(&[
+        (tr_const!("Wire number"), o.number.clone(), n.number.clone()),
+        (tr_const!("Colour"), o.color.clone(), n.color.clone()),
+        (tr_const!("Cross-section"), o.cross_section.clone(), n.cross_section.clone()),
+        (tr_const!("Cable"), o.cable.clone(), n.cable.clone()),
+        (tr_const!("Core"), o.core.clone(), n.core.clone()),
+        (tr_const!("Position"), format!("{} – {}", xy(o.a), xy(o.b)), format!("{} – {}", xy(n.a), xy(n.b))),
+    ]);
+    if d.is_empty() { vec![Detail { field: tr_const!("Other properties"), old: String::new(), new: String::new() }] } else { d }
+}
+
+fn text_details(o: &TextItem, n: &TextItem) -> Vec<Detail> {
+    let d = changed(&[
+        (tr_const!("Text"), o.text.clone(), n.text.clone()),
+        (tr_const!("Position"), xy(o.pos), xy(n.pos)),
+        (tr_const!("Size"), format!("{}", o.size), format!("{}", n.size)),
+        (tr_const!("Angle"), format!("{}°", o.angle), format!("{}°", n.angle)),
+    ]);
+    if d.is_empty() { vec![Detail { field: tr_const!("Other properties"), old: String::new(), new: String::new() }] } else { d }
 }
 
 /// Changes of one page (by page id; `page` is the current index if it still exists).
@@ -103,30 +185,32 @@ pub struct PageChanges {
     pub changes: Vec<Change>,
 }
 
-fn diff<T: PartialEq>(
-    old: &[T],
-    new: &[T],
-    id: impl Fn(&T) -> u64,
+/// How an item is found, named and compared.
+struct Kind<'a, T> {
     what: &'static str,
-    describe: impl Fn(&T) -> (String, P),
-    out: &mut Vec<Change>,
-) {
+    id: &'a dyn Fn(&T) -> u64,
+    describe: &'a dyn Fn(&T) -> (String, P),
+    details: &'a dyn Fn(&T, &T) -> Vec<Detail>,
+}
+
+fn diff<T: PartialEq>(old: &[T], new: &[T], k: &Kind<T>, out: &mut Vec<Change>) {
+    let (id, what) = (k.id, k.what);
     for n in new {
         match old.iter().find(|o| id(o) == id(n)) {
             None => {
-                let (label, pos) = describe(n);
-                out.push(Change { kind: ChangeKind::Added, what, id: id(n), label, pos });
+                let (label, pos) = (k.describe)(n);
+                out.push(Change { kind: ChangeKind::Added, what, id: id(n), label, pos, details: Vec::new() });
             }
             Some(o) if o != n => {
-                let (label, pos) = describe(n);
-                out.push(Change { kind: ChangeKind::Modified, what, id: id(n), label, pos });
+                let (label, pos) = (k.describe)(n);
+                out.push(Change { kind: ChangeKind::Modified, what, id: id(n), label, pos, details: (k.details)(o, n) });
             }
             Some(_) => {}
         }
     }
     for o in old.iter().filter(|o| !new.iter().any(|n| id(n) == id(o))) {
-        let (label, pos) = describe(o);
-        out.push(Change { kind: ChangeKind::Removed, what, id: id(o), label, pos });
+        let (label, pos) = (k.describe)(o);
+        out.push(Change { kind: ChangeKind::Removed, what, id: id(o), label, pos, details: Vec::new() });
     }
 }
 
@@ -140,15 +224,26 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
     for (i, n) in new.iter().enumerate() {
         let mut changes = Vec::new();
         match old.iter().find(|o| o.id == n.id) {
-            None => changes.push(Change { kind: ChangeKind::Added, what: "Page", id: n.id, label: n.description.clone(), pos: p(0.0, 0.0) }),
+            None => changes.push(Change { kind: ChangeKind::Added, what: "Page", id: n.id, label: n.description.clone(), pos: p(0.0, 0.0), details: Vec::new() }),
             Some(o) => {
-                if (&o.name, &o.description, crate::structure::page_structure(o), o.kind) != (&n.name, &n.description, crate::structure::page_structure(n), n.kind) {
-                    changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: tr("page properties").into(), pos: p(0.0, 0.0) });
+                let details = changed(&[
+                    (tr_const!("Page name"), o.name.clone(), n.name.clone()),
+                    (tr_const!("Description"), o.description.clone(), n.description.clone()),
+                    (tr_const!("Structure"), crate::structure::page_structure(o), crate::structure::page_structure(n)),
+                    (tr_const!("Page type"), o.kind.label(), n.kind.label()),
+                ]);
+                if !details.is_empty() {
+                    changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: tr("page properties").into(), pos: p(0.0, 0.0), details });
                 }
-                diff(&o.symbols, &n.symbols, |s| s.id, "Symbol", |s| (format!("{} {}", s.tag, s.label).trim().to_string(), s.pos), &mut changes);
-                diff(&o.wires, &n.wires, |w| w.id, "Wire", |w| (w.number.clone(), mid(w.a, w.b)), &mut changes);
-                diff(&o.texts, &n.texts, |t| t.id, "Text", |t| (t.text.lines().next().unwrap_or("").to_string(), t.pos), &mut changes);
-                diff(&o.shapes, &n.shapes, |s| s.id, "Graphic", |s| (String::new(), mid(s.a, s.b)), &mut changes);
+                let sym = Kind { what: "Symbol", id: &|s: &SymbolInst| s.id, describe: &|s: &SymbolInst| (format!("{} {}", s.tag, s.label).trim().to_string(), s.pos), details: &symbol_details };
+                diff(&o.symbols, &n.symbols, &sym, &mut changes);
+                let wire = Kind { what: "Wire", id: &|w: &Wire| w.id, describe: &|w: &Wire| (w.number.clone(), mid(w.a, w.b)), details: &wire_details };
+                diff(&o.wires, &n.wires, &wire, &mut changes);
+                let text = Kind { what: "Text", id: &|t: &TextItem| t.id, describe: &|t: &TextItem| (t.text.lines().next().unwrap_or("").to_string(), t.pos), details: &text_details };
+                diff(&o.texts, &n.texts, &text, &mut changes);
+                let none = |_: &Shape, _: &Shape| Vec::new();
+                let shape = Kind { what: "Graphic", id: &|s: &Shape| s.id, describe: &|s: &Shape| (String::new(), mid(s.a, s.b)), details: &none };
+                diff(&o.shapes, &n.shapes, &shape, &mut changes);
             }
         }
         if !changes.is_empty() {
@@ -156,7 +251,7 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
         }
     }
     for o in old.iter().filter(|o| !new.iter().any(|n| n.id == o.id)) {
-        let removed = Change { kind: ChangeKind::Removed, what: "Page", id: o.id, label: o.description.clone(), pos: p(0.0, 0.0) };
+        let removed = Change { kind: ChangeKind::Removed, what: "Page", id: o.id, label: o.description.clone(), pos: p(0.0, 0.0), details: Vec::new() };
         out.push(PageChanges { page_id: o.id, page: None, name: o.name.clone(), changes: vec![removed] });
     }
     out
@@ -349,7 +444,12 @@ pub fn overview(prj: &Project) -> Vec<OverviewRow> {
     for pc in pages {
         for c in &pc.changes {
             let target = pc.page.map(|pi| (pi, if c.kind == ChangeKind::Removed || c.what == "Page" { 0 } else { c.id }));
-            rows.push((pc.name.clone(), c.kind.title().to_string(), tr(c.what).to_string(), c.label.clone(), target));
+            let label = match (c.label.is_empty(), c.details.is_empty()) {
+                (_, true) => c.label.clone(),
+                (true, false) => c.details_text(),
+                (false, false) => format!("{} ({})", c.label, c.details_text()),
+            };
+            rows.push((pc.name.clone(), c.kind.title().to_string(), tr(c.what).to_string(), label, target));
         }
     }
     rows

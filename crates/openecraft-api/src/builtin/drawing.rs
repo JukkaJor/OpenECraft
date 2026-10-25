@@ -10,8 +10,9 @@ use openecraft_core::fluid::Medium;
 use openecraft_core::geom::{p, P, GRID};
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
-use openecraft_core::symbols::{self, Func, SymbolRef};
+use openecraft_core::symbols::{self, Anchor, Func, SymbolRef};
 use openecraft_core::symlib::Symbols;
+use openecraft_core::arrange::{self, Align};
 use openecraft_core::{cabledef, conndef, routing};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -113,10 +114,45 @@ pub static COMMANDS: &[Spec] = &[
             PAGE,
             param("x", Kind::Num, tr_const!("X position in mm")),
             param("y", Kind::Num, tr_const!("Y position in mm (downwards)")),
-            param("text", Kind::Str, tr_const!("Text")),
+            param("text", Kind::Str, tr_const!("Text; placeholders such as {page} or {prop:Name} are filled in when drawn")),
             optional("size", Kind::Num, tr_const!("Text height in mm (default 3.5)")),
+            optional("angle", Kind::Num, tr_const!("Rotation in degrees, counter-clockwise (90 reads from bottom to top)")),
+            optional("align", Kind::Str, tr_const!("Horizontal alignment: left, center or right")),
+            optional("valign", Kind::Str, tr_const!("Which line the position is on: top (first), middle or bottom (last)")),
+            optional("width", Kind::Num, tr_const!("Wrap width in mm (0: no wrapping)")),
+            optional("bold", Kind::Bool, tr_const!("Bold")),
+            optional("italic", Kind::Bool, tr_const!("Italic")),
+            optional("underline", Kind::Bool, tr_const!("Underline")),
+            optional("frame", Kind::Bool, tr_const!("Border around the text")),
+            optional("background", Kind::Bool, tr_const!("Opaque background in the paper colour")),
+            optional("link", Kind::Str, tr_const!("Hyperlink (URL)")),
+            optional("path_function", Kind::Bool, tr_const!("Path function text: function text of the functions in its column that have none")),
         ],
         run: add_text,
+    },
+    Spec {
+        name: "update_text",
+        help: tr_const!("Changes a text (only the given properties)"),
+        params: &[
+            PAGE,
+            param("id", Kind::Int, tr_const!("Id of the text")),
+            optional("text", Kind::Str, tr_const!("Text; placeholders such as {page} or {prop:Name} are filled in when drawn")),
+            optional("x", Kind::Num, tr_const!("X position in mm")),
+            optional("y", Kind::Num, tr_const!("Y position in mm (downwards)")),
+            optional("size", Kind::Num, tr_const!("Text height in mm (default 3.5)")),
+            optional("angle", Kind::Num, tr_const!("Rotation in degrees, counter-clockwise (90 reads from bottom to top)")),
+            optional("align", Kind::Str, tr_const!("Horizontal alignment: left, center or right")),
+            optional("valign", Kind::Str, tr_const!("Which line the position is on: top (first), middle or bottom (last)")),
+            optional("width", Kind::Num, tr_const!("Wrap width in mm (0: no wrapping)")),
+            optional("bold", Kind::Bool, tr_const!("Bold")),
+            optional("italic", Kind::Bool, tr_const!("Italic")),
+            optional("underline", Kind::Bool, tr_const!("Underline")),
+            optional("frame", Kind::Bool, tr_const!("Border around the text")),
+            optional("background", Kind::Bool, tr_const!("Opaque background in the paper colour")),
+            optional("link", Kind::Str, tr_const!("Hyperlink (URL)")),
+            optional("path_function", Kind::Bool, tr_const!("Path function text: function text of the functions in its column that have none")),
+        ],
+        run: update_text,
     },
     Spec {
         name: "move_items",
@@ -128,6 +164,34 @@ pub static COMMANDS: &[Spec] = &[
             param("dy", Kind::Num, tr_const!("Distance in Y (mm)")),
         ],
         run: move_items,
+    },
+    Spec {
+        name: "align_items",
+        help: tr_const!("Aligns symbols, texts and graphics to a common edge or centre; connected wire ends follow"),
+        params: &[
+            PAGE,
+            param("ids", Kind::Ids, tr_const!("Item ids")),
+            param("align", Kind::Str, tr_const!("left, center, right, top, middle or bottom")),
+        ],
+        run: align_items,
+    },
+    Spec {
+        name: "distribute_items",
+        help: tr_const!("Distributes symbols, texts and graphics evenly between the first and the last one"),
+        params: &[PAGE, param("ids", Kind::Ids, tr_const!("Item ids")), optional("vertical", Kind::Bool, tr_const!("Distribute vertically (default horizontally)"))],
+        run: distribute_items,
+    },
+    Spec {
+        name: "copy_items",
+        help: tr_const!("Copies items several times at a fixed distance; devices get new tags, terminals new numbers"),
+        params: &[
+            PAGE,
+            param("ids", Kind::Ids, tr_const!("Item ids")),
+            optional("count", Kind::Int, tr_const!("Number of copies (default 1)")),
+            param("dx", Kind::Num, tr_const!("Distance in X (mm)")),
+            param("dy", Kind::Num, tr_const!("Distance in Y (mm)")),
+        ],
+        run: copy_items,
     },
     Spec {
         name: "delete_items",
@@ -422,13 +486,92 @@ fn update_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
     Ok(json!({ "id": w.id, "number": w.number, "color": w.color, "cross_section": w.cross_section, "cable": w.cable, "core": w.core, "medium": medium, "length": w.length }))
 }
 
+/// Takes the style parameters of `add_text` / `update_text` that are given.
+fn text_style_args(t: &mut TextItem, a: &Args) -> Result<(), String> {
+    if let Some(s) = a.num("size") {
+        t.size = s.max(0.5);
+    }
+    if let Some(v) = a.num("angle") {
+        t.angle = v.rem_euclid(360.0);
+    }
+    if let Some(v) = a.str("align") {
+        t.align = match v.trim().to_ascii_lowercase().as_str() {
+            "left" => Anchor::Left,
+            "center" | "centre" => Anchor::Center,
+            "right" => Anchor::Right,
+            _ => return Err(tr_fmt!("Unknown alignment: {}", v)),
+        };
+    }
+    if let Some(v) = a.str("valign") {
+        t.valign = match v.trim().to_ascii_lowercase().as_str() {
+            "top" => VAnchor::Top,
+            "middle" => VAnchor::Middle,
+            "bottom" => VAnchor::Bottom,
+            _ => return Err(tr_fmt!("Unknown vertical anchor: {}", v)),
+        };
+    }
+    if let Some(w) = a.num("width") {
+        t.width = w.max(0.0);
+    }
+    for (name, field) in [
+        ("bold", &mut t.bold),
+        ("italic", &mut t.italic),
+        ("underline", &mut t.underline),
+        ("frame", &mut t.frame),
+        ("background", &mut t.background),
+        ("path_function", &mut t.path_function),
+    ] {
+        if let Some(v) = a.value(name).and_then(Value::as_bool) {
+            *field = v;
+        }
+    }
+    if let Some(l) = a.str("link") {
+        t.link = l.trim().to_string();
+    }
+    Ok(())
+}
+
+fn text_json(t: &TextItem) -> Value {
+    let align = match t.align {
+        Anchor::Left => "left",
+        Anchor::Center => "center",
+        Anchor::Right => "right",
+    };
+    let valign = match t.valign {
+        VAnchor::Top => "top",
+        VAnchor::Middle => "middle",
+        VAnchor::Bottom => "bottom",
+    };
+    json!({
+        "id": t.id, "x": t.pos.x, "y": t.pos.y, "text": t.text, "size": t.size, "angle": t.angle, "align": align, "valign": valign,
+        "width": t.width, "bold": t.bold, "italic": t.italic, "underline": t.underline, "frame": t.frame, "background": t.background,
+        "link": t.link, "path_function": t.path_function
+    })
+}
+
 fn add_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let id = prj.new_id();
     let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
-    let size = a.num("size").unwrap_or(3.5);
-    prj.pages[i].texts.push(TextItem { id, pos, text: a.req("text").into(), size, ..Default::default() });
-    Ok(json!({ "id": id }))
+    let mut t = TextItem { id, pos, text: a.req("text").into(), size: 3.5, ..Default::default() };
+    text_style_args(&mut t, a)?;
+    let out = text_json(&t);
+    prj.pages[i].texts.push(t);
+    Ok(out)
+}
+
+fn update_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let i = editable(prj, a.req("page"))?;
+    let id = a.int("id").unwrap_or_default() as u64;
+    let t = prj.pages[i].texts.iter_mut().find(|t| t.id == id).ok_or_else(|| tr_fmt!("No text with id {}", id))?;
+    if let Some(s) = a.str("text") {
+        t.text = s.into();
+    }
+    if let (Some(x), Some(y)) = (a.num("x"), a.num("y")) {
+        t.pos = snapped(x, y);
+    }
+    text_style_args(t, a)?;
+    Ok(text_json(t))
 }
 
 fn move_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -440,6 +583,32 @@ fn move_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let attached = ops::attached_wire_ends(&symbols, page, &sel);
     ops::translate(page, &sel, &attached, d);
     Ok(json!({ "moved": sel.len(), "dx": d.x, "dy": d.y }))
+}
+
+fn align_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let symbols = prj.symbol_table();
+    let i = editable(prj, a.req("page"))?;
+    let how = Align::from_code(a.req("align")).ok_or_else(|| tr_fmt!("Unknown alignment: {}", a.req("align")))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let n = arrange::align(&symbols, &mut prj.pages[i], &sel, how);
+    Ok(json!({ "moved": n }))
+}
+
+fn distribute_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let symbols = prj.symbol_table();
+    let i = editable(prj, a.req("page"))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let n = arrange::distribute(&symbols, &mut prj.pages[i], &sel, !a.flag("vertical"));
+    Ok(json!({ "moved": n }))
+}
+
+fn copy_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let i = editable(prj, a.req("page"))?;
+    let sel = selection(&prj.pages[i], a)?;
+    let count = a.int("count").unwrap_or(1).clamp(1, 100) as usize;
+    let d = p(a.num("dx").unwrap_or_default(), a.num("dy").unwrap_or_default());
+    let ids = arrange::multiple_copy(prj, i, &sel, count, d);
+    Ok(json!({ "ids": ids }))
 }
 
 fn delete_items(prj: &mut Project, a: &Args) -> Result<Value, String> {

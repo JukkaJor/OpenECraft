@@ -214,3 +214,15 @@ fn review_records_need_no_lock() {
     let out = merge(&theirs, &prj, &Owned::default());
     assert_eq!(out.review.live_comments().count(), 2);
 }
+
+#[test]
+fn roles_and_projects_of_users() {
+    let viewer = ProjectUser { name: "v".into(), role: ProjectRole::Viewer, projects: vec![] };
+    assert!(viewer.may_see("Plant 1") && !viewer.may_edit("Plant 1"));
+    let editor = ProjectUser { name: "e".into(), role: ProjectRole::Editor, projects: vec!["Plant*".into()] };
+    assert!(editor.may_edit("Plant 2") && !editor.may_see("Office"));
+    let admin = ProjectUser { name: "a".into(), role: ProjectRole::Admin, projects: vec!["none".into()] };
+    assert!(admin.may_edit("Office"), "administrators see everything");
+    assert!(ProjectRole::Viewer < ProjectRole::Editor && ProjectRole::Editor < ProjectRole::Admin);
+    assert_eq!(user_path("anna b"), "/api/v1/users/anna%20b");
+}

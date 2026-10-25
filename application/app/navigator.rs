@@ -12,12 +12,15 @@ impl App {
             ui.selectable_value(&mut self.left_tab, LeftTab::Connections, tr("Connections"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Cables, tr("Cables"));
             ui.selectable_value(&mut self.left_tab, LeftTab::Layers, tr("Layers"));
-            let n_err = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error).count();
+            let n_err = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error && !i.accepted).count();
             let label = if n_err > 0 { RichText::new(tr_fmt!("Check ({})", n_err)).color(Color32::from_rgb(220, 60, 60)) } else { RichText::new(tr("Check")) };
             ui.selectable_value(&mut self.left_tab, LeftTab::Check, label);
             let open = self.session.prj.review.live_comments().filter(|c| !c.status.is_done()).count();
             let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
             ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
+            ui.selectable_value(&mut self.left_tab, LeftTab::Unplaced, tr("Unplaced")).on_hover_text(tr("PLC channels and functions of the assigned parts that are not in the schematic yet"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Strips, tr("Strips / plugs")).on_hover_text(tr("Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Plc, tr("PLC")).on_hover_text(tr("PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page"));
         });
         let areas = &self.session.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
@@ -43,6 +46,7 @@ impl App {
                     if ui.button("⚙").on_hover_text(tr("Page properties")).clicked() {
                         self.page_props = Some(self.session.page);
                     }
+                    ui.toggle_value(&mut self.page_tree, "🗄").on_hover_text(tr("Group the pages by structure"));
                     if ui.add_enabled(self.session.page > 0, egui::Button::new("⏶")).clicked() {
                         self.session.prj.pages.swap(self.session.page, self.session.page - 1);
                         self.session.page -= 1;
@@ -53,42 +57,42 @@ impl App {
                     }
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let mut goto = None;
-                    let mut lock_action = None;
-                    for (i, pg) in self.session.prj.pages.iter().enumerate() {
-                        if area.as_ref().is_some_and(|w| !w.shows_page(pg)) && i != self.session.page {
-                            continue;
+                    let mut action = PageAction::None;
+                    let shown: Vec<usize> = (0..self.session.prj.pages.len())
+                        .filter(|&i| i == self.session.page || area.as_ref().is_none_or(|w| w.shows_page(&self.session.prj.pages[i])))
+                        .collect();
+                    if self.page_tree {
+                        // Groups by structure, in the order they first occur.
+                        let mut groups: Vec<(String, Vec<usize>)> = Vec::new();
+                        for &i in &shown {
+                            let st = structure::page_structure(&self.session.prj.pages[i]);
+                            match groups.iter_mut().find(|g| g.0 == st) {
+                                Some(g) => g.1.push(i),
+                                None => groups.push((st, vec![i])),
+                            }
                         }
-                        let icon = match pg.kind {
-                            PageKind::Schematic => "🗋",
-                            PageKind::Cover => "🏷",
-                            PageKind::Report(_) => "📊",
-                            PageKind::Mounting(_) => "🗄",
-                            PageKind::Overview => "🗺",
-                            PageKind::Graphic => "✏",
-                            PageKind::Document => "📎",
-                        };
-                        let mut text = egui::text::LayoutJob::default();
-                        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
-                        text.append(&format!("{icon} {}   {}", structure::page_full_name(pg), pg.description), 0.0, style.clone());
-                        if let Some((mark, color)) = self.page_lock_mark(pg.id) {
-                            text.append(&mark, 8.0, egui::TextFormat { color, ..style });
-                        }
-                        let r = ui.selectable_label(i == self.session.page, text);
-                        if r.clicked() {
-                            goto = Some(i);
-                        }
-                        if self.remote.shared.is_some() {
-                            r.context_menu(|ui| {
-                                if let Some(a) = self.page_lock_menu(ui, pg.id) {
-                                    lock_action = Some(a);
+                        for (st, pages) in groups {
+                            let title = if st.is_empty() { tr("(no structure)").to_string() } else { self.structure_title(&st) };
+                            egui::CollapsingHeader::new(title).id_salt(("ptree", st.as_str())).default_open(true).show(ui, |ui| {
+                                for i in pages {
+                                    action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
                                 }
                             });
                         }
-                        if r.double_clicked() {
-                            self.page_props = Some(i);
+                    } else {
+                        for i in shown {
+                            action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
                         }
                     }
+                    let (goto, lock_action) = match action {
+                        PageAction::Goto(i) => (Some(i), None),
+                        PageAction::Properties(i) => {
+                            self.page_props = Some(i);
+                            (None, None)
+                        }
+                        PageAction::Lock(t, r) => (None, Some((t, r))),
+                        PageAction::None => (None, None),
+                    };
                     if let Some(i) = goto {
                         self.goto(i, 0);
                     }
@@ -176,39 +180,277 @@ impl App {
             LeftTab::Connections => self.connections_tab(ui),
             LeftTab::Cables => self.cables_tab(ui),
             LeftTab::Layers => self.layers_tab(ui),
-            LeftTab::Check => {
-                let issues = self.session.analysis.issues.clone();
-                let count = |s| issues.iter().filter(|i| i.severity == s).count();
-                ui.label(format!(
-                    "{} errors, {} warnings, {} notes",
-                    count(Severity::Error),
-                    count(Severity::Warning),
-                    count(Severity::Info)
-                ));
-                egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let mut jump = None;
-                    for issue in &issues {
-                        let (icon, color) = match issue.severity {
-                            Severity::Error => ("⛔", Color32::from_rgb(220, 60, 60)),
-                            Severity::Warning => ("⚠", Color32::from_rgb(220, 160, 0)),
-                            Severity::Info => ("ℹ", ui.visuals().weak_text_color()),
-                        };
-                        ui.horizontal_wrapped(|ui| {
-                            ui.label(RichText::new(icon).color(color));
-                            let r = ui.add(egui::Label::new(issue.message()).sense(egui::Sense::click()));
-                            if r.on_hover_text(tr("Click to show")).clicked() {
-                                jump = issue.target;
+            LeftTab::Check => self.check_tab(ui),
+            LeftTab::Unplaced => self.unplaced_tab(ui),
+            LeftTab::Plc => self.plc_tab(ui),
+            LeftTab::Strips => self.strips_tab(ui),
+        }
+    }
+}
+
+/// What a row of the page list asks for.
+enum PageAction {
+    None,
+    Goto(usize),
+    Properties(usize),
+    Lock(openecraft_core::collab::Target, bool),
+}
+
+impl PageAction {
+    fn or(self, other: PageAction) -> PageAction {
+        match self {
+            PageAction::None => other,
+            a => a,
+        }
+    }
+}
+
+impl App {
+    /// `=A1+CAB1  Pump station` (descriptions from the structure management).
+    fn structure_title(&self, st: &str) -> String {
+        let dt = Dt::parse_structure(st);
+        let s = &self.session.prj.structures;
+        let desc: Vec<String> = openecraft_core::structure::Aspect::ALL
+            .into_iter()
+            .filter_map(|a| s.entry(a, dt.get(a)).map(|e| e.description.clone()))
+            .filter(|d| !d.is_empty())
+            .collect();
+        if desc.is_empty() {
+            st.to_string()
+        } else {
+            format!("{st}  {}", desc.join(", "))
+        }
+    }
+
+    /// One page of the page list.
+    fn page_row(&self, ui: &mut egui::Ui, i: usize) -> PageAction {
+        let pg = &self.session.prj.pages[i];
+        let icon = match pg.kind {
+            PageKind::Schematic => "🗋",
+            PageKind::Cover => "🏷",
+            PageKind::Report(_) => "📊",
+            PageKind::Mounting(_) => "🗄",
+            PageKind::Overview => "🗺",
+            PageKind::Graphic => "✏",
+            PageKind::Document => "📎",
+        };
+        let mut text = egui::text::LayoutJob::default();
+        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
+        let name = if self.page_tree { pg.name.clone() } else { structure::page_full_name(pg) };
+        text.append(&format!("{icon} {name}   {}", pg.description), 0.0, style.clone());
+        if let Some((mark, color)) = self.page_lock_mark(pg.id) {
+            text.append(&mark, 8.0, egui::TextFormat { color, ..style });
+        }
+        let r = ui.selectable_label(i == self.session.page, text);
+        let mut action = PageAction::None;
+        if r.clicked() {
+            action = PageAction::Goto(i);
+        }
+        if self.remote.shared.is_some() {
+            r.context_menu(|ui| {
+                if let Some((t, release)) = self.page_lock_menu(ui, pg.id) {
+                    action = PageAction::Lock(t, release);
+                }
+            });
+        }
+        if r.double_clicked() {
+            action = PageAction::Properties(i);
+        }
+        action
+    }
+}
+
+impl App {
+    /// Unplaced PLC channels and part functions, grouped by device; a click places one.
+    fn unplaced_tab(&mut self, ui: &mut egui::Ui) {
+        let prj = &self.session.prj;
+        let channels = openecraft_core::unplaced::plc_channels(prj);
+        let functions = openecraft_core::unplaced::device_functions(prj, Some(&self.parts_db));
+        let potentials = openecraft_core::unplaced::potentials(prj);
+        let mut start = None;
+        ui.weak(tr("Drag an entry into the page, or click it and then click into the page."));
+        egui::ScrollArea::vertical().id_salt("unplaced").auto_shrink([false, false]).show(ui, |ui| {
+            for (title, list) in [(tr("PLC channels"), &channels), (tr("Functions of the parts"), &functions), (tr("Defined potentials"), &potentials)] {
+                egui::CollapsingHeader::new(RichText::new(tr_fmt!("{} ({})", title, list.len())).strong()).id_salt(title).default_open(true).show(ui, |ui| {
+                    let mut tags: Vec<&String> = list.iter().map(|u| &u.tag).collect();
+                    tags.dedup();
+                    for tag in tags {
+                        let items: Vec<&openecraft_core::unplaced::Unplaced> = list.iter().filter(|u| &u.tag == tag).collect();
+                        egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({})", items.len())).monospace()).id_salt((title, tag)).show(ui, |ui| {
+                            for u in items {
+                                let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
+                                let r = ui.dnd_drag_source(ui.make_persistent_id(("unplaced", &u.tag, &u.title)), payload, |ui| ui.link(&u.title).on_hover_text(tr("Click, or drag it into the page")));
+                                if r.inner.clicked() {
+                                    start = Some(u.clone());
+                                }
                             }
                         });
                     }
-                    if issues.is_empty() {
-                        ui.label(tr("✔ No problems found."));
-                    }
-                    if let Some((pg, id)) = jump {
-                        self.goto(pg, id);
+                    if list.is_empty() {
+                        ui.weak(tr("(no entries)"));
                     }
                 });
             }
+        });
+        if let Some(u) = start {
+            self.editor.set_tool(Tool::Place(u.symbol));
+            self.editor.place_tag = Some(u.tag.clone());
+            self.editor.place_once = Some((u.label, u.pins));
+        }
+    }
+
+    /// PLC cards with their channels in address order: placed ones with function text
+    /// and connected devices (a click shows the symbol), unplaced ones of cards with a
+    /// device description to drag into the page.
+    fn plc_tab(&mut self, ui: &mut egui::Ui) {
+        let prj = &self.session.prj;
+        let points = openecraft_core::plc::points(prj, &self.session.analysis.netlist);
+        let unplaced = openecraft_core::unplaced::plc_channels(prj);
+        let mut cards: Vec<String> = points.iter().map(|p| p.card.clone()).chain(unplaced.iter().map(|u| u.tag.clone())).collect();
+        cards.sort_by(|a, b| openecraft_core::model::natural_cmp(a, b));
+        cards.dedup();
+        let mut jump = None;
+        let mut start = None;
+        egui::ScrollArea::vertical().id_salt("plc_nav").auto_shrink([false, false]).show(ui, |ui| {
+            if cards.is_empty() {
+                ui.weak(tr("No PLC cards in the project."));
+            }
+            for card in &cards {
+                let placed: Vec<&openecraft_core::plc::Point> = points.iter().filter(|p| &p.card == card).collect();
+                let open: Vec<&openecraft_core::unplaced::Unplaced> = unplaced.iter().filter(|u| &u.tag == card).collect();
+                let mut rows: Vec<(openecraft_core::plc::AddressKey, Option<&openecraft_core::plc::Point>, Option<&openecraft_core::unplaced::Unplaced>)> = placed
+                    .iter()
+                    .map(|p| (openecraft_core::plc::address_key(&p.address), Some(*p), None))
+                    .chain(open.iter().map(|u| (openecraft_core::plc::address_key(&u.label), None, Some(*u))))
+                    .collect();
+                rows.sort_by(|a, b| a.0.cmp(&b.0));
+                let title = if open.is_empty() { format!("{card}  ({})", placed.len()) } else { tr_fmt!("{}  ({} placed, {} free)", card, placed.len(), open.len()) };
+                egui::CollapsingHeader::new(RichText::new(title).monospace()).id_salt(("plc_card", card)).show(ui, |ui| {
+                    for (_, p, u) in rows {
+                        if let Some(p) = p {
+                            let kind = if p.input { "DI" } else { "DO" };
+                            let mut text = format!("{}  {kind}  {}", p.address, p.function_text);
+                            if !p.connected.is_empty() {
+                                text = format!("{text}  › {}", p.connected);
+                            }
+                            if ui.selectable_label(false, text).on_hover_text(&p.location).clicked() {
+                                jump = Some((p.page, p.id));
+                            }
+                        } else if let Some(u) = u {
+                            let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
+                            let r = ui.dnd_drag_source(ui.make_persistent_id(("plc_free", &u.tag, &u.label)), payload, |ui| {
+                                ui.add(egui::Label::new(RichText::new(format!("{}  –", u.label)).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
+                            });
+                            if r.inner.clicked() {
+                                start = Some(u.clone());
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        if let Some((page, id)) = jump {
+            self.goto(page, id);
+        }
+        if let Some(u) = start {
+            self.editor.set_tool(Tool::Place(u.symbol));
+            self.editor.place_tag = Some(u.tag.clone());
+            self.editor.place_once = Some((u.label, u.pins));
+        }
+    }
+
+    /// Terminal strips (terminals in rail order, spares) and plugs (pins, unused pins of
+    /// the plug parts): a click shows a placed one, spare ones are dragged into the page.
+    fn strips_tab(&mut self, ui: &mut egui::Ui) {
+        use openecraft_core::strips::{self, ElementKind};
+        let prj = &self.session.prj;
+        let mut jump = None;
+        let mut start: Option<crate::editor::PlacePayload> = None;
+        // Placed terminal symbols by strip and designation.
+        let placed = |tag: &str, label: &str| {
+            prj.pages.iter().enumerate().find_map(|(pi, pg)| {
+                pg.symbols.iter().find(|s| s.tag == tag && s.label == label && prj.symbol(&s.sym).is_some_and(|d| d.func == openecraft_core::symbols::Func::Terminal)).map(|s| (pi, s.id))
+            })
+        };
+        let free = |ui: &mut egui::Ui, id: (&str, &str, &str), payload: crate::editor::PlacePayload, text: String| -> bool {
+            let r = ui.dnd_drag_source(ui.make_persistent_id(id), payload, |ui| {
+                ui.add(egui::Label::new(RichText::new(text).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
+            });
+            r.inner.clicked()
+        };
+        egui::ScrollArea::vertical().id_salt("strips_nav").auto_shrink([false, false]).show(ui, |ui| {
+            ui.label(RichText::new(tr("Terminal strips")).strong());
+            let tags = strips::strip_tags(prj);
+            if tags.is_empty() {
+                ui.weak(tr("(no entries)"));
+            }
+            for tag in &tags {
+                let layout = strips::strip_layout(prj, tag);
+                let n = layout.iter().filter(|e| matches!(e.kind, ElementKind::Terminal(_) | ElementKind::Spare(_))).count();
+                egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({n})")).monospace()).id_salt(("strip_nav", tag)).show(ui, |ui| {
+                    for e in &layout {
+                        match &e.kind {
+                            ElementKind::Terminal(label) => {
+                                let levels = e.designations().join(" / ");
+                                let text = if e.levels.is_empty() { label.clone() } else { levels };
+                                match placed(tag, label) {
+                                    Some(at) => {
+                                        if ui.selectable_label(false, text).clicked() {
+                                            jump = Some(at);
+                                        }
+                                    }
+                                    None => {
+                                        ui.weak(text);
+                                    }
+                                }
+                            }
+                            ElementKind::Spare(label) => {
+                                let payload = crate::editor::PlacePayload { symbol: "term", tag: tag.clone(), label: label.clone(), pins: Vec::new() };
+                                if free(ui, ("strip_free", tag, label), payload.clone(), tr_fmt!("{} (spare)", label)) {
+                                    start = Some(payload);
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                });
+            }
+            ui.add_space(6.0);
+            ui.label(RichText::new(tr("Plugs")).strong());
+            let plugs = openecraft_core::plugs::plug_tags(prj);
+            if plugs.is_empty() {
+                ui.weak(tr("(no entries)"));
+            }
+            for plug in &plugs {
+                let rows = openecraft_core::plugs::rows(prj, plug, &self.session.analysis.netlist, &self.session.analysis.open);
+                egui::CollapsingHeader::new(RichText::new(format!("{plug}  ({})", rows.len())).monospace()).id_salt(("plug_nav", plug)).show(ui, |ui| {
+                    for r in &rows {
+                        match r.pins.first() {
+                            Some(p) => {
+                                let targets = [r.socket.as_str(), r.pin.as_str()].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join(" | ");
+                                let text = if targets.is_empty() { r.label.clone() } else { format!("{}  › {targets}", r.label) };
+                                if ui.selectable_label(false, text).clicked() {
+                                    jump = Some((p.page, p.id));
+                                }
+                            }
+                            None => {
+                                let payload = crate::editor::PlacePayload { symbol: "plug_pair", tag: plug.clone(), label: r.label.clone(), pins: Vec::new() };
+                                if free(ui, ("plug_free", plug, &r.label), payload.clone(), tr_fmt!("{} (unused)", r.label)) {
+                                    start = Some(payload);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        if let Some((page, id)) = jump {
+            self.goto(page, id);
+        }
+        if let Some(pl) = start {
+            self.editor.set_tool(Tool::Place(pl.symbol));
+            self.editor.place_tag = Some(pl.tag);
+            self.editor.place_once = Some((pl.label, pl.pins));
         }
     }
 }

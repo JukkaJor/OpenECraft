@@ -8,6 +8,7 @@ use openecraft_core::index::Index;
 use crate::io::{self, FileIo, Loaded, Purpose, PROJECT_EXT};
 use openecraft_core::parts::{self, PartsDb};
 use crate::panel_ui::{NcFormat, PanelUi};
+use crate::mounting_ui::MountingUi;
 use crate::wiring_ui::WiringUi;
 use crate::parts_ui::{PartsAction, PartsUi};
 use openecraft_core::model::*;
@@ -18,17 +19,22 @@ use openecraft_core::issue::Severity;
 use openecraft_core::structure::{self, Aspect, Dt};
 use openecraft_core::symbols::{self, Category, Func};
 use openecraft_core::{potentials, properties, sample, translation, wirenum};
-use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
+use egui::{Color32, Key, RichText};
 use openecraft_api::params::{text, Args};
 use serde_json::Map;
 
+mod arrange_ui;
 mod cables_ui;
+mod check_ui;
 mod files;
+mod find_ui;
 mod menus;
 mod navigator;
+mod numbering_ui;
 mod properties_panel;
 mod toolbar;
 mod windows;
+mod xref_ui;
 mod compare_ui;
 mod engineering;
 mod field_ui;
@@ -48,6 +54,8 @@ mod potentials_ui;
 mod projects_ui;
 mod properties_ui;
 mod structure_ui;
+mod preplanning_ui;
+mod workspaces_ui;
 mod process_ui;
 mod singleline_ui;
 mod remote_ui;
@@ -74,6 +82,12 @@ enum LeftTab {
     Layers,
     Check,
     Review,
+    /// Functions of the project data not placed yet.
+    Unplaced,
+    /// PLC cards with their channels.
+    Plc,
+    /// Terminal strips and plugs with their terminals and pins.
+    Strips,
 }
 
 pub struct App {
@@ -101,9 +115,26 @@ pub struct App {
     workspace: Workspace,
     panel_ui: PanelUi,
     wiring_ui: WiringUi,
+    mounting_ui: MountingUi,
     show_help: bool,
+    show_shortcuts: bool,
+    /// Saved workspaces (View › Workspaces) and the name typed for a new one.
+    layouts: Vec<crate::workspaces::Layout>,
+    /// Name of the workspace being saved (the window is open while it is set).
+    layout_name: Option<String>,
+    /// Export whose parameters are being entered: exporter, language, text per parameter.
+    export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
+    /// Action whose new shortcut is being recorded.
+    recording: Option<crate::shortcuts::Action>,
     show_cables: bool,
     show_numbering: bool,
+    numbering_ui: numbering_ui::NumberingUi,
+    check_ui: check_ui::CheckUi,
+    arrange_ui: arrange_ui::ArrangeUi,
+    show_xref: bool,
+    find_ui: find_ui::FindUi,
+    /// Pages tab grouped by structure.
+    page_tree: bool,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -116,6 +147,7 @@ pub struct App {
     plc_ui: plc_ui::PlcUi,
     integration_ui: integration_ui::IntegrationUi,
     process_ui: process_ui::ProcessUi,
+    preplanning_ui: preplanning_ui::PreplanningUi,
     electrical_ui: electrical_ui::ElectricalUi,
     singleline_ui: singleline_ui::SingleLineUi,
     languages_ui: languages_ui::LanguagesUi,
@@ -140,6 +172,14 @@ pub struct App {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> App {
+        // System fonts for scripts the bundled fonts lack, on screen and in PDF exports.
+        let system_fonts = openecraft_ui::fonts::system_fallbacks();
+        openecraft_ui::fonts::install(&cc.egui_ctx, &system_fonts);
+        for (_, bytes) in system_fonts {
+            if openecraft_core::pdf::set_fallback_font(bytes) {
+                break;
+            }
+        }
         let mut prj: Option<Project> = None;
         let mut file_name = None;
         let mut parts_db: Option<PartsDb> = None;
@@ -148,10 +188,13 @@ impl App {
         let mut macro_lib = None;
         let mut disabled_plugins: Vec<String> = Vec::new();
         let mut language: Option<String> = None;
+        let mut shortcuts = crate::shortcuts::Shortcuts::default();
+        let mut layouts: Vec<crate::workspaces::Layout> = Vec::new();
         let mut projects_ui = projects_ui::ProjectsUi::default();
         if let Some(storage) = cc.storage {
             language = eframe::get_value(storage, openecraft_ui::language::STORAGE_KEY);
-            prj = eframe::get_value(storage, "project");
+            // Packed; stores written before have the plain project.
+            prj = storage.get_string("project_packed").and_then(|s| openecraft_core::archive::unpack(&s).ok()).or_else(|| eframe::get_value(storage, "project"));
             file_name = eframe::get_value(storage, "file_name").flatten();
             parts_db = eframe::get_value(storage, "parts_db");
             server_url = eframe::get_value(storage, "parts_server_url");
@@ -160,6 +203,10 @@ impl App {
                 projects_ui.db = db;
             }
             disabled_plugins = eframe::get_value(storage, plugins_ui::STORAGE_KEY).unwrap_or_default();
+            if let Some(stored) = eframe::get_value(storage, crate::shortcuts::STORAGE_KEY) {
+                shortcuts = crate::shortcuts::Shortcuts::from_storage(&stored);
+            }
+            layouts = eframe::get_value(storage, crate::workspaces::STORAGE_KEY).unwrap_or_default();
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -181,7 +228,11 @@ impl App {
         }
         App {
             session: Session::new(prj, file_name),
-            editor: Editor::default(),
+            editor: {
+                let mut editor = Editor::default();
+                editor.shortcuts = shortcuts;
+                editor
+            },
             io: FileIo::default(),
             left_tab: LeftTab::Pages,
             lib_filter: String::new(),
@@ -201,9 +252,21 @@ impl App {
             workspace: Workspace::Schematic,
             panel_ui: PanelUi::default(),
             wiring_ui: WiringUi::default(),
+            mounting_ui: MountingUi::default(),
             show_help: false,
+            show_shortcuts: false,
+            layouts,
+            layout_name: None,
+            export_form: None,
+            recording: None,
             show_cables: false,
             show_numbering: false,
+            numbering_ui: Default::default(),
+            check_ui: Default::default(),
+            arrange_ui: Default::default(),
+            show_xref: false,
+            find_ui: Default::default(),
+            page_tree: false,
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),
@@ -215,6 +278,7 @@ impl App {
             plc_ui: Default::default(),
             integration_ui: Default::default(),
             process_ui: Default::default(),
+            preplanning_ui: Default::default(),
             electrical_ui: Default::default(),
             singleline_ui: Default::default(),
             languages_ui: Default::default(),
@@ -231,6 +295,42 @@ impl App {
             requests_ui: Default::default(),
             plugins,
             plugins_ui: Default::default(),
+        }
+    }
+
+    /// The Wiring workspace: the wiring or the mounting assistant.
+    fn wiring_workspace(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        if self.mounting_ui.active {
+            self.panel_ui.done_wires.clear();
+            self.mounting_ui.sync(&self.session.prj, &mut self.panel_ui);
+            egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
+                self.mounting_ui.mode_switch(ui);
+                self.mounting_ui.checklist(ui, &mut self.session.prj, &mut self.panel_ui);
+            });
+            egui::CentralPanel::default().show(ui, |ui| {
+                self.mounting_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            self.editor.status = self.panel_ui.status.clone();
+            if std::mem::take(&mut self.mounting_ui.export) {
+                let content = openecraft_core::mounting::csv(&self.session.prj, self.mounting_ui.enclosure);
+                self.export(ctx, "mounting.csv".into(), ("CSV", "csv"), content);
+            }
+        } else {
+            self.panel_ui.selection.clear();
+            self.panel_ui.done_items.clear();
+            self.wiring_ui.sync(&self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
+                self.mounting_ui.mode_switch(ui);
+                self.wiring_ui.checklist(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            egui::CentralPanel::default().show(ui, |ui| {
+                self.wiring_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
+            });
+            self.editor.status = self.panel_ui.status.clone();
+            if std::mem::take(&mut self.wiring_ui.export) {
+                let content = openecraft_core::wiring::csv(&self.session.prj, &self.session.analysis.wiring, self.wiring_ui.order);
+                self.export(ctx, "wiring.csv".into(), ("CSV", "csv"), content);
+            }
         }
     }
 
@@ -341,10 +441,13 @@ impl eframe::App for App {
                 });
                 egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| {
                     let page = self.session.page;
-                    self.editor.read_only = self.page_locked_by().is_some();
+                    self.editor.read_only = self.page_locked_by().is_some() || self.remote.viewer();
                     self.editor.review_selected = self.review_ui.selected;
                     let out = self.editor.ui(ui, &mut self.session.prj, page, &idx, &self.session.analysis);
                     let _ = out.open_properties;
+                    if let Some(url) = out.open_url {
+                        ctx.open_url(egui::OpenUrl::new_tab(url));
+                    }
                     if let Some(msg) = out.message {
                         self.notify(&ctx, msg);
                     }
@@ -355,23 +458,10 @@ impl eframe::App for App {
                     }
                 });
             }
-            Workspace::Wiring => {
-                self.panel_ui.selection.clear();
-                self.wiring_ui.sync(&self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                egui::Panel::left("wiring_list").resizable(true).default_size(380.0).show(ui, |ui| {
-                    self.wiring_ui.checklist(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                });
-                egui::CentralPanel::default().show(ui, |ui| {
-                    self.wiring_ui.workbench(ui, &mut self.session.prj, &self.session.analysis, &mut self.panel_ui);
-                });
-                self.editor.status = self.panel_ui.status.clone();
-                if std::mem::take(&mut self.wiring_ui.export) {
-                    let content = openecraft_core::wiring::csv(&self.session.prj, &self.session.analysis.wiring, self.wiring_ui.order);
-                    self.export(&ctx, "wiring.csv".into(), ("CSV", "csv"), content);
-                }
-            }
+            Workspace::Wiring => self.wiring_workspace(ui, &ctx),
             Workspace::Panel => {
                 self.panel_ui.done_wires.clear();
+                self.panel_ui.done_items.clear();
                 egui::Panel::left("panel_nav").resizable(true).default_size(250.0).show(ui, |ui| {
                     self.panel_ui.navigator(ui, &mut self.session.prj, &self.parts_db);
                 });
@@ -439,7 +529,9 @@ impl eframe::App for App {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, "project", &self.session.prj);
+        // Packed: large projects would not fit the browser's local storage as text.
+        storage.set_string("project_packed", openecraft_core::archive::pack(&self.session.prj));
+        storage.set_string("project", String::new());
         eframe::set_value(storage, "file_name", &self.session.file_name);
         eframe::set_value(storage, "parts_db", &self.parts_db);
         eframe::set_value(storage, "parts_server_url", &self.parts_ui.server.url);
@@ -448,6 +540,8 @@ impl eframe::App for App {
         eframe::set_value(storage, "project_server_url", &self.remote.url);
         eframe::set_value(storage, "project_server_user", &self.remote.user);
         eframe::set_value(storage, plugins_ui::STORAGE_KEY, &self.plugins.disabled());
+        eframe::set_value(storage, crate::shortcuts::STORAGE_KEY, &self.editor.shortcuts.to_storage());
+        eframe::set_value(storage, crate::workspaces::STORAGE_KEY, &self.layouts);
         eframe::set_value(storage, openecraft_ui::language::STORAGE_KEY, &openecraft_i18n::lang().code());
     }
 }

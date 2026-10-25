@@ -61,3 +61,20 @@ fn dwg_drawings_are_imported_as_pages() {
     std::fs::write(&dwg, b"AC1018 damaged").unwrap();
     assert!(run(&mut s, "import_dwg", json!({ "path": dwg.to_str().unwrap() })).unwrap_err().contains("DWG"));
 }
+
+#[test]
+fn pdf_comments_are_imported_into_the_review() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let file = temp_dir("pdf-comments").join("reviewed.pdf");
+    let body = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n\
+3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Annots [4 0 R] >>\nendobj\n\
+4 0 obj\n<< /Type /Annot /Subtype /Text /Rect [72 500 92 520] /Contents (Check fuse) /T (Anna) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n";
+    std::fs::write(&file, body).unwrap();
+    let r = run(&mut s, "import_pdf_comments", json!({ "path": file.to_str().unwrap(), "author": "me" })).unwrap();
+    assert_eq!((r["comments"].as_u64(), r["skipped"].as_u64()), (Some(1), Some(0)));
+    let again = run(&mut s, "import_pdf_comments", json!({ "path": file.to_str().unwrap() })).unwrap();
+    assert_eq!(again["skipped"], 1);
+    std::fs::write(&file, "no pdf").unwrap();
+    assert!(run(&mut s, "import_pdf_comments", json!({ "path": file.to_str().unwrap() })).unwrap_err().contains("Not a PDF file"));
+}

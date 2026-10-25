@@ -24,7 +24,7 @@ fn symbol_names_are_translated() {
 
 #[test]
 fn extra_libraries_are_complete() {
-    for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid, Category::Process] {
+    for cat in [Category::BlackBox, Category::SingleLine, Category::Nfpa, Category::Fluid, Category::Process, Category::Installation] {
         let n = library().iter().filter(|d| d.category == cat).count();
         assert!(n >= 4, "{} has only {n} symbols", cat.title());
     }

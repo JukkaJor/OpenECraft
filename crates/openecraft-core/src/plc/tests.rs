@@ -73,3 +73,93 @@ fn iec_global_variables_per_address_space() {
     let table = symbol_table(&prj, &nl(&prj));
     assert_eq!(import_symbol_table(&mut prj, &table).unwrap(), 0);
 }
+
+#[test]
+fn vendor_tag_formats() {
+    let prj = crate::sample::demo_project();
+    let nl = Netlist::build(&prj, true);
+    let n = tags(&prj, &nl).len();
+    assert!(n > 0);
+    let tia = tia_tags(&prj, &nl);
+    assert_eq!(tia[0][..5], ["Name", "Path", "Data Type", "Logical Address", "Comment"]);
+    assert_eq!(tia.len(), n + 1);
+    assert!(tia[1..].iter().all(|r| r[2] == "Bool" && (r[3].starts_with("%I") || r[3].starts_with("%Q"))), "{tia:?}");
+    let rw = rockwell_tags(&prj, &nl);
+    let lines: Vec<&str> = rw.lines().collect();
+    assert_eq!(lines[3], "TYPE,SCOPE,NAME,DESCRIPTION,DATATYPE,SPECIFIER,ATTRIBUTES");
+    assert_eq!(lines.len(), 4 + n);
+    assert!(lines[4].starts_with("ALIAS,,\"") && lines[4].contains("\"Local:"), "{}", lines[4]);
+    // The workbook for TIA Portal reads back.
+    let ex = crate::exporters::builtin().into_iter().find(|e| e.name == "plc_tia").unwrap();
+    let an = crate::analysis::Analysis::build(&prj);
+    let bytes = (ex.run)(&prj, &an, &crate::params::Args(&serde_json::Map::new())).unwrap().into_bytes();
+    let sheets = crate::xlsx::read(&bytes).unwrap();
+    assert_eq!(sheets[0].0, "PLC Tags");
+    assert_eq!(sheets[0].1.len(), n + 1);
+}
+
+#[test]
+fn large_nets_list_twenty_targets() {
+    use crate::geom::p;
+    use crate::model::{SymbolInst, Wire};
+    let mut prj = Project::default();
+    // A PLC input on a potential with many other connection points.
+    let add = |prj: &mut Project, sym: &str, tag: &str, label: &str, x: f32| {
+        let id = prj.new_id();
+        prj.pages[0].symbols.push(SymbolInst { id, sym: sym.into(), pos: p(x, 100.0), tag: tag.into(), label: label.into(), ..Default::default() });
+    };
+    add(&mut prj, "plc_in", "-A1", "I0.0", 20.0);
+    for i in 0..30 {
+        add(&mut prj, "term", "-X1", &(i + 1).to_string(), 40.0 + 8.0 * i as f32);
+    }
+    let symbols = prj.symbol_table();
+    let pins: Vec<crate::geom::P> = prj.pages[0].symbols.iter().map(|s| symbols.get(&s.sym).unwrap().pin_world(0, s.pos, 0, false)).collect();
+    for w in pins.windows(2) {
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: w[0], b: p(w[0].x, w[0].y - 8.0), ..Default::default() });
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: p(w[0].x, w[0].y - 8.0), b: p(w[1].x, w[1].y - 8.0), ..Default::default() });
+        let id = prj.new_id();
+        prj.pages[0].wires.push(Wire { id, a: p(w[1].x, w[1].y - 8.0), b: w[1], ..Default::default() });
+    }
+    let point = points(&prj, &nl(&prj)).into_iter().next().unwrap();
+    assert!(point.connected.ends_with(", … (+10)"), "{}", point.connected);
+    assert_eq!(point.connected.matches("-X1:").count(), 20);
+}
+
+#[test]
+fn step7_twincat_and_schneider_exports() {
+    let prj = crate::sample::demo_project();
+    let an = crate::analysis::Analysis::checked(&prj);
+    let nl = &an.netlist;
+    let n = tags(&prj, nl).iter().filter(|(_, p)| absolute(&prj, p).is_some()).count();
+    assert!(n > 0);
+    let sdf = step7_sdf(&prj, nl);
+    assert_eq!(sdf.lines().count(), n);
+    let first = sdf.lines().next().unwrap();
+    let fields: Vec<&str> = first.split("\",\"").collect();
+    assert_eq!(fields.len(), 4, "{first}");
+    assert_eq!(fields[0].trim_start_matches('"').len(), 24);
+    assert_eq!(fields[1].len(), 12);
+    assert!(fields[1].starts_with('I') || fields[1].starts_with('Q'));
+    assert_eq!(fields[2], "BOOL      ");
+    let gvl = twincat_gvl(&prj, nl);
+    assert!(gvl.contains("<TcPlcObject") && gvl.contains("VAR_GLOBAL") && gvl.contains("END_VAR"));
+    assert_eq!(gvl.matches(" AT %").count(), n);
+    let xsy = schneider_xsy(&prj, nl);
+    assert!(xsy.starts_with("<?xml") && xsy.contains("<VariablesExchangeFile>"));
+    assert!(xsy.matches("<variables ").count() >= 1);
+    assert!(xsy.contains("typeName=\"EBOOL\" topologicalAddress=\"%"));
+}
+
+#[test]
+fn mitsubishi_devices_are_octal() {
+    let prj = crate::sample::demo_project();
+    let an = crate::analysis::Analysis::checked(&prj);
+    let csv = mitsubishi_comments(&prj, &an.netlist);
+    let mut lines = csv.lines();
+    assert_eq!(lines.next(), Some("\"Device Name\",\"Comment\""));
+    let devices: Vec<&str> = lines.map(|l| l.split(',').next().unwrap().trim_matches('"')).collect();
+    assert!(!devices.is_empty());
+    assert!(devices.iter().all(|d| (d.starts_with('X') || d.starts_with('Y')) && d[1..].chars().all(|c| ('0'..='7').contains(&c))), "{devices:?}");
+}

@@ -40,18 +40,49 @@ pub struct Issue {
     pub severity: Severity,
     pub text: IssueText,
     pub target: Option<(usize, u64)>,
+    /// Name of the check that found it (set by the host).
+    pub check: String,
+    /// Accepted as checked (project check settings).
+    pub accepted: bool,
+}
+
+/// FNV-1a hash of a text (stable across versions and platforms).
+fn hash(text: &str) -> u32 {
+    text.bytes().fold(0x811c_9dc5u32, |h, b| (h ^ u32::from(b)).wrapping_mul(0x0100_0193))
 }
 
 impl Issue {
     /// An issue with a translatable message (`key` is an English catalog entry, see the
     /// [`issue!`](crate::issue!) macro).
     pub fn new(severity: Severity, key: &'static str, args: Vec<String>, target: Option<(usize, u64)>) -> Issue {
-        Issue { severity, text: IssueText::Template { key, args }, target }
+        Issue { severity, text: IssueText::Template { key, args }, target, check: String::new(), accepted: false }
     }
 
     /// An issue with a finished text.
     pub fn plain(severity: Severity, message: impl Into<String>, target: Option<(usize, u64)>) -> Issue {
-        Issue { severity, text: IssueText::Plain(message.into()), target }
+        Issue { severity, text: IssueText::Plain(message.into()), target, check: String::new(), accepted: false }
+    }
+
+    /// Code of the kind of message, e.g. `wires.3f9a1c`: the check and a hash of the
+    /// English template, the same in every language and for every occurrence. Plain
+    /// texts have the check's name as code.
+    pub fn code(&self) -> String {
+        let check = if self.check.is_empty() { "project" } else { self.check.as_str() };
+        match &self.text {
+            IssueText::Template { key, .. } => format!("{check}.{:06x}", hash(key) & 0x00ff_ffff),
+            IssueText::Plain(_) => check.to_string(),
+        }
+    }
+
+    /// Identity of this occurrence: code, arguments (or the text) and the item, used
+    /// to accept a message until it changes.
+    pub fn fingerprint(&self) -> String {
+        let what = match &self.text {
+            IssueText::Template { args, .. } => args.join("|"),
+            IssueText::Plain(text) => text.clone(),
+        };
+        let item = self.target.map(|t| t.1).unwrap_or_default();
+        format!("{}:{:08x}:{item}", self.code(), hash(&what))
     }
 
     /// The message in the current language.

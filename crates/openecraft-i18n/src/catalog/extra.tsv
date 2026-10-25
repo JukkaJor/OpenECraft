@@ -1401,8 +1401,8 @@ Compare with a baseline, a revision or another project file and take differences
 Change requests…	Änderungsanträge…	Demandes de modification…	Solicitudes de cambio…
 Review: comments and markup	Prüfung: Kommentare und Markierungen	Révision : commentaires et annotations	Revisión: comentarios y marcas
 Revisions, approval and release	Revisionen, Genehmigung und Freigabe	Révisions, approbation et diffusion	Revisiones, aprobación y liberación
-Review ({})	Prüfung ({})	Révision ({})	Revisión ({})
-Review	Prüfung	Révision	Revisión
+Review ({})	Kommentare ({})	Révision ({})	Comentarios ({})
+Review	Kommentare	Révision	Comentarios
 Click to place a comment	Klicken, um einen Kommentar zu setzen	Cliquer pour placer un commentaire	Haga clic para colocar un comentario
 Click to place the markup text	Klicken, um den Markierungstext zu setzen	Cliquer pour placer le texte d'annotation	Haga clic para colocar el texto de la marca
 Change requests (CSV, JSON)	Änderungsanträge (CSV, JSON)	Demandes de modification (CSV, JSON)	Solicitudes de cambio (CSV, JSON)
@@ -4308,3 +4308,570 @@ Property and function definitions, property values and placement schemes	Eigensc
 Options and rules of the configurator	Optionen und Regeln des Konfigurators	Options et règles du configurateur	Opciones y reglas del configurador
 Report blocks and report schemes	Auswertungsblöcke und Auswertungsschemata	Blocs et schémas de rapport	Bloques y esquemas de informe
 Subprojects, model options and the project data check	Teilprojekte, Modelloptionen und die Prüfung der Projektdaten	Sous-projets, options de modèle et contrôle des données du projet	Subproyectos, opciones de modelo y la comprobación de los datos del proyecto
+Top	Oben	Haut	Arriba
+Middle	Mitte	Milieu	Centro
+Wrap width (mm)	Umbruchbreite (mm)	Largeur de retour à la ligne (mm)	Ancho de ajuste (mm)
+0: no wrapping	0: kein Umbruch	0 : pas de retour à la ligne	0: sin ajuste
+Bold	Fett	Gras	Negrita
+Italic	Kursiv	Italique	Cursiva
+Underline	Unterstrichen	Souligné	Subrayado
+Frame	Rahmen	Cadre	Marco
+Border	Umrandung	Bordure	Borde
+Background	Hintergrund	Arrière-plan	Fondo
+Covers what is behind the text	Deckt ab, was hinter dem Text liegt	Couvre ce qui se trouve derrière le texte	Cubre lo que hay detrás del texto
+Insert placeholder…	Platzhalter einfügen…	Insérer un espace réservé…	Insertar marcador…
+Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn	Sondertext: Projekt- und Seiteneigenschaften wie {page} oder {prop:Name} werden beim Zeichnen der Seite eingesetzt	Texte spécial : les propriétés du projet et de la page telles que {page} ou {prop:Name} sont remplies au dessin de la page	Texto especial: las propiedades del proyecto y de la página como {page} o {prop:Name} se rellenan al dibujar la página
+Special text	Sondertext	Texte spécial	Texto especial
+Path function text	Pfad-Funktionstext	Texte de fonction de chemin	Texto de función de camino
+Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)	Funktionstext der Funktionen in dieser Spalte, die keinen eigenen haben (Betriebsmittelliste, Klemmen-, Stecker- und SPS-Pläne)	Texte de fonction des fonctions de cette colonne qui n'en ont pas (liste des appareils, plans de bornes, de connecteurs et d'API)	Texto de función de las funciones de esta columna que no tienen uno propio (lista de dispositivos, diagramas de bornes, conectores y PLC)
+Ctrl + click on the text opens it as well	Strg + Klick auf den Text öffnet ihn ebenfalls	Ctrl + clic sur le texte l'ouvre aussi	Ctrl + clic en el texto también lo abre
+Text; placeholders such as {page} or {prop:Name} are filled in when drawn	Text; Platzhalter wie {page} oder {prop:Name} werden beim Zeichnen eingesetzt	Texte ; les espaces réservés tels que {page} ou {prop:Name} sont remplis au dessin	Texto; los marcadores como {page} o {prop:Name} se rellenan al dibujar
+Rotation in degrees, counter-clockwise (90 reads from bottom to top)	Drehung in Grad, gegen den Uhrzeigersinn (90 liest sich von unten nach oben)	Rotation en degrés, dans le sens antihoraire (90 se lit de bas en haut)	Rotación en grados, en sentido antihorario (90 se lee de abajo arriba)
+Horizontal alignment: left, center or right	Horizontale Ausrichtung: left, center oder right	Alignement horizontal : left, center ou right	Alineación horizontal: left, center o right
+Which line the position is on: top (first), middle or bottom (last)	Zeile an der Position: top (erste), middle oder bottom (letzte)	Ligne située à la position : top (première), middle ou bottom (dernière)	Línea en la posición: top (primera), middle o bottom (última)
+Wrap width in mm (0: no wrapping)	Umbruchbreite in mm (0: kein Umbruch)	Largeur de retour à la ligne en mm (0 : aucun)	Ancho de ajuste en mm (0: sin ajuste)
+Border around the text	Umrandung um den Text	Bordure autour du texte	Borde alrededor del texto
+Opaque background in the paper colour	Deckender Hintergrund in Papierfarbe	Arrière-plan opaque de la couleur du papier	Fondo opaco del color del papel
+Hyperlink (URL)	Hyperlink (URL)	Hyperlien (URL)	Hipervínculo (URL)
+Path function text: function text of the functions in its column that have none	Pfad-Funktionstext: Funktionstext der Funktionen seiner Spalte ohne eigenen	Texte de fonction de chemin : texte de fonction des fonctions de sa colonne qui n'en ont pas	Texto de función de camino: texto de función de las funciones de su columna que no tienen uno
+Changes a text (only the given properties)	Ändert einen Text (nur die angegebenen Eigenschaften)	Modifie un texte (seulement les propriétés indiquées)	Cambia un texto (solo las propiedades indicadas)
+Id of the text	Id des Textes	Id du texte	Id del texto
+Unknown alignment: {}	Unbekannte Ausrichtung: {}	Alignement inconnu : {}	Alineación desconocida: {}
+Unknown vertical anchor: {}	Unbekannter vertikaler Anker: {}	Ancrage vertical inconnu : {}	Anclaje vertical desconocido: {}
+No text with id {}	Kein Text mit Id {}	Aucun texte avec l'id {}	Ningún texto con id {}
+Format (placeholders)	Format (Platzhalter)	Format (espaces réservés)	Formato (marcadores)
+Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)	Nummeriert die Betriebsmittelkennzeichen je Struktur und Kennbuchstabe in Schaltplanreihenfolge (Seite, Spalte, von oben nach unten)	Numérote les repères d'appareils par structure et lettre repère dans l'ordre du schéma (page, colonne, de haut en bas)	Numera las identificaciones de dispositivos por estructura y letra de código en el orden del esquema (página, columna, de arriba abajo)
+Format of the device name: {letter}, {n} (counter), {page}, {column}, {row}; default {letter}{n}	Format des Betriebsmittelnamens: {letter}, {n} (Zähler), {page}, {column}, {row}; Standard {letter}{n}	Format du nom d'appareil : {letter}, {n} (compteur), {page}, {column}, {row} ; par défaut {letter}{n}	Formato del nombre del dispositivo: {letter}, {n} (contador), {page}, {column}, {row}; por defecto {letter}{n}
+First counter value (default 1)	Erster Zählerwert (Standard 1)	Première valeur du compteur (1 par défaut)	Primer valor del contador (1 por defecto)
+Counting step (default 1)	Zählschritt (Standard 1)	Pas de comptage (1 par défaut)	Paso de conteo (1 por defecto)
+Only devices on these pages (names separated by commas)	Nur Betriebsmittel auf diesen Seiten (Namen durch Kommas getrennt)	Seulement les appareils de ces pages (noms séparés par des virgules)	Solo los dispositivos de estas páginas (nombres separados por comas)
+Only these identifying letters (separated by commas, e.g. K,Q)	Nur diese Kennbuchstaben (durch Kommas getrennt, z. B. K,Q)	Seulement ces lettres repères (séparées par des virgules, p. ex. K,Q)	Solo estas letras de código (separadas por comas, p. ej. K,Q)
+Also renumber terminal strips, plugs and PLC cards	Auch Klemmleisten, Stecker und SPS-Karten neu nummerieren	Renuméroter aussi les borniers, connecteurs et cartes d'API	Renumerar también regletas, conectores y tarjetas PLC
+Only list the new tags, change nothing	Nur die neuen Kennzeichen auflisten, nichts ändern	Seulement lister les nouveaux repères, ne rien modifier	Solo listar las nuevas identificaciones, no cambiar nada
+Numbers the pages with a start value and step; released pages keep their name	Nummeriert die Seiten mit Startwert und Schrittweite; freigegebene Seiten behalten ihren Namen	Numérote les pages avec une valeur de départ et un pas ; les pages validées gardent leur nom	Numera las páginas con un valor inicial y un paso; las páginas liberadas conservan su nombre
+First page number (default 1)	Erste Seitennummer (Standard 1)	Premier numéro de page (1 par défaut)	Primer número de página (1 por defecto)
+Start again on every page whose structure differs from the page before	Bei jeder Seite neu beginnen, deren Struktur sich von der vorherigen unterscheidet	Recommencer à chaque page dont la structure diffère de la page précédente	Empezar de nuevo en cada página cuya estructura difiera de la anterior
+Pages with a suffix (3.a) stay sub-pages of the page before (default true)	Seiten mit Zusatz (3.a) bleiben Unterseiten der vorherigen Seite (Standard true)	Les pages avec un suffixe (3.a) restent des sous-pages de la page précédente (true par défaut)	Las páginas con sufijo (3.a) siguen siendo subpáginas de la anterior (true por defecto)
+Only these pages (names separated by commas)	Nur diese Seiten (Namen durch Kommas getrennt)	Seulement ces pages (noms séparés par des virgules)	Solo estas páginas (nombres separados por comas)
+Sets the numbering scheme of the wires (only the given settings) and shows it	Setzt das Nummerierungsschema der Verbindungen (nur die angegebenen Einstellungen) und zeigt es an	Définit le schéma de numérotation des fils (seulement les réglages indiqués) et l'affiche	Establece el esquema de numeración de los cables (solo los ajustes indicados) y lo muestra
+sequential, page_column, potential or format	sequential, page_column, potential oder format	sequential, page_column, potential ou format	sequential, page_column, potential o format
+Format of the scheme format: {n} (counter), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Format des Schemas format: {n} (Zähler), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Format du schéma format : {n} (compteur), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}	Formato del esquema format: {n} (contador), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}
+Put in front of the numbers, e.g. W	Vor die Nummern gesetzt, z. B. W	Placé devant les numéros, p. ex. W	Se antepone a los números, p. ej. W
+Minimum digits of the counter (leading zeros)	Mindestanzahl Stellen des Zählers (führende Nullen)	Nombre minimal de chiffres du compteur (zéros en tête)	Número mínimo de dígitos del contador (ceros a la izquierda)
+Potential kinds whose connections get no number, separated by commas (l, n, pe, dc_plus, dc_minus, signal)	Potenzialarten, deren Verbindungen keine Nummer erhalten, durch Kommas getrennt (l, n, pe, dc_plus, dc_minus, signal)	Types de potentiel dont les liaisons ne sont pas numérotées, séparés par des virgules (l, n, pe, dc_plus, dc_minus, signal)	Tipos de potencial cuyas conexiones no reciben número, separados por comas (l, n, pe, dc_plus, dc_minus, signal)
+Unknown numbering scheme: {}	Unbekanntes Nummerierungsschema: {}	Schéma de numérotation inconnu : {}	Esquema de numeración desconocido: {}
+Device numbering	Betriebsmittel nummerieren	Numérotation des appareils	Numeración de dispositivos
+Device numbering…	Betriebsmittel nummerieren…	Numérotation des appareils…	Numeración de dispositivos…
+Format	Format	Format	Formato
+Step	Schrittweite	Pas	Paso
+Digits	Stellen	Chiffres	Dígitos
+Identifying letters	Kennbuchstaben	Lettres repères	Letras de código
+all, or e.g. K, Q	alle, oder z. B. K, Q	toutes, ou p. ex. K, Q	todas, o p. ej. K, Q
+Only devices on the current page	Nur Betriebsmittel auf der aktuellen Seite	Seulement les appareils de la page courante	Solo los dispositivos de la página actual
+Terminal strips, plugs and PLC cards keep their tags	Klemmleisten, Stecker und SPS-Karten behalten ihre Kennzeichen	Les borniers, connecteurs et cartes d'API gardent leurs repères	Las regletas, conectores y tarjetas PLC conservan sus identificaciones
+Placeholders: {letter} identifying letter, {n} counter, {page} page, {column} / {row} where the main function stands	Platzhalter: {letter} Kennbuchstabe, {n} Zähler, {page} Seite, {column} / {row} Ort der Hauptfunktion	Espaces réservés : {letter} lettre repère, {n} compteur, {page} page, {column} / {row} emplacement de la fonction principale	Marcadores: {letter} letra de código, {n} contador, {page} página, {column} / {row} donde está la función principal
+All devices are numbered already.	Alle Betriebsmittel sind bereits nummeriert.	Tous les appareils sont déjà numérotés.	Todos los dispositivos ya están numerados.
+{} devices get a new tag	{} Betriebsmittel erhalten ein neues Kennzeichen	{} appareils reçoivent un nouveau repère	{} dispositivos reciben una nueva identificación
+Number devices	Betriebsmittel nummerieren	Numéroter les appareils	Numerar dispositivos
+{} devices renamed	{} Betriebsmittel umbenannt	{} appareils renommés	{} dispositivos renombrados
+Renumber pages	Seiten neu nummerieren	Renuméroter les pages	Renumerar páginas
+Renumber pages…	Seiten neu nummerieren…	Renuméroter les pages…	Renumerar páginas…
+Start again when the page structure changes	Neu beginnen, wenn sich die Seitenstruktur ändert	Recommencer quand la structure de page change	Empezar de nuevo cuando cambia la estructura de página
+Keep sub-pages (3.a, 3.1) with the page before	Unterseiten (3.a, 3.1) bei der vorherigen Seite lassen	Garder les sous-pages (3.a, 3.1) avec la page précédente	Mantener las subpáginas (3.a, 3.1) con la página anterior
+Released pages keep their name.	Freigegebene Seiten behalten ihren Namen.	Les pages validées gardent leur nom.	Las páginas liberadas conservan su nombre.
+{} pages get a new name	{} Seiten erhalten einen neuen Namen	{} pages reçoivent un nouveau nom	{} páginas reciben un nuevo nombre
+{} pages renamed	{} Seiten umbenannt	{} pages renommées	{} páginas renombradas
+Placeholders: {n} counter (counted per value of the rest), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Without {n}, connections with the same text share the number.	Platzhalter: {n} Zähler (je Wert des übrigen Texts gezählt), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Ohne {n} teilen sich Verbindungen mit gleichem Text die Nummer.	Espaces réservés : {n} compteur (compté par valeur du reste), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sans {n}, les liaisons au même texte partagent le numéro.	Marcadores: {n} contador (contado por valor del resto), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Sin {n}, las conexiones con el mismo texto comparten el número.
+No numbers for	Keine Nummern für	Pas de numéros pour	Sin números para
+Check settings	Prüfeinstellungen	Réglages de vérification	Ajustes de comprobación
+Switch checks off, change message levels, accept messages as checked	Prüfungen abschalten, Meldungsstufen ändern, Meldungen als geprüft akzeptieren	Désactiver des vérifications, changer le niveau des messages, accepter des messages comme vérifiés	Desactivar comprobaciones, cambiar el nivel de los mensajes, aceptar mensajes como revisados
+Shows the settings of the project check: checks switched off, changed message levels and accepted messages	Zeigt die Einstellungen der Projektprüfung: abgeschaltete Prüfungen, geänderte Meldungsstufen und akzeptierte Meldungen	Affiche les réglages de la vérification du projet : vérifications désactivées, niveaux modifiés et messages acceptés	Muestra los ajustes de la comprobación del proyecto: comprobaciones desactivadas, niveles cambiados y mensajes aceptados
+Switches a check on or off (names as shown by list_checks)	Schaltet eine Prüfung ein oder aus (Namen wie von list_checks angezeigt)	Active ou désactive une vérification (noms comme affichés par list_checks)	Activa o desactiva una comprobación (nombres como los muestra list_checks)
+Name of the check	Name der Prüfung	Nom de la vérification	Nombre de la comprobación
+Run the check	Prüfung ausführen	Exécuter la vérification	Ejecutar la comprobación
+Changes the level of a kind of message (code as shown by check)	Ändert die Stufe einer Meldungsart (Code wie von check angezeigt)	Change le niveau d'un type de message (code comme affiché par check)	Cambia el nivel de un tipo de mensaje (código como lo muestra check)
+Message code, e.g. wires.3f9a1c	Meldungscode, z. B. wires.3f9a1c	Code du message, p. ex. wires.3f9a1c	Código del mensaje, p. ej. wires.3f9a1c
+error, warning, info, off, or default to take the change back	error, warning, info, off oder default, um die Änderung zurückzunehmen	error, warning, info, off, ou default pour annuler le changement	error, warning, info, off, o default para deshacer el cambio
+Accepts a message as checked, so that it is no longer counted until it changes	Akzeptiert eine Meldung als geprüft, sodass sie nicht mehr gezählt wird, bis sie sich ändert	Accepte un message comme vérifié, il n'est plus compté tant qu'il ne change pas	Acepta un mensaje como revisado, de modo que no se cuenta mientras no cambie
+Fingerprint of the message as shown by check	Fingerabdruck der Meldung wie von check angezeigt	Empreinte du message comme affichée par check	Huella del mensaje como la muestra check
+false takes the acceptance back (default true)	false nimmt die Akzeptanz zurück (Standard true)	false annule l'acceptation (true par défaut)	false deshace la aceptación (true por defecto)
+The message text, kept for the list of accepted messages	Der Meldungstext, für die Liste der akzeptierten Meldungen	Le texte du message, conservé pour la liste des messages acceptés	El texto del mensaje, guardado para la lista de mensajes aceptados
+Why the message is accepted	Warum die Meldung akzeptiert ist	Pourquoi le message est accepté	Por qué se acepta el mensaje
+Who accepted it	Wer sie akzeptiert hat	Qui l'a accepté	Quién lo aceptó
+Date of the acceptance	Datum der Akzeptanz	Date de l'acceptation	Fecha de la aceptación
+Unknown level: {}	Unbekannte Stufe: {}	Niveau inconnu : {}	Nivel desconocido: {}
+Lists the checks of the project check (built-in and of plugins) and whether they run	Listet die Prüfungen der Projektprüfung (eingebaute und von Plugins) und ob sie laufen	Liste les vérifications du projet (intégrées et des plugins) et indique si elles s'exécutent	Lista las comprobaciones del proyecto (integradas y de plugins) y si se ejecutan
+Off	Aus	Désactivé	Desactivado
+{} errors, {} warnings, {} notes	{} Fehler, {} Warnungen, {} Hinweise	{} erreurs, {} avertissements, {} remarques	{} errores, {} advertencias, {} notas
+Show the messages accepted as checked	Als geprüft akzeptierte Meldungen anzeigen	Afficher les messages acceptés comme vérifiés	Mostrar los mensajes aceptados como revisados
+✔ {}	✔ {}	✔ {}	✔ {}
+This page	Diese Seite	Cette page	Esta página
+Only messages of the current page	Nur Meldungen der aktuellen Seite	Seulement les messages de la page courante	Solo los mensajes de la página actual
+Check settings: checks, message levels, accepted messages	Prüfeinstellungen: Prüfungen, Meldungsstufen, akzeptierte Meldungen	Réglages de vérification : vérifications, niveaux des messages, messages acceptés	Ajustes de comprobación: comprobaciones, niveles de mensajes, mensajes aceptados
+Export the messages as CSV	Meldungen als CSV exportieren	Exporter les messages en CSV	Exportar los mensajes como CSV
+{}\nClick to show, right click for more	{}\nKlicken zum Anzeigen, Rechtsklick für mehr	{}\nCliquer pour afficher, clic droit pour plus	{}\nClic para mostrar, clic derecho para más
+Take the acceptance back	Akzeptanz zurücknehmen	Annuler l'acceptation	Deshacer la aceptación
+Accept as checked	Als geprüft akzeptieren	Accepter comme vérifié	Aceptar como revisado
+Level of this kind of message	Stufe dieser Meldungsart	Niveau de ce type de message	Nivel de este tipo de mensaje
+As defined by the check	Wie von der Prüfung festgelegt	Comme défini par la vérification	Como lo define la comprobación
+Switch off the check \"{}\"	Prüfung \"{}\" abschalten	Désactiver la vérification \"{}\"	Desactivar la comprobación \"{}\"
+Changed message levels ({})	Geänderte Meldungsstufen ({})	Niveaux de message modifiés ({})	Niveles de mensaje cambiados ({})
+Right click a message in the Check tab to change its level.	Rechtsklick auf eine Meldung im Reiter Prüfung ändert ihre Stufe.	Clic droit sur un message dans l'onglet Vérification pour changer son niveau.	Clic derecho en un mensaje en la pestaña Comprobación para cambiar su nivel.
+Accepted messages ({})	Akzeptierte Meldungen ({})	Messages acceptés ({})	Mensajes aceptados ({})
+No longer reported	Wird nicht mehr gemeldet	N'est plus signalé	Ya no se notifica
+Still reported	Wird noch gemeldet	Encore signalé	Se sigue notificando
+Remove the {} messages no longer reported	Die {} nicht mehr gemeldeten Meldungen entfernen	Retirer les {} messages qui ne sont plus signalés	Quitar los {} mensajes que ya no se notifican
+Plug-in jumper	Steckbrücke	Pont enfichable	Puente enchufable
+Wire jumper	Drahtbrücke	Pont filaire	Puente de cable
+{}: jumper {} connects terminals on different levels; use a wire jumper	{}: Brücke {} verbindet Klemmen auf verschiedenen Etagen; eine Drahtbrücke verwenden	{} : le pont {} relie des bornes sur des étages différents ; utiliser un pont filaire	{}: el puente {} une bornes de pisos distintos; usar un puente de cable
+{}: terminal {} uses {} levels, its part {} has {}	{}: Klemme {} nutzt {} Etagen, ihr Artikel {} hat {}	{} : la borne {} utilise {} étages, son article {} en a {}	{}: el borne {} usa {} pisos, su artículo {} tiene {}
+{}: terminal {} is on level {}, but no terminal block is before it	{}: Klemme {} liegt auf Etage {}, aber davor ist kein Klemmenblock	{} : la borne {} est à l'étage {}, mais aucun bloc ne la précède	{}: el borne {} está en el piso {}, pero no hay bloque delante
+Terminal order, levels, jumpers, spare terminals and accessories	Klemmenreihenfolge, Etagen, Brücken, Reserveklemmen und Zubehör	Ordre des bornes, étages, ponts, bornes de réserve et accessoires	Orden de bornes, pisos, puentes, bornes de reserva y accesorios
+Tag of the terminal strip, e.g. -X1	Kennzeichen der Klemmleiste, z. B. -X1	Repère du bornier, p. ex. -X1	Identificación de la regleta, p. ej. -X1
+Lists the terminal strips with their number of terminals and length on the rail	Listet die Klemmleisten mit Anzahl der Klemmen und Länge auf der Schiene	Liste les borniers avec leur nombre de bornes et leur longueur sur le rail	Lista las regletas con su número de bornes y su longitud en el carril
+Shows a terminal strip: terminals in strip order with level, jumper and targets, the blocks on the rail and the jumpers	Zeigt eine Klemmleiste: Klemmen in Leistenreihenfolge mit Etage, Brücke und Zielen, die Blöcke auf der Schiene und die Brücken	Affiche un bornier : bornes dans l'ordre avec étage, pont et cibles, les blocs sur le rail et les ponts	Muestra una regleta: bornes en orden con piso, puente y destinos, los bloques en el carril y los puentes
+Sets the level (multi-level terminals) or jumper number of a terminal	Setzt die Etage (Etagenklemmen) oder Brückennummer einer Klemme	Définit l'étage (bornes à étages) ou le numéro de pont d'une borne	Establece el piso (bornes de varios pisos) o el número de puente de un borne
+Terminal designation	Klemmenbezeichnung	Désignation de la borne	Designación del borne
+Level of a multi-level terminal (1 = bottom); upper levels sit on the block of the terminal before	Etage einer Etagenklemme (1 = unten); obere Etagen sitzen auf dem Block der Klemme davor	Étage d'une borne à étages (1 = bas) ; les étages supérieurs sont sur le bloc de la borne précédente	Piso de un borne de varios pisos (1 = abajo); los pisos superiores están en el bloque del borne anterior
+Jumper number (terminals with the same number are bridged); 0 removes it	Brückennummer (Klemmen mit gleicher Nummer sind gebrückt); 0 entfernt sie	Numéro de pont (les bornes de même numéro sont pontées) ; 0 le retire	Número de puente (los bornes con el mismo número están puenteados); 0 lo quita
+Sets how the terminals of a jumper are bridged	Legt fest, wie die Klemmen einer Brücke gebrückt werden	Définit comment les bornes d'un pont sont pontées	Establece cómo se puentean los bornes de un puente
+Jumper number	Brückennummer	Numéro de pont	Número de puente
+plug_in, saddle or wire	plug_in, saddle oder wire	plug_in, saddle ou wire	plug_in, saddle o wire
+Sets the spare terminals of a strip and whether its accessories are added automatically	Setzt die Reserveklemmen einer Leiste und ob ihr Zubehör automatisch ergänzt wird	Définit les bornes de réserve d'un bornier et si ses accessoires sont ajoutés automatiquement	Establece los bornes de reserva de una regleta y si sus accesorios se añaden automáticamente
+Spare terminals at the end of the strip	Reserveklemmen am Ende der Leiste	Bornes de réserve en fin de bornier	Bornes de reserva al final de la regleta
+End brackets and end plates from the tech data of the terminal parts	Endhalter und Abschlussplatten aus den technischen Daten der Klemmenartikel	Butées et flasques d'extrémité depuis les données techniques des articles de borne	Topes y tapas finales a partir de los datos técnicos de los artículos de borne
+Terminal designations in strip order, separated by commas	Klemmenbezeichnungen in Leistenreihenfolge, durch Kommas getrennt	Désignations des bornes dans l'ordre du bornier, séparées par des virgules	Designaciones de los bornes en el orden de la regleta, separadas por comas
+Numbers the terminals of a strip 1 … n in strip order; non-numeric designations such as PE stay	Nummeriert die Klemmen einer Leiste 1 … n in Leistenreihenfolge; nicht numerische Bezeichnungen wie PE bleiben	Numérote les bornes d'un bornier 1 … n dans l'ordre ; les désignations non numériques comme PE restent	Numera los bornes de una regleta 1 … n en orden; las designaciones no numéricas como PE se mantienen
+No terminal strip {}	Keine Klemmleiste {}	Aucun bornier {}	Ninguna regleta {}
+No terminal {} on strip {}	Keine Klemme {} auf Leiste {}	Aucune borne {} sur le bornier {}	Ningún borne {} en la regleta {}
+Unknown jumper kind: {}	Unbekannte Brückenart: {}	Type de pont inconnu : {}	Tipo de puente desconocido: {}
+Level of a multi-level terminal: upper levels sit on the block of the terminal before	Etage einer Etagenklemme: obere Etagen sitzen auf dem Block der Klemme davor	Étage d'une borne à étages : les étages supérieurs sont sur le bloc de la borne précédente	Piso de un borne de varios pisos: los pisos superiores están en el bloque del borne anterior
+Left edges	Linke Kanten	Bords gauches	Bordes izquierdos
+Horizontal centres	Horizontale Mitten	Centres horizontaux	Centros horizontales
+Right edges	Rechte Kanten	Bords droits	Bordes derechos
+Top edges	Obere Kanten	Bords supérieurs	Bordes superiores
+Vertical centres	Vertikale Mitten	Centres verticaux	Centros verticales
+Bottom edges	Untere Kanten	Bords inférieurs	Bordes inferiores
+x y	x y	x y	x y
+Type a point and press Enter: x y in mm, or @dx dy relative to the last point; it acts like a click of the current tool	Punkt eingeben und Enter drücken: x y in mm oder @dx dy relativ zum letzten Punkt; wirkt wie ein Klick des aktuellen Werkzeugs	Saisir un point puis Entrée : x y en mm, ou @dx dy relatif au dernier point ; agit comme un clic de l'outil courant	Escriba un punto y pulse Intro: x y en mm, o @dx dy relativo al último punto; actúa como un clic de la herramienta actual
+Not a point: type x y or @dx dy	Kein Punkt: x y oder @dx dy eingeben	Pas un point : saisir x y ou @dx dy	No es un punto: escriba x y o @dx dy
+Grid size	Rastergröße	Taille de la grille	Tamaño de rejilla
+mm	mm	mm	mm
+Align	Ausrichten	Aligner	Alinear
+Distribute	Verteilen	Répartir	Distribuir
+Horizontally	Horizontal	Horizontalement	Horizontalmente
+Vertically	Vertikal	Verticalement	Verticalmente
+Move selection by…	Auswahl verschieben um…	Déplacer la sélection de…	Mover la selección…
+Multiple copy…	Mehrfach kopieren…	Copie multiple…	Copia múltiple…
+Move selection by	Auswahl verschieben um	Déplacer la sélection de	Mover la selección
+Horizontal (mm)	Horizontal (mm)	Horizontal (mm)	Horizontal (mm)
+Vertical (mm, downwards)	Vertikal (mm, nach unten)	Vertical (mm, vers le bas)	Vertical (mm, hacia abajo)
+Move	Verschieben	Déplacer	Mover
+Multiple copy	Mehrfach kopieren	Copie multiple	Copia múltiple
+Copies the selection several times; devices get new tags, terminals new numbers.	Kopiert die Auswahl mehrfach; Betriebsmittel erhalten neue Kennzeichen, Klemmen neue Nummern.	Copie la sélection plusieurs fois ; les appareils reçoivent de nouveaux repères, les bornes de nouveaux numéros.	Copia la selección varias veces; los dispositivos reciben nuevas identificaciones, los bornes nuevos números.
+Copies	Kopien	Copies	Copias
+Copy	Kopieren	Copier	Copiar
+{} items copied	{} Elemente kopiert	{} éléments copiés	{} elementos copiados
+Aligns symbols, texts and graphics to a common edge or centre; connected wire ends follow	Richtet Symbole, Texte und Grafik an einer gemeinsamen Kante oder Mitte aus; angeschlossene Verbindungsenden folgen	Aligne symboles, textes et graphiques sur un bord ou un centre commun ; les extrémités de fils raccordées suivent	Alinea símbolos, textos y gráficos a un borde o centro común; los extremos de cables conectados siguen
+left, center, right, top, middle or bottom	left, center, right, top, middle oder bottom	left, center, right, top, middle ou bottom	left, center, right, top, middle o bottom
+Distributes symbols, texts and graphics evenly between the first and the last one	Verteilt Symbole, Texte und Grafik gleichmäßig zwischen dem ersten und dem letzten	Répartit symboles, textes et graphiques régulièrement entre le premier et le dernier	Distribuye símbolos, textos y gráficos uniformemente entre el primero y el último
+Distribute vertically (default horizontally)	Vertikal verteilen (Standard horizontal)	Répartir verticalement (horizontalement par défaut)	Distribuir verticalmente (horizontalmente por defecto)
+Copies items several times at a fixed distance; devices get new tags, terminals new numbers	Kopiert Elemente mehrfach in festem Abstand; Betriebsmittel erhalten neue Kennzeichen, Klemmen neue Nummern	Copie des éléments plusieurs fois à distance fixe ; les appareils reçoivent de nouveaux repères, les bornes de nouveaux numéros	Copia elementos varias veces a una distancia fija; los dispositivos reciben nuevas identificaciones, los bornes nuevos números
+Number of copies (default 1)	Anzahl Kopien (Standard 1)	Nombre de copies (1 par défaut)	Número de copias (1 por defecto)
+Cross references…	Querverweise…	Renvois…	Referencias cruzadas…
+Format of cross references, structure of the target page, interruption points, contact images	Format der Querverweise, Struktur der Zielseite, Unterbrechungspunkte, Kontaktspiegel	Format des renvois, structure de la page cible, points d'interruption, images de contacts	Formato de las referencias cruzadas, estructura de la página destino, puntos de interrupción, imágenes de contactos
+Row	Zeile	Ligne	Fila
+Show the row after the column	Zeile nach der Spalte anzeigen	Afficher la ligne après la colonne	Mostrar la fila después de la columna
+Example: {}	Beispiel: {}	Exemple : {}	Ejemplo: {}
+Structure of the target page	Struktur der Zielseite	Structure de la page cible	Estructura de la página destino
+When it differs from the page	Wenn sie von der Seite abweicht	Si elle diffère de la page	Si difiere de la página
+Always	Immer	Toujours	Siempre
+Never	Nie	Jamais	Nunca
+Interruption points refer to	Unterbrechungspunkte verweisen auf	Les points d'interruption renvoient à	Los puntos de interrupción remiten a
+All other points of the name	Alle anderen Punkte des Namens	Tous les autres points du nom	Todos los demás puntos del nombre
+Star: the first point refers to all, the others to it	Stern: der erste Punkt verweist auf alle, die anderen auf ihn	Étoile : le premier point renvoie à tous, les autres à lui	Estrella: el primer punto remite a todos, los demás a él
+Pairs in schematic order (1-2, 3-4 …)	Paare in Schaltplanreihenfolge (1-2, 3-4 …)	Paires dans l'ordre du schéma (1-2, 3-4 …)	Pares en el orden del esquema (1-2, 3-4 …)
+Contact image below coils	Kontaktspiegel unter Spulen	Image de contacts sous les bobines	Imagen de contactos bajo las bobinas
+Sets how cross references are shown (only the given settings) and shows the settings	Legt fest, wie Querverweise angezeigt werden (nur die angegebenen Einstellungen), und zeigt die Einstellungen	Définit l'affichage des renvois (seulement les réglages indiqués) et affiche les réglages	Establece cómo se muestran las referencias cruzadas (solo los ajustes indicados) y muestra los ajustes
+In front of the page name (default /)	Vor dem Seitennamen (Standard /)	Devant le nom de page (/ par défaut)	Delante del nombre de página (/ por defecto)
+Between page and column (default .)	Zwischen Seite und Spalte (Standard .)	Entre page et colonne (. par défaut)	Entre página y columna (. por defecto)
+Structure of the target page: different (default), always or never	Struktur der Zielseite: different (Standard), always oder never	Structure de la page cible : different (par défaut), always ou never	Estructura de la página destino: different (por defecto), always o never
+Interruption points refer to: all (default), star or pairs	Unterbrechungspunkte verweisen auf: all (Standard), star oder pairs	Les points d'interruption renvoient à : all (par défaut), star ou pairs	Los puntos de interrupción remiten a: all (por defecto), star o pairs
+Draw the contact image below coils (default true)	Kontaktspiegel unter Spulen zeichnen (Standard true)	Dessiner l'image de contacts sous les bobines (true par défaut)	Dibujar la imagen de contactos bajo las bobinas (true por defecto)
+Unknown setting: {}	Unbekannte Einstellung: {}	Réglage inconnu : {}	Ajuste desconocido: {}
+Find…   Ctrl+F	Suchen…   Strg+F	Rechercher…   Ctrl+F	Buscar…   Ctrl+F
+Find and replace in the whole project	Im ganzen Projekt suchen und ersetzen	Rechercher et remplacer dans tout le projet	Buscar y reemplazar en todo el proyecto
+Text to find	Zu suchender Text	Texte à rechercher	Texto a buscar
+Match case	Groß-/Kleinschreibung beachten	Respecter la casse	Distinguir mayúsculas
+Whole words	Ganze Wörter	Mots entiers	Palabras completas
+Function texts	Funktionstexte	Textes de fonction	Textos de función
+Texts	Texte	Textes	Textos
+Wire numbers	Verbindungsnummern	Numéros de fils	Números de cable
+Terminals and pins	Klemmen und Pins	Bornes et broches	Bornes y pines
+Descriptions	Beschreibungen	Descriptions	Descripciones
+Replace all	Alle ersetzen	Tout remplacer	Reemplazar todo
+Replaces in free texts, function texts, page, device and cable descriptions; released pages stay	Ersetzt in freien Texten, Funktionstexten, Seiten-, Betriebsmittel- und Kabelbeschreibungen; freigegebene Seiten bleiben	Remplace dans les textes libres, textes de fonction, descriptions de pages, d'appareils et de câbles ; les pages validées restent	Reemplaza en textos libres, textos de función, descripciones de páginas, dispositivos y cables; las páginas liberadas se mantienen
+The project changed since the search.	Das Projekt hat sich seit der Suche geändert.	Le projet a changé depuis la recherche.	El proyecto ha cambiado desde la búsqueda.
+{} found	{} gefunden	{} trouvés	{} encontrados
+{} texts changed	{} Texte geändert	{} textes modifiés	{} textos cambiados
+(no structure)	(keine Struktur)	(sans structure)	(sin estructura)
+Group the pages by structure	Seiten nach Struktur gruppieren	Grouper les pages par structure	Agrupar las páginas por estructura
+Finds text in the whole project: pages, device tags, function texts, free texts, wire numbers, terminals, cables, parts, descriptions	Sucht Text im ganzen Projekt: Seiten, Betriebsmittelkennzeichen, Funktionstexte, freie Texte, Verbindungsnummern, Klemmen, Kabel, Artikel, Beschreibungen	Recherche du texte dans tout le projet : pages, repères d'appareils, textes de fonction, textes libres, numéros de fils, bornes, câbles, articles, descriptions	Busca texto en todo el proyecto: páginas, identificaciones de dispositivos, textos de función, textos libres, números de cable, bornes, cables, artículos, descripciones
+Whole words only	Nur ganze Wörter	Mots entiers seulement	Solo palabras completas
+Only these kinds, separated by commas: page, device, function_text, text, wire_number, terminal, cable, part, description	Nur diese Arten, durch Kommas getrennt: page, device, function_text, text, wire_number, terminal, cable, part, description	Seulement ces types, séparés par des virgules : page, device, function_text, text, wire_number, terminal, cable, part, description	Solo estos tipos, separados por comas: page, device, function_text, text, wire_number, terminal, cable, part, description
+Replaces text in free texts, function texts, page, device and cable descriptions of the whole project; released pages stay	Ersetzt Text in freien Texten, Funktionstexten, Seiten-, Betriebsmittel- und Kabelbeschreibungen des ganzen Projekts; freigegebene Seiten bleiben	Remplace du texte dans les textes libres, textes de fonction, descriptions de pages, d'appareils et de câbles de tout le projet ; les pages validées restent	Reemplaza texto en textos libres, textos de función, descripciones de páginas, dispositivos y cables de todo el proyecto; las páginas liberadas se mantienen
+Only these kinds, separated by commas: page, function_text, text, description	Nur diese Arten, durch Kommas getrennt: page, function_text, text, description	Seulement ces types, séparés par des virgules : page, function_text, text, description	Solo estos tipos, separados por comas: page, function_text, text, description
+Unknown kind: {}	Unbekannte Art: {}	Type inconnu : {}	Tipo desconocido: {}
+Graphical form	Grafisches Formular	Formulaire graphique	Formulario gráfico
+Draws the strip with its terminals and jumpers, or the cables with their cores, instead of a table; the columns of the form are not used	Zeichnet die Leiste mit Klemmen und Brücken bzw. die Kabel mit ihren Adern statt einer Tabelle; die Spalten des Formulars werden nicht verwendet	Dessine le bornier avec ses bornes et ponts, ou les câbles avec leurs conducteurs, au lieu d'un tableau ; les colonnes du formulaire ne sont pas utilisées	Dibuja la regleta con sus bornes y puentes, o los cables con sus conductores, en lugar de una tabla; las columnas del formulario no se usan
+Form: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size, graphic (terminal and cable diagrams as drawings)	Formular: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size, graphic (Klemmen- und Kabelpläne als Zeichnung)	Formulaire : title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size, graphic (plans de bornes et de câbles en dessin)	Formulario: title, columns, rows, filters [{column, op, value}], sort [{column, descending}], group, blank_repeats, widths, text_size, graphic (diagramas de bornes y cables como dibujo)
+Not an Excel workbook (.xlsx)	Keine Excel-Arbeitsmappe (.xlsx)	Pas un classeur Excel (.xlsx)	No es un libro de Excel (.xlsx)
+The workbook has no sheet	Die Arbeitsmappe hat kein Blatt	Le classeur n'a pas de feuille	El libro no tiene ninguna hoja
+⬇ Export Excel	⬇ Excel exportieren	⬇ Exporter en Excel	⬇ Exportar a Excel
+Export Excel…	Excel exportieren…	Exporter en Excel…	Exportar a Excel…
+Import CSV / Excel…	CSV / Excel importieren…	Importer CSV / Excel…	Importar CSV / Excel…
+Changed cells of a CSV or Excel file exported here (rows by their key)	Geänderte Zellen einer hier exportierten CSV- oder Excel-Datei (Zeilen über ihren Schlüssel)	Cellules modifiées d'un fichier CSV ou Excel exporté ici (lignes par leur clé)	Celdas cambiadas de un archivo CSV o Excel exportado aquí (filas por su clave)
+CSV or Excel	CSV oder Excel	CSV ou Excel	CSV o Excel
+json (default), csv or xlsx (Excel, needs path)	json (Standard), csv oder xlsx (Excel, braucht path)	json (par défaut), csv ou xlsx (Excel, nécessite path)	json (por defecto), csv o xlsx (Excel, necesita path)
+File to write (xlsx)	Zu schreibende Datei (xlsx)	Fichier à écrire (xlsx)	Archivo a escribir (xlsx)
+The format xlsx needs a path	Das Format xlsx braucht einen Pfad	Le format xlsx nécessite un chemin	El formato xlsx necesita una ruta
+Export as EPLAN parts XML…	Als EPLAN-Artikel-XML exportieren…	Exporter en XML d'articles EPLAN…	Exportar como XML de artículos EPLAN…
+For the import into EPLAN parts management (P_ARTICLE_* attributes, texts in en_US)	Für den Import in die EPLAN-Artikelverwaltung (P_ARTICLE_*-Attribute, Texte in en_US)	Pour l'import dans la gestion d'articles EPLAN (attributs P_ARTICLE_*, textes en en_US)	Para importar en la gestión de artículos de EPLAN (atributos P_ARTICLE_*, textos en en_US)
+Parts (CSV, JSON, BMEcat, EPLAN XML)	Artikel (CSV, JSON, BMEcat, EPLAN-XML)	Articles (CSV, JSON, BMEcat, XML EPLAN)	Artículos (CSV, JSON, BMEcat, XML de EPLAN)
+Exports all parts of the parts server as CSV or EPLAN parts XML	Exportiert alle Artikel des Artikelservers als CSV oder EPLAN-Artikel-XML	Exporte tous les articles du serveur d'articles en CSV ou en XML d'articles EPLAN	Exporta todos los artículos del servidor de artículos como CSV o XML de artículos EPLAN
+csv (default) or eplan_xml	csv (Standard) oder eplan_xml	csv (par défaut) ou eplan_xml	csv (por defecto) o eplan_xml
+PLC tag table for Siemens TIA Portal (Excel)	SPS-Variablentabelle für Siemens TIA Portal (Excel)	Table de variables API pour Siemens TIA Portal (Excel)	Tabla de variables PLC para Siemens TIA Portal (Excel)
+PLC tags for Rockwell Studio 5000 (CSV)	SPS-Tags für Rockwell Studio 5000 (CSV)	Variables API pour Rockwell Studio 5000 (CSV)	Etiquetas PLC para Rockwell Studio 5000 (CSV)
+Unplaced	Nicht platziert	Non placés	No colocados
+PLC channels and functions of the assigned parts that are not in the schematic yet	SPS-Kanäle und Funktionen der zugeordneten Artikel, die noch nicht im Schaltplan sind	Canaux API et fonctions des articles affectés qui ne sont pas encore dans le schéma	Canales PLC y funciones de los artículos asignados que aún no están en el esquema
+Click an entry, then click into the page to place it.	Eintrag anklicken, dann in die Seite klicken, um ihn zu platzieren.	Cliquer sur une entrée, puis dans la page pour la placer.	Haga clic en una entrada y luego en la página para colocarla.
+PLC channels	SPS-Kanäle	Canaux API	Canales PLC
+Functions of the parts	Funktionen der Artikel	Fonctions des articles	Funciones de los artículos
+Place this function	Diese Funktion platzieren	Placer cette fonction	Colocar esta función
+Lists PLC channels and functions of the assigned parts that are not placed yet, with the symbol, tag, label and pins for place_symbol	Listet SPS-Kanäle und Funktionen der zugeordneten Artikel, die noch nicht platziert sind, mit Symbol, Kennzeichen, Beschriftung und Pins für place_symbol	Liste les canaux API et fonctions des articles affectés pas encore placés, avec symbole, repère, libellé et broches pour place_symbol	Lista los canales PLC y funciones de los artículos asignados aún no colocados, con símbolo, identificación, etiqueta y pines para place_symbol
+Empty (IEC 60204-1)	Leer (IEC 60204-1)	Vide (IEC 60204-1)	Vacío (IEC 60204-1)
+One schematic page, the potentials of IEC 60204-1	Eine Schaltplanseite, die Potenziale nach IEC 60204-1	Une page de schéma, les potentiels de l'IEC 60204-1	Una página de esquema, los potenciales de IEC 60204-1
+Cover sheet, table of contents, schematic pages with function and location, device list, bill of materials, terminal and cable diagrams	Deckblatt, Inhaltsverzeichnis, Schaltplanseiten mit Funktion und Ort, Betriebsmittelliste, Stückliste, Klemmen- und Kabelpläne	Page de garde, sommaire, pages de schéma avec fonction et emplacement, liste des appareils, nomenclature, plans de bornes et de câbles	Portada, índice, páginas de esquema con función y ubicación, lista de dispositivos, lista de materiales, diagramas de bornes y cables
+Distribution board (IEC 61439)	Verteiler (IEC 61439)	Tableau de distribution (IEC 61439)	Cuadro de distribución (IEC 61439)
+Cover sheet, single-line overview, schematic pages, bill of materials, enclosure climate and short circuit reports	Deckblatt, Übersicht einpolig, Schaltplanseiten, Stückliste, Auswertungen Gehäuseklima und Kurzschluss	Page de garde, vue unifilaire, pages de schéma, nomenclature, rapports climat d'armoire et court-circuit	Portada, vista unifilar, páginas de esquema, lista de materiales, informes de clima del armario y cortocircuito
+Incoming supply	Einspeisung	Arrivée	Acometida
+Outgoing circuits	Abgänge	Départs	Salidas
+New project from template	Neues Projekt aus Vorlage	Nouveau projet à partir d'un modèle	Nuevo proyecto desde plantilla
+From a template file…	Aus einer Vorlagendatei…	À partir d'un fichier modèle…	Desde un archivo de plantilla…
+Any project file: its settings, forms, structure, potentials and pages start the new project	Jede Projektdatei: ihre Einstellungen, Formulare, Struktur, Potenziale und Seiten beginnen das neue Projekt	Tout fichier projet : ses réglages, formulaires, structure, potentiels et pages démarrent le nouveau projet	Cualquier archivo de proyecto: sus ajustes, formularios, estructura, potenciales y páginas inician el nuevo proyecto
+Save as project template…	Als Projektvorlage speichern…	Enregistrer comme modèle de projet…	Guardar como plantilla de proyecto…
+Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Speichert das Projekt ohne Revisionen, Stände, Prüfung und Verdrahtungsmarken als Vorlage für neue Projekte	Enregistre le projet sans révisions, états de référence, revue ni marques de câblage comme modèle de nouveaux projets	Guarda el proyecto sin revisiones, líneas base, revisión ni marcas de cableado como plantilla para nuevos proyectos
+OpenECraft project template	OpenECraft-Projektvorlage	Modèle de projet OpenECraft	Plantilla de proyecto de OpenECraft
+Not a project template: {}	Keine Projektvorlage: {}	Pas un modèle de projet : {}	No es una plantilla de proyecto: {}
+Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Mit einer Projektvorlage beginnen: einer eingebauten (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) oder einer Projektdatei	Partir d'un modèle de projet : intégré (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) ou un fichier projet	Empezar desde una plantilla: una integrada (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) o un archivo de proyecto
+Unknown template {}: {}	Unbekannte Vorlage {}: {}	Modèle inconnu {} : {}	Plantilla desconocida {}: {}
+Not a packed project	Kein gepacktes Projekt	Pas un projet compressé	No es un proyecto comprimido
+Viewer	Betrachter	Lecteur	Lector
+With a user account of the server; replaces the access token	Mit einem Benutzerkonto des Servers; ersetzt den Zugriffstoken	Avec un compte utilisateur du serveur ; remplace le jeton d'accès	Con una cuenta de usuario del servidor; reemplaza el token de acceso
+You may view this project: comments and markup only, no changes.	Sie dürfen dieses Projekt ansehen: nur Kommentare und Markierungen, keine Änderungen.	Vous pouvez consulter ce projet : commentaires et annotations seulement, aucune modification.	Puede ver este proyecto: solo comentarios y marcas, sin cambios.
+Emergency stop, mushroom head (NFPA)	Not-Halt, Pilzkopf (NFPA)	Arrêt d'urgence, tête champignon (NFPA)	Parada de emergencia, cabeza de seta (NFPA)
+Foot switch NO (NFPA)	Fußschalter Schließer (NFPA)	Interrupteur à pied NO (NFPA)	Interruptor de pie NA (NFPA)
+Float switch NO (NFPA)	Schwimmerschalter Schließer (NFPA)	Interrupteur à flotteur NO (NFPA)	Interruptor de flotador NA (NFPA)
+Pressure switch NO (NFPA)	Druckschalter Schließer (NFPA)	Pressostat NO (NFPA)	Presostato NA (NFPA)
+Temperature switch NO (NFPA)	Temperaturschalter Schließer (NFPA)	Thermostat NO (NFPA)	Termostato NA (NFPA)
+Flow switch NO (NFPA)	Strömungsschalter Schließer (NFPA)	Contrôleur de débit NO (NFPA)	Interruptor de caudal NA (NFPA)
+Proximity switch NO (NFPA)	Näherungsschalter Schließer (NFPA)	Détecteur de proximité NO (NFPA)	Detector de proximidad NA (NFPA)
+Solenoid (NFPA)	Magnetspule (NFPA)	Électroaimant (NFPA)	Solenoide (NFPA)
+Timer coil (NFPA)	Zeitrelaisspule (NFPA)	Bobine de relais temporisé (NFPA)	Bobina de temporizador (NFPA)
+Control transformer (NFPA)	Steuertransformator (NFPA)	Transformateur de commande (NFPA)	Transformador de control (NFPA)
+Horn (NFPA)	Hupe (NFPA)	Avertisseur (NFPA)	Bocina (NFPA)
+Circuit breaker 1-pole (NFPA)	Leitungsschutzschalter 1-polig (NFPA)	Disjoncteur unipolaire (NFPA)	Interruptor automático unipolar (NFPA)
+Overload contact NC (NFPA)	Überlastkontakt Öffner (NFPA)	Contact de surcharge NF (NFPA)	Contacto de sobrecarga NC (NFPA)
+Main contacts 3-pole (NFPA)	Hauptkontakte 3-polig (NFPA)	Contacts principaux tripolaires (NFPA)	Contactos principales tripolares (NFPA)
+3/2 directional valve	3/2-Wegeventil	Distributeur 3/2	Válvula distribuidora 3/2
+Pressure relief valve	Druckbegrenzungsventil	Limiteur de pression	Válvula limitadora de presión
+Flow control valve, adjustable	Drosselventil, einstellbar	Réducteur de débit réglable	Válvula de estrangulación regulable
+Pressure regulator	Druckregelventil	Régulateur de pression	Regulador de presión
+Service unit (filter, regulator, lubricator)	Wartungseinheit (Filter, Regler, Öler)	Unité de conditionnement (filtre, régulateur, lubrificateur)	Unidad de mantenimiento (filtro, regulador, lubricador)
+Accumulator	Hydrospeicher	Accumulateur	Acumulador
+Hydraulic motor	Hydromotor	Moteur hydraulique	Motor hidráulico
+Ball valve	Kugelhahn	Vanne à boisseau sphérique	Válvula de bola
+Mounted	Montiert	Monté	Montado
+Mounting assistant: the panel items in mounting order with their place and part	Montageassistent: die Teile des Schaltschranks in Montagereihenfolge mit Platz und Artikel	Assistant de montage : les éléments de l'armoire dans l'ordre de montage avec leur position et leur article	Asistente de montaje: los elementos del armario en orden de montaje con su posición y artículo
+Mark as mounted	Als montiert markieren	Marquer comme monté	Marcar como montado
+No panel items: place the devices in the panel layout.	Keine Teile: Geräte im Schaltschrankaufbau platzieren.	Aucun élément : placez les appareils dans l'implantation d'armoire.	No hay elementos: coloque los equipos en la disposición del armario.
+Checklist with the mounting state	Checkliste mit Montagestand	Liste de contrôle avec l'état du montage	Lista de comprobación con el estado del montaje
+Marks of items that no longer exist	Markierungen von Teilen, die es nicht mehr gibt	Marques d'éléments qui n'existent plus	Marcas de elementos que ya no existen
+✔ All items are mounted.	✔ Alle Teile sind montiert.	✔ Tous les éléments sont montés.	✔ Todos los elementos están montados.
+Select an item in the list or in the 3D view.	Teil in der Liste oder in der 3D-Ansicht wählen.	Sélectionnez un élément dans la liste ou dans la vue 3D.	Seleccione un elemento en la lista o en la vista 3D.
+✔ Mounted	✔ Montiert	✔ Monté	✔ Montado
+Mark as not mountable; describe the problem in the note	Als nicht montierbar markieren; Problem in der Notiz beschreiben	Marquer comme non montable ; décrivez le problème dans la note	Marcar como no montable; describa el problema en la nota
+Previous item	Vorheriges Teil	Élément précédent	Elemento anterior
+Next item	Nächstes Teil	Élément suivant	Elemento siguiente
+e.g. cutout too small, part missing	z. B. Ausschnitt zu klein, Artikel fehlt	p. ex. découpe trop petite, article manquant	p. ej. recorte demasiado pequeño, falta el artículo
+{} of {} items	{} von {} Teilen	{} sur {} éléments	{} de {} elementos
+{} changed since mounted · {} problems	{} seit Montage geändert · {} Probleme	{} modifiés depuis le montage · {} problèmes	{} modificados desde el montaje · {} problemas
+Position X {} mm, Y {} mm	Position X {} mm, Y {} mm	Position X {} mm, Y {} mm	Posición X {} mm, Y {} mm
+Size {} × {} mm	Größe {} × {} mm	Taille {} × {} mm	Tamaño {} × {} mm
+Changed since mounted: was at X {} mm, Y {} mm with part {}	Seit Montage geändert: war bei X {} mm, Y {} mm mit Artikel {}	Modifié depuis le montage : était à X {} mm, Y {} mm avec l'article {}	Modificado desde el montaje: estaba en X {} mm, Y {} mm con el artículo {}
+{}: {} changed after it was mounted	{}: {} wurde nach der Montage geändert	{} : {} a été modifié après le montage	{}: {} se modificó después del montaje
+{}: mounting problem {}: {}	{}: Montageproblem {}: {}	{} : problème de montage {} : {}	{}: problema de montaje {}: {}
+{} mounting marks belong to items that no longer exist	{} Montagemarkierungen gehören zu Teilen, die es nicht mehr gibt	{} marques de montage appartiennent à des éléments qui n'existent plus	{} marcas de montaje pertenecen a elementos que ya no existen
+Mounting marks	Montagemarkierungen	Marques de montage	Marcas de montaje
+Changed since mounted	Seit Montage geändert	Modifié depuis le montage	Modificado desde el montaje
+Cutouts	Ausschnitte	Découpes	Recortes
+Rails, ducts and busbars	Schienen, Kanäle und Sammelschienen	Rails, goulottes et jeux de barres	Carriles, canaletas y barras colectoras
+Door and walls	Tür und Wände	Porte et parois	Puerta y paredes
+No panel item with id {}	Kein Teil mit der Id {}	Aucun élément avec l'id {}	No hay ningún elemento con el id {}
+Lists the items of the panel layout in mounting order with place, size, part and mounting state	Listet die Teile des Schaltschrankaufbaus in Montagereihenfolge mit Platz, Größe, Artikel und Montagestand	Liste les éléments de l'implantation dans l'ordre de montage avec position, taille, article et état du montage	Lista los elementos de la disposición en orden de montaje con posición, tamaño, artículo y estado del montaje
+Marks a panel item as mounted or as a problem, or as open again	Markiert ein Teil als montiert, als Problem oder wieder als offen	Marque un élément comme monté, comme problème ou de nouveau comme ouvert	Marca un elemento como montado, como problema o de nuevo como abierto
+Id of the panel item (from mounting_list)	Id des Teils (aus mounting_list)	Id de l'élément (de mounting_list)	Id del elemento (de mounting_list)
+mounted, problem or open	mounted, problem oder open	mounted, problem ou open	mounted, problem u open
+Built-in scheme: copy it to change it.	Mitgeliefertes Schema: zum Ändern kopieren.	Schéma intégré : copiez-le pour le modifier.	Esquema integrado: cópielo para cambiarlo.
+Byte order mark	Byte-Order-Mark	Marque d'ordre des octets	Marca de orden de bytes
+Columns: {}	Spalten: {}	Colonnes : {}	Columnas: {}
+Comma	Komma	Virgule	Coma
+Export marking (Excel)…	Beschriftung exportieren (Excel)…	Exporter le repérage (Excel)…	Exportar el marcado (Excel)…
+Header row	Kopfzeile	Ligne d'en-tête	Fila de encabezado
+Labeling scheme	Beschriftungsschema	Schéma de repérage	Esquema de marcado
+Markers	Beschriftungen	Repères	Marcadores
+Move left	Nach links	Déplacer à gauche	Mover a la izquierda
+New project scheme from the selected one	Neues Projektschema aus dem gewählten	Nouveau schéma de projet à partir du schéma choisi	Nuevo esquema de proyecto a partir del seleccionado
+One row per label	Eine Zeile je Schild	Une ligne par repère	Una fila por etiqueta
+Semicolon	Semikolon	Point-virgule	Punto y coma
+Tab	Tabulator	Tabulation	Tabulador
+Labeling scheme (default: the scheme selected in the project)	Beschriftungsschema (Standard: das im Projekt gewählte Schema)	Schéma de repérage (par défaut : le schéma choisi dans le projet)	Esquema de marcado (por defecto: el esquema elegido en el proyecto)
+Marking (Excel)	Beschriftung (Excel)	Repérage (Excel)	Marcado (Excel)
+No labeling scheme named {}	Kein Beschriftungsschema namens {}	Aucun schéma de repérage nommé {}	No hay ningún esquema de marcado llamado {}
+Adds or changes a labeling scheme of the project, removes it, or selects the scheme used for the marking export	Legt ein Beschriftungsschema des Projekts an oder ändert es, entfernt es oder wählt das Schema für den Beschriftungsexport	Ajoute ou modifie un schéma de repérage du projet, le supprime ou choisit le schéma utilisé pour l'export du repérage	Añade o cambia un esquema de marcado del proyecto, lo elimina o elige el esquema usado para exportar el marcado
+Columns, comma separated: Material, Category, Text, Count, Enclosure, Group, No	Spalten, durch Komma getrennt: Material, Category, Text, Count, Enclosure, Group, No	Colonnes, séparées par des virgules : Material, Category, Text, Count, Enclosure, Group, No	Columnas, separadas por comas: Material, Category, Text, Count, Enclosure, Group, No
+First row with the column names	Erste Zeile mit den Spaltennamen	Première ligne avec les noms des colonnes	Primera fila con los nombres de las columnas
+Lists the labeling schemes for marking programs (built-in and of the project) and the selected one	Listet die Beschriftungsschemata für Beschriftungsprogramme (mitgeliefert und des Projekts) und das gewählte	Liste les schémas de repérage pour les logiciels de marquage (intégrés et du projet) et le schéma choisi	Lista los esquemas de marcado para programas de marcado (integrados y del proyecto) y el elegido
+Markers, comma separated: device, terminal, wire, cable (empty: all)	Beschriftungen, durch Komma getrennt: device, terminal, wire, cable (leer: alle)	Repères, séparés par des virgules : device, terminal, wire, cable (vide : tous)	Marcadores, separados por comas: device, terminal, wire, cable (vacío: todos)
+One row per printed label instead of a count	Eine Zeile je gedrucktem Schild statt einer Anzahl	Une ligne par repère imprimé au lieu d'une quantité	Una fila por etiqueta impresa en lugar de una cantidad
+Remove the scheme from the project	Schema aus dem Projekt entfernen	Supprimer le schéma du projet	Eliminar el esquema del proyecto
+Separator: semicolon, comma or tab	Trennzeichen: semicolon, comma oder tab	Séparateur : semicolon, comma ou tab	Separador: semicolon, comma o tab
+Unknown marker category: {}	Unbekannte Beschriftungsart: {}	Type de repère inconnu : {}	Tipo de marcador desconocido: {}
+Unknown separator: {}	Unbekanntes Trennzeichen: {}	Séparateur inconnu : {}	Separador desconocido: {}
+Use this scheme for the marking export	Dieses Schema für den Beschriftungsexport verwenden	Utiliser ce schéma pour l'export du repérage	Usar este esquema para exportar el marcado
+{} comments are on pages the project does not have	{} Kommentare liegen auf Seiten, die das Projekt nicht hat	{} commentaires se trouvent sur des pages que le projet n'a pas	{} comentarios están en páginas que el proyecto no tiene
+{} comments were imported before	{} Kommentare wurden schon früher importiert	{} commentaires ont déjà été importés	{} comentarios ya se importaron antes
+{} comments, {} replies and {} markups imported	{} Kommentare, {} Antworten und {} Markierungen importiert	{} commentaires, {} réponses et {} annotations importés	{} comentarios, {} respuestas y {} marcas importados
+PDF with comments	PDF mit Kommentaren	PDF avec commentaires	PDF con comentarios
+Author of comments without one (default: the user name)	Autor von Kommentaren ohne Autor (Standard: der Benutzername)	Auteur des commentaires qui n'en ont pas (par défaut : le nom d'utilisateur)	Autor de los comentarios que no lo tienen (por defecto: el nombre de usuario)
+Imports the comments a reviewer made in a PDF export of the project (notes, text boxes, highlights, shapes, replies) into the review layer; comments imported before are skipped	Importiert die Kommentare, die ein Prüfer in einem PDF-Export des Projekts gemacht hat (Notizen, Textfelder, Hervorhebungen, Formen, Antworten), in die Prüfebene; schon importierte Kommentare werden übersprungen	Importe dans la couche de révision les commentaires qu'un réviseur a faits dans un export PDF du projet (notes, zones de texte, surlignages, formes, réponses) ; les commentaires déjà importés sont ignorés	Importa a la capa de revisión los comentarios que un revisor hizo en una exportación PDF del proyecto (notas, cuadros de texto, resaltados, formas, respuestas); los comentarios ya importados se omiten
+PDF file with comments	PDF-Datei mit Kommentaren	Fichier PDF avec commentaires	Archivo PDF con comentarios
+Not a PDF file	Keine PDF-Datei	Ce n'est pas un fichier PDF	No es un archivo PDF
+The PDF has no pages that can be read	Das PDF hat keine lesbaren Seiten	Le PDF n'a aucune page lisible	El PDF no tiene páginas legibles
+Comments a reviewer made in a PDF export of the project (Acrobat or another PDF viewer)	Kommentare, die ein Prüfer in einem PDF-Export des Projekts gemacht hat (Acrobat oder ein anderer PDF-Betrachter)	Commentaires qu'un réviseur a faits dans un export PDF du projet (Acrobat ou une autre visionneuse PDF)	Comentarios que un revisor hizo en una exportación PDF del proyecto (Acrobat u otro visor de PDF)
+Import PDF comments…	PDF-Kommentare importieren…	Importer des commentaires PDF…	Importar comentarios PDF…
+Clearance bottom	Abstand unten	Dégagement en bas	Distancia inferior
+Clearance front	Abstand vorne	Dégagement à l'avant	Distancia delantera
+Clearance left	Abstand links	Dégagement à gauche	Distancia izquierda
+Clearance right	Abstand rechts	Dégagement à droite	Distancia derecha
+Clearance top	Abstand oben	Dégagement en haut	Distancia superior
+Door cutout	Türausschnitt	Découpe de porte	Recorte de puerta
+Faces	Flächen	Faces	Caras
+Mounting holes	Befestigungsbohrungen	Trous de fixation	Agujeros de fijación
+Moves lines such as Power loss: 3 W into the typed fields	Verschiebt Zeilen wie Power loss: 3 W in die typisierten Felder	Déplace les lignes telles que Power loss: 3 W dans les champs typés	Mueve líneas como Power loss: 3 W a los campos tipados
+Outside the face	Außerhalb der Fläche	À l'extérieur de la face	Fuera de la cara
+Take {} values from the technical data	{} Werte aus den technischen Daten übernehmen	Reprendre {} valeurs des données techniques	Tomar {} valores de los datos técnicos
+Find…	Suchen…	Rechercher…	Buscar…
+Keyboard shortcuts…	Tastenkürzel…	Raccourcis clavier…	Atajos de teclado…
+Open…	Öffnen…	Ouvrir…	Abrir…
+Redo	Wiederholen	Rétablir	Rehacer
+Rotate	Drehen	Pivoter	Girar
+Save to project server	Auf dem Projektserver speichern	Enregistrer sur le serveur de projets	Guardar en el servidor de proyectos
+Undo	Rückgängig	Annuler	Deshacer
+Find and replace	Suchen und ersetzen	Rechercher et remplacer	Buscar y reemplazar
+Finish polyline or polygon	Polylinie oder Polygon abschließen	Terminer la polyligne ou le polygone	Terminar la polilínea o el polígono
+Mirror (selection or symbol being placed)	Spiegeln (Auswahl oder zu platzierendes Symbol)	Miroir (sélection ou symbole en cours de placement)	Reflejar (selección o símbolo que se coloca)
+Next page	Nächste Seite	Page suivante	Página siguiente
+Open project	Projekt öffnen	Ouvrir le projet	Abrir proyecto
+Previous page	Vorherige Seite	Page précédente	Página anterior
+Rotate (selection or symbol being placed)	Drehen (Auswahl oder zu platzierendes Symbol)	Pivoter (sélection ou symbole en cours de placement)	Girar (selección o símbolo que se coloca)
+Save project	Projekt speichern	Enregistrer le projet	Guardar proyecto
+Text tool	Textwerkzeug	Outil texte	Herramienta de texto
+Toggle routing around symbols (wire tool)	Führung um Symbole ein / aus (Verbindungswerkzeug)	Activer / désactiver le contournement des symboles (outil fil)	Activar / desactivar el trazado alrededor de símbolos (herramienta de cable)
+Wire tool	Verbindungswerkzeug	Outil fil	Herramienta de cable
+Clear	Leeren	Effacer	Borrar
+Keyboard shortcuts	Tastenkürzel	Raccourcis clavier	Atajos de teclado
+No shortcut	Kein Tastenkürzel	Aucun raccourci	Sin atajo
+Press a key…	Taste drücken…	Appuyez sur une touche…	Pulse una tecla…
+Record	Aufnehmen	Enregistrer	Grabar
+Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Aufnehmen: die neue Taste mit ihren Zusatztasten drücken (Esc bricht ab). Esc, Entf, die Pfeiltasten und Kopieren / Einfügen bleiben fest.	Enregistrer : appuyez sur la nouvelle touche avec ses modificateurs (Échap annule). Échap, Suppr, les flèches et copier / coller restent fixes.	Grabar: pulse la nueva tecla con sus modificadores (Esc cancela). Esc, Supr, las flechas y copiar / pegar no cambian.
+Reset all to the defaults	Alle auf die Vorgaben zurücksetzen	Tout réinitialiser aux valeurs par défaut	Restablecer todo a los valores predeterminados
+{} is used by: {}	{} wird verwendet von: {}	{} est utilisé par : {}	{} lo usan: {}
+Harness nailboard drawing to scale (SVG)	Kabelbaum-Nagelbrett-Zeichnung maßstäblich (SVG)	Plan de clouage du faisceau à l'échelle (SVG)	Plano de clavos del mazo a escala (SVG)
+Harness tag, e.g. -WH1	Kennzeichen des Kabelbaums, z. B. -WH1	Repère du faisceau, p. ex. -WH1	Identificador del mazo, p. ej. -WH1
+Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Nagelbrett-Zeichnung des Kabelbaums maßstäblich mit Abzweiglängen und den Pin-Tabellen der Stecker	Plan de clouage du faisceau à l'échelle avec les longueurs des branches et les tableaux de broches des connecteurs	Plano de clavos del mazo a escala con las longitudes de las ramas y las tablas de pines de los conectores
+📐 Nailboard (SVG)…	📐 Nagelbrett (SVG)…	📐 Plan de clouage (SVG)…	📐 Plano de clavos (SVG)…
+Bundle Ø {} mm	Bündel-Ø {} mm	Ø du faisceau {} mm	Ø del mazo {} mm
+Nailboard {}	Nagelbrett {}	Plan de clouage {}	Plano de clavos {}
+Scale 1:{}	Maßstab 1:{}	Échelle 1:{}	Escala 1:{}
+~ length assumed: no wire of the connector has a length	~ Länge angenommen: keine Ader des Steckers hat eine Länge	~ longueur supposée : aucun fil du connecteur n'a de longueur	~ longitud supuesta: ningún cable del conector tiene longitud
+Nailboard layout of a harness: the branches from the common node to the connectors with length, direction, bundle diameter and pins, and the drawing scale	Nagelbrett-Aufbau eines Kabelbaums: die Abzweige vom gemeinsamen Knoten zu den Steckern mit Länge, Richtung, Bündeldurchmesser und Pins sowie der Zeichnungsmaßstab	Disposition du plan de clouage d'un faisceau : les branches du nœud commun aux connecteurs avec longueur, direction, diamètre du faisceau et broches, et l'échelle du dessin	Disposición del plano de clavos de un mazo: las ramas desde el nodo común hasta los conectores con longitud, dirección, diámetro del mazo y pines, y la escala del dibujo
+// branch not to scale	// Abzweig nicht maßstäblich	// branche pas à l'échelle	// rama no a escala
+Option {} needs the form name=value	Option {} braucht die Form Name=Wert	L'option {} doit avoir la forme nom=valeur	La opción {} necesita la forma nombre=valor
+Further parameters of the export as name=value, separated by commas (see list_exports), e.g. harness=-WH1	Weitere Parameter des Exports als Name=Wert, durch Komma getrennt (siehe list_exports), z. B. harness=-WH1	Autres paramètres de l'export sous la forme nom=valeur, séparés par des virgules (voir list_exports), p. ex. harness=-WH1	Otros parámetros de la exportación como nombre=valor, separados por comas (ver list_exports), p. ej. harness=-WH1
+HTML document for printing	HTML-Dokument zum Drucken	Document HTML pour l'impression	Documento HTML para imprimir
+Pages: names and ranges, e.g. 1-3, 5 (default: all pages)	Seiten: Namen und Bereiche, z. B. 1-3, 5 (Standard: alle Seiten)	Pages : noms et plages, p. ex. 1-3, 5 (par défaut : toutes les pages)	Páginas: nombres y rangos, p. ej. 1-3, 5 (por defecto: todas las páginas)
+PLC symbol table for Siemens STEP 7 classic (SDF)	SPS-Symboltabelle für Siemens STEP 7 classic (SDF)	Table des symboles API pour Siemens STEP 7 classic (SDF)	Tabla de símbolos PLC para Siemens STEP 7 classic (SDF)
+PLC global variable list for Beckhoff TwinCAT 3 (TcGVL)	Globale SPS-Variablenliste für Beckhoff TwinCAT 3 (TcGVL)	Liste de variables globales API pour Beckhoff TwinCAT 3 (TcGVL)	Lista de variables globales PLC para Beckhoff TwinCAT 3 (TcGVL)
+PLC variables for Schneider Control Expert (XSY)	SPS-Variablen für Schneider Control Expert (XSY)	Variables API pour Schneider Control Expert (XSY)	Variables PLC para Schneider Control Expert (XSY)
+Pre-planning	Vorplanung	Préplanification	Preplanificación
+CSV or Excel file	CSV- oder Excel-Datei	Fichier CSV ou Excel	Archivo CSV o Excel
+Generates a schematic page per planned device that has a page macro and is not in the schematic yet	Erzeugt eine Schaltplanseite je geplantem Gerät mit Seitenmakro, das noch nicht im Schaltplan ist	Génère une page de schéma par appareil planifié qui a une macro de page et n'est pas encore dans le schéma	Genera una página de esquema por cada equipo planificado que tenga una macro de página y aún no esté en el esquema
+Imports pre-planning segments and planned devices from CSV or Excel (columns Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importiert Vorplanungssegmente und geplante Geräte aus CSV oder Excel (Spalten Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importe les segments de préplanification et les appareils planifiés depuis CSV ou Excel (colonnes Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importa segmentos de preplanificación y equipos planificados desde CSV o Excel (columnas Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)
+No segment {}	Kein Segment {}	Aucun segment {}	No hay ningún segmento {}
+Segment path (default: all segments)	Segmentpfad (Standard: alle Segmente)	Chemin du segment (par défaut : tous les segments)	Ruta del segmento (por defecto: todos los segmentos)
+Pre-planning (CSV, Excel)	Vorplanung (CSV, Excel)	Préplanification (CSV, Excel)	Preplanificación (CSV, Excel)
+Plant segments with planned devices before the schematic	Anlagensegmente mit geplanten Geräten vor dem Schaltplan	Segments d'installation avec les appareils planifiés avant le schéma	Segmentos de la planta con los equipos planificados antes del esquema
+Pre-planning…	Vorplanung…	Préplanification…	Preplanificación…
+A segment cannot be moved below itself	Ein Segment kann nicht unter sich selbst verschoben werden	Un segment ne peut pas être déplacé sous lui-même	Un segmento no se puede mover debajo de sí mismo
+Adds a planned device to a segment or changes it	Fügt einem Segment ein geplantes Gerät hinzu oder ändert es	Ajoute un appareil planifié à un segment ou le modifie	Añade un equipo planificado a un segmento o lo cambia
+Adds a segment below another one (or at the top)	Fügt ein Segment unter einem anderen (oder oben) hinzu	Ajoute un segment sous un autre (ou au niveau supérieur)	Añade un segmento debajo de otro (o en el nivel superior)
+Adds the devices of a template to a segment	Fügt die Geräte einer Vorlage einem Segment hinzu	Ajoute les appareils d'un modèle à un segment	Añade los equipos de una plantilla a un segmento
+Changes name, description, function, location or parent of a segment	Ändert Name, Beschreibung, Funktion, Ort oder übergeordnetes Segment eines Segments	Modifie le nom, la description, la fonction, le lieu ou le parent d'un segment	Cambia el nombre, la descripción, la función, la ubicación o el padre de un segmento
+Column Segment is missing	Spalte Segment fehlt	La colonne Segment manque	Falta la columna Segment
+Device tag within the segment, e.g. -M1	Betriebsmittelkennzeichen im Segment, z. B. -M1	Repère d'appareil dans le segment, p. ex. -M1	Identificador del equipo en el segmento, p. ej. -M1
+Function (= without the sign; empty: the parent's)	Funktion (= ohne Zeichen; leer: die des übergeordneten Segments)	Fonction (= sans le signe ; vide : celle du parent)	Función (= sin el signo; vacía: la del padre)
+Invalid segment name: {}	Ungültiger Segmentname: {}	Nom de segment non valide : {}	Nombre de segmento no válido: {}
+Lists the segments in tree order with structure, planned power and the planned devices with their state in the schematic	Listet die Segmente in Baumreihenfolge mit Struktur, geplanter Leistung und den geplanten Geräten mit ihrem Stand im Schaltplan	Liste les segments dans l'ordre de l'arbre avec la structure, la puissance planifiée et les appareils planifiés avec leur état dans le schéma	Lista los segmentos en orden de árbol con la estructura, la potencia planificada y los equipos planificados con su estado en el esquema
+Location (+ without the sign; empty: the parent's)	Ort (+ ohne Zeichen; leer: der des übergeordneten Segments)	Lieu (+ sans le signe ; vide : celui du parent)	Ubicación (+ sin el signo; vacía: la del padre)
+Name of the segment	Name des Segments	Nom du segment	Nombre del segmento
+New parent segment (empty: top level)	Neues übergeordnetes Segment (leer: oberste Ebene)	Nouveau segment parent (vide : niveau supérieur)	Nuevo segmento padre (vacío: nivel superior)
+No planned device {}	Kein geplantes Gerät {}	Aucun appareil planifié {}	No hay ningún equipo planificado {}
+No segment template named {}	Keine Segmentvorlage namens {}	Aucun modèle de segment nommé {}	No hay ninguna plantilla de segmento llamada {}
+Page macro that generates its schematic	Seitenmakro, das seinen Schaltplan erzeugt	Macro de page qui génère son schéma	Macro de página que genera su esquema
+Part differs	Artikel abweichend	Article différent	Artículo distinto
+Planned part number	Geplante Artikelnummer	Référence d'article planifiée	Número de artículo planificado
+Planned power in kW	Geplante Leistung in kW	Puissance planifiée en kW	Potencia planificada en kW
+Plant segments with planned devices before the schematic: templates, power budget, state against the schematic, exchange as CSV / Excel	Anlagensegmente mit geplanten Geräten vor dem Schaltplan: Vorlagen, Leistungsbilanz, Stand gegenüber dem Schaltplan, Austausch als CSV / Excel	Segments d'installation avec les appareils planifiés avant le schéma : modèles, bilan de puissance, état par rapport au schéma, échange en CSV / Excel	Segmentos de la planta con los equipos planificados antes del esquema: plantillas, balance de potencia, estado frente al esquema, intercambio como CSV / Excel
+Pre-planning (CSV)	Vorplanung (CSV)	Préplanification (CSV)	Preplanificación (CSV)
+Pre-planning (Excel)	Vorplanung (Excel)	Préplanification (Excel)	Preplanificación (Excel)
+Removes a planned device from a segment	Entfernt ein geplantes Gerät aus einem Segment	Supprime un appareil planifié d'un segment	Elimina un equipo planificado de un segmento
+Removes a segment with everything below it	Entfernt ein Segment mit allem darunter	Supprime un segment avec tout ce qui se trouve en dessous	Elimina un segmento con todo lo que hay debajo
+Saves the planned devices of a segment as a template	Speichert die geplanten Geräte eines Segments als Vorlage	Enregistre les appareils planifiés d'un segment comme modèle	Guarda los equipos planificados de un segmento como plantilla
+Segment path, e.g. Plant/Area 1	Segmentpfad, z. B. Plant/Area 1	Chemin du segment, p. ex. Plant/Area 1	Ruta del segmento, p. ej. Plant/Area 1
+Segment {} already exists	Segment {} gibt es schon	Le segment {} existe déjà	El segmento {} ya existe
+Unknown segment	Unbekanntes Segment	Segment inconnu	Segmento desconocido
+What it is: motor, valve, sensor, …	Was es ist: Motor, Ventil, Sensor, …	Ce que c'est : moteur, vanne, capteur, …	Qué es: motor, válvula, sensor, …
+{} is planned twice ({} and {})	{} ist doppelt geplant ({} und {})	{} est planifié deux fois ({} et {})	{} está planificado dos veces ({} y {})
+{} planned devices are not in the schematic yet	{} geplante Geräte sind noch nicht im Schaltplan	{} appareils planifiés ne sont pas encore dans le schéma	{} equipos planificados aún no están en el esquema
+{}: planned with part {}, the schematic uses another part	{}: geplant mit Artikel {}, der Schaltplan verwendet einen anderen Artikel	{} : planifié avec l'article {}, le schéma utilise un autre article	{}: planificado con el artículo {}, el esquema usa otro artículo
+A schematic page per planned device with a page macro that is not in the schematic yet (selected segment, otherwise all)	Eine Schaltplanseite je geplantem Gerät mit Seitenmakro, das noch nicht im Schaltplan ist (gewähltes Segment, sonst alle)	Une page de schéma par appareil planifié avec une macro de page qui n'est pas encore dans le schéma (segment choisi, sinon tous)	Una página de esquema por equipo planificado con macro de página que aún no está en el esquema (segmento elegido, si no todos)
+At the top level	Auf oberster Ebene	Au niveau supérieur	En el nivel superior
+Generate pages	Seiten erzeugen	Générer les pages	Generar páginas
+No segments yet: add one, or import a CSV / Excel file.	Noch keine Segmente: eines hinzufügen oder eine CSV- / Excel-Datei importieren.	Pas encore de segments : ajoutez-en un ou importez un fichier CSV / Excel.	Aún no hay segmentos: añada uno o importe un archivo CSV / Excel.
+Save as template	Als Vorlage speichern	Enregistrer comme modèle	Guardar como plantilla
+Segment {}	Segment {}	Segment {}	Segmento {}
+Select a segment.	Ein Segment wählen.	Choisissez un segment.	Seleccione un segmento.
+Tag	Kennzeichen	Repère	Identificador
+With everything below it	Mit allem darunter	Avec tout ce qui se trouve en dessous	Con todo lo que hay debajo
+kW	kW	kW	kW
+name	Name	nom	nombre
+{} devices added	{} Geräte hinzugefügt	{} appareils ajoutés	{} equipos añadidos
+{} pages generated	{} Seiten erzeugt	{} pages générées	{} páginas generadas
+{} pages generated; page macros not found: {}	{} Seiten erzeugt; Seitenmakros nicht gefunden: {}	{} pages générées ; macros de page introuvables : {}	{} páginas generadas; macros de página no encontradas: {}
+{} segments created, {} devices added, {} updated	{} Segmente angelegt, {} Geräte hinzugefügt, {} geändert	{} segments créés, {} appareils ajoutés, {} modifiés	{} segmentos creados, {} equipos añadidos, {} actualizados
+➕ Device	➕ Gerät	➕ Appareil	➕ Equipo
+➕ Segment	➕ Segment	➕ Segment	➕ Segmento
+➕ Sub-segment	➕ Untersegment	➕ Sous-segment	➕ Subsegmento
+🗑 Remove segment	🗑 Segment entfernen	🗑 Supprimer le segment	🗑 Eliminar segmento
+Display	Darstellung	Affichage	Presentación
+Mirrored	Gespiegelt	En miroir	Reflejado
+Other properties	Weitere Eigenschaften	Autres propriétés	Otras propiedades
+Page name	Seitenname	Nom de la page	Nombre de la página
+Rotation	Drehung	Rotation	Rotación
+Lists the window macros placed on the pages (macro boxes) with macro, variant, placeholder values and number of items	Listet die auf den Seiten platzierten Fenstermakros (Makrokästen) mit Makro, Variante, Platzhalterwerten und Anzahl der Elemente	Liste les macros de fenêtre placées sur les pages (boîtes de macro) avec macro, variante, valeurs des paramètres fictifs et nombre d'éléments	Lista las macros de ventana colocadas en las páginas (cajas de macro) con macro, variante, valores de marcadores y número de elementos
+Replaces the content of the macro boxes whose macro changed in a macro library file	Ersetzt den Inhalt der Makrokästen, deren Makro sich in einer Makrobibliotheksdatei geändert hat	Remplace le contenu des boîtes de macro dont la macro a changé dans un fichier de bibliothèque de macros	Sustituye el contenido de las cajas de macro cuya macro cambió en un archivo de biblioteca de macros
+Macro boxes ({})	Makrokästen ({})	Boîtes de macro ({})	Cajas de macro ({})
+Macro saved to the library	Makro in der Bibliothek gespeichert	Macro enregistrée dans la bibliothèque	Macro guardada en la biblioteca
+Page {}: {}	Seite {}: {}	Page {} : {}	Página {}: {}
+Remove the macro box (its items stay)	Makrokasten entfernen (seine Elemente bleiben)	Supprimer la boîte de macro (ses éléments restent)	Eliminar la caja de macro (sus elementos se quedan)
+Replaces the content of the macro boxes whose macro changed in the library	Ersetzt den Inhalt der Makrokästen, deren Makro sich in der Bibliothek geändert hat	Remplace le contenu des boîtes de macro dont la macro a changé dans la bibliothèque	Sustituye el contenido de las cajas de macro cuya macro cambió en la biblioteca
+Save the box content as the macro in the library	Inhalt des Kastens als Makro in der Bibliothek speichern	Enregistrer le contenu de la boîte comme macro dans la bibliothèque	Guardar el contenido de la caja como macro en la biblioteca
+Update {} changed macros	{} geänderte Makros aktualisieren	Mettre à jour {} macros modifiées	Actualizar {} macros modificadas
+Window macros inserted from now on are recorded as macro boxes.	Ab jetzt eingefügte Fenstermakros werden als Makrokästen erfasst.	Les macros de fenêtre insérées désormais sont enregistrées comme boîtes de macro.	Las macros de ventana insertadas a partir de ahora se registran como cajas de macro.
+changed in the library	in der Bibliothek geändert	modifiée dans la bibliothèque	modificada en la biblioteca
+current	aktuell	à jour	actual
+not in the library	nicht in der Bibliothek	absente de la bibliothèque	no está en la biblioteca
+{} macro boxes updated	{} Makrokästen aktualisiert	{} boîtes de macro mises à jour	{} cajas de macro actualizadas
+{} on released pages were left as they are	{} auf freigegebenen Seiten blieben unverändert	{} sur des pages libérées sont restées inchangées	{} en páginas liberadas se dejaron como estaban
+The macro box has no items left	Der Makrokasten hat keine Elemente mehr	La boîte de macro n'a plus d'éléments	La caja de macro ya no tiene elementos
+Unknown macro box	Unbekannter Makrokasten	Boîte de macro inconnue	Caja de macro desconocida
+Macro boxes	Makrokästen	Boîtes de macro	Cajas de macro
+Window macros placed on the pages (not printed)	Auf den Seiten platzierte Fenstermakros (nicht gedruckt)	Macros de fenêtre placées sur les pages (non imprimées)	Macros de ventana colocadas en las páginas (no se imprimen)
+Inputs from	Eingänge von	Entrées de	Entradas de
+Outputs to	Ausgänge an	Sorties vers	Salidas a
+Click, or drag it into the page	Anklicken oder in die Seite ziehen	Cliquez, ou faites-le glisser dans la page	Haga clic o arrástrelo a la página
+Drag an entry into the page, or click it and then click into the page.	Einen Eintrag in die Seite ziehen, oder anklicken und dann in die Seite klicken.	Faites glisser une entrée dans la page, ou cliquez dessus puis dans la page.	Arrastre una entrada a la página, o haga clic en ella y luego en la página.
+Capacitor, polarized	Kondensator, gepolt	Condensateur polarisé	Condensador polarizado
+Zener diode	Z-Diode	Diode Zener	Diodo Zener
+Photodiode	Fotodiode	Photodiode	Fotodiodo
+Transistor NPN	Transistor NPN	Transistor NPN	Transistor NPN
+Transistor PNP	Transistor PNP	Transistor PNP	Transistor PNP
+MOSFET N-channel	MOSFET N-Kanal	MOSFET canal N	MOSFET de canal N
+Thyristor	Thyristor	Thyristor	Tiristor
+Triac	Triac	Triac	Triac
+Thermistor NTC	Heißleiter (NTC)	Thermistance CTN	Termistor NTC
+Photoresistor (LDR)	Fotowiderstand (LDR)	Photorésistance (LDR)	Fotorresistencia (LDR)
+Optocoupler	Optokoppler	Optocoupleur	Optoacoplador
+Transistor	Transistor	Transistor	Transistor
+Defined potentials	Definierte Potenziale	Potentiels définis	Potenciales definidos
+Switch, 1-pole (installation)	Ausschalter, einpolig (Installation)	Interrupteur unipolaire (installation)	Interruptor unipolar (instalación)
+Two-way switch (installation)	Wechselschalter (Installation)	Va-et-vient (installation)	Conmutador (instalación)
+Dimmer (installation)	Dimmer (Installation)	Variateur (installation)	Regulador (instalación)
+Push button (installation)	Taster (Installation)	Bouton-poussoir (installation)	Pulsador (instalación)
+Lighting outlet	Leuchtenauslass	Point d'éclairage	Punto de luz
+Luminaire, fluorescent	Leuchtstofflampe	Luminaire fluorescent	Luminaria fluorescente
+Double socket outlet with PE	Doppelsteckdose mit Schutzkontakt	Prise double avec terre	Toma doble con tierra
+Junction box	Abzweigdose	Boîte de dérivation	Caja de derivación
+Motion detector	Bewegungsmelder	Détecteur de mouvement	Detector de movimiento
+Distribution board	Verteiler	Tableau de distribution	Cuadro de distribución
+Installation plan (IEC 60617-11)	Installationsplan (IEC 60617-11)	Plan d'installation (IEC 60617-11)	Plano de instalación (IEC 60617-11)
+Installation switch	Installationsschalter	Interrupteur d'installation	Interruptor de instalación
+Parts this part is assembled from; the bill of materials lists them under it	Artikel, aus denen dieser Artikel zusammengesetzt ist; die Stückliste führt sie darunter auf	Articles dont cet article est composé ; la nomenclature les liste en dessous	Artículos de los que se compone este artículo; la lista de materiales los muestra debajo
+➕ Add component	➕ Bestandteil hinzufügen	➕ Ajouter un composant	➕ Añadir componente
+in {}	in {}	dans {}	en {}
+incl.	inkl.	incl.	incl.
+Check scheme (JSON)	Prüfschema (JSON)	Schéma de vérification (JSON)	Esquema de comprobación (JSON)
+Checks switched off and message levels as a file for other projects	Abgeschaltete Prüfungen und Meldungsstufen als Datei für andere Projekte	Vérifications désactivées et niveaux des messages dans un fichier pour d'autres projets	Comprobaciones desactivadas y niveles de mensajes en un archivo para otros proyectos
+Export check scheme…	Prüfschema exportieren…	Exporter le schéma de vérification…	Exportar el esquema de comprobación…
+Import check scheme…	Prüfschema importieren…	Importer un schéma de vérification…	Importar un esquema de comprobación…
+Not a check scheme: {}	Kein Prüfschema: {}	Ce n'est pas un schéma de vérification : {}	No es un esquema de comprobación: {}
+Check scheme file (JSON)	Prüfschema-Datei (JSON)	Fichier de schéma de vérification (JSON)	Archivo de esquema de comprobación (JSON)
+Output file (JSON)	Ausgabedatei (JSON)	Fichier de sortie (JSON)	Archivo de salida (JSON)
+Takes the checks switched off and the message levels of a check scheme file	Übernimmt die abgeschalteten Prüfungen und die Meldungsstufen einer Prüfschema-Datei	Reprend les vérifications désactivées et les niveaux des messages d'un fichier de schéma de vérification	Toma las comprobaciones desactivadas y los niveles de mensajes de un archivo de esquema de comprobación
+Writes the check scheme of the project (checks switched off, message levels) to a file	Schreibt das Prüfschema des Projekts (abgeschaltete Prüfungen, Meldungsstufen) in eine Datei	Écrit le schéma de vérification du projet (vérifications désactivées, niveaux des messages) dans un fichier	Escribe el esquema de comprobación del proyecto (comprobaciones desactivadas, niveles de mensajes) en un archivo
+Check scheme taken over	Prüfschema übernommen	Schéma de vérification repris	Esquema de comprobación aplicado
+PLC device comments for Mitsubishi GX Works (CSV)	SPS-Operandenkommentare für Mitsubishi GX Works (CSV)	Commentaires d'opérandes API pour Mitsubishi GX Works (CSV)	Comentarios de operandos PLC para Mitsubishi GX Works (CSV)
+No PLC cards in the project.	Keine SPS-Karten im Projekt.	Aucune carte API dans le projet.	No hay tarjetas PLC en el proyecto.
+PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page	SPS-Karten mit ihren Kanälen: einen platzierten Kanal anklicken, um ihn zu zeigen, einen freien in die Seite ziehen	Cartes API avec leurs voies : cliquez sur une voie placée pour l'afficher, faites glisser une voie libre dans la page	Tarjetas PLC con sus canales: haga clic en un canal colocado para mostrarlo, arrastre uno libre a la página
+{}  ({} placed, {} free)	{}  ({} platziert, {} frei)	{}  ({} placées, {} libres)	{}  ({} colocados, {} libres)
+Strips / plugs	Klemmleisten / Stecker	Borniers / connecteurs	Regletas / conectores
+Terminal strips and plugs: click a placed terminal or pin to show it, drag a spare one into the page	Klemmleisten und Stecker: eine platzierte Klemme oder einen Pin anklicken, um ihn zu zeigen, eine freie in die Seite ziehen	Borniers et connecteurs : cliquez sur une borne ou une broche placée pour l'afficher, faites glisser une libre dans la page	Regletas y conectores: haga clic en un borne o pin colocado para mostrarlo, arrastre uno libre a la página
+{} (spare)	{} (Reserve)	{} (réserve)	{} (reserva)
+{} (unused)	{} (unbenutzt)	{} (inutilisée)	{} (sin usar)
+All pages…	Alle Seiten…	Toutes les pages…	Todas las páginas…
+Current page…	Aktuelle Seite…	Page courante…	Página actual…
+Opens the pages for printing in the browser with its print dialog	Öffnet die Seiten zum Drucken im Browser mit dessen Druckdialog	Ouvre les pages pour l'impression dans le navigateur avec sa boîte de dialogue d'impression	Abre las páginas para imprimir en el navegador con su diálogo de impresión
+Printing failed: {}	Drucken fehlgeschlagen: {}	Échec de l'impression : {}	Error al imprimir: {}
+Workspaces	Arbeitsbereiche	Espaces de travail	Espacios de trabajo
+Delete this workspace	Diesen Arbeitsbereich löschen	Supprimer cet espace de travail	Eliminar este espacio de trabajo
+No saved workspaces yet.	Noch keine gespeicherten Arbeitsbereiche.	Aucun espace de travail enregistré.	Aún no hay espacios de trabajo guardados.
+Saves the workspace, the navigator tab and the open windows	Speichert den Arbeitsbereich, den Navigator-Reiter und die offenen Fenster	Enregistre l'espace de travail, l'onglet du navigateur et les fenêtres ouvertes	Guarda el espacio de trabajo, la pestaña del navegador y las ventanas abiertas
+{} windows	{} Fenster	{} fenêtres	{} ventanas
+Save current…	Aktuellen speichern…	Enregistrer l'actuel…	Guardar el actual…
+Save workspace	Arbeitsbereich speichern	Enregistrer l'espace de travail	Guardar espacio de trabajo
+New sub-page	Neue Unterseite	Nouvelle sous-page	Nueva subpágina
+A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering	Eine Schaltplanseite 3.1, 3.2, … nach der aktuellen Seite, die beim Umnummerieren Unterseite bleibt	Une page de schéma 3.1, 3.2, … après la page courante, qui reste sous-page lors de la renumérotation	Una página de esquema 3.1, 3.2, … tras la página actual, que sigue siendo subpágina al renumerar
+Settings scheme file (JSON)	Einstellungsschema-Datei (JSON)	Fichier de schéma de paramètres (JSON)	Archivo de esquema de ajustes (JSON)
+Takes the settings a settings scheme file carries	Übernimmt die Einstellungen einer Einstellungsschema-Datei	Reprend les paramètres d'un fichier de schéma de paramètres	Toma los ajustes de un archivo de esquema de ajustes
+Writes the settings of the project (wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references, check scheme) to a file	Schreibt die Einstellungen des Projekts (Verbindungsnummerierung, Potenziale, Leitungsvorgaben und -farben, Beschriftung, Schlauchvorgaben, Querverweise, Prüfschema) in eine Datei	Écrit les paramètres du projet (numérotation des fils, potentiels, valeurs par défaut et couleurs des fils, repérage, valeurs par défaut des flexibles, renvois, schéma de vérification) dans un fichier	Escribe los ajustes del proyecto (numeración de cables, potenciales, valores y colores de cables, marcado, valores de mangueras, referencias cruzadas, esquema de comprobación) en un archivo
+Settings taken over: {}	Einstellungen übernommen: {}	Paramètres repris : {}	Ajustes aplicados: {}
+Settings scheme (JSON)	Einstellungsschema (JSON)	Schéma de paramètres (JSON)	Esquema de ajustes (JSON)
+Export settings…	Einstellungen exportieren…	Exporter les paramètres…	Exportar ajustes…
+Import settings…	Einstellungen importieren…	Importer des paramètres…	Importar ajustes…
+Settings scheme	Einstellungsschema	Schéma de paramètres	Esquema de ajustes
+Wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and the check scheme as one file	Verbindungsnummerierung, Potenziale, Leitungsvorgaben und -farben, Beschriftung, Schlauchvorgaben, Querverweise und Prüfschema als eine Datei	Numérotation des fils, potentiels, valeurs par défaut et couleurs des fils, repérage, valeurs par défaut des flexibles, renvois et schéma de vérification dans un fichier	Numeración de cables, potenciales, valores y colores de cables, marcado, valores de mangueras, referencias cruzadas y esquema de comprobación en un archivo
+Hose defaults	Schlauchvorgaben	Valeurs par défaut des flexibles	Valores predeterminados de mangueras
+Message levels	Meldungsstufen	Niveaux des messages	Niveles de mensajes
+Not a settings scheme: {}	Kein Einstellungsschema: {}	Ce n'est pas un schéma de paramètres : {}	No es un esquema de ajustes: {}
+Wire defaults	Leitungsvorgaben	Valeurs par défaut des fils	Valores predeterminados de cables

@@ -1,13 +1,17 @@
 //! Interactive schematic canvas: pan/zoom, selection, moving, placing symbols,
 //! drawing wires, texts, graphics, dimensions and connection / cable definitions.
 
+use crate::shortcuts::Action;
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_core::geom::{dist_to_segment, p, P, R, GRID};
 use openecraft_core::frame::PlotFrame;
 use openecraft_core::index::Index;
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, Clip, PlaceCtx};
-use openecraft_core::render::{self, Draw, Ink, Opts, VAnchor};
+use openecraft_core::render::{self, Draw, Ink, Opts, TextStyle, VAnchor};
+use egui::emath::Rot2;
+use egui::epaint::{Tessellator, TextShape};
+use egui::Mesh;
 use openecraft_core::analysis::Analysis;
 use openecraft_core::review::{Hit, MarkupKind, Pen};
 use openecraft_core::symlib::Symbols;
@@ -176,6 +180,7 @@ impl Palette {
             Ink::Plate => self.plate,
             Ink::Fill => self.fill,
             Ink::Color([r, g, b]) => Color32::from_rgb(r, g, b),
+            Ink::Paper => self.paper,
         }
     }
 }
@@ -254,22 +259,45 @@ impl Draw for EguiDraw<'_> {
     }
 
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink) {
-        let px = size * self.zoom * 1.25;
+        self.styled_text(pos, text, &TextStyle::plain(size, h, v), ink);
+    }
+
+    fn styled_text(&mut self, pos: P, text: &str, st: &TextStyle, ink: Ink) {
+        let px = st.size * self.zoom * 1.25;
         if px < 3.0 || text.is_empty() {
             return;
         }
-        let align = Align2([
-            match h {
-                Anchor::Left => egui::Align::Min,
-                Anchor::Center => egui::Align::Center,
-                Anchor::Right => egui::Align::Max,
+        let color = self.color(ink);
+        let galley = self.painter.layout_no_wrap(text.to_string(), FontId::proportional(px), color);
+        let size = galley.size();
+        // Top left corner of the text relative to its anchor, before the rotation.
+        let off = vec2(
+            match st.h {
+                Anchor::Left => 0.0,
+                Anchor::Center => -size.x / 2.0,
+                Anchor::Right => -size.x,
             },
-            match v {
-                VAnchor::Middle => egui::Align::Center,
-                VAnchor::Bottom => egui::Align::Max,
+            match st.v {
+                VAnchor::Top => 0.0,
+                VAnchor::Middle => -size.y / 2.0,
+                VAnchor::Bottom => -size.y,
             },
-        ]);
-        self.painter.text(self.w2s(pos), align, text, FontId::proportional(px), self.color(ink));
+        );
+        // egui turns clockwise; the text's angle is counter-clockwise.
+        let angle = -st.angle.to_radians();
+        let rot = Rot2::from_angle(angle);
+        let anchor = self.w2s(pos);
+        let underline = if st.underline { Stroke::new((px * 0.06).max(1.0), color) } else { Stroke::NONE };
+        // Bold: a second copy a little to the right.
+        let copies: &[f32] = if st.bold { &[0.0, px * 0.05] } else { &[0.0] };
+        for dx in copies {
+            let shape = TextShape::new(anchor + rot * (off + vec2(*dx, 0.0)), galley.clone(), color).with_angle(angle).with_underline(underline);
+            if st.italic {
+                self.painter.add(EShape::mesh(skewed(self.painter, &shape, 0.2)));
+            } else {
+                self.painter.add(EShape::Text(shape));
+            }
+        }
     }
 
     fn image(&mut self, img: &ImageItem) {
@@ -283,6 +311,22 @@ impl Draw for EguiDraw<'_> {
             _ => render::image_placeholder(self, img),
         }
     }
+}
+
+/// Tessellates a text shape with its glyphs leaning by `k` (italic): a shear along
+/// the baseline, applied before the shape's rotation.
+fn skewed(painter: &Painter, shape: &TextShape, k: f32) -> Mesh {
+    let tex = painter.fonts(|f| f.font_image_size());
+    let options = painter.ctx().tessellation_options(|o| *o);
+    let local = TextShape::new(Pos2::ZERO, shape.galley.clone(), shape.fallback_color).with_underline(shape.underline);
+    let mut mesh = Mesh::default();
+    Tessellator::new(painter.pixels_per_point(), options, tex, Vec::new()).tessellate_text(&local, &mut mesh);
+    let h = shape.galley.size().y;
+    let rot = Rot2::from_angle(shape.angle);
+    for v in &mut mesh.vertices {
+        v.pos = shape.pos + rot * vec2(v.pos.x + (h - v.pos.y) * k, v.pos.y);
+    }
+    mesh
 }
 
 fn convex(pts: &[P]) -> bool {
@@ -345,6 +389,16 @@ fn fill_mesh(pts: &[P], v: &[Pos2], color: Color32) -> egui::Mesh {
     mesh
 }
 
+/// A function dragged from a navigator onto the page: symbol, device tag, label and
+/// connection point designations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PlacePayload {
+    pub symbol: &'static str,
+    pub tag: String,
+    pub label: String,
+    pub pins: Vec<String>,
+}
+
 pub struct Editor {
     pub tool: Tool,
     /// Screen offset of page origin relative to the canvas rect.
@@ -355,6 +409,12 @@ pub struct Editor {
     pub place_rot: u8,
     pub place_mirror: bool,
     pub show_grid: bool,
+    /// Snap and drawing grid in mm (EPLAN grid sizes; connection points are on 4 mm).
+    pub grid: f32,
+    /// A point typed into the coordinate field: used like a click of the current tool.
+    pub typed: Option<P>,
+    /// Last point clicked or typed (relative coordinates `@dx dy`).
+    pub last_point: Option<P>,
     pub show_pins: bool,
     pub place_ctx: PlaceCtx,
     pub fit_pending: bool,
@@ -363,9 +423,19 @@ pub struct Editor {
     pub center_on: Option<P>,
     /// Items placed with `Tool::Insert`.
     pub insert: Option<Clip>,
+    /// The window macro (with its placeholder values) `insert` comes from: recorded as
+    /// a macro box when placed.
+    pub insert_macro: Option<(openecraft_core::macros::Macro, std::collections::BTreeMap<String, String>)>,
+    /// Macro boxes are drawn.
+    pub show_macro_boxes: bool,
     pub show_revision_marks: bool,
     /// Layer of new graphics, texts, dimensions and images.
     pub active_layer: String,
+    /// The next text to place (path function text, special text); None: a plain text.
+    pub text_proto: Option<TextItem>,
+    /// An unplaced function to place once: label (PLC address) and connection point
+    /// designations of the next symbol; the tool returns to Select afterwards.
+    pub place_once: Option<(String, Vec<String>)>,
     /// Connect facing connection points after placing or moving symbols.
     pub autoconnect: bool,
     /// The wire tool routes around symbols and other wires.
@@ -391,6 +461,8 @@ pub struct Editor {
     textures: Textures,
     /// Wire routing preview: from, to and the path.
     route_cache: Option<(P, P, Vec<P>)>,
+    /// The user's keyboard shortcuts.
+    pub shortcuts: crate::shortcuts::Shortcuts,
 }
 
 impl Default for Editor {
@@ -403,6 +475,9 @@ impl Default for Editor {
             place_rot: 0,
             place_mirror: false,
             show_grid: true,
+            grid: GRID,
+            typed: None,
+            last_point: None,
             show_pins: false,
             place_ctx: PlaceCtx::default(),
             fit_pending: true,
@@ -414,10 +489,13 @@ impl Default for Editor {
             active_layer: String::new(),
             autoconnect: true,
             autoroute: false,
+            shortcuts: Default::default(),
             cable_target: String::new(),
             place_tag: None,
             read_only: false,
             review_layer: true,
+            insert_macro: None,
+            show_macro_boxes: true,
             review_selected: None,
             wire_start: None,
             wire_hfirst: true,
@@ -427,6 +505,8 @@ impl Default for Editor {
             frame: PlotFrame::default(),
             textures: HashMap::new(),
             route_cache: None,
+            text_proto: None,
+            place_once: None,
         }
     }
 }
@@ -442,6 +522,8 @@ pub struct CanvasOutput {
     pub review: Option<ReviewInput>,
     /// Click with the select tool (world position), for picking comments and markup.
     pub clicked: Option<P>,
+    /// Hyperlink of a text the user Ctrl-clicked.
+    pub open_url: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -482,6 +564,8 @@ impl Editor {
     pub fn set_tool(&mut self, tool: Tool) {
         self.tool = tool;
         self.wire_start = None;
+        self.text_proto = None;
+        self.place_once = None;
         self.pts.clear();
         if self.tool != Tool::Select {
             self.selection.clear();
@@ -528,7 +612,7 @@ impl Editor {
         let tol = (8.0 / self.zoom).max(0.4);
         let usable = |layer: &str| graphics::shown(prj, layer, false) && !graphics::locked(prj, layer);
         for t in page.texts.iter().rev().filter(|t| usable(&t.layer)) {
-            if ops::text_bounds(t).expand(tol * 0.5).contains(q) {
+            if render::text_bounds(prj, page_i, t).expand(tol * 0.5).contains(q) {
                 return Some(t.id);
             }
         }
@@ -695,7 +779,7 @@ impl Editor {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
-        let snapped = world.map(|w| w.snap(GRID));
+        let snapped = world.map(|w| w.snap(self.grid));
         self.hover = world;
 
         // ------------------------------------------------------------ keyboard
@@ -722,7 +806,7 @@ impl Editor {
         let page_rect = Rect::from_min_max(self.w2s(rect, p(0.0, 0.0)), self.w2s(rect, p(self.frame.width(), self.frame.height())));
         painter.rect_filled(page_rect.translate(vec2(3.0, 3.0)), 0.0, Color32::from_black_alpha(60));
         painter.rect_filled(page_rect, 0.0, pal.paper);
-        if self.show_grid && editable && self.zoom * GRID >= 7.0 {
+        if self.show_grid && editable && self.zoom * self.grid >= 7.0 {
             self.draw_grid(&painter, rect, &pal);
         }
 
@@ -733,6 +817,7 @@ impl Editor {
             review: self.review_layer || self.tool.is_review(),
             review_selected: self.review_selected,
             screen: true,
+            macro_boxes: self.show_macro_boxes,
             ..Default::default()
         };
         // Highlight the complete potential of a selected wire.
@@ -914,15 +999,16 @@ impl Editor {
     fn draw_grid(&self, painter: &Painter, rect: Rect, pal: &Palette) {
         let tl = self.s2w(rect, rect.min);
         let br = self.s2w(rect, rect.max);
-        let x0 = (tl.x.max(0.0) / GRID).ceil() as i32;
-        let x1 = (br.x.min(self.frame.width()) / GRID).floor() as i32;
-        let y0 = (tl.y.max(0.0) / GRID).ceil() as i32;
-        let y1 = (br.y.min(self.frame.height()) / GRID).floor() as i32;
+        let g = self.grid;
+        let x0 = (tl.x.max(0.0) / g).ceil() as i32;
+        let x1 = (br.x.min(self.frame.width()) / g).floor() as i32;
+        let y0 = (tl.y.max(0.0) / g).ceil() as i32;
+        let y1 = (br.y.min(self.frame.height()) / g).floor() as i32;
         let mut mesh = egui::Mesh::default();
-        let r = if self.zoom * GRID > 20.0 { 1.0 } else { 0.6 };
+        let r = if self.zoom * g > 20.0 { 1.0 } else { 0.6 };
         for gx in x0..=x1 {
             for gy in y0..=y1 {
-                let c = self.w2s(rect, p(gx as f32 * GRID, gy as f32 * GRID));
+                let c = self.w2s(rect, p(gx as f32 * g, gy as f32 * g));
                 mesh.add_colored_rect(Rect::from_center_size(c, vec2(r * 2.0, r * 2.0)), pal.grid);
             }
         }
@@ -931,23 +1017,25 @@ impl Editor {
 
     fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>, out: &mut CanvasOutput) {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
+        let g = self.grid;
+        let sc = &self.shortcuts;
         let (esc, enter, r, m, a, del, space, fit, all, arrows, events) = ui.input(|i| {
             let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
                 i.key_pressed(Key::Escape),
-                k(Key::Enter),
-                k(Key::R),
-                k(Key::M),
-                k(Key::A),
+                sc.pressed(i, Action::FinishPolyline),
+                sc.pressed(i, Action::Rotate),
+                sc.pressed(i, Action::Mirror),
+                sc.pressed(i, Action::Autoroute),
                 i.key_pressed(Key::Delete) || k(Key::Backspace),
-                k(Key::Space),
-                k(Key::F) || k(Key::Home),
-                i.modifiers.command && i.key_pressed(Key::A),
+                sc.pressed(i, Action::WireCorner),
+                sc.pressed(i, Action::FitPage),
+                sc.pressed(i, Action::SelectAll),
                 [
-                    (i.key_pressed(Key::ArrowLeft), p(-GRID, 0.0)),
-                    (i.key_pressed(Key::ArrowRight), p(GRID, 0.0)),
-                    (i.key_pressed(Key::ArrowUp), p(0.0, -GRID)),
-                    (i.key_pressed(Key::ArrowDown), p(0.0, GRID)),
+                    (i.key_pressed(Key::ArrowLeft), p(-g, 0.0)),
+                    (i.key_pressed(Key::ArrowRight), p(g, 0.0)),
+                    (i.key_pressed(Key::ArrowUp), p(0.0, -g)),
+                    (i.key_pressed(Key::ArrowDown), p(0.0, g)),
                 ],
                 i.events.clone(),
             )
@@ -1089,6 +1177,43 @@ impl Editor {
         }
     }
 
+    /// Places the symbol `key` at `sn` (with the tag and label / connection points of
+    /// an unplaced function when one is being placed).
+    fn place_at(&mut self, prj: &mut Project, page_i: usize, key: &str, sn: P, out: &mut CanvasOutput) {
+        let Some(def) = prj.symbol(key) else { return };
+        let mut ctx = self.place_ctx.clone();
+        if let Some(tag) = &self.place_tag {
+            ctx.last_main.insert(def.letter.to_string(), tag.clone());
+        }
+        let mut s = ops::new_symbol(prj, page_i, &ctx, &def, sn, self.place_rot, self.place_mirror);
+        if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
+            s.tag = tag.clone();
+        }
+        let once = self.place_once.take();
+        if let Some((label, pins)) = &once {
+            if !label.is_empty() {
+                s.label = label.clone();
+            }
+            if pins.len() == s.pins.len() {
+                s.pins = pins.clone();
+            }
+        }
+        self.place_ctx.remember(prj, &s);
+        let id = s.id;
+        prj.pages[page_i].symbols.push(s);
+        if self.autoconnect {
+            let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
+            if n > 0 {
+                out.message = Some(tr_fmt!("{} connections drawn automatically", n));
+            }
+        }
+        if once.is_some() {
+            self.place_tag = None;
+            self.set_tool(Tool::Select);
+            self.selection.insert(id);
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn mouse(
         &mut self,
@@ -1114,35 +1239,32 @@ impl Editor {
                 self.set_tool(Tool::Select);
             }
         }
-        let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten();
+        if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PlacePayload>()) {
+            self.set_tool(Tool::Place(pl.symbol));
+            self.place_tag = Some(pl.tag.clone());
+            self.place_once = Some((pl.label.clone(), pl.pins.clone()));
+            self.place_at(prj, page_i, pl.symbol, sn, out);
+            return;
+        }
+        let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten().or_else(|| self.typed.take());
+        if click.is_some() {
+            self.last_point = click;
+        }
         match self.tool.clone() {
             Tool::Select => self.select_mouse(ui, resp, prj, page_i, rect, world, shift, out),
             Tool::Insert => {
                 if let (Some(sn), Some(clip)) = (click, click.and_then(|_| self.insert.take())) {
                     let ids = ops::paste(prj, page_i, &clip, sn);
+                    if let Some((m, values)) = self.insert_macro.take() {
+                        openecraft_core::macro_boxes::record(prj, page_i, &m, &values, &ids);
+                    }
                     self.set_tool(Tool::Select);
                     self.selection = ids;
                 }
             }
             Tool::Place(key) => {
-                if let (Some(sn), Some(def)) = (click, prj.symbol(key)) {
-                    let mut ctx = self.place_ctx.clone();
-                    if let Some(tag) = &self.place_tag {
-                        ctx.last_main.insert(def.letter.to_string(), tag.clone());
-                    }
-                    let mut s = ops::new_symbol(prj, page_i, &ctx, &def, sn, self.place_rot, self.place_mirror);
-                    if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
-                        s.tag = tag.clone();
-                    }
-                    self.place_ctx.remember(prj, &s);
-                    let id = s.id;
-                    prj.pages[page_i].symbols.push(s);
-                    if self.autoconnect {
-                        let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
-                        if n > 0 {
-                            out.message = Some(tr_fmt!("{} connections drawn automatically", n));
-                        }
-                    }
+                if let Some(sn) = click {
+                    self.place_at(prj, page_i, key, sn, out);
                 }
             }
             Tool::Wire => {
@@ -1171,7 +1293,11 @@ impl Editor {
             Tool::Text => {
                 if let Some(sn) = click {
                     let id = prj.new_id();
-                    prj.pages[page_i].texts.push(TextItem { id, pos: sn, text: "Text".into(), size: 3.0, layer: self.active_layer.clone(), color: None });
+                    let mut t = self.text_proto.take().unwrap_or_else(|| TextItem { text: "Text".into(), ..Default::default() });
+                    t.id = id;
+                    t.pos = sn;
+                    t.layer = self.active_layer.clone();
+                    prj.pages[page_i].texts.push(t);
                     self.set_tool(Tool::Select);
                     self.selection.insert(id);
                     out.open_properties = true;
@@ -1251,7 +1377,7 @@ impl Editor {
         if resp.dragged_by(PointerButton::Primary) {
             match (&mut self.drag, world) {
                 (Drag::Move { start, applied, attached }, Some(w)) => {
-                    let total = (w - *start).snap(GRID);
+                    let total = (w - *start).snap(self.grid);
                     let delta = total - *applied;
                     if delta.x != 0.0 || delta.y != 0.0 {
                         ops::translate(&mut prj.pages[page_i], &self.selection, attached, delta);
@@ -1305,7 +1431,13 @@ impl Editor {
         }
         if resp.clicked_by(PointerButton::Primary) {
             if let Some(w) = world {
-                match self.hit(prj, page_i, w) {
+                let hit = self.hit(prj, page_i, w);
+                let ctrl = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                if let (true, Some(link)) = (ctrl, hit.and_then(|id| prj.pages[page_i].texts.iter().find(|t| t.id == id)).map(|t| t.link.clone()).filter(|l| !l.is_empty())) {
+                    out.open_url = Some(link);
+                    return;
+                }
+                match hit {
                     Some(id) => {
                         if shift {
                             if !self.selection.remove(&id) {

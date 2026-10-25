@@ -7,6 +7,9 @@ use openecraft_core::model::*;
 use openecraft_core::{ops, parts, structure, wirenum};
 use egui::RichText;
 
+/// Example format of the wire numbering (a format, not a text to translate).
+const FORMAT_HINT: &str = "{page}.{column}.{n}";
+
 impl App {
     pub(super) fn cables_window(&mut self, ctx: &egui::Context) {
         if !self.show_cables {
@@ -132,6 +135,32 @@ impl App {
                 ui.label(tr("Start at"));
                 ui.add(egui::DragValue::new(&mut s.start).range(0..=1_000_000));
                 ui.end_row();
+                ui.label(tr("Step"));
+                ui.add(egui::DragValue::new(&mut s.step).range(1..=1000));
+                ui.end_row();
+                ui.label(tr("Digits"));
+                ui.add(egui::DragValue::new(&mut s.digits).range(0..=9)).on_hover_text(tr("Minimum digits of the counter (leading zeros)"));
+                ui.end_row();
+                if s.scheme == NumberScheme::Format {
+                    ui.label(tr("Format"));
+                    ui.add(egui::TextEdit::singleline(&mut s.format).desired_width(160.0).hint_text(FORMAT_HINT).font(egui::TextStyle::Monospace));
+                    ui.end_row();
+                }
+            });
+            if s.scheme == NumberScheme::Format {
+                ui.label(RichText::new(tr("Placeholders: {n} counter (counted per value of the rest), {page}, {column}, {row}, {potential}, {kind}, {color}, {cross_section}. Without {n}, connections with the same text share the number.")).weak());
+            }
+            ui.horizontal_wrapped(|ui| {
+                ui.label(tr("No numbers for"));
+                for kind in openecraft_core::potentials::PotentialKind::ALL {
+                    let mut on = s.skip_kinds.contains(&kind);
+                    if ui.checkbox(&mut on, kind.title()).changed() {
+                        s.skip_kinds.retain(|k| *k != kind);
+                        if on {
+                            s.skip_kinds.push(kind);
+                        }
+                    }
+                }
             });
             ui.checkbox(&mut self.numbering_overwrite, tr("Include manually set numbers"));
             ui.label(tr_fmt!("{} of {} connections numbered", numbered, total));

@@ -108,6 +108,9 @@ Parameter kinds: `str`, `int`, `num`, `bool`, `ids` (list of item ids), `points`
 (list of `[x, y]` in mm), `object` (JSON object). `required` defaults to `true`.
 
 `describe` is asked once when the plugin is loaded; checks run after every change of
-the project in the editor, so they should answer quickly.
+the project in the editor, so they should answer quickly. The project's check settings
+apply to the issues of plugins as well: a check can be switched off by its name, and
+its plain messages share the check's name as code (level changes then apply to all of
+them) and can be accepted one by one.
 
 A complete example is in [`examples/plugins/page_notes`](../examples/plugins/page_notes).

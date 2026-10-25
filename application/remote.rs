@@ -3,7 +3,7 @@
 //! collects the answers. The rules of shared editing are in `openecraft_core::collab`.
 
 use openecraft_client::{decode, ehttp, ProjectEndpoint};
-use openecraft_core::collab::{Opened, ProjectSummary, Shared, Snapshot, Status, Target};
+use openecraft_core::collab::{LoginResponse, Opened, ProjectRole, ProjectSummary, Shared, Snapshot, Status, Target};
 use openecraft_core::model::Project;
 use openecraft_i18n::{tr, tr_fmt};
 use std::sync::{Arc, Mutex};
@@ -19,6 +19,7 @@ pub enum Reply {
     Status(String, Result<Status, String>),
     /// Requested targets and the answer.
     Locked(String, Vec<Target>, Result<Status, String>),
+    Login(Result<LoginResponse, String>),
     Closed,
 }
 
@@ -26,7 +27,7 @@ impl Reply {
     fn session(&self) -> Option<&str> {
         match self {
             Reply::Saved(s, _) | Reply::Snapshot(s, _) | Reply::Status(s, _) | Reply::Locked(s, _, _) => Some(s),
-            Reply::List(_) | Reply::Opened(..) | Reply::Closed => None,
+            Reply::List(_) | Reply::Opened(..) | Reply::Login(_) | Reply::Closed => None,
         }
     }
 }
@@ -36,6 +37,10 @@ pub struct Remote {
     /// Access token of the server (kept in memory only).
     pub token: String,
     pub user: String,
+    /// Password of a user account (kept until signing in).
+    pub password: String,
+    /// Role of the signed-in user; None without user account (token or open server).
+    pub role: Option<ProjectRole>,
     /// Projects on the server (last list).
     pub projects: Vec<ProjectSummary>,
     /// The open shared project.
@@ -66,6 +71,8 @@ impl Default for Remote {
             url,
             token,
             user,
+            password: String::new(),
+            role: None,
             projects: Vec::new(),
             shared: None,
             new_name: String::new(),
@@ -109,6 +116,17 @@ impl Remote {
 
     fn session_id(&self) -> String {
         self.shared.as_ref().map(|s| s.session.session.clone()).unwrap_or_default()
+    }
+
+    /// Signs in with user name and password; the session token replaces the token.
+    pub fn sign_in(&mut self) {
+        let req = self.endpoint().login(self.user.trim(), &std::mem::take(&mut self.password));
+        self.send(req, tr("Signing in…").into(), |r| Reply::Login(decode(r)));
+    }
+
+    /// A viewer may only look at shared projects.
+    pub fn viewer(&self) -> bool {
+        self.shared.is_some() && self.role == Some(ProjectRole::Viewer)
     }
 
     /// Lists the projects of the server.
@@ -193,6 +211,8 @@ impl Remote {
                 Reply::List(Ok(list)) => tr_fmt!("{} projects on the server", list.len()),
                 Reply::Opened(name, Ok(_)) => tr_fmt!("Opened {} from the project server", name),
                 Reply::Saved(_, Ok(s)) => tr_fmt!("Saved to the project server (revision {})", s.revision),
+                Reply::Login(Ok(r)) => tr_fmt!("Signed in as {} ({})", r.user.name, r.user.role.title()),
+                Reply::Login(Err(e)) => tr_fmt!("Project server: {}", e),
                 Reply::List(Err(e))
                 | Reply::Opened(_, Err(e))
                 | Reply::Saved(_, Err(e))
@@ -203,6 +223,12 @@ impl Remote {
             };
             if let Reply::List(Ok(list)) = &reply {
                 self.projects = list.clone();
+            }
+            if let Reply::Login(Ok(r)) = &reply {
+                self.token = r.token.clone();
+                self.user = r.user.name.clone();
+                self.role = Some(r.user.role);
+                self.list();
             }
             out.push(reply);
         }

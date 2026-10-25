@@ -4,13 +4,19 @@ An open source electrical CAE editor written in Rust, in the spirit of EPLAN Ele
 One code base runs natively on **Windows, Linux and macOS** and in the **browser** (WebAssembly),
 built with [egui / eframe](https://github.com/emilk/egui).
 
+New to OpenECraft? [docs/tutorial.md](docs/tutorial.md) walks from the first page to the
+bill of materials.
+
 ## Features
 
 - **Languages**: English, German, French and Spanish (View › Language; the editor and the
   parts manager remember the choice and start in the system / browser language if supported).
+  Project texts in scripts the bundled fonts lack (Chinese, Japanese, Korean) use the
+  system's CJK fonts on the desktop as fallback, on screen and in PDF exports (embedded
+  as a subset).
 - **Projects with pages**: multi-line schematic pages (A3, 10 columns / 6 rows, title block),
   cover sheet and generated report pages. Page navigator with reordering.
-- **IEC 60617 symbol library** (~320 symbols): relay coils (AC, latching, polarized,
+- **IEC 60617 symbol library** (~330 symbols): relay coils (AC, latching, polarized,
   timers, time switches, counters, over- / undervoltage relays), NO/NC/changeover contacts
   (early / late, passing, on- / off-delay), push / pull / key / foot / selector switches
   with spring return or latching and position diagrams, emergency stops with turn / pull /
@@ -20,7 +26,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   protection switches, overload relays, AC / DC / EC motors and fans, signal lamps,
   beacons, sirens, indicating, recording and integrating meters, current transformers,
   1- and 3-phase transformers (vector groups) and autotransformers, rectifiers and
-  converters, terminals, PLC inputs/outputs, potentials, interruption points, R/C/diode.
+  converters, terminals, PLC inputs/outputs, potentials, interruption points, and
+  electronics: resistors, capacitors (also polarized), diodes, Zener and photodiodes, LEDs,
+  NPN / PNP transistors, N-channel MOSFET, thyristor, triac, NTC thermistor,
+  photoresistor, optocoupler and bridge rectifier.
+- **Installation plan symbols** (IEC 60617-11): 1-pole and two-way switches, dimmer, push
+  button, lighting outlet, fluorescent luminaire, double socket outlet with PE, junction box,
+  motion detector and distribution board, each with one connection point for the cable.
 - **Device-oriented engineering**: device tags (`-K1`, `-S3`, …) are assigned automatically.
   Main function (coil) + auxiliary functions (contacts) form one device. Select a coil and
   place contacts: they are assigned to it and numbered (13/14, 21/22, …).
@@ -52,6 +64,19 @@ built with [egui / eframe](https://github.com/emilk/egui).
   (`3.4.1`) or by potential name (`L1`, `+24V`), with prefix and start value; manually
   set numbers are kept. Shown on the schematic, in the connection list and the panel
   wire list; checks for conflicting and duplicate numbers.
+- **Numbering** (in the spirit of EPLAN's offline numbering): *Project › Device
+  numbering…* renumbers device tags per structure and identifying letter in schematic
+  order (page, column, top to bottom) after a format: `{letter}{n}` (`-K1`),
+  `{letter}{page}.{n}` (`-K3.1`), `{letter}{page}{column}` (`-K34`) or NFPA style
+  `{page}{column}{letter}` (`-34K`), with start value, step, letters and scope, and a
+  preview of the new tags; everything that refers to a tag follows (parts, strips,
+  plugs, PLC data, panel layout, harnesses). *Page › Renumber pages…* numbers pages
+  with start and step, restarting per structure and keeping sub-pages (`3.a`; *Page › New
+  sub-page* inserts `3.1`, `3.2`, … after the current page). The wire
+  numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
+  `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
+  value of the rest), counter digits and step, and potential kinds that get no number
+  (e.g. PE). Commands: `renumber_devices`, `renumber_pages`, `set_wire_numbering`.
 - **Macros**: save a selection (window macro) or a whole page (page macro) into a macro
   library (stored with the application, JSON import / export). Window macros are placed
   with the mouse (ghost preview, devices get new tags), page macros insert a page.
@@ -59,7 +84,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   filled from **value sets** when inserting. **Variants**: a macro can hold the same
   function in several versions (A, B, … – e.g. direct on line and star-delta); save a
   selection under the name of an existing macro with another variant, choose the
-  variant when inserting.
+  variant when inserting. **Macro boxes**: placed window macros remember their macro,
+  variant, placeholder values and items (dashed frame on screen, *View › Macro boxes*);
+  *Macros › Macro boxes › Update changed macros* replaces the content of boxes whose
+  macro changed in the library, a box edited on the page is saved back into the
+  library (command `list_macro_boxes`, tool `update_macro_boxes`).
 - **Configurator** (*Project › Configurator…*): options with their choices (e.g.
   `STARTER` = DOL / SD) and rules that insert a page macro in a variant with
   placeholder values (`NAME=Pump; POWER={POWER}`) when their condition holds
@@ -82,6 +111,14 @@ built with [egui / eframe](https://github.com/emilk/egui).
   bill of materials, the terminal diagram, the panel layout (2D / 3D) and the check;
   the terminal strip window shows the strip on the rail with its jumpers and has a
   switch for the automatic accessories.
+  **Multi-level terminals**: a terminal on level 2 or higher sits on the block of the
+  terminal before it (one part per block, tech data `Levels: 2`); the terminal
+  diagram lists every level, the rail layout and the bill of materials count blocks,
+  and the check reports more levels than the part has. **Jumper kinds**: plug-in
+  jumpers (tech data `Jumper`), saddle jumpers (`Saddle jumper`) and wire jumpers (any
+  level, no part); plug-in and saddle jumpers must stay on one level. Commands:
+  `list_strips`, `get_strip`, `set_terminal`, `set_jumper_kind`, `set_strip`,
+  `renumber_strip`.
 - **Plugs** (*Project › Plugs…*, symbol group *Plugs*): pin and socket (mated pair, two
   connection points), male pin and female socket (one each); tag = plug (`-X10`),
   designation = pin. Male and female pins of the same designation are mated: the
@@ -99,14 +136,34 @@ built with [egui / eframe](https://github.com/emilk/egui).
   marker material in the order of application, as CSV for marking software (UTF-8,
   `;`, header `Material;Category;Text;Count;Enclosure;Group`); the material is in the
   bill of materials. Texts and materials are project settings (`marking`).
+  **Labeling schemes** choose the markers, the columns and their order, the separator,
+  header and one row per printed label, for CSV / text and Excel export; built-in
+  import tables for Phoenix Contact CLIP PROJECT, Weidmüller M-Print PRO, Brady,
+  Murrplastik and Partex (starting points – copy and adjust to the program version),
+  own schemes are stored in the project (commands `marking_schemes`,
+  `set_marking_scheme`, exporters `marking` / `marking_xlsx` with `scheme`).
+- **Strip and plug navigator** (navigator tab *Strips / plugs*): the terminal strips with
+  their terminals in rail order (levels of multi-level blocks) and spares, the plugs with
+  their pins and targets and the unused pins of the plug parts; a click shows a placed
+  one, spares and unused pins are dragged into the page.
+- **PLC navigator** (navigator tab *PLC*): the cards with their channels in address
+  order, placed ones with function text and connected devices (a click shows the
+  symbol), free channels of cards with a device description to drag into the page.
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming
-  tools; addresses used on several cards are reported.
+  tools, the tag table of **Siemens TIA Portal** (Excel sheet *PLC Tags*), the tag
+  import of **Rockwell Studio 5000** (aliases of the module channels), the symbol table
+  of **Siemens STEP 7 classic** (SDF), a global variable list for **Beckhoff TwinCAT 3**
+  (TcGVL, `AT %I*` / `AT %Q*`), variables for **Schneider Control Expert** (XSY, `EBOOL`
+  with topological addresses), device comments for **Mitsubishi GX Works** (CSV, `X` / `Y`
+  in octal) and IEC 61131-3 global variables (CODESYS); addresses
+  used on several cards are reported.
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
   locked pages are read only. Changes since the last released revision (added / changed /
   removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
-  triangle and reported in the *revision overview*.
+  triangle and reported in the *revision overview*; changed items name the changed
+  properties with old and new value (`Device tag: -K1 › -K2; Position`).
 - **Release workflow**: with approvers defined (*Project › Revisions… › Approval
   workflow*: user names and the number of approvals needed) a new revision starts as a
   draft, is submitted for review, approved or rejected by the approvers (recorded with
@@ -124,14 +181,23 @@ built with [egui / eframe](https://github.com/emilk/egui).
   drawn on a layer of their own (shown on screen, not in exports), listed in the *Review*
   tab of the navigator and can be added to released pages and to pages another user has
   locked. On the project server they are merged record by record without locks.
+  **PDF comments** a reviewer made in a PDF export (Acrobat or another viewer: notes,
+  text boxes, highlights, shapes, replies) are imported into the review layer
+  (*Review › Import PDF comments…*, command `import_pdf_comments`); rectangles and
+  lines also become redline markup, comments imported before are skipped.
 - **Change requests**: requests from inside or outside the project (number, title,
   description, requester, origin, priority, status, affected pages and devices,
   implementing revision) with linked comments (*Project › Change requests…*). Exchange
   with other systems as CSV (`Number;Title;Description;Requester;Origin;Date;Priority;
   Status;Pages;Devices;Revision`) or JSON; importing updates requests with a known number.
 - **Symbol editor and libraries**: besides the IEC symbols there are NFPA / JIC
-  symbols, fluid power symbols (ISO 1219: pump, cylinder, 4/2 valve, filter, gauge,
-  tank), single-line / overview symbols (cross references to the device, not part of
+  symbols (30: coils, timer coils, contacts, timed and overload contacts, main
+  contacts, push buttons, emergency stop, selector, foot, limit, float, pressure,
+  temperature, flow and proximity switches, breakers, disconnects, fuses, pilot lights,
+  horns, solenoids, control transformers, motors), fluid power symbols (ISO 1219: pumps, compressor, hydraulic motor, single and
+  double acting cylinders, 3/2, 4/2 and 5/2 valves, non-return, relief, ball and flow
+  control valves, pressure regulator, service unit, filter, accumulator, cooler,
+  gauge, tank, silencer), single-line / overview symbols (cross references to the device, not part of
   the netlist) and black boxes / PLC boxes. Own symbols are drawn in the symbol editor
   (lines, rectangles, circles, texts, tag / label fields, connection points on the 4 mm
   grid, function such as main function, contact, terminal, PLC point), or copied from a
@@ -141,9 +207,21 @@ built with [egui / eframe](https://github.com/emilk/egui).
   edited in the title block editor and shared as files; one per project with an
   override per page (built-in: Standard, Compact, None). Report forms choose the
   columns, their order, the heading and the rows per report page.
+  **Graphical forms**: a report form of the terminal, cable or plug diagram or the PLC
+  assignment can switch to its graphical form – the strip drawn with a box per terminal (levels marked), end
+  brackets and end plates, jumper bridges and the external and internal targets with
+  potential, function text and linked location; or each cable as a band with its cores
+  from end to end (potential, wire number, reserve cores dashed); the plug diagram as
+  a housing with socket and pin half per pin; the PLC assignment as a module per card
+  with the inputs coming in from the left and the outputs going out to the right.
 - **Live cross references**: contacts show where their coil is (`/3.4`), coils show a
   contact image with all contacts and their locations, interruption points reference their
-  counterparts on other pages.
+  counterparts on other pages. *Project › Cross references…* sets the format (prefix,
+  separator, row: `/3.4`, `3-4`, `/3.4.B`), when the structure of the target page is
+  shown (when it differs, always, never), what interruption points refer to (all
+  other points, star from the first point, or pairs in schematic order; the check
+  reports a point without partner) and whether coils draw a contact image. Command:
+  `set_cross_references`.
 - **Connectivity / potentials**: wires, T-junctions (with connection dots), terminals,
   potential connection points (L1, N, PE, +24V, …) and interruption points are evaluated
   into nets across pages. Selecting a wire highlights its whole potential.
@@ -154,11 +232,34 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Project check**: aux functions without main function, duplicate main functions,
   open connection points, unpaired interruption points, short circuits between
   potentials, duplicate terminal numbers / PLC addresses, devices without part.
+  **Message management** (in the spirit of EPLAN's check schemes): every message has
+  a code per kind (`wires.3f9a1c`, the same in every language) and a fingerprint per
+  occurrence. Right click a message in the Check tab to accept it as checked (hidden
+  and not counted until it changes), to change the level of its kind (error, warning,
+  note, off) or to switch its check off; the settings (⚙) list the checks, changed
+  levels and accepted messages (with note, user, date and whether they are still
+  reported). The tab filters by level, page and text and exports the messages as CSV.
+  The settings are stored with the project; the checks switched off and the changed
+  levels are exchanged as a **check scheme** file (JSON) between projects. Commands:
+  `list_checks`, `check_settings`, `set_check`, `set_message_level`, `accept_message`;
+  tools `export_check_scheme`, `import_check_scheme`; `check` shows codes and
+  fingerprints.
 - **Parts management** (EPLAN style):
   - a global **parts database** shared by all projects (product top group / group /
     subgroup tree, filter), with general, commercial (price, price unit, packaging,
     quantity unit), technical, mounting (dimensions, weight) data, accessories and a
     **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
+  - **assemblies**: a part can consist of component parts with quantities (tab
+    *Accessories*, CSV column `Components`: `NUM:2|NUM2`); the bill of materials lists
+    them under the assembly (nested assemblies resolved, priced as included);
+  - **typed mounting data** per part (tab *Mounting*): clearances (top, bottom, left,
+    right, front, EMC, service space), mounting holes with thread, door and face
+    cutouts, power loss, how far an accessory sticks out, fastening, faces, collision
+    class and terminal type. They drive the panel checks, drilling, cutouts and the
+    climate calculation; CSV has a column per value (`Power loss`, `Mounting holes`,
+    …). Older parts with these values as `Key: value` lines in the technical data
+    still work; imports and the built-in catalog move such lines into the typed
+    fields, the part editor offers it for existing parts;
   - **graphics** per part: 2D front view (SVG) and 3D model (STL, OBJ, **STEP**:
     solids and surface models of AP203 / AP214 / AP242 files, placed by their
     assembly structure, tessellated and converted to mm; **IGES 5.3**: solids and
@@ -177,6 +278,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
     door devices from the rear, PLC modules at the bottom). Edited in the part editor
     (tab *Connection points*: table, click into the front view to place one); the
     panel layout wires to them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`;
+  - **EPLAN parts XML**: the parts management export of EPLAN (`<part>` with
+    `P_ARTICLE_*` attributes and variants, multi-language texts, product groups by
+    their exchange numbers) is imported like the other formats, and parts export as
+    EPLAN parts XML for the way back (parts management, `parts_export --format
+    eplan_xml`);
   - import / export as CSV (`;` separated, header names) or JSON, import of **BMEcat**
     catalogs (1.2 / 2005, as published by manufacturers and wholesalers, e.g. from the
     EPLAN Data Portal or ETIM / eCl@ss data pools): identification, description, price,
@@ -199,7 +305,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
     the door (front view *Door*); each gets its **door cutout** (Ø22.5 by default or from
     the part data `Door cutout: Ø30.5` / `92 x 68`), checked against the door frame and
     in 3D against the equipment of the mounting plate; their wires are routed over the
-    hinge; the mounting layout page shows plate and door side by side;
+    hinge; the mounting layout page shows the plate and every face with items (door,
+    side walls, rear wall, roof, bottom) side by side;
   - copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
     or round **cutouts** in the mounting plate;
   - **drilling pattern**: rails, ducts and busbar holders get tapped holes along their
@@ -285,9 +392,29 @@ built with [egui / eframe](https://github.com/emilk/egui).
   column or find and replace in the filtered rows; CSV export / import for changes in a
   spreadsheet (rows by key, only changed cells are applied); rows on released pages
   stay unchanged. Renaming a device moves its strip, plug and PLC card data along.
+  The round trip also works with **Excel** files (`.xlsx`: export, change, import);
+  report tables export as Excel workbooks from the Reports window and with `report
+  --format xlsx --path …` (bold, frozen header row with filter, numbers as numbers,
+  codes such as `007` kept as text).
 - **Editing**: select / window select / move with rubber-band wires, rotate, mirror,
   copy / cut / paste (via clipboard, devices get new tags), undo / redo, texts, grid
-  snapping, pan and zoom.
+  snapping, pan and zoom. Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View); a
+  coordinate field in the tool bar (`x y` absolute or `@dx dy` relative to the last
+  point, Enter acts like a click of the current tool); *Edit › Align* (edges or
+  centres), *Distribute* (evenly, horizontally or vertically), *Move selection by…*
+  and *Multiple copy…* (n copies at a fixed distance, new tags and terminal numbers);
+  attached wire ends follow. Commands: `align_items`, `distribute_items`, `copy_items`.
+- **Texts**: free texts with rotation (0 … 359°, e.g. reading upwards along a terminal
+  strip), left / centred / right alignment, a vertical anchor, word wrap at a set
+  width, bold / italic / underline, a border and an opaque background, and a hyperlink
+  (Ctrl + click opens it; clickable in the PDF and SVG export). **Special texts** show
+  project and page properties anywhere on a page: placeholders such as `{page}`,
+  `{project}` or `{prop:Name}` (the same as in title blocks, Insert › Special text) are
+  filled in when the page is drawn. A **path function text** (Insert › Path function
+  text) is the function text of all functions in its column that have none of their
+  own; the device list, terminal, plug and PLC diagrams use it. Texts turn with a
+  rotated selection; DXF / DWG import keeps text rotation and alignment. Command line /
+  MCP: `add_text`, `update_text`.
 - **Schematic graphics**: lines, rectangles, circles, ellipses, arcs, polylines and
   polygons (width, colour, dashed, filled), dimensions (aligned / horizontal / vertical,
   scale, unit), PNG / JPEG images (also in the PDF and SVG export). **Layers**
@@ -303,11 +430,28 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Property placement**: drag the tag block of a selected symbol; place further device
   properties (description, part / type number, manufacturer, designation, connection
   points, structure) beside it.
-- **Navigators**: pages, devices (select on page, place further functions, rename),
+- **Find** (*Edit › Find…*, `Ctrl+F`): searches the whole project (page names and
+  descriptions, device tags, function texts, free texts, wire numbers, terminals and
+  pins, cables, part numbers, descriptions) with case and whole-word options, jumps
+  to the hits and replaces text in free texts, function texts and descriptions
+  (released pages stay). Commands: `find`, `replace_text`.
+- **Navigators**: pages (optionally grouped by structure with the descriptions of the
+  structure management), devices (select on page, place further functions, rename),
   connections (filter, show, select, add a connection definition), cables (cores in
   use and free, cable definitions, draw a cable definition), layers and the check.
-- **Output / data exchange**: **PDF** of all pages (bookmarks per page, clickable cross
-  references and report rows), **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
+  The *Unplaced* tab lists what the project data has but the schematic does not: the
+  channels of PLC cards with a device description that have no input / output symbol
+  (with their address), and the functions of the assigned parts that no symbol uses
+  (coils, contacts with their designations), and the potentials defined in the project
+  that no potential connection point carries yet; drag one into the page (or click it, then
+  into the page) to place it with tag, address and designations. Command:
+  `list_unplaced`.
+- **Output / data exchange**: **PDF** of all pages or a page selection (`1-3, 5`;
+  also for the HTML print document; *File › Print* opens all or the current page in the
+  browser with its print dialog) with bookmarks per page, clickable cross
+  references and report rows (links to pages left out are dropped); texts beyond Latin-1 such as Polish, Czech, Turkish,
+  Greek or Cyrillic are written with an embedded subset of the Ubuntu font, searchable
+  and copyable, **DXF** (R12, layers by kind) and **DWG** (AutoCAD 2004,
   the same drawing) per page or all pages side by side, SVG per page, printable HTML, production wire list (CSV with wire numbers,
   ends, colour, cross-section, routed length, stripping length and ferrule per
   DIN 46228-4, cable cores; panel wires sorted by cross-section, colour and length for
@@ -333,7 +477,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   report lists their wires with length (routed in the panel layout or the harness's
   field length) and end treatment, the harness window shows the connectors with their
   pin assignment and the bundle diameter; export as simplified **KBL** (VDA 4964, XML)
-  for harness manufacturing.
+  for harness manufacturing. **Nailboard drawings** (formboards) to scale: the bundle as
+  branches from a common node to the connectors, each as long as the wire lengths
+  require and as thick as its bundle, with nails, branch lengths and the pin table of
+  every connector, on A3 at the smallest standard scale that fits (harness window
+  › *Nailboard (SVG)…*, exporter `nailboard`, command `harness_nailboard`).
 - **Wiring assistant** (in the spirit of EPLAN Smart Wiring): the *Wiring* workspace
   turns the routed wires of the panel layout into a touch-friendly checklist for the
   workshop – ordered by device, position, cross-section or wire number – with the
@@ -343,6 +491,13 @@ built with [egui / eframe](https://github.com/emilk/egui).
   schematic after they were wired are flagged by the check. The web build opens the
   assistant directly with `…/#wiring` (desktop: `--wiring`), which makes a tablet in
   the workshop a cheap wiring station; checklist with state as CSV.
+- **Mounting assistant** (in the spirit of EPLAN Smart Mounting): the *Mounting* switch
+  of the *Wiring* workspace lists the items of the panel layout in mounting order –
+  cutouts, rails, ducts and busbars, devices, accessories, then door and walls – with
+  the current item highlighted in 3D, its place, size and part, and the progress.
+  Items are marked as mounted or as a problem (with a note); items moved or given
+  another part after they were mounted are flagged by the check. Commands
+  `mounting_list` and `mark_mounted`; checklist with state as CSV.
 - **Enterprise integration** (*Project › Enterprise integration…*): one integration
   layer with connectors for **ERP** (item master and BOM, CSV), **PDM** (project and
   page metadata, JSON), **PLM** (engineering BOM, JSON), **ECAD** (components and
@@ -394,6 +549,15 @@ built with [egui / eframe](https://github.com/emilk/egui).
   PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
   and the *PCT loop overview* shows whether each loop is planned, in engineering or
   engineered in the schematic.
+- **Pre-planning** (*Project › Pre-planning…*): the plant as a tree of segments
+  (plant, area, unit, …) with function and location inherited down the tree and the
+  devices planned in them (tag, kind, description, power, voltage, part, page macro);
+  the planned power per segment, segment templates, the state of every planned device
+  against the schematic (planned, engineered, part differs; also a check and the
+  report *Pre-planning*), schematic pages generated from the page macros of the
+  devices not engineered yet, and the exchange as CSV / Excel (commands
+  `preplanning`, `add_segment`, `plan_device`, …; tools `import_preplanning`,
+  `generate_preplanning_pages`).
 - **Single-line / multi-line engineering** (*Project › Single-line / multi-line…*):
   devices are planned with single-line symbols (breaker, switch-disconnector, motor
   protection switch, fuse, overload relay, contactor, motor, transformer) on overview
@@ -413,7 +577,15 @@ built with [egui / eframe](https://github.com/emilk/egui).
   with `language`) puts out the documentation per language – project texts from the
   dictionary, reports and title blocks in that language (English, German, French,
   Spanish; other languages get English report headings).
+- **Project templates** (in the spirit of EPLAN's basic projects): *File › New project
+  from template* starts from a built-in template (empty IEC 60204-1 project; machine
+  with cover sheet, table of contents, structured schematic pages and report pages;
+  distribution board with single-line overview, climate and short-circuit reports) or
+  from any project file; *Save as project template…* writes the current project
+  without revisions, baselines, review, wiring marks and accepted check messages.
+  Command line: `new_project --template Machine` (or a file).
 - **Storage**: JSON project files (`.oec`); the current project is also auto-saved
+  (compressed, so large projects fit the browser's local storage)
   (app storage on desktop, local storage in the browser).
 
 ## Build & run
@@ -523,8 +695,15 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
-  `Authorization: Bearer <token>`; without it everyone who reaches the server can
-  change its projects.
+  `Authorization: Bearer <token>`; without it and without user accounts everyone who
+  reaches the server can change its projects.
+- **User accounts** (`users.json` in the data directory, Argon2 password hashes):
+  viewers open projects read-only (comments and markup), editors lock, change, save
+  and create projects, administrators also manage the users; a user can be limited to
+  some projects (names with `*` / `?`). `--admin-user <name>` creates the first
+  administrator with the password from `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign
+  in from *File › Project server…* (user name, password, *Sign in*); the server uses
+  the account's name on the locks, whatever the request says.
 - Locks: every page and the project data (page list and order, devices, parts, panel
   layout, settings) are locked separately. Editing something you have not locked
   requests the lock automatically; if another user holds it, the change is taken back.
@@ -539,7 +718,8 @@ cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data p
   project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
   context menu lock and release pages.
 - REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT /projects/{name}`,
-  `POST /projects/{name}/open|status|lock|release|close` (see `openecraft_core::collab`).
+  `POST /projects/{name}/open|status|lock|release|close`, `POST /login`, `POST /logout`,
+  `GET /users`, `PUT|DELETE /users/{name}` (see `openecraft_core::collab`).
 
 ### Parts manager
 
@@ -654,6 +834,9 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | Revisions | *Project › Revisions…*: create (and release) revisions, approval workflow, lock / unlock pages, see changes |
 | Compare | *Project › Compare and baselines…*: create baselines, compare, take differences over |
 | Review | *Review* tab of the navigator, 💬 *Comment* and redline / greenline tools of the toolbar |
+| Settings scheme | *Project › Settings scheme*: export the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file and take them into other projects (tools `export_settings`, `import_settings`) |
+| Workspaces | *View › Workspaces*: save the workspace, the navigator tab and the open windows under a name and restore them with one click (kept by the app) |
+| Keyboard shortcuts | *View › Keyboard shortcuts…*: record, clear or reset the keys of open, save, undo / redo, find, select all, page up / down, fit, wire and text tool, rotate, mirror, wire corner, routing and finishing polylines; conflicts are shown, the keys are kept by the app and shown in the menus and the help |
 | Change requests | *Project › Change requests…*: requests, CSV / JSON import and export |
 | Export | *File*: PDF, DXF / DWG (page / all), SVG, HTML, production wire list, panel layout in 3D (glTF / STEP / IGES / IFC / JT) |
 | Import old drawings | *File › Import DXF / DWG as page…* |
@@ -694,10 +877,12 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/harness.rs` | Wire harnesses: wires, connectors, bundle diameter, KBL export |
 | `crates/openecraft-core/src/translation.rs` | Project texts in several languages: dictionary, translated output, CSV |
 | `crates/openecraft-core/src/wiring.rs` | Wiring assistant: checklist order, wired / problem marks, progress, CSV |
+| `crates/openecraft-core/src/mounting.rs` | Mounting assistant: mounting order, mounted / problem marks, progress, CSV |
 | `crates/openecraft-core/src/integration.rs` | Integration layer: neutral fields, connectors (ERP, PDM, PLM, ECAD, MCAD, procurement, wiring machine), profiles, import preview, conflicts, exchange log |
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
 | `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
+| `crates/openecraft-core/src/preplanning.rs` | Pre-planning: segments, planned devices, templates, power budget, page generation, CSV / Excel |
 | `crates/openecraft-core/src/singleline.rs` | Single-line / multi-line engineering: device status, checks, transformation in both directions |
 | `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
@@ -720,7 +905,8 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/config.rs` | Configurator: options, rules, page generation from macros |
 | `crates/openecraft-core/src/wirenum.rs` | Wire numbers per connection and automatic numbering |
 | `crates/openecraft-core/src/macros.rs` | Window / page macros, placeholders and value sets |
-| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, marking CSV |
+| `crates/openecraft-core/src/pdf_comments.rs` | Import of PDF comments (annotations) into the review layer; minimal PDF object reader |
+| `crates/openecraft-core/src/marking.rs` | Device, terminal, wire and cable markers, labeling schemes, marking CSV / Excel |
 | `crates/openecraft-core/src/strips.rs` | Terminal strips: order, renumbering, jumpers, spare terminals, part per terminal, strip layout with accessories, jumper parts |
 | `crates/openecraft-core/src/plugs.rs` | Plugs: pin order, both sides of each pin, pin count of the parts, placement check |
 | `crates/openecraft-core/src/plc.rs` | PLC points, addressing, symbol table export / import |
@@ -743,6 +929,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `application/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
 | `application/app/integration_ui.rs` | Enterprise integration window: export, import preview, profiles, linked data, log |
 | `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
+| `application/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |

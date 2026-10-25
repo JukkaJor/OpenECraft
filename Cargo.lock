@@ -3264,6 +3264,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "openecraft-auth"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "getrandom 0.2.17",
+ "openecraft-parts",
+ "password-hash",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "openecraft-cli"
 version = "0.1.0"
 dependencies = [
@@ -3293,6 +3304,7 @@ name = "openecraft-core"
 version = "0.1.0"
 dependencies = [
  "acadrust",
+ "epaint_default_fonts",
  "miniz_oxide 0.8.9",
  "openecraft-i18n",
  "openecraft-jt",
@@ -3342,20 +3354,17 @@ dependencies = [
 name = "openecraft-parts-server"
 version = "0.1.0"
 dependencies = [
- "argon2",
  "axum",
  "clap",
  "env_logger",
- "getrandom 0.2.17",
  "http-body-util",
  "log",
+ "openecraft-auth",
  "openecraft-i18n",
  "openecraft-parts",
- "password-hash",
  "rusqlite",
  "serde",
  "serde_json",
- "sha2 0.10.9",
  "tokio",
  "tower",
  "tower-http",
@@ -3370,6 +3379,7 @@ dependencies = [
  "env_logger",
  "http-body-util",
  "log",
+ "openecraft-auth",
  "openecraft-core",
  "openecraft-parts",
  "serde",

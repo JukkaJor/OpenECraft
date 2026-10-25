@@ -11,6 +11,12 @@ fn reports_and_exports() {
     assert!(!bom["rows"].as_array().unwrap().is_empty());
     assert!(run(&mut s, "report", json!({ "kind": "device_list", "format": "csv" })).unwrap().as_str().unwrap().contains(';'));
     assert!(run(&mut s, "report", json!({ "kind": "parts" })).is_err());
+    let xlsx = dir.join("devices.xlsx");
+    assert!(run(&mut s, "report", json!({ "kind": "device_list", "format": "xlsx" })).is_err(), "xlsx needs a path");
+    run(&mut s, "report", json!({ "kind": "device_list", "format": "xlsx", "path": xlsx.to_str().unwrap() })).unwrap();
+    let sheets = openecraft_core::xlsx::read(&std::fs::read(&xlsx).unwrap()).unwrap();
+    assert_eq!(sheets[0].1[0][0], "Device tag");
+    assert!(sheets[0].1.len() > 3);
 
     let svg = run(&mut s, "export", json!({ "format": "svg", "page": "1" })).unwrap();
     assert!(svg.as_str().unwrap().contains("<svg"));
@@ -73,4 +79,17 @@ fn check_reports_the_template_and_arguments_of_an_issue() {
     let issue = c["issues"].as_array().unwrap().iter().find(|i| i["args"][0] == "-K1").unwrap_or_else(|| panic!("{c}"));
     assert!(issue["key"].as_str().unwrap().contains("{}"), "{issue}");
     assert!(issue["message"].as_str().unwrap().starts_with("-K1"), "{issue}");
+}
+
+#[test]
+fn exporter_parameters_are_passed_as_options() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let svg = run(&mut s, "export", json!({ "format": "nailboard", "options": "harness=-WH1" })).unwrap();
+    assert!(svg.as_str().unwrap().starts_with("<svg"));
+    assert!(run(&mut s, "export", json!({ "format": "nailboard" })).unwrap_err().contains("harness"));
+    let csv = run(&mut s, "export", json!({ "format": "marking", "options": "scheme=Partex" })).unwrap();
+    assert!(!csv.as_str().unwrap().starts_with('\u{feff}'), "Partex has no byte order mark");
+    assert!(run(&mut s, "export", json!({ "format": "marking", "options": "colour=red" })).unwrap_err().contains("colour"));
+    assert!(run(&mut s, "export", json!({ "format": "marking", "options": "scheme" })).unwrap_err().contains("name=value"));
 }

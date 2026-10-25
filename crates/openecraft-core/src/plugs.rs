@@ -140,7 +140,7 @@ pub fn rows(prj: &Project, plug: &str, nl: &Netlist, open: &Netlist) -> Vec<Row>
             pin: targets(prj, open, &pin, &own),
             potential: nl.pin_net.get(&(first.id, 0)).map(|&n| nl.nets[n].name.clone()).unwrap_or_default(),
             location: locations.join(", "),
-            function_text: first.function_text.replace('\n', " "),
+            function_text: crate::text::function_text(prj, pins[0].page, first).replace('\n', " "),
             label,
             pins,
         });

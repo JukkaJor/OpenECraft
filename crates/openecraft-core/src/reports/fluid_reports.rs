@@ -109,7 +109,13 @@ pub(super) fn groups(prj: &Project, idx: &Index) -> Table {
         t.push(vec![g.tag.clone(), g.kind.title().into(), String::new(), String::new(), g.description.clone(), String::new(), String::new(), g.part.clone()], None);
         for (i, m) in g.members.iter().enumerate() {
             let main = electrofluid::main_of(prj, idx, m);
-            let function = main.as_ref().map(|(d, s, _)| if s.function_text.is_empty() { tr(d.name).to_string() } else { s.function_text.clone() }).unwrap_or_default();
+            let function = main
+                .as_ref()
+                .map(|(d, s, l)| match crate::text::function_text(prj, l.page, s) {
+                    "" => tr(d.name).to_string(),
+                    ft => ft.to_string(),
+                })
+                .unwrap_or_default();
             let location = main.as_ref().map(|(_, _, l)| l.reference(prj)).unwrap_or_else(|| "?".into());
             let parts: Vec<String> = prj.devices.get(m).map(|d| d.parts.iter().map(|p| p.number.clone()).collect()).unwrap_or_default();
             t.push(

@@ -176,8 +176,11 @@ pub static TOOLS: &[Tool] = &[
     },
     Tool {
         name: "parts_export",
-        help: tr_const!("Exports all parts of the parts server as CSV"),
-        params: &[optional("path", Kind::Str, tr_const!("Output file; without it the content is returned"))],
+        help: tr_const!("Exports all parts of the parts server as CSV or EPLAN parts XML"),
+        params: &[
+            optional("path", Kind::Str, tr_const!("Output file; without it the content is returned")),
+            optional("format", Kind::Str, tr_const!("csv (default) or eplan_xml")),
+        ],
         needs_project: false,
         run: export,
     },
@@ -415,6 +418,11 @@ fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     let csv = s.server.export()?;
+    let csv = match a.str("format").unwrap_or("csv") {
+        "csv" => csv,
+        "eplan_xml" => openecraft_core::parts::to_eplan_xml(&openecraft_core::parts::from_csv(&csv)?),
+        other => return Err(tr_fmt!("Unknown format: {}", other)),
+    };
     match a.str("path") {
         Some(path) => {
             std::fs::write(path, &csv).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;

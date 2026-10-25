@@ -58,6 +58,13 @@ impl Table {
         self.headers.iter().position(|h| header_matches(h, name))
     }
 
+    /// The header (translated) and the rows, e.g. for a spreadsheet.
+    pub fn sheet_rows(&self) -> Vec<Vec<String>> {
+        let mut rows = vec![self.header_texts().into_iter().map(String::from).collect::<Vec<_>>()];
+        rows.extend(self.rows.iter().cloned());
+        rows
+    }
+
     /// CSV like the built-in reports (`;` separated, headers translated).
     pub fn to_csv(&self) -> String {
         let esc = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };

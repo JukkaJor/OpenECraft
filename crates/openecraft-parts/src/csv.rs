@@ -48,6 +48,11 @@ pub fn csv_escape(s: &str) -> String {
 
 pub fn to_csv(parts: &[Part]) -> String {
     let mut out = CSV_FIELDS.join(";");
+    for key in crate::MOUNTING_KEYS {
+        out.push(';');
+        out.push_str(key);
+    }
+    out.push_str(";Components");
     out.push('\n');
     for p in parts {
         let functions = p
@@ -97,7 +102,9 @@ pub fn to_csv(parts: &[Part]) -> String {
             format!("{:?}", p.lifecycle),
             p.successor.clone(),
         ];
-        out.push_str(&row.iter().map(|c| csv_escape(c)).collect::<Vec<_>>().join(";"));
+        let typed = crate::MOUNTING_KEYS.iter().map(|k| p.mounting_data.get(k).unwrap_or_default());
+        let components = std::iter::once(crate::components_to_text(&p.components));
+        out.push_str(&row.into_iter().chain(typed).chain(components).map(|c| csv_escape(&c)).collect::<Vec<_>>().join(";"));
         out.push('\n');
     }
     out
@@ -147,6 +154,8 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
         return Err("column 'Part number' missing".into());
     }
     let idx: Vec<Option<usize>> = CSV_FIELDS.iter().map(|f| col(f)).collect();
+    let typed: Vec<(&str, usize)> = crate::MOUNTING_KEYS.iter().filter_map(|k| Some((*k, col(k)?))).collect();
+    let components_col = col("Components");
     let mut parts = Vec::new();
     for r in data {
         let get = |i: usize| idx[i].and_then(|c| r.get(c)).map(|s| s.trim().to_string()).unwrap_or_default();
@@ -209,15 +218,36 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
             successor: get(32),
             ..Default::default()
         });
+        if let Some(part) = parts.last_mut() {
+            if let Some(c) = components_col {
+                part.components = crate::components_from_text(r.get(c).map(|s| s.as_str()).unwrap_or_default());
+            }
+            for (key, c) in &typed {
+                let v = r.get(*c).map(|s| s.trim()).unwrap_or_default();
+                if !v.is_empty() && !part.mounting_data.set(key, v) {
+                    part.tech_data = [part.tech_data.as_str(), &format!("{key}: {v}")].into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("\n");
+                }
+            }
+        }
     }
     Ok(parts)
 }
 
 /// Imports a parts file (JSON database / part list, BMEcat or CSV). Returns the parts.
 pub fn import(text: &str) -> Result<Vec<Part>, String> {
+    let mut parts = import_raw(text)?;
+    for p in &mut parts {
+        p.migrate_tech_data();
+    }
+    Ok(parts)
+}
+
+fn import_raw(text: &str) -> Result<Vec<Part>, String> {
     let t = text.trim_start_matches('\u{feff}').trim_start();
     if crate::bmecat::is_bmecat(t) {
         crate::bmecat::from_bmecat(t)
+    } else if crate::eplan::is_eplan_xml(t) {
+        crate::eplan::from_eplan_xml(t)
     } else if t.starts_with('{') {
         serde_json::from_str::<PartsDb>(t).map(|d| d.parts).map_err(|e| e.to_string())
     } else if t.starts_with('[') {

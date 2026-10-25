@@ -17,16 +17,16 @@ pub fn catalog() -> &'static [Part] {
 /// Function kind represented by a library symbol.
 pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
     Some(match key {
-        "coil" | "coil_on" | "coil_off" | "nfpa_coil" => FnKind::Coil,
-        "valve" => FnKind::Valve,
+        "coil" | "coil_on" | "coil_off" | "nfpa_coil" | "nfpa_tr_coil" => FnKind::Coil,
+        "valve" | "nfpa_sol" => FnKind::Valve,
         "no" | "nfpa_no" => FnKind::No,
-        "nc" | "ol_nc" | "nfpa_nc" => FnKind::Nc,
+        "nc" | "ol_nc" | "nfpa_nc" | "nfpa_ol_nc" => FnKind::Nc,
         "co" => FnKind::Changeover,
         "no_on" | "nfpa_notc" => FnKind::NoOnDelay,
         "nc_on" | "nfpa_ncto" => FnKind::NcOnDelay,
         "no_off" => FnKind::NoOffDelay,
         "nc_off" => FnKind::NcOffDelay,
-        "main3" => FnKind::MainContacts3,
+        "main3" | "nfpa_main3" => FnKind::MainContacts3,
         "main4" => FnKind::MainContacts4,
         "main1" => FnKind::MainContact,
         "pb_no" | "nfpa_pb_no" => FnKind::PushbuttonNo,
@@ -73,7 +73,9 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "fl_pump" | "pid_pump" => FnKind::Pump,
         "fl_filter" | "fl_gauge" | "fl_tank" | "fl_source" | "fl_silencer" | "fl_throttle" | "pid_vessel" | "pid_valve"
         | "pid_control_valve" | "pid_check_valve" | "pid_heat_exchanger" => FnKind::FluidComponent,
-        "res" | "cap" | "diode" | "led" | "inductor" | "varistor" | "potentiometer" => FnKind::Generic,
+        "res" | "cap" | "diode" | "led" | "inductor" | "varistor" | "potentiometer" | "cap_pol" | "zener" | "photodiode" | "npn" | "pnp" | "nmos" | "thyristor" | "triac" | "ntc" | "ldr"
+        | "optocoupler" | "bridge_rect" | "inst_switch" | "inst_switch2" | "inst_dimmer" | "inst_push" | "inst_lamp" | "inst_luminaire" | "inst_socket2" | "inst_junction" | "inst_motion"
+        | "inst_board" => FnKind::Generic,
         _ => return symbols::iec_kind(key),
     })
 }
@@ -214,9 +216,36 @@ pub fn reserve_functions(prj: &Project, db: Option<&PartsDb>, tag: &str) -> Vec<
 
 /// Per function kind: (placed, available) for devices that have parts assigned.
 pub fn usage(prj: &Project, db: Option<&PartsDb>, tag: &str) -> BTreeMap<FnKind, (usize, usize)> {
+    usage_with(prj, db, tag, &placed_functions(prj, tag))
+}
+
+/// The kinds of the placed functions of every device (one pass over the project).
+pub fn placed_kinds(prj: &Project) -> std::collections::HashMap<&str, Vec<FnKind>> {
+    let mut m: std::collections::HashMap<&str, Vec<FnKind>> = std::collections::HashMap::new();
+    for s in prj.pages.iter().flat_map(|pg| pg.symbols.iter()) {
+        if let Some(k) = kind_of_symbol(&s.sym) {
+            m.entry(s.tag.as_str()).or_default().push(k);
+        }
+    }
+    m
+}
+
+/// [`usage`] with the kinds of the placed functions given (see [`placed_kinds`]).
+pub fn usage_of(prj: &Project, db: Option<&PartsDb>, tag: &str, placed: &[FnKind]) -> BTreeMap<FnKind, (usize, usize)> {
     let mut m: BTreeMap<FnKind, (usize, usize)> = BTreeMap::new();
-    for (k, _, _) in placed_functions(prj, tag) {
-        m.entry(k).or_default().0 += 1;
+    for k in placed {
+        m.entry(*k).or_default().0 += 1;
+    }
+    for f in available_functions(prj, db, tag) {
+        m.entry(f.kind).or_default().1 += 1;
+    }
+    m
+}
+
+fn usage_with(prj: &Project, db: Option<&PartsDb>, tag: &str, placed: &[(FnKind, Vec<String>, u64)]) -> BTreeMap<FnKind, (usize, usize)> {
+    let mut m: BTreeMap<FnKind, (usize, usize)> = BTreeMap::new();
+    for (k, _, _) in placed {
+        m.entry(*k).or_default().0 += 1;
     }
     for f in available_functions(prj, db, tag) {
         m.entry(f.kind).or_default().1 += 1;
@@ -277,6 +306,33 @@ pub fn main_kind(prj: &Project, tag: &str) -> Option<FnKind> {
         .filter(|s| s.tag == tag)
         .find(|s| prj.symbol(&s.sym).map(|d| matches!(d.func, Func::Main { .. })).unwrap_or(false))
         .and_then(|s| kind_of_symbol(&s.sym))
+}
+
+/// The components of an assembly for `qty` assemblies, nested assemblies resolved
+/// (quantities multiplied), in the order of first use.
+pub fn assembly_components(prj: &Project, number: &str, qty: f32) -> Vec<(String, f32)> {
+    fn walk(prj: &Project, number: &str, qty: f32, depth: usize, path: &mut Vec<String>, out: &mut Vec<(String, f32)>) {
+        if depth > 8 || path.iter().any(|p| p == number) {
+            return;
+        }
+        let Some(part) = prj.parts.iter().chain(catalog()).find(|p| p.number == number) else { return };
+        path.push(number.to_string());
+        for c in &part.components {
+            if path.contains(&c.number) {
+                continue;
+            }
+            let n = qty * c.quantity;
+            match out.iter_mut().find(|x| x.0 == c.number) {
+                Some(x) => x.1 += n,
+                None => out.push((c.number.clone(), n)),
+            }
+            walk(prj, &c.number, n, depth + 1, path, out);
+        }
+        path.pop();
+    }
+    let mut out = Vec::new();
+    walk(prj, number, qty, 0, &mut Vec::new(), &mut out);
+    out
 }
 
 #[cfg(test)]

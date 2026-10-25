@@ -16,6 +16,8 @@ pub enum Purpose {
     Model(ModelKind),
     /// Macro library (JSON) to merge.
     Macros,
+    /// A project file that starts a new project (project template).
+    ProjectTemplate,
     /// PLC symbol table (CSV).
     PlcTable,
     /// Symbol library (JSON) to merge into the project.
@@ -46,6 +48,14 @@ pub enum Purpose {
     Compare,
     /// Change requests (CSV, JSON) of another system.
     ChangeRequests,
+    /// A PDF export of the project with comments of a reviewer.
+    PdfComments,
+    /// Pre-planning segments and devices (CSV, Excel).
+    Preplanning,
+    /// Check scheme (JSON): checks switched off and message levels.
+    CheckScheme,
+    /// Settings scheme (JSON) of a project.
+    SettingsScheme,
     /// Customer rule sets (JSON) to add to the project.
     RuleSets,
     /// Property library (JSON) to merge into the project.
@@ -60,9 +70,14 @@ impl FileKind for Purpose {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
             Purpose::Project => (tr("OpenECraft project or archive"), &[PROJECT_EXT, "oecz", "json"]),
+            Purpose::ProjectTemplate => (tr("OpenECraft project template"), &[PROJECT_EXT, "oecz", "json"]),
             Purpose::OutputTarget | Purpose::Compare | Purpose::Subproject => (tr("OpenECraft project"), &[PROJECT_EXT, "json"]),
             Purpose::ChangeRequests => (tr("Change requests (CSV, JSON)"), &["csv", "json", "txt"]),
-            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat)"), &["csv", "json", "xml", "txt"]),
+            Purpose::PdfComments => (tr("PDF with comments"), &["pdf"]),
+            Purpose::Preplanning => (tr("Pre-planning (CSV, Excel)"), &["csv", "xlsx", "txt"]),
+            Purpose::CheckScheme => (tr("Check scheme (JSON)"), &["json"]),
+            Purpose::SettingsScheme => (tr("Settings scheme (JSON)"), &["json"]),
+            Purpose::Parts => (tr("Parts (CSV, JSON, BMEcat, EPLAN XML)"), &["csv", "json", "xml", "txt"]),
             Purpose::Model(kind) => kind.filter(),
             Purpose::Macros => (tr("OpenECraft macros (JSON)"), &["json"]),
             Purpose::PlcTable => ("PLC symbol table (CSV)", &["csv", "txt"]),
@@ -74,7 +89,8 @@ impl FileKind for Purpose {
             Purpose::PropertyLibrary => (tr("OpenECraft property library (JSON)"), &["json"]),
             Purpose::Image => (tr("Images (PNG, JPEG)"), &["png", "jpg", "jpeg"]),
             Purpose::Document => (tr("Documents"), &["pdf", "docx", "doc", "xlsx", "xls", "pptx", "odt", "ods", "png", "jpg", "jpeg", "txt", "*"]),
-            Purpose::Table(_) | Purpose::Dictionary => ("CSV", &["csv", "txt"]),
+            Purpose::Table(_) => (tr("CSV or Excel"), &["csv", "txt", "xlsx"]),
+            Purpose::Dictionary => ("CSV", &["csv", "txt"]),
             Purpose::Drawing => (tr("Drawing (DXF, DWG)"), &["dxf", "dwg"]),
             Purpose::Aml => ("AutomationML", &["aml", "xml"]),
             Purpose::Integration => (tr("Files of other systems (CSV, JSON)"), &["csv", "json", "txt"]),

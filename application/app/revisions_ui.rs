@@ -232,7 +232,7 @@ impl App {
                     };
                     egui::CollapsingHeader::new(title).id_salt(("chg", pc.page_id)).show(ui, |ui| {
                         for c in &pc.changes {
-                            let text = format!("{} {} {}", tr(c.what), c.kind.title(), c.label);
+                            let text = if c.details.is_empty() { format!("{} {} {}", tr(c.what), c.kind.title(), c.label) } else { format!("{} {} {} ({})", tr(c.what), c.kind.title(), c.label, c.details_text()) };
                             match pc.page {
                                 Some(pi) if c.kind != revision::ChangeKind::Removed => {
                                     if ui.link(text.trim()).clicked() {

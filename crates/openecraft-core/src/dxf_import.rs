@@ -6,13 +6,14 @@
 use openecraft_i18n::tr;
 use crate::geom::{p, P};
 use crate::model::*;
+use crate::symbols::Anchor;
 use std::collections::{BTreeSet, HashMap};
 
 /// Drawing elements in DXF coordinates (y up).
 #[derive(Clone, Debug, PartialEq)]
 enum Geo {
     Line(P, P, bool),
-    Text { pos: P, text: String, height: f32 },
+    Text { pos: P, text: String, height: f32, angle: f32, align: Anchor },
 }
 
 type Entity = Vec<(i32, String)>;
@@ -274,7 +275,12 @@ fn entities(d: &Drawing, ents: &[Entity], tf: Tf, depth: usize, out: &mut Vec<Ge
                 let base = if aligned && get(e, 11).is_some() { point(e, 11) } else { point(e, 10) };
                 let text = clean_text(get(e, 1).unwrap_or(""));
                 if !text.is_empty() {
-                    geo.push(Geo::Text { pos: p(base.x, base.y + h / 2.0), text, height: h });
+                    let align = match num(e, 72, 0.0) as i32 {
+                        1 | 4 => Anchor::Center,
+                        2 => Anchor::Right,
+                        _ => Anchor::Left,
+                    };
+                    geo.push(Geo::Text { pos: p(base.x, base.y + h / 2.0), text, height: h, angle: num(e, 50, 0.0), align });
                 }
             }
             "MTEXT" => {
@@ -289,7 +295,7 @@ fn entities(d: &Drawing, ents: &[Entity], tf: Tf, depth: usize, out: &mut Vec<Ge
                         7..=9 => at.y + h / 2.0 + (text.lines().count().max(1) - 1) as f32 * h * 1.4,
                         _ => at.y - h / 2.0,
                     };
-                    geo.push(Geo::Text { pos: p(at.x, y), text, height: h });
+                    geo.push(Geo::Text { pos: p(at.x, y), text, height: h, angle: num(e, 50, 0.0), align: Anchor::Left });
                 }
             }
             "INSERT" | "DIMENSION" => {
@@ -312,7 +318,7 @@ fn entities(d: &Drawing, ents: &[Entity], tf: Tf, depth: usize, out: &mut Vec<Ge
         for g in geo {
             out.push(match g {
                 Geo::Line(a, b, dash) => Geo::Line(tf.apply(a), tf.apply(b), dash),
-                Geo::Text { pos, text, height } => Geo::Text { pos: tf.apply(pos), text, height: height * tf.sy.abs() },
+                Geo::Text { pos, text, height, angle, align } => Geo::Text { pos: tf.apply(pos), text, height: height * tf.sy.abs(), angle, align },
             });
         }
         k += 1;
@@ -391,8 +397,8 @@ pub fn import_page(prj: &mut Project, text: &str, description: &str, after: usiz
                 prj.pages[at].shapes.push(Shape { id, kind: ShapeKind::Line, a, b, dashed, ..Default::default() });
                 lines += 1;
             }
-            Geo::Text { pos, text, height } => {
-                prj.pages[at].texts.push(TextItem { id, pos: to_page(pos), text, size: (height * scale).max(1.0), ..Default::default() });
+            Geo::Text { pos, text, height, angle, align } => {
+                prj.pages[at].texts.push(TextItem { id, pos: to_page(pos), text, size: (height * scale).max(1.0), angle: angle.rem_euclid(360.0), align, ..Default::default() });
                 texts += 1;
             }
         }

@@ -1,6 +1,7 @@
 //! The menu bar of the editor: one method per menu.
 
 use super::*;
+use crate::shortcuts::Action;
 
 impl App {
     #[allow(clippy::too_many_lines)]
@@ -23,21 +24,42 @@ impl App {
         if ui.button(tr("New project")).clicked() {
             self.replace_project(Project::new_default(), None);
         }
-        if ui.button(tr("Open…        Ctrl+O")).clicked() {
+        ui.menu_button(tr("New project from template"), |ui| {
+            for (name, desc) in openecraft_core::project_templates::BUILTIN {
+                if ui.button(tr(name)).on_hover_text(tr(desc)).clicked() {
+                    if let Some(t) = openecraft_core::project_templates::builtin(name) {
+                        let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
+                        self.replace_project(prj, None);
+                    }
+                    ui.close();
+                }
+            }
+            ui.separator();
+            if ui.button(tr("From a template file…")).on_hover_text(tr("Any project file: its settings, forms, structure, potentials and pages start the new project")).clicked() {
+                self.io.open(&ctx, Purpose::ProjectTemplate);
+                ui.close();
+            }
+        });
+        if ui.add(egui::Button::new(tr("Open…")).shortcut_text(self.editor.shortcuts.text(Action::Open))).clicked() {
             self.io.open(&ctx, Purpose::Project);
+        }
+        if ui.button(tr("Save as project template…")).on_hover_text(tr("Saves the project without revisions, baselines, review and wiring marks as a template for new projects")).clicked() {
+            let t = openecraft_core::project_templates::as_template(&self.session.prj);
+            let name = format!("{}_template.oec", self.session.prj.info.name.replace(' ', "_"));
+            self.export(&ctx, name, (tr("OpenECraft project template"), "oec"), t.to_json());
         }
         if ui.button(tr("Open demo project")).clicked() {
             self.replace_project(sample::demo_project(), None);
         }
         ui.separator();
         let save_label = if self.remote.shared.is_some() {
-            tr("Save to project server   Ctrl+S")
+            tr("Save to project server")
         } else if FileIo::can_save_in_place() {
-            tr("Save          Ctrl+S")
+            tr("Save")
         } else {
-            tr("Download project   Ctrl+S")
+            tr("Download project")
         };
-        if ui.button(save_label).clicked() {
+        if ui.add(egui::Button::new(save_label).shortcut_text(self.editor.shortcuts.text(Action::Save))).clicked() {
             self.save(&ctx, false);
         }
         if self.remote.shared.is_some() && !FileIo::can_save_in_place() && ui.button(tr("Download project")).clicked() {
@@ -62,6 +84,24 @@ impl App {
                 }
             });
         }
+        ui.menu_button(tr("Print"), |ui| {
+            let sel = if ui.button(tr("All pages…")).clicked() {
+                Some((0..self.session.prj.pages.len()).collect::<Vec<_>>())
+            } else if ui.button(tr("Current page…")).clicked() {
+                Some(vec![self.session.page])
+            } else {
+                None
+            };
+            if let Some(sel) = sel {
+                let html = openecraft_core::svg::print_document_pages(&self.session.prj, &self.session.analysis, &sel);
+                if let Err(e) = openecraft_ui::io::print_html(&html) {
+                    self.notify(&ctx, tr_fmt!("Printing failed: {}", e));
+                }
+                ui.close();
+            }
+        })
+        .response
+        .on_hover_text(tr("Opens the pages for printing in the browser with its print dialog"));
         if ui.button(tr("Import DXF / DWG as page…")).on_hover_text(tr("An old drawing as graphics on a new schematic page (lines, arcs, texts, blocks)")).clicked() {
             self.io.open(&ctx, Purpose::Drawing);
         }
@@ -74,28 +114,34 @@ impl App {
     }
 
     pub(super) fn edit_menu(&mut self, ui: &mut egui::Ui) {
-        if ui.add_enabled(self.session.history.can_undo(), egui::Button::new(tr("Undo   Ctrl+Z"))).clicked() {
+        let keys = |a| self.editor.shortcuts.text(a);
+        if ui.add_enabled(self.session.history.can_undo(), egui::Button::new(tr("Undo")).shortcut_text(keys(Action::Undo))).clicked() {
             self.session.undo();
         }
-        if ui.add_enabled(self.session.history.can_redo(), egui::Button::new(tr("Redo   Ctrl+Y"))).clicked() {
+        if ui.add_enabled(self.session.history.can_redo(), egui::Button::new(tr("Redo")).shortcut_text(keys(Action::Redo))).clicked() {
             self.session.redo();
         }
         ui.separator();
         let has_sel = !self.editor.selection.is_empty();
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate   R"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Rotate")).shortcut_text(keys(Action::Rotate))).clicked() {
             ops::rotate(&self.session.prj.symbol_table(), &mut self.session.prj.pages[self.session.page], &self.editor.selection);
         }
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror   M"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Mirror")).shortcut_text(keys(Action::Mirror))).clicked() {
             ops::mirror(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
         }
-        if ui.add_enabled(has_sel, egui::Button::new(tr("Delete   Del"))).clicked() {
+        if ui.add_enabled(has_sel, egui::Button::new(tr("Delete")).shortcut_text(tr("Del"))).clicked() {
             ops::delete(&mut self.session.prj.pages[self.session.page], &self.editor.selection);
             self.editor.selection.clear();
         }
-        if ui.button(tr("Select all   Ctrl+A")).clicked() {
+        if ui.add(egui::Button::new(tr("Find…")).shortcut_text(keys(Action::Find))).on_hover_text(tr("Find and replace in the whole project")).clicked() {
+            self.find_ui.open = true;
+        }
+        if ui.add(egui::Button::new(tr("Select all")).shortcut_text(keys(Action::SelectAll))).clicked() {
             self.editor.selection = ops::all_ids(&self.session.prj.pages[self.session.page]).into_iter().collect();
         }
         ui.label(RichText::new(tr("Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V")).weak());
+        ui.separator();
+        self.arrange_menu_entries(ui);
         ui.separator();
         self.edit_menu_entries(ui);
         ui.separator();
@@ -115,6 +161,23 @@ impl App {
         if ui.button(tr("Text   T")).clicked() {
             self.editor.set_tool(Tool::Text);
         }
+        if ui
+            .button(tr("Path function text"))
+            .on_hover_text(tr("Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)"))
+            .clicked()
+        {
+            self.editor.set_tool(Tool::Text);
+            self.editor.text_proto = Some(openecraft_core::model::TextItem { text: "Function text".into(), path_function: true, ..Default::default() });
+        }
+        ui.menu_button(tr("Special text"), |ui| {
+            ui.label(RichText::new(tr("Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn")).weak());
+            for (ph, meaning) in openecraft_core::forms::PLACEHOLDERS.iter().filter(|(ph, _)| *ph != "{{ }}") {
+                if ui.button(format!("{}  {}", tr(meaning), ph)).clicked() {
+                    self.editor.set_tool(Tool::Text);
+                    self.editor.text_proto = Some(openecraft_core::model::TextItem { text: (*ph).to_string(), ..Default::default() });
+                }
+            }
+        });
         if ui.button(tr("Graphic line")).clicked() {
             self.editor.set_tool(Tool::Line);
         }
@@ -149,6 +212,10 @@ impl App {
         if ui.button(tr("New schematic page")).clicked() {
             self.add_page(PageKind::Schematic);
         }
+        if ui.button(tr("New sub-page")).on_hover_text(tr("A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering")).clicked() {
+            let at = ops::add_subpage(&mut self.session.prj, self.session.page);
+            self.goto(at, 0);
+        }
         if ui.button(tr("New cover sheet")).clicked() {
             self.add_page(PageKind::Cover);
         }
@@ -161,6 +228,9 @@ impl App {
         if ui.button(tr("New document page…")).on_hover_text(tr("Embeds a file (PDF, Word, Excel, image …) as a page")).clicked() {
             self.pages_ui.replace_document = None;
             self.io.open(&ctx, Purpose::Document);
+        }
+        if ui.button(tr("Renumber pages…")).clicked() {
+            self.numbering_ui.show_pages = true;
         }
         ui.menu_button(tr("New page from template"), |ui| {
             for t in openecraft_core::page_templates::all(&self.session.prj) {
@@ -215,6 +285,18 @@ impl App {
     }
 
     pub(super) fn project_menu(&mut self, ui: &mut egui::Ui) {
+        ui.menu_button(tr("Settings scheme"), |ui| {
+            let ctx = ui.ctx().clone();
+            if ui.button(tr("Export settings…")).on_hover_text(tr("Wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and the check scheme as one file")).clicked() {
+                let json = openecraft_core::settings_scheme::export(&self.session.prj);
+                self.export(&ctx, "settings_scheme.json".into(), (tr("Settings scheme (JSON)"), "json"), json);
+                ui.close();
+            }
+            if ui.button(tr("Import settings…")).clicked() {
+                self.io.open(&ctx, Purpose::SettingsScheme);
+                ui.close();
+            }
+        });
         if ui.button(tr("Project properties…")).clicked() {
             self.show_project = true;
         }
@@ -245,6 +327,12 @@ impl App {
         if ui.button(tr("Wire numbering…")).clicked() {
             self.show_numbering = true;
         }
+        if ui.button(tr("Cross references…")).on_hover_text(tr("Format of cross references, structure of the target page, interruption points, contact images")).clicked() {
+            self.show_xref = true;
+        }
+        if ui.button(tr("Device numbering…")).on_hover_text(tr("Numbers the device tags per structure and identifying letter in schematic order (page, column, top to bottom)")).clicked() {
+            self.numbering_ui.show_devices = true;
+        }
         if ui.button(tr("Harnesses…")).clicked() {
             self.harness_ui.open = true;
         }
@@ -262,6 +350,9 @@ impl App {
         }
         if ui.button(tr("Fluid and process…")).on_hover_text(tr("Hose defaults and PCT loops of the pre-planning")).clicked() {
             self.process_ui.open = true;
+        }
+        if ui.button(tr("Pre-planning…")).on_hover_text(tr("Plant segments with planned devices before the schematic")).clicked() {
+            self.preplanning_ui.open = true;
         }
         if ui.button(tr("Single-line / multi-line…")).on_hover_text(tr("Plan devices in the single-line diagram, generate the schematic and keep both in sync")).clicked() {
             self.singleline_ui.open = true;
@@ -332,15 +423,21 @@ impl App {
     }
 
     pub(super) fn view_menu(&mut self, ui: &mut egui::Ui) {
-        if ui.button(tr("Fit page   F")).clicked() {
+        if ui.add(egui::Button::new(tr("Fit page")).shortcut_text(self.editor.shortcuts.text(Action::FitPage))).clicked() {
             self.editor.fit_pending = true;
         }
         ui.checkbox(&mut self.editor.show_grid, tr("Grid"));
+        self.grid_menu(ui);
         ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
         ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
+        ui.checkbox(&mut self.editor.show_macro_boxes, tr("Macro boxes")).on_hover_text(tr("Window macros placed on the pages (not printed)"));
         ui.checkbox(&mut self.session.prj.wire_colors, tr("Wire colours"))
             .on_hover_text(tr("Draw wires in their colour (also in PDF and SVG); saved with the project"));
         ui.separator();
+        if ui.button(tr("Keyboard shortcuts…")).clicked() {
+            self.show_shortcuts = true;
+        }
+        ui.menu_button(tr("Workspaces"), |ui| self.workspaces_menu(ui));
         openecraft_ui::language::menu(ui);
         let mut pref = ui.ctx().options(|o| o.theme_preference);
         ui.horizontal(|ui| {

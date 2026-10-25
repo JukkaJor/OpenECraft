@@ -12,7 +12,7 @@ use egui::{Color32, RichText};
 pub struct HarnessUi {
     pub open: bool,
     /// Tag of the harness whose connectors are shown.
-    sel: Option<String>,
+    pub(super) sel: Option<String>,
 }
 
 impl App {
@@ -25,6 +25,7 @@ impl App {
         let mut remove = None;
         let mut unassign: Option<(String, [String; 2])> = None;
         let (mut kbl, mut report) = (false, false);
+        let mut nailboard: Option<String> = None;
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         egui::Window::new(tr("Harnesses")).open(&mut open).default_size([900.0, 460.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -89,7 +90,12 @@ impl App {
                 ui.separator();
                 let ws = harness::wires(&self.session.prj, an, &tag);
                 let total: f32 = ws.iter().map(|w| w.length).sum();
-                ui.label(RichText::new(tr_fmt!("{}: {} wires, {} m wire in total", tag, ws.len(), format!("{:.2}", total / 1000.0))).strong());
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(tr_fmt!("{}: {} wires, {} m wire in total", tag, ws.len(), format!("{:.2}", total / 1000.0))).strong());
+                    if ui.add_enabled(!ws.is_empty(), egui::Button::new(tr("📐 Nailboard (SVG)…"))).on_hover_text(tr("Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors")).clicked() {
+                        nailboard = Some(tag.clone());
+                    }
+                });
                 if ws.iter().any(|w| w.length <= 0.0) {
                     ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Some wires have no length: place their devices in the panel layout or set the field length."));
                 }
@@ -146,6 +152,10 @@ impl App {
         if report {
             self.report_kind = ReportKind::HarnessData.into();
             self.show_reports = true;
+        }
+        if let Some(nb) = nailboard.and_then(|tag| openecraft_core::nailboard::layout(&self.session.prj, &self.session.analysis, &tag)) {
+            let name = format!("nailboard_{}.svg", nb.tag.trim_start_matches(['-', '=', '+']).replace(['/', '\\', ' '], "_"));
+            self.export(ctx, name, ("SVG", "svg"), openecraft_core::nailboard::svg(&nb));
         }
         if kbl {
             let xml = harness::kbl(&self.session.prj, &self.session.analysis);

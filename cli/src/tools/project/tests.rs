@@ -34,3 +34,12 @@ fn renumbering_and_undo() {
     assert_eq!(run(&mut s, "redo", json!({})).unwrap()["redone"], true);
     assert_ne!(s.project().unwrap(), &before);
 }
+
+#[test]
+fn projects_from_templates() {
+    let mut s = session();
+    let out = run(&mut s, "new_project", json!({ "template": "Machine", "name": "Line 2" })).unwrap();
+    assert_eq!(out["name"], "Line 2");
+    assert!(s.project().unwrap().pages.len() > 5);
+    assert!(run(&mut s, "new_project", json!({ "template": "no-such-template.oec", "discard": true })).is_err());
+}

@@ -9,7 +9,8 @@ use openecraft_core::graphics::{self, Layer};
 use crate::io::Loaded;
 use openecraft_core::model::*;
 use openecraft_core::netlist::pin_designation;
-use openecraft_core::{cabledef, conndef, ops, properties, props, routing, structure, wirenum};
+use openecraft_core::symbols::Anchor;
+use openecraft_core::{cabledef, conndef, forms, ops, properties, props, routing, structure, wirenum};
 use egui::RichText;
 
 /// Selection of the layer of an item ("" is the default layer).
@@ -34,6 +35,98 @@ fn color_field(ui: &mut egui::Ui, color: &mut Option<[u8; 3]>) {
             ui.color_edit_button_srgb(c);
         }
     });
+}
+
+fn anchor_title(a: Anchor) -> &'static str {
+    match a {
+        Anchor::Left => tr("Left"),
+        Anchor::Center => tr("Centred"),
+        Anchor::Right => tr("Right"),
+    }
+}
+
+fn valign_title(v: VAnchor) -> &'static str {
+    match v {
+        VAnchor::Top => tr("Top"),
+        VAnchor::Middle => tr("Middle"),
+        VAnchor::Bottom => tr("Bottom"),
+    }
+}
+
+/// Properties of a free text: content with placeholders, height, rotation,
+/// alignment, wrapping, style, frame, hyperlink, layer and path function text.
+fn text_properties(ui: &mut egui::Ui, t: &mut TextItem, names: &[String]) {
+    ui.label(RichText::new(if t.path_function { tr("Path function text") } else { tr("Text") }).strong());
+    ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
+    egui::ComboBox::from_id_salt("tph")
+        .selected_text(tr("Insert placeholder…"))
+        .width(200.0)
+        .show_ui(ui, |ui| {
+            for (ph, meaning) in forms::PLACEHOLDERS.iter().filter(|(ph, _)| *ph != "{{ }}") {
+                if ui.button(format!("{}  {}", tr(meaning), ph)).clicked() {
+                    t.text.push_str(ph);
+                }
+            }
+        })
+        .response
+        .on_hover_text(tr("Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn"));
+    egui::Grid::new("txtprops").num_columns(2).show(ui, |ui| {
+        ui.label(tr("Height (mm)"));
+        ui.add(egui::DragValue::new(&mut t.size).range(1.0..=50.0).speed(0.1));
+        ui.end_row();
+        ui.label(tr("Angle"));
+        ui.horizontal(|ui| {
+            ui.add(egui::DragValue::new(&mut t.angle).range(0.0..=359.9).speed(1.0).suffix(" °"));
+            for a in [0.0, 90.0, 180.0, 270.0] {
+                ui.selectable_value(&mut t.angle, a, format!("{a:.0}°"));
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Alignment"));
+        ui.horizontal(|ui| {
+            egui::ComboBox::from_id_salt("talign").selected_text(anchor_title(t.align)).show_ui(ui, |ui| {
+                for a in [Anchor::Left, Anchor::Center, Anchor::Right] {
+                    ui.selectable_value(&mut t.align, a, anchor_title(a));
+                }
+            });
+            egui::ComboBox::from_id_salt("tvalign").selected_text(valign_title(t.valign)).show_ui(ui, |ui| {
+                for v in [VAnchor::Top, VAnchor::Middle, VAnchor::Bottom] {
+                    ui.selectable_value(&mut t.valign, v, valign_title(v));
+                }
+            });
+        });
+        ui.end_row();
+        ui.label(tr("Wrap width (mm)"));
+        ui.add(egui::DragValue::new(&mut t.width).range(0.0..=400.0).speed(1.0)).on_hover_text(tr("0: no wrapping"));
+        ui.end_row();
+        ui.label(tr("Style"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut t.bold, tr("Bold"));
+            ui.checkbox(&mut t.italic, tr("Italic"));
+            ui.checkbox(&mut t.underline, tr("Underline"));
+        });
+        ui.end_row();
+        ui.label(tr("Frame"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut t.frame, tr("Border"));
+            ui.checkbox(&mut t.background, tr("Background")).on_hover_text(tr("Covers what is behind the text"));
+        });
+        ui.end_row();
+        ui.label(tr("Link"));
+        ui.horizontal(|ui| {
+            ui.add(egui::TextEdit::singleline(&mut t.link).desired_width(150.0));
+            if !t.link.is_empty() && ui.button(tr("Open")).on_hover_text(tr("Ctrl + click on the text opens it as well")).clicked() {
+                ui.ctx().open_url(egui::OpenUrl::new_tab(t.link.clone()));
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Layer"));
+        layer_combo(ui, "tlayer", &mut t.layer, names);
+        ui.end_row();
+    });
+    ui.checkbox(&mut t.path_function, tr("Path function text"))
+        .on_hover_text(tr("Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)"));
+    color_field(ui, &mut t.color);
 }
 
 impl App {
@@ -164,6 +257,7 @@ impl App {
         };
         self.editor.set_tool(Tool::Insert);
         self.editor.insert = Some(ops::Clip { images: vec![img], ..ops::Clip::new() });
+        self.editor.insert_macro = None;
         self.notify(ctx, tr("Click into the page to place the image"));
     }
 
@@ -175,14 +269,7 @@ impl App {
         let cables: Vec<(String, Vec<String>)> = self.session.prj.cables.iter().map(|c| (c.tag.clone(), c.core_list())).collect();
         let pg = &mut self.session.prj.pages[pi];
         if let Some(t) = pg.texts.iter_mut().find(|t| t.id == id) {
-            ui.label(tr("Text"));
-            ui.add(egui::TextEdit::multiline(&mut t.text).desired_rows(3));
-            ui.add(egui::Slider::new(&mut t.size, 1.5..=20.0).text(tr("Height (mm)")));
-            color_field(ui, &mut t.color);
-            ui.horizontal(|ui| {
-                ui.label(tr("Layer"));
-                layer_combo(ui, "tlayer", &mut t.layer, &names);
-            });
+            text_properties(ui, t, &names);
             return true;
         }
         if let Some(s) = pg.shapes.iter_mut().find(|s| s.id == id) {

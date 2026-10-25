@@ -36,7 +36,9 @@ exceptions, to be removed over time.
 
 Layers, bottom up (a module may use its own layer and the layers below):
 
-1. Foundations without dependencies: `geom`, `xml`, `params` (typed parameters and
+1. Foundations without dependencies: `geom`, `xml`, `zip`, `xlsx` (Excel workbooks),
+   `ttf` (TrueType reader and
+   subsetter for PDF fonts), `params` (typed parameters and
    `Text`), `table` (report tables), `issue` (`Issue`, `Severity`; a built-in check's
    message is an English template with its arguments, `issue!(severity, target, "…",
    args)`, translated by `Issue::message()` where it is shown, so that the analysis
@@ -51,8 +53,10 @@ Layers, bottom up (a module may use its own layer and the layers below):
    their data types from here and keep the logic.
 4. Evaluation of the model that everything else builds on: `index`, `netlist`,
    `structure`, `frame`, `wirenum`, `history`, `translation`, `options`,
-   `potentials`, `functions`, `properties`, `props`.
-5. Feature logic and page editing: `ops`, `panel`, `electrical`, `fluid`, `plc`,
+   `potentials`, `functions`, `properties`, `props`, `numbering` (device and page
+   renumbering), `text` (free texts: lines,
+   wrapping, rotation, path function texts).
+5. Feature logic and page editing: `ops`, `arrange` (align, distribute, multiple copy), `panel`, `electrical`, `fluid`, `plc`,
    `plc_hw`, `field`, `routing3d`, `strips`, `plugs`, `harness`, `marking`, `forms`,
    `report_blocks`, `revision`, `review`, `compare`, …
 6. Derived data and the registry: `analysis` (`Analysis`: index, netlists,

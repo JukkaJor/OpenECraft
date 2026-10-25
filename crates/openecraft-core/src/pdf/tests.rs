@@ -77,3 +77,79 @@ fn images_become_xobjects() {
     assert!(pdf.contains("/XObject << /Im0 "));
     assert!(pdf.contains("(alpha.png) Tj"));
 }
+
+#[test]
+fn styled_texts_fonts_rotation_and_hyperlinks() {
+    use crate::geom::p;
+    use crate::model::*;
+    let mut prj = Project::default();
+    let pg = &mut prj.pages[0];
+    pg.texts.push(TextItem { id: 1, pos: p(100.0, 100.0), text: "Up".into(), angle: 90.0, bold: true, ..Default::default() });
+    pg.texts.push(TextItem { id: 2, pos: p(50.0, 50.0), text: "Docs".into(), italic: true, underline: true, link: "https://example.org/a(b)".into(), ..Default::default() });
+    let pdf = document(&prj);
+    for name in ["Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique"] {
+        assert!(pdf.contains(&format!("/BaseFont /{name}")), "{name}");
+    }
+    assert!(pdf.contains("/F2 ") && pdf.contains("/F3 ") && pdf.contains("/F4 "), "the page lists the four fonts");
+    let up = pdf.lines().find(|l| l.ends_with("(Up) Tj ET")).expect("rotated text");
+    assert!(up.contains("rg BT /F2 ") && up.contains(" 1.0000 -1.0000 ") && up.contains(" Tm "), "{up}");
+    let docs = pdf.lines().find(|l| l.ends_with("(Docs) Tj ET")).expect("italic text");
+    assert!(docs.contains("rg BT /F3 ") && docs.contains(" Td "), "{docs}");
+    assert!(pdf.contains("/A << /S /URI /URI (https://example.org/a\\(b\\)) >>"), "{pdf}");
+}
+
+#[test]
+fn texts_beyond_winansi_use_the_embedded_font() {
+    use crate::geom::p;
+    use crate::model::*;
+    assert!(needs_unicode("Łódź") && needs_unicode("Ωμ") && !needs_unicode("Grüße 1.5 mm² – €") && !needs_unicode("a?"));
+    assert_eq!(ascii85(b"Man "), "9jqo^~>");
+    assert_eq!(ascii85(&[0, 0, 0, 0]), "z~>");
+    assert_eq!(ascii85(b"M"), "9`~>");
+
+    let plain = document(&Project::default());
+    assert!(!plain.contains("/F5 "), "no font without such texts");
+
+    let mut prj = Project::default();
+    prj.pages[0].texts.push(TextItem { id: 1, pos: p(50.0, 50.0), text: "Łódź Ж".into(), bold: true, ..Default::default() });
+    prj.pages[0].texts.push(TextItem { id: 2, pos: p(50.0, 70.0), text: "Wire 1.5 mm²".into(), ..Default::default() });
+    let pdf = document(&prj);
+    assert!(pdf.is_ascii(), "the file stays ASCII");
+    assert!(pdf.contains("/Subtype /Type0 /BaseFont /OECUBU+Ubuntu-Light /Encoding /Identity-H"));
+    assert!(pdf.contains("/FontFile2 ") && pdf.contains("/Filter [/ASCII85Decode /FlateDecode]"));
+    assert!(pdf.contains("/F5 ") && pdf.contains(" 2 Tr "), "bold by stroking");
+    let f = unicode_font().unwrap();
+    let l = format!("<{:04X}> <0141>", f.glyph('Ł'));
+    assert!(pdf.contains(&l), "ToUnicode maps the glyph back to the character");
+    assert!(pdf.contains("(Wire 1.5 mm\\262) Tj"), "WinAnsi texts keep Helvetica");
+}
+
+#[test]
+fn selected_pages_only_with_links_among_them() {
+    let prj = crate::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let all = document_with(&prj, &an);
+    let two = document_pages(&prj, &an, &[1, 2]);
+    assert!(two.contains("/Count 2"));
+    assert!(two.len() < all.len());
+    let pages = |s: &str| s.matches("/Type /Page ").count();
+    assert_eq!(pages(&two), 2);
+    assert_eq!(pages(&all), prj.pages.len());
+}
+
+#[test]
+fn characters_the_bundled_font_lacks_use_the_fallback_font() {
+    // The Hack font of egui stands in for a system CJK font: it has glyphs the
+    // Ubuntu font lacks.
+    let fb = Font::parse(epaint_default_fonts::HACK_REGULAR).unwrap();
+    let primary = unicode_font().unwrap();
+    let c = ('\u{2000}'..='\u{2BFF}').find(|c| primary.glyph(*c) == 0 && fb.glyph(*c) != 0).unwrap();
+    assert!(set_fallback_font(epaint_default_fonts::HACK_REGULAR.to_vec()) || fallback_font().is_some());
+    let mut prj = demo_project();
+    let id = prj.new_id();
+    prj.pages[1].texts.push(crate::model::TextItem { id, pos: crate::geom::p(50.0, 50.0), text: format!("A{c}b"), size: 3.0, ..Default::default() });
+    let an = Analysis::checked(&prj);
+    let pdf = document_with(&prj, &an);
+    assert!(pdf.contains("/F6 "), "fallback font used");
+    assert!(pdf.contains("OECFBK+Fallback"));
+}

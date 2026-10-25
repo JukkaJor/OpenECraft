@@ -10,7 +10,7 @@ use crate::panel::{self, Enclosure, Face, ItemKind, PanelItem};
 use crate::parts::{Model2d, Prim2d};
 use crate::parts::{self, FnKind};
 use crate::analysis::Analysis;
-use crate::{graphics, structure, wirenum};
+use crate::{graphics, structure, text, wirenum};
 use crate::symbols::{Anchor, ContactKind, FieldKind, Func, Prim, SymbolDef, SymbolRef};
 use std::collections::{BTreeSet, HashSet};
 
@@ -33,24 +33,29 @@ pub enum Ink {
     Fill,
     /// Wire drawn in its own colour (RGB).
     Color([u8; 3]),
+    /// Paper colour (opaque backgrounds of texts).
+    Paper,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum VAnchor {
-    Middle,
-    Bottom,
-}
-
+pub use crate::model::VAnchor;
+pub use crate::text::TextStyle;
 pub trait Draw {
     fn line(&mut self, a: P, b: P, width: f32, ink: Ink, dashed: bool);
     fn poly(&mut self, pts: &[P], closed: bool, width: f32, ink: Ink, fill: bool);
     fn circle(&mut self, c: P, r: f32, width: f32, ink: Ink, fill: bool);
     fn text(&mut self, pos: P, text: &str, size: f32, h: Anchor, v: VAnchor, ink: Ink);
+    /// Text with rotation and style (free texts); back ends that cannot draw them
+    /// show the plain text.
+    fn styled_text(&mut self, pos: P, text: &str, style: &TextStyle, ink: Ink) {
+        self.text(pos, text, style.size, style.h, style.v, ink);
+    }
     fn rect(&mut self, a: P, b: P, width: f32, ink: Ink, fill: bool) {
         self.poly(&[a, p(b.x, a.y), b, p(a.x, b.y)], true, width, ink, fill);
     }
     /// Marks the area `min`..`max` as a link to another page (PDF export).
     fn link(&mut self, _min: P, _max: P, _page: usize) {}
+    /// Marks the area `min`..`max` as a hyperlink (PDF and SVG export).
+    fn link_url(&mut self, _min: P, _max: P, _url: &str) {}
     /// Draws a bitmap; back ends that cannot show it draw a frame with its name.
     fn image(&mut self, img: &ImageItem) {
         image_placeholder(self, img);
@@ -84,6 +89,8 @@ fn link_text(d: &mut dyn Draw, pos: P, text: &str, size: f32, h: Anchor, page: u
     d.link(p(x0, pos.y - size * 0.7), p(x0 + w, pos.y + size * 0.7), page);
 }
 
+mod report_graphics;
+
 pub const SYMBOL_W: f32 = 0.25;
 pub const WIRE_W: f32 = 0.35;
 pub const TAG_SIZE: f32 = 2.5;
@@ -101,6 +108,8 @@ pub struct Opts {
     pub review_selected: Option<crate::review::Hit>,
     /// Drawn on screen: layers that are not printed are shown.
     pub screen: bool,
+    /// Draw the macro boxes (on screen only).
+    pub macro_boxes: bool,
 }
 
 fn is_black(c: &[u8; 3]) -> bool {
@@ -114,9 +123,11 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     let frame = crate::frame::of_page(prj, page_i);
     match page.kind {
         PageKind::Cover => draw_cover(d, prj, &frame),
-        PageKind::Report(_) => {
+        PageKind::Report(kind) => {
             if let Some(t) = crate::report_blocks::page_table(prj, an, page_i) {
-                draw_report(d, &t, &frame);
+                if !(t.graphic && report_graphics::draw(d, kind, &t, &frame)) {
+                    draw_report(d, &t, &frame);
+                }
             }
         }
         PageKind::Mounting(id) => draw_mounting_page(d, prj, id, &frame),
@@ -204,10 +215,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     for t in page.texts.iter().filter(|t| shown(&t.layer)) {
         d.layer(Some(&t.layer));
-        let ink = item_ink(t.id, t.color, &t.layer, Ink::Text);
-        for (i, line) in t.text.lines().enumerate() {
-            d.text(t.pos + p(0.0, i as f32 * t.size * 1.4), line, t.size, Anchor::Left, VAnchor::Middle, ink);
-        }
+        draw_text_item(d, prj, page_i, t, item_ink(t.id, t.color, &t.layer, Ink::Text));
     }
     d.layer(None);
     if !opts.hide_revision_marks {
@@ -215,6 +223,54 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     if opts.review {
         crate::review::draw(d, prj, page_i, opts.review_selected);
+    }
+    if opts.screen && opts.macro_boxes {
+        for b in &page.macro_boxes {
+            if let Some(r) = crate::macro_boxes::bounds(prj, page_i, b) {
+                let (a, c) = (p(r.min.x - 2.0, r.min.y - 4.5), p(r.max.x + 2.0, r.max.y + 2.0));
+                d.poly(&[a, p(c.x, a.y), c, p(a.x, c.y)], true, 0.2, Ink::Ghost, false);
+                d.line(a, p(c.x, a.y), 0.2, Ink::Ghost, true);
+                d.text(p(a.x + 1.0, a.y + 2.2), &b.name, 2.0, Anchor::Left, VAnchor::Middle, Ink::Ghost);
+            }
+        }
+    }
+}
+
+/// The text of a free text as shown: placeholders such as `{page}` or `{prop:Name}`
+/// (special texts) are filled in.
+pub fn text_shown(prj: &Project, page_i: usize, t: &TextItem) -> String {
+    if t.text.contains('{') {
+        crate::forms::fill(&t.text, prj, page_i)
+    } else {
+        t.text.clone()
+    }
+}
+
+/// Area of a free text as shown (picking).
+pub fn text_bounds(prj: &Project, page_i: usize, t: &TextItem) -> R {
+    text::bounds(t, &text_shown(prj, page_i, t))
+}
+
+/// Draws a free text: background and frame, its lines with rotation, alignment and
+/// style, and its hyperlink.
+pub fn draw_text_item(d: &mut dyn Draw, prj: &Project, page_i: usize, t: &TextItem, ink: Ink) {
+    let shown = text_shown(prj, page_i, t);
+    if t.background || t.frame {
+        let c = text::corners(t, &shown, 0.25);
+        if t.background {
+            d.poly(&c, true, 0.0, Ink::Paper, true);
+        }
+        if t.frame {
+            d.poly(&c, true, SYMBOL_W, if ink == Ink::Text { Ink::Line } else { ink }, false);
+        }
+    }
+    let style = TextStyle::of(t);
+    for (q, line) in text::lines(t, &shown) {
+        d.styled_text(q, &line, &style, ink);
+    }
+    if !t.link.is_empty() {
+        let b = text::bounds(t, &shown);
+        d.link_url(b.min, b.max, &t.link);
     }
 }
 
@@ -478,16 +534,14 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
                 refs.extend(dev.auxs.iter().map(|a| (a.reference_from(prj, page_i), Some(a.page))));
             }
         }
-        Func::Interruption => {
-            if let Some(locs) = idx.interruptions.get(&s.label) {
-                let others: Vec<&Loc> = locs.iter().filter(|l| l.sym_id != s.id).collect();
-                let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror) + p(0.0, 2.6);
-                let txt = if others.is_empty() { "?".to_string() } else { others.iter().map(|l| l.reference_from(prj, page_i)).collect::<Vec<_>>().join(" ") };
-                let ink = if others.is_empty() { Ink::Error } else { Ink::CrossRef };
-                d.text(q, &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
-                if let Some(l) = others.first() {
-                    link_text(d, q, &txt, SMALL_SIZE, Anchor::Left, l.page);
-                }
+        Func::Interruption if idx.interruptions.contains_key(&s.label) => {
+            let others: Vec<Loc> = idx.interruption_targets(prj, &s.label, s.id);
+            let q = s.pos + p(2.2, 1.6).transform(s.rot, s.mirror) + p(0.0, 2.6);
+            let txt = if others.is_empty() { "?".to_string() } else { others.iter().map(|l| l.reference_from(prj, page_i)).collect::<Vec<_>>().join(" ") };
+            let ink = if others.is_empty() { Ink::Error } else { Ink::CrossRef };
+            d.text(q, &txt, SMALL_SIZE, Anchor::Left, VAnchor::Middle, ink);
+            if let Some(l) = others.first() {
+                link_text(d, q, &txt, SMALL_SIZE, Anchor::Left, l.page);
             }
         }
         _ => {}
@@ -532,7 +586,9 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
     // Contact image (mirror) below coils
     if matches!(def.func, Func::Main { mirror: true }) {
         if let Some(dev) = dev {
-            draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            if !prj.xref.hide_contact_image {
+                draw_contact_image(d, prj, page_i, &s.tag, dev.auxs.as_slice(), &bounds, vertical, text_ink);
+            }
         }
     }
 }
@@ -1188,20 +1244,26 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::f
     };
     let a = frame.area();
     let (x0, y0, x1, y1) = (a.min.x + 25.0, a.min.y + 12.0, a.max.x - 15.0, a.max.y - 22.0);
-    // With door devices the door is drawn to the right of the mounting plate.
-    let door = e.items.iter().any(|i| i.face == Face::Door);
-    let gap = if door { e.width * 0.25 } else { 0.0 };
-    let total_w = if door { 2.0 * e.width + gap } else { e.width };
-    let n = drawing_scale((total_w, e.height), (x1 - x0, y1 - y0));
+    // The mounting plate, then every other face that carries items (door, walls, roof,
+    // bottom) side by side at one scale.
+    let faces: Vec<Face> = std::iter::once(Face::Plate).chain(Face::ALL.into_iter().filter(|f| *f != Face::Plate && e.items.iter().any(|i| i.face == *f))).collect();
+    let gap = e.width * 0.25;
+    let sizes: Vec<(f32, f32)> = faces.iter().map(|f| e.view_size(*f)).collect();
+    let total_w = sizes.iter().map(|s| s.0).sum::<f32>() + gap * (faces.len() - 1) as f32;
+    let total_h = sizes.iter().map(|s| s.1).fold(0.0, f32::max);
+    let n = drawing_scale((total_w, total_h), (x1 - x0, y1 - y0));
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
-    let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, Face::Plate, false, origin, k, &BTreeSet::new(), &BTreeSet::new(), prj);
-    if door {
-        let o = origin + p(w + gap * k, 0.0);
-        draw_enclosure(d, e, Face::Door, false, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
-        d.text(p(origin.x + w / 2.0, origin.y - 3.0), tr("Mounting plate"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
-        d.text(p(o.x + w / 2.0, o.y - 3.0), tr("Door (front view)"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+    let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - total_h * k) / 2.0);
+    let mut x = origin.x;
+    for (f, (fw, _)) in faces.iter().zip(&sizes) {
+        let o = p(x, origin.y);
+        draw_enclosure(d, e, *f, false, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
+        if faces.len() > 1 {
+            let title = if *f == Face::Door { tr("Door (front view)") } else { f.title() };
+            d.text(p(o.x + fw * k / 2.0, o.y - 3.0), title, 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+        }
+        x += (fw + gap) * k;
     }
     // Dimensions
     let bottom = origin.y + h + 6.0;
@@ -1216,10 +1278,7 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::f
         d.line(p(left - 2.0, y), p(left + 2.0, y), 0.18, Ink::Frame, false);
     }
     d.text(p(left - 1.5, origin.y + h / 2.0), &format!("{:.0}", e.height), 2.5, Anchor::Right, VAnchor::Middle, Ink::Text);
-    let caption = format!(
-        "{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  Scale 1:{}",
-        e.name, e.part, e.width, e.height, e.depth, n
-    );
+    let caption = format!("{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  {}", e.name, e.part, e.width, e.height, e.depth, tr_fmt!("Scale 1:{}", n));
     d.text(p(x0, a.max.y - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
 }
 

@@ -315,6 +315,8 @@ async function showPart(number) {
   const life = p.lifecycle || "Active";
   const fav = favorites.includes(p.number);
   const mm = v => v ? v + " mm" : "";
+  const md = p.mounting_data || {};
+  const cutout = c => !c ? "" : c.round ? "Ø" + c.round.d + " mm" : c.rect ? c.rect.w + " x " + c.rect.h + " mm" : "";
   const files = p.attachments || [];
   let html = '<div class="detail"><div class="head"><div><a href="#" id="back">← ' + esc(t("Back to the results")) + "</a><h2>" + esc(p.number) + "</h2><div>" + esc(p.description) + " " +
     '<span class="badge ' + life + '">' + esc(key("lifecycle", life)) + "</span>" + (p.successor ? " " + tf("Replaced by {}", "\u0001") .replace("\u0001", partLink(p.successor)) : "") + "</div></div>";
@@ -332,7 +334,10 @@ async function showPart(number) {
     ["Has 3D model", p.model_3d ? "✓" : ""], ["Has 2D model", p.model_2d ? "✓" : ""]]) + "</div>";
   html += '<div class="box"><h3>' + esc(t("Commercial data")) + " / " + esc(t("Mounting data")) + "</h3>" + rows([
     ["Price", money(p) + (p.price_unit > 1 ? " / " + p.price_unit + " " + esc(p.quantity_unit) : "")], ["Width", mm(p.width)], ["Height", mm(p.height)], ["Depth", mm(p.depth)],
-    ["Weight", p.weight ? p.weight + " kg" : ""], ["Mounting", esc(p.mounting)], ["Accessories", (p.accessories || []).map(partLink).join(", ")]]) + "</div>";
+    ["Weight", p.weight ? p.weight + " kg" : ""], ["Mounting", esc(p.mounting)], ["Accessories", (p.accessories || []).map(partLink).join(", ")],
+    ["Power loss", md.power_loss ? md.power_loss + " W" : ""], ["Clearance top", mm(md.clearance_top)], ["Clearance bottom", mm(md.clearance_bottom)],
+    ["Mounting holes", (md.holes || []).length ? esc((md.hole_thread || "") + ": " + md.holes.map(h => h[0] + "," + h[1]).join("; ")) : ""],
+    ["Door cutout", cutout(md.door_cutout)], ["Cutout", cutout(md.cutout)]]) + "</div>";
   if (files.length) {
     const link = a => '<a href="' + API + "/files/" + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' + esc(a.name) + "</a>";
     html += '<div class="box"><h3>' + esc(t("Files")) + "</h3>" + rows(files.map(a => [key("kind", a.kind || "Other"), link(a) + ' <span class="muted">' + Math.max(1, Math.round(a.size / 1024)) + " kB</span>"]));

@@ -49,7 +49,7 @@ fn page_column_and_potential_schemes() {
     let first = number_at(&prj, |s| s.tag == "-Q1", 0);
     assert!(first.starts_with("2.") && first.ends_with(".1"), "{first}");
 
-    prj.wire_numbering = WireNumbering { scheme: NumberScheme::Potential, prefix: "W".into(), start: 100 };
+    prj.wire_numbering = WireNumbering { scheme: NumberScheme::Potential, prefix: "W".into(), start: 100, ..Default::default() };
     renumber(&mut prj, &open, &bridged, false);
     // -Q1 is fed from the L1 rail; the motor side of the terminal is not a named potential.
     assert_eq!(number_at(&prj, |s| s.tag == "-Q1", 0), "L1");
@@ -82,4 +82,36 @@ fn numbers_are_labelled_on_the_longest_wire() {
     let w = label_wire(&prj.pages[pi], pi, net).unwrap();
     let len = |w: &Wire| (w.b - w.a).len();
     assert!(net.wires.iter().filter(|x| x.0 == pi).all(|(_, id)| len(prj.pages[pi].wires.iter().find(|x| x.id == *id).unwrap()) <= len(w)));
+}
+
+#[test]
+fn format_digits_step_and_skipped_kinds() {
+    use crate::model::potentials::PotentialKind;
+    let mut prj = demo_project();
+    let (open, bridged) = nets(&prj);
+    prj.wire_numbering = WireNumbering { scheme: NumberScheme::Format, format: "{page}-{n}".into(), digits: 3, step: 10, start: 10, ..Default::default() };
+    renumber(&mut prj, &open, &bridged, false);
+    let page2: Vec<String> = numbered(&open).iter().map(|n| number_of(&prj, n)).filter(|n| n.starts_with("2-")).collect();
+    assert!(page2.contains(&"2-010".to_string()) && page2.contains(&"2-020".to_string()), "{page2:?}");
+    assert!(page2.iter().all(|n| n.len() == 5), "{page2:?}");
+
+    // Without {n} the connections with the same text share the number.
+    prj.wire_numbering.format = "{potential}".into();
+    prj.wire_numbering.prefix = "P".into();
+    renumber(&mut prj, &open, &bridged, false);
+    assert_eq!(number_at(&prj, |s| s.tag == "-Q1", 0), "PL1");
+
+    // Connections of PE potentials get no number.
+    prj.potentials.push(crate::model::potentials::PotentialDef { name: "PE".into(), kind: PotentialKind::Pe, ..Default::default() });
+    prj.wire_numbering = WireNumbering { skip_kinds: vec![PotentialKind::Pe], ..Default::default() };
+    renumber(&mut prj, &open, &bridged, false);
+    let mut pe = 0;
+    for net in numbered(&open) {
+        if potential_of(&prj, net, &bridged).is_some_and(|p| p.named && p.name == "PE") {
+            pe += 1;
+            assert_eq!(number_of(&prj, net), "", "PE connection numbered");
+        }
+    }
+    assert!(pe > 0, "the demo project has PE connections");
+    assert_eq!(kind_code(PotentialKind::Pe), "PE");
 }

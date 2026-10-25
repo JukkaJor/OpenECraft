@@ -45,6 +45,8 @@ pub fn builtin() -> Vec<Check> {
             crate::singleline::problems(prj, &an.index, &an.netlist).into_iter().map(|(severity, message, target)| Issue::plain(severity, message, target)).collect()
         }),
         entry("wiring_marks", tr_const!("Wiring marks"), |prj, an| check_wiring_marks(prj, &an.wiring)),
+        entry("mounting_marks", tr_const!("Mounting marks"), |prj, _| check_mounting_marks(prj)),
+        entry("preplanning", tr_const!("Pre-planning"), |prj, an| crate::preplanning::issues(prj, &an.index)),
         entry("integration", tr_const!("Enterprise integration"), |prj, _| crate::integration::problems(prj)),
         entry("field_wiring", tr_const!("Field wiring"), |_, an| an.field.issues.clone()),
         entry("routing_3d", tr_const!("3D routing"), |_, an| check_routing(&an.routing)),
@@ -54,6 +56,81 @@ pub fn builtin() -> Vec<Check> {
         entry("translations", tr_const!("Project languages"), |prj, _| check_translations(prj)),
         entry("harnesses", tr_const!("Harnesses"), check_harnesses),
     ]
+}
+
+/// Applies the project's check settings to the issues the checks found: changed
+/// levels (`Off` removes the message) and accepted messages. The host skips disabled
+/// checks before running them ([`is_enabled`]).
+pub fn apply_settings(prj: &Project, issues: Vec<Issue>) -> Vec<Issue> {
+    use crate::model::checks::Level;
+    let s = &prj.check_settings;
+    issues
+        .into_iter()
+        .filter_map(|mut i| {
+            match s.levels.get(&i.code()) {
+                Some(Level::Off) => return None,
+                Some(Level::Error) => i.severity = Severity::Error,
+                Some(Level::Warning) => i.severity = Severity::Warning,
+                Some(Level::Info) => i.severity = Severity::Info,
+                None => {}
+            }
+            if !s.accepted.is_empty() {
+                let id = i.fingerprint();
+                i.accepted = s.accepted.iter().any(|a| a.id == id);
+            }
+            Some(i)
+        })
+        .collect()
+}
+
+/// The check runs (not switched off in the project's check settings).
+pub fn is_enabled(prj: &Project, check: &str) -> bool {
+    !prj.check_settings.disabled.iter().any(|d| d == check)
+}
+
+/// Accepts a message as checked (or takes the acceptance back with `accept` false).
+pub fn accept(prj: &mut Project, issue: &Issue, accept: bool, note: &str, user: &str, date: &str) {
+    let id = issue.fingerprint();
+    prj.check_settings.accepted.retain(|a| a.id != id);
+    if accept {
+        prj.check_settings.accepted.push(crate::model::checks::Accepted { id, message: issue.message(), note: note.into(), user: user.into(), date: date.into() });
+    }
+}
+
+/// Accepted messages that no check reports any more (the object changed or the
+/// problem was solved).
+/// The check scheme of the project as a file: checks switched off and changed message
+/// levels (the accepted messages belong to the project and stay out).
+pub fn scheme_json(prj: &Project) -> String {
+    let s = &prj.check_settings;
+    let scheme = crate::model::checks::CheckSettings { disabled: s.disabled.clone(), levels: s.levels.clone(), accepted: Vec::new() };
+    serde_json::to_string_pretty(&scheme).unwrap_or_default()
+}
+
+/// Takes the checks switched off and the message levels of a scheme file; the
+/// accepted messages of the project stay.
+pub fn apply_scheme(prj: &mut Project, json: &str) -> Result<(), String> {
+    let scheme: crate::model::checks::CheckSettings = serde_json::from_str(json).map_err(|e| openecraft_i18n::tr_fmt!("Not a check scheme: {}", e))?;
+    prj.check_settings.disabled = scheme.disabled;
+    prj.check_settings.levels = scheme.levels;
+    Ok(())
+}
+
+pub fn stale_accepted<'a>(prj: &'a Project, issues: &[Issue]) -> Vec<&'a crate::model::checks::Accepted> {
+    let live: std::collections::HashSet<String> = issues.iter().map(Issue::fingerprint).collect();
+    prj.check_settings.accepted.iter().filter(|a| !live.contains(&a.id)).collect()
+}
+
+/// The messages as CSV (`Severity;Code;Message;Page;Item;Accepted`).
+pub fn issues_csv(prj: &Project, issues: &[Issue]) -> String {
+    let cell = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
+    let mut out = String::from("Severity;Code;Message;Page;Item;Accepted\n");
+    for i in issues {
+        let page = i.target.and_then(|t| prj.pages.get(t.0)).map(|p| p.name.clone()).unwrap_or_default();
+        let item = i.target.map(|t| t.1).filter(|id| *id != 0).map(|id| id.to_string()).unwrap_or_default();
+        out.push_str(&format!("{};{};{};{};{};{}\n", i.severity.key(), cell(&i.code()), cell(&i.message()), cell(&page), item, if i.accepted { "yes" } else { "" }));
+    }
+    out
 }
 
 /// Issues of all built-in checks, errors first.
@@ -98,6 +175,7 @@ fn check_translations(prj: &Project) -> Vec<Issue> {
 /// Project check ("Prüfläufe"): finds typical engineering mistakes.
 pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     let mut v = Vec::new();
+    let placed = crate::parts::placed_kinds(prj);
     for tag in idx.sorted_tags() {
         let dev = &idx.devices[tag];
         let t = |l: &crate::index::Loc| Some((l.page, l.sym_id));
@@ -129,7 +207,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             }
         }
         // Function templates: more functions placed than the parts provide?
-        let usage = crate::parts::usage(prj, None, tag);
+        let usage = crate::parts::usage_of(prj, None, tag, placed.get(tag.as_str()).map(Vec::as_slice).unwrap_or(&[]));
         let has_templates = usage.values().any(|(_, avail)| *avail > 0);
         if has_templates {
             for (kind, (placed, avail)) in &usage {
@@ -148,6 +226,11 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     for (name, locs) in &idx.interruptions {
         if locs.len() == 1 {
             v.push(crate::issue!(Severity::Warning, Some((locs[0].page, locs[0].sym_id)), "Interruption point '{}' has no counterpart", name));
+        } else if prj.xref.interruptions == InterruptionMode::Pairs {
+            // In pairs the last point of an odd number has no partner.
+            if let Some(l) = locs.iter().find(|l| idx.interruption_targets(prj, name, l.sym_id).is_empty()) {
+                v.push(crate::issue!(Severity::Warning, Some((l.page, l.sym_id)), "Interruption point '{}' has no counterpart", name));
+            }
         }
     }
     for (pi, pg) in prj.pages.iter().enumerate() {
@@ -340,6 +423,7 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
             let severity = if j.problem == Some(crate::strips::JumperProblem::NoPart) { Severity::Info } else { Severity::Warning };
             v.push(Issue::plain(severity, message, None));
         }
+        v.extend(crate::strips::level_problems(prj, strip).into_iter().map(|m| Issue::plain(Severity::Warning, m, None)));
     }
     for (addr, points) in crate::plc::duplicate_addresses(prj, nl) {
         let mut cards: Vec<&str> = points.iter().map(|p| p.card.as_str()).collect();
@@ -414,6 +498,30 @@ fn check_wiring_marks(prj: &Project, wiring: &[RoutedWire]) -> Vec<Issue> {
     let stale = crate::wiring::stale(prj, wiring).len();
     if stale > 0 {
         v.push(crate::issue!(Severity::Info, None, "{} wiring marks belong to wires that no longer exist", stale));
+    }
+    v
+}
+
+/// Items moved or changed after they were mounted, mounting problems and marks of
+/// items that no longer exist.
+fn check_mounting_marks(prj: &Project) -> Vec<Issue> {
+    use crate::mounting::{self, Status};
+    let mut v = Vec::new();
+    for e in &prj.layout.enclosures {
+        for it in &e.items {
+            match mounting::status(prj, it) {
+                Status::Changed => v.push(crate::issue!(Severity::Warning, None, "{}: {} changed after it was mounted", e.name, mounting::item_title(it))),
+                Status::Problem => {
+                    let note = mounting::mark_of(prj, it.id).map(|m| m.note.clone()).unwrap_or_default();
+                    v.push(crate::issue!(Severity::Warning, None, "{}: mounting problem {}: {}", e.name, mounting::item_title(it), note));
+                }
+                _ => {}
+            }
+        }
+    }
+    let stale = mounting::stale(prj).len();
+    if stale > 0 {
+        v.push(crate::issue!(Severity::Info, None, "{} mounting marks belong to items that no longer exist", stale));
     }
     v
 }

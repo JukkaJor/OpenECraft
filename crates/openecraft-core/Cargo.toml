@@ -12,4 +12,6 @@ openecraft-parts = { path = "../openecraft-parts" }
 openecraft-i18n = { path = "../openecraft-i18n" }
 openecraft-jt = { path = "../openecraft-jt" }
 miniz_oxide = "0.8"
+# The Ubuntu font of egui (bytes only), embedded in PDF files for text beyond WinAnsi.
+epaint_default_fonts = "0.37"
 acadrust = { version = "0.6.6", default-features = false }

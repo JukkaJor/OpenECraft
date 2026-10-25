@@ -26,6 +26,10 @@ pub mod options;
 pub mod page_templates;
 pub mod graphics;
 pub mod potentials;
+pub mod checks;
+pub mod mounting;
+pub mod preplanning;
+pub mod macro_box;
 pub mod plugs;
 pub mod harness;
 pub mod config;
@@ -129,6 +133,12 @@ pub struct Project {
     /// Wired / problem marks of the wiring assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub wiring_marks: Vec<wiring::WiringMark>,
+    /// Mounted / problem marks of the mounting assistant.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub mounting_marks: Vec<mounting::MountingMark>,
+    /// Pre-planning: segments with planned devices, segment templates.
+    #[serde(skip_serializing_if = "preplanning::Preplanning::is_empty")]
+    pub preplanning: preplanning::Preplanning,
     /// Structure management: defined identifiers, aspects of the pages, work areas.
     #[serde(skip_serializing_if = "structure::Structures::is_default")]
     pub structures: structure::Structures,
@@ -162,6 +172,12 @@ pub struct Project {
     /// Options that show or hide model content.
     #[serde(skip_serializing_if = "options::ModelOptions::is_empty")]
     pub model_options: options::ModelOptions,
+    /// How cross references are shown (format, structure, interruption points).
+    #[serde(skip_serializing_if = "CrossRefs::is_default")]
+    pub xref: CrossRefs,
+    /// Checks switched off, message levels and accepted messages of the project check.
+    #[serde(skip_serializing_if = "checks::CheckSettings::is_default")]
+    pub check_settings: checks::CheckSettings,
     /// Links to ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines.
     #[serde(skip_serializing_if = "integration::Integration::is_empty")]
     pub integration: integration::Integration,
@@ -199,6 +215,8 @@ impl Default for Project {
             fluid: Default::default(),
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
+            mounting_marks: Vec::new(),
+            preplanning: Default::default(),
             languages: Default::default(),
             structures: Default::default(),
             page_templates: Vec::new(),
@@ -211,6 +229,8 @@ impl Default for Project {
             field: Default::default(),
             subprojects: Default::default(),
             model_options: Default::default(),
+            check_settings: Default::default(),
+            xref: Default::default(),
             integration: Default::default(),
             next_id: 1,
             symbol_cache: Default::default(),
@@ -430,46 +450,46 @@ impl ReportKind {
     /// Name of the report in files, on the command line and in the registry.
     pub fn name(self) -> &'static str {
         match self {
-            ReportKind::TableOfContents => "table_of_contents",
-            ReportKind::DeviceList => "device_list",
-            ReportKind::BillOfMaterials => "bill_of_materials",
-            ReportKind::TerminalDiagram => "terminal_diagram",
-            ReportKind::TerminalLineup => "terminal_lineup",
-            ReportKind::TerminalStripOverview => "terminal_strip_overview",
-            ReportKind::TerminalConnections => "terminal_connections",
-            ReportKind::PlugDiagram => "plug_diagram",
-            ReportKind::PinConnections => "pin_connections",
-            ReportKind::ConnectionList => "connection_list",
-            ReportKind::DeviceConnections => "device_connections",
-            ReportKind::PlcAssignment => "plc_assignment",
-            ReportKind::PotentialList => "potential_list",
-            ReportKind::PanelWiring => "panel_wiring",
-            ReportKind::CableOverview => "cable_overview",
-            ReportKind::CableDiagram => "cable_diagram",
-            ReportKind::CableConnections => "cable_connections",
-            ReportKind::CableSizing => "cable_sizing",
-            ReportKind::RevisionOverview => "revision_overview",
-            ReportKind::HarnessData => "harness_data",
-            ReportKind::DuctFill => "duct_fill",
-            ReportKind::PanelLegend => "panel_legend",
-            ReportKind::Climate => "climate",
-            ReportKind::Marking => "marking",
-            ReportKind::HoseList => "hose_list",
-            ReportKind::PctLoops => "pct_loops",
-            ReportKind::FluidNetlist => "fluid_netlist",
-            ReportKind::HoseConfiguration => "hose_configuration",
-            ReportKind::TubingList => "tubing_list",
-            ReportKind::FluidDeviceGroups => "fluid_device_groups",
-            ReportKind::ElectroFluid => "electro_fluid",
-            ReportKind::RoutingList => "routing_list",
-            ReportKind::BundleList => "bundle_list",
-            ReportKind::ShortCircuit => "short_circuit",
-            ReportKind::Selectivity => "selectivity",
-            ReportKind::LoadCalculation => "load_calculation",
-            ReportKind::PowerSupplyBudget => "power_supply_budget",
-            ReportKind::SafetyFunctions => "safety_functions",
-            ReportKind::Verification => "verification",
-            ReportKind::FieldRouting => "field_routing",
+            ReportKind::TableOfContents => "table_of_contents",
+            ReportKind::DeviceList => "device_list",
+            ReportKind::BillOfMaterials => "bill_of_materials",
+            ReportKind::TerminalDiagram => "terminal_diagram",
+            ReportKind::TerminalLineup => "terminal_lineup",
+            ReportKind::TerminalStripOverview => "terminal_strip_overview",
+            ReportKind::TerminalConnections => "terminal_connections",
+            ReportKind::PlugDiagram => "plug_diagram",
+            ReportKind::PinConnections => "pin_connections",
+            ReportKind::ConnectionList => "connection_list",
+            ReportKind::DeviceConnections => "device_connections",
+            ReportKind::PlcAssignment => "plc_assignment",
+            ReportKind::PotentialList => "potential_list",
+            ReportKind::PanelWiring => "panel_wiring",
+            ReportKind::CableOverview => "cable_overview",
+            ReportKind::CableDiagram => "cable_diagram",
+            ReportKind::CableConnections => "cable_connections",
+            ReportKind::CableSizing => "cable_sizing",
+            ReportKind::RevisionOverview => "revision_overview",
+            ReportKind::HarnessData => "harness_data",
+            ReportKind::DuctFill => "duct_fill",
+            ReportKind::PanelLegend => "panel_legend",
+            ReportKind::Climate => "climate",
+            ReportKind::Marking => "marking",
+            ReportKind::HoseList => "hose_list",
+            ReportKind::PctLoops => "pct_loops",
+            ReportKind::FluidNetlist => "fluid_netlist",
+            ReportKind::HoseConfiguration => "hose_configuration",
+            ReportKind::TubingList => "tubing_list",
+            ReportKind::FluidDeviceGroups => "fluid_device_groups",
+            ReportKind::ElectroFluid => "electro_fluid",
+            ReportKind::RoutingList => "routing_list",
+            ReportKind::BundleList => "bundle_list",
+            ReportKind::ShortCircuit => "short_circuit",
+            ReportKind::Selectivity => "selectivity",
+            ReportKind::LoadCalculation => "load_calculation",
+            ReportKind::PowerSupplyBudget => "power_supply_budget",
+            ReportKind::SafetyFunctions => "safety_functions",
+            ReportKind::Verification => "verification",
+            ReportKind::FieldRouting => "field_routing",
             ReportKind::Bonding => "bonding",
         }
     }
@@ -609,6 +629,9 @@ pub struct Page {
     /// Page property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub values: properties::Values,
+    /// Window macros placed on the page (macro boxes).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub macro_boxes: Vec<macro_box::MacroBox>,
 }
 
 impl Default for Page {
@@ -649,6 +672,7 @@ impl Page {
             conn_defs: Vec::new(),
             cable_defs: Vec::new(),
             values: BTreeMap::new(),
+            macro_boxes: Vec::new(),
         }
     }
 
@@ -847,16 +871,19 @@ pub enum NumberScheme {
     PageColumn,
     /// Named potentials (L1, +24V …) keep their name, other connections are counted.
     Potential,
+    /// After the format of the numbering settings (`{page}.{column}.{n}` …).
+    Format,
 }
 
 impl NumberScheme {
-    pub const ALL: [NumberScheme; 3] = [NumberScheme::Sequential, NumberScheme::PageColumn, NumberScheme::Potential];
+    pub const ALL: [NumberScheme; 4] = [NumberScheme::Sequential, NumberScheme::PageColumn, NumberScheme::Potential, NumberScheme::Format];
 
     pub fn title(self) -> &'static str {
         match self {
             NumberScheme::Sequential => tr("Sequential (1, 2, 3 …)"),
             NumberScheme::PageColumn => tr("Page / column (3.4.1)"),
             NumberScheme::Potential => tr("Potential name (L1, +24V, otherwise counted)"),
+            NumberScheme::Format => tr("Format (placeholders)"),
         }
     }
 }
@@ -877,6 +904,25 @@ pub struct StripData {
     /// End brackets and end plates are not placed automatically.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub manual_accessories: bool,
+    /// Terminal designation -> level of a multi-level terminal (missing = 1). A terminal
+    /// on level 2 or higher sits on the block of the terminal before it in strip order.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub levels: BTreeMap<String, u8>,
+    /// Jumper number -> kind of jumper (missing = plug-in jumper).
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub jumper_kinds: BTreeMap<u32, JumperKind>,
+}
+
+/// How the terminals of a jumper are bridged.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum JumperKind {
+    /// Plug-in (centre) jumper, cut to length (tech data `Jumper: …` of the terminal part).
+    #[default]
+    PlugIn,
+    /// Saddle (screw) jumper (tech data `Saddle jumper: …`).
+    Saddle,
+    /// Wire jumper: a wire from terminal to terminal, any level, no jumper part.
+    Wire,
 }
 
 /// PLC card (I/O module) data.
@@ -899,6 +945,61 @@ pub struct PlcCard {
     pub device: String,
 }
 
+/// When a cross reference shows the structure of the page it points to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum XrefStructure {
+    /// Only if it differs from the page the reference is on.
+    #[default]
+    Different,
+    Always,
+    Never,
+}
+
+/// Which counterparts an interruption point refers to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum InterruptionMode {
+    /// Every other point of the same name.
+    #[default]
+    All,
+    /// The first point (in schematic order) is the source: it refers to all others,
+    /// the others to it.
+    Star,
+    /// In schematic order, the 1st and 2nd, 3rd and 4th … refer to each other.
+    Pairs,
+}
+
+/// How cross references are shown: `/3.4`, `/3.4.B`, `=A1/3.4` …
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct CrossRefs {
+    /// In front of the page name (default `/`).
+    pub prefix: String,
+    /// Between page and column (default `.`).
+    pub separator: String,
+    /// The row follows the column (`/3.4.B`).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub row: bool,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub structure: XrefStructure,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub interruptions: InterruptionMode,
+    /// Coils draw no contact image.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub hide_contact_image: bool,
+}
+
+impl Default for CrossRefs {
+    fn default() -> Self {
+        CrossRefs { prefix: "/".into(), separator: ".".into(), row: false, structure: XrefStructure::Different, interruptions: InterruptionMode::All, hide_contact_image: false }
+    }
+}
+
+impl CrossRefs {
+    pub fn is_default(&self) -> bool {
+        *self == CrossRefs::default()
+    }
+}
+
 /// Settings of the automatic wire numbering.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -907,12 +1008,44 @@ pub struct WireNumbering {
     /// Put in front of counted numbers, e.g. "W".
     pub prefix: String,
     pub start: u32,
+    /// Format of the scheme `Format`: `{n}` counter (counted per value of the rest of
+    /// the format), `{page}`, `{column}`, `{row}`, `{potential}` (name of a named
+    /// potential), `{kind}` (L, N, PE … of its definition), `{color}`,
+    /// `{cross_section}`. Without `{n}`, connections with the same text share it.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub format: String,
+    /// Minimum digits of the counter (leading zeros).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub digits: u8,
+    /// Counting step.
+    #[serde(skip_serializing_if = "is_one", default = "one")]
+    pub step: u32,
+    /// Connections of potentials of these kinds get no number (e.g. PE).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub skip_kinds: Vec<potentials::PotentialKind>,
+}
+
+fn one() -> u32 {
+    1
+}
+
+fn is_one(v: &u32) -> bool {
+    *v == 1
 }
 
 impl Default for WireNumbering {
     fn default() -> Self {
-        WireNumbering { scheme: NumberScheme::Sequential, prefix: String::new(), start: 1 }
+        WireNumbering { scheme: NumberScheme::Sequential, prefix: String::new(), start: 1, format: String::new(), digits: 0, step: 1, skip_kinds: Vec::new() }
     }
+}
+
+/// Vertical anchor of a text at its position.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum VAnchor {
+    #[default]
+    Top,
+    Middle,
+    Bottom,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -920,17 +1053,68 @@ impl Default for WireNumbering {
 pub struct TextItem {
     pub id: u64,
     pub pos: P,
+    /// Placeholders such as `{page}` or `{prop:Name}` are filled in when the text is
+    /// drawn (special texts, see `forms::fill`).
     pub text: String,
     pub size: f32,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub layer: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<[u8; 3]>,
+    /// Rotation in degrees, counter-clockwise (90: reads from bottom to top).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub angle: f32,
+    /// Horizontal alignment of the lines at `pos`.
+    #[serde(skip_serializing_if = "is_left", default = "default_anchor")]
+    pub align: crate::symbols::Anchor,
+    /// Which line `pos` is on: the first, the middle of the block or the last.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub valign: VAnchor,
+    /// Lines are wrapped at this width in mm; 0 = no wrapping.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub width: f32,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub bold: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub italic: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub underline: bool,
+    /// Border around the text.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub frame: bool,
+    /// Opaque background in the paper colour (covers what is behind the text).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub background: bool,
+    /// Hyperlink (URL) opened from the text.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub link: String,
+    /// Path function text: the function text of the functions in its column that
+    /// have none of their own.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub path_function: bool,
 }
 
 impl Default for TextItem {
     fn default() -> Self {
-        TextItem { id: 0, pos: P::default(), text: String::new(), size: 3.0, layer: String::new(), color: None }
+        TextItem {
+            id: 0,
+            pos: P::default(),
+            text: String::new(),
+            size: 3.0,
+            layer: String::new(),
+            color: None,
+            angle: 0.0,
+            align: crate::symbols::Anchor::Left,
+            valign: VAnchor::Top,
+            width: 0.0,
+            bold: false,
+            italic: false,
+            underline: false,
+            frame: false,
+            background: false,
+            link: String::new(),
+            path_function: false,
+        }
     }
 }
 

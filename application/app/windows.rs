@@ -2,10 +2,14 @@
 //! help) and the keyboard shortcuts.
 
 use super::*;
+use crate::shortcuts::{Action, Shortcut};
 
 impl App {
     #[allow(clippy::too_many_lines)]
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
+        self.shortcuts_window(ctx);
+        self.export_form_window(ctx);
+        self.save_layout_window(ctx);
         self.reports_window(ctx);
         self.project_properties_window(ctx);
         self.parts_management_and_part_selection_window(ctx);
@@ -34,22 +38,20 @@ impl App {
                 ui.separator();
                 ui.label(RichText::new(tr("Shortcuts")).strong());
                 egui::Grid::new("keys").striped(true).show(ui, |ui| {
-                    for (k, v) in [
+                    let sc = &self.editor.shortcuts;
+                    let configured: Vec<(String, &str)> = Action::ALL.iter().map(|a| (sc.text(*a), a.title())).filter(|(k, _)| !k.is_empty()).collect();
+                    let fixed: Vec<(String, &str)> = [
                         (tr("Esc"), tr("Cancel / select tool / clear selection")),
-                        ("W / T", tr("Wire tool / text tool")),
-                        ("R / M", tr("Rotate / mirror (selection or symbol being placed)")),
-                        (tr("Space"), tr("Toggle corner direction while drawing wires")),
                         (tr("Del"), tr("Delete selection")),
                         (tr("Arrows"), tr("Move selection by one grid step")),
                         (tr("Ctrl+C / X / V"), tr("Copy / cut / paste (devices get new tags)")),
-                        (tr("Ctrl+A"), tr("Select all")),
-                        (tr("Ctrl+Z / Ctrl+Y"), tr("Undo / redo")),
-                        (tr("Ctrl+S / Ctrl+O"), tr("Save / open")),
-                        (tr("F / Home"), tr("Fit page")),
-                        (tr("Page Up / Down"), tr("Previous / next page")),
                         (tr("Wheel / right or middle drag"), tr("Zoom / pan")),
                         (tr("Shift + click / drag"), tr("Add to selection")),
-                    ] {
+                    ]
+                    .into_iter()
+                    .map(|(k, v)| (k.to_string(), v))
+                    .collect();
+                    for (k, v) in configured.into_iter().chain(fixed) {
                         ui.label(RichText::new(k).monospace());
                         ui.label(v);
                         ui.end_row();
@@ -66,6 +68,7 @@ impl App {
         let mut open = true;
         let mut jump = None;
         let mut export = None;
+        let mut export_xlsx = None;
         let mut add_page = None;
         egui::Window::new(tr("Reports")).open(&mut open).default_size([900.0, 520.0]).show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
@@ -78,6 +81,9 @@ impl App {
             ui.horizontal(|ui| {
                 if ui.button(tr("⬇ Export CSV")).clicked() {
                     export = Some(kind);
+                }
+                if ui.button(tr("⬇ Export Excel")).clicked() {
+                    export_xlsx = Some(kind);
                 }
                 if ui.button(tr("➕ Insert as report page")).clicked() {
                     add_page = Some(kind);
@@ -117,6 +123,14 @@ impl App {
         self.show_reports = open;
         if let Some((pg, id)) = jump {
             self.goto(pg, id);
+        }
+        if let Some(kind) = export_xlsx {
+            if let Some(t) = self.session.analysis.report(&self.session.prj, kind) {
+                let title = self.report_title(kind);
+                let bytes = openecraft_core::xlsx::write(&[(title.clone(), t.sheet_rows())]);
+                let name = format!("{}.xlsx", title.replace(' ', "_").to_lowercase());
+                self.export_bytes(ctx, name, ("Excel", "xlsx"), &bytes);
+            }
         }
         if let Some(kind) = export {
             if let Some(t) = self.session.analysis.report(&self.session.prj, kind) {
@@ -221,6 +235,11 @@ impl App {
     self.cables_window(ctx);
     self.rename_device_window(ctx);
     self.numbering_window(ctx);
+    self.numbering_windows(ctx);
+    self.check_settings_window(ctx);
+    self.arrange_windows(ctx);
+    self.xref_window(ctx);
+    self.find_window(ctx);
     self.engineering_windows(ctx);
     self.compare_window(ctx);
     self.requests_window(ctx);
@@ -233,6 +252,7 @@ impl App {
     self.plc_hw_window(ctx);
     self.integration_window(ctx);
     self.process_window(ctx);
+    self.preplanning_window(ctx);
     self.electrical_window(ctx);
     self.singleline_window(ctx);
     self.languages_window(ctx);
@@ -395,28 +415,34 @@ impl App {
     }
 
     pub(super) fn shortcuts(&mut self, ctx: &egui::Context) {
+        if self.recording.is_some() {
+            self.record_shortcut(ctx);
+            return;
+        }
         if ctx.egui_wants_keyboard_input() {
             return;
         }
-        let sc = |m, k| KeyboardShortcut::new(m, k);
-        let (undo, redo, redo2, save, open, pgup, pgdn, w, t) = ctx.input_mut(|i| {
+        let sc = self.editor.shortcuts.clone();
+        if ctx.input_mut(|i| sc.consume(i, Action::Find)) {
+            self.find_ui.open = true;
+        }
+        let (undo, redo, save, open, pgup, pgdn, w, t) = ctx.input_mut(|i| {
             (
-                i.consume_shortcut(&sc(Modifiers::COMMAND, Key::Z)),
-                i.consume_shortcut(&sc(Modifiers::COMMAND, Key::Y)),
-                i.consume_shortcut(&sc(Modifiers::COMMAND | Modifiers::SHIFT, Key::Z)),
-                i.consume_shortcut(&sc(Modifiers::COMMAND, Key::S)),
-                i.consume_shortcut(&sc(Modifiers::COMMAND, Key::O)),
-                i.key_pressed(Key::PageUp),
-                i.key_pressed(Key::PageDown),
-                i.modifiers.is_none() && i.key_pressed(Key::W),
-                i.modifiers.is_none() && i.key_pressed(Key::T),
+                sc.consume(i, Action::Undo),
+                sc.consume(i, Action::Redo),
+                sc.consume(i, Action::Save),
+                sc.consume(i, Action::Open),
+                sc.pressed(i, Action::PreviousPage),
+                sc.pressed(i, Action::NextPage),
+                sc.pressed(i, Action::WireTool),
+                sc.pressed(i, Action::TextTool),
             )
         });
         if undo {
             self.editor.cancel();
             self.session.undo();
         }
-        if redo || redo2 {
+        if redo {
             self.editor.cancel();
             self.session.redo();
         }
@@ -441,5 +467,77 @@ impl App {
         if t {
             self.editor.set_tool(Tool::Text);
         }
+    }
+
+    /// Takes the next key press (with modifiers) as the shortcut of the action being
+    /// recorded; Esc cancels. Key presses do not reach the editor meanwhile.
+    fn record_shortcut(&mut self, ctx: &egui::Context) {
+        let Some(action) = self.recording else { return };
+        let pressed = ctx.input_mut(|i| {
+            let key = i.events.iter().find_map(|e| match e {
+                egui::Event::Key { key, pressed: true, modifiers, .. } => Some((*key, *modifiers)),
+                _ => None,
+            });
+            i.events.retain(|e| !matches!(e, egui::Event::Key { .. } | egui::Event::Text(_) | egui::Event::Copy | egui::Event::Cut | egui::Event::Paste(_)));
+            key
+        });
+        match pressed {
+            Some((Key::Escape, m)) if m.is_none() => self.recording = None,
+            Some((key, m)) => {
+                let s = Shortcut { command: m.command, shift: m.shift, alt: m.alt, key };
+                self.editor.shortcuts.set(action, vec![s]);
+                self.recording = None;
+            }
+            None => {}
+        }
+    }
+
+    /// View › Keyboard shortcuts: the actions with their keys, record, clear, reset.
+    pub(super) fn shortcuts_window(&mut self, ctx: &egui::Context) {
+        if !self.show_shortcuts {
+            self.recording = None;
+            return;
+        }
+        let mut open = true;
+        let conflicts = self.editor.shortcuts.conflicts();
+        egui::Window::new(tr("Keyboard shortcuts")).open(&mut open).resizable(false).show(ctx, |ui| {
+            ui.weak(tr("Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed."));
+            egui::Grid::new("shortcut_grid").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+                for a in Action::ALL {
+                    ui.label(a.title());
+                    let text = self.editor.shortcuts.text(a);
+                    let clash = conflicts.iter().any(|(_, v)| v.contains(&a));
+                    let shown = if self.recording == Some(a) {
+                        RichText::new(tr("Press a key…")).italics()
+                    } else if text.is_empty() {
+                        RichText::new("–").weak()
+                    } else {
+                        RichText::new(text).monospace()
+                    };
+                    ui.label(if clash { shown.color(Color32::from_rgb(220, 60, 60)) } else { shown });
+                    ui.horizontal(|ui| {
+                        if ui.small_button(tr("Record")).clicked() {
+                            self.recording = Some(a);
+                        }
+                        if ui.small_button(tr("Clear")).on_hover_text(tr("No shortcut")).clicked() {
+                            self.editor.shortcuts.set(a, Vec::new());
+                        }
+                        if ui.add_enabled(!self.editor.shortcuts.is_default(a), egui::Button::new(tr("Default")).small()).clicked() {
+                            self.editor.shortcuts.reset(a);
+                        }
+                    });
+                    ui.end_row();
+                }
+            });
+            for (key, actions) in &conflicts {
+                let names: Vec<&str> = actions.iter().map(|a| a.title()).collect();
+                ui.colored_label(Color32::from_rgb(220, 60, 60), tr_fmt!("{} is used by: {}", key.text(), names.join(", ")));
+            }
+            ui.separator();
+            if ui.button(tr("Reset all to the defaults")).clicked() {
+                self.editor.shortcuts.reset_all();
+            }
+        });
+        self.show_shortcuts = open;
     }
 }

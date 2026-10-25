@@ -165,6 +165,53 @@ fn download(name: &str, mime: &str, content: &[u8]) -> Result<(), wasm_bindgen::
     Ok(())
 }
 
+/// Script added to a print document: opens the print dialog once the page is loaded.
+const PRINT_SCRIPT: &str = "<script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>";
+
+/// The HTML document with the print script (before `</body>`, or at the end).
+pub fn with_print_script(html: &str) -> String {
+    match html.rfind("</body>") {
+        Some(i) => format!("{}{PRINT_SCRIPT}{}", &html[..i], &html[i..]),
+        None => format!("{html}{PRINT_SCRIPT}"),
+    }
+}
+
+/// Shows an HTML print document with the print dialog: in a new browser tab (web) or
+/// in the default browser through a temporary file (desktop).
+pub fn print_html(html: &str) -> Result<(), String> {
+    let html = with_print_script(html);
+    #[cfg(target_arch = "wasm32")]
+    {
+        open_in_tab(&html).map_err(|e| format!("{e:?}"))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let path = std::env::temp_dir().join("openecraft_print.html");
+        std::fs::write(&path, html).map_err(|e| e.to_string())?;
+        let file = path.to_string_lossy().to_string();
+        let status = if cfg!(target_os = "windows") {
+            std::process::Command::new("cmd").args(["/C", "start", "", &file]).spawn()
+        } else if cfg!(target_os = "macos") {
+            std::process::Command::new("open").arg(&file).spawn()
+        } else {
+            std::process::Command::new("xdg-open").arg(&file).spawn()
+        };
+        status.map(|_| ()).map_err(|e| e.to_string())
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn open_in_tab(html: &str) -> Result<(), wasm_bindgen::JsValue> {
+    let parts = js_sys::Array::new();
+    parts.push(&wasm_bindgen::JsValue::from_str(html));
+    let opts = web_sys::BlobPropertyBag::new();
+    opts.set_type("text/html");
+    let blob = web_sys::Blob::new_with_str_sequence_and_options(&parts, &opts)?;
+    let url = web_sys::Url::create_object_url_with_blob(&blob)?;
+    web_sys::window().ok_or("no window")?.open_with_url_and_target(&url, "_blank")?;
+    Ok(())
+}
+
 /// Today's date `YYYY-MM-DD` (UTC).
 pub fn today() -> String {
     #[cfg(not(target_arch = "wasm32"))]

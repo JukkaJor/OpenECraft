@@ -4,11 +4,12 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
 use crate::io::Purpose;
+use openecraft_core::macro_boxes;
 use openecraft_core::macros::{self, Macro, MacroKind};
 use openecraft_core::model::*;
 use openecraft_core::ops::Clip;
 use openecraft_core::render::{self, Draw, Ink};
-use openecraft_core::marking::{self, WireText};
+use openecraft_core::marking::{self, Category, Column, Scheme, WireText};
 use openecraft_core::{parts, plc, strips, symbols};
 use egui::{vec2, Color32, RichText};
 use std::collections::BTreeMap;
@@ -41,6 +42,10 @@ enum MacroAction {
     DeleteVariant(usize, String),
     Export,
     Import,
+    UpdateBoxes,
+    GotoBox(usize, u64),
+    SaveBox(usize, u64),
+    RemoveBox(usize, u64),
 }
 
 /// Scaled drawing of a macro's items.
@@ -166,6 +171,44 @@ impl App {
                     if ui.button(tr("Import macros…")).clicked() {
                         action = Some(MacroAction::Import);
                     }
+                });
+                let boxes: Vec<(usize, u64, String, macro_boxes::State)> = macro_boxes::all(&self.session.prj)
+                    .into_iter()
+                    .map(|(pi, b)| (pi, b.id, b.name.clone(), macro_boxes::state(&self.macro_lib, b)))
+                    .collect();
+                let outdated = boxes.iter().filter(|b| b.3 == macro_boxes::State::Outdated).count();
+                ui.menu_button(tr_fmt!("Macro boxes ({})", boxes.len()), |ui| {
+                    if ui.add_enabled(outdated > 0, egui::Button::new(tr_fmt!("Update {} changed macros", outdated))).on_hover_text(tr("Replaces the content of the macro boxes whose macro changed in the library")).clicked() {
+                        action = Some(MacroAction::UpdateBoxes);
+                        ui.close();
+                    }
+                    ui.separator();
+                    if boxes.is_empty() {
+                        ui.weak(tr("Window macros inserted from now on are recorded as macro boxes."));
+                    }
+                    egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+                        for (pi, id, name, st) in &boxes {
+                            let page = &self.session.prj.pages[*pi].name;
+                            let (state, color) = match st {
+                                macro_boxes::State::Current => (tr("current"), ui.visuals().weak_text_color()),
+                                macro_boxes::State::Outdated => (tr("changed in the library"), Color32::from_rgb(230, 150, 30)),
+                                macro_boxes::State::Missing => (tr("not in the library"), Color32::from_rgb(220, 60, 60)),
+                            };
+                            ui.horizontal(|ui| {
+                                if ui.small_button("➡").on_hover_text(tr("Show")).clicked() {
+                                    action = Some(MacroAction::GotoBox(*pi, *id));
+                                }
+                                ui.label(tr_fmt!("Page {}: {}", page, name));
+                                ui.colored_label(color, state);
+                                if ui.small_button("💾").on_hover_text(tr("Save the box content as the macro in the library")).clicked() {
+                                    action = Some(MacroAction::SaveBox(*pi, *id));
+                                }
+                                if ui.small_button("✖").on_hover_text(tr("Remove the macro box (its items stay)")).clicked() {
+                                    action = Some(MacroAction::RemoveBox(*pi, *id));
+                                }
+                            });
+                        }
+                    });
                 });
             });
             ui.separator();
@@ -325,6 +368,7 @@ impl App {
                     self.notify(ctx, tr_fmt!("Page macro {} inserted as page {}", m.name, self.session.prj.pages[at].name));
                 } else {
                     self.editor.insert = Some(m.resolve(&self.eng.macro_values));
+                    self.editor.insert_macro = Some((m.clone(), self.eng.macro_values.clone()));
                     self.editor.set_tool(Tool::Insert);
                     self.workspace = super::Workspace::Schematic;
                 }
@@ -332,6 +376,29 @@ impl App {
             Some(MacroAction::Delete(i)) => {
                 self.macro_lib.macros.remove(i);
                 self.eng.macro_sel = None;
+            }
+            Some(MacroAction::UpdateBoxes) => {
+                let r = macro_boxes::update(&mut self.session.prj, &self.macro_lib);
+                let mut msg = tr_fmt!("{} macro boxes updated", r.updated);
+                if r.locked > 0 {
+                    msg = format!("{msg}\n{}", tr_fmt!("{} on released pages were left as they are", r.locked));
+                }
+                self.notify(ctx, msg);
+            }
+            Some(MacroAction::GotoBox(pi, id)) => {
+                if pi != self.session.page {
+                    self.goto(pi, 0);
+                }
+                if let Some(b) = self.session.prj.pages[pi].macro_boxes.iter().find(|b| b.id == id) {
+                    self.editor.selection = macro_boxes::live_items(&self.session.prj.pages[pi], b);
+                }
+            }
+            Some(MacroAction::SaveBox(pi, id)) => match macro_boxes::save_to_library(&mut self.session.prj, pi, id, &mut self.macro_lib) {
+                Ok(()) => self.notify(ctx, tr("Macro saved to the library")),
+                Err(e) => self.notify(ctx, e),
+            },
+            Some(MacroAction::RemoveBox(pi, id)) => {
+                macro_boxes::remove(&mut self.session.prj, pi, id);
             }
             Some(MacroAction::DeleteVariant(i, name)) => {
                 self.macro_lib.macros[i].remove_variant(&name);
@@ -359,6 +426,7 @@ impl App {
         let rows = strips::rows(&self.session.prj, &strip, &self.session.analysis.netlist, &self.session.analysis.open);
         let layout = strips::strip_layout(&self.session.prj, &strip);
         let jumpers = strips::strip_jumpers(&self.session.prj, &strip);
+        let level_problems = strips::level_problems(&self.session.prj, &strip);
         let mut data = self.session.prj.strips.get(&strip).cloned().unwrap_or_default();
         let before = data.clone();
         let mut open = true;
@@ -414,6 +482,19 @@ impl App {
                 for j in &jumpers {
                     ui.horizontal_wrapped(|ui| {
                         ui.label(tr_fmt!("Jumper {}", j.number));
+                        let mut kind = j.kind;
+                        egui::ComboBox::from_id_salt(("jkind", j.number)).selected_text(strips::jumper_kind_title(kind)).show_ui(ui, |ui| {
+                            for k in [JumperKind::PlugIn, JumperKind::Saddle, JumperKind::Wire] {
+                                ui.selectable_value(&mut kind, k, strips::jumper_kind_title(k));
+                            }
+                        });
+                        if kind != j.kind {
+                            if kind == JumperKind::PlugIn {
+                                data.jumper_kinds.remove(&j.number);
+                            } else {
+                                data.jumper_kinds.insert(j.number, kind);
+                            }
+                        }
                         ui.label(RichText::new(if j.part.is_empty() { "–" } else { &j.part }).monospace());
                         ui.label(j.length_text());
                         ui.label(j.span_text());
@@ -426,11 +507,14 @@ impl App {
                     });
                 }
             });
+            for problem in &level_problems {
+                ui.colored_label(Color32::from_rgb(220, 120, 0), problem);
+            }
             ui.weak(tr("Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials."));
             ui.separator();
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
-                egui::Grid::new("strip").striped(true).num_columns(8).spacing([10.0, 4.0]).show(ui, |ui| {
-                    for h in ["", tr("Terminal"), tr("Jumper"), tr("External (top)"), tr("Internal (bottom)"), tr("Potential"), tr("Function text"), tr("Location")] {
+                egui::Grid::new("strip").striped(true).num_columns(9).spacing([10.0, 4.0]).show(ui, |ui| {
+                    for h in ["", tr("Terminal"), tr("Level"), tr("Jumper"), tr("External (top)"), tr("Internal (bottom)"), tr("Potential"), tr("Function text"), tr("Location")] {
                         ui.label(RichText::new(h).strong());
                     }
                     ui.end_row();
@@ -439,6 +523,7 @@ impl App {
                         let Some(t) = &r.terminal else {
                             ui.label("");
                             ui.weak(&r.label);
+                            ui.label("");
                             ui.label("");
                             ui.weak(tr("spare"));
                             ui.end_row();
@@ -456,6 +541,14 @@ impl App {
                         ui.add_sized([50.0, 20.0], egui::TextEdit::singleline(&mut label));
                         if label != r.label {
                             relabel.push((t.page, t.sym, r.label.clone(), label));
+                        }
+                        let mut level = r.level;
+                        if ui.add(egui::DragValue::new(&mut level).range(1..=4)).on_hover_text(tr("Level of a multi-level terminal: upper levels sit on the block of the terminal before")).changed() {
+                            if level <= 1 {
+                                data.levels.remove(&r.label);
+                            } else {
+                                data.levels.insert(r.label.clone(), level);
+                            }
                         }
                         let mut j = data.jumpers.get(&r.label).copied().unwrap_or(0);
                         if ui.add(egui::DragValue::new(&mut j).range(0..=99)).on_hover_text(tr("0 = no jumper")).changed() {
@@ -486,6 +579,9 @@ impl App {
             if let Some(d) = self.session.prj.strips.get_mut(&strip) {
                 if let Some(j) = d.jumpers.remove(&old) {
                     d.jumpers.insert(new.clone(), j);
+                }
+                if let Some(l) = d.levels.remove(&old) {
+                    d.levels.insert(new.clone(), l);
                 }
                 for o in d.order.iter_mut().filter(|o| **o == old) {
                     *o = new.clone();
@@ -526,7 +622,7 @@ impl App {
         choices.sort_by(|a, b| a.0.cmp(&b.0));
         choices.dedup_by(|a, b| a.0 == b.0);
         let mut open = true;
-        let mut export = false;
+        let mut export: Option<bool> = None;
         let mut picked = Vec::new();
         let s = &mut self.session.prj.marking;
         egui::Window::new(tr("Marking")).open(&mut open).resizable(false).min_width(520.0).show(ctx, |ui| {
@@ -563,18 +659,32 @@ impl App {
                 }
             });
             ui.separator();
+            ui.label(RichText::new(tr("Labeling scheme")).strong());
+            scheme_editor(ui, s);
+            ui.separator();
             ui.horizontal(|ui| {
                 ui.label(tr_fmt!("{} markers", markers.iter().map(|m| m.count).sum::<u32>()));
-                export = ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked();
+                if ui.button(tr("Export marking (CSV)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
+                    export = Some(false);
+                }
+                if ui.button(tr("Export marking (Excel)…")).on_hover_text(tr("Device, terminal, wire and cable markers for marking software")).clicked() {
+                    export = Some(true);
+                }
             });
         });
         self.eng.show_marking = open;
         for number in picked {
             parts::ensure_in_project(&mut self.session.prj, &self.parts_db, &number);
         }
-        if export {
-            let csv = marking::csv(&marking::markers(&self.session.prj, &self.session.analysis.connections));
-            self.export(ctx, "marking.csv".into(), ("CSV", "csv"), csv);
+        if let Some(excel) = export {
+            let scheme = marking::scheme(&self.session.prj.marking, None).unwrap_or_default();
+            let markers = marking::markers(&self.session.prj, &self.session.analysis.connections);
+            if excel {
+                self.export_bytes(ctx, "marking.xlsx".into(), ("Excel", "xlsx"), &marking::xlsx(&markers, &scheme));
+            } else {
+                let ext = if scheme.separator == "\t" { "txt" } else { "csv" };
+                self.export(ctx, format!("marking.{ext}"), ("CSV", ext), marking::text(&markers, &scheme));
+            }
         }
     }
 
@@ -679,3 +789,119 @@ impl App {
         }
     }
 }
+
+/// Choice of the labeling scheme and editing of the project's own schemes.
+fn scheme_editor(ui: &mut egui::Ui, s: &mut marking::Settings) {
+    let all = marking::schemes(s);
+    let current = marking::scheme(s, None).unwrap_or_default();
+    ui.horizontal(|ui| {
+        egui::ComboBox::from_id_salt("marking_scheme").width(260.0).selected_text(&current.name).show_ui(ui, |ui| {
+            for x in &all {
+                if ui.selectable_label(x.name == current.name, &x.name).clicked() {
+                    s.scheme = x.name.clone();
+                }
+            }
+        });
+        if ui.button(tr("Copy")).on_hover_text(tr("New project scheme from the selected one")).clicked() {
+            let mut name = tr_fmt!("{} (copy)", current.name);
+            while all.iter().any(|x| x.name == name) {
+                name.push('+');
+            }
+            s.schemes.push(Scheme { name: name.clone(), ..current.clone() });
+            s.scheme = name;
+        }
+        let own = s.schemes.iter().any(|x| x.name == current.name);
+        if own && ui.button(tr("Remove")).clicked() {
+            s.schemes.retain(|x| x.name != current.name);
+            s.scheme.clear();
+        }
+    });
+    let Some(x) = s.schemes.iter_mut().find(|x| x.name == current.name) else {
+        let cols: Vec<&str> = current.columns.iter().map(|c| c.title()).collect();
+        ui.weak(tr_fmt!("Columns: {}", cols.join(", ")));
+        ui.weak(tr("Built-in scheme: copy it to change it."));
+        return;
+    };
+    let old_name = x.name.clone();
+    egui::Grid::new("marking_scheme_grid").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
+        ui.label(tr("Name"));
+        ui.text_edit_singleline(&mut x.name);
+        ui.end_row();
+        ui.label(tr("Separator"));
+        ui.horizontal(|ui| {
+            for (sep, title) in [(";", tr("Semicolon")), (",", tr("Comma")), ("\t", tr("Tab"))] {
+                if ui.selectable_label(x.separator == sep, title).clicked() {
+                    x.separator = sep.into();
+                }
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Options"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut x.header, tr("Header row"));
+            ui.checkbox(&mut x.one_row_per_label, tr("One row per label"));
+            ui.checkbox(&mut x.bom, tr("Byte order mark"));
+        });
+        ui.end_row();
+        ui.label(tr("Markers"));
+        ui.horizontal(|ui| {
+            for c in Category::ALL {
+                let mut on = x.categories.is_empty() || x.categories.contains(&c);
+                if ui.checkbox(&mut on, c.title()).changed() {
+                    if x.categories.is_empty() {
+                        x.categories = Category::ALL.to_vec();
+                    }
+                    x.categories.retain(|k| *k != c);
+                    if on {
+                        x.categories.push(c);
+                        x.categories.sort();
+                    }
+                    if x.categories.len() == Category::ALL.len() {
+                        x.categories.clear();
+                    }
+                }
+            }
+        });
+        ui.end_row();
+        ui.label(tr("Columns"));
+        ui.horizontal_wrapped(|ui| {
+            let mut remove = None;
+            let mut left = None;
+            for (i, c) in x.columns.iter().enumerate() {
+                ui.group(|ui| {
+                    ui.label(c.title());
+                    if i > 0 && ui.small_button("◀").on_hover_text(tr("Move left")).clicked() {
+                        left = Some(i);
+                    }
+                    if x.columns.len() > 1 && ui.small_button("✖").on_hover_text(tr("Remove")).clicked() {
+                        remove = Some(i);
+                    }
+                });
+            }
+            if let Some(i) = left {
+                x.columns.swap(i - 1, i);
+            }
+            if let Some(i) = remove {
+                x.columns.remove(i);
+            }
+            ui.menu_button("+", |ui| {
+                let missing: Vec<Column> = Column::ALL.into_iter().filter(|c| !x.columns.contains(c)).collect();
+                for c in missing {
+                    if ui.button(c.title()).clicked() {
+                        x.columns.push(c);
+                    }
+                }
+            });
+        });
+        ui.end_row();
+    });
+    let new_name = x.name.trim().to_string();
+    if new_name != old_name {
+        if new_name.is_empty() || all.iter().any(|y| y.name == new_name && y.name != old_name && !marking::is_builtin(&y.name)) {
+            x.name = old_name;
+        } else if s.scheme == old_name || s.scheme.is_empty() {
+            s.scheme = new_name;
+        }
+    }
+}
+

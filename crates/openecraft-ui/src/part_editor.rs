@@ -7,7 +7,7 @@ use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
 use openecraft_parts::{
     default_connection_points, distinct_values, parse_mesh, parse_svg, natural_cmp, ConnectionPoint, Exit, FnKind, FunctionTemplate, Grouping,
-    Mesh3d, Model2d, Part, PartFilter, Prim2d, TopGroup, PRODUCT_GROUPS,
+    Component, Mesh3d, Model2d, MountingData, Part, PartFilter, Prim2d, TopGroup, MOUNTING_KEYS, PRODUCT_GROUPS,
 };
 use openecraft_parts::portal::{Attachment, Lifecycle};
 use openecraft_parts::{date_from_unix, productgroups};
@@ -190,6 +190,57 @@ fn text_row(ui: &mut egui::Ui, label: &str, value: &mut String) {
     ui.end_row();
 }
 
+/// A typed value edited as text (holes, cutouts): kept as typed while it cannot be
+/// read, shown in red.
+fn typed_text_row(ui: &mut egui::Ui, part: &str, label: &str, data: &mut MountingData, key: &str, hint: &str) {
+    ui.label(label);
+    let id = ui.make_persistent_id(("mounting_data", part, key));
+    let mut text = ui.data_mut(|d| d.get_temp::<String>(id)).unwrap_or_else(|| data.get(key).unwrap_or_default());
+    let ok = text.trim().is_empty() || MountingData::default().set(key, &text);
+    let r = ui.add(egui::TextEdit::singleline(&mut text).desired_width(f32::INFINITY).hint_text(hint).text_color_opt((!ok).then_some(Color32::from_rgb(220, 60, 60))));
+    let ok = text.trim().is_empty() || MountingData::default().set(key, &text);
+    if r.changed() && ok {
+        data.set(key, &text);
+    }
+    if r.has_focus() || !ok {
+        ui.data_mut(|d| d.insert_temp(id, text));
+    } else {
+        ui.data_mut(|d| d.remove::<String>(id));
+    }
+    ui.end_row();
+}
+
+const HOLES_HINT: &str = "M4: 6,8; 42,8";
+const CUTOUT_HINT: &str = "Ø22.5 / 92 x 92";
+
+/// Typed mounting data: clearances, holes, cutouts, power loss, fastening.
+fn mounting_data(ui: &mut egui::Ui, part: &mut Part) {
+    let number = part.number.clone();
+    let moved = part.tech_data.lines().filter(|l| l.split_once(':').is_some_and(|(k, _)| MOUNTING_KEYS.iter().any(|m| m.eq_ignore_ascii_case(k.trim())) || k.trim().eq_ignore_ascii_case("Clearance"))).count();
+    if moved > 0 && ui.button(tr_fmt!("Take {} values from the technical data", moved)).on_hover_text(tr("Moves lines such as Power loss: 3 W into the typed fields")).clicked() {
+        part.migrate_tech_data();
+    }
+    let m = &mut part.mounting_data;
+    egui::Grid::new("pmd").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+        num_row(ui, tr("Clearance top"), &mut m.clearance_top, " mm");
+        num_row(ui, tr("Clearance bottom"), &mut m.clearance_bottom, " mm");
+        num_row(ui, tr("Clearance left"), &mut m.clearance_left, " mm");
+        num_row(ui, tr("Clearance right"), &mut m.clearance_right, " mm");
+        num_row(ui, tr("Clearance front"), &mut m.clearance_front, " mm");
+        num_row(ui, tr("EMC clearance"), &mut m.emc_clearance, " mm");
+        num_row(ui, tr("Service space"), &mut m.service_space, " mm");
+        num_row(ui, tr("Outside the face"), &mut m.outside, " mm");
+        num_row(ui, tr("Power loss"), &mut m.power_loss, " W");
+        typed_text_row(ui, &number, tr("Mounting holes"), m, "Mounting holes", HOLES_HINT);
+        typed_text_row(ui, &number, tr("Door cutout"), m, "Door cutout", CUTOUT_HINT);
+        typed_text_row(ui, &number, tr("Cutout"), m, "Cutout", CUTOUT_HINT);
+        text_row(ui, tr("Fastening"), &mut m.fastening);
+        text_row(ui, tr("Faces"), &mut m.faces);
+        text_row(ui, tr("Collision class"), &mut m.collision_class);
+        text_row(ui, tr("Terminal type"), &mut m.terminal_type);
+    });
+}
+
 fn num_row(ui: &mut egui::Ui, label: &str, value: &mut f32, suffix: &str) {
     ui.label(label);
     ui.add(egui::DragValue::new(value).speed(0.1).range(0.0..=1.0e7).suffix(suffix));
@@ -306,6 +357,9 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 num_row(ui, tr("Weight"), &mut part.weight, " kg");
                 text_row(ui, tr("Mounting"), &mut part.mounting);
             });
+            ui.add_space(6.0);
+            ui.label(RichText::new(tr("Mounting data")).strong());
+            mounting_data(ui, part);
         }
         PartTab::Functions => {
             ui.weak(tr("Functions the part provides. Used for device selection, the contact image (reserve contacts), the project check and to assign connection designations. Designations are listed in symbol connection order, separated by blanks."));
@@ -362,6 +416,34 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             });
             if let Some(n) = add {
                 part.accessories.push(n);
+            }
+            ui.separator();
+            ui.label(RichText::new(tr("Components (assembly)")).strong()).on_hover_text(tr("Parts this part is assembled from; the bill of materials lists them under it"));
+            let mut remove = None;
+            egui::Grid::new("pcomp").num_columns(3).spacing([8.0, 4.0]).show(ui, |ui| {
+                for (i, c) in part.components.iter_mut().enumerate() {
+                    let known = all_numbers.contains(&c.number);
+                    ui.label(RichText::new(&c.number).monospace().color(if known { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) }));
+                    ui.add(egui::DragValue::new(&mut c.quantity).speed(0.1).range(0.0..=100000.0).prefix("× "));
+                    if ui.small_button("🗑").clicked() {
+                        remove = Some(i);
+                    }
+                    ui.end_row();
+                }
+            });
+            if let Some(i) = remove {
+                part.components.remove(i);
+            }
+            let mut add = None;
+            egui::ComboBox::from_id_salt("comp").selected_text(tr("➕ Add component")).width(240.0).show_ui(ui, |ui| {
+                for n in all_numbers {
+                    if *n != part.number && !part.components.iter().any(|c| &c.number == n) && ui.selectable_label(false, n).clicked() {
+                        add = Some(n.clone());
+                    }
+                }
+            });
+            if let Some(n) = add {
+                part.components.push(Component { number: n, quantity: 1.0 });
             }
         }
         PartTab::Connections => connections_tab(ui, part, &mut state.point),
