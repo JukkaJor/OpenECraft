@@ -19,6 +19,7 @@ impl App {
             let label = if open > 0 { tr_fmt!("Review ({})", open) } else { tr("Review").to_string() };
             ui.selectable_value(&mut self.left_tab, LeftTab::Review, label);
             ui.selectable_value(&mut self.left_tab, LeftTab::Unplaced, tr("Unplaced")).on_hover_text(tr("PLC channels and functions of the assigned parts that are not in the schematic yet"));
+            ui.selectable_value(&mut self.left_tab, LeftTab::Plc, tr("PLC")).on_hover_text(tr("PLC cards with their channels: click a placed channel to show it, drag an unplaced one into the page"));
         });
         let areas = &self.session.prj.structures.work_areas;
         if !areas.is_empty() || !self.work_area.is_empty() {
@@ -180,6 +181,7 @@ impl App {
             LeftTab::Layers => self.layers_tab(ui),
             LeftTab::Check => self.check_tab(ui),
             LeftTab::Unplaced => self.unplaced_tab(ui),
+            LeftTab::Plc => self.plc_tab(ui),
         }
     }
 }
@@ -288,6 +290,66 @@ impl App {
                 });
             }
         });
+        if let Some(u) = start {
+            self.editor.set_tool(Tool::Place(u.symbol));
+            self.editor.place_tag = Some(u.tag.clone());
+            self.editor.place_once = Some((u.label, u.pins));
+        }
+    }
+
+    /// PLC cards with their channels in address order: placed ones with function text
+    /// and connected devices (a click shows the symbol), unplaced ones of cards with a
+    /// device description to drag into the page.
+    fn plc_tab(&mut self, ui: &mut egui::Ui) {
+        let prj = &self.session.prj;
+        let points = openecraft_core::plc::points(prj, &self.session.analysis.netlist);
+        let unplaced = openecraft_core::unplaced::plc_channels(prj);
+        let mut cards: Vec<String> = points.iter().map(|p| p.card.clone()).chain(unplaced.iter().map(|u| u.tag.clone())).collect();
+        cards.sort_by(|a, b| openecraft_core::model::natural_cmp(a, b));
+        cards.dedup();
+        let mut jump = None;
+        let mut start = None;
+        egui::ScrollArea::vertical().id_salt("plc_nav").auto_shrink([false, false]).show(ui, |ui| {
+            if cards.is_empty() {
+                ui.weak(tr("No PLC cards in the project."));
+            }
+            for card in &cards {
+                let placed: Vec<&openecraft_core::plc::Point> = points.iter().filter(|p| &p.card == card).collect();
+                let open: Vec<&openecraft_core::unplaced::Unplaced> = unplaced.iter().filter(|u| &u.tag == card).collect();
+                let mut rows: Vec<(openecraft_core::plc::AddressKey, Option<&openecraft_core::plc::Point>, Option<&openecraft_core::unplaced::Unplaced>)> = placed
+                    .iter()
+                    .map(|p| (openecraft_core::plc::address_key(&p.address), Some(*p), None))
+                    .chain(open.iter().map(|u| (openecraft_core::plc::address_key(&u.label), None, Some(*u))))
+                    .collect();
+                rows.sort_by(|a, b| a.0.cmp(&b.0));
+                let title = if open.is_empty() { format!("{card}  ({})", placed.len()) } else { tr_fmt!("{}  ({} placed, {} free)", card, placed.len(), open.len()) };
+                egui::CollapsingHeader::new(RichText::new(title).monospace()).id_salt(("plc_card", card)).show(ui, |ui| {
+                    for (_, p, u) in rows {
+                        if let Some(p) = p {
+                            let kind = if p.input { "DI" } else { "DO" };
+                            let mut text = format!("{}  {kind}  {}", p.address, p.function_text);
+                            if !p.connected.is_empty() {
+                                text = format!("{text}  › {}", p.connected);
+                            }
+                            if ui.selectable_label(false, text).on_hover_text(&p.location).clicked() {
+                                jump = Some((p.page, p.id));
+                            }
+                        } else if let Some(u) = u {
+                            let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
+                            let r = ui.dnd_drag_source(ui.make_persistent_id(("plc_free", &u.tag, &u.label)), payload, |ui| {
+                                ui.add(egui::Label::new(RichText::new(format!("{}  –", u.label)).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
+                            });
+                            if r.inner.clicked() {
+                                start = Some(u.clone());
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        if let Some((page, id)) = jump {
+            self.goto(page, id);
+        }
         if let Some(u) = start {
             self.editor.set_tool(Tool::Place(u.symbol));
             self.editor.place_tag = Some(u.tag.clone());

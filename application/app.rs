@@ -83,6 +83,8 @@ enum LeftTab {
     Review,
     /// Functions of the project data not placed yet.
     Unplaced,
+    /// PLC cards with their channels.
+    Plc,
 }
 
 pub struct App {

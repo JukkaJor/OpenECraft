@@ -135,6 +135,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
   Murrplastik and Partex (starting points – copy and adjust to the program version),
   own schemes are stored in the project (commands `marking_schemes`,
   `set_marking_scheme`, exporters `marking` / `marking_xlsx` with `scheme`).
+- **PLC navigator** (navigator tab *PLC*): the cards with their channels in address
+  order, placed ones with function text and connected devices (a click shows the
+  symbol), free channels of cards with a device description to drag into the page.
 - **PLC overview**: all inputs / outputs per card with connected devices, editable
   addresses and function texts, card start byte / rack / slot, readdressing, **symbol
   table export / import** (CSV: name, data type, address, comment) for PLC programming

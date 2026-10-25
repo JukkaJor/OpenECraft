@@ -71,7 +71,7 @@ missing relative to an EPLAN user's expectations):
 | Macros, placeholders, variants, configurator, options | good | small | 3.9 | very good (macro boxes, update) |
 | Parts management and data portal | good (software), missing (content) | large (content) | 3.10 | good (typed mounting data, EPLAN XML); content |
 | Panel layout (Pro Panel) | very good | small | 3.11 | very good (mounting assistant) |
-| PLC, bus, AutomationML | good | medium | 3.12 | good (6 vendor formats); PLC navigator open |
+| PLC, bus, AutomationML | good | medium | 3.12 | good (6 vendor formats, PLC navigator) |
 | Fluid, P&ID, pre-planning | partial | medium | 3.13 | good (pre-planning module) |
 | Revisions, review, compare, change requests | very good | small | 3.14 | very good (PDF comments, property changes) |
 | Multi-user, rights, cloud | partial | medium | 3.15 | good (accounts, roles, viewer) |
@@ -697,7 +697,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 11 | Typed mounting data, assemblies | done: typed mounting data; assemblies with components in the bill of materials | 11794d0, ed86e62 | part variants |
 | 12 | Templates, master data, macros | partly: project templates; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108 | settings schemes, master data synchronisation |
 | 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
-| 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY), GX Works device comments | 93fdeb6, 7e3fb7b, 294e3dc | PLC navigator, PLCnext |
+| 14 | PLC exchange formats, navigator | done: PLC navigator; TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY), GX Works device comments | 93fdeb6, 7e3fb7b, 294e3dc, see log | PLCnext |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
 | 16 | PDF comment import, labeling schemes | done | aab1be8, 53db461 | – |
 | 17 | Symbol libraries | partly: more NFPA / JIC and fluid power symbols, basic electronics, installation plan symbols | 31f4166, b2b4e88, cceabce, 3e46498 | GB, GOST, JIS |
