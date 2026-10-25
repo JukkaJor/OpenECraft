@@ -257,6 +257,7 @@ impl App {
         };
         self.editor.set_tool(Tool::Insert);
         self.editor.insert = Some(ops::Clip { images: vec![img], ..ops::Clip::new() });
+        self.editor.insert_macro = None;
         self.notify(ctx, tr("Click into the page to place the image"));
     }
 

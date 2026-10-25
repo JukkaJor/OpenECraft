@@ -4779,3 +4779,22 @@ Mirrored	Gespiegelt	En miroir	Reflejado
 Other properties	Weitere Eigenschaften	Autres propriétés	Otras propiedades
 Page name	Seitenname	Nom de la page	Nombre de la página
 Rotation	Drehung	Rotation	Rotación
+Lists the window macros placed on the pages (macro boxes) with macro, variant, placeholder values and number of items	Listet die auf den Seiten platzierten Fenstermakros (Makrokästen) mit Makro, Variante, Platzhalterwerten und Anzahl der Elemente	Liste les macros de fenêtre placées sur les pages (boîtes de macro) avec macro, variante, valeurs des paramètres fictifs et nombre d'éléments	Lista las macros de ventana colocadas en las páginas (cajas de macro) con macro, variante, valores de marcadores y número de elementos
+Replaces the content of the macro boxes whose macro changed in a macro library file	Ersetzt den Inhalt der Makrokästen, deren Makro sich in einer Makrobibliotheksdatei geändert hat	Remplace le contenu des boîtes de macro dont la macro a changé dans un fichier de bibliothèque de macros	Sustituye el contenido de las cajas de macro cuya macro cambió en un archivo de biblioteca de macros
+Macro boxes ({})	Makrokästen ({})	Boîtes de macro ({})	Cajas de macro ({})
+Macro saved to the library	Makro in der Bibliothek gespeichert	Macro enregistrée dans la bibliothèque	Macro guardada en la biblioteca
+Page {}: {}	Seite {}: {}	Page {} : {}	Página {}: {}
+Remove the macro box (its items stay)	Makrokasten entfernen (seine Elemente bleiben)	Supprimer la boîte de macro (ses éléments restent)	Eliminar la caja de macro (sus elementos se quedan)
+Replaces the content of the macro boxes whose macro changed in the library	Ersetzt den Inhalt der Makrokästen, deren Makro sich in der Bibliothek geändert hat	Remplace le contenu des boîtes de macro dont la macro a changé dans la bibliothèque	Sustituye el contenido de las cajas de macro cuya macro cambió en la biblioteca
+Save the box content as the macro in the library	Inhalt des Kastens als Makro in der Bibliothek speichern	Enregistrer le contenu de la boîte comme macro dans la bibliothèque	Guardar el contenido de la caja como macro en la biblioteca
+Update {} changed macros	{} geänderte Makros aktualisieren	Mettre à jour {} macros modifiées	Actualizar {} macros modificadas
+Window macros inserted from now on are recorded as macro boxes.	Ab jetzt eingefügte Fenstermakros werden als Makrokästen erfasst.	Les macros de fenêtre insérées désormais sont enregistrées comme boîtes de macro.	Las macros de ventana insertadas a partir de ahora se registran como cajas de macro.
+changed in the library	in der Bibliothek geändert	modifiée dans la bibliothèque	modificada en la biblioteca
+current	aktuell	à jour	actual
+not in the library	nicht in der Bibliothek	absente de la bibliothèque	no está en la biblioteca
+{} macro boxes updated	{} Makrokästen aktualisiert	{} boîtes de macro mises à jour	{} cajas de macro actualizadas
+{} on released pages were left as they are	{} auf freigegebenen Seiten blieben unverändert	{} sur des pages libérées sont restées inchangées	{} en páginas liberadas se dejaron como estaban
+The macro box has no items left	Der Makrokasten hat keine Elemente mehr	La boîte de macro n'a plus d'éléments	La caja de macro ya no tiene elementos
+Unknown macro box	Unbekannter Makrokasten	Boîte de macro inconnue	Caja de macro desconocida
+Macro boxes	Makrokästen	Boîtes de macro	Cajas de macro
+Window macros placed on the pages (not printed)	Auf den Seiten platzierte Fenstermakros (nicht gedruckt)	Macros de fenêtre placées sur les pages (non imprimées)	Macros de ventana colocadas en las páginas (no se imprimen)

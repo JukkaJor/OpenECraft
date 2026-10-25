@@ -29,6 +29,7 @@ pub mod potentials;
 pub mod checks;
 pub mod mounting;
 pub mod preplanning;
+pub mod macro_box;
 pub mod plugs;
 pub mod harness;
 pub mod config;
@@ -628,6 +629,9 @@ pub struct Page {
     /// Page property values.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub values: properties::Values,
+    /// Window macros placed on the page (macro boxes).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub macro_boxes: Vec<macro_box::MacroBox>,
 }
 
 impl Default for Page {
@@ -668,6 +672,7 @@ impl Page {
             conn_defs: Vec::new(),
             cable_defs: Vec::new(),
             values: BTreeMap::new(),
+            macro_boxes: Vec::new(),
         }
     }
 

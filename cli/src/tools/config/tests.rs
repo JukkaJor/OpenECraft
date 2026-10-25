@@ -49,3 +49,21 @@ fn preplanning_is_imported_from_csv_and_pages_generated() {
     assert_eq!(g["pages"].as_array().unwrap().len(), 1);
     assert!(run(&mut s, "generate_preplanning_pages", json!({ "macros": lib.to_str().unwrap(), "segment": "Nope" })).is_err());
 }
+
+#[test]
+fn macro_boxes_are_updated_from_a_library_file() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let dir = temp_dir("macro-boxes");
+    let prj = s.project_mut().unwrap();
+    let sel: std::collections::BTreeSet<u64> = [prj.pages[1].symbols[0].id].into();
+    let m = openecraft_core::macros::from_selection(&prj.pages[1], &sel, "One");
+    openecraft_core::macro_boxes::place(prj, 1, &m, &Default::default(), openecraft_core::geom::p(200.0, 150.0));
+    let mut changed = m.clone();
+    changed.clip.texts.push(openecraft_core::model::TextItem { id: 1, text: "NEW".into(), size: 3.0, ..Default::default() });
+    let lib = dir.join("macros.json");
+    std::fs::write(&lib, serde_json::to_string(&MacroLibrary { macros: vec![changed] }).unwrap()).unwrap();
+    let r = run(&mut s, "update_macro_boxes", json!({ "macros": lib.to_str().unwrap() })).unwrap();
+    assert_eq!(r["updated"], 1);
+    assert!(s.project().unwrap().pages[1].texts.iter().any(|t| t.text == "NEW"));
+}

@@ -4,6 +4,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
 use crate::io::Purpose;
+use openecraft_core::macro_boxes;
 use openecraft_core::macros::{self, Macro, MacroKind};
 use openecraft_core::model::*;
 use openecraft_core::ops::Clip;
@@ -41,6 +42,10 @@ enum MacroAction {
     DeleteVariant(usize, String),
     Export,
     Import,
+    UpdateBoxes,
+    GotoBox(usize, u64),
+    SaveBox(usize, u64),
+    RemoveBox(usize, u64),
 }
 
 /// Scaled drawing of a macro's items.
@@ -166,6 +171,44 @@ impl App {
                     if ui.button(tr("Import macros…")).clicked() {
                         action = Some(MacroAction::Import);
                     }
+                });
+                let boxes: Vec<(usize, u64, String, macro_boxes::State)> = macro_boxes::all(&self.session.prj)
+                    .into_iter()
+                    .map(|(pi, b)| (pi, b.id, b.name.clone(), macro_boxes::state(&self.macro_lib, b)))
+                    .collect();
+                let outdated = boxes.iter().filter(|b| b.3 == macro_boxes::State::Outdated).count();
+                ui.menu_button(tr_fmt!("Macro boxes ({})", boxes.len()), |ui| {
+                    if ui.add_enabled(outdated > 0, egui::Button::new(tr_fmt!("Update {} changed macros", outdated))).on_hover_text(tr("Replaces the content of the macro boxes whose macro changed in the library")).clicked() {
+                        action = Some(MacroAction::UpdateBoxes);
+                        ui.close();
+                    }
+                    ui.separator();
+                    if boxes.is_empty() {
+                        ui.weak(tr("Window macros inserted from now on are recorded as macro boxes."));
+                    }
+                    egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+                        for (pi, id, name, st) in &boxes {
+                            let page = &self.session.prj.pages[*pi].name;
+                            let (state, color) = match st {
+                                macro_boxes::State::Current => (tr("current"), ui.visuals().weak_text_color()),
+                                macro_boxes::State::Outdated => (tr("changed in the library"), Color32::from_rgb(230, 150, 30)),
+                                macro_boxes::State::Missing => (tr("not in the library"), Color32::from_rgb(220, 60, 60)),
+                            };
+                            ui.horizontal(|ui| {
+                                if ui.small_button("➡").on_hover_text(tr("Show")).clicked() {
+                                    action = Some(MacroAction::GotoBox(*pi, *id));
+                                }
+                                ui.label(tr_fmt!("Page {}: {}", page, name));
+                                ui.colored_label(color, state);
+                                if ui.small_button("💾").on_hover_text(tr("Save the box content as the macro in the library")).clicked() {
+                                    action = Some(MacroAction::SaveBox(*pi, *id));
+                                }
+                                if ui.small_button("✖").on_hover_text(tr("Remove the macro box (its items stay)")).clicked() {
+                                    action = Some(MacroAction::RemoveBox(*pi, *id));
+                                }
+                            });
+                        }
+                    });
                 });
             });
             ui.separator();
@@ -325,6 +368,7 @@ impl App {
                     self.notify(ctx, tr_fmt!("Page macro {} inserted as page {}", m.name, self.session.prj.pages[at].name));
                 } else {
                     self.editor.insert = Some(m.resolve(&self.eng.macro_values));
+                    self.editor.insert_macro = Some((m.clone(), self.eng.macro_values.clone()));
                     self.editor.set_tool(Tool::Insert);
                     self.workspace = super::Workspace::Schematic;
                 }
@@ -332,6 +376,29 @@ impl App {
             Some(MacroAction::Delete(i)) => {
                 self.macro_lib.macros.remove(i);
                 self.eng.macro_sel = None;
+            }
+            Some(MacroAction::UpdateBoxes) => {
+                let r = macro_boxes::update(&mut self.session.prj, &self.macro_lib);
+                let mut msg = tr_fmt!("{} macro boxes updated", r.updated);
+                if r.locked > 0 {
+                    msg = format!("{msg}\n{}", tr_fmt!("{} on released pages were left as they are", r.locked));
+                }
+                self.notify(ctx, msg);
+            }
+            Some(MacroAction::GotoBox(pi, id)) => {
+                if pi != self.session.page {
+                    self.goto(pi, 0);
+                }
+                if let Some(b) = self.session.prj.pages[pi].macro_boxes.iter().find(|b| b.id == id) {
+                    self.editor.selection = macro_boxes::live_items(&self.session.prj.pages[pi], b);
+                }
+            }
+            Some(MacroAction::SaveBox(pi, id)) => match macro_boxes::save_to_library(&mut self.session.prj, pi, id, &mut self.macro_lib) {
+                Ok(()) => self.notify(ctx, tr("Macro saved to the library")),
+                Err(e) => self.notify(ctx, e),
+            },
+            Some(MacroAction::RemoveBox(pi, id)) => {
+                macro_boxes::remove(&mut self.session.prj, pi, id);
             }
             Some(MacroAction::DeleteVariant(i, name)) => {
                 self.macro_lib.macros[i].remove_variant(&name);

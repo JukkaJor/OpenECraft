@@ -39,6 +39,7 @@ pub mod integration;
 pub mod issue;
 pub mod loads;
 pub mod macros;
+pub mod macro_boxes;
 pub mod manufacturing;
 pub mod marking;
 pub mod mounting;

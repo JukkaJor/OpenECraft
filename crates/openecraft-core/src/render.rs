@@ -108,6 +108,8 @@ pub struct Opts {
     pub review_selected: Option<crate::review::Hit>,
     /// Drawn on screen: layers that are not printed are shown.
     pub screen: bool,
+    /// Draw the macro boxes (on screen only).
+    pub macro_boxes: bool,
 }
 
 fn is_black(c: &[u8; 3]) -> bool {
@@ -221,6 +223,16 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     }
     if opts.review {
         crate::review::draw(d, prj, page_i, opts.review_selected);
+    }
+    if opts.screen && opts.macro_boxes {
+        for b in &page.macro_boxes {
+            if let Some(r) = crate::macro_boxes::bounds(prj, page_i, b) {
+                let (a, c) = (p(r.min.x - 2.0, r.min.y - 4.5), p(r.max.x + 2.0, r.max.y + 2.0));
+                d.poly(&[a, p(c.x, a.y), c, p(a.x, c.y)], true, 0.2, Ink::Ghost, false);
+                d.line(a, p(c.x, a.y), 0.2, Ink::Ghost, true);
+                d.text(p(a.x + 1.0, a.y + 2.2), &b.name, 2.0, Anchor::Left, VAnchor::Middle, Ink::Ghost);
+            }
+        }
     }
 }
 

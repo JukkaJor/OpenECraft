@@ -225,11 +225,12 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("ext", &["analysis", "issue", "model", "params", "table"]),
     ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "nailboard", "page_select", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),
     // 7 output and exchange formats
-    ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
+    ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "macro_boxes", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),
     ("pdf", &["analysis", "document", "frame", "geom", "model", "render", "structure", "symbols", "text", "ttf"]),
     ("pdf_comments", &["geom", "model", "review"]),
     ("page_select", &["model", "structure"]),
+    ("macro_boxes", &["geom", "macros", "model", "ops"]),
     ("preplanning", &["index", "issue", "macros", "model", "structure"]),
     ("dxf", &["analysis", "frame", "geom", "graphics", "model", "render", "symbols", "text"]),
     ("dxf_import", &["frame", "geom", "model", "ops", "symbols"]),

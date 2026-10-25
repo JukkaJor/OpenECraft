@@ -71,7 +71,11 @@ built with [egui / eframe](https://github.com/emilk/egui).
   filled from **value sets** when inserting. **Variants**: a macro can hold the same
   function in several versions (A, B, … – e.g. direct on line and star-delta); save a
   selection under the name of an existing macro with another variant, choose the
-  variant when inserting.
+  variant when inserting. **Macro boxes**: placed window macros remember their macro,
+  variant, placeholder values and items (dashed frame on screen, *View › Macro boxes*);
+  *Macros › Macro boxes › Update changed macros* replaces the content of boxes whose
+  macro changed in the library, a box edited on the page is saved back into the
+  library (command `list_macro_boxes`, tool `update_macro_boxes`).
 - **Configurator** (*Project › Configurator…*): options with their choices (e.g.
   `STARTER` = DOL / SD) and rules that insert a page macro in a variant with
   placeholder values (`NAME=Pump; POWER={POWER}`) when their condition holds

@@ -413,6 +413,11 @@ pub struct Editor {
     pub center_on: Option<P>,
     /// Items placed with `Tool::Insert`.
     pub insert: Option<Clip>,
+    /// The window macro (with its placeholder values) `insert` comes from: recorded as
+    /// a macro box when placed.
+    pub insert_macro: Option<(openecraft_core::macros::Macro, std::collections::BTreeMap<String, String>)>,
+    /// Macro boxes are drawn.
+    pub show_macro_boxes: bool,
     pub show_revision_marks: bool,
     /// Layer of new graphics, texts, dimensions and images.
     pub active_layer: String,
@@ -479,6 +484,8 @@ impl Default for Editor {
             place_tag: None,
             read_only: false,
             review_layer: true,
+            insert_macro: None,
+            show_macro_boxes: true,
             review_selected: None,
             wire_start: None,
             wire_hfirst: true,
@@ -800,6 +807,7 @@ impl Editor {
             review: self.review_layer || self.tool.is_review(),
             review_selected: self.review_selected,
             screen: true,
+            macro_boxes: self.show_macro_boxes,
             ..Default::default()
         };
         // Highlight the complete potential of a selected wire.
@@ -1193,6 +1201,9 @@ impl Editor {
             Tool::Insert => {
                 if let (Some(sn), Some(clip)) = (click, click.and_then(|_| self.insert.take())) {
                     let ids = ops::paste(prj, page_i, &clip, sn);
+                    if let Some((m, values)) = self.insert_macro.take() {
+                        openecraft_core::macro_boxes::record(prj, page_i, &m, &values, &ids);
+                    }
                     self.set_tool(Tool::Select);
                     self.selection = ids;
                 }

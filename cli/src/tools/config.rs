@@ -17,6 +17,13 @@ pub static TOOLS: &[Tool] = &[
         run: generate_pages,
     },
     Tool {
+        name: "update_macro_boxes",
+        help: tr_const!("Replaces the content of the macro boxes whose macro changed in a macro library file"),
+        params: &[param("macros", Kind::Str, tr_const!("Macro library file (JSON, exported by the editor)"))],
+        needs_project: true,
+        run: update_macro_boxes,
+    },
+    Tool {
         name: "import_preplanning",
         help: tr_const!("Imports pre-planning segments and planned devices from CSV or Excel (columns Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)"),
         params: &[param("path", Kind::Str, tr_const!("CSV or Excel file"))],
@@ -34,6 +41,14 @@ pub static TOOLS: &[Tool] = &[
         run: generate_preplanning_pages,
     },
 ];
+
+fn update_macro_boxes(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("macros");
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let lib = MacroLibrary::from_json(&text).map_err(|e| tr_fmt!("Not a macro file: {}", e))?;
+    let r = openecraft_core::macro_boxes::update(s.project_mut()?, &lib);
+    Ok(json!({ "updated": r.updated, "locked": r.locked, "macros_not_found": r.missing }))
+}
 
 fn import_preplanning(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");

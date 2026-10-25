@@ -396,6 +396,7 @@ impl App {
         self.grid_menu(ui);
         ui.checkbox(&mut self.editor.show_pins, tr("Connection points"));
         ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
+        ui.checkbox(&mut self.editor.show_macro_boxes, tr("Macro boxes")).on_hover_text(tr("Window macros placed on the pages (not printed)"));
         ui.checkbox(&mut self.session.prj.wire_colors, tr("Wire colours"))
             .on_hover_text(tr("Draw wires in their colour (also in PDF and SVG); saved with the project"));
         ui.separator();
