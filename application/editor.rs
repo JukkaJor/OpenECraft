@@ -389,6 +389,16 @@ fn fill_mesh(pts: &[P], v: &[Pos2], color: Color32) -> egui::Mesh {
     mesh
 }
 
+/// A function dragged from a navigator onto the page: symbol, device tag, label and
+/// connection point designations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PlacePayload {
+    pub symbol: &'static str,
+    pub tag: String,
+    pub label: String,
+    pub pins: Vec<String>,
+}
+
 pub struct Editor {
     pub tool: Tool,
     /// Screen offset of page origin relative to the canvas rect.
@@ -1167,6 +1177,43 @@ impl Editor {
         }
     }
 
+    /// Places the symbol `key` at `sn` (with the tag and label / connection points of
+    /// an unplaced function when one is being placed).
+    fn place_at(&mut self, prj: &mut Project, page_i: usize, key: &str, sn: P, out: &mut CanvasOutput) {
+        let Some(def) = prj.symbol(key) else { return };
+        let mut ctx = self.place_ctx.clone();
+        if let Some(tag) = &self.place_tag {
+            ctx.last_main.insert(def.letter.to_string(), tag.clone());
+        }
+        let mut s = ops::new_symbol(prj, page_i, &ctx, &def, sn, self.place_rot, self.place_mirror);
+        if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
+            s.tag = tag.clone();
+        }
+        let once = self.place_once.take();
+        if let Some((label, pins)) = &once {
+            if !label.is_empty() {
+                s.label = label.clone();
+            }
+            if pins.len() == s.pins.len() {
+                s.pins = pins.clone();
+            }
+        }
+        self.place_ctx.remember(prj, &s);
+        let id = s.id;
+        prj.pages[page_i].symbols.push(s);
+        if self.autoconnect {
+            let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
+            if n > 0 {
+                out.message = Some(tr_fmt!("{} connections drawn automatically", n));
+            }
+        }
+        if once.is_some() {
+            self.place_tag = None;
+            self.set_tool(Tool::Select);
+            self.selection.insert(id);
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn mouse(
         &mut self,
@@ -1192,6 +1239,13 @@ impl Editor {
                 self.set_tool(Tool::Select);
             }
         }
+        if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PlacePayload>()) {
+            self.set_tool(Tool::Place(pl.symbol));
+            self.place_tag = Some(pl.tag.clone());
+            self.place_once = Some((pl.label.clone(), pl.pins.clone()));
+            self.place_at(prj, page_i, pl.symbol, sn, out);
+            return;
+        }
         let click = resp.clicked_by(PointerButton::Primary).then_some(snapped).flatten().or_else(|| self.typed.take());
         if click.is_some() {
             self.last_point = click;
@@ -1209,38 +1263,8 @@ impl Editor {
                 }
             }
             Tool::Place(key) => {
-                if let (Some(sn), Some(def)) = (click, prj.symbol(key)) {
-                    let mut ctx = self.place_ctx.clone();
-                    if let Some(tag) = &self.place_tag {
-                        ctx.last_main.insert(def.letter.to_string(), tag.clone());
-                    }
-                    let mut s = ops::new_symbol(prj, page_i, &ctx, &def, sn, self.place_rot, self.place_mirror);
-                    if let (Some(tag), true) = (&self.place_tag, def.func.has_tag()) {
-                        s.tag = tag.clone();
-                    }
-                    let once = self.place_once.take();
-                    if let Some((label, pins)) = &once {
-                        if !label.is_empty() {
-                            s.label = label.clone();
-                        }
-                        if pins.len() == s.pins.len() {
-                            s.pins = pins.clone();
-                        }
-                    }
-                    self.place_ctx.remember(prj, &s);
-                    let id = s.id;
-                    prj.pages[page_i].symbols.push(s);
-                    if self.autoconnect {
-                        let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
-                        if n > 0 {
-                            out.message = Some(tr_fmt!("{} connections drawn automatically", n));
-                        }
-                    }
-                    if once.is_some() {
-                        self.place_tag = None;
-                        self.set_tool(Tool::Select);
-                        self.selection.insert(id);
-                    }
+                if let Some(sn) = click {
+                    self.place_at(prj, page_i, key, sn, out);
                 }
             }
             Tool::Wire => {

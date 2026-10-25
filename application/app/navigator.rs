@@ -263,7 +263,7 @@ impl App {
         let channels = openecraft_core::unplaced::plc_channels(prj);
         let functions = openecraft_core::unplaced::device_functions(prj, Some(&self.parts_db));
         let mut start = None;
-        ui.weak(tr("Click an entry, then click into the page to place it."));
+        ui.weak(tr("Drag an entry into the page, or click it and then click into the page."));
         egui::ScrollArea::vertical().id_salt("unplaced").auto_shrink([false, false]).show(ui, |ui| {
             for (title, list) in [(tr("PLC channels"), &channels), (tr("Functions of the parts"), &functions)] {
                 egui::CollapsingHeader::new(RichText::new(tr_fmt!("{} ({})", title, list.len())).strong()).id_salt(title).default_open(true).show(ui, |ui| {
@@ -273,7 +273,9 @@ impl App {
                         let items: Vec<&openecraft_core::unplaced::Unplaced> = list.iter().filter(|u| &u.tag == tag).collect();
                         egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({})", items.len())).monospace()).id_salt((title, tag)).show(ui, |ui| {
                             for u in items {
-                                if ui.link(&u.title).on_hover_text(tr("Place this function")).clicked() {
+                                let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
+                                let r = ui.dnd_drag_source(ui.make_persistent_id(("unplaced", &u.tag, &u.title)), payload, |ui| ui.link(&u.title).on_hover_text(tr("Click, or drag it into the page")));
+                                if r.inner.clicked() {
                                     start = Some(u.clone());
                                 }
                             }
