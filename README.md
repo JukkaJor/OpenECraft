@@ -137,7 +137,8 @@ built with [egui / eframe](https://github.com/emilk/egui).
 - **Revisions**: a revision stores a snapshot of all pages and can release (lock) them;
   locked pages are read only. Changes since the last released revision (added / changed /
   removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
-  triangle and reported in the *revision overview*.
+  triangle and reported in the *revision overview*; changed items name the changed
+  properties with old and new value (`Device tag: -K1 › -K2; Position`).
 - **Release workflow**: with approvers defined (*Project › Revisions… › Approval
   workflow*: user names and the number of approvals needed) a new revision starts as a
   draft, is submitted for review, approved or rejected by the approvers (recorded with

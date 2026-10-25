@@ -127,3 +127,28 @@ fn withdraw_and_discard() {
     discard(&mut prj, 0);
     assert!(prj.revisions.is_empty());
 }
+
+#[test]
+fn changed_items_list_their_changed_properties() {
+    let old = crate::sample::demo_project().pages;
+    let mut new = old.clone();
+    let pi = new.iter().position(|p| p.symbols.iter().any(|s| !s.tag.is_empty()) && !p.wires.is_empty()).unwrap();
+    let si = new[pi].symbols.iter().position(|s| !s.tag.is_empty()).unwrap();
+    let old_tag = new[pi].symbols[si].tag.clone();
+    new[pi].symbols[si].tag = "-K99".into();
+    new[pi].symbols[si].pos.x += 8.0;
+    new[pi].wires[0].color = "VT".into();
+    new[pi].description = "Changed page".into();
+    let changes = compare(&old, &new);
+    let pc = changes.iter().find(|c| c.page == Some(pi)).unwrap();
+    let sym = pc.changes.iter().find(|c| c.what == "Symbol").unwrap();
+    let fields: Vec<&str> = sym.details.iter().map(|d| d.field).collect();
+    assert_eq!(fields, ["Device tag", "Position"]);
+    assert_eq!((sym.details[0].old.as_str(), sym.details[0].new.as_str()), (old_tag.as_str(), "-K99"));
+    assert!(sym.details_text().starts_with(&format!("Device tag: {old_tag} › -K99")));
+    let wire = pc.changes.iter().find(|c| c.what == "Wire").unwrap();
+    assert_eq!(wire.details[0].field, "Colour");
+    assert_eq!(wire.details[0].new, "VT");
+    let page = pc.changes.iter().find(|c| c.what == "Page").unwrap();
+    assert_eq!(page.details[0].field, "Description");
+}
