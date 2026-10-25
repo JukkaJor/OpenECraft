@@ -1244,20 +1244,26 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::f
     };
     let a = frame.area();
     let (x0, y0, x1, y1) = (a.min.x + 25.0, a.min.y + 12.0, a.max.x - 15.0, a.max.y - 22.0);
-    // With door devices the door is drawn to the right of the mounting plate.
-    let door = e.items.iter().any(|i| i.face == Face::Door);
-    let gap = if door { e.width * 0.25 } else { 0.0 };
-    let total_w = if door { 2.0 * e.width + gap } else { e.width };
-    let n = drawing_scale((total_w, e.height), (x1 - x0, y1 - y0));
+    // The mounting plate, then every other face that carries items (door, walls, roof,
+    // bottom) side by side at one scale.
+    let faces: Vec<Face> = std::iter::once(Face::Plate).chain(Face::ALL.into_iter().filter(|f| *f != Face::Plate && e.items.iter().any(|i| i.face == *f))).collect();
+    let gap = e.width * 0.25;
+    let sizes: Vec<(f32, f32)> = faces.iter().map(|f| e.view_size(*f)).collect();
+    let total_w = sizes.iter().map(|s| s.0).sum::<f32>() + gap * (faces.len() - 1) as f32;
+    let total_h = sizes.iter().map(|s| s.1).fold(0.0, f32::max);
+    let n = drawing_scale((total_w, total_h), (x1 - x0, y1 - y0));
     let k = 1.0 / n;
     let (w, h) = (e.width * k, e.height * k);
-    let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - h) / 2.0);
-    draw_enclosure(d, e, Face::Plate, false, origin, k, &BTreeSet::new(), &BTreeSet::new(), prj);
-    if door {
-        let o = origin + p(w + gap * k, 0.0);
-        draw_enclosure(d, e, Face::Door, false, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
-        d.text(p(origin.x + w / 2.0, origin.y - 3.0), tr("Mounting plate"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
-        d.text(p(o.x + w / 2.0, o.y - 3.0), tr("Door (front view)"), 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+    let origin = p(x0 + ((x1 - x0) - total_w * k) / 2.0, y0 + ((y1 - y0) - total_h * k) / 2.0);
+    let mut x = origin.x;
+    for (f, (fw, _)) in faces.iter().zip(&sizes) {
+        let o = p(x, origin.y);
+        draw_enclosure(d, e, *f, false, o, k, &BTreeSet::new(), &BTreeSet::new(), prj);
+        if faces.len() > 1 {
+            let title = if *f == Face::Door { tr("Door (front view)") } else { f.title() };
+            d.text(p(o.x + fw * k / 2.0, o.y - 3.0), title, 3.0, Anchor::Center, VAnchor::Bottom, Ink::Text);
+        }
+        x += (fw + gap) * k;
     }
     // Dimensions
     let bottom = origin.y + h + 6.0;
@@ -1272,10 +1278,7 @@ fn draw_mounting_page(d: &mut dyn Draw, prj: &Project, id: u64, frame: &crate::f
         d.line(p(left - 2.0, y), p(left + 2.0, y), 0.18, Ink::Frame, false);
     }
     d.text(p(left - 1.5, origin.y + h / 2.0), &format!("{:.0}", e.height), 2.5, Anchor::Right, VAnchor::Middle, Ink::Text);
-    let caption = format!(
-        "{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  Scale 1:{}",
-        e.name, e.part, e.width, e.height, e.depth, n
-    );
+    let caption = format!("{}  {}  -  {:.0} x {:.0} x {:.0} mm  -  {}", e.name, e.part, e.width, e.height, e.depth, tr_fmt!("Scale 1:{}", n));
     d.text(p(x0, a.max.y - 8.0), &caption, 3.0, Anchor::Left, VAnchor::Middle, Ink::Text);
 }
 

@@ -301,7 +301,8 @@ bill of materials.
     the door (front view *Door*); each gets its **door cutout** (Ø22.5 by default or from
     the part data `Door cutout: Ø30.5` / `92 x 68`), checked against the door frame and
     in 3D against the equipment of the mounting plate; their wires are routed over the
-    hinge; the mounting layout page shows plate and door side by side;
+    hinge; the mounting layout page shows the plate and every face with items (door,
+    side walls, rear wall, roof, bottom) side by side;
   - copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
     or round **cutouts** in the mounting plate;
   - **drilling pattern**: rails, ducts and busbar holders get tapped holes along their

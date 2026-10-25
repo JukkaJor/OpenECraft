@@ -157,3 +157,22 @@ fn graphical_plug_diagram_and_plc_assignment() {
     assert!(!plc.rows.is_empty(), "the demo has PLC points");
     assert!(crate::report_blocks::has_graphic(ReportKind::PlugDiagram) && crate::report_blocks::has_graphic(ReportKind::PlcAssignment));
 }
+
+#[test]
+fn mounting_pages_show_every_face_with_items() {
+    let mut prj = crate::sample::demo_project();
+    let pi = prj.pages.iter().position(|p| matches!(p.kind, PageKind::Mounting(_))).unwrap();
+    let PageKind::Mounting(id) = prj.pages[pi].kind else { unreachable!() };
+    let e = prj.layout.enclosures.iter_mut().find(|e| e.id == id).unwrap();
+    let mut fan = e.items.iter().find(|i| i.face == crate::panel::Face::Plate).cloned().unwrap();
+    fan.id = 987_654;
+    fan.face = crate::panel::Face::Roof;
+    fan.x = 10.0;
+    fan.y = 10.0;
+    e.items.push(fan);
+    let an = Analysis::checked(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, pi, &Opts::default());
+    let texts: Vec<&str> = d.texts.iter().map(|t| t.1.as_str()).collect();
+    assert!(texts.contains(&"Mounting plate") && texts.contains(&"Roof"), "{texts:?}");
+}
