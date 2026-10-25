@@ -232,6 +232,9 @@ built with [egui / eframe](https://github.com/emilk/egui).
     subgroup tree, filter), with general, commercial (price, price unit, packaging,
     quantity unit), technical, mounting (dimensions, weight) data, accessories and a
     **function template** per part (e.g. coil A1/A2, main contacts, 13/14 NO);
+  - **assemblies**: a part can consist of component parts with quantities (tab
+    *Accessories*, CSV column `Components`: `NUM:2|NUM2`); the bill of materials lists
+    them under the assembly (nested assemblies resolved, priced as included);
   - **typed mounting data** per part (tab *Mounting*): clearances (top, bottom, left,
     right, front, EMC, service space), mounting holes with thread, door and face
     cutouts, power loss, how far an accessory sticks out, fastening, faces, collision

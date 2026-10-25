@@ -31,7 +31,7 @@ fn connection_points_in_csv() {
     ];
     let csv = to_csv(std::slice::from_ref(&part));
     let header = csv.lines().next().unwrap();
-    assert!(header.contains(";Connection points;Catalog;Lifecycle;Successor;Clearance top;") && header.ends_with(";Terminal type"));
+    assert!(header.contains(";Connection points;Catalog;Lifecycle;Successor;Clearance top;") && header.ends_with(";Terminal type;Components"));
     assert!(csv.contains("A1:5.5/0/60/up|14:40/74/55.25/down"));
     assert_eq!(from_csv(&csv).unwrap()[0].connection_points, part.connection_points);
     // Files without the column (older exports) have no points.
@@ -64,4 +64,14 @@ fn import_moves_technical_data_into_typed_fields() {
     let z = &crate::import(text).unwrap()[0];
     assert_eq!(z.mounting_data.power_loss, 4.0);
     assert_eq!(z.tech_data, "Coil voltage: 24 V");
+}
+
+#[test]
+fn assembly_components_in_csv() {
+    let mut part = Part { number: "ASM.1".into(), ..Default::default() };
+    part.components = vec![crate::Component { number: "A".into(), quantity: 2.0 }, crate::Component { number: "B".into(), quantity: 1.0 }];
+    let csv = to_csv(std::slice::from_ref(&part));
+    assert!(csv.contains("A:2|B"));
+    assert_eq!(from_csv(&csv).unwrap()[0].components, part.components);
+    assert_eq!(crate::components_from_text("X:1,5 | Y"), vec![crate::Component { number: "X".into(), quantity: 1.5 }, crate::Component { number: "Y".into(), quantity: 1.0 }]);
 }

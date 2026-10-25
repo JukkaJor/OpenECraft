@@ -7,7 +7,7 @@ use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
 use openecraft_parts::{
     default_connection_points, distinct_values, parse_mesh, parse_svg, natural_cmp, ConnectionPoint, Exit, FnKind, FunctionTemplate, Grouping,
-    Mesh3d, Model2d, MountingData, Part, PartFilter, Prim2d, TopGroup, MOUNTING_KEYS, PRODUCT_GROUPS,
+    Component, Mesh3d, Model2d, MountingData, Part, PartFilter, Prim2d, TopGroup, MOUNTING_KEYS, PRODUCT_GROUPS,
 };
 use openecraft_parts::portal::{Attachment, Lifecycle};
 use openecraft_parts::{date_from_unix, productgroups};
@@ -416,6 +416,34 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             });
             if let Some(n) = add {
                 part.accessories.push(n);
+            }
+            ui.separator();
+            ui.label(RichText::new(tr("Components (assembly)")).strong()).on_hover_text(tr("Parts this part is assembled from; the bill of materials lists them under it"));
+            let mut remove = None;
+            egui::Grid::new("pcomp").num_columns(3).spacing([8.0, 4.0]).show(ui, |ui| {
+                for (i, c) in part.components.iter_mut().enumerate() {
+                    let known = all_numbers.contains(&c.number);
+                    ui.label(RichText::new(&c.number).monospace().color(if known { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) }));
+                    ui.add(egui::DragValue::new(&mut c.quantity).speed(0.1).range(0.0..=100000.0).prefix("× "));
+                    if ui.small_button("🗑").clicked() {
+                        remove = Some(i);
+                    }
+                    ui.end_row();
+                }
+            });
+            if let Some(i) = remove {
+                part.components.remove(i);
+            }
+            let mut add = None;
+            egui::ComboBox::from_id_salt("comp").selected_text(tr("➕ Add component")).width(240.0).show_ui(ui, |ui| {
+                for n in all_numbers {
+                    if *n != part.number && !part.components.iter().any(|c| &c.number == n) && ui.selectable_label(false, n).clicked() {
+                        add = Some(n.clone());
+                    }
+                }
+            });
+            if let Some(n) = add {
+                part.components.push(Component { number: n, quantity: 1.0 });
             }
         }
         PartTab::Connections => connections_tab(ui, part, &mut state.point),

@@ -52,6 +52,7 @@ pub fn to_csv(parts: &[Part]) -> String {
         out.push(';');
         out.push_str(key);
     }
+    out.push_str(";Components");
     out.push('\n');
     for p in parts {
         let functions = p
@@ -102,7 +103,8 @@ pub fn to_csv(parts: &[Part]) -> String {
             p.successor.clone(),
         ];
         let typed = crate::MOUNTING_KEYS.iter().map(|k| p.mounting_data.get(k).unwrap_or_default());
-        out.push_str(&row.into_iter().chain(typed).map(|c| csv_escape(&c)).collect::<Vec<_>>().join(";"));
+        let components = std::iter::once(crate::components_to_text(&p.components));
+        out.push_str(&row.into_iter().chain(typed).chain(components).map(|c| csv_escape(&c)).collect::<Vec<_>>().join(";"));
         out.push('\n');
     }
     out
@@ -153,6 +155,7 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
     }
     let idx: Vec<Option<usize>> = CSV_FIELDS.iter().map(|f| col(f)).collect();
     let typed: Vec<(&str, usize)> = crate::MOUNTING_KEYS.iter().filter_map(|k| Some((*k, col(k)?))).collect();
+    let components_col = col("Components");
     let mut parts = Vec::new();
     for r in data {
         let get = |i: usize| idx[i].and_then(|c| r.get(c)).map(|s| s.trim().to_string()).unwrap_or_default();
@@ -216,6 +219,9 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
             ..Default::default()
         });
         if let Some(part) = parts.last_mut() {
+            if let Some(c) = components_col {
+                part.components = crate::components_from_text(r.get(c).map(|s| s.as_str()).unwrap_or_default());
+            }
             for (key, c) in &typed {
                 let v = r.get(*c).map(|s| s.trim()).unwrap_or_default();
                 if !v.is_empty() && !part.mounting_data.set(key, v) {

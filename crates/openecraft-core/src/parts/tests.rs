@@ -101,3 +101,14 @@ fn usage_from_the_placed_kinds_of_all_devices() {
         assert_eq!(usage_of(&prj, None, tag, kinds), usage(&prj, None, tag), "{tag}");
     }
 }
+
+#[test]
+fn assemblies_resolve_nested_components() {
+    let mut prj = crate::sample::demo_project();
+    let comp = |n: &str, q: f32| crate::parts::Component { number: n.into(), quantity: q };
+    prj.parts.push(Part { number: "ASM.TOP".into(), components: vec![comp("ASM.SUB", 2.0), comp("P.A", 1.0)], ..Default::default() });
+    prj.parts.push(Part { number: "ASM.SUB".into(), components: vec![comp("P.A", 3.0), comp("ASM.TOP", 1.0)], ..Default::default() });
+    let c = assembly_components(&prj, "ASM.TOP", 2.0);
+    assert_eq!(c, vec![("ASM.SUB".to_string(), 4.0), ("P.A".to_string(), 14.0)], "nested quantities, the cycle back to the top is ignored");
+    assert!(assembly_components(&prj, "P.A", 1.0).is_empty());
+}

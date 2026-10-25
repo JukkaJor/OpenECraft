@@ -328,6 +328,36 @@ impl FunctionTemplate {
     }
 }
 
+/// A part of an assembly with its quantity per assembly.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Component {
+    pub number: String,
+    pub quantity: f32,
+}
+
+impl Default for Component {
+    fn default() -> Self {
+        Component { number: String::new(), quantity: 1.0 }
+    }
+}
+
+/// `NUM:2|NUM2:1` (quantity 1 may be left out).
+pub fn components_to_text(c: &[Component]) -> String {
+    c.iter().map(|c| if c.quantity == 1.0 { c.number.clone() } else { format!("{}:{}", c.number, c.quantity) }).collect::<Vec<_>>().join("|")
+}
+
+pub fn components_from_text(s: &str) -> Vec<Component> {
+    s.split('|')
+        .map(str::trim)
+        .filter(|x| !x.is_empty())
+        .map(|x| match x.rsplit_once(':') {
+            Some((n, q)) if q.trim().replace(',', ".").parse::<f32>().is_ok() => Component { number: n.trim().to_string(), quantity: q.trim().replace(',', ".").parse().unwrap_or(1.0) },
+            _ => Component { number: x.to_string(), quantity: 1.0 },
+        })
+        .collect()
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Part {
@@ -372,6 +402,10 @@ pub struct Part {
     pub functions: Vec<FunctionTemplate>,
     /// Part numbers of accessories.
     pub accessories: Vec<String>,
+    /// Parts this part is assembled from (assembly / module); the bill of materials
+    /// lists them under it.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub components: Vec<Component>,
     // Graphics
     /// Front view for mounting layouts.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -441,6 +475,7 @@ impl Default for Part {
             mounting_data: MountingData::default(),
             functions: Vec::new(),
             accessories: Vec::new(),
+            components: Vec::new(),
             model_2d: None,
             model_3d: None,
             connection_points: Vec::new(),

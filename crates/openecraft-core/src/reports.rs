@@ -447,6 +447,25 @@ fn bom(prj: &Project, idx: &Index, wiring: &[RoutedWire], conns: &[Connection]) 
             ],
             None,
         );
+        // Components of an assembly below it, included in its price.
+        for (k, (sub, n)) in crate::parts::assembly_components(prj, part, *qty).into_iter().enumerate() {
+            let sd = prj.parts.iter().chain(catalog.iter()).find(|p| p.number == sub).cloned().unwrap_or_default();
+            t.push(
+                vec![
+                    format!("{}.{}", i + 1, k + 1),
+                    if n.fract() == 0.0 { format!("{n:.0}") } else { format!("{n:.2}") },
+                    sd.quantity_unit.clone(),
+                    sub,
+                    sd.type_number,
+                    sd.manufacturer,
+                    sd.description,
+                    tr_fmt!("in {}", part),
+                    String::new(),
+                    tr("incl.").to_string(),
+                ],
+                None,
+            );
+        }
     }
     if !groups.is_empty() {
         let mut last = vec![String::new(); 10];

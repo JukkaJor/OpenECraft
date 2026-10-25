@@ -694,7 +694,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 8 | PDF with Unicode fonts | done: embedded font subset for texts beyond WinAnsi | c336a16 | UI font fallback for scripts outside the bundled fonts |
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
 | 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
-| 11 | Typed mounting data | done | 11794d0 | part variants, assemblies |
+| 11 | Typed mounting data, assemblies | done: typed mounting data; assemblies with components in the bill of materials | 11794d0, see log | part variants |
 | 12 | Templates, master data, macros | partly: project templates; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108 | settings schemes, master data synchronisation |
 | 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
 | 14 | PLC exchange formats | done: TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY) | 93fdeb6, 7e3fb7b | PLC navigator, GX Works / PLCnext formats |

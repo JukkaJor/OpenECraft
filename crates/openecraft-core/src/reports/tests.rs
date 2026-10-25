@@ -92,3 +92,21 @@ fn mounting_pages_without_enclosure_are_reported() {
     assert_eq!(find(&msgs, "no longer exists").unwrap(), &format!("Page {}: its enclosure no longer exists", page.name));
 }
 
+
+#[test]
+fn assemblies_list_their_components_in_the_bom() {
+    let mut prj = demo_project();
+    let number = prj.devices.values().find_map(|d| d.parts.first().map(|r| r.number.clone())).unwrap();
+    let comp = |n: &str, q: f32| crate::parts::Component { number: n.into(), quantity: q };
+    let part = prj.parts.iter_mut().find(|p| p.number == number).unwrap();
+    part.components = vec![comp("GEN.SCREW-M4", 4.0)];
+    let an = crate::analysis::Analysis::checked(&prj);
+    let bom = an.report(&prj, ReportKind::BillOfMaterials).unwrap();
+    let main = bom.rows.iter().position(|r| r[3] == number).unwrap();
+    let sub = &bom.rows[main + 1];
+    assert_eq!(sub[0], format!("{}.1", bom.rows[main][0]));
+    assert_eq!(sub[3], "GEN.SCREW-M4");
+    let qty: f32 = bom.rows[main][1].parse().unwrap();
+    assert_eq!(sub[1].parse::<f32>().unwrap(), qty * 4.0);
+    assert_eq!(sub[7], format!("in {number}"));
+}

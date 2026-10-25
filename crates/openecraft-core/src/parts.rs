@@ -308,5 +308,32 @@ pub fn main_kind(prj: &Project, tag: &str) -> Option<FnKind> {
         .and_then(|s| kind_of_symbol(&s.sym))
 }
 
+/// The components of an assembly for `qty` assemblies, nested assemblies resolved
+/// (quantities multiplied), in the order of first use.
+pub fn assembly_components(prj: &Project, number: &str, qty: f32) -> Vec<(String, f32)> {
+    fn walk(prj: &Project, number: &str, qty: f32, depth: usize, path: &mut Vec<String>, out: &mut Vec<(String, f32)>) {
+        if depth > 8 || path.iter().any(|p| p == number) {
+            return;
+        }
+        let Some(part) = prj.parts.iter().chain(catalog()).find(|p| p.number == number) else { return };
+        path.push(number.to_string());
+        for c in &part.components {
+            if path.contains(&c.number) {
+                continue;
+            }
+            let n = qty * c.quantity;
+            match out.iter_mut().find(|x| x.0 == c.number) {
+                Some(x) => x.1 += n,
+                None => out.push((c.number.clone(), n)),
+            }
+            walk(prj, &c.number, n, depth + 1, path, out);
+        }
+        path.pop();
+    }
+    let mut out = Vec::new();
+    walk(prj, number, qty, 0, &mut Vec::new(), &mut out);
+    out
+}
+
 #[cfg(test)]
 mod tests;
