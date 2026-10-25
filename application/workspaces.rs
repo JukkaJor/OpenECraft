@@ -1,5 +1,5 @@
 //! Workspaces (View › Workspaces): named arrangements of the editor – the workspace
-//! (schematic, panel layout, wiring), the navigator tab and the open windows – saved by
+//! (schematic, panel layout, wiring), the docked panels and the open windows – saved by
 //! the app and restored with one click.
 
 use serde::{Deserialize, Serialize};
@@ -17,6 +17,10 @@ pub struct Layout {
     pub left_tab: String,
     /// Ids of the open windows.
     pub windows: Vec<String>,
+    /// Arrangement of the docked panes (JSON, see `crate::dock`); empty in workspaces
+    /// saved before panels could be docked.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub dock: String,
 }
 
 /// Adds a layout or replaces the one with the same name; names are trimmed, empty

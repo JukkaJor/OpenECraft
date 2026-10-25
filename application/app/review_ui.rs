@@ -67,7 +67,7 @@ impl App {
             }
         };
         self.review_ui.selected = Some(hit);
-        self.left_tab = LeftTab::Review;
+        self.show_tab(LeftTab::Review);
     }
 
     /// Selects the comment or markup at a click of the select tool.
@@ -80,7 +80,7 @@ impl App {
         self.review_ui.selected = review::hit(&self.session.prj, page, at, tolerance);
         if self.review_ui.selected.is_some() {
             self.editor.selection.clear();
-            self.left_tab = LeftTab::Review;
+            self.show_tab(LeftTab::Review);
         }
     }
 

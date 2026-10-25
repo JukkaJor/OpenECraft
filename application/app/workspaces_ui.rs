@@ -3,36 +3,6 @@
 use super::*;
 use crate::workspaces::{self, Layout};
 
-impl LeftTab {
-    const ALL: [LeftTab; 10] = [
-        LeftTab::Pages,
-        LeftTab::Devices,
-        LeftTab::Connections,
-        LeftTab::Cables,
-        LeftTab::Layers,
-        LeftTab::Check,
-        LeftTab::Review,
-        LeftTab::Unplaced,
-        LeftTab::Plc,
-        LeftTab::Strips,
-    ];
-
-    fn key(self) -> &'static str {
-        match self {
-            LeftTab::Pages => "pages",
-            LeftTab::Devices => "devices",
-            LeftTab::Connections => "connections",
-            LeftTab::Cables => "cables",
-            LeftTab::Layers => "layers",
-            LeftTab::Check => "check",
-            LeftTab::Review => "review",
-            LeftTab::Unplaced => "unplaced",
-            LeftTab::Plc => "plc",
-            LeftTab::Strips => "strips",
-        }
-    }
-}
-
 impl Workspace {
     fn key(self) -> &'static str {
         match self {
@@ -91,17 +61,21 @@ impl App {
     }
 
     fn current_layout(&mut self, name: &str) -> Layout {
-        let (workspace, left_tab) = (self.workspace.key().to_string(), self.left_tab.key().to_string());
+        let workspace = self.workspace.key().to_string();
+        let left_tab = crate::dock::active_tab(&self.dock).unwrap_or(LeftTab::Pages).key().to_string();
         let windows = workspaces::open_windows(&self.window_flags());
-        Layout { name: name.into(), workspace, left_tab, windows }
+        Layout { name: name.into(), workspace, left_tab, windows, dock: crate::dock::to_json(&self.dock) }
     }
 
     fn apply_layout(&mut self, layout: &Layout) {
         if let Some(w) = Workspace::from_key(&layout.workspace) {
             self.workspace = w;
         }
-        if let Some(t) = LeftTab::ALL.into_iter().find(|t| t.key() == layout.left_tab) {
-            self.left_tab = t;
+        if let Some(tree) = crate::dock::from_json(&layout.dock) {
+            self.dock = tree;
+        }
+        if let Some(t) = LeftTab::from_key(&layout.left_tab) {
+            self.show_tab(t);
         }
         workspaces::apply_windows(layout, &mut self.window_flags());
     }
@@ -124,7 +98,7 @@ impl App {
             ui.weak(tr("No saved workspaces yet."));
         }
         ui.separator();
-        if ui.button(tr("Save current…")).on_hover_text(tr("Saves the workspace, the navigator tab and the open windows")).clicked() {
+        if ui.button(tr("Save current…")).on_hover_text(tr("Saves the workspace, the arrangement of the panels and the open windows")).clicked() {
             self.layout_name = Some(String::new());
             ui.close();
         }

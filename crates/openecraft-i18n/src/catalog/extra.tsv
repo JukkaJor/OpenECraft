@@ -4875,3 +4875,7 @@ Hose defaults	Schlauchvorgaben	Valeurs par défaut des flexibles	Valores predete
 Message levels	Meldungsstufen	Niveaux des messages	Niveles de mensajes
 Not a settings scheme: {}	Kein Einstellungsschema: {}	Ce n'est pas un schéma de paramètres : {}	No es un esquema de ajustes: {}
 Wire defaults	Leitungsvorgaben	Valeurs par défaut des fils	Valores predeterminados de cables
+Reset panel layout	Anordnung der Fenster zurücksetzen	Réinitialiser la disposition des panneaux	Restablecer la disposición de los paneles
+Navigator on the left, symbols and properties on the right	Navigator links, Symbole und Eigenschaften rechts	Navigateur à gauche, symboles et propriétés à droite	Navegador a la izquierda, símbolos y propiedades a la derecha
+Panels	Fenster	Panneaux	Paneles
+Saves the workspace, the arrangement of the panels and the open windows	Speichert den Arbeitsbereich, die Anordnung der Fenster und die geöffneten Dialoge	Enregistre l'espace de travail, la disposition des panneaux et les fenêtres ouvertes	Guarda el espacio de trabajo, la disposición de los paneles y las ventanas abiertas

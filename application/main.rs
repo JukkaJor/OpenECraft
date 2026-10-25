@@ -8,6 +8,7 @@
 
 mod app;
 mod autosave;
+mod dock;
 #[cfg(test)]
 mod conventions;
 mod editor;
