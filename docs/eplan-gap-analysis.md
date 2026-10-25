@@ -697,7 +697,7 @@ One commit per item, in roadmap order. "Open" lists what of the item is still mi
 | 9 | Cross references, interruption points | done: configurable cross references, star / chain interruption points | f10f102 | – |
 | 10 | EPLAN XML and xlsx | partly: EPLAN parts XML import / export; xlsx export and import of tables and reports | df94fd2, 7da1077 | EPLAN project import |
 | 11 | Typed mounting data, assemblies | done: typed mounting data; assemblies with components in the bill of materials | 11794d0, ed86e62 | part variants |
-| 12 | Templates, master data, macros | partly: project templates; settings schemes; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108, see log | master data synchronisation |
+| 12 | Templates, master data, macros | partly: project templates; settings schemes; macro boxes with update from the library (device tags kept) and saving back | 57c6af6, 341a108, c76948c | master data synchronisation |
 | 13 | Accounts and roles | done: accounts, roles per project, read-only viewer | a14895e | – |
 | 14 | PLC exchange formats, navigator | done: PLC navigator; TIA Portal, Studio 5000, STEP 7 classic (SDF), TwinCAT 3 (TcGVL), Control Expert (XSY), GX Works device comments | 93fdeb6, 7e3fb7b, 294e3dc, 84181bd | PLCnext |
 | 15 | Pre-planning | done: segment tree, planned devices, templates, power budget, state against the schematic, page generation, CSV / Excel | 0328637 | pre-planning macros with several representation types |
