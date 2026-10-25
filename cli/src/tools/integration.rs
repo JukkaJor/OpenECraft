@@ -92,7 +92,7 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     write_or_return(a, text)
 }
 
-fn change_json(c: &Change) -> Value {
+pub(super) fn change_json(c: &Change) -> Value {
     json!({
         "target": format!("{:?}", c.target).to_lowercase(),
         "key": c.key.replace('|', " – "),

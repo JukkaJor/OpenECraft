@@ -2,6 +2,7 @@ use super::*;
 use axum::body::Body;
 use axum::http::Request;
 use http_body_util::BodyExt;
+use openecraft_parts::access::{Grant, Subject};
 use openecraft_parts::default_catalog;
 use openecraft_parts::portal::{ChangeKind, Lifecycle};
 use tower::ServiceExt;
@@ -13,7 +14,7 @@ fn app(token: Option<&str>) -> Router {
 }
 
 fn state(token: Option<&str>) -> AppState {
-    AppState { store: Arc::new(Mutex::new(Store::in_memory(default_catalog()))), token: token.map(String::from) }
+    AppState::new(Store::in_memory(default_catalog()), token.map(String::from), AccessFile::in_memory(default_access()))
 }
 
 async fn send(app: &Router, method: &str, uri: &str, token: Option<&str>, body: Vec<u8>) -> (StatusCode, HeaderMap, Vec<u8>) {
@@ -183,7 +184,7 @@ async fn last_administrator_stays() {
     let state = state(None);
     {
         let mut store = state.store.lock().unwrap();
-        let mut account = Account { user: User { name: "root".into(), role: Role::Admin, manufacturer: String::new() }, ..Default::default() };
+        let mut account = Account { user: User { name: "root".into(), role: Role::Admin, manufacturer: String::new(), ..Default::default() }, ..Default::default() };
         account.password = hash_password("pw").unwrap();
         store.put_account(account).unwrap();
     }
@@ -325,4 +326,88 @@ async fn cors_preflight_allows_authorization_header() {
     // The wildcard would not cover Authorization in browsers.
     assert!(h(header::ACCESS_CONTROL_ALLOW_HEADERS).contains("authorization"));
     assert!(h(header::ACCESS_CONTROL_ALLOW_METHODS).contains("post"));
+}
+
+#[tokio::test]
+async fn grants_to_groups_per_manufacturer() {
+    let app = app(Some(TOKEN));
+    let body = r#"{"role": "Reader", "manufacturer": "", "password": "pw-max", "groups": ["purchasing", "trainees"]}"#;
+    assert_eq!(call(&app, "PUT", "/api/v1/users/max", Some(TOKEN), body).await.0, StatusCode::OK);
+    let max: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "max", "password": "pw-max"}"#).await;
+    assert_eq!(max.user.groups, ["purchasing", "trainees"]);
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/ACME.1", Some(&max.token), r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::FORBIDDEN);
+
+    // Purchasing maintains ACME; trainees never delete parts or change catalogs.
+    let policy = r#"{"anonymous": "reader",
+        "roles": [{"name": "cleanup", "rights": ["delete_parts", "edit_catalogs"]}],
+        "grants": [{"subject": {"group": "purchasing"}, "role": "manufacturer", "scope": "ACME"},
+                   {"subject": {"group": "trainees"}, "role": "cleanup", "scope": "*", "deny": true}]}"#;
+    assert_eq!(call(&app, "PUT", "/api/v1/access", Some(&max.token), policy).await.0, StatusCode::FORBIDDEN);
+    let settings: Settings<PartsRight> = json(&app, "PUT", "/api/v1/access", Some(TOKEN), policy).await;
+    assert_eq!(settings.policy.grants.len(), 2);
+    let info: ServerInfo = json(&app, "GET", "/api/v1/info", Some(&max.token), "").await;
+    assert!(info.may_edit("ACME") && !info.may(PartsRight::DeleteParts, "ACME") && !info.may_edit("Other"));
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/ACME.1", Some(&max.token), r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::CREATED);
+    let (status, text) = call(&app, "DELETE", "/api/v1/parts/ACME.1", Some(&max.token), "").await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert!(text.contains("delete_parts"), "{text}");
+    assert_eq!(call(&app, "PUT", "/api/v1/catalogs/acme", Some(&max.token), r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::FORBIDDEN);
+
+    let invalid = r#"{"grants": [{"subject": {"user": "max"}, "role": "nobody"}]}"#;
+    assert_eq!(call(&app, "PUT", "/api/v1/access", Some(TOKEN), invalid).await.0, StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn private_servers_need_a_sign_in_to_read() {
+    let state = state(Some(TOKEN));
+    access_file(&state).config.policy.anonymous.clear();
+    let app = router(state);
+    for uri in ["/api/v1/parts", "/api/v1/catalogs", "/api/v1/parts/GEN.CT-9A-24DC", "/api/v1/export.csv"] {
+        assert_eq!(call(&app, "GET", uri, None, "").await.0, StatusCode::UNAUTHORIZED, "{uri}");
+    }
+    assert_eq!(call(&app, "POST", "/api/v1/search", None, "{}").await.0, StatusCode::UNAUTHORIZED);
+    let info: ServerInfo = json(&app, "GET", "/api/v1/info", None, "").await;
+    assert!(info.access.is_empty(), "info tells clients to sign in");
+    let reader = sign_up(&app, "rea", "Reader", "").await;
+    assert_eq!(call(&app, "GET", "/api/v1/parts", Some(&reader), "").await.0, StatusCode::OK);
+    let mut settings: Settings<PartsRight> = json(&app, "GET", "/api/v1/access", Some(TOKEN), "").await;
+    settings.policy.grants.push(Grant { deny: true, ..Grant::new(Subject::User("rea".into()), "reader", "*") });
+    json::<Settings<PartsRight>>(&app, "PUT", "/api/v1/access", Some(TOKEN), &serde_json::to_string(&settings.policy).unwrap()).await;
+    assert_eq!(call(&app, "GET", "/api/v1/parts", Some(&reader), "").await.0, StatusCode::FORBIDDEN);
+}
+
+#[tokio::test]
+async fn admins_from_grants_and_directories() {
+    let state = state(None);
+    access_file(&state).config.directories.push(openecraft_auth::Directory {
+        id: "corp".into(),
+        url: "ldap://127.0.0.1:1".into(),
+        bind_dn: "CN=svc".into(),
+        base_dn: "DC=corp".into(),
+        timeout_secs: 1,
+        ..Default::default()
+    });
+    {
+        let mut store = store(&state);
+        let root = User { name: "root".into(), role: Role::Admin, ..Default::default() };
+        store.put_account(Account { user: root, password: hash_password("pw-root").unwrap(), ..Default::default() }).unwrap();
+        let ops = User { name: "ops".into(), groups: vec!["it".into()], ..Default::default() };
+        store.put_account(Account { user: ops, password: hash_password("pw-ops").unwrap(), ..Default::default() }).unwrap();
+    }
+    let app = router(state.clone());
+    let info: ServerInfo = json(&app, "GET", "/api/v1/info", None, "").await;
+    assert!(info.writable, "directory users can sign in");
+    let root: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "root", "password": "pw-root"}"#).await;
+    assert_eq!(call(&app, "DELETE", "/api/v1/users/root", Some(&root.token), "").await.0, StatusCode::CONFLICT);
+    // An administrator by grant keeps the server manageable.
+    let policy = r#"{"anonymous": "reader", "grants": [{"subject": {"group": "it"}, "role": "admin"}]}"#;
+    json::<Settings<PartsRight>>(&app, "PUT", "/api/v1/access", Some(&root.token), policy).await;
+    let ops: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "ops", "password": "pw-ops"}"#).await;
+    assert!(ops.access.allows(SERVER, PartsRight::Administer));
+    assert_eq!(call(&app, "DELETE", "/api/v1/users/root", Some(&ops.token), "").await.0, StatusCode::NO_CONTENT);
+    // Unknown names go to the directory, which is down.
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "anna", "password": "pw"}"#).await.0, StatusCode::SERVICE_UNAVAILABLE);
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "ops", "password": "wrong"}"#).await.0, StatusCode::UNAUTHORIZED);
+    let settings: Settings<PartsRight> = json(&app, "GET", "/api/v1/access", Some(&ops.token), "").await;
+    assert_eq!(settings.providers[0].id, "corp");
 }

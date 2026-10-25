@@ -25,7 +25,7 @@ fn requests_of_the_api() {
     assert_eq!(e.part("A B").url, "http://host:8090/api/v1/parts/A%20B");
     assert_eq!(e.export().url, "http://host:8090/api/v1/export.csv");
     // Reading needs no token; the info names the user of the token.
-    assert_eq!(e.list(&q).headers.get("Authorization"), None);
+    assert_eq!(e.list(&q).headers.get("Authorization"), Some("Bearer secret"), "private servers need it for reading");
     assert_eq!(e.info().headers.get("Authorization"), Some("Bearer secret"));
     assert_eq!(e.history("A/1").url, "http://host:8090/api/v1/parts/A%2F1/history");
     assert_eq!(e.history_part("A", 7).url, "http://host:8090/api/v1/parts/A/history/7");
@@ -55,7 +55,7 @@ fn portal_requests() {
     // Signing in never sends an old token.
     let login = e.login(" ann ", "pw");
     assert_eq!(login.headers.get("Authorization"), None);
-    assert_eq!(serde_json::from_slice::<api::Login>(&login.body).unwrap(), api::Login { name: "ann".into(), password: "pw".into() });
+    assert_eq!(serde_json::from_slice::<api::Login>(&login.body).unwrap(), api::Login { name: "ann".into(), password: "pw".into(), ..Default::default() });
     assert_eq!(e.logout().headers.get("Authorization"), Some("Bearer secret"));
     let fav = e.set_favorites(&["A".into()]);
     assert_eq!((fav.method, fav.body.as_slice()), (ehttp::Method::PUT, br#"["A"]"#.as_slice()));
@@ -63,6 +63,10 @@ fn portal_requests() {
     let user = e.save_user("bob", &api::UserUpdate::default());
     assert_eq!(user.url, "http://host:8090/api/v1/users/bob");
     assert_eq!(e.delete_user("bob").method, ehttp::Method::DELETE);
+    assert_eq!(e.access().url, "http://host:8090/api/v1/access");
+    let access = e.save_access(&Policy { anonymous: "reader".into(), ..Default::default() });
+    assert_eq!((access.method, access.headers.get("Authorization")), (ehttp::Method::PUT, Some("Bearer secret")));
+    assert_eq!(serde_json::from_slice::<Policy<PartsRight>>(&access.body).unwrap().anonymous, "reader");
 }
 
 #[test]

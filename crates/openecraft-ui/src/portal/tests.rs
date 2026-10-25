@@ -95,7 +95,7 @@ fn replies_update_results_history_and_updates() {
     assert!(b.updates.is_none() && b.remote.is_empty());
 
     b.password = "secret".into();
-    b.apply(&Reply::SignedIn(Ok(Session { token: "t".into(), user: User::default() })), &[]);
+    b.apply(&Reply::SignedIn(Ok(Session { token: "t".into(), user: User::default(), ..Default::default() })), &[]);
     assert!(b.password.is_empty(), "the password is not kept");
 }
 

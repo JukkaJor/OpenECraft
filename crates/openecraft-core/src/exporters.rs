@@ -1,7 +1,7 @@
 //! The built-in exports as registry entries ([`Exporter`]): drawings of the pages
 //! (SVG, HTML, PDF, DXF, DWG), production and PLC lists, exchange files (AutomationML,
 //! KBL, the harness interface), the panel layout and the harnesses in 3D (glTF, STEP,
-//! IGES, IFC, JT) and the translation
+//! IGES, IFC, JT, Parasolid XT) and the translation
 //! dictionary. The front ends offer them next to the exports of plugins; the language
 //! of the texts is the host's business (`translation::with_language`).
 
@@ -122,6 +122,10 @@ pub fn builtin() -> Vec<Exporter> {
         with_layout(prj)?;
         Ok(Export::Binary(crate::export3d::jt(prj)))
     })
+    .exporter_with("parasolid", tr_const!("Panel layout in 3D (Parasolid XT)"), "x_t", false, vec![], text(|prj, _, _| {
+        with_layout(prj)?;
+        Ok(crate::export3d::parasolid(prj))
+    }))
     .exporter_with("dictionary", tr_const!("Translation dictionary (CSV)"), "csv", false, vec![], text(|prj, _, _| Ok(crate::translation::to_csv(prj))));
     reg.exporters
 }

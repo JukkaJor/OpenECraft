@@ -27,7 +27,7 @@ impl FileKind for Purpose {
             Purpose::Model(kind) => kind.filter(),
             Purpose::Attachment => (
                 tr("Part files (documents, images, models, macros)"),
-                &["pdf", "png", "jpg", "jpeg", "gif", "webp", "svg", "dxf", "dwg", "step", "stp", "igs", "iges", "stl", "obj", "jt", "ifc", "json", "xml", "txt", "csv", "zip"],
+                &["pdf", "png", "jpg", "jpeg", "gif", "webp", "svg", "dxf", "dwg", "step", "stp", "igs", "iges", "x_t", "x_b", "stl", "obj", "jt", "ifc", "json", "xml", "txt", "csv", "zip"],
             ),
         }
     }
@@ -101,8 +101,9 @@ impl ManagerApp {
         self.client.info.as_ref().is_some_and(|i| i.can_edit()) && !self.client.busy()
     }
 
+    /// Manages users: by role or by a grant of the server's policy.
     fn is_admin(&self) -> bool {
-        self.client.user().is_some_and(|u| u.role == Role::Admin)
+        self.client.info.as_ref().is_some_and(|i| i.is_admin()) || self.client.user().is_some_and(|u| u.role == Role::Admin)
     }
 
     fn poll(&mut self, ctx: &egui::Context) {
@@ -518,7 +519,7 @@ impl ManagerApp {
             let selected = self.session.user.as_ref().filter(|d| !d.new).map(|d| d.name.clone());
             let mut open = None;
             for u in &self.session.users {
-                let text = format!("{} – {}", u.name, tr(u.role.title()));
+                let text = if u.provider.is_empty() { format!("{} – {}", u.name, tr(u.role.title())) } else { format!("{} – {} ({})", u.name, tr(u.role.title()), u.provider) };
                 if ui.selectable_label(selected.as_deref() == Some(u.name.as_str()), text).clicked() {
                     open = Some(u.name.clone());
                 }
@@ -559,14 +560,27 @@ impl ManagerApp {
                 ui.add(egui::TextEdit::singleline(&mut d.update.manufacturer).desired_width(200.0));
                 ui.end_row();
             }
-            ui.label(if d.new { tr("Password") } else { tr("New password") });
-            ui.add(egui::TextEdit::singleline(&mut d.update.password).password(true).desired_width(200.0).hint_text(if d.new { "" } else { tr("unchanged if empty") }));
-            ui.end_row();
+            if d.provider.is_empty() {
+                ui.label(if d.new { tr("Password") } else { tr("New password") });
+                ui.add(egui::TextEdit::singleline(&mut d.update.password).password(true).desired_width(200.0).hint_text(if d.new { "" } else { tr("unchanged if empty") }));
+                ui.end_row();
+                ui.label(tr("Groups"));
+                ui.add(egui::TextEdit::singleline(&mut d.groups).desired_width(200.0).hint_text(tr("separated by commas")))
+                    .on_hover_text(tr("Grants of the server's access settings can refer to them"));
+                ui.end_row();
+            } else {
+                ui.label(tr("Directory"));
+                ui.label(&d.provider).on_hover_text(tr("The directory checks the password and sets the groups at every sign-in"));
+                ui.end_row();
+                ui.label(tr("Groups"));
+                ui.add(egui::Label::new(&d.groups).wrap());
+                ui.end_row();
+            }
         });
         ui.add_space(8.0);
         ui.horizontal(|ui| {
             if ui.add_enabled(!busy && problem.is_none(), egui::Button::new(tr("✔ Save"))).clicked() {
-                let update = d.update.clone();
+                let update = d.request();
                 self.client.save_user(&ctx, d.name.trim(), &update);
             }
             if !d.new && ui.add_enabled(!busy, egui::Button::new(tr("🗑 Delete"))).clicked() {

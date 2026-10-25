@@ -112,7 +112,7 @@ fn update_check_finds_newer_and_discontinued_parts() {
 
 #[test]
 fn manufacturers_edit_their_own_parts_only() {
-    let user = |role, m: &str| User { name: "u".into(), role, manufacturer: m.into() };
+    let user = |role, m: &str| User { name: "u".into(), role, manufacturer: m.into(), ..Default::default() };
     assert!(user(Role::Manufacturer, "ABB").may_edit("abb "));
     assert!(!user(Role::Manufacturer, "ABB").may_edit("Siemens"));
     assert!(!user(Role::Manufacturer, "").may_edit(""));
@@ -122,10 +122,30 @@ fn manufacturers_edit_their_own_parts_only() {
 }
 
 #[test]
+fn roles_give_rights() {
+    use crate::access::{Grant, Policy, Right, Subject, SERVER};
+    let maker = User { name: "max".into(), role: Role::Manufacturer, manufacturer: "ABB".into(), groups: vec!["corp:Purchasing".into()], ..Default::default() };
+    let access = maker.access();
+    assert!(access.allows(SERVER, PartsRight::Read));
+    assert!(access.allows("ABB", PartsRight::EditCatalogs));
+    assert!(!access.allows("Siemens", PartsRight::DeleteParts));
+    assert!(!access.allows(SERVER, PartsRight::Administer));
+    let policy = Policy::<PartsRight> { grants: vec![Grant::new(Subject::Group("corp:Purchasing".into()), "editor", "Sie*")], ..Default::default() };
+    assert!(policy.access(&maker.identity(), &maker.grants()).allows("Siemens", PartsRight::DeleteParts));
+    for role in Role::ALL {
+        assert_eq!(PartsRight::role(role.name()), Some(role.rights()));
+    }
+    assert_eq!(PartsRight::ROLES, Role::ALL.map(Role::name));
+    let admin = User { role: Role::Admin, ..Default::default() };
+    assert!(admin.access().allows(SERVER, PartsRight::Administer));
+}
+
+#[test]
 fn attachment_kinds_and_media_types() {
     assert_eq!(AttachmentKind::guess("K1 datasheet.PDF"), AttachmentKind::Datasheet);
     assert_eq!(AttachmentKind::guess("manual_de.pdf"), AttachmentKind::Manual);
     assert_eq!(AttachmentKind::guess("model.stp"), AttachmentKind::Model3d);
+    assert_eq!(AttachmentKind::guess("contactor.x_t"), AttachmentKind::Model3d);
     assert_eq!(AttachmentKind::guess("motor-macros.json"), AttachmentKind::Macro);
     assert_eq!(AttachmentKind::guess("photo.jpeg"), AttachmentKind::Image);
     assert_eq!(content_type("a.PDF"), "application/pdf");

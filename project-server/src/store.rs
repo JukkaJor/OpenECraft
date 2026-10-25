@@ -106,6 +106,22 @@ impl Store {
         Ok(revision)
     }
 
+    /// Removes the project and its files.
+    pub fn delete(&mut self, name: &str) -> io::Result<()> {
+        if self.projects.remove(name).is_none() {
+            return Err(io::Error::new(io::ErrorKind::NotFound, name.to_string()));
+        }
+        if let Some(dir) = &self.dir {
+            for ext in [PROJECT_EXT, STATE_EXT] {
+                match std::fs::remove_file(dir.join(format!("{name}.{ext}"))) {
+                    Err(e) if e.kind() != io::ErrorKind::NotFound => return Err(e),
+                    _ => {}
+                }
+            }
+        }
+        Ok(())
+    }
+
     /// Reserves [`ID_BLOCK`] object ids for a session; returns the first one.
     pub fn reserve_ids(&mut self, name: &str) -> io::Result<u64> {
         let Some(old) = self.projects.get(name) else {

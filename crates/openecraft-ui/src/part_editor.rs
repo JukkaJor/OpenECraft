@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 pub enum ModelKind {
     /// 2D front view (SVG).
     Front2d,
-    /// 3D model (STL, OBJ, STEP, IGES, IFC, JT).
+    /// 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT).
     Mesh3d,
 }
 
@@ -26,7 +26,7 @@ impl FileKind for ModelKind {
     fn filter(self) -> (&'static str, &'static [&'static str]) {
         match self {
             ModelKind::Front2d => (tr("2D front view (SVG)"), &["svg"]),
-            ModelKind::Mesh3d => (tr("3D model (STL, OBJ, STEP, IGES, IFC, JT)"), &["stl", "obj", "step", "stp", "igs", "iges", "ifc", "jt"]),
+            ModelKind::Mesh3d => (tr("3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)"), &["stl", "obj", "step", "stp", "igs", "iges", "x_t", "x_b", "xmt_txt", "xmt_bin", "ifc", "jt"]),
         }
     }
 }
@@ -38,6 +38,7 @@ pub fn parse_model_3d(file: &str, bytes: &[u8]) -> Result<Mesh3d, String> {
     match ext {
         "step" | "stp" => openecraft_step::parse_step(bytes),
         "igs" | "iges" => openecraft_step::parse_iges(bytes),
+        "x_t" | "x_b" | "xmt_txt" | "xmt_bin" => openecraft_step::parse_parasolid(bytes),
         "jt" => openecraft_jt::parse_jt(bytes),
         _ => parse_mesh(file, bytes),
     }

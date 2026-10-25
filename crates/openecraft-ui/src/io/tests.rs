@@ -8,6 +8,7 @@ fn short_names_and_mime_types() {
     assert_eq!(mime_type("csv"), "text/csv");
     assert_eq!(mime_type("json"), "application/json");
     assert_eq!(mime_type("igs"), "model/iges");
+    assert_eq!(mime_type("x_t"), "model/vnd.parasolid.transmit.text");
     assert_eq!(mime_type("jt"), "application/octet-stream");
 }
 
@@ -15,6 +16,19 @@ fn short_names_and_mime_types() {
 fn loaded_text_is_lossy() {
     let l = Loaded { purpose: (), name: "a".into(), bytes: vec![b'o', b'k', 0xff] };
     assert!(l.text().starts_with("ok"));
+}
+
+#[test]
+fn a_file_opened_by_path_is_polled() {
+    let path = std::env::temp_dir().join(format!("openecraft-ui-open-{}.oec", std::process::id())).display().to_string();
+    write_file(&path, b"{}").unwrap();
+    let io = FileIo::<()>::default();
+    io.open_path(&path, ());
+    io.open_path(&format!("{path}.missing"), ());
+    let loaded = io.poll().unwrap();
+    assert_eq!((loaded.name.as_str(), loaded.bytes.as_slice()), (path.as_str(), b"{}".as_slice()));
+    assert!(io.poll().is_none());
+    std::fs::remove_file(&path).unwrap();
 }
 
 #[test]

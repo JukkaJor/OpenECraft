@@ -126,7 +126,7 @@ fn catalogs_count_their_parts() {
 #[test]
 fn accounts_sessions_and_favorites() {
     for mut store in stores() {
-        let mut account = Account { user: User { name: "ann".into(), role: Role::Editor, manufacturer: String::new() }, ..Default::default() };
+        let mut account = Account { user: User { name: "ann".into(), role: Role::Editor, manufacturer: String::new(), ..Default::default() }, ..Default::default() };
         let token = account.start_session();
         let rev = store.revision;
         store.put_account(account).unwrap();

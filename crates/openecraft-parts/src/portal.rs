@@ -2,6 +2,7 @@
 //! search of the parts server. Shared by the server and its clients, so a search or
 //! an update check gives the same result everywhere.
 
+use crate::access::{Access, Grant, Identity, Policy, Right, Subject, SERVER};
 use crate::api::PartQuery;
 use crate::{natural_cmp, Part, TopGroup};
 use serde::{Deserialize, Serialize};
@@ -79,7 +80,7 @@ impl AttachmentKind {
         match ext {
             "png" | "jpg" | "jpeg" | "gif" | "webp" | "bmp" => AttachmentKind::Image,
             "svg" | "dxf" | "dwg" => AttachmentKind::Drawing,
-            "step" | "stp" | "iges" | "igs" | "stl" | "obj" | "jt" | "ifc" => AttachmentKind::Model3d,
+            "step" | "stp" | "iges" | "igs" | "x_t" | "x_b" | "xmt_txt" | "xmt_bin" | "stl" | "obj" | "jt" | "ifc" => AttachmentKind::Model3d,
             "json" if lower.contains("macro") => AttachmentKind::Macro,
             "pdf" if lower.contains("manual") || lower.contains("handbuch") => AttachmentKind::Manual,
             "pdf" if lower.contains("cert") || lower.contains("zert") => AttachmentKind::Certificate,
@@ -104,6 +105,8 @@ pub fn content_type(name: &str) -> &'static str {
         "xml" => "application/xml",
         "zip" => "application/zip",
         "step" | "stp" => "model/step",
+        "x_t" => "model/vnd.parasolid.transmit.text",
+        "x_b" => "model/vnd.parasolid.transmit.binary",
         "stl" => "model/stl",
         "obj" => "model/obj",
         _ => "application/octet-stream",
@@ -138,7 +141,57 @@ pub struct Catalog {
     pub parts: usize,
 }
 
-/// What a user may do on the parts server. Ordered by permissions.
+/// What may be done on the parts server. The scope of a right is the manufacturer
+/// of the parts and catalogs; reading and administering apply to the whole server.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PartsRight {
+    /// Browse and search parts, catalogs and files; keep favorites.
+    Read,
+    /// Create and change parts and their files, import parts.
+    EditParts,
+    DeleteParts,
+    /// Create, change and delete catalogs.
+    EditCatalogs,
+    /// Manage users, roles and grants.
+    Administer,
+}
+
+impl Right for PartsRight {
+    const ALL: &'static [PartsRight] = &[PartsRight::Read, PartsRight::EditParts, PartsRight::DeleteParts, PartsRight::EditCatalogs, PartsRight::Administer];
+    const ROLES: &'static [&'static str] = &["reader", "manufacturer", "editor", "admin"];
+
+    fn role(name: &str) -> Option<&'static [PartsRight]> {
+        Role::ALL.into_iter().find(|r| r.name().eq_ignore_ascii_case(name.trim())).map(Role::rights)
+    }
+
+    fn name(self) -> &'static str {
+        match self {
+            PartsRight::Read => "read",
+            PartsRight::EditParts => "edit_parts",
+            PartsRight::DeleteParts => "delete_parts",
+            PartsRight::EditCatalogs => "edit_catalogs",
+            PartsRight::Administer => "administer",
+        }
+    }
+
+    fn title(self) -> &'static str {
+        match self {
+            PartsRight::Read => "Read parts",
+            PartsRight::EditParts => "Edit parts",
+            PartsRight::DeleteParts => "Delete parts",
+            PartsRight::EditCatalogs => "Edit catalogs",
+            PartsRight::Administer => "Administer the server",
+        }
+    }
+
+    fn server_wide(self) -> bool {
+        matches!(self, PartsRight::Read | PartsRight::Administer)
+    }
+}
+
+/// Built-in role of a user account on the parts server. Ordered by permissions.
+/// Further rights come from the grants of the server's policy ([`crate::access`]).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Role {
     /// Browse and keep favorites.
@@ -163,6 +216,25 @@ impl Role {
             Role::Admin => "Administrator",
         }
     }
+
+    /// Name in grants.
+    pub fn name(self) -> &'static str {
+        match self {
+            Role::Reader => "reader",
+            Role::Manufacturer => "manufacturer",
+            Role::Editor => "editor",
+            Role::Admin => "admin",
+        }
+    }
+
+    pub fn rights(self) -> &'static [PartsRight] {
+        use PartsRight::*;
+        match self {
+            Role::Reader => &[Read],
+            Role::Manufacturer | Role::Editor => &[Read, EditParts, DeleteParts, EditCatalogs],
+            Role::Admin => PartsRight::ALL,
+        }
+    }
 }
 
 /// A user of the parts server (without credentials).
@@ -173,16 +245,39 @@ pub struct User {
     pub role: Role,
     /// Manufacturer whose parts a [`Role::Manufacturer`] user maintains.
     pub manufacturer: String,
+    /// Directory the user signs in with; empty for a local account.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub provider: String,
+    /// Groups for the grants (directory groups as `directory:group`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<String>,
 }
 
 impl User {
-    /// True if the user may change parts / catalogs of this manufacturer.
-    pub fn may_edit(&self, manufacturer: &str) -> bool {
+    pub fn identity(&self) -> Identity {
+        Identity { name: self.name.clone(), provider: self.provider.clone(), groups: self.groups.clone() }
+    }
+
+    /// What the built-in role gives: its rights everywhere; a manufacturer user gets
+    /// them on its own manufacturer only.
+    pub fn grants(&self) -> Vec<Grant> {
+        let me = || Subject::User(self.name.clone());
+        let reader = || Grant::new(me(), Role::Reader.name(), SERVER);
         match self.role {
-            Role::Admin | Role::Editor => true,
-            Role::Manufacturer => !self.manufacturer.trim().is_empty() && self.manufacturer.trim().eq_ignore_ascii_case(manufacturer.trim()),
-            Role::Reader => false,
+            Role::Manufacturer if self.manufacturer.trim().is_empty() => vec![reader()],
+            Role::Manufacturer => vec![reader(), Grant::new(me(), Role::Manufacturer.name(), self.manufacturer.trim())],
+            role => vec![Grant::new(me(), role.name(), SERVER)],
         }
+    }
+
+    /// The rights of the built-in role (without the grants of a policy).
+    pub fn access(&self) -> Access<PartsRight> {
+        Policy::default().access(&self.identity(), &self.grants())
+    }
+
+    /// True if the built-in role allows changing parts of this manufacturer.
+    pub fn may_edit(&self, manufacturer: &str) -> bool {
+        self.access().allows(manufacturer.trim(), PartsRight::EditParts)
     }
 }
 

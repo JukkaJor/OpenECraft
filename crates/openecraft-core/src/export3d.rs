@@ -4,7 +4,8 @@
 //! models or boxes) as glTF 2.0 (JSON with embedded buffer, metres, y up) and – in
 //! millimetres, z up – as STEP AP214 (faceted solids with colours), IGES 5.3
 //! (manifold solid B-rep objects with planar faces), IFC4 (distribution boards with
-//! triangulated elements) and JT (tri-strip meshes).
+//! triangulated elements), JT (tri-strip meshes) and – in metres – Parasolid XT
+//! (faceted solid bodies).
 
 mod ifc;
 mod iges;
@@ -160,6 +161,15 @@ pub fn jt_of(title: &str, scenes: &[EnclosureScene]) -> Vec<u8> {
         })
         .collect();
     openecraft_jt::write_jt(title, &groups)
+}
+
+/// The scene as Parasolid XT text (`.x_t`): every closed part of a solid a faceted
+/// solid body, in metres, z up (see `openecraft_xt`).
+pub fn parasolid(prj: &Project) -> String {
+    let scenes = scene(prj);
+    let tris: Vec<Vec<Tri>> = scenes.iter().flat_map(|es| es.solids.iter().map(|s| z_up(es, s))).collect();
+    let meshes: Vec<&[Tri]> = tris.iter().map(Vec::as_slice).collect();
+    openecraft_xt::write_xt(&meshes)
 }
 
 fn json_str(s: &str) -> String {

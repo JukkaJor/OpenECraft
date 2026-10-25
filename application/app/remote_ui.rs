@@ -6,7 +6,7 @@ use super::App;
 use openecraft_core::history::History;
 use crate::remote::{Remote, Reply};
 use egui::{Color32, RichText};
-use openecraft_core::collab::{valid_name, Shared, Snapshot, Target};
+use openecraft_core::collab::{valid_name, Grant, ProjectRight, Right, Shared, Snapshot, Subject, Target};
 use openecraft_i18n::{tr, tr_fmt};
 
 impl App {
@@ -43,10 +43,10 @@ impl App {
                     }
                     self.notify(ctx, self.remote.status.clone());
                 }
-                Reply::Opened(_, Err(_)) | Reply::Saved(_, Err(_)) | Reply::Snapshot(_, Err(_)) | Reply::Status(_, Err(_)) => {
+                Reply::Opened(_, Err(_)) | Reply::Saved(_, Err(_)) | Reply::Snapshot(_, Err(_)) | Reply::Status(_, Err(_)) | Reply::Access(_, Err(_)) => {
                     self.notify(ctx, self.remote.status.clone());
                 }
-                Reply::List(_) | Reply::Login(_) | Reply::Closed => {}
+                Reply::List(_) | Reply::Login(_) | Reply::Access(_, Ok(_)) | Reply::Closed => {}
             }
         }
     }
@@ -162,6 +162,12 @@ impl App {
                     ui.label(role.title());
                     ui.end_row();
                 }
+                if connected && !self.remote.rights.is_empty() {
+                    ui.label(tr("Rights"));
+                    let rights: Vec<&str> = self.remote.rights.iter().map(|r| tr(r.title())).collect();
+                    ui.add(egui::Label::new(rights.join(", ")).wrap());
+                    ui.end_row();
+                }
             });
             ui.horizontal(|ui| {
                 if ui.add_enabled(!self.remote.busy(), egui::Button::new(tr("⟳ List projects"))).clicked() {
@@ -231,8 +237,10 @@ impl App {
     fn shared_section(&mut self, ui: &mut egui::Ui) {
         let Some(sh) = &self.remote.shared else { return };
         ui.label(RichText::new(tr_fmt!("Shared project {} – revision {}, user {}", sh.name, sh.revision, sh.session.user)).strong());
-        if self.remote.viewer() {
-            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may view this project: comments and markup only, no changes."));
+        if self.remote.viewer() && self.remote.may(ProjectRight::Review) {
+            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may review this project: comments, markup and approvals, no other changes."));
+        } else if self.remote.viewer() {
+            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("You may only view this project."));
         }
         let mine = self.my_locks();
         let others: Vec<(Target, String)> = sh.locks.iter().filter(|l| l.session != sh.session.session).map(|l| (l.target, l.user.clone())).collect();
@@ -282,9 +290,80 @@ impl App {
         for (t, user) in &others {
             ui.label(format!("🔒 {} – {}", Remote::describe(&self.session.prj, *t), user));
         }
+        if self.remote.may(ProjectRight::ManageAccess) && !self.remote.rights.is_empty() {
+            ui.separator();
+            self.access_section(ui);
+        }
         ui.separator();
         if ui.button(tr("Close shared project")).on_hover_text(tr("Releases all locks; the project stays open as a local copy")).clicked() {
             self.remote.close();
+        }
+    }
+
+    /// Who may use the open project: grants of roles to users and groups (with
+    /// wildcards; directory groups as `directory:group`), for project managers.
+    fn access_section(&mut self, ui: &mut egui::Ui) {
+        ui.strong(tr("Project access"));
+        let busy = self.remote.busy();
+        let Some(access) = &mut self.remote.access else {
+            if ui.add_enabled(!busy, egui::Button::new(tr("Show who may use the project"))).clicked() {
+                self.remote.load_access();
+            }
+            return;
+        };
+        let mut remove = None;
+        egui::Grid::new("project_access").striped(true).num_columns(5).show(ui, |ui| {
+            for h in [tr("User / group"), tr("Name"), tr("Role"), tr("Deny"), ""] {
+                ui.strong(h);
+            }
+            ui.end_row();
+            for (i, g) in access.grants.iter_mut().enumerate() {
+                let group = matches!(g.subject, Subject::Group(_));
+                let mut kind = group;
+                egui::ComboBox::from_id_salt(("grant_kind", i)).selected_text(if group { tr("Group") } else { tr("User") }).show_ui(ui, |ui| {
+                    ui.selectable_value(&mut kind, false, tr("User"));
+                    ui.selectable_value(&mut kind, true, tr("Group"));
+                });
+                let mut name = g.subject.name().to_string();
+                ui.add(egui::TextEdit::singleline(&mut name).desired_width(160.0).hint_text(tr("e.g. corp:Engineering")));
+                g.subject = if kind { Subject::Group(name) } else { Subject::User(name) };
+                egui::ComboBox::from_id_salt(("grant_role", i)).selected_text(g.role.as_str()).show_ui(ui, |ui| {
+                    for r in &access.roles {
+                        ui.selectable_value(&mut g.role, r.clone(), r.as_str());
+                    }
+                });
+                ui.checkbox(&mut g.deny, "").on_hover_text(tr("Takes the rights of the role away, whatever other grants give"));
+                if ui.small_button("🗑").on_hover_text(tr("Remove")).clicked() {
+                    remove = Some(i);
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(i) = remove {
+            access.grants.remove(i);
+        }
+        let role = access.roles.first().cloned().unwrap_or_default();
+        let mut save = None;
+        let mut reload = false;
+        ui.horizontal(|ui| {
+            if ui.button(tr("Add user")).clicked() {
+                access.grants.push(Grant::new(Subject::User(String::new()), &role, ""));
+            }
+            if ui.button(tr("Add group")).clicked() {
+                access.grants.push(Grant::new(Subject::Group(String::new()), &role, ""));
+            }
+            let complete = access.grants.iter().all(|g| !g.subject.name().trim().is_empty() && !g.role.is_empty());
+            if ui.add_enabled(complete && !busy, egui::Button::new(tr("Save access"))).clicked() {
+                save = Some(access.grants.clone());
+            }
+            reload = ui.add_enabled(!busy, egui::Button::new(tr("⟳ Reload"))).clicked();
+        });
+        if let Some(grants) = save {
+            self.remote.save_access(&grants);
+        }
+        if reload {
+            self.remote.access = None;
+            self.remote.load_access();
         }
     }
 }
