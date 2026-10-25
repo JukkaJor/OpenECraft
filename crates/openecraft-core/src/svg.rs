@@ -170,6 +170,11 @@ pub fn print_document(prj: &Project) -> String {
 
 /// All pages as HTML, drawn with the host's analysis.
 pub fn print_document_with(prj: &Project, an: &Analysis) -> String {
+    print_document_pages(prj, an, &(0..prj.pages.len()).collect::<Vec<_>>())
+}
+
+/// The print document of the pages `sel` (indices in project order).
+pub fn print_document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
@@ -180,7 +185,7 @@ pub fn print_document_with(prj: &Project, an: &Analysis) -> String {
         esc(&prj.info.name)
     );
     // One named @page rule per paper size.
-    let sizes: Vec<(f32, f32)> = (0..prj.pages.len()).map(|i| crate::frame::of_page(prj, i).size()).collect();
+    let sizes: Vec<(f32, f32)> = sel.iter().map(|&i| crate::frame::of_page(prj, i).size()).collect();
     let mut distinct: Vec<(f32, f32)> = Vec::new();
     for s in &sizes {
         if !distinct.contains(s) {
@@ -191,7 +196,8 @@ pub fn print_document_with(prj: &Project, an: &Analysis) -> String {
         let _ = write!(out, "@page s{n} {{ size: {w}mm {h}mm; margin: 0; }}");
     }
     out.push_str("</style></head><body>\n");
-    for (i, (w, h)) in sizes.iter().enumerate() {
+    for (k, (w, h)) in sizes.iter().enumerate() {
+        let i = sel[k];
         let n = distinct.iter().position(|s| s == &(*w, *h)).unwrap_or(0);
         let _ = writeln!(out, "<div class=\"page\" style=\"page: s{n}; width: {w}mm; height: {h}mm\">");
         out.push_str(&page_svg_with(prj, an, i));

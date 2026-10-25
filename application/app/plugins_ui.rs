@@ -24,7 +24,7 @@ pub struct PluginsUi {
 }
 
 /// Arguments from the texts of the form; empty fields are left out.
-fn form_args(params: &[Param], texts: &[String]) -> Result<Map<String, Value>, String> {
+pub(super) fn form_args(params: &[Param], texts: &[String]) -> Result<Map<String, Value>, String> {
     let mut out = Map::new();
     for (p, t) in params.iter().zip(texts) {
         if t.trim().is_empty() {

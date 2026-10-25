@@ -62,7 +62,67 @@ impl App {
 
     /// Runs an exporter on the project (with its texts in `lang` if given) and saves
     /// the file. Exporters that take a page get the current one.
+    /// Runs an export; exports with parameters beyond the page and the file name ask
+    /// for them first.
     pub(super) fn run_exporter(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>) {
+        if e.params.iter().any(|p| p.name != "page" && p.name != "file") {
+            let page = self.session.prj.pages[self.session.page].name.clone();
+            let harness = self.harness_ui.sel.clone().or_else(|| self.session.prj.harnesses.first().map(|h| h.tag.clone())).unwrap_or_default();
+            let texts = e
+                .params
+                .iter()
+                .map(|p| match p.name.as_ref() {
+                    "page" => page.clone(),
+                    "harness" => harness.clone(),
+                    _ => String::new(),
+                })
+                .collect();
+            self.export_form = Some((e.clone(), lang.map(String::from), texts));
+            return;
+        }
+        self.run_exporter_with(ctx, e, lang, Map::new());
+    }
+
+    /// The window with the parameters of an export.
+    pub(super) fn export_form_window(&mut self, ctx: &egui::Context) {
+        let Some((e, lang, mut texts)) = self.export_form.take() else { return };
+        let mut open = true;
+        let mut run = false;
+        egui::Window::new(text(&e.title).to_string()).open(&mut open).resizable(false).show(ctx, |ui| {
+            egui::Grid::new("export_params").num_columns(2).show(ui, |ui| {
+                for (p, t) in e.params.iter().zip(texts.iter_mut()).filter(|(p, _)| p.name != "file") {
+                    let name = if p.required { format!("{} *", p.name) } else { p.name.to_string() };
+                    ui.label(name).on_hover_text(text(&p.help));
+                    if p.kind == openecraft_api::params::Kind::Bool {
+                        let mut on = t.trim() == "true";
+                        if ui.checkbox(&mut on, "").changed() {
+                            *t = on.to_string();
+                        }
+                    } else {
+                        ui.add(egui::TextEdit::singleline(t).hint_text(text(&p.help)).desired_width(320.0));
+                    }
+                    ui.end_row();
+                }
+            });
+            run = ui.button(tr("⬇ Export…")).clicked();
+        });
+        if run {
+            let params: Vec<openecraft_api::params::Param> = e.params.iter().filter(|p| p.name != "file").cloned().collect();
+            let shown: Vec<String> = e.params.iter().zip(&texts).filter(|(p, _)| p.name != "file").map(|(_, t)| t.clone()).collect();
+            match super::plugins_ui::form_args(&params, &shown) {
+                Ok(args) => {
+                    self.run_exporter_with(ctx, &e, lang.as_deref(), args);
+                    return;
+                }
+                Err(err) => self.notify(ctx, err),
+            }
+        }
+        if open {
+            self.export_form = Some((e, lang, texts));
+        }
+    }
+
+    fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
         let takes = |n: &str| e.params.iter().any(|p| p.name == n);
         let page = self.session.prj.pages[self.session.page].name.clone();
         let base = self.suggested_name("x");
@@ -78,8 +138,8 @@ impl App {
             stem = format!("{stem}_{l}");
         }
         let name = format!("{stem}.{}", e.extension);
-        let mut args = Map::new();
-        if takes("page") {
+        let mut args = extra;
+        if takes("page") && !args.contains_key("page") {
             args.insert("page".into(), page.into());
         }
         if takes("file") {

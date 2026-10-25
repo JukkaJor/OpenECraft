@@ -13,6 +13,7 @@ use openecraft_i18n::{tr, tr_const, tr_fmt};
 const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));
 const PAGE_OPT: Param = optional("page", Kind::Str, tr_const!("Page name as shown by list_pages (default: all pages)"));
 const FILE: Param = optional("file", Kind::Str, tr_const!("File name written into the file header"));
+const PAGES: Param = optional("pages", Kind::Str, tr_const!("Pages: names and ranges, e.g. 1-3, 5 (default: all pages)"));
 const HARNESS: Param = param("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1"));
 const SCHEME: Param = optional("scheme", Kind::Str, tr_const!("Labeling scheme (default: the scheme selected in the project)"));
 
@@ -56,8 +57,12 @@ pub fn builtin() -> Vec<Exporter> {
         let i = page_index(prj, a)?.ok_or_else(|| tr("This format needs a page").to_string())?;
         Ok(crate::svg::page_svg_with(prj, an, i))
     }))
-    .exporter_with("html", tr_const!("HTML document for printing (all pages)"), "html", false, vec![], text(|prj, an, _| Ok(crate::svg::print_document_with(prj, an))))
-    .exporter_with("pdf", tr_const!("PDF document (bookmarks, linked cross references)"), "pdf", false, vec![], text(|prj, an, _| Ok(crate::pdf::document_with(prj, an))))
+    .exporter_with("html", tr_const!("HTML document for printing"), "html", false, vec![PAGES], text(|prj, an, a| {
+        Ok(crate::svg::print_document_pages(prj, an, &crate::page_select::parse(prj, a.str("pages").unwrap_or_default())?))
+    }))
+    .exporter_with("pdf", tr_const!("PDF document (bookmarks, linked cross references)"), "pdf", false, vec![PAGES], text(|prj, an, a| {
+        Ok(crate::pdf::document_pages(prj, an, &crate::page_select::parse(prj, a.str("pages").unwrap_or_default())?))
+    }))
     .exporter_with("dxf", tr_const!("DXF drawing"), "dxf", false, vec![PAGE_OPT], text(|prj, an, a| Ok(crate::dxf::pages_dxf_with(prj, an, &pages(prj, a)?))))
     .exporter_with("dwg", tr_const!("DWG drawing"), "dwg", true, vec![PAGE_OPT], |prj, an, a| crate::dwg::pages_dwg_with(prj, an, &pages(prj, a)?).map(Export::Binary))
     .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv())))

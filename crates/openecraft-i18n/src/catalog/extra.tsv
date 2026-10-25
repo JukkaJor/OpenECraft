@@ -4709,3 +4709,5 @@ Nailboard layout of a harness: the branches from the common node to the connecto
 // branch not to scale	// Abzweig nicht maßstäblich	// branche pas à l'échelle	// rama no a escala
 Option {} needs the form name=value	Option {} braucht die Form Name=Wert	L'option {} doit avoir la forme nom=valeur	La opción {} necesita la forma nombre=valor
 Further parameters of the export as name=value, separated by commas (see list_exports), e.g. harness=-WH1	Weitere Parameter des Exports als Name=Wert, durch Komma getrennt (siehe list_exports), z. B. harness=-WH1	Autres paramètres de l'export sous la forme nom=valeur, séparés par des virgules (voir list_exports), p. ex. harness=-WH1	Otros parámetros de la exportación como nombre=valor, separados por comas (ver list_exports), p. ej. harness=-WH1
+HTML document for printing	HTML-Dokument zum Drucken	Document HTML pour l'impression	Documento HTML para imprimir
+Pages: names and ranges, e.g. 1-3, 5 (default: all pages)	Seiten: Namen und Bereiche, z. B. 1-3, 5 (Standard: alle Seiten)	Pages : noms et plages, p. ex. 1-3, 5 (par défaut : toutes les pages)	Páginas: nombres y rangos, p. ej. 1-3, 5 (por defecto: todas las páginas)

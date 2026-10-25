@@ -123,3 +123,16 @@ fn texts_beyond_winansi_use_the_embedded_font() {
     assert!(pdf.contains(&l), "ToUnicode maps the glyph back to the character");
     assert!(pdf.contains("(Wire 1.5 mm\\262) Tj"), "WinAnsi texts keep Helvetica");
 }
+
+#[test]
+fn selected_pages_only_with_links_among_them() {
+    let prj = crate::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let all = document_with(&prj, &an);
+    let two = document_pages(&prj, &an, &[1, 2]);
+    assert!(two.contains("/Count 2"));
+    assert!(two.len() < all.len());
+    let pages = |s: &str| s.matches("/Type /Page ").count();
+    assert_eq!(pages(&two), 2);
+    assert_eq!(pages(&all), prj.pages.len());
+}

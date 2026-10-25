@@ -12,7 +12,7 @@ use egui::{Color32, RichText};
 pub struct HarnessUi {
     pub open: bool,
     /// Tag of the harness whose connectors are shown.
-    sel: Option<String>,
+    pub(super) sel: Option<String>,
 }
 
 impl App {

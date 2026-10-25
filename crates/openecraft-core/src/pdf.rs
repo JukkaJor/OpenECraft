@@ -461,9 +461,16 @@ pub fn document(prj: &Project) -> String {
 
 /// All pages as PDF, drawn with the host's analysis (its reports, its index).
 pub fn document_with(prj: &Project, an: &Analysis) -> String {
+    document_pages(prj, an, &(0..prj.pages.len()).collect::<Vec<_>>())
+}
+
+/// The PDF of the pages `sel` (indices in project order); links to pages left out are
+/// dropped.
+pub fn document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> String {
     let idx = &an.index;
-    let pages: Vec<PdfDraw> = (0..prj.pages.len())
-        .map(|i| {
+    let pages: Vec<PdfDraw> = sel
+        .iter()
+        .map(|&i| {
             let mut d = PdfDraw { h: crate::frame::of_page(prj, i).height(), ..Default::default() };
             draw_page(&mut d, prj, idx, an, i, &Opts::default());
             d
@@ -503,7 +510,8 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
     }
     w.obj(5, &format!("<< /Title ({}) /Producer (OpenECraft) >>", pdf_string(&prj.info.name)));
     let mut attachments = Vec::new();
-    for (i, d) in pages.iter().enumerate() {
+    for (k, d) in pages.iter().enumerate() {
+        let i = sel[k];
         let frame = crate::frame::of_page(prj, i);
         let (width, height) = (frame.width() * K, frame.height() * K);
         let mut annots = Vec::new();
@@ -540,12 +548,10 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
             }
         }
         for (rect, target) in &d.links {
-            if *target >= n || *target == i {
-                continue;
-            }
+            let Some(target) = sel.iter().position(|x| x == target).filter(|t| *t != k) else { continue };
             let body = format!(
                 "<< /Type /Annot /Subtype /Link /Rect [{:.2} {:.2} {:.2} {:.2}] /Border [0 0 0] /Dest [{} 0 R /Fit] >>",
-                rect[0], rect[1], rect[2], rect[3], page_obj(*target)
+                rect[0], rect[1], rect[2], rect[3], page_obj(target)
             );
             w.obj(next, &body);
             annots.push(format!("{next} 0 R"));
@@ -574,7 +580,7 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
             next += 1;
         }
         let xobject = if xobjects.is_empty() { String::new() } else { format!(" /XObject << {} >>", xobjects.join(" ")) };
-        let po = page_obj(i);
+        let po = page_obj(k);
         w.obj(
             po,
             &format!(
@@ -590,11 +596,11 @@ pub fn document_with(prj: &Project, an: &Analysis) -> String {
         w.obj(po + 1, &format!("<< /Length {} >>\nstream\n{}endstream", d.ops.len(), d.ops));
         let title = format!("{} {}", crate::structure::page_full_name(pg), pg.description).trim().to_string();
         let mut bookmark = format!("<< /Title ({}) /Parent 4 0 R /Dest [{po} 0 R /Fit]", pdf_string(&title));
-        if i > 0 {
-            let _ = write!(bookmark, " /Prev {} 0 R", page_obj(i - 1) + 2);
+        if k > 0 {
+            let _ = write!(bookmark, " /Prev {} 0 R", page_obj(k - 1) + 2);
         }
-        if i + 1 < n {
-            let _ = write!(bookmark, " /Next {} 0 R", page_obj(i + 1) + 2);
+        if k + 1 < n {
+            let _ = write!(bookmark, " /Next {} 0 R", page_obj(k + 1) + 2);
         }
         bookmark.push_str(" >>");
         w.obj(po + 2, &bookmark);

@@ -112,6 +112,8 @@ pub struct App {
     mounting_ui: MountingUi,
     show_help: bool,
     show_shortcuts: bool,
+    /// Export whose parameters are being entered: exporter, language, text per parameter.
+    export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Action whose new shortcut is being recorded.
     recording: Option<crate::shortcuts::Action>,
     show_cables: bool,
@@ -232,6 +234,7 @@ impl App {
             mounting_ui: MountingUi::default(),
             show_help: false,
             show_shortcuts: false,
+            export_form: None,
             recording: None,
             show_cables: false,
             show_numbering: false,
