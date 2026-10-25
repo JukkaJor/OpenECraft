@@ -52,6 +52,12 @@ pub struct PageTable {
     /// Drawn by the graphical form of the report (all columns in the report's order).
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub graphic: bool,
+    /// Drawn by the user's form (all columns in the report's order).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layout: Option<super::forms::FormLayout>,
+    /// Column names as stored in forms (English), for the placeholders of `layout`.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub keys: Vec<String>,
 }
 
 /// One element of the terminal line-up drawing.

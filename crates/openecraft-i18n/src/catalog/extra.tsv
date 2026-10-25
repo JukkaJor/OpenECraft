@@ -4879,3 +4879,12 @@ Reset panel layout	Anordnung der Fenster zurücksetzen	Réinitialiser la disposi
 Navigator on the left, symbols and properties on the right	Navigator links, Symbole und Eigenschaften rechts	Navigateur à gauche, symboles et propriétés à droite	Navegador a la izquierda, símbolos y propiedades a la derecha
 Panels	Fenster	Panneaux	Paneles
 Saves the workspace, the arrangement of the panels and the open windows	Speichert den Arbeitsbereich, die Anordnung der Fenster und die geöffneten Dialoge	Enregistre l'espace de travail, la disposition des panneaux et les fenêtres ouvertes	Guarda el espacio de trabajo, la disposición de los paneles y las ventanas abiertas
+Own drawn form	Eigenes gezeichnetes Formular	Formulaire dessiné personnalisé	Formulario dibujado propio
+Draw the page yourself: graphics for every page and a row drawing repeated for every row; texts take the columns as placeholders	Seite selbst zeichnen: Grafik für jede Seite und eine Zeilenzeichnung, die für jede Zeile wiederholt wird; Texte übernehmen die Spalten als Platzhalter	Dessinez la page vous-même : un graphique pour chaque page et un dessin de ligne répété pour chaque ligne ; les textes prennent les colonnes comme espaces réservés	Dibuje la página usted mismo: gráficos para cada página y un dibujo de fila repetido para cada fila; los textos usan las columnas como marcadores de posición
+Drawn form	Gezeichnetes Formular	Formulaire dessiné	Formulario dibujado
+Page graphics	Seitengrafik	Graphique de page	Gráficos de página
+Row drawing	Zeilenzeichnung	Dessin de ligne	Dibujo de fila
+First row	Erste Zeile	Première ligne	Primera fila
+Next row	Nächste Zeile	Ligne suivante	Fila siguiente
+Offset from one row to the next: downwards for lists, sideways for rows side by side	Versatz von einer Zeile zur nächsten: nach unten für Listen, seitlich für nebeneinanderliegende Zeilen	Décalage d'une ligne à la suivante : vers le bas pour les listes, sur le côté pour des lignes côte à côte	Desplazamiento de una fila a la siguiente: hacia abajo para listas, hacia el lado para filas una junto a otra
+Report name (page heading)	Name der Auswertung (Seitenüberschrift)	Nom du rapport (titre de la page)	Nombre del informe (título de la página)

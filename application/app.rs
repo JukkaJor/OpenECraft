@@ -39,6 +39,7 @@ mod xref_ui;
 mod compare_ui;
 mod engineering;
 mod field_ui;
+mod form_layout_ui;
 mod forms_ui;
 mod harness_ui;
 mod integration_ui;

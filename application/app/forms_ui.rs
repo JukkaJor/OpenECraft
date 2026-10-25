@@ -1,5 +1,5 @@
 //! Forms window: title block editor (lines, rectangles, texts with placeholders)
-//! and report forms (columns, order, rows per page).
+//! and report forms (columns, order, rows per page, own drawn forms).
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
@@ -33,9 +33,19 @@ pub struct FormsUi {
     report: Option<ReportId>,
     /// Edited report scheme; empty: the report's form.
     scheme: String,
+    /// Part of a drawn report form being edited: the row drawing (or the page graphics).
+    pub(super) layout_row: bool,
 }
 
 impl FormsUi {
+    pub(super) fn select(&mut self, item: Option<usize>) {
+        self.item = item;
+    }
+
+    pub(super) fn selected(&self) -> Option<usize> {
+        self.item
+    }
+
     pub fn busy(&self) -> bool {
         self.drag.is_some()
     }
@@ -181,37 +191,17 @@ impl App {
                 ui.horizontal_top(|ui| {
                     ui.vertical(|ui| {
                         ui.set_width(380.0);
-                        ui.horizontal_wrapped(|ui| {
-                            let mid = p(forms::AREA_W / 2.0, forms::AREA_H / 2.0);
-                            let new = [
-                                (tr("➕ Line"), FormItem::Line { a: mid - p(20.0, 0.0), b: mid + p(20.0, 0.0), width: 0.25 }),
-                                (tr("➕ Rectangle"), FormItem::Rect { a: mid - p(20.0, 8.0), b: mid + p(20.0, 8.0), width: 0.25, fill: false }),
-                                (tr("➕ Text"), FormItem::Text { pos: mid, text: "{project}".into(), size: 2.5, anchor: Anchor::Left, label: false, max_width: 0.0 }),
-                                (tr("➕ Label"), FormItem::Text { pos: mid, text: "Label".into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 }),
-                            ];
-                            for (label, item) in new {
-                                if ui.button(label).clicked() {
-                                    form.items.push(item);
-                                    fu.item = Some(form.items.len() - 1);
-                                }
-                            }
-                        });
-                        egui::ScrollArea::vertical().id_salt("tbitems").max_height(220.0).show(ui, |ui| {
-                            for (i, it) in form.items.iter().enumerate() {
-                                let summary = match it {
-                                    FormItem::Text { text, .. } => format!("{}: {text}", it.kind_name()),
-                                    FormItem::Line { a, b, .. } | FormItem::Rect { a, b, .. } => format!("{}: {:.1},{:.1} – {:.1},{:.1}", it.kind_name(), a.x, a.y, b.x, b.y),
-                                };
-                                if ui.selectable_label(fu.item == Some(i), summary).clicked() {
-                                    fu.item = Some(i);
-                                }
-                            }
-                        });
+                        if let Some(i) = add_buttons(ui, &mut form.items, p(forms::AREA_W / 2.0, forms::AREA_H / 2.0), "{project}") {
+                            fu.item = Some(i);
+                        }
+                        if let Some(i) = item_list(ui, "tbitems", &form.items, fu.item) {
+                            fu.item = Some(i);
+                        }
                     });
                     ui.separator();
                     ui.vertical(|ui| {
                         ui.set_width(330.0);
-                        item_properties(ui, fu, &mut form);
+                        item_properties(ui, fu, &mut form.items, p(forms::AREA_W, forms::AREA_H));
                     });
                     ui.separator();
                     ui.vertical(|ui| {
@@ -353,7 +343,15 @@ impl App {
                 ui.label("");
                 ui.checkbox(&mut form.blank_repeats, tr("Leave repeated values of the first column blank"));
                 ui.end_row();
-                if openecraft_core::report_blocks::has_graphic(kind) {
+                ui.label("");
+                let mut drawn = form.layout.is_some();
+                if ui.checkbox(&mut drawn, tr("Own drawn form")).on_hover_text(tr("Draw the page yourself: graphics for every page and a row drawing repeated for every row; texts take the columns as placeholders")).changed() {
+                    let width = openecraft_core::frame::of_page(&self.session.prj, self.session.page).area().width() - 17.0;
+                    form.layout = drawn.then(|| forms::starting_layout(&headers, &titles, &table.widths, width));
+                    fu.item = None;
+                }
+                ui.end_row();
+                if openecraft_core::report_blocks::has_graphic(kind) && form.layout.is_none() {
                     ui.label("");
                     ui.checkbox(&mut form.graphic, tr("Graphical form"))
                         .on_hover_text(tr("Draws the strip with its terminals and jumpers, or the cables with their cores, instead of a table; the columns of the form are not used"));
@@ -361,6 +359,11 @@ impl App {
                 }
             });
             ui.add_space(4.0);
+            if let Some(layout) = &mut form.layout {
+                let page = self.session.page.min(self.session.prj.pages.len().saturating_sub(1));
+                super::form_layout_ui::layout_editor(ui, fu, &self.session.prj, page, layout, &table, &kind_title);
+                ui.separator();
+            }
             ui.columns(2, |cols| {
                 columns_editor(&mut cols[0], &mut form, &headers, &titles, &table.widths);
                 filter_editor(&mut cols[1], &mut form, &headers, &titles);
@@ -502,7 +505,7 @@ fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &openecraft_core::model::Pr
     painter.rect_filled(resp.rect, 2.0, pal.paper);
     let origin = resp.rect.min + vec2(0.0, 4.0);
     if edit {
-        pick(fu, &resp, ui, form, origin, zoom);
+        pick(fu, &resp, ui, &mut form.items, origin, zoom);
     }
     let mut d = EguiDraw { painter: &painter, origin, zoom, pal: &pal, force: None, mirror: None, textures: None };
     forms::draw_at(&mut d, form, prj, page, p(0.0, 0.0), 1.0);
@@ -516,9 +519,47 @@ fn preview(ui: &mut egui::Ui, fu: &mut FormsUi, prj: &openecraft_core::model::Pr
     }
 }
 
-/// Properties of the selected title block element.
-fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
-    let Some(i) = fu.item.filter(|i| *i < form.items.len()) else {
+/// Buttons that add a line, rectangle, text (`text`) or label around `mid`; returns
+/// the index of the new element.
+pub(super) fn add_buttons(ui: &mut egui::Ui, items: &mut Vec<FormItem>, mid: P, text: &str) -> Option<usize> {
+    let mut added = None;
+    ui.horizontal_wrapped(|ui| {
+        let new = [
+            (tr("➕ Line"), FormItem::Line { a: mid - p(20.0, 0.0), b: mid + p(20.0, 0.0), width: 0.25 }),
+            (tr("➕ Rectangle"), FormItem::Rect { a: mid - p(20.0, 8.0), b: mid + p(20.0, 8.0), width: 0.25, fill: false }),
+            (tr("➕ Text"), FormItem::Text { pos: mid, text: text.into(), size: 2.5, anchor: Anchor::Left, label: false, max_width: 0.0 }),
+            (tr("➕ Label"), FormItem::Text { pos: mid, text: "Label".into(), size: 1.6, anchor: Anchor::Left, label: true, max_width: 0.0 }),
+        ];
+        for (label, item) in new {
+            if ui.button(label).clicked() {
+                items.push(item);
+                added = Some(items.len() - 1);
+            }
+        }
+    });
+    added
+}
+
+/// The elements as a list; returns the one clicked.
+pub(super) fn item_list(ui: &mut egui::Ui, id: &str, items: &[FormItem], selected: Option<usize>) -> Option<usize> {
+    let mut clicked = None;
+    egui::ScrollArea::vertical().id_salt(id).max_height(220.0).show(ui, |ui| {
+        for (i, it) in items.iter().enumerate() {
+            let summary = match it {
+                FormItem::Text { text, .. } => format!("{}: {text}", it.kind_name()),
+                FormItem::Line { a, b, .. } | FormItem::Rect { a, b, .. } => format!("{}: {:.1},{:.1} – {:.1},{:.1}", it.kind_name(), a.x, a.y, b.x, b.y),
+            };
+            if ui.selectable_label(selected == Some(i), summary).clicked() {
+                clicked = Some(i);
+            }
+        }
+    });
+    clicked
+}
+
+/// Properties of the selected element (coordinates up to `max`).
+pub(super) fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, items: &mut Vec<FormItem>, max: P) {
+    let Some(i) = fu.item.filter(|i| *i < items.len()) else {
         ui.weak(tr("Select an element in the list or the drawing."));
         return;
     };
@@ -527,13 +568,13 @@ fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
     let pt = |ui: &mut egui::Ui, label: &str, q: &mut P| {
         ui.label(label);
         ui.horizontal(|ui| {
-            ui.add(egui::DragValue::new(&mut q.x).speed(0.5).range(0.0..=forms::AREA_W).prefix("x "));
-            ui.add(egui::DragValue::new(&mut q.y).speed(0.5).range(0.0..=forms::AREA_H).prefix("y "));
+            ui.add(egui::DragValue::new(&mut q.x).speed(0.5).range(-max.x..=max.x).prefix("x "));
+            ui.add(egui::DragValue::new(&mut q.y).speed(0.5).range(-max.y..=max.y).prefix("y "));
         });
         ui.end_row();
     };
-    ui.label(RichText::new(form.items[i].kind_name()).strong());
-    egui::Grid::new("tbitem").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| match &mut form.items[i] {
+    ui.label(RichText::new(items[i].kind_name()).strong());
+    egui::Grid::new("tbitem").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| match &mut items[i] {
         FormItem::Line { a, b, width } => {
             pt(ui, tr("Start"), a);
             pt(ui, tr("End"), b);
@@ -573,7 +614,7 @@ fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
             });
             ui.end_row();
             ui.label(tr("Max. width"));
-            ui.add(egui::DragValue::new(max_width).speed(0.5).range(0.0..=forms::AREA_W).suffix(" mm"))
+            ui.add(egui::DragValue::new(max_width).speed(0.5).range(0.0..=max.x).suffix(" mm"))
                 .on_hover_text(tr("Longer values are drawn smaller (0 = no limit)"));
             ui.end_row();
         }
@@ -583,23 +624,24 @@ fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, form: &mut Form) {
         delete = ui.button(tr("🗑 Delete")).clicked();
     });
     if duplicate {
-        let mut copy = form.items[i].clone();
+        let mut copy = items[i].clone();
         copy.translate(p(2.0, 2.0));
-        form.items.push(copy);
-        fu.item = Some(form.items.len() - 1);
+        items.push(copy);
+        fu.item = Some(items.len() - 1);
     }
     if delete {
-        form.items.remove(i);
+        items.remove(i);
         fu.item = None;
     }
 }
 
-/// Picking and dragging in the editable preview.
-fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, form: &mut Form, origin: egui::Pos2, zoom: f32) {
+/// Picking and dragging in the editable preview (`origin`: screen position of the
+/// items' origin).
+pub(super) fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, items: &mut [FormItem], origin: egui::Pos2, zoom: f32) {
     let to_mm = |s: egui::Pos2| p((s.x - origin.x) / zoom, (s.y - origin.y) / zoom);
     let tol = 6.0 / zoom;
-    let nearest = |form: &Form, q: P| {
-        form.items
+    let nearest = |items: &[FormItem], q: P| {
+        items
             .iter()
             .enumerate()
             .map(|(i, it)| (i, it.distance(q)))
@@ -609,15 +651,15 @@ fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, form: &mut Form,
     };
     if resp.drag_started_by(PointerButton::Primary) {
         if let Some(q) = ui.input(|i| i.pointer.press_origin()).map(to_mm) {
-            fu.item = nearest(form, q);
+            fu.item = nearest(items, q);
             fu.drag = fu.item.map(|_| openecraft_core::symlib::snap(q, 0.5));
         }
     }
     if let (Some(last), Some(i), Some(q)) = (fu.drag, fu.item, resp.interact_pointer_pos().map(to_mm)) {
         let q = openecraft_core::symlib::snap(q, 0.5);
         let d = q - last;
-        if (d.x != 0.0 || d.y != 0.0) && i < form.items.len() {
-            form.items[i].translate(d);
+        if (d.x != 0.0 || d.y != 0.0) && i < items.len() {
+            items[i].translate(d);
             fu.drag = Some(q);
         }
     }
@@ -626,7 +668,7 @@ fn pick(fu: &mut FormsUi, resp: &egui::Response, ui: &egui::Ui, form: &mut Form,
     }
     if resp.clicked_by(PointerButton::Primary) {
         if let Some(q) = resp.interact_pointer_pos().map(to_mm) {
-            fu.item = nearest(form, q);
+            fu.item = nearest(items, q);
         }
     }
 }

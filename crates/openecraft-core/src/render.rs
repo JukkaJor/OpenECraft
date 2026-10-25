@@ -125,7 +125,9 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         PageKind::Cover => draw_cover(d, prj, &frame),
         PageKind::Report(kind) => {
             if let Some(t) = crate::report_blocks::page_table(prj, an, page_i) {
-                if !(t.graphic && report_graphics::draw(d, kind, &t, &frame)) {
+                if let Some(layout) = &t.layout {
+                    crate::forms::draw_layout(d, layout, &t, prj, page_i, frame.area().min);
+                } else if !(t.graphic && report_graphics::draw(d, kind, &t, &frame)) {
                     draw_report(d, &t, &frame);
                 }
             }

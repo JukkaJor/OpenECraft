@@ -70,6 +70,28 @@ pub struct ReportForm {
     /// Drawn as a graphic (terminal and cable diagrams) instead of a table.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub graphic: bool,
+    /// Drawn by the user's own form (form editor) instead of a table.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layout: Option<FormLayout>,
+}
+
+/// A report form drawn by the user: graphics drawn once per page and a row drawing
+/// repeated for every row of the page. Texts take the column names of the report as
+/// placeholders (`{Terminal}`, `{Target}`; the English name or the one shown) besides
+/// those of title blocks (`{project}`, `{page}` …). Coordinates in mm from the top
+/// left corner of the drawing area of the plot frame.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct FormLayout {
+    /// Drawn once per page.
+    pub header: Vec<FormItem>,
+    /// Drawn for every row, relative to the row's origin.
+    pub row: Vec<FormItem>,
+    /// Origin of the first row.
+    pub first_row: P,
+    /// From one row to the next: downwards for lists, sideways to draw the rows
+    /// side by side (e.g. terminals of a strip).
+    pub step: P,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
