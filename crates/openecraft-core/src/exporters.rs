@@ -1,6 +1,7 @@
 //! The built-in exports as registry entries ([`Exporter`]): drawings of the pages
 //! (SVG, HTML, PDF, DXF, DWG), production and PLC lists, exchange files (AutomationML,
-//! KBL), the panel layout in 3D (glTF, STEP, IGES, IFC, JT, Parasolid XT) and the translation
+//! KBL, the harness interface), the panel layout and the harnesses in 3D (glTF, STEP,
+//! IGES, IFC, JT, Parasolid XT) and the translation
 //! dictionary. The front ends offer them next to the exports of plugins; the language
 //! of the texts is the host's business (`translation::with_language`).
 
@@ -15,6 +16,8 @@ const PAGE_OPT: Param = optional("page", Kind::Str, tr_const!("Page name as show
 const FILE: Param = optional("file", Kind::Str, tr_const!("File name written into the file header"));
 const PAGES: Param = optional("pages", Kind::Str, tr_const!("Pages: names and ranges, e.g. 1-3, 5 (default: all pages)"));
 const HARNESS: Param = param("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1"));
+const HARNESS_OPT: Param = optional("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1 (default: the only harness of the project)"));
+const HARNESSES: Param = optional("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1 (default: all harnesses)"));
 const SCHEME: Param = optional("scheme", Kind::Str, tr_const!("Labeling scheme (default: the scheme selected in the project)"));
 
 fn marking_scheme(prj: &Project, a: &Args) -> Result<crate::marking::Scheme, String> {
@@ -77,7 +80,16 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("plc_mitsubishi", tr_const!("PLC device comments for Mitsubishi GX Works (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::mitsubishi_comments(prj, &an.netlist))))
     .exporter_with("plc_schneider", tr_const!("PLC variables for Schneider Control Expert (XSY)"), "xsy", false, vec![], text(|prj, an, _| Ok(crate::plc::schneider_xsy(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
-    .exporter_with("kbl", tr_const!("Harnesses (KBL XML)"), "kbl", false, vec![], text(|prj, an, _| Ok(crate::harness::kbl(prj, an))))
+    .exporter_with("kbl", tr_const!("Harness (KBL, VDA 4964)"), "kbl", false, vec![HARNESS_OPT], text(|prj, an, a| crate::kbl::export(prj, an, a.str("harness"))))
+    .exporter_with("kbl_zip", tr_const!("All harnesses as KBL files (ZIP)"), "zip", true, vec![], |prj, an, _| Ok(Export::Binary(crate::kbl::zip(prj, an))))
+    .exporter_with("harness_json", tr_const!("Harness interface for machines and tools (JSON)"), "json", false, vec![HARNESSES], text(|prj, an, a| {
+        crate::harness_export::document(prj, an, a.str("harness")).map(|v| serde_json::to_string_pretty(&v).unwrap_or_default())
+    }))
+    .exporter_with("harness_processing", tr_const!("Wire processing list for cutting and crimping machines (CSV)"), "csv", false, vec![HARNESSES], text(|prj, an, a| {
+        crate::harness_export::processing_list(prj, an, a.str("harness"))
+    }))
+    .exporter_with("harness_gltf", tr_const!("Harnesses in 3D (glTF)"), "gltf", false, vec![HARNESSES], text(|prj, an, a| crate::harness_export::gltf(prj, an, a.str("harness"))))
+    .exporter_with("harness_jt", tr_const!("Harnesses in 3D (JT)"), "jt", true, vec![HARNESSES], |prj, an, a| crate::harness_export::jt(prj, an, a.str("harness")).map(Export::Binary))
     .exporter_with("nailboard", tr_const!("Harness nailboard drawing to scale (SVG)"), "svg", false, vec![HARNESS], text(|prj, an, a| {
         let tag = a.req("harness");
         crate::nailboard::layout(prj, an, tag).map(|nb| crate::nailboard::svg(&nb)).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))

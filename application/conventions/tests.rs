@@ -217,13 +217,13 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("document", &["frame", "geom", "model", "ops", "render", "symbols"]),
     ("forms", &["frame", "geom", "model", "params", "properties", "render", "revision", "structure", "symbols", "table"]),
     ("report_blocks", &["analysis", "ext", "forms", "model", "ops", "reports", "strips"]),
-    ("testkit", &["geom", "model", "parts", "symbols"]),
+    ("testkit", &["analysis", "geom", "model", "parts", "symbols"]),
     // 6 derived data, checks, reports, registry
     ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "revision", "routing3d", "table"]),
     ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "harness", "index", "integration", "issue", "loads", "model", "mounting", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "preplanning", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
     ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table", "text"]),
     ("ext", &["analysis", "issue", "model", "params", "table"]),
-    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "marking", "model", "nailboard", "page_select", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),
+    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "harness_export", "kbl", "marking", "model", "nailboard", "page_select", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),
     // 7 output and exchange formats
     ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "macro_boxes", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),
@@ -237,6 +237,8 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("dxf_import", &["frame", "geom", "model", "ops", "symbols"]),
     ("dwg", &["analysis", "dxf", "dxf_import", "model", "panel", "production"]),
     ("export3d", &["document", "model", "panel", "parts"]),
+    ("kbl", &["analysis", "harness", "model", "netlist", "parts", "plugs", "production", "routing3d", "xml", "zip"]),
+    ("harness_export", &["analysis", "export3d", "harness", "model", "plugs", "production"]),
     ("aml", &["devdesc", "model", "netlist", "parts", "plc", "plc_hw", "xml"]),
     ("integration", &["analysis", "issue", "model", "netlist", "panel", "parts", "wiring"]),
     // 8 project files, sharing, verification

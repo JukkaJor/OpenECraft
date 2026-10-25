@@ -14,10 +14,8 @@ use crate::render::{Draw, Ink, VAnchor};
 use crate::symbols::Anchor;
 use openecraft_i18n::{tr, tr_fmt};
 
-/// Branch length used when no wire of a connector has a length, mm.
-pub const DEFAULT_BRANCH: f32 = 300.0;
-/// Shortest branch, mm.
-const MIN_BRANCH: f32 = 50.0;
+pub use crate::harness::topology::{branch_lengths, DEFAULT_BRANCH};
+
 /// Shortest branch on the sheet, mm; shorter ones are drawn with a break mark.
 const MIN_DRAWN: f32 = 60.0;
 /// Standard drawing scales (1 : n).
@@ -50,28 +48,6 @@ pub struct Nailboard {
     /// Diameter of the whole bundle at the node, mm.
     pub diameter: f32,
     pub branches: Vec<Branch>,
-}
-
-/// Branch lengths `b` with `b[i] + b[j]` close to the length of every wire between
-/// connectors `i` and `j` (least squares, by Gauss-Seidel iteration); connectors
-/// without lengths get [`DEFAULT_BRANCH`].
-pub fn branch_lengths(n: usize, wires: &[(usize, usize, f32)]) -> Vec<(f32, bool)> {
-    let known: Vec<&(usize, usize, f32)> = wires.iter().filter(|w| w.2 > 0.0 && w.0 != w.1).collect();
-    let mut b: Vec<f32> = (0..n)
-        .map(|i| {
-            let l: Vec<f32> = known.iter().filter(|w| w.0 == i || w.1 == i).map(|w| w.2 / 2.0).collect();
-            if l.is_empty() { DEFAULT_BRANCH } else { l.iter().sum::<f32>() / l.len() as f32 }
-        })
-        .collect();
-    for _ in 0..200 {
-        for i in 0..n {
-            let est: Vec<f32> = known.iter().filter_map(|w| if w.0 == i { Some(w.2 - b[w.1]) } else if w.1 == i { Some(w.2 - b[w.0]) } else { None }).collect();
-            if !est.is_empty() {
-                b[i] = (est.iter().sum::<f32>() / est.len() as f32).max(MIN_BRANCH);
-            }
-        }
-    }
-    (0..n).map(|i| (b[i], !known.iter().any(|w| w.0 == i || w.1 == i))).collect()
 }
 
 /// The nailboard of a harness; `None` if it has no wires.

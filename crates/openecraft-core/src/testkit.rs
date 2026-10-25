@@ -74,3 +74,19 @@ impl Kit {
         self.prj.parts.push(part);
     }
 }
+
+/// Makes the wires of the first connection of harness -WH1 a core of a new cable
+/// `-W77` (the demo harness has no cable).
+pub fn with_cable(prj: &mut Project) {
+    let an = crate::analysis::Analysis::checked(prj);
+    let c = an.connections.iter().find(|c| c.harness == "-WH1").unwrap();
+    let net = an.open.nets.iter().find(|n| n.pins.contains(&c.a) && n.pins.contains(&c.b)).unwrap().clone();
+    for (pi, id) in &net.wires {
+        if let Some(w) = prj.pages[*pi].wires.iter_mut().find(|w| w.id == *id) {
+            w.cable = "-W77".into();
+            w.core = "1".into();
+        }
+    }
+    let id = prj.new_id();
+    prj.cables.push(Cable { id, tag: "-W77".into(), cable_type: "LIYY 2x0.75".into(), cores: "1 2".into(), cross_section: "0.75 mm\u{b2}".into(), length: 2.0, ..Default::default() });
+}

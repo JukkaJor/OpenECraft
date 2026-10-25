@@ -1,14 +1,107 @@
 //! Wire harnesses: connections (point-to-point, identified by their two connection
 //! point designations) assigned to a harness are made as one assembly. The harness data lists its wires with lengths and end treatment, its
-//! connectors (device ends with their pin assignment) and the bundle diameter, and
-//! is exported as a simplified KBL file (VDA 4964) for harness manufacturing.
+//! connectors (device ends with their pin assignment) and the bundle diameter; the 3D
+//! topology of the bundle is in [`topology`]. Harnesses are exported as KBL
+//! (VDA 4964, [`crate::kbl`]) and through the harness interface
+//! ([`crate::harness_export`]).
 
 use crate::model::{natural_cmp, Project};
 use crate::netlist::{pin_designation, PinRef};
 use crate::analysis::Analysis;
 use std::collections::BTreeSet;
-use std::fmt::Write;
-pub use crate::model::harness::Harness;
+pub use crate::model::harness::{End, ExtraPart, Fixing, FixingKind, Harness, PartKind, Protection, ProtectionKind};
+
+pub mod topology;
+
+impl ProtectionKind {
+    pub const ALL: [ProtectionKind; 5] = [ProtectionKind::Tape, ProtectionKind::Tube, ProtectionKind::CorrugatedTube, ProtectionKind::Sleeve, ProtectionKind::HeatShrink];
+
+    pub fn key(self) -> &'static str {
+        match self {
+            ProtectionKind::Tape => "tape",
+            ProtectionKind::Tube => "tube",
+            ProtectionKind::CorrugatedTube => "corrugated_tube",
+            ProtectionKind::Sleeve => "sleeve",
+            ProtectionKind::HeatShrink => "heat_shrink",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<ProtectionKind> {
+        ProtectionKind::ALL.into_iter().find(|k| k.key() == key.trim().to_ascii_lowercase())
+    }
+
+    pub fn title(self) -> &'static str {
+        openecraft_i18n::tr(match self {
+            ProtectionKind::Tape => "Tape",
+            ProtectionKind::Tube => "Tube",
+            ProtectionKind::CorrugatedTube => "Corrugated tube",
+            ProtectionKind::Sleeve => "Braided sleeve",
+            ProtectionKind::HeatShrink => "Heat shrink tube",
+        })
+    }
+}
+
+impl FixingKind {
+    pub const ALL: [FixingKind; 4] = [FixingKind::Clip, FixingKind::CableTie, FixingKind::Grommet, FixingKind::Bracket];
+
+    pub fn key(self) -> &'static str {
+        match self {
+            FixingKind::Clip => "clip",
+            FixingKind::CableTie => "cable_tie",
+            FixingKind::Grommet => "grommet",
+            FixingKind::Bracket => "bracket",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<FixingKind> {
+        FixingKind::ALL.into_iter().find(|k| k.key() == key.trim().to_ascii_lowercase())
+    }
+
+    pub fn title(self) -> &'static str {
+        openecraft_i18n::tr(match self {
+            FixingKind::Clip => "Clip",
+            FixingKind::CableTie => "Cable tie",
+            FixingKind::Grommet => "Grommet",
+            FixingKind::Bracket => "Bracket",
+        })
+    }
+}
+
+impl PartKind {
+    pub const ALL: [PartKind; 4] = [PartKind::Accessory, PartKind::CoPack, PartKind::Assembly, PartKind::Component];
+
+    pub fn key(self) -> &'static str {
+        match self {
+            PartKind::Accessory => "accessory",
+            PartKind::CoPack => "co_pack",
+            PartKind::Assembly => "assembly",
+            PartKind::Component => "component",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<PartKind> {
+        PartKind::ALL.into_iter().find(|k| k.key() == key.trim().to_ascii_lowercase())
+    }
+}
+
+/// KBL connector usages ([`End::usage`]).
+pub const USAGES: [&str; 4] = ["no end", "ring terminal", "splice", "dangler"];
+
+/// End treatment of a wire end at `device:pin`: the entry of the pin, otherwise that
+/// of the device.
+pub fn end_of<'a>(h: &'a Harness, device: &str, pin: &str) -> Option<&'a End> {
+    h.ends.iter().find(|e| e.device == device && !e.pin.is_empty() && e.pin == pin).or_else(|| h.ends.iter().find(|e| e.device == device && e.pin.is_empty()))
+}
+
+/// Terminal part, seal part and stripping length of a wire end: from the end
+/// treatment of the harness, ferrules (panel layout setting) at device ends.
+pub fn end_parts(prj: &Project, h: &Harness, device: &str, pin: &str, cross_section: &str) -> (String, String, f32) {
+    let e = end_of(h, device, pin);
+    let default = crate::production::end_treatment(cross_section, prj.layout.ferrules && !crate::plugs::plug_tags(prj).iter().any(|p| p == device));
+    let terminal = e.map(|e| e.terminal.clone()).filter(|t| !t.is_empty()).or_else(|| default.and_then(|d| d.ferrule).map(|f| f.part.to_string())).unwrap_or_default();
+    let strip = e.map(|e| e.strip).filter(|s| *s > 0.0).or_else(|| default.map(|d| d.strip)).unwrap_or(0.0);
+    (terminal, e.map(|e| e.seal.clone()).unwrap_or_default(), strip)
+}
 
 /// Order independent key of a connection.
 pub fn key(a: &str, b: &str) -> [String; 2] {
@@ -77,7 +170,7 @@ pub fn connections_of_wire(an: &Analysis, wire: u64) -> Vec<usize> {
 }
 
 /// One wire of a harness.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct HarnessWire {
     pub number: String,
     /// Device tag and connection point of both ends.
@@ -85,10 +178,16 @@ pub struct HarnessWire {
     pub to: (String, String),
     pub color: String,
     pub cross_section: String,
-    /// Length in mm (routed in the panel layout, or the harness length); 0 = unknown.
+    /// Length in mm (routed in the panel layout, along the stored topology, or the
+    /// harness length); 0 = unknown.
     pub length: f32,
     pub routed: bool,
     pub target: Option<(usize, u64)>,
+    /// Potential of the wire.
+    pub net: String,
+    /// Cable tag and core, if the wire is a cable core.
+    pub cable: String,
+    pub core: String,
 }
 
 /// A device end of a harness with its pin assignment: (pin, wire number, other end).
@@ -105,7 +204,8 @@ fn end(prj: &Project, pin: PinRef) -> (String, String) {
     (tag, pin_name)
 }
 
-fn joined(e: &(String, String)) -> String {
+/// `device:pin` of a wire end (the device alone without a pin).
+pub fn joined(e: &(String, String)) -> String {
     if e.1.is_empty() { e.0.clone() } else { format!("{}:{}", e.0, e.1) }
 }
 
@@ -129,10 +229,22 @@ pub fn wires(prj: &Project, an: &Analysis, tag: &str) -> Vec<HarnessWire> {
                 length: routed.unwrap_or(default),
                 routed: routed.is_some(),
                 target: Some((c.a.page, prj.pages[c.a.page].symbols[c.a.sym].id)),
+                net: c.net.clone(),
+                cable: c.cable.clone(),
+                core: c.core.clone(),
             }
         })
         .collect();
     v.sort_by(|a, b| natural_cmp(&a.number, &b.number).then(natural_cmp(&joined(&a.from), &joined(&b.from))));
+    // Wires outside the panel layout: along the stored topology, if it routes them.
+    if let Some(h) = prj.harnesses.iter().find(|h| h.tag == tag && !h.nodes.is_empty()) {
+        let t = topology::build(prj, an, h, &v);
+        for (i, w) in v.iter_mut().enumerate().filter(|(_, w)| !w.routed) {
+            if let Some(l) = t.wire_length(i).filter(|l| *l > 0.0) {
+                w.length = l;
+            }
+        }
+    }
     v
 }
 
@@ -167,105 +279,6 @@ pub fn outer_diameter(cross_section: &str) -> f32 {
 pub fn bundle_diameter(wires: &[HarnessWire]) -> f32 {
     let sum: f32 = wires.iter().map(|w| outer_diameter(&w.cross_section).powi(2)).sum();
     sum.sqrt() * 1.15
-}
-
-fn xml(s: &str) -> String {
-    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
-}
-
-/// Harness data as simplified KBL (VDA 4964): general wires (cross-section and
-/// colour), and per harness its connector occurrences with contact points, wire
-/// occurrences with lengths and the connections between contact points.
-pub fn kbl(prj: &Project, an: &Analysis) -> String {
-    let mut out = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    out.push_str("<!-- Simplified KBL (VDA 4964) harness data, exported by OpenECraft -->\n");
-    out.push_str("<kbl:KBL_container xmlns:kbl=\"http://www.prostep.org/Car_electric_container/KBL2.3/KBLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version_id=\"2.4\">\n");
-    let all: Vec<(String, Vec<HarnessWire>)> = prj.harnesses.iter().map(|h| (h.tag.clone(), wires(prj, an, &h.tag))).collect();
-    // General wires: one per cross-section and colour.
-    let mut general: Vec<(String, String)> = Vec::new();
-    for w in all.iter().flat_map(|(_, ws)| ws) {
-        let key = (w.cross_section.clone(), w.color.clone());
-        if !general.contains(&key) {
-            general.push(key);
-        }
-    }
-    let gw_id = |cs: &str, color: &str| general.iter().position(|g| g.0 == cs && g.1 == color).map(|i| format!("GW{}", i + 1)).unwrap_or_default();
-    // Connector housings: the (first) part of the plugs the harnesses end at.
-    let plugs = crate::plugs::plug_tags(prj);
-    let housing_of = |dev: &str| -> Option<String> {
-        plugs.iter().any(|p| p == dev).then(|| prj.devices.get(dev).and_then(|d| d.parts.first()).map(|r| r.number.clone())).flatten()
-    };
-    let mut housings: Vec<String> = Vec::new();
-    for c in all.iter().flat_map(|(_, ws)| connectors(ws)) {
-        if let Some(h) = housing_of(&c.device).filter(|h| !housings.contains(h)) {
-            housings.push(h);
-        }
-    }
-    let ch_id = |dev: &str| housing_of(dev).and_then(|h| housings.iter().position(|x| *x == h)).map(|i| format!("CH{}", i + 1));
-    for (i, (cs, color)) in general.iter().enumerate() {
-        let area = crate::production::cross_section_mm2(cs).map(|v| v.to_string()).unwrap_or_default();
-        let _ = writeln!(
-            out,
-            "  <General_wire id=\"GW{}\"><Part_number>{} {}</Part_number><Cross_section_area><Value_component>{area}</Value_component><Unit_component>mm2</Unit_component></Cross_section_area><Cover_colour>{}</Cover_colour><Outside_diameter><Value_component>{:.2}</Value_component><Unit_component>mm</Unit_component></Outside_diameter></General_wire>",
-            i + 1,
-            xml(cs),
-            xml(color),
-            xml(color),
-            outer_diameter(cs)
-        );
-    }
-    for (i, h) in housings.iter().enumerate() {
-        let _ = writeln!(out, "  <Connector_housing id=\"CH{}\"><Part_number>{}</Part_number></Connector_housing>", i + 1, xml(h));
-    }
-    for (hi, h) in prj.harnesses.iter().enumerate() {
-        let ws = &all[hi].1;
-        let _ = writeln!(out, "  <Harness id=\"H{}\"><Part_number>{}</Part_number><Description>{}</Description>", hi + 1, xml(if h.part.is_empty() { &h.tag } else { &h.part }), xml(&h.description));
-        let _ = writeln!(out, "    <Id>{}</Id>", xml(&h.tag));
-        let cons = connectors(ws);
-        let cp_id = |dev: &str, pin: &str| -> String {
-            let ci = cons.iter().position(|c| c.device == dev).unwrap_or(0);
-            let pi = cons.get(ci).and_then(|c| c.pins.iter().position(|p| p.0 == pin)).unwrap_or(0);
-            format!("H{}_C{}_P{}", hi + 1, ci + 1, pi + 1)
-        };
-        for (ci, c) in cons.iter().enumerate() {
-            let _ = write!(out, "    <Connector_occurrence id=\"H{}_C{}\"><Id>{}</Id>", hi + 1, ci + 1, xml(&c.device));
-            if let Some(id) = ch_id(&c.device) {
-                let _ = write!(out, "<Part>{id}</Part>");
-            }
-            out.push_str("<Contact_points>");
-            let mut seen: Vec<&str> = Vec::new();
-            for (pi, pin) in c.pins.iter().enumerate() {
-                if seen.contains(&pin.0.as_str()) {
-                    continue;
-                }
-                seen.push(&pin.0);
-                let _ = write!(out, "<Contact_point id=\"H{}_C{}_P{}\"><Id>{}</Id></Contact_point>", hi + 1, ci + 1, pi + 1, xml(&pin.0));
-            }
-            out.push_str("</Contact_points></Connector_occurrence>\n");
-        }
-        for (wi, w) in ws.iter().enumerate() {
-            let id = format!("H{}_W{}", hi + 1, wi + 1);
-            let _ = writeln!(
-                out,
-                "    <General_wire_occurrence xsi:type=\"kbl:Wire_occurrence\" id=\"{id}\"><Part>{}</Part><Wire_number>{}</Wire_number><Length_information><Length_type>{}</Length_type><Length_value><Value_component>{:.0}</Value_component><Unit_component>mm</Unit_component></Length_value></Length_information></General_wire_occurrence>",
-                gw_id(&w.cross_section, &w.color),
-                xml(&w.number),
-                if w.routed { "DMA" } else { "Nominal" },
-                w.length
-            );
-            let _ = writeln!(
-                out,
-                "    <Connection id=\"H{}_N{}\"><Wire>{id}</Wire><Extremities><Extremity><Position_on_wire>0</Position_on_wire><Contact_point>{}</Contact_point></Extremity><Extremity><Position_on_wire>1</Position_on_wire><Contact_point>{}</Contact_point></Extremity></Extremities></Connection>",
-                hi + 1,
-                wi + 1,
-                cp_id(&w.from.0, &w.from.1),
-                cp_id(&w.to.0, &w.to.1)
-            );
-        }
-        out.push_str("  </Harness>\n");
-    }
-    out.push_str("</kbl:KBL_container>\n");
-    out
 }
 
 #[cfg(test)]

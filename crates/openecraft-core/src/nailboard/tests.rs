@@ -11,6 +11,7 @@ fn wire(n: &str, a: &str, b: &str, length: f32) -> HarnessWire {
         length,
         routed: length > 0.0,
         target: None,
+        ..Default::default()
     }
 }
 

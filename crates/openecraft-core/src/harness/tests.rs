@@ -95,21 +95,63 @@ fn renamed_devices_keep_and_stale_assignments_are_reported() {
 }
 
 #[test]
-fn kbl_export() {
-    let prj = demo_project();
+fn wires_carry_potential_and_cable() {
+    let mut prj = demo_project();
+    crate::testkit::with_cable(&mut prj);
     let an = Analysis::checked(&prj);
     let ws = wires(&prj, &an, "-WH1");
-    let x = kbl(&prj, &an);
-    assert!(x.starts_with("<?xml"));
-    assert!(x.contains("<Id>-WH1</Id>"));
-    assert_eq!(x.matches("<Connection ").count(), ws.len());
-    assert_eq!(x.matches("xsi:type=\"kbl:Wire_occurrence\"").count(), ws.len());
-    assert_eq!(x.matches("<Connector_occurrence ").count(), connectors(&ws).len());
-    // Every contact point a connection refers to exists.
-    for cap in x.split("<Contact_point>").skip(1) {
-        let id = &cap[..cap.find('<').unwrap()];
-        assert!(x.contains(&format!("<Contact_point id=\"{id}\">")), "{id}");
+    assert!(ws.iter().all(|w| !w.net.is_empty()));
+    let w = ws.iter().find(|w| w.cable == "-W77").unwrap();
+    assert_eq!(w.core, "1");
+}
+
+#[test]
+fn end_treatment_of_wire_ends() {
+    let mut prj = demo_project();
+    prj.layout.ferrules = true;
+    let mut h = prj.harnesses[0].clone();
+    // Device ends get ferrules by the cross-section, unless the harness says otherwise.
+    let (terminal, seal, strip) = end_parts(&prj, &h, "-S1", "13", "1.5 mm²");
+    assert_eq!((terminal.as_str(), seal.as_str(), strip), ("GEN.FER-1.5", "", 8.0));
+    h.ends.push(End { device: "-S1".into(), terminal: "RING-M4".into(), ..Default::default() });
+    h.ends.push(End { device: "-S1".into(), pin: "14".into(), terminal: "CRIMP".into(), seal: "SEAL".into(), strip: 4.0, ..Default::default() });
+    assert_eq!(end_parts(&prj, &h, "-S1", "13", "1.5 mm²").0, "RING-M4");
+    assert_eq!(end_parts(&prj, &h, "-S1", "14", "1.5 mm²"), ("CRIMP".into(), "SEAL".into(), 4.0));
+    assert_eq!(end_of(&h, "-S2", "1"), None);
+}
+
+#[test]
+fn kinds_have_keys() {
+    for k in ProtectionKind::ALL {
+        assert_eq!(ProtectionKind::from_key(k.key()), Some(k));
+        assert!(!k.title().is_empty());
     }
-    assert_eq!(x.matches("<Harness ").count(), x.matches("</Harness>").count());
-    assert_eq!(xml("a<b&\"c\""), "a&lt;b&amp;&quot;c&quot;");
+    for k in FixingKind::ALL {
+        assert_eq!(FixingKind::from_key(k.key()), Some(k));
+        assert!(!k.title().is_empty());
+    }
+    for k in PartKind::ALL {
+        assert_eq!(PartKind::from_key(k.key()), Some(k));
+    }
+    assert_eq!(ProtectionKind::from_key("glue"), None);
+}
+
+#[test]
+fn stored_topology_gives_the_lengths_of_field_wires() {
+    let mut prj = demo_project();
+    let an = Analysis::checked(&prj);
+    let before = wires(&prj, &an, "-WH1");
+    topology::store(&mut prj, &an, "-WH1").unwrap();
+    // Stretch every segment: the field wires get longer, the routed ones keep their length.
+    for s in &mut prj.harnesses[0].segments {
+        s.length = 5000.0;
+    }
+    let after = wires(&prj, &Analysis::checked(&prj), "-WH1");
+    assert_eq!(before.len(), after.len());
+    for (a, b) in before.iter().zip(&after) {
+        if b.routed {
+            assert_eq!(a.length, b.length);
+        }
+    }
+    assert!(after.iter().any(|w| !w.routed && w.length >= 5000.0), "{after:?}");
 }

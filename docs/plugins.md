@@ -22,7 +22,7 @@ and exports of `openecraft-core`, project statistics, panel layout checks, panel
 manufacturing, part lifecycle, and one plugin per area of project commands (pages,
 sheets, drawing, devices, plugs, PLC, potentials, process engineering, single-line
 diagrams, tables, engineering, electrical engineering, panel layout, routing, field
-wiring, wiring, integration, languages, structure, properties, configurator, report
+wiring, wiring, harnesses, integration, languages, structure, properties, configurator, report
 blocks, project management). An area lists its commands in a `COMMANDS` table of
 `Spec`s (`builtin/<area>.rs`); the command line and the MCP server offer them as tools
 next to the session tools of `cli/`. The project checks themselves are registry

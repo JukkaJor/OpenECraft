@@ -127,7 +127,7 @@ impl App {
         }
     }
 
-    fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
+    pub(super) fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
         let title = text(&e.title).to_string();
         match self.exporter_output(e, lang, extra) {
             Ok((name, out)) => self.export_bytes(ctx, name, (&title, &e.extension), &out),

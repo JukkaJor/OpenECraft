@@ -148,7 +148,12 @@ fn kbl_names_the_plug_housing() {
     assign(&mut prj, "-X10", plug_part("ACME.M12-4F", 4));
     prj.harnesses.push(Harness { id: 99, tag: "-WH1".into(), length: 1.0, ..Default::default() });
     crate::harness::assign(&mut prj, "-X10:1", "-K1:A1", "-WH1");
-    let kbl = crate::harness::kbl(&prj, &Analysis::checked(&prj));
-    assert!(kbl.contains("<Connector_housing id=\"CH1\"><Part_number>ACME.M12-4F</Part_number></Connector_housing>"), "{kbl}");
-    assert!(kbl.contains("<Id>-X10</Id><Part>CH1</Part>"));
+    let kbl = crate::kbl::export(&prj, &Analysis::checked(&prj), None).unwrap();
+    let housing = kbl.split("<Connector_housing ").find(|h| h.contains("<Part_number>ACME.M12-4F</Part_number>")).expect(&kbl);
+    // All four pins of the part are cavities, also the unused ones.
+    assert!(housing.contains("<Housing_type>connector</Housing_type>"));
+    assert!(housing.contains("<Number_of_cavities>4</Number_of_cavities>"), "{housing}");
+    let id = housing.split('"').nth(1).unwrap();
+    let occ = kbl.split("<Connector_occurrence ").find(|o| o.contains("<Id>-X10</Id>")).unwrap();
+    assert!(occ.contains(&format!("<Part>{id}</Part>")), "{occ}");
 }
