@@ -251,6 +251,7 @@ impl App {
     self.plc_hw_window(ctx);
     self.integration_window(ctx);
     self.process_window(ctx);
+    self.preplanning_window(ctx);
     self.electrical_window(ctx);
     self.singleline_window(ctx);
     self.languages_window(ctx);

@@ -46,6 +46,7 @@ pub fn builtin() -> Vec<Check> {
         }),
         entry("wiring_marks", tr_const!("Wiring marks"), |prj, an| check_wiring_marks(prj, &an.wiring)),
         entry("mounting_marks", tr_const!("Mounting marks"), |prj, _| check_mounting_marks(prj)),
+        entry("preplanning", tr_const!("Pre-planning"), |prj, an| crate::preplanning::issues(prj, &an.index)),
         entry("integration", tr_const!("Enterprise integration"), |prj, _| crate::integration::problems(prj)),
         entry("field_wiring", tr_const!("Field wiring"), |_, an| an.field.issues.clone()),
         entry("routing_3d", tr_const!("3D routing"), |_, an| check_routing(&an.routing)),

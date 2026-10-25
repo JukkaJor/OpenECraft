@@ -269,6 +269,7 @@ impl App {
                     Err(e) => self.notify(ctx, e),
                 }
             }
+            Purpose::Preplanning => self.import_preplanning(ctx, &loaded.bytes),
             Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
             Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
             Purpose::Subproject => self.insert_subproject(ctx, &loaded.bytes),

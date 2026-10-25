@@ -1,8 +1,9 @@
 //! Configurator tools: options, rules and generating pages from a macro library file.
 
-use super::{param, Args, Kind, Tool};
+use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::config::{self};
+use openecraft_core::preplanning;
 use openecraft_core::macros::MacroLibrary;
 use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
@@ -15,7 +16,57 @@ pub static TOOLS: &[Tool] = &[
         needs_project: true,
         run: generate_pages,
     },
+    Tool {
+        name: "import_preplanning",
+        help: tr_const!("Imports pre-planning segments and planned devices from CSV or Excel (columns Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)"),
+        params: &[param("path", Kind::Str, tr_const!("CSV or Excel file"))],
+        needs_project: true,
+        run: import_preplanning,
+    },
+    Tool {
+        name: "generate_preplanning_pages",
+        help: tr_const!("Generates a schematic page per planned device that has a page macro and is not in the schematic yet"),
+        params: &[
+            param("macros", Kind::Str, tr_const!("Macro library file (JSON, exported by the editor)")),
+            optional("segment", Kind::Str, tr_const!("Segment path (default: all segments)")),
+        ],
+        needs_project: true,
+        run: generate_preplanning_pages,
+    },
 ];
+
+fn import_preplanning(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("path");
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let rows = if bytes.starts_with(b"PK") {
+        openecraft_core::xlsx::read(&bytes)?.into_iter().next().map(|(_, rows)| rows).unwrap_or_default()
+    } else {
+        openecraft_core::xlsx::rows_of_csv(String::from_utf8_lossy(&bytes).trim_start_matches('\u{feff}'))
+    };
+    let (segments, added, updated) = preplanning::import_rows(s.project_mut()?, &rows)?;
+    Ok(json!({ "segments_created": segments, "devices_added": added, "devices_updated": updated }))
+}
+
+fn generate_preplanning_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
+    let path = a.req("macros");
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let lib = MacroLibrary::from_json(&text).map_err(|e| tr_fmt!("Not a macro file: {}", e))?;
+    let prj = s.project_mut()?;
+    let roots: Vec<u64> = match a.str("segment") {
+        Some(p) => {
+            let want = p.trim().trim_matches('/');
+            vec![prj.preplanning.segments.iter().map(|x| x.id).find(|id| preplanning::path(prj, *id) == want).ok_or_else(|| tr_fmt!("No segment {}", p))?]
+        }
+        None => prj.preplanning.segments.iter().filter(|x| x.parent == 0).map(|x| x.id).collect(),
+    };
+    let (mut pages, mut missing) = (Vec::new(), Vec::new());
+    for r in roots {
+        let (p, m) = preplanning::generate(prj, r, &lib);
+        pages.extend(p);
+        missing.extend(m.into_iter().filter(|x| !missing.contains(x)).collect::<Vec<_>>());
+    }
+    Ok(json!({ "pages": pages, "macros_not_found": missing }))
+}
 
 fn generate_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("macros");

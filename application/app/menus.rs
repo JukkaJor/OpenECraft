@@ -317,6 +317,9 @@ impl App {
         if ui.button(tr("Fluid and process…")).on_hover_text(tr("Hose defaults and PCT loops of the pre-planning")).clicked() {
             self.process_ui.open = true;
         }
+        if ui.button(tr("Pre-planning…")).on_hover_text(tr("Plant segments with planned devices before the schematic")).clicked() {
+            self.preplanning_ui.open = true;
+        }
         if ui.button(tr("Single-line / multi-line…")).on_hover_text(tr("Plan devices in the single-line diagram, generate the schematic and keep both in sync")).clicked() {
             self.singleline_ui.open = true;
         }

@@ -54,6 +54,7 @@ mod potentials_ui;
 mod projects_ui;
 mod properties_ui;
 mod structure_ui;
+mod preplanning_ui;
 mod process_ui;
 mod singleline_ui;
 mod remote_ui;
@@ -137,6 +138,7 @@ pub struct App {
     plc_ui: plc_ui::PlcUi,
     integration_ui: integration_ui::IntegrationUi,
     process_ui: process_ui::ProcessUi,
+    preplanning_ui: preplanning_ui::PreplanningUi,
     electrical_ui: electrical_ui::ElectricalUi,
     singleline_ui: singleline_ui::SingleLineUi,
     languages_ui: languages_ui::LanguagesUi,
@@ -255,6 +257,7 @@ impl App {
             plc_ui: Default::default(),
             integration_ui: Default::default(),
             process_ui: Default::default(),
+            preplanning_ui: Default::default(),
             electrical_ui: Default::default(),
             singleline_ui: Default::default(),
             languages_ui: Default::default(),

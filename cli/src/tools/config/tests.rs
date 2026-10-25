@@ -30,3 +30,22 @@ fn options_rules_and_generation() {
     run(&mut s, "delete_option", json!({ "name": "LINE" })).unwrap();
     assert_eq!(run(&mut s, "get_configuration", json!({})).unwrap(), json!({ "options": [], "rules": [] }));
 }
+
+#[test]
+fn preplanning_is_imported_from_csv_and_pages_generated() {
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let dir = temp_dir("preplanning");
+    let csv = dir.join("plan.csv");
+    std::fs::write(&csv, "Segment;Tag;Kind;Description;Power (kW);Voltage;Part;Macro\nPlant/Pumps;-M60;Motor;Pump 1;7,5;400 V;;Page one\nPlant/Pumps;-M61;Motor;Pump 2;5;400 V;;\n").unwrap();
+    let r = run(&mut s, "import_preplanning", json!({ "path": csv.to_str().unwrap() })).unwrap();
+    assert_eq!((r["segments_created"].as_u64(), r["devices_added"].as_u64()), (Some(2), Some(2)));
+    let prj = s.project().unwrap();
+    let mut m = openecraft_core::macros::from_page(&prj.pages[1], "Page one");
+    m.kind = openecraft_core::macros::MacroKind::Page;
+    let lib = dir.join("macros.json");
+    std::fs::write(&lib, serde_json::to_string(&openecraft_core::macros::MacroLibrary { macros: vec![m] }).unwrap()).unwrap();
+    let g = run(&mut s, "generate_preplanning_pages", json!({ "macros": lib.to_str().unwrap(), "segment": "Plant/Pumps" })).unwrap();
+    assert_eq!(g["pages"].as_array().unwrap().len(), 1);
+    assert!(run(&mut s, "generate_preplanning_pages", json!({ "macros": lib.to_str().unwrap(), "segment": "Nope" })).is_err());
+}

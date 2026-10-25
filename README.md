@@ -512,6 +512,15 @@ built with [egui / eframe](https://github.com/emilk/egui).
   PCT loops of the pre-planning (*Project › Fluid and process…*) list their devices,
   and the *PCT loop overview* shows whether each loop is planned, in engineering or
   engineered in the schematic.
+- **Pre-planning** (*Project › Pre-planning…*): the plant as a tree of segments
+  (plant, area, unit, …) with function and location inherited down the tree and the
+  devices planned in them (tag, kind, description, power, voltage, part, page macro);
+  the planned power per segment, segment templates, the state of every planned device
+  against the schematic (planned, engineered, part differs; also a check and the
+  report *Pre-planning*), schematic pages generated from the page macros of the
+  devices not engineered yet, and the exchange as CSV / Excel (commands
+  `preplanning`, `add_segment`, `plan_device`, …; tools `import_preplanning`,
+  `generate_preplanning_pages`).
 - **Single-line / multi-line engineering** (*Project › Single-line / multi-line…*):
   devices are planned with single-line symbols (breaker, switch-disconnector, motor
   protection switch, fuse, overload relay, contactor, motor, transformer) on overview
@@ -834,6 +843,7 @@ All three must pass without warnings (CI runs them with `-D warnings`).
 | `crates/openecraft-core/src/fluid.rs` | Hoses and pipes between fluid ports: media, defaults, configuration, fluid netlist (port and line kinds), tube routing, tubing, checks |
 | `crates/openecraft-core/src/electrofluid.rs` | Fluid device groups and the links between fluid and electrical devices: cross references, checks, synchronization |
 | `crates/openecraft-core/src/process.rs` | Pre-planning: PCT loops, P&ID instruments, engineering status |
+| `crates/openecraft-core/src/preplanning.rs` | Pre-planning: segments, planned devices, templates, power budget, page generation, CSV / Excel |
 | `crates/openecraft-core/src/singleline.rs` | Single-line / multi-line engineering: device status, checks, transformation in both directions |
 | `crates/openecraft-core/src/netlist.rs` | Connectivity analysis (nets / potentials, junctions) |
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |

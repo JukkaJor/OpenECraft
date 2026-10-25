@@ -28,6 +28,7 @@ pub mod graphics;
 pub mod potentials;
 pub mod checks;
 pub mod mounting;
+pub mod preplanning;
 pub mod plugs;
 pub mod harness;
 pub mod config;
@@ -134,6 +135,9 @@ pub struct Project {
     /// Mounted / problem marks of the mounting assistant.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub mounting_marks: Vec<mounting::MountingMark>,
+    /// Pre-planning: segments with planned devices, segment templates.
+    #[serde(skip_serializing_if = "preplanning::Preplanning::is_empty")]
+    pub preplanning: preplanning::Preplanning,
     /// Structure management: defined identifiers, aspects of the pages, work areas.
     #[serde(skip_serializing_if = "structure::Structures::is_default")]
     pub structures: structure::Structures,
@@ -211,6 +215,7 @@ impl Default for Project {
             pct_loops: Vec::new(),
             wiring_marks: Vec::new(),
             mounting_marks: Vec::new(),
+            preplanning: Default::default(),
             languages: Default::default(),
             structures: Default::default(),
             page_templates: Vec::new(),

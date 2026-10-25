@@ -372,6 +372,7 @@ fn with_data(out: &mut Project, src: &Project) {
         check_settings,
         xref,
         mounting_marks,
+        preplanning,
         review: _,
         next_id: _,
         symbol_cache: _,
@@ -414,6 +415,7 @@ fn with_data(out: &mut Project, src: &Project) {
     out.check_settings = check_settings.clone();
     out.xref = xref.clone();
     out.mounting_marks = mounting_marks.clone();
+    out.preplanning = preplanning.clone();
 }
 
 /// Project-wide data equal (all but page contents, review and `next_id`; the page
@@ -460,6 +462,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         check_settings,
         xref,
         mounting_marks,
+        preplanning,
         review: _,
         next_id: _,
         symbol_cache: _,
@@ -503,6 +506,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
         && *check_settings == b.check_settings
         && *xref == b.xref
         && *mounting_marks == b.mounting_marks
+        && *preplanning == b.preplanning
 }
 
 /// What differs between `a` and `b`. Changes of pages that `a` does not have count

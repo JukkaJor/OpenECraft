@@ -4714,3 +4714,63 @@ Pages: names and ranges, e.g. 1-3, 5 (default: all pages)	Seiten: Namen und Bere
 PLC symbol table for Siemens STEP 7 classic (SDF)	SPS-Symboltabelle für Siemens STEP 7 classic (SDF)	Table des symboles API pour Siemens STEP 7 classic (SDF)	Tabla de símbolos PLC para Siemens STEP 7 classic (SDF)
 PLC global variable list for Beckhoff TwinCAT 3 (TcGVL)	Globale SPS-Variablenliste für Beckhoff TwinCAT 3 (TcGVL)	Liste de variables globales API pour Beckhoff TwinCAT 3 (TcGVL)	Lista de variables globales PLC para Beckhoff TwinCAT 3 (TcGVL)
 PLC variables for Schneider Control Expert (XSY)	SPS-Variablen für Schneider Control Expert (XSY)	Variables API pour Schneider Control Expert (XSY)	Variables PLC para Schneider Control Expert (XSY)
+Pre-planning	Vorplanung	Préplanification	Preplanificación
+CSV or Excel file	CSV- oder Excel-Datei	Fichier CSV ou Excel	Archivo CSV o Excel
+Generates a schematic page per planned device that has a page macro and is not in the schematic yet	Erzeugt eine Schaltplanseite je geplantem Gerät mit Seitenmakro, das noch nicht im Schaltplan ist	Génère une page de schéma par appareil planifié qui a une macro de page et n'est pas encore dans le schéma	Genera una página de esquema por cada equipo planificado que tenga una macro de página y aún no esté en el esquema
+Imports pre-planning segments and planned devices from CSV or Excel (columns Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importiert Vorplanungssegmente und geplante Geräte aus CSV oder Excel (Spalten Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importe les segments de préplanification et les appareils planifiés depuis CSV ou Excel (colonnes Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)	Importa segmentos de preplanificación y equipos planificados desde CSV o Excel (columnas Segment, Tag, Kind, Description, Power (kW), Voltage, Part, Macro)
+No segment {}	Kein Segment {}	Aucun segment {}	No hay ningún segmento {}
+Segment path (default: all segments)	Segmentpfad (Standard: alle Segmente)	Chemin du segment (par défaut : tous les segments)	Ruta del segmento (por defecto: todos los segmentos)
+Pre-planning (CSV, Excel)	Vorplanung (CSV, Excel)	Préplanification (CSV, Excel)	Preplanificación (CSV, Excel)
+Plant segments with planned devices before the schematic	Anlagensegmente mit geplanten Geräten vor dem Schaltplan	Segments d'installation avec les appareils planifiés avant le schéma	Segmentos de la planta con los equipos planificados antes del esquema
+Pre-planning…	Vorplanung…	Préplanification…	Preplanificación…
+A segment cannot be moved below itself	Ein Segment kann nicht unter sich selbst verschoben werden	Un segment ne peut pas être déplacé sous lui-même	Un segmento no se puede mover debajo de sí mismo
+Adds a planned device to a segment or changes it	Fügt einem Segment ein geplantes Gerät hinzu oder ändert es	Ajoute un appareil planifié à un segment ou le modifie	Añade un equipo planificado a un segmento o lo cambia
+Adds a segment below another one (or at the top)	Fügt ein Segment unter einem anderen (oder oben) hinzu	Ajoute un segment sous un autre (ou au niveau supérieur)	Añade un segmento debajo de otro (o en el nivel superior)
+Adds the devices of a template to a segment	Fügt die Geräte einer Vorlage einem Segment hinzu	Ajoute les appareils d'un modèle à un segment	Añade los equipos de una plantilla a un segmento
+Changes name, description, function, location or parent of a segment	Ändert Name, Beschreibung, Funktion, Ort oder übergeordnetes Segment eines Segments	Modifie le nom, la description, la fonction, le lieu ou le parent d'un segment	Cambia el nombre, la descripción, la función, la ubicación o el padre de un segmento
+Column Segment is missing	Spalte Segment fehlt	La colonne Segment manque	Falta la columna Segment
+Device tag within the segment, e.g. -M1	Betriebsmittelkennzeichen im Segment, z. B. -M1	Repère d'appareil dans le segment, p. ex. -M1	Identificador del equipo en el segmento, p. ej. -M1
+Function (= without the sign; empty: the parent's)	Funktion (= ohne Zeichen; leer: die des übergeordneten Segments)	Fonction (= sans le signe ; vide : celle du parent)	Función (= sin el signo; vacía: la del padre)
+Invalid segment name: {}	Ungültiger Segmentname: {}	Nom de segment non valide : {}	Nombre de segmento no válido: {}
+Lists the segments in tree order with structure, planned power and the planned devices with their state in the schematic	Listet die Segmente in Baumreihenfolge mit Struktur, geplanter Leistung und den geplanten Geräten mit ihrem Stand im Schaltplan	Liste les segments dans l'ordre de l'arbre avec la structure, la puissance planifiée et les appareils planifiés avec leur état dans le schéma	Lista los segmentos en orden de árbol con la estructura, la potencia planificada y los equipos planificados con su estado en el esquema
+Location (+ without the sign; empty: the parent's)	Ort (+ ohne Zeichen; leer: der des übergeordneten Segments)	Lieu (+ sans le signe ; vide : celui du parent)	Ubicación (+ sin el signo; vacía: la del padre)
+Name of the segment	Name des Segments	Nom du segment	Nombre del segmento
+New parent segment (empty: top level)	Neues übergeordnetes Segment (leer: oberste Ebene)	Nouveau segment parent (vide : niveau supérieur)	Nuevo segmento padre (vacío: nivel superior)
+No planned device {}	Kein geplantes Gerät {}	Aucun appareil planifié {}	No hay ningún equipo planificado {}
+No segment template named {}	Keine Segmentvorlage namens {}	Aucun modèle de segment nommé {}	No hay ninguna plantilla de segmento llamada {}
+Page macro that generates its schematic	Seitenmakro, das seinen Schaltplan erzeugt	Macro de page qui génère son schéma	Macro de página que genera su esquema
+Part differs	Artikel abweichend	Article différent	Artículo distinto
+Planned part number	Geplante Artikelnummer	Référence d'article planifiée	Número de artículo planificado
+Planned power in kW	Geplante Leistung in kW	Puissance planifiée en kW	Potencia planificada en kW
+Plant segments with planned devices before the schematic: templates, power budget, state against the schematic, exchange as CSV / Excel	Anlagensegmente mit geplanten Geräten vor dem Schaltplan: Vorlagen, Leistungsbilanz, Stand gegenüber dem Schaltplan, Austausch als CSV / Excel	Segments d'installation avec les appareils planifiés avant le schéma : modèles, bilan de puissance, état par rapport au schéma, échange en CSV / Excel	Segmentos de la planta con los equipos planificados antes del esquema: plantillas, balance de potencia, estado frente al esquema, intercambio como CSV / Excel
+Pre-planning (CSV)	Vorplanung (CSV)	Préplanification (CSV)	Preplanificación (CSV)
+Pre-planning (Excel)	Vorplanung (Excel)	Préplanification (Excel)	Preplanificación (Excel)
+Removes a planned device from a segment	Entfernt ein geplantes Gerät aus einem Segment	Supprime un appareil planifié d'un segment	Elimina un equipo planificado de un segmento
+Removes a segment with everything below it	Entfernt ein Segment mit allem darunter	Supprime un segment avec tout ce qui se trouve en dessous	Elimina un segmento con todo lo que hay debajo
+Saves the planned devices of a segment as a template	Speichert die geplanten Geräte eines Segments als Vorlage	Enregistre les appareils planifiés d'un segment comme modèle	Guarda los equipos planificados de un segmento como plantilla
+Segment path, e.g. Plant/Area 1	Segmentpfad, z. B. Plant/Area 1	Chemin du segment, p. ex. Plant/Area 1	Ruta del segmento, p. ej. Plant/Area 1
+Segment {} already exists	Segment {} gibt es schon	Le segment {} existe déjà	El segmento {} ya existe
+Unknown segment	Unbekanntes Segment	Segment inconnu	Segmento desconocido
+What it is: motor, valve, sensor, …	Was es ist: Motor, Ventil, Sensor, …	Ce que c'est : moteur, vanne, capteur, …	Qué es: motor, válvula, sensor, …
+{} is planned twice ({} and {})	{} ist doppelt geplant ({} und {})	{} est planifié deux fois ({} et {})	{} está planificado dos veces ({} y {})
+{} planned devices are not in the schematic yet	{} geplante Geräte sind noch nicht im Schaltplan	{} appareils planifiés ne sont pas encore dans le schéma	{} equipos planificados aún no están en el esquema
+{}: planned with part {}, the schematic uses another part	{}: geplant mit Artikel {}, der Schaltplan verwendet einen anderen Artikel	{} : planifié avec l'article {}, le schéma utilise un autre article	{}: planificado con el artículo {}, el esquema usa otro artículo
+A schematic page per planned device with a page macro that is not in the schematic yet (selected segment, otherwise all)	Eine Schaltplanseite je geplantem Gerät mit Seitenmakro, das noch nicht im Schaltplan ist (gewähltes Segment, sonst alle)	Une page de schéma par appareil planifié avec une macro de page qui n'est pas encore dans le schéma (segment choisi, sinon tous)	Una página de esquema por equipo planificado con macro de página que aún no está en el esquema (segmento elegido, si no todos)
+At the top level	Auf oberster Ebene	Au niveau supérieur	En el nivel superior
+Generate pages	Seiten erzeugen	Générer les pages	Generar páginas
+No segments yet: add one, or import a CSV / Excel file.	Noch keine Segmente: eines hinzufügen oder eine CSV- / Excel-Datei importieren.	Pas encore de segments : ajoutez-en un ou importez un fichier CSV / Excel.	Aún no hay segmentos: añada uno o importe un archivo CSV / Excel.
+Save as template	Als Vorlage speichern	Enregistrer comme modèle	Guardar como plantilla
+Segment {}	Segment {}	Segment {}	Segmento {}
+Select a segment.	Ein Segment wählen.	Choisissez un segment.	Seleccione un segmento.
+Tag	Kennzeichen	Repère	Identificador
+With everything below it	Mit allem darunter	Avec tout ce qui se trouve en dessous	Con todo lo que hay debajo
+kW	kW	kW	kW
+name	Name	nom	nombre
+{} devices added	{} Geräte hinzugefügt	{} appareils ajoutés	{} equipos añadidos
+{} pages generated	{} Seiten erzeugt	{} pages générées	{} páginas generadas
+{} pages generated; page macros not found: {}	{} Seiten erzeugt; Seitenmakros nicht gefunden: {}	{} pages générées ; macros de page introuvables : {}	{} páginas generadas; macros de página no encontradas: {}
+{} segments created, {} devices added, {} updated	{} Segmente angelegt, {} Geräte hinzugefügt, {} geändert	{} segments créés, {} appareils ajoutés, {} modifiés	{} segmentos creados, {} equipos añadidos, {} actualizados
+➕ Device	➕ Gerät	➕ Appareil	➕ Equipo
+➕ Segment	➕ Segment	➕ Segment	➕ Segmento
+➕ Sub-segment	➕ Untersegment	➕ Sous-segment	➕ Subsegmento
+🗑 Remove segment	🗑 Segment entfernen	🗑 Supprimer le segment	🗑 Eliminar segmento
