@@ -7,7 +7,11 @@
 //! openecraft-parts-server --bind 0.0.0.0:8090 --data parts-db.sqlite --token <secret>
 //! openecraft-parts-server --storage json --data parts-db.json
 //! openecraft-parts-server --install-catalogs all
+//! openecraft-parts-server --config parts-server.toml
 //! ```
+//!
+//! `--config` reads the settings of the options from a TOML file (`settings`,
+//! `parts-server.example.toml`); options on the command line win.
 //!
 //! Without `--token` (or `OPENECRAFT_TOKEN`), user accounts and directories the
 //! server is read-only. Users sign in with a local account or with a directory
@@ -18,48 +22,13 @@
 mod auth;
 mod bundled;
 mod routes;
+mod settings;
 mod storage;
 mod web;
 
 use clap::Parser;
-use openecraft_parts::api::DEFAULT_PORT;
 use openecraft_parts::portal::{Role, User};
-use std::net::SocketAddr;
-use std::path::PathBuf;
 use storage::{StorageKind, Store};
-
-#[derive(Parser)]
-#[command(version, about = "Data portal (global parts database) server for OpenECraft")]
-struct Args {
-    /// Address to listen on.
-    #[arg(long, default_value_t = SocketAddr::from(([127, 0, 0, 1], DEFAULT_PORT)))]
-    bind: SocketAddr,
-    /// Storage backend. Default: JSON for a `.json` data file, SQLite otherwise.
-    #[arg(long, value_enum)]
-    storage: Option<StorageKind>,
-    /// Database file (created with the example and the bundled catalogs if missing).
-    #[arg(long, default_value = "parts-db.sqlite")]
-    data: PathBuf,
-    /// Copy all data of this database into a new, empty `--data` database first
-    /// (e.g. `--migrate-from parts-db.json` when changing to SQLite).
-    #[arg(long)]
-    migrate_from: Option<PathBuf>,
-    /// Administrator token. Without a token changes need user accounts.
-    #[arg(long, env = "OPENECRAFT_TOKEN", hide_env_values = true)]
-    token: Option<String>,
-    /// Create this administrator account (or reset its password) at startup; the
-    /// password is read from OPENECRAFT_ADMIN_PASSWORD.
-    #[arg(long)]
-    admin_user: Option<String>,
-    /// Install or update bundled manufacturer catalogs at startup: `all` or ids
-    /// (e.g. `siemens`). Parts changed by users are kept.
-    #[arg(long, value_delimiter = ',')]
-    install_catalogs: Vec<String>,
-    /// Access settings: directories (Active Directory, LDAP), roles and grants.
-    /// Default: `<data>.access.json` next to the database.
-    #[arg(long)]
-    access: Option<PathBuf>,
-}
 
 fn fail(msg: String) -> ! {
     log::error!("{msg}");
@@ -114,8 +83,8 @@ fn install_catalogs(store: &mut Store, ids: &[String]) {
 #[tokio::main]
 async fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    let args = Args::parse();
-    let kind = StorageKind::resolve(args.storage, &args.data);
+    let args = settings::Settings::new(settings::Args::parse()).unwrap_or_else(|e| fail(e));
+    let kind = args.storage;
     if let Some(from) = &args.migrate_from {
         migrate(from, kind, &args.data);
     }
@@ -136,12 +105,11 @@ async fn main() {
         store.kind(),
         store.revision
     );
-    let access_path = args.access.unwrap_or_else(|| args.data.with_extension("access.json"));
-    let access = openecraft_auth::AccessFile::open(&access_path, routes::default_access()).unwrap_or_else(|e| fail(format!("cannot read the access settings: {e}")));
+    let access = openecraft_auth::AccessFile::open(&args.access, routes::default_access()).unwrap_or_else(|e| fail(format!("cannot read the access settings: {e}")));
     for d in &access.config.directories {
         log::info!("sign-in with directory {} ({})", d.id, d.url);
     }
-    let token = args.token.filter(|t| !t.trim().is_empty());
+    let token = args.token;
     if token.is_none() && store.accounts().is_empty() && access.config.directories.is_empty() {
         log::warn!("no access token, users or directories: the server is read-only");
     }

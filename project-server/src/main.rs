@@ -4,7 +4,11 @@
 //!
 //! ```text
 //! openecraft-project-server --bind 0.0.0.0:8091 --data projects --token <secret>
+//! openecraft-project-server --config project-server.toml
 //! ```
+//!
+//! `--config` reads the settings of the options from a TOML file (`settings`,
+//! `project-server.example.toml`); options on the command line win.
 //!
 //! Without `--token` (or `OPENECRAFT_PROJECT_TOKEN`), user accounts and directories
 //! everyone who reaches the server can open and change its projects. Users sign in
@@ -15,41 +19,23 @@
 
 mod routes;
 mod sessions;
+mod settings;
 mod store;
 mod users;
 
 use clap::Parser;
-use openecraft_core::collab::DEFAULT_PORT;
-use std::net::SocketAddr;
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-
-#[derive(Parser)]
-#[command(version, about = "Project server for OpenECraft: shared projects with page locks")]
-struct Args {
-    /// Address to listen on.
-    #[arg(long, default_value_t = SocketAddr::from(([127, 0, 0, 1], DEFAULT_PORT)))]
-    bind: SocketAddr,
-    /// Directory of the project files (created if missing).
-    #[arg(long, default_value = "projects")]
-    data: PathBuf,
-    /// Access token required for every request.
-    #[arg(long, env = "OPENECRAFT_PROJECT_TOKEN", hide_env_values = true)]
-    token: Option<String>,
-    /// Creates (or resets) an administrator account with the password from
-    /// OPENECRAFT_PROJECT_ADMIN_PASSWORD.
-    #[arg(long)]
-    admin_user: Option<String>,
-    /// Access settings: directories (Active Directory, LDAP), roles and grants.
-    /// Default: `access.json` in the data directory.
-    #[arg(long)]
-    access: Option<PathBuf>,
-}
 
 #[tokio::main]
 async fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    let args = Args::parse();
+    let args = match settings::Settings::new(settings::Args::parse()) {
+        Ok(s) => s,
+        Err(e) => {
+            log::error!("{e}");
+            std::process::exit(1);
+        }
+    };
     let store = match store::Store::open(&args.data) {
         Ok(s) => s,
         Err(e) => {
@@ -65,7 +51,7 @@ async fn main() {
             std::process::exit(1);
         }
     };
-    if let Some(name) = args.admin_user.filter(|n| !n.trim().is_empty()) {
+    if let Some(name) = args.admin_user {
         let password = std::env::var("OPENECRAFT_PROJECT_ADMIN_PASSWORD").unwrap_or_default();
         if password.is_empty() {
             log::error!("--admin-user needs the password in OPENECRAFT_PROJECT_ADMIN_PASSWORD");
@@ -77,8 +63,7 @@ async fn main() {
         }
         log::info!("administrator {name} set");
     }
-    let access_path = args.access.unwrap_or_else(|| args.data.join("access.json"));
-    let access = match openecraft_auth::AccessFile::open(&access_path, Default::default()) {
+    let access = match openecraft_auth::AccessFile::open(&args.access, Default::default()) {
         Ok(a) => a,
         Err(e) => {
             log::error!("cannot read the access settings: {e}");
@@ -88,7 +73,7 @@ async fn main() {
     for d in &access.config.directories {
         log::info!("sign-in with directory {} ({})", d.id, d.url);
     }
-    let token = args.token.filter(|t| !t.trim().is_empty());
+    let token = args.token;
     if token.is_none() && users.accounts.is_empty() && access.config.directories.is_empty() {
         log::warn!("no access token, user accounts or directories: everyone who reaches the server can change its projects");
     }

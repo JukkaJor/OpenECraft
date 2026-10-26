@@ -27,8 +27,9 @@ openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core,
   `openecraft_core::collab`, roles, grants and their evaluation for both servers in
   `openecraft_parts::access` (the servers check, the clients offer what is allowed).
 - `openecraft-auth` is native only and used by the servers alone: password hashes,
-  session tokens, sign-in with directories (Active Directory, LDAP) and the access
-  settings file. See [access-control.md](access-control.md).
+  session tokens, sign-in with directories (Active Directory, LDAP), the access
+  settings file and reading the configuration files of the servers (`--config`,
+  `server_config`). See [access-control.md](access-control.md).
 - Autodesk Vault is a server of another vendor: its requests, answer types and the
   operations of several requests (`Job`: uploads with checkout and check-in, the item
   lookup) live in `openecraft_client::vault`. The editor (`application/vault.rs`) runs

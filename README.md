@@ -779,8 +779,16 @@ cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <s
 cargo run --release -p openecraft-parts-server -- --storage json --data parts-db.json
 cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migrate-from parts-db.json
 cargo run --release -p openecraft-parts-server -- --install-catalogs all
+cargo run --release -p openecraft-parts-server -- --config parts-server.toml
 ```
 
+- Configuration file (`--config <file>` or `OPENECRAFT_PARTS_SERVER_CONFIG`): a TOML
+  file with the settings of the command line options under their names (`bind`,
+  `storage`, `data`, `token`, `admin_user`, `install_catalogs`, `access`; see
+  [`parts-server/parts-server.example.toml`](parts-server/parts-server.example.toml)).
+  Options on the command line or in the environment win; relative paths are relative to
+  the file; unknown keys stop the server with an error. `--migrate-from` is a command
+  line option only.
 - Storage (`--storage sqlite|json`): SQLite by default (`--data parts-db.sqlite`, one
   file with indexed parts, history, accounts and files); JSON keeps everything in one
   file written atomically on every change, with the files in `<name>.files/` next to
@@ -876,8 +884,14 @@ time.
 
 ```bash
 cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data projects --token <secret>
+cargo run --release -p openecraft-project-server -- --config project-server.toml
 ```
 
+- Configuration file (`--config <file>` or `OPENECRAFT_PROJECT_SERVER_CONFIG`): the
+  settings of the command line options in TOML (`bind`, `data`, `token`, `admin_user`,
+  `access`; see
+  [`project-server/project-server.example.toml`](project-server/project-server.example.toml)),
+  as for the parts server.
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
