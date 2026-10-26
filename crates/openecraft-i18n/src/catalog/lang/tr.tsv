@@ -6232,3 +6232,43 @@ Click to show, right click for more	Göstermek için tıklayın, daha fazlası i
 {} notes	{} not
 Open in a new page tab	Yeni bir sayfa sekmesinde aç
 Project information	Proje bilgileri
+New room	Yeni oda
+Room	Oda
+Rooms	Odalar
+Delete room	Odayı sil
+Ceiling	Tavan
+Walls and ceiling	Duvarlar ve tavan
+Cabinets in the room	Odadaki panolar
+Wall mounting	Duvara montaj
+WALL	DUVAR
+Wall-mounted part	Duvara monte parça
+Width × depth	Genişlik × derinlik
+Place in the plant	Tesisteki yer
+Only parts for direct wall mounting	Yalnızca doğrudan duvara montaj parçaları
+Mounted directly on the wall or ceiling of a room	Doğrudan bir odanın duvarına veya tavanına monte edilir
+{}  room {} × {} × {}	{}  oda {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} duvara montaj için uygun değil: bir montaj rayına yerleştirin
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} duvara montaj için uygun değil, bir raya monte edin
+{}: {} stands outside the room	{}: {} odanın dışında duruyor
+{}: {} is higher than the ceiling	{}: {} tavandan yüksek
+Floor plan	Kat planı
+Draw walls	Duvar çiz
+Wall	Duvar
+Wall {}	Duvar {}
+Floor plan with {} walls	{} duvarlı kat planı
+{} rails, {} cable ducts, {} devices	{} ray, {} kablo kanalı, {} cihaz
+A room needs at least four walls	Bir oda en az dört duvar gerektirir
+Walls {} and {} cross	{} ve {} duvarları kesişiyor
+Wall {} is shorter than {} mm	Duvar {}, {} mm'den kısa
+Wall {} is not at a right angle	Duvar {} dik açıda değil
+Window	Pencere
+Opening	Açıklık
+Above the floor	Zeminin üstünde
+Click on a wall	Bir duvara tıklayın
+{}: {} stands in the swing of the door in wall {}	{}: {}, {} numaralı duvardaki kapının açılma alanında
+Inner walls	İç duvarlar
+Inner wall	İç duvar
+Draw inner walls	İç duvar çiz
+Inner wall {}, side {}	İç duvar {}, taraf {}
+Thickness	Kalınlık
+{}: {} stands in an inner wall	{}: {} bir iç duvarın içinde duruyor

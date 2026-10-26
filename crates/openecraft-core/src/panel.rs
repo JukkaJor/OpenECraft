@@ -26,6 +26,7 @@ mod macros;
 mod manufacturing;
 mod placement;
 mod points;
+mod rooms;
 mod system;
 pub mod thermal;
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
@@ -35,8 +36,12 @@ pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineup
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
+pub use rooms::{
+    add_inner_wall, add_opening, add_wall_profile, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinets_in, check_outline, floor_cells, footprint, inside_outline, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    room_of, room_place, rooms, set_outline, set_room, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
+};
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
-pub use crate::model::panel::{Enclosure, Face, ItemKind, Layout, PanelItem};
+pub use crate::model::panel::{Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem};
 
 /// Distance between enclosure wall and mounting plate edge.
 pub const PLATE_MARGIN: f32 = 25.0;
@@ -78,10 +83,13 @@ impl Face {
             Face::Rear => tr("Rear wall"),
             Face::Roof => tr("Roof"),
             Face::Bottom => tr("Bottom"),
+            Face::Wall(_) => tr("Wall"),
+            Face::Inner(..) => tr("Inner wall"),
         }
     }
 
-    /// Key of the face in files and on the command line.
+    /// Key of the face in files and on the command line (all walls of a room: `wall`,
+    /// see [`room_face_key`]).
     pub fn key(self) -> &'static str {
         match self {
             Face::Plate => "plate",
@@ -91,12 +99,23 @@ impl Face {
             Face::Rear => "rear",
             Face::Roof => "roof",
             Face::Bottom => "bottom",
+            Face::Wall(_) => "wall",
+            Face::Inner(..) => "inner",
         }
     }
 
     pub fn from_key(key: &str) -> Option<Face> {
         let k = key.trim().to_lowercase();
         Face::ALL.into_iter().find(|f| f.key() == k)
+    }
+
+    /// Sort order of the faces: as in [`Face::ALL`], then the walls of a room.
+    pub fn order(self) -> u16 {
+        match self {
+            Face::Wall(n) => Face::ALL.len() as u16 + n,
+            Face::Inner(_, s) => u16::MAX - 1 + s as u16,
+            f => Face::ALL.iter().position(|x| *x == f).unwrap_or(0) as u16,
+        }
     }
 
     /// Side, rear, roof or bottom wall.
@@ -111,6 +130,32 @@ impl Face {
             Face::Plate => PLATE_MARGIN,
             _ => 0.0,
         }
+    }
+}
+
+impl Opening {
+    pub const ALL: [Opening; 3] = [Opening::Cutout, Opening::Door, Opening::Window];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Opening::Cutout => tr("Cutout"),
+            Opening::Door => tr("Door"),
+            Opening::Window => tr("Window"),
+        }
+    }
+
+    /// Key on the command line.
+    pub fn key(self) -> &'static str {
+        match self {
+            Opening::Cutout => "cutout",
+            Opening::Door => "door",
+            Opening::Window => "window",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Opening> {
+        let k = key.trim().to_lowercase();
+        Opening::ALL.into_iter().find(|o| o.key() == k)
     }
 }
 
@@ -201,11 +246,47 @@ impl Default for Enclosure {
             reservations: Vec::new(),
             elevation: None,
             site: None,
+            kind: EnclosureKind::Cabinet,
+            room: 0,
+            outline: Vec::new(),
+            inner_walls: Vec::new(),
         }
     }
 }
 
 impl Enclosure {
+    pub fn is_room(&self) -> bool {
+        self.kind == EnclosureKind::Room
+    }
+
+    /// Faces items can be mounted on: all of a cabinet; the walls and the ceiling of a
+    /// room ([`room_faces`]).
+    pub fn faces(&self) -> Vec<Face> {
+        if self.is_room() {
+            room_faces(self)
+        } else {
+            Face::ALL.to_vec()
+        }
+    }
+
+    /// Title of a face (see [`room_face_title`] for rooms).
+    pub fn face_title(&self, face: Face) -> String {
+        if self.is_room() {
+            room_face_title(self, face)
+        } else {
+            face.title().to_string()
+        }
+    }
+
+    /// Key of a face on the command line (see [`room_face_key`] for rooms).
+    pub fn face_key(&self, face: Face) -> String {
+        if self.is_room() {
+            room_face_key(self, face)
+        } else {
+            face.key().to_string()
+        }
+    }
+
     pub fn plate_size(&self) -> (f32, f32) {
         ((self.width - 2.0 * PLATE_MARGIN).max(10.0), (self.height - 2.0 * PLATE_MARGIN).max(10.0))
     }
@@ -221,9 +302,12 @@ impl Enclosure {
 
     /// Size of a face (mounting plate, door or wall).
     pub fn face_size(&self, face: Face) -> (f32, f32) {
+        if self.is_room() {
+            return rooms::face_size(self, face);
+        }
         match face {
             Face::Plate => self.plate_size(),
-            Face::Door | Face::Rear => (self.width, self.height),
+            Face::Door | Face::Rear | Face::Wall(_) | Face::Inner(..) => (self.width, self.height),
             Face::Left | Face::Right => (self.depth, self.height),
             Face::Roof | Face::Bottom => (self.width, self.depth),
         }
@@ -241,22 +325,32 @@ impl Enclosure {
     /// Room in front of a face: how far items may reach into the enclosure.
     pub fn face_room(&self, face: Face) -> f32 {
         let t = self.wall();
+        if self.is_room() {
+            return rooms::face_room(self, face);
+        }
         match face {
             Face::Plate => self.depth - PLATE_Z - PLATE_THICKNESS - self.door_clearance,
             Face::Door => self.depth - PLATE_Z,
             Face::Left | Face::Right => self.width - 2.0 * t,
-            Face::Rear => PLATE_Z - PLATE_THICKNESS - t,
+            Face::Rear | Face::Wall(_) | Face::Inner(..) => PLATE_Z - PLATE_THICKNESS - t,
             Face::Roof | Face::Bottom => self.height - 2.0 * t,
         }
     }
 
     /// Sheet thickness of walls and door.
     pub fn wall(&self) -> f32 {
+        if self.is_room() {
+            return ROOM_WALL;
+        }
         self.system().map(|s| s.data.wall).unwrap_or(WALL)
     }
 
-    /// Free edge of the door and the walls where nothing can be mounted.
+    /// Free edge of the door and the walls where nothing can be mounted (none in a
+    /// room).
     pub fn flange(&self) -> f32 {
+        if self.is_room() {
+            return 0.0;
+        }
         self.system().map(|s| s.data.flange).unwrap_or(DOOR_FRAME)
     }
 
@@ -275,6 +369,9 @@ pub const WALL: f32 = 2.0;
 /// Frame of a face in enclosure coordinates: origin (face coordinates 0, 0 on the
 /// mounting surface), direction of face x, of face y and of `z` (into the enclosure).
 pub fn face_frame(e: &Enclosure, face: Face) -> [V3; 4] {
+    if e.is_room() {
+        return rooms::frame(e, face);
+    }
     let (w, h, d, t) = (e.width, e.height, e.depth, e.wall());
     match face {
         Face::Plate => [[PLATE_MARGIN, PLATE_MARGIN, PLATE_Z], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
@@ -284,6 +381,7 @@ pub fn face_frame(e: &Enclosure, face: Face) -> [V3; 4] {
         Face::Rear => [[w, 0.0, t], [-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
         Face::Roof => [[0.0, t, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]],
         Face::Bottom => [[0.0, h - t, d], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, -1.0, 0.0]],
+        Face::Wall(_) | Face::Inner(..) => [[w, 0.0, t], [-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
     }
 }
 
@@ -786,15 +884,15 @@ pub fn place_accessory(prj: &mut Project, enc: usize, part: &str, face: Face, at
 }
 
 /// Devices whose centre lies on a horizontal rail are centred on it and mounted on
-/// top of it; otherwise they sit directly on the plate.
+/// top of it; otherwise they sit directly on the plate (or a wall of a room).
 pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
-    if item.kind != ItemKind::Device || item.face != Face::Plate {
+    if item.kind != ItemKind::Device || (item.face != Face::Plate && !e.is_room()) {
         return;
     }
     let c = item.center();
     let rail = e.items.iter().find(|r| {
         r.kind == ItemKind::Rail
-            && r.face == Face::Plate
+            && r.face == item.face
             && r.horizontal()
             && c.x >= r.x
             && c.x <= r.x + r.w

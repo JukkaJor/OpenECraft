@@ -74,6 +74,37 @@ pub struct Enclosure {
     /// plant layout or next to the other line-ups ([`site_poses`]).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub site: Option<SitePlace>,
+    /// A cabinet or a room (see `crate::panel::rooms`).
+    #[serde(skip_serializing_if = "EnclosureKind::is_cabinet")]
+    pub kind: EnclosureKind,
+    /// Id of the room the line-up stands in (set on its left enclosure), 0 for none;
+    /// `site` is then measured from the room's rear left inside corner.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub room: u64,
+    /// Rooms: corners of the floor plan (x, z in mm, inside surfaces of the walls, walls
+    /// at right angles); empty for the rectangle of `width` × `depth`.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub outline: Vec<[f32; 2]>,
+    /// Rooms: walls inside the room.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub inner_walls: Vec<InnerWall>,
+}
+
+/// What an [`Enclosure`] is.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EnclosureKind {
+    #[default]
+    Cabinet,
+    /// A room of a building: cabinets stand in it; its walls (`Wall(n)` along its
+    /// outline) and ceiling (`Roof`) carry rails, cable ducts and wall-mounted devices.
+    /// It has no mounting plate, door or floor slab.
+    Room,
+}
+
+impl EnclosureKind {
+    pub fn is_cabinet(&self) -> bool {
+        *self == EnclosureKind::Cabinet
+    }
 }
 
 /// A group (assembly) of items in an enclosure.
@@ -131,6 +162,27 @@ pub struct PanelItem {
     /// Collision class, empty: from the part or by kind ([`item_class`]).
     #[serde(skip_serializing_if = "String::is_empty")]
     pub class: String,
+    /// Cutouts in the wall of a room: a door or a window.
+    #[serde(skip_serializing_if = "Opening::is_cutout")]
+    pub opening: Opening,
+}
+
+/// What a cutout is: an opening for cables, fans, … or a door or window in the wall of
+/// a room.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Opening {
+    #[default]
+    Cutout,
+    /// Stands on the floor; its leaf swings into the room, hinged at its left edge
+    /// seen from inside.
+    Door,
+    Window,
+}
+
+impl Opening {
+    pub fn is_cutout(&self) -> bool {
+        *self == Opening::Cutout
+    }
 }
 
 pub(crate) fn is_plate(f: &Face) -> bool {
@@ -204,6 +256,22 @@ pub enum Face {
     Roof,
     /// Bottom (gland plate), seen from below (the front at the bottom).
     Bottom,
+    /// Wall `n` of a room's outline (from corner `n` to the next one), seen from inside
+    /// the room (rooms only, not in `Face::ALL`).
+    Wall(u16),
+    /// Side 0 or 1 of the inner wall of a room with this id ([`InnerWall`]).
+    Inner(u64, u8),
+}
+
+/// A wall inside a room (partition): its centre line from `a` to `b` along x or z, as
+/// high as the room.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct InnerWall {
+    pub id: u64,
+    pub a: [f32; 2],
+    pub b: [f32; 2],
+    pub thickness: f32,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]

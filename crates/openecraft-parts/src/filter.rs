@@ -33,6 +33,8 @@ pub struct PartFilter {
     pub supplier: Option<String>,
     pub top_group: Option<TopGroup>,
     pub group: Option<String>,
+    /// Only parts that can be mounted directly on a room wall ([`Part::wall_mountable`]).
+    pub wall_mount: bool,
     pub grouping: Grouping,
 }
 
@@ -44,11 +46,12 @@ impl PartFilter {
             && eq(&self.supplier, &p.supplier)
             && self.top_group.is_none_or(|t| t == p.top_group)
             && eq(&self.group, &p.group)
+            && (!self.wall_mount || p.wall_mountable())
     }
 
     /// True if any criterion restricts the parts (the grouping does not).
     pub fn is_active(&self) -> bool {
-        !self.text.is_empty() || self.manufacturer.is_some() || self.supplier.is_some() || self.top_group.is_some() || self.group.is_some()
+        !self.text.is_empty() || self.manufacturer.is_some() || self.supplier.is_some() || self.top_group.is_some() || self.group.is_some() || self.wall_mount
     }
 
     /// Clears all criteria, keeps the grouping.

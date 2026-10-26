@@ -212,11 +212,12 @@ fn lineup_json(prj: &Project, ei: usize) -> Value {
 
 fn enclosure_json(prj: &Project, e: &Enclosure) -> Value {
     let components: Vec<Value> = panel::components(e).into_iter().map(|c| json!({ "role": c.role.title(), "part": c.part, "count": c.count })).collect();
-    let faces: Vec<Value> = Face::ALL
-        .into_iter()
-        .filter_map(|f| {
+    let faces: Vec<Value> = e
+        .faces()
+        .iter()
+        .filter_map(|&f| {
             let items: Vec<Value> = e.items.iter().filter(|i| i.face == f).map(|i| item_json(prj, i)).collect();
-            (!items.is_empty()).then(|| json!({ "face": f.key(), "items": items }))
+            (!items.is_empty()).then(|| json!({ "face": e.face_key(f), "items": items }))
         })
         .collect();
     let ei = prj.layout.enclosures.iter().position(|x| std::ptr::eq(x, e)).unwrap_or(0);
@@ -299,6 +300,9 @@ fn bay_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
     match a.str("right_of").filter(|n| !n.trim().is_empty()) {
         Some(left) => {
             let li = enclosure_index(prj, left.trim())?;
+            if let Some(room) = [ei, li].into_iter().find(|&i| prj.layout.enclosures[i].is_room()) {
+                return Err(tr_fmt!("{} is a room and cannot be bayed", prj.layout.enclosures[room].name));
+            }
             if !panel::bay_right_of(prj, ei, li) {
                 return Err(tr_fmt!("{} cannot be bayed to itself", prj.layout.enclosures[ei].name));
             }

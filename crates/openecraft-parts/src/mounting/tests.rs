@@ -77,3 +77,21 @@ fn empty_data_is_not_serialized() {
     let back: Part = serde_json::from_str(&json).unwrap();
     assert_eq!(back.mounting_data.power_loss, 2.0);
 }
+
+#[test]
+fn wall_mounting_is_a_typed_flag() {
+    let mut m = MountingData::default();
+    assert_eq!(m.get("Wall mounting"), None);
+    assert!(m.set("Wall mounting", "yes"));
+    assert!(m.wall_mount);
+    assert_eq!(m.get("Wall mounting").as_deref(), Some("yes"));
+    assert!(!m.set("Wall mounting", "maybe"));
+    assert!(m.set("Wall mounting", ""));
+    assert!(m.is_empty());
+    let mut p = Part { tech_data: "Wall mounting: yes".into(), ..Default::default() };
+    assert!(p.wall_mountable(), "from the technical data");
+    assert_eq!(p.migrate_tech_data(), 1);
+    assert!(p.mounting_data.wall_mount && p.wall_mountable());
+    assert!(Part { mounting: "Wall mounting".into(), ..Default::default() }.wall_mountable());
+    assert!(!Part::default().wall_mountable());
+}

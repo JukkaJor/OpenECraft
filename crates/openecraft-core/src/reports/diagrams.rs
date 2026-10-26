@@ -281,7 +281,7 @@ pub(super) fn panel_legend(prj: &Project, idx: &Index) -> Table {
     ]);
     for e in &prj.layout.enclosures {
         let mut items: Vec<_> = e.items.iter().filter(|i| i.kind == ItemKind::Device).collect();
-        items.sort_by(|a, b| (a.face as u8).cmp(&(b.face as u8)).then(a.y.round().total_cmp(&b.y.round())).then(a.x.total_cmp(&b.x)));
+        items.sort_by(|a, b| a.face.order().cmp(&b.face.order()).then(a.y.round().total_cmp(&b.y.round())).then(a.x.total_cmp(&b.x)));
         for (n, it) in items.into_iter().enumerate() {
             let data = prj.devices.get(&it.tag);
             let part = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == it.part);

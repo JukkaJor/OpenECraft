@@ -69,10 +69,10 @@ pub fn package(prj: &Project, job: Option<&Job>, list: &[Program]) -> Value {
     })
 }
 
-/// Package of all enclosures (not released as a job).
+/// Package of all enclosures (not released as a job); rooms are not machined.
 pub fn package_all(prj: &Project) -> Result<Value, String> {
     let mut list = Vec::new();
-    for enc in 0..prj.layout.enclosures.len() {
+    for enc in (0..prj.layout.enclosures.len()).filter(|&i| !prj.layout.enclosures[i].is_room()) {
         list.extend(programs(prj, enc)?);
     }
     Ok(package(prj, None, &list))

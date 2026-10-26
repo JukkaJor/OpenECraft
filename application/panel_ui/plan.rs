@@ -1,0 +1,453 @@
+//! Floor plan of a room: walls drawn by clicking their corners, walls dragged to move
+//! them, the cabinets standing in the room dragged to their places.
+
+use super::{wheel_delta, PanelUi, Tool, View};
+use crate::editor::Palette;
+use egui::{vec2, CursorIcon, Key, PointerButton, Pos2, Rect, Sense, Shape, Stroke};
+use openecraft_core::geom::{p, P};
+use openecraft_core::model::Project;
+use openecraft_core::panel::{self, Face, InnerWall, Opening, SitePlace};
+use openecraft_i18n::{tr, tr_fmt};
+
+/// Grid the corners of drawn walls snap to, mm.
+pub(super) const WALL_SNAP: f32 = 50.0;
+/// Grid cabinets and dragged walls snap to, mm.
+const MOVE_SNAP: f32 = 10.0;
+/// Pick distance on screen, px.
+const PICK: f32 = 8.0;
+
+/// A gesture in the floor plan.
+pub(super) enum PlanDrag {
+    /// A wall moved along its normal: the outline before and where the drag started.
+    Wall { wall: usize, outline: Vec<[f32; 2]>, start: P },
+    /// A line-up moved: its first cabinet, its place before and where the drag started.
+    Cabinet { first: usize, place: SitePlace, start: P },
+    /// An inner wall moved across itself: how it was and where the drag started.
+    Inner { wall: InnerWall, start: P },
+}
+
+/// The next corner of walls being drawn: on the grid, at a right angle to the last one.
+pub(super) fn ortho_corner(last: Option<P>, q: P) -> P {
+    let s = |v: f32| (v / WALL_SNAP).round() * WALL_SNAP;
+    let q = p(s(q.x), s(q.y));
+    match last {
+        Some(l) if (q.x - l.x).abs() >= (q.y - l.y).abs() => p(q.x, l.y),
+        Some(l) => p(l.x, q.y),
+        None => q,
+    }
+}
+
+/// The outline of drawn corners, closed at a right angle back to the first corner.
+pub(super) fn closed_outline(points: &[P]) -> Result<Vec<[f32; 2]>, String> {
+    let pts: Vec<[f32; 2]> = points.iter().map(|q| [q.x, q.y]).collect();
+    let (Some(&first), Some(&last)) = (pts.first(), pts.last()) else { return panel::normalize_outline(&pts) };
+    if (first[0] - last[0]).abs() < 0.01 || (first[1] - last[1]).abs() < 0.01 {
+        return panel::normalize_outline(&pts);
+    }
+    // Two ways round the missing corner: the first that gives a valid outline.
+    let a = [pts.clone(), vec![[last[0], first[1]]]].concat();
+    let b = [pts, vec![[first[0], last[1]]]].concat();
+    panel::normalize_outline(&a).or_else(|_| panel::normalize_outline(&b))
+}
+
+fn snap(v: f32) -> f32 {
+    (v / MOVE_SNAP).round() * MOVE_SNAP
+}
+
+fn segment_distance(q: P, a: [f32; 2], b: [f32; 2]) -> f32 {
+    let (dx, dz) = (b[0] - a[0], b[1] - a[1]);
+    let len2 = (dx * dx + dz * dz).max(1e-6);
+    let t = (((q.x - a[0]) * dx + (q.y - a[1]) * dz) / len2).clamp(0.0, 1.0);
+    let (x, z) = (a[0] + t * dx - q.x, a[1] + t * dz - q.y);
+    (x * x + z * z).sqrt()
+}
+
+impl PanelUi {
+    /// Finishes the walls being drawn: the room gets them as its outline.
+    pub(super) fn finish_walls(&mut self, prj: &mut Project, ei: usize) {
+        match closed_outline(&self.wall_points).and_then(|o| panel::set_outline(&mut prj.layout.enclosures[ei], &o)) {
+            Ok(()) => {
+                let n = panel::walls(&prj.layout.enclosures[ei]).len();
+                self.status = tr_fmt!("Floor plan with {} walls", n);
+                self.wall_points.clear();
+                self.set_tool(Tool::Select);
+            }
+            Err(e) => self.status = e,
+        }
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn plan_view(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+        let pal = Palette::new(ui.visuals().dark_mode);
+        let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
+        let rect = resp.rect;
+        let outline = panel::outline(&prj.layout.enclosures[ei]);
+        let (lo, hi) = panel::bounds(&outline);
+        let margin = 600.0;
+        if self.fit_pending && rect.width() > 100.0 && rect.height() > 100.0 {
+            let (w, h) = (hi[0] - lo[0] + 2.0 * margin, hi[1] - lo[1] + 2.0 * margin);
+            self.zoom = ((rect.width() - 40.0) / w).min((rect.height() - 40.0) / h).max(0.002);
+            self.offset = vec2((rect.width() - w * self.zoom) / 2.0 - (lo[0] - margin) * self.zoom, (rect.height() - h * self.zoom) / 2.0 - (lo[1] - margin) * self.zoom);
+            self.fit_pending = false;
+        }
+        if resp.hovered() {
+            let (wheel, zoom_delta, ptr) = ui.input(|i| (wheel_delta(i), i.zoom_delta(), i.pointer.hover_pos()));
+            if let Some(ptr) = ptr {
+                let factor = zoom_delta * (wheel * 0.0025).exp();
+                if (factor - 1.0).abs() > 1e-4 {
+                    let before = self.s2w(rect, ptr);
+                    self.zoom = (self.zoom * factor).clamp(0.002, 5.0);
+                    self.offset = ptr - rect.min - vec2(before.x, before.y) * self.zoom;
+                }
+            }
+        }
+        if resp.dragged_by(PointerButton::Middle) || resp.dragged_by(PointerButton::Secondary) {
+            self.offset += resp.drag_delta();
+        }
+        let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|q| rect.contains(*q));
+        let plan = ptr.map(|s| self.s2w(rect, s));
+        let pick = PICK / self.zoom;
+
+        // Keyboard
+        if self.keys_active && !ui.ctx().egui_wants_keyboard_input() {
+            let (esc, back, enter, r) = ui.input(|i| (i.key_pressed(Key::Escape), i.key_pressed(Key::Backspace), i.key_pressed(Key::Enter), i.key_pressed(Key::R) && i.modifiers.is_none()));
+            if esc {
+                if self.wall_points.is_empty() {
+                    self.set_tool(Tool::Select);
+                    self.plan_cabinet = None;
+                    self.plan_inner = None;
+                } else {
+                    self.wall_points.clear();
+                }
+            }
+            let del = ui.input(|i| i.key_pressed(Key::Delete));
+            if let (true, Some(id)) = (del, self.plan_inner.take()) {
+                panel::remove_inner_wall(&mut prj.layout.enclosures[ei], id);
+                if matches!(self.face, Face::Inner(w, _) if w == id) {
+                    self.face = Face::Wall(0);
+                }
+            }
+            if back {
+                self.wall_points.pop();
+            }
+            if enter && self.wall_points.len() >= 3 && self.tool == Tool::Walls {
+                self.finish_walls(prj, ei);
+            }
+            if enter && self.tool == Tool::InnerWalls {
+                self.wall_points.clear();
+            }
+            if let (true, Some(first)) = (r, self.plan_cabinet) {
+                if let Some(place) = panel::room_place(prj, first) {
+                    let angle = (place.angle + 90.0).rem_euclid(360.0);
+                    prj.layout.enclosures[first].site = Some(SitePlace { angle, ..place });
+                }
+            }
+        }
+        if resp.clicked_by(PointerButton::Secondary) {
+            if self.wall_points.is_empty() {
+                self.set_tool(Tool::Select);
+            } else {
+                self.wall_points.pop();
+            }
+        }
+
+        // What is under the pointer: a cabinet (its line-up's first one) or a wall.
+        let cabinets = panel::cabinets_in(&prj.layout, ei);
+        let footprints: Vec<(usize, [[f32; 2]; 4])> = cabinets.iter().map(|&c| (c, panel::footprint(prj, ei, c))).collect();
+        let walls = panel::walls(&prj.layout.enclosures[ei]);
+        let first_of = |prj: &Project, c: usize| panel::lineup_of(&prj.layout, c).first().copied().unwrap_or(c);
+        let cabinet_at = |q: P| footprints.iter().find(|(_, fp)| panel::inside_outline(fp, [q.x, q.y])).map(|(c, _)| *c);
+        let wall_at = |q: P| walls.iter().position(|w| segment_distance(q, w.a, w.b) <= pick);
+        let inner_walls = prj.layout.enclosures[ei].inner_walls.clone();
+        // An inner wall and the side of it the point is on.
+        let inner_at = |q: P| {
+            inner_walls.iter().find(|w| segment_distance(q, w.a, w.b) <= w.thickness / 2.0 + pick).map(|w| {
+                let n = panel::inner_sides(w)[0].normal;
+                (w.id, u8::from((q.x - w.a[0]) * n[0] + (q.y - w.a[1]) * n[1] < 0.0))
+            })
+        };
+        // The wall surface at a point: an outer wall or a side of an inner wall.
+        let face_at = |q: P| inner_at(q).map(|(id, s)| Face::Inner(id, s)).or_else(|| wall_at(q).map(|n| Face::Wall(n as u16)));
+        let hit_cabinet = plan.and_then(cabinet_at);
+        let hit_wall = plan.filter(|_| hit_cabinet.is_none()).and_then(wall_at);
+        let hit_inner = plan.filter(|_| hit_cabinet.is_none()).and_then(inner_at).map(|(id, _)| id);
+        // A drag starts where the button went down and follows the pointer outside the view too.
+        let pressed = ui.input(|i| i.pointer.press_origin()).map(|s| self.s2w(rect, s));
+        let dragged_to = ui.input(|i| i.pointer.interact_pos()).map(|s| self.s2w(rect, s));
+
+        // Mouse
+        match self.tool.clone() {
+            Tool::Walls => {
+                if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plan) {
+                    let corner = ortho_corner(self.wall_points.last().copied(), q);
+                    let closes = self.wall_points.len() >= 3 && self.wall_points.first().is_some_and(|f| (f.x - corner.x).abs() + (f.y - corner.y).abs() <= pick.max(WALL_SNAP));
+                    if closes || resp.double_clicked() {
+                        self.finish_walls(prj, ei);
+                    } else if self.wall_points.last().is_none_or(|l| !l.same(corner)) {
+                        self.wall_points.push(corner);
+                    }
+                }
+            }
+            Tool::InnerWalls => {
+                if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plan) {
+                    // A chain of inner walls: every click ends one and starts the next.
+                    let corner = ortho_corner(self.wall_points.last().copied(), q);
+                    match self.wall_points.last().copied() {
+                        _ if resp.double_clicked() => self.wall_points.clear(),
+                        Some(last) if !last.same(corner) => match panel::add_inner_wall(prj, ei, [last.x, last.y], [corner.x, corner.y], panel::INNER_WALL) {
+                            Ok(_) => self.wall_points = vec![corner],
+                            Err(e) => self.status = e,
+                        },
+                        Some(_) => {}
+                        None => self.wall_points.push(corner),
+                    }
+                }
+            }
+            Tool::Opening(opening) => {
+                if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plan) {
+                    // In the wall clicked (the side of an inner wall clicked), centred where it was clicked.
+                    let e = &prj.layout.enclosures[ei];
+                    match face_at(q).and_then(|f| panel::side(e, f).map(|w| (f, w))) {
+                        Some((face, w)) => {
+                            let (s, r) = (w.start(), w.right());
+                            let along = (q.x - s[0]) * r[0] + (q.y - s[1]) * r[1];
+                            let (width, _) = if opening == Opening::Door { panel::DOOR_SIZE } else { panel::WINDOW_SIZE };
+                            match panel::add_opening(prj, ei, opening, face, Some(along - width / 2.0), None, None) {
+                                Ok(id) => {
+                                    self.face = face;
+                                    self.select_item(id);
+                                }
+                                Err(e) => self.status = e,
+                            }
+                        }
+                        None => self.status = tr("Click on a wall").to_string(),
+                    }
+                }
+            }
+            Tool::Select => {
+                if resp.drag_started_by(PointerButton::Primary) {
+                    if let Some(q) = pressed {
+                        if let Some(c) = cabinet_at(q) {
+                            let first = first_of(prj, c);
+                            if let Some(place) = panel::room_place(prj, first) {
+                                self.plan_cabinet = Some(first);
+                                self.plan_drag = Some(PlanDrag::Cabinet { first, place, start: q });
+                            }
+                        } else if let Some((id, _)) = inner_at(q) {
+                            if let Some(wall) = inner_walls.iter().find(|w| w.id == id) {
+                                self.plan_inner = Some(id);
+                                self.plan_drag = Some(PlanDrag::Inner { wall: wall.clone(), start: q });
+                            }
+                        } else if let Some(wall) = wall_at(q) {
+                            self.plan_drag = Some(PlanDrag::Wall { wall, outline: outline.clone(), start: q });
+                        }
+                    }
+                }
+                if let (Some(drag), Some(q)) = (&self.plan_drag, dragged_to) {
+                    match drag {
+                        PlanDrag::Wall { wall, outline, start } => {
+                            let w = &panel::walls(&prj.layout.enclosures[ei])[*wall];
+                            let offset = snap(-((q.x - start.x) * w.normal[0] + (q.y - start.y) * w.normal[1]));
+                            match panel::moved_wall(outline, *wall, offset) {
+                                Ok(o) => {
+                                    let _ = panel::set_outline(&mut prj.layout.enclosures[ei], &o);
+                                    self.status = tr_fmt!("Wall {}: moved by {} mm", wall + 1, format!("{offset:.0}"));
+                                }
+                                Err(e) => self.status = e,
+                            }
+                        }
+                        PlanDrag::Cabinet { first, place, start } => {
+                            let moved = SitePlace { x: snap(place.x + q.x - start.x), z: snap(place.z + q.y - start.y), angle: place.angle };
+                            prj.layout.enclosures[*first].site = Some(moved);
+                        }
+                        PlanDrag::Inner { wall, start } => {
+                            // From where it was, across itself.
+                            let n = panel::inner_sides(wall)[0].normal;
+                            let offset = snap((q.x - start.x) * n[0] + (q.y - start.y) * n[1]);
+                            let e = &mut prj.layout.enclosures[ei];
+                            if let Some(w) = e.inner_walls.iter_mut().find(|w| w.id == wall.id) {
+                                *w = wall.clone();
+                            }
+                            match panel::moved_inner_wall(e, wall.id, offset, None, None) {
+                                Ok(moved) => {
+                                    if let Some(w) = e.inner_walls.iter_mut().find(|w| w.id == wall.id) {
+                                        *w = moved;
+                                    }
+                                }
+                                Err(msg) => self.status = msg,
+                            }
+                        }
+                    }
+                }
+                if resp.drag_stopped() {
+                    self.plan_drag = None;
+                }
+                if resp.clicked_by(PointerButton::Primary) {
+                    self.plan_cabinet = hit_cabinet.map(|c| first_of(prj, c));
+                    self.plan_inner = hit_inner;
+                }
+                if resp.double_clicked() {
+                    if let Some(c) = hit_cabinet {
+                        // Open the cabinet.
+                        self.enclosure = c;
+                        self.view = View::Front;
+                        self.selection.clear();
+                        self.fit_pending = true;
+                        self.cam = None;
+                        return;
+                    } else if let Some(face) = plan.and_then(face_at) {
+                        self.front_face(face, false);
+                        return;
+                    }
+                }
+                if let Some(w) = hit_inner.and_then(|id| inner_walls.iter().find(|w| w.id == id)) {
+                    ui.ctx().set_cursor_icon(if (w.a[0] - w.b[0]).abs() < 0.5 { CursorIcon::ResizeHorizontal } else { CursorIcon::ResizeVertical });
+                } else if hit_wall.is_some() || matches!(self.plan_drag, Some(PlanDrag::Wall { .. })) {
+                    let wall = match &self.plan_drag {
+                        Some(PlanDrag::Wall { wall, .. }) => Some(*wall),
+                        _ => hit_wall,
+                    };
+                    if let Some(w) = wall.and_then(|w| walls.get(w)) {
+                        ui.ctx().set_cursor_icon(if w.normal[0].abs() > 0.5 { CursorIcon::ResizeHorizontal } else { CursorIcon::ResizeVertical });
+                    }
+                } else if hit_cabinet.is_some() {
+                    ui.ctx().set_cursor_icon(CursorIcon::Grab);
+                }
+            }
+            _ => {}
+        }
+
+        // Draw
+        let e = &prj.layout.enclosures[ei];
+        let (off, zoom) = (self.offset, self.zoom);
+        let to_screen = |x: f32, z: f32| rect.min + off + vec2(x, z) * zoom;
+        painter.rect_filled(rect, 0.0, pal.canvas);
+        // Grid of metres (or ten metres when zoomed out).
+        let step = if zoom * 1000.0 < 12.0 { 10000.0 } else { 1000.0 };
+        let (a, b) = (self.s2w(rect, rect.min), self.s2w(rect, rect.max));
+        let grid = Stroke::new(1.0, pal.grid.gamma_multiply(0.35));
+        let mut x = (a.x / step).floor() * step;
+        while x <= b.x {
+            painter.line_segment([to_screen(x, a.y), to_screen(x, b.y)], grid);
+            x += step;
+        }
+        let mut z = (a.y / step).floor() * step;
+        while z <= b.y {
+            painter.line_segment([to_screen(a.x, z), to_screen(b.x, z)], grid);
+            z += step;
+        }
+        // Floor, walls and their numbers and lengths.
+        for (a, b) in panel::floor_cells(e) {
+            painter.rect_filled(Rect::from_two_pos(to_screen(a[0], a[2]), to_screen(b[0], b[2])), 0.0, pal.paper);
+        }
+        let dragged_wall = match &self.plan_drag {
+            Some(PlanDrag::Wall { wall, .. }) => Some(*wall),
+            _ => None,
+        };
+        let walls = panel::walls(e);
+        for (i, w) in walls.iter().enumerate() {
+            let (a, b) = panel::wall_box(e, Face::Wall(i as u16));
+            let picking = matches!(self.tool, Tool::Select | Tool::Opening(_));
+            let active = dragged_wall == Some(i) || (dragged_wall.is_none() && hit_wall == Some(i) && picking);
+            let color = if active { pal.selected } else if self.face == Face::Wall(i as u16) { pal.highlight } else { pal.line };
+            painter.rect_filled(Rect::from_two_pos(to_screen(a[0], a[2]), to_screen(b[0], b[2])).expand(1.0), 0.0, color);
+            // Number and length inside the room, beside the wall.
+            let mid = to_screen((w.a[0] + w.b[0]) / 2.0, (w.a[1] + w.b[1]) / 2.0) + vec2(w.normal[0], w.normal[1]) * 8.0;
+            let align = match w.normal {
+                [x, _] if x > 0.5 => egui::Align2::LEFT_CENTER,
+                [x, _] if x < -0.5 => egui::Align2::RIGHT_CENTER,
+                [_, z] if z > 0.5 => egui::Align2::CENTER_TOP,
+                _ => egui::Align2::CENTER_BOTTOM,
+            };
+            let label = format!("{}  {:.2} m", i + 1, w.length() / 1000.0);
+            painter.text(mid, align, label, egui::FontId::proportional(12.0), pal.text);
+        }
+        // Inner walls with their numbers.
+        for (k, w) in e.inner_walls.iter().enumerate() {
+            let (a, b) = panel::wall_box(e, Face::Inner(w.id, 0));
+            let active = self.plan_inner == Some(w.id) || hit_inner == Some(w.id);
+            let color = if active { pal.selected } else if matches!(self.face, Face::Inner(id, _) if id == w.id) { pal.highlight } else { pal.line };
+            let r = Rect::from_two_pos(to_screen(a[0], a[2]), to_screen(b[0], b[2])).expand(0.5);
+            painter.rect_filled(r, 0.0, color.gamma_multiply(0.85));
+            let length = (w.b[0] - w.a[0]).abs() + (w.b[1] - w.a[1]).abs();
+            let align = if r.width() < r.height() { egui::Align2::LEFT_CENTER } else { egui::Align2::CENTER_TOP };
+            let at = if r.width() < r.height() { r.right_center() + vec2(6.0, 0.0) } else { r.center_bottom() + vec2(0.0, 4.0) };
+            painter.text(at, align, format!("I{}  {:.2} m", k + 1, length / 1000.0), egui::FontId::proportional(12.0), pal.text);
+        }
+        // Doors (gap, leaf and its swing) and windows (gap with the glass).
+        for it in e.items.iter().filter(|i| !i.opening.is_cutout()) {
+            let Some(w) = panel::side(e, it.face) else { continue };
+            let w = &w;
+            // Through an outer wall or the whole inner wall.
+            let t = match it.face {
+                Face::Inner(id, _) => e.inner_walls.iter().find(|x| x.id == id).map_or(panel::INNER_WALL, |x| x.thickness),
+                _ => e.wall(),
+            };
+            let (s, r, nm) = (w.start(), w.right(), w.normal);
+            let at = |along: f32, into: f32| to_screen(s[0] + r[0] * along + nm[0] * into, s[1] + r[1] * along + nm[1] * into);
+            let selected = self.selection.contains(&it.id);
+            let ink = if selected { pal.selected } else { pal.line };
+            let gap = [at(it.x, 0.0), at(it.x + it.w, 0.0), at(it.x + it.w, -t), at(it.x, -t)];
+            painter.add(Shape::convex_polygon(gap.to_vec(), pal.paper, Stroke::NONE));
+            if it.opening == Opening::Door {
+                let leaf = Stroke::new(if selected { 2.0 } else { 1.2 }, ink);
+                painter.line_segment([at(it.x, 0.0), at(it.x, it.w)], leaf);
+                let arc: Vec<Pos2> = (0..=16)
+                    .map(|k| {
+                        let a = std::f32::consts::FRAC_PI_2 * k as f32 / 16.0;
+                        at(it.x + it.w * a.cos(), it.w * a.sin())
+                    })
+                    .collect();
+                painter.add(Shape::line(arc, Stroke::new(1.0, ink.gamma_multiply(0.6))));
+            } else {
+                painter.line_segment([at(it.x, -t / 2.0), at(it.x + it.w, -t / 2.0)], Stroke::new(if selected { 3.0 } else { 2.0 }, pal.highlight));
+            }
+            for along in [it.x, it.x + it.w] {
+                painter.line_segment([at(along, 0.0), at(along, -t)], Stroke::new(1.5, ink));
+            }
+        }
+        // Cabinets: footprint, front edge, name.
+        for (c, fp) in &footprints {
+            let pts: Vec<Pos2> = fp.iter().map(|q| to_screen(q[0], q[1])).collect();
+            let selected = self.plan_cabinet == Some(first_of(prj, *c));
+            let stroke = Stroke::new(if selected { 2.5 } else { 1.0 }, if selected { pal.selected } else { pal.frame });
+            painter.add(Shape::convex_polygon(pts.clone(), pal.plate, stroke));
+            painter.line_segment([pts[2], pts[3]], Stroke::new(3.0, stroke.color));
+            let centre = Pos2::new(pts.iter().map(|q| q.x).sum::<f32>() / 4.0, pts.iter().map(|q| q.y).sum::<f32>() / 4.0);
+            painter.text(centre, egui::Align2::CENTER_CENTER, &prj.layout.enclosures[*c].name, egui::FontId::proportional(12.0), pal.text);
+        }
+        // Walls being drawn.
+        if !self.wall_points.is_empty() {
+            let stroke = Stroke::new(2.0, pal.selected);
+            let mut pts: Vec<Pos2> = self.wall_points.iter().map(|q| to_screen(q.x, q.y)).collect();
+            let next = plan.map(|q| ortho_corner(self.wall_points.last().copied(), q));
+            if let Some(n) = next {
+                pts.push(to_screen(n.x, n.y));
+                let l = self.wall_points.last().copied().unwrap_or(n);
+                let length = (n.x - l.x).abs() + (n.y - l.y).abs();
+                painter.text(to_screen(n.x, n.y) + vec2(10.0, -10.0), egui::Align2::LEFT_BOTTOM, format!("{:.2} m", length / 1000.0), egui::FontId::proportional(12.0), pal.selected);
+            }
+            painter.add(Shape::line(pts, stroke));
+            let f = self.wall_points[0];
+            painter.circle_stroke(to_screen(f.x, f.y), 6.0, stroke);
+        } else if self.tool == Tool::Walls {
+            if let Some(q) = plan {
+                let c = ortho_corner(None, q);
+                painter.circle_stroke(to_screen(c.x, c.y), 4.0, Stroke::new(1.5, pal.selected));
+            }
+        }
+        // Hint and pointer position.
+        let hint = match self.tool {
+            Tool::Walls => tr("Click the corners of the walls; click the first corner again, double-click or press Enter to close the room. Backspace removes the last corner, Esc cancels."),
+            Tool::InnerWalls => tr("Click the ends of the inner walls; every click starts the next one. Esc, Enter or a double-click ends the chain."),
+            Tool::Opening(Opening::Door) => tr("Click on a wall where the door goes; it swings into the room. Size and position in the properties."),
+            Tool::Opening(_) => tr("Click on a wall where the window goes. Size, position and sill height in the properties."),
+            _ => tr("Drag a wall to move it, drag a cabinet to its place (R turns it); double-click a wall to equip it, a cabinet to open it. Del removes the selected inner wall."),
+        };
+        painter.text(rect.left_top() + vec2(8.0, 8.0), egui::Align2::LEFT_TOP, hint, egui::FontId::proportional(12.0), pal.text);
+        if let Some(q) = plan {
+            let at = tr_fmt!("x {} mm, z {} mm", format!("{:.0}", q.x), format!("{:.0}", q.y));
+            painter.text(rect.left_bottom() + vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, at, egui::FontId::proportional(12.0), pal.text);
+        }
+    }
+}

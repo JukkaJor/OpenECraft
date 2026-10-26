@@ -6232,3 +6232,39 @@ Click to show, right click for more	클릭하면 표시, 마우스 오른쪽 버
 {} notes	참고 {}개
 Open in a new page tab	새 페이지 탭에서 열기
 Project information	프로젝트 정보
+New room	새 방
+Room	방
+Rooms	방
+Delete room	방 삭제
+Ceiling	천장
+Walls and ceiling	벽과 천장
+Wall mounting	벽 설치
+WALL	벽
+Wall-mounted part	벽 설치 부품
+Width × depth	너비 × 깊이
+Place in the plant	플랜트 내 위치
+Only parts for direct wall mounting	직접 벽 설치 부품만
+Mounted directly on the wall or ceiling of a room	방의 벽이나 천장에 직접 설치
+{}  room {} × {} × {}	{}  방 {} × {} × {}
+{}: {} stands outside the room	{}: {}이(가) 방 밖에 있습니다
+{}: {} is higher than the ceiling	{}: {}이(가) 천장보다 높습니다
+Floor plan	평면도
+Draw walls	벽 그리기
+Wall	벽
+Wall {}	벽 {}
+Floor plan with {} walls	벽 {}개의 평면도
+{} rails, {} cable ducts, {} devices	레일 {}개, 케이블 덕트 {}개, 장치 {}개
+A room needs at least four walls	방에는 벽이 4개 이상 필요합니다
+Walls {} and {} cross	벽 {}과(와) {}이(가) 교차합니다
+Wall {} is shorter than {} mm	벽 {}이(가) {} mm보다 짧습니다
+Wall {} is not at a right angle	벽 {}이(가) 직각이 아닙니다
+Window	창문
+Opening	개구부
+Above the floor	바닥 위 높이
+{}: {} stands in the swing of the door in wall {}	{}: {}이(가) 벽 {} 문의 개폐 범위에 있습니다
+Inner walls	내벽
+Inner wall	내벽
+Draw inner walls	내벽 그리기
+Inner wall {}, side {}	내벽 {}, {} 면
+Thickness	두께
+{}: {} stands in an inner wall	{}: {}이(가) 내벽 안에 있습니다

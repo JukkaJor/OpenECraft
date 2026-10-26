@@ -189,6 +189,7 @@ pub enum Cmd {
     WiringWorkbench,
     // Layout space (panel layout)
     NewEnclosure,
+    NewRoom,
     LayoutSelect,
     LayoutRail,
     LayoutDuct,
@@ -198,6 +199,12 @@ pub enum Cmd {
     LayoutReservation,
     LayoutAccessory,
     Layout3dMacro,
+    LayoutWallPart,
+    LayoutFloorPlan,
+    LayoutDrawWalls,
+    LayoutInnerWalls,
+    LayoutRoomDoor,
+    LayoutRoomWindow,
     LayoutFront,
     LayoutDoor,
     LayoutDoorInside,
@@ -524,6 +531,7 @@ pub static ALL: &[Def] = &[
     d(C::WiringWorkbench, "wiring_workbench", tr_const!("Workbench"), I::Cube).pane(Pane::WiringWorkbench),
     // ---------------------------------------------------------------- layout space
     d(C::NewEnclosure, "new_enclosure", tr_const!("New enclosure"), I::Enclosure),
+    d(C::NewRoom, "new_room", tr_const!("New room"), I::Wall).tip(tr_const!("A room in which cabinets stand; rails, cable ducts and wall-mounted devices go on its walls and ceiling")),
     d(C::LayoutSelect, "layout_select", tr_const!("Select"), I::Select).toggle().tip(tr_const!("Select / move (Esc)")),
     d(C::LayoutRail, "layout_rail", tr_const!("Mounting rail"), I::Rail).toggle().tip(tr_const!("Click start and end point")),
     d(C::LayoutDuct, "layout_duct", tr_const!("Cable duct"), I::Duct).toggle().tip(tr_const!("Click start and end point")),
@@ -543,6 +551,24 @@ pub static ALL: &[Def] = &[
     d(C::Layout3dMacro, "layout_3d_macro", tr_const!("3D macro"), I::Macro)
         .menu()
         .tip(tr_const!("Insert a group of items (anchored items go to their place, the others where you click)")),
+    d(C::LayoutFloorPlan, "layout_floor_plan", tr_const!("Floor plan"), I::Grid)
+        .toggle()
+        .tip(tr_const!("Floor plan of the room: drag walls to move them, drag cabinets to their places")),
+    d(C::LayoutDrawWalls, "layout_draw_walls", tr_const!("Draw walls"), I::Polyline)
+        .toggle()
+        .tip(tr_const!("Draw the walls of the room: click the corners, walls run at right angles; click the first corner or press Enter to close")),
+    d(C::LayoutInnerWalls, "layout_inner_walls", tr_const!("Inner walls"), I::Line)
+        .toggle()
+        .tip(tr_const!("Walls inside the room: click their ends in the floor plan, every click starts the next one; both sides carry rails, ducts, devices, doors and windows")),
+    d(C::LayoutRoomDoor, "layout_room_door", tr_const!("Door"), I::Door)
+        .toggle()
+        .tip(tr_const!("Door in a wall of the room: click on the wall in the floor plan or in the view of the wall")),
+    d(C::LayoutRoomWindow, "layout_room_window", tr_const!("Window"), I::Rect)
+        .toggle()
+        .tip(tr_const!("Window in a wall of the room: click on the wall in the floor plan or in the view of the wall")),
+    d(C::LayoutWallPart, "layout_wall_part", tr_const!("Wall-mounted part"), I::Device)
+        .menu()
+        .tip(tr_const!("Parts marked for wall mounting (inverters, charge controllers, …): choose one, then click where it goes on the wall of the room")),
     d(C::LayoutFront, "layout_plate", tr_const!("Mounting plate"), I::Front).toggle(),
     d(C::LayoutDoor, "layout_door", tr_const!("Door (front)"), I::Door).toggle().tip(tr_const!("The door seen from the front: door devices and cutouts")),
     d(C::LayoutDoorInside, "layout_door_inside", tr_const!("Door (inside)"), I::Door)

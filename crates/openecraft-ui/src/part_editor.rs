@@ -109,6 +109,9 @@ pub fn part_filter(ui: &mut egui::Ui, id: &str, parts: &[&Part], f: &mut PartFil
             let top = f.top_group;
             let groups = distinct_values(parts.iter().copied().filter(|p| top.is_none_or(|t| t == p.top_group)), |p| &p.group);
             choice_row(ui, (id, "group"), tr("Product group"), &mut f.group, &groups);
+            ui.label(tr("Wall mounting"));
+            ui.checkbox(&mut f.wall_mount, tr("Only parts for direct wall mounting"));
+            ui.end_row();
             ui.label(tr("Group by"));
             egui::ComboBox::from_id_salt((id, "grouping")).selected_text(tr(f.grouping.title())).width(180.0).show_ui(ui, |ui| {
                 for g in Grouping::ALL {
@@ -146,7 +149,14 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilt
         list.sort_by(|a, b| natural_cmp(&a.number, &b.number));
         for p in list.iter() {
             let is_sel = selected.as_deref() == Some(p.number.as_str());
-            let r = ui.selectable_label(is_sel, &p.number).on_hover_text(&p.description);
+            let r = ui.horizontal(|ui| {
+                let r = ui.selectable_label(is_sel, &p.number).on_hover_text(&p.description);
+                if p.wall_mountable() {
+                    wall_badge(ui);
+                }
+                r
+            });
+            let r = r.inner;
             if r.clicked() {
                 *selected = Some(p.number.clone());
             }
@@ -239,7 +249,23 @@ fn mounting_data(ui: &mut egui::Ui, part: &mut Part) {
         text_row(ui, tr("Faces"), &mut m.faces);
         text_row(ui, tr("Collision class"), &mut m.collision_class);
         text_row(ui, tr("Terminal type"), &mut m.terminal_type);
+        ui.label(tr("Wall mounting"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut m.wall_mount, tr("Mounted directly on the wall or ceiling of a room"));
+            if m.wall_mount {
+                wall_badge(ui);
+            }
+        });
+        ui.end_row();
     });
+}
+
+/// Marking of parts that are mounted directly on a room wall (part trees, editor,
+/// summary).
+pub fn wall_badge(ui: &mut egui::Ui) {
+    let color = Color32::from_rgb(40, 140, 120);
+    ui.label(RichText::new(tr("WALL")).small().strong().color(Color32::WHITE).background_color(color))
+        .on_hover_text(tr("Can be mounted directly on the wall or ceiling of a room, without a rail"));
 }
 
 fn num_row(ui: &mut egui::Ui, label: &str, value: &mut f32, suffix: &str) {
@@ -907,6 +933,7 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
             (tr("Accessories"), p.accessories.join(", ")),
             (tr("Lifecycle"), if p.lifecycle.is_active() { String::new() } else { tr(p.lifecycle.title()).to_string() }),
             (tr("Successor"), p.successor.clone()),
+            (tr("Wall mounting"), if p.wall_mountable() { tr("yes").to_string() } else { String::new() }),
         ] {
             if !v.trim().is_empty() && v.trim() != "/" {
                 ui.label(RichText::new(k).weak());

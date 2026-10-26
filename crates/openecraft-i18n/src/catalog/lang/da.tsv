@@ -6232,3 +6232,43 @@ Click to show, right click for more	Klik for at vise, højreklik for mere
 {} notes	{} bemærkninger
 Open in a new page tab	Åbn i en ny sidefane
 Project information	Projektinformation
+New room	Nyt rum
+Room	Rum
+Rooms	Rum
+Delete room	Slet rum
+Ceiling	Loft
+Walls and ceiling	Vægge og loft
+Cabinets in the room	Skabe i rummet
+Wall mounting	Vægmontage
+WALL	VÆG
+Wall-mounted part	Vægmonteret artikel
+Width × depth	Bredde × dybde
+Place in the plant	Placering i anlægget
+Only parts for direct wall mounting	Kun artikler til direkte vægmontage
+Mounted directly on the wall or ceiling of a room	Monteres direkte på væggen eller i loftet i et rum
+{}  room {} × {} × {}	{}  rum {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} er ikke beregnet til vægmontage: placer den på en skinne
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} er ikke beregnet til vægmontage, monter den på en skinne
+{}: {} stands outside the room	{}: {} står uden for rummet
+{}: {} is higher than the ceiling	{}: {} er højere end loftet
+Floor plan	Plantegning
+Draw walls	Tegn vægge
+Wall	Væg
+Wall {}	Væg {}
+Floor plan with {} walls	Plantegning med {} vægge
+{} rails, {} cable ducts, {} devices	{} skinner, {} kabelkanaler, {} enheder
+A room needs at least four walls	Et rum skal have mindst fire vægge
+Walls {} and {} cross	Væggene {} og {} krydser hinanden
+Wall {} is shorter than {} mm	Væg {} er kortere end {} mm
+Wall {} is not at a right angle	Væg {} er ikke i ret vinkel
+Window	Vindue
+Opening	Åbning
+Above the floor	Over gulvet
+Click on a wall	Klik på en væg
+{}: {} stands in the swing of the door in wall {}	{}: {} står i dørens svingområde i væg {}
+Inner walls	Indervægge
+Inner wall	Indervæg
+Draw inner walls	Tegn indervægge
+Inner wall {}, side {}	Indervæg {}, side {}
+Thickness	Tykkelse
+{}: {} stands in an inner wall	{}: {} står i en indervæg

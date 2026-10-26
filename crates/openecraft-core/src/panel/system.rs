@@ -70,6 +70,8 @@ pub enum Role {
     MountingPlate,
     Plinth,
     BayingKit,
+    /// A wall or the ceiling (`Roof`) of a room.
+    RoomWall(Face),
 }
 
 impl Role {
@@ -86,6 +88,9 @@ impl Role {
             Role::MountingPlate => tr("Mounting plate"),
             Role::Plinth => tr("Plinth"),
             Role::BayingKit => tr("Baying kit"),
+            Role::RoomWall(Face::Roof) => tr("Ceiling"),
+            Role::RoomWall(Face::Inner(..)) => tr("Inner wall"),
+            Role::RoomWall(_) => tr("Wall"),
         }
     }
 }
@@ -102,6 +107,9 @@ pub struct Component {
 
 /// Box of a wall of the enclosure (sheet thickness `t`).
 pub fn wall_box(e: &Enclosure, face: Face) -> (V3, V3) {
+    if e.is_room() {
+        return super::rooms::wall_box(e, face);
+    }
     let (w, h, d, t) = (e.width, e.height, e.depth, e.wall());
     match face {
         Face::Left => ([0.0, 0.0, 0.0], [t, h, d]),
@@ -109,20 +117,13 @@ pub fn wall_box(e: &Enclosure, face: Face) -> (V3, V3) {
         Face::Roof => ([0.0, 0.0, 0.0], [w, t, d]),
         Face::Bottom => ([0.0, h - t, 0.0], [w, h, d]),
         Face::Door => ([0.0, 0.0, d], [w, h, d + t]),
-        Face::Rear | Face::Plate => ([0.0, 0.0, 0.0], [w, h, t]),
+        Face::Rear | Face::Plate | Face::Wall(_) | Face::Inner(..) => ([0.0, 0.0, 0.0], [w, h, t]),
     }
 }
 
-/// Direction out of the enclosure through a wall (or the door).
-pub fn outward(face: Face) -> V3 {
-    match face {
-        Face::Left => [-1.0, 0.0, 0.0],
-        Face::Right => [1.0, 0.0, 0.0],
-        Face::Roof => [0.0, -1.0, 0.0],
-        Face::Bottom => [0.0, 1.0, 0.0],
-        Face::Door => [0.0, 0.0, 1.0],
-        Face::Rear | Face::Plate => [0.0, 0.0, -1.0],
-    }
+/// Direction out of the enclosure (or room) through a wall, the door or the ceiling.
+pub fn outward(e: &Enclosure, face: Face) -> V3 {
+    super::face_frame(e, face)[3].map(|v| -v)
 }
 
 /// The frame of a floor-standing system: four posts and the rails joining them at
@@ -151,6 +152,16 @@ fn frame_boxes(e: &Enclosure, f: f32) -> Vec<(V3, V3)> {
 /// mounting plate plus side panels (or baying kits on bayed sides) and a rear wall.
 pub fn components(e: &Enclosure) -> Vec<Component> {
     let (w, h, d) = (e.width, e.height, e.depth);
+    if e.is_room() {
+        // Room walls stand on the floor of the site, the ceiling covers the floor plan.
+        let mut v: Vec<Component> = super::room_faces(e)
+            .into_iter()
+            .filter(|f| matches!(f, Face::Wall(_) | Face::Inner(_, 0)))
+            .map(|f| Component { role: Role::RoomWall(f), part: String::new(), count: 1, boxes: vec![wall_box(e, f)] })
+            .collect();
+        v.push(Component { role: Role::RoomWall(Face::Roof), part: String::new(), count: 1, boxes: super::rooms::floor_cells(e) });
+        return v;
+    }
     let sys = e.system();
     let modular = sys.is_some_and(|s| s.data.bayable);
     let body = match sys {

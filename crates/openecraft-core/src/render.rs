@@ -1064,6 +1064,24 @@ pub fn draw_enclosure(
                     d.rect(r0, r1, 0.15, ink, false);
                 }
             }
+            ItemKind::Cutout if !it.opening.is_cutout() => {
+                // Doors and windows in the wall of a room, seen from inside: a frame,
+                // the door's handle on the right, the window's sashes.
+                let line_ink = if ink == Ink::Line { Ink::Frame } else { ink };
+                d.rect(a, b, 0.0, Ink::Fill, true);
+                d.rect(a, b, 0.3, ink, false);
+                let f = 60.0_f32.min(it.w / 4.0).min(it.h / 4.0);
+                if it.opening == crate::model::panel::Opening::Door {
+                    d.rect(tf(it.x + f, it.y + f), tf(it.x + it.w - f, it.y + it.h), 0.15, line_ink, false);
+                    let handle = tf(it.x + it.w - f - 60.0, it.y + it.h - 1050.0_f32.min(it.h / 2.0));
+                    d.circle(handle, 20.0 * k, 0.2, line_ink, false);
+                } else {
+                    let (c, m) = (tf(it.x + f, it.y + f), tf(it.x + it.w - f, it.y + it.h - f));
+                    d.rect(c, m, 0.15, line_ink, false);
+                    let mid = tf(it.x + it.w / 2.0, it.y + it.h / 2.0);
+                    d.line(p(mid.x, c.y), p(mid.x, m.y), 0.15, line_ink, false);
+                }
+            }
             ItemKind::Cutout => {
                 let line_ink = if ink == Ink::Line { Ink::Frame } else { ink };
                 if it.round {

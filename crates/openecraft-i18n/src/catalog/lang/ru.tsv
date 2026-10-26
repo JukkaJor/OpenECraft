@@ -6232,3 +6232,43 @@ Click to show, right click for more	Щелчок — показать, прав�
 {} notes	Примечаний: {}
 Open in a new page tab	Открыть в новой вкладке листа
 Project information	Сведения о проекте
+New room	Новое помещение
+Room	Помещение
+Rooms	Помещения
+Delete room	Удалить помещение
+Ceiling	Потолок
+Walls and ceiling	Стены и потолок
+Cabinets in the room	Шкафы в помещении
+Wall mounting	Настенный монтаж
+WALL	СТЕНА
+Wall-mounted part	Настенное изделие
+Width × depth	Ширина × глубина
+Place in the plant	Место на объекте
+Only parts for direct wall mounting	Только изделия для прямого настенного монтажа
+Mounted directly on the wall or ceiling of a room	Монтируется непосредственно на стену или потолок помещения
+{}  room {} × {} × {}	{}  помещение {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} не предназначен для настенного монтажа: установите его на рейку
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} не предназначен для настенного монтажа, установите его на рейку
+{}: {} stands outside the room	{}: {} стоит вне помещения
+{}: {} is higher than the ceiling	{}: {} выше потолка
+Floor plan	План помещения
+Draw walls	Рисовать стены
+Wall	Стена
+Wall {}	Стена {}
+Floor plan with {} walls	План с {} стенами
+{} rails, {} cable ducts, {} devices	рейки {}, кабельные каналы {}, устройства {}
+A room needs at least four walls	Помещению нужны минимум четыре стены
+Walls {} and {} cross	Стены {} и {} пересекаются
+Wall {} is shorter than {} mm	Стена {} короче {} мм
+Wall {} is not at a right angle	Стена {} не под прямым углом
+Window	Окно
+Opening	Проём
+Above the floor	Над полом
+Click on a wall	Щёлкните по стене
+{}: {} stands in the swing of the door in wall {}	{}: {} стоит в зоне открывания двери в стене {}
+Inner walls	Внутренние стены
+Inner wall	Внутренняя стена
+Draw inner walls	Рисовать внутренние стены
+Inner wall {}, side {}	Внутренняя стена {}, сторона {}
+Thickness	Толщина
+{}: {} stands in an inner wall	{}: {} стоит во внутренней стене

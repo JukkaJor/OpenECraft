@@ -6232,3 +6232,43 @@ Click to show, right click for more	Näytä napsauttamalla, lisää hiiren oikea
 {} notes	Huomautuksia: {}
 Open in a new page tab	Avaa uudessa sivuvälilehdessä
 Project information	Projektin tiedot
+New room	Uusi tila
+Room	Tila
+Rooms	Tilat
+Delete room	Poista tila
+Ceiling	Katto
+Walls and ceiling	Seinät ja katto
+Cabinets in the room	Kaapit tilassa
+Wall mounting	Seinäasennus
+WALL	SEINÄ
+Wall-mounted part	Seinäasennettava osa
+Width × depth	Leveys × syvyys
+Place in the plant	Paikka laitoksessa
+Only parts for direct wall mounting	Vain suoraan seinään asennettavat osat
+Mounted directly on the wall or ceiling of a room	Asennetaan suoraan tilan seinään tai kattoon
+{}  room {} × {} × {}	{}  tila {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} ei ole tarkoitettu seinäasennukseen: aseta se asennuskiskoon
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} ei ole tarkoitettu seinäasennukseen, asenna se kiskoon
+{}: {} stands outside the room	{}: {} on tilan ulkopuolella
+{}: {} is higher than the ceiling	{}: {} on kattoa korkeampi
+Floor plan	Pohjapiirros
+Draw walls	Piirrä seinät
+Wall	Seinä
+Wall {}	Seinä {}
+Floor plan with {} walls	Pohjapiirros, {} seinää
+{} rails, {} cable ducts, {} devices	kiskoja {}, johtokouruja {}, laitteita {}
+A room needs at least four walls	Tilassa on oltava vähintään neljä seinää
+Walls {} and {} cross	Seinät {} ja {} risteävät
+Wall {} is shorter than {} mm	Seinä {} on lyhyempi kuin {} mm
+Wall {} is not at a right angle	Seinä {} ei ole suorassa kulmassa
+Window	Ikkuna
+Opening	Aukko
+Above the floor	Lattian yläpuolella
+Click on a wall	Napsauta seinää
+{}: {} stands in the swing of the door in wall {}	{}: {} on seinän {} oven kääntöalueella
+Inner walls	Väliseinät
+Inner wall	Väliseinä
+Draw inner walls	Piirrä väliseinät
+Inner wall {}, side {}	Väliseinä {}, puoli {}
+Thickness	Paksuus
+{}: {} stands in an inner wall	{}: {} on väliseinän sisällä

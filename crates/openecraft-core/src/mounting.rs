@@ -99,8 +99,8 @@ pub fn steps(prj: &Project, enclosure: Option<usize>) -> Vec<Step> {
     }
     let item = |s: &Step| &prj.layout.enclosures[s.enclosure].items[s.item];
     v.sort_by(|a, b| {
-        (a.enclosure, a.phase, item(a).face as u8)
-            .cmp(&(b.enclosure, b.phase, item(b).face as u8))
+        (a.enclosure, a.phase, item(a).face.order())
+            .cmp(&(b.enclosure, b.phase, item(b).face.order()))
             .then(item(a).y.total_cmp(&item(b).y))
             .then(item(a).x.total_cmp(&item(b).x))
     });

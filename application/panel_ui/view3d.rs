@@ -7,7 +7,7 @@ use super::routing_ui::RouteRef;
 use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
-use openecraft_core::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
+use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{cross, dot, norm, sub, Orbit};
 use openecraft_core::analysis::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
@@ -29,12 +29,18 @@ impl PanelUi {
     }
 
     /// Enclosures shown in the 3D view with their poses in view coordinates (x right,
-    /// y up, z towards the door): all of them at their places in the room, or the
-    /// current one or its whole line-up from the left with the first one's bottom at
-    /// y 0.
+    /// y up, z towards the door): all of them at their places in the room, a room with
+    /// the cabinets standing in it, or the current one or its whole line-up from the
+    /// left with the first one's bottom at y 0.
     pub(super) fn shown_3d(&self, prj: &Project, ei: usize) -> Vec<(usize, SitePose)> {
         if self.show_site {
             return panel::site_poses(prj).into_iter().enumerate().collect();
+        }
+        if prj.layout.enclosures[ei].is_room() {
+            let poses = panel::site_poses(prj);
+            let room = poses[ei];
+            let local = |p: SitePose| SitePose { at: room.local(p.at), angle: p.angle - room.angle };
+            return std::iter::once(ei).chain(panel::cabinets_in(&prj.layout, ei)).map(|k| (k, local(poses[k]))).collect();
         }
         let lu = if self.show_lineup { panel::lineup_of(&prj.layout, ei) } else { vec![ei] };
         let pos = panel::positions(&prj.layout);
@@ -179,7 +185,7 @@ impl PanelUi {
             // A wall seen from the outside covers the equipment (drawn last, translucent);
             // seen from the inside it is behind everything.
             let outside_of = |face: Face, b: ([f32; 3], [f32; 3])| {
-                let n = panel::outward(face);
+                let n = panel::outward(e, face);
                 let c = [0, 1, 2].map(|k| if n[k] > 0.0 { b.1[k] } else if n[k] < 0.0 { b.0[k] } else { (b.0[k] + b.1[k]) / 2.0 });
                 dot(n, sub(eye_e, c)) > 0.0
             };
@@ -198,7 +204,7 @@ impl PanelUi {
                             let layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
                             add_box(&mut prims, layer, min, max, Color32::from_rgb(190, 194, 200), None, true);
                         }
-                        Role::Wall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), min, max, color, None, false),
+                        Role::Wall(face) | Role::RoomWall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), min, max, color, None, false),
                         Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), min, max, color, None, false),
                         Role::MountingPlate | Role::Body => add_box(&mut prims, 1, min, max, color, None, false),
                         Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, min, max, color, None, false),
@@ -220,7 +226,11 @@ impl PanelUi {
                         ItemKind::Rail => Color32::from_rgb(205, 208, 212),
                         ItemKind::Duct => Color32::from_rgb(150, 154, 160),
                         ItemKind::Busbar => Color32::from_rgb(200, 120, 60),
-                        ItemKind::Cutout => Color32::from_rgb(40, 40, 44),
+                        ItemKind::Cutout => match it.opening {
+                            Opening::Door => Color32::from_rgb(150, 110, 70),
+                            Opening::Window => Color32::from_rgb(160, 205, 235),
+                            Opening::Cutout => Color32::from_rgb(40, 40, 44),
+                        },
                         ItemKind::Device => Color32::from_rgb(170, 186, 210),
                         ItemKind::Accessory => Color32::from_rgb(95, 100, 110),
                     }
@@ -253,7 +263,7 @@ impl PanelUi {
                     (to3(it.x, it.y + it.h, 0.0), to3(it.x + it.w, it.y, 0.3))
                 } else if it.kind == ItemKind::Cutout && it.face.is_wall() {
                     // Through the wall, a little proud of both of its surfaces.
-                    let n = panel::outward(it.face);
+                    let n = panel::outward(e, it.face);
                     let (a, b) = ([0, 1, 2].map(|k| b0[k] - n[k].abs() * 0.5), [0, 1, 2].map(|k| b1[k] + n[k].abs() * 0.5));
                     (up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]))
                 } else {
@@ -328,14 +338,14 @@ impl PanelUi {
                     }
                 }
             }
-            // Enclosure outline
-            let edges = [
+            // Enclosure outline (the front of a cabinet; rooms show their walls)
+            let edges = if e.is_room() { [([0.0; 3], [0.0; 3]); 4] } else { [
                 ([0.0, 0.0, dpt], [w, 0.0, dpt]),
                 ([w, 0.0, dpt], [w, h, dpt]),
                 ([w, h, dpt], [0.0, h, dpt]),
                 ([0.0, h, dpt], [0.0, 0.0, dpt]),
-            ];
-            for (a, b) in edges {
+            ] };
+            for (a, b) in edges.into_iter().filter(|(a, b)| a != b) {
                 if let (Some(pa), Some(pb)) = (project(a), project(b)) {
                     outlines.push((pa.0, pb.0));
                 }

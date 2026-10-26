@@ -6232,3 +6232,38 @@ Click to show, right click for more	单击显示，右键查看更多
 {} notes	{} 个提示
 Open in a new page tab	在新的页选项卡中打开
 Project information	项目信息
+New room	新建房间
+Room	房间
+Rooms	房间
+Delete room	删除房间
+Cabinets in the room	房间内的机柜
+Wall mounting	墙面安装
+WALL	墙
+Wall-mounted part	墙面安装部件
+Width × depth	宽度 × 深度
+Place in the plant	在工厂中的位置
+Only parts for direct wall mounting	仅限直接墙面安装的部件
+{}  room {} × {} × {}	{}  房间 {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} 不适合墙面安装：请将其放在安装导轨上
+{}: {} is not made for wall mounting, mount it on a rail	{}：{} 不适合墙面安装，请安装在导轨上
+{}: {} stands outside the room	{}：{} 位于房间外
+Floor plan	平面图
+Draw walls	绘制墙壁
+Wall	墙
+Wall {}	墙 {}
+Floor plan with {} walls	有 {} 面墙的平面图
+{} rails, {} cable ducts, {} devices	{} 根导轨，{} 条线槽，{} 个设备
+Walls {} and {} cross	墙 {} 和 {} 交叉
+Wall {} is shorter than {} mm	墙 {} 短于 {} mm
+Wall {} is not at a right angle	墙 {} 不是直角
+Window	窗
+Opening	开口
+Above the floor	离地高度
+Click on a wall	请点击墙
+{}: {} stands in the swing of the door in wall {}	{}：{} 位于墙 {} 门的开启范围内
+Inner walls	内墙
+Inner wall	内墙
+Draw inner walls	绘制内墙
+Inner wall {}, side {}	内墙 {}，{} 面
+Thickness	厚度
+{}: {} stands in an inner wall	{}：{} 位于内墙中

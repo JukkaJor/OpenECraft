@@ -6232,3 +6232,42 @@ Click to show, right click for more	クリックで表示、右クリックで�
 {} notes	{} 件の注記
 Open in a new page tab	新しいページタブで開く
 Project information	プロジェクト情報
+New room	新しい部屋
+Room	部屋
+Rooms	部屋
+Delete room	部屋を削除
+Ceiling	天井
+Walls and ceiling	壁と天井
+Cabinets in the room	部屋内の盤
+Wall mounting	壁取付
+WALL	壁
+Wall-mounted part	壁取付部品
+Width × depth	幅 × 奥行
+Place in the plant	プラント内の位置
+Only parts for direct wall mounting	直接壁取付できる部品のみ
+Mounted directly on the wall or ceiling of a room	部屋の壁または天井に直接取り付け
+{}  room {} × {} × {}	{}  部屋 {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} は壁取付用ではありません: 取付レールに配置してください
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} は壁取付用ではありません。レールに取り付けてください
+{}: {} stands outside the room	{}: {} は部屋の外にあります
+{}: {} is higher than the ceiling	{}: {} は天井より高いです
+Floor plan	平面図
+Draw walls	壁を描く
+Wall	壁
+Wall {}	壁 {}
+Floor plan with {} walls	壁 {} 面の平面図
+{} rails, {} cable ducts, {} devices	レール {}、配線ダクト {}、デバイス {}
+A room needs at least four walls	部屋には少なくとも4つの壁が必要です
+Walls {} and {} cross	壁 {} と {} が交差しています
+Wall {} is shorter than {} mm	壁 {} は {} mm より短いです
+Wall {} is not at a right angle	壁 {} が直角ではありません
+Opening	開口部
+Above the floor	床からの高さ
+Click on a wall	壁をクリック
+{}: {} stands in the swing of the door in wall {}	{}: {} が壁 {} のドアの開閉範囲にあります
+Inner walls	内壁
+Inner wall	内壁
+Draw inner walls	内壁を描く
+Inner wall {}, side {}	内壁 {}、{} 側
+Thickness	厚さ
+{}: {} stands in an inner wall	{}: {} が内壁の中にあります

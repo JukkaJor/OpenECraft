@@ -17,6 +17,7 @@ const FILES: &[(&str, &str)] = &[
     ("mdt", include_str!("../catalogs/mdt.json")),
     ("phoenix_contact", include_str!("../catalogs/phoenix_contact.json")),
     ("siemens", include_str!("../catalogs/siemens.json")),
+    ("victron", include_str!("../catalogs/victron.json")),
     ("weidmueller", include_str!("../catalogs/weidmueller.json")),
 ];
 

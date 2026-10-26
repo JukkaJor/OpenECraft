@@ -6232,3 +6232,43 @@ Click to show, right click for more	Clique para mostrar, botão direito para mai
 {} notes	{} notas
 Open in a new page tab	Abrir em uma nova guia de página
 Project information	Informações do projeto
+New room	Nova sala
+Room	Sala
+Rooms	Salas
+Delete room	Excluir sala
+Ceiling	Teto
+Walls and ceiling	Paredes e teto
+Cabinets in the room	Armários na sala
+Wall mounting	Montagem na parede
+WALL	PAREDE
+Wall-mounted part	Peça de montagem na parede
+Width × depth	Largura × profundidade
+Place in the plant	Posição na instalação
+Only parts for direct wall mounting	Somente peças para montagem direta na parede
+Mounted directly on the wall or ceiling of a room	Montado diretamente na parede ou no teto de uma sala
+{}  room {} × {} × {}	{}  sala {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} não é feito para montagem na parede: coloque-o em um trilho
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} não é feito para montagem na parede, monte-o em um trilho
+{}: {} stands outside the room	{}: {} está fora da sala
+{}: {} is higher than the ceiling	{}: {} é mais alto que o teto
+Floor plan	Planta baixa
+Draw walls	Desenhar paredes
+Wall	Parede
+Wall {}	Parede {}
+Floor plan with {} walls	Planta baixa com {} paredes
+{} rails, {} cable ducts, {} devices	{} trilhos, {} canaletas, {} dispositivos
+A room needs at least four walls	Uma sala precisa de pelo menos quatro paredes
+Walls {} and {} cross	As paredes {} e {} se cruzam
+Wall {} is shorter than {} mm	A parede {} é mais curta que {} mm
+Wall {} is not at a right angle	A parede {} não está em ângulo reto
+Window	Janela
+Opening	Abertura
+Above the floor	Acima do piso
+Click on a wall	Clique em uma parede
+{}: {} stands in the swing of the door in wall {}	{}: {} está na área de abertura da porta da parede {}
+Inner walls	Paredes internas
+Inner wall	Parede interna
+Draw inner walls	Desenhar paredes internas
+Inner wall {}, side {}	Parede interna {}, lado {}
+Thickness	Espessura
+{}: {} stands in an inner wall	{}: {} está dentro de uma parede interna

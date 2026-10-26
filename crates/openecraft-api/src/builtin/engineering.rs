@@ -95,6 +95,7 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
         .layout
         .enclosures
         .iter()
+        .filter(|e| !e.is_room())
         .map(|e| {
             let r = climate::calculate(prj, e);
             let c = &e.climate;

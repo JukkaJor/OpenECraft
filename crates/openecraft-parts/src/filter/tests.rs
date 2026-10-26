@@ -56,3 +56,13 @@ fn distinct_values_are_sorted_and_unique() {
     assert_eq!(distinct_values(&parts, |p| &p.manufacturer), ["ABB", "Festo", "Siemens"]);
     assert_eq!(distinct_values(&parts, |p| &p.supplier), ["Direct", "Wholesale"]);
 }
+
+#[test]
+fn filter_for_wall_mountable_parts() {
+    let wall = Part { number: "VIC.MPPT".into(), mounting_data: crate::MountingData { wall_mount: true, ..Default::default() }, ..Default::default() };
+    let rail = Part { number: "GEN.MCB".into(), ..Default::default() };
+    let f = PartFilter { wall_mount: true, ..Default::default() };
+    assert!(f.is_active());
+    assert!(f.matches(&wall));
+    assert!(!f.matches(&rail));
+}
