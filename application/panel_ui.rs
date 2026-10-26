@@ -5,7 +5,7 @@ use openecraft_i18n::{tr, tr_fmt};
 use crate::editor::{EguiDraw, Palette};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::{natural_cmp, Project};
-use openecraft_core::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
+use openecraft_core::panel::{self, Align, Anchor, Enclosure, Face, Fastening, ItemKind, Opening, PanelItem, SitePlace, PLATE_MARGIN, PLATE_THICKNESS, PLATE_Z};
 use openecraft_core::parts::{self, PartsDb};
 use openecraft_core::parts::vec3::Orbit;
 use openecraft_core::render::{self, Draw, Ink};
@@ -15,6 +15,7 @@ use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape
 use std::collections::{BTreeSet, HashMap, HashSet};
 use view3d::default_cam;
 
+mod plan;
 mod routing_ui;
 mod view3d;
 
@@ -34,6 +35,12 @@ pub enum Tool {
     RoutingPath,
     /// Routing reservation over the mounting plate: click two corners.
     Reservation,
+    /// Walls of a room in its floor plan: click the corners.
+    Walls,
+    /// Door or window in a wall of a room: click where it goes.
+    Opening(Opening),
+    /// Inner walls of a room in its floor plan: click their ends.
+    InnerWalls,
 }
 
 impl Tool {
@@ -48,10 +55,12 @@ impl Tool {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum View {
     Front,
     ThreeD,
+    /// Floor plan of a room.
+    Plan,
 }
 
 /// File of an NC export: drawing (DXF, DWG) or drilling list (CSV).
@@ -379,6 +388,8 @@ fn align_editor(ui: &mut egui::Ui, salt: &str, a: &mut Align) {
 
 pub struct PanelUi {
     pub enclosure: usize,
+    /// The current enclosure is a room (walls and ceiling, no plate or door).
+    pub in_room: bool,
     pub tool: Tool,
     pub view: View,
     /// Face shown in the front view (mounting plate or door).
@@ -442,12 +453,20 @@ pub struct PanelUi {
     selected_object: Option<u64>,
     /// The layout view is the document worked in: it takes the keys.
     pub keys_active: bool,
+    /// Corners of the walls being drawn in the floor plan (x, z).
+    wall_points: Vec<P>,
+    plan_drag: Option<plan::PlanDrag>,
+    /// Line-up selected in the floor plan (its first cabinet).
+    plan_cabinet: Option<usize>,
+    /// Inner wall selected in the floor plan (its id).
+    plan_inner: Option<u64>,
 }
 
 impl Default for PanelUi {
     fn default() -> Self {
         PanelUi {
             enclosure: 0,
+            in_room: false,
             tool: Tool::Select,
             view: View::Front,
             face: Face::Plate,
@@ -488,6 +507,10 @@ impl Default for PanelUi {
             selected_route: None,
             selected_object: None,
             keys_active: true,
+            wall_points: Vec::new(),
+            plan_drag: None,
+            plan_cabinet: None,
+            plan_inner: None,
         }
     }
 }
@@ -508,7 +531,7 @@ const RESERVE_COLOR: Color32 = Color32::from_rgb(220, 70, 60);
 impl PanelUi {
     /// True while a gesture is in progress (no undo step yet).
     pub fn busy(&self) -> bool {
-        self.start.is_some() || self.drag.is_some() || !self.path_points.is_empty()
+        self.start.is_some() || self.drag.is_some() || !self.path_points.is_empty() || !self.wall_points.is_empty() || self.plan_drag.is_some()
     }
 
     fn select_item(&mut self, id: u64) {
@@ -559,6 +582,13 @@ impl PanelUi {
         if matches!(t, Tool::RoutingPath | Tool::Reservation) {
             return self.face == Face::Plate;
         }
+        if matches!(t, Tool::Walls | Tool::InnerWalls | Tool::Opening(_)) {
+            return self.in_room;
+        }
+        // Rooms: rails, ducts, devices and wall-mounted parts on the walls and the ceiling.
+        if self.in_room {
+            return !matches!(t, Tool::Busbar | Tool::Cutout);
+        }
         if self.face.is_wall() {
             return !matches!(t, Tool::Busbar);
         }
@@ -592,13 +622,24 @@ impl PanelUi {
         self.tool = tool;
         self.start = None;
         self.path_points.clear();
+        self.wall_points.clear();
     }
 
     fn enclosure_index(&mut self, prj: &Project) -> Option<usize> {
         if prj.layout.enclosures.is_empty() {
+            self.in_room = false;
             return None;
         }
         self.enclosure = self.enclosure.min(prj.layout.enclosures.len() - 1);
+        let e = &prj.layout.enclosures[self.enclosure];
+        self.in_room = e.is_room();
+        let faces = e.faces();
+        if !faces.contains(&self.face) {
+            self.show_face(faces[0], false);
+        }
+        if !self.in_room && self.view == View::Plan {
+            self.view = View::Front;
+        }
         Some(self.enclosure)
     }
 
@@ -670,27 +711,52 @@ impl PanelUi {
             if openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Plus, tr("New enclosure")).clicked() {
                 self.new_enclosure_dialog(prj, db);
             }
+            if openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Wall, tr("New room")).clicked() {
+                self.new_room(prj);
+            }
         });
         let mut remove = None;
-        // Line-ups from left to right; bayed enclosures are indented.
-        for (k, i) in panel::lineups(&prj.layout).into_iter().flat_map(|lu| lu.into_iter().enumerate()) {
+        // Rooms with the line-ups standing in them, then the other line-ups; bayed
+        // enclosures are indented.
+        let lineups = panel::lineups(&prj.layout);
+        let room_of = |lu: &Vec<usize>| lu.first().and_then(|&i| panel::room_of(&prj.layout, i));
+        let mut rows: Vec<(usize, usize)> = Vec::new();
+        for r in panel::rooms(&prj.layout) {
+            rows.push((0, r));
+            for lu in lineups.iter().filter(|lu| room_of(lu) == Some(r)) {
+                rows.extend(lu.iter().enumerate().map(|(k, &i)| (1 + usize::from(k > 0), i)));
+            }
+        }
+        for lu in lineups.iter().filter(|lu| room_of(lu).is_none() && !lu.first().is_some_and(|&i| prj.layout.enclosures[i].is_room())) {
+            rows.extend(lu.iter().enumerate().map(|(k, &i)| (usize::from(k > 0), i)));
+        }
+        for (indent, i) in rows {
             let e = &prj.layout.enclosures[i];
             ui.horizontal(|ui| {
-                if k > 0 {
-                    ui.add_space(14.0);
-                }
-                let label = format!("{}  {:.0}×{:.0}×{:.0}", e.name, e.width, e.height, e.depth);
+                ui.add_space(14.0 * indent as f32);
+                let label = if e.is_room() {
+                    tr_fmt!("{}  room {} × {} × {}", e.name, format!("{:.0}", e.width), format!("{:.0}", e.depth), format!("{:.0}", e.height))
+                } else {
+                    format!("{}  {:.0}×{:.0}×{:.0}", e.name, e.width, e.height, e.depth)
+                };
                 if ui.selectable_label(i == self.enclosure, label).clicked() {
                     self.enclosure = i;
                     self.selection.clear();
                     self.fit_pending = true;
+                    self.cam = None;
                 }
-                if ui.small_button("🗑").on_hover_text(tr("Delete enclosure")).clicked() {
+                let tip = if e.is_room() { tr("Delete room") } else { tr("Delete enclosure") };
+                if ui.small_button("🗑").on_hover_text(tip).clicked() {
                     remove = Some(i);
                 }
             });
         }
         if let Some(i) = remove {
+            if prj.layout.enclosures[i].is_room() {
+                for c in panel::cabinets_in(&prj.layout, i) {
+                    let _ = panel::set_room(prj, c, None, None);
+                }
+            }
             panel::unbay(prj, i);
             prj.layout.enclosures.remove(i);
             self.selection.clear();
@@ -708,7 +774,16 @@ impl PanelUi {
             for d in todo.iter().filter(|d| f.is_empty() || d.tag.to_lowercase().contains(&f)) {
                 let active = self.tool == Tool::PlaceDevice(d.tag.clone());
                 let text = format!("{}   {:.0}×{:.0}×{:.0}", d.tag, d.w, d.h, d.d);
-                if ui.selectable_label(active, text).on_hover_text(&d.part).clicked() {
+                let clicked = ui
+                    .horizontal(|ui| {
+                        let r = ui.selectable_label(active, text).on_hover_text(&d.part).clicked();
+                        if prj.parts.iter().chain(db.parts.iter()).find(|p| p.number == d.part).is_some_and(|p| p.wall_mountable()) {
+                            openecraft_ui::part_editor::wall_badge(ui);
+                        }
+                        r
+                    })
+                    .inner;
+                if clicked {
                     self.set_tool(Tool::PlaceDevice(d.tag.clone()));
                     if self.view == View::ThreeD {
                         self.view = View::Front;
@@ -724,12 +799,13 @@ impl PanelUi {
         let Some(ei) = self.enclosure_index(prj) else { return };
         let mut placed: Vec<&PanelItem> = prj.layout.enclosures[ei].items.iter().filter(|i| i.kind == ItemKind::Device).collect();
         placed.sort_by(|a, b| natural_cmp(&a.tag, &b.tag));
+        let e = &prj.layout.enclosures[ei];
         egui::ScrollArea::vertical().id_salt("placed").auto_shrink([false, false]).show(ui, |ui| {
             for it in placed {
                 let text = match it.face {
                     Face::Plate => it.tag.clone(),
                     Face::Door => tr_fmt!("{}  (door)", it.tag),
-                    f => format!("{}  ({})", it.tag, f.title()),
+                    f => format!("{}  ({})", it.tag, e.face_title(f)),
                 };
                 if ui.selectable_label(self.selection.contains(&it.id), text).clicked() {
                     self.face = it.face;
@@ -785,6 +861,8 @@ impl PanelUi {
             let before_item = it.clone();
             let part = prj.parts.iter().chain(parts::catalog()).find(|p| p.number == it.part).cloned();
             let (face_w, face_h) = e.face_size(it.face);
+            let room_wall = e.is_room() && matches!(it.face, Face::Wall(_) | Face::Inner(..));
+            let room_height = e.height;
             ui.label(RichText::new(it.kind.title()).strong());
             if it.kind == ItemKind::Accessory {
                 if let Some(p) = &part {
@@ -847,6 +925,32 @@ impl PanelUi {
                         ui.add(egui::DragValue::new(&mut it.z).speed(0.5).range(0.0..=2000.0).prefix("z "));
                     });
                     ui.end_row();
+                } else if it.kind == ItemKind::Cutout && room_wall {
+                    // Doors and windows of a room.
+                    ui.label(tr("Opening"));
+                    ui.horizontal(|ui| {
+                        for o in Opening::ALL {
+                            ui.selectable_value(&mut it.opening, o, o.title());
+                        }
+                    });
+                    ui.end_row();
+                    ui.label(tr("Width × height"));
+                    let floor = it.y + it.h;
+                    ui.horizontal(|ui| {
+                        ui.add(egui::DragValue::new(&mut it.w).speed(5.0).range(100.0..=20_000.0));
+                        ui.add(egui::DragValue::new(&mut it.h).speed(5.0).range(100.0..=room_height).suffix(" mm"));
+                    });
+                    ui.end_row();
+                    let mut sill = room_height - floor;
+                    if it.opening == Opening::Door {
+                        sill = 0.0;
+                    } else {
+                        ui.label(tr("Above the floor"));
+                        ui.add(egui::DragValue::new(&mut sill).speed(5.0).range(0.0..=room_height).suffix(" mm")).on_hover_text(tr("Height of the sill (bottom edge) above the floor"));
+                        ui.end_row();
+                    }
+                    // Openings keep their bottom edge when they grow; doors stand on the floor.
+                    it.y = room_height - sill - it.h;
                 } else if it.kind == ItemKind::Cutout {
                     ui.label(tr("Shape"));
                     ui.horizontal(|ui| {
@@ -1026,6 +1130,10 @@ impl PanelUi {
             }
             return;
         }
+        if prj.layout.enclosures[ei].is_room() {
+            self.room_properties(ui, prj, ei);
+            return;
+        }
         // Enclosure properties
         let e = &mut prj.layout.enclosures[ei];
         let size_before = (e.width, e.height, e.depth);
@@ -1192,6 +1300,188 @@ impl PanelUi {
         }
     }
 
+    /// Properties of a room: size, place in the plant, the cabinets standing in it and
+    /// what its walls and ceiling carry.
+    fn room_properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+        let pose = panel::site_poses(prj)[ei];
+        let mut site: Option<Option<SitePlace>> = None;
+        let e = &mut prj.layout.enclosures[ei];
+        let size_before = (e.width, e.depth, e.height);
+        ui.label(RichText::new(tr("Room")).strong());
+        egui::Grid::new("proom").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
+            ui.label(tr("Location"));
+            ui.text_edit_singleline(&mut e.name);
+            ui.end_row();
+            ui.label(tr("Width × depth"));
+            if e.outline.is_empty() {
+                ui.horizontal(|ui| {
+                    ui.add(egui::DragValue::new(&mut e.width).speed(10.0).range(500.0..=100_000.0));
+                    ui.add(egui::DragValue::new(&mut e.depth).speed(10.0).range(500.0..=100_000.0).suffix(" mm"));
+                });
+            } else {
+                ui.label(tr_fmt!("{} × {} mm, {} walls", format!("{:.0}", e.width), format!("{:.0}", e.depth), e.outline.len()))
+                    .on_hover_text(tr("Extent of the floor plan; change it by its walls"));
+            }
+            ui.end_row();
+            ui.label(tr("Height"));
+            ui.add(egui::DragValue::new(&mut e.height).speed(10.0).range(500.0..=20_000.0).suffix(" mm"));
+            ui.end_row();
+            ui.label(tr("Place in the plant"));
+            let current = e.site;
+            let mut place = current.unwrap_or(SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() });
+            ui.horizontal(|ui| {
+                let mut by_hand = current.is_some();
+                let mut changed = ui.checkbox(&mut by_hand, tr("by hand")).on_hover_text(tr("Otherwise from the plant layout, or next to the other line-ups")).changed();
+                ui.add_enabled_ui(by_hand, |ui| {
+                    changed |= ui.add(egui::DragValue::new(&mut place.x).speed(10.0).prefix("x ").suffix(" mm")).changed();
+                    changed |= ui.add(egui::DragValue::new(&mut place.z).speed(10.0).prefix("z ").suffix(" mm")).changed();
+                    changed |= ui.add(egui::DragValue::new(&mut place.angle).speed(1.0).range(-360.0..=360.0).suffix(" °")).changed();
+                });
+                if changed {
+                    site = Some(by_hand.then_some(place));
+                }
+            })
+            .response
+            .on_hover_text(tr("Rear left corner of the room on the floor, as in the 3D view with all enclosures; the cabinets in it move with it"));
+            ui.end_row();
+        });
+        if (e.width, e.depth, e.height) != size_before {
+            panel::apply_anchors(e);
+        }
+        if let Some(place) = site {
+            prj.layout.enclosures[ei].site = place;
+        }
+        ui.separator();
+        ui.label(RichText::new(tr("Cabinets in the room")).strong());
+        let inside = panel::cabinets_in(&prj.layout, ei);
+        for &c in &inside {
+            let place = panel::room_place(prj, c).unwrap_or_default();
+            let label = tr_fmt!("{}  x {} mm, z {} mm", prj.layout.enclosures[c].name, format!("{:.0}", place.x), format!("{:.0}", place.z));
+            if ui.selectable_label(false, label).on_hover_text(tr("Show this cabinet; its place in the room is in its properties")).clicked() {
+                self.enclosure = c;
+                self.selection.clear();
+                self.fit_pending = true;
+                self.cam = None;
+            }
+        }
+        if inside.is_empty() {
+            ui.weak(tr("No cabinet stands in this room yet."));
+        }
+        let mut add = None;
+        egui::ComboBox::from_id_salt("roomadd").selected_text(tr("➕ Put a cabinet into the room")).width(220.0).show_ui(ui, |ui| {
+            for (i, o) in prj.layout.enclosures.iter().enumerate().filter(|(i, o)| !o.is_room() && !inside.contains(i)) {
+                if ui.selectable_label(false, &o.name).clicked() {
+                    add = Some(i);
+                }
+            }
+        });
+        if let Some(c) = add {
+            if let Err(e) = panel::set_room(prj, c, Some(ei), None) {
+                self.status = e;
+            }
+        }
+        ui.separator();
+        ui.label(RichText::new(tr("Walls and ceiling")).strong());
+        ui.horizontal(|ui| {
+            if ui.button(tr("Floor plan")).on_hover_text(tr("Drag walls and cabinets in the floor plan of the room")).clicked() {
+                self.floor_plan();
+            }
+            if ui.button(tr("Draw walls")).on_hover_text(tr("Draw the walls of the room anew by clicking their corners")).clicked() {
+                self.choose_tool(Tool::Walls);
+            }
+            if !prj.layout.enclosures[ei].outline.is_empty() && ui.button(tr("Rectangular")).on_hover_text(tr("Back to a rectangle of the room's width and depth")).clicked() {
+                prj.layout.enclosures[ei].outline.clear();
+            }
+        });
+        let corners = panel::outline(&prj.layout.enclosures[ei]);
+        let mut new_outline = None;
+        egui::Grid::new("roomwalls").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+            let e = &prj.layout.enclosures[ei];
+            let walls = panel::walls(e);
+            for f in e.faces() {
+                let items: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == f).collect();
+                let rails = items.iter().filter(|i| i.kind == ItemKind::Rail).count();
+                let ducts = items.iter().filter(|i| i.kind == ItemKind::Duct).count();
+                let devices = items.len() - rails - ducts;
+                if ui.selectable_label(self.face == f && self.view == View::Front, panel::room_face_title(e, f)).on_hover_text(tr("Show and equip this face")).clicked() {
+                    self.front_face(f, false);
+                }
+                match f {
+                    Face::Wall(n) => {
+                        let mut length = walls[n as usize].length();
+                        let r = ui.add(egui::DragValue::new(&mut length).speed(10.0).range(panel::MIN_WALL..=100_000.0).suffix(" mm"));
+                        if r.on_hover_text(tr("Length of the wall; its end moves, the next wall with it")).changed() {
+                            match panel::wall_length_set(&corners, n as usize, (length / 10.0).round() * 10.0) {
+                                Ok(o) => new_outline = Some(o),
+                                Err(e) => self.status = e,
+                            }
+                        }
+                    }
+                    _ => {
+                        ui.label("");
+                    }
+                }
+                ui.label(tr_fmt!("{} rails, {} cable ducts, {} devices", rails, ducts, devices));
+                ui.end_row();
+            }
+        });
+        if let Some(o) = new_outline {
+            if let Err(e) = panel::set_outline(&mut prj.layout.enclosures[ei], &o) {
+                self.status = e;
+            }
+        }
+        self.inner_walls_section(ui, prj, ei);
+        ui.weak(tr("Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Insert › Wall-mounted part)."));
+        checks_section(ui, prj, ei);
+    }
+
+    /// Inner walls of a room: length, thickness, removing them.
+    fn inner_walls_section(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(tr("Inner walls")).strong());
+            if ui.button(tr("Draw inner walls")).on_hover_text(tr("Click the ends of the inner walls in the floor plan")).clicked() {
+                self.choose_tool(Tool::InnerWalls);
+            }
+        });
+        let mut change = None;
+        let mut remove = None;
+        egui::Grid::new("roominner").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+            for (k, w) in prj.layout.enclosures[ei].inner_walls.iter().enumerate() {
+                if ui.selectable_label(self.plan_inner == Some(w.id), format!("I{}", k + 1)).on_hover_text(tr("Select it in the floor plan")).clicked() {
+                    self.plan_inner = Some(w.id);
+                    self.floor_plan_on();
+                }
+                let mut length = (w.b[0] - w.a[0]).abs() + (w.b[1] - w.a[1]).abs();
+                let mut thickness = w.thickness;
+                let l = ui.add(egui::DragValue::new(&mut length).speed(10.0).range(panel::MIN_WALL..=100_000.0).suffix(" mm")).on_hover_text(tr("Length; its end moves"));
+                let t = ui.add(egui::DragValue::new(&mut thickness).speed(1.0).range(10.0..=1000.0).suffix(" mm")).on_hover_text(tr("Thickness"));
+                if l.changed() || t.changed() {
+                    change = Some((w.id, (length / 10.0).round() * 10.0, thickness));
+                }
+                if ui.small_button("🗑").on_hover_text(tr("Remove the inner wall with everything on it")).clicked() {
+                    remove = Some(w.id);
+                }
+                ui.end_row();
+            }
+        });
+        if let Some((id, length, thickness)) = change {
+            let e = &mut prj.layout.enclosures[ei];
+            match panel::moved_inner_wall(e, id, 0.0, Some(length), Some(thickness)) {
+                Ok(w) => {
+                    if let Some(old) = e.inner_walls.iter_mut().find(|x| x.id == id) {
+                        *old = w;
+                    }
+                }
+                Err(msg) => self.status = msg,
+            }
+        }
+        if let Some(id) = remove {
+            panel::remove_inner_wall(&mut prj.layout.enclosures[ei], id);
+            self.plan_inner = None;
+        }
+    }
+
     /// Line-up of an enclosure: the neighbours it is bayed to and the cable passages
     /// the wires take into them.
     fn lineup_section(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
@@ -1199,6 +1489,7 @@ impl PanelUi {
         let name = |prj: &Project, i: Option<usize>| i.map(|i| prj.layout.enclosures[i].name.clone()).unwrap_or_else(|| tr("(none)").to_string());
         let mut bay: Option<Option<usize>> = None;
         let mut site: Option<Option<SitePlace>> = None;
+        let mut move_to: Option<Option<usize>> = None;
         let mut add = false;
         egui::CollapsingHeader::new(tr("Line-up and cable passages")).id_salt("lineup").default_open(left.is_some() || right.is_some()).show(ui, |ui| {
             egui::Grid::new("plineup").num_columns(2).spacing([10.0, 5.0]).show(ui, |ui| {
@@ -1221,12 +1512,31 @@ impl PanelUi {
                 ui.label(tr("Right neighbour"));
                 ui.label(name(prj, right));
                 ui.end_row();
+                ui.label(tr("Room"));
+                let room = panel::room_of(&prj.layout, ei);
+                egui::ComboBox::from_id_salt("encroom")
+                    .selected_text(name(prj, room))
+                    .show_ui(ui, |ui| {
+                        if ui.selectable_label(room.is_none(), tr("(none)")).clicked() {
+                            move_to = Some(None);
+                        }
+                        for r in panel::rooms(&prj.layout) {
+                            if ui.selectable_label(room == Some(r), &prj.layout.enclosures[r].name).clicked() {
+                                move_to = Some(Some(r));
+                            }
+                        }
+                    })
+                    .response
+                    .on_hover_text(tr("The room the line-up stands in; its place is then measured from the rear left inside corner of the room"));
+                ui.end_row();
                 ui.label(tr("Place in the room"));
                 let first = panel::lineup_of(&prj.layout, ei).first().copied().unwrap_or(ei);
                 let current = prj.layout.enclosures[first].site;
                 let mut place = current.unwrap_or_else(|| {
-                    let pose = panel::site_poses(prj)[first];
-                    SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() }
+                    panel::room_place(prj, ei).unwrap_or_else(|| {
+                        let pose = panel::site_poses(prj)[first];
+                        SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() }
+                    })
                 });
                 ui.horizontal(|ui| {
                     let mut by_hand = current.is_some();
@@ -1277,6 +1587,11 @@ impl PanelUi {
         }
         if let Some(place) = site {
             panel::set_site(prj, ei, place);
+        }
+        if let Some(room) = move_to {
+            if let Err(e) = panel::set_room(prj, ei, room, None) {
+                self.status = e;
+            }
         }
         if add {
             let (y, z) = panel::next_passage_place(&prj.layout, ei);
@@ -1612,7 +1927,8 @@ impl PanelUi {
                     View::ThreeD => "3D".to_string(),
                     View::Front if self.face == Face::Door && self.door_inside => tr("Door (inside)").to_string(),
                     View::Front if self.face == Face::Door => tr("Door (front)").to_string(),
-                    View::Front => self.face.title().to_string(),
+                    View::Plan => tr("Floor plan").to_string(),
+                    View::Front => prj.layout.enclosures[ei].face_title(self.face),
                 };
                 ui.weak(format!("{}  ·  {}", prj.layout.enclosures[ei].name, what));
             });
@@ -1621,12 +1937,21 @@ impl PanelUi {
         match self.view {
             View::Front => self.front_view(ui, prj, ei, an, db),
             View::ThreeD => self.view_3d(ui, prj, ei, an),
+            View::Plan => self.plan_view(ui, prj, ei),
         }
     }
 
     /// Chooses a tool (Layout space tab of the ribbon); drawing tools show the front view.
     pub fn choose_tool(&mut self, tool: Tool) {
-        if tool != Tool::Select {
+        if matches!(tool, Tool::Walls | Tool::InnerWalls) {
+            self.view = View::Plan;
+            self.wall_points.clear();
+        } else if matches!(tool, Tool::Opening(_)) {
+            // Placed in the floor plan or in the view of a wall.
+            if self.view == View::ThreeD || (self.view == View::Front && !matches!(self.face, Face::Wall(_) | Face::Inner(..))) {
+                self.view = View::Plan;
+            }
+        } else if tool != Tool::Select {
             self.view = View::Front;
         }
         if self.tool_allowed(&tool) {
@@ -1670,13 +1995,85 @@ impl PanelUi {
         self.new_enclosure = Some(ne);
     }
 
-    /// The walls of the enclosure (Layout space › View › Walls).
-    pub fn walls_menu(&mut self, ui: &mut egui::Ui) {
-        for f in Face::WALLS {
-            if ui.selectable_label(self.face == f && self.view == View::Front, f.title()).clicked() {
+    /// The walls of the enclosure (Layout space › View › Walls); of a room its walls
+    /// and the ceiling.
+    pub fn walls_menu(&mut self, ui: &mut egui::Ui, prj: &Project) {
+        let room = prj.layout.enclosures.get(self.enclosure).filter(|e| e.is_room());
+        let faces = room.map(|e| e.faces()).unwrap_or_else(|| Face::WALLS.to_vec());
+        for f in faces {
+            let title = match room {
+                Some(e) => match panel::side(e, f) {
+                    Some(w) => format!("{}  ({:.2} m)", panel::room_face_title(e, f), w.length() / 1000.0),
+                    None => panel::room_face_title(e, f),
+                },
+                None => f.title().to_string(),
+            };
+            if ui.selectable_label(self.face == f && self.view == View::Front, title).clicked() {
                 self.front_face(f, false);
                 ui.close();
             }
+        }
+    }
+
+    /// Shows the floor plan of the room (it stays when it is shown).
+    fn floor_plan_on(&mut self) {
+        if self.view != View::Plan {
+            self.floor_plan();
+        }
+    }
+
+    /// Shows the floor plan of the room (Layout space › View › Floor plan).
+    pub fn floor_plan(&mut self) {
+        if self.in_room {
+            self.view = if self.view == View::Plan { View::Front } else { View::Plan };
+            self.fit_pending = true;
+            if self.tool != Tool::Walls {
+                self.set_tool(Tool::Select);
+            }
+        }
+    }
+
+    /// Adds a room and shows its rear wall.
+    pub fn new_room(&mut self, prj: &mut Project) {
+        let n = (1..).find(|n| !prj.layout.enclosures.iter().any(|e| e.name == format!("=ROOM{n}"))).unwrap_or(1);
+        let room = panel::new_room(prj, &format!("=ROOM{n}"), 4000.0, 3000.0, 2800.0);
+        prj.layout.enclosures.push(room);
+        self.enclosure = prj.layout.enclosures.len() - 1;
+        self.in_room = true;
+        self.selection.clear();
+        self.show_face(Face::Wall(0), false);
+        self.view = View::Plan;
+        self.fit_pending = true;
+        self.cam = None;
+        self.status = tr("Room added: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties").to_string();
+    }
+
+    /// Parts made for direct wall mounting (inverters, charge controllers, …) of the
+    /// parts database, the project and the catalog, placed without a device tag.
+    pub fn wall_part_menu(&mut self, ui: &mut egui::Ui, prj: &Project, db: &PartsDb) {
+        if !self.in_room {
+            ui.weak(tr("Choose a room first: wall-mounted parts go on its walls and ceiling."));
+            return;
+        }
+        let mut list: Vec<&parts::Part> = Vec::new();
+        for p in db.parts.iter().chain(prj.parts.iter()).chain(parts::catalog()) {
+            if p.wall_mountable() && !list.iter().any(|x| x.number == p.number) {
+                list.push(p);
+            }
+        }
+        list.sort_by(|a, b| a.manufacturer.cmp(&b.manufacturer).then(natural_cmp(&a.number, &b.number)));
+        egui::ScrollArea::vertical().max_height(420.0).show(ui, |ui| {
+            for p in &list {
+                let active = self.tool == Tool::Accessory(p.number.clone());
+                if ui.selectable_label(active, format!("{} – {}", p.number, p.description)).clicked() {
+                    self.view = View::Front;
+                    self.set_tool(Tool::Accessory(p.number.clone()));
+                    ui.close();
+                }
+            }
+        });
+        if list.is_empty() {
+            ui.weak(tr("No parts marked for wall mounting."));
         }
     }
 
@@ -1887,10 +2284,24 @@ impl PanelUi {
                     let (w, h) = size.map(|s| (s.w, s.h)).unwrap_or((panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1));
                     if let Some(id) = panel::place_device_on(prj, ei, &tag, p(q.x - w / 2.0, q.y - h / 2.0), self.face) {
                         self.select_item(id);
+                        let e = &prj.layout.enclosures[ei];
+                        if e.item(id).is_some_and(|it| !panel::wall_mount_ok(prj, e, it)) {
+                            self.status = tr_fmt!("{} is not made for wall mounting: place it on a mounting rail", tag);
+                        }
                     }
                     // Continue with the next unplaced device.
                     let next = panel::devices_to_place(prj).into_iter().next();
                     self.set_tool(next.map(|d| Tool::PlaceDevice(d.tag)).unwrap_or(Tool::Select));
+                }
+            }
+            Tool::Walls | Tool::InnerWalls => {}
+            Tool::Opening(opening) => {
+                if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plate) {
+                    let (w, _) = if opening == Opening::Door { panel::DOOR_SIZE } else { panel::WINDOW_SIZE };
+                    match panel::add_opening(prj, ei, opening, self.face, Some(q.x - w / 2.0), None, None) {
+                        Ok(id) => self.select_item(id),
+                        Err(e) => self.status = e,
+                    }
                 }
             }
             Tool::Accessory(part) => {

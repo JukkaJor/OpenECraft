@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Номер розділу н
 Another section here has this number	Інший розділ тут уже має цей номер
 A section cannot be moved into itself	Розділ не можна перемістити в самого себе
 Released pages cannot be moved	Затверджені сторінки не можна переміщувати
+New room	Нове приміщення
+Room	Приміщення
+Rooms	Приміщення
+Delete room	Видалити приміщення
+Ceiling	Стеля
+Walls and ceiling	Стіни та стеля
+Cabinets in the room	Шафи в приміщенні
+Wall mounting	Настінний монтаж
+WALL	СТІНА
+Wall-mounted part	Настінний виріб
+Width × depth	Ширина × глибина
+Place in the plant	Місце на об'єкті
+Only parts for direct wall mounting	Лише вироби для прямого настінного монтажу
+Mounted directly on the wall or ceiling of a room	Монтується безпосередньо на стіну або стелю приміщення
+{}  room {} × {} × {}	{}  приміщення {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} не призначений для настінного монтажу: встановіть його на рейку
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} не призначений для настінного монтажу, встановіть його на рейку
+{}: {} stands outside the room	{}: {} стоїть поза приміщенням
+{}: {} is higher than the ceiling	{}: {} вищий за стелю
+Floor plan	План приміщення
+Draw walls	Малювати стіни
+Wall	Стіна
+Wall {}	Стіна {}
+Floor plan with {} walls	План із {} стінами
+{} rails, {} cable ducts, {} devices	рейки {}, кабельні канали {}, пристрої {}
+A room needs at least four walls	Приміщенню потрібні щонайменше чотири стіни
+Walls {} and {} cross	Стіни {} і {} перетинаються
+Wall {} is shorter than {} mm	Стіна {} коротша за {} мм
+Wall {} is not at a right angle	Стіна {} не під прямим кутом
+Window	Вікно
+Opening	Проріз
+Above the floor	Над підлогою
+Click on a wall	Клацніть по стіні
+{}: {} stands in the swing of the door in wall {}	{}: {} стоїть у зоні відчинення дверей у стіні {}
+Inner walls	Внутрішні стіни
+Inner wall	Внутрішня стіна
+Draw inner walls	Малювати внутрішні стіни
+Inner wall {}, side {}	Внутрішня стіна {}, сторона {}
+Thickness	Товщина
+{}: {} stands in an inner wall	{}: {} стоїть у внутрішній стіні

@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	A szakaszszám nem lehet ür
 Another section here has this number	Egy másik szakasznak itt már ez a száma
 A section cannot be moved into itself	Egy szakasz nem helyezhető át önmagába
 Released pages cannot be moved	A kiadott oldalak nem helyezhetők át
+New room	Új helyiség
+Room	Helyiség
+Rooms	Helyiségek
+Delete room	Helyiség törlése
+Ceiling	Mennyezet
+Walls and ceiling	Falak és mennyezet
+Cabinets in the room	Szekrények a helyiségben
+Wall mounting	Falra szerelés
+WALL	FAL
+Wall-mounted part	Falra szerelhető cikk
+Width × depth	Szélesség × mélység
+Place in the plant	Hely a létesítményben
+Only parts for direct wall mounting	Csak közvetlen falra szerelésre szolgáló cikkek
+Mounted directly on the wall or ceiling of a room	Közvetlenül egy helyiség falára vagy mennyezetére szerelve
+{}  room {} × {} × {}	{}  helyiség {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} nem falra szerelésre készült: helyezze szerelősínre
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} nem falra szerelésre készült, szerelje sínre
+{}: {} stands outside the room	{}: {} a helyiségen kívül áll
+{}: {} is higher than the ceiling	{}: {} magasabb a mennyezetnél
+Floor plan	Alaprajz
+Draw walls	Falak rajzolása
+Wall	Fal
+Wall {}	{}. fal
+Floor plan with {} walls	Alaprajz {} fallal
+{} rails, {} cable ducts, {} devices	{} sín, {} kábelcsatorna, {} készülék
+A room needs at least four walls	Egy helyiségnek legalább négy fal kell
+Walls {} and {} cross	A(z) {}. és {}. fal keresztezi egymást
+Wall {} is shorter than {} mm	A(z) {}. fal rövidebb {} mm-nél
+Wall {} is not at a right angle	A(z) {}. fal nem derékszögű
+Window	Ablak
+Opening	Nyílás
+Above the floor	A padló felett
+Click on a wall	Kattintson egy falra
+{}: {} stands in the swing of the door in wall {}	{}: {} a(z) {}. fal ajtajának nyitási területén áll
+Inner walls	Belső falak
+Inner wall	Belső fal
+Draw inner walls	Belső falak rajzolása
+Inner wall {}, side {}	{}. belső fal, {} oldal
+Thickness	Vastagság
+{}: {} stands in an inner wall	{}: {} egy belső falban áll

@@ -229,7 +229,13 @@ pub struct Finding {
 
 /// Device tag or what the item is.
 pub fn item_name(e: &Enclosure, id: u64) -> String {
-    e.item(id).map(|i| if i.kind == ItemKind::Device && !i.tag.is_empty() { i.tag.clone() } else { i.kind.title().to_string() }).unwrap_or_default()
+    e.item(id)
+        .map(|i| match i.kind {
+            ItemKind::Device if !i.tag.is_empty() => i.tag.clone(),
+            ItemKind::Cutout if !i.opening.is_cutout() => i.opening.title().to_string(),
+            k => k.title().to_string(),
+        })
+        .unwrap_or_default()
 }
 
 /// Gap between two boxes (0 when they touch or overlap).
@@ -276,7 +282,7 @@ pub fn heights(e: &Enclosure, it: &PanelItem) -> Option<(f32, f32)> {
     let base = floor_height(e)?;
     let top = match it.face {
         Face::Plate => e.height - PLATE_MARGIN,
-        Face::Door | Face::Left | Face::Right | Face::Rear => e.height,
+        Face::Door | Face::Left | Face::Right | Face::Rear | Face::Wall(_) | Face::Inner(..) => e.height,
         Face::Roof | Face::Bottom => return None,
     };
     Some((base + top - it.y - it.h, base + top - it.y))
@@ -411,6 +417,11 @@ pub fn validate(prj: &Project, e: &Enclosure) -> Vec<Finding> {
                 );
             }
         }
+    }
+    if e.is_room() {
+        // No heights of machinery, no climate and no sheet metal work in a room.
+        super::rooms::check(prj, e, &mut push);
+        return out;
     }
     height_checks(e, &kinds, rules, &mut push);
     let map = super::thermal::heat_map(prj, e);

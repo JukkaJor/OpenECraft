@@ -42,3 +42,14 @@ fn unknown_catalogs_are_refused() {
     assert!(err.contains("siemens"), "{err}");
     assert_eq!(load("SIEMENS").unwrap().catalog.id, "siemens");
 }
+
+#[test]
+fn victron_devices_are_wall_mountable() {
+    let victron = load("victron").unwrap();
+    let wall: Vec<&str> = victron.parts.iter().filter(|p| p.wall_mountable()).map(|p| p.number.as_str()).collect();
+    assert!(wall.contains(&"VIC.PMP482305012") && wall.contains(&"VIC.SCC115035210"), "{wall:?}");
+    // The BMV-712 display goes into a front panel.
+    let bmv = victron.parts.iter().find(|p| p.number == "VIC.BAM030712000").unwrap();
+    assert!(!bmv.wall_mountable() && bmv.mounting_data.door_cutout.is_some());
+    assert!(victron.parts.iter().all(|p| p.model_3d.is_some()));
+}

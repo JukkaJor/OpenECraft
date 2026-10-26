@@ -75,6 +75,85 @@ fn the_3d_view_shows_all_enclosures_at_their_places() {
 }
 
 #[test]
+fn rooms_show_their_walls_and_cabinets() {
+    let mut prj = Project::default();
+    prj.layout.enclosures.push(Enclosure { name: "+A".into(), id: 7, ..Default::default() });
+    let mut ui = PanelUi::default();
+    ui.new_room(&mut prj);
+    ui.new_room(&mut prj);
+    assert_eq!(prj.layout.enclosures[2].name, "=ROOM2");
+    let room = 1;
+    ui.enclosure = room;
+    assert!(ui.enclosure_index(&prj).is_some() && ui.in_room);
+    assert_eq!((ui.face, ui.view), (Face::Wall(0), View::Plan));
+    assert!(ui.tool_allowed(&Tool::Rail) && ui.tool_allowed(&Tool::Duct) && ui.tool_allowed(&Tool::Walls));
+    assert!(!ui.tool_allowed(&Tool::Busbar) && !ui.tool_allowed(&Tool::Cutout));
+    panel::set_room(&mut prj, 0, Some(room), Some(SitePlace { x: 500.0, z: 200.0, angle: 0.0 })).unwrap();
+    let shown = ui.shown_3d(&prj, room);
+    assert_eq!(shown.iter().map(|s| s.0).collect::<Vec<_>>(), vec![room, 0]);
+    assert_eq!(shown[1].1.at, [500.0, 0.0, 200.0], "in the room's coordinates");
+    // Back to a cabinet: its faces again.
+    ui.enclosure = 0;
+    ui.enclosure_index(&prj);
+    assert!(!ui.in_room && !ui.tool_allowed(&Tool::Walls));
+    assert_eq!(ui.view, View::Front, "no floor plan of a cabinet");
+}
+
+#[test]
+fn walls_are_drawn_at_right_angles_and_closed() {
+    // Corners snap to the grid and follow the last one at a right angle.
+    assert_eq!(plan::ortho_corner(None, p(1020.0, 1980.0)), p(1000.0, 2000.0));
+    assert_eq!(plan::ortho_corner(Some(p(0.0, 0.0)), p(3990.0, 220.0)), p(4000.0, 0.0));
+    assert_eq!(plan::ortho_corner(Some(p(4000.0, 0.0)), p(4100.0, 2980.0)), p(4000.0, 3000.0));
+    // An L drawn without its last corner is closed at a right angle.
+    let drawn = [p(0.0, 0.0), p(6000.0, 0.0), p(6000.0, 6000.0), p(3000.0, 6000.0), p(3000.0, 3000.0)];
+    let closed = plan::closed_outline(&drawn).unwrap();
+    assert_eq!(closed.len(), 6);
+    assert!(closed.contains(&[0.0, 3000.0]));
+    assert!(plan::closed_outline(&drawn[..2]).is_err(), "too few walls");
+    // Finishing the drawing gives the room its outline.
+    let mut prj = Project::default();
+    let mut ui = PanelUi::default();
+    ui.new_room(&mut prj);
+    ui.wall_points = drawn.to_vec();
+    ui.finish_walls(&mut prj, 0);
+    assert_eq!(panel::walls(&prj.layout.enclosures[0]).len(), 6);
+    assert!(ui.wall_points.is_empty() && ui.tool == Tool::Select);
+}
+
+#[test]
+fn doors_and_windows_are_placed_in_rooms_only() {
+    let mut prj = Project::default();
+    prj.layout.enclosures.push(Enclosure { name: "+A".into(), ..Default::default() });
+    let mut ui = PanelUi::default();
+    ui.enclosure_index(&prj);
+    assert!(!ui.tool_allowed(&Tool::Opening(Opening::Door)), "not in a cabinet");
+    ui.new_room(&mut prj);
+    ui.view = View::ThreeD;
+    ui.choose_tool(Tool::Opening(Opening::Window));
+    assert_eq!((ui.tool.clone(), ui.view), (Tool::Opening(Opening::Window), View::Plan), "placed in the floor plan");
+    ui.front_face(Face::Wall(1), false);
+    ui.choose_tool(Tool::Opening(Opening::Door));
+    assert_eq!(ui.view, View::Front, "or in the view of a wall");
+}
+
+#[test]
+fn inner_walls_are_drawn_as_a_chain() {
+    let mut prj = Project::default();
+    let mut ui = PanelUi::default();
+    ui.new_room(&mut prj);
+    ui.choose_tool(Tool::InnerWalls);
+    assert_eq!((ui.tool.clone(), ui.view), (Tool::InnerWalls, View::Plan));
+    let id = panel::add_inner_wall(&mut prj, 0, [2000.0, 0.0], [2000.0, 1500.0], 100.0).unwrap();
+    // Its sides are in the walls menu's faces and take doors.
+    let faces = prj.layout.enclosures[0].faces();
+    assert!(faces.contains(&Face::Inner(id, 0)) && faces.contains(&Face::Inner(id, 1)));
+    ui.front_face(Face::Inner(id, 1), false);
+    ui.choose_tool(Tool::Opening(Opening::Door));
+    assert_eq!(ui.view, View::Front, "placed in the view of the side");
+}
+
+#[test]
 fn ducts_in_front_of_devices_are_painted_over_them() {
     // Seen from the left, the vertical duct at the left edge of the demo's mounting
     // plate is in front of the devices; it was always painted behind them.

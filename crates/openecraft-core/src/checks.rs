@@ -461,11 +461,11 @@ fn check_duct_fill(prj: &Project, fill: &[panel::DuctFill]) -> Vec<Issue> {
     v
 }
 
-/// Enclosures that get too warm without cooling.
+/// Enclosures that get too warm without cooling (rooms are not calculated).
 fn check_climate(prj: &Project) -> Vec<Issue> {
     use crate::climate::Cooling;
     let mut v = Vec::new();
-    for e in &prj.layout.enclosures {
+    for e in prj.layout.enclosures.iter().filter(|e| !e.is_room()) {
         let r = crate::climate::calculate(prj, e);
         if r.cooling != Cooling::None {
             v.push(crate::issue!(Severity::Warning, None, "{}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed", e.name, format!("{:.0}", r.loss), format!("{:.0}", r.inside), format!("{:.0}", e.climate.inside_max), r.cooling.text()));

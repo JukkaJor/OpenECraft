@@ -34,7 +34,10 @@ impl App {
             Cmd::Quit => FileIo::has_own_window(),
             Cmd::SaveAs => FileIo::can_save_in_place(),
             Cmd::NextPageTab | Cmd::PreviousPageTab | Cmd::ClosePageTab => self.page_tabs.len() > 1,
-            Cmd::LayoutDoorInside | Cmd::LayoutDoor | Cmd::LayoutFront | Cmd::LayoutWalls => self.panel_ui.view == crate::panel_ui::View::Front,
+            Cmd::LayoutDoorInside | Cmd::LayoutDoor | Cmd::LayoutFront => self.panel_ui.view == crate::panel_ui::View::Front && !self.panel_ui.in_room,
+            Cmd::LayoutWalls => self.panel_ui.view != crate::panel_ui::View::ThreeD,
+            Cmd::LayoutBusbar | Cmd::LayoutCutout | Cmd::LayoutRoutingPath | Cmd::LayoutReservation | Cmd::LayoutHeat | Cmd::LayoutNcData => !self.panel_ui.in_room,
+            Cmd::LayoutWallPart | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow => self.panel_ui.in_room,
             Cmd::LayoutLineup | Cmd::LayoutSite => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
         }
@@ -85,6 +88,11 @@ impl App {
             Cmd::LayoutDoor => self.panel_ui.view == View::Front && self.panel_ui.face == openecraft_core::panel::Face::Door && !self.panel_ui.door_inside,
             Cmd::LayoutDoorInside => self.panel_ui.view == View::Front && self.panel_ui.face == openecraft_core::panel::Face::Door && self.panel_ui.door_inside,
             Cmd::Layout3d => self.panel_ui.view == View::ThreeD,
+            Cmd::LayoutFloorPlan => self.panel_ui.view == View::Plan,
+            Cmd::LayoutDrawWalls => self.panel_ui.tool == crate::panel_ui::Tool::Walls,
+            Cmd::LayoutInnerWalls => self.panel_ui.tool == crate::panel_ui::Tool::InnerWalls,
+            Cmd::LayoutRoomDoor => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door),
+            Cmd::LayoutRoomWindow => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window),
             Cmd::LayoutWires => self.panel_ui.show_wires,
             Cmd::LayoutDuctFill => self.panel_ui.show_fill,
             Cmd::LayoutHeat => self.panel_ui.show_heat,
@@ -343,6 +351,15 @@ impl App {
                 self.set_workspace(Workspace::Panel);
                 self.panel_ui.new_enclosure_dialog(&self.session.prj, &self.parts_db);
             }
+            Cmd::LayoutFloorPlan => self.panel_ui.floor_plan(),
+            Cmd::LayoutDrawWalls => self.panel_ui.choose_tool(crate::panel_ui::Tool::Walls),
+            Cmd::LayoutInnerWalls => self.panel_ui.choose_tool(crate::panel_ui::Tool::InnerWalls),
+            Cmd::LayoutRoomDoor => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door)),
+            Cmd::LayoutRoomWindow => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window)),
+            Cmd::NewRoom => {
+                self.set_workspace(Workspace::Panel);
+                self.panel_ui.new_room(&mut self.session.prj);
+            }
             Cmd::LayoutSelect => self.panel_ui.choose_tool(crate::panel_ui::Tool::Select),
             Cmd::LayoutRail => self.panel_ui.choose_tool(crate::panel_ui::Tool::Rail),
             Cmd::LayoutDuct => self.panel_ui.choose_tool(crate::panel_ui::Tool::Duct),
@@ -565,7 +582,8 @@ impl App {
             }
             Cmd::LayoutAccessory => self.panel_ui.accessory_menu(ui, &self.session.prj, &self.parts_db),
             Cmd::Layout3dMacro => self.panel_ui.macro_menu(ui, &mut self.session.prj),
-            Cmd::LayoutWalls => self.panel_ui.walls_menu(ui),
+            Cmd::LayoutWallPart => self.panel_ui.wall_part_menu(ui, &self.session.prj, &self.parts_db),
+            Cmd::LayoutWalls => self.panel_ui.walls_menu(ui, &self.session.prj),
             Cmd::LayoutNcData => {
                 for (label, format) in [(tr("DXF drawing"), NcFormat::Dxf), ("DWG", NcFormat::Dwg), (tr("Drilling list (CSV)"), NcFormat::Csv)] {
                     if ui.button(label).clicked() {

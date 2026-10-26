@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Číslo oddílu nesmí být 
 Another section here has this number	Jiný oddíl zde už má toto číslo
 A section cannot be moved into itself	Oddíl nelze přesunout sám do sebe
 Released pages cannot be moved	Uvolněné stránky nelze přesouvat
+New room	Nová místnost
+Room	Místnost
+Rooms	Místnosti
+Delete room	Smazat místnost
+Ceiling	Strop
+Walls and ceiling	Stěny a strop
+Cabinets in the room	Rozváděče v místnosti
+Wall mounting	Montáž na stěnu
+WALL	STĚNA
+Wall-mounted part	Díl na stěnu
+Width × depth	Šířka × hloubka
+Place in the plant	Umístění v zařízení
+Only parts for direct wall mounting	Pouze díly pro přímou montáž na stěnu
+Mounted directly on the wall or ceiling of a room	Montováno přímo na stěnu nebo strop místnosti
+{}  room {} × {} × {}	{}  místnost {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} není určen pro montáž na stěnu: umístěte jej na lištu
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} není určen pro montáž na stěnu, namontujte jej na lištu
+{}: {} stands outside the room	{}: {} stojí mimo místnost
+{}: {} is higher than the ceiling	{}: {} je vyšší než strop
+Floor plan	Půdorys
+Draw walls	Kreslit stěny
+Wall	Stěna
+Wall {}	Stěna {}
+Floor plan with {} walls	Půdorys s {} stěnami
+{} rails, {} cable ducts, {} devices	{} lišty, {} kabelové kanály, {} přístroje
+A room needs at least four walls	Místnost potřebuje alespoň čtyři stěny
+Walls {} and {} cross	Stěny {} a {} se kříží
+Wall {} is shorter than {} mm	Stěna {} je kratší než {} mm
+Wall {} is not at a right angle	Stěna {} není v pravém úhlu
+Window	Okno
+Opening	Otvor
+Above the floor	Nad podlahou
+Click on a wall	Klikněte na stěnu
+{}: {} stands in the swing of the door in wall {}	{}: {} stojí v prostoru otevírání dveří ve stěně {}
+Inner walls	Vnitřní stěny
+Inner wall	Vnitřní stěna
+Draw inner walls	Kreslit vnitřní stěny
+Inner wall {}, side {}	Vnitřní stěna {}, strana {}
+Thickness	Tloušťka
+{}: {} stands in an inner wall	{}: {} stojí ve vnitřní stěně

@@ -1,0 +1,251 @@
+{
+  "catalog": {
+    "id": "victron",
+    "name": "Victron Energy",
+    "manufacturer": "Victron Energy",
+    "version": "2026.1",
+    "description": "Off-grid and backup power: MultiPlus-II inverter / charger, SmartSolar MPPT charge controller, Orion-Tr DC-DC charger, Cerbo GX, SmartShunt and BMV battery monitors, Lynx DC distribution. Most of them are mounted directly on a wall (Wall mounting). Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "VIC.PMP482305012",
+      "type_number": "MultiPlus-II 48/3000/35-32",
+      "order_number": "PMP482305012",
+      "manufacturer": "Victron Energy",
+      "description": "Inverter / charger MultiPlus-II 48/3000/35-32, 230 V, with 32 A transfer switch",
+      "group": "Power supplies, transformers",
+      "subgroup": "Inverter / charger",
+      "identifier": "T",
+      "voltage": "48 V DC / 230 V AC",
+      "current": "35 A charge, 32 A transfer",
+      "power": "3000 VA",
+      "tech_data": "Continuous output power at 25 °C: 2400 W\nPeak power: 5500 W\nBattery voltage range: 38 - 66 V DC\nEfficiency: 95 %\nProtection: IP21\nCommunication: VE.Bus",
+      "width": 275,
+      "height": 506,
+      "depth": 147,
+      "weight": 19.0,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "ACin-L ACin-N DC+ DC-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "ACout1-L ACout1-N ACout2-L ACout2-N"
+        },
+        {
+          "kind": "Generic",
+          "pins": "VE.Bus1 VE.Bus2"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "clearance_top": 100,
+        "clearance_bottom": 100,
+        "power_loss": 150
+      }
+    },
+    {
+      "number": "VIC.SCC115035210",
+      "type_number": "SmartSolar MPPT 150/35",
+      "order_number": "SCC115035210",
+      "manufacturer": "Victron Energy",
+      "description": "Solar charge controller SmartSolar MPPT 150/35 with Bluetooth",
+      "group": "Power supplies, transformers",
+      "subgroup": "Solar charge controller",
+      "identifier": "T",
+      "voltage": "PV 150 V max., battery 12 / 24 / 36 / 48 V",
+      "current": "35 A charge, 40 A PV short-circuit",
+      "power": "2000 W PV at 48 V",
+      "tech_data": "Peak efficiency: 98 %\nProtection: IP43 (electronics IP65)\nCommunication: VE.Direct, Bluetooth",
+      "width": 186,
+      "height": 130,
+      "depth": 70,
+      "weight": 1.25,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "PV+ PV- BAT+ BAT-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "VE.Direct"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "clearance_top": 100,
+        "clearance_bottom": 100,
+        "power_loss": 30
+      }
+    },
+    {
+      "number": "VIC.ORION-TR-SMART-12-12-30-ISO",
+      "type_number": "Orion-Tr Smart 12/12-30 isolated",
+      "manufacturer": "Victron Energy",
+      "description": "Isolated DC-DC charger Orion-Tr Smart 12/12-30 A with Bluetooth",
+      "group": "Power supplies, transformers",
+      "subgroup": "DC-DC converter",
+      "identifier": "T",
+      "voltage": "10 - 17 V DC in / 12 V DC out",
+      "current": "30 A",
+      "power": "360 W",
+      "tech_data": "Galvanic isolation: yes\nEfficiency: 87 %\nProtection: IP43\nRemote on/off: H / L",
+      "width": 186,
+      "height": 130,
+      "depth": 80,
+      "weight": 1.8,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "IN+ IN- OUT+ OUT-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "H L"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "clearance_top": 100,
+        "clearance_bottom": 100,
+        "power_loss": 40
+      }
+    },
+    {
+      "number": "VIC.BPP900450100",
+      "type_number": "Cerbo GX",
+      "order_number": "BPP900450100",
+      "manufacturer": "Victron Energy",
+      "description": "System monitoring and control centre Cerbo GX (GX device)",
+      "group": "Measuring instruments",
+      "subgroup": "System monitoring",
+      "identifier": "K",
+      "voltage": "8 - 70 V DC",
+      "power": "3 W",
+      "tech_data": "Remote monitoring: VRM portal\nDigital inputs: 4\nTemperature inputs: 2\nTank inputs: 4",
+      "width": 154,
+      "height": 78,
+      "depth": 48,
+      "weight": 0.3,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "Generic",
+          "pins": "V+ V- VE.Bus VE.Direct1 VE.Direct2 VE.Direct3 VE.Can BMS-Can LAN"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "R1-NO R1-C R1-NC"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "power_loss": 3
+      }
+    },
+    {
+      "number": "VIC.SHU050150050",
+      "type_number": "SmartShunt 500A/50mV",
+      "order_number": "SHU050150050",
+      "manufacturer": "Victron Energy",
+      "description": "Battery monitor SmartShunt 500 A / 50 mV with Bluetooth",
+      "group": "Measuring instruments",
+      "subgroup": "Battery monitor",
+      "identifier": "P",
+      "voltage": "6.5 - 70 V DC",
+      "current": "500 A",
+      "tech_data": "Shunt: 500 A / 50 mV\nCommunication: VE.Direct, Bluetooth",
+      "width": 120,
+      "height": 46,
+      "depth": 54,
+      "weight": 0.25,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "BAT- LOAD-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "Vbat+ Aux VE.Direct"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true
+      }
+    },
+    {
+      "number": "VIC.BAM030712000",
+      "type_number": "BMV-712 Smart",
+      "order_number": "BAM030712000",
+      "manufacturer": "Victron Energy",
+      "description": "Battery monitor BMV-712 Smart with 500 A shunt and display, front panel mounting",
+      "group": "Measuring instruments",
+      "subgroup": "Battery monitor",
+      "identifier": "P",
+      "voltage": "6.5 - 70 V DC",
+      "current": "500 A",
+      "tech_data": "Display: Ø 63 mm, mounting hole Ø 52 mm\nShunt: 500 A / 50 mV\nCommunication: VE.Direct, Bluetooth",
+      "width": 63,
+      "height": 63,
+      "depth": 31,
+      "weight": 0.2,
+      "mounting": "Front panel",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "Vbat+ Vbat2+ Shunt"
+        }
+      ],
+      "mounting_data": {
+        "door_cutout": {
+          "round": {
+            "d": 52.0
+          }
+        }
+      }
+    },
+    {
+      "number": "VIC.LYNX-DISTRIBUTOR-M10",
+      "type_number": "Lynx Distributor (M10)",
+      "manufacturer": "Victron Energy",
+      "description": "DC distribution busbar Lynx Distributor with four MEGA fuse holders, 1000 A, M10",
+      "group": "Safety devices",
+      "subgroup": "Fuse",
+      "identifier": "F",
+      "voltage": "max. 48 V DC",
+      "current": "1000 A busbar",
+      "tech_data": "Fuses: 4 x MEGA, max. 250 A each\nConnection: M10 studs\nFuse monitoring: LED and VE.Can via Lynx Smart BMS",
+      "width": 180,
+      "height": 190,
+      "depth": 80,
+      "weight": 1.5,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "Fuse",
+          "pins": "BUS+ F1"
+        },
+        {
+          "kind": "Fuse",
+          "pins": "BUS+ F2"
+        },
+        {
+          "kind": "Fuse",
+          "pins": "BUS+ F3"
+        },
+        {
+          "kind": "Fuse",
+          "pins": "BUS+ F4"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true
+      }
+    }
+  ]
+}

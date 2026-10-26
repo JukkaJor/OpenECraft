@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Numer sekcji nie może być 
 Another section here has this number	Inna sekcja tutaj ma już ten numer
 A section cannot be moved into itself	Sekcji nie można przenieść do niej samej
 Released pages cannot be moved	Nie można przenosić wydanych stron
+New room	Nowe pomieszczenie
+Room	Pomieszczenie
+Rooms	Pomieszczenia
+Delete room	Usuń pomieszczenie
+Ceiling	Sufit
+Walls and ceiling	Ściany i sufit
+Cabinets in the room	Szafy w pomieszczeniu
+Wall mounting	Montaż naścienny
+WALL	ŚCIANA
+Wall-mounted part	Artykuł naścienny
+Width × depth	Szerokość × głębokość
+Place in the plant	Miejsce w instalacji
+Only parts for direct wall mounting	Tylko artykuły do bezpośredniego montażu naściennego
+Mounted directly on the wall or ceiling of a room	Montowany bezpośrednio na ścianie lub suficie pomieszczenia
+{}  room {} × {} × {}	{}  pomieszczenie {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} nie jest przeznaczony do montażu naściennego: umieść go na szynie
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} nie jest przeznaczony do montażu naściennego, zamontuj go na szynie
+{}: {} stands outside the room	{}: {} stoi poza pomieszczeniem
+{}: {} is higher than the ceiling	{}: {} jest wyższy niż sufit
+Floor plan	Rzut
+Draw walls	Rysuj ściany
+Wall	Ściana
+Wall {}	Ściana {}
+Floor plan with {} walls	Rzut z {} ścianami
+{} rails, {} cable ducts, {} devices	{} szyny, {} korytka kablowe, {} urządzenia
+A room needs at least four walls	Pomieszczenie wymaga co najmniej czterech ścian
+Walls {} and {} cross	Ściany {} i {} przecinają się
+Wall {} is shorter than {} mm	Ściana {} jest krótsza niż {} mm
+Wall {} is not at a right angle	Ściana {} nie jest pod kątem prostym
+Window	Okno
+Opening	Otwór
+Above the floor	Nad podłogą
+Click on a wall	Kliknij ścianę
+{}: {} stands in the swing of the door in wall {}	{}: {} stoi w polu otwierania drzwi w ścianie {}
+Inner walls	Ściany wewnętrzne
+Inner wall	Ściana wewnętrzna
+Draw inner walls	Rysuj ściany wewnętrzne
+Inner wall {}, side {}	Ściana wewnętrzna {}, strona {}
+Thickness	Grubość
+{}: {} stands in an inner wall	{}: {} stoi w ścianie wewnętrznej

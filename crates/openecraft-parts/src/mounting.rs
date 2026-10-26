@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 /// Keys of the typed values (also the column names of the CSV export and the keys of
 /// the technical data they replace).
-pub const MOUNTING_KEYS: [&str; 16] = [
+pub const MOUNTING_KEYS: [&str; 17] = [
     "Clearance top",
     "Clearance bottom",
     "Clearance left",
@@ -26,6 +26,7 @@ pub const MOUNTING_KEYS: [&str; 16] = [
     "Faces",
     "Collision class",
     "Terminal type",
+    "Wall mounting",
 ];
 
 /// A round or rectangular cutout.
@@ -118,6 +119,19 @@ pub struct MountingData {
     /// Terminal type (`PE`, `N`, …) of terminals.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub terminal_type: String,
+    /// The part is screwed directly to the wall or ceiling of a room (inverters,
+    /// charge controllers, distribution boxes); other devices need a rail there.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub wall_mount: bool,
+}
+
+/// `yes` / `no` of a flag (also `true`, `1`, `x`); `None` for other texts.
+fn parse_flag(v: &str) -> Option<bool> {
+    match v.trim().to_ascii_lowercase().as_str() {
+        "" | "no" | "false" | "0" | "-" => Some(false),
+        "yes" | "true" | "1" | "x" => Some(true),
+        _ => None,
+    }
 }
 
 impl MountingData {
@@ -179,6 +193,7 @@ impl MountingData {
             }
             "door cutout" => self.door_cutout.map(|c| c.text()),
             "cutout" => self.cutout.map(|c| c.text()),
+            "wall mounting" => self.wall_mount.then(|| "yes".to_string()),
             _ => None,
         }
     }
@@ -250,12 +265,28 @@ impl MountingData {
                 }
                 true
             }
+            "wall mounting" => match parse_flag(value) {
+                Some(v) => {
+                    self.wall_mount = v;
+                    true
+                }
+                None => false,
+            },
             _ => false,
         }
     }
 }
 
 impl Part {
+    /// The part can be mounted directly on the wall or ceiling of a room: the typed
+    /// flag, a `Wall mounting: yes` line of the technical data or a mounting text
+    /// saying so (EPLAN mounting site "Wall").
+    pub fn wall_mountable(&self) -> bool {
+        self.mounting_data.wall_mount
+            || self.tech_value("Wall mounting").and_then(parse_flag).unwrap_or(false)
+            || self.mounting.to_lowercase().contains("wall")
+    }
+
     /// A mounting / placement value: the typed one, otherwise the line of the technical
     /// data with that key (older parts).
     pub fn data_value(&self, key: &str) -> Option<String> {

@@ -27,7 +27,7 @@ pub struct Solid {
     /// Device tag or what it is ("Mounting plate", "Rail", …).
     pub name: String,
     pub color: [u8; 3],
-    /// Shown see-through (door).
+    /// Shown see-through (door, walls of a room).
     pub transparent: bool,
     pub triangles: Vec<Tri>,
 }
@@ -86,7 +86,7 @@ pub fn enclosure_solids(prj: &Project, e: &Enclosure) -> Vec<Solid> {
     for c in panel::components(e).into_iter().filter(|c| !c.boxes.is_empty()) {
         let name = if c.part.is_empty() { format!("{} {}", e.name, kind_role(c.role)) } else { format!("{} {} {}", e.name, kind_role(c.role), c.part) };
         let tris = c.boxes.into_iter().flat_map(up_box).collect();
-        solid(&name, component_color(c.role), c.role == Role::Door, tris);
+        solid(&name, component_color(c.role), matches!(c.role, Role::Door | Role::RoomWall(_)), tris);
     }
     for it in e.items.iter().filter(|i| i.kind != ItemKind::Cutout) {
         let name = if it.tag.is_empty() { kind_name(it.kind) } else { it.tag.as_str() };
@@ -116,6 +116,10 @@ fn kind_role(role: Role) -> &'static str {
         Role::MountingPlate => "mounting plate",
         Role::Plinth => "plinth",
         Role::BayingKit => "baying kit",
+
+        Role::RoomWall(panel::Face::Roof) => "ceiling",
+        Role::RoomWall(panel::Face::Inner(..)) => "inner wall",
+        Role::RoomWall(_) => "wall",
     }
 }
 

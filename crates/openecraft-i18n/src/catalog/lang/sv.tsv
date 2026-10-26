@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Ett avsnittsnummer får inte
 Another section here has this number	Ett annat avsnitt här har redan detta nummer
 A section cannot be moved into itself	Ett avsnitt kan inte flyttas in i sig självt
 Released pages cannot be moved	Frisläppta sidor kan inte flyttas
+New room	Nytt rum
+Room	Rum
+Rooms	Rum
+Delete room	Ta bort rum
+Ceiling	Tak
+Walls and ceiling	Väggar och tak
+Cabinets in the room	Skåp i rummet
+Wall mounting	Väggmontage
+WALL	VÄGG
+Wall-mounted part	Väggmonterad artikel
+Width × depth	Bredd × djup
+Place in the plant	Plats i anläggningen
+Only parts for direct wall mounting	Endast artiklar för direkt väggmontage
+Mounted directly on the wall or ceiling of a room	Monteras direkt på väggen eller i taket i ett rum
+{}  room {} × {} × {}	{}  rum {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} är inte avsedd för väggmontage: placera den på en skena
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} är inte avsedd för väggmontage, montera den på en skena
+{}: {} stands outside the room	{}: {} står utanför rummet
+{}: {} is higher than the ceiling	{}: {} är högre än taket
+Floor plan	Planritning
+Draw walls	Rita väggar
+Wall	Vägg
+Wall {}	Vägg {}
+Floor plan with {} walls	Planritning med {} väggar
+{} rails, {} cable ducts, {} devices	{} skenor, {} kabelkanaler, {} enheter
+A room needs at least four walls	Ett rum behöver minst fyra väggar
+Walls {} and {} cross	Väggarna {} och {} korsar varandra
+Wall {} is shorter than {} mm	Vägg {} är kortare än {} mm
+Wall {} is not at a right angle	Vägg {} är inte i rät vinkel
+Window	Fönster
+Opening	Öppning
+Above the floor	Över golvet
+Click on a wall	Klicka på en vägg
+{}: {} stands in the swing of the door in wall {}	{}: {} står i dörrens svängområde i vägg {}
+Inner walls	Innerväggar
+Inner wall	Innervägg
+Draw inner walls	Rita innerväggar
+Inner wall {}, side {}	Innervägg {}, sida {}
+Thickness	Tjocklek
+{}: {} stands in an inner wall	{}: {} står i en innervägg

@@ -11,6 +11,7 @@ use super::{item_box, route_ends, Enclosure, Face, ItemKind, Layout, PanelItem, 
 use crate::geom::{p, P};
 use crate::model::Project;
 use crate::parts::vec3::V3;
+use std::collections::HashMap;
 pub use crate::model::panel::SitePlace;
 
 /// Gap between line-ups (and single enclosures) placed next to each other.
@@ -133,20 +134,49 @@ impl SitePose {
 /// centre of its footprint on the node), otherwise unturned next to the other
 /// line-ups as in [`positions`]. Its enclosures stand side by side on the floor, all
 /// raised by the elevation of the left one.
+///
+/// A line-up in a room ([`super::room_of`]) stands at its place in the room's floor
+/// plan, turned with the room; without a place at the rear of the room after the
+/// other line-ups of that room.
 pub fn site_poses(prj: &Project) -> Vec<SitePose> {
     let layout = &prj.layout;
     let pos = positions(layout);
     let mut out = vec![SitePose::default(); layout.enclosures.len()];
-    for lu in lineups(layout) {
-        let Some(&first) = lu.first() else { continue };
-        let fe = &layout.enclosures[first];
-        let lift = fe.elevation.unwrap_or(0.0);
-        // In the line-up: x from its left end, the bottom above the floor.
-        let local = |i: usize| [pos[i][0] - pos[first][0], lift + layout.enclosures[i].build.plinth, 0.0];
-        let place = fe.site.or_else(|| plant_place(prj, &lu, &local)).unwrap_or(SitePlace { x: pos[first][0], z: 0.0, angle: 0.0 });
-        let pose = SitePose { at: [place.x, 0.0, place.z], angle: place.angle.to_radians() };
-        for &i in &lu {
-            out[i] = SitePose { at: pose.apply(local(i)), angle: pose.angle };
+    let lus = lineups(layout);
+    let mut along_rear: HashMap<usize, f32> = HashMap::new();
+    // Rooms and the line-ups outside rooms first, then those in rooms.
+    for in_room in [false, true] {
+        for lu in &lus {
+            let Some(&first) = lu.first() else { continue };
+            let room = super::room_of(layout, first);
+            if room.is_some() != in_room {
+                continue;
+            }
+            let fe = &layout.enclosures[first];
+            let lift = fe.elevation.unwrap_or(0.0);
+            // In the line-up: x from its left end, the bottom above the floor.
+            let local = |i: usize| [pos[i][0] - pos[first][0], lift + layout.enclosures[i].build.plinth, 0.0];
+            let pose = match room {
+                Some(r) => {
+                    let rp = out[r];
+                    let place = fe.site.unwrap_or_else(|| {
+                        let (lo, _) = super::bounds(&super::outline(&layout.enclosures[r]));
+                        let x = along_rear.entry(r).or_insert(lo[0]);
+                        let width: f32 = lu.iter().map(|&i| layout.enclosures[i].width).sum();
+                        let place = SitePlace { x: *x, z: lo[1], angle: 0.0 };
+                        *x += width + LINEUP_GAP;
+                        place
+                    });
+                    SitePose { at: rp.apply([place.x, 0.0, place.z]), angle: rp.angle + place.angle.to_radians() }
+                }
+                None => {
+                    let place = fe.site.or_else(|| plant_place(prj, lu, &local)).unwrap_or(SitePlace { x: pos[first][0], z: 0.0, angle: 0.0 });
+                    SitePose { at: [place.x, 0.0, place.z], angle: place.angle.to_radians() }
+                }
+            };
+            for &i in lu {
+                out[i] = SitePose { at: pose.apply(local(i)), angle: pose.angle };
+            }
         }
     }
     out
@@ -196,10 +226,10 @@ pub fn unbay(prj: &mut Project, ei: usize) {
 
 /// Bays an enclosure to the right side of `left`, taking it out of its line-up first;
 /// an enclosure that stood right of `left` moves on to its right. False if that is
-/// not possible (same enclosure, unknown index).
+/// not possible (same enclosure, unknown index, a room).
 pub fn bay_right_of(prj: &mut Project, ei: usize, left: usize) -> bool {
     let n = prj.layout.enclosures.len();
-    if ei == left || ei >= n || left >= n {
+    if ei == left || ei >= n || left >= n || prj.layout.enclosures[ei].is_room() || prj.layout.enclosures[left].is_room() {
         return false;
     }
     unbay(prj, ei);

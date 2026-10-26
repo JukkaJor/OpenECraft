@@ -261,17 +261,17 @@ pub static TABS: &[Tab] = &[
         key_tip: 'L',
         context: true,
         groups: &[
-            g("enclosures", tr_const!("Enclosures"), &[L(C::NewEnclosure), S(C::LayoutSpaces), S(C::LayoutProperties)]),
-            g("place", tr_const!("Insert"), &[L(C::LayoutSelect), S(C::LayoutAccessory), S(C::Layout3dMacro)]),
+            g("enclosures", tr_const!("Enclosures"), &[L(C::NewEnclosure), S(C::NewRoom), S(C::LayoutSpaces), S(C::LayoutProperties)]),
+            g("place", tr_const!("Insert"), &[L(C::LayoutSelect), S(C::LayoutAccessory), S(C::LayoutWallPart), S(C::Layout3dMacro)]),
             g(
                 "draw",
                 tr_const!("Draw"),
-                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation)],
+                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation), S(C::LayoutDrawWalls), S(C::LayoutInnerWalls), S(C::LayoutRoomDoor), S(C::LayoutRoomWindow)],
             ),
             g(
                 "view",
                 tr_const!("View"),
-                &[L(C::Layout3d), S(C::LayoutFront), S(C::LayoutDoor), S(C::LayoutDoorInside), S(C::LayoutWalls), S(C::LayoutFit)],
+                &[L(C::Layout3d), S(C::LayoutFloorPlan), S(C::LayoutFront), S(C::LayoutDoor), S(C::LayoutDoorInside), S(C::LayoutWalls), S(C::LayoutFit)],
             ),
             g("show", tr_const!("Show"), &[S(C::LayoutWires), S(C::LayoutDuctFill), S(C::LayoutHeat), S(C::LayoutLineup), S(C::LayoutSite)]),
             g("production", tr_const!("Production"), &[L(C::LayoutNcData), S(C::LayoutReports), S(C::LayoutMountingPage)]),

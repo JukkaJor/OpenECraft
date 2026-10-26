@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Un număr de secțiune nu po
 Another section here has this number	O altă secțiune de aici are deja acest număr
 A section cannot be moved into itself	O secțiune nu poate fi mutată în ea însăși
 Released pages cannot be moved	Paginile aprobate nu pot fi mutate
+New room	Încăpere nouă
+Room	Încăpere
+Rooms	Încăperi
+Delete room	Șterge încăperea
+Ceiling	Tavan
+Walls and ceiling	Pereți și tavan
+Cabinets in the room	Dulapuri în încăpere
+Wall mounting	Montaj pe perete
+WALL	PERETE
+Wall-mounted part	Articol de montat pe perete
+Width × depth	Lățime × adâncime
+Place in the plant	Loc în instalație
+Only parts for direct wall mounting	Doar articole pentru montaj direct pe perete
+Mounted directly on the wall or ceiling of a room	Montat direct pe peretele sau tavanul unei încăperi
+{}  room {} × {} × {}	{}  încăpere {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} nu este destinat montajului pe perete: așezați-l pe o șină
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} nu este destinat montajului pe perete, montați-l pe o șină
+{}: {} stands outside the room	{}: {} se află în afara încăperii
+{}: {} is higher than the ceiling	{}: {} este mai înalt decât tavanul
+Floor plan	Plan
+Draw walls	Desenează pereți
+Wall	Perete
+Wall {}	Peretele {}
+Floor plan with {} walls	Plan cu {} pereți
+{} rails, {} cable ducts, {} devices	{} șine, {} canale de cablu, {} aparate
+A room needs at least four walls	O încăpere are nevoie de cel puțin patru pereți
+Walls {} and {} cross	Pereții {} și {} se intersectează
+Wall {} is shorter than {} mm	Peretele {} este mai scurt de {} mm
+Wall {} is not at a right angle	Peretele {} nu este în unghi drept
+Window	Fereastră
+Opening	Deschidere
+Above the floor	Deasupra podelei
+Click on a wall	Faceți clic pe un perete
+{}: {} stands in the swing of the door in wall {}	{}: {} stă în zona de deschidere a ușii din peretele {}
+Inner walls	Pereți interiori
+Inner wall	Perete interior
+Draw inner walls	Desenează pereți interiori
+Inner wall {}, side {}	Perete interior {}, partea {}
+Thickness	Grosime
+{}: {} stands in an inner wall	{}: {} stă într-un perete interior

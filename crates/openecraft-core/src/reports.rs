@@ -1007,7 +1007,7 @@ fn climate_report(prj: &Project) -> Table {
         (tr_const!("Dew point (°C)"), 0.7),
         (tr_const!("Devices without power loss"), 2.0),
     ]);
-    for e in &prj.layout.enclosures {
+    for e in prj.layout.enclosures.iter().filter(|e| !e.is_room()) {
         let r = crate::climate::calculate(prj, e);
         t.push(
             vec![

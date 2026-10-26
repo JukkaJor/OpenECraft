@@ -6260,3 +6260,43 @@ A section number must not be empty or contain a dot	Un numero di sezione non pu�
 Another section here has this number	Un'altra sezione qui ha già questo numero
 A section cannot be moved into itself	Una sezione non può essere spostata in se stessa
 Released pages cannot be moved	Le pagine rilasciate non possono essere spostate
+New room	Nuovo locale
+Room	Locale
+Rooms	Locali
+Delete room	Elimina locale
+Ceiling	Soffitto
+Walls and ceiling	Pareti e soffitto
+Cabinets in the room	Armadi nel locale
+Wall mounting	Montaggio a parete
+WALL	PARETE
+Wall-mounted part	Articolo a parete
+Width × depth	Larghezza × profondità
+Place in the plant	Posizione nell'impianto
+Only parts for direct wall mounting	Solo articoli per montaggio diretto a parete
+Mounted directly on the wall or ceiling of a room	Montato direttamente sulla parete o sul soffitto di un locale
+{}  room {} × {} × {}	{}  locale {} × {} × {}
+{} is not made for wall mounting: place it on a mounting rail	{} non è previsto per il montaggio a parete: posizionarlo su una guida
+{}: {} is not made for wall mounting, mount it on a rail	{}: {} non è previsto per il montaggio a parete, montarlo su una guida
+{}: {} stands outside the room	{}: {} si trova fuori dal locale
+{}: {} is higher than the ceiling	{}: {} è più alto del soffitto
+Floor plan	Pianta
+Draw walls	Disegna pareti
+Wall	Parete
+Wall {}	Parete {}
+Floor plan with {} walls	Pianta con {} pareti
+{} rails, {} cable ducts, {} devices	{} guide, {} canaline, {} dispositivi
+A room needs at least four walls	Un locale richiede almeno quattro pareti
+Walls {} and {} cross	Le pareti {} e {} si incrociano
+Wall {} is shorter than {} mm	La parete {} è più corta di {} mm
+Wall {} is not at a right angle	La parete {} non è ad angolo retto
+Window	Finestra
+Opening	Apertura
+Above the floor	Sopra il pavimento
+Click on a wall	Fare clic su una parete
+{}: {} stands in the swing of the door in wall {}	{}: {} si trova nell'apertura della porta nella parete {}
+Inner walls	Pareti interne
+Inner wall	Parete interna
+Draw inner walls	Disegna pareti interne
+Inner wall {}, side {}	Parete interna {}, lato {}
+Thickness	Spessore
+{}: {} stands in an inner wall	{}: {} si trova in una parete interna

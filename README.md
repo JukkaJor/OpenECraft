@@ -374,6 +374,33 @@ bill of materials.
     the whole line-up, wires run from one enclosure into the next;
   - **room**: the 3D view shows all enclosures side by side at their places, each
     line-up at its position and turn set by hand or taken from the plant layout;
+  - **rooms** (Layout space › New room, plugin `rooms`): a room of the building with
+    its floor plan, height and place in the plant. The floor plan is a rectangle or an
+    outline of walls at right angles (L, U or T shaped rooms): *Floor plan* shows it
+    from above, *Draw walls* draws it by clicking the corners (on a 50 mm grid, closed
+    by clicking the first corner or Enter), walls are dragged to move them or get a
+    length in the room's properties (commands `set_room_outline`, `set_room_wall`).
+    Inner walls (Layout space › Draw › Inner walls, commands `add_inner_wall`,
+    `set_inner_wall`) are drawn in the floor plan by clicking their ends (a chain, at
+    right angles), dragged across to move them, get length and thickness in the
+    room's properties and are removed with Del; both sides (`inner1a`, `inner1b`) are
+    faces like the walls.
+    Doors and windows (Layout space › Draw › Door / Window, command
+    `add_wall_opening`) are openings in a wall, placed by clicking the wall in the
+    floor plan or in the view of the wall: a door stands on the floor and swings into
+    the room (drawn with its swing), a window has its sill height; size, position and
+    sill are in their properties.
+    Cabinets (their line-ups) stand in it at a place of the floor plan, dragged there
+    in the floor plan, and move with the room. Every wall (seen from inside the room)
+    and the ceiling carry mounting rails, cable ducts and devices: a
+    device on a wall sits on a rail, unless its part is marked *Wall mounting* (part
+    editor › Mounting data, a `WALL` badge in the part trees, filter *Only parts for
+    direct wall mounting*), then it goes directly on the wall (Insert › Wall-mounted
+    part, also without a device tag). The check reports devices on a wall that are
+    neither, rails or devices over a door or window, items on the ceiling outside the
+    floor plan, inner walls leaving the room, cabinets in the swing of a door or in an
+    inner wall, and cabinets outside the room (or across a wall) or higher than its
+    ceiling; rooms have no climate calculation and no NC data;
   - **3D routing** of cables, tubes and (optionally) wires through the line-up: in cable
     ducts, along routing paths drawn over the mounting plate, or freely around the
     devices; segregation of the classes power, control, signal and fluid, routing
@@ -805,8 +832,10 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
   interface / router, power supply), `phoenix_contact` (terminal blocks, relay
   modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
-  starter protectors, SENTRON circuit breakers) and `weidmueller` (terminals, relay
-  module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
+  starter protectors, SENTRON circuit breakers), `victron` (MultiPlus-II inverter /
+  charger, SmartSolar MPPT, Orion-Tr, Cerbo GX, SmartShunt, BMV-712, Lynx
+  Distributor; mostly parts for direct wall mounting) and `weidmueller` (terminals,
+  relay module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
   `siemens`) installs or updates them in an existing database: new parts are added,
   parts nobody changed are updated, parts changed or deleted by users are kept. Parts
   without models get generated ones from their mounting dimensions. Only add data
@@ -1213,6 +1242,8 @@ zoom, language, check results and the messages of the session.
 | `application/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
+| `crates/openecraft-core/src/panel/rooms.rs` | Rooms: floor plan outline and its walls, cabinets standing in them, rails, ducts and wall-mounted devices on walls and ceiling, their checks |
+| `application/panel_ui/plan.rs` | Floor plan of a room: drawing and moving walls, placing cabinets |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |
 | `crates/openecraft-core/src/collab.rs` | Shared projects: API types, lock targets and the merge rules of the project server |
 | `application/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
