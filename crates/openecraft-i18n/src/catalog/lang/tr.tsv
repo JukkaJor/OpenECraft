@@ -6232,3 +6232,27 @@ Click to show, right click for more	Göstermek için tıklayın, daha fazlası i
 {} notes	{} not
 Open in a new page tab	Yeni bir sayfa sekmesinde aç
 Project information	Proje bilgileri
+Move to section	Bölüme taşı
+Number the sections 1, 2, 3 … on every level first	Önce bölümleri her düzeyde 1, 2, 3 … olarak numaralandır
+In every section counting starts again after the section number (2.3.1).	Her bölümde sayım, bölüm numarasından sonra yeniden başlar (2.3.1).
+New page in this section	Bu bölümde yeni sayfa
+New subsection	Yeni alt bölüm
+Section properties…	Bölüm özellikleri…
+Move up	Yukarı taşı
+Move down	Aşağı taşı
+Delete section	Bölümü sil
+(top level)	(en üst düzey)
+Section properties	Bölüm özellikleri
+The names of its pages follow	Sayfalarının adları da değişir
+Parent section	Üst bölüm
+Its pages and subsections go to the section above	Sayfaları ve alt bölümleri üst bölüme geçer
+{} pages; their names start with {}	{} sayfa; adları {} ile başlar
+Section	Bölüm
+The page name gets the section number	Sayfa adı bölüm numarasını alır
+New section	Yeni bölüm
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Sayfaları bir klasör gibi içeren numaralı bir bölüm; sayfa adları onun numarasıyla başlar (2.3.1)
+No such section	Böyle bir bölüm yok
+A section number must not be empty or contain a dot	Bölüm numarası boş olamaz ve nokta içeremez
+Another section here has this number	Buradaki başka bir bölüm bu numaraya sahip
+A section cannot be moved into itself	Bir bölüm kendi içine taşınamaz
+Released pages cannot be moved	Yayımlanmış sayfalar taşınamaz

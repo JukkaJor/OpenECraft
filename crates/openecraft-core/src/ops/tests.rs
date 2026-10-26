@@ -265,3 +265,29 @@ fn sub_pages_follow_their_page() {
     let c = add_subpage(&mut prj, a);
     assert_eq!(prj.pages[c].name, "3.3", "a sub-page of a sub-page belongs to the main page");
 }
+
+#[test]
+fn new_pages_join_the_section_of_the_page_before() {
+    let mut prj = Project::default();
+    let a = sections::add(&mut prj, 0, "");
+    let at = add_page(&mut prj, PageKind::Schematic, 1);
+    sections::move_page(&mut prj, at, a).unwrap();
+    assert_eq!(prj.pages[1].name, "1.2");
+    let at = add_page(&mut prj, PageKind::Schematic, 2);
+    assert_eq!((prj.pages[at].section, prj.pages[at].name.as_str()), (a, "1.3"));
+    let at = add_subpage(&mut prj, 1);
+    assert_eq!((at, prj.pages[at].name.as_str()), (2, "1.2.a"), "lettered once there are sections");
+    let at = add_subpage(&mut prj, 2);
+    assert_eq!(prj.pages[at].name, "1.2.b");
+    let at = add_page(&mut prj, PageKind::Schematic, 0);
+    assert_eq!((prj.pages[at].section, prj.pages[at].name.as_str()), (0, "2"));
+    assert_eq!(next_page_name(&prj, prj.pages.len()), "1.4");
+    assert_eq!(letters(27), "ab");
+    assert_eq!(move_page(&mut prj, 2, 1), 2, "pages move within their section only");
+    assert_eq!(move_page(&mut prj, 1, 0), 0);
+    let b = sections::add(&mut prj, a, "");
+    let at = add_page_in(&mut prj, PageKind::Schematic, b);
+    assert_eq!((at, prj.pages[at].name.as_str()), (prj.pages.len() - 1, "1.1.1"));
+    let at = add_page_in(&mut prj, PageKind::Schematic, a);
+    assert_eq!((at, prj.pages[at].name.as_str()), (6, "1.4"));
+}

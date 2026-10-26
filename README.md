@@ -74,7 +74,10 @@ bill of materials.
   preview of the new tags; everything that refers to a tag follows (parts, strips,
   plugs, PLC data, panel layout, harnesses). *Home › Renumber pages…* numbers pages
   with start and step, restarting per structure and keeping sub-pages (`3.a`; *Home › New page › New
-  sub-page* inserts `3.1`, `3.2`, … after the current page). The wire
+  sub-page* inserts `3.1`, `3.2`, … after the current page). Page sections hold pages
+  and subsections like directories (*Home › New section*, drag pages onto them in the
+  *Pages* navigator); the page names carry the section numbers (`2.3.1`), follow when a
+  section is renumbered or moved, and renumbering counts per section. The wire
   numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
   `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
   value of the rest), counter digits and step, and potential kinds that get no number

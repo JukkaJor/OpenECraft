@@ -3,6 +3,7 @@
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{P, R, GRID};
 use crate::model::*;
+use crate::sections;
 use crate::symlib::Symbols;
 use crate::symbols::{ContactKind, Func, PinKind, SymbolDef};
 use std::collections::{BTreeSet, HashMap};
@@ -108,16 +109,25 @@ fn next_plc_address(prj: &Project, card: &str, input: bool) -> String {
     crate::plc_hw::card_address(prj, card, input, max.map(|m| m + 1).unwrap_or(0))
 }
 
-/// Name for a new page: one more than the highest numeric page name.
-pub fn next_page_name(prj: &Project) -> String {
-    let max = prj.pages.iter().filter_map(|p| p.name.parse::<u32>().ok()).max().unwrap_or(0);
-    (max + 1).to_string()
+/// Name for a new page inserted at `at`: one more than the highest page number of the
+/// section it comes into (see [`insert_page`]).
+pub fn next_page_name(prj: &Project, at: usize) -> String {
+    sections::next_page_name(prj, sections::section_at(prj, at))
 }
 
-/// Moves the page at `from` to position `to` (both existing). Returns the index the
-/// page has afterwards.
+/// Inserts a page at `at` (clamped), into the section of the page before it. Returns
+/// its index.
+pub fn insert_page(prj: &mut Project, at: usize, mut page: Page) -> usize {
+    let at = at.min(prj.pages.len());
+    page.section = sections::section_at(prj, at);
+    prj.pages.insert(at, page);
+    at
+}
+
+/// Moves the page at `from` to position `to` (both existing, in the same section).
+/// Returns the index the page has afterwards.
 pub fn move_page(prj: &mut Project, from: usize, to: usize) -> usize {
-    if from >= prj.pages.len() || to >= prj.pages.len() {
+    if from >= prj.pages.len() || to >= prj.pages.len() || sections::of_page(prj, from) != sections::of_page(prj, to) {
         return from;
     }
     let page = prj.pages.remove(from);
@@ -140,20 +150,34 @@ pub fn add_page(prj: &mut Project, kind: PageKind, at: usize) -> usize {
         PageKind::Graphic => tr("Graphics").to_string(),
         PageKind::Document => tr("Document").to_string(),
     };
-    let page = Page::new(id, &next_page_name(prj), &desc, kind);
-    let at = at.min(prj.pages.len());
-    prj.pages.insert(at, page);
-    at
+    let page = Page::new(id, &next_page_name(prj, at), &desc, kind);
+    insert_page(prj, at, page)
+}
+
+/// Adds a new page of `kind` after the pages of a section (0: top level). Returns its
+/// index.
+pub fn add_page_in(prj: &mut Project, kind: PageKind, section: u64) -> usize {
+    let at = add_page(prj, kind, prj.pages.len());
+    sections::place_new_page(prj, at, section)
 }
 
 /// Inserts a schematic sub-page of page `of` (`3` → `3.1`, then `3.2`, …) after the
-/// page and its sub-pages, in the page's structure; returns its index.
+/// page and its sub-pages, in the page's structure and section; returns its index.
+/// Once the project has sections, sub-pages are lettered (`3.a`, `1.2.a`), so that
+/// they cannot be mistaken for the pages of a section.
 pub fn add_subpage(prj: &mut Project, of: usize) -> usize {
-    let main = prj.pages[of].name.split_once('.').map_or(prj.pages[of].name.as_str(), |(m, _)| m).to_string();
-    let is_sub = |name: &str| name.split_once('.').is_some_and(|(m, _)| m == main);
-    let next = prj.pages.iter().filter(|p| is_sub(&p.name)).filter_map(|p| p.name.split_once('.').and_then(|(_, n)| n.parse::<u32>().ok())).max().unwrap_or(0) + 1;
+    let section = sections::of_page(prj, of);
+    let local = sections::local_name(prj, of);
+    let main = format!("{}{}", sections::prefix(prj, section), local.split_once('.').map_or(local, |(m, _)| m));
+    let sub = |name: &str| name.strip_prefix(main.as_str()).and_then(|r| r.strip_prefix('.')).filter(|r| !r.is_empty()).map(str::to_string);
+    let subs: Vec<String> = (0..prj.pages.len()).filter(|&i| sections::of_page(prj, i) == section).filter_map(|i| sub(&prj.pages[i].name)).collect();
+    let next = if prj.sections.is_empty() {
+        (subs.iter().filter_map(|n| n.parse::<u32>().ok()).max().unwrap_or(0) + 1).to_string()
+    } else {
+        (0..).map(letters).find(|l| !subs.contains(l)).unwrap_or_default()
+    };
     let mut at = of + 1;
-    while at < prj.pages.len() && is_sub(&prj.pages[at].name) {
+    while at < prj.pages.len() && sections::of_page(prj, at) == section && sub(&prj.pages[at].name).is_some() {
         at += 1;
     }
     let at = add_page(prj, PageKind::Schematic, at);
@@ -162,6 +186,19 @@ pub fn add_subpage(prj: &mut Project, of: usize) -> usize {
     pg.name = format!("{main}.{next}");
     structure.apply_to(pg);
     at
+}
+
+/// `a` … `z`, `aa`, `ab` … for 0, 1, 2 …
+fn letters(n: usize) -> String {
+    let mut n = n + 1;
+    let mut out = Vec::new();
+    while n > 0 {
+        n -= 1;
+        out.push(b'a' + (n % 26) as u8);
+        n /= 26;
+    }
+    out.reverse();
+    String::from_utf8(out).unwrap_or_default()
 }
 
 /// Creates a symbol instance for a page with sensible defaults (tag in the page's

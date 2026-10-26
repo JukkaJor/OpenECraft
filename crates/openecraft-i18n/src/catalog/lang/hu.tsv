@@ -6232,3 +6232,27 @@ Click to show, right click for more	Kattintás: megjelenítés, jobb kattintás:
 {} notes	Megjegyzések: {}
 Open in a new page tab	Megnyitás új oldallapon
 Project information	Projektinformációk
+Move to section	Áthelyezés szakaszba
+Number the sections 1, 2, 3 … on every level first	Először a szakaszok számozása 1, 2, 3 … minden szinten
+In every section counting starts again after the section number (2.3.1).	Minden szakaszban a számozás újrakezdődik a szakasz száma után (2.3.1).
+New page in this section	Új oldal ebben a szakaszban
+New subsection	Új alszakasz
+Section properties…	Szakasz tulajdonságai…
+Move up	Mozgatás felfelé
+Move down	Mozgatás lefelé
+Delete section	Szakasz törlése
+(top level)	(legfelső szint)
+Section properties	Szakasz tulajdonságai
+The names of its pages follow	Oldalainak neve is változik
+Parent section	Szülőszakasz
+Its pages and subsections go to the section above	Oldalai és alszakaszai a fölötte lévő szakaszba kerülnek
+{} pages; their names start with {}	{} oldal; nevük ezzel kezdődik: {}
+Section	Szakasz
+The page name gets the section number	Az oldal neve megkapja a szakasz számát
+New section	Új szakasz
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Számozott szakasz, amely mappaként tartalmazza az oldalakat; az oldalnevek a számával kezdődnek (2.3.1)
+No such section	Nincs ilyen szakasz
+A section number must not be empty or contain a dot	A szakaszszám nem lehet üres, és nem tartalmazhat pontot
+Another section here has this number	Egy másik szakasznak itt már ez a száma
+A section cannot be moved into itself	Egy szakasz nem helyezhető át önmagába
+Released pages cannot be moved	A kiadott oldalak nem helyezhetők át

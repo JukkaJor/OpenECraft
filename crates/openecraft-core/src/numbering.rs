@@ -5,11 +5,13 @@
 //! NFPA style `{page}{column}{letter}` (`-34CR`); the device keeps its structure, and
 //! everything that refers to its tag follows (see [`ops::rename_device`]). Pages are
 //! numbered with a start value and step, optionally restarting per structure and
-//! keeping sub-pages (`3.a`).
+//! keeping sub-pages (`3.a`); in every section counting starts again after the
+//! section's number (`2.3.1`), the sections themselves can be numbered 1, 2, 3 …
 
 use crate::index::{Index, Loc};
 use crate::model::Project;
 use crate::ops;
+use crate::sections;
 use crate::structure::{self, Dt};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
@@ -168,6 +170,9 @@ pub struct PageNumbering {
     pub per_structure: bool,
     /// Pages with a suffix (`3.a`, `3.1`) stay sub-pages of the page before.
     pub subpages: bool,
+    /// The sections are numbered 1, 2, 3 … on every level first.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub sections: bool,
     /// Only these pages (indices); empty = all.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub pages: Vec<usize>,
@@ -175,7 +180,7 @@ pub struct PageNumbering {
 
 impl Default for PageNumbering {
     fn default() -> Self {
-        PageNumbering { start: 1, step: 1, per_structure: false, subpages: true, pages: Vec::new() }
+        PageNumbering { start: 1, step: 1, per_structure: false, subpages: true, sections: false, pages: Vec::new() }
     }
 }
 
@@ -183,27 +188,35 @@ impl Default for PageNumbering {
 /// keep their name.
 pub fn plan_pages(prj: &Project, opts: &PageNumbering) -> Vec<(usize, String)> {
     let step = opts.step.max(1);
+    let renumbered = if opts.sections { sections::renumbered(prj) } else { Default::default() };
     let mut n: Option<u32> = None;
     let mut structure_before: Option<String> = None;
+    let mut section_before: Option<u64> = None;
     let mut out = Vec::new();
     for (i, pg) in prj.pages.iter().enumerate() {
         if !opts.pages.is_empty() && !opts.pages.contains(&i) {
             continue;
         }
         let s = structure::page_structure(pg);
-        if opts.per_structure && structure_before.as_ref().is_some_and(|b| *b != s) {
+        let section = sections::of_page(prj, i);
+        if (opts.per_structure && structure_before.as_ref().is_some_and(|b| *b != s)) || section_before.is_some_and(|b| b != section) {
             n = None;
         }
         structure_before = Some(s);
-        let suffix = pg.name.split_once('.').map(|(_, x)| x).filter(|x| !x.is_empty());
+        section_before = Some(section);
+        let prefix = match renumbered.get(&section) {
+            Some(full) => format!("{full}{}", sections::SEPARATOR),
+            None => sections::prefix(prj, section),
+        };
+        let suffix = sections::local_name(prj, i).split_once('.').map(|(_, x)| x).filter(|x| !x.is_empty());
         let name = match (opts.subpages, suffix, n) {
-            (true, Some(sfx), Some(cur)) => format!("{cur}.{sfx}"),
+            (true, Some(sfx), Some(cur)) => format!("{prefix}{cur}.{sfx}"),
             _ => {
                 let next = n.map_or(opts.start, |c| c + step);
                 n = Some(next);
                 match (opts.subpages, suffix) {
-                    (true, Some(sfx)) => format!("{next}.{sfx}"),
-                    _ => next.to_string(),
+                    (true, Some(sfx)) => format!("{prefix}{next}.{sfx}"),
+                    _ => format!("{prefix}{next}"),
                 }
             }
         };
@@ -214,13 +227,17 @@ pub fn plan_pages(prj: &Project, opts: &PageNumbering) -> Vec<(usize, String)> {
     out
 }
 
-/// Renumbers the pages (see [`plan_pages`]); returns how many were renamed.
+/// Renumbers the pages (and the sections, see [`sections::renumber`]); returns how
+/// many pages were renamed.
 pub fn renumber_pages(prj: &mut Project, opts: &PageNumbering) -> usize {
-    let plan = plan_pages(prj, opts);
-    for (i, name) in &plan {
-        prj.pages[*i].name = name.clone();
+    let before: Vec<String> = prj.pages.iter().map(|p| p.name.clone()).collect();
+    if opts.sections {
+        sections::renumber(prj);
     }
-    plan.len()
+    for (i, name) in plan_pages(prj, opts) {
+        prj.pages[i].name = name;
+    }
+    prj.pages.iter().zip(&before).filter(|(p, b)| p.name != **b).count()
 }
 
 #[cfg(test)]

@@ -66,6 +66,7 @@ mod plugins_ui;
 mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
+mod sections_ui;
 mod potentials_ui;
 mod projects_ui;
 mod properties_ui;
@@ -186,6 +187,8 @@ pub struct App {
     /// Wire numbering: also renumber / remove manually set numbers.
     numbering_overwrite: bool,
     page_props: Option<usize>,
+    /// Section whose properties are shown.
+    section_props: Option<u64>,
     message: Option<(String, f64)>,
     /// The messages of this session (status bar › messages).
     messages: Vec<String>,
@@ -396,6 +399,7 @@ impl App {
             config_ui: Default::default(),
             numbering_overwrite: false,
             page_props: None,
+            section_props: None,
             message: None,
             messages: Vec::new(),
             title: String::new(),

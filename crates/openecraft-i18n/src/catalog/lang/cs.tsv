@@ -6232,3 +6232,27 @@ Click to show, right click for more	Klepnutím zobrazit, pravým tlačítkem dal
 {} notes	Poznámky: {}
 Open in a new page tab	Otevřít v nové kartě stránky
 Project information	Informace o projektu
+Move to section	Přesunout do oddílu
+Number the sections 1, 2, 3 … on every level first	Nejprve očíslovat oddíly 1, 2, 3 … na každé úrovni
+In every section counting starts again after the section number (2.3.1).	V každém oddílu začíná číslování znovu za číslem oddílu (2.3.1).
+New page in this section	Nová stránka v tomto oddílu
+New subsection	Nový pododdíl
+Section properties…	Vlastnosti oddílu…
+Move up	Posunout nahoru
+Move down	Posunout dolů
+Delete section	Odstranit oddíl
+(top level)	(nejvyšší úroveň)
+Section properties	Vlastnosti oddílu
+The names of its pages follow	Názvy jeho stránek se změní s ním
+Parent section	Nadřazený oddíl
+Its pages and subsections go to the section above	Jeho stránky a pododdíly přejdou do nadřazeného oddílu
+{} pages; their names start with {}	Stránek: {}; jejich názvy začínají {}
+Section	Oddíl
+The page name gets the section number	Název stránky dostane číslo oddílu
+New section	Nový oddíl
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Číslovaný oddíl, který obsahuje stránky jako složka; názvy stránek začínají jeho číslem (2.3.1)
+No such section	Takový oddíl neexistuje
+A section number must not be empty or contain a dot	Číslo oddílu nesmí být prázdné ani obsahovat tečku
+Another section here has this number	Jiný oddíl zde už má toto číslo
+A section cannot be moved into itself	Oddíl nelze přesunout sám do sebe
+Released pages cannot be moved	Uvolněné stránky nelze přesouvat

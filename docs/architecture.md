@@ -62,7 +62,7 @@ Layers, bottom up (a module may use its own layer and the layers below):
    project file format. Data only, serde, no evaluation. The feature modules re-export
    their data types from here and keep the logic.
 4. Evaluation of the model that everything else builds on: `index`, `netlist`,
-   `structure`, `frame`, `wirenum`, `history`, `translation`, `options`,
+   `structure`, `sections` (page sections: tree, numbers in the page names), `frame`, `wirenum`, `history`, `translation`, `options`,
    `potentials`, `functions`, `properties`, `props`, `numbering` (device and page
    renumbering), `text` (free texts: lines,
    wrapping, rotation, path function texts).
