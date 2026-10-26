@@ -1,13 +1,15 @@
 //! Access control of the OpenECraft servers (parts server, project server): password
 //! hashes (Argon2), random session tokens and the lists of session token hashes an
 //! account keeps, sign-in with directories (Active Directory, LDAP) and the access
-//! settings file (directories, roles, grants). The rules of roles and grants are in
+//! settings file (directories, roles, grants) and the configuration files of the servers
+//! (`server_config`). The rules of roles and grants are in
 //! `openecraft_parts::access`, shared with the clients. Native only (the servers); the
 //! clients just send tokens.
 
 mod account;
 mod config;
 mod directory;
+pub mod server_config;
 
 pub use account::*;
 pub use config::{AccessConfig, AccessFile};

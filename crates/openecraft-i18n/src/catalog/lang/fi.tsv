@@ -6232,6 +6232,10 @@ Click to show, right click for more	Näytä napsauttamalla, lisää hiiren oikea
 {} notes	Huomautuksia: {}
 Open in a new page tab	Avaa uudessa sivuvälilehdessä
 Project information	Projektin tiedot
+Plugin commands…	Laajennusten komennot…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Kaikkien laajennusten komennot laajennuksittain, haulla; tähti kiinnittää komennon Laajennukset-välilehdelle
+Star a command in Plugin commands to pin it here	Kiinnitä komento tähän tähdellä kohdassa Laajennusten komennot
+Installed plugins	Asennetut laajennukset
 Move to section	Siirrä osioon
 Number the sections 1, 2, 3 … on every level first	Numeroi ensin osiot 1, 2, 3 … jokaisella tasolla
 In every section counting starts again after the section number (2.3.1).	Jokaisessa osiossa laskenta alkaa alusta osion numeron jälkeen (2.3.1).

@@ -6232,6 +6232,10 @@ Click to show, right click for more	クリックで表示、右クリックで�
 {} notes	{} 件の注記
 Open in a new page tab	新しいページタブで開く
 Project information	プロジェクト情報
+Plugin commands…	プラグインコマンド…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	すべてのプラグインのコマンドをプラグインごとに検索付きで表示します。星を付けるとコマンドがプラグインタブに固定されます
+Star a command in Plugin commands to pin it here	プラグインコマンドで星を付けるとここに固定されます
+Installed plugins	インストール済みプラグイン
 Move to section	セクションへ移動
 Number the sections 1, 2, 3 … on every level first	最初に各レベルのセクションを 1, 2, 3 … と番号付けする
 In every section counting starts again after the section number (2.3.1).	各セクションでは、セクション番号の後から番号付けが再開されます (2.3.1)。

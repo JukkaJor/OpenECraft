@@ -6232,6 +6232,10 @@ Click to show, right click for more	Clic per mostrare, clic destro per altro
 {} notes	{} note
 Open in a new page tab	Apri in una nuova scheda pagina
 Project information	Informazioni sul progetto
+Plugin commands…	Comandi dei plugin…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	I comandi di tutti i plugin per plugin, con ricerca; la stella fissa un comando nella scheda Plugin
+Star a command in Plugin commands to pin it here	Contrassegna un comando con la stella in Comandi dei plugin per fissarlo qui
+Installed plugins	Plugin installati
 Move to section	Sposta nella sezione
 Number the sections 1, 2, 3 … on every level first	Numerare prima le sezioni 1, 2, 3 … a ogni livello
 In every section counting starts again after the section number (2.3.1).	In ogni sezione il conteggio ricomincia dopo il numero della sezione (2.3.1).

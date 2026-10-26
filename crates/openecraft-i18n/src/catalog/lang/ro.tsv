@@ -6232,6 +6232,10 @@ Click to show, right click for more	Clic pentru afișare, clic dreapta pentru ma
 {} notes	Note: {}
 Open in a new page tab	Deschidere într-o filă de pagină nouă
 Project information	Informații despre proiect
+Plugin commands…	Comenzi plugin…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Comenzile tuturor pluginurilor, pe pluginuri, cu căutare; steaua fixează o comandă în fila Pluginuri
+Star a command in Plugin commands to pin it here	Marcați o comandă cu steaua în Comenzi plugin pentru a o fixa aici
+Installed plugins	Pluginuri instalate
 Move to section	Mută în secțiune
 Number the sections 1, 2, 3 … on every level first	Numerotează mai întâi secțiunile 1, 2, 3 … pe fiecare nivel
 In every section counting starts again after the section number (2.3.1).	În fiecare secțiune numărarea reîncepe după numărul secțiunii (2.3.1).

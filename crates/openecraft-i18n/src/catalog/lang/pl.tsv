@@ -6232,6 +6232,10 @@ Click to show, right click for more	Kliknij, aby pokazać, prawy przycisk – wi
 {} notes	Uwagi: {}
 Open in a new page tab	Otwórz w nowej karcie strony
 Project information	Informacje o projekcie
+Plugin commands…	Polecenia wtyczek…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Polecenia wszystkich wtyczek według wtyczki, z wyszukiwaniem; gwiazdka przypina polecenie do karty Wtyczki
+Star a command in Plugin commands to pin it here	Oznacz polecenie gwiazdką w Polecenia wtyczek, aby przypiąć je tutaj
+Installed plugins	Zainstalowane wtyczki
 Move to section	Przenieś do sekcji
 Number the sections 1, 2, 3 … on every level first	Najpierw numeruj sekcje 1, 2, 3 … na każdym poziomie
 In every section counting starts again after the section number (2.3.1).	W każdej sekcji liczenie zaczyna się od nowa po numerze sekcji (2.3.1).

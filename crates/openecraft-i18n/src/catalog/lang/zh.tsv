@@ -6232,6 +6232,10 @@ Click to show, right click for more	单击显示，右键查看更多
 {} notes	{} 个提示
 Open in a new page tab	在新的页选项卡中打开
 Project information	项目信息
+Plugin commands…	插件命令…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	按插件列出所有插件的命令并可搜索；点击星标可将命令固定到插件选项卡
+Star a command in Plugin commands to pin it here	在插件命令中点击星标即可将命令固定到此处
+Installed plugins	已安装的插件
 Move to section	移到分节
 Number the sections 1, 2, 3 … on every level first	先在每一级将分节编号为 1, 2, 3 …
 In every section counting starts again after the section number (2.3.1).	在每个分节中，编号在分节号之后重新开始 (2.3.1)。

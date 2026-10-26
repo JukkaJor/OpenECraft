@@ -238,7 +238,14 @@ pub static TABS: &[Tab] = &[
             g("templates", tr_const!("Templates"), &[L(C::SaveAsProjectTemplate), S(C::SavePageAsTemplate)]),
         ],
     },
-    Tab { id: TabId::Plugins, key: "plugins", title: tr_const!("Plugins"), key_tip: 'G', context: false, groups: &[] },
+    Tab {
+        id: TabId::Plugins,
+        key: "plugins",
+        title: tr_const!("Plugins"),
+        key_tip: 'G',
+        context: false,
+        groups: &[g("plugin_commands", tr_const!("Plugins"), &[L(C::PluginCommands), L(C::ManagePlugins), S(C::CommandSearch)])],
+    },
     Tab {
         id: TabId::Help,
         key: "help",

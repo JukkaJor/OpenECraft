@@ -14,7 +14,7 @@ fn tabs_and_groups_have_unique_keys_and_tips() {
         }
     }
     assert!(!tips.contains(&'F'), "F is the key tip of the File tab");
-    assert_eq!(tab(TabId::Plugins).groups.len(), 0, "the plugin tab is filled from the registry");
+    assert_eq!(tab(TabId::Plugins).groups.len(), 1, "favorites, recent and external plugins are added from the registry");
 }
 
 #[test]

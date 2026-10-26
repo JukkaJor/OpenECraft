@@ -6,6 +6,7 @@ use egui::RichText;
 use openecraft_api::params::{text, Kind, Param};
 use openecraft_api::{Command, Origin, Table, PLUGIN_PATH_VAR};
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 use serde_json::{Map, Value};
 
 /// Storage key of the disabled plugin ids.
@@ -39,6 +40,7 @@ pub(super) fn form_args(params: &[Param], texts: &[String]) -> Result<Map<String
 impl App {
     /// Opens the parameter form of a command (runs it at once when it has none).
     pub(super) fn start_plugin_command(&mut self, c: Command) {
+        self.plugin_cmds.used(&c.name);
         let texts = vec![String::new(); c.params.len()];
         self.plugins_ui.result = None;
         if c.params.is_empty() {
@@ -111,6 +113,57 @@ impl App {
                 self.plugins.set_enabled(&id, on);
             }
             self.plugins_changed();
+        }
+    }
+
+    /// Plugin commands: every command of the plugins by plugin, with a search; the star
+    /// pins a command to the Plugins tab.
+    pub(super) fn plugin_commands_pane(&mut self, ui: &mut egui::Ui) {
+        let mut start = None;
+        let mut star = None;
+        ui.horizontal(|ui| {
+            icons::show(ui, Icon::Find, 16.0);
+            ui.add(egui::TextEdit::singleline(&mut self.plugin_cmds.query).hint_text(tr("Search (* and ? as placeholders)…")).desired_width(f32::INFINITY));
+        });
+        ui.separator();
+        let searching = !self.plugin_cmds.query.trim().is_empty();
+        let mut found = 0;
+        egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+            for (plugin, commands) in self.plugin_groups() {
+                let hits: Vec<&Command> = commands
+                    .iter()
+                    .filter(|c| self.plugin_cmds.matches(&[&super::ribbon_ui::humanize(&c.name), text(&c.help), &plugin, &c.name]))
+                    .collect();
+                if hits.is_empty() {
+                    continue;
+                }
+                found += hits.len();
+                let header = format!("{plugin} ({})", hits.len());
+                egui::CollapsingHeader::new(header).id_salt(("plugin_commands", &plugin)).open(searching.then_some(true)).show(ui, |ui| {
+                    for c in hits {
+                        ui.horizontal(|ui| {
+                            let fav = self.plugin_cmds.is_favorite(&c.name);
+                            let tip = if fav { tr("Remove from favorites") } else { tr("Add to favorites") };
+                            if icons::toggle_button(ui, if fav { Icon::StarFilled } else { Icon::Star }, tip, fav).clicked() {
+                                star = Some(c.name.clone());
+                            }
+                            if icons::text_button(ui, Icon::Plugin, &super::ribbon_ui::humanize(&c.name)).on_hover_text(text(&c.help)).clicked() {
+                                start = Some(c.clone());
+                            }
+                            ui.add(egui::Label::new(RichText::new(text(&c.help)).weak()).truncate());
+                        });
+                    }
+                });
+            }
+            if found == 0 {
+                ui.weak(tr("(no entries)"));
+            }
+        });
+        if let Some(name) = star {
+            self.plugin_cmds.toggle_favorite(&name);
+        }
+        if let Some(c) = start {
+            self.start_plugin_command(c);
         }
     }
 

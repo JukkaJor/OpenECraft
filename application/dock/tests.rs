@@ -108,3 +108,30 @@ fn arrangements_saved_before_tools_were_panes_are_read() {
     let old = Tree::new(egui::Id::unique("old"), root, tiles);
     assert!(from_json(&to_json(&old)).is_some());
 }
+
+#[test]
+fn tools_float_until_the_user_docks_them() {
+    let mut placement = Placement::default();
+    assert!(placement.floats(Pane::Tool(ToolPane::Reports)));
+    assert!(placement.floats(Pane::Tool(ToolPane::Plugins)));
+    for p in [Pane::Page, Pane::Library, Pane::Properties, Pane::Navigator(LeftTab::Devices), Pane::Tool(ToolPane::Start), Pane::Tool(ToolPane::Find)] {
+        assert!(!placement.floats(p), "{p:?} opens docked");
+    }
+
+    placement.set(Pane::Tool(ToolPane::Reports), false);
+    placement.set(Pane::Navigator(LeftTab::Devices), true);
+    assert!(!placement.floats(Pane::Tool(ToolPane::Reports)));
+    assert!(placement.floats(Pane::Navigator(LeftTab::Devices)));
+
+    placement.set(Pane::Tool(ToolPane::Reports), true);
+    placement.set(Pane::Navigator(LeftTab::Devices), false);
+    assert_eq!(placement, Placement::default(), "back to the defaults, nothing remembered");
+}
+
+#[test]
+fn every_floating_tool_has_a_window_size() {
+    for t in ToolPane::ALL.into_iter().filter(|t| t.floats()) {
+        let [w, h] = t.window_size();
+        assert!(w >= 400.0 && h >= 300.0, "{t:?}");
+    }
+}

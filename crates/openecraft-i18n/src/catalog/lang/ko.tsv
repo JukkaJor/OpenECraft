@@ -6232,6 +6232,10 @@ Click to show, right click for more	클릭하면 표시, 마우스 오른쪽 버
 {} notes	참고 {}개
 Open in a new page tab	새 페이지 탭에서 열기
 Project information	프로젝트 정보
+Plugin commands…	플러그인 명령…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	모든 플러그인의 명령을 플러그인별로 검색과 함께 표시합니다. 별표를 누르면 명령이 플러그인 탭에 고정됩니다
+Star a command in Plugin commands to pin it here	플러그인 명령에서 별표를 누르면 여기에 고정됩니다
+Installed plugins	설치된 플러그인
 Move to section	구역으로 이동
 Number the sections 1, 2, 3 … on every level first	먼저 각 수준의 구역에 1, 2, 3 … 번호 매기기
 In every section counting starts again after the section number (2.3.1).	각 구역에서는 구역 번호 뒤에서 번호가 다시 시작됩니다 (2.3.1).

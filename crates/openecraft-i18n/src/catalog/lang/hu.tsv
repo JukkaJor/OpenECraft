@@ -6232,6 +6232,10 @@ Click to show, right click for more	Kattintás: megjelenítés, jobb kattintás:
 {} notes	Megjegyzések: {}
 Open in a new page tab	Megnyitás új oldallapon
 Project information	Projektinformációk
+Plugin commands…	Bővítményparancsok…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Az összes bővítmény parancsai bővítményenként, kereséssel; a csillag a Bővítmények lapra tűzi a parancsot
+Star a command in Plugin commands to pin it here	Jelöljön meg egy parancsot csillaggal a Bővítményparancsok ablakban, hogy ide kerüljön
+Installed plugins	Telepített bővítmények
 Move to section	Áthelyezés szakaszba
 Number the sections 1, 2, 3 … on every level first	Először a szakaszok számozása 1, 2, 3 … minden szinten
 In every section counting starts again after the section number (2.3.1).	Minden szakaszban a számozás újrakezdődik a szakasz száma után (2.3.1).

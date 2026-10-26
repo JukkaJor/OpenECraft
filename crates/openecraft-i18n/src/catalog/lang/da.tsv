@@ -6232,6 +6232,10 @@ Click to show, right click for more	Klik for at vise, højreklik for mere
 {} notes	{} bemærkninger
 Open in a new page tab	Åbn i en ny sidefane
 Project information	Projektinformation
+Plugin commands…	Plugin-kommandoer…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Kommandoerne fra alle plugins efter plugin, med søgning; stjernen fastgør en kommando til fanen Plugins
+Star a command in Plugin commands to pin it here	Marker en kommando med stjernen i Plugin-kommandoer for at fastgøre den her
+Installed plugins	Installerede plugins
 Move to section	Flyt til afsnit
 Number the sections 1, 2, 3 … on every level first	Nummerér først afsnittene 1, 2, 3 … på hvert niveau
 In every section counting starts again after the section number (2.3.1).	I hvert afsnit starter tællingen forfra efter afsnitsnummeret (2.3.1).
