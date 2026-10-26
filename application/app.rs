@@ -226,6 +226,8 @@ pub struct App {
     settings: settings_ui::SettingsUi,
     search: command_search::SearchUi,
     insert_center: crate::insert_center::InsertCenter,
+    /// Favorite and recently used plugin commands.
+    plugin_cmds: crate::plugin_commands::PluginCommands,
     help: help_pane::HelpUi,
     shell: ShellState,
     /// The properties of the selection in a window (F2, double click).
@@ -276,6 +278,7 @@ impl App {
         let mut shell = ShellState::default();
         let mut ribbon = ribbon_ui::RibbonUi::default();
         let mut insert_center = crate::insert_center::InsertCenter::default();
+        let mut plugin_cmds = crate::plugin_commands::PluginCommands::default();
         let mut stored = false;
         if let Some(storage) = cc.storage {
             stored = storage.get_string("file_name").is_some();
@@ -303,6 +306,7 @@ impl App {
                 ribbon.custom = c;
             }
             insert_center = eframe::get_value(storage, crate::insert_center::STORAGE_KEY).unwrap_or_default();
+            plugin_cmds = eframe::get_value(storage, crate::plugin_commands::STORAGE_KEY).unwrap_or_default();
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -428,6 +432,7 @@ impl App {
             settings: Default::default(),
             search: Default::default(),
             insert_center,
+            plugin_cmds,
             help: Default::default(),
             shell,
             props_window: false,
@@ -767,6 +772,7 @@ impl eframe::App for App {
         storage.set_string(crate::dock::STORAGE_KEY, crate::dock::to_json(&self.dock));
         storage.set_string(crate::ribbon::STORAGE_KEY, self.ribbon.custom.to_json());
         eframe::set_value(storage, crate::insert_center::STORAGE_KEY, &self.insert_center);
+        eframe::set_value(storage, crate::plugin_commands::STORAGE_KEY, &self.plugin_cmds);
         eframe::set_value(storage, RECENT_KEY, &self.recent);
         let mut shell = self.shell.clone();
         shell.workspace = self.workspace.key().to_string();

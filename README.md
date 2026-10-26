@@ -1033,7 +1033,8 @@ working directory (and with a parts server token) you are fine with the agent us
 
 ### Plugins
 
-Plugins add commands, checks, reports and exports to the editor (*Plugins* menu, *Check*
+Plugins add commands, checks, reports and exports to the editor (*Plugins* tab: *Plugin
+commands* lists every command by plugin with a search, the star pins one to the tab; *Check*
 tab), the command line and the MCP server at the same time. Built-in plugins are Rust
 code in `crates/openecraft-api`; external plugins are programs in any language that
 answer JSON requests on stdin / stdout:

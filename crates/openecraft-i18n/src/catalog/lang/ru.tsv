@@ -6232,3 +6232,7 @@ Click to show, right click for more	Щелчок — показать, прав�
 {} notes	Примечаний: {}
 Open in a new page tab	Открыть в новой вкладке листа
 Project information	Сведения о проекте
+Plugin commands…	Команды плагинов…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Команды всех плагинов по плагинам, с поиском; звёздочка закрепляет команду на вкладке «Плагины»
+Star a command in Plugin commands to pin it here	Отметьте команду звёздочкой в окне «Команды плагинов», чтобы закрепить её здесь
+Installed plugins	Установленные плагины

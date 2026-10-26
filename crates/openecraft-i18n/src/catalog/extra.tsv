@@ -5458,3 +5458,7 @@ Click to show, right click for more	Klicken zum Anzeigen, Rechtsklick für mehr	
 {} notes	{} Hinweise	{} remarques	{} notas
 Open in a new page tab	In einer neuen Seitenregisterkarte öffnen	Ouvrir dans un nouvel onglet de page	Abrir en una nueva pestaña de página
 Project information	Projektinformationen	Informations sur le projet	Información del proyecto
+Plugin commands…	Plugin-Befehle…	Commandes de plugin…	Comandos de plugin…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Die Befehle aller Plugins nach Plugin, mit Suche; der Stern heftet einen Befehl an die Registerkarte Plugins	Les commandes de tous les plugins par plugin, avec une recherche ; l'étoile épingle une commande dans l'onglet Plugins	Los comandos de todos los plugins por plugin, con búsqueda; la estrella fija un comando en la pestaña Plugins
+Star a command in Plugin commands to pin it here	Einen Befehl in Plugin-Befehle mit dem Stern markieren, um ihn hier anzuheften	Marquez une commande d'une étoile dans Commandes de plugin pour l'épingler ici	Marque un comando con la estrella en Comandos de plugin para fijarlo aquí
+Installed plugins	Installierte Plugins	Plugins installés	Plugins instalados

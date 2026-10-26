@@ -225,6 +225,7 @@ impl App {
             T::ProjectServer => self.remote_pane(ui),
             T::Vault => self.vault_pane(ui),
             T::Plugins => self.plugins_pane(ui),
+            T::PluginCommands => self.plugin_commands_pane(ui),
         }
     }
 

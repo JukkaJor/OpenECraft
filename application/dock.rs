@@ -105,10 +105,11 @@ pub enum ToolPane {
     ProjectServer,
     Vault,
     Plugins,
+    PluginCommands,
 }
 
 impl ToolPane {
-    pub const ALL: [ToolPane; 35] = [
+    pub const ALL: [ToolPane; 36] = [
         ToolPane::Start,
         ToolPane::Help,
         ToolPane::Reports,
@@ -144,6 +145,7 @@ impl ToolPane {
         ToolPane::ProjectServer,
         ToolPane::Vault,
         ToolPane::Plugins,
+        ToolPane::PluginCommands,
     ];
 
     /// Narrow tools open beside the navigators and the properties; the others are wide

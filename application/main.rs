@@ -19,6 +19,7 @@ mod insert_center;
 mod io;
 mod mounting_ui;
 mod panel_ui;
+mod plugin_commands;
 mod shortcuts;
 mod workspaces;
 mod parts_ui;

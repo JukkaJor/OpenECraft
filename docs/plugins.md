@@ -4,7 +4,7 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 
 | Extension | What it is | Editor | Command line / MCP |
 | --- | --- | --- | --- |
-| Command | function on the project with typed parameters, returns JSON | *Plugins* tab of the ribbon (one group per plugin, a form for the parameters) and the command search | a command / tool of its own |
+| Command | function on the project with typed parameters, returns JSON | *Plugin commands* pane (*Plugins* tab: every command by plugin with a search; favorites, recently used commands and a menu per external plugin on the tab; a form for the parameters) and the command search | a command / tool of its own |
 | Check | adds issues to the project check | *Messages* pane | `check` |
 | Report | table generated from the project | *Reports* pane, report pages and report blocks | `report --kind <name>` |
 | Exporter | file generated from the project | *File › Export* | `export --format <name>` |
