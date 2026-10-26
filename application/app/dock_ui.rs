@@ -97,8 +97,9 @@ impl App {
         match request {
             Some(PaneRequest::Float(p)) => {
                 dock::close(&mut self.dock, p);
-                if dock::find(&self.dock, p).is_none() && !self.floating.contains(&p) {
-                    self.floating.push(p);
+                if dock::find(&self.dock, p).is_none() {
+                    self.shell.placement.set(p, true);
+                    self.show_pane(p);
                 }
             }
             Some(PaneRequest::Close(p)) => dock::close(&mut self.dock, p),
@@ -107,14 +108,29 @@ impl App {
         }
     }
 
-    /// Panes shown as windows; Dock puts them back into the workspace.
+    /// Panes shown as windows, opening in the middle of the editor; Dock puts them into
+    /// the workspace (and they open docked from then on).
     pub(super) fn floating_panes(&mut self, ctx: &egui::Context) {
+        // A pane docked in the workspace switched to is shown there only.
+        self.floating.retain(|p| dock::find(&self.dock, *p).is_none());
         let idx = std::mem::take(&mut self.session.index);
-        for pane in self.floating.clone() {
+        let screen = ctx.content_rect();
+        for (i, pane) in self.floating.clone().into_iter().enumerate() {
             let mut open = true;
             let mut dock_back = false;
             let title = self.pane_title(pane).text().to_string();
-            egui::Window::new(title).id(egui::Id::unique(("floating", pane))).open(&mut open).default_size([640.0, 440.0]).show(ctx, |ui| {
+            let id = egui::Id::unique(("floating", pane));
+            let [w, h] = match pane {
+                Pane::Tool(t) => t.window_size(),
+                _ => [640.0, 440.0],
+            };
+            let size = egui::vec2(w.min(screen.width() * 0.9), h.min(screen.height() * 0.8));
+            let at = screen.center() + egui::Vec2::splat(24.0 * (i % 8) as f32);
+            if self.raise == Some(pane) {
+                self.raise = None;
+                ctx.move_to_top(egui::LayerId::new(egui::Order::Middle, id));
+            }
+            egui::Window::new(title).id(id).open(&mut open).default_size(size).default_pos(at).pivot(egui::Align2::CENTER_CENTER).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     if icons::text_button(ui, Icon::Panes, tr("Dock")).on_hover_text(tr("Put the pane back into the workspace")).clicked() {
                         dock_back = true;
@@ -126,6 +142,7 @@ impl App {
             if !open || dock_back {
                 self.floating.retain(|p| *p != pane);
                 if dock_back {
+                    self.shell.placement.set(pane, false);
                     self.show_pane(pane);
                 }
             }

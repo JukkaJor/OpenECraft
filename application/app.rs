@@ -100,11 +100,21 @@ struct ShellState {
     workspace: String,
     /// Arrangements of the workspaces not shown (key → dock JSON).
     docks: Vec<(String, String)>,
+    /// Panes the user floated or docked against their default.
+    placement: crate::dock::Placement,
 }
 
 impl Default for ShellState {
     fn default() -> Self {
-        ShellState { ribbon_minimized: false, ui_scale: 1.0, tablet: false, started: false, workspace: "schematic".into(), docks: Vec::new() }
+        ShellState {
+            ribbon_minimized: false,
+            ui_scale: 1.0,
+            tablet: false,
+            started: false,
+            workspace: "schematic".into(),
+            docks: Vec::new(),
+            placement: crate::dock::Placement::default(),
+        }
     }
 }
 
@@ -117,8 +127,10 @@ pub struct App {
     dock: egui_tiles::Tree<Pane>,
     /// Arrangements of the other workspaces.
     docks: HashMap<Workspace, egui_tiles::Tree<Pane>>,
-    /// Panes shown as windows (pane menu › Float).
+    /// Panes shown as windows (tools, pane menu › Float).
     floating: Vec<Pane>,
+    /// The floating pane to bring to the front.
+    raise: Option<Pane>,
     /// The document pane the user worked in last (keys go to it).
     active_doc: Pane,
     /// The pane last clicked (F6 cycles from it).
@@ -341,6 +353,7 @@ impl App {
             dock,
             docks,
             floating: Vec::new(),
+            raise: None,
             active_doc: Pane::Page,
             active_pane: None,
             page_tabs: Vec::new(),
@@ -526,9 +539,16 @@ impl App {
 
     // ------------------------------------------------------------------ panes and workspaces
 
-    /// Shows a pane in the current workspace (a floating pane comes to the front).
+    /// Shows a pane: the active tab where it is docked, otherwise a window (tools) or a
+    /// tab of the area it belongs to. A floating pane comes to the front.
     pub(super) fn show_pane(&mut self, pane: Pane) {
-        if self.floating.contains(&pane) {
+        let docked = crate::dock::find(&self.dock, pane).is_some();
+        if self.floating.contains(&pane) || (!docked && self.shell.placement.floats(pane)) {
+            if !self.floating.contains(&pane) {
+                self.floating.push(pane);
+            }
+            self.raise = Some(pane);
+            self.active_pane = Some(pane);
             return;
         }
         crate::dock::show(&mut self.dock, pane);

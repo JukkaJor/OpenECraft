@@ -2,7 +2,8 @@
 //! properties, the panel layout, the wiring assistant and every tool (reports, cables,
 //! revisions, parts, …) are panes of a tile tree that the user rearranges by dragging
 //! tabs (side by side, stacked, as tabs of one another). Each workspace has its own
-//! tree; the trees are saved by the app and in workspaces. No UI code:
+//! tree; the trees are saved by the app and in workspaces. Tools open as floating
+//! windows unless the user docked them (`Placement`). No UI code:
 //! `app/dock_ui.rs` draws the panes.
 
 use crate::workspaces::Workspace;
@@ -150,6 +151,22 @@ impl ToolPane {
     pub fn is_side(self) -> bool {
         matches!(self, ToolPane::Find | ToolPane::ProjectServer | ToolPane::Vault | ToolPane::Plugins)
     }
+
+    /// Tools open as floating windows, so that it is clear what a button opened; the
+    /// start page and the find results open docked.
+    pub fn floats(self) -> bool {
+        !matches!(self, ToolPane::Start | ToolPane::Find)
+    }
+
+    /// Size of the tool's window when it opens.
+    pub fn window_size(self) -> [f32; 2] {
+        use ToolPane as T;
+        match self {
+            T::Tables | T::PlcHardware | T::Harnesses | T::FieldWiring | T::Compare | T::Preplanning | T::SingleLine | T::Process | T::Electrical | T::Integration | T::Projects | T::SymbolEditor | T::Forms | T::Parts | T::DataPortal => [960.0, 640.0],
+            T::Help | T::Potentials | T::Plugs | T::ProjectServer | T::Vault | T::Plugins => [480.0, 560.0],
+            _ => [720.0, 500.0],
+        }
+    }
 }
 
 /// What a pane shows.
@@ -207,6 +224,39 @@ impl Pane {
     /// The page cannot be closed while it is the only document of the workspace.
     pub fn is_document(self) -> bool {
         self.area() == Area::Center
+    }
+
+    /// The pane opens as a window unless the user docked it.
+    pub fn floats(self) -> bool {
+        matches!(self, Pane::Tool(t) if t.floats())
+    }
+}
+
+/// Where panes open that are not in the workspace: as a window or docked. Panes follow
+/// `Pane::floats` until the user floats or docks one (pane menu › Float, Dock).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Placement {
+    docked: Vec<Pane>,
+    floated: Vec<Pane>,
+}
+
+impl Placement {
+    pub fn floats(&self, pane: Pane) -> bool {
+        if self.docked.contains(&pane) {
+            false
+        } else {
+            self.floated.contains(&pane) || pane.floats()
+        }
+    }
+
+    /// Remembers that the user floated (`true`) or docked a pane.
+    pub fn set(&mut self, pane: Pane, floats: bool) {
+        self.docked.retain(|p| *p != pane);
+        self.floated.retain(|p| *p != pane);
+        if floats != pane.floats() {
+            if floats { &mut self.floated } else { &mut self.docked }.push(pane);
+        }
     }
 }
 
