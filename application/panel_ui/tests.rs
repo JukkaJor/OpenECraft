@@ -73,3 +73,42 @@ fn the_3d_view_shows_all_enclosures_at_their_places() {
     let cam = view3d::default_cam(&prj, &shown);
     assert!(cam.target[0] > 600.0 && cam.target[2] > 0.0, "the camera looks at both");
 }
+
+#[test]
+fn ducts_in_front_of_devices_are_painted_over_them() {
+    // Seen from the left, the vertical duct at the left edge of the demo's mounting
+    // plate is in front of the devices; it was always painted behind them.
+    let prj = openecraft_core::sample::demo_project();
+    let e = &prj.layout.enclosures[0];
+    let shown: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Duct | ItemKind::Device)).collect();
+    let boxes: Vec<_> = shown.iter().map(|i| panel::item_box(e, i)).collect();
+    let duct = (0..shown.len()).filter(|&i| shown[i].kind == ItemKind::Duct && shown[i].h > shown[i].w).min_by(|&a, &b| shown[a].x.total_cmp(&shown[b].x)).unwrap();
+    let eye = [-3000.0, e.height / 2.0, e.depth + 500.0];
+    let order = openecraft_core::parts::vec3::paint_order(&boxes, eye);
+    let rank = |i: usize| order.iter().position(|&k| k == i).unwrap();
+    let devices: Vec<usize> = (0..shown.len()).filter(|&i| shown[i].kind == ItemKind::Device).collect();
+    assert!(!devices.is_empty());
+    for d in devices {
+        assert!(rank(d) < rank(duct), "{} before the duct", shown[d].tag);
+    }
+}
+
+#[test]
+fn wires_routed_through_ducts_lie_inside_the_duct_boxes() {
+    // The 3D view draws the pieces of a wire inside a duct box over that duct; the
+    // stretches between the first and the last point of a route run in the ducts.
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let e = &prj.layout.enclosures[0];
+    let ducts: Vec<_> = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate).map(|i| panel::item_box(e, i)).collect();
+    let z = panel::DUCT_PROFILE.1 * 0.5;
+    let mut checked = 0;
+    for w in an.wiring.iter().filter(|w| w.enclosure == 0 && w.route.via_ducts) {
+        let pts: Vec<[f32; 3]> = w.route.points.iter().map(|q| [PLATE_MARGIN + q.x, PLATE_MARGIN + q.y, PLATE_Z + z]).collect();
+        for q in pts.iter().skip(1).take(pts.len().saturating_sub(2)) {
+            assert!(ducts.iter().any(|(lo, hi)| (0..3).all(|k| q[k] >= lo[k] - 0.5 && q[k] <= hi[k] + 0.5)), "{} at {q:?}", w.number);
+            checked += 1;
+        }
+    }
+    assert!(checked > 0);
+}

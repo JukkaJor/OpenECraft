@@ -323,6 +323,7 @@ impl App {
             Cmd::ResetLayout => {
                 self.dock = crate::dock::default_tree_for(self.workspace);
                 self.floating.clear();
+                self.shell.placement = crate::dock::Placement::default();
             }
             Cmd::MinimizeRibbon => self.shell.ribbon_minimized = !self.shell.ribbon_minimized,
             // ------------------------------------------------------------ engineering

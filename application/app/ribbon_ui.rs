@@ -1,9 +1,11 @@
 //! The ribbon (see `crate::ribbon`): the quick access row, the tabs with the File tab
-//! that opens the backstage, the command groups of the active tab, the plugin tab
-//! filled from the registry, the user's own groups and the key tips (Alt or F10).
+//! that opens the backstage, the command groups of the active tab, the favorite and
+//! recent plugin commands and the external plugins on the Plugins tab, the user's own
+//! groups and the key tips (Alt or F10).
 
 use super::*;
 use crate::commands::{self, Kind};
+use crate::plugin_commands;
 use crate::ribbon::{self, Item, TabId, TABS};
 
 /// Key tips shown: on the tabs, or on the commands of a tab.
@@ -244,26 +246,32 @@ impl App {
     fn large_button(&mut self, ui: &mut egui::Ui, cmd: Cmd, tip: Option<char>) {
         let def = commands::def(cmd);
         let title = tr(def.title).trim_end_matches('…').to_string();
-        let font = egui::TextStyle::Small.resolve(ui.style());
-        let galley = ui.painter().layout(title.clone(), font, ui.visuals().text_color(), LARGE_W + 16.0);
-        let w = (galley.size().x + 8.0).max(LARGE_W);
         let enabled = self.cmd_enabled(cmd);
-        let (rect, resp) = ui.allocate_exact_size(egui::vec2(w, ROW * 3.0), egui::Sense::click());
-        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, &title));
         let on = self.cmd_checked(cmd).unwrap_or(false);
+        let resp = self.large_widget(ui, def.icon, &title, on, enabled, def.kind == Kind::Menu);
+        if let Some(c) = tip {
+            key_tip(ui, resp.rect, c);
+        }
+        self.cmd_response(ui, cmd, resp);
+    }
+
+    /// A large button: the icon above the title.
+    fn large_widget(&self, ui: &mut egui::Ui, icon: Icon, title: &str, on: bool, enabled: bool, menu: bool) -> egui::Response {
+        let font = egui::TextStyle::Small.resolve(ui.style());
+        let galley = ui.painter().layout(title.to_string(), font, ui.visuals().text_color(), LARGE_W + 16.0);
+        let w = (galley.size().x + 8.0).max(LARGE_W);
+        let (rect, resp) = ui.allocate_exact_size(egui::vec2(w, ROW * 3.0), egui::Sense::click());
+        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, title));
         self.paint_cmd_frame(ui, &resp, rect, on, enabled);
         let color = if enabled { ui.visuals().text_color() } else { ui.visuals().weak_text_color() };
         let icon_rect = egui::Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + 15.0), egui::Vec2::splat(24.0));
-        icons::paint(ui.painter(), icon_rect, def.icon, color);
+        icons::paint(ui.painter(), icon_rect, icon, color);
         let text_pos = egui::pos2(rect.center().x - galley.size().x / 2.0, rect.min.y + 31.0);
         ui.painter().galley_with_override_text_color(text_pos, galley, color);
-        if def.kind == Kind::Menu {
+        if menu {
             icons::paint(ui.painter(), egui::Rect::from_center_size(egui::pos2(rect.max.x - 6.0, rect.min.y + 6.0), egui::Vec2::splat(8.0)), Icon::ChevronDown, color);
         }
-        if let Some(c) = tip {
-            key_tip(ui, rect, c);
-        }
-        self.cmd_response(ui, cmd, resp);
+        resp
     }
 
     fn small_button(&mut self, ui: &mut egui::Ui, cmd: Cmd, tip: Option<char>) {
@@ -345,29 +353,71 @@ impl App {
         self.plugins.list().iter().filter(|l| l.enabled && !l.registry.commands.is_empty()).map(|l| (text(&l.info.name).to_string(), l.registry.commands.clone())).collect()
     }
 
+    /// The external plugins with commands; the built-in ones are in the Plugin commands pane.
+    fn external_plugin_groups(&self) -> Vec<(String, Vec<openecraft_api::Command>)> {
+        self.plugins
+            .list()
+            .iter()
+            .filter(|l| l.enabled && !l.registry.commands.is_empty() && matches!(l.origin, openecraft_api::Origin::External(_)))
+            .map(|l| (text(&l.info.name).to_string(), l.registry.commands.clone()))
+            .collect()
+    }
+
+    /// After the fixed group: the favorite and the recently used commands, and a menu per
+    /// external plugin. Every command is in the Plugin commands pane.
     fn plugin_tab(&mut self, ui: &mut egui::Ui) {
-        for (name, commands) in self.plugin_groups() {
+        let all: Vec<openecraft_api::Command> = self.plugin_groups().into_iter().flat_map(|(_, c)| c).collect();
+        let mut start = None;
+        let favorites = plugin_commands::pick(&self.plugin_cmds.favorites, &all, |c| &c.name);
+        let recent = plugin_commands::pick(&self.plugin_cmds.recent_only(), &all, |c| &c.name);
+        let mut groups = vec![(tr("Favorites"), favorites)];
+        if !recent.is_empty() {
+            groups.push((tr("Recently used"), recent));
+        }
+        for (title, cmds) in groups {
             ui.vertical(|ui| {
                 let row = ui.horizontal_top(|ui| {
-                    for chunk in commands.chunks(3) {
+                    if cmds.is_empty() {
+                        ui.add_sized([150.0, ROW * 3.0], egui::Label::new(RichText::new(tr("Star a command in Plugin commands to pin it here")).small().weak()).wrap());
+                    }
+                    for chunk in cmds.chunks(3) {
                         ui.vertical(|ui| {
                             ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
                             for c in chunk {
-                                let r = icons::text_button(ui, Icon::Plugin, &humanize(&c.name)).on_hover_text(text(&c.help));
-                                if r.clicked() {
-                                    self.start_plugin_command(c.clone());
+                                if icons::text_button(ui, Icon::Plugin, &humanize(&c.name)).on_hover_text(text(&c.help)).clicked() {
+                                    start = Some((*c).clone());
                                 }
                             }
                         });
                     }
                 });
-                group_title(ui, &name, row.response.rect.width());
+                group_title(ui, title, row.response.rect.width());
             });
             ui.separator();
         }
-        ui.vertical(|ui| {
-            self.large_button(ui, Cmd::ManagePlugins, None);
-        });
+        let external = self.external_plugin_groups();
+        if !external.is_empty() {
+            ui.vertical(|ui| {
+                let row = ui.horizontal_top(|ui| {
+                    for (name, cmds) in &external {
+                        let r = self.large_widget(ui, Icon::Plugin, name, false, true, true);
+                        egui::Popup::menu(&r).show(|ui| {
+                            for c in cmds {
+                                if icons::text_button(ui, Icon::Plugin, &humanize(&c.name)).on_hover_text(text(&c.help)).clicked() {
+                                    start = Some(c.clone());
+                                    ui.close();
+                                }
+                            }
+                        });
+                    }
+                });
+                group_title(ui, tr("Installed plugins"), row.response.rect.width());
+            });
+            ui.separator();
+        }
+        if let Some(c) = start {
+            self.start_plugin_command(c);
+        }
     }
 
     // ------------------------------------------------------------------ key tips

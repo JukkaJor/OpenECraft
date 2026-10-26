@@ -181,6 +181,7 @@ pub enum Cmd {
     ProjectServer,
     Vault,
     ManagePlugins,
+    PluginCommands,
     Help,
     LayoutSpaces,
     LayoutView,
@@ -516,6 +517,9 @@ pub static ALL: &[Def] = &[
         .tool(ToolPane::Vault)
         .tip(tr_const!("Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault")),
     d(C::ManagePlugins, "manage_plugins", tr_const!("Manage plugins…"), I::Plugin).tool(ToolPane::Plugins),
+    d(C::PluginCommands, "plugin_commands", tr_const!("Plugin commands…"), I::Plugin)
+        .tool(ToolPane::PluginCommands)
+        .tip(tr_const!("The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab")),
     d(C::Help, "help", tr_const!("Help"), I::Help).tool(ToolPane::Help).keys("F1").tip(tr_const!("Quick guide, tutorial and shortcuts")),
     d(C::LayoutSpaces, "layout_spaces", tr_const!("Layout spaces"), I::Enclosure).pane(Pane::LayoutSpaces).tip(tr_const!("Enclosures, devices to place and placed devices")),
     d(C::LayoutView, "layout_view", tr_const!("Panel layout"), I::Front).pane(Pane::LayoutView),

@@ -6232,3 +6232,7 @@ Click to show, right click for more	クリックで表示、右クリックで�
 {} notes	{} 件の注記
 Open in a new page tab	新しいページタブで開く
 Project information	プロジェクト情報
+Plugin commands…	プラグインコマンド…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	すべてのプラグインのコマンドをプラグインごとに検索付きで表示します。星を付けるとコマンドがプラグインタブに固定されます
+Star a command in Plugin commands to pin it here	プラグインコマンドで星を付けるとここに固定されます
+Installed plugins	インストール済みプラグイン

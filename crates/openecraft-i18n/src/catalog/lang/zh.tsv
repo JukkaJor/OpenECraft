@@ -6232,3 +6232,7 @@ Click to show, right click for more	单击显示，右键查看更多
 {} notes	{} 个提示
 Open in a new page tab	在新的页选项卡中打开
 Project information	项目信息
+Plugin commands…	插件命令…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	按插件列出所有插件的命令并可搜索；点击星标可将命令固定到插件选项卡
+Star a command in Plugin commands to pin it here	在插件命令中点击星标即可将命令固定到此处
+Installed plugins	已安装的插件

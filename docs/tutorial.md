@@ -175,5 +175,5 @@ panel layout. Most steps below can be tried on it.
 Everything above is also available without the user interface: the command line
 (`cargo run -p openecraft-cli -- help`) and the MCP server for AI agents
 (`openecraft-cli mcp`) offer the same commands, checks, reports and exports, and
-plugins add their own (see [plugins.md](plugins.md)); in the editor they are in the
-*Plugins* tab of the ribbon.
+plugins add their own (see [plugins.md](plugins.md)); in the editor they are in
+*Plugins › Plugin commands*, where the star pins a command to the *Plugins* tab.

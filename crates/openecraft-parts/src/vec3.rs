@@ -125,6 +125,119 @@ pub fn box_triangles(min: V3, max: V3) -> Vec<Tri> {
     quads.iter().flat_map(|q| [[q[0], q[1], q[2]], [q[0], q[2], q[3]]]).collect()
 }
 
+/// The order in which to paint boxes (min, max) seen from `eye`, far to near: a box comes
+/// after every box it may hide. Two boxes are ordered by a plane between them (the box on
+/// the eye's side may hide the other); overlapping boxes, boxes without a constraint and
+/// cycles go by the distance of their centres.
+pub fn paint_order(boxes: &[(V3, V3)], eye: V3) -> Vec<usize> {
+    let n = boxes.len();
+    let mut after: Vec<Vec<usize>> = vec![Vec::new(); n];
+    let mut before = vec![0usize; n];
+    for i in 0..n {
+        for j in i + 1..n {
+            match (may_hide(&boxes[i], &boxes[j], eye), may_hide(&boxes[j], &boxes[i], eye)) {
+                (true, false) => {
+                    after[j].push(i);
+                    before[i] += 1;
+                }
+                (false, true) => {
+                    after[i].push(j);
+                    before[j] += 1;
+                }
+                _ => {}
+            }
+        }
+    }
+    let dist = |b: &(V3, V3)| {
+        let c = [0, 1, 2].map(|k| (b.0[k] + b.1[k]) / 2.0);
+        dot(sub(c, eye), sub(c, eye))
+    };
+    let far: Vec<f32> = boxes.iter().map(dist).collect();
+    let mut done = vec![false; n];
+    let mut order = Vec::with_capacity(n);
+    for _ in 0..n {
+        let farthest = |ready: bool| (0..n).filter(|&i| !done[i] && (!ready || before[i] == 0)).max_by(|&a, &b| far[a].total_cmp(&far[b]));
+        let Some(i) = farthest(true).or_else(|| farthest(false)) else { break };
+        done[i] = true;
+        order.push(i);
+        for &j in &after[i] {
+            before[j] = before[j].saturating_sub(1);
+        }
+    }
+    order
+}
+
+/// Whether box `a` may hide box `b` seen from `eye`: not when a plane between them has
+/// the eye on the side of `b`.
+pub fn may_hide(a: &(V3, V3), b: &(V3, V3), eye: V3) -> bool {
+    !(0..3).any(|k| (a.1[k] <= b.0[k] && eye[k] >= a.1[k]) || (b.1[k] <= a.0[k] && eye[k] <= a.0[k]))
+}
+
+/// The part `t0 .. t1` (0 at `a`, 1 at `b`) of a segment inside a box, if any.
+pub fn segment_in_box(a: V3, b: V3, (lo, hi): (V3, V3)) -> Option<(f32, f32)> {
+    let (mut t0, mut t1) = (0.0f32, 1.0f32);
+    for k in 0..3 {
+        let d = b[k] - a[k];
+        if d.abs() < 1e-6 {
+            if a[k] < lo[k] || a[k] > hi[k] {
+                return None;
+            }
+            continue;
+        }
+        let (u, v) = ((lo[k] - a[k]) / d, (hi[k] - a[k]) / d);
+        t0 = t0.max(u.min(v));
+        t1 = t1.min(u.max(v));
+    }
+    (t1 - t0 > 1e-4).then_some((t0, t1))
+}
+
+/// A segment cut where it enters and leaves boxes: the pieces `t0 .. t1` (0 at `a`, 1 at
+/// `b`) in order, each with the box it lies in (the first one where boxes overlap).
+pub fn split_by_boxes(a: V3, b: V3, boxes: &[(V3, V3)]) -> Vec<(f32, f32, Option<usize>)> {
+    let mut inside: Vec<(f32, f32, usize)> = boxes.iter().enumerate().filter_map(|(i, bx)| segment_in_box(a, b, *bx).map(|(t0, t1)| (t0, t1, i))).collect();
+    inside.sort_by(|x, y| x.0.total_cmp(&y.0));
+    let mut pieces = Vec::new();
+    let mut done = 0.0f32;
+    for (t0, t1, i) in inside {
+        if t0 > done {
+            pieces.push((done, t0, None));
+        }
+        if t1 > done {
+            pieces.push((done.max(t0), t1, Some(i)));
+            done = t1;
+        }
+    }
+    if done < 1.0 {
+        pieces.push((done, 1.0, None));
+    }
+    pieces
+}
+
+/// Where a wire goes in the paint order of boxes (`rank` per box), given the boxes that
+/// may hide it and whether each is see-through for wires (a duct): after every
+/// see-through box and before every solid one; the solid one wins where both cannot hold.
+/// `(i, true)`: just after box `i`, `(i, false)`: just before it, `None`: no constraint.
+pub fn wire_place(hiders: impl IntoIterator<Item = (usize, bool)>, rank: &[usize]) -> Option<(usize, bool)> {
+    let (mut after, mut before): (Option<usize>, Option<usize>) = (None, None);
+    for (i, see_through) in hiders {
+        let slot = if see_through { &mut after } else { &mut before };
+        let better = match *slot {
+            Some(j) if see_through => rank[i] > rank[j],
+            Some(j) => rank[i] < rank[j],
+            None => true,
+        };
+        if better {
+            *slot = Some(i);
+        }
+    }
+    match (after, before) {
+        (Some(a), Some(b)) if rank[a] < rank[b] => Some((a, true)),
+        (_, Some(b)) => Some((b, false)),
+        (Some(a), None) => Some((a, true)),
+        (None, None) => None,
+    }
+}
+
 /// Camera orbiting around `target` (y up).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Orbit {

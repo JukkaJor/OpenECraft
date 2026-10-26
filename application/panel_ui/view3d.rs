@@ -8,9 +8,12 @@ use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Role, SitePose, PLATE_MARGIN, PLATE_Z};
-use openecraft_core::parts::vec3::{cross, dot, norm, sub, Orbit};
+use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, Orbit};
 use openecraft_core::analysis::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
+
+/// Layer of the equipment (ducts, busbars, devices), painted in the order of its boxes.
+const EQUIPMENT: u8 = 5;
 
 impl PanelUi {
     /// Opens or closes the door in the 3D view.
@@ -105,9 +108,26 @@ impl PanelUi {
             Face { pts: Vec<Pos2>, color: Color32, item: Option<(usize, u64)>, outline: bool },
             Line { a: Pos2, b: Pos2, color: Color32, width: f32 },
         }
-        // (layer, depth, primitive): walls and plate are always behind the equipment
-        // when looking through the open door, so they are drawn in earlier layers.
-        let mut prims: Vec<(u8, f32, Prim)> = Vec::new();
+        type Drawn = (u8, Option<(usize, u8)>, f32, Prim);
+        // (layer, object, depth, primitive): walls and plate are always behind the equipment
+        // when looking through the open door, so they are drawn in earlier layers. The
+        // equipment (ducts, busbars, devices) is painted object by object in the order of
+        // their boxes (`paint_order`); the object is (index, part): 0 wires it may hide,
+        // 1 its faces, 2 the wires in a duct, 3 wires nothing hides (after the last object).
+        let mut prims: Vec<Drawn> = Vec::new();
+        // Boxes of the equipment in view coordinates, and which of them are ducts.
+        let mut objects: Vec<([f32; 3], [f32; 3])> = Vec::new();
+        let mut ducts: Vec<usize> = Vec::new();
+        // Whether a box is the object's own (not enlarged by a turn of the door or the
+        // enclosure).
+        let mut exact: Vec<bool> = Vec::new();
+        let bounds = |pts: &[[f32; 3]]| {
+            let lo = [0, 1, 2].map(|k| pts.iter().map(|q| q[k]).fold(f32::INFINITY, f32::min));
+            let hi = [0, 1, 2].map(|k| pts.iter().map(|q| q[k]).fold(f32::NEG_INFINITY, f32::max));
+            (lo, hi)
+        };
+        // Wire segments among the equipment (view coordinates), placed once its order is known.
+        let mut equipment_wires: Vec<([f32; 3], [f32; 3], Color32, f32)> = Vec::new();
         let light_view = norm([0.35, 0.75, 0.55]);
         let shown_wire = |i: usize| shown.iter().any(|(k, _)| an.wiring[i].in_enclosure(*k));
         let selected_wire = self.wire_index(an).filter(|i| shown_wire(*i));
@@ -127,7 +147,7 @@ impl PanelUi {
                 [r[0], r[1], r[2] + e.depth]
             };
             let problems = panel::problem_items(prj, e);
-            let add_box = |prims: &mut Vec<(u8, f32, Prim)>, layer: u8, min: [f32; 3], max: [f32; 3], base: Color32, item: Option<u64>, door: bool| {
+            let add_box = |prims: &mut Vec<Drawn>, layer: u8, obj: Option<usize>, min: [f32; 3], max: [f32; 3], base: Color32, item: Option<u64>, door: bool| {
                 let c = |x: usize, y: usize, z: usize| [if x == 0 { min[0] } else { max[0] }, if y == 0 { min[1] } else { max[1] }, if z == 0 { min[2] } else { max[2] }];
                 let faces: [([usize; 4], [f32; 3]); 6] = [
                     ([0b000, 0b010, 0b011, 0b001], [-1.0, 0.0, 0.0]),
@@ -164,7 +184,7 @@ impl PanelUi {
                     if layer == OUTER_WALLS {
                         color = color.gamma_multiply(0.6);
                     }
-                    prims.push((layer, depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item: item.map(|id| (k, id)), outline: true }));
+                    prims.push((layer, obj.map(|o| (o, 1)), depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item: item.map(|id| (k, id)), outline: true }));
                 }
             };
             // The enclosure's components: walls, side panels, frame, plinth, mounting
@@ -196,12 +216,12 @@ impl PanelUi {
                         // door devices.
                         Role::Door => {
                             let layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
-                            add_box(&mut prims, layer, min, max, Color32::from_rgb(190, 194, 200), None, true);
+                            add_box(&mut prims, layer, None, min, max, Color32::from_rgb(190, 194, 200), None, true);
                         }
-                        Role::Wall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), min, max, color, None, false),
-                        Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), min, max, color, None, false),
-                        Role::MountingPlate | Role::Body => add_box(&mut prims, 1, min, max, color, None, false),
-                        Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, min, max, color, None, false),
+                        Role::Wall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), None, min, max, color, None, false),
+                        Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), None, min, max, color, None, false),
+                        Role::MountingPlate | Role::Body => add_box(&mut prims, 1, None, min, max, color, None, false),
+                        Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, None, min, max, color, None, false),
                     }
                 }
             }
@@ -225,8 +245,34 @@ impl PanelUi {
                         ItemKind::Accessory => Color32::from_rgb(95, 100, 110),
                     }
                 };
-                // Devices with a 3D model in their part are drawn with it instead of a box.
                 let on_door = it.face == Face::Door;
+                let (b0, b1) = panel::item_box(e, it);
+                let (min, max) = if it.kind == ItemKind::Cutout && it.face == Face::Plate {
+                    // Dark patch just in front of the plate.
+                    (to3(it.x, it.y + it.h, 0.0), to3(it.x + it.w, it.y, 0.3))
+                } else if it.kind == ItemKind::Cutout && it.face.is_wall() {
+                    // Through the wall, a little proud of both of its surfaces.
+                    let n = panel::outward(it.face);
+                    let (a, b) = ([0, 1, 2].map(|k| b0[k] - n[k].abs() * 0.5), [0, 1, 2].map(|k| b1[k] + n[k].abs() * 0.5));
+                    (up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]))
+                } else {
+                    (up([b0[0], b1[1], b0[2]]), up([b1[0], b0[1], b1[2]]))
+                };
+                let obj = (!matches!(it.kind, ItemKind::Cutout | ItemKind::Rail)).then(|| {
+                    let corners: Vec<[f32; 3]> = (0..8)
+                        .map(|c| {
+                            let q = [if c & 1 == 0 { min[0] } else { max[0] }, if c & 2 == 0 { min[1] } else { max[1] }, if c & 4 == 0 { min[2] } else { max[2] }];
+                            pose.apply(if on_door { swing(q) } else { q })
+                        })
+                        .collect();
+                    objects.push(bounds(&corners));
+                    exact.push(!on_door && (pose.angle.sin() * pose.angle.cos()).abs() < 1e-4);
+                    if it.kind == ItemKind::Duct {
+                        ducts.push(objects.len() - 1);
+                    }
+                    objects.len() - 1
+                });
+                // Devices with a 3D model in their part are drawn with it instead of a box.
                 if let Some(tris) = panel::device_mesh(prj, it) {
                     for tri in panel::place_triangles(e, it, tris) {
                         let w = tri.map(up).map(|q| if on_door { swing(q) } else { q });
@@ -243,30 +289,17 @@ impl PanelUi {
                             (base.b() as f32 * shade) as u8,
                         );
                         let pts = pr.into_iter().map(|x| x.0).collect();
-                        prims.push((5, depth, Prim::Face { pts, color, item: Some((k, it.id)), outline: false }));
+                        prims.push((EQUIPMENT, obj.map(|o| (o, 1)), depth, Prim::Face { pts, color, item: Some((k, it.id)), outline: false }));
                     }
                     continue;
                 }
-                let (b0, b1) = panel::item_box(e, it);
-                let (min, max) = if it.kind == ItemKind::Cutout && it.face == Face::Plate {
-                    // Dark patch just in front of the plate.
-                    (to3(it.x, it.y + it.h, 0.0), to3(it.x + it.w, it.y, 0.3))
-                } else if it.kind == ItemKind::Cutout && it.face.is_wall() {
-                    // Through the wall, a little proud of both of its surfaces.
-                    let n = panel::outward(it.face);
-                    let (a, b) = ([0, 1, 2].map(|k| b0[k] - n[k].abs() * 0.5), [0, 1, 2].map(|k| b1[k] + n[k].abs() * 0.5));
-                    (up([a[0], b[1], a[2]]), up([b[0], a[1], b[2]]))
-                } else {
-                    (up([b0[0], b1[1], b0[2]]), up([b1[0], b0[1], b1[2]]))
-                };
                 let layer = match it.kind {
                     ItemKind::Cutout if it.face.is_wall() => wall_layer(outside_of(it.face, (b0, b1))),
                     ItemKind::Cutout => 1,
                     ItemKind::Rail => 2,
-                    ItemKind::Duct | ItemKind::Busbar => 3,
-                    ItemKind::Device | ItemKind::Accessory => 5,
+                    ItemKind::Duct | ItemKind::Busbar | ItemKind::Device | ItemKind::Accessory => EQUIPMENT,
                 };
-                add_box(&mut prims, layer, min, max, base, Some(it.id), on_door);
+                add_box(&mut prims, layer, obj, min, max, base, Some(it.id), on_door);
             }
             // Wires inside the ducts; the selected one is drawn on top of everything.
             // Wires routed in 3D are drawn with the routing below.
@@ -323,7 +356,11 @@ impl PanelUi {
                 for seg in paths.iter().flat_map(|p| p.windows(2)) {
                     let (a, b) = (seg[0], seg[1]);
                     if let (Some(pa), Some(pb)) = (project(a), project(b)) {
-                        prims.push((layer, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                        if layer == 4 {
+                            equipment_wires.push((pose.apply(a), pose.apply(b), color, width));
+                        } else {
+                            prims.push((layer, None, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                        }
                         wire_segs.push((pa.0, pb.0, wi));
                     }
                 }
@@ -371,10 +408,13 @@ impl PanelUi {
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
         let mut route_segs: Vec<(Pos2, Pos2, String)> = Vec::new();
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
-            let layer = if line.on_top { OUTER_WALLS + 1 } else { 4 };
             for seg in line.points.windows(2) {
                 if let (Some(pa), Some(pb)) = (project_view(seg[0]), project_view(seg[1])) {
-                    prims.push((layer, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color: line.color, width: line.width }));
+                    if line.on_top {
+                        prims.push((OUTER_WALLS + 1, None, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color: line.color, width: line.width }));
+                    } else {
+                        equipment_wires.push((seg[0], seg[1], line.color, line.width));
+                    }
                     match &line.target {
                         RouteRef::Wire(wi) => wire_segs.push((pa.0, pb.0, *wi)),
                         RouteRef::Item(key) => route_segs.push((pa.0, pb.0, key.clone())),
@@ -385,10 +425,55 @@ impl PanelUi {
         }
         let in_view = |q: [f32; 3]| keys.iter().any(|&k| q[0] >= pos[k][0] && q[0] <= pos[k][0] + prj.layout.enclosures[k].width);
         let branch_points: Vec<Pos2> = an.routing.branches.iter().filter(|b| in_view(b.at)).filter_map(|b| project_view(to_view(b.at)).map(|x| x.0)).collect();
-        // Painter's algorithm: far to near
-        prims.sort_by(|a, b| a.0.cmp(&b.0).then(b.1.total_cmp(&a.1)));
+        // Painter's algorithm: far to near; the equipment object by object.
+        let order = vec3::paint_order(&objects, eye_view);
+        let mut rank = vec![0; objects.len()];
+        for (r, &i) in order.iter().enumerate() {
+            rank[i] = r;
+        }
+        // Wires, cut where they enter and leave the ducts and the devices: over the ducts that
+        // cover them on the screen (the one they run in and its neighbours), under the
+        // devices; the parts inside a device are not seen.
+        let mut is_duct = vec![false; objects.len()];
+        ducts.iter().for_each(|&d| is_duct[d] = true);
+        let cut: Vec<usize> = (0..objects.len()).filter(|&i| is_duct[i] || exact[i]).collect();
+        let cut_boxes: Vec<([f32; 3], [f32; 3])> =
+            cut.iter().map(|&i| if is_duct[i] { (objects[i].0.map(|v| v - 0.5), objects[i].1.map(|v| v + 0.5)) } else { objects[i] }).collect();
+        // Screen rectangles of the objects; `None` when a corner is behind the eye.
+        let rects: Vec<Option<egui::Rect>> = objects
+            .iter()
+            .map(|(lo, hi)| {
+                let corners = (0..8).map(|c| project_view([if c & 1 == 0 { lo[0] } else { hi[0] }, if c & 2 == 0 { lo[1] } else { hi[1] }, if c & 4 == 0 { lo[2] } else { hi[2] }]));
+                corners.map(|p| p.map(|x| x.0)).collect::<Option<Vec<Pos2>>>().map(|pts| egui::Rect::from_points(&pts))
+            })
+            .collect();
+        for (a, b, color, width) in equipment_wires {
+            let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
+            for (t0, t1, inside) in vec3::split_by_boxes(a, b, &cut_boxes) {
+                let inside = inside.map(|c| cut[c]);
+                if inside.is_some_and(|i| !is_duct[i]) {
+                    continue;
+                }
+                let (p0, p1) = (at(t0), at(t1));
+                let (Some(pa), Some(pb)) = (project_view(p0), project_view(p1)) else { continue };
+                let piece = bounds(&[p0, p1]);
+                let on_screen = egui::Rect::from_two_pos(pa.0, pb.0).expand(width);
+                let hiders = (0..objects.len())
+                    .filter(|&i| rects[i].is_none_or(|r| r.intersects(on_screen)) && vec3::may_hide(&objects[i], &piece, eye_view))
+                    .map(|i| (i, is_duct[i]))
+                    .chain(inside.map(|d| (d, true)));
+                let obj = match vec3::wire_place(hiders, &rank) {
+                    Some((i, true)) => Some((i, 2)),
+                    Some((i, false)) => Some((i, 0)),
+                    None => order.last().map(|&i| (i, 3)),
+                };
+                prims.push((EQUIPMENT, obj, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+            }
+        }
+        let key = |o: &Option<(usize, u8)>| o.map(|(i, part)| (rank[i], part));
+        prims.sort_by(|a, b| a.0.cmp(&b.0).then(key(&a.1).cmp(&key(&b.1))).then(b.2.total_cmp(&a.2)));
         let mut pick: Vec<(f32, Vec<Pos2>, (usize, u64))> = Vec::new();
-        for (_, depth, prim) in &prims {
+        for (_, _, depth, prim) in &prims {
             match prim {
                 Prim::Face { pts, color, item, outline } => {
                     // Mesh triangles get a hairline in their own colour to close the seams.
