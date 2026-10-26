@@ -6232,6 +6232,34 @@ Click to show, right click for more	Clique para mostrar, botão direito para mai
 {} notes	{} notas
 Open in a new page tab	Abrir em uma nova guia de página
 Project information	Informações do projeto
+Plugin commands…	Comandos de plug-in…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Os comandos de todos os plug-ins por plug-in, com pesquisa; a estrela fixa um comando na guia Plug-ins
+Star a command in Plugin commands to pin it here	Marque um comando com a estrela em Comandos de plug-in para fixá-lo aqui
+Installed plugins	Plug-ins instalados
+Move to section	Mover para a seção
+Number the sections 1, 2, 3 … on every level first	Numerar primeiro as seções 1, 2, 3 … em cada nível
+In every section counting starts again after the section number (2.3.1).	Em cada seção a contagem recomeça após o número da seção (2.3.1).
+New page in this section	Nova página nesta seção
+New subsection	Nova subseção
+Section properties…	Propriedades da seção…
+Move up	Mover para cima
+Move down	Mover para baixo
+Delete section	Excluir seção
+(top level)	(nível superior)
+Section properties	Propriedades da seção
+The names of its pages follow	Os nomes de suas páginas acompanham
+Parent section	Seção superior
+Its pages and subsections go to the section above	Suas páginas e subseções vão para a seção superior
+{} pages; their names start with {}	{} páginas; seus nomes começam com {}
+Section	Seção
+The page name gets the section number	O nome da página recebe o número da seção
+New section	Nova seção
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Uma seção numerada que contém páginas como um diretório; os nomes das páginas começam com o seu número (2.3.1)
+No such section	Seção inexistente
+A section number must not be empty or contain a dot	Um número de seção não pode estar vazio nem conter um ponto
+Another section here has this number	Outra seção aqui já tem este número
+A section cannot be moved into itself	Uma seção não pode ser movida para dentro de si mesma
+Released pages cannot be moved	Páginas liberadas não podem ser movidas
 New room	Nova sala
 Room	Sala
 Rooms	Salas

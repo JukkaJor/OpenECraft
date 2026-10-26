@@ -38,6 +38,13 @@ panel layout. Most steps below can be tried on it.
 - The tree button of the *Pages* navigator groups the pages by structure; *Home ›
   Renumber pages…* renumbers them. *Home › New sub-page* inserts `3.1`, `3.2`, …
   after the current page; renumbering keeps them sub-pages of their page.
+- *Home › New section* structures the pages like directories: a section holds pages
+  and subsections, and the page names start with its number (`2.3.1` is page 1 of
+  section 2.3). Drag a page onto a section in the *Pages* navigator (or choose its
+  *Section* in the page properties) to move it there; a right click on a section adds
+  pages and subsections, moves, renumbers or deletes it, and the pages follow.
+  *Renumber pages…* counts again in every section and can number the sections
+  1, 2, 3 … first. Once a project has sections, sub-pages are lettered (`2.3.1.a`).
 
 ## 3. Placing symbols
 
@@ -175,5 +182,5 @@ panel layout. Most steps below can be tried on it.
 Everything above is also available without the user interface: the command line
 (`cargo run -p openecraft-cli -- help`) and the MCP server for AI agents
 (`openecraft-cli mcp`) offer the same commands, checks, reports and exports, and
-plugins add their own (see [plugins.md](plugins.md)); in the editor they are in the
-*Plugins* tab of the ribbon.
+plugins add their own (see [plugins.md](plugins.md)); in the editor they are in
+*Plugins › Plugin commands*, where the star pins a command to the *Plugins* tab.

@@ -22,8 +22,10 @@ impl App {
             Cmd::Paste => self.editor.clip.is_some(),
             Cmd::Align => self.editor.selection.len() >= 2,
             Cmd::Distribute => self.editor.selection.len() >= 3,
-            Cmd::PreviousPage | Cmd::MovePageUp => page > 0,
-            Cmd::NextPage | Cmd::MovePageDown => page + 1 < pages,
+            Cmd::PreviousPage => page > 0,
+            Cmd::NextPage => page + 1 < pages,
+            Cmd::MovePageUp => page > 0 && openecraft_core::sections::of_page(&self.session.prj, page - 1) == openecraft_core::sections::of_page(&self.session.prj, page),
+            Cmd::MovePageDown => page + 1 < pages && openecraft_core::sections::of_page(&self.session.prj, page + 1) == openecraft_core::sections::of_page(&self.session.prj, page),
             Cmd::DeletePage => pages > 1,
             Cmd::CheckInVault => self.vault.origin.is_some() && self.vault.signed_in && !self.vault.busy(),
             Cmd::PdfInLanguage => !self.session.prj.languages.targets.is_empty(),
@@ -203,6 +205,7 @@ impl App {
                 self.pages_ui.replace_document = None;
                 self.io.open(ctx, Purpose::Document);
             }
+            Cmd::NewSection => self.new_section(),
             Cmd::PageProperties => self.page_props = Some(page),
             Cmd::RenumberPages => self.numbering_ui.show_pages = true,
             Cmd::MovePageUp => self.session.page = ops::move_page(&mut self.session.prj, page, page - 1),
@@ -331,6 +334,7 @@ impl App {
             Cmd::ResetLayout => {
                 self.dock = crate::dock::default_tree_for(self.workspace);
                 self.floating.clear();
+                self.shell.placement = crate::dock::Placement::default();
             }
             Cmd::MinimizeRibbon => self.shell.ribbon_minimized = !self.shell.ribbon_minimized,
             // ------------------------------------------------------------ engineering

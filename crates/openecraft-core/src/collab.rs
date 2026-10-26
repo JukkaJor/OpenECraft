@@ -485,6 +485,7 @@ fn with_data(out: &mut Project, src: &Project) {
     let Project {
         info,
         pages: _,
+        sections,
         parts,
         devices,
         layout,
@@ -529,6 +530,7 @@ fn with_data(out: &mut Project, src: &Project) {
         symbol_cache: _,
     } = src;
     out.info = info.clone();
+    out.sections = sections.clone();
     out.parts = parts.clone();
     out.devices = devices.clone();
     out.layout = layout.clone();
@@ -575,6 +577,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
     let Project {
         info,
         pages,
+        sections,
         parts,
         devices,
         layout,
@@ -620,6 +623,7 @@ fn same_data(a: &Project, b: &Project) -> bool {
     } = a;
     pages.iter().map(|p| p.id).eq(b.pages.iter().map(|p| p.id))
         && *info == b.info
+        && *sections == b.sections
         && *parts == b.parts
         && *devices == b.devices
         && *layout == b.layout

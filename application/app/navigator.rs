@@ -13,6 +13,7 @@ impl App {
             LeftTab::Pages => {
                 ui.horizontal(|ui| {
                     self.icon_cmd(ui, Cmd::NewSchematicPage);
+                    self.icon_cmd(ui, Cmd::NewSection);
                     self.icon_cmd(ui, Cmd::PageProperties);
                     let tree = self.page_tree;
                     if icons::toggle_button(ui, Icon::Tree, tr("Group the pages by structure"), tree).clicked() {
@@ -45,6 +46,8 @@ impl App {
                                 }
                             });
                         }
+                    } else if !self.session.prj.sections.is_empty() {
+                        action = self.section_tree(ui, &shown);
                     } else {
                         for i in shown {
                             action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
@@ -59,6 +62,10 @@ impl App {
                         PageAction::Lock(t, r) => (None, Some((t, r))),
                         PageAction::Table => {
                             self.open_table(openecraft_core::tables::TableKind::Pages, "");
+                            (None, None)
+                        }
+                        PageAction::Section(a) => {
+                            self.section_action(ui.ctx(), a);
                             (None, None)
                         }
                         PageAction::None => (None, None),
@@ -205,16 +212,17 @@ impl App {
 }
 
 /// What a row of the page list asks for.
-enum PageAction {
+pub(super) enum PageAction {
     None,
     Goto(usize),
     Properties(usize),
     Lock(openecraft_core::collab::Target, bool),
     Table,
+    Section(sections_ui::SectionAction),
 }
 
 impl PageAction {
-    fn or(self, other: PageAction) -> PageAction {
+    pub(super) fn or(self, other: PageAction) -> PageAction {
         match self {
             PageAction::None => other,
             a => a,
@@ -239,8 +247,8 @@ impl App {
         }
     }
 
-    /// One page of the page list.
-    fn page_row(&self, ui: &mut egui::Ui, i: usize) -> PageAction {
+    /// One page of the page list; with sections it can be dragged onto one.
+    pub(super) fn page_row(&self, ui: &mut egui::Ui, i: usize) -> PageAction {
         let pg = &self.session.prj.pages[i];
         let icon = match pg.kind {
             PageKind::Schematic => "🗋",
@@ -258,7 +266,15 @@ impl App {
         if let Some((mark, color)) = self.page_lock_mark(pg.id) {
             text.append(&mark, 8.0, egui::TextFormat { color, ..style });
         }
-        let r = ui.selectable_label(i == self.session.page, text);
+        let sectioned = !self.session.prj.sections.is_empty();
+        let mut r = ui.selectable_label(i == self.session.page, text);
+        if sectioned {
+            r = r.interact(egui::Sense::drag());
+            r.dnd_set_drag_payload(sections_ui::PageDrag(i));
+            if r.dragged() {
+                ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
+            }
+        }
         if i == self.session.page && self.scroll_nav {
             r.scroll_to_me(None);
         }
@@ -278,6 +294,17 @@ impl App {
             if ui.button(tr("Edit in table…")).clicked() {
                 action = PageAction::Table;
                 ui.close();
+            }
+            if sectioned {
+                ui.menu_button(tr("Move to section"), |ui| {
+                    let current = openecraft_core::sections::of_page(&self.session.prj, i);
+                    for (id, title) in self.section_choices() {
+                        if ui.add_enabled(id != current, egui::Button::new(title)).clicked() {
+                            action = PageAction::Section(sections_ui::SectionAction::MovePage(i, id));
+                            ui.close();
+                        }
+                    }
+                });
             }
             if self.remote.shared.is_some() {
                 ui.separator();

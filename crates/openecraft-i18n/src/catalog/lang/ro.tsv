@@ -6232,6 +6232,34 @@ Click to show, right click for more	Clic pentru afișare, clic dreapta pentru ma
 {} notes	Note: {}
 Open in a new page tab	Deschidere într-o filă de pagină nouă
 Project information	Informații despre proiect
+Plugin commands…	Comenzi plugin…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Comenzile tuturor pluginurilor, pe pluginuri, cu căutare; steaua fixează o comandă în fila Pluginuri
+Star a command in Plugin commands to pin it here	Marcați o comandă cu steaua în Comenzi plugin pentru a o fixa aici
+Installed plugins	Pluginuri instalate
+Move to section	Mută în secțiune
+Number the sections 1, 2, 3 … on every level first	Numerotează mai întâi secțiunile 1, 2, 3 … pe fiecare nivel
+In every section counting starts again after the section number (2.3.1).	În fiecare secțiune numărarea reîncepe după numărul secțiunii (2.3.1).
+New page in this section	Pagină nouă în această secțiune
+New subsection	Subsecțiune nouă
+Section properties…	Proprietățile secțiunii…
+Move up	Mută în sus
+Move down	Mută în jos
+Delete section	Șterge secțiunea
+(top level)	(nivelul superior)
+Section properties	Proprietățile secțiunii
+The names of its pages follow	Numele paginilor ei se schimbă odată cu ea
+Parent section	Secțiune părinte
+Its pages and subsections go to the section above	Paginile și subsecțiunile ei trec în secțiunea de deasupra
+{} pages; their names start with {}	{} pagini; numele lor încep cu {}
+Section	Secțiune
+The page name gets the section number	Numele paginii primește numărul secțiunii
+New section	Secțiune nouă
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	O secțiune numerotată care conține pagini ca un director; numele paginilor încep cu numărul ei (2.3.1)
+No such section	Secțiunea nu există
+A section number must not be empty or contain a dot	Un număr de secțiune nu poate fi gol și nu poate conține un punct
+Another section here has this number	O altă secțiune de aici are deja acest număr
+A section cannot be moved into itself	O secțiune nu poate fi mutată în ea însăși
+Released pages cannot be moved	Paginile aprobate nu pot fi mutate
 New room	Încăpere nouă
 Room	Încăpere
 Rooms	Încăperi

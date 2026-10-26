@@ -258,12 +258,11 @@ pub fn from_page(page: &Page, name: &str) -> Macro {
 /// of the macro's page. Returns the index of the new page.
 pub fn insert_page(prj: &mut Project, after: usize, m: &Macro, values: &BTreeMap<String, String>) -> usize {
     let clip = m.resolve(values);
-    let name = (prj.pages.iter().filter_map(|p| p.name.parse::<u32>().ok()).max().unwrap_or(0) + 1).to_string();
-    let id = prj.new_id();
-    let mut page = Page::new(id, &name, &fill(&m.page_description, values), PageKind::Schematic);
-    clip.structure().apply_to(&mut page);
     let at = (after + 1).min(prj.pages.len());
-    prj.pages.insert(at, page);
+    let id = prj.new_id();
+    let mut page = Page::new(id, &ops::next_page_name(prj, at), &fill(&m.page_description, values), PageKind::Schematic);
+    clip.structure().apply_to(&mut page);
+    ops::insert_page(prj, at, page);
     // Items keep their position on the page.
     let origin = clip.bounds().min;
     ops::paste(prj, at, &clip, origin);

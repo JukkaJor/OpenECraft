@@ -66,6 +66,7 @@ mod plugins_ui;
 mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
+mod sections_ui;
 mod potentials_ui;
 mod projects_ui;
 mod properties_ui;
@@ -100,11 +101,21 @@ struct ShellState {
     workspace: String,
     /// Arrangements of the workspaces not shown (key → dock JSON).
     docks: Vec<(String, String)>,
+    /// Panes the user floated or docked against their default.
+    placement: crate::dock::Placement,
 }
 
 impl Default for ShellState {
     fn default() -> Self {
-        ShellState { ribbon_minimized: false, ui_scale: 1.0, tablet: false, started: false, workspace: "schematic".into(), docks: Vec::new() }
+        ShellState {
+            ribbon_minimized: false,
+            ui_scale: 1.0,
+            tablet: false,
+            started: false,
+            workspace: "schematic".into(),
+            docks: Vec::new(),
+            placement: crate::dock::Placement::default(),
+        }
     }
 }
 
@@ -117,8 +128,10 @@ pub struct App {
     dock: egui_tiles::Tree<Pane>,
     /// Arrangements of the other workspaces.
     docks: HashMap<Workspace, egui_tiles::Tree<Pane>>,
-    /// Panes shown as windows (pane menu › Float).
+    /// Panes shown as windows (tools, pane menu › Float).
     floating: Vec<Pane>,
+    /// The floating pane to bring to the front.
+    raise: Option<Pane>,
     /// The document pane the user worked in last (keys go to it).
     active_doc: Pane,
     /// The pane last clicked (F6 cycles from it).
@@ -186,6 +199,8 @@ pub struct App {
     /// Wire numbering: also renumber / remove manually set numbers.
     numbering_overwrite: bool,
     page_props: Option<usize>,
+    /// Section whose properties are shown.
+    section_props: Option<u64>,
     message: Option<(String, f64)>,
     /// The messages of this session (status bar › messages).
     messages: Vec<String>,
@@ -214,6 +229,8 @@ pub struct App {
     settings: settings_ui::SettingsUi,
     search: command_search::SearchUi,
     insert_center: crate::insert_center::InsertCenter,
+    /// Favorite and recently used plugin commands.
+    plugin_cmds: crate::plugin_commands::PluginCommands,
     help: help_pane::HelpUi,
     shell: ShellState,
     /// The properties of the selection in a window (F2, double click).
@@ -264,6 +281,7 @@ impl App {
         let mut shell = ShellState::default();
         let mut ribbon = ribbon_ui::RibbonUi::default();
         let mut insert_center = crate::insert_center::InsertCenter::default();
+        let mut plugin_cmds = crate::plugin_commands::PluginCommands::default();
         let mut stored = false;
         if let Some(storage) = cc.storage {
             stored = storage.get_string("file_name").is_some();
@@ -291,6 +309,7 @@ impl App {
                 ribbon.custom = c;
             }
             insert_center = eframe::get_value(storage, crate::insert_center::STORAGE_KEY).unwrap_or_default();
+            plugin_cmds = eframe::get_value(storage, crate::plugin_commands::STORAGE_KEY).unwrap_or_default();
             if let Some(url) = eframe::get_value(storage, "project_server_url") {
                 remote.url = url;
             }
@@ -341,6 +360,7 @@ impl App {
             dock,
             docks,
             floating: Vec::new(),
+            raise: None,
             active_doc: Pane::Page,
             active_pane: None,
             page_tabs: Vec::new(),
@@ -396,6 +416,7 @@ impl App {
             config_ui: Default::default(),
             numbering_overwrite: false,
             page_props: None,
+            section_props: None,
             message: None,
             messages: Vec::new(),
             title: String::new(),
@@ -415,6 +436,7 @@ impl App {
             settings: Default::default(),
             search: Default::default(),
             insert_center,
+            plugin_cmds,
             help: Default::default(),
             shell,
             props_window: false,
@@ -526,9 +548,16 @@ impl App {
 
     // ------------------------------------------------------------------ panes and workspaces
 
-    /// Shows a pane in the current workspace (a floating pane comes to the front).
+    /// Shows a pane: the active tab where it is docked, otherwise a window (tools) or a
+    /// tab of the area it belongs to. A floating pane comes to the front.
     pub(super) fn show_pane(&mut self, pane: Pane) {
-        if self.floating.contains(&pane) {
+        let docked = crate::dock::find(&self.dock, pane).is_some();
+        if self.floating.contains(&pane) || (!docked && self.shell.placement.floats(pane)) {
+            if !self.floating.contains(&pane) {
+                self.floating.push(pane);
+            }
+            self.raise = Some(pane);
+            self.active_pane = Some(pane);
             return;
         }
         crate::dock::show(&mut self.dock, pane);
@@ -747,6 +776,7 @@ impl eframe::App for App {
         storage.set_string(crate::dock::STORAGE_KEY, crate::dock::to_json(&self.dock));
         storage.set_string(crate::ribbon::STORAGE_KEY, self.ribbon.custom.to_json());
         eframe::set_value(storage, crate::insert_center::STORAGE_KEY, &self.insert_center);
+        eframe::set_value(storage, crate::plugin_commands::STORAGE_KEY, &self.plugin_cmds);
         eframe::set_value(storage, RECENT_KEY, &self.recent);
         let mut shell = self.shell.clone();
         shell.workspace = self.workspace.key().to_string();

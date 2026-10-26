@@ -1,0 +1,27 @@
+# Configuration of the OpenECraft parts server:
+#   openecraft-parts-server --config parts-server.toml
+# or OPENECRAFT_PARTS_SERVER_CONFIG=parts-server.toml. Every setting is optional and has
+# the name of its command line option (`admin_user` for `--admin-user`); options on the
+# command line or in the environment win. Relative paths are relative to this file.
+
+# Address to listen on.
+bind = "0.0.0.0:8090"
+
+# Database file; created with the example and the bundled catalogs if missing.
+data = "parts-db.sqlite"
+
+# Storage backend: "sqlite" or "json". Default: from the extension of the data file.
+# storage = "sqlite"
+
+# Administrator token. Better kept out of this file: OPENECRAFT_TOKEN.
+# token = "change-me"
+
+# Administrator account created (or reset) at startup; its password is read from
+# OPENECRAFT_ADMIN_PASSWORD.
+# admin_user = "admin"
+
+# Bundled manufacturer catalogs installed or updated at startup: ["all"] or ids.
+# install_catalogs = ["siemens", "phoenix_contact"]
+
+# Access settings (directories, roles, grants). Default: <data>.access.json.
+# access = "parts-db.access.json"

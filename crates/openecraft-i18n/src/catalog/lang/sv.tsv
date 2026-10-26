@@ -6232,6 +6232,34 @@ Click to show, right click for more	Klicka för att visa, högerklicka för mer
 {} notes	{} anmärkningar
 Open in a new page tab	Öppna i en ny sidflik
 Project information	Projektinformation
+Plugin commands…	Plugin-kommandon…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Kommandona för alla plugins per plugin, med sökning; stjärnan fäster ett kommando på fliken Plugins
+Star a command in Plugin commands to pin it here	Markera ett kommando med stjärnan i Plugin-kommandon för att fästa det här
+Installed plugins	Installerade plugins
+Move to section	Flytta till avsnitt
+Number the sections 1, 2, 3 … on every level first	Numrera först avsnitten 1, 2, 3 … på varje nivå
+In every section counting starts again after the section number (2.3.1).	I varje avsnitt börjar räkningen om efter avsnittsnumret (2.3.1).
+New page in this section	Ny sida i detta avsnitt
+New subsection	Nytt underavsnitt
+Section properties…	Avsnittsegenskaper…
+Move up	Flytta uppåt
+Move down	Flytta nedåt
+Delete section	Ta bort avsnitt
+(top level)	(översta nivån)
+Section properties	Avsnittsegenskaper
+The names of its pages follow	Namnen på dess sidor följer med
+Parent section	Överordnat avsnitt
+Its pages and subsections go to the section above	Dess sidor och underavsnitt flyttas till avsnittet ovanför
+{} pages; their names start with {}	{} sidor; deras namn börjar med {}
+Section	Avsnitt
+The page name gets the section number	Sidnamnet får avsnittsnumret
+New section	Nytt avsnitt
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Ett numrerat avsnitt som innehåller sidor som en mapp; sidnamnen börjar med dess nummer (2.3.1)
+No such section	Avsnittet finns inte
+A section number must not be empty or contain a dot	Ett avsnittsnummer får inte vara tomt eller innehålla en punkt
+Another section here has this number	Ett annat avsnitt här har redan detta nummer
+A section cannot be moved into itself	Ett avsnitt kan inte flyttas in i sig självt
+Released pages cannot be moved	Frisläppta sidor kan inte flyttas
 New room	Nytt rum
 Room	Rum
 Rooms	Rum

@@ -73,6 +73,9 @@ pub struct Project {
     pub format: u32,
     pub info: ProjectInfo,
     pub pages: Vec<Page>,
+    /// Page sections (a tree, siblings in this order); see [`crate::sections`].
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub sections: Vec<Section>,
     pub parts: Vec<Part>,
     /// Device level data (article assignment etc.) keyed by device tag.
     pub devices: BTreeMap<String, DeviceData>,
@@ -193,6 +196,7 @@ impl Default for Project {
             format: FORMAT,
             info: ProjectInfo::default(),
             pages: Vec::new(),
+            sections: Vec::new(),
             parts: Vec::new(),
             devices: BTreeMap::new(),
             layout: Layout::default(),
@@ -582,6 +586,10 @@ pub struct Page {
     /// Page number / name as shown in cross references, e.g. "3".
     pub name: String,
     pub description: String,
+    /// Section the page is in (its id); 0 = top level. The name starts with the
+    /// section's number.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub section: u64,
     /// Structure of the page (IEC 81346) without prefix signs: function (`=`),
     /// installation site (`++`), location (`+`) and higher-level product (`-`).
     /// Devices placed on the page inherit it.
@@ -652,6 +660,7 @@ impl Page {
             id,
             name: name.into(),
             description: description.into(),
+            section: 0,
             function: String::new(),
             installation: String::new(),
             location: String::new(),
@@ -686,6 +695,20 @@ impl Page {
             && self.conn_defs.is_empty()
             && self.cable_defs.is_empty()
     }
+}
+
+/// A section of pages, like a directory: holds pages and subsections. Its full
+/// number (`2.3`) is the numbers of its parents and its own.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Section {
+    pub id: u64,
+    /// Parent section; 0 = top level.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub parent: u64,
+    /// Number within the parent, e.g. `3` or `A`.
+    pub number: String,
+    pub description: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

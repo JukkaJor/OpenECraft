@@ -6232,6 +6232,34 @@ Click to show, right click for more	Клацніть, щоб показати, �
 {} notes	Приміток: {}
 Open in a new page tab	Відкрити в новій вкладці сторінки
 Project information	Відомості про проєкт
+Plugin commands…	Команди плагінів…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Команди всіх плагінів за плагінами, з пошуком; зірочка закріплює команду на вкладці «Плагіни»
+Star a command in Plugin commands to pin it here	Позначте команду зірочкою у вікні «Команди плагінів», щоб закріпити її тут
+Installed plugins	Встановлені плагіни
+Move to section	Перемістити до розділу
+Number the sections 1, 2, 3 … on every level first	Спочатку пронумерувати розділи 1, 2, 3 … на кожному рівні
+In every section counting starts again after the section number (2.3.1).	У кожному розділі лічба починається знову після номера розділу (2.3.1).
+New page in this section	Нова сторінка в цьому розділі
+New subsection	Новий підрозділ
+Section properties…	Властивості розділу…
+Move up	Перемістити вгору
+Move down	Перемістити вниз
+Delete section	Видалити розділ
+(top level)	(верхній рівень)
+Section properties	Властивості розділу
+The names of its pages follow	Імена його сторінок змінюються разом із ним
+Parent section	Батьківський розділ
+Its pages and subsections go to the section above	Його сторінки та підрозділи переходять до батьківського розділу
+{} pages; their names start with {}	Сторінок: {}; їхні імена починаються з {}
+Section	Розділ
+The page name gets the section number	Ім'я сторінки отримує номер розділу
+New section	Новий розділ
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Нумерований розділ, що містить сторінки як тека; імена сторінок починаються з його номера (2.3.1)
+No such section	Такого розділу немає
+A section number must not be empty or contain a dot	Номер розділу не може бути порожнім або містити крапку
+Another section here has this number	Інший розділ тут уже має цей номер
+A section cannot be moved into itself	Розділ не можна перемістити в самого себе
+Released pages cannot be moved	Затверджені сторінки не можна переміщувати
 New room	Нове приміщення
 Room	Приміщення
 Rooms	Приміщення

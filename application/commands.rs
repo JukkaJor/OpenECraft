@@ -42,6 +42,7 @@ pub enum Cmd {
     NewSchematicPage,
     NewPage,
     NewSubPage,
+    NewSection,
     NewDocumentPage,
     PageProperties,
     RenumberPages,
@@ -181,6 +182,7 @@ pub enum Cmd {
     ProjectServer,
     Vault,
     ManagePlugins,
+    PluginCommands,
     Help,
     LayoutSpaces,
     LayoutView,
@@ -337,6 +339,8 @@ pub static ALL: &[Def] = &[
     d(C::NewPage, "new_page", tr_const!("New page"), I::FileNew).menu().tip(tr_const!("Cover sheet, overview, graphics, report, mounting layout or a page template")),
     d(C::NewSubPage, "new_sub_page", tr_const!("New sub-page"), I::FileNew)
         .tip(tr_const!("A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering")),
+    d(C::NewSection, "new_section", tr_const!("New section"), I::FolderOpen)
+        .tip(tr_const!("A numbered section that holds pages like a directory; the page names start with its number (2.3.1)")),
     d(C::NewDocumentPage, "new_document_page", tr_const!("New document page…"), I::File).tip(tr_const!("Embeds a file (PDF, Word, Excel, image …) as a page")),
     d(C::PageProperties, "page_properties", tr_const!("Page properties…"), I::PageProperties),
     d(C::RenumberPages, "renumber_pages", tr_const!("Renumber pages…"), I::Renumber),
@@ -523,6 +527,9 @@ pub static ALL: &[Def] = &[
         .tool(ToolPane::Vault)
         .tip(tr_const!("Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault")),
     d(C::ManagePlugins, "manage_plugins", tr_const!("Manage plugins…"), I::Plugin).tool(ToolPane::Plugins),
+    d(C::PluginCommands, "plugin_commands", tr_const!("Plugin commands…"), I::Plugin)
+        .tool(ToolPane::PluginCommands)
+        .tip(tr_const!("The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab")),
     d(C::Help, "help", tr_const!("Help"), I::Help).tool(ToolPane::Help).keys("F1").tip(tr_const!("Quick guide, tutorial and shortcuts")),
     d(C::LayoutSpaces, "layout_spaces", tr_const!("Layout spaces"), I::Enclosure).pane(Pane::LayoutSpaces).tip(tr_const!("Enclosures, devices to place and placed devices")),
     d(C::LayoutView, "layout_view", tr_const!("Panel layout"), I::Front).pane(Pane::LayoutView),

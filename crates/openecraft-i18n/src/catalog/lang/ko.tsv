@@ -6232,6 +6232,34 @@ Click to show, right click for more	클릭하면 표시, 마우스 오른쪽 버
 {} notes	참고 {}개
 Open in a new page tab	새 페이지 탭에서 열기
 Project information	프로젝트 정보
+Plugin commands…	플러그인 명령…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	모든 플러그인의 명령을 플러그인별로 검색과 함께 표시합니다. 별표를 누르면 명령이 플러그인 탭에 고정됩니다
+Star a command in Plugin commands to pin it here	플러그인 명령에서 별표를 누르면 여기에 고정됩니다
+Installed plugins	설치된 플러그인
+Move to section	구역으로 이동
+Number the sections 1, 2, 3 … on every level first	먼저 각 수준의 구역에 1, 2, 3 … 번호 매기기
+In every section counting starts again after the section number (2.3.1).	각 구역에서는 구역 번호 뒤에서 번호가 다시 시작됩니다 (2.3.1).
+New page in this section	이 구역에 새 페이지
+New subsection	새 하위 구역
+Section properties…	구역 속성…
+Move up	위로 이동
+Move down	아래로 이동
+Delete section	구역 삭제
+(top level)	(최상위)
+Section properties	구역 속성
+The names of its pages follow	페이지 이름도 함께 변경됩니다
+Parent section	상위 구역
+Its pages and subsections go to the section above	페이지와 하위 구역은 상위 구역으로 이동됩니다
+{} pages; their names start with {}	{}개 페이지, 이름은 {}(으)로 시작합니다
+Section	구역
+The page name gets the section number	페이지 이름에 구역 번호가 붙습니다
+New section	새 구역
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	폴더처럼 페이지를 담는 번호 매긴 구역입니다. 페이지 이름은 그 번호로 시작합니다 (2.3.1)
+No such section	해당 구역이 없습니다
+A section number must not be empty or contain a dot	구역 번호는 비어 있거나 점을 포함할 수 없습니다
+Another section here has this number	여기에 있는 다른 구역이 이미 이 번호를 사용합니다
+A section cannot be moved into itself	구역을 자기 자신 안으로 이동할 수 없습니다
+Released pages cannot be moved	릴리스된 페이지는 이동할 수 없습니다
 New room	새 방
 Room	방
 Rooms	방

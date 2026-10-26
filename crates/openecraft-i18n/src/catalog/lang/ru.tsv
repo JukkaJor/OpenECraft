@@ -6232,6 +6232,34 @@ Click to show, right click for more	Щелчок — показать, прав�
 {} notes	Примечаний: {}
 Open in a new page tab	Открыть в новой вкладке листа
 Project information	Сведения о проекте
+Plugin commands…	Команды плагинов…
+The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Команды всех плагинов по плагинам, с поиском; звёздочка закрепляет команду на вкладке «Плагины»
+Star a command in Plugin commands to pin it here	Отметьте команду звёздочкой в окне «Команды плагинов», чтобы закрепить её здесь
+Installed plugins	Установленные плагины
+Move to section	Переместить в раздел
+Number the sections 1, 2, 3 … on every level first	Сначала пронумеровать разделы 1, 2, 3 … на каждом уровне
+In every section counting starts again after the section number (2.3.1).	В каждом разделе счёт начинается заново после номера раздела (2.3.1).
+New page in this section	Новый лист в этом разделе
+New subsection	Новый подраздел
+Section properties…	Свойства раздела…
+Move up	Переместить вверх
+Move down	Переместить вниз
+Delete section	Удалить раздел
+(top level)	(верхний уровень)
+Section properties	Свойства раздела
+The names of its pages follow	Имена его листов меняются вместе с ним
+Parent section	Родительский раздел
+Its pages and subsections go to the section above	Его листы и подразделы переходят в родительский раздел
+{} pages; their names start with {}	Листов: {}; их имена начинаются с {}
+Section	Раздел
+The page name gets the section number	Имя листа получает номер раздела
+New section	Новый раздел
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Нумерованный раздел, содержащий листы как папка; имена листов начинаются с его номера (2.3.1)
+No such section	Нет такого раздела
+A section number must not be empty or contain a dot	Номер раздела не может быть пустым или содержать точку
+Another section here has this number	Другой раздел здесь уже имеет этот номер
+A section cannot be moved into itself	Раздел нельзя переместить в самого себя
+Released pages cannot be moved	Выпущенные листы нельзя перемещать
 New room	Новое помещение
 Room	Помещение
 Rooms	Помещения

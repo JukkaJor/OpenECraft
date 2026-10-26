@@ -27,8 +27,9 @@ openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core,
   `openecraft_core::collab`, roles, grants and their evaluation for both servers in
   `openecraft_parts::access` (the servers check, the clients offer what is allowed).
 - `openecraft-auth` is native only and used by the servers alone: password hashes,
-  session tokens, sign-in with directories (Active Directory, LDAP) and the access
-  settings file. See [access-control.md](access-control.md).
+  session tokens, sign-in with directories (Active Directory, LDAP), the access
+  settings file and reading the configuration files of the servers (`--config`,
+  `server_config`). See [access-control.md](access-control.md).
 - Autodesk Vault is a server of another vendor: its requests, answer types and the
   operations of several requests (`Job`: uploads with checkout and check-in, the item
   lookup) live in `openecraft_client::vault`. The editor (`application/vault.rs`) runs
@@ -62,7 +63,7 @@ Layers, bottom up (a module may use its own layer and the layers below):
    project file format. Data only, serde, no evaluation. The feature modules re-export
    their data types from here and keep the logic.
 4. Evaluation of the model that everything else builds on: `index`, `netlist`,
-   `structure`, `frame`, `wirenum`, `history`, `translation`, `options`,
+   `structure`, `sections` (page sections: tree, numbers in the page names), `frame`, `wirenum`, `history`, `translation`, `options`,
    `potentials`, `functions`, `properties`, `props`, `numbering` (device and page
    renumbering), `text` (free texts: lines,
    wrapping, rotation, path function texts).
@@ -123,7 +124,7 @@ refer to each other (the registry kinds take an `&Analysis`).
   search, the settings dialog, the start page, the help pane, the Insert center and
   the running of commands (`app/commands_ui.rs`) are `impl App` blocks in modules of
   their own; `app/dock_ui.rs` draws the panes, the page tabs and the panes floating
-  as windows. Each tool is a pane function (`fn …_pane(&mut self, ui)`) in its module
+  as windows (tools open floating unless the user docked them: `dock::Placement`). Each tool is a pane function (`fn …_pane(&mut self, ui)`) in its module
   under `app/` with a state struct; its `open` flag asks for the pane to be shown.
   Small one-shot dialogs (rename, move by, save as macro, part selection, export
   parameters) stay windows (`app/windows.rs`).

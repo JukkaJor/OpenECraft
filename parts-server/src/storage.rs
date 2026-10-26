@@ -20,7 +20,8 @@ pub use sqlite::SqliteBackend;
 /// Changes kept per part in the history.
 pub const HISTORY_LIMIT: usize = 20;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum StorageKind {
     Sqlite,
     Json,

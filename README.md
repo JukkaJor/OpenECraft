@@ -74,7 +74,10 @@ bill of materials.
   preview of the new tags; everything that refers to a tag follows (parts, strips,
   plugs, PLC data, panel layout, harnesses). *Home › Renumber pages…* numbers pages
   with start and step, restarting per structure and keeping sub-pages (`3.a`; *Home › New page › New
-  sub-page* inserts `3.1`, `3.2`, … after the current page). The wire
+  sub-page* inserts `3.1`, `3.2`, … after the current page). Page sections hold pages
+  and subsections like directories (*Home › New section*, drag pages onto them in the
+  *Pages* navigator); the page names carry the section numbers (`2.3.1`), follow when a
+  section is renumbered or moved, and renumbering counts per section. The wire
   numbering gets a *Format* scheme with placeholders (`{page}`, `{column}`, `{row}`,
   `{potential}`, `{kind}`, `{color}`, `{cross_section}`, counter `{n}` counted per
   value of the rest), counter digits and step, and potential kinds that get no number
@@ -806,8 +809,16 @@ cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <s
 cargo run --release -p openecraft-parts-server -- --storage json --data parts-db.json
 cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migrate-from parts-db.json
 cargo run --release -p openecraft-parts-server -- --install-catalogs all
+cargo run --release -p openecraft-parts-server -- --config parts-server.toml
 ```
 
+- Configuration file (`--config <file>` or `OPENECRAFT_PARTS_SERVER_CONFIG`): a TOML
+  file with the settings of the command line options under their names (`bind`,
+  `storage`, `data`, `token`, `admin_user`, `install_catalogs`, `access`; see
+  [`parts-server/parts-server.example.toml`](parts-server/parts-server.example.toml)).
+  Options on the command line or in the environment win; relative paths are relative to
+  the file; unknown keys stop the server with an error. `--migrate-from` is a command
+  line option only.
 - Storage (`--storage sqlite|json`): SQLite by default (`--data parts-db.sqlite`, one
   file with indexed parts, history, accounts and files); JSON keeps everything in one
   file written atomically on every change, with the files in `<name>.files/` next to
@@ -905,8 +916,14 @@ time.
 
 ```bash
 cargo run --release -p openecraft-project-server -- --bind 0.0.0.0:8091 --data projects --token <secret>
+cargo run --release -p openecraft-project-server -- --config project-server.toml
 ```
 
+- Configuration file (`--config <file>` or `OPENECRAFT_PROJECT_SERVER_CONFIG`): the
+  settings of the command line options in TOML (`bind`, `data`, `token`, `admin_user`,
+  `access`; see
+  [`project-server/project-server.example.toml`](project-server/project-server.example.toml)),
+  as for the parts server.
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
@@ -1062,7 +1079,8 @@ working directory (and with a parts server token) you are fine with the agent us
 
 ### Plugins
 
-Plugins add commands, checks, reports and exports to the editor (*Plugins* menu, *Check*
+Plugins add commands, checks, reports and exports to the editor (*Plugins* tab: *Plugin
+commands* lists every command by plugin with a search, the star pins one to the tab; *Check*
 tab), the command line and the MCP server at the same time. Built-in plugins are Rust
 code in `crates/openecraft-api`; external plugins are programs in any language that
 answer JSON requests on stdin / stdout:
@@ -1119,7 +1137,7 @@ zoom, language, check results and the messages of the session.
 | Review | *Review* workspace or navigator, *Insert › Comment* and *Insert › Markup* (redline / greenline) |
 | Settings | *File › Settings*: project settings (wire numbering, cross references, checks, marking, settings scheme) and user settings (appearance, UI scale, language, keyboard shortcuts, ribbon, servers) in one dialog |
 | Settings scheme | *Project data › Export settings… / Import settings…*: the project's wire numbering, potentials, wire defaults and colours, marking, hose defaults, cross references and check scheme as one file for other projects (tools `export_settings`, `import_settings`) |
-| Panes | drag the tab of any pane (page, navigators, Insert center, properties, messages, tools) beside, above or below another one or among its tabs; the pane menu (`⋯`) floats a pane as a window or closes it; *View › Panes* shows or hides each and resets the layout; `F6` moves between the panes |
+| Panes | drag the tab of any pane (page, navigators, Insert center, properties, messages, tools) beside, above or below another one or among its tabs; tools (reports, cables, revisions, parts, …) open as floating windows, *Dock* in a window puts it into the workspace and the pane menu (`⋯`) floats a docked pane again or closes it (the choice is remembered); *View › Panes* shows or hides each and resets the layout; `F6` moves between the panes |
 | Workspaces | *View › Workspaces* or the chooser in the quick access row: *Schematic*, *Panel layout*, *Wiring*, *Mounting*, *Review*, *Pre-planning*, each with its own arrangement of the panes; *Save workspace…* keeps the arrangement and the ribbon under a name (kept by the app) |
 | Ribbon | double click a tab or the arrow at the right minimizes it; *File › Settings › Ribbon* hides groups, adds own groups of commands and exports / imports them |
 | Keyboard shortcuts | *File › Settings › Keyboard shortcuts*: record, clear or reset the keys of every command; conflicts are shown, the keys are kept by the app and shown in the tooltips and the help |

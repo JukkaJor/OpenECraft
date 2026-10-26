@@ -78,3 +78,28 @@ fn pdf_comments_are_imported_into_the_review() {
     std::fs::write(&file, "no pdf").unwrap();
     assert!(run(&mut s, "import_pdf_comments", json!({ "path": file.to_str().unwrap() })).unwrap_err().contains("Not a PDF file"));
 }
+
+#[test]
+fn pages_are_structured_in_numbered_sections() {
+    let mut s = new_session();
+    assert_eq!(run(&mut s, "add_section", json!({ "description": "Supply" })).unwrap()["number"], "1");
+    assert_eq!(run(&mut s, "add_section", json!({ "parent": "1", "description": "Main feed" })).unwrap()["number"], "1.1");
+    assert!(run(&mut s, "add_section", json!({ "parent": "1", "number": "1" })).is_err());
+    assert_eq!(run(&mut s, "add_page", json!({ "kind": "schematic", "section": "1.1" })).unwrap()["name"], "1.1.1");
+    assert_eq!(run(&mut s, "add_page", json!({ "kind": "schematic" })).unwrap()["name"], "1.1.2");
+    let pg = run(&mut s, "add_page", json!({ "kind": "schematic", "section": "" })).unwrap();
+    assert_eq!(pg["name"], "2");
+    let pg = run(&mut s, "set_page", json!({ "page": "2", "section": "1" })).unwrap();
+    assert_eq!((pg["name"].as_str(), pg["section"].as_str()), (Some("1.2"), Some("1")));
+    let names: Vec<Value> = run(&mut s, "list_pages", json!({})).unwrap().as_array().unwrap().iter().map(|p| p["name"].clone()).collect();
+    assert_eq!(names, vec![json!("1"), json!("1.2"), json!("1.1.1"), json!("1.1.2")]);
+
+    run(&mut s, "set_section", json!({ "section": "1", "number": "4", "description": "Power" })).unwrap();
+    let list = run(&mut s, "list_sections", json!({})).unwrap();
+    assert_eq!(list[1]["number"], "4.1");
+    assert_eq!(list[0]["pages"], json!(["4.2"]));
+    assert_eq!(run(&mut s, "renumber_pages", json!({ "sections": true })).unwrap()["pages"], json!(["1", "1.1", "1.1.1", "1.1.2"]));
+    assert!(run(&mut s, "set_section", json!({ "section": "9" })).unwrap_err().contains("No section"));
+    run(&mut s, "delete_section", json!({ "section": "1.1" })).unwrap();
+    assert_eq!(run(&mut s, "list_sections", json!({})).unwrap()[0]["pages"], json!(["1.1", "1.2", "1.3"]));
+}

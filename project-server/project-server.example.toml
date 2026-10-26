@@ -1,0 +1,23 @@
+# Configuration of the OpenECraft project server:
+#   openecraft-project-server --config project-server.toml
+# or OPENECRAFT_PROJECT_SERVER_CONFIG=project-server.toml. Every setting is optional and
+# has the name of its command line option (`admin_user` for `--admin-user`); options on
+# the command line or in the environment win. Relative paths are relative to this file.
+
+# Address to listen on.
+bind = "0.0.0.0:8091"
+
+# Directory of the project files; created if missing.
+data = "projects"
+
+# Access token required for every request. Better kept out of this file:
+# OPENECRAFT_PROJECT_TOKEN.
+# token = "change-me"
+
+# Administrator account created (or reset) at startup; its password is read from
+# OPENECRAFT_PROJECT_ADMIN_PASSWORD.
+# admin_user = "admin"
+
+# Access settings (directories, roles, grants). Default: access.json in the data
+# directory.
+# access = "projects/access.json"

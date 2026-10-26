@@ -11,6 +11,7 @@ use openecraft_i18n::{tr_const, tr_fmt};
 use serde_json::{json, Value};
 
 pub const PAGE: Param = param("page", Kind::Str, tr_const!("Page name as shown by list_pages"));
+pub const SECTION: Param = param("section", Kind::Str, tr_const!("Section number as shown by list_sections, e.g. 2.3"));
 
 /// `DeviceList` → `device_list`.
 pub fn snake(debug: impl std::fmt::Debug) -> String {
@@ -44,6 +45,15 @@ pub fn kind_name(kind: PageKind) -> String {
 
 pub fn page_index(prj: &Project, name: &str) -> Result<usize, String> {
     prj.pages.iter().position(|pg| pg.name == name).ok_or_else(|| tr_fmt!("No page named {}", name))
+}
+
+/// Section by its full number (`2.3`); empty = the top level (0).
+pub fn section_id(prj: &Project, number: &str) -> Result<u64, String> {
+    let number = number.trim();
+    if number.is_empty() {
+        return Ok(0);
+    }
+    prj.sections.iter().map(|s| s.id).find(|&id| openecraft_core::sections::full_number(prj, id) == number).ok_or_else(|| tr_fmt!("No section numbered {}", number))
 }
 
 /// Page whose properties may be changed (not released).
