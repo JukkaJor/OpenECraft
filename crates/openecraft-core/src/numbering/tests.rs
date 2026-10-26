@@ -110,3 +110,27 @@ fn pages_are_renumbered_with_subpages_and_structures() {
     let plan = plan_pages(&prj, &PageNumbering { pages: vec![0, 1], ..Default::default() });
     assert_eq!(plan, [(1, "2".to_string())], "released pages keep their name");
 }
+
+#[test]
+fn pages_are_numbered_per_section_after_the_section_number() {
+    let mut prj = Project::default();
+    let a = sections::add(&mut prj, 0, "");
+    let b = sections::add(&mut prj, a, "");
+    sections::set_number(&mut prj, a, "5").unwrap();
+    for (name, section) in [("5.4", a), ("5.4.a", a), ("x", a), ("5.1.7", b), ("3", 0)] {
+        let id = prj.new_id();
+        let mut pg = Page::new(id, name, "", PageKind::Schematic);
+        pg.section = section;
+        prj.pages.push(pg);
+    }
+    sections::sort_pages(&mut prj);
+    renumber_pages(&mut prj, &PageNumbering::default());
+    let names: Vec<&str> = prj.pages.iter().map(|p| p.name.as_str()).collect();
+    assert_eq!(names, ["1", "2", "5.1", "5.1.a", "5.2", "5.1.1"]);
+
+    let opts = PageNumbering { sections: true, ..Default::default() };
+    assert_eq!(plan_pages(&prj, &opts).len(), 4);
+    assert_eq!(renumber_pages(&mut prj, &opts), 4);
+    let names: Vec<&str> = prj.pages.iter().map(|p| p.name.as_str()).collect();
+    assert_eq!(names, ["1", "2", "1.1", "1.1.a", "1.2", "1.1.1"]);
+}

@@ -79,7 +79,7 @@ pub static TABS: &[Tab] = &[
         context: false,
         groups: &[
             g("clipboard", tr_const!("Clipboard"), &[L(C::Paste), S(C::Cut), S(C::Copy), S(C::MultipleCopy)]),
-            g("page", tr_const!("Page"), &[L(C::NewSchematicPage), S(C::NewPage), S(C::NewSubPage), S(C::PageProperties), S(C::RenumberPages), S(C::DeletePage)]),
+            g("page", tr_const!("Page"), &[L(C::NewSchematicPage), S(C::NewPage), S(C::NewSubPage), S(C::NewSection), S(C::PageProperties), S(C::RenumberPages), S(C::DeletePage)]),
             g("edit", tr_const!("Edit"), &[L(C::SelectTool), S(C::Undo), S(C::Redo), S(C::Delete), S(C::Rotate), S(C::Mirror), S(C::Align), S(C::Distribute), S(C::MoveBy)]),
             g("find", tr_const!("Find"), &[L(C::Find), S(C::CommandSearch), S(C::SelectAll)]),
             g("navigators", tr_const!("Navigators"), &[S(C::PagesPane), S(C::DevicesPane), S(C::MessagesPane)]),

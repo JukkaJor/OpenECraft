@@ -374,10 +374,10 @@ pub fn to_multiline(prj: &mut Project, from: usize) -> Result<Generated, String>
     let place = |q: P| p(x0 + (q.x - x0) * 2.0, y0 + (q.y - y0) * 1.5).snap(GRID);
 
     let id = prj.new_id();
-    let mut page = Page::new(id, &crate::ops::next_page_name(prj), &tr_fmt!("{} (multi-line)", src.description), PageKind::Schematic);
-    Dt::of_page(&src).apply_to(&mut page);
     let at = (from + 1).min(prj.pages.len());
-    prj.pages.insert(at, page);
+    let mut page = Page::new(id, &crate::ops::next_page_name(prj, at), &tr_fmt!("{} (multi-line)", src.description), PageKind::Schematic);
+    Dt::of_page(&src).apply_to(&mut page);
+    crate::ops::insert_page(prj, at, page);
 
     let mut out = Generated { page: at, skipped, ..Default::default() };
     // Single-line symbol id -> generated power symbol (def, position, rotation, mirror).
@@ -495,9 +495,9 @@ pub fn to_singleline(prj: &mut Project, after: usize) -> Result<Generated, Strin
     }
 
     let id = prj.new_id();
-    let page = Page::new(id, &crate::ops::next_page_name(prj), tr("Single-line diagram"), PageKind::Overview);
     let at = (after + 1).min(prj.pages.len());
-    prj.pages.insert(at, page);
+    let page = Page::new(id, &crate::ops::next_page_name(prj, at), tr("Single-line diagram"), PageKind::Overview);
+    crate::ops::insert_page(prj, at, page);
     let mut out = Generated { page: at, skipped, ..Default::default() };
     let pos = |(col, row): (f32, f32)| p(10.0 * GRID + col * 8.0 * GRID, 10.0 * GRID + row * 9.0 * GRID);
     for (n, node) in nodes.iter().enumerate() {

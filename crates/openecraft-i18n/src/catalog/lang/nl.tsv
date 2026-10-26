@@ -6236,3 +6236,27 @@ Plugin commands…	Pluginopdrachten…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	De opdrachten van alle plugins per plugin, met zoeken; de ster zet een opdracht vast op het tabblad Plugins
 Star a command in Plugin commands to pin it here	Markeer een opdracht met de ster in Pluginopdrachten om hem hier vast te zetten
 Installed plugins	Geïnstalleerde plugins
+Move to section	Naar sectie verplaatsen
+Number the sections 1, 2, 3 … on every level first	Eerst de secties op elk niveau nummeren met 1, 2, 3 …
+In every section counting starts again after the section number (2.3.1).	In elke sectie begint de telling opnieuw na het sectienummer (2.3.1).
+New page in this section	Nieuwe pagina in deze sectie
+New subsection	Nieuwe subsectie
+Section properties…	Sectie-eigenschappen…
+Move up	Omhoog
+Move down	Omlaag
+Delete section	Sectie verwijderen
+(top level)	(hoogste niveau)
+Section properties	Sectie-eigenschappen
+The names of its pages follow	De namen van de pagina's veranderen mee
+Parent section	Bovenliggende sectie
+Its pages and subsections go to the section above	De pagina's en subsecties gaan naar de bovenliggende sectie
+{} pages; their names start with {}	{} pagina's; hun namen beginnen met {}
+Section	Sectie
+The page name gets the section number	De paginanaam krijgt het sectienummer
+New section	Nieuwe sectie
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Een genummerde sectie die pagina's bevat zoals een map; de paginanamen beginnen met het nummer ervan (2.3.1)
+No such section	Sectie bestaat niet
+A section number must not be empty or contain a dot	Een sectienummer mag niet leeg zijn of een punt bevatten
+Another section here has this number	Een andere sectie hier heeft dit nummer al
+A section cannot be moved into itself	Een sectie kan niet in zichzelf worden verplaatst
+Released pages cannot be moved	Vrijgegeven pagina's kunnen niet worden verplaatst

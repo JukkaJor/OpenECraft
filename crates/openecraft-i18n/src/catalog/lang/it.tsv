@@ -6236,3 +6236,27 @@ Plugin commands…	Comandi dei plugin…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	I comandi di tutti i plugin per plugin, con ricerca; la stella fissa un comando nella scheda Plugin
 Star a command in Plugin commands to pin it here	Contrassegna un comando con la stella in Comandi dei plugin per fissarlo qui
 Installed plugins	Plugin installati
+Move to section	Sposta nella sezione
+Number the sections 1, 2, 3 … on every level first	Numerare prima le sezioni 1, 2, 3 … a ogni livello
+In every section counting starts again after the section number (2.3.1).	In ogni sezione il conteggio ricomincia dopo il numero della sezione (2.3.1).
+New page in this section	Nuova pagina in questa sezione
+New subsection	Nuova sottosezione
+Section properties…	Proprietà della sezione…
+Move up	Sposta in alto
+Move down	Sposta in basso
+Delete section	Elimina sezione
+(top level)	(livello superiore)
+Section properties	Proprietà della sezione
+The names of its pages follow	I nomi delle sue pagine si adeguano
+Parent section	Sezione superiore
+Its pages and subsections go to the section above	Le sue pagine e sottosezioni passano alla sezione superiore
+{} pages; their names start with {}	{} pagine; i loro nomi iniziano con {}
+Section	Sezione
+The page name gets the section number	Il nome della pagina riceve il numero della sezione
+New section	Nuova sezione
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Una sezione numerata che contiene pagine come una cartella; i nomi delle pagine iniziano con il suo numero (2.3.1)
+No such section	Sezione inesistente
+A section number must not be empty or contain a dot	Un numero di sezione non può essere vuoto né contenere un punto
+Another section here has this number	Un'altra sezione qui ha già questo numero
+A section cannot be moved into itself	Una sezione non può essere spostata in se stessa
+Released pages cannot be moved	Le pagine rilasciate non possono essere spostate

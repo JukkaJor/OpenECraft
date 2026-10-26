@@ -4,7 +4,7 @@ use super::common::*;
 use super::{optional, param, Args, Kind, Tool};
 use crate::session::Session;
 use openecraft_core::model::*;
-use openecraft_core::{dwg, dxf_import, frame, ops, page_templates, pdf_comments};
+use openecraft_core::{dwg, dxf_import, frame, ops, page_templates, pdf_comments, sections};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -19,6 +19,7 @@ pub static TOOLS: &[Tool] = &[
             optional("after", Kind::Str, tr_const!("Insert after this page (default: at the end)")),
             optional("name", Kind::Str, tr_const!("Page name (default: next number)")),
             optional("description", Kind::Str, tr_const!("Description")),
+            optional("section", Kind::Str, tr_const!("Section of the page (list_sections; default: that of the page before)")),
         ],
         needs_project: true,
         run: add_page,
@@ -120,18 +121,22 @@ fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
         Some(after) => page_index(prj, after)? + 1,
         None => prj.pages.len(),
     };
+    let section = a.str("section").map(|s| section_id(prj, s)).transpose()?;
     if let Some(name) = a.str("name") {
         if prj.pages.iter().any(|pg| pg.name == name) {
             return Err(tr_fmt!("A page named {} already exists", name));
         }
     }
-    let i = match template {
+    let mut i = match template {
         Some(mut t) => {
             t.kind = kind;
             page_templates::insert(prj, &t, at)
         }
         None => ops::add_page(prj, kind, at),
     };
+    if let Some(section) = section {
+        i = sections::place_new_page(prj, i, section);
+    }
     let pg = &mut prj.pages[i];
     if let Some(f) = a.str("frame") {
         pg.frame = f.into();

@@ -6236,3 +6236,27 @@ Plugin commands…	Polecenia wtyczek…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Polecenia wszystkich wtyczek według wtyczki, z wyszukiwaniem; gwiazdka przypina polecenie do karty Wtyczki
 Star a command in Plugin commands to pin it here	Oznacz polecenie gwiazdką w Polecenia wtyczek, aby przypiąć je tutaj
 Installed plugins	Zainstalowane wtyczki
+Move to section	Przenieś do sekcji
+Number the sections 1, 2, 3 … on every level first	Najpierw numeruj sekcje 1, 2, 3 … na każdym poziomie
+In every section counting starts again after the section number (2.3.1).	W każdej sekcji liczenie zaczyna się od nowa po numerze sekcji (2.3.1).
+New page in this section	Nowa strona w tej sekcji
+New subsection	Nowa podsekcja
+Section properties…	Właściwości sekcji…
+Move up	Przesuń w górę
+Move down	Przesuń w dół
+Delete section	Usuń sekcję
+(top level)	(najwyższy poziom)
+Section properties	Właściwości sekcji
+The names of its pages follow	Nazwy jej stron zmieniają się wraz z nią
+Parent section	Sekcja nadrzędna
+Its pages and subsections go to the section above	Jej strony i podsekcje przechodzą do sekcji nadrzędnej
+{} pages; their names start with {}	Stron: {}; ich nazwy zaczynają się od {}
+Section	Sekcja
+The page name gets the section number	Nazwa strony otrzymuje numer sekcji
+New section	Nowa sekcja
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Numerowana sekcja zawierająca strony jak katalog; nazwy stron zaczynają się od jej numeru (2.3.1)
+No such section	Nie ma takiej sekcji
+A section number must not be empty or contain a dot	Numer sekcji nie może być pusty ani zawierać kropki
+Another section here has this number	Inna sekcja tutaj ma już ten numer
+A section cannot be moved into itself	Sekcji nie można przenieść do niej samej
+Released pages cannot be moved	Nie można przenosić wydanych stron

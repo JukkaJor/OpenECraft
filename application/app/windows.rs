@@ -11,6 +11,7 @@ impl App {
         self.project_properties_window(ctx);
         self.parts_management_and_part_selection_window(ctx);
         self.page_properties_window(ctx);
+        self.section_properties_window(ctx);
     }
 
     /// The Reports pane: the reports of the registry on the left, the table on the right.
@@ -215,18 +216,21 @@ impl App {
         let mut open = true;
         let mut apply_structure = None;
         let mut document_action = None;
+        let mut move_to = None;
         if pi < self.session.prj.pages.len() {
             let tb_names = openecraft_core::forms::names(&self.session.prj);
             let frame_names = openecraft_core::frame::names(&self.session.prj);
             let page_aspects = self.session.prj.structures.page_aspects();
             let structure_entries = self.session.prj.structures.entries.clone();
             let reports = self.report_list();
+            let sections = (!self.session.prj.sections.is_empty()).then(|| (self.section_choices(), openecraft_core::sections::of_page(&self.session.prj, pi)));
             egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
                 let pg = &mut self.session.prj.pages[pi];
                 egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
                     ui.label(tr("Page name / number"));
                     ui.text_edit_singleline(&mut pg.name);
                     ui.end_row();
+                    move_to = sections.as_ref().and_then(|(choices, current)| sections_ui::section_row(ui, choices, *current, !pg.locked));
                     ui.label(tr("Description"));
                     ui.text_edit_singleline(&mut pg.description);
                     ui.end_row();
@@ -349,6 +353,9 @@ impl App {
         }
         if let Some((dt, move_devices)) = apply_structure {
             ops::set_page_structure(&mut self.session.prj, pi, &dt, move_devices);
+        }
+        if let Some(id) = move_to {
+            self.section_action(ctx, sections_ui::SectionAction::MovePage(pi, id));
         }
         if !open {
             self.page_props = None;

@@ -5462,3 +5462,42 @@ Plugin commands…	Plugin-Befehle…	Commandes de plugin…	Comandos de plugin�
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Die Befehle aller Plugins nach Plugin, mit Suche; der Stern heftet einen Befehl an die Registerkarte Plugins	Les commandes de tous les plugins par plugin, avec une recherche ; l'étoile épingle une commande dans l'onglet Plugins	Los comandos de todos los plugins por plugin, con búsqueda; la estrella fija un comando en la pestaña Plugins
 Star a command in Plugin commands to pin it here	Einen Befehl in Plugin-Befehle mit dem Stern markieren, um ihn hier anzuheften	Marquez une commande d'une étoile dans Commandes de plugin pour l'épingler ici	Marque un comando con la estrella en Comandos de plugin para fijarlo aquí
 Installed plugins	Installierte Plugins	Plugins installés	Plugins instalados
+Move to section	In Abschnitt verschieben	Déplacer vers la section	Mover a la sección
+Number the sections 1, 2, 3 … on every level first	Zuerst die Abschnitte auf jeder Ebene mit 1, 2, 3 … nummerieren	Numéroter d'abord les sections 1, 2, 3 … à chaque niveau	Numerar primero las secciones 1, 2, 3 … en cada nivel
+In every section counting starts again after the section number (2.3.1).	In jedem Abschnitt beginnt die Zählung nach der Abschnittsnummer neu (2.3.1).	Dans chaque section, le comptage recommence après le numéro de la section (2.3.1).	En cada sección, la numeración vuelve a empezar tras el número de la sección (2.3.1).
+New page in this section	Neue Seite in diesem Abschnitt	Nouvelle page dans cette section	Nueva página en esta sección
+New subsection	Neuer Unterabschnitt	Nouvelle sous-section	Nueva subsección
+Section properties…	Abschnittseigenschaften…	Propriétés de la section…	Propiedades de la sección…
+Move up	Nach oben	Monter	Subir
+Move down	Nach unten	Descendre	Bajar
+Delete section	Abschnitt löschen	Supprimer la section	Eliminar sección
+(top level)	(oberste Ebene)	(niveau supérieur)	(nivel superior)
+Section properties	Abschnittseigenschaften	Propriétés de la section	Propiedades de la sección
+The names of its pages follow	Die Namen seiner Seiten ändern sich mit	Les noms de ses pages suivent	Los nombres de sus páginas cambian con ella
+Parent section	Übergeordneter Abschnitt	Section parente	Sección superior
+Its pages and subsections go to the section above	Seine Seiten und Unterabschnitte kommen in den übergeordneten Abschnitt	Ses pages et sous-sections passent dans la section parente	Sus páginas y subsecciones pasan a la sección superior
+{} pages; their names start with {}	{} Seiten; ihre Namen beginnen mit {}	{} pages ; leurs noms commencent par {}	{} páginas; sus nombres empiezan por {}
+Section	Abschnitt	Section	Sección
+The page name gets the section number	Der Seitenname erhält die Abschnittsnummer	Le nom de la page reçoit le numéro de la section	El nombre de la página recibe el número de la sección
+New section	Neuer Abschnitt	Nouvelle section	Nueva sección
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Ein nummerierter Abschnitt, der Seiten wie ein Verzeichnis enthält; die Seitennamen beginnen mit seiner Nummer (2.3.1)	Une section numérotée qui contient des pages comme un dossier ; les noms des pages commencent par son numéro (2.3.1)	Una sección numerada que contiene páginas como un directorio; los nombres de las páginas empiezan por su número (2.3.1)
+No such section	Abschnitt nicht vorhanden	Section introuvable	No existe esa sección
+A section number must not be empty or contain a dot	Eine Abschnittsnummer darf nicht leer sein und keinen Punkt enthalten	Un numéro de section ne doit pas être vide ni contenir de point	Un número de sección no puede estar vacío ni contener un punto
+Another section here has this number	Ein anderer Abschnitt hier hat bereits diese Nummer	Une autre section ici porte déjà ce numéro	Otra sección aquí ya tiene este número
+A section cannot be moved into itself	Ein Abschnitt kann nicht in sich selbst verschoben werden	Une section ne peut pas être déplacée dans elle-même	Una sección no puede moverse dentro de sí misma
+Released pages cannot be moved	Freigegebene Seiten können nicht verschoben werden	Les pages validées ne peuvent pas être déplacées	Las páginas liberadas no se pueden mover
+No section numbered {}	Kein Abschnitt mit der Nummer {}	Aucune section numérotée {}	No hay ninguna sección con el número {}
+Section number as shown by list_sections, e.g. 2.3	Abschnittsnummer wie von list_sections angezeigt, z. B. 2.3	Numéro de section tel qu'affiché par list_sections, p. ex. 2.3	Número de sección como lo muestra list_sections, p. ej. 2.3
+Give a section	Einen Abschnitt angeben	Indiquez une section	Indique una sección
+Lists, changes and deletes pages and page sections	Listet, ändert und löscht Seiten und Seitenabschnitte	Liste, modifie et supprime les pages et les sections de pages	Lista, cambia y elimina páginas y secciones de páginas
+Moves the page into this section (list_sections; empty = top level); its name gets the section number	Verschiebt die Seite in diesen Abschnitt (list_sections; leer = oberste Ebene); ihr Name erhält die Abschnittsnummer	Déplace la page dans cette section (list_sections ; vide = niveau supérieur) ; son nom reçoit le numéro de la section	Mueve la página a esta sección (list_sections; vacío = nivel superior); su nombre recibe el número de la sección
+Lists the page sections in tree order; the page names start with the section number	Listet die Seitenabschnitte in Baumreihenfolge; die Seitennamen beginnen mit der Abschnittsnummer	Liste les sections de pages dans l'ordre de l'arborescence ; les noms des pages commencent par le numéro de la section	Lista las secciones de páginas en orden de árbol; los nombres de las páginas empiezan por el número de la sección
+Adds a page section with the next free number	Fügt einen Seitenabschnitt mit der nächsten freien Nummer hinzu	Ajoute une section de pages avec le prochain numéro libre	Añade una sección de páginas con el siguiente número libre
+Section to add a subsection to (default: top level)	Abschnitt, dem ein Unterabschnitt hinzugefügt wird (Standard: oberste Ebene)	Section à laquelle ajouter une sous-section (par défaut : niveau supérieur)	Sección a la que añadir una subsección (predeterminado: nivel superior)
+Number within the parent (default: the next free one)	Nummer innerhalb des übergeordneten Abschnitts (Standard: die nächste freie)	Numéro dans la section parente (par défaut : le prochain libre)	Número dentro de la sección superior (predeterminado: el siguiente libre)
+Changes number, description or parent of a page section; the names of its pages follow	Ändert Nummer, Beschreibung oder übergeordneten Abschnitt eines Seitenabschnitts; die Namen seiner Seiten ändern sich mit	Modifie le numéro, la description ou la section parente d'une section de pages ; les noms de ses pages suivent	Cambia el número, la descripción o la sección superior de una sección de páginas; los nombres de sus páginas cambian con ella
+New number within the parent	Neue Nummer innerhalb des übergeordneten Abschnitts	Nouveau numéro dans la section parente	Nuevo número dentro de la sección superior
+Moves the section into this one (empty = top level)	Verschiebt den Abschnitt in diesen (leer = oberste Ebene)	Déplace la section dans celle-ci (vide = niveau supérieur)	Mueve la sección dentro de esta (vacío = nivel superior)
+up or down: swaps place and number with the neighbouring section	up oder down: tauscht Platz und Nummer mit dem benachbarten Abschnitt	up ou down : échange place et numéro avec la section voisine	up o down: intercambia posición y número con la sección vecina
+Deletes a page section; its pages and subsections go to the section above	Löscht einen Seitenabschnitt; seine Seiten und Unterabschnitte kommen in den übergeordneten Abschnitt	Supprime une section de pages ; ses pages et sous-sections passent dans la section parente	Elimina una sección de páginas; sus páginas y subsecciones pasan a la sección superior
+Section of the page (list_sections; default: that of the page before)	Abschnitt der Seite (list_sections; Standard: der der Seite davor)	Section de la page (list_sections ; par défaut : celle de la page précédente)	Sección de la página (list_sections; predeterminado: la de la página anterior)

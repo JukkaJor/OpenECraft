@@ -42,6 +42,7 @@ pub enum Cmd {
     NewSchematicPage,
     NewPage,
     NewSubPage,
+    NewSection,
     NewDocumentPage,
     PageProperties,
     RenumberPages,
@@ -331,6 +332,8 @@ pub static ALL: &[Def] = &[
     d(C::NewPage, "new_page", tr_const!("New page"), I::FileNew).menu().tip(tr_const!("Cover sheet, overview, graphics, report, mounting layout or a page template")),
     d(C::NewSubPage, "new_sub_page", tr_const!("New sub-page"), I::FileNew)
         .tip(tr_const!("A schematic page 3.1, 3.2, … after the current page, kept as sub-page when renumbering")),
+    d(C::NewSection, "new_section", tr_const!("New section"), I::FolderOpen)
+        .tip(tr_const!("A numbered section that holds pages like a directory; the page names start with its number (2.3.1)")),
     d(C::NewDocumentPage, "new_document_page", tr_const!("New document page…"), I::File).tip(tr_const!("Embeds a file (PDF, Word, Excel, image …) as a page")),
     d(C::PageProperties, "page_properties", tr_const!("Page properties…"), I::PageProperties),
     d(C::RenumberPages, "renumber_pages", tr_const!("Renumber pages…"), I::Renumber),

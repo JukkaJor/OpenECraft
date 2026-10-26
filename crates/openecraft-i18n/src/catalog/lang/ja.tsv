@@ -6236,3 +6236,27 @@ Plugin commands…	プラグインコマンド…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	すべてのプラグインのコマンドをプラグインごとに検索付きで表示します。星を付けるとコマンドがプラグインタブに固定されます
 Star a command in Plugin commands to pin it here	プラグインコマンドで星を付けるとここに固定されます
 Installed plugins	インストール済みプラグイン
+Move to section	セクションへ移動
+Number the sections 1, 2, 3 … on every level first	最初に各レベルのセクションを 1, 2, 3 … と番号付けする
+In every section counting starts again after the section number (2.3.1).	各セクションでは、セクション番号の後から番号付けが再開されます (2.3.1)。
+New page in this section	このセクションに新しいページ
+New subsection	新しいサブセクション
+Section properties…	セクションのプロパティ…
+Move up	上へ移動
+Move down	下へ移動
+Delete section	セクションを削除
+(top level)	（最上位）
+Section properties	セクションのプロパティ
+The names of its pages follow	そのページの名前も変わります
+Parent section	親セクション
+Its pages and subsections go to the section above	そのページとサブセクションは上位のセクションに移ります
+{} pages; their names start with {}	{} ページ、名前は {} で始まります
+Section	セクション
+The page name gets the section number	ページ名にセクション番号が付きます
+New section	新しいセクション
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	フォルダーのようにページを含む番号付きセクション。ページ名はその番号で始まります (2.3.1)
+No such section	そのセクションはありません
+A section number must not be empty or contain a dot	セクション番号は空にできず、ドットを含めることもできません
+Another section here has this number	ここにある別のセクションがこの番号を使っています
+A section cannot be moved into itself	セクションをそれ自身の中に移動することはできません
+Released pages cannot be moved	リリース済みのページは移動できません

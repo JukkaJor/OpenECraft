@@ -242,7 +242,7 @@ pub fn generate(prj: &mut Project, an: &Analysis, block: usize) -> Result<usize,
     let pages = block_pages(prj, an, &b);
     let title = forms::report_form(prj, b.kind, &b.scheme).map(|f| f.title.clone()).filter(|t| !t.is_empty()).unwrap_or_else(|| b.kind.title());
     for (i, (group, first)) in pages.iter().enumerate() {
-        let name = names.pop_front().unwrap_or_else(|| crate::ops::next_page_name(prj));
+        let name = names.pop_front().unwrap_or_else(|| crate::ops::next_page_name(prj, at + i));
         let description = match group {
             Some(g) if !g.is_empty() => format!("{title} {g}"),
             _ => title.clone(),
@@ -252,7 +252,7 @@ pub fn generate(prj: &mut Project, an: &Analysis, block: usize) -> Result<usize,
         page.function = b.function.clone();
         page.location = b.location.clone();
         page.report = Some(ReportPart { block: b.name.clone(), scheme: b.scheme.clone(), group: group.clone(), first: *first, frozen: None });
-        prj.pages.insert(at + i, page);
+        crate::ops::insert_page(prj, at + i, page);
     }
     Ok(pages.len())
 }
@@ -310,14 +310,14 @@ pub fn output_to_project(src: &Project, an: &Analysis, pages: &[usize], target: 
         table.targets.clear();
         table.continued = table.continued || table.more > 0;
         let sp = &src.pages[pi];
-        let name = names.pop_front().unwrap_or_else(|| crate::ops::next_page_name(target));
+        let name = names.pop_front().unwrap_or_else(|| crate::ops::next_page_name(target, at + n));
         let id = target.new_id();
         let mut page = Page::new(id, &name, &sp.description, sp.kind);
         page.function = sp.function.clone();
         page.location = sp.location.clone();
         let block = sp.report.as_ref().map(|r| r.block.clone()).unwrap_or_default();
         page.report = Some(ReportPart { block, frozen: Some(table), ..Default::default() });
-        target.pages.insert(at + n, page);
+        crate::ops::insert_page(target, at + n, page);
         n += 1;
     }
     Ok(n)

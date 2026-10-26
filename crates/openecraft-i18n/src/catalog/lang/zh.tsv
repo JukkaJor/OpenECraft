@@ -6236,3 +6236,27 @@ Plugin commands…	插件命令…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	按插件列出所有插件的命令并可搜索；点击星标可将命令固定到插件选项卡
 Star a command in Plugin commands to pin it here	在插件命令中点击星标即可将命令固定到此处
 Installed plugins	已安装的插件
+Move to section	移到分节
+Number the sections 1, 2, 3 … on every level first	先在每一级将分节编号为 1, 2, 3 …
+In every section counting starts again after the section number (2.3.1).	在每个分节中，编号在分节号之后重新开始 (2.3.1)。
+New page in this section	在此分节中新建页
+New subsection	新建子分节
+Section properties…	分节属性…
+Move up	上移
+Move down	下移
+Delete section	删除分节
+(top level)	（顶层）
+Section properties	分节属性
+The names of its pages follow	其页的名称随之改变
+Parent section	上级分节
+Its pages and subsections go to the section above	其页和子分节移到上级分节
+{} pages; their names start with {}	{} 页；其名称以 {} 开头
+Section	分节
+The page name gets the section number	页名称获得分节号
+New section	新建分节
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	像目录一样包含页的编号分节；页名称以其编号开头 (2.3.1)
+No such section	没有此分节
+A section number must not be empty or contain a dot	分节号不能为空，也不能包含点
+Another section here has this number	此处另一个分节已使用此编号
+A section cannot be moved into itself	分节不能移到其自身中
+Released pages cannot be moved	无法移动已发布页

@@ -96,6 +96,7 @@ impl App {
         let mut apply = false;
         let st = &mut self.numbering_ui;
         let plan = numbering::plan_pages(&self.session.prj, &st.pages);
+        let sectioned = !self.session.prj.sections.is_empty();
         egui::Window::new(tr("Renumber pages")).open(&mut open).resizable(false).show(ctx, |ui| {
             egui::Grid::new("pagenum").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Start at"));
@@ -107,6 +108,10 @@ impl App {
             });
             ui.checkbox(&mut st.pages.per_structure, tr("Start again when the page structure changes"));
             ui.checkbox(&mut st.pages.subpages, tr("Keep sub-pages (3.a, 3.1) with the page before"));
+            if sectioned {
+                ui.checkbox(&mut st.pages.sections, tr("Number the sections 1, 2, 3 … on every level first"));
+                ui.label(RichText::new(tr("In every section counting starts again after the section number (2.3.1).")).weak());
+            }
             ui.label(RichText::new(tr("Released pages keep their name.")).weak());
             ui.separator();
             ui.label(tr_fmt!("{} pages get a new name", plan.len()));

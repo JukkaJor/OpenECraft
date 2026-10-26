@@ -6236,3 +6236,27 @@ Plugin commands…	Laajennusten komennot…
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Kaikkien laajennusten komennot laajennuksittain, haulla; tähti kiinnittää komennon Laajennukset-välilehdelle
 Star a command in Plugin commands to pin it here	Kiinnitä komento tähän tähdellä kohdassa Laajennusten komennot
 Installed plugins	Asennetut laajennukset
+Move to section	Siirrä osioon
+Number the sections 1, 2, 3 … on every level first	Numeroi ensin osiot 1, 2, 3 … jokaisella tasolla
+In every section counting starts again after the section number (2.3.1).	Jokaisessa osiossa laskenta alkaa alusta osion numeron jälkeen (2.3.1).
+New page in this section	Uusi sivu tähän osioon
+New subsection	Uusi alaosio
+Section properties…	Osion ominaisuudet…
+Move up	Siirrä ylöspäin
+Move down	Siirrä alaspäin
+Delete section	Poista osio
+(top level)	(ylin taso)
+Section properties	Osion ominaisuudet
+The names of its pages follow	Sen sivujen nimet muuttuvat mukana
+Parent section	Yläosio
+Its pages and subsections go to the section above	Sen sivut ja alaosiot siirtyvät yläosioon
+{} pages; their names start with {}	{} sivua; niiden nimet alkavat {}
+Section	Osio
+The page name gets the section number	Sivun nimi saa osion numeron
+New section	Uusi osio
+A numbered section that holds pages like a directory; the page names start with its number (2.3.1)	Numeroitu osio, joka sisältää sivuja kuin kansio; sivujen nimet alkavat sen numerolla (2.3.1)
+No such section	Osiota ei ole
+A section number must not be empty or contain a dot	Osion numero ei saa olla tyhjä eikä sisältää pistettä
+Another section here has this number	Toisella osiolla tässä on jo tämä numero
+A section cannot be moved into itself	Osiota ei voi siirtää itsensä sisään
+Released pages cannot be moved	Vapautettuja sivuja ei voi siirtää

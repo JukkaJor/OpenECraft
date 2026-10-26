@@ -1,4 +1,4 @@
-//! Page commands: list, show, add, change and delete pages.
+//! Page commands: list, show, add, change and delete pages and page sections.
 
 use crate::builtin::common::*;
 use crate::params::{optional, Args, Kind};
@@ -8,7 +8,7 @@ use openecraft_core::model::*;
 use openecraft_core::netlist::Netlist;
 use openecraft_core::structure::{Aspect, Dt};
 use openecraft_core::numbering::{self, PageNumbering};
-use openecraft_core::{frame, ops, potentials};
+use openecraft_core::{frame, ops, potentials, sections};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
@@ -16,7 +16,7 @@ pub struct Pages;
 
 impl Plugin for Pages {
     fn info(&self) -> Info {
-        info("pages", tr_const!("Pages"), tr_const!("Lists, changes and deletes pages"))
+        info("pages", tr_const!("Pages"), tr_const!("Lists, changes and deletes pages and page sections"))
     }
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
@@ -49,6 +49,7 @@ pub static COMMANDS: &[Spec] = &[
             optional("installation", Kind::Str, tr_const!("Installation site aspect (++) of the page; the devices on the page move along")),
             optional("location", Kind::Str, tr_const!("Location aspect (+) of the page; the devices on the page move along")),
             optional("product", Kind::Str, tr_const!("Higher-level product aspect (-) of the page; the devices on the page move along")),
+            optional("section", Kind::Str, tr_const!("Moves the page into this section (list_sections; empty = top level); its name gets the section number")),
         ],
         run: set_page,
     },
@@ -79,19 +80,118 @@ pub static COMMANDS: &[Spec] = &[
             optional("step", Kind::Int, tr_const!("Counting step (default 1)")),
             optional("per_structure", Kind::Bool, tr_const!("Start again on every page whose structure differs from the page before")),
             optional("subpages", Kind::Bool, tr_const!("Pages with a suffix (3.a) stay sub-pages of the page before (default true)")),
+            optional("sections", Kind::Bool, tr_const!("Number the sections 1, 2, 3 … on every level first")),
             optional("pages", Kind::Str, tr_const!("Only these pages (names separated by commas)")),
         ],
         run: renumber_pages,
     },
+    Spec {
+        name: "list_sections",
+        help: tr_const!("Lists the page sections in tree order; the page names start with the section number"),
+        params: &[],
+        run: list_sections,
+    },
+    Spec {
+        name: "add_section",
+        help: tr_const!("Adds a page section with the next free number"),
+        params: &[
+            optional("parent", Kind::Str, tr_const!("Section to add a subsection to (default: top level)")),
+            optional("number", Kind::Str, tr_const!("Number within the parent (default: the next free one)")),
+            optional("description", Kind::Str, tr_const!("Description")),
+        ],
+        run: add_section,
+    },
+    Spec {
+        name: "set_section",
+        help: tr_const!("Changes number, description or parent of a page section; the names of its pages follow"),
+        params: &[
+            SECTION,
+            optional("number", Kind::Str, tr_const!("New number within the parent")),
+            optional("description", Kind::Str, tr_const!("Description")),
+            optional("parent", Kind::Str, tr_const!("Moves the section into this one (empty = top level)")),
+            optional("move", Kind::Str, tr_const!("up or down: swaps place and number with the neighbouring section")),
+        ],
+        run: set_section,
+    },
+    Spec {
+        name: "delete_section",
+        help: tr_const!("Deletes a page section; its pages and subsections go to the section above"),
+        params: &[SECTION],
+        run: delete_section,
+    },
 ];
+
+fn section_json(prj: &Project, id: u64) -> Value {
+    let s = sections::get(prj, id).cloned().unwrap_or_default();
+    json!({
+        "number": sections::full_number(prj, id),
+        "description": s.description,
+        "parent": sections::full_number(prj, s.parent),
+        "pages": prj.pages.iter().filter(|p| p.section == id).map(|p| p.name.clone()).collect::<Vec<_>>(),
+    })
+}
+
+fn list_sections(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    Ok(sections::tree(prj).into_iter().map(|(id, _)| section_json(prj, id)).collect())
+}
+
+fn add_section(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let parent = section_id(prj, a.str("parent").unwrap_or_default())?;
+    let id = sections::add(prj, parent, a.str("description").unwrap_or_default());
+    if let Some(n) = a.str("number") {
+        if let Err(e) = sections::set_number(prj, id, n) {
+            prj.sections.retain(|s| s.id != id);
+            return Err(tr(e).into());
+        }
+    }
+    Ok(section_json(prj, id))
+}
+
+fn set_section(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let id = section_id(prj, a.req("section"))?;
+    if id == 0 {
+        return Err(tr("Give a section").into());
+    }
+    if let Some(p) = a.str("parent") {
+        let parent = section_id(prj, p)?;
+        sections::set_parent(prj, id, parent).map_err(tr)?;
+    }
+    if let Some(n) = a.str("number") {
+        sections::set_number(prj, id, n).map_err(tr)?;
+    }
+    if let Some(d) = a.str("description") {
+        if let Some(s) = prj.sections.iter_mut().find(|s| s.id == id) {
+            s.description = d.into();
+        }
+    }
+    match a.str("move").map(|m| m.trim().to_ascii_lowercase()) {
+        Some(m) if m == "up" || m == "down" => {
+            sections::move_section(prj, id, m == "up");
+        }
+        Some(m) => return Err(tr_fmt!("Unknown setting: {}", m)),
+        None => {}
+    }
+    Ok(section_json(prj, id))
+}
+
+fn delete_section(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let id = section_id(prj, a.req("section"))?;
+    if id == 0 {
+        return Err(tr("Give a section").into());
+    }
+    let number = sections::full_number(prj, id);
+    sections::delete(prj, id).map_err(tr)?;
+    Ok(json!({ "deleted": number }))
+}
 
 fn list_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let area = match a.str("work_area") {
         Some(name) => Some(prj.structures.work_area(name).ok_or_else(|| tr_fmt!("No work area named {}", name))?),
         None => None,
     };
-    let pages = prj.pages.iter().filter(|pg| area.is_none_or(|w| w.shows_page(pg))).map(|pg| {
+    let pages = prj.pages.iter().enumerate().filter(|(_, pg)| area.is_none_or(|w| w.shows_page(pg))).map(|(i, pg)| {
         let mut v = page_json(pg);
+        v["section"] = sections::full_number(prj, sections::of_page(prj, i)).into();
         v["symbols"] = pg.symbols.len().into();
         v["wires"] = pg.wires.len().into();
         v["texts"] = pg.texts.len().into();
@@ -157,7 +257,14 @@ fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
         }
         ops::set_page_structure(prj, i, &dt, true);
     }
-    Ok(page_json(&prj.pages[i]))
+    let mut i = i;
+    if let Some(s) = a.str("section") {
+        let section = section_id(prj, s)?;
+        i = sections::move_page(prj, i, section).map_err(tr)?;
+    }
+    let mut v = page_json(&prj.pages[i]);
+    v["section"] = sections::full_number(prj, sections::of_page(prj, i)).into();
+    Ok(v)
 }
 
 fn set_cross_references(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -210,6 +317,7 @@ fn renumber_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
         step: a.int("step").map_or(defaults.step, |v| v.max(1) as u32),
         per_structure: a.flag("per_structure"),
         subpages: a.value("subpages").and_then(Value::as_bool).unwrap_or(defaults.subpages),
+        sections: a.flag("sections"),
         pages: crate::builtin::devices::page_list(prj, a.str("pages"))?,
     };
     let n = numbering::renumber_pages(prj, &opts);

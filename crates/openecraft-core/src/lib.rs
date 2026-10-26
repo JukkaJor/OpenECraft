@@ -81,6 +81,7 @@ pub mod routing3d;
 pub mod rules;
 pub mod safety;
 pub mod search;
+pub mod sections;
 pub mod sample;
 pub mod shortcircuit;
 pub mod singleline;
