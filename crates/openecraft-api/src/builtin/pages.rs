@@ -234,6 +234,9 @@ fn get_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = unlocked(prj, a.req("page"))?;
     if let Some(name) = a.str("name") {
+        if name.trim().is_empty() {
+            return Err(tr("A page needs a name").to_string());
+        }
         if prj.pages.iter().enumerate().any(|(j, pg)| j != i && pg.name == name) {
             return Err(tr_fmt!("A page named {} already exists", name));
         }

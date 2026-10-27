@@ -114,7 +114,8 @@ fn rename_device(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if !tags.iter().any(|t| t == old) {
         return Err(tr_fmt!("No device {}", old));
     }
-    if new.is_empty() || tags.iter().any(|t| t == new) {
+    ops::check_tag(new)?;
+    if tags.iter().any(|t| t == new) {
         return Err(tr_fmt!("Device {} already exists", new));
     }
     ops::rename_device(prj, old, new);

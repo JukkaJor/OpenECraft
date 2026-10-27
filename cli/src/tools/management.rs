@@ -109,11 +109,11 @@ fn today() -> String {
 }
 
 fn read(path: &Path) -> Result<Vec<u8>, String> {
-    std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path.display(), e))
+    std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path.display(), openecraft_i18n::io_error(&e)))
 }
 
 fn write(path: &Path, bytes: &[u8]) -> Result<(), String> {
-    std::fs::write(path, bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), e))
+    std::fs::write(path, bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), openecraft_i18n::io_error(&e)))
 }
 
 /// Project files of a folder and its subfolders.
@@ -121,7 +121,7 @@ fn project_files(folder: &Path) -> Result<Vec<PathBuf>, String> {
     let mut out = Vec::new();
     let mut dirs = vec![folder.to_path_buf()];
     while let Some(dir) = dirs.pop() {
-        let entries = std::fs::read_dir(&dir).map_err(|e| tr_fmt!("Cannot read {}: {}", dir.display(), e))?;
+        let entries = std::fs::read_dir(&dir).map_err(|e| tr_fmt!("Cannot read {}: {}", dir.display(), openecraft_i18n::io_error(&e)))?;
         for e in entries.flatten() {
             let path = e.path();
             if path.is_dir() {

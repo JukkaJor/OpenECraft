@@ -129,11 +129,11 @@ fn output_reports(s: &mut Session, a: &Args) -> Result<Value, String> {
         return Err(tr_fmt!("No report block named {}", b));
     }
     let pages = report_blocks::report_pages(prj, block);
-    let text = std::fs::read_to_string(target).map_err(|e| tr_fmt!("Cannot read {}: {}", target, e))?;
+    let text = std::fs::read_to_string(target).map_err(|e| tr_fmt!("Cannot read {}: {}", target, openecraft_i18n::io_error(&e)))?;
     let mut an = Analysis::build(prj);
     an.set_reports(s.plugins.reports().cloned());
     let (json, n) = report_blocks::output_to_file(prj, &an, &pages, &text)?;
-    std::fs::write(target, json).map_err(|e| tr_fmt!("Cannot write {}: {}", target, e))?;
+    std::fs::write(target, json).map_err(|e| tr_fmt!("Cannot write {}: {}", target, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "target": target, "pages": n }))
 }
 

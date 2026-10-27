@@ -135,9 +135,10 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilt
     type Groups<'a> = BTreeMap<String, BTreeMap<&'a str, Vec<&'a Part>>>;
     let mut tree: BTreeMap<(usize, String), Groups> = BTreeMap::new();
     for p in parts.iter().filter(|p| filter.matches(p)) {
-        let group = or(&p.group, no_group);
+        // Sorted as shown: product groups in the user's language.
+        let group = crate::portal::group_text(&or(&p.group, no_group));
         let (first, sub) = match filter.grouping {
-            Grouping::ProductGroup => ((p.top_group as usize, p.top_group.title().to_string()), p.subgroup.as_str()),
+            Grouping::ProductGroup => ((p.top_group as usize, tr(p.top_group.title()).to_string()), p.subgroup.as_str()),
             Grouping::Manufacturer => ((0, or(&p.manufacturer, no_manufacturer)), ""),
             Grouping::Supplier => ((0, or(&p.supplier, no_supplier)), ""),
         };
@@ -179,7 +180,7 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilt
                             if sub.is_empty() {
                                 leaf(ui, list);
                             } else {
-                                egui::CollapsingHeader::new(*sub)
+                                egui::CollapsingHeader::new(crate::portal::group_text(sub))
                                     .id_salt((id, grouping, top, group.as_str(), *sub))
                                     .open(open)
                                     .show(ui, |ui| leaf(ui, list));
@@ -916,6 +917,11 @@ pub fn mesh_preview(ui: &mut egui::Ui, mesh: &Mesh3d, size: egui::Vec2) {
     }
 }
 
+/// The quantity unit as shown: the default unit (pieces) in the user's language.
+pub fn quantity_unit(unit: &str) -> &str {
+    if unit == "pcs" { tr("pcs") } else { unit }
+}
+
 /// Read only summary of a part.
 pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
     ui.label(RichText::new(&p.number).monospace().strong());
@@ -925,10 +931,10 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
             (tr("Manufacturer"), p.manufacturer.clone()),
             (tr("Type number"), p.type_number.clone()),
             (tr("Order number"), p.order_number.clone()),
-            (tr("Product group"), format!("{} / {}", p.group, p.subgroup)),
+            (tr("Product group"), format!("{} / {}", crate::portal::group_text(&p.group), crate::portal::group_text(&p.subgroup))),
             (tr("Voltage / current"), format!("{} {}", p.voltage, p.current)),
-            (tr("Price"), format!("{:.2} {} / {} {}", p.price, p.currency, p.price_unit, p.quantity_unit)),
-            (tr("Dimensions"), tr_fmt!("{} × {} × {} mm", p.width, p.height, p.depth)),
+            (tr("Price"), if p.price > 0.0 { format!("{} {} / {} {}", openecraft_i18n::decimal(p.price.into(), 2), p.currency, p.price_unit, quantity_unit(&p.quantity_unit)) } else { String::new() }),
+            (tr("Dimensions"), if p.width > 0.0 || p.height > 0.0 || p.depth > 0.0 { tr_fmt!("{} × {} × {} mm", p.width, p.height, p.depth) } else { String::new() }),
             (tr("Functions"), p.template_summary()),
             (tr("Accessories"), p.accessories.join(", ")),
             (tr("Lifecycle"), if p.lifecycle.is_active() { String::new() } else { tr(p.lifecycle.title()).to_string() }),

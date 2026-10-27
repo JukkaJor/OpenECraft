@@ -57,7 +57,10 @@ fn run(argv: &[String]) -> Result<(), String> {
             }
             Ok(())
         }
-        "mcp" => mcp::serve(&mut session, std::io::stdin().lock(), std::io::stdout().lock()),
+        "mcp" => {
+            session.mcp_tools = mcp::tools_from_env();
+            mcp::serve(&mut session, std::io::stdin().lock(), std::io::stdout().lock())
+        }
         "version" => {
             println!("openecraft-cli {}", env!("CARGO_PKG_VERSION"));
             Ok(())

@@ -5552,7 +5552,7 @@ End, from the top edge of the face in mm	Ende, vom oberen Rand der Fläche in mm
 Part number of the rail or duct	Artikelnummer der Tragschiene oder des Kabelkanals	Référence du rail ou de la goulotte	Número de artículo del carril o de la canaleta
 Mounts a device or a part on a wall or the ceiling of a room: on a rail there, or directly on the wall when its part is made for wall mounting	Montiert ein Gerät oder einen Artikel an einer Wand oder der Decke eines Raums: auf einer Tragschiene dort oder direkt an der Wand, wenn sein Artikel für Wandmontage vorgesehen ist	Monte un appareil ou un article sur un mur ou le plafond d'une salle : sur un rail, ou directement au mur si son article est prévu pour le montage mural	Monta un equipo o un artículo en una pared o el techo de una sala: sobre un carril, o directamente en la pared si su artículo está previsto para montaje mural
 Device tag, or a part number for a part without device tag	Betriebsmittelkennzeichen oder eine Artikelnummer für einen Artikel ohne Kennzeichen	Repère d'appareil, ou référence pour un article sans repère	Identificador del equipo, o número de artículo para un artículo sin identificador
-Room (location, e.g. =ROOM1)	Raum (Ort, z. B. =ROOM1)	Salle (emplacement, p. ex. =ROOM1)	Sala (ubicación, p. ej. =ROOM1)
+Room (location, e.g. +ROOM1)	Raum (Ort, z. B. +ROOM1)	Salle (emplacement, p. ex. +ROOM1)	Sala (ubicación, p. ej. +ROOM1)
 A room needs at least four walls	Ein Raum braucht mindestens vier Wände	Une salle doit avoir au moins quatre murs	Una sala necesita al menos cuatro paredes
 Adds a mounting rail or cable duct on a wall or the ceiling of a room, from x1 / y1 to x2 / y2 (walls seen from inside the room, the ceiling from above)	Fügt eine Tragschiene oder einen Kabelkanal an einer Wand oder der Decke eines Raums hinzu, von x1 / y1 bis x2 / y2 (Wände vom Rauminneren gesehen, die Decke von oben)	Ajoute un rail ou une goulotte sur un mur ou le plafond d'une salle, de x1 / y1 à x2 / y2 (murs vus de l'intérieur de la salle, le plafond vu de dessus)	Añade un carril o una canaleta en una pared o el techo de una sala, de x1 / y1 a x2 / y2 (paredes vistas desde el interior de la sala, el techo desde arriba)
 Back to a rectangle of the room's width and depth	Zurück zu einem Rechteck aus Breite und Tiefe des Raums	Revenir à un rectangle de la largeur et de la profondeur de la salle	Volver a un rectángulo del ancho y la profundidad de la sala
@@ -5631,3 +5631,54 @@ wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms) or ceiling	wa
 wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms)	wall1, wall2, …, inner1a, inner1b, … (wie von list_rooms aufgelistet)	wall1, wall2, …, inner1a, inner1b, … (comme listés par list_rooms)	wall1, wall2, …, inner1a, inner1b, … (según list_rooms)
 {}: inner wall {}: {}	{}: Innenwand {}: {}	{} : mur intérieur {} : {}	{}: pared interior {}: {}
 {}: {} stands in an inner wall	{}: {} steht in einer Innenwand	{} : {} se trouve dans un mur intérieur	{}: {} está dentro de una pared interior
+Opening {} replaces the current project, its unsaved changes are lost.	Das Öffnen von {} ersetzt das aktuelle Projekt, dessen ungespeicherte Änderungen gehen verloren.	Ouvrir {} remplace le projet actuel, ses modifications non enregistrées sont perdues.	Abrir {} reemplaza el proyecto actual, sus cambios no guardados se pierden.
+Discard changes and open	Änderungen verwerfen und öffnen	Abandonner les modifications et ouvrir	Descartar los cambios y abrir
+Open link	Link öffnen	Ouvrir le lien	Abrir enlace
+Replace the file at path if it exists	Die Datei unter path ersetzen, falls sie existiert	Remplacer le fichier de path s'il existe	Reemplazar el archivo de path si existe
+{} exists already: pass overwrite to replace it	{} existiert bereits: overwrite angeben, um sie zu ersetzen	{} existe déjà : passez overwrite pour le remplacer	{} ya existe: indique overwrite para reemplazarlo
+{} has unsaved changes. Discard them?	{} hat ungespeicherte Änderungen. Verwerfen?	{} contient des modifications non enregistrées. Les abandonner ?	{} tiene cambios sin guardar. ¿Descartarlos?
+Discard changes	Änderungen verwerfen	Abandonner les modifications	Descartar los cambios
+Locked by {} on the project server – read only	Auf dem Projektserver von {} gesperrt – schreibgeschützt	Verrouillé par {} sur le serveur de projets – lecture seule	Bloqueado por {} en el servidor de proyectos – solo lectura
+A device tag must not be empty	Ein Betriebsmittelkennzeichen darf nicht leer sein	Un repère d'appareil ne doit pas être vide	Una designación de dispositivo no debe estar vacía
+Device tag {} must start with -, = or +	Betriebsmittelkennzeichen {} muss mit -, = oder + beginnen	Le repère {} doit commencer par -, = ou +	La designación {} debe empezar por -, = o +
+Device tag {} must not contain blanks or the separators ; | ,	Betriebsmittelkennzeichen {} darf keine Leerzeichen und keine Trennzeichen ; | , enthalten	Le repère {} ne doit contenir ni espaces ni les séparateurs ; | ,	La designación {} no debe contener espacios ni los separadores ; | ,
+{} lies outside page {}	{} liegt außerhalb von Seite {}	{} se trouve hors de la page {}	{} está fuera de la página {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Position {} / {} mm liegt außerhalb der Seite ({} x {} mm)	La position {} / {} mm est hors de la page ({} x {} mm)	La posición {} / {} mm está fuera de la página ({} x {} mm)
+The wire has no length	Die Verbindung hat keine Länge	Le fil n'a pas de longueur	El hilo no tiene longitud
+Start and end are the same connection point	Anfang und Ende sind derselbe Anschluss	Le début et la fin sont le même point de raccordement	El inicio y el final son el mismo punto de conexión
+A page needs a name	Eine Seite braucht einen Namen	Une page doit avoir un nom	Una página necesita un nombre
+Printing and export	Drucken und Ausgabe	Impression et export	Impresión y exportación
+1 project on the server	1 Projekt auf dem Server	1 projet sur le serveur	1 proyecto en el servidor
+pcs	Stk.	pce	uds.
+Legend plate	Bezeichnungsschild	Porte-étiquette	Placa de identificación
+KNX actuator	KNX-Aktor	Actionneur KNX	Actuador KNX
+KNX system device	KNX-Systemgerät	Appareil système KNX	Dispositivo de sistema KNX
+Battery monitor	Batteriemonitor	Moniteur de batterie	Monitor de batería
+System monitoring	Systemüberwachung	Surveillance du système	Supervisión del sistema
+Cable clamp rail	Kabelabfangschiene	Rail de fixation des câbles	Riel de sujeción de cables
+Document holder	Schaltplantasche	Porte-documents	Portadocumentos
+Door handle	Türgriff	Poignée de porte	Manija de puerta
+Filter fan	Filterlüfter	Ventilateur à filtre	Ventilador con filtro
+Outlet filter	Austrittsfilter	Filtre de sortie	Filtro de salida
+PE busbar	PE-Schiene	Barre PE	Barra PE
+Rail standoff	Schienenabstandshalter	Entretoise de rail	Separador de riel
+Screw	Schraube	Vis	Tornillo
+Nut	Mutter	Écrou	Tuerca
+Washer	Unterlegscheibe	Rondelle	Arandela
+Side panel	Seitenwand	Paroi latérale	Panel lateral
+DC-DC converter	DC/DC-Wandler	Convertisseur CC-CC	Convertidor CC-CC
+Inverter / charger	Wechselrichter / Ladegerät	Onduleur / chargeur	Inversor / cargador
+Solar charge controller	Solarladeregler	Régulateur de charge solaire	Regulador de carga solar
+Breaking capacity	Schaltvermögen	Pouvoir de coupure	Poder de corte
+Poles	Pole	Pôles	Polos
+Wrong user name or password	Falscher Benutzername oder falsches Passwort	Nom d'utilisateur ou mot de passe incorrect	Nombre de usuario o contraseña incorrectos
+Too many failed sign-ins, try again later	Zu viele fehlgeschlagene Anmeldungen, bitte später erneut versuchen	Trop d'échecs de connexion, réessayez plus tard	Demasiados inicios de sesión fallidos, inténtelo más tarde
+Part {} not found	Artikel {} nicht gefunden	Article {} introuvable	Artículo {} no encontrado
+X {}  Y {} mm · {}	X {}  Y {} mm · {}	X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	Datei oder Ordner nicht gefunden	fichier ou dossier introuvable	archivo o carpeta no encontrado
+access denied	Zugriff verweigert	accès refusé	acceso denegado
+the file exists already	die Datei existiert bereits	le fichier existe déjà	el archivo ya existe
+this is a folder	dies ist ein Ordner	c'est un dossier	es una carpeta
+the disk is full	der Datenträger ist voll	le disque est plein	el disco está lleno
+Enclosures and rooms	Gehäuse und Räume	Enveloppes et salles	Envolventes y salas
+Not saved, locked or changed by another user: {}	Nicht gespeichert, von einem anderen Benutzer gesperrt oder geändert: {}	Non enregistré, verrouillé ou modifié par un autre utilisateur : {}	No guardado, bloqueado o modificado por otro usuario: {}

@@ -66,9 +66,10 @@ impl ProjectEndpoint {
         self.json("POST", &format!("{}/open", project_path(name)), &OpenRequest { user: user.into() })
     }
 
-    /// PUT /api/v1/projects/{name}: saves what the session has locked.
-    pub fn save(&self, name: &str, session: &Session, project: &Project, release: Vec<Target>) -> ehttp::Request {
-        let req = SaveRequest { session: session.clone(), project: project.clone(), release };
+    /// PUT /api/v1/projects/{name}: saves what the session changed since `base_revision`
+    /// (the revision last loaded): what it has locked and what is free.
+    pub fn save(&self, name: &str, session: &Session, project: &Project, release: Vec<Target>, base_revision: u64) -> ehttp::Request {
+        let req = SaveRequest { session: session.clone(), project: project.clone(), release, base_revision, strict: false };
         self.json("PUT", &project_path(name), &req)
     }
 

@@ -10,7 +10,7 @@ use tower::ServiceExt;
 const TOKEN: &str = "secret-token";
 
 fn app(token: Option<&str>) -> Router {
-    let server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()) };
+    let server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()), throttle: Throttle::default() };
     router(AppState { server: Arc::new(Mutex::new(server)), token: token.map(String::from) })
 }
 
@@ -74,6 +74,10 @@ async fn create_list_and_open() {
 
     let req = CreateRequest { name: "Plant 1".into(), user: "ben".into(), project: Project::default() };
     assert_eq!(error(&app, "POST", "/api/v1/projects", &req).await.0, StatusCode::CONFLICT);
+    // Windows and macOS would store it in the same file.
+    let req = CreateRequest { name: "plant 1".into(), user: "ben".into(), project: Project::default() };
+    let (status, text) = error(&app, "POST", "/api/v1/projects", &req).await;
+    assert_eq!((status, text.as_str()), (StatusCode::CONFLICT, "project 'Plant 1' already exists"));
     let req = CreateRequest { name: "../x".into(), user: "ben".into(), project: Project::default() };
     assert_eq!(error(&app, "POST", "/api/v1/projects", &req).await.0, StatusCode::BAD_REQUEST);
     let req = CreateRequest { name: "x".into(), user: " ".into(), project: Project::default() };
@@ -106,9 +110,9 @@ async fn two_users_edit_different_pages() {
     let mut b = ben.snapshot.project.clone();
     b.pages[0].description = "ben 1".into();
     b.pages[1].description = "ben 2".into();
-    let saved: Snapshot = ok(&app, "PUT", path, &SaveRequest { session: anna.session.clone(), project: a, release: Vec::new() }).await;
+    let saved: Snapshot = ok(&app, "PUT", path, &SaveRequest { session: anna.session.clone(), project: a, release: Vec::new(), ..Default::default() }).await;
     assert_eq!(saved.revision, 2);
-    let saved: Snapshot = ok(&app, "PUT", path, &SaveRequest { session: ben.session.clone(), project: b, release: vec![Target::Page(p2)] }).await;
+    let saved: Snapshot = ok(&app, "PUT", path, &SaveRequest { session: ben.session.clone(), project: b, release: vec![Target::Page(p2)], ..Default::default() }).await;
     assert_eq!(saved.revision, 3);
     assert_eq!(saved.project.pages[0].description, "anna 1");
     assert_eq!(saved.project.pages[1].description, "ben 2");
@@ -132,7 +136,7 @@ async fn pages_locked_by_others_cannot_be_deleted() {
     let _: Status = ok(&app, "POST", &format!("{path}/lock"), &LockRequest { session: ben.session.clone(), targets: vec![Target::Page(p2)] }).await;
     let mut a = anna.snapshot.project.clone();
     a.pages.pop();
-    let req = SaveRequest { session: anna.session.clone(), project: a, release: Vec::new() };
+    let req = SaveRequest { session: anna.session.clone(), project: a, release: Vec::new(), ..Default::default() };
     let (code, msg) = error(&app, "PUT", path, &req).await;
     assert_eq!(code, StatusCode::CONFLICT);
     assert!(msg.contains("ben"), "{msg}");
@@ -166,7 +170,7 @@ async fn users_roles_and_projects() {
     let app = app(Some(TOKEN));
     // The server token creates the users.
     for (name, role, projects) in [("anna", ProjectRole::Editor, vec![]), ("vic", ProjectRole::Viewer, vec![]), ("eve", ProjectRole::Editor, vec!["Office".to_string()])] {
-        let req = UserUpdate { password: Some(format!("{name}-pw")), role: Some(role), projects, groups: None };
+        let req = UserUpdate { password: Some(format!("{name}-password")), role: Some(role), projects, groups: None };
         let (s, text) = with(&app, "PUT", &format!("/api/v1/users/{name}"), TOKEN, &req).await;
         assert!(s.is_success(), "{s} {text}");
     }
@@ -175,7 +179,7 @@ async fn users_roles_and_projects() {
     // Without a token nothing works any more.
     let (s, _) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
     assert_eq!(s, StatusCode::UNAUTHORIZED);
-    let login = |name: &str| LoginRequest { user: name.into(), password: format!("{name}-pw"), ..Default::default() };
+    let login = |name: &str| LoginRequest { user: name.into(), password: format!("{name}-password"), ..Default::default() };
     let (s, _) = call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&LoginRequest { user: "anna".into(), password: "wrong".into(), ..Default::default() }).unwrap()).await;
     assert_eq!(s, StatusCode::UNAUTHORIZED);
     let session = |text: String| serde_json::from_str::<LoginResponse>(&text).unwrap().token;
@@ -229,10 +233,10 @@ async fn users_roles_and_projects() {
 async fn sign_in(app: &Router, users: &[(&str, Option<ProjectRole>, &[&str])]) -> Vec<String> {
     let mut tokens = Vec::new();
     for (name, role, groups) in users {
-        let req = UserUpdate { password: Some(format!("{name}-pw")), role: *role, projects: vec![], groups: Some(groups.iter().map(|g| g.to_string()).collect()) };
+        let req = UserUpdate { password: Some(format!("{name}-password")), role: *role, projects: vec![], groups: Some(groups.iter().map(|g| g.to_string()).collect()) };
         let (s, text) = with(app, "PUT", &format!("/api/v1/users/{name}"), TOKEN, &req).await;
         assert!(s.is_success(), "{s} {text}");
-        let login = LoginRequest { user: name.to_string(), password: format!("{name}-pw"), ..Default::default() };
+        let login = LoginRequest { user: name.to_string(), password: format!("{name}-password"), ..Default::default() };
         let (s, text) = call(app, "POST", "/api/v1/login", None, serde_json::to_string(&login).unwrap()).await;
         assert!(s.is_success(), "{s} {text}");
         tokens.push(serde_json::from_str::<LoginResponse>(&text).unwrap().token);
@@ -287,7 +291,7 @@ async fn rights_per_project() {
     assert_eq!(s, StatusCode::FORBIDDEN);
     let mut changed = rita_session.snapshot.project.clone();
     changed.info.name = "renamed".into();
-    let save = SaveRequest { session: rita_session.session.clone(), project: changed, release: vec![] };
+    let save = SaveRequest { session: rita_session.session.clone(), project: changed, release: vec![], ..Default::default() };
     let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201", rita, &save).await;
     assert!(s.is_success(), "{text}");
     assert_eq!(serde_json::from_str::<Snapshot>(&text).unwrap().project.info.name, opened.snapshot.project.info.name, "only reviews are taken");
@@ -348,7 +352,7 @@ async fn create_with(app: &Router, token: &str) {
 
 #[tokio::test]
 async fn directory_sign_in() {
-    let mut server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()) };
+    let mut server = Server { store: Store::in_memory(), sessions: Sessions::default(), users: Users::default(), access: AccessFile::in_memory(Default::default()), throttle: Throttle::default() };
     let corp = openecraft_auth::Directory {
         id: "corp".into(),
         url: "ldap://127.0.0.1:1".into(),
@@ -374,4 +378,106 @@ async fn directory_sign_in() {
     assert_eq!(s, StatusCode::SERVICE_UNAVAILABLE, "{text}");
     let (_, text) = call(&app, "POST", "/api/v1/login", None, login("anna", "")).await;
     assert!(text.contains("wrong password"), "{text}");
+}
+
+#[tokio::test]
+async fn lock_errors_name_the_page_and_hide_other_sessions() {
+    let app = app(None);
+    let anna = create(&app, "anna").await;
+    let ben = open(&app, "ben").await;
+    let page = &anna.snapshot.project.pages[1];
+    let path = "/api/v1/projects/Plant%201";
+    let lock = |s: &Session| LockRequest { session: s.clone(), targets: vec![Target::Page(page.id)] };
+    let _: Status = ok(&app, "POST", &format!("{path}/lock"), &lock(&anna.session)).await;
+    let (status, text) = error(&app, "POST", &format!("{path}/lock"), &lock(&ben.session)).await;
+    assert_eq!((status, text), (StatusCode::CONFLICT, format!("page {} is locked by anna", page.name)));
+    // The session of a lock is the key to it: only its owner sees it.
+    let seen: Status = ok(&app, "POST", &format!("{path}/status"), &ben.session).await;
+    assert_eq!(seen.locks.len(), 1);
+    assert_ne!(seen.locks[0].session, anna.session.session);
+    let own: Status = ok(&app, "POST", &format!("{path}/status"), &anna.session).await;
+    assert_eq!(own.locks[0].session, anna.session.session);
+    let snapshot: Snapshot = ok(&app, "GET", path, &()).await;
+    assert_ne!(snapshot.locks[0].session, anna.session.session);
+}
+
+#[tokio::test]
+async fn user_names_passwords_and_the_last_administrator() {
+    let app = app(None);
+    let admin = UserUpdate { password: Some("root-password".into()), role: Some(ProjectRole::Admin), projects: vec![], groups: None };
+    let _: ProjectUser = ok(&app, "PUT", "/api/v1/users/root", &admin).await;
+    let login = LoginRequest { user: "root".into(), password: "root-password".into(), ..Default::default() };
+    let (_, text) = call(&app, "POST", "/api/v1/login", None, serde_json::to_string(&login).unwrap()).await;
+    let root = serde_json::from_str::<LoginResponse>(&text).unwrap().token;
+    let user = |password: &str| UserUpdate { password: Some(password.into()), role: Some(ProjectRole::Editor), projects: vec![], groups: None };
+    assert_eq!(with(&app, "PUT", "/api/v1/users/a%20b", &root, &user("long-password")).await.0, StatusCode::BAD_REQUEST);
+    assert_eq!(with(&app, "PUT", "/api/v1/users/weak", &root, &user("1")).await.0, StatusCode::BAD_REQUEST);
+    // Without server token someone must stay able to manage the users.
+    assert_eq!(with(&app, "DELETE", "/api/v1/users/root", &root, &()).await.0, StatusCode::CONFLICT);
+    assert_eq!(with(&app, "PUT", "/api/v1/users/root", &root, &user("")).await.0, StatusCode::CONFLICT);
+    // Signing out without a session is no error.
+    assert_eq!(call(&app, "POST", "/api/v1/logout", None, String::new()).await.0, StatusCode::NO_CONTENT);
+}
+
+#[tokio::test]
+async fn failed_sign_ins_are_throttled() {
+    let app = app(None);
+    let admin = UserUpdate { password: Some("root-password".into()), role: Some(ProjectRole::Admin), projects: vec![], groups: None };
+    let _: ProjectUser = ok(&app, "PUT", "/api/v1/users/root", &admin).await;
+    let login = |password: &str| serde_json::to_string(&LoginRequest { user: "root".into(), password: password.into(), ..Default::default() }).unwrap();
+    for _ in 0..openecraft_auth::throttle::FREE_ATTEMPTS {
+        assert_eq!(call(&app, "POST", "/api/v1/login", None, login("guess")).await.0, StatusCode::UNAUTHORIZED);
+    }
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, login("root-password")).await.0, StatusCode::TOO_MANY_REQUESTS);
+}
+
+#[tokio::test]
+async fn saves_with_a_base_revision_lock_free_changes_and_report_the_rest() {
+    let app = app(None);
+    let anna = create(&app, "anna").await;
+    let ben = open(&app, "ben").await;
+    let (p1, p2) = (anna.snapshot.project.pages[0].id, anna.snapshot.project.pages[1].id);
+    let path = "/api/v1/projects/Plant%201";
+    // Ben holds page 2; anna changes both pages without any lock.
+    let _: Status = ok(&app, "POST", &format!("{path}/lock"), &LockRequest { session: ben.session.clone(), targets: vec![Target::Page(p2)] }).await;
+    let mut a = anna.snapshot.project.clone();
+    a.pages[0].description = "anna 1".into();
+    a.pages[1].description = "anna 2".into();
+    let base = anna.snapshot.revision;
+    let req = SaveRequest { session: anna.session.clone(), project: a.clone(), base_revision: base, ..Default::default() };
+    let saved: Snapshot = ok(&app, "PUT", path, &req).await;
+    assert_eq!(saved.project.pages[0].description, "anna 1", "the free page was locked and saved");
+    assert_eq!(saved.project.pages[1].description, anna.snapshot.project.pages[1].description);
+    assert_eq!(saved.ignored, vec![Target::Page(p2)]);
+    assert!(saved.locks.iter().any(|l| l.target == Target::Page(p1) && l.session == anna.session.session));
+
+    // Strict: nothing is saved when a change would be left out.
+    a.pages[0].description = "anna 1b".into();
+    let strict = SaveRequest { session: anna.session.clone(), project: a, base_revision: saved.revision, strict: true, ..Default::default() };
+    let (code, msg) = error(&app, "PUT", path, &strict).await;
+    assert_eq!(code, StatusCode::CONFLICT);
+    assert!(msg.contains(&format!("page {}", saved.project.pages[1].name)), "{msg}");
+    let snap: Snapshot = ok(&app, "GET", path, &()).await;
+    assert_eq!(snap.project.pages[0].description, "anna 1");
+}
+
+#[tokio::test]
+async fn changes_made_by_others_since_the_base_are_not_overwritten() {
+    let app = app(None);
+    let anna = create(&app, "anna").await;
+    let ben = open(&app, "ben").await;
+    let path = "/api/v1/projects/Plant%201";
+    // Ben changes page 1 (locking it on the way) and releases it again.
+    let mut b = ben.snapshot.project.clone();
+    b.pages[0].description = "ben".into();
+    let req = SaveRequest { session: ben.session.clone(), project: b, release: vec![Target::Page(ben.snapshot.project.pages[0].id)], base_revision: 1, ..Default::default() };
+    let saved: Snapshot = ok(&app, "PUT", path, &req).await;
+    assert_eq!(saved.project.pages[0].description, "ben");
+    // Anna still edits revision 1: her change of the same page would overwrite ben's.
+    let mut a = anna.snapshot.project.clone();
+    a.pages[0].description = "anna".into();
+    let req = SaveRequest { session: anna.session.clone(), project: a, base_revision: 1, ..Default::default() };
+    let saved: Snapshot = ok(&app, "PUT", path, &req).await;
+    assert_eq!(saved.project.pages[0].description, "ben");
+    assert_eq!(saved.ignored, vec![Target::Page(anna.snapshot.project.pages[0].id)]);
 }

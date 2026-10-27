@@ -28,7 +28,7 @@ pub static TOOLS: &[Tool] = &[
 
 fn import_device_descriptions(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let file = path.rsplit(['/', '\\']).next().unwrap_or(path);
     let list = devdesc::import(&text, file)?;
     let out: Vec<Value> = list.iter().map(description_json).collect();
@@ -39,7 +39,7 @@ fn import_device_descriptions(s: &mut Session, a: &Args) -> Result<Value, String
 fn import_aml(s: &mut Session, a: &Args) -> Result<Value, String> {
     let text = match (a.str("text"), a.str("path")) {
         (Some(t), _) => t.to_string(),
-        (None, Some(path)) => std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?,
+        (None, Some(path)) => std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?,
         (None, None) => return Err(tr_fmt!("Missing parameter: {}", "path")),
     };
     let prj = s.project_mut()?;

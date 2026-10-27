@@ -194,9 +194,15 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
     for s in &page.symbols {
         let Some(def) = prj.symbol(&s.sym) else { continue };
         let ink = if opts.selected.contains(&s.id) { Ink::Selected } else { Ink::Line };
-        if structured {
-            let shown = SymbolInst { tag: structure::relative(page, &s.tag), ..s.clone() };
-            draw_symbol(d, &def, &shown, ink);
+        let tag = if continues_strip(prj, page_i, &def, s) {
+            String::new()
+        } else if structured {
+            structure::relative(page, &s.tag)
+        } else {
+            s.tag.clone()
+        };
+        if tag != s.tag {
+            draw_symbol(d, &def, &SymbolInst { tag, ..s.clone() }, ink);
         } else {
             draw_symbol(d, &def, s, ink);
         }
@@ -453,6 +459,11 @@ fn find_inst<'a>(prj: &'a Project, loc: &Loc) -> Option<&'a SymbolInst> {
 
 /// Text beside a wire at fraction `t` of its length: left of vertical wires, above
 /// horizontal ones (`below`: right of / below the wire).
+/// Distance of a wire number from the ends of its wire (mm).
+const END_CLEARANCE: f32 = 4.5;
+/// Length of a wire taken by the cable tag and core below the cable stroke (mm).
+const CORE_LABEL: f32 = 4.0;
+
 fn wire_text(d: &mut dyn Draw, w: &Wire, t: f32, text: &str, below: bool, ink: Ink) {
     let q = p(w.a.x + (w.b.x - w.a.x) * t, w.a.y + (w.b.y - w.a.y) * t);
     if (w.b.x - w.a.x).abs() < (w.b.y - w.a.y).abs() {
@@ -473,8 +484,12 @@ fn draw_wire_labels(d: &mut dyn Draw, prj: &Project, an: &Analysis, page_i: usiz
         let Some(w) = wirenum::label_wire(page, page_i, net) else { continue };
         let number = wirenum::number_of(prj, net);
         if !number.is_empty() {
-            // Cable cores are labelled at 30 % of the wire.
-            let t = if w.cable.is_empty() { 0.5 } else { 0.72 };
+            // Cable cores are labelled at 30 % of the wire: the number goes into the
+            // middle of the rest, clear of the end with the connection point
+            // designations.
+            let len = (w.b.x - w.a.x).hypot(w.b.y - w.a.y);
+            let (from, to) = if w.cable.is_empty() { (END_CLEARANCE, len - END_CLEARANCE) } else { (0.3 * len + CORE_LABEL, len - END_CLEARANCE) };
+            let t = if to > from && len > 0.0 { (from + to) / 2.0 / len } else if w.cable.is_empty() { 0.5 } else { 0.72 };
             wire_text(d, w, t, &number, false, Ink::Text);
         }
     }
@@ -555,7 +570,7 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
     // Tag block
     if def.show_tag {
         let mut lines: Vec<(String, f32, Ink, Option<usize>)> = Vec::new();
-        if !s.tag.is_empty() {
+        if !s.tag.is_empty() && !continues_strip(prj, page_i, def, s) {
             lines.push((structure::relative(&prj.pages[page_i], &s.tag), TAG_SIZE, text_ink, None));
         }
         if !s.function_text.is_empty() {
@@ -595,6 +610,20 @@ pub fn draw_annotations(d: &mut dyn Draw, prj: &Project, idx: &Index, page_i: us
     }
 }
 
+/// A terminal right beside the one before it of the same strip (same row, at most
+/// 20 mm apart): the strip tag is shown once, at the first terminal of the row, or it
+/// would run into the terminal numbers.
+pub fn continues_strip(prj: &Project, page_i: usize, def: &SymbolDef, s: &SymbolInst) -> bool {
+    let is_terminal = |d: &SymbolDef| matches!(d.func, Func::Terminal);
+    is_terminal(def)
+        && s.tag_offset.is_none()
+        && s.rot.is_multiple_of(2)
+        && prj.pages[page_i].symbols.iter().any(|o| {
+            let dx = s.pos.x - o.pos.x;
+            o.id != s.id && o.tag == s.tag && (o.pos.y - s.pos.y).abs() < 0.1 && dx > 0.0 && dx <= 20.0 && o.rot == s.rot && prj.symbol(&o.sym).is_some_and(|d| is_terminal(&d))
+        })
+}
+
 /// Where the tag block starts: x and top y of the first line and the text anchor
 /// (left of vertical symbols, above horizontal ones, or where it was placed).
 fn tag_block_origin(def: &SymbolDef, s: &SymbolInst, sizes: &[f32]) -> (f32, f32, Anchor) {
@@ -614,7 +643,7 @@ pub fn tag_block_bounds(prj: &Project, page_i: usize, def: &SymbolDef, s: &Symbo
         return None;
     }
     let mut lines: Vec<(String, f32)> = Vec::new();
-    if !s.tag.is_empty() {
+    if !s.tag.is_empty() && !continues_strip(prj, page_i, def, s) {
         lines.push((structure::relative(&prj.pages[page_i], &s.tag), TAG_SIZE));
     }
     lines.extend(s.function_text.lines().map(|l| (l.to_string(), 2.0)));

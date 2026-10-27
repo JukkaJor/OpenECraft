@@ -6300,3 +6300,54 @@ Draw inner walls	Binnenwanden tekenen
 Inner wall {}, side {}	Binnenwand {}, zijde {}
 Thickness	Dikte
 {}: {} stands in an inner wall	{}: {} staat in een binnenwand
+Opening {} replaces the current project, its unsaved changes are lost.	Het openen van {} vervangt het huidige project; niet-opgeslagen wijzigingen gaan verloren.
+Discard changes and open	Wijzigingen verwerpen en openen
+Open link	Koppeling openen
+Replace the file at path if it exists	Het bestand op path vervangen als het bestaat
+{} exists already: pass overwrite to replace it	{} bestaat al: geef overwrite op om het te vervangen
+{} has unsaved changes. Discard them?	{} heeft niet-opgeslagen wijzigingen. Verwerpen?
+Discard changes	Wijzigingen verwerpen
+Locked by {} on the project server – read only	Vergrendeld door {} op de projectserver – alleen-lezen
+A device tag must not be empty	Een apparaatcode mag niet leeg zijn
+Device tag {} must start with -, = or +	Apparaatcode {} moet beginnen met -, = of +
+Device tag {} must not contain blanks or the separators ; | ,	Apparaatcode {} mag geen spaties of de scheidingstekens ; | , bevatten
+{} lies outside page {}	{} ligt buiten pagina {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Positie {} / {} mm ligt buiten de pagina ({} x {} mm)
+The wire has no length	De verbinding heeft geen lengte
+Start and end are the same connection point	Begin en eind zijn hetzelfde aansluitpunt
+A page needs a name	Een pagina heeft een naam nodig
+Printing and export	Afdrukken en exporteren
+1 project on the server	1 project op de server
+pcs	st.
+Legend plate	Tekstplaatje
+KNX actuator	KNX-actor
+KNX system device	KNX-systeemapparaat
+Battery monitor	Accumonitor
+System monitoring	Systeembewaking
+Cable clamp rail	Kabelopvangrail
+Document holder	Documentenhouder
+Door handle	Deurgreep
+Filter fan	Filterventilator
+Outlet filter	Uitlaatfilter
+PE busbar	PE-rail
+Rail standoff	Railafstandhouder
+Screw	Schroef
+Nut	Moer
+Washer	Ring
+Side panel	Zijwand
+DC-DC converter	DC/DC-omvormer
+Inverter / charger	Omvormer / lader
+Solar charge controller	Zonnelaadregelaar
+Breaking capacity	Uitschakelvermogen
+Poles	Polen
+Wrong user name or password	Onjuiste gebruikersnaam of onjuist wachtwoord
+Too many failed sign-ins, try again later	Te veel mislukte aanmeldingen, probeer het later opnieuw
+Part {} not found	Artikel {} niet gevonden
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	bestand of map niet gevonden
+access denied	toegang geweigerd
+the file exists already	het bestand bestaat al
+this is a folder	dit is een map
+the disk is full	de schijf is vol
+Enclosures and rooms	Behuizingen en ruimten
+Not saved, locked or changed by another user: {}	Niet opgeslagen, vergrendeld of gewijzigd door een andere gebruiker: {}

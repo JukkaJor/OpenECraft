@@ -176,3 +176,18 @@ fn mounting_pages_show_every_face_with_items() {
     let texts: Vec<&str> = d.texts.iter().map(|t| t.1.as_str()).collect();
     assert!(texts.contains(&"Mounting plate") && texts.contains(&"Roof"), "{texts:?}");
 }
+
+#[test]
+fn a_row_of_terminals_shows_the_strip_tag_once() {
+    let mut prj = Project::default();
+    for (i, x) in [100.0, 112.0, 124.0, 200.0].into_iter().enumerate() {
+        let label = (i + 1).to_string();
+        prj.pages[0].symbols.push(SymbolInst { id: 10 + i as u64, sym: "term".into(), pos: p(x, 100.0), tag: "-X1".into(), label, ..Default::default() });
+    }
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    let tags: Vec<f32> = d.texts.iter().filter(|t| t.1 == "-X1").map(|t| t.0.x).collect();
+    assert_eq!(tags.len(), 2, "first terminal of each row: {tags:?}");
+    assert!(tags.iter().all(|x| *x < 100.0 || (*x > 180.0 && *x < 200.0)), "{tags:?}");
+}

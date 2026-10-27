@@ -6300,3 +6300,54 @@ Draw inner walls	Rysuj ściany wewnętrzne
 Inner wall {}, side {}	Ściana wewnętrzna {}, strona {}
 Thickness	Grubość
 {}: {} stands in an inner wall	{}: {} stoi w ścianie wewnętrznej
+Opening {} replaces the current project, its unsaved changes are lost.	Otwarcie {} zastępuje bieżący projekt, jego niezapisane zmiany zostaną utracone.
+Discard changes and open	Odrzuć zmiany i otwórz
+Open link	Otwórz łącze
+Replace the file at path if it exists	Zastąp plik w path, jeśli istnieje
+{} exists already: pass overwrite to replace it	{} już istnieje: podaj overwrite, aby go zastąpić
+{} has unsaved changes. Discard them?	{} ma niezapisane zmiany. Odrzucić je?
+Discard changes	Odrzuć zmiany
+Locked by {} on the project server – read only	Zablokowane przez {} na serwerze projektów – tylko do odczytu
+A device tag must not be empty	Oznaczenie urządzenia nie może być puste
+Device tag {} must start with -, = or +	Oznaczenie {} musi zaczynać się od -, = lub +
+Device tag {} must not contain blanks or the separators ; | ,	Oznaczenie {} nie może zawierać spacji ani separatorów ; | ,
+{} lies outside page {}	{} leży poza stroną {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Pozycja {} / {} mm leży poza stroną ({} x {} mm)
+The wire has no length	Połączenie nie ma długości
+Start and end are the same connection point	Początek i koniec to ten sam punkt przyłączenia
+A page needs a name	Strona musi mieć nazwę
+Printing and export	Drukowanie i eksport
+1 project on the server	1 projekt na serwerze
+pcs	szt.
+Legend plate	Tabliczka opisowa
+KNX actuator	Aktor KNX
+KNX system device	Urządzenie systemowe KNX
+Battery monitor	Monitor akumulatora
+System monitoring	Monitorowanie systemu
+Cable clamp rail	Szyna mocująca kable
+Document holder	Kieszeń na dokumentację
+Door handle	Uchwyt drzwi
+Filter fan	Wentylator filtrujący
+Outlet filter	Filtr wylotowy
+PE busbar	Szyna PE
+Rail standoff	Dystans szyny
+Screw	Śruba
+Nut	Nakrętka
+Washer	Podkładka
+Side panel	Ściana boczna
+DC-DC converter	Przetwornica DC-DC
+Inverter / charger	Falownik / ładowarka
+Solar charge controller	Regulator ładowania solarnego
+Breaking capacity	Zdolność wyłączania
+Poles	Bieguny
+Wrong user name or password	Nieprawidłowa nazwa użytkownika lub hasło
+Too many failed sign-ins, try again later	Zbyt wiele nieudanych logowań, spróbuj później
+Part {} not found	Nie znaleziono artykułu {}
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	nie znaleziono pliku ani folderu
+access denied	odmowa dostępu
+the file exists already	plik już istnieje
+this is a folder	to jest folder
+the disk is full	dysk jest pełny
+Enclosures and rooms	Obudowy i pomieszczenia
+Not saved, locked or changed by another user: {}	Nie zapisano, zablokowane lub zmienione przez innego użytkownika: {}

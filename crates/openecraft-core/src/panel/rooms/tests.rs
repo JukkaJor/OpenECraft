@@ -14,7 +14,7 @@ fn project() -> (Project, usize, usize) {
     for (tag, number) in [("-T1", "VIC.MPPT"), ("-F1", "GEN.MCB")] {
         prj.devices.insert(tag.into(), DeviceData { parts: vec![PartRef { number: number.into(), count: 1 }], ..Default::default() });
     }
-    let room = new_room(&mut prj, "=ROOM1", 4000.0, 3000.0, 2800.0);
+    let room = new_room(&mut prj, "+ROOM1", 4000.0, 3000.0, 2800.0);
     prj.layout.enclosures.push(room);
     let cab = Enclosure { id: prj.new_id(), name: "+CAB1".into(), width: 600.0, height: 1800.0, depth: 400.0, ..Default::default() };
     prj.layout.enclosures.push(cab);

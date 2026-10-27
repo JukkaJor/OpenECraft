@@ -6300,3 +6300,54 @@ Draw inner walls	Tegn indervægge
 Inner wall {}, side {}	Indervæg {}, side {}
 Thickness	Tykkelse
 {}: {} stands in an inner wall	{}: {} står i en indervæg
+Opening {} replaces the current project, its unsaved changes are lost.	Åbning af {} erstatter det aktuelle projekt, dets ikke-gemte ændringer går tabt.
+Discard changes and open	Kassér ændringerne og åbn
+Open link	Åbn link
+Replace the file at path if it exists	Erstat filen på path, hvis den findes
+{} exists already: pass overwrite to replace it	{} findes allerede: angiv overwrite for at erstatte den
+{} has unsaved changes. Discard them?	{} har ikke-gemte ændringer. Kassér dem?
+Discard changes	Kassér ændringerne
+Locked by {} on the project server – read only	Låst af {} på projektserveren – skrivebeskyttet
+A device tag must not be empty	En komponentbetegnelse må ikke være tom
+Device tag {} must start with -, = or +	Betegnelsen {} skal begynde med -, = eller +
+Device tag {} must not contain blanks or the separators ; | ,	Betegnelsen {} må ikke indeholde mellemrum eller skilletegnene ; | ,
+{} lies outside page {}	{} ligger uden for side {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Positionen {} / {} mm ligger uden for siden ({} x {} mm)
+The wire has no length	Forbindelsen har ingen længde
+Start and end are the same connection point	Start og slut er det samme tilslutningspunkt
+A page needs a name	En side skal have et navn
+Printing and export	Udskrivning og eksport
+1 project on the server	1 projekt på serveren
+pcs	stk.
+Legend plate	Skilt
+KNX actuator	KNX-aktuator
+KNX system device	KNX-systemenhed
+Battery monitor	Batterimonitor
+System monitoring	Systemovervågning
+Cable clamp rail	Kabelaflastningsskinne
+Document holder	Dokumentlomme
+Door handle	Dørhåndtag
+Filter fan	Filterventilator
+Outlet filter	Udgangsfilter
+PE busbar	PE-skinne
+Rail standoff	Skinneafstandsholder
+Screw	Skrue
+Nut	Møtrik
+Washer	Skive
+Side panel	Sidevæg
+DC-DC converter	DC/DC-konverter
+Inverter / charger	Inverter / lader
+Solar charge controller	Solcelleladeregulator
+Breaking capacity	Brydeevne
+Poles	Poler
+Wrong user name or password	Forkert brugernavn eller adgangskode
+Too many failed sign-ins, try again later	For mange mislykkede logins, prøv igen senere
+Part {} not found	Varen {} blev ikke fundet
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	filen eller mappen blev ikke fundet
+access denied	adgang nægtet
+the file exists already	filen findes allerede
+this is a folder	dette er en mappe
+the disk is full	disken er fuld
+Enclosures and rooms	Kabinetter og rum
+Not saved, locked or changed by another user: {}	Ikke gemt, låst eller ændret af en anden bruger: {}

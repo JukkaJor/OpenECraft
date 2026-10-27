@@ -6300,3 +6300,54 @@ Draw inner walls	Рисовать внутренние стены
 Inner wall {}, side {}	Внутренняя стена {}, сторона {}
 Thickness	Толщина
 {}: {} stands in an inner wall	{}: {} стоит во внутренней стене
+Opening {} replaces the current project, its unsaved changes are lost.	Открытие {} заменяет текущий проект, его несохранённые изменения будут потеряны.
+Discard changes and open	Отменить изменения и открыть
+Open link	Открыть ссылку
+Replace the file at path if it exists	Заменить файл path, если он существует
+{} exists already: pass overwrite to replace it	{} уже существует: укажите overwrite, чтобы заменить
+{} has unsaved changes. Discard them?	В {} есть несохранённые изменения. Отменить их?
+Discard changes	Отменить изменения
+Locked by {} on the project server – read only	Заблокировано пользователем {} на сервере проектов – только чтение
+A device tag must not be empty	Обозначение устройства не может быть пустым
+Device tag {} must start with -, = or +	Обозначение {} должно начинаться с -, = или +
+Device tag {} must not contain blanks or the separators ; | ,	Обозначение {} не должно содержать пробелы и разделители ; | ,
+{} lies outside page {}	{} находится за пределами страницы {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Позиция {} / {} мм за пределами страницы ({} x {} мм)
+The wire has no length	У соединения нет длины
+Start and end are the same connection point	Начало и конец – одна и та же точка подключения
+A page needs a name	Странице нужно имя
+Printing and export	Печать и экспорт
+1 project on the server	1 проект на сервере
+pcs	шт.
+Legend plate	Табличка с надписью
+KNX actuator	Исполнительное устройство KNX
+KNX system device	Системное устройство KNX
+Battery monitor	Монитор аккумулятора
+System monitoring	Мониторинг системы
+Cable clamp rail	Шина крепления кабелей
+Document holder	Карман для документации
+Door handle	Дверная ручка
+Filter fan	Фильтрующий вентилятор
+Outlet filter	Выпускной фильтр
+PE busbar	Шина PE
+Rail standoff	Дистанционная стойка шины
+Screw	Винт
+Nut	Гайка
+Washer	Шайба
+Side panel	Боковая стенка
+DC-DC converter	Преобразователь DC-DC
+Inverter / charger	Инвертор / зарядное устройство
+Solar charge controller	Солнечный контроллер заряда
+Breaking capacity	Отключающая способность
+Poles	Полюсы
+Wrong user name or password	Неверное имя пользователя или пароль
+Too many failed sign-ins, try again later	Слишком много неудачных попыток входа, повторите позже
+Part {} not found	Артикул {} не найден
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	файл или папка не найдены
+access denied	доступ запрещён
+the file exists already	файл уже существует
+this is a folder	это папка
+the disk is full	диск заполнен
+Enclosures and rooms	Шкафы и помещения
+Not saved, locked or changed by another user: {}	Не сохранено, заблокировано или изменено другим пользователем: {}

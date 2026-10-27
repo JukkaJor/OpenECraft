@@ -137,6 +137,13 @@ account for the directory user (no password; groups refreshed at every sign-in),
 administrators see them in the user list and session tokens work as for local users.
 A name that already belongs to a local account cannot sign in through a directory.
 
+Passwords of local accounts need at least 8 characters. After 5 failed sign-ins of a
+user name (local or directory) every further attempt of that name waits, 1 s at first
+and twice as long after every further failure, up to 5 minutes; the servers answer
+`429 Too Many Requests` meanwhile. A successful sign-in forgets the failures. Errors
+of both servers come as `{"error": "…"}`, also for unknown routes and requests that do
+not parse.
+
 Values are escaped for LDAP filters and DNs. Keep the service account read-only.
 
 ## Clients

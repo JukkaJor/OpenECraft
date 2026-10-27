@@ -447,6 +447,8 @@ pub struct Editor {
     pub place_tag: Option<String>,
     /// The page is locked by another user of a shared project.
     pub read_only: bool,
+    /// Why the page is read only (shown on the page instead of the hint of generated pages).
+    pub read_only_reason: String,
     /// Comments and markup are drawn.
     pub review_layer: bool,
     /// Selected comment or markup.
@@ -498,6 +500,7 @@ impl Default for Editor {
             cable_target: String::new(),
             place_tag: None,
             read_only: false,
+            read_only_reason: String::new(),
             review_layer: true,
             insert_macro: None,
             show_macro_boxes: true,
@@ -893,7 +896,13 @@ impl Editor {
             }
         }
         if !editable {
-            let msg = if locked { tr("Released page – unlock it in Project › Revisions to change it") } else { tr("Generated page – edit via page properties") };
+            let msg = if locked {
+                tr("Released page – unlock it in Project › Revisions to change it")
+            } else if self.read_only && !self.read_only_reason.is_empty() {
+                self.read_only_reason.as_str()
+            } else {
+                tr("Generated page – edit via page properties")
+            };
             painter.text(rect.left_top() + vec2(10.0, 10.0), Align2::LEFT_TOP, msg, FontId::proportional(13.0), pal.frame);
         }
 

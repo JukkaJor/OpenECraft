@@ -196,7 +196,7 @@ fn items(s: &mut Session, a: &Args) -> Result<Value, String> {
 fn download(s: &mut Session, a: &Args) -> Result<Value, String> {
     let bytes = s.vault.download(a.req("version"))?;
     let path = a.req("path");
-    std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "path": path, "bytes": bytes.len() }))
 }
 
@@ -233,7 +233,7 @@ fn project_stem(s: &Session) -> String {
 /// Content and default file name of what `vault_upload` puts into the vault.
 fn upload_content(s: &mut Session, a: &Args, name: Option<&str>) -> Result<(Vec<u8>, String), String> {
     if let Some(path) = a.str("path") {
-        let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+        let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
         return Ok((bytes, path.rsplit(['/', '\\']).next().unwrap_or(path).to_string()));
     }
     let stem = project_stem(s);

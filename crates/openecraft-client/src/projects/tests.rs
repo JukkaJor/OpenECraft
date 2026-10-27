@@ -43,10 +43,10 @@ fn bodies_are_json() {
     assert_eq!(body.session, session());
 
     let prj = Project::default();
-    let save = e.save("p", &session(), &prj, vec![Target::Project]);
+    let save = e.save("p", &session(), &prj, vec![Target::Project], 7);
     assert_eq!(save.method, ehttp::Method::PUT);
     let body: SaveRequest = serde_json::from_slice(&save.body).unwrap();
-    assert_eq!(body.release, vec![Target::Project]);
+    assert_eq!((body.release, body.base_revision), (vec![Target::Project], 7));
     assert_eq!(body.project, prj);
 
     let create = e.create("p", "anna", &prj);

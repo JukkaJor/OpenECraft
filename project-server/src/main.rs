@@ -77,7 +77,7 @@ async fn main() {
     if token.is_none() && users.accounts.is_empty() && access.config.directories.is_empty() {
         log::warn!("no access token, user accounts or directories: everyone who reaches the server can change its projects");
     }
-    let server = routes::Server { store, sessions: Default::default(), users, access };
+    let server = routes::Server { store, sessions: Default::default(), users, access, throttle: Default::default() };
     let state = routes::AppState { server: Arc::new(Mutex::new(server)), token };
     let listener = match tokio::net::TcpListener::bind(args.bind).await {
         Ok(l) => l,

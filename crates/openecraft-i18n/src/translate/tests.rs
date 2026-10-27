@@ -241,3 +241,17 @@ fn all_texts_used_in_the_sources_are_in_the_catalog() {
     assert!(checked > 500, "source scan found only {checked} texts – scanner broken?");
     assert!(missing.is_empty(), "texts without catalog entry (add them to catalog/extra.tsv):\n{}", missing.join("\n"));
 }
+
+#[test]
+fn decimals_follow_the_language() {
+    assert_eq!(with_lang(Lang::De, || decimal(12.5, 2)), "12,50");
+    assert_eq!(with_lang(Lang::En, || decimal(12.5, 2)), "12.50");
+    assert_eq!(with_lang(Lang::Ja, || decimal(3.0, 1)), "3.0");
+}
+
+#[test]
+fn file_errors_in_the_language_of_the_program() {
+    let e = std::io::Error::from(std::io::ErrorKind::NotFound);
+    assert_eq!(with_lang(Lang::En, || io_error(&e)), "file or folder not found");
+    assert_eq!(with_lang(Lang::De, || io_error(&e)), "Datei oder Ordner nicht gefunden");
+}

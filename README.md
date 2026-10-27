@@ -846,7 +846,9 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`
   creates an administrator account with the password from `OPENECRAFT_ADMIN_PASSWORD`.
   Users sign in with `POST /login` and send the session token as
-  `Authorization: Bearer <token>`. Without token, accounts and directories the server
+  `Authorization: Bearer <token>`. Passwords of local accounts have at least 8
+  characters; after 5 failed sign-ins of a user name every further attempt waits
+  (1 s, doubling up to 5 minutes, answer `429`). Without token, accounts and directories the server
   is read-only.
 - Access control (`<data>.access.json`, `--access`): sign-in with Active Directory or
   LDAP directories next to the local accounts, roles defined by administrators and
@@ -868,7 +870,8 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
 - REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
   `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
   `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
-  JSON or BMEcat), `GET /export.csv`, `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
+  JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
+  `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
   `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
 - In the editor: *Devices › Data portal…* – search the server, add parts to the local
   database, save their files, add their macros to the macro library and check the
@@ -924,6 +927,9 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   `access`; see
   [`project-server/project-server.example.toml`](project-server/project-server.example.toml)),
   as for the parts server.
+- Project names differing only in case are one name (Windows and macOS do not tell
+  their files apart); Windows device names (`CON`, `NUL`, `COM1` …) and names ending
+  with a dot are refused.
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
@@ -952,6 +958,13 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   the editor stopped sending its status (every 15 s).
 - Saving merges only what you have locked into the server's project; everything else
   comes from the server. Changes of other users are loaded automatically.
+  A save names the revision it was edited from (`base_revision`; the editor does):
+  the server then also takes over changed pages and project data nobody has locked
+  (it locks them for you first) and answers with the changes it left out
+  (`ignored`): locked by another user, changed by another user since that revision or
+  not allowed. With `strict` nothing is saved in that case (`409`). The server keeps
+  the last 16 revisions per project in memory; a save from an older revision (or
+  without `base_revision`) saves only what is locked.
 - Each session gets its own range of object ids, so users never create the same id.
 - In the editor: *Tools › Project server…* – enter the server URL, your user name and the
   token, list the projects and open one, or upload the current project. While a shared
@@ -1061,6 +1074,11 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
   with the server (`parts_check_updates`).
 - Help and messages follow `--lang` or the system language; the MCP server answers in
   English unless `--lang` is given.
+
+- `OPENECRAFT_MCP_TOOLS` limits the tools the MCP server offers, for clients that take
+  only a limited number: names separated by commas, `parts_*` for all tools starting
+  with `parts_` (e.g. `new_project,open_project,save_project,place_symbol,connect,check,export`).
+- `new_project --path` does not replace an existing file unless `overwrite` is given.
 
 Register the MCP server with an agent, e.g. Claude Code:
 

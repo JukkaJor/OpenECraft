@@ -195,7 +195,12 @@ impl PanelUi {
                     match self.wall_points.last().copied() {
                         _ if resp.double_clicked() => self.wall_points.clear(),
                         Some(last) if !last.same(corner) => match panel::add_inner_wall(prj, ei, [last.x, last.y], [corner.x, corner.y], panel::INNER_WALL) {
-                            Ok(_) => self.wall_points = vec![corner],
+                            Ok(id) => {
+                                // The properties show the wall just drawn.
+                                self.wall_points = vec![corner];
+                                self.plan_inner = Some(id);
+                                self.selection.clear();
+                            }
                             Err(e) => self.status = e,
                         },
                         Some(_) => {}

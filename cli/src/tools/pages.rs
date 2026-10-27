@@ -62,7 +62,7 @@ pub static TOOLS: &[Tool] = &[
 
 fn import_pdf_comments(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let user = std::env::var("USERNAME").or_else(|_| std::env::var("USER")).unwrap_or_default();
     let author = a.str("author").map(String::from).unwrap_or(user);
     let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
@@ -73,7 +73,7 @@ fn import_pdf_comments(s: &mut Session, a: &Args) -> Result<Value, String> {
 /// `import_dxf` and `import_dwg`: the format is told apart by the content.
 fn import_drawing(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let prj = s.project_mut()?;
     let after = match a.str("after") {
         Some(n) => page_index(prj, n)?,

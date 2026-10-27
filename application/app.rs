@@ -165,6 +165,11 @@ pub struct App {
     layouts: Vec<crate::workspaces::Layout>,
     /// Name of the workspace being saved (the window is open while it is set).
     layout_name: Option<String>,
+    /// Command that replaces the project, waiting for the user to drop the unsaved
+    /// changes.
+    confirm_discard: Option<crate::commands::Cmd>,
+    /// The user agreed: the next project replacing command runs without asking.
+    discard_ok: bool,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
     export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Binding whose new shortcut is being recorded.
@@ -205,6 +210,8 @@ pub struct App {
     /// The messages of this session (status bar › messages).
     messages: Vec<String>,
     title: String,
+    /// Language the texts kept between frames were made in.
+    shown_lang: openecraft_i18n::Lang,
     /// Project server: shared projects and locks.
     remote: crate::remote::Remote,
     /// Autodesk Vault: browsing, imports and check-ins.
@@ -387,6 +394,8 @@ impl App {
             show_shortcuts: false,
             layouts,
             layout_name: None,
+            confirm_discard: None,
+            discard_ok: false,
             export_form: None,
             recording: None,
             show_cables: false,
@@ -420,6 +429,7 @@ impl App {
             message: None,
             messages: Vec::new(),
             title: String::new(),
+            shown_lang: openecraft_i18n::lang(),
             remote,
             vault,
             vault_ui: Default::default(),
@@ -620,6 +630,25 @@ impl App {
     }
 
     /// The flags of the tools with the pane each opens.
+    /// Status texts were made in the language before: they would stay in it.
+    fn language_changed(&mut self) {
+        self.shown_lang = openecraft_i18n::lang();
+        self.remote.status.clear();
+        self.parts_ui.server.status.clear();
+        self.panel_ui.status.clear();
+        self.vault.status.clear();
+        self.message = None;
+    }
+
+    /// Clears the flag that asks for `pane` (the pane was closed).
+    pub(super) fn forget_request(&mut self, pane: Pane) {
+        for (flag, p) in self.request_flags() {
+            if p == pane {
+                *flag = false;
+            }
+        }
+    }
+
     fn request_flags(&mut self) -> Vec<(&mut bool, Pane)> {
         use ToolPane as T;
         vec![
@@ -688,6 +717,13 @@ impl App {
     }
 }
 
+/// An entry dragged into the page or clicked: the drag source lies over the entry and
+/// takes its clicks, so it senses them as well.
+fn drag_source<P: std::any::Any + Send + Sync>(ui: &mut egui::Ui, id: egui::Id, payload: P, add: impl FnOnce(&mut egui::Ui) -> egui::Response) -> egui::Response {
+    let r = ui.dnd_drag_source(id, payload, add);
+    r.inner.union(r.response.interact(egui::Sense::click()))
+}
+
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
@@ -714,6 +750,9 @@ impl eframe::App for App {
         self.session.refresh(&self.plugins, editing);
         let idx = std::mem::take(&mut self.session.index);
 
+        if openecraft_i18n::lang() != self.shown_lang {
+            self.language_changed();
+        }
         self.open_requests(true);
         self.layout_frame();
         egui::Panel::top("ribbon").show(ui, |ui| self.ribbon_bar(ui));
@@ -743,7 +782,7 @@ impl eframe::App for App {
             if self.session.dirty() { " *" } else { "" }
         );
         if title != self.title {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
+            openecraft_ui::io::set_title(&ctx, &title);
             self.title = title;
         }
     }

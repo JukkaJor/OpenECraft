@@ -7,6 +7,17 @@ use sha2::{Digest, Sha256};
 /// Sessions kept per user; the oldest is dropped when a new one starts.
 pub const MAX_SESSIONS: usize = 20;
 
+/// Shortest password the servers accept for local accounts.
+pub const MIN_PASSWORD_LEN: usize = 8;
+
+/// A password a server may set for a local account: long enough, not only blanks.
+pub fn check_password(password: &str) -> Result<(), String> {
+    if password.trim().chars().count() < MIN_PASSWORD_LEN {
+        return Err(format!("the password needs at least {MIN_PASSWORD_LEN} characters"));
+    }
+    Ok(())
+}
+
 pub fn hash_password(password: &str) -> Result<String, String> {
     let salt = SaltString::generate(&mut password_hash::rand_core::OsRng);
     Argon2::default().hash_password(password.as_bytes(), &salt).map(|h| h.to_string()).map_err(|e| e.to_string())

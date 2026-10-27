@@ -99,7 +99,7 @@ fn shared(locks: Vec<Lock>) -> (Shared, Project) {
     let opened = Opened {
         session: Session { user: "me".into(), session: "s1".into() },
         first_id: 2_000_000,
-        snapshot: Snapshot { revision: 3, project: project(), locks },
+        snapshot: Snapshot { revision: 3, project: project(), locks, ..Default::default() },
         rights: Vec::new(),
     };
     Shared::open("plant", opened)
@@ -160,7 +160,7 @@ fn locks_granted_on_an_old_state_are_checked_on_update() {
     let mut server = sh.base.clone();
     server.pages[1].description = "theirs B".into();
     server.info.name = "theirs".into();
-    let (lost, apply) = sh.update(Snapshot { revision: 4, project: server, locks: mine });
+    let (lost, apply) = sh.update(Snapshot { revision: 4, project: server, locks: mine, ..Default::default() });
     assert_eq!(lost, vec![Target::Page(b)]);
     let out = apply(&prj);
     assert_eq!(out.pages[0].description, "mine A");
@@ -190,6 +190,14 @@ fn names_and_paths() {
     assert!(!valid_name("a/b"));
     assert!(!valid_name("a\\b"));
     assert!(!valid_name(&"x".repeat(65)));
+    assert!(!valid_name("Plant."));
+    for reserved in ["CON", "nul", "Aux.oec", "com1", "LPT9"] {
+        assert!(!valid_name(reserved), "{reserved}");
+    }
+    assert!(valid_name("COM0"));
+    assert!(valid_name("Console"));
+    assert!(stored_name("CON") && stored_name("Plant."), "existing projects stay available");
+    assert_eq!(name_key("Plant"), name_key("plant"));
     assert_eq!(project_path("Plant 1"), "/api/v1/projects/Plant%201");
 }
 
@@ -243,4 +251,32 @@ fn old_user_files_keep_their_role() {
     let u: ProjectUser = serde_json::from_str(r#"{"name":"anna","role":"editor","projects":["Plant*"]}"#).unwrap();
     assert_eq!(u.role, Some(ProjectRole::Editor));
     assert_eq!(serde_json::to_string(&ProjectUser { name: "x".into(), ..Default::default() }).unwrap(), r#"{"name":"x"}"#);
+}
+
+#[test]
+fn roles_and_targets_are_read_in_either_case() {
+    assert_eq!(serde_json::from_str::<ProjectRole>(r#""Editor""#).unwrap(), ProjectRole::Editor);
+    assert_eq!(serde_json::from_str::<ProjectRole>(r#""editor""#).unwrap(), ProjectRole::Editor);
+    assert_eq!(serde_json::from_str::<Target>(r#"{"Page": 3}"#).unwrap(), Target::Page(3));
+    assert_eq!(serde_json::to_string(&Target::Project).unwrap(), r#""project""#);
+}
+
+#[test]
+fn a_save_locks_free_changes_and_leaves_out_the_rest() {
+    let lock = |t, s: &str| Lock { target: t, user: s.into(), session: s.into() };
+    let locks = vec![lock(Target::Page(1), "me"), lock(Target::Page(2), "other")];
+    let mine = BTreeSet::from([Target::Page(1), Target::Page(2), Target::Page(3), Target::Page(4), Target::Page(5), Target::Project]);
+    // Page 4 was changed by another user since the base revision; page 5 is not allowed.
+    let theirs = BTreeSet::from([Target::Page(4)]);
+    let plan = save_plan(&mine, &theirs, &locks, "me", |t| t != Target::Page(5));
+    assert_eq!(plan.lock, vec![Target::Project, Target::Page(3)]);
+    assert_eq!(plan.ignored, vec![Target::Page(2), Target::Page(4), Target::Page(5)]);
+}
+
+#[test]
+fn older_save_requests_still_parse() {
+    let req: SaveRequest = serde_json::from_str(r#"{"session": {"user": "a", "session": "1"}, "release": []}"#).unwrap();
+    assert_eq!((req.base_revision, req.strict), (0, false));
+    let json = serde_json::to_string(&Snapshot::default()).unwrap();
+    assert!(!json.contains("ignored"), "{json}");
 }

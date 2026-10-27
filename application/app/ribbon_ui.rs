@@ -66,8 +66,12 @@ impl App {
         let peek = matches!(self.ribbon.tips, Some(Tips::Commands(_)));
         if (!self.shell.ribbon_minimized || peek) && self.backstage.is_none() {
             ui.add_space(2.0);
-            egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]).show(ui, |ui| {
-                ui.horizontal(|ui| self.ribbon_groups(ui));
+            // A solid scroll bar shows that groups lie beyond the right edge.
+            ui.scope(|ui| {
+                ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
+                egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]).show(ui, |ui| {
+                    ui.horizontal(|ui| self.ribbon_groups(ui));
+                });
             });
         }
         ui.add_space(2.0);
@@ -258,7 +262,9 @@ impl App {
     /// A large button: the icon above the title.
     fn large_widget(&self, ui: &mut egui::Ui, icon: Icon, title: &str, on: bool, enabled: bool, menu: bool) -> egui::Response {
         let font = egui::TextStyle::Small.resolve(ui.style());
-        let galley = ui.painter().layout(title.to_string(), font, ui.visuals().text_color(), LARGE_W + 16.0);
+        // Lines break between words only: a long word widens the button.
+        let longest = title.split_whitespace().map(|w| ui.painter().layout_no_wrap(w.to_string(), font.clone(), ui.visuals().text_color()).size().x).fold(0.0, f32::max);
+        let galley = ui.painter().layout(title.to_string(), font, ui.visuals().text_color(), (LARGE_W + 16.0).max(longest + 1.0));
         let w = (galley.size().x + 8.0).max(LARGE_W);
         let (rect, resp) = ui.allocate_exact_size(egui::vec2(w, ROW * 3.0), egui::Sense::click());
         resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, title));
@@ -378,7 +384,10 @@ impl App {
             ui.vertical(|ui| {
                 let row = ui.horizontal_top(|ui| {
                     if cmds.is_empty() {
-                        ui.add_sized([150.0, ROW * 3.0], egui::Label::new(RichText::new(tr("Star a command in Plugin commands to pin it here")).small().weak()).wrap());
+                        ui.allocate_ui_with_layout(egui::vec2(170.0, ROW * 3.0), egui::Layout::top_down(egui::Align::Min), |ui| {
+                            ui.set_min_size(egui::vec2(170.0, ROW * 3.0));
+                            ui.add(egui::Label::new(RichText::new(tr("Star a command in Plugin commands to pin it here")).weak()).wrap());
+                        });
                     }
                     for chunk in cmds.chunks(3) {
                         ui.vertical(|ui| {
@@ -486,9 +495,12 @@ impl App {
 
 /// The title below a group, as wide as the group.
 fn group_title(ui: &mut egui::Ui, title: &str, width: f32) {
-    ui.allocate_ui_with_layout(egui::vec2(width.max(32.0), 14.0), egui::Layout::top_down(egui::Align::Center), |ui| {
-        ui.set_width(width.max(32.0));
-        ui.label(RichText::new(title).small().weak());
+    // A title longer than its group widens the group instead of being cut off.
+    let text = RichText::new(title).small().weak();
+    let width = width.max(32.0).max(egui::WidgetText::from(text.clone()).into_galley(ui, Some(egui::TextWrapMode::Extend), f32::INFINITY, egui::TextStyle::Small).size().x);
+    ui.allocate_ui_with_layout(egui::vec2(width, 14.0), egui::Layout::top_down(egui::Align::Center), |ui| {
+        ui.set_width(width);
+        ui.add(egui::Label::new(text).extend());
     });
 }
 

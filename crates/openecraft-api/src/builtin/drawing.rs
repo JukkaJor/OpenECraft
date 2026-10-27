@@ -281,6 +281,16 @@ fn snapped(x: f32, y: f32) -> P {
     p(x, y).snap(GRID)
 }
 
+/// Positions must lie on the paper of the page.
+fn on_page(prj: &Project, page: usize, pos: P) -> Result<(), String> {
+    let (w, h) = openecraft_core::frame::of_page(prj, page).size();
+    if (0.0..=w).contains(&pos.x) && (0.0..=h).contains(&pos.y) {
+        Ok(())
+    } else {
+        Err(tr_fmt!("Position {} / {} mm lies outside the page ({} x {} mm)", pos.x, pos.y, w, h))
+    }
+}
+
 fn pin_list(text: &str) -> Vec<String> {
     text.split(',').map(|s| s.trim().to_string()).collect()
 }
@@ -397,7 +407,10 @@ fn place_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
     // A given tag decides the device the new function belongs to, like the last
     // placed main function in the editor.
     let mut ctx = PlaceCtx::default();
-    if let Some(tag) = a.str("tag") {
+    // An empty tag means the next free one, as without the parameter.
+    let tag = a.str("tag").filter(|t| !t.trim().is_empty());
+    if let Some(tag) = tag {
+        ops::check_tag(tag)?;
         match def.func {
             Func::Aux(_) | Func::Overview => {
                 ctx.last_main.insert(def.letter.into(), tag.into());
@@ -411,8 +424,9 @@ fn place_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
         }
     }
     let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
+    on_page(prj, i, pos)?;
     let mut sym = ops::new_symbol(prj, i, &ctx, &def, pos, rotation(a)?.unwrap_or(0), a.flag("mirror"));
-    if let Some(tag) = a.str("tag").filter(|_| def.func.has_tag()) {
+    if let Some(tag) = tag.filter(|_| def.func.has_tag()) {
         sym.tag = tag.into();
     }
     apply_symbol_params(&mut sym, a)?;
@@ -425,15 +439,19 @@ fn update_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let symbols = prj.symbol_table();
     let i = editable(prj, a.req("page"))?;
     let id = a.int("id").unwrap_or_default() as u64;
-    let page = &mut prj.pages[i];
-    let old = page.symbols.iter().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?.pos;
+    let old = prj.pages[i].symbols.iter().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?.pos;
     let to = snapped(a.num("x").unwrap_or(old.x), a.num("y").unwrap_or(old.y));
+    if let Some(tag) = a.str("tag") {
+        ops::check_tag(tag)?;
+    }
     if !to.same(old) {
+        on_page(prj, i, to)?;
+        let page = &mut prj.pages[i];
         let sel = BTreeSet::from([id]);
         let attached = ops::attached_wire_ends(&symbols, page, &sel);
         ops::translate(page, &sel, &attached, to - old);
     }
-    let sym = page.symbols.iter_mut().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?;
+    let sym = prj.pages[i].symbols.iter_mut().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?;
     if let Some(tag) = a.str("tag") {
         sym.tag = tag.into();
     }
@@ -447,7 +465,14 @@ fn add_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if pts.len() < 2 {
         return Err(tr("A wire needs at least two points").to_string());
     }
-    Ok(json!({ "ids": push_path(prj, i, &pts) }))
+    for &pt in &pts {
+        on_page(prj, i, pt)?;
+    }
+    let ids = push_path(prj, i, &pts);
+    if ids.is_empty() {
+        return Err(tr("The wire has no length").to_string());
+    }
+    Ok(json!({ "ids": ids }))
 }
 
 fn connect(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -455,6 +480,9 @@ fn connect(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let from = pin_position(&symbols, &prj.pages[i], a.req("from"))?;
     let to = pin_position(&symbols, &prj.pages[i], a.req("to"))?;
+    if from.same(to) {
+        return Err(tr("Start and end are the same connection point").to_string());
+    }
     let mut pts = vec![from];
     pts.extend(a.points("via").into_iter().map(|[x, y]| snapped(x, y)));
     pts.push(to);
@@ -553,6 +581,7 @@ fn add_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let id = prj.new_id();
     let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
+    on_page(prj, i, pos)?;
     let mut t = TextItem { id, pos, text: a.req("text").into(), size: 3.5, ..Default::default() };
     text_style_args(&mut t, a)?;
     let out = text_json(&t);

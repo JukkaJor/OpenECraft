@@ -6300,3 +6300,54 @@ Draw inner walls	Малювати внутрішні стіни
 Inner wall {}, side {}	Внутрішня стіна {}, сторона {}
 Thickness	Товщина
 {}: {} stands in an inner wall	{}: {} стоїть у внутрішній стіні
+Opening {} replaces the current project, its unsaved changes are lost.	Відкриття {} замінює поточний проєкт, його незбережені зміни буде втрачено.
+Discard changes and open	Скасувати зміни й відкрити
+Open link	Відкрити посилання
+Replace the file at path if it exists	Замінити файл path, якщо він існує
+{} exists already: pass overwrite to replace it	{} вже існує: вкажіть overwrite, щоб замінити
+{} has unsaved changes. Discard them?	У {} є незбережені зміни. Скасувати їх?
+Discard changes	Скасувати зміни
+Locked by {} on the project server – read only	Заблоковано користувачем {} на сервері проєктів – лише читання
+A device tag must not be empty	Позначення пристрою не може бути порожнім
+Device tag {} must start with -, = or +	Позначення {} має починатися з -, = або +
+Device tag {} must not contain blanks or the separators ; | ,	Позначення {} не повинно містити пробіли та роздільники ; | ,
+{} lies outside page {}	{} знаходиться поза сторінкою {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Позиція {} / {} мм поза сторінкою ({} x {} мм)
+The wire has no length	З'єднання не має довжини
+Start and end are the same connection point	Початок і кінець – одна й та сама точка підключення
+A page needs a name	Сторінці потрібна назва
+Printing and export	Друк та експорт
+1 project on the server	1 проєкт на сервері
+pcs	шт.
+Legend plate	Табличка з написом
+KNX actuator	Виконавчий пристрій KNX
+KNX system device	Системний пристрій KNX
+Battery monitor	Монітор акумулятора
+System monitoring	Моніторинг системи
+Cable clamp rail	Шина кріплення кабелів
+Document holder	Кишеня для документації
+Door handle	Дверна ручка
+Filter fan	Фільтрувальний вентилятор
+Outlet filter	Випускний фільтр
+PE busbar	Шина PE
+Rail standoff	Дистанційна стійка шини
+Screw	Гвинт
+Nut	Гайка
+Washer	Шайба
+Side panel	Бічна стінка
+DC-DC converter	Перетворювач DC-DC
+Inverter / charger	Інвертор / зарядний пристрій
+Solar charge controller	Сонячний контролер заряду
+Breaking capacity	Відключальна здатність
+Poles	Полюси
+Wrong user name or password	Неправильне ім'я користувача або пароль
+Too many failed sign-ins, try again later	Забагато невдалих спроб входу, спробуйте пізніше
+Part {} not found	Артикул {} не знайдено
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	файл або папку не знайдено
+access denied	доступ заборонено
+the file exists already	файл уже існує
+this is a folder	це папка
+the disk is full	диск заповнено
+Enclosures and rooms	Шафи та приміщення
+Not saved, locked or changed by another user: {}	Не збережено, заблоковано або змінено іншим користувачем: {}

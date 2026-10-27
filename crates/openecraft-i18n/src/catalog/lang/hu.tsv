@@ -6300,3 +6300,54 @@ Draw inner walls	Belső falak rajzolása
 Inner wall {}, side {}	{}. belső fal, {} oldal
 Thickness	Vastagság
 {}: {} stands in an inner wall	{}: {} egy belső falban áll
+Opening {} replaces the current project, its unsaved changes are lost.	A(z) {} megnyitása lecseréli az aktuális projektet, a nem mentett módosítások elvesznek.
+Discard changes and open	Módosítások elvetése és megnyitás
+Open link	Hivatkozás megnyitása
+Replace the file at path if it exists	A path helyén lévő fájl cseréje, ha létezik
+{} exists already: pass overwrite to replace it	{} már létezik: a cseréhez adja meg az overwrite paramétert
+{} has unsaved changes. Discard them?	A(z) {} nem mentett módosításokat tartalmaz. Elveti őket?
+Discard changes	Módosítások elvetése
+Locked by {} on the project server – read only	{} zárolta a projektkiszolgálón – csak olvasható
+A device tag must not be empty	Az eszközazonosító nem lehet üres
+Device tag {} must start with -, = or +	A(z) {} azonosítónak -, = vagy + jellel kell kezdődnie
+Device tag {} must not contain blanks or the separators ; | ,	A(z) {} azonosító nem tartalmazhat szóközt és ; | , elválasztót
+{} lies outside page {}	{} a(z) {} oldalon kívül esik
+Position {} / {} mm lies outside the page ({} x {} mm)	A(z) {} / {} mm pozíció az oldalon kívül esik ({} x {} mm)
+The wire has no length	A kapcsolatnak nincs hossza
+Start and end are the same connection point	A kezdet és a vég ugyanaz a csatlakozási pont
+A page needs a name	Az oldalnak nevet kell adni
+Printing and export	Nyomtatás és exportálás
+1 project on the server	1 projekt a kiszolgálón
+pcs	db
+Legend plate	Feliratos tábla
+KNX actuator	KNX aktor
+KNX system device	KNX rendszereszköz
+Battery monitor	Akkumulátorfigyelő
+System monitoring	Rendszerfelügyelet
+Cable clamp rail	Kábelrögzítő sín
+Document holder	Dokumentumtartó
+Door handle	Ajtófogantyú
+Filter fan	Szűrős ventilátor
+Outlet filter	Kilépő szűrő
+PE busbar	PE-sín
+Rail standoff	Sín távtartó
+Screw	Csavar
+Nut	Anya
+Washer	Alátét
+Side panel	Oldalfal
+DC-DC converter	DC-DC átalakító
+Inverter / charger	Inverter / töltő
+Solar charge controller	Napelemes töltésszabályozó
+Breaking capacity	Megszakítóképesség
+Poles	Pólusok
+Wrong user name or password	Hibás felhasználónév vagy jelszó
+Too many failed sign-ins, try again later	Túl sok sikertelen bejelentkezés, próbálja újra később
+Part {} not found	A(z) {} cikk nem található
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	a fájl vagy mappa nem található
+access denied	hozzáférés megtagadva
+the file exists already	a fájl már létezik
+this is a folder	ez egy mappa
+the disk is full	a lemez megtelt
+Enclosures and rooms	Szekrények és helyiségek
+Not saved, locked or changed by another user: {}	Nincs mentve, egy másik felhasználó zárolta vagy módosította: {}

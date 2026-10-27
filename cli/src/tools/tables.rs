@@ -33,7 +33,7 @@ fn table_get(s: &mut Session, a: &Args) -> Result<Value, String> {
         tables::rows(prj, &Netlist::build(prj, true), &Netlist::build(prj, false), kind).into_iter().filter(|r| tables::matches(r, a.str("filter").unwrap_or(""))).collect();
     if let Some(path) = a.str("path") {
         let csv = tables::to_csv(kind, &rows);
-        std::fs::write(path, &csv).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+        std::fs::write(path, &csv).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
         return Ok(json!({ "path": path, "rows": rows.len() }));
     }
     let columns = kind.columns();
@@ -57,7 +57,7 @@ fn table_get(s: &mut Session, a: &Args) -> Result<Value, String> {
 fn table_import(s: &mut Session, a: &Args) -> Result<Value, String> {
     let kind = kind(a)?;
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let prj = s.project_mut()?;
     let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
     let (n, problems) = tables::apply_csv(prj, &nl, &open, kind, &text)?;

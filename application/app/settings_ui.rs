@@ -178,7 +178,7 @@ impl App {
             ui.end_row();
             ui.label(tr("Language"));
             ui.vertical(|ui| {
-                egui::ScrollArea::vertical().id_salt("langs").max_height(220.0).show(ui, |ui| {
+                egui::ScrollArea::vertical().id_salt("langs").max_height(220.0).min_scrolled_height(220.0).show(ui, |ui| {
                     for l in openecraft_i18n::Lang::ALL {
                         if ui.selectable_label(openecraft_i18n::lang() == l, l.native_name()).clicked() {
                             openecraft_i18n::set_lang(l);

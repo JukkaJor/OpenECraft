@@ -52,7 +52,7 @@ fn apply_template(s: &mut Session, a: &Args) -> Result<Value, String> {
             structure::apply_template(&mut s.project_mut()?.structures, t)
         }
         (None, Some(path)) => {
-            let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+            let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
             let file = Structures::from_json(&text)?;
             s.project_mut()?.structures.merge(&file)
         }
@@ -67,7 +67,7 @@ fn export_template(s: &mut Session, a: &Args) -> Result<Value, String> {
     let content = s.project()?.structures.to_json();
     match a.str("path") {
         Some(path) => {
-            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
             Ok(json!({ "path": path, "bytes": content.len() }))
         }
         None => serde_json::from_str(&content).map_err(|e| e.to_string()),

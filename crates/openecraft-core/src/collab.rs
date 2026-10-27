@@ -5,7 +5,10 @@
 //! settings, …) are locked separately ([`Target`]). A user changes only what they
 //! have locked; saving merges their locked parts into the server's project and takes
 //! everything else from the server ([`merge`]). New pages belong to the project-wide
-//! data until they are saved. Review records (comments, markup, approvals, change
+//! data until they are saved. A save that names the revision it was edited from
+//! ([`SaveRequest::base_revision`]) also takes over changes of free targets (they are
+//! locked for the session first) and lists the changes it leaves out ([`save_plan`],
+//! [`Snapshot::ignored`]). Review records (comments, markup, approvals, change
 //! requests) need no lock: they are merged record by record (`review::merge`).
 //!
 //! | Method | Path | |
@@ -57,12 +60,15 @@ pub const SESSION_TIMEOUT_SECS: u64 = 90;
 pub const HEARTBEAT_SECS: f64 = 15.0;
 
 /// Something a user can lock.
+/// Also read capitalised (`{"Page": 3}`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Target {
     /// Project-wide data: page list and order, devices, parts, layout, settings.
+    #[serde(alias = "Project")]
     Project,
     /// Content and properties of a page (by page id).
+    #[serde(alias = "Page")]
     Page(u64),
 }
 
@@ -125,6 +131,11 @@ pub struct Snapshot {
     pub revision: u64,
     pub project: Project,
     pub locks: Vec<Lock>,
+    /// Answer to a save: changes left out, because another session has locked them
+    /// (see `locks`), another user changed them since the base revision or the user
+    /// may not change them.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub ignored: Vec<Target>,
 }
 
 /// Answer to opening a project: a new session with its id range.
@@ -153,6 +164,18 @@ pub struct SaveRequest {
     pub project: Project,
     /// Locks to release after saving.
     pub release: Vec<Target>,
+    /// Server revision the project was edited from (the one last loaded). With it the
+    /// server finds what the session changed ([`save_plan`]); 0 (older clients) or a
+    /// revision the server no longer keeps: only what the session has locked is saved.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub base_revision: u64,
+    /// Save nothing (`409`) if a change would be left out.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub strict: bool,
+}
+
+fn is_zero(v: &u64) -> bool {
+    *v == 0
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -233,19 +256,25 @@ impl Right for ProjectRight {
 }
 
 /// Built-in roles of the project server. Ordered by permissions.
+/// Also read capitalised, as the parts server writes its roles.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectRole {
     /// Open projects read-only (no locks, no saving).
     #[default]
+    #[serde(alias = "Viewer")]
     Viewer,
     /// Also save review records: comments, markup, approvals.
+    #[serde(alias = "Reviewer")]
     Reviewer,
     /// Lock, change, save and create projects.
+    #[serde(alias = "Editor")]
     Editor,
     /// Also delete projects and manage who may use them.
+    #[serde(alias = "Manager")]
     Manager,
     /// Also manage the users, roles and all grants.
+    #[serde(alias = "Admin")]
     Admin,
 }
 
@@ -383,13 +412,58 @@ pub fn project_path(name: &str) -> String {
 }
 
 /// Project names are file names on the server: letters, digits, space, `-`, `_`, `.`;
-/// not starting with a dot, at most 64 characters.
+/// not starting or ending with a dot, at most 64 characters, no device name of
+/// Windows (`CON`, `NUL`, `COM1` …).
 pub fn valid_name(name: &str) -> bool {
+    stored_name(name) && !name.ends_with('.') && !reserved_file_name(name)
+}
+
+/// Name of a project already stored on the server: the rules before device names and
+/// a trailing dot were refused, so such projects stay available.
+pub fn stored_name(name: &str) -> bool {
     !name.trim().is_empty()
         && name.trim() == name
         && name.chars().count() <= 64
         && !name.starts_with('.')
         && name.chars().all(|c| c.is_alphanumeric() || matches!(c, ' ' | '-' | '_' | '.'))
+}
+
+/// Device names Windows does not allow as file names (also with an extension).
+fn reserved_file_name(name: &str) -> bool {
+    let stem = name.split('.').next().unwrap_or(name).trim_end().to_ascii_uppercase();
+    matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (stem.len() == 4 && (stem.starts_with("COM") || stem.starts_with("LPT")) && stem.as_bytes()[3].is_ascii_digit() && stem.as_bytes()[3] != b'0')
+}
+
+/// The key under which a project name is unique: file systems of Windows and macOS
+/// do not tell upper and lower case apart.
+pub fn name_key(name: &str) -> String {
+    name.to_lowercase()
+}
+
+/// What a save does with the changes of a session.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct SavePlan {
+    /// Free targets to lock for the session before merging.
+    pub lock: Vec<Target>,
+    /// Changes that are not taken over.
+    pub ignored: Vec<Target>,
+}
+
+/// What a save takes over of the targets the session changed since its base revision
+/// (`mine`): those it has locked; free ones it may change are locked for it first,
+/// unless another user changed them since the base revision as well (`theirs`, they
+/// would be lost). Targets another session has locked are left out.
+pub fn save_plan(mine: &BTreeSet<Target>, theirs: &BTreeSet<Target>, locks: &[Lock], session: &str, may: impl Fn(Target) -> bool) -> SavePlan {
+    let mut plan = SavePlan::default();
+    for &t in mine {
+        match locks.iter().find(|l| l.target == t) {
+            Some(l) if l.session == session => {}
+            None if !theirs.contains(&t) && may(t) => plan.lock.push(t),
+            _ => plan.ignored.push(t),
+        }
+    }
+    plan
 }
 
 /// What a session may change.

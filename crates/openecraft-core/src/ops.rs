@@ -646,6 +646,21 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
     new_ids
 }
 
+/// A device tag starts with its prefix (`-K1`, or with its structure `=A1+CAB1-K1`)
+/// and holds no blanks or list separators; the message says what is wrong.
+pub fn check_tag(tag: &str) -> Result<(), String> {
+    if tag.trim().is_empty() {
+        return Err(openecraft_i18n::tr("A device tag must not be empty").to_string());
+    }
+    if !tag.starts_with(['-', '=', '+']) {
+        return Err(openecraft_i18n::tr_fmt!("Device tag {} must start with -, = or +", tag));
+    }
+    if tag.chars().any(|c| c.is_whitespace() || c.is_control() || matches!(c, ';' | '|' | ',')) {
+        return Err(openecraft_i18n::tr_fmt!("Device tag {} must not contain blanks or the separators ; | ,", tag));
+    }
+    Ok(())
+}
+
 /// Renames a device everywhere (all functions with that tag, device, strip, plug and
 /// PLC card data, panel layout, harnesses, fluid device groups and links).
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {

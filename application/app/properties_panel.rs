@@ -413,9 +413,15 @@ impl App {
             }
             if def.show_pin_labels {
                 ui.label(tr("Connection points"));
-                ui.horizontal_wrapped(|ui| {
-                    for pin in edited.pins.iter_mut() {
-                        ui.add(egui::TextEdit::singleline(pin).desired_width(32.0));
+                // Fixed rows of four: a wrapping row in a grid cell would overlap the
+                // row below it.
+                ui.vertical(|ui| {
+                    for row in edited.pins.chunks_mut(4) {
+                        ui.horizontal(|ui| {
+                            for pin in row {
+                                ui.add(egui::TextEdit::singleline(pin).desired_width(32.0));
+                            }
+                        });
                     }
                 });
                 ui.end_row();
@@ -545,14 +551,20 @@ impl App {
             }
             // Rename the complete device
             if tab == PropTab::Device {
-            let rename_id = ui.scope_id().with("rename");
+            // The text typed belongs to this device; another device starts with its own tag.
+            let rename_id = ui.scope_id().with(("rename", &edited.tag));
             let mut new_tag: String = ui.data_mut(|d| d.get_temp(rename_id)).unwrap_or_else(|| edited.tag.clone());
+            let problem = super::drawing_ui::rename_problem(&self.session.prj, &edited.tag, new_tag.trim());
             ui.horizontal(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut new_tag).desired_width(90.0));
-                if ui.button(tr("Rename device")).on_hover_text(tr("Changes the tag of all functions of this device")).clicked() {
-                    ops::rename_device(&mut self.session.prj, &edited.tag, &new_tag);
+                let ok = problem.is_none() && new_tag.trim() != edited.tag;
+                if ui.add_enabled(ok, egui::Button::new(tr("Rename device"))).on_hover_text(tr("Changes the tag of all functions of this device")).clicked() {
+                    ops::rename_device(&mut self.session.prj, &edited.tag, new_tag.trim());
                 }
             });
+            if let Some(p) = problem {
+                ui.colored_label(crate::style::error(), p);
+            }
             ui.data_mut(|d| d.insert_temp(rename_id, new_tag));
             }
 

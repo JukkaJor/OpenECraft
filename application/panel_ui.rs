@@ -707,7 +707,7 @@ impl PanelUi {
 
     pub fn navigator(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
         ui.horizontal(|ui| {
-            ui.heading(tr("Enclosures"));
+            ui.heading(tr("Enclosures and rooms"));
             if openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Plus, tr("New enclosure")).clicked() {
                 self.new_enclosure_dialog(prj, db);
             }
@@ -863,7 +863,9 @@ impl PanelUi {
             let (face_w, face_h) = e.face_size(it.face);
             let room_wall = e.is_room() && matches!(it.face, Face::Wall(_) | Face::Inner(..));
             let room_height = e.height;
-            ui.label(RichText::new(it.kind.title()).strong());
+            // Doors and windows of a room are openings, not cutouts of a plate.
+            let title = if room_wall && it.kind == ItemKind::Cutout { it.opening.title() } else { it.kind.title() };
+            ui.label(RichText::new(title).strong());
             if it.kind == ItemKind::Accessory {
                 if let Some(p) = &part {
                     ui.weak(&p.description);
@@ -1247,12 +1249,12 @@ impl PanelUi {
         let wires: Vec<_> = an.wiring.iter().filter(|w| w.in_enclosure(ei)).collect();
         let total: f32 = wires.iter().map(|w| w.length).sum();
         ui.separator();
-        ui.label(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0)));
+        ui.add(egui::Label::new(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0))).wrap());
         let problems = panel::problem_items(prj, e).len();
         let holes = openecraft_core::production::holes(e, &prj.parts).len();
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
-        ui.label(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts));
-        ui.horizontal(|ui| {
+        ui.add(egui::Label::new(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts)).wrap());
+        ui.horizontal_wrapped(|ui| {
             if ui.button(tr("⬇ NC data (DXF)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
                 self.export = Some((ei, Face::Plate, NcFormat::Dxf));
             }
@@ -1265,7 +1267,7 @@ impl PanelUi {
         });
         let door_devices = e.items.iter().filter(|i| i.face == Face::Door && i.kind == ItemKind::Device).count();
         ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, openecraft_core::production::openings(e, &prj.parts, Face::Door).len()));
-        ui.horizontal(|ui| {
+        ui.horizontal_wrapped(|ui| {
             if ui.button(tr("⬇ Door NC data (DXF)")).clicked() {
                 self.export = Some((ei, Face::Door, NcFormat::Dxf));
             }
@@ -1280,7 +1282,7 @@ impl PanelUi {
             let face = self.face;
             let n = openecraft_core::production::holes_on(e, &prj.parts, face).len();
             ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, openecraft_core::production::openings(e, &prj.parts, face).len()));
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
                 if ui.button(tr("⬇ NC data of this face (DXF)")).clicked() {
                     self.export = Some((ei, face, NcFormat::Dxf));
                 }
@@ -1677,6 +1679,11 @@ impl PanelUi {
                 });
             }
         }
+        // Patterns and macros of doors and windows of a room make no sense.
+        let openings = e.is_room() && e.items.iter().filter(|i| sel.contains(&i.id)).all(|i| i.kind == ItemKind::Cutout);
+        if openings {
+            return;
+        }
         ui.horizontal(|ui| {
             if ui.button(tr("Pattern…")).on_hover_text(tr("Copies in rows and columns")).clicked() {
                 self.pattern = Some(PatternDialog { nx: 2, ny: 1, px: 50.0, py: 50.0 });
@@ -2035,8 +2042,8 @@ impl PanelUi {
 
     /// Adds a room and shows its rear wall.
     pub fn new_room(&mut self, prj: &mut Project) {
-        let n = (1..).find(|n| !prj.layout.enclosures.iter().any(|e| e.name == format!("=ROOM{n}"))).unwrap_or(1);
-        let room = panel::new_room(prj, &format!("=ROOM{n}"), 4000.0, 3000.0, 2800.0);
+        let n = (1..).find(|n| !prj.layout.enclosures.iter().any(|e| e.name == format!("+ROOM{n}"))).unwrap_or(1);
+        let room = panel::new_room(prj, &format!("+ROOM{n}"), 4000.0, 3000.0, 2800.0);
         prj.layout.enclosures.push(room);
         self.enclosure = prj.layout.enclosures.len() - 1;
         self.in_room = true;
@@ -2500,7 +2507,7 @@ impl PanelUi {
         }
         if let Some(q) = plate {
             if self.start.is_none() && !resp.clicked() {
-                self.status = tr_fmt!("X {}  Y {} mm on the {}", format!("{:.0}", q.x), format!("{:.0}", q.y), self.face.title().to_lowercase());
+                self.status = tr_fmt!("X {}  Y {} mm · {}", format!("{:.0}", q.x), format!("{:.0}", q.y), self.face.title());
             }
         }
     }

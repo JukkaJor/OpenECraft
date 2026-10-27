@@ -6300,3 +6300,54 @@ Draw inner walls	Desenează pereți interiori
 Inner wall {}, side {}	Perete interior {}, partea {}
 Thickness	Grosime
 {}: {} stands in an inner wall	{}: {} stă într-un perete interior
+Opening {} replaces the current project, its unsaved changes are lost.	Deschiderea {} înlocuiește proiectul curent, modificările nesalvate se pierd.
+Discard changes and open	Renunță la modificări și deschide
+Open link	Deschide linkul
+Replace the file at path if it exists	Înlocuiește fișierul din path dacă există
+{} exists already: pass overwrite to replace it	{} există deja: indicați overwrite pentru a-l înlocui
+{} has unsaved changes. Discard them?	{} are modificări nesalvate. Renunțați la ele?
+Discard changes	Renunță la modificări
+Locked by {} on the project server – read only	Blocat de {} pe serverul de proiecte – doar citire
+A device tag must not be empty	Marcajul echipamentului nu poate fi gol
+Device tag {} must start with -, = or +	Marcajul {} trebuie să înceapă cu -, = sau +
+Device tag {} must not contain blanks or the separators ; | ,	Marcajul {} nu poate conține spații sau separatorii ; | ,
+{} lies outside page {}	{} se află în afara paginii {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Poziția {} / {} mm este în afara paginii ({} x {} mm)
+The wire has no length	Conexiunea nu are lungime
+Start and end are the same connection point	Începutul și sfârșitul sunt același punct de conexiune
+A page needs a name	O pagină are nevoie de un nume
+Printing and export	Imprimare și export
+1 project on the server	1 proiect pe server
+pcs	buc.
+Legend plate	Plăcuță de marcare
+KNX actuator	Actuator KNX
+KNX system device	Dispozitiv de sistem KNX
+Battery monitor	Monitor baterie
+System monitoring	Monitorizarea sistemului
+Cable clamp rail	Șină de fixare a cablurilor
+Document holder	Suport pentru documente
+Door handle	Mâner de ușă
+Filter fan	Ventilator cu filtru
+Outlet filter	Filtru de ieșire
+PE busbar	Bară PE
+Rail standoff	Distanțier pentru șină
+Screw	Șurub
+Nut	Piuliță
+Washer	Șaibă
+Side panel	Perete lateral
+DC-DC converter	Convertor c.c.-c.c.
+Inverter / charger	Invertor / încărcător
+Solar charge controller	Regulator de încărcare solară
+Breaking capacity	Capacitate de rupere
+Poles	Poli
+Wrong user name or password	Nume de utilizator sau parolă greșită
+Too many failed sign-ins, try again later	Prea multe autentificări eșuate, încercați mai târziu
+Part {} not found	Articolul {} nu a fost găsit
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	fișierul sau folderul nu a fost găsit
+access denied	acces refuzat
+the file exists already	fișierul există deja
+this is a folder	acesta este un folder
+the disk is full	discul este plin
+Enclosures and rooms	Carcase și încăperi
+Not saved, locked or changed by another user: {}	Nesalvat, blocat sau modificat de alt utilizator: {}

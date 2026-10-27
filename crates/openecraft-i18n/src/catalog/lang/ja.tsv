@@ -6299,3 +6299,54 @@ Draw inner walls	内壁を描く
 Inner wall {}, side {}	内壁 {}、{} 側
 Thickness	厚さ
 {}: {} stands in an inner wall	{}: {} が内壁の中にあります
+Opening {} replaces the current project, its unsaved changes are lost.	{} を開くと現在のプロジェクトが置き換えられ、未保存の変更は失われます。
+Discard changes and open	変更を破棄して開く
+Open link	リンクを開く
+Replace the file at path if it exists	path のファイルが存在する場合は置き換える
+{} exists already: pass overwrite to replace it	{} は既に存在します。置き換えるには overwrite を指定してください
+{} has unsaved changes. Discard them?	{} には未保存の変更があります。破棄しますか?
+Discard changes	変更を破棄
+Locked by {} on the project server – read only	プロジェクトサーバーで {} がロック中 – 読み取り専用
+A device tag must not be empty	機器タグは空にできません
+Device tag {} must start with -, = or +	機器タグ {} は -、= または + で始まる必要があります
+Device tag {} must not contain blanks or the separators ; | ,	機器タグ {} に空白や区切り文字 ; | , は使えません
+{} lies outside page {}	{} はページ {} の外にあります
+Position {} / {} mm lies outside the page ({} x {} mm)	位置 {} / {} mm はページの外です ({} x {} mm)
+The wire has no length	接続に長さがありません
+Start and end are the same connection point	始点と終点が同じ接続ポイントです
+A page needs a name	ページには名前が必要です
+Printing and export	印刷とエクスポート
+1 project on the server	サーバー上のプロジェクト: 1 件
+pcs	個
+Legend plate	銘板
+KNX actuator	KNX アクチュエータ
+KNX system device	KNX システム機器
+Battery monitor	バッテリーモニター
+System monitoring	システム監視
+Cable clamp rail	ケーブルクランプレール
+Document holder	図面ポケット
+Door handle	ドアハンドル
+Filter fan	フィルターファン
+Outlet filter	排気フィルター
+PE busbar	PE バー
+Rail standoff	レールスペーサー
+Screw	ねじ
+Nut	ナット
+Washer	ワッシャー
+Side panel	側板
+DC-DC converter	DC-DC コンバータ
+Inverter / charger	インバータ / 充電器
+Solar charge controller	ソーラー充電コントローラ
+Breaking capacity	遮断容量
+Poles	極数
+Wrong user name or password	ユーザー名またはパスワードが違います
+Too many failed sign-ins, try again later	サインインの失敗が多すぎます。後でもう一度お試しください
+Part {} not found	部品 {} が見つかりません
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	ファイルまたはフォルダーが見つかりません
+access denied	アクセスが拒否されました
+the file exists already	ファイルは既に存在します
+this is a folder	これはフォルダーです
+the disk is full	ディスクがいっぱいです
+Enclosures and rooms	筐体と部屋
+Not saved, locked or changed by another user: {}	保存されていません。他のユーザーがロックまたは変更しています: {}

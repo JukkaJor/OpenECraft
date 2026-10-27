@@ -130,7 +130,8 @@ impl App {
                 self.raise = None;
                 ctx.move_to_top(egui::LayerId::new(egui::Order::Middle, id));
             }
-            egui::Window::new(title).id(id).open(&mut open).default_size(size).default_pos(at).pivot(egui::Align2::CENTER_CENTER).show(ctx, |ui| {
+            let max = egui::vec2(screen.width() * 0.95, screen.height() * 0.9);
+            egui::Window::new(title).id(id).open(&mut open).default_size(size).max_size(max).constrain(true).default_pos(at).pivot(egui::Align2::CENTER_CENTER).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     if icons::text_button(ui, Icon::Panes, tr("Dock")).on_hover_text(tr("Put the pane back into the workspace")).clicked() {
                         dock_back = true;
@@ -141,6 +142,10 @@ impl App {
             });
             if !open || dock_back {
                 self.floating.retain(|p| *p != pane);
+                if !open {
+                    // The flag that asked for the pane would open it again next frame.
+                    self.forget_request(pane);
+                }
                 if dock_back {
                     self.shell.placement.set(pane, false);
                     self.show_pane(pane);
@@ -268,7 +273,13 @@ impl App {
         let ctx = ui.ctx().clone();
         self.page_tabs_bar(ui);
         let page = self.session.page;
-        self.editor.read_only = self.page_locked_by().is_some() || self.remote.viewer();
+        let locked_by = self.page_locked_by();
+        self.editor.read_only = locked_by.is_some() || self.remote.viewer();
+        self.editor.read_only_reason = match locked_by {
+            Some(user) => tr_fmt!("Locked by {} on the project server – read only", user),
+            None if self.remote.viewer() => tr("You may only view this project.").to_string(),
+            None => String::new(),
+        };
         self.editor.review_selected = self.review_ui.selected;
         let out = self.editor.ui(ui, &mut self.session.prj, page, idx, &self.session.analysis);
         if out.open_properties {

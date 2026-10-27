@@ -62,3 +62,21 @@ fn ids_never_go_below_the_project() {
     assert!(first >= 500);
     assert!(store.reserve_ids("p").unwrap() >= first + ID_BLOCK);
 }
+
+#[test]
+fn earlier_revisions_are_kept_for_a_while() {
+    let mut store = Store::in_memory();
+    store.create("p", Project::default()).unwrap();
+    for i in 0..KEPT_REVISIONS + 2 {
+        let mut prj = store.get("p").unwrap().project.clone();
+        prj.info.name = format!("v{i}");
+        store.save("p", prj).unwrap();
+    }
+    let current = store.get("p").unwrap().revision;
+    assert_eq!(store.at("p", current).unwrap().info.name, format!("v{}", KEPT_REVISIONS + 1));
+    assert_eq!(store.at("p", current - 1).unwrap().info.name, format!("v{}", KEPT_REVISIONS));
+    assert!(store.at("p", current - KEPT_REVISIONS as u64).is_some());
+    assert!(store.at("p", 1).is_none(), "too old");
+    store.delete("p").unwrap();
+    assert!(store.at("p", current - 1).is_none());
+}

@@ -339,8 +339,8 @@ impl App {
                         egui::CollapsingHeader::new(RichText::new(format!("{tag}  ({})", items.len())).monospace()).id_salt((title, tag)).show(ui, |ui| {
                             for u in items {
                                 let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
-                                let r = ui.dnd_drag_source(ui.make_persistent_id(("unplaced", &u.tag, &u.title)), payload, |ui| ui.link(&u.title).on_hover_text(tr("Click, or drag it into the page")));
-                                if r.inner.clicked() {
+                                let r = super::drag_source(ui, ui.make_persistent_id(("unplaced", &u.tag, &u.title)), payload, |ui| ui.link(&u.title).on_hover_text(tr("Click, or drag it into the page")));
+                                if r.clicked() {
                                     start = Some(u.clone());
                                 }
                             }
@@ -398,10 +398,10 @@ impl App {
                             }
                         } else if let Some(u) = u {
                             let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
-                            let r = ui.dnd_drag_source(ui.make_persistent_id(("plc_free", &u.tag, &u.label)), payload, |ui| {
+                            let r = super::drag_source(ui, ui.make_persistent_id(("plc_free", &u.tag, &u.label)), payload, |ui| {
                                 ui.add(egui::Label::new(RichText::new(format!("{}  –", u.label)).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
                             });
-                            if r.inner.clicked() {
+                            if r.clicked() {
                                 start = Some(u.clone());
                             }
                         }
@@ -433,10 +433,10 @@ impl App {
             })
         };
         let free = |ui: &mut egui::Ui, id: (&str, &str, &str), payload: crate::editor::PlacePayload, text: String| -> bool {
-            let r = ui.dnd_drag_source(ui.make_persistent_id(id), payload, |ui| {
+            super::drag_source(ui, ui.make_persistent_id(id), payload, |ui| {
                 ui.add(egui::Label::new(RichText::new(text).weak()).sense(egui::Sense::click())).on_hover_text(tr("Click, or drag it into the page"))
-            });
-            r.inner.clicked()
+            })
+            .clicked()
         };
         egui::ScrollArea::vertical().id_salt("strips_nav").auto_shrink([false, false]).show(ui, |ui| {
             ui.label(RichText::new(tr("Terminal strips")).strong());
