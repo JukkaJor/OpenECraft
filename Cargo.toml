@@ -1,53 +1,7 @@
-﻿[package]
-name = "openecraft"
-version = "0.1.0"
-edition = "2021"
-description = "OpenECraft - an open electrical CAE (schematic) editor in the spirit of EPLAN Electric P8"
-license = "MIT OR Apache-2.0"
-
-[[bin]]
-name = "openecraft"
-path = "application/main.rs"
-
-[workspace]
-members = [".", "crates/openecraft-i18n", "crates/openecraft-fonts", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-edz", "crates/openecraft-jt", "crates/openecraft-xt", "crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
+﻿[workspace]
+members = ["openecraft", "crates/openecraft-i18n", "crates/openecraft-fonts", "crates/openecraft-core", "crates/openecraft-client", "crates/openecraft-step", "crates/openecraft-edz", "crates/openecraft-jt", "crates/openecraft-xt", "crates/openecraft-parts", "crates/openecraft-ui", "crates/openecraft-api", "crates/openecraft-auth", "parts-server", "project-server", "parts-manager", "cli"]
 exclude = ["vendor"]
-
-[dependencies]
-eframe = { version = "0.37", default-features = false, features = [
-    "accesskit",
-    "clipboard",
-    "default_fonts",
-    "glow",
-    "links",
-    "persistence",
-    "wayland",
-    "x11",
-] }
-# Bundle the symbol / emoji fonts: native builds have no browser font fallback,
-# so icons used in the UI must be in the bundled fonts (see application/glyphs.rs).
-egui = { version = "0.37", features = ["monochrome_emoji_fonts"] }
-# Docking panels (application/dock.rs).
-egui_tiles = { version = "0.18", features = ["serde"] }
-serde = { version = "1", features = ["derive", "rc"] }
-serde_json = "1"
-log = "0.4"
-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
-openecraft-edz = { path = "crates/openecraft-edz" }
-openecraft-parts = { path = "crates/openecraft-parts" }
-openecraft-i18n = { path = "crates/openecraft-i18n" }
-openecraft-ui = { path = "crates/openecraft-ui" }
-openecraft-core = { path = "crates/openecraft-core" }
-openecraft-client = { path = "crates/openecraft-client" }
-openecraft-api = { path = "crates/openecraft-api" }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-env_logger = "0.11"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "Location", "Navigator"] }
+resolver = "2"
 
 [profile.release]
 opt-level = 2

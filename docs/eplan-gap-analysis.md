@@ -31,7 +31,7 @@ and a browser build.
 
 The gaps are therefore not in breadth but in three places:
 
-1. **Depth of the daily editing experience.** The editor (`application/editor.rs`,
+1. **Depth of the daily editing experience.** The editor (`openecraft/src/editor.rs`,
    about 1,400 lines) is thin compared with the engine behind it. Texts cannot be
    rotated, aligned or formatted; device tags are only numbered online; pages cannot
    be renumbered; connection numbering has three fixed schemes; cross-reference
@@ -191,7 +191,7 @@ OpenECraft exports PDF, SVG and an HTML print document; there is no print dialog
 (desktop) and no page selection for output.
 
 - Gap: native print, page ranges on export, print of the panel layout faces.
-- Where: `application/io.rs`, `pdf.rs` (page selection).
+- Where: `openecraft/src/io.rs`, `pdf.rs` (page selection).
 - Size: S to M.
 
 ### 3.2 Device tags, numbering and cross references
@@ -206,7 +206,7 @@ numbering schemes were found (`grep renumber` finds strips and wires only).
 
 - Gap: offline DT numbering with schemes, NFPA style numbering, renumber selection.
 - Where: new `numbering.rs` in core, tool in `cli/src/tools/devices.rs`, dialog in
-  `application/app`.
+  `openecraft/src/app`.
 - Size: M.
 
 **Page numbering.** EPLAN renumbers pages (start, increment, sub-pages, per structure).
@@ -323,7 +323,7 @@ found.
   unplaced functions, synchronised selection, project-wide Find and Replace, Edit in
   table for cables, plugs, PLC, pages and parts, an "Insert Center" that searches
   symbols, macros and devices at once.
-- Where: `application/app/*_ui.rs`, `tables.rs` (more row kinds), new `search.rs`
+- Where: `openecraft/src/app/*_ui.rs`, `tables.rs` (more row kinds), new `search.rs`
   in core.
 - Size: L in total; each navigator S to M.
 
@@ -521,7 +521,7 @@ EPLAN's multi-user approach. Gaps:
   full editor.
 - Cloud storage of projects, sharing links, notifications on comments.
 
-Where: `project-server/`, `collab.rs`, `application/app/remote_ui.rs`. Size: M.
+Where: `project-server/`, `collab.rs`, `openecraft/src/app/remote_ui.rs`. Size: M.
 
 ### 3.16 Import, export and migration
 

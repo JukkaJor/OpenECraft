@@ -14,7 +14,7 @@ cargo clippy --workspace --all-targets
 cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown
 ```
 
-- Desktop: `cargo run --release`
+- Desktop: `cargo run --release -p openecraft`
 - Parts server: `cargo run -p openecraft-parts-server -- --token <secret>` (http://127.0.0.1:8090)
 - Project server: `cargo run -p openecraft-project-server -- --token <secret>` (http://127.0.0.1:8091)
 - Both servers also take `--config <file.toml>` with the settings of their options
@@ -22,7 +22,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
   a new option gets a key in the server's `settings.rs` `File` too
 - Parts manager: `cargo run -p openecraft-parts-manager`; web: `cd parts-manager && trunk serve` (http://127.0.0.1:8082)
 - Command line / MCP server: `cargo run -p openecraft-cli -- help`, `cargo run -p openecraft-cli -- mcp`
-- Web: `trunk serve` (dev server on http://127.0.0.1:8080), `trunk build --release`
+- Web: `cd openecraft && trunk serve` (dev server on http://127.0.0.1:8080), `cd openecraft && trunk build --release`
 - Windows installer: `powershell -ExecutionPolicy Bypass -File installer/windows/build.ps1`
   (Inno Setup 6, script `installer/windows/openecraft.iss`, output `target/installer/`);
   installer texts are in all four languages too (`[CustomMessages]`)
@@ -37,7 +37,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 
 | Crate | Path | Purpose |
 | --- | --- | --- |
-| `openecraft` | `.` (`application/`) | Editor (desktop + web) – the root package, built by trunk |
+| `openecraft` | `openecraft/` | Editor (desktop + web), built by trunk (own `index.html` / `Trunk.toml`) |
 | `openecraft-core` | `crates/openecraft-core` | Headless project model: pages, symbols, devices, netlist, checks, reports, panel layout, SVG / PDF / DXF / DWG export |
 | `openecraft-parts` | `crates/openecraft-parts` | Shared library: part model, function templates, CSV/JSON, catalog, EPLAN product groups, parts server API types, data portal rules (faceted search, lifecycle, update check), role based access control of both servers (`access`) |
 | `openecraft-i18n` | `crates/openecraft-i18n` | Languages and UI translations (English, German, French, Spanish and 16 further languages); no dependencies |
@@ -56,7 +56,7 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 | `openecraft-parts-manager` | `parts-manager/` | Standalone parts server maintenance app (desktop + web, own `index.html` / `Trunk.toml`) |
 
 - `docs/architecture.md` describes the crate graph, the layers inside `openecraft-core`
-  and where a new feature goes; `application/conventions/tests.rs` enforces the layer
+  and where a new feature goes; `openecraft/src/conventions/tests.rs` enforces the layer
   rules (`CORE_RULES`). Extend the table when you add or layer a module.
 - Code needed by more than one executable belongs in a library crate under `crates/`,
   never duplicated.
@@ -117,7 +117,7 @@ text without a line there is shown in English. Add the new texts of a feature to
 too when you can (same placeholders and leading / trailing spaces; the tests check
 this). Chinese, Japanese and Korean use the bundled fonts of `openecraft-fonts`: after
 a translation into one of them gained characters, run `crates/openecraft-fonts/subset.py`
-(see its header) or `application/glyphs/tests.rs` fails. A new language is a `Lang`
+(see its header) or `openecraft/src/glyphs/tests.rs` fails. A new language is a `Lang`
 variant, a catalog file in `catalog.rs` and, for a script the bundled fonts lack, a font
 in `openecraft-fonts`. Scripts written right to left or needing complex shaping (Arabic,
 Hebrew, Indic scripts, Thai) cannot be drawn by egui.
@@ -138,7 +138,7 @@ Hebrew, Indic scripts, Thai) cannot be drawn by egui.
   placeholders equal, every literal passed to `tr` / `tr_fmt!` / `tr_const!` / `issue!`
   and every built-in symbol name is in the catalog, and all translated characters exist
   in the bundled fonts.
-- `application/conventions/tests.rs` fails for plain string literals passed to widgets
+- `openecraft/src/conventions/tests.rs` fails for plain string literals passed to widgets
   (`ui.button("…")`, `.label("…")`, `.on_hover_text("…")`, `Window::new("…")`, …).
 - Translate at the point where the text is shown, so that switching the language in
   View › Language (or the parts manager's toolbar) takes effect immediately. Texts
@@ -156,10 +156,10 @@ Hebrew, Indic scripts, Thai) cannot be drawn by egui.
 separate file next to it:
 
 ```
-application/geom.rs        ← module code, ends with:
-                         #[cfg(test)]
-                         mod tests;
-application/geom/tests.rs  ← the tests, starting with `use super::*;`
+openecraft/src/geom.rs        ← module code, ends with:
+                            #[cfg(test)]
+                            mod tests;
+openecraft/src/geom/tests.rs  ← the tests, starting with `use super::*;`
 ```
 
 Rules (for every crate of the workspace):
@@ -176,14 +176,14 @@ Rules (for every crate of the workspace):
    not add an inline block "for now".
 6. New behaviour gets a test. Bug fixes get a regression test.
 
-These rules are enforced by `application/conventions/tests.rs` – `cargo test` fails on
+These rules are enforced by `openecraft/src/conventions/tests.rs` – `cargo test` fails on
 violations. Do not weaken or delete that test to make a change pass.
 
 ## Other conventions
 
 - **Glyphs:** every character used in a string literal must exist in the bundled
   egui fonts. Native builds have no font fallback, so missing characters render as
-  empty boxes (the browser hides the problem). `application/glyphs/tests.rs` checks this for
+  empty boxes (the browser hides the problem). `openecraft/src/glyphs/tests.rs` checks this for
   every workspace member; if
   it fails, pick a character the fonts contain instead of disabling the check. Keep
   the egui feature `monochrome_emoji_fonts` enabled.
@@ -211,11 +211,11 @@ violations. Do not weaken or delete that test to make a change pass.
   `cli/src/tools/<area>.rs`. Help texts use `tr_const!` and need catalog entries; MCP
   clients get them in English.
 - **Editor shell:** every function of the editor is a command of
-  `application/commands.rs` with a place in the ribbon, the backstage or View › Panes
-  (`application/ribbon.rs`); a tool is a pane (`ToolPane` in `application/dock.rs`)
+  `openecraft/src/commands.rs` with a place in the ribbon, the backstage or View › Panes
+  (`openecraft/src/ribbon.rs`); a tool is a pane (`ToolPane` in `openecraft/src/dock.rs`)
   shown by a command. The tests of both modules fail for a command without a place
   or a pane without a command. Icons are vector paths in `openecraft_ui::icons`
-  (no new glyphs); state colours come from `application/style.rs`.
+  (no new glyphs); state colours come from `openecraft/src/style.rs`.
 - **Parts manager:** keep its editing rules (drafts, renames, unsaved changes) in
   `parts-manager/src/session.rs` (no UI code, unit tested); `app.rs` only draws.
 - **Style:** match the surrounding code; keep comments as sparse as the existing ones.

@@ -70,11 +70,11 @@ built by CI on every push; see [installation](docs/installation.md). From source
 recent stable Rust toolchain:
 
 ```bash
-cargo run --release
+cargo run --release -p openecraft
 ```
 
 ```bash
-trunk serve
+cd openecraft && trunk serve
 ```
 
 The second command serves the web version on http://127.0.0.1:8080 (it needs

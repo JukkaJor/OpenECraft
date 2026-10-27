@@ -88,8 +88,8 @@ precede any crate split; phase 6 is optional and incremental.
 - **Platform code confined**: the only `cfg(target_arch = "wasm32")` lines are in
   `crates/openecraft-ui/src/io.rs` and the two `main.rs` files. `FileIo<K>` with the
   `FileKind` trait is a clean seam.
-- **Conventions enforced by tests**: `application/conventions/tests.rs` (test layout,
-  untranslated widget texts), `application/glyphs/tests.rs` (font coverage), the i18n
+- **Conventions enforced by tests**: `openecraft/src/conventions/tests.rs` (test layout,
+  untranslated widget texts), `openecraft/src/glyphs/tests.rs` (font coverage), the i18n
   catalog tests (four languages, placeholders, every `tr` literal present),
   `sample/tests.rs` (demo project has no check errors). The 543 core tests and the 99
   CLI tests (black-box through JSON) are a real safety net for refactoring.
@@ -111,7 +111,7 @@ precede any crate split; phase 6 is optional and incremental.
 
 | Crate | Lines | Files | Tests | Transitive deps |
 | --- | ---: | ---: | ---: | ---: |
-| `openecraft` (editor, `application/`) | 18 960 | 48 | 30 | 347 |
+| `openecraft` (editor, `openecraft/`) | 18 960 | 48 | 30 | 347 |
 | `openecraft-core` | 52 625 | 183 | 543 | 54 |
 | `openecraft-cli` | 9 902 | 63 | 99 | 82 |
 | `openecraft-parts` | 5 887 | 31 | 70 | 14 |
@@ -151,13 +151,13 @@ Longest functions:
 | ---: | --- |
 | 841 | `symbols::build_library` (`crates/openecraft-core/src/symbols.rs:498`) |
 | 473 | `integration::records` (`crates/openecraft-core/src/integration.rs:645`) |
-| 449 | `PanelUi::properties` (`application/panel_ui.rs:715`) |
-| 426 | `PanelUi::view_3d` (`application/panel_ui/view3d.rs:52`) |
-| 425 | `App::menu_bar` (`application/app.rs:564`) |
-| 371 | `App::windows` (`application/app.rs:1811`) |
-| 349 | `PanelUi::front_view` (`application/panel_ui.rs:1736`) |
-| 256 | `RevisionsUi::ui` (`application/app/revisions_ui.rs:46`) |
-| 246 | `App::symbol_properties` (`application/app.rs:1564`) |
+| 449 | `PanelUi::properties` (`openecraft/src/panel_ui.rs:715`) |
+| 426 | `PanelUi::view_3d` (`openecraft/src/panel_ui/view3d.rs:52`) |
+| 425 | `App::menu_bar` (`openecraft/src/app.rs:564`) |
+| 371 | `App::windows` (`openecraft/src/app.rs:1811`) |
+| 349 | `PanelUi::front_view` (`openecraft/src/panel_ui.rs:1736`) |
+| 256 | `RevisionsUi::ui` (`openecraft/src/app/revisions_ui.rs:46`) |
+| 246 | `App::symbol_properties` (`openecraft/src/app.rs:1564`) |
 | 238 | `routing3d::analyse` (`crates/openecraft-core/src/routing3d.rs:634`) |
 
 Most frequently changed files in git (the three hubs of finding F1 lead):
@@ -202,7 +202,7 @@ through `PageKind::Report(ReportKind)`, so plugin reports can never become repor
 
 Export formats are listed twice by hand: the editor's File menu (`app.rs:564` onwards)
 and the CLI's `export` match (`cli/src/tools/output.rs:138`). Import kinds are the
-25-variant `Purpose` enum in `application/io.rs` dispatched by a 172-line if-chain in
+25-variant `Purpose` enum in `openecraft/src/io.rs` dispatched by a 172-line if-chain in
 `App::poll_loaded`.
 
 Meanwhile `openecraft-api::Registry` offers exactly the abstractions needed (`Check`,
@@ -225,7 +225,7 @@ of one page.
 
 ### F3. The editor `App` is a god object with hidden boundaries
 
-- `App` (`application/app.rs:66`) has ~60 fields mixing document state (project,
+- `App` (`openecraft/src/app.rs:66`) has ~60 fields mixing document state (project,
   history, analysis, index, file name, remote session), UI state of 25 dialogs, and
   caches. 29 submodules each add an `impl App` block, so any dialog can read or write
   any field; the struct is the only interface.
@@ -236,11 +236,11 @@ of one page.
   provide its own page operations. 42 UI functions take `&mut Project` and mutate it
   directly; the undo mechanism makes that safe, but it means the editor and the CLI
   share less logic than they should.
-- `application/main.rs:20` re-exports all 60 core modules, so editor code is written as
+- `openecraft/src/main.rs:20` re-exports all 60 core modules, so editor code is written as
   `use crate::model::*`, `crate::reports::Analysis`, `crate::svg::page_svg`. A reader
   cannot tell UI from model, and moving code between the crates leaves no trace. (The
   history shows why: the editor used to be `src/` containing everything.)
-- `EngineeringUi` (`application/app/engineering.rs`) bundles four unrelated windows
+- `EngineeringUi` (`openecraft/src/app/engineering.rs`) bundles four unrelated windows
   (macros, terminal strips, PLC overview, marking) in one struct.
 
 ### F4. Per-frame work scales with the whole project
@@ -313,10 +313,9 @@ offers"); the code predates the rule.
   fine, but it is why two `Table` types exist.
 - Check issues are translated strings built at generation time, so the analysis must be
   rebuilt on a language change and MCP clients cannot filter by kind.
-- The root package is the editor (`[[bin]] path = "application/main.rs"`) and also the
-  workspace manifest; `conventions.rs` depends on `CARGO_MANIFEST_DIR` being the root.
-  Works, but a virtual workspace root with the editor in `application/Cargo.toml` would
-  be the usual layout.
+- Done: the root manifest is a virtual workspace, the editor is the crate
+  `openecraft/` like every other member (it was the root package, sources in
+  `application/`).
 - Only one `TODO` in the whole tree and eight `#[allow]`s (all
   `too_many_arguments`): the code is clean at the small scale; the debt is structural.
 
@@ -341,7 +340,7 @@ Goal: make the intended structure visible and checkable before moving code.
 1. Add `docs/architecture.md` (short, maintained): crate graph with the direction rule,
    the layers inside core introduced in phase 3, where a new feature goes (data type,
    logic, registry entry, UI), and a link to this analysis. Reference it from AGENTS.md.
-2. Add an architecture test next to `application/conventions/tests.rs` that parses
+2. Add an architecture test next to `openecraft/src/conventions/tests.rs` that parses
    `use crate::…` lines of core and asserts a dependency rule table. Start with the rules
    that already hold (`geom` imports nothing; `symbols` imports only `geom`, `symlib`;
    `history` imports only `model`; `i18n` has no dependencies). Phase 3 extends the
@@ -351,7 +350,7 @@ Goal: make the intended structure visible and checkable before moving code.
    `cargo fmt --check` to CI. If the one-time diff is unwanted, skip this item; do not
    leave the question open.
 4. Add `clippy.toml` with `too-many-lines-threshold = 150` and enable
-   `clippy::too_many_lines` as a warning in `application/main.rs` and `core/lib.rs`
+   `clippy::too_many_lines` as a warning in `openecraft/src/main.rs` and `core/lib.rs`
    with `#![warn]` plus explicit `#[allow]` on the existing offenders, so new long
    functions are caught while old ones are reduced over time.
 
@@ -489,12 +488,12 @@ Goal: `App` becomes a thin composition root; dialogs are self-contained; busines
 live in core where the CLI can use them.
 
 4a. **Explicit imports.** Delete the `use openecraft_core::{…}` re-export block in
-    `application/main.rs` and rewrite `crate::model::…` etc. as `openecraft_core::…`
+    `openecraft/src/main.rs` and rewrite `crate::model::…` etc. as `openecraft_core::…`
     (mechanical, one PR, no logic change). The conventions test can forbid
     re-exporting core modules from `main.rs` so it does not come back.
 
 4b. **A `Session` type for the document state.** Extract from `App` into
-    `application/session.rs`: `prj`, `history`, `analysis`, `index`, `saved_rev`,
+    `openecraft/src/session.rs`: `prj`, `history`, `analysis`, `index`, `saved_rev`,
     `file_name`, `remote`, `page`, with a small API (`edit(|prj| …)`, `goto`,
     `replace_project`, `dirty`, `analysis()`), unit-testable without egui (the pattern
     `parts-manager/src/session.rs` already follows). `App` keeps UI state only. Dialog
@@ -516,7 +515,7 @@ live in core where the CLI can use them.
     (349): one function per property section (climate, checks, line-up, routing, wire
     are already separate; devices, profiles, enclosure follow).
 
-Acceptance: `app.rs` under ~800 lines; no function in `application/` over 150 lines
+Acceptance: `app.rs` under ~800 lines; no function in `openecraft/` over 150 lines
 except the egui canvas loops; `Session` has tests for open / save / dirty / goto.
 
 ### Phase 5: Symbol table instead of a global registry (M)
@@ -570,7 +569,7 @@ Depends on 2b (checks in a table).
 2. Phase 2a–2d (the biggest design change; do it before phase 3 because 3b depends on
    the registry types living in core).
 3. Phases 4a, 4b and 5 can run in parallel with phase 2 since they touch different
-   files (`application/` vs `core`); 4c/4d after 2c.
+   files (`openecraft/` vs `core`); 4c/4d after 2c.
 4. Phase 3a–3c after 2; 3d only with numbers.
 5. Phases 6 and 7 when the product wants them (command palette, check suppression).
 

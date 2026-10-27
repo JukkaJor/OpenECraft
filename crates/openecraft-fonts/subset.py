@@ -3,7 +3,7 @@
 The fonts are subsets of the Noto Sans SC / JP / KR variable fonts of Google Fonts
 (https://github.com/google/fonts, ofl/notosans{sc,jp,kr}, SIL Open Font License 1.1)
 at weight 350 with the characters of the translations of their language. Run it after
-a translation gained characters (`application/glyphs/tests.rs` fails then):
+a translation gained characters (`openecraft/src/glyphs/tests.rs` fails then):
 
     pip install fonttools
     python subset.py <folder with NotoSansSC[wght].ttf, NotoSansJP[wght].ttf, NotoSansKR[wght].ttf>

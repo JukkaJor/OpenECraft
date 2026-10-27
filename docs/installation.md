@@ -7,7 +7,7 @@ Building from source requires a recent stable Rust toolchain (`rustup update sta
 ## Desktop (Windows / Linux / macOS)
 
 ```bash
-cargo run --release
+cargo run --release -p openecraft
 ```
 
 On Linux you need the usual windowing / dialog libraries, e.g. on Debian/Ubuntu:
@@ -98,8 +98,8 @@ supported yet. CI builds the image on every push (artifact `openecraft-macos-dmg
 ```bash
 rustup target add wasm32-unknown-unknown
 cargo install trunk --locked
-trunk serve          # development server on http://127.0.0.1:8080
-trunk build --release  # static files in dist/ – host them on any web server
+cd openecraft && trunk serve            # development server on http://127.0.0.1:8080
+cd openecraft && trunk build --release  # static files in openecraft/dist/ – host them on any web server
 ```
 
 In the browser "Save" downloads the project file and "Open" uses the file picker.
