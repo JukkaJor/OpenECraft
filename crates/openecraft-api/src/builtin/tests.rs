@@ -45,3 +45,85 @@ fn macro_boxes_are_listed() {
     assert_eq!(list[0]["items"], 1);
     assert_eq!(list[0]["values"]["NAME"], "X");
 }
+
+#[test]
+fn a_failed_command_changes_nothing_and_old_parameter_names_work() {
+    let p = Plugins::new(Vec::<String>::new());
+    let mut prj = demo_project();
+    let before = prj.clone();
+    // set_potential checks the cross-section after creating the definition.
+    let args = serde_json::json!({ "name": "+99V", "cross_section": "thick" });
+    assert!(p.run(p.command("set_potential").unwrap(), &mut prj, args.as_object().unwrap()).is_err());
+    assert_eq!(prj, before);
+    // rename_device: tag / new_tag, also old / new.
+    let args = serde_json::json!({ "old": "-S4", "new": "-S9" });
+    assert_eq!(p.run(p.command("rename_device").unwrap(), &mut prj, args.as_object().unwrap()).unwrap()["new"], "-S9");
+    let args = serde_json::json!({ "tag": "-S9", "new_tag": "-S4" });
+    assert_eq!(p.run(p.command("rename_device").unwrap(), &mut prj, args.as_object().unwrap()).unwrap()["new"], "-S4");
+    assert_eq!(renamed_param("replace_text", "with"), Some("replace"));
+    assert_eq!(renamed_param("replace_text", "kinds"), None);
+}
+
+#[test]
+fn values_out_of_range_are_refused_not_corrected() {
+    let p = Plugins::new(Vec::<String>::new());
+    let mut prj = demo_project();
+    let mut run = |name: &str, args: serde_json::Value| p.run(p.command(name).unwrap(), &mut prj, args.as_object().unwrap());
+    assert_eq!(run("set_frame", serde_json::json!({ "name": "Tiny", "columns": 0 })).unwrap_err(), "columns must be between 1 and 60");
+    assert_eq!(run("set_wire_numbering", serde_json::json!({ "start": -5 })).unwrap_err(), "start must not be negative");
+    assert_eq!(run("set_wire_numbering", serde_json::json!({ "step": 0 })).unwrap_err(), "step must be at least 1");
+    assert!(run("set_wire_numbering", serde_json::json!({ "format": "{bogus}" })).unwrap_err().starts_with("Unknown placeholder {bogus}"));
+    assert!(run("set_wire_numbering", serde_json::json!({ "format": "{page}.{n}" })).is_ok());
+    assert!(run("renumber_devices", serde_json::json!({ "format": "{letter}{x}" })).is_err());
+    assert!(run("renumber_pages", serde_json::json!({ "start": -5 })).is_err());
+    assert!(run("renumber_pages", serde_json::json!({ "step": 0 })).is_err());
+    assert!(run("set_terminal", serde_json::json!({ "strip": "-X1", "terminal": "1", "level": 99 })).is_err());
+    assert!(run("add_enclosure", serde_json::json!({ "name": "+CAB9", "width": -5 })).is_err());
+    assert!(run("add_room", serde_json::json!({ "name": "+R1", "width": 0 })).is_err());
+    let room = run("add_room", serde_json::json!({ "name": "+R1", "width": 5000, "depth": 4000 })).unwrap();
+    assert_eq!(room["name"], "+R1");
+    assert_eq!(run("add_room", serde_json::json!({ "name": "+R1" })).unwrap_err(), "Room +R1 exists already");
+    // A cabinet is placed in its room or not at all.
+    let err = run("place_in_room", serde_json::json!({ "enclosure": "+CAB1", "room": "+R1", "x": 100000, "z": 0 })).unwrap_err();
+    assert_eq!(err, "+CAB1 would stand outside the room +R1");
+    assert!(run("place_in_room", serde_json::json!({ "enclosure": "+CAB1", "room": "+R1", "x": 100, "z": 100 })).is_ok());
+}
+
+#[test]
+fn names_codes_and_identifiers_are_checked() {
+    let p = Plugins::new(Vec::<String>::new());
+    let mut prj = openecraft_core::sample::example("pump_station").unwrap();
+    let mut run = |name: &str, args: serde_json::Value| p.run(p.command(name).unwrap(), &mut prj, args.as_object().unwrap());
+    // Structure identifiers keep no blanks; renaming needs an identifier that exists.
+    assert!(run("set_page", serde_json::json!({ "page": "2.1", "location": "has space" })).unwrap_err().contains("must not contain blanks"));
+    assert!(run("define_structure", serde_json::json!({ "aspect": "location", "id": "BAD ID" })).is_err());
+    assert_eq!(run("rename_structure", serde_json::json!({ "aspect": "location", "id": "NOSUCH", "new_id": "X" })).unwrap_err(), "No identifier +NOSUCH in the project");
+    assert!(run("rename_structure", serde_json::json!({ "aspect": "location", "id": "CAB1", "new_id": "FLD" })).unwrap_err().contains("pass merge"));
+    assert!(run("rename_structure", serde_json::json!({ "aspect": "location", "id": "CAB1", "new_id": "FLD", "merge": true })).is_ok());
+    // Page names lose their blanks at the ends.
+    assert_eq!(run("set_page", serde_json::json!({ "page": "2.1", "name": " 20 " })).unwrap()["name"], "20");
+    // Check settings take what `check` and `list_checks` show.
+    assert!(run("set_check", serde_json::json!({ "name": "devices", "enabled": false })).unwrap().get("note").is_none());
+    assert!(run("set_check", serde_json::json!({ "name": "my_plugin_check", "enabled": false })).unwrap()["note"].is_string());
+    assert!(run("set_check", serde_json::json!({ "name": "Not A Check", "enabled": false })).is_err());
+    assert!(run("set_message_level", serde_json::json!({ "code": "bogus code", "level": "error" })).is_err());
+    assert!(run("set_message_level", serde_json::json!({ "code": "devices.d5601b", "level": "error" })).is_ok());
+    assert!(run("accept_message", serde_json::json!({ "fingerprint": "nosuch" })).is_err());
+    assert!(run("accept_message", serde_json::json!({ "fingerprint": "devices.d5601b:45b990c0:2" })).is_ok());
+    // Sections are numbered with letters and digits.
+    for number in ["-1", "0", "a b"] {
+        assert!(run("add_section", serde_json::json!({ "number": number })).is_err(), "{number}");
+    }
+    assert_eq!(run("add_section", serde_json::json!({ "number": "9" })).unwrap()["number"], "9");
+    // Languages of ISO 639-1, the targets separated by commas or blanks.
+    assert!(run("set_project_languages", serde_json::json!({ "source": "xx" })).is_err());
+    let langs = run("set_project_languages", serde_json::json!({ "source": "en", "targets": "de, fr" })).unwrap();
+    assert_eq!(langs["targets"].as_array().unwrap().len(), 2);
+    // Potentials have known colours; conditions of rules are checked.
+    assert!(run("set_potential", serde_json::json!({ "name": "L1", "color": "notacolor" })).is_err());
+    assert_eq!(run("set_potential", serde_json::json!({ "name": "L1", "new_name": "L9" })).unwrap()["name"], "L9");
+    run("set_option", serde_json::json!({ "name": "Opt", "choices": "a,b", "value": "a" })).unwrap();
+    assert!(run("add_rule", serde_json::json!({ "macro": "M", "condition": "Opt == a" })).unwrap_err().contains("needs OPTION=value"));
+    assert!(run("add_rule", serde_json::json!({ "macro": "M", "condition": "Nope=a" })).is_err());
+    assert!(run("add_rule", serde_json::json!({ "macro": "M", "condition": "Opt=a" })).is_ok());
+}

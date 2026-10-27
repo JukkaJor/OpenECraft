@@ -3,6 +3,7 @@
 //! manufacturability ([`openecraft_core::panel::validate`]), with commands for their
 //! rules.
 
+use crate::builtin::common::{num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::Registry;
 use crate::{Info, Plugin, Text};
@@ -189,12 +190,12 @@ fn panel_rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ("min_profile", &mut r.min_profile),
         ("stock_length", &mut r.stock_length),
     ] {
-        if let Some(v) = a.num(name) {
-            *field = v.max(0.0);
+        if let Some(v) = num_in(a, name, 0.0, NO_MAX)? {
+            *field = v;
         }
     }
-    if let Some(v) = a.num("stratification") {
-        r.stratification = v.clamp(1.0, 2.0);
+    if let Some(v) = num_in(a, "stratification", 1.0, 2.0)? {
+        r.stratification = v;
     }
     Ok(rules_json(r))
 }
@@ -211,7 +212,7 @@ fn set_collision_rule(prj: &mut Project, a: &Args) -> Result<Value, String> {
         let i = at.ok_or_else(|| tr_fmt!("No rule for {} and {}", ca, cb))?;
         classes.remove(i);
     } else {
-        let rule = ClassRule { a: ca, b: cb, distance: a.num("distance").unwrap_or(0.0).max(0.0), ignore: a.flag("ignore") };
+        let rule = ClassRule { a: ca, b: cb, distance: num_in(a, "distance", 0.0, NO_MAX)?.unwrap_or(0.0), ignore: a.flag("ignore") };
         match at {
             Some(i) => classes[i] = rule,
             None => classes.push(rule),

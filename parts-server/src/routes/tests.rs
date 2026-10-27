@@ -468,3 +468,45 @@ async fn passwords_and_failed_sign_ins() {
     let right = r#"{"name": "anna", "password": "password-anna"}"#;
     assert_eq!(call(&app, "POST", "/api/v1/login", None, right).await.0, StatusCode::TOO_MANY_REQUESTS);
 }
+
+#[tokio::test]
+async fn unknown_tokens_are_refused_for_reading() {
+    let app = app(Some(TOKEN));
+    // No token reads anonymously, a wrong or expired one is an error.
+    assert_eq!(call(&app, "GET", "/api/v1/parts?limit=1", None, "").await.0, StatusCode::OK);
+    for uri in ["/api/v1/info", "/api/v1/parts?limit=1", "/api/v1/export.csv", "/api/v1/catalogs"] {
+        let (status, text) = call(&app, "GET", uri, Some("expired"), "").await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{uri}: {text}");
+    }
+    // The sign-in field is read as `name` and as `user` (project server).
+    let token = sign_up(&app, "anna", "Reader", "").await;
+    assert_eq!(call(&app, "GET", "/api/v1/info", Some(&token), "").await.0, StatusCode::OK);
+    let (status, _) = call(&app, "POST", "/api/v1/login", None, r#"{"user": "anna", "password": "password-anna"}"#).await;
+    assert_eq!(status, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn parts_are_checked_before_storing() {
+    let app = app(Some(TOKEN));
+    let long = "X".repeat(129);
+    let (status, text) = call(&app, "PUT", &format!("/api/v1/parts/{long}"), Some(TOKEN), "{}").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{text}");
+    let body = format!(r#"{{"description": "{}"}}"#, "y".repeat(20_001));
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/LONG.1", Some(TOKEN), &body).await.0, StatusCode::BAD_REQUEST);
+    // Parts name existing catalogs only.
+    let (status, text) = call(&app, "PUT", "/api/v1/parts/CAT.1", Some(TOKEN), r#"{"catalog": "nope"}"#).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert!(text.contains("catalog 'nope'"), "{text}");
+    call(&app, "PUT", "/api/v1/catalogs/acme", Some(TOKEN), r#"{"manufacturer": "ACME"}"#).await;
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/CAT.1", Some(TOKEN), r#"{"catalog": "ACME"}"#).await.0, StatusCode::CREATED);
+    let csv = "Part number;Catalog\nCAT.2;nope\n";
+    assert_eq!(call(&app, "POST", "/api/v1/import", Some(TOKEN), csv).await.0, StatusCode::BAD_REQUEST);
+    // A file naming a part twice is refused instead of counting it twice.
+    let (status, text) = call(&app, "POST", "/api/v1/import", Some(TOKEN), r#"[{"number": "DUP.1"}, {"number": "dup.1"}]"#).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert!(text.contains("more than once"), "{text}");
+    // Enumerations in the address are read in lower case as well.
+    for uri in ["/api/v1/parts?top_group=fluid", "/api/v1/parts?lifecycle=active", "/api/v1/parts?sort=price"] {
+        assert_eq!(call(&app, "GET", uri, None, "").await.0, StatusCode::OK, "{uri}");
+    }
+}

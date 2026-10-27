@@ -33,7 +33,7 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Sets the source language of the project texts and the target languages (ISO 639-1 codes)"),
         params: &[
             optional("source", Kind::Str, tr_const!("Language the project texts are written in, e.g. en")),
-            optional("targets", Kind::Str, tr_const!("Target languages separated by blanks, e.g. de fr")),
+            optional("targets", Kind::Str, tr_const!("Target languages separated by commas or blanks, e.g. de, fr")),
         ],
         run: set_languages,
     },
@@ -84,7 +84,7 @@ fn list_languages(prj: &mut Project, _: &Args) -> Result<Value, String> {
 
 fn set_languages(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let source = a.str("source").map(code).transpose()?;
-    let targets = a.str("targets").map(|t| t.split_whitespace().map(code).collect::<Result<Vec<_>, _>>()).transpose()?;
+    let targets = a.str("targets").map(|t| crate::builtin::common::words(t).into_iter().map(code).collect::<Result<Vec<_>, _>>()).transpose()?;
     if let Some(src) = source {
         prj.languages.source = src;
     }

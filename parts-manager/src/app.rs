@@ -198,10 +198,10 @@ impl ManagerApp {
             ui.label(RichText::new(tr("OpenECraft parts manager")).strong());
             ui.separator();
             ui.label(tr("Server"));
-            let url = ui.add(egui::TextEdit::singleline(&mut self.client.url).desired_width(240.0));
+            let url = ui.add(egui::TextEdit::singleline(&mut self.client.url).desired_width(220.0));
             ui.label(tr("Access token"));
             let token = ui.add(
-                egui::TextEdit::singleline(&mut self.client.token).password(true).desired_width(160.0).hint_text(tr("needed for changes")),
+                egui::TextEdit::singleline(&mut self.client.token).password(true).desired_width(210.0).hint_text(tr("needed for changes")),
             );
             let enter = (url.lost_focus() || token.lost_focus()) && ui.input(|i| i.key_pressed(Key::Enter));
             if ui.add_enabled(!self.client.busy(), egui::Button::new(tr("Connect"))).clicked() || enter {
@@ -224,8 +224,8 @@ impl ManagerApp {
                             }
                         }
                         None if info.writable => {
-                            ui.add(egui::TextEdit::singleline(&mut self.user_name).desired_width(90.0).hint_text(tr("User name")));
-                            let pw = ui.add(egui::TextEdit::singleline(&mut self.password).password(true).desired_width(90.0).hint_text(tr("Password")));
+                            ui.add(egui::TextEdit::singleline(&mut self.user_name).desired_width(120.0).hint_text(tr("User name")));
+                            let pw = ui.add(egui::TextEdit::singleline(&mut self.password).password(true).desired_width(120.0).hint_text(tr("Password")));
                             let enter = pw.lost_focus() && ui.input(|i| i.key_pressed(Key::Enter));
                             if ui.add_enabled(!self.client.busy() && !self.user_name.trim().is_empty(), egui::Button::new(tr("Sign in"))).clicked() || enter {
                                 self.client.sign_in(&ctx, &self.user_name, &self.password);
@@ -278,10 +278,17 @@ impl ManagerApp {
                 }
                 return;
             }
-            if ui.add_enabled(connected, egui::Button::new(tr("➕ New"))).clicked() {
+            // Without the right to change parts there is nothing a new part could become.
+            let no_right = tr("Sign in or connect with the access token to change parts");
+            if ui.add_enabled(connected && writable, egui::Button::new(tr("➕ New"))).on_disabled_hover_text(no_right).clicked() {
                 self.open(None);
             }
-            if ui.add_enabled(has_draft, egui::Button::new(tr("⎘ Copy"))).on_hover_text(tr("New part based on the open one")).clicked() {
+            if ui
+                .add_enabled(has_draft && writable, egui::Button::new(tr("⎘ Copy")))
+                .on_hover_text(tr("New part based on the open one"))
+                .on_disabled_hover_text(no_right)
+                .clicked()
+            {
                 self.session.copy_part();
             }
             let save = ui
@@ -356,6 +363,7 @@ impl ManagerApp {
         let numbers: Vec<String> = self.session.parts.iter().map(|p| p.number.clone()).collect();
         let problem = self.session.save_problem();
         let dirty = self.session.dirty();
+        let may_change = self.session.may_change(self.client.info.as_ref());
         let Some(d) = self.session.draft.as_mut() else {
             ui.weak(tr("Select a part in the tree or create a new one."));
             return;
@@ -421,7 +429,13 @@ impl ManagerApp {
         }
         ui.separator();
         let duplicate = problem == Some("Part number already exists");
-        if let Some(kind) = pe::part_editor(ui, &mut d.part, &mut self.editor, &numbers, duplicate) {
+        // Parts the caller may not change are shown, not edited.
+        let editable = may_change && !self.client.busy();
+        if !may_change {
+            ui.colored_label(Color32::from_rgb(220, 140, 0), tr("Read only: sign in with a user who may change parts of this manufacturer"));
+        }
+        let picked = ui.add_enabled_ui(editable, |ui| pe::part_editor(ui, &mut d.part, &mut self.editor, &numbers, duplicate)).inner;
+        if let Some(kind) = picked {
             self.model_target = Some(d.part.number.clone());
             let ctx = ui.ctx().clone();
             self.io.open(&ctx, Purpose::Model(kind));

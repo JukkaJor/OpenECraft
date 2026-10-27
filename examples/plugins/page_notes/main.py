@@ -52,4 +52,7 @@ def answer(request):
 
 
 if __name__ == "__main__":
-    sys.stdout.write(json.dumps(answer(json.load(sys.stdin))))
+    # The JSON is UTF-8 whatever the system's code page (Windows would garble
+    # non-ASCII characters of the project otherwise).
+    request = json.loads(sys.stdin.buffer.read().decode("utf-8"))
+    sys.stdout.buffer.write(json.dumps(answer(request), ensure_ascii=False).encode("utf-8"))

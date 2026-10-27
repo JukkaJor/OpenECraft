@@ -37,14 +37,19 @@ impl Session {
         Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved_rev: rev, file_name }
     }
 
-    /// Replaces the project (one undo step); the replacement counts as saved.
+    /// Replaces the project; the replacement counts as saved. Its history starts
+    /// anew: undo must not bring back the project before (whose changes may have been
+    /// discarded) under the file name of this one.
     pub fn replace(&mut self, prj: Project, file_name: Option<String>) {
         self.prj = prj;
         self.prj.normalize();
         self.file_name = file_name;
         self.page = first_schematic(&self.prj);
-        self.history.track(&self.prj, true);
-        self.saved_rev = self.history.rev;
+        // A new revision, so that the analysis and the index are built again.
+        let rev = self.history.rev + 1;
+        self.history = History::new(&self.prj);
+        self.history.rev = rev;
+        self.saved_rev = rev;
     }
 
     /// Changes since the last save.

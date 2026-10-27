@@ -2,6 +2,7 @@
 //! jumpers and accessories, change terminals (level, jumper), jumper kinds, spare
 //! terminals and the order.
 
+use crate::builtin::common::{int_in};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -146,15 +147,16 @@ fn set_terminal(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if !strips::terminals(prj, &strip).iter().any(|t| t.label == terminal) {
         return Err(tr_fmt!("No terminal {} on strip {}", terminal, strip));
     }
+    let (level, jumper) = (int_in(a, "level", 1, 9)?, int_in(a, "jumper", 0, u32::MAX.into())?);
     let data = prj.strips.entry(strip.clone()).or_default();
-    if let Some(l) = a.int("level") {
+    if let Some(l) = level {
         if l <= 1 {
             data.levels.remove(&terminal);
         } else {
-            data.levels.insert(terminal.clone(), l.min(9) as u8);
+            data.levels.insert(terminal.clone(), l as u8);
         }
     }
-    if let Some(j) = a.int("jumper") {
+    if let Some(j) = jumper {
         if j <= 0 {
             data.jumpers.remove(&terminal);
         } else {
@@ -167,7 +169,7 @@ fn set_terminal(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn set_jumper_kind(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let strip = a.req("strip").trim().to_string();
     existing(prj, &strip)?;
-    let number = a.int("jumper").unwrap_or_default().max(0) as u32;
+    let number = int_in(a, "jumper", 0, u32::MAX.into())?.unwrap_or_default() as u32;
     let kind = match a.req("kind").trim().to_ascii_lowercase().as_str() {
         "plug_in" | "plugin" => JumperKind::PlugIn,
         "saddle" => JumperKind::Saddle,
@@ -188,8 +190,8 @@ fn set_strip(prj: &mut Project, a: &Args) -> Result<Value, String> {
     existing(prj, &strip)?;
     let labels: Vec<String> = strips::terminals(prj, &strip).into_iter().map(|t| t.label).collect();
     let data = prj.strips.entry(strip).or_default();
-    if let Some(n) = a.int("spares") {
-        data.spares = n.max(0) as u32;
+    if let Some(n) = int_in(a, "spares", 0, 1000)? {
+        data.spares = n as u32;
     }
     if let Some(auto) = a.value("automatic_accessories").and_then(Value::as_bool) {
         data.manual_accessories = !auto;

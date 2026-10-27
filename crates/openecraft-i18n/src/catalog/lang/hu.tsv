@@ -136,7 +136,6 @@ Contacts	Érintkezők
 Control transformer	Vezérlőtranszformátor
 Copper busbar system: click start and end point	Réz gyűjtősínrendszer: kattintson a kezdő- és a végpontra
 Copy / cut / paste (devices get new tags)	Másolás / kivágás / beillesztés (a készülékek új azonosítót kapnak)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Másolás / beillesztés: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Másolás újként
 Copy built-in…	Beépített másolása…
 Core	Ér
@@ -155,8 +154,6 @@ Cross references	Kereszthivatkozások
 Cross-section	Keresztmetszet
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Áram
 Cutout	Kivágás
 Cutout {} × {} mm	Kivágás {} × {} mm
@@ -169,7 +166,6 @@ Date	Dátum
 Date of the last revision	Az utolsó revízió dátuma
 Default label	Alapértelmezett felirat
 Del	Del
-Delete   Del	Törlés   Del
 Delete (Del)	Törlés (Del)
 Delete cable (its wires are removed from it)	Kábel törlése (a vezetékei lekerülnek róla)
 Delete enclosure	Szekrény törlése
@@ -203,7 +199,6 @@ Door	Ajtó
 Door (front view)	Ajtó (elölnézet)
 Door clearance	Ajtó szabad tere
 Door: {} devices, {} cutouts	Ajtó: {} készülék, {} kivágás
-Download project   Ctrl+S	Projekt letöltése   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} alkatrész letöltve ({}. revízió): {} új, {} frissítve
 Downloading parts…	Alkatrészek letöltése…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Húzás: körbeforgatás · jobb/középső gombos húzás: mozgatás · görgő: nagyítás · kattintás: készülék vagy vezeték kijelölése
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Szűrő (szám, típus, gyártó, 
 Filter devices…	Készülékek szűrése…
 Filter…	Szűrés…
 Fit page	Oldal méretre igazítása
-Fit page   F	Oldal méretre igazítása   F
 Fit page (F)	Oldal méretre igazítása (F)
 Fluid power (ISO 1219)	Fluidtechnika (ISO 1219)
 Forms – title blocks and reports	Űrlapok – szövegmezők és kimutatások
@@ -347,7 +341,6 @@ Manufacturer	Gyártó
 Max. width	Max. szélesség
 Merge a symbol library file	Szimbólumkönyvtár-fájl egyesítése
 Mirror	Tükrözés
-Mirror   M	Tükrözés   M
 Model import failed: {}	Sikertelen modellimportálás: {}
 Motor (single-line)	Motor (egyvonalas)
 Motor 1-phase	Motor, 1 fázisú
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft-szövegmezők (JSON)
 OpenECraft – usage	OpenECraft – használat
 Opened {}	{} megnyitva
 Opening in the mounting plate / door: click two corners (round: in the properties)	Nyílás a szerelőlapon / ajtón: kattintson két sarokra (kerek: a tulajdonságokban)
-Open…        Ctrl+O	Megnyitás…        Ctrl+O
 Order number	Rendelési szám
 Orientation	Tájolás
 Overload aux contact NC	Túlterhelés-segédérintkező, nyitó
@@ -546,8 +538,6 @@ Radius	Sugár
 Readdress card	Kártya újracímzése
 Rectangle	Téglalap
 Rectangular	Téglalap alakú
-Redo   Ctrl+Y	Mégis   Ctrl+Y
-Redo (Ctrl+Y)	Mégis (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Példakatalógus-alkatrészek frissítése (GEN.*)
 Relay / contactor coil	Relé- / mágneskapcsoló-tekercs
 Relay coil (NFPA)	Relétekercs (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	A(z) {} revízió létrehozva
 Revisions	Revíziók
 Revisions…	Revíziók…
 Right	Jobb
-Rotate   R	Forgatás   R
 Rotate (R)	Forgatás (R)
 Rotate / mirror (selection or symbol being placed)	Forgatás / tükrözés (kijelölés vagy az elhelyezés alatt álló szimbólum)
 Rotate 90°:	Forgatás 90°-kal:
@@ -586,7 +575,6 @@ Round	Kerek
 Routing	Nyomvonalvezetés
 Rows per page	Sorok oldalanként
 SVG image	SVG-kép
-Save          Ctrl+S	Mentés          Ctrl+S
 Save / open	Mentés / megnyitás
 Save as macro	Mentés makróként
 Save as…	Mentés másként…
@@ -605,7 +593,6 @@ Select a macro.	Válasszon egy makrót.
 Select a part in the tree or create a new one.	Válasszon egy alkatrészt a fában, vagy hozzon létre egy újat.
 Select a part. Double click adds it to the device.	Válasszon egy alkatrészt. Dupla kattintással hozzáadja a készülékhez.
 Select all	Az összes kijelölése
-Select all   Ctrl+A	Az összes kijelölése   Ctrl+A
 Select an element in the list or the drawing.	Jelöljön ki egy elemet a listában vagy a rajzon.
 Select and drag elements; Del deletes	Elemek kijelölése és húzása; a Del töröl
 Select device	Készülék kiválasztása
@@ -673,7 +660,6 @@ Terminals	Sorkapcsok
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Az azonos áthidalásszámú sorkapcsok össze vannak kötve (azonos potenciál). A tartalék sorkapcsok beszámítanak az anyagjegyzékbe.
 Test connection	Kapcsolat tesztelése
 Text	Szöveg
-Text   T	Szöveg   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	A 2D elölnézet a szekrény elölnézetében és a szerelésiterv-oldalakon, a 3D-modell a 3D szekrénynézetben használatos. Mindkettő a szerelési adatokhoz (szélesség × magasság × mélység) igazodik.
 The access token is only needed for changes; it is not stored.	A hozzáférési token csak a módosításokhoz szükséges; nem tárolódik.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	A modell ({} × {} × {}) eltér a szerelési adatoktól ({} × {} × {}); a szerelési adatokra nyújtjuk.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transzformátor (egyvonalas)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Forgassa el a modellt úgy, hogy az eleje a néző felé nézzen (+Z), a teteje pedig +Y legyen
 Type	Típus
 Type number	Típusszám
-Undo   Ctrl+Z	Visszavonás   Ctrl+Z
-Undo (Ctrl+Z)	Visszavonás (Ctrl+Z)
 Undo / redo	Visszavonás / mégis
 Unit	Egység
 Unit price	Egységár
@@ -729,7 +713,6 @@ Width × height	Szélesség × magasság
 Width × height × depth	Szélesség × magasság × mélység
 Window macro: {}	Ablakmakró: {}
 Wire	Vezeték
-Wire   W	Vezeték   W
 Wire assigned to unknown cable {}	A vezeték ismeretlen kábelhez van rendelve: {}
 Wire ends with ferrules	Vezetékvégek érvéghüvelyekkel
 Wire list (panel routing)	Vezetéklista (szekrényen belüli nyomvonal)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Létrehozza vagy módosítja az előtervezés egy PCT-körét
 Loop number, e.g. 101	Körszám, pl. 101
 Measuring range or set point	Méréstartomány vagy alapjel
-Further device tags of the loop, separated by blanks	A kör további készülékazonosítói szóközzel elválasztva
 Deletes a PCT loop of the pre-planning	Töröl egy PCT-kört az előtervezésből
 Loop number	Körszám
 No enclosure named {}	Nincs {} nevű szekrény
@@ -1582,7 +1564,6 @@ Not a language code: {}	Nem nyelvkód: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Felsorolja a projektszövegek forrás- és célnyelveit a le nem fordított sorok számával
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Beállítja a projektszövegek forrásnyelvét és a célnyelveket (ISO 639-1 kódok)
 Language the project texts are written in, e.g. en	A projektszövegek nyelve, pl. en
-Target languages separated by blanks, e.g. de fr	Célnyelvek szóközzel elválasztva, pl. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Felsorolja a projektszövegek fordítási szótárát (forrássor és fordítások)
 Only lines without a translation into this language	Csak az erre a nyelvre le nem fordított sorok
 Text in the line or a translation	Szöveg a sorban vagy egy fordításban
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Szövegmezők, rajzkeretek és o
 Frame of all pages that do not choose one	Az összes olyan oldal kerete, amely nem választ sajátot
 Frame to start from when the frame is new (default: A3 landscape)	Kiinduló keret új keret esetén (alapértelmezés: A3 landscape)
 Free graphics and notes, not evaluated	Szabad grafika és jegyzetek, nincs kiértékelés
-Give kind or template	Adja meg a kind vagy a template paramétert
 Imported {} page templates	{} oldalsablon importálva
 Insert page	Oldal beszúrása
 Landscape	Fekvő
@@ -2280,7 +2260,6 @@ Locked by other users	Más felhasználók által zárolva
 None	Nincs
 Close shared project	Megosztott projekt bezárása
 Releases all locks; the project stays open as a local copy	Feloldja az összes zárolást; a projekt helyi másolatként nyitva marad
-Save to project server   Ctrl+S	Mentés a projektszerverre   Ctrl+S
 Download project	Projekt letöltése
 Project server…	Projektszerver…
 Open and save shared projects, lock pages	Megosztott projektek megnyitása és mentése, oldalak zárolása
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Húzzon egy vonalat a 
 Cable definition on page {}	Kábeldefiníció a(z) {}. oldalon
 No cables yet. Draw a cable definition across wires or add a cable.	Még nincsenek kábelek. Rajzoljon kábeldefiníciót vezetékeken keresztül, vagy adjon hozzá egy kábelt.
 New tag for {}	Új azonosító ehhez: {}
-This tag is already used	Ez az azonosító már használatban van
 Select on this page	Kijelölés ezen az oldalon
 Place functions of this device	A készülék funkcióinak elhelyezése
 Symbols placed next get this device tag (contacts are numbered on)	A következőként elhelyezett szimbólumok ezt a készülékazonosítót kapják (az érintkezők számozása folytatódik)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Fluid-készülékcsoportot hoz létre va
 Device tag of the group, e.g. -KH1	A csoport készülékazonosítója, pl. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit vagy other
 Places of the group (0 = not limited)	A csoport helyei (0 = korlátlan)
-Device tags of the members in slot order, separated by blanks	A tagok készülékazonosítói helysorrendben, szóközzel elválasztva
 Part number of the base	Az alaplap cikkszáma
 Deletes a fluid device group	Töröl egy fluid-készülékcsoportot
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Felsorolja a mágnestekercses vagy kapcsolt fluidkészülékeket és a hozzájuk kapcsolt villamos készülékeket
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Fluidkészüléket kapcsol össze az azt működtető vagy felügyelő villamos készülékekkel (lecseréli a kapcsolatokat)
 Device tag of the fluid device, e.g. -QM1	A fluidkészülék készülékazonosítója, pl. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Villamos készülékazonosítók szóközzel elválasztva (üres = a kapcsolatok eltávolítása)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Összekapcsolja a mágnesszelepeket az azonos számú tekerccsel (-QM3 › -MB3), és átmásolja a funkciószövegeket a kapcsolt készülékek között
 No hose {}	Nincs {} tömlő
 Unknown line type: {}	Ismeretlen vezetékfajta: {}
@@ -3173,7 +3149,6 @@ Communication	Kommunikáció
 Conductor class	Vezetőosztály
 Conductor material	Vezetőanyag
 Connection point descriptions	Csatlakozási pontok leírásai
-Connection point designations separated by blanks	Csatlakozásmegnevezések szóközzel elválasztva
 Connection type	Csatlakozás típusa
 Contact material	Érintkezőanyag
 Contractor	Vállalkozó
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Minden projekt ellenőrzése is (lassabb)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Projekteket keres a projektadatbázisban vagy egy mappában: a kifejezéseket ';' választja el, mindegyik kulcs=érték, kulcs~szöveg vagy egyszerű szöveg
 Search terms, e.g. company=ACME; customer~plant; conveyor	Keresési kifejezések, pl. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Projektadatbázis-fájl (JSON)
-Folder with project files (instead of a database)	Projektfájlokat tartalmazó mappa (adatbázis helyett)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Egyszerre sok projektfájlban módosítja a projekttulajdonságokat (name, description, company, creator, date, revision mezők vagy projekttulajdonságok)
 Project files, separated by ';'	Projektfájlok, ';' karakterrel elválasztva
 All project files of a folder	Egy mappa összes projektfájlja
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Aktiválja (megjeleníti) vagy deaktiválja (elrejti) egy projektopció tartalmát
 Show the content	Tartalom megjelenítése
 Switches the project options with a condition by the configurator options	A feltétellel rendelkező projektopciókat a konfigurátoropciók szerint kapcsolja
-Pass a database or a folder	Adjon meg egy adatbázist vagy egy mappát
 Nothing to change: pass set, remove, replace or rename	Nincs mit módosítani: adja meg a set, remove, replace vagy rename paramétert
 Pass files or a folder	Adjon meg fájlokat vagy egy mappát
 Pass ids or pages	Adjon meg azonosítókat vagy oldalakat
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	A céloldal s
 Interruption points refer to: all (default), star or pairs	A megszakítási pontok hivatkozása: all (alapértelmezett), star vagy pairs
 Draw the contact image below coils (default true)	Érintkezőtükör rajzolása a tekercsek alá (alapértelmezés: true)
 Unknown setting: {}	Ismeretlen beállítás: {}
-Find…   Ctrl+F	Keresés…   Ctrl+F
 Find and replace in the whole project	Keresés és csere a teljes projektben
 Text to find	Keresendő szöveg
 Match case	Kis- és nagybetűk megkülönböztetése
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft projektsablon
 Not a project template: {}	Nem projektsablon: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Indítás projektsablonból: beépítettből (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) vagy projektfájlból
-Unknown template {}: {}	Ismeretlen sablon: {}: {}
 Not a packed project	Nem csomagolt projekt
 Viewer	Megtekintő
 With a user account of the server; replaces the access token	A szerver felhasználói fiókjával; felváltja a hozzáférési tokent
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Ismeretlen példa: {}; lásd list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	A szivattyútelep két sorolt álló szekrényben: gyűjtősín-rendszer, sínek és kábelcsatornák, ajtókészülékek és fogantyúk, szűrős ventilátor, lámpa, PE-sín, kábeltömszelencék, kábelátvezetés, klimatizálási számítás, csatornatöltöttség és 3D-útvonaltervezés.
 9 · Electrical room	9 · Villamos helyiség
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	A szekrénysor a helyiségében: L alakú alaprajz, belső fal, ajtó és ablak, a szekrénysor a helyén, egy sín dugaszolóaljzattal a falon, falra szerelt vészvilágító lámpa és kábeltálca a mennyezet alatt.
+{} is on page {}, which is released: renaming it would change the page	A(z) {} a kiadott {} oldalon van: az átnevezés megváltoztatná az oldalt
+A section number consists of letters and digits and does not start with 0	A szakaszszám betűkből és számjegyekből áll, és nem kezdődik 0-val
+Structure identifier {} must not contain blanks or the signs = + - / :	A(z) {} struktúraazonosító nem tartalmazhat szóközt és = + - / : jeleket
+Bridge rectifier block	Hídegyenirányító (blokk)
+the server refuses the connection (not started, or another port)	a kiszolgáló elutasítja a kapcsolatot (nem fut, vagy más a port)
+the server name is unknown	a kiszolgáló neve ismeretlen
+the server does not answer in time	a kiszolgáló nem válaszol időben
+the address is not a valid URL (e.g. http://server:8090)	a cím nem érvényes URL (pl. http://server:8090)
+Unknown check: {}	Ismeretlen ellenőrzés: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Nincs {} nevű beépített ellenőrzés: a beállítás egy ilyen nevű bővítmény ellenőrzésére vonatkozik (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	A(z) {} nem a check által mutatott üzenetkód (pl. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	A(z) {} nem a check által mutatott üzenet-ujjlenyomat (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	A(z) {} oldal ki van emelve a(z) {} alprojektbe: előbb illessze vissza vagy vesse el az alprojektet
+Unknown wire colour {} (IEC 60757: {})	Ismeretlen érszín: {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Nem keresztmetszet: {} (pl. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Ismeretlen helyőrző: {}; lehetséges: {}
+{} must not be negative	A(z) {} nem lehet negatív
+{} must be at least {}	A(z) {} legalább {} legyen
+{} must be between {} and {}	A(z) {} értéke {} és {} között legyen
+The length must not be negative	A hossz nem lehet negatív
+The text height must be at least 0.5 mm	A szövegmagasságnak legalább 0,5 mm-nek kell lennie
+The wrap width must not be negative	A tördelési szélesség nem lehet negatív
+The items would leave the page	Az elemek kikerülnének az oldalról
+The number of copies must be between 1 and 100	A másolatok száma 1 és 100 között legyen
+The copies would leave the page	A másolatok kikerülnének az oldalról
+The cable definition line has no length	A kábeldefiníciós vonalnak nincs hossza
+The cable definition line crosses no wire	A kábeldefiníciós vonal nem keresztez vezetéket
+{} and {} are both ends of one function: the wire would short-circuit it	{} és {} ugyanannak a funkciónak a két vége: a vezeték rövidre zárná
+No wire at {} / {} mm	Nincs vezeték a(z) {} / {} mm helyen
+Target languages separated by commas or blanks, e.g. de, fr	Célnyelvek vesszővel vagy szóközzel elválasztva, pl. de, fr
+The first page number must not be negative	Az első oldalszám nem lehet negatív
+The counting step must be at least 1	A számlálási lépésköz legalább 1 legyen
+Released pages keep their names: {}	A kiadott oldalak megtartják a nevüket: {}
+The plinth height must not be negative	A lábazat magassága nem lehet negatív
+{} is a room already	A(z) {} már helyiség
+Width, height and depth of an enclosure are at least {} mm	A szekrény szélessége, magassága és mélysége legalább {} mm
+Device tags of the members in slot order, separated by commas or blanks	A tagok készülékazonosítói helysorrendben, vesszővel vagy szóközzel elválasztva
+Electrical device tags separated by commas or blanks (empty = remove the links)	Villamos készülékazonosítók vesszővel vagy szóközzel elválasztva (üres = a kapcsolatok eltávolítása)
+Further device tags of the loop, separated by commas or blanks	A kör további készülékazonosítói vesszővel vagy szóközzel elválasztva
+Connection point designations separated by commas or blanks	Csatlakozásmegnevezések vesszővel vagy szóközzel elválasztva
+Width, depth and height of a room are at least {} mm	A helyiség szélessége, mélysége és magassága legalább {} mm
+Room {} exists already	A(z) {} helyiség már létezik
+{} is an enclosure already	A(z) {} már szekrény
+{} would stand outside the room {}	A(z) {} a(z) {} helyiségen kívül állna
+No identifier {} in the project	A projektben nincs {} azonosító
+{} exists already: pass merge to make both one identifier	A(z) {} már létezik: adja meg a merge paramétert a kettő egyesítéséhez
+Allow renaming onto an identifier in use: both become one	Átnevezés engedélyezése egy használt azonosítóra: a kettő eggyé válik
+Sign in or connect with the access token to change parts	Jelentkezzen be, vagy csatlakozzon a hozzáférési tokennel az alkatrészek módosításához
+Read only: sign in with a user who may change parts of this manufacturer	Csak olvasható: jelentkezzen be olyan felhasználóval, aki módosíthatja e gyártó alkatrészeit
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nModel Context Protocol-kiszolgálót futtat a stdin / stdout csatornán: a lista eszközei MI-ügynököknek, a projekt a memóriában marad (a save_project kiírja, az undo / redo egyes hívásokat von vissza). Az OPENECRAFT_MCP_TOOLS korlátozza a felkínált eszközöket.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nMegjeleníti a parancssor verzióját (--version vagy -V is)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	Az undo és a redo csak MCP-munkamenetben működik: a parancssor minden parancshoz újra megnyitja a projektet
+(MCP server only)	(csak MCP-kiszolgáló)
+{} is an archive: pass a path to save the project as a project file	A(z) {} archívum: adjon meg egy elérési utat a projekt projektfájlként való mentéséhez
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	A(z) {} archívum, és nem változik: mentse a projektet projektfájlként (save_project --path <file>.oec), vagy alakítsa át az archívumot (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Projektfájlokat tartalmazó mappa (adatbázis helyett; alapértelmezés: az aktuális mappa)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Ismeretlen oldaltípus: {} (schematic, overview, graphic, cover vagy egy list_reports szerinti kimutatás)
+Unknown template {}: give a built-in one ({}) or a project file	Ismeretlen sablon: {}; adjon meg egy beépítettet ({}) vagy egy projektfájlt
+Property {} needs a text or a number	A(z) {} tulajdonsághoz szöveg vagy szám kell

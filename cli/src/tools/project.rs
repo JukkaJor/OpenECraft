@@ -120,8 +120,12 @@ fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     } else if let Some(t) = a.str("template") {
         let template = match openecraft_core::project_templates::builtin(t) {
             Some(p) => p,
+            None if !std::path::Path::new(t).exists() => {
+                let names: Vec<&str> = openecraft_core::project_templates::BUILTIN.iter().map(|(n, _)| tr(n)).collect();
+                return Err(tr_fmt!("Unknown template {}: give a built-in one ({}) or a project file", t, names.join(", ")));
+            }
             None => {
-                let bytes = std::fs::read(t).map_err(|e| tr_fmt!("Unknown template {}: {}", t, e))?;
+                let bytes = std::fs::read(t).map_err(|e| tr_fmt!("Cannot read {}: {}", t, openecraft_i18n::io_error(&e)))?;
                 openecraft_core::archive::read_project(&bytes)?.0
             }
         };
@@ -182,10 +186,21 @@ fn set_project_info(s: &mut Session, a: &Args) -> Result<Value, String> {
         }
     }
     if let Some(Value::Object(props)) = a.value("properties") {
+        let mut values = Vec::new();
         for (k, v) in props {
-            match v.as_str().unwrap_or_default() {
-                "" => info.properties.remove(k),
-                v => info.properties.insert(k.clone(), v.into()),
+            let text = match v {
+                Value::String(s) => s.clone(),
+                Value::Number(n) => n.to_string(),
+                Value::Bool(b) => b.to_string(),
+                Value::Null => String::new(),
+                _ => return Err(tr_fmt!("Property {} needs a text or a number", k)),
+            };
+            values.push((k.clone(), text));
+        }
+        for (k, v) in values {
+            match v.trim() {
+                "" => info.properties.remove(&k),
+                _ => info.properties.insert(k, v),
             };
         }
     }

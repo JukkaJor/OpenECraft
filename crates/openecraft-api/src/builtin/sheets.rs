@@ -131,19 +131,21 @@ fn set_frame(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(l) = a.value("landscape").and_then(Value::as_bool) {
         f.landscape = l;
     }
+    num_in(a, "width", 50.0, 5000.0)?;
+    num_in(a, "height", 50.0, 5000.0)?;
     if a.num("width").is_some() || a.num("height").is_some() {
         let (w, h) = f.size();
         f.custom = [a.num("width").unwrap_or(w), a.num("height").unwrap_or(h)];
         f.paper = Paper::Custom;
     }
-    if let Some(m) = a.num("margin") {
-        f.margin = m.clamp(0.0, 50.0);
+    if let Some(m) = num_in(a, "margin", 0.0, 50.0)? {
+        f.margin = m;
     }
-    if let Some(c) = a.int("columns") {
-        f.columns = c.clamp(1, 60) as usize;
+    if let Some(c) = int_in(a, "columns", 1, 60)? {
+        f.columns = c as usize;
     }
-    if let Some(r) = a.int("rows") {
-        f.rows = r.clamp(1, 40) as usize;
+    if let Some(r) = int_in(a, "rows", 1, 40)? {
+        f.rows = r as usize;
     }
     if let Some(l) = a.str("column_labels") {
         f.column_labels = labels(l)?;

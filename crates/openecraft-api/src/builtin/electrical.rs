@@ -1,6 +1,7 @@
 //! Electrical calculations and verification: supply and installation conditions,
 //! short circuit and selectivity, loads, EMC, safety functions and rule sets.
 
+use crate::builtin::common::{int_in, num_in, NO_MAX};
 use crate::params::{optional, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -140,24 +141,24 @@ fn electrical_settings(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(v) = a.str("insulation") {
         el.conditions.insulation = pick(&[("pvc", Insulation::Pvc), ("xlpe", Insulation::Xlpe)], v).ok_or_else(|| tr_fmt!("Unknown insulation: {}", v))?;
     }
-    if let Some(v) = a.int("grouped") {
-        el.conditions.grouped = v.max(1) as u32;
+    if let Some(v) = int_in(a, "grouped", 1, u32::MAX.into())? {
+        el.conditions.grouped = v as u32;
     }
-    if let Some(v) = a.num("rx") {
-        el.supply.rx = v.max(0.0);
+    if let Some(v) = num_in(a, "rx", 0.0, NO_MAX)? {
+        el.supply.rx = v;
     }
     if let Some(v) = a.num("transformer_kva") {
         el.supply.transformer = (v > 0.0).then(|| Transformer { power: v, ..el.supply.transformer.clone().unwrap_or_default() });
     }
     for name in ["transformer_uk", "transformer_losses", "network_mva"] {
-        let Some(v) = a.num(name) else { continue };
+        let Some(v) = num_in(a, name, 0.0, NO_MAX)? else { continue };
         let t = el.supply.transformer.as_mut().ok_or_else(|| tr_fmt!("No transformer: set {} first", "transformer_kva"))?;
         let field = match name {
             "transformer_uk" => &mut t.uk,
             "transformer_losses" => &mut t.losses,
             _ => &mut t.network,
         };
-        *field = v.max(0.0);
+        *field = v;
     }
     for (name, field) in [("motors", &mut el.supply.motors), ("neutral", &mut el.supply.neutral)] {
         if let Some(v) = a.value(name).and_then(Value::as_bool) {
@@ -257,11 +258,11 @@ fn coordination_table(prj: &mut Project, a: &Args) -> Result<Value, String> {
                     table.push(Coordination { upstream: up.into(), downstream: down.into(), ..Default::default() });
                     table.len() - 1
                 });
-                if let Some(v) = a.num("selectivity_ka") {
-                    table[i].selectivity = v.max(0.0);
+                if let Some(v) = num_in(a, "selectivity_ka", 0.0, NO_MAX)? {
+                    table[i].selectivity = v;
                 }
-                if let Some(v) = a.num("backup_ka") {
-                    table[i].backup = v.max(0.0);
+                if let Some(v) = num_in(a, "backup_ka", 0.0, NO_MAX)? {
+                    table[i].backup = v;
                 }
             }
         }

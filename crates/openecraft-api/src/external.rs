@@ -100,19 +100,40 @@ impl External {
     }
 }
 
+/// The process of a plugin program: started in the plugin folder, JSON in UTF-8 on
+/// stdin and stdout (Python is told so: on Windows it would use the ANSI code page and
+/// garble every non-ASCII character of the project).
+fn command(dir: &Path, program: &Path, args: &[String]) -> std::process::Command {
+    let mut c = std::process::Command::new(program);
+    c.args(args)
+        .current_dir(dir)
+        .env("PYTHONUTF8", "1")
+        .env("PYTHONIOENCODING", "utf-8")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    c
+}
+
+/// Program to try when `program` is not installed: `python3` is called `python` on
+/// Windows.
+fn alternative(program: &Path) -> Option<PathBuf> {
+    (program.as_os_str() == "python3").then(|| PathBuf::from("python"))
+}
+
 /// Runs the program once per request.
 fn process(dir: PathBuf, run: Vec<String>) -> Transport {
     Arc::new(move |request: &Value| {
         // A program given by path is found in the plugin folder.
         let program = if run[0].contains(['/', '\\']) && dir.join(&run[0]).exists() { dir.join(&run[0]) } else { PathBuf::from(&run[0]) };
-        let mut child = std::process::Command::new(&program)
-            .args(&run[1..])
-            .current_dir(&dir)
-            .stdin(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .spawn()
-            .map_err(|e| tr_fmt!("Cannot start {}: {}", program.display(), e))?;
+        let started = match command(&dir, &program, &run[1..]).spawn() {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => match alternative(&program) {
+                Some(other) => command(&dir, &other, &run[1..]).spawn(),
+                None => Err(e),
+            },
+            other => other,
+        };
+        let mut child = started.map_err(|e| tr_fmt!("Cannot start {}: {}", program.display(), openecraft_i18n::io_error(&e)))?;
         if let Some(mut stdin) = child.stdin.take() {
             stdin.write_all(request.to_string().as_bytes()).map_err(|e| e.to_string())?;
         }
@@ -155,13 +176,16 @@ struct IssueDesc {
     item: Option<u64>,
 }
 
-fn issue(d: IssueDesc) -> Issue {
+/// An issue of the plugin; `page` alone points at the page (item 0), a page the
+/// project does not have at nothing.
+fn issue(d: IssueDesc, pages: usize) -> Issue {
     let severity = match d.severity.as_str() {
         "error" => Severity::Error,
         "info" => Severity::Info,
         _ => Severity::Warning,
     };
-    Issue::plain(severity, d.message, d.page.zip(d.item))
+    let target = d.page.filter(|p| *p < pages).map(|p| (p, d.item.unwrap_or(0)));
+    Issue::plain(severity, d.message, target)
 }
 
 impl Plugin for External {
@@ -186,7 +210,7 @@ impl Plugin for External {
             reg.check(c.name.clone(), text(c.title, &c.name), move |prj, _| {
                 let mut answer = ask(&t, json!({ "method": "check", "name": name, "project": project_value(prj) }))?;
                 let found: Vec<IssueDesc> = decode(answer.get_mut("issues").map(Value::take).unwrap_or(json!([])))?;
-                Ok(found.into_iter().map(issue).collect())
+                Ok(found.into_iter().map(|d| issue(d, prj.pages.len())).collect())
             });
         }
         for r in desc.reports {

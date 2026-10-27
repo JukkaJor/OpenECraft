@@ -56,17 +56,21 @@ pub fn release(prj: &mut Project, enc: usize, date: &str) -> Result<(Job, Vec<Pr
 
 /// The package handed to the machines: manifest and programs.
 pub fn package(prj: &Project, job: Option<&Job>, list: &[Program]) -> Value {
-    json!({
+    let mut v = json!({
         "format": "openecraft-manufacturing/1",
         "project": prj.info.name,
         "revision": prj.info.revision,
-        "job": job.map(|j| j.id.as_str()),
-        "date": job.map(|j| j.date.as_str()),
         "programs": list.iter().map(|p| {
             let r = reference(p);
             json!({ "file": p.name, "machine": p.machine, "face": r.face, "operations": p.operations, "time_s": p.time.round(), "checksum": r.checksum, "problems": p.problems, "content": p.content })
         }).collect::<Vec<_>>(),
-    })
+    });
+    // A package handed off as a job names it; the plain export has no job.
+    if let Some(j) = job {
+        v["job"] = j.id.as_str().into();
+        v["date"] = j.date.as_str().into();
+    }
+    v
 }
 
 /// Package of all enclosures (not released as a job); rooms are not machined.

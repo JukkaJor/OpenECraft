@@ -233,8 +233,9 @@ fn get_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = unlocked(prj, a.req("page"))?;
-    if let Some(name) = a.str("name") {
-        if name.trim().is_empty() {
+    // Leading and trailing blanks are no part of a name.
+    if let Some(name) = a.str("name").map(str::trim) {
+        if name.is_empty() {
             return Err(tr("A page needs a name").to_string());
         }
         if prj.pages.iter().enumerate().any(|(j, pg)| j != i && pg.name == name) {
@@ -255,7 +256,7 @@ fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
         let mut dt = Dt::of_page(&prj.pages[i]);
         for asp in Aspect::ALL {
             if let Some(v) = a.str(asp.key()) {
-                *dt.get_mut(asp) = v.to_string();
+                *dt.get_mut(asp) = openecraft_core::structure::check_identifier(asp, v)?;
             }
         }
         ops::set_page_structure(prj, i, &dt, true);
@@ -315,20 +316,38 @@ fn set_cross_references(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn renumber_pages(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let defaults = PageNumbering::default();
+    let start = a.int("start").unwrap_or(defaults.start.into());
+    let step = a.int("step").unwrap_or(defaults.step.into());
+    if !(0..=u32::MAX as i64).contains(&start) {
+        return Err(tr("The first page number must not be negative").to_string());
+    }
+    if !(1..=u32::MAX as i64).contains(&step) {
+        return Err(tr("The counting step must be at least 1").to_string());
+    }
     let opts = PageNumbering {
-        start: a.int("start").map_or(defaults.start, |v| v.max(0) as u32),
-        step: a.int("step").map_or(defaults.step, |v| v.max(1) as u32),
+        start: start as u32,
+        step: step as u32,
         per_structure: a.flag("per_structure"),
         subpages: a.value("subpages").and_then(Value::as_bool).unwrap_or(defaults.subpages),
         sections: a.flag("sections"),
         pages: crate::builtin::devices::page_list(prj, a.str("pages"))?,
     };
     let n = numbering::renumber_pages(prj, &opts);
-    Ok(json!({ "renamed": n, "pages": prj.pages.iter().map(|pg| pg.name.clone()).collect::<Vec<_>>() }))
+    let mut out = json!({ "renamed": n, "pages": prj.pages.iter().map(|pg| pg.name.clone()).collect::<Vec<_>>() });
+    // Released pages keep their names: the numbers of the others count their places.
+    let kept: Vec<String> = prj.pages.iter().enumerate().filter(|(i, pg)| pg.locked && (opts.pages.is_empty() || opts.pages.contains(i))).map(|(_, pg)| pg.name.clone()).collect();
+    if !kept.is_empty() {
+        out["kept"] = json!(kept);
+        out["note"] = json!(tr_fmt!("Released pages keep their names: {}", kept.join(", ")));
+    }
+    Ok(out)
 }
 
 fn delete_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = page_index(prj, a.req("page"))?;
+    if out_in_subproject(prj, i).is_some() {
+        return Err(locked_reason(prj, i));
+    }
     let pg = ops::delete_page(prj, i).map_err(tr)?;
     Ok(json!({ "deleted": pg.name }))
 }

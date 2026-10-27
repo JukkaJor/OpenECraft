@@ -137,22 +137,28 @@ struct Caller {
     /// The signed-in user; the administrator token is the user `admin`.
     user: Option<User>,
     access: Access<PartsRight>,
+    /// A token was sent that is neither the administrator token nor a session.
+    unknown_token: bool,
 }
 
-/// The caller of a request: the administrator token, a session or (also for unknown
-/// tokens) an anonymous caller.
+/// The caller of a request: the administrator token, a session or an anonymous
+/// caller (an unknown token is marked: reading with it fails).
 fn caller(state: &AppState, headers: &HeaderMap) -> Caller {
     let token = presented(headers);
     if token.is_some_and(|p| state.token.as_deref().is_some_and(|t| token_matches(p, t))) {
-        return Caller { user: Some(User { name: ADMIN.into(), role: Role::Admin, ..Default::default() }), access: Access::full() };
+        return Caller { user: Some(User { name: ADMIN.into(), role: Role::Admin, ..Default::default() }), access: Access::full(), unknown_token: false };
     }
     let user = token.and_then(|t| store(state).session(t).map(|a| a.user.clone()));
     let file = access_file(state);
     let policy = &file.config.policy;
     match user {
-        Some(u) => Caller { access: policy.access(&u.identity(), &u.grants()).with(policy.anonymous_access()), user: Some(u) },
-        None => Caller { user: None, access: policy.anonymous_access() },
+        Some(u) => Caller { access: policy.access(&u.identity(), &u.grants()).with(policy.anonymous_access()), user: Some(u), unknown_token: false },
+        None => Caller { user: None, access: policy.anonymous_access(), unknown_token: token.is_some() },
     }
+}
+
+fn wrong_token() -> AppError {
+    AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into())
 }
 
 /// True if anybody can change the database.
@@ -169,7 +175,7 @@ fn user(state: &AppState, headers: &HeaderMap) -> Result<(User, Access<PartsRigh
     if !writable(state, &store(state)) {
         return Err(forbidden("server is read-only (start it with --token to allow changes)"));
     }
-    Err(AppError(StatusCode::UNAUTHORIZED, "missing or wrong access token".into()))
+    Err(wrong_token())
 }
 
 /// The signed in user if they have the right on the manufacturer's data.
@@ -195,6 +201,10 @@ fn need(user: &User, access: &Access<PartsRight>, right: PartsRight, manufacture
 /// takes it away (`anonymous` role).
 fn reader(state: &AppState, headers: &HeaderMap) -> Result<()> {
     let c = caller(state, headers);
+    // A wrong or expired token is an error, not an anonymous request.
+    if c.unknown_token {
+        return Err(wrong_token());
+    }
     if c.access.allows(SERVER, PartsRight::Read) {
         Ok(())
     } else if c.user.is_none() {
@@ -205,7 +215,10 @@ fn reader(state: &AppState, headers: &HeaderMap) -> Result<()> {
 }
 
 async fn info(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<ServerInfo>> {
-    let Caller { user, access } = caller(&state, &headers);
+    let Caller { user, access, unknown_token } = caller(&state, &headers);
+    if unknown_token {
+        return Err(wrong_token());
+    }
     let store = store(&state);
     Ok(Json(ServerInfo {
         name: "OpenECraft parts server".into(),
@@ -232,13 +245,62 @@ async fn search(State(state): State<AppState>, headers: HeaderMap, Json(query): 
     Ok(Json(store(&state).search(&query)?))
 }
 
-/// A part number may not be empty, start or end with blanks or hold control characters.
+/// Longest part number.
+const MAX_NUMBER_LEN: usize = 128;
+/// Longest short text of a part (type number, manufacturer, groups, ...).
+const MAX_FIELD_LEN: usize = 256;
+/// Longest long text of a part (description, note, technical data, ...).
+const MAX_TEXT_LEN: usize = 20_000;
+
+/// A part number may not be empty, start or end with blanks, hold control characters
+/// or be longer than [`MAX_NUMBER_LEN`].
 fn check_number(number: &str) -> Result<()> {
     if number.trim().is_empty() {
         return Err(bad("part number must not be empty"));
     }
     if number.trim() != number || number.chars().any(char::is_control) {
-        return Err(bad(format!("part number '{number}' must not start or end with blanks")));
+        return Err(bad(format!("part number '{}' must not start or end with blanks", number.escape_debug())));
+    }
+    if number.chars().count() > MAX_NUMBER_LEN {
+        let start: String = number.chars().take(20).collect();
+        return Err(bad(format!("part number '{start}...' is longer than {MAX_NUMBER_LEN} characters")));
+    }
+    Ok(())
+}
+
+/// The number and the texts of a part must not exceed their lengths.
+fn check_part(part: &Part) -> Result<()> {
+    check_number(&part.number)?;
+    let short = [
+        ("type number", &part.type_number),
+        ("order number", &part.order_number),
+        ("manufacturer", &part.manufacturer),
+        ("supplier", &part.supplier),
+        ("product group", &part.group),
+        ("product subgroup", &part.subgroup),
+        ("identifier", &part.identifier),
+        ("currency", &part.currency),
+        ("quantity unit", &part.quantity_unit),
+        ("voltage", &part.voltage),
+        ("current", &part.current),
+        ("power", &part.power),
+        ("mounting", &part.mounting),
+        ("catalog", &part.catalog),
+        ("successor", &part.successor),
+    ];
+    let long = [("description", &part.description), ("note", &part.note), ("technical data", &part.tech_data), ("certificates", &part.certificates), ("datasheet", &part.datasheet)];
+    for (max, fields) in [(MAX_FIELD_LEN, &short[..]), (MAX_TEXT_LEN, &long[..])] {
+        if let Some((name, _)) = fields.iter().find(|(_, v)| v.chars().count() > max) {
+            return Err(bad(format!("the {name} of part '{}' is longer than {max} characters", part.number)));
+        }
+    }
+    Ok(())
+}
+
+/// The catalog a part names must exist.
+fn check_catalog(store: &Store, part: &Part) -> Result<()> {
+    if !part.catalog.trim().is_empty() && store.catalog(part.catalog.trim())?.is_none() {
+        return Err(bad(format!("catalog '{}' of part '{}' not found: create the catalog first", part.catalog.trim(), part.number)));
     }
     Ok(())
 }
@@ -279,7 +341,9 @@ async fn put_part(
     if part.successor == part.number {
         return Err(bad("a part cannot be its own successor"));
     }
+    check_part(&part)?;
     let mut store = store(&state);
+    check_catalog(&store, &part)?;
     need(&user, &access, PartsRight::EditParts, &part.manufacturer)?;
     if let Some(old) = store.get(&number)? {
         need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
@@ -376,10 +440,15 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
         return Err(bad("every part needs a part number"));
     }
     for p in &parts {
-        check_number(&p.number)?;
+        check_part(p)?;
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    if let Some(dup) = parts.iter().find(|p| !seen.insert(p.number.to_lowercase())) {
+        return Err(bad(format!("part '{}' appears more than once in the file", dup.number)));
     }
     let mut store = store(&state);
     for p in &parts {
+        check_catalog(&store, p)?;
         need(&user, &access, PartsRight::EditParts, &p.manufacturer)?;
         if let Some(old) = store.get(&p.number)? {
             need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;

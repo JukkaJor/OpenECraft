@@ -163,3 +163,14 @@ fn templates_set_aspects_and_add_identifiers() {
     assert_eq!(other.work_areas.len(), 1);
     assert!(Structures::from_json("42").is_err());
 }
+
+#[test]
+fn identifiers_keep_no_blanks_or_separators() {
+    assert_eq!(check_identifier(Aspect::Location, " +CAB1 ").unwrap(), "CAB1");
+    assert_eq!(check_identifier(Aspect::Function, "PUMP.2").unwrap(), "PUMP.2");
+    assert_eq!(check_identifier(Aspect::Product, "U1-A2").unwrap(), "U1-A2");
+    for bad in ["has space", "CAB1-X", "A=B", "A/B"] {
+        assert!(check_identifier(Aspect::Location, bad).is_err(), "{bad}");
+    }
+    assert_eq!(check_identifier(Aspect::Location, "").unwrap(), "");
+}

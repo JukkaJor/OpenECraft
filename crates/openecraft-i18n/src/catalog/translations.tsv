@@ -136,7 +136,6 @@ Contacts	Kontakte	Contacts	Contactos
 Control transformer	Steuertransformator	Transformateur de commande	Transformador de control
 Copper busbar system: click start and end point	Kupfer-Sammelschienensystem: Start- und Endpunkt anklicken	Système de barres en cuivre : cliquez sur le point de départ et d'arrivée	Sistema de pletinas de cobre: haz clic en el punto inicial y el final
 Copy / cut / paste (devices get new tags)	Kopieren / Ausschneiden / Einfügen (Betriebsmittel erhalten neue Kennzeichen)	Copier / couper / coller (les appareils reçoivent de nouveaux repères)	Copiar / cortar / pegar (los dispositivos reciben nuevas designaciones)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopieren / Einfügen: Strg+C, Strg+X, Strg+V	Copier / coller : Ctrl+C, Ctrl+X, Ctrl+V	Copiar / pegar: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Als neu kopieren	Copier comme nouveau	Copiar como nuevo
 Copy built-in…	Eingebautes kopieren…	Copier un élément intégré…	Copiar incorporado…
 Core	Ader	Âme	Núcleo
@@ -155,8 +154,6 @@ Cross references	Querverweise	Renvois	Referencias cruzadas
 Cross-section	Querschnitt	Section	Sección
 Ctrl+A	Ctrl+A	Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V	Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Strom	Courant	Corriente
 Cutout	Ausschnitt	Découpe	Recorte
 Cutout {} × {} mm	Ausschnitt {} × {} mm	Découpe {} × {} mm	Recorte {} × {} mm
@@ -169,7 +166,6 @@ Date	Datum	Date	Fecha
 Date of the last revision	Datum der letzten Revision	Date de la dernière révision	Fecha de la última revisión
 Default label	Standardbezeichnung	Désignation par défaut	Designación predeterminada
 Del	Entf	Suppr	Supr
-Delete   Del	Löschen   Entf	Supprimer   Suppr	Eliminar   Supr
 Delete (Del)	Löschen (Entf)	Supprimer (Suppr)	Eliminar (Supr)
 Delete cable (its wires are removed from it)	Kabel löschen (seine Leitungen werden entfernt)	Supprimer le câble (ses fils en sont retirés)	Eliminar cable (sus hilos se quitan de él)
 Delete enclosure	Gehäuse löschen	Supprimer l'enveloppe	Eliminar envolvente
@@ -203,7 +199,6 @@ Door	Tür	Porte	Puerta
 Door (front view)	Tür (Frontansicht)	Porte (vue de face)	Puerta (vista frontal)
 Door clearance	Türfreiraum	Dégagement de porte	Espacio libre de la puerta
 Door: {} devices, {} cutouts	Tür: {} Betriebsmittel, {} Ausschnitte	Porte : {} appareils, {} découpes	Puerta: {} dispositivos, {} recortes
-Download project   Ctrl+S	Projekt herunterladen   Strg+S	Télécharger le projet   Ctrl+S	Descargar proyecto   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} Artikel heruntergeladen (Revision {}): {} neu, {} aktualisiert	{} articles téléchargés (révision {}) : {} nouveaux, {} mis à jour	{} artículos descargados (revisión {}): {} nuevos, {} actualizados
 Downloading parts…	Artikel werden heruntergeladen …	Téléchargement des articles…	Descargando artículos…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Ziehen: Orbit · Rechts-/Mittelklick-Ziehen: verschieben · Mausrad: Zoom · Klick: Betriebsmittel oder Leitung wählen	Glisser : orbite · glisser avec clic droit/milieu : déplacer · molette : zoom · clic : sélectionner un appareil ou un fil	Arrastrar: órbita · arrastrar con botón derecho/central: desplazar · rueda: zoom · clic: seleccionar dispositivo o hilo
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filter (Nummer, Typ, Hersteller, T
 Filter devices…	Betriebsmittel filtern …	Filtrer les appareils…	Filtrar dispositivos…
 Filter…	Filter …	Filtre…	Filtro…
 Fit page	Seite einpassen	Ajuster la page	Ajustar página
-Fit page   F	Seite einpassen   F	Ajuster la page   F	Ajustar página   F
 Fit page (F)	Seite einpassen (F)	Ajuster la page (F)	Ajustar página (F)
 Fluid power (ISO 1219)	Fluidtechnik (ISO 1219)	Hydraulique et pneumatique (ISO 1219)	Neumática e hidráulica (ISO 1219)
 Forms – title blocks and reports	Formulare – Schriftfelder und Berichte	Formulaires – cartouches et rapports	Formularios – cajetines e informes
@@ -347,7 +341,6 @@ Manufacturer	Hersteller	Fabricant	Fabricante
 Max. width	Max. Breite	Largeur max.	Ancho máx.
 Merge a symbol library file	Eine Symbolbibliotheksdatei zusammenführen	Fusionner un fichier de bibliothèque de symboles	Combinar un archivo de biblioteca de símbolos
 Mirror	Spiegeln	Miroir	Reflejar
-Mirror   M	Spiegeln   M	Miroir   M	Reflejar   M
 Model import failed: {}	Modellimport fehlgeschlagen: {}	Échec de l'import du modèle : {}	Error al importar el modelo: {}
 Motor (single-line)	Motor (einpolig dargestellt)	Moteur (unifilaire)	Motor (unifilar)
 Motor 1-phase	Motor 1-phasig	Moteur monophasé	Motor monofásico
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft-Schriftfelder (JSON)	Cartouches OpenEC
 OpenECraft – usage	OpenECraft – Bedienung	OpenECraft – utilisation	OpenECraft – uso
 Opened {}	{} geöffnet	{} ouvert	{} abierto
 Opening in the mounting plate / door: click two corners (round: in the properties)	Öffnung in Montageplatte / Tür: Zwei Ecken anklicken (rund: in den Eigenschaften)	Ouverture dans la plaque de montage / la porte : cliquez sur deux coins (rond : dans les propriétés)	Abertura en la placa de montaje / puerta: haz clic en dos esquinas (redonda: en las propiedades)
-Open…        Ctrl+O	Öffnen…        Strg+O	Ouvrir…        Ctrl+O	Abrir…        Ctrl+O
 Order number	Bestellnummer	Référence de commande	Número de pedido
 Orientation	Ausrichtung	Orientation	Orientación
 Overload aux contact NC	Überlast-Hilfskontakt Öffner	Contact auxiliaire de relais thermique NF	Contacto auxiliar de relé térmico NC
@@ -546,8 +538,6 @@ Radius	Radius	Rayon	Radio
 Readdress card	Karte neu adressieren	Réadresser la carte	Redireccionar tarjeta
 Rectangle	Rechteck	Rectangle	Rectángulo
 Rectangular	Rechteckig	Rectangulaire	Rectangular
-Redo   Ctrl+Y	Wiederholen   Strg+Y	Rétablir   Ctrl+Y	Rehacer   Ctrl+Y
-Redo (Ctrl+Y)	Wiederholen (Strg+Y)	Rétablir (Ctrl+Y)	Rehacer (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Beispielkatalog-Artikel (GEN.*) aktualisieren	Actualiser les articles du catalogue d'exemple (GEN.*)	Actualizar los artículos del catálogo de ejemplo (GEN.*)
 Relay / contactor coil	Relais- / Schützspule	Bobine de relais / contacteur	Bobina de relé / contactor
 Relay coil (NFPA)	Relaisspule (NFPA)	Bobine de relais (NFPA)	Bobina de relé (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revision {} angelegt	Révision {} créée	Revisión {} cread
 Revisions	Revisionen	Révisions	Revisiones
 Revisions…	Revisionen…	Révisions…	Revisiones…
 Right	Rechts	Droite	Derecha
-Rotate   R	Drehen   R	Pivoter   R	Girar   R
 Rotate (R)	Drehen (R)	Pivoter (R)	Girar (R)
 Rotate / mirror (selection or symbol being placed)	Drehen / Spiegeln (Auswahl oder zu platzierendes Symbol)	Pivoter / miroir (sélection ou symbole en cours de placement)	Girar / reflejar (selección o símbolo que se está colocando)
 Rotate 90°:	Um 90° drehen:	Pivoter de 90° :	Girar 90°:
@@ -586,7 +575,6 @@ Round	Rund	Rond	Redondo
 Routing	Verlegung	Cheminement	Tendido
 Rows per page	Zeilen pro Seite	Lignes par page	Filas por página
 SVG image	SVG-Grafik	Image SVG	Imagen SVG
-Save          Ctrl+S	Speichern          Strg+S	Enregistrer          Ctrl+S	Guardar          Ctrl+S
 Save / open	Speichern / Öffnen	Enregistrer / ouvrir	Guardar / abrir
 Save as macro	Als Makro speichern	Enregistrer comme macro	Guardar como macro
 Save as…	Speichern unter…	Enregistrer sous…	Guardar como…
@@ -605,7 +593,6 @@ Select a macro.	Wählen Sie ein Makro.	Sélectionnez une macro.	Selecciona una m
 Select a part in the tree or create a new one.	Wählen Sie einen Artikel im Baum oder legen Sie einen neuen an.	Sélectionnez un article dans l'arborescence ou créez-en un nouveau.	Selecciona un artículo en el árbol o crea uno nuevo.
 Select a part. Double click adds it to the device.	Wählen Sie einen Artikel. Doppelklick fügt ihn dem Betriebsmittel hinzu.	Sélectionnez un article. Un double-clic l'ajoute à l'appareil.	Selecciona un artículo. Doble clic lo añade al dispositivo.
 Select all	Alles auswählen	Tout sélectionner	Seleccionar todo
-Select all   Ctrl+A	Alles auswählen   Strg+A	Tout sélectionner   Ctrl+A	Seleccionar todo   Ctrl+A
 Select an element in the list or the drawing.	Wählen Sie ein Element in der Liste oder der Zeichnung.	Sélectionnez un élément dans la liste ou le dessin.	Selecciona un elemento de la lista o del dibujo.
 Select and drag elements; Del deletes	Elemente wählen und ziehen; Entf löscht	Sélectionner et glisser des éléments ; Suppr supprime	Selecciona y arrastra elementos; Supr elimina
 Select device	Betriebsmittel wählen	Sélectionner l'appareil	Seleccionar dispositivo
@@ -673,7 +660,6 @@ Terminals	Klemmen	Bornes	Bornes
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Klemmen mit gleicher Brückennummer sind verbunden (gleiches Potenzial). Reserveklemmen werden in der Stückliste mitgezählt.	Les bornes de même numéro de pont sont reliées (même potentiel). Les bornes de réserve sont comptées dans la nomenclature.	Los bornes con el mismo número de puente están unidos (mismo potencial). Los bornes de reserva se cuentan en la lista de materiales.
 Test connection	Verbindung testen	Tester la connexion	Probar conexión
 Text	Text	Texte	Texto
-Text   T	Text   T	Texte   T	Texto   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	Die 2D-Frontansicht wird in der Schaltschrank-Frontansicht und auf Montageplan-Seiten verwendet, das 3D-Modell in der 3D-Schaltschrankansicht. Beide werden an die Montagedaten (Breite × Höhe × Tiefe) angepasst.	La vue de face 2D est utilisée dans la vue de face de l'armoire et sur les pages d'implantation, le modèle 3D dans la vue 3D de l'armoire. Les deux sont adaptés aux données de montage (largeur × hauteur × profondeur).	La vista frontal 2D se usa en la vista frontal del armario y en las páginas de distribución de montaje, el modelo 3D en la vista 3D del armario. Ambos se ajustan a los datos de montaje (ancho × alto × profundidad).
 The access token is only needed for changes; it is not stored.	Das Zugriffstoken wird nur für Änderungen benötigt; es wird nicht gespeichert.	Le jeton d'accès n'est nécessaire que pour les modifications ; il n'est pas enregistré.	El token de acceso solo se necesita para los cambios; no se guarda.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Das Modell ({} × {} × {}) weicht von den Montagedaten ({} × {} × {}) ab; es wird auf die Montagedaten gestreckt.	Le modèle ({} × {} × {}) diffère des données de montage ({} × {} × {}) ; il est étiré aux données de montage.	El modelo ({} × {} × {}) difiere de los datos de montaje ({} × {} × {}); se estira a los datos de montaje.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformator (einpolig dargestellt)	Transformateur (u
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Drehe das Modell so, dass die Vorderseite zum Betrachter zeigt (+Z) und die Oberseite +Y ist	Orientez le modèle pour que sa face avant regarde l'observateur (+Z) et que son dessus soit +Y	Gira el modelo para que su frente mire al observador (+Z) y su parte superior sea +Y
 Type	Typ	Type	Tipo
 Type number	Typnummer	Numéro de type	Número de tipo
-Undo   Ctrl+Z	Rückgängig   Strg+Z	Annuler   Ctrl+Z	Deshacer   Ctrl+Z
-Undo (Ctrl+Z)	Rückgängig (Strg+Z)	Annuler (Ctrl+Z)	Deshacer (Ctrl+Z)
 Undo / redo	Rückgängig / Wiederholen	Annuler / rétablir	Deshacer / rehacer
 Unit	Einheit	Unité	Unidad
 Unit price	Einzelpreis	Prix unitaire	Precio unitario
@@ -729,7 +713,6 @@ Width × height	Breite × Höhe	Largeur × hauteur	Ancho × alto
 Width × height × depth	Breite × Höhe × Tiefe	Largeur × hauteur × profondeur	Ancho × alto × profundidad
 Window macro: {}	Fenstermakro: {}	Macro de fenêtre : {}	Macro de ventana: {}
 Wire	Leitung	Fil	Hilo
-Wire   W	Leitung   W	Fil   W	Hilo   W
 Wire assigned to unknown cable {}	Leitung einem unbekannten Kabel zugewiesen {}	Fil affecté à un câble inconnu {}	Hilo asignado a un cable desconocido {}
 Wire ends with ferrules	Leitungsenden mit Aderendhülsen	Extrémités de fil avec embouts	Extremos de hilo con punteras
 Wire list (panel routing)	Leitungsliste (Schaltschrank-Verlegung)	Liste des fils (cheminement en armoire)	Lista de hilos (tendido en armario)

@@ -45,6 +45,14 @@ fn with_layout(prj: &Project) -> Result<(), String> {
     Ok(())
 }
 
+/// The harness exports have nothing to write without harnesses (like `kbl`).
+fn with_harnesses(prj: &Project) -> Result<(), String> {
+    if prj.harnesses.is_empty() {
+        return Err(tr("The project has no harnesses").into());
+    }
+    Ok(())
+}
+
 fn file_name<'a>(a: &'a Args, default: &'a str) -> &'a str {
     a.str("file").filter(|f| !f.trim().is_empty()).unwrap_or(default)
 }
@@ -68,7 +76,7 @@ pub fn builtin() -> Vec<Exporter> {
     }))
     .exporter_with("dxf", tr_const!("DXF drawing"), "dxf", false, vec![PAGE_OPT], text(|prj, an, a| Ok(crate::dxf::pages_dxf_with(prj, an, &pages(prj, a)?))))
     .exporter_with("dwg", tr_const!("DWG drawing"), "dwg", true, vec![PAGE_OPT], |prj, an, a| crate::dwg::pages_dwg_with(prj, an, &pages(prj, a)?).map(Export::Binary))
-    .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv())))
+    .exporter_with("wire_list", tr_const!("Production wire list (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::reports::production_wire_list(prj, an).to_csv_bom())))
     .exporter_with("plc_table", tr_const!("PLC symbol table (CSV)"), "csv", false, vec![], text(|prj, an, _| Ok(crate::plc::symbol_table(prj, &an.netlist))))
     .exporter_with("plc_variables", tr_const!("PLC global variables (IEC 61131-3)"), "st", false, vec![], text(|prj, an, _| Ok(crate::plc::global_variables(prj, &an.netlist))))
     .exporter_with("plc_tia", tr_const!("PLC tag table for Siemens TIA Portal (Excel)"), "xlsx", true, vec![], |prj, an, _| {
@@ -81,15 +89,26 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("plc_schneider", tr_const!("PLC variables for Schneider Control Expert (XSY)"), "xsy", false, vec![], text(|prj, an, _| Ok(crate::plc::schneider_xsy(prj, &an.netlist))))
     .exporter_with("aml", tr_const!("PLC hardware (AutomationML)"), "aml", false, vec![], text(|prj, an, _| Ok(crate::aml::export(prj, &an.netlist))))
     .exporter_with("kbl", tr_const!("Harness (KBL, VDA 4964)"), "kbl", false, vec![HARNESS_OPT], text(|prj, an, a| crate::kbl::export(prj, an, a.str("harness"))))
-    .exporter_with("kbl_zip", tr_const!("All harnesses as KBL files (ZIP)"), "zip", true, vec![], |prj, an, _| Ok(Export::Binary(crate::kbl::zip(prj, an))))
+    .exporter_with("kbl_zip", tr_const!("All harnesses as KBL files (ZIP)"), "zip", true, vec![], |prj, an, _| {
+        with_harnesses(prj)?;
+        Ok(Export::Binary(crate::kbl::zip(prj, an)))
+    })
     .exporter_with("harness_json", tr_const!("Harness interface for machines and tools (JSON)"), "json", false, vec![HARNESSES], text(|prj, an, a| {
+        with_harnesses(prj)?;
         crate::harness_export::document(prj, an, a.str("harness")).map(|v| serde_json::to_string_pretty(&v).unwrap_or_default())
     }))
     .exporter_with("harness_processing", tr_const!("Wire processing list for cutting and crimping machines (CSV)"), "csv", false, vec![HARNESSES], text(|prj, an, a| {
+        with_harnesses(prj)?;
         crate::harness_export::processing_list(prj, an, a.str("harness"))
     }))
-    .exporter_with("harness_gltf", tr_const!("Harnesses in 3D (glTF)"), "gltf", false, vec![HARNESSES], text(|prj, an, a| crate::harness_export::gltf(prj, an, a.str("harness"))))
-    .exporter_with("harness_jt", tr_const!("Harnesses in 3D (JT)"), "jt", true, vec![HARNESSES], |prj, an, a| crate::harness_export::jt(prj, an, a.str("harness")).map(Export::Binary))
+    .exporter_with("harness_gltf", tr_const!("Harnesses in 3D (glTF)"), "gltf", false, vec![HARNESSES], text(|prj, an, a| {
+        with_harnesses(prj)?;
+        crate::harness_export::gltf(prj, an, a.str("harness"))
+    }))
+    .exporter_with("harness_jt", tr_const!("Harnesses in 3D (JT)"), "jt", true, vec![HARNESSES], |prj, an, a| {
+        with_harnesses(prj)?;
+        crate::harness_export::jt(prj, an, a.str("harness")).map(Export::Binary)
+    })
     .exporter_with("nailboard", tr_const!("Harness nailboard drawing to scale (SVG)"), "svg", false, vec![HARNESS], text(|prj, an, a| {
         let tag = a.req("harness");
         crate::nailboard::layout(prj, an, tag).map(|nb| crate::nailboard::svg(&nb)).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))

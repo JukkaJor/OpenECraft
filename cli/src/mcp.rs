@@ -105,7 +105,10 @@ fn call(session: &mut Session, params: &Value) -> Result<Value, (i64, String)> {
     // Tool errors are results the agent can react to, not protocol errors.
     let (text, is_error) = match tools::call(session, tool, &args) {
         Ok(Value::String(text)) => (text, false),
-        Ok(value) => (serde_json::to_string_pretty(&value).unwrap_or_default(), false),
+        Ok(mut value) => {
+            tools::tidy(&mut value);
+            (serde_json::to_string_pretty(&value).unwrap_or_default(), false)
+        }
         Err(e) => (e, true),
     };
     Ok(json!({ "content": [{ "type": "text", "text": text }], "isError": is_error }))

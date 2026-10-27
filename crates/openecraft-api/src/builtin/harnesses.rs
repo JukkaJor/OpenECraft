@@ -2,6 +2,7 @@
 //! 3D topology (stored or derived) and its editing (nodes, segments, protections,
 //! fixings), the end treatment of the connectors and the further parts.
 
+use crate::builtin::common::{int_in, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind, Param};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -269,11 +270,11 @@ fn set_node(prj: &mut Project, a: &Args) -> Result<Value, String> {
             n.pos[k] = v;
         }
     }
-    if let Some(v) = a.num("bend_radius") {
-        n.bend_radius = v.max(0.0);
+    if let Some(v) = num_in(a, "bend_radius", 0.0, NO_MAX)? {
+        n.bend_radius = v;
     }
     if let Some(list) = a.str("connectors") {
-        let connectors: Vec<String> = list.split(',').map(|c| c.trim().to_string()).filter(|c| !c.is_empty()).collect();
+        let connectors: Vec<String> = crate::builtin::common::words(list).into_iter().map(String::from).collect();
         for other in h.nodes.iter_mut().filter(|n| n.id != id) {
             other.connectors.retain(|c| !connectors.contains(c));
         }
@@ -335,8 +336,8 @@ fn set_segment(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(p) = points {
         s.points = p;
     }
-    if let Some(l) = a.num("length") {
-        s.length = l.max(0.0);
+    if let Some(l) = num_in(a, "length", 0.0, NO_MAX)? {
+        s.length = l;
     }
     harness_topology(prj, a)
 }
@@ -443,8 +444,8 @@ fn set_end(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(v) = a.str("cavity_plug") {
         e.cavity_plug = v.trim().into();
     }
-    if let Some(v) = a.num("strip") {
-        e.strip = v.max(0.0);
+    if let Some(v) = num_in(a, "strip", 0.0, NO_MAX)? {
+        e.strip = v;
     }
     if let Some(u) = usage {
         e.usage = u;
@@ -471,8 +472,8 @@ fn set_part(prj: &mut Project, a: &Args) -> Result<Value, String> {
             h.parts.last_mut().unwrap()
         }
     };
-    if let Some(n) = a.int("count") {
-        p.count = n.max(1) as u32;
+    if let Some(n) = int_in(a, "count", 1, u32::MAX.into())? {
+        p.count = n as u32;
     }
     if let Some(v) = a.str("description") {
         p.description = v.trim().into();

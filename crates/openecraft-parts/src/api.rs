@@ -119,6 +119,8 @@ pub struct ApiError {
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Login {
+    /// Also read as `user` (the field of the project server).
+    #[serde(alias = "user")]
     pub name: String,
     pub password: String,
     /// Directory to sign in with; empty = the local accounts, then every directory.

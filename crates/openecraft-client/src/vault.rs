@@ -397,7 +397,7 @@ fn error_text(resp: &ehttp::Response) -> String {
 /// Successful response or a readable error.
 pub fn check(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, String> {
     match result {
-        Err(e) => Err(tr_fmt!("connection failed: {}", e)),
+        Err(e) => Err(tr_fmt!("connection failed: {}", crate::reason(&e))),
         Ok(resp) if resp.ok => Ok(resp),
         Ok(resp) => Err(error_text(&resp)),
     }

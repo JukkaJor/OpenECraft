@@ -25,7 +25,12 @@ fn fake(log: Arc<Mutex<Vec<Value>>>) -> External {
                     prj["info"]["name"] = req["params"]["title"].clone();
                     json!({ "result": "ok", "project": prj })
                 }
-                ("check", _) => json!({ "issues": [{ "severity": "error", "message": "no title", "page": 0, "item": 7 }, { "message": "hint" }] }),
+                ("check", _) => json!({ "issues": [
+                    { "severity": "error", "message": "no title", "page": 0, "item": 7 },
+                    { "message": "hint" },
+                    { "message": "page only", "page": 1 },
+                    { "message": "no such page", "page": 999 },
+                ] }),
                 ("report", _) => json!({ "headers": ["Title"], "rows": [[req["project"]["info"]["name"].clone()]] }),
                 ("export", _) => json!({ "content": "title" }),
                 _ => json!({}),
@@ -51,6 +56,9 @@ fn external_plugins_answer_json_requests() {
     assert_eq!(issues[0].severity, Severity::Error);
     assert_eq!(issues[0].target, Some((0, 7)));
     assert_eq!((issues[1].severity, issues[1].target), (Severity::Warning, None));
+    // A page without item points at the page; a page the project lacks at nothing.
+    assert_eq!(issues[2].target, Some((1, 0)));
+    assert_eq!(issues[3].target, None);
 
     let table = (p.report("titles").unwrap().run)(&prj, &Analysis::default()).unwrap();
     assert_eq!(table.rows, [["Plant 7"]]);
@@ -70,4 +78,14 @@ fn manifests_are_read_from_the_plugin_folder() {
     assert_eq!(plugin.info().id, "x");
     assert!(Plugins::default().add(&plugin, Origin::External(dir.clone())).unwrap_err().contains("openecraft-no-such-program"));
     std::fs::remove_dir_all(&dir).unwrap();
+}
+
+#[test]
+fn plugin_programs_talk_utf8_and_python3_falls_back_to_python() {
+    let c = command(Path::new("."), Path::new("python3"), &[]);
+    let envs: Vec<_> = c.get_envs().map(|(k, v)| (k.to_string_lossy().to_string(), v.map(|v| v.to_string_lossy().to_string()))).collect();
+    assert!(envs.contains(&("PYTHONUTF8".to_string(), Some("1".to_string()))));
+    assert!(envs.contains(&("PYTHONIOENCODING".to_string(), Some("utf-8".to_string()))));
+    assert_eq!(alternative(Path::new("python3")), Some(PathBuf::from("python")));
+    assert_eq!(alternative(Path::new("node")), None);
 }

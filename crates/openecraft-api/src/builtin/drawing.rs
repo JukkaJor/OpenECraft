@@ -281,14 +281,43 @@ fn snapped(x: f32, y: f32) -> P {
     p(x, y).snap(GRID)
 }
 
-/// Positions must lie on the paper of the page.
-fn on_page(prj: &Project, page: usize, pos: P) -> Result<(), String> {
-    let (w, h) = openecraft_core::frame::of_page(prj, page).size();
-    if (0.0..=w).contains(&pos.x) && (0.0..=h).contains(&pos.y) {
-        Ok(())
+/// A coordinate for messages: huge values in exponent form.
+fn mm(v: f64) -> String {
+    if v.is_finite() && v.abs() < 1e6 {
+        format!("{}", v as f32)
     } else {
-        Err(tr_fmt!("Position {} / {} mm lies outside the page ({} x {} mm)", pos.x, pos.y, w, h))
+        format!("{v:e}")
     }
+}
+
+/// The position `x` / `y` as given (mm) on the paper of the page, snapped to the grid.
+fn on_page(prj: &Project, page: usize, x: f64, y: f64) -> Result<P, String> {
+    let (w, h) = openecraft_core::frame::of_page(prj, page).size();
+    let inside = |v: f64, max: f32| v.is_finite() && (0.0..=f64::from(max)).contains(&v);
+    if inside(x, w) && inside(y, h) {
+        Ok(snapped(x as f32, y as f32))
+    } else {
+        Err(tr_fmt!("Position {} / {} mm lies outside the page ({} x {} mm)", mm(x), mm(y), w, h))
+    }
+}
+
+/// A number parameter as sent (not rounded to `f32`).
+fn num(a: &Args, name: &str) -> Option<f64> {
+    a.value(name).and_then(Value::as_f64)
+}
+
+/// The points of a parameter as sent.
+fn raw_points(a: &Args, name: &str) -> Vec<[f64; 2]> {
+    let pt = |v: &Value| Some([v.get(0)?.as_f64()?, v.get(1)?.as_f64()?]);
+    a.value(name).and_then(Value::as_array).map(|list| list.iter().filter_map(pt).collect()).unwrap_or_default()
+}
+
+/// Everything on the page still lies on its paper (after moving or copying).
+fn inside_page(prj: &Project, page: usize) -> bool {
+    let (w, h) = openecraft_core::frame::of_page(prj, page).size();
+    let ok = |q: P| q.x.is_finite() && q.y.is_finite() && (0.0..=w).contains(&q.x) && (0.0..=h).contains(&q.y);
+    let pg = &prj.pages[page];
+    pg.symbols.iter().all(|s| ok(s.pos)) && pg.texts.iter().all(|t| ok(t.pos)) && pg.wires.iter().all(|wi| ok(wi.a) && ok(wi.b))
 }
 
 fn pin_list(text: &str) -> Vec<String> {
@@ -326,11 +355,20 @@ fn push_path(prj: &mut Project, page: usize, pts: &[P]) -> Vec<u64> {
     ids
 }
 
+/// A connection point found on a page: its position, the symbol and its number of
+/// connection points.
+#[derive(Clone, Copy)]
+struct PinAt {
+    pos: P,
+    symbol: u64,
+    pins: usize,
+}
+
 /// Position of a connection point `TAG:PIN` / `#ID:PIN` / `POTENTIAL:PIN` on a page.
-fn pin_position(symbols: &Symbols, pg: &Page, spec: &str) -> Result<P, String> {
+fn pin_position(symbols: &Symbols, pg: &Page, spec: &str) -> Result<PinAt, String> {
     let (dev, pin) = spec.rsplit_once(':').ok_or_else(|| tr_fmt!("{} is not a connection point (TAG:PIN)", spec))?;
     let id = dev.strip_prefix('#').and_then(|n| n.parse::<u64>().ok());
-    let mut found: Vec<P> = Vec::new();
+    let mut found: Vec<PinAt> = Vec::new();
     for s in &pg.symbols {
         let named = |f: Func| matches!(f, Func::Potential | Func::Interruption) && s.label == dev;
         let hit = match id {
@@ -338,9 +376,10 @@ fn pin_position(symbols: &Symbols, pg: &Page, spec: &str) -> Result<P, String> {
             None => s.tag == dev || symbols.get(&s.sym).is_some_and(|d| named(d.func)),
         };
         if hit {
-            for (label, q) in pins_of(symbols, s) {
-                if label == pin && !found.iter().any(|f| f.same(q)) {
-                    found.push(q);
+            let pins = pins_of(symbols, s);
+            for (label, q) in &pins {
+                if *label == pin && !found.iter().any(|f| f.pos.same(*q)) {
+                    found.push(PinAt { pos: *q, symbol: s.id, pins: pins.len() });
                 }
             }
         }
@@ -350,6 +389,20 @@ fn pin_position(symbols: &Symbols, pg: &Page, spec: &str) -> Result<P, String> {
         [] => Err(tr_fmt!("No connection point {} on this page", spec)),
         _ => Err(tr_fmt!("{} is ambiguous: use #id:pin", spec)),
     }
+}
+
+/// The two ends of a wire between connection points: not the same point and not both
+/// ends of a function with two connection points (a coil, contact or lamp would be
+/// short-circuited; bridges between poles of a multi-pole symbol stay possible).
+fn wire_ends(symbols: &Symbols, pg: &Page, from: &str, to: &str) -> Result<(P, P), String> {
+    let (a, b) = (pin_position(symbols, pg, from)?, pin_position(symbols, pg, to)?);
+    if a.pos.same(b.pos) {
+        return Err(tr("Start and end are the same connection point").to_string());
+    }
+    if a.symbol == b.symbol && a.pins == 2 {
+        return Err(tr_fmt!("{} and {} are both ends of one function: the wire would short-circuit it", from, to));
+    }
+    Ok((a.pos, b.pos))
 }
 
 /// Orthogonal path through the points: vertical first, then horizontal.
@@ -423,8 +476,7 @@ fn place_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
             _ => {}
         }
     }
-    let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
-    on_page(prj, i, pos)?;
+    let pos = on_page(prj, i, num(a, "x").unwrap_or_default(), num(a, "y").unwrap_or_default())?;
     let mut sym = ops::new_symbol(prj, i, &ctx, &def, pos, rotation(a)?.unwrap_or(0), a.flag("mirror"));
     if let Some(tag) = tag.filter(|_| def.func.has_tag()) {
         sym.tag = tag.into();
@@ -440,12 +492,11 @@ fn update_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let id = a.int("id").unwrap_or_default() as u64;
     let old = prj.pages[i].symbols.iter().find(|x| x.id == id).ok_or_else(|| tr_fmt!("No symbol with id {}", id))?.pos;
-    let to = snapped(a.num("x").unwrap_or(old.x), a.num("y").unwrap_or(old.y));
+    let to = on_page(prj, i, num(a, "x").unwrap_or(old.x.into()), num(a, "y").unwrap_or(old.y.into()))?;
     if let Some(tag) = a.str("tag") {
         ops::check_tag(tag)?;
     }
     if !to.same(old) {
-        on_page(prj, i, to)?;
         let page = &mut prj.pages[i];
         let sel = BTreeSet::from([id]);
         let attached = ops::attached_wire_ends(&symbols, page, &sel);
@@ -461,12 +512,9 @@ fn update_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn add_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
-    let pts: Vec<P> = a.points("points").into_iter().map(|[x, y]| snapped(x, y)).collect();
+    let pts = raw_points(a, "points").into_iter().map(|[x, y]| on_page(prj, i, x, y)).collect::<Result<Vec<P>, String>>()?;
     if pts.len() < 2 {
         return Err(tr("A wire needs at least two points").to_string());
-    }
-    for &pt in &pts {
-        on_page(prj, i, pt)?;
     }
     let ids = push_path(prj, i, &pts);
     if ids.is_empty() {
@@ -478,13 +526,11 @@ fn add_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn connect(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let symbols = prj.symbol_table();
     let i = editable(prj, a.req("page"))?;
-    let from = pin_position(&symbols, &prj.pages[i], a.req("from"))?;
-    let to = pin_position(&symbols, &prj.pages[i], a.req("to"))?;
-    if from.same(to) {
-        return Err(tr("Start and end are the same connection point").to_string());
-    }
+    let (from, to) = wire_ends(&symbols, &prj.pages[i], a.req("from"), a.req("to"))?;
     let mut pts = vec![from];
-    pts.extend(a.points("via").into_iter().map(|[x, y]| snapped(x, y)));
+    for [x, y] in raw_points(a, "via") {
+        pts.push(on_page(prj, i, x, y)?);
+    }
     pts.push(to);
     let path = orthogonal(&pts);
     let ids = push_path(prj, i, &path);
@@ -499,16 +545,27 @@ fn update_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
         w.number = n.into();
         w.number_fixed = !n.is_empty();
     }
-    for (name, field) in [("color", &mut w.color), ("cross_section", &mut w.cross_section), ("cable", &mut w.cable), ("core", &mut w.core)] {
+    let color = a.str("color").map(wire_color).transpose()?;
+    let cross = a.str("cross_section").map(cross_section).transpose()?;
+    for (name, field) in [("cable", &mut w.cable), ("core", &mut w.core)] {
         if let Some(v) = a.str(name) {
             *field = v.into();
         }
+    }
+    if let Some(c) = color {
+        w.color = c;
+    }
+    if let Some(c) = cross {
+        w.cross_section = c;
     }
     if let Some(m) = a.str("medium") {
         w.medium = if m.trim().is_empty() { None } else { Some(Medium::from_code(m).ok_or_else(|| tr_fmt!("Unknown medium: {}", m))?) };
     }
     if let Some(l) = a.num("length") {
-        w.length = l.max(0.0);
+        if !(l >= 0.0 && l.is_finite()) {
+            return Err(tr("The length must not be negative").to_string());
+        }
+        w.length = l;
     }
     let medium = w.medium.map(|m| m.code()).unwrap_or_default();
     Ok(json!({ "id": w.id, "number": w.number, "color": w.color, "cross_section": w.cross_section, "cable": w.cable, "core": w.core, "medium": medium, "length": w.length }))
@@ -517,7 +574,10 @@ fn update_wire(prj: &mut Project, a: &Args) -> Result<Value, String> {
 /// Takes the style parameters of `add_text` / `update_text` that are given.
 fn text_style_args(t: &mut TextItem, a: &Args) -> Result<(), String> {
     if let Some(s) = a.num("size") {
-        t.size = s.max(0.5);
+        if !(s >= 0.5 && s.is_finite()) {
+            return Err(tr("The text height must be at least 0.5 mm").to_string());
+        }
+        t.size = s;
     }
     if let Some(v) = a.num("angle") {
         t.angle = v.rem_euclid(360.0);
@@ -539,7 +599,10 @@ fn text_style_args(t: &mut TextItem, a: &Args) -> Result<(), String> {
         };
     }
     if let Some(w) = a.num("width") {
-        t.width = w.max(0.0);
+        if !(w >= 0.0 && w.is_finite()) {
+            return Err(tr("The wrap width must not be negative").to_string());
+        }
+        t.width = w;
     }
     for (name, field) in [
         ("bold", &mut t.bold),
@@ -579,9 +642,8 @@ fn text_json(t: &TextItem) -> Value {
 
 fn add_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
+    let pos = on_page(prj, i, num(a, "x").unwrap_or_default(), num(a, "y").unwrap_or_default())?;
     let id = prj.new_id();
-    let pos = snapped(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
-    on_page(prj, i, pos)?;
     let mut t = TextItem { id, pos, text: a.req("text").into(), size: 3.5, ..Default::default() };
     text_style_args(&mut t, a)?;
     let out = text_json(&t);
@@ -592,13 +654,16 @@ fn add_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn update_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let id = a.int("id").unwrap_or_default() as u64;
+    let old = prj.pages[i].texts.iter().find(|t| t.id == id).ok_or_else(|| tr_fmt!("No text with id {}", id))?.pos;
+    let pos = match (num(a, "x"), num(a, "y")) {
+        (None, None) => old,
+        (x, y) => on_page(prj, i, x.unwrap_or(old.x.into()), y.unwrap_or(old.y.into()))?,
+    };
     let t = prj.pages[i].texts.iter_mut().find(|t| t.id == id).ok_or_else(|| tr_fmt!("No text with id {}", id))?;
     if let Some(s) = a.str("text") {
         t.text = s.into();
     }
-    if let (Some(x), Some(y)) = (a.num("x"), a.num("y")) {
-        t.pos = snapped(x, y);
-    }
+    t.pos = pos;
     text_style_args(t, a)?;
     Ok(text_json(t))
 }
@@ -606,11 +671,16 @@ fn update_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn move_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let symbols = prj.symbol_table();
     let i = editable(prj, a.req("page"))?;
+    let before = prj.pages[i].clone();
     let page = &mut prj.pages[i];
     let sel = selection(page, a)?;
     let d = snapped(a.num("dx").unwrap_or_default(), a.num("dy").unwrap_or_default());
     let attached = ops::attached_wire_ends(&symbols, page, &sel);
     ops::translate(page, &sel, &attached, d);
+    if !inside_page(prj, i) {
+        prj.pages[i] = before;
+        return Err(tr("The items would leave the page").to_string());
+    }
     Ok(json!({ "moved": sel.len(), "dx": d.x, "dy": d.y }))
 }
 
@@ -634,9 +704,17 @@ fn distribute_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn copy_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
     let sel = selection(&prj.pages[i], a)?;
-    let count = a.int("count").unwrap_or(1).clamp(1, 100) as usize;
+    let count = a.int("count").unwrap_or(1);
+    if !(1..=100).contains(&count) {
+        return Err(tr("The number of copies must be between 1 and 100").to_string());
+    }
     let d = p(a.num("dx").unwrap_or_default(), a.num("dy").unwrap_or_default());
-    let ids = arrange::multiple_copy(prj, i, &sel, count, d);
+    let before = prj.clone();
+    let ids = arrange::multiple_copy(prj, i, &sel, count as usize, d);
+    if !inside_page(prj, i) {
+        *prj = before;
+        return Err(tr("The copies would leave the page").to_string());
+    }
     Ok(json!({ "ids": ids }))
 }
 
@@ -650,8 +728,7 @@ fn delete_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn route(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let symbols = prj.symbol_table();
     let i = editable(prj, a.req("page"))?;
-    let from = pin_position(&symbols, &prj.pages[i], a.req("from"))?;
-    let to = pin_position(&symbols, &prj.pages[i], a.req("to"))?;
+    let (from, to) = wire_ends(&symbols, &prj.pages[i], a.req("from"), a.req("to"))?;
     let area = openecraft_core::frame::of_page(prj, i).area();
     let path = routing::route(&prj.symbol_table(), &prj.pages[i], area, from, to);
     let ids = push_path(prj, i, &path);
@@ -672,15 +749,22 @@ fn autoconnect(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn add_cable_definition(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
-    let pts = a.points("points");
+    let pts = raw_points(a, "points");
     let [[x0, y0], [x1, y1]] = pts.as_slice() else {
         return Err(tr("A cable definition needs a start and an end point").to_string());
     };
+    let (from, to) = (on_page(prj, i, *x0, *y0)?, on_page(prj, i, *x1, *y1)?);
+    if from.same(to) {
+        return Err(tr("The cable definition line has no length").to_string());
+    }
+    if cabledef::crossed_wires(&prj.pages[i], from, to).is_empty() {
+        return Err(tr("The cable definition line crosses no wire").to_string());
+    }
     let cable = a.str("cable").unwrap_or_default();
     if !cable.is_empty() && prj.cable(cable).is_none() {
         return Err(tr_fmt!("No cable {}", cable));
     }
-    let id = cabledef::add(prj, i, p(*x0, *y0), p(*x1, *y1), cable);
+    let id = cabledef::add(prj, i, from, to, cable);
     let def = prj.pages[i].cable_defs.iter().find(|c| c.id == id).cloned().unwrap_or_default();
     let cores: Vec<Value> = prj.pages[i].wires.iter().filter(|w| w.cable == def.cable).map(|w| json!({ "wire": w.id, "core": w.core })).collect();
     Ok(json!({ "id": id, "cable": def.cable, "cores": cores }))
@@ -688,10 +772,13 @@ fn add_cable_definition(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn add_connection_definition(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let i = editable(prj, a.req("page"))?;
-    let pos = p(a.num("x").unwrap_or_default(), a.num("y").unwrap_or_default());
+    let (x, y) = (num(a, "x").unwrap_or_default(), num(a, "y").unwrap_or_default());
+    let pos = p(x as f32, y as f32);
     if conndef::wire_at(&prj.pages[i], pos).is_none() {
-        return Err(tr("Click on a wire to place the connection definition point").to_string());
+        return Err(tr_fmt!("No wire at {} / {} mm", mm(x), mm(y)));
     }
+    a.str("color").map(wire_color).transpose()?;
+    a.str("cross_section").map(cross_section).transpose()?;
     let open = openecraft_core::netlist::Netlist::build(prj, false);
     let mut cd = conndef::adopt(prj, &open, i, pos);
     for (field, name) in [(&mut cd.number, "number"), (&mut cd.color, "color"), (&mut cd.cross_section, "cross_section")] {

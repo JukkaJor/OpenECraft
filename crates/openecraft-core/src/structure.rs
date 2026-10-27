@@ -189,6 +189,18 @@ pub fn clean_aspect(s: &str) -> String {
     s.trim().trim_start_matches(['=', '+', '-']).replace(' ', "")
 }
 
+/// A structure identifier of `aspect` as entered (`CAB1`, `+CAB1`), without its
+/// prefix. Blanks and the signs that separate the aspects of a tag are refused
+/// instead of dropped; a product may have levels (`U1-A2`).
+pub fn check_identifier(aspect: Aspect, s: &str) -> Result<String, String> {
+    let id = s.trim().trim_start_matches(['=', '+', '-']);
+    let bad = |c: char| c.is_whitespace() || c.is_control() || matches!(c, '=' | '+' | '/' | ':') || (c == '-' && aspect != Aspect::Product);
+    if id.chars().any(bad) {
+        return Err(tr_fmt!("Structure identifier {} must not contain blanks or the signs = + - / :", s.trim()));
+    }
+    Ok(id.to_string())
+}
+
 /// Structure of a page, e.g. `=A1+CAB1`.
 pub fn page_structure(page: &Page) -> String {
     Dt::of_page(page).structure()

@@ -97,8 +97,6 @@ pub fn accept(prj: &mut Project, issue: &Issue, accept: bool, note: &str, user: 
     }
 }
 
-/// Accepted messages that no check reports any more (the object changed or the
-/// problem was solved).
 /// The check scheme of the project as a file: checks switched off and changed message
 /// levels (the accepted messages belong to the project and stay out).
 pub fn scheme_json(prj: &Project) -> String {
@@ -110,12 +108,26 @@ pub fn scheme_json(prj: &Project) -> String {
 /// Takes the checks switched off and the message levels of a scheme file; the
 /// accepted messages of the project stay.
 pub fn apply_scheme(prj: &mut Project, json: &str) -> Result<(), String> {
-    let scheme: crate::model::checks::CheckSettings = serde_json::from_str(json).map_err(|e| openecraft_i18n::tr_fmt!("Not a check scheme: {}", e))?;
+    let not_scheme = |e: String| openecraft_i18n::tr_fmt!("Not a check scheme: {}", e);
+    let value: serde_json::Value = serde_json::from_str(json).map_err(|e| not_scheme(e.to_string()))?;
+    // Any other JSON object (a project, a settings scheme) would pass as an empty scheme.
+    let Some(map) = value.as_object() else {
+        return Err(not_scheme("JSON object expected".into()));
+    };
+    if let Some(key) = map.keys().find(|k| !SCHEME_KEYS.contains(&k.as_str())) {
+        return Err(not_scheme(format!("unknown field `{key}`")));
+    }
+    let scheme: crate::model::checks::CheckSettings = serde_json::from_value(value).map_err(|e| not_scheme(e.to_string()))?;
     prj.check_settings.disabled = scheme.disabled;
     prj.check_settings.levels = scheme.levels;
     Ok(())
 }
 
+/// The fields of a check scheme file.
+const SCHEME_KEYS: [&str; 3] = ["disabled", "levels", "accepted"];
+
+/// Accepted messages that no check reports any more (the object changed or the
+/// problem was solved).
 pub fn stale_accepted<'a>(prj: &'a Project, issues: &[Issue]) -> Vec<&'a crate::model::checks::Accepted> {
     let live: std::collections::HashSet<String> = issues.iter().map(Issue::fingerprint).collect();
     prj.check_settings.accepted.iter().filter(|a| !live.contains(&a.id)).collect()

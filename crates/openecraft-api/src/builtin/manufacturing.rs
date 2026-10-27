@@ -2,6 +2,7 @@
 //! programs, drilling / milling / punching strategies, copper bars, the enclosure
 //! configurator, the hand-off of jobs to the machines and the production feedback.
 
+use crate::builtin::common::{int_in, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Registry, Table};
 use crate::{Info, Plugin, Text};
@@ -283,8 +284,8 @@ fn set_machine(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ("tool_change", &mut m.tool_change),
         ("time_factor", &mut m.time_factor),
     ] {
-        if let Some(v) = a.num(name) {
-            *field = v.max(0.0);
+        if let Some(v) = num_in(a, name, 0.0, NO_MAX)? {
+            *field = v;
         }
     }
     let own = &mut prj.layout.manufacturing.machines;
@@ -351,14 +352,14 @@ fn set_strategy(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if a.value("optimize").is_some() {
         s.optimize = a.flag("optimize");
     }
-    if let Some(v) = a.num("drill_max") {
-        s.drill_max = v.max(0.0);
+    if let Some(v) = num_in(a, "drill_max", 0.0, NO_MAX)? {
+        s.drill_max = v;
     }
-    if let Some(v) = a.num("tolerance") {
-        s.tolerance = v.clamp(0.0, 5.0);
+    if let Some(v) = num_in(a, "tolerance", 0.0, 5.0)? {
+        s.tolerance = v;
     }
-    if let Some(v) = a.num("nibble_overlap") {
-        s.nibble_overlap = v.clamp(0.0, 0.9);
+    if let Some(v) = num_in(a, "nibble_overlap", 0.0, 0.9)? {
+        s.nibble_overlap = v;
     }
     Ok(strategy_json(prj))
 }
@@ -417,13 +418,13 @@ fn add_bar(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let mut b = CopperBar {
         enclosure: prj.layout.enclosures[enc].name.clone(),
         name: a.req("name").trim().to_string(),
-        width: a.num("width").unwrap_or(20.0).max(1.0),
-        thickness: a.num("thickness").unwrap_or(5.0).max(0.5),
-        count: a.int("count").unwrap_or(1).max(1) as u32,
+        width: num_in(a, "width", 1.0, NO_MAX)?.unwrap_or(20.0),
+        thickness: num_in(a, "thickness", 0.5, NO_MAX)?.unwrap_or(5.0),
+        count: int_in(a, "count", 1, u32::MAX.into())?.unwrap_or(1) as u32,
         segments: bars::parse_segments(a.req("segments"))?,
         bends: bars::parse_bends(a.str("bends").unwrap_or(""))?,
         holes: bars::parse_holes(a.str("holes").unwrap_or(""))?,
-        end_holes: a.num("end_holes").unwrap_or(0.0).max(0.0),
+        end_holes: num_in(a, "end_holes", 0.0, NO_MAX)?.unwrap_or(0.0),
         ..Default::default()
     };
     if b.segments.is_empty() {
@@ -492,8 +493,8 @@ fn bar_rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ("kerf", &mut r.kerf),
         ("end_distance", &mut r.end_distance),
     ] {
-        if let Some(v) = a.num(name) {
-            *field = v.max(0.0);
+        if let Some(v) = num_in(a, name, 0.0, NO_MAX)? {
+            *field = v;
         }
     }
     r.k_factor = r.k_factor.min(1.0);

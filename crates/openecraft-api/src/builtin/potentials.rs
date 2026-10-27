@@ -1,6 +1,7 @@
 //! Potential commands: potential definitions (wire colour and cross-section per
 //! potential), the default of nets without a defined potential and presets.
 
+use crate::builtin::common::{cross_section, wire_color};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -33,7 +34,7 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Creates or changes a potential definition; its wires take the colour and cross-section unless set on the wire"),
         params: &[
             param("name", Kind::Str, tr_const!("Potential name, e.g. L1 or +24V")),
-            optional("rename", Kind::Str, tr_const!("New name")),
+            optional("new_name", Kind::Str, tr_const!("New name")),
             optional("kind", Kind::Str, tr_const!("l, n, pe, dc_plus, dc_minus, signal or other")),
             optional("voltage", Kind::Str, tr_const!("Voltage, e.g. 400 V AC")),
             optional("color", Kind::Str, tr_const!("Wire colour (IEC 60757), e.g. BK")),
@@ -117,11 +118,13 @@ fn set_potential(prj: &mut Project, a: &Args) -> Result<Value, String> {
         Some(k) => Some(KINDS.iter().find(|x| x.0 == k.trim().to_ascii_lowercase()).map(|x| x.1).ok_or_else(|| tr_fmt!("Unknown potential kind: {}", k))?),
         None => None,
     };
-    if let Some(new) = a.str("rename").map(str::trim).filter(|n| *n != name) {
+    if let Some(new) = a.str("new_name").map(str::trim).filter(|n| *n != name) {
         if new.is_empty() || prj.potential(new).is_some() {
             return Err(tr_fmt!("Potential {} already exists", new));
         }
     }
+    let color = a.str("color").map(wire_color).transpose()?;
+    let cross = a.str("cross_section").map(cross_section).transpose()?;
     let i = match prj.potentials.iter().position(|p| p.name == name) {
         Some(i) => i,
         None => {
@@ -133,12 +136,18 @@ fn set_potential(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(k) = kind {
         d.kind = k;
     }
-    for (field, value) in [("voltage", &mut d.voltage), ("color", &mut d.color), ("cross_section", &mut d.cross_section), ("description", &mut d.description)] {
+    for (field, value) in [("voltage", &mut d.voltage), ("description", &mut d.description)] {
         if let Some(v) = a.str(field) {
             *value = v.trim().into();
         }
     }
-    if let Some(new) = a.str("rename") {
+    if let Some(c) = color {
+        d.color = c;
+    }
+    if let Some(c) = cross {
+        d.cross_section = c;
+    }
+    if let Some(new) = a.str("new_name") {
         d.name = new.trim().into();
     }
     Ok(def_json(d))
@@ -152,11 +161,13 @@ fn delete_potential(prj: &mut Project, a: &Args) -> Result<Value, String> {
 }
 
 fn set_wire_defaults(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    if let Some(v) = a.str("color") {
-        prj.wire_defaults.color = v.trim().into();
+    let color = a.str("color").map(wire_color).transpose()?;
+    let cross = a.str("cross_section").map(cross_section).transpose()?;
+    if let Some(v) = color {
+        prj.wire_defaults.color = v;
     }
-    if let Some(v) = a.str("cross_section") {
-        prj.wire_defaults.cross_section = v.trim().into();
+    if let Some(v) = cross {
+        prj.wire_defaults.cross_section = v;
     }
     list(prj)
 }

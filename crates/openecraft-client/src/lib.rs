@@ -14,5 +14,6 @@ pub mod vault;
 pub use connection::{Call, Connection, Decoder, PortalKind};
 pub use ehttp;
 pub use endpoint::{check, decode, decode_found, text, Endpoint};
+pub(crate) use endpoint::reason;
 pub use eplan::EplanEndpoint;
 pub use projects::ProjectEndpoint;

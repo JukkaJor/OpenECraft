@@ -1143,7 +1143,7 @@ fn build_library() -> Vec<SymbolDef> {
     b.text(-2.6, 2.4, "~", 1.8, Center).text(2.6, 2.4, "~", 1.8, Center);
     b.l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(-8.0, 0.0, -4.0, 0.0).l(4.0, 0.0, 8.0, 0.0);
     b.pin(-8.0, 0.0, "~1").pin(8.0, 0.0, "~2").pin(0.0, -8.0, "+").pin(0.0, 8.0, "-");
-    v.push(def("bridge_rect", "Bridge rectifier", C::Passive, "T", MAIN).build(&mut b));
+    v.push(def("bridge_rect", "Bridge rectifier block", C::Passive, "T", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- installation plan
     // Single-line symbols of building installation plans with one connection point

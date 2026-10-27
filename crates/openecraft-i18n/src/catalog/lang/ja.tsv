@@ -136,7 +136,6 @@ Contacts	接点
 Control transformer	制御用変圧器
 Copper busbar system: click start and end point	銅ブスバーシステム: 始点と終点をクリック
 Copy / cut / paste (devices get new tags)	コピー / 切り取り / 貼り付け (デバイスには新しいタグが付きます)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	コピー / 貼り付け: Ctrl+C、Ctrl+X、Ctrl+V
 Copy as new	新規としてコピー
 Copy built-in…	組み込みをコピー…
 Core	心線
@@ -155,8 +154,6 @@ Cross references	相互参照
 Cross-section	断面積
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	電流
 Cutout	切り欠き
 Cutout {} × {} mm	切り欠き {} × {} mm
@@ -169,7 +166,6 @@ Date	日付
 Date of the last revision	最終リビジョンの日付
 Default label	既定のラベル
 Del	Del
-Delete   Del	削除   Del
 Delete (Del)	削除 (Del)
 Delete cable (its wires are removed from it)	ケーブルを削除 (その電線はケーブルから外されます)
 Delete enclosure	エンクロージャーを削除
@@ -203,7 +199,6 @@ Door	扉
 Door (front view)	扉 (正面図)
 Door clearance	扉のクリアランス
 Door: {} devices, {} cutouts	扉: デバイス {} 個、切り欠き {} 個
-Download project   Ctrl+S	プロジェクトをダウンロード   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} 個の部品をダウンロードしました (リビジョン {}): 新規 {}、更新 {}
 Downloading parts…	部品をダウンロード中…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	ドラッグ: 回転 · 右/中ボタンのドラッグ: パン · ホイール: ズーム · クリック: デバイスまたは電線を選択
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	フィルター (番号、タイ�
 Filter devices…	デバイスをフィルター…
 Filter…	フィルター…
 Fit page	ページに合わせる
-Fit page   F	ページに合わせる   F
 Fit page (F)	ページに合わせる (F)
 Fluid power (ISO 1219)	流体動力 (ISO 1219)
 Forms – title blocks and reports	フォーム – 表題欄とレポート
@@ -347,7 +341,6 @@ Manufacturer	メーカー
 Max. width	最大幅
 Merge a symbol library file	シンボルライブラリファイルをマージ
 Mirror	反転
-Mirror   M	反転   M
 Model import failed: {}	モデルのインポートに失敗しました: {}
 Motor (single-line)	モーター (単線)
 Motor 1-phase	モーター 単相
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft 表題欄 (JSON)
 OpenECraft – usage	OpenECraft – 使い方
 Opened {}	{} を開きました
 Opening in the mounting plate / door: click two corners (round: in the properties)	取付板 / 扉の開口部: 2 つのコーナーをクリック (円形: プロパティで設定)
-Open…        Ctrl+O	開く…        Ctrl+O
 Order number	注文番号
 Orientation	向き
 Overload aux contact NC	過負荷補助接点 b接点
@@ -546,8 +538,6 @@ Radius	半径
 Readdress card	カードのアドレスを再設定
 Rectangle	四角形
 Rectangular	四角形
-Redo   Ctrl+Y	やり直し   Ctrl+Y
-Redo (Ctrl+Y)	やり直し (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	サンプルカタログの部品 (GEN.*) を更新
 Relay / contactor coil	リレー / 電磁接触器コイル
 Relay coil (NFPA)	リレーコイル (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	リビジョン {} を作成しました
 Revisions	リビジョン
 Revisions…	リビジョン…
 Right	右
-Rotate   R	回転   R
 Rotate (R)	回転 (R)
 Rotate / mirror (selection or symbol being placed)	回転 / 反転 (選択範囲または配置中のシンボル)
 Rotate 90°:	90° 回転:
@@ -586,7 +575,6 @@ Round	円形
 Routing	配線ルート
 Rows per page	ページあたりの行数
 SVG image	SVG 画像
-Save          Ctrl+S	保存          Ctrl+S
 Save / open	保存 / 開く
 Save as macro	マクロとして保存
 Save as…	名前を付けて保存…
@@ -605,7 +593,6 @@ Select a macro.	マクロを選択してください。
 Select a part in the tree or create a new one.	ツリーで部品を選択するか、新しい部品を作成してください。
 Select a part. Double click adds it to the device.	部品を選択してください。ダブルクリックするとデバイスに追加されます。
 Select all	すべて選択
-Select all   Ctrl+A	すべて選択   Ctrl+A
 Select an element in the list or the drawing.	リストまたは図面で要素を選択してください。
 Select and drag elements; Del deletes	要素を選択してドラッグ。Del で削除
 Select device	デバイスを選択
@@ -673,7 +660,6 @@ Terminals	端子
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	同じジャンパー番号の端子はジャンパー接続されます (同電位)。予備端子は部品表に計上されます。
 Test connection	接続をテスト
 Text	テキスト
-Text   T	テキスト   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D 正面図は盤の正面図と取付図ページで、3D モデルは盤の 3D ビューで使用されます。どちらも取付データ (幅 × 高さ × 奥行き) に合わせられます。
 The access token is only needed for changes; it is not stored.	アクセストークンは変更時にのみ必要です。保存されません。
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	モデル ({} × {} × {}) が取付データ ({} × {} × {}) と異なります。モデルは取付データに合わせて伸縮されます。
@@ -699,8 +685,6 @@ Transformer (single-line)	変圧器 (単線)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	モデルの前面が視点側 (+Z)、上面が +Y を向くように回転させます
 Type	タイプ
 Type number	型番
-Undo   Ctrl+Z	元に戻す   Ctrl+Z
-Undo (Ctrl+Z)	元に戻す (Ctrl+Z)
 Undo / redo	元に戻す / やり直し
 Unit	単位
 Unit price	単価
@@ -729,7 +713,6 @@ Width × height	幅 × 高さ
 Width × height × depth	幅 × 高さ × 奥行き
 Window macro: {}	ウィンドウマクロ: {}
 Wire	電線
-Wire   W	電線   W
 Wire assigned to unknown cable {}	電線が不明なケーブル {} に割り当てられています
 Wire ends with ferrules	フェルール付きの電線端
 Wire list (panel routing)	電線リスト (盤内配線ルート)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	事前計画の計装ループを作成または変更します
 Loop number, e.g. 101	ループ番号 (例: 101)
 Measuring range or set point	測定範囲または設定値
-Further device tags of the loop, separated by blanks	ループのその他のデバイスタグ (スペース区切り)
 Deletes a PCT loop of the pre-planning	事前計画の計装ループを削除します
 Loop number	ループ番号
 No enclosure named {}	{} という名前のエンクロージャーはありません
@@ -1582,7 +1564,6 @@ Not a language code: {}	言語コードではありません: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	プロジェクトテキストのソース言語とターゲット言語を、未翻訳の行数と共に一覧表示します
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	プロジェクトテキストのソース言語とターゲット言語 (ISO 639-1 コード) を設定します
 Language the project texts are written in, e.g. en	プロジェクトテキストの記述言語 (例: en)
-Target languages separated by blanks, e.g. de fr	ターゲット言語 (スペース区切り、例: de fr)
 Lists the translation dictionary of the project texts (source line and translations)	プロジェクトテキストの翻訳辞書 (ソース行と翻訳) を一覧表示します
 Only lines without a translation into this language	この言語への翻訳がない行のみ
 Text in the line or a translation	行または翻訳内のテキスト
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	表題欄、図枠、ページ�
 Frame of all pages that do not choose one	図枠を選択していないすべてのページの図枠
 Frame to start from when the frame is new (default: A3 landscape)	新しい図枠の場合の元になる図枠 (既定: A3 landscape)
 Free graphics and notes, not evaluated	自由な図形と注記 (評価されません)
-Give kind or template	kind または template を指定してください
 Imported {} page templates	{} 個のページテンプレートをインポートしました
 Insert page	ページを挿入
 Landscape	横
@@ -2280,7 +2260,6 @@ Locked by other users	他のユーザーがロック中
 None	なし
 Close shared project	共有プロジェクトを閉じる
 Releases all locks; the project stays open as a local copy	すべてのロックを解放します。プロジェクトはローカルコピーとして開いたままになります
-Save to project server   Ctrl+S	プロジェクトサーバーに保存   Ctrl+S
 Download project	プロジェクトをダウンロード
 Project server…	プロジェクトサーバー…
 Open and save shared projects, lock pages	共有プロジェクトを開いて保存し、ページをロックします
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	このケーブルの�
 Cable definition on page {}	ページ {} のケーブル定義
 No cables yet. Draw a cable definition across wires or add a cable.	ケーブルはまだありません。電線を横切るケーブル定義を描画するか、ケーブルを追加してください。
 New tag for {}	{} の新しいタグ
-This tag is already used	このタグは既に使用されています
 Select on this page	このページで選択
 Place functions of this device	このデバイスの機能を配置
 Symbols placed next get this device tag (contacts are numbered on)	次に配置するシンボルにこのデバイスタグが付きます (接点には続き番号が付きます)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	流体デバイスグループを作成�
 Device tag of the group, e.g. -KH1	グループのデバイスタグ (例: -KH1)
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal、service_unit、manifold、power_unit、または other
 Places of the group (0 = not limited)	グループの位置数 (0 = 制限なし)
-Device tags of the members in slot order, separated by blanks	メンバーのデバイスタグ (位置順、スペース区切り)
 Part number of the base	ベースの部品番号
 Deletes a fluid device group	流体デバイスグループを削除します
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	ソレノイドまたはリンクを持つ流体デバイスと、それにリンクされた電気デバイスを一覧表示します
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	流体デバイスを、それを操作または監視する電気デバイスとリンクします (リンクを置き換えます)
 Device tag of the fluid device, e.g. -QM1	流体デバイスのデバイスタグ (例: -QM1)
-Electrical device tags separated by blanks (empty = remove the links)	電気デバイスのタグ (スペース区切り、空 = リンクを削除)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	電磁弁を同じ番号のコイル (-QM3 › -MB3) とリンクし、リンクされたデバイス間で機能テキストをコピーします
 No hose {}	ホース {} はありません
 Unknown line type: {}	不明なラインタイプ: {}
@@ -3173,7 +3149,6 @@ Communication	通信
 Conductor class	導体クラス
 Conductor material	導体材質
 Connection point descriptions	接続ポイントの説明
-Connection point designations separated by blanks	接続ポイントの名称 (スペース区切り)
 Connection type	接続タイプ
 Contact material	接点材質
 Contractor	請負業者
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	各プロジェクトも検証する (低速)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	プロジェクトデータベースまたはフォルダー内のプロジェクトを検索します。条件は ';' で区切り、それぞれ キー=値、キー~テキスト、または単純なテキストで指定します
 Search terms, e.g. company=ACME; customer~plant; conveyor	検索条件 (例: company=ACME; customer~plant; conveyor)
 Project database file (JSON)	プロジェクトデータベースファイル (JSON)
-Folder with project files (instead of a database)	プロジェクトファイルのあるフォルダー (データベースの代わり)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	多数のプロジェクトファイルのプロジェクトプロパティを一括で変更します (フィールド name、description、company、creator、date、revision またはプロジェクトプロパティ)
 Project files, separated by ';'	プロジェクトファイル (';' 区切り)
 All project files of a folder	フォルダー内のすべてのプロジェクトファイル
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	プロジェクトオプションの内容を有効化 (表示) または無効化 (非表示) します
 Show the content	内容を表示
 Switches the project options with a condition by the configurator options	条件付きのプロジェクトオプションをコンフィギュレーターのオプションに従って切り替えます
-Pass a database or a folder	データベースまたはフォルダーを指定してください
 Nothing to change: pass set, remove, replace or rename	変更する内容がありません。set、remove、replace または rename を指定してください
 Pass files or a folder	ファイルまたはフォルダーを指定してください
 Pass ids or pages	ID またはページを指定してください
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	参照先ペ�
 Interruption points refer to: all (default), star or pairs	中断ポイントの参照先: all (既定)、star または pairs
 Draw the contact image below coils (default true)	コイルの下に接点イメージを描画 (既定 true)
 Unknown setting: {}	不明な設定: {}
-Find…   Ctrl+F	検索…   Ctrl+F
 Find and replace in the whole project	プロジェクト全体で検索と置換
 Text to find	検索するテキスト
 Match case	大文字と小文字を区別する
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft プロジェクトテンプレート
 Not a project template: {}	プロジェクトテンプレートではありません: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	プロジェクトテンプレートから開始します: 組み込みテンプレート (Machine、Distribution board (IEC 61439)、Empty (IEC 60204-1)) またはプロジェクトファイル
-Unknown template {}: {}	不明なテンプレート {}: {}
 Not a packed project	パックされたプロジェクトではありません
 Viewer	ビューアー
 With a user account of the server; replaces the access token	サーバーのユーザーアカウントを使用 (アクセストークンの代わり)
@@ -6374,3 +6345,62 @@ Unknown example {}: see list_examples	不明なサンプル {}：list_examples �
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	2 台の列盤自立盤に組み込んだポンプ場：ブスバーシステム、レールと配線ダクト、扉機器とハンドル、フィルタファン、照明、PE バー、ケーブルグランド、ケーブル通路、盤内温度計算、ダクト占有率、3D 配線。
 9 · Electrical room	9 · 電気室
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	部屋に設置した列盤：L 字形の平面図、内壁、扉とウィンドウ、所定の位置の列盤、壁のコンセント付きレール、壁付けの非常灯、天井下のケーブルラック。
+{} is on page {}, which is released: renaming it would change the page	{} はリリース済みのページ {} にあります: 名前を変更するとページが変わります
+A section number consists of letters and digits and does not start with 0	セクション番号は英字と数字からなり、0 で始まりません
+Structure identifier {} must not contain blanks or the signs = + - / :	構造識別子 {} に空白や記号 = + - / : を含めることはできません
+Bridge rectifier block	ブリッジ整流器 (ブロック)
+the server refuses the connection (not started, or another port)	サーバーが接続を拒否しています (未起動、または別のポート)
+the server name is unknown	サーバー名が不明です
+the server does not answer in time	サーバーが時間内に応答しません
+the address is not a valid URL (e.g. http://server:8090)	アドレスが有効な URL ではありません (例: http://server:8090)
+Unknown check: {}	不明なチェック: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	{} という名前の組み込みチェックはありません: 設定は同じ名前のプラグインのチェックに適用されます (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} は check が表示するメッセージコードではありません (例: wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} は check が表示するメッセージのフィンガープリントではありません (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	ページ {} はサブプロジェクト {} に取り出されています: 先にサブプロジェクトを戻すか破棄してください
+Unknown wire colour {} (IEC 60757: {})	不明な電線色 {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	断面積ではありません: {} (例: 1.5 mm²)
+Unknown placeholder {}: possible are {}	不明なプレースホルダー {}: 使用できるのは {}
+{} must not be negative	{} に負の値は指定できません
+{} must be at least {}	{} は {} 以上である必要があります
+{} must be between {} and {}	{} は {} から {} の範囲である必要があります
+The length must not be negative	長さに負の値は指定できません
+The text height must be at least 0.5 mm	文字の高さは 0.5 mm 以上である必要があります
+The wrap width must not be negative	折り返し幅に負の値は指定できません
+The items would leave the page	要素がページの外に出てしまいます
+The number of copies must be between 1 and 100	コピー数は 1 から 100 の範囲である必要があります
+The copies would leave the page	コピーがページの外に出てしまいます
+The cable definition line has no length	ケーブル定義線に長さがありません
+The cable definition line crosses no wire	ケーブル定義線がどの電線とも交差していません
+{} and {} are both ends of one function: the wire would short-circuit it	{} と {} は同じ機能の両端です: この電線はそれを短絡させます
+No wire at {} / {} mm	{} / {} mm に電線はありません
+Target languages separated by commas or blanks, e.g. de, fr	ターゲット言語 (カンマまたはスペース区切り、例: de, fr)
+The first page number must not be negative	最初のページ番号に負の値は指定できません
+The counting step must be at least 1	カウントの増分は 1 以上である必要があります
+Released pages keep their names: {}	リリース済みのページは名前を保持します: {}
+The plinth height must not be negative	台座の高さに負の値は指定できません
+{} is a room already	{} は既に部屋です
+Width, height and depth of an enclosure are at least {} mm	エンクロージャーの幅、高さ、奥行きは {} mm 以上です
+Device tags of the members in slot order, separated by commas or blanks	メンバーのデバイスタグ (位置順、カンマまたはスペース区切り)
+Electrical device tags separated by commas or blanks (empty = remove the links)	電気デバイスのタグ (カンマまたはスペース区切り、空 = リンクを削除)
+Further device tags of the loop, separated by commas or blanks	ループのその他のデバイスタグ (カンマまたはスペース区切り)
+Connection point designations separated by commas or blanks	接続ポイントの名称 (カンマまたはスペース区切り)
+Width, depth and height of a room are at least {} mm	部屋の幅、奥行き、高さは {} mm 以上です
+Room {} exists already	部屋 {} は既に存在します
+{} is an enclosure already	{} は既にエンクロージャーです
+{} would stand outside the room {}	{} は部屋 {} の外に置かれてしまいます
+No identifier {} in the project	プロジェクトに識別子 {} はありません
+{} exists already: pass merge to make both one identifier	{} は既に存在します: 両方を 1 つの識別子にまとめるには merge を指定してください
+Allow renaming onto an identifier in use: both become one	使用中の識別子への名前変更を許可: 両方が 1 つになります
+Sign in or connect with the access token to change parts	部品を変更するには、サインインするかアクセストークンで接続してください
+Read only: sign in with a user who may change parts of this manufacturer	読み取り専用: このメーカーの部品を変更できるユーザーでサインインしてください
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nstdin / stdout で Model Context Protocol サーバーを実行します: AI エージェント向けにこの一覧のツールを提供し、プロジェクトはメモリーに保持されます (save_project で書き込み、undo / redo で個々の呼び出しを元に戻します)。OPENECRAFT_MCP_TOOLS で提供するツールを制限します。\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nコマンドラインのバージョンを表示します (--version または -V でも可)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo と redo は MCP セッションでのみ機能します: コマンドラインはコマンドごとにプロジェクトを開き直します
+(MCP server only)	(MCP サーバーのみ)
+{} is an archive: pass a path to save the project as a project file	{} はアーカイブです: プロジェクトをプロジェクトファイルとして保存するにはパスを指定してください
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} はアーカイブのため変更されません: プロジェクトをプロジェクトファイルとして保存する (save_project --path <file>.oec) か、アーカイブを変換してください (convert_project)
+Folder with project files (instead of a database; default: the current folder)	プロジェクトファイルのあるフォルダー (データベースの代わり、既定: 現在のフォルダー)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	不明なページの種類: {} (schematic、overview、graphic、cover、または list_reports のレポート)
+Unknown template {}: give a built-in one ({}) or a project file	不明なテンプレート {}: 組み込みのもの ({}) かプロジェクトファイルを指定してください
+Property {} needs a text or a number	プロパティ {} にはテキストまたは数値が必要です

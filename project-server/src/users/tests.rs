@@ -7,13 +7,14 @@ fn accounts_are_stored_and_found() {
     std::fs::create_dir_all(&dir).unwrap();
     let mut users = Users::open(&dir).unwrap();
     assert!(users.accounts.is_empty());
-    users.set_admin("Anna", "pw").unwrap();
+    assert!(users.set_admin("Anna", "pw").is_err(), "too short");
+    users.set_admin("Anna", "long-password").unwrap();
     let token = openecraft_auth::start_session(&mut users.find_mut("anna").unwrap().sessions);
     users.save().unwrap();
     let back = Users::open(&dir).unwrap();
     let a = back.by_token(&token).unwrap();
     assert_eq!((a.user.name.as_str(), a.user.role), ("Anna", Some(ProjectRole::Admin)));
-    assert!(openecraft_auth::verify_password("pw", &a.password));
+    assert!(openecraft_auth::verify_password("long-password", &a.password));
     assert!(back.by_token("nope").is_none());
     std::fs::write(dir.join("users.json"), "not json").unwrap();
     assert!(Users::open(&dir).is_err());

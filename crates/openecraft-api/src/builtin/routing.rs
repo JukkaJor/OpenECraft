@@ -2,7 +2,7 @@
 //! cables and tubes with their bundles, branches and shields, and freezing routes
 //! for production.
 
-use crate::builtin::common::enclosure_index;
+use crate::builtin::common::{enclosure_index, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -136,8 +136,8 @@ fn routing_rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ("cable_reserve", &mut r.cable_reserve),
         ("pigtail", &mut r.pigtail),
     ] {
-        if let Some(v) = a.num(name) {
-            *field = v.max(0.0);
+        if let Some(v) = num_in(a, name, 0.0, NO_MAX)? {
+            *field = v;
         }
     }
     r.grid = r.grid.max(5.0);
@@ -146,7 +146,7 @@ fn routing_rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn classes_arg(a: &Args) -> Result<Vec<Class>, String> {
     let Some(list) = a.str("classes") else { return Ok(Vec::new()) };
-    list.split(',').filter(|c| !c.trim().is_empty()).map(|c| Class::from_key(c).ok_or_else(|| tr_fmt!("Unknown class: {}", c.trim()))).collect()
+    crate::builtin::common::words(list).into_iter().map(|c| Class::from_key(c).ok_or_else(|| tr_fmt!("Unknown class: {}", c))).collect()
 }
 
 fn add_routing_path(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -163,7 +163,7 @@ fn add_routing_path(prj: &mut Project, a: &Args) -> Result<Value, String> {
     }
     let id = prj.new_id();
     let name = a.str("name").map(String::from).unwrap_or_else(|| format!("P{}", prj.layout.enclosures[ei].paths.len() + 1));
-    let path = RoutingPath { id, name, kind, points, width: a.num("width").unwrap_or(50.0).max(1.0), classes, reserve: a.num("reserve").unwrap_or(0.0).clamp(0.0, 90.0) };
+    let path = RoutingPath { id, name, kind, points, width: num_in(a, "width", 1.0, NO_MAX)?.unwrap_or(50.0), classes, reserve: num_in(a, "reserve", 0.0, 90.0)?.unwrap_or(0.0) };
     let out = serde_json::to_value(&path).unwrap_or(Value::Null);
     prj.layout.enclosures[ei].paths.push(path);
     Ok(out)
@@ -269,8 +269,8 @@ fn set_cable_shield(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(e) = a.str("ends") {
         c.shield_ends = ShieldEnds::from_key(e).ok_or_else(|| tr_fmt!("Unknown shield ends: {}", e))?;
     }
-    if let Some(d) = a.num("diameter") {
-        c.diameter = d.max(0.0);
+    if let Some(d) = num_in(a, "diameter", 0.0, NO_MAX)? {
+        c.diameter = d;
     }
     Ok(json!({
         "cable": c.tag,

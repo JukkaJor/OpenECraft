@@ -2,6 +2,7 @@
 //! outlines), route definitions of cables, the cable planning through the network,
 //! equipotential bonding and cable accessories.
 
+use crate::builtin::common::{int_in, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -200,14 +201,14 @@ fn add_segment(prj: &mut Project, a: &Args) -> Result<Value, String> {
         a: na,
         b: nb,
         kind,
-        width: a.num("width").unwrap_or(0.0).max(0.0),
-        height: a.num("height").unwrap_or(0.0).max(0.0),
+        width: num_in(a, "width", 0.0, NO_MAX)?.unwrap_or(0.0),
+        height: num_in(a, "height", 0.0, NO_MAX)?.unwrap_or(0.0),
         classes,
         divider: a.flag("divider"),
-        reserve: a.num("reserve").unwrap_or(0.0).clamp(0.0, 90.0),
+        reserve: num_in(a, "reserve", 0.0, 90.0)?.unwrap_or(0.0),
         part: a.str("part").map(String::from).unwrap_or_default(),
-        length: a.num("length").unwrap_or(0.0).max(0.0),
-        bend_radius: a.num("bend_radius").unwrap_or(0.0).max(0.0),
+        length: num_in(a, "length", 0.0, NO_MAX)?.unwrap_or(0.0),
+        bend_radius: num_in(a, "bend_radius", 0.0, NO_MAX)?.unwrap_or(0.0),
     };
     let mut out = serde_json::to_value(&seg).unwrap_or(Value::Null);
     out["length_m"] = json!(prj.field.segment_length(&seg));
@@ -219,7 +220,7 @@ fn place(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let node = node_id(&prj.field, a.req("node"))?;
     let tag = a.req("tag").trim().to_string();
     prj.field.places.retain(|p| p.tag != tag);
-    let p = Place { tag, node, drop: a.num("drop").unwrap_or(0.0).max(0.0) };
+    let p = Place { tag, node, drop: num_in(a, "drop", 0.0, NO_MAX)?.unwrap_or(0.0) };
     let out = serde_json::to_value(&p).unwrap_or(Value::Null);
     prj.field.places.push(p);
     Ok(out)
@@ -270,7 +271,7 @@ fn add_bond(prj: &mut Project, a: &Args) -> Result<Value, String> {
         b: a.req("b").trim().into(),
         kind,
         cross_section: a.str("cross_section").map(String::from).unwrap_or_default(),
-        length: a.num("length").unwrap_or(0.0).max(0.0),
+        length: num_in(a, "length", 0.0, NO_MAX)?.unwrap_or(0.0),
         part: a.str("part").map(String::from).unwrap_or_default(),
     };
     let out = serde_json::to_value(&b).unwrap_or(Value::Null);
@@ -291,7 +292,7 @@ fn add_accessory(prj: &mut Project, a: &Args) -> Result<Value, String> {
         at: a.str("at").map(|t| t.trim().to_string()).unwrap_or_default(),
         kind,
         part: a.str("part").map(String::from).unwrap_or_default(),
-        count: a.int("count").unwrap_or(1).max(1) as u32,
+        count: int_in(a, "count", 1, u32::MAX.into())?.unwrap_or(1) as u32,
     };
     let out = serde_json::to_value(&acc).unwrap_or(Value::Null);
     prj.field.accessories.push(acc);
@@ -343,11 +344,10 @@ fn remove(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn rules(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let r = &mut prj.field.rules;
     for (name, v) in [("reserve", &mut r.reserve), ("cabinet", &mut r.cabinet), ("cut", &mut r.cut), ("fill", &mut r.fill), ("bend_factor", &mut r.bend_factor)] {
-        if let Some(x) = a.num(name) {
-            *v = x.max(0.0);
+        if let Some(x) = num_in(a, name, if name == "fill" { 1.0 } else { 0.0 }, if name == "fill" { 100.0 } else { NO_MAX })? {
+            *v = x;
         }
     }
-    r.fill = r.fill.clamp(1.0, 100.0);
     if let Some(m) = a.str("main_earth").map(str::trim).filter(|m| !m.is_empty()) {
         r.main_earth = m.into();
     }

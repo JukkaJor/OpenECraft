@@ -7,6 +7,11 @@ fn pins_on_grid_and_keys_unique() {
     keys.sort();
     keys.dedup();
     assert_eq!(keys.len(), lib.len());
+    // The Insert center lists symbols by name: two alike could not be told apart.
+    let mut names: Vec<_> = lib.iter().map(|d| d.name).collect();
+    names.sort();
+    let twice: Vec<_> = names.windows(2).filter(|w| w[0] == w[1]).map(|w| w[0]).collect();
+    assert!(twice.is_empty(), "symbol names used twice: {twice:?}");
     for d in lib {
         for pin in &d.pins {
             assert_eq!(pin.pos.x % crate::geom::GRID, 0.0, "{} pin x off grid", d.key);

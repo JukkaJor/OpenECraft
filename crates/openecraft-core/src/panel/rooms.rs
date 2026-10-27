@@ -695,6 +695,18 @@ pub fn add_wall_profile(prj: &mut Project, room: usize, kind: ItemKind, part: &s
     Ok(id)
 }
 
+/// True if the cabinet `ci` stands inside the floor plan of room `ri` (it may stand
+/// against a wall, but not across one).
+pub fn stands_inside(prj: &Project, ri: usize, ci: usize) -> bool {
+    let pts = outline(&prj.layout.enclosures[ri]);
+    let fp = footprint(prj, ri, ci);
+    let centre = [fp.iter().map(|q| q[0]).sum::<f32>() / 4.0, fp.iter().map(|q| q[1]).sum::<f32>() / 4.0];
+    // Corners pulled in a little (cabinets may stand against a wall), and no corner
+    // of the room inside the footprint.
+    let pulled = fp.map(|q| [q[0] + (centre[0] - q[0]).signum() * 0.5, q[1] + (centre[1] - q[1]).signum() * 0.5]);
+    pulled.iter().all(|&q| inside_outline(&pts, q)) && !pts.iter().any(|&v| inside_outline(&pulled, v))
+}
+
 /// Checks of a room: devices on its walls that are neither on a rail nor made for
 /// wall mounting, items on the ceiling outside the floor plan, and cabinets standing
 /// outside the room (or across a wall) or higher than its ceiling.
@@ -729,11 +741,7 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     for ci in cabinets_in(layout, ri) {
         let c = &layout.enclosures[ci];
         let fp = footprint(prj, ri, ci);
-        let centre = [fp.iter().map(|q| q[0]).sum::<f32>() / 4.0, fp.iter().map(|q| q[1]).sum::<f32>() / 4.0];
-        // Corners pulled in a little (cabinets may stand against a wall), and no corner
-        // of the room inside the footprint.
-        let pulled = fp.map(|q| [q[0] + (centre[0] - q[0]).signum() * 0.5, q[1] + (centre[1] - q[1]).signum() * 0.5]);
-        let inside = pulled.iter().all(|&q| inside_outline(&pts, q)) && !pts.iter().any(|&v| inside_outline(&pulled, v));
+        let inside = stands_inside(prj, ri, ci);
         let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
         if e.inner_walls.iter().any(|w| convex_overlap(&fp, &inner_footprint(w))) {
             push(CheckKind::Collision, Severity::Warning, Vec::new(), tr_fmt!("{}: {} stands in an inner wall", e.name, c.name));

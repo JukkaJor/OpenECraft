@@ -43,7 +43,12 @@ pub static COMMANDS: &[Spec] = &[
     Spec {
         name: "rename_structure",
         help: tr_const!("Renames a structure identifier in the whole project: pages, devices, cables, definition and work areas"),
-        params: &[ASPECT, param("id", Kind::Str, tr_const!("Identifier")), param("new_id", Kind::Str, tr_const!("New identifier"))],
+        params: &[
+            ASPECT,
+            param("id", Kind::Str, tr_const!("Identifier")),
+            param("new_id", Kind::Str, tr_const!("New identifier")),
+            optional("merge", Kind::Bool, tr_const!("Allow renaming onto an identifier in use: both become one")),
+        ],
         run: rename_structure,
     },
     Spec {
@@ -117,7 +122,7 @@ fn list_structure(prj: &mut Project, _: &Args) -> Result<Value, String> {
 
 fn define_structure(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let aspect = aspect(a)?;
-    let id = structure::clean_aspect(a.req("id"));
+    let id = structure::check_identifier(aspect, a.req("id"))?;
     if id.is_empty() {
         return Err(tr("The identifier must not be empty").into());
     }
@@ -137,8 +142,17 @@ fn remove_structure(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn rename_structure(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let aspect = aspect(a)?;
-    let n = structure::rename(prj, aspect, a.req("id"), a.req("new_id"))?;
-    Ok(json!({ "renamed": n, "identifier": aspect.format(&structure::clean_aspect(a.req("new_id"))) }))
+    let (old, new) = (structure::check_identifier(aspect, a.req("id"))?, structure::check_identifier(aspect, a.req("new_id"))?);
+    let known = structure::overview(prj);
+    let exists = |id: &str| known.iter().any(|u| u.aspect == aspect && u.id == id);
+    if !old.is_empty() && !exists(&old) {
+        return Err(tr_fmt!("No identifier {} in the project", aspect.format(&old)));
+    }
+    if new != old && exists(&new) && !a.flag("merge") {
+        return Err(tr_fmt!("{} exists already: pass merge to make both one identifier", aspect.format(&new)));
+    }
+    let n = structure::rename(prj, aspect, &old, &new)?;
+    Ok(json!({ "renamed": n, "identifier": aspect.format(&new) }))
 }
 
 fn tidy_structure(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -149,7 +163,7 @@ fn tidy_structure(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn set_aspects(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let mut aspects = Vec::new();
-    for key in a.req("aspects").split(',').map(str::trim).filter(|k| !k.is_empty()) {
+    for key in crate::builtin::common::words(a.req("aspects")) {
         let aspect = Aspect::from_key(key).ok_or_else(|| tr_fmt!("Unknown aspect: {}", key))?;
         if !aspects.contains(&aspect) {
             aspects.push(aspect);

@@ -93,7 +93,9 @@ fn import_drawing(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     let report = match a.str("kind").map(|k| k.trim().to_ascii_lowercase()) {
-        Some(k) if !matches!(k.as_str(), "schematic" | "overview" | "graphic" | "graphics" | "cover") => Some(report_id(&s.plugins, &k)?),
+        Some(k) if !matches!(k.as_str(), "schematic" | "overview" | "graphic" | "graphics" | "cover") => {
+            Some(report_id(&s.plugins, &k).map_err(|_| tr_fmt!("Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)", k))?)
+        }
         _ => None,
     };
     let prj = s.project_mut()?;
@@ -110,7 +112,7 @@ fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
             _ => PageKind::Report(report.unwrap_or(ReportKind::DeviceList.into())),
         },
         (None, Some(t)) => t.kind,
-        (None, None) => return Err(tr("Give kind or template").into()),
+        (None, None) => PageKind::Schematic,
     };
     if let Some(f) = a.str("frame") {
         if !frame::names(prj).iter().any(|n| n == f) {
@@ -122,7 +124,10 @@ fn add_page(s: &mut Session, a: &Args) -> Result<Value, String> {
         None => prj.pages.len(),
     };
     let section = a.str("section").map(|s| section_id(prj, s)).transpose()?;
-    if let Some(name) = a.str("name") {
+    if let Some(name) = a.str("name").map(str::trim) {
+        if name.is_empty() {
+            return Err(tr("A page needs a name").into());
+        }
         if prj.pages.iter().any(|pg| pg.name == name) {
             return Err(tr_fmt!("A page named {} already exists", name));
         }

@@ -383,10 +383,12 @@ Breaking capacity: 100 kA".into();
         ("16", "blue", 12),
     ] {
         let number = format!("GEN.FER-{cs}");
-        let desc = format!("Ferrule {cs} mm², insulated, {color}, {len} mm");
+        // The number stays as it was; the cross-section is written like the others (1 mm²).
+        let shown = cs.strip_suffix(".0").unwrap_or(cs);
+        let desc = format!("Ferrule {shown} mm², insulated, {color}, {len} mm");
         let p = c.add(&number, &desc, "Wiring material", "Ferrule", "", 0.03, (0.0, 0.0, 0.0, 0.0), &[]);
         p.mounting.clear();
-        p.tech_data = format!("Cross-section: {cs} mm²\nColour: {color}\nLength: {len} mm");
+        p.tech_data = format!("Cross-section: {shown} mm²\nColour: {color}\nLength: {len} mm");
     }
 
     // Cables: sold by the metre; the cores are listed in the technical data.

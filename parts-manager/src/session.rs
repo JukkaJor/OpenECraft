@@ -2,7 +2,7 @@
 //! No UI code, so the editing rules (new parts, renames, unsaved changes, catalogs,
 //! users) are unit testable.
 
-use openecraft_parts::api::UserUpdate;
+use openecraft_parts::api::{ServerInfo, UserUpdate};
 use openecraft_parts::portal::{catalog_id, Catalog, HistoryEntry, Role, User};
 use openecraft_parts::{natural_cmp, unique_number, Part, PartsDb};
 use openecraft_edz::EdzFile;
@@ -112,6 +112,17 @@ impl Session {
 
     pub fn selected(&self) -> Option<&str> {
         self.draft.as_ref().map(|d| d.original.as_deref().unwrap_or(&d.part.number))
+    }
+
+    /// True if the caller (`info`: the server's answer for the token) may change the
+    /// part in the editor: a saved part of a manufacturer they may edit, or a new part
+    /// when they may edit any. Otherwise the editor only shows it.
+    pub fn may_change(&self, info: Option<&ServerInfo>) -> bool {
+        let (Some(info), Some(d)) = (info, self.draft.as_ref()) else { return false };
+        match &d.original {
+            Some(n) => info.may_edit(self.get(n).map_or(d.part.manufacturer.as_str(), |p| p.manufacturer.as_str())),
+            None => info.can_edit(),
+        }
     }
 
     /// Opens a server part in the editor.

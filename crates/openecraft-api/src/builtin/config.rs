@@ -111,6 +111,11 @@ fn delete_option(prj: &mut Project, a: &Args) -> Result<Value, String> {
 }
 
 fn add_rule(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let condition = a.str("condition").unwrap_or("");
+    prj.configuration.holds(condition)?;
+    if a.req("macro").trim().is_empty() {
+        return Err(tr_fmt!("Missing parameter: {}", "macro"));
+    }
     let rule = Rule {
         macro_name: a.req("macro").into(),
         variant: a.str("variant").unwrap_or("").into(),

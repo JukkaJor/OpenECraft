@@ -11,6 +11,8 @@ struct Entry {
     project: String,
     seen: Instant,
     locks: BTreeSet<Target>,
+    /// Hash of the sign-in token the session was opened with: signing out ends it.
+    owner: Option<String>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -33,8 +35,30 @@ impl Sessions {
         self.counter += 1;
         let random = RandomState::new().hash_one(self.counter);
         let id = format!("{}-{random:016x}", self.counter);
-        self.sessions.insert(id.clone(), Entry { user: user.to_string(), project: project.to_string(), seen: now, locks: BTreeSet::new() });
+        self.sessions.insert(id.clone(), Entry { user: user.to_string(), project: project.to_string(), seen: now, locks: BTreeSet::new(), owner: None });
         Session { user: user.to_string(), session: id }
+    }
+
+    /// Marks a session as opened with the sign-in token whose hash is `owner`.
+    pub fn set_owner(&mut self, session: &str, owner: String) {
+        if let Some(e) = self.sessions.get_mut(session) {
+            e.owner = Some(owner);
+        }
+    }
+
+    /// Ends the sessions opened with the sign-in token whose hash is `owner` (the
+    /// user signed out); returns how many.
+    pub fn close_owned(&mut self, owner: &str) -> usize {
+        let before = self.sessions.len();
+        self.sessions.retain(|_, s| s.owner.as_deref() != Some(owner));
+        before - self.sessions.len()
+    }
+
+    /// Ends all sessions of `user` (the account was deleted); returns how many.
+    pub fn close_user(&mut self, user: &str) -> usize {
+        let before = self.sessions.len();
+        self.sessions.retain(|_, s| !s.user.eq_ignore_ascii_case(user.trim()));
+        before - self.sessions.len()
     }
 
     /// Ends the sessions without request for `SESSION_TIMEOUT_SECS`.

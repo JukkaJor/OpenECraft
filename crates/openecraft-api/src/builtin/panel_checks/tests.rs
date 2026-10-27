@@ -37,7 +37,10 @@ fn check_is_part_of_the_project_check() {
 fn rules_classes_and_heights() {
     let p = Plugins::new(Vec::<String>::new());
     let mut prj = demo_project();
-    let r = run(&p, &mut prj, "panel_rules", json!({ "device_gap": 30, "stratification": 5 })).unwrap();
+    // Values out of range are refused, not corrected.
+    let err = run(&p, &mut prj, "panel_rules", json!({ "device_gap": 30, "stratification": 5 })).unwrap_err();
+    assert_eq!(err, "stratification must be between 1 and 2");
+    let r = run(&p, &mut prj, "panel_rules", json!({ "device_gap": 30, "stratification": 2 })).unwrap();
     assert_eq!((r["device_gap"].as_f64(), r["stratification"].as_f64()), (Some(30.0), Some(2.0)));
     assert!(findings(&p, &mut prj).iter().any(|f| f["check"] == "mounting"));
     run(&p, &mut prj, "panel_rules", json!({ "reset": true })).unwrap();

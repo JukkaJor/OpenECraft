@@ -747,13 +747,7 @@ impl App {
 
 /// Why a device cannot be renamed to `new` (None: it can).
 pub(super) fn rename_problem(prj: &openecraft_core::model::Project, old: &str, new: &str) -> Option<String> {
-    if new == old {
-        return None;
-    }
-    if let Err(e) = ops::check_tag(new) {
-        return Some(e);
-    }
-    prj.all_tags().iter().any(|t| t == new).then(|| tr("This tag is already used").to_string())
+    ops::rename_problem(prj, old, new)
 }
 
 /// What the context menu of a device in the navigator asks for.

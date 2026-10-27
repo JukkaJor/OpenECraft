@@ -79,17 +79,36 @@ fn show(prj: &mut Project, _: &Args) -> Result<Value, String> {
 
 fn set_check(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let name = a.req("name").trim().to_string();
+    if !crate::is_snake_case(&name) {
+        return Err(tr_fmt!("Unknown check: {}", name));
+    }
+    let builtin = super::check_names().contains(&name);
     let d = &mut prj.check_settings.disabled;
     d.retain(|n| *n != name);
     if !a.flag("enabled") {
-        d.push(name);
+        d.push(name.clone());
         d.sort();
     }
-    show(prj, a)
+    let mut out = show(prj, a)?;
+    // Checks of external plugins are not known here: a name that is no built-in
+    // check is kept for them, but said.
+    if !builtin {
+        out["note"] = json!(tr_fmt!("No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)", name));
+    }
+    Ok(out)
+}
+
+/// `devices.3f9a1c` or `routing_3d`: the code of a message as `check` shows it.
+fn is_code(code: &str) -> bool {
+    let (name, hash) = code.split_once('.').unwrap_or((code, "0"));
+    crate::is_snake_case(name) && !hash.is_empty() && hash.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 fn set_level(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let code = a.req("code").trim().to_string();
+    if !is_code(&code) {
+        return Err(tr_fmt!("{} is not a message code as shown by check (e.g. wires.3f9a1c)", code));
+    }
     let level = match a.req("level").trim().to_ascii_lowercase().as_str() {
         "error" => Some(Level::Error),
         "warning" => Some(Level::Warning),
@@ -107,6 +126,12 @@ fn set_level(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn accept(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let id = a.req("fingerprint").trim().to_string();
+    // code:hash:item, as `check` shows it
+    let parts: Vec<&str> = id.split(':').collect();
+    let valid = matches!(parts.as_slice(), [code, hash, item] if is_code(code) && hash.len() == 8 && hash.chars().all(|c| c.is_ascii_hexdigit()) && item.parse::<u64>().is_ok());
+    if !valid {
+        return Err(tr_fmt!("{} is not a message fingerprint as shown by check (code:hash:item)", id));
+    }
     let accepted = &mut prj.check_settings.accepted;
     accepted.retain(|x| x.id != id);
     if a.value("accept").and_then(Value::as_bool).unwrap_or(true) {

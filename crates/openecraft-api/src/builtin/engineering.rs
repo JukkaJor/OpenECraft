@@ -1,5 +1,6 @@
 //! Engineering calculations: enclosure climate and electrical sizing.
 
+use crate::builtin::common::{num_in, NO_MAX};
 use crate::params::{optional, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -73,6 +74,8 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
         if let Some(v) = a.str("material") {
             c.material = MATERIALS.iter().find(|x| x.0 == v).map(|x| x.1).ok_or_else(|| tr_fmt!("Unknown material: {}", v))?;
         }
+        num_in(a, "humidity", 0.0, 100.0)?;
+        num_in(a, "extra_loss", 0.0, NO_MAX)?;
         for (name, field) in [
             ("ambient_max", &mut c.ambient_max),
             ("ambient_min", &mut c.ambient_min),
@@ -86,7 +89,6 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
                 *field = v;
             }
         }
-        c.humidity = c.humidity.clamp(0.0, 100.0);
         if let Some(v) = a.value("sealed").and_then(Value::as_bool) {
             c.sealed = v;
         }

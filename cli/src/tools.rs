@@ -120,16 +120,37 @@ pub fn lookup(session: &Session, name: &str) -> Option<Entry> {
 /// one undo step.
 pub fn call(session: &mut Session, entry: impl Into<Entry>, values: &Map<String, Value>) -> Result<Value, String> {
     let entry = entry.into();
+    let values = &openecraft_api::builtin::current_names(entry.name(), values);
     params::check(entry.params(), values)?;
-    if entry.needs_project() {
-        session.project()?;
-    }
+    let before = if entry.needs_project() { Some(session.project()?.clone()) } else { None };
     let result = match &entry {
         Entry::Tool(t) => (t.run)(session, &Args(values)),
-        Entry::Plugin(c) => (c.run)(session.project_mut()?, &Args(values)),
+        Entry::Plugin(c) => session.run_command(c, values),
     };
+    // A command that fails leaves the project as it was, also halfway through.
+    if let (Err(_), Some(prj)) = (&result, before) {
+        session.restore(prj);
+    }
     session.commit();
     result
+}
+
+/// Numbers of the project are `f32`: as JSON they would show the binary noise of the
+/// conversion (`41.79999923706055`). Numbers that are exactly an `f32` are written
+/// as the shortest decimal of that `f32` (`41.8`); other numbers stay as they are.
+pub fn tidy(value: &mut Value) {
+    match value {
+        Value::Number(n) if n.is_f64() => {
+            if let Some(f) = n.as_f64().filter(|f| f.is_finite() && (*f as f32) as f64 == *f) {
+                if let Some(short) = format!("{}", f as f32).parse::<f64>().ok().and_then(serde_json::Number::from_f64) {
+                    *n = short;
+                }
+            }
+        }
+        Value::Array(items) => items.iter_mut().for_each(tidy),
+        Value::Object(map) => map.values_mut().for_each(tidy),
+        _ => {}
+    }
 }
 
 /// JSON schema of the tool's parameters (MCP `inputSchema`).
@@ -140,7 +161,17 @@ pub fn schema(entry: impl Into<Entry>) -> Value {
 /// Parameters from the command line: `--json` first, then `--name value` pairs
 /// converted to the parameter's type.
 pub fn from_cli(entry: impl Into<Entry>, json: Option<&str>, pairs: &[(String, Option<String>)]) -> Result<Map<String, Value>, String> {
-    params::from_cli(entry.into().params(), json, pairs)
+    let entry = entry.into();
+    let pairs: Vec<(String, Option<String>)> = pairs.iter().map(|(k, v)| (openecraft_api::builtin::renamed_param(entry.name(), k).map_or_else(|| k.clone(), String::from), v.clone())).collect();
+    let mut values = params::from_cli(entry.params(), None, &pairs)?;
+    if let Some(text) = json {
+        // Parameters of --json may use the old names as well; pairs win.
+        let Ok(Value::Object(map)) = serde_json::from_str::<Value>(text) else { return Err(openecraft_i18n::tr("--json needs a JSON object").to_string()) };
+        for (k, v) in openecraft_api::builtin::current_names(entry.name(), &map) {
+            values.entry(k).or_insert(v);
+        }
+    }
+    Ok(values)
 }
 
 /// Command line help of a tool.

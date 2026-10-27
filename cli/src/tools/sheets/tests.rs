@@ -36,7 +36,9 @@ fn pages_are_made_from_templates() {
     assert!(list.as_array().unwrap().iter().any(|t| t["name"] == "Graphics A4 portrait" && t["kind"] == "graphic"));
     let pg = run(&mut s, "add_page", json!({ "template": "Graphics A4 portrait" })).unwrap();
     assert_eq!((pg["kind"].as_str(), pg["frame"].as_str()), (Some("graphic"), Some("A4 portrait")));
-    assert!(run(&mut s, "add_page", json!({})).unwrap_err().contains("kind or template"));
+    // Without kind or template the page is a schematic page.
+    assert_eq!(run(&mut s, "add_page", json!({})).unwrap()["kind"], "schematic");
+    assert!(run(&mut s, "add_page", json!({ "kind": "bogus" })).unwrap_err().starts_with("Unknown page type: bogus"));
     assert!(run(&mut s, "add_page", json!({ "template": "Nothing" })).unwrap_err().contains("No page template"));
 
     run(&mut s, "set_page", json!({ "page": "1", "function": "A1", "frame": "A4 landscape" })).unwrap();

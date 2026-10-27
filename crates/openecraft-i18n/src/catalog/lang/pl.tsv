@@ -136,7 +136,6 @@ Contacts	Styki
 Control transformer	Transformator sterowniczy
 Copper busbar system: click start and end point	Miedziany system szyn zbiorczych: kliknij punkt początkowy i końcowy
 Copy / cut / paste (devices get new tags)	Kopiuj / wytnij / wklej (urządzenia otrzymują nowe oznaczenia)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopiuj / wklej: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Kopiuj jako nowy
 Copy built-in…	Kopiuj wbudowany…
 Core	Żyła
@@ -155,8 +154,6 @@ Cross references	Odsyłacze
 Cross-section	Przekrój
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Prąd
 Cutout	Wycięcie
 Cutout {} × {} mm	Wycięcie {} × {} mm
@@ -169,7 +166,6 @@ Date	Data
 Date of the last revision	Data ostatniej rewizji
 Default label	Domyślna etykieta
 Del	Del
-Delete   Del	Usuń   Del
 Delete (Del)	Usuń (Del)
 Delete cable (its wires are removed from it)	Usuń kabel (jego przewody zostaną z niego usunięte)
 Delete enclosure	Usuń obudowę
@@ -203,7 +199,6 @@ Door	Drzwi
 Door (front view)	Drzwi (widok z przodu)
 Door clearance	Wolna przestrzeń drzwi
 Door: {} devices, {} cutouts	Drzwi: urządzenia: {}, wycięcia: {}
-Download project   Ctrl+S	Pobierz projekt   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	Pobrano artykuły: {} (rewizja {}): nowe: {}, zaktualizowane: {}
 Downloading parts…	Pobieranie artykułów…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Przeciągnij: obrót · przeciąganie prawym/środkowym przyciskiem: przesuwanie · kółko: powiększenie · kliknięcie: zaznacz urządzenie lub przewód
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filtr (numer, typ, producent, teks
 Filter devices…	Filtruj urządzenia…
 Filter…	Filtr…
 Fit page	Dopasuj stronę
-Fit page   F	Dopasuj stronę   F
 Fit page (F)	Dopasuj stronę (F)
 Fluid power (ISO 1219)	Napędy płynowe (ISO 1219)
 Forms – title blocks and reports	Formularze – tabliczki rysunkowe i raporty
@@ -347,7 +341,6 @@ Manufacturer	Producent
 Max. width	Maks. szerokość
 Merge a symbol library file	Scal plik biblioteki symboli
 Mirror	Odbij
-Mirror   M	Odbij   M
 Model import failed: {}	Import modelu nie powiódł się: {}
 Motor (single-line)	Silnik (jednokreskowy)
 Motor 1-phase	Silnik 1-fazowy
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	Tabliczki rysunkowe OpenECraft (JSON)
 OpenECraft – usage	OpenECraft – obsługa
 Opened {}	Otwarto {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	Otwór w płycie montażowej / drzwiach: kliknij dwa narożniki (okrągły: we właściwościach)
-Open…        Ctrl+O	Otwórz…        Ctrl+O
 Order number	Numer zamówieniowy
 Orientation	Orientacja
 Overload aux contact NC	Pomocniczy styk przeciążeniowy NC
@@ -546,8 +538,6 @@ Radius	Promień
 Readdress card	Zmień adresację karty
 Rectangle	Prostokąt
 Rectangular	Prostokątny
-Redo   Ctrl+Y	Ponów   Ctrl+Y
-Redo (Ctrl+Y)	Ponów (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Odśwież artykuły katalogu przykładowego (GEN.*)
 Relay / contactor coil	Cewka przekaźnika / stycznika
 Relay coil (NFPA)	Cewka przekaźnika (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Utworzono rewizję {}
 Revisions	Rewizje
 Revisions…	Rewizje…
 Right	Prawo
-Rotate   R	Obróć   R
 Rotate (R)	Obróć (R)
 Rotate / mirror (selection or symbol being placed)	Obróć / odbij (zaznaczenie lub umieszczany symbol)
 Rotate 90°:	Obróć o 90°:
@@ -586,7 +575,6 @@ Round	Okrągły
 Routing	Prowadzenie
 Rows per page	Wiersze na stronę
 SVG image	Obraz SVG
-Save          Ctrl+S	Zapisz          Ctrl+S
 Save / open	Zapisz / otwórz
 Save as macro	Zapisz jako makro
 Save as…	Zapisz jako…
@@ -605,7 +593,6 @@ Select a macro.	Wybierz makro.
 Select a part in the tree or create a new one.	Wybierz artykuł w drzewie lub utwórz nowy.
 Select a part. Double click adds it to the device.	Wybierz artykuł. Dwukrotne kliknięcie dodaje go do urządzenia.
 Select all	Zaznacz wszystko
-Select all   Ctrl+A	Zaznacz wszystko   Ctrl+A
 Select an element in the list or the drawing.	Wybierz element na liście lub na rysunku.
 Select and drag elements; Del deletes	Zaznaczaj i przeciągaj elementy; Del usuwa
 Select device	Wybierz urządzenie
@@ -673,7 +660,6 @@ Terminals	Zaciski
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Zaciski o tym samym numerze mostka są zmostkowane (ten sam potencjał). Zaciski rezerwowe są liczone w zestawieniu materiałów.
 Test connection	Testuj połączenie
 Text	Tekst
-Text   T	Tekst   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	Widok 2D z przodu jest używany w widoku z przodu szafy i na stronach planu montażu, model 3D w widoku 3D szafy. Oba są dopasowywane do danych montażowych (szerokość × wysokość × głębokość).
 The access token is only needed for changes; it is not stored.	Token dostępu jest potrzebny tylko do wprowadzania zmian; nie jest zapisywany.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Model ({} × {} × {}) różni się od danych montażowych ({} × {} × {}); zostanie rozciągnięty do danych montażowych.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformator (jednokreskowy)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Obróć model tak, aby jego przód był skierowany do obserwatora (+Z), a góra była +Y
 Type	Typ
 Type number	Numer typu
-Undo   Ctrl+Z	Cofnij   Ctrl+Z
-Undo (Ctrl+Z)	Cofnij (Ctrl+Z)
 Undo / redo	Cofnij / ponów
 Unit	Jednostka
 Unit price	Cena jednostkowa
@@ -729,7 +713,6 @@ Width × height	Szerokość × wysokość
 Width × height × depth	Szerokość × wysokość × głębokość
 Window macro: {}	Makro okna: {}
 Wire	Przewód
-Wire   W	Przewód   W
 Wire assigned to unknown cable {}	Przewód przypisany do nieznanego kabla {}
 Wire ends with ferrules	Końce przewodów z tulejkami kablowymi
 Wire list (panel routing)	Lista przewodów (prowadzenie w szafie)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Tworzy lub zmienia pętlę AKPiA planowania wstępnego
 Loop number, e.g. 101	Numer pętli, np. 101
 Measuring range or set point	Zakres pomiarowy lub wartość zadana
-Further device tags of the loop, separated by blanks	Dalsze oznaczenia urządzeń pętli, oddzielone spacjami
 Deletes a PCT loop of the pre-planning	Usuwa pętlę AKPiA planowania wstępnego
 Loop number	Numer pętli
 No enclosure named {}	Brak obudowy o nazwie {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	To nie jest kod języka: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Wyświetla języki źródłowy i docelowe tekstów projektu z liczbą nieprzetłumaczonych wierszy
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Ustawia język źródłowy tekstów projektu i języki docelowe (kody ISO 639-1)
 Language the project texts are written in, e.g. en	Język, w którym są pisane teksty projektu, np. en
-Target languages separated by blanks, e.g. de fr	Języki docelowe oddzielone spacjami, np. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Wyświetla słownik tłumaczeń tekstów projektu (wiersz źródłowy i tłumaczenia)
 Only lines without a translation into this language	Tylko wiersze bez tłumaczenia na ten język
 Text in the line or a translation	Tekst w wierszu lub w tłumaczeniu
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Tabliczki rysunkowe, ramki rysun
 Frame of all pages that do not choose one	Ramka wszystkich stron, które nie wybierają własnej
 Frame to start from when the frame is new (default: A3 landscape)	Ramka wyjściowa dla nowej ramki (domyślnie: A3 landscape)
 Free graphics and notes, not evaluated	Swobodna grafika i notatki, nieanalizowane
-Give kind or template	Podaj kind lub template
 Imported {} page templates	Zaimportowano szablony stron: {}
 Insert page	Wstaw stronę
 Landscape	Poziomo
@@ -2280,7 +2260,6 @@ Locked by other users	Zablokowane przez innych użytkowników
 None	Brak
 Close shared project	Zamknij projekt współdzielony
 Releases all locks; the project stays open as a local copy	Zwalnia wszystkie blokady; projekt pozostaje otwarty jako kopia lokalna
-Save to project server   Ctrl+S	Zapisz na serwerze projektów   Ctrl+S
 Download project	Pobierz projekt
 Project server…	Serwer projektów…
 Open and save shared projects, lock pages	Otwieraj i zapisuj projekty współdzielone, blokuj strony
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Narysuj linię przez p
 Cable definition on page {}	Definicja kabla na stronie {}
 No cables yet. Draw a cable definition across wires or add a cable.	Brak kabli. Narysuj definicję kabla przez przewody lub dodaj kabel.
 New tag for {}	Nowe oznaczenie dla {}
-This tag is already used	To oznaczenie jest już używane
 Select on this page	Zaznacz na tej stronie
 Place functions of this device	Umieść funkcje tego urządzenia
 Symbols placed next get this device tag (contacts are numbered on)	Następnie umieszczane symbole otrzymują to oznaczenie urządzenia (styki są numerowane dalej)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Tworzy lub zmienia grupę urządzeń pł
 Device tag of the group, e.g. -KH1	Oznaczenie urządzenia grupy, np. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit lub other
 Places of the group (0 = not limited)	Miejsca grupy (0 = bez ograniczenia)
-Device tags of the members in slot order, separated by blanks	Oznaczenia urządzeń członków w kolejności miejsc, oddzielone spacjami
 Part number of the base	Numer artykułu płyty bazowej
 Deletes a fluid device group	Usuwa grupę urządzeń płynowych
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Wyświetla listę urządzeń płynowych z cewkami elektromagnetycznymi lub powiązaniami oraz powiązanych z nimi urządzeń elektrycznych
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Wiąże urządzenie płynowe z urządzeniami elektrycznymi, które je uruchamiają lub monitorują (zastępuje powiązania)
 Device tag of the fluid device, e.g. -QM1	Oznaczenie urządzenia płynowego, np. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Oznaczenia urządzeń elektrycznych oddzielone spacjami (puste = usuń powiązania)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Wiąże zawory elektromagnetyczne z cewką o tym samym numerze (-QM3 › -MB3) i kopiuje teksty funkcji między powiązanymi urządzeniami
 No hose {}	Brak węża {}
 Unknown line type: {}	Nieznany rodzaj przewodu: {}
@@ -3173,7 +3149,6 @@ Communication	Komunikacja
 Conductor class	Klasa żyły
 Conductor material	Materiał żyły
 Connection point descriptions	Opisy punktów połączeń
-Connection point designations separated by blanks	Oznaczenia punktów połączeń oddzielone spacjami
 Connection type	Rodzaj przyłącza
 Contact material	Materiał styków
 Contractor	Wykonawca
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Sprawdź również każdy projekt (wolniej)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Wyszukuje projekty w bazie danych projektów lub folderze: terminy rozdzielone znakiem ';', każdy w postaci klucz=wartość, klucz~tekst lub zwykły tekst
 Search terms, e.g. company=ACME; customer~plant; conveyor	Terminy wyszukiwania, np. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Plik bazy danych projektów (JSON)
-Folder with project files (instead of a database)	Folder z plikami projektów (zamiast bazy danych)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Zmienia właściwości projektu w wielu plikach projektów jednocześnie (pola name, description, company, creator, date, revision lub właściwości projektu)
 Project files, separated by ';'	Pliki projektów, rozdzielone znakiem ';'
 All project files of a folder	Wszystkie pliki projektów z folderu
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Aktywuje (pokazuje) lub dezaktywuje (ukrywa) zawartość opcji projektu
 Show the content	Pokaż zawartość
 Switches the project options with a condition by the configurator options	Przełącza opcje projektu z warunkiem zgodnie z opcjami konfiguratora
-Pass a database or a folder	Podaj bazę danych lub folder
 Nothing to change: pass set, remove, replace or rename	Nic do zmiany: podaj set, remove, replace lub rename
 Pass files or a folder	Podaj pliki lub folder
 Pass ids or pages	Podaj identyfikatory lub strony
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Struktura str
 Interruption points refer to: all (default), star or pairs	Punkty przerwania odsyłają do: all (domyślnie), star lub pairs
 Draw the contact image below coils (default true)	Rysuj obraz styków pod cewkami (domyślnie true)
 Unknown setting: {}	Nieznane ustawienie: {}
-Find…   Ctrl+F	Znajdź…   Ctrl+F
 Find and replace in the whole project	Znajdź i zamień w całym projekcie
 Text to find	Tekst do znalezienia
 Match case	Uwzględniaj wielkość liter
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	Szablon projektu OpenECraft
 Not a project template: {}	To nie jest szablon projektu: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Rozpocznij od szablonu projektu: wbudowanego (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) lub pliku projektu
-Unknown template {}: {}	Nieznany szablon {}: {}
 Not a packed project	To nie jest spakowany projekt
 Viewer	Przeglądający
 With a user account of the server; replaces the access token	Z kontem użytkownika serwera; zastępuje token dostępu
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Nieznany przykład {}: zobacz list_example
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Przepompownia zabudowana w dwóch szeregowanych szafach stojących: system szyn zbiorczych, szyny i korytka, urządzenia na drzwiach i uchwyty, wentylator z filtrem, oświetlenie, szyna PE, dławnice kablowe, przepust kablowy, obliczenia klimatyzacji, zapełnienie korytek i trasowanie 3D.
 9 · Electrical room	9 · Pomieszczenie elektryczne
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Szereg szaf w swoim pomieszczeniu: rzut w kształcie litery L, ściana wewnętrzna, drzwi i okno, szereg szaf na swoim miejscu, szyna z gniazdem na ścianie, oprawa awaryjna montowana na ścianie i korytko kablowe pod sufitem.
+{} is on page {}, which is released: renaming it would change the page	{} znajduje się na stronie {}, która jest wydana: zmiana nazwy zmieniłaby stronę
+A section number consists of letters and digits and does not start with 0	Numer sekcji składa się z liter i cyfr i nie zaczyna się od 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Identyfikator struktury {} nie może zawierać spacji ani znaków = + - / :
+Bridge rectifier block	Prostownik mostkowy (blok)
+the server refuses the connection (not started, or another port)	serwer odrzuca połączenie (nieuruchomiony lub inny port)
+the server name is unknown	nazwa serwera jest nieznana
+the server does not answer in time	serwer nie odpowiada na czas
+the address is not a valid URL (e.g. http://server:8090)	adres nie jest prawidłowym URL (np. http://server:8090)
+Unknown check: {}	Nieznane sprawdzenie: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Żadne wbudowane sprawdzenie nie nazywa się {}: ustawienie dotyczy sprawdzenia wtyczki o tej nazwie (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} nie jest kodem komunikatu wyświetlanym przez check (np. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} nie jest odciskiem komunikatu wyświetlanym przez check (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Strona {} jest wydzielona do podprojektu {}: najpierw wstaw podprojekt z powrotem lub go odrzuć
+Unknown wire colour {} (IEC 60757: {})	Nieznany kolor przewodu {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	To nie jest przekrój: {} (np. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Nieznany symbol zastępczy {}: możliwe są {}
+{} must not be negative	{} nie może być ujemne
+{} must be at least {}	{} musi wynosić co najmniej {}
+{} must be between {} and {}	{} musi mieścić się w zakresie od {} do {}
+The length must not be negative	Długość nie może być ujemna
+The text height must be at least 0.5 mm	Wysokość tekstu musi wynosić co najmniej 0,5 mm
+The wrap width must not be negative	Szerokość zawijania nie może być ujemna
+The items would leave the page	Elementy wyszłyby poza stronę
+The number of copies must be between 1 and 100	Liczba kopii musi wynosić od 1 do 100
+The copies would leave the page	Kopie wyszłyby poza stronę
+The cable definition line has no length	Linia definicji kabla nie ma długości
+The cable definition line crosses no wire	Linia definicji kabla nie przecina żadnego przewodu
+{} and {} are both ends of one function: the wire would short-circuit it	{} i {} to oba końce jednej funkcji: przewód by ją zwarł
+No wire at {} / {} mm	Brak przewodu w punkcie {} / {} mm
+Target languages separated by commas or blanks, e.g. de, fr	Języki docelowe oddzielone przecinkami lub spacjami, np. de, fr
+The first page number must not be negative	Pierwszy numer strony nie może być ujemny
+The counting step must be at least 1	Krok numeracji musi wynosić co najmniej 1
+Released pages keep their names: {}	Wydane strony zachowują swoje nazwy: {}
+The plinth height must not be negative	Wysokość cokołu nie może być ujemna
+{} is a room already	{} jest już pomieszczeniem
+Width, height and depth of an enclosure are at least {} mm	Szerokość, wysokość i głębokość obudowy wynoszą co najmniej {} mm
+Device tags of the members in slot order, separated by commas or blanks	Oznaczenia urządzeń członków w kolejności miejsc, oddzielone przecinkami lub spacjami
+Electrical device tags separated by commas or blanks (empty = remove the links)	Oznaczenia urządzeń elektrycznych oddzielone przecinkami lub spacjami (puste = usuń powiązania)
+Further device tags of the loop, separated by commas or blanks	Dalsze oznaczenia urządzeń pętli, oddzielone przecinkami lub spacjami
+Connection point designations separated by commas or blanks	Oznaczenia punktów połączeń oddzielone przecinkami lub spacjami
+Width, depth and height of a room are at least {} mm	Szerokość, głębokość i wysokość pomieszczenia wynoszą co najmniej {} mm
+Room {} exists already	Pomieszczenie {} już istnieje
+{} is an enclosure already	{} jest już obudową
+{} would stand outside the room {}	{} stałaby poza pomieszczeniem {}
+No identifier {} in the project	Brak identyfikatora {} w projekcie
+{} exists already: pass merge to make both one identifier	{} już istnieje: podaj merge, aby połączyć oba w jeden identyfikator
+Allow renaming onto an identifier in use: both become one	Zezwól na zmianę nazwy na używany identyfikator: oba staną się jednym
+Sign in or connect with the access token to change parts	Zaloguj się lub połącz z tokenem dostępu, aby zmieniać części
+Read only: sign in with a user who may change parts of this manufacturer	Tylko do odczytu: zaloguj się jako użytkownik, który może zmieniać części tego producenta
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nUruchamia serwer Model Context Protocol na stdin / stdout: narzędzia z tej listy dla agentów AI, z projektem w pamięci (save_project go zapisuje, undo / redo cofają pojedyncze wywołania). OPENECRAFT_MCP_TOOLS ogranicza oferowane narzędzia.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nWyświetla wersję wiersza poleceń (także --version lub -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo i redo działają tylko w sesji MCP: wiersz poleceń otwiera projekt od nowa dla każdego polecenia
+(MCP server only)	(tylko serwer MCP)
+{} is an archive: pass a path to save the project as a project file	{} jest archiwum: podaj ścieżkę, aby zapisać projekt jako plik projektu
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} jest archiwum i pozostaje bez zmian: zapisz projekt jako plik projektu (save_project --path <file>.oec) lub przekonwertuj archiwum (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Folder z plikami projektów (zamiast bazy danych; domyślnie: bieżący folder)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Nieznany typ strony: {} (schematic, overview, graphic, cover lub raport z list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Nieznany szablon {}: podaj wbudowany ({}) lub plik projektu
+Property {} needs a text or a number	Właściwość {} wymaga tekstu lub liczby

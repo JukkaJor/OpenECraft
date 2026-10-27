@@ -8,13 +8,17 @@ use crate::{natural_cmp, Part, TopGroup};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-/// Delivery state of a part.
+/// Delivery state of a part; also read in lower case (`active`, `phase_out`,
+/// `discontinued`).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Lifecycle {
     #[default]
+    #[serde(alias = "active")]
     Active,
     /// Still available, replaced soon (successor known).
+    #[serde(alias = "phase_out", alias = "phaseout")]
     PhaseOut,
+    #[serde(alias = "discontinued")]
     Discontinued,
 }
 
@@ -385,10 +389,24 @@ pub fn attributes(part: &Part) -> Vec<(String, String)> {
     }
     for key in crate::MOUNTING_KEYS {
         if let Some(v) = part.mounting_data.get(key).filter(|_| !out.iter().any(|(n, _)| n.eq_ignore_ascii_case(key))) {
-            out.push((key.to_string(), v));
+            out.push((key.to_string(), with_unit(key, v)));
         }
     }
     out
+}
+
+/// A number of the mounting data with its unit, as the other technical data shows it.
+fn with_unit(key: &str, value: String) -> String {
+    let unit = match key {
+        "Power loss" => "W",
+        "Clearance top" | "Clearance bottom" | "Clearance left" | "Clearance right" | "Clearance front" | "EMC clearance" | "Service space" | "Outside" => "mm",
+        _ => return value,
+    };
+    if value.parse::<f64>().is_ok() {
+        format!("{value} {unit}")
+    } else {
+        value
+    }
 }
 
 /// Value of a fixed facet of a part.
@@ -541,14 +559,19 @@ fn count(values: impl Iterator<Item = String>) -> Vec<FacetValue> {
     out
 }
 
-/// Order of the search results.
+/// Order of the search results; also read in lower case.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Sort {
     #[default]
+    #[serde(alias = "number")]
     Number,
+    #[serde(alias = "manufacturer")]
     Manufacturer,
+    #[serde(alias = "description")]
     Description,
+    #[serde(alias = "price")]
     Price,
+    #[serde(alias = "modified")]
     Modified,
 }
 

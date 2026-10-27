@@ -290,3 +290,20 @@ fn the_editor_names_core_modules_explicitly() {
 {}", offending.join("
 "));
 }
+
+/// Text files of the repository have no UTF-8 byte order mark: tools reading the
+/// manifests or sources (TOML parsers, scripts) need not cope with one.
+#[test]
+fn text_files_have_no_byte_order_mark() {
+    let mut files: Vec<PathBuf> = vec![root().join("Cargo.toml")];
+    for dir in source_dirs() {
+        let krate = dir.parent().unwrap().to_path_buf();
+        files.push(krate.join("Cargo.toml"));
+        files.extend(rust_files(&dir));
+    }
+    for f in ["README.md", "AGENTS.md", ".claude/launch.json"] {
+        files.push(root().join(f));
+    }
+    let marked: Vec<String> = files.iter().filter(|f| std::fs::read(f).is_ok_and(|b| b.starts_with(b"\xef\xbb\xbf"))).map(|f| display(f)).collect();
+    assert!(marked.is_empty(), "remove the byte order mark of {marked:?}");
+}

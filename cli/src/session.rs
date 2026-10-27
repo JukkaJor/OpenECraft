@@ -14,6 +14,8 @@ use std::path::PathBuf;
 pub struct Session {
     project: Option<Project>,
     pub path: Option<PathBuf>,
+    /// Archive the project was read from: saving writes a project file, not the archive.
+    pub archive: Option<PathBuf>,
     /// Project as last opened / saved; `None` if it was never saved.
     saved: Option<Project>,
     history: Option<History>,
@@ -29,7 +31,17 @@ pub struct Session {
 impl Session {
     pub fn new(server: Server) -> Session {
         let vault = Vault::new(Box::new(Http));
-        Session { project: None, path: None, saved: None, history: None, server, vault, plugins: Plugins::new(crate::tools::all().map(|t| t.name)), mcp_tools: Vec::new() }
+        Session {
+            project: None,
+            path: None,
+            archive: None,
+            saved: None,
+            history: None,
+            server,
+            vault,
+            plugins: Plugins::new(crate::tools::all().map(|t| t.name)),
+            mcp_tools: Vec::new(),
+        }
     }
 
     pub fn project(&self) -> Result<&Project, String> {
@@ -46,6 +58,7 @@ impl Session {
         self.history = Some(History::new(&prj));
         self.saved = path.is_some().then(|| prj.clone());
         self.path = path;
+        self.archive = None;
         self.project = Some(prj);
     }
 
@@ -54,15 +67,25 @@ impl Session {
         let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
         let (prj, conv) = archive::read_project(&bytes)?;
         // Saving writes a project file, not the archive.
-        let file = (!archive::is_archive(&bytes)).then(|| PathBuf::from(path));
+        let is_archive = archive::is_archive(&bytes);
+        let file = (!is_archive).then(|| PathBuf::from(path));
         self.replace(prj, file);
+        if is_archive {
+            // Counts as saved: only changes made after opening are refused.
+            self.saved = self.project.clone();
+            self.archive = Some(PathBuf::from(path));
+        }
         Ok(conv)
     }
 
     /// Saves to `path`, or to the file of the project. Returns the file.
     pub fn save(&mut self, path: Option<&str>) -> Result<PathBuf, String> {
         let prj = self.project()?;
-        let path = path.map(PathBuf::from).or_else(|| self.path.clone()).ok_or_else(|| tr("The project has no file yet: pass a path").to_string())?;
+        let no_file = || match &self.archive {
+            Some(a) => tr_fmt!("{} is an archive: pass a path to save the project as a project file", a.display()),
+            None => tr("The project has no file yet: pass a path").to_string(),
+        };
+        let path = path.map(PathBuf::from).or_else(|| self.path.clone()).ok_or_else(no_file)?;
         std::fs::write(&path, prj.to_json()).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), openecraft_i18n::io_error(&e)))?;
         self.saved = Some(prj.clone());
         self.path = Some(path.clone());
@@ -72,6 +95,32 @@ impl Session {
     /// The project has changes that are not in its file.
     pub fn unsaved(&self) -> bool {
         self.project.is_some() && self.saved != self.project
+    }
+
+    /// The command line has no session: changes are written back to the project file
+    /// at once. An archive is not rewritten, the changes are refused instead.
+    pub fn write_back(&mut self) -> Result<(), String> {
+        if !self.unsaved() {
+            return Ok(());
+        }
+        match (&self.path, &self.archive) {
+            (Some(_), _) => self.save(None).map(|_| ()),
+            (None, Some(a)) => Err(tr_fmt!("{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)", a.display())),
+            (None, None) => Ok(()),
+        }
+    }
+
+    /// Runs a command of a plugin on the open project.
+    pub fn run_command(&mut self, command: &openecraft_api::Command, args: &serde_json::Map<String, serde_json::Value>) -> Result<serde_json::Value, String> {
+        let prj = self.project.as_mut().ok_or_else(no_project)?;
+        self.plugins.run(command, prj, args)
+    }
+
+    /// Puts back the project as it was before a failed command (no undo step).
+    pub fn restore(&mut self, prj: Project) {
+        if self.project.is_some() {
+            self.project = Some(prj);
+        }
     }
 
     /// Makes the changes of a tool one undo step.

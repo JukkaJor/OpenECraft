@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "openecraft"
 version.workspace = true
 edition = "2021"

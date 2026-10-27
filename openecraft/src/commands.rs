@@ -360,7 +360,7 @@ pub static ALL: &[Def] = &[
     d(C::Distribute, "distribute", tr_const!("Distribute"), I::Distribute).menu(),
     d(C::MoveBy, "move_by", tr_const!("Move selection by…"), I::Move),
     d(C::Find, "find", tr_const!("Find…"), I::Find).keys("Ctrl+F").tip(tr_const!("Find and replace in the whole project")),
-    d(C::CommandSearch, "command_search", tr_const!("Find a command…"), I::Find).keys("Ctrl+Shift+P").tip(tr_const!("Every command of the editor and of the plugins by name")),
+    d(C::CommandSearch, "command_search", tr_const!("Find a command…"), I::Find).keys("Ctrl+Shift+P|F3").tip(tr_const!("Every command of the editor and of the plugins by name")),
     d(C::SelectAll, "select_all", tr_const!("Select all"), I::SelectAll).keys("Ctrl+A").canvas(),
     d(C::SelectTool, "select_tool", tr_const!("Select"), I::Select).tip(tr_const!("Select / move (Esc)")),
     // ---------------------------------------------------------------- insert

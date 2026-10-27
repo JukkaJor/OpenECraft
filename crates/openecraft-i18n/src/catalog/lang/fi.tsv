@@ -136,7 +136,6 @@ Contacts	Koskettimet
 Control transformer	Ohjausmuuntaja
 Copper busbar system: click start and end point	Kuparinen kokoojakiskojärjestelmä: napsauta alku- ja loppupistettä
 Copy / cut / paste (devices get new tags)	Kopioi / leikkaa / liitä (laitteet saavat uudet tunnukset)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopioi / liitä: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Kopioi uutena
 Copy built-in…	Kopioi sisäinen…
 Core	Johdin
@@ -155,8 +154,6 @@ Cross references	Ristiviittaukset
 Cross-section	Poikkipinta-ala
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Virta
 Cutout	Aukko
 Cutout {} × {} mm	Aukko {} × {} mm
@@ -169,7 +166,6 @@ Date	Päivämäärä
 Date of the last revision	Viimeisimmän revision päivämäärä
 Default label	Oletusnimitys
 Del	Del
-Delete   Del	Poista   Del
 Delete (Del)	Poista (Del)
 Delete cable (its wires are removed from it)	Poista kaapeli (sen johdot poistetaan siitä)
 Delete enclosure	Poista kotelo
@@ -203,7 +199,6 @@ Door	Ovi
 Door (front view)	Ovi (etunäkymä)
 Door clearance	Oven vapaa tila
 Door: {} devices, {} cutouts	Ovi: {} laitetta, {} aukkoa
-Download project   Ctrl+S	Lataa projekti   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	Ladattu {} osaa (revisio {}): {} uutta, {} päivitetty
 Downloading parts…	Ladataan osia…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Veto: kierrä · oikean/keskipainikkeen veto: panoroi · rulla: zoomaa · napsautus: valitse laite tai johto
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Suodatin (numero, tyyppi, valmista
 Filter devices…	Suodata laitteita…
 Filter…	Suodatin…
 Fit page	Sovita sivu
-Fit page   F	Sovita sivu   F
 Fit page (F)	Sovita sivu (F)
 Fluid power (ISO 1219)	Fluidivoimatekniikka (ISO 1219)
 Forms – title blocks and reports	Lomakkeet – nimiöt ja raportit
@@ -347,7 +341,6 @@ Manufacturer	Valmistaja
 Max. width	Enimmäisleveys
 Merge a symbol library file	Yhdistä symbolikirjastotiedosto
 Mirror	Peilaa
-Mirror   M	Peilaa   M
 Model import failed: {}	Mallin tuonti epäonnistui: {}
 Motor (single-line)	Moottori (yksinapainen esitys)
 Motor 1-phase	Moottori 1-vaiheinen
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft-nimiöt (JSON)
 OpenECraft – usage	OpenECraft – käyttö
 Opened {}	Avattu {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	Aukko asennuslevyyn / oveen: napsauta kahta kulmaa (pyöreä: ominaisuuksissa)
-Open…        Ctrl+O	Avaa…        Ctrl+O
 Order number	Tilausnumero
 Orientation	Suunta
 Overload aux contact NC	Ylikuormituksen apukosketin avautuva
@@ -546,8 +538,6 @@ Radius	Säde
 Readdress card	Osoita kortti uudelleen
 Rectangle	Suorakulmio
 Rectangular	Suorakulmainen
-Redo   Ctrl+Y	Tee uudelleen   Ctrl+Y
-Redo (Ctrl+Y)	Tee uudelleen (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Päivitä esimerkkiluettelon osat (GEN.*)
 Relay / contactor coil	Releen / kontaktorin kela
 Relay coil (NFPA)	Releen kela (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revisio {} luotu
 Revisions	Revisiot
 Revisions…	Revisiot…
 Right	Oikea
-Rotate   R	Kierrä   R
 Rotate (R)	Kierrä (R)
 Rotate / mirror (selection or symbol being placed)	Kierrä / peilaa (valinta tai sijoitettava symboli)
 Rotate 90°:	Kierrä 90°:
@@ -586,7 +575,6 @@ Round	Pyöreä
 Routing	Reititys
 Rows per page	Rivejä sivulla
 SVG image	SVG-kuva
-Save          Ctrl+S	Tallenna          Ctrl+S
 Save / open	Tallenna / avaa
 Save as macro	Tallenna makrona
 Save as…	Tallenna nimellä…
@@ -605,7 +593,6 @@ Select a macro.	Valitse makro.
 Select a part in the tree or create a new one.	Valitse osa puusta tai luo uusi.
 Select a part. Double click adds it to the device.	Valitse osa. Kaksoisnapsautus lisää sen laitteeseen.
 Select all	Valitse kaikki
-Select all   Ctrl+A	Valitse kaikki   Ctrl+A
 Select an element in the list or the drawing.	Valitse elementti luettelosta tai piirustuksesta.
 Select and drag elements; Del deletes	Valitse ja vedä elementtejä; Del poistaa
 Select device	Valitse laite
@@ -673,7 +660,6 @@ Terminals	Riviliittimet
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Riviliittimet, joilla on sama siltanumero, on silloitettu (sama potentiaali). Varariviliittimet lasketaan mukaan osaluetteloon.
 Test connection	Testaa yhteys
 Text	Teksti
-Text   T	Teksti   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D-etunäkymää käytetään kaapin etunäkymässä ja asennuskuvasivuilla, 3D-mallia kaapin 3D-näkymässä. Molemmat sovitetaan asennustietoihin (leveys × korkeus × syvyys).
 The access token is only needed for changes; it is not stored.	Käyttöoikeustokenia tarvitaan vain muutoksiin; sitä ei tallenneta.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Malli ({} × {} × {}) poikkeaa asennustiedoista ({} × {} × {}); se venytetään asennustietojen mukaiseksi.
@@ -699,8 +685,6 @@ Transformer (single-line)	Muuntaja (yksinapainen esitys)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Käännä mallia niin, että sen etupuoli on katsojaan päin (+Z) ja yläpuoli on +Y
 Type	Tyyppi
 Type number	Tyyppinumero
-Undo   Ctrl+Z	Kumoa   Ctrl+Z
-Undo (Ctrl+Z)	Kumoa (Ctrl+Z)
 Undo / redo	Kumoa / tee uudelleen
 Unit	Yksikkö
 Unit price	Yksikköhinta
@@ -729,7 +713,6 @@ Width × height	Leveys × korkeus
 Width × height × depth	Leveys × korkeus × syvyys
 Window macro: {}	Ikkunamakro: {}
 Wire	Johto
-Wire   W	Johto   W
 Wire assigned to unknown cable {}	Johto määritetty tuntemattomaan kaapeliin {}
 Wire ends with ferrules	Johtojen päät pääteholkeilla
 Wire list (panel routing)	Johtoluettelo (kaapin reititys)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Luo tai muuttaa esisuunnittelun instrumentointipiirin
 Loop number, e.g. 101	Piirin numero, esim. 101
 Measuring range or set point	Mittausalue tai asetusarvo
-Further device tags of the loop, separated by blanks	Piirin muut laitetunnukset välilyönneillä erotettuina
 Deletes a PCT loop of the pre-planning	Poistaa esisuunnittelun instrumentointipiirin
 Loop number	Piirin numero
 No enclosure named {}	Ei koteloa nimeltä {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Ei kielikoodi: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Luettelee projektin tekstien lähde- ja kohdekielet sekä kääntämättömien rivien määrän
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Asettaa projektin tekstien lähdekielen ja kohdekielet (ISO 639-1 -koodit)
 Language the project texts are written in, e.g. en	Kieli, jolla projektin tekstit on kirjoitettu, esim. en
-Target languages separated by blanks, e.g. de fr	Kohdekielet välilyönneillä erotettuina, esim. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Luettelee projektin tekstien käännössanakirjan (lähderivi ja käännökset)
 Only lines without a translation into this language	Vain rivit, joilla ei ole käännöstä tälle kielelle
 Text in the line or a translation	Teksti rivillä tai käännöksessä
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Nimiöt, piirustuskehykset ja si
 Frame of all pages that do not choose one	Kaikkien niiden sivujen kehys, jotka eivät valitse omaa
 Frame to start from when the frame is new (default: A3 landscape)	Kehys, josta aloitetaan, kun kehys on uusi (oletus: A3 landscape)
 Free graphics and notes, not evaluated	Vapaa grafiikka ja muistiinpanot, ei arvioida
-Give kind or template	Anna kind tai template
 Imported {} page templates	Tuotu {} sivumallia
 Insert page	Lisää sivu
 Landscape	Vaakasuunta
@@ -2280,7 +2260,6 @@ Locked by other users	Muiden käyttäjien lukitsemat
 None	Ei mitään
 Close shared project	Sulje jaettu projekti
 Releases all locks; the project stays open as a local copy	Vapauttaa kaikki lukitukset; projekti pysyy avoinna paikallisena kopiona
-Save to project server   Ctrl+S	Tallenna projektipalvelimelle   Ctrl+S
 Download project	Lataa projekti
 Project server…	Projektipalvelin…
 Open and save shared projects, lock pages	Avaa ja tallenna jaettuja projekteja, lukitse sivuja
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Piirrä viiva niiden j
 Cable definition on page {}	Kaapelimääritys sivulla {}
 No cables yet. Draw a cable definition across wires or add a cable.	Ei vielä kaapeleita. Piirrä kaapelimääritys johtojen poikki tai lisää kaapeli.
 New tag for {}	Uusi tunnus kohteelle {}
-This tag is already used	Tämä tunnus on jo käytössä
 Select on this page	Valitse tällä sivulla
 Place functions of this device	Sijoita tämän laitteen toiminnot
 Symbols placed next get this device tag (contacts are numbered on)	Seuraavaksi sijoitettavat symbolit saavat tämän laitetunnuksen (koskettimien numerointi jatkuu)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Luo tai muuttaa fluidilaiteryhmän
 Device tag of the group, e.g. -KH1	Ryhmän laitetunnus, esim. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit tai other
 Places of the group (0 = not limited)	Ryhmän paikat (0 = ei rajoitettu)
-Device tags of the members in slot order, separated by blanks	Jäsenten laitetunnukset paikkajärjestyksessä välilyönneillä erotettuina
 Part number of the base	Pohjalevyn osanumero
 Deletes a fluid device group	Poistaa fluidilaiteryhmän
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Luettelee fluidilaitteet, joilla on magneettikeloja tai linkkejä, sekä niihin linkitetyt sähkölaitteet
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Linkittää fluidilaitteen sähkölaitteisiin, jotka ohjaavat tai valvovat sitä (korvaa linkit)
 Device tag of the fluid device, e.g. -QM1	Fluidilaitteen laitetunnus, esim. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Sähkölaitteiden tunnukset välilyönneillä erotettuina (tyhjä = poista linkit)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Linkittää magneettiventtiilit samanumeroiseen kelaan (-QM3 › -MB3) ja kopioi toimintotekstit linkitettyjen laitteiden välillä
 No hose {}	Ei letkua {}
 Unknown line type: {}	Tuntematon linjatyyppi: {}
@@ -3173,7 +3149,6 @@ Communication	Tiedonsiirto
 Conductor class	Johdinluokka
 Conductor material	Johdinmateriaali
 Connection point descriptions	Liitäntäpisteiden kuvaukset
-Connection point designations separated by blanks	Liitäntäpisteiden merkinnät välilyönneillä erotettuina
 Connection type	Liitäntätyyppi
 Contact material	Kosketinmateriaali
 Contractor	Urakoitsija
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Validoi myös jokainen projekti (hitaampi)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Etsii projekteja projektitietokannasta tai kansiosta: ehdot erotetaan merkillä ';', kukin muodossa avain=arvo, avain~teksti tai pelkkä teksti
 Search terms, e.g. company=ACME; customer~plant; conveyor	Hakuehdot, esim. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Projektitietokantatiedosto (JSON)
-Folder with project files (instead of a database)	Projektitiedostojen kansio (tietokannan sijaan)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Muuttaa projektin ominaisuuksia monessa projektitiedostossa kerralla (kentät name, description, company, creator, date, revision tai projektiominaisuudet)
 Project files, separated by ';'	Projektitiedostot merkillä ';' erotettuina
 All project files of a folder	Kansion kaikki projektitiedostot
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Aktivoi (näyttää) tai poistaa käytöstä (piilottaa) projektivaihtoehdon sisällön
 Show the content	Näytä sisältö
 Switches the project options with a condition by the configurator options	Kytkee ehdolliset projektivaihtoehdot konfiguraattorin vaihtoehtojen mukaan
-Pass a database or a folder	Anna tietokanta tai kansio
 Nothing to change: pass set, remove, replace or rename	Ei muutettavaa: anna set, remove, replace tai rename
 Pass files or a folder	Anna tiedostot tai kansio
 Pass ids or pages	Anna tunnukset tai sivut
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Kohdesivun ra
 Interruption points refer to: all (default), star or pairs	Katkoskohdat viittaavat: all (oletus), star tai pairs
 Draw the contact image below coils (default true)	Piirrä kosketinkuvio kelojen alle (oletus true)
 Unknown setting: {}	Tuntematon asetus: {}
-Find…   Ctrl+F	Etsi…   Ctrl+F
 Find and replace in the whole project	Etsi ja korvaa koko projektissa
 Text to find	Etsittävä teksti
 Match case	Sama kirjainkoko
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft-projektimalli
 Not a project template: {}	Ei projektimalli: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Aloita projektimallista: sisäisestä (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) tai projektitiedostosta
-Unknown template {}: {}	Tuntematon malli {}: {}
 Not a packed project	Ei pakattu projekti
 Viewer	Katselija
 With a user account of the server; replaces the access token	Palvelimen käyttäjätilillä; korvaa käyttöoikeustokenin
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Tuntematon esimerkki {}: katso list_exampl
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Pumppaamo kahteen rinnakkain liitettyyn lattiakaappiin rakennettuna: kiskojärjestelmä, kiskot ja johtokanavat, ovilaitteet ja kahvat, suodatintuuletin, valaisin, PE-kisko, kaapeliläpiviennit, kaapeliläpivienti kaappien välillä, ilmastointilaskenta, kanavien täyttöaste ja 3D-reititys.
 9 · Electrical room	9 · Sähkötila
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Kaappirivi tilassaan: L-muotoinen pohjapiirros, väliseinä, ovi ja ikkuna, kaappirivi paikallaan, seinällä kisko ja pistorasia, seinään asennettu turvavalaisin ja kaapelihylly katon alla.
+{} is on page {}, which is released: renaming it would change the page	{} on vapautetulla sivulla {}: uudelleennimeäminen muuttaisi sivua
+A section number consists of letters and digits and does not start with 0	Osion numero koostuu kirjaimista ja numeroista eikä ala numerolla 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Rakennetunnus {} ei saa sisältää välilyöntejä eikä merkkejä = + - / :
+Bridge rectifier block	Siltatasasuuntaaja (lohko)
+the server refuses the connection (not started, or another port)	palvelin hylkää yhteyden (ei käynnissä tai eri portti)
+the server name is unknown	palvelimen nimi on tuntematon
+the server does not answer in time	palvelin ei vastaa ajoissa
+the address is not a valid URL (e.g. http://server:8090)	osoite ei ole kelvollinen URL (esim. http://server:8090)
+Unknown check: {}	Tuntematon tarkistus: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Sisäänrakennettua tarkistusta nimeltä {} ei ole: asetus koskee samannimistä laajennuksen tarkistusta (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} ei ole check-komennon näyttämä ilmoituskoodi (esim. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} ei ole check-komennon näyttämä ilmoituksen sormenjälki (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Sivu {} on irrotettu aliprojektiin {}: lisää aliprojekti ensin takaisin tai hylkää se
+Unknown wire colour {} (IEC 60757: {})	Tuntematon johtoväri {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Ei poikkipinta-ala: {} (esim. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Tuntematon paikkamerkki {}: mahdollisia ovat {}
+{} must not be negative	{} ei saa olla negatiivinen
+{} must be at least {}	{} on oltava vähintään {}
+{} must be between {} and {}	{} on oltava välillä {} ja {}
+The length must not be negative	Pituus ei saa olla negatiivinen
+The text height must be at least 0.5 mm	Tekstin korkeuden on oltava vähintään 0,5 mm
+The wrap width must not be negative	Rivityksen leveys ei saa olla negatiivinen
+The items would leave the page	Kohteet joutuisivat sivun ulkopuolelle
+The number of copies must be between 1 and 100	Kopioiden määrän on oltava välillä 1 ja 100
+The copies would leave the page	Kopiot joutuisivat sivun ulkopuolelle
+The cable definition line has no length	Kaapelimäärittelyviivalla ei ole pituutta
+The cable definition line crosses no wire	Kaapelimäärittelyviiva ei leikkaa yhtään johdinta
+{} and {} are both ends of one function: the wire would short-circuit it	{} ja {} ovat saman toiminnon molemmat päät: johdin oikosulkisi sen
+No wire at {} / {} mm	Kohdassa {} / {} mm ei ole johdinta
+Target languages separated by commas or blanks, e.g. de, fr	Kohdekielet pilkuilla tai välilyönneillä erotettuina, esim. de, fr
+The first page number must not be negative	Ensimmäinen sivunumero ei saa olla negatiivinen
+The counting step must be at least 1	Laskennan askeleen on oltava vähintään 1
+Released pages keep their names: {}	Vapautetut sivut säilyttävät nimensä: {}
+The plinth height must not be negative	Sokkelin korkeus ei saa olla negatiivinen
+{} is a room already	{} on jo tila
+Width, height and depth of an enclosure are at least {} mm	Kotelon leveys, korkeus ja syvyys ovat vähintään {} mm
+Device tags of the members in slot order, separated by commas or blanks	Jäsenten laitetunnukset paikkajärjestyksessä pilkuilla tai välilyönneillä erotettuina
+Electrical device tags separated by commas or blanks (empty = remove the links)	Sähkölaitteiden tunnukset pilkuilla tai välilyönneillä erotettuina (tyhjä = poista linkit)
+Further device tags of the loop, separated by commas or blanks	Piirin muut laitetunnukset pilkuilla tai välilyönneillä erotettuina
+Connection point designations separated by commas or blanks	Liitäntäpisteiden merkinnät pilkuilla tai välilyönneillä erotettuina
+Width, depth and height of a room are at least {} mm	Tilan leveys, syvyys ja korkeus ovat vähintään {} mm
+Room {} exists already	Tila {} on jo olemassa
+{} is an enclosure already	{} on jo kotelo
+{} would stand outside the room {}	{} jäisi tilan {} ulkopuolelle
+No identifier {} in the project	Projektissa ei ole tunnusta {}
+{} exists already: pass merge to make both one identifier	{} on jo olemassa: yhdistä molemmat yhdeksi tunnukseksi antamalla merge
+Allow renaming onto an identifier in use: both become one	Salli uudelleennimeäminen käytössä olevaksi tunnukseksi: molemmista tulee yksi
+Sign in or connect with the access token to change parts	Kirjaudu sisään tai yhdistä käyttöoikeustunnuksella muuttaaksesi osia
+Read only: sign in with a user who may change parts of this manufacturer	Vain luku: kirjaudu käyttäjänä, joka saa muuttaa tämän valmistajan osia
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nKäynnistää Model Context Protocol -palvelimen stdin / stdout -virroissa: tämän luettelon työkalut tekoälyagenteille, projekti muistissa (save_project tallentaa sen, undo / redo perua yksittäisiä kutsuja). OPENECRAFT_MCP_TOOLS rajaa tarjotut työkalut.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nNäyttää komentorivin version (myös --version tai -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo ja redo toimivat vain MCP-istunnossa: komentorivi avaa projektin uudelleen jokaista komentoa varten
+(MCP server only)	(vain MCP-palvelin)
+{} is an archive: pass a path to save the project as a project file	{} on arkisto: anna polku tallentaaksesi projektin projektitiedostona
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} on arkisto eikä muutu: tallenna projekti projektitiedostona (save_project --path <file>.oec) tai muunna arkisto (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Projektitiedostojen kansio (tietokannan sijaan; oletus: nykyinen kansio)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Tuntematon sivutyyppi: {} (schematic, overview, graphic, cover tai list_reports-raportti)
+Unknown template {}: give a built-in one ({}) or a project file	Tuntematon malli {}: anna sisäänrakennettu malli ({}) tai projektitiedosto
+Property {} needs a text or a number	Ominaisuus {} vaatii tekstin tai luvun

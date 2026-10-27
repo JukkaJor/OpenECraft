@@ -1,6 +1,7 @@
 //! Wiring assistant commands: the routed wires of the panel layout as a checklist with
 //! the wiring state, marking wires as wired or as a problem.
 
+use crate::builtin::common::{check_placeholders, int_in};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -152,23 +153,24 @@ fn set_wire_numbering(prj: &mut Project, a: &Args) -> Result<Value, String> {
         s.scheme = NumberScheme::ALL.into_iter().find(|x| scheme_code(*x) == v).ok_or_else(|| tr_fmt!("Unknown numbering scheme: {}", v))?;
     }
     if let Some(v) = a.str("format") {
+        check_placeholders(v, &["n", "page", "column", "row", "potential", "kind", "color", "cross_section"])?;
         s.format = v.trim().to_string();
     }
     if let Some(v) = a.str("prefix") {
         s.prefix = v.trim().to_string();
     }
-    if let Some(v) = a.int("start") {
-        s.start = v.max(0) as u32;
+    if let Some(v) = int_in(a, "start", 0, u32::MAX.into())? {
+        s.start = v as u32;
     }
-    if let Some(v) = a.int("step") {
-        s.step = v.max(1) as u32;
+    if let Some(v) = int_in(a, "step", 1, u32::MAX.into())? {
+        s.step = v as u32;
     }
-    if let Some(v) = a.int("digits") {
-        s.digits = v.clamp(0, 9) as u8;
+    if let Some(v) = int_in(a, "digits", 0, 9)? {
+        s.digits = v as u8;
     }
     if let Some(v) = a.str("skip_kinds") {
         let mut kinds = Vec::new();
-        for code in v.split(',').map(|c| c.trim().to_ascii_lowercase()).filter(|c| !c.is_empty()) {
+        for code in crate::builtin::common::words(v).into_iter().map(str::to_ascii_lowercase) {
             kinds.push(PotentialKind::ALL.into_iter().find(|k| kind_code(*k) == code).ok_or_else(|| tr_fmt!("Unknown potential kind: {}", code))?);
         }
         s.skip_kinds = kinds;
@@ -230,7 +232,7 @@ fn set_marking_scheme(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let mut s = marking::scheme(&prj.marking, Some(&name)).unwrap_or_else(|| marking::Scheme { name: name.clone(), ..Default::default() });
     let changes = ["columns", "separator", "header", "one_row_per_label", "categories"].iter().any(|k| a.value(k).is_some());
     if let Some(cols) = a.str("columns") {
-        s.columns = cols.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Column::parse(c).ok_or_else(|| tr_fmt!("Unknown column: {}", c.trim()))).collect::<Result<_, _>>()?;
+        s.columns = crate::builtin::common::words(cols).into_iter().map(|c| marking::Column::parse(c).ok_or_else(|| tr_fmt!("Unknown column: {}", c))).collect::<Result<_, _>>()?;
         if s.columns.is_empty() {
             return Err(tr_fmt!("Unknown column: {}", cols));
         }
@@ -251,7 +253,7 @@ fn set_marking_scheme(prj: &mut Project, a: &Args) -> Result<Value, String> {
         s.one_row_per_label = a.flag("one_row_per_label");
     }
     if let Some(cats) = a.str("categories") {
-        s.categories = cats.split(',').filter(|c| !c.trim().is_empty()).map(|c| marking::Category::parse(c).ok_or_else(|| tr_fmt!("Unknown marker category: {}", c.trim()))).collect::<Result<_, _>>()?;
+        s.categories = crate::builtin::common::words(cats).into_iter().map(|c| marking::Category::parse(c).ok_or_else(|| tr_fmt!("Unknown marker category: {}", c))).collect::<Result<_, _>>()?;
     }
     if changes || !marking::is_builtin(&name) {
         match prj.marking.schemes.iter_mut().find(|x| x.name == name) {

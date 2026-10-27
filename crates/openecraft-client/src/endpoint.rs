@@ -183,10 +183,29 @@ pub(crate) fn with_content_type(mut req: ehttp::Request, content_type: &str) -> 
     req
 }
 
+/// Why a request did not reach the server, in the program's language where the cause
+/// is known (the operating system words its own errors in the system language).
+pub(crate) fn reason(error: &str) -> String {
+    let e = error.to_lowercase();
+    let has = |codes: &[&str]| codes.iter().any(|c| e.contains(c));
+    if has(&["os error 10061", "os error 111)", "os error 61)", "connection refused"]) {
+        tr("the server refuses the connection (not started, or another port)").to_string()
+    } else if has(&["os error 11001", "os error 11004", "failed to lookup", "name or service not known", "no such host", "dns error"]) {
+        tr("the server name is unknown").to_string()
+    } else if has(&["os error 10060", "timed out", "timeout"]) {
+        tr("the server does not answer in time").to_string()
+    } else if has(&["invalid uri", "relative url", "unknown scheme", "empty host", "url error", "invalid url"]) {
+        tr("the address is not a valid URL (e.g. http://server:8090)").to_string()
+    } else {
+        // "io: ..." / "http: ..." of the HTTP library
+        error.split_once(": ").filter(|(kind, _)| matches!(*kind, "io" | "http" | "transport")).map_or(error, |(_, rest)| rest).to_string()
+    }
+}
+
 /// Successful response or a readable error (server message, HTTP status, connection error).
 pub fn check(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, String> {
     match result {
-        Err(e) => Err(tr_fmt!("connection failed: {}", e)),
+        Err(e) => Err(tr_fmt!("connection failed: {}", crate::reason(&e))),
         Ok(resp) if resp.ok => Ok(resp),
         Ok(resp) => Err(api::error_text(resp.status, &resp.status_text, &resp.bytes)),
     }

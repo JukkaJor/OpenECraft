@@ -136,7 +136,6 @@ Contacts	触点
 Control transformer	控制变压器
 Copper busbar system: click start and end point	铜母线系统：单击起点和终点
 Copy / cut / paste (devices get new tags)	复制 / 剪切 / 粘贴（设备获得新标识符）
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	复制 / 粘贴：Ctrl+C、Ctrl+X、Ctrl+V
 Copy as new	复制为新项
 Copy built-in…	复制内置项…
 Core	芯线
@@ -155,8 +154,6 @@ Cross references	交叉引用
 Cross-section	截面积
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	电流
 Cutout	开孔
 Cutout {} × {} mm	开孔 {} × {} mm
@@ -169,7 +166,6 @@ Date	日期
 Date of the last revision	最新修订的日期
 Default label	默认标签
 Del	Del
-Delete   Del	删除   Del
 Delete (Del)	删除 (Del)
 Delete cable (its wires are removed from it)	删除电缆（其导线将从中移除）
 Delete enclosure	删除机柜
@@ -203,7 +199,6 @@ Door	柜门
 Door (front view)	柜门（正视图）
 Door clearance	柜门间隙
 Door: {} devices, {} cutouts	柜门：{} 个设备，{} 个开孔
-Download project   Ctrl+S	下载项目   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	已下载 {} 个部件（修订 {}）：{} 个新增，{} 个已更新
 Downloading parts…	正在下载部件…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	拖动：环绕 · 右键/中键拖动：平移 · 滚轮：缩放 · 单击：选择设备或导线
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	筛选（编号、类型、制造�
 Filter devices…	筛选设备…
 Filter…	筛选…
 Fit page	适合页面
-Fit page   F	适合页面   F
 Fit page (F)	适合页面 (F)
 Fluid power (ISO 1219)	流体技术 (ISO 1219)
 Forms – title blocks and reports	表单 – 标题栏和报表
@@ -347,7 +341,6 @@ Manufacturer	制造商
 Max. width	最大宽度
 Merge a symbol library file	合并符号库文件
 Mirror	镜像
-Mirror   M	镜像   M
 Model import failed: {}	模型导入失败：{}
 Motor (single-line)	电机（单线）
 Motor 1-phase	单相电机
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft 标题栏 (JSON)
 OpenECraft – usage	OpenECraft – 使用说明
 Opened {}	已打开 {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	安装板 / 柜门中的开口：单击两个角点（圆形：在属性中设置）
-Open…        Ctrl+O	打开…        Ctrl+O
 Order number	订货号
 Orientation	方向
 Overload aux contact NC	过载辅助触点 常闭触点
@@ -546,8 +538,6 @@ Radius	半径
 Readdress card	重新为卡件分配地址
 Rectangle	矩形
 Rectangular	矩形
-Redo   Ctrl+Y	恢复   Ctrl+Y
-Redo (Ctrl+Y)	恢复 (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	刷新示例目录部件 (GEN.*)
 Relay / contactor coil	继电器 / 接触器线圈
 Relay coil (NFPA)	继电器线圈 (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	已创建修订 {}
 Revisions	修订
 Revisions…	修订…
 Right	右
-Rotate   R	旋转   R
 Rotate (R)	旋转 (R)
 Rotate / mirror (selection or symbol being placed)	旋转 / 镜像（所选内容或正在放置的符号）
 Rotate 90°:	旋转 90°：
@@ -586,7 +575,6 @@ Round	圆形
 Routing	布线
 Rows per page	每页行数
 SVG image	SVG 图像
-Save          Ctrl+S	保存          Ctrl+S
 Save / open	保存 / 打开
 Save as macro	另存为宏
 Save as…	另存为…
@@ -605,7 +593,6 @@ Select a macro.	选择一个宏。
 Select a part in the tree or create a new one.	在树中选择一个部件或新建一个部件。
 Select a part. Double click adds it to the device.	选择一个部件。双击可将其添加到设备。
 Select all	全选
-Select all   Ctrl+A	全选   Ctrl+A
 Select an element in the list or the drawing.	在列表或图形中选择一个元素。
 Select and drag elements; Del deletes	选择并拖动元素；Del 删除
 Select device	选择设备
@@ -673,7 +660,6 @@ Terminals	端子
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	跳线编号相同的端子相互桥接（电位相同）。备用端子计入物料清单。
 Test connection	测试连接
 Text	文本
-Text   T	文本   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D 正视图用于安装板正视图和安装布局页，3D 模型用于 3D 机柜视图。两者都会按安装数据（宽 × 高 × 深）调整。
 The access token is only needed for changes; it is not stored.	访问令牌仅在更改时需要；不会被存储。
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	模型（{} × {} × {}）与安装数据（{} × {} × {}）不同；它将被拉伸为安装数据的尺寸。
@@ -699,8 +685,6 @@ Transformer (single-line)	变压器（单线）
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	旋转模型，使其正面朝向观察者 (+Z)，顶面为 +Y
 Type	类型
 Type number	型号
-Undo   Ctrl+Z	撤消   Ctrl+Z
-Undo (Ctrl+Z)	撤消 (Ctrl+Z)
 Undo / redo	撤消 / 恢复
 Unit	单位
 Unit price	单价
@@ -729,7 +713,6 @@ Width × height	宽 × 高
 Width × height × depth	宽 × 高 × 深
 Window macro: {}	窗口宏：{}
 Wire	导线
-Wire   W	导线   W
 Wire assigned to unknown cable {}	导线分配给了未知电缆 {}
 Wire ends with ferrules	带冷压端子的导线端
 Wire list (panel routing)	导线列表（机柜布线）
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	创建或更改预规划的 PCT 回路
 Loop number, e.g. 101	回路编号，例如 101
 Measuring range or set point	测量范围或设定值
-Further device tags of the loop, separated by blanks	回路的其他设备标识符，以空格分隔
 Deletes a PCT loop of the pre-planning	删除预规划的 PCT 回路
 Loop number	回路编号
 No enclosure named {}	没有名为 {} 的机柜
@@ -1582,7 +1564,6 @@ Not a language code: {}	不是语言代码：{}
 Lists the source and target languages of the project texts with the number of untranslated lines	列出项目文本的源语言和目标语言以及未翻译的行数
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	设置项目文本的源语言和目标语言（ISO 639-1 代码）
 Language the project texts are written in, e.g. en	编写项目文本所用的语言，例如 en
-Target languages separated by blanks, e.g. de fr	目标语言，以空格分隔，例如 de fr
 Lists the translation dictionary of the project texts (source line and translations)	列出项目文本的翻译词典（源行和翻译）
 Only lines without a translation into this language	仅限未翻译为此语言的行
 Text in the line or a translation	行或翻译中的文本
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	标题栏、图框和页模板�
 Frame of all pages that do not choose one	所有未选择图框的页使用的图框
 Frame to start from when the frame is new (default: A3 landscape)	新建图框时的起始图框（默认：A3 landscape）
 Free graphics and notes, not evaluated	自由图形和注释，不评估
-Give kind or template	请指定 kind 或 template
 Imported {} page templates	已导入 {} 个页模板
 Insert page	插入页
 Landscape	横向
@@ -2280,7 +2260,6 @@ Locked by other users	已被其他用户锁定
 None	无
 Close shared project	关闭共享项目
 Releases all locks; the project stays open as a local copy	释放所有锁定；项目作为本地副本保持打开
-Save to project server   Ctrl+S	保存到项目服务器   Ctrl+S
 Download project	下载项目
 Project server…	项目服务器…
 Open and save shared projects, lock pages	打开和保存共享项目，锁定页
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	画一条线穿过作�
 Cable definition on page {}	页 {} 上的电缆定义
 No cables yet. Draw a cable definition across wires or add a cable.	尚无电缆。在导线上绘制电缆定义或添加电缆。
 New tag for {}	{} 的新标识符
-This tag is already used	此标识符已被使用
 Select on this page	在此页上选择
 Place functions of this device	放置此设备的功能
 Symbols placed next get this device tag (contacts are numbered on)	接下来放置的符号将获得此设备标识符（触点继续编号）
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	创建或更改流体设备组
 Device tag of the group, e.g. -KH1	组的设备标识符，例如 -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal、service_unit、manifold、power_unit 或 other
 Places of the group (0 = not limited)	组的位置数（0 = 不限）
-Device tags of the members in slot order, separated by blanks	成员的设备标识符，按位置顺序，以空格分隔
 Part number of the base	底板的部件编号
 Deletes a fluid device group	删除流体设备组
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	列出带电磁线圈或关联的流体设备以及与其关联的电气设备
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	将流体设备与驱动或监视它的电气设备关联（替换已有关联）
 Device tag of the fluid device, e.g. -QM1	流体设备的设备标识符，例如 -QM1
-Electrical device tags separated by blanks (empty = remove the links)	电气设备标识符，以空格分隔（空 = 移除关联）
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	将电磁阀与编号相同的线圈关联 (-QM3 › -MB3)，并在关联的设备之间复制功能文本
 No hose {}	没有软管 {}
 Unknown line type: {}	未知管路类型：{}
@@ -3173,7 +3149,6 @@ Communication	通信
 Conductor class	导体等级
 Conductor material	导体材料
 Connection point descriptions	连接点描述
-Connection point designations separated by blanks	以空格分隔的连接点标识
 Connection type	连接类型
 Contact material	触点材料
 Contractor	承包商
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	同时校验每个项目（较慢）
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	在项目数据库或文件夹中查找项目：各条件以 ';' 分隔，每个条件为 键=值、键~文本 或纯文本
 Search terms, e.g. company=ACME; customer~plant; conveyor	搜索条件，例如 company=ACME; customer~plant; conveyor
 Project database file (JSON)	项目数据库文件 (JSON)
-Folder with project files (instead of a database)	包含项目文件的文件夹（代替数据库）
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	一次更改多个项目文件中的项目属性（字段 name、description、company、creator、date、revision 或项目属性）
 Project files, separated by ';'	项目文件，以 ';' 分隔
 All project files of a folder	文件夹中的所有项目文件
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	激活（显示）或停用（隐藏）项目选项的内容
 Show the content	显示内容
 Switches the project options with a condition by the configurator options	根据配置器选项切换带条件的项目选项
-Pass a database or a folder	请指定数据库或文件夹
 Nothing to change: pass set, remove, replace or rename	无需更改：请指定 set、remove、replace 或 rename
 Pass files or a folder	请指定文件或文件夹
 Pass ids or pages	请指定 ID 或页
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	目标页的�
 Interruption points refer to: all (default), star or pairs	中断点引用：all（默认）、star 或 pairs
 Draw the contact image below coils (default true)	在线圈下方绘制触点映像（默认 true）
 Unknown setting: {}	未知设置：{}
-Find…   Ctrl+F	查找…   Ctrl+F
 Find and replace in the whole project	在整个项目中查找和替换
 Text to find	要查找的文本
 Match case	区分大小写
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft 项目模板
 Not a project template: {}	不是项目模板：{}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	从项目模板开始：内置模板（Machine、Distribution board (IEC 61439)、Empty (IEC 60204-1)）或项目文件
-Unknown template {}: {}	未知模板 {}：{}
 Not a packed project	不是打包的项目
 Viewer	查看者
 With a user account of the server; replaces the access token	使用服务器的用户帐户；替代访问令牌
@@ -6370,3 +6341,62 @@ Unknown example {}: see list_examples	未知示例 {}：请参阅 list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	安装在两台并柜落地柜中的泵站：母线系统、导轨和线槽、柜门设备和把手、过滤风扇、照明灯、PE 排、电缆密封接头、电缆通道、柜内温控计算、线槽填充率和三维布线。
 9 · Electrical room	9 · 电气室
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	并柜后的控制柜在其房间中：L 形平面图、内墙、门和窗、放置到位的并柜、墙上带插座的导轨、墙装应急灯以及顶部下方的电缆桥架。
+{} is on page {}, which is released: renaming it would change the page	{} 位于已发布页 {} 上：重命名会更改该页
+A section number consists of letters and digits and does not start with 0	分节号由字母和数字组成，且不以 0 开头
+Structure identifier {} must not contain blanks or the signs = + - / :	结构标识符 {} 不得包含空格或符号 = + - / :
+Bridge rectifier block	桥式整流器（块）
+the server refuses the connection (not started, or another port)	服务器拒绝连接（未启动或端口不同）
+the server name is unknown	服务器名称未知
+the server does not answer in time	服务器未及时响应
+the address is not a valid URL (e.g. http://server:8090)	地址不是有效的 URL（例如 http://server:8090）
+Unknown check: {}	未知检查：{}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	没有名为 {} 的内置检查：该设置适用于同名插件的检查 (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} 不是 check 显示的消息代码（例如 wires.3f9a1c）
+{} is not a message fingerprint as shown by check (code:hash:item)	{} 不是 check 显示的消息指纹（code:hash:item）
+Page {} is out in subproject {}: insert or discard the subproject first	页 {} 已提取到子项目 {}：请先插回或放弃该子项目
+Unknown wire colour {} (IEC 60757: {})	未知导线颜色 {}（IEC 60757：{}）
+Not a cross-section: {} (e.g. 1.5 mm²)	不是截面积：{}（例如 1.5 mm²）
+Unknown placeholder {}: possible are {}	未知占位符 {}：可用的有 {}
+{} must not be negative	{} 不能为负数
+{} must be at least {}	{} 必须至少为 {}
+{} must be between {} and {}	{} 必须介于 {} 和 {} 之间
+The length must not be negative	长度不能为负数
+The text height must be at least 0.5 mm	文字高度必须至少为 0.5 mm
+The wrap width must not be negative	换行宽度不能为负数
+The items would leave the page	这些元素将移出页面
+The number of copies must be between 1 and 100	副本数必须介于 1 和 100 之间
+The copies would leave the page	副本将移出页面
+The cable definition line has no length	电缆定义线没有长度
+The cable definition line crosses no wire	电缆定义线未穿过任何导线
+{} and {} are both ends of one function: the wire would short-circuit it	{} 和 {} 是同一功能的两端：该导线会使其短路
+No wire at {} / {} mm	{} / {} mm 处没有导线
+Target languages separated by commas or blanks, e.g. de, fr	目标语言，以逗号或空格分隔，例如 de, fr
+The first page number must not be negative	起始页码不能为负数
+The counting step must be at least 1	计数步长必须至少为 1
+Released pages keep their names: {}	已发布页保留其名称：{}
+The plinth height must not be negative	底座高度不能为负数
+{} is a room already	{} 已经是房间
+Width, height and depth of an enclosure are at least {} mm	机柜的宽度、高度和深度至少为 {} mm
+Device tags of the members in slot order, separated by commas or blanks	成员的设备标识符，按位置顺序，以逗号或空格分隔
+Electrical device tags separated by commas or blanks (empty = remove the links)	电气设备标识符，以逗号或空格分隔（空 = 移除关联）
+Further device tags of the loop, separated by commas or blanks	回路的其他设备标识符，以逗号或空格分隔
+Connection point designations separated by commas or blanks	以逗号或空格分隔的连接点标识
+Width, depth and height of a room are at least {} mm	房间的宽度、深度和高度至少为 {} mm
+Room {} exists already	房间 {} 已存在
+{} is an enclosure already	{} 已经是机柜
+{} would stand outside the room {}	{} 将位于房间 {} 之外
+No identifier {} in the project	项目中没有标识符 {}
+{} exists already: pass merge to make both one identifier	{} 已存在：指定 merge 可将两者合并为一个标识符
+Allow renaming onto an identifier in use: both become one	允许重命名为已使用的标识符：两者合而为一
+Sign in or connect with the access token to change parts	请登录或使用访问令牌连接以更改部件
+Read only: sign in with a user who may change parts of this manufacturer	只读：请使用可以更改该制造商部件的用户登录
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\n在 stdin / stdout 上运行 Model Context Protocol 服务器：为 AI 代理提供此列表中的工具，项目保留在内存中（save_project 写入项目，undo / redo 撤销单个调用）。OPENECRAFT_MCP_TOOLS 限制提供的工具。\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\n显示命令行的版本（也可用 --version 或 -V）\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo 和 redo 仅在 MCP 会话中有效：命令行会为每个命令重新打开项目
+(MCP server only)	（仅限 MCP 服务器）
+{} is an archive: pass a path to save the project as a project file	{} 是归档文件：请指定路径以将项目另存为项目文件
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} 是归档文件，保持不变：请将项目另存为项目文件 (save_project --path <file>.oec) 或转换归档 (convert_project)
+Folder with project files (instead of a database; default: the current folder)	包含项目文件的文件夹（代替数据库；默认：当前文件夹）
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	未知页面类型：{}（schematic、overview、graphic、cover 或 list_reports 中的报表）
+Unknown template {}: give a built-in one ({}) or a project file	未知模板 {}：请指定内置模板（{}）或项目文件
+Property {} needs a text or a number	属性 {} 需要文本或数字

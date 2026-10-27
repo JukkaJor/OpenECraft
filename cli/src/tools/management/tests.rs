@@ -35,7 +35,8 @@ fn projects_are_indexed_searched_and_changed_in_batch() {
     assert_eq!(found[0]["path"], a);
     let found = run(&mut s, "search_projects", json!({ "folder": dir.display().to_string(), "query": "line" })).unwrap();
     assert_eq!(found.as_array().unwrap().len(), 2);
-    assert!(run(&mut s, "search_projects", json!({})).is_err());
+    // Without database or folder the current folder is searched.
+    assert!(run(&mut s, "search_projects", json!({ "query": "nothing-matches-this" })).unwrap().as_array().unwrap().is_empty());
 
     let dry = run(&mut s, "batch_project_properties", json!({ "folder": dir.display().to_string(), "set": { "creator": "NS", "plant": "North" }, "dry_run": true })).unwrap();
     assert_eq!(dry.as_array().unwrap().len(), 2);

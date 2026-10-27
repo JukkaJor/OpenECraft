@@ -91,7 +91,9 @@ available in the browser.
 ### Protocol
 
 For every request OpenECraft starts the program (`run`, in the plugin folder), writes
-one JSON object to its stdin and reads one JSON object from its stdout. Every request
+one JSON object to its stdin and reads one JSON object from its stdout, both in UTF-8
+(Python is started with `PYTHONUTF8=1` and `PYTHONIOENCODING=utf-8`; where `python3` is
+not installed, as on Windows, `python` is started instead). Every request
 has `"api": 1` and a `method`. An answer `{"error": "message"}` (or a non-zero exit
 code, with the message on stderr) is an error. `project` is the project as in a
 `.oec` file.
@@ -100,12 +102,15 @@ code, with the message on stderr) is an error. `project` is the project as in a
 | --- | --- |
 | `{"method": "describe"}` | `{"commands": [{"name", "help", "params": [{"name", "kind", "required", "help"}]}], "checks": [{"name", "title"}], "reports": [{"name", "title"}], "exporters": [{"name", "title", "extension", "params"}]}` (all lists optional, `params` of exporters too) |
 | `{"method": "command", "name", "params": {…}, "project": {…}}` | `{"result": <any JSON>, "project": {…}}` – `project` only if the command changed it |
-| `{"method": "check", "name", "project"}` | `{"issues": [{"severity": "error" \| "warning" \| "info", "message", "page": <page index>, "item": <item id>}]}` – `page` / `item` optional |
+| `{"method": "check", "name", "project"}` | `{"issues": [{"severity": "error" \| "warning" \| "info", "message", "page": <page index>, "item": <item id>}]}` – `page` / `item` optional; `page` alone points at the page, a page the project does not have at nothing |
 | `{"method": "report", "name", "project"}` | `{"headers": ["…"], "rows": [["…"]]}` |
 | `{"method": "export", "name", "params": {…}, "project"}` | `{"content": "file content"}` (text; `params` holds what the front end passed: by convention `page`, the name of one page, and `file`, the file name) |
 
 Parameter kinds: `str`, `int`, `num`, `bool`, `ids` (list of item ids), `points`
 (list of `[x, y]` in mm), `object` (JSON object). `required` defaults to `true`.
+
+A command that answers with an error leaves the project unchanged, also in the editor
+and the MCP server.
 
 `describe` is asked once when the plugin is loaded; checks run after every change of
 the project in the editor, so they should answer quickly. The project's check settings

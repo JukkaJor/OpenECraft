@@ -225,3 +225,28 @@ fn files_of_an_edz_file_are_attached_after_its_parts_are_uploaded() {
     assert!(s.pending_files.is_empty(), "a failed upload drops the files");
     assert!(s.import_edz(b"no archive").is_err());
 }
+
+#[test]
+fn parts_are_only_editable_with_the_right_to_change_them() {
+    use openecraft_parts::access::{Access, Grant, Policy, Subject};
+    use openecraft_parts::portal::PartsRight;
+    let mut s = loaded(&["ACME.1", "OTHER.1"]);
+    s.parts[0].manufacturer = "ACME".into();
+    s.parts[1].manufacturer = "Other".into();
+    s.select("ACME.1");
+    // Not connected, or anonymous on a server that only lets read.
+    assert!(!s.may_change(None));
+    let reader = ServerInfo { access: Access::default(), ..Default::default() };
+    assert!(!s.may_change(Some(&reader)));
+    // A manufacturer user changes the parts of its manufacturer only.
+    let grant = Grant::new(Subject::User("max".into()), "manufacturer", "ACME");
+    let access = Policy::<PartsRight>::default().access(&Default::default(), &[grant]);
+    let acme = ServerInfo { access, ..Default::default() };
+    assert!(s.may_change(Some(&acme)));
+    s.select("OTHER.1");
+    assert!(!s.may_change(Some(&acme)));
+    // A new part needs the right to change parts anywhere.
+    s.new_part();
+    assert!(s.may_change(Some(&acme)));
+    assert!(!s.may_change(Some(&reader)));
+}

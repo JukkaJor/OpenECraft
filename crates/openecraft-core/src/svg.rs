@@ -178,10 +178,12 @@ pub fn print_document_pages(prj: &Project, an: &Analysis, sel: &[usize]) -> Stri
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>{}</title><style>\
+        "<!DOCTYPE html><html lang=\"{}\"><head><meta charset=\"utf-8\"><title>{}</title><style>\
          body {{ margin: 0; background: #888; }}\
          .page {{ page-break-after: always; background: #fff; margin: 0 auto 8mm auto; }}\
          @media print {{ body {{ background: none; }} .page {{ margin: 0; }} }}",
+        // The language the texts are generated in (the export language).
+        openecraft_i18n::lang().code(),
         esc(&prj.info.name)
     );
     // One named @page rule per paper size.
