@@ -36,7 +36,7 @@ where it differs from the plan below:
 | 7 Layout space | done | Context tab with the panel tools, views, show options, NC data, 3D macros and accessories; the canvas keeps only the profile part chooser; tablet mode (scale and 40 pt targets) |
 | 8 Start and help | done | Start page on first start, Help pane with quick guide, the rendered tutorial (English) and the shortcut list, F1 per pane; `docs/tutorial.md` and the README use the ribbon paths |
 | 9 Keyboard | done | Key tips (Alt or F10, then letters), F6 / Shift+F6, Ctrl+Tab, Ins, F2, F4, Ctrl+Shift+P, every command bindable; screen-reader labels on the icon buttons; Tab / Shift+Tab move through the ribbon and Enter runs a command. Not done: arrow keys inside the ribbon |
-| 10 Customisation | done | Hide groups, own groups, export / import, kept in saved workspaces; the new texts in all 20 languages, the CJK font subsets regenerated. Not done: screenshots for the README and the installers |
+| 10 Customisation | done | Hide groups, own groups, export / import, kept in saved workspaces; the new texts in all 20 languages, the CJK font subsets regenerated. README screenshots in docs/images. Not done: screenshots for the installers |
 
 ## 1. Where the UI stands today
 

@@ -1,0 +1,136 @@
+# Parts server and parts manager
+
+The data portal shared by all OpenECraft installations and the app that maintains it.
+
+`openecraft-parts-server` is the data portal of all OpenECraft installations (desktop
+and web), in the spirit of the EPLAN Data Portal: manufacturer catalogs with a faceted
+search, part history and lifecycle, files of the parts (datasheets, images, models,
+macros), user accounts with roles and a web page for browsing. It is a separate
+executable and runs independently of the editor.
+
+```bash
+cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <secret>
+cargo run --release -p openecraft-parts-server -- --storage json --data parts-db.json
+cargo run --release -p openecraft-parts-server -- --data parts-db.sqlite --migrate-from parts-db.json
+cargo run --release -p openecraft-parts-server -- --install-catalogs all
+cargo run --release -p openecraft-parts-server -- --config parts-server.toml
+```
+
+- Configuration file (`--config <file>` or `OPENECRAFT_PARTS_SERVER_CONFIG`): a TOML
+  file with the settings of the command line options under their names (`bind`,
+  `storage`, `data`, `token`, `admin_user`, `install_catalogs`, `access`; see
+  [`parts-server/parts-server.example.toml`](../parts-server/parts-server.example.toml)).
+  Options on the command line or in the environment win; relative paths are relative to
+  the file; unknown keys stop the server with an error. `--migrate-from` is a command
+  line option only.
+- Storage (`--storage sqlite|json`): SQLite by default (`--data parts-db.sqlite`, one
+  file with indexed parts, history, accounts and files); JSON keeps everything in one
+  file written atomically on every change, with the files in `<name>.files/` next to
+  it. A `.json` data file selects JSON storage. New databases are filled with the
+  example catalog and the bundled manufacturer catalogs; `--migrate-from` copies an
+  existing database into a new one.
+- Bundled catalogs: `parts-server/catalogs/<id>.json` (a `catalog` and its `parts`,
+  listed in `parts-server/src/bundled.rs`) are curated starter sets of real
+  manufacturer parts: `abb` (circuit breakers, RCCB, contactors, manual motor
+  starters), `beckhoff` (EtherCAT coupler and terminals), `dehn` (surge protective devices type 1 - 3 and for data lines), `hager` (circuit breakers,
+  RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
+  interface / router, power supply), `phoenix_contact` (terminal blocks, relay
+  modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
+  starter protectors, SENTRON circuit breakers), `victron` (MultiPlus-II inverter /
+  charger, SmartSolar MPPT, Orion-Tr, Cerbo GX, SmartShunt, BMV-712, Lynx
+  Distributor; mostly parts for direct wall mounting) and `weidmueller` (terminals,
+  relay module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
+  `siemens`) installs or updates them in an existing database: new parts are added,
+  parts nobody changed are updated, parts changed or deleted by users are kept. Parts
+  without models get generated ones from their mounting dimensions. Only add data
+  that may be redistributed (facts from public data sheets, no copied texts, images
+  or models).
+- Users: readers keep favorites, manufacturers change the parts and catalogs of their
+  own manufacturer, editors all parts, administrators also manage the users. The
+  `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`
+  creates an administrator account with the password from `OPENECRAFT_ADMIN_PASSWORD`.
+  Users sign in with `POST /login` and send the session token as
+  `Authorization: Bearer <token>`. Passwords of local accounts have at least 8
+  characters; after 5 failed sign-ins of a user name every further attempt waits
+  (1 s, doubling up to 5 minutes, answer `429`). Without token, accounts and directories the server
+  is read-only.
+- Access control (`<data>.access.json`, `--access`): sign-in with Active Directory or
+  LDAP directories next to the local accounts, roles defined by administrators and
+  grants of roles to users and groups per manufacturer, with deny grants; anonymous
+  reading can be switched off. See [docs/access-control.md](access-control.md).
+- Every change is a new revision; each part keeps its revision, time of change and the
+  last 20 versions (history). Parts have a lifecycle (active, phase-out, discontinued)
+  and a successor. Files are stored once per content; a file is deleted as soon as
+  neither a part nor a version in the history uses it (and at startup).
+- Product groups: the EPLAN generic product groups, product groups and subgroups with
+  their exchange numbers (`openecraft_parts::productgroups`) are offered in the part
+  editor next to OpenECraft's own groups.
+- Search (`POST /search`): text (every word must occur), top group, group, subgroup,
+  manufacturer, catalog, lifecycle and technical data (voltage, current, power and the
+  `Name: value` lines of the technical data), sorted and paged, with facets that count
+  the matching parts per value.
+- Web page: `http://<server>:8090/` – search with facets, part details with files and
+  history, catalogs, sign-in and favorites, in English, German, French and Spanish.
+- REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
+  `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
+  `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
+  JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
+  `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
+  `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
+- In the editor: *Devices › Data portal…* – search the server, add parts to the local
+  database, save their files, add their macros to the macro library and check the
+  database for newer versions, phased out and discontinued parts. *Devices › Parts
+  management › 🌐 Parts server* downloads all parts or uploads parts. The project check
+  warns about devices with discontinued parts; `use_successor_parts` changes them over.
+- The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
+  from outside your network.
+
+## EPLAN Data Portal
+
+The parts handling also connects to the EPLAN Data Portal: choose *EPLAN Data Portal*
+as the server type in the data portal window or in *Parts management › 🌐 Parts
+server*, keep the address `https://dataportal.eplan.com/api` and enter a personal
+access token (created for the Data Portal in the profile of your EPLAN account,
+ePulse). The portal then works like a parts server: search by text, manufacturer and
+product group, part details with the commercial data (CSV), DXF drawings and
+pictures, adding parts to the local database and the update check of the database.
+
+- `openecraft_client::eplan` wraps the portal's REST API (JSON:API): it builds the
+  portal's requests from the parts server's queries and turns the answers into
+  `ServerInfo`, `SearchResult` and `Part`. `openecraft_client::Connection` offers the
+  reading functions of both kinds of server; the editor and the command line use it.
+- The connection is read-only: no uploads, catalogs, users, sign-in, favorites,
+  history or download of the whole database. The facets count the parts of the shown
+  page, as the portal does not count them; catalogs, lifecycle and technical data
+  cannot be filtered.
+- The portal finds parts by its own ids, not by number: a part loaded from it keeps
+  the id (`portal_id`), so adding marked parts and the update check load them in one
+  request. The update check compares only the parts that came from the portal; a
+  single part number is found by an exact search.
+- Manufacturers are filtered by their short name, product groups by the id of the
+  EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
+  (subgroup + 1), e.g. `200050000` for electrical engineering / plugs.
+- Parts in EPLAN format (macros, connection points) come as EDZ files from the portal
+  web page; import them like other parts files (see [parts management](features/parts.md)).
+- Only the desktop version and the command line reach the portal: it allows no
+  cross-origin requests from browsers, so the web version would need a proxy.
+
+## Parts manager
+
+`openecraft-parts-manager` is a standalone application that maintains the parts of a
+parts server: create new parts, edit existing ones (including 2D / 3D models), rename
+and delete parts, upload CSV / JSON parts files and export all parts. It uses the same
+part editor as the editor's parts management and runs on the desktop and in the browser.
+
+```bash
+cargo run --release -p openecraft-parts-manager        # desktop
+cd parts-manager && trunk serve                        # web, http://127.0.0.1:8082
+cd parts-manager && trunk build --release              # static files in parts-manager/dist/
+```
+
+Enter the server URL and the access token (kept in memory only) and click *Connect*, or
+sign in with a user name and password. Changes are saved to the server with *Save*
+(`Ctrl+S`); the editor asks before unsaved changes are discarded and before a part is
+deleted. *Files and history* above the part editor uploads and removes the files of a
+part and shows its changes; *Catalogs* maintains the manufacturer catalogs and *Users*
+(administrators) the accounts and roles.

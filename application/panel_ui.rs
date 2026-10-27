@@ -664,10 +664,21 @@ impl PanelUi {
         }
         let n = pts.len() as f32;
         let c = p(pts.iter().map(|q| q.x).sum::<f32>() / n, pts.iter().map(|q| q.y).sum::<f32>() / n);
-        let shown = self.shown_3d(prj, w.enclosure);
-        let pose = shown.iter().find(|s| s.0 == w.enclosure).map(|s| s.1).unwrap_or_default();
-        let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
-        cam.target = pose.apply([PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z]);
+        self.aim_camera(prj, w.enclosure, [PLATE_MARGIN + c.x, e.height - PLATE_MARGIN - c.y, PLATE_Z]);
+    }
+
+    /// Turns a zoomed-in 3D camera to `at` (enclosure coordinates). A new camera, or one
+    /// zoomed out as far as the whole view, frames everything shown instead: centred on
+    /// `at` its zoom would push the rest of the line-up out of the view.
+    fn aim_camera(&mut self, prj: &Project, enclosure: usize, at: [f32; 3]) {
+        let shown = self.shown_3d(prj, enclosure);
+        let pose = shown.iter().find(|s| s.0 == enclosure).map(|s| s.1).unwrap_or_default();
+        let full = default_cam(prj, &shown);
+        match &mut self.cam {
+            Some(cam) if cam.dist < full.dist => cam.target = pose.apply(at),
+            Some(cam) => cam.target = full.target,
+            None => self.cam = Some(full),
+        }
     }
 
     /// Selects a panel item and turns the 3D view to it (mounting assistant).
@@ -683,10 +694,8 @@ impl PanelUi {
         if it.face == Face::Door {
             self.door_open = true;
         }
-        let shown = self.shown_3d(prj, enclosure);
-        let pose = shown.iter().find(|s| s.0 == enclosure).map(|s| s.1).unwrap_or_default();
-        let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
-        cam.target = pose.apply([PLATE_MARGIN + it.x + it.w / 2.0, e.height - PLATE_MARGIN - it.y - it.h / 2.0, PLATE_Z]);
+        let at = [PLATE_MARGIN + it.x + it.w / 2.0, e.height - PLATE_MARGIN - it.y - it.h / 2.0, PLATE_Z];
+        self.aim_camera(prj, enclosure, at);
     }
 
     /// Selects a placed device (e.g. coming from the schematic); a valve or its coil

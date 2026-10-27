@@ -75,6 +75,24 @@ fn the_3d_view_shows_all_enclosures_at_their_places() {
 }
 
 #[test]
+fn focusing_frames_the_whole_view_unless_zoomed_in() {
+    let mut prj = Project::default();
+    let item = PanelItem { id: 5, x: 100.0, y: 50.0, w: 40.0, h: 80.0, ..Default::default() };
+    prj.layout.enclosures.push(Enclosure { name: "+A".into(), width: 800.0, height: 2000.0, items: vec![item], ..Default::default() });
+    let mut ui = PanelUi::default();
+    let full = view3d::default_cam(&prj, &ui.shown_3d(&prj, 0));
+    ui.focus_item(&prj, 0, 5);
+    assert_eq!(ui.cam.as_ref().map(|c| (c.target, c.dist)), Some((full.target, full.dist)), "Fit shows the whole enclosure");
+    ui.cam.as_mut().unwrap().dist = full.dist / 3.0;
+    ui.focus_item(&prj, 0, 5);
+    let near = ui.cam.as_ref().unwrap();
+    assert!(near.target[1] > 1800.0 && near.dist == full.dist / 3.0, "zoomed in, the camera turns to the item near the top");
+    ui.cam.as_mut().unwrap().dist = full.dist * 2.0;
+    ui.focus_item(&prj, 0, 5);
+    assert_eq!(ui.cam.as_ref().unwrap().target, full.target, "zoomed out, everything stays in view");
+}
+
+#[test]
 fn rooms_show_their_walls_and_cabinets() {
     let mut prj = Project::default();
     prj.layout.enclosures.push(Enclosure { name: "+A".into(), id: 7, ..Default::default() });

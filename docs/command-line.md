@@ -1,0 +1,74 @@
+# Command line, MCP server and plugins
+
+Projects and the parts server without a window, for scripts and AI agents.
+
+`openecraft-cli` edits projects and maintains the parts server without a window. The same
+commands are offered to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io)
+(`openecraft-cli mcp`, JSON-RPC on stdin / stdout), so an agent can create projects, place
+symbols, draw wires between connection points, assign parts, run the check, generate
+reports and export PDF / SVG / DXF / DWG.
+
+```bash
+cargo run --release -p openecraft-cli -- help                 # all commands
+cargo run --release -p openecraft-cli -- help connect         # parameters of a command
+openecraft-cli new_project --name "Pump control" --path pump.oec
+openecraft-cli new_project --example star_delta_starter --path star_delta.oec   # see list_examples
+openecraft-cli -p pump.oec place_symbol --page 1 --symbol pb_no --x 200 --y 100   # -S1
+openecraft-cli -p pump.oec place_symbol --page 1 --symbol coil --x 200 --y 160    # -K1
+openecraft-cli -p pump.oec connect --page 1 --from -S1:14 --to -K1:A1
+openecraft-cli -p pump.oec check
+openecraft-cli -p pump.oec export --format pdf --path pump.pdf
+openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --path parts.csv
+openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --path 6ED1052-1CC08-0BA3.edz
+```
+
+- On the command line every change is written back to `--project` at once. In an MCP
+  session the project stays open in memory: `save_project` writes it, `undo` / `redo`
+  revert single tool calls.
+- Parameters are `--name value` (also `--name=value`, or all at once with `--json '{…}'`);
+  lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
+- Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
+  environment variables or the `parts_connect` tool (also with `user` / `password`);
+  default `http://127.0.0.1:8090`. `parts_connect` with `kind: Eplan` reads the EPLAN
+  Data Portal instead (the token is the personal access token; searching, `parts_get`,
+  `parts_file` and `parts_check_updates` only). The data portal tools search with facets
+  (`parts_search`), manage catalogs, files, favorites and users (`parts_catalog_save`,
+  `parts_attach`, `parts_favorites`, `parts_user_save`, …) and compare the project parts
+  with the server (`parts_check_updates`).
+- Help and messages follow `--lang` or the system language; the MCP server answers in
+  English unless `--lang` is given.
+
+- `OPENECRAFT_MCP_TOOLS` limits the tools the MCP server offers, for clients that take
+  only a limited number: names separated by commas, `parts_*` for all tools starting
+  with `parts_` (e.g. `new_project,open_project,save_project,place_symbol,connect,check,export`).
+- `new_project --path` does not replace an existing file unless `overwrite` is given.
+
+Register the MCP server with an agent, e.g. Claude Code:
+
+```bash
+claude mcp add openecraft -- /path/to/openecraft-cli mcp
+```
+
+or in the `mcpServers` configuration of other clients:
+
+```json
+{ "mcpServers": { "openecraft": { "command": "openecraft-cli", "args": ["mcp"] } } }
+```
+
+The agent can read and write any file the server process can access; start it in a
+working directory (and with a parts server token) you are fine with the agent using.
+
+## Plugins
+
+Plugins add commands, checks, reports and exports to the editor (*Plugins* tab: *Plugin
+commands* lists every command by plugin with a search, the star pins one to the tab; *Check*
+tab), the command line and the MCP server at the same time. Built-in plugins are Rust
+code in `crates/openecraft-api`; external plugins are programs in any language that
+answer JSON requests on stdin / stdout:
+
+```bash
+OPENECRAFT_PLUGINS=examples/plugins openecraft-cli -p pump.oec plugins
+openecraft-cli --plugins examples/plugins -p pump.oec report --kind page_notes
+```
+
+See [docs/plugins.md](plugins.md) for the API and the protocol.
