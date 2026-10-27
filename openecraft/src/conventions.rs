@@ -3,9 +3,9 @@
 
 use std::path::PathBuf;
 
-/// Workspace root (the application crate is the root package).
+/// Workspace root (the parent of the editor crate).
 pub fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().expect("workspace root").to_path_buf()
 }
 
 /// Source directories of all workspace members (from `[workspace] members` in Cargo.toml).
@@ -16,7 +16,7 @@ pub fn source_dirs() -> Vec<PathBuf> {
         .split(',')
         .map(|m| m.trim().trim_matches('"'))
         .filter(|m| !m.is_empty())
-        .map(|m| if m == "." { root().join("application") } else { root().join(m).join("src") })
+        .map(|m| root().join(m).join("src"))
         .collect();
     assert!(dirs.len() >= 2, "workspace members not found");
     dirs

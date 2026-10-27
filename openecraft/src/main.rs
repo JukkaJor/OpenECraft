@@ -51,7 +51,7 @@ fn main() -> eframe::Result {
 /// Window and taskbar icon (`assets/icon.png`, generated with `installer/icon.py`).
 #[cfg(not(target_arch = "wasm32"))]
 fn icon() -> egui::IconData {
-    let img = image::load_from_memory(include_bytes!("../assets/icon.png")).expect("bundled icon").into_rgba8();
+    let img = image::load_from_memory(include_bytes!("../../assets/icon.png")).expect("bundled icon").into_rgba8();
     egui::IconData { width: img.width(), height: img.height(), rgba: img.into_raw() }
 }
 

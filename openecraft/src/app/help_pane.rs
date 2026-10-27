@@ -5,7 +5,7 @@
 use super::*;
 use crate::shortcuts;
 
-const TUTORIAL: &str = include_str!("../../docs/tutorial.md");
+const TUTORIAL: &str = include_str!("../../../docs/tutorial.md");
 const PRODUCT: &str = "OpenECraft";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

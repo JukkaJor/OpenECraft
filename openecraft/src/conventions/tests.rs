@@ -78,14 +78,14 @@ fn tests_path(module_file: &str) -> String {
 #[test]
 fn all_workspace_crates_are_checked() {
     let dirs = source_dirs();
-    for member in ["application", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "parts-server/src", "parts-manager/src"] {
+    for member in ["openecraft/src", "crates/openecraft-parts/src", "crates/openecraft-ui/src", "parts-server/src", "parts-manager/src"] {
         assert!(dirs.iter().any(|d| d.ends_with(member)), "{member} missing in {dirs:?}");
     }
 }
 
 /// UI crates (the others have no user-visible texts of their own).
 fn ui_source_files() -> Vec<PathBuf> {
-    ["application", "crates/openecraft-ui/src", "parts-manager/src"]
+    ["openecraft/src", "crates/openecraft-ui/src", "parts-manager/src"]
         .iter()
         .flat_map(|d| rust_files(&root().join(d)))
         .filter(|p| !is_test_file(p))
@@ -284,7 +284,7 @@ let x = crate::panel::snap(1.0);");
 /// them as `crate::…`, so that UI code and model code stay distinguishable.
 #[test]
 fn the_editor_names_core_modules_explicitly() {
-    let main = std::fs::read_to_string(root().join("application/main.rs")).unwrap();
+    let main = std::fs::read_to_string(root().join("openecraft/src/main.rs")).unwrap();
     let offending: Vec<&str> = main.lines().filter(|l| l.trim_start().starts_with("use openecraft_core::") || l.trim_start().starts_with("pub use openecraft_core::")).collect();
     assert!(offending.is_empty(), "main.rs must not re-export core modules:
 {}", offending.join("

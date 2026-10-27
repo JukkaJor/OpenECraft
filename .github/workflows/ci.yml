@@ -133,12 +133,13 @@ jobs:
       - run: cargo install trunk --locked
       - run: cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown -- -D warnings
       - run: trunk build --release
+        working-directory: openecraft
       - run: trunk build --release
         working-directory: parts-manager
       - uses: actions/upload-artifact@v4
         with:
           name: openecraft-web
-          path: dist
+          path: openecraft/dist
       - uses: actions/upload-artifact@v4
         with:
           name: openecraft-parts-manager-web

@@ -40,7 +40,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `crates/openecraft-core/src/index.rs` | Device and cross-reference index |
 | `crates/openecraft-core/src/reports.rs` | Reports and project check |
 | `crates/openecraft-core/src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
-| `application/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
+| `openecraft/src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
 | `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
@@ -71,28 +71,28 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC, JT and Parasolid export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
-| `application/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
-| `application/app/revisions_ui.rs` | Revisions window with the approval workflow |
-| `application/app/compare_ui.rs`, `application/app/review_ui.rs`, `application/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
-| `application/app/symbol_editor.rs` / `application/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
-| `application/app/harness_ui.rs` | Harness window |
-| `application/app/languages_ui.rs` | Project languages window: dictionary, export per language |
-| `application/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
-| `application/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
-| `application/app/integration_ui.rs` | Enterprise integration window: export, import preview, profiles, linked data, log |
-| `application/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
-| `application/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
+| `openecraft/src/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
+| `openecraft/src/app/revisions_ui.rs` | Revisions window with the approval workflow |
+| `openecraft/src/app/compare_ui.rs`, `openecraft/src/app/review_ui.rs`, `openecraft/src/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
+| `openecraft/src/app/symbol_editor.rs` / `openecraft/src/app/forms_ui.rs` | Symbol editor and forms (title block / report form) windows |
+| `openecraft/src/app/harness_ui.rs` | Harness window |
+| `openecraft/src/app/languages_ui.rs` | Project languages window: dictionary, export per language |
+| `openecraft/src/app/process_ui.rs` | Hose properties and the fluid and process window (hoses, fluid netlist, device groups, electro-fluid links, PCT loops) |
+| `openecraft/src/app/singleline_ui.rs` | Single-line / multi-line window: device status and the transformations |
+| `openecraft/src/app/integration_ui.rs` | Enterprise integration window: export, import preview, profiles, linked data, log |
+| `openecraft/src/wiring_ui.rs` | Wiring assistant workspace: checklist, current wire, 3D view, progress |
+| `openecraft/src/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
 | `crates/openecraft-core/src/panel/rooms.rs` | Rooms: floor plan outline and its walls, cabinets standing in them, rails, ducts and wall-mounted devices on walls and ceiling, their checks |
-| `application/panel_ui/plan.rs` | Floor plan of a room: drawing and moving walls, placing cabinets |
+| `openecraft/src/panel_ui/plan.rs` | Floor plan of a room: drawing and moving walls, placing cabinets |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |
 | `crates/openecraft-core/src/collab.rs` | Shared projects: API types, lock targets and the merge rules of the project server |
-| `application/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
+| `openecraft/src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
-| `application/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
-| `application/remote.rs`, `application/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
-| `application/vault.rs`, `application/app/vault_ui.rs` | Autodesk Vault client and window: browsing, imports, uploads and check-ins, item links; requests in `crates/openecraft-client/src/vault.rs` |
-| `application/app.rs` | Application UI (menus, panels, dialogs); the windows in `application/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
+| `openecraft/src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
+| `openecraft/src/remote.rs`, `openecraft/src/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |
+| `openecraft/src/vault.rs`, `openecraft/src/app/vault_ui.rs` | Autodesk Vault client and window: browsing, imports, uploads and check-ins, item links; requests in `crates/openecraft-client/src/vault.rs` |
+| `openecraft/src/app.rs` | Application UI (menus, panels, dialogs); the windows in `openecraft/src/app/*_ui.rs` (cables, tables, PLC, plugs, potentials, structure, pages, …) |
 | `crates/openecraft-core/src/svg.rs` | SVG / print export |
-| `application/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |
+| `openecraft/src/io.rs` | File kinds of the editor (dialogs are in `openecraft-ui`) |

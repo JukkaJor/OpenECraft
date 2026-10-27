@@ -16,8 +16,8 @@ openecraft-client ─► openecraft-ui ──────────┘ (editor
 openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core, parts)
 ```
 
-- Library crates live under `crates/`; executables are the root package (editor,
-  `application/`), `cli/`, `parts-server/`, `project-server/`, `parts-manager/`.
+- Library crates live under `crates/`; executables are `openecraft/` (editor),
+  `cli/`, `parts-server/`, `project-server/`, `parts-manager/`.
 - A crate depends only on crates to its left. No library depends on an executable.
   `openecraft-api` has no UI dependency and no `cfg(target_arch)` branch.
 - Platform code (`wasm32` versus native) exists only in `crates/openecraft-ui/src/io.rs`
@@ -32,14 +32,14 @@ openecraft-auth (parts) ─► parts-server (parts, i18n), project-server (core,
   `server_config`). See [access-control.md](access-control.md).
 - Autodesk Vault is a server of another vendor: its requests, answer types and the
   operations of several requests (`Job`: uploads with checkout and check-in, the item
-  lookup) live in `openecraft_client::vault`. The editor (`application/vault.rs`) runs
+  lookup) live in `openecraft_client::vault`. The editor (`openecraft/src/vault.rs`) runs
   the jobs in the background, the command line (`cli/src/vault.rs`) blocking; item
   links reach the project through the PLM connector of `openecraft_core::integration`.
 
 ## Layers inside `openecraft-core`
 
 The crate is one compilation unit, so the compiler does not stop a module from
-reaching upwards. `application/conventions/tests.rs` (`core_modules_respect_the_layer_rules`)
+reaching upwards. `openecraft/src/conventions/tests.rs` (`core_modules_respect_the_layer_rules`)
 does: `CORE_RULES` lists every module with the modules it may refer to (`crate::…`
 paths outside comments). The table pins the current graph: a new edge fails the test,
 removing an edge means shortening a list. Entries that point upwards are the known
@@ -90,7 +90,7 @@ refer to each other (the registry kinds take an `&Analysis`).
 
 ## The editor
 
-- `application/session.rs` holds the document state: the open project, its undo
+- `openecraft/src/session.rs` holds the document state: the open project, its undo
   history, the analysis (rebuilt after committed changes and language changes, with the
   reports and checks of the registry), the device index, the saved revision and the
   file name. It has no UI code and is unit tested; `App` adds the windows. The
@@ -98,26 +98,26 @@ refer to each other (the registry kinds take an `&Analysis`).
   (`netlist::Scans`, keyed by page id and a fingerprint of its wires and symbols), so
   a change scans only the changed pages again; the checks run on several threads where
   the platform has them (`analysis::par_map`, sequential in the browser).
-- `application/autosave.rs` keeps the autosaved project and parts database in the
+- `openecraft/src/autosave.rs` keeps the autosaved project and parts database in the
   app's `openecraft_ui::io::Store` (a file per key on the desktop, IndexedDB in the
   browser) and decides when a value read back at start-up may replace the start-up
   one.
 - The shell (see `docs/ux-workplan.md`) is described by four modules without UI code,
-  each unit tested: `application/commands.rs` is the table of every command of the
+  each unit tested: `openecraft/src/commands.rs` is the table of every command of the
   editor (id, title, tooltip, icon, kind, default keys, the pane it shows);
-  `application/ribbon.rs` places the commands in the tabs and groups of the ribbon,
+  `openecraft/src/ribbon.rs` places the commands in the tabs and groups of the ribbon,
   the backstage pages and the quick access row, assigns key tips and holds the user's
-  customisation; `application/dock.rs` lists the panes (page, navigators, Insert
+  customisation; `openecraft/src/dock.rs` lists the panes (page, navigators, Insert
   center, properties, panel layout and wiring panes, and every tool as a `ToolPane`)
   with the default arrangement of each workspace (`egui_tiles`, one tree per
-  workspace); `application/workspaces.rs` the built-in and saved workspaces.
-  `application/insert_center.rs` holds the search, favorites and recently used
-  entries of the Insert center, `application/shortcuts.rs` the keys of every command,
-  `application/style.rs` the state colours (light and dark, tested for contrast).
+  workspace); `openecraft/src/workspaces.rs` the built-in and saved workspaces.
+  `openecraft/src/insert_center.rs` holds the search, favorites and recently used
+  entries of the Insert center, `openecraft/src/shortcuts.rs` the keys of every command,
+  `openecraft/src/style.rs` the state colours (light and dark, tested for contrast).
   The tests check that every command has a place in the shell and every pane a
   command, so a new feature cannot be unreachable. Icons are vector paths in
   `openecraft_ui::icons`.
-- `application/app.rs` is the composition root: the `App` struct, start-up, the frame
+- `openecraft/src/app.rs` is the composition root: the `App` struct, start-up, the frame
   loop and the handful of helpers every pane needs (`notify`, `goto`, `show_pane`,
   `set_workspace`, `replace_project`, `add_page`). The ribbon and quick access row
   (`app/ribbon_ui.rs`), the backstage (`app/backstage.rs`), the status bar, the command
@@ -151,11 +151,11 @@ refer to each other (the registry kinds take an `&Analysis`).
    (project files, undo, exports to files, the parts server) stay `Tool`s in
    `cli/src/tools/`. Front ends never special-case one of them: they enumerate
    `Plugins`.
-4. UI: a module under `application/app/` that draws and sends actions; rules that
+4. UI: a module under `openecraft/src/app/` that draws and sends actions; rules that
    change the project go to core (`ops` or the feature module) so the command line can
    use them. A new tool is a pane: a `ToolPane` variant, a command in
-   `application/commands.rs` that shows it and a place in a group of
-   `application/ribbon.rs` (the tests fail otherwise).
+   `openecraft/src/commands.rs` that shows it and a place in a group of
+   `openecraft/src/ribbon.rs` (the tests fail otherwise).
 5. Texts: English in the code, through `tr` / `tr_fmt!` / `tr_const!`, with catalog
    entries in the four required languages and, where possible, the further ones (see
    AGENTS.md).
