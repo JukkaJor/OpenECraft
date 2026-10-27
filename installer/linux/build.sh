@@ -13,6 +13,7 @@
 #   flatpak   flatpak, flatpak-builder (the runtime is installed from Flathub)
 #   snap      snapcraft (SNAPCRAFT="sudo snapcraft" SNAPCRAFT_ARGS=--destructive-mode in CI)
 #
+# All formats need cargo-about for the third-party licenses (cargo install cargo-about --locked).
 # OPENECRAFT_BIN_DIR=<dir> packages binaries built before instead of running cargo.
 
 set -euo pipefail
@@ -24,7 +25,8 @@ out="$root/target/installer"
 work="$out/linux"
 id=io.github.nilres.OpenECraft
 bins=(openecraft openecraft-parts-manager openecraft-cli openecraft-parts-server openecraft-project-server)
-version="$(sed -n 's/^version *= *"\([^"]*\)".*/\1/p' "$root/Cargo.toml" | head -n 1)"
+version="$(sed -n '/^\[workspace\.package\]/,/^\[/s/^version *= *"\([^"]*\)".*/\1/p' "$root/Cargo.toml" | head -n 1)"
+notices="$out/THIRD-PARTY-LICENSES.html"
 # deb and rpm sort `~` before a release ("0.2.0~rc1" < "0.2.0") and do not allow `-`.
 pkgver="${version//-/\~}"
 arch="$(uname -m)"
@@ -34,6 +36,8 @@ formats=("$@")
 die() { echo "error: $*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null || die "$1 not found, needed for $2"; }
 
+[ -n "$version" ] || die "no version in [workspace.package] of Cargo.toml"
+need cargo-about "the third-party licenses (cargo install cargo-about --locked)"
 grep -q "<release version=\"$version\"" "$here/$id.metainfo.xml" \
     || die "add <release version=\"$version\" date=\"…\"/> to installer/linux/$id.metainfo.xml"
 
@@ -60,6 +64,10 @@ stage() {
     install -D -m 644 "$root/assets/icon.png" "$dir/share/icons/hicolor/256x256/apps/$id.png"
     install -D -m 644 "$root/assets/icon.svg" "$dir/share/icons/hicolor/scalable/apps/$id.svg"
     install -D -m 644 "$root/README.md" "$dir/share/doc/openecraft/README.md"
+    install -D -m 644 "$root/LICENSE-MIT" "$dir/share/doc/openecraft/LICENSE-MIT"
+    install -D -m 644 "$root/LICENSE-APACHE" "$dir/share/doc/openecraft/LICENSE-APACHE"
+    install -D -m 644 "$root/crates/openecraft-fonts/fonts/OFL.txt" "$dir/share/doc/openecraft/OFL-NotoSans.txt"
+    install -D -m 644 "$notices" "$dir/share/doc/openecraft/THIRD-PARTY-LICENSES.html"
 }
 
 build_tar() {
@@ -177,6 +185,8 @@ build_snap() {
 }
 
 install -d "$work"
+cargo about generate --fail --manifest-path "$root/Cargo.toml" -c "$root/installer/about.toml" \
+    -o "$notices" "$root/installer/about.hbs"
 for format in "${formats[@]}"; do
     case "$format" in
         tar.gz) build_tar ;;

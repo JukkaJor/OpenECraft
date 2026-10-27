@@ -82,8 +82,10 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   database for newer versions, phased out and discontinued parts. *Devices › Parts
   management › 🌐 Parts server* downloads all parts or uploads parts. The project check
   warns about devices with discontinued parts; `use_successor_parts` changes them over.
-- The server speaks plain HTTP; put it behind a TLS reverse proxy when it is reachable
-  from outside your network.
+- The server speaks plain HTTP, so tokens and passwords cross the network unencrypted.
+  Keep it on `127.0.0.1` behind a TLS reverse proxy when it is reachable from other
+  machines, e.g. with [Caddy](https://caddyserver.com/), which fetches the certificate:
+  `caddy reverse-proxy --from parts.example.com --to 127.0.0.1:8090`.
 
 ## EPLAN Data Portal
 

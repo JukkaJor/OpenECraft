@@ -66,7 +66,9 @@ match the current file format; *Save as…* writes one as an `.oec` file.
 ## Getting started
 
 Installers for Windows, Linux (deb, rpm, AppImage, Flatpak, snap, tar.gz) and macOS are
-built by CI on every push; see [installation](docs/installation.md). From source, with a
+on the [releases page](https://github.com/nilres/OpenECraft/releases) and are built by CI
+on every push; see [installation](docs/installation.md) and the
+[changelog](CHANGELOG.md). From source, with a
 recent stable Rust toolchain:
 
 ```bash
@@ -88,7 +90,7 @@ The second command serves the web version on http://127.0.0.1:8080 (it needs
 | Features | [Schematic editor](docs/features/schematic.md) · [Symbols](docs/features/symbols.md) · [Connections and numbering](docs/features/connections.md) · [Macros and configurator](docs/features/macros.md) · [Terminals, plugs, PLC](docs/features/terminals-plugs-plc.md) · [Reports and checks](docs/features/reports-and-checks.md) · [Revisions and review](docs/features/revisions-and-review.md) · [Parts](docs/features/parts.md) · [Panel layout](docs/features/panel-layout.md) · [Wiring and mounting assistants](docs/features/workshop.md) · [Calculations](docs/features/calculations.md) · [Harnesses](docs/features/harnesses.md) · [Fluid and process](docs/features/fluid-and-process.md) · [Output and data exchange](docs/features/data-exchange.md) |
 | Administrators | [Parts server and parts manager](docs/parts-server.md) · [Project server](docs/project-server.md) · [Access control](docs/access-control.md) |
 | Automation | [Command line and MCP server](docs/command-line.md) · [Plugins](docs/plugins.md) · [Harness interface](docs/harness-interface.md) |
-| Developers | [AGENTS.md](AGENTS.md) (conventions) · [Architecture](docs/architecture.md) · [Code structure](docs/code-structure.md) |
+| Developers | [AGENTS.md](AGENTS.md) (conventions) · [Architecture](docs/architecture.md) · [Code structure](docs/code-structure.md) · [Releasing](docs/releasing.md) |
 
 Before a change is done, these must pass without warnings (CI runs them with
 `-D warnings`):
@@ -101,4 +103,6 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 
 ## License
 
-MIT or Apache-2.0, at your option.
+MIT ([LICENSE-MIT](LICENSE-MIT)) or Apache-2.0 ([LICENSE-APACHE](LICENSE-APACHE)), at
+your option. The licenses of the libraries and fonts OpenECraft contains are listed in
+`THIRD-PARTY-LICENSES.html`, which comes with every package.

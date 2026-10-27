@@ -1,0 +1,35 @@
+# Changelog
+
+The notable changes of each OpenECraft release. The section of a version is the text of
+its GitHub release ([docs/releasing.md](docs/releasing.md)).
+
+## [0.1.0] - unreleased
+
+The first release: an electrical CAE editor for Windows, Linux, macOS and the browser,
+with a command line, an MCP server, a parts server and a project server.
+
+- **Schematics:** device-oriented pages with live cross references and contact images,
+  structure identifiers, page sections, macros with variants and a configurator;
+  potentials, cables with cores and automatic wire, device and page numbering.
+- **Symbols:** about 330 IEC 60617 symbols, NFPA / JIC, GB, GOST and JIS sets, fluid
+  power (ISO 1219), P&ID, installation plans and single-line; a symbol editor.
+- **Terminals, plugs, PLC:** multi-level terminals with accessories, plugs, PLC tag
+  tables for TIA Portal, Studio 5000, TwinCAT, CODESYS and more, marker export.
+- **Reports and checks:** live report pages, graphical terminal, cable and plug
+  diagrams, drawn forms, a project check with message management.
+- **Panel layout:** devices at real size in 2D and 3D, virtual wiring with duct fill,
+  drilling and NC data, enclosure climate, line-ups, rooms and 3D routing; wiring and
+  mounting assistants for the workshop.
+- **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
+  EMC, ISO 13849-1 safety functions; wire harnesses with KBL, fluid power, pre-planning.
+- **Revisions and review:** released pages, approval workflow, baselines with compare
+  and merge, comments and redlining.
+- **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
+  JT, IFC), BMEcat, EPLAN XML and EDZ import; a parts server with a data portal.
+- **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
+  Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
+- **Teams and automation:** a project server with page locks, roles and Active
+  Directory / LDAP sign-in; a command line, an MCP server for AI agents and plugins.
+- **Languages:** English, German, French, Spanish and 16 more.
+- **Packages:** Windows setup, deb, rpm, AppImage, Flatpak, snap, tar.gz, macOS disk
+  image and the web version.

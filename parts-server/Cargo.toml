@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-parts-server"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "Global parts database server for OpenECraft"
 license = "MIT OR Apache-2.0"

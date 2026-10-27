@@ -2,7 +2,14 @@
 
 Packages for Windows, Linux and macOS, the web version, and building from source.
 
+Released versions are on the [releases page](https://github.com/nilres/OpenECraft/releases)
+with a `SHA256SUMS` file; how they are made is in [releasing](releasing.md).
+
 Building from source requires a recent stable Rust toolchain (`rustup update stable`).
+The installer scripts below also need
+[cargo-about](https://github.com/EmbarkStudios/cargo-about)
+(`cargo install cargo-about --locked`) for `THIRD-PARTY-LICENSES.html`, which every
+package contains next to `LICENSE-MIT` and `LICENSE-APACHE`.
 
 ## Desktop (Windows / Linux / macOS)
 
@@ -36,8 +43,10 @@ powershell -ExecutionPolicy Bypass -File installer/windows/build.ps1   # → tar
 The binaries link the C runtime statically, so no Visual C++ redistributable is needed.
 For unattended installation (software distribution) run the setup with
 `/VERYSILENT /SUPPRESSMSGBOXES`, add `/ALLUSERS` for all users and select parts with
-`/COMPONENTS="main,partsmanager,cli,servers"` and `/TASKS="fileassoc,addtopath"`. The
-installer is not code signed yet, so SmartScreen asks for confirmation on first run.
+`/COMPONENTS="main,partsmanager,cli,servers"` and `/TASKS="fileassoc,addtopath"`.
+With `WINDOWS_SIGN_CERT=<.pfx file>` and `WINDOWS_SIGN_PASSWORD` the script signs the
+programs, the setup and the uninstaller (signtool of the Windows SDK); otherwise they are
+unsigned and SmartScreen asks for confirmation on first run (see [releasing](releasing.md)).
 `installer/icon.py` draws the application icon (`assets/icon.png`, `assets/icon.ico`,
 `assets/icon.icns`, `assets/icon.svg`).
 
@@ -89,7 +98,8 @@ bash installer/macos/build.sh                        # → target/installer/
 Without `MACOS_SIGN_IDENTITY` the apps are signed ad hoc, so Gatekeeper asks for
 confirmation on first start (*System Settings › Privacy & Security › Open Anyway*). With
 a Developer ID certificate (`MACOS_SIGN_IDENTITY="Developer ID Application: …"`) and a
-`notarytool` keychain profile (`MACOS_NOTARY_PROFILE`) the image is signed and notarized.
+`notarytool` keychain profile (`MACOS_NOTARY_PROFILE`, `MACOS_NOTARY_KEYCHAIN` when it is
+not in the login keychain) the image is signed and notarized.
 Projects are opened with *File › Open project*; opening them by double-click in the Finder is not
 supported yet. CI builds the image on every push (artifact `openecraft-macos-dmg`).
 

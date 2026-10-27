@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-project-server"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "Project server for OpenECraft: shared projects with page locks for several users"
 license = "MIT OR Apache-2.0"

@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-xt"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "Parasolid XT export of OpenECraft: triangle meshes as faceted B-rep bodies in transmit text (.x_t)"
 license = "MIT OR Apache-2.0"

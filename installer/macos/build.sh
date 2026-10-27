@@ -6,13 +6,15 @@
 #
 #   bash installer/macos/build.sh
 #
-# Needs the Xcode command line tools and both Rust targets
-# (rustup target add aarch64-apple-darwin x86_64-apple-darwin).
+# Needs the Xcode command line tools, both Rust targets
+# (rustup target add aarch64-apple-darwin x86_64-apple-darwin) and cargo-about for the
+# third-party licenses (cargo install cargo-about --locked).
 #
 # MACOS_TARGETS="aarch64-apple-darwin" builds for one architecture only.
 # MACOS_SIGN_IDENTITY="Developer ID Application: …" signs with that certificate
 # (hardened runtime), otherwise the apps are signed ad hoc.
-# MACOS_NOTARY_PROFILE=<keychain profile of notarytool> notarizes and staples the image.
+# MACOS_NOTARY_PROFILE=<keychain profile of notarytool> notarizes and staples the image
+# (MACOS_NOTARY_KEYCHAIN=<keychain> when the profile is not in the login keychain).
 
 set -euo pipefail
 umask 022
@@ -22,7 +24,9 @@ root="$(cd "$here/../.." && pwd)"
 out="$root/target/installer"
 work="$out/macos"
 id=io.github.nilres.OpenECraft
-version="$(sed -n 's/^version *= *"\([^"]*\)".*/\1/p' "$root/Cargo.toml" | head -n 1)"
+version="$(sed -n '/^\[workspace\.package\]/,/^\[/s/^version *= *"\([^"]*\)".*/\1/p' "$root/Cargo.toml" | head -n 1)"
+[ -n "$version" ] || { echo "error: no version in [workspace.package] of Cargo.toml" >&2; exit 1; }
+command -v cargo-about >/dev/null || { echo "error: cargo-about not found (cargo install cargo-about --locked)" >&2; exit 1; }
 # shellcheck disable=SC2206
 targets=(${MACOS_TARGETS:-aarch64-apple-darwin x86_64-apple-darwin})
 identity="${MACOS_SIGN_IDENTITY:--}"
@@ -101,6 +105,8 @@ bundle() {
     info_plist "$name" "$bundle_id" "$1" > "$app/Contents/Info.plist"
     printf 'APPL????' > "$app/Contents/PkgInfo"
     cp "$root/assets/icon.icns" "$app/Contents/Resources/OpenECraft.icns"
+    cp "$root/LICENSE-MIT" "$root/LICENSE-APACHE" "$work/THIRD-PARTY-LICENSES.html" "$app/Contents/Resources/"
+    cp "$root/crates/openecraft-fonts/fonts/OFL.txt" "$app/Contents/Resources/OFL-NotoSans.txt"
     # The main program is signed with the bundle.
     for program in "$@"; do
         universal "$program" "$app/Contents/MacOS/$program"
@@ -111,6 +117,8 @@ bundle() {
 dmg_root="$work/dmg"
 rm -rf "$work"
 install -d "$dmg_root" "$out"
+cargo about generate --fail --manifest-path "$root/Cargo.toml" -c "$root/installer/about.toml" \
+    -o "$work/THIRD-PARTY-LICENSES.html" "$root/installer/about.hbs"
 
 bundle "$dmg_root/OpenECraft.app" OpenECraft "$id" \
     openecraft openecraft-cli openecraft-parts-server openecraft-project-server
@@ -130,7 +138,8 @@ if [ "$identity" != - ]; then
     codesign --force --sign "$identity" --timestamp "$dmg"
 fi
 if [ -n "${MACOS_NOTARY_PROFILE:-}" ]; then
-    xcrun notarytool submit "$dmg" --keychain-profile "$MACOS_NOTARY_PROFILE" --wait
+    xcrun notarytool submit "$dmg" --keychain-profile "$MACOS_NOTARY_PROFILE" \
+        ${MACOS_NOTARY_KEYCHAIN:+--keychain "$MACOS_NOTARY_KEYCHAIN"} --wait
     xcrun stapler staple "$dmg"
 fi
 ls -l "$dmg"

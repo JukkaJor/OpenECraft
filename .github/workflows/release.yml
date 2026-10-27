@@ -1,0 +1,55 @@
+name: Release
+
+# Pushing a tag v<version> builds every package with the jobs of ci.yml and creates a
+# draft GitHub release with them (docs/releasing.md).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag, version, metainfo and changelog agree
+        run: |
+          version="$(sed -n '/^\[workspace\.package\]/,/^\[/s/^version *= *"\([^"]*\)".*/\1/p' Cargo.toml | head -n 1)"
+          fail() { echo "::error::$*"; exit 1; }
+          [ "v$version" = "$GITHUB_REF_NAME" ] || fail "tag $GITHUB_REF_NAME does not match version $version of Cargo.toml"
+          grep -q "<release version=\"$version\"" installer/linux/io.github.nilres.OpenECraft.metainfo.xml \
+            || fail "no <release version=\"$version\"> in installer/linux/io.github.nilres.OpenECraft.metainfo.xml"
+          grep -q "^## \[$version\]" CHANGELOG.md || fail "no section ## [$version] in CHANGELOG.md"
+
+  build:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Release files
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir assets
+          cp artifacts/openecraft-windows-installer/* artifacts/openecraft-linux-packages/* \
+            artifacts/openecraft-flatpak/* artifacts/openecraft-snap/* artifacts/openecraft-macos-dmg/* assets/
+          (cd artifacts/openecraft-web && zip -qr "$GITHUB_WORKSPACE/assets/OpenECraft-$version-web.zip" .)
+          (cd artifacts/openecraft-parts-manager-web && zip -qr "$GITHUB_WORKSPACE/assets/OpenECraft-Parts-Manager-$version-web.zip" .)
+          (cd assets && sha256sum -- * > SHA256SUMS)
+          # The section of this version in the changelog, without its heading.
+          awk -v v="$version" '/^## \[/ { on = index($0, "## [" v "]") == 1; next } on' CHANGELOG.md > notes.md
+      - name: Draft release
+        run: |
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+            --title "OpenECraft ${GITHUB_REF_NAME#v}" --notes-file notes.md assets/*
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,16 +1,19 @@
 name: CI
 
+# Also called by release.yml for a tag; tags therefore do not start this workflow.
 on:
   push:
+    branches: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   native:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-2025, ubuntu-24.04, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -38,14 +41,30 @@ jobs:
             target/release/openecraft-cli
             target/release/openecraft-cli.exe
 
+  # Signed when the secrets WINDOWS_CERTIFICATE (base64 of a .pfx) and
+  # WINDOWS_CERTIFICATE_PASSWORD are set (docs/releasing.md).
   windows-installer:
-    runs-on: windows-latest
+    runs-on: windows-2025
+    env:
+      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
       - name: Inno Setup
         run: choco install innosetup --no-progress -y
+      - name: Signing certificate
+        if: env.WINDOWS_CERTIFICATE != ''
+        shell: pwsh
+        run: |
+          $pfx = "$env:RUNNER_TEMP\sign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          "WINDOWS_SIGN_CERT=$pfx" >> $env:GITHUB_ENV
       - run: powershell -ExecutionPolicy Bypass -File installer\windows\build.ps1
+        env:
+          WINDOWS_SIGN_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: openecraft-windows-installer
@@ -53,7 +72,7 @@ jobs:
 
   # Built on Debian 12, so the binaries run on distributions with glibc 2.36 or newer.
   linux-packages:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:bookworm
     env:
       DEBIAN_FRONTEND: noninteractive
@@ -65,6 +84,9 @@ jobs:
             libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
       - run: bash installer/linux/build.sh tar.gz deb rpm appimage
       - uses: actions/upload-artifact@v4
         with:
@@ -74,12 +96,16 @@ jobs:
             target/installer/*.deb
             target/installer/*.rpm
             target/installer/*.AppImage
+            target/installer/THIRD-PARTY-LICENSES.html
 
   flatpak:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
       - name: Build dependencies
         run: |
           sudo apt-get update
@@ -96,6 +122,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
       - name: Build dependencies
         run: |
           sudo apt-get update
@@ -110,13 +139,47 @@ jobs:
           name: openecraft-snap
           path: target/installer/*.snap
 
+  # Signed with a Developer ID when the secrets MACOS_CERTIFICATE (base64 of a .p12),
+  # MACOS_CERTIFICATE_PASSWORD and MACOS_SIGN_IDENTITY are set, notarized when
+  # APPLE_ID, APPLE_TEAM_ID and APPLE_APP_PASSWORD are set too (docs/releasing.md).
   macos-dmg:
-    runs-on: macos-latest
+    runs-on: macos-15
+    env:
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
+      - name: Signing certificate
+        if: env.MACOS_CERTIFICATE != ''
+        env:
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/sign.keychain-db"
+          password="$(openssl rand -hex 16)"
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/sign.p12"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$RUNNER_TEMP/sign.p12" -k "$keychain" -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$password" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/sign.p12"
+          echo "MACOS_SIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
+          if [ -n "$APPLE_ID" ]; then
+            xcrun notarytool store-credentials openecraft --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+              --password "$APPLE_APP_PASSWORD" --keychain "$keychain"
+            echo "MACOS_NOTARY_PROFILE=openecraft" >> "$GITHUB_ENV"
+            echo "MACOS_NOTARY_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          fi
       - run: bash installer/macos/build.sh
       - uses: actions/upload-artifact@v4
         with:
@@ -124,13 +187,15 @@ jobs:
           path: target/installer/*.dmg
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - run: cargo install trunk --locked
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: trunk
       - run: cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown -- -D warnings
       - run: trunk build --release
         working-directory: openecraft

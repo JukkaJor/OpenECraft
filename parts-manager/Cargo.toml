@@ -1,6 +1,6 @@
 ﻿[package]
 name = "openecraft-parts-manager"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "OpenECraft parts manager - maintains the parts of an OpenECraft parts server"
 license = "MIT OR Apache-2.0"
