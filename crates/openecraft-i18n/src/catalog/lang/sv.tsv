@@ -136,7 +136,6 @@ Contacts	Kontakter
 Control transformer	Manövertransformator
 Copper busbar system: click start and end point	Samlingsskenesystem av koppar: klicka på start- och slutpunkt
 Copy / cut / paste (devices get new tags)	Kopiera / klipp ut / klistra in (apparater får nya beteckningar)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopiera / klistra in: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Kopiera som ny
 Copy built-in…	Kopiera inbyggd…
 Core	Ledare
@@ -155,8 +154,6 @@ Cross references	Korsreferenser
 Cross-section	Tvärsnitt
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Ström
 Cutout	Urtag
 Cutout {} × {} mm	Urtag {} × {} mm
@@ -169,7 +166,6 @@ Date	Datum
 Date of the last revision	Datum för den senaste revisionen
 Default label	Standardetikett
 Del	Del
-Delete   Del	Ta bort   Del
 Delete (Del)	Ta bort (Del)
 Delete cable (its wires are removed from it)	Ta bort kabel (dess ledningar tas bort från den)
 Delete enclosure	Ta bort kapsling
@@ -203,7 +199,6 @@ Door	Dörr
 Door (front view)	Dörr (frontvy)
 Door clearance	Dörrfrigång
 Door: {} devices, {} cutouts	Dörr: {} apparater, {} urtag
-Download project   Ctrl+S	Ladda ned projekt   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} artiklar nedladdade (revision {}): {} nya, {} uppdaterade
 Downloading parts…	Laddar ned artiklar…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Dra: rotera · dra med höger-/mittknappen: panorera · hjul: zooma · klick: välj apparat eller ledning
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filter (nummer, typ, tillverkare, 
 Filter devices…	Filtrera apparater…
 Filter…	Filtrera…
 Fit page	Anpassa sida
-Fit page   F	Anpassa sida   F
 Fit page (F)	Anpassa sida (F)
 Fluid power (ISO 1219)	Fluidteknik (ISO 1219)
 Forms – title blocks and reports	Formulär – namnrutor och rapporter
@@ -347,7 +341,6 @@ Manufacturer	Tillverkare
 Max. width	Max. bredd
 Merge a symbol library file	Sammanfoga en symbolbiblioteksfil
 Mirror	Spegelvänd
-Mirror   M	Spegelvänd   M
 Model import failed: {}	Modellimporten misslyckades: {}
 Motor (single-line)	Motor (enlinje)
 Motor 1-phase	Motor 1-fas
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft-namnrutor (JSON)
 OpenECraft – usage	OpenECraft – användning
 Opened {}	{} öppnad
 Opening in the mounting plate / door: click two corners (round: in the properties)	Öppning i monteringsplåten / dörren: klicka på två hörn (rund: i egenskaperna)
-Open…        Ctrl+O	Öppna…        Ctrl+O
 Order number	Beställningsnummer
 Orientation	Orientering
 Overload aux contact NC	Överlast hjälpkontakt brytande
@@ -546,8 +538,6 @@ Radius	Radie
 Readdress card	Adressera om kort
 Rectangle	Rektangel
 Rectangular	Rektangulär
-Redo   Ctrl+Y	Gör om   Ctrl+Y
-Redo (Ctrl+Y)	Gör om (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Uppdatera exempelkatalogens artiklar (GEN.*)
 Relay / contactor coil	Relä- / kontaktorspole
 Relay coil (NFPA)	Reläspole (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revision {} skapad
 Revisions	Revisioner
 Revisions…	Revisioner…
 Right	Höger
-Rotate   R	Rotera   R
 Rotate (R)	Rotera (R)
 Rotate / mirror (selection or symbol being placed)	Rotera / spegelvänd (markering eller symbol som placeras)
 Rotate 90°:	Rotera 90°:
@@ -586,7 +575,6 @@ Round	Rund
 Routing	Dragning
 Rows per page	Rader per sida
 SVG image	SVG-bild
-Save          Ctrl+S	Spara          Ctrl+S
 Save / open	Spara / öppna
 Save as macro	Spara som makro
 Save as…	Spara som…
@@ -605,7 +593,6 @@ Select a macro.	Välj ett makro.
 Select a part in the tree or create a new one.	Välj en artikel i trädet eller skapa en ny.
 Select a part. Double click adds it to the device.	Välj en artikel. Dubbelklick lägger till den i apparaten.
 Select all	Markera alla
-Select all   Ctrl+A	Markera alla   Ctrl+A
 Select an element in the list or the drawing.	Välj ett element i listan eller i ritningen.
 Select and drag elements; Del deletes	Markera och dra element; Del tar bort
 Select device	Välj apparat
@@ -673,7 +660,6 @@ Terminals	Plintar
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Plintar med samma bygelnummer är byglade (samma potential). Reservplintar räknas i stycklistan.
 Test connection	Testa anslutning
 Text	Text
-Text   T	Text   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D-frontvyn används i skåpets frontvy och på monteringslayoutsidor, 3D-modellen i 3D-skåpvyn. Båda anpassas till monteringsdata (bredd × höjd × djup).
 The access token is only needed for changes; it is not stored.	Åtkomsttoken behövs bara för ändringar; den lagras inte.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Modellen ({} × {} × {}) avviker från monteringsdata ({} × {} × {}); den sträcks ut till monteringsdata.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformator (enlinje)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Vrid modellen så att dess framsida är vänd mot betraktaren (+Z) och dess ovansida är +Y
 Type	Typ
 Type number	Typnummer
-Undo   Ctrl+Z	Ångra   Ctrl+Z
-Undo (Ctrl+Z)	Ångra (Ctrl+Z)
 Undo / redo	Ångra / gör om
 Unit	Enhet
 Unit price	Enhetspris
@@ -729,7 +713,6 @@ Width × height	Bredd × höjd
 Width × height × depth	Bredd × höjd × djup
 Window macro: {}	Fönstermakro: {}
 Wire	Ledning
-Wire   W	Ledning   W
 Wire assigned to unknown cable {}	Ledning tilldelad okänd kabel {}
 Wire ends with ferrules	Ledningsändar med ändhylsor
 Wire list (panel routing)	Ledningslista (skåpdragning)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Skapar eller ändrar en instrumentslinga i förprojekteringen
 Loop number, e.g. 101	Slingnummer, t.ex. 101
 Measuring range or set point	Mätområde eller börvärde
-Further device tags of the loop, separated by blanks	Ytterligare apparatbeteckningar för slingan, åtskilda med blanksteg
 Deletes a PCT loop of the pre-planning	Tar bort en instrumentslinga i förprojekteringen
 Loop number	Slingnummer
 No enclosure named {}	Ingen kapsling med namnet {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Inte en språkkod: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Listar käll- och målspråken för projekttexterna med antalet oöversatta rader
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Anger källspråket för projekttexterna och målspråken (ISO 639-1-koder)
 Language the project texts are written in, e.g. en	Språk som projekttexterna är skrivna på, t.ex. en
-Target languages separated by blanks, e.g. de fr	Målspråk åtskilda med blanksteg, t.ex. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Listar översättningsordlistan för projekttexterna (källrad och översättningar)
 Only lines without a translation into this language	Endast rader utan översättning till det här språket
 Text in the line or a translation	Text i raden eller i en översättning
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Namnrutor, ritningsramar och sid
 Frame of all pages that do not choose one	Ram för alla sidor som inte väljer någon
 Frame to start from when the frame is new (default: A3 landscape)	Ram att utgå från när ramen är ny (standard: A3 landscape)
 Free graphics and notes, not evaluated	Fri grafik och anteckningar, utvärderas inte
-Give kind or template	Ange kind eller template
 Imported {} page templates	{} sidmallar importerade
 Insert page	Infoga sida
 Landscape	Liggande
@@ -2280,7 +2260,6 @@ Locked by other users	Låst av andra användare
 None	Inga
 Close shared project	Stäng delat projekt
 Releases all locks; the project stays open as a local copy	Släpper alla lås; projektet förblir öppet som en lokal kopia
-Save to project server   Ctrl+S	Spara på projektservern   Ctrl+S
 Download project	Ladda ned projekt
 Project server…	Projektserver…
 Open and save shared projects, lock pages	Öppna och spara delade projekt, lås sidor
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Rita en linje tvärs �
 Cable definition on page {}	Kabeldefinition på sida {}
 No cables yet. Draw a cable definition across wires or add a cable.	Inga kablar ännu. Rita en kabeldefinition tvärs över ledningar eller lägg till en kabel.
 New tag for {}	Ny beteckning för {}
-This tag is already used	Den här beteckningen används redan
 Select on this page	Markera på den här sidan
 Place functions of this device	Placera funktioner för den här apparaten
 Symbols placed next get this device tag (contacts are numbered on)	Symboler som placeras härnäst får den här apparatbeteckningen (kontakter numreras vidare)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Skapar eller ändrar en fluidapparatgrup
 Device tag of the group, e.g. -KH1	Gruppens apparatbeteckning, t.ex. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit eller other
 Places of the group (0 = not limited)	Gruppens platser (0 = obegränsat)
-Device tags of the members in slot order, separated by blanks	Medlemmarnas apparatbeteckningar i platsordning, åtskilda med blanksteg
 Part number of the base	Bottenplattans artikelnummer
 Deletes a fluid device group	Tar bort en fluidapparatgrupp
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Listar fluidapparaterna med magnetspolar eller länkar och de elektriska apparater som är länkade till dem
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Länkar en fluidapparat med de elektriska apparater som manövrerar eller övervakar den (ersätter länkarna)
 Device tag of the fluid device, e.g. -QM1	Fluidapparatens apparatbeteckning, t.ex. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Elektriska apparatbeteckningar åtskilda med blanksteg (tomt = ta bort länkarna)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Länkar magnetventiler med spolen med samma nummer (-QM3 › -MB3) och kopierar funktionstexter mellan länkade apparater
 No hose {}	Ingen slang {}
 Unknown line type: {}	Okänd ledningstyp: {}
@@ -3173,7 +3149,6 @@ Communication	Kommunikation
 Conductor class	Ledarklass
 Conductor material	Ledarmaterial
 Connection point descriptions	Beskrivningar av anslutningspunkter
-Connection point designations separated by blanks	Anslutningspunktsbeteckningar åtskilda med blanksteg
 Connection type	Anslutningstyp
 Contact material	Kontaktmaterial
 Contractor	Entreprenör
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Verifiera även varje projekt (långsammare)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Söker projekt i projektdatabasen eller en mapp: termer åtskilda med ';', var och en nyckel=värde, nyckel~text eller vanlig text
 Search terms, e.g. company=ACME; customer~plant; conveyor	Söktermer, t.ex. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Projektdatabasfil (JSON)
-Folder with project files (instead of a database)	Mapp med projektfiler (i stället för en databas)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Ändrar projektegenskaper i många projektfiler samtidigt (fälten name, description, company, creator, date, revision eller projektegenskaper)
 Project files, separated by ';'	Projektfiler, åtskilda med ';'
 All project files of a folder	Alla projektfiler i en mapp
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Aktiverar (visar) eller inaktiverar (döljer) innehållet i ett projektalternativ
 Show the content	Visa innehållet
 Switches the project options with a condition by the configurator options	Kopplar projektalternativen med villkor enligt konfiguratoralternativen
-Pass a database or a folder	Ange en databas eller en mapp
 Nothing to change: pass set, remove, replace or rename	Inget att ändra: ange set, remove, replace eller rename
 Pass files or a folder	Ange filer eller en mapp
 Pass ids or pages	Ange ID:n eller sidor
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Målsidans st
 Interruption points refer to: all (default), star or pairs	Avbrottspunkter hänvisar till: all (standard), star eller pairs
 Draw the contact image below coils (default true)	Rita kontaktavbildningen under spolar (standard true)
 Unknown setting: {}	Okänd inställning: {}
-Find…   Ctrl+F	Sök…   Ctrl+F
 Find and replace in the whole project	Sök och ersätt i hela projektet
 Text to find	Text att söka efter
 Match case	Matcha versaler/gemener
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft-projektmall
 Not a project template: {}	Inte en projektmall: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Börja från en projektmall: en inbyggd (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) eller en projektfil
-Unknown template {}: {}	Okänd mall {}: {}
 Not a packed project	Inte ett packat projekt
 Viewer	Visare
 With a user account of the server; replaces the access token	Med ett användarkonto på servern; ersätter åtkomsttoken
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Okänt exempel {}: se list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Pumpstationen inbyggd i två sammanbyggda golvskåp: skensystem, skenor och kabelkanaler, dörrapparater och handtag, filterfläkt, belysning, PE-skena, kabelförskruvningar, en kabelgenomföring, klimatberäkning, kanalfyllnad och 3D-dragning.
 9 · Electrical room	9 · Elrum
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Skåpraden i sitt rum: L-format planritning, innervägg, dörr och fönster, skåpraden på sin plats, en skena med ett vägguttag, en väggmonterad nödbelysning och en kabelstege under taket.
+{} is on page {}, which is released: renaming it would change the page	{} finns på sidan {}, som är frisläppt: att byta namn skulle ändra sidan
+A section number consists of letters and digits and does not start with 0	Ett avsnittsnummer består av bokstäver och siffror och börjar inte med 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Strukturbeteckningen {} får inte innehålla blanksteg eller tecknen = + - / :
+Bridge rectifier block	Bryggriktare (block)
+the server refuses the connection (not started, or another port)	servern vägrar anslutningen (inte startad eller en annan port)
+the server name is unknown	servernamnet är okänt
+the server does not answer in time	servern svarar inte i tid
+the address is not a valid URL (e.g. http://server:8090)	adressen är ingen giltig URL (t.ex. http://server:8090)
+Unknown check: {}	Okänd kontroll: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Ingen inbyggd kontroll heter {}: inställningen gäller en kontroll i ett plugin med det namnet (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} är ingen meddelandekod som check visar (t.ex. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} är inget meddelandefingeravtryck som check visar (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Sidan {} är utlyft i delprojektet {}: infoga eller kasta delprojektet först
+Unknown wire colour {} (IEC 60757: {})	Okänd ledarfärg {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Inget tvärsnitt: {} (t.ex. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Okänd platshållare {}: möjliga är {}
+{} must not be negative	{} får inte vara negativ
+{} must be at least {}	{} måste vara minst {}
+{} must be between {} and {}	{} måste ligga mellan {} och {}
+The length must not be negative	Längden får inte vara negativ
+The text height must be at least 0.5 mm	Texthöjden måste vara minst 0,5 mm
+The wrap width must not be negative	Radbrytningsbredden får inte vara negativ
+The items would leave the page	Objekten skulle hamna utanför sidan
+The number of copies must be between 1 and 100	Antalet kopior måste ligga mellan 1 och 100
+The copies would leave the page	Kopiorna skulle hamna utanför sidan
+The cable definition line has no length	Kabeldefinitionslinjen har ingen längd
+The cable definition line crosses no wire	Kabeldefinitionslinjen korsar ingen ledning
+{} and {} are both ends of one function: the wire would short-circuit it	{} och {} är båda ändarna av en funktion: ledningen skulle kortsluta den
+No wire at {} / {} mm	Ingen ledning vid {} / {} mm
+Target languages separated by commas or blanks, e.g. de, fr	Målspråk åtskilda med kommatecken eller blanksteg, t.ex. de, fr
+The first page number must not be negative	Första sidnumret får inte vara negativt
+The counting step must be at least 1	Räknesteget måste vara minst 1
+Released pages keep their names: {}	Frisläppta sidor behåller sina namn: {}
+The plinth height must not be negative	Sockelhöjden får inte vara negativ
+{} is a room already	{} är redan ett rum
+Width, height and depth of an enclosure are at least {} mm	Bredd, höjd och djup för en kapsling är minst {} mm
+Device tags of the members in slot order, separated by commas or blanks	Medlemmarnas apparatbeteckningar i platsordning, åtskilda med kommatecken eller blanksteg
+Electrical device tags separated by commas or blanks (empty = remove the links)	Elektriska apparatbeteckningar åtskilda med kommatecken eller blanksteg (tomt = ta bort länkarna)
+Further device tags of the loop, separated by commas or blanks	Ytterligare apparatbeteckningar för slingan, åtskilda med kommatecken eller blanksteg
+Connection point designations separated by commas or blanks	Anslutningspunktsbeteckningar åtskilda med kommatecken eller blanksteg
+Width, depth and height of a room are at least {} mm	Bredd, djup och höjd för ett rum är minst {} mm
+Room {} exists already	Rummet {} finns redan
+{} is an enclosure already	{} är redan en kapsling
+{} would stand outside the room {}	{} skulle stå utanför rummet {}
+No identifier {} in the project	Ingen beteckning {} i projektet
+{} exists already: pass merge to make both one identifier	{} finns redan: ange merge för att slå ihop båda till en beteckning
+Allow renaming onto an identifier in use: both become one	Tillåt namnbyte till en beteckning som används: båda blir en
+Sign in or connect with the access token to change parts	Logga in eller anslut med åtkomsttoken för att ändra artiklar
+Read only: sign in with a user who may change parts of this manufacturer	Skrivskyddat: logga in med en användare som får ändra artiklar från den här tillverkaren
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nKör en Model Context Protocol-server på stdin / stdout: verktygen i listan för AI-agenter, med projektet i minnet (save_project skriver det, undo / redo ångrar enskilda anrop). OPENECRAFT_MCP_TOOLS begränsar de erbjudna verktygen.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nVisar kommandoradens version (även --version eller -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo och redo fungerar bara i en MCP-session: kommandoraden öppnar projektet på nytt för varje kommando
+(MCP server only)	(endast MCP-server)
+{} is an archive: pass a path to save the project as a project file	{} är ett arkiv: ange en sökväg för att spara projektet som projektfil
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} är ett arkiv och lämnas oförändrat: spara projektet som projektfil (save_project --path <file>.oec) eller konvertera arkivet (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Mapp med projektfiler (i stället för en databas; standard: aktuell mapp)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Okänd sidtyp: {} (schematic, overview, graphic, cover eller en rapport från list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Okänd mall {}: ange en inbyggd ({}) eller en projektfil
+Property {} needs a text or a number	Egenskapen {} kräver en text eller ett tal

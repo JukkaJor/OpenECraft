@@ -39,8 +39,8 @@ pub static COMMANDS: &[Spec] = &[
         name: "replace_text",
         help: tr_const!("Replaces text in free texts, function texts, page, device and cable descriptions of the whole project; released pages stay"),
         params: &[
-            param("text", Kind::Str, tr_const!("Text to find")),
-            param("with", Kind::Str, tr_const!("Replacement")),
+            param("find", Kind::Str, tr_const!("Text to find")),
+            param("replace", Kind::Str, tr_const!("Replacement")),
             optional("case_sensitive", Kind::Bool, tr_const!("Match case")),
             optional("whole_word", Kind::Bool, tr_const!("Whole words only")),
             optional("kinds", Kind::Str, tr_const!("Only these kinds, separated by commas: page, function_text, text, description")),
@@ -96,10 +96,15 @@ fn table_replace(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn query(a: &Args) -> Result<Query, String> {
     let mut kinds = Vec::new();
-    for code in a.str("kinds").unwrap_or_default().split(',').map(str::trim).filter(|c| !c.is_empty()) {
+    for code in crate::builtin::common::words(a.str("kinds").unwrap_or_default()) {
         kinds.push(search::Kind::from_code(code).ok_or_else(|| tr_fmt!("Unknown kind: {}", code))?);
     }
-    Ok(Query { text: a.req("text").to_string(), case_sensitive: a.flag("case_sensitive"), whole_word: a.flag("whole_word"), kinds })
+    // `find` searches `text`, `replace_text` replaces `find`.
+    let text = a.str("find").or(a.str("text")).unwrap_or_default();
+    if text.is_empty() {
+        return Err(tr_fmt!("Missing parameter: {}", if a.value("find").is_some() { "find" } else { "text" }));
+    }
+    Ok(Query { text: text.to_string(), case_sensitive: a.flag("case_sensitive"), whole_word: a.flag("whole_word"), kinds })
 }
 
 fn find(prj: &mut Project, a: &Args) -> Result<Value, String> {
@@ -113,7 +118,7 @@ fn find(prj: &mut Project, a: &Args) -> Result<Value, String> {
 
 fn replace_text(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let q = query(a)?;
-    let n = search::replace(prj, &q, a.req("with"));
+    let n = search::replace(prj, &q, a.req("replace"));
     Ok(json!({ "changed": n }))
 }
 

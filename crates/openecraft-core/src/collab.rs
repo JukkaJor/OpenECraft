@@ -354,6 +354,8 @@ impl ProjectUser {
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LoginRequest {
+    /// Also read as `name` (the field of the parts server).
+    #[serde(alias = "name")]
     pub user: String,
     pub password: String,
     /// Directory to sign in with; empty = the local accounts, then every directory.

@@ -14,6 +14,8 @@ pub struct Options {
     /// All parameters as one JSON object (`--json '{…}'`).
     pub json: Option<String>,
     pub help: bool,
+    /// `--version` / `-V`.
+    pub version: bool,
 }
 
 #[derive(Debug, Default, PartialEq)]
@@ -34,6 +36,10 @@ pub fn parse(argv: &[String]) -> Result<Invocation, String> {
         i += 1;
         if arg == "-h" || arg == "--help" {
             inv.options.help = true;
+            continue;
+        }
+        if arg == "-V" || arg == "--version" {
+            inv.options.version = true;
             continue;
         }
         let Some(name) = arg.strip_prefix("--").or_else(|| arg.strip_prefix('-').filter(|n| *n == "p")) else {
@@ -65,7 +71,9 @@ pub fn parse(argv: &[String]) -> Result<Invocation, String> {
                 continue;
             }
         };
-        *option = Some(value.ok_or_else(|| tr_fmt!("Missing value for --{}", name))?);
+        // `-p` is short for `--project`.
+        let long = if name == "p" { "project" } else { name.as_str() };
+        *option = Some(value.ok_or_else(|| tr_fmt!("Missing value for --{}", long))?);
     }
     Ok(inv)
 }

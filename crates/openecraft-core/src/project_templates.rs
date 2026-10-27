@@ -56,7 +56,8 @@ fn add(prj: &mut Project, name: &str, description: &str, kind: PageKind, functio
 
 /// A built-in template by name (English or translated); None for an unknown name.
 pub fn builtin(name: &str) -> Option<Project> {
-    let i = BUILTIN.iter().position(|(n, _)| *n == name || tr(n) == name)?;
+    let name = name.trim();
+    let i = BUILTIN.iter().position(|(n, _)| n.eq_ignore_ascii_case(name) || tr(n).to_lowercase() == name.to_lowercase())?;
     let mut prj = Project::new_default();
     match i {
         0 => {}

@@ -169,6 +169,10 @@ pub fn set_number(prj: &mut Project, id: u64, number: &str) -> Result<(), &'stat
     if number.is_empty() || number.contains(SEPARATOR) {
         return Err(tr_const!("A section number must not be empty or contain a dot"));
     }
+    // Letters and digits; numbers count from 1 like the automatic ones.
+    if !number.chars().all(char::is_alphanumeric) || number.starts_with('0') {
+        return Err(tr_const!("A section number consists of letters and digits and does not start with 0"));
+    }
     if number_taken(prj, parent_of(prj, s), number, id) {
         return Err(tr_const!("Another section here has this number"));
     }

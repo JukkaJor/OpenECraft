@@ -89,3 +89,12 @@ fn csv_round_trip_for_translators() {
     assert!(from_csv(&mut other, "en;Deutsch\n").unwrap_err().contains("Deutsch"));
     assert!(from_csv(&mut other, "").is_err());
 }
+
+#[test]
+fn language_codes_are_those_of_iso_639() {
+    assert_eq!(normalize_code("de_AT").as_deref(), Some("de-at"));
+    assert_eq!(normalize_code("deu").as_deref(), Some("deu"));
+    assert_eq!(normalize_code("xx"), None);
+    assert_eq!(normalize_code("en,"), None);
+    assert!(ISO_639_1.windows(2).all(|w| w[0] < w[1]));
+}

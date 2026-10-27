@@ -24,6 +24,22 @@ fn attributes_combine_fields_and_technical_data() {
 }
 
 #[test]
+fn mounting_numbers_have_their_units() {
+    let mut p = Part::default();
+    assert!(p.mounting_data.set("Power loss", "2.5 W") && p.mounting_data.set("Clearance top", "30"));
+    let a = attributes(&p);
+    assert!(a.contains(&("Power loss".to_string(), "2.5 W".to_string())), "{a:?}");
+    assert!(a.contains(&("Clearance top".to_string(), "30 mm".to_string())), "{a:?}");
+}
+
+#[test]
+fn bundled_cross_sections_are_written_alike() {
+    for p in crate::default_catalog() {
+        assert!(!p.tech_data.contains(".0 mm²") && !p.tech_data.contains(" mm2"), "{}: {}", p.number, p.tech_data);
+    }
+}
+
+#[test]
 fn every_word_of_the_text_must_occur() {
     let q = PartQuery { q: Some("siemens relays".into()), ..Default::default() };
     assert_eq!(q.apply(&parts()).1.iter().map(|p| p.number.as_str()).collect::<Vec<_>>(), ["SIE.K3"]);

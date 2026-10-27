@@ -33,6 +33,10 @@ impl Configuration {
                     None => return Err(tr_fmt!("Condition '{}' needs OPTION=value", clause)),
                 },
             };
+            // `A == b` is a typo of `A=b`, not a comparison with "= b".
+            if name.trim().is_empty() || values.trim_start().starts_with('=') {
+                return Err(tr_fmt!("Condition '{}' needs OPTION=value", clause));
+            }
             let Some(o) = self.option(name.trim()) else { return Err(tr_fmt!("Unknown option {}", name.trim())) };
             let any = values.split('|').any(|v| v.trim() == o.value.trim());
             if any == negated {

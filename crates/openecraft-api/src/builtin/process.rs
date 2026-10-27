@@ -3,6 +3,7 @@
 //! electrical devices, and the PCT loops of the pre-planning with their engineering
 //! status.
 
+use crate::builtin::common::{int_in, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -82,11 +83,11 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Creates or changes a fluid device group"),
         params: &[
             param("tag", Kind::Str, tr_const!("Device tag of the group, e.g. -KH1")),
-            optional("rename", Kind::Str, tr_const!("New name")),
+            optional("new_name", Kind::Str, tr_const!("New name")),
             optional("kind", Kind::Str, tr_const!("valve_terminal, service_unit, manifold, power_unit or other")),
             optional("description", Kind::Str, tr_const!("Description")),
             optional("slots", Kind::Int, tr_const!("Places of the group (0 = not limited)")),
-            optional("members", Kind::Str, tr_const!("Device tags of the members in slot order, separated by blanks")),
+            optional("members", Kind::Str, tr_const!("Device tags of the members in slot order, separated by commas or blanks")),
             optional("part", Kind::Str, tr_const!("Part number of the base")),
         ],
         run: set_fluid_group,
@@ -108,7 +109,7 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)"),
         params: &[
             param("tag", Kind::Str, tr_const!("Device tag of the fluid device, e.g. -QM1")),
-            param("devices", Kind::Str, tr_const!("Electrical device tags separated by blanks (empty = remove the links)")),
+            param("devices", Kind::Str, tr_const!("Electrical device tags separated by commas or blanks (empty = remove the links)")),
         ],
         run: link_fluid_device,
     },
@@ -129,10 +130,10 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Creates or changes a PCT loop of the pre-planning"),
         params: &[
             param("name", Kind::Str, tr_const!("Loop number, e.g. 101")),
-            optional("rename", Kind::Str, tr_const!("New name")),
+            optional("new_name", Kind::Str, tr_const!("New name")),
             optional("description", Kind::Str, tr_const!("Description")),
             optional("range", Kind::Str, tr_const!("Measuring range or set point")),
-            optional("devices", Kind::Str, tr_const!("Further device tags of the loop, separated by blanks")),
+            optional("devices", Kind::Str, tr_const!("Further device tags of the loop, separated by commas or blanks")),
         ],
         run: set_pct_loop,
     },
@@ -179,8 +180,8 @@ fn set_fluid_defaults(prj: &mut Project, a: &Args) -> Result<Value, String> {
             *field = v.trim().into();
         }
     }
-    if let Some(p) = a.num("pressure") {
-        prj.fluid.pressure = p.max(0.0);
+    if let Some(p) = num_in(a, "pressure", 0.0, NO_MAX)? {
+        prj.fluid.pressure = p;
     }
     if let Some(v) = a.num("allowance") {
         prj.fluid.allowance = v;
@@ -203,8 +204,8 @@ fn configure_hose(prj: &mut Project, a: &Args) -> Result<Value, String> {
         }
     }
     for (field, value) in [("pressure", &mut config.pressure), ("bend_radius", &mut config.bend_radius)] {
-        if let Some(v) = a.num(field) {
-            *value = v.max(0.0);
+        if let Some(v) = num_in(a, field, 0.0, NO_MAX)? {
+            *value = v;
         }
     }
     let medium = match a.str("medium") {
@@ -225,8 +226,8 @@ fn configure_hose(prj: &mut Project, a: &Args) -> Result<Value, String> {
         if let Some(v) = a.str("color") {
             w.color = v.trim().into();
         }
-        if let Some(l) = a.num("length") {
-            w.length = l.max(0.0);
+        if let Some(l) = num_in(a, "length", 0.0, NO_MAX)? {
+            w.length = l;
         }
     }
     let v = list_hoses(prj, a)?;
@@ -265,7 +266,7 @@ fn set_fluid_group(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if tag.is_empty() {
         return Err(tr_fmt!("Missing parameter: {}", "tag"));
     }
-    if let Some(new) = a.str("rename").map(str::trim).filter(|n| *n != tag) {
+    if let Some(new) = a.str("new_name").map(str::trim).filter(|n| *n != tag) {
         if new.is_empty() || prj.fluid.groups.iter().any(|g| g.tag == new) {
             return Err(tr_fmt!("Device group {} already exists", new));
         }
@@ -286,13 +287,13 @@ fn set_fluid_group(prj: &mut Project, a: &Args) -> Result<Value, String> {
             *value = v.trim().into();
         }
     }
-    if let Some(n) = a.int("slots") {
-        g.slots = n.max(0) as u32;
+    if let Some(n) = int_in(a, "slots", 0, u32::MAX.into())? {
+        g.slots = n as u32;
     }
     if let Some(m) = a.str("members") {
-        g.members = m.split_whitespace().map(String::from).collect();
+        g.members = crate::builtin::common::words(m).into_iter().map(String::from).collect();
     }
-    if let Some(new) = a.str("rename") {
+    if let Some(new) = a.str("new_name") {
         g.tag = new.trim().into();
     }
     groups_json(prj)
@@ -326,7 +327,7 @@ fn link_fluid_device(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if tag.is_empty() {
         return Err(tr_fmt!("Missing parameter: {}", "tag"));
     }
-    let devices: Vec<String> = a.req("devices").split_whitespace().map(String::from).collect();
+    let devices: Vec<String> = crate::builtin::common::words(a.req("devices")).into_iter().map(String::from).collect();
     if devices.is_empty() {
         prj.fluid.links.remove(&tag);
     } else {
@@ -372,7 +373,7 @@ fn set_pct_loop(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if name.is_empty() {
         return Err(tr_fmt!("Missing parameter: {}", "name"));
     }
-    if let Some(new) = a.str("rename").map(str::trim).filter(|n| *n != name) {
+    if let Some(new) = a.str("new_name").map(str::trim).filter(|n| *n != name) {
         if new.is_empty() || prj.pct_loops.iter().any(|l| l.name == new) {
             return Err(tr_fmt!("PCT loop {} already exists", new));
         }
@@ -391,9 +392,9 @@ fn set_pct_loop(prj: &mut Project, a: &Args) -> Result<Value, String> {
         }
     }
     if let Some(d) = a.str("devices") {
-        l.devices = d.split_whitespace().map(String::from).collect();
+        l.devices = crate::builtin::common::words(d).into_iter().map(String::from).collect();
     }
-    if let Some(new) = a.str("rename") {
+    if let Some(new) = a.str("new_name") {
         l.name = new.trim().into();
     }
     loops_json(prj)

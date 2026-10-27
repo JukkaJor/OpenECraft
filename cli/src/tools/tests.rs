@@ -86,3 +86,11 @@ fn help_shows_all_parameters() {
     }
     assert!(text.contains("(optional)"));
 }
+
+#[test]
+fn tidy_removes_the_noise_of_f32_numbers() {
+    let mut v = json!({ "length": 41.8f32 as f64, "list": [0.1f32 as f64, 2], "exact": 0.1, "count": 3 });
+    tidy(&mut v);
+    assert_eq!(v, json!({ "length": 41.8, "list": [0.1, 2], "exact": 0.1, "count": 3 }));
+    assert_eq!(serde_json::to_string(&v["length"]).unwrap(), "41.8");
+}

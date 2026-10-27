@@ -2,7 +2,7 @@
 //! their walls and ceiling, and devices mounted there – on a rail, or directly on the
 //! wall when their part is made for it ([`openecraft_core::panel::rooms`]).
 
-use crate::builtin::common::enclosure_index;
+use crate::builtin::common::{enclosure_index, int_in, NO_LIMIT};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -255,35 +255,47 @@ fn list_rooms(prj: &mut Project, a: &Args) -> Result<Value, String> {
     Ok(Value::Array(list.into_iter().map(|ri| room_json(prj, ri)).collect()))
 }
 
-fn resize(prj: &mut Project, ri: usize, a: &Args) {
+/// Smallest width, depth and height of a room (mm).
+const MIN_ROOM: f32 = 500.0;
+
+fn resize(prj: &mut Project, ri: usize, a: &Args) -> Result<(), String> {
+    for name in ["width", "depth", "height"] {
+        if a.num(name).is_some_and(|v| !(v >= MIN_ROOM && v.is_finite())) {
+            return Err(tr_fmt!("Width, depth and height of a room are at least {} mm", MIN_ROOM));
+        }
+    }
     let e = &mut prj.layout.enclosures[ri];
     if a.num("width").is_some() || a.num("depth").is_some() {
         e.outline.clear();
     }
     for (name, field) in [("width", &mut e.width), ("depth", &mut e.depth), ("height", &mut e.height)] {
         if let Some(v) = a.num(name) {
-            *field = v.max(500.0);
+            *field = v;
         }
     }
     e.site = place_arg(a, e.site);
     panel::apply_anchors(e);
+    Ok(())
 }
 
 fn add_room(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let name = a.req("name").to_string();
-    if prj.layout.enclosures.iter().any(|e| e.name == name) {
-        return Err(tr_fmt!("Enclosure {} exists already", name));
+    let name = a.req("name").trim().to_string();
+    if let Some(e) = prj.layout.enclosures.iter().find(|e| e.name == name) {
+        return Err(if e.is_room() { tr_fmt!("Room {} exists already", name) } else { tr_fmt!("{} is an enclosure already", name) });
     }
     let room = panel::new_room(prj, &name, 4000.0, 3000.0, 2800.0);
     prj.layout.enclosures.push(room);
     let ri = prj.layout.enclosures.len() - 1;
-    resize(prj, ri, a);
+    if let Err(e) = resize(prj, ri, a) {
+        prj.layout.enclosures.pop();
+        return Err(e);
+    }
     Ok(room_json(prj, ri))
 }
 
 fn set_room(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ri = room_index(prj, a.req("room"))?;
-    resize(prj, ri, a);
+    resize(prj, ri, a)?;
     Ok(room_json(prj, ri))
 }
 
@@ -310,7 +322,7 @@ fn parse_corners(text: &str) -> Result<Vec<[f32; 2]>, String> {
 
 fn set_room_wall(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ri = room_index(prj, a.req("room"))?;
-    let wall = (a.int("wall").unwrap_or(0) - 1).max(0) as usize;
+    let wall = (int_in(a, "wall", 1, NO_LIMIT)?.unwrap_or(1) - 1) as usize;
     let e = &mut prj.layout.enclosures[ri];
     let mut corners = panel::outline(e);
     if let Some(offset) = a.num("offset") {
@@ -326,7 +338,16 @@ fn set_room_wall(prj: &mut Project, a: &Args) -> Result<Value, String> {
 fn place_in_room(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ei = enclosure_index(prj, a.req("enclosure"))?;
     let room = a.str("room").map(str::trim).filter(|r| !r.is_empty()).map(|r| room_index(prj, r)).transpose()?;
+    let before = prj.layout.clone();
     panel::set_room(prj, ei, room, place_arg(a, None))?;
+    if let Some(ri) = room {
+        // The whole line-up must stand in the room.
+        if let Some(ci) = panel::cabinets_in(&prj.layout, ri).into_iter().find(|&ci| !panel::stands_inside(prj, ri, ci)) {
+            let name = prj.layout.enclosures[ci].name.clone();
+            prj.layout = before;
+            return Err(tr_fmt!("{} would stand outside the room {}", name, a.req("room").trim()));
+        }
+    }
     match room {
         Some(ri) => Ok(room_json(prj, ri)),
         None => Ok(json!({ "enclosure": prj.layout.enclosures[ei].name, "room": Value::Null })),

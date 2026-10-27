@@ -32,6 +32,9 @@ fn bundled_catalogs_are_consistent() {
                 assert!(bundle.parts.iter().any(|q| &q.number == a), "{}: accessory {a} missing", p.number);
             }
             assert_eq!(p.model_3d.is_some(), p.width > 0.0 && !mounting, "{}: generated model", p.number);
+            // Units are written alike in every catalog (the facets list each spelling).
+            let texts = format!("{} {}", p.description, p.tech_data);
+            assert!(!texts.contains(" mm2") && !texts.contains(".0 mm²"), "{}: write cross-sections as 2.5 mm²", p.number);
         }
     }
 }

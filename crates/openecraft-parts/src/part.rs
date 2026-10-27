@@ -6,12 +6,17 @@ use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d, MountingData, Shared}
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+/// Product top group; also read in lower case.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum TopGroup {
     #[default]
+    #[serde(alias = "electrical")]
     Electrical,
+    #[serde(alias = "fluid")]
     Fluid,
+    #[serde(alias = "mechanics")]
     Mechanics,
+    #[serde(alias = "process")]
     Process,
 }
 

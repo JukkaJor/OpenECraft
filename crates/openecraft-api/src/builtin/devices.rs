@@ -1,6 +1,6 @@
 //! Device commands: list, rename, assign parts.
 
-use crate::builtin::common::page_index;
+use crate::builtin::common::{check_placeholders, int_in, page_index};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -34,8 +34,8 @@ pub static COMMANDS: &[Spec] = &[
         name: "rename_device",
         help: tr_const!("Renames a device with all its functions"),
         params: &[
-            param("old", Kind::Str, tr_const!("Current device tag")),
-            param("new", Kind::Str, tr_const!("New device tag")),
+            param("tag", Kind::Str, tr_const!("Current device tag")),
+            param("new_tag", Kind::Str, tr_const!("New device tag")),
         ],
         run: rename_device,
     },
@@ -76,12 +76,15 @@ pub(crate) fn page_list(prj: &Project, list: Option<&str>) -> Result<Vec<usize>,
 
 fn renumber_devices(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let defaults = DeviceNumbering::default();
+    if let Some(f) = a.str("format") {
+        check_placeholders(f, &["letter", "n", "page", "column", "row"])?;
+    }
     let opts = DeviceNumbering {
         format: a.str("format").filter(|f| !f.trim().is_empty()).map(str::to_string).unwrap_or(defaults.format),
-        start: a.int("start").map_or(defaults.start, |v| v.max(0) as u32),
-        step: a.int("step").map_or(defaults.step, |v| v.max(1) as u32),
+        start: int_in(a, "start", 0, u32::MAX.into())?.map_or(defaults.start, |v| v as u32),
+        step: int_in(a, "step", 1, u32::MAX.into())?.map_or(defaults.step, |v| v as u32),
         pages: page_list(prj, a.str("pages"))?,
-        letters: a.str("letters").unwrap_or_default().split(',').map(str::trim).filter(|s| !s.is_empty()).map(String::from).collect(),
+        letters: crate::builtin::common::words(a.str("letters").unwrap_or_default()).into_iter().map(String::from).collect(),
         skip_terminals: !a.flag("terminals"),
     };
     let renamed = if a.flag("dry_run") { numbering::plan_devices(prj, &opts) } else { numbering::renumber_devices(prj, &opts) };
@@ -109,14 +112,12 @@ fn list_devices(prj: &mut Project, _: &Args) -> Result<Value, String> {
 }
 
 fn rename_device(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let (old, new) = (a.req("old"), a.req("new").trim());
-    let tags = prj.all_tags();
-    if !tags.iter().any(|t| t == old) {
+    let (old, new) = (a.req("tag").trim(), a.req("new_tag").trim());
+    if !prj.all_tags().iter().any(|t| t == old) {
         return Err(tr_fmt!("No device {}", old));
     }
-    ops::check_tag(new)?;
-    if tags.iter().any(|t| t == new) {
-        return Err(tr_fmt!("Device {} already exists", new));
+    if let Some(problem) = ops::rename_problem(prj, old, new) {
+        return Err(problem);
     }
     ops::rename_device(prj, old, new);
     Ok(json!({ "old": old, "new": new }))

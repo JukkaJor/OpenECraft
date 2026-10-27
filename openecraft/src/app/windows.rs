@@ -128,7 +128,7 @@ impl App {
         }
         if let Some(kind) = export {
             if let Some(t) = self.session.analysis.report(&self.session.prj, kind) {
-                let csv = t.to_csv();
+                let csv = t.to_csv_bom();
                 let name = format!("{}.csv", self.report_title(kind).replace(' ', "_").to_lowercase());
                 self.export(ctx, name, ("CSV", "csv"), csv);
             }
@@ -335,46 +335,7 @@ impl App {
                         .on_hover_text(tr("Replaced when the configurator generates again; switch off to keep the page"));
                 }
                 ui.separator();
-                ui.label(RichText::new(tr("Structure (IEC 81346)")).strong());
-                let key = ui.scope_id().with(("page_structure", pi));
-                let (mut dt, mut move_devices): (Dt, bool) = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (Dt::of_page(pg), true));
-                let current = Dt::of_page(pg);
-                egui::Grid::new("pgstruct").num_columns(3).show(ui, |ui| {
-                    for a in Aspect::ALL.into_iter().filter(|a| page_aspects.contains(a) || !current.get(*a).is_empty()) {
-                        ui.label(format!("{}  {}", a.title(), a.prefix()));
-                        let hint = match a {
-                            Aspect::Function => tr("e.g. A1, PUMP.2"),
-                            Aspect::Installation => tr("e.g. HALL1, PLANT2"),
-                            Aspect::Location => tr("e.g. CAB1, FIELD"),
-                            Aspect::Product => tr("e.g. U1, U1-A2"),
-                        };
-                        ui.add(egui::TextEdit::singleline(dt.get_mut(a)).hint_text(hint).desired_width(140.0));
-                        let defined: Vec<_> = structure_entries.iter().filter(|e| e.aspect == a).collect();
-                        ui.add_enabled_ui(!defined.is_empty(), |ui| {
-                            ui.menu_button("⏷", |ui| {
-                                for e in defined {
-                                    if ui.button(format!("{}  {}", a.format(&e.id), e.description)).clicked() {
-                                        *dt.get_mut(a) = e.id.clone();
-                                        ui.close();
-                                    }
-                                }
-                            })
-                            .response
-                            .on_hover_text(tr("Identifiers of the structure management"));
-                        });
-                        ui.end_row();
-                    }
-                });
-                ui.checkbox(&mut move_devices, tr("Move the devices of this page into the new structure"))
-                    .on_hover_text(tr("Renames the devices (all their functions, also on other pages)"));
-                let mut cleaned = Page::default();
-                dt.apply_to(&mut cleaned);
-                let changed = Dt::of_page(&cleaned) != current;
-                if ui.add_enabled(changed, egui::Button::new(tr("Apply structure"))).clicked() {
-                    apply_structure = Some((dt.clone(), move_devices));
-                }
-                ui.weak(tr("Devices placed on the page get its structure; their tags are shown without it."));
-                ui.data_mut(|d| d.insert_temp(key, (dt, move_devices)));
+                apply_structure = page_structure_ui(ui, pg, pi, &page_aspects, &structure_entries);
             });
         } else {
             open = false;
@@ -422,4 +383,55 @@ impl App {
             None => {}
         }
     }
+}
+
+/// The structure section of the page properties: the identifiers per aspect, checked
+/// before they can be applied. Returns the structure to apply.
+fn page_structure_ui(ui: &mut egui::Ui, pg: &Page, pi: usize, page_aspects: &[Aspect], structure_entries: &[openecraft_core::model::structure::Entry]) -> Option<(Dt, bool)> {
+    let mut apply = None;
+    ui.label(RichText::new(tr("Structure (IEC 81346)")).strong());
+    let key = ui.scope_id().with(("page_structure", pi));
+    let (mut dt, mut move_devices): (Dt, bool) = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| (Dt::of_page(pg), true));
+    let current = Dt::of_page(pg);
+    egui::Grid::new("pgstruct").num_columns(3).show(ui, |ui| {
+        for a in Aspect::ALL.into_iter().filter(|a| page_aspects.contains(a) || !current.get(*a).is_empty()) {
+            ui.label(format!("{}  {}", a.title(), a.prefix()));
+            let hint = match a {
+                Aspect::Function => tr("e.g. A1, PUMP.2"),
+                Aspect::Installation => tr("e.g. HALL1, PLANT2"),
+                Aspect::Location => tr("e.g. CAB1, FIELD"),
+                Aspect::Product => tr("e.g. U1, U1-A2"),
+            };
+            ui.add(egui::TextEdit::singleline(dt.get_mut(a)).hint_text(hint).desired_width(140.0));
+            let defined: Vec<_> = structure_entries.iter().filter(|e| e.aspect == a).collect();
+            ui.add_enabled_ui(!defined.is_empty(), |ui| {
+                ui.menu_button("⏷", |ui| {
+                    for e in defined {
+                        if ui.button(format!("{}  {}", a.format(&e.id), e.description)).clicked() {
+                            *dt.get_mut(a) = e.id.clone();
+                            ui.close();
+                        }
+                    }
+                })
+                .response
+                .on_hover_text(tr("Identifiers of the structure management"));
+            });
+            ui.end_row();
+        }
+    });
+    ui.checkbox(&mut move_devices, tr("Move the devices of this page into the new structure"))
+        .on_hover_text(tr("Renames the devices (all their functions, also on other pages)"));
+    let mut cleaned = Page::default();
+    dt.apply_to(&mut cleaned);
+    let changed = Dt::of_page(&cleaned) != current;
+    let problem = Aspect::ALL.into_iter().find_map(|a| openecraft_core::structure::check_identifier(a, dt.get(a)).err());
+    if let Some(p) = &problem {
+        ui.colored_label(crate::style::error(), p);
+    }
+    if ui.add_enabled(changed && problem.is_none(), egui::Button::new(tr("Apply structure"))).clicked() {
+        apply = Some((dt.clone(), move_devices));
+    }
+    ui.weak(tr("Devices placed on the page get its structure; their tags are shown without it."));
+    ui.data_mut(|d| d.insert_temp(key, (dt, move_devices)));
+    apply
 }

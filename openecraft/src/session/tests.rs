@@ -27,12 +27,20 @@ fn edits_make_the_session_dirty_until_saved_or_undone() {
 }
 
 #[test]
-fn replacing_the_project_is_one_saved_step() {
+fn replacing_the_project_starts_a_new_history() {
     let mut s = Session::new(demo_project(), Some("a.oec".into()));
     s.page = 3;
+    s.prj.info.name = "Changed, then discarded".into();
+    s.commit(true);
+    let rev = s.history.rev;
     s.replace(Project::default(), None);
     assert_eq!((s.page, s.file_name.as_deref(), s.dirty()), (0, None, false));
-    assert!(s.history.can_undo());
+    // Undo would put the discarded project under the new name (and saving would
+    // overwrite the new file with it).
+    assert!(!s.history.can_undo());
+    s.undo();
+    assert_eq!(s.prj.info.name, Project::default().info.name);
+    assert!(s.history.rev > rev, "the analysis is built again");
 }
 
 #[test]

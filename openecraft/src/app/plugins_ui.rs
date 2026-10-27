@@ -253,7 +253,7 @@ impl App {
             }
         });
         if let (true, Ok(t)) = (export, &table) {
-            self.export(ctx, format!("{name}.csv"), ("CSV", "csv"), t.to_csv());
+            self.export(ctx, format!("{name}.csv"), ("CSV", "csv"), t.to_csv_bom());
         }
         if let Some((pg, id)) = jump {
             self.goto(pg, id);

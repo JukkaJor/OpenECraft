@@ -51,10 +51,11 @@ impl Kind {
         let point = |p: &Value| p.as_array().is_some_and(|a| a.len() == 2 && a.iter().all(Value::is_number));
         match self {
             Kind::Str => v.is_string(),
-            Kind::Int => v.is_i64() || v.is_u64(),
+            // Clients written in JavaScript send 90 as 90.0.
+            Kind::Int => integer(v).is_some(),
             Kind::Num => v.is_number(),
             Kind::Bool => v.is_boolean(),
-            Kind::Ids => v.as_array().is_some_and(|a| a.iter().all(Value::is_u64)),
+            Kind::Ids => v.as_array().is_some_and(|a| a.iter().all(|id| integer(id).is_some_and(|i| i >= 0))),
             Kind::Points => v.as_array().is_some_and(|a| a.iter().all(point)),
             Kind::Object => v.is_object(),
         }
@@ -87,6 +88,13 @@ impl Kind {
             _ => serde_json::from_str(raw).ok().filter(|v| self.fits(v)),
         }
     }
+}
+
+/// An integer, also written as a number without fraction (`90.0`).
+fn integer(v: &Value) -> Option<i64> {
+    v.as_i64().or_else(|| v.as_u64().and_then(|u| i64::try_from(u).ok())).or_else(|| {
+        v.as_f64().filter(|f| f.fract() == 0.0 && f.abs() < 9.0e15).map(|f| f as i64)
+    })
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -193,7 +201,7 @@ impl Args<'_> {
     }
 
     pub fn int(&self, name: &str) -> Option<i64> {
-        self.0.get(name).and_then(Value::as_i64)
+        self.0.get(name).and_then(integer)
     }
 
     pub fn flag(&self, name: &str) -> bool {
@@ -201,7 +209,7 @@ impl Args<'_> {
     }
 
     pub fn ids(&self, name: &str) -> Vec<u64> {
-        self.0.get(name).and_then(Value::as_array).map(|a| a.iter().filter_map(Value::as_u64).collect()).unwrap_or_default()
+        self.0.get(name).and_then(Value::as_array).map(|a| a.iter().filter_map(|v| integer(v).and_then(|i| u64::try_from(i).ok())).collect()).unwrap_or_default()
     }
 
     pub fn points(&self, name: &str) -> Vec<[f32; 2]> {

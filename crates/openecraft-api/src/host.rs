@@ -150,10 +150,17 @@ impl Plugins {
         self.exporters().find(|e| e.name == name)
     }
 
-    /// Checks the arguments and runs the command.
+    /// Checks the arguments (renamed parameters are also taken by their old names) and
+    /// runs the command. A command that fails leaves the project as it was.
     pub fn run(&self, command: &Command, prj: &mut Project, args: &Map<String, Value>) -> Result<Value, String> {
-        params::check(&command.params, args)?;
-        (command.run)(prj, &Args(args))
+        let args = crate::builtin::current_names(&command.name, args);
+        params::check(&command.params, &args)?;
+        let before = prj.clone();
+        let result = (command.run)(prj, &Args(&args));
+        if result.is_err() {
+            *prj = before;
+        }
+        result
     }
 
     /// Issues of all checks; a failing check is reported as error.

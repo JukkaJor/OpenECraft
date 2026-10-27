@@ -182,3 +182,52 @@ fn symbols_outside_the_page_are_reported() {
     s.project_mut().unwrap().pages[0].symbols[0].pos = p(-500.0, 40.0);
     assert!(issues(&mut s).iter().any(|m| m == "-K1 lies outside page 1"), "{:?}", issues(&mut s));
 }
+
+#[test]
+fn positions_are_named_as_given_and_items_stay_on_the_page() {
+    let mut s = new_session();
+    let err = run(&mut s, "add_wire", json!({ "page": "1", "points": [[10, 10], [900, 10]] })).unwrap_err();
+    assert!(err.contains("900 / 10 mm"), "{err}");
+    let err = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 1e308, "y": 100 })).unwrap_err();
+    assert!(err.contains("1e308") && !err.contains("inf"), "{err}");
+    let coil = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100 })).unwrap();
+    let ids = json!([coil["id"]]);
+    let before = s.project().unwrap().clone();
+    assert!(run(&mut s, "move_items", json!({ "page": "1", "ids": ids, "dx": 1000, "dy": 0 })).unwrap_err().contains("leave the page"));
+    assert!(run(&mut s, "copy_items", json!({ "page": "1", "ids": ids, "count": 1000, "dx": 40, "dy": 0 })).is_err());
+    assert!(run(&mut s, "copy_items", json!({ "page": "1", "ids": ids, "count": 0, "dx": 40, "dy": 0 })).is_err());
+    assert!(run(&mut s, "copy_items", json!({ "page": "1", "ids": ids, "count": 20, "dx": 40, "dy": 0 })).unwrap_err().contains("leave the page"));
+    assert_eq!(s.project().unwrap(), &before, "refused commands change nothing");
+    // Text heights and wire lengths are refused out of range, not corrected.
+    assert!(run(&mut s, "add_text", json!({ "page": "1", "x": 20, "y": 20, "text": "x", "size": -5 })).is_err());
+    assert!(run(&mut s, "add_text", json!({ "page": "1", "x": 20, "y": 20, "text": "x", "size": 0 })).is_err());
+    assert_eq!(run(&mut s, "add_text", json!({ "page": "1", "x": 20, "y": 20, "text": "x", "size": 2.5 })).unwrap()["size"], 2.5);
+}
+
+#[test]
+fn wires_do_not_short_circuit_a_function() {
+    let mut s = new_session();
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100 })).unwrap();
+    for tool in ["connect", "route"] {
+        let err = run(&mut s, tool, json!({ "page": "1", "from": "-K1:A1", "to": "-K1:A2" })).unwrap_err();
+        assert!(err.contains("short-circuit"), "{tool}: {err}");
+    }
+    // Poles of a multi-pole symbol may be bridged (star point of a star contactor).
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "main3", "x": 200, "y": 100, "tag": "-Q1" })).unwrap();
+    assert!(run(&mut s, "connect", json!({ "page": "1", "from": "-Q1:2", "to": "-Q1:4" })).is_ok());
+}
+
+#[test]
+fn definitions_need_wires_and_known_values() {
+    let mut s = new_session();
+    let w = run(&mut s, "add_wire", json!({ "page": "1", "points": [[40, 40], [40, 120]] })).unwrap();
+    assert!(run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[100, 100], [100, 100]] })).unwrap_err().contains("no length"));
+    assert!(run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[100, 80], [200, 80]] })).unwrap_err().contains("crosses no wire"));
+    assert!(run(&mut s, "add_cable_definition", json!({ "page": "1", "points": [[20, 80], [60, 80]] })).is_ok());
+    assert_eq!(run(&mut s, "add_connection_definition", json!({ "page": "1", "x": 200, "y": 200 })).unwrap_err(), "No wire at 200 / 200 mm");
+    let id = w["ids"][0].clone();
+    assert!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "color": "notacolor" })).unwrap_err().starts_with("Unknown wire colour notacolor"));
+    assert!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "cross_section": "abc" })).unwrap_err().starts_with("Not a cross-section"));
+    assert_eq!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "color": "gn/ye", "cross_section": "1,5 mm²" })).unwrap()["color"], "gn/ye");
+    assert!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "length": -1 })).is_err());
+}

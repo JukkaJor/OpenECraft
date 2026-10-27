@@ -63,3 +63,18 @@ fn examples_are_listed_and_opened() {
     let err = run(&mut s, "new_project", json!({ "example": "nothing", "discard": true })).unwrap_err();
     assert!(err.contains("list_examples"), "{err}");
 }
+
+#[test]
+fn templates_by_name_in_any_case_and_properties_of_any_scalar() {
+    let mut s = session();
+    let info = run(&mut s, "new_project", json!({ "template": "machine" })).unwrap();
+    assert!(info["pages"].as_u64().unwrap() > 1);
+    let err = run(&mut s, "new_project", json!({ "template": "nosuch", "discard": true })).unwrap_err();
+    assert!(err.contains("give a built-in one (") && err.contains("Machine"), "{err}");
+    let info = run(&mut s, "set_project_info", json!({ "properties": { "Customer": 5, "Rated": true, "Line": "3" } })).unwrap();
+    assert_eq!(info["properties"], json!({ "Customer": "5", "Line": "3", "Rated": "true" }));
+    let info = run(&mut s, "set_project_info", json!({ "properties": { "Customer": null, "Line": "" } })).unwrap();
+    assert_eq!(info["properties"], json!({ "Rated": "true" }));
+    assert!(run(&mut s, "set_project_info", json!({ "properties": { "List": [1] } })).is_err());
+    assert_eq!(s.project().unwrap().info.properties.len(), 1, "nothing is changed by a refused call");
+}

@@ -68,6 +68,11 @@ impl App {
                             self.section_action(ui.ctx(), a);
                             (None, None)
                         }
+                        PageAction::Run(i, cmd) => {
+                            self.goto(i, 0);
+                            self.run(&ui.ctx().clone(), cmd);
+                            (None, None)
+                        }
                         PageAction::None => (None, None),
                     };
                     if let Some(i) = goto {
@@ -219,6 +224,8 @@ pub(super) enum PageAction {
     Lock(openecraft_core::collab::Target, bool),
     Table,
     Section(sections_ui::SectionAction),
+    /// A page command on this page (new page after it, delete, renumber).
+    Run(usize, crate::commands::Cmd),
 }
 
 impl PageAction {
@@ -294,6 +301,14 @@ impl App {
             if ui.button(tr("Edit in table…")).clicked() {
                 action = PageAction::Table;
                 ui.close();
+            }
+            ui.separator();
+            use crate::commands::{def, Cmd};
+            for (cmd, enabled) in [(Cmd::NewSchematicPage, true), (Cmd::RenumberPages, true), (Cmd::DeletePage, self.session.prj.pages.len() > 1 && !pg.locked)] {
+                if ui.add_enabled(enabled, egui::Button::new(tr(def(cmd).title))).clicked() {
+                    action = PageAction::Run(i, cmd);
+                    ui.close();
+                }
             }
             if sectioned {
                 ui.menu_button(tr("Move to section"), |ui| {

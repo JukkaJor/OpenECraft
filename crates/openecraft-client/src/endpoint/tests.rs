@@ -114,3 +114,14 @@ fn missing_resources_and_empty_answers() {
     assert_eq!(decode_found::<ImportResult>(response(200, r#"{"imported": 2}"#)).unwrap().unwrap().imported, 2);
     assert_eq!(text(response(200, "a;b\n")).unwrap(), "a;b\n");
 }
+
+#[test]
+fn connection_errors_name_the_cause() {
+    let refused = "io: Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte. (os error 10061)";
+    assert_eq!(reason(refused), "the server refuses the connection (not started, or another port)");
+    assert_eq!(reason("io: Connection refused (os error 111)"), "the server refuses the connection (not started, or another port)");
+    assert_eq!(reason("http: invalid uri character"), "the address is not a valid URL (e.g. http://server:8090)");
+    assert_eq!(reason("io: failed to lookup address information"), "the server name is unknown");
+    assert_eq!(reason("io: something else"), "something else");
+    assert!(check(Err("io: x (os error 10061)".into())).unwrap_err().starts_with("connection failed: the server refuses"));
+}

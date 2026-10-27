@@ -84,3 +84,10 @@ fn problems_stop_the_generation() {
     prj.pages[1].locked = true;
     assert!(generate(&mut prj, &lib).unwrap_err().contains("released"));
 }
+
+#[test]
+fn a_doubled_equals_sign_is_a_syntax_error() {
+    let cfg = Configuration { options: vec![ConfigOption { name: "STARTER".into(), value: "DOL".into(), ..Default::default() }], rules: Vec::new() };
+    assert!(cfg.holds("STARTER == DOL").unwrap_err().contains("needs OPTION=value"));
+    assert!(cfg.holds("STARTER=DOL").unwrap());
+}

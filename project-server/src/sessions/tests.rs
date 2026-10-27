@@ -52,3 +52,21 @@ fn idle_sessions_expire_with_their_locks() {
     assert_eq!(s.touch("p", &anna, later), Err(LockError::Expired));
     assert!(s.touch("p", &ben, later).is_ok());
 }
+
+#[test]
+fn signing_out_and_deleting_the_user_end_their_sessions() {
+    let now = Instant::now();
+    let mut s = Sessions::default();
+    let anna = s.open("p", "anna", now);
+    let anna_tablet = s.open("q", "anna", now);
+    let ben = s.open("p", "Ben", now);
+    s.set_owner(&anna.session, "token-a".into());
+    s.set_owner(&anna_tablet.session, "token-b".into());
+    s.lock("p", &anna, &[Target::Page(1)], now).unwrap();
+    assert_eq!(s.close_owned("token-a"), 1);
+    assert!(s.locks("p").is_empty());
+    // The session of the other sign-in stays.
+    assert!(s.touch("q", &anna_tablet, now).is_ok());
+    assert_eq!(s.close_user("ben"), 1);
+    assert_eq!(s.touch("p", &ben, now), Err(LockError::Expired));
+}

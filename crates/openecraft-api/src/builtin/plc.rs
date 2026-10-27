@@ -1,6 +1,7 @@
 //! PLC hardware commands: stations with racks and modules, bus systems and their port
 //! connections, device descriptions, automatic configuration and AutomationML import.
 
+use crate::builtin::common::{int_in, NO_LIMIT};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -236,8 +237,8 @@ fn set_station(prj: &mut Project, a: &Args) -> Result<Value, String> {
                 *field = v.to_string();
             }
         }
-        if let Some(n) = a.int("device_number") {
-            st.device_number = n.max(0) as u32;
+        if let Some(n) = int_in(a, "device_number", 0, u32::MAX.into())? {
+            st.device_number = n as u32;
         }
     }
     let converted = if prj.plc.stations[i].scheme != old_scheme { plc_hw::convert_addresses(prj) } else { 0 };
@@ -277,14 +278,14 @@ fn set_plc_card(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(v) = a.str("device") {
         c.device = v.to_string();
     }
-    if let Some(v) = a.int("rack") {
-        c.rack = v.max(0).to_string();
+    if let Some(v) = int_in(a, "rack", 0, NO_LIMIT)? {
+        c.rack = v.to_string();
     }
-    if let Some(v) = a.int("slot") {
-        c.slot = v.max(0).to_string();
+    if let Some(v) = int_in(a, "slot", 0, NO_LIMIT)? {
+        c.slot = v.to_string();
     }
-    if let Some(v) = a.int("start_byte") {
-        c.start_byte = v.max(0) as u32;
+    if let Some(v) = int_in(a, "start_byte", 0, u32::MAX.into())? {
+        c.start_byte = v as u32;
     }
     if let Some(v) = a.int("output_byte") {
         c.output_byte = (v >= 0).then_some(v as u32);

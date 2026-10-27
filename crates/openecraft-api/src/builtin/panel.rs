@@ -2,14 +2,14 @@
 //! plate, the door and the walls, fastening, parametric placement (anchors, patterns,
 //! aligning, rails), assemblies and 3D macros.
 
-use crate::builtin::common::enclosure_index;
+use crate::builtin::common::{enclosure_index, int_in, num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
 use openecraft_core::geom::p;
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Align, AlignTo, Anchor, Enclosure, Face, Fastening, ItemGroup, PanelItem};
-use openecraft_i18n::{tr_const, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
 pub struct Panel;
@@ -246,10 +246,11 @@ fn list_enclosures(prj: &mut Project, a: &Args) -> Result<Value, String> {
 }
 
 fn add_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
-    let name = a.req("name").to_string();
-    if prj.layout.enclosures.iter().any(|e| e.name == name) {
-        return Err(tr_fmt!("Enclosure {} exists already", name));
+    let name = a.req("name").trim().to_string();
+    if let Some(e) = prj.layout.enclosures.iter().find(|e| e.name == name) {
+        return Err(if e.is_room() { tr_fmt!("{} is a room already", name) } else { tr_fmt!("Enclosure {} exists already", name) });
     }
+    check_size(a)?;
     let mut e = panel::new_enclosure(prj, a.str("part").unwrap_or(""), &name);
     if let Some(system) = a.str("system") {
         if panel::SYSTEMS.iter().all(|x| x.id() != system) {
@@ -264,10 +265,20 @@ fn add_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
     Ok(enclosure_json(prj, prj.layout.enclosures.last().unwrap()))
 }
 
+/// Smallest width, height and depth of an enclosure (mm).
+const MIN_ENCLOSURE: f32 = 50.0;
+
+fn check_size(a: &Args) -> Result<(), String> {
+    if ["width", "height", "depth"].iter().any(|n| a.num(n).is_some_and(|v| !(v >= MIN_ENCLOSURE && v.is_finite()))) {
+        return Err(tr_fmt!("Width, height and depth of an enclosure are at least {} mm", MIN_ENCLOSURE));
+    }
+    Ok(())
+}
+
 fn resize(e: &mut Enclosure, a: &Args) {
     for (name, field) in [("width", &mut e.width), ("height", &mut e.height), ("depth", &mut e.depth)] {
         if let Some(v) = a.num(name) {
-            *field = v.max(50.0);
+            *field = v;
         }
     }
     panel::sync_part(e);
@@ -276,6 +287,10 @@ fn resize(e: &mut Enclosure, a: &Args) {
 
 fn set_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let ei = enclosure_index(prj, a.req("enclosure"))?;
+    check_size(a)?;
+    if a.num("plinth").is_some_and(|v| !(v >= 0.0 && v.is_finite())) {
+        return Err(tr("The plinth height must not be negative").to_string());
+    }
     let e = &mut prj.layout.enclosures[ei];
     if let Some(system) = a.str("system") {
         if !system.is_empty() && panel::SYSTEMS.iter().all(|x| x.id() != system) {
@@ -284,7 +299,7 @@ fn set_enclosure(prj: &mut Project, a: &Args) -> Result<Value, String> {
         panel::apply_system(e, system, None);
     }
     if let Some(v) = a.num("plinth") {
-        e.build.plinth = v.max(0.0);
+        e.build.plinth = v;
     }
     for (name, field) in [("left_open", &mut e.build.left_open), ("right_open", &mut e.build.right_open), ("gland_plate", &mut e.build.gland_plate)] {
         if let Some(v) = bool_arg(a, name) {
@@ -320,7 +335,7 @@ fn add_cable_passage(prj: &mut Project, a: &Args) -> Result<Value, String> {
     };
     let (y, z) = panel::next_passage_place(&prj.layout, ei);
     let (y, z) = (a.num("y").unwrap_or(y), a.num("z").unwrap_or(z));
-    let ids = panel::add_passage(prj, ei, y, z, a.num("diameter").unwrap_or(panel::PASSAGE_DIAMETER).max(1.0));
+    let ids = panel::add_passage(prj, ei, y, z, num_in(a, "diameter", 1.0, NO_MAX)?.unwrap_or(panel::PASSAGE_DIAMETER));
     let (left_name, right_name) = (prj.layout.enclosures[ei].name.clone(), prj.layout.enclosures[right].name.clone());
     Ok(json!({ "cutouts": ids, "from": left_name, "to": right_name, "lineup": lineup_json(prj, ei) }))
 }
@@ -392,7 +407,7 @@ fn arrange_panel_items(prj: &mut Project, a: &Args) -> Result<Value, String> {
             }
         }
         "pattern" => {
-            let (nx, ny) = (a.int("columns").unwrap_or(1).max(1) as usize, a.int("rows").unwrap_or(1).max(1) as usize);
+            let (nx, ny) = (int_in(a, "columns", 1, 100)?.unwrap_or(1) as usize, int_in(a, "rows", 1, 100)?.unwrap_or(1) as usize);
             created = panel::pattern_copy(prj, ei, &ids, nx, ny, a.num("pitch_x").unwrap_or(0.0), a.num("pitch_y").unwrap_or(0.0));
         }
         other => {

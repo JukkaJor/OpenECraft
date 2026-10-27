@@ -13,7 +13,7 @@ zoom, language, check results and the messages of the session.
 
 | Action | How |
 | --- | --- |
-| Find any command | `Ctrl+Shift+P` or the search box of the quick access row: every command of the editor and of the plugins by name, tooltip or place |
+| Find any command | `Ctrl+Shift+P` / `F3` or the search box of the quick access row: every command of the editor and of the plugins by name, tooltip or place |
 | Key tips | `Alt` (or `F10`) shows a letter on each tab, a second letter runs a command; `Esc` goes back |
 | Place symbol | *Insert › Insert center* (`Ins`): search (`*` and `?` as placeholders), favorites, recently used, symbols, macros, devices from parts, unplaced functions; click, then click into the page; `R` rotate, `M` mirror, `Esc` stop |
 | Draw wires | `W` (*Insert › Wire*), click start and corner points, ends automatically on a connection point; `Space` flips the corner |
@@ -52,6 +52,6 @@ zoom, language, check results and the messages of the session.
 | Harnesses | *Connections › Harnesses…*; select the wires between two devices › *Assign to harness*, or per connection in the wire properties; 3D topology, protections, fixings, end treatment, KBL, harness interface and 3D export in the pane |
 | Help | `F1` opens the help of the pane in use: quick guide, tutorial, keyboard shortcuts; *Help › Start page* |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page |
-| Pages | `Page Up` / `Page Down`, *Pages* navigator, page switch of the quick access row |
+| Pages | `Page Up` / `Page Down`, *Pages* navigator (its context menu also adds a schematic page after the page, renumbers and deletes pages), page switch of the quick access row |
 | Undo / redo | `Ctrl+Z` / `Ctrl+Y`; the undo list of the quick access row undoes several steps |
 | Copy / paste | `Ctrl+C` / `Ctrl+X` / `Ctrl+V`, *Home › Cut* / *Copy* / *Paste* |

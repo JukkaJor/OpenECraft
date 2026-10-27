@@ -136,7 +136,6 @@ Contacts	Kontakty
 Control transformer	Ovládací transformátor
 Copper busbar system: click start and end point	Měděný přípojnicový systém: klikněte na počáteční a koncový bod
 Copy / cut / paste (devices get new tags)	Kopírovat / vyjmout / vložit (přístroje dostanou nová označení)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopírovat / vložit: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Kopírovat jako nové
 Copy built-in…	Kopírovat vestavěné…
 Core	Žíla
@@ -155,8 +154,6 @@ Cross references	Křížové odkazy
 Cross-section	Průřez
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Proud
 Cutout	Výřez
 Cutout {} × {} mm	Výřez {} × {} mm
@@ -169,7 +166,6 @@ Date	Datum
 Date of the last revision	Datum poslední revize
 Default label	Výchozí popisek
 Del	Del
-Delete   Del	Odstranit   Del
 Delete (Del)	Odstranit (Del)
 Delete cable (its wires are removed from it)	Odstranit kabel (jeho vodiče z něj budou odebrány)
 Delete enclosure	Odstranit skříň
@@ -203,7 +199,6 @@ Door	Dveře
 Door (front view)	Dveře (čelní pohled)
 Door clearance	Volný prostor u dveří
 Door: {} devices, {} cutouts	Dveře: přístroje: {}, výřezy: {}
-Download project   Ctrl+S	Stáhnout projekt   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	Staženo {} artiklů (revize {}): {} nových, {} aktualizovaných
 Downloading parts…	Stahování artiklů…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Tažení: otáčení · tažení pravým/prostředním tlačítkem: posun · kolečko: zoom · kliknutí: vybrat přístroj nebo vodič
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filtr (číslo, typ, výrobce, tex
 Filter devices…	Filtrovat přístroje…
 Filter…	Filtr…
 Fit page	Přizpůsobit stránku
-Fit page   F	Přizpůsobit stránku   F
 Fit page (F)	Přizpůsobit stránku (F)
 Fluid power (ISO 1219)	Tekutinové mechanismy (ISO 1219)
 Forms – title blocks and reports	Formuláře – rohová razítka a výkazy
@@ -347,7 +341,6 @@ Manufacturer	Výrobce
 Max. width	Max. šířka
 Merge a symbol library file	Sloučit soubor knihovny symbolů
 Mirror	Zrcadlit
-Mirror   M	Zrcadlit   M
 Model import failed: {}	Import modelu se nezdařil: {}
 Motor (single-line)	Motor (jednopólové zobrazení)
 Motor 1-phase	Motor 1fázový
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	Rohová razítka OpenECraft (JSON)
 OpenECraft – usage	OpenECraft – ovládání
 Opened {}	Otevřeno: {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	Otvor v montážní desce / dveřích: klikněte na dva rohy (kruhový: ve vlastnostech)
-Open…        Ctrl+O	Otevřít…        Ctrl+O
 Order number	Objednací číslo
 Orientation	Orientace
 Overload aux contact NC	Pomocný kontakt přetížení rozpínací
@@ -546,8 +538,6 @@ Radius	Poloměr
 Readdress card	Přeadresovat kartu
 Rectangle	Obdélník
 Rectangular	Obdélníkový
-Redo   Ctrl+Y	Znovu   Ctrl+Y
-Redo (Ctrl+Y)	Znovu (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Aktualizovat artikly ukázkového katalogu (GEN.*)
 Relay / contactor coil	Cívka relé / stykače
 Relay coil (NFPA)	Cívka relé (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revize {} vytvořena
 Revisions	Revize
 Revisions…	Revize…
 Right	Vpravo
-Rotate   R	Otočit   R
 Rotate (R)	Otočit (R)
 Rotate / mirror (selection or symbol being placed)	Otočit / zrcadlit (výběr nebo umísťovaný symbol)
 Rotate 90°:	Otočit o 90°:
@@ -586,7 +575,6 @@ Round	Kruhový
 Routing	Vedení
 Rows per page	Řádků na stránku
 SVG image	Obrázek SVG
-Save          Ctrl+S	Uložit          Ctrl+S
 Save / open	Uložit / otevřít
 Save as macro	Uložit jako makro
 Save as…	Uložit jako…
@@ -605,7 +593,6 @@ Select a macro.	Vyberte makro.
 Select a part in the tree or create a new one.	Vyberte artikl ve stromu nebo vytvořte nový.
 Select a part. Double click adds it to the device.	Vyberte artikl. Poklikáním jej přidáte k přístroji.
 Select all	Vybrat vše
-Select all   Ctrl+A	Vybrat vše   Ctrl+A
 Select an element in the list or the drawing.	Vyberte prvek v seznamu nebo ve výkresu.
 Select and drag elements; Del deletes	Vyberte a přetáhněte prvky; Del odstraní
 Select device	Vybrat přístroj
@@ -673,7 +660,6 @@ Terminals	Svorky
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Svorky se stejným číslem propojky jsou propojeny (stejný potenciál). Rezervní svorky se započítávají do kusovníku.
 Test connection	Otestovat připojení
 Text	Text
-Text   T	Text   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D čelní pohled se používá v čelním pohledu rozváděče a na stránkách montážního plánu, 3D model ve 3D pohledu rozváděče. Oba se přizpůsobí montážním datům (šířka × výška × hloubka).
 The access token is only needed for changes; it is not stored.	Přístupový token je potřeba jen pro změny; neukládá se.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Model ({} × {} × {}) se liší od montážních dat ({} × {} × {}); bude roztažen podle montážních dat.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformátor (jednopólové zobrazení)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Otočte model tak, aby jeho přední strana směřovala k pozorovateli (+Z) a horní strana byla +Y
 Type	Typ
 Type number	Typové číslo
-Undo   Ctrl+Z	Zpět   Ctrl+Z
-Undo (Ctrl+Z)	Zpět (Ctrl+Z)
 Undo / redo	Zpět / znovu
 Unit	Jednotka
 Unit price	Jednotková cena
@@ -729,7 +713,6 @@ Width × height	Šířka × výška
 Width × height × depth	Šířka × výška × hloubka
 Window macro: {}	Makro okna: {}
 Wire	Vodič
-Wire   W	Vodič   W
 Wire assigned to unknown cable {}	Vodič přiřazen k neznámému kabelu {}
 Wire ends with ferrules	Konce vodičů s dutinkami
 Wire list (panel routing)	Seznam vodičů (vedení v rozváděči)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Vytvoří nebo změní smyčku MaR předběžného návrhu
 Loop number, e.g. 101	Číslo smyčky, např. 101
 Measuring range or set point	Měřicí rozsah nebo žádaná hodnota
-Further device tags of the loop, separated by blanks	Další označení přístrojů smyčky, oddělená mezerami
 Deletes a PCT loop of the pre-planning	Odstraní smyčku MaR předběžného návrhu
 Loop number	Číslo smyčky
 No enclosure named {}	Žádná skříň s názvem {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Nejde o kód jazyka: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Vypíše zdrojový a cílové jazyky textů projektu s počtem nepřeložených řádků
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Nastaví zdrojový jazyk textů projektu a cílové jazyky (kódy ISO 639-1)
 Language the project texts are written in, e.g. en	Jazyk, ve kterém jsou texty projektu napsány, např. en
-Target languages separated by blanks, e.g. de fr	Cílové jazyky oddělené mezerami, např. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Vypíše překladový slovník textů projektu (zdrojový řádek a překlady)
 Only lines without a translation into this language	Jen řádky bez překladu do tohoto jazyka
 Text in the line or a translation	Text v řádku nebo v překladu
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Rohová razítka, rámečky výk
 Frame of all pages that do not choose one	Rámeček všech stránek, které si nevyberou vlastní
 Frame to start from when the frame is new (default: A3 landscape)	Výchozí rámeček pro nový rámeček (výchozí: A3 landscape)
 Free graphics and notes, not evaluated	Volná grafika a poznámky, nevyhodnocují se
-Give kind or template	Zadejte kind nebo template
 Imported {} page templates	Importováno šablon stránek: {}
 Insert page	Vložit stránku
 Landscape	Na šířku
@@ -2280,7 +2260,6 @@ Locked by other users	Uzamčeno jinými uživateli
 None	Žádné
 Close shared project	Zavřít sdílený projekt
 Releases all locks; the project stays open as a local copy	Uvolní všechny zámky; projekt zůstane otevřený jako místní kopie
-Save to project server   Ctrl+S	Uložit na projektový server   Ctrl+S
 Download project	Stáhnout projekt
 Project server…	Projektový server…
 Open and save shared projects, lock pages	Otevírat a ukládat sdílené projekty, zamykat stránky
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Nakreslete čáru pře
 Cable definition on page {}	Definice kabelu na stránce {}
 No cables yet. Draw a cable definition across wires or add a cable.	Zatím žádné kabely. Nakreslete definici kabelu přes vodiče nebo přidejte kabel.
 New tag for {}	Nové označení pro {}
-This tag is already used	Toto označení je již použito
 Select on this page	Vybrat na této stránce
 Place functions of this device	Umístit funkce tohoto přístroje
 Symbols placed next get this device tag (contacts are numbered on)	Symboly umístěné jako další dostanou toto označení přístroje (kontakty se číslují dál)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Vytvoří nebo změní skupinu tekutinov
 Device tag of the group, e.g. -KH1	Označení přístroje skupiny, např. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit nebo other
 Places of the group (0 = not limited)	Místa skupiny (0 = neomezeno)
-Device tags of the members in slot order, separated by blanks	Označení přístrojů členů v pořadí míst, oddělená mezerami
 Part number of the base	Číslo artiklu základní desky
 Deletes a fluid device group	Odstraní skupinu tekutinových přístrojů
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Vypíše tekutinové přístroje s cívkami nebo propojeními a elektrické přístroje s nimi propojené
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Propojí tekutinový přístroj s elektrickými přístroji, které jej ovládají nebo sledují (nahradí propojení)
 Device tag of the fluid device, e.g. -QM1	Označení tekutinového přístroje, např. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Označení elektrických přístrojů oddělená mezerami (prázdné = odebrat propojení)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Propojí elektromagnetické ventily s cívkou stejného čísla (-QM3 › -MB3) a zkopíruje texty funkcí mezi propojenými přístroji
 No hose {}	Žádná hadice {}
 Unknown line type: {}	Neznámý typ vedení: {}
@@ -3173,7 +3149,6 @@ Communication	Komunikace
 Conductor class	Třída vodiče
 Conductor material	Materiál vodiče
 Connection point descriptions	Popisy přípojných bodů
-Connection point designations separated by blanks	Označení přípojných bodů oddělená mezerami
 Connection type	Typ připojení
 Contact material	Materiál kontaktů
 Contractor	Zhotovitel
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Také ověřit každý projekt (pomalejší)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Vyhledá projekty v databázi projektů nebo ve složce: výrazy oddělené ';', každý klíč=hodnota, klíč~text nebo prostý text
 Search terms, e.g. company=ACME; customer~plant; conveyor	Hledané výrazy, např. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Soubor databáze projektů (JSON)
-Folder with project files (instead of a database)	Složka s projektovými soubory (místo databáze)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Změní vlastnosti projektu v mnoha projektových souborech najednou (pole name, description, company, creator, date, revision nebo vlastnosti projektu)
 Project files, separated by ';'	Projektové soubory oddělené ';'
 All project files of a folder	Všechny projektové soubory složky
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Aktivuje (zobrazí) nebo deaktivuje (skryje) obsah projektové volby
 Show the content	Zobrazit obsah
 Switches the project options with a condition by the configurator options	Přepne projektové volby s podmínkou podle voleb konfigurátoru
-Pass a database or a folder	Zadejte databázi nebo složku
 Nothing to change: pass set, remove, replace or rename	Není co měnit: zadejte set, remove, replace nebo rename
 Pass files or a folder	Zadejte soubory nebo složku
 Pass ids or pages	Zadejte ID nebo stránky
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Struktura cí
 Interruption points refer to: all (default), star or pairs	Body přerušení odkazují na: all (výchozí), star nebo pairs
 Draw the contact image below coils (default true)	Kreslit zrcadlo kontaktů pod cívkami (výchozí true)
 Unknown setting: {}	Neznámé nastavení: {}
-Find…   Ctrl+F	Najít…   Ctrl+F
 Find and replace in the whole project	Najít a nahradit v celém projektu
 Text to find	Hledaný text
 Match case	Rozlišovat malá a velká písmena
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	Šablona projektu OpenECraft
 Not a project template: {}	Není šablona projektu: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Začít ze šablony projektu: vestavěné (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) nebo projektového souboru
-Unknown template {}: {}	Neznámá šablona {}: {}
 Not a packed project	Není zabalený projekt
 Viewer	Prohlížející
 With a user account of the server; replaces the access token	S uživatelským účtem serveru; nahrazuje přístupový token
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Neznámý příklad {}: viz list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Čerpací stanice vestavěná do dvou řazených stojanových skříní: přípojnicový systém, lišty a kabelové žlaby, přístroje ve dveřích a rukojeti, ventilátor s filtrem, osvětlení, přípojnice PE, kabelové vývodky, kabelová průchodka, výpočet klimatizace, zaplnění žlabů a 3D trasování.
 9 · Electrical room	9 · Elektrická místnost
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Řada rozvaděčů ve své místnosti: půdorys ve tvaru L, vnitřní stěna, dveře a okno, řada na svém místě, lišta se zásuvkou na stěně, nouzové svítidlo na stěně a kabelový žlab pod stropem.
+{} is on page {}, which is released: renaming it would change the page	{} je na stránce {}, která je uvolněná: přejmenování by stránku změnilo
+A section number consists of letters and digits and does not start with 0	Číslo oddílu se skládá z písmen a číslic a nezačíná číslicí 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Identifikátor struktury {} nesmí obsahovat mezery ani znaky = + - / :
+Bridge rectifier block	Můstkový usměrňovač (blok)
+the server refuses the connection (not started, or another port)	server odmítá připojení (není spuštěn nebo jiný port)
+the server name is unknown	název serveru je neznámý
+the server does not answer in time	server neodpovídá včas
+the address is not a valid URL (e.g. http://server:8090)	adresa není platná URL (např. http://server:8090)
+Unknown check: {}	Neznámá kontrola: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Žádná vestavěná kontrola se nejmenuje {}: nastavení platí pro kontrolu pluginu s tímto názvem (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} není kód hlášení, jak jej zobrazuje check (např. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} není otisk hlášení, jak jej zobrazuje check (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Stránka {} je vyjmuta do podprojektu {}: nejprve podprojekt vložte zpět nebo jej zahoďte
+Unknown wire colour {} (IEC 60757: {})	Neznámá barva vodiče {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Nejde o průřez: {} (např. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Neznámý zástupný symbol {}: možné jsou {}
+{} must not be negative	{} nesmí být záporné
+{} must be at least {}	{} musí být alespoň {}
+{} must be between {} and {}	{} musí být mezi {} a {}
+The length must not be negative	Délka nesmí být záporná
+The text height must be at least 0.5 mm	Výška textu musí být alespoň 0,5 mm
+The wrap width must not be negative	Šířka zalomení nesmí být záporná
+The items would leave the page	Prvky by opustily stránku
+The number of copies must be between 1 and 100	Počet kopií musí být mezi 1 a 100
+The copies would leave the page	Kopie by opustily stránku
+The cable definition line has no length	Čára definice kabelu nemá délku
+The cable definition line crosses no wire	Čára definice kabelu nekříží žádný vodič
+{} and {} are both ends of one function: the wire would short-circuit it	{} a {} jsou oba konce jedné funkce: vodič by ji zkratoval
+No wire at {} / {} mm	V místě {} / {} mm není žádný vodič
+Target languages separated by commas or blanks, e.g. de, fr	Cílové jazyky oddělené čárkami nebo mezerami, např. de, fr
+The first page number must not be negative	První číslo stránky nesmí být záporné
+The counting step must be at least 1	Krok číslování musí být alespoň 1
+Released pages keep their names: {}	Uvolněné stránky si ponechají své názvy: {}
+The plinth height must not be negative	Výška soklu nesmí být záporná
+{} is a room already	{} je již místnost
+Width, height and depth of an enclosure are at least {} mm	Šířka, výška a hloubka skříně jsou alespoň {} mm
+Device tags of the members in slot order, separated by commas or blanks	Označení přístrojů členů v pořadí míst, oddělená čárkami nebo mezerami
+Electrical device tags separated by commas or blanks (empty = remove the links)	Označení elektrických přístrojů oddělená čárkami nebo mezerami (prázdné = odebrat propojení)
+Further device tags of the loop, separated by commas or blanks	Další označení přístrojů smyčky, oddělená čárkami nebo mezerami
+Connection point designations separated by commas or blanks	Označení přípojných bodů oddělená čárkami nebo mezerami
+Width, depth and height of a room are at least {} mm	Šířka, hloubka a výška místnosti jsou alespoň {} mm
+Room {} exists already	Místnost {} již existuje
+{} is an enclosure already	{} je již skříň
+{} would stand outside the room {}	{} by stála mimo místnost {}
+No identifier {} in the project	V projektu není identifikátor {}
+{} exists already: pass merge to make both one identifier	{} již existuje: zadejte merge pro sloučení obou do jednoho identifikátoru
+Allow renaming onto an identifier in use: both become one	Povolit přejmenování na používaný identifikátor: oba se stanou jedním
+Sign in or connect with the access token to change parts	Přihlaste se nebo se připojte pomocí přístupového tokenu, abyste mohli měnit díly
+Read only: sign in with a user who may change parts of this manufacturer	Jen pro čtení: přihlaste se jako uživatel, který smí měnit díly tohoto výrobce
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nSpustí server Model Context Protocol na stdin / stdout: nástroje tohoto seznamu pro agenty AI, s projektem v paměti (save_project jej zapíše, undo / redo vrátí jednotlivá volání). OPENECRAFT_MCP_TOOLS omezuje nabízené nástroje.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nZobrazí verzi příkazového řádku (také --version nebo -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo a redo fungují jen v relaci MCP: příkazový řádek otevírá projekt pro každý příkaz znovu
+(MCP server only)	(jen server MCP)
+{} is an archive: pass a path to save the project as a project file	{} je archiv: zadejte cestu pro uložení projektu jako projektového souboru
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} je archiv a zůstává beze změny: uložte projekt jako projektový soubor (save_project --path <file>.oec) nebo archiv převeďte (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Složka s projektovými soubory (místo databáze; výchozí: aktuální složka)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Neznámý typ stránky: {} (schematic, overview, graphic, cover nebo výkaz z list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Neznámá šablona {}: zadejte vestavěnou ({}) nebo projektový soubor
+Property {} needs a text or a number	Vlastnost {} vyžaduje text nebo číslo

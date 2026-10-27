@@ -12,7 +12,7 @@
       "type_number": "WDU 2.5",
       "order_number": "1020000000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "Feed-through terminal WDU 2.5, screw, 2.5 mm2, beige",
+      "description": "Feed-through terminal WDU 2.5, screw, 2.5 mm², beige",
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
@@ -23,14 +23,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1020080000",
       "type_number": "WDU 2.5 BL",
       "order_number": "1020080000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "Feed-through terminal WDU 2.5 BL, screw, 2.5 mm2, blue",
+      "description": "Feed-through terminal WDU 2.5 BL, screw, 2.5 mm², blue",
       "group": "Terminals",
       "subgroup": "N terminal",
       "identifier": "X",
@@ -41,14 +41,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: N\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: N\nCross-section: 2.5 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1020100000",
       "type_number": "WDU 4",
       "order_number": "1020100000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "Feed-through terminal WDU 4, screw, 4 mm2, beige",
+      "description": "Feed-through terminal WDU 4, screw, 4 mm², beige",
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
@@ -59,14 +59,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: Feed-through\nCross-section: 4 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: Feed-through\nCross-section: 4 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1020200000",
       "type_number": "WDU 6",
       "order_number": "1020200000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "Feed-through terminal WDU 6, screw, 6 mm2, beige",
+      "description": "Feed-through terminal WDU 6, screw, 6 mm², beige",
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
@@ -77,14 +77,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: Feed-through\nCross-section: 6 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: Feed-through\nCross-section: 6 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1010000000",
       "type_number": "WPE 2.5",
       "order_number": "1010000000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "PE terminal WPE 2.5, screw, 2.5 mm2, green-yellow",
+      "description": "PE terminal WPE 2.5, screw, 2.5 mm², green-yellow",
       "group": "Terminals",
       "subgroup": "PE terminal",
       "identifier": "X",
@@ -95,14 +95,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1010100000",
       "type_number": "WPE 4",
       "order_number": "1010100000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "PE terminal WPE 4, screw, 4 mm2, green-yellow",
+      "description": "PE terminal WPE 4, screw, 4 mm², green-yellow",
       "group": "Terminals",
       "subgroup": "PE terminal",
       "identifier": "X",
@@ -113,14 +113,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: PE\nCross-section: 4 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: PE\nCross-section: 4 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1521850000",
       "type_number": "A2C 2.5",
       "order_number": "1521850000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "Feed-through terminal A2C 2.5, push-in, 2.5 mm2, dark beige",
+      "description": "Feed-through terminal A2C 2.5, push-in, 2.5 mm², dark beige",
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
@@ -131,14 +131,14 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: Feed-through\nCross-section: 2.5 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1521680000",
       "type_number": "A2C 2.5 PE",
       "order_number": "1521680000",
       "manufacturer": "Weidm\u00fcller",
-      "description": "PE terminal A2C 2.5 PE, push-in, 2.5 mm2, green-yellow",
+      "description": "PE terminal A2C 2.5 PE, push-in, 2.5 mm², green-yellow",
       "group": "Terminals",
       "subgroup": "PE terminal",
       "identifier": "X",
@@ -149,7 +149,7 @@
           "pins": ""
         }
       ],
-      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm2\nEnd bracket: WEI.1061200000"
+      "tech_data": "Terminal type: PE\nCross-section: 2.5 mm²\nEnd bracket: WEI.1061200000"
     },
     {
       "number": "WEI.1050000000",

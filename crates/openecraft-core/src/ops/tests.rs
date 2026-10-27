@@ -291,3 +291,14 @@ fn new_pages_join_the_section_of_the_page_before() {
     let at = add_page_in(&mut prj, PageKind::Schematic, a);
     assert_eq!((at, prj.pages[at].name.as_str()), (6, "1.4"));
 }
+
+#[test]
+fn devices_on_released_pages_are_not_renamed() {
+    let mut prj = crate::sample::demo_project();
+    assert_eq!(rename_problem(&prj, "-K1", "-K1"), None);
+    assert_eq!(rename_problem(&prj, "-K1", "-K9"), None);
+    assert!(rename_problem(&prj, "-K1", "-S1").unwrap().contains("already exists"));
+    let page = prj.pages.iter().position(|pg| pg.symbols.iter().any(|s| s.tag == "-K1")).unwrap();
+    prj.pages[page].locked = true;
+    assert!(rename_problem(&prj, "-K1", "-K9").unwrap().contains("released"));
+}

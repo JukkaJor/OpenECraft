@@ -197,7 +197,7 @@ pub fn error_text(status: u16, status_text: &str, body: &[u8]) -> String {
 
 fn answer(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, String> {
     match result {
-        Err(e) => Err(tr_fmt!("connection failed: {}", e)),
+        Err(e) => Err(tr_fmt!("connection failed: {}", crate::reason(&e))),
         Ok(resp) if resp.ok => Ok(resp),
         Ok(resp) => Err(error_text(resp.status, &resp.status_text, &resp.bytes)),
     }

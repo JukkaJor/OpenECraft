@@ -136,7 +136,6 @@ Contacts	Contacte
 Control transformer	Transformator de comandă
 Copper busbar system: click start and end point	Sistem de bare colectoare din cupru: faceți clic pe punctul de start și pe cel final
 Copy / cut / paste (devices get new tags)	Copiere / decupare / lipire (dispozitivele primesc identificatori noi)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Copiere / lipire: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Copiere ca nou
 Copy built-in…	Copiere element integrat…
 Core	Fir
@@ -155,8 +154,6 @@ Cross references	Referințe încrucișate
 Cross-section	Secțiune
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Curent
 Cutout	Decupaj
 Cutout {} × {} mm	Decupaj {} × {} mm
@@ -169,7 +166,6 @@ Date	Dată
 Date of the last revision	Data ultimei revizii
 Default label	Etichetă implicită
 Del	Del
-Delete   Del	Ștergere   Del
 Delete (Del)	Ștergere (Del)
 Delete cable (its wires are removed from it)	Ștergere cablu (conductoarele sale sunt eliminate din el)
 Delete enclosure	Ștergere carcasă
@@ -203,7 +199,6 @@ Door	Ușă
 Door (front view)	Ușă (vedere frontală)
 Door clearance	Distanță liberă față de ușă
 Door: {} devices, {} cutouts	Ușă: {} dispozitive, {} decupaje
-Download project   Ctrl+S	Descărcare proiect   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	S-au descărcat {} articole (revizia {}): {} noi, {} actualizate
 Downloading parts…	Se descarcă articolele…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Glisare: orbitare · glisare cu butonul dreapta/din mijloc: deplasare · rotiță: zoom · clic: selectare dispozitiv sau conductor
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filtru (număr, tip, producător, 
 Filter devices…	Filtrare dispozitive…
 Filter…	Filtru…
 Fit page	Încadrare pagină
-Fit page   F	Încadrare pagină   F
 Fit page (F)	Încadrare pagină (F)
 Fluid power (ISO 1219)	Acționări hidraulice și pneumatice (ISO 1219)
 Forms – title blocks and reports	Formulare – cartușe și rapoarte
@@ -347,7 +341,6 @@ Manufacturer	Producător
 Max. width	Lățime max.
 Merge a symbol library file	Combinare cu un fișier de bibliotecă de simboluri
 Mirror	Oglindire
-Mirror   M	Oglindire   M
 Model import failed: {}	Importul modelului nu a reușit: {}
 Motor (single-line)	Motor (monofilar)
 Motor 1-phase	Motor monofazat
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	Cartușe OpenECraft (JSON)
 OpenECraft – usage	OpenECraft – utilizare
 Opened {}	S-a deschis {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	Deschidere în placa de montaj / ușă: faceți clic pe două colțuri (rotundă: în proprietăți)
-Open…        Ctrl+O	Deschidere…        Ctrl+O
 Order number	Număr de comandă
 Orientation	Orientare
 Overload aux contact NC	Contact auxiliar de suprasarcină NÎ
@@ -546,8 +538,6 @@ Radius	Rază
 Readdress card	Readresare card
 Rectangle	Dreptunghi
 Rectangular	Dreptunghiular
-Redo   Ctrl+Y	Refacere   Ctrl+Y
-Redo (Ctrl+Y)	Refacere (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Reîmprospătare articole din catalogul exemplu (GEN.*)
 Relay / contactor coil	Bobină de releu / contactor
 Relay coil (NFPA)	Bobină de releu (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revizia {} a fost creată
 Revisions	Revizii
 Revisions…	Revizii…
 Right	Dreapta
-Rotate   R	Rotire   R
 Rotate (R)	Rotire (R)
 Rotate / mirror (selection or symbol being placed)	Rotire / oglindire (selecția sau simbolul care se plasează)
 Rotate 90°:	Rotire cu 90°:
@@ -586,7 +575,6 @@ Round	Rotund
 Routing	Pozare
 Rows per page	Rânduri pe pagină
 SVG image	Imagine SVG
-Save          Ctrl+S	Salvare          Ctrl+S
 Save / open	Salvare / deschidere
 Save as macro	Salvare ca macro
 Save as…	Salvare ca…
@@ -605,7 +593,6 @@ Select a macro.	Selectați un macro.
 Select a part in the tree or create a new one.	Selectați un articol din arbore sau creați unul nou.
 Select a part. Double click adds it to the device.	Selectați un articol. Dublu clic îl adaugă la dispozitiv.
 Select all	Selectare totală
-Select all   Ctrl+A	Selectare totală   Ctrl+A
 Select an element in the list or the drawing.	Selectați un element din listă sau din desen.
 Select and drag elements; Del deletes	Selectați și glisați elemente; Del șterge
 Select device	Selectare dispozitiv
@@ -673,7 +660,6 @@ Terminals	Borne
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Bornele cu același număr de punte sunt legate prin punte (același potențial). Bornele de rezervă sunt incluse în lista de materiale.
 Test connection	Testare conexiune
 Text	Text
-Text   T	Text   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	Vederea frontală 2D se folosește în vederea frontală a tabloului și pe paginile de plan de montaj, modelul 3D în vederea 3D a tabloului. Ambele se ajustează la datele de montaj (lățime × înălțime × adâncime).
 The access token is only needed for changes; it is not stored.	Tokenul de acces este necesar doar pentru modificări; nu se stochează.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Modelul ({} × {} × {}) diferă de datele de montaj ({} × {} × {}); este întins la datele de montaj.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformator (monofilar)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Rotiți modelul astfel încât fața sa să fie orientată spre privitor (+Z), iar partea de sus să fie +Y
 Type	Tip
 Type number	Număr de tip
-Undo   Ctrl+Z	Anulare acțiune   Ctrl+Z
-Undo (Ctrl+Z)	Anulare acțiune (Ctrl+Z)
 Undo / redo	Anulare / refacere
 Unit	Unitate
 Unit price	Preț unitar
@@ -729,7 +713,6 @@ Width × height	Lățime × înălțime
 Width × height × depth	Lățime × înălțime × adâncime
 Window macro: {}	Macro de fereastră: {}
 Wire	Conductor
-Wire   W	Conductor   W
 Wire assigned to unknown cable {}	Conductor atribuit unui cablu necunoscut {}
 Wire ends with ferrules	Capete de conductor cu manșoane de capăt
 Wire list (panel routing)	Listă de conductoare (pozare în tablou)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Creează sau modifică o buclă AMC a preplanificării
 Loop number, e.g. 101	Număr buclă, de ex. 101
 Measuring range or set point	Domeniu de măsură sau valoare prescrisă
-Further device tags of the loop, separated by blanks	Alți identificatori de dispozitiv ai buclei, separați prin spații
 Deletes a PCT loop of the pre-planning	Șterge o buclă AMC a preplanificării
 Loop number	Număr buclă
 No enclosure named {}	Nicio carcasă cu numele {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Nu este un cod de limbă: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Listează limbile sursă și țintă ale textelor proiectului cu numărul de rânduri netraduse
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Setează limba sursă a textelor proiectului și limbile țintă (coduri ISO 639-1)
 Language the project texts are written in, e.g. en	Limba în care sunt scrise textele proiectului, de ex. en
-Target languages separated by blanks, e.g. de fr	Limbi țintă separate prin spații, de ex. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Listează dicționarul de traduceri al textelor proiectului (rândul sursă și traducerile)
 Only lines without a translation into this language	Doar rândurile fără traducere în această limbă
 Text in the line or a translation	Text în rând sau într-o traducere
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Cartușe, chenare și șabloane 
 Frame of all pages that do not choose one	Chenarul tuturor paginilor care nu își aleg unul propriu
 Frame to start from when the frame is new (default: A3 landscape)	Chenarul de pornire când chenarul este nou (implicit: A3 landscape)
 Free graphics and notes, not evaluated	Grafică liberă și note, neevaluate
-Give kind or template	Indicați kind sau template
 Imported {} page templates	S-au importat {} șabloane de pagină
 Insert page	Inserare pagină
 Landscape	Vedere
@@ -2280,7 +2260,6 @@ Locked by other users	Blocate de alți utilizatori
 None	Niciuna
 Close shared project	Închidere proiect partajat
 Releases all locks; the project stays open as a local copy	Eliberează toate blocările; proiectul rămâne deschis ca copie locală
-Save to project server   Ctrl+S	Salvare pe serverul de proiecte   Ctrl+S
 Download project	Descărcare proiect
 Project server…	Server de proiecte…
 Open and save shared projects, lock pages	Deschiderea și salvarea proiectelor partajate, blocarea paginilor
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Trasați o linie peste
 Cable definition on page {}	Definire cablu pe pagina {}
 No cables yet. Draw a cable definition across wires or add a cable.	Încă nu există cabluri. Desenați o definire de cablu peste conductoare sau adăugați un cablu.
 New tag for {}	Identificator nou pentru {}
-This tag is already used	Acest identificator este deja folosit
 Select on this page	Selectare pe această pagină
 Place functions of this device	Plasare funcții ale acestui dispozitiv
 Symbols placed next get this device tag (contacts are numbered on)	Simbolurile plasate în continuare primesc acest identificator de dispozitiv (contactele se numerotează în continuare)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Creează sau modifică un grup de dispoz
 Device tag of the group, e.g. -KH1	Identificatorul de dispozitiv al grupului, de ex. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit sau other
 Places of the group (0 = not limited)	Locurile grupului (0 = nelimitat)
-Device tags of the members in slot order, separated by blanks	Identificatorii de dispozitiv ai membrilor în ordinea locurilor, separați prin spații
 Part number of the base	Numărul de articol al bazei
 Deletes a fluid device group	Șterge un grup de dispozitive de fluid
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Listează dispozitivele de fluid cu bobine sau legături și dispozitivele electrice legate de ele
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Leagă un dispozitiv de fluid de dispozitivele electrice care îl acționează sau îl monitorizează (înlocuiește legăturile)
 Device tag of the fluid device, e.g. -QM1	Identificatorul de dispozitiv al dispozitivului de fluid, de ex. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Identificatorii dispozitivelor electrice separați prin spații (gol = eliminare legături)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Leagă electrovalvele de bobina cu același număr (-QM3 › -MB3) și copiază textele de funcție între dispozitivele legate
 No hose {}	Niciun furtun {}
 Unknown line type: {}	Tip de conductă necunoscut: {}
@@ -3173,7 +3149,6 @@ Communication	Comunicație
 Conductor class	Clasa conductorului
 Conductor material	Materialul conductorului
 Connection point descriptions	Descrieri ale punctelor de conexiune
-Connection point designations separated by blanks	Denumiri ale punctelor de conexiune separate prin spații
 Connection type	Tip de conexiune
 Contact material	Material de contact
 Contractor	Contractant
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Validează și fiecare proiect (mai lent)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Găsește proiecte în baza de date de proiecte sau într-un folder: termeni separați prin ';', fiecare cheie=valoare, cheie~text sau text simplu
 Search terms, e.g. company=ACME; customer~plant; conveyor	Termeni de căutare, de ex. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Fișierul bazei de date de proiecte (JSON)
-Folder with project files (instead of a database)	Folder cu fișiere de proiect (în locul unei baze de date)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Modifică proprietățile de proiect în mai multe fișiere de proiect simultan (câmpurile name, description, company, creator, date, revision sau proprietăți de proiect)
 Project files, separated by ';'	Fișiere de proiect, separate prin ';'
 All project files of a folder	Toate fișierele de proiect ale unui folder
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Activează (afișează) sau dezactivează (ascunde) conținutul unei opțiuni de proiect
 Show the content	Afișare conținut
 Switches the project options with a condition by the configurator options	Comută opțiunile de proiect cu condiție conform opțiunilor configuratorului
-Pass a database or a folder	Indicați o bază de date sau un folder
 Nothing to change: pass set, remove, replace or rename	Nimic de modificat: indicați set, remove, replace sau rename
 Pass files or a folder	Indicați fișiere sau un folder
 Pass ids or pages	Indicați ID-uri sau pagini
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Structura pag
 Interruption points refer to: all (default), star or pairs	Punctele de întrerupere fac referire la: all (implicit), star sau pairs
 Draw the contact image below coils (default true)	Desenarea imaginii contactelor sub bobine (implicit true)
 Unknown setting: {}	Setare necunoscută: {}
-Find…   Ctrl+F	Găsire…   Ctrl+F
 Find and replace in the whole project	Găsire și înlocuire în întregul proiect
 Text to find	Text de căutat
 Match case	Potrivire litere mari și mici
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	Șablon de proiect OpenECraft
 Not a project template: {}	Nu este un șablon de proiect: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Pornire de la un șablon de proiect: unul integrat (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) sau un fișier de proiect
-Unknown template {}: {}	Șablon necunoscut {}: {}
 Not a packed project	Nu este un proiect împachetat
 Viewer	Vizualizator
 With a user account of the server; replaces the access token	Cu un cont de utilizator al serverului; înlocuiește tokenul de acces
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Exemplu necunoscut {}: vezi list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Stația de pompare montată în două dulapuri de podea alăturate: sistem de bare, șine și canale de cablu, aparate pe ușă și mânere, ventilator cu filtru, iluminat, bară PE, presetupe, o trecere de cabluri, calculul climatizării, gradul de umplere al canalelor și rutare 3D.
 9 · Electrical room	9 · Cameră electrică
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Șirul de dulapuri în camera sa: plan în formă de L, perete interior, ușă și fereastră, șirul de dulapuri la locul său, o șină cu o priză pe un perete, un corp de iluminat de siguranță montat pe perete și un jgheab de cabluri sub tavan.
+{} is on page {}, which is released: renaming it would change the page	{} se află pe pagina {}, care este aprobată: redenumirea ar modifica pagina
+A section number consists of letters and digits and does not start with 0	Un număr de secțiune constă din litere și cifre și nu începe cu 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Identificatorul de structură {} nu trebuie să conțină spații sau semnele = + - / :
+Bridge rectifier block	Redresor în punte (bloc)
+the server refuses the connection (not started, or another port)	serverul refuză conexiunea (nepornit sau alt port)
+the server name is unknown	numele serverului este necunoscut
+the server does not answer in time	serverul nu răspunde la timp
+the address is not a valid URL (e.g. http://server:8090)	adresa nu este un URL valid (de ex. http://server:8090)
+Unknown check: {}	Verificare necunoscută: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Nicio verificare integrată nu se numește {}: setarea se aplică unei verificări a unui plugin cu acest nume (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} nu este un cod de mesaj așa cum îl afișează check (de ex. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} nu este o amprentă de mesaj așa cum o afișează check (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Pagina {} este scoasă în subproiectul {}: mai întâi reinserați subproiectul sau renunțați la el
+Unknown wire colour {} (IEC 60757: {})	Culoare de conductor necunoscută {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Nu este o secțiune: {} (de ex. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Substituent necunoscut {}: posibile sunt {}
+{} must not be negative	{} nu trebuie să fie negativ
+{} must be at least {}	{} trebuie să fie cel puțin {}
+{} must be between {} and {}	{} trebuie să fie între {} și {}
+The length must not be negative	Lungimea nu trebuie să fie negativă
+The text height must be at least 0.5 mm	Înălțimea textului trebuie să fie de cel puțin 0,5 mm
+The wrap width must not be negative	Lățimea de încadrare nu trebuie să fie negativă
+The items would leave the page	Elementele ar ieși din pagină
+The number of copies must be between 1 and 100	Numărul de copii trebuie să fie între 1 și 100
+The copies would leave the page	Copiile ar ieși din pagină
+The cable definition line has no length	Linia de definire a cablului nu are lungime
+The cable definition line crosses no wire	Linia de definire a cablului nu intersectează niciun conductor
+{} and {} are both ends of one function: the wire would short-circuit it	{} și {} sunt ambele capete ale unei funcții: conductorul ar scurtcircuita-o
+No wire at {} / {} mm	Niciun conductor la {} / {} mm
+Target languages separated by commas or blanks, e.g. de, fr	Limbi țintă separate prin virgule sau spații, de ex. de, fr
+The first page number must not be negative	Primul număr de pagină nu trebuie să fie negativ
+The counting step must be at least 1	Pasul de numărare trebuie să fie cel puțin 1
+Released pages keep their names: {}	Paginile aprobate își păstrează numele: {}
+The plinth height must not be negative	Înălțimea soclului nu trebuie să fie negativă
+{} is a room already	{} este deja o încăpere
+Width, height and depth of an enclosure are at least {} mm	Lățimea, înălțimea și adâncimea unei carcase sunt de cel puțin {} mm
+Device tags of the members in slot order, separated by commas or blanks	Identificatorii de dispozitiv ai membrilor în ordinea locurilor, separați prin virgule sau spații
+Electrical device tags separated by commas or blanks (empty = remove the links)	Identificatorii dispozitivelor electrice separați prin virgule sau spații (gol = eliminare legături)
+Further device tags of the loop, separated by commas or blanks	Alți identificatori de dispozitiv ai buclei, separați prin virgule sau spații
+Connection point designations separated by commas or blanks	Denumiri ale punctelor de conexiune separate prin virgule sau spații
+Width, depth and height of a room are at least {} mm	Lățimea, adâncimea și înălțimea unei încăperi sunt de cel puțin {} mm
+Room {} exists already	Încăperea {} există deja
+{} is an enclosure already	{} este deja o carcasă
+{} would stand outside the room {}	{} ar sta în afara încăperii {}
+No identifier {} in the project	Niciun identificator {} în proiect
+{} exists already: pass merge to make both one identifier	{} există deja: indicați merge pentru a le uni într-un singur identificator
+Allow renaming onto an identifier in use: both become one	Permite redenumirea într-un identificator folosit: ambele devin unul
+Sign in or connect with the access token to change parts	Autentificați-vă sau conectați-vă cu tokenul de acces pentru a modifica articole
+Read only: sign in with a user who may change parts of this manufacturer	Doar citire: autentificați-vă cu un utilizator care poate modifica articolele acestui producător
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nPornește un server Model Context Protocol pe stdin / stdout: instrumentele acestei liste pentru agenți AI, cu proiectul păstrat în memorie (save_project îl scrie, undo / redo anulează apeluri individuale). OPENECRAFT_MCP_TOOLS limitează instrumentele oferite.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nAfișează versiunea liniei de comandă (și --version sau -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo și redo funcționează doar într-o sesiune MCP: linia de comandă redeschide proiectul pentru fiecare comandă
+(MCP server only)	(doar serverul MCP)
+{} is an archive: pass a path to save the project as a project file	{} este o arhivă: indicați o cale pentru a salva proiectul ca fișier de proiect
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} este o arhivă și rămâne neschimbată: salvați proiectul ca fișier de proiect (save_project --path <file>.oec) sau convertiți arhiva (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Folder cu fișiere de proiect (în locul unei baze de date; implicit: folderul curent)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Tip de pagină necunoscut: {} (schematic, overview, graphic, cover sau un raport din list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Șablon necunoscut {}: indicați unul integrat ({}) sau un fișier de proiect
+Property {} needs a text or a number	Proprietatea {} necesită un text sau un număr

@@ -18,24 +18,34 @@ impl App {
         } else {
             self.editor.status.clone()
         };
+        // Narrow windows leave out the less needed segments instead of drawing them
+        // over each other (the typed coordinates, the layer, the grid, the file name).
+        let width = ui.available_width();
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 6.0;
             if on_page {
                 let pos = match self.editor.hover {
-                    Some(p) => format!("x {:>7.1}  y {:>7.1} mm", p.x, p.y),
+                    Some(p) if width > 900.0 => format!("x {:>7.1}  y {:>7.1} mm", p.x, p.y),
+                    Some(p) => format!("{:.0} / {:.0}", p.x, p.y),
                     None => "x –  y –".to_string(),
                 };
                 ui.monospace(pos).on_hover_text(tr("Position of the cursor"));
-                self.coordinate_field(ui);
+                if width > 1100.0 {
+                    self.coordinate_field(ui);
+                }
                 ui.separator();
-                let r = ui.add(egui::Button::new(tr_fmt!("Grid {} mm", self.editor.grid)).frame(false)).on_hover_text(tr("Grid size"));
-                egui::Popup::menu(&r).show(|ui| {
-                    self.cmd_button(ui, Cmd::Grid);
-                    self.cmd_menu(ui, Cmd::GridSize);
-                });
-                let layer = if self.editor.active_layer.is_empty() { tr("(default)").to_string() } else { self.editor.active_layer.clone() };
-                let r = ui.add(egui::Button::new(tr_fmt!("Layer: {}", layer)).frame(false)).on_hover_text(tr("Layer"));
-                egui::Popup::menu(&r).show(|ui| self.cmd_menu(ui, Cmd::ActiveLayer));
+                if width > 800.0 {
+                    let r = ui.add(egui::Button::new(tr_fmt!("Grid {} mm", self.editor.grid)).frame(false)).on_hover_text(tr("Grid size"));
+                    egui::Popup::menu(&r).show(|ui| {
+                        self.cmd_button(ui, Cmd::Grid);
+                        self.cmd_menu(ui, Cmd::GridSize);
+                    });
+                }
+                if width > 1000.0 {
+                    let layer = if self.editor.active_layer.is_empty() { tr("(default)").to_string() } else { self.editor.active_layer.clone() };
+                    let r = ui.add(egui::Button::new(tr_fmt!("Layer: {}", layer)).frame(false)).on_hover_text(tr("Layer"));
+                    egui::Popup::menu(&r).show(|ui| self.cmd_menu(ui, Cmd::ActiveLayer));
+                }
                 let r = ui.add(egui::Button::new(format!("{:.0} %", self.editor.zoom / 3.78 * 100.0)).frame(false)).on_hover_text(tr("100% ≈ real size on a 96 dpi screen"));
                 if r.clicked() {
                     self.editor.fit_pending = true;
@@ -74,8 +84,10 @@ impl App {
                     None if self.remote.shared.is_some() => String::new(),
                     None => tr("unsaved").to_string(),
                 };
-                ui.weak(format!("{}{}", file, if self.session.dirty() { " *" } else { "" }));
-                ui.separator();
+                if width > 700.0 {
+                    ui.weak(format!("{}{}", file, if self.session.dirty() { " *" } else { "" }));
+                    ui.separator();
+                }
                 let lang = openecraft_i18n::lang();
                 let r = ui.add(egui::Button::new(lang.native_name()).frame(false)).on_hover_text(tr("Language"));
                 egui::Popup::menu(&r).show(|ui| self.cmd_menu(ui, Cmd::Language));
@@ -96,7 +108,7 @@ impl App {
                     ui.separator();
                     // Work area: the navigators show its pages and devices.
                     let areas: Vec<String> = self.session.prj.structures.work_areas.iter().map(|w| w.name.clone()).collect();
-                    if !areas.is_empty() || !self.work_area.is_empty() {
+                    if (!areas.is_empty() || !self.work_area.is_empty()) && width > 900.0 {
                         let shown = if self.work_area.is_empty() { tr("(whole project)").to_string() } else { self.work_area.clone() };
                         egui::ComboBox::from_id_salt("status_work_area").selected_text(shown).show_ui(ui, |ui| {
                             ui.selectable_value(&mut self.work_area, String::new(), tr("(whole project)"));

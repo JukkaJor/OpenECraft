@@ -29,7 +29,7 @@ pub static TOOLS: &[Tool] = &[
         params: &[
             optional("query", Kind::Str, tr_const!("Search terms, e.g. company=ACME; customer~plant; conveyor")),
             optional("database", Kind::Str, tr_const!("Project database file (JSON)")),
-            optional("folder", Kind::Str, tr_const!("Folder with project files (instead of a database)")),
+            optional("folder", Kind::Str, tr_const!("Folder with project files (instead of a database; default: the current folder)")),
         ],
         needs_project: false,
         run: search_projects,
@@ -156,8 +156,10 @@ fn index_projects(_: &mut Session, a: &Args) -> Result<Value, String> {
 fn search_projects(_: &mut Session, a: &Args) -> Result<Value, String> {
     let db = match (a.str("database"), a.str("folder")) {
         (Some(path), _) => Database::from_json(&String::from_utf8_lossy(&read(Path::new(path))?))?,
-        (None, Some(folder)) => Database { folders: vec![folder.into()], entries: scan(folder, false)? },
-        (None, None) => return Err(tr("Pass a database or a folder").into()),
+        (None, folder) => {
+            let folder = folder.unwrap_or(".");
+            Database { folders: vec![folder.into()], entries: scan(folder, false)? }
+        }
     };
     Ok(json!(db.search(a.str("query").unwrap_or_default())))
 }

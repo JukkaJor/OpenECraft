@@ -4,19 +4,19 @@
     {
       "name": "web",
       "runtimeExecutable": "trunk",
-      "runtimeArgs": ["serve"],
+      "runtimeArgs": ["serve", "--config", "openecraft/Trunk.toml"],
       "port": 8080
     },
     {
       "name": "web-fresh",
       "runtimeExecutable": "trunk",
-      "runtimeArgs": ["serve", "--port", "8081", "--dist", "target/dist-fresh"],
+      "runtimeArgs": ["serve", "--config", "openecraft/Trunk.toml", "--port", "8081", "--dist", "target/dist-fresh"],
       "port": 8081
     },
     {
       "name": "parts-manager-web",
       "runtimeExecutable": "trunk",
-      "runtimeArgs": ["serve", "parts-manager/index.html", "--port", "8082", "--dist", "target/dist-parts-manager"],
+      "runtimeArgs": ["serve", "--config", "parts-manager/Trunk.toml", "--port", "8082", "--dist", "target/dist-parts-manager"],
       "port": 8082
     },
     {

@@ -168,8 +168,12 @@ impl App {
                 });
                 ui.add(egui::TextEdit::singleline(&mut st.new_id).hint_text(tr("Identifier")).desired_width(90.0));
                 ui.add(egui::TextEdit::singleline(&mut st.new_description).hint_text(tr("Description")).desired_width(200.0));
-                let id = structure::clean_aspect(&st.new_id);
+                let checked = structure::check_identifier(st.new_aspect, &st.new_id);
+                let id = checked.clone().unwrap_or_default();
                 let free = !id.is_empty() && structures.entry(st.new_aspect, &id).is_none();
+                if let Err(e) = &checked {
+                    ui.colored_label(crate::style::error(), e);
+                }
                 if ui.add_enabled(free, egui::Button::new(tr("➕ Add"))).clicked() {
                     structures.define(st.new_aspect, &id, &st.new_description);
                     st.new_id.clear();

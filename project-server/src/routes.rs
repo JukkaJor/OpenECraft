@@ -244,12 +244,30 @@ fn not_found(name: &str) -> AppError {
     AppError(StatusCode::NOT_FOUND, format!("project '{name}' not found"))
 }
 
+/// Longest user name the server accepts.
+const MAX_USER_LEN: usize = 64;
+
 fn user(name: &str) -> Result<String> {
     let user = name.trim();
     if user.is_empty() {
         return Err(bad("a user name is required"));
     }
+    if user.chars().any(char::is_control) || user.chars().count() > MAX_USER_LEN {
+        return Err(bad(format!("'{}' cannot be used as a user name", user.escape_debug())));
+    }
     Ok(user.to_string())
+}
+
+/// The stored name of a project whose name differs from `name` at most in case
+/// (`name` itself if there is none).
+fn canonical(server: &Server, name: String) -> String {
+    server.store.taken(&name).map(String::from).unwrap_or(name)
+}
+
+/// Hash of the sign-in token of a request: project sessions opened with it end
+/// when the user signs out.
+fn owner(headers: &HeaderMap, caller: &Caller) -> Option<String> {
+    caller.user.as_ref().and(presented(headers)).map(|t| openecraft_auth::sha256_hex(t.as_bytes()))
 }
 
 impl Server {
@@ -267,12 +285,15 @@ impl Server {
         self.store.get(name).map(|_| ()).ok_or_else(|| not_found(name))
     }
 
-    fn open(&mut self, name: &str, user: &str, rights: BTreeSet<ProjectRight>) -> Result<Opened> {
+    fn open(&mut self, name: &str, user: &str, rights: BTreeSet<ProjectRight>, owner: Option<String>) -> Result<Opened> {
         if self.store.get(name).is_none() {
             return Err(not_found(name));
         }
         let first_id = self.store.reserve_ids(name)?;
         let session = self.sessions.open(name, user, Instant::now());
+        if let Some(owner) = owner {
+            self.sessions.set_owner(&session.session, owner);
+        }
         log::info!("{user} opened {name}");
         let snapshot = self.snapshot(name, Some(&session.session))?;
         Ok(Opened { session, first_id, snapshot, rights: rights.into_iter().collect() })
@@ -296,13 +317,14 @@ async fn index(State(state): State<AppState>) -> String {
     )
 }
 
-async fn info(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<ServerInfo>> {
-    let (server, _) = server(&state, &headers)?;
-    Ok(Json(ServerInfo {
-        name: "OpenECraft project server".into(),
-        version: env!("CARGO_PKG_VERSION").into(),
-        projects: server.store.projects.len(),
-    }))
+/// Name and version for everybody (like the parts server); the projects the caller
+/// may see.
+async fn info(State(state): State<AppState>, headers: HeaderMap) -> Json<ServerInfo> {
+    let projects = match server(&state, &headers) {
+        Ok((server, caller)) => server.store.projects.keys().filter(|name| caller.may(name, ProjectRight::View)).count(),
+        Err(_) => 0,
+    };
+    Json(ServerInfo { name: "OpenECraft project server".into(), version: env!("CARGO_PKG_VERSION").into(), projects })
 }
 
 async fn list(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<ProjectSummary>>> {
@@ -324,7 +346,11 @@ async fn list(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<
     Ok(Json(list))
 }
 
-async fn create(State(state): State<AppState>, headers: HeaderMap, Json(req): Json<CreateRequest>) -> Result<(StatusCode, Json<Opened>)> {
+async fn create(State(state): State<AppState>, headers: HeaderMap, Json(body): Json<serde_json::Value>) -> Result<(StatusCode, Json<Opened>)> {
+    if body.get("project").is_none_or(serde_json::Value::is_null) {
+        return Err(bad("the request needs the project"));
+    }
+    let req: CreateRequest = serde_json::from_value(body).map_err(|e| AppError(StatusCode::UNPROCESSABLE_ENTITY, format!("invalid request: {e}")))?;
     let (mut server, mut caller) = server(&state, &headers)?;
     let user = caller.name(&req.user)?;
     if !caller.may(&req.name, ProjectRight::Create) {
@@ -347,11 +373,13 @@ async fn create(State(state): State<AppState>, headers: HeaderMap, Json(req): Js
         caller.access = caller.access.with(Policy::default().access(&Default::default(), &[owner_grant]));
     }
     let rights = caller.rights(&req.name);
-    Ok((StatusCode::CREATED, Json(server.open(&req.name, &user, rights)?)))
+    let owner = owner(&headers, &caller);
+    Ok((StatusCode::CREATED, Json(server.open(&req.name, &user, rights, owner)?)))
 }
 
 async fn delete_project(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<StatusCode> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.need(&name, ProjectRight::Delete)?;
     server.exists(&name)?;
     let users = server.sessions.users(&name);
@@ -370,15 +398,18 @@ async fn delete_project(State(state): State<AppState>, headers: HeaderMap, Path(
 
 async fn snapshot(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<Json<Snapshot>> {
     let (server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     Ok(Json(server.snapshot(&name, None)?))
 }
 
 async fn open(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<OpenRequest>) -> Result<Json<Opened>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     let user = caller.name(&req.user)?;
-    Ok(Json(server.open(&name, &user, caller.rights(&name))?))
+    let owner = owner(&headers, &caller);
+    Ok(Json(server.open(&name, &user, caller.rights(&name), owner)?))
 }
 
 /// Merges what the session has locked (and the review records) into the stored project.
@@ -386,6 +417,7 @@ async fn open(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
 /// first; the changes left out are listed in the answer (`ignored`).
 async fn save(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<SaveRequest>) -> Result<Json<Snapshot>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     caller.owns(&req.session)?;
     let rights = caller.rights(&name);
@@ -443,6 +475,7 @@ async fn save(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
 
 async fn status(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(session): Json<Session>) -> Result<Json<Status>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     caller.owns(&session)?;
     server.exists(&name)?;
@@ -452,6 +485,7 @@ async fn status(State(state): State<AppState>, headers: HeaderMap, Path(name): P
 
 async fn lock(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<LockRequest>) -> Result<Json<Status>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     caller.owns(&req.session)?;
     for t in &req.targets {
@@ -471,6 +505,7 @@ async fn lock(State(state): State<AppState>, headers: HeaderMap, Path(name): Pat
 
 async fn release(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(req): Json<LockRequest>) -> Result<Json<Status>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     caller.owns(&req.session)?;
     server.exists(&name)?;
@@ -480,6 +515,7 @@ async fn release(State(state): State<AppState>, headers: HeaderMap, Path(name): 
 
 async fn close(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(session): Json<Session>) -> Result<Json<Status>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.see(&name)?;
     caller.owns(&session)?;
     server.exists(&name)?;
@@ -490,6 +526,7 @@ async fn close(State(state): State<AppState>, headers: HeaderMap, Path(name): Pa
 
 async fn project_access(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>) -> Result<Json<ProjectAccess>> {
     let (server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.need(&name, ProjectRight::ManageAccess)?;
     server.exists(&name)?;
     Ok(Json(server.project_access(&name, &caller)))
@@ -498,6 +535,7 @@ async fn project_access(State(state): State<AppState>, headers: HeaderMap, Path(
 /// Replaces the grants on the project. Nobody gives rights they do not have.
 async fn save_project_access(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(grants): Json<Vec<Grant>>) -> Result<Json<ProjectAccess>> {
     let (mut server, caller) = server(&state, &headers)?;
+    let name = canonical(&server, name);
     caller.need(&name, ProjectRight::ManageAccess)?;
     server.exists(&name)?;
     let allowed = server.project_access(&name, &caller).roles;
@@ -523,7 +561,7 @@ async fn login(State(state): State<AppState>, Json(req): Json<LoginRequest>) -> 
     }
     let refused = || {
         lock_server(&state).throttle.failed(&req.user, Instant::now());
-        AppError(StatusCode::UNAUTHORIZED, "unknown user or wrong password".into())
+        AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into())
     };
     let directories = {
         let mut server = lock_server(&state);
@@ -533,7 +571,7 @@ async fn login(State(state): State<AppState>, Json(req): Json<LoginRequest>) -> 
             if !openecraft_auth::verify_password(&req.password, &account.password) {
                 log::warn!("failed sign-in of '{}'", req.user.trim());
                 server.throttle.failed(&req.user, Instant::now());
-                return Err(AppError(StatusCode::UNAUTHORIZED, "unknown user or wrong password".into()));
+                return Err(AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into()));
             }
             let token = openecraft_auth::start_session(&mut account.sessions);
             let user = account.user.clone();
@@ -579,6 +617,11 @@ async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<Sta
     let ended = server.users.accounts.iter_mut().any(|a| openecraft_auth::end_session(&mut a.sessions, &token));
     if ended {
         server.users.save()?;
+        // The projects opened with this sign-in are closed and their locks released.
+        let closed = server.sessions.close_owned(&openecraft_auth::sha256_hex(token.as_bytes()));
+        if closed > 0 {
+            log::info!("{closed} project sessions closed on signing out");
+        }
     }
     Ok(StatusCode::NO_CONTENT)
 }
@@ -626,6 +669,11 @@ async fn save_user(State(state): State<AppState>, headers: HeaderMap, Path(name)
         }
         None => {
             let password = hash.ok_or_else(|| bad("a new user needs a password"))?;
+            let granted = server.access.config.policy.grants.iter().any(|g| matches!(&g.subject, Subject::User(u) if u.eq_ignore_ascii_case(&name)));
+            // Without role, groups or grants of their own the account could do nothing.
+            if req.role.is_none() && groups.as_ref().is_none_or(Vec::is_empty) && !granted {
+                return Err(bad("a new user needs a role (viewer, reviewer, editor, manager or admin), groups or grants in the access settings"));
+            }
             let user = ProjectUser { name: name.clone(), role: req.role, projects: req.projects, groups: groups.unwrap_or_default(), ..Default::default() };
             server.users.accounts.push(Account { user: user.clone(), password, sessions: Vec::new() });
             user
@@ -648,6 +696,9 @@ async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(nam
         return Err(AppError(StatusCode::NOT_FOUND, format!("user '{name}' not found")));
     }
     server.users.save()?;
+    // A deleted user keeps no project open and no page locked.
+    let closed = server.sessions.close_user(&name);
+    log::info!("user {} deleted ({closed} project sessions closed)", name.trim());
     Ok(StatusCode::NO_CONTENT)
 }
 

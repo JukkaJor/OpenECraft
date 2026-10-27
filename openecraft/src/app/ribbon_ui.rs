@@ -69,9 +69,18 @@ impl App {
             // A solid scroll bar shows that groups lie beyond the right edge.
             ui.scope(|ui| {
                 ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
-                egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]).show(ui, |ui| {
+                // The wheel scrolls the groups sideways: there is nothing to scroll up and down.
+                let key = ui.scope_id().with("ribbon_wheel");
+                let (offset, rect): (f32, egui::Rect) = ui.data(|d| d.get_temp(key)).unwrap_or((0.0, egui::Rect::NOTHING));
+                let wheel = ui.input(|i| if i.pointer.hover_pos().is_some_and(|p| rect.contains(p)) { i.smooth_scroll_delta.y } else { 0.0 });
+                let mut area = egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]);
+                if wheel != 0.0 {
+                    area = area.horizontal_scroll_offset((offset - wheel).max(0.0));
+                }
+                let out = area.show(ui, |ui| {
                     ui.horizontal(|ui| self.ribbon_groups(ui));
                 });
+                ui.data_mut(|d| d.insert_temp(key, (out.state.clamped_offset().x, out.inner_rect)));
             });
         }
         ui.add_space(2.0);
@@ -125,11 +134,16 @@ impl App {
             .response
             .on_hover_text(tr("Workspaces"));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                let dirty = if self.session.dirty() { " *" } else { "" };
-                ui.weak(format!("{}{}", self.session.prj.info.name, dirty));
-                ui.separator();
+                // On a narrow window the project name goes first, then the search text
+                // (the icon stays): nothing is drawn over the commands on the left.
+                let room = ui.available_width();
+                if room > 420.0 {
+                    let dirty = if self.session.dirty() { " *" } else { "" };
+                    ui.add(egui::Label::new(RichText::new(format!("{}{}", self.session.prj.info.name, dirty)).weak()).truncate());
+                    ui.separator();
+                }
                 let hint = tr_fmt!("Find a command ({})", self.editor.shortcuts.cmd_text(Cmd::CommandSearch));
-                let r = icons::text_button(ui, Icon::Find, &hint);
+                let r = if room > 240.0 { icons::text_button(ui, Icon::Find, &hint) } else { icons::button(ui, Icon::Find, &hint) };
                 if r.clicked() {
                     self.search.open();
                 }

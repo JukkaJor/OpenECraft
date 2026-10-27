@@ -48,6 +48,44 @@ pub use lifecycle::PartLifecycle;
 pub use manufacturing::PanelManufacturing;
 pub use panel_checks::PanelChecks;
 
+/// Parameters renamed so that all commands name alike (`tag` / `new_tag`, `name` /
+/// `new_name`, `find` / `replace`): command, old name, current name. The command line
+/// and the MCP server still take the old names.
+pub const RENAMED_PARAMS: &[(&str, &str, &str)] = &[
+    ("rename_device", "old", "tag"),
+    ("rename_device", "new", "new_tag"),
+    ("set_potential", "rename", "new_name"),
+    ("set_fluid_group", "rename", "new_name"),
+    ("set_pct_loop", "rename", "new_name"),
+    ("replace_text", "text", "find"),
+    ("replace_text", "with", "replace"),
+];
+
+/// The current name of the parameter `name` of `command` if it was renamed.
+pub fn renamed_param(command: &str, name: &str) -> Option<&'static str> {
+    RENAMED_PARAMS.iter().find(|(c, old, _)| *c == command && *old == name).map(|(_, _, new)| *new)
+}
+
+/// The arguments of `command` with renamed parameters under their current names
+/// (an argument given under both names keeps the current one).
+pub fn current_names(command: &str, args: &serde_json::Map<String, serde_json::Value>) -> serde_json::Map<String, serde_json::Value> {
+    let mut out = serde_json::Map::new();
+    for (k, v) in args {
+        let name = renamed_param(command, k).filter(|new| !args.contains_key(*new)).unwrap_or(k);
+        out.insert(name.to_string(), v.clone());
+    }
+    out
+}
+
+/// Names of the checks of the built-in plugins.
+pub fn check_names() -> Vec<String> {
+    let mut reg = Registry::default();
+    for p in plugins() {
+        let _ = p.register(&mut reg);
+    }
+    reg.checks.into_iter().map(|c| c.name).collect()
+}
+
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
     vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(check_settings::CheckSettings), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(harnesses::Harnesses), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(preplanning::Preplanning), Box::new(process::Process), Box::new(properties::Properties), Box::new(reports::ReportBlocks), Box::new(rooms::Rooms), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(terminals::Terminals), Box::new(wiring::Wiring)]
 }

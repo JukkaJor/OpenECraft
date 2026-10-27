@@ -35,3 +35,10 @@ fn options_need_a_value() {
     assert!(parse(&argv("check --project")).is_err());
     assert!(parse(&argv("check --token --project a.oec")).is_err());
 }
+
+#[test]
+fn version_and_short_options() {
+    assert!(parse(&argv("--version")).unwrap().options.version);
+    assert!(parse(&argv("-V")).unwrap().options.version);
+    assert_eq!(parse(&argv("check -p")).unwrap_err(), "Missing value for --project");
+}

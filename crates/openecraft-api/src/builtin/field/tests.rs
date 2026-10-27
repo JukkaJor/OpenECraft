@@ -51,7 +51,8 @@ fn route_definition_rules_and_removal() {
     assert_eq!(p["cables"][0]["segments"], json!(["L1", "L2", "F1"]));
     run(&mut s, "field_route", json!({ "cable": "-W1" })).unwrap();
     assert!(s.project().unwrap().field.routes.is_empty());
-    let r = run(&mut s, "field_rules", json!({ "reserve": 1, "cut": 1, "fill": 300, "main_earth": "PAS" })).unwrap();
+    assert_eq!(run(&mut s, "field_rules", json!({ "fill": 300 })).unwrap_err(), "fill must be between 1 and 100");
+    let r = run(&mut s, "field_rules", json!({ "reserve": 1, "cut": 1, "fill": 100, "main_earth": "PAS" })).unwrap();
     assert_eq!((r["reserve"].as_f64(), r["fill"].as_f64(), r["main_earth"].as_str()), (Some(1.0), Some(100.0), Some("PAS")));
     run(&mut s, "field_remove", json!({ "what": "segment", "id": "L2" })).unwrap();
     run(&mut s, "field_remove", json!({ "what": "node", "id": "D" })).unwrap();

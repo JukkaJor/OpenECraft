@@ -55,6 +55,7 @@ impl Users {
 
     /// Creates or replaces the account of an administrator (start-up option).
     pub fn set_admin(&mut self, name: &str, password: &str) -> Result<(), String> {
+        openecraft_auth::check_password(password)?;
         let hash = openecraft_auth::hash_password(password)?;
         let user = ProjectUser { name: name.trim().to_string(), role: Some(openecraft_core::collab::ProjectRole::Admin), ..Default::default() };
         match self.find_mut(name) {

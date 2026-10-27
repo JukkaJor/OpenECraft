@@ -53,6 +53,9 @@ fn add_admin(store: &mut Store, name: &str) {
     if password.is_empty() {
         fail("--admin-user needs the password in OPENECRAFT_ADMIN_PASSWORD".into());
     }
+    if let Err(e) = openecraft_auth::check_password(&password) {
+        fail(format!("--admin-user: {e}"));
+    }
     let mut account = store.account(name).cloned().unwrap_or_default();
     account.user = User { name: name.trim().into(), role: Role::Admin, manufacturer: String::new(), ..Default::default() };
     account.password = auth::hash_password(&password).unwrap_or_else(|e| fail(e));

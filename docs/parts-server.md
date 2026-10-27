@@ -49,15 +49,21 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   own manufacturer, editors all parts, administrators also manage the users. The
   `--token` (or `OPENECRAFT_TOKEN`) is the administrator token; `--admin-user <name>`
   creates an administrator account with the password from `OPENECRAFT_ADMIN_PASSWORD`.
-  Users sign in with `POST /login` and send the session token as
-  `Authorization: Bearer <token>`. Passwords of local accounts have at least 8
-  characters; after 5 failed sign-ins of a user name every further attempt waits
+  Users sign in with `POST /login` (`name` and `password`; `user` is taken for `name`, as
+  on the project server) and send the session token as `Authorization: Bearer <token>`.
+  A token the server does not know (an expired session) is refused with `401`, for
+  reading too, so that clients notice it instead of reading anonymously. Passwords of
+  local accounts (also the one of `--admin-user`) have at least 8 characters; after 5 failed sign-ins of a user name every further attempt waits
   (1 s, doubling up to 5 minutes, answer `429`). Without token, accounts and directories the server
   is read-only.
 - Access control (`<data>.access.json`, `--access`): sign-in with Active Directory or
   LDAP directories next to the local accounts, roles defined by administrators and
   grants of roles to users and groups per manufacturer, with deny grants; anonymous
   reading can be switched off. See [docs/access-control.md](access-control.md).
+- Parts are checked before they are stored: part numbers have at most 128 characters,
+  the other fields at most 256 (description, note, technical data, certificates and
+  data sheet 20000), the catalog a part names must exist, and an import refuses a file
+  that has a part number twice.
 - Every change is a new revision; each part keeps its revision, time of change and the
   last 20 versions (history). Parts have a lifecycle (active, phase-out, discontinued)
   and a successor. Files are stored once per content; a file is deleted as soon as
@@ -70,7 +76,9 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   `Name: value` lines of the technical data), sorted and paged, with facets that count
   the matching parts per value.
 - Web page: `http://<server>:8090/` – search with facets, part details with files and
-  history, catalogs, sign-in and favorites, in English, German, French and Spanish.
+  history, catalogs, sign-in and favorites, in English, German, French and Spanish. The
+  address keeps the search and the open part (bookmarks, the browser's back button);
+  `?lang=de` chooses the language.
 - REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
   `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
   `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,

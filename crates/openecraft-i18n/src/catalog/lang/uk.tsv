@@ -136,7 +136,6 @@ Contacts	Контакти
 Control transformer	Трансформатор кола керування
 Copper busbar system: click start and end point	Система мідних збірних шин: клацніть початкову й кінцеву точки
 Copy / cut / paste (devices get new tags)	Копіювати / вирізати / вставити (пристрої отримують нові позначення)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Копіювати / вставити: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Копіювати як новий
 Copy built-in…	Копіювати вбудований…
 Core	Жила
@@ -155,8 +154,6 @@ Cross references	Перехресні посилання
 Cross-section	Переріз
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Струм
 Cutout	Виріз
 Cutout {} × {} mm	Виріз {} × {} мм
@@ -169,7 +166,6 @@ Date	Дата
 Date of the last revision	Дата останньої ревізії
 Default label	Стандартна мітка
 Del	Del
-Delete   Del	Видалити   Del
 Delete (Del)	Видалити (Del)
 Delete cable (its wires are removed from it)	Видалити кабель (його проводи буде вилучено з нього)
 Delete enclosure	Видалити корпус
@@ -203,7 +199,6 @@ Door	Двері
 Door (front view)	Двері (фронтальний вигляд)
 Door clearance	Вільний простір дверей
 Door: {} devices, {} cutouts	Двері: пристроїв – {}, вирізів – {}
-Download project   Ctrl+S	Завантажити проєкт   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	Завантажено виробів: {} (ревізія {}): нових – {}, оновлених – {}
 Downloading parts…	Завантаження виробів…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Перетягування: обертання · перетягування правою/середньою кнопкою: зсув · коліщатко: масштаб · клацання: вибрати пристрій або провід
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Фільтр (номер, тип, 
 Filter devices…	Фільтрувати пристрої…
 Filter…	Фільтр…
 Fit page	Умістити сторінку
-Fit page   F	Умістити сторінку   F
 Fit page (F)	Умістити сторінку (F)
 Fluid power (ISO 1219)	Гідро- та пневмотехніка (ISO 1219)
 Forms – title blocks and reports	Форми – основні написи та звіти
@@ -347,7 +341,6 @@ Manufacturer	Виробник
 Max. width	Макс. ширина
 Merge a symbol library file	Об’єднати файл бібліотеки символів
 Mirror	Віддзеркалити
-Mirror   M	Віддзеркалити   M
 Model import failed: {}	Помилка імпорту моделі: {}
 Motor (single-line)	Двигун (однолінійне зображення)
 Motor 1-phase	Двигун однофазний
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	Основні написи OpenECraft (JSON)
 OpenECraft – usage	OpenECraft – використання
 Opened {}	Відкрито {}
 Opening in the mounting plate / door: click two corners (round: in the properties)	Отвір у монтажній панелі / дверях: клацніть два кути (круглий: у властивостях)
-Open…        Ctrl+O	Відкрити…        Ctrl+O
 Order number	Номер для замовлення
 Orientation	Орієнтація
 Overload aux contact NC	Допоміжний контакт перевантаження, розмикальний
@@ -546,8 +538,6 @@ Radius	Радіус
 Readdress card	Переадресувати плату
 Rectangle	Прямокутник
 Rectangular	Прямокутний
-Redo   Ctrl+Y	Повторити   Ctrl+Y
-Redo (Ctrl+Y)	Повторити (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Оновити вироби прикладу каталогу (GEN.*)
 Relay / contactor coil	Котушка реле / контактора
 Relay coil (NFPA)	Котушка реле (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Ревізію {} створено
 Revisions	Ревізії
 Revisions…	Ревізії…
 Right	Праворуч
-Rotate   R	Повернути   R
 Rotate (R)	Повернути (R)
 Rotate / mirror (selection or symbol being placed)	Повернути / віддзеркалити (виділене або символ, що розміщується)
 Rotate 90°:	Повернути на 90°:
@@ -586,7 +575,6 @@ Round	Круглий
 Routing	Прокладання
 Rows per page	Рядків на сторінці
 SVG image	Зображення SVG
-Save          Ctrl+S	Зберегти          Ctrl+S
 Save / open	Зберегти / відкрити
 Save as macro	Зберегти як макрос
 Save as…	Зберегти як…
@@ -605,7 +593,6 @@ Select a macro.	Виберіть макрос.
 Select a part in the tree or create a new one.	Виберіть виріб у дереві або створіть новий.
 Select a part. Double click adds it to the device.	Виберіть виріб. Подвійне клацання додає його до пристрою.
 Select all	Вибрати все
-Select all   Ctrl+A	Вибрати все   Ctrl+A
 Select an element in the list or the drawing.	Виберіть елемент у списку або на кресленні.
 Select and drag elements; Del deletes	Вибирайте й перетягуйте елементи; Del видаляє
 Select device	Вибрати пристрій
@@ -673,7 +660,6 @@ Terminals	Клеми
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Клеми з однаковим номером перемички з’єднані (однаковий потенціал). Резервні клеми враховуються в специфікації.
 Test connection	Перевірити підключення
 Text	Текст
-Text   T	Текст   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D-фронтальний вигляд використовується у фронтальному вигляді шафи та на сторінках плану монтажу, 3D-модель – у 3D-вигляді шафи. Обидва підганяються під дані монтажу (ширина × висота × глибина).
 The access token is only needed for changes; it is not stored.	Токен доступу потрібен лише для змін; він не зберігається.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Модель ({} × {} × {}) відрізняється від даних монтажу ({} × {} × {}); її розтягнуто відповідно до даних монтажу.
@@ -699,8 +685,6 @@ Transformer (single-line)	Трансформатор (однолінійне з�
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Поверніть модель так, щоб її передня сторона була звернена до глядача (+Z), а верх був +Y
 Type	Тип
 Type number	Номер типу
-Undo   Ctrl+Z	Скасувати   Ctrl+Z
-Undo (Ctrl+Z)	Скасувати (Ctrl+Z)
 Undo / redo	Скасувати / повторити
 Unit	Одиниця
 Unit price	Ціна за одиницю
@@ -729,7 +713,6 @@ Width × height	Ширина × висота
 Width × height × depth	Ширина × висота × глибина
 Window macro: {}	Макрос вікна: {}
 Wire	Провід
-Wire   W	Провід   W
 Wire assigned to unknown cable {}	Провід призначено невідомому кабелю {}
 Wire ends with ferrules	Кінці проводів із наконечниками
 Wire list (panel routing)	Перелік проводів (прокладання в шафі)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Створює або змінює контур КВПіА попереднього планування
 Loop number, e.g. 101	Номер контуру, напр. 101
 Measuring range or set point	Діапазон вимірювання або уставка
-Further device tags of the loop, separated by blanks	Інші позначення пристроїв контуру, розділені пробілами
 Deletes a PCT loop of the pre-planning	Видаляє контур КВПіА попереднього планування
 Loop number	Номер контуру
 No enclosure named {}	Немає корпусу з назвою {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Не код мови: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Перелічує мову оригіналу та цільові мови текстів проєкту з кількістю неперекладених рядків
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Задає мову оригіналу текстів проєкту та цільові мови (коди ISO 639-1)
 Language the project texts are written in, e.g. en	Мова, якою написано тексти проєкту, напр. en
-Target languages separated by blanks, e.g. de fr	Цільові мови, розділені пробілами, напр. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Перелічує словник перекладів текстів проєкту (рядок оригіналу та переклади)
 Only lines without a translation into this language	Лише рядки без перекладу цією мовою
 Text in the line or a translation	Текст у рядку або перекладі
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Основні написи, р�
 Frame of all pages that do not choose one	Рамка всіх сторінок, які не вибирають власну
 Frame to start from when the frame is new (default: A3 landscape)	Вихідна рамка для нової рамки (за замовчуванням: A3 landscape)
 Free graphics and notes, not evaluated	Вільна графіка та нотатки, не обробляються
-Give kind or template	Вкажіть kind або template
 Imported {} page templates	Імпортовано шаблонів сторінок: {}
 Insert page	Вставити сторінку
 Landscape	Альбомна
@@ -2280,7 +2260,6 @@ Locked by other users	Заблоковано іншими користувача
 None	Немає
 Close shared project	Закрити спільний проєкт
 Releases all locks; the project stays open as a local copy	Звільняє всі блокування; проєкт залишається відкритим як локальна копія
-Save to project server   Ctrl+S	Зберегти на сервері проєктів   Ctrl+S
 Download project	Завантажити проєкт
 Project server…	Сервер проєктів…
 Open and save shared projects, lock pages	Відкривати та зберігати спільні проєкти, блокувати сторінки
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Проведіть л�
 Cable definition on page {}	Визначення кабелю на сторінці {}
 No cables yet. Draw a cable definition across wires or add a cable.	Кабелів ще немає. Намалюйте визначення кабелю через проводи або додайте кабель.
 New tag for {}	Нове позначення для {}
-This tag is already used	Це позначення вже використовується
 Select on this page	Вибрати на цій сторінці
 Place functions of this device	Розмістити функції цього пристрою
 Symbols placed next get this device tag (contacts are numbered on)	Символи, розміщені наступними, отримують це позначення пристрою (контакти нумеруються далі)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Створює або змінює гр�
 Device tag of the group, e.g. -KH1	Позначення пристрою групи, напр. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit або other
 Places of the group (0 = not limited)	Місця групи (0 = без обмеження)
-Device tags of the members in slot order, separated by blanks	Позначення пристроїв членів у порядку місць, розділені пробілами
 Part number of the base	Номер виробу основи
 Deletes a fluid device group	Видаляє групу гідропневматичних пристроїв
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Перелічує гідропневматичні пристрої з котушками або зв’язками та пов’язані з ними електричні пристрої
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Пов’язує гідропневматичний пристрій з електричними пристроями, які приводять його в дію або контролюють (замінює зв’язки)
 Device tag of the fluid device, e.g. -QM1	Позначення гідропневматичного пристрою, напр. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Позначення електричних пристроїв, розділені пробілами (порожньо = вилучити зв’язки)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Пов’язує електромагнітні клапани з котушкою з тим самим номером (-QM3 › -MB3) і копіює тексти функцій між пов’язаними пристроями
 No hose {}	Немає шланга {}
 Unknown line type: {}	Невідомий тип лінії: {}
@@ -3173,7 +3149,6 @@ Communication	Зв’язок
 Conductor class	Клас провідника
 Conductor material	Матеріал провідника
 Connection point descriptions	Описи точок підключення
-Connection point designations separated by blanks	Позначення точок підключення, розділені пробілами
 Connection type	Тип підключення
 Contact material	Матеріал контактів
 Contractor	Підрядник
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Також перевіряти кожен п�
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Шукає проєкти в базі даних проєктів або в папці: умови через ';', кожна у вигляді ключ=значення, ключ~текст або простий текст
 Search terms, e.g. company=ACME; customer~plant; conveyor	Умови пошуку, напр. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Файл бази даних проєктів (JSON)
-Folder with project files (instead of a database)	Папка з файлами проєктів (замість бази даних)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Змінює властивості проєкту в багатьох файлах проєктів одночасно (поля name, description, company, creator, date, revision або властивості проєкту)
 Project files, separated by ';'	Файли проєктів через ';'
 All project files of a folder	Усі файли проєктів із папки
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Активує (показує) або деактивує (приховує) вміст опції проєкту
 Show the content	Показати вміст
 Switches the project options with a condition by the configurator options	Перемикає опції проєкту з умовою відповідно до опцій конфігуратора
-Pass a database or a folder	Укажіть базу даних або папку
 Nothing to change: pass set, remove, replace or rename	Нічого змінювати: укажіть set, remove, replace або rename
 Pass files or a folder	Укажіть файли або папку
 Pass ids or pages	Укажіть ідентифікатори або сторінки
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Структ�
 Interruption points refer to: all (default), star or pairs	Точки розриву посилаються на: all (за замовчуванням), star або pairs
 Draw the contact image below coils (default true)	Відображати контакти під котушками (за замовчуванням true)
 Unknown setting: {}	Невідомий параметр: {}
-Find…   Ctrl+F	Знайти…   Ctrl+F
 Find and replace in the whole project	Знайти й замінити в усьому проєкті
 Text to find	Текст для пошуку
 Match case	Враховувати регістр
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	Шаблон проєкту OpenECraft
 Not a project template: {}	Не є шаблоном проєкту: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Почати із шаблону проєкту: вбудованого (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) або файлу проєкту
-Unknown template {}: {}	Невідомий шаблон {}: {}
 Not a packed project	Не є запакованим проєктом
 Viewer	Переглядач
 With a user account of the server; replaces the access token	З обліковим записом користувача сервера; замінює маркер доступу
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Невідомий приклад {}: ди
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Насосна станція у двох з'єднаних підлогових шафах: система збірних шин, рейки та кабель-канали, пристрої на дверях і ручки, вентилятор із фільтром, світильник, шина PE, кабельні вводи, кабельний прохід, розрахунок клімату, заповнення кабель-каналів і 3D-трасування.
 9 · Electrical room	9 · Електрощитова
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Ряд шаф у своєму приміщенні: Г-подібний план, внутрішня стіна, двері та вікно, ряд шаф на своєму місці, рейка з розеткою на стіні, настінний аварійний світильник і кабельний лоток під стелею.
+{} is on page {}, which is released: renaming it would change the page	{} розташовано на сторінці {}, яку затверджено: перейменування змінило б сторінку
+A section number consists of letters and digits and does not start with 0	Номер розділу складається з літер і цифр і не починається з 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Структурне позначення {} не повинно містити пробілів і знаків = + - / :
+Bridge rectifier block	Мостовий випрямляч (блок)
+the server refuses the connection (not started, or another port)	сервер відхиляє підключення (не запущено або інший порт)
+the server name is unknown	ім'я сервера невідоме
+the server does not answer in time	сервер не відповідає вчасно
+the address is not a valid URL (e.g. http://server:8090)	адреса не є дійсною URL (напр. http://server:8090)
+Unknown check: {}	Невідома перевірка: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Вбудованої перевірки з назвою {} немає: налаштування стосується перевірки плагіна з цією назвою (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} не є кодом повідомлення, як його показує check (напр. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} не є відбитком повідомлення, як його показує check (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Сторінку {} винесено в підпроєкт {}: спочатку вставте підпроєкт назад або відкиньте його
+Unknown wire colour {} (IEC 60757: {})	Невідомий колір проводу {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Не є перерізом: {} (напр. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Невідомий заповнювач {}: можливі {}
+{} must not be negative	{} не може бути від'ємним
+{} must be at least {}	{} має бути щонайменше {}
+{} must be between {} and {}	{} має бути від {} до {}
+The length must not be negative	Довжина не може бути від'ємною
+The text height must be at least 0.5 mm	Висота тексту має бути щонайменше 0,5 мм
+The wrap width must not be negative	Ширина перенесення не може бути від'ємною
+The items would leave the page	Елементи вийшли б за межі сторінки
+The number of copies must be between 1 and 100	Кількість копій має бути від 1 до 100
+The copies would leave the page	Копії вийшли б за межі сторінки
+The cable definition line has no length	Лінія визначення кабелю не має довжини
+The cable definition line crosses no wire	Лінія визначення кабелю не перетинає жодного проводу
+{} and {} are both ends of one function: the wire would short-circuit it	{} і {} — обидва кінці однієї функції: провід замкнув би її накоротко
+No wire at {} / {} mm	У точці {} / {} мм немає проводу
+Target languages separated by commas or blanks, e.g. de, fr	Цільові мови, розділені комами або пробілами, напр. de, fr
+The first page number must not be negative	Перший номер сторінки не може бути від'ємним
+The counting step must be at least 1	Крок лічби має бути щонайменше 1
+Released pages keep their names: {}	Затверджені сторінки зберігають свої назви: {}
+The plinth height must not be negative	Висота цоколя не може бути від'ємною
+{} is a room already	{} уже є приміщенням
+Width, height and depth of an enclosure are at least {} mm	Ширина, висота та глибина корпусу — щонайменше {} мм
+Device tags of the members in slot order, separated by commas or blanks	Позначення пристроїв членів у порядку місць, розділені комами або пробілами
+Electrical device tags separated by commas or blanks (empty = remove the links)	Позначення електричних пристроїв, розділені комами або пробілами (порожньо = вилучити зв’язки)
+Further device tags of the loop, separated by commas or blanks	Інші позначення пристроїв контуру, розділені комами або пробілами
+Connection point designations separated by commas or blanks	Позначення точок підключення, розділені комами або пробілами
+Width, depth and height of a room are at least {} mm	Ширина, глибина та висота приміщення — щонайменше {} мм
+Room {} exists already	Приміщення {} вже існує
+{} is an enclosure already	{} уже є корпусом
+{} would stand outside the room {}	{} опинився б за межами приміщення {}
+No identifier {} in the project	У проєкті немає позначення {}
+{} exists already: pass merge to make both one identifier	{} вже існує: вкажіть merge, щоб об’єднати обидва в одне позначення
+Allow renaming onto an identifier in use: both become one	Дозволити перейменування на використовуване позначення: обидва стануть одним
+Sign in or connect with the access token to change parts	Увійдіть або підключіться з токеном доступу, щоб змінювати вироби
+Read only: sign in with a user who may change parts of this manufacturer	Лише читання: увійдіть як користувач, якому дозволено змінювати вироби цього виробника
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nЗапускає сервер Model Context Protocol на stdin / stdout: інструменти цього списку для ШІ-агентів, проєкт зберігається в пам’яті (save_project записує його, undo / redo скасовують окремі виклики). OPENECRAFT_MCP_TOOLS обмежує запропоновані інструменти.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nПоказує версію командного рядка (також --version або -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo і redo працюють лише в сеансі MCP: командний рядок відкриває проєкт заново для кожної команди
+(MCP server only)	(лише сервер MCP)
+{} is an archive: pass a path to save the project as a project file	{} — це архів: вкажіть шлях, щоб зберегти проєкт як файл проєкту
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} — це архів, він не змінюється: збережіть проєкт як файл проєкту (save_project --path <file>.oec) або перетворіть архів (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Папка з файлами проєктів (замість бази даних; типово: поточна папка)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Невідомий тип сторінки: {} (schematic, overview, graphic, cover або звіт із list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Невідомий шаблон {}: вкажіть вбудований ({}) або файл проєкту
+Property {} needs a text or a number	Властивості {} потрібен текст або число

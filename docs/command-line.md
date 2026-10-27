@@ -11,6 +11,7 @@ reports and export PDF / SVG / DXF / DWG.
 ```bash
 cargo run --release -p openecraft-cli -- help                 # all commands
 cargo run --release -p openecraft-cli -- help connect         # parameters of a command
+cargo run --release -p openecraft-cli -- --version             # also -V or version
 openecraft-cli new_project --name "Pump control" --path pump.oec
 openecraft-cli new_project --example star_delta_starter --path star_delta.oec   # see list_examples
 openecraft-cli -p pump.oec place_symbol --page 1 --symbol pb_no --x 200 --y 100   # -S1
@@ -24,9 +25,19 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
 
 - On the command line every change is written back to `--project` at once. In an MCP
   session the project stays open in memory: `save_project` writes it, `undo` / `redo`
-  revert single tool calls.
+  revert single tool calls (`help mcp`); the command line refuses `undo` / `redo`, as it
+  opens the project anew for every command. An archive given as `--project` stays
+  unchanged: save the project as a project file (`save_project --path <file>.oec`) or
+  convert the archive (`convert_project`).
 - Parameters are `--name value` (also `--name=value`, or all at once with `--json '{…}'`);
-  lists as `--ids 3,4` and points as `--points "0,0 40,0"`.
+  lists as `--ids 3,4` and points as `--points "0,0 40,0"`; lists of codes, tags or
+  languages are separated by commas or blanks. Values outside their range are refused
+  with the allowed range, not clamped, and a command that fails leaves the project
+  unchanged. Numbers in answers are rounded to the precision they are stored with.
+- Parameters renamed since earlier versions are still taken under their old names:
+  `rename_device` `old` / `new` (now `tag` / `new_tag`), `rename` of `set_potential`,
+  `set_fluid_group` and `set_pct_loop` (now `new_name`), `replace_text` `text` / `with`
+  (now `find` / `replace`).
 - Parts server: `--server` / `--token`, the `OPENECRAFT_SERVER` / `OPENECRAFT_TOKEN`
   environment variables or the `parts_connect` tool (also with `user` / `password`);
   default `http://127.0.0.1:8090`. `parts_connect` with `kind: Eplan` reads the EPLAN
@@ -42,6 +53,7 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
   only a limited number: names separated by commas, `parts_*` for all tools starting
   with `parts_` (e.g. `new_project,open_project,save_project,place_symbol,connect,check,export`).
 - `new_project --path` does not replace an existing file unless `overwrite` is given.
+  `search_projects` searches the current folder unless a database or folder is given.
 
 Register the MCP server with an agent, e.g. Claude Code:
 

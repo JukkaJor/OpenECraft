@@ -7,7 +7,7 @@ use axum::response::Html;
 use axum::Json;
 use openecraft_i18n::{tr_const, translate, Lang};
 use openecraft_parts::portal::{AttachmentKind, ChangeKind, Lifecycle, Role, Sort};
-use openecraft_parts::{productgroups, TopGroup, PRODUCT_GROUPS};
+use openecraft_parts::{productgroups, FnKind, TopGroup, PRODUCT_GROUPS};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -147,6 +147,9 @@ pub fn web_texts(lang: Lang) -> WebTexts {
     }
     for c in [ChangeKind::Created, ChangeKind::Changed, ChangeKind::Deleted] {
         key("change", format!("{c:?}"), c.title());
+    }
+    for f in FnKind::ALL {
+        key("fn", format!("{f:?}"), f.title());
     }
     let languages = Lang::ALL.iter().map(|l| (l.code().to_string(), l.native_name().to_string())).collect();
     WebTexts { lang: lang.code().into(), languages, texts, keys }

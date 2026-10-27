@@ -2,6 +2,7 @@
 //! segment templates, the comparison with the schematic as check and report, and the
 //! exchange as CSV / Excel. Segments are named by their path (`Plant/Area 1`).
 
+use crate::builtin::common::{num_in, NO_MAX};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry, Table, Text};
 use openecraft_core::ext::Export;
@@ -205,8 +206,8 @@ fn plan_device(prj: &mut Project, a: &Args) -> Result<Value, String> {
             *field = v.trim().to_string();
         }
     }
-    if let Some(p) = a.num("power") {
-        d.power = p.max(0.0);
+    if let Some(p) = num_in(a, "power", 0.0, NO_MAX)? {
+        d.power = p;
     }
     let d = d.clone();
     Ok(json!({ "tag": pp::full_tag(prj, id, &d), "segment_power": pp::power(prj, id) }))

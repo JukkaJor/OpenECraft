@@ -10,6 +10,8 @@ fn texts_are_translated() {
     assert_eq!(de.keys["top_group:Fluid"], translate("Fluid power", Lang::De));
     assert_eq!(de.keys["lifecycle:Discontinued"], translate("Discontinued", Lang::De));
     assert!(de.keys.contains_key("kind:Datasheet") && de.keys.contains_key("sort:Price") && de.keys.contains_key("change:Deleted"));
+    // Functions are shown by their names, not by the keys of the file format.
+    assert_eq!(de.keys["fn:MainContacts3"], translate("Main contacts 3-pole", Lang::De));
     assert_eq!(de.languages.len(), Lang::ALL.len());
     let en = web_texts(Lang::En);
     assert!(en.texts.iter().all(|(k, v)| k == v));
@@ -29,6 +31,7 @@ fn names_and_titles_are_in_the_catalog() {
     names.extend(Sort::ALL.map(|s| s.title()));
     names.extend(Role::ALL.map(|r| r.title()));
     names.extend([ChangeKind::Created, ChangeKind::Changed, ChangeKind::Deleted].map(|c| c.title()));
+    names.extend(openecraft_parts::FnKind::ALL.map(|f| f.title()));
     names.extend([UpdateKind::Changed, UpdateKind::PhaseOut, UpdateKind::Discontinued, UpdateKind::Removed].map(|u| u.title()));
     let missing: Vec<&str> = names.into_iter().filter(|n| !known.contains(n)).collect();
     assert!(missing.is_empty(), "add to crates/openecraft-i18n/src/catalog/extra.tsv: {missing:?}");

@@ -136,7 +136,6 @@ Contacts	Contacten
 Control transformer	Stuurtransformator
 Copper busbar system: click start and end point	Koperen stroomrailsysteem: klik op begin- en eindpunt
 Copy / cut / paste (devices get new tags)	Kopiëren / knippen / plakken (apparaten krijgen nieuwe aanduidingen)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopiëren / plakken: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Als nieuw kopiëren
 Copy built-in…	Ingebouwd kopiëren…
 Core	Ader
@@ -155,8 +154,6 @@ Cross references	Kruisverwijzingen
 Cross-section	Doorsnede
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Stroom
 Cutout	Uitsparing
 Cutout {} × {} mm	Uitsparing {} × {} mm
@@ -169,7 +166,6 @@ Date	Datum
 Date of the last revision	Datum van de laatste revisie
 Default label	Standaardlabel
 Del	Del
-Delete   Del	Verwijderen   Del
 Delete (Del)	Verwijderen (Del)
 Delete cable (its wires are removed from it)	Kabel verwijderen (de draden worden eruit verwijderd)
 Delete enclosure	Behuizing verwijderen
@@ -203,7 +199,6 @@ Door	Deur
 Door (front view)	Deur (vooraanzicht)
 Door clearance	Deurvrijruimte
 Door: {} devices, {} cutouts	Deur: {} apparaten, {} uitsparingen
-Download project   Ctrl+S	Project downloaden   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} artikelen gedownload (revisie {}): {} nieuw, {} bijgewerkt
 Downloading parts…	Artikelen downloaden…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Slepen: draaien · slepen met rechter-/middelste muisknop: verschuiven · muiswiel: zoomen · klikken: apparaat of draad selecteren
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filter (nummer, type, fabrikant, t
 Filter devices…	Apparaten filteren…
 Filter…	Filter…
 Fit page	Pagina passend maken
-Fit page   F	Pagina passend maken   F
 Fit page (F)	Pagina passend maken (F)
 Fluid power (ISO 1219)	Vloeistoftechniek (ISO 1219)
 Forms – title blocks and reports	Formulieren – titelblokken en rapporten
@@ -347,7 +341,6 @@ Manufacturer	Fabrikant
 Max. width	Max. breedte
 Merge a symbol library file	Een symboolbibliotheekbestand samenvoegen
 Mirror	Spiegelen
-Mirror   M	Spiegelen   M
 Model import failed: {}	Model importeren mislukt: {}
 Motor (single-line)	Motor (eenlijnig)
 Motor 1-phase	Motor 1-fase
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft-titelblokken (JSON)
 OpenECraft – usage	OpenECraft – bediening
 Opened {}	{} geopend
 Opening in the mounting plate / door: click two corners (round: in the properties)	Opening in montageplaat / deur: klik op twee hoeken (rond: in de eigenschappen)
-Open…        Ctrl+O	Openen…        Ctrl+O
 Order number	Bestelnummer
 Orientation	Oriëntatie
 Overload aux contact NC	Overbelastingshulpcontact verbreekcontact
@@ -546,8 +538,6 @@ Radius	Straal
 Readdress card	Kaart opnieuw adresseren
 Rectangle	Rechthoek
 Rectangular	Rechthoekig
-Redo   Ctrl+Y	Opnieuw   Ctrl+Y
-Redo (Ctrl+Y)	Opnieuw (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Artikelen van de voorbeeldcatalogus (GEN.*) vernieuwen
 Relay / contactor coil	Relais- / magneetschakelaarspoel
 Relay coil (NFPA)	Relaisspoel (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revisie {} gemaakt
 Revisions	Revisies
 Revisions…	Revisies…
 Right	Rechts
-Rotate   R	Draaien   R
 Rotate (R)	Draaien (R)
 Rotate / mirror (selection or symbol being placed)	Draaien / spiegelen (selectie of symbool dat wordt geplaatst)
 Rotate 90°:	90° draaien:
@@ -586,7 +575,6 @@ Round	Rond
 Routing	Routering
 Rows per page	Rijen per pagina
 SVG image	SVG-afbeelding
-Save          Ctrl+S	Opslaan          Ctrl+S
 Save / open	Opslaan / openen
 Save as macro	Opslaan als macro
 Save as…	Opslaan als…
@@ -605,7 +593,6 @@ Select a macro.	Selecteer een macro.
 Select a part in the tree or create a new one.	Selecteer een artikel in de structuur of maak een nieuw artikel.
 Select a part. Double click adds it to the device.	Selecteer een artikel. Dubbelklikken voegt het toe aan het apparaat.
 Select all	Alles selecteren
-Select all   Ctrl+A	Alles selecteren   Ctrl+A
 Select an element in the list or the drawing.	Selecteer een element in de lijst of de tekening.
 Select and drag elements; Del deletes	Elementen selecteren en slepen; Del verwijdert
 Select device	Apparaat selecteren
@@ -673,7 +660,6 @@ Terminals	Klemmen
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Klemmen met hetzelfde brugnummer zijn doorverbonden (dezelfde potentiaal). Reserveklemmen worden in de stuklijst meegeteld.
 Test connection	Verbinding testen
 Text	Tekst
-Text   T	Tekst   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	Het 2D-vooraanzicht wordt gebruikt in het vooraanzicht van de kast en op montageplanpagina's, het 3D-model in de 3D-kastweergave. Beide worden aangepast aan de montagegegevens (breedte × hoogte × diepte).
 The access token is only needed for changes; it is not stored.	Het toegangstoken is alleen nodig voor wijzigingen; het wordt niet opgeslagen.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Het model ({} × {} × {}) wijkt af van de montagegegevens ({} × {} × {}); het wordt uitgerekt tot de montagegegevens.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformator (eenlijnig)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Draai het model zodat de voorkant naar de kijker wijst (+Z) en de bovenkant +Y is
 Type	Type
 Type number	Typenummer
-Undo   Ctrl+Z	Ongedaan maken   Ctrl+Z
-Undo (Ctrl+Z)	Ongedaan maken (Ctrl+Z)
 Undo / redo	Ongedaan maken / opnieuw
 Unit	Eenheid
 Unit price	Stukprijs
@@ -729,7 +713,6 @@ Width × height	Breedte × hoogte
 Width × height × depth	Breedte × hoogte × diepte
 Window macro: {}	Venstermacro: {}
 Wire	Draad
-Wire   W	Draad   W
 Wire assigned to unknown cable {}	Draad toegewezen aan onbekende kabel {}
 Wire ends with ferrules	Draadeinden met adereindhulzen
 Wire list (panel routing)	Draadlijst (routering in de kast)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Maakt of wijzigt een PCT-lus van de voorplanning
 Loop number, e.g. 101	Lusnummer, bijv. 101
 Measuring range or set point	Meetbereik of setpoint
-Further device tags of the loop, separated by blanks	Verdere apparaataanduidingen van de lus, gescheiden door spaties
 Deletes a PCT loop of the pre-planning	Verwijdert een PCT-lus van de voorplanning
 Loop number	Lusnummer
 No enclosure named {}	Geen behuizing met de naam {}
@@ -1582,7 +1564,6 @@ Not a language code: {}	Geen taalcode: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Geeft een lijst van de bron- en doeltalen van de projectteksten met het aantal onvertaalde regels
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Stelt de brontaal van de projectteksten en de doeltalen in (ISO 639-1-codes)
 Language the project texts are written in, e.g. en	Taal waarin de projectteksten zijn geschreven, bijv. en
-Target languages separated by blanks, e.g. de fr	Doeltalen gescheiden door spaties, bijv. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Geeft een lijst van het vertaalwoordenboek van de projectteksten (bronregel en vertalingen)
 Only lines without a translation into this language	Alleen regels zonder vertaling in deze taal
 Text in the line or a translation	Tekst in de regel of een vertaling
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Titelblokken, plotkaders en pagi
 Frame of all pages that do not choose one	Kader van alle pagina's die er geen kiezen
 Frame to start from when the frame is new (default: A3 landscape)	Kader om mee te beginnen als het kader nieuw is (standaard: A3 landscape)
 Free graphics and notes, not evaluated	Vrije grafiek en notities, niet geëvalueerd
-Give kind or template	Geef kind of template op
 Imported {} page templates	{} paginasjablonen geïmporteerd
 Insert page	Pagina invoegen
 Landscape	Liggend
@@ -2280,7 +2260,6 @@ Locked by other users	Vergrendeld door andere gebruikers
 None	Geen
 Close shared project	Gedeeld project sluiten
 Releases all locks; the project stays open as a local copy	Geeft alle vergrendelingen vrij; het project blijft geopend als lokale kopie
-Save to project server   Ctrl+S	Opslaan op projectserver   Ctrl+S
 Download project	Project downloaden
 Project server…	Projectserver…
 Open and save shared projects, lock pages	Gedeelde projecten openen en opslaan, pagina's vergrendelen
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Trek een lijn over de 
 Cable definition on page {}	Kabeldefinitie op pagina {}
 No cables yet. Draw a cable definition across wires or add a cable.	Nog geen kabels. Teken een kabeldefinitie over draden of voeg een kabel toe.
 New tag for {}	Nieuwe aanduiding voor {}
-This tag is already used	Deze aanduiding wordt al gebruikt
 Select on this page	Selecteren op deze pagina
 Place functions of this device	Functies van dit apparaat plaatsen
 Symbols placed next get this device tag (contacts are numbered on)	Symbolen die hierna worden geplaatst, krijgen deze apparaataanduiding (contacten worden doorgenummerd)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Maakt of wijzigt een vloeistoftechnische
 Device tag of the group, e.g. -KH1	Apparaataanduiding van de groep, bijv. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit of other
 Places of the group (0 = not limited)	Plaatsen van de groep (0 = onbeperkt)
-Device tags of the members in slot order, separated by blanks	Apparaataanduidingen van de leden in plaatsvolgorde, gescheiden door spaties
 Part number of the base	Artikelnummer van de basis
 Deletes a fluid device group	Verwijdert een vloeistoftechnische apparaatgroep
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Geeft een lijst van de vloeistoftechnische apparaten met magneetspoelen of koppelingen en de daaraan gekoppelde elektrische apparaten
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Koppelt een vloeistoftechnisch apparaat aan de elektrische apparaten die het bedienen of bewaken (vervangt de koppelingen)
 Device tag of the fluid device, e.g. -QM1	Apparaataanduiding van het vloeistoftechnische apparaat, bijv. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Aanduidingen van elektrische apparaten, gescheiden door spaties (leeg = koppelingen verwijderen)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Koppelt magneetventielen aan de spoel met hetzelfde nummer (-QM3 › -MB3) en kopieert functieteksten tussen gekoppelde apparaten
 No hose {}	Geen slang {}
 Unknown line type: {}	Onbekend leidingtype: {}
@@ -3173,7 +3149,6 @@ Communication	Communicatie
 Conductor class	Geleiderklasse
 Conductor material	Geleidermateriaal
 Connection point descriptions	Beschrijvingen van aansluitpunten
-Connection point designations separated by blanks	Aansluitbenamingen gescheiden door spaties
 Connection type	Aansluittype
 Contact material	Contactmateriaal
 Contractor	Aannemer
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Elk project ook controleren (langzamer)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Zoekt projecten in de projectdatabase of een map: termen gescheiden door ';', elk sleutel=waarde, sleutel~tekst of gewone tekst
 Search terms, e.g. company=ACME; customer~plant; conveyor	Zoektermen, bijv. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Projectdatabasebestand (JSON)
-Folder with project files (instead of a database)	Map met projectbestanden (in plaats van een database)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Wijzigt projecteigenschappen in veel projectbestanden tegelijk (velden name, description, company, creator, date, revision of projecteigenschappen)
 Project files, separated by ';'	Projectbestanden, gescheiden door ';'
 All project files of a folder	Alle projectbestanden van een map
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Activeert (toont) of deactiveert (verbergt) de inhoud van een projectoptie
 Show the content	Inhoud weergeven
 Switches the project options with a condition by the configurator options	Schakelt de projectopties met een voorwaarde volgens de configuratoropties
-Pass a database or a folder	Geef een database of een map op
 Nothing to change: pass set, remove, replace or rename	Niets te wijzigen: geef set, remove, replace of rename op
 Pass files or a folder	Geef bestanden of een map op
 Pass ids or pages	Geef ID's of pagina's op
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Structuur van
 Interruption points refer to: all (default), star or pairs	Onderbrekingspunten verwijzen naar: all (standaard), star of pairs
 Draw the contact image below coils (default true)	De contactspiegel onder spoelen tekenen (standaard true)
 Unknown setting: {}	Onbekende instelling: {}
-Find…   Ctrl+F	Zoeken…   Ctrl+F
 Find and replace in the whole project	Zoeken en vervangen in het hele project
 Text to find	Te zoeken tekst
 Match case	Hoofdlettergevoelig
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft-projectsjabloon
 Not a project template: {}	Geen projectsjabloon: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Beginnen met een projectsjabloon: een ingebouwde (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) of een projectbestand
-Unknown template {}: {}	Onbekende sjabloon {}: {}
 Not a packed project	Geen verpakt project
 Viewer	Kijker
 With a user account of the server; replaces the access token	Met een gebruikersaccount van de server; vervangt het toegangstoken
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Onbekend voorbeeld {}: zie list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Het pompstation ingebouwd in twee aaneengeschakelde vloerkasten: railsysteem, montagerails en kabelgoten, deurapparaten en grepen, filterventilator, verlichting, aardrail, kabelwartels, een kabeldoorvoer, klimaatberekening, gootvulling en 3D-routing.
 9 · Electrical room	9 · Elektrische ruimte
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	De kastenrij in haar ruimte: L-vormige plattegrond, binnenwand, deur en raam, de kastenrij op haar plaats, een montagerail met een wandcontactdoos, een op de wand gemonteerde noodverlichting en een kabelgoot onder het plafond.
+{} is on page {}, which is released: renaming it would change the page	{} staat op pagina {}, die is vrijgegeven: hernoemen zou de pagina wijzigen
+A section number consists of letters and digits and does not start with 0	Een sectienummer bestaat uit letters en cijfers en begint niet met 0
+Structure identifier {} must not contain blanks or the signs = + - / :	Structuuraanduiding {} mag geen spaties en geen van de tekens = + - / : bevatten
+Bridge rectifier block	Bruggelijkrichter (blok)
+the server refuses the connection (not started, or another port)	de server weigert de verbinding (niet gestart of een andere poort)
+the server name is unknown	de servernaam is onbekend
+the server does not answer in time	de server antwoordt niet op tijd
+the address is not a valid URL (e.g. http://server:8090)	het adres is geen geldige URL (bijv. http://server:8090)
+Unknown check: {}	Onbekende controle: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	Geen ingebouwde controle heet {}: de instelling geldt voor een controle van een plugin met die naam (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{} is geen meldingscode zoals check die toont (bijv. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{} is geen vingerafdruk van een melding zoals check die toont (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Pagina {} is uitbesteed in deelproject {}: voeg het deelproject eerst weer in of verwerp het
+Unknown wire colour {} (IEC 60757: {})	Onbekende draadkleur {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Geen doorsnede: {} (bijv. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Onbekende plaatsaanduiding {}: mogelijk zijn {}
+{} must not be negative	{} mag niet negatief zijn
+{} must be at least {}	{} moet minstens {} zijn
+{} must be between {} and {}	{} moet tussen {} en {} liggen
+The length must not be negative	De lengte mag niet negatief zijn
+The text height must be at least 0.5 mm	De teksthoogte moet minstens 0,5 mm zijn
+The wrap width must not be negative	De terugloopbreedte mag niet negatief zijn
+The items would leave the page	De elementen zouden buiten de pagina komen
+The number of copies must be between 1 and 100	Het aantal kopieën moet tussen 1 en 100 liggen
+The copies would leave the page	De kopieën zouden buiten de pagina komen
+The cable definition line has no length	De kabeldefinitielijn heeft geen lengte
+The cable definition line crosses no wire	De kabeldefinitielijn kruist geen draad
+{} and {} are both ends of one function: the wire would short-circuit it	{} en {} zijn beide uiteinden van één functie: de draad zou die kortsluiten
+No wire at {} / {} mm	Geen draad op {} / {} mm
+Target languages separated by commas or blanks, e.g. de, fr	Doeltalen gescheiden door komma's of spaties, bijv. de, fr
+The first page number must not be negative	Het eerste paginanummer mag niet negatief zijn
+The counting step must be at least 1	De telstap moet minstens 1 zijn
+Released pages keep their names: {}	Vrijgegeven pagina's behouden hun naam: {}
+The plinth height must not be negative	De sokkelhoogte mag niet negatief zijn
+{} is a room already	{} is al een ruimte
+Width, height and depth of an enclosure are at least {} mm	Breedte, hoogte en diepte van een behuizing zijn minstens {} mm
+Device tags of the members in slot order, separated by commas or blanks	Apparaataanduidingen van de leden in plaatsvolgorde, gescheiden door komma's of spaties
+Electrical device tags separated by commas or blanks (empty = remove the links)	Aanduidingen van elektrische apparaten, gescheiden door komma's of spaties (leeg = koppelingen verwijderen)
+Further device tags of the loop, separated by commas or blanks	Verdere apparaataanduidingen van de lus, gescheiden door komma's of spaties
+Connection point designations separated by commas or blanks	Aansluitbenamingen gescheiden door komma's of spaties
+Width, depth and height of a room are at least {} mm	Breedte, diepte en hoogte van een ruimte zijn minstens {} mm
+Room {} exists already	Ruimte {} bestaat al
+{} is an enclosure already	{} is al een behuizing
+{} would stand outside the room {}	{} zou buiten ruimte {} staan
+No identifier {} in the project	Geen aanduiding {} in het project
+{} exists already: pass merge to make both one identifier	{} bestaat al: geef merge op om beide tot één aanduiding samen te voegen
+Allow renaming onto an identifier in use: both become one	Hernoemen naar een gebruikte aanduiding toestaan: beide worden één
+Sign in or connect with the access token to change parts	Meld u aan of maak verbinding met het toegangstoken om artikelen te wijzigen
+Read only: sign in with a user who may change parts of this manufacturer	Alleen lezen: meld u aan met een gebruiker die artikelen van deze fabrikant mag wijzigen
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nStart een Model Context Protocol-server op stdin / stdout: de tools van deze lijst voor AI-agents, met het project in het geheugen (save_project schrijft het, undo / redo maken afzonderlijke aanroepen ongedaan). OPENECRAFT_MCP_TOOLS beperkt de aangeboden tools.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nToont de versie van de opdrachtregel (ook --version of -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo en redo werken alleen in een MCP-sessie: de opdrachtregel opent het project voor elke opdracht opnieuw
+(MCP server only)	(alleen MCP-server)
+{} is an archive: pass a path to save the project as a project file	{} is een archief: geef een pad op om het project als projectbestand op te slaan
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} is een archief en blijft ongewijzigd: sla het project op als projectbestand (save_project --path <file>.oec) of converteer het archief (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Map met projectbestanden (in plaats van een database; standaard: de huidige map)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Onbekend paginatype: {} (schematic, overview, graphic, cover of een rapport uit list_reports)
+Unknown template {}: give a built-in one ({}) or a project file	Onbekende sjabloon {}: geef een ingebouwde ({}) of een projectbestand op
+Property {} needs a text or a number	Eigenschap {} vereist een tekst of een getal

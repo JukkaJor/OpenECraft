@@ -17,7 +17,7 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   [`project-server/project-server.example.toml`](../project-server/project-server.example.toml)),
   as for the parts server.
 - Project names differing only in case are one name (Windows and macOS do not tell
-  their files apart); Windows device names (`CON`, `NUL`, `COM1` …) and names ending
+  their files apart): requests find a project under any case of its name; Windows device names (`CON`, `NUL`, `COM1` …) and names ending
   with a dot are refused.
 - Each project is stored as `<name>.oec` (a normal project file) next to
   `<name>.state.json` (revision, id counter) in the data directory.
@@ -30,9 +30,13 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   projects and manage who may use them, administrators also manage the users; a user's
   role can be limited to some projects (names with `*` / `?`). `--admin-user <name>`
   creates the first administrator with the password from
-  `OPENECRAFT_PROJECT_ADMIN_PASSWORD`. Users sign in from *Tools › Project server…*
-  (user name, password, *Sign in*); the server uses the account's name on the locks,
-  whatever the request says.
+  `OPENECRAFT_PROJECT_ADMIN_PASSWORD` (at least 8 characters, as every password). Users
+  sign in from *Tools › Project server…* (user name, password, *Sign in*); the server uses
+  the account's name on the locks, whatever the request says. User names have at most 64
+  characters and no control characters; a new user needs a role, directory groups or a
+  grant in the access settings. Signing out closes the projects opened with that
+  sign-in and releases their locks; deleting a user closes all of theirs. A failed
+  sign-in answers `wrong user name or password` whichever of the two was wrong.
 - **Access control** (`access.json` in the data directory, `--access`): users sign in
   with a local account or with Active Directory / LDAP directories; roles (built-in or
   defined by administrators) are granted to users and directory groups per project,
@@ -59,7 +63,10 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   token, list the projects and open one, or upload the current project. While a shared
   project is open, *Save* (`Ctrl+S`) saves to the server; the window and the page list's
   context menu lock and release pages.
-- REST API (`/api/v1`): `GET /info`, `GET|POST /projects`, `GET|PUT|DELETE /projects/{name}`,
+- REST API (`/api/v1`): `GET /info` (name, version and the number of projects the
+  caller may see; answered without token too), `GET|POST /projects` (`POST` needs the
+  `project`), `GET|PUT|DELETE /projects/{name}`,
   `POST /projects/{name}/open|status|lock|release|close`, `GET|PUT /projects/{name}/access`,
-  `POST /login`, `POST /logout`, `GET /users`, `PUT|DELETE /users/{name}`, `GET|PUT /access`
+  `POST /login` (`user` and `password`; `name` is taken for `user`, as on the parts
+  server), `POST /logout`, `GET /users`, `PUT|DELETE /users/{name}`, `GET|PUT /access`
   (see `openecraft_core::collab`).

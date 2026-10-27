@@ -1,6 +1,7 @@
 //! Property database commands: property definitions, values of all objects, function
 //! definitions, placement schemes and property library files.
 
+use crate::builtin::common::{int_in, num_in};
 use crate::params::{optional, param, Args, Kind};
 use crate::{Info, Plugin, Registry};
 use super::{add_commands, info, Spec};
@@ -87,7 +88,7 @@ pub static COMMANDS: &[Spec] = &[
             optional("name", Kind::Str, tr_const!("Name")),
             optional("letter", Kind::Str, tr_const!("Identifying letter")),
             optional("symbol", Kind::Str, tr_const!("Default symbol key")),
-            optional("pins", Kind::Str, tr_const!("Connection point designations separated by blanks")),
+            optional("pins", Kind::Str, tr_const!("Connection point designations separated by commas or blanks")),
             optional("scheme", Kind::Str, tr_const!("Placement scheme")),
             optional("defaults", Kind::Object, tr_const!("Default property values")),
             optional("description", Kind::Str, tr_const!("Description")),
@@ -183,7 +184,7 @@ fn define_property(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ty,
         unit: a.str("unit").unwrap_or_default().into(),
         choices: a.str("choices").unwrap_or_default().split(',').map(|c| c.trim().to_string()).filter(|c| !c.is_empty()).collect(),
-        indices: a.int("indices").unwrap_or(0).clamp(0, 500) as u16,
+        indices: int_in(a, "indices", 0, 500)?.unwrap_or(0) as u16,
         default: a.str("default").unwrap_or_default().into(),
         description: a.str("description").unwrap_or_default().into(),
         ..Default::default()
@@ -285,7 +286,7 @@ fn define_function(prj: &mut Project, a: &Args) -> Result<Value, String> {
         d.symbol = v.into();
     }
     if let Some(v) = a.str("pins") {
-        d.pins = v.into();
+        d.pins = crate::builtin::common::words(v).join(" ");
     }
     if let Some(v) = a.str("scheme") {
         if !v.is_empty() && props::scheme(prj, v).is_none() {
@@ -395,8 +396,8 @@ fn place_property(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if let Some(dy) = a.num("dy") {
         pp.offset.y = dy;
     }
-    if let Some(size) = a.num("size") {
-        pp.size = size.clamp(1.0, 10.0);
+    if let Some(size) = num_in(a, "size", 1.0, 10.0)? {
+        pp.size = size;
     }
     pp.name = a.flag("name");
     let sym = &prj.pages[pi].symbols[si];

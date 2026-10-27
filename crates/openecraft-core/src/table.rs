@@ -66,6 +66,12 @@ impl Table {
     }
 
     /// CSV like the built-in reports (`;` separated, headers translated).
+    /// CSV for spreadsheets: with a UTF-8 byte order mark, so that Excel shows `mm²`
+    /// and umlauts instead of guessing the code page.
+    pub fn to_csv_bom(&self) -> String {
+        format!("\u{feff}{}", self.to_csv())
+    }
+
     pub fn to_csv(&self) -> String {
         let esc = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
         let line = |cells: Vec<&str>| cells.into_iter().map(esc).collect::<Vec<_>>().join(";") + "\n";

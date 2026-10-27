@@ -1,4 +1,6 @@
 /target
+# trunk output (also of a trunk run in the repository root)
+/dist
 /openecraft/dist
 /parts-manager/dist
 /.idea/

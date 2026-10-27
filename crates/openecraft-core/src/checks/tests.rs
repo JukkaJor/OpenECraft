@@ -38,3 +38,19 @@ fn check_schemes_are_exchanged_without_the_accepted_messages() {
     assert_eq!(b.check_settings.accepted.len(), 1, "own acceptances stay");
     assert!(apply_scheme(&mut b, "[1, 2]").is_err());
 }
+
+/// Regression: a project file or any other JSON object was taken as an empty scheme
+/// and switched every check on again.
+#[test]
+fn other_json_objects_are_no_check_scheme() {
+    let mut prj = crate::sample::demo_project();
+    prj.check_settings.disabled.push("cables".into());
+    let project_file = serde_json::to_string(&crate::sample::demo_project()).unwrap();
+    for json in [project_file.as_str(), r#"{"name": "x"}"#, "5"] {
+        let err = apply_scheme(&mut prj, json).unwrap_err();
+        assert!(err.contains("Not a check scheme"), "{err}");
+    }
+    assert_eq!(prj.check_settings.disabled, vec!["cables".to_string()], "unchanged");
+    apply_scheme(&mut prj, "{}").unwrap();
+    assert!(prj.check_settings.disabled.is_empty(), "an empty scheme switches every check on");
+}

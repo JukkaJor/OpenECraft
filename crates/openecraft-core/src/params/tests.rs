@@ -42,3 +42,14 @@ fn params_of_external_plugins_are_read_from_json() {
     assert_eq!(p.kind, Kind::Num);
     assert!(matches!(p.name, Cow::Owned(_)));
 }
+
+#[test]
+fn integers_may_be_written_with_a_zero_fraction() {
+    const P: &[Param] = &[optional("rotation", Kind::Int, "Rotation"), optional("ids", Kind::Ids, "Items")];
+    assert!(check(P, &map(json!({ "rotation": 90.0, "ids": [3.0, 4] }))).is_ok());
+    assert!(check(P, &map(json!({ "rotation": 90.5 }))).is_err());
+    assert!(check(P, &map(json!({ "ids": [-1] }))).is_err());
+    let m = map(json!({ "rotation": 90.0, "ids": [3.0, 4] }));
+    let a = Args(&m);
+    assert_eq!((a.int("rotation"), a.ids("ids")), (Some(90), vec![3, 4]));
+}

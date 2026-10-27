@@ -362,7 +362,7 @@ async fn directory_sign_in() {
         ..Default::default()
     };
     server.access.config.directories.push(corp);
-    server.users.set_admin("root", "root-pw").unwrap();
+    server.users.set_admin("root", "root-password").unwrap();
     let app = router(AppState { server: Arc::new(Mutex::new(server)), token: None });
     // A directory alone makes the server private.
     let (s, _) = call(&app, "GET", "/api/v1/projects", None, String::new()).await;
@@ -371,13 +371,13 @@ async fn directory_sign_in() {
     let login = |user: &str, password: &str| serde_json::to_string(&LoginRequest { user: user.into(), password: password.into(), ..Default::default() }).unwrap();
     let (s, _) = call(&app, "POST", "/api/v1/login", None, login("root", "wrong")).await;
     assert_eq!(s, StatusCode::UNAUTHORIZED);
-    let (s, text) = call(&app, "POST", "/api/v1/login", None, login("root", "root-pw")).await;
+    let (s, text) = call(&app, "POST", "/api/v1/login", None, login("root", "root-password")).await;
     assert!(s.is_success(), "{text}");
     assert!(serde_json::from_str::<LoginResponse>(&text).unwrap().access.allows(SERVER, ProjectRight::Administer));
     let (s, text) = call(&app, "POST", "/api/v1/login", None, login("anna", "pw")).await;
     assert_eq!(s, StatusCode::SERVICE_UNAVAILABLE, "{text}");
     let (_, text) = call(&app, "POST", "/api/v1/login", None, login("anna", "")).await;
-    assert!(text.contains("wrong password"), "{text}");
+    assert!(text.contains("wrong user name or password"), "{text}");
 }
 
 #[tokio::test]
@@ -480,4 +480,59 @@ async fn changes_made_by_others_since_the_base_are_not_overwritten() {
     let saved: Snapshot = ok(&app, "PUT", path, &req).await;
     assert_eq!(saved.project.pages[0].description, "ben");
     assert_eq!(saved.ignored, vec![Target::Page(anna.snapshot.project.pages[0].id)]);
+}
+
+#[tokio::test]
+async fn requests_are_checked_and_names_found_in_any_case() {
+    let app = app(None);
+    // User names with control characters are refused.
+    let req = CreateRequest { name: "Plant 1".into(), user: "a\nb".into(), project: two_pages() };
+    assert_eq!(error(&app, "POST", "/api/v1/projects", &req).await.0, StatusCode::BAD_REQUEST);
+    // A project needs its content.
+    let (status, text) = error(&app, "POST", "/api/v1/projects", &serde_json::json!({ "name": "Empty", "user": "anna" })).await;
+    assert_eq!((status, text.as_str()), (StatusCode::BAD_REQUEST, "the request needs the project"));
+    create(&app, "anna").await;
+    // The project is found whatever the case of its name.
+    let snapshot: Snapshot = ok(&app, "GET", "/api/v1/projects/plant%201", &()).await;
+    assert_eq!(snapshot.project.pages.len(), 2);
+    let ben: Opened = ok(&app, "POST", "/api/v1/projects/PLANT%201/open", &OpenRequest { user: "ben".into() }).await;
+    let list: Vec<ProjectSummary> = ok(&app, "GET", "/api/v1/projects", &()).await;
+    assert_eq!(list[0].users, vec!["anna".to_string(), "ben".to_string()]);
+    let _: Status = ok(&app, "POST", "/api/v1/projects/plant%201/close", &ben.session).await;
+}
+
+#[tokio::test]
+async fn signing_out_or_deleting_a_user_closes_their_projects() {
+    let app = app(Some(TOKEN));
+    let t = sign_in(&app, &[("olga", Some(ProjectRole::Editor), &[]), ("vic", Some(ProjectRole::Editor), &[])]).await;
+    // A new user without role, groups or grants could do nothing.
+    let nobody = UserUpdate { password: Some("nobody-password".into()), ..Default::default() };
+    let (s, _) = with(&app, "PUT", "/api/v1/users/nobody", TOKEN, &nobody).await;
+    assert_eq!(s, StatusCode::BAD_REQUEST);
+    // The server's name and version need no token.
+    let (s, text) = call(&app, "GET", "/api/v1/info", None, String::new()).await;
+    assert_eq!(s, StatusCode::OK, "{text}");
+    // Both servers read the user name as `user` and as `name`.
+    let (s, text) = call(&app, "POST", "/api/v1/login", None, r#"{"name": "olga", "password": "olga-password"}"#.into()).await;
+    assert_eq!(s, StatusCode::OK, "{text}");
+
+    let req = CreateRequest { name: "Plant 1".into(), user: String::new(), project: two_pages() };
+    let (s, text) = with(&app, "POST", "/api/v1/projects", &t[0], &req).await;
+    assert_eq!(s, StatusCode::CREATED, "{text}");
+    let olga: Opened = serde_json::from_str(&text).unwrap();
+    let lock = LockRequest { session: olga.session.clone(), targets: vec![Target::Project] };
+    assert_eq!(with(&app, "POST", "/api/v1/projects/Plant%201/lock", &t[0], &lock).await.0, StatusCode::OK);
+    // Signing out releases the locks of the projects opened with that sign-in.
+    assert_eq!(with(&app, "POST", "/api/v1/logout", &t[0], &()).await.0, StatusCode::NO_CONTENT);
+    let snapshot: Snapshot = serde_json::from_str(&with(&app, "GET", "/api/v1/projects/Plant%201", TOKEN, &()).await.1).unwrap();
+    assert!(snapshot.locks.is_empty());
+
+    let (_, text) = with(&app, "POST", "/api/v1/projects/Plant%201/open", &t[1], &OpenRequest::default()).await;
+    let vic: Opened = serde_json::from_str(&text).unwrap();
+    let lock = LockRequest { session: vic.session.clone(), targets: vec![Target::Project] };
+    assert_eq!(with(&app, "POST", "/api/v1/projects/Plant%201/lock", &t[1], &lock).await.0, StatusCode::OK);
+    // A deleted user keeps nothing locked.
+    assert_eq!(with(&app, "DELETE", "/api/v1/users/vic", TOKEN, &()).await.0, StatusCode::NO_CONTENT);
+    let list: Vec<ProjectSummary> = serde_json::from_str(&with(&app, "GET", "/api/v1/projects", TOKEN, &()).await.1).unwrap();
+    assert!(list[0].users.is_empty());
 }

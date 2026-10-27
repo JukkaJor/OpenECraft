@@ -663,6 +663,22 @@ pub fn check_tag(tag: &str) -> Result<(), String> {
 
 /// Renames a device everywhere (all functions with that tag, device, strip, plug and
 /// PLC card data, panel layout, harnesses, fluid device groups and links).
+/// Why device `old` cannot be renamed to `new` (None: it can): an invalid or used tag,
+/// or a function on a released page, which must stay as it is.
+pub fn rename_problem(prj: &Project, old: &str, new: &str) -> Option<String> {
+    if new == old {
+        return None;
+    }
+    if let Err(e) = check_tag(new) {
+        return Some(e);
+    }
+    if prj.all_tags().iter().any(|t| t == new) {
+        return Some(tr_fmt!("Device {} already exists", new));
+    }
+    let released = prj.pages.iter().find(|pg| pg.locked && pg.symbols.iter().any(|s| s.tag == old));
+    released.map(|pg| tr_fmt!("{} is on page {}, which is released: renaming it would change the page", old, pg.name))
+}
+
 pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     if old == new || old.is_empty() {
         return;

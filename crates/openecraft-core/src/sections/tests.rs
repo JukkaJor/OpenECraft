@@ -98,3 +98,14 @@ fn pages_of_unknown_sections_are_top_level_pages() {
     sort_pages(&mut prj);
     assert_eq!(names(&prj)[0], "1");
 }
+
+#[test]
+fn section_numbers_are_letters_and_digits() {
+    let mut prj = Project::new_default();
+    let id = add(&mut prj, 0, "A");
+    for bad in ["-1", "0", "01", "a b", "1/2"] {
+        assert!(set_number(&mut prj, id, bad).is_err(), "{bad}");
+    }
+    assert!(set_number(&mut prj, id, "A").is_ok());
+    assert!(set_number(&mut prj, id, "12").is_ok());
+}

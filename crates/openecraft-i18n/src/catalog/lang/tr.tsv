@@ -136,7 +136,6 @@ Contacts	Kontaklar
 Control transformer	Kumanda transformatörü
 Copper busbar system: click start and end point	Bakır bara sistemi: başlangıç ve bitiş noktasına tıklayın
 Copy / cut / paste (devices get new tags)	Kopyala / kes / yapıştır (cihazlar yeni etiket alır)
-Copy / paste: Ctrl+C, Ctrl+X, Ctrl+V	Kopyala / yapıştır: Ctrl+C, Ctrl+X, Ctrl+V
 Copy as new	Yeni olarak kopyala
 Copy built-in…	Yerleşik olanı kopyala…
 Core	Damar
@@ -155,8 +154,6 @@ Cross references	Çapraz referanslar
 Cross-section	Kesit
 Ctrl+A	Ctrl+A
 Ctrl+C / X / V	Ctrl+C / X / V
-Ctrl+S / Ctrl+O	Ctrl+S / Ctrl+O
-Ctrl+Z / Ctrl+Y	Ctrl+Z / Ctrl+Y
 Current	Akım
 Cutout	Kesim
 Cutout {} × {} mm	Kesim {} × {} mm
@@ -169,7 +166,6 @@ Date	Tarih
 Date of the last revision	Son revizyonun tarihi
 Default label	Varsayılan yazı
 Del	Del
-Delete   Del	Sil   Del
 Delete (Del)	Sil (Del)
 Delete cable (its wires are removed from it)	Kabloyu sil (telleri kablodan çıkarılır)
 Delete enclosure	Panoyu sil
@@ -203,7 +199,6 @@ Door	Kapı
 Door (front view)	Kapı (ön görünüm)
 Door clearance	Kapı boşluğu
 Door: {} devices, {} cutouts	Kapı: {} cihaz, {} kesim
-Download project   Ctrl+S	Projeyi indir   Ctrl+S
 Downloaded {} parts (revision {}): {} new, {} updated	{} parça indirildi (revizyon {}): {} yeni, {} güncellendi
 Downloading parts…	Parçalar indiriliyor…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Sürükle: yörünge · sağ/orta tuşla sürükle: kaydır · tekerlek: yakınlaştır · tıkla: cihaz veya tel seç
@@ -248,7 +243,6 @@ Filter (number, type, manufacturer, text …)	Filtre (numara, tip, üretici, met
 Filter devices…	Cihazları filtrele…
 Filter…	Filtre…
 Fit page	Sayfaya sığdır
-Fit page   F	Sayfaya sığdır   F
 Fit page (F)	Sayfaya sığdır (F)
 Fluid power (ISO 1219)	Akışkan gücü (ISO 1219)
 Forms – title blocks and reports	Formlar – antetler ve raporlar
@@ -347,7 +341,6 @@ Manufacturer	Üretici
 Max. width	Maks. genişlik
 Merge a symbol library file	Bir sembol kütüphanesi dosyasını birleştir
 Mirror	Yansıt
-Mirror   M	Yansıt   M
 Model import failed: {}	Model içe aktarma başarısız oldu: {}
 Motor (single-line)	Motor (tek hat)
 Motor 1-phase	Motor, 1 fazlı
@@ -426,7 +419,6 @@ OpenECraft title blocks (JSON)	OpenECraft antetleri (JSON)
 OpenECraft – usage	OpenECraft – kullanım
 Opened {}	{} açıldı
 Opening in the mounting plate / door: click two corners (round: in the properties)	Montaj plakasında / kapıda açıklık: iki köşeye tıklayın (yuvarlak: özelliklerde)
-Open…        Ctrl+O	Aç…        Ctrl+O
 Order number	Sipariş numarası
 Orientation	Yön
 Overload aux contact NC	Aşırı yük yardımcı kontağı NK
@@ -546,8 +538,6 @@ Radius	Yarıçap
 Readdress card	Kartı yeniden adresle
 Rectangle	Dikdörtgen
 Rectangular	Dikdörtgen
-Redo   Ctrl+Y	Yinele   Ctrl+Y
-Redo (Ctrl+Y)	Yinele (Ctrl+Y)
 Refresh example catalog parts (GEN.*)	Örnek katalog parçalarını yenile (GEN.*)
 Relay / contactor coil	Röle / kontaktör bobini
 Relay coil (NFPA)	Röle bobini (NFPA)
@@ -578,7 +568,6 @@ Revision {} created	Revizyon {} oluşturuldu
 Revisions	Revizyonlar
 Revisions…	Revizyonlar…
 Right	Sağ
-Rotate   R	Döndür   R
 Rotate (R)	Döndür (R)
 Rotate / mirror (selection or symbol being placed)	Döndür / yansıt (seçim veya yerleştirilen sembol)
 Rotate 90°:	90° döndür:
@@ -586,7 +575,6 @@ Round	Yuvarlak
 Routing	Yönlendirme
 Rows per page	Sayfa başına satır
 SVG image	SVG görüntüsü
-Save          Ctrl+S	Kaydet          Ctrl+S
 Save / open	Kaydet / aç
 Save as macro	Makro olarak kaydet
 Save as…	Farklı kaydet…
@@ -605,7 +593,6 @@ Select a macro.	Bir makro seçin.
 Select a part in the tree or create a new one.	Ağaçta bir parça seçin veya yeni bir parça oluşturun.
 Select a part. Double click adds it to the device.	Bir parça seçin. Çift tıklama parçayı cihaza ekler.
 Select all	Tümünü seç
-Select all   Ctrl+A	Tümünü seç   Ctrl+A
 Select an element in the list or the drawing.	Listede veya çizimde bir öğe seçin.
 Select and drag elements; Del deletes	Öğeleri seçin ve sürükleyin; Del siler
 Select device	Cihaz seç
@@ -673,7 +660,6 @@ Terminals	Klemensler
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Aynı köprü numarasına sahip klemensler köprülenir (aynı potansiyel). Yedek klemensler malzeme listesinde sayılır.
 Test connection	Bağlantıyı test et
 Text	Metin
-Text   T	Metin   T
 The 2D front view is used in the panel front view and on mounting layout pages, the 3D model in the 3D panel view. Both are fitted to the mounting data (width × height × depth).	2D ön görünüm pano ön görünümünde ve montaj planı sayfalarında, 3D model ise 3D pano görünümünde kullanılır. Her ikisi de montaj verilerine (genişlik × yükseklik × derinlik) uydurulur.
 The access token is only needed for changes; it is not stored.	Erişim belirteci yalnızca değişiklikler için gereklidir; saklanmaz.
 The model ({} × {} × {}) differs from the mounting data ({} × {} × {}); it is stretched to the mounting data.	Model ({} × {} × {}) montaj verilerinden ({} × {} × {}) farklı; montaj verilerine göre esnetilir.
@@ -699,8 +685,6 @@ Transformer (single-line)	Transformatör (tek hat)
 Turn the model so that its front faces the viewer (+Z) and its top is +Y	Modeli, ön yüzü izleyiciye (+Z) ve üst yüzü +Y yönüne bakacak şekilde döndürün
 Type	Tip
 Type number	Tip numarası
-Undo   Ctrl+Z	Geri al   Ctrl+Z
-Undo (Ctrl+Z)	Geri al (Ctrl+Z)
 Undo / redo	Geri al / yinele
 Unit	Birim
 Unit price	Birim fiyat
@@ -729,7 +713,6 @@ Width × height	Genişlik × yükseklik
 Width × height × depth	Genişlik × yükseklik × derinlik
 Window macro: {}	Pencere makrosu: {}
 Wire	Tel
-Wire   W	Tel   W
 Wire assigned to unknown cable {}	Tel bilinmeyen bir kabloya atanmış: {}
 Wire ends with ferrules	Kablo yüksüklü tel uçları
 Wire list (panel routing)	Tel listesi (pano yönlendirmesi)
@@ -1534,7 +1517,6 @@ Lists the PCT loops of the pre-planning and of the P&ID instruments with their d
 Creates or changes a PCT loop of the pre-planning	Ön planlamanın bir PCT döngüsünü oluşturur veya değiştirir
 Loop number, e.g. 101	Döngü numarası, ör. 101
 Measuring range or set point	Ölçüm aralığı veya ayar noktası
-Further device tags of the loop, separated by blanks	Döngünün diğer cihaz etiketleri, boşlukla ayrılmış
 Deletes a PCT loop of the pre-planning	Ön planlamanın bir PCT döngüsünü siler
 Loop number	Döngü numarası
 No enclosure named {}	{} adlı pano yok
@@ -1582,7 +1564,6 @@ Not a language code: {}	Dil kodu değil: {}
 Lists the source and target languages of the project texts with the number of untranslated lines	Proje metinlerinin kaynak ve hedef dillerini çevrilmemiş satır sayısıyla listeler
 Sets the source language of the project texts and the target languages (ISO 639-1 codes)	Proje metinlerinin kaynak dilini ve hedef dillerini ayarlar (ISO 639-1 kodları)
 Language the project texts are written in, e.g. en	Proje metinlerinin yazıldığı dil, ör. en
-Target languages separated by blanks, e.g. de fr	Boşlukla ayrılmış hedef diller, ör. de fr
 Lists the translation dictionary of the project texts (source line and translations)	Proje metinlerinin çeviri sözlüğünü listeler (kaynak satır ve çeviriler)
 Only lines without a translation into this language	Yalnızca bu dile çevirisi olmayan satırlar
 Text in the line or a translation	Satırdaki veya bir çevirideki metin
@@ -1896,7 +1877,6 @@ Title blocks, plot frames and page templates…	Antetler, çizim çerçeveleri v
 Frame of all pages that do not choose one	Kendi çerçevesini seçmeyen tüm sayfaların çerçevesi
 Frame to start from when the frame is new (default: A3 landscape)	Çerçeve yeniyse başlangıç alınacak çerçeve (varsayılan: A3 landscape)
 Free graphics and notes, not evaluated	Serbest grafikler ve notlar, değerlendirilmez
-Give kind or template	kind veya template verin
 Imported {} page templates	{} sayfa şablonu içe aktarıldı
 Insert page	Sayfa ekle
 Landscape	Yatay
@@ -2280,7 +2260,6 @@ Locked by other users	Diğer kullanıcılar tarafından kilitlenenler
 None	Yok
 Close shared project	Paylaşılan projeyi kapat
 Releases all locks; the project stays open as a local copy	Tüm kilitleri kaldırır; proje yerel kopya olarak açık kalır
-Save to project server   Ctrl+S	Proje sunucusuna kaydet   Ctrl+S
 Download project	Projeyi indir
 Project server…	Proje sunucusu…
 Open and save shared projects, lock pages	Paylaşılan projeleri aç ve kaydet, sayfaları kilitle
@@ -2530,7 +2509,6 @@ Draw a line across the wires that are cores of this cable	Bu kablonun damarları
 Cable definition on page {}	{} sayfasında kablo tanımı
 No cables yet. Draw a cable definition across wires or add a cable.	Henüz kablo yok. Tellerin üzerinden bir kablo tanımı çizin veya bir kablo ekleyin.
 New tag for {}	{} için yeni etiket
-This tag is already used	Bu etiket zaten kullanılıyor
 Select on this page	Bu sayfada seç
 Place functions of this device	Bu cihazın fonksiyonlarını yerleştir
 Symbols placed next get this device tag (contacts are numbered on)	Bundan sonra yerleştirilen semboller bu cihaz etiketini alır (kontaklar numaralandırılmaya devam eder)
@@ -2737,13 +2715,11 @@ Creates or changes a fluid device group	Bir akışkan cihaz grubu oluşturur vey
 Device tag of the group, e.g. -KH1	Grubun cihaz etiketi, ör. -KH1
 valve_terminal, service_unit, manifold, power_unit or other	valve_terminal, service_unit, manifold, power_unit veya other
 Places of the group (0 = not limited)	Grubun yerleri (0 = sınırsız)
-Device tags of the members in slot order, separated by blanks	Yer sırasına göre, boşlukla ayrılmış üyelerin cihaz etiketleri
 Part number of the base	Taban plakasının parça numarası
 Deletes a fluid device group	Bir akışkan cihaz grubunu siler
 Lists the fluid devices with solenoids or links and the electrical devices linked to them	Solenoidli veya ilişkili akışkan cihazlarını ve bunlarla ilişkilendirilmiş elektrik cihazlarını listeler
 Links a fluid device with the electrical devices that actuate or monitor it (replaces the links)	Bir akışkan cihazını, onu tahrik eden veya izleyen elektrik cihazlarıyla ilişkilendirir (ilişkileri değiştirir)
 Device tag of the fluid device, e.g. -QM1	Akışkan cihazının cihaz etiketi, ör. -QM1
-Electrical device tags separated by blanks (empty = remove the links)	Boşlukla ayrılmış elektrik cihazı etiketleri (boş = ilişkileri kaldır)
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts between linked devices	Solenoid valfleri aynı numaralı bobinle (-QM3 › -MB3) ilişkilendirir ve ilişkili cihazlar arasında fonksiyon metinlerini kopyalar
 No hose {}	{} hortumu yok
 Unknown line type: {}	Bilinmeyen hat tipi: {}
@@ -3173,7 +3149,6 @@ Communication	İletişim
 Conductor class	İletken sınıfı
 Conductor material	İletken malzemesi
 Connection point descriptions	Bağlantı noktası açıklamaları
-Connection point designations separated by blanks	Boşlukla ayrılmış bağlantı noktası tanımları
 Connection type	Bağlantı tipi
 Contact material	Kontak malzemesi
 Contractor	Yüklenici
@@ -3882,7 +3857,6 @@ Also verify each project (slower)	Her projeyi ayrıca doğrula (daha yavaş)
 Finds projects in the project database or a folder: terms separated by ';', each key=value, key~text or plain text	Proje veritabanında veya bir klasörde proje arar: terimler ';' ile ayrılır, her biri anahtar=değer, anahtar~metin veya düz metin
 Search terms, e.g. company=ACME; customer~plant; conveyor	Arama terimleri, ör. company=ACME; customer~plant; conveyor
 Project database file (JSON)	Proje veritabanı dosyası (JSON)
-Folder with project files (instead of a database)	Proje dosyalarını içeren klasör (veritabanı yerine)
 Changes project properties in many project files at once (fields name, description, company, creator, date, revision or project properties)	Birçok proje dosyasındaki proje özelliklerini tek seferde değiştirir (name, description, company, creator, date, revision alanları veya proje özellikleri)
 Project files, separated by ';'	';' ile ayrılmış proje dosyaları
 All project files of a folder	Bir klasörün tüm proje dosyaları
@@ -3924,7 +3898,6 @@ Takes pages or page items out of their project option (hidden content is shown a
 Activates (shows) or deactivates (hides) the content of a project option	Bir proje seçeneğinin içeriğini etkinleştirir (gösterir) veya devre dışı bırakır (gizler)
 Show the content	İçeriği göster
 Switches the project options with a condition by the configurator options	Koşullu proje seçeneklerini yapılandırıcı seçeneklerine göre değiştirir
-Pass a database or a folder	Bir veritabanı veya klasör belirtin
 Nothing to change: pass set, remove, replace or rename	Değiştirilecek bir şey yok: set, remove, replace veya rename belirtin
 Pass files or a folder	Dosyalar veya bir klasör belirtin
 Pass ids or pages	Kimlikler veya sayfalar belirtin
@@ -5386,7 +5359,6 @@ Structure of the target page: different (default), always or never	Hedef sayfan�
 Interruption points refer to: all (default), star or pairs	Kesme noktalarının referansı: all (varsayılan), star veya pairs
 Draw the contact image below coils (default true)	Kontak görüntüsünü bobinlerin altına çiz (varsayılan true)
 Unknown setting: {}	Bilinmeyen ayar: {}
-Find…   Ctrl+F	Bul…   Ctrl+F
 Find and replace in the whole project	Tüm projede bul ve değiştir
 Text to find	Aranacak metin
 Match case	Büyük/küçük harf eşleştir
@@ -5451,7 +5423,6 @@ Saves the project without revisions, baselines, review and wiring marks as a tem
 OpenECraft project template	OpenECraft proje şablonu
 Not a project template: {}	Proje şablonu değil: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Bir proje şablonuyla başlayın: yerleşik bir şablon (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) veya bir proje dosyası
-Unknown template {}: {}	Bilinmeyen şablon {}: {}
 Not a packed project	Paketlenmiş proje değil
 Viewer	Görüntüleyici
 With a user account of the server; replaces the access token	Sunucunun bir kullanıcı hesabıyla; erişim belirtecinin yerini alır
@@ -6375,3 +6346,62 @@ Unknown example {}: see list_examples	Bilinmeyen örnek {}: bkz. list_examples
 The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	İki yan yana zemin panosuna kurulmuş pompa istasyonu: bara sistemi, raylar ve kablo kanalları, kapı cihazları ve kollar, filtreli fan, aydınlatma, PE barası, kablo rakorları, bir kablo geçişi, iklimlendirme hesabı, kanal doluluğu ve 3D yönlendirme.
 9 · Electrical room	9 · Elektrik odası
 The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Odasındaki yan yana panolar: L biçimli kat planı, iç duvar, kapı ve pencere, yerindeki pano dizisi, bir duvarda prizli bir ray, duvara monte acil durum aydınlatması ve tavan altında bir kablo tavası.
+{} is on page {}, which is released: renaming it would change the page	{}, yayımlanmış {} sayfasında: yeniden adlandırmak sayfayı değiştirir
+A section number consists of letters and digits and does not start with 0	Bölüm numarası harf ve rakamlardan oluşur ve 0 ile başlamaz
+Structure identifier {} must not contain blanks or the signs = + - / :	Yapı tanımlayıcısı {} boşluk veya = + - / : işaretlerini içeremez
+Bridge rectifier block	Köprü doğrultucu (blok)
+the server refuses the connection (not started, or another port)	sunucu bağlantıyı reddediyor (başlatılmamış veya başka bir bağlantı noktası)
+the server name is unknown	sunucu adı bilinmiyor
+the server does not answer in time	sunucu zamanında yanıt vermiyor
+the address is not a valid URL (e.g. http://server:8090)	adres geçerli bir URL değil (ör. http://server:8090)
+Unknown check: {}	Bilinmeyen kontrol: {}
+No built-in check is named {}: it applies to a check of a plugin of that name (list_checks)	{} adlı yerleşik bir kontrol yok: ayar, bu adı taşıyan bir eklenti kontrolü için geçerlidir (list_checks)
+{} is not a message code as shown by check (e.g. wires.3f9a1c)	{}, check tarafından gösterilen bir mesaj kodu değil (ör. wires.3f9a1c)
+{} is not a message fingerprint as shown by check (code:hash:item)	{}, check tarafından gösterilen bir mesaj parmak izi değil (code:hash:item)
+Page {} is out in subproject {}: insert or discard the subproject first	Sayfa {}, {} alt projesine çıkarıldı: önce alt projeyi geri ekleyin veya vazgeçin
+Unknown wire colour {} (IEC 60757: {})	Bilinmeyen tel rengi {} (IEC 60757: {})
+Not a cross-section: {} (e.g. 1.5 mm²)	Kesit değil: {} (ör. 1.5 mm²)
+Unknown placeholder {}: possible are {}	Bilinmeyen yer tutucu {}: olası olanlar {}
+{} must not be negative	{} negatif olamaz
+{} must be at least {}	{} en az {} olmalıdır
+{} must be between {} and {}	{}, {} ile {} arasında olmalıdır
+The length must not be negative	Uzunluk negatif olamaz
+The text height must be at least 0.5 mm	Metin yüksekliği en az 0,5 mm olmalıdır
+The wrap width must not be negative	Kaydırma genişliği negatif olamaz
+The items would leave the page	Öğeler sayfanın dışına çıkar
+The number of copies must be between 1 and 100	Kopya sayısı 1 ile 100 arasında olmalıdır
+The copies would leave the page	Kopyalar sayfanın dışına çıkar
+The cable definition line has no length	Kablo tanımlama çizgisinin uzunluğu yok
+The cable definition line crosses no wire	Kablo tanımlama çizgisi hiçbir teli kesmiyor
+{} and {} are both ends of one function: the wire would short-circuit it	{} ve {} aynı işlevin iki ucu: tel onu kısa devre yapar
+No wire at {} / {} mm	{} / {} mm konumunda tel yok
+Target languages separated by commas or blanks, e.g. de, fr	Virgül veya boşlukla ayrılmış hedef diller, ör. de, fr
+The first page number must not be negative	İlk sayfa numarası negatif olamaz
+The counting step must be at least 1	Sayma adımı en az 1 olmalıdır
+Released pages keep their names: {}	Yayımlanmış sayfalar adlarını korur: {}
+The plinth height must not be negative	Kaide yüksekliği negatif olamaz
+{} is a room already	{} zaten bir oda
+Width, height and depth of an enclosure are at least {} mm	Bir panonun genişliği, yüksekliği ve derinliği en az {} mm'dir
+Device tags of the members in slot order, separated by commas or blanks	Yer sırasına göre, virgül veya boşlukla ayrılmış üyelerin cihaz etiketleri
+Electrical device tags separated by commas or blanks (empty = remove the links)	Virgül veya boşlukla ayrılmış elektrik cihazı etiketleri (boş = ilişkileri kaldır)
+Further device tags of the loop, separated by commas or blanks	Döngünün diğer cihaz etiketleri, virgül veya boşlukla ayrılmış
+Connection point designations separated by commas or blanks	Virgül veya boşlukla ayrılmış bağlantı noktası tanımları
+Width, depth and height of a room are at least {} mm	Bir odanın genişliği, derinliği ve yüksekliği en az {} mm'dir
+Room {} exists already	Oda {} zaten var
+{} is an enclosure already	{} zaten bir pano
+{} would stand outside the room {}	{}, {} odasının dışında kalır
+No identifier {} in the project	Projede {} tanımlayıcısı yok
+{} exists already: pass merge to make both one identifier	{} zaten var: ikisini tek tanımlayıcıda birleştirmek için merge belirtin
+Allow renaming onto an identifier in use: both become one	Kullanımdaki bir tanımlayıcıya yeniden adlandırmaya izin ver: ikisi bir olur
+Sign in or connect with the access token to change parts	Parçaları değiştirmek için oturum açın veya erişim belirteciyle bağlanın
+Read only: sign in with a user who may change parts of this manufacturer	Salt okunur: bu üreticinin parçalarını değiştirebilen bir kullanıcıyla oturum açın
+openecraft-cli mcp\n\nRuns a Model Context Protocol server on stdin / stdout: the tools of this list for AI agents, with the project kept in memory (save_project writes it, undo / redo revert single tool calls). OPENECRAFT_MCP_TOOLS limits the tools offered.\n	openecraft-cli mcp\n\nstdin / stdout üzerinde bir Model Context Protocol sunucusu çalıştırır: bu listedeki araçlar yapay zekâ ajanları için, proje bellekte tutulur (save_project yazar, undo / redo tek tek çağrıları geri alır). OPENECRAFT_MCP_TOOLS sunulan araçları sınırlar.\n
+openecraft-cli version\n\nShows the version of the command line (also --version or -V)\n	openecraft-cli version\n\nKomut satırının sürümünü gösterir (ayrıca --version veya -V)\n
+undo and redo work in an MCP session only: the command line opens the project anew for every command	undo ve redo yalnızca bir MCP oturumunda çalışır: komut satırı projeyi her komut için yeniden açar
+(MCP server only)	(yalnızca MCP sunucusu)
+{} is an archive: pass a path to save the project as a project file	{} bir arşiv: projeyi proje dosyası olarak kaydetmek için bir yol belirtin
+{} is an archive and stays unchanged: save the project as a project file (save_project --path <file>.oec) or convert the archive (convert_project)	{} bir arşiv ve değişmeden kalır: projeyi proje dosyası olarak kaydedin (save_project --path <file>.oec) veya arşivi dönüştürün (convert_project)
+Folder with project files (instead of a database; default: the current folder)	Proje dosyalarını içeren klasör (veritabanı yerine; varsayılan: geçerli klasör)
+Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Bilinmeyen sayfa türü: {} (schematic, overview, graphic, cover veya list_reports içinden bir rapor)
+Unknown template {}: give a built-in one ({}) or a project file	Bilinmeyen şablon {}: yerleşik bir şablon ({}) veya bir proje dosyası belirtin
+Property {} needs a text or a number	{} özelliği bir metin veya sayı gerektirir

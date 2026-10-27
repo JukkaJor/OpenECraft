@@ -38,7 +38,7 @@ pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, cap
 pub use points::{device_points, point_of, PlacedPoint};
 pub use rooms::{
     add_inner_wall, add_opening, add_wall_profile, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinets_in, check_outline, floor_cells, footprint, inside_outline, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
-    room_of, room_place, rooms, set_outline, set_room, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
+    room_of, room_place, rooms, set_outline, set_room, stands_inside, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
 };
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
 pub use crate::model::panel::{Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem};

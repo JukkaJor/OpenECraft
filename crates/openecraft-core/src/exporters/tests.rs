@@ -43,3 +43,19 @@ fn exports_check_their_parameters() {
     let gltf = builtin().into_iter().find(|e| e.name == "gltf").unwrap();
     assert!((gltf.run)(&empty, &Analysis::build(&empty), &Args(&Map::new())).is_err(), "no layout");
 }
+
+#[test]
+fn exports_say_what_they_lack_and_name_their_language() {
+    let mut prj = crate::sample::example("lamp_circuit").unwrap();
+    prj.harnesses.clear();
+    let an = Analysis::build(&prj);
+    let all = builtin();
+    let run = |name: &str| (all.iter().find(|e| e.name == name).unwrap().run)(&prj, &an, &Args(&serde_json::Map::new()));
+    for name in ["kbl", "kbl_zip", "harness_json", "harness_processing", "harness_gltf", "harness_jt"] {
+        assert_eq!(run(name).err().as_deref(), Some("The project has no harnesses"), "{name}");
+    }
+    let html = run("html").unwrap().text().unwrap();
+    assert!(html.starts_with("<!DOCTYPE html><html lang=\"en\">"), "{}", &html[..60]);
+    // The wire list opens in spreadsheets with its units intact.
+    assert!(run("wire_list").unwrap().text().unwrap().starts_with('\u{feff}'));
+}
