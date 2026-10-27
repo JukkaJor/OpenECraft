@@ -1,0 +1,68 @@
+# Electrical sizing, calculations and verification
+
+Conductor sizing, short circuit and protection coordination, load calculation, EMC, functional safety and rule sets – all part of the project check.
+
+## Electrical sizing
+
+**Electrical sizing** (IEC 60204-1): the wires behind a protective device – from its
+load side through main contacts and overload relays – must carry its rated current
+(part `Current`, the upper value of a setting range; current-carrying capacity per
+table 6, method B2); cables get their voltage drop to the load with the highest rated
+current at their ends (√3 for three cores, copper at operating temperature), report
+*Cable sizing*; the check reports too thin wires and cables (errors) and voltage
+drops above 5 %. The capacity is corrected for ambient temperature, bunched
+circuits (IEC 60364-5-52, B.52.17), aluminium and XLPE insulation.
+
+## Electrical calculations and verification
+
+**Electrical calculations and verification** (*Tools › Electrical calculations…*):
+- *Supply*: voltage, earthing system (TN-S, TN-C, TN-C-S, TT, IT), highest and lowest
+  short-circuit current at the supply point, rated current;
+- *Short circuit and protection coordination* (IEC 60909-0 for radial networks,
+  IEC 60364-4-41, -4-43): the source from the short-circuit currents at the supply
+  point (with its R/X) or from a transformer (rated power, uk, load losses, correction
+  factor KT) and the network upstream (S''kQ); the cables from the supply to each
+  protective device and on to the end of its circuit; asynchronous motors on the
+  mains add ILR / IrM = 5 (or `Locked rotor current`) when they exceed 1 % of the
+  supply's current. The protective devices of the mains with their time-current bands
+  (IEC 60898-1 B / C / D / K / Z, motor protection class 10, gG / aM fuses, electronic
+  LSI trip units with `Long-time delay`, `Short-time pickup`, `Short-time delay`; part
+  tech data `Characteristic`, `Breaking capacity`, `Making capacity`, `Instantaneous
+  trip`, `Let-through energy`, `Pre-arcing energy`), replaced by the manufacturer's
+  curves where given (`Trip curve min` / `Trip curve max`: `1.5: 600; 3: 20; 10: 0.01`
+  in multiples of In, `Let-through energy: 1 kA: 8000; 6 kA: 25000`). Checked: breaking
+  capacity against the short-circuit current and making capacity against its peak
+  (κ from R/X), disconnection at the lowest fault current at the end of each circuit
+  within the times of table 41.1 by U0 (TN 0.8 / 0.4 / 0.2 / 0.1 s, TT 0.3 / 0.2 /
+  0.07 / 0.04 s, distribution circuits 5 s / 1 s; TT: residual current device needed;
+  IT: the second fault, at U or with a distributed neutral at U0), k²S² withstand of
+  the cables, selectivity with the device upstream (total / partial up to a current)
+  from the manufacturer's coordination table, gG fuses at a ratio of 1.6, the
+  pre-arcing energy of a fuse upstream or the time-current bands; back-up protection
+  from the coordination table covers a too low breaking capacity. The coordination
+  tables (selectivity and back-up limits in kA by part number) are edited in the
+  window and with `coordination_table`. Reports *Short circuit and disconnection*,
+  *Selectivity* (with its basis);
+- *Load calculation*: motors, drives, heaters, power supplies and transformers of the
+  mains with active / apparent power and current (`Power`, `Current`, `Power factor`,
+  `Efficiency`), the load of each protective device, demand with the rated diversity
+  factor of IEC 61439-1 (table 101) or a set factor, phase currents and unbalance, and
+  the load budget of each 24 V power supply (`Coil power`, `Current consumption`);
+  reports *Load calculation*, *Power supply load budget*;
+- *EMC*: motor cables of frequency converters shielded at both ends, analogue signals
+  in shielded cables, no power and signal conductors in one cable, surge protection;
+- *Functional safety* (ISO 13849-1): safety functions of subsystems with their devices,
+  category, DCavg, operations per year and CCF; PL by the simplified procedure
+  (figure 5) from `MTTFd` / `B10d` of the parts or certified `PL` / `PFHd`, combined by
+  table 11 or, where every subsystem has a PFHd, by their sum, with the matching SIL;
+  a second channel of other devices is symmetrised (D.2), the DCavg comes from the
+  `DC` of the devices when the subsystem gives none (annex E), devices whose T10d
+  falls within the mission time of 20 years are named for replacement; report
+  *Safety functions*;
+- *Rule sets*: built-in libraries (IEC 60204-1, IEC 61439-1, UL 508A / NFPA 79,
+  ISO 13849-1, EMC) and customer rule sets (JSON import / export) that tighten the
+  limits (voltage drop, disconnection times, minimum cross-sections, load reserve,
+  phase unbalance, total selectivity, shielding, surge protection) and add checks
+  "every item of a scope (project, pages, devices, parts, cables, connections,
+  potentials) that meets these conditions must meet this one"; report *Rule set
+  verification*; all results are part of the project check.
