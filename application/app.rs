@@ -168,6 +168,8 @@ pub struct App {
     /// Command that replaces the project, waiting for the user to drop the unsaved
     /// changes.
     confirm_discard: Option<crate::commands::Cmd>,
+    /// Example project chosen in a list, opened by `Cmd::OpenExample`.
+    pending_example: Option<&'static str>,
     /// The user agreed: the next project replacing command runs without asking.
     discard_ok: bool,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
@@ -395,6 +397,7 @@ impl App {
             layouts,
             layout_name: None,
             confirm_discard: None,
+            pending_example: None,
             discard_ok: false,
             export_form: None,
             recording: None,

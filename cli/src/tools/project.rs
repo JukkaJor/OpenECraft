@@ -20,12 +20,20 @@ pub static TOOLS: &[Tool] = &[
             optional("path", Kind::Str, tr_const!("File to save the project to (.oec)")),
             optional("name", Kind::Str, tr_const!("Project name")),
             optional("demo", Kind::Bool, tr_const!("Start from the demo project")),
+            optional("example", Kind::Str, tr_const!("Start from an example project (names: list_examples)")),
             optional("template", Kind::Str, tr_const!("Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file")),
             optional("overwrite", Kind::Bool, tr_const!("Replace the file at path if it exists")),
             DISCARD,
         ],
         needs_project: false,
         run: new_project,
+    },
+    Tool {
+        name: "list_examples",
+        help: tr_const!("Lists the example projects, from a first circuit to a whole plant, with the features each one shows"),
+        params: &[],
+        needs_project: false,
+        run: list_examples,
     },
     Tool {
         name: "open_project",
@@ -107,6 +115,8 @@ fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     }
     let mut prj = if a.flag("demo") {
         sample::demo_project()
+    } else if let Some(key) = a.str("example") {
+        sample::example(key).ok_or_else(|| tr_fmt!("Unknown example {}: see list_examples", key))?
     } else if let Some(t) = a.str("template") {
         let template = match openecraft_core::project_templates::builtin(t) {
             Some(p) => p,
@@ -127,6 +137,14 @@ fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
         s.save(Some(path))?;
     }
     summary(s)
+}
+
+fn list_examples(_: &mut Session, _: &Args) -> Result<Value, String> {
+    let list: Vec<Value> = sample::EXAMPLES
+        .iter()
+        .map(|e| json!({ "name": e.key, "level": e.level, "title": tr(e.title), "description": tr(e.description) }))
+        .collect();
+    Ok(json!(list))
 }
 
 fn open_project(s: &mut Session, a: &Args) -> Result<Value, String> {

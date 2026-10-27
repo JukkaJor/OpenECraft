@@ -6351,3 +6351,27 @@ this is a folder	это папка
 the disk is full	диск заполнен
 Enclosures and rooms	Шкафы и помещения
 Not saved, locked or changed by another user: {}	Не сохранено, заблокировано или изменено другим пользователем: {}
+1 · First circuit: push buttons and lamps	1 · Первая цепь: кнопки и лампы
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Одна страница схемы с потенциалами +24V / 0V, кнопками, переключателем, лампами и предохранителем; изделия и спецификация.
+2 · Relay with self-holding contact	2 · Реле с самоподхватом
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Схема пуска / останова с реле: катушка и контакты образуют одно устройство с перекрёстными ссылками и зеркалом контактов, клеммник, номера проводов, схема клеммника и перечень соединений.
+3 · Star-delta motor starter	3 · Пуск звезда-треугольник
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Силовая цепь и цепь управления на нескольких страницах: главный выключатель, защита двигателя, три контактора с блокировками, реле времени с задержкой включения, точки разрыва, потенциалы с цветами проводов, кабель двигателя и отчёты по кабелям.
+4 · Conveyor with PLC and control cabinet	4 · Конвейер с ПЛК и шкафом управления
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Демонстрационный проект: входы и выходы ПЛК, компоновка шкафа с рейками, кабель-каналами и устройствами на двери, жгут двери и кабель двигателя.
+5 · Electro-pneumatic press	5 · Электропневматический пресс
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Гидропневматика и электрика в одном проекте: пневмосхема с блоком подготовки воздуха, пневмоостровом, распределителями 5/2, дросселями с обратным клапаном и цилиндрами; катушки и концевые выключатели связаны с распределителями и цилиндрами.
+6 · Pump station with structure identifiers	6 · Насосная станция с идентификаторами структуры
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Структура установки по IEC 81346 (функции и места установки), разделы страниц, однолинейная схема, насос с прямым пуском и насос с преобразователем частоты, модули ПЛК с дискретными и аналоговыми каналами, разъём датчика и распределение ПЛК.
+7 · Revisions, review and change requests	7 · Ревизии, проверка и запросы на изменение
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Конвейер после первого выпуска: выпущенная и заблокированная ревизия, отмеченные с тех пор изменения, комментарии проверки с красными пометками, запрос на изменение, ревизия B в процессе согласования и базовая версия для сравнения.
+Example projects	Примеры проектов
+Projects from a first circuit to a whole plant, each showing more of the features	Проекты от первой цепи до целой установки, каждый показывает больше функций
+Each example builds on the one before and shows more of the features.	Каждый пример основан на предыдущем и показывает больше функций.
+Start from an example project (names: list_examples)	Начать с примера проекта (имена: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Выводит примеры проектов от первой цепи до целой установки с функциями, которые показывает каждый
+Unknown example {}: see list_examples	Неизвестный пример {}: см. list_examples
+8 · Control cabinets in a line-up	8 · Шкафы управления в ряд
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Насосная станция в двух соединённых напольных шкафах: система сборных шин, рейки и кабель-каналы, устройства на двери и ручки, вентилятор с фильтром, светильник, шина PE, кабельные вводы, кабельный проход, расчёт климата, заполнение кабель-каналов и 3D-трассировка.
+9 · Electrical room	9 · Электрощитовая
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Ряд шкафов в своём помещении: Г-образный план, внутренняя стена, дверь и окно, ряд шкафов на своём месте, рейка с розеткой на стене, настенный аварийный светильник и кабельный лоток под потолком.

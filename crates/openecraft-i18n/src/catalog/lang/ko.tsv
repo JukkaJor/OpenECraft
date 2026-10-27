@@ -6347,3 +6347,27 @@ this is a folder	폴더입니다
 the disk is full	디스크가 가득 찼습니다
 Enclosures and rooms	외함 및 실
 Not saved, locked or changed by another user: {}	저장되지 않음, 다른 사용자가 잠그거나 변경함: {}
+1 · First circuit: push buttons and lamps	1 · 첫 번째 회로: 푸시 버튼과 표시등
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	+24V / 0V 전위, 푸시 버튼, 선택 스위치, 표시등, 퓨즈가 있는 회로도 한 페이지; 부품과 자재 명세서.
+2 · Relay with self-holding contact	2 · 자기 유지 접점 릴레이
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	릴레이를 이용한 시작 / 정지 회로: 코일과 접점이 상호 참조 및 접점 이미지와 함께 하나의 장치를 구성; 단자대, 전선 번호, 단자도 및 연결 목록.
+3 · Star-delta motor starter	3 · 스타-델타 기동기
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	여러 페이지의 주회로와 제어 회로: 메인 스위치, 모터 보호, 인터록이 있는 접촉기 3개, 온 딜레이 타이머, 중단점, 전선 색상이 있는 전위, 모터 케이블 및 케이블 보고서.
+4 · Conveyor with PLC and control cabinet	4 · PLC와 제어반이 있는 컨베이어
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	데모 프로젝트: PLC 입력 및 출력, 레일, 덕트, 도어 장치가 있는 외함 배치도, 도어 하네스 및 모터 케이블.
+5 · Electro-pneumatic press	5 · 전기 공압 프레스
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	유체 동력과 전기를 하나의 프로젝트에서: 서비스 유닛, 밸브 터미널, 5/2 밸브, 유량 제어 밸브 및 실린더가 있는 공압 회로; 솔레노이드 코일과 위치 스위치는 밸브 및 실린더와 연결됩니다.
+6 · Pump station with structure identifiers	6 · 구조 식별자가 있는 펌프장
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	IEC 81346에 따른 플랜트 구조(기능 및 위치), 페이지 구역, 단선도, 직입 기동 펌프와 주파수 변환기 펌프, 디지털 및 아날로그 채널이 있는 PLC 카드, 센서 플러그 및 PLC 할당.
+7 · Revisions, review and change requests	7 · 개정, 검토 및 변경 요청
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	첫 릴리스 이후의 컨베이어: 릴리스되어 잠긴 개정, 그 이후 표시된 변경 사항, 레드라인이 있는 검토 의견, 변경 요청, 승인 워크플로 중인 개정 B 및 비교할 기준선.
+Example projects	예제 프로젝트
+Projects from a first circuit to a whole plant, each showing more of the features	첫 회로부터 전체 플랜트까지의 프로젝트, 각각 더 많은 기능을 표시합니다
+Each example builds on the one before and shows more of the features.	각 예제는 이전 예제를 기반으로 더 많은 기능을 표시합니다.
+Start from an example project (names: list_examples)	예제 프로젝트에서 시작 (이름: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	첫 회로부터 전체 플랜트까지의 예제 프로젝트를 각각 보여주는 기능과 함께 나열합니다
+Unknown example {}: see list_examples	알 수 없는 예제 {}: list_examples 참조
+8 · Control cabinets in a line-up	8 · 나란히 배치된 제어반
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	나란히 연결된 두 개의 자립형 외함에 설치된 펌프장: 부스바 시스템, 레일과 덕트, 도어 장치와 손잡이, 필터 팬, 조명, PE 바, 케이블 글랜드, 케이블 통로, 외함 기후 계산, 덕트 충전율 및 3D 라우팅.
+9 · Electrical room	9 · 전기실
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	방 안의 외함 열: L자형 평면도, 내벽, 문과 창문, 제자리에 놓인 외함 열, 벽의 콘센트가 있는 레일, 벽에 설치된 비상등 및 천장 아래의 케이블 트레이.

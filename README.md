@@ -5,7 +5,30 @@ One code base runs natively on **Windows, Linux and macOS** and in the **browser
 built with [egui / eframe](https://github.com/emilk/egui).
 
 New to OpenECraft? [docs/tutorial.md](docs/tutorial.md) walks from the first page to the
-bill of materials.
+bill of materials, and the [example projects](#example-projects) show the features step by
+step, from a first lamp circuit to a structured plant.
+
+## Example projects
+
+The start page and *File › New* list nine example projects; each builds on the one
+before and shows more of the features (command line: `list_examples`,
+`new_project --example <name>`). All of them pass the project check without errors or
+warnings.
+
+| Level | Name | Shows |
+| --- | --- | --- |
+| 1 | `lamp_circuit` | One schematic page: +24V / 0V potentials, push buttons, selector switch, lamps, fuse, wire colours, parts and bill of materials |
+| 2 | `self_holding_relay` | Relay with self-holding contact: coil and contacts as one device, cross references and contact image, terminal strip, page / column wire numbers, terminal diagram, connection list |
+| 3 | `star_delta_starter` | Power and control circuit on separate pages: main switch, motor protection, three interlocked contactors, on-delay timer, interruption points, potential colours, 7-core motor cable with cable overview and diagram |
+| 4 | `conveyor` | The demo project: PLC inputs and outputs, panel layout with rails, ducts and door devices, door harness |
+| 5 | `pneumatic_press` | Electro-pneumatics: service unit, valve terminal, 5/2 valves, flow control valves and cylinders linked with solenoid coils and position switches; hose list, fluid netlist, electro-fluid cross reference |
+| 6 | `pump_station` | Structure identifiers (`=SUP`, `=P1`, `=P2`, `=PLC`; `+CAB1`, `+FLD`), page sections, single-line diagram checked against the schematic, frequency converter, PLC cards with analog input, sensor plug, PLC assignment |
+| 7 | `engineering_workflow` | The conveyor after revision A: locked pages, the change marked since, review comments and redlining, change request, revision B in the approval workflow, baseline |
+| 8 | `cabinet_lineup` | The pump station in two bayed floor-standing enclosures (`+CAB1`, `+CAB2`): busbar system, rails and ducts, door devices and handles, filter fan and outlet filter, light, PE bar, gland plate with cable glands, cable passage, mounting layout pages, climate, duct fill, 3D routing list |
+| 9 | `electrical_room` | The line-up in its room `+ER1`: L-shaped floor plan, inner wall, door and window, the line-up at its place, wall rail with a socket outlet, wall-mounted emergency light (part marked for wall mounting), cable tray under the ceiling |
+
+The projects are built in code (`crates/openecraft-core/src/sample/`), so they always
+match the current file format; *Save as…* writes one as an `.oec` file.
 
 ## Features
 
@@ -686,7 +709,8 @@ bill of materials.
   distribution board with single-line overview, climate and short-circuit reports) or
   from any project file; *Save as project template…* writes the current project
   without revisions, baselines, review, wiring marks and accepted check messages.
-  Command line: `new_project --template Machine` (or a file).
+  Command line: `new_project --template Machine` (or a file); `new_project --example
+  <name>` starts from an [example project](#example-projects).
 - **Storage**: JSON project files (`.oec`); the current project and the parts
   database are also auto-saved (compressed) in the app's data folder on the desktop and
   in IndexedDB in the browser, whose local storage holds only about 5 MB (until the
@@ -1050,6 +1074,7 @@ reports and export PDF / SVG / DXF / DWG.
 cargo run --release -p openecraft-cli -- help                 # all commands
 cargo run --release -p openecraft-cli -- help connect         # parameters of a command
 openecraft-cli new_project --name "Pump control" --path pump.oec
+openecraft-cli new_project --example star_delta_starter --path star_delta.oec   # see list_examples
 openecraft-cli -p pump.oec place_symbol --page 1 --symbol pb_no --x 200 --y 100   # -S1
 openecraft-cli -p pump.oec place_symbol --page 1 --symbol coil --x 200 --y 160    # -K1
 openecraft-cli -p pump.oec connect --page 1 --from -S1:14 --to -K1:A1

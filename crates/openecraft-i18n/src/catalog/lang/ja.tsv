@@ -6350,3 +6350,27 @@ this is a folder	これはフォルダーです
 the disk is full	ディスクがいっぱいです
 Enclosures and rooms	筐体と部屋
 Not saved, locked or changed by another user: {}	保存されていません。他のユーザーがロックまたは変更しています: {}
+1 · First circuit: push buttons and lamps	1 · 最初の回路：押しボタンと表示灯
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	+24V / 0V の電位、押しボタン、セレクタスイッチ、表示灯、ヒューズを含む1枚の回路図ページ。部品と部品表。
+2 · Relay with self-holding contact	2 · 保持回路付きリレー
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	リレーによる起動 / 停止回路：コイルと接点は相互参照と接点イメージを持つ1つの機器を構成します。端子台、線番号、端子図、接続リスト。
+3 · Star-delta motor starter	3 · スターデルタ始動器
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	複数ページにわたる主回路と制御回路：主開閉器、モータ保護、インターロック付きの3つの電磁接触器、オンディレイタイマ、中断点、線色付きの電位、モータケーブル、ケーブルレポート。
+4 · Conveyor with PLC and control cabinet	4 · PLC と制御盤を備えたコンベヤ
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	デモプロジェクト：PLC の入出力、レール、配線ダクト、扉機器を含む盤の配置図、扉ハーネス、モータケーブル。
+5 · Electro-pneumatic press	5 · 電空プレス
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	流体と電気を1つのプロジェクトで：エアサービスユニット、バルブターミナル、5/2 弁、流量制御弁、シリンダを含む空圧回路。ソレノイドコイルと位置スイッチは弁とシリンダに関連付けられています。
+6 · Pump station with structure identifiers	6 · 構造識別子付きのポンプ場
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	IEC 81346 に基づくプラント構造（機能と場所）、ページセクション、単線結線図、直入れ始動のポンプとインバータ付きのポンプ、デジタルおよびアナログチャンネルを持つ PLC カード、センサプラグ、PLC 割り付け。
+7 · Revisions, review and change requests	7 · リビジョン、レビュー、変更要求
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	最初のリリース後のコンベヤ：リリース済みでロックされたリビジョン、その後にマークされた変更、赤線入りのレビューコメント、変更要求、承認ワークフロー中のリビジョン B、比較用のベースライン。
+Example projects	サンプルプロジェクト
+Projects from a first circuit to a whole plant, each showing more of the features	最初の回路からプラント全体までのプロジェクト。それぞれがより多くの機能を示します
+Each example builds on the one before and shows more of the features.	各サンプルは前のものを基にしており、より多くの機能を示します。
+Start from an example project (names: list_examples)	サンプルプロジェクトから開始（名前：list_examples）
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	最初の回路からプラント全体までのサンプルプロジェクトを、それぞれが示す機能とともに一覧表示します
+Unknown example {}: see list_examples	不明なサンプル {}：list_examples を参照
+8 · Control cabinets in a line-up	8 · 列盤の制御盤
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	2 台の列盤自立盤に組み込んだポンプ場：ブスバーシステム、レールと配線ダクト、扉機器とハンドル、フィルタファン、照明、PE バー、ケーブルグランド、ケーブル通路、盤内温度計算、ダクト占有率、3D 配線。
+9 · Electrical room	9 · 電気室
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	部屋に設置した列盤：L 字形の平面図、内壁、扉とウィンドウ、所定の位置の列盤、壁のコンセント付きレール、壁付けの非常灯、天井下のケーブルラック。

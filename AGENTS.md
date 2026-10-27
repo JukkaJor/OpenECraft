@@ -190,8 +190,12 @@ violations. Do not weaken or delete that test to make a change pass.
 - **eframe features:** default features are disabled in both app manifests; when changing
   the feature list keep `clipboard` (desktop copy/paste), `persistence`,
   `default_fonts` and `glow`.
-- **Demo project:** `crates/openecraft-core/src/sample.rs` is checked by `sample/tests.rs` (no check errors,
-  no warnings). Keep it consistent when changing symbols, parts or checks.
+- **Demo and example projects:** `crates/openecraft-core/src/sample.rs` (demo) and the
+  example projects of `sample::EXAMPLES` (`sample/<example>.rs`, simplest first) are
+  checked by `sample/tests.rs` (no check errors, no warnings). Keep them consistent when
+  changing symbols, parts or checks. A new example gets the next level, an entry in
+  `EXAMPLES` (title and description in the catalogs), a test of the features it shows
+  and a row in the README table.
 - **Rendering:** draw through the `render::Draw` trait so the canvas and SVG / print
   export stay identical.
 - **Undo:** edits are captured by snapshot comparison (`history.rs`); just mutate the

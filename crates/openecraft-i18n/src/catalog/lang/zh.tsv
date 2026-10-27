@@ -6346,3 +6346,27 @@ this is a folder	这是一个文件夹
 the disk is full	磁盘已满
 Enclosures and rooms	机柜和房间
 Not saved, locked or changed by another user: {}	未保存，已被其他用户锁定或更改：{}
+1 · First circuit: push buttons and lamps	1 · 第一个电路：按钮和指示灯
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	一页原理图，包含 +24V / 0V 电位、按钮、选择开关、指示灯和熔断器；部件和物料清单。
+2 · Relay with self-holding contact	2 · 带自锁触点的继电器
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	带继电器的启动 / 停止电路：线圈和触点组成一个设备，带交叉引用和触点映像；端子排、导线编号、端子图和连接列表。
+3 · Star-delta motor starter	3 · 星三角启动器
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	分布在多页上的主电路和控制电路：主开关、电机保护、三个带互锁的接触器、通电延时继电器、中断点、带导线颜色的电位、电机电缆和电缆报表。
+4 · Conveyor with PLC and control cabinet	4 · 带 PLC 和控制柜的输送机
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	演示项目：PLC 输入和输出、带导轨、线槽和柜门设备的机柜布置、柜门线束和电机电缆。
+5 · Electro-pneumatic press	5 · 电气气动压力机
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	流体动力与电气同在一个项目中：带气源处理单元、阀岛、5/2 阀、流量控制阀和气缸的气动回路；电磁线圈和位置开关与阀和气缸相关联。
+6 · Pump station with structure identifiers	6 · 带结构标识符的泵站
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	按 IEC 81346 的工厂结构（功能和位置）、页面分节、单线图、一台直接启动的泵和一台带变频器的泵、带数字和模拟通道的 PLC 卡、一个传感器插头以及 PLC 分配。
+7 · Revisions, review and change requests	7 · 修订、审查和变更请求
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	第一次发布后的输送机：已发布并锁定的修订、此后标记的更改、带红线标注的审查注释、一个变更请求、处于审批流程中的修订 B 以及用于比较的基线。
+Example projects	示例项目
+Projects from a first circuit to a whole plant, each showing more of the features	从第一个电路到整个工厂的项目，每个都展示更多功能
+Each example builds on the one before and shows more of the features.	每个示例都以前一个为起点，并展示更多功能。
+Start from an example project (names: list_examples)	从示例项目开始（名称：list_examples）
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	列出从第一个电路到整个工厂的示例项目以及每个项目展示的功能
+Unknown example {}: see list_examples	未知示例 {}：请参阅 list_examples
+8 · Control cabinets in a line-up	8 · 并柜排列的控制柜
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	安装在两台并柜落地柜中的泵站：母线系统、导轨和线槽、柜门设备和把手、过滤风扇、照明灯、PE 排、电缆密封接头、电缆通道、柜内温控计算、线槽填充率和三维布线。
+9 · Electrical room	9 · 电气室
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	并柜后的控制柜在其房间中：L 形平面图、内墙、门和窗、放置到位的并柜、墙上带插座的导轨、墙装应急灯以及顶部下方的电缆桥架。

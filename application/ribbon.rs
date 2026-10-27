@@ -368,7 +368,7 @@ impl Page {
     pub fn commands(self) -> &'static [Cmd] {
         match self {
             Page::Home => &[C::NewProject, C::Open, C::OpenDemo, C::StartPage],
-            Page::New => &[C::NewProject, C::NewFromTemplateFile, C::OpenDemo],
+            Page::New => &[C::NewProject, C::NewFromTemplateFile, C::OpenDemo, C::OpenExample],
             Page::Open => &[C::Open, C::ProjectServer, C::Vault, C::ProjectManagement],
             Page::Import => &[C::ImportDrawing, C::NewDocumentPage, C::ImportSettings, C::ImportParts, C::ImportMacros, C::ImportSymbols, C::ImportPageTemplates],
             Page::Export => &[C::ExportSettings, C::PdfInLanguage, C::CheckInVault],
