@@ -1,7 +1,7 @@
-use crate::import::mesh_shells;
+use crate::import::{body_shells, mesh_shells};
 use cadmpeg_ir::codec::{CodecEntry, DecodeOptions};
 use cadmpeg_ir::topology::BodyKind;
-use monstertruck_io::cadmpeg::{to_bodies, ImportedBody};
+use monstertruck_io::cadmpeg::to_bodies;
 use monstertruck_meshing::prelude::*;
 use openecraft_parts::Mesh3d;
 
@@ -17,14 +17,7 @@ pub fn parse_iges(bytes: &[u8]) -> Result<Mesh3d, String> {
         return Err("the IGES file contains no solids or surfaces".into());
     }
     let bodies = to_bodies(&ir, "IGES").map_err(|e| format!("IGES file: {e}"))?;
-    let shells: Vec<_> = bodies
-        .into_iter()
-        .flat_map(|body| match body {
-            ImportedBody::Solid(solid) => solid.boundaries,
-            ImportedBody::Sheet(sheet) => vec![sheet],
-        })
-        .map(|shell| (shell, Matrix4::identity()))
-        .collect();
+    let shells: Vec<_> = bodies.into_iter().flat_map(body_shells).map(|shell| (shell, Matrix4::identity())).collect();
     // cadmpeg converts lengths to millimetres while decoding.
     mesh_shells(&shells, 1.0)
 }

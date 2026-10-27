@@ -7,8 +7,8 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 openecraft-parts = { path = "../openecraft-parts" }
-monstertruck-assembly = "0.4"
-monstertruck-io = { version = "0.4", features = ["iges"] }
+# STEP is read through the `cadmpeg` backend, not monstertruck's own `step` reader.
+monstertruck-io = { version = "0.4", default-features = false, features = ["iges"] }
 cadmpeg-codec-iges = "0.4"
 cadmpeg-ir = "0.4"
 monstertruck-meshing = "0.4"

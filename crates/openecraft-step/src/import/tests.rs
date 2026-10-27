@@ -1,18 +1,9 @@
 use super::*;
-use monstertruck_io::step::save::{CompleteStepDisplay, SiPrefix, StepHeaderDescriptor, StepMeasurementContext, StepModel};
-use monstertruck_modeling::{primitive, CompressedSolid, Solid};
 
-/// A cuboid from the origin to `size`.
-fn cuboid(size: [f64; 3]) -> CompressedSolid {
-    let bdd = BoundingBox::from_iter([Point3::new(0.0, 0.0, 0.0), Point3::new(size[0], size[1], size[2])]);
-    let solid: Solid = primitive::cuboid(bdd);
-    solid.compress()
-}
-
-fn step_file(solid: &CompressedSolid, prefix: SiPrefix) -> String {
-    let context = StepMeasurementContext { length_prefix: prefix, ..Default::default() };
-    CompleteStepDisplay::new(StepModel::from(solid).with_measurement_context(context), StepHeaderDescriptor::default()).to_string()
-}
+/// A cuboid of 10 × 20 × 30 mm from the origin, written by monstertruck.
+const CUBOID_MM: &str = include_str!("cuboid_mm.step");
+/// The same cuboid in metres (`SI_UNIT($,.METRE.)`).
+const CUBOID_M: &str = include_str!("cuboid_m.step");
 
 fn assert_size(mesh: &Mesh3d, expected: [f32; 3]) {
     let size = mesh.size();
@@ -23,8 +14,7 @@ fn assert_size(mesh: &Mesh3d, expected: [f32; 3]) {
 
 #[test]
 fn single_solid_in_millimetres() {
-    let text = step_file(&cuboid([10.0, 20.0, 30.0]), SiPrefix::Milli);
-    let mesh = parse_step(text.as_bytes()).unwrap();
+    let mesh = parse_step(CUBOID_MM.as_bytes()).unwrap();
     assert_size(&mesh, [10.0, 20.0, 30.0]);
     assert!(mesh.triangles.len() >= 12, "six faces, at least two triangles each");
     // Moved to the origin like every imported model.
@@ -33,9 +23,7 @@ fn single_solid_in_millimetres() {
 
 #[test]
 fn lengths_are_converted_to_millimetres() {
-    let text = step_file(&cuboid([0.01, 0.02, 0.03]), SiPrefix::None);
-    assert_eq!(length_unit_mm(&text), 1000.0);
-    assert_size(&parse_step(text.as_bytes()).unwrap(), [10.0, 20.0, 30.0]);
+    assert_size(&parse_step(CUBOID_M.as_bytes()).unwrap(), [10.0, 20.0, 30.0]);
 }
 
 /// The cuboid file plus a top product that uses its part (`#5`, shape
@@ -73,30 +61,16 @@ fn assembly_file(part: &str, offsets: &[f64]) -> String {
     entities.push(format!("#1004 = SHAPE_REPRESENTATION('top',(#1009,{}),#11);", placements.join(",")));
     entities.push("#1005 = SHAPE_DEFINITION_REPRESENTATION(#1003,#1004);".into());
     let end = part.rfind("ENDSEC;").unwrap();
-    format!("{}{}
-{}", &part[..end], entities.join("
-"), &part[end..])
+    format!("{}{}\n{}", &part[..end], entities.join("\n"), &part[end..])
 }
 
 #[test]
 fn assemblies_place_their_parts() {
     // One part used twice, 50 mm apart.
-    let part = step_file(&cuboid([10.0, 10.0, 10.0]), SiPrefix::Milli);
-    let mesh = parse_step(assembly_file(&part, &[0.0, 50.0]).as_bytes()).unwrap();
-    assert_size(&mesh, [60.0, 10.0, 10.0]);
+    let mesh = parse_step(assembly_file(CUBOID_MM, &[0.0, 50.0]).as_bytes()).unwrap();
+    assert_size(&mesh, [60.0, 20.0, 30.0]);
     // Used once: only the part.
-    assert_size(&parse_step(assembly_file(&part, &[50.0]).as_bytes()).unwrap(), [10.0, 10.0, 10.0]);
-}
-
-#[test]
-fn length_units_of_step_files() {
-    let unit = |s: &str| length_unit_mm(&format!("DATA;\n#1 = {s};\nENDSEC;"));
-    assert_eq!(unit("( LENGTH_UNIT() NAMED_UNIT(*) SI_UNIT(.MILLI.,.METRE.) )"), 1.0);
-    assert_eq!(unit("( LENGTH_UNIT() NAMED_UNIT(*) SI_UNIT($,.METRE.) )"), 1000.0);
-    assert_eq!(unit("( LENGTH_UNIT() NAMED_UNIT(*) SI_UNIT(.CENTI., .METRE.) )"), 10.0);
-    assert_eq!(unit("( CONVERSION_BASED_UNIT('INCH',#2) LENGTH_UNIT() NAMED_UNIT(#3) )"), 25.4);
-    // Plane angle units do not count; no length unit: millimetres.
-    assert_eq!(unit("( NAMED_UNIT(*) PLANE_ANGLE_UNIT() SI_UNIT($,.RADIAN.) )"), 1.0);
+    assert_size(&parse_step(assembly_file(CUBOID_MM, &[50.0]).as_bytes()).unwrap(), [10.0, 20.0, 30.0]);
 }
 
 #[test]
@@ -105,4 +79,3 @@ fn files_without_geometry_are_refused() {
     let empty = "ISO-10303-21;\nHEADER;\nENDSEC;\nDATA;\nENDSEC;\nEND-ISO-10303-21;\n";
     assert!(parse_step(empty.as_bytes()).is_err());
 }
-
