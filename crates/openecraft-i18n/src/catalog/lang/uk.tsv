@@ -6351,3 +6351,23 @@ this is a folder	це папка
 the disk is full	диск заповнено
 Enclosures and rooms	Шафи та приміщення
 Not saved, locked or changed by another user: {}	Не збережено, заблоковано або змінено іншим користувачем: {}
+1 · First circuit: push buttons and lamps	1 · Перше коло: кнопки та лампи
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Одна сторінка схеми з потенціалами +24V / 0V, кнопками, перемикачем, лампами та запобіжником; вироби та специфікація.
+2 · Relay with self-holding contact	2 · Реле із самоутриманням
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Схема пуску / зупинки з реле: котушка та контакти утворюють один пристрій із перехресними посиланнями та дзеркалом контактів, клемник, номери проводів, схема клемника та перелік з'єднань.
+3 · Star-delta motor starter	3 · Пуск зірка-трикутник
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Силове коло та коло керування на кількох сторінках: головний вимикач, захист двигуна, три контактори з блокуваннями, реле часу із затримкою ввімкнення, точки розриву, потенціали з кольорами проводів, кабель двигуна та звіти щодо кабелів.
+4 · Conveyor with PLC and control cabinet	4 · Конвеєр з ПЛК і шафою керування
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Демонстраційний проєкт: входи та виходи ПЛК, компонування шафи з рейками, кабель-каналами та пристроями на дверях, джгут дверей і кабель двигуна.
+5 · Electro-pneumatic press	5 · Електропневматичний прес
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Гідропневматика та електрика в одному проєкті: пневмосхема з блоком підготовки повітря, пневмоострівцем, розподільниками 5/2, дроселями зі зворотним клапаном і циліндрами; котушки та кінцеві вимикачі пов'язані з розподільниками та циліндрами.
+6 · Pump station with structure identifiers	6 · Насосна станція з ідентифікаторами структури
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Структура установки за IEC 81346 (функції та місця встановлення), розділи сторінок, однолінійна схема, насос із прямим пуском і насос із перетворювачем частоти, модулі ПЛК з дискретними та аналоговими каналами, роз'єм датчика та розподіл ПЛК.
+7 · Revisions, review and change requests	7 · Ревізії, перевірка та запити на зміну
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Конвеєр після першого випуску: випущена та заблокована ревізія, позначені відтоді зміни, коментарі перевірки з червоними позначками, запит на зміну, ревізія B у процесі погодження та базова версія для порівняння.
+Example projects	Приклади проєктів
+Projects from a first circuit to a whole plant, each showing more of the features	Проєкти від першого кола до цілої установки, кожен показує більше функцій
+Each example builds on the one before and shows more of the features.	Кожен приклад ґрунтується на попередньому та показує більше функцій.
+Start from an example project (names: list_examples)	Почати з прикладу проєкту (імена: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Виводить приклади проєктів від першого кола до цілої установки з функціями, які показує кожен
+Unknown example {}: see list_examples	Невідомий приклад {}: див. list_examples

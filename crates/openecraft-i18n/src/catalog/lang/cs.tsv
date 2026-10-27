@@ -6351,3 +6351,23 @@ this is a folder	toto je složka
 the disk is full	disk je plný
 Enclosures and rooms	Rozvaděčové skříně a místnosti
 Not saved, locked or changed by another user: {}	Neuloženo, uzamčeno nebo změněno jiným uživatelem: {}
+1 · First circuit: push buttons and lamps	1 · První obvod: tlačítka a kontrolky
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Jedna stránka schématu s potenciály +24V / 0V, tlačítky, přepínačem, kontrolkami a pojistkou; díly a kusovník.
+2 · Relay with self-holding contact	2 · Relé s přídržným kontaktem
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Obvod start / stop s relé: cívka a kontakty tvoří jedno zařízení s křížovými odkazy a obrazem kontaktů, svorkovnice, čísla vodičů, schéma svorkovnice a seznam spojení.
+3 · Star-delta motor starter	3 · Spouštění hvězda-trojúhelník
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Silový a řídicí obvod na několika stránkách: hlavní vypínač, ochrana motoru, tři stykače s blokováním, časové relé se zpožděným přítahem, body přerušení, potenciály s barvami vodičů, kabel motoru a výkazy kabelů.
+4 · Conveyor with PLC and control cabinet	4 · Dopravník s PLC a rozvaděčem
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Ukázkový projekt: vstupy a výstupy PLC, rozmístění skříně s lištami, kabelovými žlaby a přístroji ve dveřích, svazek dveří a kabel motoru.
+5 · Electro-pneumatic press	5 · Elektropneumatický lis
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Tekutinové mechanismy a elektro v jednom projektu: pneumatické schéma s jednotkou úpravy vzduchu, ventilovým terminálem, ventily 5/2, škrticími ventily a válci; cívky a polohové spínače jsou propojeny s ventily a válci.
+6 · Pump station with structure identifiers	6 · Čerpací stanice s identifikátory struktury
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Struktura zařízení podle IEC 81346 (funkce a umístění), oddíly stránek, jednopólové schéma, čerpadlo s přímým spouštěním a čerpadlo s frekvenčním měničem, karty PLC s digitálními a analogovými kanály, konektor snímače a přiřazení PLC.
+7 · Revisions, review and change requests	7 · Revize, kontrola a žádosti o změnu
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Dopravník po prvním uvolnění: uvolněná a uzamčená revize, od té doby označené změny, komentáře z kontroly s červenými značkami, žádost o změnu, revize B ve schvalovacím procesu a základní stav k porovnání.
+Example projects	Ukázkové projekty
+Projects from a first circuit to a whole plant, each showing more of the features	Projekty od prvního obvodu po celé zařízení, každý ukazuje více funkcí
+Each example builds on the one before and shows more of the features.	Každý příklad navazuje na předchozí a ukazuje více funkcí.
+Start from an example project (names: list_examples)	Začít z ukázkového projektu (názvy: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Vypíše ukázkové projekty od prvního obvodu po celé zařízení s funkcemi, které každý ukazuje
+Unknown example {}: see list_examples	Neznámý příklad {}: viz list_examples

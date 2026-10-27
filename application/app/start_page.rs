@@ -1,5 +1,6 @@
 //! The start page (first start, File › Home, Help › Start page): new and recent
-//! projects, templates, the demo, the tutorial chapters and what is new.
+//! projects, templates, the demo, the example projects, the tutorial chapters and
+//! what is new.
 
 use super::*;
 use crate::commands;
@@ -24,6 +25,8 @@ impl App {
             });
             ui.add_space(12.0);
             self.recent_list(ui);
+            ui.add_space(12.0);
+            self.example_list(ui);
             ui.add_space(12.0);
             ui.label(RichText::new(tr("Getting started")).strong());
             ui.horizontal_wrapped(|ui| {
@@ -57,5 +60,29 @@ impl App {
                 crate::dock::close(&mut self.dock, Pane::Tool(ToolPane::Start));
             }
         });
+    }
+
+    /// The example projects, simplest first: a click opens one (asking before unsaved
+    /// changes are dropped).
+    pub(super) fn example_list(&mut self, ui: &mut egui::Ui) {
+        ui.label(RichText::new(tr("Example projects")).strong());
+        ui.weak(tr("Each example builds on the one before and shows more of the features."));
+        let mut chosen = None;
+        for e in &sample::EXAMPLES {
+            ui.horizontal(|ui| {
+                icons::show(ui, Icon::Book, 16.0);
+                if ui.link(tr(e.title)).clicked() {
+                    chosen = Some(e.key);
+                }
+            });
+            ui.indent(e.key, |ui| {
+                ui.weak(tr(e.description));
+            });
+        }
+        if let Some(key) = chosen {
+            self.pending_example = Some(key);
+            self.backstage = None;
+            self.run(&ui.ctx().clone(), Cmd::OpenExample);
+        }
     }
 }

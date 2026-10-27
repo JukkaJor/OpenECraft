@@ -6351,3 +6351,23 @@ this is a folder	isto é uma pasta
 the disk is full	o disco está cheio
 Enclosures and rooms	Gabinetes e salas
 Not saved, locked or changed by another user: {}	Não salvo, bloqueado ou alterado por outro usuário: {}
+1 · First circuit: push buttons and lamps	1 · Primeiro circuito: botões e sinaleiros
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Uma página de esquema com os potenciais +24V / 0V, botões, uma chave seletora, sinaleiros e um fusível; peças e lista de materiais.
+2 · Relay with self-holding contact	2 · Relé com selo (autorretenção)
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Circuito liga / desliga com um relé: bobina e contatos formam um dispositivo com referências cruzadas e imagem de contatos, régua de bornes, números de fios, diagrama de bornes e lista de conexões.
+3 · Star-delta motor starter	3 · Partida estrela-triângulo
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Circuito de potência e de comando em várias páginas: chave geral, proteção do motor, três contatores com intertravamentos, temporizador com retardo na energização, pontos de interrupção, potenciais com cores de fios, cabo do motor e relatórios de cabos.
+4 · Conveyor with PLC and control cabinet	4 · Transportador com CLP e painel elétrico
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	O projeto de demonstração: entradas e saídas do CLP, layout do painel com trilhos, canaletas e dispositivos de porta, chicote da porta e cabo do motor.
+5 · Electro-pneumatic press	5 · Prensa eletropneumática
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluídica e elétrica em um só projeto: esquema pneumático com unidade de conservação, terminal de válvulas, válvulas 5/2, reguladores de vazão e cilindros; bobinas e chaves fim de curso estão vinculadas às válvulas e aos cilindros.
+6 · Pump station with structure identifiers	6 · Estação de bombeamento com identificadores de estrutura
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Estrutura da instalação conforme IEC 81346 (funções e locais), seções de páginas, diagrama unifilar, uma bomba com partida direta e outra com inversor de frequência, cartões de CLP com canais digitais e analógicos, um conector de sensor e a alocação do CLP.
+7 · Revisions, review and change requests	7 · Revisões, análise e solicitações de alteração
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	O transportador após a primeira liberação: uma revisão liberada e bloqueada, alterações marcadas desde então, comentários de análise com marcações em vermelho, uma solicitação de alteração, a revisão B no fluxo de aprovação e uma linha de base para comparar.
+Example projects	Projetos de exemplo
+Projects from a first circuit to a whole plant, each showing more of the features	Projetos do primeiro circuito a uma instalação completa, cada um mostrando mais funções
+Each example builds on the one before and shows more of the features.	Cada exemplo se baseia no anterior e mostra mais funções.
+Start from an example project (names: list_examples)	Começar a partir de um projeto de exemplo (nomes: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Lista os projetos de exemplo, do primeiro circuito a uma instalação completa, com as funções que cada um mostra
+Unknown example {}: see list_examples	Exemplo desconhecido {}: veja list_examples

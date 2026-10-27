@@ -6351,3 +6351,23 @@ this is a folder	tämä on kansio
 the disk is full	levy on täynnä
 Enclosures and rooms	Kotelot ja tilat
 Not saved, locked or changed by another user: {}	Ei tallennettu, toinen käyttäjä on lukinnut tai muuttanut: {}
+1 · First circuit: push buttons and lamps	1 · Ensimmäinen piiri: painikkeet ja merkkivalot
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Yksi kaaviosivu, jossa potentiaalit +24V / 0V, painikkeet, valintakytkin, merkkivalot ja sulake; nimikkeet ja osaluettelo.
+2 · Relay with self-holding contact	2 · Itsepitävä rele
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Käynnistys- / pysäytyspiiri releellä: kela ja koskettimet muodostavat yhden laitteen ristiviittauksineen ja kosketinkuvineen, riviliitin, johdinnumerot, riviliitinkaavio ja kytkentäluettelo.
+3 · Star-delta motor starter	3 · Tähti-kolmiokäynnistin
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Pää- ja ohjauspiiri usealla sivulla: pääkytkin, moottorinsuoja, kolme kontaktoria lukituksineen, vetohidasteinen aikarele, katkaisukohdat, potentiaalit johdinväreineen, moottorikaapeli ja kaapeliraportit.
+4 · Conveyor with PLC and control cabinet	4 · Kuljetin, ohjelmoitava logiikka ja ohjauskeskus
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Esittelyprojekti: logiikan tulot ja lähdöt, kotelon asennuskuva kiskoineen, johtokanavineen ja ovilaitteineen, oven johdinsarja ja moottorikaapeli.
+5 · Electro-pneumatic press	5 · Sähköpneumaattinen puristin
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluiditekniikka ja sähkö samassa projektissa: pneumatiikkakaavio huoltoyksikköineen, venttiiliterminaaleineen, 5/2-venttiileineen, virtauksensäätöventtiileineen ja sylintereineen; magneettikelat ja rajakytkimet on linkitetty venttiileihin ja sylintereihin.
+6 · Pump station with structure identifiers	6 · Pumppaamo rakennetunnuksin
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Laitosrakenne IEC 81346:n mukaan (toiminnot ja sijainnit), sivuosiot, yksiviivakaavio, suoraan käynnistetty pumppu ja taajuusmuuttajalla ohjattu pumppu, logiikan kortit digitaali- ja analogiakanavineen, anturin liitin ja logiikan osoitteistus.
+7 · Revisions, review and change requests	7 · Revisiot, tarkastus ja muutospyynnöt
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Kuljetin ensimmäisen julkaisun jälkeen: julkaistu ja lukittu revisio, sen jälkeen merkityt muutokset, tarkastuskommentit punamerkintöineen, muutospyyntö, revisio B hyväksyntäprosessissa ja vertailupohja.
+Example projects	Esimerkkiprojektit
+Projects from a first circuit to a whole plant, each showing more of the features	Projekteja ensimmäisestä piiristä kokonaiseen laitokseen, kukin näyttää enemmän toiminnoista
+Each example builds on the one before and shows more of the features.	Jokainen esimerkki rakentuu edellisen päälle ja näyttää enemmän toiminnoista.
+Start from an example project (names: list_examples)	Aloita esimerkkiprojektista (nimet: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Luettelee esimerkkiprojektit ensimmäisestä piiristä kokonaiseen laitokseen ja niiden näyttämät toiminnot
+Unknown example {}: see list_examples	Tuntematon esimerkki {}: katso list_examples

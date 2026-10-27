@@ -1,8 +1,105 @@
-//! Demo project: direct-on-line motor starter with control circuit and PLC I/O.
+//! Demo project: direct-on-line motor starter with control circuit and PLC I/O,
+//! and the example projects, from a first circuit to a whole plant.
 
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::parts::PartsDb;
+use openecraft_i18n::tr_const;
+
+mod lamp;
+mod plant;
+mod press;
+mod relay;
+mod star_delta;
+mod workflow;
+
+/// An example project of the gallery.
+pub struct Example {
+    /// Stable name (command line `--example`).
+    pub key: &'static str,
+    /// 1 = first steps … higher levels build on the features of the lower ones.
+    pub level: u8,
+    pub title: &'static str,
+    /// The features it shows.
+    pub description: &'static str,
+    pub build: fn() -> Project,
+}
+
+/// The example projects, simple ones first.
+pub const EXAMPLES: [Example; 7] = [
+    Example {
+        key: "lamp_circuit",
+        level: 1,
+        title: tr_const!("1 · First circuit: push buttons and lamps"),
+        description: tr_const!("One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials."),
+        build: lamp::project,
+    },
+    Example {
+        key: "self_holding_relay",
+        level: 2,
+        title: tr_const!("2 · Relay with self-holding contact"),
+        description: tr_const!("Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list."),
+        build: relay::project,
+    },
+    Example {
+        key: "star_delta_starter",
+        level: 3,
+        title: tr_const!("3 · Star-delta motor starter"),
+        description: tr_const!("Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports."),
+        build: star_delta::project,
+    },
+    Example {
+        key: "conveyor",
+        level: 4,
+        title: tr_const!("4 · Conveyor with PLC and control cabinet"),
+        description: tr_const!("The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable."),
+        build: demo_project,
+    },
+    Example {
+        key: "pneumatic_press",
+        level: 5,
+        title: tr_const!("5 · Electro-pneumatic press"),
+        description: tr_const!("Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders."),
+        build: press::project,
+    },
+    Example {
+        key: "pump_station",
+        level: 6,
+        title: tr_const!("6 · Pump station with structure identifiers"),
+        description: tr_const!("Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment."),
+        build: plant::project,
+    },
+    Example {
+        key: "engineering_workflow",
+        level: 7,
+        title: tr_const!("7 · Revisions, review and change requests"),
+        description: tr_const!("The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with."),
+        build: workflow::project,
+    },
+];
+
+/// The example project of a name of [`EXAMPLES`].
+pub fn example(key: &str) -> Option<Project> {
+    EXAMPLES.iter().find(|e| e.key == key).map(|e| (e.build)())
+}
+
+/// Device data with the parts of each tag; the parts are copied into the project.
+fn assign_parts(prj: &mut Project, db: &PartsDb, devices: &[(&str, &[&str])]) {
+    for (tag, parts) in devices {
+        let refs = parts.iter().map(|n| PartRef { number: n.to_string(), count: 1 }).collect();
+        prj.devices.insert(tag.to_string(), DeviceData { parts: refs, ..Default::default() });
+        for n in *parts {
+            crate::parts::ensure_in_project(prj, db, n);
+        }
+    }
+}
+
+/// Renumbers the wires of a finished example.
+fn number_wires(prj: &mut Project) {
+    let open = crate::netlist::Netlist::build(prj, false);
+    let bridged = crate::netlist::Netlist::build(prj, true);
+    crate::wirenum::renumber(prj, &open, &bridged, false);
+}
 
 struct Pg<'a> {
     prj: &'a mut Project,
@@ -14,13 +111,15 @@ impl Pg<'_> {
     fn sym(&mut self, key: &str, x: f32, y: f32, rot: u8, tag: &str, label: &str, ftext: &str) -> &mut Self {
         let def = self.prj.symbol(key).expect("symbol");
         let id = self.prj.new_id();
+        // Tags take the missing structure aspects from the page (`-K1` → `=A1+CAB1-K1`).
+        let tag = if tag.is_empty() { String::new() } else { crate::structure::complete(&self.prj.pages[self.page], tag) };
         let s = SymbolInst {
             id,
             sym: key.into(),
             pos: p(x, y),
             rot,
             mirror: false,
-            tag: tag.into(),
+            tag,
             label: if label.is_empty() { def.default_label.into() } else { label.into() },
             function_text: ftext.into(),
             pins: def.pins.iter().map(|x| x.label.to_string()).collect(),
@@ -33,6 +132,13 @@ impl Pg<'_> {
     fn pins(&mut self, pins: &[&str]) -> &mut Self {
         if let Some(s) = self.prj.pages[self.page].symbols.last_mut() {
             s.pins = pins.iter().map(|x| x.to_string()).collect();
+        }
+        self
+    }
+
+    fn mirror(&mut self) -> &mut Self {
+        if let Some(s) = self.prj.pages[self.page].symbols.last_mut() {
+            s.mirror = true;
         }
         self
     }
@@ -159,35 +265,31 @@ pub fn demo_project() -> Project {
     add_page(&mut prj, "7", "Device list", PageKind::Report(ReportKind::DeviceList.into()));
 
     let db = PartsDb::default();
-    for (tag, parts) in [
-        ("-Q1", &["GEN.MPS-2.5-4A", "GEN.MPS-AUX-1NO1NC"][..]),
-        ("-K1", &["GEN.CT-9A-24DC", "GEN.AUX-2NO2NC"]),
-        ("-M1", &["GEN.MOT-0.75KW"]),
-        ("-X1", &["GEN.TB-2.5", "GEN.TB-PE-2.5"]),
-        ("-F1", &["GEN.MCB-1P-C6"]),
-        ("-T1", &["GEN.PS-24DC-5A"]),
-        ("-S1", &["GEN.ESTOP-1NC"]),
-        ("-S2", &["GEN.PB-RD-1NC"]),
-        ("-S3", &["GEN.PB-GN-1NO"]),
-        ("-S4", &["GEN.PB-GN-1NO"]),
-        ("-P1", &["GEN.LMP-GN-24"]),
-        ("-P2", &["GEN.LMP-RD-24"]),
-        ("-B1", &["GEN.PROX-M12-PNP"]),
-        ("-Y1", &["GEN.SV-24DC"]),
-        ("-A1", &["GEN.PLC-DI16"]),
-        ("-A2", &["GEN.PLC-DO16"]),
-    ] {
-        let refs = parts.iter().map(|n| PartRef { number: n.to_string(), count: 1 }).collect();
-        prj.devices.insert(tag.into(), DeviceData { parts: refs, ..Default::default() });
-        for n in parts {
-            crate::parts::ensure_in_project(&mut prj, &db, n);
-        }
-    }
+    assign_parts(
+        &mut prj,
+        &db,
+        &[
+            ("-Q1", &["GEN.MPS-2.5-4A", "GEN.MPS-AUX-1NO1NC"][..]),
+            ("-K1", &["GEN.CT-9A-24DC", "GEN.AUX-2NO2NC"]),
+            ("-M1", &["GEN.MOT-0.75KW"]),
+            ("-X1", &["GEN.TB-2.5", "GEN.TB-PE-2.5"]),
+            ("-F1", &["GEN.MCB-1P-C6"]),
+            ("-T1", &["GEN.PS-24DC-5A"]),
+            ("-S1", &["GEN.ESTOP-1NC"]),
+            ("-S2", &["GEN.PB-RD-1NC"]),
+            ("-S3", &["GEN.PB-GN-1NO"]),
+            ("-S4", &["GEN.PB-GN-1NO"]),
+            ("-P1", &["GEN.LMP-GN-24"]),
+            ("-P2", &["GEN.LMP-RD-24"]),
+            ("-B1", &["GEN.PROX-M12-PNP"]),
+            ("-Y1", &["GEN.SV-24DC"]),
+            ("-A1", &["GEN.PLC-DI16"]),
+            ("-A2", &["GEN.PLC-DO16"]),
+        ],
+    );
     add_panel_layout(&mut prj, &db);
     add_motor_cable(&mut prj, &db);
-    let open = crate::netlist::Netlist::build(&prj, false);
-    let bridged = crate::netlist::Netlist::build(&prj, true);
-    crate::wirenum::renumber(&mut prj, &open, &bridged, false);
+    number_wires(&mut prj);
     add_door_harness(&mut prj);
     prj
 }

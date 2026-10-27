@@ -6351,3 +6351,23 @@ this is a folder	bu bir klasör
 the disk is full	disk dolu
 Enclosures and rooms	Muhafazalar ve odalar
 Not saved, locked or changed by another user: {}	Kaydedilmedi, başka bir kullanıcı tarafından kilitlendi veya değiştirildi: {}
+1 · First circuit: push buttons and lamps	1 · İlk devre: butonlar ve lambalar
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	+24V / 0V potansiyelleri, butonlar, bir seçici anahtar, lambalar ve bir sigorta içeren tek şema sayfası; parçalar ve malzeme listesi.
+2 · Relay with self-holding contact	2 · Mühürleme kontaklı röle
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Röleli başlat / durdur devresi: bobin ve kontaklar çapraz referanslar ve kontak görüntüsüyle tek bir cihaz oluşturur; klemens dizisi, kablo numaraları, klemens şeması ve bağlantı listesi.
+3 · Star-delta motor starter	3 · Yıldız-üçgen yol verici
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Birkaç sayfada güç ve kumanda devresi: ana şalter, motor koruma, kilitlemeli üç kontaktör, çekmede gecikmeli zaman rölesi, kesinti noktaları, kablo renkli potansiyeller, motor kablosu ve kablo raporları.
+4 · Conveyor with PLC and control cabinet	4 · PLC ve kumanda panolu konveyör
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Demo projesi: PLC giriş ve çıkışları, raylar, kablo kanalları ve kapı cihazlarıyla pano yerleşimi, kapı kablo demeti ve motor kablosu.
+5 · Electro-pneumatic press	5 · Elektropnömatik pres
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Akışkan gücü ve elektrik tek projede: şartlandırıcı, valf adası, 5/2 valfler, akış kontrol valfleri ve silindirlerle pnömatik devre; bobinler ve konum şalterleri valflere ve silindirlere bağlıdır.
+6 · Pump station with structure identifiers	6 · Yapı tanımlayıcılı pompa istasyonu
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	IEC 81346'ya göre tesis yapısı (fonksiyonlar ve konumlar), sayfa bölümleri, tek hat şeması, direkt yol verilen bir pompa ve frekans çeviricili bir pompa, dijital ve analog kanallı PLC kartları, bir sensör konnektörü ve PLC ataması.
+7 · Revisions, review and change requests	7 · Revizyonlar, inceleme ve değişiklik talepleri
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	İlk yayından sonra konveyör: yayınlanmış ve kilitlenmiş bir revizyon, o zamandan beri işaretlenen değişiklikler, kırmızı işaretlemeli inceleme yorumları, bir değişiklik talebi, onay sürecindeki B revizyonu ve karşılaştırma için bir temel durum.
+Example projects	Örnek projeler
+Projects from a first circuit to a whole plant, each showing more of the features	İlk devreden tüm tesise kadar projeler; her biri özelliklerin daha fazlasını gösterir
+Each example builds on the one before and shows more of the features.	Her örnek bir öncekinin üzerine kurulur ve özelliklerin daha fazlasını gösterir.
+Start from an example project (names: list_examples)	Bir örnek projeden başla (adlar: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	İlk devreden tüm tesise kadar örnek projeleri, her birinin gösterdiği özelliklerle listeler
+Unknown example {}: see list_examples	Bilinmeyen örnek {}: bkz. list_examples

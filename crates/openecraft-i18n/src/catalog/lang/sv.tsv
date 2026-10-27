@@ -6351,3 +6351,23 @@ this is a folder	detta är en mapp
 the disk is full	disken är full
 Enclosures and rooms	Kapslingar och rum
 Not saved, locked or changed by another user: {}	Inte sparat, låst eller ändrat av en annan användare: {}
+1 · First circuit: push buttons and lamps	1 · Första kretsen: tryckknappar och lampor
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	En schemasida med potentialerna +24V / 0V, tryckknappar, en väljare, lampor och en säkring; artiklar och stycklista.
+2 · Relay with self-holding contact	2 · Relä med självhållning
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start-/stoppkrets med ett relä: spole och kontakter bildar en apparat med korsreferenser och kontaktbild, plint, ledningsnummer, plintschema och förbindningslista.
+3 · Star-delta motor starter	3 · Y/D-start
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Huvud- och manöverkrets på flera sidor: huvudbrytare, motorskydd, tre kontaktorer med förreglingar, tillslagsfördröjt tidrelä, avbrottspunkter, potentialer med ledarfärger, motorkabel och kabelrapporter.
+4 · Conveyor with PLC and control cabinet	4 · Transportör med PLC och apparatskåp
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Demoprojektet: PLC-in- och utgångar, skåplayout med skenor, kabelkanaler och dörrapparater, dörrkabelstam och motorkabel.
+5 · Electro-pneumatic press	5 · Elektropneumatisk press
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluidteknik och elteknik i ett projekt: pneumatikschema med luftberedningsenhet, ventilterminal, 5/2-ventiler, strypbackventiler och cylindrar; magnetspolar och lägesbrytare är kopplade till ventilerna och cylindrarna.
+6 · Pump station with structure identifiers	6 · Pumpstation med strukturbeteckningar
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Anläggningsstruktur enligt IEC 81346 (funktioner och placeringar), sidavsnitt, enlinjeschema, en pump med direktstart och en med frekvensomriktare, PLC-kort med digitala och analoga kanaler, ett givardon och PLC-tilldelningen.
+7 · Revisions, review and change requests	7 · Revisioner, granskning och ändringsbegäranden
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Transportören efter första frisläppningen: en frisläppt och låst revision, ändringar markerade sedan dess, granskningskommentarer med rödmarkering, en ändringsbegäran, revision B i godkännandeflödet och en baslinje att jämföra med.
+Example projects	Exempelprojekt
+Projects from a first circuit to a whole plant, each showing more of the features	Projekt från en första krets till en hel anläggning, vart och ett visar fler av funktionerna
+Each example builds on the one before and shows more of the features.	Varje exempel bygger på det föregående och visar fler av funktionerna.
+Start from an example project (names: list_examples)	Utgå från ett exempelprojekt (namn: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Listar exempelprojekten, från en första krets till en hel anläggning, med de funktioner vart och ett visar
+Unknown example {}: see list_examples	Okänt exempel {}: se list_examples

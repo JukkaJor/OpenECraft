@@ -49,3 +49,17 @@ fn projects_from_templates() {
     assert!(s.project().unwrap().pages.len() > 5);
     assert!(run(&mut s, "new_project", json!({ "template": "no-such-template.oec", "discard": true })).is_err());
 }
+
+#[test]
+fn examples_are_listed_and_opened() {
+    let mut s = session();
+    let list = run(&mut s, "list_examples", json!({})).unwrap();
+    let names: Vec<&str> = list.as_array().unwrap().iter().map(|e| e["name"].as_str().unwrap()).collect();
+    assert_eq!(names.first(), Some(&"lamp_circuit"));
+    for name in names {
+        let info = run(&mut s, "new_project", json!({ "example": name, "discard": true })).unwrap();
+        assert_eq!((info["errors"].as_u64(), info["warnings"].as_u64()), (Some(0), Some(0)), "{name}");
+    }
+    let err = run(&mut s, "new_project", json!({ "example": "nothing", "discard": true })).unwrap_err();
+    assert!(err.contains("list_examples"), "{err}");
+}

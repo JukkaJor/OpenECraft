@@ -155,6 +155,12 @@ impl App {
                 }
             }
         });
+        self.backstage_examples(ui);
+    }
+
+    fn backstage_examples(&mut self, ui: &mut egui::Ui) {
+        ui.add_space(12.0);
+        self.example_list(ui);
     }
 
     fn backstage_open(&mut self, ui: &mut egui::Ui) {

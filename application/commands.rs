@@ -17,6 +17,7 @@ pub enum Cmd {
     NewProject,
     NewFromTemplateFile,
     OpenDemo,
+    OpenExample,
     Open,
     Save,
     SaveAs,
@@ -310,6 +311,8 @@ pub static ALL: &[Def] = &[
     d(C::NewFromTemplateFile, "new_from_template_file", tr_const!("From a template file…"), I::Template)
         .tip(tr_const!("Any project file: its settings, forms, structure, potentials and pages start the new project")),
     d(C::OpenDemo, "open_demo", tr_const!("Open demo project"), I::Book),
+    d(C::OpenExample, "open_example", tr_const!("Example projects"), I::Book)
+        .tip(tr_const!("Projects from a first circuit to a whole plant, each showing more of the features")),
     d(C::Open, "open", tr_const!("Open…"), I::FolderOpen).keys("Ctrl+O"),
     d(C::Save, "save", tr_const!("Save"), I::Save).keys("Ctrl+S"),
     d(C::SaveAs, "save_as", tr_const!("Save as…"), I::SaveAs).keys("Ctrl+Shift+S"),

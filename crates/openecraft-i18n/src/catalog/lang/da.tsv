@@ -6351,3 +6351,23 @@ this is a folder	dette er en mappe
 the disk is full	disken er fuld
 Enclosures and rooms	Kabinetter og rum
 Not saved, locked or changed by another user: {}	Ikke gemt, låst eller ændret af en anden bruger: {}
+1 · First circuit: push buttons and lamps	1 · Første kreds: trykknapper og lamper
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Én diagramside med potentialerne +24V / 0V, trykknapper, en vælger, lamper og en sikring; artikler og styklisten.
+2 · Relay with self-holding contact	2 · Relæ med selvhold
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start-/stopkreds med et relæ: spole og kontakter udgør én komponent med krydshenvisninger og kontaktbillede, klemrække, ledningsnumre, klemplan og forbindelsesliste.
+3 · Star-delta motor starter	3 · Stjerne-trekant-start
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Hoved- og styrekreds på flere sider: hovedafbryder, motorværn, tre kontaktorer med forriglinger, tiltrækningsforsinket tidsrelæ, afbrydelsespunkter, potentialer med lederfarver, motorkabel og kabelrapporter.
+4 · Conveyor with PLC and control cabinet	4 · Transportbånd med PLC og tavle
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Demoprojektet: PLC-ind- og udgange, tavlelayout med skinner, kabelkanaler og dørkomponenter, dørkabelbundt og motorkabel.
+5 · Electro-pneumatic press	5 · Elektropneumatisk presse
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluidteknik og el i ét projekt: pneumatikdiagram med luftbehandlingsenhed, ventilø, 5/2-ventiler, drøvlekontraventiler og cylindre; magnetspoler og positionsafbrydere er knyttet til ventilerne og cylindrene.
+6 · Pump station with structure identifiers	6 · Pumpestation med strukturbetegnelser
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Anlægsstruktur efter IEC 81346 (funktioner og placeringer), sideafsnit, enstregsdiagram, en pumpe med direkte start og en med frekvensomformer, PLC-kort med digitale og analoge kanaler, et sensorstik og PLC-tildelingen.
+7 · Revisions, review and change requests	7 · Revisioner, gennemgang og ændringsanmodninger
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Transportbåndet efter den første frigivelse: en frigivet og låst revision, ændringer markeret siden, gennemgangskommentarer med rødmarkering, en ændringsanmodning, revision B i godkendelsesforløbet og en baseline at sammenligne med.
+Example projects	Eksempelprojekter
+Projects from a first circuit to a whole plant, each showing more of the features	Projekter fra en første kreds til et helt anlæg, hvert viser flere af funktionerne
+Each example builds on the one before and shows more of the features.	Hvert eksempel bygger på det forrige og viser flere af funktionerne.
+Start from an example project (names: list_examples)	Start fra et eksempelprojekt (navne: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Viser eksempelprojekterne, fra en første kreds til et helt anlæg, med de funktioner hvert enkelt viser
+Unknown example {}: see list_examples	Ukendt eksempel {}: se list_examples

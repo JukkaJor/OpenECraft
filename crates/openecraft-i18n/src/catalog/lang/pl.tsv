@@ -6351,3 +6351,23 @@ this is a folder	to jest folder
 the disk is full	dysk jest pełny
 Enclosures and rooms	Obudowy i pomieszczenia
 Not saved, locked or changed by another user: {}	Nie zapisano, zablokowane lub zmienione przez innego użytkownika: {}
+1 · First circuit: push buttons and lamps	1 · Pierwszy obwód: przyciski i lampki
+One schematic page with +24V / 0V potentials, push buttons, a selector switch, lamps and a fuse; parts and the bill of materials.	Jedna strona schematu z potencjałami +24V / 0V, przyciskami, przełącznikiem wyboru, lampkami i bezpiecznikiem; artykuły i zestawienie materiałów.
+2 · Relay with self-holding contact	2 · Przekaźnik z podtrzymaniem
+Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Obwód start / stop z przekaźnikiem: cewka i styki tworzą jedno urządzenie z odsyłaczami i obrazem styków, listwa zaciskowa, numery przewodów, schemat listwy i lista połączeń.
+3 · Star-delta motor starter	3 · Rozrusznik gwiazda-trójkąt
+Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Obwód główny i sterowania na kilku stronach: wyłącznik główny, zabezpieczenie silnika, trzy styczniki z blokadami, przekaźnik czasowy opóźnionego załączania, punkty przerwania, potencjały z kolorami przewodów, kabel silnika i zestawienia kabli.
+4 · Conveyor with PLC and control cabinet	4 · Przenośnik ze sterownikiem PLC i szafą sterowniczą
+The demo project: PLC inputs and outputs, panel layout of the enclosure with rails, ducts and door devices, door harness and motor cable.	Projekt demonstracyjny: wejścia i wyjścia PLC, rozmieszczenie w obudowie z szynami, korytkami i urządzeniami na drzwiach, wiązka drzwiowa i kabel silnika.
+5 · Electro-pneumatic press	5 · Prasa elektropneumatyczna
+Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Technika płynowa i elektryka w jednym projekcie: schemat pneumatyczny z zespołem przygotowania powietrza, wyspą zaworową, zaworami 5/2, zaworami dławiąco-zwrotnymi i siłownikami; cewki elektrozaworów i wyłączniki krańcowe są powiązane z zaworami i siłownikami.
+6 · Pump station with structure identifiers	6 · Przepompownia z identyfikatorami struktury
+Plant structure after IEC 81346 (functions and locations), page sections, single-line diagram, a pump direct on line and one with frequency converter, PLC cards with digital and analog channels, a sensor plug and the PLC assignment.	Struktura instalacji według IEC 81346 (funkcje i lokalizacje), sekcje stron, schemat jednokreskowy, pompa z rozruchem bezpośrednim i pompa z przemiennikiem częstotliwości, karty PLC z kanałami cyfrowymi i analogowymi, wtyk czujnika i przydział PLC.
+7 · Revisions, review and change requests	7 · Rewizje, przegląd i wnioski o zmiany
+The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with.	Przenośnik po pierwszym wydaniu: wydana i zablokowana rewizja, zmiany oznaczone od tego czasu, komentarze z przeglądu z oznaczeniami na czerwono, wniosek o zmianę, rewizja B w procesie zatwierdzania i stan bazowy do porównania.
+Example projects	Projekty przykładowe
+Projects from a first circuit to a whole plant, each showing more of the features	Projekty od pierwszego obwodu do całej instalacji, każdy pokazuje więcej funkcji
+Each example builds on the one before and shows more of the features.	Każdy przykład opiera się na poprzednim i pokazuje więcej funkcji.
+Start from an example project (names: list_examples)	Zacznij od projektu przykładowego (nazwy: list_examples)
+Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Wyświetla projekty przykładowe, od pierwszego obwodu do całej instalacji, z funkcjami, które każdy pokazuje
+Unknown example {}: see list_examples	Nieznany przykład {}: zobacz list_examples

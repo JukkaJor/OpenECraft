@@ -139,7 +139,8 @@ impl App {
             }
             return;
         }
-        let replaces = matches!(cmd, Cmd::NewProject | Cmd::NewFromTemplateFile | Cmd::OpenDemo | Cmd::Open);
+        let replaces = matches!(cmd, Cmd::NewProject | Cmd::NewFromTemplateFile | Cmd::OpenDemo | Cmd::Open)
+            || (cmd == Cmd::OpenExample && self.pending_example.is_some());
         if replaces && self.session.dirty() && !std::mem::take(&mut self.discard_ok) && self.remote.shared.is_none() {
             self.confirm_discard = Some(cmd);
             return;
@@ -152,6 +153,14 @@ impl App {
             Cmd::NewProject => self.replace_project(Project::new_default(), None),
             Cmd::NewFromTemplateFile => self.io.open(ctx, Purpose::ProjectTemplate),
             Cmd::OpenDemo => self.replace_project(sample::demo_project(), None),
+            Cmd::OpenExample => match self.pending_example.take().and_then(sample::example) {
+                Some(prj) => self.replace_project(prj, None),
+                // Without a chosen example: the start page lists them.
+                None => {
+                    self.backstage = None;
+                    self.show_pane(Pane::Tool(ToolPane::Start));
+                }
+            },
             Cmd::Open => self.io.open(ctx, Purpose::Project),
             Cmd::Save => self.save(ctx, false),
             Cmd::SaveAs => self.save(ctx, true),
