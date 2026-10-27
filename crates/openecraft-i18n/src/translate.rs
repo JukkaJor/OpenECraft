@@ -61,6 +61,11 @@ impl Lang {
     pub const REQUIRED: [Lang; 4] = [Lang::En, Lang::De, Lang::Fr, Lang::Es];
 
     /// ISO 639-1 code, also used for persisting the choice.
+    /// The language writes decimals with a comma.
+    pub fn decimal_comma(self) -> bool {
+        !matches!(self, Lang::En | Lang::Zh | Lang::Ja | Lang::Ko)
+    }
+
     pub fn code(self) -> &'static str {
         match self {
             Lang::En => "en",
@@ -208,6 +213,31 @@ pub fn translate(en: &'static str, lang: Lang) -> &'static str {
         Lang::En => en,
         Lang::De | Lang::Fr | Lang::Es => table().get(en).map(|t| t[lang.index() as usize - 1]).unwrap_or(en),
         _ => further_table(lang).get(en).copied().unwrap_or(en),
+    }
+}
+
+/// A file error in the current language: the operating system words its errors in
+/// its own language, which may differ from the program's.
+pub fn io_error(e: &std::io::Error) -> String {
+    use std::io::ErrorKind as K;
+    match e.kind() {
+        K::NotFound => tr("file or folder not found").to_string(),
+        K::PermissionDenied => tr("access denied").to_string(),
+        K::AlreadyExists => tr("the file exists already").to_string(),
+        K::IsADirectory => tr("this is a folder").to_string(),
+        K::StorageFull => tr("the disk is full").to_string(),
+        _ => e.to_string(),
+    }
+}
+
+/// A number with `digits` decimals and the decimal separator of the current language
+/// (a comma in most European languages).
+pub fn decimal(value: f64, digits: usize) -> String {
+    let text = format!("{value:.digits$}");
+    if lang().decimal_comma() {
+        text.replace('.', ",")
+    } else {
+        text
     }
 }
 

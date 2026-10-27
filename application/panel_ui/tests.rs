@@ -81,7 +81,7 @@ fn rooms_show_their_walls_and_cabinets() {
     let mut ui = PanelUi::default();
     ui.new_room(&mut prj);
     ui.new_room(&mut prj);
-    assert_eq!(prj.layout.enclosures[2].name, "=ROOM2");
+    assert_eq!(prj.layout.enclosures[2].name, "+ROOM2");
     let room = 1;
     ui.enclosure = room;
     assert!(ui.enclosure_index(&prj).is_some() && ui.in_room);

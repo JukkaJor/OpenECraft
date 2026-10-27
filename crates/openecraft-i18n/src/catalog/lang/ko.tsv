@@ -6296,3 +6296,54 @@ Draw inner walls	내벽 그리기
 Inner wall {}, side {}	내벽 {}, {} 면
 Thickness	두께
 {}: {} stands in an inner wall	{}: {}이(가) 내벽 안에 있습니다
+Opening {} replaces the current project, its unsaved changes are lost.	{}을(를) 열면 현재 프로젝트가 대체되며 저장되지 않은 변경 내용이 손실됩니다.
+Discard changes and open	변경 내용 취소 후 열기
+Open link	링크 열기
+Replace the file at path if it exists	path에 파일이 있으면 바꾸기
+{} exists already: pass overwrite to replace it	{}이(가) 이미 있습니다. 바꾸려면 overwrite를 지정하세요
+{} has unsaved changes. Discard them?	{}에 저장되지 않은 변경 내용이 있습니다. 취소할까요?
+Discard changes	변경 내용 취소
+Locked by {} on the project server – read only	프로젝트 서버에서 {}이(가) 잠금 – 읽기 전용
+A device tag must not be empty	장치 태그는 비워 둘 수 없습니다
+Device tag {} must start with -, = or +	장치 태그 {}은(는) -, = 또는 +로 시작해야 합니다
+Device tag {} must not contain blanks or the separators ; | ,	장치 태그 {}에는 공백이나 구분 기호 ; | , 를 사용할 수 없습니다
+{} lies outside page {}	{}이(가) 페이지 {} 밖에 있습니다
+Position {} / {} mm lies outside the page ({} x {} mm)	위치 {} / {} mm가 페이지 밖에 있습니다 ({} x {} mm)
+The wire has no length	연결의 길이가 없습니다
+Start and end are the same connection point	시작과 끝이 같은 연결 지점입니다
+A page needs a name	페이지에는 이름이 필요합니다
+Printing and export	인쇄 및 내보내기
+1 project on the server	서버에 프로젝트 1개
+pcs	개
+Legend plate	명판
+KNX actuator	KNX 액추에이터
+KNX system device	KNX 시스템 장치
+Battery monitor	배터리 모니터
+System monitoring	시스템 모니터링
+Cable clamp rail	케이블 고정 레일
+Document holder	문서 홀더
+Door handle	문 손잡이
+Filter fan	필터 팬
+Outlet filter	배출 필터
+PE busbar	PE 버스바
+Rail standoff	레일 스페이서
+Screw	나사
+Nut	너트
+Washer	와셔
+Side panel	측면 패널
+DC-DC converter	DC-DC 컨버터
+Inverter / charger	인버터 / 충전기
+Solar charge controller	태양광 충전 컨트롤러
+Breaking capacity	차단 용량
+Poles	극수
+Wrong user name or password	사용자 이름 또는 암호가 잘못되었습니다
+Too many failed sign-ins, try again later	로그인 실패가 너무 많습니다. 나중에 다시 시도하세요
+Part {} not found	부품 {}을(를) 찾을 수 없습니다
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	파일 또는 폴더를 찾을 수 없습니다
+access denied	액세스가 거부되었습니다
+the file exists already	파일이 이미 있습니다
+this is a folder	폴더입니다
+the disk is full	디스크가 가득 찼습니다
+Enclosures and rooms	외함 및 실
+Not saved, locked or changed by another user: {}	저장되지 않음, 다른 사용자가 잠그거나 변경함: {}

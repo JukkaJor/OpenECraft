@@ -169,6 +169,13 @@ impl Store {
         self.backend.part(number)
     }
 
+    /// Number of a part that differs from `number` only in case.
+    pub fn other_case(&self, number: &str) -> io::Result<Option<String>> {
+        let words: Vec<String> = number.split_whitespace().map(str::to_lowercase).collect();
+        let key = number.to_lowercase();
+        Ok(self.backend.candidates(&words, &[], true)?.into_iter().map(|p| p.number).find(|n| n != number && n.to_lowercase() == key))
+    }
+
     fn candidates(&self, q: &PartQuery) -> io::Result<Vec<Part>> {
         let words: Vec<String> = q.q.as_deref().unwrap_or("").split_whitespace().map(str::to_lowercase).collect();
         self.backend.candidates(&words, &q.numbers, q.brief)
@@ -182,6 +189,7 @@ impl Store {
         Ok(q.search(&self.candidates(q)?, self.revision))
     }
 
+    #[cfg(test)]
     pub fn all(&self) -> io::Result<Vec<Part>> {
         self.list(&PartQuery::default()).map(|(_, parts)| parts)
     }

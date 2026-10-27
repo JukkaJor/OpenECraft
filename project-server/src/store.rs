@@ -2,15 +2,17 @@
 //! like any other project) and a state file (`<name>.state.json`: revision and id
 //! counter) in the data directory. Files are written atomically on every change.
 
-use openecraft_core::collab::{valid_name, ID_BLOCK};
+use openecraft_core::collab::{name_key, stored_name, ID_BLOCK};
 use openecraft_core::model::Project;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::io;
 use std::path::{Path, PathBuf};
 
 const PROJECT_EXT: &str = "oec";
 const STATE_EXT: &str = "state.json";
+/// Earlier revisions kept per project (in memory) to find what a save changed.
+pub const KEPT_REVISIONS: usize = 16;
 
 #[derive(Default, Serialize, Deserialize)]
 #[serde(default)]
@@ -31,13 +33,15 @@ pub struct Entry {
 pub struct Store {
     dir: Option<PathBuf>,
     pub projects: BTreeMap<String, Entry>,
+    /// The last [`KEPT_REVISIONS`] revisions before the current one, oldest first.
+    past: BTreeMap<String, VecDeque<(u64, Project)>>,
 }
 
 impl Store {
     /// A store that is not persisted (tests).
     #[cfg(test)]
     pub fn in_memory() -> Store {
-        Store { dir: None, projects: BTreeMap::new() }
+        Store { dir: None, projects: BTreeMap::new(), past: BTreeMap::new() }
     }
 
     /// Opens (and creates) the data directory and loads its projects.
@@ -49,8 +53,12 @@ impl Store {
             let Some(name) = path.file_name().and_then(|n| n.to_str()).and_then(|n| n.strip_suffix(&format!(".{PROJECT_EXT}"))) else {
                 continue;
             };
-            if !valid_name(name) {
+            if !stored_name(name) {
                 log::warn!("skipping {}: not a valid project name", path.display());
+                continue;
+            }
+            if let Some(other) = projects.keys().find(|n: &&String| name_key(n) == name_key(name)) {
+                log::warn!("skipping {}: the name differs from project {other} only in case", path.display());
                 continue;
             }
             let invalid = |e: String| io::Error::new(io::ErrorKind::InvalidData, format!("{}: {e}", path.display()));
@@ -64,11 +72,26 @@ impl Store {
             let next_id = state.next_id.max(project.next_id);
             projects.insert(name.to_string(), Entry { project, revision: state.revision.max(1), next_id });
         }
-        Ok(Store { dir: Some(dir.to_path_buf()), projects })
+        Ok(Store { dir: Some(dir.to_path_buf()), projects, past: BTreeMap::new() })
     }
 
     pub fn get(&self, name: &str) -> Option<&Entry> {
         self.projects.get(name)
+    }
+
+    /// The project as of `revision`: the current one or one of the kept revisions.
+    pub fn at(&self, name: &str, revision: u64) -> Option<&Project> {
+        match self.projects.get(name) {
+            Some(e) if e.revision == revision => Some(&e.project),
+            _ => self.past.get(name)?.iter().find(|(r, _)| *r == revision).map(|(_, p)| p),
+        }
+    }
+
+    /// The project whose name differs from `name` at most in case: both would be
+    /// the same file on Windows and macOS.
+    pub fn taken(&self, name: &str) -> Option<&str> {
+        let key = name_key(name);
+        self.projects.keys().find(|n| name_key(n) == key).map(String::as_str)
     }
 
     /// Stores `entry` under `name`: in memory only if writing the files succeeded.
@@ -100,9 +123,15 @@ impl Store {
         if project == old.project {
             return Ok(old.revision);
         }
+        let before = (old.revision, old.project.clone());
         let entry = Entry { project, revision: old.revision + 1, next_id: old.next_id };
         let revision = entry.revision;
         self.put(name, entry)?;
+        let past = self.past.entry(name.to_string()).or_default();
+        past.push_back(before);
+        if past.len() > KEPT_REVISIONS {
+            past.pop_front();
+        }
         Ok(revision)
     }
 
@@ -111,6 +140,7 @@ impl Store {
         if self.projects.remove(name).is_none() {
             return Err(io::Error::new(io::ErrorKind::NotFound, name.to_string()));
         }
+        self.past.remove(name);
         if let Some(dir) = &self.dir {
             for ext in [PROJECT_EXT, STATE_EXT] {
                 match std::fs::remove_file(dir.join(format!("{name}.{ext}"))) {

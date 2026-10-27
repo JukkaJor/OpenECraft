@@ -19,6 +19,22 @@ between connection points (TAG:PIN, e.g. -K1:A1), check to find errors and repor
 tags follow IEC 81346 (-K1 contactor, -S1 switch, -X1 terminal strip). Parts come from the project, the built-in \
 catalog or the parts server (parts_* tools).";
 
+/// Names of the tools to offer, from `OPENECRAFT_MCP_TOOLS` (comma separated; `parts_*`
+/// for all tools starting with `parts_`). Some clients take only a limited number
+/// of tools.
+pub fn tools_from_env() -> Vec<String> {
+    std::env::var("OPENECRAFT_MCP_TOOLS").unwrap_or_default().split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+}
+
+/// True if the MCP server offers the tool `name`.
+fn offered(session: &Session, name: &str) -> bool {
+    session.mcp_tools.is_empty()
+        || session.mcp_tools.iter().any(|p| match p.strip_suffix('*') {
+            Some(prefix) => name.starts_with(prefix),
+            None => p == name,
+        })
+}
+
 pub fn serve(session: &mut Session, input: impl BufRead, mut output: impl Write) -> Result<(), String> {
     for line in input.lines() {
         let line = line.map_err(|e| e.to_string())?;
@@ -53,7 +69,7 @@ pub fn handle(session: &mut Session, msg: &Value) -> Option<Value> {
     let result = match method {
         "initialize" => Ok(initialize(&params)),
         "ping" => Ok(json!({})),
-        "tools/list" => Ok(json!({ "tools": tools::entries(session).iter().map(describe).collect::<Vec<_>>() })),
+        "tools/list" => Ok(json!({ "tools": tools::entries(session).iter().filter(|t| offered(session, t.name())).map(describe).collect::<Vec<_>>() })),
         "tools/call" => call(session, &params),
         _ => Err((-32601, format!("method not found: {method}"))),
     };
@@ -80,7 +96,7 @@ fn describe(tool: &tools::Entry) -> Value {
 
 fn call(session: &mut Session, params: &Value) -> Result<Value, (i64, String)> {
     let name = params.get("name").and_then(Value::as_str).ok_or((-32602, "missing tool name".to_string()))?;
-    let tool = tools::lookup(session, name).ok_or_else(|| (-32602, format!("unknown tool: {name}")))?;
+    let tool = tools::lookup(session, name).filter(|_| offered(session, name)).ok_or_else(|| (-32602, format!("unknown tool: {name}")))?;
     let args = match params.get("arguments") {
         None | Some(Value::Null) => Map::new(),
         Some(Value::Object(map)) => map.clone(),

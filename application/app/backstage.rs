@@ -9,7 +9,7 @@ use crate::ribbon::{Entry, Page, BACKSTAGE};
 impl App {
     pub(super) fn backstage_ui(&mut self, ui: &mut egui::Ui, page: Page) {
         let ctx = ui.ctx().clone();
-        egui::Panel::left("backstage_nav").exact_size(210.0).show(ui, |ui| {
+        egui::Panel::left("backstage_nav").exact_size(250.0).show(ui, |ui| {
             ui.add_space(6.0);
             if icons::text_button(ui, Icon::ChevronLeft, tr("Back")).on_hover_text(tr("Back to the project (Esc)")).clicked() {
                 self.backstage = None;
@@ -169,7 +169,7 @@ impl App {
         let exporters: Vec<openecraft_api::Exporter> = self.plugins.exporters().cloned().collect();
         ui.horizontal_wrapped(|ui| {
             for e in exporters {
-                if super::backstage::tile(ui, Icon::Upload, &format!("{}…", text(&e.title))).clicked() {
+                if export_entry(ui, export_icon(&e), &format!("{}…", text(&e.title)), &e.extension).clicked() {
                     let ctx = ui.ctx().clone();
                     self.run_exporter(&ctx, &e, None);
                 }
@@ -219,6 +219,42 @@ fn backstage_entry(ui: &mut egui::Ui, icon: Icon, title: &str, selected: bool) -
 }
 
 /// A large square tile with an icon and a title (backstage, start page).
+/// The icon of an export: what it puts out.
+fn export_icon(e: &openecraft_api::Exporter) -> Icon {
+    let name: &str = e.name.as_ref();
+    match e.extension.to_ascii_lowercase().as_str() {
+        _ if name.starts_with("plc") || name == "aml" => Icon::Plc,
+        _ if name.starts_with("harness") || name.starts_with("kbl") || name == "nailboard" => Icon::Harness,
+        _ if name.starts_with("marking") => Icon::Marking,
+        _ if name.starts_with("preplanning") => Icon::Preplanning,
+        _ if name == "dictionary" => Icon::Languages,
+        _ if name == "device_tags" => Icon::Device,
+        _ if name == "manufacturing_package" || name == "copper_bar_program" => Icon::Drill,
+        "pdf" | "html" => Icon::Print,
+        "svg" => Icon::Image,
+        "dxf" | "dwg" => Icon::Line,
+        "gltf" | "stp" | "igs" | "ifc" | "jt" | "x_t" => Icon::Cube,
+        "csv" | "xlsx" => Icon::Table,
+        _ => Icon::Upload,
+    }
+}
+
+/// An entry of the export page: icon, title and the file type.
+fn export_entry(ui: &mut egui::Ui, icon: Icon, title: &str, extension: &str) -> egui::Response {
+    let size = egui::vec2(330.0, 44.0);
+    let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click());
+    resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, title));
+    let v = ui.visuals();
+    let stroke = if resp.hovered() { v.widgets.hovered.bg_stroke } else { v.widgets.noninteractive.bg_stroke };
+    ui.painter().rect(rect, 6.0, v.faint_bg_color, stroke, egui::StrokeKind::Inside);
+    icons::paint(ui.painter(), egui::Rect::from_center_size(egui::pos2(rect.min.x + 22.0, rect.center().y), egui::Vec2::splat(24.0)), icon, v.text_color());
+    let ext = ui.painter().layout_no_wrap(format!(".{extension}"), egui::TextStyle::Small.resolve(ui.style()), v.weak_text_color());
+    let galley = ui.painter().layout(title.to_string(), egui::TextStyle::Small.resolve(ui.style()), v.text_color(), size.x - 60.0 - ext.size().x);
+    ui.painter().galley(egui::pos2(rect.min.x + 42.0, rect.center().y - galley.size().y / 2.0), galley, v.text_color());
+    ui.painter().galley(egui::pos2(rect.max.x - 8.0 - ext.size().x, rect.center().y - ext.size().y / 2.0), ext, v.weak_text_color());
+    resp
+}
+
 pub(super) fn tile(ui: &mut egui::Ui, icon: Icon, title: &str) -> egui::Response {
     let size = egui::vec2(120.0, 92.0);
     let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click());

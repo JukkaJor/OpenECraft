@@ -88,3 +88,15 @@ fn serves_one_message_per_line() {
     assert_eq!(replies[3]["id"], 3);
     assert_eq!(replies[3]["result"]["isError"], false, "the project stays open between calls");
 }
+
+#[test]
+fn the_offered_tools_can_be_limited() {
+    let mut s = session();
+    s.mcp_tools = vec!["new_project".into(), "parts_*".into()];
+    let r = handle(&mut s, &request(1, "tools/list", json!({}))).unwrap();
+    let names: Vec<&str> = r["result"]["tools"].as_array().unwrap().iter().map(|t| t["name"].as_str().unwrap()).collect();
+    assert!(names.contains(&"new_project") && names.contains(&"parts_search"));
+    assert!(names.iter().all(|n| *n == "new_project" || n.starts_with("parts_")), "{names:?}");
+    let r = handle(&mut s, &request(2, "tools/call", json!({ "name": "check", "arguments": {} }))).unwrap();
+    assert_eq!(r["error"]["code"], -32602);
+}

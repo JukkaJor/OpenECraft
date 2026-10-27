@@ -6300,3 +6300,54 @@ Draw inner walls	Rita innerväggar
 Inner wall {}, side {}	Innervägg {}, sida {}
 Thickness	Tjocklek
 {}: {} stands in an inner wall	{}: {} står i en innervägg
+Opening {} replaces the current project, its unsaved changes are lost.	Att öppna {} ersätter det aktuella projektet, dess osparade ändringar går förlorade.
+Discard changes and open	Släng ändringarna och öppna
+Open link	Öppna länk
+Replace the file at path if it exists	Ersätt filen på path om den finns
+{} exists already: pass overwrite to replace it	{} finns redan: ange overwrite för att ersätta den
+{} has unsaved changes. Discard them?	{} har osparade ändringar. Släng dem?
+Discard changes	Släng ändringarna
+Locked by {} on the project server – read only	Låst av {} på projektservern – skrivskyddad
+A device tag must not be empty	En apparatbeteckning får inte vara tom
+Device tag {} must start with -, = or +	Beteckningen {} måste börja med -, = eller +
+Device tag {} must not contain blanks or the separators ; | ,	Beteckningen {} får inte innehålla blanksteg eller avgränsarna ; | ,
+{} lies outside page {}	{} ligger utanför sida {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Positionen {} / {} mm ligger utanför sidan ({} x {} mm)
+The wire has no length	Förbindningen har ingen längd
+Start and end are the same connection point	Början och slut är samma anslutningspunkt
+A page needs a name	En sida behöver ett namn
+Printing and export	Utskrift och export
+1 project on the server	1 projekt på servern
+pcs	st.
+Legend plate	Skylt
+KNX actuator	KNX-aktor
+KNX system device	KNX-systemenhet
+Battery monitor	Batterimonitor
+System monitoring	Systemövervakning
+Cable clamp rail	Kabelfästskena
+Document holder	Dokumentficka
+Door handle	Dörrhandtag
+Filter fan	Filterfläkt
+Outlet filter	Utloppsfilter
+PE busbar	PE-skena
+Rail standoff	Skendistans
+Screw	Skruv
+Nut	Mutter
+Washer	Bricka
+Side panel	Sidovägg
+DC-DC converter	DC/DC-omvandlare
+Inverter / charger	Växelriktare / laddare
+Solar charge controller	Solladdningsregulator
+Breaking capacity	Brytförmåga
+Poles	Poler
+Wrong user name or password	Fel användarnamn eller lösenord
+Too many failed sign-ins, try again later	För många misslyckade inloggningar, försök igen senare
+Part {} not found	Artikeln {} hittades inte
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	filen eller mappen hittades inte
+access denied	åtkomst nekad
+the file exists already	filen finns redan
+this is a folder	detta är en mapp
+the disk is full	disken är full
+Enclosures and rooms	Kapslingar och rum
+Not saved, locked or changed by another user: {}	Inte sparat, låst eller ändrat av en annan användare: {}

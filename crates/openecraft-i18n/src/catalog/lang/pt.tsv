@@ -6300,3 +6300,54 @@ Draw inner walls	Desenhar paredes internas
 Inner wall {}, side {}	Parede interna {}, lado {}
 Thickness	Espessura
 {}: {} stands in an inner wall	{}: {} está dentro de uma parede interna
+Opening {} replaces the current project, its unsaved changes are lost.	Abrir {} substitui o projeto atual; as alterações não salvas serão perdidas.
+Discard changes and open	Descartar alterações e abrir
+Open link	Abrir link
+Replace the file at path if it exists	Substituir o arquivo em path se existir
+{} exists already: pass overwrite to replace it	{} já existe: passe overwrite para substituí-lo
+{} has unsaved changes. Discard them?	{} tem alterações não salvas. Descartá-las?
+Discard changes	Descartar alterações
+Locked by {} on the project server – read only	Bloqueado por {} no servidor de projetos – somente leitura
+A device tag must not be empty	A identificação do dispositivo não pode estar vazia
+Device tag {} must start with -, = or +	A identificação {} deve começar com -, = ou +
+Device tag {} must not contain blanks or the separators ; | ,	A identificação {} não pode conter espaços nem os separadores ; | ,
+{} lies outside page {}	{} está fora da página {}
+Position {} / {} mm lies outside the page ({} x {} mm)	A posição {} / {} mm está fora da página ({} x {} mm)
+The wire has no length	A ligação não tem comprimento
+Start and end are the same connection point	Início e fim são o mesmo ponto de conexão
+A page needs a name	Uma página precisa de um nome
+Printing and export	Impressão e exportação
+1 project on the server	1 projeto no servidor
+pcs	un.
+Legend plate	Placa de identificação
+KNX actuator	Atuador KNX
+KNX system device	Dispositivo de sistema KNX
+Battery monitor	Monitor de bateria
+System monitoring	Monitoramento do sistema
+Cable clamp rail	Trilho de fixação de cabos
+Document holder	Porta-documentos
+Door handle	Maçaneta
+Filter fan	Ventilador com filtro
+Outlet filter	Filtro de saída
+PE busbar	Barramento PE
+Rail standoff	Espaçador de trilho
+Screw	Parafuso
+Nut	Porca
+Washer	Arruela
+Side panel	Painel lateral
+DC-DC converter	Conversor CC-CC
+Inverter / charger	Inversor / carregador
+Solar charge controller	Controlador de carga solar
+Breaking capacity	Capacidade de interrupção
+Poles	Polos
+Wrong user name or password	Nome de usuário ou senha incorretos
+Too many failed sign-ins, try again later	Muitas tentativas de login falharam, tente novamente mais tarde
+Part {} not found	Artigo {} não encontrado
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	arquivo ou pasta não encontrado
+access denied	acesso negado
+the file exists already	o arquivo já existe
+this is a folder	isto é uma pasta
+the disk is full	o disco está cheio
+Enclosures and rooms	Gabinetes e salas
+Not saved, locked or changed by another user: {}	Não salvo, bloqueado ou alterado por outro usuário: {}

@@ -160,7 +160,7 @@ pub static COMMANDS: &[Spec] = &[
     },
 ];
 
-const ROOM: &str = tr_const!("Room (location, e.g. =ROOM1)");
+const ROOM: &str = tr_const!("Room (location, e.g. +ROOM1)");
 
 const FACE: &str = tr_const!("wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms) or ceiling");
 

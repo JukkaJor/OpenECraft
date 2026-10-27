@@ -234,6 +234,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         }
     }
     for (pi, pg) in prj.pages.iter().enumerate() {
+        let (w, h) = crate::frame::of_page(prj, pi).size();
         for s in &pg.symbols {
             let Some(def) = prj.symbol(&s.sym) else {
                 v.push(crate::issue!(Severity::Error, Some((pi, s.id)), "Unknown symbol '{}'", s.sym));
@@ -241,6 +242,10 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
             };
             if def.func.has_tag() && s.tag.trim().is_empty() {
                 v.push(crate::issue!(Severity::Error, Some((pi, s.id)), "{} without device tag on page {}", def.name, pg.name));
+            }
+            if !(0.0..=w).contains(&s.pos.x) || !(0.0..=h).contains(&s.pos.y) {
+                let name = if s.tag.is_empty() { def.name.to_string() } else { s.tag.clone() };
+                v.push(crate::issue!(Severity::Warning, Some((pi, s.id)), "{} lies outside page {}", name, pg.name));
             }
         }
     }

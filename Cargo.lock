@@ -3479,6 +3479,7 @@ name = "openecraft-auth"
 version = "0.1.0"
 dependencies = [
  "argon2",
+ "axum",
  "getrandom 0.2.17",
  "ldap3",
  "log",

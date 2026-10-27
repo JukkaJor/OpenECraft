@@ -24,7 +24,7 @@ pub static TOOLS: &[Tool] = &[
 fn import_dictionary(s: &mut Session, a: &Args) -> Result<Value, String> {
     let text = match (a.str("csv"), a.str("path")) {
         (Some(csv), _) => csv.to_string(),
-        (None, Some(path)) => std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?,
+        (None, Some(path)) => std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?,
         (None, None) => return Err(tr_fmt!("Missing parameter: {}", "path")),
     };
     let n = translation::from_csv(s.project_mut()?, &text)?;

@@ -6300,3 +6300,54 @@ Draw inner walls	Disegna pareti interne
 Inner wall {}, side {}	Parete interna {}, lato {}
 Thickness	Spessore
 {}: {} stands in an inner wall	{}: {} si trova in una parete interna
+Opening {} replaces the current project, its unsaved changes are lost.	Aprire {} sostituisce il progetto corrente, le modifiche non salvate vanno perse.
+Discard changes and open	Scarta le modifiche e apri
+Open link	Apri collegamento
+Replace the file at path if it exists	Sostituire il file in path se esiste
+{} exists already: pass overwrite to replace it	{} esiste già: passare overwrite per sostituirlo
+{} has unsaved changes. Discard them?	{} ha modifiche non salvate. Scartarle?
+Discard changes	Scarta le modifiche
+Locked by {} on the project server – read only	Bloccato da {} sul server dei progetti – sola lettura
+A device tag must not be empty	La sigla del dispositivo non deve essere vuota
+Device tag {} must start with -, = or +	La sigla {} deve iniziare con -, = o +
+Device tag {} must not contain blanks or the separators ; | ,	La sigla {} non deve contenere spazi né i separatori ; | ,
+{} lies outside page {}	{} si trova fuori dalla pagina {}
+Position {} / {} mm lies outside the page ({} x {} mm)	La posizione {} / {} mm è fuori dalla pagina ({} x {} mm)
+The wire has no length	Il collegamento non ha lunghezza
+Start and end are the same connection point	Inizio e fine sono lo stesso punto di connessione
+A page needs a name	Una pagina ha bisogno di un nome
+Printing and export	Stampa ed esportazione
+1 project on the server	1 progetto sul server
+pcs	pz.
+Legend plate	Targhetta
+KNX actuator	Attuatore KNX
+KNX system device	Dispositivo di sistema KNX
+Battery monitor	Monitor batteria
+System monitoring	Monitoraggio del sistema
+Cable clamp rail	Barra fermacavi
+Document holder	Portadocumenti
+Door handle	Maniglia della porta
+Filter fan	Ventilatore con filtro
+Outlet filter	Filtro di uscita
+PE busbar	Barra PE
+Rail standoff	Distanziale per guida
+Screw	Vite
+Nut	Dado
+Washer	Rondella
+Side panel	Pannello laterale
+DC-DC converter	Convertitore DC-DC
+Inverter / charger	Inverter / caricabatterie
+Solar charge controller	Regolatore di carica solare
+Breaking capacity	Potere di interruzione
+Poles	Poli
+Wrong user name or password	Nome utente o password errati
+Too many failed sign-ins, try again later	Troppi accessi non riusciti, riprovare più tardi
+Part {} not found	Articolo {} non trovato
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	file o cartella non trovati
+access denied	accesso negato
+the file exists already	il file esiste già
+this is a folder	è una cartella
+the disk is full	il disco è pieno
+Enclosures and rooms	Armadi e locali
+Not saved, locked or changed by another user: {}	Non salvato, bloccato o modificato da un altro utente: {}

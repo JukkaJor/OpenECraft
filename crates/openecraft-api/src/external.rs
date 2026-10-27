@@ -88,7 +88,7 @@ impl External {
     /// The plugin in folder `dir`.
     pub fn open(dir: &Path) -> Result<External, String> {
         let path = dir.join(MANIFEST);
-        let text = std::fs::read_to_string(&path).map_err(|e| tr_fmt!("Cannot read {}: {}", path.display(), e))?;
+        let text = std::fs::read_to_string(&path).map_err(|e| tr_fmt!("Cannot read {}: {}", path.display(), openecraft_i18n::io_error(&e)))?;
         let m: Manifest = serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
         if m.api > API_VERSION {
             return Err(tr_fmt!("Plugin {} needs a newer OpenECraft (API {})", m.info.id, m.api));

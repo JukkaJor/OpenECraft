@@ -21,12 +21,15 @@ pub struct Session {
     pub vault: Vault,
     /// Built-in plugins; the command line adds the external ones (see `main`).
     pub plugins: Plugins,
+    /// Tools the MCP server offers: names or prefixes ending in `*`; empty = all
+    /// (`OPENECRAFT_MCP_TOOLS`).
+    pub mcp_tools: Vec<String>,
 }
 
 impl Session {
     pub fn new(server: Server) -> Session {
         let vault = Vault::new(Box::new(Http));
-        Session { project: None, path: None, saved: None, history: None, server, vault, plugins: Plugins::new(crate::tools::all().map(|t| t.name)) }
+        Session { project: None, path: None, saved: None, history: None, server, vault, plugins: Plugins::new(crate::tools::all().map(|t| t.name)), mcp_tools: Vec::new() }
     }
 
     pub fn project(&self) -> Result<&Project, String> {
@@ -48,7 +51,7 @@ impl Session {
 
     /// Opens a project file or archive (converted to the current file format).
     pub fn open(&mut self, path: &str) -> Result<Conversion, String> {
-        let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+        let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
         let (prj, conv) = archive::read_project(&bytes)?;
         // Saving writes a project file, not the archive.
         let file = (!archive::is_archive(&bytes)).then(|| PathBuf::from(path));
@@ -60,7 +63,7 @@ impl Session {
     pub fn save(&mut self, path: Option<&str>) -> Result<PathBuf, String> {
         let prj = self.project()?;
         let path = path.map(PathBuf::from).or_else(|| self.path.clone()).ok_or_else(|| tr("The project has no file yet: pass a path").to_string())?;
-        std::fs::write(&path, prj.to_json()).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), e))?;
+        std::fs::write(&path, prj.to_json()).map_err(|e| tr_fmt!("Cannot write {}: {}", path.display(), openecraft_i18n::io_error(&e)))?;
         self.saved = Some(prj.clone());
         self.path = Some(path.clone());
         Ok(path)

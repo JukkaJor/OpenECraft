@@ -21,6 +21,7 @@ pub static TOOLS: &[Tool] = &[
             optional("name", Kind::Str, tr_const!("Project name")),
             optional("demo", Kind::Bool, tr_const!("Start from the demo project")),
             optional("template", Kind::Str, tr_const!("Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file")),
+            optional("overwrite", Kind::Bool, tr_const!("Replace the file at path if it exists")),
             DISCARD,
         ],
         needs_project: false,
@@ -101,6 +102,9 @@ fn summary(s: &Session) -> Result<Value, String> {
 
 fn new_project(s: &mut Session, a: &Args) -> Result<Value, String> {
     ensure_unsaved_ok(s, a)?;
+    if let Some(path) = a.str("path").filter(|p| std::path::Path::new(p).exists() && !a.flag("overwrite")) {
+        return Err(tr_fmt!("{} exists already: pass overwrite to replace it", path));
+    }
     let mut prj = if a.flag("demo") {
         sample::demo_project()
     } else if let Some(t) = a.str("template") {

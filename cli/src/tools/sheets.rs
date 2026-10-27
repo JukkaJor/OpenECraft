@@ -31,7 +31,7 @@ pub static TOOLS: &[Tool] = &[
 
 fn add_document_page(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let prj = s.project_mut()?;
     let after = match a.str("after") {
         Some(n) => page_index(prj, n)?,
@@ -53,7 +53,7 @@ fn export_document(s: &mut Session, a: &Args) -> Result<Value, String> {
     let doc = pg.document.as_ref().ok_or_else(|| tr_fmt!("Page {} has no embedded document", pg.name))?;
     let bytes = doc.bytes()?;
     let path = a.req("path");
-    std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "path": path, "name": doc.name, "bytes": bytes.len() }))
 }
 

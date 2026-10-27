@@ -28,7 +28,7 @@ fn export_library(s: &mut Session, a: &Args) -> Result<Value, String> {
     let content = s.project()?.property_db.to_json();
     match a.str("path") {
         Some(path) => {
-            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
             Ok(json!({ "path": path, "bytes": content.len() }))
         }
         None => serde_json::from_str(&content).map_err(|e| e.to_string()),
@@ -37,7 +37,7 @@ fn export_library(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn import_library(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let lib = Library::from_json(&text)?;
     let n = s.project_mut()?.property_db.merge(lib);
     Ok(json!({ "path": path, "imported": n }))

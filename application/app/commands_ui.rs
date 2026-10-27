@@ -139,6 +139,11 @@ impl App {
             }
             return;
         }
+        let replaces = matches!(cmd, Cmd::NewProject | Cmd::NewFromTemplateFile | Cmd::OpenDemo | Cmd::Open);
+        if replaces && self.session.dirty() && !std::mem::take(&mut self.discard_ok) && self.remote.shared.is_none() {
+            self.confirm_discard = Some(cmd);
+            return;
+        }
         let page = self.session.page;
         match cmd {
             // ------------------------------------------------------------ file

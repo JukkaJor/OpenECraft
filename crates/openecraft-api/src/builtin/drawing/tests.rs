@@ -150,3 +150,35 @@ fn align_distribute_and_copy() {
     assert_eq!(copied["ids"].as_array().unwrap().len(), 2);
     assert_eq!(s.project().unwrap().pages[0].symbols.len(), 5);
 }
+
+#[test]
+fn positions_tags_and_wires_are_checked() {
+    let mut s = new_session();
+    let err = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": -5000, "y": -5000 })).unwrap_err();
+    assert!(err.contains("outside the page"), "{err}");
+    assert!(run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 1e12, "y": 100 })).is_err());
+    assert!(run(&mut s, "add_text", json!({ "page": "1", "x": 500, "y": 10, "text": "x" })).is_err());
+    assert!(run(&mut s, "add_wire", json!({ "page": "1", "points": [[10, 10], [900, 10]] })).is_err());
+    // An empty tag is the next free one; tags need their prefix and no separators.
+    let coil = run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100, "tag": "" })).unwrap();
+    assert_eq!(coil["tag"], "-K1");
+    for tag in ["K 1;<x>", "S7", "-K;5"] {
+        assert!(run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 120, "y": 100, "tag": tag })).is_err(), "{tag}");
+        assert!(run(&mut s, "rename_device", json!({ "old": "-K1", "new": tag })).is_err(), "{tag}");
+    }
+    let err = run(&mut s, "rename_device", json!({ "old": "-K1", "new": "" })).unwrap_err();
+    assert!(err.contains("must not be empty"), "{err}");
+    assert!(run(&mut s, "update_symbol", json!({ "page": "1", "id": coil["id"], "x": -40 })).is_err());
+    // Wires without length and a point connected to itself are refused.
+    assert!(run(&mut s, "add_wire", json!({ "page": "1", "points": [[10, 10], [10, 10]] })).unwrap_err().contains("no length"));
+    assert!(run(&mut s, "connect", json!({ "page": "1", "from": "-K1:A1", "to": "-K1:A1" })).is_err());
+    assert!(run(&mut s, "set_page", json!({ "page": "1", "name": " " })).is_err());
+}
+
+#[test]
+fn symbols_outside_the_page_are_reported() {
+    let mut s = new_session();
+    run(&mut s, "place_symbol", json!({ "page": "1", "symbol": "coil", "x": 100, "y": 100 })).unwrap();
+    s.project_mut().unwrap().pages[0].symbols[0].pos = p(-500.0, 40.0);
+    assert!(issues(&mut s).iter().any(|m| m == "-K1 lies outside page 1"), "{:?}", issues(&mut s));
+}

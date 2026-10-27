@@ -115,7 +115,7 @@ fn text_properties(ui: &mut egui::Ui, t: &mut TextItem, names: &[String]) {
         ui.label(tr("Link"));
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut t.link).desired_width(150.0));
-            if !t.link.is_empty() && ui.button(tr("Open")).on_hover_text(tr("Ctrl + click on the text opens it as well")).clicked() {
+            if !t.link.is_empty() && ui.button(tr("Open link")).on_hover_text(tr("Ctrl + click on the text opens it as well")).clicked() {
                 ui.ctx().open_url(egui::OpenUrl::new_tab(t.link.clone()));
             }
         });
@@ -728,13 +728,14 @@ impl App {
         egui::Window::new(tr("Rename device")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
             ui.label(tr_fmt!("New tag for {}", old));
             let r = ui.text_edit_singleline(&mut new);
-            let exists = new != old && self.session.prj.all_tags().contains(&new);
-            if exists {
-                ui.colored_label(crate::style::error(), tr("This tag is already used"));
+            let problem = rename_problem(&self.session.prj, &old, new.trim());
+            if let Some(p) = &problem {
+                ui.colored_label(crate::style::error(), p);
             }
             let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-            if (ui.add_enabled(!exists && !new.is_empty(), egui::Button::new(tr("Rename"))).clicked() || (enter && !exists && !new.is_empty())) && new != old {
-                ops::rename_device(&mut self.session.prj, &old, &new);
+            let ok = problem.is_none();
+            if (ui.add_enabled(ok, egui::Button::new(tr("Rename"))).clicked() || (enter && ok)) && new.trim() != old {
+                ops::rename_device(&mut self.session.prj, &old, new.trim());
                 done = true;
             }
         });
@@ -742,6 +743,17 @@ impl App {
             self.rename_device = Some((old, new));
         }
     }
+}
+
+/// Why a device cannot be renamed to `new` (None: it can).
+pub(super) fn rename_problem(prj: &openecraft_core::model::Project, old: &str, new: &str) -> Option<String> {
+    if new == old {
+        return None;
+    }
+    if let Err(e) = ops::check_tag(new) {
+        return Some(e);
+    }
+    prj.all_tags().iter().any(|t| t == new).then(|| tr("This tag is already used").to_string())
 }
 
 /// What the context menu of a device in the navigator asks for.

@@ -133,7 +133,7 @@ fn report(s: &mut Session, a: &Args) -> Result<Value, String> {
         "xlsx" => {
             let path = a.str("path").ok_or_else(|| tr("The format xlsx needs a path").to_string())?;
             let bytes = openecraft_core::xlsx::write(&[(title, table.sheet_rows())]);
-            std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            std::fs::write(path, &bytes).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
             Ok(json!({ "path": path, "rows": table.rows.len() }))
         }
         other => Err(tr_fmt!("Unknown format: {}", other)),
@@ -149,6 +149,24 @@ fn list_exports(s: &mut Session, _: &Args) -> Result<Value, String> {
     Ok(Value::Array(list))
 }
 
+/// `name=value` pairs separated by commas; a part without `=` continues the value
+/// before it, so page lists keep their commas (`pages=1-3, 5`).
+fn split_options(text: &str) -> Result<Vec<(String, String)>, String> {
+    let mut out: Vec<(String, String)> = Vec::new();
+    for part in text.split(',').filter(|p| !p.trim().is_empty()) {
+        let pair = part.split_once('=').filter(|(k, _)| !k.trim().is_empty() && !k.trim().contains(char::is_whitespace));
+        match (pair, out.last_mut()) {
+            (Some((k, v)), _) => out.push((k.trim().to_string(), v.to_string())),
+            (None, Some((_, v))) => {
+                v.push(',');
+                v.push_str(part);
+            }
+            (None, None) => return Err(tr_fmt!("Option {} needs the form name=value", part.trim())),
+        }
+    }
+    Ok(out.into_iter().map(|(k, v)| (k, v.trim().to_string())).collect())
+}
+
 /// Runs an exporter of the registry: `page` and the file name of `path` are passed
 /// on if the exporter takes them; the texts are generated in `language`.
 fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
@@ -156,7 +174,7 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     match a.str("path") {
         Some(path) => {
             let content = out.into_bytes();
-            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            std::fs::write(path, &content).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
             Ok(json!({ "path": path, "bytes": content.len() }))
         }
         None => out.text().map(Value::String).ok_or_else(|| tr("This format needs an output file (path)").to_string()),
@@ -184,11 +202,10 @@ pub(super) fn export_content(s: &Session, a: &Args, file: Option<&str>) -> Resul
     if let Some(path) = file.filter(|_| takes("file")) {
         args.insert("file".into(), path.rsplit(['/', '\\']).next().unwrap_or(path).into());
     }
-    for opt in a.str("options").unwrap_or_default().split(',').filter(|o| !o.trim().is_empty()) {
-        let (k, v) = opt.split_once('=').ok_or_else(|| tr_fmt!("Option {} needs the form name=value", opt.trim()))?;
-        let p = e.params.iter().find(|p| p.name == k.trim()).ok_or_else(|| tr_fmt!("Unknown parameter: {}", k.trim()))?;
-        let value = p.kind.parse(v.trim()).ok_or_else(|| tr_fmt!("Parameter {} has the wrong type", k.trim()))?;
-        args.insert(k.trim().to_string(), value);
+    for (k, v) in split_options(a.str("options").unwrap_or_default())? {
+        let p = e.params.iter().find(|p| p.name == k).ok_or_else(|| tr_fmt!("Unknown parameter: {}", k))?;
+        let value = p.kind.parse(&v).ok_or_else(|| tr_fmt!("Parameter {} has the wrong type", k))?;
+        args.insert(k, value);
     }
     params::check(&e.params, &args)?;
     translation::with_language(prj, &lang, |prj| {

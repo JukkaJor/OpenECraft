@@ -213,6 +213,14 @@ fn facet_title(name: &str) -> String {
         "Voltage" => tr("Voltage").into(),
         "Current" => tr("Current").into(),
         "Power" => tr("Power").into(),
+        // Technical data of the bundled catalogs
+        "Breaking capacity" => tr("Breaking capacity").into(),
+        "Poles" => tr("Poles").into(),
+        "Cross-section" => tr("Cross-section").into(),
+        "Power loss" => tr("Power loss").into(),
+        "Rated current" => tr("Rated current").into(),
+        "Characteristic" => tr("Characteristic").into(),
+        "Coil voltage" => tr("Coil voltage").into(),
         other => other.to_string(),
     }
 }
@@ -367,8 +375,8 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
             });
         });
         ui.separator();
-        // Results
-        let width = (ui.available_width() * 0.55).max(320.0);
+        // Results; the details keep at least a readable width.
+        let width = (ui.available_width() * 0.55).min(ui.available_width() - 300.0).max(240.0);
         ui.allocate_ui_with_layout(egui::vec2(width, h), egui::Layout::top_down(egui::Align::Min), |ui| {
             let Some(r) = b.result.clone() else {
                 ui.weak(tr("Connect to a parts server and search."));
@@ -405,7 +413,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         let in_db = local.iter().any(|l| l.number == p.number);
                         let text = RichText::new(format!("{}  {}", p.number, p.description));
                         let text = if in_db { text.strong() } else { text };
-                        let resp = ui.selectable_label(b.selected.as_deref() == Some(p.number.as_str()), text);
+                        let resp = ui.add(egui::Button::selectable(b.selected.as_deref() == Some(p.number.as_str()), text).truncate());
                         let resp = if in_db { resp.on_hover_text(tr("Already in the parts database")) } else { resp };
                         if resp.clicked() {
                             b.selected = Some(p.number.clone());
@@ -420,6 +428,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
         ui.separator();
         // Details
         ui.vertical(|ui| {
+            ui.set_min_width(260.0);
             egui::ScrollArea::vertical().id_salt("portal_detail").auto_shrink([false, false]).max_height(h).show(ui, |ui| {
                 let Some(p) = b.selected_part().cloned() else {
                     ui.weak(tr("Select a part to see its details."));

@@ -38,3 +38,10 @@ fn old_sessions_are_dropped() {
 fn content_ids() {
     assert_eq!(sha256_hex(b"abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 }
+
+#[test]
+fn short_passwords_are_refused() {
+    assert!(check_password("1234567").is_err());
+    assert!(check_password("        ").is_err());
+    assert!(check_password("correct horse").is_ok());
+}

@@ -6300,3 +6300,54 @@ Draw inner walls	Kreslit vnitřní stěny
 Inner wall {}, side {}	Vnitřní stěna {}, strana {}
 Thickness	Tloušťka
 {}: {} stands in an inner wall	{}: {} stojí ve vnitřní stěně
+Opening {} replaces the current project, its unsaved changes are lost.	Otevření {} nahradí aktuální projekt, jeho neuložené změny budou ztraceny.
+Discard changes and open	Zahodit změny a otevřít
+Open link	Otevřít odkaz
+Replace the file at path if it exists	Nahradit soubor v path, pokud existuje
+{} exists already: pass overwrite to replace it	{} již existuje: pro nahrazení zadejte overwrite
+{} has unsaved changes. Discard them?	{} obsahuje neuložené změny. Zahodit je?
+Discard changes	Zahodit změny
+Locked by {} on the project server – read only	Uzamčeno uživatelem {} na projektovém serveru – jen pro čtení
+A device tag must not be empty	Označení zařízení nesmí být prázdné
+Device tag {} must start with -, = or +	Označení {} musí začínat znakem -, = nebo +
+Device tag {} must not contain blanks or the separators ; | ,	Označení {} nesmí obsahovat mezery ani oddělovače ; | ,
+{} lies outside page {}	{} leží mimo stránku {}
+Position {} / {} mm lies outside the page ({} x {} mm)	Poloha {} / {} mm leží mimo stránku ({} x {} mm)
+The wire has no length	Spoj nemá délku
+Start and end are the same connection point	Začátek a konec jsou stejný přípojný bod
+A page needs a name	Stránka musí mít název
+Printing and export	Tisk a export
+1 project on the server	1 projekt na serveru
+pcs	ks
+Legend plate	Popisný štítek
+KNX actuator	Akční člen KNX
+KNX system device	Systémové zařízení KNX
+Battery monitor	Monitor baterie
+System monitoring	Monitorování systému
+Cable clamp rail	Kotevní lišta kabelů
+Document holder	Kapsa na dokumentaci
+Door handle	Klika dveří
+Filter fan	Filtrační ventilátor
+Outlet filter	Výstupní filtr
+PE busbar	Přípojnice PE
+Rail standoff	Distanční držák lišty
+Screw	Šroub
+Nut	Matice
+Washer	Podložka
+Side panel	Bočnice
+DC-DC converter	Měnič DC-DC
+Inverter / charger	Střídač / nabíječka
+Solar charge controller	Solární regulátor nabíjení
+Breaking capacity	Vypínací schopnost
+Poles	Póly
+Wrong user name or password	Nesprávné uživatelské jméno nebo heslo
+Too many failed sign-ins, try again later	Příliš mnoho neúspěšných přihlášení, zkuste to později
+Part {} not found	Artikl {} nenalezen
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	soubor nebo složka nenalezeny
+access denied	přístup odepřen
+the file exists already	soubor již existuje
+this is a folder	toto je složka
+the disk is full	disk je plný
+Enclosures and rooms	Rozvaděčové skříně a místnosti
+Not saved, locked or changed by another user: {}	Neuloženo, uzamčeno nebo změněno jiným uživatelem: {}

@@ -33,6 +33,8 @@ nav button.active { background: var(--chip); }
 #account { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 #account input { width: 130px; }
 main { display: grid; grid-template-columns: 270px 1fr; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+main:has(#facets:empty) { grid-template-columns: 1fr; }
+#facets:empty { display: none; }
 aside, section.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; }
 aside h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; }
 aside h3:first-child { margin-top: 0; }
@@ -76,6 +78,8 @@ footer { text-align: center; color: var(--muted); font-size: 13px; padding: 8px 
 .star { font-size: 18px; line-height: 1; }
 @media (max-width: 800px) {
   main { grid-template-columns: 1fr; padding: 12px 16px; }
+  /* The results come first, the filters below them. */
+  #facets { order: 2; }
   #account input { width: 110px; }
   .hide-narrow { display: none; }
 }
@@ -130,6 +134,16 @@ function shown(facet, value) {
   return value;
 }
 function date(secs) { return secs ? new Date(secs * 1000).toLocaleDateString(T.lang) : ""; }
+function dateTime(secs) { return secs ? new Date(secs * 1000).toLocaleString(T.lang, { dateStyle: "short", timeStyle: "short" }) : ""; }
+function size(bytes) { return bytes < 1024 ? bytes + " B" : bytes < 1048576 ? Math.round(bytes / 1024) + " kB" : (bytes / 1048576).toLocaleString(T.lang, { maximumFractionDigits: 1 }) + " MB"; }
+/// The CSV export of the parts shown (the filters the server can read from the address).
+function exportUrl() {
+  const p = new URLSearchParams();
+  for (const k of ["q"].concat(FIXED)) if (query[k]) p.set(k, query[k]);
+  p.set("sort", query.sort);
+  if (query.descending) p.set("descending", "true");
+  return API + "/export.csv?" + p.toString();
+}
 function money(p) { return p.price ? p.price.toLocaleString(T.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + esc(p.currency) : ""; }
 function partLink(n) { return '<a href="#part=' + encodeURIComponent(n) + '">' + esc(n) + "</a>"; }
 
@@ -178,7 +192,10 @@ function renderAccount() {
         await loadFavorites();
         renderAccount();
         route();
-      } catch (err) { document.getElementById("login-error").textContent = err.message; }
+      } catch (err) {
+        const msg = err.status === 401 ? t("Wrong user name or password") : err.status === 429 ? t("Too many failed sign-ins, try again later") : err.message;
+        document.getElementById("login-error").textContent = msg;
+      }
     };
   }
 }
@@ -272,7 +289,8 @@ function renderResults(r) {
   const sorts = ["Number", "Manufacturer", "Description", "Price", "Modified"];
   let html = '<div class="toolbar"><strong>' + tf("{} parts", r.total) + '</strong><span style="display:flex;gap:10px;flex-wrap:wrap"><label>' + esc(t("Sort by")) + ' <select id="sort">' +
     sorts.map(s => '<option value="' + s + '"' + (query.sort === s ? " selected" : "") + ">" + esc(key("sort", s)) + "</option>").join("") +
-    '</select></label><label><input type="checkbox" id="desc"' + (query.descending ? " checked" : "") + "> " + esc(t("Descending")) + '</label><a href="' + API + '/export.csv">' + esc(t("Export (CSV)")) + "</a></span></div>";
+    '</select></label><label><input type="checkbox" id="desc"' + (query.descending ? " checked" : "") + "> " + esc(t("Descending")) + "</label>" +
+    (view === "favorites" || query.attributes.length ? "" : '<a href="' + esc(exportUrl()) + '">' + esc(t("Export (CSV)")) + "</a>") + "</span></div>";
   if (!r.parts.length) html += '<div class="status">' + esc(t("No parts found")) + "</div>";
   else {
     html += '<div class="table-wrap"><table><thead><tr><th></th><th>' + esc(t("Part number")) + "</th><th>" + esc(t("Description")) + '</th><th class="hide-narrow">' + esc(t("Manufacturer")) + '</th><th class="hide-narrow">' + esc(t("Product group")) + '</th><th class="num">' + esc(t("Price")) + "</th><th>" + esc(t("Lifecycle")) + "</th></tr></thead><tbody>";
@@ -299,6 +317,11 @@ function renderResults(r) {
   });
 }
 
+/// A box with a heading; nothing when it has no rows.
+function box(title, body) {
+  return body ? '<div class="box"><h3>' + esc(title) + "</h3>" + body + "</div>" : "";
+}
+
 function rows(pairs) {
   const items = pairs.filter(([, v]) => v !== "" && v !== null && v !== undefined && v !== 0);
   return items.length ? "<dl>" + items.map(([k, v]) => "<dt>" + esc(t(k)) + "</dt><dd>" + v + "</dd>").join("") + "</dl>" : "";
@@ -311,7 +334,12 @@ async function showPart(number) {
   try {
     p = await api("/parts/" + encodeURIComponent(number));
     history = await api("/parts/" + encodeURIComponent(number) + "/history").catch(() => []);
-  } catch (e) { content('<div class="status error">' + esc(e.message) + "</div>"); return; }
+  } catch (e) {
+    const msg = e.status === 404 ? tf("Part {} not found", number) : esc(e.message);
+    content('<div class="status error">' + msg + '</div><div class="status"><a href="#" id="back">← ' + esc(t("Back to the results")) + "</a></div>");
+    document.getElementById("back").onclick = ev => { ev.preventDefault(); history_back(); };
+    return;
+  }
   const life = p.lifecycle || "Active";
   const fav = favorites.includes(p.number);
   const mm = v => v ? v + " mm" : "";
@@ -322,31 +350,31 @@ async function showPart(number) {
     '<span class="badge ' + life + '">' + esc(key("lifecycle", life)) + "</span>" + (p.successor ? " " + tf("Replaced by {}", "\u0001") .replace("\u0001", partLink(p.successor)) : "") + "</div></div>";
   html += session ? '<div><button id="fav">' + (fav ? "★ " + esc(t("Remove from favorites")) : "☆ " + esc(t("Add to favorites"))) + "</button></div>" : "";
   html += '</div><div class="grid">';
-  html += '<div class="box"><h3>' + esc(t("General")) + "</h3>" + rows([
+  html += box(t("General"), rows([
     ["Type number", esc(p.type_number)], ["Order number", esc(p.order_number)], ["Manufacturer", esc(p.manufacturer)], ["Supplier", esc(p.supplier)],
     ["Product top group", esc(key("top_group", p.top_group || "Electrical"))], ["Product group", esc(t(p.group))], ["Product subgroup", esc(t(p.subgroup))],
     ["Catalog", esc(catalogNames[(p.catalog || "").toLowerCase()] || p.catalog || "")], ["Identifier", esc(p.identifier)], ["Note", esc(p.note)],
-    ["Last change", esc(date(p.modified))]]) + "</div>";
-  html += '<div class="box"><h3>' + esc(t("Technical data")) + "</h3>" + rows([
+    ["Last change", esc(date(p.modified))]]));
+  html += box(t("Technical data"), rows([
     ["Voltage", esc(p.voltage)], ["Current", esc(p.current)], ["Power", esc(p.power)], ["Technical data", esc(p.tech_data)], ["Certificates", esc(p.certificates)],
     ["Datasheet", p.datasheet ? '<a href="' + esc(p.datasheet) + '" target="_blank" rel="noopener">' + esc(p.datasheet) + "</a>" : ""],
     ["Functions", esc((p.functions || []).map(f => f.kind + (f.pins ? " " + f.pins : "")).join("\n"))],
-    ["Has 3D model", p.model_3d ? "✓" : ""], ["Has 2D model", p.model_2d ? "✓" : ""]]) + "</div>";
-  html += '<div class="box"><h3>' + esc(t("Commercial data")) + " / " + esc(t("Mounting data")) + "</h3>" + rows([
+    ["Has 3D model", p.model_3d ? "✓" : ""], ["Has 2D model", p.model_2d ? "✓" : ""]]));
+  html += box(t("Commercial data") + " / " + t("Mounting data"), rows([
     ["Price", money(p) + (p.price_unit > 1 ? " / " + p.price_unit + " " + esc(p.quantity_unit) : "")], ["Width", mm(p.width)], ["Height", mm(p.height)], ["Depth", mm(p.depth)],
     ["Weight", p.weight ? p.weight + " kg" : ""], ["Mounting", esc(p.mounting)], ["Accessories", (p.accessories || []).map(partLink).join(", ")],
     ["Power loss", md.power_loss ? md.power_loss + " W" : ""], ["Clearance top", mm(md.clearance_top)], ["Clearance bottom", mm(md.clearance_bottom)],
     ["Mounting holes", (md.holes || []).length ? esc((md.hole_thread || "") + ": " + md.holes.map(h => h[0] + "," + h[1]).join("; ")) : ""],
-    ["Door cutout", cutout(md.door_cutout)], ["Cutout", cutout(md.cutout)]]) + "</div>";
+    ["Door cutout", cutout(md.door_cutout)], ["Cutout", cutout(md.cutout)]]));
   if (files.length) {
     const link = a => '<a href="' + API + "/files/" + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' + esc(a.name) + "</a>";
-    html += '<div class="box"><h3>' + esc(t("Files")) + "</h3>" + rows(files.map(a => [key("kind", a.kind || "Other"), link(a) + ' <span class="muted">' + Math.max(1, Math.round(a.size / 1024)) + " kB</span>"]));
+    html += '<div class="box"><h3>' + esc(t("Files")) + "</h3>" + rows(files.map(a => [key("kind", a.kind || "Other"), link(a) + ' <span class="muted">' + size(a.size) + "</span>"]));
     const images = files.filter(a => a.kind === "Image");
     if (images.length) html += '<div class="images">' + images.map(a => '<img loading="lazy" alt="' + esc(a.name) + '" src="' + API + "/files/" + encodeURIComponent(a.id) + '">').join("") + "</div>";
     html += "</div>";
   }
   if (history.length) {
-    html += '<div class="box"><h3>' + esc(t("History")) + "</h3>" + rows(history.map(h => [tf("Revision {}", h.revision), esc(date(h.time) + " · " + key("change", h.change) + (h.user ? " · " + h.user : ""))])) + "</div>";
+    html += '<div class="box"><h3>' + esc(t("History")) + "</h3>" + rows(history.map(h => [tf("Revision {}", h.revision), esc(dateTime(h.time) + " · " + key("change", h.change) + (h.user ? " · " + h.user : ""))])) + "</div>";
   }
   html += "</div></div>";
   content(html);

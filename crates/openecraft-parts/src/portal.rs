@@ -34,17 +34,26 @@ impl Lifecycle {
     }
 }
 
+/// Also read in lower case (`?kind=datasheet`).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum AttachmentKind {
+    #[serde(alias = "datasheet")]
     Datasheet,
+    #[serde(alias = "image")]
     Image,
+    #[serde(alias = "manual")]
     Manual,
+    #[serde(alias = "certificate")]
     Certificate,
+    #[serde(alias = "drawing")]
     Drawing,
+    #[serde(alias = "model3d")]
     Model3d,
     /// Macro library (JSON) for the schematic.
+    #[serde(alias = "macro")]
     Macro,
     #[default]
+    #[serde(alias = "other")]
     Other,
 }
 
@@ -192,16 +201,21 @@ impl Right for PartsRight {
 
 /// Built-in role of a user account on the parts server. Ordered by permissions.
 /// Further rights come from the grants of the server's policy ([`crate::access`]).
+/// Also read in lower case, as the project server writes its roles.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Role {
     /// Browse and keep favorites.
     #[default]
+    #[serde(alias = "reader")]
     Reader,
     /// Change the parts and catalogs of the user's own manufacturer.
+    #[serde(alias = "manufacturer")]
     Manufacturer,
     /// Change all parts and catalogs.
+    #[serde(alias = "editor")]
     Editor,
     /// Also manage the users.
+    #[serde(alias = "admin")]
     Admin,
 }
 

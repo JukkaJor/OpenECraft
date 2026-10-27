@@ -326,7 +326,7 @@ fn history(s: &mut Session, a: &Args) -> Result<Value, String> {
 fn attach(s: &mut Session, a: &Args) -> Result<Value, String> {
     let (number, path) = (a.req("number"), a.req("path"));
     let kind = optional_choice(a, "kind", &AttachmentKind::ALL)?;
-    let data = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let data = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| path.into());
     let part = s.server.attach(number, &name, kind, data)?;
     Ok(json!({ "number": part.number, "attachments": part.attachments }))
@@ -340,7 +340,7 @@ fn detach(s: &mut Session, a: &Args) -> Result<Value, String> {
 fn file(s: &mut Session, a: &Args) -> Result<Value, String> {
     let (id, path) = (a.req("id"), a.req("path"));
     let data = s.server.file(id)?;
-    std::fs::write(path, &data).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    std::fs::write(path, &data).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "path": path, "bytes": data.len() }))
 }
 
@@ -527,7 +527,7 @@ fn delete(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn import(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let content = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let content = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     if !openecraft_edz::is_edz(&content) {
         let result = s.server.import(content)?;
         return Ok(json!({ "imported": result.imported, "revision": result.revision }));
@@ -551,7 +551,7 @@ fn export(s: &mut Session, a: &Args) -> Result<Value, String> {
     };
     match a.str("path") {
         Some(path) => {
-            std::fs::write(path, &csv).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+            std::fs::write(path, &csv).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
             Ok(json!({ "path": path, "bytes": csv.len() }))
         }
         None => Ok(Value::String(csv)),

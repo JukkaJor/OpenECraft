@@ -1,6 +1,6 @@
 //! Main window of the parts manager: connection, part tree, part editor.
 
-use openecraft_i18n::{tr, tr_fmt};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::session::{FollowUp, Session};
 use egui::{Color32, Key, KeyboardShortcut, Modifiers, RichText};
 use openecraft_parts::{date_from_unix, to_csv, PartFilter};
@@ -67,6 +67,8 @@ pub struct ManagerApp {
     password: String,
     started: bool,
     title: String,
+    /// Language the status text was made in.
+    shown_lang: openecraft_i18n::Lang,
 }
 
 const URL_KEY: &str = "server_url";
@@ -93,6 +95,7 @@ impl ManagerApp {
             password: String::new(),
             started: false,
             title: String::new(),
+            shown_lang: openecraft_i18n::lang(),
         }
     }
 
@@ -597,11 +600,11 @@ impl ManagerApp {
         let (text, button) = match confirm {
             Confirm::Discard(_) => {
                 let n = self.session.draft.as_ref().map(|d| d.part.number.clone()).unwrap_or_default();
-                (tr_fmt!("Discard the unsaved changes of {}?", n), "Discard")
+                (tr_fmt!("Discard the unsaved changes of {}?", n), tr_const!("Discard"))
             }
-            Confirm::Delete(n) => (tr_fmt!("Delete part {} from the server? This cannot be undone.", n), "🗑 Delete"),
-            Confirm::DeleteCatalog(id) => (tr_fmt!("Delete catalog {} from the server?", id), "🗑 Delete"),
-            Confirm::DeleteUser(n) => (tr_fmt!("Delete user {}? Their sessions and favorites are removed.", n), "🗑 Delete"),
+            Confirm::Delete(n) => (tr_fmt!("Delete part {} from the server? This cannot be undone.", n), tr_const!("🗑 Delete")),
+            Confirm::DeleteCatalog(id) => (tr_fmt!("Delete catalog {} from the server?", id), tr_const!("🗑 Delete")),
+            Confirm::DeleteUser(n) => (tr_fmt!("Delete user {}? Their sessions and favorites are removed.", n), tr_const!("🗑 Delete")),
         };
         let mut answer = None;
         egui::Modal::new(egui::Id::unique("confirm")).show(ctx, |ui| {
@@ -609,7 +612,7 @@ impl ManagerApp {
             ui.label(text);
             ui.add_space(8.0);
             ui.horizontal(|ui| {
-                if ui.button(button).clicked() {
+                if ui.button(tr(button)).clicked() {
                     answer = Some(true);
                 }
                 if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(Key::Escape)) {
@@ -642,6 +645,11 @@ impl eframe::App for ManagerApp {
             self.client.check(&ctx);
         }
         self.poll(&ctx);
+        if openecraft_i18n::lang() != self.shown_lang {
+            // The status was made in the language before.
+            self.shown_lang = openecraft_i18n::lang();
+            self.client.status.clear();
+        }
         if ctx.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(Modifiers::COMMAND, Key::S))) && self.writable() {
             self.save(&ctx);
         }
@@ -671,9 +679,9 @@ impl eframe::App for ManagerApp {
         }
         self.dialogs(&ctx);
 
-        let title = format!("OpenECraft parts manager – {}{}", self.client.url, if self.session.dirty() { " *" } else { "" });
+        let title = format!("{} – {}{}", tr("OpenECraft parts manager"), self.client.url, if self.session.dirty() { " *" } else { "" });
         if title != self.title {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
+            openecraft_ui::io::set_title(&ctx, &title);
             self.title = title;
         }
     }

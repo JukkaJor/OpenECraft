@@ -35,7 +35,7 @@ impl App {
                     (8, Icon::Check, tr("The project check")),
                     (9, Icon::Report, tr("Reports")),
                     (10, Icon::Enclosure, tr("Panel layout")),
-                    (11, Icon::Upload, tr("Output")),
+                    (11, Icon::Upload, tr("Printing and export")),
                 ] {
                     if super::backstage::tile(ui, icon, title).clicked() {
                         self.help_chapter(n);

@@ -160,3 +160,11 @@ fn keys_and_catalog_ids() {
     assert_eq!(top_group_from_key("Process"), Some(TopGroup::Process));
     assert_eq!(catalog_id(" ABB Contactors 2026! "), "abb_contactors_2026");
 }
+
+#[test]
+fn roles_and_file_kinds_are_read_in_either_case() {
+    assert_eq!(serde_json::from_str::<Role>(r#""editor""#).unwrap(), Role::Editor);
+    assert_eq!(serde_json::from_str::<Role>(r#""Editor""#).unwrap(), Role::Editor);
+    assert_eq!(serde_json::from_str::<AttachmentKind>(r#""model3d""#).unwrap(), AttachmentKind::Model3d);
+    assert_eq!(serde_json::to_string(&Role::Admin).unwrap(), r#""Admin""#);
+}

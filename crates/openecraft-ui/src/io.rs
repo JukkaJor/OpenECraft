@@ -219,6 +219,19 @@ fn open_in_tab(html: &str) -> Result<(), wasm_bindgen::JsValue> {
     Ok(())
 }
 
+/// Sets the title of the window (the browser tab on the web, where eframe does not).
+pub fn set_title(ctx: &egui::Context, title: &str) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = ctx;
+        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+            doc.set_title(title);
+        }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.to_string()));
+}
+
 /// Today's date `YYYY-MM-DD` (UTC).
 pub fn today() -> String {
     #[cfg(not(target_arch = "wasm32"))]

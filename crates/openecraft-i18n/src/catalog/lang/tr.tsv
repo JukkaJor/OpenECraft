@@ -6300,3 +6300,54 @@ Draw inner walls	İç duvar çiz
 Inner wall {}, side {}	İç duvar {}, taraf {}
 Thickness	Kalınlık
 {}: {} stands in an inner wall	{}: {} bir iç duvarın içinde duruyor
+Opening {} replaces the current project, its unsaved changes are lost.	{} açılırsa mevcut proje değiştirilir, kaydedilmemiş değişiklikleri kaybolur.
+Discard changes and open	Değişiklikleri at ve aç
+Open link	Bağlantıyı aç
+Replace the file at path if it exists	path konumundaki dosya varsa değiştir
+{} exists already: pass overwrite to replace it	{} zaten var: değiştirmek için overwrite verin
+{} has unsaved changes. Discard them?	{} kaydedilmemiş değişiklikler içeriyor. Atılsın mı?
+Discard changes	Değişiklikleri at
+Locked by {} on the project server – read only	Proje sunucusunda {} tarafından kilitli – salt okunur
+A device tag must not be empty	Cihaz etiketi boş olamaz
+Device tag {} must start with -, = or +	{} etiketi -, = veya + ile başlamalıdır
+Device tag {} must not contain blanks or the separators ; | ,	{} etiketi boşluk veya ; | , ayırıcılarını içeremez
+{} lies outside page {}	{} sayfa {} dışında
+Position {} / {} mm lies outside the page ({} x {} mm)	{} / {} mm konumu sayfanın dışında ({} x {} mm)
+The wire has no length	Bağlantının uzunluğu yok
+Start and end are the same connection point	Başlangıç ve bitiş aynı bağlantı noktası
+A page needs a name	Bir sayfanın adı olmalı
+Printing and export	Yazdırma ve dışa aktarma
+1 project on the server	Sunucuda 1 proje
+pcs	adet
+Legend plate	Etiket plakası
+KNX actuator	KNX aktüatörü
+KNX system device	KNX sistem cihazı
+Battery monitor	Akü monitörü
+System monitoring	Sistem izleme
+Cable clamp rail	Kablo sabitleme rayı
+Document holder	Doküman cebi
+Door handle	Kapı kolu
+Filter fan	Filtreli fan
+Outlet filter	Çıkış filtresi
+PE busbar	PE barası
+Rail standoff	Ray mesafe parçası
+Screw	Vida
+Nut	Somun
+Washer	Pul
+Side panel	Yan panel
+DC-DC converter	DC-DC dönüştürücü
+Inverter / charger	İnvertör / şarj cihazı
+Solar charge controller	Güneş şarj kontrol cihazı
+Breaking capacity	Kesme kapasitesi
+Poles	Kutuplar
+Wrong user name or password	Yanlış kullanıcı adı veya parola
+Too many failed sign-ins, try again later	Çok fazla başarısız oturum açma, daha sonra yeniden deneyin
+Part {} not found	{} parçası bulunamadı
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	dosya veya klasör bulunamadı
+access denied	erişim reddedildi
+the file exists already	dosya zaten var
+this is a folder	bu bir klasör
+the disk is full	disk dolu
+Enclosures and rooms	Muhafazalar ve odalar
+Not saved, locked or changed by another user: {}	Kaydedilmedi, başka bir kullanıcı tarafından kilitlendi veya değiştirildi: {}

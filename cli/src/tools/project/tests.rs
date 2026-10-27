@@ -20,6 +20,12 @@ fn new_project_saves_and_refuses_to_drop_changes() {
     let demo = run(&mut s, "new_project", json!({ "demo": true })).unwrap();
     assert!(demo["pages"].as_u64().unwrap() > 1);
     assert_eq!(demo["errors"], 0);
+
+    // An existing file is only replaced on request.
+    let err = run(&mut s, "new_project", json!({ "name": "Other", "path": file.to_str().unwrap(), "discard": true })).unwrap_err();
+    assert!(err.contains("exists already"), "{err}");
+    let info = run(&mut s, "new_project", json!({ "name": "Other", "path": file.to_str().unwrap(), "overwrite": true, "discard": true })).unwrap();
+    assert_eq!(info["name"], "Other");
 }
 
 #[test]

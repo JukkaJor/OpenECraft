@@ -30,8 +30,13 @@ impl App {
                     self.notify(ctx, self.remote.status.clone());
                 }
                 Reply::Saved(_, Ok(snapshot)) => {
+                    // Changes the server left out: locked or changed by another user.
+                    let ignored: Vec<String> = snapshot.ignored.iter().map(|t| Remote::describe(&self.session.prj, *t)).collect();
                     self.take_snapshot(ctx, *snapshot, true);
                     self.notify(ctx, self.remote.status.clone());
+                    if !ignored.is_empty() {
+                        self.notify(ctx, tr_fmt!("Not saved, locked or changed by another user: {}", ignored.join(", ")));
+                    }
                 }
                 Reply::Snapshot(_, Ok(snapshot)) => self.take_snapshot(ctx, *snapshot, false),
                 Reply::Status(_, Ok(status)) => self.remote.take_status(status, &[]),
@@ -200,18 +205,31 @@ impl App {
                     ui.label(&p.title);
                     ui.label(p.pages.to_string());
                     ui.label(p.users.join(", "));
-                    if ui.add_enabled(has_user, egui::Button::new(tr("Open"))).clicked() {
+                    if ui.add_enabled(has_user, egui::Button::new(tr("Open project"))).clicked() {
                         open = Some(p.name.clone());
                     }
                     ui.end_row();
                 }
             });
         });
-        if self.session.dirty() {
-            ui.colored_label(crate::style::lock(), tr("Opening a project replaces the current one, its unsaved changes are lost."));
-        }
         if let Some(name) = open {
-            self.remote.open(&name);
+            if self.session.dirty() {
+                self.remote.confirm_open = Some(name);
+            } else {
+                self.remote.open(&name);
+            }
+        }
+        if let Some(name) = self.remote.confirm_open.clone() {
+            ui.colored_label(crate::style::lock(), tr_fmt!("Opening {} replaces the current project, its unsaved changes are lost.", name));
+            ui.horizontal(|ui| {
+                if ui.button(tr("Discard changes and open")).clicked() {
+                    self.remote.confirm_open = None;
+                    self.remote.open(&name);
+                }
+                if ui.button(tr("Cancel")).clicked() {
+                    self.remote.confirm_open = None;
+                }
+            });
         }
         ui.separator();
         ui.label(tr("Upload the current project as a new shared project:"));

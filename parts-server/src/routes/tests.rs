@@ -42,10 +42,10 @@ async fn json<T: serde::de::DeserializeOwned>(app: &Router, method: &str, uri: &
 
 /// Creates a user with the administrator token and signs in. Returns the token.
 async fn sign_up(app: &Router, name: &str, role: &str, manufacturer: &str) -> String {
-    let body = format!(r#"{{"role": "{role}", "manufacturer": "{manufacturer}", "password": "pw-{name}"}}"#);
+    let body = format!(r#"{{"role": "{role}", "manufacturer": "{manufacturer}", "password": "password-{name}"}}"#);
     let (status, text) = call(app, "PUT", &format!("/api/v1/users/{name}"), Some(TOKEN), &body).await;
     assert_eq!(status, StatusCode::OK, "{text}");
-    let session: Session = json(app, "POST", "/api/v1/login", None, &format!(r#"{{"name": "{name}", "password": "pw-{name}"}}"#)).await;
+    let session: Session = json(app, "POST", "/api/v1/login", None, &format!(r#"{{"name": "{name}", "password": "password-{name}"}}"#)).await;
     session.token
 }
 
@@ -164,11 +164,11 @@ async fn users_roles_and_sessions() {
     assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "eve", "password": "nope"}"#).await.0, StatusCode::UNAUTHORIZED);
     assert_eq!(call(&app, "POST", "/api/v1/logout", Some(&reader), "").await.0, StatusCode::NO_CONTENT);
     assert_eq!(call(&app, "GET", "/api/v1/favorites", Some(&reader), "").await.0, StatusCode::UNAUTHORIZED);
-    call(&app, "PUT", "/api/v1/users/eve", Some(TOKEN), r#"{"role": "Editor", "password": "new"}"#).await;
+    call(&app, "PUT", "/api/v1/users/eve", Some(TOKEN), r#"{"role": "Editor", "password": "new-password"}"#).await;
     assert_eq!(call(&app, "GET", "/api/v1/favorites", Some(&editor), "").await.0, StatusCode::UNAUTHORIZED);
     // Changing the role keeps the password.
     call(&app, "PUT", "/api/v1/users/eve", Some(TOKEN), r#"{"role": "Reader"}"#).await;
-    let s: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "EVE", "password": "new"}"#).await;
+    let s: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "EVE", "password": "new-password"}"#).await;
     assert_eq!(s.user.role, Role::Reader);
 
     // Invalid users
@@ -194,7 +194,7 @@ async fn last_administrator_stays() {
     assert!(info.writable, "administrator accounts make the server writable");
     assert_eq!(call(&app, "PUT", "/api/v1/users/root", Some(&s.token), r#"{"role": "Editor"}"#).await.0, StatusCode::CONFLICT);
     assert_eq!(call(&app, "DELETE", "/api/v1/users/root", Some(&s.token), "").await.0, StatusCode::CONFLICT);
-    assert_eq!(call(&app, "PUT", "/api/v1/users/second", Some(&s.token), r#"{"role": "Admin", "password": "x"}"#).await.0, StatusCode::OK);
+    assert_eq!(call(&app, "PUT", "/api/v1/users/second", Some(&s.token), r#"{"role": "Admin", "password": "second-password"}"#).await.0, StatusCode::OK);
     assert_eq!(call(&app, "DELETE", "/api/v1/users/root", Some(&s.token), "").await.0, StatusCode::NO_CONTENT);
 }
 
@@ -203,10 +203,14 @@ async fn favorites_per_user() {
     let app = app(Some(TOKEN));
     let ann = sign_up(&app, "ann", "Reader", "").await;
     let bob = sign_up(&app, "bob", "Reader", "").await;
-    let saved: Vec<String> = json(&app, "PUT", "/api/v1/favorites", Some(&ann), r#"["A", "", "A", "B"]"#).await;
-    assert_eq!(saved, ["A", "B"]);
+    let catalog = default_catalog();
+    let (a, b) = (catalog[0].number.as_str(), catalog[1].number.as_str());
+    // Duplicates (also apart), empty and unknown numbers are dropped.
+    let body = serde_json::json!([a, "", b, a, "NO-SUCH-PART"]).to_string();
+    let saved: Vec<String> = json(&app, "PUT", "/api/v1/favorites", Some(&ann), &body).await;
+    assert_eq!(saved, [a, b]);
     let got: Vec<String> = json(&app, "GET", "/api/v1/favorites", Some(&ann), "").await;
-    assert_eq!(got, ["A", "B"]);
+    assert_eq!(got, [a, b]);
     let got: Vec<String> = json(&app, "GET", "/api/v1/favorites", Some(&bob), "").await;
     assert!(got.is_empty());
     assert_eq!(call(&app, "GET", "/api/v1/favorites", None, "").await.0, StatusCode::UNAUTHORIZED);
@@ -283,6 +287,10 @@ async fn import_and_export() {
     let parts = openecraft_parts::from_csv(&csv).unwrap();
     assert!(parts.iter().any(|p| p.number == "IMP.1"));
     assert!(parts.iter().any(|p| p.number == "IMP.2"));
+    // The address selects the parts exported (the filters of the web page).
+    let (_, csv) = call(&app, "GET", "/api/v1/export.csv?q=IMP.1", None, "").await;
+    let parts = openecraft_parts::from_csv(&csv).unwrap();
+    assert_eq!(parts.iter().map(|p| p.number.as_str()).collect::<Vec<_>>(), ["IMP.1"]);
 }
 
 #[tokio::test]
@@ -331,9 +339,9 @@ async fn cors_preflight_allows_authorization_header() {
 #[tokio::test]
 async fn grants_to_groups_per_manufacturer() {
     let app = app(Some(TOKEN));
-    let body = r#"{"role": "Reader", "manufacturer": "", "password": "pw-max", "groups": ["purchasing", "trainees"]}"#;
+    let body = r#"{"role": "Reader", "manufacturer": "", "password": "password-max", "groups": ["purchasing", "trainees"]}"#;
     assert_eq!(call(&app, "PUT", "/api/v1/users/max", Some(TOKEN), body).await.0, StatusCode::OK);
-    let max: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "max", "password": "pw-max"}"#).await;
+    let max: Session = json(&app, "POST", "/api/v1/login", None, r#"{"name": "max", "password": "password-max"}"#).await;
     assert_eq!(max.user.groups, ["purchasing", "trainees"]);
     assert_eq!(call(&app, "PUT", "/api/v1/parts/ACME.1", Some(&max.token), r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::FORBIDDEN);
 
@@ -410,4 +418,53 @@ async fn admins_from_grants_and_directories() {
     assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "ops", "password": "wrong"}"#).await.0, StatusCode::UNAUTHORIZED);
     let settings: Settings<PartsRight> = json(&app, "GET", "/api/v1/access", Some(&ops.token), "").await;
     assert_eq!(settings.providers[0].id, "corp");
+}
+
+#[tokio::test]
+async fn part_numbers_and_successors_are_checked() {
+    let app = app(Some(TOKEN));
+    let put = |n: &'static str, body: &'static str| {
+        let app = app.clone();
+        async move { call(&app, "PUT", &format!("/api/v1/parts/{n}"), Some(TOKEN), body).await }
+    };
+    assert_eq!(put("%20LEAD", r#"{"number": " LEAD"}"#).await.0, StatusCode::BAD_REQUEST);
+    assert_eq!(put("TRAIL%20", r#"{"number": "TRAIL "}"#).await.0, StatusCode::BAD_REQUEST);
+    assert_eq!(put("TEST-1", r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::CREATED);
+    // Only the case differs from an existing part.
+    let (status, text) = put("test-1", r#"{"manufacturer": "ACME"}"#).await;
+    assert_eq!((status, text.as_str()), (StatusCode::CONFLICT, r#"{"error":"part 'TEST-1' already exists"}"#));
+    assert_eq!(put("TEST-1", r#"{"successor": "NOPE"}"#).await.0, StatusCode::BAD_REQUEST);
+    assert_eq!(put("TEST-2", r#"{"manufacturer": "ACME"}"#).await.0, StatusCode::CREATED);
+    assert_eq!(put("TEST-1", r#"{"successor": "TEST-2"}"#).await.0, StatusCode::OK);
+    // An import may name a successor of the same file.
+    let csv = "Part number;Successor\nIMP-1;IMP-2\nIMP-2;\n";
+    assert_eq!(call(&app, "POST", "/api/v1/import", Some(TOKEN), csv).await.0, StatusCode::OK);
+    let csv = "Part number;Successor\nIMP-3;NOPE\n";
+    assert_eq!(call(&app, "POST", "/api/v1/import", Some(TOKEN), csv).await.0, StatusCode::BAD_REQUEST);
+    // The history of a part that never existed is not found.
+    assert_eq!(call(&app, "GET", "/api/v1/parts/NOPE/history", None, "").await.0, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn errors_are_json() {
+    let app = app(Some(TOKEN));
+    for (method, uri, body) in [("GET", "/api/v1/parts?limit=abc", ""), ("POST", "/api/v1/search", "{not json"), ("GET", "/api/v1/nope", ""), ("PATCH", "/api/v1/parts/X", "")] {
+        let (status, text) = call(&app, method, uri, None, body).await;
+        assert!(status.is_client_error(), "{uri}: {status}");
+        assert!(serde_json::from_str::<ApiError>(&text).is_ok(), "{uri}: {text}");
+    }
+}
+
+#[tokio::test]
+async fn passwords_and_failed_sign_ins() {
+    let app = app(Some(TOKEN));
+    let (status, text) = call(&app, "PUT", "/api/v1/users/weak", Some(TOKEN), r#"{"role": "Reader", "password": "1"}"#).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{text}");
+    sign_up(&app, "anna", "Reader", "").await;
+    for _ in 0..openecraft_auth::throttle::FREE_ATTEMPTS {
+        assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "anna", "password": "guess"}"#).await.0, StatusCode::UNAUTHORIZED);
+    }
+    // Even the right password waits now.
+    let right = r#"{"name": "anna", "password": "password-anna"}"#;
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, right).await.0, StatusCode::TOO_MANY_REQUESTS);
 }

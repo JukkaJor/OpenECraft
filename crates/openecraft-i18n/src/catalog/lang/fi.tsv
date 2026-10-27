@@ -6300,3 +6300,54 @@ Draw inner walls	Piirrä väliseinät
 Inner wall {}, side {}	Väliseinä {}, puoli {}
 Thickness	Paksuus
 {}: {} stands in an inner wall	{}: {} on väliseinän sisällä
+Opening {} replaces the current project, its unsaved changes are lost.	{} avaaminen korvaa nykyisen projektin, sen tallentamattomat muutokset menetetään.
+Discard changes and open	Hylkää muutokset ja avaa
+Open link	Avaa linkki
+Replace the file at path if it exists	Korvaa path-tiedosto, jos se on olemassa
+{} exists already: pass overwrite to replace it	{} on jo olemassa: korvaa antamalla overwrite
+{} has unsaved changes. Discard them?	Kohteessa {} on tallentamattomia muutoksia. Hylätäänkö ne?
+Discard changes	Hylkää muutokset
+Locked by {} on the project server – read only	{} on lukinnut projektipalvelimella – vain luku
+A device tag must not be empty	Laitetunnus ei saa olla tyhjä
+Device tag {} must start with -, = or +	Tunnuksen {} on alettava merkillä -, = tai +
+Device tag {} must not contain blanks or the separators ; | ,	Tunnus {} ei saa sisältää välilyöntejä tai erottimia ; | ,
+{} lies outside page {}	{} on sivun {} ulkopuolella
+Position {} / {} mm lies outside the page ({} x {} mm)	Sijainti {} / {} mm on sivun ulkopuolella ({} x {} mm)
+The wire has no length	Yhteydellä ei ole pituutta
+Start and end are the same connection point	Alku ja loppu ovat sama liitäntäpiste
+A page needs a name	Sivulla on oltava nimi
+Printing and export	Tulostus ja vienti
+1 project on the server	1 projekti palvelimella
+pcs	kpl
+Legend plate	Kilpi
+KNX actuator	KNX-toimilaite
+KNX system device	KNX-järjestelmälaite
+Battery monitor	Akkuvalvonta
+System monitoring	Järjestelmän valvonta
+Cable clamp rail	Kaapelinkiinnityskisko
+Document holder	Asiakirjatasku
+Door handle	Ovenkahva
+Filter fan	Suodatintuuletin
+Outlet filter	Poistosuodatin
+PE busbar	PE-kisko
+Rail standoff	Kiskon välike
+Screw	Ruuvi
+Nut	Mutteri
+Washer	Aluslevy
+Side panel	Sivuseinä
+DC-DC converter	DC/DC-muunnin
+Inverter / charger	Invertteri / laturi
+Solar charge controller	Aurinkolatausohjain
+Breaking capacity	Katkaisukyky
+Poles	Navat
+Wrong user name or password	Väärä käyttäjänimi tai salasana
+Too many failed sign-ins, try again later	Liian monta epäonnistunutta kirjautumista, yritä myöhemmin uudelleen
+Part {} not found	Nimikettä {} ei löytynyt
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	tiedostoa tai kansiota ei löytynyt
+access denied	pääsy estetty
+the file exists already	tiedosto on jo olemassa
+this is a folder	tämä on kansio
+the disk is full	levy on täynnä
+Enclosures and rooms	Kotelot ja tilat
+Not saved, locked or changed by another user: {}	Ei tallennettu, toinen käyttäjä on lukinnut tai muuttanut: {}

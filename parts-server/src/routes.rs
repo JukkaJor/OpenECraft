@@ -9,7 +9,7 @@ use axum::http::{header, HeaderMap, Method, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use openecraft_auth::{AccessFile, SignInError};
+use openecraft_auth::{AccessFile, SignInError, Throttle};
 use openecraft_parts::access::{Access, Policy, Right, Settings, SERVER};
 use openecraft_parts::api::{
     bearer_token, token_matches, ApiError, ImportResult, Login, PartList, PartQuery, ServerInfo, Session, UserUpdate, API_PREFIX,
@@ -18,6 +18,7 @@ use openecraft_parts::portal::{content_type, AttachmentKind, Catalog, HistoryEnt
 use openecraft_parts::{import, to_csv, Part};
 use serde::Deserialize;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Instant;
 use tower_http::cors::{Any, CorsLayer};
 
 /// Name of the user of the administrator token.
@@ -31,11 +32,13 @@ pub struct AppState {
     pub token: Option<String>,
     /// Directories, roles and grants (`--access`). Always locked after `store`.
     pub access: Arc<Mutex<AccessFile<PartsRight>>>,
+    /// Failed sign-ins per user name.
+    pub throttle: Arc<Mutex<Throttle>>,
 }
 
 impl AppState {
     pub fn new(store: Store, token: Option<String>, access: AccessFile<PartsRight>) -> AppState {
-        AppState { store: Arc::new(Mutex::new(store)), token, access: Arc::new(Mutex::new(access)) }
+        AppState { store: Arc::new(Mutex::new(store)), token, access: Arc::new(Mutex::new(access)), throttle: Arc::default() }
     }
 }
 
@@ -98,6 +101,7 @@ pub fn router(state: AppState) -> Router {
         .route(&api("/users/{name}"), axum::routing::put(put_user).delete(delete_user))
         .route(&api("/access"), get(access).put(save_access))
         .layer(DefaultBodyLimit::max(32 * 1024 * 1024))
+        .layer(axum::middleware::map_response(openecraft_auth::json_errors))
         .layer(cors())
         .with_state(state)
 }
@@ -114,6 +118,10 @@ fn cors() -> CorsLayer {
 
 fn store(state: &AppState) -> MutexGuard<'_, Store> {
     state.store.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+fn throttle(state: &AppState) -> MutexGuard<'_, Throttle> {
+    state.throttle.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 fn access_file(state: &AppState) -> MutexGuard<'_, AccessFile<PartsRight>> {
@@ -224,6 +232,27 @@ async fn search(State(state): State<AppState>, headers: HeaderMap, Json(query): 
     Ok(Json(store(&state).search(&query)?))
 }
 
+/// A part number may not be empty, start or end with blanks or hold control characters.
+fn check_number(number: &str) -> Result<()> {
+    if number.trim().is_empty() {
+        return Err(bad("part number must not be empty"));
+    }
+    if number.trim() != number || number.chars().any(char::is_control) {
+        return Err(bad(format!("part number '{number}' must not start or end with blanks")));
+    }
+    Ok(())
+}
+
+/// A new part must not differ from an existing one only in case.
+fn check_new_number(store: &Store, number: &str) -> Result<()> {
+    if store.get(number)?.is_none() {
+        if let Some(other) = store.other_case(number)? {
+            return Err(AppError(StatusCode::CONFLICT, format!("part '{other}' already exists")));
+        }
+    }
+    Ok(())
+}
+
 fn part_of(store: &Store, number: &str) -> Result<Part> {
     store.get(number)?.ok_or_else(|| not_found(format!("part '{number}' not found")))
 }
@@ -240,9 +269,7 @@ async fn put_part(
     Json(mut part): Json<Part>,
 ) -> Result<(StatusCode, Json<Part>)> {
     let (user, access) = user(&state, &headers)?;
-    if number.trim().is_empty() {
-        return Err(bad("part number must not be empty"));
-    }
+    check_number(&number)?;
     if part.number.is_empty() {
         part.number = number.clone();
     }
@@ -256,6 +283,10 @@ async fn put_part(
     need(&user, &access, PartsRight::EditParts, &part.manufacturer)?;
     if let Some(old) = store.get(&number)? {
         need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
+    }
+    check_new_number(&store, &number)?;
+    if !part.successor.is_empty() && store.get(&part.successor)?.is_none() {
+        return Err(bad(format!("successor '{}' not found", part.successor)));
     }
     let (stored, created) = store.put_parts(&user.name, vec![part])?.pop().expect("one part");
     log::info!("{} part {number} ({})", if created { "created" } else { "updated" }, user.name);
@@ -274,7 +305,12 @@ async fn delete_part(State(state): State<AppState>, headers: HeaderMap, Path(num
 
 async fn history(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<Json<Vec<HistoryEntry>>> {
     reader(&state, &headers)?;
-    Ok(Json(store(&state).history(&number)?))
+    let store = store(&state);
+    let history = store.history(&number)?;
+    if history.is_empty() && store.get(&number)?.is_none() {
+        return Err(not_found(format!("part '{number}' not found")));
+    }
+    Ok(Json(history))
 }
 
 async fn history_part(State(state): State<AppState>, headers: HeaderMap, Path((number, revision)): Path<(String, u64)>) -> Result<Json<Part>> {
@@ -339,11 +375,18 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     if parts.iter().any(|p| p.number.trim().is_empty()) {
         return Err(bad("every part needs a part number"));
     }
+    for p in &parts {
+        check_number(&p.number)?;
+    }
     let mut store = store(&state);
     for p in &parts {
         need(&user, &access, PartsRight::EditParts, &p.manufacturer)?;
         if let Some(old) = store.get(&p.number)? {
             need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
+        }
+        check_new_number(&store, &p.number)?;
+        if !p.successor.is_empty() && !parts.iter().any(|q| q.number == p.successor) && store.get(&p.successor)?.is_none() {
+            return Err(bad(format!("successor '{}' of part '{}' not found", p.successor, p.number)));
         }
     }
     let imported = store.put_parts(&user.name, parts)?.len();
@@ -351,9 +394,12 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     Ok(Json(ImportResult { imported, revision: store.revision }))
 }
 
-async fn export_csv(State(state): State<AppState>, headers: HeaderMap) -> Result<impl IntoResponse> {
+/// All parts, or those the query of the address selects (text, groups, manufacturer,
+/// catalog, lifecycle, sort order).
+async fn export_csv(State(state): State<AppState>, headers: HeaderMap, Query(mut query): Query<PartQuery>) -> Result<impl IntoResponse> {
     reader(&state, &headers)?;
-    let parts = store(&state).all()?;
+    query.brief = false;
+    let parts = store(&state).list(&query)?.1;
     Ok(([(header::CONTENT_TYPE, "text/csv; charset=utf-8"), (header::CONTENT_DISPOSITION, "attachment; filename=\"parts.csv\"")], to_csv(&parts)))
 }
 
@@ -408,7 +454,13 @@ async fn delete_catalog(State(state): State<AppState>, headers: HeaderMap, Path(
 /// directories; a directory user gets an account (reader, groups, sessions) on the
 /// first sign-in.
 async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Result<Json<Session>> {
-    let refused = || AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into());
+    if let Some(wait) = throttle(&state).wait(&login.name, Instant::now()) {
+        return Err(AppError(StatusCode::TOO_MANY_REQUESTS, format!("too many failed sign-ins, try again in {wait} s")));
+    }
+    let refused = || {
+        throttle(&state).failed(&login.name, Instant::now());
+        AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into())
+    };
     let local = store(&state).account(login.name.trim()).filter(|a| a.user.provider.is_empty() && login.provider.trim().is_empty()).cloned();
     let mut account = match local {
         Some(a) if verify_password(&login.password, &a.password) => a,
@@ -435,6 +487,7 @@ async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Resul
             account
         }
     };
+    throttle(&state).succeeded(&login.name);
     let token = account.start_session();
     let user = account.user.clone();
     store(&state).put_account(account)?;
@@ -462,10 +515,15 @@ async fn favorites(State(state): State<AppState>, headers: HeaderMap) -> Result<
 
 async fn set_favorites(State(state): State<AppState>, headers: HeaderMap, Json(mut numbers): Json<Vec<String>>) -> Result<Json<Vec<String>>> {
     let (user, _) = with_right(&state, &headers, PartsRight::Read, SERVER)?;
-    numbers.retain(|n| !n.trim().is_empty());
-    numbers.dedup();
-    store(&state).set_favorites(&user.name, numbers.clone())?;
-    Ok(Json(numbers))
+    let mut store = store(&state);
+    let mut kept: Vec<String> = Vec::new();
+    for n in numbers.drain(..) {
+        if !kept.contains(&n) && store.get(&n)?.is_some() {
+            kept.push(n);
+        }
+    }
+    store.set_favorites(&user.name, kept.clone())?;
+    Ok(Json(kept))
 }
 
 async fn users(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Vec<User>>> {
@@ -509,6 +567,7 @@ async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name):
         return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be demoted".into()));
     }
     if !update.password.is_empty() {
+        openecraft_auth::check_password(&update.password).map_err(bad)?;
         account.password = hash_password(&update.password).map_err(|e| AppError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
         account.sessions.clear();
     }

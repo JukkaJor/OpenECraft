@@ -10,6 +10,14 @@ impl App {
     pub(super) fn status_bar(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         let on_page = self.active_doc == Pane::Page;
+        // The hint fills the space between the left and the right segments.
+        let hint = if !on_page {
+            self.panel_ui.status.clone()
+        } else if self.editor.status.is_empty() {
+            tr(self.editor.tool.hint()).to_string()
+        } else {
+            self.editor.status.clone()
+        };
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 6.0;
             if on_page {
@@ -33,10 +41,6 @@ impl App {
                     self.editor.fit_pending = true;
                 }
                 ui.separator();
-                let status = if self.editor.status.is_empty() { tr(self.editor.tool.hint()).to_string() } else { self.editor.status.clone() };
-                ui.label(RichText::new(status).small());
-            } else {
-                ui.label(RichText::new(&self.panel_ui.status).small());
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 // Messages of the session: the newest for a few seconds, all on click.
@@ -64,7 +68,12 @@ impl App {
                         self.show_pane(Pane::Tool(ToolPane::ProjectServer));
                     }
                 }
-                let file = self.session.file_name.as_deref().map(io::short_name).unwrap_or(tr("unsaved")).to_string();
+                // A shared project is saved on the project server (shown before), not in a file.
+                let file = match self.session.file_name.as_deref() {
+                    Some(f) => io::short_name(f).to_string(),
+                    None if self.remote.shared.is_some() => String::new(),
+                    None => tr("unsaved").to_string(),
+                };
                 ui.weak(format!("{}{}", file, if self.session.dirty() { " *" } else { "" }));
                 ui.separator();
                 let lang = openecraft_i18n::lang();
@@ -98,6 +107,10 @@ impl App {
                         ui.label(tr("Work area"));
                     }
                 }
+                // Long hints are cut off (the whole text shows on hover).
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    ui.add(egui::Label::new(RichText::new(hint).small()).truncate());
+                });
             });
         });
     }

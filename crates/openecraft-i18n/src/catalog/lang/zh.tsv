@@ -6295,3 +6295,54 @@ Draw inner walls	绘制内墙
 Inner wall {}, side {}	内墙 {}，{} 面
 Thickness	厚度
 {}: {} stands in an inner wall	{}：{} 位于内墙中
+Opening {} replaces the current project, its unsaved changes are lost.	打开 {} 将替换当前项目，其未保存的更改将丢失。
+Discard changes and open	放弃更改并打开
+Open link	打开链接
+Replace the file at path if it exists	如果 path 处的文件已存在则替换
+{} exists already: pass overwrite to replace it	{} 已存在：传入 overwrite 以替换
+{} has unsaved changes. Discard them?	{} 有未保存的更改。是否放弃？
+Discard changes	放弃更改
+Locked by {} on the project server – read only	已被 {} 在项目服务器上锁定 – 只读
+A device tag must not be empty	设备标识不能为空
+Device tag {} must start with -, = or +	设备标识 {} 必须以 -、= 或 + 开头
+Device tag {} must not contain blanks or the separators ; | ,	设备标识 {} 不能包含空格或分隔符 ; | ,
+{} lies outside page {}	{} 位于页面 {} 之外
+Position {} / {} mm lies outside the page ({} x {} mm)	位置 {} / {} mm 位于页面之外 ({} x {} mm)
+The wire has no length	连接没有长度
+Start and end are the same connection point	起点和终点是同一个连接点
+A page needs a name	页面需要名称
+Printing and export	打印和导出
+1 project on the server	服务器上有 1 个项目
+pcs	件
+Legend plate	铭牌
+KNX actuator	KNX 执行器
+KNX system device	KNX 系统设备
+Battery monitor	电池监视器
+System monitoring	系统监控
+Cable clamp rail	电缆夹紧导轨
+Document holder	文件夹
+Door handle	门把手
+Filter fan	过滤风扇
+Outlet filter	出风过滤器
+PE busbar	PE 母线
+Rail standoff	导轨支座
+Screw	螺钉
+Nut	螺母
+Washer	垫圈
+Side panel	侧板
+DC-DC converter	DC-DC 转换器
+Inverter / charger	逆变器 / 充电器
+Solar charge controller	太阳能充电控制器
+Breaking capacity	分断能力
+Poles	极数
+Wrong user name or password	用户名或密码错误
+Too many failed sign-ins, try again later	登录失败次数过多，请稍后再试
+Part {} not found	未找到部件 {}
+X {}  Y {} mm · {}	X {}  Y {} mm · {}
+file or folder not found	未找到文件或文件夹
+access denied	拒绝访问
+the file exists already	文件已存在
+this is a folder	这是一个文件夹
+the disk is full	磁盘已满
+Enclosures and rooms	机柜和房间
+Not saved, locked or changed by another user: {}	未保存，已被其他用户锁定或更改：{}

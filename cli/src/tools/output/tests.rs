@@ -93,3 +93,16 @@ fn exporter_parameters_are_passed_as_options() {
     assert!(run(&mut s, "export", json!({ "format": "marking", "options": "colour=red" })).unwrap_err().contains("colour"));
     assert!(run(&mut s, "export", json!({ "format": "marking", "options": "scheme" })).unwrap_err().contains("name=value"));
 }
+
+#[test]
+fn options_keep_the_commas_of_page_lists() {
+    let opts = split_options("pages=1-3, 5,harness=-WH1").unwrap();
+    assert_eq!(opts, [("pages".to_string(), "1-3, 5".to_string()), ("harness".to_string(), "-WH1".to_string())]);
+    assert!(split_options("5,pages=1").is_err());
+    assert!(split_options("").unwrap().is_empty());
+    let mut s = session();
+    run(&mut s, "new_project", json!({ "demo": true })).unwrap();
+    let pdf = run(&mut s, "export", json!({ "format": "pdf", "options": "pages=1-3, 5" })).unwrap();
+    let pdf = pdf.as_str().unwrap();
+    assert_eq!(pdf.matches("/Type /Page").count() - pdf.matches("/Type /Pages").count(), 4, "four pages");
+}

@@ -93,11 +93,12 @@ pub fn demo_project() -> Project {
     g.w(60.0, 84.0, 60.0, 108.0).w(68.0, 84.0, 68.0, 108.0).w(76.0, 84.0, 76.0, 108.0);
     for (i, x) in [60.0, 68.0, 76.0].into_iter().enumerate() {
         g.sym("term", x, 140.0, 0, "-X1", &(i + 1).to_string(), "");
-        g.w(x, 116.0, x, 136.0).w(x, 144.0, x, 152.0);
+        g.w(x, 116.0, x, 136.0).w(x, 144.0, x, 168.0);
     }
     g.sym("term_pe", 84.0, 140.0, 0, "-X1", "PE", "");
-    g.w(84.0, 56.0, 84.0, 136.0).w(84.0, 144.0, 84.0, 152.0);
-    g.sym("motor3", 60.0, 156.0, 0, "-M1", "", "Conveyor\n0.75 kW");
+    // The motor cable gets room for its tag, cores and the wire numbers.
+    g.w(84.0, 56.0, 84.0, 136.0).w(84.0, 144.0, 84.0, 168.0);
+    g.sym("motor3", 60.0, 172.0, 0, "-M1", "", "Conveyor\n0.75 kW");
     // The motor feeder behind -Q1 is a power circuit, not a control circuit (project default).
     for w in g.prj.pages[page].wires.iter_mut().filter(|w| [60.0, 68.0, 76.0].contains(&w.a.x) && w.a.y >= 84.0) {
         w.color = "BK".into();
@@ -229,7 +230,7 @@ fn add_motor_cable(prj: &mut Project, db: &PartsDb) {
     });
     crate::parts::ensure_in_project(prj, db, "GEN.CBL-4G1.5");
     let page = prj.pages.iter().position(|p| p.name == "2").expect("page 2");
-    let wires = prj.pages[page].wires.iter().filter(|w| w.a.y == 144.0 && w.b.y == 152.0).map(|w| w.id).collect();
+    let wires = prj.pages[page].wires.iter().filter(|w| w.a.y == 144.0 && w.b.y == 168.0).map(|w| w.id).collect();
     crate::ops::assign_cores(prj, page, &wires, "-W1");
 }
 

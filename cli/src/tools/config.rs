@@ -72,26 +72,26 @@ pub static TOOLS: &[Tool] = &[
 
 fn export_settings(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    std::fs::write(path, openecraft_core::settings_scheme::export(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    std::fs::write(path, openecraft_core::settings_scheme::export(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "path": path }))
 }
 
 fn import_settings(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let taken = openecraft_core::settings_scheme::apply(s.project_mut()?, &text)?;
     Ok(json!({ "taken": taken }))
 }
 
 fn export_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    std::fs::write(path, openecraft_core::checks::scheme_json(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, e))?;
+    std::fs::write(path, openecraft_core::checks::scheme_json(s.project()?)).map_err(|e| tr_fmt!("Cannot write {}: {}", path, openecraft_i18n::io_error(&e)))?;
     Ok(json!({ "path": path }))
 }
 
 fn import_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let prj = s.project_mut()?;
     openecraft_core::checks::apply_scheme(prj, &text)?;
     Ok(json!({ "disabled": prj.check_settings.disabled, "levels": prj.check_settings.levels.len() }))
@@ -99,7 +99,7 @@ fn import_check_scheme(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn update_macro_boxes(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("macros");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let lib = MacroLibrary::from_json(&text).map_err(|e| tr_fmt!("Not a macro file: {}", e))?;
     let r = openecraft_core::macro_boxes::update(s.project_mut()?, &lib);
     Ok(json!({ "updated": r.updated, "locked": r.locked, "macros_not_found": r.missing }))
@@ -107,7 +107,7 @@ fn update_macro_boxes(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn import_preplanning(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("path");
-    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let bytes = std::fs::read(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let rows = if bytes.starts_with(b"PK") {
         openecraft_core::xlsx::read(&bytes)?.into_iter().next().map(|(_, rows)| rows).unwrap_or_default()
     } else {
@@ -119,7 +119,7 @@ fn import_preplanning(s: &mut Session, a: &Args) -> Result<Value, String> {
 
 fn generate_preplanning_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("macros");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let lib = MacroLibrary::from_json(&text).map_err(|e| tr_fmt!("Not a macro file: {}", e))?;
     let prj = s.project_mut()?;
     let roots: Vec<u64> = match a.str("segment") {
@@ -140,7 +140,7 @@ fn generate_preplanning_pages(s: &mut Session, a: &Args) -> Result<Value, String
 
 fn generate_pages(s: &mut Session, a: &Args) -> Result<Value, String> {
     let path = a.req("macros");
-    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, e))?;
+    let text = std::fs::read_to_string(path).map_err(|e| tr_fmt!("Cannot read {}: {}", path, openecraft_i18n::io_error(&e)))?;
     let lib = MacroLibrary::from_json(&text).map_err(|e| tr_fmt!("Not a macro file: {}", e))?;
     let g = config::generate(s.project_mut()?, &lib)?;
     Ok(json!({ "removed": g.removed, "pages": g.pages }))

@@ -56,6 +56,8 @@ pub struct Remote {
     pub new_name: String,
     pub status: String,
     pub window: bool,
+    /// Project to open once the user agreed to drop the unsaved changes.
+    pub confirm_open: Option<String>,
     pending: usize,
     /// A status request is under way.
     polling: bool,
@@ -87,6 +89,7 @@ impl Default for Remote {
             new_name: String::new(),
             status: String::new(),
             window: false,
+            confirm_open: None,
             pending: 0,
             polling: false,
             fetching: false,
@@ -185,7 +188,7 @@ impl Remote {
     /// Saves what this session has locked, then releases `release`.
     pub fn save(&mut self, prj: &Project, release: Vec<Target>) {
         let Some(sh) = &self.shared else { return };
-        let req = self.endpoint().save(&sh.name, &sh.session, prj, release);
+        let req = self.endpoint().save(&sh.name, &sh.session, prj, release, sh.revision);
         let s = self.session_id();
         self.send(req, tr("Saving to the project server…").into(), move |r| Reply::Saved(s, decode(r).map(Box::new)));
     }
@@ -242,6 +245,7 @@ impl Remote {
                 continue;
             }
             self.status = match &reply {
+                Reply::List(Ok(list)) if list.len() == 1 => tr("1 project on the server").to_string(),
                 Reply::List(Ok(list)) => tr_fmt!("{} projects on the server", list.len()),
                 Reply::Opened(name, Ok(_)) => tr_fmt!("Opened {} from the project server", name),
                 Reply::Saved(_, Ok(s)) => tr_fmt!("Saved to the project server (revision {})", s.revision),
@@ -251,6 +255,8 @@ impl Remote {
                 },
                 Reply::Login(Err(e)) => tr_fmt!("Project server: {}", e),
                 Reply::Access(_, Ok(a)) => tr_fmt!("{} grants on the project", a.grants.len()),
+                // The "Locking…" of the request is over.
+                Reply::Locked(_, _, Ok(_)) => String::new(),
                 Reply::Access(_, Err(e)) => tr_fmt!("Project server: {}", e),
                 Reply::List(Err(e))
                 | Reply::Opened(_, Err(e))

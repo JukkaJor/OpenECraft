@@ -6,12 +6,48 @@ use crate::shortcuts::Shortcut;
 
 impl App {
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
+        self.discard_window(ctx);
         self.export_form_window(ctx);
         self.save_layout_window(ctx);
         self.project_properties_window(ctx);
         self.parts_management_and_part_selection_window(ctx);
         self.page_properties_window(ctx);
         self.section_properties_window(ctx);
+    }
+
+    /// Asks before a new or opened project replaces one with unsaved changes.
+    fn discard_window(&mut self, ctx: &egui::Context) {
+        let Some(cmd) = self.confirm_discard else { return };
+        let mut answer = None;
+        egui::Modal::new(egui::Id::unique("confirm_discard")).show(ctx, |ui| {
+            ui.set_width(380.0);
+            ui.label(tr_fmt!("{} has unsaved changes. Discard them?", self.session.prj.info.name));
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                if ui.button(tr("Save")).clicked() {
+                    answer = Some(Some(true));
+                }
+                if ui.button(tr("Discard changes")).clicked() {
+                    answer = Some(Some(false));
+                }
+                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    answer = Some(None);
+                }
+            });
+        });
+        match answer {
+            Some(Some(true)) => {
+                self.confirm_discard = None;
+                self.run(ctx, Cmd::Save);
+            }
+            Some(Some(false)) => {
+                self.confirm_discard = None;
+                self.discard_ok = true;
+                self.run(ctx, cmd);
+            }
+            Some(None) => self.confirm_discard = None,
+            None => {}
+        }
     }
 
     /// The Reports pane: the reports of the registry on the left, the table on the right.

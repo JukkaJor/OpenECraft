@@ -150,8 +150,8 @@ impl App {
                     ui.weak(tr("Drag an entry into the page, or click it and then click into the page."));
                     for u in unplaced {
                         let payload = crate::editor::PlacePayload { symbol: u.symbol, tag: u.tag.clone(), label: u.label.clone(), pins: u.pins.clone() };
-                        let r = ui.dnd_drag_source(ui.make_persistent_id(("ic_unplaced", &u.tag, &u.title)), payload, |ui| ui.link(format!("{}  {}", u.tag, u.title)));
-                        if r.inner.clicked() {
+                        let r = super::drag_source(ui, ui.make_persistent_id(("ic_unplaced", &u.tag, &u.title)), payload, |ui| ui.link(format!("{}  {}", u.tag, u.title)));
+                        if r.clicked() {
                             pick = Some(Pick::Unplaced(u));
                         }
                     }
@@ -197,7 +197,7 @@ impl App {
                 let lbl = match e.symbol_key(&self.session.prj) {
                     Some(symbol) => {
                         let payload = crate::editor::PlacePayload { symbol, tag: String::new(), label: String::new(), pins: Vec::new() };
-                        ui.dnd_drag_source(ui.make_persistent_id(("ic_drag", symbol)), payload, |ui| ui.selectable_label(selected, text)).inner
+                        super::drag_source(ui, ui.make_persistent_id(("ic_drag", symbol)), payload, |ui| ui.selectable_label(selected, text))
                     }
                     None => ui.selectable_label(selected, text),
                 };
