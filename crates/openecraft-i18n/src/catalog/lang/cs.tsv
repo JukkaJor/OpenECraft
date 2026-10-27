@@ -6371,3 +6371,7 @@ Each example builds on the one before and shows more of the features.	Každý p�
 Start from an example project (names: list_examples)	Začít z ukázkového projektu (názvy: list_examples)
 Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Vypíše ukázkové projekty od prvního obvodu po celé zařízení s funkcemi, které každý ukazuje
 Unknown example {}: see list_examples	Neznámý příklad {}: viz list_examples
+8 · Control cabinets in a line-up	8 · Rozvaděče v řadě
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Čerpací stanice vestavěná do dvou řazených stojanových skříní: přípojnicový systém, lišty a kabelové žlaby, přístroje ve dveřích a rukojeti, ventilátor s filtrem, osvětlení, přípojnice PE, kabelové vývodky, kabelová průchodka, výpočet klimatizace, zaplnění žlabů a 3D trasování.
+9 · Electrical room	9 · Elektrická místnost
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Řada rozvaděčů ve své místnosti: půdorys ve tvaru L, vnitřní stěna, dveře a okno, řada na svém místě, lišta se zásuvkou na stěně, nouzové svítidlo na stěně a kabelový žlab pod stropem.

@@ -10,7 +10,7 @@ step, from a first lamp circuit to a structured plant.
 
 ## Example projects
 
-The start page and *File › New* list seven example projects; each builds on the one
+The start page and *File › New* list nine example projects; each builds on the one
 before and shows more of the features (command line: `list_examples`,
 `new_project --example <name>`). All of them pass the project check without errors or
 warnings.
@@ -24,6 +24,8 @@ warnings.
 | 5 | `pneumatic_press` | Electro-pneumatics: service unit, valve terminal, 5/2 valves, flow control valves and cylinders linked with solenoid coils and position switches; hose list, fluid netlist, electro-fluid cross reference |
 | 6 | `pump_station` | Structure identifiers (`=SUP`, `=P1`, `=P2`, `=PLC`; `+CAB1`, `+FLD`), page sections, single-line diagram checked against the schematic, frequency converter, PLC cards with analog input, sensor plug, PLC assignment |
 | 7 | `engineering_workflow` | The conveyor after revision A: locked pages, the change marked since, review comments and redlining, change request, revision B in the approval workflow, baseline |
+| 8 | `cabinet_lineup` | The pump station in two bayed floor-standing enclosures (`+CAB1`, `+CAB2`): busbar system, rails and ducts, door devices and handles, filter fan and outlet filter, light, PE bar, gland plate with cable glands, cable passage, mounting layout pages, climate, duct fill, 3D routing list |
+| 9 | `electrical_room` | The line-up in its room `+ER1`: L-shaped floor plan, inner wall, door and window, the line-up at its place, wall rail with a socket outlet, wall-mounted emergency light (part marked for wall mounting), cable tray under the ceiling |
 
 The projects are built in code (`crates/openecraft-core/src/sample/`), so they always
 match the current file format; *Save as…* writes one as an `.oec` file.

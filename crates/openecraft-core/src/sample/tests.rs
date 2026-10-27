@@ -135,3 +135,42 @@ fn workflow_marks_the_change_since_the_release() {
     assert_eq!(prj.review.requests[0].number, "CR-001");
     assert_eq!(prj.baselines.len(), 1);
 }
+
+#[test]
+fn cabinets_stand_in_a_line_up() {
+    use crate::panel::{lineups, locate, ItemKind};
+    let (prj, an) = checked("cabinet_lineup");
+    let l = &prj.layout;
+    assert_eq!(lineups(l), vec![vec![0, 1]]);
+    // Every device of the cabinets is placed, the converter in +CAB2.
+    let idx = Index::build(&prj);
+    for tag in idx.devices.keys().filter(|t| t.contains("+CAB")) {
+        assert!(locate(&prj, tag).is_some(), "{tag} not placed");
+    }
+    assert_eq!(locate(&prj, "=P2+CAB2-T1").map(|(e, _)| e), Some(1));
+    let kinds = |e: usize, k: ItemKind| l.enclosures[e].items.iter().filter(|i| i.kind == k).count();
+    assert_eq!(kinds(0, ItemKind::Busbar), 1);
+    assert_eq!(kinds(0, ItemKind::Cutout) + kinds(1, ItemKind::Cutout), 2, "cable passage");
+    assert!(crate::routing3d::accessories(&prj, 0, "Cable gland").len() == 1);
+    assert!(!an.report(&prj, ReportKind::DuctFill).unwrap().rows.is_empty());
+    assert_eq!(an.report(&prj, ReportKind::Climate).unwrap().rows.len(), 2);
+    assert!(prj.pages.iter().filter(|p| matches!(p.kind, PageKind::Mounting(_))).count() == 2);
+}
+
+#[test]
+fn electrical_room_holds_the_line_up() {
+    use crate::model::panel::Opening;
+    use crate::panel::{cabinets_in, locate, wall_mount_ok, Face};
+    let (prj, _) = checked("electrical_room");
+    let l = &prj.layout;
+    let r = l.enclosures.iter().position(|e| e.is_room()).expect("room");
+    let room = &l.enclosures[r];
+    assert_eq!((room.outline.len(), room.inner_walls.len()), (6, 1));
+    let openings: Vec<Opening> = room.items.iter().map(|i| i.opening).filter(|o| !o.is_cutout()).collect();
+    assert_eq!(openings, [Opening::Door, Opening::Window]);
+    assert_eq!(cabinets_in(l, r), [0, 1]);
+    assert!(room.items.iter().all(|i| wall_mount_ok(&prj, room, i)));
+    assert!(matches!(locate(&prj, "=SUP+ER1-X2"), Some((e, it)) if e == r && it.face == Face::Wall(5)));
+    assert!(room.items.iter().any(|i| i.part == room::LIGHT && i.tag.is_empty()));
+    assert!(room.items.iter().any(|i| i.part == room::TRAY && i.face == Face::Roof));
+}

@@ -6371,3 +6371,7 @@ Each example builds on the one before and shows more of the features.	Jokainen e
 Start from an example project (names: list_examples)	Aloita esimerkkiprojektista (nimet: list_examples)
 Lists the example projects, from a first circuit to a whole plant, with the features each one shows	Luettelee esimerkkiprojektit ensimmäisestä piiristä kokonaiseen laitokseen ja niiden näyttämät toiminnot
 Unknown example {}: see list_examples	Tuntematon esimerkki {}: katso list_examples
+8 · Control cabinets in a line-up	8 · Ohjauskeskukset rivissä
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	Pumppaamo kahteen rinnakkain liitettyyn lattiakaappiin rakennettuna: kiskojärjestelmä, kiskot ja johtokanavat, ovilaitteet ja kahvat, suodatintuuletin, valaisin, PE-kisko, kaapeliläpiviennit, kaapeliläpivienti kaappien välillä, ilmastointilaskenta, kanavien täyttöaste ja 3D-reititys.
+9 · Electrical room	9 · Sähkötila
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	Kaappirivi tilassaan: L-muotoinen pohjapiirros, väliseinä, ovi ja ikkuna, kaappirivi paikallaan, seinällä kisko ja pistorasia, seinään asennettu turvavalaisin ja kaapelihylly katon alla.

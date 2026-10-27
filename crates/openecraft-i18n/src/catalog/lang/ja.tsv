@@ -6370,3 +6370,7 @@ Each example builds on the one before and shows more of the features.	各サン�
 Start from an example project (names: list_examples)	サンプルプロジェクトから開始（名前：list_examples）
 Lists the example projects, from a first circuit to a whole plant, with the features each one shows	最初の回路からプラント全体までのサンプルプロジェクトを、それぞれが示す機能とともに一覧表示します
 Unknown example {}: see list_examples	不明なサンプル {}：list_examples を参照
+8 · Control cabinets in a line-up	8 · 列盤の制御盤
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	2 台の列盤自立盤に組み込んだポンプ場：ブスバーシステム、レールと配線ダクト、扉機器とハンドル、フィルタファン、照明、PE バー、ケーブルグランド、ケーブル通路、盤内温度計算、ダクト占有率、3D 配線。
+9 · Electrical room	9 · 電気室
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	部屋に設置した列盤：L 字形の平面図、内壁、扉とウィンドウ、所定の位置の列盤、壁のコンセント付きレール、壁付けの非常灯、天井下のケーブルラック。

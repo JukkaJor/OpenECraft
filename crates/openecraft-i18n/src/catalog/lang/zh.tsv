@@ -6366,3 +6366,7 @@ Each example builds on the one before and shows more of the features.	每个示�
 Start from an example project (names: list_examples)	从示例项目开始（名称：list_examples）
 Lists the example projects, from a first circuit to a whole plant, with the features each one shows	列出从第一个电路到整个工厂的示例项目以及每个项目展示的功能
 Unknown example {}: see list_examples	未知示例 {}：请参阅 list_examples
+8 · Control cabinets in a line-up	8 · 并柜排列的控制柜
+The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing.	安装在两台并柜落地柜中的泵站：母线系统、导轨和线槽、柜门设备和把手、过滤风扇、照明灯、PE 排、电缆密封接头、电缆通道、柜内温控计算、线槽填充率和三维布线。
+9 · Electrical room	9 · 电气室
+The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling.	并柜后的控制柜在其房间中：L 形平面图、内墙、门和窗、放置到位的并柜、墙上带插座的导轨、墙装应急灯以及顶部下方的电缆桥架。

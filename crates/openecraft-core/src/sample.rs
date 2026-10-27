@@ -6,10 +6,12 @@ use crate::model::*;
 use crate::parts::PartsDb;
 use openecraft_i18n::tr_const;
 
+mod cabinets;
 mod lamp;
 mod plant;
 mod press;
 mod relay;
+mod room;
 mod star_delta;
 mod workflow;
 
@@ -26,7 +28,7 @@ pub struct Example {
 }
 
 /// The example projects, simple ones first.
-pub const EXAMPLES: [Example; 7] = [
+pub const EXAMPLES: [Example; 9] = [
     Example {
         key: "lamp_circuit",
         level: 1,
@@ -75,6 +77,20 @@ pub const EXAMPLES: [Example; 7] = [
         title: tr_const!("7 · Revisions, review and change requests"),
         description: tr_const!("The conveyor after its first release: a released and locked revision, changes marked since, review comments with redlining, a change request, revision B in the approval workflow and a baseline to compare with."),
         build: workflow::project,
+    },
+    Example {
+        key: "cabinet_lineup",
+        level: 8,
+        title: tr_const!("8 · Control cabinets in a line-up"),
+        description: tr_const!("The pump station built into two bayed floor-standing enclosures: busbar system, rails and ducts, door devices and handles, filter fan, light, PE bar, cable glands, a cable passage, climate calculation, duct fill and 3D routing."),
+        build: cabinets::project,
+    },
+    Example {
+        key: "electrical_room",
+        level: 9,
+        title: tr_const!("9 · Electrical room"),
+        description: tr_const!("The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling."),
+        build: room::project,
     },
 ];
 
