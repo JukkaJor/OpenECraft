@@ -3,6 +3,10 @@ members = ["openecraft", "crates/openecraft-i18n", "crates/openecraft-fonts", "c
 exclude = ["vendor"]
 resolver = "2"
 
+# The version of every crate and of the installers (installer/*/build.*).
+[workspace.package]
+version = "0.1.0"
+
 [profile.release]
 opt-level = 2
 

@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-fonts"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "Fonts bundled with OpenECraft for the Chinese, Japanese and Korean translations (subsets of Noto Sans SC / JP / KR)"
 license = "MIT OR Apache-2.0 AND OFL-1.1"

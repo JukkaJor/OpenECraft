@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-step"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "STEP / IGES import of OpenECraft: B-rep models of STEP (ISO 10303-21), IGES 5.3 and Parasolid XT files tessellated into part meshes"
 license = "MIT OR Apache-2.0"

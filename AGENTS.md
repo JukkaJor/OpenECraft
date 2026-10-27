@@ -31,6 +31,11 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
   into all four languages; a new version needs a `<release>` in the metainfo)
 - macOS disk image: `bash installer/macos/build.sh` (universal app bundles, output
   `target/installer/`)
+- The installer scripts need `cargo install cargo-about --locked` (third-party licenses,
+  `installer/about.toml`); they take the version from `[workspace.package]` of the root
+  `Cargo.toml`, which every crate inherits (`version.workspace = true`)
+- Releases: a tag `v<version>` builds a draft GitHub release (`docs/releasing.md`);
+  `CHANGELOG.md` gets an entry for user-visible changes
 - The web target needs `rustup target add wasm32-unknown-unknown` and `cargo install trunk --locked`.
 
 ## Workspace layout

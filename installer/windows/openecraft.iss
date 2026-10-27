@@ -16,6 +16,9 @@
 #ifndef OutputDir
   #define OutputDir "..\..\target\installer"
 #endif
+#ifndef Notices
+  #define Notices "..\..\target\installer\windows\THIRD-PARTY-LICENSES.html"
+#endif
 
 [Setup]
 AppId={{53B40BA8-0D7F-4081-8069-C7A181DEFA3C}
@@ -43,6 +46,10 @@ Compression=lzma2/max
 SolidCompression=yes
 ChangesAssociations=yes
 ChangesEnvironment=yes
+#ifdef SignTool
+SignTool=signtool
+SignedUninstaller=yes
+#endif
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
@@ -123,6 +130,10 @@ Name: "addtopath"; Description: "{cm:AddToPath}"; GroupDescription: "{cm:Integra
 [Files]
 Source: "{#BinDir}\openecraft.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "..\..\assets\icon.ico"; DestDir: "{app}"; DestName: "openecraft.ico"; Components: main; Flags: ignoreversion
+Source: "..\..\LICENSE-MIT"; DestDir: "{app}\licenses"; Components: main; Flags: ignoreversion
+Source: "..\..\LICENSE-APACHE"; DestDir: "{app}\licenses"; Components: main; Flags: ignoreversion
+Source: "..\..\crates\openecraft-fonts\fonts\OFL.txt"; DestDir: "{app}\licenses"; DestName: "OFL-NotoSans.txt"; Components: main; Flags: ignoreversion
+Source: "{#Notices}"; DestDir: "{app}\licenses"; Components: main; Flags: ignoreversion
 Source: "{#BinDir}\openecraft-parts-manager.exe"; DestDir: "{app}"; Components: partsmanager; Flags: ignoreversion
 Source: "{#BinDir}\openecraft-cli.exe"; DestDir: "{app}"; Components: cli; Flags: ignoreversion
 Source: "{#BinDir}\openecraft-parts-server.exe"; DestDir: "{app}"; Components: servers; Flags: ignoreversion

@@ -24,6 +24,11 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
   `Authorization: Bearer <token>`; without it, user accounts and directories everyone
   who reaches the server can change its projects.
+- The server speaks plain HTTP, so tokens and passwords cross the network unencrypted.
+  Keep it on `127.0.0.1` behind a TLS reverse proxy when it is reachable from other
+  machines, e.g. with [Caddy](https://caddyserver.com/), which fetches the certificate:
+  `caddy reverse-proxy --from projects.example.com --to 127.0.0.1:8091`. The editor
+  then uses `https://projects.example.com`.
 - **User accounts** (`users.json` in the data directory, Argon2 password hashes):
   viewers open projects read-only, reviewers also save comments, markup and approvals,
   editors lock, change, save and create projects, project managers also delete

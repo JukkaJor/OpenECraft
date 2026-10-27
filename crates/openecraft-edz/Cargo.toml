@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-edz"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "EDZ import of OpenECraft: parts, connection points, drilling patterns, pictures and macros of EPLAN Data Portal archives"
 license = "MIT OR Apache-2.0"

@@ -1,6 +1,6 @@
 [package]
 name = "openecraft-jt"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 description = "JT (ISO 14306) exchange of OpenECraft: a minimal writer and reader for triangle meshes"
 license = "MIT OR Apache-2.0"
