@@ -1,83 +1,56 @@
-use monstertruck_assembly::assy::{EdgeEntity, NodeEntity};
-use monstertruck_io::step::load::step_geometry::{Curve3D, Surface};
-use monstertruck_io::step::load::{convert::*, *};
+use cadmpeg_ir::products::{AssemblyGraph, PrototypeReference};
+use cadmpeg_ir::topology::BodyKind;
+use cadmpeg_ir::transform::Transform;
+use cadmpeg_ir::CadIr;
+use monstertruck_io::cadmpeg::{to_bodies, ImportedBody, ImportedSheet};
 use monstertruck_meshing::prelude::*;
+use monstertruck_modeling::cgmath::Transform as _;
 use monstertruck_topology::compress::CompressedShell;
 use openecraft_parts::{Mesh3d, MeshBuilder, MAX_TRIANGLES};
-
-type Shell = CompressedShell<Point3, Curve3D, Surface>;
+use std::collections::HashMap;
 
 /// Chord tolerance of the tessellation relative to the size of a shell; coarser
 /// steps are tried when the mesh gets too large.
 const TOLERANCES: [f64; 4] = [0.002, 0.006, 0.02, 0.06];
 
-/// Millimetres per length unit of a STEP file (`SI_UNIT(.MILLI.,.METRE.)`,
-/// `SI_UNIT($,.METRE.)`, inch, foot …); 1 if it declares none.
-pub fn length_unit_mm(text: &str) -> f64 {
-    let upper = text.to_ascii_uppercase();
-    for record in upper.split(';').filter(|r| r.contains("LENGTH_UNIT")) {
-        let compact: String = record.chars().filter(|c| !c.is_whitespace()).collect();
-        if compact.contains("CONVERSION_BASED_UNIT") {
-            if compact.contains("'INCH'") {
-                return 25.4;
-            }
-            if compact.contains("'FOOT'") {
-                return 304.8;
-            }
-            continue;
-        }
-        if let Some(si) = compact.split("SI_UNIT(").nth(1) {
-            let prefix = si.split(',').next().unwrap_or_default();
-            return match prefix {
-                ".MILLI." => 1.0,
-                ".CENTI." => 10.0,
-                ".DECI." => 100.0,
-                ".MICRO." => 0.001,
-                ".KILO." => 1_000_000.0,
-                _ => 1000.0,
-            };
-        }
-    }
-    1.0
-}
-
-/// Shells of a solid or surface model representation.
-fn shells_of(table: &Table, idx: u64) -> Vec<Shell> {
-    if let Some(solid) = table.manifold_solid_brep.get(&idx) {
-        table.to_compressed_solid(solid).map(|s| s.boundaries).unwrap_or_default()
-    } else if let Some(model) = table.shell_based_surface_model.get(&idx) {
-        table.to_compressed_shells(model).unwrap_or_default()
-    } else {
-        Vec::new()
+/// The shells of a converted body.
+pub(crate) fn body_shells(body: ImportedBody) -> Vec<ImportedSheet> {
+    match body {
+        ImportedBody::Solid(solid) => solid.boundaries,
+        ImportedBody::Sheet(sheet) => vec![sheet],
     }
 }
 
-/// All shells with their placement: through the assembly structure, or – for files
-/// without one – every solid and surface model where it is.
-fn placed_shells(table: &Table) -> Vec<(Shell, Matrix4)> {
+fn matrix(t: &Transform) -> Matrix4 {
+    let r = &t.rows;
+    Matrix4::new(
+        r[0][0], r[1][0], r[2][0], r[3][0], r[0][1], r[1][1], r[2][1], r[3][1], r[0][2], r[1][2], r[2][2], r[3][2], r[0][3], r[1][3], r[2][3], r[3][3],
+    )
+}
+
+/// All shells of the solids and surface models with their placement: once per use
+/// in the assembly structure; bodies of no product where they are.
+fn placed_shells(ir: &CadIr) -> Result<Vec<(ImportedSheet, Matrix4)>, String> {
+    let bodies = to_bodies(ir, "STEP").map_err(|e| format!("STEP file: {e}"))?;
+    let mut uses: HashMap<_, Vec<Matrix4>> = HashMap::new();
+    if let Ok(graph) = AssemblyGraph::new(&ir.model.occurrences) {
+        for occurrence in &ir.model.occurrences {
+            let PrototypeReference::Local { definition } = &occurrence.prototype else { continue };
+            let Some(product) = ir.model.product_definitions.iter().find(|p| &p.id == definition) else { continue };
+            let placement = graph.resolved_transform(&occurrence.id).map_or(Matrix4::identity(), |t| matrix(&t));
+            for body in &product.bodies {
+                uses.entry(body).or_default().push(placement);
+            }
+        }
+    }
     let mut out = Vec::new();
-    if let Ok(assy) = table.step_assy() {
-        let shapes = assy.par_map(
-            |node: &ProductEntity| NodeEntity { shape: node.shape.clone(), attrs: () },
-            |edge: &AssembleEntity| EdgeEntity { matrix: Matrix4::try_from(&edge.matrix).unwrap_or(Matrix4::identity()), attrs: () },
-        );
-        for top in shapes.top_nodes() {
-            for path in shapes.paths_iter(top.index()) {
-                let matrix = path.matrix();
-                for &idx in path.terminal_node().shape() {
-                    out.extend(shells_of(table, idx).into_iter().map(|s| (s, matrix)));
-                }
-            }
+    for (body, imported) in ir.model.bodies.iter().zip(bodies) {
+        let placements = uses.get(&body.id).cloned().unwrap_or_else(|| vec![Matrix4::identity()]);
+        for shell in body_shells(imported) {
+            out.extend(placements.iter().map(|&m| (shell.clone(), m)));
         }
     }
-    if out.is_empty() {
-        let mut ids: Vec<u64> = table.manifold_solid_brep.keys().chain(table.shell_based_surface_model.keys()).copied().collect();
-        ids.sort_unstable();
-        for idx in ids {
-            out.extend(shells_of(table, idx).into_iter().map(|s| (s, Matrix4::identity())));
-        }
-    }
-    out
+    Ok(out)
 }
 
 fn shell_size<C, S>(shell: &CompressedShell<Point3, C, S>) -> f64 {
@@ -129,15 +102,16 @@ where
     Err(last)
 }
 
-/// Reads a STEP file into a mesh in mm.
+/// Reads a STEP file into a mesh in mm. Curves (wire bodies) are left out.
 pub fn parse_step(bytes: &[u8]) -> Result<Mesh3d, String> {
-    let table = Table::from_step_bytes(bytes).map_err(|e| format!("not a readable STEP file: {e}"))?;
-    let unit = length_unit_mm(&String::from_utf8_lossy(bytes));
-    let shells = placed_shells(&table);
-    if shells.is_empty() {
+    let mut ir = monstertruck_io::cadmpeg::step::decode_to_ir(&mut std::io::Cursor::new(bytes))
+        .map_err(|e| format!("not a readable STEP file: {e}"))?;
+    ir.model.bodies.retain(|b| matches!(b.kind, BodyKind::Solid | BodyKind::Sheet));
+    if ir.model.bodies.is_empty() {
         return Err("the STEP file contains no solids or surface models".into());
     }
-    mesh_shells(&shells, unit)
+    // cadmpeg converts lengths to millimetres while decoding.
+    mesh_shells(&placed_shells(&ir)?, 1.0)
 }
 
 #[cfg(test)]

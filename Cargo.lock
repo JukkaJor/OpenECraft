@@ -3,16 +3,6 @@
 version = 4
 
 [[package]]
-name = "Inflector"
-version = "0.11.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3"
-dependencies = [
- "lazy_static",
- "regex",
-]
-
-[[package]]
 name = "acadrust"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1222,17 +1212,6 @@ name = "deranged"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e9de72ce2ad1f90dc62fa25f0f430ef85eb4b0d8fa0be4f30373bc40a21d28e"
-
-[[package]]
-name = "derive-new"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cdc8d50f426189eef89dac62fabfa0abb27d5cc008f25bf4156a0203325becc"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
-]
 
 [[package]]
 name = "derive_more"
@@ -2840,17 +2819,12 @@ dependencies = [
  "cadmpeg-core",
  "cadmpeg-ir",
  "chrono",
- "derive_more",
  "monstertruck-assembly",
  "monstertruck-core",
- "monstertruck-derive",
  "monstertruck-geometry",
  "monstertruck-mesh",
  "monstertruck-modeling",
  "monstertruck-topology",
- "monstertruck-traits",
- "serde",
- "step-p21",
  "thiserror 2.0.21",
  "web-time",
 ]
@@ -3048,15 +3022,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df9761775871bdef83bee530e60050f7e54b1105350d6884eb0fb4f46c2f9405"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "nom-language"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2de2bc5b451bfedaef92c90b8939a8fff5770bdcc1fafd6239d086aab8fa6b29"
-dependencies = [
- "nom 8.0.0",
 ]
 
 [[package]]
@@ -3630,7 +3595,6 @@ version = "0.1.0"
 dependencies = [
  "cadmpeg-codec-iges",
  "cadmpeg-ir",
- "monstertruck-assembly",
  "monstertruck-io",
  "monstertruck-meshing",
  "monstertruck-modeling",
@@ -3994,26 +3958,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr2"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96de42df36bb9bba5542fe9f1a054b8cc87e172759a1868aa05c1f3acc89dfc5"
-dependencies = [
- "proc-macro2",
- "quote",
-]
-
-[[package]]
-name = "proc-macro-error2"
-version = "2.0.1"
-dependencies = [
- "proc-macro-error-attr2",
- "proc-macro2",
- "quote",
- "syn 2.0.119",
 ]
 
 [[package]]
@@ -4771,37 +4715,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "step-p21"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "261fb24eb3fd1de07c36523c41063ea901cde514594603cb6dfe7afe64f1b967"
-dependencies = [
- "Inflector",
- "derive-new",
- "derive_more",
- "itertools 0.15.0",
- "nom 8.0.0",
- "nom-language",
- "serde",
- "step-p21-derive",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "step-p21-derive"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "432f60e41744c351a88a444fbe134ca9bb8d930c6442fe6334728963ba5dd782"
-dependencies = [
- "Inflector",
- "proc-macro-crate",
- "proc-macro-error2",
- "proc-macro2",
- "quote",
- "syn 3.0.9",
-]
 
 [[package]]
 name = "strsim"
