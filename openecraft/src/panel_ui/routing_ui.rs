@@ -10,6 +10,7 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 
 /// Colour of a class in the drawings.
 pub(super) fn class_color(c: Class) -> Color32 {
@@ -337,7 +338,7 @@ impl PanelUi {
                         ui.label(text);
                     }
                 }
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(path.id);
                 }
             });
@@ -396,7 +397,7 @@ impl PanelUi {
                 }
                 mode_choice(ui, ("reservemode", res.id), &mut res.mode);
                 ui.label(format!("{:.0} × {:.0} mm", res.max[0] - res.min[0], res.max[1] - res.min[1]));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(res.id);
                 }
             });

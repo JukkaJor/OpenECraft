@@ -5,24 +5,9 @@
 (renamed from {})	(rinominato da {})
 + Page	+ Pagina
 0 = no jumper	0 = nessun ponticello
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Scegli un simbolo nella libreria (a destra) e fai clic nella pagina per posizionarlo. Le sigle dispositivo (-K1, -S2 …) vengono assegnate automaticamente.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Progetto › Editor simboli: disegna simboli personalizzati (o copia quelli integrati) con punti di connessione e funzione; vengono salvati nel progetto e possono essere scambiati come file di libreria.
-100% ≈ real size on a 96 dpi screen	100% ≈ dimensione reale su uno schermo a 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Progetto › Cartigli e moduli di report: cartigli personalizzati con segnaposto ({project}, {page}, {prop:Name} …) e le colonne delle pagine di report.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Layout quadro: sbarre e aperture; le proprietà dell'armadio esportano lo schema di foratura (dati NC come DXF / DWG / CSV). La lista conduttori di produzione contiene le lunghezze di spelatura e i puntalini.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Cablaggi: Progetto › Cablaggi…; seleziona i conduttori tra due dispositivi › Assegna a cablaggio, oppure per singolo collegamento nelle proprietà del conduttore. Report dati cablaggio con lunghezze, connettori e diametro del fascio, esportazione KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Porta: passa la vista frontale del quadro a Porta e posiziona lì i dispositivi di comando / segnalazione; le relative aperture nella porta vengono generate. Le collisioni vengono verificate con i modelli 3D degli articoli.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Seleziona una bobina, quindi posiziona i contatti: vengono assegnati a quella bobina e numerati (13/14, 21/22 …). I riferimenti incrociati e l'immagine contatti si aggiornano in tempo reale.
 2D front view	Vista frontale 2D
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Disegna i conduttori con lo strumento conduttore (W). I conduttori terminano automaticamente sui punti di connessione. Le derivazioni a T ricevono un punto di connessione.
 3D model	Modello 3D
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. I potenziali (L1, +24V …) e i punti di interruzione danno il nome alle reti tra le pagine. Seleziona un conduttore per evidenziarne il potenziale.
 4/2 directional valve	Valvola distributrice 4/2
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Assegna gli articoli nel pannello delle proprietà; genera report (lista dispositivi, distinta base, schema morsetti, lista collegamenti, lista PLC) e inseriscili come pagine di report.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Struttura: assegna alle pagine una funzione (=A1) e un luogo (+CAB1) nelle proprietà della pagina. I dispositivi posizionati lì li ricevono (=A1+CAB1-K1); sulla pagina viene mostrata solo la parte diversa.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Cavi: definiscili in Progetto › Cavi…, seleziona i conduttori e usa Assegna a cavo. Numeri conduttore: Progetto › Numerazione conduttori…, oppure digita un numero nelle proprietà del conduttore.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Macro: seleziona gli elementi › Modifica › Salva selezione come macro; inseriscile da Inserisci › Macro…. I segnaposto {NAME} vengono compilati dai set di valori.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Progetto › Morsettiere / Panoramica PLC / Revisioni: ordine delle morsettiere, ponticelli e riserve; indirizzi PLC e tabelle dei simboli; revisioni con contrassegni di modifica e pagine rilasciate (bloccate).
 Access token	Token di accesso
 Accessories	Accessori
 Add missing parts of the example catalog	Aggiungi gli articoli mancanti del catalogo di esempio
@@ -95,12 +80,9 @@ Click into the page to place {}	Fai clic nella pagina per posizionare {}
 Click on the 4 mm grid	Fai clic sulla griglia da 4 mm
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Fai clic sul punto iniziale e sui punti d'angolo · Barra spaziatrice cambia la direzione dell'angolo · termina automaticamente su una connessione · Clic destro / Esc per terminare
 Click start and end point	Fai clic sul punto iniziale e finale
-Click start point, click end point	Fai clic sul punto iniziale, poi sul punto finale
 Click to add to the selected text.	Fai clic per aggiungere al testo selezionato.
 Click to insert the macro · Esc cancel	Fai clic per inserire la macro · Esc per annullare
-Click to place a text	Fai clic per posizionare un testo
 Click to place the text from the field below	Fai clic per posizionare il testo del campo sottostante
-Click to place · R rotate · M mirror · Esc finish	Fai clic per posizionare · R ruota · M specchia · Esc per terminare
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Fai clic per selezionare, trascina per spostare, trascina su uno spazio vuoto per la selezione a finestra. Il trascinamento con il tasto destro/centrale sposta la vista, la rotellina esegue lo zoom.
 Click to show	Fai clic per mostrare
 Click two corners	Fai clic su due angoli
@@ -146,7 +128,6 @@ Corner	Angolo
 Cover	Copertina
 Cover sheet	Pagina di copertina
 Create / update the part on the server (Ctrl+S)	Crea / aggiorna l'articolo sul server (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Crea un armadio (➕ nel navigatore a sinistra) per iniziare il layout quadro.
 Create an enclosure in the panel layout first.	Crea prima un armadio nel layout quadro.
 Create revision	Crea revisione
 Created by	Creato da
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Porta: {} dispositivi, {} aperture
 Downloaded {} parts (revision {}): {} new, {} updated	{} articoli scaricati (revisione {}): {} nuovi, {} aggiornati
 Downloading parts…	Download degli articoli in corso…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Trascina: orbita · trascinamento destro/centrale: sposta vista · rotellina: zoom · clic: seleziona dispositivo o conduttore
-Draw connections (W)	Disegna collegamenti (W)
+Draw connections	Disegna collegamenti
 Duplicate	Duplica
 Each point-to-point connection can belong to a harness	Ogni collegamento punto-punto può appartenere a un cablaggio
 Edit	Modifica
@@ -272,7 +253,6 @@ Harness data	Dati cablaggio
 Harness {} has no wires	Il cablaggio {} non ha conduttori
 Harness {}: connection {} – {} does not exist in the schematic	Cablaggio {}: il collegamento {} – {} non esiste nello schema
 Harnesses	Cablaggi
-Harnesses…	Cablaggi…
 Height	Altezza
 Height (mm)	Altezza (mm)
 Help	Guida
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	I valori più lunghi vengono dise
 Macro {} replaced	Macro {} sostituita
 Macro {} saved	Macro {} salvata
 Macros	Macro
-Macros…	Macro…
 Macro…	Macro…
 Main	Princ.
 Main contact 1-pole	Contatto principale 1 polo
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Prossimi numeri di contatto liberi su q
 Next page (Page Down)	Pagina successiva (Page Down)
 No PLC inputs / outputs placed.	Nessun ingresso / uscita PLC posizionato.
 No cables defined.	Nessun cavo definito.
-No cables yet – Project › Cables…	Ancora nessun cavo – Progetto › Cavi…
 No changes since the last revision.	Nessuna modifica dall'ultima revisione.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Ancora nessun dispositivo. Scegli un simbolo dalla libreria a destra e fai clic nella pagina.
-No enclosure yet – create one with ➕.	Ancora nessun armadio – creane uno con ➕.
 No harnesses defined.	Nessun cablaggio definito.
-No harnesses yet – Project › Harnesses…	Ancora nessun cablaggio – Progetto › Cablaggi…
 No identifying letter for the device tag.	Nessuna lettera identificativa per la sigla dispositivo.
 No macros yet. Select items in a schematic and save them as a macro.	Ancora nessuna macro. Seleziona elementi in uno schema e salvali come macro.
 No parts found.	Nessun articolo trovato.
@@ -437,7 +412,6 @@ PLC connection point	Punto di connessione PLC
 PLC digital input	Ingresso digitale PLC
 PLC digital output	Uscita digitale PLC
 PLC overview	Panoramica PLC
-PLC overview…	Panoramica PLC…
 Packaging quantity	Unità di imballaggio
 Page	Pagina
 Page / column (3.4.1)	Pagina / colonna (3.4.1)
@@ -468,11 +442,10 @@ Parts	Articoli
 Parts (CSV, JSON)	Articoli (CSV, JSON)
 Parts import failed: {}	Importazione articoli non riuscita: {}
 Parts management	Gestione articoli
-Parts management…	Gestione articoli…
 Parts server: {}	Server articoli: {}
 Passive components	Componenti passivi
 Pilot light (NFPA)	Spia luminosa (NFPA)
-Place text (T)	Posiziona testo (T)
+Place text	Posiziona testo
 Placed	Posizionato
 Placed {}× in the project	Posizionato {}× nel progetto
 Placeholders	Segnaposto
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Aggiorna articoli del catalogo di esempio 
 Relay / contactor coil	Bobina relè / contattore
 Relay coil (NFPA)	Bobina relè (NFPA)
 Release: lock all pages	Rilascia: blocca tutte le pagine
-Released page – unlock it in Project › Revisions to change it	Pagina rilasciata – sbloccala in Progetto › Revisioni per modificarla
 Remove from cable	Rimuovi dal cavo
 Remove from harness	Rimuovi dal cablaggio
 Remove from the harness	Rimuovi dal cablaggio
@@ -566,7 +538,6 @@ Revision marks	Contrassegni di revisione
 Revision overview (changes)	Panoramica revisioni (modifiche)
 Revision {} created	Revisione {} creata
 Revisions	Revisioni
-Revisions…	Revisioni…
 Right	Destra
 Rotate (R)	Ruota (R)
 Rotate / mirror (selection or symbol being placed)	Ruota / specchia (selezione o simbolo da posizionare)
@@ -637,7 +608,6 @@ Supplier	Fornitore
 Switches / Sensors	Interruttori / sensori
 Symbol	Simbolo
 Symbol editor	Editor simboli
-Symbol editor…	Editor simboli…
 Symbol table import failed: {}	Importazione della tabella dei simboli non riuscita: {}
 Symbols	Simboli
 Synchronize project parts from database	Sincronizza articoli del progetto dal database
@@ -655,7 +625,6 @@ Terminal number	Numero morsetto
 Terminal number, PLC address, potential name …	Numero morsetto, indirizzo PLC, nome potenziale …
 Terminal strip	Morsettiera
 Terminal strips	Morsettiere
-Terminal strips…	Morsettiere…
 Terminals	Morsetti
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	I morsetti con lo stesso numero di ponticello sono collegati tra loro (stesso potenziale). I morsetti di riserva sono conteggiati nella distinta base.
 Test connection	Verifica connessione
@@ -727,8 +696,7 @@ Wire tool / text tool	Strumento conduttore / strumento testo
 Wire {} – {}  ({} of {} here, click again for the next)	Conduttore {} – {}  ({} di {} qui, fai di nuovo clic per il successivo)
 Wire {} – {}  {} mm	Conduttore {} – {}  {} mm
 Wires	Conduttori
-Workflow	Flusso di lavoro
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Colonna {}  Riga {}
+Column {}  Row {}	Colonna {}  Riga {}
 X {}  Y {} mm on the {}	X {}  Y {} mm su {}
 YYYY-MM-DD	AAAA-MM-GG
 Zoom / pan	Zoom / spostamento vista
@@ -815,67 +783,55 @@ writable with token	scrivibile con token
 ⎘ Copy	⎘ Copia
 ○ Circle	○ Cerchio
 ☐ Rect	☐ Rett.
-⛶ Fit	⛶ Adatta
-✏ Place in schematic	✏ Posiziona nello schema
+Place in schematic	Posiziona nello schema
 ✏ Wire	✏ Conduttore
-✔ Add to device	✔ Aggiungi al dispositivo
-✔ Create	✔ Crea
+Add to device	Aggiungi al dispositivo
+Create	Crea
 ✔ No problems found.	✔ Nessun problema rilevato.
 ✔ Save	✔ Salva
 ➕ Add accessory	➕ Aggiungi accessorio
-➕ Add function	➕ Aggiungi funzione
-➕ Add part…	➕ Aggiungi articolo…
+Add function	Aggiungi funzione
+Add part…	Aggiungi articolo…
 ➕ Insert (click into the page)	➕ Inserisci (fai clic nella pagina)
 ➕ Insert as new page	➕ Inserisci come nuova pagina
 ➕ Insert as report page	➕ Inserisci come pagina di report
-➕ Insert mounting layout page	➕ Inserisci pagina layout di montaggio
+Insert mounting layout page	Inserisci pagina layout di montaggio
 ➕ Label	➕ Etichetta
 ➕ Line	➕ Linea
 ➕ New	➕ Nuovo
-➕ New cable	➕ Nuovo cavo
-➕ New harness	➕ Nuovo cablaggio
+New cable	Nuovo cavo
+New harness	Nuovo cablaggio
 ➕ Property	➕ Proprietà
 ➕ Rectangle	➕ Rettangolo
 ➕ Text	➕ Testo
-➕ Value set	➕ Set di valori
+Value set	Set di valori
 ➕ {} (not saved)	➕ {} (non salvato)
 ⟲ Revert	⟲ Ripristina
 ⟳ Reload	⟳ Ricarica
-⟳ Rotate	⟳ Ruota
-⬆ Import symbol table…	⬆ Importa tabella dei simboli…
-⬆ Import…	⬆ Importa…
-⬆ Upload database ({})	⬆ Carica database ({})
+Import symbol table…	Importa tabella dei simboli…
+Upload database ({})	Carica database ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Carica file articoli (CSV / JSON)…
-⬆ Upload selected part	⬆ Carica articolo selezionato
-⬇ Door NC data (DXF)	⬇ Dati NC porta (DXF)
-⬇ Door cutouts (CSV)	⬇ Aperture porta (CSV)
-⬇ Download into database	⬇ Scarica nel database
-⬇ Drilling list (CSV)	⬇ Lista fori (CSV)
-⬇ Export CSV	⬇ Esporta CSV
+Upload selected part	Carica articolo selezionato
+Door NC data (DXF)	Dati NC porta (DXF)
+Door cutouts (CSV)	Aperture porta (CSV)
+Download into database	Scarica nel database
 ⬇ Export KBL (XML)…	⬇ Esporta KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Esporta tabella dei simboli (CSV)…
-⬇ Export…	⬇ Esporta…
-⬇ NC data (DXF)	⬇ Dati NC (DXF)
+Export symbol table (CSV)…	Esporta tabella dei simboli (CSV)…
+NC data (DXF)	Dati NC (DXF)
 ⬉ Select	⬉ Seleziona
 🌐 Parts server	🌐 Server articoli
-💾 Save	💾 Salva
-💾 Save selection as macro…	💾 Salva selezione come macro…
-📊 Cable overview	📊 Panoramica cavi
-📊 Harness data	📊 Dati cablaggio
 📊 Reports	📊 Report
-📊 Revision overview	📊 Panoramica revisioni
-🔒 Released page – read only	🔒 Pagina rilasciata – sola lettura
+Revision overview	Panoramica revisioni
+Released page – read only	Pagina rilasciata – sola lettura
 🗄 Panel layout	🗄 Layout quadro
 🗄 Parts database	🗄 Database articoli
 🗋 Schematic	🗋 Schema
 🗑 Delete	🗑 Elimina
-🗑 Delete connection point	🗑 Elimina punto di connessione
-🗑 Delete element	🗑 Elimina elemento
-🗑 Delete macro	🗑 Elimina macro
-🗑 Remove	🗑 Rimuovi
+Delete connection point	Elimina punto di connessione
+Delete element	Elimina elemento
 {} connections removed from their harness	{} collegamenti rimossi dal relativo cablaggio
 {} connections assigned to {}	{} collegamenti assegnati a {}
-🗄 Show in panel layout ({})	🗄 Mostra nel layout quadro ({})
+Show in panel layout ({})	Mostra nel layout quadro ({})
    |  Potential {}	   |  Potenziale {}
 📁 Project parts ({})	📁 Articoli del progetto ({})
 part {} not found	articolo {} non trovato
@@ -1070,8 +1026,8 @@ via cable ducts	tramite canaline
 {} connection points	{} punti di connessione
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm sulla piastra + {} mm di riserva; il resto è il percorso dai punti di connessione alla piastra.
 {} wires, {} – {} mm	{} conduttori, {} – {} mm
-➕ Add connection point	➕ Aggiungi punto di connessione
-🗑 Remove all	🗑 Rimuovi tutto
+Add connection point	Aggiungi punto di connessione
+Remove all	Rimuovi tutto
 2D front view (SVG)	Vista frontale 2D (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	Modello 3D (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Supporto terminale
@@ -1113,11 +1069,9 @@ Wire number on both ends	Numero conduttore su entrambe le estremità
 {} markers	{} marcatori
 {} mm	{} mm
 {} pieces	{} pezzi
-Potentials…	Potenziali…
 Potentials	Potenziali
-➕ New potential	➕ Nuovo potenziale
+New potential	Nuovo potenziale
 Load preset	Carica preimpostazione
-📊 Potential overview	📊 Panoramica potenziali
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	I conduttori senza colore o sezione propri li prendono dal potenziale del loro collegamento; le anime dei cavi mantengono i valori del cavo.
 e.g. 400 V AC	ad es. 400 V AC
 Delete	Elimina
@@ -1151,7 +1105,6 @@ turquoise	turchese
 silver	argento
 green-yellow	giallo-verde
 Potential {} defined {} times	Potenziale {} definito {} volte
-Potential {} has no definition (Project › Potentials)	Il potenziale {} non ha una definizione (Progetto › Potenziali)
 Protective conductor {} with wire colour {} (must be GNYE)	Conduttore di protezione {} con colore {} (deve essere GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Il colore GNYE è riservato ai conduttori di protezione ({})
 {}: cross-section {} differs from the potential definition ({})	{}: la sezione {} differisce dalla definizione del potenziale ({})
@@ -1183,9 +1136,7 @@ Draw wires in their colour	Disegna i conduttori nel loro colore
 Pin	Pin
 Plug	Connettore
 Plugs	Connettori
-Plugs…	Connettori…
 Plug diagram	Schema connettori
-📊 Plug diagram	📊 Schema connettori
 Socket side	Lato femmina
 Pin side	Lato maschio
 female	femmina
@@ -1231,7 +1182,6 @@ Column	Colonna
 Condition '{}' needs OPTION=value	La condizione '{}' richiede OPTION=valore
 Condition (OPTION=value & …)	Condizione (OPTION=valore & …)
 Configurator	Configuratore
-Configurator…	Configuratore…
 Cooling	Raffreddamento
 Creates or changes a configurator option	Crea o modifica un'opzione del configuratore
 Cross-section {} carries {} A, less than the {} A of {}	La sezione {} porta {} A, meno dei {} A di {}
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: caduta di tensione {} V ({} %) superiore al {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W di potenza dissipata riscaldano l'armadio a {} °C (massimo {} °C): necessario {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} porta {} A, l'utenza {} richiede {} A
-⚙ Generate pages	⚙ Genera pagine
-➕ Option	➕ Opzione
-➕ Rule	➕ Regola
-🗑 Delete variant	🗑 Elimina variante
+Option	Opzione
+Delete variant	Elimina variante
 e.g. NAME=Pump; POWER={POWER}	ad es. NAME=Pompa; POWER={POWER}
 e.g. STARTER=DOL	ad es. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Articoli (CSV, JSON, BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	Fluido predefinito
 Number prefix	Prefisso numero
 📊 Hose list	📊 Lista tubi flessibili
 PCT loops (pre-planning)	Loop PCT (preprogettazione)
-➕ Loop	➕ Loop
-📊 PCT loop overview	📊 Panoramica loop PCT
+Loop	Loop
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Gli strumenti nel P&ID riportano le lettere di funzione e il numero di loop nella loro etichetta (TIC 101); la sigla dispositivo li collega allo schema.
 PCT loop	Loop PCT
 Range	Campo
@@ -1409,7 +1356,6 @@ Delete loop	Elimina loop
 {} (default)	{} (predefinito)
 Hose / pipe {}	Tubo flessibile / tubazione {}
 Resulting: {} · {} · {} · {} m	Risultato: {} · {} · {} · {} m
-Fluid and process…	Fluidi e processo…
 Hose defaults and PCT loops of the pre-planning	Valori predefiniti dei tubi flessibili e loop PCT della preprogettazione
 ✔ Wiring	✔ Cablatura
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Assistente di cablatura: elenco di controllo dei conduttori con vista 3D e avanzamento (tablet: apri l'app web con #wiring)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Lingua di origine
 Target languages	Lingue di destinazione
 Remove the language (its translations stay in the dictionary)	Rimuovi la lingua (le sue traduzioni restano nel dizionario)
-➕ Add	➕ Aggiungi
+Add	Aggiungi
 ISO 639-1 language code	Codice lingua ISO 639-1
 Collect texts from the project	Raccogli testi dal progetto
 Adds all lines of the project texts to the dictionary	Aggiunge al dizionario tutte le righe dei testi del progetto
@@ -1554,7 +1500,6 @@ not translated into {}	non tradotto in {}
 {} new texts in the dictionary	{} nuovi testi nel dizionario
 {} unused entries removed	{} voci non utilizzate rimosse
 Export as PDF in language	Esporta come PDF nella lingua
-Project languages…	Lingue del progetto…
 Translate the project texts; documentation per language	Traduci i testi del progetto; documentazione per lingua
 {} translations imported	{} traduzioni importate
 Import failed: {}	Importazione non riuscita: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	Componenti (assieme)
 (included)	(incluso)
 Fastening hardware in the bill of materials	Materiale di fissaggio nella distinta base
 Screws, nuts, washers and rivet nuts of the fixing points	Viti, dadi, rondelle e inserti filettati dei punti di fissaggio
-⬇ NC data of this face (DXF)	⬇ Dati NC di questa faccia (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Lista fori di questa faccia (CSV)
+NC data of this face (DXF)	Dati NC di questa faccia (DXF)
+Drilling list of this face (CSV)	Lista fori di questa faccia (CSV)
 Group as assembly	Raggruppa come assieme
 The items are selected and moved together	Gli elementi vengono selezionati e spostati insieme
 Distribute horizontally	Distribuisci orizzontalmente
@@ -1625,7 +1570,6 @@ Pattern	Matrice
 Columns × rows	Colonne × righe
 Pitch X / Y	Passo X / Y
 Devices are not copied: a device is placed once.	I dispositivi non vengono copiati: un dispositivo viene posizionato una sola volta.
-✔ Copy	✔ Copia
 Save as 3D macro	Salva come macro 3D
 Items with an anchor keep it; the others are inserted relative to the click.	Gli elementi con ancoraggio lo mantengono; gli altri vengono inseriti rispetto al clic.
 Walls	Pareti
@@ -1728,7 +1672,6 @@ Macro name	Nome macro
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Inserisce una macro 3D come assieme: gli elementi ancorati al loro posto, gli altri rispetto a x / y sulla faccia
 Installation site	Sito di installazione
 Structure management	Gestione strutture
-Structure management…	Gestione strutture…
 Structure identifiers (IEC 81346), templates and work areas	Identificatori di struttura (IEC 81346), modelli e aree di lavoro
 Template	Modello
 Apply template	Applica modello
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	Gli identific
 Work areas	Aree di lavoro
 Work area	Area di lavoro
 Work area {}	Area di lavoro {}
-➕ Work area	➕ Area di lavoro
 (whole project)	(intero progetto)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Un'area di lavoro limita le pagine e i dispositivi nel navigatore a una parte del progetto. Filtri: vuoto = qualsiasi, * = qualsiasi carattere; A1 comprende anche A1.2.
 OpenECraft structure template	Modello di struttura OpenECraft
@@ -1873,7 +1815,7 @@ Export…	Esporta…
 Import…	Importa…
 File to embed	File da incorporare
 Forms – title blocks, frames and templates	Moduli – cartigli, cornici e modelli
-Title blocks, plot frames and page templates…	Cartigli, cornici di stampa e modelli di pagina…
+Title blocks, plot frames and page templates	Cartigli, cornici di stampa e modelli di pagina
 Frame of all pages that do not choose one	Cornice di tutte le pagine che non ne scelgono una
 Frame to start from when the frame is new (default: A3 landscape)	Cornice di partenza quando la cornice è nuova (predefinito: A3 landscape)
 Free graphics and notes, not evaluated	Grafica libera e note, non valutate
@@ -2044,19 +1986,18 @@ Port {} is not connected	La porta {} non è collegata
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Esporta il progetto: svg (una pagina), html, pdf, dxf, dwg (solo in un file), wire_list (CSV), plc_table (CSV), plc_variables (variabili globali IEC 61131-3), aml (hardware PLC AutomationML), kbl (XML cablaggio), marking (CSV), gltf, step, iges, ifc o jt (layout quadro 3D; jt solo in un file), dictionary (CSV delle traduzioni dei testi del progetto)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt o dictionary, oppure un'esportazione di un plugin
 PLC hardware	Hardware PLC
-⚙ Automatic configuration	⚙ Configurazione automatica
+Automatic configuration	Configurazione automatica
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stazioni per CPU e accoppiatori bus, sistemi bus, slot, indirizzi iniziali, indirizzi dei punti, indirizzi IP e una topologia in linea
-⬇ Export AutomationML…	⬇ Esporta AutomationML…
+Export AutomationML…	Esporta AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Configurazione hardware e variabili PLC per TIA Portal e altri strumenti PLC
-⬆ Import AutomationML…	⬆ Importa AutomationML…
+Import AutomationML…	Importa AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stazioni, moduli, indirizzi, sottoreti e commenti delle variabili da uno strumento PLC
-⬇ Export IEC 61131-3 variables…	⬇ Esporta variabili IEC 61131-3…
+Export IEC 61131-3 variables…	Esporta variabili IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Lista di variabili globali con indirizzi diretti per CODESYS, TwinCAT e altri
 Stations and racks	Stazioni e rack
 Bus topology	Topologia bus
 Device descriptions	Descrizioni dispositivo
 Station	Stazione
-➕ Station	➕ Stazione
 Cards without station: {}	Schede senza stazione: {}
 No stations: add one or use the automatic configuration.	Nessuna stazione: aggiungine una o usa la configurazione automatica.
 Head (CPU / coupler)	Testa (CPU / accoppiatore)
@@ -2065,7 +2006,7 @@ Bus system	Sistema bus
 IP / bus address	Indirizzo IP / bus
 Device number	Numero dispositivo
 {}: {} slots, ports {}	{}: {} slot, porte {}
-🗑 Remove station	🗑 Rimuovi stazione
+Remove station	Rimuovi stazione
 Plug in card	Inserisci scheda
 No modules: plug in PLC cards of the schematic.	Nessun modulo: inserisci le schede PLC dello schema.
 Device description	Descrizione dispositivo
@@ -2076,13 +2017,12 @@ Output bytes	Byte di uscita
 from the parts	dagli articoli
 Remove from the station	Rimuovi dalla stazione
 Bus systems	Sistemi bus
-➕ Bus system	➕ Sistema bus
 Subnet	Sottorete
 Port A	Porta A
 Port B	Porta B
 Without bus system	Senza sistema bus
 No bus systems.	Nessun sistema bus.
-⬆ Import GSDML / ESI…	⬆ Importa GSDML / ESI…
+Import GSDML / ESI…	Importa GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Descrizioni dispositivo di dispositivi PROFINET (GSDML) ed EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Anche gli articoli del gruppo prodotti PLC forniscono descrizioni (dati tecnici: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Slot
@@ -2093,7 +2033,7 @@ built-in	integrato
 {} addresses changed	{} indirizzi modificati
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	Importati {} stazioni, {} moduli, {} sistemi bus, {} collegamenti; {} indirizzi e {} testi modificati
 {} device descriptions imported	{} descrizioni dispositivo importate
-PLC hardware and bus topology…	Hardware PLC e topologia bus…
+PLC hardware and bus topology	Hardware PLC e topologia bus
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stazioni, rack, moduli, sistemi bus, scambio AutomationML con strumenti PLC
 Device description (GSDML, ESI)	Descrizione dispositivo (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Collegamento bus {} - {}: il cavo {} non esiste
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	Il cavo {} è un cavo {} su un collega
 Port {} has more than {} cables	La porta {} ha più di {} cavi
 Cable {} is used for {} bus connections	Il cavo {} è usato per {} collegamenti bus
 with bus cables	con cavi bus
-➕ Create bus cables	➕ Crea cavi bus
+Create bus cables	Crea cavi bus
 A cable of the bus type for every connection without cable	Un cavo del tipo di bus per ogni collegamento senza cavo
 missing	mancante
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} stazioni, {} sistemi bus, {} schede assegnate, {} indirizzi modificati, {} collegamenti, {} cavi
@@ -2211,12 +2151,11 @@ starts with	inizia con
 {} (first column)	{} (prima colonna)
 {} report pages output to {}	{} pagine di report emesse in {}
 {} – {} ({} pages)	{} – {} ({} pagine)
-➕ Add filter	➕ Aggiungi filtro
-➕ Add sort key	➕ Aggiungi criterio di ordinamento
-➕ New block	➕ Nuovo blocco
-➕ New scheme	➕ Nuovo schema
-⟳ Generate all	⟳ Genera tutto
-⟳ Generate	⟳ Genera
+Add filter	Aggiungi filtro
+Add sort key	Aggiungi criterio di ordinamento
+New block	Nuovo blocco
+Generate all	Genera tutto
+Generate	Genera
 ⟳ Update report blocks	⟳ Aggiorna blocchi di report
 Opening {}…	Apertura di {}…
 Uploading {}…	Caricamento di {}…
@@ -2238,13 +2177,13 @@ Save and release page	Salva e rilascia pagina
 Lock page	Blocca pagina
 Project server	Server di progetto
 User name	Nome utente
-⟳ List projects	⟳ Elenca progetti
+List projects	Elenca progetti
 Enter a user name: other users see it on your locks.	Immetti un nome utente: gli altri utenti lo vedono sui tuoi blocchi.
 Users	Utenti
 Opening a project replaces the current one, its unsaved changes are lost.	L'apertura di un progetto sostituisce quello corrente; le sue modifiche non salvate vanno perse.
 Upload the current project as a new shared project:	Carica il progetto corrente come nuovo progetto condiviso:
 Name on the server	Nome sul server
-⬆ Upload	⬆ Carica
+Upload	Carica
 Letters, digits, space, - _ . (up to 64 characters)	Lettere, cifre, spazio, - _ . (fino a 64 caratteri)
 Shared project {} – revision {}, user {}	Progetto condiviso {} – revisione {}, utente {}
 Save and release all locks	Salva e rilascia tutti i blocchi
@@ -2261,14 +2200,11 @@ None	Nessuno
 Close shared project	Chiudi progetto condiviso
 Releases all locks; the project stays open as a local copy	Rilascia tutti i blocchi; il progetto resta aperto come copia locale
 Download project	Scarica progetto
-Project server…	Server di progetto…
 Open and save shared projects, lock pages	Apri e salva progetti condivisi, blocca pagine
-🔒 Locked by {} – read only	🔒 Bloccato da {} – sola lettura
+Locked by {} – read only	Bloccato da {} – sola lettura
 {} (project server, revision {})	{} (server di progetto, revisione {})
 {} change requests added, {} updated	{} richieste di modifica aggiunte, {} aggiornate
-Compare and baselines…	Confronto e baseline…
 Compare with a baseline, a revision or another project file and take differences over	Confronta con una baseline, una revisione o un altro file di progetto e acquisisci le differenze
-Change requests…	Richieste di modifica…
 Review: comments and markup	Riesame: commenti e annotazioni
 Revisions, approval and release	Revisioni, approvazione e rilascio
 Review ({})	Riesame ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	Cosa deve essere verificato o modificato?
 Change request	Richiesta di modifica
 Reply…	Rispondi…
 Reply	Rispondi
-🗑 Delete comment	🗑 Elimina commento
+Delete comment	Elimina commento
 Approval workflow	Flusso di approvazione
 Approvers	Approvatori
 User names, separated by commas	Nomi utente, separati da virgole
@@ -2309,8 +2245,8 @@ rejected	rifiutato
 Submit for review	Invia per il riesame
 Release	Rilascia
 Discard draft	Ignora bozza
-✔ Approve	✔ Approva
-✖ Reject	✖ Rifiuta
+Approve	Approva
+Reject	Rifiuta
 Approving needs an approver; you are \"{}\".	Solo un approvatore può approvare; tu sei \"{}\".
 Submit again	Invia di nuovo
 With the current pages; the approvals so far become void	Con le pagine attuali; le approvazioni finora ottenute decadono
@@ -2335,7 +2271,7 @@ Compare with	Confronta con
 Baseline {} {}	Baseline {} {}
 Baseline {}	Baseline {}
 Pages of revision {}	Pagine della revisione {}
-📂 Project file…	📂 File di progetto…
+Project file…	File di progetto…
 Baselines ({})	Baseline ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Una baseline salva l'intero progetto (pagine, dispositivi, articoli, impostazioni). Il rilascio di una revisione ne salva una.
 Create baseline	Crea baseline
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	Rendi gli 
 {} details	{} dettagli
 Baseline {} created	Baseline {} creata
 Change requests	Richieste di modifica
-➕ New request	➕ Nuova richiesta
-📂 Import…	📂 Importa…
+New request	Nuova richiesta
 CSV or JSON from another system; known numbers are updated	CSV o JSON da un altro sistema; i numeri noti vengono aggiornati
-⬇ Export JSON	⬇ Esporta JSON
+Export JSON	Esporta JSON
 Rejected and closed ones too	Anche quelle rifiutate e chiuse
 No change requests yet.	Ancora nessuna richiesta di modifica.
 Select a request.	Seleziona una richiesta.
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	Sigle dispositivo, separate da virgole
 Affected pages ({})	Pagine interessate ({})
 Go to page	Vai alla pagina
 Comments ({})	Commenti ({})
-💬 Comment on the current page	💬 Commento sulla pagina corrente
+Comment on the current page	Commento sulla pagina corrente
 Linked to this request	Collegato a questa richiesta
-🗑 Delete request	🗑 Elimina richiesta
+Delete request	Elimina richiesta
 in progress	in corso
 resolved	risolto
 Redline	Redline
@@ -2405,14 +2340,6 @@ Settings	Impostazioni
 Page order	Ordine delle pagine
 {} differences taken over	{} differenze acquisite
 Layers	Livelli
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Fai clic per selezionare, trascina per spostare, trascina su uno spazio vuoto per la selezione a finestra. Trascina la sigla o un testo di proprietà di un simbolo selezionato per posizionarlo. Il trascinamento con il tasto destro/centrale sposta la vista, la rotellina esegue lo zoom.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Fai clic sul punto iniziale e sui punti d'angolo · Barra spaziatrice cambia la direzione dell'angolo · A attiva/disattiva l'instradamento attorno ai simboli · termina automaticamente su una connessione · Clic destro / Esc per terminare
-Click the centre, then a point of the circle	Fai clic sul centro, poi su un punto del cerchio
-Click the centre, the start point and the end point (counter-clockwise)	Fai clic sul centro, sul punto iniziale e sul punto finale (in senso antiorario)
-Click the corner points · double click, Enter or right click finishes	Fai clic sui punti d'angolo · doppio clic, Enter o clic destro per terminare
-Click the two points to measure, then the position of the dimension line	Fai clic sui due punti da misurare, poi sulla posizione della linea di quota
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Fai clic su un conduttore: il punto definisce numero, colore, sezione e anima del cavo del collegamento
-Draw a line across the wires that are cores of the cable	Traccia una linea attraverso i conduttori che sono anime del cavo
 Click to insert · Esc cancel	Fai clic per inserire · Esc per annullare
 Routing around symbols	Instradamento attorno ai simboli
 {} objects pasted	{} oggetti incollati
@@ -2442,7 +2369,7 @@ Layer	Livello
 Auto-connect	Collegamento automatico
 Draw connections between facing connection points when symbols are placed or moved	Disegna collegamenti tra punti di connessione affacciati quando i simboli vengono posizionati o spostati
 Route	Instrada
-The wire tool routes around symbols and other wires (A)	Lo strumento conduttore instrada attorno ai simboli e agli altri conduttori (A)
+The wire tool routes around symbols and other wires	Lo strumento conduttore instrada attorno ai simboli e agli altri conduttori
 Dimension	Quota
 Image…	Immagine…
 PNG or JPEG bitmap, e.g. a logo or a photo	Bitmap PNG o JPEG, ad es. un logo o una foto
@@ -2486,7 +2413,6 @@ Tag placed by hand	Sigla posizionata manualmente
 Drag the tag of the selected symbol to place it.	Trascina la sigla del simbolo selezionato per posizionarla.
 (empty)	(vuoto)
 ➕ Place property	➕ Posiziona proprietà
-➕ Layer	➕ Livello
 Layer {}	Livello {}
 Layers of graphics, texts, dimensions and images	Livelli di grafica, testi, quote e immagini
 Visible	Visibile
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Sezione, ad es. 1.5 mm²
 A cable definition needs a start and an end point	Una definizione cavo richiede un punto iniziale e un punto finale
 No cable {}	Nessun cavo {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. I punti di definizione collegamento su un conduttore impostano numero, colore, sezione e anima dell'intero collegamento; una linea di definizione cavo attraverso i conduttori li rende anime di un cavo. Collegamento automatico unisce i punti di connessione affacciati, Instrada (A) guida i conduttori attorno ai simboli.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafica: cerchi, ellissi, archi, poligoni, quote e immagini su livelli (navigatore › Livelli: visibile, bloccato, stampato). Trascina la sigla di un simbolo selezionato per posizionarla; le altre proprietà vengono posizionate nelle sue proprietà.
 Coil	Bobina
 Main contacts 4-pole	Contatti principali 4 poli
 NO contact, on-delay	Contatto NA, ritardato all'eccitazione
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	Aggiunta a
 📊 Hose configuration	📊 Configurazione tubi flessibili
 📊 Tubing / piping list	📊 Lista tubi / tubazioni
 📊 Fluid netlist	📊 Netlist fluidica
-➕ Group	➕ Gruppo
-📊 Fluid device groups	📊 Gruppi di dispositivi fluidici
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Isole di valvole, gruppi trattamento aria e collettori: i loro dispositivi fluidici nell'ordine dei posti, separati da spazi.
 Places	Posti
 0 = not limited	0 = illimitato
 Delete group	Elimina gruppo
-🔄 Synchronize	🔄 Sincronizza
+Synchronize	Sincronizza
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Collega le elettrovalvole alla bobina con lo stesso numero (-QM3 › -MB3) e copia i testi funzione
 {} links created, {} function texts copied	{} collegamenti creati, {} testi funzione copiati
-📊 Electro-fluid cross reference	📊 Riferimenti incrociati elettro-fluidici
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Dispositivi elettrici che azionano o monitorano un dispositivo fluidico (bobine, interruttori di posizione e pressostati); entrambi gli schemi mostrano riferimenti incrociati reciproci.
 Electrical devices	Dispositivi elettrici
 Operating pressure in bar (0 = hose ratings are not checked)	Pressione di esercizio in bar (0 = le pressioni nominali dei tubi flessibili non vengono verificate)
@@ -2734,7 +2655,6 @@ Right neighbour	Vicino a destra
 No cable passage to {}: wires to it are not routed	Nessun passaggio cavi verso {}: i conduttori verso di esso non vengono instradati
 Open to {}: wires cross beside the mounting plates	Aperto verso {}: i conduttori passano accanto alle piastre di montaggio
 {} cable passages to {}	{} passaggi cavi verso {}
-➕ Cable passage to {}	➕ Passaggio cavi verso {}
 Round cutouts facing each other in both side walls	Aperture rotonde affacciate in entrambe le pareti laterali
 Both sides are open: the wires need no cutout	Entrambi i lati sono aperti: i conduttori non richiedono aperture
 Cable passage to {}	Passaggio cavi verso {}
@@ -3067,7 +2987,6 @@ Surge protection	Protezione contro le sovratensioni
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Potere di interruzione rispetto alla corrente di cortocircuito di ogni dispositivo di protezione della rete, interruzione alla corrente di guasto minima alla fine del suo circuito, tenuta al cortocircuito dei cavi e selettività con il dispositivo a monte.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Potenza e corrente delle utenze della rete (motori, azionamenti, riscaldatori, alimentatori, trasformatori), carico di ogni dispositivo di protezione, fabbisogno con il fattore di contemporaneità e bilancio dei carichi degli alimentatori.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Funzioni di sicurezza della ISO 13849-1: ogni sottosistema (ingresso, logica, uscita) con i dispositivi di un canale, la sua categoria, la copertura diagnostica e le manovre all'anno. I dispositivi contano con PL / PFHd, MTTFd o B10d dei loro articoli.
-➕ Safety function	➕ Funzione di sicurezza
 Input	Ingresso
 Logic	Logica
 Output	Uscita
@@ -3076,13 +2995,10 @@ Operations / year	Manovre / anno
 CCF	CCF
 0 = from the devices	0 = dai dispositivi
 Measures against common cause failure (at least 65 points)	Misure contro i guasti di causa comune (almeno 65 punti)
-➕ Subsystem	➕ Sottosistema
 Subsystem {}	Sottosistema {}
 Rule libraries	Librerie di regole
 Customer rule sets	Set di regole del cliente
-➕ Rule set	➕ Set di regole
 Rule set {}	Set di regole {}
-💾 Export…	💾 Esporta…
 OpenECraft rule sets	Set di regole OpenECraft
 Verify the project against it	Verifica il progetto rispetto a esso
 {} checks	{} verifiche
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Ogn
 Message	Messaggio
 if	se
 then	allora
-➕ Condition	➕ Condizione
-➕ Check	➕ Verifica
 OpenECraft rule sets (JSON)	Set di regole OpenECraft (JSON)
-Electrical calculations…	Calcoli elettrici…
+Electrical calculations	Calcoli elettrici
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Cortocircuito, selettività, carichi, EMC, sicurezza funzionale e verifica rispetto ai set di regole
 0 = a single value; otherwise values [1] … [n]	0 = un singolo valore; altrimenti valori [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Una definizione di progetto basata su questa, con propri valori predefiniti e schema
@@ -3416,7 +3330,6 @@ Project number	Numero di progetto
 Project property of the property database (by key)	Proprietà di progetto del database delle proprietà (tramite la chiave)
 Proof test interval	Intervallo di prova
 Property database	Database delle proprietà
-Property database…	Database delle proprietà…
 Property definitions	Definizioni delle proprietà
 Property definitions, function definitions, placement schemes and the values of all objects	Definizioni delle proprietà, definizioni di funzione, schemi di posizionamento e i valori di tutti gli oggetti
 Property groups	Gruppi di proprietà
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" non è uno dei valori {}
 {}: invalid value \"{}\" ({})	{}: valore non valido \"{}\" ({})
 ➕ Default value	➕ Valore predefinito
-➕ Derive project definition	➕ Deriva definizione di progetto
-➕ User defined property	➕ Proprietà definita dall'utente
+Derive project definition	Deriva definizione di progetto
+User defined property	Proprietà definita dall'utente
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Pianifica i dispositivi nello schema unifilare, genera lo schema e mantieni entrambi sincronizzati
-Single-line / multi-line…	Unifilare / multifilare…
 All devices of page {} are in the schematic already	Tutti i dispositivi della pagina {} sono già nello schema
 Copies function texts between the single-line diagram and the schematic where one side is empty	Copia i testi di funzione tra lo schema unifilare e lo schema dove un lato è vuoto
 Does not match	Non corrisponde
@@ -3756,11 +3668,11 @@ Outline	Contorno
 Click the corners of a machine or building, double-click to finish	Fai clic sugli angoli di una macchina o di un edificio, doppio clic per terminare
 (no cable highlighted)	(nessun cavo evidenziato)
 Fit	Adatta
-⬇ Export SVG…	⬇ Esporta SVG…
+Export SVG…	Esporta SVG…
 Height above the floor	Altezza dal pavimento
 Placed here: {}	Posizionato qui: {}
 Place an enclosure, device or machine location at this node	Posiziona un armadio, un dispositivo o un luogo macchina su questo nodo
-🗑 Delete node	🗑 Elimina nodo
+Delete node	Elimina nodo
 SVG drawing	Disegno SVG
 Segments	Tratti
 Width × height (mm)	Larghezza × altezza (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	Deve essere collegato al collegam
 {} corners	{} angoli
 Take over cut lengths	Applica lunghezze di taglio
 Set the cable lengths to the planned cut lengths	Imposta le lunghezze dei cavi sulle lunghezze di taglio pianificate
-📊 Report	📊 Report
 {} parts of the network	{} parti della rete
 No field cables: place the enclosures and field devices at nodes of the route network.	Nessun cavo di campo: posiziona gli armadi e i dispositivi di campo sui nodi della rete dei percorsi cavi.
 Route definition of {}	Definizione del percorso di {}
 Via:	Tramite:
 Remove	Rimuovi
-➕ Node	➕ Nodo
 Avoid:	Evita:
 {} cable lengths taken over	{} lunghezze dei cavi applicate
-➕ Bonding conductor	➕ Conduttore equipotenziale
+Bonding conductor	Conduttore equipotenziale
 Bonding points	Punti di collegamento equipotenziale
-➕ Accessory	➕ Accessorio
 both ends	entrambe le estremità
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Nessun accessorio: pressacavi, connettori, morsetti di schermatura … entrano nella distinta base e vengono verificati rispetto al cavo.
 Reserve per cable end	Riserva per estremità del cavo
@@ -3799,7 +3708,6 @@ Length inside an enclosure	Lunghezza all'interno di un armadio
 Cut length step	Passo della lunghezza di taglio
 Maximum fill of a carrier	Riempimento massimo di un supporto portacavi
 Bend radius in drag chains	Raggio di curvatura nelle catene portacavi
-Field wiring…	Cablatura di campo…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Layout dell'impianto, rete dei percorsi cavi, pianificazione dei cavi di campo, collegamento equipotenziale e accessori per cavi
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Nessuna opzione {}
@@ -3913,9 +3821,9 @@ Archive and version	Archivio e versione
 Verification	Verifica
 OpenECraft project archive	Archivio di progetto OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Il database dei progetti richiede la versione desktop: il browser non può cercare nelle cartelle.
-📂 Add folder…	📂 Aggiungi cartella…
+Add folder…	Aggiungi cartella…
 Adds the project files and archives of a folder and its subfolders	Aggiunge i file di progetto e gli archivi di una cartella e delle sue sottocartelle
-🔄 Update all	🔄 Aggiorna tutto
+Update all	Aggiorna tutto
 Verify while reading	Verifica durante la lettura
 Remove the folder from the database	Rimuovi la cartella dal database
 Search	Cerca
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	Commuta le opz
 {} options switched	{} opzioni commutate
 File format version {}. Files of older versions are converted when they are opened.	Versione del formato di file {}. I file di versioni precedenti vengono convertiti all'apertura.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Un archivio (.oecz) è un file ZIP con il progetto, un manifest e i documenti e le immagini incorporati come file separati.
-📦 Archive project…	📦 Archivia progetto…
-📂 Open archive…	📂 Apri archivio…
+Archive project…	Archivia progetto…
+Open archive…	Apri archivio…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Verifica i dati del progetto (ID, riferimenti, dati dei dispositivi, opzioni, sottoprogetti) insieme alle verifiche di progettazione.
 Verify project	Verifica progetto
 Repair {} findings	Ripara {} risultati
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} errori, {} avvisi, {} note nei dati del progetto; verifica di progettazione: {} errori, {} avvisi
 (repairable)	(riparabile)
 ✔ The project data is consistent.	✔ I dati del progetto sono coerenti.
-Project management…	Gestione progetti…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Database dei progetti, modifiche in blocco delle proprietà di progetto, sottoprogetti, opzioni, archivi e verifica
 OpenECraft project or archive	Progetto o archivio OpenECraft
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	Per articoli s
 Collision classes	Classi di collisione
 Distances between classes of items, or classes that may overlap	Distanze tra classi di elementi o classi che possono sovrapporsi
 may overlap	possono sovrapporsi
-➕ Add rule	➕ Aggiungi regola
+Add rule	Aggiungi regola
 Air temperature at the devices	Temperatura dell'aria sui dispositivi
 max. {} °C	max. {} °C
 No problems found	Nessun problema rilevato
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	Risposta del plugin non valida: {}
 Key figures of the project and a list of its device tags	Indicatori del progetto e un elenco delle sue sigle dispositivo
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Indicatori del progetto: pagine, simboli, conduttori, dispositivi, articoli, cavi e risultati delle verifiche
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Plugin caricati (predefiniti e dalle cartelle dei plugin di --plugins / OPENECRAFT_PLUGINS) con i relativi comandi, verifiche, report ed esportazioni; ne attiva o disattiva uno per questa sessione
-Manage plugins…	Gestisci plugin…
-Plugin command {}	Comando del plugin {}
+Manage plugins	Gestisci plugin
 Plugin id '{}' is not snake_case	L'ID del plugin '{}' non è in snake_case
 Plugin {} is loaded twice	Il plugin {} è caricato due volte
 Plugin {} needs a newer OpenECraft (API {})	Il plugin {} richiede una versione più recente di OpenECraft (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	Plugin sconosciuto: {}
 Warnings	Avvisi
 {} commands, {} checks, {} reports, {} exports	{} comandi, {} verifiche, {} report, {} esportazioni
 {}: the program to run is missing	{}: manca il programma da eseguire
-▶ Run	▶ Esegui
-⟳ Update	⟳ Aggiorna
+Run	Esegui
+Update	Aggiorna
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Verifiche del layout del quadro
@@ -4187,7 +4093,7 @@ Profile	Profilo
 (standard columns)	(colonne standard)
 Write the file for the other system; later imports detect conflicts against this export	Scrivi il file per l'altro sistema; le importazioni successive rilevano i conflitti rispetto a questa esportazione
 Read a file of the other system (CSV or JSON) and review the changes	Leggi un file dell'altro sistema (CSV o JSON) ed esamina le modifiche
-⬇ Neutral exchange file…	⬇ File di scambio neutro…
+Neutral exchange file…	File di scambio neutro…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Articoli, dispositivi, posizionamenti, collegamenti, conduttori e documenti in un unico file JSON per sistemi senza connettore
 Import changes	Modifiche dell'importazione
 Profiles	Profili
@@ -4213,7 +4119,6 @@ Conflicts	Conflitti
 Export	Esportazione
 Import	Importazione
 {} values taken over	{} valori applicati
-Enterprise integration…	Integrazione aziendale…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Scambio con ERP, PDM, PLM, ECAD, MCAD, acquisti e macchine per la lavorazione dei conduttori
 Files of other systems (CSV, JSON)	File di altri sistemi (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Barra di rame {}: {} tratti richiedono {} piegature
@@ -4380,9 +4285,9 @@ DWG export failed: {}	Esportazione DWG non riuscita: {}
 DWG import failed: {}	Importazione DWG non riuscita: {}
 DWG imported as page {}: {} lines, {} texts	DWG importato come pagina {}: {} linee, {} testi
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG importato come pagina {}: {} linee, {} testi (non importati: {})
-⬇ NC data (DWG)	⬇ Dati NC (DWG)
-⬇ Door NC data (DWG)	⬇ Dati NC della porta (DWG)
-⬇ NC data of this face (DWG)	⬇ Dati NC di questa faccia (DWG)
+NC data (DWG)	Dati NC (DWG)
+Door NC data (DWG)	Dati NC della porta (DWG)
+NC data of this face (DWG)	Dati NC di questa faccia (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importa un disegno DWG (AutoCAD R12 … 2018) come grafica (linee, archi, testi, blocchi) su una nuova pagina di schema
 Generic	Generico
 Parts store	Archivio articoli
@@ -4721,7 +4626,6 @@ Power cable	Cavo di potenza
 Control cable	Cavo di comando
 Wiring material	Materiale di cablatura
 Catalog id	ID catalogo
-Data portal…	Data Portal…
 Delete catalog {} from the server?	Eliminare il catalogo {} dal server?
 Delete user {}? Their sessions and favorites are removed.	Eliminare l'utente {}? Le sue sessioni e i suoi preferiti vengono rimossi.
 Ends the session and forgets the token	Termina la sessione e dimentica il token
@@ -4843,12 +4747,10 @@ Use macros	Usa macro
 ★ Favorites	★ Preferiti
 ★ Remove from favorites	★ Rimuovi dai preferiti
 ☆ Add to favorites	☆ Aggiungi ai preferiti
-✔ Apply {} updates	✔ Applica {} aggiornamenti
-➡ Successor {}	➡ Successore {}
-⬇ Add marked parts to the parts database ({})	⬇ Aggiungi gli articoli contrassegnati al database articoli ({})
-⬇ Add to the parts database	⬇ Aggiungi al database articoli
-🔄 Check the parts database for updates	🔄 Verifica aggiornamenti del database articoli
-🔎 Search	🔎 Cerca
+Apply {} updates	Applica {} aggiornamenti
+Add marked parts to the parts database ({})	Aggiungi gli articoli contrassegnati al database articoli ({})
+Add to the parts database	Aggiungi al database articoli
+Check the parts database for updates	Verifica aggiornamenti del database articoli
 Relay coil, AC	Bobina relè, corrente alternata
 Relay coil, high-speed	Bobina relè, ad azione rapida
 Relay coil, mechanically latched	Bobina relè, con aggancio meccanico
@@ -5276,7 +5178,6 @@ Level of this kind of message	Livello di questo tipo di messaggio
 As defined by the check	Come definito dalla verifica
 Switch off the check \"{}\"	Disattiva la verifica \"{}\"
 Changed message levels ({})	Livelli dei messaggi modificati ({})
-Right click a message in the Check tab to change its level.	Fai clic con il pulsante destro su un messaggio nella scheda Verifica per modificarne il livello.
 Accepted messages ({})	Messaggi accettati ({})
 No longer reported	Non più segnalato
 Still reported	Ancora segnalato
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Salva come modello di progetto…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Salva il progetto senza revisioni, baseline, riesame e contrassegni di cablatura come modello per nuovi progetti
 OpenECraft project template	Modello di progetto OpenECraft
-Not a project template: {}	Non è un modello di progetto: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Inizia da un modello di progetto: uno predefinito (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) o un file di progetto
 Not a packed project	Non è un progetto compresso
 Viewer	Visualizzatore
@@ -5537,7 +5437,6 @@ Rotate	Ruota
 Save to project server	Salva sul server dei progetti
 Undo	Annulla
 Find and replace	Trova e sostituisci
-Finish polyline or polygon	Termina polilinea o poligono
 Mirror (selection or symbol being placed)	Specchia (selezione o simbolo in fase di posizionamento)
 Next page	Pagina successiva
 Open project	Apri progetto
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	Tasti di scelta rapida
 No shortcut	Nessun tasto di scelta rapida
 Press a key…	Premi un tasto…
 Record	Registra
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Registra: premi il nuovo tasto con i relativi modificatori (Esc annulla). Esc, Del, i tasti freccia e copia / incolla restano fissi.
 Reset all to the defaults	Ripristina tutto ai valori predefiniti
 {} is used by: {}	{} è usato da: {}
 Harness nailboard drawing to scale (SVG)	Disegno in scala della tavola chiodata del cablaggio (SVG)
 Harness tag, e.g. -WH1	Sigla del cablaggio, ad es. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Disegno in scala della tavola chiodata del cablaggio con lunghezze delle diramazioni e tabelle dei pin dei connettori
-📐 Nailboard (SVG)…	📐 Tavola chiodata (SVG)…
+Nailboard (SVG)…	Tavola chiodata (SVG)…
 Bundle Ø {} mm	Ø fascio {} mm
 Nailboard {}	Tavola chiodata {}
 Scale 1:{}	Scala 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	Nessun segmento {}
 Segment path (default: all segments)	Percorso del segmento (predefinito: tutti i segmenti)
 Pre-planning (CSV, Excel)	Preprogettazione (CSV, Excel)
 Plant segments with planned devices before the schematic	Segmenti dell'impianto con dispositivi pianificati prima dello schema
-Pre-planning…	Preprogettazione…
 A segment cannot be moved below itself	Un segmento non può essere spostato sotto se stesso
 Adds a planned device to a segment or changes it	Aggiunge un dispositivo pianificato a un segmento o lo modifica
 Adds a segment below another one (or at the top)	Aggiunge un segmento sotto un altro (o al livello superiore)
@@ -5628,10 +5525,8 @@ name	nome
 {} pages generated	{} pagine generate
 {} pages generated; page macros not found: {}	{} pagine generate; macro di pagina non trovate: {}
 {} segments created, {} devices added, {} updated	{} segmenti creati, {} dispositivi aggiunti, {} aggiornati
-➕ Device	➕ Dispositivo
-➕ Segment	➕ Segmento
-➕ Sub-segment	➕ Sottosegmento
-🗑 Remove segment	🗑 Rimuovi segmento
+Sub-segment	Sottosegmento
+Remove segment	Rimuovi segmento
 Display	Visualizzazione
 Mirrored	Specchiato
 Other properties	Altre proprietà
@@ -5733,7 +5628,7 @@ Hose defaults	Valori predefiniti dei tubi flessibili
 Message levels	Livelli dei messaggi
 Not a settings scheme: {}	Non è uno schema delle impostazioni: {}
 Wire defaults	Valori predefiniti dei conduttori
-Reset panel layout	Reimposta disposizione dei riquadri
+Reset pane layout	Reimposta disposizione dei riquadri
 Navigator on the left, symbols and properties on the right	Navigatore a sinistra, simboli e proprietà a destra
 Panels	Riquadri
 Saves the workspace, the arrangement of the panels and the open windows	Salva l'area di lavoro, la disposizione dei riquadri e le finestre aperte
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	I motori alimentano il cortocircuito
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	I motori asincroni sulla rete aumentano la corrente di cortocircuito massima (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	Al punto di alimentazione: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Tabelle di coordinamento dei produttori
-➕ Entry	➕ Voce
+Entry	Voce
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selettività e protezione di back-up di coppie di dispositivi come testate dal produttore, per codice articolo. Sostituiscono la stima ricavata dalle curve tempo-corrente.
 Upstream part	Articolo a monte
 Downstream part	Articolo a valle
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	Invece di nome utente e password
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 o successivo (Vault Data API)
-⟳ Refresh	⟳ Aggiorna
+Refresh	Aggiorna
 Search below this folder	Cerca sotto questa cartella
-🔍 Search	🔍 Cerca
 Checked out	Check-out eseguito
 {} of {} entries shown: search to narrow the list	{} di {} voci visualizzate: esegui una ricerca per restringere l'elenco
 Select a file to import it	Seleziona un file per importarlo
 (choose a part)	(scegli un articolo)
-⬇ Import	⬇ Importa
 Project file	File di progetto
-⬆ Check in project as new version of {}	⬆ Esegui il check-in del progetto come nuova versione di {}
+Check in project as new version of {}	Esegui il check-in del progetto come nuova versione di {}
 Puts the project into the folder it was opened from	Inserisce il progetto nella cartella da cui è stato aperto
 Put into the vault	Inserisci nel vault
 File name	Nome file
-⬆ Upload to {}	⬆ Carica in {}
+Upload to {}	Carica in {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Un file con lo stesso nome nella cartella riceve una nuova versione (check-out e check-in), altrimenti il file viene aggiunto
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Apri progetti e file da Autodesk Vault, inserisci il progetto, le esportazioni e i modelli 3D nel vault
 Check in {} to Vault	Esegui il check-in di {} in Vault
 Panel layout in 3D (Parasolid XT)	Layout del quadro in 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	Layout del quadro in 3D (Parasolid XT)
 Back	Indietro
 Back to the project (Esc)	Torna al progetto (Esc)
 Recent projects	Progetti recenti
-No projects opened yet.	Nessun progetto ancora aperto.
 Remove from the list	Rimuovi dall'elenco
 unsaved	non salvato
 Project: {}	Progetto: {}
@@ -6055,15 +5946,6 @@ Tutorial	Tutorial
 Introduction	Introduzione
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Un editor CAE elettrico aperto nello spirito di EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	La barra multifunzione: File apre, salva, importa, esporta e stampa; le schede raggruppano i comandi per argomento. Alt mostra i tasti di accesso, Ctrl+Shift+P trova qualsiasi comando, F6 passa da un riquadro all'altro, F1 apre questa guida.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Inserisci › Centro di inserimento (Ins): cerca un simbolo, una macro o un dispositivo e fai clic nella pagina per posizionarlo. Le sigle (-K1, -S2 …) vengono assegnate automaticamente.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Assegna gli articoli nelle proprietà (scheda Articoli); i report (Home › Report) elencano dispositivi, distinta base, morsetti, collegamenti e PLC e vengono inseriti come pagine di report.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Cavi: Collegamenti › Cavi, seleziona i conduttori e usa Assegna a cavo. Numeri dei conduttori: Collegamenti › Numerazione conduttori, oppure digita un numero nelle proprietà del conduttore.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Macro: seleziona gli elementi, clic destro › Salva selezione come macro; inseriscile dal centro di inserimento o da Inserisci › Macro. I segnaposto {NAME} vengono compilati dai set di valori.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Dispositivi › Morsettiere, Dispositivi › Panoramica PLC e Dati di progetto › Revisioni: ordine dei morsetti, ponticelli e riserve; indirizzi PLC e tabelle dei simboli; revisioni con segni di modifica e pagine rilasciate (bloccate).
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Dati di base › Editor simboli: disegna simboli propri (o copia quelli inclusi) con punti di connessione e funzione; vengono salvati nel progetto e possono essere scambiati come file di libreria.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Dati di base › Moduli: cartigli propri con segnaposto ({project}, {page}, {prop:Name} …) e le colonne delle pagine di report; Dati di progetto › Blocchi di report generano pagine di report per morsettiera, connettore, cavo o dispositivo.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Layout del quadro (area di lavoro Layout del quadro, scheda Spazio di montaggio): armadi, guide, canaline, sbarre e ritagli; Spazio di montaggio › Dati CN esporta lo schema di foratura (DXF / DWG / CSV). L'elenco conduttori di produzione contiene lunghezze di spelatura e puntalini.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Cablaggi: Collegamenti › Cablaggi; seleziona i conduttori tra due dispositivi › Assegna a cablaggio, oppure per collegamento nelle proprietà del conduttore. Report del cablaggio con lunghezze, connettori e diametro del fascio, esportazione KBL.
 Key tips of the ribbon	Tasti di accesso della barra multifunzione
 Version {}	Versione {}
 Search (* and ? as placeholders)…	Cerca (* e ? come caratteri jolly)…
@@ -6145,7 +6027,6 @@ Close page tab	Chiudi scheda pagina
 Panes	Riquadri
 Show or hide panes; drag a tab to dock it elsewhere	Mostra o nascondi riquadri; trascina una scheda per agganciarla altrove
 Save workspace…	Salva area di lavoro…
-The panes of this workspace at their default places	I riquadri di questa area di lavoro nelle posizioni predefinite
 Theme	Tema
 UI scale	Scala dell'interfaccia
 Minimize the ribbon	Riduci la barra multifunzione
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	Funzioni dei dati di progetto non a
 Insert center	Centro di inserimento
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Simboli, macro, dispositivi e funzioni non posizionate: ricerca, preferiti, usati di recente
 Find results	Risultati della ricerca
-Quick guide, tutorial and shortcuts	Guida rapida, tutorial e scorciatoie
 Layout spaces	Spazi di montaggio
 Enclosures, devices to place and placed devices	Armadi, dispositivi da posizionare e posizionati
 Layout properties	Proprietà del layout
@@ -6203,7 +6083,7 @@ Click to show, right click for more	Clic per mostrare, clic destro per altro
 {} notes	{} note
 Open in a new page tab	Apri in una nuova scheda pagina
 Project information	Informazioni sul progetto
-Plugin commands…	Comandi dei plugin…
+Plugin commands	Comandi dei plugin
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	I comandi di tutti i plugin per plugin, con ricerca; la stella fissa un comando nella scheda Plugin
 Star a command in Plugin commands to pin it here	Contrassegna un comando con la stella in Comandi dei plugin per fissarlo qui
 Installed plugins	Plugin installati
@@ -6271,8 +6151,6 @@ Draw inner walls	Disegna pareti interne
 Inner wall {}, side {}	Parete interna {}, lato {}
 Thickness	Spessore
 {}: {} stands in an inner wall	{}: {} si trova in una parete interna
-Opening {} replaces the current project, its unsaved changes are lost.	Aprire {} sostituisce il progetto corrente, le modifiche non salvate vanno perse.
-Discard changes and open	Scarta le modifiche e apri
 Open link	Apri collegamento
 Replace the file at path if it exists	Sostituire il file in path se esiste
 {} exists already: pass overwrite to replace it	{} esiste già: passare overwrite per sostituirlo
@@ -6405,3 +6283,4 @@ Folder with project files (instead of a database; default: the current folder)	C
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Tipo di pagina sconosciuto: {} (schematic, overview, graphic, cover o un report di list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Modello sconosciuto {}: indica uno integrato ({}) o un file di progetto
 Property {} needs a text or a number	La proprietà {} richiede un testo o un numero
+Check settings…	Impostazioni della verifica…

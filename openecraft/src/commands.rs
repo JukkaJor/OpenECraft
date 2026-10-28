@@ -100,6 +100,9 @@ pub enum Cmd {
     PartSelection,
     // View
     FitPage,
+    ZoomActual,
+    ZoomIn,
+    ZoomOut,
     PreviousPage,
     NextPage,
     NextPane,
@@ -185,6 +188,8 @@ pub enum Cmd {
     ManagePlugins,
     PluginCommands,
     Help,
+    Tutorial,
+    About,
     LayoutSpaces,
     LayoutView,
     LayoutProperties,
@@ -227,6 +232,54 @@ pub enum Cmd {
     MountingMode,
     WiringExport,
     TabletMode,
+}
+
+/// Commands that change the items of the current page: disabled on a page that
+/// cannot be edited (released, generated, locked by another user).
+pub fn changes_page(cmd: Cmd) -> bool {
+    matches!(
+        cmd,
+        Cmd::Cut
+            | Cmd::Paste
+            | Cmd::Delete
+            | Cmd::Rotate
+            | Cmd::Mirror
+            | Cmd::MoveBy
+            | Cmd::MultipleCopy
+            | Cmd::Align
+            | Cmd::Distribute
+            | Cmd::AutoConnectSelection
+            | Cmd::JoinCollinear
+            | Cmd::SpecialText
+            | Cmd::PathFunctionText
+            | Cmd::WireTool
+            | Cmd::TextTool
+            | Cmd::ConnDefTool
+            | Cmd::CableDefTool
+            | Cmd::InterruptionPoint
+            | Cmd::PotentialPoint
+            | Cmd::LineTool
+            | Cmd::RectTool
+            | Cmd::CircleTool
+            | Cmd::EllipseTool
+            | Cmd::ArcTool
+            | Cmd::PolylineTool
+            | Cmd::PolygonTool
+            | Cmd::InsertImage
+            | Cmd::DimAligned
+            | Cmd::DimHorizontal
+            | Cmd::DimVertical
+    )
+}
+
+/// Keys of a command that cannot be changed (the clipboard keys of the system).
+pub fn fixed_keys(cmd: Cmd) -> Option<&'static str> {
+    match cmd {
+        Cmd::Cut => Some("Ctrl+X"),
+        Cmd::Copy => Some("Ctrl+C"),
+        Cmd::Paste => Some("Ctrl+V"),
+        _ => None,
+    }
 }
 
 /// How a command is shown.
@@ -353,7 +406,7 @@ pub static ALL: &[Def] = &[
     d(C::SavePageAsTemplate, "save_page_as_template", tr_const!("Save page as template…"), I::Template),
     d(C::Undo, "undo", tr_const!("Undo"), I::Undo).keys("Ctrl+Z"),
     d(C::Redo, "redo", tr_const!("Redo"), I::Redo).keys("Ctrl+Y|Ctrl+Shift+Z"),
-    d(C::Delete, "delete", tr_const!("Delete"), I::Delete).tip(tr_const!("Del")),
+    d(C::Delete, "delete", tr_const!("Delete"), I::Delete).keys("Delete|Backspace").canvas(),
     d(C::Rotate, "rotate", tr_const!("Rotate"), I::Rotate).keys("R").canvas().tip(tr_const!("Rotate (selection or symbol being placed)")),
     d(C::Mirror, "mirror", tr_const!("Mirror"), I::Mirror).keys("M").canvas().tip(tr_const!("Mirror (selection or symbol being placed)")),
     d(C::Align, "align", tr_const!("Align"), I::Align).menu(),
@@ -369,8 +422,8 @@ pub static ALL: &[Def] = &[
         .tip(tr_const!("Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn")),
     d(C::PathFunctionText, "path_function_text", tr_const!("Path function text"), I::PathText)
         .tip(tr_const!("Function text of the functions in this column that have none of their own (device list, terminal, plug and PLC diagrams)")),
-    d(C::WireTool, "wire_tool", tr_const!("Wire"), I::Wire).keys("W").tip(tr_const!("Draw connections (W)")),
-    d(C::TextTool, "text_tool", tr_const!("Text"), I::Text).keys("T").tip(tr_const!("Place text (T)")),
+    d(C::WireTool, "wire_tool", tr_const!("Wire"), I::Wire).keys("W").tip(tr_const!("Draw connections")),
+    d(C::TextTool, "text_tool", tr_const!("Text"), I::Text).keys("T").tip(tr_const!("Place text")),
     d(C::ConnDefTool, "connection_definition", tr_const!("Connection definition point"), I::ConnDef)
         .tip(tr_const!("Connection definition point: defines number, colour, cross-section and cable core of a connection")),
     d(C::CableDefTool, "cable_definition", tr_const!("Cable definition"), I::CableDef)
@@ -397,7 +450,7 @@ pub static ALL: &[Def] = &[
     d(C::AutoConnect, "auto_connect", tr_const!("Auto-connect"), I::AutoConnect)
         .toggle()
         .tip(tr_const!("Draw connections between facing connection points when symbols are placed or moved")),
-    d(C::Route, "route", tr_const!("Route"), I::Route).toggle().tip(tr_const!("The wire tool routes around symbols and other wires (A)")),
+    d(C::Route, "route", tr_const!("Route"), I::Route).toggle().tip(tr_const!("The wire tool routes around symbols and other wires")),
     d(C::AutoConnectSelection, "auto_connect_selection", tr_const!("Auto-connect selection"), I::AutoConnect)
         .tip(tr_const!("Connects free connection points of the selected symbols with facing ones")),
     d(C::JoinCollinear, "join_collinear", tr_const!("Join collinear wires"), I::Join).tip(tr_const!("Joins wire pieces in a line where nothing else connects (current page)")),
@@ -409,6 +462,9 @@ pub static ALL: &[Def] = &[
     d(C::PartSelection, "part_selection", tr_const!("Part selection…"), I::Parts),
     // ---------------------------------------------------------------- view
     d(C::FitPage, "fit_page", tr_const!("Fit page"), I::Fit).keys("F|Home").canvas(),
+    d(C::ZoomActual, "zoom_actual", tr_const!("Zoom 100 %"), I::Scale).tip(tr_const!("Real size on a 96 dpi screen")),
+    d(C::ZoomIn, "zoom_in", tr_const!("Zoom in"), I::ZoomIn),
+    d(C::ZoomOut, "zoom_out", tr_const!("Zoom out"), I::ZoomOut),
     d(C::PreviousPage, "previous_page", tr_const!("Previous page"), I::Previous).keys("PageUp"),
     d(C::NextPage, "next_page", tr_const!("Next page"), I::Next).keys("PageDown"),
     d(C::NextPane, "next_pane", tr_const!("Next pane"), I::Panes).keys("F6"),
@@ -436,7 +492,7 @@ pub static ALL: &[Def] = &[
     d(C::SavedWorkspaces, "saved_workspaces", tr_const!("Workspaces"), I::Workspace).menu(),
     d(C::SaveWorkspace, "save_workspace", tr_const!("Save workspace…"), I::Save)
         .tip(tr_const!("Saves the workspace, the arrangement of the panels and the open windows")),
-    d(C::ResetLayout, "reset_layout", tr_const!("Reset panel layout"), I::Panes).tip(tr_const!("The panes of this workspace at their default places")),
+    d(C::ResetLayout, "reset_layout", tr_const!("Reset pane layout"), I::Panes).tip(tr_const!("Puts the panes of this workspace back at their default places and closes its floating panes")),
     d(C::Theme, "theme", tr_const!("Theme"), I::Theme).menu(),
     d(C::UiScale, "ui_scale", tr_const!("UI scale"), I::Scale).menu(),
     d(C::Language, "language", tr_const!("Language"), I::Language).menu(),
@@ -447,7 +503,7 @@ pub static ALL: &[Def] = &[
     d(C::WireNumbering, "wire_numbering", tr_const!("Wire numbering…"), I::Numbering),
     d(C::UpdateReportBlocks, "update_report_blocks", tr_const!("Update report blocks"), I::Report),
     d(C::PdfInLanguage, "pdf_in_language", tr_const!("Export as PDF in language"), I::Languages).menu(),
-    d(C::CheckSettings, "check_settings", tr_const!("Check settings"), I::Settings).tip(tr_const!("Check settings: checks, message levels, accepted messages")),
+    d(C::CheckSettings, "check_settings", tr_const!("Check settings…"), I::Settings).tip(tr_const!("Check settings: checks, message levels, accepted messages")),
     d(C::CrossReferences, "cross_references", tr_const!("Cross references…"), I::CrossRef)
         .tip(tr_const!("Format of cross references, structure of the target page, interruption points, contact images")),
     d(C::Marking, "marking", tr_const!("Marking…"), I::Marking),
@@ -468,72 +524,74 @@ pub static ALL: &[Def] = &[
         .pane(Pane::Library)
         .keys("Insert")
         .tip(tr_const!("Symbols, macros, devices and unplaced functions: search, favorites, recently used")),
-    d(C::PropertiesPane, "properties_pane", tr_const!("Properties"), I::Properties).pane(Pane::Properties),
+    d(C::PropertiesPane, "properties_pane", tr_const!("Properties pane"), I::Properties).pane(Pane::Properties),
     d(C::ReportsPane, "reports", tr_const!("Reports"), I::Report).tool(ToolPane::Reports),
-    d(C::TablesPane, "edit_in_table", tr_const!("Edit in table…"), I::Table)
+    d(C::TablesPane, "edit_in_table", tr_const!("Edit in table"), I::Table)
         .tool(ToolPane::Tables)
         .tip(tr_const!("Devices, connections and terminals: filter, fill, find and replace, CSV")),
     d(C::FindPane, "find_results", tr_const!("Find results"), I::Find).tool(ToolPane::Find),
-    d(C::CableEditor, "cables", tr_const!("Cables…"), I::Cable).tool(ToolPane::Cables),
-    d(C::Potentials, "potentials", tr_const!("Potentials…"), I::Potential).tool(ToolPane::Potentials),
-    d(C::TerminalStrips, "terminal_strips", tr_const!("Terminal strips…"), I::Terminal).tool(ToolPane::TerminalStrips),
-    d(C::Plugs, "plugs", tr_const!("Plugs…"), I::Plug).tool(ToolPane::Plugs),
-    d(C::PlcOverview, "plc_overview", tr_const!("PLC overview…"), I::Plc).tool(ToolPane::PlcOverview),
-    d(C::PlcHardware, "plc_hardware", tr_const!("PLC hardware and bus topology…"), I::Plc)
+    d(C::CableEditor, "cables", tr_const!("Cables"), I::Cable).tool(ToolPane::Cables),
+    d(C::Potentials, "potentials", tr_const!("Potentials"), I::Potential).tool(ToolPane::Potentials),
+    d(C::TerminalStrips, "terminal_strips", tr_const!("Terminal strips"), I::Terminal).tool(ToolPane::TerminalStrips),
+    d(C::Plugs, "plugs", tr_const!("Plugs"), I::Plug).tool(ToolPane::Plugs),
+    d(C::PlcOverview, "plc_overview", tr_const!("PLC overview"), I::Plc).tool(ToolPane::PlcOverview),
+    d(C::PlcHardware, "plc_hardware", tr_const!("PLC hardware and bus topology"), I::Plc)
         .tool(ToolPane::PlcHardware)
         .tip(tr_const!("Stations, racks, modules, bus systems, AutomationML exchange with PLC tools")),
-    d(C::Macros, "macros", tr_const!("Macros…"), I::Macro).tool(ToolPane::Macros),
-    d(C::Harnesses, "harnesses", tr_const!("Harnesses…"), I::Harness).tool(ToolPane::Harnesses),
-    d(C::FieldWiring, "field_wiring", tr_const!("Field wiring…"), I::Field)
+    d(C::Macros, "macros", tr_const!("Macros"), I::Macro).tool(ToolPane::Macros),
+    d(C::Harnesses, "harnesses", tr_const!("Harnesses"), I::Harness).tool(ToolPane::Harnesses),
+    d(C::FieldWiring, "field_wiring", tr_const!("Field wiring"), I::Field)
         .tool(ToolPane::FieldWiring)
         .tip(tr_const!("Plant layout, route network, field cable planning, equipotential bonding and cable accessories")),
-    d(C::Revisions, "revisions", tr_const!("Revisions…"), I::Clock).tool(ToolPane::Revisions).tip(tr_const!("Revisions, approval and release")),
-    d(C::Compare, "compare", tr_const!("Compare and baselines…"), I::Compare)
+    d(C::Revisions, "revisions", tr_const!("Revisions"), I::Clock).tool(ToolPane::Revisions).tip(tr_const!("Revisions, approval and release")),
+    d(C::Compare, "compare", tr_const!("Compare and baselines"), I::Compare)
         .tool(ToolPane::Compare)
         .tip(tr_const!("Compare with a baseline, a revision or another project file and take differences over")),
-    d(C::ChangeRequests, "change_requests", tr_const!("Change requests…"), I::ChangeRequest).tool(ToolPane::ChangeRequests),
-    d(C::Preplanning, "preplanning", tr_const!("Pre-planning…"), I::Preplanning)
+    d(C::ChangeRequests, "change_requests", tr_const!("Change requests"), I::ChangeRequest).tool(ToolPane::ChangeRequests),
+    d(C::Preplanning, "preplanning", tr_const!("Pre-planning"), I::Preplanning)
         .tool(ToolPane::Preplanning)
         .tip(tr_const!("Plant segments with planned devices before the schematic")),
-    d(C::SingleLine, "single_line", tr_const!("Single-line / multi-line…"), I::SingleLine)
+    d(C::SingleLine, "single_line", tr_const!("Single-line / multi-line"), I::SingleLine)
         .tool(ToolPane::SingleLine)
         .tip(tr_const!("Plan devices in the single-line diagram, generate the schematic and keep both in sync")),
-    d(C::Process, "fluid_and_process", tr_const!("Fluid and process…"), I::Fluid).tool(ToolPane::Process).tip(tr_const!("Hose defaults and PCT loops of the pre-planning")),
-    d(C::Electrical, "electrical_calculations", tr_const!("Electrical calculations…"), I::Calculator)
+    d(C::Process, "fluid_and_process", tr_const!("Fluid and process"), I::Fluid).tool(ToolPane::Process).tip(tr_const!("Hose defaults and PCT loops of the pre-planning")),
+    d(C::Electrical, "electrical_calculations", tr_const!("Electrical calculations"), I::Calculator)
         .tool(ToolPane::Electrical)
         .tip(tr_const!("Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets")),
-    d(C::Integration, "enterprise_integration", tr_const!("Enterprise integration…"), I::Integration)
+    d(C::Integration, "enterprise_integration", tr_const!("Enterprise integration"), I::Integration)
         .tool(ToolPane::Integration)
         .tip(tr_const!("Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines")),
-    d(C::ProjectLanguages, "project_languages", tr_const!("Project languages…"), I::Languages)
+    d(C::ProjectLanguages, "project_languages", tr_const!("Project languages"), I::Languages)
         .tool(ToolPane::Languages)
         .tip(tr_const!("Translate the project texts; documentation per language")),
-    d(C::Configurator, "configurator", tr_const!("Configurator…"), I::Configurator).tool(ToolPane::Configurator).tip(tr_const!("Generate pages from page macros by options and rules")),
-    d(C::ProjectManagement, "project_management", tr_const!("Project management…"), I::Management)
+    d(C::Configurator, "configurator", tr_const!("Configurator"), I::Configurator).tool(ToolPane::Configurator).tip(tr_const!("Generate pages from page macros by options and rules")),
+    d(C::ProjectManagement, "project_management", tr_const!("Project management"), I::Management)
         .tool(ToolPane::Projects)
         .tip(tr_const!("Project database, batch changes of project properties, subprojects, options, archives and verification")),
-    d(C::Structure, "structure_management", tr_const!("Structure management…"), I::Structure)
+    d(C::Structure, "structure_management", tr_const!("Structure management"), I::Structure)
         .tool(ToolPane::Structure)
         .tip(tr_const!("Structure identifiers (IEC 81346), templates and work areas")),
-    d(C::PropertyDatabase, "property_database", tr_const!("Property database…"), I::Database)
+    d(C::PropertyDatabase, "property_database", tr_const!("Property database"), I::Database)
         .tool(ToolPane::PropertyDatabase)
         .tip(tr_const!("Property definitions, function definitions, placement schemes and the values of all objects")),
-    d(C::SymbolEditor, "symbol_editor", tr_const!("Symbol editor…"), I::SymbolEditor).tool(ToolPane::SymbolEditor),
-    d(C::Forms, "forms", tr_const!("Title blocks, plot frames and page templates…"), I::Forms).tool(ToolPane::Forms),
-    d(C::ReportBlocks, "report_blocks", tr_const!("Report blocks…"), I::Report).tool(ToolPane::ReportBlocks).tip(tr_const!("Generate report pages per strip, plug, cable or device")),
-    d(C::PartsManagement, "parts_management", tr_const!("Parts management…"), I::Parts).tool(ToolPane::Parts),
-    d(C::DataPortal, "data_portal", tr_const!("Data portal…"), I::Database)
+    d(C::SymbolEditor, "symbol_editor", tr_const!("Symbol editor"), I::SymbolEditor).tool(ToolPane::SymbolEditor),
+    d(C::Forms, "forms", tr_const!("Forms and frames"), I::Forms).tool(ToolPane::Forms).tip(tr_const!("Title blocks, plot frames and page templates")),
+    d(C::ReportBlocks, "report_blocks", tr_const!("Report blocks"), I::Report).tool(ToolPane::ReportBlocks).tip(tr_const!("Generate report pages per strip, plug, cable or device")),
+    d(C::PartsManagement, "parts_management", tr_const!("Parts management"), I::Parts).tool(ToolPane::Parts),
+    d(C::DataPortal, "data_portal", tr_const!("Data portal"), I::Database)
         .tool(ToolPane::DataPortal)
         .tip(tr_const!("Search the parts server by catalog, product group and technical data, add parts and check the database for updates")),
-    d(C::ProjectServer, "project_server", tr_const!("Project server…"), I::Server).tool(ToolPane::ProjectServer).tip(tr_const!("Open and save shared projects, lock pages")),
-    d(C::Vault, "vault", tr_const!("Autodesk Vault…"), I::Vault)
+    d(C::ProjectServer, "project_server", tr_const!("Project server"), I::Server).tool(ToolPane::ProjectServer).tip(tr_const!("Open and save shared projects, lock pages")),
+    d(C::Vault, "vault", tr_const!("Autodesk Vault"), I::Vault)
         .tool(ToolPane::Vault)
         .tip(tr_const!("Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault")),
-    d(C::ManagePlugins, "manage_plugins", tr_const!("Manage plugins…"), I::Plugin).tool(ToolPane::Plugins),
-    d(C::PluginCommands, "plugin_commands", tr_const!("Plugin commands…"), I::Plugin)
+    d(C::ManagePlugins, "manage_plugins", tr_const!("Manage plugins"), I::Plugin).tool(ToolPane::Plugins),
+    d(C::PluginCommands, "plugin_commands", tr_const!("Plugin commands"), I::Plugin)
         .tool(ToolPane::PluginCommands)
         .tip(tr_const!("The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab")),
-    d(C::Help, "help", tr_const!("Help"), I::Help).tool(ToolPane::Help).keys("F1").tip(tr_const!("Quick guide, tutorial and shortcuts")),
+    d(C::Help, "help", tr_const!("Help"), I::Help).tool(ToolPane::Help).keys("F1").tip(tr_const!("Quick guide, tutorial and shortcuts; F1 opens the help of the pane in use")),
+    d(C::Tutorial, "tutorial", tr_const!("Tutorial"), I::Book).tip(tr_const!("The tutorial in 13 chapters, from the first project to the automation")),
+    d(C::About, "about", tr_const!("About OpenECraft"), I::Info).tip(tr_const!("Version and project page")),
     d(C::LayoutSpaces, "layout_spaces", tr_const!("Layout spaces"), I::Enclosure).pane(Pane::LayoutSpaces).tip(tr_const!("Enclosures, devices to place and placed devices")),
     d(C::LayoutView, "layout_view", tr_const!("Panel layout"), I::Front).pane(Pane::LayoutView),
     d(C::LayoutProperties, "layout_properties", tr_const!("Layout properties"), I::Properties).pane(Pane::LayoutProperties),

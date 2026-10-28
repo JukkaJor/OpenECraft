@@ -5,24 +5,9 @@
 (renamed from {})	（由 {} 重命名）
 + Page	+ 页
 0 = no jumper	0 = 无跳线
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 在库（右侧）中选择一个符号，然后在页中单击以放置。设备标识符（-K1、-S2 …）将自动分配。
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 项目 › 符号编辑器：绘制自己的符号（或复制内置符号），包含连接点和功能；符号保存在项目中，并可作为库文件交换。
-100% ≈ real size on a 96 dpi screen	100% ≈ 96 dpi 屏幕上的实际尺寸
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. 项目 › 标题栏和报表表单：带占位符（{project}、{page}、{prop:Name} …）的自定义标题栏以及报表页的列。
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 安装板布局：母线和开孔；机柜属性可导出钻孔图（NC 数据，格式为 DXF / DWG / CSV）。生产导线列表包含剥线长度和冷压端子。
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 线束：项目 › 线束…；选择两个设备之间的导线 › 分配给线束，或在导线属性中按连接分配。线束数据报表包含长度、连接器和线束直径，支持 KBL 导出。
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. 柜门：将安装板正视图切换到柜门，并在其中放置指令 / 信号设备；系统会生成其柜门开孔。使用部件的 3D 模型检查碰撞。
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. 选择一个线圈，然后放置触点：触点将分配给该线圈并编号（13/14、21/22 …）。交叉引用和触点映像实时更新。
 2D front view	2D 正视图
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. 使用导线工具 (W) 绘制导线。导线在连接点上自动结束。T 形分支会获得一个连接点标记。
 3D model	3D 模型
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. 电位（L1、+24V …）和中断点为跨页的网络命名。选择一条导线可突出显示其电位。
 4/2 directional valve	4/2 换向阀
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. 在属性面板中分配部件；生成报表（设备列表、BOM、端子图、连接列表、PLC 列表）并将其作为报表页插入。
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. 结构：在页属性中为页指定功能 (=A1) 和位置 (+CAB1)。放置在该页上的设备将获得此结构 (=A1+CAB1-K1)；页上只显示不同的部分。
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. 电缆：在项目 › 电缆… 中定义电缆，选择导线并使用“分配给电缆”。线号：项目 › 导线编号…，或在导线属性中输入编号。
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. 宏：选择元素 › 编辑 › 将所选内容另存为宏；通过插入 › 宏… 插入。占位符 {NAME} 由值集填充。
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 项目 › 端子排 / PLC 概览 / 修订：端子排顺序、跳线和备用端子；PLC 地址和符号表；带更改标记和已发布（锁定）页的修订。
 Access token	访问令牌
 Accessories	附件
 Add missing parts of the example catalog	添加示例目录中缺少的部件
@@ -95,12 +80,9 @@ Click into the page to place {}	在页中单击以放置 {}
 Click on the 4 mm grid	在 4 mm 栅格上单击
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	单击起点和拐点 · 空格键切换拐角方向 · 在连接点上自动结束 · 右键单击 / Esc 完成
 Click start and end point	单击起点和终点
-Click start point, click end point	单击起点，单击终点
 Click to add to the selected text.	单击以添加到所选文本。
 Click to insert the macro · Esc cancel	单击以插入宏 · Esc 取消
-Click to place a text	单击以放置文本
 Click to place the text from the field below	单击以放置下方字段中的文本
-Click to place · R rotate · M mirror · Esc finish	单击以放置 · R 旋转 · M 镜像 · Esc 完成
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	单击以选择，拖动以移动，在空白处拖动进行窗口选择。按住右键/中键拖动可平移，滚轮缩放。
 Click to show	单击以显示
 Click two corners	单击两个角点
@@ -146,7 +128,6 @@ Corner	角
 Cover	封面
 Cover sheet	封面
 Create / update the part on the server (Ctrl+S)	在服务器上创建 / 更新部件 (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	创建一个机柜（左侧导航器中的 ➕）以开始安装板布局。
 Create an enclosure in the panel layout first.	请先在安装板布局中创建一个机柜。
 Create revision	创建修订
 Created by	创建者
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	柜门：{} 个设备，{} 个开孔
 Downloaded {} parts (revision {}): {} new, {} updated	已下载 {} 个部件（修订 {}）：{} 个新增，{} 个已更新
 Downloading parts…	正在下载部件…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	拖动：环绕 · 右键/中键拖动：平移 · 滚轮：缩放 · 单击：选择设备或导线
-Draw connections (W)	绘制连接 (W)
+Draw connections	绘制连接
 Duplicate	复制
 Each point-to-point connection can belong to a harness	每个点对点连接都可以属于一个线束
 Edit	编辑
@@ -272,7 +253,6 @@ Harness data	线束数据
 Harness {} has no wires	线束 {} 没有导线
 Harness {}: connection {} – {} does not exist in the schematic	线束 {}：连接 {} – {} 在原理图中不存在
 Harnesses	线束
-Harnesses…	线束…
 Height	高度
 Height (mm)	高度 (mm)
 Help	帮助
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	较长的值将以较小字号绘
 Macro {} replaced	已替换宏 {}
 Macro {} saved	已保存宏 {}
 Macros	宏
-Macros…	宏…
 Macro…	宏…
 Main	主
 Main contact 1-pole	主触点 1 极
@@ -380,12 +359,8 @@ Next free contact numbers on this device	此设备上的下一个空闲触点编
 Next page (Page Down)	下一页 (Page Down)
 No PLC inputs / outputs placed.	未放置 PLC 输入 / 输出。
 No cables defined.	未定义电缆。
-No cables yet – Project › Cables…	尚无电缆 – 项目 › 电缆…
 No changes since the last revision.	自上次修订以来无更改。
-No devices yet. Pick a symbol from the library on the right and click into the page.	尚无设备。从右侧库中选择一个符号，然后在页中单击。
-No enclosure yet – create one with ➕.	尚无机柜 – 使用 ➕ 创建一个。
 No harnesses defined.	未定义线束。
-No harnesses yet – Project › Harnesses…	尚无线束 – 项目 › 线束…
 No identifying letter for the device tag.	设备标识符没有标识字母。
 No macros yet. Select items in a schematic and save them as a macro.	尚无宏。在原理图中选择元素并将其另存为宏。
 No parts found.	未找到部件。
@@ -437,7 +412,6 @@ PLC connection point	PLC 连接点
 PLC digital input	PLC 数字量输入
 PLC digital output	PLC 数字量输出
 PLC overview	PLC 概览
-PLC overview…	PLC 概览…
 Packaging quantity	包装数量
 Page	页
 Page / column (3.4.1)	页 / 列 (3.4.1)
@@ -468,11 +442,10 @@ Parts	部件
 Parts (CSV, JSON)	部件 (CSV, JSON)
 Parts import failed: {}	部件导入失败：{}
 Parts management	部件管理
-Parts management…	部件管理…
 Parts server: {}	部件服务器：{}
 Passive components	无源元件
 Pilot light (NFPA)	指示灯 (NFPA)
-Place text (T)	放置文本 (T)
+Place text	放置文本
 Placed	已放置
 Placed {}× in the project	在项目中已放置 {}×
 Placeholders	占位符
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	刷新示例目录部件 (GEN.*)
 Relay / contactor coil	继电器 / 接触器线圈
 Relay coil (NFPA)	继电器线圈 (NFPA)
 Release: lock all pages	发布：锁定所有页
-Released page – unlock it in Project › Revisions to change it	已发布页 – 在项目 › 修订中解锁后才能更改
 Remove from cable	从电缆中移除
 Remove from harness	从线束中移除
 Remove from the harness	从线束中移除
@@ -566,7 +538,6 @@ Revision marks	修订标记
 Revision overview (changes)	修订概览（更改）
 Revision {} created	已创建修订 {}
 Revisions	修订
-Revisions…	修订…
 Right	右
 Rotate (R)	旋转 (R)
 Rotate / mirror (selection or symbol being placed)	旋转 / 镜像（所选内容或正在放置的符号）
@@ -637,7 +608,6 @@ Supplier	供应商
 Switches / Sensors	开关 / 传感器
 Symbol	符号
 Symbol editor	符号编辑器
-Symbol editor…	符号编辑器…
 Symbol table import failed: {}	符号表导入失败：{}
 Symbols	符号
 Synchronize project parts from database	从数据库同步项目部件
@@ -655,7 +625,6 @@ Terminal number	端子号
 Terminal number, PLC address, potential name …	端子号、PLC 地址、电位名称 …
 Terminal strip	端子排
 Terminal strips	端子排
-Terminal strips…	端子排…
 Terminals	端子
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	跳线编号相同的端子相互桥接（电位相同）。备用端子计入物料清单。
 Test connection	测试连接
@@ -727,8 +696,7 @@ Wire tool / text tool	导线工具 / 文本工具
 Wire {} – {}  ({} of {} here, click again for the next)	导线 {} – {}  （此处 {} / {}，再次单击查看下一条）
 Wire {} – {}  {} mm	导线 {} – {}  {} mm
 Wires	导线
-Workflow	工作流程
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   列 {}  行 {}
+Column {}  Row {}	列 {}  行 {}
 X {}  Y {} mm on the {}	X {}  Y {} mm，位于 {}
 YYYY-MM-DD	YYYY-MM-DD
 Zoom / pan	缩放 / 平移
@@ -815,67 +783,55 @@ writable with token	使用令牌可写入
 ⎘ Copy	⎘ 复制
 ○ Circle	○ 圆
 ☐ Rect	☐ 矩形
-⛶ Fit	⛶ 适合
-✏ Place in schematic	✏ 放置到原理图中
+Place in schematic	放置到原理图中
 ✏ Wire	✏ 导线
-✔ Add to device	✔ 添加到设备
-✔ Create	✔ 创建
+Add to device	添加到设备
+Create	创建
 ✔ No problems found.	✔ 未发现问题。
 ✔ Save	✔ 保存
 ➕ Add accessory	➕ 添加附件
-➕ Add function	➕ 添加功能
-➕ Add part…	➕ 添加部件…
+Add function	添加功能
+Add part…	添加部件…
 ➕ Insert (click into the page)	➕ 插入（在页中单击）
 ➕ Insert as new page	➕ 作为新页插入
 ➕ Insert as report page	➕ 作为报表页插入
-➕ Insert mounting layout page	➕ 插入安装布局页
+Insert mounting layout page	插入安装布局页
 ➕ Label	➕ 标签
 ➕ Line	➕ 线
 ➕ New	➕ 新建
-➕ New cable	➕ 新建电缆
-➕ New harness	➕ 新建线束
+New cable	新建电缆
+New harness	新建线束
 ➕ Property	➕ 属性
 ➕ Rectangle	➕ 矩形
 ➕ Text	➕ 文本
-➕ Value set	➕ 值集
+Value set	值集
 ➕ {} (not saved)	➕ {}（未保存）
 ⟲ Revert	⟲ 还原
 ⟳ Reload	⟳ 重新加载
-⟳ Rotate	⟳ 旋转
-⬆ Import symbol table…	⬆ 导入符号表…
-⬆ Import…	⬆ 导入…
-⬆ Upload database ({})	⬆ 上传数据库（{}）
+Import symbol table…	导入符号表…
+Upload database ({})	上传数据库（{}）
 ⬆ Upload parts file (CSV / JSON)…	⬆ 上传部件文件 (CSV / JSON)…
-⬆ Upload selected part	⬆ 上传所选部件
-⬇ Door NC data (DXF)	⬇ 柜门 NC 数据 (DXF)
-⬇ Door cutouts (CSV)	⬇ 柜门开孔 (CSV)
-⬇ Download into database	⬇ 下载到数据库
-⬇ Drilling list (CSV)	⬇ 钻孔列表 (CSV)
-⬇ Export CSV	⬇ 导出 CSV
+Upload selected part	上传所选部件
+Door NC data (DXF)	柜门 NC 数据 (DXF)
+Door cutouts (CSV)	柜门开孔 (CSV)
+Download into database	下载到数据库
 ⬇ Export KBL (XML)…	⬇ 导出 KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ 导出符号表 (CSV)…
-⬇ Export…	⬇ 导出…
-⬇ NC data (DXF)	⬇ NC 数据 (DXF)
+Export symbol table (CSV)…	导出符号表 (CSV)…
+NC data (DXF)	NC 数据 (DXF)
 ⬉ Select	⬉ 选择
 🌐 Parts server	🌐 部件服务器
-💾 Save	💾 保存
-💾 Save selection as macro…	💾 将所选内容另存为宏…
-📊 Cable overview	📊 电缆概览
-📊 Harness data	📊 线束数据
 📊 Reports	📊 报表
-📊 Revision overview	📊 修订概览
-🔒 Released page – read only	🔒 已发布页 – 只读
+Revision overview	修订概览
+Released page – read only	已发布页 – 只读
 🗄 Panel layout	🗄 安装板布局
 🗄 Parts database	🗄 部件数据库
 🗋 Schematic	🗋 原理图
 🗑 Delete	🗑 删除
-🗑 Delete connection point	🗑 删除连接点
-🗑 Delete element	🗑 删除元素
-🗑 Delete macro	🗑 删除宏
-🗑 Remove	🗑 移除
+Delete connection point	删除连接点
+Delete element	删除元素
 {} connections removed from their harness	已从线束中移除 {} 个连接
 {} connections assigned to {}	已将 {} 个连接分配给 {}
-🗄 Show in panel layout ({})	🗄 在安装板布局中显示（{}）
+Show in panel layout ({})	在安装板布局中显示（{}）
    |  Potential {}	   |  电位 {}
 📁 Project parts ({})	📁 项目部件（{}）
 part {} not found	未找到部件 {}
@@ -1070,8 +1026,8 @@ via cable ducts	经由线槽
 {} connection points	{} 个连接点
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	板上 {} mm + 余量 {} mm；其余为从连接点到安装板的路径。
 {} wires, {} – {} mm	{} 条导线，{} – {} mm
-➕ Add connection point	➕ 添加连接点
-🗑 Remove all	🗑 全部移除
+Add connection point	添加连接点
+Remove all	全部移除
 2D front view (SVG)	2D 正视图 (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D 模型（STL、OBJ、STEP、IGES、IFC、JT）
 End bracket	终端固定件
@@ -1113,11 +1069,9 @@ Wire number on both ends	两端均标线号
 {} markers	{} 个标记
 {} mm	{} mm
 {} pieces	{} 件
-Potentials…	电位…
 Potentials	电位
-➕ New potential	➕ 新建电位
+New potential	新建电位
 Load preset	加载预设
-📊 Potential overview	📊 电位概览
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	没有自身颜色或截面积的导线从其连接的电位获取；电缆芯线保留电缆的值。
 e.g. 400 V AC	例如 400 V AC
 Delete	删除
@@ -1151,7 +1105,6 @@ turquoise	青绿色
 silver	银色
 green-yellow	绿黄色
 Potential {} defined {} times	电位 {} 被定义了 {} 次
-Potential {} has no definition (Project › Potentials)	电位 {} 没有定义（项目 › 电位）
 Protective conductor {} with wire colour {} (must be GNYE)	保护导体 {} 的导线颜色为 {}（必须为 GNYE）
 Wire colour GNYE is reserved for protective conductors ({})	导线颜色 GNYE 专用于保护导体（{}）
 {}: cross-section {} differs from the potential definition ({})	{}：截面积 {} 与电位定义不同（{}）
@@ -1183,9 +1136,7 @@ Draw wires in their colour	按导线颜色绘制导线
 Pin	插针
 Plug	插头
 Plugs	插头
-Plugs…	插头…
 Plug diagram	插头图
-📊 Plug diagram	📊 插头图
 Socket side	插孔侧
 Pin side	插针侧
 female	插孔
@@ -1231,7 +1182,6 @@ Column	列
 Condition '{}' needs OPTION=value	条件“{}”需要 OPTION=值
 Condition (OPTION=value & …)	条件（OPTION=值 & …）
 Configurator	配置器
-Configurator…	配置器…
 Cooling	冷却
 Creates or changes a configurator option	创建或更改配置器选项
 Cross-section {} carries {} A, less than the {} A of {}	截面积 {0} 的载流量为 {1} A，小于 {3} 的 {2} A
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel、stainless_steel
 {}: voltage drop {} V ({} %) above {} %	{}：电压降 {} V（{} %）超过 {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}：{} W 功率损耗使机柜升温至 {} °C（最高 {} °C）：需要 {}
 {}: {} carries {} A, the load {} needs {} A	{}：{} 的载流量为 {} A，负载 {} 需要 {} A
-⚙ Generate pages	⚙ 生成页
-➕ Option	➕ 选项
-➕ Rule	➕ 规则
-🗑 Delete variant	🗑 删除变体
+Option	选项
+Delete variant	删除变体
 e.g. NAME=Pump; POWER={POWER}	例如 NAME=Pump; POWER={POWER}
 e.g. STARTER=DOL	例如 STARTER=DOL
 Parts (CSV, JSON, BMEcat)	部件（CSV、JSON、BMEcat）
@@ -1395,8 +1343,7 @@ Default medium	默认介质
 Number prefix	编号前缀
 📊 Hose list	📊 软管列表
 PCT loops (pre-planning)	PCT 回路（预规划）
-➕ Loop	➕ 回路
-📊 PCT loop overview	📊 PCT 回路概览
+Loop	回路
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	P&ID 中的仪表在其标签中带有功能字母和回路编号 (TIC 101)；其设备标识符将其与原理图关联。
 PCT loop	PCT 回路
 Range	范围
@@ -1409,7 +1356,6 @@ Delete loop	删除回路
 {} (default)	{}（默认）
 Hose / pipe {}	软管 / 管道 {}
 Resulting: {} · {} · {} · {} m	结果：{} · {} · {} · {} m
-Fluid and process…	流体和过程…
 Hose defaults and PCT loops of the pre-planning	软管默认值和预规划的 PCT 回路
 ✔ Wiring	✔ 接线
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	接线助手：带 3D 视图和进度的导线检查清单（平板电脑：使用 #wiring 打开 Web 应用）
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	源语言
 Target languages	目标语言
 Remove the language (its translations stay in the dictionary)	移除该语言（其翻译保留在词典中）
-➕ Add	➕ 添加
+Add	添加
 ISO 639-1 language code	ISO 639-1 语言代码
 Collect texts from the project	从项目中收集文本
 Adds all lines of the project texts to the dictionary	将项目文本的所有行添加到词典
@@ -1554,7 +1500,6 @@ not translated into {}	未翻译为 {}
 {} new texts in the dictionary	词典中有 {} 个新文本
 {} unused entries removed	已移除 {} 个未使用的条目
 Export as PDF in language	以指定语言导出为 PDF
-Project languages…	项目语言…
 Translate the project texts; documentation per language	翻译项目文本；按语言生成文档
 {} translations imported	已导入 {} 条翻译
 Import failed: {}	导入失败：{}
@@ -1608,8 +1553,8 @@ Components (assembly)	构件（组件）
 (included)	（已包含）
 Fastening hardware in the bill of materials	物料清单中的紧固件
 Screws, nuts, washers and rivet nuts of the fixing points	固定点的螺钉、螺母、垫圈和拉铆螺母
-⬇ NC data of this face (DXF)	⬇ 此面的 NC 数据 (DXF)
-⬇ Drilling list of this face (CSV)	⬇ 此面的钻孔列表 (CSV)
+NC data of this face (DXF)	此面的 NC 数据 (DXF)
+Drilling list of this face (CSV)	此面的钻孔列表 (CSV)
 Group as assembly	组合为组件
 The items are selected and moved together	这些元素将一起被选择和移动
 Distribute horizontally	水平分布
@@ -1625,7 +1570,6 @@ Pattern	阵列
 Columns × rows	列 × 行
 Pitch X / Y	间距 X / Y
 Devices are not copied: a device is placed once.	不复制设备：一个设备只放置一次。
-✔ Copy	✔ 复制
 Save as 3D macro	另存为 3D 宏
 Items with an anchor keep it; the others are inserted relative to the click.	带锚定的元素保留其锚定；其他元素相对于单击位置插入。
 Walls	壁板
@@ -1728,7 +1672,6 @@ Macro name	宏名称
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	将 3D 宏作为组件插入：锚定元素放到其位置，其他元素相对于面上的 x / y 放置
 Installation site	安装地点
 Structure management	结构标识符管理
-Structure management…	结构标识符管理…
 Structure identifiers (IEC 81346), templates and work areas	结构标识符 (IEC 81346)、模板和工作区
 Template	模板
 Apply template	应用模板
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	检查会报�
 Work areas	工作区
 Work area	工作区
 Work area {}	工作区 {}
-➕ Work area	➕ 工作区
 (whole project)	（整个项目）
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	工作区将导航器中的页和设备限定为项目的一部分。筛选：空 = 任意，* = 任意字符；A1 也包括 A1.2。
 OpenECraft structure template	OpenECraft 结构模板
@@ -1873,7 +1815,7 @@ Export…	导出…
 Import…	导入…
 File to embed	要嵌入的文件
 Forms – title blocks, frames and templates	表单 – 标题栏、图框和模板
-Title blocks, plot frames and page templates…	标题栏、图框和页模板…
+Title blocks, plot frames and page templates	标题栏、图框和页模板
 Frame of all pages that do not choose one	所有未选择图框的页使用的图框
 Frame to start from when the frame is new (default: A3 landscape)	新建图框时的起始图框（默认：A3 landscape）
 Free graphics and notes, not evaluated	自由图形和注释，不评估
@@ -2044,19 +1986,18 @@ Port {} is not connected	端口 {} 未连接
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	导出项目：svg（一页）、html、pdf、dxf、dwg（仅限导出到文件）、wire_list (CSV)、plc_table (CSV)、plc_variables（IEC 61131-3 全局变量）、aml（AutomationML PLC 硬件）、kbl（线束 XML）、marking (CSV)、gltf、step、iges、ifc 或 jt（3D 安装板布局；jt 仅限导出到文件）、dictionary（项目文本翻译的 CSV）
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg、html、pdf、dxf、dwg、wire_list、plc_table、plc_variables、aml、kbl、marking、gltf、step、iges、ifc、jt 或 dictionary，或插件的导出
 PLC hardware	PLC 硬件
-⚙ Automatic configuration	⚙ 自动组态
+Automatic configuration	自动组态
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	CPU 和总线耦合器的站、总线系统、插槽、起始地址、点地址、IP 地址和线形拓扑
-⬇ Export AutomationML…	⬇ 导出 AutomationML…
+Export AutomationML…	导出 AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	用于 TIA Portal 和其他 PLC 工具的硬件组态和 PLC 变量
-⬆ Import AutomationML…	⬆ 导入 AutomationML…
+Import AutomationML…	导入 AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	来自 PLC 工具的站、模块、地址、子网和变量注释
-⬇ Export IEC 61131-3 variables…	⬇ 导出 IEC 61131-3 变量…
+Export IEC 61131-3 variables…	导出 IEC 61131-3 变量…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	带直接地址的全局变量列表，用于 CODESYS、TwinCAT 等
 Stations and racks	站和机架
 Bus topology	总线拓扑
 Device descriptions	设备描述
 Station	站
-➕ Station	➕ 站
 Cards without station: {}	没有站的卡件：{}
 No stations: add one or use the automatic configuration.	没有站：请添加一个站或使用自动组态。
 Head (CPU / coupler)	头模块（CPU / 耦合器）
@@ -2065,7 +2006,7 @@ Bus system	总线系统
 IP / bus address	IP / 总线地址
 Device number	设备编号
 {}: {} slots, ports {}	{}：{} 个插槽，端口 {}
-🗑 Remove station	🗑 移除站
+Remove station	移除站
 Plug in card	插入卡件
 No modules: plug in PLC cards of the schematic.	没有模块：请插入原理图中的 PLC 卡件。
 Device description	设备描述
@@ -2076,13 +2017,12 @@ Output bytes	输出字节
 from the parts	取自部件
 Remove from the station	从站中移除
 Bus systems	总线系统
-➕ Bus system	➕ 总线系统
 Subnet	子网
 Port A	端口 A
 Port B	端口 B
 Without bus system	无总线系统
 No bus systems.	没有总线系统。
-⬆ Import GSDML / ESI…	⬆ 导入 GSDML / ESI…
+Import GSDML / ESI…	导入 GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	PROFINET (GSDML) 和 EtherCAT (ESI) 设备的设备描述
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	产品组 PLC 的部件也提供描述（技术数据：Inputs、Outputs、Slots、Bus、Ports）。
 Slots	插槽
@@ -2093,7 +2033,7 @@ built-in	内置
 {} addresses changed	已更改 {} 个地址
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	已导入 {} 个站、{} 个模块、{} 个总线系统、{} 个连接；已更改 {} 个地址和 {} 个文本
 {} device descriptions imported	已导入 {} 个设备描述
-PLC hardware and bus topology…	PLC 硬件和总线拓扑…
+PLC hardware and bus topology	PLC 硬件和总线拓扑
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	站、机架、模块、总线系统，与 PLC 工具进行 AutomationML 交换
 Device description (GSDML, ESI)	设备描述（GSDML、ESI）
 Bus connection {} - {}: cable {} does not exist	总线连接 {} - {}：电缆 {} 不存在
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	电缆 {} 是 {} 电缆，但用于 {}
 Port {} has more than {} cables	端口 {} 有超过 {} 根电缆
 Cable {} is used for {} bus connections	电缆 {} 用于 {} 个总线连接
 with bus cables	带总线电缆
-➕ Create bus cables	➕ 创建总线电缆
+Create bus cables	创建总线电缆
 A cable of the bus type for every connection without cable	为每个没有电缆的连接创建一根总线类型的电缆
 missing	缺失
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} 个站，{} 个总线系统，已分配 {} 个卡件，已更改 {} 个地址，{} 个连接，{} 根电缆
@@ -2211,12 +2151,11 @@ starts with	开头为
 {} (first column)	{}（第一列）
 {} report pages output to {}	已将 {} 个报表页输出到 {}
 {} – {} ({} pages)	{} – {}（{} 页）
-➕ Add filter	➕ 添加筛选
-➕ Add sort key	➕ 添加排序键
-➕ New block	➕ 新建块
-➕ New scheme	➕ 新建方案
-⟳ Generate all	⟳ 全部生成
-⟳ Generate	⟳ 生成
+Add filter	添加筛选
+Add sort key	添加排序键
+New block	新建块
+Generate all	全部生成
+Generate	生成
 ⟳ Update report blocks	⟳ 更新报表块
 Opening {}…	正在打开 {}…
 Uploading {}…	正在上传 {}…
@@ -2238,13 +2177,13 @@ Save and release page	保存并释放页
 Lock page	锁定页
 Project server	项目服务器
 User name	用户名
-⟳ List projects	⟳ 列出项目
+List projects	列出项目
 Enter a user name: other users see it on your locks.	输入用户名：其他用户会在你的锁定上看到该用户名。
 Users	用户
 Opening a project replaces the current one, its unsaved changes are lost.	打开项目会替换当前项目，其未保存的更改将丢失。
 Upload the current project as a new shared project:	将当前项目作为新的共享项目上传：
 Name on the server	服务器上的名称
-⬆ Upload	⬆ 上传
+Upload	上传
 Letters, digits, space, - _ . (up to 64 characters)	字母、数字、空格、- _ .（最多 64 个字符）
 Shared project {} – revision {}, user {}	共享项目 {} – 修订 {}，用户 {}
 Save and release all locks	保存并释放所有锁定
@@ -2261,14 +2200,11 @@ None	无
 Close shared project	关闭共享项目
 Releases all locks; the project stays open as a local copy	释放所有锁定；项目作为本地副本保持打开
 Download project	下载项目
-Project server…	项目服务器…
 Open and save shared projects, lock pages	打开和保存共享项目，锁定页
-🔒 Locked by {} – read only	🔒 已被 {} 锁定 – 只读
+Locked by {} – read only	已被 {} 锁定 – 只读
 {} (project server, revision {})	{}（项目服务器，修订 {}）
 {} change requests added, {} updated	已添加 {} 个变更请求，已更新 {} 个
-Compare and baselines…	比较和基线…
 Compare with a baseline, a revision or another project file and take differences over	与基线、修订或其他项目文件进行比较，并采用差异
-Change requests…	变更请求…
 Review: comments and markup	审阅：批注和标记
 Revisions, approval and release	修订、审批和发布
 Review ({})	审阅（{}）
@@ -2293,7 +2229,7 @@ What should be checked or changed?	应检查或更改什么？
 Change request	变更请求
 Reply…	回复…
 Reply	回复
-🗑 Delete comment	🗑 删除批注
+Delete comment	删除批注
 Approval workflow	审批流程
 Approvers	审批人
 User names, separated by commas	用户名，以逗号分隔
@@ -2309,8 +2245,8 @@ rejected	已拒绝
 Submit for review	提交审阅
 Release	发布
 Discard draft	放弃草稿
-✔ Approve	✔ 批准
-✖ Reject	✖ 拒绝
+Approve	批准
+Reject	拒绝
 Approving needs an approver; you are \"{}\".	只有审批人才能批准；你是 \"{}\"。
 Submit again	再次提交
 With the current pages; the approvals so far become void	使用当前页；之前的审批将失效
@@ -2335,7 +2271,7 @@ Compare with	比较对象
 Baseline {} {}	基线 {} {}
 Baseline {}	基线 {}
 Pages of revision {}	修订 {} 的页
-📂 Project file…	📂 项目文件…
+Project file…	项目文件…
 Baselines ({})	基线（{}）
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	基线存储整个项目（页、设备、部件、设置）。发布修订时会存储一个基线。
 Create baseline	创建基线
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	使此项�
 {} details	{} 详细信息
 Baseline {} created	已创建基线 {}
 Change requests	变更请求
-➕ New request	➕ 新建请求
-📂 Import…	📂 导入…
+New request	新建请求
 CSV or JSON from another system; known numbers are updated	来自其他系统的 CSV 或 JSON；已知编号将被更新
-⬇ Export JSON	⬇ 导出 JSON
+Export JSON	导出 JSON
 Rejected and closed ones too	包括已拒绝和已关闭的
 No change requests yet.	尚无变更请求。
 Select a request.	选择一个请求。
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	设备标识符，以逗号分隔
 Affected pages ({})	受影响的页（{}）
 Go to page	转到页
 Comments ({})	批注（{}）
-💬 Comment on the current page	💬 在当前页上批注
+Comment on the current page	在当前页上批注
 Linked to this request	已关联到此请求
-🗑 Delete request	🗑 删除请求
+Delete request	删除请求
 in progress	进行中
 resolved	已解决
 Redline	红线
@@ -2405,14 +2340,6 @@ Settings	设置
 Page order	页顺序
 {} differences taken over	已采用 {} 处差异
 Layers	图层
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	单击以选择，拖动以移动，在空白处拖动进行窗口选择。拖动所选符号的标识符或属性文本可放置它。按住右键/中键拖动可平移，滚轮缩放。
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	单击起点和拐点 · 空格键切换拐角方向 · A 切换绕开符号布线 · 在连接点上自动结束 · 右键单击 / Esc 完成
-Click the centre, then a point of the circle	单击圆心，然后单击圆上的一点
-Click the centre, the start point and the end point (counter-clockwise)	单击圆心、起点和终点（逆时针）
-Click the corner points · double click, Enter or right click finishes	单击各拐点 · 双击、Enter 或右键单击完成
-Click the two points to measure, then the position of the dimension line	单击要测量的两个点，然后单击尺寸线的位置
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	单击导线：该点定义连接的编号、颜色、截面积和电缆芯线
-Draw a line across the wires that are cores of the cable	画一条线穿过作为电缆芯线的导线
 Click to insert · Esc cancel	单击以插入 · Esc 取消
 Routing around symbols	绕开符号布线
 {} objects pasted	已粘贴 {} 个对象
@@ -2442,7 +2369,7 @@ Layer	图层
 Auto-connect	自动连接
 Draw connections between facing connection points when symbols are placed or moved	放置或移动符号时，在相对的连接点之间绘制连接
 Route	布线
-The wire tool routes around symbols and other wires (A)	导线工具绕开符号和其他导线布线 (A)
+The wire tool routes around symbols and other wires	导线工具绕开符号和其他导线布线
 Dimension	尺寸标注
 Image…	图像…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG 或 JPEG 位图，例如徽标或照片
@@ -2486,7 +2413,6 @@ Tag placed by hand	手动放置的标识符
 Drag the tag of the selected symbol to place it.	拖动所选符号的标识符以放置它。
 (empty)	（空）
 ➕ Place property	➕ 放置属性
-➕ Layer	➕ 图层
 Layer {}	图层 {}
 Layers of graphics, texts, dimensions and images	图形、文本、尺寸标注和图像的图层
 Visible	可见
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	截面积，例如 1.5 mm²
 A cable definition needs a start and an end point	电缆定义需要起点和终点
 No cable {}	没有电缆 {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. 导线上的连接定义点设置整个连接的编号、颜色、截面积和芯线；穿过导线的电缆定义线使这些导线成为电缆的芯线。自动连接会连接相对的连接点，布线 (A) 使导线绕开符号。
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. 图形：图层上的圆、椭圆、圆弧、多边形、尺寸标注和图像（导航器 › 图层：可见、锁定、打印）。拖动所选符号的标识符可放置它；其他属性在其属性中放置。
 Coil	线圈
 Main contacts 4-pole	主触点 4 极
 NO contact, on-delay	常开触点，通电延时
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	计算下�
 📊 Hose configuration	📊 软管配置
 📊 Tubing / piping list	📊 管材 / 管道列表
 📊 Fluid netlist	📊 流体网络表
-➕ Group	➕ 组
-📊 Fluid device groups	📊 流体设备组
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	阀岛、气源处理单元和汇流板：其流体设备按位置顺序排列，以空格分隔。
 Places	位置数
 0 = not limited	0 = 不限
 Delete group	删除组
-🔄 Synchronize	🔄 同步
+Synchronize	同步
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	将电磁阀与编号相同的线圈关联 (-QM3 › -MB3) 并复制功能文本
 {} links created, {} function texts copied	已创建 {} 个关联，已复制 {} 个功能文本
-📊 Electro-fluid cross reference	📊 电气-流体交叉引用
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	驱动或监视流体设备的电气设备（电磁线圈、位置开关和压力开关）；两种原理图都显示相互之间的交叉引用。
 Electrical devices	电气设备
 Operating pressure in bar (0 = hose ratings are not checked)	工作压力 (bar)（0 = 不检查软管的额定压力）
@@ -2734,7 +2655,6 @@ Right neighbour	右侧相邻机柜
 No cable passage to {}: wires to it are not routed	没有到 {} 的电缆过孔：到该机柜的导线不布线
 Open to {}: wires cross beside the mounting plates	向 {} 开放：导线在安装板旁边穿过
 {} cable passages to {}	{} 个到 {} 的电缆过孔
-➕ Cable passage to {}	➕ 到 {} 的电缆过孔
 Round cutouts facing each other in both side walls	两侧板上相对的圆形开孔
 Both sides are open: the wires need no cutout	两侧均开放：导线无需开孔
 Cable passage to {}	到 {} 的电缆过孔
@@ -3067,7 +2987,6 @@ Surge protection	浪涌保护
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	电网中每个保护设备的分断能力与短路电流的对比、其电路末端最小故障电流时的切断、电缆的短路耐受能力以及与上级设备的选择性。
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	电网负载（电机、驱动器、加热器、电源装置、变压器）的功率和电流、每个保护设备的负载、按同时系数计算的需求以及电源装置的负载预算。
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	ISO 13849-1 的安全功能：每个子系统（输入、逻辑、输出）及一个通道的设备、其类别、诊断覆盖率和每年操作次数。设备按其部件的 PL / PFHd、MTTFd 或 B10d 计入。
-➕ Safety function	➕ 安全功能
 Input	输入
 Logic	逻辑
 Output	输出
@@ -3076,13 +2995,10 @@ Operations / year	操作次数 / 年
 CCF	CCF
 0 = from the devices	0 = 取自设备
 Measures against common cause failure (at least 65 points)	防止共因失效的措施（至少 65 分）
-➕ Subsystem	➕ 子系统
 Subsystem {}	子系统 {}
 Rule libraries	规则库
 Customer rule sets	客户规则集
-➕ Rule set	➕ 规则集
 Rule set {}	规则集 {}
-💾 Export…	💾 导出…
 OpenECraft rule sets	OpenECraft 规则集
 Verify the project against it	根据它验证项目
 {} checks	{} 项检查
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	范
 Message	消息
 if	如果
 then	则
-➕ Condition	➕ 条件
-➕ Check	➕ 检查
 OpenECraft rule sets (JSON)	OpenECraft 规则集 (JSON)
-Electrical calculations…	电气计算…
+Electrical calculations	电气计算
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	短路、选择性、负载、EMC、功能安全以及根据规则集进行验证
 0 = a single value; otherwise values [1] … [n]	0 = 单个值；否则为值 [1] … [n]
 A project definition based on this one, with its own defaults and scheme	基于此定义的项目定义，具有自己的默认值和方案
@@ -3416,7 +3330,6 @@ Project number	项目编号
 Project property of the property database (by key)	属性数据库中的项目属性（按键）
 Proof test interval	检验测试间隔
 Property database	属性数据库
-Property database…	属性数据库…
 Property definitions	属性定义
 Property definitions, function definitions, placement schemes and the values of all objects	属性定义、功能定义、放置方案以及所有对象的值
 Property groups	属性组
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}：\"{}\" 不是 {} 之一
 {}: invalid value \"{}\" ({})	{}：无效值 \"{}\" ({})
 ➕ Default value	➕ 默认值
-➕ Derive project definition	➕ 派生项目定义
-➕ User defined property	➕ 用户定义属性
+Derive project definition	派生项目定义
+User defined property	用户定义属性
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	在单线图中规划设备，生成原理图并保持两者同步
-Single-line / multi-line…	单线 / 多线…
 All devices of page {} are in the schematic already	页 {} 的所有设备都已在原理图中
 Copies function texts between the single-line diagram and the schematic where one side is empty	在单线图和原理图之间复制功能文本（仅当一侧为空时）
 Does not match	不匹配
@@ -3756,11 +3668,11 @@ Outline	轮廓
 Click the corners of a machine or building, double-click to finish	单击机器或建筑物的各个角点，双击完成
 (no cable highlighted)	（未突出显示电缆）
 Fit	适合窗口
-⬇ Export SVG…	⬇ 导出 SVG…
+Export SVG…	导出 SVG…
 Height above the floor	离地高度
 Placed here: {}	放置在此处：{}
 Place an enclosure, device or machine location at this node	在此节点上放置机柜、设备或机器位置
-🗑 Delete node	🗑 删除节点
+Delete node	删除节点
 SVG drawing	SVG 图纸
 Segments	布线段
 Width × height (mm)	宽 × 高 (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	必须连接到等电位联结
 {} corners	{} 个角点
 Take over cut lengths	采用下料长度
 Set the cable lengths to the planned cut lengths	将电缆长度设置为规划的下料长度
-📊 Report	📊 报表
 {} parts of the network	{} 个子网
 No field cables: place the enclosures and field devices at nodes of the route network.	没有现场电缆：请将机柜和现场设备放置在布线网络的节点上。
 Route definition of {}	{} 的路径定义
 Via:	经过：
 Remove	删除
-➕ Node	➕ 节点
 Avoid:	避开：
 {} cable lengths taken over	已采用 {} 个电缆长度
-➕ Bonding conductor	➕ 等电位联结导体
+Bonding conductor	等电位联结导体
 Bonding points	联结点
-➕ Accessory	➕ 附件
 both ends	两端
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	无附件：密封接头、连接器、屏蔽夹 … 会计入物料清单，并根据电缆进行检查。
 Reserve per cable end	每个电缆端的余量
@@ -3799,7 +3708,6 @@ Length inside an enclosure	机柜内长度
 Cut length step	下料长度步长
 Maximum fill of a carrier	电缆桥架的最大填充率
 Bend radius in drag chains	拖链中的弯曲半径
-Field wiring…	现场接线…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	工厂布局、布线网络、现场电缆规划、等电位联结和电缆附件
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	选项 {} 不存在
@@ -3913,9 +3821,9 @@ Archive and version	归档和版本
 Verification	校验
 OpenECraft project archive	OpenECraft 项目归档
 The project database needs the desktop version: the browser cannot search folders.	项目数据库需要桌面版：浏览器无法搜索文件夹。
-📂 Add folder…	📂 添加文件夹…
+Add folder…	添加文件夹…
 Adds the project files and archives of a folder and its subfolders	添加文件夹及其子文件夹中的项目文件和归档
-🔄 Update all	🔄 全部更新
+Update all	全部更新
 Verify while reading	读取时校验
 Remove the folder from the database	从数据库中删除该文件夹
 Search	搜索
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	根据配置�
 {} options switched	已切换 {} 个选项
 File format version {}. Files of older versions are converted when they are opened.	文件格式版本 {}。旧版本的文件在打开时会被转换。
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	归档 (.oecz) 是一个 ZIP 文件，包含项目、清单以及作为独立文件的嵌入文档和图像。
-📦 Archive project…	📦 归档项目…
-📂 Open archive…	📂 打开归档…
+Archive project…	归档项目…
+Open archive…	打开归档…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	校验项目数据（ID、引用、设备数据、选项、子项目），并同时运行工程检查。
 Verify project	校验项目
 Repair {} findings	修复 {} 个问题
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	项目数据中有 {} 个错误、{} 个警告、{} 个提示；工程检查：{} 个错误、{} 个警告
 (repairable)	（可修复）
 ✔ The project data is consistent.	✔ 项目数据一致。
-Project management…	项目管理…
 Project database, batch changes of project properties, subprojects, options, archives and verification	项目数据库、批量更改项目属性、子项目、选项、归档和校验
 OpenECraft project or archive	OpenECraft 项目或归档
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	适用于无 S
 Collision classes	碰撞类别
 Distances between classes of items, or classes that may overlap	元件类别之间的距离，或允许重叠的类别
 may overlap	允许重叠
-➕ Add rule	➕ 添加规则
+Add rule	添加规则
 Air temperature at the devices	设备处的空气温度
 max. {} °C	最高 {} °C
 No problems found	未发现问题
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	插件的应答无效：{}
 Key figures of the project and a list of its device tags	项目的关键指标及其设备标识符列表
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	项目的关键指标：页、符号、导线、设备、部件、电缆和检查结果
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	已加载的插件（内置插件以及来自 --plugins / OPENECRAFT_PLUGINS 插件文件夹的插件）及其命令、检查、报表和导出；为本会话启用或禁用插件
-Manage plugins…	管理插件…
-Plugin command {}	插件命令 {}
+Manage plugins	管理插件
 Plugin id '{}' is not snake_case	插件 ID '{}' 不是 snake_case
 Plugin {} is loaded twice	插件 {} 被加载了两次
 Plugin {} needs a newer OpenECraft (API {})	插件 {} 需要更新版本的 OpenECraft (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	未知插件：{}
 Warnings	警告
 {} commands, {} checks, {} reports, {} exports	{} 个命令，{} 个检查，{} 个报表，{} 个导出
 {}: the program to run is missing	{}：缺少要运行的程序
-▶ Run	▶ 运行
-⟳ Update	⟳ 更新
+Run	运行
+Update	更新
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	安装板布局检查
@@ -4187,7 +4093,7 @@ Profile	配置文件
 (standard columns)	（标准列）
 Write the file for the other system; later imports detect conflicts against this export	为其他系统写入文件；之后的导入将检测与此导出的冲突
 Read a file of the other system (CSV or JSON) and review the changes	读取其他系统的文件（CSV 或 JSON）并审阅更改
-⬇ Neutral exchange file…	⬇ 中性交换文件…
+Neutral exchange file…	中性交换文件…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	将物料、设备、放置、连接、导线和文档放在一个 JSON 文件中，供没有接口的系统使用
 Import changes	导入更改
 Profiles	配置文件
@@ -4213,7 +4119,6 @@ Conflicts	冲突
 Export	导出
 Import	导入
 {} values taken over	已采用 {} 个值
-Enterprise integration…	企业集成…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	与 ERP、PDM、PLM、ECAD、MCAD、采购和导线加工机交换数据
 Files of other systems (CSV, JSON)	其他系统的文件 (CSV, JSON)
 Copper bar {}: {} segments need {} bends	铜排 {}：{} 个段需要 {} 个折弯
@@ -4380,9 +4285,9 @@ DWG export failed: {}	DWG 导出失败：{}
 DWG import failed: {}	DWG 导入失败：{}
 DWG imported as page {}: {} lines, {} texts	已将 DWG 导入为页 {}：{} 条直线，{} 个文本
 DWG imported as page {}: {} lines, {} texts (not imported: {})	已将 DWG 导入为页 {}：{} 条直线，{} 个文本（未导入：{}）
-⬇ NC data (DWG)	⬇ NC 数据 (DWG)
-⬇ Door NC data (DWG)	⬇ 柜门 NC 数据 (DWG)
-⬇ NC data of this face (DWG)	⬇ 此面的 NC 数据 (DWG)
+NC data (DWG)	NC 数据 (DWG)
+Door NC data (DWG)	柜门 NC 数据 (DWG)
+NC data of this face (DWG)	此面的 NC 数据 (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	将 DWG 图纸（AutoCAD R12 … 2018）作为图形（直线、圆弧、文本、块）导入到新的原理图页
 Generic	通用
 Parts store	部件库
@@ -4721,7 +4626,6 @@ Power cable	动力电缆
 Control cable	控制电缆
 Wiring material	接线材料
 Catalog id	目录 ID
-Data portal…	数据门户…
 Delete catalog {} from the server?	是否从服务器删除目录 {}？
 Delete user {}? Their sessions and favorites are removed.	是否删除用户 {}？其会话和收藏夹将被删除。
 Ends the session and forgets the token	结束会话并丢弃令牌
@@ -4843,12 +4747,10 @@ Use macros	使用宏
 ★ Favorites	★ 收藏夹
 ★ Remove from favorites	★ 从收藏夹中删除
 ☆ Add to favorites	☆ 添加到收藏夹
-✔ Apply {} updates	✔ 应用 {} 项更新
-➡ Successor {}	➡ 后续产品 {}
-⬇ Add marked parts to the parts database ({})	⬇ 将标记的部件添加到部件数据库 ({})
-⬇ Add to the parts database	⬇ 添加到部件数据库
-🔄 Check the parts database for updates	🔄 检查部件数据库更新
-🔎 Search	🔎 搜索
+Apply {} updates	应用 {} 项更新
+Add marked parts to the parts database ({})	将标记的部件添加到部件数据库 ({})
+Add to the parts database	添加到部件数据库
+Check the parts database for updates	检查部件数据库更新
 Relay coil, AC	继电器线圈，交流
 Relay coil, high-speed	继电器线圈，快速动作
 Relay coil, mechanically latched	继电器线圈，机械锁扣
@@ -5276,7 +5178,6 @@ Level of this kind of message	此类消息的级别
 As defined by the check	按检查的定义
 Switch off the check \"{}\"	关闭检查 \"{}\"
 Changed message levels ({})	已更改的消息级别 ({})
-Right click a message in the Check tab to change its level.	在“检查”选项卡中右键单击消息可更改其级别。
 Accepted messages ({})	已接受的消息 ({})
 No longer reported	不再报告
 Still reported	仍在报告
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	另存为项目模板…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	将项目另存为新项目的模板，不含修订、基线、审阅和接线标记
 OpenECraft project template	OpenECraft 项目模板
-Not a project template: {}	不是项目模板：{}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	从项目模板开始：内置模板（Machine、Distribution board (IEC 61439)、Empty (IEC 60204-1)）或项目文件
 Not a packed project	不是打包的项目
 Viewer	查看者
@@ -5537,7 +5437,6 @@ Rotate	旋转
 Save to project server	保存到项目服务器
 Undo	撤销
 Find and replace	查找和替换
-Finish polyline or polygon	完成多段线或多边形
 Mirror (selection or symbol being placed)	镜像（所选内容或正在放置的符号）
 Next page	下一页
 Open project	打开项目
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	键盘快捷方式
 No shortcut	无快捷方式
 Press a key…	请按键…
 Record	录制
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	录制：按下新按键及其修饰键（按 Esc 取消）。Esc、Delete、方向键以及复制 / 粘贴保持固定。
 Reset all to the defaults	全部恢复为默认值
 {} is used by: {}	{} 已被以下项使用：{}
 Harness nailboard drawing to scale (SVG)	按比例绘制的线束钉板图 (SVG)
 Harness tag, e.g. -WH1	线束标识符，例如 -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	按比例绘制的线束钉板图，含分支长度和连接器的插针表
-📐 Nailboard (SVG)…	📐 钉板图 (SVG)…
+Nailboard (SVG)…	钉板图 (SVG)…
 Bundle Ø {} mm	线束 Ø {} mm
 Nailboard {}	钉板图 {}
 Scale 1:{}	比例 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	规划段 {} 不存在
 Segment path (default: all segments)	规划段路径（默认：所有规划段）
 Pre-planning (CSV, Excel)	预规划 (CSV, Excel)
 Plant segments with planned devices before the schematic	在原理图之前包含已规划设备的工厂规划段
-Pre-planning…	预规划…
 A segment cannot be moved below itself	规划段不能移动到其自身下方
 Adds a planned device to a segment or changes it	向规划段添加或更改已规划设备
 Adds a segment below another one (or at the top)	在另一个规划段下方（或顶层）添加规划段
@@ -5628,10 +5525,8 @@ name	名称
 {} pages generated	已生成 {} 页
 {} pages generated; page macros not found: {}	已生成 {} 页；未找到页宏：{}
 {} segments created, {} devices added, {} updated	已创建 {} 个规划段，添加 {} 个设备，更新 {} 个
-➕ Device	➕ 设备
-➕ Segment	➕ 规划段
-➕ Sub-segment	➕ 子规划段
-🗑 Remove segment	🗑 删除规划段
+Sub-segment	子规划段
+Remove segment	删除规划段
 Display	显示
 Mirrored	已镜像
 Other properties	其他属性
@@ -5733,7 +5628,7 @@ Hose defaults	软管默认值
 Message levels	消息级别
 Not a settings scheme: {}	不是设置方案：{}
 Wire defaults	导线默认值
-Reset panel layout	重置窗口布局
+Reset pane layout	重置窗口布局
 Navigator on the left, symbols and properties on the right	导航器在左侧，符号和属性在右侧
 Panels	窗口
 Saves the workspace, the arrangement of the panels and the open windows	保存工作区、窗口排列和打开的对话框
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	电机馈入短路
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	电网上的异步电机会增大最大短路电流 (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	在供电点：Ik3 max {} kA，Ik1 min {} kA
 Manufacturer's coordination tables	制造商配合表
-➕ Entry	➕ 条目
+Entry	条目
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	经制造商测试的设备对选择性和后备保护，按部件编号。它们将替代根据时间-电流曲线所作的估算。
 Upstream part	上级部件
 Downstream part	下级部件
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	代替用户名和密码
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 或更高版本 (Vault Data API)
-⟳ Refresh	⟳ 刷新
+Refresh	刷新
 Search below this folder	在此文件夹下搜索
-🔍 Search	🔍 搜索
 Checked out	已签出
 {} of {} entries shown: search to narrow the list	显示 {} / {} 个条目：请搜索以缩小列表范围
 Select a file to import it	选择要导入的文件
 (choose a part)	（选择部件）
-⬇ Import	⬇ 导入
 Project file	项目文件
-⬆ Check in project as new version of {}	⬆ 将项目签入为 {} 的新版本
+Check in project as new version of {}	将项目签入为 {} 的新版本
 Puts the project into the folder it was opened from	将项目放入打开时所在的文件夹
 Put into the vault	放入 Vault
 File name	文件名
-⬆ Upload to {}	⬆ 上传到 {}
+Upload to {}	上传到 {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	文件夹中的同名文件将获得新版本（签出后签入），否则添加该文件
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	从 Autodesk Vault 打开项目和文件，将项目、导出和 3D 模型放入 Vault
 Check in {} to Vault	将 {} 签入 Vault
 Panel layout in 3D (Parasolid XT)	3D 安装板布局 (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	3D 安装板布局 (Parasolid XT)
 Back	返回
 Back to the project (Esc)	返回项目 (Esc)
 Recent projects	最近的项目
-No projects opened yet.	尚未打开任何项目。
 Remove from the list	从列表中移除
 unsaved	未保存
 Project: {}	项目：{}
@@ -6055,15 +5946,6 @@ Tutorial	教程
 Introduction	简介
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	一款秉承 EPLAN Electric P8 理念的开放式电气 CAE 编辑器。
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	功能区：文件用于打开、保存、导入、导出和打印；各选项卡按主题汇集命令。Alt 显示访问键，Ctrl+Shift+P 可查找任意命令，F6 在窗格之间切换，F1 打开本帮助。
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 插入 › 插入中心 (Ins)：搜索符号、宏或设备，然后单击页面进行放置。设备标识符 (-K1, -S2 …) 会自动分配。
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. 在属性中分配部件（部件选项卡）；报表（开始 › 报表）列出设备、物料清单、端子、连接和 PLC，并可作为报表页插入。
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. 电缆：连接 › 电缆，选择导线并使用“分配给电缆”。导线编号：连接 › 导线编号，或在导线属性中输入编号。
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. 宏：选择对象，右键 › 将所选内容另存为宏；从插入中心或通过插入 › 宏插入。占位符 {NAME} 由值集填充。
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 设备 › 端子排、设备 › PLC 概览和项目数据 › 修订：端子顺序、跳线和备用；PLC 地址和符号表；带更改标记和已发布（锁定）页的修订。
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 主数据 › 符号编辑器：绘制自己的符号（或复制内置符号），包含连接点和功能；它们保存在项目中，并可作为库文件交换。
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. 主数据 › 表单：带占位符 ({project}, {page}, {prop:Name} …) 的自定义标题栏和报表页的列；项目数据 › 报表块为每个端子排、插头、电缆或设备生成报表页。
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 安装板布局（工作区“安装板布局”，选项卡“布局空间”）：机柜、导轨、线槽、汇流排和开孔；布局空间 › NC 数据导出钻孔图 (DXF / DWG / CSV)。生产导线列表包含剥线长度和端子套管。
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 线束：连接 › 线束；选择两个设备之间的导线 › 分配给线束，或在导线属性中按连接分配。线束报表包含长度、连接器和线束直径，并可导出 KBL。
 Key tips of the ribbon	功能区访问键
 Version {}	版本 {}
 Search (* and ? as placeholders)…	搜索（* 和 ? 作为通配符）…
@@ -6145,7 +6027,6 @@ Close page tab	关闭页选项卡
 Panes	窗格
 Show or hide panes; drag a tab to dock it elsewhere	显示或隐藏窗格；拖动选项卡可将其停靠到别处
 Save workspace…	保存工作区…
-The panes of this workspace at their default places	此工作区的窗格位于默认位置
 Theme	主题
 UI scale	界面缩放
 Minimize the ribbon	最小化功能区
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	项目数据中尚未放置的功�
 Insert center	插入中心
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	符号、宏、设备和未放置的功能：搜索、收藏、最近使用
 Find results	查找结果
-Quick guide, tutorial and shortcuts	快速指南、教程和快捷键
 Layout spaces	布局空间
 Enclosures, devices to place and placed devices	机柜、待放置和已放置的设备
 Layout properties	布局属性
@@ -6203,7 +6083,7 @@ Click to show, right click for more	单击显示，右键查看更多
 {} notes	{} 个提示
 Open in a new page tab	在新的页选项卡中打开
 Project information	项目信息
-Plugin commands…	插件命令…
+Plugin commands	插件命令
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	按插件列出所有插件的命令并可搜索；点击星标可将命令固定到插件选项卡
 Star a command in Plugin commands to pin it here	在插件命令中点击星标即可将命令固定到此处
 Installed plugins	已安装的插件
@@ -6266,8 +6146,6 @@ Draw inner walls	绘制内墙
 Inner wall {}, side {}	内墙 {}，{} 面
 Thickness	厚度
 {}: {} stands in an inner wall	{}：{} 位于内墙中
-Opening {} replaces the current project, its unsaved changes are lost.	打开 {} 将替换当前项目，其未保存的更改将丢失。
-Discard changes and open	放弃更改并打开
 Open link	打开链接
 Replace the file at path if it exists	如果 path 处的文件已存在则替换
 {} exists already: pass overwrite to replace it	{} 已存在：传入 overwrite 以替换
@@ -6400,3 +6278,4 @@ Folder with project files (instead of a database; default: the current folder)	�
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	未知页面类型：{}（schematic、overview、graphic、cover 或 list_reports 中的报表）
 Unknown template {}: give a built-in one ({}) or a project file	未知模板 {}：请指定内置模板（{}）或项目文件
 Property {} needs a text or a number	属性 {} 需要文本或数字
+Check settings…	检查设置…

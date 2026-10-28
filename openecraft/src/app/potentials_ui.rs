@@ -2,6 +2,7 @@
 //! default of nets without a defined potential, presets. Fields of the wire
 //! properties that fall back to these automatic values.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::tr;
 use super::App;
 use openecraft_core::model::ReportKind;
@@ -30,7 +31,8 @@ fn color_field(ui: &mut egui::Ui, value: &mut String, auto: &str, hint: &str, wi
     if value.is_empty() && !hint.is_empty() {
         resp.on_hover_text(hint);
     }
-    ui.menu_button("⏷", |ui| {
+    let r = icons::button(ui, Icon::ChevronDown, tr("Colour codes"));
+    egui::Popup::menu(&r).show(|ui| {
         for (code, name, _) in potentials::COLORS {
             ui.horizontal(|ui| {
                 swatch(ui, code);
@@ -54,7 +56,7 @@ pub(super) fn wire_fields(ui: &mut egui::Ui, color: &mut String, cross_section: 
     ui.horizontal(|ui| {
         let h = hint(&auto.color, &auto.color_source, tr("e.g. BU, BK, GNYE"));
         color_field(ui, color, &auto.color, &h, 120.0);
-        if ui.add_enabled(!color.is_empty(), egui::Button::new("⟲").small()).on_hover_text(tr("Automatic (from the potential definition)")).clicked() {
+        if ui.add_enabled_ui(!color.is_empty(), |ui| icons::button(ui, Icon::Undo, tr("Automatic (from the potential definition)"))).inner.clicked() {
             color.clear();
         }
     });
@@ -67,9 +69,7 @@ pub(super) fn wire_fields(ui: &mut egui::Ui, color: &mut String, cross_section: 
         if cross_section.is_empty() {
             resp.on_hover_text(h);
         }
-        if ui
-            .add_enabled(!cross_section.is_empty(), egui::Button::new("⟲").small())
-            .on_hover_text(tr("Automatic (from the potential definition)"))
+        if ui.add_enabled_ui(!cross_section.is_empty(), |ui| icons::button(ui, Icon::Undo, tr("Automatic (from the potential definition)"))).inner
             .clicked()
         {
             cross_section.clear();
@@ -90,7 +90,7 @@ impl App {
         let prj = &mut self.session.prj;
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("➕ New potential")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("New potential")).clicked() {
                     prj.potentials.push(PotentialDef { name: format!("P{}", prj.potentials.len() + 1), ..Default::default() });
                 }
                 ui.menu_button(tr("Load preset"), |ui| {
@@ -101,7 +101,7 @@ impl App {
                         }
                     }
                 });
-                if ui.button(tr("📊 Potential overview")).clicked() {
+                if icons::text_button(ui, Icon::Report, tr("Potential overview")).clicked() {
                     overview = true;
                 }
                 ui.separator();
@@ -128,7 +128,7 @@ impl App {
                         ui.add(egui::TextEdit::singleline(&mut d.cross_section).hint_text(tr("e.g. 1.5 mm²")).desired_width(80.0));
                         ui.add(egui::TextEdit::singleline(&mut d.description).desired_width(180.0));
                         ui.label(wires.get(d.name.as_str()).copied().unwrap_or(0).to_string());
-                        if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                             remove = Some(i);
                         }
                         ui.end_row();

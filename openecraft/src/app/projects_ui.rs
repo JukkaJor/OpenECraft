@@ -2,6 +2,7 @@
 //! project properties, verification of many projects), subprojects, options that
 //! show or hide model content, archives and the verification of the open project.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::archive::{self, ArchiveOptions};
@@ -126,10 +127,13 @@ impl App {
         match action {
             Some(Action::Open(path)) => match fs::read_file(&path).and_then(|b| archive::read_project(&b).map(|r| (r, archive::is_archive(&b)))) {
                 Ok(((prj, conv), is_archive)) => {
-                    self.replace_project(prj, (!is_archive).then(|| path.clone()));
-                    self.notify(ctx, conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&path))));
+                    let r = super::Replace::Project(Box::new(prj), (!is_archive).then(|| path.clone()));
+                    if let Some(r) = self.discard.request(self.session.dirty(), r) {
+                        self.perform(ctx, r);
+                        self.notify_ok(ctx, conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&path))));
+                    }
                 }
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_failure(ctx, tr("The file could not be opened as an OpenECraft project."), e),
             },
             Some(Action::Goto(page, id)) => self.goto(page, id),
             Some(Action::Notify(msg)) => self.notify(ctx, msg),
@@ -158,13 +162,13 @@ impl App {
         let mut action = None;
         let st = &mut self.projects_ui;
         ui.horizontal(|ui| {
-            if ui.button(tr("📂 Add folder…")).on_hover_text(tr("Adds the project files and archives of a folder and its subfolders")).clicked() {
+            if icons::text_button(ui, Icon::FolderOpen, tr("Add folder…")).on_hover_text(tr("Adds the project files and archives of a folder and its subfolders")).clicked() {
                 if let Some(folder) = fs::pick_folder() {
                     let found = scan(&folder, st.verify_scan);
                     st.db.update_folder(&folder, found);
                 }
             }
-            if ui.button(tr("🔄 Update all")).clicked() {
+            if icons::text_button(ui, Icon::Rotate, tr("Update all")).clicked() {
                 for folder in st.db.folders.clone() {
                     let found = scan(&folder, st.verify_scan);
                     st.db.update_folder(&folder, found);
@@ -175,7 +179,7 @@ impl App {
         let mut remove = None;
         for f in &st.db.folders {
             ui.horizontal(|ui| {
-                if ui.small_button("🗑").on_hover_text(tr("Remove the folder from the database")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove the folder from the database")).clicked() {
                     remove = Some(f.clone());
                 }
                 ui.label(f);
@@ -230,7 +234,7 @@ impl App {
                         ui.label(e.pages.to_string());
                         match e.verified {
                             Some((0, 0)) => ui.label("✔"),
-                            Some((err, warn)) => ui.label(tr_fmt!("{} errors, {} warnings", err, warn)),
+                            Some((err, warn)) => ui.label(super::errors_warnings(err, warn)),
                             None => ui.label("–"),
                         };
                     }
@@ -444,7 +448,7 @@ impl App {
         let mut edited = self.session.prj.clone();
         let sub = match subproject::extract(&mut edited, &st.sub_name, &st.sub_description, &pages, &fs::today()) {
             Ok(s) => s,
-            Err(e) => return self.notify(ctx, e),
+            Err(e) => return self.notify_error(ctx, e),
         };
         let name: String = st.sub_name.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' }).collect();
         match self.io.save_as(&format!("{name}.{}", crate::io::PROJECT_EXT), (tr("OpenECraft project"), crate::io::PROJECT_EXT), &sub.to_json()) {
@@ -454,7 +458,7 @@ impl App {
                 self.notify(ctx, tr_fmt!("Subproject saved as {}: its pages are locked until it is inserted", io::short_name(&path)));
             }
             Ok(None) => {}
-            Err(e) => self.notify(ctx, tr_fmt!("Saving failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Saving failed: {}", e)),
         }
     }
 
@@ -466,7 +470,7 @@ impl App {
                 let msg = tr_fmt!("Subproject {} inserted: {} pages replaced by {}", r.name, r.pages_removed, r.pages_inserted);
                 self.notify(ctx, msg);
             }
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 
@@ -515,7 +519,7 @@ impl App {
                     if ui.button(tr("Assign page")).on_hover_text(tr("Makes the current page content of the option")).clicked() {
                         assign = Some((name.clone(), vec![page_id]));
                     }
-                    if ui.small_button("🗑").on_hover_text(tr("Removes the option; its content stays in the project")).clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Removes the option; its content stays in the project")).clicked() {
                         remove = Some(name.clone());
                     }
                 });
@@ -525,7 +529,7 @@ impl App {
         let st = &mut self.projects_ui;
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut st.new_option).hint_text(tr("New option")).desired_width(160.0));
-            if ui.add_enabled(!st.new_option.trim().is_empty(), egui::Button::new(tr("➕ Add"))).clicked() {
+            if ui.add_enabled_ui(!st.new_option.trim().is_empty(), |ui| icons::text_button(ui, Icon::Plus, tr("Add"))).inner.clicked() {
                 match options::define(&mut self.session.prj, &st.new_option, "", "") {
                     Ok(()) => st.new_option.clear(),
                     Err(e) => action = Some(Action::Notify(e)),
@@ -578,10 +582,10 @@ impl App {
         ui.checkbox(&mut st.pdf, tr("Add a PDF of all pages"));
         ui.checkbox(&mut st.compact, tr("Leave out stored baselines and wiring marks"));
         ui.horizontal(|ui| {
-            if ui.button(tr("📦 Archive project…")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Archive project…")).clicked() {
                 action = Some(Action::Archive);
             }
-            if ui.button(tr("📂 Open archive…")).clicked() {
+            if icons::text_button(ui, Icon::FolderOpen, tr("Open archive…")).clicked() {
                 action = Some(Action::OpenArchive);
             }
         });

@@ -3,6 +3,7 @@
 //! document, file of another system) and putting the project, exports and connector
 //! exports into the vault. The client is `crate::vault`.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use crate::io::{Loaded, Purpose, PROJECT_EXT};
 use crate::vault::{Origin, Reply, Use};
@@ -80,7 +81,7 @@ impl App {
                         self.notify(ctx, tr_fmt!("{} Vault items found: review the changes in the integration window", found.len()));
                     }
                 }
-                Reply::SignedIn(Err(_)) | Reply::Downloaded(_, _, Err(_)) | Reply::Uploaded(_, Err(_)) | Reply::Items(Err(_)) => self.notify(ctx, self.vault.status.clone()),
+                Reply::SignedIn(Err(_)) | Reply::Downloaded(_, _, Err(_)) | Reply::Uploaded(_, Err(_)) | Reply::Items(Err(_)) => self.notify_error(ctx, self.vault.status.clone()),
                 Reply::SignedIn(Ok(_)) | Reply::Contents(..) | Reply::SignedOut => {}
             }
         }
@@ -99,7 +100,7 @@ impl App {
                     let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {} from Vault (version {})", file.name, file.version_number()));
                     self.notify(ctx, note);
                 }
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Use::Parts => self.import_parts(ctx, &bytes),
             Use::Model => {
@@ -202,7 +203,7 @@ impl App {
     fn vault_browser(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
         let v = &mut self.vault;
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("⟳ Refresh")).clicked() {
+            if icons::text_button(ui, Icon::Rotate, tr("Refresh")).clicked() {
                 actions.push(Action::Refresh);
             }
             if ui.link("$").clicked() {
@@ -217,7 +218,7 @@ impl App {
         });
         ui.horizontal(|ui| {
             let r = ui.add(egui::TextEdit::singleline(&mut v.search).hint_text(tr("Search below this folder")).desired_width(320.0));
-            if (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || ui.button(tr("🔍 Search")).clicked() {
+            if (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || icons::text_button(ui, Icon::Find, tr("Search")).clicked() {
                 actions.push(Action::Search);
             }
         });
@@ -308,7 +309,7 @@ impl App {
                 _ => {}
             }
             let ready = using != Use::Model || !st.model_part.is_empty();
-            if ui.add_enabled(ready, egui::Button::new(tr("⬇ Import"))).clicked() {
+            if ui.add_enabled_ui(ready, |ui| icons::text_button(ui, Icon::Download, tr("Import"))).inner.clicked() {
                 actions.push(Action::Import(file.clone(), using));
             }
         });
@@ -333,7 +334,7 @@ impl App {
 
     fn vault_export(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
         if let Some(o) = &self.vault.origin {
-            if ui.button(tr_fmt!("⬆ Check in project as new version of {}", o.name)).on_hover_text(tr("Puts the project into the folder it was opened from")).clicked() {
+            if icons::text_button(ui, Icon::Upload, &tr_fmt!("Check in project as new version of {}", o.name)).on_hover_text(tr("Puts the project into the folder it was opened from")).clicked() {
                 actions.push(Action::CheckIn);
             }
         }
@@ -373,8 +374,7 @@ impl App {
             self.vault_ui.what = what;
         }
         let target = self.vault.folder_path();
-        if ui
-            .add_enabled(!self.vault.busy(), egui::Button::new(tr_fmt!("⬆ Upload to {}", target)))
+        if ui.add_enabled_ui(!self.vault.busy(), |ui| icons::text_button(ui, Icon::Upload, &tr_fmt!("Upload to {}", target))).inner
             .on_hover_text(tr("A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added"))
             .clicked()
         {
@@ -410,6 +410,7 @@ impl App {
             Action::Up(depth) => self.vault.up_to(depth),
             Action::Enter(id, name) => self.vault.enter(&id, &name),
             Action::Search => self.vault.find(),
+            Action::Import(file, Use::Project) => self.request_replace(ctx, super::Replace::Vault(Box::new(file))),
             Action::Import(file, using) => self.vault.download(file, using),
             Action::Upload => {
                 let what = self.vault_ui.what.clone();
@@ -424,7 +425,7 @@ impl App {
                         let comment = std::mem::take(&mut self.vault_ui.comment);
                         self.vault.upload(&folder, &name, data, &comment, what == What::Project);
                     }
-                    Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
+                    Err(e) => self.notify_error(ctx, tr_fmt!("Export failed: {}", e)),
                 }
             }
             Action::CheckIn => self.check_in_project(),

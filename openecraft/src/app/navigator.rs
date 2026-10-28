@@ -156,7 +156,7 @@ impl App {
                         }
                     }
                     if idx.devices.is_empty() {
-                        ui.weak(tr("No devices yet. Pick a symbol from the library on the right and click into the page."));
+                        ui.weak(tr("No devices yet. Pick a symbol in the Insert center and click into the page."));
                     }
                     if let Some((tag, a)) = menu {
                         self.device_action(&tag, a);

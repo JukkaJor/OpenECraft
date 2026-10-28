@@ -56,8 +56,6 @@ pub struct Remote {
     pub new_name: String,
     pub status: String,
     pub window: bool,
-    /// Project to open once the user agreed to drop the unsaved changes.
-    pub confirm_open: Option<String>,
     pending: usize,
     /// A status request is under way.
     polling: bool,
@@ -89,7 +87,6 @@ impl Default for Remote {
             new_name: String::new(),
             status: String::new(),
             window: false,
-            confirm_open: None,
             pending: 0,
             polling: false,
             fetching: false,

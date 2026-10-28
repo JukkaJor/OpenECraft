@@ -5,24 +5,9 @@
 (renamed from {})	({} から名前変更)
 + Page	+ ページ
 0 = no jumper	0 = ジャンパーなし
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. ライブラリ (右) でシンボルを選択し、ページ内をクリックして配置します。デバイスタグ (-K1、-S2 …) は自動的に割り当てられます。
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. プロジェクト › シンボルエディター: 接続ポイントと機能を持つ独自のシンボルを作成します (組み込みシンボルのコピーも可能)。シンボルはプロジェクトに保存され、ライブラリファイルとして交換できます。
-100% ≈ real size on a 96 dpi screen	100% ≈ 96 dpi 画面での実寸
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. プロジェクト › 表題欄とレポートフォーム: プレースホルダー ({project}、{page}、{prop:Name} …) を含む独自の表題欄と、レポートページの列。
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 盤レイアウト: ブスバーと切り欠き。エンクロージャーのプロパティから穴あけパターンをエクスポートします (DXF / DWG / CSV 形式の NC データ)。製造用電線リストには被覆剥き長さとフェルールが含まれます。
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. ハーネス: プロジェクト › ハーネス…。2 つのデバイス間の電線を選択 › ハーネスに割り当て、または電線プロパティで接続ごとに割り当てます。長さ、コネクター、束径を含むハーネスデータレポート、KBL エクスポート。
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. 扉: 盤の正面図を扉に切り替え、そこに操作機器 / 表示機器を配置します。扉の切り欠きが生成されます。干渉は部品の 3D モデルでチェックされます。
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. コイルを選択してから接点を配置します。接点はそのコイルに割り当てられ、番号が付けられます (13/14、21/22 …)。相互参照と接点イメージはリアルタイムで更新されます。
 2D front view	2D 正面図
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. 電線ツール (W) で電線を描画します。電線は接続ポイントで自動的に終了します。T 分岐には接続ドットが付きます。
 3D model	3D モデル
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. 電位 (L1、+24V …) と中断ポイントにより、ページをまたいでネットに名前が付けられます。電線を選択すると、その電位が強調表示されます。
 4/2 directional valve	4/2 方向切換弁
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. プロパティパネルで部品を割り当て、レポート (デバイスリスト、BOM、端子図、接続リスト、PLC リスト) を生成し、レポートページとして挿入します。
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. 構造: ページプロパティでページに機能 (=A1) と取付場所 (+CAB1) を設定します。そこに配置されたデバイスはそれを引き継ぎます (=A1+CAB1-K1)。ページ上では異なる部分のみが表示されます。
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. ケーブル: プロジェクト › ケーブル… で定義し、電線を選択して「ケーブルに割り当て」を使用します。電線番号: プロジェクト › 電線番号付け…、または電線プロパティで番号を入力します。
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. マクロ: 要素を選択 › 編集 › 選択範囲をマクロとして保存。挿入 › マクロ… から挿入します。プレースホルダー {NAME} には値セットから値が入ります。
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. プロジェクト › 端子台 / PLC 概要 / リビジョン: 端子台の順序、ジャンパー、予備。PLC アドレスとシンボルテーブル。変更マーク付きのリビジョンとリリース済み (ロック済み) ページ。
 Access token	アクセストークン
 Accessories	付属品
 Add missing parts of the example catalog	サンプルカタログの不足している部品を追加
@@ -95,12 +80,9 @@ Click into the page to place {}	ページ内をクリックして {} を配置�
 Click on the 4 mm grid	4 mm グリッド上をクリックします
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	始点とコーナー点をクリック · Space でコーナーの向きを切り替え · 接続ポイントで自動的に終了 · 右クリック / Esc で終了
 Click start and end point	始点と終点をクリックします
-Click start point, click end point	始点をクリックし、次に終点をクリックします
 Click to add to the selected text.	クリックして選択したテキストに追加します。
 Click to insert the macro · Esc cancel	クリックしてマクロを挿入 · Esc でキャンセル
-Click to place a text	クリックしてテキストを配置します
 Click to place the text from the field below	クリックして下のフィールドのテキストを配置します
-Click to place · R rotate · M mirror · Esc finish	クリックで配置 · R 回転 · M 反転 · Esc 終了
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	クリックで選択、ドラッグで移動、空白部分のドラッグで範囲選択。右/中ボタンのドラッグでパン、ホイールでズーム。
 Click to show	クリックして表示
 Click two corners	2 つのコーナーをクリックします
@@ -146,7 +128,6 @@ Corner	コーナー
 Cover	表紙
 Cover sheet	表紙
 Create / update the part on the server (Ctrl+S)	サーバー上の部品を作成 / 更新 (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	盤レイアウトを開始するには、エンクロージャーを作成してください (左のナビゲーターの ➕)。
 Create an enclosure in the panel layout first.	最初に盤レイアウトでエンクロージャーを作成してください。
 Create revision	リビジョンを作成
 Created by	作成者
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	扉: デバイス {} 個、切り欠き {} 個
 Downloaded {} parts (revision {}): {} new, {} updated	{} 個の部品をダウンロードしました (リビジョン {}): 新規 {}、更新 {}
 Downloading parts…	部品をダウンロード中…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	ドラッグ: 回転 · 右/中ボタンのドラッグ: パン · ホイール: ズーム · クリック: デバイスまたは電線を選択
-Draw connections (W)	接続を描画 (W)
+Draw connections	接続を描画
 Duplicate	複製
 Each point-to-point connection can belong to a harness	各ポイントツーポイント接続は 1 つのハーネスに属することができます
 Edit	編集
@@ -272,7 +253,6 @@ Harness data	ハーネスデータ
 Harness {} has no wires	ハーネス {} には電線がありません
 Harness {}: connection {} – {} does not exist in the schematic	ハーネス {}: 接続 {} – {} は回路図に存在しません
 Harnesses	ハーネス
-Harnesses…	ハーネス…
 Height	高さ
 Height (mm)	高さ (mm)
 Help	ヘルプ
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	長い値は小さく描画され
 Macro {} replaced	マクロ {} を置換しました
 Macro {} saved	マクロ {} を保存しました
 Macros	マクロ
-Macros…	マクロ…
 Macro…	マクロ…
 Main	メイン
 Main contact 1-pole	主接点 1 極
@@ -380,12 +359,8 @@ Next free contact numbers on this device	このデバイスの次の空き接点
 Next page (Page Down)	次のページ (Page Down)
 No PLC inputs / outputs placed.	PLC 入力 / 出力が配置されていません。
 No cables defined.	ケーブルが定義されていません。
-No cables yet – Project › Cables…	ケーブルはまだありません – プロジェクト › ケーブル…
 No changes since the last revision.	最終リビジョン以降の変更はありません。
-No devices yet. Pick a symbol from the library on the right and click into the page.	デバイスはまだありません。右のライブラリからシンボルを選択し、ページ内をクリックしてください。
-No enclosure yet – create one with ➕.	エンクロージャーはまだありません – ➕ で作成してください。
 No harnesses defined.	ハーネスが定義されていません。
-No harnesses yet – Project › Harnesses…	ハーネスはまだありません – プロジェクト › ハーネス…
 No identifying letter for the device tag.	デバイスタグの識別文字がありません。
 No macros yet. Select items in a schematic and save them as a macro.	マクロはまだありません。回路図で要素を選択し、マクロとして保存してください。
 No parts found.	部品が見つかりません。
@@ -437,7 +412,6 @@ PLC connection point	PLC 接続ポイント
 PLC digital input	PLC デジタル入力
 PLC digital output	PLC デジタル出力
 PLC overview	PLC 概要
-PLC overview…	PLC 概要…
 Packaging quantity	梱包数量
 Page	ページ
 Page / column (3.4.1)	ページ / 列 (3.4.1)
@@ -468,11 +442,10 @@ Parts	部品
 Parts (CSV, JSON)	部品 (CSV、JSON)
 Parts import failed: {}	部品のインポートに失敗しました: {}
 Parts management	部品管理
-Parts management…	部品管理…
 Parts server: {}	部品サーバー: {}
 Passive components	受動部品
 Pilot light (NFPA)	パイロットランプ (NFPA)
-Place text (T)	テキストを配置 (T)
+Place text	テキストを配置
 Placed	配置済み
 Placed {}× in the project	プロジェクト内に {}× 配置
 Placeholders	プレースホルダー
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	サンプルカタログの部品 (GEN.*) 
 Relay / contactor coil	リレー / 電磁接触器コイル
 Relay coil (NFPA)	リレーコイル (NFPA)
 Release: lock all pages	リリース: すべてのページをロック
-Released page – unlock it in Project › Revisions to change it	リリース済みのページ – 変更するにはプロジェクト › リビジョンでロックを解除してください
 Remove from cable	ケーブルから削除
 Remove from harness	ハーネスから削除
 Remove from the harness	ハーネスから削除
@@ -566,7 +538,6 @@ Revision marks	リビジョンマーク
 Revision overview (changes)	リビジョン概要 (変更)
 Revision {} created	リビジョン {} を作成しました
 Revisions	リビジョン
-Revisions…	リビジョン…
 Right	右
 Rotate (R)	回転 (R)
 Rotate / mirror (selection or symbol being placed)	回転 / 反転 (選択範囲または配置中のシンボル)
@@ -637,7 +608,6 @@ Supplier	仕入先
 Switches / Sensors	スイッチ / センサー
 Symbol	シンボル
 Symbol editor	シンボルエディター
-Symbol editor…	シンボルエディター…
 Symbol table import failed: {}	シンボルテーブルのインポートに失敗しました: {}
 Symbols	シンボル
 Synchronize project parts from database	データベースからプロジェクト部品を同期
@@ -655,7 +625,6 @@ Terminal number	端子番号
 Terminal number, PLC address, potential name …	端子番号、PLC アドレス、電位名 …
 Terminal strip	端子台
 Terminal strips	端子台
-Terminal strips…	端子台…
 Terminals	端子
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	同じジャンパー番号の端子はジャンパー接続されます (同電位)。予備端子は部品表に計上されます。
 Test connection	接続をテスト
@@ -727,8 +696,7 @@ Wire tool / text tool	電線ツール / テキストツール
 Wire {} – {}  ({} of {} here, click again for the next)	電線 {} – {}  (ここに {} / {} 本、もう一度クリックすると次の電線)
 Wire {} – {}  {} mm	電線 {} – {}  {} mm
 Wires	電線
-Workflow	ワークフロー
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   列 {}  行 {}
+Column {}  Row {}	列 {}  行 {}
 X {}  Y {} mm on the {}	X {}  Y {} mm ({} 上)
 YYYY-MM-DD	YYYY-MM-DD
 Zoom / pan	ズーム / パン
@@ -815,67 +783,55 @@ writable with token	トークンで書き込み可能
 ⎘ Copy	⎘ コピー
 ○ Circle	○ 円
 ☐ Rect	☐ 四角形
-⛶ Fit	⛶ 合わせる
-✏ Place in schematic	✏ 回路図に配置
+Place in schematic	回路図に配置
 ✏ Wire	✏ 電線
-✔ Add to device	✔ デバイスに追加
-✔ Create	✔ 作成
+Add to device	デバイスに追加
+Create	作成
 ✔ No problems found.	✔ 問題は見つかりませんでした。
 ✔ Save	✔ 保存
 ➕ Add accessory	➕ 付属品を追加
-➕ Add function	➕ 機能を追加
-➕ Add part…	➕ 部品を追加…
+Add function	機能を追加
+Add part…	部品を追加…
 ➕ Insert (click into the page)	➕ 挿入 (ページ内をクリック)
 ➕ Insert as new page	➕ 新しいページとして挿入
 ➕ Insert as report page	➕ レポートページとして挿入
-➕ Insert mounting layout page	➕ 取付図ページを挿入
+Insert mounting layout page	取付図ページを挿入
 ➕ Label	➕ ラベル
 ➕ Line	➕ 線
 ➕ New	➕ 新規
-➕ New cable	➕ 新しいケーブル
-➕ New harness	➕ 新しいハーネス
+New cable	新しいケーブル
+New harness	新しいハーネス
 ➕ Property	➕ プロパティ
 ➕ Rectangle	➕ 四角形
 ➕ Text	➕ テキスト
-➕ Value set	➕ 値セット
+Value set	値セット
 ➕ {} (not saved)	➕ {} (未保存)
 ⟲ Revert	⟲ 元に戻す
 ⟳ Reload	⟳ 再読み込み
-⟳ Rotate	⟳ 回転
-⬆ Import symbol table…	⬆ シンボルテーブルをインポート…
-⬆ Import…	⬆ インポート…
-⬆ Upload database ({})	⬆ データベースをアップロード ({})
+Import symbol table…	シンボルテーブルをインポート…
+Upload database ({})	データベースをアップロード ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ 部品ファイルをアップロード (CSV / JSON)…
-⬆ Upload selected part	⬆ 選択した部品をアップロード
-⬇ Door NC data (DXF)	⬇ 扉の NC データ (DXF)
-⬇ Door cutouts (CSV)	⬇ 扉の切り欠き (CSV)
-⬇ Download into database	⬇ データベースにダウンロード
-⬇ Drilling list (CSV)	⬇ 穴あけリスト (CSV)
-⬇ Export CSV	⬇ CSV をエクスポート
+Upload selected part	選択した部品をアップロード
+Door NC data (DXF)	扉の NC データ (DXF)
+Door cutouts (CSV)	扉の切り欠き (CSV)
+Download into database	データベースにダウンロード
 ⬇ Export KBL (XML)…	⬇ KBL をエクスポート (XML)…
-⬇ Export symbol table (CSV)…	⬇ シンボルテーブルをエクスポート (CSV)…
-⬇ Export…	⬇ エクスポート…
-⬇ NC data (DXF)	⬇ NC データ (DXF)
+Export symbol table (CSV)…	シンボルテーブルをエクスポート (CSV)…
+NC data (DXF)	NC データ (DXF)
 ⬉ Select	⬉ 選択
 🌐 Parts server	🌐 部品サーバー
-💾 Save	💾 保存
-💾 Save selection as macro…	💾 選択範囲をマクロとして保存…
-📊 Cable overview	📊 ケーブル概要
-📊 Harness data	📊 ハーネスデータ
 📊 Reports	📊 レポート
-📊 Revision overview	📊 リビジョン概要
-🔒 Released page – read only	🔒 リリース済みのページ – 読み取り専用
+Revision overview	リビジョン概要
+Released page – read only	リリース済みのページ – 読み取り専用
 🗄 Panel layout	🗄 盤レイアウト
 🗄 Parts database	🗄 部品データベース
 🗋 Schematic	🗋 回路図
 🗑 Delete	🗑 削除
-🗑 Delete connection point	🗑 接続ポイントを削除
-🗑 Delete element	🗑 要素を削除
-🗑 Delete macro	🗑 マクロを削除
-🗑 Remove	🗑 削除
+Delete connection point	接続ポイントを削除
+Delete element	要素を削除
 {} connections removed from their harness	{} 件の接続をハーネスから外しました
 {} connections assigned to {}	{} 件の接続を {} に割り当てました
-🗄 Show in panel layout ({})	🗄 盤レイアウトで表示 ({})
+Show in panel layout ({})	盤レイアウトで表示 ({})
    |  Potential {}	   |  電位 {}
 📁 Project parts ({})	📁 プロジェクト部品 ({})
 part {} not found	部品 {} が見つかりません
@@ -1070,8 +1026,8 @@ via cable ducts	配線ダクト経由
 {} connection points	{} 個の接続ポイント
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	板上 {} mm + 余長 {} mm。残りは接続ポイントから板までの距離です。
 {} wires, {} – {} mm	電線 {} 本、{} – {} mm
-➕ Add connection point	➕ 接続ポイントを追加
-🗑 Remove all	🗑 すべて削除
+Add connection point	接続ポイントを追加
+Remove all	すべて削除
 2D front view (SVG)	2D 正面図 (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D モデル (STL、OBJ、STEP、IGES、IFC、JT)
 End bracket	エンドクランプ
@@ -1113,11 +1069,9 @@ Wire number on both ends	両端に電線番号
 {} markers	{} 個のマーカー
 {} mm	{} mm
 {} pieces	{} 個
-Potentials…	電位…
 Potentials	電位
-➕ New potential	➕ 新しい電位
+New potential	新しい電位
 Load preset	プリセットを読み込む
-📊 Potential overview	📊 電位概要
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	独自の色または断面積を持たない電線は、接続の電位からその値を引き継ぎます。ケーブル心線はケーブルの値を保持します。
 e.g. 400 V AC	例: 400 V AC
 Delete	削除
@@ -1151,7 +1105,6 @@ turquoise	ターコイズ
 silver	銀
 green-yellow	緑/黄
 Potential {} defined {} times	電位 {} が {} 回定義されています
-Potential {} has no definition (Project › Potentials)	電位 {} に定義がありません (プロジェクト › 電位)
 Protective conductor {} with wire colour {} (must be GNYE)	保護導体 {} の電線色が {} です (GNYE である必要があります)
 Wire colour GNYE is reserved for protective conductors ({})	電線色 GNYE は保護導体用に予約されています ({})
 {}: cross-section {} differs from the potential definition ({})	{}: 断面積 {} が電位定義 ({}) と異なります
@@ -1183,9 +1136,7 @@ Draw wires in their colour	電線を色付きで描画
 Pin	ピン
 Plug	プラグ
 Plugs	プラグ
-Plugs…	プラグ…
 Plug diagram	プラグ図
-📊 Plug diagram	📊 プラグ図
 Socket side	ソケット側
 Pin side	ピン側
 female	メス
@@ -1231,7 +1182,6 @@ Column	列
 Condition '{}' needs OPTION=value	条件 '{}' には OPTION=値 が必要です
 Condition (OPTION=value & …)	条件 (OPTION=値 & …)
 Configurator	コンフィギュレーター
-Configurator…	コンフィギュレーター…
 Cooling	冷却
 Creates or changes a configurator option	コンフィギュレーターオプションを作成または変更します
 Cross-section {} carries {} A, less than the {} A of {}	断面積 {0} の許容電流は {1} A で、{3} の {2} A より小さくなっています
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel、stainless_steel
 {}: voltage drop {} V ({} %) above {} %	{}: 電圧降下 {} V ({} %) が {} % を超えています
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: 損失電力 {} W によりエンクロージャーが {} °C に加熱されます (最高 {} °C): {} が必要です
 {}: {} carries {} A, the load {} needs {} A	{0}: {1} の許容電流は {2} A ですが、負荷 {3} には {4} A が必要です
-⚙ Generate pages	⚙ ページを生成
-➕ Option	➕ オプション
-➕ Rule	➕ ルール
-🗑 Delete variant	🗑 バリアントを削除
+Option	オプション
+Delete variant	バリアントを削除
 e.g. NAME=Pump; POWER={POWER}	例: NAME=Pump; POWER={POWER}
 e.g. STARTER=DOL	例: STARTER=DOL
 Parts (CSV, JSON, BMEcat)	部品 (CSV、JSON、BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	既定の媒体
 Number prefix	番号のプレフィックス
 📊 Hose list	📊 ホースリスト
 PCT loops (pre-planning)	計装ループ (事前計画)
-➕ Loop	➕ ループ
-📊 PCT loop overview	📊 計装ループ概要
+Loop	ループ
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	P&ID の計器は、ラベルに機能文字とループ番号 (TIC 101) を持ちます。デバイスタグによって回路図とリンクされます。
 PCT loop	計装ループ
 Range	範囲
@@ -1409,7 +1356,6 @@ Delete loop	ループを削除
 {} (default)	{} (既定)
 Hose / pipe {}	ホース / 配管 {}
 Resulting: {} · {} · {} · {} m	結果: {} · {} · {} · {} m
-Fluid and process…	流体とプロセス…
 Hose defaults and PCT loops of the pre-planning	ホースの既定値と事前計画の計装ループ
 ✔ Wiring	✔ 配線作業
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	配線アシスタント: 3D ビューと進捗付きの電線チェックリスト (タブレット: #wiring で Web アプリを開く)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	ソース言語
 Target languages	ターゲット言語
 Remove the language (its translations stay in the dictionary)	言語を削除 (その翻訳は辞書に残ります)
-➕ Add	➕ 追加
+Add	追加
 ISO 639-1 language code	ISO 639-1 言語コード
 Collect texts from the project	プロジェクトからテキストを収集
 Adds all lines of the project texts to the dictionary	プロジェクトテキストのすべての行を辞書に追加します
@@ -1554,7 +1500,6 @@ not translated into {}	{} に未翻訳
 {} new texts in the dictionary	辞書に {} 件の新しいテキスト
 {} unused entries removed	{} 件の未使用のエントリを削除しました
 Export as PDF in language	言語を指定して PDF としてエクスポート
-Project languages…	プロジェクト言語…
 Translate the project texts; documentation per language	プロジェクトテキストを翻訳します。言語ごとのドキュメント
 {} translations imported	{} 件の翻訳をインポートしました
 Import failed: {}	インポートに失敗しました: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	構成部品 (アセンブリ)
 (included)	(付属)
 Fastening hardware in the bill of materials	部品表に固定用部品を含める
 Screws, nuts, washers and rivet nuts of the fixing points	固定ポイントのねじ、ナット、ワッシャー、リベットナット
-⬇ NC data of this face (DXF)	⬇ この面の NC データ (DXF)
-⬇ Drilling list of this face (CSV)	⬇ この面の穴あけリスト (CSV)
+NC data of this face (DXF)	この面の NC データ (DXF)
+Drilling list of this face (CSV)	この面の穴あけリスト (CSV)
 Group as assembly	アセンブリとしてグループ化
 The items are selected and moved together	アイテムはまとめて選択、移動されます
 Distribute horizontally	水平方向に均等配置
@@ -1625,7 +1570,6 @@ Pattern	パターン
 Columns × rows	列 × 行
 Pitch X / Y	ピッチ X / Y
 Devices are not copied: a device is placed once.	デバイスはコピーされません: デバイスは 1 回だけ配置されます。
-✔ Copy	✔ コピー
 Save as 3D macro	3D マクロとして保存
 Items with an anchor keep it; the others are inserted relative to the click.	アンカーを持つアイテムはそれを保持し、その他はクリック位置を基準に挿入されます。
 Walls	壁面
@@ -1728,7 +1672,6 @@ Macro name	マクロ名
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	3D マクロをアセンブリとして挿入します: アンカー付きのアイテムは所定の位置に、その他は面上の x / y を基準に配置
 Installation site	設置場所
 Structure management	構造管理
-Structure management…	構造管理…
 Structure identifiers (IEC 81346), templates and work areas	構造識別子 (IEC 81346)、テンプレート、作業領域
 Template	テンプレート
 Apply template	テンプレートを適用
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	定義され�
 Work areas	作業領域
 Work area	作業領域
 Work area {}	作業領域 {}
-➕ Work area	➕ 作業領域
 (whole project)	(プロジェクト全体)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	作業領域は、ナビゲーター内のページとデバイスをプロジェクトの一部に限定します。フィルター: 空 = すべて、* = 任意の文字。A1 は A1.2 も含みます。
 OpenECraft structure template	OpenECraft 構造テンプレート
@@ -1873,7 +1815,7 @@ Export…	エクスポート…
 Import…	インポート…
 File to embed	埋め込むファイル
 Forms – title blocks, frames and templates	フォーム – 表題欄、図枠、テンプレート
-Title blocks, plot frames and page templates…	表題欄、図枠、ページテンプレート…
+Title blocks, plot frames and page templates	表題欄、図枠、ページテンプレート
 Frame of all pages that do not choose one	図枠を選択していないすべてのページの図枠
 Frame to start from when the frame is new (default: A3 landscape)	新しい図枠の場合の元になる図枠 (既定: A3 landscape)
 Free graphics and notes, not evaluated	自由な図形と注記 (評価されません)
@@ -2044,19 +1986,18 @@ Port {} is not connected	ポート {} は接続されていません
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	プロジェクトをエクスポートします: svg (1 ページ)、html、pdf、dxf、dwg (ファイルのみ)、wire_list (CSV)、plc_table (CSV)、plc_variables (IEC 61131-3 グローバル変数)、aml (AutomationML PLC ハードウェア)、kbl (ハーネス XML)、marking (CSV)、gltf、step、iges、ifc、または jt (3D 盤レイアウト。jt はファイルのみ)、dictionary (プロジェクトテキストの翻訳の CSV)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg、html、pdf、dxf、dwg、wire_list、plc_table、plc_variables、aml、kbl、marking、gltf、step、iges、ifc、jt、dictionary、またはプラグインのエクスポート
 PLC hardware	PLC ハードウェア
-⚙ Automatic configuration	⚙ 自動構成
+Automatic configuration	自動構成
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	CPU とバスカプラーのステーション、バスシステム、スロット、開始アドレス、ポイントアドレス、IP アドレス、ライントポロジー
-⬇ Export AutomationML…	⬇ AutomationML をエクスポート…
+Export AutomationML…	AutomationML をエクスポート…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	TIA Portal やその他の PLC ツール用のハードウェア構成と PLC タグ
-⬆ Import AutomationML…	⬆ AutomationML をインポート…
+Import AutomationML…	AutomationML をインポート…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	PLC ツールからのステーション、モジュール、アドレス、サブネット、タグコメント
-⬇ Export IEC 61131-3 variables…	⬇ IEC 61131-3 変数をエクスポート…
+Export IEC 61131-3 variables…	IEC 61131-3 変数をエクスポート…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	CODESYS、TwinCAT などのための直接アドレス付きグローバル変数リスト
 Stations and racks	ステーションとラック
 Bus topology	バストポロジー
 Device descriptions	デバイス記述
 Station	ステーション
-➕ Station	➕ ステーション
 Cards without station: {}	ステーションのないカード: {}
 No stations: add one or use the automatic configuration.	ステーションがありません: ステーションを追加するか、自動構成を使用してください。
 Head (CPU / coupler)	ヘッド (CPU / カプラー)
@@ -2065,7 +2006,7 @@ Bus system	バスシステム
 IP / bus address	IP / バスアドレス
 Device number	デバイス番号
 {}: {} slots, ports {}	{}: スロット {} 個、ポート {}
-🗑 Remove station	🗑 ステーションを削除
+Remove station	ステーションを削除
 Plug in card	カードを装着
 No modules: plug in PLC cards of the schematic.	モジュールがありません: 回路図の PLC カードを装着してください。
 Device description	デバイス記述
@@ -2076,13 +2017,12 @@ Output bytes	出力バイト
 from the parts	部品から
 Remove from the station	ステーションから外す
 Bus systems	バスシステム
-➕ Bus system	➕ バスシステム
 Subnet	サブネット
 Port A	ポート A
 Port B	ポート B
 Without bus system	バスシステムなし
 No bus systems.	バスシステムがありません。
-⬆ Import GSDML / ESI…	⬆ GSDML / ESI をインポート…
+Import GSDML / ESI…	GSDML / ESI をインポート…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	PROFINET (GSDML) および EtherCAT (ESI) デバイスのデバイス記述
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	製品グループ PLC の部品もデバイス記述を提供します (技術データ: Inputs、Outputs、Slots、Bus、Ports)。
 Slots	スロット
@@ -2093,7 +2033,7 @@ built-in	組み込み
 {} addresses changed	{} 個のアドレスを変更しました
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	ステーション {} 個、モジュール {} 個、バスシステム {} 個、接続 {} 件をインポートしました。アドレス {} 個とテキスト {} 個を変更しました
 {} device descriptions imported	{} 件のデバイス記述をインポートしました
-PLC hardware and bus topology…	PLC ハードウェアとバストポロジー…
+PLC hardware and bus topology	PLC ハードウェアとバストポロジー
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	ステーション、ラック、モジュール、バスシステム、PLC ツールとの AutomationML 交換
 Device description (GSDML, ESI)	デバイス記述 (GSDML、ESI)
 Bus connection {} - {}: cable {} does not exist	バス接続 {} - {}: ケーブル {} が存在しません
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	ケーブル {} は {} ケーブルで
 Port {} has more than {} cables	ポート {} に {} 本を超えるケーブルがあります
 Cable {} is used for {} bus connections	ケーブル {} が {} 件のバス接続に使用されています
 with bus cables	バスケーブル付き
-➕ Create bus cables	➕ バスケーブルを作成
+Create bus cables	バスケーブルを作成
 A cable of the bus type for every connection without cable	ケーブルのない接続ごとにバスタイプのケーブルを作成
 missing	なし
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	ステーション {} 個、バスシステム {} 個、割り当てたカード {} 個、変更したアドレス {} 個、接続 {} 件、ケーブル {} 本
@@ -2211,12 +2151,11 @@ starts with	で始まる
 {} (first column)	{} (最初の列)
 {} report pages output to {}	{} ページのレポートページを {} に出力しました
 {} – {} ({} pages)	{} – {} ({} ページ)
-➕ Add filter	➕ フィルターを追加
-➕ Add sort key	➕ 並べ替えキーを追加
-➕ New block	➕ 新しいブロック
-➕ New scheme	➕ 新しいスキーム
-⟳ Generate all	⟳ すべて生成
-⟳ Generate	⟳ 生成
+Add filter	フィルターを追加
+Add sort key	並べ替えキーを追加
+New block	新しいブロック
+Generate all	すべて生成
+Generate	生成
 ⟳ Update report blocks	⟳ レポートブロックを更新
 Opening {}…	{} を開いています…
 Uploading {}…	{} をアップロードしています…
@@ -2238,13 +2177,13 @@ Save and release page	保存してページを解放
 Lock page	ページをロック
 Project server	プロジェクトサーバー
 User name	ユーザー名
-⟳ List projects	⟳ プロジェクトを一覧表示
+List projects	プロジェクトを一覧表示
 Enter a user name: other users see it on your locks.	ユーザー名を入力してください: 他のユーザーにはロックにこの名前が表示されます。
 Users	ユーザー
 Opening a project replaces the current one, its unsaved changes are lost.	プロジェクトを開くと現在のプロジェクトが置き換えられ、未保存の変更は失われます。
 Upload the current project as a new shared project:	現在のプロジェクトを新しい共有プロジェクトとしてアップロード:
 Name on the server	サーバー上の名前
-⬆ Upload	⬆ アップロード
+Upload	アップロード
 Letters, digits, space, - _ . (up to 64 characters)	英字、数字、スペース、- _ . (最大 64 文字)
 Shared project {} – revision {}, user {}	共有プロジェクト {} – リビジョン {}、ユーザー {}
 Save and release all locks	保存してすべてのロックを解放
@@ -2261,14 +2200,11 @@ None	なし
 Close shared project	共有プロジェクトを閉じる
 Releases all locks; the project stays open as a local copy	すべてのロックを解放します。プロジェクトはローカルコピーとして開いたままになります
 Download project	プロジェクトをダウンロード
-Project server…	プロジェクトサーバー…
 Open and save shared projects, lock pages	共有プロジェクトを開いて保存し、ページをロックします
-🔒 Locked by {} – read only	🔒 {} がロック中 – 読み取り専用
+Locked by {} – read only	{} がロック中 – 読み取り専用
 {} (project server, revision {})	{} (プロジェクトサーバー、リビジョン {})
 {} change requests added, {} updated	{} 件の変更依頼を追加、{} 件を更新しました
-Compare and baselines…	比較とベースライン…
 Compare with a baseline, a revision or another project file and take differences over	ベースライン、リビジョン、または別のプロジェクトファイルと比較して、相違点を反映します
-Change requests…	変更依頼…
 Review: comments and markup	レビュー: コメントとマークアップ
 Revisions, approval and release	リビジョン、承認、リリース
 Review ({})	レビュー ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	何をチェックまたは変更しますか
 Change request	変更依頼
 Reply…	返信…
 Reply	返信
-🗑 Delete comment	🗑 コメントを削除
+Delete comment	コメントを削除
 Approval workflow	承認ワークフロー
 Approvers	承認者
 User names, separated by commas	ユーザー名 (カンマ区切り)
@@ -2309,8 +2245,8 @@ rejected	却下
 Submit for review	レビューに提出
 Release	リリース
 Discard draft	ドラフトを破棄
-✔ Approve	✔ 承認
-✖ Reject	✖ 却下
+Approve	承認
+Reject	却下
 Approving needs an approver; you are \"{}\".	承認できるのは承認者のみです。あなたは \"{}\" です。
 Submit again	再提出
 With the current pages; the approvals so far become void	現在のページで再提出します。これまでの承認は無効になります
@@ -2335,7 +2271,7 @@ Compare with	比較対象
 Baseline {} {}	ベースライン {} {}
 Baseline {}	ベースライン {}
 Pages of revision {}	リビジョン {} のページ
-📂 Project file…	📂 プロジェクトファイル…
+Project file…	プロジェクトファイル…
 Baselines ({})	ベースライン ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	ベースラインはプロジェクト全体 (ページ、デバイス、部品、設定) を保存します。リビジョンをリリースするとベースラインが 1 つ保存されます。
 Create baseline	ベースラインを作成
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	このプ�
 {} details	{} の詳細
 Baseline {} created	ベースライン {} を作成しました
 Change requests	変更依頼
-➕ New request	➕ 新しい依頼
-📂 Import…	📂 インポート…
+New request	新しい依頼
 CSV or JSON from another system; known numbers are updated	他のシステムからの CSV または JSON。既知の番号は更新されます
-⬇ Export JSON	⬇ JSON をエクスポート
+Export JSON	JSON をエクスポート
 Rejected and closed ones too	却下済みとクローズ済みも表示
 No change requests yet.	変更依頼はまだありません。
 Select a request.	依頼を選択してください。
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	デバイスタグ (カンマ区切り)
 Affected pages ({})	影響を受けるページ ({})
 Go to page	ページへ移動
 Comments ({})	コメント ({})
-💬 Comment on the current page	💬 現在のページにコメント
+Comment on the current page	現在のページにコメント
 Linked to this request	この依頼にリンク
-🗑 Delete request	🗑 依頼を削除
+Delete request	依頼を削除
 in progress	進行中
 resolved	解決済み
 Redline	レッドライン
@@ -2405,14 +2340,6 @@ Settings	設定
 Page order	ページ順序
 {} differences taken over	{} 件の相違点を反映しました
 Layers	レイヤー
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	クリックで選択、ドラッグで移動、空白部分のドラッグで範囲選択。選択したシンボルのタグまたはプロパティテキストをドラッグして配置します。右/中ボタンのドラッグでパン、ホイールでズーム。
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	始点とコーナー点をクリック · Space でコーナーの向きを切り替え · A でシンボル回避ルートを切り替え · 接続ポイントで自動的に終了 · 右クリック / Esc で終了
-Click the centre, then a point of the circle	中心をクリックし、次に円周上の点をクリックします
-Click the centre, the start point and the end point (counter-clockwise)	中心、始点、終点をクリックします (反時計回り)
-Click the corner points · double click, Enter or right click finishes	コーナー点をクリック · ダブルクリック、Enter、または右クリックで終了
-Click the two points to measure, then the position of the dimension line	測定する 2 点をクリックし、次に寸法線の位置をクリックします
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	電線をクリック: このポイントで接続の番号、色、断面積、ケーブル心線を定義します
-Draw a line across the wires that are cores of the cable	ケーブルの心線となる電線を横切る線を描画します
 Click to insert · Esc cancel	クリックで挿入 · Esc でキャンセル
 Routing around symbols	シンボル回避ルート
 {} objects pasted	{} 個のオブジェクトを貼り付けました
@@ -2442,7 +2369,7 @@ Layer	レイヤー
 Auto-connect	自動接続
 Draw connections between facing connection points when symbols are placed or moved	シンボルを配置または移動したときに、向かい合う接続ポイント間に接続を描画します
 Route	ルート
-The wire tool routes around symbols and other wires (A)	電線ツールはシンボルや他の電線を回避してルートを決めます (A)
+The wire tool routes around symbols and other wires	電線ツールはシンボルや他の電線を回避してルートを決めます
 Dimension	寸法
 Image…	画像…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG または JPEG のビットマップ (例: ロゴや写真)
@@ -2486,7 +2413,6 @@ Tag placed by hand	手動で配置したタグ
 Drag the tag of the selected symbol to place it.	選択したシンボルのタグをドラッグして配置します。
 (empty)	(空)
 ➕ Place property	➕ プロパティを配置
-➕ Layer	➕ レイヤー
 Layer {}	レイヤー {}
 Layers of graphics, texts, dimensions and images	図形、テキスト、寸法、画像のレイヤー
 Visible	表示
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	断面積 (例: 1.5 mm²)
 A cable definition needs a start and an end point	ケーブル定義には始点と終点が必要です
 No cable {}	ケーブル {} はありません
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. 電線上の接続定義ポイントは、接続全体の番号、色、断面積、心線を設定します。電線を横切るケーブル定義線は、それらの電線をケーブルの心線にします。自動接続は向かい合う接続ポイントを接続し、ルート (A) はシンボルを回避して電線を引き回します。
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. 図形: レイヤー上の円、楕円、円弧、多角形、寸法、画像 (ナビゲーター › レイヤー: 表示、ロック、印刷)。選択したシンボルのタグをドラッグして配置します。その他のプロパティはシンボルのプロパティで配置します。
 Coil	コイル
 Main contacts 4-pole	主接点 4 極
 NO contact, on-delay	a接点、オンディレイ
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	切断長�
 📊 Hose configuration	📊 ホース構成
 📊 Tubing / piping list	📊 チューブ / 配管リスト
 📊 Fluid netlist	📊 流体ネットリスト
-➕ Group	➕ グループ
-📊 Fluid device groups	📊 流体デバイスグループ
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	バルブターミナル、エアサービスユニット、マニホールド: 流体デバイスを位置順にスペース区切りで指定します。
 Places	位置数
 0 = not limited	0 = 制限なし
 Delete group	グループを削除
-🔄 Synchronize	🔄 同期
+Synchronize	同期
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	電磁弁を同じ番号のコイル (-QM3 › -MB3) とリンクし、機能テキストをコピーします
 {} links created, {} function texts copied	{} 件のリンクを作成し、{} 件の機能テキストをコピーしました
-📊 Electro-fluid cross reference	📊 電気-流体相互参照
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	流体デバイスを操作または監視する電気デバイス (ソレノイドコイル、位置スイッチ、圧力スイッチ)。両方の回路図に相互参照が表示されます。
 Electrical devices	電気デバイス
 Operating pressure in bar (0 = hose ratings are not checked)	使用圧力 (bar、0 = ホースの定格をチェックしない)
@@ -2734,7 +2655,6 @@ Right neighbour	右隣
 No cable passage to {}: wires to it are not routed	{} へのケーブル貫通口がありません: そこへの電線は配線ルートが設定されません
 Open to {}: wires cross beside the mounting plates	{} へ開放: 電線は取付板の横を通ります
 {} cable passages to {}	{} へのケーブル貫通口 {} 個
-➕ Cable passage to {}	➕ {} へのケーブル貫通口
 Round cutouts facing each other in both side walls	両側板に向かい合う円形の切り欠き
 Both sides are open: the wires need no cutout	両側が開放されています: 電線に切り欠きは不要です
 Cable passage to {}	{} へのケーブル貫通口
@@ -3067,7 +2987,6 @@ Surge protection	サージ保護
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	電源系統の各保護機器における短絡電流に対する遮断容量、回路末端の最小故障電流での遮断、ケーブルの短絡耐量、上位機器との選択遮断。
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	電源系統の負荷 (モーター、ドライブ、ヒーター、電源装置、変圧器) の電力と電流、各保護機器の負荷、分散率を考慮した需要、電源装置の負荷バジェット。
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	ISO 13849-1 の安全機能: 各サブシステム (入力、ロジック、出力) と、そのチャンネルのデバイス、カテゴリ、診断範囲、年間動作回数。デバイスは部品の PL / PFHd、MTTFd、または B10d で計算されます。
-➕ Safety function	➕ 安全機能
 Input	入力
 Logic	ロジック
 Output	出力
@@ -3076,13 +2995,10 @@ Operations / year	動作回数 / 年
 CCF	CCF
 0 = from the devices	0 = デバイスから
 Measures against common cause failure (at least 65 points)	共通原因故障に対する対策 (65 ポイント以上)
-➕ Subsystem	➕ サブシステム
 Subsystem {}	サブシステム {}
 Rule libraries	ルールライブラリ
 Customer rule sets	顧客ルールセット
-➕ Rule set	➕ ルールセット
 Rule set {}	ルールセット {}
-💾 Export…	💾 エクスポート…
 OpenECraft rule sets	OpenECraft ルールセット
 Verify the project against it	このルールセットでプロジェクトを検証
 {} checks	{} 件のチェック
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	条
 Message	メッセージ
 if	条件
 then	結果
-➕ Condition	➕ 条件
-➕ Check	➕ チェック
 OpenECraft rule sets (JSON)	OpenECraft ルールセット (JSON)
-Electrical calculations…	電気計算…
+Electrical calculations	電気計算
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	短絡、選択遮断、負荷、EMC、機能安全、ルールセットに対する検証
 0 = a single value; otherwise values [1] … [n]	0 = 単一の値。それ以外は値 [1] … [n]
 A project definition based on this one, with its own defaults and scheme	これを基にした、独自の既定値とスキームを持つプロジェクト定義
@@ -3416,7 +3330,6 @@ Project number	プロジェクト番号
 Project property of the property database (by key)	プロパティデータベースのプロジェクトプロパティ (キーで指定)
 Proof test interval	プルーフテスト間隔
 Property database	プロパティデータベース
-Property database…	プロパティデータベース…
 Property definitions	プロパティ定義
 Property definitions, function definitions, placement schemes and the values of all objects	プロパティ定義、機能定義、配置スキーム、およびすべてのオブジェクトの値
 Property groups	プロパティグループ
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: 「{}」は {} のいずれでもありません
 {}: invalid value \"{}\" ({})	{}: 無効な値「{}」({})
 ➕ Default value	➕ 既定値
-➕ Derive project definition	➕ プロジェクト定義を派生
-➕ User defined property	➕ ユーザー定義プロパティ
+Derive project definition	プロジェクト定義を派生
+User defined property	ユーザー定義プロパティ
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	単線結線図でデバイスを計画し、回路図を生成して両方を同期します
-Single-line / multi-line…	単線 / 複線…
 All devices of page {} are in the schematic already	ページ {} のすべてのデバイスはすでに回路図にあります
 Copies function texts between the single-line diagram and the schematic where one side is empty	単線結線図と回路図の間で、一方が空の機能テキストをコピーします
 Does not match	一致しません
@@ -3756,11 +3668,11 @@ Outline	輪郭
 Click the corners of a machine or building, double-click to finish	機械または建物の角をクリックし、ダブルクリックで終了します
 (no cable highlighted)	(強調表示されたケーブルなし)
 Fit	全体表示
-⬇ Export SVG…	⬇ SVG のエクスポート…
+Export SVG…	SVG のエクスポート…
 Height above the floor	床面からの高さ
 Placed here: {}	ここに配置: {}
 Place an enclosure, device or machine location at this node	このノードにエンクロージャー、デバイス、または機械の取付場所を配置
-🗑 Delete node	🗑 ノードを削除
+Delete node	ノードを削除
 SVG drawing	SVG 図面
 Segments	区間
 Width × height (mm)	幅 × 高さ (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	等電位ボンディングへの
 {} corners	頂点 {} 個
 Take over cut lengths	切断長を反映
 Set the cable lengths to the planned cut lengths	ケーブル長を計画された切断長に設定します
-📊 Report	📊 レポート
 {} parts of the network	ネットワークの部分 {} 個
 No field cables: place the enclosures and field devices at nodes of the route network.	フィールドケーブルがありません。エンクロージャーとフィールドデバイスをルートネットワークのノードに配置してください。
 Route definition of {}	{} のルート定義
 Via:	経由:
 Remove	削除
-➕ Node	➕ ノード
 Avoid:	回避:
 {} cable lengths taken over	ケーブル長を {} 件反映しました
-➕ Bonding conductor	➕ ボンディング導体
+Bonding conductor	ボンディング導体
 Bonding points	ボンディング点
-➕ Accessory	➕ 付属品
 both ends	両端
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	付属品がありません。グランド、コネクター、シールドクランプなどは部品表に含まれ、ケーブルと照合してチェックされます。
 Reserve per cable end	ケーブル端ごとの余長
@@ -3799,7 +3708,6 @@ Length inside an enclosure	エンクロージャー内の長さ
 Cut length step	切断長の刻み
 Maximum fill of a carrier	支持材の最大占有率
 Bend radius in drag chains	ケーブルキャリア内の曲げ半径
-Field wiring…	フィールド配線…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	プラントレイアウト、ルートネットワーク、フィールドケーブル計画、等電位ボンディング、ケーブル付属品
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	オプション {} がありません
@@ -3913,9 +3821,9 @@ Archive and version	アーカイブとバージョン
 Verification	検証
 OpenECraft project archive	OpenECraft プロジェクトアーカイブ
 The project database needs the desktop version: the browser cannot search folders.	プロジェクトデータベースにはデスクトップ版が必要です。ブラウザーではフォルダーを検索できません。
-📂 Add folder…	📂 フォルダーを追加…
+Add folder…	フォルダーを追加…
 Adds the project files and archives of a folder and its subfolders	フォルダーとそのサブフォルダーのプロジェクトファイルとアーカイブを追加します
-🔄 Update all	🔄 すべて更新
+Update all	すべて更新
 Verify while reading	読み込み時に検証
 Remove the folder from the database	フォルダーをデータベースから削除
 Search	検索
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	条件付き�
 {} options switched	{} 個のオプションを切り替えました
 File format version {}. Files of older versions are converted when they are opened.	ファイル形式のバージョン {}。旧バージョンのファイルは開くときに変換されます。
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	アーカイブ (.oecz) は、プロジェクト、マニフェスト、埋め込みドキュメントと画像を個別のファイルとして含む ZIP ファイルです。
-📦 Archive project…	📦 プロジェクトをアーカイブ…
-📂 Open archive…	📂 アーカイブを開く…
+Archive project…	プロジェクトをアーカイブ…
+Open archive…	アーカイブを開く…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	プロジェクトデータ (ID、参照、デバイスデータ、オプション、サブプロジェクト) をエンジニアリングチェックとともにチェックします。
 Verify project	プロジェクトを検証
 Repair {} findings	検出事項 {} 件を修復
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	プロジェクトデータ: エラー {} 件、警告 {} 件、注記 {} 件。エンジニアリングチェック: エラー {} 件、警告 {} 件
 (repairable)	(修復可能)
 ✔ The project data is consistent.	✔ プロジェクトデータに矛盾はありません。
-Project management…	プロジェクト管理…
 Project database, batch changes of project properties, subprojects, options, archives and verification	プロジェクトデータベース、プロジェクトプロパティの一括変更、サブプロジェクト、オプション、アーカイブ、検証
 OpenECraft project or archive	OpenECraft プロジェクトまたはアーカイブ
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	Stock length �
 Collision classes	干渉クラス
 Distances between classes of items, or classes that may overlap	アイテムのクラス間の距離、または重なってもよいクラス
 may overlap	重なり可
-➕ Add rule	➕ ルールを追加
+Add rule	ルールを追加
 Air temperature at the devices	デバイス周囲の空気温度
 max. {} °C	最大 {} °C
 No problems found	問題は見つかりませんでした
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	プラグインの応答が無効です: {}
 Key figures of the project and a list of its device tags	プロジェクトの主要指標とデバイスタグの一覧
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	プロジェクトの主要指標: ページ、シンボル、電線、デバイス、部品、ケーブル、チェック結果
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	読み込まれたプラグイン (組み込み、および --plugins / OPENECRAFT_PLUGINS のプラグインフォルダーから) とそのコマンド、チェック、レポート、エクスポート。このセッションでプラグインを有効化または無効化します
-Manage plugins…	プラグインの管理…
-Plugin command {}	プラグインコマンド {}
+Manage plugins	プラグインの管理
 Plugin id '{}' is not snake_case	プラグイン ID「{}」は snake_case ではありません
 Plugin {} is loaded twice	プラグイン {} が 2 回読み込まれています
 Plugin {} needs a newer OpenECraft (API {})	プラグイン {} には新しい OpenECraft (API {}) が必要です
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	不明なプラグイン: {}
 Warnings	警告
 {} commands, {} checks, {} reports, {} exports	コマンド {} 個、チェック {} 個、レポート {} 個、エクスポート {} 個
 {}: the program to run is missing	{}: 実行するプログラムがありません
-▶ Run	▶ 実行
-⟳ Update	⟳ 更新
+Run	実行
+Update	更新
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	盤レイアウトチェック
@@ -4187,7 +4093,7 @@ Profile	プロファイル
 (standard columns)	(標準の列)
 Write the file for the other system; later imports detect conflicts against this export	相手システム用のファイルを書き込みます。以降のインポートでは、このエクスポートとの競合が検出されます
 Read a file of the other system (CSV or JSON) and review the changes	相手システムのファイル (CSV または JSON) を読み込んで変更を確認します
-⬇ Neutral exchange file…	⬇ ニュートラル交換ファイル…
+Neutral exchange file…	ニュートラル交換ファイル…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	コネクターのないシステム向けに、アイテム、デバイス、配置、接続、電線、ドキュメントを 1 つの JSON ファイルにまとめます
 Import changes	インポートの変更
 Profiles	プロファイル
@@ -4213,7 +4119,6 @@ Conflicts	競合
 Export	エクスポート
 Import	インポート
 {} values taken over	{} 件の値を反映しました
-Enterprise integration…	エンタープライズ統合…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	ERP、PDM、PLM、ECAD、MCAD、調達、電線加工機とのデータ交換
 Files of other systems (CSV, JSON)	他のシステムのファイル (CSV、JSON)
 Copper bar {}: {} segments need {} bends	銅バー {}: {} 区間には {} 箇所の曲げが必要です
@@ -4380,9 +4285,9 @@ DWG export failed: {}	DWG のエクスポートに失敗しました: {}
 DWG import failed: {}	DWG のインポートに失敗しました: {}
 DWG imported as page {}: {} lines, {} texts	DWG をページ {} としてインポートしました: 線 {} 本、テキスト {} 件
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG をページ {} としてインポートしました: 線 {} 本、テキスト {} 件 (インポートされなかったもの: {})
-⬇ NC data (DWG)	⬇ NC データ (DWG)
-⬇ Door NC data (DWG)	⬇ 扉の NC データ (DWG)
-⬇ NC data of this face (DWG)	⬇ この面の NC データ (DWG)
+NC data (DWG)	NC データ (DWG)
+Door NC data (DWG)	扉の NC データ (DWG)
+NC data of this face (DWG)	この面の NC データ (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	DWG 図面 (AutoCAD R12 … 2018) をグラフィック (線、円弧、テキスト、ブロック) として新しい回路図ページにインポートします
 Generic	汎用
 Parts store	部品ストア
@@ -4721,7 +4626,6 @@ Power cable	電力ケーブル
 Control cable	制御ケーブル
 Wiring material	配線材料
 Catalog id	カタログ ID
-Data portal…	データポータル…
 Delete catalog {} from the server?	カタログ {} をサーバーから削除しますか?
 Delete user {}? Their sessions and favorites are removed.	ユーザー {} を削除しますか? そのユーザーのセッションとお気に入りも削除されます。
 Ends the session and forgets the token	セッションを終了し、トークンを破棄します
@@ -4843,12 +4747,10 @@ Use macros	マクロを使用
 ★ Favorites	★ お気に入り
 ★ Remove from favorites	★ お気に入りから削除
 ☆ Add to favorites	☆ お気に入りに追加
-✔ Apply {} updates	✔ {} 件の更新を適用
-➡ Successor {}	➡ 後継品 {}
-⬇ Add marked parts to the parts database ({})	⬇ マークした部品を部品データベースに追加 ({})
-⬇ Add to the parts database	⬇ 部品データベースに追加
-🔄 Check the parts database for updates	🔄 部品データベースの更新を確認
-🔎 Search	🔎 検索
+Apply {} updates	{} 件の更新を適用
+Add marked parts to the parts database ({})	マークした部品を部品データベースに追加 ({})
+Add to the parts database	部品データベースに追加
+Check the parts database for updates	部品データベースの更新を確認
 Relay coil, AC	リレーコイル (AC)
 Relay coil, high-speed	リレーコイル (高速)
 Relay coil, mechanically latched	リレーコイル (メカニカルラッチ)
@@ -5276,7 +5178,6 @@ Level of this kind of message	この種類のメッセージのレベル
 As defined by the check	チェックの定義どおり
 Switch off the check \"{}\"	チェック「{}」をオフにする
 Changed message levels ({})	変更したメッセージレベル ({})
-Right click a message in the Check tab to change its level.	[チェック] タブでメッセージを右クリックすると、そのレベルを変更できます。
 Accepted messages ({})	承認済みメッセージ ({})
 No longer reported	報告されなくなりました
 Still reported	引き続き報告されています
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	プロジェクトテンプレートとして保存…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	リビジョン、ベースライン、レビュー、配線マークを除いてプロジェクトを新規プロジェクト用のテンプレートとして保存します
 OpenECraft project template	OpenECraft プロジェクトテンプレート
-Not a project template: {}	プロジェクトテンプレートではありません: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	プロジェクトテンプレートから開始します: 組み込みテンプレート (Machine、Distribution board (IEC 61439)、Empty (IEC 60204-1)) またはプロジェクトファイル
 Not a packed project	パックされたプロジェクトではありません
 Viewer	ビューアー
@@ -5537,7 +5437,6 @@ Rotate	回転
 Save to project server	プロジェクトサーバーに保存
 Undo	元に戻す
 Find and replace	検索と置換
-Finish polyline or polygon	ポリラインまたはポリゴンを確定
 Mirror (selection or symbol being placed)	反転 (選択内容または配置中のシンボル)
 Next page	次のページ
 Open project	プロジェクトを開く
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	キーボードショートカット
 No shortcut	ショートカットなし
 Press a key…	キーを押してください…
 Record	記録
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	記録: 修飾キーと一緒に新しいキーを押します (Esc でキャンセル)。Esc、Delete、方向キー、コピー / 貼り付けは固定です。
 Reset all to the defaults	すべて既定値にリセット
 {} is used by: {}	{} は次で使用されています: {}
 Harness nailboard drawing to scale (SVG)	ハーネス布線板図 (縮尺どおり、SVG)
 Harness tag, e.g. -WH1	ハーネスのタグ (例: -WH1)
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	分岐長とコネクターのピン表を含む、縮尺どおりのハーネス布線板図
-📐 Nailboard (SVG)…	📐 布線板 (SVG)…
+Nailboard (SVG)…	布線板 (SVG)…
 Bundle Ø {} mm	束径 Ø {} mm
 Nailboard {}	布線板 {}
 Scale 1:{}	縮尺 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	セグメント {} がありません
 Segment path (default: all segments)	セグメントパス (既定: すべてのセグメント)
 Pre-planning (CSV, Excel)	事前計画 (CSV、Excel)
 Plant segments with planned devices before the schematic	回路図作成前の、計画済みデバイスを含むプラントセグメント
-Pre-planning…	事前計画…
 A segment cannot be moved below itself	セグメントをそれ自身の下に移動することはできません
 Adds a planned device to a segment or changes it	セグメントに計画済みデバイスを追加または変更します
 Adds a segment below another one (or at the top)	別のセグメントの下 (または最上位) にセグメントを追加します
@@ -5628,10 +5525,8 @@ name	名前
 {} pages generated	{} ページを生成しました
 {} pages generated; page macros not found: {}	{} ページを生成しました。見つからなかったページマクロ: {}
 {} segments created, {} devices added, {} updated	セグメント {} 個を作成、デバイス {} 個を追加、{} 個を更新しました
-➕ Device	➕ デバイス
-➕ Segment	➕ セグメント
-➕ Sub-segment	➕ サブセグメント
-🗑 Remove segment	🗑 セグメントを削除
+Sub-segment	サブセグメント
+Remove segment	セグメントを削除
 Display	表示
 Mirrored	反転
 Other properties	その他のプロパティ
@@ -5733,7 +5628,7 @@ Hose defaults	ホースの既定値
 Message levels	メッセージレベル
 Not a settings scheme: {}	設定スキームではありません: {}
 Wire defaults	電線の既定値
-Reset panel layout	パネル配置をリセット
+Reset pane layout	パネル配置をリセット
 Navigator on the left, symbols and properties on the right	ナビゲーターを左に、シンボルとプロパティを右に配置
 Panels	パネル
 Saves the workspace, the arrangement of the panels and the open windows	ワークスペース、パネルの配置、開いているウィンドウを保存します
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	モーターが短絡電流を供給
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	系統に接続された誘導電動機が最大短絡電流を増加させます (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	受電点: Ik3 max {} kA、Ik1 min {} kA
 Manufacturer's coordination tables	メーカーの協調表
-➕ Entry	➕ エントリ
+Entry	エントリ
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	メーカーが試験したデバイスペアの選択遮断とバックアップ保護 (部品番号ごと)。時間-電流特性曲線からの推定に代わって使用されます。
 Upstream part	上位部品
 Downstream part	下位部品
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	ユーザー名とパスワードの代わり
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 以降 (Vault Data API)
-⟳ Refresh	⟳ 最新の情報に更新
+Refresh	最新の情報に更新
 Search below this folder	このフォルダーの下を検索
-🔍 Search	🔍 検索
 Checked out	チェックアウト済み
 {} of {} entries shown: search to narrow the list	{} / {} 件のエントリを表示中: 検索して一覧を絞り込んでください
 Select a file to import it	インポートするファイルを選択してください
 (choose a part)	(部品を選択)
-⬇ Import	⬇ インポート
 Project file	プロジェクトファイル
-⬆ Check in project as new version of {}	⬆ プロジェクトを {} の新しいバージョンとしてチェックイン
+Check in project as new version of {}	プロジェクトを {} の新しいバージョンとしてチェックイン
 Puts the project into the folder it was opened from	プロジェクトを開いたフォルダーにプロジェクトを格納します
 Put into the vault	Vault に格納
 File name	ファイル名
-⬆ Upload to {}	⬆ {} にアップロード
+Upload to {}	{} にアップロード
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	フォルダー内に同名のファイルがある場合は新しいバージョンになり (チェックアウトとチェックイン)、ない場合はファイルが追加されます
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Autodesk Vault からプロジェクトとファイルを開き、プロジェクト、エクスポート、3D モデルを Vault に格納します
 Check in {} to Vault	{} を Vault にチェックイン
 Panel layout in 3D (Parasolid XT)	盤レイアウト 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	盤レイアウト 3D (Parasolid XT)
 Back	戻る
 Back to the project (Esc)	プロジェクトに戻る (Esc)
 Recent projects	最近のプロジェクト
-No projects opened yet.	まだプロジェクトを開いていません。
 Remove from the list	一覧から削除
 unsaved	未保存
 Project: {}	プロジェクト: {}
@@ -6055,15 +5946,6 @@ Tutorial	チュートリアル
 Introduction	はじめに
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	EPLAN Electric P8 の考え方に基づくオープンな電気 CAE エディター。
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	リボン: ファイルで開く、保存、インポート、エクスポート、印刷を行い、タブにはテーマ別のコマンドがあります。Alt でアクセスキーを表示し、Ctrl+Shift+P で任意のコマンドを検索し、F6 でペインを切り替え、F1 でこのヘルプを開きます。
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 挿入 › 挿入センター (Ins): シンボル、マクロ、デバイスを検索し、ページをクリックして配置します。デバイスタグ (-K1, -S2 …) は自動で割り当てられます。
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. プロパティ (部品タブ) で部品を割り当てます。レポート (ホーム › レポート) はデバイス、部品表、端子、接続、PLC を一覧表示し、レポートページとして挿入されます。
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. ケーブル: 接続 › ケーブルで電線を選択し、ケーブルに割り当てを使います。電線番号: 接続 › 電線番号付け、または電線のプロパティに番号を入力します。
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. マクロ: 要素を選択し、右クリック › 選択範囲をマクロとして保存。挿入センターまたは 挿入 › マクロ から挿入します。プレースホルダー {NAME} は値セットから埋められます。
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. デバイス › 端子台、デバイス › PLC 概要、プロジェクトデータ › リビジョン: 端子の順序、ジャンパーと予備、PLC アドレスとシンボルテーブル、変更マーク付きのリビジョンとリリース済み (ロック) ページ。
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. マスターデータ › シンボルエディター: 接続点と機能を持つ独自のシンボルを描きます (または組み込みのものをコピー)。プロジェクトに保存され、ライブラリファイルとして交換できます。
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. マスターデータ › フォーム: プレースホルダー ({project}, {page}, {prop:Name} …) 付きの独自の表題欄とレポートページの列。プロジェクトデータ › レポートブロック は端子台、プラグ、ケーブル、デバイスごとにレポートページを生成します。
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 盤レイアウト (ワークスペース 盤レイアウト、タブ レイアウト空間): 筐体、レール、ダクト、ブスバー、切り欠き。レイアウト空間 › NC データ で穴あけパターンをエクスポート (DXF / DWG / CSV)。製造用電線リストには剥離長とフェルールが含まれます。
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. ハーネス: 接続 › ハーネス。2 つのデバイス間の電線を選択 › ハーネスに割り当て、または電線のプロパティで接続ごとに割り当て。長さ、コネクター、束径を含むハーネスレポート、KBL エクスポート。
 Key tips of the ribbon	リボンのアクセスキー
 Version {}	バージョン {}
 Search (* and ? as placeholders)…	検索 (* と ? はワイルドカード)…
@@ -6145,7 +6027,6 @@ Close page tab	ページタブを閉じる
 Panes	ペイン
 Show or hide panes; drag a tab to dock it elsewhere	ペインの表示と非表示。タブをドラッグすると別の場所にドッキングします
 Save workspace…	ワークスペースを保存…
-The panes of this workspace at their default places	このワークスペースのペインを既定の位置に
 Theme	テーマ
 UI scale	UI の拡大率
 Minimize the ribbon	リボンを最小化
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	まだ配置されていないプ�
 Insert center	挿入センター
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	シンボル、マクロ、デバイス、未配置の機能: 検索、お気に入り、最近使用したもの
 Find results	検索結果
-Quick guide, tutorial and shortcuts	クイックガイド、チュートリアル、ショートカット
 Layout spaces	レイアウト空間
 Enclosures, devices to place and placed devices	筐体、配置するデバイスと配置済みのデバイス
 Layout properties	レイアウトのプロパティ
@@ -6203,7 +6083,7 @@ Click to show, right click for more	クリックで表示、右クリックで�
 {} notes	{} 件の注記
 Open in a new page tab	新しいページタブで開く
 Project information	プロジェクト情報
-Plugin commands…	プラグインコマンド…
+Plugin commands	プラグインコマンド
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	すべてのプラグインのコマンドをプラグインごとに検索付きで表示します。星を付けるとコマンドがプラグインタブに固定されます
 Star a command in Plugin commands to pin it here	プラグインコマンドで星を付けるとここに固定されます
 Installed plugins	インストール済みプラグイン
@@ -6270,8 +6150,6 @@ Draw inner walls	内壁を描く
 Inner wall {}, side {}	内壁 {}、{} 側
 Thickness	厚さ
 {}: {} stands in an inner wall	{}: {} が内壁の中にあります
-Opening {} replaces the current project, its unsaved changes are lost.	{} を開くと現在のプロジェクトが置き換えられ、未保存の変更は失われます。
-Discard changes and open	変更を破棄して開く
 Open link	リンクを開く
 Replace the file at path if it exists	path のファイルが存在する場合は置き換える
 {} exists already: pass overwrite to replace it	{} は既に存在します。置き換えるには overwrite を指定してください
@@ -6404,3 +6282,4 @@ Folder with project files (instead of a database; default: the current folder)	�
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	不明なページの種類: {} (schematic、overview、graphic、cover、または list_reports のレポート)
 Unknown template {}: give a built-in one ({}) or a project file	不明なテンプレート {}: 組み込みのもの ({}) かプロジェクトファイルを指定してください
 Property {} needs a text or a number	プロパティ {} にはテキストまたは数値が必要です
+Check settings…	チェックの設定…

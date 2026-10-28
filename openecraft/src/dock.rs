@@ -7,6 +7,7 @@
 //! `app/dock_ui.rs` draws the panes.
 
 use crate::workspaces::Workspace;
+use openecraft_i18n::tr_const;
 use egui_tiles::{Container, Linear, LinearDir, Tile, TileId, Tiles, Tree};
 use serde::{Deserialize, Serialize};
 
@@ -109,6 +110,7 @@ pub enum ToolPane {
 }
 
 impl ToolPane {
+    #[cfg(test)]
     pub const ALL: [ToolPane; 36] = [
         ToolPane::Start,
         ToolPane::Help,
@@ -164,7 +166,7 @@ impl ToolPane {
     pub fn window_size(self) -> [f32; 2] {
         use ToolPane as T;
         match self {
-            T::Tables | T::PlcHardware | T::Harnesses | T::FieldWiring | T::Compare | T::Preplanning | T::SingleLine | T::Process | T::Electrical | T::Integration | T::Projects | T::SymbolEditor | T::Forms | T::Parts | T::DataPortal => [960.0, 640.0],
+            T::Reports | T::Tables | T::PlcHardware | T::Harnesses | T::FieldWiring | T::Compare | T::Preplanning | T::SingleLine | T::Process | T::Electrical | T::Integration | T::Projects | T::SymbolEditor | T::Forms | T::Parts | T::DataPortal => [960.0, 640.0],
             T::Help | T::Potentials | T::Plugs | T::ProjectServer | T::Vault | T::Plugins => [480.0, 560.0],
             _ => [720.0, 500.0],
         }
@@ -203,7 +205,8 @@ pub enum Area {
 }
 
 impl Pane {
-    /// Every pane, in the order of the View › Panes menu.
+    /// Every pane (View › Panes groups them: `menu_groups`).
+    #[cfg(test)]
     pub fn all() -> Vec<Pane> {
         let mut v = vec![Pane::Page];
         v.extend(LeftTab::ALL.map(Pane::Navigator));
@@ -223,15 +226,45 @@ impl Pane {
         }
     }
 
-    /// The page cannot be closed while it is the only document of the workspace.
+    /// The pane is a document (the page, the layout view, a wide tool): the last one of
+    /// a workspace cannot be closed.
     pub fn is_document(self) -> bool {
         self.area() == Area::Center
+    }
+
+    /// The page and the navigators have no close button on their tab: the page is never
+    /// closed, the navigators are hidden from View › Panes or the pane menu.
+    pub fn has_close_button(self) -> bool {
+        !matches!(self, Pane::Page | Pane::Navigator(_))
     }
 
     /// The pane opens as a window unless the user docked it.
     pub fn floats(self) -> bool {
         matches!(self, Pane::Tool(t) if t.floats())
     }
+}
+
+/// The sections of View › Panes (title, panes): every pane is in one of them, so the menu
+/// stays short; the tools are grouped like their ribbon tabs.
+pub fn menu_groups() -> Vec<(&'static str, Vec<Pane>)> {
+    use ToolPane as T;
+    let tools = |t: &[ToolPane]| t.iter().map(|t| Pane::Tool(*t)).collect::<Vec<_>>();
+    vec![
+        (tr_const!("Navigators"), LeftTab::ALL.map(Pane::Navigator).to_vec()),
+        (tr_const!("Page, Insert center and properties"), vec![Pane::Page, Pane::Library, Pane::Properties, Pane::Tool(T::Find)]),
+        (tr_const!("Panel layout"), vec![Pane::LayoutSpaces, Pane::LayoutView, Pane::LayoutProperties]),
+        (tr_const!("Wiring and mounting"), vec![Pane::WiringChecklist, Pane::WiringWorkbench]),
+        (tr_const!("Devices"), tools(&[T::TerminalStrips, T::Plugs, T::PlcOverview, T::PlcHardware, T::Structure, T::Preplanning, T::SingleLine])),
+        (tr_const!("Connections"), tools(&[T::Cables, T::Potentials, T::Harnesses, T::FieldWiring])),
+        (
+            tr_const!("Project data"),
+            tools(&[T::Reports, T::ReportBlocks, T::Tables, T::Revisions, T::Compare, T::ChangeRequests, T::Languages, T::Configurator, T::Projects]),
+        ),
+        (tr_const!("Tools"), tools(&[T::Electrical, T::Process, T::Integration, T::ProjectServer, T::Vault])),
+        (tr_const!("Master data"), tools(&[T::SymbolEditor, T::Forms, T::Macros, T::Parts, T::DataPortal, T::PropertyDatabase])),
+        (tr_const!("Plugins"), tools(&[T::PluginCommands, T::Plugins])),
+        (tr_const!("Help"), tools(&[T::Start, T::Help])),
+    ]
 }
 
 /// Where panes open that are not in the workspace: as a window or docked. Panes follow
@@ -258,6 +291,34 @@ impl Placement {
         self.floated.retain(|p| *p != pane);
         if floats != pane.floats() {
             if floats { &mut self.floated } else { &mut self.docked }.push(pane);
+        }
+    }
+}
+
+/// What a workspace keeps besides its tree: where its panes open and which of them float
+/// as windows. Floating panes belong to their workspace and are hidden in the others.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Side {
+    pub placement: Placement,
+    #[serde(skip)]
+    pub floating: Vec<Pane>,
+}
+
+/// The `Side` of every workspace not shown (workspace key → side).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Sides(Vec<(String, Side)>);
+
+impl Sides {
+    /// Switching from workspace `from` to `to`: `current` (the side of `from`) is kept
+    /// and becomes the side of `to`.
+    pub fn switch(&mut self, from: Workspace, to: Workspace, current: &mut Side) {
+        let old = std::mem::take(current);
+        self.0.retain(|(k, _)| k != from.key());
+        self.0.push((from.key().to_string(), old));
+        if let Some(i) = self.0.iter().position(|(k, _)| k == to.key()) {
+            *current = self.0.remove(i).1;
         }
     }
 }
@@ -359,6 +420,16 @@ pub fn visible(tree: &Tree<Pane>) -> Vec<Pane> {
     panes(tree).into_iter().filter(|p| find(tree, *p).is_some_and(|id| active.contains(&id))).collect()
 }
 
+/// The document worked in after the user switched tabs: `current` while it is shown,
+/// otherwise the first shown document (the page for a tree without one).
+pub fn shown_document(tree: &Tree<Pane>, current: Pane) -> Pane {
+    let shown = visible(tree);
+    if shown.contains(&current) {
+        return current;
+    }
+    shown.into_iter().find(|p| p.is_document()).unwrap_or(current)
+}
+
 /// The tab container a pane of `area` joins: the parent of a pane of the same area.
 fn container_for(tree: &Tree<Pane>, pane: Pane) -> Option<TileId> {
     let area = pane.area();
@@ -407,7 +478,7 @@ pub fn show(tree: &mut Tree<Pane>, pane: Pane) {
     tree.make_active(|_, tile| matches!(tile, Tile::Pane(p) if *p == pane));
 }
 
-/// Closes a pane; the last document of a tree stays.
+/// Closes a pane; the page and the last document of a tree stay.
 pub fn close(tree: &mut Tree<Pane>, pane: Pane) {
     if !can_close(tree, pane) {
         return;
@@ -417,15 +488,25 @@ pub fn close(tree: &mut Tree<Pane>, pane: Pane) {
     }
 }
 
-/// A pane can be closed unless it is the only document left.
+/// A pane can be closed unless it is the page or the only document left.
 pub fn can_close(tree: &Tree<Pane>, pane: Pane) -> bool {
-    !pane.is_document() || panes(tree).iter().filter(|p| p.is_document()).count() > 1
+    pane != Pane::Page && (!pane.is_document() || panes(tree).iter().filter(|p| p.is_document()).count() > 1)
 }
 
 /// The navigator tab shown first: the active one of the navigators on the left.
 pub fn active_tab(tree: &Tree<Pane>) -> Option<LeftTab> {
     let active = tree.active_tiles();
     LeftTab::ALL.into_iter().filter(|t| Pane::Navigator(*t).area() == Area::Left).find(|t| find(tree, Pane::Navigator(*t)).is_some_and(|id| active.contains(&id)))
+}
+
+/// A tab label of at most `max` characters, cut with an ellipsis.
+pub fn truncate_label(text: &str, max: usize) -> String {
+    if text.chars().count() <= max {
+        text.to_string()
+    } else {
+        let cut: String = text.chars().take(max.saturating_sub(1)).collect();
+        format!("{}…", cut.trim_end())
+    }
 }
 
 pub fn to_json(tree: &Tree<Pane>) -> String {

@@ -40,7 +40,7 @@ open connection points, unpaired interruption points, short circuits between
 potentials, duplicate terminal numbers / PLC addresses, devices without part.
 **Message management** (in the spirit of EPLAN's check schemes): every message has
 a code per kind (`wires.3f9a1c`, the same in every language) and a fingerprint per
-occurrence. Right click a message in the Check tab to accept it as checked (hidden
+occurrence. Right click a message in the Messages pane to accept it as checked (hidden
 and not counted until it changes), to change the level of its kind (error, warning,
 note, off) or to switch its check off; the settings (⚙) list the checks, changed
 levels and accepted messages (with note, user, date and whether they are still

@@ -1,6 +1,7 @@
 //! Property database window (definitions, function definitions, placement schemes,
 //! values of any object) and the property grid shown in the property editor.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::functions::{self, FnCategory, FunctionDef};
@@ -120,7 +121,7 @@ impl App {
                 let n = self.session.prj.property_db.merge(lib);
                 self.notify(ctx, tr_fmt!("Imported {} entries of the property library", n));
             }
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 }
@@ -142,7 +143,7 @@ fn definitions_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, 
                 ui.selectable_value(&mut st.group, Some(g), g.title());
             }
         });
-        if ui.button(tr("➕ User defined property")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("User defined property")).clicked() {
             let class = st.class.filter(|c| *c != ObjectClass::Part).unwrap_or_default();
             st.draft = Some((PropDef { key: "user.".into(), class, group: Group::User, ..Default::default() }, String::new()));
         }
@@ -195,10 +196,10 @@ fn definitions_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, 
                         let kind = if d.read_only { tr("computed") } else if d.field { tr("model") } else { tr("built-in") };
                         ui.weak(kind);
                     } else {
-                        if ui.small_button("✏").on_hover_text(tr("Edit")).clicked() {
+                        if icons::button(ui, Icon::Markup, tr("Edit")).clicked() {
                             edit = Some(d.clone());
                         }
-                        if ui.small_button("🗑").on_hover_text(tr("Delete the property and all its values")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Delete the property and all its values")).clicked() {
                             remove = Some(d.key.clone());
                         }
                     }
@@ -320,7 +321,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
         });
         ui.label(RichText::new(tr("Property groups")).strong());
         ui.label(d.category.groups().iter().map(|g| g.title()).collect::<Vec<_>>().join(", "));
-        if ui.button(tr("➕ Derive project definition")).on_hover_text(tr("A project definition based on this one, with its own defaults and scheme")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("Derive project definition")).on_hover_text(tr("A project definition based on this one, with its own defaults and scheme")).clicked() {
             let new = functions::derive(prj, &d);
             st.function = new.key.clone();
             if let Err(e) = functions::define(prj, new) {
@@ -394,7 +395,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
                     r.on_hover_text(tr("Invalid value"));
                 }
             }
-            if ui.small_button("🗑").clicked() {
+            if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                 remove = Some(k.clone());
             }
             ui.end_row();
@@ -418,7 +419,7 @@ fn function_details(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi,
                 *action = Some(Action::Error(e));
             }
         }
-        if ui.button(tr("🗑 Delete")).on_hover_text(tr("Symbols using it go back to their built-in definition")).clicked() {
+        if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("Symbols using it go back to their built-in definition")).clicked() {
             functions::remove(prj, &d2.key);
             st.function.clear();
         }
@@ -436,7 +437,7 @@ fn schemes_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, acti
         let ui = &mut cols[0];
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut st.new_scheme).hint_text(tr("New scheme")).desired_width(140.0));
-            if ui.button("➕").on_hover_text(tr("New, empty placement scheme")).clicked() {
+            if icons::button(ui, Icon::Plus, tr("New, empty placement scheme")).clicked() {
                 match props::define_scheme(prj, Scheme { name: st.new_scheme.trim().into(), ..Default::default() }) {
                     Ok(()) => {
                         st.scheme = st.new_scheme.trim().into();
@@ -495,7 +496,7 @@ fn schemes_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, acti
                     anchor_combo(ui, ("scheme_anchor", i), &mut e.anchor);
                     ui.checkbox(&mut e.name, tr("Name")).on_hover_text(tr("Shown as \"Name: value\""));
                 });
-                if ui.small_button("🗑").clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -513,7 +514,7 @@ fn schemes_tab(ui: &mut egui::Ui, prj: &mut Project, st: &mut PropertiesUi, acti
             if ui.button(tr("Place again at all symbols using it")).clicked() {
                 *action = Some(Action::Reapply(scheme.name.clone()));
             }
-            if ui.button(tr("🗑 Delete")).on_hover_text(tr("Symbols using it keep their placed properties")).clicked() {
+            if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("Symbols using it keep their placed properties")).clicked() {
                 props::remove_scheme(prj, &scheme.name);
                 st.scheme.clear();
             }
@@ -712,7 +713,7 @@ fn property_row(ui: &mut egui::Ui, prj: &mut Project, obj: &Object, st: &mut Gri
         if !d.unit.is_empty() && !matches!(d.ty, DataType::Bool | DataType::Choice) {
             ui.weak(&d.unit);
         }
-        if origin == Origin::Stored && !d.field && ui.small_button("🗑").on_hover_text(tr("Remove the value")).clicked() {
+        if origin == Origin::Stored && !d.field && icons::button(ui, Icon::Delete, tr("Remove the value")).clicked() {
             commit = Some(String::new());
         }
     });

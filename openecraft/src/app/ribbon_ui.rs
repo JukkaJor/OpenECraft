@@ -66,22 +66,13 @@ impl App {
         let peek = matches!(self.ribbon.tips, Some(Tips::Commands(_)));
         if (!self.shell.ribbon_minimized || peek) && self.backstage.is_none() {
             ui.add_space(2.0);
-            // A solid scroll bar shows that groups lie beyond the right edge.
-            ui.scope(|ui| {
-                ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
-                // The wheel scrolls the groups sideways: there is nothing to scroll up and down.
-                let key = ui.scope_id().with("ribbon_wheel");
-                let (offset, rect): (f32, egui::Rect) = ui.data(|d| d.get_temp(key)).unwrap_or((0.0, egui::Rect::NOTHING));
-                let wheel = ui.input(|i| if i.pointer.hover_pos().is_some_and(|p| rect.contains(p)) { i.smooth_scroll_delta.y } else { 0.0 });
-                let mut area = egui::ScrollArea::horizontal().id_salt("ribbon_groups").auto_shrink([false, true]);
-                if wheel != 0.0 {
-                    area = area.horizontal_scroll_offset((offset - wheel).max(0.0));
-                }
-                let out = area.show(ui, |ui| {
-                    ui.horizontal(|ui| self.ribbon_groups(ui));
-                });
-                ui.data_mut(|d| d.insert_temp(key, (out.state.clamped_offset().x, out.inner_rect)));
-            });
+            // Every tab is as high as three small buttons and the group titles; groups
+            // that do not fit collapse into one button each (no scroll bar).
+            let height = ROW * 3.0 + 14.0 + ui.spacing().item_spacing.y;
+            let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), height), egui::Sense::hover());
+            let mut groups = ui.new_child(egui::UiBuilder::new().max_rect(rect).layout(egui::Layout::left_to_right(egui::Align::Min)));
+            groups.set_clip_rect(rect.intersect(ui.clip_rect()));
+            self.ribbon_groups(&mut groups, rect.width());
         }
         ui.add_space(2.0);
     }
@@ -156,7 +147,7 @@ impl App {
             let tips_on_tabs = self.ribbon.tips == Some(Tips::Tabs);
             let file = ui.add(egui::Button::new(RichText::new(tr("File")).strong().color(ui.visuals().selection.stroke.color)).selected(self.backstage.is_some()));
             if tips_on_tabs {
-                key_tip(ui, file.rect, 'F');
+                key_tip(ui, file.rect.center_bottom(), egui::Align2::CENTER_TOP, 'F');
             }
             if file.on_hover_text(tr(commands::def(Cmd::Backstage).tip)).clicked() {
                 self.run(&ui.ctx().clone(), Cmd::Backstage);
@@ -175,7 +166,7 @@ impl App {
                 }
                 let r = ui.selectable_label(selected, text);
                 if tips_on_tabs {
-                    key_tip(ui, r.rect, t.key_tip);
+                    key_tip(ui, r.rect.center_bottom(), egui::Align2::CENTER_TOP, t.key_tip);
                 }
                 if r.clicked() {
                     self.ribbon.tab = t.id;
@@ -201,7 +192,9 @@ impl App {
     }
 
     /// The commands of the active tab: built-in groups, the user's groups, plugin groups.
-    fn ribbon_groups(&mut self, ui: &mut egui::Ui) {
+    /// Groups wider than `available` collapse from the right (`ribbon::collapsed`); the
+    /// widths are measured when a group is drawn and kept for the next frames.
+    fn ribbon_groups(&mut self, ui: &mut egui::Ui, available: f32) {
         let tab = ribbon::tab(self.ribbon.tab);
         let mut groups: Vec<(String, Vec<Item>)> = tab
             .groups
@@ -218,16 +211,60 @@ impl App {
         } else {
             Vec::new()
         };
+        let size = egui::TextStyle::Button.resolve(ui.style()).size.to_bits();
+        let width_key = |title: &str, short: bool| egui::Id::unique(("ribbon_group_width", tab.key, title.to_string(), short, size));
+        let measured = |ui: &egui::Ui, key: egui::Id| ui.data(|d| d.get_temp::<f32>(key));
+        let plugins_key = egui::Id::unique(("ribbon_plugin_width", size));
+        let extra = if tab.id == TabId::Plugins { measured(ui, plugins_key).unwrap_or(0.0) } else { 0.0 };
+        // A group not measured yet is drawn whole once.
+        let full: Vec<f32> = groups.iter().map(|(t, _)| measured(ui, width_key(t, false)).unwrap_or(0.0)).collect();
+        let short: Vec<f32> = groups.iter().map(|(t, _)| measured(ui, width_key(t, true)).unwrap_or(LARGE_W + 12.0)).collect();
+        if full.contains(&0.0) {
+            ui.ctx().request_repaint();
+        }
+        let collapsed = ribbon::collapsed(&full, &short, available - extra);
         let mut k = 0;
-        for (title, items) in groups {
+        for ((title, items), short) in groups.into_iter().zip(collapsed) {
             let n = items.len();
             let tip_slice: Vec<char> = tips.get(k..k + n).map(|s| s.to_vec()).unwrap_or_default();
             k += n;
-            self.ribbon_group(ui, &title, &items, &tip_slice);
+            let x = ui.cursor().min.x;
+            if short {
+                self.collapsed_group(ui, &title, &items);
+            } else {
+                self.ribbon_group(ui, &title, &items, &tip_slice);
+            }
+            let w = ui.cursor().min.x - x;
+            ui.data_mut(|d| d.insert_temp(width_key(&title, short), w));
         }
         if tab.id == TabId::Plugins {
+            let x = ui.cursor().min.x;
             self.plugin_tab(ui);
+            let w = ui.cursor().min.x - x;
+            ui.data_mut(|d| d.insert_temp(plugins_key, w));
         }
+    }
+
+    /// A group that does not fit: one button with the commands of the group in its menu.
+    fn collapsed_group(&mut self, ui: &mut egui::Ui, title: &str, items: &[Item]) {
+        ui.vertical(|ui| {
+            let icon = items.first().map(|i| commands::def(i.cmd()).icon).unwrap_or(Icon::Dots);
+            let r = self.large_widget(ui, icon, title, false, true, true).on_hover_text(title);
+            egui::Popup::menu(&r).show(|ui| {
+                for item in items {
+                    let c = item.cmd();
+                    let def = commands::def(c);
+                    if def.kind == Kind::Menu {
+                        let enabled = self.cmd_enabled(c);
+                        ui.add_enabled_ui(enabled, |ui| ui.menu_button(tr(def.title), |ui| self.cmd_menu(ui, c)));
+                    } else {
+                        self.cmd_button(ui, c);
+                    }
+                }
+            });
+            group_title(ui, "", r.rect.width());
+        });
+        ui.separator();
     }
 
     fn ribbon_group(&mut self, ui: &mut egui::Ui, title: &str, items: &[Item], tips: &[char]) {
@@ -268,7 +305,7 @@ impl App {
         let on = self.cmd_checked(cmd).unwrap_or(false);
         let resp = self.large_widget(ui, def.icon, &title, on, enabled, def.kind == Kind::Menu);
         if let Some(c) = tip {
-            key_tip(ui, resp.rect, c);
+            key_tip(ui, resp.rect.left_top() + egui::vec2(2.0, 2.0), egui::Align2::LEFT_TOP, c);
         }
         self.cmd_response(ui, cmd, resp);
     }
@@ -314,7 +351,8 @@ impl App {
             icons::paint(ui.painter(), egui::Rect::from_center_size(egui::pos2(rect.max.x - 7.0, rect.center().y), egui::Vec2::splat(10.0)), Icon::ChevronDown, color);
         }
         if let Some(c) = tip {
-            key_tip(ui, rect, c);
+            // Over the icon: the title stays readable.
+            key_tip(ui, rect.min + egui::Vec2::splat(ROW / 2.0), egui::Align2::CENTER_CENTER, c);
         }
         self.cmd_response(ui, cmd, resp);
     }
@@ -528,12 +566,12 @@ fn key_char(k: Key) -> Option<char> {
     }
 }
 
-/// A key tip badge on a button.
-fn key_tip(ui: &egui::Ui, rect: egui::Rect, c: char) {
-    let pos = egui::pos2(rect.center().x, rect.max.y - 6.0);
-    let font = egui::FontId::monospace(11.0);
+/// A small key tip badge placed at `pos` (below a tab, in a corner of a button, over
+/// the icon of a small button), so that the title stays readable.
+fn key_tip(ui: &egui::Ui, pos: egui::Pos2, align: egui::Align2, c: char) {
+    let font = egui::FontId::monospace(10.0);
     let galley = ui.painter().layout_no_wrap(c.to_string(), font, ui.visuals().strong_text_color());
-    let r = egui::Rect::from_center_size(pos, galley.size() + egui::vec2(6.0, 2.0));
+    let r = align.anchor_size(pos, galley.size() + egui::vec2(6.0, 2.0));
     let layer = ui.painter().clone().with_layer_id(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("key_tip")));
     layer.rect(r, 2.0, ui.visuals().extreme_bg_color, ui.visuals().widgets.active.bg_stroke, egui::StrokeKind::Inside);
     layer.galley(r.min + egui::vec2(3.0, 1.0), galley, ui.visuals().strong_text_color());

@@ -5,24 +5,9 @@
 (renamed from {})	(hernoemd van {})
 + Page	+ Pagina
 0 = no jumper	0 = geen brug
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Kies een symbool in de bibliotheek (rechts) en klik in de pagina om het te plaatsen. Apparaataanduidingen (-K1, -S2 …) worden automatisch toegekend.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Project › Symbooleditor: teken je eigen symbolen (of kopieer ingebouwde) met aansluitpunten en functie; ze worden in het project opgeslagen en kunnen als bibliotheekbestanden worden uitgewisseld.
-100% ≈ real size on a 96 dpi screen	100% ≈ werkelijke grootte op een scherm van 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Project › Titelblokken en rapportformulieren: eigen titelblokken met tijdelijke aanduidingen ({project}, {page}, {prop:Name} …) en de kolommen van de rapportpagina's.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Kastlay-out: stroomrails en uitsparingen; de eigenschappen van de behuizing exporteren het boorpatroon (NC-gegevens als DXF / DWG / CSV). De productiedraadlijst bevat striplengtes en adereindhulzen.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbomen: Project › Kabelbomen…; selecteer de draden tussen twee apparaten › Aan kabelboom toewijzen, of per verbinding in de draadeigenschappen. Kabelboomrapport met lengtes, connectoren en bundeldiameter, KBL-export.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Deur: zet het 2D-vooraanzicht van de kast op Deur en plaats daar bedienings- en signaleringsapparaten; hun deuruitsparingen worden gegenereerd. Botsingen worden gecontroleerd met de 3D-modellen van de artikelen.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Selecteer een spoel en plaats daarna contacten: ze worden aan die spoel toegewezen en genummerd (13/14, 21/22 …). Kruisverwijzingen en het contactbeeld worden direct bijgewerkt.
 2D front view	2D-vooraanzicht
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Teken draden met het draadgereedschap (W). Draden eindigen automatisch op aansluitpunten. T-aftakkingen krijgen een verbindingspunt.
 3D model	3D-model
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Potentialen (L1, +24V …) en onderbrekingspunten benoemen de netten over pagina's heen. Selecteer een draad om de potentiaal ervan te markeren.
 4/2 directional valve	4/2-ventiel
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Wijs artikelen toe in het eigenschappenvenster; genereer rapporten (apparatenlijst, stuklijst, klemmenplan, verbindingslijst, PLC-lijst) en voeg ze in als rapportpagina's.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Structuur: geef pagina's een functie (=A1) en locatie (+CAB1) in de pagina-eigenschappen. Apparaten die daar worden geplaatst krijgen die (=A1+CAB1-K1); op de pagina wordt alleen het afwijkende deel getoond.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Kabels: definieer ze in Project › Kabels…, selecteer draden en gebruik Aan kabel toewijzen. Draadnummers: Project › Draadnummering…, of typ een nummer in de draadeigenschappen.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Macro's: selecteer elementen › Bewerken › Selectie opslaan als macro; voeg ze in via Invoegen › Macro…. Tijdelijke aanduidingen {NAME} worden gevuld uit waardensets.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Project › Klemmenstroken / PLC-overzicht / Revisies: volgorde van de klemmenstroken, bruggen en reserves; PLC-adressen en symbooltabellen; revisies met wijzigingsmarkeringen en vrijgegeven (vergrendelde) pagina's.
 Access token	Toegangstoken
 Accessories	Toebehoren
 Add missing parts of the example catalog	Ontbrekende artikelen van de voorbeeldcatalogus toevoegen
@@ -95,12 +80,9 @@ Click into the page to place {}	Klik in de pagina om {} te plaatsen
 Click on the 4 mm grid	Klik op het raster van 4 mm
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Klik op begin- en hoekpunten · Spatie wisselt de hoekrichting · eindigt automatisch op een aansluiting · Rechtsklik / Esc beëindigt
 Click start and end point	Klik op begin- en eindpunt
-Click start point, click end point	Klik op het beginpunt en daarna op het eindpunt
 Click to add to the selected text.	Klik om aan de geselecteerde tekst toe te voegen.
 Click to insert the macro · Esc cancel	Klik om de macro in te voegen · Esc annuleert
-Click to place a text	Klik om een tekst te plaatsen
 Click to place the text from the field below	Klik om de tekst uit het veld hieronder te plaatsen
-Click to place · R rotate · M mirror · Esc finish	Klik om te plaatsen · R draaien · M spiegelen · Esc beëindigen
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Klik om te selecteren, sleep om te verplaatsen, sleep op een lege plek voor een vensterselectie. Slepen met de rechter-/middelste muisknop verschuift de weergave, het muiswiel zoomt.
 Click to show	Klik om weer te geven
 Click two corners	Klik op twee hoeken
@@ -146,7 +128,6 @@ Corner	Hoek
 Cover	Voorblad
 Cover sheet	Voorblad
 Create / update the part on the server (Ctrl+S)	Het artikel op de server maken / bijwerken (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Maak een behuizing (➕ in de navigator links) om met de kastlay-out te beginnen.
 Create an enclosure in the panel layout first.	Maak eerst een behuizing in de kastlay-out.
 Create revision	Revisie maken
 Created by	Gemaakt door
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Deur: {} apparaten, {} uitsparingen
 Downloaded {} parts (revision {}): {} new, {} updated	{} artikelen gedownload (revisie {}): {} nieuw, {} bijgewerkt
 Downloading parts…	Artikelen downloaden…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Slepen: draaien · slepen met rechter-/middelste muisknop: verschuiven · muiswiel: zoomen · klikken: apparaat of draad selecteren
-Draw connections (W)	Verbindingen tekenen (W)
+Draw connections	Verbindingen tekenen
 Duplicate	Dupliceren
 Each point-to-point connection can belong to a harness	Elke punt-tot-puntverbinding kan bij een kabelboom horen
 Edit	Bewerken
@@ -272,7 +253,6 @@ Harness data	Kabelboomgegevens
 Harness {} has no wires	Kabelboom {} heeft geen draden
 Harness {}: connection {} – {} does not exist in the schematic	Kabelboom {}: verbinding {} – {} bestaat niet in het schema
 Harnesses	Kabelbomen
-Harnesses…	Kabelbomen…
 Height	Hoogte
 Height (mm)	Hoogte (mm)
 Help	Help
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Langere waarden worden kleiner ge
 Macro {} replaced	Macro {} vervangen
 Macro {} saved	Macro {} opgeslagen
 Macros	Macro's
-Macros…	Macro's…
 Macro…	Macro…
 Main	Hoofd
 Main contact 1-pole	Hoofdcontact 1-polig
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Volgende vrije contactnummers op dit ap
 Next page (Page Down)	Volgende pagina (Page Down)
 No PLC inputs / outputs placed.	Geen PLC-in- / uitgangen geplaatst.
 No cables defined.	Geen kabels gedefinieerd.
-No cables yet – Project › Cables…	Nog geen kabels – Project › Kabels…
 No changes since the last revision.	Geen wijzigingen sinds de laatste revisie.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Nog geen apparaten. Kies rechts een symbool uit de bibliotheek en klik in de pagina.
-No enclosure yet – create one with ➕.	Nog geen behuizing – maak er een met ➕.
 No harnesses defined.	Geen kabelbomen gedefinieerd.
-No harnesses yet – Project › Harnesses…	Nog geen kabelbomen – Project › Kabelbomen…
 No identifying letter for the device tag.	Geen kenletter voor de apparaataanduiding.
 No macros yet. Select items in a schematic and save them as a macro.	Nog geen macro's. Selecteer elementen in een schema en sla ze op als macro.
 No parts found.	Geen artikelen gevonden.
@@ -437,7 +412,6 @@ PLC connection point	PLC-aansluitpunt
 PLC digital input	PLC digitale ingang
 PLC digital output	PLC digitale uitgang
 PLC overview	PLC-overzicht
-PLC overview…	PLC-overzicht…
 Packaging quantity	Verpakkingseenheid
 Page	Pagina
 Page / column (3.4.1)	Pagina / kolom (3.4.1)
@@ -468,11 +442,10 @@ Parts	Artikelen
 Parts (CSV, JSON)	Artikelen (CSV, JSON)
 Parts import failed: {}	Artikelen importeren mislukt: {}
 Parts management	Artikelbeheer
-Parts management…	Artikelbeheer…
 Parts server: {}	Artikelserver: {}
 Passive components	Passieve componenten
 Pilot light (NFPA)	Signaallamp (NFPA)
-Place text (T)	Tekst plaatsen (T)
+Place text	Tekst plaatsen
 Placed	Geplaatst
 Placed {}× in the project	{}× in het project geplaatst
 Placeholders	Tijdelijke aanduidingen
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Artikelen van de voorbeeldcatalogus (GEN.*
 Relay / contactor coil	Relais- / magneetschakelaarspoel
 Relay coil (NFPA)	Relaisspoel (NFPA)
 Release: lock all pages	Vrijgeven: alle pagina's vergrendelen
-Released page – unlock it in Project › Revisions to change it	Vrijgegeven pagina – ontgrendel deze in Project › Revisies om hem te wijzigen
 Remove from cable	Uit kabel verwijderen
 Remove from harness	Uit kabelboom verwijderen
 Remove from the harness	Uit de kabelboom verwijderen
@@ -566,7 +538,6 @@ Revision marks	Revisiemarkeringen
 Revision overview (changes)	Revisieoverzicht (wijzigingen)
 Revision {} created	Revisie {} gemaakt
 Revisions	Revisies
-Revisions…	Revisies…
 Right	Rechts
 Rotate (R)	Draaien (R)
 Rotate / mirror (selection or symbol being placed)	Draaien / spiegelen (selectie of symbool dat wordt geplaatst)
@@ -637,7 +608,6 @@ Supplier	Leverancier
 Switches / Sensors	Schakelaars / sensoren
 Symbol	Symbool
 Symbol editor	Symbooleditor
-Symbol editor…	Symbooleditor…
 Symbol table import failed: {}	Symbooltabel importeren mislukt: {}
 Symbols	Symbolen
 Synchronize project parts from database	Projectartikelen synchroniseren vanuit de database
@@ -655,7 +625,6 @@ Terminal number	Klemnummer
 Terminal number, PLC address, potential name …	Klemnummer, PLC-adres, potentiaalnaam …
 Terminal strip	Klemmenstrook
 Terminal strips	Klemmenstroken
-Terminal strips…	Klemmenstroken…
 Terminals	Klemmen
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Klemmen met hetzelfde brugnummer zijn doorverbonden (dezelfde potentiaal). Reserveklemmen worden in de stuklijst meegeteld.
 Test connection	Verbinding testen
@@ -727,8 +696,7 @@ Wire tool / text tool	Draadgereedschap / tekstgereedschap
 Wire {} – {}  ({} of {} here, click again for the next)	Draad {} – {}  ({} van {} hier, klik opnieuw voor de volgende)
 Wire {} – {}  {} mm	Draad {} – {}  {} mm
 Wires	Draden
-Workflow	Werkwijze
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Kolom {}  Rij {}
+Column {}  Row {}	Kolom {}  Rij {}
 X {}  Y {} mm on the {}	X {}  Y {} mm op de {}
 YYYY-MM-DD	JJJJ-MM-DD
 Zoom / pan	Zoomen / verschuiven
@@ -815,67 +783,55 @@ writable with token	beschrijfbaar met token
 ⎘ Copy	⎘ Kopiëren
 ○ Circle	○ Cirkel
 ☐ Rect	☐ Rechthoek
-⛶ Fit	⛶ Passend maken
-✏ Place in schematic	✏ In schema plaatsen
+Place in schematic	In schema plaatsen
 ✏ Wire	✏ Draad
-✔ Add to device	✔ Aan apparaat toevoegen
-✔ Create	✔ Maken
+Add to device	Aan apparaat toevoegen
+Create	Maken
 ✔ No problems found.	✔ Geen problemen gevonden.
 ✔ Save	✔ Opslaan
 ➕ Add accessory	➕ Toebehoren toevoegen
-➕ Add function	➕ Functie toevoegen
-➕ Add part…	➕ Artikel toevoegen…
+Add function	Functie toevoegen
+Add part…	Artikel toevoegen…
 ➕ Insert (click into the page)	➕ Invoegen (klik in de pagina)
 ➕ Insert as new page	➕ Invoegen als nieuwe pagina
 ➕ Insert as report page	➕ Invoegen als rapportpagina
-➕ Insert mounting layout page	➕ Montageplanpagina invoegen
+Insert mounting layout page	Montageplanpagina invoegen
 ➕ Label	➕ Label
 ➕ Line	➕ Lijn
 ➕ New	➕ Nieuw
-➕ New cable	➕ Nieuwe kabel
-➕ New harness	➕ Nieuwe kabelboom
+New cable	Nieuwe kabel
+New harness	Nieuwe kabelboom
 ➕ Property	➕ Eigenschap
 ➕ Rectangle	➕ Rechthoek
 ➕ Text	➕ Tekst
-➕ Value set	➕ Waardenset
+Value set	Waardenset
 ➕ {} (not saved)	➕ {} (niet opgeslagen)
 ⟲ Revert	⟲ Terugzetten
 ⟳ Reload	⟳ Opnieuw laden
-⟳ Rotate	⟳ Draaien
-⬆ Import symbol table…	⬆ Symbooltabel importeren…
-⬆ Import…	⬆ Importeren…
-⬆ Upload database ({})	⬆ Database uploaden ({})
+Import symbol table…	Symbooltabel importeren…
+Upload database ({})	Database uploaden ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Artikelbestand uploaden (CSV / JSON)…
-⬆ Upload selected part	⬆ Geselecteerd artikel uploaden
-⬇ Door NC data (DXF)	⬇ NC-gegevens deur (DXF)
-⬇ Door cutouts (CSV)	⬇ Deuruitsparingen (CSV)
-⬇ Download into database	⬇ Downloaden naar database
-⬇ Drilling list (CSV)	⬇ Boorlijst (CSV)
-⬇ Export CSV	⬇ CSV exporteren
+Upload selected part	Geselecteerd artikel uploaden
+Door NC data (DXF)	NC-gegevens deur (DXF)
+Door cutouts (CSV)	Deuruitsparingen (CSV)
+Download into database	Downloaden naar database
 ⬇ Export KBL (XML)…	⬇ KBL exporteren (XML)…
-⬇ Export symbol table (CSV)…	⬇ Symbooltabel exporteren (CSV)…
-⬇ Export…	⬇ Exporteren…
-⬇ NC data (DXF)	⬇ NC-gegevens (DXF)
+Export symbol table (CSV)…	Symbooltabel exporteren (CSV)…
+NC data (DXF)	NC-gegevens (DXF)
 ⬉ Select	⬉ Selecteren
 🌐 Parts server	🌐 Artikelserver
-💾 Save	💾 Opslaan
-💾 Save selection as macro…	💾 Selectie opslaan als macro…
-📊 Cable overview	📊 Kabeloverzicht
-📊 Harness data	📊 Kabelboomgegevens
 📊 Reports	📊 Rapporten
-📊 Revision overview	📊 Revisieoverzicht
-🔒 Released page – read only	🔒 Vrijgegeven pagina – alleen-lezen
+Revision overview	Revisieoverzicht
+Released page – read only	Vrijgegeven pagina – alleen-lezen
 🗄 Panel layout	🗄 Kastlay-out
 🗄 Parts database	🗄 Artikeldatabase
 🗋 Schematic	🗋 Schema
 🗑 Delete	🗑 Verwijderen
-🗑 Delete connection point	🗑 Aansluitpunt verwijderen
-🗑 Delete element	🗑 Element verwijderen
-🗑 Delete macro	🗑 Macro verwijderen
-🗑 Remove	🗑 Verwijderen
+Delete connection point	Aansluitpunt verwijderen
+Delete element	Element verwijderen
 {} connections removed from their harness	{} verbindingen uit hun kabelboom verwijderd
 {} connections assigned to {}	{} verbindingen toegewezen aan {}
-🗄 Show in panel layout ({})	🗄 Weergeven in kastlay-out ({})
+Show in panel layout ({})	Weergeven in kastlay-out ({})
    |  Potential {}	   |  Potentiaal {}
 📁 Project parts ({})	📁 Projectartikelen ({})
 part {} not found	artikel {} niet gevonden
@@ -1070,8 +1026,8 @@ via cable ducts	via kabelgoten
 {} connection points	{} aansluitpunten
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm op de plaat + {} mm reserve; de rest is de weg van de aansluitpunten naar de plaat.
 {} wires, {} – {} mm	{} draden, {} – {} mm
-➕ Add connection point	➕ Aansluitpunt toevoegen
-🗑 Remove all	🗑 Alles verwijderen
+Add connection point	Aansluitpunt toevoegen
+Remove all	Alles verwijderen
 2D front view (SVG)	2D-vooraanzicht (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D-model (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Eindsteun
@@ -1113,11 +1069,9 @@ Wire number on both ends	Draadnummer aan beide uiteinden
 {} markers	{} markeringen
 {} mm	{} mm
 {} pieces	{} stuks
-Potentials…	Potentialen…
 Potentials	Potentialen
-➕ New potential	➕ Nieuwe potentiaal
+New potential	Nieuwe potentiaal
 Load preset	Voorinstelling laden
-📊 Potential overview	📊 Potentiaaloverzicht
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Draden zonder eigen kleur of doorsnede nemen die over van de potentiaal van hun verbinding; kabeladers behouden de waarden van de kabel.
 e.g. 400 V AC	bijv. 400 V AC
 Delete	Verwijderen
@@ -1151,7 +1105,6 @@ turquoise	turquoise
 silver	zilver
 green-yellow	groen-geel
 Potential {} defined {} times	Potentiaal {} is {} keer gedefinieerd
-Potential {} has no definition (Project › Potentials)	Potentiaal {} heeft geen definitie (Project › Potentialen)
 Protective conductor {} with wire colour {} (must be GNYE)	Beschermingsleiding {} met draadkleur {} (moet GNYE zijn)
 Wire colour GNYE is reserved for protective conductors ({})	De draadkleur GNYE is voorbehouden aan beschermingsleidingen ({})
 {}: cross-section {} differs from the potential definition ({})	{}: doorsnede {} wijkt af van de potentiaaldefinitie ({})
@@ -1183,9 +1136,7 @@ Draw wires in their colour	Draden in hun kleur tekenen
 Pin	Pen
 Plug	Stekker
 Plugs	Stekkers
-Plugs…	Stekkers…
 Plug diagram	Stekkerschema
-📊 Plug diagram	📊 Stekkerschema
 Socket side	Buszijde
 Pin side	Penzijde
 female	bus
@@ -1231,7 +1182,6 @@ Column	Kolom
 Condition '{}' needs OPTION=value	Voorwaarde '{}' heeft OPTION=waarde nodig
 Condition (OPTION=value & …)	Voorwaarde (OPTION=waarde & …)
 Configurator	Configurator
-Configurator…	Configurator…
 Cooling	Koeling
 Creates or changes a configurator option	Maakt of wijzigt een configuratoroptie
 Cross-section {} carries {} A, less than the {} A of {}	Doorsnede {} voert {} A, minder dan de {} A van {}
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: spanningsval {} V ({} %) boven {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W vermogensverlies verwarmt de behuizing tot {} °C (maximaal {} °C): {} nodig
 {}: {} carries {} A, the load {} needs {} A	{}: {} voert {} A, de belasting {} heeft {} A nodig
-⚙ Generate pages	⚙ Pagina's genereren
-➕ Option	➕ Optie
-➕ Rule	➕ Regel
-🗑 Delete variant	🗑 Variant verwijderen
+Option	Optie
+Delete variant	Variant verwijderen
 e.g. NAME=Pump; POWER={POWER}	bijv. NAME=Pomp; POWER={POWER}
 e.g. STARTER=DOL	bijv. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Artikelen (CSV, JSON, BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	Standaardmedium
 Number prefix	Nummervoorvoegsel
 📊 Hose list	📊 Slangenlijst
 PCT loops (pre-planning)	PCT-lussen (voorplanning)
-➕ Loop	➕ Lus
-📊 PCT loop overview	📊 Overzicht PCT-lussen
+Loop	Lus
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrumenten in het P&ID dragen functieletters en lusnummer in hun label (TIC 101); hun apparaataanduiding koppelt ze aan het schema.
 PCT loop	PCT-lus
 Range	Bereik
@@ -1409,7 +1356,6 @@ Delete loop	Lus verwijderen
 {} (default)	{} (standaard)
 Hose / pipe {}	Slang / buis {}
 Resulting: {} · {} · {} · {} m	Resultaat: {} · {} · {} · {} m
-Fluid and process…	Fluïdum en proces…
 Hose defaults and PCT loops of the pre-planning	Standaardwaarden voor slangen en PCT-lussen van de voorplanning
 ✔ Wiring	✔ Bedrading
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Bedradingsassistent: checklist van de draden met 3D-weergave en voortgang (tablet: open de web-app met #wiring)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Brontaal
 Target languages	Doeltalen
 Remove the language (its translations stay in the dictionary)	De taal verwijderen (de vertalingen blijven in het woordenboek)
-➕ Add	➕ Toevoegen
+Add	Toevoegen
 ISO 639-1 language code	Taalcode volgens ISO 639-1
 Collect texts from the project	Teksten uit het project verzamelen
 Adds all lines of the project texts to the dictionary	Voegt alle regels van de projectteksten toe aan het woordenboek
@@ -1554,7 +1500,6 @@ not translated into {}	niet vertaald in {}
 {} new texts in the dictionary	{} nieuwe teksten in het woordenboek
 {} unused entries removed	{} ongebruikte items verwijderd
 Export as PDF in language	Exporteren als PDF in taal
-Project languages…	Projecttalen…
 Translate the project texts; documentation per language	De projectteksten vertalen; documentatie per taal
 {} translations imported	{} vertalingen geïmporteerd
 Import failed: {}	Importeren mislukt: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	Componenten (samenstel)
 (included)	(inbegrepen)
 Fastening hardware in the bill of materials	Bevestigingsmateriaal in de stuklijst
 Screws, nuts, washers and rivet nuts of the fixing points	Schroeven, moeren, ringen en blindklinkmoeren van de bevestigingspunten
-⬇ NC data of this face (DXF)	⬇ NC-gegevens van dit vlak (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Boorlijst van dit vlak (CSV)
+NC data of this face (DXF)	NC-gegevens van dit vlak (DXF)
+Drilling list of this face (CSV)	Boorlijst van dit vlak (CSV)
 Group as assembly	Groeperen als samenstel
 The items are selected and moved together	De elementen worden samen geselecteerd en verplaatst
 Distribute horizontally	Horizontaal verdelen
@@ -1625,7 +1570,6 @@ Pattern	Patroon
 Columns × rows	Kolommen × rijen
 Pitch X / Y	Steek X / Y
 Devices are not copied: a device is placed once.	Apparaten worden niet gekopieerd: een apparaat wordt één keer geplaatst.
-✔ Copy	✔ Kopiëren
 Save as 3D macro	Opslaan als 3D-macro
 Items with an anchor keep it; the others are inserted relative to the click.	Elementen met een verankering behouden die; de andere worden ten opzichte van de klik ingevoegd.
 Walls	Wanden
@@ -1728,7 +1672,6 @@ Macro name	Macronaam
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Voegt een 3D-macro in als samenstel: verankerde elementen op hun plaats, de andere ten opzichte van x / y op het vlak
 Installation site	Installatieplaats
 Structure management	Structuurbeheer
-Structure management…	Structuurbeheer…
 Structure identifiers (IEC 81346), templates and work areas	Structuuraanduidingen (IEC 81346), sjablonen en werkgebieden
 Template	Sjabloon
 Apply template	Sjabloon toepassen
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	Gebruikte aan
 Work areas	Werkgebieden
 Work area	Werkgebied
 Work area {}	Werkgebied {}
-➕ Work area	➕ Werkgebied
 (whole project)	(hele project)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Een werkgebied beperkt de pagina's en apparaten in de navigator tot een deel van het project. Filters: leeg = alles, * = willekeurige tekens; A1 omvat ook A1.2.
 OpenECraft structure template	OpenECraft-structuursjabloon
@@ -1873,7 +1815,7 @@ Export…	Exporteren…
 Import…	Importeren…
 File to embed	In te sluiten bestand
 Forms – title blocks, frames and templates	Formulieren – titelblokken, kaders en sjablonen
-Title blocks, plot frames and page templates…	Titelblokken, plotkaders en paginasjablonen…
+Title blocks, plot frames and page templates	Titelblokken, plotkaders en paginasjablonen
 Frame of all pages that do not choose one	Kader van alle pagina's die er geen kiezen
 Frame to start from when the frame is new (default: A3 landscape)	Kader om mee te beginnen als het kader nieuw is (standaard: A3 landscape)
 Free graphics and notes, not evaluated	Vrije grafiek en notities, niet geëvalueerd
@@ -2044,19 +1986,18 @@ Port {} is not connected	Poort {} is niet verbonden
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Exporteert het project: svg (één pagina), html, pdf, dxf, dwg (alleen naar een bestand), wire_list (CSV), plc_table (CSV), plc_variables (globale variabelen volgens IEC 61131-3), aml (PLC-hardware als AutomationML), kbl (kabelboom-XML), marking (CSV), gltf, step, iges, ifc of jt (3D-kastlay-out; jt alleen naar een bestand), dictionary (CSV van de vertalingen van de projectteksten)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt of dictionary, of een export van een plug-in
 PLC hardware	PLC-hardware
-⚙ Automatic configuration	⚙ Automatische configuratie
+Automatic configuration	Automatische configuratie
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stations voor CPU's en buskoppelaars, bussystemen, slots, startadressen, adressen van de punten, IP-adressen en een lijntopologie
-⬇ Export AutomationML…	⬇ AutomationML exporteren…
+Export AutomationML…	AutomationML exporteren…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Hardwareconfiguratie en PLC-variabelen voor TIA Portal en andere PLC-tools
-⬆ Import AutomationML…	⬆ AutomationML importeren…
+Import AutomationML…	AutomationML importeren…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stations, modules, adressen, subnetten en variabelecommentaren uit een PLC-tool
-⬇ Export IEC 61131-3 variables…	⬇ Variabelen volgens IEC 61131-3 exporteren…
+Export IEC 61131-3 variables…	Variabelen volgens IEC 61131-3 exporteren…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Globale variabelenlijst met directe adressen voor CODESYS, TwinCAT en andere
 Stations and racks	Stations en racks
 Bus topology	Bustopologie
 Device descriptions	Apparaatbeschrijvingen
 Station	Station
-➕ Station	➕ Station
 Cards without station: {}	Kaarten zonder station: {}
 No stations: add one or use the automatic configuration.	Geen stations: voeg er een toe of gebruik de automatische configuratie.
 Head (CPU / coupler)	Kop (CPU / koppelaar)
@@ -2065,7 +2006,7 @@ Bus system	Bussysteem
 IP / bus address	IP- / busadres
 Device number	Apparaatnummer
 {}: {} slots, ports {}	{}: {} slots, poorten {}
-🗑 Remove station	🗑 Station verwijderen
+Remove station	Station verwijderen
 Plug in card	Kaart plaatsen
 No modules: plug in PLC cards of the schematic.	Geen modules: plaats PLC-kaarten uit het schema.
 Device description	Apparaatbeschrijving
@@ -2076,13 +2017,12 @@ Output bytes	Uitgangsbytes
 from the parts	uit de artikelen
 Remove from the station	Uit het station verwijderen
 Bus systems	Bussystemen
-➕ Bus system	➕ Bussysteem
 Subnet	Subnet
 Port A	Poort A
 Port B	Poort B
 Without bus system	Zonder bussysteem
 No bus systems.	Geen bussystemen.
-⬆ Import GSDML / ESI…	⬆ GSDML / ESI importeren…
+Import GSDML / ESI…	GSDML / ESI importeren…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Apparaatbeschrijvingen van PROFINET-apparaten (GSDML) en EtherCAT-apparaten (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Artikelen van de productgroep PLC leveren ook beschrijvingen (technische gegevens: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Slots
@@ -2093,7 +2033,7 @@ built-in	ingebouwd
 {} addresses changed	{} adressen gewijzigd
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	{} stations, {} modules, {} bussystemen, {} verbindingen geïmporteerd; {} adressen en {} teksten gewijzigd
 {} device descriptions imported	{} apparaatbeschrijvingen geïmporteerd
-PLC hardware and bus topology…	PLC-hardware en bustopologie…
+PLC hardware and bus topology	PLC-hardware en bustopologie
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stations, racks, modules, bussystemen, AutomationML-uitwisseling met PLC-tools
 Device description (GSDML, ESI)	Apparaatbeschrijving (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Busverbinding {} - {}: kabel {} bestaat niet
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	Kabel {} is een {}-kabel op een {}-ver
 Port {} has more than {} cables	Poort {} heeft meer dan {} kabels
 Cable {} is used for {} bus connections	Kabel {} wordt gebruikt voor {} busverbindingen
 with bus cables	met buskabels
-➕ Create bus cables	➕ Buskabels maken
+Create bus cables	Buskabels maken
 A cable of the bus type for every connection without cable	Een kabel van het bustype voor elke verbinding zonder kabel
 missing	ontbreekt
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} stations, {} bussystemen, {} kaarten toegewezen, {} adressen gewijzigd, {} verbindingen, {} kabels
@@ -2211,12 +2151,11 @@ starts with	begint met
 {} (first column)	{} (eerste kolom)
 {} report pages output to {}	{} rapportpagina's uitgevoerd naar {}
 {} – {} ({} pages)	{} – {} ({} pagina's)
-➕ Add filter	➕ Filter toevoegen
-➕ Add sort key	➕ Sorteersleutel toevoegen
-➕ New block	➕ Nieuw blok
-➕ New scheme	➕ Nieuw schema
-⟳ Generate all	⟳ Alles genereren
-⟳ Generate	⟳ Genereren
+Add filter	Filter toevoegen
+Add sort key	Sorteersleutel toevoegen
+New block	Nieuw blok
+Generate all	Alles genereren
+Generate	Genereren
 ⟳ Update report blocks	⟳ Rapportblokken bijwerken
 Opening {}…	{} openen…
 Uploading {}…	{} uploaden…
@@ -2238,13 +2177,13 @@ Save and release page	Opslaan en pagina vrijgeven
 Lock page	Pagina vergrendelen
 Project server	Projectserver
 User name	Gebruikersnaam
-⟳ List projects	⟳ Projecten weergeven
+List projects	Projecten weergeven
 Enter a user name: other users see it on your locks.	Voer een gebruikersnaam in: andere gebruikers zien deze bij je vergrendelingen.
 Users	Gebruikers
 Opening a project replaces the current one, its unsaved changes are lost.	Als je een project opent, wordt het huidige vervangen; de niet-opgeslagen wijzigingen daarvan gaan verloren.
 Upload the current project as a new shared project:	Het huidige project uploaden als nieuw gedeeld project:
 Name on the server	Naam op de server
-⬆ Upload	⬆ Uploaden
+Upload	Uploaden
 Letters, digits, space, - _ . (up to 64 characters)	Letters, cijfers, spatie, - _ . (maximaal 64 tekens)
 Shared project {} – revision {}, user {}	Gedeeld project {} – revisie {}, gebruiker {}
 Save and release all locks	Opslaan en alle vergrendelingen vrijgeven
@@ -2261,14 +2200,11 @@ None	Geen
 Close shared project	Gedeeld project sluiten
 Releases all locks; the project stays open as a local copy	Geeft alle vergrendelingen vrij; het project blijft geopend als lokale kopie
 Download project	Project downloaden
-Project server…	Projectserver…
 Open and save shared projects, lock pages	Gedeelde projecten openen en opslaan, pagina's vergrendelen
-🔒 Locked by {} – read only	🔒 Vergrendeld door {} – alleen-lezen
+Locked by {} – read only	Vergrendeld door {} – alleen-lezen
 {} (project server, revision {})	{} (projectserver, revisie {})
 {} change requests added, {} updated	{} wijzigingsverzoeken toegevoegd, {} bijgewerkt
-Compare and baselines…	Vergelijken en baselines…
 Compare with a baseline, a revision or another project file and take differences over	Vergelijken met een baseline, een revisie of een ander projectbestand en verschillen overnemen
-Change requests…	Wijzigingsverzoeken…
 Review: comments and markup	Review: opmerkingen en markeringen
 Revisions, approval and release	Revisies, goedkeuring en vrijgave
 Review ({})	Review ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	Wat moet er worden gecontroleerd of gewijzigd
 Change request	Wijzigingsverzoek
 Reply…	Beantwoorden…
 Reply	Beantwoorden
-🗑 Delete comment	🗑 Opmerking verwijderen
+Delete comment	Opmerking verwijderen
 Approval workflow	Goedkeuringsproces
 Approvers	Goedkeurders
 User names, separated by commas	Gebruikersnamen, gescheiden door komma's
@@ -2309,8 +2245,8 @@ rejected	afgewezen
 Submit for review	Indienen voor review
 Release	Vrijgeven
 Discard draft	Concept negeren
-✔ Approve	✔ Goedkeuren
-✖ Reject	✖ Afwijzen
+Approve	Goedkeuren
+Reject	Afwijzen
 Approving needs an approver; you are \"{}\".	Alleen een goedkeurder kan goedkeuren; jij bent \"{}\".
 Submit again	Opnieuw indienen
 With the current pages; the approvals so far become void	Met de huidige pagina's; de goedkeuringen tot nu toe vervallen
@@ -2335,7 +2271,7 @@ Compare with	Vergelijken met
 Baseline {} {}	Baseline {} {}
 Baseline {}	Baseline {}
 Pages of revision {}	Pagina's van revisie {}
-📂 Project file…	📂 Projectbestand…
+Project file…	Projectbestand…
 Baselines ({})	Baselines ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Een baseline slaat het hele project op (pagina's, apparaten, artikelen, instellingen). Bij het vrijgeven van een revisie wordt er een opgeslagen.
 Create baseline	Baseline maken
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	De geselec
 {} details	{} details
 Baseline {} created	Baseline {} gemaakt
 Change requests	Wijzigingsverzoeken
-➕ New request	➕ Nieuw verzoek
-📂 Import…	📂 Importeren…
+New request	Nieuw verzoek
 CSV or JSON from another system; known numbers are updated	CSV of JSON uit een ander systeem; bekende nummers worden bijgewerkt
-⬇ Export JSON	⬇ JSON exporteren
+Export JSON	JSON exporteren
 Rejected and closed ones too	Ook afgewezen en gesloten
 No change requests yet.	Nog geen wijzigingsverzoeken.
 Select a request.	Selecteer een verzoek.
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	Apparaataanduidingen, gescheiden door komma's
 Affected pages ({})	Betrokken pagina's ({})
 Go to page	Naar pagina
 Comments ({})	Opmerkingen ({})
-💬 Comment on the current page	💬 Opmerking op de huidige pagina
+Comment on the current page	Opmerking op de huidige pagina
 Linked to this request	Gekoppeld aan dit verzoek
-🗑 Delete request	🗑 Verzoek verwijderen
+Delete request	Verzoek verwijderen
 in progress	in behandeling
 resolved	opgelost
 Redline	Redline
@@ -2405,14 +2340,6 @@ Settings	Instellingen
 Page order	Paginavolgorde
 {} differences taken over	{} verschillen overgenomen
 Layers	Lagen
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klik om te selecteren, sleep om te verplaatsen, sleep op een lege plek voor een vensterselectie. Sleep de aanduiding of een eigenschapstekst van een geselecteerd symbool om deze te plaatsen. Slepen met de rechter-/middelste muisknop verschuift de weergave, het muiswiel zoomt.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Klik op begin- en hoekpunten · Spatie wisselt de hoekrichting · A schakelt routeren om symbolen heen in of uit · eindigt automatisch op een aansluiting · Rechtsklik / Esc beëindigt
-Click the centre, then a point of the circle	Klik op het middelpunt en daarna op een punt van de cirkel
-Click the centre, the start point and the end point (counter-clockwise)	Klik op het middelpunt, het beginpunt en het eindpunt (tegen de klok in)
-Click the corner points · double click, Enter or right click finishes	Klik op de hoekpunten · dubbelklikken, Enter of rechtsklik beëindigt
-Click the two points to measure, then the position of the dimension line	Klik op de twee punten die je wilt meten en daarna op de positie van de maatlijn
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Klik op een draad: het punt bepaalt nummer, kleur, doorsnede en kabelader van de verbinding
-Draw a line across the wires that are cores of the cable	Trek een lijn over de draden die aders van de kabel zijn
 Click to insert · Esc cancel	Klik om in te voegen · Esc annuleert
 Routing around symbols	Routeren om symbolen heen
 {} objects pasted	{} objecten geplakt
@@ -2442,7 +2369,7 @@ Layer	Laag
 Auto-connect	Automatisch verbinden
 Draw connections between facing connection points when symbols are placed or moved	Verbindingen tekenen tussen tegenover elkaar liggende aansluitpunten wanneer symbolen worden geplaatst of verplaatst
 Route	Routeren
-The wire tool routes around symbols and other wires (A)	Het draadgereedschap routeert om symbolen en andere draden heen (A)
+The wire tool routes around symbols and other wires	Het draadgereedschap routeert om symbolen en andere draden heen
 Dimension	Maatvoering
 Image…	Afbeelding…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG- of JPEG-bitmap, bijv. een logo of een foto
@@ -2486,7 +2413,6 @@ Tag placed by hand	Aanduiding handmatig geplaatst
 Drag the tag of the selected symbol to place it.	Sleep de aanduiding van het geselecteerde symbool om deze te plaatsen.
 (empty)	(leeg)
 ➕ Place property	➕ Eigenschap plaatsen
-➕ Layer	➕ Laag
 Layer {}	Laag {}
 Layers of graphics, texts, dimensions and images	Lagen van grafiek, teksten, maatvoering en afbeeldingen
 Visible	Zichtbaar
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Doorsnede, bijv. 1.5 mm²
 A cable definition needs a start and an end point	Een kabeldefinitie heeft een begin- en een eindpunt nodig
 No cable {}	Geen kabel {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Verbindingsdefinitiepunten op een draad bepalen nummer, kleur, doorsnede en ader van de hele verbinding; een kabeldefinitielijn over draden maakt ze tot aders van een kabel. Automatisch verbinden verbindt tegenover elkaar liggende aansluitpunten, Routeren (A) leidt draden om symbolen heen.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafiek: cirkels, ellipsen, bogen, veelhoeken, maatvoering en afbeeldingen op lagen (navigator › Lagen: zichtbaar, vergrendeld, afgedrukt). Sleep de aanduiding van een geselecteerd symbool om deze te plaatsen; verdere eigenschappen worden in de eigenschappen ervan geplaatst.
 Coil	Spoel
 Main contacts 4-pole	Hoofdcontacten 4-polig
 NO contact, on-delay	Maakcontact, opkomvertraagd
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	Wordt voor
 📊 Hose configuration	📊 Slangconfiguratie
 📊 Tubing / piping list	📊 Buis- / leidinglijst
 📊 Fluid netlist	📊 Fluïdumnetlijst
-➕ Group	➕ Groep
-📊 Fluid device groups	📊 Vloeistoftechnische apparaatgroepen
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Ventieleilanden, verzorgingseenheden en verdeelblokken: hun vloeistoftechnische apparaten in plaatsvolgorde, gescheiden door spaties.
 Places	Plaatsen
 0 = not limited	0 = onbeperkt
 Delete group	Groep verwijderen
-🔄 Synchronize	🔄 Synchroniseren
+Synchronize	Synchroniseren
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Koppelt magneetventielen aan de spoel met hetzelfde nummer (-QM3 › -MB3) en kopieert functieteksten
 {} links created, {} function texts copied	{} koppelingen gemaakt, {} functieteksten gekopieerd
-📊 Electro-fluid cross reference	📊 Elektro-fluïdum-kruisverwijzingen
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Elektrische apparaten die een vloeistoftechnisch apparaat bedienen of bewaken (magneetspoelen, positie- en drukschakelaars); beide schema's tonen kruisverwijzingen naar elkaar.
 Electrical devices	Elektrische apparaten
 Operating pressure in bar (0 = hose ratings are not checked)	Werkdruk in bar (0 = drukklassen van de slangen worden niet gecontroleerd)
@@ -2734,7 +2655,6 @@ Right neighbour	Rechterbuur
 No cable passage to {}: wires to it are not routed	Geen kabeldoorvoer naar {}: draden daarheen worden niet gerouteerd
 Open to {}: wires cross beside the mounting plates	Open naar {}: draden lopen naast de montageplaten over
 {} cable passages to {}	{} kabeldoorvoeren naar {}
-➕ Cable passage to {}	➕ Kabeldoorvoer naar {}
 Round cutouts facing each other in both side walls	Ronde uitsparingen tegenover elkaar in beide zijwanden
 Both sides are open: the wires need no cutout	Beide zijden zijn open: de draden hebben geen uitsparing nodig
 Cable passage to {}	Kabeldoorvoer naar {}
@@ -3067,7 +2987,6 @@ Surge protection	Overspanningsbeveiliging
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Uitschakelvermogen ten opzichte van de kortsluitstroom bij elk beveiligingsapparaat van het net, uitschakeling bij de laagste foutstroom aan het einde van de stroomkring, kortsluitvastheid van de kabels en selectiviteit met het voorgeschakelde apparaat.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Vermogen en stroom van de belastingen van het net (motoren, aandrijvingen, verwarmingen, voedingen, transformatoren), de belasting van elk beveiligingsapparaat, de vraag met de gelijktijdigheidsfactor en het belastingsbudget van de voedingen.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Veiligheidsfuncties volgens ISO 13849-1: elk subsysteem (ingang, logica, uitgang) met de apparaten van een kanaal, de categorie, de diagnostische dekkingsgraad en het aantal schakelcycli per jaar. Apparaten tellen mee met PL / PFHd, MTTFd of B10d van hun artikelen.
-➕ Safety function	➕ Veiligheidsfunctie
 Input	Ingang
 Logic	Logica
 Output	Uitgang
@@ -3076,13 +2995,10 @@ Operations / year	Schakelcycli / jaar
 CCF	CCF
 0 = from the devices	0 = uit de apparaten
 Measures against common cause failure (at least 65 points)	Maatregelen tegen uitval door een gemeenschappelijke oorzaak (minstens 65 punten)
-➕ Subsystem	➕ Subsysteem
 Subsystem {}	Subsysteem {}
 Rule libraries	Regelbibliotheken
 Customer rule sets	Klantspecifieke regelsets
-➕ Rule set	➕ Regelset
 Rule set {}	Regelset {}
-💾 Export…	💾 Exporteren…
 OpenECraft rule sets	OpenECraft-regelsets
 Verify the project against it	Het project hiertegen verifiëren
 {} checks	{} controles
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Elk
 Message	Bericht
 if	als
 then	dan
-➕ Condition	➕ Voorwaarde
-➕ Check	➕ Controle
 OpenECraft rule sets (JSON)	OpenECraft-regelsets (JSON)
-Electrical calculations…	Elektrische berekeningen…
+Electrical calculations	Elektrische berekeningen
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Kortsluiting, selectiviteit, belastingen, EMC, functionele veiligheid en verificatie tegen regelsets
 0 = a single value; otherwise values [1] … [n]	0 = één enkele waarde; anders waarden [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Een projectdefinitie op basis van deze, met eigen standaardwaarden en schema
@@ -3416,7 +3330,6 @@ Project number	Projectnummer
 Project property of the property database (by key)	Projecteigenschap van de eigenschappendatabase (via de sleutel)
 Proof test interval	Interval proeftest
 Property database	Eigenschappendatabase
-Property database…	Eigenschappendatabase…
 Property definitions	Eigenschapsdefinities
 Property definitions, function definitions, placement schemes and the values of all objects	Eigenschapsdefinities, functiedefinities, plaatsingsschema's en de waarden van alle objecten
 Property groups	Eigenschapsgroepen
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" is niet een van {}
 {}: invalid value \"{}\" ({})	{}: ongeldige waarde \"{}\" ({})
 ➕ Default value	➕ Standaardwaarde
-➕ Derive project definition	➕ Projectdefinitie afleiden
-➕ User defined property	➕ Door de gebruiker gedefinieerde eigenschap
+Derive project definition	Projectdefinitie afleiden
+User defined property	Door de gebruiker gedefinieerde eigenschap
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Apparaten in het eenlijnschema plannen, het schema genereren en beide synchroon houden
-Single-line / multi-line…	Eenlijnig / meerlijnig…
 All devices of page {} are in the schematic already	Alle apparaten van pagina {} staan al in het schema
 Copies function texts between the single-line diagram and the schematic where one side is empty	Kopieert functieteksten tussen het eenlijnschema en het schema waar één kant leeg is
 Does not match	Komt niet overeen
@@ -3756,11 +3668,11 @@ Outline	Contour
 Click the corners of a machine or building, double-click to finish	Klik op de hoeken van een machine of gebouw, dubbelklik om te voltooien
 (no cable highlighted)	(geen kabel gemarkeerd)
 Fit	Passend maken
-⬇ Export SVG…	⬇ SVG exporteren…
+Export SVG…	SVG exporteren…
 Height above the floor	Hoogte boven de vloer
 Placed here: {}	Hier geplaatst: {}
 Place an enclosure, device or machine location at this node	Behuizing, apparaat of machineplaats bij dit knooppunt plaatsen
-🗑 Delete node	🗑 Knooppunt verwijderen
+Delete node	Knooppunt verwijderen
 SVG drawing	SVG-tekening
 Segments	Segmenten
 Width × height (mm)	Breedte × hoogte (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	Moet worden aangesloten op de pot
 {} corners	{} hoeken
 Take over cut lengths	Snijlengten overnemen
 Set the cable lengths to the planned cut lengths	Kabellengten instellen op de geplande snijlengten
-📊 Report	📊 Rapport
 {} parts of the network	{} deelnetten
 No field cables: place the enclosures and field devices at nodes of the route network.	Geen veldkabels: plaats de behuizingen en veldapparaten bij knooppunten van het tracénetwerk.
 Route definition of {}	Tracédefinitie van {}
 Via:	Via:
 Remove	Verwijderen
-➕ Node	➕ Knooppunt
 Avoid:	Vermijden:
 {} cable lengths taken over	{} kabellengten overgenomen
-➕ Bonding conductor	➕ Vereffeningsleider
+Bonding conductor	Vereffeningsleider
 Bonding points	Aansluitpunten van de potentiaalvereffening
-➕ Accessory	➕ Toebehoren
 both ends	beide einden
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Geen toebehoren: wartels, connectors, afschermklemmen … komen in de stuklijst en worden gecontroleerd op de kabel.
 Reserve per cable end	Toeslag per kabeleinde
@@ -3799,7 +3708,6 @@ Length inside an enclosure	Lengte in de behuizing
 Cut length step	Stapgrootte van de snijlengte
 Maximum fill of a carrier	Maximale vulling van een kabeldrager
 Bend radius in drag chains	Buigradius in sleepkettingen
-Field wiring…	Veldbedrading…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Installatielay-out, tracénetwerk, veldkabelplanning, potentiaalvereffening en kabeltoebehoren
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Geen optie {}
@@ -3913,9 +3821,9 @@ Archive and version	Archief en versie
 Verification	Controle
 OpenECraft project archive	OpenECraft-projectarchief
 The project database needs the desktop version: the browser cannot search folders.	De projectdatabase vereist de desktopversie: de browser kan geen mappen doorzoeken.
-📂 Add folder…	📂 Map toevoegen…
+Add folder…	Map toevoegen…
 Adds the project files and archives of a folder and its subfolders	Voegt de projectbestanden en archieven van een map en de submappen ervan toe
-🔄 Update all	🔄 Alles bijwerken
+Update all	Alles bijwerken
 Verify while reading	Controleren tijdens het inlezen
 Remove the folder from the database	De map uit de database verwijderen
 Search	Zoeken
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	Schakelt de op
 {} options switched	{} opties geschakeld
 File format version {}. Files of older versions are converted when they are opened.	Versie van de bestandsindeling {}. Bestanden van oudere versies worden bij het openen geconverteerd.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Een archief (.oecz) is een ZIP-bestand met het project, een manifest en de ingesloten documenten en afbeeldingen als afzonderlijke bestanden.
-📦 Archive project…	📦 Project archiveren…
-📂 Open archive…	📂 Archief openen…
+Archive project…	Project archiveren…
+Open archive…	Archief openen…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Controleert de projectgegevens (ID's, verwijzingen, apparaatgegevens, opties, deelprojecten) samen met de engineeringcontroles.
 Verify project	Project controleren
 Repair {} findings	{} bevindingen herstellen
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} fouten, {} waarschuwingen, {} opmerkingen in de projectgegevens; engineeringcontrole: {} fouten, {} waarschuwingen
 (repairable)	(herstelbaar)
 ✔ The project data is consistent.	✔ De projectgegevens zijn consistent.
-Project management…	Projectbeheer…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Projectdatabase, bulkwijzigingen van projecteigenschappen, deelprojecten, opties, archieven en controle
 OpenECraft project or archive	OpenECraft-project of -archief
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	Voor artikelen
 Collision classes	Botsingsklassen
 Distances between classes of items, or classes that may overlap	Afstanden tussen klassen van elementen, of klassen die mogen overlappen
 may overlap	mogen overlappen
-➕ Add rule	➕ Regel toevoegen
+Add rule	Regel toevoegen
 Air temperature at the devices	Luchttemperatuur bij de apparaten
 max. {} °C	max. {} °C
 No problems found	Geen problemen gevonden
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	Ongeldig antwoord van de plugin: {}
 Key figures of the project and a list of its device tags	Kengetallen van het project en een lijst van de apparaataanduidingen
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Kengetallen van het project: pagina's, symbolen, draden, apparaten, artikelen, kabels en controleresultaten
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Geladen plugins (ingebouwd en uit de pluginmappen van --plugins / OPENECRAFT_PLUGINS) met hun opdrachten, controles, rapporten en exports; schakelt er een in of uit voor deze sessie
-Manage plugins…	Plugins beheren…
-Plugin command {}	Pluginopdracht {}
+Manage plugins	Plugins beheren
 Plugin id '{}' is not snake_case	Plugin-ID '{}' is geen snake_case
 Plugin {} is loaded twice	Plugin {} is twee keer geladen
 Plugin {} needs a newer OpenECraft (API {})	Plugin {} vereist een nieuwere versie van OpenECraft (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	Onbekende plugin: {}
 Warnings	Waarschuwingen
 {} commands, {} checks, {} reports, {} exports	{} opdrachten, {} controles, {} rapporten, {} exports
 {}: the program to run is missing	{}: het uit te voeren programma ontbreekt
-▶ Run	▶ Uitvoeren
-⟳ Update	⟳ Bijwerken
+Run	Uitvoeren
+Update	Bijwerken
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Controles van de kastlay-out
@@ -4187,7 +4093,7 @@ Profile	Profiel
 (standard columns)	(standaardkolommen)
 Write the file for the other system; later imports detect conflicts against this export	Het bestand voor het andere systeem schrijven; latere imports detecteren conflicten ten opzichte van deze export
 Read a file of the other system (CSV or JSON) and review the changes	Een bestand van het andere systeem (CSV of JSON) lezen en de wijzigingen beoordelen
-⬇ Neutral exchange file…	⬇ Neutraal uitwisselingsbestand…
+Neutral exchange file…	Neutraal uitwisselingsbestand…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Artikelen, apparaten, plaatsingen, verbindingen, draden en documenten in één JSON-bestand voor systemen zonder connector
 Import changes	Importwijzigingen
 Profiles	Profielen
@@ -4213,7 +4119,6 @@ Conflicts	Conflicten
 Export	Exporteren
 Import	Importeren
 {} values taken over	{} waarden overgenomen
-Enterprise integration…	Bedrijfsintegratie…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Uitwisseling met ERP, PDM, PLM, ECAD, MCAD, inkoop en draadbewerkingsmachines
 Files of other systems (CSV, JSON)	Bestanden van andere systemen (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Koperrail {}: {} segmenten hebben {} buigingen nodig
@@ -4380,9 +4285,9 @@ DWG export failed: {}	DWG-export mislukt: {}
 DWG import failed: {}	DWG-import mislukt: {}
 DWG imported as page {}: {} lines, {} texts	DWG geïmporteerd als pagina {}: {} lijnen, {} teksten
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG geïmporteerd als pagina {}: {} lijnen, {} teksten (niet geïmporteerd: {})
-⬇ NC data (DWG)	⬇ NC-gegevens (DWG)
-⬇ Door NC data (DWG)	⬇ NC-gegevens deur (DWG)
-⬇ NC data of this face (DWG)	⬇ NC-gegevens van dit vlak (DWG)
+NC data (DWG)	NC-gegevens (DWG)
+Door NC data (DWG)	NC-gegevens deur (DWG)
+NC data of this face (DWG)	NC-gegevens van dit vlak (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importeert een DWG-tekening (AutoCAD R12 … 2018) als grafische elementen (lijnen, bogen, teksten, blokken) op een nieuwe schemapagina
 Generic	Generiek
 Parts store	Artikelbestand
@@ -4721,7 +4626,6 @@ Power cable	Vermogenskabel
 Control cable	Stuurkabel
 Wiring material	Bedradingsmateriaal
 Catalog id	Catalogus-ID
-Data portal…	Dataportaal…
 Delete catalog {} from the server?	Catalogus {} van de server verwijderen?
 Delete user {}? Their sessions and favorites are removed.	Gebruiker {} verwijderen? De sessies en favorieten van deze gebruiker worden verwijderd.
 Ends the session and forgets the token	Beëindigt de sessie en vergeet het token
@@ -4843,12 +4747,10 @@ Use macros	Macro's overnemen
 ★ Favorites	★ Favorieten
 ★ Remove from favorites	★ Verwijderen uit favorieten
 ☆ Add to favorites	☆ Toevoegen aan favorieten
-✔ Apply {} updates	✔ {} updates toepassen
-➡ Successor {}	➡ Opvolger {}
-⬇ Add marked parts to the parts database ({})	⬇ Gemarkeerde artikelen toevoegen aan de artikeldatabase ({})
-⬇ Add to the parts database	⬇ Toevoegen aan de artikeldatabase
-🔄 Check the parts database for updates	🔄 Artikeldatabase controleren op updates
-🔎 Search	🔎 Zoeken
+Apply {} updates	{} updates toepassen
+Add marked parts to the parts database ({})	Gemarkeerde artikelen toevoegen aan de artikeldatabase ({})
+Add to the parts database	Toevoegen aan de artikeldatabase
+Check the parts database for updates	Artikeldatabase controleren op updates
 Relay coil, AC	Relaisspoel, wisselstroom
 Relay coil, high-speed	Relaisspoel, snel schakelend
 Relay coil, mechanically latched	Relaisspoel, mechanisch vergrendeld
@@ -5276,7 +5178,6 @@ Level of this kind of message	Niveau van deze soort melding
 As defined by the check	Zoals gedefinieerd door de controle
 Switch off the check \"{}\"	De controle \"{}\" uitschakelen
 Changed message levels ({})	Gewijzigde meldingsniveaus ({})
-Right click a message in the Check tab to change its level.	Klik met de rechtermuisknop op een melding op het tabblad Controle om het niveau ervan te wijzigen.
 Accepted messages ({})	Geaccepteerde meldingen ({})
 No longer reported	Wordt niet meer gemeld
 Still reported	Wordt nog gemeld
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Opslaan als projectsjabloon…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Slaat het project zonder revisies, basisversies, review en bedradingsmarkeringen op als sjabloon voor nieuwe projecten
 OpenECraft project template	OpenECraft-projectsjabloon
-Not a project template: {}	Geen projectsjabloon: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Beginnen met een projectsjabloon: een ingebouwde (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) of een projectbestand
 Not a packed project	Geen verpakt project
 Viewer	Kijker
@@ -5537,7 +5437,6 @@ Rotate	Draaien
 Save to project server	Opslaan op de projectserver
 Undo	Ongedaan maken
 Find and replace	Zoeken en vervangen
-Finish polyline or polygon	Polylijn of veelhoek voltooien
 Mirror (selection or symbol being placed)	Spiegelen (selectie of symbool dat wordt geplaatst)
 Next page	Volgende pagina
 Open project	Project openen
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	Sneltoetsen
 No shortcut	Geen sneltoets
 Press a key…	Druk op een toets…
 Record	Opnemen
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Opnemen: druk op de nieuwe toets met de bijbehorende modificatietoetsen (Esc annuleert). Esc, Del, de pijltoetsen en kopiëren / plakken liggen vast.
 Reset all to the defaults	Alles terugzetten naar de standaardwaarden
 {} is used by: {}	{} wordt gebruikt door: {}
 Harness nailboard drawing to scale (SVG)	Spijkerbordtekening van de kabelboom op schaal (SVG)
 Harness tag, e.g. -WH1	Aanduiding van de kabelboom, bijv. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Spijkerbordtekening van de kabelboom op schaal met aftaklengten en de pintabellen van de connectors
-📐 Nailboard (SVG)…	📐 Spijkerbord (SVG)…
+Nailboard (SVG)…	Spijkerbord (SVG)…
 Bundle Ø {} mm	Bundel-Ø {} mm
 Nailboard {}	Spijkerbord {}
 Scale 1:{}	Schaal 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	Geen segment {}
 Segment path (default: all segments)	Segmentpad (standaard: alle segmenten)
 Pre-planning (CSV, Excel)	Voorplanning (CSV, Excel)
 Plant segments with planned devices before the schematic	Installatiesegmenten met geplande apparaten vóór het schema
-Pre-planning…	Voorplanning…
 A segment cannot be moved below itself	Een segment kan niet onder zichzelf worden verplaatst
 Adds a planned device to a segment or changes it	Voegt een gepland apparaat aan een segment toe of wijzigt het
 Adds a segment below another one (or at the top)	Voegt een segment toe onder een ander segment (of bovenaan)
@@ -5628,10 +5525,8 @@ name	naam
 {} pages generated	{} pagina's gegenereerd
 {} pages generated; page macros not found: {}	{} pagina's gegenereerd; paginamacro's niet gevonden: {}
 {} segments created, {} devices added, {} updated	{} segmenten gemaakt, {} apparaten toegevoegd, {} bijgewerkt
-➕ Device	➕ Apparaat
-➕ Segment	➕ Segment
-➕ Sub-segment	➕ Subsegment
-🗑 Remove segment	🗑 Segment verwijderen
+Sub-segment	Subsegment
+Remove segment	Segment verwijderen
 Display	Weergave
 Mirrored	Gespiegeld
 Other properties	Overige eigenschappen
@@ -5733,7 +5628,7 @@ Hose defaults	Standaardwaarden voor slangen
 Message levels	Meldingsniveaus
 Not a settings scheme: {}	Geen instellingenschema: {}
 Wire defaults	Standaardwaarden voor draden
-Reset panel layout	Indeling van de deelvensters herstellen
+Reset pane layout	Indeling van de deelvensters herstellen
 Navigator on the left, symbols and properties on the right	Navigator links, symbolen en eigenschappen rechts
 Panels	Deelvensters
 Saves the workspace, the arrangement of the panels and the open windows	Slaat de werkruimte, de indeling van de deelvensters en de geopende vensters op
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	Motoren voeden de kortsluiting
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Asynchrone motoren aan het net verhogen de hoogste kortsluitstroom (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	Op het voedingspunt: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Coördinatietabellen van de fabrikanten
-➕ Entry	➕ Item
+Entry	Item
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selectiviteit en back-upbeveiliging van apparaatparen zoals getest door de fabrikant, op artikelnummer. Ze vervangen de schatting uit de tijd-stroomkarakteristieken.
 Upstream part	Voorgeschakeld artikel
 Downstream part	Nageschakeld artikel
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	In plaats van gebruikersnaam en wachtwoord
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 of nieuwer (Vault Data API)
-⟳ Refresh	⟳ Vernieuwen
+Refresh	Vernieuwen
 Search below this folder	Zoeken onder deze map
-🔍 Search	🔍 Zoeken
 Checked out	Uitgecheckt
 {} of {} entries shown: search to narrow the list	{} van {} items weergegeven: zoek om de lijst te verkleinen
 Select a file to import it	Selecteer een bestand om het te importeren
 (choose a part)	(kies een artikel)
-⬇ Import	⬇ Importeren
 Project file	Projectbestand
-⬆ Check in project as new version of {}	⬆ Project inchecken als nieuwe versie van {}
+Check in project as new version of {}	Project inchecken als nieuwe versie van {}
 Puts the project into the folder it was opened from	Plaatst het project in de map waaruit het is geopend
 Put into the vault	In de vault plaatsen
 File name	Bestandsnaam
-⬆ Upload to {}	⬆ Uploaden naar {}
+Upload to {}	Uploaden naar {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Een bestand met dezelfde naam in de map krijgt een nieuwe versie (uit- en ingecheckt), anders wordt het bestand toegevoegd
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projecten en bestanden openen vanuit Autodesk Vault, het project, exports en 3D-modellen in de vault plaatsen
 Check in {} to Vault	{} inchecken in Vault
 Panel layout in 3D (Parasolid XT)	Kastlay-out in 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	Kastlay-out in 3D (Parasolid XT)
 Back	Terug
 Back to the project (Esc)	Terug naar het project (Esc)
 Recent projects	Recente projecten
-No projects opened yet.	Nog geen projecten geopend.
 Remove from the list	Uit de lijst verwijderen
 unsaved	niet opgeslagen
 Project: {}	Project: {}
@@ -6055,15 +5946,6 @@ Tutorial	Tutorial
 Introduction	Inleiding
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Een open elektrische CAE-editor in de geest van EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Het lint: Bestand opent, slaat op, importeert, exporteert en drukt af; de tabbladen bevatten de opdrachten per onderwerp. Alt toont de toegangstoetsen, Ctrl+Shift+P vindt elke opdracht, F6 wisselt tussen de panelen, F1 opent deze help.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Invoegen › Invoegcentrum (Ins): zoek een symbool, een macro of een apparaat en klik in de pagina om het te plaatsen. Apparaataanduidingen (-K1, -S2 …) worden automatisch toegekend.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Wijs artikelen toe in de eigenschappen (tabblad Artikelen); de rapporten (Start › Rapporten) tonen apparaten, stuklijst, klemmen, verbindingen en PLC en worden als rapportpagina's ingevoegd.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabels: Verbindingen › Kabels, selecteer draden en gebruik Aan kabel toewijzen. Draadnummers: Verbindingen › Draadnummering, of typ een nummer in de draadeigenschappen.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Macro's: selecteer elementen, rechtsklik › Selectie opslaan als macro; voeg ze in via het invoegcentrum of Invoegen › Macro. Plaatshouders {NAME} worden uit waardensets ingevuld.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Apparaten › Klemmenstroken, Apparaten › PLC-overzicht en Projectgegevens › Revisies: klemvolgorde, bruggen en reserves; PLC-adressen en symbooltabellen; revisies met wijzigingsmarkeringen en vrijgegeven (vergrendelde) pagina's.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Stamgegevens › Symbooleditor: teken eigen symbolen (of kopieer meegeleverde) met aansluitpunten en functie; ze worden in het project opgeslagen en kunnen als bibliotheekbestanden worden uitgewisseld.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Stamgegevens › Formulieren: eigen titelblokken met plaatshouders ({project}, {page}, {prop:Name} …) en de kolommen van rapportpagina's; Projectgegevens › Rapportblokken maken rapportpagina's per klemmenstrook, stekker, kabel of apparaat.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Kastlay-out (werkruimte Kastlay-out, tabblad Montageruimte): kasten, rails, goten, rails en uitsparingen; Montageruimte › NC-gegevens exporteert het boorpatroon (DXF / DWG / CSV). De productiedraadlijst bevat striplengtes en adereindhulzen.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbomen: Verbindingen › Kabelbomen; selecteer de draden tussen twee apparaten › Aan kabelboom toewijzen, of per verbinding in de draadeigenschappen. Kabelboomrapport met lengtes, stekkers en bundeldiameter, KBL-export.
 Key tips of the ribbon	Toegangstoetsen van het lint
 Version {}	Versie {}
 Search (* and ? as placeholders)…	Zoeken (* en ? als jokertekens)…
@@ -6145,7 +6027,6 @@ Close page tab	Paginatabblad sluiten
 Panes	Panelen
 Show or hide panes; drag a tab to dock it elsewhere	Panelen tonen of verbergen; sleep een tabblad om het elders vast te zetten
 Save workspace…	Werkruimte opslaan…
-The panes of this workspace at their default places	De panelen van deze werkruimte op hun standaardplaatsen
 Theme	Thema
 UI scale	Schaal van de interface
 Minimize the ribbon	Het lint minimaliseren
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	Functies van de projectgegevens die
 Insert center	Invoegcentrum
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbolen, macro's, apparaten en niet geplaatste functies: zoeken, favorieten, recent gebruikt
 Find results	Zoekresultaten
-Quick guide, tutorial and shortcuts	Snelgids, tutorial en sneltoetsen
 Layout spaces	Montageruimten
 Enclosures, devices to place and placed devices	Kasten, te plaatsen en geplaatste apparaten
 Layout properties	Lay-outeigenschappen
@@ -6203,7 +6083,7 @@ Click to show, right click for more	Klik om te tonen, rechtsklik voor meer
 {} notes	{} opmerkingen
 Open in a new page tab	In een nieuw paginatabblad openen
 Project information	Projectinformatie
-Plugin commands…	Pluginopdrachten…
+Plugin commands	Pluginopdrachten
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	De opdrachten van alle plugins per plugin, met zoeken; de ster zet een opdracht vast op het tabblad Plugins
 Star a command in Plugin commands to pin it here	Markeer een opdracht met de ster in Pluginopdrachten om hem hier vast te zetten
 Installed plugins	Geïnstalleerde plugins
@@ -6271,8 +6151,6 @@ Draw inner walls	Binnenwanden tekenen
 Inner wall {}, side {}	Binnenwand {}, zijde {}
 Thickness	Dikte
 {}: {} stands in an inner wall	{}: {} staat in een binnenwand
-Opening {} replaces the current project, its unsaved changes are lost.	Het openen van {} vervangt het huidige project; niet-opgeslagen wijzigingen gaan verloren.
-Discard changes and open	Wijzigingen verwerpen en openen
 Open link	Koppeling openen
 Replace the file at path if it exists	Het bestand op path vervangen als het bestaat
 {} exists already: pass overwrite to replace it	{} bestaat al: geef overwrite op om het te vervangen
@@ -6405,3 +6283,4 @@ Folder with project files (instead of a database; default: the current folder)	M
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Onbekend paginatype: {} (schematic, overview, graphic, cover of een rapport uit list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Onbekende sjabloon {}: geef een ingebouwde ({}) of een projectbestand op
 Property {} needs a text or a number	Eigenschap {} vereist een tekst of een getal
+Check settings…	Controle-instellingen…

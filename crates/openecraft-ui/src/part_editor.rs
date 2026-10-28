@@ -2,6 +2,7 @@
 //! previews of the 2D front view and the 3D model.
 
 use openecraft_i18n::{tr, tr_fmt};
+use crate::icons::{self, Icon};
 use crate::io::{short_name, FileKind};
 use egui::{vec2, Color32, Pos2, RichText, Sense, Shape, Stroke};
 use openecraft_parts::vec3::{cross, dot, norm, sub, Orbit};
@@ -87,7 +88,7 @@ fn choice_row(ui: &mut egui::Ui, id: (&str, &str), label: &str, value: &mut Opti
 /// followed by the number of shown parts.
 pub fn part_filter(ui: &mut egui::Ui, id: &str, parts: &[&Part], f: &mut PartFilter) {
     ui.horizontal(|ui| {
-        let reset = ui.add_enabled(f.is_active(), egui::Button::new("✖")).on_hover_text(tr("Reset filter"));
+        let reset = ui.add_enabled_ui(f.is_active(), |ui| icons::button(ui, Icon::Close, tr("Reset filter"))).inner;
         if reset.clicked() {
             f.reset();
         }
@@ -407,7 +408,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                     });
                     ui.add(egui::TextEdit::singleline(&mut f.pins).desired_width(140.0).font(egui::TextStyle::Monospace));
                     ui.add(egui::TextEdit::singleline(&mut f.description).desired_width(160.0));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -416,7 +417,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             if let Some(i) = remove {
                 part.functions.remove(i);
             }
-            if ui.button(tr("➕ Add function")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Add function")).clicked() {
                 part.functions.push(FunctionTemplate::new(FnKind::No, ""));
             }
         }
@@ -426,7 +427,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 ui.horizontal(|ui| {
                     let known = all_numbers.contains(a);
                     ui.label(RichText::new(a).monospace().color(if known { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) }));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                 });
@@ -453,7 +454,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                     let known = all_numbers.contains(&c.number);
                     ui.label(RichText::new(&c.number).monospace().color(if known { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) }));
                     ui.add(egui::DragValue::new(&mut c.quantity).speed(0.1).range(0.0..=100000.0).prefix("× "));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -609,7 +610,7 @@ fn connections_tab(ui: &mut egui::Ui, part: &mut Part, selected: &mut Option<usi
                 part.connection_points = default_connection_points(part);
                 *selected = None;
             }
-            if own && ui.button(tr("🗑 Remove all")).on_hover_text(tr("Use generated connection points again")).clicked() {
+            if own && icons::text_button(ui, Icon::Delete, tr("Remove all")).on_hover_text(tr("Use generated connection points again")).clicked() {
                 part.connection_points.clear();
                 *selected = None;
             }
@@ -636,7 +637,7 @@ fn connections_tab(ui: &mut egui::Ui, part: &mut Part, selected: &mut Option<usi
                         ui.selectable_value(&mut c.exit, e, exit_title(e));
                     }
                 });
-                if ui.small_button("🗑").clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -647,7 +648,7 @@ fn connections_tab(ui: &mut egui::Ui, part: &mut Part, selected: &mut Option<usi
             *selected = None;
         }
     }
-    if ui.button(tr("➕ Add connection point")).clicked() {
+    if icons::text_button(ui, Icon::Plus, tr("Add connection point")).clicked() {
         let [w, _, d] = part.size().unwrap_or_default();
         part.connection_points.push(ConnectionPoint { pin: String::new(), pos: [w / 2.0, 0.0, d * 0.75], exit: Exit::Up });
         *selected = Some(part.connection_points.len() - 1);
@@ -714,7 +715,7 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
             if ui.button(tr("Import SVG…")).clicked() {
                 request = Some(ModelKind::Front2d);
             }
-            if part.model_2d.is_some() && ui.button(tr("🗑 Remove")).clicked() {
+            if part.model_2d.is_some() && icons::text_button(ui, Icon::Delete, tr("Remove")).clicked() {
                 part.model_2d = None;
             }
         });
@@ -741,7 +742,7 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
             if ui.button(tr("Import STL / OBJ / STEP / IGES / IFC / JT…")).clicked() {
                 request = Some(ModelKind::Mesh3d);
             }
-            if part.model_3d.is_some() && ui.button(tr("🗑 Remove")).clicked() {
+            if part.model_3d.is_some() && icons::text_button(ui, Icon::Delete, tr("Remove")).clicked() {
                 part.model_3d = None;
             }
         });

@@ -169,14 +169,17 @@ impl App {
 
     fn plugin_command_window(&mut self, ctx: &egui::Context) {
         let Some((cmd, mut texts)) = self.plugins_ui.command.take() else { return };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, super::ribbon_ui::humanize(&cmd.name), "plugin_command", None);
+        let mut open = !esc;
         let mut run = false;
-        egui::Window::new(tr_fmt!("Plugin command {}", cmd.name)).open(&mut open).resizable(false).show(ctx, |ui| {
+        let mut cancel = false;
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             ui.label(text(&cmd.help));
             if !cmd.params.is_empty() {
                 egui::Grid::new("plugin_params").num_columns(2).show(ui, |ui| {
                     for (p, t) in cmd.params.iter().zip(texts.iter_mut()) {
-                        let name = if p.required { format!("{} *", p.name) } else { p.name.to_string() };
+                        let name = super::ribbon_ui::humanize(&p.name);
+                        let name = if p.required { format!("{name} *") } else { name };
                         ui.label(name).on_hover_text(text(&p.help));
                         if p.kind == Kind::Bool {
                             let mut on = Kind::Bool.parse(t) == Some(Value::Bool(true));
@@ -189,7 +192,10 @@ impl App {
                         ui.end_row();
                     }
                 });
-                run = ui.button(tr("▶ Run")).clicked();
+                ui.horizontal(|ui| {
+                    run = icons::text_button(ui, Icon::Next, tr("Run")).clicked();
+                    cancel = ui.button(tr("Cancel")).clicked();
+                });
             }
             match &self.plugins_ui.result {
                 Some(Ok(out)) => {
@@ -206,7 +212,7 @@ impl App {
         if run {
             self.run_plugin_command(&cmd, &texts);
         }
-        if open {
+        if open && !cancel {
             self.plugins_ui.command = Some((cmd, texts));
         }
     }
@@ -217,8 +223,8 @@ impl App {
         let (mut jump, mut export, mut refresh) = (None, false, false);
         egui::Window::new(title.as_str()).open(&mut open).default_size([700.0, 420.0]).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                export = ui.add_enabled(table.is_ok(), egui::Button::new(tr("⬇ Export CSV"))).clicked();
-                refresh = ui.button(tr("⟳ Update")).clicked();
+                export = ui.add_enabled_ui(table.is_ok(), |ui| icons::text_button(ui, Icon::Download, tr("Export CSV"))).inner.clicked();
+                refresh = icons::text_button(ui, Icon::Rotate, tr("Update")).clicked();
             });
             ui.separator();
             match &table {

@@ -79,3 +79,30 @@ fn search_puts_title_matches_first() {
     assert_eq!(rank("", &items).len(), 4);
     assert!(rank("page renumber", &items).iter().all(|h| h.item == "renumber"));
 }
+
+#[test]
+fn commands_that_change_the_page_are_known() {
+    for c in [Cmd::Cut, Cmd::Paste, Cmd::Delete, Cmd::Rotate, Cmd::Mirror, Cmd::MoveBy, Cmd::MultipleCopy, Cmd::Align, Cmd::Distribute, Cmd::AutoConnectSelection, Cmd::JoinCollinear, Cmd::WireTool, Cmd::TextTool, Cmd::LineTool, Cmd::DimAligned] {
+        assert!(changes_page(c), "{c:?}");
+    }
+    // Looking, copying and the review tools stay on read only pages.
+    for c in [Cmd::Copy, Cmd::SelectAll, Cmd::SaveSelectionAsMacro, Cmd::Properties, Cmd::FitPage, Cmd::CommentTool, Cmd::Markup, Cmd::PageProperties] {
+        assert!(!changes_page(c), "{c:?}");
+    }
+    // The clipboard keys are shown though they cannot be changed.
+    assert_eq!(fixed_keys(Cmd::Copy), Some("Ctrl+C"));
+    assert_eq!(crate::shortcuts::Shortcuts::default().cmd_text(Cmd::Paste), "Ctrl+V");
+    assert_eq!(crate::shortcuts::Shortcuts::default().cmd_text(Cmd::Delete), "Delete / Backspace");
+}
+
+#[test]
+fn only_commands_that_ask_for_input_end_with_an_ellipsis() {
+    for d in ALL {
+        if d.pane.is_some() || d.kind != Kind::Button {
+            assert!(!d.title.ends_with('…'), "{} shows a pane, switches or opens a menu: no …", d.id);
+        }
+    }
+    for c in [Cmd::Open, Cmd::SaveAs, Cmd::CheckSettings, Cmd::MoveBy, Cmd::Properties] {
+        assert!(def(c).title.ends_with('…'), "{c:?} opens a dialog");
+    }
+}

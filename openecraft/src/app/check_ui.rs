@@ -61,12 +61,13 @@ impl App {
         {
             let st = &mut self.check_ui;
             ui.horizontal_wrapped(|ui| {
-                let e = RichText::new(tr_fmt!("{} errors", open(Severity::Error))).color(colors.error);
+                let (ne, nw, ni) = (open(Severity::Error), open(Severity::Warning), open(Severity::Info));
+                let e = RichText::new(super::counted(ne, tr("1 error"), tr_fmt!("{} errors", ne))).color(colors.error);
                 ui.toggle_value(&mut st.errors, e).on_hover_text(tr("Errors"));
-                let w = RichText::new(tr_fmt!("{} warnings", open(Severity::Warning))).color(colors.warning);
+                let w = RichText::new(super::counted(nw, tr("1 warning"), tr_fmt!("{} warnings", nw))).color(colors.warning);
                 ui.toggle_value(&mut st.warnings, w).on_hover_text(tr("Warnings"));
-                ui.toggle_value(&mut st.notes, tr_fmt!("{} notes", open(Severity::Info))).on_hover_text(tr("Notes"));
-                ui.toggle_value(&mut st.accepted, tr_fmt!("✔ {}", accepted)).on_hover_text(tr("Show the messages accepted as checked"));
+                ui.toggle_value(&mut st.notes, super::counted(ni, tr("1 note"), tr_fmt!("{} notes", ni))).on_hover_text(tr("Notes"));
+                ui.toggle_value(&mut st.accepted, tr_fmt!("Accepted ({})", accepted)).on_hover_text(tr("Show the messages accepted as checked"));
                 ui.toggle_value(&mut st.current_page, tr("This page")).on_hover_text(tr("Only messages of the current page"));
                 ui.add(egui::TextEdit::singleline(&mut st.filter).hint_text(tr("Filter")).desired_width(140.0));
                 settings = icons::button(ui, Icon::Settings, tr("Check settings: checks, message levels, accepted messages")).clicked();
@@ -104,7 +105,9 @@ impl App {
                     }
                     None => (String::new(), String::new()),
                 };
+                // The title of the check that found it; its internal code is shown on hover.
                 let check = titles.iter().find(|t| t.0 == i.check).map_or(i.check.clone(), |t| t.1.clone());
+                let check = if check.is_empty() { i.code() } else { check };
                 (i, pg, obj, check)
             })
             .filter(|(i, pg, obj, check)| filter.is_empty() || [i.message().to_lowercase(), i.code(), pg.to_lowercase(), obj.to_lowercase(), check.to_lowercase()].iter().any(|t| t.contains(&filter)))
@@ -112,11 +115,10 @@ impl App {
         let sort = st.sort;
         rows.sort_by(|a, b| {
             let o = match sort.0 {
-                1 => a.0.code().cmp(&b.0.code()),
+                1 | 5 => a.3.cmp(&b.3).then_with(|| a.0.code().cmp(&b.0.code())),
                 2 => a.0.message().cmp(&b.0.message()),
                 3 => natural_cmp(&a.1, &b.1),
                 4 => natural_cmp(&a.2, &b.2),
-                5 => a.3.cmp(&b.3),
                 _ => (a.0.severity as u8).cmp(&(b.0.severity as u8)),
             };
             if sort.1 { o.reverse() } else { o }
@@ -124,8 +126,8 @@ impl App {
         let mut action = None;
         let mut sort_by = None;
         egui::ScrollArea::both().id_salt("messages").auto_shrink([false, false]).show(ui, |ui| {
-            egui::Grid::new("messages_table").striped(true).num_columns(6).spacing([12.0, 3.0]).show(ui, |ui| {
-                for (c, title) in [(0, ""), (1, tr("Code")), (2, tr("Message")), (3, tr("Page")), (4, tr("Object")), (5, tr("Check"))] {
+            egui::Grid::new("messages_table").striped(true).num_columns(5).spacing([12.0, 3.0]).show(ui, |ui| {
+                for (c, title) in [(0, ""), (1, tr("Check")), (2, tr("Message")), (3, tr("Page")), (4, tr("Object"))] {
                     let arrow = if sort.0 == c { if sort.1 { " ⏶" } else { " ⏷" } } else { "" };
                     if ui.add(egui::Button::new(RichText::new(format!("{title}{arrow}")).strong()).frame(false)).clicked() {
                         sort_by = Some(c);
@@ -140,12 +142,11 @@ impl App {
                     };
                     let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
                     icons::paint(ui.painter(), rect, if issue.accepted { Icon::Check } else { icon }, color);
-                    ui.monospace(issue.code());
+                    ui.label(check.as_str()).on_hover_text(tr_fmt!("Code: {}", issue.code()));
                     let msg = if issue.accepted { RichText::new(issue.message()).weak() } else { RichText::new(issue.message()) };
                     let r = ui.add(egui::Label::new(msg).sense(egui::Sense::click()));
                     ui.label(pg);
                     ui.monospace(obj);
-                    ui.weak(check);
                     ui.end_row();
                     let r = r.on_hover_text(tr("Click to show, right click for more"));
                     if r.clicked() {
@@ -239,7 +240,7 @@ impl App {
                     ui.horizontal(|ui| {
                         ui.monospace(code);
                         ui.label(level_title(*level));
-                        if ui.small_button("🗑").on_hover_text(tr("As defined by the check")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("As defined by the check")).clicked() {
                             remove = Some(code.clone());
                         }
                     });
@@ -248,7 +249,7 @@ impl App {
                     s.levels.remove(&c);
                 }
                 if s.levels.is_empty() {
-                    ui.weak(tr("Right click a message in the Check tab to change its level."));
+                    ui.weak(tr("Right click a message in the Messages pane to change its level."));
                 }
             });
             egui::CollapsingHeader::new(tr_fmt!("Accepted messages ({})", s.accepted.len())).show(ui, |ui| {
@@ -256,7 +257,7 @@ impl App {
                 egui::ScrollArea::vertical().id_salt("accepted").max_height(220.0).show(ui, |ui| {
                     for (i, a) in s.accepted.iter_mut().enumerate() {
                         ui.horizontal_wrapped(|ui| {
-                            if ui.small_button("🗑").on_hover_text(tr("Take the acceptance back")).clicked() {
+                            if icons::button(ui, Icon::Delete, tr("Take the acceptance back")).clicked() {
                                 remove = Some(i);
                             }
                             let gone = stale.contains(&a.id);

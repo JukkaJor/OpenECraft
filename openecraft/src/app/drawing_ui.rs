@@ -2,6 +2,7 @@
 //! images, connection and cable definitions, property placement, and the
 //! connection / cable / layer navigators.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::Tool;
@@ -446,7 +447,7 @@ impl App {
                     } else {
                         ui.add(egui::Label::new(v).truncate());
                     }
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -480,14 +481,14 @@ impl App {
             if let Some(name) = apply_scheme {
                 let ids = [self.session.prj.pages[pi].symbols[si].id];
                 if let Err(e) = props::apply_to(&mut self.session.prj, &name, &ids) {
-                    self.message = Some((e, ui.ctx().input(|i| i.time)));
+                    self.notify_error(&ui.ctx().clone(), e);
                 }
             }
             if let Some(scheme) = save_scheme {
                 let name = scheme.name.clone();
                 match props::define_scheme(&mut self.session.prj, scheme) {
                     Ok(()) => self.session.prj.pages[pi].symbols[si].scheme = name,
-                    Err(e) => self.message = Some((e, ui.ctx().input(|i| i.time))),
+                    Err(e) => self.notify_error(&ui.ctx().clone(), e),
                 }
             }
         });
@@ -497,7 +498,7 @@ impl App {
 
     pub(super) fn layers_tab(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui.button(tr("➕ Layer")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Layer")).clicked() {
                 let mut n = 1;
                 while graphics::layer(&self.session.prj, &tr_fmt!("Layer {}", n)).is_some() {
                     n += 1;
@@ -514,7 +515,10 @@ impl App {
         }
         let counts: Vec<usize> = self.session.prj.layers.iter().map(|l| graphics::layer_count(&self.session.prj, &l.name)).collect();
         let default_count = graphics::layer_count(&self.session.prj, "");
+        let names: Vec<String> = self.session.prj.layers.iter().map(|l| l.name.clone()).collect();
+        let error = crate::style::colors(self.dark).error;
         let mut rename: Option<(String, String)> = None;
+        let mut refused: Option<&'static str> = None;
         let mut remove: Option<String> = None;
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
             egui::Grid::new("layers").num_columns(6).striped(true).show(ui, |ui| {
@@ -530,10 +534,35 @@ impl App {
                 ui.weak(default_count.to_string());
                 ui.end_row();
                 for (i, l) in self.session.prj.layers.iter_mut().enumerate() {
-                    ui.radio_value(&mut self.editor.active_layer, l.name.clone(), "").on_hover_text(tr("New items go onto this layer"));
-                    let mut name = l.name.clone();
-                    if ui.add(egui::TextEdit::singleline(&mut name).desired_width(90.0)).changed() && !name.is_empty() {
-                        rename = Some((l.name.clone(), name));
+                    // Hidden or locked layers cannot take new items.
+                    let usable = l.visible && !l.locked;
+                    ui.add_enabled_ui(usable, |ui| ui.radio_value(&mut self.editor.active_layer, l.name.clone(), ""))
+                        .inner
+                        .on_hover_text(tr("New items go onto this layer"))
+                        .on_disabled_hover_text(tr("A hidden or locked layer cannot take new items"));
+                    // The name is edited in a scratch copy and renamed once on Enter or
+                    // when the field is left.
+                    let buffer = ui.make_persistent_id(("layer_name", i));
+                    let mut name = ui.data(|d| d.get_temp::<String>(buffer)).unwrap_or_else(|| l.name.clone());
+                    let problem = graphics::layer_rename_problem(&names, &l.name, &name);
+                    let mut edit = egui::TextEdit::singleline(&mut name).desired_width(90.0);
+                    if problem.is_some() {
+                        edit = edit.text_color(error);
+                    }
+                    let r = ui.add(edit);
+                    let r = match problem {
+                        Some(p) => r.on_hover_text(tr(p)),
+                        None => r,
+                    };
+                    if r.lost_focus() {
+                        ui.data_mut(|d| d.remove::<String>(buffer));
+                        match problem {
+                            None if name != l.name => rename = Some((l.name.clone(), name)),
+                            None => {}
+                            Some(p) => refused = Some(p),
+                        }
+                    } else if r.has_focus() {
+                        ui.data_mut(|d| d.insert_temp(buffer, name));
                     }
                     ui.checkbox(&mut l.visible, "");
                     ui.checkbox(&mut l.locked, "");
@@ -547,7 +576,7 @@ impl App {
                             ui.color_edit_button_srgb(col);
                         }
                         ui.weak(counts[i].to_string()).on_hover_text(tr("Items on the layer"));
-                        if ui.small_button("🗑").on_hover_text(tr("Delete the layer; its items move to the default layer")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Delete the layer; its items move to the default layer")).clicked() {
                             remove = Some(l.name.clone());
                         }
                     });
@@ -556,12 +585,14 @@ impl App {
             });
         });
         if let Some((old, new)) = rename {
-            if graphics::layer(&self.session.prj, &new).is_none() {
-                graphics::rename_layer(&mut self.session.prj, &old, &new);
-                if self.editor.active_layer == old {
-                    self.editor.active_layer = new;
-                }
+            graphics::rename_layer(&mut self.session.prj, &old, &new);
+            if self.editor.active_layer == old {
+                self.editor.active_layer = new;
             }
+        }
+        if let Some(p) = refused {
+            let ctx = ui.ctx().clone();
+            self.notify_error(&ctx, tr(p));
         }
         if let Some(name) = remove {
             graphics::remove_layer(&mut self.session.prj, &name);
@@ -638,7 +669,7 @@ impl App {
     pub(super) fn cables_tab(&mut self, ui: &mut egui::Ui) {
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
                 let tag = ops::add_cable(&mut self.session.prj, &structure);
                 self.editor.cable_target = tag;
             }
@@ -723,9 +754,10 @@ impl App {
     /// Dialog to rename a device (all its functions).
     pub(super) fn rename_device_window(&mut self, ctx: &egui::Context) {
         let Some((old, mut new)) = self.rename_device.take() else { return };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Rename device"), "rename_device", None);
+        let mut open = !esc;
         let mut done = false;
-        egui::Window::new(tr("Rename device")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             ui.label(tr_fmt!("New tag for {}", old));
             let r = ui.text_edit_singleline(&mut new);
             let problem = rename_problem(&self.session.prj, &old, new.trim());
@@ -734,10 +766,15 @@ impl App {
             }
             let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
             let ok = problem.is_none();
-            if (ui.add_enabled(ok, egui::Button::new(tr("Rename"))).clicked() || (enter && ok)) && new.trim() != old {
-                ops::rename_device(&mut self.session.prj, &old, new.trim());
-                done = true;
-            }
+            ui.horizontal(|ui| {
+                if (ui.add_enabled(ok, egui::Button::new(tr("Rename"))).clicked() || (enter && ok)) && new.trim() != old {
+                    ops::rename_device(&mut self.session.prj, &old, new.trim());
+                    done = true;
+                }
+                if ui.button(tr("Cancel")).clicked() {
+                    done = true;
+                }
+            });
         });
         if open && !done {
             self.rename_device = Some((old, new));

@@ -68,11 +68,12 @@ panel layout. Most steps below can be tried on it.
 ## 4. Wires and potentials
 
 - W (*Insert › Wire*) starts the wire tool: click the start, intermediate corners and
-  the end; Space switches the corner direction, Enter or a double click finishes. With
-  *Edit › Auto-connect* on, symbols placed in line with others are connected
-  automatically.
+  the end; Space switches the corner direction, Enter or a double click ends the wire,
+  Esc or a right click ends the tool. A wire ending in empty space is reported by the
+  check *Open wire ends*. With *Edit › Auto-connect* on, symbols placed in line with
+  others are connected automatically.
 - Potentials (`L1`, `+24V`, `0V`, …) are potential symbols (*Insert › Potential* or the
-  *Potentials* library); *Connections › Potentials…* defines their kind, voltage, wire
+  *Potentials* library); *Connections › Potentials* defines their kind, voltage, wire
   colour and cross-section. The *Unplaced* navigator lists defined potentials not on
   any page yet.
 - Interruption points (*Insert › Interruption point*) carry a net across pages; their
@@ -86,7 +87,7 @@ panel layout. Most steps below can be tried on it.
   part editor with commercial, technical and typed mounting data, function templates,
   connection points, 2D / 3D models, assemblies). Parts are imported from CSV,
   BMEcat, EPLAN parts XML, EDZ files of the EPLAN Data Portal (*File › Import*) or the
-  data portal (*Devices › Data portal…*).
+  data portal (*Master data › Data portal*).
 - Assign parts in the *Parts* tab of a device's properties (*Add part…*); the device
   selection offers only parts that provide the device's main function. *Apply
   designations* takes the connection point designations from the part. The *Devices*
@@ -98,19 +99,19 @@ panel layout. Most steps below can be tried on it.
 ## 6. Terminals and plugs
 
 - Terminals are placed like other symbols (*Terminals* library); terminals with the
-  same tag form a strip. *Devices › Terminal strips…* orders them, adds spares,
+  same tag form a strip. *Devices › Terminal strips* orders them, adds spares,
   jumpers (plug-in, saddle, wire), end brackets and plates and multi-level blocks.
 - The *Strips / plugs* navigator shows each strip in rail order and each plug with its
   pins; a click shows a placed terminal or pin, spares and unused pins are dragged
   into the page.
-- *Connections › Cables…* defines cables; select wires and use *Assign to cable*, or
+- *Connections › Cables* defines cables; select wires and use *Assign to cable*, or
   draw a cable definition line across them (*Insert › Cable definition*).
 
 ## 7. PLC
 
 - PLC inputs and outputs are placed from the *PLC* library with their card tag and
-  address. *Devices › PLC hardware and bus topology…* adds stations, racks and modules
-  from device descriptions (GSDML, ESI); *Devices › PLC overview…* lists all points
+  address. *Devices › PLC hardware and bus topology* adds stations, racks and modules
+  from device descriptions (GSDML, ESI); *Devices › PLC overview* lists all points
   with their connected devices and readdresses cards.
 - The *PLC* navigator shows the cards with their channels; free channels of cards with
   a device description are dragged into the page.
@@ -129,7 +130,7 @@ panel layout. Most steps below can be tried on it.
 
 ## 9. Reports
 
-- *Home › Reports* shows every report (device list, bill of materials, terminal
+- *Project data › Reports* shows every report (device list, bill of materials, terminal
   diagram, cable diagram, plug diagram, PLC assignment, connection list, …) as a
   table with export to CSV and Excel.
 - *Insert as report page* (or *Home › New page › New report page*) inserts a report as
@@ -166,11 +167,11 @@ panel layout. Most steps below can be tried on it.
 - *File › Print* opens all pages or the current page in the browser with its print
   dialog.
 - *Project data › Export as PDF in language* writes the PDF in one of the project
-  languages (*Project data › Project languages…*).
+  languages (*Project data › Project languages*).
 
 ## 12. Changes and review
 
-- *Project data › Revisions…* creates revisions; changes since the last released
+- *Project data › Revisions* creates revisions; changes since the last released
   revision are marked on the pages and listed with old and new values in the revision
   overview. Released pages are locked.
 - The *Review* workspace and *Insert › Comment* / *Markup* hold comments and redline /

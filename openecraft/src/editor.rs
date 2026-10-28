@@ -48,26 +48,6 @@ pub enum Tool {
 }
 
 impl Tool {
-    pub fn hint(&self) -> &'static str {
-        match self {
-            Tool::Select => tr("Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms."),
-            Tool::Place(_) => tr("Click to place · R rotate · M mirror · Esc finish"),
-            Tool::Wire => tr("Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish"),
-            Tool::Text => tr("Click to place a text"),
-            Tool::Line | Tool::Rect | Tool::Ellipse => tr("Click start point, click end point"),
-            Tool::Circle => tr("Click the centre, then a point of the circle"),
-            Tool::Arc => tr("Click the centre, the start point and the end point (counter-clockwise)"),
-            Tool::Polyline | Tool::Polygon => tr("Click the corner points · double click, Enter or right click finishes"),
-            Tool::Dimension(_) => tr("Click the two points to measure, then the position of the dimension line"),
-            Tool::ConnDef => tr("Click on a wire: the point defines number, colour, cross-section and cable core of the connection"),
-            Tool::CableDef => tr("Draw a line across the wires that are cores of the cable"),
-            Tool::Insert => tr("Click to insert · Esc cancel"),
-            Tool::Comment => tr("Click to place a comment"),
-            Tool::Markup(MarkupKind::Text, _) => tr("Click to place the markup text"),
-            Tool::Markup(..) => tr("Click start point, click end point"),
-        }
-    }
-
     /// Tools of the review layer: they work on every page.
     pub fn is_review(&self) -> bool {
         matches!(self, Tool::Comment | Tool::Markup(..))
@@ -400,6 +380,9 @@ pub struct PlacePayload {
     pub pins: Vec<String>,
 }
 
+/// Pixels per millimetre at 100 % (real size on a 96 dpi screen).
+pub const ZOOM_ACTUAL: f32 = 3.78;
+
 pub struct Editor {
     pub tool: Tool,
     /// Screen offset of page origin relative to the canvas rect.
@@ -443,8 +426,11 @@ pub struct Editor {
     pub autoroute: bool,
     /// Cable of new cable definition lines; empty = a new cable.
     pub cable_target: String,
-    /// Device tag of the next symbols placed (navigator: place a function).
+    /// Device tag of the next symbols placed (navigator: place a function); ends with
+    /// the Place tool.
     pub place_tag: Option<String>,
+    /// Part of the next symbol placed (Insert center): goes to its device.
+    pub place_part: Option<String>,
     /// The page is locked by another user of a shared project.
     pub read_only: bool,
     /// Why the page is read only (shown on the page instead of the hint of generated pages).
@@ -499,6 +485,7 @@ impl Default for Editor {
             shortcuts: Default::default(),
             cable_target: String::new(),
             place_tag: None,
+            place_part: None,
             read_only: false,
             read_only_reason: String::new(),
             review_layer: true,
@@ -536,6 +523,8 @@ pub struct CanvasOutput {
     pub open_url: Option<String>,
     /// A symbol was placed (its id).
     pub placed: Option<u64>,
+    /// The part chosen for the symbol placed.
+    pub placed_part: Option<String>,
     /// The canvas with the select tool, for the context menu.
     pub response: Option<egui::Response>,
 }
@@ -574,16 +563,81 @@ fn sweep(c: P, start: P, end: P) -> f32 {
     (ang(end) - ang(start)).rem_euclid(360.0)
 }
 
+/// Whether new items may go onto `layer`: it is shown and not locked.
+pub fn layer_usable(prj: &Project, layer: &str) -> bool {
+    graphics::shown(prj, layer, false) && !graphics::locked(prj, layer)
+}
+
+/// Window selection: from left to right the items inside the window, from right to
+/// left (crossing) also the items it touches.
+pub fn box_selects(window: R, crossing: bool, item: R) -> bool {
+    if crossing {
+        window.min.x <= item.max.x && item.min.x <= window.max.x && window.min.y <= item.max.y && item.min.y <= window.max.y
+    } else {
+        window.contains_rect(&item)
+    }
+}
+
 impl Editor {
     pub fn set_tool(&mut self, tool: Tool) {
+        if !matches!(tool, Tool::Place(_)) {
+            self.place_tag = None;
+        }
         self.tool = tool;
         self.wire_start = None;
         self.text_proto = None;
         self.place_once = None;
+        self.place_part = None;
         self.pts.clear();
         if self.tool != Tool::Select {
             self.selection.clear();
         }
+    }
+
+    /// The keys of a binding for the hints ("–" without a key).
+    fn key(&self, id: &str) -> String {
+        let k = self.shortcuts.text(id);
+        if k.is_empty() { "–".to_string() } else { k }
+    }
+
+    fn cmd_key(&self, cmd: Cmd) -> String {
+        self.key(crate::commands::def(cmd).id)
+    }
+
+    /// What the current tool expects, with the user's keys.
+    pub fn hint(&self) -> String {
+        let finish = Action::FinishPolyline.id();
+        match &self.tool {
+            Tool::Select => tr("Click to select, drag to move, drag on empty space for window selection (from right to left: crossing). Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.").to_string(),
+            Tool::Place(_) => match &self.place_tag {
+                Some(tag) => tr_fmt!("Click to place for device {} · {} rotate · {} mirror · Esc or right click to finish", tag, self.cmd_key(Cmd::Rotate), self.cmd_key(Cmd::Mirror)),
+                None => tr_fmt!("Click to place · {} rotate · {} mirror · Esc or right click to finish", self.cmd_key(Cmd::Rotate), self.cmd_key(Cmd::Mirror)),
+            },
+            Tool::Wire => tr_fmt!(
+                "Click start and corner points · {} toggles corner direction · {} toggles routing around symbols · ends automatically on a connection · {} or double click ends the wire · Esc or right click to finish",
+                self.key(Action::WireCorner.id()),
+                self.key(Action::Autoroute.id()),
+                self.key(finish)
+            ),
+            Tool::Text => tr("Click to place a text · Esc or right click to finish").to_string(),
+            Tool::Line | Tool::Rect | Tool::Ellipse | Tool::Markup(MarkupKind::Line | MarkupKind::Rect | MarkupKind::Cloud, _) => tr("Click start point, click end point · Esc or right click to finish").to_string(),
+            Tool::Circle => tr("Click the centre, then a point of the circle · Esc or right click to finish").to_string(),
+            Tool::Arc => tr("Click the centre, the start point and the end point (counter-clockwise) · Esc or right click to finish").to_string(),
+            Tool::Polyline | Tool::Polygon => tr_fmt!("Click the corner points · double click, {} or right click ends the shape · Esc to finish", self.key(finish)),
+            Tool::Dimension(_) => tr("Click the two points to measure, then the position of the dimension line · Esc or right click to finish").to_string(),
+            Tool::ConnDef => tr("Click on a wire: the point defines number, colour, cross-section and cable core of the connection · Esc or right click to finish").to_string(),
+            Tool::CableDef if self.cable_target.is_empty() => tr("Draw a line across the wires that are cores of a new cable · Esc or right click to finish").to_string(),
+            Tool::CableDef => tr_fmt!("Draw a line across the wires that are cores of cable {} · Esc or right click to finish", self.cable_target),
+            Tool::Insert => tr("Click to insert · Esc cancel").to_string(),
+            Tool::Comment => tr("Click to place a comment").to_string(),
+            Tool::Markup(..) => tr("Click to place the markup text").to_string(),
+        }
+    }
+
+    /// Where Paste puts the items: at the cursor over the page, else at the last
+    /// point clicked, else near the top left corner of the drawing area.
+    pub fn paste_point(&self) -> P {
+        self.hover.map(|q| q.snap(self.grid)).or(self.last_point).unwrap_or(self.frame.area().min + p(20.0, 20.0))
     }
 
     /// True while a multi-click operation (wire, rectangle) is in progress.
@@ -610,6 +664,12 @@ impl Editor {
         let (w, h) = self.frame.size();
         self.zoom = ((size.x - 2.0 * margin) / w).min((size.y - 2.0 * margin) / h).max(0.1);
         self.offset = vec2((size.x - w * self.zoom) / 2.0, (size.y - h * self.zoom) / 2.0);
+    }
+
+    /// Zooms about the middle of the canvas (View › Zoom).
+    pub fn zoom_center(&mut self, factor: f32) {
+        let rect = Rect::from_min_size(Pos2::ZERO, self.canvas_size);
+        self.zoom_at(rect, rect.center(), factor);
     }
 
     fn zoom_at(&mut self, rect: Rect, screen: Pos2, factor: f32) {
@@ -795,11 +855,23 @@ impl Editor {
         let world = ptr.map(|s| self.s2w(rect, s));
         let snapped = world.map(|w| w.snap(self.grid));
         self.hover = world;
+        // New items never go onto a hidden or locked layer.
+        if !layer_usable(prj, &self.active_layer) {
+            self.active_layer.clear();
+        }
+        // A click into the page takes the keys from a text field.
+        if resp.hovered() && ui.input(|i| i.pointer.any_pressed()) {
+            ui.memory_mut(|m| {
+                if let Some(id) = m.focused() {
+                    m.surrender_focus(id);
+                }
+            });
+        }
 
         // ------------------------------------------------------------ keyboard
         let kb = self.keys_active && !ui.ctx().egui_wants_keyboard_input();
         if kb {
-            self.keyboard(ui, prj, page_i, snapped, &mut out);
+            self.keyboard(ui, prj, page_i, &mut out);
         }
 
         // ------------------------------------------------------------ mouse
@@ -821,9 +893,16 @@ impl Editor {
             self.review_mouse(&resp, world, &mut out);
         } else if editable {
             self.mouse(ui, &resp, prj, page_i, rect, world, snapped, an, &mut out);
-        } else if resp.clicked() {
-            self.selection.clear();
+        } else if self.tool == Tool::Select {
+            // Read only: select and inspect, no moves.
+            if let Some(q) = self.typed.take() {
+                self.select_at(prj, page_i, q, false);
+            }
+            self.select_mouse(ui, &resp, prj, page_i, rect, world, false, &mut out);
+        } else if self.typed.take().is_some() {
+            out.message = Some(tr("The page is read only").to_string());
         }
+        self.cursor(ui, &resp, prj, page_i, world, editable);
 
         // ------------------------------------------------------------ drawing
         self.update_textures(ui.ctx(), &prj.pages[page_i]);
@@ -864,6 +943,16 @@ impl Editor {
                 _ => g.rect(a, b, 0.5, Ink::Ghost, false),
             }
         }
+        if let (Some(w), true) = (world, self.tool == Tool::Select && matches!(self.drag, Drag::None)) {
+            self.draw_hover(&painter, rect, &pal, prj, page_i, w, an);
+        }
+        if let (Some(sn), Some(pl), true) = (snapped, resp.dnd_hover_payload::<PlacePayload>(), editable) {
+            if let Some(def) = prj.symbol(pl.symbol) {
+                let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
+                let inst = SymbolInst { sym: def.key.into(), pos: sn, label: def.default_label.into(), ..Default::default() };
+                render::draw_symbol(&mut g, &def, &inst, Ink::Ghost);
+            }
+        }
         if let (Some(sn), Some(w), true) = (snapped, world, editable) {
             let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
             self.previews(&mut g, prj, &prj.pages[page_i], w, sn);
@@ -877,12 +966,20 @@ impl Editor {
         if let Drag::Box { start } = self.drag {
             if let Some(ptr) = ptr {
                 let r = Rect::from_two_pos(start, ptr);
-                painter.rect_filled(r, 0.0, pal.ghost.gamma_multiply(0.15));
-                painter.rect_stroke(r, 0.0, Stroke::new(1.0, pal.ghost), egui::StrokeKind::Inside);
+                let st = Stroke::new(1.0, pal.ghost);
+                if ptr.x < start.x {
+                    // Crossing: dashed, a lighter fill.
+                    painter.rect_filled(r, 0.0, pal.ghost.gamma_multiply(0.07));
+                    let c = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom(), r.left_top()];
+                    painter.extend(EShape::dashed_line(&c, st, 5.0, 3.0));
+                } else {
+                    painter.rect_filled(r, 0.0, pal.ghost.gamma_multiply(0.15));
+                    painter.rect_stroke(r, 0.0, st, egui::StrokeKind::Inside);
+                }
             }
         }
         // Handles of the movable texts of a single selected symbol.
-        if self.tool == Tool::Select && self.selection.len() == 1 {
+        if self.tool == Tool::Select && self.selection.len() == 1 && editable {
             let page = &prj.pages[page_i];
             if let Some(s) = page.symbols.iter().find(|s| self.selection.contains(&s.id)) {
                 let mut boxes: Vec<R> = s.props.iter().map(|pp| render::prop_bounds(prj, page_i, s, pp)).collect();
@@ -897,7 +994,7 @@ impl Editor {
         }
         if !editable {
             let msg = if locked {
-                tr("Released page – unlock it in Project › Revisions to change it")
+                tr("Released page – unlock it in Project data › Revisions to change it")
             } else if self.read_only && !self.read_only_reason.is_empty() {
                 self.read_only_reason.as_str()
             } else {
@@ -909,7 +1006,7 @@ impl Editor {
         // Status line
         self.status = match (world, snapped) {
             (Some(w), Some(_)) => {
-                let mut s = tr_fmt!("X {}  Y {} mm   Column {}  Row {}", format!("{:7.1}", w.x), format!("{:7.1}", w.y), self.frame.column_of(w), self.frame.row_of(w));
+                let mut s = tr_fmt!("Column {}  Row {}", self.frame.column_of(w), self.frame.row_of(w));
                 if let Some(id) = self.hit(prj, page_i, w) {
                     let page = &prj.pages[page_i];
                     if let Some(sym) = page.symbols.iter().find(|s| s.id == id) {
@@ -1002,8 +1099,7 @@ impl Editor {
             Tool::Comment | Tool::Markup(..) => {}
             Tool::Insert => {
                 if let Some(clip) = &self.insert {
-                    // Same offset as ops::paste
-                    let d = (sn - clip.bounds().min).snap(GRID);
+                    let d = ops::paste_offset(clip, sn);
                     for s in &clip.symbols {
                         if let Some(def) = prj.symbol(&s.sym) {
                             let inst = SymbolInst { pos: s.pos + d, ..s.clone() };
@@ -1046,27 +1142,26 @@ impl Editor {
         painter.add(EShape::mesh(mesh));
     }
 
-    fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, snapped: Option<P>, out: &mut CanvasOutput) {
+    fn keyboard(&mut self, ui: &egui::Ui, prj: &mut Project, page_i: usize, out: &mut CanvasOutput) {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let g = self.grid;
         let sc = &self.shortcuts;
         let (esc, enter, r, m, a, del, space, fit, all, arrows, events) = ui.input(|i| {
-            let k = |key| i.key_pressed(key) && i.modifiers.is_none();
             (
                 i.key_pressed(Key::Escape),
                 sc.action_pressed(i, Action::FinishPolyline),
                 sc.cmd_pressed(i, Cmd::Rotate),
                 sc.cmd_pressed(i, Cmd::Mirror),
                 sc.action_pressed(i, Action::Autoroute),
-                i.key_pressed(Key::Delete) || k(Key::Backspace),
+                sc.cmd_pressed(i, Cmd::Delete),
                 sc.action_pressed(i, Action::WireCorner),
                 sc.cmd_pressed(i, Cmd::FitPage),
                 sc.cmd_pressed(i, Cmd::SelectAll),
                 [
-                    (i.key_pressed(Key::ArrowLeft), p(-g, 0.0)),
-                    (i.key_pressed(Key::ArrowRight), p(g, 0.0)),
-                    (i.key_pressed(Key::ArrowUp), p(0.0, -g)),
-                    (i.key_pressed(Key::ArrowDown), p(0.0, g)),
+                    (sc.action_pressed(i, Action::NudgeLeft), p(-g, 0.0)),
+                    (sc.action_pressed(i, Action::NudgeRight), p(g, 0.0)),
+                    (sc.action_pressed(i, Action::NudgeUp), p(0.0, -g)),
+                    (sc.action_pressed(i, Action::NudgeDown), p(0.0, g)),
                 ],
                 i.events.clone(),
             )
@@ -1079,16 +1174,33 @@ impl Editor {
                 self.set_tool(Tool::Select);
             } else {
                 self.selection.clear();
+                self.place_tag = None;
             }
         }
         if fit {
             self.fit(self.canvas_size);
         }
+        if all {
+            let page = &prj.pages[page_i];
+            self.selection = ops::all_ids(page).into_iter().filter(|id| graphics::item_layer(page, *id).is_none_or(|l| !graphics::locked(prj, l))).collect();
+        }
+        // Copy works on read only pages too.
+        for ev in &events {
+            if matches!(ev, egui::Event::Copy) && !self.selection.is_empty() {
+                let clip = ops::copy(&prj.pages[page_i], &self.selection);
+                ui.ctx().copy_text(clip.to_text());
+                self.clip = Some(clip);
+            }
+        }
         if !editable {
             return;
         }
         if enter {
-            self.finish_poly(prj, page_i);
+            if self.tool == Tool::Wire {
+                self.wire_start = None;
+            } else {
+                self.finish_poly(prj, page_i);
+            }
         }
         if a && self.tool == Tool::Wire {
             self.autoroute = !self.autoroute;
@@ -1117,39 +1229,40 @@ impl Editor {
             ops::delete(page, &self.selection);
             self.selection.clear();
         }
-        if all {
-            let page = &prj.pages[page_i];
-            self.selection = ops::all_ids(page).into_iter().filter(|id| graphics::item_layer(page, *id).is_none_or(|l| !graphics::locked(prj, l))).collect();
-        }
         if !self.selection.is_empty() && arrows.iter().any(|(pressed, _)| *pressed) {
-            let symbols = prj.symbol_table();
-            let page = &mut prj.pages[page_i];
             for (pressed, d) in arrows {
                 if pressed {
                     let att = ops::attached_wire_ends(&symbols, page, &self.selection);
                     ops::translate(page, &self.selection, &att, d);
                 }
             }
+            // Like a drag: facing connection points of moved symbols are connected.
+            ops::cleanup_wires(page);
+            let moved_symbols = page.symbols.iter().any(|s| self.selection.contains(&s.id));
+            if self.autoconnect && moved_symbols {
+                let n = routing::apply_autoconnect(prj, page_i, &self.selection);
+                if n > 0 {
+                    out.message = Some(if n == 1 { tr("1 connection drawn automatically").to_string() } else { tr_fmt!("{} connections drawn automatically", n) });
+                }
+            }
         }
-        let page = &mut prj.pages[page_i];
         for ev in events {
             match ev {
-                egui::Event::Copy | egui::Event::Cut if !self.selection.is_empty() => {
+                egui::Event::Cut if !self.selection.is_empty() => {
+                    let page = &mut prj.pages[page_i];
                     let clip = ops::copy(page, &self.selection);
                     ui.ctx().copy_text(clip.to_text());
                     self.clip = Some(clip);
-                    if ev == egui::Event::Cut {
-                        ops::delete(page, &self.selection);
-                        self.selection.clear();
-                    }
+                    ops::delete(page, &self.selection);
+                    self.selection.clear();
                 }
                 egui::Event::Paste(text) => {
                     if let Some(clip) = Clip::from_text(&text) {
                         if !clip.is_empty() {
-                            let at = snapped.unwrap_or(self.frame.area().min + p(20.0, 20.0));
+                            let at = self.paste_point();
                             self.selection = ops::paste(prj, page_i, &clip, at);
                             self.set_tool(Tool::Select);
-                            out.message = Some(tr_fmt!("{} objects pasted", self.selection.len()));
+                            out.message = Some(if self.selection.len() == 1 { tr("1 object pasted").to_string() } else { tr_fmt!("{} objects pasted", self.selection.len()) });
                         }
                     }
                     return;
@@ -1192,8 +1305,7 @@ impl Editor {
                     out.message = Some(tr_fmt!("Cable {}: {} cores assigned", c.cable, n));
                     self.cable_target = c.cable.clone();
                 }
-                self.set_tool(Tool::Select);
-                self.selection.insert(id);
+                self.selection = BTreeSet::from([id]);
                 out.open_properties = true;
             }
             tool => {
@@ -1234,10 +1346,11 @@ impl Editor {
         let id = s.id;
         prj.pages[page_i].symbols.push(s);
         out.placed = Some(id);
+        out.placed_part = self.place_part.take();
         if self.autoconnect {
             let n = routing::apply_autoconnect(prj, page_i, &BTreeSet::from([id]));
             if n > 0 {
-                out.message = Some(tr_fmt!("{} connections drawn automatically", n));
+                out.message = Some(if n == 1 { tr("1 connection drawn automatically").to_string() } else { tr_fmt!("{} connections drawn automatically", n) });
             }
         }
         if once.is_some() {
@@ -1274,6 +1387,8 @@ impl Editor {
         }
         if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PlacePayload>()) {
             self.set_tool(Tool::Place(pl.symbol));
+            self.place_rot = 0;
+            self.place_mirror = false;
             // A symbol without a device (Insert center) gets its tag as when placed by click.
             self.place_tag = (!pl.tag.is_empty()).then(|| pl.tag.clone());
             self.place_once = Some((pl.label.clone(), pl.pins.clone()));
@@ -1285,7 +1400,12 @@ impl Editor {
             self.last_point = click;
         }
         match self.tool.clone() {
-            Tool::Select => self.select_mouse(ui, resp, prj, page_i, rect, world, shift, out),
+            Tool::Select => {
+                if let Some(q) = click.filter(|_| !resp.clicked_by(PointerButton::Primary)) {
+                    self.select_at(prj, page_i, q, shift);
+                }
+                self.select_mouse(ui, resp, prj, page_i, rect, world, true, out);
+            }
             Tool::Insert => {
                 if let (Some(sn), Some(clip)) = (click, click.and_then(|_| self.insert.take())) {
                     let ids = ops::paste(prj, page_i, &clip, sn);
@@ -1327,18 +1447,21 @@ impl Editor {
             Tool::Text => {
                 if let Some(sn) = click {
                     let id = prj.new_id();
-                    let mut t = self.text_proto.take().unwrap_or_else(|| TextItem { text: "Text".into(), ..Default::default() });
+                    let mut t = self.text_proto.clone().unwrap_or_else(|| TextItem { text: "Text".into(), ..Default::default() });
                     t.id = id;
                     t.pos = sn;
                     t.layer = self.active_layer.clone();
                     prj.pages[page_i].texts.push(t);
-                    self.set_tool(Tool::Select);
-                    self.selection.insert(id);
+                    // The tool stays for the next text; the properties show this one.
+                    self.selection = BTreeSet::from([id]);
                     out.open_properties = true;
                 }
             }
             Tool::ConnDef => {
-                let target = resp.clicked_by(PointerButton::Primary).then(|| world.zip(snapped)).flatten();
+                let target = match resp.clicked_by(PointerButton::Primary) {
+                    true => world.zip(snapped),
+                    false => click.map(|q| (q, q)),
+                };
                 if let Some((w, sn)) = target {
                     match self.wire_point(&prj.pages[page_i], w, sn) {
                         Some(q) => {
@@ -1346,8 +1469,7 @@ impl Editor {
                             cd.id = prj.new_id();
                             let id = cd.id;
                             prj.pages[page_i].conn_defs.push(cd);
-                            self.set_tool(Tool::Select);
-                            self.selection.insert(id);
+                            self.selection = BTreeSet::from([id]);
                             out.open_properties = true;
                         }
                         None => out.message = Some(tr("Click on a wire to place the connection definition point").to_string()),
@@ -1380,11 +1502,20 @@ impl Editor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn select_mouse(&mut self, ui: &egui::Ui, resp: &egui::Response, prj: &mut Project, page_i: usize, rect: Rect, world: Option<P>, shift: bool, out: &mut CanvasOutput) {
+    /// Select tool: clicks select, drags move the selection or the texts of a single
+    /// selected symbol, drags on empty space select by window. On a page that is not
+    /// `editable` only the selection changes.
+    fn select_mouse(&mut self, ui: &egui::Ui, resp: &egui::Response, prj: &mut Project, page_i: usize, rect: Rect, world: Option<P>, editable: bool, out: &mut CanvasOutput) {
+        let shift = ui.input(|i| i.modifiers.shift);
         if resp.drag_started_by(PointerButton::Primary) {
             let origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(rect.center());
             let ow = self.s2w(rect, origin);
-            if let Some(handle) = self.prop_hit(prj, page_i, ow) {
+            let handle = self.prop_hit(prj, page_i, ow).filter(|_| editable);
+            // The texts of a single selected symbol are placed on their own; with several
+            // selected, dragging a text moves them all.
+            let group = handle.filter(|_| self.selection.len() > 1).map(|h| h.0);
+            let hit = self.hit(prj, page_i, ow).or(group).filter(|_| editable);
+            if let Some(handle) = handle.filter(|_| self.selection.len() == 1) {
                 let page = &prj.pages[page_i];
                 let s = page.symbols.iter().find(|s| s.id == handle.0);
                 let orig = match (s, handle.1) {
@@ -1395,7 +1526,7 @@ impl Editor {
                     _ => P::default(),
                 };
                 self.drag = Drag::Prop { handle, start: ow, orig };
-            } else if let Some(id) = self.hit(prj, page_i, ow) {
+            } else if let Some(id) = hit {
                 if !self.selection.contains(&id) {
                     if !shift {
                         self.selection.clear();
@@ -1437,6 +1568,7 @@ impl Editor {
                         let a = self.s2w(rect, start);
                         let b = self.s2w(rect, end);
                         let sel = R::from_points(a, b);
+                        let crossing = end.x < start.x;
                         if !shift {
                             self.selection.clear();
                         }
@@ -1444,7 +1576,7 @@ impl Editor {
                         let page = &prj.pages[page_i];
                         for id in ops::all_ids(page) {
                             let usable = graphics::item_layer(page, id).is_none_or(|l| graphics::shown(prj, l, false) && !graphics::locked(prj, l));
-                            if usable && ops::item_bounds(&symbols, page, id).is_some_and(|bb| sel.contains_rect(&bb)) {
+                            if usable && ops::item_bounds(&symbols, page, id).is_some_and(|bb| box_selects(sel, crossing, bb)) {
                                 self.selection.insert(id);
                             }
                         }
@@ -1456,7 +1588,7 @@ impl Editor {
                     if self.autoconnect && moved_symbols && (applied.x != 0.0 || applied.y != 0.0) {
                         let n = routing::apply_autoconnect(prj, page_i, &self.selection);
                         if n > 0 {
-                            out.message = Some(tr_fmt!("{} connections drawn automatically", n));
+                            out.message = Some(if n == 1 { tr("1 connection drawn automatically").to_string() } else { tr_fmt!("{} connections drawn automatically", n) });
                         }
                     }
                 }
@@ -1471,23 +1603,7 @@ impl Editor {
                     out.open_url = Some(link);
                     return;
                 }
-                match hit {
-                    Some(id) => {
-                        if shift {
-                            if !self.selection.remove(&id) {
-                                self.selection.insert(id);
-                            }
-                        } else {
-                            self.selection.clear();
-                            self.selection.insert(id);
-                        }
-                        if let Some(s) = prj.pages[page_i].symbols.iter().find(|s| s.id == id) {
-                            self.place_ctx.remember(prj, s);
-                        }
-                    }
-                    None if !shift => self.selection.clear(),
-                    None => {}
-                }
+                self.select_at(prj, page_i, w, shift);
             }
         }
         if resp.double_clicked() && !self.selection.is_empty() {
@@ -1497,16 +1613,84 @@ impl Editor {
 }
 
 impl Editor {
-    /// Comment and markup tools: two clicks for lines and rectangles, one otherwise.
+    /// Faint highlight of the item under the pointer (select tool).
+    #[allow(clippy::too_many_arguments)]
+    fn draw_hover(&self, painter: &Painter, rect: Rect, pal: &Palette, prj: &Project, page_i: usize, w: P, an: &Analysis) {
+        let Some(id) = self.hit(prj, page_i, w).filter(|id| !self.selection.contains(id)) else { return };
+        let page = &prj.pages[page_i];
+        let color = pal.selected.gamma_multiply(0.35);
+        if let Some(wire) = page.wires.iter().find(|x| x.id == id) {
+            // The whole potential of a wire, as the selection shows it.
+            let ids: HashSet<u64> = an.netlist.net_of_wire(id).map(|n| n.wires.iter().map(|x| x.1).collect()).unwrap_or_else(|| HashSet::from([wire.id]));
+            for x in page.wires.iter().filter(|x| ids.contains(&x.id)) {
+                painter.line_segment([self.w2s(rect, x.a), self.w2s(rect, x.b)], Stroke::new(4.0, color));
+            }
+            return;
+        }
+        if let Some(b) = ops::item_bounds(&prj.symbol_table(), page, id) {
+            let r = Rect::from_min_max(self.w2s(rect, b.min), self.w2s(rect, b.max)).expand(2.0);
+            painter.rect_filled(r, 2.0, color.gamma_multiply(0.3));
+            painter.rect_stroke(r, 2.0, Stroke::new(1.0, color), egui::StrokeKind::Outside);
+        }
+    }
+
+    /// Pointer shape over the page: move or point over an item, grab over the texts
+    /// of a selected symbol, crosshair for the drawing tools.
+    fn cursor(&self, ui: &egui::Ui, resp: &egui::Response, prj: &Project, page_i: usize, world: Option<P>, editable: bool) {
+        let Some(w) = world.filter(|_| resp.hovered() || resp.dragged()) else { return };
+        let icon = match (&self.tool, &self.drag) {
+            (_, Drag::Prop { .. }) => egui::CursorIcon::Grabbing,
+            (_, Drag::Move { .. }) => egui::CursorIcon::Move,
+            (_, Drag::Box { .. }) => egui::CursorIcon::Crosshair,
+            (Tool::Select, Drag::None) if editable && self.selection.len() == 1 && self.prop_hit(prj, page_i, w).is_some() => egui::CursorIcon::Grab,
+            (Tool::Select, Drag::None) if editable && self.prop_hit(prj, page_i, w).is_some() => egui::CursorIcon::Move,
+            (Tool::Select, Drag::None) => match self.hit(prj, page_i, w) {
+                Some(_) if editable => egui::CursorIcon::Move,
+                Some(_) => egui::CursorIcon::PointingHand,
+                None => return,
+            },
+            _ if editable || self.tool.is_review() => egui::CursorIcon::Crosshair,
+            _ => egui::CursorIcon::NotAllowed,
+        };
+        ui.ctx().set_cursor_icon(icon);
+    }
+
+    /// A click of the select tool at `q`: selects the item there (Shift toggles it).
+    fn select_at(&mut self, prj: &Project, page_i: usize, q: P, shift: bool) -> Option<u64> {
+        let hit = self.hit(prj, page_i, q);
+        match hit {
+            Some(id) => {
+                if shift {
+                    if !self.selection.remove(&id) {
+                        self.selection.insert(id);
+                    }
+                } else {
+                    self.selection.clear();
+                    self.selection.insert(id);
+                }
+                if let Some(s) = prj.pages[page_i].symbols.iter().find(|s| s.id == id) {
+                    self.place_ctx.remember(prj, s);
+                }
+            }
+            None if !shift => self.selection.clear(),
+            None => {}
+        }
+        hit
+    }
+
+    /// Comment and markup tools: two clicks for lines and rectangles, one otherwise;
+    /// a typed point acts as a click.
     fn review_mouse(&mut self, resp: &egui::Response, world: Option<P>, out: &mut CanvasOutput) {
-        let (true, Some(w)) = (resp.clicked_by(PointerButton::Primary), world) else { return };
+        let click = resp.clicked_by(PointerButton::Primary).then_some(world).flatten().or_else(|| self.typed.take());
+        let Some(w) = click else { return };
         match self.tool {
             Tool::Comment => out.review = Some(ReviewInput::Comment(w)),
             Tool::Markup(MarkupKind::Text, pen) => out.review = Some(ReviewInput::Markup(MarkupKind::Text, pen, w, w)),
             Tool::Markup(kind, pen) => match self.pts.pop() {
                 None => self.pts.push(w),
                 Some(a) if a.dist(w) > 0.5 => out.review = Some(ReviewInput::Markup(kind, pen, a, w)),
-                Some(_) => {}
+                // A second click on the start point keeps it.
+                Some(a) => self.pts.push(a),
             },
             _ => {}
         }

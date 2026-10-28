@@ -12,7 +12,7 @@ const PARTS: &str = "parts_db";
 pub struct Autosave {
     store: Store,
     /// The stored project is still expected: it replaces the start-up project unless
-    /// that was changed meanwhile.
+    /// that was changed or replaced meanwhile.
     awaiting_project: bool,
     /// The stored parts database is still expected; the start-up one, which it replaces
     /// unless the parts were changed meanwhile.
@@ -36,8 +36,13 @@ impl Autosave {
                 PROJECT => {
                     let waited = std::mem::take(&mut self.awaiting_project);
                     let prj = value.and_then(|v| openecraft_core::archive::unpack(&String::from_utf8_lossy(&v)).ok());
-                    if let Some(prj) = prj.filter(|_| waited && !session.dirty()) {
+                    if let Some(prj) = prj.filter(|_| waited && session.untouched()) {
+                        // Unsaved changes at the last close stay unsaved.
+                        let unsaved = session.dirty();
                         *session = Session::new(prj, session.file_name.clone());
+                        if unsaved {
+                            session.mark_unsaved();
+                        }
                         replaced = true;
                     }
                 }

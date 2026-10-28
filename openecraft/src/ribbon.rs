@@ -79,11 +79,14 @@ pub static TABS: &[Tab] = &[
         context: false,
         groups: &[
             g("clipboard", tr_const!("Clipboard"), &[L(C::Paste), S(C::Cut), S(C::Copy), S(C::MultipleCopy)]),
-            g("page", tr_const!("Page"), &[L(C::NewSchematicPage), S(C::NewPage), S(C::NewSubPage), S(C::NewSection), S(C::PageProperties), S(C::RenumberPages), S(C::DeletePage)]),
+            g(
+                "page",
+                tr_const!("Page"),
+                &[L(C::NewSchematicPage), S(C::NewPage), S(C::NewSubPage), S(C::NewSection), S(C::PageProperties), S(C::RenumberPages), S(C::DeletePage), S(C::MovePageUp), S(C::MovePageDown)],
+            ),
             g("edit", tr_const!("Edit"), &[L(C::SelectTool), S(C::Undo), S(C::Redo), S(C::Delete), S(C::Rotate), S(C::Mirror), S(C::Align), S(C::Distribute), S(C::MoveBy)]),
             g("find", tr_const!("Find"), &[L(C::Find), S(C::CommandSearch), S(C::SelectAll)]),
             g("navigators", tr_const!("Navigators"), &[S(C::PagesPane), S(C::DevicesPane), S(C::MessagesPane)]),
-            g("reports", tr_const!("Reports"), &[L(C::ReportsPane), S(C::UpdateReportBlocks)]),
         ],
     },
     Tab {
@@ -123,10 +126,8 @@ pub static TABS: &[Tab] = &[
                 tr_const!("Routing"),
                 &[S(C::AutoConnect), S(C::Route), S(C::AutoConnectSelection), S(C::JoinCollinear), S(C::ApplyConnDefs)],
             ),
-            g("arrange", tr_const!("Arrange"), &[S(C::Align), S(C::Distribute), S(C::MoveBy), S(C::MultipleCopy), S(C::GridSize)]),
             g("layer", tr_const!("Layer"), &[L(C::ActiveLayer), S(C::LayersPane)]),
-            g("properties", tr_const!("Properties"), &[L(C::Properties), S(C::PropertiesPane), S(C::RenameDevice), S(C::PartSelection)]),
-            g("pages", tr_const!("Pages"), &[S(C::MovePageUp), S(C::MovePageDown), S(C::SavePageAsTemplate)]),
+            g("properties", tr_const!("Properties"), &[L(C::Properties), S(C::PropertiesPane)]),
         ],
     },
     Tab {
@@ -136,7 +137,8 @@ pub static TABS: &[Tab] = &[
         key_tip: 'V',
         context: false,
         groups: &[
-            g("zoom", tr_const!("Zoom"), &[L(C::FitPage), S(C::PreviousPage), S(C::NextPage), S(C::NextPageTab), S(C::ClosePageTab)]),
+            g("zoom", tr_const!("Zoom"), &[L(C::FitPage), S(C::ZoomActual), S(C::ZoomIn), S(C::ZoomOut)]),
+            g("pages", tr_const!("Pages"), &[S(C::PreviousPage), S(C::NextPage), S(C::NextPageTab), S(C::ClosePageTab)]),
             g("show", tr_const!("Show"), &[S(C::Grid), S(C::GridSize), S(C::ConnectionPoints), S(C::RevisionMarks), S(C::MacroBoxes), S(C::WireColours)]),
             g("panes", tr_const!("Panes"), &[L(C::Panes), S(C::NextPane), S(C::PreviousPane), S(C::ResetLayout)]),
             g(
@@ -163,11 +165,12 @@ pub static TABS: &[Tab] = &[
         key_tip: 'D',
         context: false,
         groups: &[
-            g("numbering", tr_const!("Numbering"), &[L(C::DeviceNumbering), S(C::RenameDevice), S(C::DevicesPane)]),
-            g("terminals", tr_const!("Terminals"), &[L(C::TerminalStrips), S(C::StripsPane)]),
+            g("navigators", tr_const!("Navigators"), &[S(C::DevicesPane), S(C::StripsPane), S(C::PlcPane)]),
+            g("numbering", tr_const!("Numbering"), &[L(C::DeviceNumbering), S(C::RenameDevice)]),
+            g("terminals", tr_const!("Terminals"), &[L(C::TerminalStrips)]),
             g("plugs", tr_const!("Plugs"), &[L(C::Plugs)]),
-            g("plc", tr_const!("PLC"), &[L(C::PlcOverview), S(C::PlcHardware), S(C::PlcPane)]),
-            g("parts", tr_const!("Parts"), &[L(C::PartsManagement), S(C::PartSelection), S(C::DataPortal)]),
+            g("plc", tr_const!("PLC"), &[L(C::PlcOverview), S(C::PlcHardware)]),
+            g("parts", tr_const!("Parts"), &[L(C::PartSelection)]),
             g("structure", tr_const!("Structure"), &[L(C::Structure)]),
             g("preplanning", tr_const!("Pre-planning"), &[L(C::Preplanning), S(C::SingleLine)]),
         ],
@@ -179,13 +182,14 @@ pub static TABS: &[Tab] = &[
         key_tip: 'C',
         context: false,
         groups: &[
-            g("numbering", tr_const!("Numbering"), &[L(C::WireNumbering), S(C::ConnectionsPane)]),
-            g("cables", tr_const!("Cables"), &[L(C::CableEditor), S(C::CablesPane), S(C::CableDefTool)]),
-            g("potentials", tr_const!("Potentials"), &[L(C::Potentials), S(C::PotentialPoint)]),
+            g("navigators", tr_const!("Navigators"), &[S(C::ConnectionsPane), S(C::CablesPane)]),
+            g("numbering", tr_const!("Numbering"), &[L(C::WireNumbering)]),
+            g("cables", tr_const!("Cables"), &[L(C::CableEditor)]),
+            g("potentials", tr_const!("Potentials"), &[L(C::Potentials)]),
             g("harnesses", tr_const!("Harnesses"), &[L(C::Harnesses)]),
             g("field", tr_const!("Field wiring"), &[L(C::FieldWiring)]),
             g("marking", tr_const!("Marking"), &[L(C::Marking)]),
-            g("xref", tr_const!("Cross references"), &[L(C::CrossReferences), S(C::InterruptionPoint)]),
+            g("xref", tr_const!("Cross references"), &[L(C::CrossReferences)]),
         ],
     },
     Tab {
@@ -220,7 +224,6 @@ pub static TABS: &[Tab] = &[
             g("fluid", tr_const!("Fluid and process"), &[L(C::Process)]),
             g("integration", tr_const!("Integration"), &[L(C::Integration)]),
             g("collaboration", tr_const!("Collaboration"), &[L(C::ProjectServer), S(C::Vault), S(C::CheckInVault)]),
-            g("automation", tr_const!("Automation"), &[L(C::ManagePlugins), S(C::CommandSearch)]),
         ],
     },
     Tab {
@@ -244,7 +247,7 @@ pub static TABS: &[Tab] = &[
         title: tr_const!("Plugins"),
         key_tip: 'G',
         context: false,
-        groups: &[g("plugin_commands", tr_const!("Plugins"), &[L(C::PluginCommands), L(C::ManagePlugins), S(C::CommandSearch)])],
+        groups: &[g("plugin_commands", tr_const!("Plugins"), &[L(C::PluginCommands), L(C::ManagePlugins)])],
     },
     Tab {
         id: TabId::Help,
@@ -252,7 +255,7 @@ pub static TABS: &[Tab] = &[
         title: tr_const!("Help"),
         key_tip: 'Y',
         context: false,
-        groups: &[g("help", tr_const!("Help"), &[L(C::Help), S(C::StartPage), S(C::Shortcuts), S(C::CommandSearch)])],
+        groups: &[g("help", tr_const!("Help"), &[L(C::Help), L(C::Tutorial), S(C::StartPage), S(C::Shortcuts), S(C::About)])],
     },
     Tab {
         id: TabId::LayoutSpace,
@@ -293,6 +296,35 @@ pub static TABS: &[Tab] = &[
 
 pub fn tab(id: TabId) -> &'static Tab {
     TABS.iter().find(|t| t.id == id).expect("every tab is defined")
+}
+
+/// Which groups of a tab are drawn collapsed (one dropdown button per group) so that the
+/// groups fit into `available`: the rightmost groups collapse first, a group that would
+/// not get narrower stays, and no more groups collapse than needed. `full` and `short` are the widths of each group drawn whole
+/// and collapsed.
+pub fn collapsed(full: &[f32], short: &[f32], available: f32) -> Vec<bool> {
+    let mut out = vec![false; full.len()];
+    let mut total: f32 = full.iter().sum();
+    for i in (0..full.len()).rev() {
+        if total <= available {
+            break;
+        }
+        let s = short.get(i).copied().unwrap_or(full[i]);
+        if s < full[i] {
+            out[i] = true;
+            total -= full[i] - s;
+        }
+    }
+    // Room left after the last group that had to collapse: groups collapsed before it
+    // come back, the left ones first.
+    for i in 0..full.len() {
+        let s = short.get(i).copied().unwrap_or(full[i]);
+        if out[i] && total + full[i] - s <= available {
+            out[i] = false;
+            total += full[i] - s;
+        }
+    }
+    out
 }
 
 // ------------------------------------------------------------------ backstage
@@ -374,7 +406,7 @@ impl Page {
             Page::Export => &[C::ExportSettings, C::PdfInLanguage, C::CheckInVault],
             Page::Print => &[C::PrintAll, C::PrintPage],
             Page::Info => &[C::ProjectProperties, C::ProjectManagement, C::MessagesPane, C::Revisions],
-            Page::Help => &[C::Help, C::Shortcuts, C::CommandSearch, C::CustomizeRibbon],
+            Page::Help => &[C::Help, C::Tutorial, C::Shortcuts, C::CommandSearch, C::CustomizeRibbon, C::About],
         }
     }
 }

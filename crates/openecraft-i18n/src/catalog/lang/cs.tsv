@@ -5,24 +5,9 @@
 (renamed from {})	(přejmenováno z {})
 + Page	+ Stránka
 0 = no jumper	0 = bez propojky
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Vyberte symbol v knihovně (vpravo) a kliknutím do stránky jej umístěte. Označení přístrojů (-K1, -S2 …) se přidělují automaticky.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Projekt › Editor symbolů: nakreslete vlastní symboly (nebo zkopírujte vestavěné) s přípojnými body a funkcí; ukládají se do projektu a lze je vyměňovat jako soubory knihoven.
-100% ≈ real size on a 96 dpi screen	100% ≈ skutečná velikost na obrazovce s 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Projekt › Rohová razítka a formuláře výkazů: vlastní rohová razítka se zástupnými symboly ({project}, {page}, {prop:Name} …) a sloupce stránek výkazů.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Rozvržení rozváděče: přípojnice a výřezy; vlastnosti skříně exportují vrtací plán (data NC jako DXF / DWG / CSV). Výrobní seznam vodičů obsahuje délky odizolování a dutinky.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelové svazky: Projekt › Kabelové svazky…; vyberte vodiče mezi dvěma přístroji › Přiřadit ke svazku, nebo pro každé spojení ve vlastnostech vodiče. Výkaz svazku s délkami, konektory a průměrem svazku, export KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Dveře: přepněte čelní pohled rozváděče na Dveře a umístěte tam ovládací / signalizační přístroje; jejich výřezy ve dveřích se vytvoří automaticky. Kolize se kontrolují pomocí 3D modelů artiklů.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Vyberte cívku a pak umístěte kontakty: přiřadí se k této cívce a očíslují (13/14, 21/22 …). Křížové odkazy a zrcadlo kontaktů se aktualizují průběžně.
 2D front view	2D čelní pohled
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Kreslete vodiče nástrojem pro vodiče (W). Vodiče končí automaticky na přípojných bodech. T-odbočky dostanou spojovací bod.
 3D model	3D model
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Potenciály (L1, +24V …) a body přerušení pojmenovávají sítě napříč stránkami. Vyberte vodič, aby se zvýraznil jeho potenciál.
 4/2 directional valve	4/2 cestný ventil
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Přiřaďte artikly v panelu vlastností; vytvářejte výkazy (seznam přístrojů, kusovník, schéma svorkovnice, seznam spojení, seznam PLC) a vkládejte je jako stránky výkazů.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Struktura: ve vlastnostech stránky zadejte stránce funkci (=A1) a umístění (+CAB1). Přístroje tam umístěné je převezmou (=A1+CAB1-K1); na stránce se zobrazí jen odlišná část.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Kabely: definujte je v Projekt › Kabely…, vyberte vodiče a použijte Přiřadit ke kabelu. Čísla vodičů: Projekt › Číslování vodičů…, nebo zadejte číslo ve vlastnostech vodiče.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Makra: vyberte prvky › Úpravy › Uložit výběr jako makro; vložte je přes Vložit › Makro…. Zástupné symboly {NAME} se vyplní ze sad hodnot.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Projekt › Svorkovnice / Přehled PLC / Revize: pořadí svorkovnic, propojky a rezervy; adresy PLC a tabulky symbolů; revize se značkami změn a uvolněné (uzamčené) stránky.
 Access token	Přístupový token
 Accessories	Příslušenství
 Add missing parts of the example catalog	Přidat chybějící artikly ukázkového katalogu
@@ -95,12 +80,9 @@ Click into the page to place {}	Kliknutím do stránky umístíte {}
 Click on the 4 mm grid	Klikněte na rastr 4 mm
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Klikněte na počáteční a rohové body · Mezerník přepne směr rohu · končí automaticky na přípoji · Pravé tlačítko / Esc ukončí
 Click start and end point	Klikněte na počáteční a koncový bod
-Click start point, click end point	Klikněte na počáteční bod, pak na koncový bod
 Click to add to the selected text.	Kliknutím přidáte k vybranému textu.
 Click to insert the macro · Esc cancel	Kliknutím vložíte makro · Esc zruší
-Click to place a text	Kliknutím umístíte text
 Click to place the text from the field below	Kliknutím umístíte text z pole níže
-Click to place · R rotate · M mirror · Esc finish	Kliknutím umístit · R otočit · M zrcadlit · Esc ukončit
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Kliknutím vyberete, tažením přesunete, tažením na prázdné ploše vyberete oknem. Tažení pravým/prostředním tlačítkem posouvá pohled, kolečko myši přibližuje.
 Click to show	Kliknutím zobrazit
 Click two corners	Klikněte na dva rohy
@@ -146,7 +128,6 @@ Corner	Roh
 Cover	Titulní list
 Cover sheet	Titulní list
 Create / update the part on the server (Ctrl+S)	Vytvořit / aktualizovat artikl na serveru (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Vytvořte skříň (➕ v navigátoru vlevo), abyste mohli začít s rozvržením rozváděče.
 Create an enclosure in the panel layout first.	Nejprve vytvořte skříň v rozvržení rozváděče.
 Create revision	Vytvořit revizi
 Created by	Vytvořil
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Dveře: přístroje: {}, výřezy: {}
 Downloaded {} parts (revision {}): {} new, {} updated	Staženo {} artiklů (revize {}): {} nových, {} aktualizovaných
 Downloading parts…	Stahování artiklů…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Tažení: otáčení · tažení pravým/prostředním tlačítkem: posun · kolečko: zoom · kliknutí: vybrat přístroj nebo vodič
-Draw connections (W)	Kreslit spojení (W)
+Draw connections	Kreslit spojení
 Duplicate	Duplikovat
 Each point-to-point connection can belong to a harness	Každé spojení bod–bod může patřit ke kabelovému svazku
 Edit	Úpravy
@@ -272,7 +253,6 @@ Harness data	Data kabelového svazku
 Harness {} has no wires	Kabelový svazek {} nemá žádné vodiče
 Harness {}: connection {} – {} does not exist in the schematic	Kabelový svazek {}: spojení {} – {} ve schématu neexistuje
 Harnesses	Kabelové svazky
-Harnesses…	Kabelové svazky…
 Height	Výška
 Height (mm)	Výška (mm)
 Help	Nápověda
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Delší hodnoty se kreslí menš�
 Macro {} replaced	Makro {} nahrazeno
 Macro {} saved	Makro {} uloženo
 Macros	Makra
-Macros…	Makra…
 Macro…	Makro…
 Main	Hlavní
 Main contact 1-pole	Hlavní kontakt 1pólový
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Další volná čísla kontaktů na tom
 Next page (Page Down)	Další stránka (Page Down)
 No PLC inputs / outputs placed.	Nejsou umístěny žádné vstupy / výstupy PLC.
 No cables defined.	Nejsou definovány žádné kabely.
-No cables yet – Project › Cables…	Zatím žádné kabely – Projekt › Kabely…
 No changes since the last revision.	Od poslední revize žádné změny.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Zatím žádné přístroje. Vyberte symbol v knihovně vpravo a klikněte do stránky.
-No enclosure yet – create one with ➕.	Zatím žádná skříň – vytvořte ji pomocí ➕.
 No harnesses defined.	Nejsou definovány žádné kabelové svazky.
-No harnesses yet – Project › Harnesses…	Zatím žádné kabelové svazky – Projekt › Kabelové svazky…
 No identifying letter for the device tag.	Žádné kódové písmeno pro označení přístroje.
 No macros yet. Select items in a schematic and save them as a macro.	Zatím žádná makra. Vyberte prvky ve schématu a uložte je jako makro.
 No parts found.	Nebyly nalezeny žádné artikly.
@@ -437,7 +412,6 @@ PLC connection point	Přípojný bod PLC
 PLC digital input	Digitální vstup PLC
 PLC digital output	Digitální výstup PLC
 PLC overview	Přehled PLC
-PLC overview…	Přehled PLC…
 Packaging quantity	Balicí jednotka
 Page	Stránka
 Page / column (3.4.1)	Stránka / sloupec (3.4.1)
@@ -468,11 +442,10 @@ Parts	Artikly
 Parts (CSV, JSON)	Artikly (CSV, JSON)
 Parts import failed: {}	Import artiklů se nezdařil: {}
 Parts management	Správa artiklů
-Parts management…	Správa artiklů…
 Parts server: {}	Server artiklů: {}
 Passive components	Pasivní součástky
 Pilot light (NFPA)	Signálka (NFPA)
-Place text (T)	Umístit text (T)
+Place text	Umístit text
 Placed	Umístěno
 Placed {}× in the project	V projektu umístěno {}×
 Placeholders	Zástupné symboly
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Aktualizovat artikly ukázkového katalogu
 Relay / contactor coil	Cívka relé / stykače
 Relay coil (NFPA)	Cívka relé (NFPA)
 Release: lock all pages	Uvolnit: uzamknout všechny stránky
-Released page – unlock it in Project › Revisions to change it	Uvolněná stránka – chcete-li ji změnit, odemkněte ji v Projekt › Revize
 Remove from cable	Odebrat z kabelu
 Remove from harness	Odebrat ze svazku
 Remove from the harness	Odebrat z kabelového svazku
@@ -566,7 +538,6 @@ Revision marks	Značky revizí
 Revision overview (changes)	Přehled revizí (změny)
 Revision {} created	Revize {} vytvořena
 Revisions	Revize
-Revisions…	Revize…
 Right	Vpravo
 Rotate (R)	Otočit (R)
 Rotate / mirror (selection or symbol being placed)	Otočit / zrcadlit (výběr nebo umísťovaný symbol)
@@ -637,7 +608,6 @@ Supplier	Dodavatel
 Switches / Sensors	Spínače / snímače
 Symbol	Symbol
 Symbol editor	Editor symbolů
-Symbol editor…	Editor symbolů…
 Symbol table import failed: {}	Import tabulky symbolů se nezdařil: {}
 Symbols	Symboly
 Synchronize project parts from database	Synchronizovat artikly projektu z databáze
@@ -655,7 +625,6 @@ Terminal number	Číslo svorky
 Terminal number, PLC address, potential name …	Číslo svorky, adresa PLC, název potenciálu …
 Terminal strip	Svorkovnice
 Terminal strips	Svorkovnice
-Terminal strips…	Svorkovnice…
 Terminals	Svorky
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Svorky se stejným číslem propojky jsou propojeny (stejný potenciál). Rezervní svorky se započítávají do kusovníku.
 Test connection	Otestovat připojení
@@ -727,8 +696,7 @@ Wire tool / text tool	Nástroj pro vodiče / nástroj pro text
 Wire {} – {}  ({} of {} here, click again for the next)	Vodič {} – {}  ({} z {} zde, dalším kliknutím další)
 Wire {} – {}  {} mm	Vodič {} – {}  {} mm
 Wires	Vodiče
-Workflow	Postup
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Sloupec {}  Řádek {}
+Column {}  Row {}	Sloupec {}  Řádek {}
 X {}  Y {} mm on the {}	X {}  Y {} mm, {}
 YYYY-MM-DD	RRRR-MM-DD
 Zoom / pan	Zoom / posun
@@ -815,67 +783,55 @@ writable with token	zapisovatelné s tokenem
 ⎘ Copy	⎘ Kopírovat
 ○ Circle	○ Kružnice
 ☐ Rect	☐ Obdélník
-⛶ Fit	⛶ Přizpůsobit
-✏ Place in schematic	✏ Umístit ve schématu
+Place in schematic	Umístit ve schématu
 ✏ Wire	✏ Vodič
-✔ Add to device	✔ Přidat k přístroji
-✔ Create	✔ Vytvořit
+Add to device	Přidat k přístroji
+Create	Vytvořit
 ✔ No problems found.	✔ Nebyly nalezeny žádné problémy.
 ✔ Save	✔ Uložit
 ➕ Add accessory	➕ Přidat příslušenství
-➕ Add function	➕ Přidat funkci
-➕ Add part…	➕ Přidat artikl…
+Add function	Přidat funkci
+Add part…	Přidat artikl…
 ➕ Insert (click into the page)	➕ Vložit (klikněte do stránky)
 ➕ Insert as new page	➕ Vložit jako novou stránku
 ➕ Insert as report page	➕ Vložit jako stránku výkazu
-➕ Insert mounting layout page	➕ Vložit stránku montážního plánu
+Insert mounting layout page	Vložit stránku montážního plánu
 ➕ Label	➕ Popisek
 ➕ Line	➕ Čára
 ➕ New	➕ Nový
-➕ New cable	➕ Nový kabel
-➕ New harness	➕ Nový kabelový svazek
+New cable	Nový kabel
+New harness	Nový kabelový svazek
 ➕ Property	➕ Vlastnost
 ➕ Rectangle	➕ Obdélník
 ➕ Text	➕ Text
-➕ Value set	➕ Sada hodnot
+Value set	Sada hodnot
 ➕ {} (not saved)	➕ {} (neuloženo)
 ⟲ Revert	⟲ Vrátit změny
 ⟳ Reload	⟳ Znovu načíst
-⟳ Rotate	⟳ Otočit
-⬆ Import symbol table…	⬆ Importovat tabulku symbolů…
-⬆ Import…	⬆ Importovat…
-⬆ Upload database ({})	⬆ Nahrát databázi ({})
+Import symbol table…	Importovat tabulku symbolů…
+Upload database ({})	Nahrát databázi ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Nahrát soubor artiklů (CSV / JSON)…
-⬆ Upload selected part	⬆ Nahrát vybraný artikl
-⬇ Door NC data (DXF)	⬇ Data NC dveří (DXF)
-⬇ Door cutouts (CSV)	⬇ Výřezy ve dveřích (CSV)
-⬇ Download into database	⬇ Stáhnout do databáze
-⬇ Drilling list (CSV)	⬇ Seznam otvorů (CSV)
-⬇ Export CSV	⬇ Exportovat CSV
+Upload selected part	Nahrát vybraný artikl
+Door NC data (DXF)	Data NC dveří (DXF)
+Door cutouts (CSV)	Výřezy ve dveřích (CSV)
+Download into database	Stáhnout do databáze
 ⬇ Export KBL (XML)…	⬇ Exportovat KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Exportovat tabulku symbolů (CSV)…
-⬇ Export…	⬇ Exportovat…
-⬇ NC data (DXF)	⬇ Data NC (DXF)
+Export symbol table (CSV)…	Exportovat tabulku symbolů (CSV)…
+NC data (DXF)	Data NC (DXF)
 ⬉ Select	⬉ Vybrat
 🌐 Parts server	🌐 Server artiklů
-💾 Save	💾 Uložit
-💾 Save selection as macro…	💾 Uložit výběr jako makro…
-📊 Cable overview	📊 Přehled kabelů
-📊 Harness data	📊 Data kabelového svazku
 📊 Reports	📊 Výkazy
-📊 Revision overview	📊 Přehled revizí
-🔒 Released page – read only	🔒 Uvolněná stránka – jen pro čtení
+Revision overview	Přehled revizí
+Released page – read only	Uvolněná stránka – jen pro čtení
 🗄 Panel layout	🗄 Rozvržení rozváděče
 🗄 Parts database	🗄 Databáze artiklů
 🗋 Schematic	🗋 Schéma
 🗑 Delete	🗑 Odstranit
-🗑 Delete connection point	🗑 Odstranit přípojný bod
-🗑 Delete element	🗑 Odstranit prvek
-🗑 Delete macro	🗑 Odstranit makro
-🗑 Remove	🗑 Odebrat
+Delete connection point	Odstranit přípojný bod
+Delete element	Odstranit prvek
 {} connections removed from their harness	Ze svazku odebráno spojení: {}
 {} connections assigned to {}	Spojení přiřazená k {}: {}
-🗄 Show in panel layout ({})	🗄 Zobrazit v rozvržení rozváděče ({})
+Show in panel layout ({})	Zobrazit v rozvržení rozváděče ({})
    |  Potential {}	   |  Potenciál {}
 📁 Project parts ({})	📁 Artikly projektu ({})
 part {} not found	artikl {} nenalezen
@@ -1070,8 +1026,8 @@ via cable ducts	přes kabelové kanály
 {} connection points	Přípojné body: {}
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm na desce + {} mm rezerva; zbytek je cesta od přípojných bodů k desce.
 {} wires, {} – {} mm	Vodiče: {}, {} – {} mm
-➕ Add connection point	➕ Přidat přípojný bod
-🗑 Remove all	🗑 Odebrat vše
+Add connection point	Přidat přípojný bod
+Remove all	Odebrat vše
 2D front view (SVG)	2D čelní pohled (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D model (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Koncová příchytka
@@ -1113,11 +1069,9 @@ Wire number on both ends	Číslo vodiče na obou koncích
 {} markers	Štítky: {}
 {} mm	{} mm
 {} pieces	{} ks
-Potentials…	Potenciály…
 Potentials	Potenciály
-➕ New potential	➕ Nový potenciál
+New potential	Nový potenciál
 Load preset	Načíst předvolbu
-📊 Potential overview	📊 Přehled potenciálů
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Vodiče bez vlastní barvy nebo průřezu je převezmou z potenciálu svého spojení; žíly kabelů si ponechají hodnoty kabelu.
 e.g. 400 V AC	např. 400 V AC
 Delete	Odstranit
@@ -1151,7 +1105,6 @@ turquoise	tyrkysová
 silver	stříbrná
 green-yellow	zelenožlutá
 Potential {} defined {} times	Potenciál {} je definován {}krát
-Potential {} has no definition (Project › Potentials)	Potenciál {} nemá definici (Projekt › Potenciály)
 Protective conductor {} with wire colour {} (must be GNYE)	Ochranný vodič {} s barvou vodiče {} (musí být GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Barva vodiče GNYE je vyhrazena pro ochranné vodiče ({})
 {}: cross-section {} differs from the potential definition ({})	{}: průřez {} se liší od definice potenciálu ({})
@@ -1183,9 +1136,7 @@ Draw wires in their colour	Kreslit vodiče v jejich barvě
 Pin	Kolík
 Plug	Konektor
 Plugs	Konektory
-Plugs…	Konektory…
 Plug diagram	Schéma konektoru
-📊 Plug diagram	📊 Schéma konektoru
 Socket side	Strana zdířek
 Pin side	Strana kolíků
 female	zdířka
@@ -1231,7 +1182,6 @@ Column	Sloupec
 Condition '{}' needs OPTION=value	Podmínka '{}' vyžaduje OPTION=hodnota
 Condition (OPTION=value & …)	Podmínka (OPTION=hodnota & …)
 Configurator	Konfigurátor
-Configurator…	Konfigurátor…
 Cooling	Chlazení
 Creates or changes a configurator option	Vytvoří nebo změní volbu konfigurátoru
 Cross-section {} carries {} A, less than the {} A of {}	Průřez {} snese {} A, méně než {} A z {}
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: úbytek napětí {} V ({} %) nad {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: ztrátový výkon {} W ohřeje skříň na {} °C (nejvýše {} °C): potřeba {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} snese {} A, spotřebič {} potřebuje {} A
-⚙ Generate pages	⚙ Vytvořit stránky
-➕ Option	➕ Volba
-➕ Rule	➕ Pravidlo
-🗑 Delete variant	🗑 Odstranit variantu
+Option	Volba
+Delete variant	Odstranit variantu
 e.g. NAME=Pump; POWER={POWER}	např. NAME=Čerpadlo; POWER={POWER}
 e.g. STARTER=DOL	např. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Artikly (CSV, JSON, BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	Výchozí médium
 Number prefix	Předpona čísla
 📊 Hose list	📊 Seznam hadic
 PCT loops (pre-planning)	Smyčky MaR (předběžný návrh)
-➕ Loop	➕ Smyčka
-📊 PCT loop overview	📊 Přehled smyček MaR
+Loop	Smyčka
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Přístroje v P&ID nesou ve svém popisku kódová písmena funkcí a číslo smyčky (TIC 101); jejich označení přístroje je propojuje se schématem.
 PCT loop	Smyčka MaR
 Range	Rozsah
@@ -1409,7 +1356,6 @@ Delete loop	Odstranit smyčku
 {} (default)	{} (výchozí)
 Hose / pipe {}	Hadice / potrubí {}
 Resulting: {} · {} · {} · {} m	Výsledek: {} · {} · {} · {} m
-Fluid and process…	Tekutiny a procesní technika…
 Hose defaults and PCT loops of the pre-planning	Výchozí hodnoty hadic a smyčky MaR předběžného návrhu
 ✔ Wiring	✔ Zapojování
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Asistent zapojování: kontrolní seznam vodičů s 3D pohledem a postupem (tablet: otevřete webovou aplikaci s #wiring)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Zdrojový jazyk
 Target languages	Cílové jazyky
 Remove the language (its translations stay in the dictionary)	Odebrat jazyk (jeho překlady zůstanou ve slovníku)
-➕ Add	➕ Přidat
+Add	Přidat
 ISO 639-1 language code	Kód jazyka podle ISO 639-1
 Collect texts from the project	Shromáždit texty z projektu
 Adds all lines of the project texts to the dictionary	Přidá do slovníku všechny řádky textů projektu
@@ -1554,7 +1500,6 @@ not translated into {}	nepřeloženo do jazyka {}
 {} new texts in the dictionary	Nové texty ve slovníku: {}
 {} unused entries removed	Odebráno nepoužívaných položek: {}
 Export as PDF in language	Exportovat jako PDF v jazyce
-Project languages…	Jazyky projektu…
 Translate the project texts; documentation per language	Překlad textů projektu; dokumentace pro každý jazyk
 {} translations imported	Importováno překladů: {}
 Import failed: {}	Import se nezdařil: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	Komponenty (sestava)
 (included)	(obsaženo)
 Fastening hardware in the bill of materials	Spojovací materiál v kusovníku
 Screws, nuts, washers and rivet nuts of the fixing points	Šrouby, matice, podložky a nýtovací matice upevňovacích bodů
-⬇ NC data of this face (DXF)	⬇ Data NC této plochy (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Seznam otvorů této plochy (CSV)
+NC data of this face (DXF)	Data NC této plochy (DXF)
+Drilling list of this face (CSV)	Seznam otvorů této plochy (CSV)
 Group as assembly	Seskupit jako sestavu
 The items are selected and moved together	Prvky se vybírají a přesouvají společně
 Distribute horizontally	Rozmístit vodorovně
@@ -1625,7 +1570,6 @@ Pattern	Vzor
 Columns × rows	Sloupce × řádky
 Pitch X / Y	Rozteč X / Y
 Devices are not copied: a device is placed once.	Přístroje se nekopírují: přístroj se umisťuje jen jednou.
-✔ Copy	✔ Kopírovat
 Save as 3D macro	Uložit jako 3D makro
 Items with an anchor keep it; the others are inserted relative to the click.	Prvky s ukotvením si je ponechají; ostatní se vloží relativně ke kliknutí.
 Walls	Stěny
@@ -1728,7 +1672,6 @@ Macro name	Název makra
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Vloží 3D makro jako sestavu: ukotvené prvky na své místo, ostatní relativně k x / y na ploše
 Installation site	Místo instalace
 Structure management	Správa struktury
-Structure management…	Správa struktury…
 Structure identifiers (IEC 81346), templates and work areas	Identifikátory struktury (IEC 81346), šablony a pracovní oblasti
 Template	Šablona
 Apply template	Použít šablonu
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	Použité ide
 Work areas	Pracovní oblasti
 Work area	Pracovní oblast
 Work area {}	Pracovní oblast {}
-➕ Work area	➕ Pracovní oblast
 (whole project)	(celý projekt)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Pracovní oblast omezí stránky a přístroje v navigátoru na část projektu. Filtry: prázdné = libovolné, * = libovolné znaky; A1 zahrnuje i A1.2.
 OpenECraft structure template	Šablona struktury OpenECraft
@@ -1873,7 +1815,7 @@ Export…	Exportovat…
 Import…	Importovat…
 File to embed	Soubor k vložení
 Forms – title blocks, frames and templates	Formuláře – rohová razítka, rámečky a šablony
-Title blocks, plot frames and page templates…	Rohová razítka, rámečky výkresů a šablony stránek…
+Title blocks, plot frames and page templates	Rohová razítka, rámečky výkresů a šablony stránek
 Frame of all pages that do not choose one	Rámeček všech stránek, které si nevyberou vlastní
 Frame to start from when the frame is new (default: A3 landscape)	Výchozí rámeček pro nový rámeček (výchozí: A3 landscape)
 Free graphics and notes, not evaluated	Volná grafika a poznámky, nevyhodnocují se
@@ -2044,19 +1986,18 @@ Port {} is not connected	Port {} není připojen
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Exportuje projekt: svg (jedna stránka), html, pdf, dxf, dwg (jen do souboru), wire_list (CSV), plc_table (CSV), plc_variables (globální proměnné podle IEC 61131-3), aml (hardware PLC jako AutomationML), kbl (XML kabelového svazku), marking (CSV), gltf, step, iges, ifc nebo jt (3D rozvržení rozváděče; jt jen do souboru), dictionary (CSV s překlady textů projektu)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt nebo dictionary, nebo export pluginu
 PLC hardware	Hardware PLC
-⚙ Automatic configuration	⚙ Automatická konfigurace
+Automatic configuration	Automatická konfigurace
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stanice pro CPU a sběrnicové moduly, sběrnicové systémy, sloty, počáteční adresy, adresy bodů, adresy IP a liniová topologie
-⬇ Export AutomationML…	⬇ Exportovat AutomationML…
+Export AutomationML…	Exportovat AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Konfigurace hardwaru a proměnné PLC pro TIA Portal a další nástroje PLC
-⬆ Import AutomationML…	⬆ Importovat AutomationML…
+Import AutomationML…	Importovat AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stanice, moduly, adresy, podsítě a komentáře proměnných z nástroje PLC
-⬇ Export IEC 61131-3 variables…	⬇ Exportovat proměnné podle IEC 61131-3…
+Export IEC 61131-3 variables…	Exportovat proměnné podle IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Seznam globálních proměnných s přímými adresami pro CODESYS, TwinCAT a další
 Stations and racks	Stanice a nosné rámy
 Bus topology	Topologie sběrnice
 Device descriptions	Popisy zařízení
 Station	Stanice
-➕ Station	➕ Stanice
 Cards without station: {}	Karty bez stanice: {}
 No stations: add one or use the automatic configuration.	Žádné stanice: přidejte stanici nebo použijte automatickou konfiguraci.
 Head (CPU / coupler)	Hlavní modul (CPU / sběrnicový modul)
@@ -2065,7 +2006,7 @@ Bus system	Sběrnicový systém
 IP / bus address	Adresa IP / sběrnice
 Device number	Číslo zařízení
 {}: {} slots, ports {}	{}: slotů: {}, porty {}
-🗑 Remove station	🗑 Odebrat stanici
+Remove station	Odebrat stanici
 Plug in card	Zasunout kartu
 No modules: plug in PLC cards of the schematic.	Žádné moduly: zasuňte karty PLC ze schématu.
 Device description	Popis zařízení
@@ -2076,13 +2017,12 @@ Output bytes	Výstupní bajty
 from the parts	z artiklů
 Remove from the station	Odebrat ze stanice
 Bus systems	Sběrnicové systémy
-➕ Bus system	➕ Sběrnicový systém
 Subnet	Podsíť
 Port A	Port A
 Port B	Port B
 Without bus system	Bez sběrnicového systému
 No bus systems.	Žádné sběrnicové systémy.
-⬆ Import GSDML / ESI…	⬆ Importovat GSDML / ESI…
+Import GSDML / ESI…	Importovat GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Popisy zařízení PROFINET (GSDML) a EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Artikly skupiny produktů PLC poskytují také popisy (technické údaje: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Sloty
@@ -2093,7 +2033,7 @@ built-in	vestavěné
 {} addresses changed	Změněno adres: {}
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	Importováno stanic: {}, modulů: {}, sběrnicových systémů: {}, spojení: {}; změněno adres: {} a textů: {}
 {} device descriptions imported	Importováno popisů zařízení: {}
-PLC hardware and bus topology…	Hardware PLC a topologie sběrnice…
+PLC hardware and bus topology	Hardware PLC a topologie sběrnice
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stanice, nosné rámy, moduly, sběrnicové systémy, výměna AutomationML s nástroji PLC
 Device description (GSDML, ESI)	Popis zařízení (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Sběrnicové spojení {} - {}: kabel {} neexistuje
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	Kabel {} je kabel typu {} na spojení 
 Port {} has more than {} cables	Port {} má více než {} kabelů
 Cable {} is used for {} bus connections	Kabel {} je použit pro {} sběrnicových spojení
 with bus cables	se sběrnicovými kabely
-➕ Create bus cables	➕ Vytvořit sběrnicové kabely
+Create bus cables	Vytvořit sběrnicové kabely
 A cable of the bus type for every connection without cable	Kabel typu sběrnice pro každé spojení bez kabelu
 missing	chybí
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	Stanice: {}, sběrnicové systémy: {}, přiřazené karty: {}, změněné adresy: {}, spojení: {}, kabely: {}
@@ -2211,12 +2151,11 @@ starts with	začíná na
 {} (first column)	{} (první sloupec)
 {} report pages output to {}	Stránky výkazů ({}) vydány do {}
 {} – {} ({} pages)	{} – {} (stránky: {})
-➕ Add filter	➕ Přidat filtr
-➕ Add sort key	➕ Přidat klíč řazení
-➕ New block	➕ Nový blok
-➕ New scheme	➕ Nové schéma
-⟳ Generate all	⟳ Vytvořit vše
-⟳ Generate	⟳ Vytvořit
+Add filter	Přidat filtr
+Add sort key	Přidat klíč řazení
+New block	Nový blok
+Generate all	Vytvořit vše
+Generate	Vytvořit
 ⟳ Update report blocks	⟳ Aktualizovat bloky výkazů
 Opening {}…	Otevírání {}…
 Uploading {}…	Nahrávání {}…
@@ -2238,13 +2177,13 @@ Save and release page	Uložit a uvolnit stránku
 Lock page	Uzamknout stránku
 Project server	Projektový server
 User name	Uživatelské jméno
-⟳ List projects	⟳ Vypsat projekty
+List projects	Vypsat projekty
 Enter a user name: other users see it on your locks.	Zadejte uživatelské jméno: ostatní uživatelé je uvidí u vašich zámků.
 Users	Uživatelé
 Opening a project replaces the current one, its unsaved changes are lost.	Otevření projektu nahradí aktuální projekt, jeho neuložené změny budou ztraceny.
 Upload the current project as a new shared project:	Nahrát aktuální projekt jako nový sdílený projekt:
 Name on the server	Název na serveru
-⬆ Upload	⬆ Nahrát
+Upload	Nahrát
 Letters, digits, space, - _ . (up to 64 characters)	Písmena, číslice, mezera, - _ . (až 64 znaků)
 Shared project {} – revision {}, user {}	Sdílený projekt {} – revize {}, uživatel {}
 Save and release all locks	Uložit a uvolnit všechny zámky
@@ -2261,14 +2200,11 @@ None	Žádné
 Close shared project	Zavřít sdílený projekt
 Releases all locks; the project stays open as a local copy	Uvolní všechny zámky; projekt zůstane otevřený jako místní kopie
 Download project	Stáhnout projekt
-Project server…	Projektový server…
 Open and save shared projects, lock pages	Otevírat a ukládat sdílené projekty, zamykat stránky
-🔒 Locked by {} – read only	🔒 Uzamkl {} – jen pro čtení
+Locked by {} – read only	Uzamkl {} – jen pro čtení
 {} (project server, revision {})	{} (projektový server, revize {})
 {} change requests added, {} updated	Požadavky na změnu: přidáno {}, aktualizováno {}
-Compare and baselines…	Porovnání a základní verze…
 Compare with a baseline, a revision or another project file and take differences over	Porovnat se základní verzí, revizí nebo jiným souborem projektu a převzít rozdíly
-Change requests…	Požadavky na změnu…
 Review: comments and markup	Komentáře: poznámky a značky
 Revisions, approval and release	Revize, schválení a uvolnění
 Review ({})	Komentáře ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	Co se má zkontrolovat nebo změnit?
 Change request	Požadavek na změnu
 Reply…	Odpovědět…
 Reply	Odpovědět
-🗑 Delete comment	🗑 Odstranit komentář
+Delete comment	Odstranit komentář
 Approval workflow	Schvalovací postup
 Approvers	Schvalovatelé
 User names, separated by commas	Uživatelská jména oddělená čárkami
@@ -2309,8 +2245,8 @@ rejected	zamítnuto
 Submit for review	Předložit ke kontrole
 Release	Uvolnit
 Discard draft	Zahodit koncept
-✔ Approve	✔ Schválit
-✖ Reject	✖ Zamítnout
+Approve	Schválit
+Reject	Zamítnout
 Approving needs an approver; you are \"{}\".	Schvalovat může jen schvalovatel; vy jste \"{}\".
 Submit again	Předložit znovu
 With the current pages; the approvals so far become void	S aktuálními stránkami; dosavadní schválení pozbudou platnosti
@@ -2335,7 +2271,7 @@ Compare with	Porovnat s
 Baseline {} {}	Základní verze {} {}
 Baseline {}	Základní verze {}
 Pages of revision {}	Stránky revize {}
-📂 Project file…	📂 Soubor projektu…
+Project file…	Soubor projektu…
 Baselines ({})	Základní verze ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Základní verze uchovává celý projekt (stránky, přístroje, artikly, nastavení). Uvolnění revize jednu vytvoří.
 Create baseline	Vytvořit základní verzi
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	Sladit vyb
 {} details	Podrobnosti: {}
 Baseline {} created	Základní verze {} vytvořena
 Change requests	Požadavky na změnu
-➕ New request	➕ Nový požadavek
-📂 Import…	📂 Importovat…
+New request	Nový požadavek
 CSV or JSON from another system; known numbers are updated	CSV nebo JSON z jiného systému; známá čísla se aktualizují
-⬇ Export JSON	⬇ Exportovat JSON
+Export JSON	Exportovat JSON
 Rejected and closed ones too	I zamítnuté a uzavřené
 No change requests yet.	Zatím žádné požadavky na změnu.
 Select a request.	Vyberte požadavek.
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	Označení přístrojů oddělená čárkami
 Affected pages ({})	Dotčené stránky ({})
 Go to page	Přejít na stránku
 Comments ({})	Komentáře ({})
-💬 Comment on the current page	💬 Komentář na aktuální stránce
+Comment on the current page	Komentář na aktuální stránce
 Linked to this request	Propojeno s tímto požadavkem
-🗑 Delete request	🗑 Odstranit požadavek
+Delete request	Odstranit požadavek
 in progress	probíhá
 resolved	vyřešeno
 Redline	Redline
@@ -2405,14 +2340,6 @@ Settings	Nastavení
 Page order	Pořadí stránek
 {} differences taken over	Převzato rozdílů: {}
 Layers	Vrstvy
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Kliknutím vyberete, tažením přesunete, tažením na prázdné ploše vyberete oknem. Přetažením označení nebo textu vlastnosti vybraného symbolu jej umístíte. Tažení pravým/prostředním tlačítkem posouvá pohled, kolečko myši přibližuje.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Klikněte na počáteční a rohové body · Mezerník přepne směr rohu · A přepne vedení kolem symbolů · končí automaticky na přípoji · Pravé tlačítko / Esc ukončí
-Click the centre, then a point of the circle	Klikněte na střed, pak na bod kružnice
-Click the centre, the start point and the end point (counter-clockwise)	Klikněte na střed, počáteční bod a koncový bod (proti směru hodinových ručiček)
-Click the corner points · double click, Enter or right click finishes	Klikněte na rohové body · poklikání, Enter nebo pravé tlačítko ukončí
-Click the two points to measure, then the position of the dimension line	Klikněte na dva body, které chcete okótovat, pak na polohu kótovací čáry
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Klikněte na vodič: bod určí číslo, barvu, průřez a žílu kabelu spojení
-Draw a line across the wires that are cores of the cable	Nakreslete čáru přes vodiče, které jsou žílami kabelu
 Click to insert · Esc cancel	Kliknutím vložíte · Esc zruší
 Routing around symbols	Vedení kolem symbolů
 {} objects pasted	Vloženo objektů: {}
@@ -2442,7 +2369,7 @@ Layer	Vrstva
 Auto-connect	Automatické propojení
 Draw connections between facing connection points when symbols are placed or moved	Kreslit spojení mezi protilehlými přípojnými body při umísťování nebo přesouvání symbolů
 Route	Vést
-The wire tool routes around symbols and other wires (A)	Nástroj pro vodiče vede vodiče kolem symbolů a jiných vodičů (A)
+The wire tool routes around symbols and other wires	Nástroj pro vodiče vede vodiče kolem symbolů a jiných vodičů
 Dimension	Kóta
 Image…	Obrázek…
 PNG or JPEG bitmap, e.g. a logo or a photo	Bitmapa PNG nebo JPEG, např. logo nebo fotografie
@@ -2486,7 +2413,6 @@ Tag placed by hand	Označení umístěno ručně
 Drag the tag of the selected symbol to place it.	Přetažením označení vybraného symbolu jej umístíte.
 (empty)	(prázdné)
 ➕ Place property	➕ Umístit vlastnost
-➕ Layer	➕ Vrstva
 Layer {}	Vrstva {}
 Layers of graphics, texts, dimensions and images	Vrstvy grafiky, textů, kót a obrázků
 Visible	Viditelná
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Průřez, např. 1.5 mm²
 A cable definition needs a start and an end point	Definice kabelu vyžaduje počáteční a koncový bod
 No cable {}	Žádný kabel {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Body definice spojení na vodiči určují číslo, barvu, průřez a žílu celého spojení; čára definice kabelu přes vodiče z nich udělá žíly kabelu. Automatické propojení spojí protilehlé přípojné body, Vést (A) vede vodiče kolem symbolů.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafika: kružnice, elipsy, oblouky, mnohoúhelníky, kóty a obrázky ve vrstvách (navigátor › Vrstvy: viditelné, uzamčené, tištěné). Přetažením označení vybraného symbolu jej umístíte; další vlastnosti se umísťují v jeho vlastnostech.
 Coil	Cívka
 Main contacts 4-pole	Hlavní kontakty 4pólové
 NO contact, on-delay	Spínací kontakt, zpožděný při sepnutí
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	Přičte s
 📊 Hose configuration	📊 Konfigurace hadic
 📊 Tubing / piping list	📊 Seznam trubek / potrubí
 📊 Fluid netlist	📊 Seznam sítí tekutin
-➕ Group	➕ Skupina
-📊 Fluid device groups	📊 Skupiny tekutinových přístrojů
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Ventilové terminály, jednotky úpravy vzduchu a rozvodové bloky: jejich tekutinové přístroje v pořadí míst, oddělené mezerami.
 Places	Místa
 0 = not limited	0 = neomezeno
 Delete group	Odstranit skupinu
-🔄 Synchronize	🔄 Synchronizovat
+Synchronize	Synchronizovat
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Propojí elektromagnetické ventily s cívkou stejného čísla (-QM3 › -MB3) a zkopíruje texty funkcí
 {} links created, {} function texts copied	Vytvořeno propojení: {}, zkopírováno textů funkcí: {}
-📊 Electro-fluid cross reference	📊 Elektro-tekutinové křížové odkazy
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Elektrické přístroje, které ovládají nebo sledují tekutinový přístroj (cívky elektromagnetů, polohové a tlakové spínače); obě schémata zobrazují vzájemné křížové odkazy.
 Electrical devices	Elektrické přístroje
 Operating pressure in bar (0 = hose ratings are not checked)	Provozní tlak v bar (0 = tlakové třídy hadic se nekontrolují)
@@ -2734,7 +2655,6 @@ Right neighbour	Pravý soused
 No cable passage to {}: wires to it are not routed	Žádná kabelová průchodka do {}: vodiče tam se nevedou
 Open to {}: wires cross beside the mounting plates	Otevřeno do {}: vodiče přecházejí vedle montážních desek
 {} cable passages to {}	Kabelové průchodky do {1}: {0}
-➕ Cable passage to {}	➕ Kabelová průchodka do {}
 Round cutouts facing each other in both side walls	Kruhové výřezy proti sobě v obou bočních stěnách
 Both sides are open: the wires need no cutout	Obě strany jsou otevřené: vodiče nepotřebují výřez
 Cable passage to {}	Kabelová průchodka do {}
@@ -3067,7 +2987,6 @@ Surge protection	Přepěťová ochrana
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Vypínací schopnost vůči zkratovému proudu u každého ochranného přístroje sítě, odpojení při nejnižším poruchovém proudu na konci jeho obvodu, zkratová odolnost kabelů a selektivita s předřazeným přístrojem.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Výkon a proud spotřebičů sítě (motory, pohony, topení, napájecí zdroje, transformátory), zatížení každého ochranného přístroje, odběr se součinitelem soudobosti a bilance zatížení napájecích zdrojů.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Bezpečnostní funkce podle ISO 13849-1: každý subsystém (vstup, logika, výstup) s přístroji jednoho kanálu, jeho kategorií, diagnostickým pokrytím a počtem operací za rok. Přístroje se započítávají s PL / PFHd, MTTFd nebo B10d svých artiklů.
-➕ Safety function	➕ Bezpečnostní funkce
 Input	Vstup
 Logic	Logika
 Output	Výstup
@@ -3076,13 +2995,10 @@ Operations / year	Operace / rok
 CCF	CCF
 0 = from the devices	0 = z přístrojů
 Measures against common cause failure (at least 65 points)	Opatření proti poruchám se společnou příčinou (alespoň 65 bodů)
-➕ Subsystem	➕ Subsystém
 Subsystem {}	Subsystém {}
 Rule libraries	Knihovny pravidel
 Customer rule sets	Zákaznické sady pravidel
-➕ Rule set	➕ Sada pravidel
 Rule set {}	Sada pravidel {}
-💾 Export…	💾 Exportovat…
 OpenECraft rule sets	Sady pravidel OpenECraft
 Verify the project against it	Ověřit podle ní projekt
 {} checks	Kontroly: {}
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Ka�
 Message	Zpráva
 if	pokud
 then	pak
-➕ Condition	➕ Podmínka
-➕ Check	➕ Kontrola
 OpenECraft rule sets (JSON)	Sady pravidel OpenECraft (JSON)
-Electrical calculations…	Elektrické výpočty…
+Electrical calculations	Elektrické výpočty
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Zkrat, selektivita, zatížení, EMC, funkční bezpečnost a ověření podle sad pravidel
 0 = a single value; otherwise values [1] … [n]	0 = jediná hodnota; jinak hodnoty [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Definice projektu založená na této, s vlastními výchozími hodnotami a schématem
@@ -3416,7 +3330,6 @@ Project number	Číslo projektu
 Project property of the property database (by key)	Vlastnost projektu z databáze vlastností (podle klíče)
 Proof test interval	Interval kontrolních zkoušek
 Property database	Databáze vlastností
-Property database…	Databáze vlastností…
 Property definitions	Definice vlastností
 Property definitions, function definitions, placement schemes and the values of all objects	Definice vlastností, definice funkcí, schémata umístění a hodnoty všech objektů
 Property groups	Skupiny vlastností
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" není jednou z hodnot {}
 {}: invalid value \"{}\" ({})	{}: neplatná hodnota \"{}\" ({})
 ➕ Default value	➕ Výchozí hodnota
-➕ Derive project definition	➕ Odvodit projektovou definici
-➕ User defined property	➕ Uživatelsky definovaná vlastnost
+Derive project definition	Odvodit projektovou definici
+User defined property	Uživatelsky definovaná vlastnost
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Plánovat přístroje v jednopólovém schématu, generovat schéma zapojení a udržovat obě synchronizovaná
-Single-line / multi-line…	Jednopólové / vícepólové…
 All devices of page {} are in the schematic already	Všechny přístroje stránky {} už jsou ve schématu zapojení
 Copies function texts between the single-line diagram and the schematic where one side is empty	Zkopíruje texty funkcí mezi jednopólovým schématem a schématem zapojení tam, kde je jedna strana prázdná
 Does not match	Neodpovídá
@@ -3756,11 +3668,11 @@ Outline	Obrys
 Click the corners of a machine or building, double-click to finish	Klikněte na rohy stroje nebo budovy, poklikáním dokončete
 (no cable highlighted)	(žádný kabel není zvýrazněn)
 Fit	Přizpůsobit
-⬇ Export SVG…	⬇ Exportovat SVG…
+Export SVG…	Exportovat SVG…
 Height above the floor	Výška nad podlahou
 Placed here: {}	Zde umístěno: {}
 Place an enclosure, device or machine location at this node	Umístit skříň, přístroj nebo umístění stroje do tohoto uzlu
-🗑 Delete node	🗑 Odstranit uzel
+Delete node	Odstranit uzel
 SVG drawing	Výkres SVG
 Segments	Úseky
 Width × height (mm)	Šířka × výška (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	Musí být připojeno k ochranné
 {} corners	{} rohů
 Take over cut lengths	Převzít délky řezu
 Set the cable lengths to the planned cut lengths	Nastavit délky kabelů na plánované délky řezu
-📊 Report	📊 Výkaz
 {} parts of the network	{} částí sítě
 No field cables: place the enclosures and field devices at nodes of the route network.	Žádné polní kabely: umístěte skříně a polní přístroje do uzlů sítě tras.
 Route definition of {}	Definice trasy kabelu {}
 Via:	Přes:
 Remove	Odebrat
-➕ Node	➕ Uzel
 Avoid:	Vyhnout se:
 {} cable lengths taken over	Převzato {} délek kabelů
-➕ Bonding conductor	➕ Vodič pospojování
+Bonding conductor	Vodič pospojování
 Bonding points	Body pospojování
-➕ Accessory	➕ Příslušenství
 both ends	oba konce
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Žádné příslušenství: vývodky, konektory, stínicí svorky … se zahrnou do kusovníku a zkontrolují vůči kabelu.
 Reserve per cable end	Rezerva na konec kabelu
@@ -3799,7 +3708,6 @@ Length inside an enclosure	Délka uvnitř skříně
 Cut length step	Krok délky řezu
 Maximum fill of a carrier	Maximální zaplnění nosné konstrukce
 Bend radius in drag chains	Poloměr ohybu v energetických řetězech
-Field wiring…	Polní kabeláž…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Dispozice zařízení, síť tras, plánování polních kabelů, ochranné pospojování a kabelové příslušenství
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Žádná volba {}
@@ -3913,9 +3821,9 @@ Archive and version	Archiv a verze
 Verification	Ověření
 OpenECraft project archive	Archiv projektu OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Databáze projektů vyžaduje desktopovou verzi: prohlížeč nemůže prohledávat složky.
-📂 Add folder…	📂 Přidat složku…
+Add folder…	Přidat složku…
 Adds the project files and archives of a folder and its subfolders	Přidá projektové soubory a archivy složky a jejích podsložek
-🔄 Update all	🔄 Aktualizovat vše
+Update all	Aktualizovat vše
 Verify while reading	Ověřit při načítání
 Remove the folder from the database	Odebrat složku z databáze
 Search	Hledat
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	Přepne volby 
 {} options switched	Přepnuto {} voleb
 File format version {}. Files of older versions are converted when they are opened.	Verze formátu souboru {}. Soubory starších verzí se při otevření převedou.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Archiv (.oecz) je soubor ZIP s projektem, manifestem a vloženými dokumenty a obrázky jako samostatnými soubory.
-📦 Archive project…	📦 Archivovat projekt…
-📂 Open archive…	📂 Otevřít archiv…
+Archive project…	Archivovat projekt…
+Open archive…	Otevřít archiv…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Zkontroluje data projektu (ID, odkazy, data přístrojů, volby, podprojekty) společně s inženýrskými kontrolami.
 Verify project	Ověřit projekt
 Repair {} findings	Opravit nálezy ({})
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	V datech projektu: chyby {}, upozornění {}, poznámky {}; inženýrská kontrola: chyby {}, upozornění {}
 (repairable)	(opravitelné)
 ✔ The project data is consistent.	✔ Data projektu jsou konzistentní.
-Project management…	Správa projektů…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Databáze projektů, hromadné změny vlastností projektů, podprojekty, volby, archivy a ověření
 OpenECraft project or archive	Projekt nebo archiv OpenECraft
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	Pro artikly be
 Collision classes	Třídy kolizí
 Distances between classes of items, or classes that may overlap	Vzdálenosti mezi třídami prvků nebo třídy, které se smějí překrývat
 may overlap	smějí se překrývat
-➕ Add rule	➕ Přidat pravidlo
+Add rule	Přidat pravidlo
 Air temperature at the devices	Teplota vzduchu u přístrojů
 max. {} °C	max. {} °C
 No problems found	Nebyly nalezeny žádné problémy
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	Neplatná odpověď pluginu: {}
 Key figures of the project and a list of its device tags	Klíčové ukazatele projektu a seznam jeho označení přístrojů
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Klíčové ukazatele projektu: stránky, symboly, vodiče, přístroje, artikly, kabely a výsledky kontrol
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Načtené pluginy (vestavěné a ze složek pluginů z --plugins / OPENECRAFT_PLUGINS) s jejich příkazy, kontrolami, výkazy a exporty; povolí nebo zakáže jeden pro tuto relaci
-Manage plugins…	Spravovat pluginy…
-Plugin command {}	Příkaz pluginu {}
+Manage plugins	Spravovat pluginy
 Plugin id '{}' is not snake_case	ID pluginu '{}' není snake_case
 Plugin {} is loaded twice	Plugin {} je načten dvakrát
 Plugin {} needs a newer OpenECraft (API {})	Plugin {} vyžaduje novější OpenECraft (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	Neznámý plugin: {}
 Warnings	Upozornění
 {} commands, {} checks, {} reports, {} exports	Příkazy: {}, kontroly: {}, výkazy: {}, exporty: {}
 {}: the program to run is missing	{}: chybí program ke spuštění
-▶ Run	▶ Spustit
-⟳ Update	⟳ Aktualizovat
+Run	Spustit
+Update	Aktualizovat
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Kontroly rozvržení rozváděče
@@ -4187,7 +4093,7 @@ Profile	Profil
 (standard columns)	(standardní sloupce)
 Write the file for the other system; later imports detect conflicts against this export	Zapsat soubor pro jiný systém; pozdější importy zjistí konflikty vůči tomuto exportu
 Read a file of the other system (CSV or JSON) and review the changes	Načíst soubor jiného systému (CSV nebo JSON) a zkontrolovat změny
-⬇ Neutral exchange file…	⬇ Neutrální výměnný soubor…
+Neutral exchange file…	Neutrální výměnný soubor…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Položky, přístroje, umístění, spojení, vodiče a dokumenty v jednom souboru JSON pro systémy bez konektoru
 Import changes	Změny importu
 Profiles	Profily
@@ -4213,7 +4119,6 @@ Conflicts	Konflikty
 Export	Export
 Import	Import
 {} values taken over	Převzato {} hodnot
-Enterprise integration…	Podniková integrace…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Výměna dat s ERP, PDM, PLM, ECAD, MCAD, nákupem a automaty na zpracování vodičů
 Files of other systems (CSV, JSON)	Soubory jiných systémů (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Měděná přípojnice {}: {} úseků vyžaduje {} ohybů
@@ -4380,9 +4285,9 @@ DWG export failed: {}	Export DWG selhal: {}
 DWG import failed: {}	Import DWG selhal: {}
 DWG imported as page {}: {} lines, {} texts	DWG importován jako stránka {}: čáry {}, texty {}
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG importován jako stránka {}: čáry {}, texty {} (neimportováno: {})
-⬇ NC data (DWG)	⬇ Data NC (DWG)
-⬇ Door NC data (DWG)	⬇ Data NC dveří (DWG)
-⬇ NC data of this face (DWG)	⬇ Data NC této plochy (DWG)
+NC data (DWG)	Data NC (DWG)
+Door NC data (DWG)	Data NC dveří (DWG)
+NC data of this face (DWG)	Data NC této plochy (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importuje výkres DWG (AutoCAD R12 … 2018) jako grafiku (čáry, oblouky, texty, bloky) na novou stránku schématu
 Generic	Obecné
 Parts store	Kmen artiklů
@@ -4721,7 +4626,6 @@ Power cable	Silový kabel
 Control cable	Ovládací kabel
 Wiring material	Materiál pro zapojení
 Catalog id	ID katalogu
-Data portal…	Datový portál…
 Delete catalog {} from the server?	Odstranit katalog {} ze serveru?
 Delete user {}? Their sessions and favorites are removed.	Odstranit uživatele {}? Jeho relace a oblíbené položky budou odebrány.
 Ends the session and forgets the token	Ukončí relaci a zapomene token
@@ -4843,12 +4747,10 @@ Use macros	Použít makra
 ★ Favorites	★ Oblíbené
 ★ Remove from favorites	★ Odebrat z oblíbených
 ☆ Add to favorites	☆ Přidat k oblíbeným
-✔ Apply {} updates	✔ Použít aktualizace ({})
-➡ Successor {}	➡ Nástupce {}
-⬇ Add marked parts to the parts database ({})	⬇ Přidat označené artikly do databáze artiklů ({})
-⬇ Add to the parts database	⬇ Přidat do databáze artiklů
-🔄 Check the parts database for updates	🔄 Zkontrolovat aktualizace databáze artiklů
-🔎 Search	🔎 Hledat
+Apply {} updates	Použít aktualizace ({})
+Add marked parts to the parts database ({})	Přidat označené artikly do databáze artiklů ({})
+Add to the parts database	Přidat do databáze artiklů
+Check the parts database for updates	Zkontrolovat aktualizace databáze artiklů
 Relay coil, AC	Cívka relé, AC
 Relay coil, high-speed	Cívka relé, rychlá
 Relay coil, mechanically latched	Cívka relé, mechanicky blokovaná
@@ -5276,7 +5178,6 @@ Level of this kind of message	Úroveň tohoto druhu hlášení
 As defined by the check	Podle definice kontroly
 Switch off the check \"{}\"	Vypnout kontrolu \"{}\"
 Changed message levels ({})	Změněné úrovně hlášení ({})
-Right click a message in the Check tab to change its level.	Úroveň hlášení změníte kliknutím pravým tlačítkem na hlášení na kartě Kontrola.
 Accepted messages ({})	Přijatá hlášení ({})
 No longer reported	Již se nehlásí
 Still reported	Stále se hlásí
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Uložit jako šablonu projektu…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Uloží projekt bez revizí, základních verzí, komentářů a značek zapojení jako šablonu pro nové projekty
 OpenECraft project template	Šablona projektu OpenECraft
-Not a project template: {}	Není šablona projektu: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Začít ze šablony projektu: vestavěné (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) nebo projektového souboru
 Not a packed project	Není zabalený projekt
 Viewer	Prohlížející
@@ -5537,7 +5437,6 @@ Rotate	Otočit
 Save to project server	Uložit na server projektů
 Undo	Zpět
 Find and replace	Najít a nahradit
-Finish polyline or polygon	Dokončit lomenou čáru nebo mnohoúhelník
 Mirror (selection or symbol being placed)	Zrcadlit (výběr nebo umísťovaný symbol)
 Next page	Další stránka
 Open project	Otevřít projekt
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	Klávesové zkratky
 No shortcut	Bez klávesové zkratky
 Press a key…	Stiskněte klávesu…
 Record	Zaznamenat
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Zaznamenat: stiskněte novou klávesu s modifikátory (Esc zruší). Esc, Delete, klávesy se šipkami a kopírování / vložení zůstávají pevné.
 Reset all to the defaults	Obnovit vše na výchozí hodnoty
 {} is used by: {}	{} používá: {}
 Harness nailboard drawing to scale (SVG)	Výkres formovací desky kabelového svazku v měřítku (SVG)
 Harness tag, e.g. -WH1	Označení kabelového svazku, např. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Výkres formovací desky kabelového svazku v měřítku s délkami větví a tabulkami kolíků konektorů
-📐 Nailboard (SVG)…	📐 Formovací deska (SVG)…
+Nailboard (SVG)…	Formovací deska (SVG)…
 Bundle Ø {} mm	Ø svazku {} mm
 Nailboard {}	Formovací deska {}
 Scale 1:{}	Měřítko 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	Žádný segment {}
 Segment path (default: all segments)	Cesta segmentu (výchozí: všechny segmenty)
 Pre-planning (CSV, Excel)	Předběžné plánování (CSV, Excel)
 Plant segments with planned devices before the schematic	Segmenty zařízení s plánovanými přístroji před schématem zapojení
-Pre-planning…	Předběžné plánování…
 A segment cannot be moved below itself	Segment nelze přesunout pod sebe sama
 Adds a planned device to a segment or changes it	Přidá plánovaný přístroj do segmentu nebo jej změní
 Adds a segment below another one (or at the top)	Přidá segment pod jiný segment (nebo na nejvyšší úroveň)
@@ -5628,10 +5525,8 @@ name	název
 {} pages generated	Vygenerováno {} stránek
 {} pages generated; page macros not found: {}	Vygenerováno {} stránek; makra stránek nenalezena: {}
 {} segments created, {} devices added, {} updated	Vytvořeno segmentů: {}, přidáno přístrojů: {}, aktualizováno: {}
-➕ Device	➕ Přístroj
-➕ Segment	➕ Segment
-➕ Sub-segment	➕ Podsegment
-🗑 Remove segment	🗑 Odebrat segment
+Sub-segment	Podsegment
+Remove segment	Odebrat segment
 Display	Zobrazení
 Mirrored	Zrcadleno
 Other properties	Další vlastnosti
@@ -5733,7 +5628,7 @@ Hose defaults	Výchozí hodnoty hadic
 Message levels	Úrovně hlášení
 Not a settings scheme: {}	Není schéma nastavení: {}
 Wire defaults	Výchozí hodnoty vodičů
-Reset panel layout	Obnovit uspořádání panelů
+Reset pane layout	Obnovit uspořádání panelů
 Navigator on the left, symbols and properties on the right	Navigátor vlevo, symboly a vlastnosti vpravo
 Panels	Panely
 Saves the workspace, the arrangement of the panels and the open windows	Uloží pracovní prostor, uspořádání panelů a otevřená okna
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	Motory napájejí zkrat
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Asynchronní motory na síti zvyšují nejvyšší zkratový proud (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	V místě napájení: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Koordinační tabulky výrobců
-➕ Entry	➕ Položka
+Entry	Položka
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selektivita a záložní ochrana dvojic přístrojů podle zkoušek výrobce, podle čísla artiklu. Nahrazují odhad z ampérsekundových charakteristik.
 Upstream part	Předřazený artikl
 Downstream part	Následný artikl
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	Místo uživatelského jména a hesla
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 nebo novější (Vault Data API)
-⟳ Refresh	⟳ Obnovit
+Refresh	Obnovit
 Search below this folder	Hledat pod touto složkou
-🔍 Search	🔍 Hledat
 Checked out	Rezervováno
 {} of {} entries shown: search to narrow the list	Zobrazeno {} z {} položek: zúžte seznam hledáním
 Select a file to import it	Vyberte soubor, který chcete importovat
 (choose a part)	(vyberte artikl)
-⬇ Import	⬇ Importovat
 Project file	Projektový soubor
-⬆ Check in project as new version of {}	⬆ Vrátit projekt se změnami jako novou verzi {}
+Check in project as new version of {}	Vrátit projekt se změnami jako novou verzi {}
 Puts the project into the folder it was opened from	Uloží projekt do složky, ze které byl otevřen
 Put into the vault	Uložit do trezoru Vault
 File name	Název souboru
-⬆ Upload to {}	⬆ Nahrát do {}
+Upload to {}	Nahrát do {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Soubor se stejným názvem ve složce dostane novou verzi (rezervace a vrácení se změnami), jinak se soubor přidá
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Otevírat projekty a soubory z Autodesk Vault, ukládat projekt, exporty a 3D modely do trezoru Vault
 Check in {} to Vault	Vrátit {} se změnami do Vault
 Panel layout in 3D (Parasolid XT)	Rozvržení rozváděče ve 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	Rozvržení rozváděče ve 3D (Parasolid XT)
 Back	Zpět
 Back to the project (Esc)	Zpět k projektu (Esc)
 Recent projects	Poslední projekty
-No projects opened yet.	Zatím nebyl otevřen žádný projekt.
 Remove from the list	Odebrat ze seznamu
 unsaved	neuloženo
 Project: {}	Projekt: {}
@@ -6055,15 +5946,6 @@ Tutorial	Výukový kurz
 Introduction	Úvod
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Otevřený elektrotechnický CAE editor v duchu EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Pás karet: Soubor otevírá, ukládá, importuje, exportuje a tiskne; karty seskupují příkazy podle témat. Alt zobrazí přístupové klávesy, Ctrl+Shift+P najde libovolný příkaz, F6 přepíná mezi panely, F1 otevře tuto nápovědu.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Vložit › Centrum vkládání (Ins): vyhledejte symbol, makro nebo přístroj a klepněte do stránky, kam jej umístit. Označení přístrojů (-K1, -S2 …) se přidělují automaticky.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Přiřaďte artikly ve vlastnostech (karta Artikly); výkazy (Domů › Výkazy) uvádějí přístroje, kusovník, svorky, spojení a PLC a vkládají se jako stránky výkazů.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabely: Spojení › Kabely, vyberte vodiče a použijte Přiřadit ke kabelu. Čísla vodičů: Spojení › Číslování vodičů, nebo zadejte číslo ve vlastnostech vodiče.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makra: vyberte prvky, pravé tlačítko › Uložit výběr jako makro; vkládejte je z centra vkládání nebo přes Vložit › Makro. Zástupné symboly {NAME} se plní ze sad hodnot.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Přístroje › Svorkovnice, Přístroje › Přehled PLC a Data projektu › Revize: pořadí svorek, propojky a rezervy; adresy PLC a tabulky symbolů; revize se značkami změn a uvolněnými (zamčenými) stránkami.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Kmenová data › Editor symbolů: kreslete vlastní symboly (nebo kopírujte dodané) s připojovacími body a funkcí; ukládají se v projektu a lze je vyměňovat jako soubory knihoven.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Kmenová data › Formuláře: vlastní rohová razítka se zástupnými symboly ({project}, {page}, {prop:Name} …) a sloupce stránek výkazů; Data projektu › Bloky výkazů vytvářejí stránky výkazů pro každou svorkovnici, konektor, kabel nebo přístroj.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Rozvržení rozváděče (pracovní prostor Rozvržení rozváděče, karta Montážní prostor): skříně, lišty, žlaby, přípojnice a výřezy; Montážní prostor › Data NC exportuje vrtací obrazec (DXF / DWG / CSV). Výrobní seznam vodičů obsahuje délky odizolování a dutinky.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelové svazky: Spojení › Kabelové svazky; vyberte vodiče mezi dvěma přístroji › Přiřadit ke svazku, nebo pro každé spojení ve vlastnostech vodiče. Výkaz svazku s délkami, konektory a průměrem svazku, export KBL.
 Key tips of the ribbon	Přístupové klávesy pásu karet
 Version {}	Verze {}
 Search (* and ? as placeholders)…	Hledat (* a ? jako zástupné znaky)…
@@ -6145,7 +6027,6 @@ Close page tab	Zavřít kartu stránky
 Panes	Panely
 Show or hide panes; drag a tab to dock it elsewhere	Zobrazit nebo skrýt panely; přetažením karty ji ukotvíte jinde
 Save workspace…	Uložit pracovní prostor…
-The panes of this workspace at their default places	Panely tohoto pracovního prostoru na výchozích místech
 Theme	Motiv
 UI scale	Měřítko rozhraní
 Minimize the ribbon	Minimalizovat pás karet
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	Funkce dat projektu, které ještě
 Insert center	Centrum vkládání
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symboly, makra, přístroje a neumístěné funkce: hledání, oblíbené, naposledy použité
 Find results	Výsledky hledání
-Quick guide, tutorial and shortcuts	Stručný průvodce, výukový kurz a klávesové zkratky
 Layout spaces	Montážní prostory
 Enclosures, devices to place and placed devices	Skříně, přístroje k umístění a umístěné přístroje
 Layout properties	Vlastnosti rozvržení
@@ -6203,7 +6083,7 @@ Click to show, right click for more	Klepnutím zobrazit, pravým tlačítkem dal
 {} notes	Poznámky: {}
 Open in a new page tab	Otevřít v nové kartě stránky
 Project information	Informace o projektu
-Plugin commands…	Příkazy pluginů…
+Plugin commands	Příkazy pluginů
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Příkazy všech pluginů podle pluginu, s vyhledáváním; hvězdička připne příkaz na kartu Pluginy
 Star a command in Plugin commands to pin it here	Označte příkaz hvězdičkou v Příkazy pluginů a připněte ho sem
 Installed plugins	Nainstalované pluginy
@@ -6271,8 +6151,6 @@ Draw inner walls	Kreslit vnitřní stěny
 Inner wall {}, side {}	Vnitřní stěna {}, strana {}
 Thickness	Tloušťka
 {}: {} stands in an inner wall	{}: {} stojí ve vnitřní stěně
-Opening {} replaces the current project, its unsaved changes are lost.	Otevření {} nahradí aktuální projekt, jeho neuložené změny budou ztraceny.
-Discard changes and open	Zahodit změny a otevřít
 Open link	Otevřít odkaz
 Replace the file at path if it exists	Nahradit soubor v path, pokud existuje
 {} exists already: pass overwrite to replace it	{} již existuje: pro nahrazení zadejte overwrite
@@ -6405,3 +6283,4 @@ Folder with project files (instead of a database; default: the current folder)	S
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Neznámý typ stránky: {} (schematic, overview, graphic, cover nebo výkaz z list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Neznámá šablona {}: zadejte vestavěnou ({}) nebo projektový soubor
 Property {} needs a text or a number	Vlastnost {} vyžaduje text nebo číslo
+Check settings…	Nastavení kontroly…

@@ -84,3 +84,16 @@ fn junctions_match_the_exhaustive_count() {
     assert!(expected.len() > 5, "{expected:?}");
     assert_eq!(got, expected);
 }
+
+#[test]
+fn wire_ends_touching_nothing_are_open() {
+    let mut prj = Project::default();
+    let page = &mut prj.pages[0];
+    page.symbols.push(sym(11, "coil", p(100.0, 100.0), "-K1", ""));
+    // From A1 (100,96) up into empty space, a branch ending on that wire.
+    page.wires.push(Wire { id: 1, a: p(100.0, 96.0), b: p(100.0, 60.0), ..Default::default() });
+    page.wires.push(Wire { id: 2, a: p(60.0, 80.0), b: p(100.0, 80.0), ..Default::default() });
+    page.wires.push(Wire { id: 3, a: p(60.0, 80.0), b: p(60.0, 40.0), ..Default::default() });
+    let open = open_wire_ends(&prj, &prj.pages[0]);
+    assert_eq!(open, vec![(1, p(100.0, 60.0)), (3, p(60.0, 40.0))]);
+}

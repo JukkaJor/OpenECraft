@@ -11,7 +11,7 @@ OpenECraft is extended through the `openecraft-api` crate. A plugin adds
 
 Names are snake_case and unique among all plugins; commands must not take the name of
 a built-in tool. Changes a command makes to the project are one undo step.
-`openecraft-cli plugins` lists the loaded plugins, *Tools › Manage plugins…* in the
+`openecraft-cli plugins` lists the loaded plugins, *Tools › Manage plugins* in the
 editor enables and disables them (remembered by the editor).
 
 ## Rust plugins

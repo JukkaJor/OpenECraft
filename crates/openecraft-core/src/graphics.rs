@@ -77,6 +77,20 @@ fn for_each_layer_field(prj: &mut Project, mut f: impl FnMut(&mut String)) {
     }
 }
 
+/// Why the layer `old` cannot be renamed to `new` (None: it can, or nothing changes);
+/// `names` are the names of all layers. English, translated where shown.
+pub fn layer_rename_problem(names: &[String], old: &str, new: &str) -> Option<&'static str> {
+    if new == old {
+        None
+    } else if new.trim().is_empty() {
+        Some(openecraft_i18n::tr_const!("A layer needs a name"))
+    } else if names.iter().any(|n| n == new) {
+        Some(openecraft_i18n::tr_const!("Name already used"))
+    } else {
+        None
+    }
+}
+
 /// Renames a layer together with the layer of its items.
 pub fn rename_layer(prj: &mut Project, old: &str, new: &str) {
     if let Some(l) = prj.layers.iter_mut().find(|l| l.name == old) {

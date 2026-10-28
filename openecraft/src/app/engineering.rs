@@ -1,5 +1,6 @@
 //! Engineering windows: macros, terminal strips, PLC overview and marking.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
@@ -92,7 +93,8 @@ impl App {
     pub(super) fn save_macro_dialog(&mut self, ctx: &egui::Context) {
         let Some(m) = &mut self.eng.saving else { return };
         let (mut save, mut cancel) = (false, false);
-        egui::Window::new(tr("Save as macro")).collapsible(false).resizable(false).show(ctx, |ui| {
+        let (window, esc) = self.dialogs.window(ctx, tr("Save as macro"), "save_macro", None);
+        window.resizable(false).show(ctx, |ui| {
             ui.label(if m.kind == MacroKind::Page { tr_fmt!("Page macro: {}", m.summary()) } else { tr_fmt!("Window macro: {}", m.summary()) });
             egui::Grid::new("savemacro").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Name"));
@@ -111,7 +113,7 @@ impl App {
             });
             ui.weak(tr("Placeholders like {MOTOR} in tags, texts and function texts are filled in when inserting."));
             ui.horizontal(|ui| {
-                save = ui.add_enabled(!m.name.trim().is_empty(), egui::Button::new(tr("💾 Save"))).clicked();
+                save = ui.add_enabled_ui(!m.name.trim().is_empty(), |ui| icons::text_button(ui, Icon::Save, tr("Save"))).inner.clicked();
                 cancel = ui.button(tr("Cancel")).clicked();
             });
         });
@@ -131,7 +133,7 @@ impl App {
             self.notify(ctx, msg);
             self.eng.show_macros = true;
         }
-        if cancel {
+        if cancel || esc {
             self.eng.saving = None;
         }
     }
@@ -145,7 +147,7 @@ impl App {
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut self.eng.macro_filter).hint_text(tr("Filter…")).desired_width(160.0));
-                if ui.add_enabled(can_save_selection, egui::Button::new(tr("💾 Save selection as macro…"))).clicked() {
+                if ui.add_enabled_ui(can_save_selection, |ui| icons::text_button(ui, Icon::Save, tr("Save selection as macro…"))).inner.clicked() {
                     save = Some(false);
                 }
                 if ui.button(tr("Save page as macro…")).clicked() {
@@ -182,15 +184,15 @@ impl App {
                                 macro_boxes::State::Missing => (tr("not in the library"), crate::style::error()),
                             };
                             ui.horizontal(|ui| {
-                                if ui.small_button("➡").on_hover_text(tr("Show")).clicked() {
+                                if icons::button(ui, Icon::Next, tr("Show")).clicked() {
                                     action = Some(MacroAction::GotoBox(*pi, *id));
                                 }
                                 ui.label(tr_fmt!("Page {}: {}", page, name));
                                 ui.colored_label(color, state);
-                                if ui.small_button("💾").on_hover_text(tr("Save the box content as the macro in the library")).clicked() {
+                                if icons::button(ui, Icon::Save, tr("Save the box content as the macro in the library")).clicked() {
                                     action = Some(MacroAction::SaveBox(*pi, *id));
                                 }
-                                if ui.small_button("✖").on_hover_text(tr("Remove the macro box (its items stay)")).clicked() {
+                                if icons::button(ui, Icon::Close, tr("Remove the macro box (its items stay)")).clicked() {
                                     action = Some(MacroAction::RemoveBox(*pi, *id));
                                 }
                             });
@@ -270,7 +272,7 @@ impl App {
                                 }
                             });
                             let own = shown.main_variant() == m.main_variant();
-                            if !own && ui.small_button(tr("🗑 Delete variant")).clicked() {
+                            if !own && icons::text_button(ui, Icon::Delete, tr("Delete variant")).clicked() {
                                 action = Some(MacroAction::DeleteVariant(i, shown.main_variant().to_string()));
                             }
                             if names.len() == 1 {
@@ -296,7 +298,7 @@ impl App {
                                     for ph in &placeholders {
                                         ui.add_sized([100.0, 20.0], egui::TextEdit::singleline(vs.values.entry(ph.clone()).or_default()));
                                     }
-                                    if ui.small_button("🗑").clicked() {
+                                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                                         remove = Some(vi);
                                     }
                                     ui.end_row();
@@ -305,7 +307,7 @@ impl App {
                             if let Some(vi) = remove {
                                 m.value_sets.remove(vi);
                             }
-                            if ui.button(tr("➕ Value set")).clicked() {
+                            if icons::text_button(ui, Icon::Plus, tr("Value set")).clicked() {
                                 let name = format!("Set {}", m.value_sets.len() + 1);
                                 m.value_sets.push(macros::ValueSet { name, values: values.clone() });
                             }
@@ -334,7 +336,7 @@ impl App {
                             if ui.button(label).clicked() {
                                 action = Some(MacroAction::Insert(i));
                             }
-                            if ui.button(tr("🗑 Delete macro")).clicked() {
+                            if icons::text_button(ui, Icon::Delete, tr("Delete macro")).clicked() {
                                 action = Some(MacroAction::Delete(i));
                             }
                         });
@@ -381,7 +383,7 @@ impl App {
             }
             Some(MacroAction::SaveBox(pi, id)) => match macro_boxes::save_to_library(&mut self.session.prj, pi, id, &mut self.macro_lib) {
                 Ok(()) => self.notify(ctx, tr("Macro saved to the library")),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Some(MacroAction::RemoveBox(pi, id)) => {
                 macro_boxes::remove(&mut self.session.prj, pi, id);
@@ -513,10 +515,10 @@ impl App {
                             continue;
                         };
                         ui.horizontal(|ui| {
-                            if ui.add_enabled(i > 0, egui::Button::new("⏶").small()).clicked() {
+                            if ui.add_enabled_ui(i > 0, |ui| icons::button(ui, Icon::ChevronUp, tr("Move up"))).inner.clicked() {
                                 moved = Some((i, true));
                             }
-                            if ui.add_enabled(i + 1 < placed, egui::Button::new("⏷").small()).clicked() {
+                            if ui.add_enabled_ui(i + 1 < placed, |ui| icons::button(ui, Icon::ChevronDown, tr("Move down"))).inner.clicked() {
                                 moved = Some((i, false));
                             }
                         });
@@ -690,8 +692,8 @@ impl App {
                     }
                 });
                 ui.separator();
-                export = ui.button(tr("⬇ Export symbol table (CSV)…")).on_hover_text(tr("Name; Data Type; Logical Address; Comment – for PLC programming tools")).clicked();
-                import = ui.button(tr("⬆ Import symbol table…")).on_hover_text(tr("Takes the comments as function texts (matched by address)")).clicked();
+                export = icons::text_button(ui, Icon::Download, tr("Export symbol table (CSV)…")).on_hover_text(tr("Name; Data Type; Logical Address; Comment – for PLC programming tools")).clicked();
+                import = icons::text_button(ui, Icon::Upload, tr("Import symbol table…")).on_hover_text(tr("Takes the comments as function texts (matched by address)")).clicked();
             });
             if !card.is_empty() {
                 ui.horizontal_wrapped(|ui| {
@@ -847,7 +849,7 @@ fn scheme_editor(ui: &mut egui::Ui, s: &mut marking::Settings) {
                     if i > 0 && ui.small_button("◀").on_hover_text(tr("Move left")).clicked() {
                         left = Some(i);
                     }
-                    if x.columns.len() > 1 && ui.small_button("✖").on_hover_text(tr("Remove")).clicked() {
+                    if x.columns.len() > 1 && icons::button(ui, Icon::Close, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                 });

@@ -1,6 +1,7 @@
 //! Review: comments with status and replies, redline / greenline markup (the
 //! "Review" tab of the navigator and the review tools of the toolbar).
 
+use openecraft_ui::icons::{self, Icon};
 use super::{App, LeftTab};
 use crate::editor::{ReviewInput, Tool};
 use openecraft_core::geom::P;
@@ -148,7 +149,7 @@ impl App {
                     self.review_ui.selected = Some(Hit::Markup(m.id));
                 }
                 ui.checkbox(&mut edited.done, tr("taken over")).on_hover_text(tr("Taken into the drawing: drawn faded"));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(m.id);
                 }
             });
@@ -211,7 +212,7 @@ impl App {
                 edited.replies.push(Reply { author: self.user_name(), date: self.today(), text: text.trim().to_string() });
             }
         });
-        if ui.button(tr("🗑 Delete comment")).clicked() {
+        if icons::text_button(ui, Icon::Delete, tr("Delete comment")).clicked() {
             edited.deleted = true;
             self.review_ui.selected = None;
         }

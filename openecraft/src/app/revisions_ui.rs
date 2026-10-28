@@ -2,6 +2,7 @@
 //! for review, approve / reject, release) and the changes since the last released
 //! revision.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use openecraft_core::model::ReportKind;
 use openecraft_core::revision::{self, Status};
@@ -153,10 +154,10 @@ impl App {
                         _ => {
                             if is_approver {
                                 ui.add(egui::TextEdit::singleline(&mut rui.note).hint_text(tr("Note")).desired_width(160.0));
-                                if ui.button(tr("✔ Approve")).clicked() {
+                                if icons::text_button(ui, Icon::Check, tr("Approve")).clicked() {
                                     action = Some(Action::Decide(true));
                                 }
-                                if ui.button(tr("✖ Reject")).clicked() {
+                                if icons::text_button(ui, Icon::Close, tr("Reject")).clicked() {
                                     action = Some(Action::Decide(false));
                                 }
                             } else {
@@ -220,7 +221,7 @@ impl App {
                     let since = revision::last_released(&self.session.prj).map(|r| r.name.clone()).unwrap_or_default();
                     ui.label(RichText::new(if since.is_empty() { tr("Changes").to_string() } else { tr_fmt!("Changes since revision {}", since) }).strong());
                     ui.checkbox(&mut self.editor.show_revision_marks, tr("Revision marks"));
-                    overview = ui.button(tr("📊 Revision overview")).clicked();
+                    overview = icons::text_button(ui, Icon::Report, tr("Revision overview")).clicked();
                 });
                 for pc in &self.session.analysis.changes {
                     let title = match pc.page {
@@ -280,7 +281,7 @@ impl App {
             };
             match result {
                 Ok(msg) => self.notify(ctx, msg),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             }
         }
         if let Some(l) = lock {

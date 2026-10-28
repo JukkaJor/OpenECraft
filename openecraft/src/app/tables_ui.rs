@@ -2,6 +2,7 @@
 //! cells edited in place, fill / find and replace for the filtered rows and the CSV
 //! round trip through a spreadsheet.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
@@ -111,7 +112,7 @@ impl App {
                     for r in &rows {
                         match r.target {
                             Some((page, id)) => {
-                                if ui.small_button("⏵").on_hover_text(tr("Show in the schematic")).clicked() {
+                                if icons::button(ui, Icon::Next, tr("Show in the schematic")).clicked() {
                                     actions.push(Action::Jump(page, id));
                                 }
                             }
@@ -183,7 +184,7 @@ impl App {
         match tables::apply_csv(&mut self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, kind, text) {
             Ok((n, problems)) if problems.is_empty() => self.notify(ctx, tr_fmt!("{} cells changed", n)),
             Ok((n, problems)) => self.notify(ctx, tr_fmt!("{} cells changed, {} problems: {}", n, problems.len(), problems.join("; "))),
-            Err(e) => self.notify(ctx, tr_fmt!("Table import failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Table import failed: {}", e)),
         }
     }
 }

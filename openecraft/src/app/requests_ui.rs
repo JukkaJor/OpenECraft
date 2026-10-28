@@ -2,6 +2,7 @@
 //! status, affected pages and devices, the implementing revision and linked
 //! comments; exchange with other systems as CSV or JSON.
 
+use openecraft_ui::icons::{self, Icon};
 use super::{App, LeftTab};
 use crate::io::Purpose;
 use openecraft_core::review::{self, ChangeRequest, Hit, Priority, Record, RequestStatus};
@@ -37,12 +38,12 @@ impl App {
         let mut export = None;
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                new = ui.button(tr("➕ New request")).clicked();
-                import = ui.button(tr("📂 Import…")).on_hover_text(tr("CSV or JSON from another system; known numbers are updated")).clicked();
-                if ui.button(tr("⬇ Export CSV")).clicked() {
+                new = icons::text_button(ui, Icon::Plus, tr("New request")).clicked();
+                import = icons::text_button(ui, Icon::FolderOpen, tr("Import…")).on_hover_text(tr("CSV or JSON from another system; known numbers are updated")).clicked();
+                if icons::text_button(ui, Icon::Download, tr("Export CSV")).clicked() {
                     export = Some(false);
                 }
-                if ui.button(tr("⬇ Export JSON")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Export JSON")).clicked() {
                     export = Some(true);
                 }
                 ui.checkbox(&mut self.requests_ui.show_done, tr("Rejected and closed ones too"));
@@ -168,7 +169,7 @@ impl App {
                             e.pages.retain(|p| *p != pg.id);
                         }
                     }
-                    if on && ui.small_button("➡").on_hover_text(tr("Go to page")).clicked() {
+                    if on && icons::button(ui, Icon::Next, tr("Go to page")).clicked() {
                         goto = Some(i);
                     }
                 });
@@ -182,9 +183,9 @@ impl App {
                 show_comment = Some((id, page));
             }
         }
-        let add_comment = ui.button(tr("💬 Comment on the current page")).on_hover_text(tr("Linked to this request")).clicked();
+        let add_comment = icons::text_button(ui, Icon::Comment, tr("Comment on the current page")).on_hover_text(tr("Linked to this request")).clicked();
         ui.separator();
-        let delete = ui.button(tr("🗑 Delete request")).clicked();
+        let delete = icons::text_button(ui, Icon::Delete, tr("Delete request")).clicked();
 
         if delete {
             e.deleted = true;

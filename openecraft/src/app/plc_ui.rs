@@ -2,6 +2,7 @@
 //! connections and a topology view, device descriptions, automatic configuration and
 //! the exchange with PLC programming systems (AutomationML, IEC 61131-3).
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
@@ -65,20 +66,20 @@ impl App {
         let mut actions = Vec::new();
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("⚙ Automatic configuration")).on_hover_text(tr("Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology")).clicked() {
+                if icons::text_button(ui, Icon::Settings, tr("Automatic configuration")).on_hover_text(tr("Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology")).clicked() {
                     actions.push(Action::Auto);
                 }
                 let mut cables = !self.plc_ui.no_cables;
                 ui.checkbox(&mut cables, tr("with bus cables"));
                 self.plc_ui.no_cables = !cables;
                 ui.separator();
-                if ui.button(tr("⬇ Export AutomationML…")).on_hover_text(tr("Hardware configuration and PLC tags for TIA Portal and other PLC tools")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Export AutomationML…")).on_hover_text(tr("Hardware configuration and PLC tags for TIA Portal and other PLC tools")).clicked() {
                     actions.push(Action::ExportAml);
                 }
-                if ui.button(tr("⬆ Import AutomationML…")).on_hover_text(tr("Stations, modules, addresses, subnets and tag comments from a PLC tool")).clicked() {
+                if icons::text_button(ui, Icon::Upload, tr("Import AutomationML…")).on_hover_text(tr("Stations, modules, addresses, subnets and tag comments from a PLC tool")).clicked() {
                     actions.push(Action::ImportAml);
                 }
-                if ui.button(tr("⬇ Export IEC 61131-3 variables…")).on_hover_text(tr("Global variable list with direct addresses for CODESYS, TwinCAT and others")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Export IEC 61131-3 variables…")).on_hover_text(tr("Global variable list with direct addresses for CODESYS, TwinCAT and others")).clicked() {
                     actions.push(Action::ExportIec);
                 }
             });
@@ -125,7 +126,7 @@ impl App {
                     self.plc_ui.rename = n.clone();
                 }
             }
-            if ui.button(tr("➕ Station")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Station")).clicked() {
                 actions.push(Action::AddStation);
             }
         });
@@ -203,7 +204,7 @@ impl App {
             self.session.prj.plc.stations[si] = st.clone();
         }
         ui.horizontal(|ui| {
-            if ui.button(tr("🗑 Remove station")).clicked() {
+            if icons::text_button(ui, Icon::Delete, tr("Remove station")).clicked() {
                 actions.push(Action::RemoveStation(st.name.clone()));
             }
             if !unassigned.is_empty() {
@@ -260,7 +261,7 @@ impl App {
                     data.output_byte = (out != data.start_byte).then_some(out);
                     ui.weak(range(m.output_start, m.output_bytes));
                 });
-                if ui.small_button("✖").on_hover_text(tr("Remove from the station")).clicked() {
+                if icons::button(ui, Icon::Close, tr("Remove from the station")).clicked() {
                     data.station.clear();
                 }
                 if data != before {
@@ -274,7 +275,7 @@ impl App {
     fn plc_bus(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Bus systems")).strong());
-            if ui.button(tr("➕ Bus system")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Bus system")).clicked() {
                 actions.push(Action::AddNetwork);
             }
         });
@@ -288,7 +289,7 @@ impl App {
                     }
                 });
                 ui.add(egui::TextEdit::singleline(&mut n.subnet).desired_width(120.0).hint_text(tr("Subnet")));
-                if ui.small_button("🗑").clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                     actions.push(Action::RemoveNetwork(n.name.clone()));
                 }
                 ui.end_row();
@@ -301,7 +302,7 @@ impl App {
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Connections")).strong());
             let open = self.session.prj.plc.connections.iter().filter(|c| c.cable.is_empty()).count();
-            if ui.add_enabled(open > 0, egui::Button::new(tr("➕ Create bus cables"))).on_hover_text(tr("A cable of the bus type for every connection without cable")).clicked() {
+            if ui.add_enabled_ui(open > 0, |ui| icons::text_button(ui, Icon::Plus, tr("Create bus cables"))).inner.on_hover_text(tr("A cable of the bus type for every connection without cable")).clicked() {
                 actions.push(Action::CreateCables);
             }
         });
@@ -325,7 +326,7 @@ impl App {
                     None if c.cable.is_empty() => ui.label(""),
                     None => ui.colored_label(ui.visuals().warn_fg_color, tr("missing")),
                 };
-                if ui.small_button("✖").clicked() {
+                if icons::button(ui, Icon::Close, tr("Remove")).clicked() {
                     actions.push(Action::Disconnect(i));
                 }
                 ui.end_row();
@@ -403,7 +404,7 @@ impl App {
 
     fn plc_descriptions(&mut self, ui: &mut egui::Ui, actions: &mut Vec<Action>) {
         ui.horizontal(|ui| {
-            if ui.button(tr("⬆ Import GSDML / ESI…")).on_hover_text(tr("Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices")).clicked() {
+            if icons::text_button(ui, Icon::Upload, tr("Import GSDML / ESI…")).on_hover_text(tr("Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices")).clicked() {
                 actions.push(Action::ImportDescriptions);
             }
             ui.weak(tr("Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports)."));
@@ -504,7 +505,7 @@ impl App {
         match purpose {
             Purpose::Aml => match aml::import(&mut self.session.prj, text) {
                 Ok(r) => self.notify(ctx, tr_fmt!("Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed", r.stations, r.modules, r.networks, r.connections, r.addresses, r.texts)),
-                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Import failed: {}", e)),
             },
             _ => match openecraft_core::devdesc::import(text, crate::io::short_name(name)) {
                 Ok(list) => {
@@ -512,7 +513,7 @@ impl App {
                     self.session.prj.plc.add_descriptions(list);
                     self.notify(ctx, tr_fmt!("{} device descriptions imported", n));
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Import failed: {}", e)),
             },
         }
     }

@@ -5,24 +5,9 @@
 (renamed from {})	(namnbytt från {})
 + Page	+ Sida
 0 = no jumper	0 = ingen bygel
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Välj en symbol i biblioteket (till höger) och klicka på sidan för att placera den. Apparatbeteckningar (-K1, -S2 …) tilldelas automatiskt.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Projekt › Symbolredigerare: rita egna symboler (eller kopiera inbyggda) med anslutningspunkter och funktion; de sparas i projektet och kan utbytas som biblioteksfiler.
-100% ≈ real size on a 96 dpi screen	100 % ≈ verklig storlek på en skärm med 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Projekt › Namnrutor och rapportformulär: egna namnrutor med platshållare ({project}, {page}, {prop:Name} …) och kolumnerna på rapportsidorna.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Skåplayout: samlingsskenor och urtag; kapslingens egenskaper exporterar borrbilden (NC-data som DXF / DWG / CSV). Tillverkningsledningslistan innehåller avskalningslängder och ändhylsor.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelstammar: Projekt › Kabelstammar…; välj ledningarna mellan två apparater › Tilldela kabelstam, eller per förbindelse i ledningsegenskaperna. Kabelstamsrapport med längder, kontaktdon och knippdiameter, KBL-export.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Dörr: växla skåpets frontvy till Dörr och placera manöver- och signaldon där; deras dörrurtag genereras. Kollisioner kontrolleras med artiklarnas 3D-modeller.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Välj en spole och placera sedan kontakter: de tilldelas spolen och numreras (13/14, 21/22 …). Korsreferenser och kontaktbilden uppdateras direkt.
 2D front view	2D-frontvy
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Rita ledningar med ledningsverktyget (W). Ledningar slutar automatiskt vid anslutningspunkter. T-förgreningar får en förbindelsepunkt.
 3D model	3D-modell
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Potentialer (L1, +24V …) och avbrottspunkter namnger näten över flera sidor. Välj en ledning för att markera dess potential.
 4/2 directional valve	4/2-riktningsventil
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Tilldela artiklar i egenskapspanelen; generera rapporter (apparatlista, stycklista, plintschema, förbindelselista, PLC-lista) och infoga dem som rapportsidor.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Struktur: ge sidor en funktion (=A1) och en placering (+CAB1) i sidegenskaperna. Apparater som placeras där får den (=A1+CAB1-K1); på sidan visas bara den avvikande delen.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Kablar: definiera dem i Projekt › Kablar…, välj ledningar och använd Tilldela kabel. Ledningsnummer: Projekt › Ledningsnumrering…, eller ange ett nummer i ledningsegenskaperna.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Makron: välj objekt › Redigera › Spara markering som makro; infoga dem via Infoga › Makro…. Platshållare {NAME} fylls i från värdeuppsättningar.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Projekt › Plintrader / PLC-översikt / Revisioner: plintradsordning, byglar och reserver; PLC-adresser och symboltabeller; revisioner med ändringsmarkeringar och frisläppta (låsta) sidor.
 Access token	Åtkomsttoken
 Accessories	Tillbehör
 Add missing parts of the example catalog	Lägg till saknade artiklar från exempelkatalogen
@@ -95,12 +80,9 @@ Click into the page to place {}	Klicka på sidan för att placera {}
 Click on the 4 mm grid	Klicka på 4 mm-rutnätet
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Klicka på start- och hörnpunkter · Blanksteg växlar hörnriktning · slutar automatiskt vid en anslutning · Högerklick / Esc avslutar
 Click start and end point	Klicka på start- och slutpunkt
-Click start point, click end point	Klicka på startpunkten, klicka på slutpunkten
 Click to add to the selected text.	Klicka för att lägga till i den markerade texten.
 Click to insert the macro · Esc cancel	Klicka för att infoga makrot · Esc avbryter
-Click to place a text	Klicka för att placera en text
 Click to place the text from the field below	Klicka för att placera texten från fältet nedan
-Click to place · R rotate · M mirror · Esc finish	Klicka för att placera · R rotera · M spegelvänd · Esc avsluta
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Klicka för att markera, dra för att flytta, dra på tom yta för fönstermarkering. Dra med höger-/mittknappen panorerar, mushjulet zoomar.
 Click to show	Klicka för att visa
 Click two corners	Klicka på två hörn
@@ -146,7 +128,6 @@ Corner	Hörn
 Cover	Försättsblad
 Cover sheet	Försättsblad
 Create / update the part on the server (Ctrl+S)	Skapa / uppdatera artikeln på servern (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Skapa en kapsling (➕ i navigatorn till vänster) för att börja med skåplayouten.
 Create an enclosure in the panel layout first.	Skapa först en kapsling i skåplayouten.
 Create revision	Skapa revision
 Created by	Skapad av
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Dörr: {} apparater, {} urtag
 Downloaded {} parts (revision {}): {} new, {} updated	{} artiklar nedladdade (revision {}): {} nya, {} uppdaterade
 Downloading parts…	Laddar ned artiklar…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Dra: rotera · dra med höger-/mittknappen: panorera · hjul: zooma · klick: välj apparat eller ledning
-Draw connections (W)	Rita förbindelser (W)
+Draw connections	Rita förbindelser
 Duplicate	Duplicera
 Each point-to-point connection can belong to a harness	Varje punkt-till-punkt-förbindelse kan tillhöra en kabelstam
 Edit	Redigera
@@ -272,7 +253,6 @@ Harness data	Kabelstamsdata
 Harness {} has no wires	Kabelstam {} har inga ledningar
 Harness {}: connection {} – {} does not exist in the schematic	Kabelstam {}: förbindelse {} – {} finns inte i schemat
 Harnesses	Kabelstammar
-Harnesses…	Kabelstammar…
 Height	Höjd
 Height (mm)	Höjd (mm)
 Help	Hjälp
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Längre värden ritas mindre (0 =
 Macro {} replaced	Makro {} ersatt
 Macro {} saved	Makro {} sparat
 Macros	Makron
-Macros…	Makron…
 Macro…	Makro…
 Main	Huvud
 Main contact 1-pole	Huvudkontakt 1-polig
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Nästa lediga kontaktnummer på den hä
 Next page (Page Down)	Nästa sida (Page Down)
 No PLC inputs / outputs placed.	Inga PLC-ingångar / -utgångar placerade.
 No cables defined.	Inga kablar definierade.
-No cables yet – Project › Cables…	Inga kablar ännu – Projekt › Kablar…
 No changes since the last revision.	Inga ändringar sedan den senaste revisionen.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Inga apparater ännu. Välj en symbol i biblioteket till höger och klicka på sidan.
-No enclosure yet – create one with ➕.	Ingen kapsling ännu – skapa en med ➕.
 No harnesses defined.	Inga kabelstammar definierade.
-No harnesses yet – Project › Harnesses…	Inga kabelstammar ännu – Projekt › Kabelstammar…
 No identifying letter for the device tag.	Ingen kodbokstav för apparatbeteckningen.
 No macros yet. Select items in a schematic and save them as a macro.	Inga makron ännu. Markera objekt i ett schema och spara dem som ett makro.
 No parts found.	Inga artiklar hittades.
@@ -437,7 +412,6 @@ PLC connection point	PLC-anslutningspunkt
 PLC digital input	PLC digital ingång
 PLC digital output	PLC digital utgång
 PLC overview	PLC-översikt
-PLC overview…	PLC-översikt…
 Packaging quantity	Förpackningsantal
 Page	Sida
 Page / column (3.4.1)	Sida / kolumn (3.4.1)
@@ -468,11 +442,10 @@ Parts	Artiklar
 Parts (CSV, JSON)	Artiklar (CSV, JSON)
 Parts import failed: {}	Artikelimporten misslyckades: {}
 Parts management	Artikelhantering
-Parts management…	Artikelhantering…
 Parts server: {}	Artikelserver: {}
 Passive components	Passiva komponenter
 Pilot light (NFPA)	Signallampa (NFPA)
-Place text (T)	Placera text (T)
+Place text	Placera text
 Placed	Placerad
 Placed {}× in the project	Placerad {}× i projektet
 Placeholders	Platshållare
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Uppdatera exempelkatalogens artiklar (GEN.
 Relay / contactor coil	Relä- / kontaktorspole
 Relay coil (NFPA)	Reläspole (NFPA)
 Release: lock all pages	Frisläpp: lås alla sidor
-Released page – unlock it in Project › Revisions to change it	Frisläppt sida – lås upp den i Projekt › Revisioner för att ändra den
 Remove from cable	Ta bort från kabel
 Remove from harness	Ta bort från kabelstam
 Remove from the harness	Ta bort från kabelstammen
@@ -566,7 +538,6 @@ Revision marks	Revisionsmarkeringar
 Revision overview (changes)	Revisionsöversikt (ändringar)
 Revision {} created	Revision {} skapad
 Revisions	Revisioner
-Revisions…	Revisioner…
 Right	Höger
 Rotate (R)	Rotera (R)
 Rotate / mirror (selection or symbol being placed)	Rotera / spegelvänd (markering eller symbol som placeras)
@@ -637,7 +608,6 @@ Supplier	Leverantör
 Switches / Sensors	Brytare / givare
 Symbol	Symbol
 Symbol editor	Symbolredigerare
-Symbol editor…	Symbolredigerare…
 Symbol table import failed: {}	Symboltabellimporten misslyckades: {}
 Symbols	Symboler
 Synchronize project parts from database	Synkronisera projektartiklar från databasen
@@ -655,7 +625,6 @@ Terminal number	Plintnummer
 Terminal number, PLC address, potential name …	Plintnummer, PLC-adress, potentialnamn …
 Terminal strip	Plintrad
 Terminal strips	Plintrader
-Terminal strips…	Plintrader…
 Terminals	Plintar
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Plintar med samma bygelnummer är byglade (samma potential). Reservplintar räknas i stycklistan.
 Test connection	Testa anslutning
@@ -727,8 +696,7 @@ Wire tool / text tool	Ledningsverktyg / textverktyg
 Wire {} – {}  ({} of {} here, click again for the next)	Ledning {} – {}  ({} av {} här, klicka igen för nästa)
 Wire {} – {}  {} mm	Ledning {} – {}  {} mm
 Wires	Ledningar
-Workflow	Arbetsflöde
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Kolumn {}  Rad {}
+Column {}  Row {}	Kolumn {}  Rad {}
 X {}  Y {} mm on the {}	X {}  Y {} mm på {}
 YYYY-MM-DD	ÅÅÅÅ-MM-DD
 Zoom / pan	Zooma / panorera
@@ -815,67 +783,55 @@ writable with token	skrivbar med token
 ⎘ Copy	⎘ Kopiera
 ○ Circle	○ Cirkel
 ☐ Rect	☐ Rektangel
-⛶ Fit	⛶ Anpassa
-✏ Place in schematic	✏ Placera i schemat
+Place in schematic	Placera i schemat
 ✏ Wire	✏ Ledning
-✔ Add to device	✔ Lägg till i apparat
-✔ Create	✔ Skapa
+Add to device	Lägg till i apparat
+Create	Skapa
 ✔ No problems found.	✔ Inga problem hittades.
 ✔ Save	✔ Spara
 ➕ Add accessory	➕ Lägg till tillbehör
-➕ Add function	➕ Lägg till funktion
-➕ Add part…	➕ Lägg till artikel…
+Add function	Lägg till funktion
+Add part…	Lägg till artikel…
 ➕ Insert (click into the page)	➕ Infoga (klicka på sidan)
 ➕ Insert as new page	➕ Infoga som ny sida
 ➕ Insert as report page	➕ Infoga som rapportsida
-➕ Insert mounting layout page	➕ Infoga monteringslayoutsida
+Insert mounting layout page	Infoga monteringslayoutsida
 ➕ Label	➕ Etikett
 ➕ Line	➕ Linje
 ➕ New	➕ Ny
-➕ New cable	➕ Ny kabel
-➕ New harness	➕ Ny kabelstam
+New cable	Ny kabel
+New harness	Ny kabelstam
 ➕ Property	➕ Egenskap
 ➕ Rectangle	➕ Rektangel
 ➕ Text	➕ Text
-➕ Value set	➕ Värdeuppsättning
+Value set	Värdeuppsättning
 ➕ {} (not saved)	➕ {} (inte sparad)
 ⟲ Revert	⟲ Återställ
 ⟳ Reload	⟳ Läs in igen
-⟳ Rotate	⟳ Rotera
-⬆ Import symbol table…	⬆ Importera symboltabell…
-⬆ Import…	⬆ Importera…
-⬆ Upload database ({})	⬆ Ladda upp databas ({})
+Import symbol table…	Importera symboltabell…
+Upload database ({})	Ladda upp databas ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Ladda upp artikelfil (CSV / JSON)…
-⬆ Upload selected part	⬆ Ladda upp markerad artikel
-⬇ Door NC data (DXF)	⬇ NC-data för dörr (DXF)
-⬇ Door cutouts (CSV)	⬇ Dörrurtag (CSV)
-⬇ Download into database	⬇ Ladda ned till databasen
-⬇ Drilling list (CSV)	⬇ Borrlista (CSV)
-⬇ Export CSV	⬇ Exportera CSV
+Upload selected part	Ladda upp markerad artikel
+Door NC data (DXF)	NC-data för dörr (DXF)
+Door cutouts (CSV)	Dörrurtag (CSV)
+Download into database	Ladda ned till databasen
 ⬇ Export KBL (XML)…	⬇ Exportera KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Exportera symboltabell (CSV)…
-⬇ Export…	⬇ Exportera…
-⬇ NC data (DXF)	⬇ NC-data (DXF)
+Export symbol table (CSV)…	Exportera symboltabell (CSV)…
+NC data (DXF)	NC-data (DXF)
 ⬉ Select	⬉ Markera
 🌐 Parts server	🌐 Artikelserver
-💾 Save	💾 Spara
-💾 Save selection as macro…	💾 Spara markering som makro…
-📊 Cable overview	📊 Kabelöversikt
-📊 Harness data	📊 Kabelstamsdata
 📊 Reports	📊 Rapporter
-📊 Revision overview	📊 Revisionsöversikt
-🔒 Released page – read only	🔒 Frisläppt sida – skrivskyddad
+Revision overview	Revisionsöversikt
+Released page – read only	Frisläppt sida – skrivskyddad
 🗄 Panel layout	🗄 Skåplayout
 🗄 Parts database	🗄 Artikeldatabas
 🗋 Schematic	🗋 Kretsschema
 🗑 Delete	🗑 Ta bort
-🗑 Delete connection point	🗑 Ta bort anslutningspunkt
-🗑 Delete element	🗑 Ta bort element
-🗑 Delete macro	🗑 Ta bort makro
-🗑 Remove	🗑 Ta bort
+Delete connection point	Ta bort anslutningspunkt
+Delete element	Ta bort element
 {} connections removed from their harness	{} förbindelser borttagna från sin kabelstam
 {} connections assigned to {}	{} förbindelser tilldelade {}
-🗄 Show in panel layout ({})	🗄 Visa i skåplayouten ({})
+Show in panel layout ({})	Visa i skåplayouten ({})
    |  Potential {}	   |  Potential {}
 📁 Project parts ({})	📁 Projektartiklar ({})
 part {} not found	artikel {} hittades inte
@@ -1070,8 +1026,8 @@ via cable ducts	via kabelkanaler
 {} connection points	{} anslutningspunkter
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm på plåten + {} mm reserv; resten är vägen från anslutningspunkterna till plåten.
 {} wires, {} – {} mm	{} ledningar, {} – {} mm
-➕ Add connection point	➕ Lägg till anslutningspunkt
-🗑 Remove all	🗑 Ta bort alla
+Add connection point	Lägg till anslutningspunkt
+Remove all	Ta bort alla
 2D front view (SVG)	2D-frontvy (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D-modell (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Ändstopp
@@ -1113,11 +1069,9 @@ Wire number on both ends	Ledningsnummer i båda ändar
 {} markers	{} märkningar
 {} mm	{} mm
 {} pieces	{} st.
-Potentials…	Potentialer…
 Potentials	Potentialer
-➕ New potential	➕ Ny potential
+New potential	Ny potential
 Load preset	Läs in förinställning
-📊 Potential overview	📊 Potentialöversikt
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Ledningar utan egen färg eller eget tvärsnitt hämtar dem från potentialen för sin förbindelse; kabelledare behåller kabelns värden.
 e.g. 400 V AC	t.ex. 400 V AC
 Delete	Ta bort
@@ -1151,7 +1105,6 @@ turquoise	turkos
 silver	silver
 green-yellow	grön-gul
 Potential {} defined {} times	Potential {} definierad {} gånger
-Potential {} has no definition (Project › Potentials)	Potential {} saknar definition (Projekt › Potentialer)
 Protective conductor {} with wire colour {} (must be GNYE)	Skyddsledare {} med ledarfärg {} (måste vara GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Ledarfärgen GNYE är reserverad för skyddsledare ({})
 {}: cross-section {} differs from the potential definition ({})	{}: tvärsnitt {} avviker från potentialdefinitionen ({})
@@ -1183,9 +1136,7 @@ Draw wires in their colour	Rita ledningar i deras färg
 Pin	Stift
 Plug	Kontaktdon
 Plugs	Kontaktdon
-Plugs…	Kontaktdon…
 Plug diagram	Kontaktdonsschema
-📊 Plug diagram	📊 Kontaktdonsschema
 Socket side	Hylssida
 Pin side	Stiftsida
 female	hona
@@ -1231,7 +1182,6 @@ Column	Kolumn
 Condition '{}' needs OPTION=value	Villkoret '{}' kräver OPTION=värde
 Condition (OPTION=value & …)	Villkor (OPTION=värde & …)
 Configurator	Konfigurator
-Configurator…	Konfigurator…
 Cooling	Kylning
 Creates or changes a configurator option	Skapar eller ändrar ett konfiguratoralternativ
 Cross-section {} carries {} A, less than the {} A of {}	Tvärsnitt {} klarar {} A, mindre än {} A för {}
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: spänningsfall {} V ({} %) över {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W effektförlust värmer kapslingen till {} °C (högst {} °C): {} behövs
 {}: {} carries {} A, the load {} needs {} A	{}: {} klarar {} A, lasten {} behöver {} A
-⚙ Generate pages	⚙ Generera sidor
-➕ Option	➕ Alternativ
-➕ Rule	➕ Regel
-🗑 Delete variant	🗑 Ta bort variant
+Option	Alternativ
+Delete variant	Ta bort variant
 e.g. NAME=Pump; POWER={POWER}	t.ex. NAME=Pump; POWER={POWER}
 e.g. STARTER=DOL	t.ex. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Artiklar (CSV, JSON, BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	Standardmedium
 Number prefix	Nummerprefix
 📊 Hose list	📊 Slanglista
 PCT loops (pre-planning)	Instrumentslingor (förprojektering)
-➕ Loop	➕ Slinga
-📊 PCT loop overview	📊 Översikt över instrumentslingor
+Loop	Slinga
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrument i P&ID har funktionsbokstäver och slingnummer i sin etikett (TIC 101); deras apparatbeteckning länkar dem till schemat.
 PCT loop	Instrumentslinga
 Range	Område
@@ -1409,7 +1356,6 @@ Delete loop	Ta bort slinga
 {} (default)	{} (standard)
 Hose / pipe {}	Slang / rör {}
 Resulting: {} · {} · {} · {} m	Resultat: {} · {} · {} · {} m
-Fluid and process…	Fluid och process…
 Hose defaults and PCT loops of the pre-planning	Standardvärden för slangar och instrumentslingor i förprojekteringen
 ✔ Wiring	✔ Inkoppling
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Inkopplingsassistent: checklista över ledningarna med 3D-vy och förlopp (surfplatta: öppna webbappen med #wiring)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Källspråk
 Target languages	Målspråk
 Remove the language (its translations stay in the dictionary)	Ta bort språket (dess översättningar finns kvar i ordlistan)
-➕ Add	➕ Lägg till
+Add	Lägg till
 ISO 639-1 language code	Språkkod enligt ISO 639-1
 Collect texts from the project	Samla in texter från projektet
 Adds all lines of the project texts to the dictionary	Lägger till alla rader i projekttexterna i ordlistan
@@ -1554,7 +1500,6 @@ not translated into {}	inte översatt till {}
 {} new texts in the dictionary	{} nya texter i ordlistan
 {} unused entries removed	{} oanvända poster borttagna
 Export as PDF in language	Exportera som PDF på språk
-Project languages…	Projektspråk…
 Translate the project texts; documentation per language	Översätt projekttexterna; dokumentation per språk
 {} translations imported	{} översättningar importerade
 Import failed: {}	Importen misslyckades: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	Komponenter (byggrupp)
 (included)	(ingår)
 Fastening hardware in the bill of materials	Fästelement i stycklistan
 Screws, nuts, washers and rivet nuts of the fixing points	Skruvar, muttrar, brickor och nitmuttrar för fästpunkterna
-⬇ NC data of this face (DXF)	⬇ NC-data för den här ytan (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Borrlista för den här ytan (CSV)
+NC data of this face (DXF)	NC-data för den här ytan (DXF)
+Drilling list of this face (CSV)	Borrlista för den här ytan (CSV)
 Group as assembly	Gruppera som byggrupp
 The items are selected and moved together	Objekten markeras och flyttas tillsammans
 Distribute horizontally	Fördela horisontellt
@@ -1625,7 +1570,6 @@ Pattern	Mönster
 Columns × rows	Kolumner × rader
 Pitch X / Y	Delning X / Y
 Devices are not copied: a device is placed once.	Apparater kopieras inte: en apparat placeras en gång.
-✔ Copy	✔ Kopiera
 Save as 3D macro	Spara som 3D-makro
 Items with an anchor keep it; the others are inserted relative to the click.	Objekt med förankring behåller den; de övriga infogas relativt klicket.
 Walls	Väggar
@@ -1728,7 +1672,6 @@ Macro name	Makronamn
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Infogar ett 3D-makro som en byggrupp: förankrade objekt på sin plats, de övriga relativt x / y på ytan
 Installation site	Uppställningsplats
 Structure management	Strukturhantering
-Structure management…	Strukturhantering…
 Structure identifiers (IEC 81346), templates and work areas	Strukturbeteckningar (IEC 81346), mallar och arbetsområden
 Template	Mall
 Apply template	Använd mall
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	Använda bete
 Work areas	Arbetsområden
 Work area	Arbetsområde
 Work area {}	Arbetsområde {}
-➕ Work area	➕ Arbetsområde
 (whole project)	(hela projektet)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Ett arbetsområde begränsar sidorna och apparaterna i navigatorn till en del av projektet. Filter: tomt = valfritt, * = valfria tecken; A1 omfattar även A1.2.
 OpenECraft structure template	OpenECraft-strukturmall
@@ -1873,7 +1815,7 @@ Export…	Exportera…
 Import…	Importera…
 File to embed	Fil att bädda in
 Forms – title blocks, frames and templates	Formulär – namnrutor, ramar och mallar
-Title blocks, plot frames and page templates…	Namnrutor, ritningsramar och sidmallar…
+Title blocks, plot frames and page templates	Namnrutor, ritningsramar och sidmallar
 Frame of all pages that do not choose one	Ram för alla sidor som inte väljer någon
 Frame to start from when the frame is new (default: A3 landscape)	Ram att utgå från när ramen är ny (standard: A3 landscape)
 Free graphics and notes, not evaluated	Fri grafik och anteckningar, utvärderas inte
@@ -2044,19 +1986,18 @@ Port {} is not connected	Port {} är inte ansluten
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Exporterar projektet: svg (en sida), html, pdf, dxf, dwg (endast till en fil), wire_list (CSV), plc_table (CSV), plc_variables (globala variabler enligt IEC 61131-3), aml (PLC-hårdvara som AutomationML), kbl (kabelstams-XML), marking (CSV), gltf, step, iges, ifc eller jt (3D-skåplayout; jt endast till en fil), dictionary (CSV med översättningarna av projekttexterna)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt eller dictionary, eller en export från ett plugin
 PLC hardware	PLC-hårdvara
-⚙ Automatic configuration	⚙ Automatisk konfiguration
+Automatic configuration	Automatisk konfiguration
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stationer för CPU:er och busskopplare, bussystem, kortplatser, startadresser, punktadresser, IP-adresser och en linjetopologi
-⬇ Export AutomationML…	⬇ Exportera AutomationML…
+Export AutomationML…	Exportera AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Hårdvarukonfiguration och PLC-variabler för TIA Portal och andra PLC-verktyg
-⬆ Import AutomationML…	⬆ Importera AutomationML…
+Import AutomationML…	Importera AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stationer, moduler, adresser, subnät och variabelkommentarer från ett PLC-verktyg
-⬇ Export IEC 61131-3 variables…	⬇ Exportera IEC 61131-3-variabler…
+Export IEC 61131-3 variables…	Exportera IEC 61131-3-variabler…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Global variabellista med direkta adresser för CODESYS, TwinCAT och andra
 Stations and racks	Stationer och rack
 Bus topology	Busstopologi
 Device descriptions	Enhetsbeskrivningar
 Station	Station
-➕ Station	➕ Station
 Cards without station: {}	Kort utan station: {}
 No stations: add one or use the automatic configuration.	Inga stationer: lägg till en eller använd den automatiska konfigurationen.
 Head (CPU / coupler)	Huvudenhet (CPU / kopplare)
@@ -2065,7 +2006,7 @@ Bus system	Bussystem
 IP / bus address	IP- / bussadress
 Device number	Enhetsnummer
 {}: {} slots, ports {}	{}: {} kortplatser, portar {}
-🗑 Remove station	🗑 Ta bort station
+Remove station	Ta bort station
 Plug in card	Sätt i kort
 No modules: plug in PLC cards of the schematic.	Inga moduler: sätt i PLC-kort från schemat.
 Device description	Enhetsbeskrivning
@@ -2076,13 +2017,12 @@ Output bytes	Utgångsbyte
 from the parts	från artiklarna
 Remove from the station	Ta bort från stationen
 Bus systems	Bussystem
-➕ Bus system	➕ Bussystem
 Subnet	Subnät
 Port A	Port A
 Port B	Port B
 Without bus system	Utan bussystem
 No bus systems.	Inga bussystem.
-⬆ Import GSDML / ESI…	⬆ Importera GSDML / ESI…
+Import GSDML / ESI…	Importera GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Enhetsbeskrivningar för PROFINET-enheter (GSDML) och EtherCAT-enheter (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Artiklar i produktgruppen PLC ger också beskrivningar (tekniska data: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Kortplatser
@@ -2093,7 +2033,7 @@ built-in	inbyggd
 {} addresses changed	{} adresser ändrade
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	{} stationer, {} moduler, {} bussystem, {} anslutningar importerade; {} adresser och {} texter ändrade
 {} device descriptions imported	{} enhetsbeskrivningar importerade
-PLC hardware and bus topology…	PLC-hårdvara och busstopologi…
+PLC hardware and bus topology	PLC-hårdvara och busstopologi
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stationer, rack, moduler, bussystem, AutomationML-utbyte med PLC-verktyg
 Device description (GSDML, ESI)	Enhetsbeskrivning (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Bussanslutning {} - {}: kabel {} finns inte
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	Kabel {} är en {}-kabel på en {}-ans
 Port {} has more than {} cables	Port {} har fler än {} kablar
 Cable {} is used for {} bus connections	Kabel {} används för {} bussanslutningar
 with bus cables	med busskablar
-➕ Create bus cables	➕ Skapa busskablar
+Create bus cables	Skapa busskablar
 A cable of the bus type for every connection without cable	En kabel av busstypen för varje anslutning utan kabel
 missing	saknas
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} stationer, {} bussystem, {} kort tilldelade, {} adresser ändrade, {} anslutningar, {} kablar
@@ -2211,12 +2151,11 @@ starts with	börjar med
 {} (first column)	{} (första kolumnen)
 {} report pages output to {}	{} rapportsidor utmatade till {}
 {} – {} ({} pages)	{} – {} ({} sidor)
-➕ Add filter	➕ Lägg till filter
-➕ Add sort key	➕ Lägg till sorteringsnyckel
-➕ New block	➕ Nytt block
-➕ New scheme	➕ Nytt schema
-⟳ Generate all	⟳ Generera alla
-⟳ Generate	⟳ Generera
+Add filter	Lägg till filter
+Add sort key	Lägg till sorteringsnyckel
+New block	Nytt block
+Generate all	Generera alla
+Generate	Generera
 ⟳ Update report blocks	⟳ Uppdatera rapportblock
 Opening {}…	Öppnar {}…
 Uploading {}…	Laddar upp {}…
@@ -2238,13 +2177,13 @@ Save and release page	Spara och lås upp sidan
 Lock page	Lås sida
 Project server	Projektserver
 User name	Användarnamn
-⟳ List projects	⟳ Lista projekt
+List projects	Lista projekt
 Enter a user name: other users see it on your locks.	Ange ett användarnamn: andra användare ser det på dina lås.
 Users	Användare
 Opening a project replaces the current one, its unsaved changes are lost.	Om du öppnar ett projekt ersätts det aktuella, och dess osparade ändringar går förlorade.
 Upload the current project as a new shared project:	Ladda upp det aktuella projektet som ett nytt delat projekt:
 Name on the server	Namn på servern
-⬆ Upload	⬆ Ladda upp
+Upload	Ladda upp
 Letters, digits, space, - _ . (up to 64 characters)	Bokstäver, siffror, blanksteg, - _ . (upp till 64 tecken)
 Shared project {} – revision {}, user {}	Delat projekt {} – revision {}, användare {}
 Save and release all locks	Spara och släpp alla lås
@@ -2261,14 +2200,11 @@ None	Inga
 Close shared project	Stäng delat projekt
 Releases all locks; the project stays open as a local copy	Släpper alla lås; projektet förblir öppet som en lokal kopia
 Download project	Ladda ned projekt
-Project server…	Projektserver…
 Open and save shared projects, lock pages	Öppna och spara delade projekt, lås sidor
-🔒 Locked by {} – read only	🔒 Låst av {} – skrivskyddad
+Locked by {} – read only	Låst av {} – skrivskyddad
 {} (project server, revision {})	{} (projektserver, revision {})
 {} change requests added, {} updated	{} ändringsbegäranden tillagda, {} uppdaterade
-Compare and baselines…	Jämför och baslinjer…
 Compare with a baseline, a revision or another project file and take differences over	Jämför med en baslinje, en revision eller en annan projektfil och överför skillnader
-Change requests…	Ändringsbegäranden…
 Review: comments and markup	Granskning: kommentarer och markeringar
 Revisions, approval and release	Revisioner, godkännande och frisläppning
 Review ({})	Granskning ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	Vad ska kontrolleras eller ändras?
 Change request	Ändringsbegäran
 Reply…	Svara…
 Reply	Svara
-🗑 Delete comment	🗑 Ta bort kommentar
+Delete comment	Ta bort kommentar
 Approval workflow	Godkännandeflöde
 Approvers	Godkännare
 User names, separated by commas	Användarnamn, åtskilda med kommatecken
@@ -2309,8 +2245,8 @@ rejected	avvisad
 Submit for review	Skicka för granskning
 Release	Frisläpp
 Discard draft	Ignorera utkast
-✔ Approve	✔ Godkänn
-✖ Reject	✖ Avvisa
+Approve	Godkänn
+Reject	Avvisa
 Approving needs an approver; you are \"{}\".	Godkännande kräver en godkännare; du är \"{}\".
 Submit again	Skicka igen
 With the current pages; the approvals so far become void	Med de aktuella sidorna; de hittillsvarande godkännandena blir ogiltiga
@@ -2335,7 +2271,7 @@ Compare with	Jämför med
 Baseline {} {}	Baslinje {} {}
 Baseline {}	Baslinje {}
 Pages of revision {}	Sidor i revision {}
-📂 Project file…	📂 Projektfil…
+Project file…	Projektfil…
 Baselines ({})	Baslinjer ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	En baslinje lagrar hela projektet (sidor, apparater, artiklar, inställningar). När en revision frisläpps lagras en.
 Create baseline	Skapa baslinje
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	Gör de ma
 {} details	{} detaljer
 Baseline {} created	Baslinje {} skapad
 Change requests	Ändringsbegäranden
-➕ New request	➕ Ny begäran
-📂 Import…	📂 Importera…
+New request	Ny begäran
 CSV or JSON from another system; known numbers are updated	CSV eller JSON från ett annat system; kända nummer uppdateras
-⬇ Export JSON	⬇ Exportera JSON
+Export JSON	Exportera JSON
 Rejected and closed ones too	Även avvisade och stängda
 No change requests yet.	Inga ändringsbegäranden ännu.
 Select a request.	Välj en begäran.
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	Apparatbeteckningar, åtskilda med kommatecken
 Affected pages ({})	Berörda sidor ({})
 Go to page	Gå till sidan
 Comments ({})	Kommentarer ({})
-💬 Comment on the current page	💬 Kommentera aktuell sida
+Comment on the current page	Kommentera aktuell sida
 Linked to this request	Länkad till den här begäran
-🗑 Delete request	🗑 Ta bort begäran
+Delete request	Ta bort begäran
 in progress	pågår
 resolved	löst
 Redline	Redline
@@ -2405,14 +2340,6 @@ Settings	Inställningar
 Page order	Sidordning
 {} differences taken over	{} skillnader överförda
 Layers	Lager
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klicka för att markera, dra för att flytta, dra på tom yta för fönstermarkering. Dra beteckningen eller en egenskapstext för en markerad symbol för att placera den. Dra med höger-/mittknappen panorerar, mushjulet zoomar.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Klicka på start- och hörnpunkter · Blanksteg växlar hörnriktning · A växlar dragning runt symboler · slutar automatiskt vid en anslutning · Högerklick / Esc avslutar
-Click the centre, then a point of the circle	Klicka på mittpunkten och sedan på en punkt på cirkeln
-Click the centre, the start point and the end point (counter-clockwise)	Klicka på mittpunkten, startpunkten och slutpunkten (moturs)
-Click the corner points · double click, Enter or right click finishes	Klicka på hörnpunkterna · dubbelklick, Enter eller högerklick avslutar
-Click the two points to measure, then the position of the dimension line	Klicka på de två punkterna som ska mätas och sedan på måttlinjens position
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Klicka på en ledning: punkten definierar nummer, färg, tvärsnitt och kabelledare för förbindelsen
-Draw a line across the wires that are cores of the cable	Rita en linje tvärs över de ledningar som är ledare i kabeln
 Click to insert · Esc cancel	Klicka för att infoga · Esc avbryter
 Routing around symbols	Dragning runt symboler
 {} objects pasted	{} objekt inklistrade
@@ -2442,7 +2369,7 @@ Layer	Lager
 Auto-connect	Autoanslut
 Draw connections between facing connection points when symbols are placed or moved	Rita förbindelser mellan motstående anslutningspunkter när symboler placeras eller flyttas
 Route	Dra runt
-The wire tool routes around symbols and other wires (A)	Ledningsverktyget drar runt symboler och andra ledningar (A)
+The wire tool routes around symbols and other wires	Ledningsverktyget drar runt symboler och andra ledningar
 Dimension	Måttsättning
 Image…	Bild…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG- eller JPEG-bitmapp, t.ex. en logotyp eller ett foto
@@ -2486,7 +2413,6 @@ Tag placed by hand	Beteckning placerad manuellt
 Drag the tag of the selected symbol to place it.	Dra beteckningen för den markerade symbolen för att placera den.
 (empty)	(tom)
 ➕ Place property	➕ Placera egenskap
-➕ Layer	➕ Lager
 Layer {}	Lager {}
 Layers of graphics, texts, dimensions and images	Lager för grafik, texter, måttsättningar och bilder
 Visible	Synligt
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Tvärsnitt, t.ex. 1.5 mm²
 A cable definition needs a start and an end point	En kabeldefinition kräver en start- och en slutpunkt
 No cable {}	Ingen kabel {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Förbindelsedefinitionspunkter på en ledning anger nummer, färg, tvärsnitt och ledare för hela förbindelsen; en kabeldefinitionslinje tvärs över ledningar gör dem till ledare i en kabel. Autoanslut förbinder motstående anslutningspunkter, Dra runt (A) leder ledningar runt symboler.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafik: cirklar, ellipser, bågar, polygoner, måttsättningar och bilder på lager (navigatorn › Lager: synliga, låsta, utskrivna). Dra beteckningen för en markerad symbol för att placera den; ytterligare egenskaper placeras i dess egenskaper.
 Coil	Spole
 Main contacts 4-pole	Huvudkontakter 4-poliga
 NO contact, on-delay	Slutande kontakt, tillslagsfördröjd
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	Läggs til
 📊 Hose configuration	📊 Slangkonfiguration
 📊 Tubing / piping list	📊 Rör- / slanglista
 📊 Fluid netlist	📊 Fluidnätlista
-➕ Group	➕ Grupp
-📊 Fluid device groups	📊 Fluidapparatgrupper
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Ventilterminaler, luftberedningsaggregat och fördelarblock: deras fluidapparater i platsordning, åtskilda med blanksteg.
 Places	Platser
 0 = not limited	0 = obegränsat
 Delete group	Ta bort grupp
-🔄 Synchronize	🔄 Synkronisera
+Synchronize	Synkronisera
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Länkar magnetventiler med spolen med samma nummer (-QM3 › -MB3) och kopierar funktionstexter
 {} links created, {} function texts copied	{} länkar skapade, {} funktionstexter kopierade
-📊 Electro-fluid cross reference	📊 Elektro-fluid-korsreferens
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Elektriska apparater som manövrerar eller övervakar en fluidapparat (magnetspolar, gränslägesbrytare och tryckvakter); båda scheman visar korsreferenser till varandra.
 Electrical devices	Elektriska apparater
 Operating pressure in bar (0 = hose ratings are not checked)	Drifttryck i bar (0 = slangarnas tryckklassning kontrolleras inte)
@@ -2734,7 +2655,6 @@ Right neighbour	Granne till höger
 No cable passage to {}: wires to it are not routed	Ingen kabelgenomföring till {}: ledningar dit dras inte
 Open to {}: wires cross beside the mounting plates	Öppen mot {}: ledningar går över bredvid monteringsplåtarna
 {} cable passages to {}	{} kabelgenomföringar till {}
-➕ Cable passage to {}	➕ Kabelgenomföring till {}
 Round cutouts facing each other in both side walls	Runda urtag mitt emot varandra i båda sidoväggarna
 Both sides are open: the wires need no cutout	Båda sidorna är öppna: ledningarna behöver inget urtag
 Cable passage to {}	Kabelgenomföring till {}
@@ -3067,7 +2987,6 @@ Surge protection	Överspänningsskydd
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Brytförmåga mot kortslutningsströmmen vid varje skyddsdon i nätet, frånkoppling vid den lägsta felströmmen i slutet av dess krets, kablarnas kortslutningshållfasthet och selektivitet mot skyddsdonet före.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Effekt och ström för nätets laster (motorer, drivsystem, värmare, nätaggregat, transformatorer), lasten för varje skyddsdon, behovet med sammanlagringsfaktor och lastbudgeten för nätaggregaten.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Säkerhetsfunktioner enligt ISO 13849-1: varje delsystem (ingång, logik, utgång) med apparaterna i en kanal, dess kategori, diagnostisk täckning och antal manövrer per år. Apparater räknas med PL / PFHd, MTTFd eller B10d för sina artiklar.
-➕ Safety function	➕ Säkerhetsfunktion
 Input	Ingång
 Logic	Logik
 Output	Utgång
@@ -3076,13 +2995,10 @@ Operations / year	Manövrer / år
 CCF	CCF
 0 = from the devices	0 = från apparaterna
 Measures against common cause failure (at least 65 points)	Åtgärder mot fel med gemensam orsak (minst 65 poäng)
-➕ Subsystem	➕ Delsystem
 Subsystem {}	Delsystem {}
 Rule libraries	Regelbibliotek
 Customer rule sets	Kundregelverk
-➕ Rule set	➕ Regelverk
 Rule set {}	Regelverk {}
-💾 Export…	💾 Exportera…
 OpenECraft rule sets	OpenECraft-regelverk
 Verify the project against it	Kontrollera projektet mot det
 {} checks	{} kontroller
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Var
 Message	Meddelande
 if	om
 then	så
-➕ Condition	➕ Villkor
-➕ Check	➕ Kontroll
 OpenECraft rule sets (JSON)	OpenECraft-regelverk (JSON)
-Electrical calculations…	Elektriska beräkningar…
+Electrical calculations	Elektriska beräkningar
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Kortslutning, selektivitet, laster, EMC, funktionssäkerhet och kontroll mot regelverk
 0 = a single value; otherwise values [1] … [n]	0 = ett enda värde; annars värden [1] … [n]
 A project definition based on this one, with its own defaults and scheme	En projektdefinition baserad på den här, med egna standardvärden och schema
@@ -3416,7 +3330,6 @@ Project number	Projektnummer
 Project property of the property database (by key)	Projektegenskap i egenskapsdatabasen (via nyckeln)
 Proof test interval	Intervall för återkommande provning
 Property database	Egenskapsdatabas
-Property database…	Egenskapsdatabas…
 Property definitions	Egenskapsdefinitioner
 Property definitions, function definitions, placement schemes and the values of all objects	Egenskapsdefinitioner, funktionsdefinitioner, placeringsscheman och värdena för alla objekt
 Property groups	Egenskapsgrupper
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" är inte ett av {}
 {}: invalid value \"{}\" ({})	{}: ogiltigt värde \"{}\" ({})
 ➕ Default value	➕ Standardvärde
-➕ Derive project definition	➕ Härled projektdefinition
-➕ User defined property	➕ Användardefinierad egenskap
+Derive project definition	Härled projektdefinition
+User defined property	Användardefinierad egenskap
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Planera apparater i enlinjeschemat, generera kretsschemat och håll båda synkroniserade
-Single-line / multi-line…	Enlinje / flerlinje…
 All devices of page {} are in the schematic already	Alla apparater på sidan {} finns redan i kretsschemat
 Copies function texts between the single-line diagram and the schematic where one side is empty	Kopierar funktionstexter mellan enlinjeschemat och kretsschemat där den ena sidan är tom
 Does not match	Matchar inte
@@ -3756,11 +3668,11 @@ Outline	Kontur
 Click the corners of a machine or building, double-click to finish	Klicka på hörnen av en maskin eller byggnad, dubbelklicka för att avsluta
 (no cable highlighted)	(ingen kabel markerad)
 Fit	Anpassa
-⬇ Export SVG…	⬇ Exportera SVG…
+Export SVG…	Exportera SVG…
 Height above the floor	Höjd över golvet
 Placed here: {}	Placerat här: {}
 Place an enclosure, device or machine location at this node	Placera en kapsling, apparat eller maskinplacering vid den här noden
-🗑 Delete node	🗑 Ta bort nod
+Delete node	Ta bort nod
 SVG drawing	SVG-ritning
 Segments	Avsnitt
 Width × height (mm)	Bredd × höjd (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	Måste anslutas till potentialutj
 {} corners	{} hörn
 Take over cut lengths	Överför kaplängder
 Set the cable lengths to the planned cut lengths	Ställ in kabellängderna på de planerade kaplängderna
-📊 Report	📊 Rapport
 {} parts of the network	{} delnät
 No field cables: place the enclosures and field devices at nodes of the route network.	Inga fältkablar: placera kapslingarna och fältapparaterna vid noder i kabelvägsnätet.
 Route definition of {}	Kabelvägsdefinition för {}
 Via:	Via:
 Remove	Ta bort
-➕ Node	➕ Nod
 Avoid:	Undvik:
 {} cable lengths taken over	{} kabellängder överförda
-➕ Bonding conductor	➕ Potentialutjämningsledare
+Bonding conductor	Potentialutjämningsledare
 Bonding points	Anslutningspunkter för potentialutjämning
-➕ Accessory	➕ Tillbehör
 both ends	båda ändarna
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Inga tillbehör: förskruvningar, kontaktdon, skärmklämmor … ingår i stycklistan och kontrolleras mot kabeln.
 Reserve per cable end	Tillägg per kabelände
@@ -3799,7 +3708,6 @@ Length inside an enclosure	Längd inne i en kapsling
 Cut length step	Steg för kaplängd
 Maximum fill of a carrier	Högsta fyllnadsgrad för en kabelbärare
 Bend radius in drag chains	Böjradie i släpkedjor
-Field wiring…	Fältkablage…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Anläggningslayout, kabelvägsnät, fältkabelplanering, potentialutjämning och kabeltillbehör
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Inget alternativ {}
@@ -3913,9 +3821,9 @@ Archive and version	Arkiv och version
 Verification	Verifiering
 OpenECraft project archive	OpenECraft-projektarkiv
 The project database needs the desktop version: the browser cannot search folders.	Projektdatabasen kräver skrivbordsversionen: webbläsaren kan inte söka i mappar.
-📂 Add folder…	📂 Lägg till mapp…
+Add folder…	Lägg till mapp…
 Adds the project files and archives of a folder and its subfolders	Lägger till projektfilerna och arkiven i en mapp och dess undermappar
-🔄 Update all	🔄 Uppdatera alla
+Update all	Uppdatera alla
 Verify while reading	Verifiera vid inläsning
 Remove the folder from the database	Ta bort mappen från databasen
 Search	Sök
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	Kopplar altern
 {} options switched	{} alternativ växlade
 File format version {}. Files of older versions are converted when they are opened.	Filformatsversion {}. Filer från äldre versioner konverteras när de öppnas.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Ett arkiv (.oecz) är en ZIP-fil med projektet, ett manifest och de inbäddade dokumenten och bilderna som egna filer.
-📦 Archive project…	📦 Arkivera projekt…
-📂 Open archive…	📂 Öppna arkiv…
+Archive project…	Arkivera projekt…
+Open archive…	Öppna arkiv…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Kontrollerar projektdata (ID:n, referenser, apparatdata, alternativ, delprojekt) tillsammans med de tekniska kontrollerna.
 Verify project	Verifiera projekt
 Repair {} findings	Reparera {} avvikelser
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} fel, {} varningar, {} anmärkningar i projektdata; teknisk kontroll: {} fel, {} varningar
 (repairable)	(reparerbar)
 ✔ The project data is consistent.	✔ Projektdata är konsekventa.
-Project management…	Projekthantering…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Projektdatabas, massändringar av projektegenskaper, delprojekt, alternativ, arkiv och verifiering
 OpenECraft project or archive	OpenECraft-projekt eller -arkiv
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	För artiklar 
 Collision classes	Kollisionsklasser
 Distances between classes of items, or classes that may overlap	Avstånd mellan klasser av objekt, eller klasser som får överlappa
 may overlap	får överlappa
-➕ Add rule	➕ Lägg till regel
+Add rule	Lägg till regel
 Air temperature at the devices	Lufttemperatur vid apparaterna
 max. {} °C	max. {} °C
 No problems found	Inga problem hittades
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	Ogiltigt svar från plugin: {}
 Key figures of the project and a list of its device tags	Projektets nyckeltal och en lista över dess apparatbeteckningar
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Projektets nyckeltal: sidor, symboler, ledningar, apparater, artiklar, kablar och kontrollresultat
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Inlästa plugins (inbyggda och från plugin-mapparna i --plugins / OPENECRAFT_PLUGINS) med deras kommandon, kontroller, rapporter och exporter; aktiverar eller inaktiverar en för den här sessionen
-Manage plugins…	Hantera plugins…
-Plugin command {}	Plugin-kommando {}
+Manage plugins	Hantera plugins
 Plugin id '{}' is not snake_case	Plugin-ID '{}' är inte snake_case
 Plugin {} is loaded twice	Plugin {} är inläst två gånger
 Plugin {} needs a newer OpenECraft (API {})	Plugin {} kräver en nyare OpenECraft (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	Okänt plugin: {}
 Warnings	Varningar
 {} commands, {} checks, {} reports, {} exports	{} kommandon, {} kontroller, {} rapporter, {} exporter
 {}: the program to run is missing	{}: programmet som ska köras saknas
-▶ Run	▶ Kör
-⟳ Update	⟳ Uppdatera
+Run	Kör
+Update	Uppdatera
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Kontroller av skåplayout
@@ -4187,7 +4093,7 @@ Profile	Profil
 (standard columns)	(standardkolumner)
 Write the file for the other system; later imports detect conflicts against this export	Skriv filen för det andra systemet; senare importer upptäcker konflikter mot den här exporten
 Read a file of the other system (CSV or JSON) and review the changes	Läs en fil från det andra systemet (CSV eller JSON) och granska ändringarna
-⬇ Neutral exchange file…	⬇ Neutral utbytesfil…
+Neutral exchange file…	Neutral utbytesfil…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Artiklar, apparater, placeringar, förbindelser, ledningar och dokument i en JSON-fil för system utan anslutning
 Import changes	Importändringar
 Profiles	Profiler
@@ -4213,7 +4119,6 @@ Conflicts	Konflikter
 Export	Export
 Import	Import
 {} values taken over	{} värden överförda
-Enterprise integration…	Företagsintegration…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Utbyte med ERP, PDM, PLM, ECAD, MCAD, inköp och kabelbearbetningsmaskiner
 Files of other systems (CSV, JSON)	Filer från andra system (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Kopparskena {}: {} avsnitt kräver {} bockningar
@@ -4380,9 +4285,9 @@ DWG export failed: {}	DWG-exporten misslyckades: {}
 DWG import failed: {}	DWG-importen misslyckades: {}
 DWG imported as page {}: {} lines, {} texts	DWG importerad som sida {}: {} linjer, {} texter
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG importerad som sida {}: {} linjer, {} texter (inte importerat: {})
-⬇ NC data (DWG)	⬇ NC-data (DWG)
-⬇ Door NC data (DWG)	⬇ NC-data för dörr (DWG)
-⬇ NC data of this face (DWG)	⬇ NC-data för den här ytan (DWG)
+NC data (DWG)	NC-data (DWG)
+Door NC data (DWG)	NC-data för dörr (DWG)
+NC data of this face (DWG)	NC-data för den här ytan (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importerar en DWG-ritning (AutoCAD R12 … 2018) som grafik (linjer, bågar, texter, block) på en ny schemasida
 Generic	Generisk
 Parts store	Artikellager
@@ -4721,7 +4626,6 @@ Power cable	Kraftkabel
 Control cable	Styrkabel
 Wiring material	Kopplingsmaterial
 Catalog id	Katalog-ID
-Data portal…	Dataportal…
 Delete catalog {} from the server?	Vill du ta bort katalogen {} från servern?
 Delete user {}? Their sessions and favorites are removed.	Vill du ta bort användaren {}? Användarens sessioner och favoriter tas bort.
 Ends the session and forgets the token	Avslutar sessionen och glömmer token
@@ -4843,12 +4747,10 @@ Use macros	Använd makron
 ★ Favorites	★ Favoriter
 ★ Remove from favorites	★ Ta bort från favoriter
 ☆ Add to favorites	☆ Lägg till i favoriter
-✔ Apply {} updates	✔ Tillämpa {} uppdateringar
-➡ Successor {}	➡ Efterföljare {}
-⬇ Add marked parts to the parts database ({})	⬇ Lägg till markerade artiklar i artikeldatabasen ({})
-⬇ Add to the parts database	⬇ Lägg till i artikeldatabasen
-🔄 Check the parts database for updates	🔄 Sök efter uppdateringar i artikeldatabasen
-🔎 Search	🔎 Sök
+Apply {} updates	Tillämpa {} uppdateringar
+Add marked parts to the parts database ({})	Lägg till markerade artiklar i artikeldatabasen ({})
+Add to the parts database	Lägg till i artikeldatabasen
+Check the parts database for updates	Sök efter uppdateringar i artikeldatabasen
 Relay coil, AC	Reläspole, AC
 Relay coil, high-speed	Reläspole, snabb
 Relay coil, mechanically latched	Reläspole, mekaniskt spärrad
@@ -5276,7 +5178,6 @@ Level of this kind of message	Nivå för den här meddelandetypen
 As defined by the check	Som kontrollen definierar
 Switch off the check \"{}\"	Stäng av kontrollen \"{}\"
 Changed message levels ({})	Ändrade meddelandenivåer ({})
-Right click a message in the Check tab to change its level.	Högerklicka på ett meddelande på fliken Kontroll för att ändra dess nivå.
 Accepted messages ({})	Godkända meddelanden ({})
 No longer reported	Rapporteras inte längre
 Still reported	Rapporteras fortfarande
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Spara som projektmall…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Sparar projektet utan revisioner, baslinjer, granskning och inkopplingsmarkeringar som en mall för nya projekt
 OpenECraft project template	OpenECraft-projektmall
-Not a project template: {}	Inte en projektmall: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Börja från en projektmall: en inbyggd (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) eller en projektfil
 Not a packed project	Inte ett packat projekt
 Viewer	Visare
@@ -5537,7 +5437,6 @@ Rotate	Rotera
 Save to project server	Spara på projektservern
 Undo	Ångra
 Find and replace	Sök och ersätt
-Finish polyline or polygon	Avsluta polylinje eller polygon
 Mirror (selection or symbol being placed)	Spegla (markering eller symbol som placeras)
 Next page	Nästa sida
 Open project	Öppna projekt
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	Kortkommandon
 No shortcut	Inget kortkommando
 Press a key…	Tryck på en tangent…
 Record	Spela in
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Spela in: tryck på den nya tangenten med dess modifierare (Esc avbryter). Esc, Del, piltangenterna och kopiera / klistra in är fasta.
 Reset all to the defaults	Återställ alla till standardvärdena
 {} is used by: {}	{} används av: {}
 Harness nailboard drawing to scale (SVG)	Spikbräderitning för kabelstam i skala (SVG)
 Harness tag, e.g. -WH1	Kabelstammens beteckning, t.ex. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Spikbräderitning av kabelstammen i skala med grenlängder och stifttabellerna för kontaktdonen
-📐 Nailboard (SVG)…	📐 Spikbräde (SVG)…
+Nailboard (SVG)…	Spikbräde (SVG)…
 Bundle Ø {} mm	Knippe Ø {} mm
 Nailboard {}	Spikbräde {}
 Scale 1:{}	Skala 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	Inget segment {}
 Segment path (default: all segments)	Segmentsökväg (standard: alla segment)
 Pre-planning (CSV, Excel)	Förplanering (CSV, Excel)
 Plant segments with planned devices before the schematic	Anläggningssegment med planerade apparater före kretsschemat
-Pre-planning…	Förplanering…
 A segment cannot be moved below itself	Ett segment kan inte flyttas under sig självt
 Adds a planned device to a segment or changes it	Lägger till en planerad apparat i ett segment eller ändrar den
 Adds a segment below another one (or at the top)	Lägger till ett segment under ett annat (eller överst)
@@ -5628,10 +5525,8 @@ name	namn
 {} pages generated	{} sidor genererade
 {} pages generated; page macros not found: {}	{} sidor genererade; sidmakron som inte hittades: {}
 {} segments created, {} devices added, {} updated	{} segment skapade, {} apparater tillagda, {} uppdaterade
-➕ Device	➕ Apparat
-➕ Segment	➕ Segment
-➕ Sub-segment	➕ Undersegment
-🗑 Remove segment	🗑 Ta bort segment
+Sub-segment	Undersegment
+Remove segment	Ta bort segment
 Display	Visning
 Mirrored	Speglad
 Other properties	Övriga egenskaper
@@ -5733,7 +5628,7 @@ Hose defaults	Standardvärden för slangar
 Message levels	Meddelandenivåer
 Not a settings scheme: {}	Inte ett inställningsschema: {}
 Wire defaults	Standardvärden för ledningar
-Reset panel layout	Återställ panellayout
+Reset pane layout	Återställ panellayout
 Navigator on the left, symbols and properties on the right	Navigator till vänster, symboler och egenskaper till höger
 Panels	Paneler
 Saves the workspace, the arrangement of the panels and the open windows	Sparar arbetsytan, panelernas placering och de öppna fönstren
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	Motorer matar kortslutningen
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Asynkronmotorer på nätet ökar den högsta kortslutningsströmmen (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	Vid matningspunkten: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Tillverkarnas koordinationstabeller
-➕ Entry	➕ Post
+Entry	Post
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selektivitet och back-up-skydd för apparatpar enligt tillverkarens provning, efter artikelnummer. De ersätter uppskattningen från tid-strömkurvorna.
 Upstream part	Överordnad artikel
 Downstream part	Underordnad artikel
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	I stället för användarnamn och lösenord
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 eller senare (Vault Data API)
-⟳ Refresh	⟳ Uppdatera
+Refresh	Uppdatera
 Search below this folder	Sök under den här mappen
-🔍 Search	🔍 Sök
 Checked out	Utcheckad
 {} of {} entries shown: search to narrow the list	{} av {} poster visas: sök för att begränsa listan
 Select a file to import it	Välj en fil för att importera den
 (choose a part)	(välj en artikel)
-⬇ Import	⬇ Importera
 Project file	Projektfil
-⬆ Check in project as new version of {}	⬆ Checka in projektet som ny version av {}
+Check in project as new version of {}	Checka in projektet som ny version av {}
 Puts the project into the folder it was opened from	Lägger projektet i mappen som det öppnades från
 Put into the vault	Lägg i valvet
 File name	Filnamn
-⬆ Upload to {}	⬆ Ladda upp till {}
+Upload to {}	Ladda upp till {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	En fil med samma namn i mappen får en ny version (utcheckad och incheckad), annars läggs filen till
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Öppna projekt och filer från Autodesk Vault, lägg projektet, exporter och 3D-modeller i valvet
 Check in {} to Vault	Checka in {} i Vault
 Panel layout in 3D (Parasolid XT)	Skåplayout i 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	Skåplayout i 3D (Parasolid XT)
 Back	Tillbaka
 Back to the project (Esc)	Tillbaka till projektet (Esc)
 Recent projects	Senaste projekt
-No projects opened yet.	Inga projekt har öppnats än.
 Remove from the list	Ta bort från listan
 unsaved	inte sparat
 Project: {}	Projekt: {}
@@ -6055,15 +5946,6 @@ Tutorial	Handledning
 Introduction	Inledning
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	En öppen el-CAE-redigerare i EPLAN Electric P8:s anda.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Menyfliksområdet: Arkiv öppnar, sparar, importerar, exporterar och skriver ut; flikarna samlar kommandona per ämne. Alt visar snabbtangenterna, Ctrl+Shift+P hittar alla kommandon, F6 växlar mellan panelerna, F1 öppnar denna hjälp.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Infoga › Infogningscenter (Ins): sök en symbol, ett makro eller en apparat och klicka på sidan för att placera den. Apparatbeteckningar (-K1, -S2 …) tilldelas automatiskt.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Tilldela artiklar i egenskaperna (fliken Artiklar); rapporterna (Start › Rapporter) listar apparater, materiallista, plintar, förbindelser och PLC och infogas som rapportsidor.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kablar: Förbindelser › Kablar, markera ledningar och använd Tilldela kabel. Ledningsnummer: Förbindelser › Ledningsnumrering, eller skriv ett nummer i ledningens egenskaper.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makron: markera objekt, högerklick › Spara markering som makro; infoga dem från infogningscentret eller via Infoga › Makro. Platshållare {NAME} fylls från värdeuppsättningar.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Apparater › Plintrader, Apparater › PLC-översikt och Projektdata › Revisioner: plintordning, byglar och reserver; PLC-adresser och symboltabeller; revisioner med ändringsmarkeringar och frisläppta (låsta) sidor.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Grunddata › Symbolredigerare: rita egna symboler (eller kopiera inbyggda) med anslutningspunkter och funktion; de sparas i projektet och kan utbytas som biblioteksfiler.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Grunddata › Formulär: egna namnrutor med platshållare ({project}, {page}, {prop:Name} …) och rapportsidornas kolumner; Projektdata › Rapportblock skapar rapportsidor per plintrad, kontaktdon, kabel eller apparat.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Skåplayout (arbetsytan Skåplayout, fliken Monteringsutrymme): skåp, skenor, kabelkanaler, samlingsskenor och urtag; Monteringsutrymme › NC-data exporterar borrmönstret (DXF / DWG / CSV). Produktionsledningslistan innehåller avskalningslängder och ändhylsor.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelstammar: Förbindelser › Kabelstammar; markera ledningarna mellan två apparater › Tilldela kabelstam, eller per förbindelse i ledningens egenskaper. Kabelstamsrapport med längder, kontaktdon och knippediameter, KBL-export.
 Key tips of the ribbon	Menyfliksområdets snabbtangenter
 Version {}	Version {}
 Search (* and ? as placeholders)…	Sök (* och ? som jokertecken)…
@@ -6145,7 +6027,6 @@ Close page tab	Stäng sidflik
 Panes	Paneler
 Show or hide panes; drag a tab to dock it elsewhere	Visa eller dölj paneler; dra en flik för att docka den på annat ställe
 Save workspace…	Spara arbetsyta…
-The panes of this workspace at their default places	Panelerna i denna arbetsyta på sina standardplatser
 Theme	Tema
 UI scale	Gränssnittets skala
 Minimize the ribbon	Minimera menyfliksområdet
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	Funktioner i projektdata som inte �
 Insert center	Infogningscenter
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symboler, makron, apparater och oplacerade funktioner: sökning, favoriter, senast använda
 Find results	Sökresultat
-Quick guide, tutorial and shortcuts	Snabbguide, handledning och kortkommandon
 Layout spaces	Monteringsutrymmen
 Enclosures, devices to place and placed devices	Skåp, apparater att placera och placerade apparater
 Layout properties	Layoutegenskaper
@@ -6203,7 +6083,7 @@ Click to show, right click for more	Klicka för att visa, högerklicka för mer
 {} notes	{} anmärkningar
 Open in a new page tab	Öppna i en ny sidflik
 Project information	Projektinformation
-Plugin commands…	Plugin-kommandon…
+Plugin commands	Plugin-kommandon
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Kommandona för alla plugins per plugin, med sökning; stjärnan fäster ett kommando på fliken Plugins
 Star a command in Plugin commands to pin it here	Markera ett kommando med stjärnan i Plugin-kommandon för att fästa det här
 Installed plugins	Installerade plugins
@@ -6271,8 +6151,6 @@ Draw inner walls	Rita innerväggar
 Inner wall {}, side {}	Innervägg {}, sida {}
 Thickness	Tjocklek
 {}: {} stands in an inner wall	{}: {} står i en innervägg
-Opening {} replaces the current project, its unsaved changes are lost.	Att öppna {} ersätter det aktuella projektet, dess osparade ändringar går förlorade.
-Discard changes and open	Släng ändringarna och öppna
 Open link	Öppna länk
 Replace the file at path if it exists	Ersätt filen på path om den finns
 {} exists already: pass overwrite to replace it	{} finns redan: ange overwrite för att ersätta den
@@ -6405,3 +6283,4 @@ Folder with project files (instead of a database; default: the current folder)	M
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Okänd sidtyp: {} (schematic, overview, graphic, cover eller en rapport från list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Okänd mall {}: ange en inbyggd ({}) eller en projektfil
 Property {} needs a text or a number	Egenskapen {} kräver en text eller ett tal
+Check settings…	Kontrollinställningar…

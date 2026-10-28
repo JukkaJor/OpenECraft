@@ -1,7 +1,7 @@
 # Entries added by hand (not part of the generated translations.tsv).
 {} connections removed from their harness	{} Verbindungen aus ihrem Kabelbaum entfernt	{} liaisons retirées de leur faisceau	{} conexiones quitadas de su mazo
 {} connections assigned to {}	{} Verbindungen {} zugewiesen	{} liaisons affectées à {}	{} conexiones asignadas a {}
-🗄 Show in panel layout ({})	🗄 Im Schaltschrank-Layout anzeigen ({})	🗄 Afficher dans l'implantation de l'armoire ({})	🗄 Mostrar en la distribución del armario ({})
+Show in panel layout ({})	Im Schaltschrank-Layout anzeigen ({})	Afficher dans l'implantation de l'armoire ({})	Mostrar en la distribución del armario ({})
    |  Potential {}	   |  Potenzial {}	   |  Potentiel {}	   |  Potencial {}
 📁 Project parts ({})	📁 Projektartikel ({})	📁 Articles du projet ({})	📁 Artículos del proyecto ({})
 part {} not found	Artikel {} nicht gefunden	article {} introuvable	artículo {} no encontrado
@@ -196,8 +196,8 @@ via cable ducts	über Kabelkanäle	par les goulottes	por las canaletas
 {} connection points	{} Anschlüsse	{} points de connexion	{} puntos de conexión
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm auf der Platte + {} mm Reserve; der Rest ist der Weg von den Anschlüssen zur Platte.	{} mm sur la plaque + {} mm de réserve ; le reste est le chemin des points de connexion à la plaque.	{} mm en la placa + {} mm de reserva; el resto es el recorrido desde los puntos de conexión hasta la placa.
 {} wires, {} – {} mm	{} Verbindungen, {} – {} mm	{} fils, {} – {} mm	{} cables, {} – {} mm
-➕ Add connection point	➕ Anschluss hinzufügen	➕ Ajouter un point de connexion	➕ Añadir punto de conexión
-🗑 Remove all	🗑 Alle entfernen	🗑 Tout supprimer	🗑 Quitar todos
+Add connection point	Anschluss hinzufügen	Ajouter un point de connexion	Añadir punto de conexión
+Remove all	Alle entfernen	Tout supprimer	Quitar todos
 2D front view (SVG)	2D-Frontansicht (SVG)	Vue de face 2D (SVG)	Vista frontal 2D (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D-Modell (STL, OBJ, STEP, IGES, IFC, JT)	Modèle 3D (STL, OBJ, STEP, IGES, IFC, JT)	Modelo 3D (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Endhalter	Butée d'arrêt	Soporte final
@@ -239,11 +239,9 @@ Wire number on both ends	Verbindungsnummer an beiden Enden	Numéro de fil aux de
 {} markers	{} Markierer	{} repères	{} marcadores
 {} mm	{} mm	{} mm	{} mm
 {} pieces	{} Stück	{} pièces	{} piezas
-Potentials…	Potenziale…	Potentiels…	Potenciales…
 Potentials	Potenziale	Potentiels	Potenciales
-➕ New potential	➕ Neues Potenzial	➕ Nouveau potentiel	➕ Nuevo potencial
+New potential	Neues Potenzial	Nouveau potentiel	Nuevo potencial
 Load preset	Vorlage laden	Charger un modèle	Cargar plantilla
-📊 Potential overview	📊 Potenzialübersicht	📊 Vue d'ensemble des potentiels	📊 Resumen de potenciales
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Drähte ohne eigene Farbe oder eigenen Querschnitt übernehmen sie vom Potenzial ihrer Verbindung; Kabeladern behalten die Werte des Kabels.	Les fils sans couleur ni section propres les reprennent du potentiel de leur liaison ; les conducteurs de câble gardent les valeurs du câble.	Los hilos sin color ni sección propios los toman del potencial de su conexión; los conductores de cable conservan los valores del cable.
 e.g. 400 V AC	z. B. 400 V AC	p. ex. 400 V CA	p. ej. 400 V CA
 Delete	Löschen	Supprimer	Eliminar
@@ -277,7 +275,7 @@ turquoise	türkis	turquoise	turquesa
 silver	silber	argent	plata
 green-yellow	grün-gelb	vert-jaune	verde-amarillo
 Potential {} defined {} times	Potenzial {} ist {}-mal definiert	Potentiel {} défini {} fois	Potencial {} definido {} veces
-Potential {} has no definition (Project › Potentials)	Potenzial {} hat keine Definition (Projekt › Potenziale)	Le potentiel {} n'a pas de définition (Projet › Potentiels)	El potencial {} no tiene definición (Proyecto › Potenciales)
+Potential {} has no definition (Connections › Potentials)	Potenzial {} hat keine Definition (Verbindungen › Potenziale)	Le potentiel {} n'a pas de définition (Liaisons › Potentiels)	El potencial {} no tiene definición (Conexiones › Potenciales)
 Protective conductor {} with wire colour {} (must be GNYE)	Schutzleiter {} mit Aderfarbe {} (muss GNYE sein)	Conducteur de protection {} de couleur {} (doit être GNYE)	Conductor de protección {} con color {} (debe ser GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Die Aderfarbe GNYE ist Schutzleitern vorbehalten ({})	La couleur GNYE est réservée aux conducteurs de protection ({})	El color GNYE está reservado a los conductores de protección ({})
 {}: cross-section {} differs from the potential definition ({})	{}: Querschnitt {} weicht von der Potenzialdefinition ab ({})	{} : la section {} diffère de la définition du potentiel ({})	{}: la sección {} difiere de la definición del potencial ({})
@@ -309,9 +307,7 @@ Draw wires in their colour	Drähte in ihrer Farbe zeichnen	Dessiner les fils dan
 Pin	Stift	Broche	Pin
 Plug	Stecker	Connecteur	Conector
 Plugs	Stecker	Connecteurs	Conectores
-Plugs…	Stecker…	Connecteurs…	Conectores…
 Plug diagram	Steckerplan	Plan des connecteurs	Esquema de conectores
-📊 Plug diagram	📊 Steckerplan	📊 Plan des connecteurs	📊 Esquema de conectores
 Socket side	Buchsenseite	Côté douille	Lado hembra
 Pin side	Stiftseite	Côté broche	Lado macho
 female	Buchse	femelle	hembra
@@ -357,7 +353,6 @@ Column	Spalte	Colonne	Columna
 Condition '{}' needs OPTION=value	Bedingung '{}' braucht OPTION=Wert	La condition '{}' requiert OPTION=valeur	La condición '{}' necesita OPCIÓN=valor
 Condition (OPTION=value & …)	Bedingung (OPTION=Wert & …)	Condition (OPTION=valeur & …)	Condición (OPCIÓN=valor & …)
 Configurator	Konfigurator	Configurateur	Configurador
-Configurator…	Konfigurator…	Configurateur…	Configurador…
 Cooling	Kühlung	Refroidissement	Refrigeración
 Creates or changes a configurator option	Legt eine Konfiguratoroption an oder ändert sie	Crée ou modifie une option du configurateur	Crea o cambia una opción del configurador
 Cross-section {} carries {} A, less than the {} A of {}	Querschnitt {} trägt {} A, weniger als die {} A von {}	La section {} supporte {} A, moins que les {} A de {}	La sección {} soporta {} A, menos que los {} A de {}
@@ -481,10 +476,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: Spannungsfall {} V ({} %) über {} %	{} : chute de tension {} V ({} %) au-dessus de {} %	{}: caída de tensión {} V ({} %) por encima del {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W Verlustleistung erwärmen das Gehäuse auf {} °C (höchstens {} °C): {} nötig	{} : {} W de puissance dissipée chauffent l'armoire à {} °C (maximum {} °C) : {} nécessaire	{}: {} W de potencia disipada calientan el armario a {} °C (máximo {} °C): se necesita {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} trägt {} A, der Verbraucher {} braucht {} A	{} : {} supporte {} A, la charge {} demande {} A	{}: {} soporta {} A, la carga {} necesita {} A
-⚙ Generate pages	⚙ Seiten erzeugen	⚙ Générer les pages	⚙ Generar páginas
-➕ Option	➕ Option	➕ Option	➕ Opción
-➕ Rule	➕ Regel	➕ Règle	➕ Regla
-🗑 Delete variant	🗑 Variante löschen	🗑 Supprimer la variante	🗑 Eliminar variante
+Option	Option	Option	Opción
+Delete variant	Variante löschen	Supprimer la variante	Eliminar variante
 e.g. NAME=Pump; POWER={POWER}	z. B. NAME=Pumpe; POWER={POWER}	p. ex. NAME=Pompe; POWER={POWER}	p. ej. NAME=Bomba; POWER={POWER}
 e.g. STARTER=DOL	z. B. STARTER=DOL	p. ex. STARTER=DOL	p. ej. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Artikel (CSV, JSON, BMEcat)	Articles (CSV, JSON, BMEcat)	Artículos (CSV, JSON, BMEcat)
@@ -521,8 +514,7 @@ Default medium	Standardmedium	Fluide par défaut	Medio predeterminado
 Number prefix	Nummernpräfix	Préfixe de numéro	Prefijo de número
 📊 Hose list	📊 Schlauchliste	📊 Liste des flexibles	📊 Lista de mangueras
 PCT loops (pre-planning)	PLT-Stellen (Vorplanung)	Boucles CCP (pré-étude)	Lazos PCT (preplanificación)
-➕ Loop	➕ Stelle	➕ Boucle	➕ Lazo
-📊 PCT loop overview	📊 PLT-Stellenübersicht	📊 Vue d'ensemble des boucles CCP	📊 Resumen de lazos PCT
+Loop	Stelle	Boucle	Lazo
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrumente im R&I-Fließschema tragen Kennbuchstaben und Stellennummer in ihrer Bezeichnung (TIC 101); ihr BMK verbindet sie mit dem Schaltplan.	Les instruments du P&ID portent les lettres de fonction et le numéro de boucle dans leur libellé (TIC 101) ; leur repère les relie au schéma.	Los instrumentos del P&ID llevan las letras de función y el número de lazo en su etiqueta (TIC 101); su identificador los vincula con el esquema.
 PCT loop	PLT-Stelle	Boucle CCP	Lazo PCT
 Range	Bereich	Plage	Rango
@@ -535,7 +527,6 @@ Delete loop	Stelle löschen	Supprimer la boucle	Eliminar lazo
 {} (default)	{} (Standard)	{} (par défaut)	{} (predeterminado)
 Hose / pipe {}	Schlauch / Rohr {}	Flexible / tuyau {}	Manguera / tubería {}
 Resulting: {} · {} · {} · {} m	Ergebnis: {} · {} · {} · {} m	Résultat : {} · {} · {} · {} m	Resultado: {} · {} · {} · {} m
-Fluid and process…	Fluid und Verfahrenstechnik…	Fluide et procédé…	Fluidos y proceso…
 Hose defaults and PCT loops of the pre-planning	Schlauch-Standardwerte und PLT-Stellen der Vorplanung	Valeurs par défaut des flexibles et boucles CCP de la pré-étude	Valores predeterminados de mangueras y lazos PCT de la preplanificación
 ✔ Wiring	✔ Verdrahtung	✔ Câblage	✔ Cableado
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Verdrahtungsassistent: Checkliste der Drähte mit 3D-Ansicht und Fortschritt (Tablet: Web-App mit #wiring öffnen)	Assistant de câblage : liste de contrôle des fils avec vue 3D et avancement (tablette : ouvrir l'application web avec #wiring)	Asistente de cableado: lista de comprobación de los cables con vista 3D y progreso (tableta: abrir la aplicación web con #wiring)
@@ -664,7 +655,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Quellsprache	Langue source	Idioma de origen
 Target languages	Zielsprachen	Langues cibles	Idiomas de destino
 Remove the language (its translations stay in the dictionary)	Sprache entfernen (ihre Übersetzungen bleiben im Wörterbuch)	Retirer la langue (ses traductions restent dans le dictionnaire)	Quitar el idioma (sus traducciones quedan en el diccionario)
-➕ Add	➕ Hinzufügen	➕ Ajouter	➕ Añadir
+Add	Hinzufügen	Ajouter	Añadir
 ISO 639-1 language code	Sprachcode nach ISO 639-1	Code de langue ISO 639-1	Código de idioma ISO 639-1
 Collect texts from the project	Texte aus dem Projekt sammeln	Collecter les textes du projet	Recopilar los textos del proyecto
 Adds all lines of the project texts to the dictionary	Übernimmt alle Zeilen der Projekttexte ins Wörterbuch	Ajoute toutes les lignes des textes du projet au dictionnaire	Añade todas las líneas de los textos del proyecto al diccionario
@@ -680,7 +671,6 @@ not translated into {}	nicht übersetzt in {}	non traduit en {}	sin traducir al 
 {} new texts in the dictionary	{} neue Texte im Wörterbuch	{} nouveaux textes dans le dictionnaire	{} textos nuevos en el diccionario
 {} unused entries removed	{} unbenutzte Einträge entfernt	{} entrées inutilisées supprimées	{} entradas no usadas eliminadas
 Export as PDF in language	Als PDF in Sprache exportieren	Exporter en PDF dans la langue	Exportar como PDF en idioma
-Project languages…	Projektsprachen…	Langues du projet…	Idiomas del proyecto…
 Translate the project texts; documentation per language	Projekttexte übersetzen; Dokumentation je Sprache	Traduire les textes du projet ; documentation par langue	Traducir los textos del proyecto; documentación por idioma
 {} translations imported	{} Übersetzungen importiert	{} traductions importées	{} traducciones importadas
 Import failed: {}	Import fehlgeschlagen: {}	Échec de l'importation : {}	Error de importación: {}
@@ -734,8 +724,8 @@ Components (assembly)	Komponenten (Baugruppe)	Composants (ensemble)	Componentes 
 (included)	(enthalten)	(inclus)	(incluido)
 Fastening hardware in the bill of materials	Befestigungsmaterial in der Stückliste	Visserie de fixation dans la nomenclature	Tornillería de fijación en la lista de materiales
 Screws, nuts, washers and rivet nuts of the fixing points	Schrauben, Muttern, Scheiben und Einnietmuttern der Befestigungspunkte	Vis, écrous, rondelles et écrous à sertir des points de fixation	Tornillos, tuercas, arandelas y tuercas remachables de los puntos de fijación
-⬇ NC data of this face (DXF)	⬇ NC-Daten dieser Fläche (DXF)	⬇ Données CN de cette face (DXF)	⬇ Datos CN de esta cara (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Bohrliste dieser Fläche (CSV)	⬇ Liste de perçage de cette face (CSV)	⬇ Lista de taladros de esta cara (CSV)
+NC data of this face (DXF)	NC-Daten dieser Fläche (DXF)	Données CN de cette face (DXF)	Datos CN de esta cara (DXF)
+Drilling list of this face (CSV)	Bohrliste dieser Fläche (CSV)	Liste de perçage de cette face (CSV)	Lista de taladros de esta cara (CSV)
 Group as assembly	Als Baugruppe gruppieren	Grouper en ensemble	Agrupar como conjunto
 The items are selected and moved together	Die Elemente werden gemeinsam ausgewählt und verschoben	Les éléments sont sélectionnés et déplacés ensemble	Los elementos se seleccionan y se mueven juntos
 Distribute horizontally	Horizontal verteilen	Répartir horizontalement	Distribuir horizontalmente
@@ -751,7 +741,6 @@ Pattern	Muster	Motif	Patrón
 Columns × rows	Spalten × Zeilen	Colonnes × lignes	Columnas × filas
 Pitch X / Y	Raster X / Y	Pas X / Y	Paso X / Y
 Devices are not copied: a device is placed once.	Geräte werden nicht kopiert: ein Gerät wird einmal platziert.	Les appareils ne sont pas copiés : un appareil est placé une seule fois.	Los aparatos no se copian: un aparato se coloca una sola vez.
-✔ Copy	✔ Kopieren	✔ Copier	✔ Copiar
 Save as 3D macro	Als 3D-Makro speichern	Enregistrer comme macro 3D	Guardar como macro 3D
 Items with an anchor keep it; the others are inserted relative to the click.	Elemente mit Verankerung behalten sie; die anderen werden relativ zum Klick eingefügt.	Les éléments ancrés gardent leur ancrage ; les autres sont insérés par rapport au clic.	Los elementos anclados lo conservan; los demás se insertan respecto al clic.
 Walls	Wände	Parois	Paredes
@@ -854,7 +843,6 @@ Macro name	Makroname	Nom de la macro	Nombre de la macro
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Fügt ein 3D-Makro als Baugruppe ein: verankerte Elemente an ihren Platz, die anderen relativ zu x / y auf der Fläche	Insère une macro 3D comme ensemble : les éléments ancrés à leur place, les autres par rapport à x / y sur la face	Inserta una macro 3D como conjunto: los elementos anclados en su sitio, los demás respecto a x / y en la cara
 Installation site	Aufstellungsort	Lieu d'installation	Lugar de instalación
 Structure management	Strukturkennzeichenverwaltung	Gestion des identificateurs de structure	Gestión de identificadores de estructura
-Structure management…	Strukturkennzeichenverwaltung…	Gestion des identificateurs de structure…	Gestión de identificadores de estructura…
 Structure identifiers (IEC 81346), templates and work areas	Strukturkennzeichen (IEC 81346), Vorlagen und Arbeitsbereiche	Identificateurs de structure (CEI 81346), modèles et zones de travail	Identificadores de estructura (IEC 81346), plantillas y áreas de trabajo
 Template	Vorlage	Modèle	Plantilla
 Apply template	Vorlage anwenden	Appliquer le modèle	Aplicar plantilla
@@ -878,7 +866,6 @@ Identifiers in use that are not defined are reported by the check.	Verwendete Ke
 Work areas	Arbeitsbereiche	Zones de travail	Áreas de trabajo
 Work area	Arbeitsbereich	Zone de travail	Área de trabajo
 Work area {}	Arbeitsbereich {}	Zone de travail {}	Área de trabajo {}
-➕ Work area	➕ Arbeitsbereich	➕ Zone de travail	➕ Área de trabajo
 (whole project)	(ganzes Projekt)	(projet entier)	(proyecto completo)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Ein Arbeitsbereich beschränkt die Seiten und Betriebsmittel im Navigator auf einen Teil des Projekts. Filter: leer = beliebig, * = beliebige Zeichen; A1 umfasst auch A1.2.	Une zone de travail limite les pages et appareils du navigateur à une partie du projet. Filtres : vide = tout, * = caractères quelconques ; A1 couvre aussi A1.2.	Un área de trabajo limita las páginas y dispositivos del navegador a una parte del proyecto. Filtros: vacío = cualquiera, * = cualquier carácter; A1 incluye también A1.2.
 OpenECraft structure template	OpenECraft-Strukturvorlage	Modèle de structure OpenECraft	Plantilla de estructura de OpenECraft
@@ -999,7 +986,7 @@ Export…	Exportieren…	Exporter…	Exportar…
 Import…	Importieren…	Importer…	Importar…
 File to embed	Einzubettende Datei	Fichier à intégrer	Archivo a incrustar
 Forms – title blocks, frames and templates	Formulare – Schriftfelder, Rahmen und Vorlagen	Formulaires – cartouches, cadres et modèles	Formularios – cajetines, marcos y plantillas
-Title blocks, plot frames and page templates…	Schriftfelder, Plotrahmen und Seitenvorlagen…	Cartouches, cadres et modèles de page…	Cajetines, marcos y plantillas de página…
+Title blocks, plot frames and page templates	Schriftfelder, Plotrahmen und Seitenvorlagen	Cartouches, cadres et modèles de page	Cajetines, marcos y plantillas de página
 Frame of all pages that do not choose one	Rahmen aller Seiten, die keinen eigenen wählen	Cadre de toutes les pages qui n'en choisissent pas	Marco de todas las páginas que no eligen uno
 Frame to start from when the frame is new (default: A3 landscape)	Ausgangsrahmen für einen neuen Rahmen (Standard: A3 landscape)	Cadre de départ pour un nouveau cadre (par défaut : A3 landscape)	Marco de partida para un marco nuevo (por defecto: A3 landscape)
 Free graphics and notes, not evaluated	Freie Grafik und Notizen, nicht ausgewertet	Graphiques libres et notes, non évalués	Gráficos libres y notas, no evaluados
@@ -1170,19 +1157,18 @@ Port {} is not connected	Port {} ist nicht verbunden	Le port {} n'est pas relié
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Exportiert das Projekt: svg (eine Seite), html, pdf, dxf, dwg (nur in eine Datei), wire_list (CSV), plc_table (CSV), plc_variables (globale Variablen nach IEC 61131-3), aml (SPS-Hardware als AutomationML), kbl (Kabelbaum-XML), marking (CSV), gltf, step, iges, ifc oder jt (3D-Schaltschrankaufbau; jt nur in eine Datei), dictionary (CSV der Übersetzungen der Projekttexte)	Exporte le projet : svg (une page), html, pdf, dxf, dwg (uniquement dans un fichier), wire_list (CSV), plc_table (CSV), plc_variables (variables globales CEI 61131-3), aml (matériel automate en AutomationML), kbl (XML de faisceau), marking (CSV), gltf, step, iges, ifc ou jt (implantation 3D de l'armoire ; jt uniquement dans un fichier), dictionary (CSV des traductions des textes du projet)	Exporta el proyecto: svg (una página), html, pdf, dxf, dwg (solo a un archivo), wire_list (CSV), plc_table (CSV), plc_variables (variables globales IEC 61131-3), aml (hardware PLC en AutomationML), kbl (XML de mazo), marking (CSV), gltf, step, iges, ifc o jt (distribución 3D del armario; jt solo a un archivo), dictionary (CSV de las traducciones de los textos del proyecto)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt oder dictionary oder ein Export eines Plugins	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt ou dictionary ou un export d'un plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt o dictionary o una exportación de un plugin
 PLC hardware	SPS-Hardware	Matériel automate	Hardware PLC
-⚙ Automatic configuration	⚙ Automatische Konfiguration	⚙ Configuration automatique	⚙ Configuración automática
+Automatic configuration	Automatische Konfiguration	Configuration automatique	Configuración automática
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stationen für CPUs und Buskoppler, Bussysteme, Steckplätze, Anfangsadressen, Adressen der Punkte, IP-Adressen und eine Linientopologie	Stations pour CPU et coupleurs de bus, systèmes de bus, emplacements, adresses de début, adresses des points, adresses IP et une topologie en ligne	Estaciones para CPU y acopladores de bus, sistemas de bus, slots, direcciones iniciales, direcciones de los puntos, direcciones IP y una topología en línea
-⬇ Export AutomationML…	⬇ AutomationML exportieren…	⬇ Exporter AutomationML…	⬇ Exportar AutomationML…
+Export AutomationML…	AutomationML exportieren…	Exporter AutomationML…	Exportar AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Hardwarekonfiguration und SPS-Variablen für TIA Portal und andere SPS-Werkzeuge	Configuration matérielle et variables automate pour TIA Portal et d'autres outils automate	Configuración de hardware y variables PLC para TIA Portal y otras herramientas PLC
-⬆ Import AutomationML…	⬆ AutomationML importieren…	⬆ Importer AutomationML…	⬆ Importar AutomationML…
+Import AutomationML…	AutomationML importieren…	Importer AutomationML…	Importar AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stationen, Baugruppen, Adressen, Subnetze und Variablenkommentare aus einem SPS-Werkzeug	Stations, modules, adresses, sous-réseaux et commentaires de variables depuis un outil automate	Estaciones, módulos, direcciones, subredes y comentarios de variables desde una herramienta PLC
-⬇ Export IEC 61131-3 variables…	⬇ Variablen nach IEC 61131-3 exportieren…	⬇ Exporter les variables CEI 61131-3…	⬇ Exportar variables IEC 61131-3…
+Export IEC 61131-3 variables…	Variablen nach IEC 61131-3 exportieren…	Exporter les variables CEI 61131-3…	Exportar variables IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Globale Variablenliste mit direkten Adressen für CODESYS, TwinCAT und andere	Liste de variables globales avec adresses directes pour CODESYS, TwinCAT et autres	Lista de variables globales con direcciones directas para CODESYS, TwinCAT y otros
 Stations and racks	Stationen und Baugruppenträger	Stations et châssis	Estaciones y bastidores
 Bus topology	Bustopologie	Topologie de bus	Topología de bus
 Device descriptions	Gerätebeschreibungen	Descriptions d'appareils	Descripciones de dispositivos
 Station	Station	Station	Estación
-➕ Station	➕ Station	➕ Station	➕ Estación
 Cards without station: {}	Karten ohne Station: {}	Cartes sans station : {}	Tarjetas sin estación: {}
 No stations: add one or use the automatic configuration.	Keine Stationen: Legen Sie eine an oder verwenden Sie die automatische Konfiguration.	Aucune station : ajoutez-en une ou utilisez la configuration automatique.	No hay estaciones: añada una o use la configuración automática.
 Head (CPU / coupler)	Kopf (CPU / Koppler)	Tête (CPU / coupleur)	Cabecera (CPU / acoplador)
@@ -1191,7 +1177,7 @@ Bus system	Bussystem	Système de bus	Sistema de bus
 IP / bus address	IP- / Busadresse	Adresse IP / de bus	Dirección IP / de bus
 Device number	Gerätenummer	Numéro d'appareil	Número de dispositivo
 {}: {} slots, ports {}	{}: {} Steckplätze, Ports {}	{} : {} emplacements, ports {}	{}: {} slots, puertos {}
-🗑 Remove station	🗑 Station entfernen	🗑 Supprimer la station	🗑 Eliminar estación
+Remove station	Station entfernen	Supprimer la station	Eliminar estación
 Plug in card	Karte stecken	Insérer une carte	Insertar tarjeta
 No modules: plug in PLC cards of the schematic.	Keine Baugruppen: Stecken Sie SPS-Karten des Schaltplans.	Aucun module : insérez des cartes automate du schéma.	No hay módulos: inserte tarjetas PLC del esquema.
 Device description	Gerätebeschreibung	Description d'appareil	Descripción de dispositivo
@@ -1202,13 +1188,12 @@ Output bytes	Ausgangsbytes	Octets de sortie	Bytes de salida
 from the parts	aus den Artikeln	d'après les articles	de los artículos
 Remove from the station	Aus der Station entfernen	Retirer de la station	Quitar de la estación
 Bus systems	Bussysteme	Systèmes de bus	Sistemas de bus
-➕ Bus system	➕ Bussystem	➕ Système de bus	➕ Sistema de bus
 Subnet	Subnetz	Sous-réseau	Subred
 Port A	Port A	Port A	Puerto A
 Port B	Port B	Port B	Puerto B
 Without bus system	Ohne Bussystem	Sans système de bus	Sin sistema de bus
 No bus systems.	Keine Bussysteme.	Aucun système de bus.	No hay sistemas de bus.
-⬆ Import GSDML / ESI…	⬆ GSDML / ESI importieren…	⬆ Importer GSDML / ESI…	⬆ Importar GSDML / ESI…
+Import GSDML / ESI…	GSDML / ESI importieren…	Importer GSDML / ESI…	Importar GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Gerätebeschreibungen von PROFINET- (GSDML) und EtherCAT-Geräten (ESI)	Descriptions d'appareils PROFINET (GSDML) et EtherCAT (ESI)	Descripciones de dispositivos PROFINET (GSDML) y EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Artikel der Produktgruppe SPS liefern ebenfalls Beschreibungen (technische Daten: Inputs, Outputs, Slots, Bus, Ports).	Les articles du groupe de produits automate fournissent aussi des descriptions (données techniques : Inputs, Outputs, Slots, Bus, Ports).	Los artículos del grupo de productos PLC también dan descripciones (datos técnicos: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Steckplätze	Emplacements	Slots
@@ -1219,7 +1204,7 @@ built-in	eingebaut	intégrée	integrada
 {} addresses changed	{} Adressen geändert	{} adresses modifiées	{} direcciones cambiadas
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	{} Stationen, {} Baugruppen, {} Bussysteme, {} Verbindungen importiert; {} Adressen und {} Texte geändert	{} stations, {} modules, {} systèmes de bus, {} liaisons importés ; {} adresses et {} textes modifiés	Importadas {} estaciones, {} módulos, {} sistemas de bus, {} conexiones; {} direcciones y {} textos cambiados
 {} device descriptions imported	{} Gerätebeschreibungen importiert	{} descriptions d'appareils importées	{} descripciones de dispositivos importadas
-PLC hardware and bus topology…	SPS-Hardware und Bustopologie…	Matériel automate et topologie de bus…	Hardware PLC y topología de bus…
+PLC hardware and bus topology	SPS-Hardware und Bustopologie	Matériel automate et topologie de bus	Hardware PLC y topología de bus
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stationen, Baugruppenträger, Baugruppen, Bussysteme, AutomationML-Austausch mit SPS-Werkzeugen	Stations, châssis, modules, systèmes de bus, échange AutomationML avec les outils automate	Estaciones, bastidores, módulos, sistemas de bus, intercambio AutomationML con herramientas PLC
 Device description (GSDML, ESI)	Gerätebeschreibung (GSDML, ESI)	Description d'appareil (GSDML, ESI)	Descripción de dispositivo (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Busverbindung {} - {}: Kabel {} existiert nicht	Liaison bus {} - {} : le câble {} n'existe pas	Conexión de bus {} - {}: el cable {} no existe
@@ -1227,7 +1212,7 @@ Cable {} is a {} cable on a {} connection	Kabel {} ist ein {}-Kabel an einer {}-
 Port {} has more than {} cables	Port {} hat mehr als {} Kabel	Le port {} a plus de {} câbles	El puerto {} tiene más de {} cables
 Cable {} is used for {} bus connections	Kabel {} wird für {} Busverbindungen verwendet	Le câble {} est utilisé pour {} liaisons bus	El cable {} se usa para {} conexiones de bus
 with bus cables	mit Buskabeln	avec câbles de bus	con cables de bus
-➕ Create bus cables	➕ Buskabel anlegen	➕ Créer les câbles de bus	➕ Crear cables de bus
+Create bus cables	Buskabel anlegen	Créer les câbles de bus	Crear cables de bus
 A cable of the bus type for every connection without cable	Ein Kabel des Bustyps für jede Verbindung ohne Kabel	Un câble du type de bus pour chaque liaison sans câble	Un cable del tipo de bus para cada conexión sin cable
 missing	fehlt	manquant	falta
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} Stationen, {} Bussysteme, {} Karten zugeordnet, {} Adressen geändert, {} Verbindungen, {} Kabel	{} stations, {} systèmes de bus, {} cartes affectées, {} adresses modifiées, {} liaisons, {} câbles	{} estaciones, {} sistemas de bus, {} tarjetas asignadas, {} direcciones cambiadas, {} conexiones, {} cables
@@ -1337,12 +1322,11 @@ starts with	beginnt mit	commence par	empieza por
 {} (first column)	{} (erste Spalte)	{} (première colonne)	{} (primera columna)
 {} report pages output to {}	{} Auswertungsseiten ausgegeben nach {}	{} pages de rapport sorties dans {}	{} páginas de informe emitidas a {}
 {} – {} ({} pages)	{} – {} ({} Seiten)	{} – {} ({} pages)	{} – {} ({} páginas)
-➕ Add filter	➕ Filter hinzufügen	➕ Ajouter un filtre	➕ Añadir filtro
-➕ Add sort key	➕ Sortierung hinzufügen	➕ Ajouter un critère de tri	➕ Añadir criterio de orden
-➕ New block	➕ Neuer Block	➕ Nouveau bloc	➕ Nuevo bloque
-➕ New scheme	➕ Neues Schema	➕ Nouveau schéma	➕ Nuevo esquema
-⟳ Generate all	⟳ Alle erzeugen	⟳ Tout générer	⟳ Generar todo
-⟳ Generate	⟳ Erzeugen	⟳ Générer	⟳ Generar
+Add filter	Filter hinzufügen	Ajouter un filtre	Añadir filtro
+Add sort key	Sortierung hinzufügen	Ajouter un critère de tri	Añadir criterio de orden
+New block	Neuer Block	Nouveau bloc	Nuevo bloque
+Generate all	Alle erzeugen	Tout générer	Generar todo
+Generate	Erzeugen	Générer	Generar
 ⟳ Update report blocks	⟳ Auswertungsblöcke aktualisieren	⟳ Mettre à jour les blocs de rapports	⟳ Actualizar bloques de informes
 Opening {}…	{} wird geöffnet…	Ouverture de {}…	Abriendo {}…
 Uploading {}…	{} wird hochgeladen…	Envoi de {}…	Subiendo {}…
@@ -1364,13 +1348,13 @@ Save and release page	Speichern und Seite freigeben	Enregistrer et libérer la p
 Lock page	Seite sperren	Verrouiller la page	Bloquear página
 Project server	Projektserver	Serveur de projets	Servidor de proyectos
 User name	Benutzername	Nom d'utilisateur	Nombre de usuario
-⟳ List projects	⟳ Projekte auflisten	⟳ Lister les projets	⟳ Listar proyectos
+List projects	Projekte auflisten	Lister les projets	Listar proyectos
 Enter a user name: other users see it on your locks.	Geben Sie einen Benutzernamen ein: andere Benutzer sehen ihn an Ihren Sperren.	Saisissez un nom d'utilisateur : les autres utilisateurs le voient sur vos verrous.	Introduzca un nombre de usuario: los demás usuarios lo ven en sus bloqueos.
 Users	Benutzer	Utilisateurs	Usuarios
 Opening a project replaces the current one, its unsaved changes are lost.	Das Öffnen eines Projekts ersetzt das aktuelle, dessen ungespeicherte Änderungen gehen verloren.	Ouvrir un projet remplace le projet actuel, ses modifications non enregistrées sont perdues.	Abrir un proyecto reemplaza el actual, sus cambios no guardados se pierden.
 Upload the current project as a new shared project:	Aktuelles Projekt als neues gemeinsames Projekt hochladen:	Envoyer le projet actuel comme nouveau projet partagé :	Subir el proyecto actual como nuevo proyecto compartido:
 Name on the server	Name auf dem Server	Nom sur le serveur	Nombre en el servidor
-⬆ Upload	⬆ Hochladen	⬆ Envoyer	⬆ Subir
+Upload	Hochladen	Envoyer	Subir
 Letters, digits, space, - _ . (up to 64 characters)	Buchstaben, Ziffern, Leerzeichen, - _ . (bis zu 64 Zeichen)	Lettres, chiffres, espace, - _ . (64 caractères au plus)	Letras, dígitos, espacio, - _ . (hasta 64 caracteres)
 Shared project {} – revision {}, user {}	Gemeinsames Projekt {} – Revision {}, Benutzer {}	Projet partagé {} – révision {}, utilisateur {}	Proyecto compartido {} – revisión {}, usuario {}
 Save and release all locks	Speichern und alle Sperren freigeben	Enregistrer et libérer tous les verrous	Guardar y liberar todos los bloqueos
@@ -1387,14 +1371,11 @@ None	Keine	Aucun	Ninguno
 Close shared project	Gemeinsames Projekt schließen	Fermer le projet partagé	Cerrar el proyecto compartido
 Releases all locks; the project stays open as a local copy	Gibt alle Sperren frei; das Projekt bleibt als lokale Kopie geöffnet	Libère tous les verrous ; le projet reste ouvert en copie locale	Libera todos los bloqueos; el proyecto sigue abierto como copia local
 Download project	Projekt herunterladen	Télécharger le projet	Descargar proyecto
-Project server…	Projektserver…	Serveur de projets…	Servidor de proyectos…
 Open and save shared projects, lock pages	Gemeinsame Projekte öffnen und speichern, Seiten sperren	Ouvrir et enregistrer des projets partagés, verrouiller des pages	Abrir y guardar proyectos compartidos, bloquear páginas
-🔒 Locked by {} – read only	🔒 Gesperrt von {} – schreibgeschützt	🔒 Verrouillé par {} – lecture seule	🔒 Bloqueado por {} – solo lectura
+Locked by {} – read only	Gesperrt von {} – schreibgeschützt	Verrouillé par {} – lecture seule	Bloqueado por {} – solo lectura
 {} (project server, revision {})	{} (Projektserver, Revision {})	{} (serveur de projets, révision {})	{} (servidor de proyectos, revisión {})
 {} change requests added, {} updated	{} Änderungsanträge hinzugefügt, {} aktualisiert	{} demandes de modification ajoutées, {} mises à jour	{} solicitudes de cambio añadidas, {} actualizadas
-Compare and baselines…	Vergleichen und Baselines…	Comparer et références…	Comparar y líneas base…
 Compare with a baseline, a revision or another project file and take differences over	Mit einer Baseline, einer Revision oder einer anderen Projektdatei vergleichen und Unterschiede übernehmen	Comparer avec une référence, une révision ou un autre fichier de projet et reprendre les différences	Comparar con una línea base, una revisión u otro archivo de proyecto y adoptar diferencias
-Change requests…	Änderungsanträge…	Demandes de modification…	Solicitudes de cambio…
 Review: comments and markup	Prüfung: Kommentare und Markierungen	Révision : commentaires et annotations	Revisión: comentarios y marcas
 Revisions, approval and release	Revisionen, Genehmigung und Freigabe	Révisions, approbation et diffusion	Revisiones, aprobación y liberación
 Review ({})	Kommentare ({})	Révision ({})	Comentarios ({})
@@ -1419,7 +1400,7 @@ What should be checked or changed?	Was soll geprüft oder geändert werden?	Que 
 Change request	Änderungsantrag	Demande de modification	Solicitud de cambio
 Reply…	Antworten…	Répondre…	Responder…
 Reply	Antworten	Répondre	Responder
-🗑 Delete comment	🗑 Kommentar löschen	🗑 Supprimer le commentaire	🗑 Eliminar comentario
+Delete comment	Kommentar löschen	Supprimer le commentaire	Eliminar comentario
 Approval workflow	Genehmigungsablauf	Circuit d'approbation	Flujo de aprobación
 Approvers	Genehmiger	Approbateurs	Aprobadores
 User names, separated by commas	Benutzernamen, durch Kommas getrennt	Noms d'utilisateur, séparés par des virgules	Nombres de usuario, separados por comas
@@ -1435,8 +1416,8 @@ rejected	abgelehnt	refusé	rechazado
 Submit for review	Zur Prüfung einreichen	Soumettre à vérification	Enviar a revisión
 Release	Freigeben	Diffuser	Liberar
 Discard draft	Entwurf verwerfen	Abandonner le brouillon	Descartar borrador
-✔ Approve	✔ Genehmigen	✔ Approuver	✔ Aprobar
-✖ Reject	✖ Ablehnen	✖ Refuser	✖ Rechazar
+Approve	Genehmigen	Approuver	Aprobar
+Reject	Ablehnen	Refuser	Rechazar
 Approving needs an approver; you are \"{}\".	Genehmigen kann nur ein Genehmiger; Sie sind \"{}\".	Seul un approbateur peut approuver ; vous êtes \"{}\".	Solo un aprobador puede aprobar; usted es \"{}\".
 Submit again	Erneut einreichen	Soumettre à nouveau	Enviar de nuevo
 With the current pages; the approvals so far become void	Mit den aktuellen Seiten; die bisherigen Genehmigungen verfallen	Avec les pages actuelles ; les approbations précédentes deviennent caduques	Con las páginas actuales; las aprobaciones anteriores quedan anuladas
@@ -1461,7 +1442,7 @@ Compare with	Vergleichen mit	Comparer avec	Comparar con
 Baseline {} {}	Baseline {} {}	Référence {} {}	Línea base {} {}
 Baseline {}	Baseline {}	Référence {}	Línea base {}
 Pages of revision {}	Seiten der Revision {}	Pages de la révision {}	Páginas de la revisión {}
-📂 Project file…	📂 Projektdatei…	📂 Fichier de projet…	📂 Archivo de proyecto…
+Project file…	Projektdatei…	Fichier de projet…	Archivo de proyecto…
 Baselines ({})	Baselines ({})	Références ({})	Líneas base ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Eine Baseline speichert das ganze Projekt (Seiten, Geräte, Artikel, Einstellungen). Die Freigabe einer Revision speichert eine.	Une référence enregistre tout le projet (pages, appareils, articles, paramètres). La diffusion d'une révision en enregistre une.	Una línea base guarda todo el proyecto (páginas, dispositivos, artículos, ajustes). Liberar una revisión guarda una.
 Create baseline	Baseline anlegen	Créer une référence	Crear línea base
@@ -1473,10 +1454,9 @@ Make the selected elements of this project equal to the compared ones	Die ausgew
 {} details	{} Details	{} détails	{} detalles
 Baseline {} created	Baseline {} angelegt	Référence {} créée	Línea base {} creada
 Change requests	Änderungsanträge	Demandes de modification	Solicitudes de cambio
-➕ New request	➕ Neuer Antrag	➕ Nouvelle demande	➕ Nueva solicitud
-📂 Import…	📂 Importieren…	📂 Importer…	📂 Importar…
+New request	Neuer Antrag	Nouvelle demande	Nueva solicitud
 CSV or JSON from another system; known numbers are updated	CSV oder JSON aus einem anderen System; bekannte Nummern werden aktualisiert	CSV ou JSON d'un autre système ; les numéros connus sont mis à jour	CSV o JSON de otro sistema; los números conocidos se actualizan
-⬇ Export JSON	⬇ JSON exportieren	⬇ Exporter en JSON	⬇ Exportar JSON
+Export JSON	JSON exportieren	Exporter en JSON	Exportar JSON
 Rejected and closed ones too	Auch abgelehnte und geschlossene	Aussi les refusées et clôturées	También las rechazadas y cerradas
 No change requests yet.	Noch keine Änderungsanträge.	Pas encore de demandes de modification.	Aún no hay solicitudes de cambio.
 Select a request.	Einen Antrag auswählen.	Sélectionnez une demande.	Seleccione una solicitud.
@@ -1491,9 +1471,9 @@ Device tags, separated by commas	Gerätekennzeichen, durch Kommas getrennt	Repè
 Affected pages ({})	Betroffene Seiten ({})	Pages concernées ({})	Páginas afectadas ({})
 Go to page	Zur Seite	Aller à la page	Ir a la página
 Comments ({})	Kommentare ({})	Commentaires ({})	Comentarios ({})
-💬 Comment on the current page	💬 Kommentar auf der aktuellen Seite	💬 Commentaire sur la page actuelle	💬 Comentario en la página actual
+Comment on the current page	Kommentar auf der aktuellen Seite	Commentaire sur la page actuelle	Comentario en la página actual
 Linked to this request	Mit diesem Antrag verknüpft	Lié à cette demande	Vinculado a esta solicitud
-🗑 Delete request	🗑 Antrag löschen	🗑 Supprimer la demande	🗑 Eliminar solicitud
+Delete request	Antrag löschen	Supprimer la demande	Eliminar solicitud
 in progress	in Arbeit	en cours	en curso
 resolved	erledigt	résolu	resuelto
 Redline	Redline	Redline	Redline
@@ -1531,14 +1511,14 @@ Settings	Einstellungen	Paramètres	Ajustes
 Page order	Seitenreihenfolge	Ordre des pages	Orden de páginas
 {} differences taken over	{} Unterschiede übernommen	{} différences reprises	{} diferencias adoptadas
 Layers	Ebenen	Calques	Capas
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klicken zum Auswählen, Ziehen zum Verschieben, Ziehen auf freier Fläche für Fensterauswahl. Kennzeichen oder Eigenschaftstext eines markierten Symbols ziehen, um es zu platzieren. Rechts-/Mittelziehen verschiebt die Ansicht, Mausrad zoomt.	Cliquer pour sélectionner, glisser pour déplacer, glisser sur une zone vide pour une sélection par fenêtre. Glisser le repère ou un texte de propriété d'un symbole sélectionné pour le placer. Glisser avec le bouton droit/central pour déplacer la vue, molette pour zoomer.	Haga clic para seleccionar, arrastre para mover, arrastre en un espacio vacío para seleccionar por ventana. Arrastre la identificación o un texto de propiedad de un símbolo seleccionado para colocarlo. Arrastre con el botón derecho/central para desplazar, rueda para hacer zoom.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Start- und Eckpunkte klicken · Leertaste wechselt die Eckrichtung · A schaltet das Führen um Symbole herum um · endet automatisch an einem Anschluss · Rechtsklick / Esc beendet	Cliquer le point de départ et les angles · Espace change le sens de l'angle · A active le routage autour des symboles · se termine automatiquement sur une connexion · clic droit / Échap termine	Haga clic en el inicio y las esquinas · Espacio cambia la dirección de la esquina · A activa el trazado alrededor de los símbolos · termina automáticamente en una conexión · clic derecho / Esc termina
-Click the centre, then a point of the circle	Mittelpunkt klicken, dann einen Punkt des Kreises	Cliquer le centre, puis un point du cercle	Haga clic en el centro y luego en un punto del círculo
-Click the centre, the start point and the end point (counter-clockwise)	Mittelpunkt, Startpunkt und Endpunkt klicken (gegen den Uhrzeigersinn)	Cliquer le centre, le point de départ et le point d'arrivée (sens antihoraire)	Haga clic en el centro, el punto inicial y el punto final (sentido antihorario)
-Click the corner points · double click, Enter or right click finishes	Eckpunkte klicken · Doppelklick, Eingabe oder Rechtsklick beendet	Cliquer les sommets · double-clic, Entrée ou clic droit termine	Haga clic en los vértices · doble clic, Intro o clic derecho termina
-Click the two points to measure, then the position of the dimension line	Die beiden zu bemaßenden Punkte klicken, dann die Lage der Maßlinie	Cliquer les deux points à coter, puis la position de la ligne de cote	Haga clic en los dos puntos a acotar y luego en la posición de la línea de cota
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Auf eine Verbindung klicken: der Punkt legt Nummer, Farbe, Querschnitt und Kabelader der Verbindung fest	Cliquer sur un fil : le point définit le numéro, la couleur, la section et le conducteur de câble de la liaison	Haga clic en un cable: el punto define número, color, sección y conductor de cable de la conexión
-Draw a line across the wires that are cores of the cable	Eine Linie über die Verbindungen ziehen, die Adern des Kabels sind	Tracer une ligne à travers les fils qui sont des conducteurs du câble	Trace una línea a través de los cables que son conductores de la manguera
+Click to select, drag to move, drag on empty space for window selection (from right to left: crossing). Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klicken zum Auswählen, Ziehen zum Verschieben, Ziehen auf freier Fläche für Fensterauswahl (von rechts nach links: kreuzend). Kennzeichen oder Eigenschaftstext eines markierten Symbols ziehen, um es zu platzieren. Rechts-/Mittelziehen verschiebt die Ansicht, Mausrad zoomt.	Cliquer pour sélectionner, glisser pour déplacer, glisser sur une zone vide pour une sélection par fenêtre (de droite à gauche : sélection par capture). Glisser le repère ou un texte de propriété d'un symbole sélectionné pour le placer. Glisser avec le bouton droit/central pour déplacer la vue, molette pour zoomer.	Haga clic para seleccionar, arrastre para mover, arrastre en un espacio vacío para seleccionar por ventana (de derecha a izquierda: por cruce). Arrastre la identificación o un texto de propiedad de un símbolo seleccionado para colocarlo. Arrastre con el botón derecho/central para desplazar, rueda para hacer zoom.
+Click start and corner points · {} toggles corner direction · {} toggles routing around symbols · ends automatically on a connection · {} or double click ends the wire · Esc or right click to finish	Start- und Eckpunkte klicken · {} wechselt die Eckrichtung · {} schaltet das Führen um Symbole herum um · endet automatisch an einem Anschluss · {} oder Doppelklick beendet die Verbindung · Esc oder Rechtsklick beendet	Cliquer le point de départ et les angles · {} change le sens de l'angle · {} active le routage autour des symboles · se termine automatiquement sur une connexion · {} ou double-clic termine le fil · Échap ou clic droit pour terminer	Haga clic en el inicio y las esquinas · {} cambia la dirección de la esquina · {} activa el trazado alrededor de los símbolos · termina automáticamente en una conexión · {} o doble clic termina el cable · Esc o clic derecho para terminar
+Click the centre, then a point of the circle · Esc or right click to finish	Mittelpunkt klicken, dann einen Punkt des Kreises · Esc oder Rechtsklick beendet	Cliquer le centre, puis un point du cercle · Échap ou clic droit pour terminer	Haga clic en el centro y luego en un punto del círculo · Esc o clic derecho para terminar
+Click the centre, the start point and the end point (counter-clockwise) · Esc or right click to finish	Mittelpunkt, Startpunkt und Endpunkt klicken (gegen den Uhrzeigersinn) · Esc oder Rechtsklick beendet	Cliquer le centre, le point de départ et le point d'arrivée (sens antihoraire) · Échap ou clic droit pour terminer	Haga clic en el centro, el punto inicial y el punto final (sentido antihorario) · Esc o clic derecho para terminar
+Click the corner points · double click, {} or right click ends the shape · Esc to finish	Eckpunkte klicken · Doppelklick, {} oder Rechtsklick schließt die Form ab · Esc beendet	Cliquer les sommets · double-clic, {} ou clic droit achève la forme · Échap pour terminer	Haga clic en los vértices · doble clic, {} o clic derecho completa la forma · Esc para terminar
+Click the two points to measure, then the position of the dimension line · Esc or right click to finish	Die beiden zu bemaßenden Punkte klicken, dann die Lage der Maßlinie · Esc oder Rechtsklick beendet	Cliquer les deux points à coter, puis la position de la ligne de cote · Échap ou clic droit pour terminer	Haga clic en los dos puntos a acotar y luego en la posición de la línea de cota · Esc o clic derecho para terminar
+Click on a wire: the point defines number, colour, cross-section and cable core of the connection · Esc or right click to finish	Auf eine Verbindung klicken: der Punkt legt Nummer, Farbe, Querschnitt und Kabelader der Verbindung fest · Esc oder Rechtsklick beendet	Cliquer sur un fil : le point définit le numéro, la couleur, la section et le conducteur de câble de la liaison · Échap ou clic droit pour terminer	Haga clic en un cable: el punto define número, color, sección y conductor de cable de la conexión · Esc o clic derecho para terminar
+Draw a line across the wires that are cores of a new cable · Esc or right click to finish	Eine Linie über die Verbindungen ziehen, die Adern eines neuen Kabels sind · Esc oder Rechtsklick beendet	Tracer une ligne à travers les fils qui sont des conducteurs d'un nouveau câble · Échap ou clic droit pour terminer	Trace una línea a través de los cables que son conductores de una nueva manguera · Esc o clic derecho para terminar
 Click to insert · Esc cancel	Klicken zum Einfügen · Esc bricht ab	Cliquer pour insérer · Échap annule	Haga clic para insertar · Esc cancela
 Routing around symbols	Führung um Symbole herum	Routage autour des symboles	Trazado alrededor de los símbolos
 {} objects pasted	{} Objekte eingefügt	{} objets collés	{} objetos pegados
@@ -1568,7 +1548,7 @@ Layer	Ebene	Calque	Capa
 Auto-connect	Autoverbinden	Connexion auto	Autoconexión
 Draw connections between facing connection points when symbols are placed or moved	Verbindungen zwischen gegenüberliegenden Anschlüssen zeichnen, wenn Symbole platziert oder verschoben werden	Tracer les liaisons entre les connexions en vis-à-vis lorsque des symboles sont placés ou déplacés	Dibujar conexiones entre puntos de conexión enfrentados al colocar o mover símbolos
 Route	Führen	Router	Trazar
-The wire tool routes around symbols and other wires (A)	Das Verbindungswerkzeug führt um Symbole und andere Verbindungen herum (A)	L'outil fil contourne les symboles et les autres fils (A)	La herramienta de cable rodea los símbolos y otros cables (A)
+The wire tool routes around symbols and other wires	Das Verbindungswerkzeug führt um Symbole und andere Verbindungen herum	L'outil fil contourne les symboles et les autres fils	La herramienta de cable rodea los símbolos y otros cables
 Dimension	Bemaßung	Cotation	Cota
 Image…	Bild…	Image…	Imagen…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG- oder JPEG-Bitmap, z. B. ein Logo oder ein Foto	Image PNG ou JPEG, p. ex. un logo ou une photo	Mapa de bits PNG o JPEG, p. ej. un logotipo o una foto
@@ -1612,7 +1592,6 @@ Tag placed by hand	Kennzeichen von Hand platziert	Repère placé manuellement	Id
 Drag the tag of the selected symbol to place it.	Kennzeichen des markierten Symbols ziehen, um es zu platzieren.	Glisser le repère du symbole sélectionné pour le placer.	Arrastre la identificación del símbolo seleccionado para colocarla.
 (empty)	(leer)	(vide)	(vacío)
 ➕ Place property	➕ Eigenschaft platzieren	➕ Placer une propriété	➕ Colocar propiedad
-➕ Layer	➕ Ebene	➕ Calque	➕ Capa
 Layer {}	Ebene {}	Calque {}	Capa {}
 Layers of graphics, texts, dimensions and images	Ebenen für Grafik, Texte, Bemaßungen und Bilder	Calques des graphiques, textes, cotes et images	Capas de gráficos, textos, cotas e imágenes
 Visible	Sichtbar	Visible	Visible
@@ -1657,8 +1636,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Querschnitt, z. B. 1.5 mm²	Section, p. ex. 1.5 mm²	Sección, p. ej. 1.5 mm²
 A cable definition needs a start and an end point	Eine Kabeldefinition braucht einen Start- und einen Endpunkt	Une définition de câble nécessite un point de départ et un point d'arrivée	Una definición de manguera necesita un punto inicial y uno final
 No cable {}	Kein Kabel {}	Aucun câble {}	No hay manguera {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Verbindungsdefinitionspunkte auf einer Verbindung legen Nummer, Farbe, Querschnitt und Ader der ganzen Verbindung fest; eine Kabeldefinitionslinie über Verbindungen macht sie zu Adern eines Kabels. Autoverbinden verbindet gegenüberliegende Anschlüsse, Führen (A) leitet Verbindungen um Symbole herum.	15. Les points de définition de liaison sur un fil fixent le numéro, la couleur, la section et le conducteur de toute la liaison ; une ligne de définition de câble à travers des fils en fait les conducteurs d'un câble. La connexion auto relie les connexions en vis-à-vis, Router (A) fait contourner les symboles aux fils.	15. Los puntos de definición de conexión sobre un cable fijan número, color, sección y conductor de toda la conexión; una línea de definición de manguera a través de cables los convierte en conductores de una manguera. La autoconexión une los puntos de conexión enfrentados, Trazar (A) lleva los cables alrededor de los símbolos.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafik: Kreise, Ellipsen, Bögen, Polygone, Bemaßungen und Bilder auf Ebenen (Navigator › Ebenen: sichtbar, gesperrt, gedruckt). Das Kennzeichen eines markierten Symbols zum Platzieren ziehen; weitere Eigenschaften werden in seinen Eigenschaften platziert.	16. Graphiques : cercles, ellipses, arcs, polygones, cotes et images sur des calques (navigateur › Calques : visible, verrouillé, imprimé). Glisser le repère d'un symbole sélectionné pour le placer ; d'autres propriétés se placent dans ses propriétés.	16. Gráficos: círculos, elipses, arcos, polígonos, cotas e imágenes en capas (navegador › Capas: visible, bloqueada, impresa). Arrastre la identificación de un símbolo seleccionado para colocarla; otras propiedades se colocan en sus propiedades.
 Coil	Spule	Bobine	Bobina
 Main contacts 4-pole	Hauptkontakte 4-polig	Contacts principaux 4 pôles	Contactos principales 4 polos
 NO contact, on-delay	Schließer, einschaltverzögert	Contact NO, temporisé à l'appel	Contacto NA, temporizado a la conexión
@@ -1815,16 +1792,13 @@ Added to both ends of the length for the cut length (insertion depth)	Wird für 
 📊 Hose configuration	📊 Schlauchkonfiguration	📊 Configuration des flexibles	📊 Configuración de mangueras
 📊 Tubing / piping list	📊 Rohr- / Schlauchmaterialliste	📊 Liste des tubes / tuyauteries	📊 Lista de tubos / tuberías
 📊 Fluid netlist	📊 Fluid-Netzliste	📊 Liste des réseaux fluidiques	📊 Lista de redes de fluidos
-➕ Group	➕ Gruppe	➕ Groupe	➕ Grupo
-📊 Fluid device groups	📊 Fluid-Gerätegruppen	📊 Groupes d'appareils fluidiques	📊 Grupos de dispositivos de fluidos
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Ventilinseln, Wartungseinheiten und Verteilerblöcke: ihre Fluidgeräte in Platzreihenfolge, durch Leerzeichen getrennt.	Terminaux de distributeurs, unités de conditionnement et blocs de distribution : leurs appareils fluidiques dans l'ordre des emplacements, séparés par des espaces.	Terminales de válvulas, unidades de mantenimiento y bloques distribuidores: sus dispositivos de fluidos en orden de posición, separados por espacios.
 Places	Plätze	Emplacements	Posiciones
 0 = not limited	0 = unbegrenzt	0 = illimité	0 = sin límite
 Delete group	Gruppe löschen	Supprimer le groupe	Eliminar grupo
-🔄 Synchronize	🔄 Abgleichen	🔄 Synchroniser	🔄 Sincronizar
+Synchronize	Abgleichen	Synchroniser	Sincronizar
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Verknüpft Magnetventile mit der Spule gleicher Nummer (-QM3 › -MB3) und übernimmt Funktionstexte	Lie les électrodistributeurs à la bobine de même numéro (-QM3 › -MB3) et copie les textes de fonction	Vincula las electroválvulas con la bobina del mismo número (-QM3 › -MB3) y copia los textos de función
 {} links created, {} function texts copied	{} Verknüpfungen erstellt, {} Funktionstexte übernommen	{} liens créés, {} textes de fonction copiés	{} vínculos creados, {} textos de función copiados
-📊 Electro-fluid cross reference	📊 Elektro-Fluid-Querverweise	📊 Renvois électro-fluidiques	📊 Referencias cruzadas electro-fluidos
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Elektrische Geräte, die ein Fluidgerät betätigen oder überwachen (Magnetspulen, Positions- und Druckschalter); beide Schaltpläne zeigen Querverweise aufeinander.	Appareils électriques qui actionnent ou surveillent un appareil fluidique (bobines, détecteurs de position et pressostats) ; les deux schémas affichent des renvois l'un vers l'autre.	Dispositivos eléctricos que accionan o supervisan un dispositivo de fluidos (bobinas, interruptores de posición y presostatos); ambos esquemas muestran referencias cruzadas entre sí.
 Electrical devices	Elektrische Geräte	Appareils électriques	Dispositivos eléctricos
 Operating pressure in bar (0 = hose ratings are not checked)	Betriebsdruck in bar (0 = Druckstufen der Schläuche werden nicht geprüft)	Pression de service en bar (0 = pressions nominales des flexibles non vérifiées)	Presión de servicio en bar (0 = no se comprueban las presiones de las mangueras)
@@ -1860,7 +1834,6 @@ Right neighbour	Rechter Nachbar	Voisine de droite	Vecino derecho
 No cable passage to {}: wires to it are not routed	Keine Kabeldurchführung zu {}: Drähte dorthin werden nicht verlegt	Aucun passage de câbles vers {} : les fils vers elle ne sont pas acheminés	Ningún paso de cables hacia {}: los cables hacia él no se tienden
 Open to {}: wires cross beside the mounting plates	Offen zu {}: Drähte laufen neben den Montageplatten hinüber	Ouverte vers {} : les fils passent à côté des plaques de montage	Abierto hacia {}: los cables pasan junto a las placas de montaje
 {} cable passages to {}	{} Kabeldurchführungen zu {}	{} passages de câbles vers {}	{} pasos de cables hacia {}
-➕ Cable passage to {}	➕ Kabeldurchführung zu {}	➕ Passage de câbles vers {}	➕ Paso de cables hacia {}
 Round cutouts facing each other in both side walls	Runde Ausschnitte gegenüber in beiden Seitenwänden	Découpes rondes face à face dans les deux parois latérales	Recortes redondos enfrentados en ambas paredes laterales
 Both sides are open: the wires need no cutout	Beide Seiten sind offen: die Drähte brauchen keinen Ausschnitt	Les deux côtés sont ouverts : les fils n'ont pas besoin de découpe	Ambos lados están abiertos: los cables no necesitan recorte
 Cable passage to {}	Kabeldurchführung zu {}	Passage de câbles vers {}	Paso de cables hacia {}
@@ -2193,7 +2166,6 @@ Surge protection	Überspannungsschutz	Protection contre les surtensions	Protecci
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Schaltvermögen gegen den Kurzschlussstrom an jedem Schutzorgan des Netzes, Abschaltung beim kleinsten Fehlerstrom am Ende seines Stromkreises, Kurzschlussfestigkeit der Leitungen und Selektivität zum vorgeschalteten Schutzorgan.	Pouvoir de coupure face au courant de court-circuit à chaque appareil de protection du réseau, coupure au courant de défaut minimal en bout de circuit, tenue au court-circuit des câbles et sélectivité avec l'appareil amont.	Poder de corte frente a la corriente de cortocircuito en cada dispositivo de protección de la red, desconexión con la corriente de defecto mínima al final de su circuito, resistencia al cortocircuito de los cables y selectividad con el dispositivo aguas arriba.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Leistung und Strom der Verbraucher des Netzes (Motoren, Antriebe, Heizungen, Netzgeräte, Transformatoren), die Last jedes Schutzorgans, der Bedarf mit Gleichzeitigkeitsfaktor und die Lastbilanz der Netzgeräte.	Puissance et courant des charges du réseau (moteurs, variateurs, chauffages, alimentations, transformateurs), charge de chaque appareil de protection, demande avec facteur de simultanéité et bilan de charge des alimentations.	Potencia y corriente de las cargas de la red (motores, accionamientos, calefactores, fuentes de alimentación, transformadores), carga de cada dispositivo de protección, demanda con factor de simultaneidad y balance de carga de las fuentes de alimentación.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Sicherheitsfunktionen nach ISO 13849-1: jedes Teilsystem (Eingang, Logik, Ausgang) mit den Betriebsmitteln eines Kanals, seiner Kategorie, dem Diagnosedeckungsgrad und den Schaltspielen pro Jahr. Betriebsmittel zählen mit PL / PFHd, MTTFd oder B10d ihrer Artikel.	Fonctions de sécurité de l'ISO 13849-1 : chaque sous-système (entrée, logique, sortie) avec les appareils d'un canal, sa catégorie, sa couverture de diagnostic et ses manœuvres par an. Les appareils comptent avec le PL / PFHd, le MTTFd ou le B10d de leurs articles.	Funciones de seguridad de ISO 13849-1: cada subsistema (entrada, lógica, salida) con los equipos de un canal, su categoría, cobertura de diagnóstico y maniobras por año. Los equipos cuentan con el PL / PFHd, MTTFd o B10d de sus artículos.
-➕ Safety function	➕ Sicherheitsfunktion	➕ Fonction de sécurité	➕ Función de seguridad
 Input	Eingang	Entrée	Entrada
 Logic	Logik	Logique	Lógica
 Output	Ausgang	Sortie	Salida
@@ -2202,13 +2174,10 @@ Operations / year	Schaltspiele / Jahr	Manœuvres / an	Maniobras / año
 CCF	CCF	CCF	CCF
 0 = from the devices	0 = aus den Betriebsmitteln	0 = à partir des appareils	0 = a partir de los equipos
 Measures against common cause failure (at least 65 points)	Maßnahmen gegen Ausfälle gemeinsamer Ursache (mindestens 65 Punkte)	Mesures contre les défaillances de cause commune (au moins 65 points)	Medidas contra fallos de causa común (al menos 65 puntos)
-➕ Subsystem	➕ Teilsystem	➕ Sous-système	➕ Subsistema
 Subsystem {}	Teilsystem {}	Sous-système {}	Subsistema {}
 Rule libraries	Regelbibliotheken	Bibliothèques de règles	Bibliotecas de reglas
 Customer rule sets	Kundenregelwerke	Jeux de règles client	Conjuntos de reglas de cliente
-➕ Rule set	➕ Regelwerk	➕ Jeu de règles	➕ Conjunto de reglas
 Rule set {}	Regelwerk {}	Jeu de règles {}	Conjunto de reglas {}
-💾 Export…	💾 Exportieren…	💾 Exporter…	💾 Exportar…
 OpenECraft rule sets	OpenECraft-Regelwerke	Jeux de règles OpenECraft	Conjuntos de reglas de OpenECraft
 Verify the project against it	Projekt dagegen prüfen	Vérifier le projet par rapport à celui-ci	Verificar el proyecto frente a él
 {} checks	{} Prüfungen	{} vérifications	{} comprobaciones
@@ -2220,10 +2189,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Jed
 Message	Meldung	Message	Mensaje
 if	wenn	si	si
 then	dann	alors	entonces
-➕ Condition	➕ Bedingung	➕ Condition	➕ Condición
-➕ Check	➕ Prüfung	➕ Vérification	➕ Comprobación
 OpenECraft rule sets (JSON)	OpenECraft-Regelwerke (JSON)	Jeux de règles OpenECraft (JSON)	Conjuntos de reglas de OpenECraft (JSON)
-Electrical calculations…	Elektrische Berechnungen…	Calculs électriques…	Cálculos eléctricos…
+Electrical calculations	Elektrische Berechnungen	Calculs électriques	Cálculos eléctricos
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Kurzschluss, Selektivität, Lasten, EMV, funktionale Sicherheit und Prüfung gegen Regelwerke	Court-circuit, sélectivité, charges, CEM, sécurité fonctionnelle et vérification par rapport aux jeux de règles	Cortocircuito, selectividad, cargas, CEM, seguridad funcional y verificación frente a conjuntos de reglas
 0 = a single value; otherwise values [1] … [n]	0 = ein einzelner Wert; sonst Werte [1] … [n]	0 = une seule valeur ; sinon valeurs [1] … [n]	0 = un solo valor; si no, valores [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Eine Projektdefinition auf Basis dieser, mit eigenen Vorgabewerten und Schema	Une définition de projet basée sur celle-ci, avec ses propres valeurs par défaut et son schéma	Una definición de proyecto basada en esta, con sus propios valores predeterminados y esquema
@@ -2542,7 +2509,6 @@ Project number	Projektnummer	Numéro de projet	Número de proyecto
 Project property of the property database (by key)	Projekteigenschaft der Eigenschaftsdatenbank (über den Schlüssel)	Propriété de projet de la base de propriétés (par clé)	Propiedad de proyecto de la base de propiedades (por clave)
 Proof test interval	Prüfintervall	Intervalle de test périodique	Intervalo de prueba
 Property database	Eigenschaftsdatenbank	Base de propriétés	Base de propiedades
-Property database…	Eigenschaftsdatenbank…	Base de propriétés…	Base de propiedades…
 Property definitions	Eigenschaftsdefinitionen	Définitions de propriétés	Definiciones de propiedades
 Property definitions, function definitions, placement schemes and the values of all objects	Eigenschaftsdefinitionen, Funktionsdefinitionen, Platzierungsschemata und die Werte aller Objekte	Définitions de propriétés, définitions de fonction, schémas de placement et valeurs de tous les objets	Definiciones de propiedades, definiciones de función, esquemas de colocación y los valores de todos los objetos
 Property groups	Eigenschaftsgruppen	Groupes de propriétés	Grupos de propiedades
@@ -2729,10 +2695,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" ist keiner von {}	{} : \"{}\" ne fait pas partie de {}	{}: \"{}\" no es uno de {}
 {}: invalid value \"{}\" ({})	{}: ungültiger Wert \"{}\" ({})	{} : valeur invalide \"{}\" ({})	{}: valor no válido \"{}\" ({})
 ➕ Default value	➕ Vorgabewert	➕ Valeur par défaut	➕ Valor predeterminado
-➕ Derive project definition	➕ Projektdefinition ableiten	➕ Dériver une définition de projet	➕ Derivar definición de proyecto
-➕ User defined property	➕ Benutzerdefinierte Eigenschaft	➕ Propriété utilisateur	➕ Propiedad de usuario
+Derive project definition	Projektdefinition ableiten	Dériver une définition de projet	Derivar definición de proyecto
+User defined property	Benutzerdefinierte Eigenschaft	Propriété utilisateur	Propiedad de usuario
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Geräte im Übersichtsschaltplan planen, den Stromlaufplan erzeugen und beide synchron halten	Planifier les appareils dans le schéma unifilaire, générer le schéma développé et garder les deux synchronisés	Planificar los equipos en el esquema unifilar, generar el esquema desarrollado y mantener ambos sincronizados
-Single-line / multi-line…	Einpolig / allpolig…	Unifilaire / multifilaire…	Unifilar / multifilar…
 All devices of page {} are in the schematic already	Alle Geräte der Seite {} sind bereits im Stromlaufplan	Tous les appareils de la page {} sont déjà dans le schéma développé	Todos los equipos de la página {} ya están en el esquema desarrollado
 Copies function texts between the single-line diagram and the schematic where one side is empty	Kopiert Funktionstexte zwischen Übersichtsschaltplan und Stromlaufplan, wo eine Seite leer ist	Copie les textes de fonction entre le schéma unifilaire et le schéma développé lorsqu'un côté est vide	Copia los textos de función entre el esquema unifilar y el esquema desarrollado cuando un lado está vacío
 Does not match	Passt nicht	Ne correspond pas	No coincide
@@ -2882,11 +2847,11 @@ Outline	Kontur	Contour	Contorno
 Click the corners of a machine or building, double-click to finish	Ecken einer Maschine oder eines Gebäudes anklicken, Doppelklick zum Beenden	Cliquer sur les angles d'une machine ou d'un bâtiment, double-clic pour terminer	Haga clic en las esquinas de una máquina o edificio, doble clic para terminar
 (no cable highlighted)	(kein Kabel hervorgehoben)	(aucun câble en surbrillance)	(ningún cable resaltado)
 Fit	Einpassen	Ajuster	Ajustar
-⬇ Export SVG…	⬇ SVG exportieren…	⬇ Exporter en SVG…	⬇ Exportar SVG…
+Export SVG…	SVG exportieren…	Exporter en SVG…	Exportar SVG…
 Height above the floor	Höhe über dem Boden	Hauteur au-dessus du sol	Altura sobre el suelo
 Placed here: {}	Hier platziert: {}	Placé ici : {}	Colocado aquí: {}
 Place an enclosure, device or machine location at this node	Schaltschrank, Gerät oder Maschinenort an diesem Knoten platzieren	Placer une armoire, un appareil ou un emplacement de machine sur ce nœud	Colocar un armario, aparato o ubicación de máquina en este nodo
-🗑 Delete node	🗑 Knoten löschen	🗑 Supprimer le nœud	🗑 Eliminar nodo
+Delete node	Knoten löschen	Supprimer le nœud	Eliminar nodo
 SVG drawing	SVG-Zeichnung	Dessin SVG	Dibujo SVG
 Segments	Abschnitte	Tronçons	Tramos
 Width × height (mm)	Breite × Höhe (mm)	Largeur × hauteur (mm)	Ancho × alto (mm)
@@ -2906,18 +2871,16 @@ Must be connected to the equipotential bonding	Muss an den Potentialausgleich an
 {} corners	{} Ecken	{} sommets	{} vértices
 Take over cut lengths	Schnittlängen übernehmen	Reprendre les longueurs de coupe	Adoptar longitudes de corte
 Set the cable lengths to the planned cut lengths	Kabellängen auf die geplanten Schnittlängen setzen	Régler les longueurs de câble sur les longueurs de coupe prévues	Fijar las longitudes de cable en las longitudes de corte planificadas
-📊 Report	📊 Auswertung	📊 Rapport	📊 Informe
 {} parts of the network	{} Teilnetze	{} parties du réseau	{} partes de la red
 No field cables: place the enclosures and field devices at nodes of the route network.	Keine Feldkabel: Schaltschränke und Feldgeräte an Knoten des Trassennetzes platzieren.	Aucun câble de terrain : placez les armoires et les appareils de terrain sur des nœuds du réseau.	No hay cables de campo: coloque los armarios y aparatos de campo en nodos de la red de recorridos.
 Route definition of {}	Trassendefinition von {}	Définition du cheminement de {}	Definición del recorrido de {}
 Via:	Über:	Via :	Por:
 Remove	Entfernen	Retirer	Quitar
-➕ Node	➕ Knoten	➕ Nœud	➕ Nodo
+Add node	Knoten hinzufügen	Ajouter un nœud	Añadir nodo
 Avoid:	Meiden:	Éviter :	Evitar:
 {} cable lengths taken over	{} Kabellängen übernommen	{} longueurs de câble reprises	{} longitudes de cable adoptadas
-➕ Bonding conductor	➕ Potentialausgleichsleiter	➕ Conducteur d'équipotentialité	➕ Conductor equipotencial
+Bonding conductor	Potentialausgleichsleiter	Conducteur d'équipotentialité	Conductor equipotencial
 Bonding points	Anschlusspunkte des Potentialausgleichs	Points d'équipotentialité	Puntos equipotenciales
-➕ Accessory	➕ Zubehör	➕ Accessoire	➕ Accesorio
 both ends	beide Enden	les deux extrémités	ambos extremos
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Kein Zubehör: Verschraubungen, Steckverbinder, Schirmklemmen … gehen in die Stückliste ein und werden gegen das Kabel geprüft.	Aucun accessoire : presse-étoupes, connecteurs, colliers de blindage … entrent dans la nomenclature et sont vérifiés par rapport au câble.	Sin accesorios: prensaestopas, conectores, abrazaderas de pantalla … entran en la lista de materiales y se comprueban frente al cable.
 Reserve per cable end	Zugabe je Kabelende	Réserve par extrémité de câble	Reserva por extremo de cable
@@ -2925,7 +2888,6 @@ Length inside an enclosure	Länge im Schaltschrank	Longueur dans une armoire	Lon
 Cut length step	Schrittweite der Schnittlänge	Pas de la longueur de coupe	Paso de la longitud de corte
 Maximum fill of a carrier	Maximale Füllung eines Kabelträgers	Remplissage maximal d'un support	Llenado máximo de un soporte
 Bend radius in drag chains	Biegeradius in Energieketten	Rayon de courbure dans les chaînes porte-câbles	Radio de curvatura en cadenas portacables
-Field wiring…	Feldverdrahtung…	Câblage de terrain…	Cableado de campo…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Anlagenlayout, Trassennetz, Feldkabelplanung, Potentialausgleich und Kabelzubehör	Plan d'installation, réseau de cheminement, planification des câbles de terrain, liaison équipotentielle et accessoires de câble	Plano de la instalación, red de recorridos, planificación de cables de campo, conexión equipotencial y accesorios de cable
 +CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1	+CAB1 / -M1
 No option {}	Keine Option {}	Aucune option {}	No hay ninguna opción {}
@@ -3039,9 +3001,9 @@ Archive and version	Archiv und Version	Archive et version	Archivo y versión
 Verification	Prüfung	Vérification	Verificación
 OpenECraft project archive	OpenECraft-Projektarchiv	Archive de projet OpenECraft	Archivo comprimido de proyecto OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Die Projektdatenbank braucht die Desktop-Version: Der Browser kann keine Ordner durchsuchen.	La base de données de projets nécessite la version de bureau : le navigateur ne peut pas parcourir les dossiers.	La base de datos de proyectos necesita la versión de escritorio: el navegador no puede buscar en carpetas.
-📂 Add folder…	📂 Ordner hinzufügen…	📂 Ajouter un dossier…	📂 Añadir carpeta…
+Add folder…	Ordner hinzufügen…	Ajouter un dossier…	Añadir carpeta…
 Adds the project files and archives of a folder and its subfolders	Fügt die Projektdateien und Archive eines Ordners und seiner Unterordner hinzu	Ajoute les fichiers de projet et les archives d'un dossier et de ses sous-dossiers	Añade los archivos de proyecto y los archivos comprimidos de una carpeta y sus subcarpetas
-🔄 Update all	🔄 Alle aktualisieren	🔄 Tout mettre à jour	🔄 Actualizar todo
+Update all	Alle aktualisieren	Tout mettre à jour	Actualizar todo
 Verify while reading	Beim Einlesen prüfen	Vérifier à la lecture	Verificar al leer
 Remove the folder from the database	Ordner aus der Datenbank entfernen	Retirer le dossier de la base de données	Quitar la carpeta de la base de datos
 Search	Suchen	Rechercher	Buscar
@@ -3095,15 +3057,14 @@ Switches the options with a condition by the configurator options	Schaltet die O
 {} options switched	{} Optionen geschaltet	{} options commutées	{} opciones conmutadas
 File format version {}. Files of older versions are converted when they are opened.	Dateiformatversion {}. Dateien älterer Versionen werden beim Öffnen konvertiert.	Version du format de fichier {}. Les fichiers de versions antérieures sont convertis à l'ouverture.	Versión del formato de archivo {}. Los archivos de versiones anteriores se convierten al abrirlos.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Ein Archiv (.oecz) ist eine ZIP-Datei mit dem Projekt, einem Manifest und den eingebetteten Dokumenten und Bildern als eigene Dateien.	Une archive (.oecz) est un fichier ZIP contenant le projet, un manifeste ainsi que les documents et images incorporés sous forme de fichiers distincts.	Un archivo comprimido (.oecz) es un archivo ZIP con el proyecto, un manifiesto y los documentos e imágenes incrustados como archivos propios.
-📦 Archive project…	📦 Projekt archivieren…	📦 Archiver le projet…	📦 Archivar proyecto…
-📂 Open archive…	📂 Archiv öffnen…	📂 Ouvrir une archive…	📂 Abrir archivo comprimido…
+Archive project…	Projekt archivieren…	Archiver le projet…	Archivar proyecto…
+Open archive…	Archiv öffnen…	Ouvrir une archive…	Abrir archivo comprimido…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Prüft die Projektdaten (IDs, Verweise, Gerätedaten, Optionen, Teilprojekte) zusammen mit den Engineering-Prüfungen.	Vérifie les données du projet (ID, références, données d'appareil, options, sous-projets) avec les contrôles d'ingénierie.	Verifica los datos del proyecto (ID, referencias, datos de dispositivo, opciones, subproyectos) junto con las comprobaciones de ingeniería.
 Verify project	Projekt prüfen	Vérifier le projet	Verificar proyecto
 Repair {} findings	{} Befunde reparieren	Réparer {} constats	Reparar {} hallazgos
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} Fehler, {} Warnungen, {} Hinweise in den Projektdaten; Engineering-Prüfung: {} Fehler, {} Warnungen	{} erreurs, {} avertissements, {} remarques dans les données du projet ; contrôle d'ingénierie : {} erreurs, {} avertissements	{} errores, {} advertencias, {} notas en los datos del proyecto; comprobación de ingeniería: {} errores, {} advertencias
 (repairable)	(reparierbar)	(réparable)	(reparable)
 ✔ The project data is consistent.	✔ Die Projektdaten sind konsistent.	✔ Les données du projet sont cohérentes.	✔ Los datos del proyecto son coherentes.
-Project management…	Projektverwaltung…	Gestion de projets…	Gestión de proyectos…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Projektdatenbank, Sammeländerungen von Projekteigenschaften, Teilprojekte, Optionen, Archive und Prüfung	Base de données de projets, modifications groupées des propriétés de projet, sous-projets, options, archives et vérification	Base de datos de proyectos, cambios en bloque de propiedades de proyecto, subproyectos, opciones, archivos comprimidos y verificación
 OpenECraft project or archive	OpenECraft-Projekt oder -Archiv	Projet ou archive OpenECraft	Proyecto o archivo comprimido OpenECraft
 =A1+CAB1	=A1+CAB1	=A1+CAB1	=A1+CAB1
@@ -3171,7 +3132,7 @@ For parts without Stock length; longer profiles have to be joined	Für Artikel o
 Collision classes	Kollisionsklassen	Classes de collision	Clases de colisión
 Distances between classes of items, or classes that may overlap	Abstände zwischen Klassen von Elementen oder Klassen, die sich überschneiden dürfen	Distances entre classes d'éléments, ou classes qui peuvent se chevaucher	Distancias entre clases de elementos, o clases que pueden solaparse
 may overlap	dürfen überlappen	chevauchement admis	pueden solaparse
-➕ Add rule	➕ Regel hinzufügen	➕ Ajouter une règle	➕ Añadir regla
+Add rule	Regel hinzufügen	Ajouter une règle	Añadir regla
 Air temperature at the devices	Lufttemperatur an den Geräten	Température de l'air aux appareils	Temperatura del aire en los aparatos
 max. {} °C	max. {} °C	max. {} °C	máx. {} °C
 No problems found	Keine Probleme gefunden	Aucun problème trouvé	No se encontraron problemas
@@ -3227,8 +3188,7 @@ Invalid answer of the plugin: {}	Ungültige Antwort des Plugins: {}	Réponse inv
 Key figures of the project and a list of its device tags	Kennzahlen des Projekts und eine Liste seiner Betriebsmittelkennzeichen	Indicateurs du projet et liste de ses repères d'équipements	Indicadores del proyecto y una lista de sus identificadores de equipos
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Kennzahlen des Projekts: Seiten, Symbole, Verbindungen, Betriebsmittel, Artikel, Kabel und Prüfergebnisse	Indicateurs du projet : folios, symboles, liaisons, équipements, articles, câbles et résultats de vérification	Indicadores del proyecto: páginas, símbolos, conexiones, equipos, artículos, cables y resultados de la comprobación
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Geladene Plugins (eingebaute und aus den Plugin-Ordnern von --plugins / OPENECRAFT_PLUGINS) mit ihren Befehlen, Prüfungen, Berichten und Exporten; aktiviert oder deaktiviert eines für diese Sitzung	Plugins chargés (intégrés et issus des dossiers de plugins de --plugins / OPENECRAFT_PLUGINS) avec leurs commandes, vérifications, rapports et exports ; en active ou désactive un pour cette session	Plugins cargados (integrados y de las carpetas de plugins de --plugins / OPENECRAFT_PLUGINS) con sus comandos, comprobaciones, informes y exportaciones; activa o desactiva uno para esta sesión
-Manage plugins…	Plugins verwalten…	Gérer les plugins…	Gestionar plugins…
-Plugin command {}	Plugin-Befehl {}	Commande de plugin {}	Comando de plugin {}
+Manage plugins	Plugins verwalten	Gérer les plugins	Gestionar plugins
 Plugin id '{}' is not snake_case	Plugin-Id '{}' ist nicht snake_case	L'id de plugin '{}' n'est pas en snake_case	El id de plugin '{}' no está en snake_case
 Plugin {} is loaded twice	Plugin {} ist zweimal geladen	Le plugin {} est chargé deux fois	El plugin {} está cargado dos veces
 Plugin {} needs a newer OpenECraft (API {})	Plugin {} benötigt ein neueres OpenECraft (API {})	Le plugin {} nécessite un OpenECraft plus récent (API {})	El plugin {} necesita un OpenECraft más reciente (API {})
@@ -3242,8 +3202,8 @@ Unknown plugin: {}	Unbekanntes Plugin: {}	Plugin inconnu : {}	Plugin desconocido
 Warnings	Warnungen	Avertissements	Advertencias
 {} commands, {} checks, {} reports, {} exports	{} Befehle, {} Prüfungen, {} Berichte, {} Exporte	{} commandes, {} vérifications, {} rapports, {} exports	{} comandos, {} comprobaciones, {} informes, {} exportaciones
 {}: the program to run is missing	{}: das auszuführende Programm fehlt	{} : le programme à exécuter manque	{}: falta el programa que se ejecuta
-▶ Run	▶ Ausführen	▶ Exécuter	▶ Ejecutar
-⟳ Update	⟳ Aktualisieren	⟳ Mettre à jour	⟳ Actualizar
+Run	Ausführen	Exécuter	Ejecutar
+Update	Aktualisieren	Mettre à jour	Actualizar
 ⬇ {}	⬇ {}	⬇ {}	⬇ {}
 📊 {}	📊 {}	📊 {}	📊 {}
 Panel layout checks	Schaltschrankaufbau-Prüfungen	Contrôles de l'implantation d'armoire	Comprobaciones de la disposición del armario
@@ -3313,7 +3273,7 @@ Profile	Profil	Profil	Perfil
 (standard columns)	(Standardspalten)	(colonnes standard)	(columnas estándar)
 Write the file for the other system; later imports detect conflicts against this export	Datei für das andere System schreiben; spätere Importe erkennen Konflikte gegenüber diesem Export	Écrire le fichier pour l'autre système ; les importations ultérieures détectent les conflits par rapport à cet export	Escribir el archivo para el otro sistema; las importaciones posteriores detectan conflictos respecto a esta exportación
 Read a file of the other system (CSV or JSON) and review the changes	Datei des anderen Systems (CSV oder JSON) lesen und die Änderungen prüfen	Lire un fichier de l'autre système (CSV ou JSON) et vérifier les modifications	Leer un archivo del otro sistema (CSV o JSON) y revisar los cambios
-⬇ Neutral exchange file…	⬇ Neutrale Austauschdatei…	⬇ Fichier d'échange neutre…	⬇ Archivo de intercambio neutro…
+Neutral exchange file…	Neutrale Austauschdatei…	Fichier d'échange neutre…	Archivo de intercambio neutro…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Artikel, Betriebsmittel, Platzierungen, Verbindungen, Drähte und Dokumente in einer JSON-Datei für Systeme ohne Konnektor	Articles, appareils, placements, liaisons, fils et documents dans un fichier JSON pour les systèmes sans connecteur	Artículos, equipos, ubicaciones, conexiones, cables y documentos en un archivo JSON para sistemas sin conector
 Import changes	Importänderungen	Modifications importées	Cambios importados
 Profiles	Profile	Profils	Perfiles
@@ -3339,7 +3299,6 @@ Conflicts	Konflikte	Conflits	Conflictos
 Export	Export	Export	Exportación
 Import	Import	Import	Importación
 {} values taken over	{} Werte übernommen	{} valeurs reprises	{} valores aplicados
-Enterprise integration…	Unternehmensintegration…	Intégration d'entreprise…	Integración empresarial…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Austausch mit ERP, PDM, PLM, ECAD, MCAD, Einkauf und Drahtkonfektionierautomaten	Échange avec ERP, PDM, PLM, ECAD, CAO mécanique, achats et machines de câblage	Intercambio con ERP, PDM, PLM, ECAD, MCAD, compras y máquinas de cableado
 Files of other systems (CSV, JSON)	Dateien anderer Systeme (CSV, JSON)	Fichiers d'autres systèmes (CSV, JSON)	Archivos de otros sistemas (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Kupferschiene {}: {} Abschnitte brauchen {} Biegungen	Barre de cuivre {} : {} segments nécessitent {} pliages	Pletina de cobre {}: {} tramos necesitan {} dobleces
@@ -3506,9 +3465,9 @@ DWG export failed: {}	DWG-Export fehlgeschlagen: {}	Échec de l'export DWG : {}	
 DWG import failed: {}	DWG-Import fehlgeschlagen: {}	Échec de l'import DWG : {}	Error al importar el DWG: {}
 DWG imported as page {}: {} lines, {} texts	DWG als Seite {} importiert: {} Linien, {} Texte	DWG importé comme page {} : {} lignes, {} textes	DWG importado como página {}: {} líneas, {} textos
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG als Seite {} importiert: {} Linien, {} Texte (nicht importiert: {})	DWG importé comme page {} : {} lignes, {} textes (non importé : {})	DWG importado como página {}: {} líneas, {} textos (no importado: {})
-⬇ NC data (DWG)	⬇ NC-Daten (DWG)	⬇ Données CN (DWG)	⬇ Datos NC (DWG)
-⬇ Door NC data (DWG)	⬇ Tür-NC-Daten (DWG)	⬇ Données CN de la porte (DWG)	⬇ Datos NC de la puerta (DWG)
-⬇ NC data of this face (DWG)	⬇ NC-Daten dieser Fläche (DWG)	⬇ Données CN de cette face (DWG)	⬇ Datos CN de esta cara (DWG)
+NC data (DWG)	NC-Daten (DWG)	Données CN (DWG)	Datos NC (DWG)
+Door NC data (DWG)	Tür-NC-Daten (DWG)	Données CN de la porte (DWG)	Datos NC de la puerta (DWG)
+NC data of this face (DWG)	NC-Daten dieser Fläche (DWG)	Données CN de cette face (DWG)	Datos CN de esta cara (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importiert eine DWG-Zeichnung (AutoCAD R12 … 2018) als Grafik (Linien, Bögen, Texte, Blöcke) auf eine neue Schaltplanseite	Importe un dessin DWG (AutoCAD R12 … 2018) comme graphique (lignes, arcs, textes, blocs) sur une nouvelle page de schéma	Importa un dibujo DWG (AutoCAD R12 … 2018) como gráfico (líneas, arcos, textos, bloques) en una nueva página de esquema
 Generic	Generisch	Générique	Genérico
 Parts store	Artikelstamm	Base d'articles	Base de artículos
@@ -3851,7 +3810,6 @@ Control cable	Steuerleitung	Câble de commande	Cable de control
 Wiring material	Verdrahtungsmaterial	Matériel de câblage	Material de cableado
 # Data portal (editor, parts manager, command line)
 Catalog id	Katalog-ID	Identifiant du catalogue	ID del catálogo
-Data portal…	Data Portal…	Portail de données…	Portal de datos…
 Delete catalog {} from the server?	Katalog {} vom Server löschen?	Supprimer le catalogue {} du serveur ?	¿Eliminar el catálogo {} del servidor?
 Delete user {}? Their sessions and favorites are removed.	Benutzer {} löschen? Seine Sitzungen und Favoriten werden entfernt.	Supprimer l'utilisateur {} ? Ses sessions et favoris seront supprimés.	¿Eliminar el usuario {}? Se eliminarán sus sesiones y favoritos.
 Ends the session and forgets the token	Beendet die Sitzung und verwirft das Token	Termine la session et oublie le jeton	Cierra la sesión y descarta el token
@@ -3973,12 +3931,10 @@ Use macros	Makros übernehmen	Utiliser les macros	Usar macros
 ★ Favorites	★ Favoriten	★ Favoris	★ Favoritos
 ★ Remove from favorites	★ Aus Favoriten entfernen	★ Retirer des favoris	★ Quitar de favoritos
 ☆ Add to favorites	☆ Zu Favoriten hinzufügen	☆ Ajouter aux favoris	☆ Añadir a favoritos
-✔ Apply {} updates	✔ {} Aktualisierungen übernehmen	✔ Appliquer {} mises à jour	✔ Aplicar {} actualizaciones
-➡ Successor {}	➡ Nachfolger {}	➡ Successeur {}	➡ Sucesor {}
-⬇ Add marked parts to the parts database ({})	⬇ Markierte Artikel in die Artikeldatenbank übernehmen ({})	⬇ Ajouter les articles marqués à la base d'articles ({})	⬇ Añadir los artículos marcados a la base de datos de artículos ({})
-⬇ Add to the parts database	⬇ In die Artikeldatenbank übernehmen	⬇ Ajouter à la base d'articles	⬇ Añadir a la base de datos de artículos
-🔄 Check the parts database for updates	🔄 Artikeldatenbank auf Aktualisierungen prüfen	🔄 Vérifier les mises à jour de la base d'articles	🔄 Comprobar actualizaciones de la base de datos de artículos
-🔎 Search	🔎 Suchen	🔎 Rechercher	🔎 Buscar
+Apply {} updates	{} Aktualisierungen übernehmen	Appliquer {} mises à jour	Aplicar {} actualizaciones
+Add marked parts to the parts database ({})	Markierte Artikel in die Artikeldatenbank übernehmen ({})	Ajouter les articles marqués à la base d'articles ({})	Añadir los artículos marcados a la base de datos de artículos ({})
+Add to the parts database	In die Artikeldatenbank übernehmen	Ajouter à la base d'articles	Añadir a la base de datos de artículos
+Check the parts database for updates	Artikeldatenbank auf Aktualisierungen prüfen	Vérifier les mises à jour de la base d'articles	Comprobar actualizaciones de la base de datos de artículos
 Relay coil, AC	Relaisspule, Wechselstrom	Bobine de relais, courant alternatif	Bobina de relé, corriente alterna
 Relay coil, high-speed	Relaisspule, schnell schaltend	Bobine de relais, rapide	Bobina de relé, de acción rápida
 Relay coil, mechanically latched	Relaisspule, mechanisch verklinkt	Bobine de relais, à accrochage mécanique	Bobina de relé, con enclavamiento mecánico
@@ -4406,7 +4362,7 @@ Level of this kind of message	Stufe dieser Meldungsart	Niveau de ce type de mess
 As defined by the check	Wie von der Prüfung festgelegt	Comme défini par la vérification	Como lo define la comprobación
 Switch off the check \"{}\"	Prüfung \"{}\" abschalten	Désactiver la vérification \"{}\"	Desactivar la comprobación \"{}\"
 Changed message levels ({})	Geänderte Meldungsstufen ({})	Niveaux de message modifiés ({})	Niveles de mensaje cambiados ({})
-Right click a message in the Check tab to change its level.	Rechtsklick auf eine Meldung im Reiter Prüfung ändert ihre Stufe.	Clic droit sur un message dans l'onglet Vérification pour changer son niveau.	Clic derecho en un mensaje en la pestaña Comprobación para cambiar su nivel.
+Right click a message in the Messages pane to change its level.	Rechtsklick auf eine Meldung im Bereich Meldungen ändert ihre Stufe.	Clic droit sur un message dans le volet Messages pour changer son niveau.	Haga clic derecho en un mensaje del panel Mensajes para cambiar su nivel.
 Accepted messages ({})	Akzeptierte Meldungen ({})	Messages acceptés ({})	Mensajes aceptados ({})
 No longer reported	Wird nicht mehr gemeldet	N'est plus signalé	Ya no se notifica
 Still reported	Wird noch gemeldet	Encore signalé	Se sigue notificando
@@ -4551,7 +4507,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Als Projektvorlage speichern…	Enregistrer comme modèle de projet…	Guardar como plantilla de proyecto…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Speichert das Projekt ohne Revisionen, Stände, Prüfung und Verdrahtungsmarken als Vorlage für neue Projekte	Enregistre le projet sans révisions, états de référence, revue ni marques de câblage comme modèle de nouveaux projets	Guarda el proyecto sin revisiones, líneas base, revisión ni marcas de cableado como plantilla para nuevos proyectos
 OpenECraft project template	OpenECraft-Projektvorlage	Modèle de projet OpenECraft	Plantilla de proyecto de OpenECraft
-Not a project template: {}	Keine Projektvorlage: {}	Pas un modèle de projet : {}	No es una plantilla de proyecto: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Mit einer Projektvorlage beginnen: einer eingebauten (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) oder einer Projektdatei	Partir d'un modèle de projet : intégré (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) ou un fichier projet	Empezar desde una plantilla: una integrada (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) o un archivo de proyecto
 Not a packed project	Kein gepacktes Projekt	Pas un projet compressé	No es un proyecto comprimido
 Viewer	Betrachter	Lecteur	Lector
@@ -4667,7 +4622,7 @@ Rotate	Drehen	Pivoter	Girar
 Save to project server	Auf dem Projektserver speichern	Enregistrer sur le serveur de projets	Guardar en el servidor de proyectos
 Undo	Rückgängig	Annuler	Deshacer
 Find and replace	Suchen und ersetzen	Rechercher et remplacer	Buscar y reemplazar
-Finish polyline or polygon	Polylinie oder Polygon abschließen	Terminer la polyligne ou le polygone	Terminar la polilínea o el polígono
+Finish a wire, polyline or polygon	Verbindung, Polylinie oder Polygon abschließen	Terminer un fil, une polyligne ou un polygone	Terminar un cable, una polilínea o un polígono
 Mirror (selection or symbol being placed)	Spiegeln (Auswahl oder zu platzierendes Symbol)	Miroir (sélection ou symbole en cours de placement)	Reflejar (selección o símbolo que se coloca)
 Next page	Nächste Seite	Page suivante	Página siguiente
 Open project	Projekt öffnen	Ouvrir le projet	Abrir proyecto
@@ -4682,13 +4637,13 @@ Keyboard shortcuts	Tastenkürzel	Raccourcis clavier	Atajos de teclado
 No shortcut	Kein Tastenkürzel	Aucun raccourci	Sin atajo
 Press a key…	Taste drücken…	Appuyez sur une touche…	Pulse una tecla…
 Record	Aufnehmen	Enregistrer	Grabar
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Aufnehmen: die neue Taste mit ihren Zusatztasten drücken (Esc bricht ab). Esc, Entf, die Pfeiltasten und Kopieren / Einfügen bleiben fest.	Enregistrer : appuyez sur la nouvelle touche avec ses modificateurs (Échap annule). Échap, Suppr, les flèches et copier / coller restent fixes.	Grabar: pulse la nueva tecla con sus modificadores (Esc cancela). Esc, Supr, las flechas y copiar / pegar no cambian.
+Record: press the new key with its modifiers (Esc cancels). Esc and copy / cut / paste stay fixed.	Aufnehmen: die neue Taste mit ihren Zusatztasten drücken (Esc bricht ab). Esc und Kopieren / Ausschneiden / Einfügen bleiben fest.	Enregistrer : appuyez sur la nouvelle touche avec ses modificateurs (Échap annule). Échap et copier / couper / coller restent fixes.	Grabar: pulse la nueva tecla con sus modificadores (Esc cancela). Esc y copiar / cortar / pegar no cambian.
 Reset all to the defaults	Alle auf die Vorgaben zurücksetzen	Tout réinitialiser aux valeurs par défaut	Restablecer todo a los valores predeterminados
 {} is used by: {}	{} wird verwendet von: {}	{} est utilisé par : {}	{} lo usan: {}
 Harness nailboard drawing to scale (SVG)	Kabelbaum-Nagelbrett-Zeichnung maßstäblich (SVG)	Plan de clouage du faisceau à l'échelle (SVG)	Plano de clavos del mazo a escala (SVG)
 Harness tag, e.g. -WH1	Kennzeichen des Kabelbaums, z. B. -WH1	Repère du faisceau, p. ex. -WH1	Identificador del mazo, p. ej. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Nagelbrett-Zeichnung des Kabelbaums maßstäblich mit Abzweiglängen und den Pin-Tabellen der Stecker	Plan de clouage du faisceau à l'échelle avec les longueurs des branches et les tableaux de broches des connecteurs	Plano de clavos del mazo a escala con las longitudes de las ramas y las tablas de pines de los conectores
-📐 Nailboard (SVG)…	📐 Nagelbrett (SVG)…	📐 Plan de clouage (SVG)…	📐 Plano de clavos (SVG)…
+Nailboard (SVG)…	Nagelbrett (SVG)…	Plan de clouage (SVG)…	Plano de clavos (SVG)…
 Bundle Ø {} mm	Bündel-Ø {} mm	Ø du faisceau {} mm	Ø del mazo {} mm
 Nailboard {}	Nagelbrett {}	Plan de clouage {}	Plano de clavos {}
 Scale 1:{}	Maßstab 1:{}	Échelle 1:{}	Escala 1:{}
@@ -4710,7 +4665,6 @@ No segment {}	Kein Segment {}	Aucun segment {}	No hay ningún segmento {}
 Segment path (default: all segments)	Segmentpfad (Standard: alle Segmente)	Chemin du segment (par défaut : tous les segments)	Ruta del segmento (por defecto: todos los segmentos)
 Pre-planning (CSV, Excel)	Vorplanung (CSV, Excel)	Préplanification (CSV, Excel)	Preplanificación (CSV, Excel)
 Plant segments with planned devices before the schematic	Anlagensegmente mit geplanten Geräten vor dem Schaltplan	Segments d'installation avec les appareils planifiés avant le schéma	Segmentos de la planta con los equipos planificados antes del esquema
-Pre-planning…	Vorplanung…	Préplanification…	Preplanificación…
 A segment cannot be moved below itself	Ein Segment kann nicht unter sich selbst verschoben werden	Un segment ne peut pas être déplacé sous lui-même	Un segmento no se puede mover debajo de sí mismo
 Adds a planned device to a segment or changes it	Fügt einem Segment ein geplantes Gerät hinzu oder ändert es	Ajoute un appareil planifié à un segment ou le modifie	Añade un equipo planificado a un segmento o lo cambia
 Adds a segment below another one (or at the top)	Fügt ein Segment unter einem anderen (oder oben) hinzu	Ajoute un segment sous un autre (ou au niveau supérieur)	Añade un segmento debajo de otro (o en el nivel superior)
@@ -4758,10 +4712,8 @@ name	Name	nom	nombre
 {} pages generated	{} Seiten erzeugt	{} pages générées	{} páginas generadas
 {} pages generated; page macros not found: {}	{} Seiten erzeugt; Seitenmakros nicht gefunden: {}	{} pages générées ; macros de page introuvables : {}	{} páginas generadas; macros de página no encontradas: {}
 {} segments created, {} devices added, {} updated	{} Segmente angelegt, {} Geräte hinzugefügt, {} geändert	{} segments créés, {} appareils ajoutés, {} modifiés	{} segmentos creados, {} equipos añadidos, {} actualizados
-➕ Device	➕ Gerät	➕ Appareil	➕ Equipo
-➕ Segment	➕ Segment	➕ Segment	➕ Segmento
-➕ Sub-segment	➕ Untersegment	➕ Sous-segment	➕ Subsegmento
-🗑 Remove segment	🗑 Segment entfernen	🗑 Supprimer le segment	🗑 Eliminar segmento
+Sub-segment	Untersegment	Sous-segment	Subsegmento
+Remove segment	Segment entfernen	Supprimer le segment	Eliminar segmento
 Display	Darstellung	Affichage	Presentación
 Mirrored	Gespiegelt	En miroir	Reflejado
 Other properties	Weitere Eigenschaften	Autres propriétés	Otras propiedades
@@ -4863,7 +4815,7 @@ Hose defaults	Schlauchvorgaben	Valeurs par défaut des flexibles	Valores predete
 Message levels	Meldungsstufen	Niveaux des messages	Niveles de mensajes
 Not a settings scheme: {}	Kein Einstellungsschema: {}	Ce n'est pas un schéma de paramètres : {}	No es un esquema de ajustes: {}
 Wire defaults	Leitungsvorgaben	Valeurs par défaut des fils	Valores predeterminados de cables
-Reset panel layout	Anordnung der Fenster zurücksetzen	Réinitialiser la disposition des panneaux	Restablecer la disposición de los paneles
+Reset pane layout	Anordnung der Fenster zurücksetzen	Réinitialiser la disposition des panneaux	Restablecer la disposición de los paneles
 Navigator on the left, symbols and properties on the right	Navigator links, Symbole und Eigenschaften rechts	Navigateur à gauche, symboles et propriétés à droite	Navegador a la izquierda, símbolos y propiedades a la derecha
 Panels	Fenster	Panneaux	Paneles
 Saves the workspace, the arrangement of the panels and the open windows	Speichert den Arbeitsbereich, die Anordnung der Fenster und die geöffneten Dialoge	Enregistre l'espace de travail, la disposition des panneaux et les fenêtres ouvertes	Guarda el espacio de trabajo, la disposición de los paneles y las ventanas abiertas
@@ -5052,7 +5004,7 @@ Motors feed the short circuit	Motoren speisen den Kurzschluss	Les moteurs alimen
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Asynchronmotoren am Netz erhöhen den größten Kurzschlussstrom (IEC 60909-0)	Les moteurs asynchrones sur le réseau augmentent le courant de court-circuit maximal (CEI 60909-0)	Los motores asíncronos de la red aumentan la corriente de cortocircuito máxima (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	Am Einspeisepunkt: Ik3 max {} kA, Ik1 min {} kA	Au point d'alimentation : Ik3 max {} kA, Ik1 min {} kA	En el punto de alimentación: Ik3 máx {} kA, Ik1 mín {} kA
 Manufacturer's coordination tables	Koordinationstabellen der Hersteller	Tableaux de coordination des fabricants	Tablas de coordinación de los fabricantes
-➕ Entry	➕ Eintrag	➕ Entrée	➕ Entrada
+Entry	Eintrag	Entrée	Entrada
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selektivität und Back-up-Schutz von Gerätepaaren, wie vom Hersteller geprüft, nach Artikelnummer. Sie ersetzen die Abschätzung aus den Zeit-Strom-Kennlinien.	Sélectivité et protection d'accompagnement de paires d'appareils telles que testées par le fabricant, par référence. Elles remplacent l'estimation tirée des courbes temps-courant.	Selectividad y protección de respaldo de pares de aparatos según los ensayos del fabricante, por referencia. Sustituyen la estimación a partir de las curvas tiempo-corriente.
 Upstream part	Vorgeschalteter Artikel	Article amont	Artículo aguas arriba
 Downstream part	Nachgeschalteter Artikel	Article aval	Artículo aguas abajo
@@ -5142,29 +5094,26 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault	Coffre	Almacén
 Instead of user name and password	Statt Benutzername und Passwort	Au lieu du nom d'utilisateur et du mot de passe	En lugar de nombre de usuario y contraseña
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 oder neuer (Vault Data API)	Vault Professional 2025.2 ou plus récent (Vault Data API)	Vault Professional 2025.2 o posterior (Vault Data API)
-⟳ Refresh	⟳ Aktualisieren	⟳ Actualiser	⟳ Actualizar
+Refresh	Aktualisieren	Actualiser	Actualizar
 Search below this folder	Unterhalb dieses Ordners suchen	Rechercher sous ce dossier	Buscar debajo de esta carpeta
-🔍 Search	🔍 Suchen	🔍 Rechercher	🔍 Buscar
 Checked out	Ausgecheckt	Extrait	Desprotegido
 {} of {} entries shown: search to narrow the list	{} von {} Einträgen angezeigt: suchen, um die Liste einzugrenzen	{} entrées sur {} affichées : recherchez pour réduire la liste	{} de {} entradas mostradas: busque para acotar la lista
 Select a file to import it	Datei auswählen, um sie zu importieren	Sélectionnez un fichier pour l'importer	Seleccione un archivo para importarlo
 (choose a part)	(Artikel wählen)	(choisir un article)	(elegir un artículo)
-⬇ Import	⬇ Importieren	⬇ Importer	⬇ Importar
 Project file	Projektdatei	Fichier de projet	Archivo de proyecto
-⬆ Check in project as new version of {}	⬆ Projekt als neue Version von {} einchecken	⬆ Archiver le projet comme nouvelle version de {}	⬆ Proteger el proyecto como nueva versión de {}
+Check in project as new version of {}	Projekt als neue Version von {} einchecken	Archiver le projet comme nouvelle version de {}	Proteger el proyecto como nueva versión de {}
 Puts the project into the folder it was opened from	Legt das Projekt in dem Ordner ab, aus dem es geöffnet wurde	Place le projet dans le dossier d'où il a été ouvert	Coloca el proyecto en la carpeta desde la que se abrió
 Put into the vault	Im Vault ablegen	Placer dans le Vault	Colocar en el Vault
 File name	Dateiname	Nom du fichier	Nombre del archivo
-⬆ Upload to {}	⬆ Hochladen nach {}	⬆ Envoyer vers {}	⬆ Subir a {}
+Upload to {}	Hochladen nach {}	Envoyer vers {}	Subir a {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Eine gleichnamige Datei im Ordner erhält eine neue Version (aus- und eingecheckt), sonst wird die Datei hinzugefügt	Un fichier du même nom dans le dossier reçoit une nouvelle version (extrait puis archivé), sinon le fichier est ajouté	Un archivo con el mismo nombre en la carpeta recibe una nueva versión (desprotegido y protegido), si no el archivo se añade
-Autodesk Vault…	Autodesk Vault…	Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projekte und Dateien aus Autodesk Vault öffnen, das Projekt, Exporte und 3D-Modelle im Vault ablegen	Ouvrir des projets et fichiers depuis Autodesk Vault, placer le projet, les exports et les modèles 3D dans le Vault	Abrir proyectos y archivos de Autodesk Vault, colocar el proyecto, las exportaciones y los modelos 3D en el Vault
 Check in {} to Vault	{} in Vault einchecken	Archiver {} dans Vault	Proteger {} en Vault
 Panel layout in 3D (Parasolid XT)	Schaltschrankaufbau in 3D (Parasolid XT)	Implantation d'armoire en 3D (Parasolid XT)	Diseño de armario en 3D (Parasolid XT)
 3D model (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	3D-Modell (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Modèle 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)	Modelo 3D (STL, OBJ, STEP, IGES, Parasolid, IFC, JT)
-⬇ All as KBL (ZIP)…	⬇ Alle als KBL (ZIP)…	⬇ Tout en KBL (ZIP)…	⬇ Todos como KBL (ZIP)…
+All as KBL (ZIP)…	Alle als KBL (ZIP)…	Tout en KBL (ZIP)…	Todos como KBL (ZIP)…
 One KBL file (VDA 4964) per harness	Eine KBL-Datei (VDA 4964) je Kabelbaum	Un fichier KBL (VDA 4964) par faisceau	Un archivo KBL (VDA 4964) por mazo de cables
-⬇ Wire processing list (CSV)…	⬇ Leitungsfertigungsliste (CSV)…	⬇ Liste de fabrication des fils (CSV)…	⬇ Lista de procesado de cables (CSV)…
+Wire processing list (CSV)…	Leitungsfertigungsliste (CSV)…	Liste de fabrication des fils (CSV)…	Lista de procesado de cables (CSV)…
 All harness wires in processing order for cutting, stripping and crimping machines	Alle Kabelbaumleitungen in Fertigungsreihenfolge für Schneide-, Abisolier- und Crimpautomaten	Tous les fils des faisceaux dans l'ordre de fabrication pour les machines de coupe, de dénudage et de sertissage	Todos los cables de los mazos en orden de procesado para máquinas de corte, pelado y crimpado
 ⬇ KBL (XML)…	⬇ KBL (XML)…	⬇ KBL (XML)…	⬇ KBL (XML)…
 KBL (VDA 4964) for harness manufacturing: parts, connectors, wires, connections and the 3D topology	KBL (VDA 4964) für die Kabelbaumfertigung: Artikel, Steckverbinder, Leitungen, Verbindungen und die 3D-Topologie	KBL (VDA 4964) pour la fabrication des faisceaux : articles, connecteurs, fils, connexions et topologie 3D	KBL (VDA 4964) para la fabricación de mazos: artículos, conectores, cables, conexiones y la topología 3D
@@ -5177,9 +5126,9 @@ End treatment of the connectors	Leitungsenden an den Steckverbindern	Traitement 
 Stored and edited in the harness	Im Kabelbaum gespeichert und bearbeitet	Enregistrée et modifiée dans le faisceau	Guardada y editada en el mazo
 Derived from the routes of the panel layout	Aus den Verlegewegen des Aufbaus abgeleitet	Déduite des cheminements de l'implantation	Derivada de los recorridos del montaje
 Generated around a common node (no connector in the panel layout)	Um einen gemeinsamen Knoten erzeugt (kein Steckverbinder im Aufbau)	Générée autour d'un nœud commun (aucun connecteur dans l'implantation)	Generada alrededor de un nodo común (ningún conector en el montaje)
-⟳ Derive again	⟳ Neu ableiten	⟳ Déduire à nouveau	⟳ Derivar de nuevo
+Derive again	Neu ableiten	Déduire à nouveau	Derivar de nuevo
 Drops the stored topology	Verwirft die gespeicherte Topologie	Abandonne la topologie enregistrée	Descarta la topología guardada
-✏ Store for editing	✏ Zum Bearbeiten speichern	✏ Enregistrer pour modifier	✏ Guardar para editar
+Store for editing	Zum Bearbeiten speichern	Enregistrer pour modifier	Guardar para editar
 Stores the derived topology in the harness, so nodes and segments can be edited	Speichert die abgeleitete Topologie im Kabelbaum, damit Knoten und Segmente bearbeitet werden können	Enregistre la topologie déduite dans le faisceau pour pouvoir modifier nœuds et segments	Guarda la topología derivada en el mazo para poder editar nodos y segmentos
 Front	Vorne	Avant	Frente
 Nodes	Knoten	Nœuds	Nodos
@@ -5189,8 +5138,7 @@ Centre curve	Mittellinie	Ligne médiane	Línea central
 All segments	Alle Segmente	Tous les segments	Todos los segmentos
 Segment ids of a derived topology may change: store the topology before placing parts on single segments.	Segment-IDs einer abgeleiteten Topologie können sich ändern: Topologie speichern, bevor Teile auf einzelne Segmente gesetzt werden.	Les identifiants de segment d'une topologie déduite peuvent changer : enregistrer la topologie avant de placer des éléments sur des segments.	Los ID de segmento de una topología derivada pueden cambiar: guarde la topología antes de colocar piezas en segmentos concretos.
 Location along the segment, 0 … 1	Position entlang des Segments, 0 … 1	Position le long du segment, 0 … 1	Posición a lo largo del segmento, 0 … 1
-➕ Protection	➕ Schutz	➕ Protection	➕ Protección
-➕ Fixing	➕ Befestigung	➕ Fixation	➕ Fijación
+Fixing	Befestigung	Fixation	Fijación
 Seal	Einzeladerabdichtung	Joint	Junta
 Cavity plug	Blindstopfen	Bouchon d'alvéole	Tapón de cavidad
 KBL usage	KBL-Verwendung	Usage KBL	Uso KBL
@@ -5278,7 +5226,6 @@ Bracket	Halter	Support	Soporte
 Back	Zurück	Retour	Atrás
 Back to the project (Esc)	Zurück zum Projekt (Esc)	Retour au projet (Échap)	Volver al proyecto (Esc)
 Recent projects	Zuletzt verwendete Projekte	Projets récents	Proyectos recientes
-No projects opened yet.	Noch keine Projekte geöffnet.	Aucun projet ouvert pour l'instant.	Todavía no se ha abierto ningún proyecto.
 Remove from the list	Aus der Liste entfernen	Retirer de la liste	Quitar de la lista
 unsaved	nicht gespeichert	non enregistré	sin guardar
 Project: {}	Projekt: {}	Projet : {}	Proyecto: {}
@@ -5298,15 +5245,6 @@ Tutorial	Tutorial	Tutoriel	Tutorial
 Introduction	Einführung	Introduction	Introducción
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Ein offener Elektro-CAE-Editor im Sinne von EPLAN Electric P8.	Un éditeur CAO électrique ouvert dans l'esprit d'EPLAN Electric P8.	Un editor CAE eléctrico abierto al estilo de EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Das Menüband: Datei öffnet, speichert, importiert, exportiert und druckt; die Registerkarten enthalten die Befehle nach Themen. Alt zeigt die Zugriffstasten, Strg+Umschalt+P findet jeden Befehl, F6 wechselt zwischen den Fenstern, F1 öffnet diese Hilfe.	Le ruban : Fichier ouvre, enregistre, importe, exporte et imprime ; les onglets regroupent les commandes par thème. Alt affiche les touches d'accès, Ctrl+Maj+P trouve n'importe quelle commande, F6 passe d'un panneau à l'autre, F1 ouvre cette aide.	La cinta de opciones: Archivo abre, guarda, importa, exporta e imprime; las pestañas agrupan los comandos por tema. Alt muestra las teclas de acceso, Ctrl+Mayús+P encuentra cualquier comando, F6 pasa de un panel a otro, F1 abre esta ayuda.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Einfügen › Einfügezentrum (Einfg): ein Symbol, ein Makro oder ein Betriebsmittel suchen und in die Seite klicken, um es zu platzieren. Betriebsmittelkennzeichen (-K1, -S2 …) werden automatisch vergeben.	1. Insertion › Centre d'insertion (Inser) : rechercher un symbole, une macro ou un appareil et cliquer dans la page pour le placer. Les repères (-K1, -S2 …) sont attribués automatiquement.	1. Insertar › Centro de inserción (Insert): buscar un símbolo, una macro o un dispositivo y hacer clic en la página para colocarlo. Las designaciones (-K1, -S2 …) se asignan automáticamente.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Artikel in den Eigenschaften zuordnen (Registerkarte Artikel); die Berichte (Start › Berichte) listen Betriebsmittel, Stückliste, Klemmen, Verbindungen und SPS auf und werden als Berichtsseiten eingefügt.	5. Affecter les articles dans les propriétés (onglet Articles) ; les rapports (Accueil › Rapports) listent appareils, nomenclature, bornes, liaisons et API et sont insérés comme pages de rapport.	5. Asignar artículos en las propiedades (pestaña Artículos); los informes (Inicio › Informes) listan dispositivos, lista de materiales, bornes, conexiones y PLC y se insertan como páginas de informe.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Kabel: Verbindungen › Kabel, Leitungen markieren und Kabel zuordnen wählen. Verbindungsnummern: Verbindungen › Verbindungsnummerierung oder eine Nummer in den Leitungseigenschaften eingeben.	7. Câbles : Liaisons › Câbles, sélectionner des fils et utiliser Affecter au câble. Numéros de fil : Liaisons › Numérotation des fils, ou saisir un numéro dans les propriétés du fil.	7. Cables: Conexiones › Cables, seleccionar hilos y usar Asignar a cable. Números de hilo: Conexiones › Numeración de hilos, o escribir un número en las propiedades del hilo.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Makros: Elemente markieren, Rechtsklick › Auswahl als Makro speichern; aus dem Einfügezentrum oder über Einfügen › Makro einfügen. Platzhalter {NAME} werden aus Wertesätzen gefüllt.	8. Macros : sélectionner des éléments, clic droit › Enregistrer la sélection comme macro ; les insérer depuis le centre d'insertion ou Insertion › Macro. Les variables {NAME} sont remplies à partir de jeux de valeurs.	8. Macros: seleccionar elementos, clic derecho › Guardar selección como macro; insertarlas desde el centro de inserción o Insertar › Macro. Los marcadores {NAME} se rellenan a partir de conjuntos de valores.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Betriebsmittel › Klemmleisten, Betriebsmittel › SPS-Übersicht und Projektdaten › Revisionen: Klemmenreihenfolge, Brücken und Reserven; SPS-Adressen und Symboltabellen; Revisionen mit Änderungsmarkierungen und freigegebenen (gesperrten) Seiten.	9. Appareils › Borniers, Appareils › Vue d'ensemble API et Données de projet › Révisions : ordre des bornes, ponts et réserves ; adresses API et tables de symboles ; révisions avec marques de modification et pages validées (verrouillées).	9. Dispositivos › Regletas, Dispositivos › Vista general de PLC y Datos de proyecto › Revisiones: orden de bornes, puentes y reservas; direcciones PLC y tablas de símbolos; revisiones con marcas de cambio y páginas liberadas (bloqueadas).
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Stammdaten › Symboleditor: eigene Symbole zeichnen (oder mitgelieferte kopieren) mit Anschlusspunkten und Funktion; sie werden im Projekt gespeichert und können als Bibliotheksdateien ausgetauscht werden.	10. Données de base › Éditeur de symboles : dessiner vos propres symboles (ou copier ceux fournis) avec points de connexion et fonction ; ils sont enregistrés dans le projet et peuvent être échangés comme fichiers de bibliothèque.	10. Datos maestros › Editor de símbolos: dibujar símbolos propios (o copiar los incluidos) con puntos de conexión y función; se guardan en el proyecto y se pueden intercambiar como archivos de biblioteca.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Stammdaten › Formulare: eigene Schriftfelder mit Platzhaltern ({project}, {page}, {prop:Name} …) und die Spalten der Berichtsseiten; Projektdaten › Berichtsblöcke erzeugen Berichtsseiten je Klemmleiste, Stecker, Kabel oder Betriebsmittel.	11. Données de base › Formulaires : cartouches propres avec variables ({project}, {page}, {prop:Name} …) et colonnes des pages de rapport ; Données de projet › Blocs de rapport génèrent des pages de rapport par bornier, connecteur, câble ou appareil.	11. Datos maestros › Formularios: cajetines propios con marcadores ({project}, {page}, {prop:Name} …) y las columnas de las páginas de informe; Datos de proyecto › Bloques de informe generan páginas de informe por regleta, conector, cable o dispositivo.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Schaltschrankaufbau (Arbeitsbereich Schaltschrankaufbau, Registerkarte Layoutbereich): Gehäuse, Tragschienen, Kanäle, Sammelschienen und Ausschnitte; Layoutbereich › NC-Daten exportiert das Bohrbild (DXF / DWG / CSV). Die Fertigungs-Leitungsliste enthält Abisolierlängen und Aderendhülsen.	12. Implantation d'armoire (espace de travail Implantation d'armoire, onglet Espace de montage) : armoires, rails, goulottes, barres et découpes ; Espace de montage › Données CN exporte le plan de perçage (DXF / DWG / CSV). La liste de fils de production contient les longueurs de dénudage et les embouts.	12. Diseño del armario (espacio de trabajo Diseño del armario, pestaña Espacio de montaje): envolventes, carriles, canaletas, pletinas y recortes; Espacio de montaje › Datos CN exporta el patrón de taladrado (DXF / DWG / CSV). La lista de hilos de producción contiene longitudes de pelado y punteras.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbäume: Verbindungen › Kabelbäume; die Leitungen zwischen zwei Betriebsmitteln markieren › Kabelbaum zuordnen, oder je Verbindung in den Leitungseigenschaften. Kabelbaumbericht mit Längen, Steckern und Bündeldurchmesser, KBL-Export.	13. Faisceaux : Liaisons › Faisceaux ; sélectionner les fils entre deux appareils › Affecter au faisceau, ou par liaison dans les propriétés du fil. Rapport de faisceau avec longueurs, connecteurs et diamètre du toron, export KBL.	13. Mazos: Conexiones › Mazos; seleccionar los hilos entre dos dispositivos › Asignar a mazo, o por conexión en las propiedades del hilo. Informe de mazo con longitudes, conectores y diámetro del haz, exportación KBL.
 Key tips of the ribbon	Zugriffstasten des Menübands	Touches d'accès du ruban	Teclas de acceso de la cinta
 Version {}	Version {}	Version {}	Versión {}
 Search (* and ? as placeholders)…	Suchen (* und ? als Platzhalter)…	Rechercher (* et ? comme jokers)…	Buscar (* y ? como comodines)…
@@ -5388,7 +5326,6 @@ Close page tab	Seitenregisterkarte schließen	Fermer l'onglet de page	Cerrar la 
 Panes	Fenster	Panneaux	Paneles
 Show or hide panes; drag a tab to dock it elsewhere	Fenster ein- oder ausblenden; eine Registerkarte ziehen, um sie woanders anzudocken	Afficher ou masquer des panneaux ; faire glisser un onglet pour l'ancrer ailleurs	Mostrar u ocultar paneles; arrastre una pestaña para acoplarla en otro lugar
 Save workspace…	Arbeitsbereich speichern…	Enregistrer l'espace de travail…	Guardar espacio de trabajo…
-The panes of this workspace at their default places	Die Fenster dieses Arbeitsbereichs an ihren Standardplätzen	Les panneaux de cet espace de travail à leur place par défaut	Los paneles de este espacio de trabajo en su lugar predeterminado
 Theme	Farbschema	Thème	Tema
 UI scale	Skalierung der Oberfläche	Échelle de l'interface	Escala de la interfaz
 Minimize the ribbon	Menüband minimieren	Réduire le ruban	Minimizar la cinta de opciones
@@ -5401,7 +5338,6 @@ Functions of the project data not placed yet	Funktionen der Projektdaten, die no
 Insert center	Einfügezentrum	Centre d'insertion	Centro de inserción
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Symbole, Makros, Betriebsmittel und nicht platzierte Funktionen: Suche, Favoriten, zuletzt verwendet	Symboles, macros, appareils et fonctions non placées : recherche, favoris, récents	Símbolos, macros, dispositivos y funciones no colocadas: búsqueda, favoritos, recientes
 Find results	Suchergebnisse	Résultats de recherche	Resultados de búsqueda
-Quick guide, tutorial and shortcuts	Kurzanleitung, Tutorial und Tastenkürzel	Guide rapide, tutoriel et raccourcis	Guía rápida, tutorial y atajos
 Layout spaces	Layoutbereiche	Espaces de montage	Espacios de montaje
 Enclosures, devices to place and placed devices	Gehäuse, zu platzierende und platzierte Betriebsmittel	Armoires, appareils à placer et appareils placés	Envolventes, dispositivos por colocar y colocados
 Layout properties	Layout-Eigenschaften	Propriétés de l'implantation	Propiedades del montaje
@@ -5446,7 +5382,7 @@ Click to show, right click for more	Klicken zum Anzeigen, Rechtsklick für mehr	
 {} notes	{} Hinweise	{} remarques	{} notas
 Open in a new page tab	In einer neuen Seitenregisterkarte öffnen	Ouvrir dans un nouvel onglet de page	Abrir en una nueva pestaña de página
 Project information	Projektinformationen	Informations sur le projet	Información del proyecto
-Plugin commands…	Plugin-Befehle…	Commandes de plugin…	Comandos de plugin…
+Plugin commands	Plugin-Befehle	Commandes de plugin	Comandos de plugin
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Die Befehle aller Plugins nach Plugin, mit Suche; der Stern heftet einen Befehl an die Registerkarte Plugins	Les commandes de tous les plugins par plugin, avec une recherche ; l'étoile épingle une commande dans l'onglet Plugins	Los comandos de todos los plugins por plugin, con búsqueda; la estrella fija un comando en la pestaña Plugins
 Star a command in Plugin commands to pin it here	Einen Befehl in Plugin-Befehle mit dem Stern markieren, um ihn hier anzuheften	Marquez une commande d'une étoile dans Commandes de plugin pour l'épingler ici	Marque un comando con la estrella en Comandos de plugin para fijarlo aquí
 Installed plugins	Installierte Plugins	Plugins installés	Plugins instalados
@@ -5503,7 +5439,7 @@ Show this cabinet; its place in the room is in its properties	Diesen Schaltschra
 No cabinet stands in this room yet.	In diesem Raum steht noch kein Schaltschrank.	Aucune armoire ne se trouve encore dans cette salle.	Todavía no hay ningún armario en esta sala.
 ➕ Put a cabinet into the room	➕ Schaltschrank in den Raum stellen	➕ Placer une armoire dans la salle	➕ Colocar un armario en la sala
 Walls and ceiling	Wände und Decke	Murs et plafond	Paredes y techo
-Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Insert › Wall-mounted part).	Geräte an einer Wand sitzen auf einer Tragschiene; für Wandmontage gekennzeichnete Artikel kommen direkt an die Wand (Einfügen › Wandmontage-Artikel).	Les appareils sur un mur se fixent sur un rail ; les articles marqués pour le montage mural vont directement au mur (Insérer › Article à montage mural).	Los equipos en una pared van sobre un carril; los artículos marcados para montaje mural van directamente en la pared (Insertar › Artículo de montaje mural).
+Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Layout space › Insert › Wall-mounted part).	Geräte an einer Wand sitzen auf einer Tragschiene; für Wandmontage gekennzeichnete Artikel kommen direkt an die Wand (Layoutbereich › Einfügen › Wandmontage-Artikel).	Les appareils sur un mur se fixent sur un rail ; les articles marqués pour le montage mural vont directement au mur (Espace de montage › Insérer › Article à montage mural).	Los equipos en una pared van sobre un carril; los artículos marcados para montaje mural van directamente en la pared (Espacio de montaje › Insertar › Artículo de montaje mural).
 The room the line-up stands in; its place is then measured from the rear left inside corner of the room	Der Raum, in dem die Anreihung steht; ihr Platz wird dann von der hinteren linken Innenecke des Raums gemessen	La salle dans laquelle se trouve la juxtaposition ; son emplacement est alors mesuré depuis le coin intérieur arrière gauche de la salle	La sala en la que está la fila de armarios; su ubicación se mide entonces desde la esquina interior trasera izquierda de la sala
 Choose a room first: wall-mounted parts go on its walls and ceiling.	Zuerst einen Raum wählen: Wandmontage-Artikel kommen an seine Wände und Decke.	Choisissez d'abord une salle : les articles à montage mural vont sur ses murs et son plafond.	Elija primero una sala: los artículos de montaje mural van en sus paredes y techo.
 No parts marked for wall mounting.	Keine Artikel für Wandmontage gekennzeichnet.	Aucun article marqué pour le montage mural.	No hay artículos marcados para montaje mural.
@@ -5619,8 +5555,6 @@ wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms) or ceiling	wa
 wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms)	wall1, wall2, …, inner1a, inner1b, … (wie von list_rooms aufgelistet)	wall1, wall2, …, inner1a, inner1b, … (comme listés par list_rooms)	wall1, wall2, …, inner1a, inner1b, … (según list_rooms)
 {}: inner wall {}: {}	{}: Innenwand {}: {}	{} : mur intérieur {} : {}	{}: pared interior {}: {}
 {}: {} stands in an inner wall	{}: {} steht in einer Innenwand	{} : {} se trouve dans un mur intérieur	{}: {} está dentro de una pared interior
-Opening {} replaces the current project, its unsaved changes are lost.	Das Öffnen von {} ersetzt das aktuelle Projekt, dessen ungespeicherte Änderungen gehen verloren.	Ouvrir {} remplace le projet actuel, ses modifications non enregistrées sont perdues.	Abrir {} reemplaza el proyecto actual, sus cambios no guardados se pierden.
-Discard changes and open	Änderungen verwerfen und öffnen	Abandonner les modifications et ouvrir	Descartar los cambios y abrir
 Open link	Link öffnen	Ouvrir le lien	Abrir enlace
 Replace the file at path if it exists	Die Datei unter path ersetzen, falls sie existiert	Remplacer le fichier de path s'il existe	Reemplazar el archivo de path si existe
 {} exists already: pass overwrite to replace it	{} existiert bereits: overwrite angeben, um sie zu ersetzen	{} existe déjà : passez overwrite pour le remplacer	{} ya existe: indique overwrite para reemplazarlo
@@ -5753,3 +5687,94 @@ Folder with project files (instead of a database; default: the current folder)	O
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Unbekannter Seitentyp: {} (schematic, overview, graphic, cover oder eine Auswertung aus list_reports)	Type de page inconnu : {} (schematic, overview, graphic, cover ou un rapport de list_reports)	Tipo de página desconocido: {} (schematic, overview, graphic, cover o un informe de list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Unbekannte Vorlage {}: geben Sie eine eingebaute ({}) oder eine Projektdatei an	Modèle inconnu {} : indiquez un modèle intégré ({}) ou un fichier de projet	Plantilla desconocida {}: indique una integrada ({}) o un archivo de proyecto
 Property {} needs a text or a number	Eigenschaft {} braucht einen Text oder eine Zahl	La propriété {} doit être un texte ou un nombre	La propiedad {} necesita un texto o un número
+Saving…	Wird gespeichert…	Enregistrement…	Guardando…
+The project was not saved.	Das Projekt wurde nicht gespeichert.	Le projet n'a pas été enregistré.	El proyecto no se ha guardado.
+Delete page {}? It holds 1 item.	Seite {} löschen? Sie enthält 1 Element.	Supprimer la page {} ? Elle contient 1 élément.	¿Eliminar la página {}? Contiene 1 elemento.
+Delete page {}? It holds {} items.	Seite {} löschen? Sie enthält {} Elemente.	Supprimer la page {} ? Elle contient {} éléments.	¿Eliminar la página {}? Contiene {} elementos.
+Undo brings the page back.	Rückgängig holt die Seite zurück.	Annuler rétablit la page.	Deshacer recupera la página.
+Delete the group {}?	Gruppe {} löschen?	Supprimer le groupe {} ?	¿Eliminar el grupo {}?
+Delete the workspace {}?	Arbeitsbereich {} löschen?	Supprimer l'espace de travail {} ?	¿Eliminar el espacio de trabajo {}?
+Projects you open or save appear here.	Hier erscheinen die Projekte, die Sie öffnen oder speichern.	Les projets que vous ouvrez ou enregistrez apparaissent ici.	Aquí aparecen los proyectos que abre o guarda.
+The file could not be opened as an OpenECraft project.	Die Datei konnte nicht als OpenECraft-Projekt geöffnet werden.	Le fichier n'a pas pu être ouvert comme projet OpenECraft.	El archivo no se ha podido abrir como proyecto de OpenECraft.
+{} could not be opened as an OpenECraft project.	{} konnte nicht als OpenECraft-Projekt geöffnet werden.	{} n'a pas pu être ouvert comme projet OpenECraft.	{} no se ha podido abrir como proyecto de OpenECraft.
+{} is not an OpenECraft project template.	{} ist keine OpenECraft-Projektvorlage.	{} n'est pas un modèle de projet OpenECraft.	{} no es una plantilla de proyecto de OpenECraft.
+Open wire ends	Offene Verbindungsenden	Extrémités de connexion ouvertes	Extremos de conexión abiertos
+Wire ends open at {}	Offenes Verbindungsende bei {}	Extrémité de connexion ouverte en {}	Extremo de conexión abierto en {}
+Click to place for device {} · {} rotate · {} mirror · Esc or right click to finish	Klicken zum Platzieren für Gerät {} · {} drehen · {} spiegeln · Esc oder Rechtsklick beendet	Cliquez pour placer pour l'appareil {} · {} pivoter · {} miroir · Échap ou clic droit pour terminer	Clic para colocar para el equipo {} · {} girar · {} reflejar · Esc o clic derecho para terminar
+Draw a line across the wires that are cores of cable {} · Esc or right click to finish	Eine Linie über die Verbindungen ziehen, die Adern des Kabels {} sind · Esc oder Rechtsklick beendet	Tracer une ligne à travers les fils qui sont des conducteurs du câble {} · Échap ou clic droit pour terminer	Trace una línea a través de los cables que son conductores de la manguera {} · Esc o clic derecho para terminar
+Move selection left by one grid step	Auswahl um einen Rasterschritt links verschieben	Déplacer la sélection d'un pas de grille vers la gauche	Mover la selección un paso de cuadrícula a la izquierda
+Move selection right by one grid step	Auswahl um einen Rasterschritt rechts verschieben	Déplacer la sélection d'un pas de grille vers la droite	Mover la selección un paso de cuadrícula a la derecha
+Move selection up by one grid step	Auswahl um einen Rasterschritt nach oben verschieben	Déplacer la sélection d'un pas de grille vers le haut	Mover la selección un paso de cuadrícula hacia arriba
+Move selection down by one grid step	Auswahl um einen Rasterschritt nach unten verschieben	Déplacer la sélection d'un pas de grille vers le bas	Mover la selección un paso de cuadrícula hacia abajo
+The page is read only	Die Seite ist schreibgeschützt	La page est en lecture seule	La página es de solo lectura
+Type a point	Punkt eingeben	Saisir un point	Introducir un punto
+A hidden or locked layer cannot take new items	Eine ausgeblendete oder gesperrte Ebene nimmt keine neuen Elemente auf	Un calque masqué ou verrouillé ne peut pas recevoir de nouveaux éléments	Una capa oculta o bloqueada no puede recibir elementos nuevos
+Name already used	Name bereits vergeben	Nom déjà utilisé	Nombre ya utilizado
+A layer needs a name	Eine Ebene braucht einen Namen	Un calque doit avoir un nom	Una capa necesita un nombre
+(fixed)	(fest)	(fixe)	(fijo)
+Check settings…	Prüfeinstellungen…	Réglages de vérification…	Ajustes de comprobación…
+Puts the panes of this workspace back at their default places and closes its floating panes	Setzt die Fenster dieses Arbeitsbereichs an ihre Standardplätze zurück und schließt seine schwebenden Fenster	Remet les panneaux de cet espace de travail à leur place par défaut et ferme ses panneaux flottants	Devuelve los paneles de este espacio de trabajo a su lugar predeterminado y cierra sus paneles flotantes
+Zoom 100 %	Zoom 100 %	Zoom 100 %	Zoom 100 %
+Real size on a 96 dpi screen	Reale Größe auf einem 96-dpi-Bildschirm	Taille réelle sur un écran de 96 dpi	Tamaño real en una pantalla de 96 ppp
+Zoom in	Vergrößern	Zoom avant	Acercar
+Zoom out	Verkleinern	Zoom arrière	Alejar
+Forms and frames	Formulare und Rahmen	Formulaires et cadres	Formularios y marcos
+Properties pane	Eigenschaftenfenster	Panneau des propriétés	Panel de propiedades
+Page, Insert center and properties	Seite, Einfügezentrum und Eigenschaften	Page, centre d'insertion et propriétés	Página, centro de inserción y propiedades
+Wiring and mounting	Verdrahtung und Montage	Câblage et montage	Cableado y montaje
+All tabs	Alle Registerkarten	Tous les onglets	Todas las pestañas
+Align: {}	Ausrichten: {}	Aligner : {}	Alinear: {}
+Reload	Neu laden	Recharger	Recargar
+Rotate left	Nach links drehen	Tourner à gauche	Girar a la izquierda
+Rotate right	Nach rechts drehen	Tourner à droite	Girar a la derecha
+Colour codes	Farbcodes	Codes de couleur	Códigos de color
+Belongs to device	Gehört zum Betriebsmittel	Appartient à l'appareil	Pertenece al dispositivo
+The device this function belongs to. Another tag moves the function to that device (Enter applies, Esc restores); Rename device below renames the whole device.	Das Betriebsmittel, zu dem diese Funktion gehört. Ein anderes BMK verschiebt die Funktion zu diesem Betriebsmittel (Enter übernimmt, Esc stellt wieder her); Betriebsmittel umbenennen weiter unten benennt das ganze Betriebsmittel um.	L'appareil auquel appartient cette fonction. Un autre repère déplace la fonction vers cet appareil (Entrée applique, Échap rétablit) ; Renommer l'appareil plus bas renomme l'appareil entier.	El dispositivo al que pertenece esta función. Otra identificación mueve la función a ese dispositivo (Intro aplica, Esc restablece); Renombrar dispositivo más abajo renombra el dispositivo completo.
+Enter a device tag – an empty tag is not applied.	BMK eingeben – ein leeres BMK wird nicht übernommen.	Saisissez un repère – un repère vide n'est pas appliqué.	Introduzca una identificación – una identificación vacía no se aplica.
+Moves this function to the existing device {}	Verschiebt diese Funktion zum vorhandenen Betriebsmittel {}	Déplace cette fonction vers l'appareil existant {}	Mueve esta función al dispositivo existente {}
+Moves this function to the new device {}	Verschiebt diese Funktion zum neuen Betriebsmittel {}	Déplace cette fonction vers le nouvel appareil {}	Mueve esta función al nuevo dispositivo {}
+1 item copied	1 Element kopiert	1 élément copié	1 elemento copiado
+1 device gets a new tag	1 Betriebsmittel erhält ein neues BMK	1 appareil reçoit un nouveau repère	1 dispositivo recibe una nueva identificación
+1 device renamed	1 Betriebsmittel umbenannt	1 appareil renommé	1 dispositivo renombrado
+1 page gets a new name	1 Seite erhält einen neuen Namen	1 page reçoit un nouveau nom	1 página recibe un nuevo nombre
+1 page renamed	1 Seite umbenannt	1 page renommée	1 página renombrada
+Pages and structure	Seiten und Struktur	Pages et structure	Páginas y estructura
+Terminals and plugs	Klemmen und Stecker	Bornes et connecteurs	Bornes y conectores
+Changes and review	Änderungen und Prüfung	Modifications et revue	Cambios y revisión
+Tutorial: {}	Tutorial: {}	Tutoriel : {}	Tutorial: {}
+Version and project page	Version und Projektseite	Version et page du projet	Versión y página del proyecto
+The tutorial in 13 chapters, from the first project to the automation	Das Tutorial in 13 Kapiteln, vom ersten Projekt bis zur Automatisierung	Le tutoriel en 13 chapitres, du premier projet à l'automatisation	El tutorial en 13 capítulos, desde el primer proyecto hasta la automatización
+Quick guide, tutorial and shortcuts; F1 opens the help of the pane in use	Kurzanleitung, Tutorial und Tastenkürzel; F1 öffnet die Hilfe des verwendeten Bereichs	Guide rapide, tutoriel et raccourcis ; F1 ouvre l'aide du volet utilisé	Guía rápida, tutorial y atajos; F1 abre la ayuda del panel en uso
+The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens the help of the pane in use.	Das Menüband: Datei öffnet, speichert, importiert, exportiert und druckt; die Registerkarten enthalten die Befehle nach Thema. Alt zeigt die Tastentipps, Strg+Umschalt+P findet jeden Befehl, F6 wechselt zwischen den Bereichen, F1 öffnet die Hilfe des verwendeten Bereichs.	Le ruban : Fichier ouvre, enregistre, importe, exporte et imprime ; les onglets regroupent les commandes par thème. Alt affiche les infobulles de touches, Ctrl+Maj+P trouve n'importe quelle commande, F6 passe d'un volet à l'autre, F1 ouvre l'aide du volet utilisé.	La cinta: Archivo abre, guarda, importa, exporta e imprime; las pestañas agrupan los comandos por tema. Alt muestra las sugerencias de teclas, Ctrl+Mayús+P encuentra cualquier comando, F6 cambia entre paneles, F1 abre la ayuda del panel en uso.
+The first hour	Die erste Stunde	La première heure	La primera hora
+3. Insert › Insert center ({}): search a symbol and click into the page to place it. Select a coil, then place contacts: they are assigned to it and numbered.	3. Einfügen › Einfügezentrum ({}): Symbol suchen und in die Seite klicken, um es zu platzieren. Eine Spule auswählen, dann Kontakte platzieren: Sie werden ihr zugeordnet und nummeriert.	3. Insertion › Centre d'insertion ({}) : cherchez un symbole et cliquez dans la page pour le placer. Sélectionnez une bobine, puis placez des contacts : ils lui sont affectés et numérotés.	3. Insertar › Centro de inserción ({}): busque un símbolo y haga clic en la página para colocarlo. Seleccione una bobina y coloque contactos: se le asignan y se numeran.
+4. Draw wires with the wire tool ({}); they end on connection points. Potentials and interruption points name the nets across pages.	4. Verbindungen mit dem Verbindungswerkzeug ({}) zeichnen; sie enden an Anschlusspunkten. Potenziale und Unterbrechungsstellen benennen die Netze seitenübergreifend.	4. Tracez des fils avec l'outil fil ({}) ; ils se terminent sur les points de connexion. Les potentiels et les points d'interruption nomment les réseaux entre les pages.	4. Dibuje conductores con la herramienta de conductor ({}); terminan en los puntos de conexión. Los potenciales y los puntos de interrupción nombran las redes entre páginas.
+1. File › New creates a project (or open the demo from the start page).	1. Datei › Neu legt ein Projekt an (oder die Demo von der Startseite öffnen).	1. Fichier › Nouveau crée un projet (ou ouvrez la démo depuis la page d'accueil).	1. Archivo › Nuevo crea un proyecto (o abra la demo desde la página de inicio).
+2. Home › Page adds pages; the page properties give them a structure (=A1 +CAB1).	2. Start › Seite fügt Seiten hinzu; die Seiteneigenschaften geben ihnen eine Struktur (=A1 +CAB1).	2. Accueil › Page ajoute des pages ; les propriétés de page leur donnent une structure (=A1 +CAB1).	2. Inicio › Página añade páginas; las propiedades de página les dan una estructura (=A1 +CAB1).
+5. Assign parts in the properties (Parts tab) or with Devices › Part selection.	5. Artikel in den Eigenschaften (Registerkarte Artikel) oder mit Betriebsmittel › Artikelauswahl zuordnen.	5. Affectez des articles dans les propriétés (onglet Articles) ou avec Appareils › Sélection d'article.	5. Asigne artículos en las propiedades (pestaña Artículos) o con Dispositivos › Selección de artículo.
+6. Project data › Check: the Messages pane lists what is missing; a click shows the place.	6. Projektdaten › Prüfen: Der Bereich Meldungen listet auf, was fehlt; ein Klick zeigt die Stelle.	6. Données de projet › Vérification : le volet Messages liste ce qui manque ; un clic montre l'endroit.	6. Datos de proyecto › Comprobación: el panel Mensajes enumera lo que falta; un clic muestra el lugar.
+7. Project data › Reports: device list, bill of materials, terminals and more, inserted as report pages.	7. Projektdaten › Auswertungen: Betriebsmittelliste, Stückliste, Klemmen und mehr, als Auswertungsseiten eingefügt.	7. Données de projet › Rapports : liste des appareils, nomenclature, bornes et plus, insérés comme pages de rapport.	7. Datos de proyecto › Informes: lista de dispositivos, lista de materiales, bornes y más, insertados como páginas de informe.
+8. File › Export and Print: PDF, DXF / DWG, SVG and the production data.	8. Datei › Exportieren und Drucken: PDF, DXF / DWG, SVG und die Fertigungsdaten.	8. Fichier › Exporter et Imprimer : PDF, DXF / DWG, SVG et les données de production.	8. Archivo › Exportar e Imprimir: PDF, DXF / DWG, SVG y los datos de producción.
+The tutorial goes on with terminals, PLC, the panel layout, revisions and automation.	Das Tutorial geht weiter mit Klemmen, SPS, Aufbau, Revisionen und Automatisierung.	Le tutoriel continue avec les bornes, l'API, l'implantation, les révisions et l'automatisation.	El tutorial continúa con bornes, PLC, el montaje, las revisiones y la automatización.
+Not on a page: shows it in its pane	Nicht auf einer Seite: zeigt es in seinem Bereich	Pas sur une page : l'affiche dans son volet	No está en una página: lo muestra en su panel
+Not on a page	Nicht auf einer Seite	Pas sur une page	No está en una página
+1 found	1 gefunden	1 trouvé	1 encontrado
+1 text changed	1 Text geändert	1 texte modifié	1 texto cambiado
+1 error, 1 warning	1 Fehler, 1 Warnung	1 erreur, 1 avertissement	1 error, 1 advertencia
+1 error, {} warnings	1 Fehler, {} Warnungen	1 erreur, {} avertissements	1 error, {} advertencias
+{} errors, 1 warning	{} Fehler, 1 Warnung	{} erreurs, 1 avertissement	{} errores, 1 advertencia
+1 error	1 Fehler	1 erreur	1 error
+1 warning	1 Warnung	1 avertissement	1 advertencia
+1 note	1 Hinweis	1 remarque	1 nota
+Accepted ({})	Akzeptiert ({})	Acceptés ({})	Aceptados ({})
+1 object pasted	1 Objekt eingefügt	1 objet collé	1 objeto pegado
+1 connection drawn automatically	1 Verbindung automatisch gezeichnet	1 liaison tracée automatiquement	1 conexión dibujada automáticamente
+1 wire	1 Leitung	1 fil	1 hilo
+Grid off	Raster aus	Grille désactivée	Rejilla desactivada
+Zoom: 100% ≈ real size on a 96 dpi screen. Click fits the page.	Zoom: 100 % ≈ Originalgröße auf einem 96-dpi-Bildschirm. Klick passt die Seite ein.	Zoom : 100 % ≈ taille réelle sur un écran de 96 dpi. Un clic ajuste la page.	Zoom: 100 % ≈ tamaño real en una pantalla de 96 ppp. Un clic ajusta la página.
+Zoom: click fits the view.	Zoom: Klick passt die Ansicht ein.	Zoom : un clic ajuste la vue.	Zoom: un clic ajusta la vista.
+Code: {}	Code: {}	Code : {}	Código: {}
+{} of {} devices shown – refine the search	{} von {} Betriebsmitteln angezeigt – Suche verfeinern	{} appareils affichés sur {} – affinez la recherche	{} de {} dispositivos mostrados – refine la búsqueda
+Identifying letter: {}	Kennbuchstabe: {}	Lettre d'identification : {}	Letra de identificación: {}
+File and further commands	Datei und weitere Befehle	Fichier et autres commandes	Archivo y otros comandos
+Keys of the page editor	Tasten des Seiteneditors	Touches de l'éditeur de page	Teclas del editor de páginas

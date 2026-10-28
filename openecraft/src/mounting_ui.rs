@@ -3,6 +3,7 @@
 //! part, highlighted in 3D, and the mounting progress. Shares the Wiring workspace.
 
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 use openecraft_core::model::Project;
 use openecraft_core::model::panel::PanelItem;
 use openecraft_core::analysis::Analysis;
@@ -294,7 +295,7 @@ impl MountingUi {
     fn view(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, panel: &mut PanelUi) {
         ui.horizontal(|ui| {
             panel.door_button(ui);
-            if ui.button(tr("⛶ Fit")).clicked() {
+            if icons::text_button(ui, Icon::Fit, tr("Fit")).clicked() {
                 panel.reset_camera();
                 if let Some((e, id)) = self.current {
                     panel.focus_item(prj, e, id);

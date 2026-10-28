@@ -16,7 +16,13 @@ with a command line, an MCP server, a parts server and a project server.
 - **Terminals, plugs, PLC:** multi-level terminals with accessories, plugs, PLC tag
   tables for TIA Portal, Studio 5000, TwinCAT, CODESYS and more, marker export.
 - **Reports and checks:** live report pages, graphical terminal, cable and plug
-  diagrams, drawn forms, a project check with message management.
+  diagrams, drawn forms, a project check with message management and a check for
+  open wire ends.
+- **Editor:** an EPLAN-style ribbon that folds groups into menus when space is short,
+  dockable panes per workspace, an Insert center, a properties pane, key tips,
+  command search; unsaved changes are kept and asked for on every way out; released
+  and locked pages are read only but selectable; crossing selection, zoom commands,
+  contextual help (F1) and rebindable keys for every page action.
 - **Panel layout:** devices at real size in 2D and 3D, virtual wiring with duct fill,
   drilling and NC data, enclosure climate, line-ups, rooms and 3D routing; wiring and
   mounting assistants for the workshop.

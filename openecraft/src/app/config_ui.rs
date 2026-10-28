@@ -1,6 +1,7 @@
 //! Configurator window: options with their choices, rules that insert page macros
 //! (variant, placeholder values, condition) and generating the pages.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::config::{self, ConfigOption, Rule};
@@ -46,7 +47,7 @@ impl App {
                             }
                         });
                     }
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove_option = Some(i);
                     }
                     ui.end_row();
@@ -55,7 +56,7 @@ impl App {
             if let Some(i) = remove_option {
                 cfg.options.remove(i);
             }
-            if ui.button(tr("➕ Option")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Option")).clicked() {
                 cfg.options.push(ConfigOption { name: format!("OPTION{}", cfg.options.len() + 1), ..Default::default() });
             }
             ui.separator();
@@ -82,7 +83,7 @@ impl App {
                     });
                     ui.add(egui::TextEdit::singleline(&mut r.values).hint_text(tr("e.g. NAME=Pump; POWER={POWER}")).desired_width(220.0));
                     ui.add(egui::TextEdit::singleline(&mut r.condition).hint_text(tr("e.g. STARTER=DOL")).desired_width(170.0));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove_rule = Some(i);
                     }
                     ui.end_row();
@@ -92,7 +93,7 @@ impl App {
                 cfg.rules.remove(i);
             }
             ui.horizontal(|ui| {
-                if ui.add_enabled(!page_macros.is_empty(), egui::Button::new(tr("➕ Rule"))).clicked() {
+                if ui.add_enabled_ui(!page_macros.is_empty(), |ui| icons::text_button(ui, Icon::Plus, tr("Rule"))).inner.clicked() {
                     cfg.rules.push(Rule { macro_name: page_macros[0].0.clone(), ..Default::default() });
                 }
                 if page_macros.is_empty() {
@@ -104,14 +105,14 @@ impl App {
                 ui.colored_label(crate::style::lock(), p);
             }
             ui.horizontal(|ui| {
-                generate = ui.add_enabled(problems.is_empty() && !cfg.rules.is_empty(), egui::Button::new(tr("⚙ Generate pages"))).clicked();
+                generate = ui.add_enabled_ui(problems.is_empty() && !cfg.rules.is_empty(), |ui| icons::text_button(ui, Icon::Settings, tr("Generate pages"))).inner.clicked();
                 ui.weak(tr_fmt!("{} generated pages in the project (changes on them are replaced)", generated));
             });
         });
         if generate {
             match config::generate(&mut self.session.prj, &self.macro_lib) {
                 Ok(g) => self.notify(ctx, tr_fmt!("{} pages removed, {} pages generated", g.removed, g.pages.len())),
-                Err(e) => self.notify(ctx, tr_fmt!("Generation failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Generation failed: {}", e)),
             }
             self.session.page = self.session.page.min(self.session.prj.pages.len() - 1);
             self.editor.selection.clear();

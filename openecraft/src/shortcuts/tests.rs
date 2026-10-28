@@ -76,3 +76,18 @@ fn unknown_stored_entries_are_ignored() {
     assert_eq!(s.text("rotate"), "E");
     assert_eq!(s.to_storage().len(), 1);
 }
+
+#[test]
+fn shortcut_groups_hold_every_binding_once() {
+    let groups = groups();
+    let mut all: Vec<&str> = groups.iter().flat_map(|(_, ids)| ids.iter().copied()).collect();
+    let n = all.len();
+    all.sort_unstable();
+    all.dedup();
+    assert_eq!(all.len(), n, "a binding in two groups");
+    let mut ids = binding_ids();
+    ids.sort_unstable();
+    assert_eq!(all, ids);
+    // The Home tab comes first with its commands.
+    assert!(groups[0].1.contains(&commands::def(Cmd::Paste).id));
+}

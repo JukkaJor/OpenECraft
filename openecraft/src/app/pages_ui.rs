@@ -1,6 +1,7 @@
 //! Plot frames and page templates (tabs of the forms window), the "save page as
 //! template" dialog and the files of document pages.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::document;
@@ -236,7 +237,7 @@ impl App {
                         if ui.button(tr("Insert page")).on_hover_text(tr("New page after the current one")).clicked() {
                             insert = Some(t.clone());
                         }
-                        if own && ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                        if own && icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                             remove = Some(t.name.clone());
                         }
                     });
@@ -277,10 +278,12 @@ impl App {
 
     pub(super) fn save_template_window(&mut self, ctx: &egui::Context) {
         let Some(mut name) = self.pages_ui.template_name.take() else { return };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Save page as template"), "save_page_template", None);
+        let mut open = !esc;
         let mut save = false;
+        let mut cancel = false;
         let exists = self.session.prj.page_templates.iter().any(|t| t.name == name.trim());
-        egui::Window::new(tr("Save page as template")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             ui.label(tr("The page type, plot frame, title block, structure, description and the whole content are saved."));
             ui.horizontal(|ui| {
                 ui.label(tr("Name"));
@@ -289,13 +292,16 @@ impl App {
             if exists {
                 ui.colored_label(crate::style::lock(), tr("A template of this name is replaced."));
             }
-            save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("Save"))).clicked();
+            ui.horizontal(|ui| {
+                save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("Save"))).clicked();
+                cancel = ui.button(tr("Cancel")).clicked();
+            });
         });
         if save {
             let t = page_templates::from_page(&self.session.prj, self.session.page, &name);
             page_templates::save(&mut self.session.prj, t);
             self.notify(ctx, tr_fmt!("Page template {} saved", name.trim()));
-        } else if open {
+        } else if open && !cancel {
             self.pages_ui.template_name = Some(name);
         }
     }
@@ -322,12 +328,12 @@ impl App {
             Ok(bytes) => {
                 let ext = doc.extension();
                 match self.io.save_bytes_as(&doc.name, (doc.kind().title(), &ext), &bytes) {
-                    Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", crate::io::short_name(&path))),
+                    Ok(Some(path)) => self.notify_ok(ctx, tr_fmt!("Exported {}", crate::io::short_name(&path))),
                     Ok(None) => {}
-                    Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
+                    Err(e) => self.notify_error(ctx, tr_fmt!("Export failed: {}", e)),
                 }
             }
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 }
