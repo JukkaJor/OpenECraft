@@ -730,6 +730,16 @@ impl App {
         self.active_doc = crate::dock::panes(&self.dock).into_iter().find(|p| p.is_document()).unwrap_or(Pane::Page);
     }
 
+    /// Puts the panes of the current workspace back at their default places and closes
+    /// its floating panes.
+    pub(super) fn reset_layout(&mut self) {
+        let mut side = crate::dock::Side { placement: std::mem::take(&mut self.shell.placement), floating: std::mem::take(&mut self.floating) };
+        crate::dock::reset(self.workspace, &mut self.dock, &mut side);
+        self.shell.placement = side.placement;
+        self.floating = side.floating;
+        self.active_doc = crate::dock::panes(&self.dock).into_iter().find(|p| p.is_document()).unwrap_or(Pane::Page);
+    }
+
     /// Tool windows asked for by a flag of the tools (`open = true`) become panes; a
     /// flag follows whether its pane is shown.
     fn open_requests(&mut self, before: bool) {

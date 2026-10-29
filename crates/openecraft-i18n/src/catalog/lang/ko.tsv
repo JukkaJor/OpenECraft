@@ -6289,3 +6289,6 @@ Section {} is now section {}	구역 {}은(는) 이제 구역 {}입니다
 Moves the page before this page of its section (or of the section given)	페이지를 해당 구역(또는 지정한 구역)의 이 페이지 앞으로 이동합니다
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	구역을 상위 구역(또는 지정한 상위 구역)의 이 구역 앞으로 이동합니다. 번호는 순서대로 이어집니다
 {} is not in that section	{}은(는) 그 구역에 없습니다
+Standard workspaces	표준 작업 공간
+Saved workspaces	저장된 작업 공간
+Switches to this workspace with its panes at their default places	이 작업 공간으로 전환하고 창을 기본 위치로 되돌립니다

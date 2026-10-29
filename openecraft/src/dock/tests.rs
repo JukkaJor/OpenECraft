@@ -202,3 +202,20 @@ fn the_document_worked_in_follows_the_tab_shown() {
     assert_eq!(shown_document(&tree, start), Pane::Page, "the start page tab is behind the page now");
     assert_eq!(shown_document(&tree, Pane::Page), Pane::Page);
 }
+
+#[test]
+fn a_standard_workspace_comes_back_in_its_default_arrangement() {
+    for w in Workspace::ALL {
+        let mut tree = default_tree_for(w);
+        let before = panes(&tree);
+        close(&mut tree, before[0]);
+        show(&mut tree, Pane::Tool(ToolPane::Reports));
+        let mut side = Side::default();
+        side.placement.set(Pane::Tool(ToolPane::Cables), !Pane::Tool(ToolPane::Cables).floats());
+        side.floating.push(Pane::Tool(ToolPane::Parts));
+        assert_ne!(panes(&tree), before);
+        reset(w, &mut tree, &mut side);
+        assert_eq!(panes(&tree), before, "{}", w.key());
+        assert_eq!(side, Side::default());
+    }
+}

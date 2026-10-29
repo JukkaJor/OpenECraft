@@ -356,11 +356,7 @@ impl App {
             Cmd::WorkspaceReview => self.set_workspace(Workspace::Review),
             Cmd::WorkspacePreplanning => self.set_workspace(Workspace::Preplanning),
             Cmd::SaveWorkspace => self.layout_name = Some(String::new()),
-            Cmd::ResetLayout => {
-                self.dock = crate::dock::default_tree_for(self.workspace);
-                self.floating.clear();
-                self.shell.placement = crate::dock::Placement::default();
-            }
+            Cmd::ResetLayout => self.reset_layout(),
             Cmd::MinimizeRibbon => self.shell.ribbon_minimized = !self.shell.ribbon_minimized,
             // ------------------------------------------------------------ engineering
             Cmd::DeviceNumbering => self.numbering_ui.show_devices = true,

@@ -19,7 +19,8 @@ with a command line, an MCP server, a parts server and a project server.
   diagrams, drawn forms, a project check with message management and a check for
   open wire ends.
 - **Editor:** an EPLAN-style ribbon that folds groups into menus when space is short,
-  dockable panes per workspace, an Insert center, a properties pane, key tips,
+  dockable panes per workspace with standard workspaces to return to their default
+  arrangement, an Insert center, a properties pane, key tips,
   command search; unsaved changes are kept and asked for on every way out; released
   and locked pages are read only but selectable; crossing selection, zoom commands,
   contextual help (F1) and rebindable keys for every page action; pages and sections

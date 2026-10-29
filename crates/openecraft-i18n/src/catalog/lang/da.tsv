@@ -6296,3 +6296,6 @@ Section {} is now section {}	Afsnit {} er nu afsnit {}
 Moves the page before this page of its section (or of the section given)	Flytter siden foran denne side i dens afsnit (eller i det angivne afsnit)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Flytter afsnittet foran dette afsnit i dets overordnede afsnit (eller i det angivne); numrene tæller fortsat i rækkefølge
 {} is not in that section	{} er ikke i det afsnit
+Standard workspaces	Standardarbejdsområder
+Saved workspaces	Gemte arbejdsområder
+Switches to this workspace with its panes at their default places	Skifter til dette arbejdsområde med panelerne på deres standardpladser

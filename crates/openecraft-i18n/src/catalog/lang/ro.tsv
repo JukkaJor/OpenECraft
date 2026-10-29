@@ -6296,3 +6296,6 @@ Section {} is now section {}	Secțiunea {} este acum secțiunea {}
 Moves the page before this page of its section (or of the section given)	Mută pagina înaintea acestei pagini din secțiunea ei (sau din secțiunea dată)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Mută secțiunea înaintea acestei secțiuni a părintelui ei (sau a părintelui dat); numerele continuă în ordine
 {} is not in that section	{} nu se află în acea secțiune
+Standard workspaces	Spații de lucru standard
+Saved workspaces	Spații de lucru salvate
+Switches to this workspace with its panes at their default places	Comută la acest spațiu de lucru cu panourile la locurile lor implicite

@@ -1,5 +1,5 @@
-//! View › Workspaces: saving and restoring the arrangement of the editor (workspace,
-//! panes and ribbon).
+//! View › Workspaces: the built-in workspaces in their default arrangement, and saving
+//! and restoring the arrangement of the editor (workspace, panes and ribbon).
 
 use super::*;
 use crate::workspaces::{self, Layout};
@@ -30,10 +30,27 @@ impl App {
         }
     }
 
-    /// The saved workspaces (View › Workspaces).
+    /// Switches to a built-in workspace in its default arrangement, whatever was
+    /// changed in it before.
+    pub(super) fn restore_workspace(&mut self, w: Workspace) {
+        self.set_workspace(w);
+        self.reset_layout();
+    }
+
+    /// The standard and the saved workspaces (View › Workspaces).
     pub(super) fn workspaces_menu(&mut self, ui: &mut egui::Ui) {
+        let mut standard = None;
         let mut apply = None;
         let mut confirm = None;
+        ui.weak(tr("Standard workspaces"));
+        for w in Workspace::ALL {
+            let r = ui.add(egui::Button::selectable(w == self.workspace, tr(w.title())));
+            if r.on_hover_text(tr("Switches to this workspace with its panes at their default places")).clicked() {
+                standard = Some(w);
+            }
+        }
+        ui.separator();
+        ui.weak(tr("Saved workspaces"));
         for l in &self.layouts {
             ui.horizontal(|ui| {
                 let ws = Workspace::from_key(&l.workspace).map(|w| tr(w.title())).unwrap_or("");
@@ -51,6 +68,10 @@ impl App {
         ui.separator();
         if ui.button(tr("Save current…")).on_hover_text(tr("Saves the workspace, the arrangement of the panels and the open windows")).clicked() {
             self.layout_name = Some(String::new());
+            ui.close();
+        }
+        if let Some(w) = standard {
+            self.restore_workspace(w);
             ui.close();
         }
         if let Some(l) = apply {
