@@ -8,7 +8,7 @@
 use crate::model::{natural_cmp, Project};
 use crate::netlist::{pin_designation, PinRef};
 use crate::analysis::Analysis;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 pub use crate::model::harness::{End, ExtraPart, Fixing, FixingKind, Harness, PartKind, Protection, ProtectionKind};
 
 pub mod topology;
@@ -139,6 +139,75 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
             *c = key(&c[0], &c[1]);
         }
     }
+}
+
+/// The connections assigned to any harness.
+pub fn assigned(prj: &Project) -> HashSet<[String; 2]> {
+    prj.harnesses.iter().flat_map(|h| h.connections.iter().cloned()).collect()
+}
+
+/// Orders the connection points of a net (`pins`, in schematic order) so that the
+/// connections assigned to a harness stay connections: they are wires of the harness,
+/// so moving pages or symbols does not chain them anew. A run of assigned connections
+/// keeps together where its first point is; the other points keep their order.
+pub fn keep_assigned(prj: &Project, assigned: &HashSet<[String; 2]>, pins: Vec<PinRef>) -> Vec<PinRef> {
+    let n = pins.len();
+    if assigned.is_empty() || n < 3 {
+        return pins;
+    }
+    let names: Vec<String> = pins.iter().map(|&p| pin_designation(prj, p)).collect();
+    fn root(group: &mut [usize], mut i: usize) -> usize {
+        while group[i] != i {
+            group[i] = group[group[i]];
+            i = group[i];
+        }
+        i
+    }
+    // Links between assigned points, nearest in schematic order first; each point has
+    // at most two and they form no ring, so the links make paths.
+    let mut links: Vec<Vec<usize>> = vec![Vec::new(); n];
+    let mut group: Vec<usize> = (0..n).collect();
+    for d in 1..n {
+        for i in 0..n - d {
+            let j = i + d;
+            if links[i].len() < 2 && links[j].len() < 2 && assigned.contains(&key(&names[i], &names[j])) {
+                let (ri, rj) = (root(&mut group, i), root(&mut group, j));
+                if ri != rj {
+                    group[ri] = rj;
+                    links[i].push(j);
+                    links[j].push(i);
+                }
+            }
+        }
+    }
+    let mut done = vec![false; n];
+    let mut out = Vec::with_capacity(n);
+    for s in 0..n {
+        if done[s] {
+            continue;
+        }
+        let mut path = vec![s];
+        let mut k = 0;
+        while k < path.len() {
+            for &m in &links[path[k]] {
+                if !path.contains(&m) {
+                    path.push(m);
+                }
+            }
+            k += 1;
+        }
+        // From the end that comes first in schematic order.
+        let mut cur = path.iter().copied().filter(|&m| links[m].len() < 2).min().unwrap_or(s);
+        loop {
+            done[cur] = true;
+            out.push(pins[cur]);
+            match links[cur].iter().copied().find(|&m| !done[m]) {
+                Some(m) => cur = m,
+                None => break,
+            }
+        }
+    }
+    out
 }
 
 /// Assigned connections that do not exist in the schematic (any more): (harness, ends).

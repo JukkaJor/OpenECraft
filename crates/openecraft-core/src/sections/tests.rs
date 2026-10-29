@@ -109,3 +109,58 @@ fn section_numbers_are_letters_and_digits() {
     assert!(set_number(&mut prj, id, "A").is_ok());
     assert!(set_number(&mut prj, id, "12").is_ok());
 }
+
+#[test]
+fn a_page_moves_between_pages_of_a_section() {
+    let (mut prj, a, b) = project();
+    // Page 1.2 goes before page 1.1 of its own section: the order changes, the name stays.
+    assert_eq!(moved_name(&prj, 2, a), "1.2");
+    let at = move_page_to(&mut prj, 2, a, Some(1)).unwrap();
+    assert_eq!((at, names(&prj)), (1, vec!["1", "1.2", "1.1", "1.1.1"]));
+    // Page 1 goes into section 1.1 before its page 1.1.1: number 1 is taken there.
+    assert_eq!(moved_name(&prj, 0, b), "1.1.2");
+    let at = move_page_to(&mut prj, 0, b, Some(3)).unwrap();
+    assert_eq!((at, names(&prj)), (2, vec!["1.2", "1.1", "1.1.2", "1.1.1"]));
+    // A page of another section as `before` puts it after the section's pages.
+    let at = move_page_to(&mut prj, 0, 0, Some(1)).unwrap();
+    assert_eq!((at, names(&prj)), (0, vec!["2", "1.1", "1.1.2", "1.1.1"]));
+    prj.pages[1].locked = true;
+    assert!(move_page_to(&mut prj, 1, 0, None).is_err());
+    assert!(move_page_to(&mut prj, 9, 0, None).is_err());
+}
+
+#[test]
+fn pages_without_sections_are_reordered() {
+    let mut prj = Project::default();
+    for _ in 0..2 {
+        let at = prj.pages.len();
+        crate::ops::add_page(&mut prj, PageKind::Schematic, at);
+    }
+    assert_eq!(names(&prj), ["1", "2", "3"]);
+    assert_eq!(move_page_to(&mut prj, 2, 0, Some(0)), Ok(0));
+    assert_eq!(names(&prj), ["3", "1", "2"]);
+    assert_eq!(move_page_to(&mut prj, 0, 0, None), Ok(2));
+    assert_eq!(names(&prj), ["1", "2", "3"]);
+}
+
+#[test]
+fn a_section_moves_before_a_sibling_and_into_another_section() {
+    let (mut prj, a, b) = project();
+    let c = add(&mut prj, 0, "Controls");
+    let d = add(&mut prj, 0, "Field");
+    // Section 3 goes before section 1: the numbers keep counting in tree order.
+    assert_eq!(number_after_move(&prj, d, 0, Some(a)).as_deref(), Ok("1"));
+    move_section_to(&mut prj, d, 0, Some(a)).unwrap();
+    assert_eq!(children(&prj, 0), [d, a, c]);
+    assert_eq!((full_number(&prj, a), full_number(&prj, b)), ("2".into(), "2.1".into()));
+    assert_eq!(names(&prj), ["1", "2.1", "2.2", "2.1.1"]);
+    // Section 2.1 goes into section 3 as its last subsection, then back before nothing.
+    assert_eq!(number_after_move(&prj, b, c, None).as_deref(), Ok("3.1"));
+    move_section_to(&mut prj, b, c, None).unwrap();
+    assert_eq!(names(&prj), ["1", "2.1", "2.2", "3.1.1"]);
+    // Moving a section onto its old place changes nothing; into itself fails.
+    move_section_to(&mut prj, a, 0, Some(c)).unwrap();
+    assert_eq!(children(&prj, 0), [d, a, c]);
+    assert!(number_after_move(&prj, c, b, None).is_err());
+    assert_eq!(full_number(&prj, b), "3.1");
+}

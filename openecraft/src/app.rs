@@ -67,6 +67,7 @@ mod plugins_ui;
 mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
+mod page_dnd;
 mod sections_ui;
 mod potentials_ui;
 mod projects_ui;
@@ -241,6 +242,8 @@ pub struct App {
     find_ui: find_ui::FindUi,
     /// Pages tab grouped by structure.
     page_tree: bool,
+    /// A page or section dragged in the Pages tab.
+    page_drag: page_dnd::DragState,
     /// Macros, terminal strips, PLC overview, revisions.
     eng: engineering::EngineeringUi,
     macro_lib: openecraft_core::macros::MacroLibrary,
@@ -471,6 +474,7 @@ impl App {
             show_xref: false,
             find_ui: Default::default(),
             page_tree: false,
+            page_drag: Default::default(),
             eng: Default::default(),
             macro_lib: macro_lib.unwrap_or_default(),
             symed: Default::default(),

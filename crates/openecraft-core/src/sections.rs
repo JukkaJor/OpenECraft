@@ -111,9 +111,15 @@ pub fn local_name(prj: &Project, page: usize) -> &str {
 /// Name for a new page of a section (0: top level): one more than the highest page
 /// number in it, not used by another page.
 pub fn next_page_name(prj: &Project, section: u64) -> String {
+    next_name(prj, section, None)
+}
+
+/// [`next_page_name`] as if page `skip` were not there.
+fn next_name(prj: &Project, section: u64, skip: Option<usize>) -> String {
     let prefix = prefix(prj, section);
-    let max = (0..prj.pages.len()).filter(|&i| of_page(prj, i) == section).filter_map(|i| local_name(prj, i).parse::<u32>().ok()).max().unwrap_or(0);
-    let used: HashSet<&str> = prj.pages.iter().map(|p| p.name.as_str()).collect();
+    let others = |i: &usize| Some(*i) != skip;
+    let max = (0..prj.pages.len()).filter(others).filter(|&i| of_page(prj, i) == section).filter_map(|i| local_name(prj, i).parse::<u32>().ok()).max().unwrap_or(0);
+    let used: HashSet<&str> = (0..prj.pages.len()).filter(others).map(|i| prj.pages[i].name.as_str()).collect();
     (max + 1..).map(|n| format!("{prefix}{n}")).find(|n| !used.contains(n.as_str())).unwrap_or_default()
 }
 
@@ -235,25 +241,76 @@ pub fn move_section(prj: &mut Project, id: u64, up: bool) -> bool {
     true
 }
 
+/// Moves a section into `parent` (0: top level) before its subsection `before`
+/// (`None`: after them): [`set_parent`], then [`move_section`] steps, so the numbers
+/// keep counting in tree order. The pages follow.
+pub fn move_section_to(prj: &mut Project, id: u64, parent: u64, before: Option<u64>) -> Result<(), &'static str> {
+    set_parent(prj, id, parent)?;
+    let siblings = children(prj, parent);
+    let Some(k) = siblings.iter().position(|&c| c == id) else { return Ok(()) };
+    let target = match before.and_then(|b| siblings.iter().position(|&c| c == b)) {
+        Some(b) if b > k => b - 1,
+        Some(b) => b,
+        None => siblings.len() - 1,
+    };
+    for _ in target..k {
+        move_section(prj, id, true);
+    }
+    for _ in k..target {
+        move_section(prj, id, false);
+    }
+    Ok(())
+}
+
+/// The full number a section gets from [`move_section_to`].
+pub fn number_after_move(prj: &Project, id: u64, parent: u64, before: Option<u64>) -> Result<String, &'static str> {
+    let mut sim = Project { sections: prj.sections.clone(), pages: Vec::new(), ..Project::default() };
+    move_section_to(&mut sim, id, parent, before)?;
+    Ok(full_number(&sim, id))
+}
+
 /// Moves a page into a section (0: top level), after the section's pages. It keeps
 /// its number within the section if that is free there, otherwise it gets the next
 /// one. Returns the page's new index.
 pub fn move_page(prj: &mut Project, page: usize, section: u64) -> Result<usize, &'static str> {
     let section = if get(prj, section).is_some() { section } else { 0 };
-    if prj.pages[page].locked {
-        return Err(tr_const!("Released pages cannot be moved"));
-    }
-    if of_page(prj, page) == section {
+    if prj.pages.get(page).is_some_and(|p| !p.locked) && of_page(prj, page) == section {
         return Ok(page);
     }
-    let local = local_name(prj, page).to_string();
+    move_page_to(prj, page, section, None)
+}
+
+/// The name a page gets when it moves into a section (0: top level): its number
+/// within its section if that is free there, otherwise the next one; within its own
+/// section it keeps its name.
+pub fn moved_name(prj: &Project, page: usize, section: u64) -> String {
+    let section = if get(prj, section).is_some() { section } else { 0 };
+    if of_page(prj, page) == section {
+        return prj.pages[page].name.clone();
+    }
+    let local = local_name(prj, page);
     let name = format!("{}{local}", prefix(prj, section));
+    let taken = local.is_empty() || prj.pages.iter().enumerate().any(|(i, p)| i != page && p.name == name);
+    if taken { next_name(prj, section, Some(page)) } else { name }
+}
+
+/// Moves a page into a section (0: top level) before the page `before` of that
+/// section (`None`, or a page of another section: after the section's pages); it gets
+/// [`moved_name`]. Returns the page's new index.
+pub fn move_page_to(prj: &mut Project, page: usize, section: u64, before: Option<usize>) -> Result<usize, &'static str> {
+    let section = if get(prj, section).is_some() { section } else { 0 };
+    let pg = prj.pages.get(page).ok_or(tr_const!("No such page"))?;
+    if pg.locked {
+        return Err(tr_const!("Released pages cannot be moved"));
+    }
+    let before = before.filter(|&b| b < prj.pages.len() && b != page && of_page(prj, b) == section).map(|b| prj.pages[b].id);
+    let name = moved_name(prj, page, section);
     let mut pg = prj.pages.remove(page);
-    let taken = local.is_empty() || prj.pages.iter().any(|p| p.name == name);
-    pg.name = if taken { next_page_name(prj, section) } else { name };
+    pg.name = name;
     pg.section = section;
     let id = pg.id;
-    prj.pages.push(pg);
+    let at = before.and_then(|b| prj.pages.iter().position(|p| p.id == b)).unwrap_or(prj.pages.len());
+    prj.pages.insert(at, pg);
     sort_pages(prj);
     Ok(prj.pages.iter().position(|p| p.id == id).unwrap_or(0))
 }

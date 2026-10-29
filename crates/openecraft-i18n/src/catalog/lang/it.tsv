@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Modello sconosciuto {}: indica uno integrato ({}) o un file di progetto
 Property {} needs a text or a number	La proprietà {} richiede un testo o un numero
 Check settings…	Impostazioni della verifica…
+Drop between the pages	Rilascia tra le pagine
+Drop between the rows or onto a section	Rilascia tra le righe o su una sezione
+Changes the page order; the name stays	Cambia l'ordine delle pagine; il nome resta
+Moves to the top level as page {}	Passa al livello superiore come pagina {}
+Moves to {} as page {}	Passa in {} come pagina {}
+Becomes section {}	Diventa la sezione {}
+Released pages in it keep their names	Le pagine rilasciate al suo interno mantengono il nome
+Page {} is now page {}	La pagina {} è ora la pagina {}
+Section {} is now section {}	La sezione {} è ora la sezione {}
+Moves the page before this page of its section (or of the section given)	Sposta la pagina prima di questa pagina della sua sezione (o della sezione indicata)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Sposta la sezione prima di questa sezione del suo padre (o del padre indicato); i numeri continuano in ordine
+{} is not in that section	{} non è in quella sezione

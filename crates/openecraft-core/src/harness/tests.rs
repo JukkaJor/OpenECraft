@@ -155,3 +155,32 @@ fn stored_topology_gives_the_lengths_of_field_wires() {
     }
     assert!(after.iter().any(|w| !w.routed && w.length >= 5000.0), "{after:?}");
 }
+
+#[test]
+fn assigned_connections_stay_when_pages_are_reordered() {
+    let mut prj = demo_project();
+    let pairs = |prj: &Project| {
+        let an = Analysis::checked(prj);
+        an.connections.iter().map(|c| key(&pin_designation(prj, c.a), &pin_designation(prj, c.b))).collect::<Vec<_>>()
+    };
+    // While the assignments match the schematic order they change nothing.
+    let mut free = prj.clone();
+    free.harnesses.clear();
+    assert_eq!(pairs(&prj), pairs(&free));
+    let before = wires(&prj, &Analysis::checked(&prj), "-WH1").len();
+    // The control circuit moves behind the other pages: its points come later in the
+    // schematic order, the harness wires stay.
+    let at = prj.pages.len() - 1;
+    crate::ops::move_page(&mut prj, 2, at);
+    let an = Analysis::checked(&prj);
+    assert!(stale(&prj, &an).is_empty());
+    assert_eq!(wires(&prj, &an, "-WH1").len(), before);
+    let s = crate::sections::add(&mut prj, 0, "");
+    crate::sections::move_page(&mut prj, 1, s).unwrap();
+    let an = Analysis::checked(&prj);
+    assert!(stale(&prj, &an).is_empty() && an.issues.iter().all(|i| !i.message().starts_with("Harness")));
+    // Without the harness the connections follow the new order.
+    let mut free = prj.clone();
+    free.harnesses.clear();
+    assert_ne!(pairs(&prj), pairs(&free));
+}

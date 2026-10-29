@@ -1,13 +1,10 @@
-//! Page sections in the editor: the section tree of the Pages navigator (a page is
-//! dragged onto a section to move it there) and the section properties window.
+//! Page sections in the editor: the section tree of the Pages navigator (pages and
+//! sections are dragged within it, `page_dnd`) and the section properties window.
 
 use super::*;
 use super::navigator::PageAction;
+use super::page_dnd::{Dragged, Probe};
 use openecraft_core::sections;
-
-/// Payload of a dragged page row: the page index.
-#[derive(Clone, Copy)]
-pub(super) struct PageDrag(pub usize);
 
 /// What the section tree or the section properties ask for.
 pub(super) enum SectionAction {
@@ -17,6 +14,10 @@ pub(super) enum SectionAction {
     Move(u64, bool),
     Delete(u64),
     MovePage(usize, u64),
+    /// A page into a section before one of its pages (`None`: after them).
+    MovePageTo(usize, u64, Option<usize>),
+    /// A section into a section before one of its subsections (`None`: after them).
+    MoveSectionTo(u64, u64, Option<u64>),
     Number(u64, String),
     Parent(u64, u64),
 }
@@ -43,38 +44,37 @@ pub(super) fn section_row(ui: &mut egui::Ui, choices: &[(u64, String)], current:
 
 impl App {
     /// The pages of the top level, then the sections with their pages and subsections.
-    pub(super) fn section_tree(&self, ui: &mut egui::Ui, shown: &[usize]) -> PageAction {
+    pub(super) fn section_tree(&self, ui: &mut egui::Ui, shown: &[usize], probe: &mut Probe) -> PageAction {
         let prj = &self.session.prj;
         let mut action = PageAction::None;
         for &i in shown.iter().filter(|&&i| sections::of_page(prj, i) == 0) {
-            action = action.or(self.page_row(ui, i));
+            action = action.or(self.page_row(ui, i, probe));
         }
         for id in sections::children(prj, 0) {
-            action = action.or(self.section_node(ui, id, shown));
+            action = action.or(self.section_node(ui, id, shown, probe));
         }
         action
     }
 
-    fn section_node(&self, ui: &mut egui::Ui, id: u64, shown: &[usize]) -> PageAction {
+    fn section_node(&self, ui: &mut egui::Ui, id: u64, shown: &[usize], probe: &mut Probe) -> PageAction {
         let prj = &self.session.prj;
-        let header = egui::CollapsingHeader::new(RichText::new(sections::title(prj, id)).strong()).id_salt(("section", id)).default_open(true).show(ui, |ui| {
+        let title = RichText::new(sections::title(prj, id));
+        let title = if probe.dragged == Some(Dragged::Section(id)) { title.weak() } else { title.strong() };
+        let header = egui::CollapsingHeader::new(title).id_salt(("section", id)).default_open(true).show(ui, |ui| {
             let mut action = PageAction::None;
             for &i in shown.iter().filter(|&&i| sections::of_page(prj, i) == id) {
-                action = action.or(self.page_row(ui, i));
+                action = action.or(self.page_row(ui, i, probe));
             }
             for c in sections::children(prj, id) {
-                action = action.or(self.section_node(ui, c, shown));
+                action = action.or(self.section_node(ui, c, shown, probe));
             }
             action
         });
         let mut action = header.body_returned.unwrap_or(PageAction::None);
-        let r = &header.header_response;
-        if r.dnd_hover_payload::<PageDrag>().is_some() {
-            ui.painter().rect_stroke(r.rect, 2.0, ui.visuals().selection.stroke, egui::StrokeKind::Inside);
-        }
-        if let Some(p) = r.dnd_release_payload::<PageDrag>() {
-            action = action.or(PageAction::Section(SectionAction::MovePage(p.0, id)));
-        }
+        let r = header.header_response.interact(egui::Sense::drag());
+        r.dnd_set_drag_payload(Dragged::Section(id));
+        let bottom = header.body_response.as_ref().map_or(r.rect.bottom(), |b| b.rect.bottom());
+        probe.section(prj, &header.header_response, bottom, id);
         let siblings = sections::get(prj, id).map(|s| sections::children(prj, s.parent)).unwrap_or_default();
         let (first, last) = (siblings.first() == Some(&id), siblings.last() == Some(&id));
         r.context_menu(|ui| {
@@ -108,6 +108,12 @@ impl App {
         let prj = &mut self.session.prj;
         let id_of = |prj: &Project, i: Option<usize>| i.and_then(|i| prj.pages.get(i)).map(|p| p.id);
         let (current, props) = (id_of(prj, Some(self.session.page)), id_of(prj, self.page_props));
+        // The page or section that moves and its name before, for the message after it.
+        let moved = match a {
+            SectionAction::MovePage(p, _) | SectionAction::MovePageTo(p, _, _) => prj.pages.get(p).map(|pg| (false, pg.id, pg.name.clone())),
+            SectionAction::MoveSectionTo(id, _, _) => Some((true, id, sections::full_number(prj, id))),
+            _ => None,
+        };
         let result = match a {
             SectionAction::NewPage(id) => {
                 let at = ops::add_page_in(prj, PageKind::Schematic, id);
@@ -128,6 +134,8 @@ impl App {
             }
             SectionAction::Delete(id) => sections::delete(prj, id),
             SectionAction::MovePage(page, id) => sections::move_page(prj, page, id).map(|_| ()),
+            SectionAction::MovePageTo(page, id, before) => sections::move_page_to(prj, page, id, before).map(|_| ()),
+            SectionAction::MoveSectionTo(id, parent, before) => sections::move_section_to(prj, id, parent, before),
             SectionAction::Number(id, n) => sections::set_number(prj, id, &n),
             SectionAction::Parent(id, parent) => sections::set_parent(prj, id, parent),
         };
@@ -137,8 +145,15 @@ impl App {
             self.session.page = i;
         }
         self.page_props = index(props);
-        if let Err(e) = result {
-            self.notify(ctx, tr(e));
+        let renamed = match moved {
+            Some((false, id, old)) => prj.pages.iter().find(|p| p.id == id).map(|p| p.name.clone()).filter(|n| *n != old).map(|new| tr_fmt!("Page {} is now page {}", old, new)),
+            Some((true, id, old)) => Some(sections::full_number(prj, id)).filter(|n| *n != old).map(|new| tr_fmt!("Section {} is now section {}", old, new)),
+            None => None,
+        };
+        match (result, renamed) {
+            (Err(e), _) => self.notify_error(ctx, tr(e)),
+            (Ok(()), Some(msg)) => self.notify_ok(ctx, msg),
+            (Ok(()), None) => {}
         }
     }
 

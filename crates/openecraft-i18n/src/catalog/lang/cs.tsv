@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Neznámá šablona {}: zadejte vestavěnou ({}) nebo projektový soubor
 Property {} needs a text or a number	Vlastnost {} vyžaduje text nebo číslo
 Check settings…	Nastavení kontroly…
+Drop between the pages	Pustit mezi stránky
+Drop between the rows or onto a section	Pustit mezi řádky nebo na oddíl
+Changes the page order; the name stays	Změní pořadí stránek; název zůstane
+Moves to the top level as page {}	Přejde na nejvyšší úroveň jako stránka {}
+Moves to {} as page {}	Přejde do {} jako stránka {}
+Becomes section {}	Stane se oddílem {}
+Released pages in it keep their names	Uvolněné stránky v něm si ponechají své názvy
+Page {} is now page {}	Stránka {} je nyní stránka {}
+Section {} is now section {}	Oddíl {} je nyní oddíl {}
+Moves the page before this page of its section (or of the section given)	Přesune stránku před tuto stránku jejího oddílu (nebo zadaného oddílu)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Přesune oddíl před tento oddíl jeho nadřazeného oddílu (nebo zadaného); čísla pokračují v pořadí
+{} is not in that section	{} není v tomto oddílu

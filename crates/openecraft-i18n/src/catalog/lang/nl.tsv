@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Onbekende sjabloon {}: geef een ingebouwde ({}) of een projectbestand op
 Property {} needs a text or a number	Eigenschap {} vereist een tekst of een getal
 Check settings…	Controle-instellingen…
+Drop between the pages	Neerzetten tussen de pagina's
+Drop between the rows or onto a section	Neerzetten tussen de rijen of op een sectie
+Changes the page order; the name stays	Wijzigt de paginavolgorde; de naam blijft
+Moves to the top level as page {}	Gaat naar het bovenste niveau als pagina {}
+Moves to {} as page {}	Gaat naar {} als pagina {}
+Becomes section {}	Wordt sectie {}
+Released pages in it keep their names	Vrijgegeven pagina's erin behouden hun naam
+Page {} is now page {}	Pagina {} is nu pagina {}
+Section {} is now section {}	Sectie {} is nu sectie {}
+Moves the page before this page of its section (or of the section given)	Verplaatst de pagina vóór deze pagina van haar sectie (of van de opgegeven sectie)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Verplaatst de sectie vóór deze sectie van de bovenliggende sectie (of van de opgegeven); de nummers lopen door in volgorde
+{} is not in that section	{} ligt niet in die sectie

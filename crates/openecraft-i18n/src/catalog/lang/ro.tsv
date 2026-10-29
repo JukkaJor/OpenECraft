@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Șablon necunoscut {}: indicați unul integrat ({}) sau un fișier de proiect
 Property {} needs a text or a number	Proprietatea {} necesită un text sau un număr
 Check settings…	Setări de verificare…
+Drop between the pages	Plasați între pagini
+Drop between the rows or onto a section	Plasați între rânduri sau pe o secțiune
+Changes the page order; the name stays	Schimbă ordinea paginilor; numele rămâne
+Moves to the top level as page {}	Trece la nivelul superior ca pagina {}
+Moves to {} as page {}	Trece în {} ca pagina {}
+Becomes section {}	Devine secțiunea {}
+Released pages in it keep their names	Paginile aprobate din ea își păstrează numele
+Page {} is now page {}	Pagina {} este acum pagina {}
+Section {} is now section {}	Secțiunea {} este acum secțiunea {}
+Moves the page before this page of its section (or of the section given)	Mută pagina înaintea acestei pagini din secțiunea ei (sau din secțiunea dată)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Mută secțiunea înaintea acestei secțiuni a părintelui ei (sau a părintelui dat); numerele continuă în ordine
+{} is not in that section	{} nu se află în acea secțiune

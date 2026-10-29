@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Ukendt skabelon {}: angiv en indbygget ({}) eller en projektfil
 Property {} needs a text or a number	Egenskaben {} kræver en tekst eller et tal
 Check settings…	Kontrolindstillinger…
+Drop between the pages	Slip mellem siderne
+Drop between the rows or onto a section	Slip mellem rækkerne eller på et afsnit
+Changes the page order; the name stays	Ændrer siderækkefølgen; navnet bliver
+Moves to the top level as page {}	Flyttes til øverste niveau som side {}
+Moves to {} as page {}	Flyttes til {} som side {}
+Becomes section {}	Bliver afsnit {}
+Released pages in it keep their names	Frigivne sider i det beholder deres navne
+Page {} is now page {}	Side {} er nu side {}
+Section {} is now section {}	Afsnit {} er nu afsnit {}
+Moves the page before this page of its section (or of the section given)	Flytter siden foran denne side i dens afsnit (eller i det angivne afsnit)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Flytter afsnittet foran dette afsnit i dets overordnede afsnit (eller i det angivne); numrene tæller fortsat i rækkefølge
+{} is not in that section	{} er ikke i det afsnit

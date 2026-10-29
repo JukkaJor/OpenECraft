@@ -22,12 +22,14 @@ with a command line, an MCP server, a parts server and a project server.
   dockable panes per workspace, an Insert center, a properties pane, key tips,
   command search; unsaved changes are kept and asked for on every way out; released
   and locked pages are read only but selectable; crossing selection, zoom commands,
-  contextual help (F1) and rebindable keys for every page action.
+  contextual help (F1) and rebindable keys for every page action; pages and sections
+  are dragged in the Pages navigator with a drop marker and the resulting name shown.
 - **Panel layout:** devices at real size in 2D and 3D, virtual wiring with duct fill,
   drilling and NC data, enclosure climate, line-ups, rooms and 3D routing; wiring and
   mounting assistants for the workshop.
 - **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
-  EMC, ISO 13849-1 safety functions; wire harnesses with KBL, fluid power, pre-planning.
+  EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
+  power, pre-planning.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,

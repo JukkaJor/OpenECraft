@@ -5778,3 +5778,15 @@ Code: {}	Code: {}	Code : {}	Código: {}
 Identifying letter: {}	Kennbuchstabe: {}	Lettre d'identification : {}	Letra de identificación: {}
 File and further commands	Datei und weitere Befehle	Fichier et autres commandes	Archivo y otros comandos
 Keys of the page editor	Tasten des Seiteneditors	Touches de l'éditeur de page	Teclas del editor de páginas
+Drop between the pages	Zwischen den Seiten ablegen	Déposer entre les pages	Soltar entre las páginas
+Drop between the rows or onto a section	Zwischen den Zeilen oder auf einem Abschnitt ablegen	Déposer entre les lignes ou sur une section	Soltar entre las filas o sobre una sección
+Changes the page order; the name stays	Ändert die Seitenreihenfolge; der Name bleibt	Change l'ordre des pages ; le nom reste	Cambia el orden de las páginas; el nombre se mantiene
+Moves to the top level as page {}	Kommt als Seite {} auf die oberste Ebene	Passe au niveau supérieur comme page {}	Pasa al nivel superior como página {}
+Moves to {} as page {}	Kommt als Seite {1} in {0}	Passe dans {} comme page {}	Pasa a {} como página {}
+Becomes section {}	Wird Abschnitt {}	Devient la section {}	Pasa a ser la sección {}
+Released pages in it keep their names	Freigegebene Seiten darin behalten ihren Namen	Les pages validées qu'elle contient gardent leur nom	Las páginas liberadas que contiene conservan su nombre
+Page {} is now page {}	Seite {} ist jetzt Seite {}	La page {} est maintenant la page {}	La página {} ahora es la página {}
+Section {} is now section {}	Abschnitt {} ist jetzt Abschnitt {}	La section {} est maintenant la section {}	La sección {} ahora es la sección {}
+Moves the page before this page of its section (or of the section given)	Verschiebt die Seite vor diese Seite ihres Abschnitts (oder des angegebenen Abschnitts)	Déplace la page avant cette page de sa section (ou de la section indiquée)	Mueve la página delante de esta página de su sección (o de la sección indicada)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Verschiebt den Abschnitt vor diesen Abschnitt seines übergeordneten Abschnitts (oder des angegebenen); die Nummern zählen weiter der Reihe nach	Déplace la section avant cette section de son parent (ou du parent indiqué) ; les numéros restent dans l'ordre	Mueve la sección delante de esta sección de su sección superior (o de la indicada); los números siguen en orden
+{} is not in that section	{} liegt nicht in diesem Abschnitt	{} n'est pas dans cette section	{} no está en esa sección
