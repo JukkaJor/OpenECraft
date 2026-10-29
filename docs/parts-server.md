@@ -85,7 +85,7 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
   `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
   `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
-- In the editor: *Devices › Data portal…* – search the server, add parts to the local
+- In the editor: *Master data › Data portal* – search the server, add parts to the local
   database, save their files, add their macros to the macro library and check the
   database for newer versions, phased out and discontinued parts. *Devices › Parts
   management › 🌐 Parts server* downloads all parts or uploads parts. The project check

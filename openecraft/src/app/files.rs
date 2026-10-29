@@ -36,13 +36,13 @@ impl App {
         };
         match result {
             Ok(Some(path)) => {
-                self.notify(ctx, tr_fmt!("Saved {}", io::short_name(&path)));
+                self.notify_ok(ctx, tr_fmt!("Saved {}", io::short_name(&path)));
                 self.remember_recent(&path);
                 self.session.file_name = Some(path);
                 self.session.mark_saved();
             }
             Ok(None) => {}
-            Err(e) => self.notify(ctx, tr_fmt!("Saving failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Saving failed: {}", e)),
         }
     }
 
@@ -92,12 +92,15 @@ impl App {
     /// The window with the parameters of an export.
     pub(super) fn export_form_window(&mut self, ctx: &egui::Context) {
         let Some((e, lang, mut texts)) = self.export_form.take() else { return };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, text(&e.title).to_string(), "export_parameters", None);
+        let mut open = !esc;
         let mut run = false;
-        egui::Window::new(text(&e.title).to_string()).open(&mut open).resizable(false).show(ctx, |ui| {
+        let mut cancel = false;
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             egui::Grid::new("export_params").num_columns(2).show(ui, |ui| {
                 for (p, t) in e.params.iter().zip(texts.iter_mut()).filter(|(p, _)| p.name != "file") {
-                    let name = if p.required { format!("{} *", p.name) } else { p.name.to_string() };
+                    let name = super::ribbon_ui::humanize(&p.name);
+                    let name = if p.required { format!("{name} *") } else { name };
                     ui.label(name).on_hover_text(text(&p.help));
                     if p.kind == openecraft_api::params::Kind::Bool {
                         let mut on = t.trim() == "true";
@@ -110,7 +113,10 @@ impl App {
                     ui.end_row();
                 }
             });
-            run = ui.button(tr("⬇ Export…")).clicked();
+            ui.horizontal(|ui| {
+                run = icons::text_button(ui, Icon::Download, tr("Export…")).clicked();
+                cancel = ui.button(tr("Cancel")).clicked();
+            });
         });
         if run {
             let params: Vec<openecraft_api::params::Param> = e.params.iter().filter(|p| p.name != "file").cloned().collect();
@@ -120,10 +126,10 @@ impl App {
                     self.run_exporter_with(ctx, &e, lang.as_deref(), args);
                     return;
                 }
-                Err(err) => self.notify(ctx, err),
+                Err(err) => self.notify_error(ctx, err),
             }
         }
-        if open {
+        if open && !cancel {
             self.export_form = Some((e, lang, texts));
         }
     }
@@ -132,7 +138,7 @@ impl App {
         let title = text(&e.title).to_string();
         match self.exporter_output(e, lang, extra) {
             Ok((name, out)) => self.export_bytes(ctx, name, (&title, &e.extension), &out),
-            Err(err) => self.notify(ctx, tr_fmt!("Export failed: {}", err)),
+            Err(err) => self.notify_error(ctx, tr_fmt!("Export failed: {}", err)),
         }
     }
 
@@ -173,16 +179,16 @@ impl App {
 
     pub(super) fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
         match self.io.save_bytes_as(&name, filter, content) {
-            Ok(Some(path)) => self.notify(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
+            Ok(Some(path)) => self.notify_ok(ctx, tr_fmt!("Exported {}", io::short_name(&path))),
             Ok(None) => {}
-            Err(e) => self.notify(ctx, tr_fmt!("Export failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Export failed: {}", e)),
         }
     }
 
     pub(super) fn export_dwg(&mut self, ctx: &egui::Context, name: String, content: Result<Vec<u8>, String>) {
         match content {
             Ok(dwg) => self.export_bytes(ctx, name, (tr("DWG drawing"), "dwg"), &dwg),
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 
@@ -195,7 +201,7 @@ impl App {
                     let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
                     self.replace_project(prj, None);
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Not a project template: {}", e)),
+                Err(e) => self.notify_failure(ctx, tr_fmt!("{} is not an OpenECraft project template.", io::short_name(&loaded.name)), e),
             },
             Purpose::Parts => self.import_parts(ctx, &loaded.bytes),
             Purpose::Model(_) => {
@@ -208,7 +214,7 @@ impl App {
             Purpose::Macros => self.import_macros(ctx, &loaded.text()),
             Purpose::PlcTable => match openecraft_core::plc::import_symbol_table(&mut self.session.prj, &loaded.text()) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} PLC function texts updated", n)),
-                Err(e) => self.notify(ctx, tr_fmt!("Symbol table import failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Symbol table import failed: {}", e)),
             },
             Purpose::Symbols => match openecraft_core::symlib::SymbolLibrary::from_json(&loaded.text()) {
                 Ok(lib) => {
@@ -216,26 +222,26 @@ impl App {
                     self.symed.open = true;
                     self.notify(ctx, tr_fmt!("{} symbols added, {} replaced", added, replaced));
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Not a symbol library: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Not a symbol library: {}", e)),
             },
             Purpose::Forms => match openecraft_core::forms::FormLibrary::from_json(&loaded.text()) {
                 Ok(lib) => {
                     let (blocks, schemes) = openecraft_core::forms::merge(&mut self.session.prj, lib);
                     self.notify(ctx, tr_fmt!("Imported {} title blocks and {} report schemes", blocks, schemes));
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Not a title block file: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Not a title block file: {}", e)),
             },
             Purpose::Drawing => self.import_drawing(ctx, &loaded),
             Purpose::Table(kind) => {
                 let text = if openecraft_core::archive::is_archive(&loaded.bytes) { openecraft_core::xlsx::first_sheet_csv(&loaded.bytes) } else { Ok(loaded.text()) };
                 match text {
                     Ok(text) => self.import_table(ctx, kind, &text),
-                    Err(e) => self.notify(ctx, tr_fmt!("Table import failed: {}", e)),
+                    Err(e) => self.notify_error(ctx, tr_fmt!("Table import failed: {}", e)),
                 }
             }
             Purpose::Dictionary => match translation::from_csv(&mut self.session.prj, &loaded.text()) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} translations imported", n)),
-                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Import failed: {}", e)),
             },
             Purpose::OutputTarget => self.output_reports(ctx, &loaded),
             Purpose::Aml | Purpose::DeviceDescription => self.plc_file_loaded(ctx, loaded.purpose, &loaded.name, &loaded.text()),
@@ -244,7 +250,7 @@ impl App {
                     let n = self.session.prj.structures.merge(&file);
                     self.notify(ctx, tr_fmt!("{} structure identifiers added", n));
                 }
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Purpose::Document => self.load_document(ctx, &loaded),
             Purpose::Image => self.load_image(ctx, &loaded),
@@ -253,15 +259,15 @@ impl App {
                     let n = openecraft_core::page_templates::merge(&mut self.session.prj, lib);
                     self.notify(ctx, tr_fmt!("Imported {} page templates", n));
                 }
-                Err(e) => self.notify(ctx, tr_fmt!("Not a page template file: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Not a page template file: {}", e)),
             },
             Purpose::Compare => match Project::from_json(&loaded.text()) {
                 Ok(prj) => self.compare_ui.set_file(io::short_name(&loaded.name), prj),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Purpose::ChangeRequests => match openecraft_core::review::import_requests(&mut self.session.prj, &loaded.text()) {
                 Ok((added, updated)) => self.notify(ctx, tr_fmt!("{} change requests added, {} updated", added, updated)),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Purpose::PdfComments => {
                 let (user, date) = (self.user_name(), self.today());
@@ -277,7 +283,7 @@ impl App {
                         }
                         self.notify(ctx, msg);
                     }
-                    Err(e) => self.notify(ctx, e),
+                    Err(e) => self.notify_error(ctx, e),
                 }
             }
             Purpose::Preplanning => self.import_preplanning(ctx, &loaded.bytes),
@@ -286,11 +292,11 @@ impl App {
                     let names: Vec<&str> = parts.iter().map(|p| tr(p)).collect();
                     self.notify(ctx, tr_fmt!("Settings taken over: {}", names.join(", ")));
                 }
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Purpose::CheckScheme => match openecraft_core::checks::apply_scheme(&mut self.session.prj, &loaded.text()) {
                 Ok(()) => self.notify(ctx, tr("Check scheme taken over")),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             Purpose::RuleSets => self.import_rule_sets(ctx, &loaded.text()),
             Purpose::PropertyLibrary => self.import_property_library(ctx, &loaded.text()),
@@ -299,7 +305,7 @@ impl App {
             Purpose::Ribbon => self.import_ribbon(ctx, &loaded.text()),
             Purpose::Favorites => match self.insert_center.import_favorites(&loaded.text()) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} favorites added", n)),
-                Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+                Err(e) => self.notify_error(ctx, tr_fmt!("Import failed: {}", e)),
             },
         }
     }
@@ -312,9 +318,9 @@ impl App {
                 let file = (!openecraft_core::archive::is_archive(&loaded.bytes)).then(|| loaded.name.clone());
                 self.replace_project(prj, file);
                 let note = conv.message().unwrap_or_else(|| tr_fmt!("Opened {}", io::short_name(&loaded.name)));
-                self.notify(ctx, note);
+                self.notify_ok(ctx, note);
             }
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_failure(ctx, tr_fmt!("{} could not be opened as an OpenECraft project.", io::short_name(&loaded.name)), e),
         }
     }
 
@@ -329,7 +335,7 @@ impl App {
                 self.parts_db.sort();
                 self.notify(ctx, tr_fmt!("Imported {} parts into the database", n));
             }
-            Err(e) => self.notify(ctx, tr_fmt!("Parts import failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Parts import failed: {}", e)),
         }
     }
 
@@ -340,7 +346,7 @@ impl App {
                 let n = self.macro_lib.merge(lib);
                 self.notify(ctx, tr_fmt!("Imported {} macros", n));
             }
-            Err(e) => self.notify(ctx, tr_fmt!("Not a macro file: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Not a macro file: {}", e)),
         }
     }
 
@@ -361,8 +367,8 @@ impl App {
                 };
                 self.notify(ctx, msg);
             }
-            Err(e) if is_dwg => self.notify(ctx, tr_fmt!("DWG import failed: {}", e)),
-            Err(e) => self.notify(ctx, tr_fmt!("DXF import failed: {}", e)),
+            Err(e) if is_dwg => self.notify_error(ctx, tr_fmt!("DWG import failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("DXF import failed: {}", e)),
         }
     }
 }

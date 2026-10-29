@@ -168,8 +168,10 @@ fn cable_definition_tool_makes_cores() {
     assert_eq!(prj.cables.len(), 1);
     assert_eq!(prj.pages[0].cable_defs.len(), 1);
     assert!(prj.pages[0].wires.iter().all(|w| w.cable == prj.cables[0].tag && !w.core.is_empty()));
-    assert_eq!(ed.tool, Tool::Select);
+    // The tool stays for the next line, which extends the same cable.
+    assert_eq!(ed.tool, Tool::CableDef);
     assert_eq!(ed.cable_target, prj.cables[0].tag);
+    assert!(ed.hint().contains(&prj.cables[0].tag), "{}", ed.hint());
 }
 
 #[test]
@@ -213,4 +215,254 @@ fn tag_block_is_dragged_into_place() {
     let o = s.tag_offset.expect("tag placed");
     let expect = block.min - s.pos + p(-20.0, 10.0);
     assert!(o.dist(expect) < 0.6, "{o:?} {expect:?}");
+}
+
+fn key(key: Key) -> Event {
+    Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers: Modifiers::default() }
+}
+
+/// Drags with the primary button from page point `a` to `b`.
+fn drag(ed: &mut Editor, ctx: &egui::Context, prj: &mut Project, page: usize, a: P, b: P) {
+    let (from, to) = (ed.w2s(SCREEN, a), ed.w2s(SCREEN, b));
+    frame(ed, ctx, prj, page, vec![Event::PointerMoved(from)]);
+    frame(ed, ctx, prj, page, vec![button(from, true)]);
+    for i in 1..=5 {
+        let t = i as f32 / 5.0;
+        frame(ed, ctx, prj, page, vec![Event::PointerMoved(from + (to - from) * t)]);
+    }
+    frame(ed, ctx, prj, page, vec![button(to, false)]);
+    frame(ed, ctx, prj, page, vec![]);
+}
+
+fn coil(id: u64, pos: P, tag: &str) -> SymbolInst {
+    SymbolInst { id, sym: "coil".into(), pos, tag: tag.into(), pins: vec!["A1".into(), "A2".into()], ..Default::default() }
+}
+
+#[test]
+fn window_from_the_right_selects_what_it_crosses() {
+    let window = R::from_points(p(10.0, 10.0), p(50.0, 50.0));
+    let inside = R::from_points(p(20.0, 20.0), p(30.0, 30.0));
+    let across = R::from_points(p(40.0, 20.0), p(90.0, 20.0));
+    let outside = R::from_points(p(60.0, 20.0), p(90.0, 30.0));
+    assert!(box_selects(window, false, inside) && box_selects(window, true, inside));
+    assert!(!box_selects(window, false, across) && box_selects(window, true, across));
+    assert!(!box_selects(window, false, outside) && !box_selects(window, true, outside));
+
+    // On the page: a long wire is caught by a crossing window over its middle.
+    let mut prj = Project::default();
+    prj.pages[0].wires.push(Wire { id: 5, a: p(40.0, 60.0), b: p(200.0, 60.0), ..Default::default() });
+    prj.fix_next_id();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    drag(&mut ed, &ctx, &mut prj, 0, p(100.0, 40.0), p(120.0, 80.0));
+    assert!(ed.selection.is_empty(), "left to right needs the whole wire");
+    drag(&mut ed, &ctx, &mut prj, 0, p(120.0, 40.0), p(100.0, 80.0));
+    assert_eq!(ed.selection, BTreeSet::from([5]));
+}
+
+#[test]
+fn hints_name_the_device_and_the_users_keys() {
+    let mut ed = Editor::default();
+    ed.set_tool(Tool::Place("coil"));
+    assert!(ed.hint().contains("R rotate"), "{}", ed.hint());
+    ed.place_tag = Some("-K7".into());
+    assert!(ed.hint().contains("-K7"), "{}", ed.hint());
+    ed.shortcuts.set("rotate", vec![crate::shortcuts::Shortcut::parse("Ctrl+R").unwrap()]);
+    assert!(ed.hint().contains("Ctrl+R rotate"), "{}", ed.hint());
+    ed.set_tool(Tool::Wire);
+    assert!(ed.hint().contains("Space") && ed.hint().contains("Enter"), "{}", ed.hint());
+}
+
+#[test]
+fn the_device_and_part_of_a_placement_end_with_the_place_tool() {
+    let mut ed = Editor::default();
+    ed.set_tool(Tool::Place("coil"));
+    ed.place_tag = Some("-K1".into());
+    ed.place_part = Some("3RT2016".into());
+    // Another symbol keeps the device, but not the part.
+    ed.set_tool(Tool::Place("no"));
+    assert_eq!(ed.place_tag.as_deref(), Some("-K1"));
+    assert_eq!(ed.place_part, None);
+    ed.set_tool(Tool::Select);
+    assert_eq!(ed.place_tag, None);
+
+    // Esc on the page ends the placement too.
+    let mut prj = Project::default();
+    let ctx = egui::Context::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.set_tool(Tool::Place("coil"));
+    ed.place_tag = Some("-K1".into());
+    frame(&mut ed, &ctx, &mut prj, 0, vec![key(Key::Escape)]);
+    assert_eq!((ed.tool.clone(), ed.place_tag.clone()), (Tool::Select, None));
+}
+
+#[test]
+fn read_only_pages_can_be_selected_but_not_changed() {
+    let mut prj = Project::default();
+    prj.pages[0].symbols.push(coil(7, p(100.0, 100.0), "-K1"));
+    prj.pages[0].locked = true;
+    prj.fix_next_id();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    click(&mut ed, &ctx, &mut prj, 0, p(100.0, 100.0));
+    assert_eq!(ed.selection, BTreeSet::from([7]));
+    drag(&mut ed, &ctx, &mut prj, 0, p(100.0, 100.0), p(140.0, 100.0));
+    assert_eq!(prj.pages[0].symbols[0].pos, p(100.0, 100.0), "no moves");
+    frame(&mut ed, &ctx, &mut prj, 0, vec![key(Key::Delete)]);
+    assert_eq!(prj.pages[0].symbols.len(), 1, "no deletes");
+    // A typed point selects too.
+    ed.selection.clear();
+    ed.typed = Some(p(100.0, 100.0));
+    frame(&mut ed, &ctx, &mut prj, 0, vec![]);
+    assert_eq!(ed.selection, BTreeSet::from([7]));
+}
+
+#[test]
+fn dragging_one_of_several_selected_symbols_moves_them_all() {
+    let mut prj = Project::default();
+    prj.pages[0].symbols.push(coil(7, p(100.0, 100.0), "-K1"));
+    prj.pages[0].symbols.push(coil(8, p(200.0, 100.0), "-K2"));
+    prj.fix_next_id();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.selection = BTreeSet::from([7, 8]);
+    let def = prj.symbol("coil").unwrap();
+    let block = render::tag_block_bounds(&prj, 0, &def, &prj.pages[0].symbols[0]).unwrap();
+    drag(&mut ed, &ctx, &mut prj, 0, block.center(), block.center() + p(0.0, 20.0));
+    let s = &prj.pages[0].symbols;
+    assert_eq!((s[0].pos, s[1].pos), (p(100.0, 120.0), p(200.0, 120.0)));
+    assert_eq!(s[0].tag_offset, None);
+}
+
+#[test]
+fn enter_ends_the_wire() {
+    let mut prj = Project::default();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.set_tool(Tool::Wire);
+    click(&mut ed, &ctx, &mut prj, 0, p(40.0, 40.0));
+    click(&mut ed, &ctx, &mut prj, 0, p(80.0, 40.0));
+    assert!(ed.busy(), "the wire goes on from the corner");
+    frame(&mut ed, &ctx, &mut prj, 0, vec![key(Key::Enter)]);
+    assert!(!ed.busy());
+    assert_eq!(ed.tool, Tool::Wire);
+    assert_eq!(prj.pages[0].wires.len(), 1);
+}
+
+#[test]
+fn a_second_click_on_the_start_of_a_markup_line_keeps_it() {
+    let mut prj = Project::default();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.set_tool(Tool::Markup(MarkupKind::Line, Pen::Red));
+    let mut clicks = Vec::new();
+    for q in [p(40.0, 40.0), p(40.0, 40.0), p(80.0, 40.0)] {
+        let at = ed.w2s(SCREEN, q);
+        frame(&mut ed, &ctx, &mut prj, 0, vec![Event::PointerMoved(at)]);
+        frame(&mut ed, &ctx, &mut prj, 0, vec![button(at, true)]);
+        clicks.push(frame(&mut ed, &ctx, &mut prj, 0, vec![button(at, false)]).review);
+        frame(&mut ed, &ctx, &mut prj, 0, vec![Event::PointerMoved(at + vec2(0.0, 300.0))]);
+    }
+    assert_eq!(clicks[..2], [None, None]);
+    match clicks[2] {
+        Some(ReviewInput::Markup(MarkupKind::Line, Pen::Red, a, b)) => assert!(a.dist(p(40.0, 40.0)) < 0.5 && b.dist(p(80.0, 40.0)) < 0.5, "{a:?} {b:?}"),
+        other => panic!("{other:?}"),
+    }
+}
+
+#[test]
+fn typed_points_place_connection_definitions() {
+    let mut prj = Project::default();
+    prj.pages[0].wires.push(Wire { id: 5, a: p(40.0, 60.0), b: p(200.0, 60.0), ..Default::default() });
+    prj.fix_next_id();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.set_tool(Tool::ConnDef);
+    ed.typed = Some(p(100.0, 60.0));
+    frame(&mut ed, &ctx, &mut prj, 0, vec![]);
+    assert_eq!(prj.pages[0].conn_defs.len(), 1);
+    assert_eq!(prj.pages[0].conn_defs[0].pos, p(100.0, 60.0));
+    assert_eq!(ed.tool, Tool::ConnDef, "the tool stays for the next point");
+}
+
+#[test]
+fn texts_are_placed_one_after_the_other() {
+    let mut prj = Project::default();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.set_tool(Tool::Text);
+    ed.text_proto = Some(TextItem { text: "{page}".into(), ..Default::default() });
+    click(&mut ed, &ctx, &mut prj, 0, p(40.0, 40.0));
+    click(&mut ed, &ctx, &mut prj, 0, p(80.0, 40.0));
+    assert_eq!(ed.tool, Tool::Text);
+    assert_eq!(prj.pages[0].texts.iter().map(|t| t.text.as_str()).collect::<Vec<_>>(), ["{page}", "{page}"]);
+    assert_eq!(ed.selection, BTreeSet::from([prj.pages[0].texts[1].id]));
+}
+
+#[test]
+fn paste_goes_to_the_cursor_then_to_the_last_click() {
+    let mut ed = Editor::default();
+    let corner = ed.paste_point();
+    ed.last_point = Some(p(40.0, 40.0));
+    assert_eq!(ed.paste_point(), p(40.0, 40.0));
+    ed.hover = Some(p(101.0, 99.0));
+    assert_eq!(ed.paste_point(), p(100.0, 100.0), "snapped to the grid");
+    ed.last_point = None;
+    ed.hover = None;
+    assert_eq!(ed.paste_point(), corner);
+}
+
+#[test]
+fn new_items_never_go_onto_a_hidden_or_locked_layer() {
+    let mut prj = Project::default();
+    let mut hidden = openecraft_core::graphics::Layer::new("Hidden");
+    hidden.visible = false;
+    prj.layers.push(hidden);
+    prj.layers.push(openecraft_core::graphics::Layer::new("Notes"));
+    assert!(!layer_usable(&prj, "Hidden"));
+    assert!(layer_usable(&prj, "Notes") && layer_usable(&prj, ""));
+    let ctx = egui::Context::default();
+    let mut ed = Editor { active_layer: "Hidden".into(), ..Default::default() };
+    ready(&mut ed, &ctx, &mut prj);
+    assert_eq!(ed.active_layer, "");
+    ed.set_tool(Tool::Line);
+    click(&mut ed, &ctx, &mut prj, 0, p(40.0, 40.0));
+    click(&mut ed, &ctx, &mut prj, 0, p(80.0, 40.0));
+    assert_eq!(prj.pages[0].shapes[0].layer, "");
+}
+
+#[test]
+fn arrow_keys_connect_facing_points_like_a_drag() {
+    let mut prj = Project::default();
+    // A2 of -K1 at (100, 104) faces A1 of -K2 at (104, 136) once -K2 moves left.
+    prj.pages[0].symbols.push(coil(7, p(100.0, 100.0), "-K1"));
+    prj.pages[0].symbols.push(coil(8, p(104.0, 140.0), "-K2"));
+    prj.fix_next_id();
+    let ctx = egui::Context::default();
+    let mut ed = Editor::default();
+    ready(&mut ed, &ctx, &mut prj);
+    ed.selection = BTreeSet::from([8]);
+    frame(&mut ed, &ctx, &mut prj, 0, vec![key(Key::ArrowLeft)]);
+    assert_eq!(prj.pages[0].symbols[1].pos, p(100.0, 140.0));
+    assert_eq!(prj.pages[0].wires.len(), 1, "connected");
+}
+
+#[test]
+fn zoom_commands_keep_the_middle_of_the_canvas() {
+    let mut ed = Editor { zoom: 2.0, ..Editor::default() };
+    let rect = Rect::from_min_size(Pos2::ZERO, ed.canvas_size);
+    let middle = ed.s2w(rect, rect.center());
+    ed.zoom_center(1.25);
+    assert!((ed.zoom - 2.5).abs() < 1e-4);
+    let after = ed.s2w(rect, rect.center());
+    assert!((after.x - middle.x).abs() < 1e-3 && (after.y - middle.y).abs() < 1e-3);
+    ed.zoom_center(ZOOM_ACTUAL / ed.zoom);
+    assert!((ed.zoom - ZOOM_ACTUAL).abs() < 1e-4, "Zoom 100 %");
 }

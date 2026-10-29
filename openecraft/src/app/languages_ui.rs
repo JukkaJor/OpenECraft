@@ -2,6 +2,7 @@
 //! translation dictionary (edit, collect, CSV for translators) and the export of the
 //! documentation per language.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
@@ -47,13 +48,13 @@ impl App {
                 for (l, n) in &missing {
                     let text = if *n > 0 { tr_fmt!("{} ({} open)", language_name(l), n) } else { language_name(l) };
                     ui.label(RichText::new(text).strong());
-                    if ui.small_button("✖").on_hover_text(tr("Remove the language (its translations stay in the dictionary)")).clicked() {
+                    if icons::button(ui, Icon::Close, tr("Remove the language (its translations stay in the dictionary)")).clicked() {
                         remove_lang = Some(l.clone());
                     }
                 }
                 ui.add(egui::TextEdit::singleline(&mut ui_state.new_lang).hint_text(tr("e.g. de, fr, it")).desired_width(90.0));
                 let code = normalize_code(&ui_state.new_lang).filter(|c| *c != langs.source && !langs.targets.contains(c));
-                if ui.add_enabled(code.is_some(), egui::Button::new(tr("➕ Add"))).on_hover_text(tr("ISO 639-1 language code")).clicked() {
+                if ui.add_enabled_ui(code.is_some(), |ui| icons::text_button(ui, Icon::Plus, tr("Add"))).inner.on_hover_text(tr("ISO 639-1 language code")).clicked() {
                     langs.targets.extend(code);
                     ui_state.new_lang.clear();
                 }

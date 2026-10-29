@@ -302,3 +302,18 @@ fn devices_on_released_pages_are_not_renamed() {
     prj.pages[page].locked = true;
     assert!(rename_problem(&prj, "-K1", "-K9").unwrap().contains("released"));
 }
+
+#[test]
+fn paste_lands_where_its_offset_says() {
+    let mut prj = Project::default();
+    prj.pages[0].wires.push(Wire { id: 5, a: p(0.0, 0.0), b: p(0.0, 20.0), ..Default::default() });
+    prj.next_id = 6;
+    let clip = copy(&prj.pages[0], &BTreeSet::from([5]));
+    // A point off the connection point grid (1 mm grid): the offset keeps the 4 mm grid.
+    let at = p(41.0, 9.0);
+    let d = paste_offset(&clip, at);
+    assert_eq!(d, p(40.0, 8.0));
+    let ids = paste(&mut prj, 0, &clip, at);
+    let w = prj.pages[0].wires.iter().find(|w| ids.contains(&w.id)).unwrap();
+    assert_eq!((w.a, w.b), (p(0.0, 0.0) + d, p(0.0, 20.0) + d));
+}

@@ -7,6 +7,7 @@ use openecraft_client::PortalKind;
 use crate::part_editor::{part_summary, size_text};
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
+use crate::icons::{self, Icon};
 use openecraft_parts::api::PartQuery;
 use openecraft_parts::portal::{check_updates, lifecycle_from_key, top_group_from_key, Facet, HistoryEntry, Lifecycle, PartUpdate, SearchResult, Sort};
 use openecraft_parts::{date_from_unix, productgroups, Part, PRODUCT_GROUPS};
@@ -300,7 +301,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
     // Search line and account
     ui.horizontal_wrapped(|ui| {
         let edit = ui.add(egui::TextEdit::singleline(&mut b.text).desired_width(260.0).hint_text(tr("Search parts")));
-        if ui.button(tr("🔎 Search")).clicked() || edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+        if icons::text_button(ui, Icon::Find, tr("Search")).clicked() || edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
             b.restart();
         }
         if signed_in.is_some() && ui.toggle_value(&mut b.only_favorites, tr("★ Favorites")).changed() {
@@ -449,10 +450,10 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                     ui.colored_label(lifecycle_color(p.lifecycle), tr(p.lifecycle.title()));
                 }
                 ui.horizontal_wrapped(|ui| {
-                    if ui.add_enabled(!busy, egui::Button::new(tr("⬇ Add to the parts database"))).clicked() {
+                    if ui.add_enabled_ui(!busy, |ui| icons::text_button(ui, Icon::Download, tr("Add to the parts database"))).inner.clicked() {
                         client.fetch(&ctx, std::slice::from_ref(&p.number));
                     }
-                    if !p.successor.is_empty() && ui.button(tr_fmt!("➡ Successor {}", p.successor)).clicked() {
+                    if !p.successor.is_empty() && icons::text_button(ui, Icon::Next, &tr_fmt!("Successor {}", p.successor)).clicked() {
                         b.text = p.successor.clone();
                         b.selected = Some(p.successor.clone());
                         b.clear_filters();
@@ -474,7 +475,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                             if a.size > 0 {
                                 ui.label(RichText::new(size_text(a.size)).weak());
                             }
-                            if ui.add_enabled(!busy, egui::Button::new("💾").small()).on_hover_text(tr("Save the file")).clicked() {
+                            if ui.add_enabled_ui(!busy, |ui| icons::button(ui, Icon::Save, tr("Save the file"))).inner.clicked() {
                                 client.download_file(&ctx, &a.id, &a.name, FileUse::Save);
                             }
                             if a.kind == openecraft_parts::portal::AttachmentKind::Macro
@@ -511,12 +512,11 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
     ui.separator();
     ui.horizontal_wrapped(|ui| {
         let marked: Vec<String> = b.marked.iter().cloned().collect();
-        if ui.add_enabled(!busy && !marked.is_empty(), egui::Button::new(tr_fmt!("⬇ Add marked parts to the parts database ({})", marked.len()))).clicked() {
+        if ui.add_enabled_ui(!busy && !marked.is_empty(), |ui| icons::text_button(ui, Icon::Download, &tr_fmt!("Add marked parts to the parts database ({})", marked.len()))).inner.clicked() {
             client.fetch(&ctx, &marked);
             b.marked.clear();
         }
-        if ui
-            .add_enabled(!busy && !local.is_empty(), egui::Button::new(tr("🔄 Check the parts database for updates")))
+        if ui.add_enabled_ui(!busy && !local.is_empty(), |ui| icons::text_button(ui, Icon::Rotate, tr("Check the parts database for updates"))).inner
             .on_hover_text(tr("Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts"))
             .clicked()
         {
@@ -526,7 +526,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
             let applicable = updates.iter().filter(|u| u.kind != openecraft_parts::portal::UpdateKind::Removed).count();
             if updates.is_empty() {
                 ui.label(tr("All parts are up to date"));
-            } else if ui.add_enabled(applicable > 0, egui::Button::new(tr_fmt!("✔ Apply {} updates", applicable))).clicked() {
+            } else if ui.add_enabled_ui(applicable > 0, |ui| icons::text_button(ui, Icon::Check, &tr_fmt!("Apply {} updates", applicable))).inner.clicked() {
                 event = Some(BrowserEvent::ApplyUpdates);
             }
         }

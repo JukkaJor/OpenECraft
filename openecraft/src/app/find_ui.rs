@@ -2,6 +2,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
+use crate::dock::{LeftTab, Pane, ToolPane};
 use openecraft_core::search::{self, Hit, Kind, Query};
 use egui::RichText;
 
@@ -30,12 +31,24 @@ pub fn kind_title(k: Kind) -> &'static str {
     }
 }
 
+/// The pane that shows a hit without a page: parts in the parts management, cables
+/// in the cables, devices and descriptions in the device navigator.
+pub(super) fn pane_of(kind: Kind) -> Option<Pane> {
+    match kind {
+        Kind::Part => Some(Pane::Tool(ToolPane::Parts)),
+        Kind::Cable => Some(Pane::Tool(ToolPane::Cables)),
+        Kind::Device | Kind::Description => Some(Pane::Navigator(LeftTab::Devices)),
+        _ => None,
+    }
+}
+
 impl App {
     pub(super) fn find_pane(&mut self, ui: &mut egui::Ui) {
         let ctx = &ui.ctx().clone();
         let mut search_now = false;
         let mut replace = false;
         let mut jump = None;
+        let mut show = None;
         let rev = self.session.history.rev;
         let st = &mut self.find_ui;
         ui.scope(|ui| {
@@ -79,7 +92,7 @@ impl App {
                 ui.weak(tr("The project changed since the search."));
             }
             if st.searched {
-                ui.label(tr_fmt!("{} found", st.hits.len()));
+                ui.label(if st.hits.len() == 1 { tr("1 found").to_string() } else { tr_fmt!("{} found", st.hits.len()) });
             }
             egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
                 egui::Grid::new("hits").striped(true).num_columns(3).show(ui, |ui| {
@@ -87,9 +100,19 @@ impl App {
                         ui.weak(kind_title(h.kind));
                         let page = h.page.map(|p| openecraft_core::structure::page_full_name(&self.session.prj.pages[p])).unwrap_or_default();
                         ui.label(RichText::new(page).monospace());
-                        if ui.link(&h.text).clicked() {
-                            if let Some(p) = h.page {
-                                jump = Some((p, h.item));
+                        match (h.page, pane_of(h.kind)) {
+                            (Some(p), _) => {
+                                if ui.link(&h.text).clicked() {
+                                    jump = Some((p, h.item));
+                                }
+                            }
+                            (None, Some(pane)) => {
+                                if ui.link(&h.text).on_hover_text(tr("Not on a page: shows it in its pane")).clicked() {
+                                    show = Some(pane);
+                                }
+                            }
+                            (None, None) => {
+                                ui.label(&h.text).on_hover_text(tr("Not on a page"));
                             }
                         }
                         ui.end_row();
@@ -100,7 +123,7 @@ impl App {
         if replace {
             let q = self.find_ui.query.clone();
             let n = search::replace(&mut self.session.prj, &q, &self.find_ui.with.clone());
-            self.notify(ctx, tr_fmt!("{} texts changed", n));
+            self.notify(ctx, if n == 1 { tr("1 text changed").to_string() } else { tr_fmt!("{} texts changed", n) });
             search_now = true;
         }
         if search_now {
@@ -111,5 +134,11 @@ impl App {
         if let Some((p, id)) = jump {
             self.goto(p, id);
         }
+        if let Some(pane) = show {
+            self.show_pane(pane);
+        }
     }
 }
+
+#[cfg(test)]
+mod tests;

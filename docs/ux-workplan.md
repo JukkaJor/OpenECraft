@@ -435,7 +435,7 @@ command today it is listed under its area.
 | Placing: name | Status bar |
 | Fit, zoom percentage | View › Zoom; status bar segment |
 | Previous / next page, page title | Quick access; page tabs |
-| Reports button | Home › Reports (opens the Reports pane) |
+| Reports button | Project data › Reports (opens the Reports pane) |
 
 ### 6.3 Insert menu
 
@@ -503,11 +503,11 @@ command today it is listed under its area.
 
 | Today | New place |
 | --- | --- |
-| Reports › 41 kinds | Reports pane (tree); Home › Reports |
+| Reports › 41 kinds | Reports pane (tree); Project data › Reports |
 | Report blocks…, Update report blocks | Project data › Reports |
 | Plugins › <area> › command | Plugins tab (groups per plugin) or the area's group; command search |
 | Plugins › reports | Reports pane (plugin group) |
-| Manage plugins… | Tools › Automation |
+| Manage plugins | Plugins |
 | Fit page | View › Zoom |
 | Grid, grid size | View › Show; status bar segment |
 | Connection points, revision marks, macro boxes, wire colours | View › Show |

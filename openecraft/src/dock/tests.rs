@@ -55,17 +55,58 @@ fn showing_a_tab_activates_it_and_brings_closed_panes_back() {
 }
 
 #[test]
-fn tools_open_beside_the_page_and_the_page_can_close_then() {
+fn tools_open_beside_the_page_which_never_closes() {
     let mut tree = default_tree();
     show(&mut tree, Pane::Tool(ToolPane::Reports));
     let reports = find(&tree, Pane::Tool(ToolPane::Reports)).unwrap();
     let page = find(&tree, Pane::Page).unwrap();
     assert_eq!(tree.tiles.parent_of(reports), tree.tiles.parent_of(page));
     assert!(visible(&tree).contains(&Pane::Tool(ToolPane::Reports)));
-    assert!(can_close(&tree, Pane::Page), "another document is open");
+    assert!(!can_close(&tree, Pane::Page), "the page stays though another document is open");
     close(&mut tree, Pane::Page);
-    assert!(find(&tree, Pane::Page).is_none());
-    assert!(!can_close(&tree, Pane::Tool(ToolPane::Reports)));
+    assert!(find(&tree, Pane::Page).is_some());
+    assert!(can_close(&tree, Pane::Tool(ToolPane::Reports)));
+    assert!(!Pane::Page.has_close_button() && !Pane::Navigator(LeftTab::Cables).has_close_button());
+    assert!(Pane::Library.has_close_button() && Pane::Tool(ToolPane::Reports).has_close_button());
+    // The wiring workspace has no page: its last document stays.
+    let wiring = default_tree_for(Workspace::Wiring);
+    assert!(!can_close(&wiring, Pane::WiringWorkbench));
+}
+
+#[test]
+fn every_pane_is_in_one_section_of_the_panes_menu() {
+    let groups = menu_groups();
+    let all: Vec<Pane> = groups.iter().flat_map(|(_, p)| p.iter().copied()).collect();
+    for pane in Pane::all() {
+        assert_eq!(all.iter().filter(|p| **p == pane).count(), 1, "{pane:?}");
+    }
+    assert_eq!(all.len(), Pane::all().len());
+    // Short enough for a window 700 pixels high (about 20 pixels per entry).
+    assert!(groups.len() <= 14);
+    for (title, panes) in &groups {
+        assert!(!panes.is_empty() && panes.len() <= 12, "{title}");
+    }
+}
+
+#[test]
+fn placement_and_floating_panes_belong_to_their_workspace() {
+    let mut sides = Sides::default();
+    let mut current = Side::default();
+    current.placement.set(Pane::Tool(ToolPane::Reports), false);
+    current.floating.push(Pane::Tool(ToolPane::Cables));
+    sides.switch(Workspace::Schematic, Workspace::Panel, &mut current);
+    assert_eq!(current, Side::default(), "nothing of the schematic workspace in the panel layout");
+    current.floating.push(Pane::Tool(ToolPane::Parts));
+    sides.switch(Workspace::Panel, Workspace::Schematic, &mut current);
+    assert!(!current.placement.floats(Pane::Tool(ToolPane::Reports)));
+    assert_eq!(current.floating, vec![Pane::Tool(ToolPane::Cables)]);
+    // Reset layout resets the current workspace only.
+    current = Side::default();
+    sides.switch(Workspace::Schematic, Workspace::Panel, &mut current);
+    assert_eq!(current.floating, vec![Pane::Tool(ToolPane::Parts)]);
+    let json = serde_json::to_string(&sides).unwrap();
+    let back: Sides = serde_json::from_str(&json).unwrap();
+    assert_eq!(back.0.len(), sides.0.len());
 }
 
 #[test]
@@ -134,4 +175,30 @@ fn every_floating_tool_has_a_window_size() {
         let [w, h] = t.window_size();
         assert!(w >= 400.0 && h >= 300.0, "{t:?}");
     }
+}
+
+#[test]
+fn long_page_tab_labels_end_with_an_ellipsis() {
+    assert_eq!(truncate_label("3  Motors", 28), "3  Motors");
+    let cut = truncate_label("2  Power supply conveyor motors", 28);
+    assert_eq!(cut, "2  Power supply conveyor mo…");
+    assert_eq!(cut.chars().count(), 28);
+    assert_eq!(truncate_label("2  Power supply conveyor motor", 26), "2  Power supply conveyor…", "no space before the ellipsis");
+}
+
+#[test]
+fn reports_open_large_enough_for_their_tables() {
+    let [w, h] = ToolPane::Reports.window_size();
+    assert!(w >= 900.0 && h >= 600.0, "report list and table side by side");
+}
+
+#[test]
+fn the_document_worked_in_follows_the_tab_shown() {
+    let mut tree = default_tree();
+    let start = Pane::Tool(ToolPane::Start);
+    show(&mut tree, start);
+    assert_eq!(shown_document(&tree, start), start);
+    show(&mut tree, Pane::Page);
+    assert_eq!(shown_document(&tree, start), Pane::Page, "the start page tab is behind the page now");
+    assert_eq!(shown_document(&tree, Pane::Page), Pane::Page);
 }

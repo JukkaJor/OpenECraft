@@ -211,6 +211,25 @@ fn wire_ends(page: &Page) -> HashMap<(i64, i64), (P, usize)> {
 
 /// Positions where a connection dot must be drawn (three or more connections).
 pub fn junctions(prj: &Project, page: &Page) -> Vec<P> {
+    end_counts(prj, page).into_values().filter(|(_, n)| *n >= 3).map(|(q, _)| q).collect()
+}
+
+/// Wire ends that touch nothing: no other wire, no connection point (wire id, end).
+pub fn open_wire_ends(prj: &Project, page: &Page) -> Vec<(u64, P)> {
+    let counts = end_counts(prj, page);
+    let mut open: Vec<(u64, P)> = Vec::new();
+    for w in &page.wires {
+        for e in [w.a, w.b] {
+            if counts.get(&e.key()).is_some_and(|(_, n)| *n == 1) {
+                open.push((w.id, e));
+            }
+        }
+    }
+    open
+}
+
+/// Wire ends with the number of connections there: wires ending or passing, pins.
+fn end_counts(prj: &Project, page: &Page) -> HashMap<(i64, i64), (P, usize)> {
     let ends = wire_ends(page);
     let mut count: HashMap<(i64, i64), (P, usize)> = ends.clone();
     // Ends by their x and y key: a horizontal or vertical wire (the usual case) only
@@ -249,7 +268,7 @@ pub fn junctions(prj: &Project, page: &Page) -> Vec<P> {
             }
         }
     }
-    count.into_values().filter(|(_, n)| *n >= 3).map(|(q, _)| q).collect()
+    count
 }
 
 impl Netlist {

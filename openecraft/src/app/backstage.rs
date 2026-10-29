@@ -116,7 +116,7 @@ impl App {
     pub(super) fn recent_list(&mut self, ui: &mut egui::Ui) {
         ui.label(RichText::new(tr("Recent projects")).strong());
         if self.recent.is_empty() {
-            ui.weak(tr("No projects opened yet."));
+            ui.weak(tr("Projects you open or save appear here."));
             return;
         }
         let mut open = None;
@@ -135,8 +135,7 @@ impl App {
             });
         }
         if let Some(p) = open {
-            self.io.open_path(&p, Purpose::Project);
-            self.backstage = None;
+            self.request_replace(&ui.ctx().clone(), Replace::Path(p));
         }
         if let Some(p) = forget {
             self.recent.retain(|x| *x != p);
@@ -150,7 +149,7 @@ impl App {
                 if tile(ui, Icon::Template, tr(name)).on_hover_text(tr(desc)).clicked() {
                     if let Some(t) = openecraft_core::project_templates::builtin(name) {
                         let prj = openecraft_core::project_templates::from_template(&t, tr("New project"), &openecraft_ui::io::today());
-                        self.replace_project(prj, None);
+                        self.request_replace(&ui.ctx().clone(), Replace::Project(Box::new(prj), None));
                     }
                 }
             }
@@ -196,7 +195,7 @@ impl App {
                 (tr("Revision"), prj.info.revision.clone()),
                 (tr("Pages"), prj.pages.len().to_string()),
                 (tr("Devices"), self.session.index.devices.len().to_string()),
-                (tr("Messages"), tr_fmt!("{} errors, {} warnings", errors, warnings)),
+                (tr("Messages"), super::errors_warnings(errors, warnings)),
                 (tr("File"), self.session.file_name.clone().unwrap_or_else(|| tr("unsaved").to_string())),
             ] {
                 ui.label(RichText::new(k).strong());

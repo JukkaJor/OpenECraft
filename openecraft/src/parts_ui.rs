@@ -2,6 +2,7 @@
 //! with the parts manager (`openecraft_ui::part_editor`).
 
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 use openecraft_core::model::Project;
 use openecraft_core::parts::{self, Part, PartFilter, PartsDb};
 use crate::io::{Loaded, Purpose};
@@ -177,21 +178,19 @@ impl PartsUi {
             if ui.add_enabled(!busy, egui::Button::new(tr("Test connection"))).clicked() {
                 self.server.check(&ctx);
             }
-            if ui
-                .add_enabled(!busy && full, egui::Button::new(tr("⬇ Download into database")))
+            if ui.add_enabled_ui(!busy && full, |ui| icons::text_button(ui, Icon::Download, tr("Download into database"))).inner
                 .on_hover_text(tr("Adds new parts and updates existing ones in the local parts database"))
                 .clicked()
             {
                 self.server.download(&ctx);
             }
-            let upload_one = ui.add_enabled(!busy && full && selected.is_some(), egui::Button::new(tr("⬆ Upload selected part")));
+            let upload_one = ui.add_enabled_ui(!busy && full && selected.is_some(), |ui| icons::text_button(ui, Icon::Upload, tr("Upload selected part"))).inner;
             if upload_one.clicked() {
                 if let Some(p) = &selected {
                     self.server.upload(&ctx, std::slice::from_ref(p));
                 }
             }
-            if ui
-                .add_enabled(!busy && full && !db.parts.is_empty(), egui::Button::new(tr_fmt!("⬆ Upload database ({})", db.parts.len())))
+            if ui.add_enabled_ui(!busy && full && !db.parts.is_empty(), |ui| icons::text_button(ui, Icon::Upload, &tr_fmt!("Upload database ({})", db.parts.len()))).inner
                 .on_hover_text(tr("Adds / replaces all parts of the local database on the server"))
                 .clicked()
             {
@@ -236,20 +235,20 @@ impl PartsUi {
                     Source::Database => &mut db.parts,
                     Source::Project => &mut prj.parts,
                 };
-                if ui.button(tr("➕ New")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("New")).clicked() {
                     let number = parts::unique_number(list, "NEW.PART");
                     list.push(Part { number: number.clone(), manufacturer: "NEW".into(), ..Default::default() });
                     self.selected = Some(number);
                     self.editor.tab = PartTab::General;
                 }
                 let sel_idx = self.selected.as_ref().and_then(|n| list.iter().position(|p| &p.number == n));
-                if ui.add_enabled(sel_idx.is_some(), egui::Button::new(tr("⎘ Copy"))).clicked() {
+                if ui.add_enabled_ui(sel_idx.is_some(), |ui| icons::text_button(ui, Icon::Copy, tr("Copy"))).inner.clicked() {
                     let mut p = list[sel_idx.unwrap()].clone();
                     p.number = parts::unique_number(list, &format!("{}_COPY", p.number));
                     self.selected = Some(p.number.clone());
                     list.push(p);
                 }
-                if ui.add_enabled(sel_idx.is_some(), egui::Button::new(tr("🗑 Delete"))).clicked() {
+                if ui.add_enabled_ui(sel_idx.is_some(), |ui| icons::text_button(ui, Icon::Delete, tr("Delete"))).inner.clicked() {
                     list.remove(sel_idx.unwrap());
                     self.selected = None;
                 }
@@ -417,7 +416,7 @@ impl PartsUi {
             });
             ui.separator();
             ui.horizontal(|ui| {
-                if ui.add_enabled(self.sel_part.is_some(), egui::Button::new(tr("✔ Add to device"))).clicked() {
+                if ui.add_enabled_ui(self.sel_part.is_some(), |ui| icons::text_button(ui, Icon::Check, tr("Add to device"))).inner.clicked() {
                     chosen = self.sel_part.clone();
                 }
                 if ui.button(tr("Cancel")).clicked() {

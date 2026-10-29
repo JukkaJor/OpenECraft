@@ -2,6 +2,7 @@
 //! project file; selected differences are taken over. Baselines are created and
 //! deleted here.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use openecraft_core::compare::{self, Difference, Item};
 use crate::io::Purpose;
@@ -89,7 +90,7 @@ impl App {
                         }
                     }
                 });
-                if ui.button(tr("📂 Project file…")).clicked() {
+                if icons::text_button(ui, Icon::FolderOpen, tr("Project file…")).clicked() {
                     open_file = true;
                 }
             });
@@ -101,7 +102,7 @@ impl App {
                         ui.label(&b.date);
                         ui.label(&b.author);
                         ui.label(&b.description);
-                        if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                             delete_baseline = Some(i);
                         }
                         ui.end_row();

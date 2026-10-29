@@ -2,6 +2,7 @@
 //! project server, locks on pages and on the project data. Changes without a lock
 //! request it; changes of what another user has locked are taken back.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use openecraft_core::history::History;
 use crate::remote::{Remote, Reply};
@@ -23,7 +24,7 @@ impl App {
                     let rev = self.session.history.rev + 1;
                     self.session.history = History::new(&self.session.prj);
                     self.session.history.rev = rev;
-                    self.session.saved_rev = rev;
+                    self.session.mark_saved();
                     self.remote.checked_rev = rev;
                     self.remote.shared = Some(shared);
                     self.remote.window = false;
@@ -35,7 +36,7 @@ impl App {
                     self.take_snapshot(ctx, *snapshot, true);
                     self.notify(ctx, self.remote.status.clone());
                     if !ignored.is_empty() {
-                        self.notify(ctx, tr_fmt!("Not saved, locked or changed by another user: {}", ignored.join(", ")));
+                        self.notify_warning(ctx, tr_fmt!("Not saved, locked or changed by another user: {}", ignored.join(", ")));
                     }
                 }
                 Reply::Snapshot(_, Ok(snapshot)) => self.take_snapshot(ctx, *snapshot, false),
@@ -49,7 +50,7 @@ impl App {
                     self.notify(ctx, self.remote.status.clone());
                 }
                 Reply::Opened(_, Err(_)) | Reply::Saved(_, Err(_)) | Reply::Snapshot(_, Err(_)) | Reply::Status(_, Err(_)) | Reply::Access(_, Err(_)) => {
-                    self.notify(ctx, self.remote.status.clone());
+                    self.notify_error(ctx, self.remote.status.clone());
                 }
                 Reply::List(_) | Reply::Login(_) | Reply::Access(_, Ok(_)) | Reply::Closed => {}
             }
@@ -69,7 +70,7 @@ impl App {
         }
         self.session.page = self.session.page.min(self.session.prj.pages.len().saturating_sub(1));
         if !lost.is_empty() {
-            self.notify(ctx, tr_fmt!("Changed by another user in the meantime, your change was replaced: {}", lost.join(", ")));
+            self.notify_warning(ctx, tr_fmt!("Changed by another user in the meantime, your change was replaced: {}", lost.join(", ")));
         }
     }
 
@@ -88,7 +89,7 @@ impl App {
                 .map(|t| tr_fmt!("{} (locked by {})", Remote::describe(&self.session.prj, *t), sh.holder(*t).map(|l| l.user.as_str()).unwrap_or_default()))
                 .collect();
             self.session.prj = sh.revert(&self.session.prj, &held);
-            self.notify(ctx, tr_fmt!("Not changed: {}", who.join(", ")));
+            self.notify_warning(ctx, tr_fmt!("Not changed: {}", who.join(", ")));
         }
         if !free.is_empty() {
             self.remote.lock(free);
@@ -116,6 +117,12 @@ impl App {
     }
 
     /// The user holding the lock of the current page (another session).
+    /// Page `page` is locked by another user of the shared project.
+    pub(super) fn page_held_by_other(&self, page: usize) -> bool {
+        let Some(id) = self.session.prj.pages.get(page).map(|p| p.id) else { return false };
+        self.remote.shared.as_ref().is_some_and(|sh| sh.holder(Target::Page(id)).is_some())
+    }
+
     pub(super) fn page_locked_by(&self) -> Option<String> {
         let id = self.session.prj.pages.get(self.session.page)?.id;
         Some(self.remote.shared.as_ref()?.holder(Target::Page(id))?.user.clone())
@@ -171,7 +178,7 @@ impl App {
                 }
             });
             ui.horizontal(|ui| {
-                if ui.add_enabled(!self.remote.busy(), egui::Button::new(tr("⟳ List projects"))).clicked() {
+                if ui.add_enabled_ui(!self.remote.busy(), |ui| icons::text_button(ui, Icon::Rotate, tr("List projects"))).inner.clicked() {
                     self.remote.list();
                 }
                 if self.remote.busy() {
@@ -213,31 +220,14 @@ impl App {
             });
         });
         if let Some(name) = open {
-            if self.session.dirty() {
-                self.remote.confirm_open = Some(name);
-            } else {
-                self.remote.open(&name);
-            }
-        }
-        if let Some(name) = self.remote.confirm_open.clone() {
-            ui.colored_label(crate::style::lock(), tr_fmt!("Opening {} replaces the current project, its unsaved changes are lost.", name));
-            ui.horizontal(|ui| {
-                if ui.button(tr("Discard changes and open")).clicked() {
-                    self.remote.confirm_open = None;
-                    self.remote.open(&name);
-                }
-                if ui.button(tr("Cancel")).clicked() {
-                    self.remote.confirm_open = None;
-                }
-            });
+            self.request_replace(&ui.ctx().clone(), super::Replace::Shared(name));
         }
         ui.separator();
         ui.label(tr("Upload the current project as a new shared project:"));
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut self.remote.new_name).hint_text(tr("Name on the server")));
             let ok = has_user && valid_name(&self.remote.new_name);
-            if ui
-                .add_enabled(ok, egui::Button::new(tr("⬆ Upload")))
+            if ui.add_enabled_ui(ok, |ui| icons::text_button(ui, Icon::Upload, tr("Upload"))).inner
                 .on_hover_text(tr("Letters, digits, space, - _ . (up to 64 characters)"))
                 .clicked()
             {
@@ -259,7 +249,7 @@ impl App {
         let others: Vec<(Target, String)> = sh.locks.iter().filter(|l| l.session != sh.session.session).map(|l| (l.target, l.user.clone())).collect();
         let page_id = self.session.prj.pages.get(self.session.page).map(|p| p.id);
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("💾 Save")).clicked() {
+            if icons::text_button(ui, Icon::Save, tr("Save")).clicked() {
                 self.save_remote(Vec::new());
             }
             if ui.add_enabled(!mine.is_empty(), egui::Button::new(tr("Save and release all locks"))).clicked() {
@@ -346,7 +336,7 @@ impl App {
                     }
                 });
                 ui.checkbox(&mut g.deny, "").on_hover_text(tr("Takes the rights of the role away, whatever other grants give"));
-                if ui.small_button("🗑").on_hover_text(tr("Remove")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -369,7 +359,7 @@ impl App {
             if ui.add_enabled(complete && !busy, egui::Button::new(tr("Save access"))).clicked() {
                 save = Some(access.grants.clone());
             }
-            reload = ui.add_enabled(!busy, egui::Button::new(tr("⟳ Reload"))).clicked();
+            reload = ui.add_enabled_ui(!busy, |ui| icons::text_button(ui, Icon::Rotate, tr("Reload"))).inner.clicked();
         });
         if let Some(grants) = save {
             self.remote.save_access(&grants);

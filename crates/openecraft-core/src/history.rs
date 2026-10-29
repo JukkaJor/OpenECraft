@@ -6,39 +6,64 @@ use crate::model::Project;
 const MAX_STEPS: usize = 200;
 
 pub struct History {
-    undo: Vec<Project>,
-    redo: Vec<Project>,
+    /// Earlier and later states, each with its id.
+    undo: Vec<(Project, u64)>,
+    redo: Vec<(Project, u64)>,
     committed: Project,
+    /// Id of the committed state: undo and redo bring back the id of the state they
+    /// restore, so a state can be recognised (e.g. the saved one).
+    state: u64,
+    next_state: u64,
     /// Incremented on every change; used to invalidate caches.
     pub rev: u64,
 }
 
 impl History {
     pub fn new(prj: &Project) -> History {
-        History { undo: Vec::new(), redo: Vec::new(), committed: prj.clone(), rev: 1 }
+        History { undo: Vec::new(), redo: Vec::new(), committed: prj.clone(), state: 1, next_state: 2, rev: 1 }
     }
 
     /// Call once per frame. `can_commit` is false while the user is still dragging
     /// or typing, so that a whole gesture becomes one undo step.
-    pub fn track(&mut self, prj: &Project, can_commit: bool) {
-        if can_commit && *prj != self.committed {
-            let prev = std::mem::replace(&mut self.committed, prj.clone());
-            self.undo.push(prev);
-            if self.undo.len() > MAX_STEPS {
-                self.undo.remove(0);
-            }
-            self.redo.clear();
-            self.rev += 1;
+    /// Returns whether a change was committed.
+    pub fn track(&mut self, prj: &Project, can_commit: bool) -> bool {
+        if !can_commit || *prj == self.committed {
+            return false;
         }
+        let prev = std::mem::replace(&mut self.committed, prj.clone());
+        let state = self.new_state();
+        self.undo.push((prev, std::mem::replace(&mut self.state, state)));
+        if self.undo.len() > MAX_STEPS {
+            self.undo.remove(0);
+        }
+        self.redo.clear();
+        self.rev += 1;
+        true
+    }
+
+    fn new_state(&mut self) -> u64 {
+        self.next_state += 1;
+        self.next_state - 1
+    }
+
+    /// Id of the committed state.
+    pub fn state(&self) -> u64 {
+        self.state
     }
 
     /// Applies `f` to the project and all undo / redo steps (changes of other users
     /// of a shared project, which undo must not take back).
     pub fn rebase(&mut self, prj: &mut Project, f: impl Fn(&Project) -> Project) {
-        for p in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+        // Every state changes: none of them is a state seen before.
+        let mut next = self.next_state;
+        for (p, id) in self.undo.iter_mut().chain(self.redo.iter_mut()) {
             *p = f(p);
+            *id = next;
+            next += 1;
         }
+        self.next_state = next;
         self.committed = f(&self.committed);
+        self.state = self.new_state();
         *prj = f(prj);
         self.rev += 1;
     }
@@ -61,16 +86,16 @@ impl History {
     }
 
     pub fn undo(&mut self, prj: &mut Project) {
-        if let Some(prev) = self.undo.pop() {
-            self.redo.push(std::mem::replace(&mut self.committed, prev));
+        if let Some((prev, id)) = self.undo.pop() {
+            self.redo.push((std::mem::replace(&mut self.committed, prev), std::mem::replace(&mut self.state, id)));
             *prj = self.committed.clone();
             self.rev += 1;
         }
     }
 
     pub fn redo(&mut self, prj: &mut Project) {
-        if let Some(next) = self.redo.pop() {
-            self.undo.push(std::mem::replace(&mut self.committed, next));
+        if let Some((next, id)) = self.redo.pop() {
+            self.undo.push((std::mem::replace(&mut self.committed, next), std::mem::replace(&mut self.state, id)));
             *prj = self.committed.clone();
             self.rev += 1;
         }

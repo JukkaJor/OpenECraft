@@ -30,17 +30,23 @@ impl App {
             ui.add_space(12.0);
             ui.label(RichText::new(tr("Getting started")).strong());
             ui.horizontal_wrapped(|ui| {
+                // All chapters of docs/tutorial.md, numbered like there.
                 for (n, icon, title) in [
                     (1, Icon::FileNew, tr("A new project")),
+                    (2, Icon::PageProperties, tr("Pages and structure")),
                     (3, Icon::InsertCenter, tr("Placing symbols")),
                     (4, Icon::Wire, tr("Wires and potentials")),
                     (5, Icon::Parts, tr("Parts")),
+                    (6, Icon::Terminal, tr("Terminals and plugs")),
+                    (7, Icon::Plc, tr("PLC")),
                     (8, Icon::Check, tr("The project check")),
                     (9, Icon::Report, tr("Reports")),
                     (10, Icon::Enclosure, tr("Panel layout")),
                     (11, Icon::Upload, tr("Printing and export")),
+                    (12, Icon::Compare, tr("Changes and review")),
+                    (13, Icon::Plugin, tr("Automation")),
                 ] {
-                    if super::backstage::tile(ui, icon, title).clicked() {
+                    if super::backstage::tile(ui, icon, &format!("{n}. {title}")).clicked() {
                         self.help_chapter(n);
                     }
                 }

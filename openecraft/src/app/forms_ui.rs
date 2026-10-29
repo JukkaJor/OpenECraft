@@ -1,6 +1,7 @@
 //! Forms window: title block editor (lines, rectangles, texts with placeholders)
 //! and report forms (columns, order, rows per page, own drawn forms).
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette};
@@ -145,7 +146,7 @@ impl App {
                 prj.forms.default_title_block = if fu.form == forms::STANDARD { String::new() } else { fu.form.clone() };
             }
             if let Some(ci) = custom {
-                if ui.button(tr("🗑 Delete")).on_hover_text(tr("Pages using it get the project default")).clicked() {
+                if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("Pages using it get the project default")).clicked() {
                     let name = prj.forms.title_blocks.remove(ci).name;
                     for pg in prj.pages.iter_mut().filter(|pg| pg.title_block == name) {
                         pg.title_block.clear();
@@ -158,10 +159,10 @@ impl App {
                 }
             }
             ui.separator();
-            if ui.button(tr("⬆ Import…")).clicked() {
+            if icons::text_button(ui, Icon::Upload, tr("Import…")).clicked() {
                 action = Some(Action::Import);
             }
-            if ui.add_enabled(!prj.forms.title_blocks.is_empty(), egui::Button::new(tr("⬇ Export…"))).on_hover_text(tr("The project's own title blocks")).clicked() {
+            if ui.add_enabled_ui(!prj.forms.title_blocks.is_empty(), |ui| icons::text_button(ui, Icon::Download, tr("Export…"))).inner.on_hover_text(tr("The project's own title blocks")).clicked() {
                 action = Some(Action::Export);
             }
         });
@@ -264,13 +265,13 @@ impl App {
                     ui.selectable_value(&mut fu.scheme, s.clone(), s);
                 }
             });
-            new_scheme = ui.button(tr("➕ New scheme")).on_hover_text(tr("Named copy of this form, for report blocks")).clicked();
-            delete_scheme = ui.add_enabled(!fu.scheme.is_empty(), egui::Button::new(tr("🗑 Delete"))).clicked();
+            new_scheme = icons::text_button(ui, Icon::Plus, tr("New scheme")).on_hover_text(tr("Named copy of this form, for report blocks")).clicked();
+            delete_scheme = ui.add_enabled_ui(!fu.scheme.is_empty(), |ui| icons::text_button(ui, Icon::Delete, tr("Delete"))).inner.clicked();
             ui.separator();
-            if ui.button(tr("⬆ Import…")).clicked() {
+            if icons::text_button(ui, Icon::Upload, tr("Import…")).clicked() {
                 action = Some(Action::Import);
             }
-            if ui.button(tr("⬇ Export…")).on_hover_text(tr("The project's own title blocks and report schemes")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Export…")).on_hover_text(tr("The project's own title blocks and report schemes")).clicked() {
                 action = Some(Action::Export);
             }
         });
@@ -406,10 +407,10 @@ fn columns_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], ti
     let mut swap = None;
     for (pos, (c, on)) in order.iter_mut().enumerate() {
         ui.horizontal(|ui| {
-            if ui.add_enabled(pos > 0, egui::Button::new("⬆").small()).clicked() {
+            if ui.add_enabled_ui(pos > 0, |ui| icons::button(ui, Icon::Upload, tr("Move up"))).inner.clicked() {
                 swap = Some((pos, pos - 1));
             }
-            if ui.add_enabled(pos + 1 < n, egui::Button::new("⬇").small()).clicked() {
+            if ui.add_enabled_ui(pos + 1 < n, |ui| icons::button(ui, Icon::Download, tr("Move down"))).inner.clicked() {
                 swap = Some((pos, pos + 1));
             }
             let h = headers[*c];
@@ -458,7 +459,7 @@ fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], tit
             if f.op.has_value() {
                 ui.add(egui::TextEdit::singleline(&mut f.value).desired_width(120.0));
             }
-            if ui.small_button("🗑").clicked() {
+            if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                 remove = Some(i);
             }
         });
@@ -466,7 +467,7 @@ fn filter_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], tit
     if let Some(i) = remove {
         form.filters.remove(i);
     }
-    if ui.button(tr("➕ Add filter")).clicked() {
+    if icons::text_button(ui, Icon::Plus, tr("Add filter")).clicked() {
         form.filters.push(forms::RowFilter { column: headers.first().map(|h| h.to_string()).unwrap_or_default(), ..Default::default() });
     }
 }
@@ -478,7 +479,7 @@ fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], title
         ui.horizontal(|ui| {
             column_combo(ui, ("rfscol", i), &mut k.column, headers, titles);
             ui.checkbox(&mut k.descending, tr("Descending"));
-            if ui.small_button("🗑").clicked() {
+            if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                 remove = Some(i);
             }
         });
@@ -486,7 +487,7 @@ fn sort_editor(ui: &mut egui::Ui, form: &mut ReportForm, headers: &[&str], title
     if let Some(i) = remove {
         form.sort.remove(i);
     }
-    if ui.button(tr("➕ Add sort key")).clicked() {
+    if icons::text_button(ui, Icon::Plus, tr("Add sort key")).clicked() {
         form.sort.push(forms::SortKey { column: headers.first().map(|h| h.to_string()).unwrap_or_default(), descending: false });
     }
 }
@@ -617,7 +618,7 @@ pub(super) fn item_properties(ui: &mut egui::Ui, fu: &mut FormsUi, items: &mut V
     });
     ui.horizontal(|ui| {
         duplicate = ui.button(tr("Duplicate")).clicked();
-        delete = ui.button(tr("🗑 Delete")).clicked();
+        delete = icons::text_button(ui, Icon::Delete, tr("Delete")).clicked();
     });
     if duplicate {
         let mut copy = items[i].clone();

@@ -5,24 +5,9 @@
 (renamed from {})	(переименовано из {})
 + Page	+ Лист
 0 = no jumper	0 = без перемычки
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Выберите символ в библиотеке (справа) и щёлкните на листе, чтобы разместить его. Обозначения устройств (-K1, -S2 …) присваиваются автоматически.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Проект › Редактор символов: рисуйте собственные символы (или копируйте встроенные) с точками подключения и функцией; они сохраняются в проекте и могут передаваться в виде файлов библиотеки.
-100% ≈ real size on a 96 dpi screen	100% ≈ реальный размер на экране 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Проект › Основные надписи и формы отчётов: собственные основные надписи с заполнителями ({project}, {page}, {prop:Name} …) и столбцы листов отчётов.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Компоновка шкафа: шины и вырезы; свойства корпуса экспортируют схему сверления (данные ЧПУ в формате DXF / DWG / CSV). Производственный список проводов содержит длины зачистки и наконечники.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Жгуты: Проект › Жгуты…; выберите провода между двумя устройствами › Назначить жгуту или для каждого соединения в свойствах провода. Отчёт по жгутам с длинами, разъёмами и диаметром пучка, экспорт KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Дверь: переключите вид спереди шкафа на «Дверь» и разместите там командные / сигнальные устройства; вырезы в двери создаются автоматически. Коллизии проверяются по 3D-моделям изделий.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Выберите катушку, затем разместите контакты: они назначаются этой катушке и нумеруются (13/14, 21/22 …). Перекрёстные ссылки и зеркало контактов обновляются сразу.
 2D front view	Вид спереди 2D
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Рисуйте провода инструментом «Провод» (W). Провода автоматически заканчиваются на точках подключения. Т-образные ответвления получают точку соединения.
 3D model	3D-модель
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Потенциалы (L1, +24V …) и точки разрыва именуют цепи на разных листах. Выберите провод, чтобы выделить его потенциал.
 4/2 directional valve	4/2-распределитель
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Назначайте изделия в панели свойств; создавайте отчёты (список устройств, спецификацию, схему клемм, список соединений, список ПЛК) и вставляйте их как листы отчётов.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Структура: задайте листам функциональное назначение (=A1) и место установки (+CAB1) в свойствах листа. Размещённые там устройства получают их (=A1+CAB1-K1); на листе показывается только отличающаяся часть.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Кабели: определите их в меню Проект › Кабели…, выберите провода и используйте «Назначить кабелю». Номера проводов: Проект › Нумерация проводов… или введите номер в свойствах провода.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Макросы: выберите элементы › Правка › Сохранить выделенное как макрос; вставляйте их через Вставка › Макрос…. Заполнители {NAME} заполняются из наборов значений.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Проект › Клеммные колодки / Обзор ПЛК / Ревизии: порядок колодок, перемычки и резервы; адреса ПЛК и таблицы символов; ревизии с отметками изменений и выпущенные (заблокированные) листы.
 Access token	Маркер доступа
 Accessories	Принадлежности
 Add missing parts of the example catalog	Добавить недостающие изделия из примера каталога
@@ -95,12 +80,9 @@ Click into the page to place {}	Щёлкните на листе, чтобы р�
 Click on the 4 mm grid	Щёлкните по сетке 4 мм
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Щёлкайте начальную и угловые точки · Пробел меняет направление угла · автоматически заканчивается на подключении · Правый щелчок / Esc – завершить
 Click start and end point	Щёлкните начальную и конечную точки
-Click start point, click end point	Щёлкните начальную точку, затем конечную
 Click to add to the selected text.	Щёлкните, чтобы добавить к выбранному тексту.
 Click to insert the macro · Esc cancel	Щёлкните, чтобы вставить макрос · Esc – отмена
-Click to place a text	Щёлкните, чтобы разместить текст
 Click to place the text from the field below	Щёлкните, чтобы разместить текст из поля ниже
-Click to place · R rotate · M mirror · Esc finish	Щелчок – разместить · R – повернуть · M – отразить · Esc – завершить
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Щелчок – выбрать, перетаскивание – переместить, перетаскивание на пустом месте – выбор рамкой. Перетаскивание правой/средней кнопкой сдвигает вид, колесо масштабирует.
 Click to show	Щёлкните, чтобы показать
 Click two corners	Щёлкните два угла
@@ -146,7 +128,6 @@ Corner	Угол
 Cover	Титульный лист
 Cover sheet	Титульный лист
 Create / update the part on the server (Ctrl+S)	Создать / обновить изделие на сервере (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Создайте корпус (➕ в навигаторе слева), чтобы начать компоновку шкафа.
 Create an enclosure in the panel layout first.	Сначала создайте корпус в компоновке шкафа.
 Create revision	Создать ревизию
 Created by	Создал
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Дверь: устройств – {}, вырезо
 Downloaded {} parts (revision {}): {} new, {} updated	Скачано изделий: {} (ревизия {}): новых – {}, обновлено – {}
 Downloading parts…	Скачивание изделий…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Перетаскивание: вращение · перетаскивание правой/средней кнопкой: сдвиг · колесо: масштаб · щелчок: выбрать устройство или провод
-Draw connections (W)	Рисовать соединения (W)
+Draw connections	Рисовать соединения
 Duplicate	Дублировать
 Each point-to-point connection can belong to a harness	Каждое соединение «точка – точка» может входить в жгут
 Edit	Правка
@@ -272,7 +253,6 @@ Harness data	Данные жгута
 Harness {} has no wires	У жгута {} нет проводов
 Harness {}: connection {} – {} does not exist in the schematic	Жгут {}: соединение {} – {} отсутствует на схеме
 Harnesses	Жгуты
-Harnesses…	Жгуты…
 Height	Высота
 Height (mm)	Высота (мм)
 Help	Справка
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Более длинные зна�
 Macro {} replaced	Макрос {} заменён
 Macro {} saved	Макрос {} сохранён
 Macros	Макросы
-Macros…	Макросы…
 Macro…	Макрос…
 Main	Главн.
 Main contact 1-pole	Главный контакт 1-полюсный
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Следующие свободные �
 Next page (Page Down)	Следующий лист (Page Down)
 No PLC inputs / outputs placed.	Входы / выходы ПЛК не размещены.
 No cables defined.	Кабели не определены.
-No cables yet – Project › Cables…	Кабелей пока нет – Проект › Кабели…
 No changes since the last revision.	Нет изменений с последней ревизии.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Устройств пока нет. Выберите символ в библиотеке справа и щёлкните на листе.
-No enclosure yet – create one with ➕.	Корпуса пока нет – создайте его с помощью ➕.
 No harnesses defined.	Жгуты не определены.
-No harnesses yet – Project › Harnesses…	Жгутов пока нет – Проект › Жгуты…
 No identifying letter for the device tag.	Нет буквенного кода для обозначения устройства.
 No macros yet. Select items in a schematic and save them as a macro.	Макросов пока нет. Выберите элементы на схеме и сохраните их как макрос.
 No parts found.	Изделия не найдены.
@@ -437,7 +412,6 @@ PLC connection point	Точка подключения ПЛК
 PLC digital input	Дискретный вход ПЛК
 PLC digital output	Дискретный выход ПЛК
 PLC overview	Обзор ПЛК
-PLC overview…	Обзор ПЛК…
 Packaging quantity	Количество в упаковке
 Page	Лист
 Page / column (3.4.1)	Лист / столбец (3.4.1)
@@ -468,11 +442,10 @@ Parts	Изделия
 Parts (CSV, JSON)	Изделия (CSV, JSON)
 Parts import failed: {}	Ошибка импорта изделий: {}
 Parts management	Управление изделиями
-Parts management…	Управление изделиями…
 Parts server: {}	Сервер изделий: {}
 Passive components	Пассивные компоненты
 Pilot light (NFPA)	Сигнальная лампа (NFPA)
-Place text (T)	Разместить текст (T)
+Place text	Разместить текст
 Placed	Размещено
 Placed {}× in the project	Размещено в проекте: {}×
 Placeholders	Заполнители
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Обновить изделия приме
 Relay / contactor coil	Катушка реле / контактора
 Relay coil (NFPA)	Катушка реле (NFPA)
 Release: lock all pages	Выпуск: заблокировать все листы
-Released page – unlock it in Project › Revisions to change it	Выпущенный лист – чтобы изменить его, разблокируйте в меню Проект › Ревизии
 Remove from cable	Удалить из кабеля
 Remove from harness	Удалить из жгута
 Remove from the harness	Удалить из жгута
@@ -566,7 +538,6 @@ Revision marks	Отметки ревизий
 Revision overview (changes)	Обзор ревизий (изменения)
 Revision {} created	Ревизия {} создана
 Revisions	Ревизии
-Revisions…	Ревизии…
 Right	Справа
 Rotate (R)	Повернуть (R)
 Rotate / mirror (selection or symbol being placed)	Повернуть / отразить (выделенное или размещаемый символ)
@@ -637,7 +608,6 @@ Supplier	Поставщик
 Switches / Sensors	Выключатели / датчики
 Symbol	Символ
 Symbol editor	Редактор символов
-Symbol editor…	Редактор символов…
 Symbol table import failed: {}	Ошибка импорта таблицы символов: {}
 Symbols	Символы
 Synchronize project parts from database	Синхронизировать изделия проекта из базы данных
@@ -655,7 +625,6 @@ Terminal number	Номер клеммы
 Terminal number, PLC address, potential name …	Номер клеммы, адрес ПЛК, имя потенциала …
 Terminal strip	Клеммная колодка
 Terminal strips	Клеммные колодки
-Terminal strips…	Клеммные колодки…
 Terminals	Клеммы
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Клеммы с одинаковым номером перемычки соединены (один потенциал). Резервные клеммы учитываются в спецификации.
 Test connection	Проверить подключение
@@ -727,8 +696,6 @@ Wire tool / text tool	Инструмент «Провод» / инструмен
 Wire {} – {}  ({} of {} here, click again for the next)	Провод {} – {}  ({} из {} здесь, щёлкните снова для следующего)
 Wire {} – {}  {} mm	Провод {} – {}  {} мм
 Wires	Провода
-Workflow	Порядок работы
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} мм   Столбец {}  Строка {}
 X {}  Y {} mm on the {}	X {}  Y {} мм ({})
 YYYY-MM-DD	ГГГГ-ММ-ДД
 Zoom / pan	Масштаб / сдвиг
@@ -815,67 +782,55 @@ writable with token	запись с маркером
 ⎘ Copy	⎘ Копировать
 ○ Circle	○ Окружность
 ☐ Rect	☐ Прямоуг.
-⛶ Fit	⛶ По размеру
-✏ Place in schematic	✏ Разместить на схеме
+Place in schematic	Разместить на схеме
 ✏ Wire	✏ Провод
-✔ Add to device	✔ Добавить к устройству
-✔ Create	✔ Создать
+Add to device	Добавить к устройству
+Create	Создать
 ✔ No problems found.	✔ Проблем не найдено.
 ✔ Save	✔ Сохранить
 ➕ Add accessory	➕ Добавить принадлежность
-➕ Add function	➕ Добавить функцию
-➕ Add part…	➕ Добавить изделие…
+Add function	Добавить функцию
+Add part…	Добавить изделие…
 ➕ Insert (click into the page)	➕ Вставить (щёлкните на листе)
 ➕ Insert as new page	➕ Вставить как новый лист
 ➕ Insert as report page	➕ Вставить как лист отчёта
-➕ Insert mounting layout page	➕ Вставить лист монтажного плана
+Insert mounting layout page	Вставить лист монтажного плана
 ➕ Label	➕ Надпись
 ➕ Line	➕ Линия
 ➕ New	➕ Создать
-➕ New cable	➕ Новый кабель
-➕ New harness	➕ Новый жгут
+New cable	Новый кабель
+New harness	Новый жгут
 ➕ Property	➕ Свойство
 ➕ Rectangle	➕ Прямоугольник
 ➕ Text	➕ Текст
-➕ Value set	➕ Набор значений
+Value set	Набор значений
 ➕ {} (not saved)	➕ {} (не сохранено)
 ⟲ Revert	⟲ Вернуть
 ⟳ Reload	⟳ Перезагрузить
-⟳ Rotate	⟳ Повернуть
-⬆ Import symbol table…	⬆ Импортировать таблицу символов…
-⬆ Import…	⬆ Импортировать…
-⬆ Upload database ({})	⬆ Выгрузить базу данных ({})
+Import symbol table…	Импортировать таблицу символов…
+Upload database ({})	Выгрузить базу данных ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Выгрузить файл изделий (CSV / JSON)…
-⬆ Upload selected part	⬆ Выгрузить выбранное изделие
-⬇ Door NC data (DXF)	⬇ Данные ЧПУ двери (DXF)
-⬇ Door cutouts (CSV)	⬇ Вырезы в двери (CSV)
-⬇ Download into database	⬇ Загрузить в базу данных
-⬇ Drilling list (CSV)	⬇ Список сверления (CSV)
-⬇ Export CSV	⬇ Экспортировать CSV
+Upload selected part	Выгрузить выбранное изделие
+Door NC data (DXF)	Данные ЧПУ двери (DXF)
+Door cutouts (CSV)	Вырезы в двери (CSV)
+Download into database	Загрузить в базу данных
 ⬇ Export KBL (XML)…	⬇ Экспортировать KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Экспортировать таблицу символов (CSV)…
-⬇ Export…	⬇ Экспортировать…
-⬇ NC data (DXF)	⬇ Данные ЧПУ (DXF)
+Export symbol table (CSV)…	Экспортировать таблицу символов (CSV)…
+NC data (DXF)	Данные ЧПУ (DXF)
 ⬉ Select	⬉ Выбрать
 🌐 Parts server	🌐 Сервер изделий
-💾 Save	💾 Сохранить
-💾 Save selection as macro…	💾 Сохранить выделенное как макрос…
-📊 Cable overview	📊 Обзор кабелей
-📊 Harness data	📊 Данные жгутов
 📊 Reports	📊 Отчёты
-📊 Revision overview	📊 Обзор ревизий
-🔒 Released page – read only	🔒 Выпущенный лист – только чтение
+Revision overview	Обзор ревизий
+Released page – read only	Выпущенный лист – только чтение
 🗄 Panel layout	🗄 Компоновка шкафа
 🗄 Parts database	🗄 База данных изделий
 🗋 Schematic	🗋 Схема
 🗑 Delete	🗑 Удалить
-🗑 Delete connection point	🗑 Удалить точку подключения
-🗑 Delete element	🗑 Удалить элемент
-🗑 Delete macro	🗑 Удалить макрос
-🗑 Remove	🗑 Убрать
+Delete connection point	Удалить точку подключения
+Delete element	Удалить элемент
 {} connections removed from their harness	Соединений удалено из своих жгутов: {}
 {} connections assigned to {}	Соединений назначено {1}: {0}
-🗄 Show in panel layout ({})	🗄 Показать в компоновке шкафа ({})
+Show in panel layout ({})	Показать в компоновке шкафа ({})
    |  Potential {}	   |  Потенциал {}
 📁 Project parts ({})	📁 Изделия проекта ({})
 part {} not found	изделие {} не найдено
@@ -1070,8 +1025,8 @@ via cable ducts	через кабельные каналы
 {} connection points	Точек подключения: {}
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} мм на панели + {} мм запас; остальное – путь от точек подключения до панели.
 {} wires, {} – {} mm	Проводов: {}, {} – {} мм
-➕ Add connection point	➕ Добавить точку подключения
-🗑 Remove all	🗑 Удалить все
+Add connection point	Добавить точку подключения
+Remove all	Удалить все
 2D front view (SVG)	Вид спереди 2D (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D-модель (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Концевой держатель
@@ -1113,11 +1068,9 @@ Wire number on both ends	Номер провода на обоих концах
 {} markers	Маркеров: {}
 {} mm	{} мм
 {} pieces	{} шт.
-Potentials…	Потенциалы…
 Potentials	Потенциалы
-➕ New potential	➕ Новый потенциал
+New potential	Новый потенциал
 Load preset	Загрузить шаблон
-📊 Potential overview	📊 Обзор потенциалов
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Провода без собственного цвета или сечения получают их от потенциала своего соединения; жилы кабелей сохраняют значения кабеля.
 e.g. 400 V AC	например, 400 V AC
 Delete	Удалить
@@ -1151,7 +1104,6 @@ turquoise	бирюзовый
 silver	серебристый
 green-yellow	зелёно-жёлтый
 Potential {} defined {} times	Потенциал {} определён {} раз
-Potential {} has no definition (Project › Potentials)	У потенциала {} нет определения (Проект › Потенциалы)
 Protective conductor {} with wire colour {} (must be GNYE)	Защитный проводник {} с цветом провода {} (должен быть GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Цвет провода GNYE зарезервирован для защитных проводников ({})
 {}: cross-section {} differs from the potential definition ({})	{}: сечение {} отличается от определения потенциала ({})
@@ -1183,9 +1135,7 @@ Draw wires in their colour	Рисовать провода их цветом
 Pin	Контакт разъёма
 Plug	Штекер
 Plugs	Штекеры
-Plugs…	Штекеры…
 Plug diagram	Схема штекеров
-📊 Plug diagram	📊 Схема штекеров
 Socket side	Сторона гнёзд
 Pin side	Сторона штырей
 female	гнездо
@@ -1231,7 +1181,6 @@ Column	Столбец
 Condition '{}' needs OPTION=value	Условию '{}' нужно OPTION=значение
 Condition (OPTION=value & …)	Условие (OPTION=значение & …)
 Configurator	Конфигуратор
-Configurator…	Конфигуратор…
 Cooling	Охлаждение
 Creates or changes a configurator option	Создаёт или изменяет параметр конфигуратора
 Cross-section {} carries {} A, less than the {} A of {}	Сечение {} выдерживает {} A, меньше, чем {} A у {}
@@ -1355,10 +1304,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: падение напряжения {} V ({} %) выше {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: потери мощности {} W нагревают корпус до {} °C (максимум {} °C): требуется {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} выдерживает {} A, нагрузке {} нужно {} A
-⚙ Generate pages	⚙ Создать листы
-➕ Option	➕ Параметр
-➕ Rule	➕ Правило
-🗑 Delete variant	🗑 Удалить вариант
+Option	Параметр
+Delete variant	Удалить вариант
 e.g. NAME=Pump; POWER={POWER}	например, NAME=Насос; POWER={POWER}
 e.g. STARTER=DOL	например, STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Изделия (CSV, JSON, BMEcat)
@@ -1395,8 +1342,7 @@ Default medium	Среда по умолчанию
 Number prefix	Префикс номера
 📊 Hose list	📊 Список шлангов
 PCT loops (pre-planning)	Контуры КИПиА (предварительное проектирование)
-➕ Loop	➕ Контур
-📊 PCT loop overview	📊 Обзор контуров КИПиА
+Loop	Контур
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Приборы на P&ID содержат в надписи буквенный код функции и номер контура (TIC 101); обозначение устройства связывает их со схемой.
 PCT loop	Контур КИПиА
 Range	Диапазон
@@ -1409,7 +1355,6 @@ Delete loop	Удалить контур
 {} (default)	{} (по умолчанию)
 Hose / pipe {}	Шланг / труба {}
 Resulting: {} · {} · {} · {} m	Итог: {} · {} · {} · {} м
-Fluid and process…	Гидропневматика и технологические процессы…
 Hose defaults and PCT loops of the pre-planning	Параметры шлангов по умолчанию и контуры КИПиА предварительного проектирования
 ✔ Wiring	✔ Монтаж проводов
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Помощник монтажа проводов: контрольный список проводов с 3D-видом и ходом выполнения (планшет: откройте веб-приложение с #wiring)
@@ -1538,7 +1483,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Исходный язык
 Target languages	Целевые языки
 Remove the language (its translations stay in the dictionary)	Удалить язык (его переводы остаются в словаре)
-➕ Add	➕ Добавить
+Add	Добавить
 ISO 639-1 language code	Код языка по ISO 639-1
 Collect texts from the project	Собрать тексты из проекта
 Adds all lines of the project texts to the dictionary	Добавляет все строки текстов проекта в словарь
@@ -1554,7 +1499,6 @@ not translated into {}	не переведено на {}
 {} new texts in the dictionary	Новых текстов в словаре: {}
 {} unused entries removed	Удалено неиспользуемых записей: {}
 Export as PDF in language	Экспортировать в PDF на языке
-Project languages…	Языки проекта…
 Translate the project texts; documentation per language	Перевод текстов проекта; документация на каждом языке
 {} translations imported	Импортировано переводов: {}
 Import failed: {}	Ошибка импорта: {}
@@ -1608,8 +1552,8 @@ Components (assembly)	Компоненты (сборка)
 (included)	(входит в состав)
 Fastening hardware in the bill of materials	Крепёж в спецификации
 Screws, nuts, washers and rivet nuts of the fixing points	Винты, гайки, шайбы и заклёпочные гайки точек крепления
-⬇ NC data of this face (DXF)	⬇ Данные ЧПУ этой поверхности (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Список сверления этой поверхности (CSV)
+NC data of this face (DXF)	Данные ЧПУ этой поверхности (DXF)
+Drilling list of this face (CSV)	Список сверления этой поверхности (CSV)
 Group as assembly	Сгруппировать как сборку
 The items are selected and moved together	Элементы выделяются и перемещаются вместе
 Distribute horizontally	Распределить по горизонтали
@@ -1625,7 +1569,6 @@ Pattern	Массив
 Columns × rows	Столбцы × строки
 Pitch X / Y	Шаг X / Y
 Devices are not copied: a device is placed once.	Устройства не копируются: устройство размещается один раз.
-✔ Copy	✔ Копировать
 Save as 3D macro	Сохранить как 3D-макрос
 Items with an anchor keep it; the others are inserted relative to the click.	Элементы с привязкой сохраняют её; остальные вставляются относительно точки щелчка.
 Walls	Стенки
@@ -1728,7 +1671,6 @@ Macro name	Имя макроса
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Вставляет 3D-макрос как сборку: привязанные элементы – на своё место, остальные – относительно x / y на поверхности
 Installation site	Объект установки
 Structure management	Управление структурой
-Structure management…	Управление структурой…
 Structure identifiers (IEC 81346), templates and work areas	Идентификаторы структуры (IEC 81346), шаблоны и рабочие области
 Template	Шаблон
 Apply template	Применить шаблон
@@ -1752,7 +1694,6 @@ Identifiers in use that are not defined are reported by the check.	Исполь�
 Work areas	Рабочие области
 Work area	Рабочая область
 Work area {}	Рабочая область {}
-➕ Work area	➕ Рабочая область
 (whole project)	(весь проект)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Рабочая область ограничивает листы и устройства в навигаторе частью проекта. Фильтры: пусто = любой, * = любые символы; A1 охватывает также A1.2.
 OpenECraft structure template	Шаблон структуры OpenECraft
@@ -1873,7 +1814,7 @@ Export…	Экспортировать…
 Import…	Импортировать…
 File to embed	Файл для встраивания
 Forms – title blocks, frames and templates	Формы – основные надписи, рамки и шаблоны
-Title blocks, plot frames and page templates…	Основные надписи, рамки листов и шаблоны листов…
+Title blocks, plot frames and page templates	Основные надписи, рамки листов и шаблоны листов
 Frame of all pages that do not choose one	Рамка всех листов, для которых она не выбрана
 Frame to start from when the frame is new (default: A3 landscape)	Исходная рамка для новой рамки (по умолчанию: A3 landscape)
 Free graphics and notes, not evaluated	Свободная графика и заметки, не обрабатываются
@@ -2044,19 +1985,18 @@ Port {} is not connected	Порт {} не подключён
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Экспортирует проект: svg (один лист), html, pdf, dxf, dwg (только в файл), wire_list (CSV), plc_table (CSV), plc_variables (глобальные переменные IEC 61131-3), aml (аппаратура ПЛК в AutomationML), kbl (XML жгутов), marking (CSV), gltf, step, iges, ifc или jt (3D-компоновка шкафа; jt только в файл), dictionary (CSV переводов текстов проекта)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt или dictionary, либо экспорт плагина
 PLC hardware	Аппаратура ПЛК
-⚙ Automatic configuration	⚙ Автоматическая конфигурация
+Automatic configuration	Автоматическая конфигурация
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Станции для CPU и шинных соединителей, шинные системы, слоты, начальные адреса, адреса точек, IP-адреса и линейная топология
-⬇ Export AutomationML…	⬇ Экспортировать AutomationML…
+Export AutomationML…	Экспортировать AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Аппаратная конфигурация и теги ПЛК для TIA Portal и других средств ПЛК
-⬆ Import AutomationML…	⬆ Импортировать AutomationML…
+Import AutomationML…	Импортировать AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Станции, модули, адреса, подсети и комментарии тегов из средства ПЛК
-⬇ Export IEC 61131-3 variables…	⬇ Экспортировать переменные IEC 61131-3…
+Export IEC 61131-3 variables…	Экспортировать переменные IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Список глобальных переменных с прямыми адресами для CODESYS, TwinCAT и других
 Stations and racks	Станции и стойки
 Bus topology	Топология шины
 Device descriptions	Описания устройств
 Station	Станция
-➕ Station	➕ Станция
 Cards without station: {}	Платы без станции: {}
 No stations: add one or use the automatic configuration.	Станций нет: добавьте станцию или используйте автоматическую конфигурацию.
 Head (CPU / coupler)	Головной модуль (CPU / соединитель)
@@ -2065,7 +2005,7 @@ Bus system	Шинная система
 IP / bus address	IP-адрес / адрес на шине
 Device number	Номер устройства
 {}: {} slots, ports {}	{}: слотов – {}, порты {}
-🗑 Remove station	🗑 Удалить станцию
+Remove station	Удалить станцию
 Plug in card	Установить плату
 No modules: plug in PLC cards of the schematic.	Модулей нет: установите платы ПЛК со схемы.
 Device description	Описание устройства
@@ -2076,13 +2016,12 @@ Output bytes	Байты выходов
 from the parts	из изделий
 Remove from the station	Удалить из станции
 Bus systems	Шинные системы
-➕ Bus system	➕ Шинная система
 Subnet	Подсеть
 Port A	Порт A
 Port B	Порт B
 Without bus system	Без шинной системы
 No bus systems.	Шинных систем нет.
-⬆ Import GSDML / ESI…	⬆ Импортировать GSDML / ESI…
+Import GSDML / ESI…	Импортировать GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Описания устройств PROFINET (GSDML) и EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Изделия группы продуктов ПЛК также дают описания (технические данные: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Слоты
@@ -2093,7 +2032,7 @@ built-in	встроенное
 {} addresses changed	Изменено адресов: {}
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	Импортировано станций: {}, модулей: {}, шинных систем: {}, соединений: {}; изменено адресов: {} и текстов: {}
 {} device descriptions imported	Импортировано описаний устройств: {}
-PLC hardware and bus topology…	Аппаратура ПЛК и топология шины…
+PLC hardware and bus topology	Аппаратура ПЛК и топология шины
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Станции, стойки, модули, шинные системы, обмен AutomationML со средствами ПЛК
 Device description (GSDML, ESI)	Описание устройства (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Шинное соединение {} - {}: кабель {} не существует
@@ -2101,7 +2040,7 @@ Cable {} is a {} cable on a {} connection	Кабель {} – кабель {} н
 Port {} has more than {} cables	У порта {} больше {} кабелей
 Cable {} is used for {} bus connections	Кабель {} используется для нескольких шинных соединений ({})
 with bus cables	с шинными кабелями
-➕ Create bus cables	➕ Создать шинные кабели
+Create bus cables	Создать шинные кабели
 A cable of the bus type for every connection without cable	Кабель шинного типа для каждого соединения без кабеля
 missing	отсутствует
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	Станций: {}, шинных систем: {}, назначено плат: {}, изменено адресов: {}, соединений: {}, кабелей: {}
@@ -2211,12 +2150,11 @@ starts with	начинается с
 {} (first column)	{} (первый столбец)
 {} report pages output to {}	Выведено листов отчётов: {} в {}
 {} – {} ({} pages)	{} – {} (листов: {})
-➕ Add filter	➕ Добавить фильтр
-➕ Add sort key	➕ Добавить ключ сортировки
-➕ New block	➕ Новый блок
-➕ New scheme	➕ Новая схема
-⟳ Generate all	⟳ Создать все
-⟳ Generate	⟳ Создать
+Add filter	Добавить фильтр
+Add sort key	Добавить ключ сортировки
+New block	Новый блок
+Generate all	Создать все
+Generate	Создать
 ⟳ Update report blocks	⟳ Обновить блоки отчётов
 Opening {}…	Открытие {}…
 Uploading {}…	Выгрузка {}…
@@ -2238,13 +2176,13 @@ Save and release page	Сохранить и снять блокировку ли
 Lock page	Заблокировать лист
 Project server	Сервер проектов
 User name	Имя пользователя
-⟳ List projects	⟳ Список проектов
+List projects	Список проектов
 Enter a user name: other users see it on your locks.	Введите имя пользователя: другие пользователи видят его на ваших блокировках.
 Users	Пользователи
 Opening a project replaces the current one, its unsaved changes are lost.	Открытие проекта заменяет текущий проект, его несохранённые изменения будут потеряны.
 Upload the current project as a new shared project:	Выгрузить текущий проект как новый общий проект:
 Name on the server	Имя на сервере
-⬆ Upload	⬆ Выгрузить
+Upload	Выгрузить
 Letters, digits, space, - _ . (up to 64 characters)	Буквы, цифры, пробел, - _ . (до 64 символов)
 Shared project {} – revision {}, user {}	Общий проект {} – ревизия {}, пользователь {}
 Save and release all locks	Сохранить и снять все блокировки
@@ -2261,14 +2199,11 @@ None	Нет
 Close shared project	Закрыть общий проект
 Releases all locks; the project stays open as a local copy	Снимает все блокировки; проект остаётся открытым как локальная копия
 Download project	Скачать проект
-Project server…	Сервер проектов…
 Open and save shared projects, lock pages	Открытие и сохранение общих проектов, блокировка листов
-🔒 Locked by {} – read only	🔒 Заблокировано пользователем {} – только чтение
+Locked by {} – read only	Заблокировано пользователем {} – только чтение
 {} (project server, revision {})	{} (сервер проектов, ревизия {})
 {} change requests added, {} updated	Запросов на изменение добавлено: {}, обновлено: {}
-Compare and baselines…	Сравнение и базовые версии…
 Compare with a baseline, a revision or another project file and take differences over	Сравнить с базовой версией, ревизией или другим файлом проекта и принять различия
-Change requests…	Запросы на изменение…
 Review: comments and markup	Рецензирование: комментарии и пометки
 Revisions, approval and release	Ревизии, утверждение и выпуск
 Review ({})	Рецензирование ({})
@@ -2293,7 +2228,7 @@ What should be checked or changed?	Что нужно проверить или �
 Change request	Запрос на изменение
 Reply…	Ответить…
 Reply	Ответить
-🗑 Delete comment	🗑 Удалить комментарий
+Delete comment	Удалить комментарий
 Approval workflow	Процесс утверждения
 Approvers	Утверждающие
 User names, separated by commas	Имена пользователей через запятую
@@ -2309,8 +2244,8 @@ rejected	отклонено
 Submit for review	Отправить на рецензирование
 Release	Выпустить
 Discard draft	Отменить черновик
-✔ Approve	✔ Утвердить
-✖ Reject	✖ Отклонить
+Approve	Утвердить
+Reject	Отклонить
 Approving needs an approver; you are \"{}\".	Утверждать может только утверждающий; вы – \"{}\".
 Submit again	Отправить снова
 With the current pages; the approvals so far become void	С текущими листами; полученные утверждения аннулируются
@@ -2335,7 +2270,7 @@ Compare with	Сравнить с
 Baseline {} {}	Базовая версия {} {}
 Baseline {}	Базовая версия {}
 Pages of revision {}	Листы ревизии {}
-📂 Project file…	📂 Файл проекта…
+Project file…	Файл проекта…
 Baselines ({})	Базовые версии ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Базовая версия хранит весь проект (листы, устройства, изделия, настройки). При выпуске ревизии она создаётся автоматически.
 Create baseline	Создать базовую версию
@@ -2347,10 +2282,9 @@ Make the selected elements of this project equal to the compared ones	Сдела
 {} details	{} – подробности
 Baseline {} created	Базовая версия {} создана
 Change requests	Запросы на изменение
-➕ New request	➕ Новый запрос
-📂 Import…	📂 Импортировать…
+New request	Новый запрос
 CSV or JSON from another system; known numbers are updated	CSV или JSON из другой системы; известные номера обновляются
-⬇ Export JSON	⬇ Экспортировать JSON
+Export JSON	Экспортировать JSON
 Rejected and closed ones too	Также отклонённые и закрытые
 No change requests yet.	Запросов на изменение пока нет.
 Select a request.	Выберите запрос.
@@ -2365,9 +2299,9 @@ Device tags, separated by commas	Обозначения устройств че�
 Affected pages ({})	Затронутые листы ({})
 Go to page	Перейти к листу
 Comments ({})	Комментарии ({})
-💬 Comment on the current page	💬 Комментарий на текущем листе
+Comment on the current page	Комментарий на текущем листе
 Linked to this request	Связано с этим запросом
-🗑 Delete request	🗑 Удалить запрос
+Delete request	Удалить запрос
 in progress	в работе
 resolved	решено
 Redline	Красная правка
@@ -2405,14 +2339,6 @@ Settings	Настройки
 Page order	Порядок листов
 {} differences taken over	Перенесено различий: {}
 Layers	Слои
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Щелчок – выбрать, перетаскивание – переместить, перетаскивание на пустом месте – выбор рамкой. Перетащите обозначение или текст свойства выбранного символа, чтобы разместить его. Перетаскивание правой/средней кнопкой сдвигает вид, колесо масштабирует.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Щёлкайте начальную и угловые точки · Пробел меняет направление угла · A включает обход символов · автоматически заканчивается на подключении · Правый щелчок / Esc – завершить
-Click the centre, then a point of the circle	Щёлкните центр, затем точку окружности
-Click the centre, the start point and the end point (counter-clockwise)	Щёлкните центр, начальную и конечную точки (против часовой стрелки)
-Click the corner points · double click, Enter or right click finishes	Щёлкайте угловые точки · двойной щелчок, Enter или правый щелчок – завершить
-Click the two points to measure, then the position of the dimension line	Щёлкните две измеряемые точки, затем положение размерной линии
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Щёлкните провод: точка задаёт номер, цвет, сечение и жилу кабеля соединения
-Draw a line across the wires that are cores of the cable	Проведите линию через провода, которые являются жилами кабеля
 Click to insert · Esc cancel	Щелчок – вставить · Esc – отмена
 Routing around symbols	Обход символов
 {} objects pasted	Вставлено объектов: {}
@@ -2442,7 +2368,7 @@ Layer	Слой
 Auto-connect	Автосоединение
 Draw connections between facing connection points when symbols are placed or moved	Рисовать соединения между обращёнными друг к другу точками подключения при размещении или перемещении символов
 Route	Обход
-The wire tool routes around symbols and other wires (A)	Инструмент «Провод» обходит символы и другие провода (A)
+The wire tool routes around symbols and other wires	Инструмент «Провод» обходит символы и другие провода
 Dimension	Размер
 Image…	Изображение…
 PNG or JPEG bitmap, e.g. a logo or a photo	Растровое изображение PNG или JPEG, например логотип или фотография
@@ -2486,7 +2412,6 @@ Tag placed by hand	Обозначение размещено вручную
 Drag the tag of the selected symbol to place it.	Перетащите обозначение выбранного символа, чтобы разместить его.
 (empty)	(пусто)
 ➕ Place property	➕ Разместить свойство
-➕ Layer	➕ Слой
 Layer {}	Слой {}
 Layers of graphics, texts, dimensions and images	Слои графики, текстов, размеров и изображений
 Visible	Видимый
@@ -2531,8 +2456,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Сечение, например 1.5 mm²
 A cable definition needs a start and an end point	Определению кабеля нужны начальная и конечная точки
 No cable {}	Нет кабеля {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Точки определения соединения на проводе задают номер, цвет, сечение и жилу всего соединения; линия определения кабеля через провода делает их жилами кабеля. Автосоединение соединяет обращённые друг к другу точки подключения, «Обход» (A) прокладывает провода в обход символов.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Графика: окружности, эллипсы, дуги, многоугольники, размеры и изображения на слоях (навигатор › Слои: видимый, заблокирован, печатается). Перетащите обозначение выбранного символа, чтобы разместить его; остальные свойства размещаются в его свойствах.
 Coil	Катушка
 Main contacts 4-pole	Главные контакты 4-полюсные
 NO contact, on-delay	Замыкающий контакт с задержкой при включении
@@ -2689,16 +2612,13 @@ Added to both ends of the length for the cut length (insertion depth)	Приба
 📊 Hose configuration	📊 Конфигурация шлангов
 📊 Tubing / piping list	📊 Список труб / трубок
 📊 Fluid netlist	📊 Список цепей гидропневматики
-➕ Group	➕ Группа
-📊 Fluid device groups	📊 Группы устройств гидропневматики
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Пневмоострова, блоки подготовки воздуха и распределительные плиты: их устройства гидропневматики в порядке мест через пробел.
 Places	Места
 0 = not limited	0 = без ограничения
 Delete group	Удалить группу
-🔄 Synchronize	🔄 Синхронизировать
+Synchronize	Синхронизировать
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Связывает электромагнитные клапаны с катушкой с тем же номером (-QM3 › -MB3) и копирует тексты функций
 {} links created, {} function texts copied	Создано связей: {}, скопировано текстов функций: {}
-📊 Electro-fluid cross reference	📊 Перекрёстные ссылки электрика – гидропневматика
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Электрические устройства, которые приводят в действие или контролируют устройство гидропневматики (катушки электромагнитов, путевые выключатели и реле давления); обе схемы показывают перекрёстные ссылки друг на друга.
 Electrical devices	Электрические устройства
 Operating pressure in bar (0 = hose ratings are not checked)	Рабочее давление в bar (0 = номинальное давление шлангов не проверяется)
@@ -2734,7 +2654,6 @@ Right neighbour	Сосед справа
 No cable passage to {}: wires to it are not routed	Нет кабельного прохода к {}: провода туда не прокладываются
 Open to {}: wires cross beside the mounting plates	Открыто к {}: провода проходят рядом с монтажными панелями
 {} cable passages to {}	Кабельных проходов к {1}: {0}
-➕ Cable passage to {}	➕ Кабельный проход к {}
 Round cutouts facing each other in both side walls	Круглые вырезы друг напротив друга в обеих боковых стенках
 Both sides are open: the wires need no cutout	Обе стороны открыты: проводам не нужен вырез
 Cable passage to {}	Кабельный проход к {}
@@ -3067,7 +2986,6 @@ Surge protection	Защита от перенапряжений
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Отключающая способность по отношению к току короткого замыкания на каждом защитном устройстве сети, отключение при наименьшем токе замыкания в конце его цепи, стойкость кабелей к короткому замыканию и селективность с вышестоящим устройством.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Мощность и ток нагрузок сети (двигатели, приводы, нагреватели, блоки питания, трансформаторы), нагрузка каждого защитного устройства, расчётная нагрузка с коэффициентом одновременности и баланс нагрузки блоков питания.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Функции безопасности по ISO 13849-1: каждая подсистема (вход, логика, выход) с устройствами канала, его категорией, охватом диагностики и числом срабатываний в год. Устройства учитываются с PL / PFHd, MTTFd или B10d их изделий.
-➕ Safety function	➕ Функция безопасности
 Input	Вход
 Logic	Логика
 Output	Выход
@@ -3076,13 +2994,10 @@ Operations / year	Срабатываний / год
 CCF	CCF
 0 = from the devices	0 = из устройств
 Measures against common cause failure (at least 65 points)	Меры против отказов по общей причине (не менее 65 баллов)
-➕ Subsystem	➕ Подсистема
 Subsystem {}	Подсистема {}
 Rule libraries	Библиотеки правил
 Customer rule sets	Наборы правил заказчика
-➕ Rule set	➕ Набор правил
 Rule set {}	Набор правил {}
-💾 Export…	💾 Экспортировать…
 OpenECraft rule sets	Наборы правил OpenECraft
 Verify the project against it	Проверить проект по нему
 {} checks	Проверок: {}
@@ -3094,10 +3009,8 @@ Every item of the scope that meets the conditions must meet the requirement.	К�
 Message	Сообщение
 if	если
 then	то
-➕ Condition	➕ Условие
-➕ Check	➕ Проверка
 OpenECraft rule sets (JSON)	Наборы правил OpenECraft (JSON)
-Electrical calculations…	Электрические расчёты…
+Electrical calculations	Электрические расчёты
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Короткое замыкание, селективность, нагрузки, ЭМС, функциональная безопасность и проверка по наборам правил
 0 = a single value; otherwise values [1] … [n]	0 = одно значение; иначе значения [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Определение проекта на основе этого, с собственными значениями по умолчанию и схемой
@@ -3416,7 +3329,6 @@ Project number	Номер проекта
 Project property of the property database (by key)	Свойство проекта из базы данных свойств (по ключу)
 Proof test interval	Интервал контрольных испытаний
 Property database	База данных свойств
-Property database…	База данных свойств…
 Property definitions	Определения свойств
 Property definitions, function definitions, placement schemes and the values of all objects	Определения свойств, определения функций, схемы размещения и значения всех объектов
 Property groups	Группы свойств
@@ -3603,10 +3515,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: «{}» не входит в {}
 {}: invalid value \"{}\" ({})	{}: недопустимое значение «{}» ({})
 ➕ Default value	➕ Значение по умолчанию
-➕ Derive project definition	➕ Создать производное определение проекта
-➕ User defined property	➕ Пользовательское свойство
+Derive project definition	Создать производное определение проекта
+User defined property	Пользовательское свойство
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Планирование устройств на однолинейной схеме, создание схемы и их синхронизация
-Single-line / multi-line…	Однолинейная / многолинейная…
 All devices of page {} are in the schematic already	Все устройства листа {} уже есть на схеме
 Copies function texts between the single-line diagram and the schematic where one side is empty	Копирует тексты функций между однолинейной схемой и схемой, если на одной из них текст пуст
 Does not match	Не соответствует
@@ -3756,11 +3667,11 @@ Outline	Контур
 Click the corners of a machine or building, double-click to finish	Щёлкните углы машины или здания, дважды щёлкните для завершения
 (no cable highlighted)	(кабель не выделен)
 Fit	Вписать
-⬇ Export SVG…	⬇ Экспортировать SVG…
+Export SVG…	Экспортировать SVG…
 Height above the floor	Высота над полом
 Placed here: {}	Размещено здесь: {}
 Place an enclosure, device or machine location at this node	Разместить корпус, устройство или место на машине в этом узле
-🗑 Delete node	🗑 Удалить узел
+Delete node	Удалить узел
 SVG drawing	Чертёж SVG
 Segments	Участки
 Width × height (mm)	Ширина × высота (мм)
@@ -3780,18 +3691,15 @@ Must be connected to the equipotential bonding	Должна быть подкл�
 {} corners	Углов: {}
 Take over cut lengths	Принять длины отрезков
 Set the cable lengths to the planned cut lengths	Установить длины кабелей равными запланированным длинам отрезков
-📊 Report	📊 Отчёт
 {} parts of the network	Частей сети: {}
 No field cables: place the enclosures and field devices at nodes of the route network.	Нет полевых кабелей: разместите корпуса и полевые устройства в узлах сети трасс.
 Route definition of {}	Определение трассы {}
 Via:	Через:
 Remove	Удалить
-➕ Node	➕ Узел
 Avoid:	Избегать:
 {} cable lengths taken over	Принято длин кабелей: {}
-➕ Bonding conductor	➕ Проводник уравнивания потенциалов
+Bonding conductor	Проводник уравнивания потенциалов
 Bonding points	Точки подключения уравнивания потенциалов
-➕ Accessory	➕ Принадлежность
 both ends	оба конца
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Нет принадлежностей: кабельные вводы, разъёмы, зажимы экрана … включаются в спецификацию и проверяются на соответствие кабелю.
 Reserve per cable end	Запас на конец кабеля
@@ -3799,7 +3707,6 @@ Length inside an enclosure	Длина внутри корпуса
 Cut length step	Шаг длины отрезка
 Maximum fill of a carrier	Максимальное заполнение кабельной конструкции
 Bend radius in drag chains	Радиус изгиба в кабельных цепях
-Field wiring…	Полевой монтаж…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	План установки, сеть трасс, планирование полевых кабелей, уравнивание потенциалов и кабельные принадлежности
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Нет опции {}
@@ -3913,9 +3820,9 @@ Archive and version	Архив и версия
 Verification	Проверка
 OpenECraft project archive	Архив проекта OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Для базы данных проектов требуется настольная версия: браузер не может просматривать папки.
-📂 Add folder…	📂 Добавить папку…
+Add folder…	Добавить папку…
 Adds the project files and archives of a folder and its subfolders	Добавляет файлы проектов и архивы папки и её вложенных папок
-🔄 Update all	🔄 Обновить все
+Update all	Обновить все
 Verify while reading	Проверять при считывании
 Remove the folder from the database	Удалить папку из базы данных
 Search	Поиск
@@ -3969,15 +3876,14 @@ Switches the options with a condition by the configurator options	Переклю
 {} options switched	Переключено опций: {}
 File format version {}. Files of older versions are converted when they are opened.	Версия формата файла {}. Файлы старых версий преобразуются при открытии.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Архив (.oecz) – это ZIP-файл с проектом, манифестом и внедрёнными документами и изображениями в виде отдельных файлов.
-📦 Archive project…	📦 Архивировать проект…
-📂 Open archive…	📂 Открыть архив…
+Archive project…	Архивировать проект…
+Open archive…	Открыть архив…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Проверяет данные проекта (идентификаторы, ссылки, данные устройств, опции, подпроекты) вместе с инженерными проверками.
 Verify project	Проверить проект
 Repair {} findings	Исправить замечания ({})
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	Данные проекта: ошибок: {}, предупреждений: {}, примечаний: {}; инженерная проверка: ошибок: {}, предупреждений: {}
 (repairable)	(исправимо)
 ✔ The project data is consistent.	✔ Данные проекта согласованы.
-Project management…	Управление проектами…
 Project database, batch changes of project properties, subprojects, options, archives and verification	База данных проектов, групповое изменение свойств проектов, подпроекты, опции, архивы и проверка
 OpenECraft project or archive	Проект или архив OpenECraft
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3951,7 @@ For parts without Stock length; longer profiles have to be joined	Для изд�
 Collision classes	Классы коллизий
 Distances between classes of items, or classes that may overlap	Расстояния между классами элементов или классы, которые могут перекрываться
 may overlap	могут перекрываться
-➕ Add rule	➕ Добавить правило
+Add rule	Добавить правило
 Air temperature at the devices	Температура воздуха у устройств
 max. {} °C	макс. {} °C
 No problems found	Проблем не найдено
@@ -4101,8 +4007,7 @@ Invalid answer of the plugin: {}	Недопустимый ответ плаги�
 Key figures of the project and a list of its device tags	Ключевые показатели проекта и список обозначений его устройств
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Ключевые показатели проекта: листы, символы, провода, устройства, изделия, кабели и результаты проверок
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Загруженные плагины (встроенные и из папок плагинов --plugins / OPENECRAFT_PLUGINS) с их командами, проверками, отчётами и экспортами; включает или отключает плагин для этого сеанса
-Manage plugins…	Управление плагинами…
-Plugin command {}	Команда плагина {}
+Manage plugins	Управление плагинами
 Plugin id '{}' is not snake_case	Идентификатор плагина «{}» не в формате snake_case
 Plugin {} is loaded twice	Плагин {} загружен дважды
 Plugin {} needs a newer OpenECraft (API {})	Плагину {} требуется более новая версия OpenECraft (API {})
@@ -4116,8 +4021,8 @@ Unknown plugin: {}	Неизвестный плагин: {}
 Warnings	Предупреждения
 {} commands, {} checks, {} reports, {} exports	Команд: {}, проверок: {}, отчётов: {}, экспортов: {}
 {}: the program to run is missing	{}: отсутствует запускаемая программа
-▶ Run	▶ Выполнить
-⟳ Update	⟳ Обновить
+Run	Выполнить
+Update	Обновить
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Проверки компоновки шкафа
@@ -4187,7 +4092,7 @@ Profile	Профиль
 (standard columns)	(стандартные столбцы)
 Write the file for the other system; later imports detect conflicts against this export	Записать файл для другой системы; последующие импорты выявляют конфликты относительно этого экспорта
 Read a file of the other system (CSV or JSON) and review the changes	Прочитать файл другой системы (CSV или JSON) и проверить изменения
-⬇ Neutral exchange file…	⬇ Нейтральный файл обмена…
+Neutral exchange file…	Нейтральный файл обмена…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Позиции, устройства, размещения, соединения, провода и документы в одном файле JSON для систем без коннектора
 Import changes	Изменения импорта
 Profiles	Профили
@@ -4213,7 +4118,6 @@ Conflicts	Конфликты
 Export	Экспорт
 Import	Импорт
 {} values taken over	Принято значений: {}
-Enterprise integration…	Интеграция с корпоративными системами…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Обмен с ERP, PDM, PLM, ECAD, MCAD, закупками и автоматами обработки проводов
 Files of other systems (CSV, JSON)	Файлы других систем (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Медная шина {}: для участков ({}) требуется гибов: {}
@@ -4380,9 +4284,9 @@ DWG export failed: {}	Сбой экспорта DWG: {}
 DWG import failed: {}	Сбой импорта DWG: {}
 DWG imported as page {}: {} lines, {} texts	DWG импортирован как лист {}: линий: {}, текстов: {}
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG импортирован как лист {}: линий: {}, текстов: {} (не импортировано: {})
-⬇ NC data (DWG)	⬇ Данные ЧПУ (DWG)
-⬇ Door NC data (DWG)	⬇ Данные ЧПУ двери (DWG)
-⬇ NC data of this face (DWG)	⬇ Данные ЧПУ этой поверхности (DWG)
+NC data (DWG)	Данные ЧПУ (DWG)
+Door NC data (DWG)	Данные ЧПУ двери (DWG)
+NC data of this face (DWG)	Данные ЧПУ этой поверхности (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Импортирует чертёж DWG (AutoCAD R12 … 2018) как графику (линии, дуги, тексты, блоки) на новый лист схемы
 Generic	Универсальный
 Parts store	База изделий
@@ -4721,7 +4625,6 @@ Power cable	Силовой кабель
 Control cable	Кабель управления
 Wiring material	Монтажные материалы
 Catalog id	ID каталога
-Data portal…	Портал данных…
 Delete catalog {} from the server?	Удалить каталог {} с сервера?
 Delete user {}? Their sessions and favorites are removed.	Удалить пользователя {}? Его сеансы и избранное будут удалены.
 Ends the session and forgets the token	Завершает сеанс и удаляет маркер доступа
@@ -4843,12 +4746,10 @@ Use macros	Добавить макросы
 ★ Favorites	★ Избранное
 ★ Remove from favorites	★ Удалить из избранного
 ☆ Add to favorites	☆ Добавить в избранное
-✔ Apply {} updates	✔ Применить обновления ({})
-➡ Successor {}	➡ Преемник {}
-⬇ Add marked parts to the parts database ({})	⬇ Добавить отмеченные изделия в базу данных изделий ({})
-⬇ Add to the parts database	⬇ Добавить в базу данных изделий
-🔄 Check the parts database for updates	🔄 Проверить базу данных изделий на наличие обновлений
-🔎 Search	🔎 Поиск
+Apply {} updates	Применить обновления ({})
+Add marked parts to the parts database ({})	Добавить отмеченные изделия в базу данных изделий ({})
+Add to the parts database	Добавить в базу данных изделий
+Check the parts database for updates	Проверить базу данных изделий на наличие обновлений
 Relay coil, AC	Катушка реле, переменный ток
 Relay coil, high-speed	Катушка реле, быстродействующая
 Relay coil, mechanically latched	Катушка реле, с механической фиксацией
@@ -5276,7 +5177,6 @@ Level of this kind of message	Уровень этого вида сообщен�
 As defined by the check	Как задано проверкой
 Switch off the check \"{}\"	Отключить проверку «{}»
 Changed message levels ({})	Измененные уровни сообщений ({})
-Right click a message in the Check tab to change its level.	Щёлкните сообщение правой кнопкой мыши на вкладке «Проверка», чтобы изменить его уровень.
 Accepted messages ({})	Принятые сообщения ({})
 No longer reported	Больше не выдаётся
 Still reported	Всё ещё выдаётся
@@ -5421,7 +5321,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Сохранить как шаблон проекта…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Сохраняет проект без ревизий, базовых версий, рецензирования и отметок проводки как шаблон для новых проектов
 OpenECraft project template	Шаблон проекта OpenECraft
-Not a project template: {}	Не шаблон проекта: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Начать с шаблона проекта: встроенного (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) или файла проекта
 Not a packed project	Не упакованный проект
 Viewer	Наблюдатель
@@ -5537,7 +5436,6 @@ Rotate	Повернуть
 Save to project server	Сохранить на сервере проектов
 Undo	Отменить
 Find and replace	Найти и заменить
-Finish polyline or polygon	Завершить полилинию или многоугольник
 Mirror (selection or symbol being placed)	Отразить (выделенное или размещаемый символ)
 Next page	Следующий лист
 Open project	Открыть проект
@@ -5552,13 +5450,12 @@ Keyboard shortcuts	Сочетания клавиш
 No shortcut	Нет сочетания клавиш
 Press a key…	Нажмите клавишу…
 Record	Записать
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Запись: нажмите новую клавишу с клавишами-модификаторами (Esc – отмена). Esc, Del, клавиши со стрелками и копирование / вставка не изменяются.
 Reset all to the defaults	Сбросить все к значениям по умолчанию
 {} is used by: {}	{} используется: {}
 Harness nailboard drawing to scale (SVG)	Чертёж плаза жгута в масштабе (SVG)
 Harness tag, e.g. -WH1	Обозначение жгута, например -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Чертёж плаза жгута в масштабе с длинами ответвлений и таблицами контактов разъёмов
-📐 Nailboard (SVG)…	📐 Плаз (SVG)…
+Nailboard (SVG)…	Плаз (SVG)…
 Bundle Ø {} mm	Ø пучка {} мм
 Nailboard {}	Плаз {}
 Scale 1:{}	Масштаб 1:{}
@@ -5580,7 +5477,6 @@ No segment {}	Нет сегмента {}
 Segment path (default: all segments)	Путь сегмента (по умолчанию: все сегменты)
 Pre-planning (CSV, Excel)	Предварительное планирование (CSV, Excel)
 Plant segments with planned devices before the schematic	Сегменты установки с запланированными устройствами до создания схемы
-Pre-planning…	Предварительное планирование…
 A segment cannot be moved below itself	Сегмент нельзя переместить под самого себя
 Adds a planned device to a segment or changes it	Добавляет запланированное устройство в сегмент или изменяет его
 Adds a segment below another one (or at the top)	Добавляет сегмент под другим (или на верхнем уровне)
@@ -5628,10 +5524,8 @@ name	имя
 {} pages generated	Создано листов: {}
 {} pages generated; page macros not found: {}	Создано листов: {}; макросы листов не найдены: {}
 {} segments created, {} devices added, {} updated	Создано сегментов: {}, добавлено устройств: {}, обновлено: {}
-➕ Device	➕ Устройство
-➕ Segment	➕ Сегмент
-➕ Sub-segment	➕ Подсегмент
-🗑 Remove segment	🗑 Удалить сегмент
+Sub-segment	Подсегмент
+Remove segment	Удалить сегмент
 Display	Отображение
 Mirrored	Отражено
 Other properties	Прочие свойства
@@ -5733,7 +5627,7 @@ Hose defaults	Параметры шлангов по умолчанию
 Message levels	Уровни сообщений
 Not a settings scheme: {}	Не схема настроек: {}
 Wire defaults	Параметры проводов по умолчанию
-Reset panel layout	Сбросить расположение панелей
+Reset pane layout	Сбросить расположение панелей
 Navigator on the left, symbols and properties on the right	Навигатор слева, символы и свойства справа
 Panels	Панели
 Saves the workspace, the arrangement of the panels and the open windows	Сохраняет рабочее пространство, расположение панелей и открытые окна
@@ -5922,7 +5816,7 @@ Motors feed the short circuit	Двигатели подпитывают коро
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Асинхронные двигатели в сети увеличивают максимальный ток короткого замыкания (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	В точке питания: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Таблицы координации производителей
-➕ Entry	➕ Запись
+Entry	Запись
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Селективность и резервная защита пар устройств, проверенные производителем, по номеру изделия. Они заменяют оценку по время-токовым характеристикам.
 Upstream part	Вышестоящее изделие
 Downstream part	Нижестоящее изделие
@@ -6012,22 +5906,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	Вместо имени пользователя и пароля
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 или новее (Vault Data API)
-⟳ Refresh	⟳ Обновить
+Refresh	Обновить
 Search below this folder	Искать в этой папке и ниже
-🔍 Search	🔍 Поиск
 Checked out	Извлечён
 {} of {} entries shown: search to narrow the list	Показано записей: {} из {}; используйте поиск, чтобы сузить список
 Select a file to import it	Выберите файл, чтобы импортировать его
 (choose a part)	(выберите изделие)
-⬇ Import	⬇ Импортировать
 Project file	Файл проекта
-⬆ Check in project as new version of {}	⬆ Вернуть проект как новую версию {}
+Check in project as new version of {}	Вернуть проект как новую версию {}
 Puts the project into the folder it was opened from	Помещает проект в папку, из которой он был открыт
 Put into the vault	Поместить в хранилище
 File name	Имя файла
-⬆ Upload to {}	⬆ Выгрузить в {}
+Upload to {}	Выгрузить в {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Одноимённый файл в папке получает новую версию (извлекается и возвращается), иначе файл добавляется
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Открывать проекты и файлы из Autodesk Vault, помещать проект, экспорты и 3D-модели в хранилище
 Check in {} to Vault	Вернуть {} в Vault
 Panel layout in 3D (Parasolid XT)	Компоновка шкафа в 3D (Parasolid XT)
@@ -6035,7 +5926,6 @@ Panel layout in 3D (Parasolid XT)	Компоновка шкафа в 3D (Parasol
 Back	Назад
 Back to the project (Esc)	Назад к проекту (Esc)
 Recent projects	Последние проекты
-No projects opened yet.	Проекты ещё не открывались.
 Remove from the list	Удалить из списка
 unsaved	не сохранён
 Project: {}	Проект: {}
@@ -6055,15 +5945,6 @@ Tutorial	Учебник
 Introduction	Введение
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Открытый электротехнический САПР-редактор в духе EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Лента: Файл открывает, сохраняет, импортирует, экспортирует и печатает; вкладки группируют команды по темам. Alt показывает клавиши доступа, Ctrl+Shift+P находит любую команду, F6 переключает панели, F1 открывает эту справку.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Вставка › Центр вставки (Ins): найдите символ, макрос или устройство и щёлкните на листе, чтобы разместить его. Обозначения устройств (-K1, -S2 …) присваиваются автоматически.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Назначьте изделия в свойствах (вкладка Изделия); отчёты (Главная › Отчёты) содержат устройства, спецификацию, клеммы, соединения и ПЛК и вставляются как листы отчётов.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Кабели: Соединения › Кабели, выделите провода и выберите Назначить кабелю. Номера проводов: Соединения › Нумерация проводов или введите номер в свойствах провода.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Макросы: выделите элементы, правая кнопка › Сохранить выделенное как макрос; вставляйте их из центра вставки или через Вставка › Макрос. Заполнители {NAME} заполняются из наборов значений.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Устройства › Клеммные колодки, Устройства › Обзор ПЛК и Данные проекта › Ревизии: порядок клемм, перемычки и резервы; адреса ПЛК и таблицы символов; ревизии с отметками изменений и выпущенными (заблокированными) листами.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Основные данные › Редактор символов: рисуйте собственные символы (или копируйте встроенные) с точками подключения и функцией; они сохраняются в проекте и передаются как файлы библиотек.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Основные данные › Формы: собственные основные надписи с заполнителями ({project}, {page}, {prop:Name} …) и столбцы листов отчётов; Данные проекта › Блоки отчётов создают листы отчётов для каждой колодки, штекера, кабеля или устройства.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Компоновка шкафа (рабочее пространство Компоновка шкафа, вкладка Монтажное пространство): шкафы, рейки, кабельные каналы, шины и вырезы; Монтажное пространство › Данные ЧПУ экспортирует схему сверления (DXF / DWG / CSV). Производственный список проводов содержит длины зачистки и наконечники.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Жгуты: Соединения › Жгуты; выделите провода между двумя устройствами › Назначить жгуту или для каждого соединения в свойствах провода. Отчёт по жгуту с длинами, разъёмами и диаметром пучка, экспорт KBL.
 Key tips of the ribbon	Клавиши доступа ленты
 Version {}	Версия {}
 Search (* and ? as placeholders)…	Поиск (* и ? как подстановочные знаки)…
@@ -6145,7 +6026,6 @@ Close page tab	Закрыть вкладку листа
 Panes	Панели
 Show or hide panes; drag a tab to dock it elsewhere	Показать или скрыть панели; перетащите вкладку, чтобы закрепить её в другом месте
 Save workspace…	Сохранить рабочее пространство…
-The panes of this workspace at their default places	Панели этого рабочего пространства на местах по умолчанию
 Theme	Тема
 UI scale	Масштаб интерфейса
 Minimize the ribbon	Свернуть ленту
@@ -6158,7 +6038,6 @@ Functions of the project data not placed yet	Ещё не размещённые 
 Insert center	Центр вставки
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Символы, макросы, устройства и неразмещённые функции: поиск, избранное, недавние
 Find results	Результаты поиска
-Quick guide, tutorial and shortcuts	Краткое руководство, учебник и сочетания клавиш
 Layout spaces	Монтажные пространства
 Enclosures, devices to place and placed devices	Шкафы, устройства для размещения и размещённые устройства
 Layout properties	Свойства компоновки
@@ -6203,7 +6082,7 @@ Click to show, right click for more	Щелчок — показать, прав�
 {} notes	Примечаний: {}
 Open in a new page tab	Открыть в новой вкладке листа
 Project information	Сведения о проекте
-Plugin commands…	Команды плагинов…
+Plugin commands	Команды плагинов
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Команды всех плагинов по плагинам, с поиском; звёздочка закрепляет команду на вкладке «Плагины»
 Star a command in Plugin commands to pin it here	Отметьте команду звёздочкой в окне «Команды плагинов», чтобы закрепить её здесь
 Installed plugins	Установленные плагины
@@ -6271,8 +6150,6 @@ Draw inner walls	Рисовать внутренние стены
 Inner wall {}, side {}	Внутренняя стена {}, сторона {}
 Thickness	Толщина
 {}: {} stands in an inner wall	{}: {} стоит во внутренней стене
-Opening {} replaces the current project, its unsaved changes are lost.	Открытие {} заменяет текущий проект, его несохранённые изменения будут потеряны.
-Discard changes and open	Отменить изменения и открыть
 Open link	Открыть ссылку
 Replace the file at path if it exists	Заменить файл path, если он существует
 {} exists already: pass overwrite to replace it	{} уже существует: укажите overwrite, чтобы заменить
@@ -6405,3 +6282,4 @@ Folder with project files (instead of a database; default: the current folder)	�
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Неизвестный тип листа: {} (schematic, overview, graphic, cover или отчёт из list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Неизвестный шаблон {}: укажите встроенный ({}) или файл проекта
 Property {} needs a text or a number	Свойству {} нужен текст или число
+Check settings…	Настройки проверки…

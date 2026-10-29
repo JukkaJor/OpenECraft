@@ -54,11 +54,13 @@ pub(super) struct SettingsUi {
     /// Command search of the own groups.
     add_filter: String,
     ribbon_tab: usize,
+    /// Own group (index) whose deletion waits for the confirmation.
+    confirm_group: Option<usize>,
 }
 
 impl Default for SettingsUi {
     fn default() -> Self {
-        SettingsUi { open: false, node: Node::Appearance, filter: String::new(), new_group: String::new(), add_filter: String::new(), ribbon_tab: 0 }
+        SettingsUi { open: false, node: Node::Appearance, filter: String::new(), new_group: String::new(), add_filter: String::new(), ribbon_tab: 0, confirm_group: None }
     }
 }
 
@@ -66,6 +68,11 @@ impl SettingsUi {
     pub fn open_at(&mut self, node: Node) {
         self.open = true;
         self.node = node;
+    }
+
+    /// Opens the dialog at the node shown last.
+    pub fn open(&mut self) {
+        self.open = true;
     }
 }
 
@@ -75,8 +82,12 @@ impl App {
             self.recording = None;
             return;
         }
-        let mut open = true;
-        egui::Window::new(tr("Settings")).open(&mut open).default_size([860.0, 560.0]).show(ctx, |ui| {
+        // One size for every node: the close button stays where it is.
+        let screen = ctx.content_rect();
+        let size = egui::vec2(860.0f32.min(screen.width() - 40.0), 560.0f32.min(screen.height() - 120.0));
+        let (window, esc) = self.dialogs.window(ctx, tr("Settings"), "settings", None);
+        let mut open = !esc;
+        window.open(&mut open).fixed_size(size).show(ctx, |ui| {
             egui::Panel::left("settings_tree").resizable(true).default_size(200.0).show(ui, |ui| {
                 ui.label(RichText::new(tr("Project")).strong());
                 for n in Node::PROJECT {
@@ -130,8 +141,8 @@ impl App {
         for c in [Cmd::Potentials, Cmd::Structure, Cmd::PropertyDatabase, Cmd::ProjectLanguages, Cmd::Forms, Cmd::Process, Cmd::Configurator, Cmd::ProjectProperties] {
             let d = commands::def(c);
             ui.horizontal(|ui| {
+                // The pane opens beside the dialog, which stays open.
                 if icons::text_button(ui, d.icon, tr(d.title)).clicked() {
-                    self.settings.open = false;
                     self.run(&ui.ctx().clone(), c);
                 }
                 if !d.tip.is_empty() {
@@ -146,8 +157,8 @@ impl App {
         for c in [Cmd::DataPortal, Cmd::ProjectServer, Cmd::Vault, Cmd::ManagePlugins] {
             let d = commands::def(c);
             ui.horizontal(|ui| {
+                // The pane opens beside the dialog, which stays open.
                 if icons::text_button(ui, d.icon, tr(d.title)).clicked() {
-                    self.settings.open = false;
                     self.run(&ui.ctx().clone(), c);
                 }
                 if !d.tip.is_empty() {
@@ -171,7 +182,10 @@ impl App {
             });
             ui.end_row();
             ui.label(tr("Tablet mode"));
-            ui.checkbox(&mut self.shell.tablet, tr(commands::def(Cmd::TabletMode).tip));
+            let mut tablet = self.shell.tablet();
+            if ui.checkbox(&mut tablet, tr(commands::def(Cmd::TabletMode).tip)).changed() {
+                self.shell.set_tablet(tablet);
+            }
             ui.end_row();
             ui.label(tr("Ribbon"));
             ui.checkbox(&mut self.shell.ribbon_minimized, tr("Minimize the ribbon"));
@@ -193,41 +207,27 @@ impl App {
 
     /// Every command and key of the page editor with its keys: record, clear, default.
     fn shortcut_settings(&mut self, ui: &mut egui::Ui) {
-        ui.weak(tr("Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed."));
+        ui.weak(tr("Record: press the new key with its modifiers (Esc cancels). Esc and copy / cut / paste stay fixed."));
         ui.add(egui::TextEdit::singleline(&mut self.settings.filter).hint_text(tr("Filter…")));
         let conflicts = self.editor.shortcuts.conflicts();
         let f = self.settings.filter.to_lowercase();
-        egui::Grid::new("shortcut_grid").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
-            for id in shortcuts::binding_ids() {
-                let title = tr(shortcuts::title(id));
-                let text = self.editor.shortcuts.text(id);
-                if !f.is_empty() && !title.to_lowercase().contains(&f) && !text.to_lowercase().contains(&f) {
-                    continue;
-                }
-                ui.label(title);
-                let clash = conflicts.iter().any(|(_, v)| v.contains(&id));
-                let shown = if self.recording == Some(id) {
-                    RichText::new(tr("Press a key…")).italics()
-                } else if text.is_empty() {
-                    RichText::new("–").weak()
-                } else {
-                    RichText::new(text).monospace()
-                };
-                ui.label(if clash { shown.color(crate::style::colors(self.dark).error) } else { shown });
-                ui.horizontal(|ui| {
-                    if ui.small_button(tr("Record")).clicked() {
-                        self.recording = Some(id);
-                    }
-                    if ui.small_button(tr("Clear")).on_hover_text(tr("No shortcut")).clicked() {
-                        self.editor.shortcuts.set(id, Vec::new());
-                    }
-                    if ui.add_enabled(!self.editor.shortcuts.is_default(id), egui::Button::new(tr("Default")).small()).clicked() {
-                        self.editor.shortcuts.reset(id);
+        // Grouped like the ribbon; a filter opens every group with a match.
+        for (gi, (group, ids)) in shortcuts::groups().into_iter().enumerate() {
+            let ids: Vec<&str> = ids
+                .into_iter()
+                .filter(|id| f.is_empty() || tr(shortcuts::title(id)).to_lowercase().contains(&f) || self.editor.shortcuts.text(id).to_lowercase().contains(&f))
+                .collect();
+            if ids.is_empty() {
+                continue;
+            }
+            egui::CollapsingHeader::new(RichText::new(tr(group)).strong()).id_salt(("shortcut_group", gi)).default_open(gi == 0).open((!f.is_empty()).then_some(true)).show(ui, |ui| {
+                egui::Grid::new(("shortcut_grid", gi)).num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+                    for id in ids {
+                        self.shortcut_row(ui, id, &conflicts);
                     }
                 });
-                ui.end_row();
-            }
-        });
+            });
+        }
         for (key, ids) in &conflicts {
             let names: Vec<&str> = ids.iter().map(|id| tr(shortcuts::title(id))).collect();
             ui.colored_label(crate::style::colors(self.dark).error, tr_fmt!("{} is used by: {}", key.text(), names.join(", ")));
@@ -236,6 +236,38 @@ impl App {
         if ui.button(tr("Reset all to the defaults")).clicked() {
             self.editor.shortcuts.reset_all();
         }
+    }
+
+    /// A binding of the shortcut editor: title, keys, Record / Clear / Default.
+    fn shortcut_row(&mut self, ui: &mut egui::Ui, id: &'static str, conflicts: &[(shortcuts::Shortcut, Vec<&'static str>)]) {
+        let text = self.editor.shortcuts.text(id);
+        ui.label(tr(shortcuts::title(id)));
+        let clash = conflicts.iter().any(|(_, v)| v.contains(&id));
+        let shown = if self.recording == Some(id) {
+            RichText::new(tr("Press a key…")).italics()
+        } else if text.is_empty() {
+            RichText::new("–").weak()
+        } else {
+            RichText::new(text.clone()).monospace()
+        };
+        ui.label(if clash { shown.color(crate::style::colors(self.dark).error) } else { shown });
+        if shortcuts::fixed(id).is_some() {
+            ui.weak(tr("(fixed)"));
+            ui.end_row();
+            return;
+        }
+        ui.horizontal(|ui| {
+            if ui.small_button(tr("Record")).clicked() {
+                self.recording = Some(id);
+            }
+            if ui.add_enabled(!text.is_empty(), egui::Button::new(tr("Clear")).small()).on_hover_text(tr("No shortcut")).clicked() {
+                self.editor.shortcuts.set(id, Vec::new());
+            }
+            if ui.add_enabled(!self.editor.shortcuts.is_default(id), egui::Button::new(tr("Default")).small()).clicked() {
+                self.editor.shortcuts.reset(id);
+            }
+        });
+        ui.end_row();
     }
 
     /// Hide groups, own groups of commands, export and import of the customisation.
@@ -280,9 +312,20 @@ impl App {
                 ui.horizontal(|ui| {
                     ui.label(RichText::new(&g.title).strong());
                     if icons::button(ui, Icon::Delete, tr("Delete the group")).clicked() {
-                        remove = Some(gi);
+                        self.settings.confirm_group = Some(gi);
                     }
                 });
+                if self.settings.confirm_group == Some(gi) {
+                    ui.horizontal(|ui| {
+                        ui.colored_label(crate::style::warning(), tr_fmt!("Delete the group {}?", g.title));
+                        if ui.button(tr("Delete")).clicked() {
+                            remove = Some(gi);
+                        }
+                        if ui.button(tr("Cancel")).clicked() {
+                            self.settings.confirm_group = None;
+                        }
+                    });
+                }
                 for (ci, c) in cmds.iter().enumerate() {
                     ui.horizontal(|ui| {
                         icons::show(ui, commands::def(*c).icon, 16.0);
@@ -309,6 +352,7 @@ impl App {
         }
         if let Some(gi) = remove {
             self.ribbon.custom.groups.remove(gi);
+            self.settings.confirm_group = None;
         }
         if let Some((gi, id)) = add {
             if !self.ribbon.custom.groups[gi].commands.contains(&id) {
@@ -338,7 +382,7 @@ impl App {
                 self.ribbon.custom = c;
                 self.notify(ctx, tr("Ribbon imported"));
             }
-            Err(e) => self.notify(ctx, tr_fmt!("Import failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Import failed: {}", e)),
         }
     }
 }

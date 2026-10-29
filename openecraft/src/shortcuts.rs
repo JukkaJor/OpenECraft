@@ -18,10 +18,14 @@ pub enum Action {
     WireCorner,
     Autoroute,
     FinishPolyline,
+    NudgeLeft,
+    NudgeRight,
+    NudgeUp,
+    NudgeDown,
 }
 
 impl Action {
-    pub const ALL: [Action; 3] = [Action::WireCorner, Action::Autoroute, Action::FinishPolyline];
+    pub const ALL: [Action; 7] = [Action::WireCorner, Action::Autoroute, Action::FinishPolyline, Action::NudgeLeft, Action::NudgeRight, Action::NudgeUp, Action::NudgeDown];
 
     /// Id in the stored settings.
     pub fn id(self) -> &'static str {
@@ -29,6 +33,10 @@ impl Action {
             Action::WireCorner => "wire_corner",
             Action::Autoroute => "autoroute",
             Action::FinishPolyline => "finish_polyline",
+            Action::NudgeLeft => "nudge_left",
+            Action::NudgeRight => "nudge_right",
+            Action::NudgeUp => "nudge_up",
+            Action::NudgeDown => "nudge_down",
         }
     }
 
@@ -37,7 +45,11 @@ impl Action {
         match self {
             Action::WireCorner => tr_const!("Toggle corner direction while drawing wires"),
             Action::Autoroute => tr_const!("Toggle routing around symbols (wire tool)"),
-            Action::FinishPolyline => tr_const!("Finish polyline or polygon"),
+            Action::FinishPolyline => tr_const!("Finish a wire, polyline or polygon"),
+            Action::NudgeLeft => tr_const!("Move selection left by one grid step"),
+            Action::NudgeRight => tr_const!("Move selection right by one grid step"),
+            Action::NudgeUp => tr_const!("Move selection up by one grid step"),
+            Action::NudgeDown => tr_const!("Move selection down by one grid step"),
         }
     }
 
@@ -47,6 +59,10 @@ impl Action {
             Action::WireCorner => vec![plain(Key::Space)],
             Action::Autoroute => vec![plain(Key::A)],
             Action::FinishPolyline => vec![plain(Key::Enter)],
+            Action::NudgeLeft => vec![plain(Key::ArrowLeft)],
+            Action::NudgeRight => vec![plain(Key::ArrowRight)],
+            Action::NudgeUp => vec![plain(Key::ArrowUp)],
+            Action::NudgeDown => vec![plain(Key::ArrowDown)],
         }
     }
 }
@@ -56,9 +72,38 @@ pub fn binding_ids() -> Vec<&'static str> {
     commands::ALL.iter().map(|d| d.id).chain(Action::ALL.iter().map(|a| a.id())).collect()
 }
 
+/// The bindings grouped for the shortcut editor (English title, ids): the commands of
+/// each ribbon tab in ribbon order, each command in the first tab that holds it, then
+/// the commands without a place in a tab and the keys of the page editor.
+pub fn groups() -> Vec<(&'static str, Vec<&'static str>)> {
+    let mut seen: Vec<Cmd> = Vec::new();
+    let mut out: Vec<(&'static str, Vec<&'static str>)> = Vec::new();
+    for t in crate::ribbon::TABS.iter() {
+        let mut ids = Vec::new();
+        for c in t.groups.iter().flat_map(|g| g.items.iter().map(|i| i.cmd())) {
+            if !seen.contains(&c) {
+                seen.push(c);
+                ids.push(commands::def(c).id);
+            }
+        }
+        if !ids.is_empty() {
+            out.push((t.title, ids));
+        }
+    }
+    let other: Vec<&'static str> = commands::ALL.iter().filter(|d| !seen.contains(&d.cmd)).map(|d| d.id).collect();
+    out.push((tr_const!("File and further commands"), other));
+    out.push((tr_const!("Keys of the page editor"), Action::ALL.iter().map(|a| a.id()).collect()));
+    out
+}
+
 /// English title of a binding.
 pub fn title(id: &str) -> &'static str {
     commands::by_id(id).map(|d| d.title).or_else(|| Action::ALL.into_iter().find(|a| a.id() == id).map(Action::title)).unwrap_or("")
+}
+
+/// The keys of a binding that cannot be changed (shown, not recorded).
+pub fn fixed(id: &str) -> Option<&'static str> {
+    commands::by_id(id).and_then(|d| commands::fixed_keys(d.cmd))
 }
 
 /// The default keys of a binding.
@@ -165,6 +210,9 @@ impl Shortcuts {
 
     /// The keys of a binding for menus and the help (`Ctrl+Y / Ctrl+Shift+Z`).
     pub fn text(&self, id: &str) -> String {
+        if let Some(fixed) = fixed(id) {
+            return fixed.to_string();
+        }
         self.keys(id).iter().map(Shortcut::text).collect::<Vec<_>>().join(" / ")
     }
 

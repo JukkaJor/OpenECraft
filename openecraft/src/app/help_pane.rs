@@ -62,7 +62,23 @@ fn chapter_of(pane: Pane) -> usize {
     }
 }
 
+/// The chapter F1 opens: the one of the pane in use (`active`, else the document
+/// `doc`); in the Help pane itself F1 keeps what it shows (`None`).
+pub(super) fn key_help(active: Option<Pane>, doc: Pane) -> Option<usize> {
+    match active {
+        Some(Pane::Tool(ToolPane::Help)) => None,
+        other => Some(chapter_of(other.unwrap_or(doc))),
+    }
+}
+
 impl App {
+    /// Shows the version (Help › About).
+    pub(super) fn help_about(&mut self) {
+        self.help.section = Section::About;
+        self.help.scroll_top = true;
+        self.show_pane(Pane::Tool(ToolPane::Help));
+    }
+
     /// Opens the help at the chapter of a pane.
     pub(super) fn help_for(&mut self, pane: Pane) {
         self.help_chapter(chapter_of(pane));
@@ -123,29 +139,39 @@ impl App {
         });
     }
 
+    /// The first hour in eight steps, each with a link to its tutorial chapter.
     fn quick_guide(&mut self, ui: &mut egui::Ui) {
-        ui.label(RichText::new(tr("Workflow")).strong());
-        for p in [
-            tr("The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help."),
-            tr("1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically."),
-            tr("2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live."),
-            tr("3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot."),
-            tr("4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential."),
-            tr("5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages."),
-            tr("6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown."),
-            tr("7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties."),
-            tr("8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets."),
-            tr("9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages."),
-            tr("10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files."),
-            tr("11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device."),
-            tr("12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules."),
-            tr("13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export."),
-            tr("14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models."),
-            tr("15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols."),
-            tr("16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties."),
-        ] {
-            ui.label(p);
+        ui.label(tr("The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens the help of the pane in use."));
+        ui.add_space(6.0);
+        ui.label(RichText::new(tr("The first hour")).strong());
+        let sc = &self.editor.shortcuts;
+        let place = tr_fmt!("3. Insert › Insert center ({}): search a symbol and click into the page to place it. Select a coil, then place contacts: they are assigned to it and numbered.", sc.cmd_text(Cmd::InsertCenter));
+        let wires = tr_fmt!("4. Draw wires with the wire tool ({}); they end on connection points. Potentials and interruption points name the nets across pages.", sc.cmd_text(Cmd::WireTool));
+        let steps: [(String, usize); 8] = [
+            (tr("1. File › New creates a project (or open the demo from the start page).").to_string(), 1),
+            (tr("2. Home › Page adds pages; the page properties give them a structure (=A1 +CAB1).").to_string(), 2),
+            (place, 3),
+            (wires, 4),
+            (tr("5. Assign parts in the properties (Parts tab) or with Devices › Part selection.").to_string(), 5),
+            (tr("6. Project data › Check: the Messages pane lists what is missing; a click shows the place.").to_string(), 8),
+            (tr("7. Project data › Reports: device list, bill of materials, terminals and more, inserted as report pages.").to_string(), 9),
+            (tr("8. File › Export and Print: PDF, DXF / DWG, SVG and the production data.").to_string(), 11),
+        ];
+        let chapters = chapters();
+        let mut open = None;
+        for (text, chapter) in &steps {
+            ui.label(text);
+            if let Some((title, _)) = chapters.get(*chapter) {
+                if ui.link(tr_fmt!("Tutorial: {}", title)).clicked() {
+                    open = Some(*chapter);
+                }
+            }
             ui.add_space(4.0);
+        }
+        ui.add_space(4.0);
+        ui.weak(tr("The tutorial goes on with terminals, PLC, the panel layout, revisions and automation."));
+        if let Some(chapter) = open {
+            self.help_chapter(chapter);
         }
     }
 
@@ -155,9 +181,6 @@ impl App {
             let configured: Vec<(String, &str)> = shortcuts::binding_ids().into_iter().map(|id| (sc.text(id), tr(shortcuts::title(id)))).filter(|(k, _)| !k.is_empty()).collect();
             let fixed: Vec<(String, &str)> = [
                 (tr("Esc"), tr("Cancel / select tool / clear selection")),
-                (tr("Del"), tr("Delete selection")),
-                (tr("Arrows"), tr("Move selection by one grid step")),
-                (tr("Ctrl+C / X / V"), tr("Copy / cut / paste (devices get new tags)")),
                 (tr("Wheel / right or middle drag"), tr("Zoom / pan")),
                 (tr("Shift + click / drag"), tr("Add to selection")),
                 ("Alt / F10", tr("Key tips of the ribbon")),
@@ -250,3 +273,6 @@ fn inline(ui: &egui::Ui, s: &str) -> egui::text::LayoutJob {
     job.wrap.max_width = ui.available_width();
     job
 }
+
+#[cfg(test)]
+mod tests;

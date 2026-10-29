@@ -7,6 +7,8 @@ use crate::shortcuts::Shortcut;
 impl App {
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
         self.discard_window(ctx);
+        self.delete_page_window(ctx);
+        self.remove_layout_window(ctx);
         self.export_form_window(ctx);
         self.save_layout_window(ctx);
         self.project_properties_window(ctx);
@@ -15,38 +17,81 @@ impl App {
         self.section_properties_window(ctx);
     }
 
-    /// Asks before a new or opened project replaces one with unsaved changes.
+    /// Asks before a new or opened project replaces one with unsaved changes or the
+    /// window closes. After Save the action runs once the project is saved.
     fn discard_window(&mut self, ctx: &egui::Context) {
-        let Some(cmd) = self.confirm_discard else { return };
+        if self.discard.pending().is_none() {
+            return;
+        }
+        let saving = self.discard.saving();
         let mut answer = None;
         egui::Modal::new(egui::Id::unique("confirm_discard")).show(ctx, |ui| {
             ui.set_width(380.0);
             ui.label(tr_fmt!("{} has unsaved changes. Discard them?", self.session.prj.info.name));
+            if saving {
+                ui.weak(tr("Saving…"));
+            } else if self.discard.not_saved {
+                ui.colored_label(crate::style::error(), tr("The project was not saved."));
+            }
             ui.add_space(8.0);
-            ui.horizontal(|ui| {
-                if ui.button(tr("Save")).clicked() {
-                    answer = Some(Some(true));
-                }
-                if ui.button(tr("Discard changes")).clicked() {
-                    answer = Some(Some(false));
-                }
-                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-                    answer = Some(None);
-                }
+            ui.add_enabled_ui(!saving, |ui| {
+                ui.horizontal(|ui| {
+                    if ui.button(tr("Save")).clicked() {
+                        answer = Some(Some(true));
+                    }
+                    if ui.button(tr("Discard changes")).clicked() {
+                        answer = Some(Some(false));
+                    }
+                    if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                        answer = Some(None);
+                    }
+                });
             });
         });
         match answer {
             Some(Some(true)) => {
-                self.confirm_discard = None;
+                self.discard.save();
                 self.run(ctx, Cmd::Save);
             }
             Some(Some(false)) => {
-                self.confirm_discard = None;
-                self.discard_ok = true;
-                self.run(ctx, cmd);
+                if let Some(r) = self.discard.discard() {
+                    self.perform(ctx, r);
+                }
             }
-            Some(None) => self.confirm_discard = None,
+            Some(None) => self.discard.cancel(),
             None => {}
+        }
+    }
+
+    /// Asks before a page with contents is deleted.
+    fn delete_page_window(&mut self, ctx: &egui::Context) {
+        let Some(id) = self.confirm_delete_page else { return };
+        let Some(page) = self.session.prj.pages.iter().position(|p| p.id == id) else {
+            self.confirm_delete_page = None;
+            return;
+        };
+        let name = self.session.prj.pages[page].name.clone();
+        let items = self.session.page_items(page);
+        let mut answer = None;
+        egui::Modal::new(egui::Id::unique("confirm_delete_page")).show(ctx, |ui| {
+            ui.set_width(380.0);
+            ui.label(if items == 1 { tr_fmt!("Delete page {}? It holds 1 item.", name) } else { tr_fmt!("Delete page {}? It holds {} items.", name, items) });
+            ui.weak(tr("Undo brings the page back."));
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                if ui.button(tr("Delete page")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    answer = Some(false);
+                }
+            });
+        });
+        if let Some(delete) = answer {
+            self.confirm_delete_page = None;
+            if delete && self.session.may_delete_page(page, self.page_held_by_other(page)) {
+                self.delete_page(ctx, page);
+            }
         }
     }
 
@@ -141,9 +186,10 @@ impl App {
     /// Project properties.
     pub(super) fn project_properties_window(&mut self, ctx: &egui::Context) {
     if self.show_project {
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Project properties"), "project_properties", None);
+        let mut open = !esc;
         let prj_tb_names = openecraft_core::forms::names(&self.session.prj);
-        egui::Window::new(tr("Project properties")).open(&mut open).resizable(false).show(ctx, |ui| {
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             let info = &mut self.session.prj.info;
             egui::Grid::new("prj").num_columns(2).show(ui, |ui| {
                 ui.label(tr("Project name"));
@@ -188,7 +234,7 @@ impl App {
                         rename = Some((k.clone(), key));
                     }
                     ui.add(egui::TextEdit::singleline(v).desired_width(200.0));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(k.clone());
                     }
                     ui.end_row();
@@ -204,7 +250,7 @@ impl App {
             if let Some(k) = remove {
                 props.remove(&k);
             }
-            if ui.button(tr("➕ Property")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Property")).clicked() {
                 let mut n = props.len() + 1;
                 while props.contains_key(&format!("Property{n}")) {
                     n += 1;
@@ -229,6 +275,7 @@ impl App {
         self.properties_float_window(ctx);
         self.settings_window(ctx);
         self.command_search_window(ctx);
+        self.command_menu_window(ctx);
         self.floating_panes(ctx);
     }
 
@@ -249,7 +296,8 @@ impl App {
     /// Page properties.
     pub(super) fn page_properties_window(&mut self, ctx: &egui::Context) {
     if let Some(pi) = self.page_props {
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Page properties"), "page_properties", None);
+        let mut open = !esc;
         let mut apply_structure = None;
         let mut document_action = None;
         let mut move_to = None;
@@ -260,7 +308,7 @@ impl App {
             let structure_entries = self.session.prj.structures.entries.clone();
             let reports = self.report_list();
             let sections = (!self.session.prj.sections.is_empty()).then(|| (self.section_choices(), openecraft_core::sections::of_page(&self.session.prj, pi)));
-            egui::Window::new(tr("Page properties")).open(&mut open).resizable(false).show(ctx, |ui| {
+            window.open(&mut open).resizable(false).show(ctx, |ui| {
                 let pg = &mut self.session.prj.pages[pi];
                 egui::Grid::new("pgprops").num_columns(2).show(ui, |ui| {
                     ui.label(tr("Page name / number"));
@@ -405,16 +453,15 @@ fn page_structure_ui(ui: &mut egui::Ui, pg: &Page, pi: usize, page_aspects: &[As
             ui.add(egui::TextEdit::singleline(dt.get_mut(a)).hint_text(hint).desired_width(140.0));
             let defined: Vec<_> = structure_entries.iter().filter(|e| e.aspect == a).collect();
             ui.add_enabled_ui(!defined.is_empty(), |ui| {
-                ui.menu_button("⏷", |ui| {
+                let r = icons::button(ui, Icon::ChevronDown, tr("Identifiers of the structure management"));
+                egui::Popup::menu(&r).show(|ui| {
                     for e in defined {
                         if ui.button(format!("{}  {}", a.format(&e.id), e.description)).clicked() {
                             *dt.get_mut(a) = e.id.clone();
                             ui.close();
                         }
                     }
-                })
-                .response
-                .on_hover_text(tr("Identifiers of the structure management"));
+                });
             });
             ui.end_row();
         }

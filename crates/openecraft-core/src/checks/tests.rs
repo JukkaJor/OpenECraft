@@ -54,3 +54,21 @@ fn other_json_objects_are_no_check_scheme() {
     apply_scheme(&mut prj, "{}").unwrap();
     assert!(prj.check_settings.disabled.is_empty(), "an empty scheme switches every check on");
 }
+
+#[test]
+fn a_wire_ending_in_empty_space_is_reported() {
+    let mut prj = demo_project();
+    let open = |prj: &Project| {
+        let an = Analysis::checked(prj);
+        run_builtin(prj, &an).iter().filter(|i| i.message().starts_with("Wire ends open")).count()
+    };
+    assert_eq!(open(&prj), 0);
+    let pi = prj.pages.iter().position(|p| p.kind == PageKind::Schematic && !p.wires.is_empty()).unwrap();
+    let id = prj.new_id();
+    prj.pages[pi].wires.push(Wire { id, a: crate::geom::p(300.0, 200.0), b: crate::geom::p(320.0, 200.0), ..Default::default() });
+    assert_eq!(open(&prj), 2, "both ends of a lone wire");
+    let an = Analysis::checked(&prj);
+    let issue = run_builtin(&prj, &an).into_iter().find(|i| i.message().starts_with("Wire ends open")).unwrap();
+    assert_eq!(issue.severity, Severity::Warning);
+    assert_eq!(issue.target, Some((pi, id)));
+}

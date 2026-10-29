@@ -33,7 +33,7 @@ impl App {
     /// The saved workspaces (View › Workspaces).
     pub(super) fn workspaces_menu(&mut self, ui: &mut egui::Ui) {
         let mut apply = None;
-        let mut remove = None;
+        let mut confirm = None;
         for l in &self.layouts {
             ui.horizontal(|ui| {
                 let ws = Workspace::from_key(&l.workspace).map(|w| tr(w.title())).unwrap_or("");
@@ -41,7 +41,7 @@ impl App {
                     apply = Some(l.clone());
                 }
                 if icons::button(ui, Icon::Close, tr("Delete this workspace")).clicked() {
-                    remove = Some(l.name.clone());
+                    confirm = Some(l.name.clone());
                 }
             });
         }
@@ -57,17 +57,45 @@ impl App {
             self.apply_layout(&l);
             ui.close();
         }
-        if let Some(n) = remove {
-            workspaces::remove(&mut self.layouts, &n);
+        if confirm.is_some() {
+            // Asked in a dialog (`remove_layout_window`): the menu closes.
+            self.confirm_remove_layout = confirm;
+            ui.close();
+        }
+    }
+
+    /// Asks before a saved workspace is deleted (there is no undo for it).
+    pub(super) fn remove_layout_window(&mut self, ctx: &egui::Context) {
+        let Some(name) = self.confirm_remove_layout.clone() else { return };
+        let mut answer = None;
+        egui::Modal::new(egui::Id::unique("confirm_remove_layout")).show(ctx, |ui| {
+            ui.label(tr_fmt!("Delete the workspace {}?", name));
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                if ui.button(tr("Delete")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    answer = Some(false);
+                }
+            });
+        });
+        if let Some(delete) = answer {
+            if delete {
+                workspaces::remove(&mut self.layouts, &name);
+            }
+            self.confirm_remove_layout = None;
         }
     }
 
     /// The small window that asks for the name of the workspace to save.
     pub(super) fn save_layout_window(&mut self, ctx: &egui::Context) {
         let Some(mut name) = self.layout_name.take() else { return };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Save workspace"), "save_workspace", None);
+        let mut open = !esc;
         let mut save = false;
-        egui::Window::new(tr("Save workspace")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+        let mut cancel = false;
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let r = ui.add(egui::TextEdit::singleline(&mut name).hint_text(tr("name")).desired_width(180.0));
                 let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
@@ -75,12 +103,13 @@ impl App {
                     r.request_focus();
                 }
                 save = (ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("Save"))).clicked() || enter) && !name.trim().is_empty();
+                cancel = ui.button(tr("Cancel")).clicked();
             });
         });
         if save {
             let layout = self.current_layout(&name);
             workspaces::save(&mut self.layouts, layout);
-        } else if open {
+        } else if open && !cancel {
             self.layout_name = Some(name);
         }
     }

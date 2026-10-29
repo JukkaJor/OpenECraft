@@ -2,6 +2,7 @@
 //! canvas), places of enclosures and devices, the planned field cables with their
 //! route definitions, equipotential bonding, cable accessories and the rules.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette};
@@ -155,7 +156,7 @@ impl App {
                     }
                 });
                 fit |= ui.button(tr("Fit")).clicked();
-                svg = ui.button(tr("⬇ Export SVG…")).clicked();
+                svg = icons::text_button(ui, Icon::Download, tr("Export SVG…")).clicked();
             });
         }
         // Selected node: name, position, places, delete.
@@ -177,7 +178,7 @@ impl App {
                 if ui.button(tr("Place")).on_hover_text(tr("Place an enclosure, device or machine location at this node")).clicked() && !self.field_ui.tag.trim().is_empty() {
                     place = Some(self.field_ui.tag.trim().to_string());
                 }
-                remove = ui.button(tr("🗑 Delete node")).clicked();
+                remove = icons::text_button(ui, Icon::Delete, tr("Delete node")).clicked();
             });
             if let Some(tag) = place {
                 self.session.prj.field.places.retain(|p| p.tag != tag);
@@ -353,7 +354,7 @@ impl App {
                         }),
                         None => ui.weak("–"),
                     };
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(s.id);
                     }
                     ui.end_row();
@@ -373,7 +374,7 @@ impl App {
                     ui.add(egui::TextEdit::singleline(&mut pl.tag).desired_width(110.0).font(egui::TextStyle::Monospace));
                     node_combo(ui, ("fp", i), &mut pl.node);
                     ui.add(egui::DragValue::new(&mut pl.drop).speed(0.1).range(0.0..=100.0).suffix(" m")).on_hover_text(tr("Length from the node to the device"));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -390,7 +391,7 @@ impl App {
                     ui.add(egui::TextEdit::singleline(&mut o.name).desired_width(110.0));
                     ui.checkbox(&mut o.conductive, tr("Conductive frame")).on_hover_text(tr("Must be connected to the equipotential bonding"));
                     ui.weak(tr_fmt!("{} corners", o.points.len()));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                 });
@@ -408,7 +409,7 @@ impl App {
         let mut report = false;
         ui.horizontal(|ui| {
             apply = ui.add_enabled(plan.cables.iter().any(|c| c.routed()), egui::Button::new(tr("Take over cut lengths"))).on_hover_text(tr("Set the cable lengths to the planned cut lengths")).clicked();
-            report = ui.button(tr("📊 Report")).clicked();
+            report = icons::text_button(ui, Icon::Report, tr("Report")).clicked();
             ui.weak(tr_fmt!("{} parts of the network", plan.islands));
         });
         if plan.cables.is_empty() {
@@ -463,7 +464,7 @@ impl App {
                 if let Some(i) = remove {
                     def.via.remove(i);
                 }
-                ui.menu_button(tr("➕ Node"), |ui| {
+                ui.menu_button(tr("Add node"), |ui| {
                     for (id, name) in &names {
                         if ui.button(name).clicked() {
                             def.via.push(*id);
@@ -509,13 +510,13 @@ impl App {
         };
         let mut report = false;
         ui.horizontal(|ui| {
-            if ui.button(tr("➕ Bonding conductor")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Bonding conductor")).clicked() {
                 let id = self.session.prj.new_id();
                 let a = self.session.prj.field.rules.main_earth.clone();
                 let b = names.iter().find(|n| **n != a).cloned().unwrap_or_default();
                 self.session.prj.field.bonds.push(Bond { id, a, b, kind: BondKind::Main, cross_section: "6".into(), ..Default::default() });
             }
-            report = ui.button(tr("📊 Report")).clicked();
+            report = icons::text_button(ui, Icon::Report, tr("Report")).clicked();
         });
         let mut remove = None;
         egui::Grid::new("fbonds").striped(true).spacing([6.0, 4.0]).show(ui, |ui| {
@@ -534,7 +535,7 @@ impl App {
                 ui.add(egui::TextEdit::singleline(&mut b.cross_section).desired_width(40.0).hint_text("mm²"));
                 ui.add(egui::DragValue::new(&mut b.length).speed(0.1).range(0.0..=1000.0).suffix(" m"));
                 ui.add(egui::TextEdit::singleline(&mut b.part).desired_width(90.0).hint_text(tr("part number")));
-                if ui.small_button("🗑").clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -567,7 +568,7 @@ impl App {
     fn field_accessories(&mut self, ui: &mut egui::Ui) {
         let cables: Vec<String> = self.session.prj.cables.iter().map(|c| c.tag.clone()).collect();
         let ends = |cable: &str| self.session.analysis.field.cable(cable).map(|c| c.ends.clone());
-        if ui.add_enabled(!cables.is_empty(), egui::Button::new(tr("➕ Accessory"))).clicked() {
+        if ui.add_enabled_ui(!cables.is_empty(), |ui| icons::text_button(ui, Icon::Plus, tr("Accessory"))).inner.clicked() {
             let id = self.session.prj.new_id();
             let cable = self.field_ui.cable.clone().filter(|c| cables.contains(c)).unwrap_or_else(|| cables[0].clone());
             self.session.prj.field.accessories.push(Accessory { id, cable, count: 1, ..Default::default() });
@@ -599,7 +600,7 @@ impl App {
                     });
                     ui.add(egui::TextEdit::singleline(&mut a.part).desired_width(110.0).hint_text(tr("part number")));
                     ui.add(egui::DragValue::new(&mut a.count).range(1..=999));
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();

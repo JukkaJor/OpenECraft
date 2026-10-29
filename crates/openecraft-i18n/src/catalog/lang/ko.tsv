@@ -5,24 +5,9 @@
 (renamed from {})	({}에서 이름 변경됨)
 + Page	+ 페이지
 0 = no jumper	0 = 점퍼 없음
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 라이브러리(오른쪽)에서 심볼을 선택하고 페이지를 클릭하여 배치하세요. 장치 태그(-K1, -S2 …)는 자동으로 지정됩니다.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 프로젝트 › 심볼 편집기: 연결 지점과 기능이 있는 고유 심볼을 그리세요(또는 기본 제공 심볼 복사). 심볼은 프로젝트에 저장되며 라이브러리 파일로 교환할 수 있습니다.
-100% ≈ real size on a 96 dpi screen	100% ≈ 96dpi 화면에서 실제 크기
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. 프로젝트 › 표제란 및 보고서 양식: 자리 표시자({project}, {page}, {prop:Name} …)가 있는 고유 표제란과 보고서 페이지의 열.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 패널 레이아웃: 부스바와 컷아웃. 외함 속성에서 드릴링 패턴을 내보냅니다(NC 데이터: DXF / DWG / CSV). 생산용 전선 목록에는 피복 제거 길이와 페룰이 포함됩니다.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 하네스: 프로젝트 › 하네스…; 두 장치 사이의 전선을 선택 › 하네스에 지정, 또는 전선 속성에서 연결별로 지정. 길이, 커넥터, 번들 직경이 포함된 하네스 데이터 보고서, KBL 내보내기.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. 도어: 패널 정면도를 도어로 전환하고 명령 / 신호 장치를 배치하세요. 도어 컷아웃이 생성됩니다. 충돌은 부품의 3D 모델로 검사됩니다.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. 코일을 선택한 후 접점을 배치하세요. 접점은 해당 코일에 지정되고 번호가 매겨집니다(13/14, 21/22 …). 상호 참조와 접점 이미지가 실시간으로 업데이트됩니다.
 2D front view	2D 정면도
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. 전선 도구(W)로 전선을 그리세요. 전선은 연결 지점에서 자동으로 끝납니다. T 분기에는 연결 점이 표시됩니다.
 3D model	3D 모델
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. 전위(L1, +24V …)와 중단점이 페이지 간 네트의 이름을 지정합니다. 전선을 선택하면 해당 전위가 강조 표시됩니다.
 4/2 directional valve	4/2 방향 밸브
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. 속성 패널에서 부품을 지정하고, 보고서(장치 목록, BOM, 단자 다이어그램, 연결 목록, PLC 목록)를 생성하여 보고서 페이지로 삽입하세요.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. 구조: 페이지 속성에서 페이지에 기능(=A1)과 위치(+CAB1)를 지정하세요. 그곳에 배치된 장치가 이를 상속합니다(=A1+CAB1-K1). 페이지에는 다른 부분만 표시됩니다.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. 케이블: 프로젝트 › 케이블…에서 정의하고, 전선을 선택한 후 케이블에 지정을 사용하세요. 전선 번호: 프로젝트 › 전선 번호 지정…, 또는 전선 속성에 번호를 입력하세요.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. 매크로: 항목 선택 › 편집 › 선택 항목을 매크로로 저장. 삽입 › 매크로…에서 삽입합니다. 자리 표시자 {NAME}은 값 세트로 채워집니다.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 프로젝트 › 단자대 / PLC 개요 / 개정: 단자대 순서, 점퍼 및 예비. PLC 주소 및 심볼 테이블. 변경 표시와 릴리스된(잠긴) 페이지가 있는 개정.
 Access token	액세스 토큰
 Accessories	부속품
 Add missing parts of the example catalog	예제 카탈로그의 누락된 부품 추가
@@ -95,12 +80,9 @@ Click into the page to place {}	페이지를 클릭하여 {}을(를) 배치하�
 Click on the 4 mm grid	4mm 그리드를 클릭하세요
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	시작점과 꺾임점을 클릭 · Space로 꺾임 방향 전환 · 연결부에서 자동 종료 · 오른쪽 클릭 / Esc로 완료
 Click start and end point	시작점과 끝점을 클릭하세요
-Click start point, click end point	시작점을 클릭한 후 끝점을 클릭하세요
 Click to add to the selected text.	선택한 텍스트에 추가하려면 클릭하세요.
 Click to insert the macro · Esc cancel	클릭하여 매크로 삽입 · Esc 취소
-Click to place a text	클릭하여 텍스트 배치
 Click to place the text from the field below	클릭하여 아래 필드의 텍스트 배치
-Click to place · R rotate · M mirror · Esc finish	클릭하여 배치 · R 회전 · M 대칭 · Esc 완료
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	클릭하여 선택, 끌어서 이동, 빈 공간에서 끌면 영역 선택. 오른쪽/가운데 버튼으로 끌면 화면 이동, 휠로 확대/축소.
 Click to show	클릭하여 표시
 Click two corners	두 모서리를 클릭하세요
@@ -146,7 +128,6 @@ Corner	모서리
 Cover	표지
 Cover sheet	표지
 Create / update the part on the server (Ctrl+S)	서버에서 부품 생성 / 업데이트(Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	패널 레이아웃을 시작하려면 외함을 만드세요(왼쪽 탐색기의 ➕).
 Create an enclosure in the panel layout first.	먼저 패널 레이아웃에서 외함을 만드세요.
 Create revision	개정 만들기
 Created by	작성자
@@ -202,7 +183,6 @@ Door: {} devices, {} cutouts	도어: 장치 {}개, 컷아웃 {}개
 Downloaded {} parts (revision {}): {} new, {} updated	부품 {}개 다운로드됨(개정 {}): 신규 {}개, 업데이트 {}개
 Downloading parts…	부품 다운로드 중…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	끌기: 궤도 회전 · 오른쪽/가운데 버튼 끌기: 화면 이동 · 휠: 확대/축소 · 클릭: 장치 또는 전선 선택
-Draw connections (W)	연결 그리기(W)
 Duplicate	복제
 Each point-to-point connection can belong to a harness	각 점대점 연결은 하네스에 속할 수 있습니다
 Edit	편집
@@ -272,7 +252,6 @@ Harness data	하네스 데이터
 Harness {} has no wires	하네스 {}에 전선이 없습니다
 Harness {}: connection {} – {} does not exist in the schematic	하네스 {}: 연결 {} – {}이(가) 회로도에 없습니다
 Harnesses	하네스
-Harnesses…	하네스…
 Height	높이
 Height (mm)	높이(mm)
 Help	도움말
@@ -330,7 +309,6 @@ Longer values are drawn smaller (0 = no limit)	더 긴 값은 더 작게 그려�
 Macro {} replaced	매크로 {} 교체됨
 Macro {} saved	매크로 {} 저장됨
 Macros	매크로
-Macros…	매크로…
 Macro…	매크로…
 Main	주
 Main contact 1-pole	주접점 1극
@@ -380,12 +358,8 @@ Next free contact numbers on this device	이 장치의 다음 빈 접점 번호
 Next page (Page Down)	다음 페이지(Page Down)
 No PLC inputs / outputs placed.	배치된 PLC 입력 / 출력이 없습니다.
 No cables defined.	정의된 케이블이 없습니다.
-No cables yet – Project › Cables…	아직 케이블이 없습니다 – 프로젝트 › 케이블…
 No changes since the last revision.	마지막 개정 이후 변경 내용이 없습니다.
-No devices yet. Pick a symbol from the library on the right and click into the page.	아직 장치가 없습니다. 오른쪽 라이브러리에서 심볼을 선택하고 페이지를 클릭하세요.
-No enclosure yet – create one with ➕.	아직 외함이 없습니다 – ➕로 만드세요.
 No harnesses defined.	정의된 하네스가 없습니다.
-No harnesses yet – Project › Harnesses…	아직 하네스가 없습니다 – 프로젝트 › 하네스…
 No identifying letter for the device tag.	장치 태그의 식별 문자가 없습니다.
 No macros yet. Select items in a schematic and save them as a macro.	아직 매크로가 없습니다. 회로도에서 항목을 선택하고 매크로로 저장하세요.
 No parts found.	부품을 찾을 수 없습니다.
@@ -437,7 +411,6 @@ PLC connection point	PLC 연결 지점
 PLC digital input	PLC 디지털 입력
 PLC digital output	PLC 디지털 출력
 PLC overview	PLC 개요
-PLC overview…	PLC 개요…
 Packaging quantity	포장 수량
 Page	페이지
 Page / column (3.4.1)	페이지 / 열(3.4.1)
@@ -468,11 +441,9 @@ Parts	부품
 Parts (CSV, JSON)	부품(CSV, JSON)
 Parts import failed: {}	부품 가져오기 실패: {}
 Parts management	부품 관리
-Parts management…	부품 관리…
 Parts server: {}	부품 서버: {}
 Passive components	수동 소자
 Pilot light (NFPA)	표시등(NFPA)
-Place text (T)	텍스트 배치(T)
 Placed	배치됨
 Placed {}× in the project	프로젝트에 {}× 배치됨
 Placeholders	자리 표시자
@@ -542,7 +513,6 @@ Refresh example catalog parts (GEN.*)	예제 카탈로그 부품(GEN.*) 새로 �
 Relay / contactor coil	릴레이 / 접촉기 코일
 Relay coil (NFPA)	릴레이 코일(NFPA)
 Release: lock all pages	릴리스: 모든 페이지 잠금
-Released page – unlock it in Project › Revisions to change it	릴리스된 페이지 – 변경하려면 프로젝트 › 개정에서 잠금 해제하세요
 Remove from cable	케이블에서 제거
 Remove from harness	하네스에서 제거
 Remove from the harness	하네스에서 제거
@@ -566,7 +536,6 @@ Revision marks	개정 표시
 Revision overview (changes)	개정 개요(변경 내용)
 Revision {} created	개정 {} 만들어짐
 Revisions	개정
-Revisions…	개정…
 Right	오른쪽
 Rotate (R)	회전(R)
 Rotate / mirror (selection or symbol being placed)	회전 / 대칭(선택 항목 또는 배치 중인 심볼)
@@ -637,7 +606,6 @@ Supplier	공급업체
 Switches / Sensors	스위치 / 센서
 Symbol	심볼
 Symbol editor	심볼 편집기
-Symbol editor…	심볼 편집기…
 Symbol table import failed: {}	심볼 테이블 가져오기 실패: {}
 Symbols	심볼
 Synchronize project parts from database	데이터베이스에서 프로젝트 부품 동기화
@@ -655,7 +623,6 @@ Terminal number	단자 번호
 Terminal number, PLC address, potential name …	단자 번호, PLC 주소, 전위 이름 …
 Terminal strip	단자대
 Terminal strips	단자대
-Terminal strips…	단자대…
 Terminals	단자
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	점퍼 번호가 같은 단자는 브리지됩니다(동일 전위). 예비 단자는 자재 명세서에 포함됩니다.
 Test connection	연결 테스트
@@ -727,8 +694,7 @@ Wire tool / text tool	전선 도구 / 텍스트 도구
 Wire {} – {}  ({} of {} here, click again for the next)	전선 {0} – {1}  (여기서 {3}개 중 {2}번째, 다음 항목은 다시 클릭)
 Wire {} – {}  {} mm	전선 {} – {}  {} mm
 Wires	전선
-Workflow	작업 흐름
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   열 {}  행 {}
+Column {}  Row {}	열 {}  행 {}
 X {}  Y {} mm on the {}	X {}  Y {} mm({} 위)
 YYYY-MM-DD	YYYY-MM-DD
 Zoom / pan	확대/축소 / 화면 이동
@@ -815,67 +781,55 @@ writable with token	토큰으로 쓰기 가능
 ⎘ Copy	⎘ 복사
 ○ Circle	○ 원
 ☐ Rect	☐ 사각형
-⛶ Fit	⛶ 맞춤
-✏ Place in schematic	✏ 회로도에 배치
+Place in schematic	회로도에 배치
 ✏ Wire	✏ 전선
-✔ Add to device	✔ 장치에 추가
-✔ Create	✔ 만들기
+Add to device	장치에 추가
+Create	만들기
 ✔ No problems found.	✔ 문제가 없습니다.
 ✔ Save	✔ 저장
 ➕ Add accessory	➕ 부속품 추가
-➕ Add function	➕ 기능 추가
-➕ Add part…	➕ 부품 추가…
+Add function	기능 추가
+Add part…	부품 추가…
 ➕ Insert (click into the page)	➕ 삽입(페이지 클릭)
 ➕ Insert as new page	➕ 새 페이지로 삽입
 ➕ Insert as report page	➕ 보고서 페이지로 삽입
-➕ Insert mounting layout page	➕ 장착 레이아웃 페이지 삽입
+Insert mounting layout page	장착 레이아웃 페이지 삽입
 ➕ Label	➕ 레이블
 ➕ Line	➕ 선
 ➕ New	➕ 새로 만들기
-➕ New cable	➕ 새 케이블
-➕ New harness	➕ 새 하네스
+New cable	새 케이블
+New harness	새 하네스
 ➕ Property	➕ 속성
 ➕ Rectangle	➕ 사각형
 ➕ Text	➕ 텍스트
-➕ Value set	➕ 값 세트
+Value set	값 세트
 ➕ {} (not saved)	➕ {}(저장되지 않음)
 ⟲ Revert	⟲ 되돌리기
 ⟳ Reload	⟳ 다시 로드
-⟳ Rotate	⟳ 회전
-⬆ Import symbol table…	⬆ 심볼 테이블 가져오기…
-⬆ Import…	⬆ 가져오기…
-⬆ Upload database ({})	⬆ 데이터베이스 업로드({})
+Import symbol table…	심볼 테이블 가져오기…
+Upload database ({})	데이터베이스 업로드({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ 부품 파일 업로드(CSV / JSON)…
-⬆ Upload selected part	⬆ 선택한 부품 업로드
-⬇ Door NC data (DXF)	⬇ 도어 NC 데이터(DXF)
-⬇ Door cutouts (CSV)	⬇ 도어 컷아웃(CSV)
-⬇ Download into database	⬇ 데이터베이스로 다운로드
-⬇ Drilling list (CSV)	⬇ 드릴링 목록(CSV)
-⬇ Export CSV	⬇ CSV 내보내기
+Upload selected part	선택한 부품 업로드
+Door NC data (DXF)	도어 NC 데이터(DXF)
+Door cutouts (CSV)	도어 컷아웃(CSV)
+Download into database	데이터베이스로 다운로드
 ⬇ Export KBL (XML)…	⬇ KBL 내보내기(XML)…
-⬇ Export symbol table (CSV)…	⬇ 심볼 테이블 내보내기(CSV)…
-⬇ Export…	⬇ 내보내기…
-⬇ NC data (DXF)	⬇ NC 데이터(DXF)
+Export symbol table (CSV)…	심볼 테이블 내보내기(CSV)…
+NC data (DXF)	NC 데이터(DXF)
 ⬉ Select	⬉ 선택
 🌐 Parts server	🌐 부품 서버
-💾 Save	💾 저장
-💾 Save selection as macro…	💾 선택 항목을 매크로로 저장…
-📊 Cable overview	📊 케이블 개요
-📊 Harness data	📊 하네스 데이터
 📊 Reports	📊 보고서
-📊 Revision overview	📊 개정 개요
-🔒 Released page – read only	🔒 릴리스된 페이지 – 읽기 전용
+Revision overview	개정 개요
+Released page – read only	릴리스된 페이지 – 읽기 전용
 🗄 Panel layout	🗄 패널 레이아웃
 🗄 Parts database	🗄 부품 데이터베이스
 🗋 Schematic	🗋 회로도
 🗑 Delete	🗑 삭제
-🗑 Delete connection point	🗑 연결 지점 삭제
-🗑 Delete element	🗑 요소 삭제
-🗑 Delete macro	🗑 매크로 삭제
-🗑 Remove	🗑 제거
+Delete connection point	연결 지점 삭제
+Delete element	요소 삭제
 {} connections removed from their harness	연결 {}개가 하네스에서 제거됨
 {} connections assigned to {}	연결 {}개가 {}에 지정됨
-🗄 Show in panel layout ({})	🗄 패널 레이아웃에서 표시({})
+Show in panel layout ({})	패널 레이아웃에서 표시({})
    |  Potential {}	   |  전위 {}
 📁 Project parts ({})	📁 프로젝트 부품({})
 part {} not found	부품 {}을(를) 찾을 수 없음
@@ -1070,8 +1024,8 @@ via cable ducts	케이블 덕트 경유
 {} connection points	연결 지점 {}개
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	플레이트 위 {} mm + 여유 {} mm. 나머지는 연결 지점에서 플레이트까지의 거리입니다.
 {} wires, {} – {} mm	전선 {}개, {} – {} mm
-➕ Add connection point	➕ 연결 지점 추가
-🗑 Remove all	🗑 모두 제거
+Add connection point	연결 지점 추가
+Remove all	모두 제거
 2D front view (SVG)	2D 정면도(SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D 모델(STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	엔드 브래킷
@@ -1113,11 +1067,9 @@ Wire number on both ends	양쪽 끝의 전선 번호
 {} markers	마커 {}개
 {} mm	{} mm
 {} pieces	{}개
-Potentials…	전위…
 Potentials	전위
-➕ New potential	➕ 새 전위
+New potential	새 전위
 Load preset	사전 설정 로드
-📊 Potential overview	📊 전위 개요
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	고유 색상이나 단면적이 없는 전선은 연결의 전위에서 값을 가져옵니다. 케이블 심선은 케이블의 값을 유지합니다.
 e.g. 400 V AC	예: 400 V AC
 Delete	삭제
@@ -1151,7 +1103,6 @@ turquoise	청록
 silver	은색
 green-yellow	녹황색
 Potential {} defined {} times	전위 {}이(가) {}번 정의됨
-Potential {} has no definition (Project › Potentials)	전위 {}에 정의가 없습니다(프로젝트 › 전위)
 Protective conductor {} with wire colour {} (must be GNYE)	전선 색상이 {1}인 보호 도체 {0}(GNYE여야 함)
 Wire colour GNYE is reserved for protective conductors ({})	전선 색상 GNYE는 보호 도체 전용입니다({})
 {}: cross-section {} differs from the potential definition ({})	{0}: 단면적 {1}이(가) 전위 정의({2})와 다릅니다
@@ -1183,9 +1134,7 @@ Draw wires in their colour	전선을 해당 색상으로 그리기
 Pin	핀
 Plug	플러그
 Plugs	플러그
-Plugs…	플러그…
 Plug diagram	플러그 다이어그램
-📊 Plug diagram	📊 플러그 다이어그램
 Socket side	소켓 측
 Pin side	핀 측
 female	암
@@ -1231,7 +1180,6 @@ Column	열
 Condition '{}' needs OPTION=value	조건 '{}'에는 OPTION=값이 필요합니다
 Condition (OPTION=value & …)	조건(OPTION=값 & …)
 Configurator	컨피규레이터
-Configurator…	컨피규레이터…
 Cooling	냉각
 Creates or changes a configurator option	컨피규레이터 옵션을 만들거나 변경합니다
 Cross-section {} carries {} A, less than the {} A of {}	단면적 {0}의 허용 전류 {1} A가 {3}의 {2} A보다 작습니다
@@ -1355,10 +1303,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{0}: 전압 강하 {1} V({2} %)가 {3} %를 초과함
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{0}: 전력 손실 {1} W로 외함이 {2} °C까지 가열됨(최고 {3} °C): {4} 필요
 {}: {} carries {} A, the load {} needs {} A	{0}: {1}의 허용 전류는 {2} A이며, 부하 {3}에는 {4} A가 필요합니다
-⚙ Generate pages	⚙ 페이지 생성
-➕ Option	➕ 옵션
-➕ Rule	➕ 규칙
-🗑 Delete variant	🗑 변형 삭제
+Option	옵션
+Delete variant	변형 삭제
 e.g. NAME=Pump; POWER={POWER}	예: NAME=펌프; POWER={POWER}
 e.g. STARTER=DOL	예: STARTER=DOL
 Parts (CSV, JSON, BMEcat)	부품(CSV, JSON, BMEcat)
@@ -1395,8 +1341,7 @@ Default medium	기본 매체
 Number prefix	번호 접두사
 📊 Hose list	📊 호스 목록
 PCT loops (pre-planning)	PCT 루프(사전 계획)
-➕ Loop	➕ 루프
-📊 PCT loop overview	📊 PCT 루프 개요
+Loop	루프
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	P&ID의 계기는 레이블에 기능 문자와 루프 번호를 포함합니다(TIC 101). 장치 태그로 회로도와 연결됩니다.
 PCT loop	PCT 루프
 Range	범위
@@ -1409,7 +1354,6 @@ Delete loop	루프 삭제
 {} (default)	{}(기본값)
 Hose / pipe {}	호스 / 배관 {}
 Resulting: {} · {} · {} · {} m	결과: {} · {} · {} · {} m
-Fluid and process…	유체 및 공정…
 Hose defaults and PCT loops of the pre-planning	사전 계획의 호스 기본값 및 PCT 루프
 ✔ Wiring	✔ 배선 작업
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	배선 작업 도우미: 3D 보기와 진행률이 포함된 전선 체크리스트(태블릿: #wiring으로 웹 앱 열기)
@@ -1538,7 +1482,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	원본 언어
 Target languages	대상 언어
 Remove the language (its translations stay in the dictionary)	언어 제거(번역은 사전에 남음)
-➕ Add	➕ 추가
+Add	추가
 ISO 639-1 language code	ISO 639-1 언어 코드
 Collect texts from the project	프로젝트에서 텍스트 수집
 Adds all lines of the project texts to the dictionary	프로젝트 텍스트의 모든 줄을 사전에 추가합니다
@@ -1554,7 +1498,6 @@ not translated into {}	{}(으)로 번역되지 않음
 {} new texts in the dictionary	사전의 새 텍스트 {}개
 {} unused entries removed	사용하지 않는 항목 {}개 제거됨
 Export as PDF in language	언어별 PDF로 내보내기
-Project languages…	프로젝트 언어…
 Translate the project texts; documentation per language	프로젝트 텍스트 번역, 언어별 문서
 {} translations imported	번역 {}개 가져옴
 Import failed: {}	가져오기 실패: {}
@@ -1608,8 +1551,8 @@ Components (assembly)	구성 요소(어셈블리)
 (included)	(포함됨)
 Fastening hardware in the bill of materials	자재 명세서의 고정 부품
 Screws, nuts, washers and rivet nuts of the fixing points	고정점의 나사, 너트, 와셔 및 리벳 너트
-⬇ NC data of this face (DXF)	⬇ 이 면의 NC 데이터(DXF)
-⬇ Drilling list of this face (CSV)	⬇ 이 면의 드릴링 목록(CSV)
+NC data of this face (DXF)	이 면의 NC 데이터(DXF)
+Drilling list of this face (CSV)	이 면의 드릴링 목록(CSV)
 Group as assembly	어셈블리로 그룹화
 The items are selected and moved together	항목이 함께 선택되고 이동됩니다
 Distribute horizontally	가로로 균등 배치
@@ -1625,7 +1568,6 @@ Pattern	패턴
 Columns × rows	열 × 행
 Pitch X / Y	간격 X / Y
 Devices are not copied: a device is placed once.	장치는 복사되지 않습니다. 장치는 한 번만 배치됩니다.
-✔ Copy	✔ 복사
 Save as 3D macro	3D 매크로로 저장
 Items with an anchor keep it; the others are inserted relative to the click.	앵커가 있는 항목은 앵커를 유지하고, 나머지 항목은 클릭 위치를 기준으로 삽입됩니다.
 Walls	벽면
@@ -1728,7 +1670,6 @@ Macro name	매크로 이름
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	3D 매크로를 어셈블리로 삽입합니다: 앵커가 있는 항목은 제자리에, 나머지는 면의 x / y를 기준으로
 Installation site	설치 장소
 Structure management	구조 관리
-Structure management…	구조 관리…
 Structure identifiers (IEC 81346), templates and work areas	구조 식별자(IEC 81346), 템플릿 및 작업 영역
 Template	템플릿
 Apply template	템플릿 적용
@@ -1752,7 +1693,6 @@ Identifiers in use that are not defined are reported by the check.	정의되지 
 Work areas	작업 영역
 Work area	작업 영역
 Work area {}	작업 영역 {}
-➕ Work area	➕ 작업 영역
 (whole project)	(전체 프로젝트)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	작업 영역은 탐색기의 페이지와 장치를 프로젝트의 일부로 제한합니다. 필터: 비우면 모두, * = 임의의 문자. A1은 A1.2도 포함합니다.
 OpenECraft structure template	OpenECraft 구조 템플릿
@@ -1873,7 +1813,7 @@ Export…	내보내기…
 Import…	가져오기…
 File to embed	포함할 파일
 Forms – title blocks, frames and templates	양식 – 표제란, 프레임 및 템플릿
-Title blocks, plot frames and page templates…	표제란, 플롯 프레임 및 페이지 템플릿…
+Title blocks, plot frames and page templates	표제란, 플롯 프레임 및 페이지 템플릿
 Frame of all pages that do not choose one	프레임을 선택하지 않은 모든 페이지의 프레임
 Frame to start from when the frame is new (default: A3 landscape)	프레임이 새것일 때 시작할 프레임(기본값: A3 landscape)
 Free graphics and notes, not evaluated	자유 그래픽 및 메모, 평가되지 않음
@@ -2044,19 +1984,18 @@ Port {} is not connected	포트 {}이(가) 연결되어 있지 않습니다
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	프로젝트를 내보냅니다: svg(한 페이지), html, pdf, dxf, dwg(파일로만), wire_list(CSV), plc_table(CSV), plc_variables(IEC 61131-3 전역 변수), aml(AutomationML PLC 하드웨어), kbl(하네스 XML), marking(CSV), gltf, step, iges, ifc 또는 jt(3D 패널 레이아웃, jt는 파일로만), dictionary(프로젝트 텍스트 번역 CSV)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt 또는 dictionary, 또는 플러그인의 내보내기
 PLC hardware	PLC 하드웨어
-⚙ Automatic configuration	⚙ 자동 구성
+Automatic configuration	자동 구성
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	CPU와 버스 커플러용 스테이션, 버스 시스템, 슬롯, 시작 주소, 점 주소, IP 주소 및 라인 토폴로지
-⬇ Export AutomationML…	⬇ AutomationML 내보내기…
+Export AutomationML…	AutomationML 내보내기…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	TIA Portal 및 기타 PLC 도구용 하드웨어 구성 및 PLC 태그
-⬆ Import AutomationML…	⬆ AutomationML 가져오기…
+Import AutomationML…	AutomationML 가져오기…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	PLC 도구의 스테이션, 모듈, 주소, 서브넷 및 태그 주석
-⬇ Export IEC 61131-3 variables…	⬇ IEC 61131-3 변수 내보내기…
+Export IEC 61131-3 variables…	IEC 61131-3 변수 내보내기…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	CODESYS, TwinCAT 등을 위한 직접 주소가 포함된 전역 변수 목록
 Stations and racks	스테이션 및 랙
 Bus topology	버스 토폴로지
 Device descriptions	장치 설명
 Station	스테이션
-➕ Station	➕ 스테이션
 Cards without station: {}	스테이션 없는 카드: {}
 No stations: add one or use the automatic configuration.	스테이션이 없습니다. 스테이션을 추가하거나 자동 구성을 사용하세요.
 Head (CPU / coupler)	헤드(CPU / 커플러)
@@ -2065,7 +2004,7 @@ Bus system	버스 시스템
 IP / bus address	IP / 버스 주소
 Device number	장치 번호
 {}: {} slots, ports {}	{}: 슬롯 {}개, 포트 {}
-🗑 Remove station	🗑 스테이션 제거
+Remove station	스테이션 제거
 Plug in card	카드 장착
 No modules: plug in PLC cards of the schematic.	모듈이 없습니다. 회로도의 PLC 카드를 장착하세요.
 Device description	장치 설명
@@ -2076,13 +2015,12 @@ Output bytes	출력 바이트
 from the parts	부품에서
 Remove from the station	스테이션에서 제거
 Bus systems	버스 시스템
-➕ Bus system	➕ 버스 시스템
 Subnet	서브넷
 Port A	포트 A
 Port B	포트 B
 Without bus system	버스 시스템 없음
 No bus systems.	버스 시스템이 없습니다.
-⬆ Import GSDML / ESI…	⬆ GSDML / ESI 가져오기…
+Import GSDML / ESI…	GSDML / ESI 가져오기…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	PROFINET(GSDML) 및 EtherCAT(ESI) 장치의 장치 설명
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	제품 그룹 PLC의 부품도 설명을 제공합니다(기술 데이터: Inputs, Outputs, Slots, Bus, Ports).
 Slots	슬롯
@@ -2093,7 +2031,7 @@ built-in	기본 제공
 {} addresses changed	주소 {}개 변경됨
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	스테이션 {}개, 모듈 {}개, 버스 시스템 {}개, 연결 {}개 가져옴. 주소 {}개 및 텍스트 {}개 변경됨
 {} device descriptions imported	장치 설명 {}개 가져옴
-PLC hardware and bus topology…	PLC 하드웨어 및 버스 토폴로지…
+PLC hardware and bus topology	PLC 하드웨어 및 버스 토폴로지
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	스테이션, 랙, 모듈, 버스 시스템, PLC 도구와의 AutomationML 교환
 Device description (GSDML, ESI)	장치 설명(GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	버스 연결 {0} - {1}: 케이블 {2}이(가) 없습니다
@@ -2101,7 +2039,7 @@ Cable {} is a {} cable on a {} connection	케이블 {0}은(는) {2} 연결에 �
 Port {} has more than {} cables	포트 {0}에 케이블이 {1}개를 초과합니다
 Cable {} is used for {} bus connections	케이블 {0}이(가) 버스 연결 {1}개에 사용됨
 with bus cables	버스 케이블 포함
-➕ Create bus cables	➕ 버스 케이블 만들기
+Create bus cables	버스 케이블 만들기
 A cable of the bus type for every connection without cable	케이블이 없는 모든 연결에 버스 유형의 케이블
 missing	누락됨
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	스테이션 {}개, 버스 시스템 {}개, 카드 {}개 지정됨, 주소 {}개 변경됨, 연결 {}개, 케이블 {}개
@@ -2211,12 +2149,11 @@ starts with	시작 문자
 {} (first column)	{}(첫 번째 열)
 {} report pages output to {}	보고서 페이지 {0}개를 {1}(으)로 출력함
 {} – {} ({} pages)	{} – {}(페이지 {}개)
-➕ Add filter	➕ 필터 추가
-➕ Add sort key	➕ 정렬 키 추가
-➕ New block	➕ 새 블록
-➕ New scheme	➕ 새 스키마
-⟳ Generate all	⟳ 모두 생성
-⟳ Generate	⟳ 생성
+Add filter	필터 추가
+Add sort key	정렬 키 추가
+New block	새 블록
+Generate all	모두 생성
+Generate	생성
 ⟳ Update report blocks	⟳ 보고서 블록 업데이트
 Opening {}…	{} 여는 중…
 Uploading {}…	{} 업로드 중…
@@ -2238,13 +2175,13 @@ Save and release page	저장 후 페이지 잠금 해제
 Lock page	페이지 잠금
 Project server	프로젝트 서버
 User name	사용자 이름
-⟳ List projects	⟳ 프로젝트 나열
+List projects	프로젝트 나열
 Enter a user name: other users see it on your locks.	사용자 이름을 입력하세요. 다른 사용자가 내 잠금에서 이 이름을 봅니다.
 Users	사용자
 Opening a project replaces the current one, its unsaved changes are lost.	프로젝트를 열면 현재 프로젝트가 교체되며, 저장되지 않은 변경 내용은 손실됩니다.
 Upload the current project as a new shared project:	현재 프로젝트를 새 공유 프로젝트로 업로드:
 Name on the server	서버의 이름
-⬆ Upload	⬆ 업로드
+Upload	업로드
 Letters, digits, space, - _ . (up to 64 characters)	문자, 숫자, 공백, - _ .(최대 64자)
 Shared project {} – revision {}, user {}	공유 프로젝트 {} – 개정 {}, 사용자 {}
 Save and release all locks	저장 후 모든 잠금 해제
@@ -2261,14 +2198,11 @@ None	없음
 Close shared project	공유 프로젝트 닫기
 Releases all locks; the project stays open as a local copy	모든 잠금을 해제합니다. 프로젝트는 로컬 복사본으로 열린 상태로 유지됩니다
 Download project	프로젝트 다운로드
-Project server…	프로젝트 서버…
 Open and save shared projects, lock pages	공유 프로젝트 열기 및 저장, 페이지 잠금
-🔒 Locked by {} – read only	🔒 잠금: {} – 읽기 전용
+Locked by {} – read only	잠금: {} – 읽기 전용
 {} (project server, revision {})	{}(프로젝트 서버, 개정 {})
 {} change requests added, {} updated	변경 요청 {}개 추가됨, {}개 업데이트됨
-Compare and baselines…	비교 및 기준선…
 Compare with a baseline, a revision or another project file and take differences over	기준선, 개정 또는 다른 프로젝트 파일과 비교하고 차이점 가져오기
-Change requests…	변경 요청…
 Review: comments and markup	검토: 주석 및 마크업
 Revisions, approval and release	개정, 승인 및 릴리스
 Review ({})	검토({})
@@ -2293,7 +2227,7 @@ What should be checked or changed?	무엇을 검사하거나 변경해야 합니
 Change request	변경 요청
 Reply…	회신…
 Reply	회신
-🗑 Delete comment	🗑 주석 삭제
+Delete comment	주석 삭제
 Approval workflow	승인 워크플로
 Approvers	승인자
 User names, separated by commas	쉼표로 구분된 사용자 이름
@@ -2309,8 +2243,8 @@ rejected	거부됨
 Submit for review	검토 제출
 Release	릴리스
 Discard draft	초안 취소
-✔ Approve	✔ 승인
-✖ Reject	✖ 거부
+Approve	승인
+Reject	거부
 Approving needs an approver; you are \"{}\".	승인자만 승인할 수 있습니다. 현재 사용자는 \"{}\"입니다.
 Submit again	다시 제출
 With the current pages; the approvals so far become void	현재 페이지로 제출합니다. 지금까지의 승인은 무효가 됩니다
@@ -2335,7 +2269,7 @@ Compare with	비교 대상
 Baseline {} {}	기준선 {} {}
 Baseline {}	기준선 {}
 Pages of revision {}	개정 {}의 페이지
-📂 Project file…	📂 프로젝트 파일…
+Project file…	프로젝트 파일…
 Baselines ({})	기준선({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	기준선은 전체 프로젝트(페이지, 장치, 부품, 설정)를 저장합니다. 개정을 릴리스하면 기준선이 하나 저장됩니다.
 Create baseline	기준선 만들기
@@ -2347,10 +2281,9 @@ Make the selected elements of this project equal to the compared ones	이 프로
 {} details	세부 정보 {}개
 Baseline {} created	기준선 {} 만들어짐
 Change requests	변경 요청
-➕ New request	➕ 새 요청
-📂 Import…	📂 가져오기…
+New request	새 요청
 CSV or JSON from another system; known numbers are updated	다른 시스템의 CSV 또는 JSON. 알려진 번호는 업데이트됩니다
-⬇ Export JSON	⬇ JSON 내보내기
+Export JSON	JSON 내보내기
 Rejected and closed ones too	거부 및 종료된 항목 포함
 No change requests yet.	아직 변경 요청이 없습니다.
 Select a request.	요청을 선택하세요.
@@ -2365,9 +2298,9 @@ Device tags, separated by commas	쉼표로 구분된 장치 태그
 Affected pages ({})	영향을 받는 페이지({})
 Go to page	페이지로 이동
 Comments ({})	주석({})
-💬 Comment on the current page	💬 현재 페이지에 주석
+Comment on the current page	현재 페이지에 주석
 Linked to this request	이 요청에 연결됨
-🗑 Delete request	🗑 요청 삭제
+Delete request	요청 삭제
 in progress	진행 중
 resolved	해결됨
 Redline	레드라인
@@ -2405,14 +2338,6 @@ Settings	설정
 Page order	페이지 순서
 {} differences taken over	차이점 {}개 가져옴
 Layers	레이어
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	클릭하여 선택, 끌어서 이동, 빈 공간에서 끌면 영역 선택. 선택한 심볼의 태그나 속성 텍스트를 끌어서 배치. 오른쪽/가운데 버튼으로 끌면 화면 이동, 휠로 확대/축소.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	시작점과 꺾임점을 클릭 · Space로 꺾임 방향 전환 · A로 심볼 우회 경로 설정 전환 · 연결부에서 자동 종료 · 오른쪽 클릭 / Esc로 완료
-Click the centre, then a point of the circle	중심을 클릭한 후 원 위의 점을 클릭하세요
-Click the centre, the start point and the end point (counter-clockwise)	중심, 시작점, 끝점을 클릭하세요(시계 반대 방향)
-Click the corner points · double click, Enter or right click finishes	꺾임점을 클릭 · 두 번 클릭, Enter 또는 오른쪽 클릭으로 완료
-Click the two points to measure, then the position of the dimension line	측정할 두 점을 클릭한 후 치수선의 위치를 클릭하세요
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	전선을 클릭하세요. 이 점이 연결의 번호, 색상, 단면적 및 케이블 심선을 정의합니다
-Draw a line across the wires that are cores of the cable	케이블의 심선인 전선을 가로질러 선을 그리세요
 Click to insert · Esc cancel	클릭하여 삽입 · Esc 취소
 Routing around symbols	심볼 우회 경로 설정
 {} objects pasted	개체 {}개 붙여넣음
@@ -2442,7 +2367,6 @@ Layer	레이어
 Auto-connect	자동 연결
 Draw connections between facing connection points when symbols are placed or moved	심볼을 배치하거나 이동할 때 마주 보는 연결 지점 사이에 연결 그리기
 Route	경로 설정
-The wire tool routes around symbols and other wires (A)	전선 도구가 심볼과 다른 전선을 우회하여 경로를 설정합니다(A)
 Dimension	치수
 Image…	이미지…
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG 또는 JPEG 비트맵(예: 로고 또는 사진)
@@ -2486,7 +2410,6 @@ Tag placed by hand	수동으로 배치된 태그
 Drag the tag of the selected symbol to place it.	선택한 심볼의 태그를 끌어서 배치하세요.
 (empty)	(비어 있음)
 ➕ Place property	➕ 속성 배치
-➕ Layer	➕ 레이어
 Layer {}	레이어 {}
 Layers of graphics, texts, dimensions and images	그래픽, 텍스트, 치수 및 이미지의 레이어
 Visible	표시
@@ -2531,8 +2454,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	단면적(예: 1.5 mm²)
 A cable definition needs a start and an end point	케이블 정의에는 시작점과 끝점이 필요합니다
 No cable {}	케이블 {} 없음
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. 전선 위의 연결 정의점은 전체 연결의 번호, 색상, 단면적 및 심선을 설정합니다. 전선을 가로지르는 케이블 정의선은 전선을 케이블의 심선으로 만듭니다. 자동 연결은 마주 보는 연결 지점을 연결하고, 경로 설정(A)은 전선을 심볼을 우회하도록 이끕니다.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. 그래픽: 레이어 위의 원, 타원, 호, 다각형, 치수 및 이미지(탐색기 › 레이어: 표시, 잠금, 인쇄). 선택한 심볼의 태그를 끌어서 배치하세요. 다른 속성은 심볼의 속성에서 배치합니다.
 Coil	코일
 Main contacts 4-pole	주접점 4극
 NO contact, on-delay	a접점, 온 딜레이
@@ -2689,16 +2610,13 @@ Added to both ends of the length for the cut length (insertion depth)	절단 길
 📊 Hose configuration	📊 호스 구성
 📊 Tubing / piping list	📊 튜브 / 배관 목록
 📊 Fluid netlist	📊 유체 네트 목록
-➕ Group	➕ 그룹
-📊 Fluid device groups	📊 유체 장치 그룹
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	밸브 터미널, 서비스 유닛 및 매니폴드: 해당 유체 장치를 자리 순서대로 공백으로 구분.
 Places	자리
 0 = not limited	0 = 제한 없음
 Delete group	그룹 삭제
-🔄 Synchronize	🔄 동기화
+Synchronize	동기화
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	솔레노이드 밸브를 번호가 같은 코일과 연결하고(-QM3 › -MB3) 기능 텍스트를 복사합니다
 {} links created, {} function texts copied	연결 {}개 생성됨, 기능 텍스트 {}개 복사됨
-📊 Electro-fluid cross reference	📊 전기-유체 상호 참조
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	유체 장치를 작동하거나 감시하는 전기 장치(솔레노이드 코일, 위치 및 압력 스위치). 두 회로도 모두 서로에 대한 상호 참조를 표시합니다.
 Electrical devices	전기 장치
 Operating pressure in bar (0 = hose ratings are not checked)	작동 압력(bar, 0 = 호스 정격을 검사하지 않음)
@@ -2734,7 +2652,6 @@ Right neighbour	오른쪽 인접 외함
 No cable passage to {}: wires to it are not routed	{}(으)로의 케이블 통로 없음: 그쪽 전선은 배선 경로가 지정되지 않음
 Open to {}: wires cross beside the mounting plates	{}(으)로 개방됨: 전선이 장착 플레이트 옆으로 지나감
 {} cable passages to {}	{1}(으)로의 케이블 통로 {0}개
-➕ Cable passage to {}	➕ {}(으)로의 케이블 통로
 Round cutouts facing each other in both side walls	양쪽 측벽에 서로 마주 보는 원형 컷아웃
 Both sides are open: the wires need no cutout	양쪽이 모두 개방됨: 전선에 컷아웃이 필요 없음
 Cable passage to {}	{}(으)로의 케이블 통로
@@ -3067,7 +2984,6 @@ Surge protection	서지 보호
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	전원의 각 보호 장치에서 단락 전류 대비 차단 용량, 회로 끝의 최소 고장 전류에서의 차단, 케이블의 단락 내량 및 상위 장치와의 선택 차단.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	전원 부하(모터, 드라이브, 히터, 전원 공급 장치, 변압기)의 전력 및 전류, 각 보호 장치의 부하, 부등률을 적용한 수요 및 전원 공급 장치의 부하 예산.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	ISO 13849-1의 안전 기능: 각 하위 시스템(입력, 로직, 출력)과 채널의 장치, 카테고리, 진단 범위 및 연간 동작 횟수. 장치는 부품의 PL / PFHd, MTTFd 또는 B10d로 계산됩니다.
-➕ Safety function	➕ 안전 기능
 Input	입력
 Logic	로직
 Output	출력
@@ -3076,13 +2992,10 @@ Operations / year	동작 횟수 / 년
 CCF	CCF
 0 = from the devices	0 = 장치에서
 Measures against common cause failure (at least 65 points)	공통 원인 고장에 대한 대책(최소 65점)
-➕ Subsystem	➕ 하위 시스템
 Subsystem {}	하위 시스템 {}
 Rule libraries	규칙 라이브러리
 Customer rule sets	고객 규칙 세트
-➕ Rule set	➕ 규칙 세트
 Rule set {}	규칙 세트 {}
-💾 Export…	💾 내보내기…
 OpenECraft rule sets	OpenECraft 규칙 세트
 Verify the project against it	이에 대해 프로젝트 검증
 {} checks	검사 {}개
@@ -3094,10 +3007,8 @@ Every item of the scope that meets the conditions must meet the requirement.	범
 Message	메시지
 if	만약
 then	그러면
-➕ Condition	➕ 조건
-➕ Check	➕ 검사
 OpenECraft rule sets (JSON)	OpenECraft 규칙 세트(JSON)
-Electrical calculations…	전기 계산…
+Electrical calculations	전기 계산
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	단락, 선택 차단, 부하, EMC, 기능 안전 및 규칙 세트에 대한 검증
 0 = a single value; otherwise values [1] … [n]	0 = 단일 값, 그렇지 않으면 값 [1] … [n]
 A project definition based on this one, with its own defaults and scheme	이 정의를 기반으로 고유 기본값과 스키마를 가진 프로젝트 정의
@@ -3416,7 +3327,6 @@ Project number	프로젝트 번호
 Project property of the property database (by key)	속성 데이터베이스의 프로젝트 속성(키 기준)
 Proof test interval	보증 시험 주기
 Property database	속성 데이터베이스
-Property database…	속성 데이터베이스…
 Property definitions	속성 정의
 Property definitions, function definitions, placement schemes and the values of all objects	속성 정의, 기능 정의, 배치 스키마 및 모든 개체의 값
 Property groups	속성 그룹
@@ -3603,10 +3513,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\"은(는) {} 중 하나가 아닙니다
 {}: invalid value \"{}\" ({})	{}: 잘못된 값 \"{}\"({})
 ➕ Default value	➕ 기본값
-➕ Derive project definition	➕ 프로젝트 정의 파생
-➕ User defined property	➕ 사용자 정의 속성
+Derive project definition	프로젝트 정의 파생
+User defined property	사용자 정의 속성
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	단선도에서 장치를 계획하고, 회로도를 생성하며 둘을 동기화합니다
-Single-line / multi-line…	단선 / 복선…
 All devices of page {} are in the schematic already	{} 페이지의 모든 장치가 이미 회로도에 있습니다
 Copies function texts between the single-line diagram and the schematic where one side is empty	한쪽이 비어 있는 경우 단선도와 회로도 간에 기능 텍스트를 복사합니다
 Does not match	일치하지 않음
@@ -3756,11 +3665,11 @@ Outline	외곽선
 Click the corners of a machine or building, double-click to finish	기계 또는 건물의 모서리를 클릭하고 두 번 클릭하여 완료
 (no cable highlighted)	(강조 표시된 케이블 없음)
 Fit	맞춤
-⬇ Export SVG…	⬇ SVG 내보내기…
+Export SVG…	SVG 내보내기…
 Height above the floor	바닥으로부터의 높이
 Placed here: {}	여기에 배치됨: {}
 Place an enclosure, device or machine location at this node	이 노드에 외함, 장치 또는 기계 위치 배치
-🗑 Delete node	🗑 노드 삭제
+Delete node	노드 삭제
 SVG drawing	SVG 도면
 Segments	구간
 Width × height (mm)	폭 × 높이(mm)
@@ -3780,18 +3689,15 @@ Must be connected to the equipotential bonding	등전위 본딩에 연결해야 
 {} corners	꼭짓점 {}개
 Take over cut lengths	절단 길이 적용
 Set the cable lengths to the planned cut lengths	케이블 길이를 계획된 절단 길이로 설정
-📊 Report	📊 보고서
 {} parts of the network	네트워크 부분 {}개
 No field cables: place the enclosures and field devices at nodes of the route network.	필드 케이블이 없습니다. 외함과 필드 장치를 경로 네트워크의 노드에 배치하세요.
 Route definition of {}	{}의 경로 정의
 Via:	경유:
 Remove	제거
-➕ Node	➕ 노드
 Avoid:	회피:
 {} cable lengths taken over	케이블 길이 {}개를 적용했습니다
-➕ Bonding conductor	➕ 본딩 도체
+Bonding conductor	본딩 도체
 Bonding points	본딩 지점
-➕ Accessory	➕ 부속품
 both ends	양쪽 끝
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	부속품이 없습니다. 글랜드, 커넥터, 차폐 클램프 등은 부품 목록에 포함되며 케이블과 대조하여 검사됩니다.
 Reserve per cable end	케이블 끝당 여유 길이
@@ -3799,7 +3705,6 @@ Length inside an enclosure	외함 내부 길이
 Cut length step	절단 길이 단위
 Maximum fill of a carrier	케이블 지지대의 최대 충전율
 Bend radius in drag chains	케이블 체인 내 굽힘 반경
-Field wiring…	필드 배선…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	플랜트 레이아웃, 경로 네트워크, 필드 케이블 계획, 등전위 본딩 및 케이블 부속품
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	옵션 {}이(가) 없습니다
@@ -3913,9 +3818,9 @@ Archive and version	아카이브 및 버전
 Verification	검증
 OpenECraft project archive	OpenECraft 프로젝트 아카이브
 The project database needs the desktop version: the browser cannot search folders.	프로젝트 데이터베이스에는 데스크톱 버전이 필요합니다. 브라우저에서는 폴더를 검색할 수 없습니다.
-📂 Add folder…	📂 폴더 추가…
+Add folder…	폴더 추가…
 Adds the project files and archives of a folder and its subfolders	폴더 및 하위 폴더의 프로젝트 파일과 아카이브를 추가합니다
-🔄 Update all	🔄 모두 업데이트
+Update all	모두 업데이트
 Verify while reading	읽는 동안 검증
 Remove the folder from the database	데이터베이스에서 폴더 제거
 Search	검색
@@ -3969,15 +3874,14 @@ Switches the options with a condition by the configurator options	조건이 있�
 {} options switched	옵션 {}개를 전환했습니다
 File format version {}. Files of older versions are converted when they are opened.	파일 형식 버전 {}. 이전 버전의 파일은 열 때 변환됩니다.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	아카이브(.oecz)는 프로젝트, 매니페스트, 포함된 문서와 이미지를 개별 파일로 담은 ZIP 파일입니다.
-📦 Archive project…	📦 프로젝트 아카이브…
-📂 Open archive…	📂 아카이브 열기…
+Archive project…	프로젝트 아카이브…
+Open archive…	아카이브 열기…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	프로젝트 데이터(ID, 참조, 장치 데이터, 옵션, 하위 프로젝트)를 엔지니어링 검사와 함께 검사합니다.
 Verify project	프로젝트 검증
 Repair {} findings	결과 {}개 복구
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	프로젝트 데이터: 오류 {}개, 경고 {}개, 참고 {}개, 엔지니어링 검사: 오류 {}개, 경고 {}개
 (repairable)	(복구 가능)
 ✔ The project data is consistent.	✔ 프로젝트 데이터가 일관됩니다.
-Project management…	프로젝트 관리…
 Project database, batch changes of project properties, subprojects, options, archives and verification	프로젝트 데이터베이스, 프로젝트 속성 일괄 변경, 하위 프로젝트, 옵션, 아카이브 및 검증
 OpenECraft project or archive	OpenECraft 프로젝트 또는 아카이브
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3949,7 @@ For parts without Stock length; longer profiles have to be joined	Stock length�
 Collision classes	충돌 클래스
 Distances between classes of items, or classes that may overlap	항목 클래스 간 거리 또는 겹쳐도 되는 클래스
 may overlap	겹침 허용
-➕ Add rule	➕ 규칙 추가
+Add rule	규칙 추가
 Air temperature at the devices	장치 주변 공기 온도
 max. {} °C	최대 {} °C
 No problems found	문제가 없습니다
@@ -4101,8 +4005,7 @@ Invalid answer of the plugin: {}	플러그인의 응답이 잘못되었습니다
 Key figures of the project and a list of its device tags	프로젝트의 주요 지표 및 장치 태그 목록
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	프로젝트의 주요 지표: 페이지, 심볼, 전선, 장치, 부품, 케이블 및 검사 결과
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	로드된 플러그인(기본 제공 및 --plugins / OPENECRAFT_PLUGINS의 플러그인 폴더에서 로드)과 해당 명령, 검사, 보고서 및 내보내기. 이 세션에서 플러그인을 활성화하거나 비활성화합니다
-Manage plugins…	플러그인 관리…
-Plugin command {}	플러그인 명령 {}
+Manage plugins	플러그인 관리
 Plugin id '{}' is not snake_case	플러그인 ID '{}'이(가) snake_case가 아닙니다
 Plugin {} is loaded twice	플러그인 {}이(가) 두 번 로드되었습니다
 Plugin {} needs a newer OpenECraft (API {})	플러그인 {}에는 최신 OpenECraft(API {})가 필요합니다
@@ -4116,8 +4019,8 @@ Unknown plugin: {}	알 수 없는 플러그인: {}
 Warnings	경고
 {} commands, {} checks, {} reports, {} exports	명령 {}개, 검사 {}개, 보고서 {}개, 내보내기 {}개
 {}: the program to run is missing	{}: 실행할 프로그램이 없습니다
-▶ Run	▶ 실행
-⟳ Update	⟳ 업데이트
+Run	실행
+Update	업데이트
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	패널 레이아웃 검사
@@ -4187,7 +4090,7 @@ Profile	프로필
 (standard columns)	(표준 열)
 Write the file for the other system; later imports detect conflicts against this export	다른 시스템용 파일 쓰기. 이후 가져올 때 이 내보내기와 비교하여 충돌을 감지합니다
 Read a file of the other system (CSV or JSON) and review the changes	다른 시스템의 파일(CSV 또는 JSON)을 읽고 변경 내용 검토
-⬇ Neutral exchange file…	⬇ 중립 교환 파일…
+Neutral exchange file…	중립 교환 파일…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	커넥터가 없는 시스템을 위해 품목, 장치, 배치, 연결, 전선 및 문서를 하나의 JSON 파일로 저장
 Import changes	가져오기 변경 내용
 Profiles	프로필
@@ -4213,7 +4116,6 @@ Conflicts	충돌
 Export	내보내기
 Import	가져오기
 {} values taken over	값 {}개를 적용했습니다
-Enterprise integration…	엔터프라이즈 통합…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	ERP, PDM, PLM, ECAD, MCAD, 구매 및 전선 가공기와 교환
 Files of other systems (CSV, JSON)	다른 시스템의 파일(CSV, JSON)
 Copper bar {}: {} segments need {} bends	동바 {}: 구간 {}개에는 굽힘 {}개가 필요합니다
@@ -4380,9 +4282,9 @@ DWG export failed: {}	DWG 내보내기 실패: {}
 DWG import failed: {}	DWG 가져오기 실패: {}
 DWG imported as page {}: {} lines, {} texts	DWG를 {} 페이지로 가져왔습니다: 선 {}개, 텍스트 {}개
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG를 {} 페이지로 가져왔습니다: 선 {}개, 텍스트 {}개(가져오지 않음: {})
-⬇ NC data (DWG)	⬇ NC 데이터(DWG)
-⬇ Door NC data (DWG)	⬇ 도어 NC 데이터(DWG)
-⬇ NC data of this face (DWG)	⬇ 이 면의 NC 데이터(DWG)
+NC data (DWG)	NC 데이터(DWG)
+Door NC data (DWG)	도어 NC 데이터(DWG)
+NC data of this face (DWG)	이 면의 NC 데이터(DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	DWG 도면(AutoCAD R12 … 2018)을 새 회로도 페이지에 그래픽(선, 호, 텍스트, 블록)으로 가져옵니다
 Generic	일반
 Parts store	부품 저장소
@@ -4721,7 +4623,6 @@ Power cable	전력 케이블
 Control cable	제어 케이블
 Wiring material	배선 자재
 Catalog id	카탈로그 ID
-Data portal…	데이터 포털…
 Delete catalog {} from the server?	서버에서 카탈로그 {}을(를) 삭제하시겠습니까?
 Delete user {}? Their sessions and favorites are removed.	사용자 {}을(를) 삭제하시겠습니까? 해당 사용자의 세션과 즐겨찾기가 제거됩니다.
 Ends the session and forgets the token	세션을 종료하고 토큰을 삭제합니다
@@ -4843,12 +4744,10 @@ Use macros	매크로 사용
 ★ Favorites	★ 즐겨찾기
 ★ Remove from favorites	★ 즐겨찾기에서 제거
 ☆ Add to favorites	☆ 즐겨찾기에 추가
-✔ Apply {} updates	✔ 업데이트 {}개 적용
-➡ Successor {}	➡ 후속 제품 {}
-⬇ Add marked parts to the parts database ({})	⬇ 표시한 부품을 부품 데이터베이스에 추가({})
-⬇ Add to the parts database	⬇ 부품 데이터베이스에 추가
-🔄 Check the parts database for updates	🔄 부품 데이터베이스 업데이트 확인
-🔎 Search	🔎 검색
+Apply {} updates	업데이트 {}개 적용
+Add marked parts to the parts database ({})	표시한 부품을 부품 데이터베이스에 추가({})
+Add to the parts database	부품 데이터베이스에 추가
+Check the parts database for updates	부품 데이터베이스 업데이트 확인
 Relay coil, AC	릴레이 코일, AC
 Relay coil, high-speed	릴레이 코일, 고속
 Relay coil, mechanically latched	릴레이 코일, 기계식 래치
@@ -5276,7 +5175,6 @@ Level of this kind of message	이 메시지 종류의 수준
 As defined by the check	검사에서 정의한 대로
 Switch off the check \"{}\"	\"{}\" 검사 끄기
 Changed message levels ({})	변경된 메시지 수준({})
-Right click a message in the Check tab to change its level.	검사 탭에서 메시지를 마우스 오른쪽 단추로 클릭하여 수준을 변경하세요.
 Accepted messages ({})	승인된 메시지({})
 No longer reported	더 이상 보고되지 않음
 Still reported	계속 보고됨
@@ -5421,7 +5319,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	프로젝트 템플릿으로 저장…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	개정, 기준선, 검토 및 배선 표시 없이 프로젝트를 새 프로젝트용 템플릿으로 저장합니다
 OpenECraft project template	OpenECraft 프로젝트 템플릿
-Not a project template: {}	프로젝트 템플릿이 아닙니다: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	프로젝트 템플릿으로 시작: 기본 제공 템플릿(Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) 또는 프로젝트 파일
 Not a packed project	패키지된 프로젝트가 아닙니다
 Viewer	뷰어
@@ -5537,7 +5434,6 @@ Rotate	회전
 Save to project server	프로젝트 서버에 저장
 Undo	실행 취소
 Find and replace	찾기 및 바꾸기
-Finish polyline or polygon	폴리라인 또는 다각형 완료
 Mirror (selection or symbol being placed)	대칭(선택 항목 또는 배치 중인 심볼)
 Next page	다음 페이지
 Open project	프로젝트 열기
@@ -5552,13 +5448,12 @@ Keyboard shortcuts	바로 가기 키
 No shortcut	바로 가기 키 없음
 Press a key…	키를 누르세요…
 Record	기록
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	기록: 새 키를 보조 키와 함께 누르세요(Esc는 취소). Esc, Delete, 화살표 키 및 복사 / 붙여넣기는 고정되어 있습니다.
 Reset all to the defaults	모두 기본값으로 재설정
 {} is used by: {}	{}을(를) 사용하는 항목: {}
 Harness nailboard drawing to scale (SVG)	하네스 네일보드 도면, 실척(SVG)
 Harness tag, e.g. -WH1	하네스 태그(예: -WH1)
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	분기 길이와 커넥터의 핀 표가 포함된 하네스의 실척 폼보드 도면
-📐 Nailboard (SVG)…	📐 네일보드(SVG)…
+Nailboard (SVG)…	네일보드(SVG)…
 Bundle Ø {} mm	번들 Ø {} mm
 Nailboard {}	네일보드 {}
 Scale 1:{}	축척 1:{}
@@ -5580,7 +5475,6 @@ No segment {}	세그먼트 {}이(가) 없습니다
 Segment path (default: all segments)	세그먼트 경로(기본값: 모든 세그먼트)
 Pre-planning (CSV, Excel)	사전 계획(CSV, Excel)
 Plant segments with planned devices before the schematic	회로도 작성 전 계획된 장치가 포함된 플랜트 세그먼트
-Pre-planning…	사전 계획…
 A segment cannot be moved below itself	세그먼트를 자기 자신 아래로 이동할 수 없습니다
 Adds a planned device to a segment or changes it	세그먼트에 계획된 장치를 추가하거나 변경합니다
 Adds a segment below another one (or at the top)	다른 세그먼트 아래(또는 최상위)에 세그먼트를 추가합니다
@@ -5628,10 +5522,8 @@ name	이름
 {} pages generated	페이지 {}개를 생성했습니다
 {} pages generated; page macros not found: {}	페이지 {}개를 생성했습니다. 찾을 수 없는 페이지 매크로: {}
 {} segments created, {} devices added, {} updated	세그먼트 {}개 생성, 장치 {}개 추가, {}개 업데이트
-➕ Device	➕ 장치
-➕ Segment	➕ 세그먼트
-➕ Sub-segment	➕ 하위 세그먼트
-🗑 Remove segment	🗑 세그먼트 제거
+Sub-segment	하위 세그먼트
+Remove segment	세그먼트 제거
 Display	표시
 Mirrored	대칭됨
 Other properties	기타 속성
@@ -5733,7 +5625,7 @@ Hose defaults	호스 기본값
 Message levels	메시지 수준
 Not a settings scheme: {}	설정 스키마가 아닙니다: {}
 Wire defaults	전선 기본값
-Reset panel layout	창 배치 재설정
+Reset pane layout	창 배치 재설정
 Navigator on the left, symbols and properties on the right	탐색기는 왼쪽, 심볼과 속성은 오른쪽
 Panels	창
 Saves the workspace, the arrangement of the panels and the open windows	작업 공간, 창 배치 및 열린 대화 상자를 저장합니다
@@ -5922,7 +5814,7 @@ Motors feed the short circuit	모터가 단락 전류를 공급함
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	전원에 연결된 비동기 모터가 최대 단락 전류를 증가시킵니다(IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	전원 공급점: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	제조업체 협조 표
-➕ Entry	➕ 항목
+Entry	항목
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	제조업체가 시험한 장치 쌍의 선택 차단 및 백업 보호(부품 번호별). 시간-전류 곡선에 따른 추정을 대체합니다.
 Upstream part	상위 부품
 Downstream part	하위 부품
@@ -6012,22 +5904,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	사용자 이름 및 암호 대신
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 이상(Vault Data API)
-⟳ Refresh	⟳ 새로 고침
+Refresh	새로 고침
 Search below this folder	이 폴더 아래에서 검색
-🔍 Search	🔍 검색
 Checked out	체크 아웃됨
 {} of {} entries shown: search to narrow the list	항목 {}/{}개 표시됨. 목록을 좁히려면 검색하세요
 Select a file to import it	가져올 파일을 선택하세요
 (choose a part)	(부품 선택)
-⬇ Import	⬇ 가져오기
 Project file	프로젝트 파일
-⬆ Check in project as new version of {}	⬆ 프로젝트를 {}의 새 버전으로 체크 인
+Check in project as new version of {}	프로젝트를 {}의 새 버전으로 체크 인
 Puts the project into the folder it was opened from	프로젝트를 연 폴더에 프로젝트를 넣습니다
 Put into the vault	Vault에 넣기
 File name	파일 이름
-⬆ Upload to {}	⬆ {}에 업로드
+Upload to {}	{}에 업로드
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	폴더에 같은 이름의 파일이 있으면 새 버전이 생성되고(체크 아웃 후 체크 인), 그렇지 않으면 파일이 추가됩니다
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Autodesk Vault에서 프로젝트와 파일을 열고, 프로젝트, 내보내기 및 3D 모델을 Vault에 넣습니다
 Check in {} to Vault	{}을(를) Vault에 체크 인
 Panel layout in 3D (Parasolid XT)	3D 패널 레이아웃(Parasolid XT)
@@ -6035,7 +5924,6 @@ Panel layout in 3D (Parasolid XT)	3D 패널 레이아웃(Parasolid XT)
 Back	뒤로
 Back to the project (Esc)	프로젝트로 돌아가기 (Esc)
 Recent projects	최근 프로젝트
-No projects opened yet.	아직 연 프로젝트가 없습니다.
 Remove from the list	목록에서 제거
 unsaved	저장되지 않음
 Project: {}	프로젝트: {}
@@ -6055,15 +5943,6 @@ Tutorial	튜토리얼
 Introduction	소개
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	EPLAN Electric P8의 방식을 따르는 개방형 전기 CAE 편집기입니다.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	리본: 파일에서 열기, 저장, 가져오기, 내보내기, 인쇄를 하고, 탭은 주제별로 명령을 모읍니다. Alt는 액세스 키를 표시하고, Ctrl+Shift+P는 모든 명령을 찾으며, F6은 창 사이를 이동하고, F1은 이 도움말을 엽니다.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. 삽입 › 삽입 센터 (Ins): 심볼, 매크로 또는 장치를 검색하고 페이지를 클릭하여 배치합니다. 장치 태그 (-K1, -S2 …)는 자동으로 지정됩니다.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. 속성 (부품 탭)에서 부품을 지정합니다. 보고서 (홈 › 보고서)는 장치, 부품 목록, 단자, 연결 및 PLC를 나열하며 보고서 페이지로 삽입됩니다.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. 케이블: 연결 › 케이블에서 전선을 선택하고 케이블에 지정을 사용합니다. 전선 번호: 연결 › 전선 번호 지정, 또는 전선 속성에 번호를 입력합니다.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. 매크로: 항목을 선택하고 마우스 오른쪽 버튼 › 선택 항목을 매크로로 저장. 삽입 센터나 삽입 › 매크로에서 삽입합니다. 자리 표시자 {NAME}은 값 세트에서 채워집니다.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. 장치 › 단자대, 장치 › PLC 개요, 프로젝트 데이터 › 개정: 단자 순서, 점퍼와 예비, PLC 주소와 심볼 테이블, 변경 표시가 있는 개정과 릴리스된 (잠긴) 페이지.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. 마스터 데이터 › 심볼 편집기: 연결 지점과 기능이 있는 자신만의 심볼을 그립니다 (또는 기본 제공 심볼을 복사). 프로젝트에 저장되며 라이브러리 파일로 교환할 수 있습니다.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. 마스터 데이터 › 양식: 자리 표시자 ({project}, {page}, {prop:Name} …)가 있는 자체 표제란과 보고서 페이지의 열. 프로젝트 데이터 › 보고서 블록은 단자대, 플러그, 케이블 또는 장치별로 보고서 페이지를 생성합니다.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. 패널 레이아웃 (작업 공간 패널 레이아웃, 탭 레이아웃 공간): 외함, 레일, 덕트, 부스바, 개구부. 레이아웃 공간 › NC 데이터는 드릴 패턴을 내보냅니다 (DXF / DWG / CSV). 생산 전선 목록에는 탈피 길이와 페룰이 포함됩니다.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. 하네스: 연결 › 하네스. 두 장치 사이의 전선을 선택 › 하네스에 지정, 또는 전선 속성에서 연결별로 지정합니다. 길이, 커넥터, 다발 지름이 포함된 하네스 보고서, KBL 내보내기.
 Key tips of the ribbon	리본의 액세스 키
 Version {}	버전 {}
 Search (* and ? as placeholders)…	검색 (* 와 ? 는 와일드카드)…
@@ -6145,7 +6024,6 @@ Close page tab	페이지 탭 닫기
 Panes	창
 Show or hide panes; drag a tab to dock it elsewhere	창 표시 또는 숨기기. 탭을 끌어 다른 곳에 도킹합니다
 Save workspace…	작업 공간 저장…
-The panes of this workspace at their default places	이 작업 공간의 창을 기본 위치로
 Theme	테마
 UI scale	UI 배율
 Minimize the ribbon	리본 최소화
@@ -6158,7 +6036,6 @@ Functions of the project data not placed yet	아직 배치되지 않은 프로�
 Insert center	삽입 센터
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	심볼, 매크로, 장치, 배치되지 않은 기능: 검색, 즐겨찾기, 최근 사용
 Find results	검색 결과
-Quick guide, tutorial and shortcuts	빠른 안내, 튜토리얼, 바로 가기 키
 Layout spaces	레이아웃 공간
 Enclosures, devices to place and placed devices	외함, 배치할 장치와 배치된 장치
 Layout properties	레이아웃 속성
@@ -6203,7 +6080,7 @@ Click to show, right click for more	클릭하면 표시, 마우스 오른쪽 버
 {} notes	참고 {}개
 Open in a new page tab	새 페이지 탭에서 열기
 Project information	프로젝트 정보
-Plugin commands…	플러그인 명령…
+Plugin commands	플러그인 명령
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	모든 플러그인의 명령을 플러그인별로 검색과 함께 표시합니다. 별표를 누르면 명령이 플러그인 탭에 고정됩니다
 Star a command in Plugin commands to pin it here	플러그인 명령에서 별표를 누르면 여기에 고정됩니다
 Installed plugins	설치된 플러그인
@@ -6267,8 +6144,6 @@ Draw inner walls	내벽 그리기
 Inner wall {}, side {}	내벽 {}, {} 면
 Thickness	두께
 {}: {} stands in an inner wall	{}: {}이(가) 내벽 안에 있습니다
-Opening {} replaces the current project, its unsaved changes are lost.	{}을(를) 열면 현재 프로젝트가 대체되며 저장되지 않은 변경 내용이 손실됩니다.
-Discard changes and open	변경 내용 취소 후 열기
 Open link	링크 열기
 Replace the file at path if it exists	path에 파일이 있으면 바꾸기
 {} exists already: pass overwrite to replace it	{}이(가) 이미 있습니다. 바꾸려면 overwrite를 지정하세요
@@ -6401,3 +6276,4 @@ Folder with project files (instead of a database; default: the current folder)	�
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	알 수 없는 페이지 유형: {}(schematic, overview, graphic, cover 또는 list_reports의 보고서)
 Unknown template {}: give a built-in one ({}) or a project file	알 수 없는 템플릿 {}: 기본 제공 템플릿({}) 또는 프로젝트 파일을 지정하십시오
 Property {} needs a text or a number	속성 {}에는 텍스트나 숫자가 필요합니다
+Check settings…	검사 설정…

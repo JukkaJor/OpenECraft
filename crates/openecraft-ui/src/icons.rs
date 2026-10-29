@@ -156,11 +156,13 @@ pub enum Icon {
     Unplaced,
     Heat,
     Eye,
+    ZoomIn,
+    ZoomOut,
 }
 
 impl Icon {
     /// Every icon, for the tests.
-    pub const ALL: [Icon; 143] = [
+    pub const ALL: [Icon; 145] = [
         Icon::File, Icon::FileNew, Icon::FolderOpen, Icon::Save, Icon::SaveAs, Icon::Download, Icon::Upload, Icon::Print, Icon::Template,
         Icon::Info, Icon::Settings, Icon::Help, Icon::Quit, Icon::Home, Icon::Undo, Icon::Redo, Icon::Cut, Icon::Copy, Icon::Paste,
         Icon::Delete, Icon::Rotate, Icon::Mirror, Icon::Align, Icon::Distribute, Icon::Move, Icon::MultiCopy, Icon::Find, Icon::Select,
@@ -177,7 +179,8 @@ impl Icon {
         Icon::RoutingPath, Icon::Reservation, Icon::Cube, Icon::Front, Icon::Door, Icon::Wall, Icon::Accessory, Icon::Drill, Icon::Wiring,
         Icon::Mounting, Icon::Tablet, Icon::Star, Icon::StarFilled, Icon::Pin, Icon::Close, Icon::Filter, Icon::Tree, Icon::List,
         Icon::Lock, Icon::Unlock, Icon::Plus, Icon::ChevronDown, Icon::ChevronRight, Icon::ChevronUp, Icon::ChevronLeft, Icon::Float,
-        Icon::Dot, Icon::Dots, Icon::Keyboard, Icon::Book, Icon::Unplaced, Icon::Heat, Icon::Eye,
+        Icon::Dot, Icon::Dots, Icon::Keyboard, Icon::Book, Icon::Unplaced, Icon::Heat, Icon::Eye, Icon::ZoomIn,
+        Icon::ZoomOut,
     ];
 
     /// The path of the icon (see the module documentation).
@@ -326,6 +329,8 @@ impl Icon {
             Icon::Unplaced => "M 1.5 4 1.5 1.5 4 1.5 ; M 6 1.5 8 1.5 9.5 1.5 9.5 4 ; M 9.5 6 9.5 9.5 6 9.5 ; M 4 9.5 1.5 9.5 1.5 6 ; M 12 8 12 14.5 ; M 8.5 11.5 15 11.5",
             Icon::Heat => "M 7 2.5 7 10 ; C 7 12 2.2 ; M 9 2.5 9 10 ; M 7 2.5 9 2.5 ; M 11 4 13 4 ; M 11 6.5 13 6.5",
             Icon::Eye => "B 8 8 6.5 4 180 360 ; B 8 8 6.5 4 0 180 ; C 8 8 2",
+            Icon::ZoomIn => "C 6.5 6.5 4.5 ; M 10 10 14.5 14.5 ; M 6.5 4.5 6.5 8.5 ; M 4.5 6.5 8.5 6.5",
+            Icon::ZoomOut => "C 6.5 6.5 4.5 ; M 10 10 14.5 14.5 ; M 4.5 6.5 8.5 6.5",
         }
     }
 }

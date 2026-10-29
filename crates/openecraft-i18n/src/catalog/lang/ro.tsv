@@ -5,24 +5,9 @@
 (renamed from {})	(redenumit din {})
 + Page	+ Pagină
 0 = no jumper	0 = fără punte
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Alegeți un simbol din bibliotecă (dreapta) și faceți clic în pagină pentru a-l plasa. Identificatorii de dispozitiv (-K1, -S2 …) se atribuie automat.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Proiect › Editor de simboluri: desenați propriile simboluri (sau copiați-le pe cele integrate) cu puncte de conexiune și funcție; ele se salvează în proiect și pot fi schimbate ca fișiere de bibliotecă.
-100% ≈ real size on a 96 dpi screen	100% ≈ dimensiunea reală pe un ecran de 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Proiect › Cartușe și formulare de raport: cartușe proprii cu substituenți ({project}, {page}, {prop:Name} …) și coloanele paginilor de raport.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Amplasare în tablou: bare colectoare și decupaje; proprietățile carcasei exportă modelul de găurire (date NC ca DXF / DWG / CSV). Lista de conductoare pentru producție conține lungimile de dezizolare și manșoanele de capăt.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Cablaje: Proiect › Cablaje…; selectați conductoarele dintre două dispozitive › Atribuire la cablaj, sau pe conexiune în proprietățile conductorului. Raport de cablaj cu lungimi, conectori și diametrul mănunchiului, export KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Ușă: comutați vederea frontală a tabloului pe Ușă și plasați acolo aparatele de comandă / semnalizare; decupajele din ușă se generează automat. Coliziunile se verifică cu modelele 3D ale articolelor.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Selectați o bobină, apoi plasați contacte: ele se atribuie acelei bobine și se numerotează (13/14, 21/22 …). Referințele încrucișate și imaginea contactelor se actualizează imediat.
 2D front view	Vedere frontală 2D
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Desenați conductoare cu instrumentul de conductor (W). Conductoarele se termină automat în punctele de conexiune. Ramificațiile în T primesc un punct de conexiune.
 3D model	Model 3D
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Potențialele (L1, +24V …) și punctele de întrerupere denumesc rețelele pe mai multe pagini. Selectați un conductor pentru a-i evidenția potențialul.
 4/2 directional valve	Distribuitor 4/2
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Atribuiți articole în panoul de proprietăți; generați rapoarte (listă de dispozitive, BOM, schemă de borne, listă de conexiuni, listă PLC) și inserați-le ca pagini de raport.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Structură: dați paginilor o funcție (=A1) și un loc de montare (+CAB1) în proprietățile paginii. Dispozitivele plasate acolo le preiau (=A1+CAB1-K1); pe pagină se afișează doar partea diferită.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Cabluri: definiți-le în Proiect › Cabluri…, selectați conductoare și folosiți Atribuire la cablu. Numere de conductor: Proiect › Numerotare conductoare…, sau introduceți un număr în proprietățile conductorului.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Macro-uri: selectați elemente › Editare › Salvare selecție ca macro; inserați-le din Inserare › Macro…. Substituenții {NAME} se completează din seturi de valori.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Proiect › Șiruri de borne / Prezentare PLC / Revizii: ordinea șirurilor, punți și rezerve; adrese PLC și tabele de simboluri; revizii cu marcaje de modificare și pagini aprobate (blocate).
 Access token	Token de acces
 Accessories	Accesorii
 Add missing parts of the example catalog	Adăugare articole lipsă din catalogul exemplu
@@ -95,12 +80,9 @@ Click into the page to place {}	Faceți clic în pagină pentru a plasa {}
 Click on the 4 mm grid	Faceți clic pe grila de 4 mm
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Faceți clic pe punctul de start și pe colțuri · Spațiu comută direcția colțului · se termină automat la o conexiune · Clic dreapta / Esc termină
 Click start and end point	Faceți clic pe punctul de start și pe cel final
-Click start point, click end point	Faceți clic pe punctul de start, apoi pe punctul final
 Click to add to the selected text.	Faceți clic pentru a adăuga la textul selectat.
 Click to insert the macro · Esc cancel	Faceți clic pentru a insera macro-ul · Esc anulează
-Click to place a text	Faceți clic pentru a plasa un text
 Click to place the text from the field below	Faceți clic pentru a plasa textul din câmpul de mai jos
-Click to place · R rotate · M mirror · Esc finish	Clic pentru plasare · R rotire · M oglindire · Esc terminare
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Clic pentru selectare, glisare pentru mutare, glisare pe spațiu gol pentru selecție cu fereastră. Glisarea cu butonul dreapta/din mijloc deplasează vederea, rotița face zoom.
 Click to show	Clic pentru afișare
 Click two corners	Faceți clic pe două colțuri
@@ -146,7 +128,6 @@ Corner	Colț
 Cover	Copertă
 Cover sheet	Pagină de copertă
 Create / update the part on the server (Ctrl+S)	Creare / actualizare articol pe server (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Creați o carcasă (➕ în navigatorul din stânga) pentru a începe amplasarea în tablou.
 Create an enclosure in the panel layout first.	Creați mai întâi o carcasă în amplasarea în tablou.
 Create revision	Creare revizie
 Created by	Creat de
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Ușă: {} dispozitive, {} decupaje
 Downloaded {} parts (revision {}): {} new, {} updated	S-au descărcat {} articole (revizia {}): {} noi, {} actualizate
 Downloading parts…	Se descarcă articolele…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Glisare: orbitare · glisare cu butonul dreapta/din mijloc: deplasare · rotiță: zoom · clic: selectare dispozitiv sau conductor
-Draw connections (W)	Desenare conexiuni (W)
+Draw connections	Desenare conexiuni
 Duplicate	Duplicare
 Each point-to-point connection can belong to a harness	Fiecare conexiune punct la punct poate aparține unui cablaj
 Edit	Editare
@@ -272,7 +253,6 @@ Harness data	Date de cablaj
 Harness {} has no wires	Cablajul {} nu are conductoare
 Harness {}: connection {} – {} does not exist in the schematic	Cablajul {}: conexiunea {} – {} nu există în schemă
 Harnesses	Cablaje
-Harnesses…	Cablaje…
 Height	Înălțime
 Height (mm)	Înălțime (mm)
 Help	Ajutor
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Valorile mai lungi se desenează 
 Macro {} replaced	Macro-ul {} a fost înlocuit
 Macro {} saved	Macro-ul {} a fost salvat
 Macros	Macro-uri
-Macros…	Macro-uri…
 Macro…	Macro…
 Main	Principal
 Main contact 1-pole	Contact principal monopolar
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Următoarele numere de contact libere a
 Next page (Page Down)	Pagina următoare (Page Down)
 No PLC inputs / outputs placed.	Nu sunt plasate intrări / ieșiri PLC.
 No cables defined.	Nu sunt definite cabluri.
-No cables yet – Project › Cables…	Încă nu există cabluri – Proiect › Cabluri…
 No changes since the last revision.	Nicio modificare de la ultima revizie.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Încă nu există dispozitive. Alegeți un simbol din biblioteca din dreapta și faceți clic în pagină.
-No enclosure yet – create one with ➕.	Încă nu există carcase – creați una cu ➕.
 No harnesses defined.	Nu sunt definite cablaje.
-No harnesses yet – Project › Harnesses…	Încă nu există cablaje – Proiect › Cablaje…
 No identifying letter for the device tag.	Nicio literă de identificare pentru identificatorul de dispozitiv.
 No macros yet. Select items in a schematic and save them as a macro.	Încă nu există macro-uri. Selectați elemente într-o schemă și salvați-le ca macro.
 No parts found.	Nu s-au găsit articole.
@@ -437,7 +412,6 @@ PLC connection point	Punct de conexiune PLC
 PLC digital input	Intrare digitală PLC
 PLC digital output	Ieșire digitală PLC
 PLC overview	Prezentare PLC
-PLC overview…	Prezentare PLC…
 Packaging quantity	Unitate de ambalare
 Page	Pagină
 Page / column (3.4.1)	Pagină / coloană (3.4.1)
@@ -468,11 +442,10 @@ Parts	Articole
 Parts (CSV, JSON)	Articole (CSV, JSON)
 Parts import failed: {}	Importul articolelor nu a reușit: {}
 Parts management	Gestionare articole
-Parts management…	Gestionare articole…
 Parts server: {}	Server de articole: {}
 Passive components	Componente pasive
 Pilot light (NFPA)	Lampă de semnalizare (NFPA)
-Place text (T)	Plasare text (T)
+Place text	Plasare text
 Placed	Plasat
 Placed {}× in the project	Plasat {}× în proiect
 Placeholders	Substituenți
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Reîmprospătare articole din catalogul ex
 Relay / contactor coil	Bobină de releu / contactor
 Relay coil (NFPA)	Bobină de releu (NFPA)
 Release: lock all pages	Aprobare: blocare toate paginile
-Released page – unlock it in Project › Revisions to change it	Pagină aprobată – deblocați-o în Proiect › Revizii pentru a o modifica
 Remove from cable	Eliminare din cablu
 Remove from harness	Eliminare din cablaj
 Remove from the harness	Eliminare din cablaj
@@ -566,7 +538,6 @@ Revision marks	Marcaje de revizie
 Revision overview (changes)	Prezentare revizii (modificări)
 Revision {} created	Revizia {} a fost creată
 Revisions	Revizii
-Revisions…	Revizii…
 Right	Dreapta
 Rotate (R)	Rotire (R)
 Rotate / mirror (selection or symbol being placed)	Rotire / oglindire (selecția sau simbolul care se plasează)
@@ -637,7 +608,6 @@ Supplier	Furnizor
 Switches / Sensors	Comutatoare / senzori
 Symbol	Simbol
 Symbol editor	Editor de simboluri
-Symbol editor…	Editor de simboluri…
 Symbol table import failed: {}	Importul tabelului de simboluri nu a reușit: {}
 Symbols	Simboluri
 Synchronize project parts from database	Sincronizare articole proiect din baza de date
@@ -655,7 +625,6 @@ Terminal number	Număr bornă
 Terminal number, PLC address, potential name …	Număr bornă, adresă PLC, nume potențial …
 Terminal strip	Șir de borne
 Terminal strips	Șiruri de borne
-Terminal strips…	Șiruri de borne…
 Terminals	Borne
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Bornele cu același număr de punte sunt legate prin punte (același potențial). Bornele de rezervă sunt incluse în lista de materiale.
 Test connection	Testare conexiune
@@ -727,8 +696,7 @@ Wire tool / text tool	Instrument conductor / instrument text
 Wire {} – {}  ({} of {} here, click again for the next)	Conductor {} – {}  ({} din {} aici, faceți clic din nou pentru următorul)
 Wire {} – {}  {} mm	Conductor {} – {}  {} mm
 Wires	Conductoare
-Workflow	Flux de lucru
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Coloana {}  Rândul {}
+Column {}  Row {}	Coloana {}  Rândul {}
 X {}  Y {} mm on the {}	X {}  Y {} mm pe {}
 YYYY-MM-DD	AAAA-LL-ZZ
 Zoom / pan	Zoom / deplasare
@@ -815,67 +783,55 @@ writable with token	inscriptibil cu token
 ⎘ Copy	⎘ Copiere
 ○ Circle	○ Cerc
 ☐ Rect	☐ Dreptunghi
-⛶ Fit	⛶ Încadrare
-✏ Place in schematic	✏ Plasare în schemă
+Place in schematic	Plasare în schemă
 ✏ Wire	✏ Conductor
-✔ Add to device	✔ Adăugare la dispozitiv
-✔ Create	✔ Creare
+Add to device	Adăugare la dispozitiv
+Create	Creare
 ✔ No problems found.	✔ Nu s-au găsit probleme.
 ✔ Save	✔ Salvare
 ➕ Add accessory	➕ Adăugare accesoriu
-➕ Add function	➕ Adăugare funcție
-➕ Add part…	➕ Adăugare articol…
+Add function	Adăugare funcție
+Add part…	Adăugare articol…
 ➕ Insert (click into the page)	➕ Inserare (faceți clic în pagină)
 ➕ Insert as new page	➕ Inserare ca pagină nouă
 ➕ Insert as report page	➕ Inserare ca pagină de raport
-➕ Insert mounting layout page	➕ Inserare pagină de plan de montaj
+Insert mounting layout page	Inserare pagină de plan de montaj
 ➕ Label	➕ Etichetă
 ➕ Line	➕ Linie
 ➕ New	➕ Nou
-➕ New cable	➕ Cablu nou
-➕ New harness	➕ Cablaj nou
+New cable	Cablu nou
+New harness	Cablaj nou
 ➕ Property	➕ Proprietate
 ➕ Rectangle	➕ Dreptunghi
 ➕ Text	➕ Text
-➕ Value set	➕ Set de valori
+Value set	Set de valori
 ➕ {} (not saved)	➕ {} (nesalvat)
 ⟲ Revert	⟲ Revenire
 ⟳ Reload	⟳ Reîncărcare
-⟳ Rotate	⟳ Rotire
-⬆ Import symbol table…	⬆ Import tabel de simboluri…
-⬆ Import…	⬆ Import…
-⬆ Upload database ({})	⬆ Încărcare bază de date ({})
+Import symbol table…	Import tabel de simboluri…
+Upload database ({})	Încărcare bază de date ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Încărcare fișier de articole (CSV / JSON)…
-⬆ Upload selected part	⬆ Încărcare articol selectat
-⬇ Door NC data (DXF)	⬇ Date NC ușă (DXF)
-⬇ Door cutouts (CSV)	⬇ Decupaje ușă (CSV)
-⬇ Download into database	⬇ Descărcare în baza de date
-⬇ Drilling list (CSV)	⬇ Listă de găurire (CSV)
-⬇ Export CSV	⬇ Export CSV
+Upload selected part	Încărcare articol selectat
+Door NC data (DXF)	Date NC ușă (DXF)
+Door cutouts (CSV)	Decupaje ușă (CSV)
+Download into database	Descărcare în baza de date
 ⬇ Export KBL (XML)…	⬇ Export KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Export tabel de simboluri (CSV)…
-⬇ Export…	⬇ Export…
-⬇ NC data (DXF)	⬇ Date NC (DXF)
+Export symbol table (CSV)…	Export tabel de simboluri (CSV)…
+NC data (DXF)	Date NC (DXF)
 ⬉ Select	⬉ Selectare
 🌐 Parts server	🌐 Server de articole
-💾 Save	💾 Salvare
-💾 Save selection as macro…	💾 Salvare selecție ca macro…
-📊 Cable overview	📊 Prezentare cabluri
-📊 Harness data	📊 Date de cablaj
 📊 Reports	📊 Rapoarte
-📊 Revision overview	📊 Prezentare revizii
-🔒 Released page – read only	🔒 Pagină aprobată – doar în citire
+Revision overview	Prezentare revizii
+Released page – read only	Pagină aprobată – doar în citire
 🗄 Panel layout	🗄 Amplasare în tablou
 🗄 Parts database	🗄 Bază de date de articole
 🗋 Schematic	🗋 Schemă
 🗑 Delete	🗑 Ștergere
-🗑 Delete connection point	🗑 Ștergere punct de conexiune
-🗑 Delete element	🗑 Ștergere element
-🗑 Delete macro	🗑 Ștergere macro
-🗑 Remove	🗑 Eliminare
+Delete connection point	Ștergere punct de conexiune
+Delete element	Ștergere element
 {} connections removed from their harness	{} conexiuni eliminate din cablajul lor
 {} connections assigned to {}	{} conexiuni atribuite lui {}
-🗄 Show in panel layout ({})	🗄 Afișare în amplasarea în tablou ({})
+Show in panel layout ({})	Afișare în amplasarea în tablou ({})
    |  Potential {}	   |  Potențial {}
 📁 Project parts ({})	📁 Articole proiect ({})
 part {} not found	articolul {} nu a fost găsit
@@ -1070,8 +1026,8 @@ via cable ducts	prin canale de cablu
 {} connection points	{} puncte de conexiune
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm pe placă + {} mm rezervă; restul este traseul de la punctele de conexiune la placă.
 {} wires, {} – {} mm	{} conductoare, {} – {} mm
-➕ Add connection point	➕ Adăugare punct de conexiune
-🗑 Remove all	🗑 Eliminare toate
+Add connection point	Adăugare punct de conexiune
+Remove all	Eliminare toate
 2D front view (SVG)	Vedere frontală 2D (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	Model 3D (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Opritor de capăt
@@ -1113,11 +1069,9 @@ Wire number on both ends	Număr de conductor la ambele capete
 {} markers	{} marcaje
 {} mm	{} mm
 {} pieces	{} bucăți
-Potentials…	Potențiale…
 Potentials	Potențiale
-➕ New potential	➕ Potențial nou
+New potential	Potențial nou
 Load preset	Încărcare presetare
-📊 Potential overview	📊 Prezentare potențiale
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Conductoarele fără culoare sau secțiune proprie le preiau de la potențialul conexiunii lor; firele de cablu păstrează valorile cablului.
 e.g. 400 V AC	de ex. 400 V AC
 Delete	Ștergere
@@ -1151,7 +1105,6 @@ turquoise	turcoaz
 silver	argintiu
 green-yellow	verde-galben
 Potential {} defined {} times	Potențialul {} este definit de {} ori
-Potential {} has no definition (Project › Potentials)	Potențialul {} nu are definiție (Proiect › Potențiale)
 Protective conductor {} with wire colour {} (must be GNYE)	Conductor de protecție {} cu culoarea {} (trebuie să fie GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Culoarea de conductor GNYE este rezervată conductoarelor de protecție ({})
 {}: cross-section {} differs from the potential definition ({})	{}: secțiunea {} diferă de definiția potențialului ({})
@@ -1183,9 +1136,7 @@ Draw wires in their colour	Desenare conductoare în culoarea lor
 Pin	Pin
 Plug	Conector
 Plugs	Conectori
-Plugs…	Conectori…
 Plug diagram	Schemă de conector
-📊 Plug diagram	📊 Schemă de conector
 Socket side	Partea mufei
 Pin side	Partea pinului
 female	mamă
@@ -1231,7 +1182,6 @@ Column	Coloană
 Condition '{}' needs OPTION=value	Condiția '{}' necesită OPTION=valoare
 Condition (OPTION=value & …)	Condiție (OPTION=valoare & …)
 Configurator	Configurator
-Configurator…	Configurator…
 Cooling	Răcire
 Creates or changes a configurator option	Creează sau modifică o opțiune de configurator
 Cross-section {} carries {} A, less than the {} A of {}	Secțiunea {} suportă {} A, mai puțin decât cei {} A ai lui {}
@@ -1355,10 +1305,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: cădere de tensiune {} V ({} %) peste {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: {} W putere disipată încălzesc carcasa la {} °C (maxim {} °C): este necesar(ă) {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} suportă {} A, consumatorul {} necesită {} A
-⚙ Generate pages	⚙ Generare pagini
-➕ Option	➕ Opțiune
-➕ Rule	➕ Regulă
-🗑 Delete variant	🗑 Ștergere variantă
+Option	Opțiune
+Delete variant	Ștergere variantă
 e.g. NAME=Pump; POWER={POWER}	de ex. NAME=Pompă; POWER={POWER}
 e.g. STARTER=DOL	de ex. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Articole (CSV, JSON, BMEcat)
@@ -1395,8 +1343,7 @@ Default medium	Mediu implicit
 Number prefix	Prefix număr
 📊 Hose list	📊 Listă de furtunuri
 PCT loops (pre-planning)	Bucle AMC (preplanificare)
-➕ Loop	➕ Buclă
-📊 PCT loop overview	📊 Prezentare bucle AMC
+Loop	Buclă
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrumentele din P&ID poartă literele de funcție și numărul buclei în eticheta lor (TIC 101); identificatorul lor de dispozitiv le leagă de schemă.
 PCT loop	Buclă AMC
 Range	Domeniu
@@ -1409,7 +1356,6 @@ Delete loop	Ștergere buclă
 {} (default)	{} (implicit)
 Hose / pipe {}	Furtun / conductă {}
 Resulting: {} · {} · {} · {} m	Rezultat: {} · {} · {} · {} m
-Fluid and process…	Fluide și procese…
 Hose defaults and PCT loops of the pre-planning	Valori implicite pentru furtunuri și bucle AMC ale preplanificării
 ✔ Wiring	✔ Cablare
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Asistent de cablare: listă de verificare a conductoarelor cu vedere 3D și progres (tabletă: deschideți aplicația web cu #wiring)
@@ -1538,7 +1484,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Limbă sursă
 Target languages	Limbi țintă
 Remove the language (its translations stay in the dictionary)	Eliminare limbă (traducerile ei rămân în dicționar)
-➕ Add	➕ Adăugare
+Add	Adăugare
 ISO 639-1 language code	Cod de limbă ISO 639-1
 Collect texts from the project	Colectare texte din proiect
 Adds all lines of the project texts to the dictionary	Adaugă în dicționar toate rândurile textelor proiectului
@@ -1554,7 +1500,6 @@ not translated into {}	netradus în {}
 {} new texts in the dictionary	{} texte noi în dicționar
 {} unused entries removed	{} intrări neutilizate eliminate
 Export as PDF in language	Export ca PDF în limba
-Project languages…	Limbile proiectului…
 Translate the project texts; documentation per language	Traducerea textelor proiectului; documentație pe limbi
 {} translations imported	{} traduceri importate
 Import failed: {}	Importul nu a reușit: {}
@@ -1608,8 +1553,8 @@ Components (assembly)	Componente (ansamblu)
 (included)	(inclus)
 Fastening hardware in the bill of materials	Elemente de fixare în lista de materiale
 Screws, nuts, washers and rivet nuts of the fixing points	Șuruburi, piulițe, șaibe și piulițe nituite ale punctelor de fixare
-⬇ NC data of this face (DXF)	⬇ Date NC ale acestei fețe (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Listă de găurire a acestei fețe (CSV)
+NC data of this face (DXF)	Date NC ale acestei fețe (DXF)
+Drilling list of this face (CSV)	Listă de găurire a acestei fețe (CSV)
 Group as assembly	Grupare ca ansamblu
 The items are selected and moved together	Elementele se selectează și se mută împreună
 Distribute horizontally	Distribuire pe orizontală
@@ -1625,7 +1570,6 @@ Pattern	Model de repetare
 Columns × rows	Coloane × rânduri
 Pitch X / Y	Pas X / Y
 Devices are not copied: a device is placed once.	Dispozitivele nu se copiază: un dispozitiv se plasează o singură dată.
-✔ Copy	✔ Copiere
 Save as 3D macro	Salvare ca macro 3D
 Items with an anchor keep it; the others are inserted relative to the click.	Elementele cu ancoră o păstrează; celelalte se inserează relativ la punctul de clic.
 Walls	Pereți
@@ -1728,7 +1672,6 @@ Macro name	Nume macro
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Inserează un macro 3D ca ansamblu: elementele ancorate la locul lor, celelalte relativ la x / y pe față
 Installation site	Amplasament
 Structure management	Gestionare structură
-Structure management…	Gestionare structură…
 Structure identifiers (IEC 81346), templates and work areas	Identificatori de structură (IEC 81346), șabloane și zone de lucru
 Template	Șablon
 Apply template	Aplicare șablon
@@ -1752,7 +1695,6 @@ Identifiers in use that are not defined are reported by the check.	Identificator
 Work areas	Zone de lucru
 Work area	Zonă de lucru
 Work area {}	Zona de lucru {}
-➕ Work area	➕ Zonă de lucru
 (whole project)	(tot proiectul)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	O zonă de lucru limitează paginile și dispozitivele din navigator la o parte a proiectului. Filtre: gol = oricare, * = orice caractere; A1 include și A1.2.
 OpenECraft structure template	Șablon de structură OpenECraft
@@ -1873,7 +1815,7 @@ Export…	Export…
 Import…	Import…
 File to embed	Fișier de încorporat
 Forms – title blocks, frames and templates	Formulare – cartușe, chenare și șabloane
-Title blocks, plot frames and page templates…	Cartușe, chenare și șabloane de pagină…
+Title blocks, plot frames and page templates	Cartușe, chenare și șabloane de pagină
 Frame of all pages that do not choose one	Chenarul tuturor paginilor care nu își aleg unul propriu
 Frame to start from when the frame is new (default: A3 landscape)	Chenarul de pornire când chenarul este nou (implicit: A3 landscape)
 Free graphics and notes, not evaluated	Grafică liberă și note, neevaluate
@@ -2044,19 +1986,18 @@ Port {} is not connected	Portul {} nu este conectat
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Exportă proiectul: svg (o pagină), html, pdf, dxf, dwg (doar într-un fișier), wire_list (CSV), plc_table (CSV), plc_variables (variabile globale IEC 61131-3), aml (hardware PLC în AutomationML), kbl (XML de cablaj), marking (CSV), gltf, step, iges, ifc sau jt (amplasare în tablou 3D; jt doar într-un fișier), dictionary (CSV cu traducerile textelor proiectului)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt sau dictionary, sau un export al unui plugin
 PLC hardware	Hardware PLC
-⚙ Automatic configuration	⚙ Configurare automată
+Automatic configuration	Configurare automată
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Stații pentru CPU-uri și cuploare de magistrală, sisteme de magistrală, sloturi, adrese de start, adrese de puncte, adrese IP și o topologie liniară
-⬇ Export AutomationML…	⬇ Export AutomationML…
+Export AutomationML…	Export AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Configurație hardware și variabile PLC pentru TIA Portal și alte instrumente PLC
-⬆ Import AutomationML…	⬆ Import AutomationML…
+Import AutomationML…	Import AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Stații, module, adrese, subrețele și comentarii ale variabilelor dintr-un instrument PLC
-⬇ Export IEC 61131-3 variables…	⬇ Export variabile IEC 61131-3…
+Export IEC 61131-3 variables…	Export variabile IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Listă de variabile globale cu adrese directe pentru CODESYS, TwinCAT și altele
 Stations and racks	Stații și rack-uri
 Bus topology	Topologie de magistrală
 Device descriptions	Descrieri de dispozitiv
 Station	Stație
-➕ Station	➕ Stație
 Cards without station: {}	Carduri fără stație: {}
 No stations: add one or use the automatic configuration.	Nu există stații: adăugați una sau folosiți configurarea automată.
 Head (CPU / coupler)	Cap (CPU / cuplor)
@@ -2065,7 +2006,7 @@ Bus system	Sistem de magistrală
 IP / bus address	Adresă IP / de magistrală
 Device number	Număr dispozitiv
 {}: {} slots, ports {}	{}: {} sloturi, porturi {}
-🗑 Remove station	🗑 Eliminare stație
+Remove station	Eliminare stație
 Plug in card	Inserare card
 No modules: plug in PLC cards of the schematic.	Nu există module: inserați carduri PLC din schemă.
 Device description	Descriere de dispozitiv
@@ -2076,13 +2017,12 @@ Output bytes	Octeți de ieșire
 from the parts	din articole
 Remove from the station	Eliminare din stație
 Bus systems	Sisteme de magistrală
-➕ Bus system	➕ Sistem de magistrală
 Subnet	Subrețea
 Port A	Port A
 Port B	Port B
 Without bus system	Fără sistem de magistrală
 No bus systems.	Nu există sisteme de magistrală.
-⬆ Import GSDML / ESI…	⬆ Import GSDML / ESI…
+Import GSDML / ESI…	Import GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Descrieri de dispozitiv pentru dispozitive PROFINET (GSDML) și EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Articolele din grupa de produse PLC oferă și ele descrieri (date tehnice: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Sloturi
@@ -2093,7 +2033,7 @@ built-in	integrat
 {} addresses changed	{} adrese modificate
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	S-au importat {} stații, {} module, {} sisteme de magistrală, {} conexiuni; {} adrese și {} texte modificate
 {} device descriptions imported	{} descrieri de dispozitiv importate
-PLC hardware and bus topology…	Hardware PLC și topologie de magistrală…
+PLC hardware and bus topology	Hardware PLC și topologie de magistrală
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Stații, rack-uri, module, sisteme de magistrală, schimb AutomationML cu instrumente PLC
 Device description (GSDML, ESI)	Descriere de dispozitiv (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Conexiunea de magistrală {} - {}: cablul {} nu există
@@ -2101,7 +2041,7 @@ Cable {} is a {} cable on a {} connection	Cablul {} este un cablu {} pe o conexi
 Port {} has more than {} cables	Portul {} are mai mult de {} cabluri
 Cable {} is used for {} bus connections	Cablul {} este folosit pentru {} conexiuni de magistrală
 with bus cables	cu cabluri de magistrală
-➕ Create bus cables	➕ Creare cabluri de magistrală
+Create bus cables	Creare cabluri de magistrală
 A cable of the bus type for every connection without cable	Un cablu de tipul magistralei pentru fiecare conexiune fără cablu
 missing	lipsește
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	{} stații, {} sisteme de magistrală, {} carduri atribuite, {} adrese modificate, {} conexiuni, {} cabluri
@@ -2211,12 +2151,11 @@ starts with	începe cu
 {} (first column)	{} (prima coloană)
 {} report pages output to {}	{} pagini de raport transmise în {}
 {} – {} ({} pages)	{} – {} ({} pagini)
-➕ Add filter	➕ Adăugare filtru
-➕ Add sort key	➕ Adăugare cheie de sortare
-➕ New block	➕ Bloc nou
-➕ New scheme	➕ Schemă nouă
-⟳ Generate all	⟳ Generare toate
-⟳ Generate	⟳ Generare
+Add filter	Adăugare filtru
+Add sort key	Adăugare cheie de sortare
+New block	Bloc nou
+Generate all	Generare toate
+Generate	Generare
 ⟳ Update report blocks	⟳ Actualizare blocuri de raport
 Opening {}…	Se deschide {}…
 Uploading {}…	Se încarcă {}…
@@ -2238,13 +2177,13 @@ Save and release page	Salvare și eliberare pagină
 Lock page	Blocare pagină
 Project server	Server de proiecte
 User name	Nume de utilizator
-⟳ List projects	⟳ Listare proiecte
+List projects	Listare proiecte
 Enter a user name: other users see it on your locks.	Introduceți un nume de utilizator: ceilalți utilizatori îl văd la blocările dvs.
 Users	Utilizatori
 Opening a project replaces the current one, its unsaved changes are lost.	Deschiderea unui proiect îl înlocuiește pe cel curent, iar modificările nesalvate ale acestuia se pierd.
 Upload the current project as a new shared project:	Încărcați proiectul curent ca proiect partajat nou:
 Name on the server	Nume pe server
-⬆ Upload	⬆ Încărcare
+Upload	Încărcare
 Letters, digits, space, - _ . (up to 64 characters)	Litere, cifre, spațiu, - _ . (până la 64 de caractere)
 Shared project {} – revision {}, user {}	Proiect partajat {} – revizia {}, utilizator {}
 Save and release all locks	Salvare și eliberare toate blocările
@@ -2261,14 +2200,11 @@ None	Niciuna
 Close shared project	Închidere proiect partajat
 Releases all locks; the project stays open as a local copy	Eliberează toate blocările; proiectul rămâne deschis ca copie locală
 Download project	Descărcare proiect
-Project server…	Server de proiecte…
 Open and save shared projects, lock pages	Deschiderea și salvarea proiectelor partajate, blocarea paginilor
-🔒 Locked by {} – read only	🔒 Blocat de {} – doar în citire
+Locked by {} – read only	Blocat de {} – doar în citire
 {} (project server, revision {})	{} (server de proiecte, revizia {})
 {} change requests added, {} updated	{} cereri de modificare adăugate, {} actualizate
-Compare and baselines…	Comparare și versiuni de referință…
 Compare with a baseline, a revision or another project file and take differences over	Comparare cu o versiune de referință, o revizie sau alt fișier de proiect și preluarea diferențelor
-Change requests…	Cereri de modificare…
 Review: comments and markup	Examinare: comentarii și adnotări
 Revisions, approval and release	Revizii, avizare și aprobare
 Review ({})	Comentarii ({})
@@ -2293,7 +2229,7 @@ What should be checked or changed?	Ce trebuie verificat sau modificat?
 Change request	Cerere de modificare
 Reply…	Răspuns…
 Reply	Răspuns
-🗑 Delete comment	🗑 Ștergere comentariu
+Delete comment	Ștergere comentariu
 Approval workflow	Flux de avizare
 Approvers	Avizatori
 User names, separated by commas	Nume de utilizator, separate prin virgule
@@ -2309,8 +2245,8 @@ rejected	respins
 Submit for review	Trimitere spre examinare
 Release	Aprobare
 Discard draft	Renunțare la ciornă
-✔ Approve	✔ Avizare
-✖ Reject	✖ Respingere
+Approve	Avizare
+Reject	Respingere
 Approving needs an approver; you are \"{}\".	Doar un avizator poate aviza; sunteți \"{}\".
 Submit again	Retrimitere
 With the current pages; the approvals so far become void	Cu paginile curente; avizele de până acum devin nule
@@ -2335,7 +2271,7 @@ Compare with	Comparare cu
 Baseline {} {}	Versiunea de referință {} {}
 Baseline {}	Versiunea de referință {}
 Pages of revision {}	Paginile reviziei {}
-📂 Project file…	📂 Fișier de proiect…
+Project file…	Fișier de proiect…
 Baselines ({})	Versiuni de referință ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	O versiune de referință stochează întregul proiect (pagini, dispozitive, articole, setări). Aprobarea unei revizii stochează una.
 Create baseline	Creare versiune de referință
@@ -2347,10 +2283,9 @@ Make the selected elements of this project equal to the compared ones	Face eleme
 {} details	{} detalii
 Baseline {} created	Versiunea de referință {} a fost creată
 Change requests	Cereri de modificare
-➕ New request	➕ Cerere nouă
-📂 Import…	📂 Import…
+New request	Cerere nouă
 CSV or JSON from another system; known numbers are updated	CSV sau JSON din alt sistem; numerele cunoscute se actualizează
-⬇ Export JSON	⬇ Export JSON
+Export JSON	Export JSON
 Rejected and closed ones too	Și cele respinse și închise
 No change requests yet.	Încă nu există cereri de modificare.
 Select a request.	Selectați o cerere.
@@ -2365,9 +2300,9 @@ Device tags, separated by commas	Identificatori de dispozitiv, separați prin vi
 Affected pages ({})	Pagini afectate ({})
 Go to page	Salt la pagină
 Comments ({})	Comentarii ({})
-💬 Comment on the current page	💬 Comentariu pe pagina curentă
+Comment on the current page	Comentariu pe pagina curentă
 Linked to this request	Legat de această cerere
-🗑 Delete request	🗑 Ștergere cerere
+Delete request	Ștergere cerere
 in progress	în lucru
 resolved	rezolvat
 Redline	Redline
@@ -2405,14 +2340,6 @@ Settings	Setări
 Page order	Ordinea paginilor
 {} differences taken over	{} diferențe preluate
 Layers	Straturi
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Clic pentru selectare, glisare pentru mutare, glisare pe spațiu gol pentru selecție cu fereastră. Glisați identificatorul sau un text de proprietate al unui simbol selectat pentru a-l plasa. Glisarea cu butonul dreapta/din mijloc deplasează vederea, rotița face zoom.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Faceți clic pe punctul de start și pe colțuri · Spațiu comută direcția colțului · A comută ocolirea simbolurilor · se termină automat la o conexiune · Clic dreapta / Esc termină
-Click the centre, then a point of the circle	Faceți clic pe centru, apoi pe un punct al cercului
-Click the centre, the start point and the end point (counter-clockwise)	Faceți clic pe centru, pe punctul de start și pe punctul final (în sens trigonometric)
-Click the corner points · double click, Enter or right click finishes	Faceți clic pe colțuri · dublu clic, Enter sau clic dreapta termină
-Click the two points to measure, then the position of the dimension line	Faceți clic pe cele două puncte de măsurat, apoi pe poziția liniei de cotă
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Faceți clic pe un conductor: punctul definește numărul, culoarea, secțiunea și firul de cablu al conexiunii
-Draw a line across the wires that are cores of the cable	Trasați o linie peste conductoarele care sunt fire ale cablului
 Click to insert · Esc cancel	Clic pentru inserare · Esc anulează
 Routing around symbols	Ocolirea simbolurilor
 {} objects pasted	{} obiecte lipite
@@ -2442,7 +2369,7 @@ Layer	Strat
 Auto-connect	Conectare automată
 Draw connections between facing connection points when symbols are placed or moved	Desenează conexiuni între punctele de conexiune față în față când simbolurile sunt plasate sau mutate
 Route	Traseu
-The wire tool routes around symbols and other wires (A)	Instrumentul de conductor ocolește simbolurile și alte conductoare (A)
+The wire tool routes around symbols and other wires	Instrumentul de conductor ocolește simbolurile și alte conductoare
 Dimension	Cotă
 Image…	Imagine…
 PNG or JPEG bitmap, e.g. a logo or a photo	Imagine bitmap PNG sau JPEG, de ex. un logo sau o fotografie
@@ -2486,7 +2413,6 @@ Tag placed by hand	Identificator plasat manual
 Drag the tag of the selected symbol to place it.	Glisați identificatorul simbolului selectat pentru a-l plasa.
 (empty)	(gol)
 ➕ Place property	➕ Plasare proprietate
-➕ Layer	➕ Strat
 Layer {}	Stratul {}
 Layers of graphics, texts, dimensions and images	Straturi pentru grafică, texte, cote și imagini
 Visible	Vizibil
@@ -2531,8 +2457,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Secțiune, de ex. 1.5 mm²
 A cable definition needs a start and an end point	O definire de cablu necesită un punct de start și unul final
 No cable {}	Niciun cablu {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Punctele de definire a conexiunii de pe un conductor setează numărul, culoarea, secțiunea și firul întregii conexiuni; o linie de definire a cablului peste conductoare le face fire ale unui cablu. Conectarea automată unește punctele de conexiune aflate față în față, Traseu (A) conduce conductoarele în jurul simbolurilor.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Grafică: cercuri, elipse, arce, poligoane, cote și imagini pe straturi (navigator › Straturi: vizibil, blocat, tipărit). Glisați identificatorul unui simbol selectat pentru a-l plasa; celelalte proprietăți se plasează din proprietățile sale.
 Coil	Bobină
 Main contacts 4-pole	Contacte principale tetrapolare
 NO contact, on-delay	Contact ND, temporizare la anclanșare
@@ -2689,16 +2613,13 @@ Added to both ends of the length for the cut length (insertion depth)	Se adaugă
 📊 Hose configuration	📊 Configurație furtunuri
 📊 Tubing / piping list	📊 Listă de tuburi / conducte
 📊 Fluid netlist	📊 Listă de rețele de fluid
-➕ Group	➕ Grup
-📊 Fluid device groups	📊 Grupuri de dispozitive de fluid
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Insule de ventile, unități de preparare a aerului și blocuri distribuitoare: dispozitivele lor de fluid în ordinea locurilor, separate prin spații.
 Places	Locuri
 0 = not limited	0 = nelimitat
 Delete group	Ștergere grup
-🔄 Synchronize	🔄 Sincronizare
+Synchronize	Sincronizare
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Leagă electrovalvele de bobina cu același număr (-QM3 › -MB3) și copiază textele de funcție
 {} links created, {} function texts copied	{} legături create, {} texte de funcție copiate
-📊 Electro-fluid cross reference	📊 Referințe încrucișate electro-fluid
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Dispozitive electrice care acționează sau monitorizează un dispozitiv de fluid (bobine de electrovalvă, limitatoare de cursă și presostate); ambele scheme afișează referințe încrucișate între ele.
 Electrical devices	Dispozitive electrice
 Operating pressure in bar (0 = hose ratings are not checked)	Presiune de lucru în bar (0 = presiunile nominale ale furtunurilor nu se verifică)
@@ -2734,7 +2655,6 @@ Right neighbour	Vecin din dreapta
 No cable passage to {}: wires to it are not routed	Nicio trecere de cabluri spre {}: conductoarele spre aceasta nu sunt pozate
 Open to {}: wires cross beside the mounting plates	Deschis spre {}: conductoarele trec pe lângă plăcile de montaj
 {} cable passages to {}	{} treceri de cabluri spre {}
-➕ Cable passage to {}	➕ Trecere de cabluri spre {}
 Round cutouts facing each other in both side walls	Decupaje rotunde față în față în ambii pereți laterali
 Both sides are open: the wires need no cutout	Ambele părți sunt deschise: conductoarele nu necesită decupaj
 Cable passage to {}	Trecere de cabluri spre {}
@@ -3067,7 +2987,6 @@ Surge protection	Protecție la supratensiune
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Capacitatea de rupere față de curentul de scurtcircuit la fiecare dispozitiv de protecție al rețelei, deconectarea la cel mai mic curent de defect la capătul circuitului său, rezistența la scurtcircuit a cablurilor și selectivitatea față de dispozitivul din amonte.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Puterea și curentul consumatorilor rețelei (motoare, acționări, încălzitoare, surse de alimentare, transformatoare), sarcina fiecărui dispozitiv de protecție, necesarul cu factorul de simultaneitate și bilanțul de sarcină al surselor de alimentare.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Funcții de securitate conform ISO 13849-1: fiecare subsistem (intrare, logică, ieșire) cu dispozitivele unui canal, categoria sa, acoperirea diagnosticului și manevrele pe an. Dispozitivele contează cu PL / PFHd, MTTFd sau B10d ale articolelor lor.
-➕ Safety function	➕ Funcție de securitate
 Input	Intrare
 Logic	Logică
 Output	Ieșire
@@ -3076,13 +2995,10 @@ Operations / year	Manevre / an
 CCF	CCF
 0 = from the devices	0 = din dispozitive
 Measures against common cause failure (at least 65 points)	Măsuri împotriva defectelor de cauză comună (cel puțin 65 de puncte)
-➕ Subsystem	➕ Subsistem
 Subsystem {}	Subsistemul {}
 Rule libraries	Biblioteci de reguli
 Customer rule sets	Seturi de reguli ale clienților
-➕ Rule set	➕ Set de reguli
 Rule set {}	Setul de reguli {}
-💾 Export…	💾 Export…
 OpenECraft rule sets	Seturi de reguli OpenECraft
 Verify the project against it	Verificare proiect față de acesta
 {} checks	{} verificări
@@ -3094,10 +3010,8 @@ Every item of the scope that meets the conditions must meet the requirement.	Fie
 Message	Mesaj
 if	dacă
 then	atunci
-➕ Condition	➕ Condiție
-➕ Check	➕ Verificare
 OpenECraft rule sets (JSON)	Seturi de reguli OpenECraft (JSON)
-Electrical calculations…	Calcule electrice…
+Electrical calculations	Calcule electrice
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Scurtcircuit, selectivitate, sarcini, CEM, securitate funcțională și verificare față de seturi de reguli
 0 = a single value; otherwise values [1] … [n]	0 = o singură valoare; altfel valorile [1] … [n]
 A project definition based on this one, with its own defaults and scheme	O definiție de proiect bazată pe aceasta, cu propriile valori implicite și schemă
@@ -3416,7 +3330,6 @@ Project number	Număr proiect
 Project property of the property database (by key)	Proprietate de proiect din baza de date de proprietăți (după cheie)
 Proof test interval	Interval de testare periodică
 Property database	Bază de date de proprietăți
-Property database…	Bază de date de proprietăți…
 Property definitions	Definiții de proprietăți
 Property definitions, function definitions, placement schemes and the values of all objects	Definiții de proprietăți, definiții de funcție, scheme de plasare și valorile tuturor obiectelor
 Property groups	Grupuri de proprietăți
@@ -3603,10 +3516,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: \"{}\" nu este una dintre {}
 {}: invalid value \"{}\" ({})	{}: valoare nevalidă \"{}\" ({})
 ➕ Default value	➕ Valoare implicită
-➕ Derive project definition	➕ Derivare definiție de proiect
-➕ User defined property	➕ Proprietate definită de utilizator
+Derive project definition	Derivare definiție de proiect
+User defined property	Proprietate definită de utilizator
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Planificați dispozitivele în schema monofilară, generați schema multifilară și mențineți-le sincronizate
-Single-line / multi-line…	Monofilar / multifilar…
 All devices of page {} are in the schematic already	Toate dispozitivele paginii {} sunt deja în schemă
 Copies function texts between the single-line diagram and the schematic where one side is empty	Copiază textele de funcție între schema monofilară și schema multifilară acolo unde una dintre ele este goală
 Does not match	Nu corespunde
@@ -3756,11 +3668,11 @@ Outline	Contur
 Click the corners of a machine or building, double-click to finish	Faceți clic pe colțurile unei mașini sau ale unei clădiri, dublu clic pentru a termina
 (no cable highlighted)	(niciun cablu evidențiat)
 Fit	Încadrare
-⬇ Export SVG…	⬇ Export SVG…
+Export SVG…	Export SVG…
 Height above the floor	Înălțime deasupra podelei
 Placed here: {}	Plasat aici: {}
 Place an enclosure, device or machine location at this node	Plasați o carcasă, un dispozitiv sau un loc al mașinii la acest nod
-🗑 Delete node	🗑 Ștergere nod
+Delete node	Ștergere nod
 SVG drawing	Desen SVG
 Segments	Segmente
 Width × height (mm)	Lățime × înălțime (mm)
@@ -3780,18 +3692,15 @@ Must be connected to the equipotential bonding	Trebuie conectat la legătura ech
 {} corners	{} colțuri
 Take over cut lengths	Preluare lungimi de tăiere
 Set the cable lengths to the planned cut lengths	Setați lungimile cablurilor la lungimile de tăiere planificate
-📊 Report	📊 Raport
 {} parts of the network	{} părți ale rețelei
 No field cables: place the enclosures and field devices at nodes of the route network.	Niciun cablu de câmp: plasați carcasele și dispozitivele de câmp la nodurile rețelei de trasee.
 Route definition of {}	Definiția traseului pentru {}
 Via:	Prin:
 Remove	Eliminare
-➕ Node	➕ Nod
 Avoid:	Evitare:
 {} cable lengths taken over	{} lungimi de cablu preluate
-➕ Bonding conductor	➕ Conductor de legătură echipotențială
+Bonding conductor	Conductor de legătură echipotențială
 Bonding points	Puncte de legătură echipotențială
-➕ Accessory	➕ Accesoriu
 both ends	ambele capete
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Niciun accesoriu: presetupele, conectorii, clemele de ecran … intră în lista de materiale și sunt verificate în raport cu cablul.
 Reserve per cable end	Rezervă pe capăt de cablu
@@ -3799,7 +3708,6 @@ Length inside an enclosure	Lungime în interiorul unei carcase
 Cut length step	Pasul lungimii de tăiere
 Maximum fill of a carrier	Grad maxim de umplere a unui suport de cabluri
 Bend radius in drag chains	Raza de curbură în lanțurile portcablu
-Field wiring…	Cablare de câmp…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	Plan de amplasare a instalației, rețea de trasee, planificarea cablurilor de câmp, legătură echipotențială și accesorii de cablu
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Nu există opțiunea {}
@@ -3913,9 +3821,9 @@ Archive and version	Arhivă și versiune
 Verification	Validare
 OpenECraft project archive	Arhivă de proiect OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Baza de date de proiecte necesită versiunea desktop: browserul nu poate căuta în foldere.
-📂 Add folder…	📂 Adăugare folder…
+Add folder…	Adăugare folder…
 Adds the project files and archives of a folder and its subfolders	Adaugă fișierele de proiect și arhivele unui folder și ale subfolderelor sale
-🔄 Update all	🔄 Actualizare totală
+Update all	Actualizare totală
 Verify while reading	Validare la citire
 Remove the folder from the database	Eliminarea folderului din baza de date
 Search	Căutare
@@ -3969,15 +3877,14 @@ Switches the options with a condition by the configurator options	Comută opțiu
 {} options switched	{} opțiuni comutate
 File format version {}. Files of older versions are converted when they are opened.	Versiunea formatului de fișier {}. Fișierele versiunilor mai vechi sunt convertite la deschidere.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	O arhivă (.oecz) este un fișier ZIP cu proiectul, un manifest și documentele și imaginile încorporate ca fișiere separate.
-📦 Archive project…	📦 Arhivare proiect…
-📂 Open archive…	📂 Deschidere arhivă…
+Archive project…	Arhivare proiect…
+Open archive…	Deschidere arhivă…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Verifică datele proiectului (ID-uri, referințe, date de dispozitiv, opțiuni, subproiecte) împreună cu verificările de inginerie.
 Verify project	Validare proiect
 Repair {} findings	Reparare {} constatări
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	{} erori, {} avertismente, {} note în datele proiectului; verificare de inginerie: {} erori, {} avertismente
 (repairable)	(reparabil)
 ✔ The project data is consistent.	✔ Datele proiectului sunt consecvente.
-Project management…	Gestionarea proiectelor…
 Project database, batch changes of project properties, subprojects, options, archives and verification	Bază de date de proiecte, modificări în bloc ale proprietăților de proiect, subproiecte, opțiuni, arhive și validare
 OpenECraft project or archive	Proiect sau arhivă OpenECraft
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3952,7 @@ For parts without Stock length; longer profiles have to be joined	Pentru articol
 Collision classes	Clase de coliziune
 Distances between classes of items, or classes that may overlap	Distanțe între clase de elemente sau clase care se pot suprapune
 may overlap	se pot suprapune
-➕ Add rule	➕ Adăugare regulă
+Add rule	Adăugare regulă
 Air temperature at the devices	Temperatura aerului la dispozitive
 max. {} °C	max. {} °C
 No problems found	Nu s-au găsit probleme
@@ -4101,8 +4008,7 @@ Invalid answer of the plugin: {}	Răspuns nevalid al pluginului: {}
 Key figures of the project and a list of its device tags	Indicatorii proiectului și o listă a identificatorilor săi de dispozitiv
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Indicatorii proiectului: pagini, simboluri, conductoare, dispozitive, articole, cabluri și rezultatele verificărilor
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Pluginuri încărcate (integrate și din folderele de pluginuri din --plugins / OPENECRAFT_PLUGINS) cu comenzile, verificările, rapoartele și exporturile lor; activează sau dezactivează unul pentru această sesiune
-Manage plugins…	Gestionare pluginuri…
-Plugin command {}	Comandă plugin {}
+Manage plugins	Gestionare pluginuri
 Plugin id '{}' is not snake_case	ID-ul pluginului '{}' nu este snake_case
 Plugin {} is loaded twice	Pluginul {} este încărcat de două ori
 Plugin {} needs a newer OpenECraft (API {})	Pluginul {} necesită un OpenECraft mai nou (API {})
@@ -4116,8 +4022,8 @@ Unknown plugin: {}	Plugin necunoscut: {}
 Warnings	Avertismente
 {} commands, {} checks, {} reports, {} exports	{} comenzi, {} verificări, {} rapoarte, {} exporturi
 {}: the program to run is missing	{}: lipsește programul de executat
-▶ Run	▶ Executare
-⟳ Update	⟳ Actualizare
+Run	Executare
+Update	Actualizare
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Verificări ale amplasării în tablou
@@ -4187,7 +4093,7 @@ Profile	Profil
 (standard columns)	(coloane standard)
 Write the file for the other system; later imports detect conflicts against this export	Scrieți fișierul pentru celălalt sistem; importurile ulterioare detectează conflictele față de acest export
 Read a file of the other system (CSV or JSON) and review the changes	Citiți un fișier al celuilalt sistem (CSV sau JSON) și examinați modificările
-⬇ Neutral exchange file…	⬇ Fișier de schimb neutru…
+Neutral exchange file…	Fișier de schimb neutru…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Articole, dispozitive, plasări, conexiuni, conductoare și documente într-un singur fișier JSON pentru sistemele fără conector
 Import changes	Modificări de import
 Profiles	Profiluri
@@ -4213,7 +4119,6 @@ Conflicts	Conflicte
 Export	Export
 Import	Import
 {} values taken over	{} valori preluate
-Enterprise integration…	Integrare în întreprindere…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Schimb cu ERP, PDM, PLM, ECAD, MCAD, achiziții și automate de prelucrare a conductoarelor
 Files of other systems (CSV, JSON)	Fișiere ale altor sisteme (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Bara de cupru {}: {} segmente necesită {} îndoiri
@@ -4380,9 +4285,9 @@ DWG export failed: {}	Exportul DWG nu a reușit: {}
 DWG import failed: {}	Importul DWG nu a reușit: {}
 DWG imported as page {}: {} lines, {} texts	DWG importat ca pagina {}: {} linii, {} texte
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG importat ca pagina {}: {} linii, {} texte (neimportate: {})
-⬇ NC data (DWG)	⬇ Date NC (DWG)
-⬇ Door NC data (DWG)	⬇ Date NC ușă (DWG)
-⬇ NC data of this face (DWG)	⬇ Date NC ale acestei fețe (DWG)
+NC data (DWG)	Date NC (DWG)
+Door NC data (DWG)	Date NC ușă (DWG)
+NC data of this face (DWG)	Date NC ale acestei fețe (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Importă un desen DWG (AutoCAD R12 … 2018) ca grafică (linii, arce, texte, blocuri) pe o pagină de schemă nouă
 Generic	Generic
 Parts store	Catalog de articole
@@ -4721,7 +4626,6 @@ Power cable	Cablu de putere
 Control cable	Cablu de comandă
 Wiring material	Material de cablare
 Catalog id	ID catalog
-Data portal…	Portal de date…
 Delete catalog {} from the server?	Ștergeți catalogul {} de pe server?
 Delete user {}? Their sessions and favorites are removed.	Ștergeți utilizatorul {}? Sesiunile și favoritele sale sunt eliminate.
 Ends the session and forgets the token	Încheie sesiunea și uită tokenul
@@ -4843,12 +4747,10 @@ Use macros	Utilizare macro-uri
 ★ Favorites	★ Favorite
 ★ Remove from favorites	★ Eliminare din favorite
 ☆ Add to favorites	☆ Adăugare la favorite
-✔ Apply {} updates	✔ Aplicare {} actualizări
-➡ Successor {}	➡ Succesor {}
-⬇ Add marked parts to the parts database ({})	⬇ Adăugare articole marcate în baza de date de articole ({})
-⬇ Add to the parts database	⬇ Adăugare în baza de date de articole
-🔄 Check the parts database for updates	🔄 Verificare actualizări în baza de date de articole
-🔎 Search	🔎 Căutare
+Apply {} updates	Aplicare {} actualizări
+Add marked parts to the parts database ({})	Adăugare articole marcate în baza de date de articole ({})
+Add to the parts database	Adăugare în baza de date de articole
+Check the parts database for updates	Verificare actualizări în baza de date de articole
 Relay coil, AC	Bobină de releu, c.a.
 Relay coil, high-speed	Bobină de releu, comutare rapidă
 Relay coil, mechanically latched	Bobină de releu, zăvorâre mecanică
@@ -5276,7 +5178,6 @@ Level of this kind of message	Nivelul acestui tip de mesaj
 As defined by the check	Așa cum este definit de verificare
 Switch off the check \"{}\"	Dezactivare verificare \"{}\"
 Changed message levels ({})	Niveluri de mesaj modificate ({})
-Right click a message in the Check tab to change its level.	Faceți clic dreapta pe un mesaj din fila Verificare pentru a-i modifica nivelul.
 Accepted messages ({})	Mesaje acceptate ({})
 No longer reported	Nu mai este raportat
 Still reported	Încă raportat
@@ -5421,7 +5322,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Salvare ca șablon de proiect…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Salvează proiectul fără revizii, versiuni de referință, examinare și marcaje de cablare ca șablon pentru proiecte noi
 OpenECraft project template	Șablon de proiect OpenECraft
-Not a project template: {}	Nu este un șablon de proiect: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Pornire de la un șablon de proiect: unul integrat (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) sau un fișier de proiect
 Not a packed project	Nu este un proiect împachetat
 Viewer	Vizualizator
@@ -5537,7 +5437,6 @@ Rotate	Rotire
 Save to project server	Salvare pe serverul de proiecte
 Undo	Anulare acțiune
 Find and replace	Găsire și înlocuire
-Finish polyline or polygon	Terminare polilinie sau poligon
 Mirror (selection or symbol being placed)	Oglindire (selecția sau simbolul care se plasează)
 Next page	Pagina următoare
 Open project	Deschidere proiect
@@ -5552,13 +5451,12 @@ Keyboard shortcuts	Comenzi rapide de la tastatură
 No shortcut	Nicio comandă rapidă
 Press a key…	Apăsați o tastă…
 Record	Înregistrare
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Înregistrare: apăsați noua tastă cu modificatorii ei (Esc anulează). Esc, Del, tastele săgeată și copierea / lipirea rămân fixe.
 Reset all to the defaults	Resetare totală la valorile implicite
 {} is used by: {}	{} este folosit de: {}
 Harness nailboard drawing to scale (SVG)	Desen de planșetă a cablajului la scară (SVG)
 Harness tag, e.g. -WH1	Identificatorul cablajului, de ex. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Desen de planșetă al cablajului la scară, cu lungimile ramificațiilor și tabelele de pini ale conectorilor
-📐 Nailboard (SVG)…	📐 Planșetă (SVG)…
+Nailboard (SVG)…	Planșetă (SVG)…
 Bundle Ø {} mm	Fascicul Ø {} mm
 Nailboard {}	Planșetă {}
 Scale 1:{}	Scară 1:{}
@@ -5580,7 +5478,6 @@ No segment {}	Nu există segmentul {}
 Segment path (default: all segments)	Calea segmentului (implicit: toate segmentele)
 Pre-planning (CSV, Excel)	Preplanificare (CSV, Excel)
 Plant segments with planned devices before the schematic	Segmente de instalație cu dispozitive planificate înainte de schemă
-Pre-planning…	Preplanificare…
 A segment cannot be moved below itself	Un segment nu poate fi mutat sub el însuși
 Adds a planned device to a segment or changes it	Adaugă un dispozitiv planificat într-un segment sau îl modifică
 Adds a segment below another one (or at the top)	Adaugă un segment sub altul (sau la nivelul superior)
@@ -5628,10 +5525,8 @@ name	nume
 {} pages generated	{} pagini generate
 {} pages generated; page macros not found: {}	{} pagini generate; macro-uri de pagină negăsite: {}
 {} segments created, {} devices added, {} updated	{} segmente create, {} dispozitive adăugate, {} actualizate
-➕ Device	➕ Dispozitiv
-➕ Segment	➕ Segment
-➕ Sub-segment	➕ Subsegment
-🗑 Remove segment	🗑 Eliminare segment
+Sub-segment	Subsegment
+Remove segment	Eliminare segment
 Display	Afișare
 Mirrored	Oglindit
 Other properties	Alte proprietăți
@@ -5733,7 +5628,7 @@ Hose defaults	Valori implicite ale furtunurilor
 Message levels	Niveluri de mesaj
 Not a settings scheme: {}	Nu este o schemă de setări: {}
 Wire defaults	Valori implicite ale conductoarelor
-Reset panel layout	Resetare aranjare panouri
+Reset pane layout	Resetare aranjare panouri
 Navigator on the left, symbols and properties on the right	Navigator în stânga, simboluri și proprietăți în dreapta
 Panels	Panouri
 Saves the workspace, the arrangement of the panels and the open windows	Salvează spațiul de lucru, aranjarea panourilor și ferestrele deschise
@@ -5922,7 +5817,7 @@ Motors feed the short circuit	Motoarele alimentează scurtcircuitul
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Motoarele asincrone conectate la rețea măresc cel mai mare curent de scurtcircuit (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	La punctul de alimentare: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Tabelele de coordonare ale producătorilor
-➕ Entry	➕ Intrare
+Entry	Intrare
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Selectivitatea și protecția de rezervă a perechilor de dispozitive, așa cum au fost testate de producător, după numărul de articol. Acestea înlocuiesc estimarea din caracteristicile timp-curent.
 Upstream part	Articol din amonte
 Downstream part	Articol din aval
@@ -6012,22 +5907,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	În locul numelui de utilizator și al parolei
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 sau mai nou (Vault Data API)
-⟳ Refresh	⟳ Reîmprospătare
+Refresh	Reîmprospătare
 Search below this folder	Căutare sub acest folder
-🔍 Search	🔍 Căutare
 Checked out	În check-out
 {} of {} entries shown: search to narrow the list	{} din {} intrări afișate: căutați pentru a restrânge lista
 Select a file to import it	Selectați un fișier pentru a-l importa
 (choose a part)	(alegeți un articol)
-⬇ Import	⬇ Import
 Project file	Fișier de proiect
-⬆ Check in project as new version of {}	⬆ Check-in proiect ca versiune nouă a {}
+Check in project as new version of {}	Check-in proiect ca versiune nouă a {}
 Puts the project into the folder it was opened from	Plasează proiectul în folderul din care a fost deschis
 Put into the vault	Plasare în vault
 File name	Nume fișier
-⬆ Upload to {}	⬆ Încărcare în {}
+Upload to {}	Încărcare în {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Un fișier cu același nume din folder primește o versiune nouă (check-out și check-in), altfel fișierul este adăugat
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Deschideți proiecte și fișiere din Autodesk Vault, plasați proiectul, exporturile și modelele 3D în vault
 Check in {} to Vault	Check-in {} în Vault
 Panel layout in 3D (Parasolid XT)	Amplasare în tablou în 3D (Parasolid XT)
@@ -6035,7 +5927,6 @@ Panel layout in 3D (Parasolid XT)	Amplasare în tablou în 3D (Parasolid XT)
 Back	Înapoi
 Back to the project (Esc)	Înapoi la proiect (Esc)
 Recent projects	Proiecte recente
-No projects opened yet.	Niciun proiect deschis încă.
 Remove from the list	Eliminare din listă
 unsaved	nesalvat
 Project: {}	Proiect: {}
@@ -6055,15 +5946,6 @@ Tutorial	Tutorial
 Introduction	Introducere
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Un editor CAE electric deschis, în spiritul EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Panglica: Fișier deschide, salvează, importă, exportă și tipărește; filele grupează comenzile pe teme. Alt afișează tastele de acces, Ctrl+Shift+P găsește orice comandă, F6 trece de la un panou la altul, F1 deschide acest ajutor.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Inserare › Centru de inserare (Ins): căutați un simbol, o macro sau un dispozitiv și faceți clic în pagină pentru a-l plasa. Identificatorii (-K1, -S2 …) se atribuie automat.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Atribuiți articole în proprietăți (fila Articole); rapoartele (Pornire › Rapoarte) listează dispozitive, lista de materiale, borne, conexiuni și PLC și se inserează ca pagini de raport.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Cabluri: Conexiuni › Cabluri, selectați conductoarele și folosiți Atribuire la cablu. Numere de conductoare: Conexiuni › Numerotare conductoare sau scrieți un număr în proprietățile conductorului.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Macro-uri: selectați elementele, clic dreapta › Salvare selecție ca macro; inserați-le din centrul de inserare sau prin Inserare › Macro. Substituenții {NAME} se completează din seturi de valori.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Dispozitive › Șiruri de borne, Dispozitive › Prezentare PLC și Date proiect › Revizii: ordinea bornelor, punți și rezerve; adrese PLC și tabele de simboluri; revizii cu marcaje de modificare și pagini eliberate (blocate).
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Date de bază › Editor de simboluri: desenați simboluri proprii (sau copiați-le pe cele incluse) cu puncte de conectare și funcție; se salvează în proiect și pot fi schimbate ca fișiere de bibliotecă.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Date de bază › Formulare: cartușe proprii cu substituenți ({project}, {page}, {prop:Name} …) și coloanele paginilor de raport; Date proiect › Blocuri de raport generează pagini de raport pentru fiecare șir, conector, cablu sau dispozitiv.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Amplasare în tablou (spațiul de lucru Amplasare în tablou, fila Spațiu de montaj): dulapuri, șine, canale, bare colectoare și decupaje; Spațiu de montaj › Date CN exportă modelul de găurire (DXF / DWG / CSV). Lista de conductoare pentru producție conține lungimile de dezizolare și papucii.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Cablaje: Conexiuni › Cablaje; selectați conductoarele dintre două dispozitive › Atribuire la cablaj sau pe conexiune în proprietățile conductorului. Raport de cablaj cu lungimi, conectori și diametrul mănunchiului, export KBL.
 Key tips of the ribbon	Tastele de acces ale panglicii
 Version {}	Versiune {}
 Search (* and ? as placeholders)…	Căutare (* și ? ca metacaractere)…
@@ -6145,7 +6027,6 @@ Close page tab	Închidere filă de pagină
 Panes	Panouri
 Show or hide panes; drag a tab to dock it elsewhere	Afișare sau ascundere panouri; trageți o filă pentru a o andoca în altă parte
 Save workspace…	Salvare spațiu de lucru…
-The panes of this workspace at their default places	Panourile acestui spațiu de lucru în locurile lor implicite
 Theme	Temă
 UI scale	Scara interfeței
 Minimize the ribbon	Minimizarea panglicii
@@ -6158,7 +6039,6 @@ Functions of the project data not placed yet	Funcții ale datelor proiectului î
 Insert center	Centru de inserare
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Simboluri, macro-uri, dispozitive și funcții neplasate: căutare, favorite, folosite recent
 Find results	Rezultatele căutării
-Quick guide, tutorial and shortcuts	Ghid rapid, tutorial și comenzi rapide
 Layout spaces	Spații de montaj
 Enclosures, devices to place and placed devices	Dulapuri, dispozitive de plasat și dispozitive plasate
 Layout properties	Proprietățile amplasării
@@ -6203,7 +6083,7 @@ Click to show, right click for more	Clic pentru afișare, clic dreapta pentru ma
 {} notes	Note: {}
 Open in a new page tab	Deschidere într-o filă de pagină nouă
 Project information	Informații despre proiect
-Plugin commands…	Comenzi plugin…
+Plugin commands	Comenzi plugin
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Comenzile tuturor pluginurilor, pe pluginuri, cu căutare; steaua fixează o comandă în fila Pluginuri
 Star a command in Plugin commands to pin it here	Marcați o comandă cu steaua în Comenzi plugin pentru a o fixa aici
 Installed plugins	Pluginuri instalate
@@ -6271,8 +6151,6 @@ Draw inner walls	Desenează pereți interiori
 Inner wall {}, side {}	Perete interior {}, partea {}
 Thickness	Grosime
 {}: {} stands in an inner wall	{}: {} stă într-un perete interior
-Opening {} replaces the current project, its unsaved changes are lost.	Deschiderea {} înlocuiește proiectul curent, modificările nesalvate se pierd.
-Discard changes and open	Renunță la modificări și deschide
 Open link	Deschide linkul
 Replace the file at path if it exists	Înlocuiește fișierul din path dacă există
 {} exists already: pass overwrite to replace it	{} există deja: indicați overwrite pentru a-l înlocui
@@ -6405,3 +6283,4 @@ Folder with project files (instead of a database; default: the current folder)	F
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Tip de pagină necunoscut: {} (schematic, overview, graphic, cover sau un raport din list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Șablon necunoscut {}: indicați unul integrat ({}) sau un fișier de proiect
 Property {} needs a text or a number	Proprietatea {} necesită un text sau un număr
+Check settings…	Setări de verificare…

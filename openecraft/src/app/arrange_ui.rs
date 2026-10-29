@@ -14,15 +14,22 @@ pub struct ArrangeUi {
     coord: String,
     pub show_move: bool,
     pub show_copy: bool,
-    dx: f32,
-    dy: f32,
+    /// Distance of Move selection by (mm): nothing moves until one is typed.
+    move_by: (f32, f32),
+    /// Distance between the copies of Multiple copy (mm).
+    copy_by: (f32, f32),
     count: usize,
 }
 
 impl Default for ArrangeUi {
     fn default() -> Self {
-        ArrangeUi { coord: String::new(), show_move: false, show_copy: false, dx: 0.0, dy: 40.0, count: 3 }
+        ArrangeUi { coord: String::new(), show_move: false, show_copy: false, move_by: (0.0, 0.0), copy_by: (0.0, 40.0), count: 3 }
     }
+}
+
+/// Move selection by and Multiple copy act only for a distance other than zero.
+pub(super) fn moves((dx, dy): (f32, f32)) -> bool {
+    dx != 0.0 || dy != 0.0
 }
 
 pub(super) fn align_title(a: Align) -> &'static str {
@@ -59,54 +66,68 @@ impl App {
     pub(super) fn arrange_windows(&mut self, ctx: &egui::Context) {
         let page = self.session.page;
         if self.arrange_ui.show_move {
-            let mut open = true;
             let mut apply = false;
+            let mut cancel = false;
+            let (window, esc) = self.dialogs.window(ctx, tr("Move selection by"), "move_by", None);
+            let mut open = !esc;
             let st = &mut self.arrange_ui;
-            egui::Window::new(tr("Move selection by")).open(&mut open).resizable(false).show(ctx, |ui| {
+            window.open(&mut open).resizable(false).show(ctx, |ui| {
                 egui::Grid::new("movesel").num_columns(2).show(ui, |ui| {
                     ui.label(tr("Horizontal (mm)"));
-                    ui.add(egui::DragValue::new(&mut st.dx).speed(1.0));
+                    ui.add(egui::DragValue::new(&mut st.move_by.0).speed(1.0));
                     ui.end_row();
                     ui.label(tr("Vertical (mm, downwards)"));
-                    ui.add(egui::DragValue::new(&mut st.dy).speed(1.0));
+                    ui.add(egui::DragValue::new(&mut st.move_by.1).speed(1.0));
                     ui.end_row();
                 });
-                apply = ui.button(tr("Move")).clicked();
+                ui.horizontal(|ui| {
+                    apply = ui.add_enabled(moves(st.move_by), egui::Button::new(tr("Move"))).clicked();
+                    cancel = ui.button(tr("Cancel")).clicked();
+                });
             });
-            if apply && !self.editor.selection.is_empty() {
+            if apply && !self.editor.selection.is_empty() && self.page_editable() {
                 let symbols = self.session.prj.symbol_table();
                 let pg = &mut self.session.prj.pages[page];
                 let attached = ops::attached_wire_ends(&symbols, pg, &self.editor.selection);
-                ops::translate(pg, &self.editor.selection, &attached, p(self.arrange_ui.dx, self.arrange_ui.dy));
+                let (dx, dy) = self.arrange_ui.move_by;
+                ops::translate(pg, &self.editor.selection, &attached, p(dx, dy));
             }
-            self.arrange_ui.show_move = open && !apply;
+            self.arrange_ui.show_move = open && !apply && !cancel;
         }
         if self.arrange_ui.show_copy {
-            let mut open = true;
             let mut apply = false;
+            let mut cancel = false;
+            let (window, esc) = self.dialogs.window(ctx, tr("Multiple copy"), "multiple_copy", None);
+            let mut open = !esc;
             let st = &mut self.arrange_ui;
-            egui::Window::new(tr("Multiple copy")).open(&mut open).resizable(false).show(ctx, |ui| {
+            window.open(&mut open).resizable(false).show(ctx, |ui| {
                 ui.label(tr("Copies the selection several times; devices get new tags, terminals new numbers."));
                 egui::Grid::new("multicopy").num_columns(2).show(ui, |ui| {
                     ui.label(tr("Copies"));
                     ui.add(egui::DragValue::new(&mut st.count).range(1..=100));
                     ui.end_row();
                     ui.label(tr("Horizontal (mm)"));
-                    ui.add(egui::DragValue::new(&mut st.dx).speed(1.0));
+                    ui.add(egui::DragValue::new(&mut st.copy_by.0).speed(1.0));
                     ui.end_row();
                     ui.label(tr("Vertical (mm, downwards)"));
-                    ui.add(egui::DragValue::new(&mut st.dy).speed(1.0));
+                    ui.add(egui::DragValue::new(&mut st.copy_by.1).speed(1.0));
                     ui.end_row();
                 });
-                apply = ui.button(tr("Copy")).clicked();
+                ui.horizontal(|ui| {
+                    apply = ui.add_enabled(moves(st.copy_by), egui::Button::new(tr("Copy"))).clicked();
+                    cancel = ui.button(tr("Cancel")).clicked();
+                });
             });
-            if apply && !self.editor.selection.is_empty() {
-                let (count, d) = (self.arrange_ui.count, p(self.arrange_ui.dx, self.arrange_ui.dy));
-                let ids = arrange::multiple_copy(&mut self.session.prj, page, &self.editor.selection, count, d);
-                self.notify(ctx, tr_fmt!("{} items copied", ids.len()));
+            if apply && !self.editor.selection.is_empty() && self.page_editable() {
+                let (count, (dx, dy)) = (self.arrange_ui.count, self.arrange_ui.copy_by);
+                let ids = arrange::multiple_copy(&mut self.session.prj, page, &self.editor.selection, count, p(dx, dy));
+                self.notify(ctx, if ids.len() == 1 { tr("1 item copied").to_string() } else { tr_fmt!("{} items copied", ids.len()) });
                 self.editor.selection = ids;
             }
-            self.arrange_ui.show_copy = open && !apply;
+            self.arrange_ui.show_copy = open && !apply && !cancel;
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

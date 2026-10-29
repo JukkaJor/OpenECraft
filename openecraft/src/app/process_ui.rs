@@ -2,6 +2,7 @@
 //! netlist, fluid device groups, the links to the electrical devices and the PCT
 //! loops of the pre-planning with their engineering status.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::electrofluid::{self, DeviceGroup, GroupKind};
@@ -226,12 +227,12 @@ impl App {
     fn groups_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportId>) {
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("➕ Group")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Group")).clicked() {
                 let used = |t: &str| self.session.prj.fluid.groups.iter().any(|g| g.tag == t) || self.session.prj.all_tags().iter().any(|x| x == t);
                 let tag = (1..).map(|n| format!("-KH{n}")).find(|t| !used(t)).unwrap_or_default();
                 self.session.prj.fluid.groups.push(DeviceGroup { tag, ..Default::default() });
             }
-            if ui.button(tr("📊 Fluid device groups")).clicked() {
+            if icons::text_button(ui, Icon::Report, tr("Fluid device groups")).clicked() {
                 *report = Some(ReportKind::FluidDeviceGroups.into());
             }
         });
@@ -253,7 +254,7 @@ impl App {
                     ui.add(egui::DragValue::new(&mut g.slots).range(0..=128)).on_hover_text(tr("0 = not limited"));
                     tags_edit(ui, &mut g.members, "-QM1 -QM2", 200.0);
                     ui.add(egui::TextEdit::singleline(&mut g.part).desired_width(100.0));
-                    if ui.small_button("🗑").on_hover_text(tr("Delete group")).clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Delete group")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -267,11 +268,11 @@ impl App {
 
     fn electro_fluid_tab(&mut self, ui: &mut egui::Ui, jump: &mut Option<(usize, u64)>, report: &mut Option<ReportId>) {
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("🔄 Synchronize")).on_hover_text(tr("Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts")).clicked() {
+            if icons::text_button(ui, Icon::Rotate, tr("Synchronize")).on_hover_text(tr("Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts")).clicked() {
                 let s = electrofluid::synchronize(&mut self.session.prj);
                 self.process_ui.message = tr_fmt!("{} links created, {} function texts copied", s.linked.len(), s.texts);
             }
-            if ui.button(tr("📊 Electro-fluid cross reference")).clicked() {
+            if icons::text_button(ui, Icon::Report, tr("Electro-fluid cross reference")).clicked() {
                 *report = Some(ReportKind::ElectroFluid.into());
             }
             if !self.process_ui.message.is_empty() {
@@ -330,8 +331,8 @@ impl App {
         let loops = process::loops(&self.session.prj, &idx);
         let (mut add, mut remove, mut define) = (false, None, None);
         ui.horizontal_wrapped(|ui| {
-            add = ui.button(tr("➕ Loop")).clicked();
-            if ui.button(tr("📊 PCT loop overview")).clicked() {
+            add = icons::text_button(ui, Icon::Plus, tr("Loop")).clicked();
+            if icons::text_button(ui, Icon::Report, tr("PCT loop overview")).clicked() {
                 *report = Some(ReportKind::PctLoops.into());
             }
         });
@@ -369,7 +370,7 @@ impl App {
                     let devices = l.devices.iter().map(|d| if l.missing.contains(d) { format!("{d}?") } else { d.clone() }).collect::<Vec<_>>().join(", ");
                     ui.label(devices).on_hover_text(tr("? = not in the schematic yet"));
                     ui.colored_label(status_color(l.status), l.status.title());
-                    if l.defined && ui.small_button("🗑").on_hover_text(tr("Delete loop")).clicked() {
+                    if l.defined && icons::button(ui, Icon::Delete, tr("Delete loop")).clicked() {
                         remove = Some(l.name.clone());
                     }
                     ui.end_row();

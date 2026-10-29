@@ -5,24 +5,9 @@
 (renamed from {})	(umbenannt von {})	(renommé depuis {})	(renombrado desde {})
 + Page	+ Seite	+ Page	+ Página
 0 = no jumper	0 = keine Brücke	0 = aucun pont	0 = sin puente
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Wählen Sie ein Symbol in der Bibliothek (rechts) und klicken Sie in die Seite, um es zu platzieren. Betriebsmittelkennzeichen (-K1, -S2 …) werden automatisch vergeben.	1. Choisissez un symbole dans la bibliothèque (à droite) et cliquez dans la page pour le placer. Les repères d'appareil (-K1, -S2 …) sont attribués automatiquement.	1. Elige un símbolo de la biblioteca (a la derecha) y haz clic en la página para colocarlo. Las designaciones de dispositivo (-K1, -S2 …) se asignan automáticamente.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Projekt › Symboleditor: Zeichnen Sie eigene Symbole (oder kopieren Sie eingebaute) mit Anschlusspunkten und Funktion; sie werden im Projekt gespeichert und können als Bibliotheksdateien ausgetauscht werden.	10. Projet › Éditeur de symboles : dessinez vos propres symboles (ou copiez ceux fournis) avec points de connexion et fonction ; ils sont enregistrés dans le projet et peuvent être échangés sous forme de fichiers de bibliothèque.	10. Proyecto › Editor de símbolos: dibuja tus propios símbolos (o copia los incorporados) con puntos de conexión y función; se guardan en el proyecto y se pueden intercambiar como archivos de biblioteca.
-100% ≈ real size on a 96 dpi screen	100 % ≈ reale Größe auf einem 96-dpi-Bildschirm	100 % ≈ taille réelle sur un écran de 96 dpi	100 % ≈ tamaño real en una pantalla de 96 ppp
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Projekt › Schriftfelder und Berichtsformulare: eigene Schriftfelder mit Platzhaltern ({project}, {page}, {prop:Name} …) und die Spalten der Berichtsseiten.	11. Projet › Cartouches et formulaires de rapport : cartouches personnalisés avec champs variables ({project}, {page}, {prop:Name} …) et colonnes des pages de rapport.	11. Proyecto › Cajetines y formularios de informe: cajetines propios con marcadores ({project}, {page}, {prop:Name} …) y las columnas de las páginas de informe.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Schaltschrank-Layout: Sammelschienen und Ausschnitte; die Gehäuse-Eigenschaften exportieren das Bohrbild (NC-Daten als DXF / DWG / CSV). Die Fertigungs-Leitungsliste enthält Abisolierlängen und Aderendhülsen.	12. Implantation de l'armoire : barres de cuivre et découpes ; les propriétés de l'enveloppe exportent le plan de perçage (données CN en DXF / DWG / CSV). La liste de câblage de production contient les longueurs de dénudage et les embouts.	12. Distribución del armario: pletinas y recortes; las propiedades de la envolvente exportan el patrón de taladrado (datos NC como DXF / DWG / CSV). La lista de cableado de producción contiene longitudes de pelado y punteras.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Kabelbäume: Projekt › Kabelbäume…; wählen Sie die Leitungen zwischen zwei Betriebsmitteln › Kabelbaum zuweisen, oder je Verbindung in den Leitungseigenschaften. Kabelbaum-Bericht mit Längen, Steckern und Bündeldurchmesser, KBL-Export.	13. Faisceaux : Projet › Faisceaux… ; sélectionnez les fils entre deux appareils › Affecter au faisceau, ou par liaison dans les propriétés du fil. Rapport de faisceau avec longueurs, connecteurs et diamètre de faisceau, export KBL.	13. Mazos de cables: Proyecto › Mazos de cables…; selecciona los hilos entre dos dispositivos › Asignar al mazo, o por conexión en las propiedades del hilo. Informe de mazos con longitudes, conectores y diámetro del haz, exportación KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Tür: Schalten Sie die Schaltschrank-Frontansicht auf Tür und platzieren Sie dort Befehls- / Meldegeräte; ihre Türausschnitte werden erzeugt. Kollisionen werden mit den 3D-Modellen der Artikel geprüft.	14. Porte : passez la vue de face de l'armoire sur Porte et placez-y les appareils de commande / signalisation ; leurs découpes de porte sont générées. Les collisions sont vérifiées avec les modèles 3D des articles.	14. Puerta: cambia la vista frontal del armario a Puerta y coloca allí los dispositivos de mando / señalización; sus recortes de puerta se generan. Las colisiones se comprueban con los modelos 3D de los artículos.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Wählen Sie eine Spule und platzieren Sie dann Kontakte: Sie werden dieser Spule zugeordnet und nummeriert (13/14, 21/22 …). Querverweise und das Kontaktbild werden live aktualisiert.	2. Sélectionnez une bobine, puis placez des contacts : ils sont affectés à cette bobine et numérotés (13/14, 21/22 …). Les renvois et l'image des contacts se mettent à jour en direct.	2. Selecciona una bobina y coloca contactos: se asignan a esa bobina y se numeran (13/14, 21/22 …). Las referencias cruzadas y la imagen de contactos se actualizan en vivo.
 2D front view	2D-Frontansicht	Vue de face 2D	Vista frontal 2D
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Zeichnen Sie Leitungen mit dem Leitungswerkzeug (W). Leitungen enden automatisch an Anschlusspunkten. T-Abzweige erhalten einen Verbindungspunkt.	3. Tracez les fils avec l'outil fil (W). Les fils se terminent automatiquement sur les points de connexion. Les dérivations en T reçoivent un point de jonction.	3. Dibuja hilos con la herramienta de hilo (W). Los hilos terminan automáticamente en los puntos de conexión. Las derivaciones en T reciben un punto de unión.
 3D model	3D-Modell	Modèle 3D	Modelo 3D
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Potenziale (L1, +24V …) und Unterbrechungspunkte benennen die Netze über Seiten hinweg. Wählen Sie eine Leitung, um ihr Potenzial hervorzuheben.	4. Les potentiels (L1, +24V …) et les points d'interruption nomment les réseaux d'une page à l'autre. Sélectionnez un fil pour mettre son potentiel en évidence.	4. Los potenciales (L1, +24V …) y los puntos de interrupción nombran las redes entre páginas. Selecciona un hilo para resaltar su potencial.
 4/2 directional valve	4/2-Wegeventil	Distributeur 4/2	Válvula direccional 4/2
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Weisen Sie Artikel im Eigenschaftenbereich zu; erzeugen Sie Berichte (Betriebsmittelliste, Stückliste, Klemmenplan, Verbindungsliste, SPS-Liste) und fügen Sie sie als Berichtsseiten ein.	5. Affectez des articles dans le panneau des propriétés ; générez des rapports (liste des appareils, nomenclature, plan de bornes, liste des liaisons, liste API) et insérez-les comme pages de rapport.	5. Asigna artículos en el panel de propiedades; genera informes (lista de dispositivos, lista de materiales, diagrama de bornes, lista de conexiones, lista PLC) e insértalos como páginas de informe.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Struktur: Geben Sie Seiten eine Funktion (=A1) und einen Ort (+CAB1) in den Seiteneigenschaften. Dort platzierte Betriebsmittel erhalten sie (=A1+CAB1-K1); auf der Seite wird nur der abweichende Teil angezeigt.	6. Structure : donnez aux pages une fonction (=A1) et un emplacement (+CAB1) dans leurs propriétés. Les appareils placés dessus les héritent (=A1+CAB1-K1) ; sur la page, seule la partie différente est affichée.	6. Estructura: asigna a las páginas una función (=A1) y una ubicación (+CAB1) en sus propiedades. Los dispositivos colocados en ellas las heredan (=A1+CAB1-K1); en la página solo se muestra la parte diferente.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Kabel: Definieren Sie sie unter Projekt › Kabel…, wählen Sie Leitungen und nutzen Sie Kabel zuweisen. Leitungsnummern: Projekt › Leitungsnummerierung…, oder geben Sie eine Nummer in den Leitungseigenschaften ein.	7. Câbles : définissez-les dans Projet › Câbles…, sélectionnez des fils et utilisez Affecter au câble. Numéros de fil : Projet › Numérotation des fils…, ou saisissez un numéro dans les propriétés du fil.	7. Cables: defínelos en Proyecto › Cables…, selecciona hilos y usa Asignar al cable. Números de hilo: Proyecto › Numeración de hilos…, o escribe un número en las propiedades del hilo.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Makros: Wählen Sie Elemente › Bearbeiten › Auswahl als Makro speichern; fügen Sie sie über Einfügen › Makro… ein. Platzhalter {NAME} werden aus Wertesätzen gefüllt.	8. Macros : sélectionnez des éléments › Édition › Enregistrer la sélection comme macro ; insérez-les via Insertion › Macro…. Les variables {NAME} sont remplies à partir des jeux de valeurs.	8. Macros: selecciona elementos › Edición › Guardar selección como macro; insértalos desde Insertar › Macro…. Los marcadores {NAME} se rellenan con conjuntos de valores.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Projekt › Klemmenleisten / SPS-Übersicht / Revisionen: Leistenreihenfolge, Brücken und Reserven; SPS-Adressen und Symboltabellen; Revisionen mit Änderungsmarken und freigegebene (gesperrte) Seiten.	9. Projet › Borniers / Vue d'ensemble API / Révisions : ordre des borniers, ponts et réserves ; adresses API et tables de symboles ; révisions avec repères de modification et pages validées (verrouillées).	9. Proyecto › Regletas de bornes / Resumen PLC / Revisiones: orden de regletas, puentes y reservas; direcciones PLC y tablas de símbolos; revisiones con marcas de cambio y páginas liberadas (bloqueadas).
 Access token	Zugriffstoken	Jeton d'accès	Token de acceso
 Accessories	Zubehör	Accessoires	Accesorios
 Add missing parts of the example catalog	Fehlende Artikel des Beispielkatalogs hinzufügen	Ajouter les articles manquants du catalogue d'exemple	Añadir los artículos que faltan del catálogo de ejemplo
@@ -95,12 +80,12 @@ Click into the page to place {}	Klicken Sie in die Seite, um {} zu platzieren	Cl
 Click on the 4 mm grid	Klicken Sie auf das 4-mm-Raster	Cliquez sur la grille de 4 mm	Haz clic en la cuadrícula de 4 mm
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Klicken Sie Start- und Eckpunkte · Leertaste wechselt die Eckrichtung · endet automatisch an einem Anschluss · Rechtsklick / Esc beendet	Cliquez sur le départ et les coins · Espace change le sens du coin · se termine automatiquement sur une connexion · clic droit / Échap pour terminer	Haz clic en el inicio y las esquinas · Espacio cambia la dirección de la esquina · termina automáticamente en una conexión · clic derecho / Esc para finalizar
 Click start and end point	Klicken Sie auf Start- und Endpunkt	Cliquez sur le point de départ et le point d'arrivée	Haz clic en el punto inicial y el final
-Click start point, click end point	Klicken Sie auf den Startpunkt, dann auf den Endpunkt	Cliquez sur le point de départ, puis sur le point d'arrivée	Haz clic en el punto inicial y luego en el final
+Click start point, click end point · Esc or right click to finish	Klicken Sie auf den Startpunkt, dann auf den Endpunkt · Esc oder Rechtsklick beendet	Cliquez sur le point de départ, puis sur le point d'arrivée · Échap ou clic droit pour terminer	Haz clic en el punto inicial y luego en el final · Esc o clic derecho para terminar
 Click to add to the selected text.	Klicken Sie, um zum gewählten Text hinzuzufügen.	Cliquez pour ajouter au texte sélectionné.	Haz clic para añadir al texto seleccionado.
 Click to insert the macro · Esc cancel	Klicken Sie, um das Makro einzufügen · Esc bricht ab	Cliquez pour insérer la macro · Échap pour annuler	Haz clic para insertar la macro · Esc para cancelar
-Click to place a text	Klicken Sie, um einen Text zu platzieren	Cliquez pour placer un texte	Haz clic para colocar un texto
+Click to place a text · Esc or right click to finish	Klicken Sie, um einen Text zu platzieren · Esc oder Rechtsklick beendet	Cliquez pour placer un texte · Échap ou clic droit pour terminer	Haz clic para colocar un texto · Esc o clic derecho para terminar
 Click to place the text from the field below	Klicken Sie, um den Text aus dem Feld unten zu platzieren	Cliquez pour placer le texte du champ ci-dessous	Haz clic para colocar el texto del campo inferior
-Click to place · R rotate · M mirror · Esc finish	Klicken zum Platzieren · R drehen · M spiegeln · Esc beenden	Cliquez pour placer · R pivoter · M miroir · Échap pour terminer	Clic para colocar · R girar · M reflejar · Esc para finalizar
+Click to place · {} rotate · {} mirror · Esc or right click to finish	Klicken zum Platzieren · {} drehen · {} spiegeln · Esc oder Rechtsklick beendet	Cliquez pour placer · {} pivoter · {} miroir · Échap ou clic droit pour terminer	Clic para colocar · {} girar · {} reflejar · Esc o clic derecho para terminar
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Klicken zum Auswählen, Ziehen zum Verschieben, Ziehen auf leerer Fläche für Fensterauswahl. Rechts-/Mittelklick-Ziehen verschiebt die Ansicht, das Mausrad zoomt.	Cliquez pour sélectionner, glissez pour déplacer, glissez dans le vide pour une sélection par fenêtre. Glisser avec le clic droit/milieu déplace la vue, la molette zoome.	Clic para seleccionar, arrastra para mover, arrastra en un espacio vacío para seleccionar por ventana. Arrastrar con el botón derecho/central desplaza la vista, la rueda hace zoom.
 Click to show	Klicken zum Anzeigen	Cliquez pour afficher	Haz clic para mostrar
 Click two corners	Klicken Sie auf zwei Ecken	Cliquez sur deux coins	Haz clic en dos esquinas
@@ -146,7 +131,7 @@ Corner	Ecke	Coin	Esquina
 Cover	Deckblatt	Page de garde	Portada
 Cover sheet	Deckblatt	Page de garde	Portada
 Create / update the part on the server (Ctrl+S)	Artikel auf dem Server anlegen / aktualisieren (Strg+S)	Créer / mettre à jour l'article sur le serveur (Ctrl+S)	Crear / actualizar el artículo en el servidor (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Legen Sie ein Gehäuse an (➕ in der Navigation links), um das Schaltschrank-Layout zu beginnen.	Créez une enveloppe (➕ dans le navigateur à gauche) pour commencer l'implantation de l'armoire.	Crea una envolvente (➕ en el navegador de la izquierda) para empezar la distribución del armario.
+Create an enclosure (Layout space › New enclosure) to start the panel layout.	Ein Gehäuse anlegen (Layoutbereich › Neues Gehäuse), um mit dem Aufbau zu beginnen.	Créez une enveloppe (Espace de montage › Nouvelle enveloppe) pour commencer l'implantation.	Cree una envolvente (Espacio de montaje › Nueva envolvente) para empezar el montaje.
 Create an enclosure in the panel layout first.	Legen Sie zuerst im Schaltschrank-Layout ein Gehäuse an.	Créez d'abord une enveloppe dans l'implantation de l'armoire.	Crea primero una envolvente en la distribución del armario.
 Create revision	Revision anlegen	Créer une révision	Crear revisión
 Created by	Erstellt von	Créé par	Creado por
@@ -202,7 +187,7 @@ Door: {} devices, {} cutouts	Tür: {} Betriebsmittel, {} Ausschnitte	Porte : {} 
 Downloaded {} parts (revision {}): {} new, {} updated	{} Artikel heruntergeladen (Revision {}): {} neu, {} aktualisiert	{} articles téléchargés (révision {}) : {} nouveaux, {} mis à jour	{} artículos descargados (revisión {}): {} nuevos, {} actualizados
 Downloading parts…	Artikel werden heruntergeladen …	Téléchargement des articles…	Descargando artículos…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Ziehen: Orbit · Rechts-/Mittelklick-Ziehen: verschieben · Mausrad: Zoom · Klick: Betriebsmittel oder Leitung wählen	Glisser : orbite · glisser avec clic droit/milieu : déplacer · molette : zoom · clic : sélectionner un appareil ou un fil	Arrastrar: órbita · arrastrar con botón derecho/central: desplazar · rueda: zoom · clic: seleccionar dispositivo o hilo
-Draw connections (W)	Verbindungen zeichnen (W)	Tracer des liaisons (W)	Dibujar conexiones (W)
+Draw connections	Verbindungen zeichnen	Tracer des liaisons	Dibujar conexiones
 Duplicate	Duplizieren	Dupliquer	Duplicar
 Each point-to-point connection can belong to a harness	Jede Punkt-zu-Punkt-Verbindung kann zu einem Kabelbaum gehören	Chaque liaison point à point peut appartenir à un faisceau	Cada conexión punto a punto puede pertenecer a un mazo
 Edit	Bearbeiten	Édition	Edición
@@ -272,7 +257,6 @@ Harness data	Kabelbaumdaten	Données de faisceau	Datos de mazos
 Harness {} has no wires	Kabelbaum {} hat keine Leitungen	Le faisceau {} n'a aucun fil	El mazo {} no tiene hilos
 Harness {}: connection {} – {} does not exist in the schematic	Kabelbaum {}: Verbindung {} – {} existiert im Schaltplan nicht	Faisceau {} : la liaison {} – {} n'existe pas dans le schéma	Mazo {}: la conexión {} – {} no existe en el esquema
 Harnesses	Kabelbäume	Faisceaux	Mazos
-Harnesses…	Kabelbäume…	Faisceaux…	Mazos…
 Height	Höhe	Hauteur	Altura
 Height (mm)	Höhe (mm)	Hauteur (mm)	Altura (mm)
 Help	Hilfe	Aide	Ayuda
@@ -330,7 +314,6 @@ Longer values are drawn smaller (0 = no limit)	Längere Werte werden kleiner gez
 Macro {} replaced	Makro {} ersetzt	Macro {} remplacée	Macro {} reemplazada
 Macro {} saved	Makro {} gespeichert	Macro {} enregistrée	Macro {} guardada
 Macros	Makros	Macros	Macros
-Macros…	Makros…	Macros…	Macros…
 Macro…	Makro…	Macro…	Macro…
 Main	Haupt	Principal	Principal
 Main contact 1-pole	Hauptkontakt 1-polig	Contact principal 1 pôle	Contacto principal 1 polo
@@ -380,12 +363,12 @@ Next free contact numbers on this device	Nächste freie Kontaktnummern an diesem
 Next page (Page Down)	Nächste Seite (Bild ab)	Page suivante (Page suiv.)	Página siguiente (Av Pág)
 No PLC inputs / outputs placed.	Keine SPS-Ein- / Ausgänge platziert.	Aucune entrée / sortie API placée.	No hay entradas / salidas PLC colocadas.
 No cables defined.	Keine Kabel definiert.	Aucun câble défini.	No hay cables definidos.
-No cables yet – Project › Cables…	Noch keine Kabel – Projekt › Kabel…	Aucun câble pour l'instant – Projet › Câbles…	Aún no hay cables – Proyecto › Cables…
+No cables yet – Connections › Cables	Noch keine Kabel – Verbindungen › Kabel	Pas encore de câbles – Liaisons › Câbles	Aún no hay cables – Conexiones › Cables
 No changes since the last revision.	Keine Änderungen seit der letzten Revision.	Aucune modification depuis la dernière révision.	No hay cambios desde la última revisión.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Noch keine Betriebsmittel. Wählen Sie rechts in der Bibliothek ein Symbol und klicken Sie in die Seite.	Aucun appareil pour l'instant. Choisissez un symbole dans la bibliothèque à droite et cliquez dans la page.	Aún no hay dispositivos. Elige un símbolo de la biblioteca de la derecha y haz clic en la página.
-No enclosure yet – create one with ➕.	Noch kein Gehäuse – legen Sie eines mit ➕ an.	Aucune enveloppe pour l'instant – créez-en une avec ➕.	Aún no hay envolvente – crea una con ➕.
+No devices yet. Pick a symbol in the Insert center and click into the page.	Noch keine Betriebsmittel. Ein Symbol im Einfügezentrum wählen und in die Seite klicken.	Pas encore d'appareils. Choisissez un symbole dans le centre d'insertion et cliquez dans la page.	Aún no hay dispositivos. Elija un símbolo en el centro de inserción y haga clic en la página.
+No enclosure yet – create one with New enclosure.	Noch kein Gehäuse – mit Neues Gehäuse anlegen.	Pas encore d'enveloppe – créez-en une avec Nouvelle enveloppe.	Aún no hay envolvente – cree una con Nueva envolvente.
 No harnesses defined.	Keine Kabelbäume definiert.	Aucun faisceau défini.	No hay mazos definidos.
-No harnesses yet – Project › Harnesses…	Noch keine Kabelbäume – Projekt › Kabelbäume…	Aucun faisceau pour l'instant – Projet › Faisceaux…	Aún no hay mazos – Proyecto › Mazos…
+No harnesses yet – Connections › Harnesses	Noch keine Kabelbäume – Verbindungen › Kabelbäume	Pas encore de faisceaux – Liaisons › Faisceaux	Aún no hay mazos – Conexiones › Mazos
 No identifying letter for the device tag.	Kein Kennbuchstabe für das Betriebsmittelkennzeichen.	Pas de lettre d'identification pour le repère d'appareil.	Falta la letra identificativa de la designación del dispositivo.
 No macros yet. Select items in a schematic and save them as a macro.	Noch keine Makros. Wählen Sie Elemente in einem Schaltplan und speichern Sie sie als Makro.	Aucune macro pour l'instant. Sélectionnez des éléments dans un schéma et enregistrez-les comme macro.	Aún no hay macros. Selecciona elementos en un esquema y guárdalos como macro.
 No parts found.	Keine Artikel gefunden.	Aucun article trouvé.	No se encontraron artículos.
@@ -437,7 +420,6 @@ PLC connection point	SPS-Anschlusspunkt	Point de connexion API	Punto de conexió
 PLC digital input	SPS-Digitaleingang	Entrée numérique API	Entrada digital PLC
 PLC digital output	SPS-Digitalausgang	Sortie numérique API	Salida digital PLC
 PLC overview	SPS-Übersicht	Vue d'ensemble API	Resumen PLC
-PLC overview…	SPS-Übersicht…	Vue d'ensemble API…	Resumen PLC…
 Packaging quantity	Verpackungseinheit	Quantité par conditionnement	Cantidad por embalaje
 Page	Seite	Page	Página
 Page / column (3.4.1)	Seite / Spalte (3.4.1)	Page / colonne (3.4.1)	Página / columna (3.4.1)
@@ -468,11 +450,10 @@ Parts	Artikel	Articles	Artículos
 Parts (CSV, JSON)	Artikel (CSV, JSON)	Articles (CSV, JSON)	Artículos (CSV, JSON)
 Parts import failed: {}	Artikelimport fehlgeschlagen: {}	Échec de l'import des articles : {}	Error al importar artículos: {}
 Parts management	Artikelverwaltung	Gestion des articles	Gestión de artículos
-Parts management…	Artikelverwaltung…	Gestion des articles…	Gestión de artículos…
 Parts server: {}	Artikelserver: {}	Serveur d'articles : {}	Servidor de artículos: {}
 Passive components	Passive Bauteile	Composants passifs	Componentes pasivos
 Pilot light (NFPA)	Meldeleuchte (NFPA)	Voyant (NFPA)	Piloto luminoso (NFPA)
-Place text (T)	Text platzieren (T)	Placer un texte (T)	Colocar texto (T)
+Place text	Text platzieren	Placer un texte	Colocar texto
 Placed	Platziert	Placé	Colocado
 Placed {}× in the project	{}× im Projekt platziert	Placé {}× dans le projet	Colocado {}× en el proyecto
 Placeholders	Platzhalter	Variables	Marcadores
@@ -542,7 +523,7 @@ Refresh example catalog parts (GEN.*)	Beispielkatalog-Artikel (GEN.*) aktualisie
 Relay / contactor coil	Relais- / Schützspule	Bobine de relais / contacteur	Bobina de relé / contactor
 Relay coil (NFPA)	Relaisspule (NFPA)	Bobine de relais (NFPA)	Bobina de relé (NFPA)
 Release: lock all pages	Freigeben: alle Seiten sperren	Valider : verrouiller toutes les pages	Liberar: bloquear todas las páginas
-Released page – unlock it in Project › Revisions to change it	Freigegebene Seite – zum Ändern unter Projekt › Revisionen entsperren	Page validée – déverrouillez-la dans Projet › Révisions pour la modifier	Página liberada – desbloquéala en Proyecto › Revisiones para modificarla
+Released page – unlock it in Project data › Revisions to change it	Freigegebene Seite – zum Ändern in Projektdaten › Revisionen entsperren	Page validée – déverrouillez-la dans Données de projet › Révisions pour la modifier	Página liberada – desbloquéela en Datos de proyecto › Revisiones para cambiarla
 Remove from cable	Aus Kabel entfernen	Retirer du câble	Quitar del cable
 Remove from harness	Aus Kabelbaum entfernen	Retirer du faisceau	Quitar del mazo
 Remove from the harness	Aus dem Kabelbaum entfernen	Retirer du faisceau	Quitar del mazo
@@ -566,7 +547,6 @@ Revision marks	Revisionsmarken	Repères de révision	Marcas de revisión
 Revision overview (changes)	Revisionsübersicht (Änderungen)	Vue d'ensemble des révisions (modifications)	Resumen de revisiones (cambios)
 Revision {} created	Revision {} angelegt	Révision {} créée	Revisión {} creada
 Revisions	Revisionen	Révisions	Revisiones
-Revisions…	Revisionen…	Révisions…	Revisiones…
 Right	Rechts	Droite	Derecha
 Rotate (R)	Drehen (R)	Pivoter (R)	Girar (R)
 Rotate / mirror (selection or symbol being placed)	Drehen / Spiegeln (Auswahl oder zu platzierendes Symbol)	Pivoter / miroir (sélection ou symbole en cours de placement)	Girar / reflejar (selección o símbolo que se está colocando)
@@ -637,7 +617,6 @@ Supplier	Lieferant	Fournisseur	Proveedor
 Switches / Sensors	Schalter / Sensoren	Interrupteurs / capteurs	Interruptores / sensores
 Symbol	Symbol	Symbole	Símbolo
 Symbol editor	Symboleditor	Éditeur de symboles	Editor de símbolos
-Symbol editor…	Symboleditor…	Éditeur de symboles…	Editor de símbolos…
 Symbol table import failed: {}	Import der Symboltabelle fehlgeschlagen: {}	Échec de l'import de la table de symboles : {}	Error al importar la tabla de símbolos: {}
 Symbols	Symbole	Symboles	Símbolos
 Synchronize project parts from database	Projektartikel aus der Datenbank synchronisieren	Synchroniser les articles du projet depuis la base	Sincronizar los artículos del proyecto desde la base de datos
@@ -655,7 +634,6 @@ Terminal number	Klemmennummer	Numéro de borne	Número de borne
 Terminal number, PLC address, potential name …	Klemmennummer, SPS-Adresse, Potenzialname …	Numéro de borne, adresse API, nom du potentiel …	Número de borne, dirección PLC, nombre del potencial …
 Terminal strip	Klemmenleiste	Bornier	Regleta de bornes
 Terminal strips	Klemmenleisten	Borniers	Regletas de bornes
-Terminal strips…	Klemmenleisten…	Borniers…	Regletas de bornes…
 Terminals	Klemmen	Bornes	Bornes
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Klemmen mit gleicher Brückennummer sind verbunden (gleiches Potenzial). Reserveklemmen werden in der Stückliste mitgezählt.	Les bornes de même numéro de pont sont reliées (même potentiel). Les bornes de réserve sont comptées dans la nomenclature.	Los bornes con el mismo número de puente están unidos (mismo potencial). Los bornes de reserva se cuentan en la lista de materiales.
 Test connection	Verbindung testen	Tester la connexion	Probar conexión
@@ -727,8 +705,7 @@ Wire tool / text tool	Leitungswerkzeug / Textwerkzeug	Outil fil / outil texte	He
 Wire {} – {}  ({} of {} here, click again for the next)	Leitung {} – {}  ({} von {} hier, erneut klicken für die nächste)	Fil {} – {}  ({} sur {} ici, cliquez à nouveau pour le suivant)	Hilo {} – {}  ({} de {} aquí, haz clic de nuevo para el siguiente)
 Wire {} – {}  {} mm	Leitung {} – {}  {} mm	Fil {} – {}  {} mm	Hilo {} – {}  {} mm
 Wires	Leitungen	Fils	Hilos
-Workflow	Ablauf	Procédure	Flujo de trabajo
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} mm   Spalte {}  Zeile {}	X {}  Y {} mm   Colonne {}  Ligne {}	X {}  Y {} mm   Columna {}  Fila {}
+Column {}  Row {}	Spalte {}  Zeile {}	Colonne {}  Ligne {}	Columna {}  Fila {}
 X {}  Y {} mm on the {}	X {}  Y {} mm auf der Seite {}	X {}  Y {} mm sur {}	X {}  Y {} mm en {}
 YYYY-MM-DD	JJJJ-MM-TT	AAAA-MM-JJ	AAAA-MM-DD
 Zoom / pan	Zoom / Verschieben	Zoom / déplacement	Zoom / desplazar
@@ -815,61 +792,49 @@ writable with token	mit Token beschreibbar	modifiable avec jeton	escribible con 
 ⎘ Copy	⎘ Kopieren	⎘ Copier	⎘ Copiar
 ○ Circle	○ Kreis	○ Cercle	○ Círculo
 ☐ Rect	☐ Rechteck	☐ Rect.	☐ Rect.
-⛶ Fit	⛶ Einpassen	⛶ Ajuster	⛶ Ajustar
-✏ Place in schematic	✏ Im Schaltplan platzieren	✏ Placer dans le schéma	✏ Colocar en el esquema
+Place in schematic	Im Schaltplan platzieren	Placer dans le schéma	Colocar en el esquema
 ✏ Wire	✏ Leitung	✏ Fil	✏ Hilo
-✔ Add to device	✔ Zum Betriebsmittel hinzufügen	✔ Ajouter à l'appareil	✔ Añadir al dispositivo
-✔ Create	✔ Anlegen	✔ Créer	✔ Crear
+Add to device	Zum Betriebsmittel hinzufügen	Ajouter à l'appareil	Añadir al dispositivo
+Create	Anlegen	Créer	Crear
 ✔ No problems found.	✔ Keine Probleme gefunden.	✔ Aucun problème trouvé.	✔ No se encontraron problemas.
 ✔ Save	✔ Speichern	✔ Enregistrer	✔ Guardar
 ➕ Add accessory	➕ Zubehör hinzufügen	➕ Ajouter un accessoire	➕ Añadir accesorio
-➕ Add function	➕ Funktion hinzufügen	➕ Ajouter une fonction	➕ Añadir función
-➕ Add part…	➕ Artikel hinzufügen…	➕ Ajouter un article…	➕ Añadir artículo…
+Add function	Funktion hinzufügen	Ajouter une fonction	Añadir función
+Add part…	Artikel hinzufügen…	Ajouter un article…	Añadir artículo…
 ➕ Insert (click into the page)	➕ Einfügen (in die Seite klicken)	➕ Insérer (cliquer dans la page)	➕ Insertar (clic en la página)
 ➕ Insert as new page	➕ Als neue Seite einfügen	➕ Insérer comme nouvelle page	➕ Insertar como página nueva
 ➕ Insert as report page	➕ Als Berichtsseite einfügen	➕ Insérer comme page de rapport	➕ Insertar como página de informe
-➕ Insert mounting layout page	➕ Montageplan-Seite einfügen	➕ Insérer une page d'implantation	➕ Insertar página de distribución de montaje
+Insert mounting layout page	Montageplan-Seite einfügen	Insérer une page d'implantation	Insertar página de distribución de montaje
 ➕ Label	➕ Beschriftung	➕ Libellé	➕ Etiqueta
 ➕ Line	➕ Linie	➕ Ligne	➕ Línea
 ➕ New	➕ Neu	➕ Nouveau	➕ Nuevo
-➕ New cable	➕ Neues Kabel	➕ Nouveau câble	➕ Nuevo cable
-➕ New harness	➕ Neuer Kabelbaum	➕ Nouveau faisceau	➕ Nuevo mazo
+New cable	Neues Kabel	Nouveau câble	Nuevo cable
+New harness	Neuer Kabelbaum	Nouveau faisceau	Nuevo mazo
 ➕ Property	➕ Eigenschaft	➕ Propriété	➕ Propiedad
 ➕ Rectangle	➕ Rechteck	➕ Rectangle	➕ Rectángulo
 ➕ Text	➕ Text	➕ Texte	➕ Texto
-➕ Value set	➕ Wertesatz	➕ Jeu de valeurs	➕ Conjunto de valores
+Value set	Wertesatz	Jeu de valeurs	Conjunto de valores
 ➕ {} (not saved)	➕ {} (nicht gespeichert)	➕ {} (non enregistré)	➕ {} (sin guardar)
 ⟲ Revert	⟲ Zurücksetzen	⟲ Rétablir	⟲ Revertir
 ⟳ Reload	⟳ Neu laden	⟳ Recharger	⟳ Recargar
-⟳ Rotate	⟳ Drehen	⟳ Pivoter	⟳ Girar
-⬆ Import symbol table…	⬆ Symboltabelle importieren…	⬆ Importer la table de symboles…	⬆ Importar tabla de símbolos…
-⬆ Import…	⬆ Importieren…	⬆ Importer…	⬆ Importar…
-⬆ Upload database ({})	⬆ Datenbank hochladen ({})	⬆ Envoyer la base ({})	⬆ Subir base de datos ({})
+Import symbol table…	Symboltabelle importieren…	Importer la table de symboles…	Importar tabla de símbolos…
+Upload database ({})	Datenbank hochladen ({})	Envoyer la base ({})	Subir base de datos ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Artikeldatei hochladen (CSV / JSON)…	⬆ Envoyer un fichier d'articles (CSV / JSON)…	⬆ Subir archivo de artículos (CSV / JSON)…
-⬆ Upload selected part	⬆ Gewählten Artikel hochladen	⬆ Envoyer l'article sélectionné	⬆ Subir el artículo seleccionado
-⬇ Door NC data (DXF)	⬇ Tür-NC-Daten (DXF)	⬇ Données CN de la porte (DXF)	⬇ Datos NC de la puerta (DXF)
-⬇ Door cutouts (CSV)	⬇ Türausschnitte (CSV)	⬇ Découpes de porte (CSV)	⬇ Recortes de puerta (CSV)
-⬇ Download into database	⬇ In Datenbank laden	⬇ Télécharger dans la base	⬇ Descargar a la base de datos
-⬇ Drilling list (CSV)	⬇ Bohrliste (CSV)	⬇ Liste de perçage (CSV)	⬇ Lista de taladrado (CSV)
-⬇ Export CSV	⬇ CSV exportieren	⬇ Exporter en CSV	⬇ Exportar CSV
+Upload selected part	Gewählten Artikel hochladen	Envoyer l'article sélectionné	Subir el artículo seleccionado
+Door NC data (DXF)	Tür-NC-Daten (DXF)	Données CN de la porte (DXF)	Datos NC de la puerta (DXF)
+Door cutouts (CSV)	Türausschnitte (CSV)	Découpes de porte (CSV)	Recortes de puerta (CSV)
+Download into database	In Datenbank laden	Télécharger dans la base	Descargar a la base de datos
 ⬇ Export KBL (XML)…	⬇ KBL exportieren (XML)…	⬇ Exporter KBL (XML)…	⬇ Exportar KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Symboltabelle exportieren (CSV)…	⬇ Exporter la table de symboles (CSV)…	⬇ Exportar tabla de símbolos (CSV)…
-⬇ Export…	⬇ Exportieren…	⬇ Exporter…	⬇ Exportar…
-⬇ NC data (DXF)	⬇ NC-Daten (DXF)	⬇ Données CN (DXF)	⬇ Datos NC (DXF)
+Export symbol table (CSV)…	Symboltabelle exportieren (CSV)…	Exporter la table de symboles (CSV)…	Exportar tabla de símbolos (CSV)…
+NC data (DXF)	NC-Daten (DXF)	Données CN (DXF)	Datos NC (DXF)
 ⬉ Select	⬉ Auswählen	⬉ Sélectionner	⬉ Seleccionar
 🌐 Parts server	🌐 Artikelserver	🌐 Serveur d'articles	🌐 Servidor de artículos
-💾 Save	💾 Speichern	💾 Enregistrer	💾 Guardar
-💾 Save selection as macro…	💾 Auswahl als Makro speichern…	💾 Enregistrer la sélection comme macro…	💾 Guardar selección como macro…
-📊 Cable overview	📊 Kabelübersicht	📊 Vue d'ensemble des câbles	📊 Resumen de cables
-📊 Harness data	📊 Kabelbaumdaten	📊 Données de faisceau	📊 Datos de mazos
 📊 Reports	📊 Berichte	📊 Rapports	📊 Informes
-📊 Revision overview	📊 Revisionsübersicht	📊 Vue d'ensemble des révisions	📊 Resumen de revisiones
-🔒 Released page – read only	🔒 Freigegebene Seite – schreibgeschützt	🔒 Page validée – lecture seule	🔒 Página liberada – solo lectura
+Revision overview	Revisionsübersicht	Vue d'ensemble des révisions	Resumen de revisiones
+Released page – read only	Freigegebene Seite – schreibgeschützt	Page validée – lecture seule	Página liberada – solo lectura
 🗄 Panel layout	🗄 Schaltschrank-Layout	🗄 Implantation de l'armoire	🗄 Distribución del armario
 🗄 Parts database	🗄 Artikeldatenbank	🗄 Base d'articles	🗄 Base de datos de artículos
 🗋 Schematic	🗋 Schaltplan	🗋 Schéma	🗋 Esquema
 🗑 Delete	🗑 Löschen	🗑 Supprimer	🗑 Eliminar
-🗑 Delete connection point	🗑 Anschlusspunkt löschen	🗑 Supprimer le point de connexion	🗑 Eliminar punto de conexión
-🗑 Delete element	🗑 Element löschen	🗑 Supprimer l'élément	🗑 Eliminar elemento
-🗑 Delete macro	🗑 Makro löschen	🗑 Supprimer la macro	🗑 Eliminar macro
-🗑 Remove	🗑 Entfernen	🗑 Retirer	🗑 Quitar
+Delete connection point	Anschlusspunkt löschen	Supprimer le point de connexion	Eliminar punto de conexión
+Delete element	Element löschen	Supprimer l'élément	Eliminar elemento

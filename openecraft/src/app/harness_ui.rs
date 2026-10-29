@@ -2,6 +2,7 @@
 //! and bundle diameter; the 3D topology with protections, fixings and end treatment;
 //! KBL, harness interface, wire processing list and 3D exports.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::harness::topology::{self, Source, Topology};
@@ -41,18 +42,18 @@ impl App {
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("➕ New harness")).on_hover_text(tr("In the structure of the current page")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("New harness")).on_hover_text(tr("In the structure of the current page")).clicked() {
                     let tag = self.session.prj.next_tag(&structure, "WH");
                     let id = self.session.prj.new_id();
                     self.harness_ui.sel = Some(tag.clone());
                     self.session.prj.harnesses.push(Harness { id, tag, ..Default::default() });
                 }
-                report = ui.button(tr("📊 Harness data")).on_hover_text(tr("Report with all harness wires")).clicked();
+                report = icons::text_button(ui, Icon::Report, tr("Harness data")).on_hover_text(tr("Report with all harness wires")).clicked();
                 let any = !self.session.prj.harnesses.is_empty();
-                if ui.add_enabled(any, egui::Button::new(tr("⬇ All as KBL (ZIP)…"))).on_hover_text(tr("One KBL file (VDA 4964) per harness")).clicked() {
+                if ui.add_enabled_ui(any, |ui| icons::text_button(ui, Icon::Download, tr("All as KBL (ZIP)…"))).inner.on_hover_text(tr("One KBL file (VDA 4964) per harness")).clicked() {
                     export = Some(("kbl_zip", None));
                 }
-                if ui.add_enabled(any, egui::Button::new(tr("⬇ Wire processing list (CSV)…"))).on_hover_text(tr("All harness wires in processing order for cutting, stripping and crimping machines")).clicked() {
+                if ui.add_enabled_ui(any, |ui| icons::text_button(ui, Icon::Download, tr("Wire processing list (CSV)…"))).inner.on_hover_text(tr("All harness wires in processing order for cutting, stripping and crimping machines")).clicked() {
                     export = Some(("harness_processing", None));
                 }
                 ui.weak(tr("Assign connections: select the wires between two devices in the schematic › Assign to harness."));
@@ -94,7 +95,7 @@ impl App {
                     ui.label(n.to_string());
                     ui.label(c.to_string());
                     ui.label(format!("{dia:.1} mm"));
-                    if ui.small_button("🗑").on_hover_text(tr("Delete harness (its wires are removed from it)")).clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Delete harness (its wires are removed from it)")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -110,7 +111,7 @@ impl App {
                 let total: f32 = ws.iter().map(|w| w.length).sum();
                 ui.horizontal_wrapped(|ui| {
                     ui.label(RichText::new(tr_fmt!("{}: {} wires, {} m wire in total", tag, ws.len(), format!("{:.2}", total / 1000.0))).strong());
-                    if ui.add_enabled(!ws.is_empty(), egui::Button::new(tr("📐 Nailboard (SVG)…"))).on_hover_text(tr("Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors")).clicked() {
+                    if ui.add_enabled_ui(!ws.is_empty(), |ui| icons::text_button(ui, Icon::Dimension, tr("Nailboard (SVG)…"))).inner.on_hover_text(tr("Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors")).clicked() {
                         nailboard = Some(tag.clone());
                     }
                     for (name, label, hover) in [
@@ -135,7 +136,7 @@ impl App {
                                 if stale.iter().any(|(t, c)| *t == tag && *c == k) {
                                     ui.colored_label(crate::style::lock(), tr("not in the schematic"));
                                 }
-                                if ui.small_button("🗑").on_hover_text(tr("Remove from the harness")).clicked() {
+                                if icons::button(ui, Icon::Delete, tr("Remove from the harness")).clicked() {
                                     unassign = Some((tag.clone(), k.clone()));
                                 }
                             });
@@ -225,9 +226,9 @@ fn topology_section(ui: &mut egui::Ui, view: &mut usize, h: &mut Harness, t: &To
         ui.label(source_text(t.source));
         ui.label(tr_fmt!("{} nodes, {} segments, {} m bundle", t.nodes.len(), t.segments.len(), format!("{:.2}", t.length() / 1000.0)));
         if t.source == Source::Stored {
-            action.clear = ui.button(tr("⟳ Derive again")).on_hover_text(tr("Drops the stored topology")).clicked();
+            action.clear = icons::text_button(ui, Icon::Rotate, tr("Derive again")).on_hover_text(tr("Drops the stored topology")).clicked();
         } else {
-            action.store = ui.button(tr("✏ Store for editing")).on_hover_text(tr("Stores the derived topology in the harness, so nodes and segments can be edited")).clicked();
+            action.store = icons::text_button(ui, Icon::Markup, tr("Store for editing")).on_hover_text(tr("Stores the derived topology in the harness, so nodes and segments can be edited")).clicked();
         }
         if problems > 0 {
             ui.colored_label(crate::style::lock(), tr_fmt!("{} problems: see the check results", problems));
@@ -373,7 +374,7 @@ fn protections_section(ui: &mut egui::Ui, h: &mut Harness, t: &Topology) {
                 ui.label("…");
                 ui.add(egui::DragValue::new(&mut p.end).speed(0.01).range(0.0..=1.0));
             });
-            if ui.small_button("🗑").clicked() {
+            if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                 drop_p = Some(i);
             }
             ui.end_row();
@@ -394,7 +395,7 @@ fn protections_section(ui: &mut egui::Ui, h: &mut Harness, t: &Topology) {
             ui.add_sized([110.0, 20.0], egui::TextEdit::singleline(&mut f.part).hint_text(tr("part number")));
             segment_combo(ui, ("hfs", i), &mut f.segment, t, false);
             ui.add(egui::DragValue::new(&mut f.location).speed(0.01).range(0.0..=1.0)).on_hover_text(tr("Location along the segment, 0 … 1"));
-            if ui.small_button("🗑").clicked() {
+            if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                 drop_f = Some(i);
             }
             ui.end_row();
@@ -404,11 +405,11 @@ fn protections_section(ui: &mut egui::Ui, h: &mut Harness, t: &Topology) {
         h.fixings.remove(i);
     }
     ui.horizontal(|ui| {
-        if ui.button(tr("➕ Protection")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("Protection")).clicked() {
             let id = next_id("P", &h.protections.iter().map(|p| p.id.as_str()).collect::<Vec<_>>());
             h.protections.push(Protection { id, end: 1.0, ..Default::default() });
         }
-        if ui.add_enabled(!t.segments.is_empty(), egui::Button::new(tr("➕ Fixing"))).clicked() {
+        if ui.add_enabled_ui(!t.segments.is_empty(), |ui| icons::text_button(ui, Icon::Plus, tr("Fixing"))).inner.clicked() {
             let id = next_id("F", &h.fixings.iter().map(|f| f.id.as_str()).collect::<Vec<_>>());
             h.fixings.push(Fixing { id, segment: t.segments[0].id.clone(), location: 0.5, ..Default::default() });
         }

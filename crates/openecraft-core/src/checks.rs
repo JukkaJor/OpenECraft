@@ -55,6 +55,7 @@ pub fn builtin() -> Vec<Check> {
         }),
         entry("translations", tr_const!("Project languages"), |prj, _| check_translations(prj)),
         entry("harnesses", tr_const!("Harnesses"), check_harnesses),
+        entry("open_wire_ends", tr_const!("Open wire ends"), |prj, _| check_open_wire_ends(prj)),
     ]
 }
 
@@ -303,6 +304,22 @@ fn check_layout(prj: &Project) -> Vec<Issue> {
     v
 }
 
+/// Wires that end in empty space (not on a connection point or another wire). Ends
+/// near the left or right edge of the drawing area are rails continued on the next
+/// page and stay unreported.
+fn check_open_wire_ends(prj: &Project) -> Vec<Issue> {
+    const EDGE: f32 = 12.0;
+    let mut v = Vec::new();
+    for (pi, pg) in prj.pages.iter().enumerate().filter(|(_, pg)| pg.kind == PageKind::Schematic) {
+        let area = crate::frame::of_page(prj, pi).area();
+        let at_edge = |x: f32| x - area.min.x <= EDGE || area.max.x - x <= EDGE;
+        for (id, q) in crate::netlist::open_wire_ends(prj, pg).into_iter().filter(|(_, q)| !at_edge(q.x)) {
+            v.push(crate::issue!(Severity::Warning, Some((pi, id)), "Wire ends open at {}", loc_str(prj, pi, q)));
+        }
+    }
+    v
+}
+
 /// Cable assignments, wire numbers and device tags.
 fn check_wires(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
     let mut v = Vec::new();
@@ -394,7 +411,7 @@ fn check_potentials(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Issue> {
             }
         }
         for (name, at) in undefined {
-            v.push(crate::issue!(Severity::Info, Some(at), "Potential {} has no definition (Project › Potentials)", name));
+            v.push(crate::issue!(Severity::Info, Some(at), "Potential {} has no definition (Connections › Potentials)", name));
         }
     }
     for net in open.nets.iter().filter(|n| !n.fluid) {

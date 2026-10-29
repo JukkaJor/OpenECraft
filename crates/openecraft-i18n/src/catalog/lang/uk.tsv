@@ -5,24 +5,9 @@
 (renamed from {})	(перейменовано з {})
 + Page	+ Сторінка
 0 = no jumper	0 = без перемички
-1. Pick a symbol in the library (right) and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Виберіть символ у бібліотеці (праворуч) і клацніть на сторінці, щоб розмістити його. Позначення пристроїв (-K1, -S2 …) призначаються автоматично.
-10. Project › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Проєкт › Редактор символів: малюйте власні символи (або копіюйте вбудовані) з точками підключення та функцією; вони зберігаються в проєкті й можуть передаватися як файли бібліотек.
-100% ≈ real size on a 96 dpi screen	100% ≈ реальний розмір на екрані 96 dpi
-11. Project › Title blocks and report forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages.	11. Проєкт › Основні написи та форми звітів: власні основні написи із заповнювачами ({project}, {page}, {prop:Name} …) і стовпці сторінок звітів.
-12. Panel layout: busbars and cutouts; the enclosure properties export the drilling pattern (NC data as DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Компонування шафи: збірні шини та вирізи; властивості корпусу експортують схему свердління (дані ЧПК як DXF / DWG / CSV). Виробничий перелік проводів містить довжини зачищення та наконечники.
-13. Harnesses: Project › Harnesses…; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Джгути: Проєкт › Джгути…; виберіть проводи між двома пристроями › Призначити джгуту, або для кожного з’єднання у властивостях проводу. Звіт даних джгута з довжинами, роз’ємами та діаметром пучка, експорт KBL.
-14. Door: switch the panel front view to Door and place command / signal devices there; their door cutouts are generated. Collisions are checked with the parts' 3D models.	14. Двері: перемкніть фронтальний вигляд шафи на «Двері» та розмістіть там командні / сигнальні пристрої; вирізи в дверях створюються автоматично. Колізії перевіряються за 3D-моделями виробів.
-2. Select a coil, then place contacts: they are assigned to that coil and numbered (13/14, 21/22 …). Cross references and the contact image update live.	2. Виберіть котушку, потім розмістіть контакти: вони призначаються цій котушці й нумеруються (13/14, 21/22 …). Перехресні посилання та зображення контактів оновлюються в реальному часі.
 2D front view	2D-фронтальний вигляд
-3. Draw wires with the wire tool (W). Wires end automatically on connection points. T-junctions get a connection dot.	3. Малюйте проводи інструментом «Провід» (W). Проводи автоматично закінчуються в точках підключення. Т-подібні відгалуження отримують точку з’єднання.
 3D model	3D-модель
-4. Potentials (L1, +24V …) and interruption points name the nets across pages. Select a wire to highlight its potential.	4. Потенціали (L1, +24V …) і точки розриву називають мережі на різних сторінках. Виберіть провід, щоб виділити його потенціал.
 4/2 directional valve	4/2-розподільник
-5. Assign parts in the property panel; generate reports (device list, BOM, terminal diagram, connection list, PLC list) and insert them as report pages.	5. Призначайте вироби на панелі властивостей; створюйте звіти (перелік пристроїв, специфікація, схема клем, перелік з’єднань, перелік ПЛК) і вставляйте їх як сторінки звітів.
-6. Structure: give pages a function (=A1) and location (+CAB1) in the page properties. Devices placed there get it (=A1+CAB1-K1); on the page only the differing part is shown.	6. Структура: задайте сторінкам функцію (=A1) і розташування (+CAB1) у властивостях сторінки. Розміщені там пристрої отримують їх (=A1+CAB1-K1); на сторінці показано лише відмінну частину.
-7. Cables: define them in Project › Cables…, select wires and use Assign to cable. Wire numbers: Project › Wire numbering…, or type a number in the wire properties.	7. Кабелі: визначте їх у Проєкт › Кабелі…, виберіть проводи та скористайтеся «Призначити кабелю». Номери проводів: Проєкт › Нумерація проводів… або введіть номер у властивостях проводу.
-8. Macros: select items › Edit › Save selection as macro; insert them from Insert › Macro…. Placeholders {NAME} are filled from value sets.	8. Макроси: виберіть елементи › Редагування › Зберегти виділене як макрос; вставляйте їх через Вставлення › Макрос…. Заповнювачі {NAME} заповнюються з наборів значень.
-9. Project › Terminal strips / PLC overview / Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Проєкт › Клемні колодки / Огляд ПЛК / Ревізії: порядок колодок, перемички та резерви; адреси ПЛК і таблиці символів; ревізії з позначками змін і затвердженими (заблокованими) сторінками.
 Access token	Токен доступу
 Accessories	Аксесуари
 Add missing parts of the example catalog	Додати відсутні вироби з прикладу каталогу
@@ -95,12 +80,9 @@ Click into the page to place {}	Клацніть на сторінці, щоб �
 Click on the 4 mm grid	Клацніть на сітці 4 мм
 Click start and corner points · Space toggles corner direction · ends automatically on a connection · Right click / Esc finish	Клацніть початкову й кутові точки · Пробіл змінює напрямок кута · закінчується автоматично на підключенні · Правий клік / Esc – завершити
 Click start and end point	Клацніть початкову й кінцеву точки
-Click start point, click end point	Клацніть початкову точку, потім кінцеву
 Click to add to the selected text.	Клацніть, щоб додати до вибраного тексту.
 Click to insert the macro · Esc cancel	Клацніть, щоб вставити макрос · Esc – скасувати
-Click to place a text	Клацніть, щоб розмістити текст
 Click to place the text from the field below	Клацніть, щоб розмістити текст із поля нижче
-Click to place · R rotate · M mirror · Esc finish	Клацніть, щоб розмістити · R – повернути · M – віддзеркалити · Esc – завершити
 Click to select, drag to move, drag on empty space for window selection. Right/middle drag pans, wheel zooms.	Клацніть, щоб вибрати, перетягніть, щоб перемістити, перетягніть на порожньому місці для вибору рамкою. Перетягування правою/середньою кнопкою зсуває вигляд, коліщатко масштабує.
 Click to show	Клацніть, щоб показати
 Click two corners	Клацніть два кути
@@ -146,7 +128,6 @@ Corner	Кут
 Cover	Титульний аркуш
 Cover sheet	Титульний аркуш
 Create / update the part on the server (Ctrl+S)	Створити / оновити виріб на сервері (Ctrl+S)
-Create an enclosure (➕ in the navigator on the left) to start the panel layout.	Створіть корпус (➕ у навігаторі ліворуч), щоб розпочати компонування шафи.
 Create an enclosure in the panel layout first.	Спочатку створіть корпус у компонуванні шафи.
 Create revision	Створити ревізію
 Created by	Створено
@@ -202,7 +183,7 @@ Door: {} devices, {} cutouts	Двері: пристроїв – {}, вирізі
 Downloaded {} parts (revision {}): {} new, {} updated	Завантажено виробів: {} (ревізія {}): нових – {}, оновлених – {}
 Downloading parts…	Завантаження виробів…
 Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire	Перетягування: обертання · перетягування правою/середньою кнопкою: зсув · коліщатко: масштаб · клацання: вибрати пристрій або провід
-Draw connections (W)	Малювати з’єднання (W)
+Draw connections	Малювати з’єднання
 Duplicate	Дублювати
 Each point-to-point connection can belong to a harness	Кожне з’єднання «точка–точка» може належати до джгута
 Edit	Редагувати
@@ -272,7 +253,6 @@ Harness data	Дані джгута
 Harness {} has no wires	Джгут {} не має проводів
 Harness {}: connection {} – {} does not exist in the schematic	Джгут {}: з’єднання {} – {} не існує на схемі
 Harnesses	Джгути
-Harnesses…	Джгути…
 Height	Висота
 Height (mm)	Висота (мм)
 Help	Довідка
@@ -330,7 +310,6 @@ Longer values are drawn smaller (0 = no limit)	Довші значення ві�
 Macro {} replaced	Макрос {} замінено
 Macro {} saved	Макрос {} збережено
 Macros	Макроси
-Macros…	Макроси…
 Macro…	Макрос…
 Main	Головн.
 Main contact 1-pole	Головний контакт, 1-полюсний
@@ -380,12 +359,8 @@ Next free contact numbers on this device	Наступні вільні номе�
 Next page (Page Down)	Наступна сторінка (Page Down)
 No PLC inputs / outputs placed.	Входи / виходи ПЛК не розміщено.
 No cables defined.	Кабелі не визначено.
-No cables yet – Project › Cables…	Кабелів ще немає – Проєкт › Кабелі…
 No changes since the last revision.	Немає змін після останньої ревізії.
-No devices yet. Pick a symbol from the library on the right and click into the page.	Пристроїв ще немає. Виберіть символ у бібліотеці праворуч і клацніть на сторінці.
-No enclosure yet – create one with ➕.	Корпусу ще немає – створіть його за допомогою ➕.
 No harnesses defined.	Джгути не визначено.
-No harnesses yet – Project › Harnesses…	Джгутів ще немає – Проєкт › Джгути…
 No identifying letter for the device tag.	Немає літерного коду для позначення пристрою.
 No macros yet. Select items in a schematic and save them as a macro.	Макросів ще немає. Виберіть елементи на схемі та збережіть їх як макрос.
 No parts found.	Вироби не знайдено.
@@ -437,7 +412,6 @@ PLC connection point	Точка підключення ПЛК
 PLC digital input	Дискретний вхід ПЛК
 PLC digital output	Дискретний вихід ПЛК
 PLC overview	Огляд ПЛК
-PLC overview…	Огляд ПЛК…
 Packaging quantity	Кількість в упаковці
 Page	Сторінка
 Page / column (3.4.1)	Сторінка / стовпець (3.4.1)
@@ -468,11 +442,10 @@ Parts	Вироби
 Parts (CSV, JSON)	Вироби (CSV, JSON)
 Parts import failed: {}	Помилка імпорту виробів: {}
 Parts management	Керування виробами
-Parts management…	Керування виробами…
 Parts server: {}	Сервер виробів: {}
 Passive components	Пасивні компоненти
 Pilot light (NFPA)	Сигнальна лампа (NFPA)
-Place text (T)	Розмістити текст (T)
+Place text	Розмістити текст
 Placed	Розміщено
 Placed {}× in the project	Розміщено в проєкті {}×
 Placeholders	Заповнювачі
@@ -542,7 +515,6 @@ Refresh example catalog parts (GEN.*)	Оновити вироби приклад
 Relay / contactor coil	Котушка реле / контактора
 Relay coil (NFPA)	Котушка реле (NFPA)
 Release: lock all pages	Затвердити: заблокувати всі сторінки
-Released page – unlock it in Project › Revisions to change it	Затверджена сторінка – щоб змінити її, розблокуйте в Проєкт › Ревізії
 Remove from cable	Вилучити з кабелю
 Remove from harness	Вилучити з джгута
 Remove from the harness	Вилучити з джгута
@@ -566,7 +538,6 @@ Revision marks	Позначки ревізій
 Revision overview (changes)	Огляд ревізій (зміни)
 Revision {} created	Ревізію {} створено
 Revisions	Ревізії
-Revisions…	Ревізії…
 Right	Праворуч
 Rotate (R)	Повернути (R)
 Rotate / mirror (selection or symbol being placed)	Повернути / віддзеркалити (виділене або символ, що розміщується)
@@ -637,7 +608,6 @@ Supplier	Постачальник
 Switches / Sensors	Вимикачі / датчики
 Symbol	Символ
 Symbol editor	Редактор символів
-Symbol editor…	Редактор символів…
 Symbol table import failed: {}	Помилка імпорту таблиці символів: {}
 Symbols	Символи
 Synchronize project parts from database	Синхронізувати вироби проєкту з бази даних
@@ -655,7 +625,6 @@ Terminal number	Номер клеми
 Terminal number, PLC address, potential name …	Номер клеми, адреса ПЛК, назва потенціалу …
 Terminal strip	Клемна колодка
 Terminal strips	Клемні колодки
-Terminal strips…	Клемні колодки…
 Terminals	Клеми
 Terminals with the same jumper number are bridged (same potential). Spare terminals are counted in the bill of materials.	Клеми з однаковим номером перемички з’єднані (однаковий потенціал). Резервні клеми враховуються в специфікації.
 Test connection	Перевірити підключення
@@ -727,8 +696,6 @@ Wire tool / text tool	Інструмент «Провід» / інструмен
 Wire {} – {}  ({} of {} here, click again for the next)	Провід {} – {}  ({} з {} тут, клацніть ще раз для наступного)
 Wire {} – {}  {} mm	Провід {} – {}  {} мм
 Wires	Проводи
-Workflow	Порядок роботи
-X {}  Y {} mm   Column {}  Row {}	X {}  Y {} мм   Стовпець {}  Рядок {}
 X {}  Y {} mm on the {}	X {}  Y {} мм на {}
 YYYY-MM-DD	РРРР-ММ-ДД
 Zoom / pan	Масштаб / зсув
@@ -815,67 +782,55 @@ writable with token	доступний для запису з токеном
 ⎘ Copy	⎘ Копіювати
 ○ Circle	○ Коло
 ☐ Rect	☐ Прямокутник
-⛶ Fit	⛶ Умістити
-✏ Place in schematic	✏ Розмістити на схемі
+Place in schematic	Розмістити на схемі
 ✏ Wire	✏ Провід
-✔ Add to device	✔ Додати до пристрою
-✔ Create	✔ Створити
+Add to device	Додати до пристрою
+Create	Створити
 ✔ No problems found.	✔ Проблем не знайдено.
 ✔ Save	✔ Зберегти
 ➕ Add accessory	➕ Додати аксесуар
-➕ Add function	➕ Додати функцію
-➕ Add part…	➕ Додати виріб…
+Add function	Додати функцію
+Add part…	Додати виріб…
 ➕ Insert (click into the page)	➕ Вставити (клацніть на сторінці)
 ➕ Insert as new page	➕ Вставити як нову сторінку
 ➕ Insert as report page	➕ Вставити як сторінку звіту
-➕ Insert mounting layout page	➕ Вставити сторінку плану монтажу
+Insert mounting layout page	Вставити сторінку плану монтажу
 ➕ Label	➕ Мітка
 ➕ Line	➕ Лінія
 ➕ New	➕ Створити
-➕ New cable	➕ Новий кабель
-➕ New harness	➕ Новий джгут
+New cable	Новий кабель
+New harness	Новий джгут
 ➕ Property	➕ Властивість
 ➕ Rectangle	➕ Прямокутник
 ➕ Text	➕ Текст
-➕ Value set	➕ Набір значень
+Value set	Набір значень
 ➕ {} (not saved)	➕ {} (не збережено)
 ⟲ Revert	⟲ Повернути зміни
 ⟳ Reload	⟳ Перезавантажити
-⟳ Rotate	⟳ Повернути
-⬆ Import symbol table…	⬆ Імпортувати таблицю символів…
-⬆ Import…	⬆ Імпортувати…
-⬆ Upload database ({})	⬆ Вивантажити базу даних ({})
+Import symbol table…	Імпортувати таблицю символів…
+Upload database ({})	Вивантажити базу даних ({})
 ⬆ Upload parts file (CSV / JSON)…	⬆ Вивантажити файл виробів (CSV / JSON)…
-⬆ Upload selected part	⬆ Вивантажити вибраний виріб
-⬇ Door NC data (DXF)	⬇ Дані ЧПК дверей (DXF)
-⬇ Door cutouts (CSV)	⬇ Вирізи дверей (CSV)
-⬇ Download into database	⬇ Завантажити до бази даних
-⬇ Drilling list (CSV)	⬇ Перелік отворів (CSV)
-⬇ Export CSV	⬇ Експортувати CSV
+Upload selected part	Вивантажити вибраний виріб
+Door NC data (DXF)	Дані ЧПК дверей (DXF)
+Door cutouts (CSV)	Вирізи дверей (CSV)
+Download into database	Завантажити до бази даних
 ⬇ Export KBL (XML)…	⬇ Експортувати KBL (XML)…
-⬇ Export symbol table (CSV)…	⬇ Експортувати таблицю символів (CSV)…
-⬇ Export…	⬇ Експортувати…
-⬇ NC data (DXF)	⬇ Дані ЧПК (DXF)
+Export symbol table (CSV)…	Експортувати таблицю символів (CSV)…
+NC data (DXF)	Дані ЧПК (DXF)
 ⬉ Select	⬉ Вибрати
 🌐 Parts server	🌐 Сервер виробів
-💾 Save	💾 Зберегти
-💾 Save selection as macro…	💾 Зберегти виділене як макрос…
-📊 Cable overview	📊 Огляд кабелів
-📊 Harness data	📊 Дані джгута
 📊 Reports	📊 Звіти
-📊 Revision overview	📊 Огляд ревізій
-🔒 Released page – read only	🔒 Затверджена сторінка – лише для читання
+Revision overview	Огляд ревізій
+Released page – read only	Затверджена сторінка – лише для читання
 🗄 Panel layout	🗄 Компонування шафи
 🗄 Parts database	🗄 База даних виробів
 🗋 Schematic	🗋 Схема
 🗑 Delete	🗑 Видалити
-🗑 Delete connection point	🗑 Видалити точку підключення
-🗑 Delete element	🗑 Видалити елемент
-🗑 Delete macro	🗑 Видалити макрос
-🗑 Remove	🗑 Вилучити
+Delete connection point	Видалити точку підключення
+Delete element	Видалити елемент
 {} connections removed from their harness	Вилучено з’єднань із їхнього джгута: {}
 {} connections assigned to {}	{} з’єднань призначено {}
-🗄 Show in panel layout ({})	🗄 Показати в компонуванні шафи ({})
+Show in panel layout ({})	Показати в компонуванні шафи ({})
    |  Potential {}	   |  Потенціал {}
 📁 Project parts ({})	📁 Вироби проєкту ({})
 part {} not found	виріб {} не знайдено
@@ -1070,8 +1025,8 @@ via cable ducts	через кабельні канали
 {} connection points	Точок підключення: {}
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} мм на панелі + {} мм запасу; решта – шлях від точок підключення до панелі.
 {} wires, {} – {} mm	Проводів: {}, {} – {} мм
-➕ Add connection point	➕ Додати точку підключення
-🗑 Remove all	🗑 Вилучити все
+Add connection point	Додати точку підключення
+Remove all	Вилучити все
 2D front view (SVG)	2D-фронтальний вигляд (SVG)
 3D model (STL, OBJ, STEP, IGES, IFC, JT)	3D-модель (STL, OBJ, STEP, IGES, IFC, JT)
 End bracket	Кінцевий фіксатор
@@ -1113,11 +1068,9 @@ Wire number on both ends	Номер проводу на обох кінцях
 {} markers	Маркерів: {}
 {} mm	{} мм
 {} pieces	{} шт.
-Potentials…	Потенціали…
 Potentials	Потенціали
-➕ New potential	➕ Новий потенціал
+New potential	Новий потенціал
 Load preset	Завантажити шаблон
-📊 Potential overview	📊 Огляд потенціалів
 Wires without their own colour or cross-section take them from the potential of their connection; cable cores keep the values of the cable.	Проводи без власного кольору або перерізу беруть їх від потенціалу свого з’єднання; жили кабелю зберігають значення кабелю.
 e.g. 400 V AC	напр. 400 V AC
 Delete	Видалити
@@ -1151,7 +1104,6 @@ turquoise	бірюзовий
 silver	срібний
 green-yellow	зелено-жовтий
 Potential {} defined {} times	Потенціал {} визначено {} раз(и)
-Potential {} has no definition (Project › Potentials)	Потенціал {} не має визначення (Проєкт › Потенціали)
 Protective conductor {} with wire colour {} (must be GNYE)	Захисний провідник {} з кольором проводу {} (має бути GNYE)
 Wire colour GNYE is reserved for protective conductors ({})	Колір проводу GNYE зарезервовано для захисних провідників ({})
 {}: cross-section {} differs from the potential definition ({})	{}: переріз {} відрізняється від визначення потенціалу ({})
@@ -1183,9 +1135,7 @@ Draw wires in their colour	Малювати проводи їхнім кольо
 Pin	Штир
 Plug	Штекер
 Plugs	Штекери
-Plugs…	Штекери…
 Plug diagram	Схема штекерів
-📊 Plug diagram	📊 Схема штекерів
 Socket side	Сторона гнізд
 Pin side	Сторона штирів
 female	гніздо
@@ -1231,7 +1181,6 @@ Column	Стовпець
 Condition '{}' needs OPTION=value	Умова '{}' потребує OPTION=значення
 Condition (OPTION=value & …)	Умова (OPTION=значення & …)
 Configurator	Конфігуратор
-Configurator…	Конфігуратор…
 Cooling	Охолодження
 Creates or changes a configurator option	Створює або змінює параметр конфігуратора
 Cross-section {} carries {} A, less than the {} A of {}	Переріз {} витримує {} A, менше ніж {} A для {}
@@ -1355,10 +1304,8 @@ sheet_steel, stainless_steel, aluminium or plastic	sheet_steel, stainless_steel,
 {}: voltage drop {} V ({} %) above {} %	{}: спад напруги {} V ({} %) понад {} %
 {}: {} W power loss heat the enclosure to {} °C (highest {} °C): {} needed	{}: втрати потужності {} W нагрівають корпус до {} °C (максимум {} °C): потрібно {}
 {}: {} carries {} A, the load {} needs {} A	{}: {} витримує {} A, навантаження {} потребує {} A
-⚙ Generate pages	⚙ Згенерувати сторінки
-➕ Option	➕ Параметр
-➕ Rule	➕ Правило
-🗑 Delete variant	🗑 Видалити варіант
+Option	Параметр
+Delete variant	Видалити варіант
 e.g. NAME=Pump; POWER={POWER}	напр. NAME=Насос; POWER={POWER}
 e.g. STARTER=DOL	напр. STARTER=DOL
 Parts (CSV, JSON, BMEcat)	Вироби (CSV, JSON, BMEcat)
@@ -1395,8 +1342,7 @@ Default medium	Стандартне середовище
 Number prefix	Префікс номера
 📊 Hose list	📊 Перелік шлангів
 PCT loops (pre-planning)	Контури КВПіА (попереднє планування)
-➕ Loop	➕ Контур
-📊 PCT loop overview	📊 Огляд контурів КВПіА
+Loop	Контур
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Прилади на P&ID мають у своїй мітці літери функції та номер контуру (TIC 101); їхнє позначення пристрою пов’язує їх зі схемою.
 PCT loop	Контур КВПіА
 Range	Діапазон
@@ -1409,7 +1355,6 @@ Delete loop	Видалити контур
 {} (default)	{} (за замовчуванням)
 Hose / pipe {}	Шланг / трубопровід {}
 Resulting: {} · {} · {} · {} m	Результат: {} · {} · {} · {} м
-Fluid and process…	Гідро-, пневмотехніка та технологія…
 Hose defaults and PCT loops of the pre-planning	Параметри шлангів за замовчуванням і контури КВПіА попереднього планування
 ✔ Wiring	✔ Монтаж проводів
 Wiring assistant: checklist of the wires with 3D view and progress (tablet: open the web app with #wiring)	Помічник монтажу проводів: контрольний список проводів із 3D-виглядом і ходом виконання (планшет: відкрийте вебзастосунок із #wiring)
@@ -1538,7 +1483,7 @@ Project texts (function texts, page descriptions, free texts, descriptions) are 
 Source language	Мова оригіналу
 Target languages	Цільові мови
 Remove the language (its translations stay in the dictionary)	Вилучити мову (її переклади залишаються в словнику)
-➕ Add	➕ Додати
+Add	Додати
 ISO 639-1 language code	Код мови ISO 639-1
 Collect texts from the project	Зібрати тексти з проєкту
 Adds all lines of the project texts to the dictionary	Додає всі рядки текстів проєкту до словника
@@ -1554,7 +1499,6 @@ not translated into {}	не перекладено мовою {}
 {} new texts in the dictionary	Нових текстів у словнику: {}
 {} unused entries removed	Вилучено невикористаних записів: {}
 Export as PDF in language	Експортувати як PDF мовою
-Project languages…	Мови проєкту…
 Translate the project texts; documentation per language	Переклад текстів проєкту; документація для кожної мови
 {} translations imported	Імпортовано перекладів: {}
 Import failed: {}	Помилка імпорту: {}
@@ -1608,8 +1552,8 @@ Components (assembly)	Компоненти (збірка)
 (included)	(включено)
 Fastening hardware in the bill of materials	Кріпильні вироби в специфікації
 Screws, nuts, washers and rivet nuts of the fixing points	Гвинти, гайки, шайби та заклепкові гайки точок кріплення
-⬇ NC data of this face (DXF)	⬇ Дані ЧПК цієї грані (DXF)
-⬇ Drilling list of this face (CSV)	⬇ Перелік отворів цієї грані (CSV)
+NC data of this face (DXF)	Дані ЧПК цієї грані (DXF)
+Drilling list of this face (CSV)	Перелік отворів цієї грані (CSV)
 Group as assembly	Згрупувати як збірку
 The items are selected and moved together	Елементи вибираються й переміщуються разом
 Distribute horizontally	Розподілити горизонтально
@@ -1625,7 +1569,6 @@ Pattern	Масив
 Columns × rows	Стовпці × рядки
 Pitch X / Y	Крок X / Y
 Devices are not copied: a device is placed once.	Пристрої не копіюються: пристрій розміщується один раз.
-✔ Copy	✔ Копіювати
 Save as 3D macro	Зберегти як 3D-макрос
 Items with an anchor keep it; the others are inserted relative to the click.	Елементи з прив’язкою зберігають її; інші вставляються відносно місця клацання.
 Walls	Стінки
@@ -1728,7 +1671,6 @@ Macro name	Назва макросу
 Inserts a 3D macro as an assembly: anchored items at their place, the others relative to x / y on the face	Вставляє 3D-макрос як збірку: прив’язані елементи – на їхнє місце, інші – відносно x / y на грані
 Installation site	Місце встановлення
 Structure management	Керування структурою
-Structure management…	Керування структурою…
 Structure identifiers (IEC 81346), templates and work areas	Структурні позначення (IEC 81346), шаблони та робочі області
 Template	Шаблон
 Apply template	Застосувати шаблон
@@ -1752,7 +1694,6 @@ Identifiers in use that are not defined are reported by the check.	Про вик
 Work areas	Робочі області
 Work area	Робоча область
 Work area {}	Робоча область {}
-➕ Work area	➕ Робоча область
 (whole project)	(увесь проєкт)
 A work area limits the pages and devices in the navigator to a part of the project. Filters: empty = any, * = any characters; A1 also covers A1.2.	Робоча область обмежує сторінки й пристрої в навігаторі частиною проєкту. Фільтри: порожньо = будь-що, * = будь-які символи; A1 охоплює також A1.2.
 OpenECraft structure template	Шаблон структури OpenECraft
@@ -1873,7 +1814,7 @@ Export…	Експортувати…
 Import…	Імпортувати…
 File to embed	Файл для вбудовування
 Forms – title blocks, frames and templates	Форми – основні написи, рамки та шаблони
-Title blocks, plot frames and page templates…	Основні написи, рамки аркушів і шаблони сторінок…
+Title blocks, plot frames and page templates	Основні написи, рамки аркушів і шаблони сторінок
 Frame of all pages that do not choose one	Рамка всіх сторінок, які не вибирають власну
 Frame to start from when the frame is new (default: A3 landscape)	Вихідна рамка для нової рамки (за замовчуванням: A3 landscape)
 Free graphics and notes, not evaluated	Вільна графіка та нотатки, не обробляються
@@ -2044,19 +1985,18 @@ Port {} is not connected	Порт {} не підключено
 Exports the project: svg (one page), html, pdf, dxf, dwg (only to a file), wire_list (CSV), plc_table (CSV), plc_variables (IEC 61131-3 global variables), aml (AutomationML PLC hardware), kbl (harness XML), marking (CSV), gltf, step, iges, ifc or jt (3D panel layout; jt only to a file), dictionary (CSV of the project text translations)	Експортує проєкт: svg (одна сторінка), html, pdf, dxf, dwg (лише у файл), wire_list (CSV), plc_table (CSV), plc_variables (глобальні змінні IEC 61131-3), aml (апаратне забезпечення ПЛК в AutomationML), kbl (XML джгута), marking (CSV), gltf, step, iges, ifc або jt (3D-компонування шафи; jt лише у файл), dictionary (CSV перекладів текстів проєкту)
 svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt or dictionary, or an export of a plugin	svg, html, pdf, dxf, dwg, wire_list, plc_table, plc_variables, aml, kbl, marking, gltf, step, iges, ifc, jt або dictionary, або експорт плагіна
 PLC hardware	Апаратне забезпечення ПЛК
-⚙ Automatic configuration	⚙ Автоматична конфігурація
+Automatic configuration	Автоматична конфігурація
 Stations for CPUs and bus couplers, bus systems, slots, start addresses, point addresses, IP addresses and a line topology	Станції для CPU і шинних з’єднувачів, шинні системи, слоти, початкові адреси, адреси точок, IP-адреси та лінійна топологія
-⬇ Export AutomationML…	⬇ Експортувати AutomationML…
+Export AutomationML…	Експортувати AutomationML…
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Апаратна конфігурація та змінні ПЛК для TIA Portal та інших засобів ПЛК
-⬆ Import AutomationML…	⬆ Імпортувати AutomationML…
+Import AutomationML…	Імпортувати AutomationML…
 Stations, modules, addresses, subnets and tag comments from a PLC tool	Станції, модулі, адреси, підмережі та коментарі змінних із засобу ПЛК
-⬇ Export IEC 61131-3 variables…	⬇ Експортувати змінні IEC 61131-3…
+Export IEC 61131-3 variables…	Експортувати змінні IEC 61131-3…
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Список глобальних змінних із прямими адресами для CODESYS, TwinCAT та інших
 Stations and racks	Станції та монтажні каркаси
 Bus topology	Топологія шини
 Device descriptions	Описи пристроїв
 Station	Станція
-➕ Station	➕ Станція
 Cards without station: {}	Плати без станції: {}
 No stations: add one or use the automatic configuration.	Немає станцій: додайте станцію або скористайтеся автоматичною конфігурацією.
 Head (CPU / coupler)	Головний модуль (CPU / з’єднувач)
@@ -2065,7 +2005,7 @@ Bus system	Шинна система
 IP / bus address	IP-адреса / адреса на шині
 Device number	Номер пристрою
 {}: {} slots, ports {}	{}: слотів – {}, порти {}
-🗑 Remove station	🗑 Вилучити станцію
+Remove station	Вилучити станцію
 Plug in card	Встановити плату
 No modules: plug in PLC cards of the schematic.	Немає модулів: встановіть плати ПЛК зі схеми.
 Device description	Опис пристрою
@@ -2076,13 +2016,12 @@ Output bytes	Байти виходів
 from the parts	з виробів
 Remove from the station	Вилучити зі станції
 Bus systems	Шинні системи
-➕ Bus system	➕ Шинна система
 Subnet	Підмережа
 Port A	Порт A
 Port B	Порт B
 Without bus system	Без шинної системи
 No bus systems.	Немає шинних систем.
-⬆ Import GSDML / ESI…	⬆ Імпортувати GSDML / ESI…
+Import GSDML / ESI…	Імпортувати GSDML / ESI…
 Device descriptions of PROFINET (GSDML) and EtherCAT (ESI) devices	Описи пристроїв PROFINET (GSDML) і EtherCAT (ESI)
 Parts of the product group PLC give descriptions as well (technical data: Inputs, Outputs, Slots, Bus, Ports).	Вироби групи продуктів ПЛК також надають описи (технічні дані: Inputs, Outputs, Slots, Bus, Ports).
 Slots	Слоти
@@ -2093,7 +2032,7 @@ built-in	вбудований
 {} addresses changed	Змінено адрес: {}
 Imported {} stations, {} modules, {} bus systems, {} connections; {} addresses and {} texts changed	Імпортовано станцій: {}, модулів: {}, шинних систем: {}, з’єднань: {}; змінено адрес: {} і текстів: {}
 {} device descriptions imported	Імпортовано описів пристроїв: {}
-PLC hardware and bus topology…	Апаратне забезпечення ПЛК і топологія шини…
+PLC hardware and bus topology	Апаратне забезпечення ПЛК і топологія шини
 Stations, racks, modules, bus systems, AutomationML exchange with PLC tools	Станції, монтажні каркаси, модулі, шинні системи, обмін AutomationML із засобами ПЛК
 Device description (GSDML, ESI)	Опис пристрою (GSDML, ESI)
 Bus connection {} - {}: cable {} does not exist	Шинне з’єднання {} - {}: кабель {} не існує
@@ -2101,7 +2040,7 @@ Cable {} is a {} cable on a {} connection	Кабель {} – це кабель 
 Port {} has more than {} cables	Порт {} має понад {} кабелів
 Cable {} is used for {} bus connections	Кабель {} використано для {} шинних з’єднань
 with bus cables	із шинними кабелями
-➕ Create bus cables	➕ Створити шинні кабелі
+Create bus cables	Створити шинні кабелі
 A cable of the bus type for every connection without cable	Кабель шинного типу для кожного з’єднання без кабелю
 missing	відсутній
 {} stations, {} bus systems, {} cards assigned, {} addresses changed, {} connections, {} cables	Станцій: {}, шинних систем: {}, призначено плат: {}, змінено адрес: {}, з’єднань: {}, кабелів: {}
@@ -2211,12 +2150,11 @@ starts with	починається з
 {} (first column)	{} (перший стовпець)
 {} report pages output to {}	Виведено сторінок звітів: {} до {}
 {} – {} ({} pages)	{} – {} (сторінок: {})
-➕ Add filter	➕ Додати фільтр
-➕ Add sort key	➕ Додати ключ сортування
-➕ New block	➕ Новий блок
-➕ New scheme	➕ Нова схема
-⟳ Generate all	⟳ Згенерувати всі
-⟳ Generate	⟳ Згенерувати
+Add filter	Додати фільтр
+Add sort key	Додати ключ сортування
+New block	Новий блок
+Generate all	Згенерувати всі
+Generate	Згенерувати
 ⟳ Update report blocks	⟳ Оновити блоки звітів
 Opening {}…	Відкриття {}…
 Uploading {}…	Вивантаження {}…
@@ -2238,13 +2176,13 @@ Save and release page	Зберегти та звільнити сторінку
 Lock page	Заблокувати сторінку
 Project server	Сервер проєктів
 User name	Ім’я користувача
-⟳ List projects	⟳ Показати проєкти
+List projects	Показати проєкти
 Enter a user name: other users see it on your locks.	Введіть ім’я користувача: інші користувачі бачать його на ваших блокуваннях.
 Users	Користувачі
 Opening a project replaces the current one, its unsaved changes are lost.	Відкриття проєкту замінює поточний, його незбережені зміни буде втрачено.
 Upload the current project as a new shared project:	Вивантажити поточний проєкт як новий спільний проєкт:
 Name on the server	Назва на сервері
-⬆ Upload	⬆ Вивантажити
+Upload	Вивантажити
 Letters, digits, space, - _ . (up to 64 characters)	Літери, цифри, пробіл, - _ . (до 64 символів)
 Shared project {} – revision {}, user {}	Спільний проєкт {} – ревізія {}, користувач {}
 Save and release all locks	Зберегти та звільнити всі блокування
@@ -2261,14 +2199,11 @@ None	Немає
 Close shared project	Закрити спільний проєкт
 Releases all locks; the project stays open as a local copy	Звільняє всі блокування; проєкт залишається відкритим як локальна копія
 Download project	Завантажити проєкт
-Project server…	Сервер проєктів…
 Open and save shared projects, lock pages	Відкривати та зберігати спільні проєкти, блокувати сторінки
-🔒 Locked by {} – read only	🔒 Заблоковано користувачем {} – лише для читання
+Locked by {} – read only	Заблоковано користувачем {} – лише для читання
 {} (project server, revision {})	{} (сервер проєктів, ревізія {})
 {} change requests added, {} updated	Запитів на зміни додано: {}, оновлено: {}
-Compare and baselines…	Порівняння та базові версії…
 Compare with a baseline, a revision or another project file and take differences over	Порівняти з базовою версією, ревізією або іншим файлом проєкту та перенести відмінності
-Change requests…	Запити на зміни…
 Review: comments and markup	Рецензування: коментарі та розмітка
 Revisions, approval and release	Ревізії, погодження та затвердження
 Review ({})	Коментарі ({})
@@ -2293,7 +2228,7 @@ What should be checked or changed?	Що слід перевірити або з�
 Change request	Запит на зміну
 Reply…	Відповісти…
 Reply	Відповісти
-🗑 Delete comment	🗑 Видалити коментар
+Delete comment	Видалити коментар
 Approval workflow	Процес погодження
 Approvers	Погоджувачі
 User names, separated by commas	Імена користувачів через кому
@@ -2309,8 +2244,8 @@ rejected	відхилено
 Submit for review	Подати на рецензування
 Release	Затвердити
 Discard draft	Відхилити чернетку
-✔ Approve	✔ Погодити
-✖ Reject	✖ Відхилити
+Approve	Погодити
+Reject	Відхилити
 Approving needs an approver; you are \"{}\".	Погоджувати може лише погоджувач; ви – «{}».
 Submit again	Подати повторно
 With the current pages; the approvals so far become void	З поточними сторінками; наявні погодження втрачають чинність
@@ -2335,7 +2270,7 @@ Compare with	Порівняти з
 Baseline {} {}	Базова версія {} {}
 Baseline {}	Базова версія {}
 Pages of revision {}	Сторінки ревізії {}
-📂 Project file…	📂 Файл проєкту…
+Project file…	Файл проєкту…
 Baselines ({})	Базові версії ({})
 A baseline stores the whole project (pages, devices, parts, settings). Releasing a revision stores one.	Базова версія зберігає весь проєкт (сторінки, пристрої, вироби, параметри). Затвердження ревізії зберігає базову версію.
 Create baseline	Створити базову версію
@@ -2347,10 +2282,9 @@ Make the selected elements of this project equal to the compared ones	Зроби
 {} details	{} – подробиці
 Baseline {} created	Базову версію {} створено
 Change requests	Запити на зміни
-➕ New request	➕ Новий запит
-📂 Import…	📂 Імпортувати…
+New request	Новий запит
 CSV or JSON from another system; known numbers are updated	CSV або JSON з іншої системи; відомі номери оновлюються
-⬇ Export JSON	⬇ Експортувати JSON
+Export JSON	Експортувати JSON
 Rejected and closed ones too	Також відхилені та закриті
 No change requests yet.	Запитів на зміни ще немає.
 Select a request.	Виберіть запит.
@@ -2365,9 +2299,9 @@ Device tags, separated by commas	Позначення пристроїв чер�
 Affected pages ({})	Сторінки, яких це стосується ({})
 Go to page	Перейти до сторінки
 Comments ({})	Коментарі ({})
-💬 Comment on the current page	💬 Коментар на поточній сторінці
+Comment on the current page	Коментар на поточній сторінці
 Linked to this request	Пов’язано з цим запитом
-🗑 Delete request	🗑 Видалити запит
+Delete request	Видалити запит
 in progress	виконується
 resolved	вирішено
 Redline	Червона розмітка
@@ -2405,14 +2339,6 @@ Settings	Параметри
 Page order	Порядок сторінок
 {} differences taken over	Перенесено відмінностей: {}
 Layers	Шари
-Click to select, drag to move, drag on empty space for window selection. Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Клацніть, щоб вибрати, перетягніть, щоб перемістити, перетягніть на порожньому місці для вибору рамкою. Перетягніть позначення або текст властивості вибраного символу, щоб розмістити його. Перетягування правою/середньою кнопкою зсуває вигляд, коліщатко масштабує.
-Click start and corner points · Space toggles corner direction · A toggles routing around symbols · ends automatically on a connection · Right click / Esc finish	Клацніть початкову й кутові точки · Пробіл змінює напрямок кута · A вмикає/вимикає обхід символів · закінчується автоматично на підключенні · Правий клік / Esc – завершити
-Click the centre, then a point of the circle	Клацніть центр, потім точку кола
-Click the centre, the start point and the end point (counter-clockwise)	Клацніть центр, початкову та кінцеву точки (проти годинникової стрілки)
-Click the corner points · double click, Enter or right click finishes	Клацніть кутові точки · подвійне клацання, Enter або правий клік – завершити
-Click the two points to measure, then the position of the dimension line	Клацніть дві точки для вимірювання, потім положення розмірної лінії
-Click on a wire: the point defines number, colour, cross-section and cable core of the connection	Клацніть провід: точка визначає номер, колір, переріз і жилу кабелю з’єднання
-Draw a line across the wires that are cores of the cable	Проведіть лінію через проводи, які є жилами кабелю
 Click to insert · Esc cancel	Клацніть, щоб вставити · Esc – скасувати
 Routing around symbols	Обхід символів
 {} objects pasted	Вставлено об’єктів: {}
@@ -2442,7 +2368,7 @@ Layer	Шар
 Auto-connect	Автопідключення
 Draw connections between facing connection points when symbols are placed or moved	Малювати з’єднання між протилежними точками підключення під час розміщення або переміщення символів
 Route	Обхід
-The wire tool routes around symbols and other wires (A)	Інструмент «Провід» прокладає проводи в обхід символів та інших проводів (A)
+The wire tool routes around symbols and other wires	Інструмент «Провід» прокладає проводи в обхід символів та інших проводів
 Dimension	Розмір
 Image…	Зображення…
 PNG or JPEG bitmap, e.g. a logo or a photo	Растрове зображення PNG або JPEG, напр. логотип або фото
@@ -2486,7 +2412,6 @@ Tag placed by hand	Позначення розміщено вручну
 Drag the tag of the selected symbol to place it.	Перетягніть позначення вибраного символу, щоб розмістити його.
 (empty)	(порожньо)
 ➕ Place property	➕ Розмістити властивість
-➕ Layer	➕ Шар
 Layer {}	Шар {}
 Layers of graphics, texts, dimensions and images	Шари графіки, текстів, розмірів і зображень
 Visible	Видимий
@@ -2531,8 +2456,6 @@ Places a connection definition point on a wire; the connection takes its number,
 Cross-section, e.g. 1.5 mm²	Переріз, напр. 1.5 mm²
 A cable definition needs a start and an end point	Визначення кабелю потребує початкової та кінцевої точки
 No cable {}	Немає кабелю {}
-15. Connection definition points on a wire set number, colour, cross-section and core of the whole connection; a cable definition line across wires makes them cores of a cable. Auto-connect joins facing connection points, Route (A) leads wires around symbols.	15. Точки визначення з’єднання на проводі задають номер, колір, переріз і жилу всього з’єднання; лінія визначення кабелю через проводи робить їх жилами кабелю. Автопідключення з’єднує протилежні точки підключення, «Обхід» (A) прокладає проводи в обхід символів.
-16. Graphics: circles, ellipses, arcs, polygons, dimensions and images on layers (navigator › Layers: visible, locked, printed). Drag the tag of a selected symbol to place it; further properties are placed in its properties.	16. Графіка: кола, еліпси, дуги, багатокутники, розміри та зображення на шарах (навігатор › Шари: видимий, заблокований, друкується). Перетягніть позначення вибраного символу, щоб розмістити його; інші властивості розміщуються в його властивостях.
 Coil	Котушка
 Main contacts 4-pole	Головні контакти, 4-полюсні
 NO contact, on-delay	Замикальний контакт, із затримкою ввімкнення
@@ -2689,16 +2612,13 @@ Added to both ends of the length for the cut length (insertion depth)	Додає
 📊 Hose configuration	📊 Конфігурація шлангів
 📊 Tubing / piping list	📊 Перелік труб / шлангів
 📊 Fluid netlist	📊 Список гідропневматичних мереж
-➕ Group	➕ Група
-📊 Fluid device groups	📊 Групи гідропневматичних пристроїв
 Valve terminals, service units and manifolds: their fluid devices in slot order, separated by blanks.	Клапанні острови, блоки підготовки повітря та розподільні плити: їхні гідропневматичні пристрої в порядку місць, розділені пробілами.
 Places	Місця
 0 = not limited	0 = без обмеження
 Delete group	Видалити групу
-🔄 Synchronize	🔄 Синхронізувати
+Synchronize	Синхронізувати
 Links solenoid valves with the coil of the same number (-QM3 › -MB3) and copies function texts	Пов’язує електромагнітні клапани з котушкою з тим самим номером (-QM3 › -MB3) і копіює тексти функцій
 {} links created, {} function texts copied	Створено зв’язків: {}, скопійовано текстів функцій: {}
-📊 Electro-fluid cross reference	📊 Електро-гідропневматичні перехресні посилання
 Electrical devices that actuate or monitor a fluid device (solenoid coils, position and pressure switches); both schematics show cross references to each other.	Електричні пристрої, які приводять у дію або контролюють гідропневматичний пристрій (котушки, кінцеві вимикачі та реле тиску); обидві схеми показують перехресні посилання одна на одну.
 Electrical devices	Електричні пристрої
 Operating pressure in bar (0 = hose ratings are not checked)	Робочий тиск у bar (0 = номінальний тиск шлангів не перевіряється)
@@ -2734,7 +2654,6 @@ Right neighbour	Сусід праворуч
 No cable passage to {}: wires to it are not routed	Немає кабельного проходу до {}: проводи до нього не прокладаються
 Open to {}: wires cross beside the mounting plates	Відкрито до {}: проводи проходять поруч із монтажними панелями
 {} cable passages to {}	Кабельних проходів до {}: {}
-➕ Cable passage to {}	➕ Кабельний прохід до {}
 Round cutouts facing each other in both side walls	Круглі вирізи один навпроти одного в обох бічних стінках
 Both sides are open: the wires need no cutout	Обидві сторони відкриті: проводам не потрібен виріз
 Cable passage to {}	Кабельний прохід до {}
@@ -3067,7 +2986,6 @@ Surge protection	Захист від перенапруг
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Відключна здатність щодо струму короткого замикання на кожному захисному пристрої мережі, вимкнення за найменшого струму замикання в кінці його кола, стійкість кабелів до короткого замикання та селективність із пристроєм, розташованим вище за схемою.
 Power and current of the loads of the mains (motors, drives, heaters, power supplies, transformers), the load of each protective device, the demand with the diversity factor and the load budget of the power supplies.	Потужність і струм навантажень мережі (двигуни, приводи, нагрівачі, блоки живлення, трансформатори), навантаження кожного захисного пристрою, потреба з коефіцієнтом одночасності та баланс навантаження блоків живлення.
 Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts.	Функції безпеки за ISO 13849-1: кожна підсистема (вхід, логіка, вихід) з пристроями каналу, її категорією, охопленням діагностикою та кількістю циклів комутації на рік. Пристрої враховуються з PL / PFHd, MTTFd або B10d їхніх виробів.
-➕ Safety function	➕ Функція безпеки
 Input	Вхід
 Logic	Логіка
 Output	Вихід
@@ -3076,13 +2994,10 @@ Operations / year	Циклів комутації / рік
 CCF	CCF
 0 = from the devices	0 = з пристроїв
 Measures against common cause failure (at least 65 points)	Заходи проти відмов зі спільної причини (щонайменше 65 балів)
-➕ Subsystem	➕ Підсистема
 Subsystem {}	Підсистема {}
 Rule libraries	Бібліотеки правил
 Customer rule sets	Набори правил замовників
-➕ Rule set	➕ Набір правил
 Rule set {}	Набір правил {}
-💾 Export…	💾 Експортувати…
 OpenECraft rule sets	Набори правил OpenECraft
 Verify the project against it	Перевірити проєкт за ним
 {} checks	Перевірок: {}
@@ -3094,10 +3009,8 @@ Every item of the scope that meets the conditions must meet the requirement.	К�
 Message	Повідомлення
 if	якщо
 then	то
-➕ Condition	➕ Умова
-➕ Check	➕ Перевірка
 OpenECraft rule sets (JSON)	Набори правил OpenECraft (JSON)
-Electrical calculations…	Електричні розрахунки…
+Electrical calculations	Електричні розрахунки
 Short circuit, selectivity, loads, EMC, functional safety and verification against rule sets	Коротке замикання, селективність, навантаження, ЕМС, функціональна безпека та перевірка за наборами правил
 0 = a single value; otherwise values [1] … [n]	0 = одне значення; інакше значення [1] … [n]
 A project definition based on this one, with its own defaults and scheme	Визначення проєкту на основі цього, з власними стандартними значеннями та схемою
@@ -3416,7 +3329,6 @@ Project number	Номер проєкту
 Project property of the property database (by key)	Властивість проєкту з бази даних властивостей (за ключем)
 Proof test interval	Інтервал контрольних випробувань
 Property database	База даних властивостей
-Property database…	База даних властивостей…
 Property definitions	Визначення властивостей
 Property definitions, function definitions, placement schemes and the values of all objects	Визначення властивостей, визначення функцій, схеми розміщення та значення всіх об’єктів
 Property groups	Групи властивостей
@@ -3603,10 +3515,9 @@ text, multiline, integer, number, bool, choice, date or link (default text)	text
 {}: \"{}\" is not one of {}	{}: «{}» не входить до {}
 {}: invalid value \"{}\" ({})	{}: недійсне значення «{}» ({})
 ➕ Default value	➕ Значення за замовчуванням
-➕ Derive project definition	➕ Створити похідне визначення проєкту
-➕ User defined property	➕ Користувацька властивість
+Derive project definition	Створити похідне визначення проєкту
+User defined property	Користувацька властивість
 Plan devices in the single-line diagram, generate the schematic and keep both in sync	Планувати пристрої в однолінійній схемі, генерувати схему й синхронізувати їх
-Single-line / multi-line…	Однолінійна / багатолінійна…
 All devices of page {} are in the schematic already	Усі пристрої сторінки {} уже є на схемі
 Copies function texts between the single-line diagram and the schematic where one side is empty	Копіює тексти функцій між однолінійною схемою та схемою там, де одна сторона порожня
 Does not match	Не відповідає
@@ -3756,11 +3667,11 @@ Outline	Контур
 Click the corners of a machine or building, double-click to finish	Клацайте кути машини або будівлі, двічі клацніть для завершення
 (no cable highlighted)	(жоден кабель не виділено)
 Fit	Умістити
-⬇ Export SVG…	⬇ Експортувати SVG…
+Export SVG…	Експортувати SVG…
 Height above the floor	Висота над підлогою
 Placed here: {}	Розміщено тут: {}
 Place an enclosure, device or machine location at this node	Розмістити шафу, пристрій або місце на машині в цьому вузлі
-🗑 Delete node	🗑 Видалити вузол
+Delete node	Видалити вузол
 SVG drawing	Креслення SVG
 Segments	Ділянки
 Width × height (mm)	Ширина × висота (мм)
@@ -3780,18 +3691,15 @@ Must be connected to the equipotential bonding	Потрібно підключи
 {} corners	Кутів: {}
 Take over cut lengths	Перенести довжини відрізання
 Set the cable lengths to the planned cut lengths	Установити довжини кабелів відповідно до запланованих довжин відрізання
-📊 Report	📊 Звіт
 {} parts of the network	Частин мережі: {}
 No field cables: place the enclosures and field devices at nodes of the route network.	Немає польових кабелів: розмістіть шафи та польові пристрої у вузлах мережі трас.
 Route definition of {}	Визначення траси {}
 Via:	Через:
 Remove	Вилучити
-➕ Node	➕ Вузол
 Avoid:	Уникати:
 {} cable lengths taken over	Перенесено довжин кабелів: {}
-➕ Bonding conductor	➕ Провідник вирівнювання потенціалів
+Bonding conductor	Провідник вирівнювання потенціалів
 Bonding points	Точки підключення вирівнювання потенціалів
-➕ Accessory	➕ Аксесуар
 both ends	обидва кінці
 No accessories: glands, connectors, shield clamps … go into the bill of materials and are checked against the cable.	Немає аксесуарів: вводи, роз’єми, затискачі екрана … потрапляють до специфікації та перевіряються щодо кабелю.
 Reserve per cable end	Запас на кінець кабелю
@@ -3799,7 +3707,6 @@ Length inside an enclosure	Довжина всередині шафи
 Cut length step	Крок довжини відрізання
 Maximum fill of a carrier	Максимальне заповнення кабельної конструкції
 Bend radius in drag chains	Радіус згину в кабельних ланцюгах
-Field wiring…	Польовий монтаж…
 Plant layout, route network, field cable planning, equipotential bonding and cable accessories	План установки, мережа трас, планування польових кабелів, вирівнювання потенціалів і кабельні аксесуари
 +CAB1 / -M1	+CAB1 / -M1
 No option {}	Немає опції {}
@@ -3913,9 +3820,9 @@ Archive and version	Архів і версія
 Verification	Перевірка
 OpenECraft project archive	Архів проєкту OpenECraft
 The project database needs the desktop version: the browser cannot search folders.	Для бази даних проєктів потрібна настільна версія: браузер не може шукати в папках.
-📂 Add folder…	📂 Додати папку…
+Add folder…	Додати папку…
 Adds the project files and archives of a folder and its subfolders	Додає файли й архіви проєктів із папки та її вкладених папок
-🔄 Update all	🔄 Оновити все
+Update all	Оновити все
 Verify while reading	Перевіряти під час зчитування
 Remove the folder from the database	Вилучити папку з бази даних
 Search	Пошук
@@ -3969,15 +3876,14 @@ Switches the options with a condition by the configurator options	Перемик
 {} options switched	Перемкнуто опцій: {}
 File format version {}. Files of older versions are converted when they are opened.	Версія формату файлу {}. Файли старіших версій перетворюються під час відкриття.
 An archive (.oecz) is a ZIP file with the project, a manifest and the embedded documents and images as files of their own.	Архів (.oecz) – це ZIP-файл із проєктом, маніфестом і вбудованими документами та зображеннями як окремими файлами.
-📦 Archive project…	📦 Архівувати проєкт…
-📂 Open archive…	📂 Відкрити архів…
+Archive project…	Архівувати проєкт…
+Open archive…	Відкрити архів…
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Перевіряє дані проєкту (ідентифікатори, посилання, дані пристроїв, опції, підпроєкти) разом з інженерними перевірками.
 Verify project	Перевірити проєкт
 Repair {} findings	Виправити результати ({})
 {} errors, {} warnings, {} notes in the project data; engineering check: {} errors, {} warnings	Помилок: {}, попереджень: {}, приміток: {} у даних проєкту; інженерна перевірка: помилок: {}, попереджень: {}
 (repairable)	(можна виправити)
 ✔ The project data is consistent.	✔ Дані проєкту узгоджені.
-Project management…	Керування проєктами…
 Project database, batch changes of project properties, subprojects, options, archives and verification	База даних проєктів, групові зміни властивостей проєктів, підпроєкти, опції, архіви та перевірка
 OpenECraft project or archive	Проєкт або архів OpenECraft
 =A1+CAB1	=A1+CAB1
@@ -4045,7 +3951,7 @@ For parts without Stock length; longer profiles have to be joined	Для вир�
 Collision classes	Класи колізій
 Distances between classes of items, or classes that may overlap	Відстані між класами елементів або класи, що можуть перекриватися
 may overlap	можуть перекриватися
-➕ Add rule	➕ Додати правило
+Add rule	Додати правило
 Air temperature at the devices	Температура повітря біля пристроїв
 max. {} °C	макс. {} °C
 No problems found	Проблем не знайдено
@@ -4101,8 +4007,7 @@ Invalid answer of the plugin: {}	Недійсна відповідь плагі�
 Key figures of the project and a list of its device tags	Ключові показники проєкту та список позначень його пристроїв
 Key figures of the project: pages, symbols, wires, devices, parts, cables and check results	Ключові показники проєкту: сторінки, символи, проводи, пристрої, вироби, кабелі та результати перевірок
 Loaded plugins (built-in and from the plugin folders of --plugins / OPENECRAFT_PLUGINS) with their commands, checks, reports and exports; enables or disables one for this session	Завантажені плагіни (вбудовані та з папок плагінів --plugins / OPENECRAFT_PLUGINS) з їхніми командами, перевірками, звітами та експортами; вмикає або вимикає один із них для цього сеансу
-Manage plugins…	Керувати плагінами…
-Plugin command {}	Команда плагіна {}
+Manage plugins	Керувати плагінами
 Plugin id '{}' is not snake_case	Ідентифікатор плагіна '{}' не у форматі snake_case
 Plugin {} is loaded twice	Плагін {} завантажено двічі
 Plugin {} needs a newer OpenECraft (API {})	Плагіну {} потрібна новіша версія OpenECraft (API {})
@@ -4116,8 +4021,8 @@ Unknown plugin: {}	Невідомий плагін: {}
 Warnings	Попередження
 {} commands, {} checks, {} reports, {} exports	Команд: {}, перевірок: {}, звітів: {}, експортів: {}
 {}: the program to run is missing	{}: відсутня програма для запуску
-▶ Run	▶ Виконати
-⟳ Update	⟳ Оновити
+Run	Виконати
+Update	Оновити
 ⬇ {}	⬇ {}
 📊 {}	📊 {}
 Panel layout checks	Перевірки компонування шафи
@@ -4187,7 +4092,7 @@ Profile	Профіль
 (standard columns)	(стандартні стовпці)
 Write the file for the other system; later imports detect conflicts against this export	Записати файл для іншої системи; подальші імпорти виявлятимуть конфлікти щодо цього експорту
 Read a file of the other system (CSV or JSON) and review the changes	Прочитати файл іншої системи (CSV або JSON) і переглянути зміни
-⬇ Neutral exchange file…	⬇ Нейтральний файл обміну…
+Neutral exchange file…	Нейтральний файл обміну…
 Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector	Вироби, пристрої, розміщення, з’єднання, проводи й документи в одному файлі JSON для систем без конектора
 Import changes	Зміни імпорту
 Profiles	Профілі
@@ -4213,7 +4118,6 @@ Conflicts	Конфлікти
 Export	Експорт
 Import	Імпорт
 {} values taken over	Перенесено значень: {}
-Enterprise integration…	Інтеграція з корпоративними системами…
 Exchange with ERP, PDM, PLM, ECAD, MCAD, procurement and wiring machines	Обмін з ERP, PDM, PLM, ECAD, MCAD, закупівлями та автоматами обробки проводів
 Files of other systems (CSV, JSON)	Файли інших систем (CSV, JSON)
 Copper bar {}: {} segments need {} bends	Мідна шина {}: для {} ділянок потрібно {} згинів
@@ -4380,9 +4284,9 @@ DWG export failed: {}	Помилка експорту DWG: {}
 DWG import failed: {}	Помилка імпорту DWG: {}
 DWG imported as page {}: {} lines, {} texts	DWG імпортовано як сторінку {}: ліній: {}, текстів: {}
 DWG imported as page {}: {} lines, {} texts (not imported: {})	DWG імпортовано як сторінку {}: ліній: {}, текстів: {} (не імпортовано: {})
-⬇ NC data (DWG)	⬇ Дані ЧПК (DWG)
-⬇ Door NC data (DWG)	⬇ Дані ЧПК дверцят (DWG)
-⬇ NC data of this face (DWG)	⬇ Дані ЧПК цієї грані (DWG)
+NC data (DWG)	Дані ЧПК (DWG)
+Door NC data (DWG)	Дані ЧПК дверцят (DWG)
+NC data of this face (DWG)	Дані ЧПК цієї грані (DWG)
 Imports a DWG drawing (AutoCAD R12 … 2018) as graphics (lines, arcs, texts, blocks) on a new schematic page	Імпортує креслення DWG (AutoCAD R12 … 2018) як графіку (лінії, дуги, тексти, блоки) на нову сторінку схеми
 Generic	Загальний
 Parts store	Довідник виробів
@@ -4721,7 +4625,6 @@ Power cable	Силовий кабель
 Control cable	Кабель керування
 Wiring material	Монтажний матеріал
 Catalog id	Ідентифікатор каталогу
-Data portal…	Портал даних…
 Delete catalog {} from the server?	Видалити каталог {} із сервера?
 Delete user {}? Their sessions and favorites are removed.	Видалити користувача {}? Його сеанси та вибране буде вилучено.
 Ends the session and forgets the token	Завершує сеанс і забуває токен
@@ -4843,12 +4746,10 @@ Use macros	Використати макроси
 ★ Favorites	★ Вибране
 ★ Remove from favorites	★ Вилучити з вибраного
 ☆ Add to favorites	☆ Додати до вибраного
-✔ Apply {} updates	✔ Застосувати оновлення ({})
-➡ Successor {}	➡ Наступник {}
-⬇ Add marked parts to the parts database ({})	⬇ Додати позначені вироби до бази даних виробів ({})
-⬇ Add to the parts database	⬇ Додати до бази даних виробів
-🔄 Check the parts database for updates	🔄 Перевірити базу даних виробів на оновлення
-🔎 Search	🔎 Пошук
+Apply {} updates	Застосувати оновлення ({})
+Add marked parts to the parts database ({})	Додати позначені вироби до бази даних виробів ({})
+Add to the parts database	Додати до бази даних виробів
+Check the parts database for updates	Перевірити базу даних виробів на оновлення
 Relay coil, AC	Котушка реле, змінний струм
 Relay coil, high-speed	Котушка реле, швидкодійна
 Relay coil, mechanically latched	Котушка реле з механічною фіксацією
@@ -5276,7 +5177,6 @@ Level of this kind of message	Рівень цього типу повідомл�
 As defined by the check	Як визначено перевіркою
 Switch off the check \"{}\"	Вимкнути перевірку «{}»
 Changed message levels ({})	Змінені рівні повідомлень ({})
-Right click a message in the Check tab to change its level.	Клацніть правою кнопкою повідомлення на вкладці «Перевірка», щоб змінити його рівень.
 Accepted messages ({})	Прийняті повідомлення ({})
 No longer reported	Більше не повідомляється
 Still reported	Досі повідомляється
@@ -5421,7 +5321,6 @@ Any project file: its settings, forms, structure, potentials and pages start the
 Save as project template…	Зберегти як шаблон проєкту…
 Saves the project without revisions, baselines, review and wiring marks as a template for new projects	Зберігає проєкт без ревізій, базових версій, рецензування та позначок монтажу проводів як шаблон для нових проєктів
 OpenECraft project template	Шаблон проєкту OpenECraft
-Not a project template: {}	Не є шаблоном проєкту: {}
 Start from a project template: a built-in one (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) or a project file	Почати із шаблону проєкту: вбудованого (Machine, Distribution board (IEC 61439), Empty (IEC 60204-1)) або файлу проєкту
 Not a packed project	Не є запакованим проєктом
 Viewer	Переглядач
@@ -5537,7 +5436,6 @@ Rotate	Повернути
 Save to project server	Зберегти на сервері проєктів
 Undo	Скасувати
 Find and replace	Знайти й замінити
-Finish polyline or polygon	Завершити полілінію або багатокутник
 Mirror (selection or symbol being placed)	Віддзеркалити (вибране або символ, що розміщується)
 Next page	Наступна сторінка
 Open project	Відкрити проєкт
@@ -5552,13 +5450,12 @@ Keyboard shortcuts	Сполучення клавіш
 No shortcut	Немає сполучення клавіш
 Press a key…	Натисніть клавішу…
 Record	Записати
-Record: press the new key with its modifiers (Esc cancels). Esc, Delete, the arrow keys and copy / paste stay fixed.	Запис: натисніть нову клавішу з клавішами-модифікаторами (Esc скасовує). Esc, Delete, клавіші зі стрілками та копіювання / вставлення змінити не можна.
 Reset all to the defaults	Скинути все до стандартних значень
 {} is used by: {}	{} використовується для: {}
 Harness nailboard drawing to scale (SVG)	Креслення шаблону джгута в масштабі (SVG)
 Harness tag, e.g. -WH1	Позначення джгута, напр. -WH1
 Formboard drawing of the harness to scale with branch lengths and the pin tables of the connectors	Креслення шаблону джгута в масштабі з довжинами відгалужень і таблицями штирів роз’ємів
-📐 Nailboard (SVG)…	📐 Шаблон джгута (SVG)…
+Nailboard (SVG)…	Шаблон джгута (SVG)…
 Bundle Ø {} mm	Ø джгута {} мм
 Nailboard {}	Шаблон джгута {}
 Scale 1:{}	Масштаб 1:{}
@@ -5580,7 +5477,6 @@ No segment {}	Немає сегмента {}
 Segment path (default: all segments)	Шлях сегмента (за замовчуванням: усі сегменти)
 Pre-planning (CSV, Excel)	Попереднє планування (CSV, Excel)
 Plant segments with planned devices before the schematic	Сегменти установки із запланованими пристроями до створення схеми
-Pre-planning…	Попереднє планування…
 A segment cannot be moved below itself	Сегмент не можна перемістити під самого себе
 Adds a planned device to a segment or changes it	Додає запланований пристрій до сегмента або змінює його
 Adds a segment below another one (or at the top)	Додає сегмент під іншим (або на верхньому рівні)
@@ -5628,10 +5524,8 @@ name	назва
 {} pages generated	Згенеровано сторінок: {}
 {} pages generated; page macros not found: {}	Згенеровано сторінок: {}; не знайдено макросів сторінок: {}
 {} segments created, {} devices added, {} updated	Створено сегментів: {}, додано пристроїв: {}, оновлено: {}
-➕ Device	➕ Пристрій
-➕ Segment	➕ Сегмент
-➕ Sub-segment	➕ Підсегмент
-🗑 Remove segment	🗑 Вилучити сегмент
+Sub-segment	Підсегмент
+Remove segment	Вилучити сегмент
 Display	Відображення
 Mirrored	Віддзеркалено
 Other properties	Інші властивості
@@ -5733,7 +5627,7 @@ Hose defaults	Параметри шлангів за замовчуванням
 Message levels	Рівні повідомлень
 Not a settings scheme: {}	Не є схемою параметрів: {}
 Wire defaults	Параметри проводів за замовчуванням
-Reset panel layout	Скинути розташування панелей
+Reset pane layout	Скинути розташування панелей
 Navigator on the left, symbols and properties on the right	Навігатор ліворуч, символи та властивості праворуч
 Panels	Панелі
 Saves the workspace, the arrangement of the panels and the open windows	Зберігає робочий простір, розташування панелей і відкриті вікна
@@ -5922,7 +5816,7 @@ Motors feed the short circuit	Двигуни підживлюють коротк
 Asynchronous motors on the mains add to the highest short-circuit current (IEC 60909-0)	Асинхронні двигуни в мережі збільшують максимальний струм короткого замикання (IEC 60909-0)
 At the supply point: Ik3 max {} kA, Ik1 min {} kA	У точці живлення: Ik3 max {} kA, Ik1 min {} kA
 Manufacturer's coordination tables	Таблиці координації виробників
-➕ Entry	➕ Запис
+Entry	Запис
 Selectivity and back-up protection of device pairs as tested by the manufacturer, by part number. They replace the estimate from the time-current curves.	Селективність і резервний захист пар пристроїв, перевірені виробником, за номером виробу. Вони замінюють оцінку за час-струмовими характеристиками.
 Upstream part	Попередній виріб
 Downstream part	Наступний виріб
@@ -6012,22 +5906,19 @@ Finds the Vault items of the project parts by item number or Part Number propert
 Vault	Vault
 Instead of user name and password	Замість імені користувача й пароля
 Vault Professional 2025.2 or newer (Vault Data API)	Vault Professional 2025.2 або новіший (Vault Data API)
-⟳ Refresh	⟳ Оновити
+Refresh	Оновити
 Search below this folder	Шукати в цій папці та вкладених
-🔍 Search	🔍 Пошук
 Checked out	Отримано для редагування
 {} of {} entries shown: search to narrow the list	Показано записів: {} з {}; скористайтеся пошуком, щоб звузити список
 Select a file to import it	Виберіть файл, щоб імпортувати його
 (choose a part)	(виберіть виріб)
-⬇ Import	⬇ Імпортувати
 Project file	Файл проєкту
-⬆ Check in project as new version of {}	⬆ Повернути проєкт як нову версію {}
+Check in project as new version of {}	Повернути проєкт як нову версію {}
 Puts the project into the folder it was opened from	Поміщає проєкт у папку, з якої його відкрито
 Put into the vault	Помістити у сховище
 File name	Назва файлу
-⬆ Upload to {}	⬆ Передати в {}
+Upload to {}	Передати в {}
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Однойменний файл у папці отримує нову версію (отримання для редагування й повернення), інакше файл додається
-Autodesk Vault…	Autodesk Vault…
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Відкривати проєкти й файли з Autodesk Vault, поміщати проєкт, експорти та 3D-моделі у сховище
 Check in {} to Vault	Повернути {} у Vault
 Panel layout in 3D (Parasolid XT)	Компонування шафи в 3D (Parasolid XT)
@@ -6035,7 +5926,6 @@ Panel layout in 3D (Parasolid XT)	Компонування шафи в 3D (Paras
 Back	Назад
 Back to the project (Esc)	Назад до проєкту (Esc)
 Recent projects	Останні проєкти
-No projects opened yet.	Проєкти ще не відкривалися.
 Remove from the list	Вилучити зі списку
 unsaved	не збережено
 Project: {}	Проєкт: {}
@@ -6055,15 +5945,6 @@ Tutorial	Навчальний посібник
 Introduction	Вступ
 An open electrical CAE editor in the spirit of EPLAN Electric P8.	Відкритий електротехнічний САПР-редактор у дусі EPLAN Electric P8.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens this help.	Стрічка: Файл відкриває, зберігає, імпортує, експортує та друкує; вкладки групують команди за темами. Alt показує клавіші доступу, Ctrl+Shift+P знаходить будь-яку команду, F6 перемикає панелі, F1 відкриває цю довідку.
-1. Insert › Insert center (Ins): search a symbol, a macro or a device and click into the page to place it. Device tags (-K1, -S2 …) are assigned automatically.	1. Вставити › Центр вставлення (Ins): знайдіть символ, макрос або пристрій і клацніть на сторінці, щоб розмістити його. Позначення пристроїв (-K1, -S2 …) призначаються автоматично.
-5. Assign parts in the properties (Parts tab); the reports (Home › Reports) list devices, bill of materials, terminals, connections and PLC and are inserted as report pages.	5. Призначте вироби у властивостях (вкладка Вироби); звіти (Основне › Звіти) містять пристрої, специфікацію, клеми, з’єднання та ПЛК і вставляються як сторінки звітів.
-7. Cables: Connections › Cables, select wires and use Assign to cable. Wire numbers: Connections › Wire numbering, or type a number in the wire properties.	7. Кабелі: З’єднання › Кабелі, виділіть проводи й виберіть Призначити кабелю. Номери проводів: З’єднання › Нумерація проводів або введіть номер у властивостях проводу.
-8. Macros: select items, right click › Save selection as macro; insert them from the Insert center or Insert › Macro. Placeholders {NAME} are filled from value sets.	8. Макроси: виділіть елементи, права кнопка › Зберегти виділене як макрос; вставляйте їх із центру вставлення або через Вставити › Макрос. Заповнювачі {NAME} заповнюються з наборів значень.
-9. Devices › Terminal strips, Devices › PLC overview and Project data › Revisions: strip order, jumpers and spares; PLC addresses and symbol tables; revisions with change marks and released (locked) pages.	9. Пристрої › Клемні колодки, Пристрої › Огляд ПЛК і Дані проєкту › Ревізії: порядок клем, перемички й резерви; адреси ПЛК і таблиці символів; ревізії з позначками змін і випущеними (заблокованими) сторінками.
-10. Master data › Symbol editor: draw your own symbols (or copy built-in ones) with connection points and function; they are saved in the project and can be exchanged as library files.	10. Основні дані › Редактор символів: малюйте власні символи (або копіюйте вбудовані) з точками підключення та функцією; вони зберігаються в проєкті й передаються як файли бібліотек.
-11. Master data › Forms: own title blocks with placeholders ({project}, {page}, {prop:Name} …) and the columns of report pages; Project data › Report blocks generate report pages per strip, plug, cable or device.	11. Основні дані › Форми: власні основні написи із заповнювачами ({project}, {page}, {prop:Name} …) і стовпці сторінок звітів; Дані проєкту › Блоки звітів створюють сторінки звітів для кожної колодки, штекера, кабелю чи пристрою.
-12. Panel layout (workspace Panel layout, tab Layout space): enclosures, rails, ducts, busbars and cutouts; Layout space › NC data exports the drilling pattern (DXF / DWG / CSV). The production wire list contains stripping lengths and ferrules.	12. Компонування шафи (робочий простір Компонування шафи, вкладка Монтажний простір): шафи, рейки, кабельні канали, шини й вирізи; Монтажний простір › Дані ЧПК експортує схему свердління (DXF / DWG / CSV). Виробничий список проводів містить довжини зачищення та наконечники.
-13. Harnesses: Connections › Harnesses; select the wires between two devices › Assign to harness, or per connection in the wire properties. Harness data report with lengths, connectors and bundle diameter, KBL export.	13. Джгути: З’єднання › Джгути; виділіть проводи між двома пристроями › Призначити джгуту або для кожного з’єднання у властивостях проводу. Звіт джгута з довжинами, роз’ємами й діаметром пучка, експорт KBL.
 Key tips of the ribbon	Клавіші доступу стрічки
 Version {}	Версія {}
 Search (* and ? as placeholders)…	Пошук (* і ? як символи підстановки)…
@@ -6145,7 +6026,6 @@ Close page tab	Закрити вкладку сторінки
 Panes	Панелі
 Show or hide panes; drag a tab to dock it elsewhere	Показати або сховати панелі; перетягніть вкладку, щоб закріпити її деінде
 Save workspace…	Зберегти робочий простір…
-The panes of this workspace at their default places	Панелі цього робочого простору на типових місцях
 Theme	Тема
 UI scale	Масштаб інтерфейсу
 Minimize the ribbon	Згорнути стрічку
@@ -6158,7 +6038,6 @@ Functions of the project data not placed yet	Ще не розміщені фун
 Insert center	Центр вставлення
 Symbols, macros, devices and unplaced functions: search, favorites, recently used	Символи, макроси, пристрої та нерозміщені функції: пошук, вибране, нещодавні
 Find results	Результати пошуку
-Quick guide, tutorial and shortcuts	Короткий посібник, навчальний посібник і сполучення клавіш
 Layout spaces	Монтажні простори
 Enclosures, devices to place and placed devices	Шафи, пристрої для розміщення та розміщені пристрої
 Layout properties	Властивості компонування
@@ -6203,7 +6082,7 @@ Click to show, right click for more	Клацніть, щоб показати, �
 {} notes	Приміток: {}
 Open in a new page tab	Відкрити в новій вкладці сторінки
 Project information	Відомості про проєкт
-Plugin commands…	Команди плагінів…
+Plugin commands	Команди плагінів
 The commands of all plugins by plugin, with a search; the star pins a command to the Plugins tab	Команди всіх плагінів за плагінами, з пошуком; зірочка закріплює команду на вкладці «Плагіни»
 Star a command in Plugin commands to pin it here	Позначте команду зірочкою у вікні «Команди плагінів», щоб закріпити її тут
 Installed plugins	Встановлені плагіни
@@ -6271,8 +6150,6 @@ Draw inner walls	Малювати внутрішні стіни
 Inner wall {}, side {}	Внутрішня стіна {}, сторона {}
 Thickness	Товщина
 {}: {} stands in an inner wall	{}: {} стоїть у внутрішній стіні
-Opening {} replaces the current project, its unsaved changes are lost.	Відкриття {} замінює поточний проєкт, його незбережені зміни буде втрачено.
-Discard changes and open	Скасувати зміни й відкрити
 Open link	Відкрити посилання
 Replace the file at path if it exists	Замінити файл path, якщо він існує
 {} exists already: pass overwrite to replace it	{} вже існує: вкажіть overwrite, щоб замінити
@@ -6405,3 +6282,4 @@ Folder with project files (instead of a database; default: the current folder)	�
 Unknown page type: {} (schematic, overview, graphic, cover or a report of list_reports)	Невідомий тип сторінки: {} (schematic, overview, graphic, cover або звіт із list_reports)
 Unknown template {}: give a built-in one ({}) or a project file	Невідомий шаблон {}: вкажіть вбудований ({}) або файл проєкту
 Property {} needs a text or a number	Властивості {} потрібен текст або число
+Check settings…	Параметри перевірки…

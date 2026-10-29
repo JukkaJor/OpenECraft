@@ -1,6 +1,7 @@
 //! Plugs window: pins of a plug in plug order with both sides, the pin count of
 //! the plug parts and unused pins.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::model::ReportKind;
@@ -55,7 +56,7 @@ impl App {
                 });
                 ui.separator();
                 sort = ui.button(tr("Sort by designation")).clicked();
-                diagram = ui.button(tr("📊 Plug diagram")).clicked();
+                diagram = icons::text_button(ui, Icon::Report, tr("Plug diagram")).clicked();
             });
             ui.horizontal_wrapped(|ui| {
                 ui.label(match capacity {
@@ -87,10 +88,10 @@ impl App {
                             continue;
                         }
                         ui.horizontal(|ui| {
-                            if ui.add_enabled(i > 0, egui::Button::new("⏶").small()).clicked() {
+                            if ui.add_enabled_ui(i > 0, |ui| icons::button(ui, Icon::ChevronUp, tr("Move up"))).inner.clicked() {
                                 moved = Some((i, true));
                             }
-                            if ui.add_enabled(i + 1 < placed, egui::Button::new("⏷").small()).clicked() {
+                            if ui.add_enabled_ui(i + 1 < placed, |ui| icons::button(ui, Icon::ChevronDown, tr("Move down"))).inner.clicked() {
                                 moved = Some((i, false));
                             }
                         });

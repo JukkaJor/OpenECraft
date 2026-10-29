@@ -1,6 +1,7 @@
 //! Structure management window (IEC 81346): aspects of the pages, templates, the
 //! defined and used identifiers with project-wide renaming, and the work areas.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use crate::io::Purpose;
@@ -140,18 +141,18 @@ impl App {
                                         action = Some(Action::Rename(a, old, new));
                                     }
                                 }
-                                if ui.small_button("✖").on_hover_text(tr("Cancel")).clicked() {
+                                if icons::button(ui, Icon::Close, tr("Cancel")).clicked() {
                                     st.renaming = None;
                                 }
                             } else {
-                                if ui.small_button("✏").on_hover_text(tr("Rename in the whole project")).clicked() {
+                                if icons::button(ui, Icon::Markup, tr("Rename in the whole project")).clicked() {
                                     st.renaming = Some((r.aspect, r.id.clone(), r.id.clone()));
                                 }
                                 if !r.defined {
-                                    if ui.small_button("➕").on_hover_text(tr("Define")).clicked() {
+                                    if icons::button(ui, Icon::Plus, tr("Define")).clicked() {
                                         structures.define(r.aspect, &r.id, "");
                                     }
-                                } else if ui.small_button("🗑").on_hover_text(tr("Remove the definition (pages and devices keep the identifier)")).clicked() {
+                                } else if icons::button(ui, Icon::Delete, tr("Remove the definition (pages and devices keep the identifier)")).clicked() {
                                     structures.remove(r.aspect, &r.id);
                                 }
                             }
@@ -174,7 +175,7 @@ impl App {
                 if let Err(e) = &checked {
                     ui.colored_label(crate::style::error(), e);
                 }
-                if ui.add_enabled(free, egui::Button::new(tr("➕ Add"))).clicked() {
+                if ui.add_enabled_ui(free, |ui| icons::text_button(ui, Icon::Plus, tr("Add"))).inner.clicked() {
                     structures.define(st.new_aspect, &id, &st.new_description);
                     st.new_id.clear();
                     st.new_description.clear();
@@ -200,7 +201,7 @@ impl App {
                     for a in Aspect::ALL {
                         ui.add(egui::TextEdit::singleline(w.filter.get_mut(a)).desired_width(80.0));
                     }
-                    if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                         delete = Some(i);
                     }
                     ui.end_row();
@@ -209,7 +210,7 @@ impl App {
             if let Some(i) = delete {
                 structures.work_areas.remove(i);
             }
-            if ui.button(tr("➕ Work area")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Work area")).clicked() {
                 let n = (1..).map(|n| tr_fmt!("Work area {}", n)).find(|n| structures.work_area(n).is_none()).unwrap_or_default();
                 structures.work_areas.push(WorkArea { name: n, filter: Dt::default() });
             }
@@ -234,7 +235,7 @@ impl App {
             }
             Some(Action::Rename(a, old, new)) => match structure::rename(&mut self.session.prj, a, &old, &new) {
                 Ok(n) => self.notify(ctx, tr_fmt!("{} renamed: {} pages and devices", a.format(&old), n)),
-                Err(e) => self.notify(ctx, e),
+                Err(e) => self.notify_error(ctx, e),
             },
             None => {}
         }

@@ -58,6 +58,31 @@ pub fn colors(dark: bool) -> StateColors {
     }
 }
 
+/// Severity of a status message.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Level {
+    #[default]
+    Info,
+    /// Something was done (saved, opened, exported).
+    Ok,
+    Warning,
+    /// Something failed.
+    Error,
+}
+
+impl Level {
+    /// Colour of a message of this level; info messages keep `normal`.
+    pub fn color(self, dark: bool, normal: Color32) -> Color32 {
+        let c = colors(dark);
+        match self {
+            Level::Info => normal,
+            Level::Ok => c.ok,
+            Level::Warning => c.warning,
+            Level::Error => c.error,
+        }
+    }
+}
+
 /// Relative luminance (WCAG 2.1).
 #[cfg(test)]
 pub fn luminance(c: Color32) -> f32 {

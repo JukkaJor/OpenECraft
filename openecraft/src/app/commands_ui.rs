@@ -15,6 +15,9 @@ impl App {
         let has_sel = !self.editor.selection.is_empty();
         let pages = self.session.prj.pages.len();
         let page = self.session.page;
+        if commands::changes_page(cmd) && !self.page_editable() {
+            return false;
+        }
         match cmd {
             Cmd::Undo => self.session.history.can_undo(),
             Cmd::Redo => self.session.history.can_redo(),
@@ -26,7 +29,7 @@ impl App {
             Cmd::NextPage => page + 1 < pages,
             Cmd::MovePageUp => page > 0 && openecraft_core::sections::of_page(&self.session.prj, page - 1) == openecraft_core::sections::of_page(&self.session.prj, page),
             Cmd::MovePageDown => page + 1 < pages && openecraft_core::sections::of_page(&self.session.prj, page + 1) == openecraft_core::sections::of_page(&self.session.prj, page),
-            Cmd::DeletePage => pages > 1,
+            Cmd::DeletePage => self.session.may_delete_page(page, self.page_held_by_other(page)),
             Cmd::CheckInVault => self.vault.origin.is_some() && self.vault.signed_in && !self.vault.busy(),
             Cmd::PdfInLanguage => !self.session.prj.languages.targets.is_empty(),
             Cmd::UpdateReportBlocks => !self.session.prj.report_blocks.is_empty(),
@@ -41,6 +44,12 @@ impl App {
             Cmd::LayoutLineup | Cmd::LayoutSite => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
         }
+    }
+
+    /// Whether the current page can be edited by this user.
+    pub(super) fn page_editable(&self) -> bool {
+        let page = self.session.page;
+        self.session.may_edit_page(page, self.page_held_by_other(page) || self.remote.viewer())
     }
 
     /// Whether a toggle is on; `None` for commands that are no toggles.
@@ -100,7 +109,7 @@ impl App {
             Cmd::LayoutSite => self.panel_ui.show_site,
             Cmd::WiringMode => !self.mounting_ui.active,
             Cmd::MountingMode => self.mounting_ui.active,
-            Cmd::TabletMode => self.shell.tablet,
+            Cmd::TabletMode => self.shell.tablet(),
             _ => return None,
         };
         Some(on)
@@ -128,23 +137,23 @@ impl App {
             return;
         }
         if def.kind == Kind::Menu {
-            // Menus open in the ribbon; from the command search their pane or dialog opens.
-            match cmd {
-                Cmd::NewPage => self.add_page(PageKind::Schematic),
-                Cmd::Panes => self.show_pane(Pane::Navigator(LeftTab::Pages)),
-                Cmd::Theme | Cmd::UiScale | Cmd::Language => self.settings.open_at(settings_ui::Node::Appearance),
-                Cmd::SavedWorkspaces => self.layout_name = Some(String::new()),
-                Cmd::Align | Cmd::Distribute => self.arrange_ui.show_move = true,
-                _ => {}
-            }
+            // Menus open in the ribbon; from the command search, a key or a key tip
+            // their entries open in a small window.
+            self.search.menu = Some(cmd);
             return;
         }
         let replaces = matches!(cmd, Cmd::NewProject | Cmd::NewFromTemplateFile | Cmd::OpenDemo | Cmd::Open)
             || (cmd == Cmd::OpenExample && self.pending_example.is_some());
-        if replaces && self.session.dirty() && !std::mem::take(&mut self.discard_ok) && self.remote.shared.is_none() {
-            self.confirm_discard = Some(cmd);
-            return;
+        if replaces {
+            self.request_replace(ctx, Replace::Cmd(cmd));
+        } else {
+            self.exec(ctx, cmd);
         }
+    }
+
+    /// Runs a command without asking (`run` asked before one that replaces the project).
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn exec(&mut self, ctx: &egui::Context, cmd: Cmd) {
         let page = self.session.page;
         match cmd {
             // ------------------------------------------------------------ file
@@ -184,11 +193,13 @@ impl App {
                 let sel: Vec<usize> = if cmd == Cmd::PrintAll { (0..self.session.prj.pages.len()).collect() } else { vec![page] };
                 let html = openecraft_core::svg::print_document_pages(&self.session.prj, &self.session.analysis, &sel);
                 if let Err(e) = openecraft_ui::io::print_html(&html) {
-                    self.notify(ctx, tr_fmt!("Printing failed: {}", e));
+                    self.notify_error(ctx, tr_fmt!("Printing failed: {}", e));
                 }
             }
             Cmd::ProjectProperties => self.show_project = true,
-            Cmd::Settings => self.settings.open_at(settings_ui::Node::Appearance),
+            Cmd::Settings => self.settings.open(),
+            Cmd::Tutorial => self.help_chapter(1),
+            Cmd::About => self.help_about(),
             Cmd::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             // ------------------------------------------------------------ home
             Cmd::Cut | Cmd::Copy => {
@@ -202,10 +213,11 @@ impl App {
             }
             Cmd::Paste => {
                 if let Some(clip) = self.editor.clip.clone() {
-                    let at = self.editor.last_point.unwrap_or_else(|| openecraft_core::frame::of_page(&self.session.prj, page).area().min + openecraft_core::geom::p(20.0, 20.0));
+                    let at = self.editor.paste_point();
                     self.editor.selection = ops::paste(&mut self.session.prj, page, &clip, at);
                     self.editor.set_tool(Tool::Select);
-                    self.notify(ctx, tr_fmt!("{} objects pasted", self.editor.selection.len()));
+                    let n = self.editor.selection.len();
+                    self.notify(ctx, super::counted(n, tr("1 object pasted"), tr_fmt!("{} objects pasted", n)));
                 }
             }
             Cmd::MultipleCopy => self.arrange_ui.show_copy = true,
@@ -224,13 +236,9 @@ impl App {
             Cmd::RenumberPages => self.numbering_ui.show_pages = true,
             Cmd::MovePageUp => self.session.page = ops::move_page(&mut self.session.prj, page, page - 1),
             Cmd::MovePageDown => self.session.page = ops::move_page(&mut self.session.prj, page, page + 1),
-            Cmd::DeletePage => match ops::delete_page(&mut self.session.prj, page) {
-                Ok(_) => {
-                    self.session.page = page.min(self.session.prj.pages.len() - 1);
-                    self.editor.selection.clear();
-                }
-                Err(e) => self.notify(ctx, tr(e)),
-            },
+            // A page with contents is deleted after the confirmation (`delete_page_window`).
+            Cmd::DeletePage if self.session.page_items(page) > 0 => self.confirm_delete_page = Some(self.session.prj.pages[page].id),
+            Cmd::DeletePage => self.delete_page(ctx, page),
             Cmd::SavePageAsTemplate => self.open_save_template(),
             Cmd::Undo => {
                 self.editor.cancel();
@@ -299,7 +307,7 @@ impl App {
             }
             Cmd::AutoConnectSelection => {
                 let n = routing::apply_autoconnect(&mut self.session.prj, page, &self.editor.selection);
-                self.notify(ctx, tr_fmt!("{} connections drawn automatically", n));
+                self.notify(ctx, super::counted(n, tr("1 connection drawn automatically"), tr_fmt!("{} connections drawn automatically", n)));
             }
             Cmd::JoinCollinear => {
                 let symbols = self.session.prj.symbol_table();
@@ -311,7 +319,7 @@ impl App {
                 let n = conndef::apply_all(&mut self.session.prj);
                 self.notify(ctx, tr_fmt!("{} wires changed", n));
             }
-            Cmd::Properties => self.props_window = true,
+            Cmd::Properties => self.open_properties(ctx),
             Cmd::RenameDevice => {
                 if let Some(tag) = self.selected_tag() {
                     self.rename_device = Some((tag.clone(), tag));
@@ -324,6 +332,9 @@ impl App {
             }
             // ------------------------------------------------------------ view
             Cmd::FitPage => self.editor.fit_pending = true,
+            Cmd::ZoomActual => self.editor.zoom_center(crate::editor::ZOOM_ACTUAL / self.editor.zoom),
+            Cmd::ZoomIn => self.editor.zoom_center(1.25),
+            Cmd::ZoomOut => self.editor.zoom_center(0.8),
             Cmd::PreviousPage => self.goto(page - 1, 0),
             Cmd::NextPage => self.goto(page + 1, 0),
             Cmd::NextPane | Cmd::PreviousPane => self.cycle_pane(cmd == Cmd::NextPane),
@@ -425,8 +436,22 @@ impl App {
                     self.wiring_ui.export = true;
                 }
             }
-            Cmd::TabletMode => self.shell.tablet = !self.shell.tablet,
+            Cmd::TabletMode => {
+                let on = !self.shell.tablet();
+                self.shell.set_tablet(on);
+            }
             _ => {}
+        }
+    }
+
+    /// Deletes page `page` (undo brings it back).
+    pub(super) fn delete_page(&mut self, ctx: &egui::Context, page: usize) {
+        match ops::delete_page(&mut self.session.prj, page) {
+            Ok(_) => {
+                self.session.page = page.min(self.session.prj.pages.len() - 1);
+                self.editor.selection.clear();
+            }
+            Err(e) => self.notify_error(ctx, tr(e)),
         }
     }
 
@@ -446,6 +471,10 @@ impl App {
     pub(super) fn cmd_menu(&mut self, ui: &mut egui::Ui, cmd: Cmd) {
         let ctx = ui.ctx().clone();
         let page = self.session.page;
+        if commands::changes_page(cmd) && !self.page_editable() {
+            ui.weak(tr("The page is read only"));
+            return;
+        }
         match cmd {
             Cmd::NewPage => {
                 for (label, kind) in [
@@ -536,7 +565,10 @@ impl App {
             Cmd::ActiveLayer => {
                 ui.selectable_value(&mut self.editor.active_layer, String::new(), tr("(default)"));
                 for n in graphics::layer_names(&self.session.prj).into_iter().filter(|n| !n.is_empty()) {
-                    ui.selectable_value(&mut self.editor.active_layer, n.clone(), n);
+                    let usable = crate::editor::layer_usable(&self.session.prj, &n);
+                    ui.add_enabled_ui(usable, |ui| ui.selectable_value(&mut self.editor.active_layer, n.clone(), n))
+                        .inner
+                        .on_disabled_hover_text(tr("A hidden or locked layer cannot take new items"));
                 }
                 ui.separator();
                 self.cmd_button(ui, Cmd::LayersPane);
@@ -547,18 +579,27 @@ impl App {
                 }
             }
             Cmd::Panes => {
-                for pane in Pane::all() {
-                    let Some(c) = commands::for_pane(pane) else { continue };
-                    let mut shown = self.pane_shown(pane);
-                    let title = self.pane_title(pane).text().to_string();
-                    if ui.checkbox(&mut shown, title).on_hover_text(tr(commands::def(c).tip)).changed() {
-                        if shown {
-                            self.show_pane(pane);
-                        } else {
-                            self.floating.retain(|p| *p != pane);
-                            crate::dock::close(&mut self.dock, pane);
+                // One submenu per area keeps the menu short.
+                for (title, panes) in crate::dock::menu_groups() {
+                    ui.menu_button(tr(title), |ui| {
+                        for pane in panes {
+                            let mut shown = self.pane_shown(pane);
+                            let title = self.pane_title(pane).text().to_string();
+                            // The page is never hidden: its entry only brings it back.
+                            let can_hide = pane != Pane::Page;
+                            let tip = commands::for_pane(pane).map(|c| tr(commands::def(c).tip)).unwrap_or("");
+                            let r = ui.add_enabled(can_hide || !shown, egui::Checkbox::new(&mut shown, title));
+                            let r = if tip.is_empty() { r } else { r.on_hover_text(tip) };
+                            if r.changed() {
+                                if shown {
+                                    self.show_pane(pane);
+                                } else {
+                                    self.floating.retain(|p| *p != pane);
+                                    crate::dock::close(&mut self.dock, pane);
+                                }
+                            }
                         }
-                    }
+                    });
                 }
                 ui.separator();
                 self.cmd_button(ui, Cmd::ResetLayout);
@@ -631,6 +672,17 @@ impl App {
     /// The shortcuts of the commands (outside text fields); keys of the page editor go
     /// to it while it is the active document.
     pub(super) fn command_keys(&mut self, ctx: &egui::Context) {
+        // Esc closes the dialog on top first (not while a key is recorded, the key tips
+        // are shown or a modal question waits).
+        let esc = self.recording.is_none()
+            && self.ribbon.tips.is_none()
+            && !self.search.is_open()
+            && ctx.memory(|m| m.top_modal_layer().is_none())
+            && ctx.input(|i| i.key_pressed(Key::Escape) && i.modifiers.is_none());
+        let order: Vec<egui::Id> = ctx.memory(|m| m.layer_ids().filter(|l| l.order == egui::Order::Middle).map(|l| l.id).collect());
+        if self.dialogs.begin(esc, &order) {
+            ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape));
+        }
         if self.recording.is_some() {
             self.record_shortcut(ctx);
             return;
@@ -661,7 +713,15 @@ impl App {
             }
         });
         for cmd in hit {
-            self.run(ctx, cmd);
+            // F1 opens the help of the pane in use; the Help button the general help.
+            if cmd == Cmd::Help {
+                match super::help_pane::key_help(self.active_pane, self.active_doc) {
+                    Some(chapter) => self.help_chapter(chapter),
+                    None => self.show_pane(Pane::Tool(ToolPane::Help)),
+                }
+            } else {
+                self.run(ctx, cmd);
+            }
         }
         if self.backstage.is_some() && ctx.input(|i| i.key_pressed(Key::Escape)) {
             self.backstage = None;

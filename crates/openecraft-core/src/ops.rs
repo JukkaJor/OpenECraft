@@ -533,6 +533,12 @@ impl Clip {
     }
 }
 
+/// How far [`paste`] moves the items of `clip` for the point `at`: the top left corner
+/// goes to `at`, in steps of the connection point grid.
+pub fn paste_offset(clip: &Clip, at: P) -> P {
+    (at - clip.bounds().min).snap(GRID)
+}
+
 /// Pastes the clip so that its top-left corner lands on `at`. Tags move into the
 /// structure of the target page; device tags of main functions that already exist
 /// get new numbers (consistently for coil + contacts). Wire numbers and cable cores
@@ -544,7 +550,7 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
     if !b.is_valid() {
         return BTreeSet::new();
     }
-    let d = (at - b.min).snap(GRID);
+    let d = paste_offset(clip, at);
     let existing: BTreeSet<String> = prj.all_tags().into_iter().collect();
     let mut rename: HashMap<String, String> = HashMap::new();
     let mut new_ids = BTreeSet::new();

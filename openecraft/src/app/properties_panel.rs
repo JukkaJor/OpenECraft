@@ -5,6 +5,39 @@
 use super::*;
 
 /// The tabs of a symbol's properties.
+/// What the Belongs to device field does with the text typed when it loses the focus.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum TagEdit {
+    /// Nothing changes: the same tag, Esc, or an empty field.
+    Keep,
+    /// The function moves to the device with this complete tag.
+    Move(String),
+}
+
+/// The text `typed` (relative to the page structure `here`) for a function of the device
+/// `current`; `cancelled` when Esc ended the input. An empty tag is not applied.
+pub(super) fn tag_edit(typed: &str, current: &str, here: &Dt, cancelled: bool) -> TagEdit {
+    let typed = typed.trim();
+    if cancelled || typed.is_empty() {
+        return TagEdit::Keep;
+    }
+    let tag = here.complete(typed);
+    if tag == current { TagEdit::Keep } else { TagEdit::Move(tag) }
+}
+
+/// The note below the field while typing: an empty tag (error), or the device the
+/// function moves to.
+fn tag_note_of(typed: &str, current: &str, here: &Dt, idx: &Index) -> Option<(String, bool)> {
+    if typed.trim().is_empty() {
+        return Some((tr("Enter a device tag – an empty tag is not applied.").to_string(), true));
+    }
+    match tag_edit(typed, current, here, false) {
+        TagEdit::Keep => None,
+        TagEdit::Move(tag) if idx.devices.contains_key(&tag) => Some((tr_fmt!("Moves this function to the existing device {}", tag), false)),
+        TagEdit::Move(tag) => Some((tr_fmt!("Moves this function to the new device {}", tag), false)),
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(super) enum PropTab {
     #[default]
@@ -28,14 +61,34 @@ impl PropTab {
 }
 
 impl App {
+    /// F2 and a double click: the Properties pane when it is shown in the workspace
+    /// (with a frame until the next click), otherwise a window beside the pointer.
+    pub(super) fn open_properties(&mut self, ctx: &egui::Context) {
+        if crate::dock::visible(&self.dock).contains(&Pane::Properties) {
+            self.focus_pane = Some(Pane::Properties);
+            return;
+        }
+        if !self.props_window {
+            let screen = ctx.content_rect();
+            let size = egui::vec2(380.0, 520.0);
+            self.props_at = match ctx.pointer_latest_pos().filter(|p| screen.contains(*p)) {
+                // Beside the pointer (the double-clicked symbol), inside the window.
+                Some(p) => egui::pos2((p.x + 32.0).min(screen.right() - size.x - 8.0).max(screen.left()), (p.y - 40.0).min(screen.bottom() - size.y - 8.0).max(screen.top() + 40.0)),
+                None => screen.center() - size / 2.0,
+            };
+        }
+        self.props_window = true;
+    }
+
     /// The properties of the selection in a window beside the page (F2, double click).
     pub(super) fn properties_float_window(&mut self, ctx: &egui::Context) {
         if !self.props_window {
             return;
         }
         let idx = std::mem::take(&mut self.session.index);
-        let mut open = true;
-        egui::Window::new(tr("Properties")).id(egui::Id::unique("properties_window")).open(&mut open).default_size([380.0, 520.0]).show(ctx, |ui| {
+        let (window, esc) = self.dialogs.window(ctx, tr("Properties"), "properties", Some(self.props_at));
+        let mut open = !esc;
+        window.open(&mut open).default_size([380.0, 520.0]).show(ctx, |ui| {
             egui::ScrollArea::vertical().id_salt("props_window").auto_shrink([false, false]).show(ui, |ui| self.properties(ui, &idx));
         });
         self.session.index = idx;
@@ -58,10 +111,15 @@ impl App {
         if !tabs.contains(&self.props_tab) {
             self.props_tab = PropTab::Device;
         }
-        ui.horizontal_wrapped(|ui| {
-            for t in tabs {
-                ui.selectable_value(&mut self.props_tab, t, t.title());
-            }
+        // Compact tabs in one row; a narrow pane scrolls them instead of wrapping.
+        egui::ScrollArea::horizontal().id_salt("prop_tabs").scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 2.0;
+                ui.spacing_mut().button_padding.x = 4.0;
+                for t in tabs {
+                    ui.selectable_value(&mut self.props_tab, t, RichText::new(t.title()).small());
+                }
+            });
         });
         ui.separator();
         self.props_tab
@@ -104,14 +162,19 @@ impl App {
 
     #[allow(clippy::too_many_lines)]
     pub(super) fn properties(&mut self, ui: &mut egui::Ui, idx: &Index) {
-        ui.heading(tr("Properties"));
+        // The pane's tab and the window are titled Properties already.
         let sel: Vec<u64> = self.editor.selection.iter().copied().collect();
         let pi = self.session.page;
-        if self.session.prj.pages[pi].locked {
-            ui.label(RichText::new(tr("🔒 Released page – read only")).color(crate::style::lock()));
-            ui.disable();
-        } else if let Some(user) = self.page_locked_by() {
-            ui.label(RichText::new(tr_fmt!("🔒 Locked by {} – read only", user)).color(crate::style::lock()));
+        let read_only = if self.session.prj.pages[pi].locked {
+            Some(tr("Released page – read only").to_string())
+        } else {
+            self.page_locked_by().map(|user| tr_fmt!("Locked by {} – read only", user))
+        };
+        if let Some(text) = read_only {
+            ui.horizontal(|ui| {
+                icons::show(ui, Icon::Lock, 14.0);
+                ui.label(RichText::new(text).color(crate::style::lock()));
+            });
             ui.disable();
         }
         if sel.is_empty() {
@@ -123,7 +186,7 @@ impl App {
                 self.page_props = Some(pi);
             }
             ui.add_space(6.0);
-            ui.weak(self.editor.tool.hint());
+            ui.weak(self.editor.hint());
             return;
         }
         if sel.len() > 1 {
@@ -142,7 +205,7 @@ impl App {
             let wires: Vec<u64> = self.session.prj.pages[pi].wires.iter().filter(|w| self.editor.selection.contains(&w.id)).map(|w| w.id).collect();
             if !wires.is_empty() {
                 ui.separator();
-                ui.label(tr_fmt!("{} wires", wires.len()));
+                ui.label(super::counted(wires.len(), tr("1 wire"), tr_fmt!("{} wires", wires.len())));
                 let first = self.session.prj.pages[pi].wires.iter().find(|w| w.id == wires[0]).cloned().unwrap_or_default();
                 let (mut color, mut cs) = (first.color.clone(), first.cross_section.clone());
                 let auto = potentials::props_of_wire(&self.session.prj, &self.session.analysis.netlist, &self.session.analysis.open, first.id);
@@ -165,7 +228,7 @@ impl App {
                             }
                         }
                         if cables.is_empty() {
-                            ui.weak(tr("No cables yet – Project › Cables…"));
+                            ui.weak(tr("No cables yet – Connections › Cables"));
                         }
                     })
                     .response
@@ -187,7 +250,7 @@ impl App {
                             }
                         }
                         if harnesses.is_empty() {
-                            ui.weak(tr("No harnesses yet – Project › Harnesses…"));
+                            ui.weak(tr("No harnesses yet – Connections › Harnesses"));
                         }
                     })
                     .response
@@ -356,23 +419,40 @@ impl App {
         let tab = self.props_tab_bar(ui, device, !def.pins.is_empty(), def.show_tag);
         let mut edited = s.clone();
         let here = Dt::of_page(&self.session.prj.pages[pi]);
+        let mut tag_note: Option<(String, bool)> = None;
         if tab == PropTab::Device {
         egui::Grid::new("sprops").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
             if def.func.has_tag() {
-                ui.label(match def.func {
-                    Func::Terminal => tr("Terminal strip"),
-                    Func::Plc => tr("PLC card"),
-                    Func::Plug(_) => tr("Plug"),
-                    _ => tr("Device tag"),
-                });
+                let (label, tip) = match def.func {
+                    Func::Terminal => (tr("Terminal strip"), ""),
+                    Func::Plc => (tr("PLC card"), ""),
+                    Func::Plug(_) => (tr("Plug"), ""),
+                    _ => (tr("Belongs to device"), tr("The device this function belongs to. Another tag moves the function to that device (Enter applies, Esc restores); Rename device below renames the whole device.")),
+                };
+                let r = ui.label(label);
+                if !tip.is_empty() {
+                    r.on_hover_text(tip);
+                }
                 ui.horizontal(|ui| {
-                    // Shown relative to the page structure, stored complete.
-                    let mut shown = here.relative(&edited.tag);
-                    let before = shown.clone();
-                    ui.add(egui::TextEdit::singleline(&mut shown).desired_width(90.0).font(egui::TextStyle::Monospace))
+                    // Shown relative to the page structure, stored complete; typed into a
+                    // copy and applied when the field loses the focus (one undo step).
+                    let key = ui.scope_id().with(("device_tag", s.id));
+                    let now = here.relative(&edited.tag);
+                    let mut typed: String = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| now.clone());
+                    let r = ui
+                        .add(egui::TextEdit::singleline(&mut typed).id(key.with("edit")).desired_width(90.0).font(egui::TextStyle::Monospace))
                         .on_hover_text(tr_fmt!("Complete tag: {}\nAspects missing here are taken from the page (=function +location).", edited.tag));
-                    if shown != before {
-                        edited.tag = if shown.trim().is_empty() { String::new() } else { here.complete(&shown) };
+                    if r.lost_focus() {
+                        let esc = ui.input(|i| i.key_pressed(egui::Key::Escape));
+                        if let TagEdit::Move(tag) = tag_edit(&typed, &edited.tag, &here, esc) {
+                            edited.tag = tag;
+                        }
+                    }
+                    tag_note = if r.has_focus() { tag_note_of(&typed, &edited.tag, &here, idx) } else { None };
+                    if r.has_focus() {
+                        ui.data_mut(|d| d.insert_temp(key, typed));
+                    } else {
+                        ui.data_mut(|d| d.remove::<String>(key));
                     }
                     // Assign to an existing device (e.g. contact → coil)
                     egui::ComboBox::from_id_salt("assign").selected_text("…").width(30.0).show_ui(ui, |ui| {
@@ -392,6 +472,15 @@ impl App {
                     .on_hover_text(tr("Assign to existing device"));
                 });
                 ui.end_row();
+                if let Some((text, error)) = tag_note.take() {
+                    ui.label("");
+                    if error {
+                        ui.colored_label(crate::style::error(), text);
+                    } else {
+                        ui.weak(text);
+                    }
+                    ui.end_row();
+                }
             }
             let label_name = match def.func {
                 Func::Terminal => Some(tr("Terminal number")),
@@ -428,11 +517,11 @@ impl App {
             }
             ui.label(tr("Orientation"));
             ui.horizontal(|ui| {
-                if ui.button("⟲").clicked() {
+                if icons::button(ui, Icon::Undo, tr("Rotate left")).clicked() {
                     edited.rot = (edited.rot + 3) % 4;
                 }
                 ui.label(format!("{}°", edited.rot as u32 * 90));
-                if ui.button("⟳").clicked() {
+                if icons::button(ui, Icon::Rotate, tr("Rotate right")).clicked() {
                     edited.rot = (edited.rot + 1) % 4;
                 }
                 ui.checkbox(&mut edited.mirror, tr("Mirror"));
@@ -502,7 +591,7 @@ impl App {
                 self.parts_ui.show_part(&n, true);
             }
             ui.horizontal(|ui| {
-                if ui.button(tr("➕ Add part…")).on_hover_text(tr("Part selection from the parts database")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("Add part…")).on_hover_text(tr("Part selection from the parts database")).clicked() {
                     self.parts_ui.select_for(&edited.tag);
                 }
                 if !data.parts.is_empty()
@@ -525,7 +614,7 @@ impl App {
             if tab == PropTab::Device {
                 if let Some((ei, _)) = openecraft_core::panel::locate(&self.session.prj, &edited.tag) {
                     let enc = self.session.prj.layout.enclosures[ei].name.clone();
-                    if ui.button(tr_fmt!("🗄 Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.session.prj, &edited.tag) {
+                    if icons::text_button(ui, Icon::Database, &tr_fmt!("Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.session.prj, &edited.tag) {
                         self.set_workspace(Workspace::Panel);
                         self.show_pane(Pane::LayoutView);
                     }
@@ -621,3 +710,6 @@ impl App {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -18,3 +18,15 @@ fn contrast_is_symmetric_and_bounded() {
     assert!((contrast(Color32::WHITE, Color32::BLACK) - 21.0).abs() < 0.01);
     assert!((contrast(Color32::GRAY, Color32::GRAY) - 1.0).abs() < 0.001);
 }
+
+#[test]
+fn errors_are_shown_in_the_error_colour_not_as_success() {
+    for dark in [false, true] {
+        let c = colors(dark);
+        assert_eq!(Level::Error.color(dark, Color32::GRAY), c.error);
+        assert_eq!(Level::Warning.color(dark, Color32::GRAY), c.warning);
+        assert_eq!(Level::Ok.color(dark, Color32::GRAY), c.ok);
+        assert_eq!(Level::Info.color(dark, Color32::GRAY), Color32::GRAY);
+        assert_ne!(Level::Error.color(dark, Color32::GRAY), Level::Ok.color(dark, Color32::GRAY));
+    }
+}

@@ -54,3 +54,29 @@ fn values_arriving_after_a_change_do_not_replace_it() {
     assert_eq!(session.prj.info.name, "edited");
     assert!(parts.parts.iter().any(|p| p.number == "new"));
 }
+
+#[test]
+fn unsaved_changes_of_the_last_session_stay_unsaved() {
+    let store = store("unsaved");
+    let ctx = egui::Context::default();
+    store.store(PROJECT, openecraft_core::archive::pack(&named("stored")).into_bytes());
+    let mut autosave = Autosave::start(store, &ctx, &PartsDb::default());
+    let mut session = Session::new(named("start"), Some("plant.oec".into()));
+    // The shell restores the flag stored at the last close.
+    session.mark_unsaved();
+    assert!(autosave.poll(&mut session, &mut PartsDb::default()));
+    assert_eq!(session.prj.info.name, "stored");
+    assert!(session.dirty(), "the file on disk does not hold the restored changes");
+}
+
+#[test]
+fn values_arriving_after_a_replacement_do_not_replace_it() {
+    let store = store("replaced");
+    let ctx = egui::Context::default();
+    store.store(PROJECT, openecraft_core::archive::pack(&named("stored")).into_bytes());
+    let mut autosave = Autosave::start(store, &ctx, &PartsDb::default());
+    let mut session = Session::new(named("start"), None);
+    session.replace(named("opened"), Some("opened.oec".into()));
+    assert!(!autosave.poll(&mut session, &mut PartsDb::default()));
+    assert_eq!(session.prj.info.name, "opened");
+}

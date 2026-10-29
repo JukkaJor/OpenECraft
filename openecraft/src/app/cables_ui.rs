@@ -1,6 +1,7 @@
 //! Cables window (cable list with type, cores, part and usage) and the wire
 //! numbering window.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::model::*;
@@ -27,10 +28,10 @@ impl App {
         let structure = structure::page_structure(&self.session.prj.pages[self.session.page]);
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("➕ New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("New cable")).on_hover_text(tr("In the structure of the current page")).clicked() {
                     ops::add_cable(&mut self.session.prj, &structure);
                 }
-                if ui.button(tr("📊 Cable overview")).clicked() {
+                if icons::text_button(ui, Icon::Report, tr("Cable overview")).clicked() {
                     overview = true;
                 }
                 ui.weak(tr("Assign wires: select them in the schematic › Assign to cable."));
@@ -81,7 +82,7 @@ impl App {
                             let n = used.get(&old).map(|s| s.len()).unwrap_or(0);
                             ui.label(format!("{n}/{}", c.core_list().len()));
                         }
-                        if ui.small_button("🗑").on_hover_text(tr("Delete cable (its wires are removed from it)")).clicked() {
+                        if icons::button(ui, Icon::Delete, tr("Delete cable (its wires are removed from it)")).clicked() {
                             remove = Some(i);
                         }
                         ui.end_row();

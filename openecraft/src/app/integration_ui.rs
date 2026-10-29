@@ -2,6 +2,7 @@
 //! wiring machines through the connectors of the integration layer. Imports are shown
 //! as a list of changes (conflicts unchecked) and the checked ones are taken over.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use openecraft_core::integration::{self, Direction, Field, Preview, Profile, CONNECTORS};
 use crate::io::Purpose;
@@ -81,14 +82,14 @@ impl App {
             let c = &CONNECTORS[ui_state.connector.min(CONNECTORS.len() - 1)];
             ui.label(RichText::new(tr(c.help)).weak());
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("⬇ Export…")).on_hover_text(tr("Write the file for the other system; later imports detect conflicts against this export")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Export…")).on_hover_text(tr("Write the file for the other system; later imports detect conflicts against this export")).clicked() {
                     actions.push(Action::Export);
                 }
-                if ui.button(tr("⬆ Import…")).on_hover_text(tr("Read a file of the other system (CSV or JSON) and review the changes")).clicked() {
+                if icons::text_button(ui, Icon::Upload, tr("Import…")).on_hover_text(tr("Read a file of the other system (CSV or JSON) and review the changes")).clicked() {
                     actions.push(Action::Import);
                 }
                 ui.separator();
-                if ui.button(tr("⬇ Neutral exchange file…")).on_hover_text(tr("Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Neutral exchange file…")).on_hover_text(tr("Items, devices, placements, connections, wires and documents in one JSON file for systems without a connector")).clicked() {
                     actions.push(Action::ExportExchange);
                 }
             });

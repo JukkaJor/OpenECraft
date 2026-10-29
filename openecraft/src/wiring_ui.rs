@@ -3,6 +3,7 @@
 //! wiring progress.
 
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 use openecraft_core::model::Project;
 use openecraft_core::panel::RoutedWire;
 use crate::panel_ui::PanelUi;
@@ -317,7 +318,7 @@ impl WiringUi {
         ui.horizontal(|ui| {
             ui.checkbox(&mut self.show_others, tr("Show the other wires"));
             panel.door_button(ui);
-            if ui.button(tr("⛶ Fit")).clicked() {
+            if icons::text_button(ui, Icon::Fit, tr("Fit")).clicked() {
                 panel.reset_camera();
                 if let Some(w) = self.current_index(an).map(|i| an.wiring[i].clone()) {
                     panel.focus_wire(prj, &w);

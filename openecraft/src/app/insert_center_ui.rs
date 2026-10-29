@@ -23,6 +23,9 @@ enum Pick {
     Unplaced(openecraft_core::unplaced::Unplaced),
 }
 
+/// The device list stops after this many parts (the search narrows it).
+const DEVICES_SHOWN: usize = 200;
+
 impl App {
     /// Registered symbols of the project symbol library, sorted by library and name.
     pub(super) fn user_symbols(&self) -> Vec<symbols::SymbolRef> {
@@ -118,8 +121,9 @@ impl App {
             });
             // Devices: parts with function templates (the first function is placed).
             let mut devices: Vec<Entry> = Vec::new();
+            let mut found = 0;
             for p in self.session.prj.parts.iter().chain(self.parts_db.parts.iter()) {
-                if p.functions.is_empty() || devices.len() >= 200 {
+                if p.functions.is_empty() {
                     continue;
                 }
                 if searching && !self.insert_center.matches(&[&p.number, &p.description, &p.manufacturer, &p.group]) {
@@ -127,15 +131,21 @@ impl App {
                 }
                 let e = Entry::Part(p.number.clone());
                 if !devices.contains(&e) {
-                    devices.push(e);
+                    found += 1;
+                    if devices.len() < DEVICES_SHOWN {
+                        devices.push(e);
+                    }
                 }
             }
-            egui::CollapsingHeader::new(RichText::new(tr_fmt!("Devices ({})", devices.len())).strong())
+            egui::CollapsingHeader::new(RichText::new(tr_fmt!("Devices ({})", found)).strong())
                 .id_salt("ic_devices")
                 .open(searching.then_some(!devices.is_empty()))
                 .show(ui, |ui| {
                     ui.weak(tr("Parts with functions: the device gets the part, its first function is placed."));
                     self.entry_rows(ui, &devices, &mut pick);
+                    if found > devices.len() {
+                        ui.colored_label(crate::style::warning(), tr_fmt!("{} of {} devices shown – refine the search", devices.len(), found));
+                    }
                 });
             // Unplaced functions of the project.
             let prj = &self.session.prj;
@@ -186,12 +196,15 @@ impl App {
                     Entry::Symbol(k) => symbol_icon(ui, &self.session.prj, k, egui::vec2(36.0, 26.0)),
                     _ => icons::show(ui, icon, 22.0).interact(egui::Sense::click()),
                 };
-                let extra = match e {
-                    Entry::Symbol(k) => self.session.prj.symbol(k).map(|d| if d.letter.is_empty() { "–".to_string() } else { d.letter.to_string() }).unwrap_or_default(),
-                    Entry::Part(n) => parts::lookup(&self.session.prj, Some(&self.parts_db), n).map(|p| p.description.clone()).unwrap_or_default(),
-                    Entry::Macro(n) => self.macro_lib.get(n).map(|m| m.description.clone()).unwrap_or_default(),
+                // Symbols: the identifying letter as a badge; parts and macros: the
+                // description. The whole text shows on hover (the pane may clip it).
+                let (letter, about) = match e {
+                    Entry::Symbol(k) => (self.session.prj.symbol(k).map(|d| d.letter.to_string()).unwrap_or_default(), String::new()),
+                    Entry::Part(n) => (String::new(), parts::lookup(&self.session.prj, Some(&self.parts_db), n).map(|p| p.description.clone()).unwrap_or_default()),
+                    Entry::Macro(n) => (String::new(), self.macro_lib.get(n).map(|m| m.description.clone()).unwrap_or_default()),
                 };
-                let text = format!("{title}  ({extra})");
+                let full = if about.is_empty() { title.clone() } else { format!("{title} – {about}") };
+                let text = title.clone();
                 let selected = active.as_ref() == Some(e);
                 // Symbols can be dragged into the page as well.
                 let lbl = match e.symbol_key(&self.session.prj) {
@@ -201,6 +214,12 @@ impl App {
                     }
                     None => ui.selectable_label(selected, text),
                 };
+                let lbl = lbl.on_hover_text(&full);
+                if !letter.is_empty() {
+                    ui.label(RichText::new(&letter).small().monospace().weak()).on_hover_text(tr_fmt!("Identifying letter: {}", letter));
+                } else if !about.is_empty() {
+                    ui.add(egui::Label::new(RichText::new(&about).small().weak()).truncate());
+                }
                 let fav = self.insert_center.is_favorite(e);
                 let star = icons::toggle_button(ui, if fav { Icon::StarFilled } else { Icon::Star }, tr("Favorite"), fav);
                 if preview.clicked() || lbl.clicked() {
@@ -230,8 +249,8 @@ impl App {
                         Entry::Symbol(k) => symbol_icon(ui, &self.session.prj, k, egui::vec2(56.0, 40.0)),
                         _ => icons::show(ui, icon, 40.0).interact(egui::Sense::click()),
                     };
-                    let short: String = title.chars().take(14).collect();
-                    ui.label(RichText::new(short).small());
+                    // The name wraps under the tile; the whole name shows on hover.
+                    ui.add(egui::Label::new(RichText::new(&title).small()).wrap()).on_hover_text(&title);
                     let r = r.on_hover_text(&title);
                     if r.clicked() {
                         *pick = Some(Pick::Insert(e.clone()));
@@ -276,7 +295,7 @@ impl App {
                 let pins = f.pin_list();
                 self.set_tool(Tool::Place(sym));
                 self.editor.place_once = Some((String::new(), pins));
-                self.pending_part = Some(n.clone());
+                self.editor.place_part = Some(n.clone());
             }
         }
         self.insert_center.used(&e);

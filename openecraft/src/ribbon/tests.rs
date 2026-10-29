@@ -65,3 +65,42 @@ fn customisation_hides_groups_and_adds_own_ones() {
     let f = Custom::from_json(foreign).unwrap();
     assert!(f.hidden.is_empty() && f.groups.is_empty());
 }
+
+#[test]
+fn groups_collapse_from_the_right_until_the_tab_fits() {
+    let full = [100.0, 200.0, 150.0, 60.0];
+    let short = [60.0, 60.0, 60.0, 60.0];
+    assert_eq!(collapsed(&full, &short, 600.0), vec![false; 4], "everything fits");
+    // 510 wide: the last group would not get narrower, the third one collapses.
+    assert_eq!(collapsed(&full, &short, 450.0), vec![false, false, true, false]);
+    assert_eq!(collapsed(&full, &short, 300.0), vec![false, true, true, false]);
+    assert_eq!(collapsed(&full, &short, 10.0), vec![true, true, true, false], "as narrow as it gets");
+    assert!(collapsed(&[], &[], 0.0).is_empty());
+    // The wide group had to go; the narrow one collapsed before it fits again.
+    assert_eq!(collapsed(&[100.0, 400.0, 100.0], &[60.0, 60.0, 60.0], 300.0), vec![false, true, false]);
+}
+
+#[test]
+fn a_command_has_one_place_in_the_ribbon() {
+    // Deliberate second entry points: the navigators of Home and the quick access row.
+    let mut seen: std::collections::BTreeMap<Cmd, Vec<String>> = Default::default();
+    for t in TABS {
+        for g in t.groups {
+            if t.id == TabId::Home && g.id == "navigators" {
+                continue;
+            }
+            for i in g.items {
+                seen.entry(i.cmd()).or_default().push(format!("{}/{}", t.key, g.id));
+            }
+        }
+    }
+    let twice: Vec<_> = seen.iter().filter(|(_, p)| p.len() > 1).collect();
+    assert!(twice.is_empty(), "commands in more than one group: {twice:?}");
+    let search: Vec<String> = places(Cmd::CommandSearch).into_iter().filter(|p| !p.starts_with("backstage")).collect();
+    assert_eq!(search, vec!["home/find".to_string()], "the box of the quick access row and Home › Find");
+    assert_eq!(places(Cmd::ManagePlugins).iter().filter(|p| !p.starts_with("backstage") && *p != "view/panes").count(), 1);
+    for c in [Cmd::ZoomActual, Cmd::ZoomIn, Cmd::ZoomOut, Cmd::FitPage] {
+        assert!(places(c).contains(&"view/zoom".to_string()), "{c:?}");
+    }
+    assert!(places(Cmd::DevicesPane).contains(&"devices/navigators".to_string()));
+}

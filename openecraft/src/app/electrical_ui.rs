@@ -2,6 +2,7 @@
 //! selectivity, loads and power supply budgets, safety functions (ISO 13849-1) and
 //! the rule libraries / customer rule sets the project is verified against.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::electrical::{Coordination, Earthing, Insulation, Material, Transformer};
@@ -47,7 +48,7 @@ fn table_grid(ui: &mut egui::Ui, id: &str, t: &Table, jump: &mut Option<(usize, 
             for (row, target) in t.rows.iter().zip(&t.targets) {
                 match target {
                     Some(tg) => {
-                        if ui.small_button("➡").on_hover_text(tr("Click to show")).clicked() {
+                        if icons::button(ui, Icon::Next, tr("Click to show")).clicked() {
                             *jump = Some(*tg);
                         }
                     }
@@ -265,7 +266,7 @@ impl App {
         for (k, id) in [(ReportKind::ShortCircuit, "el_sc"), (ReportKind::Selectivity, "el_sel")] {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(k.title()).strong());
-                if ui.small_button(tr("📊 Report")).clicked() {
+                if icons::text_button(ui, Icon::Report, tr("Report")).clicked() {
                     *report = Some(k.into());
                 }
             });
@@ -277,7 +278,7 @@ impl App {
         ui.separator();
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Manufacturer's coordination tables")).strong());
-            if ui.small_button(tr("➕ Entry")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Entry")).clicked() {
                 self.session.prj.electrical.coordination.push(Coordination::default());
             }
         });
@@ -297,7 +298,7 @@ impl App {
                 ui.add(egui::TextEdit::singleline(&mut c.downstream).desired_width(150.0));
                 ui.add(egui::DragValue::new(&mut c.selectivity).speed(0.1).range(0.0..=200.0)).on_hover_text(tr("0 = not given"));
                 ui.add(egui::DragValue::new(&mut c.backup).speed(0.1).range(0.0..=200.0)).on_hover_text(tr("0 = not given"));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -313,7 +314,7 @@ impl App {
         for (k, id) in [(ReportKind::LoadCalculation, "el_loads"), (ReportKind::PowerSupplyBudget, "el_psu")] {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(k.title()).strong());
-                if ui.small_button(tr("📊 Report")).clicked() {
+                if icons::text_button(ui, Icon::Report, tr("Report")).clicked() {
                     *report = Some(k.into());
                 }
             });
@@ -327,7 +328,7 @@ impl App {
     fn safety_tab(&mut self, ui: &mut egui::Ui, report: &mut Option<ReportId>) {
         ui.weak(tr("Safety functions of ISO 13849-1: each subsystem (input, logic, output) with the devices of a channel, its category, diagnostic coverage and operations per year. Devices count with PL / PFHd, MTTFd or B10d of their parts."));
         ui.horizontal(|ui| {
-            if ui.button(tr("➕ Safety function")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Safety function")).clicked() {
                 let n = self.session.prj.electrical.safety.len() + 1;
                 let sub = |name: &str| Subsystem { name: name.into(), category: Category::Three, dc: 90.0, operations: 10000.0, ccf: true, ..Default::default() };
                 self.session.prj.electrical.safety.push(SafetyFunction {
@@ -337,7 +338,7 @@ impl App {
                     ..Default::default()
                 });
             }
-            if ui.button(tr("📊 Report")).clicked() {
+            if icons::text_button(ui, Icon::Report, tr("Report")).clicked() {
                 *report = Some(ReportKind::SafetyFunctions.into());
             }
         });
@@ -351,7 +352,7 @@ impl App {
                 ui.label(tr("Required"));
                 combo(ui, ("sf_req", fi), &mut f.required, &Pl::ALL, |p| safety::pl_text(Some(p)));
                 ui.label(RichText::new(tr_fmt!("reached: PL {}", safety::pl_text(e.achieved))).color(result_color(e.is_met())));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(fi);
                 }
             });
@@ -380,7 +381,7 @@ impl App {
                     if !hints.is_empty() {
                         label.on_hover_text(hints.join("\n"));
                     }
-                    if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                         remove_sub = Some(si);
                     }
                     ui.end_row();
@@ -389,7 +390,7 @@ impl App {
             if let Some(si) = remove_sub {
                 f.subsystems.remove(si);
             }
-            if ui.small_button(tr("➕ Subsystem")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Subsystem")).clicked() {
                 f.subsystems.push(Subsystem { name: tr_fmt!("Subsystem {}", f.subsystems.len() + 1), category: Category::Three, dc: 90.0, ccf: true, ..Default::default() });
             }
         }
@@ -417,15 +418,15 @@ impl App {
         ui.separator();
         ui.horizontal(|ui| {
             ui.label(RichText::new(tr("Customer rule sets")).strong());
-            if ui.button(tr("➕ Rule set")).clicked() {
+            if icons::text_button(ui, Icon::Plus, tr("Rule set")).clicked() {
                 let n = self.session.prj.electrical.rule_sets.len() + 1;
                 self.session.prj.electrical.rule_sets.push(RuleSet { name: tr_fmt!("Rule set {}", n), active: true, ..Default::default() });
                 self.electrical_ui.rule_set = Some(self.session.prj.electrical.rule_sets.len() - 1);
             }
-            if ui.button(tr("📂 Import…")).clicked() {
+            if icons::text_button(ui, Icon::FolderOpen, tr("Import…")).clicked() {
                 self.io.open(ctx, Purpose::RuleSets);
             }
-            if ui.add_enabled(!self.session.prj.electrical.rule_sets.is_empty(), egui::Button::new(tr("💾 Export…"))).clicked() {
+            if ui.add_enabled_ui(!self.session.prj.electrical.rule_sets.is_empty(), |ui| icons::text_button(ui, Icon::Save, tr("Export…"))).inner.clicked() {
                 let json = rules::export(&self.session.prj.electrical.rule_sets);
                 self.export(ctx, "rule_sets.json".into(), (tr("OpenECraft rule sets"), "json"), json);
             }
@@ -440,7 +441,7 @@ impl App {
                 }
                 ui.weak(tr_fmt!("{} checks", r.checks.len()));
                 ui.weak(&r.source);
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(i);
                 }
             });
@@ -456,7 +457,7 @@ impl App {
         ui.separator();
         ui.horizontal(|ui| {
             ui.label(RichText::new(ReportKind::Verification.title()).strong());
-            if ui.small_button(tr("📊 Report")).clicked() {
+            if icons::text_button(ui, Icon::Report, tr("Report")).clicked() {
                 *report = Some(ReportKind::Verification.into());
             }
         });
@@ -478,7 +479,7 @@ impl App {
                 }
                 self.notify(ctx, tr_fmt!("Imported {} rule sets", n));
             }
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 }
@@ -520,7 +521,7 @@ fn rule_set_editor(ui: &mut egui::Ui, r: &mut RuleSet) {
                 combo(ui, ("ck_scope", ci), &mut c.scope, &Scope::ALL, |s| s.title().into());
                 combo(ui, ("ck_level", ci), &mut c.level, &Level::ALL, |l| l.title().into());
                 ui.add(egui::TextEdit::singleline(&mut c.message).hint_text(tr("Message")).desired_width(320.0));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(ci);
                 }
             });
@@ -530,7 +531,7 @@ fn rule_set_editor(ui: &mut egui::Ui, r: &mut RuleSet) {
                 ui.horizontal(|ui| {
                     ui.label(tr("if"));
                     condition_edit(ui, ("ck_when", ci, wi), w, scope);
-                    if ui.small_button("✖").clicked() {
+                    if icons::button(ui, Icon::Close, tr("Remove")).clicked() {
                         remove_when = Some(wi);
                     }
                 });
@@ -541,7 +542,7 @@ fn rule_set_editor(ui: &mut egui::Ui, r: &mut RuleSet) {
             ui.horizontal(|ui| {
                 ui.label(tr("then"));
                 condition_edit(ui, ("ck_req", ci), &mut c.require, scope);
-                if ui.small_button(tr("➕ Condition")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("Condition")).clicked() {
                     c.when.push(Condition { field: scope.fields()[0].into(), ..Default::default() });
                 }
             });
@@ -550,7 +551,7 @@ fn rule_set_editor(ui: &mut egui::Ui, r: &mut RuleSet) {
     if let Some(ci) = remove {
         r.checks.remove(ci);
     }
-    if ui.button(tr("➕ Check")).clicked() {
+    if icons::text_button(ui, Icon::Plus, tr("Check")).clicked() {
         r.checks.push(Check { require: Condition { field: "description".into(), ..Default::default() }, ..Default::default() });
     }
 }

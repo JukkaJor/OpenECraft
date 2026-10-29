@@ -2,6 +2,7 @@
 //! segment with its structure and planned devices (state against the schematic),
 //! templates, page generation from page macros and the CSV / Excel exchange.
 
+use openecraft_ui::icons::{self, Icon};
 use super::App;
 use crate::io::Purpose;
 use egui::{Color32, RichText};
@@ -32,18 +33,18 @@ impl App {
         let (mut import, mut export, mut generate) = (false, None, false);
         ui.scope(|ui| {
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("➕ Segment")).on_hover_text(tr("At the top level")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("Segment")).on_hover_text(tr("At the top level")).clicked() {
                     let n = self.session.prj.preplanning.segments.iter().filter(|s| s.parent == 0).count() + 1;
                     self.preplanning_ui.selected = Some(pp::add_segment(&mut self.session.prj, 0, &tr_fmt!("Segment {}", n)));
                 }
                 let sel = self.preplanning_ui.selected.filter(|id| pp::segment(&self.session.prj, *id).is_some());
-                if ui.add_enabled(sel.is_some(), egui::Button::new(tr("➕ Sub-segment"))).clicked() {
+                if ui.add_enabled_ui(sel.is_some(), |ui| icons::text_button(ui, Icon::Plus, tr("Sub-segment"))).inner.clicked() {
                     if let Some(p) = sel {
                         let n = self.session.prj.preplanning.segments.iter().filter(|s| s.parent == p).count() + 1;
                         self.preplanning_ui.selected = Some(pp::add_segment(&mut self.session.prj, p, &tr_fmt!("Segment {}", n)));
                     }
                 }
-                if ui.add_enabled(sel.is_some(), egui::Button::new(tr("🗑 Remove segment"))).on_hover_text(tr("With everything below it")).clicked() {
+                if ui.add_enabled_ui(sel.is_some(), |ui| icons::text_button(ui, Icon::Delete, tr("Remove segment"))).inner.on_hover_text(tr("With everything below it")).clicked() {
                     if let Some(id) = sel {
                         pp::remove_segment(&mut self.session.prj, id);
                         self.preplanning_ui.selected = None;
@@ -188,7 +189,7 @@ impl App {
                         Some((t, st)) => ui.label(RichText::new(st.title()).color(state_color(*st))).on_hover_text(t),
                         None => ui.label(""),
                     };
-                    if ui.small_button("🗑").clicked() {
+                    if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
                         remove = Some(i);
                     }
                     ui.end_row();
@@ -198,7 +199,7 @@ impl App {
         if let Some(i) = remove {
             s.devices.remove(i);
         }
-        if ui.button(tr("➕ Device")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("Device")).clicked() {
             let n = s.devices.len() + 1;
             s.devices.push(PlannedDevice { tag: format!("-M{n}"), ..Default::default() });
         }
@@ -232,14 +233,14 @@ impl App {
         let rows = if bytes.starts_with(b"PK") {
             match openecraft_core::xlsx::read(bytes) {
                 Ok(sheets) => sheets.into_iter().next().map(|(_, r)| r).unwrap_or_default(),
-                Err(e) => return self.notify(ctx, e),
+                Err(e) => return self.notify_error(ctx, e),
             }
         } else {
             openecraft_core::xlsx::rows_of_csv(String::from_utf8_lossy(bytes).trim_start_matches('\u{feff}'))
         };
         match pp::import_rows(&mut self.session.prj, &rows) {
             Ok((s, a, u)) => self.notify(ctx, tr_fmt!("{} segments created, {} devices added, {} updated", s, a, u)),
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
     }
 }

@@ -2,6 +2,7 @@
 //! set per strip, plug, cable …), generating them again, and the output of report
 //! pages into another project.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_fmt};
 use super::App;
 use openecraft_core::forms;
@@ -39,14 +40,14 @@ impl App {
             let ru = &mut self.report_blocks_ui;
             let prj = &mut self.session.prj;
             ui.horizontal(|ui| {
-                if ui.button(tr("➕ New block")).clicked() {
+                if icons::text_button(ui, Icon::Plus, tr("New block")).clicked() {
                     let name = (1..).map(|i| tr_fmt!("Block {}", i)).find(|n| !prj.report_blocks.iter().any(|b| &b.name == n)).unwrap_or_default();
                     prj.report_blocks.push(ReportBlock { name, ..Default::default() });
                     ru.selected = Some(prj.report_blocks.len() - 1);
                     ru.name.clear();
                 }
                 let any = !prj.report_blocks.is_empty();
-                if ui.add_enabled(any, egui::Button::new(tr("⟳ Generate all"))).on_hover_text(tr("Generates the pages of all report blocks again")).clicked() {
+                if ui.add_enabled_ui(any, |ui| icons::text_button(ui, Icon::Rotate, tr("Generate all"))).inner.on_hover_text(tr("Generates the pages of all report blocks again")).clicked() {
                     action = Some(Action::GenerateAll);
                 }
             });
@@ -123,10 +124,10 @@ impl App {
                 let n = report_blocks::block_pages(prj, &self.session.analysis, &prj.report_blocks[i]).len();
                 ui.weak(tr_fmt!("Generates {} pages", n));
                 ui.horizontal(|ui| {
-                    if ui.button(tr("⟳ Generate")).on_hover_text(tr("Replaces the pages of this block")).clicked() {
+                    if icons::text_button(ui, Icon::Rotate, tr("Generate")).on_hover_text(tr("Replaces the pages of this block")).clicked() {
                         action = Some(Action::Generate(i));
                     }
-                    if ui.button(tr("🗑 Delete")).on_hover_text(tr("The pages it generated stay")).clicked() {
+                    if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("The pages it generated stay")).clicked() {
                         action = Some(Action::Delete(i));
                     }
                 });
@@ -150,7 +151,7 @@ impl App {
                 let name = self.session.prj.report_blocks[i].name.clone();
                 match report_blocks::generate(&mut self.session.prj, &self.session.analysis, i) {
                     Ok(n) => self.notify(ctx, tr_fmt!("Report block {}: {} pages generated", name, n)),
-                    Err(e) => self.notify(ctx, e),
+                    Err(e) => self.notify_error(ctx, e),
                 }
             }
             Some(Action::GenerateAll) => self.generate_report_blocks(ctx),
@@ -177,7 +178,7 @@ impl App {
     pub(super) fn generate_report_blocks(&mut self, ctx: &egui::Context) {
         match report_blocks::generate_all(&mut self.session.prj) {
             Ok(n) => self.notify(ctx, tr_fmt!("Report blocks updated: {} pages", n)),
-            Err(e) => self.notify(ctx, e),
+            Err(e) => self.notify_error(ctx, e),
         }
         self.session.page = self.session.page.min(self.session.prj.pages.len() - 1);
     }
@@ -189,7 +190,7 @@ impl App {
             .and_then(|(json, n)| self.io.save_to(&loaded.name, &json).map(|_| n));
         match result {
             Ok(n) => self.notify(ctx, tr_fmt!("{} report pages output to {}", n, io::short_name(&loaded.name))),
-            Err(e) => self.notify(ctx, tr_fmt!("Output failed: {}", e)),
+            Err(e) => self.notify_error(ctx, tr_fmt!("Output failed: {}", e)),
         }
     }
 }

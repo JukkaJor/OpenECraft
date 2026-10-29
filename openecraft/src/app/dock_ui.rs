@@ -7,6 +7,7 @@ use crate::dock::{self, Pane};
 
 /// What the pane menu of a tab bar asked for.
 enum PaneRequest {
+    Show(Pane),
     Float(Pane),
     Close(Pane),
     Help(Pane),
@@ -18,6 +19,35 @@ struct Docked<'a> {
     idx: &'a Index,
     request: Option<PaneRequest>,
     documents: usize,
+    /// Tabs of bars too narrow for their titles: icons with tooltips instead.
+    compact: Vec<egui_tiles::TileId>,
+}
+
+/// Draws a tab the way egui_tiles does (the title, the close button, dragging) with
+/// the given margin beside the title.
+struct PlainTab(egui::WidgetText, f32);
+
+impl egui_tiles::Behavior<Pane> for PlainTab {
+    fn pane_ui(&mut self, _ui: &mut egui::Ui, _tile: egui_tiles::TileId, _pane: &mut Pane) -> egui_tiles::UiResponse {
+        egui_tiles::UiResponse::None
+    }
+
+    fn tab_title_for_pane(&mut self, _pane: &Pane) -> egui::WidgetText {
+        self.0.clone()
+    }
+
+    fn tab_title_for_tile(&mut self, _tiles: &egui_tiles::Tiles<Pane>, _tile: egui_tiles::TileId) -> egui::WidgetText {
+        self.0.clone()
+    }
+
+    fn tab_title_spacing(&self, _visuals: &egui::Visuals) -> f32 {
+        self.1
+    }
+}
+
+/// The icon of a pane (of the command that shows it).
+fn pane_icon(pane: Pane) -> Icon {
+    crate::commands::for_pane(pane).map(|c| crate::commands::def(c).icon).unwrap_or(Icon::File)
 }
 
 impl egui_tiles::Behavior<Pane> for Docked<'_> {
@@ -48,11 +78,42 @@ impl egui_tiles::Behavior<Pane> for Docked<'_> {
     }
 
     fn is_tab_closable(&self, tiles: &egui_tiles::Tiles<Pane>, tile: egui_tiles::TileId) -> bool {
-        tiles.get_pane(&tile).is_some_and(|p| !p.is_document() || self.documents > 1)
+        tiles.get_pane(&tile).is_some_and(|p| p.has_close_button() && (!p.is_document() || self.documents > 1))
+    }
+
+    /// Tabs of a bar too narrow for their titles show their icon (the title on hover).
+    fn tab_ui(&mut self, tiles: &mut egui_tiles::Tiles<Pane>, ui: &mut egui::Ui, id: egui::Id, tile: egui_tiles::TileId, state: &egui_tiles::TabState) -> egui::Response {
+        let title = self.tab_title_for_tile(tiles, tile);
+        let compact = self.compact.contains(&tile);
+        let pane = tiles.get_pane(&tile).copied();
+        match pane {
+            Some(pane) if compact => {
+                // Blanks as wide as the icon painted over them.
+                let mut plain = PlainTab("    ".into(), 2.0);
+                let compact_state = egui_tiles::TabState { closable: false, ..state.clone() };
+                let r = plain.tab_ui(tiles, ui, id, tile, &compact_state);
+                let color = if state.active { ui.visuals().strong_text_color() } else { ui.visuals().text_color() };
+                icons::paint(ui.painter(), egui::Rect::from_center_size(r.rect.center(), egui::Vec2::splat(13.0)), pane_icon(pane), color);
+                r.on_hover_text(title.text())
+            }
+            _ => PlainTab(title, 8.0).tab_ui(tiles, ui, id, tile, state),
+        }
     }
 
     fn top_bar_right_ui(&mut self, tiles: &egui_tiles::Tiles<Pane>, ui: &mut egui::Ui, _tile: egui_tiles::TileId, tabs: &egui_tiles::Tabs, _scroll: &mut f32) {
         let Some(pane) = tabs.active.and_then(|id| tiles.get_pane(&id)).copied() else { return };
+        // Titles that do not fit: icons, and a list of all tabs of the bar.
+        let font = egui::TextStyle::Button.resolve(ui.style());
+        let needed: f32 = tabs
+            .children
+            .iter()
+            .map(|c| {
+                let title = self.tab_title_for_tile(tiles, *c).text().to_string();
+                let close = if self.is_tab_closable(tiles, *c) { 16.0 } else { 0.0 };
+                ui.painter().layout_no_wrap(title, font.clone(), egui::Color32::WHITE).size().x + 16.0 + close
+            })
+            .sum();
+        let compact = tabs.children.len() > 1 && needed > ui.available_width() - 34.0;
         ui.add_space(4.0);
         let r = icons::button(ui, Icon::Dots, tr("Pane menu"));
         egui::Popup::menu(&r).show(|ui| {
@@ -60,7 +121,7 @@ impl egui_tiles::Behavior<Pane> for Docked<'_> {
                 self.request = Some(PaneRequest::Float(pane));
                 ui.close();
             }
-            if (!pane.is_document() || self.documents > 1) && icons::text_button(ui, Icon::Close, tr("Close")).clicked() {
+            if pane != Pane::Page && (!pane.is_document() || self.documents > 1) && icons::text_button(ui, Icon::Close, tr("Close")).clicked() {
                 self.request = Some(PaneRequest::Close(pane));
                 ui.close();
             }
@@ -69,6 +130,26 @@ impl egui_tiles::Behavior<Pane> for Docked<'_> {
                 ui.close();
             }
         });
+        if compact {
+            self.compact.extend(tabs.children.iter().copied());
+            let r = icons::button(ui, Icon::ChevronDown, tr("All tabs"));
+            egui::Popup::menu(&r).show(|ui| {
+                for c in &tabs.children {
+                    let Some(p) = tiles.get_pane(c).copied() else { continue };
+                    let title = self.tab_title_for_tile(tiles, *c);
+                    let picked = ui
+                        .horizontal(|ui| {
+                            icons::show(ui, pane_icon(p), 14.0);
+                            ui.selectable_label(Some(*c) == tabs.active, title).clicked()
+                        })
+                        .inner;
+                    if picked {
+                        self.request = Some(PaneRequest::Show(p));
+                        ui.close();
+                    }
+                }
+            });
+        }
     }
 
     fn simplification_options(&self) -> egui_tiles::SimplificationOptions {
@@ -81,7 +162,7 @@ impl App {
     pub(super) fn docked(&mut self, ui: &mut egui::Ui, idx: &Index) {
         let mut tree = std::mem::replace(&mut self.dock, egui_tiles::Tree::empty(egui::Id::unique("dock_swap")));
         let documents = dock::panes(&tree).iter().filter(|p| p.is_document()).count();
-        let mut behavior = Docked { app: self, idx, request: None, documents };
+        let mut behavior = Docked { app: self, idx, request: None, documents, compact: Vec::new() };
         tree.ui(&mut behavior, ui);
         let request = behavior.request.take();
         // egui_tiles shows the grab hand over tabs, which Windows draws as the move cross.
@@ -94,7 +175,12 @@ impl App {
             tree = dock::default_tree_for(self.workspace);
         }
         self.dock = tree;
+        // A click on a tab shows another document: keys and the status bar follow it.
+        if !self.floating.contains(&self.active_doc) {
+            self.active_doc = dock::shown_document(&self.dock, self.active_doc);
+        }
         match request {
+            Some(PaneRequest::Show(p)) => self.show_pane(p),
             Some(PaneRequest::Float(p)) => {
                 dock::close(&mut self.dock, p);
                 if dock::find(&self.dock, p).is_none() {
@@ -108,7 +194,7 @@ impl App {
         }
     }
 
-    /// Panes shown as windows, opening in the middle of the editor; Dock puts them into
+    /// Panes shown as windows, opening at the right of the editor; Dock puts them into
     /// the workspace (and they open docked from then on).
     pub(super) fn floating_panes(&mut self, ctx: &egui::Context) {
         // A pane docked in the workspace switched to is shown there only.
@@ -125,13 +211,16 @@ impl App {
                 _ => [640.0, 440.0],
             };
             let size = egui::vec2(w.min(screen.width() * 0.9), h.min(screen.height() * 0.8));
-            let at = screen.center() + egui::Vec2::splat(24.0 * (i % 8) as f32);
+            // Over the right side of the editor (the Insert center and the properties),
+            // so that the page stays visible; egui keeps where and how large the user
+            // left the window.
+            let at = egui::pos2(screen.right() - 16.0, screen.top() + 140.0) + egui::vec2(-24.0, 24.0) * (i % 8) as f32;
             if self.raise == Some(pane) {
                 self.raise = None;
                 ctx.move_to_top(egui::LayerId::new(egui::Order::Middle, id));
             }
             let max = egui::vec2(screen.width() * 0.95, screen.height() * 0.9);
-            egui::Window::new(title).id(id).open(&mut open).default_size(size).max_size(max).constrain(true).default_pos(at).pivot(egui::Align2::CENTER_CENTER).show(ctx, |ui| {
+            egui::Window::new(title).id(id).open(&mut open).default_size(size).max_size(max).constrain(true).default_pos(at).pivot(egui::Align2::RIGHT_TOP).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     if icons::text_button(ui, Icon::Panes, tr("Dock")).on_hover_text(tr("Put the pane back into the workspace")).clicked() {
                         dock_back = true;
@@ -242,10 +331,9 @@ impl App {
     /// Title of a pane's tab; the messages and review tabs count what is open.
     pub(super) fn pane_title(&self, pane: Pane) -> egui::WidgetText {
         match pane {
-            Pane::Page => match self.session.prj.pages.get(self.session.page) {
-                Some(p) => tr_fmt!("Page {}", structure::page_full_name(p)).into(),
-                None => tr("Page").into(),
-            },
+            // The page tabs below name the page.
+            Pane::Page => tr("Page").into(),
+            Pane::Properties => tr("Properties").into(),
             Pane::Navigator(LeftTab::Check) => {
                 let n = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error && !i.accepted).count();
                 if n > 0 {
@@ -283,7 +371,7 @@ impl App {
         self.editor.review_selected = self.review_ui.selected;
         let out = self.editor.ui(ui, &mut self.session.prj, page, idx, &self.session.analysis);
         if out.open_properties {
-            self.props_window = true;
+            self.open_properties(&ctx);
         }
         if let Some(url) = out.open_url {
             ctx.open_url(egui::OpenUrl::new_tab(url));
@@ -291,11 +379,22 @@ impl App {
         if let Some(msg) = out.message {
             self.notify(&ctx, msg);
         }
-        if let Some(id) = out.placed {
-            self.placed(id);
+        if let (Some(id), Some(part)) = (out.placed, out.placed_part) {
+            self.placed(id, &part);
         }
         if let Some(resp) = &out.response {
-            resp.context_menu(|ui| self.page_context_menu(ui));
+            // A right click while the menu is open closes it; the next frame opens it
+            // again at the new spot.
+            let menu = egui::Popup::default_response_id(resp);
+            let reopen = menu.with("reopen");
+            let mut popup = egui::Popup::context_menu(resp);
+            if ctx.data_mut(|d| d.remove_temp::<bool>(reopen)).is_some() {
+                popup = popup.open_memory(egui::SetOpenCommand::Bool(true));
+            } else if resp.secondary_clicked() && egui::Popup::is_id_open(&ctx, menu) {
+                ctx.data_mut(|d| d.insert_temp(reopen, true));
+                ctx.request_repaint();
+            }
+            popup.show(|ui| self.page_context_menu(ui));
         }
         if let Some(input) = out.review {
             self.review_input(input);
@@ -304,12 +403,12 @@ impl App {
         }
     }
 
-    /// A symbol was placed: a part chosen in the Insert center goes to its device.
-    fn placed(&mut self, id: u64) {
-        let Some(number) = self.pending_part.take() else { return };
+    /// A symbol was placed with a part chosen in the Insert center: the part goes to
+    /// its device.
+    fn placed(&mut self, id: u64, number: &str) {
         let page = &self.session.prj.pages[self.session.page];
         if let Some(tag) = page.symbols.iter().find(|s| s.id == id).map(|s| s.tag.clone()).filter(|t| !t.is_empty()) {
-            parts::add_to_device(&mut self.session.prj, &self.parts_db, &tag, &number, 1);
+            parts::add_to_device(&mut self.session.prj, &self.parts_db, &tag, number, 1);
         }
     }
 
@@ -323,9 +422,12 @@ impl App {
             for &id in &self.page_tabs {
                 let Some((i, pg)) = self.session.prj.pages.iter().enumerate().find(|(_, p)| p.id == id) else { continue };
                 let name = structure::page_full_name(pg);
-                let label = if pg.description.is_empty() { name } else { format!("{name}  {}", pg.description) };
-                let label: String = label.chars().take(28).collect();
-                let r = ui.selectable_label(Some(id) == current, RichText::new(label).small()).on_hover_text(&pg.description);
+                let full = if pg.description.is_empty() { name } else { format!("{name}  {}", pg.description) };
+                let label = dock::truncate_label(&full, 28);
+                let mut r = ui.selectable_label(Some(id) == current, RichText::new(&label).small());
+                if label != full {
+                    r = r.on_hover_text(&full);
+                }
                 if r.clicked() {
                     goto = Some(i);
                 }
@@ -361,29 +463,34 @@ impl App {
     }
 
     /// Right click on the page: the commands for the selection or the page.
+    /// On a page that cannot be edited only the entries that change nothing are shown.
     fn page_context_menu(&mut self, ui: &mut egui::Ui) {
         let has_sel = !self.editor.selection.is_empty();
+        let editable = self.page_editable();
+        let shown = |c: Cmd| editable || !crate::commands::changes_page(c);
         if has_sel {
             if self.selected_tag().is_some() {
-                for c in [Cmd::Properties, Cmd::RenameDevice, Cmd::PartSelection] {
+                for c in [Cmd::Properties, Cmd::RenameDevice, Cmd::PartSelection].into_iter().filter(|c| shown(*c)) {
                     self.cmd_button(ui, c);
                 }
                 ui.separator();
             }
-            for c in [Cmd::Cut, Cmd::Copy, Cmd::Delete, Cmd::Rotate, Cmd::Mirror] {
+            for c in [Cmd::Cut, Cmd::Copy, Cmd::Delete, Cmd::Rotate, Cmd::Mirror].into_iter().filter(|c| shown(*c)) {
                 self.cmd_button(ui, c);
             }
-            ui.menu_button(tr("Align"), |ui| self.cmd_menu(ui, Cmd::Align));
-            ui.menu_button(tr("Distribute"), |ui| self.cmd_menu(ui, Cmd::Distribute));
-            for c in [Cmd::MoveBy, Cmd::MultipleCopy, Cmd::AutoConnectSelection, Cmd::SaveSelectionAsMacro] {
+            if editable {
+                ui.menu_button(tr("Align"), |ui| self.cmd_menu(ui, Cmd::Align));
+                ui.menu_button(tr("Distribute"), |ui| self.cmd_menu(ui, Cmd::Distribute));
+            }
+            for c in [Cmd::MoveBy, Cmd::MultipleCopy, Cmd::AutoConnectSelection, Cmd::SaveSelectionAsMacro].into_iter().filter(|c| shown(*c)) {
                 self.cmd_button(ui, c);
             }
         } else {
-            for c in [Cmd::Paste, Cmd::SelectAll, Cmd::InsertCenter, Cmd::WireTool, Cmd::TextTool] {
+            for c in [Cmd::Paste, Cmd::SelectAll, Cmd::InsertCenter, Cmd::WireTool, Cmd::TextTool].into_iter().filter(|c| shown(*c)) {
                 self.cmd_button(ui, c);
             }
             ui.separator();
-            for c in [Cmd::PageProperties, Cmd::NewSchematicPage, Cmd::FitPage, Cmd::JoinCollinear] {
+            for c in [Cmd::PageProperties, Cmd::NewSchematicPage, Cmd::FitPage, Cmd::JoinCollinear].into_iter().filter(|c| shown(*c)) {
                 self.cmd_button(ui, c);
             }
         }

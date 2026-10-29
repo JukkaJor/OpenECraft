@@ -96,3 +96,12 @@ fn image_keeps_aspect_ratio() {
     assert_eq!(img.b, p(70.0, 40.0));
     assert_eq!(img.file.bytes().unwrap(), png);
 }
+
+#[test]
+fn layer_names_stay_unique_and_not_empty() {
+    let names = vec!["Notes".to_string(), "Frame".to_string()];
+    assert_eq!(layer_rename_problem(&names, "Notes", "Notes"), None);
+    assert_eq!(layer_rename_problem(&names, "Notes", "Notes 2"), None);
+    assert_eq!(layer_rename_problem(&names, "Notes", "Frame"), Some("Name already used"));
+    assert_eq!(layer_rename_problem(&names, "Notes", " "), Some("A layer needs a name"));
+}

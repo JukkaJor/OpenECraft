@@ -787,7 +787,7 @@ exists only in Chromium browsers.
 **Docking panels.** In the schematic workspace the page, each navigator tab, the symbol
 library and the properties are panes of a tile tree: tabs are dragged beside, above or
 below another pane or among its tabs, panes can be closed and shown again (*View ›
-Panels*, also *Reset panel layout*). The arrangement is kept by the app and in saved
+Panels*, also *Reset pane layout*). The arrangement is kept by the app and in saved
 workspaces. Open: the panel layout and wiring workspaces keep their fixed panels;
 toolbar customisation. *Update (UX workplan, `docs/ux-workplan.md`):* both are done; every
 workspace and every tool is a pane, and the ribbon that replaced the menus and the tool

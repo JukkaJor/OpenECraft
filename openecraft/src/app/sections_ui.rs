@@ -164,9 +164,10 @@ impl App {
             let below = sections::subtree(&self.session.prj, id);
             self.section_choices().into_iter().filter(|(c, _)| !below.contains(c)).collect()
         };
-        let mut open = true;
+        let (window, esc) = self.dialogs.window(ctx, tr("Section properties"), "section_properties", None);
+        let mut open = !esc;
         let mut action = None;
-        egui::Window::new(tr("Section properties")).open(&mut open).resizable(false).show(ctx, |ui| {
+        window.open(&mut open).resizable(false).show(ctx, |ui| {
             let prj = &mut self.session.prj;
             let key = ui.make_persistent_id(("section_number", id));
             let mut number: String = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| s.number.clone());

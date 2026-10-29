@@ -1,6 +1,7 @@
 //! Symbol editor: user symbols of the project (graphics, connection points,
 //! function), copies of built-in symbols and symbol library files.
 
+use openecraft_ui::icons::{self, Icon};
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use super::App;
 use crate::editor::{EguiDraw, Palette, Tool};
@@ -94,7 +95,7 @@ impl App {
                 ui.vertical(|ui| {
                     ui.set_width(180.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button(tr("➕ New")).clicked() {
+                        if icons::text_button(ui, Icon::Plus, tr("New")).clicked() {
                             let mut u = UserSymbol::default();
                             u.key = symlib::new_key(&prj.symbols, &u.name);
                             u.prims.push(Prim::Poly { pts: vec![p(-4.0, -4.0), p(4.0, -4.0), p(4.0, 4.0), p(-4.0, 4.0)], closed: true, fill: false });
@@ -122,10 +123,10 @@ impl App {
                         });
                     });
                     ui.horizontal(|ui| {
-                        if ui.button(tr("⬆ Import…")).on_hover_text(tr("Merge a symbol library file")).clicked() {
+                        if icons::text_button(ui, Icon::Upload, tr("Import…")).on_hover_text(tr("Merge a symbol library file")).clicked() {
                             action = Some(Action::Import);
                         }
-                        if ui.add_enabled(!prj.symbols.is_empty(), egui::Button::new(tr("⬇ Export…"))).on_hover_text(tr("All user symbols as library file")).clicked() {
+                        if ui.add_enabled_ui(!prj.symbols.is_empty(), |ui| icons::text_button(ui, Icon::Download, tr("Export…"))).inner.on_hover_text(tr("All user symbols as library file")).clicked() {
                             action = Some(Action::Export);
                         }
                     });
@@ -194,13 +195,13 @@ impl App {
                         }
                         ui.label(tr_fmt!("Placed {}× in the project", usage));
                         ui.horizontal(|ui| {
-                            if ui.add_enabled(symlib::problems(u).is_empty(), egui::Button::new(tr("✏ Place in schematic"))).clicked() {
+                            if ui.add_enabled_ui(symlib::problems(u).is_empty(), |ui| icons::text_button(ui, Icon::Markup, tr("Place in schematic"))).inner.clicked() {
                                 action = Some(Action::Place(u.key.clone()));
                             }
                             if ui.button(tr("Duplicate")).clicked() {
                                 action = Some(Action::Duplicate(si));
                             }
-                            let del = ui.add_enabled(usage == 0, egui::Button::new(tr("🗑 Delete"))).on_disabled_hover_text(tr("The symbol is placed in the project"));
+                            let del = ui.add_enabled_ui(usage == 0, |ui| icons::text_button(ui, Icon::Delete, tr("Delete"))).inner.on_disabled_hover_text(tr("The symbol is placed in the project"));
                             if del.clicked() {
                                 action = Some(Action::Delete(si));
                             }
@@ -301,7 +302,7 @@ fn element_properties(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymb
                 point_edit(ui, tr("Position"), &mut u.pins[i].pos, GRID);
             });
             u.pins[i].pos = symlib::snap(u.pins[i].pos, GRID);
-            delete = ui.button(tr("🗑 Delete connection point")).clicked();
+            delete = icons::text_button(ui, Icon::Delete, tr("Delete connection point")).clicked();
         }
         Some(Hit::Prim(i)) if i < u.prims.len() => {
             let prim = &mut u.prims[i];
@@ -365,7 +366,7 @@ fn element_properties(ui: &mut egui::Ui, se: &mut SymbolEditor, u: &mut UserSymb
                     anchor_edit(ui, anchor);
                 }
             });
-            delete = ui.button(tr("🗑 Delete element")).clicked();
+            delete = icons::text_button(ui, Icon::Delete, tr("Delete element")).clicked();
         }
         _ => {
             ui.weak(tr("Click an element in the drawing to edit it."));

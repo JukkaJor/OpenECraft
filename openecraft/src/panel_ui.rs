@@ -2,6 +2,7 @@
 //! and property editor.
 
 use openecraft_i18n::{tr, tr_fmt};
+use openecraft_ui::icons::{self, Icon};
 use crate::editor::{EguiDraw, Palette};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::{natural_cmp, Project};
@@ -257,7 +258,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
                 class_combo(ui, &format!("cls_b{i}"), &mut c.b, &custom);
                 ui.add_enabled(!c.ignore, egui::DragValue::new(&mut c.distance).speed(1.0).range(0.0..=1000.0).suffix(" mm"));
                 ui.checkbox(&mut c.ignore, tr("may overlap"));
-                if ui.small_button("🗑").on_hover_text(tr("Delete")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Delete")).clicked() {
                     remove = Some(i);
                 }
                 ui.end_row();
@@ -266,7 +267,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
         if let Some(i) = remove {
             r.classes.remove(i);
         }
-        if ui.button(tr("➕ Add rule")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("Add rule")).clicked() {
             r.classes.push(panel::ClassRule::distance("power", "signal", 50.0));
         }
         if !temps.is_empty() {
@@ -755,7 +756,7 @@ impl PanelUi {
                     self.cam = None;
                 }
                 let tip = if e.is_room() { tr("Delete room") } else { tr("Delete enclosure") };
-                if ui.small_button("🗑").on_hover_text(tip).clicked() {
+                if icons::button(ui, Icon::Delete, tip).clicked() {
                     remove = Some(i);
                 }
             });
@@ -771,7 +772,7 @@ impl PanelUi {
             self.selection.clear();
         }
         if prj.layout.enclosures.is_empty() {
-            ui.weak(tr("No enclosure yet – create one with ➕."));
+            ui.weak(tr("No enclosure yet – create one with New enclosure."));
             return;
         }
         ui.separator();
@@ -838,10 +839,10 @@ impl PanelUi {
         if sel.len() > 1 {
             ui.label(tr_fmt!("{} items selected", sel.len()));
             ui.horizontal(|ui| {
-                if ui.button(tr("⟳ Rotate")).clicked() {
+                if icons::text_button(ui, Icon::Rotate, tr("Rotate")).clicked() {
                     rotate(&mut prj.layout.enclosures[ei], &self.selection);
                 }
-                if ui.button(tr("🗑 Delete")).clicked() {
+                if icons::text_button(ui, Icon::Delete, tr("Delete")).clicked() {
                     prj.layout.enclosures[ei].items.retain(|i| !self.selection.contains(&i.id));
                     self.selection.clear();
                 }
@@ -1077,10 +1078,10 @@ impl PanelUi {
                 }
             });
             ui.horizontal(|ui| {
-                if ui.button(tr("⟳ Rotate")).on_hover_text("R").clicked() {
+                if icons::text_button(ui, Icon::Rotate, tr("Rotate")).on_hover_text("R").clicked() {
                     it.rotate();
                 }
-                if ui.button(tr("🗑 Delete")).on_hover_text(tr("Del")).clicked() {
+                if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("Del")).clicked() {
                     self.selection.clear();
                 }
             });
@@ -1264,26 +1265,26 @@ impl PanelUi {
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
         ui.add(egui::Label::new(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts)).wrap());
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("⬇ NC data (DXF)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("NC data (DXF)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
                 self.export = Some((ei, Face::Plate, NcFormat::Dxf));
             }
-            if ui.button(tr("⬇ NC data (DWG)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("NC data (DWG)")).on_hover_text(tr("Plate outline, holes per diameter, cutouts")).clicked() {
                 self.export = Some((ei, Face::Plate, NcFormat::Dwg));
             }
-            if ui.button(tr("⬇ Drilling list (CSV)")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Drilling list (CSV)")).clicked() {
                 self.export = Some((ei, Face::Plate, NcFormat::Csv));
             }
         });
         let door_devices = e.items.iter().filter(|i| i.face == Face::Door && i.kind == ItemKind::Device).count();
         ui.label(tr_fmt!("Door: {} devices, {} cutouts", door_devices, openecraft_core::production::openings(e, &prj.parts, Face::Door).len()));
         ui.horizontal_wrapped(|ui| {
-            if ui.button(tr("⬇ Door NC data (DXF)")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Door NC data (DXF)")).clicked() {
                 self.export = Some((ei, Face::Door, NcFormat::Dxf));
             }
-            if ui.button(tr("⬇ Door NC data (DWG)")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Door NC data (DWG)")).clicked() {
                 self.export = Some((ei, Face::Door, NcFormat::Dwg));
             }
-            if ui.button(tr("⬇ Door cutouts (CSV)")).clicked() {
+            if icons::text_button(ui, Icon::Download, tr("Door cutouts (CSV)")).clicked() {
                 self.export = Some((ei, Face::Door, NcFormat::Csv));
             }
         });
@@ -1292,13 +1293,13 @@ impl PanelUi {
             let n = openecraft_core::production::holes_on(e, &prj.parts, face).len();
             ui.label(tr_fmt!("{}: {} holes, {} cutouts", face.title(), n, openecraft_core::production::openings(e, &prj.parts, face).len()));
             ui.horizontal_wrapped(|ui| {
-                if ui.button(tr("⬇ NC data of this face (DXF)")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("NC data of this face (DXF)")).clicked() {
                     self.export = Some((ei, face, NcFormat::Dxf));
                 }
-                if ui.button(tr("⬇ NC data of this face (DWG)")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("NC data of this face (DWG)")).clicked() {
                     self.export = Some((ei, face, NcFormat::Dwg));
                 }
-                if ui.button(tr("⬇ Drilling list of this face (CSV)")).clicked() {
+                if icons::text_button(ui, Icon::Download, tr("Drilling list of this face (CSV)")).clicked() {
                     self.export = Some((ei, face, NcFormat::Csv));
                 }
             });
@@ -1306,7 +1307,7 @@ impl PanelUi {
         if problems > 0 {
             ui.colored_label(crate::style::error(), tr_fmt!("{} placement problems (red) – see Check", problems));
         }
-        if ui.button(tr("➕ Insert mounting layout page")).clicked() {
+        if icons::text_button(ui, Icon::Plus, tr("Insert mounting layout page")).clicked() {
             self.add_page = Some(e.id);
         }
     }
@@ -1442,7 +1443,7 @@ impl PanelUi {
             }
         }
         self.inner_walls_section(ui, prj, ei);
-        ui.weak(tr("Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Insert › Wall-mounted part)."));
+        ui.weak(tr("Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Layout space › Insert › Wall-mounted part)."));
         checks_section(ui, prj, ei);
     }
 
@@ -1470,7 +1471,7 @@ impl PanelUi {
                 if l.changed() || t.changed() {
                     change = Some((w.id, (length / 10.0).round() * 10.0, thickness));
                 }
-                if ui.small_button("🗑").on_hover_text(tr("Remove the inner wall with everything on it")).clicked() {
+                if icons::button(ui, Icon::Delete, tr("Remove the inner wall with everything on it")).clicked() {
                     remove = Some(w.id);
                 }
                 ui.end_row();
@@ -1584,7 +1585,7 @@ impl PanelUi {
             }
             if let Some(r) = right {
                 ui.horizontal(|ui| {
-                    add = ui.button(tr_fmt!("➕ Cable passage to {}", prj.layout.enclosures[r].name)).on_hover_text(tr("Round cutouts facing each other in both side walls")).clicked();
+                    add = icons::text_button(ui, Icon::Plus, &tr_fmt!("Cable passage to {}", prj.layout.enclosures[r].name)).on_hover_text(tr("Round cutouts facing each other in both side walls")).clicked();
                     ui.add(egui::DragValue::new(&mut self.passage_diameter).speed(1.0).range(10.0..=300.0).suffix(" mm")).on_hover_text(tr("Diameter"));
                 });
             }
@@ -1831,7 +1832,7 @@ impl PanelUi {
                 });
                 ui.end_row();
             });
-            if ui.button(tr("✔ Create")).clicked() {
+            if icons::text_button(ui, Icon::Check, tr("Create")).clicked() {
                 create = true;
             }
         });
@@ -1878,7 +1879,7 @@ impl PanelUi {
                 ui.end_row();
             });
             ui.weak(tr("Devices are not copied: a device is placed once."));
-            apply = ui.button(tr("✔ Copy")).clicked();
+            apply = icons::text_button(ui, Icon::Check, tr("Copy")).clicked();
         });
         if apply {
             let ids: Vec<u64> = self.selection.iter().copied().collect();
@@ -1900,7 +1901,7 @@ impl PanelUi {
                 ui.text_edit_singleline(name);
             });
             ui.weak(tr("Items with an anchor keep it; the others are inserted relative to the click."));
-            save = ui.add_enabled(!name.trim().is_empty(), egui::Button::new(tr("✔ Save"))).clicked();
+            save = ui.add_enabled_ui(!name.trim().is_empty(), |ui| icons::text_button(ui, Icon::Check, tr("Save"))).inner.clicked();
         });
         if save {
             let ids: Vec<u64> = self.selection.iter().copied().collect();
@@ -1921,7 +1922,7 @@ impl PanelUi {
     pub fn canvas(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, db: &PartsDb) {
         let Some(ei) = self.enclosure_index(prj) else {
             ui.centered_and_justified(|ui| {
-                ui.label(tr("Create an enclosure (➕ in the navigator on the left) to start the panel layout."));
+                ui.label(tr("Create an enclosure (Layout space › New enclosure) to start the panel layout."));
             });
             return;
         };
@@ -1994,6 +1995,11 @@ impl PanelUi {
     pub fn fit(&mut self) {
         self.fit_pending = true;
         self.cam = None;
+    }
+
+    /// The zoom of the 2D views in percent of the real size (none in the 3D view).
+    pub fn zoom_percent(&self) -> Option<f32> {
+        (self.view != View::ThreeD).then(|| self.zoom / crate::editor::ZOOM_ACTUAL * 100.0)
     }
 
     /// Opens the dialog for a new enclosure.
