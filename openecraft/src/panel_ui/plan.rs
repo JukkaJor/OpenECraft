@@ -79,6 +79,48 @@ pub(super) fn inner_corner(walls: &[panel::Wall], last: Option<P>, q: P) -> P {
     c
 }
 
+/// Another room seen in the floor plan of a room: its index, its outline and floor
+/// cells and the footprints of its cabinets, in plan coordinates of the room shown.
+pub(super) struct Neighbour {
+    pub room: usize,
+    pub outline: Vec<[f32; 2]>,
+    pub cells: Vec<[[f32; 2]; 4]>,
+    pub cabinets: Vec<[[f32; 2]; 4]>,
+}
+
+/// The other rooms of the layout as seen in the floor plan of room `ei`, at their
+/// places in the plant.
+pub(super) fn neighbours(prj: &Project, ei: usize) -> Vec<Neighbour> {
+    let poses = panel::site_poses(prj);
+    let here = poses[ei];
+    let plan = |k: usize, q: [f32; 2]| {
+        let l = here.local(poses[k].apply([q[0], 0.0, q[1]]));
+        [l[0], l[2]]
+    };
+    panel::rooms(&prj.layout)
+        .into_iter()
+        .filter(|&k| k != ei)
+        .map(|k| {
+            let e = &prj.layout.enclosures[k];
+            let cells = panel::floor_cells(e).into_iter().map(|(a, b)| [[a[0], a[2]], [b[0], a[2]], [b[0], b[2]], [a[0], b[2]]].map(|q| plan(k, q))).collect();
+            let cabinets = panel::cabinets_in(&prj.layout, k).into_iter().map(|c| panel::footprint(prj, k, c).map(|q| plan(k, q))).collect();
+            Neighbour { room: k, outline: panel::outline(e).into_iter().map(|q| plan(k, q)).collect(), cells, cabinets }
+        })
+        .collect()
+}
+
+/// The ways through the walls into and out of room `ei` from the plan of room `ei`:
+/// both ends in its plan coordinates.
+pub(super) fn links_in_plan(prj: &Project, ei: usize) -> Vec<([f32; 2], [f32; 2])> {
+    let poses = panel::site_poses(prj);
+    let here = poses[ei];
+    let plan = |k: usize, q: [f32; 3]| {
+        let l = here.local(poses[k].apply([q[0], 0.0, q[2]]));
+        [l[0], l[2]]
+    };
+    panel::wall_links(prj).into_iter().filter(|l| l.from == ei || l.to == ei).map(|l| (plan(l.from, l.a), plan(l.to, l.b))).collect()
+}
+
 fn snap(v: f32) -> f32 {
     (v / MOVE_SNAP).round() * MOVE_SNAP
 }
@@ -210,6 +252,9 @@ impl PanelUi {
         let hit_cabinet = plan.filter(|_| hit_floor.is_none()).and_then(cabinet_at);
         let hit_wall = plan.filter(|_| hit_cabinet.is_none() && hit_floor.is_none()).and_then(wall_at);
         let hit_inner = plan.filter(|_| hit_cabinet.is_none() && hit_floor.is_none()).and_then(inner_at).map(|(id, _)| id);
+        // Another room, outside this one.
+        let others = neighbours(prj, ei);
+        let hit_room = plan.filter(|q| hit_wall.is_none() && !panel::inside_outline(&outline, [q.x, q.y])).and_then(|q| others.iter().find(|n| panel::inside_outline(&n.outline, [q.x, q.y]))).map(|n| n.room);
         // A drag starts where the button went down and follows the pointer outside the view too.
         let pressed = ui.input(|i| i.pointer.press_origin()).map(|s| self.s2w(rect, s));
         let dragged_to = ui.input(|i| i.pointer.interact_pos()).map(|s| self.s2w(rect, s));
@@ -255,7 +300,7 @@ impl PanelUi {
                         Some((face, w)) => {
                             let (s, r) = (w.start(), w.right());
                             let along = (q.x - s[0]) * r[0] + (q.y - s[1]) * r[1];
-                            let (width, _) = if opening == Opening::Door { panel::DOOR_SIZE } else { panel::WINDOW_SIZE };
+                            let (width, _) = opening.size();
                             match panel::add_opening(prj, ei, opening, face, Some(along - width / 2.0), None, None) {
                                 Ok(id) => {
                                     self.face = face;
@@ -360,6 +405,16 @@ impl PanelUi {
                     } else if let Some(face) = plan.and_then(face_at) {
                         self.front_face(face, false);
                         return;
+                    } else if let Some(k) = hit_room {
+                        // Open the other room in its floor plan.
+                        self.enclosure = k;
+                        self.face = Face::Wall(0);
+                        self.selection.clear();
+                        self.plan_cabinet = None;
+                        self.plan_inner = None;
+                        self.fit_pending = true;
+                        self.cam = None;
+                        return;
                     }
                 }
                 if let Some(w) = hit_inner.and_then(|id| inner_walls.iter().find(|w| w.id == id)) {
@@ -397,6 +452,26 @@ impl PanelUi {
         while z <= b.y {
             painter.line_segment([to_screen(a.x, z), to_screen(b.x, z)], grid);
             z += step;
+        }
+        // The other rooms around it, faint, with their names and cabinets.
+        for n in &others {
+            let hovered = hit_room == Some(n.room);
+            let fill = pal.paper.gamma_multiply(if hovered { 0.75 } else { 0.45 });
+            for cell in &n.cells {
+                painter.add(Shape::convex_polygon(cell.iter().map(|q| to_screen(q[0], q[1])).collect(), fill, Stroke::NONE));
+            }
+            let mut ring: Vec<Pos2> = n.outline.iter().map(|q| to_screen(q[0], q[1])).collect();
+            ring.extend(ring.first().copied());
+            painter.add(Shape::line(ring, Stroke::new(if hovered { 2.0 } else { 1.5 }, pal.line.gamma_multiply(0.5))));
+            for fp in &n.cabinets {
+                painter.add(Shape::convex_polygon(fp.iter().map(|q| to_screen(q[0], q[1])).collect(), pal.plate.gamma_multiply(0.5), Stroke::new(1.0, pal.frame.gamma_multiply(0.5))));
+            }
+            let (lo, hi) = panel::bounds(&n.outline);
+            let centre = to_screen((lo[0] + hi[0]) / 2.0, (lo[1] + hi[1]) / 2.0);
+            painter.text(centre, egui::Align2::CENTER_CENTER, &prj.layout.enclosures[n.room].name, egui::FontId::proportional(14.0), pal.text.gamma_multiply(0.6));
+        }
+        if let Some(k) = hit_room.filter(|_| self.plan_drag.is_none()) {
+            resp.clone().on_hover_text_at_pointer(tr_fmt!("{}: a double-click opens its floor plan", prj.layout.enclosures[k].name));
         }
         // Floor, walls and their numbers and lengths.
         for (a, b) in panel::floor_cells(e) {
@@ -461,6 +536,12 @@ impl PanelUi {
             let ink = if selected { pal.selected } else { pal.line };
             let gap = [at(it.x, 0.0), at(it.x + it.w, 0.0), at(it.x + it.w, -t), at(it.x, -t)];
             painter.add(Shape::convex_polygon(gap.to_vec(), pal.paper, Stroke::NONE));
+            if it.opening == Opening::Penetration {
+                // The hole through the wall, in the colour of the pipe runs.
+                let ink = if selected { pal.selected } else { PIPE_COLOR };
+                painter.add(Shape::convex_polygon(gap.to_vec(), ink.gamma_multiply(0.35), Stroke::new(if selected { 2.0 } else { 1.2 }, ink)));
+                continue;
+            }
             if it.opening == Opening::Door {
                 let leaf = Stroke::new(if selected { 2.0 } else { 1.2 }, ink);
                 painter.line_segment([at(it.x, 0.0), at(it.x, it.w)], leaf);
@@ -481,6 +562,12 @@ impl PanelUi {
             for along in [it.x, it.x + it.w] {
                 painter.line_segment([at(along, 0.0), at(along, -t)], Stroke::new(1.5, ink));
             }
+        }
+        // The ways through the wall penetrations into the rooms behind the walls.
+        for (a, b) in links_in_plan(prj, ei) {
+            let (a, b) = (to_screen(a[0], a[1]), to_screen(b[0], b[1]));
+            painter.extend(Shape::dashed_line(&[a, b], Stroke::new(2.0, PIPE_COLOR), 6.0, 4.0));
+            painter.circle_filled(b, 3.0, PIPE_COLOR);
         }
         // Cabinets: footprint, front edge, name.
         // A cabinet in a bad place (outside, across a wall, in a door swing, …) is drawn
@@ -562,6 +649,7 @@ impl PanelUi {
             Tool::Walls => tr("Click the corners of the walls; click the first corner again, double-click or press Enter to close the room. Backspace removes the last corner, Esc cancels."),
             Tool::InnerWalls => tr("Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool."),
             Tool::Opening(Opening::Door) => tr("Click on a wall where the door goes; it swings into the room. Size and position in the properties."),
+            Tool::Opening(Opening::Penetration) => tr("Click on an outer wall where the wall penetration goes; cables, tubes and pipes pass through it into the room behind the wall. Size and height in the properties."),
             Tool::Opening(_) => tr("Click on a wall where the window goes. Size, position and sill height in the properties."),
             _ => tr("Drag a wall to move it, drag a cabinet to its place (R turns it); double-click a wall to equip it, a cabinet to open it. Del removes the selected inner wall."),
         };

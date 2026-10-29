@@ -36,7 +36,7 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Adds an enclosure: of a system in one of its sizes (or a custom size), or from an enclosure part"),
         params: &[
             param("name", Kind::Str, ENCLOSURE),
-            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box or plastic")),
+            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box, plastic or rack19")),
             optional("part", Kind::Str, tr_const!("Enclosure part number")),
             optional("width", Kind::Num, tr_const!("Width in mm")),
             optional("height", Kind::Num, tr_const!("Height in mm")),
@@ -49,7 +49,7 @@ pub static COMMANDS: &[Spec] = &[
         help: tr_const!("Changes the system, size and components of an enclosure (plinth, bayed sides, gland plate); anchored items follow"),
         params: &[
             param("enclosure", Kind::Str, ENCLOSURE),
-            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box or plastic; empty for none")),
+            optional("system", Kind::Str, tr_const!("compact, baying, terminal_box, plastic or rack19; empty for none")),
             optional("width", Kind::Num, tr_const!("Width in mm")),
             optional("height", Kind::Num, tr_const!("Height in mm")),
             optional("depth", Kind::Num, tr_const!("Depth in mm")),

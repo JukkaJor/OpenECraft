@@ -407,3 +407,32 @@ fn pipe_runs_keep_clear_of_doors_and_windows() {
     let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
     assert!(findings.iter().any(|f| f.kind == CheckKind::Collision && f.items == vec![door] && f.message.contains("PR3") && f.message.contains("Door")), "{findings:?}");
 }
+
+#[test]
+fn wall_penetrations_lead_into_the_room_behind_the_wall() {
+    let (mut prj, r, _) = project();
+    let pen = add_opening(&mut prj, r, Opening::Penetration, Face::Wall(1), Some(500.0), None, Some(1000.0)).unwrap();
+    let room = &prj.layout.enclosures[r];
+    let it = room.item(pen).unwrap();
+    assert_eq!((it.w, it.h, opening_sill(room, it)), (PENETRATION_SIZE.0, PENETRATION_SIZE.1, 1000.0));
+    assert_eq!(super::super::item_name(room, pen), "Wall penetration");
+    let id = add_inner_wall(&mut prj, r, [2000.0, 0.0], [2000.0, 2000.0], 100.0).unwrap();
+    assert!(add_opening(&mut prj, r, Opening::Penetration, Face::Inner(id, 0), None, None, None).is_err(), "outer walls only");
+    // Nothing behind the wall.
+    let poses = site_poses(&prj);
+    assert_eq!(penetration_link(&prj, &poses, r, prj.layout.enclosures[r].item(pen).unwrap()), None);
+    assert!(super::super::validate(&prj, &prj.layout.enclosures[r]).iter().any(|f| f.items == vec![pen] && f.kind == CheckKind::Outside));
+    // A room behind it, 1.2 m away: too far; 300 mm away: reached.
+    let other = new_room(&mut prj, "+ROOM2", 3000.0, 3000.0, 2800.0);
+    prj.layout.enclosures.push(other);
+    let r2 = prj.layout.enclosures.len() - 1;
+    let wall = walls(&prj.layout.enclosures[r])[1].a[0];
+    for (gap, reached) in [(1200.0, false), (300.0, true)] {
+        super::super::set_site(&mut prj, r2, Some(SitePlace { x: wall + gap, z: 0.0, angle: 0.0 }));
+        let poses = site_poses(&prj);
+        let link = penetration_link(&prj, &poses, r, prj.layout.enclosures[r].item(pen).unwrap());
+        assert_eq!(link.map(|l| l.to), reached.then_some(r2), "{gap}");
+    }
+    assert_eq!(wall_links(&prj).len(), 1);
+    assert!(super::super::validate(&prj, &prj.layout.enclosures[r]).is_empty());
+}

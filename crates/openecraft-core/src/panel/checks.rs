@@ -423,6 +423,7 @@ pub fn validate(prj: &Project, e: &Enclosure) -> Vec<Finding> {
         super::rooms::check(prj, e, &mut push);
         return out;
     }
+    super::rack::check(e, &mut push);
     height_checks(e, &kinds, rules, &mut push);
     let map = super::thermal::heat_map(prj, e);
     for t in super::thermal::device_temperatures(prj, e, &map) {

@@ -85,6 +85,7 @@ pub fn table(prj: &Project, an: &Analysis, kind: ReportKind) -> Table {
         ReportKind::Verification => electrical_reports::verification(prj, conns),
         ReportKind::FieldRouting => field_routing(prj, &an.field),
         ReportKind::Bonding => bonding_list(prj),
+        ReportKind::RackElevation => rack_elevation(prj),
     }
 }
 
@@ -184,6 +185,31 @@ fn field_routing(prj: &Project, plan: &crate::field::Plan) -> Table {
             vec![c.cable.clone(), c.ends[0].clone(), c.ends[1].clone(), c.class.title().into(), route.join(" › "), m(c.network), m(c.length), m(c.cut), c.status_text()],
             None,
         );
+    }
+    t
+}
+
+/// The 19-inch racks from the top unit down: what each part takes, then the free units.
+fn rack_elevation(prj: &Project) -> Table {
+    let mut t = Table::with_widths(&[
+        (tr_const!("Rack"), 0.7),
+        (tr_const!("Units"), 0.6),
+        (tr_const!("Device"), 0.8),
+        (tr_const!("Part"), 1.1),
+        (tr_const!("Description"), 2.2),
+        (tr_const!("Depth (mm)"), 0.6),
+    ]);
+    for e in prj.layout.enclosures.iter().filter(|e| panel::is_rack(e)) {
+        let taken = panel::rack::occupied(e);
+        for &(first, n, id) in &taken {
+            let Some(it) = e.item(id) else { continue };
+            let units = if n > 1 { format!("{} – {}", first + n - 1, first) } else { first.to_string() };
+            let desc = panel::part_by_number(prj, &it.part).map(|p| p.description.clone()).unwrap_or_default();
+            t.push(vec![e.name.clone(), units, it.tag.clone(), it.part.clone(), desc, format!("{:.0}", it.d)], None);
+        }
+        let used: u32 = taken.iter().map(|o| o.1).sum();
+        let total = panel::rack_units(e);
+        t.push(vec![e.name.clone(), format!("{} / {} U", total.saturating_sub(used), total), String::new(), String::new(), tr("free").to_string(), String::new()], None);
     }
     t
 }

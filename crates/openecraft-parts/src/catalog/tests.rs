@@ -78,6 +78,23 @@ fn mounting_material_has_models_in_proportion() {
 }
 
 #[test]
+fn the_catalog_has_parts_for_19_inch_racks() {
+    use crate::mechanics::{rack_rail_number, rack_units, system, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
+    let parts = default_catalog();
+    let racks: Vec<&Part> = parts.iter().filter(|p| p.tech_value("Enclosure system").is_some_and(|s| s.trim() == RACK_SYSTEM)).collect();
+    assert_eq!(racks.len(), system(RACK_SYSTEM).unwrap().sizes.len());
+    for r in racks {
+        assert!(parts.iter().any(|p| p.number == rack_rail_number(rack_units(r.height))), "rails of {}", r.number);
+    }
+    let rack_mounted: Vec<&Part> = parts.iter().filter(|p| p.tech_value("Rack units").is_some()).collect();
+    assert!(rack_mounted.len() >= 8);
+    for p in rack_mounted {
+        let u: f32 = p.tech_value("Rack units").unwrap().trim().parse().unwrap();
+        assert!((p.width - RACK_WIDTH).abs() < 0.01 && (p.height - u * RACK_UNIT).abs() < 0.01, "{}", p.number);
+    }
+}
+
+#[test]
 fn the_catalog_has_a_part_for_wall_mounting() {
     let parts = default_catalog();
     let light = parts.iter().find(|p| p.number == "GEN.LIGHT-EM-3W").expect("emergency light");

@@ -1,4 +1,5 @@
-//! Enclosure systems (compact, floor-standing baying, terminal box, plastic) and the
+//! Enclosure systems (compact, floor-standing baying, terminal box, plastic, 19-inch
+//! rack) and the
 //! components an enclosure is assembled from: body or frame, door, walls, side panels,
 //! rear wall, gland plate, plinth and baying kits, each with its part and its
 //! geometry for the 3D view and the export.
@@ -16,11 +17,12 @@ pub struct System {
     pub data: &'static SystemData,
 }
 
-pub static SYSTEMS: [System; 4] = [
+pub static SYSTEMS: [System; 5] = [
     System { data: &mechanics::SYSTEMS[0] },
     System { data: &mechanics::SYSTEMS[1] },
     System { data: &mechanics::SYSTEMS[2] },
     System { data: &mechanics::SYSTEMS[3] },
+    System { data: &mechanics::SYSTEMS[4] },
 ];
 
 impl System {
@@ -34,6 +36,7 @@ impl System {
             "baying" => tr("Floor-standing baying system"),
             "terminal_box" => tr("Terminal box"),
             "plastic" => tr("Plastic enclosure"),
+            mechanics::RACK_SYSTEM => tr("19-inch rack"),
             other => other,
         }
     }
@@ -70,6 +73,8 @@ pub enum Role {
     MountingPlate,
     Plinth,
     BayingKit,
+    /// The 19-inch mounting rails of a rack.
+    RackRails,
     /// A wall or the ceiling (`Roof`) of a room.
     RoomWall(Face),
 }
@@ -88,6 +93,7 @@ impl Role {
             Role::MountingPlate => tr("Mounting plate"),
             Role::Plinth => tr("Plinth"),
             Role::BayingKit => tr("Baying kit"),
+            Role::RackRails => tr("19-inch mounting rails"),
             Role::RoomWall(Face::Roof) => tr("Ceiling"),
             Role::RoomWall(Face::Inner(..)) => tr("Inner wall"),
             Role::RoomWall(_) => tr("Wall"),
@@ -185,9 +191,15 @@ pub fn components(e: &Enclosure) -> Vec<Component> {
     } else {
         v.push(one(Role::Wall(Face::Bottom), String::new(), vec![wall_box(e, Face::Bottom)]));
     }
-    let (pw, ph) = e.plate_size();
-    let plate = ([PLATE_MARGIN, PLATE_MARGIN, PLATE_Z - PLATE_THICKNESS], [PLATE_MARGIN + pw, PLATE_MARGIN + ph, PLATE_Z]);
-    v.push(one(Role::MountingPlate, String::new(), vec![plate]));
+    if super::is_rack(e) {
+        // Two pairs of rails instead of a mounting plate.
+        let part = mechanics::rack_rail_number(super::rack_units(e));
+        v.push(Component { role: Role::RackRails, part, count: 2, boxes: super::rack::rail_boxes(e) });
+    } else {
+        let (pw, ph) = e.plate_size();
+        let plate = ([PLATE_MARGIN, PLATE_MARGIN, PLATE_Z - PLATE_THICKNESS], [PLATE_MARGIN + pw, PLATE_MARGIN + ph, PLATE_Z]);
+        v.push(one(Role::MountingPlate, String::new(), vec![plate]));
+    }
     let p = e.build.plinth;
     if p > 0.0 {
         let s = 2.0;

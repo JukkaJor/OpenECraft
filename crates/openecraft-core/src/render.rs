@@ -964,6 +964,26 @@ pub fn draw_enclosure(
     let (vw, vh) = e.view_size(face);
     d.rect(origin, origin + p(vw * k, vh * k), 0.5, Ink::Line, false);
     match face {
+        Face::Plate if panel::is_rack(e) => {
+            // No plate in a rack: its front rails with the rack units, numbered from
+            // the bottom.
+            use panel::rack::{panel_left, unit_top, RACK_OPENING, RACK_UNIT, RACK_WIDTH};
+            let n = panel::rack_units(e);
+            let (l, rail) = (panel_left(e), (RACK_WIDTH - RACK_OPENING) / 2.0);
+            let (top, bottom) = (unit_top(e, n, 1), unit_top(e, 1, 1) + RACK_UNIT);
+            for x in [l, l + RACK_WIDTH - rail] {
+                d.rect(tf(x, top), tf(x + rail, bottom), 0.0, Ink::Plate, true);
+                d.rect(tf(x, top), tf(x + rail, bottom), 0.25, Ink::Frame, false);
+                for u in 1..n {
+                    let y = unit_top(e, u, 1);
+                    d.line(tf(x, y), tf(x + rail, y), 0.1, Ink::Frame, false);
+                }
+            }
+            for u in 1..=n {
+                let y = unit_top(e, u, 1) + RACK_UNIT / 2.0;
+                d.text(tf(l - 4.0, y), &u.to_string(), RACK_UNIT * 0.4 * k, Anchor::Right, VAnchor::Middle, Ink::Text);
+            }
+        }
         Face::Plate => {
             let (pw, ph) = e.plate_size();
             d.rect(tf(0.0, 0.0), tf(pw, ph), 0.0, Ink::Plate, true);
@@ -1092,7 +1112,7 @@ pub fn draw_enclosure(
                     d.rect(r0, r1, 0.15, ink, false);
                 }
             }
-            ItemKind::Cutout if !it.opening.is_cutout() => {
+            ItemKind::Cutout if matches!(it.opening, crate::model::panel::Opening::Door | crate::model::panel::Opening::Window) => {
                 // Doors and windows in the wall of a room, seen from inside: a frame,
                 // the door's handle on the right, the window's sashes.
                 let line_ink = if ink == Ink::Line { Ink::Frame } else { ink };

@@ -208,6 +208,7 @@ pub enum Cmd {
     LayoutAccessory,
     Layout3dMacro,
     LayoutWallPart,
+    LayoutRackPart,
     LayoutFloorPart,
     LayoutPipeRun,
     LayoutFloorPlan,
@@ -215,6 +216,7 @@ pub enum Cmd {
     LayoutInnerWalls,
     LayoutRoomDoor,
     LayoutRoomWindow,
+    LayoutRoomPenetration,
     LayoutFront,
     LayoutDoor,
     LayoutDoorInside,
@@ -636,6 +638,12 @@ pub static ALL: &[Def] = &[
     d(C::LayoutRoomWindow, "layout_room_window", tr_const!("Window"), I::Rect)
         .toggle()
         .tip(tr_const!("Window in a wall of the room: click on the wall in the floor plan or in the view of the wall")),
+    d(C::LayoutRoomPenetration, "layout_room_penetration", tr_const!("Wall penetration"), I::Circle)
+        .toggle()
+        .tip(tr_const!("Wall penetration: cables, tubes and pipes pass through it into the room behind the wall; click on an outer wall in the floor plan or in the view of the wall")),
+    d(C::LayoutRackPart, "layout_rack_part", tr_const!("19-inch part"), I::Device)
+        .menu()
+        .tip(tr_const!("19-inch parts (switches, patch panels, servers, blank panels, …) for the rack shown: choose one, it goes into the highest free rack units; dragged, it snaps onto whole units")),
     d(C::LayoutWallPart, "layout_wall_part", tr_const!("Wall-mounted part"), I::Device)
         .menu()
         .tip(tr_const!("Parts marked for wall mounting (inverters, charge controllers, …): choose one, then click where it goes on the wall of the room")),

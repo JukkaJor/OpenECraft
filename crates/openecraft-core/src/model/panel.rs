@@ -177,6 +177,9 @@ pub enum Opening {
     /// seen from inside.
     Door,
     Window,
+    /// A wall penetration (core hole, cable transit): cables, tubes and pipes pass
+    /// through it into the room behind the wall.
+    Penetration,
 }
 
 impl Opening {

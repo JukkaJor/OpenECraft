@@ -135,15 +135,15 @@ pub static COMMANDS: &[Spec] = &[
     },
     Spec {
         name: "add_wall_opening",
-        help: tr_const!("Adds a door or a window to a wall of a room; a door stands on the floor and swings into the room, the check keeps its swing free of cabinets"),
+        help: tr_const!("Adds a door, a window or a wall penetration to a wall of a room; a door stands on the floor and swings into the room, the check keeps its swing free of cabinets; cables, tubes and pipes pass through a wall penetration into the room behind the wall"),
         params: &[
             param("room", Kind::Str, ROOM),
-            param("kind", Kind::Str, tr_const!("door or window")),
+            param("kind", Kind::Str, tr_const!("door, window or penetration")),
             param("wall", Kind::Str, tr_const!("wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms)")),
             optional("x", Kind::Num, tr_const!("Left edge from the left end of the wall (seen from inside) in mm; centred without")),
             optional("width", Kind::Num, tr_const!("Width in mm")),
             optional("height", Kind::Num, tr_const!("Height in mm")),
-            optional("sill", Kind::Num, tr_const!("Windows: height of the sill above the floor in mm")),
+            optional("sill", Kind::Num, tr_const!("Windows and wall penetrations: height of the bottom edge above the floor in mm")),
         ],
         run: add_wall_opening,
     },
@@ -241,7 +241,12 @@ fn room_json(prj: &Project, ri: usize) -> Value {
                 .filter(|i| i.face == f)
                 .map(|i| {
                     let kind = if i.opening.is_cutout() { format!("{:?}", i.kind).to_lowercase() } else { i.opening.key().to_string() };
-                    json!({ "id": i.id, "kind": kind, "tag": i.tag, "part": i.part, "x": i.x, "y": i.y, "w": i.w, "h": i.h, "z": i.z, "d": i.d, "wall_mounted": panel::mount_ok(prj, e, i) })
+                    let mut v = json!({ "id": i.id, "kind": kind, "tag": i.tag, "part": i.part, "x": i.x, "y": i.y, "w": i.w, "h": i.h, "z": i.z, "d": i.d, "wall_mounted": panel::mount_ok(prj, e, i) });
+                    if i.opening == Opening::Penetration {
+                        let to = panel::penetration_link(prj, &poses, ri, i).map(|l| prj.layout.enclosures[l.to].name.clone());
+                        v["leads_to"] = json!(to);
+                    }
+                    v
                 })
                 .collect();
             (!items.is_empty()).then(|| json!({ "face": panel::room_face_key(e, f), "items": items }))
@@ -419,7 +424,7 @@ fn add_wall_opening(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let kind = a.req("kind");
     let opening = Opening::from_key(kind).filter(|o| !o.is_cutout()).ok_or_else(|| tr_fmt!("Unknown kind: {}", kind))?;
     let face = face_arg(prj, ri, a, "wall")?;
-    let default = if opening == Opening::Door { panel::DOOR_SIZE } else { panel::WINDOW_SIZE };
+    let default = opening.size();
     let size = (a.num("width").is_some() || a.num("height").is_some()).then(|| (a.num("width").unwrap_or(default.0).max(100.0), a.num("height").unwrap_or(default.1).max(100.0)));
     let id = panel::add_opening(prj, ri, opening, face, a.num("x"), size, a.num("sill"))?;
     Ok(json!({ "id": id, "room": room_json(prj, ri) }))

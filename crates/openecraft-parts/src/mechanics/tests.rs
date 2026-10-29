@@ -12,6 +12,16 @@ fn part_numbers_of_components() {
 }
 
 #[test]
+fn racks_have_their_units() {
+    let rk = system(RACK_SYSTEM).unwrap();
+    let units: Vec<u32> = rk.sizes.iter().map(|s| rack_units(s.1)).collect();
+    assert_eq!(units, [12, 24, 42, 42, 42, 47]);
+    assert!(rk.sizes.iter().all(|s| s.0 - 2.0 * rk.frame >= RACK_WIDTH), "the panels fit between the posts");
+    assert_eq!(rack_rail_number(42), "GEN.RK-RAIL-42U");
+    assert_eq!(rack_units(80.0), 0);
+}
+
+#[test]
 fn fasteners() {
     assert_eq!(thread(" m5 "), Some("M5"));
     assert_eq!(thread("M7"), None);

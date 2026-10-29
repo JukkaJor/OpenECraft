@@ -177,7 +177,7 @@ impl App {
 }
 
 /// The tools of the panel layout whose tooltip says what they expect.
-const LAYOUT_TOOLS: [Cmd; 12] = [
+const LAYOUT_TOOLS: [Cmd; 13] = [
     Cmd::LayoutSelect,
     Cmd::LayoutRail,
     Cmd::LayoutDuct,
@@ -189,5 +189,6 @@ const LAYOUT_TOOLS: [Cmd; 12] = [
     Cmd::LayoutInnerWalls,
     Cmd::LayoutRoomDoor,
     Cmd::LayoutRoomWindow,
+    Cmd::LayoutRoomPenetration,
     Cmd::LayoutPipeRun,
 ];

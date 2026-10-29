@@ -201,3 +201,78 @@ fn cables_from_a_cabinet_to_a_room_wall_and_ends_elsewhere() {
     let an = Analysis::checked(&prj);
     assert!(an.routing.item("-W1").is_none());
 }
+
+/// The pump room with a second room +ROOM2 (3 x 3 m) right of it behind a 200 mm wall,
+/// -QM3 moved onto its rear wall. Returns the project and both rooms.
+fn two_rooms() -> (Project, usize, usize) {
+    let (mut prj, r, _) = pump_room();
+    let room = panel::new_room(&mut prj, "+ROOM2", 3000.0, 3000.0, 2800.0);
+    prj.layout.enclosures.push(room);
+    let r2 = prj.layout.enclosures.len() - 1;
+    panel::set_site(&mut prj, r2, Some(SitePlace { x: 4200.0, z: 0.0, angle: 0.0 }));
+    prj.layout.enclosures[r].items.retain(|i| i.tag != "-QM3");
+    panel::mount_on_wall(&mut prj, r2, "-QM3", Face::Wall(0), p(1500.0, 1200.0)).unwrap();
+    (prj, r, r2)
+}
+
+#[test]
+fn routes_pass_from_room_to_room_through_wall_penetrations() {
+    let (mut prj, r, r2) = two_rooms();
+    let an = Analysis::checked(&prj);
+    let h = tube(&an, "-QM3");
+    assert_eq!(h.status, Status::Unrouted(openecraft_i18n::tr("no wall penetration leads from room to room").to_string()));
+    // A penetration in the right wall of the first room leads into the second one.
+    let pen = panel::add_opening(&mut prj, r, panel::Opening::Penetration, Face::Wall(1), Some(1000.0), None, None).unwrap();
+    let it = prj.layout.enclosures[r].item(pen).unwrap().clone();
+    assert_eq!((it.w, it.h, it.y), (300.0, 200.0, 300.0), "below the ceiling");
+    let links = panel::wall_links(&prj);
+    assert_eq!(links.len(), 1);
+    let l = links[0];
+    assert_eq!((l.from, l.to, l.item), (r, r2, pen));
+    assert!((l.length - (200.0 + 120.0)).abs() <= 5.0, "{}", l.length);
+    assert!((l.a[0] - 3940.0).abs() < 0.5 && (l.b[0] - 60.0).abs() <= 5.0, "{:?} {:?}", l.a, l.b);
+    let an = Analysis::checked(&prj);
+    let h = tube(&an, "-QM3");
+    assert!(h.routed(), "{:?}", h.status);
+    assert_eq!(h.legs.iter().map(|lg| lg.enclosure).collect::<Vec<_>>(), vec![r, r2]);
+    assert_eq!(h.enclosures, vec![r, r2]);
+    // Through the penetration: the first leg ends in front of it, the second starts behind it.
+    let pos = panel::positions(&prj.layout);
+    assert!(manhattan(sub(*h.legs[0].points.last().unwrap(), pos[r]), l.a) <= 2.0 * super::ROOM_GRID);
+    assert!(manhattan(sub(h.legs[1].points[0], pos[r2]), l.b) <= 2.0 * super::ROOM_GRID);
+    let legs: f32 = h.legs.iter().map(|lg| grid_length(&lg.points)).sum();
+    // Both legs (less the rounded bends), the way through the wall and the allowances.
+    let extra = 2.0 * prj.fluid.allowance;
+    assert!(h.length <= legs + l.length + extra + 0.5 && h.length > 0.9 * legs + l.length, "{} {}", h.length, legs);
+    let nowhere = |prj: &Project| panel::validate(prj, &prj.layout.enclosures[r]).iter().any(|f| f.message.contains("leads into no room"));
+    assert!(!nowhere(&prj));
+    // Moved away, the second room is out of reach and the penetration leads nowhere.
+    panel::set_site(&mut prj, r2, Some(SitePlace { x: 6000.0, z: 0.0, angle: 0.0 }));
+    let an = Analysis::checked(&prj);
+    assert!(!tube(&an, "-QM3").routed());
+    assert!(nowhere(&prj));
+}
+
+#[test]
+fn routes_take_the_rooms_between_and_turned_rooms() {
+    let (mut prj, r, r2) = two_rooms();
+    // A corridor +ROOM3 between both rooms, turned by 90 degrees.
+    panel::set_site(&mut prj, r2, Some(SitePlace { x: 6400.0, z: 0.0, angle: 0.0 }));
+    let room = panel::new_room(&mut prj, "+ROOM3", 3000.0, 2000.0, 2800.0);
+    prj.layout.enclosures.push(room);
+    let r3 = prj.layout.enclosures.len() - 1;
+    // Turned counter-clockwise, its floor plan covers x 4100 to 6100, z 0 to 3000.
+    panel::set_site(&mut prj, r3, Some(SitePlace { x: 4100.0, z: 3000.0, angle: 90.0 }));
+    for (room, wall) in [(r, Face::Wall(1)), (r2, Face::Wall(3))] {
+        panel::add_opening(&mut prj, room, panel::Opening::Penetration, wall, Some(1000.0), None, None).unwrap();
+    }
+    let links = panel::wall_links(&prj);
+    assert_eq!(links.iter().map(|l| (l.from, l.to)).collect::<Vec<_>>(), vec![(r, r3), (r2, r3)], "{links:?}");
+    let chain = super::room_chain(&links, r, r2).unwrap();
+    assert_eq!(chain.iter().map(|l| (l.from, l.to)).collect::<Vec<_>>(), vec![(r, r3), (r3, r2)]);
+    assert!(super::room_chain(&links, r, r).unwrap().is_empty());
+    let an = Analysis::checked(&prj);
+    let h = tube(&an, "-QM3");
+    assert!(h.routed(), "{:?}", h.status);
+    assert_eq!(h.enclosures, vec![r, r3, r2]);
+}

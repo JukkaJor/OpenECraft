@@ -3,7 +3,8 @@
 //! the cable ducts and pipe runs on its walls, ceiling and floor as channels; and the
 //! way from a device in a cabinet into the room through a cable gland of the cabinet.
 //! A route between ends in different line-ups of one room runs in legs: through the
-//! cabinet to its gland, through the room, through the other cabinet.
+//! cabinet to its gland, through the room, through the other cabinet; between rooms
+//! also through the rooms between them and the wall penetrations joining them.
 //!
 //! Room coordinates are those of the room's items (x and z of the floor plan, y down
 //! from the ceiling); in the grid they are shifted to the room's place in the layout
@@ -15,6 +16,7 @@ use crate::model::Project;
 use crate::panel::{self, Face, SitePose};
 use crate::parts::vec3::{add, manhattan, sub, V3};
 use openecraft_i18n::tr;
+use std::collections::{HashMap, VecDeque};
 
 /// Faces of a cabinet through which a route leaves it into the room.
 const ROOM_SIDES: [Face; 4] = [Face::Roof, Face::Left, Face::Right, Face::Rear];
@@ -113,26 +115,60 @@ pub(super) struct LegPlan {
     pub ignore: Vec<u64>,
 }
 
-/// The legs of a route between two placed ends in different line-ups of room `ri` (or
-/// in the room itself): from a device in a cabinet to its entry, through the room, from
-/// the other entry to the other device. True if an entry is the middle of a roof.
-pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of: &dyn Fn(usize) -> Option<usize>, ri: usize, ends: &[End; 2]) -> Option<(Vec<LegPlan>, bool)> {
-    // The ends in room coordinates.
-    let in_room = |end: &End| -> Option<V3> {
+/// The rooms a route passes from room `a` to room `b`: the ways through their walls
+/// in order, through as few walls as possible (empty within one room); `None` if no
+/// chain of wall penetrations joins them.
+pub(super) fn room_chain(links: &[panel::WallLink], a: usize, b: usize) -> Option<Vec<panel::WallLink>> {
+    let both: Vec<panel::WallLink> = links.iter().flat_map(|l| [*l, l.reversed()]).collect();
+    let mut came: HashMap<usize, Option<panel::WallLink>> = HashMap::from([(a, None)]);
+    let mut queue = VecDeque::from([a]);
+    while let Some(r) = queue.pop_front() {
+        if r == b {
+            break;
+        }
+        for l in both.iter().filter(|l| l.from == r) {
+            if let std::collections::hash_map::Entry::Vacant(v) = came.entry(l.to) {
+                v.insert(Some(*l));
+                queue.push_back(l.to);
+            }
+        }
+    }
+    let mut chain = Vec::new();
+    let mut r = b;
+    while let Some(l) = *came.get(&r)? {
+        chain.push(l);
+        r = l.from;
+    }
+    chain.reverse();
+    Some(chain)
+}
+
+/// The legs of a route between two placed ends in rooms `rooms` (in a room itself or
+/// in a cabinet standing there): from a device in a cabinet to its entry, through the
+/// rooms and the wall penetrations between them (`links`: [`panel::wall_links`]), from
+/// the other entry to the other device. Gives the legs, whether an entry is the middle
+/// of a roof and the length of the ways through the walls.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of: &dyn Fn(usize) -> Option<usize>, rooms: [usize; 2], links: &[panel::WallLink], ends: &[End; 2]) -> Option<(Vec<LegPlan>, bool, f32)> {
+    let chain = if rooms[0] == rooms[1] { Vec::new() } else { room_chain(links, rooms[0], rooms[1])? };
+    // An end in room coordinates of its room.
+    let in_room = |ri: usize, end: &End| -> Option<V3> {
         let (k, q) = (end.enclosure?, end.point?);
         Some(if k == ri { sub(q, pos[ri]) } else { cabinet_in_room(prj, poses, ri, k, sub(q, pos[k])) })
     };
-    let at = [in_room(&ends[0])?, in_room(&ends[1])?];
+    let at = [in_room(rooms[0], &ends[0])?, in_room(rooms[1], &ends[1])?];
+    // What each end heads for in its room: the other end, or the wall penetration.
+    let near = [chain.first().map_or(at[1], |l| l.a), chain.last().map_or(at[0], |l| l.b)];
     let mut roof = false;
     let mut through = [ends[0].point?, ends[1].point?];
     let mut legs: [Option<LegPlan>; 2] = [None, None];
     let mut glands: Vec<u64> = Vec::new();
     for i in 0..2 {
-        let k = ends[i].enclosure?;
+        let (k, ri) = (ends[i].enclosure?, rooms[i]);
         if k == ri {
             continue;
         }
-        let (entry, start, by_roof) = room_entry(prj, pos, poses, ri, k, at[1 - i]);
+        let (entry, start, by_roof) = room_entry(prj, pos, poses, ri, k, near[i]);
         roof |= by_roof;
         glands.extend(entry.item);
         let inside = entry.point?;
@@ -140,13 +176,19 @@ pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of
         legs[i] = Some(LegPlan { lineup: lineup_of(entry.enclosure?)?, a, b, ignore: Vec::new() });
         through[i] = start;
     }
-    let room = LegPlan { lineup: lineup_of(ri)?, a: through[0], b: through[1], ignore: Vec::new() };
-    let [first, last] = legs;
-    let mut v: Vec<LegPlan> = first.into_iter().chain([room]).chain(last).collect();
+    // Through every room of the chain, from where the route comes in to where it leaves.
+    let mut v: Vec<LegPlan> = legs[0].take().into_iter().collect();
+    let mut from = (rooms[0], through[0]);
+    for l in &chain {
+        v.push(LegPlan { lineup: lineup_of(from.0)?, a: from.1, b: add(l.a, pos[l.from]), ignore: Vec::new() });
+        from = (l.to, add(l.b, pos[l.to]));
+    }
+    v.push(LegPlan { lineup: lineup_of(from.0)?, a: from.1, b: through[1], ignore: Vec::new() });
+    v.extend(legs[1].take());
     for leg in &mut v {
         leg.ignore = glands.clone();
     }
-    Some((v, roof))
+    Some((v, roof, chain.iter().map(|l| l.length).sum()))
 }
 
 #[cfg(test)]

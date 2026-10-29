@@ -621,6 +621,7 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
     // The room an end is in: the room itself, or the room its cabinet stands in.
     let room_of_end = |ei: usize| if prj.layout.enclosures[ei].is_room() { Some(ei) } else { panel::room_of(&prj.layout, ei) };
     let is_room = |lu: usize| lineups[lu].len() == 1 && prj.layout.enclosures[lineups[lu][0]].is_room();
+    let links = panel::wall_links(prj);
     let mut spaces: HashMap<usize, grid::Space> = HashMap::new();
     // The class each space's segregation zones were last computed for.
     let mut zoned: HashMap<usize, Class> = HashMap::new();
@@ -656,24 +657,30 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
             items.push(item);
             continue;
         };
-        // In one line-up (or room) at once, otherwise in legs through the room both
-        // ends are in.
+        // In one line-up (or room) at once, otherwise in legs through the rooms the
+        // ends are in and the wall penetrations between them.
+        let mut through_walls = 0.0;
         let legs = if job.ends.iter().filter_map(|e| e.enclosure).all(|ei| lineup_of(ei) == Some(lu)) {
             vec![room::LegPlan { lineup: lu, a, b, ignore: Vec::new() }]
         } else {
             let rooms: Vec<Option<usize>> = job.ends.iter().map(|e| e.enclosure.and_then(room_of_end)).collect();
             let planned = match (rooms[0], rooms[1]) {
-                (Some(r), Some(other)) if r == other && !known && job.kind != RouteKind::Wire => room::plan_legs(prj, &pos, &poses, &lineup_of, r, &job.ends),
+                (Some(r), Some(other)) if !known && job.kind != RouteKind::Wire => room::plan_legs(prj, &pos, &poses, &lineup_of, [r, other], &links, &job.ends),
                 _ => None,
             };
-            let Some((legs, roof)) = planned else {
-                item.status = Status::Unrouted(tr("not in the same line-up or room").to_string());
+            let Some((legs, roof, walls)) = planned else {
+                let why = match (rooms[0], rooms[1]) {
+                    (Some(r), Some(other)) if r != other && !known && job.kind != RouteKind::Wire => tr("no wall penetration leads from room to room"),
+                    _ => tr("not in the same line-up or room"),
+                };
+                item.status = Status::Unrouted(why.to_string());
                 items.push(item);
                 continue;
             };
             if roof {
                 roof_entries.push(job.key.clone());
             }
+            through_walls = walls;
             legs
         };
         let area = std::f32::consts::PI / 4.0 * job.diameter * job.diameter;
@@ -734,6 +741,7 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
             item.bends += bends;
             item.free += if known { 0.0 } else { *free };
         }
+        length += through_walls;
         item.length = match (known, job.wire) {
             (true, Some(wi)) => wiring[wi].length,
             _ => length + job.extra,

@@ -116,6 +116,7 @@ fn kind_role(role: Role) -> &'static str {
         Role::MountingPlate => "mounting plate",
         Role::Plinth => "plinth",
         Role::BayingKit => "baying kit",
+        Role::RackRails => "19-inch mounting rails",
 
         Role::RoomWall(panel::Face::Roof) => "ceiling",
         Role::RoomWall(panel::Face::Inner(..)) => "inner wall",

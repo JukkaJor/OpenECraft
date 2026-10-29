@@ -11,7 +11,7 @@
 //! Room coordinates (the enclosure coordinates of a room): x and z of the floor plan,
 //! y downwards from the ceiling (the floor at `height`).
 
-use super::{item_name, lineup_of, new_profile, part_by_number, place_device_on, site_poses, snap, CheckKind, Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem, SitePlace};
+use super::{item_name, lineup_of, new_profile, part_by_number, place_device_on, site_poses, snap, CheckKind, SitePose, Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem, SitePlace};
 use crate::model::routing3d::{Class, PathKind, RoutingPath};
 use crate::geom::P;
 use crate::issue::Severity;
@@ -32,6 +32,14 @@ pub const MIN_WALL: f32 = 50.0;
 pub const INNER_WALL: f32 = 100.0;
 /// Width of a new pipe run (the space its pipes may take), mm.
 pub const PIPE_RUN_WIDTH: f32 = 100.0;
+/// Width and height of a new wall penetration and the distance of its top below the
+/// ceiling, mm.
+pub const PENETRATION_SIZE: (f32, f32) = (300.0, 200.0);
+pub const PENETRATION_TOP: f32 = 300.0;
+/// Thickest wall a penetration leads through into the room behind it, mm.
+pub const MAX_WALL_THICKNESS: f32 = 1000.0;
+/// How far in front of a wall penetration a route through it starts, mm.
+const PASS_OUT: f32 = 60.0;
 
 /// A wall of a room's outline: from corner `a` to corner `b`, `normal` pointing into
 /// the room (plan coordinates x / z).
@@ -606,9 +614,10 @@ pub fn opening_sill(e: &Enclosure, it: &PanelItem) -> f32 {
     e.height - it.y - it.h
 }
 
-/// Adds a door or window to a wall of a room: its left edge `x` mm from the left end
-/// of the wall (seen from inside), centred when `None`; default sizes and sill when
-/// not given. A door stands on the floor.
+/// Adds a door, window or wall penetration to a wall of a room: its left edge `x` mm
+/// from the left end of the wall (seen from inside), centred when `None`; default
+/// sizes and sill when not given. A door stands on the floor; a penetration goes into
+/// an outer wall, [`PENETRATION_TOP`] below the ceiling unless its sill is given.
 pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face, x: Option<f32>, size: Option<(f32, f32)>, sill: Option<f32>) -> Result<u64, String> {
     let e = prj.layout.enclosures.get(room).ok_or_else(|| tr_fmt!("No enclosure {}", room))?;
     if !e.is_room() {
@@ -616,6 +625,9 @@ pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face,
     }
     if !matches!(face, Face::Wall(_) | Face::Inner(..)) {
         return Err(tr("Doors and windows go into walls").to_string());
+    }
+    if opening == Opening::Penetration && !matches!(face, Face::Wall(_)) {
+        return Err(tr("Wall penetrations go into the outer walls of a room").to_string());
     }
     let wall_len = side(e, face).map(|w| w.length()).ok_or_else(|| tr_fmt!("Unknown face: {}", room_face_key(e, face)))?;
     let (w, h, sill) = match opening {
@@ -626,6 +638,10 @@ pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face,
         Opening::Window => {
             let (w, h) = size.unwrap_or(WINDOW_SIZE);
             (w, h, sill.unwrap_or(WINDOW_SILL))
+        }
+        Opening::Penetration => {
+            let (w, h) = size.unwrap_or(PENETRATION_SIZE);
+            (w, h, sill.unwrap_or(e.height - PENETRATION_TOP - h).max(0.0))
         }
         Opening::Cutout => return Err(tr("Doors and windows go into walls").to_string()),
     };
@@ -651,6 +667,72 @@ pub fn door_zone(e: &Enclosure, it: &PanelItem) -> Option<[[f32; 2]; 4]> {
     let (s, r, nm) = (w.start(), w.right(), w.normal);
     let at = |along: f32, into: f32| [s[0] + r[0] * along + nm[0] * into, s[1] + r[1] * along + nm[1] * into];
     Some([at(it.x, 0.0), at(it.x + it.w, 0.0), at(it.x + it.w, it.w), at(it.x, it.w)])
+}
+
+/// A way through a wall from one room into another: the wall penetration `item` of
+/// room `from` leading into room `to`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct WallLink {
+    pub from: usize,
+    pub item: u64,
+    pub to: usize,
+    /// In front of the penetration in room `from` and where the way comes into room
+    /// `to` (room coordinates of each).
+    pub a: V3,
+    pub b: V3,
+    /// Length of the way from `a` to `b` through the wall, mm.
+    pub length: f32,
+}
+
+impl WallLink {
+    /// The same way the other way round.
+    pub fn reversed(&self) -> WallLink {
+        WallLink { from: self.to, to: self.from, a: self.b, b: self.a, ..*self }
+    }
+}
+
+/// Where a wall penetration of room `ri` leads (`poses`: [`site_poses`]): into the
+/// room behind its wall, at most [`MAX_WALL_THICKNESS`] away; `None` for other items
+/// and penetrations that lead into no room.
+pub fn penetration_link(prj: &Project, poses: &[SitePose], ri: usize, it: &PanelItem) -> Option<WallLink> {
+    let layout = &prj.layout;
+    let e = layout.enclosures.get(ri)?;
+    if it.opening != Opening::Penetration || !e.is_room() {
+        return None;
+    }
+    let w = side(e, it.face)?;
+    let (s, r, n) = (w.start(), w.right(), w.normal);
+    let (along, y) = (it.x + it.w / 2.0, it.y + it.h / 2.0);
+    let at = |into: f32| [s[0] + r[0] * along + n[0] * into, y, s[1] + r[1] * along + n[1] * into];
+    // Room coordinates (y down from the ceiling) and those of the site (y up).
+    let to_site = |k: usize, q: V3| poses[k].apply([q[0], layout.enclosures[k].height - q[1], q[2]]);
+    let to_room = |k: usize, q: V3| {
+        let l = poses[k].local(q);
+        [l[0], layout.enclosures[k].height - l[1], l[2]]
+    };
+    let out = poses[ri].turn([-n[0], 0.0, -n[1]]);
+    let others: Vec<usize> = rooms(layout).into_iter().filter(|&k| k != ri).collect();
+    let mut d = 0.0;
+    while d <= MAX_WALL_THICKNESS {
+        let q = to_site(ri, at(-d));
+        for &k in &others {
+            let (t, l) = (&layout.enclosures[k], to_room(k, q));
+            if l[1] > 0.0 && l[1] < t.height && inside_outline(&outline(t), [l[0], l[2]]) {
+                let dir = poses[k].unturn(out);
+                let b = [l[0] + dir[0] * PASS_OUT, l[1], l[2] + dir[2] * PASS_OUT];
+                return Some(WallLink { from: ri, item: it.id, to: k, a: at(PASS_OUT), b, length: d + 2.0 * PASS_OUT });
+            }
+        }
+        d += 5.0;
+    }
+    None
+}
+
+/// The ways through the walls of the layout: one for every wall penetration that
+/// leads into another room.
+pub fn wall_links(prj: &Project) -> Vec<WallLink> {
+    let poses = site_poses(prj);
+    rooms(&prj.layout).into_iter().flat_map(|ri| prj.layout.enclosures[ri].items.iter().filter_map(|it| penetration_link(prj, &poses, ri, it)).collect::<Vec<_>>()).collect()
 }
 
 /// Corners of an inner wall's footprint in the floor plan.
@@ -908,7 +990,7 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     for path in &e.paths {
         let Some((face, pts, _)) = pipe_run_on_face(e, path) else { continue };
         let r = path.width / 2.0;
-        for o in e.items.iter().filter(|i| i.face == face && i.kind == ItemKind::Cutout && !i.opening.is_cutout()) {
+        for o in e.items.iter().filter(|i| i.face == face && i.kind == ItemKind::Cutout && matches!(i.opening, Opening::Door | Opening::Window)) {
             let hit = pts.windows(2).any(|s| {
                 let (x0, x1) = (s[0].x.min(s[1].x) - r, s[0].x.max(s[1].x) + r);
                 let (y0, y1) = (s[0].y.min(s[1].y) - r, s[0].y.max(s[1].y) + r);
@@ -942,6 +1024,12 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     for ci in cabinets_in(layout, ri) {
         for (kind, ids, msg) in cabinet_problems(prj, ri, ci) {
             push(kind, Severity::Warning, ids, msg);
+        }
+    }
+    let poses = site_poses(prj);
+    for it in e.items.iter().filter(|i| i.opening == Opening::Penetration) {
+        if penetration_link(prj, &poses, ri, it).is_none() {
+            push(CheckKind::Outside, Severity::Warning, vec![it.id], tr_fmt!("{}: {} leads into no room", e.name, item_name(e, it.id)));
         }
     }
 }
