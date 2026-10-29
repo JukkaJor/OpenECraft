@@ -4558,8 +4558,6 @@ Datasheet	Katalogový list
 Export (CSV)	Export (CSV)
 Favorites	Oblíbené
 Files	Soubory
-Has 2D model	Má 2D model
-Has 3D model	Má 3D model
 History	Historie
 Last change	Poslední změna
 Lifecycle	Životní cyklus
@@ -6296,6 +6294,7 @@ Section {} is now section {}	Oddíl {} je nyní oddíl {}
 Moves the page before this page of its section (or of the section given)	Přesune stránku před tuto stránku jejího oddílu (nebo zadaného oddílu)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Přesune oddíl před tento oddíl jeho nadřazeného oddílu (nebo zadaného); čísla pokračují v pořadí
 {} is not in that section	{} není v tomto oddílu
+Drag to turn the model	Tažením model otočíte
 Standard workspaces	Standardní pracovní prostory
 Saved workspaces	Uložené pracovní prostory
 Switches to this workspace with its panes at their default places	Přepne do tohoto pracovního prostoru s panely na jejich výchozích místech

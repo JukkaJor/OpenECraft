@@ -4558,8 +4558,6 @@ Datasheet	数据手册
 Export (CSV)	导出 (CSV)
 Favorites	收藏夹
 Files	文件
-Has 2D model	有 2D 模型
-Has 3D model	有 3D 模型
 History	历史记录
 Last change	上次更改
 Lifecycle	生命周期
@@ -6291,6 +6289,7 @@ Section {} is now section {}	分节 {} 现在是分节 {}
 Moves the page before this page of its section (or of the section given)	将页移到其分节（或指定分节）中此页之前
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	将分节移到其上级分节（或指定上级）中此分节之前；编号按顺序继续
 {} is not in that section	{} 不在该分节中
+Drag to turn the model	拖动以旋转模型
 Standard workspaces	标准工作区
 Saved workspaces	已保存的工作区
 Switches to this workspace with its panes at their default places	切换到此工作区，并将其窗格恢复到默认位置

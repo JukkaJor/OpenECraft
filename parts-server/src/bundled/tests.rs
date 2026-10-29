@@ -22,7 +22,7 @@ fn bundled_catalogs_are_consistent() {
             assert_eq!(p.manufacturer, c.manufacturer, "{}", p.number);
             assert_eq!(p.catalog, c.id, "{}", p.number);
             assert!(group_id(&p.group).is_some(), "{}: unknown group {}", p.number, p.group);
-            // Mounting material (ducts) is placed without a device tag and has no model.
+            // Mounting material (ducts) is placed without a device tag.
             let mounting = p.group == "Mounting";
             assert!(!p.description.is_empty() && (mounting || !p.identifier.is_empty()), "{}", p.number);
             // Terminals take their designation from the device tag; accessories have no functions.
@@ -31,7 +31,8 @@ fn bundled_catalogs_are_consistent() {
             for a in &p.accessories {
                 assert!(bundle.parts.iter().any(|q| &q.number == a), "{}: accessory {a} missing", p.number);
             }
-            assert_eq!(p.model_3d.is_some(), p.width > 0.0 && !mounting, "{}: generated model", p.number);
+            // Every part with dimensions has a generated model, mounting material too.
+            assert_eq!(p.model_3d.is_some(), p.width > 0.0 && p.height > 0.0 && p.depth > 0.0, "{}: generated model", p.number);
             // Units are written alike in every catalog (the facets list each spelling).
             let texts = format!("{} {}", p.description, p.tech_data);
             assert!(!texts.contains(" mm2") && !texts.contains(".0 mm²"), "{}: write cross-sections as 2.5 mm²", p.number);

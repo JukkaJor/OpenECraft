@@ -4558,8 +4558,6 @@ Datasheet	Tietolehti
 Export (CSV)	Vienti (CSV)
 Favorites	Suosikit
 Files	Tiedostot
-Has 2D model	2D-malli saatavilla
-Has 3D model	3D-malli saatavilla
 History	Historia
 Last change	Viimeisin muutos
 Lifecycle	Elinkaari
@@ -6296,6 +6294,7 @@ Section {} is now section {}	Osio {} on nyt osio {}
 Moves the page before this page of its section (or of the section given)	Siirtää sivun osionsa (tai annetun osion) tämän sivun eteen
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Siirtää osion yläosionsa (tai annetun) tämän osion eteen; numerot jatkuvat järjestyksessä
 {} is not in that section	{} ei ole siinä osiossa
+Drag to turn the model	Käännä mallia vetämällä
 Standard workspaces	Vakiotyötilat
 Saved workspaces	Tallennetut työtilat
 Switches to this workspace with its panes at their default places	Vaihtaa tähän työtilaan ja palauttaa sen paneelit oletuspaikoilleen

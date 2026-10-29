@@ -3740,8 +3740,6 @@ Datasheet	Datenblatt	Fiche technique	Hoja de datos
 Export (CSV)	Export (CSV)	Exporter (CSV)	Exportar (CSV)
 Favorites	Favoriten	Favoris	Favoritos
 Files	Dateien	Fichiers	Archivos
-Has 2D model	Hat 2D-Modell	Possède un modèle 2D	Tiene modelo 2D
-Has 3D model	Hat 3D-Modell	Possède un modèle 3D	Tiene modelo 3D
 History	Verlauf	Historique	Historial
 Last change	Letzte Änderung	Dernière modification	Último cambio
 Lifecycle	Lebenszyklus	Cycle de vie	Ciclo de vida
@@ -5790,6 +5788,7 @@ Section {} is now section {}	Abschnitt {} ist jetzt Abschnitt {}	La section {} e
 Moves the page before this page of its section (or of the section given)	Verschiebt die Seite vor diese Seite ihres Abschnitts (oder des angegebenen Abschnitts)	Déplace la page avant cette page de sa section (ou de la section indiquée)	Mueve la página delante de esta página de su sección (o de la sección indicada)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Verschiebt den Abschnitt vor diesen Abschnitt seines übergeordneten Abschnitts (oder des angegebenen); die Nummern zählen weiter der Reihe nach	Déplace la section avant cette section de son parent (ou du parent indiqué) ; les numéros restent dans l'ordre	Mueve la sección delante de esta sección de su sección superior (o de la indicada); los números siguen en orden
 {} is not in that section	{} liegt nicht in diesem Abschnitt	{} n'est pas dans cette section	{} no está en esa sección
+Drag to turn the model	Ziehen, um das Modell zu drehen	Faites glisser pour tourner le modèle	Arrastre para girar el modelo
 Standard workspaces	Standard-Arbeitsbereiche	Espaces de travail standard	Espacios de trabajo estándar
 Saved workspaces	Gespeicherte Arbeitsbereiche	Espaces de travail enregistrés	Espacios de trabajo guardados
 Switches to this workspace with its panes at their default places	Wechselt in diesen Arbeitsbereich und setzt seine Fenster an ihre Standardplätze	Passe à cet espace de travail avec ses panneaux à leur place par défaut	Cambia a este espacio de trabajo con sus paneles en su lugar predeterminado

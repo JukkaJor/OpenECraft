@@ -34,7 +34,9 @@ with a command line, an MCP server, a parts server and a project server.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
-  JT, IFC), BMEcat, EPLAN XML and EDZ import; a parts server with a data portal.
+  JT, IFC), BMEcat, EPLAN XML and EDZ import; a parts server with a data portal that
+  shows the 2D front view and the 3D model of a part; the example parts, mounting
+  material included, come with both.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

@@ -4558,8 +4558,6 @@ Datasheet	Datablad
 Export (CSV)	Export (CSV)
 Favorites	Favoriter
 Files	Filer
-Has 2D model	Har 2D-modell
-Has 3D model	Har 3D-modell
 History	Historik
 Last change	Senaste ändring
 Lifecycle	Livscykel
@@ -6296,6 +6294,7 @@ Section {} is now section {}	Avsnitt {} är nu avsnitt {}
 Moves the page before this page of its section (or of the section given)	Flyttar sidan före denna sida i dess avsnitt (eller i det angivna avsnittet)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Flyttar avsnittet före detta avsnitt i dess överordnade avsnitt (eller i det angivna); numren fortsätter i ordning
 {} is not in that section	{} ligger inte i det avsnittet
+Drag to turn the model	Dra för att vrida modellen
 Standard workspaces	Standardarbetsytor
 Saved workspaces	Sparade arbetsytor
 Switches to this workspace with its panes at their default places	Växlar till den här arbetsytan med panelerna på sina standardplatser

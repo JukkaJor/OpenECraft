@@ -4558,8 +4558,6 @@ Datasheet	Folha de dados
 Export (CSV)	Exportar (CSV)
 Favorites	Favoritos
 Files	Arquivos
-Has 2D model	Tem modelo 2D
-Has 3D model	Tem modelo 3D
 History	Histórico
 Last change	Última alteração
 Lifecycle	Ciclo de vida
@@ -6296,6 +6294,7 @@ Section {} is now section {}	A seção {} agora é a seção {}
 Moves the page before this page of its section (or of the section given)	Move a página para antes desta página da sua seção (ou da seção indicada)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Move a seção para antes desta seção da seção superior (ou da indicada); os números continuam em ordem
 {} is not in that section	{} não está nessa seção
+Drag to turn the model	Arraste para girar o modelo
 Standard workspaces	Espaços de trabalho padrão
 Saved workspaces	Espaços de trabalho salvos
 Switches to this workspace with its panes at their default places	Muda para este espaço de trabalho com os painéis nas posições padrão

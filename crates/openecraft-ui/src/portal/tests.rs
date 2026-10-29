@@ -107,3 +107,24 @@ fn values_are_shown_translated() {
     assert_eq!(value_text("group", "own group"), "own group");
     assert_eq!(value_text("manufacturer", "ACME"), "ACME");
 }
+
+#[test]
+fn the_details_load_the_whole_part_once() {
+    let mut b = Browser::new();
+    b.apply(&Reply::Search(Ok(result(2, &["A", "B"]))), &[]);
+    assert_eq!(b.detail_due(), None, "nothing selected");
+    b.selected = Some("A".into());
+    assert_eq!(b.detail_due().as_deref(), Some("A"));
+    assert_eq!(b.detail_due(), None, "asked for once");
+    assert!(b.selected_detail().is_none());
+    let mesh = openecraft_parts::Mesh3d { vertices: vec![[0.0; 3]], triangles: Vec::new() };
+    let full = Part { number: "A".into(), model_3d: Some(mesh.into()), ..Default::default() };
+    // A late answer for another part is dropped.
+    b.apply(&Reply::Detail("B".into(), Ok(Some(Box::new(full.clone())))), &[]);
+    assert!(b.selected_detail().is_none());
+    b.apply(&Reply::Detail("A".into(), Ok(Some(Box::new(full)))), &[]);
+    assert!(b.selected_detail().is_some_and(|p| p.model_3d.is_some()));
+    b.selected = Some("B".into());
+    assert!(b.selected_detail().is_none());
+    assert_eq!(b.detail_due().as_deref(), Some("B"));
+}

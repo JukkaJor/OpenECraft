@@ -4558,8 +4558,6 @@ Datasheet	Veri sayfası
 Export (CSV)	Dışa aktar (CSV)
 Favorites	Sık kullanılanlar
 Files	Dosyalar
-Has 2D model	2D modeli var
-Has 3D model	3D modeli var
 History	Geçmiş
 Last change	Son değişiklik
 Lifecycle	Yaşam döngüsü
@@ -6296,6 +6294,7 @@ Section {} is now section {}	{} bölümü artık {} bölümü
 Moves the page before this page of its section (or of the section given)	Sayfayı bölümünün (veya verilen bölümün) bu sayfasının önüne taşır
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Bölümü üst bölümünün (veya verilen üst bölümün) bu bölümünün önüne taşır; numaralar sırayla devam eder
 {} is not in that section	{} o bölümde değil
+Drag to turn the model	Modeli döndürmek için sürükleyin
 Standard workspaces	Standart çalışma alanları
 Saved workspaces	Kaydedilmiş çalışma alanları
 Switches to this workspace with its panes at their default places	Bu çalışma alanına geçer ve bölmeleri varsayılan yerlerine koyar

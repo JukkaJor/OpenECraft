@@ -4558,8 +4558,6 @@ Datasheet	Adatlap
 Export (CSV)	Exportálás (CSV)
 Favorites	Kedvencek
 Files	Fájlok
-Has 2D model	Van 2D-modellje
-Has 3D model	Van 3D-modellje
 History	Előzmények
 Last change	Utolsó módosítás
 Lifecycle	Életciklus
@@ -6296,6 +6294,7 @@ Section {} is now section {}	A(z) {} szakasz most a(z) {} szakasz
 Moves the page before this page of its section (or of the section given)	Áthelyezi az oldalt a szakasza (vagy a megadott szakasz) ezen oldala elé
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Áthelyezi a szakaszt a szülője (vagy a megadott szülő) ezen szakasza elé; a számok sorrendben folytatódnak
 {} is not in that section	{} nincs abban a szakaszban
+Drag to turn the model	Húzással forgathatja a modellt
 Standard workspaces	Alapértelmezett munkaterületek
 Saved workspaces	Mentett munkaterületek
 Switches to this workspace with its panes at their default places	Átvált erre a munkaterületre, a panelek az alapértelmezett helyükön

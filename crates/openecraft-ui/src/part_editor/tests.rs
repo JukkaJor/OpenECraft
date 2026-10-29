@@ -52,3 +52,25 @@ fn jt_and_ifc_models_are_assigned() {
     apply_model(&mut part, ModelKind::Mesh3d, "part.ifc", ifc.as_bytes()).unwrap();
     assert_eq!(part.model_3d.as_ref().unwrap().size(), [5.0, 6.0, 7.0]);
 }
+
+#[test]
+fn the_3d_preview_finds_the_edges_and_splits_large_faces() {
+    let mut mesh = Mesh3d::default();
+    mesh.add_box([0.0; 3], [100.0, 50.0, 20.0]);
+    let normals: Vec<[f32; 3]> = mesh.triangles.iter().map(|t| {
+        let v = t.map(|i| mesh.vertices[i as usize]);
+        norm(cross(sub(v[1], v[0]), sub(v[2], v[0])))
+    }).collect();
+    // The 12 edges of the box, not the diagonals of its faces.
+    assert_eq!(sharp_edges(&mesh, &normals).len(), 12);
+    let mut pieces = Vec::new();
+    split_triangle([[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [0.0, 50.0, 0.0]], 30.0, &mut pieces);
+    let area = |v: &[[f32; 3]; 3]| {
+        let c = cross(sub(v[1], v[0]), sub(v[2], v[0]));
+        dot(c, c).sqrt() / 2.0
+    };
+    assert!(pieces.len() > 4);
+    assert!((pieces.iter().map(area).sum::<f32>() - 2500.0).abs() < 0.1);
+    // Each piece keeps the turning direction of the face.
+    assert!(pieces.iter().all(|v| cross(sub(v[1], v[0]), sub(v[2], v[0]))[2] > 0.0));
+}
