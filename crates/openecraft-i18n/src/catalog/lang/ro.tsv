@@ -4558,8 +4558,6 @@ Datasheet	Fișă tehnică
 Export (CSV)	Export (CSV)
 Favorites	Favorite
 Files	Fișiere
-Has 2D model	Are model 2D
-Has 3D model	Are model 3D
 History	Istoric
 Last change	Ultima modificare
 Lifecycle	Ciclu de viață
@@ -6296,3 +6294,4 @@ Section {} is now section {}	Secțiunea {} este acum secțiunea {}
 Moves the page before this page of its section (or of the section given)	Mută pagina înaintea acestei pagini din secțiunea ei (sau din secțiunea dată)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Mută secțiunea înaintea acestei secțiuni a părintelui ei (sau a părintelui dat); numerele continuă în ordine
 {} is not in that section	{} nu se află în acea secțiune
+Drag to turn the model	Trageți pentru a roti modelul

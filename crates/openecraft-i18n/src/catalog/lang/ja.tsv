@@ -4558,8 +4558,6 @@ Datasheet	データシート
 Export (CSV)	エクスポート (CSV)
 Favorites	お気に入り
 Files	ファイル
-Has 2D model	2D モデルあり
-Has 3D model	3D モデルあり
 History	履歴
 Last change	最終変更
 Lifecycle	ライフサイクル
@@ -6295,3 +6293,4 @@ Section {} is now section {}	セクション {} はセクション {} になり�
 Moves the page before this page of its section (or of the section given)	ページをそのセクション（または指定したセクション）のこのページの前に移動します
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	セクションをその親（または指定した親）のこのセクションの前に移動します。番号は順に続きます
 {} is not in that section	{} はそのセクションにありません
+Drag to turn the model	ドラッグしてモデルを回転

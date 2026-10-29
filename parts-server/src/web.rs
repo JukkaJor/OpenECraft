@@ -15,6 +15,10 @@ const PAGE: &str = include_str!("web/portal.html");
 
 /// Texts of the page (`{}`: placeholders filled in by the page).
 const TEXTS: &[&str] = &[
+    tr_const!("Graphics"),
+    tr_const!("Front view (2D)"),
+    tr_const!("3D model"),
+    tr_const!("Drag to turn the model"),
     tr_const!("OpenECraft data portal"),
     tr_const!("Search parts"),
     tr_const!("Search"),
@@ -97,8 +101,6 @@ const TEXTS: &[&str] = &[
     tr_const!("Mounting holes"),
     tr_const!("Door cutout"),
     tr_const!("Cutout"),
-    tr_const!("Has 3D model"),
-    tr_const!("Has 2D model"),
     tr_const!("{} parts in {} catalogs, revision {}"),
 ];
 

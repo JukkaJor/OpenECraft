@@ -4558,8 +4558,6 @@ Datasheet	Scheda tecnica
 Export (CSV)	Esportazione (CSV)
 Favorites	Preferiti
 Files	File
-Has 2D model	Con modello 2D
-Has 3D model	Con modello 3D
 History	Cronologia
 Last change	Ultima modifica
 Lifecycle	Ciclo di vita
@@ -6296,3 +6294,4 @@ Section {} is now section {}	La sezione {} è ora la sezione {}
 Moves the page before this page of its section (or of the section given)	Sposta la pagina prima di questa pagina della sua sezione (o della sezione indicata)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Sposta la sezione prima di questa sezione del suo padre (o del padre indicato); i numeri continuano in ordine
 {} is not in that section	{} non è in quella sezione
+Drag to turn the model	Trascina per ruotare il modello

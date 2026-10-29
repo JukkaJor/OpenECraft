@@ -4557,8 +4557,6 @@ Datasheet	Технічний паспорт
 Export (CSV)	Експорт (CSV)
 Favorites	Вибране
 Files	Файли
-Has 2D model	Має 2D-модель
-Has 3D model	Має 3D-модель
 History	Журнал
 Last change	Остання зміна
 Lifecycle	Життєвий цикл
@@ -6295,3 +6293,4 @@ Section {} is now section {}	Розділ {} тепер розділ {}
 Moves the page before this page of its section (or of the section given)	Переміщує сторінку перед цією сторінкою її розділу (або вказаного розділу)
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Переміщує розділ перед цим розділом його батьківського розділу (або вказаного); номери йдуть по порядку
 {} is not in that section	{} не входить до цього розділу
+Drag to turn the model	Перетягніть, щоб повернути модель
