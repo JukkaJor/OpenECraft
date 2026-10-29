@@ -30,7 +30,7 @@ fn a_new_room_is_a_rectangle_of_four_walls() {
     let (prj, r, c) = project();
     let room = &prj.layout.enclosures[r];
     assert!(room.is_room() && !prj.layout.enclosures[c].is_room());
-    assert_eq!(room.faces(), vec![Face::Wall(0), Face::Wall(1), Face::Wall(2), Face::Wall(3), Face::Roof]);
+    assert_eq!(room.faces(), vec![Face::Wall(0), Face::Wall(1), Face::Wall(2), Face::Wall(3), Face::Roof, Face::Bottom]);
     assert_eq!(room_face_from_key(room, "ceiling"), Some(Face::Roof));
     assert_eq!(room_face_from_key(room, "WALL3"), Some(Face::Wall(2)));
     assert_eq!(room_face_from_key(room, "wall0"), None);
@@ -219,7 +219,7 @@ fn inner_walls_divide_the_room() {
     // Across the room at x = 2000, from the rear wall to 2 m before the front wall.
     let id = add_inner_wall(&mut prj, r, [2000.0, 0.0], [2000.0, 2000.0], 100.0).unwrap();
     let room = &prj.layout.enclosures[r];
-    assert_eq!(room.faces(), vec![Face::Wall(0), Face::Wall(1), Face::Wall(2), Face::Wall(3), Face::Inner(id, 0), Face::Inner(id, 1), Face::Roof]);
+    assert_eq!(room.faces(), vec![Face::Wall(0), Face::Wall(1), Face::Wall(2), Face::Wall(3), Face::Inner(id, 0), Face::Inner(id, 1), Face::Roof, Face::Bottom]);
     assert_eq!(room_face_key(room, Face::Inner(id, 1)), "inner1b");
     assert_eq!(room_face_from_key(room, "INNER1A"), Some(Face::Inner(id, 0)));
     assert_eq!(room_face_from_key(room, "inner2a"), None);
@@ -286,4 +286,124 @@ fn turning_a_cabinet_keeps_its_footprint_in_place() {
         assert!(stands_inside(&prj, r, c), "{:?}", prj.layout.enclosures[c].site);
     }
     assert_eq!(turned_place(&prj, r, 90.0), None);
+}
+
+/// A pump (stands on the floor) as `-P1` and its part, added to [`project`].
+fn with_pump(prj: &mut Project) {
+    let pump = Part { number: "GEN.PUMP".into(), width: 300.0, height: 400.0, depth: 600.0, mounting_data: MountingData { floor_mount: true, ..Default::default() }, ..Default::default() };
+    prj.parts.push(pump);
+    prj.devices.insert("-P1".into(), DeviceData { parts: vec![PartRef { number: "GEN.PUMP".into(), count: 1 }], ..Default::default() });
+}
+
+#[test]
+fn the_floor_is_seen_from_above_like_the_floor_plan() {
+    let (mut prj, r, _) = project();
+    let room = &prj.layout.enclosures[r];
+    assert_eq!(room_face_from_key(room, "floor"), Some(Face::Bottom));
+    assert_eq!(room_face_key(room, Face::Bottom), "floor");
+    assert_eq!(room.face_title(Face::Bottom), "Room floor");
+    assert_eq!(room.face_size(Face::Bottom), (4000.0, 3000.0));
+    // x and z of the floor plan, standing upwards from the floor (y down from the ceiling).
+    assert_eq!(super::super::face_frame(room, Face::Bottom), [[0.0, 2800.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]]);
+    // A pump stands on it: its depth along the floor, its height upwards.
+    with_pump(&mut prj);
+    let id = mount_on_wall(&mut prj, r, "-P1", Face::Bottom, p(1000.0, 500.0)).unwrap();
+    let room = &prj.layout.enclosures[r];
+    let it = room.item(id).unwrap();
+    assert_eq!((it.w, it.h, it.d, it.z), (300.0, 600.0, 400.0, 0.0));
+    assert_eq!(super::super::item_box(room, it), ([1000.0, 2400.0, 500.0], [1300.0, 2800.0, 1100.0]));
+    assert_eq!(floor_footprint(room, it), [[1000.0, 500.0], [1300.0, 500.0], [1300.0, 1100.0], [1000.0, 1100.0]]);
+    assert!(super::super::validate(&prj, room).is_empty());
+}
+
+#[test]
+fn only_floor_standing_parts_go_on_the_floor() {
+    let (mut prj, r, _) = project();
+    with_pump(&mut prj);
+    // A wall-mounted part or a circuit breaker does not stand on the floor.
+    assert!(mount_on_wall(&mut prj, r, "-T1", Face::Bottom, p(500.0, 500.0)).is_err());
+    assert!(mount_on_wall(&mut prj, r, "-F1", Face::Bottom, p(500.0, 500.0)).is_err());
+    assert!(prj.layout.enclosures[r].items.is_empty());
+    // A pump does not go on the wall, and rails do not go on the floor.
+    assert!(mount_on_wall(&mut prj, r, "-P1", Face::Wall(0), p(500.0, 500.0)).is_err());
+    assert!(add_wall_profile(&mut prj, r, ItemKind::Rail, super::super::RAIL_PART, Face::Bottom, p(0.0, 100.0), p(1000.0, 100.0)).is_err());
+    // Without a device tag as well; a device moved onto the floor is reported.
+    assert!(mount_on_wall(&mut prj, r, "GEN.PUMP", Face::Bottom, p(2000.0, 500.0)).is_ok());
+    let t1 = mount_on_wall(&mut prj, r, "-T1", Face::Wall(0), p(500.0, 1000.0)).unwrap();
+    prj.layout.enclosures[r].items.iter_mut().find(|i| i.id == t1).unwrap().face = Face::Bottom;
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Mounting && f.items == vec![t1] && f.message.contains("floor")), "{findings:?}");
+}
+
+#[test]
+fn floor_standing_parts_keep_clear_of_doors_walls_and_cabinets() {
+    let (mut prj, r, c) = project();
+    with_pump(&mut prj);
+    let door = add_opening(&mut prj, r, Opening::Door, Face::Wall(0), None, None, None).unwrap();
+    let pump = mount_on_wall(&mut prj, r, "-P1", Face::Bottom, p(1800.0, 200.0)).unwrap();
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Service && f.items == vec![pump, door] && f.message.contains("-P1")), "{findings:?}");
+    // Beside the door it stands free; on the cabinet's place it does not.
+    let move_to = |prj: &mut Project, x: f32, y: f32| {
+        let it = prj.layout.enclosures[r].items.iter_mut().find(|i| i.id == pump).unwrap();
+        (it.x, it.y) = (x, y);
+    };
+    move_to(&mut prj, 3000.0, 200.0);
+    assert!(super::super::validate(&prj, &prj.layout.enclosures[r]).is_empty());
+    set_room(&mut prj, c, Some(r), Some(SitePlace { x: 2800.0, z: 0.0, angle: 0.0 })).unwrap();
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Collision && f.items == vec![pump] && f.message.contains("+CAB1")), "{findings:?}");
+    // Outside the room, and in an inner wall.
+    set_room(&mut prj, c, None, None).unwrap();
+    move_to(&mut prj, 3800.0, 200.0);
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Outside && f.items == vec![pump]), "{findings:?}");
+    move_to(&mut prj, 3000.0, 200.0);
+    add_inner_wall(&mut prj, r, [3100.0, 0.0], [3100.0, 1500.0], 100.0).unwrap();
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Collision && f.items == vec![pump] && f.message.contains("inner wall")), "{findings:?}");
+}
+
+#[test]
+fn pipe_runs_stand_off_the_walls_and_the_ceiling() {
+    let (mut prj, r, c) = project();
+    // On the rear wall 100 mm into the room, at right angles, snapped.
+    let id = add_pipe_run(&mut prj, r, Face::Wall(0), &[p(502.0, 1000.0), p(2500.0, 1000.0), p(2500.0, 400.0)], None, None, None).unwrap();
+    let path = prj.layout.enclosures[r].paths.iter().find(|x| x.id == id).unwrap().clone();
+    assert_eq!(path.points, vec![[500.0, 1000.0, 100.0], [2500.0, 1000.0, 100.0], [2500.0, 400.0, 100.0]]);
+    assert_eq!((path.name.as_str(), path.kind, path.classes.clone(), path.width, path.face), ("PR1", PathKind::Tubes, vec![Class::Fluid], PIPE_RUN_WIDTH, Some(Face::Wall(0))));
+    let (face, pts, offset) = pipe_run_on_face(&prj.layout.enclosures[r], &path).unwrap();
+    assert_eq!((face, pts, offset), (Face::Wall(0), vec![p(500.0, 1000.0), p(2500.0, 1000.0), p(2500.0, 400.0)], 100.0));
+    // The right wall (x = 4000), from the rear towards the front.
+    let id = add_pipe_run(&mut prj, r, Face::Wall(1), &[p(500.0, 1000.0), p(1500.0, 1000.0)], Some(150.0), Some(60.0), Some("Water")).unwrap();
+    let path = prj.layout.enclosures[r].paths.iter().find(|x| x.id == id).unwrap();
+    assert_eq!((path.points.clone(), path.width, path.name.as_str()), (vec![[3850.0, 1000.0, 500.0], [3850.0, 1000.0, 1500.0]], 60.0, "Water"));
+    // 300 mm below the ceiling, and along the side of an inner wall.
+    let id = add_pipe_run(&mut prj, r, Face::Roof, &[p(1000.0, 500.0), p(3000.0, 500.0)], None, None, None).unwrap();
+    assert_eq!(prj.layout.enclosures[r].paths.iter().find(|x| x.id == id).unwrap().points[0], [1000.0, 300.0, 500.0]);
+    let wall = add_inner_wall(&mut prj, r, [2000.0, 1000.0], [2000.0, 3000.0], 100.0).unwrap();
+    let id = add_pipe_run(&mut prj, r, Face::Inner(wall, 1), &[p(100.0, 800.0), p(1500.0, 800.0)], None, None, None).unwrap();
+    let room = &prj.layout.enclosures[r];
+    let path = room.paths.iter().find(|x| x.id == id).unwrap();
+    assert_eq!(path.points[0], super::super::face_point(room, Face::Inner(wall, 1), [100.0, 800.0, 100.0]));
+    assert_eq!(pipe_run_on_face(room, path).unwrap().1, vec![p(100.0, 800.0), p(1500.0, 800.0)]);
+    assert_eq!(path.name, "PR4");
+    // Diagonals, single points, unknown faces and cabinets are refused.
+    assert!(add_pipe_run(&mut prj, r, Face::Wall(0), &[p(0.0, 0.0), p(500.0, 500.0)], None, None, None).is_err());
+    assert!(add_pipe_run(&mut prj, r, Face::Wall(0), &[p(0.0, 0.0), p(1.0, 0.0)], None, None, None).is_err());
+    assert!(add_pipe_run(&mut prj, r, Face::Wall(9), &[p(0.0, 0.0), p(500.0, 0.0)], None, None, None).is_err());
+    assert!(add_pipe_run(&mut prj, c, Face::Plate, &[p(0.0, 0.0), p(500.0, 0.0)], None, None, None).is_err());
+}
+
+#[test]
+fn pipe_runs_keep_clear_of_doors_and_windows() {
+    let (mut prj, r, _) = project();
+    // The door in the middle of the rear wall reaches 2.1 m high (y from 700 mm).
+    let door = add_opening(&mut prj, r, Opening::Door, Face::Wall(0), None, None, None).unwrap();
+    add_pipe_run(&mut prj, r, Face::Wall(0), &[p(500.0, 400.0), p(3500.0, 400.0)], None, None, None).unwrap();
+    add_pipe_run(&mut prj, r, Face::Roof, &[p(500.0, 400.0), p(3500.0, 400.0)], None, None, None).unwrap();
+    assert!(super::super::validate(&prj, &prj.layout.enclosures[r]).is_empty(), "above the door");
+    add_pipe_run(&mut prj, r, Face::Wall(0), &[p(500.0, 1000.0), p(3500.0, 1000.0)], None, None, None).unwrap();
+    let findings = super::super::validate(&prj, &prj.layout.enclosures[r]);
+    assert!(findings.iter().any(|f| f.kind == CheckKind::Collision && f.items == vec![door] && f.message.contains("PR3") && f.message.contains("Door")), "{findings:?}");
 }

@@ -1,5 +1,5 @@
 use super::*;
-use crate::routing3d::{End, RouteKind, Status};
+use crate::routing3d::{End, RouteKind, RouteLeg, Status};
 
 fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
     RoutedItem {
@@ -10,6 +10,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         ends: [End::default(), End::default()],
         enclosures: vec![0],
         points,
+        legs: Vec::new(),
         length: 0.0,
         cut: 0.0,
         diameter,
@@ -55,4 +56,21 @@ fn shared_stretches_become_bundles_with_branches() {
     unrouted[1].status = Status::Unrouted("x".into());
     assert!(find(&unrouted, 25.0).0.iter().all(|b| !b.items.contains(&1)));
     assert!((diameter([3.0, 4.0].into_iter()) - 5.75).abs() < 1e-4);
+}
+
+#[test]
+fn legs_are_bundled_on_their_own() {
+    // Two routes leave a cabinet (x 0 – 100) through the same gland and go on in a room
+    // elsewhere in the layout (x 5000 – 5100): the jump between the legs is no stretch.
+    let leg = |item: &mut RoutedItem, legs: [Vec<V3>; 2]| {
+        item.points = legs.concat();
+        item.legs = legs.into_iter().enumerate().map(|(k, points)| RouteLeg { enclosure: k, points }).collect();
+    };
+    let mut a = item("A", Class::Control, 6.0, Vec::new());
+    leg(&mut a, [vec![[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]], vec![[5000.0, 0.0, 0.0], [5100.0, 0.0, 0.0]]]);
+    let mut b = item("B", Class::Control, 6.0, Vec::new());
+    leg(&mut b, [vec![[0.0, 50.0, 0.0], [100.0, 0.0, 0.0]], vec![[5000.0, 0.0, 0.0], [5000.0, 300.0, 0.0]]]);
+    assert_eq!(a.stretches().len(), 2);
+    let (bundles, _) = find(&[a, b], 25.0);
+    assert!(bundles.iter().all(|x| x.length < 200.0), "{bundles:?}");
 }

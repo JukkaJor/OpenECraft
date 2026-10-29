@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Cikkszám, pl. GEN.LMP-GN-24
 Part {} has no function with a symbol	A(z) {} alkatrésznek nincs szimbólummal rendelkező funkciója
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Alkatrészt csak módosítható oldalra lehet ejteni; ez az oldal kiadott, zárolt vagy generált
+Floor mounting	Padlóra szerelés
+Only floor-standing parts	Csak padlón álló alkatrészek
+Stands on the floor of a room	Egy helyiség padlóján áll
+FLOOR	PADLÓ
+Stands on the floor of a room, like pumps, tanks and compressors	Egy helyiség padlóján áll, mint a szivattyúk, tartályok és kompresszorok
+{} does not stand on the floor: choose a part marked for floor mounting	{} nem a padlón áll: válasszon padlóra szerelésre jelölt alkatrészt
+Mounting rails go on the walls and the ceiling	A szerelősínek a falakra és a mennyezetre kerülnek
+{}: {} stands where {} stands	{}: {} ott áll, ahol {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} nem a padlón áll, válasszon padlón álló alkatrészt
+A pipe run turns at right angles	A csővezeték-nyomvonal derékszögben fordul
+{}: pipe run {} crosses an opening ({})	{}: a(z) {} csővezeték-nyomvonal egy nyílást keresztez ({})
+not in the same line-up or room	nem ugyanabban a szekrénysorban vagy helyiségben
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} a tetőn keresztül lép be: nincs kábeltömszelence a tetőn, az oldalakon vagy a hátfalon
+Pipe run {} mm – double-click or Enter to finish	Csővezeték-nyomvonal {} mm – a befejezéshez kattintson duplán, vagy nyomja meg az Enter billentyűt
+Choose a room first: floor-standing parts go on its floor.	Először válasszon helyiséget: a padlón álló alkatrészek a padlójára kerülnek.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Még nincs padlóra szerelésre jelölt alkatrész. Jelöljön meg egyet az alkatrészkezelésben: alkatrész-szerkesztő › Szerelési adatok › Padlóra szerelés.
+Floor-standing part	Padlón álló cikk
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Padlóra szerelésre jelölt alkatrészek (szivattyúk, tartályok, kompresszorok): válasszon egyet, majd kattintson a helyére a helyiség padlóján
+Pipe run	Csővezeték-nyomvonal
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Csővezeték-nyomvonal a helyiség falán, mennyezetén vagy padlóján, amely mentén a tömlők, csövek és csővezetékek haladnak: kattintson a sarkokra, a befejezéshez kattintson duplán vagy nyomja meg az Enter billentyűt
+{}: drag to move it, a double-click shows the floor	{}: húzással mozgatható, dupla kattintás megjeleníti a padlót
+10 · Pump room	10 · Szivattyúhelyiség
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	A szekrénysor helyisége a szivattyúival: a szivattyúmotorok a szekrénytetők kábeltömszelencéin át kapnak tápot, egy szivattyú és egy tartály a padlón, golyóscsapok és egy nyomásmérő a falon, a vízkör DN25-ös csövei pedig 3D-ben egy fali csővezeték-nyomvonal mentén haladnak.
+Room floor	Helyiség padlója

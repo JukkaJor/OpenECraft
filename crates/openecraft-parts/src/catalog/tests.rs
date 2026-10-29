@@ -83,3 +83,17 @@ fn the_catalog_has_a_part_for_wall_mounting() {
     let light = parts.iter().find(|p| p.number == "GEN.LIGHT-EM-3W").expect("emergency light");
     assert!(light.wall_mountable() && light.width > 0.0 && light.height > 0.0);
 }
+
+#[test]
+fn the_catalog_has_fluid_parts_for_rooms() {
+    let parts = default_catalog();
+    let part = |n: &str| parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
+    for n in ["GEN.PUMP-CENT-DN25", "GEN.TANK-200L"] {
+        let p = part(n);
+        assert!(p.floor_standing() && !p.wall_mountable() && p.width > 0.0 && p.depth > 0.0, "{n}");
+    }
+    for n in ["GEN.VLV-BALL-DN25", "GEN.GAUGE-0-10BAR"] {
+        let p = part(n);
+        assert!(p.wall_mountable() && !p.floor_standing() && p.width > 0.0, "{n}");
+    }
+}

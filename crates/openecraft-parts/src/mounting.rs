@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 /// Keys of the typed values (also the column names of the CSV export and the keys of
 /// the technical data they replace).
-pub const MOUNTING_KEYS: [&str; 17] = [
+pub const MOUNTING_KEYS: [&str; 18] = [
     "Clearance top",
     "Clearance bottom",
     "Clearance left",
@@ -27,6 +27,7 @@ pub const MOUNTING_KEYS: [&str; 17] = [
     "Collision class",
     "Terminal type",
     "Wall mounting",
+    "Floor mounting",
 ];
 
 /// A round or rectangular cutout.
@@ -123,6 +124,9 @@ pub struct MountingData {
     /// charge controllers, distribution boxes); other devices need a rail there.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub wall_mount: bool,
+    /// The part stands on the floor of a room (pumps, tanks, compressors).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub floor_mount: bool,
 }
 
 /// `yes` / `no` of a flag (also `true`, `1`, `x`); `None` for other texts.
@@ -194,6 +198,7 @@ impl MountingData {
             "door cutout" => self.door_cutout.map(|c| c.text()),
             "cutout" => self.cutout.map(|c| c.text()),
             "wall mounting" => self.wall_mount.then(|| "yes".to_string()),
+            "floor mounting" => self.floor_mount.then(|| "yes".to_string()),
             _ => None,
         }
     }
@@ -265,9 +270,9 @@ impl MountingData {
                 }
                 true
             }
-            "wall mounting" => match parse_flag(value) {
+            "wall mounting" | "floor mounting" => match parse_flag(value) {
                 Some(v) => {
-                    self.wall_mount = v;
+                    *if key == "wall mounting" { &mut self.wall_mount } else { &mut self.floor_mount } = v;
                     true
                 }
                 None => false,
@@ -285,6 +290,15 @@ impl Part {
         self.mounting_data.wall_mount
             || self.tech_value("Wall mounting").and_then(parse_flag).unwrap_or(false)
             || self.mounting.to_lowercase().contains("wall")
+    }
+
+    /// The part stands on the floor of a room: the typed flag, a `Floor mounting: yes`
+    /// line of the technical data or a mounting text saying so (EPLAN mounting site
+    /// "Floor").
+    pub fn floor_standing(&self) -> bool {
+        self.mounting_data.floor_mount
+            || self.tech_value("Floor mounting").and_then(parse_flag).unwrap_or(false)
+            || self.mounting.to_lowercase().contains("floor")
     }
 
     /// A mounting / placement value: the typed one, otherwise the line of the technical

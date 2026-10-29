@@ -11,6 +11,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         ends: [End::default(), End::default()],
         enclosures: vec![0],
         points,
+        legs: Vec::new(),
         length: 0.0,
         cut: 0.0,
         diameter,

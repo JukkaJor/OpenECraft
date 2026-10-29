@@ -163,7 +163,7 @@ fn add_routing_path(prj: &mut Project, a: &Args) -> Result<Value, String> {
     }
     let id = prj.new_id();
     let name = a.str("name").map(String::from).unwrap_or_else(|| format!("P{}", prj.layout.enclosures[ei].paths.len() + 1));
-    let path = RoutingPath { id, name, kind, points, width: num_in(a, "width", 1.0, NO_MAX)?.unwrap_or(50.0), classes, reserve: num_in(a, "reserve", 0.0, 90.0)?.unwrap_or(0.0) };
+    let path = RoutingPath { id, name, kind, points, width: num_in(a, "width", 1.0, NO_MAX)?.unwrap_or(50.0), classes, reserve: num_in(a, "reserve", 0.0, 90.0)?.unwrap_or(0.0), face: None };
     let out = serde_json::to_value(&path).unwrap_or(Value::Null);
     prj.layout.enclosures[ei].paths.push(path);
     Ok(out)

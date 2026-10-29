@@ -243,3 +243,26 @@ fn new_enclosures_and_rooms_take_free_names() {
     ui.new_room(&mut prj);
     assert_eq!(prj.layout.enclosures[1].name, "+ROOM2");
 }
+
+#[test]
+fn pipe_runs_and_the_floor_belong_to_rooms() {
+    let mut prj = Project::default();
+    let mut ui = PanelUi::default();
+    // Not in a cabinet.
+    let cab = panel::new_enclosure(&mut prj, panel::ENCLOSURE_PART, "+CAB1");
+    prj.layout.enclosures.push(cab);
+    ui.enclosure_index(&prj);
+    ui.choose_tool(Tool::PipeRun);
+    assert_eq!(ui.tool, Tool::Select);
+    // In a room on any of its faces, the floor among them.
+    ui.new_room(&mut prj);
+    let ri = ui.enclosure_index(&prj).unwrap();
+    assert!(prj.layout.enclosures[ri].faces().contains(&Face::Bottom));
+    ui.front_face(Face::Bottom, false);
+    ui.choose_tool(Tool::PipeRun);
+    assert_eq!((ui.tool.clone(), ui.view, ui.face), (Tool::PipeRun, View::Front, Face::Bottom));
+    // Corners at right angles, along the longer direction.
+    assert_eq!(ortho(Some(p(0.0, 0.0)), p(500.0, 40.0)), p(500.0, 0.0));
+    assert_eq!(ortho(Some(p(0.0, 0.0)), p(40.0, -500.0)), p(0.0, -500.0));
+    assert_eq!(ortho(None, p(40.0, 50.0)), p(40.0, 50.0));
+}

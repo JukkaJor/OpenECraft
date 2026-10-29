@@ -409,10 +409,12 @@ impl PanelUi {
         }
         // 3D routing across the enclosures shown: routing paths, reservations, cables and
         // tubes (and the wires routed in 3D), from layout to view coordinates through the
-        // enclosure a point lies in (the nearest one along the line-up).
-        let to_view = |q: [f32; 3]| {
+        // enclosure a point lies in (the nearest one along the line-up), points of a room
+        // through the room.
+        let to_view = |room: Option<usize>, q: [f32; 3]| {
             let gap = |k: usize| (pos[k][0] - q[0]).max(q[0] - pos[k][0] - prj.layout.enclosures[k].width).max(0.0);
-            let (k, pose) = shown.iter().min_by(|a, b| gap(a.0).total_cmp(&gap(b.0))).copied().unwrap_or((ei, SitePose::default()));
+            let in_room = room.filter(|r| prj.layout.enclosures[*r].is_room()).and_then(|r| shown.iter().find(|s| s.0 == r));
+            let (k, pose) = in_room.or_else(|| shown.iter().min_by(|a, b| gap(a.0).total_cmp(&gap(b.0)))).copied().unwrap_or((ei, SitePose::default()));
             pose.apply([q[0] - pos[k][0], prj.layout.enclosures[k].height - (q[1] - pos[k][1]), q[2] - pos[k][2]])
         };
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
@@ -434,7 +436,7 @@ impl PanelUi {
             }
         }
         let in_view = |q: [f32; 3]| keys.iter().any(|&k| q[0] >= pos[k][0] && q[0] <= pos[k][0] + prj.layout.enclosures[k].width);
-        let branch_points: Vec<Pos2> = an.routing.branches.iter().filter(|b| in_view(b.at)).filter_map(|b| project_view(to_view(b.at)).map(|x| x.0)).collect();
+        let branch_points: Vec<Pos2> = an.routing.branches.iter().filter(|b| in_view(b.at)).filter_map(|b| project_view(to_view(None, b.at)).map(|x| x.0)).collect();
         // Painter's algorithm: far to near; the equipment object by object.
         let order = vec3::paint_order(&objects, eye_view);
         let mut rank = vec![0; objects.len()];

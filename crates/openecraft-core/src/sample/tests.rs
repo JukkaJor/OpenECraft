@@ -160,7 +160,7 @@ fn cabinets_stand_in_a_line_up() {
 #[test]
 fn electrical_room_holds_the_line_up() {
     use crate::model::panel::Opening;
-    use crate::panel::{cabinets_in, locate, wall_mount_ok, Face};
+    use crate::panel::{cabinets_in, locate, mount_ok, Face};
     let (prj, _) = checked("electrical_room");
     let l = &prj.layout;
     let r = l.enclosures.iter().position(|e| e.is_room()).expect("room");
@@ -169,8 +169,36 @@ fn electrical_room_holds_the_line_up() {
     let openings: Vec<Opening> = room.items.iter().map(|i| i.opening).filter(|o| !o.is_cutout()).collect();
     assert_eq!(openings, [Opening::Door, Opening::Window]);
     assert_eq!(cabinets_in(l, r), [0, 1]);
-    assert!(room.items.iter().all(|i| wall_mount_ok(&prj, room, i)));
+    assert!(room.items.iter().all(|i| mount_ok(&prj, room, i)));
     assert!(matches!(locate(&prj, "=SUP+ER1-X2"), Some((e, it)) if e == r && it.face == Face::Wall(5)));
     assert!(room.items.iter().any(|i| i.part == room::LIGHT && i.tag.is_empty()));
     assert!(room.items.iter().any(|i| i.part == room::TRAY && i.face == Face::Roof));
+}
+
+#[test]
+fn pump_room_routes_pipes_and_motor_cables() {
+    use crate::panel::{mount_ok, Face};
+    use crate::routing3d::RouteKind;
+    let (prj, an) = checked("pump_room");
+    let l = &prj.layout;
+    let r = l.enclosures.iter().position(|e| e.is_room()).expect("room");
+    let room = &l.enclosures[r];
+    // Vessel, pump and both motors stand on the floor; valves and gauge on the wall.
+    let on = |face: Face| room.items.iter().filter(|i| i.face == face && !i.tag.is_empty()).map(|i| i.tag.as_str()).collect::<Vec<_>>();
+    assert_eq!(on(Face::Bottom), ["=P1+ER1-CM1", "=P1+ER1-GP1", "=P1+FLD-M1", "=P2+FLD-M1"]);
+    assert!(["=P1+ER1-QM1", "=P1+ER1-QM2", "=P1+ER1-BP1"].iter().all(|t| on(Face::Wall(2)).contains(t)));
+    assert!(room.items.iter().all(|i| mount_ok(&prj, room, i)));
+    assert_eq!(room.paths.iter().filter(|p| p.face.is_some()).count(), 1);
+    // The pipes run through the room only, along the pipe runs (the pressure side to
+    // the gauge and on to the vessel are two).
+    let pipes: Vec<_> = an.routing.items.iter().filter(|i| i.kind == RouteKind::Tube).collect();
+    assert_eq!(pipes.len(), 5);
+    assert!(pipes.iter().all(|i| i.routed() && i.legs.is_empty() && i.enclosures == [r] && i.diameter == 25.0), "{pipes:#?}");
+    assert!(an.routing.paths.iter().any(|u| u.enclosure == r && u.items >= 2), "{:?}", an.routing.paths);
+    // The motor cables leave their cabinets through the roof.
+    for tag in ["=P1-W1", "=P2-W1"] {
+        let c = an.routing.item(tag).expect(tag);
+        assert!(c.routed() && c.legs.len() == 2 && c.enclosures.contains(&r), "{tag}: {:?} {:?}", c.status, c.enclosures);
+    }
+    assert!(!an.issues.iter().any(|i| i.message().contains("enters through the roof")));
 }

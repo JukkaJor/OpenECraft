@@ -55,7 +55,29 @@ fn kind_choice(ui: &mut egui::Ui, salt: &str, kind: &mut PathKind) {
     });
 }
 
+/// Colour of the pipe runs of rooms.
+pub(super) const PIPE_COLOR: Color32 = Color32::from_rgb(40, 150, 200);
+
 impl PanelUi {
+    /// The pipe runs on the face of a room shown, with their names.
+    pub(super) fn draw_pipe_runs(&self, painter: &egui::Painter, prj: &Project, ei: usize, to_screen: &dyn Fn(P) -> Pos2) {
+        let e = &prj.layout.enclosures[ei];
+        for path in &e.paths {
+            let Some((face, pts, _)) = openecraft_core::panel::pipe_run_on_face(e, path) else { continue };
+            if face != self.face {
+                continue;
+            }
+            let pts: Vec<Pos2> = pts.into_iter().map(to_screen).collect();
+            let selected = self.selected_object == Some(path.id);
+            let width = (path.width * self.zoom).max(2.0);
+            painter.add(Shape::line(pts.clone(), Stroke::new(width, PIPE_COLOR.gamma_multiply(if selected { 0.45 } else { 0.25 }))));
+            painter.add(Shape::line(pts.clone(), Stroke::new(if selected { 2.0 } else { 1.0 }, PIPE_COLOR)));
+            if let Some(first) = pts.first() {
+                painter.text(*first, egui::Align2::LEFT_BOTTOM, &path.name, egui::FontId::proportional(11.0), PIPE_COLOR);
+            }
+        }
+    }
+
     /// Makes a routing path of the corners drawn. Returns its id.
     pub(super) fn add_routing_path(&mut self, prj: &mut Project, ei: usize) -> u64 {
         let id = prj.new_id();
@@ -63,7 +85,7 @@ impl PanelUi {
         let z = PLATE_Z + self.path_height;
         let points = self.path_points.drain(..).map(|q| [PLATE_MARGIN + q.x, PLATE_MARGIN + q.y, z]).collect();
         let name = format!("P{}", e.paths.len() + 1);
-        e.paths.push(RoutingPath { id, name, kind: self.path_kind, points, width: self.path_width, classes: Vec::new(), reserve: 0.0 });
+        e.paths.push(RoutingPath { id, name, kind: self.path_kind, points, width: self.path_width, classes: Vec::new(), reserve: 0.0, face: None });
         id
     }
 
@@ -118,24 +140,28 @@ impl PanelUi {
             if !self.show_wires && !selected {
                 continue;
             }
-            let pts: Vec<Pos2> = it.points.iter().map(|q| plate([q[0] - pos[ei][0], q[1] - pos[ei][1], q[2]])).collect();
             let (color, width) = if selected { (WIRE_HIGHLIGHT, 3.0) } else { (class_color(it.class), (it.diameter * self.zoom * 0.5).clamp(1.5, 6.0)) };
-            painter.add(Shape::line(pts, Stroke::new(width, color.gamma_multiply(0.8))));
+            // The legs in the line-up, not those through a room.
+            for (_, points) in it.stretches().into_iter().filter(|(leg, _)| leg.is_none_or(|k| !prj.layout.enclosures[k].is_room())) {
+                let pts: Vec<Pos2> = points.iter().map(|q| plate([q[0] - pos[ei][0], q[1] - pos[ei][1], q[2]])).collect();
+                painter.add(Shape::line(pts, Stroke::new(width, color.gamma_multiply(0.8))));
+            }
         }
     }
 
     /// Lines of the 3D routing in view coordinates (`to_view`: layout to view
-    /// coordinates): routing paths and reservations of the enclosures shown, the routed
+    /// coordinates, through a room for points of the room): routing paths and reservations of the enclosures shown, the routed
     /// cables and tubes, and the wires when they are routed in 3D.
-    pub(super) fn routing_lines_3d(&self, prj: &Project, an: &Analysis, shown: &[usize], to_view: &dyn Fn([f32; 3]) -> [f32; 3], selected_wire: Option<usize>) -> Vec<RouteLine> {
+    pub(super) fn routing_lines_3d(&self, prj: &Project, an: &Analysis, shown: &[usize], to_view: &dyn Fn(Option<usize>, [f32; 3]) -> [f32; 3], selected_wire: Option<usize>) -> Vec<RouteLine> {
         let pos = openecraft_core::panel::positions(&prj.layout);
         let mut out = Vec::new();
         for &k in shown {
             let e = &prj.layout.enclosures[k];
-            let g = |q: [f32; 3]| to_view([q[0] + pos[k][0], q[1] + pos[k][1], q[2] + pos[k][2]]);
+            let g = |q: [f32; 3]| to_view(Some(k), [q[0] + pos[k][0], q[1] + pos[k][1], q[2] + pos[k][2]]);
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color: PATH_COLOR, width: if selected { 3.0 } else { 1.5 }, on_top: selected, target: RouteRef::None });
+                let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, width: if selected { 3.0 } else { 1.5 }, on_top: selected, target: RouteRef::None });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -165,33 +191,39 @@ impl PanelUi {
         }
         let wires_3d = prj.layout.routing.wires_3d;
         for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
-            let points: Vec<[f32; 3]> = it.points.iter().map(|q| to_view(*q)).collect();
-            match (it.kind, it.wire) {
-                (RouteKind::Wire, Some(wi)) if wires_3d => {
-                    let selected = selected_wire == Some(wi);
-                    let done = self.done_wires.contains(&an.wiring[wi].key());
-                    if !self.show_wires && !selected && !done {
-                        continue;
-                    }
-                    let (color, width) = if selected {
-                        (WIRE_HIGHLIGHT, 3.5)
-                    } else if done {
-                        (WIRE_DONE, 1.5)
-                    } else if selected_wire.is_some() {
-                        (WIRE_COLOR.gamma_multiply(0.3), 1.0)
-                    } else {
-                        (WIRE_COLOR, 1.5)
-                    };
-                    out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Wire(wi) });
+            // Leg by leg; legs through an enclosure not shown are left out.
+            for (leg, points) in it.stretches() {
+                if leg.is_some_and(|k| !shown.contains(&k)) {
+                    continue;
                 }
-                (RouteKind::Wire, _) => {}
-                _ => {
-                    let selected = self.selected_route.as_deref() == Some(it.key.as_str());
-                    if !self.show_wires && !selected {
-                        continue;
+                let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
+                match (it.kind, it.wire) {
+                    (RouteKind::Wire, Some(wi)) if wires_3d => {
+                        let selected = selected_wire == Some(wi);
+                        let done = self.done_wires.contains(&an.wiring[wi].key());
+                        if !self.show_wires && !selected && !done {
+                            continue;
+                        }
+                        let (color, width) = if selected {
+                            (WIRE_HIGHLIGHT, 3.5)
+                        } else if done {
+                            (WIRE_DONE, 1.5)
+                        } else if selected_wire.is_some() {
+                            (WIRE_COLOR.gamma_multiply(0.3), 1.0)
+                        } else {
+                            (WIRE_COLOR, 1.5)
+                        };
+                        out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Wire(wi) });
                     }
-                    let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), (it.diameter * 0.25).clamp(2.0, 5.0)) };
-                    out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                    (RouteKind::Wire, _) => {}
+                    _ => {
+                        let selected = self.selected_route.as_deref() == Some(it.key.as_str());
+                        if !self.show_wires && !selected {
+                            continue;
+                        }
+                        let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), (it.diameter * 0.25).clamp(2.0, 5.0)) };
+                        out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                    }
                 }
             }
         }

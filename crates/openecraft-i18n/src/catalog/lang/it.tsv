@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Codice articolo, ad es. GEN.LMP-GN-24
 Part {} has no function with a symbol	L'articolo {} non ha funzioni con simbolo
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Gli articoli possono essere rilasciati solo su pagine modificabili; questa è rilasciata, bloccata o generata
+Floor mounting	Montaggio a pavimento
+Only floor-standing parts	Solo articoli a pavimento
+Stands on the floor of a room	Poggia sul pavimento di un locale
+FLOOR	PAVIMENTO
+Stands on the floor of a room, like pumps, tanks and compressors	Poggia sul pavimento di un locale, come pompe, serbatoi e compressori
+{} does not stand on the floor: choose a part marked for floor mounting	{} non poggia sul pavimento: scegli un articolo contrassegnato per il montaggio a pavimento
+Mounting rails go on the walls and the ceiling	Le guide di montaggio vanno sulle pareti e sul soffitto
+{}: {} stands where {} stands	{}: {} si trova dove si trova {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} non poggia sul pavimento, scegli un articolo a pavimento
+A pipe run turns at right angles	Un percorso tubazioni gira ad angolo retto
+{}: pipe run {} crosses an opening ({})	{}: il percorso tubazioni {} attraversa un'apertura ({})
+not in the same line-up or room	non nello stesso affiancamento né nello stesso locale
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} entra dal tetto: nessun pressacavo sul tetto, sui lati o sul retro
+Pipe run {} mm – double-click or Enter to finish	Percorso tubazioni {} mm – doppio clic o Enter per terminare
+Choose a room first: floor-standing parts go on its floor.	Scegli prima un locale: gli articoli a pavimento vanno sul suo pavimento.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Nessun articolo ancora contrassegnato per il montaggio a pavimento. Contrassegnane uno nella gestione articoli: editor articoli › Dati di montaggio › Montaggio a pavimento.
+Floor-standing part	Articolo a pavimento
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Articoli contrassegnati per il montaggio a pavimento (pompe, serbatoi, compressori): scegline uno, poi fai clic dove va sul pavimento del locale
+Pipe run	Percorso tubazioni
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Percorso tubazioni su una parete, il soffitto o il pavimento del locale, lungo cui vengono instradati tubi flessibili, tubi e tubazioni: fai clic sugli angoli, doppio clic o Enter per terminare
+{}: drag to move it, a double-click shows the floor	{}: trascina per spostare, doppio clic per mostrare il pavimento
+10 · Pump room	10 · Locale pompe
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Il locale dell'affiancamento con le sue pompe: motori delle pompe alimentati tramite pressacavi nei tetti degli armadi, una pompa e un serbatoio a pavimento, valvole a sfera e un manometro a parete e le tubazioni DN25 del circuito dell'acqua instradate in 3D lungo un percorso tubazioni a parete.
+Room floor	Pavimento del locale

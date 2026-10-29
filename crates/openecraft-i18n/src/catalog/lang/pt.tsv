@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Número da peça, p. ex. GEN.LMP-GN-24
 Part {} has no function with a symbol	A peça {} não tem função com símbolo
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	As peças só podem ser soltas em páginas que podem ser alteradas; esta está liberada, bloqueada ou gerada
+Floor mounting	Montagem no piso
+Only floor-standing parts	Somente peças apoiadas no piso
+Stands on the floor of a room	Fica no piso de uma sala
+FLOOR	PISO
+Stands on the floor of a room, like pumps, tanks and compressors	Fica no piso de uma sala, como bombas, tanques e compressores
+{} does not stand on the floor: choose a part marked for floor mounting	{} não fica no piso: escolha uma peça marcada para montagem no piso
+Mounting rails go on the walls and the ceiling	Trilhos de montagem vão nas paredes e no teto
+{}: {} stands where {} stands	{}: {} está onde está {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} não fica no piso, escolha uma peça apoiada no piso
+A pipe run turns at right angles	Um percurso de tubulação vira em ângulo reto
+{}: pipe run {} crosses an opening ({})	{}: o percurso de tubulação {} cruza uma abertura ({})
+not in the same line-up or room	não está na mesma fileira nem na mesma sala
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} entra pelo teto: nenhum prensa-cabo no teto, nas laterais ou na traseira
+Pipe run {} mm – double-click or Enter to finish	Percurso de tubulação {} mm – clique duplo ou Enter para concluir
+Choose a room first: floor-standing parts go on its floor.	Escolha primeiro uma sala: peças apoiadas no piso vão no piso dela.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Ainda não há peças marcadas para montagem no piso. Marque uma no gerenciamento de peças: editor de peças › Dados de montagem › Montagem no piso.
+Floor-standing part	Peça apoiada no piso
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Peças marcadas para montagem no piso (bombas, tanques, compressores): escolha uma e clique onde ela fica no piso da sala
+Pipe run	Percurso de tubulação
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Percurso de tubulação em uma parede, no teto ou no piso da sala, ao longo do qual mangueiras, tubos e tubulações são roteados: clique nos cantos, clique duplo ou Enter para concluir
+{}: drag to move it, a double-click shows the floor	{}: arraste para mover, clique duplo para mostrar o piso
+10 · Pump room	10 · Sala de bombas
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	A sala da fileira com suas bombas: motores de bomba alimentados por prensa-cabos nos tetos dos gabinetes, uma bomba e um tanque apoiados no piso, válvulas de esfera e um manômetro na parede e a tubulação DN25 do circuito de água roteada em 3D ao longo de um percurso de tubulação na parede.
+Room floor	Piso da sala

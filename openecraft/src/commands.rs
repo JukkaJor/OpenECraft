@@ -208,6 +208,8 @@ pub enum Cmd {
     LayoutAccessory,
     Layout3dMacro,
     LayoutWallPart,
+    LayoutFloorPart,
+    LayoutPipeRun,
     LayoutFloorPlan,
     LayoutDrawWalls,
     LayoutInnerWalls,
@@ -637,6 +639,12 @@ pub static ALL: &[Def] = &[
     d(C::LayoutWallPart, "layout_wall_part", tr_const!("Wall-mounted part"), I::Device)
         .menu()
         .tip(tr_const!("Parts marked for wall mounting (inverters, charge controllers, …): choose one, then click where it goes on the wall of the room")),
+    d(C::LayoutFloorPart, "layout_floor_part", tr_const!("Floor-standing part"), I::Cube)
+        .menu()
+        .tip(tr_const!("Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room")),
+    d(C::LayoutPipeRun, "layout_pipe_run", tr_const!("Pipe run"), I::RoutingPath)
+        .toggle()
+        .tip(tr_const!("Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish")),
     d(C::LayoutFront, "layout_plate", tr_const!("Mounting plate"), I::Front).toggle(),
     d(C::LayoutDoor, "layout_door", tr_const!("Door (front)"), I::Door).toggle().tip(tr_const!("The door seen from the front: door devices and cutouts")),
     d(C::LayoutDoorInside, "layout_door_inside", tr_const!("Door (inside)"), I::Door)

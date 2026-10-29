@@ -90,3 +90,29 @@ fn inner_walls() {
     assert_eq!(r["inner_walls"], json!([]));
     assert_eq!(r["faces"], json!([]), "its rail and door went with it");
 }
+
+#[test]
+fn pipe_runs_and_floor_standing_parts() {
+    let mut s = demo_session();
+    run(&mut s, "add_room", json!({ "name": "+ROOM1", "width": 5000, "depth": 4000, "height": 3000 })).unwrap();
+    let r = run(&mut s, "add_pipe_run", json!({ "room": "+ROOM1", "face": "wall1", "points": [[500, 800], [4000, 800], [4000, 1500]] })).unwrap();
+    let run0 = &r["room"]["pipe_runs"][0];
+    assert_eq!((run0["name"].as_str(), run0["face"].as_str(), run0["offset"].as_f64(), run0["width"].as_f64()), (Some("PR1"), Some("wall1"), Some(100.0), Some(100.0)));
+    assert_eq!(run0["points"], json!([[500.0, 800.0], [4000.0, 800.0], [4000.0, 1500.0]]));
+    let r = run(&mut s, "add_pipe_run", json!({ "room": "+ROOM1", "face": "ceiling", "points": [[500, 500], [4500, 500]], "offset": 250, "width": 60, "name": "Water" })).unwrap();
+    assert_eq!(r["room"]["pipe_runs"][1]["name"], "Water");
+    assert!(run(&mut s, "add_pipe_run", json!({ "room": "+ROOM1", "face": "wall1", "points": [[0, 0], [500, 500]] })).unwrap_err().contains("right angles"));
+    assert!(run(&mut s, "add_pipe_run", json!({ "room": "+CAB1", "face": "wall1", "points": [[0, 0], [500, 0]] })).is_err());
+    // A pump stands on the floor, a contactor does not.
+    let pump = run(&mut s, "mount_on_wall", json!({ "room": "+ROOM1", "device": "GEN.PUMP-CENT-DN25", "face": "floor", "x": 1000, "y": 1500 })).unwrap();
+    assert_eq!(pump["z"], 0.0);
+    assert!(run(&mut s, "mount_on_wall", json!({ "room": "+ROOM1", "device": "-K1", "face": "floor", "x": 2000, "y": 1500 })).unwrap_err().contains("floor"));
+    let list = run(&mut s, "list_rooms", json!({ "room": "+ROOM1" })).unwrap();
+    let floor = list[0]["faces"].as_array().unwrap().iter().find(|f| f["face"] == "floor").expect("floor items");
+    assert_eq!(floor["items"][0]["part"], "GEN.PUMP-CENT-DN25");
+    assert_eq!(list[0]["problems"], json!([]));
+    // Pipe runs are removed like other routing objects.
+    let id = list[0]["pipe_runs"][0]["id"].as_u64().unwrap();
+    run(&mut s, "remove_routing_object", json!({ "enclosure": "+ROOM1", "id": id })).unwrap();
+    assert_eq!(run(&mut s, "list_rooms", json!({})).unwrap()[0]["pipe_runs"].as_array().unwrap().len(), 1);
+}

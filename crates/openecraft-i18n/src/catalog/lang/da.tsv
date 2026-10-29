@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Artikelnummer, f.eks. GEN.LMP-GN-24
 Part {} has no function with a symbol	Artiklen {} har ingen funktion med symbol
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikler kan kun slippes på sider, der kan ændres; denne er frigivet, låst eller genereret
+Floor mounting	Gulvmontage
+Only floor-standing parts	Kun gulvstående artikler
+Stands on the floor of a room	Står på gulvet i et rum
+FLOOR	GULV
+Stands on the floor of a room, like pumps, tanks and compressors	Står på gulvet i et rum, som pumper, tanke og kompressorer
+{} does not stand on the floor: choose a part marked for floor mounting	{} står ikke på gulvet: vælg en artikel, der er markeret til gulvmontage
+Mounting rails go on the walls and the ceiling	Monteringsskinner sidder på væggene og loftet
+{}: {} stands where {} stands	{}: {} står, hvor {} står
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} står ikke på gulvet, vælg en gulvstående artikel
+A pipe run turns at right angles	Et rørtracé drejer i rette vinkler
+{}: pipe run {} crosses an opening ({})	{}: rørtracéet {} krydser en åbning ({})
+not in the same line-up or room	ikke i samme sammenbygning eller rum
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} føres ind gennem taget: ingen kabelforskruning på tag, sider eller bagside
+Pipe run {} mm – double-click or Enter to finish	Rørtracé {} mm – dobbeltklik eller tryk på Enter for at afslutte
+Choose a room first: floor-standing parts go on its floor.	Vælg først et rum: gulvstående artikler står på dets gulv.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Ingen artikler er markeret til gulvmontage endnu. Markér en i artikelstyringen: artikeleditor › Monteringsdata › Gulvmontage.
+Floor-standing part	Gulvstående artikel
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Artikler markeret til gulvmontage (pumper, tanke, kompressorer): vælg en, og klik, hvor den skal stå på rummets gulv
+Pipe run	Rørtracé
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Rørtracé på en væg, loftet eller gulvet i rummet, langs hvilket slanger, rør og rørledninger føres: klik på hjørnerne, dobbeltklik eller Enter for at afslutte
+{}: drag to move it, a double-click shows the floor	{}: træk for at flytte, dobbeltklik viser gulvet
+10 · Pump room	10 · Pumperum
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Rummet med sammenbygningen og dens pumper: pumpemotorer forsynet gennem kabelforskruninger i skabenes tage, en pumpe og en tank på gulvet, kugleventiler og et manometer på væggen og vandkredsløbets DN25-rør ført i 3D langs et rørtracé på væggen.
+Room floor	Rummets gulv

@@ -36,6 +36,8 @@ pub enum Tool {
     RoutingPath,
     /// Routing reservation over the mounting plate: click two corners.
     Reservation,
+    /// Pipe run on a wall, the ceiling or the floor of a room: click the corners.
+    PipeRun,
     /// Walls of a room in its floor plan: click the corners.
     Walls,
     /// Door or window in a wall of a room: click where it goes.
@@ -53,6 +55,16 @@ impl Tool {
             Tool::Busbar => Some((ItemKind::Busbar, panel::BUSBAR_PART)),
             _ => None,
         }
+    }
+}
+
+/// The next corner of a line drawn at right angles: along the longer direction from
+/// the last one.
+fn ortho(last: Option<P>, q: P) -> P {
+    match last {
+        Some(l) if (q.x - l.x).abs() >= (q.y - l.y).abs() => p(q.x, l.y),
+        Some(l) => p(l.x, q.y),
+        None => q,
     }
 }
 
@@ -588,6 +600,9 @@ impl PanelUi {
     /// Tools of the face shown: no rails or busbars on the door, cable ducts only on its
     /// inside, cutouts from the front; no busbars on the walls.
     fn tool_allowed(&self, t: &Tool) -> bool {
+        if *t == Tool::PipeRun {
+            return self.in_room;
+        }
         // Routing paths and reservations are drawn over the mounting plate.
         if matches!(t, Tool::RoutingPath | Tool::Reservation) {
             return self.face == Face::Plate;
@@ -803,8 +818,12 @@ impl PanelUi {
                 let clicked = ui
                     .horizontal(|ui| {
                         let r = ui.selectable_label(active, text).on_hover_text(&d.part).clicked();
-                        if prj.parts.iter().chain(db.parts.iter()).find(|p| p.number == d.part).is_some_and(|p| p.wall_mountable()) {
+                        let part = prj.parts.iter().chain(db.parts.iter()).find(|p| p.number == d.part);
+                        if part.is_some_and(|p| p.wall_mountable()) {
                             openecraft_ui::part_editor::wall_badge(ui);
+                        }
+                        if part.is_some_and(|p| p.floor_standing()) {
+                            openecraft_ui::part_editor::floor_badge(ui);
                         }
                         r
                     })
@@ -2166,6 +2185,39 @@ impl PanelUi {
         self.status = tr("Room added: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties").to_string();
     }
 
+    /// Parts that stand on the floor of a room (pumps, tanks, …) of the parts database,
+    /// the project and the catalog, placed on the floor without a device tag.
+    pub fn floor_part_menu(&mut self, ui: &mut egui::Ui, prj: &Project, db: &PartsDb) {
+        if !self.in_room {
+            ui.weak(tr("Choose a room first: floor-standing parts go on its floor."));
+            return;
+        }
+        let mut list: Vec<&parts::Part> = Vec::new();
+        for p in db.parts.iter().chain(prj.parts.iter()).chain(parts::catalog()) {
+            if p.floor_standing() && !list.iter().any(|x| x.number == p.number) {
+                list.push(p);
+            }
+        }
+        list.sort_by(|a, b| a.manufacturer.cmp(&b.manufacturer).then(natural_cmp(&a.number, &b.number)));
+        egui::ScrollArea::vertical().max_height(420.0).show(ui, |ui| {
+            for p in &list {
+                let active = self.tool == Tool::Accessory(p.number.clone()) && self.face == Face::Bottom;
+                if ui.selectable_label(active, format!("{} – {}", p.number, p.description)).clicked() {
+                    self.front_face(Face::Bottom, false);
+                    self.set_tool(Tool::Accessory(p.number.clone()));
+                    ui.close();
+                }
+            }
+        });
+        if list.is_empty() {
+            ui.weak(tr("No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting."));
+            if ui.button(tr("Parts management")).clicked() {
+                self.open_parts = true;
+                ui.close();
+            }
+        }
+    }
+
     /// Parts made for direct wall mounting (inverters, charge controllers, …) of the
     /// parts database, the project and the catalog, placed without a device tag.
     pub fn wall_part_menu(&mut self, ui: &mut egui::Ui, prj: &Project, db: &PartsDb) {
@@ -2390,6 +2442,22 @@ impl PanelUi {
                     self.selected_object = Some(id);
                 }
             }
+            Tool::PipeRun => {
+                if let (true, Some(sn)) = (resp.clicked_by(PointerButton::Primary), snapped) {
+                    let q = ortho(self.path_points.last().copied(), sn);
+                    if self.path_points.last().is_none_or(|l| !l.same(q)) {
+                        self.path_points.push(q);
+                    }
+                }
+                let enter = !ui.ctx().egui_wants_keyboard_input() && ui.input(|i| i.key_pressed(Key::Enter));
+                if (resp.double_clicked() || enter) && self.path_points.len() >= 2 {
+                    let points = std::mem::take(&mut self.path_points);
+                    match panel::add_pipe_run(prj, ei, self.face, &points, None, None, None) {
+                        Ok(id) => self.selected_object = Some(id),
+                        Err(e) => self.status = e,
+                    }
+                }
+            }
             Tool::Reservation => {
                 if let (true, Some(sn)) = (resp.clicked_by(PointerButton::Primary), snapped) {
                     match self.start.take() {
@@ -2405,12 +2473,17 @@ impl PanelUi {
             Tool::PlaceDevice(tag) => {
                 if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plate) {
                     let size = panel::device_size(prj, &tag);
-                    let (w, h) = size.map(|s| (s.w, s.h)).unwrap_or((panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1));
+                    let on_floor = self.in_room && self.face == Face::Bottom;
+                    let (w, h) = size.map(|s| (s.w, if on_floor { s.d } else { s.h })).unwrap_or((panel::DEFAULT_DEVICE.0, panel::DEFAULT_DEVICE.1));
                     if let Some(id) = panel::place_device_on(prj, ei, &tag, p(q.x - w / 2.0, q.y - h / 2.0), self.face) {
                         self.select_item(id);
                         let e = &prj.layout.enclosures[ei];
-                        if e.item(id).is_some_and(|it| !panel::wall_mount_ok(prj, e, it)) {
-                            self.status = tr_fmt!("{} is not made for wall mounting: place it on a mounting rail", tag);
+                        if e.item(id).is_some_and(|it| !panel::mount_ok(prj, e, it)) {
+                            self.status = if on_floor {
+                                tr_fmt!("{} does not stand on the floor: choose a part marked for floor mounting", tag)
+                            } else {
+                                tr_fmt!("{} is not made for wall mounting: place it on a mounting rail", tag)
+                            };
                         }
                     }
                     // Continue with the next unplaced device.
@@ -2434,7 +2507,8 @@ impl PanelUi {
                         parts::ensure_in_project(prj, db, &part);
                     }
                     let probe = panel::new_accessory(prj, &part, self.face, p(0.0, 0.0));
-                    if let Some(id) = panel::place_accessory(prj, ei, &part, self.face, p(q.x - probe.w / 2.0, q.y - probe.h / 2.0)) {
+                    let h = if self.in_room && self.face == Face::Bottom { probe.d } else { probe.h };
+                    if let Some(id) = panel::place_accessory(prj, ei, &part, self.face, p(q.x - probe.w / 2.0, q.y - h / 2.0)) {
                         self.select_item(id);
                     }
                 }
@@ -2494,9 +2568,12 @@ impl PanelUi {
                 }
             }
         }
-        // Routing paths, reservations and the routed cables and tubes over the plate.
+        // Routing paths, reservations and the routed cables and tubes over the plate; the
+        // pipe runs of a room's face.
         if self.face == Face::Plate {
             self.draw_routing_2d(&painter, prj, an, ei, &to_screen);
+        } else if self.in_room {
+            self.draw_pipe_runs(&painter, prj, ei, &to_screen);
         }
         // Wires on the face shown: the routes on the plate, or on the door from the door
         // devices to the hinge.
@@ -2571,6 +2648,16 @@ impl PanelUi {
                 if !self.path_points.is_empty() {
                     let len: f32 = self.path_points.windows(2).map(|s| s[0].dist(s[1])).sum::<f32>() + self.path_points.last().map(|l| l.dist(sn)).unwrap_or(0.0);
                     self.status = tr_fmt!("Routing path {} mm – double-click or Enter to finish", format!("{len:.0}"));
+                }
+            }
+            (Tool::PipeRun, Some(sn), _) => {
+                let next = ortho(self.path_points.last().copied(), sn);
+                let mut pts: Vec<Pos2> = self.path_points.iter().map(|q| to_screen(*q)).collect();
+                pts.push(to_screen(next));
+                painter.add(Shape::line(pts, Stroke::new((panel::PIPE_RUN_WIDTH * self.zoom).max(2.0), routing_ui::PIPE_COLOR.gamma_multiply(0.4))));
+                if !self.path_points.is_empty() {
+                    let len: f32 = self.path_points.windows(2).map(|s| s[0].dist(s[1])).sum::<f32>() + self.path_points.last().map(|l| l.dist(next)).unwrap_or(0.0);
+                    self.status = tr_fmt!("Pipe run {} mm – double-click or Enter to finish", format!("{len:.0}"));
                 }
             }
             (Tool::Reservation, Some(sn), _) => {

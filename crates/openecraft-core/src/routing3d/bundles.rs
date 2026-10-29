@@ -43,22 +43,24 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
     // Edges between consecutive cells and the items along them.
     let mut edges: BTreeMap<(Key, Key), BTreeSet<usize>> = BTreeMap::new();
     for (i, it) in items.iter().enumerate().filter(|(_, it)| it.routed()) {
-        let mut keys: Vec<Key> = Vec::new();
-        for s in it.points.windows(2) {
-            let len = ((s[1][0] - s[0][0]).powi(2) + (s[1][1] - s[0][1]).powi(2) + (s[1][2] - s[0][2]).powi(2)).sqrt();
-            let steps = (len / (cell * 0.5)).ceil().max(1.0) as usize;
-            for k in 0..=steps {
-                let t = k as f32 / steps as f32;
-                let q = key([0, 1, 2].map(|j| s[0][j] + (s[1][j] - s[0][j]) * t));
-                if keys.last() != Some(&q) {
-                    keys.push(q);
+        for (_, points) in it.stretches() {
+            let mut keys: Vec<Key> = Vec::new();
+            for s in points.windows(2) {
+                let len = ((s[1][0] - s[0][0]).powi(2) + (s[1][1] - s[0][1]).powi(2) + (s[1][2] - s[0][2]).powi(2)).sqrt();
+                let steps = (len / (cell * 0.5)).ceil().max(1.0) as usize;
+                for k in 0..=steps {
+                    let t = k as f32 / steps as f32;
+                    let q = key([0, 1, 2].map(|j| s[0][j] + (s[1][j] - s[0][j]) * t));
+                    if keys.last() != Some(&q) {
+                        keys.push(q);
+                    }
                 }
             }
-        }
-        for w in keys.windows(2) {
-            // Only neighbours along one axis are edges (no jumps).
-            if (0..3).map(|j| (w[0][j] - w[1][j]).abs()).sum::<i32>() == 1 {
-                edges.entry((w[0].min(w[1]), w[0].max(w[1]))).or_default().insert(i);
+            for w in keys.windows(2) {
+                // Only neighbours along one axis are edges (no jumps).
+                if (0..3).map(|j| (w[0][j] - w[1][j]).abs()).sum::<i32>() == 1 {
+                    edges.entry((w[0].min(w[1]), w[0].max(w[1]))).or_default().insert(i);
+                }
             }
         }
     }

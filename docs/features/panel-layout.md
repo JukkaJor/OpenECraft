@@ -2,8 +2,9 @@
 
 Enclosures with their devices at real size in 2D and 3D (in the spirit of EPLAN Pro
 Panel), virtual wiring through the ducts, drilling and NC data, enclosure climate,
-line-ups, rooms of the building and 3D routing of cables and tubes. The example
-projects `conveyor`, `cabinet_lineup` and `electrical_room` show them.
+line-ups, rooms of the building with their floor-standing equipment and pipe runs,
+and 3D routing of cables, tubes and pipes. The example projects `conveyor`,
+`cabinet_lineup`, `electrical_room` and `pump_room` show them.
 
 ![The line-up of the cabinet_lineup example in 3D, door open, with rails, ducts, devices and routed wires](../images/panel-3d.png)
 
@@ -112,11 +113,23 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   *Wall mounting* (part editor › Mounting data, a `WALL` badge in the part trees, filter
   *Only parts for direct wall mounting*), then it goes directly on the wall
   (*Insert › Wall-mounted part*, also without a device tag).
+- The **floor** (face `floor`) carries the parts marked *Floor mounting* (pumps, tanks,
+  compressors; a `FLOOR` badge, filter *Only floor-standing parts*): *Insert ›
+  Floor-standing part*, devices to place on the floor's view, command `mount_on_wall`
+  with `face` `floor`. They are drawn in the floor plan, dragged there to move them and
+  removed with Del.
+- **Pipe runs** (*Layout space › Draw › Pipe run*, command `add_pipe_run`) are drawn on a
+  wall, the ceiling or the floor by clicking their corners (at right angles), 100 mm in
+  front of a wall, 300 mm below the ceiling or 200 mm above the floor unless set
+  otherwise: the hoses, tubes and pipes of the schematic are routed along them like
+  wires along cable ducts. The floor plan shows them dashed.
 
 The check reports devices on a wall that are neither, rails or devices over a door or
-window, items on the ceiling outside the floor plan, inner walls leaving the room,
-cabinets in the swing of a door or in an inner wall, and cabinets outside the room (or
-across a wall) or higher than its ceiling. Rooms have no climate calculation and no NC
+window, pipe runs across a door or window, items on the ceiling outside the floor plan,
+inner walls leaving the room, cabinets and floor-standing parts in the swing of a door
+or in an inner wall, floor-standing parts on the place of a cabinet or not made to
+stand on the floor, and cabinets and floor-standing parts outside the room (or across a
+wall), cabinets higher than its ceiling. Rooms have no climate calculation and no NC
 data.
 
 ![Floor plan of the electrical_room example: L-shaped room, inner wall, door, window and the two cabinets](../images/room.png)
@@ -129,6 +142,14 @@ segregation of the classes power, control, signal and fluid, routing reservation
 radii, cable bundles with their branches, shield terminations (shield clamp rail,
 pigtail) and their checks; routes can be frozen for production and stay as they are
 until they become invalid.
+
+In a room, routes run through its free space: around its walls, inner walls, the
+cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe
+runs. A route between a cabinet and a device in its room (or two cabinets of one room)
+runs in legs: through the cabinet to a cable gland on its roof, sides or rear (one of
+its own cabinet first, otherwise of the line-up; without one through the middle of the
+roof, which is reported), then through the room. Frozen, such a route keeps its legs.
+The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
 
 The routed panel is the input of the [wiring and mounting assistants](workshop.md) and of
 the 3D exports (glTF, STEP, IGES, IFC, JT, Parasolid; see

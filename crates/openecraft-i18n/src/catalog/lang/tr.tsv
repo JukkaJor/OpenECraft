@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Parça numarası, ör. GEN.LMP-GN-24
 Part {} has no function with a symbol	{} parçasının sembollü işlevi yok
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Parçalar yalnızca değiştirilebilen sayfalara bırakılabilir; bu sayfa yayınlanmış, kilitli veya oluşturulmuş
+Floor mounting	Zemine montaj
+Only floor-standing parts	Yalnızca zemine konan parçalar
+Stands on the floor of a room	Bir odanın zemininde durur
+FLOOR	ZEMİN
+Stands on the floor of a room, like pumps, tanks and compressors	Pompalar, tanklar ve kompresörler gibi bir odanın zemininde durur
+{} does not stand on the floor: choose a part marked for floor mounting	{} zemine konmaz: zemine montaj için işaretlenmiş bir parça seçin
+Mounting rails go on the walls and the ceiling	Montaj rayları duvarlara ve tavana takılır
+{}: {} stands where {} stands	{}: {}, {} ile aynı yerde duruyor
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} zemine konmaz, zemine konan bir parça seçin
+A pipe run turns at right angles	Bir boru güzergâhı dik açıyla döner
+{}: pipe run {} crosses an opening ({})	{}: boru güzergâhı {} bir açıklığı kesiyor ({})
+not in the same line-up or room	aynı dizilimde veya odada değil
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} tavandan giriyor: tavanda, yanlarda veya arkada kablo rakoru yok
+Pipe run {} mm – double-click or Enter to finish	Boru güzergâhı {} mm – bitirmek için çift tıklayın veya Enter'a basın
+Choose a room first: floor-standing parts go on its floor.	Önce bir oda seçin: zemine konan parçalar onun zeminine yerleştirilir.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Henüz zemine montaj için işaretlenmiş parça yok. Parça yönetiminde bir parça işaretleyin: parça düzenleyici › Montaj verileri › Zemine montaj.
+Floor-standing part	Zemine konan parça
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Zemine montaj için işaretlenmiş parçalar (pompalar, tanklar, kompresörler): birini seçin, ardından odanın zemininde duracağı yere tıklayın
+Pipe run	Boru güzergâhı
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Odanın duvarında, tavanında veya zemininde, hortumların, boruların ve boru hatlarının boyunca döşendiği boru güzergâhı: köşelere tıklayın, bitirmek için çift tıklayın veya Enter'a basın
+{}: drag to move it, a double-click shows the floor	{}: taşımak için sürükleyin, çift tıklama zemini gösterir
+10 · Pump room	10 · Pompa odası
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Pano dizilimi ve pompalarıyla oda: panoların tavanlarındaki kablo rakorlarından beslenen pompa motorları, zeminde duran bir pompa ve tank, duvarda küresel vanalar ve bir manometre, ve duvardaki boru güzergâhı boyunca 3D olarak döşenen su devresinin DN25 boruları.
+Room floor	Oda zemini
