@@ -34,6 +34,9 @@ pub struct Browser {
     /// Parts marked for adding.
     pub marked: BTreeSet<String>,
     pub history: Option<(String, Vec<HistoryEntry>)>,
+    /// The whole part shown in the details (with its 2D and 3D models), by number;
+    /// `None` inside: the server does not have it.
+    pub detail: Option<(String, Option<Part>)>,
     pub favorites: Vec<String>,
     pub only_favorites: bool,
     /// Result of the last update check and the server versions it compared with.
@@ -164,6 +167,24 @@ impl Browser {
         self.result.as_ref()?.parts.iter().find(|p| &p.number == n)
     }
 
+    /// The whole selected part, once it arrived.
+    pub fn selected_detail(&self) -> Option<&Part> {
+        match &self.detail {
+            Some((n, p)) if self.selected.as_ref() == Some(n) => p.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// The selected part whose whole data is still to be loaded; marks it as asked for.
+    pub fn detail_due(&mut self) -> Option<String> {
+        let n = self.selected.clone()?;
+        if self.detail.as_ref().is_some_and(|(d, _)| *d == n) || self.selected_part().is_none() {
+            return None;
+        }
+        self.detail = Some((n.clone(), None));
+        Some(n)
+    }
+
     /// Takes a server reply. `local`: the parts an update check compares with.
     pub fn apply(&mut self, reply: &Reply, local: &[Part]) {
         match reply {
@@ -175,6 +196,7 @@ impl Browser {
                 self.result = Some(r.clone());
             }
             Reply::History(number, Ok(h)) => self.history = Some((number.clone(), h.clone())),
+            Reply::Detail(number, Ok(p)) if self.detail.as_ref().is_some_and(|(n, _)| n == number) => self.detail = Some((number.clone(), p.as_deref().cloned())),
             Reply::Favorites(Ok(f)) => {
                 self.favorites = f.clone();
                 if self.only_favorites {
@@ -431,10 +453,15 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
         ui.vertical(|ui| {
             ui.set_min_width(260.0);
             egui::ScrollArea::vertical().id_salt("portal_detail").auto_shrink([false, false]).max_height(h).show(ui, |ui| {
-                let Some(p) = b.selected_part().cloned() else {
+                let Some(brief) = b.selected_part().cloned() else {
                     ui.weak(tr("Select a part to see its details."));
                     return;
                 };
+                if let Some(n) = b.detail_due() {
+                    client.detail(&ctx, &n);
+                }
+                let full = b.selected_detail().cloned();
+                let p = full.clone().unwrap_or(brief);
                 part_summary(ui, &p);
                 ui.horizontal_wrapped(|ui| {
                     if !p.catalog.is_empty() {
@@ -465,6 +492,19 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         }
                     }
                 });
+                if let Some(full) = full.filter(|f| f.model_2d.is_some() || f.model_3d.is_some()) {
+                    ui.add_space(6.0);
+                    ui.strong(tr("Graphics"));
+                    let size = egui::vec2((ui.available_width() - 8.0).clamp(160.0, 320.0), 170.0);
+                    ui.horizontal_wrapped(|ui| {
+                        if let Some(m) = &full.model_2d {
+                            crate::part_editor::model_2d_preview(ui, Some(m), size);
+                        }
+                        if let Some(m) = &full.model_3d {
+                            crate::part_editor::mesh_preview(ui, m, size);
+                        }
+                    });
+                }
                 if !p.attachments.is_empty() {
                     ui.add_space(6.0);
                     ui.strong(tr("Files"));

@@ -5,8 +5,12 @@ The data portal shared by all OpenECraft installations and the app that maintain
 `openecraft-parts-server` is the data portal of all OpenECraft installations (desktop
 and web), in the spirit of the EPLAN Data Portal: manufacturer catalogs with a faceted
 search, part history and lifecycle, files of the parts (datasheets, images, models,
-macros), user accounts with roles and a web page for browsing. It is a separate
-executable and runs independently of the editor.
+macros), user accounts with roles and a web page for browsing. The details of a part
+show its 2D front view and its 3D model (turned by dragging) where it has them; the
+parts of the example catalog all have both when their dimensions are known, generated
+from the dimensions (devices, terminals, PLC modules, rails, ducts, busbar systems,
+enclosures and their components, accessories). It is a separate executable and runs
+independently of the editor.
 
 ```bash
 cargo run --release -p openecraft-parts-server -- --bind 0.0.0.0:8090 --token <secret>
@@ -85,8 +89,8 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
   `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
   `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.
-- In the editor: *Master data › Data portal* – search the server, add parts to the local
-  database, save their files, add their macros to the macro library and check the
+- In the editor: *Master data › Data portal* – search the server, see the details with
+  the front view and the 3D model, add parts to the local database, save their files, add their macros to the macro library and check the
   database for newer versions, phased out and discontinued parts. *Devices › Parts
   management › 🌐 Parts server* downloads all parts or uploads parts. The project check
   warns about devices with discontinued parts; `use_successor_parts` changes them over.

@@ -27,8 +27,8 @@ fn generated_models_match_mounting_data() {
                 assert!(m3.triangles.iter().flatten().all(|&i| (i as usize) < m3.vertices.len()));
             }
             (None, None) => {
-                // Mounting material and parts without dimensions have no model.
-                assert!(p.group == "Mounting" || p.width == 0.0 || p.depth == 0.0, "{} has no model", p.number);
+                // Only parts without dimensions have no model.
+                assert!(p.width == 0.0 || p.height == 0.0 || p.depth == 0.0, "{} has no model", p.number);
             }
             _ => panic!("{}: only one of the models", p.number),
         }
@@ -49,4 +49,30 @@ fn generated_models_keep_existing_models() {
     let mut none = Part { number: "X.2".into(), ..Default::default() };
     add_generated_models(&mut none);
     assert!(none.model_2d.is_none());
+}
+
+#[test]
+fn mounting_material_has_models_in_proportion() {
+    let parts = default_catalog();
+    let mounting: Vec<&Part> = parts.iter().filter(|p| p.group == "Mounting" && p.width > 0.0 && p.height > 0.0 && p.depth > 0.0).collect();
+    assert!(mounting.len() > 60, "{}", mounting.len());
+    for p in mounting {
+        let (m2, m3) = (p.model_2d.as_ref().unwrap(), p.model_3d.as_ref().unwrap());
+        // Small enough to be sent with every part and drawn at once.
+        assert!(m3.triangles.len() <= 600 && m2.prims.len() <= 400, "{}: {} triangles, {} lines", p.number, m3.triangles.len(), m2.prims.len());
+        let inside = |q: [f32; 2]| (-0.01..=p.width + 0.01).contains(&q[0]) && (-0.01..=p.height + 0.01).contains(&q[1]);
+        for prim in &m2.prims {
+            let ok = match prim {
+                Prim2d::Line { a, b } => inside(*a) && inside(*b),
+                Prim2d::Rect { min, max, .. } => inside(*min) && inside(*max) && min[0] <= max[0] && min[1] <= max[1],
+                Prim2d::Circle { c, r, .. } => inside([c[0] - r, c[1] - r]) && inside([c[0] + r, c[1] + r]),
+                Prim2d::Polyline { pts, .. } => pts.iter().all(|q| inside(*q)),
+                Prim2d::Text { .. } => true,
+            };
+            assert!(ok, "{}: {prim:?} outside {} x {}", p.number, p.width, p.height);
+        }
+    }
+    // The shapes differ: a duct is no rail.
+    let tris = |n: &str| parts.iter().find(|p| p.number == n).and_then(|p| p.model_3d.as_ref()).map(|m| m.triangles.len());
+    assert_ne!(tris("GEN.RAIL-TS35-1M"), tris("GEN.DUCT-40X60"));
 }

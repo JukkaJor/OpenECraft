@@ -412,8 +412,8 @@ Breaking capacity: 100 kA".into();
     parts
 }
 
-/// Gives a part without models a simple 2D front view and 3D model of its mounting
-/// dimensions (nothing for parts without dimensions and mounting material).
+/// Gives a part without models a simple 2D front view and 3D model of its dimensions
+/// (nothing for parts without dimensions).
 pub fn add_generated_models(p: &mut Part) {
     if p.model_2d.is_some() || p.model_3d.is_some() {
         return;
@@ -531,6 +531,9 @@ fn shape_of(p: &Part) -> Option<Shape> {
 
 /// Simple 2D front view and 3D model with exactly the part's mounting dimensions.
 fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
+    if p.group == "Mounting" {
+        return mounting::model(p);
+    }
     let shape = shape_of(p)?;
     let (w, h, d) = (p.width, p.height, p.depth);
     let mut m3 = Mesh3d::default();
@@ -601,6 +604,8 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     }
     Some((Model2d { width: w, height: h, prims }, m3))
 }
+
+mod mounting;
 
 #[cfg(test)]
 mod tests;

@@ -27,6 +27,9 @@ pub enum Reply {
     Versions(Result<SearchResult, String>),
     /// Part number and its changes.
     History(String, Result<Vec<HistoryEntry>, String>),
+    /// Part number and the whole part (with its models) for the details of the data
+    /// portal; `None` if the server does not know it.
+    Detail(String, Result<Option<Box<Part>>, String>),
     Catalogs(Result<Vec<Catalog>, String>),
     CatalogSaved(Result<Catalog, String>),
     CatalogDeleted(String, Result<(), String>),
@@ -60,6 +63,7 @@ impl Reply {
             | Reply::Search(Err(e))
             | Reply::Versions(Err(e))
             | Reply::History(_, Err(e))
+            | Reply::Detail(_, Err(e))
             | Reply::Catalogs(Err(e))
             | Reply::CatalogSaved(Err(e))
             | Reply::CatalogDeleted(_, Err(e))
@@ -316,6 +320,15 @@ impl ServerClient {
         self.send(ctx, call, tr("Loading the history…").into(), move |r| Reply::History(n, r));
     }
 
+    /// The whole part with its models, for the details (the search sends parts without
+    /// them); the status line stays.
+    pub fn detail(&mut self, ctx: &egui::Context, number: &str) {
+        let call = self.connection().part(number);
+        let n = number.to_string();
+        let status = self.status.clone();
+        self.send(ctx, Ok(call), status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
+    }
+
     /// Stores a file with a part.
     pub fn attach(&mut self, ctx: &egui::Context, number: &str, name: &str, kind: Option<AttachmentKind>, data: Vec<u8>) {
         let call = self.server(|e| e.attach(number, name, kind, data), decode);
@@ -416,8 +429,10 @@ impl ServerClient {
                 }
                 _ => {}
             }
-            self.status = reply.describe();
-            self.failed = reply.error().is_some();
+            if !matches!(reply, Reply::Detail(_, Ok(_))) {
+                self.status = reply.describe();
+                self.failed = reply.error().is_some();
+            }
         }
         replies
     }

@@ -893,29 +893,119 @@ pub fn mesh_preview(ui: &mut egui::Ui, mesh: &Mesh3d, size: egui::Vec2) {
     let scale = size.x.min(size.y) * 0.45 / radius;
     let center = resp.rect.center();
     let light = norm([0.35, 0.75, 0.55]);
-    let mut tris: Vec<(f32, [Pos2; 3], Color32)> = Vec::new();
-    for t in &mesh.triangles {
+    // Painted back to front (depth: distance along `fwd`, larger is farther): small
+    // pieces keep large faces from covering what is in front of them, nearer faces
+    // are a little lighter, and the sharp edges are drawn over their faces.
+    let limit = radius * 0.12;
+    let depth_of = |q: [f32; 3]| dot(sub(q, c), fwd);
+    let screen = |q: [f32; 3]| {
+        let d = sub(q, c);
+        center + vec2(dot(d, right), -dot(d, up)) * scale
+    };
+    let normals: Vec<[f32; 3]> = mesh.triangles.iter().map(|t| {
         let v = t.map(|i| mesh.vertices[i as usize]);
-        let n = norm(cross(sub(v[1], v[0]), sub(v[2], v[0])));
-        if dot(n, view) <= 0.0 {
+        norm(cross(sub(v[1], v[0]), sub(v[2], v[0])))
+    }).collect();
+    let facing: Vec<bool> = normals.iter().map(|n| dot(*n, view) > 1e-6).collect();
+    let mut items: Vec<(f32, [Pos2; 3], Option<Color32>)> = Vec::new();
+    let mut pieces = Vec::new();
+    for (k, t) in mesh.triangles.iter().enumerate() {
+        if !facing[k] {
             continue;
         }
-        let pts = v.map(|q| {
-            let d = sub(q, c);
-            center + vec2(dot(d, right), -dot(d, up)) * scale
-        });
-        let depth = v.iter().map(|q| dot(sub(*q, c), fwd)).sum::<f32>();
-        let shade = 0.5 + 0.5 * dot(n, light).max(0.0);
-        let g = (190.0 * shade) as u8;
-        tris.push((depth, pts, Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14))));
+        let shade = 0.5 + 0.5 * dot(normals[k], light).max(0.0);
+        pieces.clear();
+        split_triangle(t.map(|i| mesh.vertices[i as usize]), limit, &mut pieces);
+        for v in &pieces {
+            let depth = v.iter().map(|q| depth_of(*q)).sum::<f32>() / 3.0;
+            let g = (180.0 * shade + 14.0 * (0.5 - depth / (2.0 * radius))).clamp(0.0, 240.0) as u8;
+            items.push((depth, v.map(screen), Some(Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14)))));
+        }
     }
-    tris.sort_by(|a, b| b.0.total_cmp(&a.0));
-    for (_, pts, color) in tris {
-        painter.add(crate::faces::face(pts.to_vec(), color, Stroke::new(0.5, color)));
+    for (a, b, faces) in sharp_edges(mesh, &normals) {
+        if !faces.iter().any(|&f| facing[f]) {
+            continue;
+        }
+        let n = ((dot(sub(a, b), sub(a, b)).sqrt() / limit).ceil() as usize).clamp(1, 64);
+        for i in 0..n {
+            let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
+            let (p, q) = (at(i as f32 / n as f32), at((i + 1) as f32 / n as f32));
+            let (sp, sq) = (screen(p), screen(q));
+            items.push(((depth_of(p) + depth_of(q)) / 2.0 - limit * 0.6, [sp, sq, sq], None));
+        }
     }
+    items.sort_by(|a, b| b.0.total_cmp(&a.0));
+    let ink = if dark { Color32::from_rgba_unmultiplied(10, 12, 16, 220) } else { Color32::from_rgba_unmultiplied(40, 46, 58, 200) };
+    // One mesh without feathering: the pieces of a face meet without seams; edges are
+    // thin quads in the same order.
+    let mut out = egui::Mesh::default();
+    for (_, pts, color) in items {
+        let base = out.vertices.len() as u32;
+        match color {
+            Some(color) => {
+                for q in pts {
+                    out.colored_vertex(q, color);
+                }
+                out.add_triangle(base, base + 1, base + 2);
+            }
+            None if (pts[1] - pts[0]).length() > 1e-3 => {
+                let d = pts[1] - pts[0];
+                let n = vec2(-d.y, d.x).normalized() * 0.6;
+                for q in [pts[0] - n, pts[0] + n, pts[1] + n, pts[1] - n] {
+                    out.colored_vertex(q, ink);
+                }
+                out.add_triangle(base, base + 1, base + 2);
+                out.add_triangle(base, base + 2, base + 3);
+            }
+            None => {}
+        }
+    }
+    painter.add(Shape::mesh(out));
     if resp.hovered() {
-        painter.text(resp.rect.left_bottom() + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, "drag to rotate", egui::FontId::proportional(10.0), Color32::GRAY);
+        painter.text(resp.rect.left_bottom() + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, tr("Drag to turn the model"), egui::FontId::proportional(10.0), Color32::GRAY);
     }
+}
+
+/// An edge of a mesh: both ends and the triangles it belongs to.
+type Edge = ([f32; 3], [f32; 3], Vec<usize>);
+
+/// Sharp edges of a mesh with the triangles they belong to: at the border or between
+/// faces at more than 20°, found by position so that meshes without shared vertices
+/// (STL) work too; none for very large meshes.
+fn sharp_edges(mesh: &Mesh3d, normals: &[[f32; 3]]) -> Vec<Edge> {
+    if mesh.triangles.len() > 20_000 {
+        return Vec::new();
+    }
+    let key = |v: [f32; 3]| v.map(|x| (x * 100.0).round() as i64);
+    let mut edges: std::collections::HashMap<([i64; 3], [i64; 3]), Edge> = std::collections::HashMap::new();
+    for (k, t) in mesh.triangles.iter().enumerate() {
+        for (i, j) in [(t[0], t[1]), (t[1], t[2]), (t[2], t[0])] {
+            let (a, b) = (mesh.vertices[i as usize], mesh.vertices[j as usize]);
+            let (ka, kb) = (key(a), key(b));
+            let id = if ka < kb { (ka, kb) } else { (kb, ka) };
+            edges.entry(id).or_insert_with(|| (a, b, Vec::new())).2.push(k);
+        }
+    }
+    edges.into_values().filter(|(_, _, f)| f.len() != 2 || dot(normals[f[0]], normals[f[1]]) < 0.94).collect()
+}
+
+/// Splits a triangle at the middle of its longest edge until no edge is longer than
+/// `limit` (at most 64 pieces).
+fn split_triangle(v: [[f32; 3]; 3], limit: f32, out: &mut Vec<[[f32; 3]; 3]>) {
+    fn go(v: [[f32; 3]; 3], limit: f32, depth: u32, out: &mut Vec<[[f32; 3]; 3]>) {
+        let len = |a: [f32; 3], b: [f32; 3]| dot(sub(a, b), sub(a, b));
+        let edges = [len(v[0], v[1]), len(v[1], v[2]), len(v[2], v[0])];
+        let k = (0..3).max_by(|&a, &b| edges[a].total_cmp(&edges[b])).unwrap_or(0);
+        if depth >= 6 || edges[k] <= limit * limit {
+            out.push(v);
+            return;
+        }
+        let (a, b, c) = (v[k], v[(k + 1) % 3], v[(k + 2) % 3]);
+        let m = [0, 1, 2].map(|i| (a[i] + b[i]) / 2.0);
+        go([a, m, c], limit, depth + 1, out);
+        go([m, b, c], limit, depth + 1, out);
+    }
+    go(v, limit, 0, out);
 }
 
 /// The quantity unit as shown: the default unit (pieces) in the user's language.
