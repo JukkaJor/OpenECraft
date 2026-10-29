@@ -128,3 +128,26 @@ fn the_details_load_the_whole_part_once() {
     assert!(b.selected_detail().is_none());
     assert_eq!(b.detail_due().as_deref(), Some("B"));
 }
+
+#[test]
+fn the_browser_fits_its_window_instead_of_growing_it() {
+    // A window of the size the user left it, with the update list under the buttons:
+    // the columns take the height left, so the window keeps its size frame by frame.
+    let ctx = egui::Context::default();
+    let mut b = Browser { result: Some(result(2, &["A.1", "A.2"])), ..Default::default() };
+    b.updates = Some((0..8).map(|i| PartUpdate { number: format!("U.{i}"), kind: UpdateKind::Changed, revision: 2, successor: String::new() }).collect());
+    let mut client = ServerClient::default();
+    let mut heights = Vec::new();
+    for _ in 0..6 {
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1600.0, 1200.0))), ..Default::default() };
+        let mut out = ctx.run_ui(input, |ui| {
+            let r = egui::Window::new("portal").default_size([900.0, 420.0]).max_size([1500.0, 1100.0]).show(ui.ctx(), |ui| {
+                browser(ui, &mut b, &mut client, &[]);
+            });
+            heights.push(r.map(|r| r.response.rect.height()).unwrap_or_default());
+        });
+        out.textures_delta.clear();
+    }
+    let (first, last) = (heights[1], *heights.last().unwrap());
+    assert!(last <= first + 1.0, "the window grew: {heights:?}");
+}
