@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Numer artykułu, np. GEN.LMP-GN-24
 Part {} has no function with a symbol	Artykuł {} nie ma funkcji z symbolem
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artykuły można upuszczać tylko na strony, które można zmieniać; ta jest zwolniona, zablokowana lub wygenerowana
+Floor mounting	Montaż na podłodze
+Only floor-standing parts	Tylko artykuły stojące na podłodze
+Stands on the floor of a room	Stoi na podłodze pomieszczenia
+FLOOR	PODŁOGA
+Stands on the floor of a room, like pumps, tanks and compressors	Stoi na podłodze pomieszczenia, jak pompy, zbiorniki i sprężarki
+{} does not stand on the floor: choose a part marked for floor mounting	{} nie stoi na podłodze: wybierz artykuł oznaczony do montażu na podłodze
+Mounting rails go on the walls and the ceiling	Szyny montażowe montuje się na ścianach i suficie
+{}: {} stands where {} stands	{}: {} stoi tam, gdzie stoi {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} nie stoi na podłodze, wybierz artykuł stojący na podłodze
+A pipe run turns at right angles	Trasa rurociągu skręca pod kątem prostym
+{}: pipe run {} crosses an opening ({})	{}: trasa rurociągu {} przecina otwór ({})
+not in the same line-up or room	nie w tym samym szeregu ani pomieszczeniu
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} wchodzi przez dach: brak dławika kablowego na dachu, bokach lub tylnej ścianie
+Pipe run {} mm – double-click or Enter to finish	Trasa rurociągu {} mm – dwukrotne kliknięcie lub Enter kończy
+Choose a room first: floor-standing parts go on its floor.	Najpierw wybierz pomieszczenie: artykuły stojące na podłodze stawia się na jego podłodze.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Brak artykułów oznaczonych do montażu na podłodze. Oznacz artykuł w zarządzaniu artykułami: edytor artykułów › Dane montażowe › Montaż na podłodze.
+Floor-standing part	Artykuł stojący na podłodze
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Artykuły oznaczone do montażu na podłodze (pompy, zbiorniki, sprężarki): wybierz jeden, a następnie kliknij miejsce na podłodze pomieszczenia
+Pipe run	Trasa rurociągu
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Trasa rurociągu na ścianie, suficie lub podłodze pomieszczenia, wzdłuż której prowadzi się węże, rurki i rury: kliknij narożniki, dwukrotne kliknięcie lub Enter kończy
+{}: drag to move it, a double-click shows the floor	{}: przeciągnij, aby przesunąć, dwuklik pokazuje podłogę
+10 · Pump room	10 · Pompownia
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Pomieszczenie szeregu szaf z pompami: silniki pomp zasilane przez dławiki kablowe w dachach szaf, pompa i zbiornik stojące na podłodze, zawory kulowe i manometr na ścianie oraz rury DN25 obiegu wody prowadzone w 3D wzdłuż trasy rurociągu na ścianie.
+Room floor	Podłoga pomieszczenia

@@ -11,11 +11,14 @@ use serde_json::{json, Value};
 pub use crate::model::manufacturing::{Job, Program, ProgramRef};
 
 /// The programs of an enclosure: one per face with machining, and one for its copper
-/// bars and busbar systems.
+/// bars and busbar systems; none for a room (rooms are not machined).
 pub fn programs(prj: &Project, enc: usize) -> Result<Vec<Program>, String> {
     let mf = &prj.layout.manufacturing;
     let e = &prj.layout.enclosures[enc];
     let mut v = Vec::new();
+    if e.is_room() {
+        return Ok(v);
+    }
     for face in Face::ALL {
         if crate::production::holes_on(e, &prj.parts, face).is_empty() && crate::production::openings(e, &prj.parts, face).is_empty() {
             continue;

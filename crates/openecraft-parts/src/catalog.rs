@@ -314,6 +314,24 @@ Breaking capacity: 100 kA".into();
     c.add("GEN.PUMP-HYD-4CC", "Hydraulic gear pump 4 cm³/rev, 200 bar", fl, "Pump", "GP", 190.0, (0.0, 0.0, 0.0, 1.8), &[(Pump, "P S")]);
     c.add("GEN.FR-G14", "Filter regulator G1/4, 5 µm, 0.5 - 10 bar", fl, "Service unit", "HQ", 54.0, (45.0, 160.0, 70.0, 0.4), &[(FluidComponent, "1 2")]);
     c.add("GEN.THROTTLE-G18", "One-way flow control valve G1/8", fl, "Service unit", "RN", 12.0, (0.0, 0.0, 0.0, 0.05), &[(FluidComponent, "1 2")]);
+    // Standing on the floor of a room (Layout space › Insert › Floor-standing part).
+    for (number, desc, subgroup, ident, price, dims, function) in [
+        ("GEN.PUMP-CENT-DN25", "Centrifugal pump DN25, 2.2 kW, on base frame", "Pump", "GP", 980.0, (320.0, 420.0, 640.0, 38.0), (Pump, "S P")),
+        ("GEN.TANK-200L", "Vessel 200 l, stainless steel, on feet", "Vessel", "CM", 1450.0, (650.0, 1200.0, 650.0, 62.0), (FluidComponent, "N1 N2")),
+    ] {
+        let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[function]);
+        p.mounting = "Floor".into();
+        p.mounting_data.floor_mount = true;
+    }
+    // Pipe fittings screwed to the wall of a room.
+    for (number, desc, subgroup, ident, price, dims, pins) in [
+        ("GEN.VLV-BALL-DN25", "Ball valve DN25, PN40, with wall bracket", "Shut-off valve", "QM", 64.0, (160.0, 120.0, 140.0, 1.4), "1 2"),
+        ("GEN.GAUGE-0-10BAR", "Pressure gauge 0 - 10 bar, Ø 100 mm, with wall bracket", "Pressure gauge", "BP", 38.0, (110.0, 140.0, 70.0, 0.4), "1"),
+    ] {
+        let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[(FluidComponent, pins)]);
+        p.mounting = "Wall".into();
+        p.mounting_data.wall_mount = true;
+    }
 
     c.add("GEN.RES-1K", "Resistor 1 kΩ 0.6 W", "Passive components", "Resistor", "R", 0.1, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);
     c.add("GEN.CAP-100N", "Capacitor 100 nF 63 V", "Passive components", "Capacitor", "C", 0.15, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);

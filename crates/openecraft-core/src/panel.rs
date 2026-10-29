@@ -37,9 +37,10 @@ pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
 pub use rooms::{
-    add_inner_wall, add_opening, add_wall_profile, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, footprint, inside_outline, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
-    room_of, room_place, rooms, set_outline, turned_place, set_room, stands_inside, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
+    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    room_of, room_place, rooms, set_outline, turned_place, set_room, stand_on_floor, stands_inside, wall_length_set, walls, Wall, MIN_WALL, ROOM_WALL,
 };
+pub(crate) use rooms::inner_footprint;
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
 pub use crate::model::panel::{Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem};
 
@@ -850,6 +851,7 @@ pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Fa
         ..Default::default()
     };
     let e = prj.layout.enclosures.get_mut(enc)?;
+    stand_on_floor(e, &mut item);
     snap_to_rail(e, &mut item);
     e.items.push(item);
     Some(id)
@@ -882,7 +884,8 @@ pub fn new_accessory(prj: &mut Project, part: &str, face: Face, at: P) -> PanelI
 /// Places an accessory on a face of an enclosure.
 pub fn place_accessory(prj: &mut Project, enc: usize, part: &str, face: Face, at: P) -> Option<u64> {
     prj.layout.enclosures.get(enc)?;
-    let item = new_accessory(prj, part, face, at);
+    let mut item = new_accessory(prj, part, face, at);
+    stand_on_floor(&prj.layout.enclosures[enc], &mut item);
     let id = item.id;
     prj.layout.enclosures[enc].items.push(item);
     Some(id)

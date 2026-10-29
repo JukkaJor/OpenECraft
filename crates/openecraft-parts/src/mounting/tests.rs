@@ -95,3 +95,22 @@ fn wall_mounting_is_a_typed_flag() {
     assert!(Part { mounting: "Wall mounting".into(), ..Default::default() }.wall_mountable());
     assert!(!Part::default().wall_mountable());
 }
+
+#[test]
+fn floor_mounting_is_a_typed_flag() {
+    let mut m = MountingData::default();
+    assert!(m.set("Floor mounting", "yes"));
+    assert!(m.floor_mount && !m.wall_mount);
+    assert_eq!(m.get("Floor mounting").as_deref(), Some("yes"));
+    let json = serde_json::to_string(&m).unwrap();
+    assert_eq!(json, "{\"floor_mount\":true}");
+    assert_eq!(serde_json::from_str::<MountingData>(&json).unwrap(), m);
+    assert!(m.set("Floor mounting", "no"));
+    assert!(m.is_empty());
+    let mut p = Part { tech_data: "Floor mounting: yes".into(), ..Default::default() };
+    assert!(p.floor_standing(), "from the technical data");
+    assert_eq!(p.migrate_tech_data(), 1);
+    assert!(p.mounting_data.floor_mount && p.tech_data.is_empty());
+    assert!(Part { mounting: "Floor".into(), ..Default::default() }.floor_standing());
+    assert!(!Part::default().floor_standing());
+}

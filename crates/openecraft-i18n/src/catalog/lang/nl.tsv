@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Artikelnummer, bijv. GEN.LMP-GN-24
 Part {} has no function with a symbol	Artikel {} heeft geen functie met symbool
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikelen kunnen alleen op wijzigbare pagina's worden neergezet; deze is vrijgegeven, vergrendeld of gegenereerd
+Floor mounting	Vloermontage
+Only floor-standing parts	Alleen vloerstaande artikelen
+Stands on the floor of a room	Staat op de vloer van een ruimte
+FLOOR	VLOER
+Stands on the floor of a room, like pumps, tanks and compressors	Staat op de vloer van een ruimte, zoals pompen, tanks en compressoren
+{} does not stand on the floor: choose a part marked for floor mounting	{} staat niet op de vloer: kies een artikel dat voor vloermontage is gemarkeerd
+Mounting rails go on the walls and the ceiling	Montagerails horen op de wanden en het plafond
+{}: {} stands where {} stands	{}: {} staat waar {} staat
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} staat niet op de vloer, kies een vloerstaand artikel
+A pipe run turns at right angles	Een leidingtracé buigt haaks af
+{}: pipe run {} crosses an opening ({})	{}: leidingtracé {} kruist een opening ({})
+not in the same line-up or room	niet in dezelfde koppeling of ruimte
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} komt binnen via het dak: geen kabelwartel op dak, zijkanten of achterwand
+Pipe run {} mm – double-click or Enter to finish	Leidingtracé {} mm – dubbelklik of druk op Enter om te voltooien
+Choose a room first: floor-standing parts go on its floor.	Kies eerst een ruimte: vloerstaande artikelen komen op de vloer.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Nog geen artikelen gemarkeerd voor vloermontage. Markeer er een in het artikelbeheer: artikeleditor › Montagegegevens › Vloermontage.
+Floor-standing part	Vloerstaand artikel
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Artikelen gemarkeerd voor vloermontage (pompen, tanks, compressoren): kies er een en klik waar het op de vloer van de ruimte staat
+Pipe run	Leidingtracé
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Leidingtracé op een wand, het plafond of de vloer van de ruimte, waarlangs slangen, buizen en leidingen worden gelegd: klik de hoekpunten, dubbelklik of druk op Enter om te voltooien
+{}: drag to move it, a double-click shows the floor	{}: slepen om te verplaatsen, dubbelklik toont de vloer
+10 · Pump room	10 · Pompruimte
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	De ruimte van de koppeling met de pompen: pompmotoren gevoed via kabelwartels in de daken van de kasten, een pomp en een tank op de vloer, kogelkranen en een manometer aan de wand, en de DN25-leidingen van het watercircuit in 3D gelegd langs een leidingtracé aan de wand.
+Room floor	Vloer van de ruimte

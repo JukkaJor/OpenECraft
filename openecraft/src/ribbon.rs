@@ -265,11 +265,11 @@ pub static TABS: &[Tab] = &[
         context: true,
         groups: &[
             g("enclosures", tr_const!("Enclosures"), &[L(C::NewEnclosure), S(C::NewRoom), S(C::LayoutSpaces), S(C::LayoutProperties)]),
-            g("place", tr_const!("Insert"), &[L(C::LayoutSelect), S(C::LayoutAccessory), S(C::LayoutWallPart), S(C::Layout3dMacro)]),
+            g("place", tr_const!("Insert"), &[L(C::LayoutSelect), S(C::LayoutAccessory), S(C::LayoutWallPart), S(C::LayoutFloorPart), S(C::Layout3dMacro)]),
             g(
                 "draw",
                 tr_const!("Draw"),
-                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation), S(C::LayoutDrawWalls), S(C::LayoutInnerWalls), S(C::LayoutRoomDoor), S(C::LayoutRoomWindow)],
+                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation), S(C::LayoutDrawWalls), S(C::LayoutInnerWalls), S(C::LayoutRoomDoor), S(C::LayoutRoomWindow), S(C::LayoutPipeRun)],
             ),
             g(
                 "view",

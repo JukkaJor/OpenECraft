@@ -39,3 +39,12 @@ fn packages_and_bars() {
     empty.layout.enclosures.push(Default::default());
     assert!(release(&mut empty, 0, "").is_err());
 }
+
+#[test]
+fn rooms_are_not_machined() {
+    let prj = crate::sample::example("pump_room").unwrap();
+    let r = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    // Its walls, ceiling and floor carry parts, but no program is made for them.
+    assert!(!prj.layout.enclosures[r].items.is_empty());
+    assert!(programs(&prj, r).unwrap().is_empty());
+}

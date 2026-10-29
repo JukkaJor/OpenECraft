@@ -136,6 +136,9 @@ pub fn part_filter(ui: &mut egui::Ui, id: &str, parts: &[&Part], f: &mut PartFil
             ui.label(tr("Wall mounting"));
             ui.checkbox(&mut f.wall_mount, tr("Only parts for direct wall mounting"));
             ui.end_row();
+            ui.label(tr("Floor mounting"));
+            ui.checkbox(&mut f.floor_mount, tr("Only floor-standing parts"));
+            ui.end_row();
             ui.label(tr("Group by"));
             egui::ComboBox::from_id_salt((id, "grouping")).selected_text(tr(f.grouping.title())).width(180.0).show_ui(ui, |ui| {
                 for g in Grouping::ALL {
@@ -183,6 +186,9 @@ pub fn part_tree_with(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &Par
                 let r = drag_row(ui, drag, &p.number, |ui| ui.selectable_label(is_sel, &p.number)).on_hover_text(&p.description);
                 if p.wall_mountable() {
                     wall_badge(ui);
+                }
+                if p.floor_standing() {
+                    floor_badge(ui);
                 }
                 r
             });
@@ -287,7 +293,22 @@ fn mounting_data(ui: &mut egui::Ui, part: &mut Part) {
             }
         });
         ui.end_row();
+        ui.label(tr("Floor mounting"));
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut m.floor_mount, tr("Stands on the floor of a room"));
+            if m.floor_mount {
+                floor_badge(ui);
+            }
+        });
+        ui.end_row();
     });
+}
+
+/// Marking of parts that stand on the floor of a room (part trees, editor, summary).
+pub fn floor_badge(ui: &mut egui::Ui) {
+    let color = Color32::from_rgb(120, 100, 40);
+    ui.label(RichText::new(tr("FLOOR")).small().strong().color(Color32::WHITE).background_color(color))
+        .on_hover_text(tr("Stands on the floor of a room, like pumps, tanks and compressors"));
 }
 
 /// Marking of parts that are mounted directly on a room wall (part trees, editor,
@@ -1059,6 +1080,7 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
             (tr("Lifecycle"), if p.lifecycle.is_active() { String::new() } else { tr(p.lifecycle.title()).to_string() }),
             (tr("Successor"), p.successor.clone()),
             (tr("Wall mounting"), if p.wall_mountable() { tr("yes").to_string() } else { String::new() }),
+            (tr("Floor mounting"), if p.floor_standing() { tr("yes").to_string() } else { String::new() }),
         ] {
             if !v.trim().is_empty() && v.trim() != "/" {
                 ui.label(RichText::new(k).weak());

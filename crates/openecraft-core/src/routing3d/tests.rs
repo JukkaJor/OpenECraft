@@ -157,7 +157,7 @@ fn bayed_enclosures_route_cables_through_passages() {
 fn rules_and_frozen_routes_round_trip() {
     let mut prj = demo_with_gland();
     prj.layout.routing.segregation = 150.0;
-    prj.layout.enclosures[0].paths.push(RoutingPath { id: 5, name: "Tray".into(), kind: PathKind::Cables, points: vec![[50.0, 50.0, 100.0], [50.0, 700.0, 100.0]], width: 40.0, classes: vec![Class::Signal], reserve: 20.0 });
+    prj.layout.enclosures[0].paths.push(RoutingPath { id: 5, name: "Tray".into(), kind: PathKind::Cables, points: vec![[50.0, 50.0, 100.0], [50.0, 700.0, 100.0]], width: 40.0, classes: vec![Class::Signal], reserve: 20.0, face: None });
     prj.layout.enclosures[0].reservations.push(Reservation { id: 6, name: "Spare".into(), min: [300.0, 600.0, 20.0], max: [500.0, 750.0, 200.0], mode: ReserveMode::For(Class::Power) });
     let an = Analysis::checked(&prj);
     freeze(&mut prj, &an.routing, &["-W1".to_string()]);

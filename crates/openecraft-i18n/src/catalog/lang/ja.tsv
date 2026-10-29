@@ -6333,3 +6333,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	部品番号 (例: GEN.LMP-GN-24)
 Part {} has no function with a symbol	部品 {} にはシンボル付きの機能がありません
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	部品は変更可能なページにのみドロップできます。このページはリリース済み、ロック済み、または生成ページです
+Floor mounting	床置き
+Only floor-standing parts	床置き部品のみ
+Stands on the floor of a room	部屋の床に設置
+FLOOR	床
+Stands on the floor of a room, like pumps, tanks and compressors	ポンプ、タンク、コンプレッサーなど、部屋の床に設置
+{} does not stand on the floor: choose a part marked for floor mounting	{} は床置きではありません: 床置きとしてマークされた部品を選択してください
+Mounting rails go on the walls and the ceiling	取付レールは壁と天井に取り付けます
+{}: {} stands where {} stands	{}: {} は {} と同じ場所にあります
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} は床置きではありません。床置き部品を選択してください
+A pipe run turns at right angles	配管ルートは直角に曲がります
+{}: pipe run {} crosses an opening ({})	{}: 配管ルート {} が開口部を横切っています ({})
+not in the same line-up or room	同じ列盤または部屋にありません
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} が天板から引き込まれていますが、天板、側面、背面にケーブルグランドがありません
+Pipe run {} mm – double-click or Enter to finish	配管ルート {} mm – ダブルクリックまたは Enter で終了
+Choose a room first: floor-standing parts go on its floor.	まず部屋を選択してください: 床置き部品はその床に設置します。
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	床置きとしてマークされた部品はまだありません。部品管理でマークしてください: 部品エディター › 取付データ › 床置き。
+Floor-standing part	床置き部品
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	床置きとしてマークされた部品 (ポンプ、タンク、コンプレッサー): 1 つ選択し、部屋の床の設置場所をクリックします
+Pipe run	配管ルート
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	部屋の壁、天井、床に沿った配管ルートで、ホース、チューブ、配管がこれに沿って配線されます: 角をクリックし、ダブルクリックまたは Enter で終了
+{}: drag to move it, a double-click shows the floor	{}: ドラッグで移動、ダブルクリックで床を表示
+10 · Pump room	10 · ポンプ室
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	列盤とポンプのある部屋: 盤の天板のケーブルグランドから給電されるポンプモーター、床置きのポンプとタンク、壁のボールバルブと圧力計、壁の配管ルートに沿って 3D で配線された水回路の DN25 配管。
+Room floor	部屋の床

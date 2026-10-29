@@ -1,6 +1,7 @@
-//! Room commands: rooms in which cabinets stand, mounting rails and cable ducts on
-//! their walls and ceiling, and devices mounted there – on a rail, or directly on the
-//! wall when their part is made for it ([`openecraft_core::panel::rooms`]).
+//! Room commands: rooms in which cabinets stand, mounting rails, cable ducts and pipe
+//! runs on their walls and ceiling, and devices mounted there – on a rail, directly on
+//! the wall when their part is made for it, or standing on the floor
+//! ([`openecraft_core::panel::rooms`]).
 
 use crate::builtin::common::{enclosure_index, int_in, NO_LIMIT};
 use crate::params::{optional, param, Args, Kind};
@@ -16,7 +17,7 @@ pub struct Rooms;
 
 impl Plugin for Rooms {
     fn info(&self) -> Info {
-        info("rooms", tr_const!("Rooms"), tr_const!("Rooms with cabinets, rails and cable ducts on walls and ceiling, wall-mounted devices"))
+        info("rooms", tr_const!("Rooms"), tr_const!("Rooms with cabinets, rails, cable ducts and pipe runs on walls and ceiling, wall-mounted and floor-standing devices"))
     }
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
@@ -148,7 +149,7 @@ pub static COMMANDS: &[Spec] = &[
     },
     Spec {
         name: "mount_on_wall",
-        help: tr_const!("Mounts a device or a part on a wall or the ceiling of a room: on a rail there, or directly on the wall when its part is made for wall mounting"),
+        help: tr_const!("Mounts a device or a part on a wall, the ceiling or the floor of a room: on a rail there, directly on the wall when its part is made for wall mounting, on the floor when it stands on it"),
         params: &[
             param("room", Kind::Str, ROOM),
             param("device", Kind::Str, tr_const!("Device tag, or a part number for a part without device tag")),
@@ -158,11 +159,24 @@ pub static COMMANDS: &[Spec] = &[
         ],
         run: mount_on_wall,
     },
+    Spec {
+        name: "add_pipe_run",
+        help: tr_const!("Adds a pipe run on a wall, the ceiling or the floor of a room: a path through its corners along which the hoses, tubes and pipes of the schematic are routed"),
+        params: &[
+            param("room", Kind::Str, ROOM),
+            param("face", Kind::Str, FACE),
+            param("points", Kind::Points, tr_const!("Corners on the face in mm from its top left corner, at right angles")),
+            optional("offset", Kind::Num, tr_const!("Distance from the face into the room in mm (default: 100 on walls, 300 below the ceiling, 200 above the floor)")),
+            optional("width", Kind::Num, tr_const!("Width of the pipe run in mm (default 100)")),
+            optional("name", Kind::Str, tr_const!("Name (default PR1, PR2, …)")),
+        ],
+        run: add_pipe_run,
+    },
 ];
 
 const ROOM: &str = tr_const!("Room (location, e.g. +ROOM1)");
 
-const FACE: &str = tr_const!("wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms) or ceiling");
+const FACE: &str = tr_const!("wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms), ceiling or floor");
 
 fn room_index(prj: &Project, name: &str) -> Result<usize, String> {
     let i = enclosure_index(prj, name)?;
@@ -227,10 +241,19 @@ fn room_json(prj: &Project, ri: usize) -> Value {
                 .filter(|i| i.face == f)
                 .map(|i| {
                     let kind = if i.opening.is_cutout() { format!("{:?}", i.kind).to_lowercase() } else { i.opening.key().to_string() };
-                    json!({ "id": i.id, "kind": kind, "tag": i.tag, "part": i.part, "x": i.x, "y": i.y, "w": i.w, "h": i.h, "z": i.z, "d": i.d, "wall_mounted": panel::wall_mount_ok(prj, e, i) })
+                    json!({ "id": i.id, "kind": kind, "tag": i.tag, "part": i.part, "x": i.x, "y": i.y, "w": i.w, "h": i.h, "z": i.z, "d": i.d, "wall_mounted": panel::mount_ok(prj, e, i) })
                 })
                 .collect();
             (!items.is_empty()).then(|| json!({ "face": panel::room_face_key(e, f), "items": items }))
+        })
+        .collect();
+    let pipe_runs: Vec<Value> = e
+        .paths
+        .iter()
+        .filter_map(|path| {
+            let (face, pts, offset) = panel::pipe_run_on_face(e, path)?;
+            let corners: Vec<[f32; 2]> = pts.iter().map(|q| [q.x, q.y]).collect();
+            Some(json!({ "id": path.id, "name": path.name, "face": panel::room_face_key(e, face), "points": corners, "offset": offset, "width": path.width }))
         })
         .collect();
     json!({
@@ -243,6 +266,7 @@ fn room_json(prj: &Project, ri: usize) -> Value {
         "angle": poses[ri].angle.to_degrees(),
         "cabinets": cabinets,
         "faces": faces,
+        "pipe_runs": pipe_runs,
         "problems": panel::validate(prj, e).into_iter().map(|f| f.message).collect::<Vec<_>>(),
     })
 }
@@ -408,6 +432,14 @@ fn mount_on_wall(prj: &mut Project, a: &Args) -> Result<Value, String> {
     let id = panel::mount_on_wall(prj, ri, a.req("device"), face, at)?;
     let it = prj.layout.enclosures[ri].item(id).cloned().unwrap_or_default();
     Ok(json!({ "id": id, "x": it.x, "y": it.y, "z": it.z, "on_rail": it.z > 0.0 }))
+}
+
+fn add_pipe_run(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let ri = room_index(prj, a.req("room"))?;
+    let face = face_arg(prj, ri, a, "face")?;
+    let points: Vec<_> = a.points("points").into_iter().map(|[x, y]| p(x, y)).collect();
+    let id = panel::add_pipe_run(prj, ri, face, &points, a.num("offset"), a.num("width"), a.str("name").map(str::trim).filter(|n| !n.is_empty()))?;
+    Ok(json!({ "id": id, "room": room_json(prj, ri) }))
 }
 
 #[cfg(test)]

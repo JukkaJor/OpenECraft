@@ -66,3 +66,13 @@ fn filter_for_wall_mountable_parts() {
     assert!(f.matches(&wall));
     assert!(!f.matches(&rail));
 }
+
+#[test]
+fn filter_for_floor_standing_parts() {
+    let pump = Part { number: "GEN.PUMP".into(), mounting_data: crate::MountingData { floor_mount: true, ..Default::default() }, ..Default::default() };
+    let rail = Part { number: "GEN.MCB".into(), ..Default::default() };
+    let f = PartFilter { floor_mount: true, ..Default::default() };
+    assert!(f.is_active());
+    assert!(f.matches(&pump));
+    assert!(!f.matches(&rail));
+}

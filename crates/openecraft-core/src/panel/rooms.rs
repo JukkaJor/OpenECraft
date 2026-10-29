@@ -3,13 +3,16 @@
 //! inside surfaces of the walls); every wall is a face of its own ([`Face::Wall`],
 //! seen from inside the room) and the ceiling is `Face::Roof`. Cabinets (their
 //! line-ups) stand in the room at a place in its floor plan; walls and ceiling carry
-//! mounting rails, cable ducts and devices. A device on a wall sits on a rail unless
-//! its part is made for direct wall mounting ([`crate::parts::Part::wall_mountable`]).
+//! mounting rails, cable ducts, devices and pipe runs ([`add_pipe_run`]). A device on a
+//! wall sits on a rail unless its part is made for direct wall mounting
+//! ([`crate::parts::Part::wall_mountable`]); the floor (`Face::Bottom`) carries parts
+//! that stand on it ([`crate::parts::Part::floor_standing`]: pumps, tanks).
 //!
 //! Room coordinates (the enclosure coordinates of a room): x and z of the floor plan,
 //! y downwards from the ceiling (the floor at `height`).
 
 use super::{item_name, lineup_of, new_profile, part_by_number, place_device_on, site_poses, snap, CheckKind, Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem, SitePlace};
+use crate::model::routing3d::{Class, PathKind, RoutingPath};
 use crate::geom::P;
 use crate::issue::Severity;
 use crate::model::Project;
@@ -27,6 +30,8 @@ pub const WINDOW_SILL: f32 = 900.0;
 pub const MIN_WALL: f32 = 50.0;
 /// Thickness of a new inner wall, mm.
 pub const INNER_WALL: f32 = 100.0;
+/// Width of a new pipe run (the space its pipes may take), mm.
+pub const PIPE_RUN_WIDTH: f32 = 100.0;
 
 /// A wall of a room's outline: from corner `a` to corner `b`, `normal` pointing into
 /// the room (plan coordinates x / z).
@@ -124,43 +129,48 @@ pub fn walls(e: &Enclosure) -> Vec<Wall> {
     walls_of(&outline(e))
 }
 
-/// The faces of a room: its walls, both sides of its inner walls and the ceiling.
+/// The faces of a room: its walls, both sides of its inner walls, the ceiling and the
+/// floor.
 pub fn room_faces(e: &Enclosure) -> Vec<Face> {
     let inner = e.inner_walls.iter().flat_map(|w| [Face::Inner(w.id, 0), Face::Inner(w.id, 1)]);
-    (0..outline(e).len() as u16).map(Face::Wall).chain(inner).chain([Face::Roof]).collect()
+    (0..outline(e).len() as u16).map(Face::Wall).chain(inner).chain([Face::Roof, Face::Bottom]).collect()
 }
 
 fn inner_index(e: &Enclosure, id: u64) -> Option<usize> {
     e.inner_walls.iter().position(|w| w.id == id)
 }
 
-/// Title of a face of a room: `Wall 2`, `Inner wall 1, side A`, `Ceiling`.
+/// Title of a face of a room: `Wall 2`, `Inner wall 1, side A`, `Ceiling`, `Room floor`.
 pub fn room_face_title(e: &Enclosure, face: Face) -> String {
     match face {
         Face::Wall(n) => tr_fmt!("Wall {}", n + 1),
         Face::Inner(id, s) => tr_fmt!("Inner wall {}, side {}", inner_index(e, id).map_or(0, |k| k + 1), if s == 0 { "A" } else { "B" }),
         Face::Roof => tr("Ceiling").to_string(),
-        Face::Bottom => tr("Floor").to_string(),
+        Face::Bottom => tr("Room floor").to_string(),
         f => f.title().to_string(),
     }
 }
 
 /// Key of a room face on the command line: `wall1`, …, `inner1a`, `inner1b`, …,
-/// `ceiling`.
+/// `ceiling`, `floor`.
 pub fn room_face_key(e: &Enclosure, face: Face) -> String {
     match face {
         Face::Wall(n) => format!("wall{}", n + 1),
         Face::Inner(id, s) => format!("inner{}{}", inner_index(e, id).map_or(0, |k| k + 1), if s == 0 { "a" } else { "b" }),
         Face::Roof => "ceiling".into(),
+        Face::Bottom => "floor".into(),
         f => f.key().into(),
     }
 }
 
-/// A room face from its key (also `roof`).
+/// A room face from its key (also `roof`, `bottom`).
 pub fn room_face_from_key(e: &Enclosure, key: &str) -> Option<Face> {
     let k = key.trim().to_lowercase();
     if k == "ceiling" || k == "roof" {
         return Some(Face::Roof);
+    }
+    if k == "floor" || k == "bottom" {
+        return Some(Face::Bottom);
     }
     if let Some(rest) = k.strip_prefix("inner") {
         let (num, side) = rest.split_at(rest.len().saturating_sub(1));
@@ -232,6 +242,11 @@ pub(super) fn frame(e: &Enclosure, face: Face) -> [V3; 4] {
             }
             None => [[0.0; 3], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
         },
+        Face::Bottom => {
+            // The floor seen from above like the floor plan, items standing upwards.
+            let (lo, _) = bounds(&outline(e));
+            [[lo[0], e.height, lo[1]], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]]
+        }
         _ => {
             // The ceiling seen from above like the roof of a cabinet, the front at the bottom.
             let (lo, _) = bounds(&outline(e));
@@ -525,22 +540,35 @@ pub fn footprint(prj: &Project, room: usize, ci: usize) -> [[f32; 2]; 4] {
     })
 }
 
-/// A device or accessory on a room wall is mounted properly: on a rail of the same
-/// wall, or its part is made for wall mounting. Other items (and items of cabinets)
-/// always are.
-pub fn wall_mount_ok(prj: &Project, e: &Enclosure, it: &PanelItem) -> bool {
+/// A device or accessory in a room is mounted properly: on the floor its part stands
+/// on the floor; on a wall or the ceiling it sits on a rail of the same face, or its
+/// part is made for wall mounting. Other items (and items of cabinets) always are.
+pub fn mount_ok(prj: &Project, e: &Enclosure, it: &PanelItem) -> bool {
     if !e.is_room() || !matches!(it.kind, ItemKind::Device | ItemKind::Accessory) {
         return true;
+    }
+    if it.face == Face::Bottom {
+        return part_by_number(prj, &it.part).is_some_and(|p| p.floor_standing());
     }
     let c = it.center();
     let on_rail = e.items.iter().any(|r| r.kind == ItemKind::Rail && r.face == it.face && r.rect().contains(c));
     on_rail || part_by_number(prj, &it.part).is_some_and(|p| p.wall_mountable())
 }
 
+/// A device or accessory placed on the floor of a room stands on it: its part's depth
+/// lies along the floor, its height goes upwards.
+pub fn stand_on_floor(e: &Enclosure, it: &mut PanelItem) {
+    if e.is_room() && it.face == Face::Bottom && matches!(it.kind, ItemKind::Device | ItemKind::Accessory) {
+        std::mem::swap(&mut it.h, &mut it.d);
+        it.z = 0.0;
+    }
+}
+
 /// Mounts a device (by its tag) or a part (by its number, without a device tag) on a
-/// wall or the ceiling of a room with its top left corner at `at`; on a rail there it
-/// snaps onto the rail. Refused for parts that are neither on a rail nor made for
-/// wall mounting.
+/// wall, the ceiling or the floor of a room with its top left corner at `at` (on the
+/// floor: its rear left corner in the floor plan); on a rail there it snaps onto the
+/// rail. Refused for parts that are neither on a rail nor made for wall mounting, and
+/// on the floor for parts that do not stand on it.
 pub fn mount_on_wall(prj: &mut Project, room: usize, what: &str, face: Face, at: P) -> Result<u64, String> {
     let e = prj.layout.enclosures.get(room).ok_or_else(|| tr_fmt!("No enclosure {}", room))?;
     if !e.is_room() {
@@ -555,15 +583,19 @@ pub fn mount_on_wall(prj: &mut Project, room: usize, what: &str, face: Face, at:
         if part_by_number(prj, what).is_none() {
             return Err(tr_fmt!("Unknown device or part: {}", what));
         }
-        let item = super::new_accessory(prj, what, face, at);
+        let mut item = PanelItem { z: 0.0, ..super::new_accessory(prj, what, face, at) };
+        stand_on_floor(&prj.layout.enclosures[room], &mut item);
         let id = item.id;
-        prj.layout.enclosures[room].items.push(PanelItem { z: 0.0, ..item });
+        prj.layout.enclosures[room].items.push(item);
         id
     };
     let e = &prj.layout.enclosures[room];
     let it = e.item(id).cloned().unwrap_or_default();
-    if !wall_mount_ok(prj, e, &it) {
+    if !mount_ok(prj, e, &it) {
         prj.layout.enclosures[room].items.retain(|i| i.id != id);
+        if face == Face::Bottom {
+            return Err(tr_fmt!("{} does not stand on the floor: choose a part marked for floor mounting", what));
+        }
         return Err(tr_fmt!("{} is not made for wall mounting: place a mounting rail on the wall first", what));
     }
     Ok(id)
@@ -622,7 +654,7 @@ pub fn door_zone(e: &Enclosure, it: &PanelItem) -> Option<[[f32; 2]; 4]> {
 }
 
 /// Corners of an inner wall's footprint in the floor plan.
-fn inner_footprint(w: &InnerWall) -> [[f32; 2]; 4] {
+pub(crate) fn inner_footprint(w: &InnerWall) -> [[f32; 2]; 4] {
     let [p, q] = inner_sides(w);
     [p.a, p.b, q.b, q.a]
 }
@@ -718,6 +750,9 @@ pub fn add_wall_profile(prj: &mut Project, room: usize, kind: ItemKind, part: &s
     if !room_faces(e).contains(&face) || !matches!(kind, ItemKind::Rail | ItemKind::Duct) {
         return Err(tr_fmt!("Unknown face: {}", room_face_key(e, face)));
     }
+    if face == Face::Bottom && kind == ItemKind::Rail {
+        return Err(tr("Mounting rails go on the walls and the ceiling").to_string());
+    }
     let snapped = |q: P| crate::geom::p(snap(q.x), snap(q.y));
     let item = PanelItem { face, ..new_profile(prj, kind, part, snapped(a), snapped(b)) };
     let id = item.id;
@@ -725,16 +760,133 @@ pub fn add_wall_profile(prj: &mut Project, room: usize, kind: ItemKind, part: &s
     Ok(id)
 }
 
+/// How far a new pipe run stands off a face of a room, mm: below the ceiling or above
+/// the floor further than off a wall.
+pub fn pipe_run_offset(face: Face) -> f32 {
+    match face {
+        Face::Roof => 300.0,
+        Face::Bottom => 200.0,
+        _ => 100.0,
+    }
+}
+
+/// Adds a pipe run to a wall, the ceiling or the floor of a room: a routing path for
+/// hoses, tubes and pipes ([`Class::Fluid`]) through the corners `points` on the face
+/// (snapped, turning at right angles), `offset` mm into the room (see
+/// [`pipe_run_offset`]), `width` mm wide (see [`PIPE_RUN_WIDTH`]).
+pub fn add_pipe_run(prj: &mut Project, room: usize, face: Face, points: &[P], offset: Option<f32>, width: Option<f32>, name: Option<&str>) -> Result<u64, String> {
+    let e = prj.layout.enclosures.get(room).ok_or_else(|| tr_fmt!("No enclosure {}", room))?;
+    if !e.is_room() {
+        return Err(tr_fmt!("{} is not a room", e.name));
+    }
+    if !room_faces(e).contains(&face) {
+        return Err(tr_fmt!("Unknown face: {}", room_face_key(e, face)));
+    }
+    let mut pts: Vec<P> = Vec::new();
+    for q in points.iter().map(|q| crate::geom::p(snap(q.x), snap(q.y))) {
+        if pts.last().is_none_or(|l| !l.same(q)) {
+            pts.push(q);
+        }
+    }
+    if pts.len() < 2 {
+        return Err(tr_fmt!("A routing path needs {} points at least", 2));
+    }
+    if pts.windows(2).any(|s| (s[1].x - s[0].x).abs() > 0.01 && (s[1].y - s[0].y).abs() > 0.01) {
+        return Err(tr("A pipe run turns at right angles").to_string());
+    }
+    let offset = offset.unwrap_or(pipe_run_offset(face)).max(0.0);
+    let width = width.unwrap_or(PIPE_RUN_WIDTH).max(1.0);
+    let n = e.paths.iter().filter(|p| p.face.is_some()).count() + 1;
+    let points = pts.iter().map(|q| super::face_point(e, face, [q.x, q.y, offset])).collect();
+    let path = RoutingPath {
+        id: prj.new_id(),
+        name: name.map_or_else(|| format!("PR{n}"), String::from),
+        kind: PathKind::Tubes,
+        points,
+        width,
+        classes: vec![Class::Fluid],
+        reserve: 0.0,
+        face: Some(face),
+    };
+    let id = path.id;
+    prj.layout.enclosures[room].paths.push(path);
+    Ok(id)
+}
+
+/// The corners of a pipe run on its face (face x, face y) and its distance from it.
+pub fn pipe_run_on_face(e: &Enclosure, path: &RoutingPath) -> Option<(Face, Vec<P>, f32)> {
+    let face = path.face?;
+    let [o, u, w, n] = super::face_frame(e, face);
+    let along = |q: &V3, a: V3| (0..3).map(|k| (q[k] - o[k]) * a[k]).sum::<f32>();
+    let pts = path.points.iter().map(|q| crate::geom::p(along(q, u), along(q, w))).collect();
+    Some((face, pts, path.points.first().map_or(0.0, |q| along(q, n))))
+}
+
 /// True if the cabinet `ci` stands inside the floor plan of room `ri` (it may stand
 /// against a wall, but not across one).
 pub fn stands_inside(prj: &Project, ri: usize, ci: usize) -> bool {
-    let pts = outline(&prj.layout.enclosures[ri]);
-    let fp = footprint(prj, ri, ci);
+    inside_plan(&outline(&prj.layout.enclosures[ri]), &footprint(prj, ri, ci))
+}
+
+/// A footprint lies inside an outline (it may touch a wall, but not cross one).
+fn inside_plan(pts: &[[f32; 2]], fp: &[[f32; 2]; 4]) -> bool {
     let centre = [fp.iter().map(|q| q[0]).sum::<f32>() / 4.0, fp.iter().map(|q| q[1]).sum::<f32>() / 4.0];
     // Corners pulled in a little (cabinets may stand against a wall), and no corner
     // of the room inside the footprint.
     let pulled = fp.map(|q| [q[0] + (centre[0] - q[0]).signum() * 0.5, q[1] + (centre[1] - q[1]).signum() * 0.5]);
-    pulled.iter().all(|&q| inside_outline(&pts, q)) && !pts.iter().any(|&v| inside_outline(&pulled, v))
+    pulled.iter().all(|&q| inside_outline(pts, q)) && !pts.iter().any(|&v| inside_outline(&pulled, v))
+}
+
+/// Floor plan corners of an item standing on the floor of a room (rear left, rear
+/// right, front right, front left).
+pub fn floor_footprint(e: &Enclosure, it: &PanelItem) -> [[f32; 2]; 4] {
+    let (lo, _) = bounds(&outline(e));
+    let (x, z) = (lo[0] + it.x, lo[1] + it.y);
+    [[x, z], [x + it.w, z], [x + it.w, z + it.h], [x, z + it.h]]
+}
+
+/// What is wrong with a footprint in a room: standing in an inner wall or the swing of
+/// a door (with the door's id), outside the room or across a wall.
+fn plan_problems(e: &Enclosure, fp: &[[f32; 2]; 4], name: &str) -> Vec<(CheckKind, Vec<u64>, String)> {
+    let mut out = Vec::new();
+    if e.inner_walls.iter().any(|w| convex_overlap(fp, &inner_footprint(w))) {
+        out.push((CheckKind::Collision, Vec::new(), tr_fmt!("{}: {} stands in an inner wall", e.name, name)));
+    }
+    for door in &e.items {
+        let Some(zone) = door_zone(e, door) else { continue };
+        if convex_overlap(fp, &zone) {
+            let wall = match door.face {
+                Face::Wall(n) => n + 1,
+                _ => 0,
+            };
+            out.push((CheckKind::Service, vec![door.id], tr_fmt!("{}: {} stands in the swing of the door in wall {}", e.name, name, wall)));
+        }
+    }
+    if !inside_plan(&outline(e), fp) {
+        out.push((CheckKind::Outside, Vec::new(), tr_fmt!("{}: {} stands outside the room", e.name, name)));
+    }
+    out
+}
+
+/// What is wrong with the place of an item standing on the floor of room `ri`: see
+/// [`plan_problems`], and standing where a cabinet stands.
+pub fn floor_problems(prj: &Project, ri: usize, it: &PanelItem) -> Vec<(CheckKind, Vec<u64>, String)> {
+    let e = &prj.layout.enclosures[ri];
+    let fp = floor_footprint(e, it);
+    let name = item_name(e, it.id);
+    let mut out: Vec<(CheckKind, Vec<u64>, String)> = plan_problems(e, &fp, &name)
+        .into_iter()
+        .map(|(k, mut ids, m)| {
+            ids.insert(0, it.id);
+            (k, ids, m)
+        })
+        .collect();
+    for ci in cabinets_in(&prj.layout, ri) {
+        if convex_overlap(&fp, &footprint(prj, ri, ci)) {
+            out.push((CheckKind::Collision, vec![it.id], tr_fmt!("{}: {} stands where {} stands", e.name, name, prj.layout.enclosures[ci].name)));
+        }
+    }
+    out
 }
 
 /// Checks of a room: devices on its walls that are neither on a rail nor made for
@@ -744,13 +896,28 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     if !e.is_room() {
         return;
     }
-    for it in e.items.iter().filter(|i| !wall_mount_ok(prj, e, i)) {
-        push(
-            CheckKind::Mounting,
-            Severity::Warning,
-            vec![it.id],
-            tr_fmt!("{}: {} is not made for wall mounting, mount it on a rail", e.name, item_name(e, it.id)),
-        );
+    for it in e.items.iter().filter(|i| !mount_ok(prj, e, i)) {
+        let msg = if it.face == Face::Bottom {
+            tr_fmt!("{}: {} does not stand on the floor, choose a floor-standing part", e.name, item_name(e, it.id))
+        } else {
+            tr_fmt!("{}: {} is not made for wall mounting, mount it on a rail", e.name, item_name(e, it.id))
+        };
+        push(CheckKind::Mounting, Severity::Warning, vec![it.id], msg);
+    }
+    // Pipe runs pass doors and windows (the same face, in front of the opening).
+    for path in &e.paths {
+        let Some((face, pts, _)) = pipe_run_on_face(e, path) else { continue };
+        let r = path.width / 2.0;
+        for o in e.items.iter().filter(|i| i.face == face && i.kind == ItemKind::Cutout && !i.opening.is_cutout()) {
+            let hit = pts.windows(2).any(|s| {
+                let (x0, x1) = (s[0].x.min(s[1].x) - r, s[0].x.max(s[1].x) + r);
+                let (y0, y1) = (s[0].y.min(s[1].y) - r, s[0].y.max(s[1].y) + r);
+                x0 < o.x + o.w && o.x < x1 && y0 < o.y + o.h && o.y < y1
+            });
+            if hit {
+                push(CheckKind::Collision, Severity::Warning, vec![o.id], tr_fmt!("{}: pipe run {} crosses an opening ({})", e.name, path.name, item_name(e, o.id)));
+            }
+        }
     }
     let pts = outline(e);
     for (k, w) in e.inner_walls.iter().enumerate() {
@@ -767,6 +934,11 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     }
     let layout = &prj.layout;
     let Some(ri) = layout.enclosures.iter().position(|x| std::ptr::eq(x, e)) else { return };
+    for it in e.items.iter().filter(|i| i.face == Face::Bottom && matches!(i.kind, ItemKind::Device | ItemKind::Accessory)) {
+        for (kind, ids, msg) in floor_problems(prj, ri, it) {
+            push(kind, Severity::Warning, ids, msg);
+        }
+    }
     for ci in cabinets_in(layout, ri) {
         for (kind, ids, msg) in cabinet_problems(prj, ri, ci) {
             push(kind, Severity::Warning, ids, msg);
@@ -780,25 +952,9 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
 pub fn cabinet_problems(prj: &Project, ri: usize, ci: usize) -> Vec<(CheckKind, Vec<u64>, String)> {
     let (e, c) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
     let poses = site_poses(prj);
-    let fp = footprint(prj, ri, ci);
-    let mut out = Vec::new();
-    if e.inner_walls.iter().any(|w| convex_overlap(&fp, &inner_footprint(w))) {
-        out.push((CheckKind::Collision, Vec::new(), tr_fmt!("{}: {} stands in an inner wall", e.name, c.name)));
-    }
-    for door in &e.items {
-        let Some(zone) = door_zone(e, door) else { continue };
-        if convex_overlap(&fp, &zone) {
-            let wall = match door.face {
-                Face::Wall(n) => n + 1,
-                _ => 0,
-            };
-            out.push((CheckKind::Service, vec![door.id], tr_fmt!("{}: {} stands in the swing of the door in wall {}", e.name, c.name, wall)));
-        }
-    }
+    let mut out = plan_problems(e, &footprint(prj, ri, ci), &c.name);
     let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
-    if !stands_inside(prj, ri, ci) {
-        out.push((CheckKind::Outside, Vec::new(), tr_fmt!("{}: {} stands outside the room", e.name, c.name)));
-    } else if top > e.height + 0.5 {
+    if out.iter().all(|(k, _, _)| *k != CheckKind::Outside) && top > e.height + 0.5 {
         out.push((CheckKind::Outside, Vec::new(), tr_fmt!("{}: {} is higher than the ceiling", e.name, c.name)));
     }
     out

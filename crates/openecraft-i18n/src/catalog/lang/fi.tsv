@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Osanumero, esim. GEN.LMP-GN-24
 Part {} has no function with a symbol	Osalla {} ei ole symbolillista toimintoa
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Osia voi pudottaa vain muokattaville sivuille; tämä on julkaistu, lukittu tai luotu
+Floor mounting	Lattia-asennus
+Only floor-standing parts	Vain lattialle sijoitettavat osat
+Stands on the floor of a room	Seisoo huoneen lattialla
+FLOOR	LATTIA
+Stands on the floor of a room, like pumps, tanks and compressors	Seisoo huoneen lattialla, kuten pumput, säiliöt ja kompressorit
+{} does not stand on the floor: choose a part marked for floor mounting	{} ei seiso lattialla: valitse lattia-asennukseen merkitty osa
+Mounting rails go on the walls and the ceiling	Asennuskiskot kuuluvat seiniin ja kattoon
+{}: {} stands where {} stands	{}: {} seisoo samassa paikassa kuin {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} ei seiso lattialla, valitse lattialle sijoitettava osa
+A pipe run turns at right angles	Putkireitti kääntyy suorassa kulmassa
+{}: pipe run {} crosses an opening ({})	{}: putkireitti {} ylittää aukon ({})
+not in the same line-up or room	ei samassa rivityksessä tai huoneessa
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} tulee sisään katon kautta: katossa, sivuissa tai takaseinässä ei ole kaapeliläpivientiä
+Pipe run {} mm – double-click or Enter to finish	Putkireitti {} mm – lopeta kaksoisnapsautuksella tai Enterillä
+Choose a room first: floor-standing parts go on its floor.	Valitse ensin huone: lattialle sijoitettavat osat tulevat sen lattialle.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Lattia-asennukseen merkittyjä osia ei vielä ole. Merkitse osa osien hallinnassa: osaeditori › Asennustiedot › Lattia-asennus.
+Floor-standing part	Lattialle sijoitettava osa
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Lattia-asennukseen merkityt osat (pumput, säiliöt, kompressorit): valitse yksi ja napsauta kohtaa huoneen lattialla
+Pipe run	Putkireitti
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Putkireitti huoneen seinällä, katossa tai lattialla, jota pitkin letkut, putket ja putkistot reititetään: napsauta kulmat, lopeta kaksoisnapsautuksella tai Enterillä
+{}: drag to move it, a double-click shows the floor	{}: siirrä vetämällä, kaksoisnapsautus näyttää lattian
+10 · Pump room	10 · Pumppuhuone
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Rivityksen huone pumppuineen: pumppumoottorit syötetään kaappien kattojen kaapeliläpivientien kautta, pumppu ja säiliö lattialla, palloventtiilit ja painemittari seinällä sekä vesipiirin DN25-putket reititettynä 3D:nä seinän putkireittiä pitkin.
+Room floor	Huoneen lattia

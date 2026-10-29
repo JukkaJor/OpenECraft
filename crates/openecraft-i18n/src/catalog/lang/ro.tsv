@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Număr articol, de ex. GEN.LMP-GN-24
 Part {} has no function with a symbol	Articolul {} nu are nicio funcție cu simbol
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Articolele pot fi plasate doar pe pagini care pot fi modificate; aceasta este eliberată, blocată sau generată
+Floor mounting	Montaj pe pardoseală
+Only floor-standing parts	Doar articole care stau pe pardoseală
+Stands on the floor of a room	Stă pe pardoseala unei încăperi
+FLOOR	PARDOSEALĂ
+Stands on the floor of a room, like pumps, tanks and compressors	Stă pe pardoseala unei încăperi, ca pompele, rezervoarele și compresoarele
+{} does not stand on the floor: choose a part marked for floor mounting	{} nu stă pe pardoseală: alegeți un articol marcat pentru montaj pe pardoseală
+Mounting rails go on the walls and the ceiling	Șinele de montaj se pun pe pereți și pe tavan
+{}: {} stands where {} stands	{}: {} stă acolo unde stă {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} nu stă pe pardoseală, alegeți un articol care stă pe pardoseală
+A pipe run turns at right angles	Un traseu de conducte se întoarce în unghi drept
+{}: pipe run {} crosses an opening ({})	{}: traseul de conducte {} traversează o deschidere ({})
+not in the same line-up or room	nu sunt în același rând de carcase sau aceeași încăpere
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} intră prin acoperiș: nicio presetupă pe acoperiș, laterale sau spate
+Pipe run {} mm – double-click or Enter to finish	Traseu de conducte {} mm – dublu clic sau Enter pentru a termina
+Choose a room first: floor-standing parts go on its floor.	Alegeți mai întâi o încăpere: articolele care stau pe pardoseală se pun pe pardoseala ei.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Încă niciun articol marcat pentru montaj pe pardoseală. Marcați unul în gestionarea articolelor: editorul de articole › Date de montaj › Montaj pe pardoseală.
+Floor-standing part	Articol care stă pe pardoseală
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Articole marcate pentru montaj pe pardoseală (pompe, rezervoare, compresoare): alegeți unul, apoi faceți clic unde stă pe pardoseala încăperii
+Pipe run	Traseu de conducte
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Traseu de conducte pe un perete, tavan sau pardoseala încăperii, de-a lungul căruia se pozează furtunuri, tuburi și conducte: faceți clic pe colțuri, dublu clic sau Enter pentru a termina
+{}: drag to move it, a double-click shows the floor	{}: trageți pentru a muta, dublu clic afișează pardoseala
+10 · Pump room	10 · Cameră de pompe
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Încăperea rândului de carcase cu pompele sale: motoare de pompă alimentate prin presetupe în acoperișurile dulapurilor, o pompă și un rezervor pe pardoseală, robinete cu bilă și un manometru pe perete și conductele DN25 ale circuitului de apă pozate 3D de-a lungul unui traseu de conducte pe perete.
+Room floor	Pardoseala încăperii

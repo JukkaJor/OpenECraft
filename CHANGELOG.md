@@ -30,7 +30,10 @@ with a command line, an MCP server, a parts server and a project server.
   mounting assistants for the workshop. In a room's floor plan cabinets turn in place,
   cabinets in a bad place are drawn in the warning colour with the reason on hover,
   inner walls end on the room walls, and the layout checks are shown below the view;
-  rooms and enclosures with content are deleted only after a question.
+  rooms and enclosures with content are deleted only after a question. Pumps, tanks
+  and other parts marked for floor mounting stand on the floor of a room, pipe runs
+  go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D
+  through the room and from its cabinets through their cable glands.
 - **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
   EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
   power, pre-planning.

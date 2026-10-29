@@ -6333,3 +6333,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Номер изделия, например GEN.LMP-GN-24
 Part {} has no function with a symbol	У изделия {} нет функции с символом
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Изделия можно перетаскивать только на изменяемые страницы; эта выпущена, заблокирована или сгенерирована
+Floor mounting	Напольный монтаж
+Only floor-standing parts	Только напольные изделия
+Stands on the floor of a room	Стоит на полу помещения
+FLOOR	ПОЛ
+Stands on the floor of a room, like pumps, tanks and compressors	Стоит на полу помещения, как насосы, баки и компрессоры
+{} does not stand on the floor: choose a part marked for floor mounting	{} не устанавливается на пол: выберите изделие с отметкой напольного монтажа
+Mounting rails go on the walls and the ceiling	Монтажные рейки крепятся на стены и потолок
+{}: {} stands where {} stands	{}: {} стоит на месте {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} не устанавливается на пол, выберите напольное изделие
+A pipe run turns at right angles	Трасса трубопровода поворачивает под прямым углом
+{}: pipe run {} crosses an opening ({})	{}: трасса трубопровода {} пересекает проём ({})
+not in the same line-up or room	не в одном ряду или помещении
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} вводится через крышу: нет кабельного ввода на крыше, боковых или задней стенке
+Pipe run {} mm – double-click or Enter to finish	Трасса трубопровода {} мм – двойной щелчок или Enter – завершить
+Choose a room first: floor-standing parts go on its floor.	Сначала выберите помещение: напольные изделия ставятся на его пол.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Пока нет изделий с отметкой напольного монтажа. Отметьте изделие в управлении изделиями: редактор изделий › Монтажные данные › Напольный монтаж.
+Floor-standing part	Напольное изделие
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Изделия с отметкой напольного монтажа (насосы, баки, компрессоры): выберите одно, затем щёлкните место на полу помещения
+Pipe run	Трасса трубопровода
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Трасса трубопровода на стене, потолке или полу помещения, вдоль которой прокладываются шланги, трубки и трубы: щёлкните углы, двойной щелчок или Enter – завершить
+{}: drag to move it, a double-click shows the floor	{}: перетащите, чтобы переместить, двойной щелчок показывает пол
+10 · Pump room	10 · Насосная
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Помещение с рядом шкафов и насосами: двигатели насосов, питаемые через кабельные вводы в крышах шкафов, насос и бак на полу, шаровые краны и манометр на стене, а также трубы DN25 водяного контура, проложенные в 3D вдоль трассы трубопровода на стене.
+Room floor	Пол помещения

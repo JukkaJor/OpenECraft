@@ -6334,3 +6334,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Číslo artiklu, např. GEN.LMP-GN-24
 Part {} has no function with a symbol	Artikl {} nemá funkci se symbolem
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikly lze pustit jen na stránky, které lze měnit; tato je uvolněná, zamčená nebo generovaná
+Floor mounting	Montáž na podlahu
+Only floor-standing parts	Pouze artikly stojící na podlaze
+Stands on the floor of a room	Stojí na podlaze místnosti
+FLOOR	PODLAHA
+Stands on the floor of a room, like pumps, tanks and compressors	Stojí na podlaze místnosti, jako čerpadla, nádrže a kompresory
+{} does not stand on the floor: choose a part marked for floor mounting	{} nestojí na podlaze: zvolte artikl označený pro montáž na podlahu
+Mounting rails go on the walls and the ceiling	Montážní lišty patří na stěny a strop
+{}: {} stands where {} stands	{}: {} stojí tam, kde stojí {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} nestojí na podlaze, zvolte artikl stojící na podlaze
+A pipe run turns at right angles	Potrubní trasa se lomí v pravém úhlu
+{}: pipe run {} crosses an opening ({})	{}: potrubní trasa {} kříží otvor ({})
+not in the same line-up or room	není ve stejné řadě ani místnosti
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} vstupuje střechou: na střeše, bocích ani zadní stěně není kabelová vývodka
+Pipe run {} mm – double-click or Enter to finish	Potrubní trasa {} mm – poklikáním nebo Enter ukončíte
+Choose a room first: floor-standing parts go on its floor.	Nejprve zvolte místnost: artikly stojící na podlaze patří na její podlahu.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Zatím žádné artikly označené pro montáž na podlahu. Označte artikl ve správě artiklů: editor artiklů › Montážní data › Montáž na podlahu.
+Floor-standing part	Díl na podlahu
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Artikly označené pro montáž na podlahu (čerpadla, nádrže, kompresory): zvolte jeden a klikněte, kde stojí na podlaze místnosti
+Pipe run	Potrubní trasa
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Potrubní trasa na stěně, stropu nebo podlaze místnosti, podél které se vedou hadice, trubky a potrubí: klikněte na rohy, poklikáním nebo Enter ukončíte
+{}: drag to move it, a double-click shows the floor	{}: přetažením přesunete, dvojklik zobrazí podlahu
+10 · Pump room	10 · Čerpací místnost
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Místnost s řadou skříní a jejími čerpadly: motory čerpadel napájené kabelovými vývodkami ve střechách skříní, čerpadlo a nádrž stojící na podlaze, kulové kohouty a manometr na stěně a potrubí DN25 vodního okruhu vedené ve 3D podél potrubní trasy na stěně.
+Room floor	Podlaha místnosti

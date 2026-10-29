@@ -1,12 +1,14 @@
 //! Floor plan of a room: walls drawn by clicking their corners, walls dragged to move
-//! them, the cabinets standing in the room dragged to their places.
+//! them, the cabinets and the parts standing in the room dragged to their places, the
+//! pipe runs seen from above.
 
+use super::routing_ui::PIPE_COLOR;
 use super::{wheel_delta, PanelUi, Tool, View};
 use crate::editor::Palette;
 use egui::{vec2, CursorIcon, Key, PointerButton, Pos2, Rect, Sense, Shape, Stroke};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
-use openecraft_core::panel::{self, Face, InnerWall, Opening, SitePlace};
+use openecraft_core::panel::{self, Face, InnerWall, ItemKind, Opening, PanelItem, SitePlace};
 use openecraft_i18n::{tr, tr_fmt};
 
 /// Grid the corners of drawn walls snap to, mm.
@@ -24,6 +26,13 @@ pub(super) enum PlanDrag {
     Cabinet { first: usize, place: SitePlace, start: P },
     /// An inner wall moved across itself: how it was and where the drag started.
     Inner { wall: InnerWall, start: P },
+    /// A part standing on the floor moved: its place before and where the drag started.
+    Floor { id: u64, at: P, start: P },
+}
+
+/// A device or accessory standing on the floor of a room.
+fn on_floor(it: &PanelItem) -> bool {
+    it.face == Face::Bottom && matches!(it.kind, ItemKind::Device | ItemKind::Accessory)
 }
 
 /// The next corner of walls being drawn: on the grid, at a right angle to the last one.
@@ -143,6 +152,10 @@ impl PanelUi {
                 }
             }
             let del = ui.input(|i| i.key_pressed(Key::Delete));
+            if del && self.plan_inner.is_none() {
+                let selected = std::mem::take(&mut self.selection);
+                prj.layout.enclosures[ei].items.retain(|i| !(on_floor(i) && selected.contains(&i.id)));
+            }
             if let (true, Some(id)) = (del, self.plan_inner.take()) {
                 panel::remove_inner_wall(&mut prj.layout.enclosures[ei], id);
                 if matches!(self.face, Face::Inner(w, _) if w == id) {
@@ -190,9 +203,13 @@ impl PanelUi {
         };
         // The wall surface at a point: an outer wall or a side of an inner wall.
         let face_at = |q: P| inner_at(q).map(|(id, s)| Face::Inner(id, s)).or_else(|| wall_at(q).map(|n| Face::Wall(n as u16)));
-        let hit_cabinet = plan.and_then(cabinet_at);
-        let hit_wall = plan.filter(|_| hit_cabinet.is_none()).and_then(wall_at);
-        let hit_inner = plan.filter(|_| hit_cabinet.is_none()).and_then(inner_at).map(|(id, _)| id);
+        // Parts standing on the floor come before what they stand on.
+        let floor: Vec<(u64, [[f32; 2]; 4])> = prj.layout.enclosures[ei].items.iter().filter(|i| on_floor(i)).map(|i| (i.id, panel::floor_footprint(&prj.layout.enclosures[ei], i))).collect();
+        let floor_at = |q: P| floor.iter().find(|(_, fp)| panel::inside_outline(fp, [q.x, q.y])).map(|(id, _)| *id);
+        let hit_floor = plan.and_then(floor_at);
+        let hit_cabinet = plan.filter(|_| hit_floor.is_none()).and_then(cabinet_at);
+        let hit_wall = plan.filter(|_| hit_cabinet.is_none() && hit_floor.is_none()).and_then(wall_at);
+        let hit_inner = plan.filter(|_| hit_cabinet.is_none() && hit_floor.is_none()).and_then(inner_at).map(|(id, _)| id);
         // A drag starts where the button went down and follows the pointer outside the view too.
         let pressed = ui.input(|i| i.pointer.press_origin()).map(|s| self.s2w(rect, s));
         let dragged_to = ui.input(|i| i.pointer.interact_pos()).map(|s| self.s2w(rect, s));
@@ -254,7 +271,11 @@ impl PanelUi {
             Tool::Select => {
                 if resp.drag_started_by(PointerButton::Primary) {
                     if let Some(q) = pressed {
-                        if let Some(c) = cabinet_at(q) {
+                        let standing = floor_at(q).and_then(|id| prj.layout.enclosures[ei].item(id).map(|it| (id, p(it.x, it.y))));
+                        if let Some((id, at)) = standing {
+                            self.select_item(id);
+                            self.plan_drag = Some(PlanDrag::Floor { id, at, start: q });
+                        } else if let Some(c) = cabinet_at(q) {
                             let first = first_of(prj, c);
                             if let Some(place) = panel::room_place(prj, first) {
                                 self.plan_cabinet = Some(first);
@@ -281,6 +302,11 @@ impl PanelUi {
                                     self.status = tr_fmt!("Wall {}: moved by {} mm", wall + 1, format!("{offset:.0}"));
                                 }
                                 Err(e) => self.status = e,
+                            }
+                        }
+                        PlanDrag::Floor { id, at, start } => {
+                            if let Some(it) = prj.layout.enclosures[ei].items.iter_mut().find(|i| i.id == *id) {
+                                (it.x, it.y) = (snap(at.x + q.x - start.x), snap(at.y + q.y - start.y));
                             }
                         }
                         PlanDrag::Cabinet { first, place, start } => {
@@ -312,9 +338,18 @@ impl PanelUi {
                 if resp.clicked_by(PointerButton::Primary) {
                     self.plan_cabinet = hit_cabinet.map(|c| first_of(prj, c));
                     self.plan_inner = hit_inner;
+                    match hit_floor {
+                        Some(id) => self.select_item(id),
+                        None => self.selection.clear(),
+                    }
                 }
                 if resp.double_clicked() {
-                    if let Some(c) = hit_cabinet {
+                    if let Some(id) = hit_floor {
+                        // The floor with the part selected.
+                        self.front_face(Face::Bottom, false);
+                        self.select_item(id);
+                        return;
+                    } else if let Some(c) = hit_cabinet {
                         // Open the cabinet.
                         self.enclosure = c;
                         self.view = View::Front;
@@ -337,7 +372,7 @@ impl PanelUi {
                     if let Some(w) = wall.and_then(|w| walls.get(w)) {
                         ui.ctx().set_cursor_icon(if w.normal[0].abs() > 0.5 { CursorIcon::ResizeHorizontal } else { CursorIcon::ResizeVertical });
                     }
-                } else if hit_cabinet.is_some() {
+                } else if hit_cabinet.is_some() || hit_floor.is_some() {
                     ui.ctx().set_cursor_icon(CursorIcon::Grab);
                 }
             }
@@ -468,6 +503,38 @@ impl PanelUi {
             painter.line_segment([pts[2], pts[3]], Stroke::new(3.0, stroke.color));
             let centre = Pos2::new(pts.iter().map(|q| q.x).sum::<f32>() / 4.0, pts.iter().map(|q| q.y).sum::<f32>() / 4.0);
             painter.text(centre, egui::Align2::CENTER_CENTER, &prj.layout.enclosures[*c].name, egui::FontId::proportional(12.0), pal.text);
+        }
+        // Parts standing on the floor: footprint and tag (or part number), in the warning
+        // colour where they stand badly.
+        for it in e.items.iter().filter(|i| on_floor(i)) {
+            let pts: Vec<Pos2> = panel::floor_footprint(e, it).iter().map(|q| to_screen(q[0], q[1])).collect();
+            let name = if it.tag.is_empty() { it.part.clone() } else { it.tag.clone() };
+            let mut problems: Vec<String> = panel::floor_problems(prj, ei, it).into_iter().map(|(_, _, msg)| msg).collect();
+            if !panel::mount_ok(prj, e, it) {
+                problems.push(tr_fmt!("{}: {} does not stand on the floor, choose a floor-standing part", e.name, name));
+            }
+            let selected = self.selection.contains(&it.id);
+            let warn = crate::style::warning();
+            let frame = if selected { pal.selected } else if problems.is_empty() { pal.frame } else { warn };
+            let fill = if problems.is_empty() { pal.plate.gamma_multiply(0.7) } else { warn.gamma_multiply(0.25) };
+            painter.add(Shape::convex_polygon(pts.clone(), fill, Stroke::new(if selected || !problems.is_empty() { 2.5 } else { 1.0 }, frame)));
+            if hit_floor == Some(it.id) && self.plan_drag.is_none() {
+                let mut lines = vec![tr_fmt!("{}: drag to move it, a double-click shows the floor", name)];
+                lines.extend(problems);
+                hover_tip = Some(lines.join("\n"));
+            }
+            let centre = Pos2::new(pts.iter().map(|q| q.x).sum::<f32>() / 4.0, pts.iter().map(|q| q.y).sum::<f32>() / 4.0);
+            painter.text(centre, egui::Align2::CENTER_CENTER, name, egui::FontId::proportional(11.0), pal.text);
+        }
+        // Pipe runs seen from above (dashed: they run above the floor).
+        for path in &e.paths {
+            if path.face.is_none() || path.points.len() < 2 {
+                continue;
+            }
+            let pts: Vec<Pos2> = path.points.iter().map(|q| to_screen(q[0], q[2])).collect();
+            let selected = self.selected_object == Some(path.id);
+            painter.extend(Shape::dashed_line(&pts, Stroke::new(if selected { 3.0 } else { 2.0 }, PIPE_COLOR), 10.0, 6.0));
+            painter.text(pts[0] + vec2(4.0, -4.0), egui::Align2::LEFT_BOTTOM, &path.name, egui::FontId::proportional(11.0), PIPE_COLOR);
         }
         // Walls being drawn.
         if !self.wall_points.is_empty() {

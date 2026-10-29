@@ -10,6 +10,7 @@ mod cabinets;
 mod lamp;
 mod plant;
 mod press;
+mod pump_room;
 mod relay;
 mod room;
 mod star_delta;
@@ -28,7 +29,7 @@ pub struct Example {
 }
 
 /// The example projects, simple ones first.
-pub const EXAMPLES: [Example; 9] = [
+pub const EXAMPLES: [Example; 10] = [
     Example {
         key: "lamp_circuit",
         level: 1,
@@ -91,6 +92,13 @@ pub const EXAMPLES: [Example; 9] = [
         title: tr_const!("9 · Electrical room"),
         description: tr_const!("The cabinet line-up in its room: L-shaped floor plan, inner wall, door and window, the line-up at its place, a mounting rail with a socket outlet on a wall, a wall-mounted emergency light and a cable tray under the ceiling."),
         build: room::project,
+    },
+    Example {
+        key: "pump_room",
+        level: 10,
+        title: tr_const!("10 · Pump room"),
+        description: tr_const!("The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall."),
+        build: pump_room::project,
     },
 ];
 

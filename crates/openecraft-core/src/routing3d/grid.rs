@@ -1,14 +1,14 @@
-//! The space of a line-up as a grid of cubic cells, and the obstacle-aware shortest
-//! way through it (A* with turn costs). Cells are free inside the enclosures (in
-//! front of the mounting plate, behind the door), blocked by the walls, by devices,
-//! rails, busbars and accessories (with a clearance) and by keep-out reservations.
-//! Cable ducts and routing paths are channels: the way through them is cheaper than
-//! through free air. Walls between bayed enclosures are crossed at cable passages
-//! only.
+//! The space of a line-up (or a room, see `super::room`) as a grid of cubic cells, and
+//! the obstacle-aware shortest way through it (A* with turn costs). Cells are free
+//! inside the enclosures (in front of the mounting plate, behind the door), blocked by
+//! the walls, by devices, rails, busbars and accessories (with a clearance) and by
+//! keep-out reservations. Cable ducts and routing paths are channels: the way through
+//! them is cheaper than through free air. Walls between bayed enclosures are crossed
+//! at cable passages only.
 
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
-use crate::panel::{self, ItemKind, PLATE_Z};
+use crate::panel::{self, Enclosure, ItemKind, PLATE_Z};
 use crate::parts::vec3::{dist, V3};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -91,6 +91,33 @@ pub struct Space {
 }
 
 impl Space {
+    /// A grid over the box from `min` to `max` with every cell blocked, with cells of
+    /// `cell` mm (coarser for large boxes); its columns belong to no enclosure.
+    pub(super) fn empty(min: V3, max: V3, cell: f32) -> Space {
+        let size = [0, 1, 2].map(|i| (max[i] - min[i]).max(1.0));
+        let mut cell = cell.max(5.0);
+        while size.iter().map(|s| (s / cell).ceil() as usize).product::<usize>() > MAX_CELLS {
+            cell *= 1.25;
+        }
+        let n = size.map(|s| (s / cell).ceil().max(1.0) as usize);
+        let total = n[0] * n[1] * n[2];
+        Space {
+            origin: min,
+            cell,
+            n,
+            block: vec![WALL; total],
+            owner: vec![0; total],
+            duct: vec![false; total],
+            path: vec![0; total],
+            reserved: vec![0; total],
+            occ: vec![0; total],
+            zone: vec![0; total],
+            paths: Vec::new(),
+            crossings: Vec::new(),
+            column: vec![usize::MAX; n[0]],
+        }
+    }
+
     /// The grid of a line-up (`pos`: [`panel::positions`]).
     pub fn build(prj: &Project, lineup: &[usize], pos: &[V3], rules: &RoutingRules) -> Space {
         let encs = &prj.layout.enclosures;
@@ -106,28 +133,8 @@ impl Space {
         if lineup.is_empty() {
             (min, max) = ([0.0; 3], [1.0; 3]);
         }
-        let size = [0, 1, 2].map(|i| (max[i] - min[i]).max(1.0));
-        let mut cell = rules.grid.max(5.0);
-        while size.iter().map(|s| (s / cell).ceil() as usize).product::<usize>() > MAX_CELLS {
-            cell *= 1.25;
-        }
-        let n = size.map(|s| (s / cell).ceil().max(1.0) as usize);
-        let total = n[0] * n[1] * n[2];
-        let mut s = Space {
-            origin: min,
-            cell,
-            n,
-            block: vec![WALL; total],
-            owner: vec![0; total],
-            duct: vec![false; total],
-            path: vec![0; total],
-            reserved: vec![0; total],
-            occ: vec![0; total],
-            zone: vec![0; total],
-            paths: Vec::new(),
-            crossings: Vec::new(),
-            column: vec![usize::MAX; n[0]],
-        };
+        let mut s = Space::empty(min, max, rules.grid);
+        let (n, total, cell) = (s.n, s.block.len(), s.cell);
         for i in 0..n[0] {
             let x = s.origin[0] + (i as f32 + 0.5) * cell;
             s.column[i] = lineup.iter().copied().find(|&k| x >= pos[k][0] && x < pos[k][0] + encs[k].width).unwrap_or(usize::MAX);
@@ -147,57 +154,7 @@ impl Space {
             }
         }
         for &k in lineup {
-            let e = &encs[k];
-            let o = pos[k];
-            let shift = |(a, b): (V3, V3), m: f32| ([a[0] + o[0] - m, a[1] + o[1] - m, a[2] + o[2] - m], [b[0] + o[0] + m, b[1] + o[1] + m, b[2] + o[2] + m]);
-            for it in &e.items {
-                let bx = shift(panel::item_box(e, it), 0.0);
-                match it.kind {
-                    ItemKind::Device | ItemKind::Rail | ItemKind::Busbar | ItemKind::Accessory => {
-                        let bx = shift(panel::item_box(e, it), rules.clearance);
-                        for idx in s.cells_in(bx) {
-                            if s.block[idx] == 0 {
-                                s.block[idx] = ITEM;
-                                s.owner[idx] = it.id;
-                            }
-                        }
-                    }
-                    ItemKind::Duct if it.face == panel::Face::Plate => s.cells_in(bx).into_iter().for_each(|idx| s.duct[idx] = true),
-                    _ => {}
-                }
-            }
-            for r in &e.reservations {
-                let bx = shift((r.min, r.max), 0.0);
-                for idx in s.cells_in(bx) {
-                    match r.mode {
-                        ReserveMode::Keepout => s.block[idx] = WALL,
-                        ReserveMode::For(class) => s.reserved[idx] |= class.bit(),
-                    }
-                }
-            }
-            for p in &e.paths {
-                let pts: Vec<V3> = p.points.iter().map(|q| [q[0] + o[0], q[1] + o[1], q[2] + o[2]]).collect();
-                if pts.len() < 2 {
-                    continue;
-                }
-                s.paths.push(PathCells {
-                    enclosure: k,
-                    id: p.id,
-                    kind: p.kind,
-                    classes: p.classes.iter().fold(0, |m, c| m | c.bit()),
-                    capacity: p.capacity(),
-                    used: 0.0,
-                    items: 0,
-                });
-                let mark = s.paths.len() as u16;
-                // At least the cells around the centre line.
-                let r = (p.width / 2.0).max(cell * 0.75);
-                for idx in s.cells_near(&pts, r) {
-                    if s.path[idx] == 0 {
-                        s.path[idx] = mark;
-                    }
-                }
-            }
+            s.add_enclosure(&encs[k], k, pos[k], rules);
         }
         for w in lineup.windows(2) {
             for x in panel::passages(&prj.layout, pos, w[0]) {
@@ -206,6 +163,86 @@ impl Space {
             }
         }
         s
+    }
+
+    /// Adds what is in enclosure `k` (at `o`, enclosure coordinates + `o` = grid
+    /// coordinates) to the free space: its items, reservations and routing paths.
+    /// Cable ducts are channels on the mounting plate, in a room on every face.
+    pub(super) fn add_enclosure(&mut self, e: &Enclosure, k: usize, o: V3, rules: &RoutingRules) {
+        let shift = |(a, b): (V3, V3), m: f32| ([a[0] + o[0] - m, a[1] + o[1] - m, a[2] + o[2] - m], [b[0] + o[0] + m, b[1] + o[1] + m, b[2] + o[2] + m]);
+        for it in &e.items {
+            let bx = shift(panel::item_box(e, it), 0.0);
+            match it.kind {
+                ItemKind::Device | ItemKind::Rail | ItemKind::Busbar | ItemKind::Accessory => {
+                    let bx = shift(panel::item_box(e, it), rules.clearance);
+                    for idx in self.cells_in(bx) {
+                        if self.block[idx] == 0 {
+                            self.block[idx] = ITEM;
+                            self.owner[idx] = it.id;
+                        }
+                    }
+                }
+                ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => self.cells_in(bx).into_iter().for_each(|idx| self.duct[idx] = true),
+                _ => {}
+            }
+        }
+        for r in &e.reservations {
+            let bx = shift((r.min, r.max), 0.0);
+            for idx in self.cells_in(bx) {
+                match r.mode {
+                    ReserveMode::Keepout => self.block[idx] = WALL,
+                    ReserveMode::For(class) => self.reserved[idx] |= class.bit(),
+                }
+            }
+        }
+        for p in &e.paths {
+            let pts: Vec<V3> = p.points.iter().map(|q| [q[0] + o[0], q[1] + o[1], q[2] + o[2]]).collect();
+            if pts.len() < 2 {
+                continue;
+            }
+            self.paths.push(PathCells {
+                enclosure: k,
+                id: p.id,
+                kind: p.kind,
+                classes: p.classes.iter().fold(0, |m, c| m | c.bit()),
+                capacity: p.capacity(),
+                used: 0.0,
+                items: 0,
+            });
+            let mark = self.paths.len() as u16;
+            // At least the cells around the centre line.
+            let r = (p.width / 2.0).max(self.cell * 0.75);
+            for idx in self.cells_near(&pts, r) {
+                if self.path[idx] == 0 {
+                    self.path[idx] = mark;
+                }
+            }
+        }
+    }
+
+    /// Frees the cells whose centre passes the test, and lets their columns belong to
+    /// enclosure `k`.
+    pub(super) fn free_where(&mut self, k: usize, inside: impl Fn(V3) -> bool) {
+        for idx in 0..self.block.len() {
+            if inside(self.centre(idx)) {
+                self.block[idx] = 0;
+                let x = self.coords(idx)[0];
+                self.column[x] = k;
+            }
+        }
+    }
+
+    /// Blocks the cells whose centre lies in a box (walls, cabinets, door swings).
+    pub(super) fn block_box(&mut self, bx: (V3, V3)) {
+        for idx in self.cells_in(bx) {
+            self.block[idx] = WALL;
+        }
+    }
+
+    /// The cell a point lies in is blocked by a wall or an item (or outside the grid).
+    #[cfg(test)]
+    pub(super) fn blocked(&self, q: V3) -> bool {
+        self.cell_of(q).is_none_or(|i| self.block[i] != 0)
     }
 
     pub fn coords(&self, idx: usize) -> [usize; 3] {

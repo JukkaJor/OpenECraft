@@ -40,7 +40,7 @@ impl App {
             Cmd::LayoutDoorInside | Cmd::LayoutDoor | Cmd::LayoutFront => self.panel_ui.view == crate::panel_ui::View::Front && !self.panel_ui.in_room,
             Cmd::LayoutWalls => self.panel_ui.view != crate::panel_ui::View::ThreeD,
             Cmd::LayoutBusbar | Cmd::LayoutCutout | Cmd::LayoutRoutingPath | Cmd::LayoutReservation | Cmd::LayoutHeat | Cmd::LayoutNcData => !self.panel_ui.in_room,
-            Cmd::LayoutWallPart | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow => self.panel_ui.in_room,
+            Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow => self.panel_ui.in_room,
             Cmd::LayoutLineup | Cmd::LayoutSite => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
         }
@@ -93,6 +93,7 @@ impl App {
             Cmd::LayoutCutout => self.panel_ui.tool == crate::panel_ui::Tool::Cutout,
             Cmd::LayoutRoutingPath => self.panel_ui.tool == crate::panel_ui::Tool::RoutingPath,
             Cmd::LayoutReservation => self.panel_ui.tool == crate::panel_ui::Tool::Reservation,
+            Cmd::LayoutPipeRun => self.panel_ui.tool == crate::panel_ui::Tool::PipeRun,
             Cmd::LayoutFront => self.panel_ui.view == View::Front && self.panel_ui.face == openecraft_core::panel::Face::Plate,
             Cmd::LayoutDoor => self.panel_ui.view == View::Front && self.panel_ui.face == openecraft_core::panel::Face::Door && !self.panel_ui.door_inside,
             Cmd::LayoutDoorInside => self.panel_ui.view == View::Front && self.panel_ui.face == openecraft_core::panel::Face::Door && self.panel_ui.door_inside,
@@ -388,6 +389,7 @@ impl App {
             Cmd::LayoutCutout => self.panel_ui.choose_tool(crate::panel_ui::Tool::Cutout),
             Cmd::LayoutRoutingPath => self.panel_ui.choose_tool(crate::panel_ui::Tool::RoutingPath),
             Cmd::LayoutReservation => self.panel_ui.choose_tool(crate::panel_ui::Tool::Reservation),
+            Cmd::LayoutPipeRun => self.panel_ui.choose_tool(crate::panel_ui::Tool::PipeRun),
             Cmd::LayoutFront => self.panel_ui.front_face(openecraft_core::panel::Face::Plate, false),
             Cmd::LayoutDoor => self.panel_ui.front_face(openecraft_core::panel::Face::Door, false),
             Cmd::LayoutDoorInside => self.panel_ui.front_face(openecraft_core::panel::Face::Door, true),
@@ -634,6 +636,7 @@ impl App {
             Cmd::LayoutAccessory => self.panel_ui.accessory_menu(ui, &self.session.prj, &self.parts_db),
             Cmd::Layout3dMacro => self.panel_ui.macro_menu(ui, &mut self.session.prj),
             Cmd::LayoutWallPart => self.panel_ui.wall_part_menu(ui, &self.session.prj, &self.parts_db),
+            Cmd::LayoutFloorPart => self.panel_ui.floor_part_menu(ui, &self.session.prj, &self.parts_db),
             Cmd::LayoutWalls => self.panel_ui.walls_menu(ui, &self.session.prj),
             Cmd::LayoutNcData => {
                 for (label, format) in [(tr("DXF drawing"), NcFormat::Dxf), ("DWG", NcFormat::Dwg), (tr("Drilling list (CSV)"), NcFormat::Csv)] {

@@ -6333,3 +6333,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	Номер виробу, наприклад GEN.LMP-GN-24
 Part {} has no function with a symbol	Виріб {} не має функції із символом
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Вироби можна перетягувати лише на сторінки, які можна змінювати; ця випущена, заблокована або згенерована
+Floor mounting	Монтаж на підлогу
+Only floor-standing parts	Лише вироби, що стоять на підлозі
+Stands on the floor of a room	Стоїть на підлозі приміщення
+FLOOR	ПІДЛОГА
+Stands on the floor of a room, like pumps, tanks and compressors	Стоїть на підлозі приміщення, як насоси, баки та компресори
+{} does not stand on the floor: choose a part marked for floor mounting	{} не встановлюється на підлогу: виберіть виріб із позначкою монтажу на підлогу
+Mounting rails go on the walls and the ceiling	Монтажні рейки кріпляться на стіни та стелю
+{}: {} stands where {} stands	{}: {} стоїть на місці {}
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {} не встановлюється на підлогу, виберіть виріб, що стоїть на підлозі
+A pipe run turns at right angles	Траса трубопроводу повертає під прямим кутом
+{}: pipe run {} crosses an opening ({})	{}: траса трубопроводу {} перетинає проріз ({})
+not in the same line-up or room	не в одному ряду чи приміщенні
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} входить через дах: немає кабельного вводу на даху, бічних чи задній стінці
+Pipe run {} mm – double-click or Enter to finish	Траса трубопроводу {} мм – подвійне клацання або Enter – завершити
+Choose a room first: floor-standing parts go on its floor.	Спочатку виберіть приміщення: вироби, що стоять на підлозі, ставляться на його підлогу.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	Ще немає виробів із позначкою монтажу на підлогу. Позначте виріб у керуванні виробами: редактор виробів › Дані монтажу › Монтаж на підлогу.
+Floor-standing part	Виріб на підлогу
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	Вироби з позначкою монтажу на підлогу (насоси, баки, компресори): виберіть один, потім клацніть місце на підлозі приміщення
+Pipe run	Траса трубопроводу
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Траса трубопроводу на стіні, стелі або підлозі приміщення, уздовж якої прокладаються шланги, трубки та труби: клацніть кути, подвійне клацання або Enter – завершити
+{}: drag to move it, a double-click shows the floor	{}: перетягніть, щоб перемістити, подвійне клацання показує підлогу
+10 · Pump room	10 · Насосна
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Приміщення з рядом шаф і насосами: двигуни насосів, живлені через кабельні вводи в дахах шаф, насос і бак на підлозі, кульові крани та манометр на стіні, а також труби DN25 водяного контуру, прокладені в 3D уздовж траси трубопроводу на стіні.
+Room floor	Підлога приміщення

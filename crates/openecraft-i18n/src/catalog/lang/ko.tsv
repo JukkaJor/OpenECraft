@@ -6327,3 +6327,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	부품 번호, 예: GEN.LMP-GN-24
 Part {} has no function with a symbol	부품 {}에는 기호가 있는 기능이 없습니다
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	부품은 변경할 수 있는 페이지에만 놓을 수 있습니다. 이 페이지는 릴리스되었거나 잠겨 있거나 생성된 페이지입니다
+Floor mounting	바닥 설치
+Only floor-standing parts	바닥 설치형 부품만
+Stands on the floor of a room	방 바닥에 설치
+FLOOR	바닥
+Stands on the floor of a room, like pumps, tanks and compressors	펌프, 탱크, 압축기처럼 방 바닥에 설치
+{} does not stand on the floor: choose a part marked for floor mounting	{}은(는) 바닥 설치형이 아닙니다: 바닥 설치로 표시된 부품을 선택하십시오
+Mounting rails go on the walls and the ceiling	장착 레일은 벽과 천장에 설치합니다
+{}: {} stands where {} stands	{}: {}이(가) {}와(과) 같은 자리에 있습니다
+{}: {} does not stand on the floor, choose a floor-standing part	{}: {}은(는) 바닥 설치형이 아닙니다. 바닥 설치형 부품을 선택하십시오
+A pipe run turns at right angles	배관 경로는 직각으로 꺾입니다
+{}: pipe run {} crosses an opening ({})	{}: 배관 경로 {}이(가) 개구부를 가로지릅니다 ({})
+not in the same line-up or room	같은 열 배치 또는 방에 있지 않음
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {}이(가) 지붕을 통해 인입됨: 지붕, 측면 또는 후면에 케이블 글랜드 없음
+Pipe run {} mm – double-click or Enter to finish	배관 경로 {} mm – 두 번 클릭하거나 Enter로 완료
+Choose a room first: floor-standing parts go on its floor.	먼저 방을 선택하십시오: 바닥 설치형 부품은 방 바닥에 설치합니다.
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	아직 바닥 설치로 표시된 부품이 없습니다. 부품 관리에서 표시하십시오: 부품 편집기 › 장착 데이터 › 바닥 설치.
+Floor-standing part	바닥 설치 부품
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	바닥 설치로 표시된 부품(펌프, 탱크, 압축기): 하나를 선택한 다음 방 바닥에서 설치할 위치를 클릭하십시오
+Pipe run	배관 경로
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	방의 벽, 천장 또는 바닥에 있는 배관 경로로, 호스, 튜브, 배관이 이를 따라 배선됩니다: 모서리를 클릭하고 두 번 클릭하거나 Enter로 완료
+{}: drag to move it, a double-click shows the floor	{}: 드래그하여 이동, 두 번 클릭하여 바닥 표시
+10 · Pump room	10 · 펌프실
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	열 배치와 펌프가 있는 방: 외함 지붕의 케이블 글랜드를 통해 전원을 받는 펌프 모터, 바닥에 놓인 펌프와 탱크, 벽의 볼 밸브와 압력계, 벽의 배관 경로를 따라 3D로 배선된 물 회로의 DN25 배관.
+Room floor	방 바닥

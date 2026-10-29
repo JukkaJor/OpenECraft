@@ -98,6 +98,10 @@ pub struct RoutingPath {
     pub classes: Vec<Class>,
     /// Share of the capacity kept free for later additions, percent.
     pub reserve: f32,
+    /// The face of a room the path runs along (pipe runs, see
+    /// `crate::panel::add_pipe_run`); `None` for paths through an enclosure.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub face: Option<super::panel::Face>,
 }
 
 /// What a routing path is for.
@@ -123,6 +127,19 @@ pub struct FrozenRoute {
     pub points: Vec<V3>,
     /// Length when it was frozen, mm.
     pub length: f32,
+    /// A route through a room into its cabinets: its legs, each relative to its own
+    /// enclosure (`points` is then empty).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub legs: Vec<FrozenLeg>,
+}
+
+/// A leg of a frozen route (see [`FrozenRoute::legs`]).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct FrozenLeg {
+    /// Id of the enclosure (cabinet or room) the points are relative to.
+    pub enclosure: u64,
+    pub points: Vec<V3>,
 }
 
 /// What is routed.

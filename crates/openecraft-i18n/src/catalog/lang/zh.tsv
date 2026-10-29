@@ -6329,3 +6329,27 @@ Places a part on a page: the symbol of its main function with its connection poi
 Part number, e.g. GEN.LMP-GN-24	部件编号，例如 GEN.LMP-GN-24
 Part {} has no function with a symbol	部件 {} 没有带符号的功能
 Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	部件只能拖放到可修改的页面上；此页面已发布、已锁定或为生成页面
+Floor mounting	落地安装
+Only floor-standing parts	仅落地式部件
+Stands on the floor of a room	立于房间地面
+FLOOR	落地
+Stands on the floor of a room, like pumps, tanks and compressors	立于房间地面，如泵、储罐和压缩机
+{} does not stand on the floor: choose a part marked for floor mounting	{} 不是落地式：请选择标记为落地安装的部件
+Mounting rails go on the walls and the ceiling	安装导轨只能装在墙面和顶部上
+{}: {} stands where {} stands	{}：{} 与 {} 位置重叠
+{}: {} does not stand on the floor, choose a floor-standing part	{}：{} 不是落地式，请选择落地式部件
+A pipe run turns at right angles	管道走线只能直角转弯
+{}: pipe run {} crosses an opening ({})	{}：管道走线 {} 穿过开口（{}）
+not in the same line-up or room	不在同一并柜排列或同一房间内
+{} {} enters through the roof: no cable gland on the roof, sides or rear	{} {} 从柜顶进入：柜顶、侧面或背面没有电缆密封接头
+Pipe run {} mm – double-click or Enter to finish	管道走线 {} mm – 双击或按 Enter 完成
+Choose a room first: floor-standing parts go on its floor.	请先选择房间：落地式部件放在其地面上。
+No parts marked for floor mounting yet. Mark one in the parts management: part editor › Mounting data › Floor mounting.	尚无标记为落地安装的部件。请在部件管理中标记：部件编辑器 › 安装数据 › 落地安装。
+Floor-standing part	落地式部件
+Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room	标记为落地安装的部件（泵、储罐、压缩机）：选择一个，然后在房间地面上单击放置位置
+Pipe run	管道走线
+Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	房间墙面、顶部或地面上的管道走线，软管、管子和管道沿其布线：单击各个角点，双击或按 Enter 完成
+{}: drag to move it, a double-click shows the floor	{}：拖动以移动，双击显示地面
+10 · Pump room	10 · 泵房
+The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	并柜排列所在的房间及其泵：泵电机经柜顶的电缆密封接头供电，泵和储罐落地放置，球阀和压力表装在墙上，水回路的 DN25 管道沿墙面管道走线进行 3D 布线。
+Room floor	房间地面
