@@ -16,6 +16,7 @@ openecraft-cli new_project --name "Pump control" --path pump.oec
 openecraft-cli new_project --example star_delta_starter --path star_delta.oec   # see list_examples
 openecraft-cli -p pump.oec place_symbol --page 1 --symbol pb_no --x 200 --y 100   # -S1
 openecraft-cli -p pump.oec place_symbol --page 1 --symbol coil --x 200 --y 160    # -K1
+openecraft-cli -p pump.oec place_part --page 1 --part GEN.LMP-GN-24 --x 240 --y 160   # -P1 with its part
 openecraft-cli -p pump.oec connect --page 1 --from -S1:14 --to -K1:A1
 openecraft-cli -p pump.oec check
 openecraft-cli -p pump.oec export --format pdf --path pump.pdf

@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Clic destro per altre opzioni
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Nessun articolo ancora contrassegnato per il montaggio a parete. Contrassegnane uno nella gestione articoli: editor articoli › Dati di montaggio › Montaggio a parete.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nessun dispositivo ha ancora dati di montaggio: assegna ai dispositivi articoli con dimensioni (Proprietà › Articoli).
+Drag it onto a schematic page to place it	Trascinalo su una pagina di schema per posizionarlo
+Importing {} from the parts server…	Importazione di {} dal server articoli…
+{} was imported into the parts database; its page no longer exists	{} è stato importato nel database articoli; la sua pagina non esiste più
+{} is neither in the parts database nor on the parts server	{} non è né nel database articoli né sul server articoli
+{} has no function with a symbol; assign it to a device in its properties	{} non ha funzioni con simbolo; assegnalo a un dispositivo nelle sue proprietà
+{} imported into the parts database and placed as {}	{} importato nel database articoli e posizionato come {}
+{} placed as {}	{} posizionato come {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Posiziona un articolo su una pagina: il simbolo della sua funzione principale con le designazioni dei punti di connessione, come nuovo dispositivo a cui l'articolo viene assegnato (articoli del progetto e catalogo di esempio)
+Part number, e.g. GEN.LMP-GN-24	Codice articolo, ad es. GEN.LMP-GN-24
+Part {} has no function with a symbol	L'articolo {} non ha funzioni con simbolo
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Gli articoli possono essere rilasciati solo su pagine modificabili; questa è rilasciata, bloccata o generata

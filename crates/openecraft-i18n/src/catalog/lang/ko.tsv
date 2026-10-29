@@ -6316,3 +6316,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	마우스 오른쪽 단추를 클릭하여 추가 옵션
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	아직 벽 설치로 표시된 부품이 없습니다. 부품 관리에서 표시하십시오: 부품 편집기 › 장착 데이터 › 벽 설치.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	아직 장착 데이터가 있는 장치가 없습니다: 장치에 치수가 있는 부품을 할당하십시오(속성 › 부품).
+Drag it onto a schematic page to place it	회로도 페이지로 드래그하여 배치
+Importing {} from the parts server…	부품 서버에서 {} 가져오는 중…
+{} was imported into the parts database; its page no longer exists	{}을(를) 부품 데이터베이스로 가져왔습니다. 해당 페이지는 더 이상 없습니다
+{} is neither in the parts database nor on the parts server	{}은(는) 부품 데이터베이스와 부품 서버 어디에도 없습니다
+{} has no function with a symbol; assign it to a device in its properties	{}에는 기호가 있는 기능이 없습니다. 장치 속성에서 장치에 할당하십시오
+{} imported into the parts database and placed as {}	{}을(를) 부품 데이터베이스로 가져와 {}(으)로 배치했습니다
+{} placed as {}	{}을(를) {}(으)로 배치했습니다
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	페이지에 부품을 배치합니다: 주 기능의 기호를 연결점 지정과 함께, 부품이 할당된 새 장치로 배치합니다(프로젝트 부품 및 예제 카탈로그)
+Part number, e.g. GEN.LMP-GN-24	부품 번호, 예: GEN.LMP-GN-24
+Part {} has no function with a symbol	부품 {}에는 기호가 있는 기능이 없습니다
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	부품은 변경할 수 있는 페이지에만 놓을 수 있습니다. 이 페이지는 릴리스되었거나 잠겨 있거나 생성된 페이지입니다

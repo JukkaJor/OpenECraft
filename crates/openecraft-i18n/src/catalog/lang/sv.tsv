@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Högerklicka för mer
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Inga artiklar är märkta för väggmontage ännu. Märk en i artikelhanteringen: artikelredigeraren › Monteringsdata › Väggmontage.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ingen apparat har monteringsdata ännu: tilldela apparaterna artiklar med mått (Egenskaper › Artiklar).
+Drag it onto a schematic page to place it	Dra till en schemasida för att placera
+Importing {} from the parts server…	Importerar {} från artikelservern…
+{} was imported into the parts database; its page no longer exists	{} importerades till artikeldatabasen; dess sida finns inte längre
+{} is neither in the parts database nor on the parts server	{} finns varken i artikeldatabasen eller på artikelservern
+{} has no function with a symbol; assign it to a device in its properties	{} har ingen funktion med symbol; tilldela den till en apparat i apparatens egenskaper
+{} imported into the parts database and placed as {}	{} importerad till artikeldatabasen och placerad som {}
+{} placed as {}	{} placerad som {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Placerar en artikel på en sida: symbolen för dess huvudfunktion med anslutningsbeteckningarna, som en ny apparat som artikeln tilldelas (projektartiklar och exempelkatalogen)
+Part number, e.g. GEN.LMP-GN-24	Artikelnummer, t.ex. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artikeln {} har ingen funktion med symbol
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artiklar kan bara släppas på sidor som kan ändras; den här är frisläppt, låst eller genererad

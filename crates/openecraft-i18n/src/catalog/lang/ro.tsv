@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Clic dreapta pentru mai multe
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Încă niciun articol marcat pentru montaj pe perete. Marcați unul în gestionarea articolelor: editorul de articole › Date de montaj › Montaj pe perete.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Niciun dispozitiv nu are încă date de montaj: atribuiți dispozitivelor articole cu dimensiuni (Proprietăți › Articole).
+Drag it onto a schematic page to place it	Trageți pe o pagină de schemă pentru a plasa
+Importing {} from the parts server…	Se importă {} de pe serverul de articole…
+{} was imported into the parts database; its page no longer exists	{} a fost importat în baza de date de articole; pagina sa nu mai există
+{} is neither in the parts database nor on the parts server	{} nu se află nici în baza de date de articole, nici pe serverul de articole
+{} has no function with a symbol; assign it to a device in its properties	{} nu are nicio funcție cu simbol; atribuiți-l unui dispozitiv în proprietățile acestuia
+{} imported into the parts database and placed as {}	{} importat în baza de date de articole și plasat ca {}
+{} placed as {}	{} plasat ca {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Plasează un articol pe o pagină: simbolul funcției sale principale cu denumirile punctelor de conexiune, ca dispozitiv nou căruia i se atribuie articolul (articolele proiectului și catalogul exemplu)
+Part number, e.g. GEN.LMP-GN-24	Număr articol, de ex. GEN.LMP-GN-24
+Part {} has no function with a symbol	Articolul {} nu are nicio funcție cu simbol
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Articolele pot fi plasate doar pe pagini care pot fi modificate; aceasta este eliberată, blocată sau generată

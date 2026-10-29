@@ -6322,3 +6322,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	右クリックでその他の操作
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	壁取付としてマークされた部品はまだありません。部品管理でマークしてください: 部品エディター › 取付データ › 壁取付。
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	取付データを持つデバイスはまだありません: 寸法のある部品をデバイスに割り当ててください (プロパティ › 部品)。
+Drag it onto a schematic page to place it	回路図ページにドラッグして配置
+Importing {} from the parts server…	部品サーバーから {} をインポートしています…
+{} was imported into the parts database; its page no longer exists	{} を部品データベースにインポートしました。ページはもう存在しません
+{} is neither in the parts database nor on the parts server	{} は部品データベースにも部品サーバーにもありません
+{} has no function with a symbol; assign it to a device in its properties	{} にはシンボル付きの機能がありません。デバイスのプロパティでデバイスに割り当ててください
+{} imported into the parts database and placed as {}	{} を部品データベースにインポートし、{} として配置しました
+{} placed as {}	{} を {} として配置しました
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	ページに部品を配置します: 主機能のシンボルを接続ポイント名付きで、部品を割り当てた新しいデバイスとして配置します (プロジェクト部品とサンプルカタログ)
+Part number, e.g. GEN.LMP-GN-24	部品番号 (例: GEN.LMP-GN-24)
+Part {} has no function with a symbol	部品 {} にはシンボル付きの機能がありません
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	部品は変更可能なページにのみドロップできます。このページはリリース済み、ロック済み、または生成ページです

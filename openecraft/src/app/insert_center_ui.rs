@@ -303,9 +303,7 @@ impl App {
             }
             Entry::Part(n) => {
                 let Some(p) = parts::lookup(&self.session.prj, Some(&self.parts_db), n) else { return };
-                let Some(f) = p.functions.iter().find(|f| openecraft_core::unplaced::symbol_for(f.kind).is_some()) else { return };
-                let Some(sym) = openecraft_core::unplaced::symbol_for(f.kind) else { return };
-                let pins = f.pin_list();
+                let Some((sym, pins)) = openecraft_core::unplaced::part_symbol(p) else { return };
                 self.set_tool(Tool::Place(sym));
                 self.editor.place_once = Some((String::new(), pins));
                 self.editor.place_part = Some(n.clone());

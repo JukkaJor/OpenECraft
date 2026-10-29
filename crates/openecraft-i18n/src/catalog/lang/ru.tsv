@@ -6322,3 +6322,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Щёлкните правой кнопкой для других действий
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Пока нет изделий с отметкой настенного монтажа. Отметьте изделие в управлении изделиями: редактор изделий › Монтажные данные › Настенный монтаж.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ни у одного устройства пока нет монтажных данных: назначьте устройствам изделия с размерами (Свойства › Изделия).
+Drag it onto a schematic page to place it	Перетащите на страницу схемы, чтобы разместить
+Importing {} from the parts server…	Импорт {} с сервера изделий…
+{} was imported into the parts database; its page no longer exists	{} импортировано в базу данных изделий; его страница больше не существует
+{} is neither in the parts database nor on the parts server	{} нет ни в базе данных изделий, ни на сервере изделий
+{} has no function with a symbol; assign it to a device in its properties	У {} нет функции с символом; назначьте его устройству в свойствах устройства
+{} imported into the parts database and placed as {}	{} импортировано в базу данных изделий и размещено как {}
+{} placed as {}	{} размещено как {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Размещает изделие на странице: символ его основной функции с обозначениями точек подключения, как новое устройство, которому назначено изделие (изделия проекта и пример каталога)
+Part number, e.g. GEN.LMP-GN-24	Номер изделия, например GEN.LMP-GN-24
+Part {} has no function with a symbol	У изделия {} нет функции с символом
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Изделия можно перетаскивать только на изменяемые страницы; эта выпущена, заблокирована или сгенерирована

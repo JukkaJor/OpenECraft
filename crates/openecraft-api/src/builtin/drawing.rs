@@ -10,6 +10,7 @@ use openecraft_core::fluid::Medium;
 use openecraft_core::geom::{p, P, GRID};
 use openecraft_core::model::*;
 use openecraft_core::ops::{self, PlaceCtx};
+use openecraft_core::parts;
 use openecraft_core::symbols::{self, Anchor, Func, SymbolRef};
 use openecraft_core::symlib::Symbols;
 use openecraft_core::arrange::{self, Align};
@@ -56,6 +57,20 @@ pub static COMMANDS: &[Spec] = &[
             PINS,
         ],
         run: place_symbol,
+    },
+    Spec {
+        name: "place_part",
+        help: tr_const!("Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)"),
+        params: &[
+            PAGE,
+            param("part", Kind::Str, tr_const!("Part number, e.g. GEN.LMP-GN-24")),
+            param("x", Kind::Num, tr_const!("X position in mm")),
+            param("y", Kind::Num, tr_const!("Y position in mm (downwards)")),
+            ROTATION,
+            MIRROR,
+            TAG,
+        ],
+        run: place_part,
     },
     Spec {
         name: "update_symbol",
@@ -483,6 +498,30 @@ fn place_symbol(prj: &mut Project, a: &Args) -> Result<Value, String> {
     }
     apply_symbol_params(&mut sym, a)?;
     let out = symbol_json(&symbols, &sym);
+    prj.pages[i].symbols.push(sym);
+    Ok(out)
+}
+
+fn place_part(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let number = a.req("part").trim().to_string();
+    let db = parts::PartsDb::default();
+    let part = parts::lookup(prj, None, &number).or_else(|| parts::catalog().iter().find(|p| p.number == number)).cloned();
+    let part = part.ok_or_else(|| tr_fmt!("Unknown part: {}", number))?;
+    let (symbol, pins) = openecraft_core::unplaced::part_symbol(&part).ok_or_else(|| tr_fmt!("Part {} has no function with a symbol", number))?;
+    let i = editable(prj, a.req("page"))?;
+    let def = symbol_def(prj, symbol)?;
+    let pos = on_page(prj, i, num(a, "x").unwrap_or_default(), num(a, "y").unwrap_or_default())?;
+    let mut sym = ops::new_symbol(prj, i, &PlaceCtx::default(), &def, pos, rotation(a)?.unwrap_or(0), a.flag("mirror"));
+    if let Some(tag) = a.str("tag").filter(|t| !t.trim().is_empty()) {
+        ops::check_tag(tag)?;
+        sym.tag = tag.into();
+    }
+    if pins.len() == sym.pins.len() {
+        sym.pins = pins;
+    }
+    parts::add_to_device(prj, &db, &sym.tag, &number, 1);
+    let mut out = symbol_json(&prj.symbol_table(), &sym);
+    out["part"] = json!(number);
     prj.pages[i].symbols.push(sym);
     Ok(out)
 }

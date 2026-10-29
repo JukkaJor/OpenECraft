@@ -231,3 +231,18 @@ fn definitions_need_wires_and_known_values() {
     assert_eq!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "color": "gn/ye", "cross_section": "1,5 mm²" })).unwrap()["color"], "gn/ye");
     assert!(run(&mut s, "update_wire", json!({ "page": "1", "id": id, "length": -1 })).is_err());
 }
+
+#[test]
+fn parts_are_placed_as_new_devices() {
+    let mut s = new_session();
+    let lamp = run(&mut s, "place_part", json!({ "page": "1", "part": "GEN.LMP-GN-24", "x": 100, "y": 100 })).unwrap();
+    assert_eq!(lamp["part"], "GEN.LMP-GN-24");
+    let tag = lamp["tag"].as_str().unwrap().to_string();
+    assert!(tag.starts_with("-P"), "{tag}");
+    let pins: Vec<&str> = lamp["pins"].as_array().unwrap().iter().map(|p| p["pin"].as_str().unwrap()).collect();
+    assert_eq!(pins, ["X1", "X2"]);
+    let prj = s.project().unwrap();
+    assert!(prj.parts.iter().any(|p| p.number == "GEN.LMP-GN-24"), "copied into the project parts");
+    assert_eq!(prj.devices[&tag].parts[0].number, "GEN.LMP-GN-24");
+    assert!(run(&mut s, "place_part", json!({ "page": "1", "part": "NO.SUCH-PART", "x": 0, "y": 0 })).is_err());
+}

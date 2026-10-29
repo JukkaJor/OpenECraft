@@ -68,6 +68,7 @@ mod plugs_ui;
 mod tables_ui;
 mod pages_ui;
 mod page_dnd;
+mod part_drop;
 mod sections_ui;
 mod potentials_ui;
 mod projects_ui;
@@ -320,6 +321,8 @@ pub struct App {
     last_selection: (usize, Vec<u64>),
     /// The touch sizes of the tablet mode are applied (or not).
     tablet_applied: Option<bool>,
+    /// A part dropped onto a page that is being downloaded from the parts server.
+    pending_drop: Option<crate::parts_ui::PendingDrop>,
 }
 
 impl App {
@@ -526,6 +529,7 @@ impl App {
             scroll_nav: false,
             last_selection: (0, Vec::new()),
             tablet_applied: None,
+            pending_drop: None,
             dark: cc.egui_ctx.theme() == egui::Theme::Dark,
         };
         crate::style::apply(&cc.egui_ctx);
@@ -899,6 +903,7 @@ impl eframe::App for App {
         self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
+        self.finish_part_drop(&ctx);
         self.key_tips(&ctx);
         self.command_keys(&ctx);
         self.session.clamp_page();

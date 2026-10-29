@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Kliknutím pravým tlačítkem další možnosti
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Zatím žádné artikly označené pro montáž na stěnu. Označte artikl ve správě artiklů: editor artiklů › Montážní data › Montáž na stěnu.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Zatím žádný přístroj nemá montážní data: přiřaďte přístrojům artikly s rozměry (Vlastnosti › Artikly).
+Drag it onto a schematic page to place it	Přetažením na stránku schématu jej umístíte
+Importing {} from the parts server…	Import {} ze serveru artiklů…
+{} was imported into the parts database; its page no longer exists	{} byl importován do databáze artiklů; jeho stránka už neexistuje
+{} is neither in the parts database nor on the parts server	{} není v databázi artiklů ani na serveru artiklů
+{} has no function with a symbol; assign it to a device in its properties	{} nemá funkci se symbolem; přiřaďte jej přístroji v jeho vlastnostech
+{} imported into the parts database and placed as {}	{} importován do databáze artiklů a umístěn jako {}
+{} placed as {}	{} umístěn jako {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Umístí artikl na stránku: symbol jeho hlavní funkce s označením přípojných bodů, jako nový přístroj, kterému je artikl přiřazen (artikly projektu a ukázkový katalog)
+Part number, e.g. GEN.LMP-GN-24	Číslo artiklu, např. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artikl {} nemá funkci se symbolem
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikly lze pustit jen na stránky, které lze měnit; tato je uvolněná, zamčená nebo generovaná

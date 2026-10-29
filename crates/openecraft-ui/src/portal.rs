@@ -44,6 +44,9 @@ pub struct Browser {
     pub remote: Vec<Part>,
     pub user_name: String,
     pub password: String,
+    /// The results can be dragged out as [`crate::part_editor::PartDrag`] (the editor
+    /// places them on a schematic page).
+    pub drag_parts: bool,
     /// A new search is due.
     dirty: bool,
 }
@@ -474,7 +477,8 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         let in_db = local.iter().any(|l| l.number == p.number);
                         let text = RichText::new(format!("{}  {}", p.number, p.description));
                         let text = if in_db { text.strong() } else { text };
-                        let resp = ui.add(egui::Button::selectable(b.selected.as_deref() == Some(p.number.as_str()), text).truncate());
+                        let selected = b.selected.as_deref() == Some(p.number.as_str());
+                        let resp = crate::part_editor::drag_row(ui, b.drag_parts, &p.number, |ui| ui.add(egui::Button::selectable(selected, text).truncate()));
                         let resp = if in_db { resp.on_hover_text(tr("Already in the parts database")) } else { resp };
                         if resp.clicked() {
                             b.selected = Some(p.number.clone());

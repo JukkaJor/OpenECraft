@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Daha fazlası için sağ tıklayın
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Henüz duvara montaj için işaretlenmiş parça yok. Parça yönetiminde bir parça işaretleyin: parça düzenleyici › Montaj verileri › Duvara montaj.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Henüz hiçbir cihazın montaj verisi yok: cihazlara boyutları olan parçalar atayın (Özellikler › Parçalar).
+Drag it onto a schematic page to place it	Yerleştirmek için bir şema sayfasına sürükleyin
+Importing {} from the parts server…	{} parça sunucusundan içe aktarılıyor…
+{} was imported into the parts database; its page no longer exists	{} parça veritabanına aktarıldı; sayfası artık yok
+{} is neither in the parts database nor on the parts server	{} ne parça veritabanında ne de parça sunucusunda var
+{} has no function with a symbol; assign it to a device in its properties	{} parçasının sembollü işlevi yok; bir cihaza, cihazın özelliklerinde atayın
+{} imported into the parts database and placed as {}	{} parça veritabanına aktarıldı ve {} olarak yerleştirildi
+{} placed as {}	{} {} olarak yerleştirildi
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Bir parçayı sayfaya yerleştirir: ana işlevinin sembolü bağlantı noktası tanımlarıyla, parçanın atandığı yeni bir cihaz olarak (proje parçaları ve örnek katalog)
+Part number, e.g. GEN.LMP-GN-24	Parça numarası, ör. GEN.LMP-GN-24
+Part {} has no function with a symbol	{} parçasının sembollü işlevi yok
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Parçalar yalnızca değiştirilebilen sayfalara bırakılabilir; bu sayfa yayınlanmış, kilitli veya oluşturulmuş

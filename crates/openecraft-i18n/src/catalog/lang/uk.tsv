@@ -6322,3 +6322,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Клацніть правою кнопкою для інших дій
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ще немає виробів із позначкою настінного монтажу. Позначте виріб у керуванні виробами: редактор виробів › Дані монтажу › Настінний монтаж.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Жоден пристрій ще не має даних монтажу: призначте пристроям вироби з розмірами (Властивості › Вироби).
+Drag it onto a schematic page to place it	Перетягніть на сторінку схеми, щоб розмістити
+Importing {} from the parts server…	Імпорт {} із сервера виробів…
+{} was imported into the parts database; its page no longer exists	{} імпортовано до бази даних виробів; його сторінки більше немає
+{} is neither in the parts database nor on the parts server	{} немає ні в базі даних виробів, ні на сервері виробів
+{} has no function with a symbol; assign it to a device in its properties	{} не має функції із символом; призначте його пристрою в його властивостях
+{} imported into the parts database and placed as {}	{} імпортовано до бази даних виробів і розміщено як {}
+{} placed as {}	{} розміщено як {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Розміщує виріб на сторінці: символ його основної функції з позначеннями точок підключення, як новий пристрій, якому призначено виріб (вироби проєкту та приклад каталогу)
+Part number, e.g. GEN.LMP-GN-24	Номер виробу, наприклад GEN.LMP-GN-24
+Part {} has no function with a symbol	Виріб {} не має функції із символом
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Вироби можна перетягувати лише на сторінки, які можна змінювати; ця випущена, заблокована або згенерована

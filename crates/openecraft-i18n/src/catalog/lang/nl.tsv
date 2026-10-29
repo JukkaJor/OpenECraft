@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Klik met de rechtermuisknop voor meer
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Nog geen artikelen gemarkeerd voor wandmontage. Markeer er een in het artikelbeheer: artikeleditor › Montagegegevens › Wandmontage.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nog geen apparaat heeft montagegegevens: wijs de apparaten artikelen met afmetingen toe (Eigenschappen › Artikelen).
+Drag it onto a schematic page to place it	Sleep naar een schemapagina om te plaatsen
+Importing {} from the parts server…	{} wordt van de artikelserver geïmporteerd…
+{} was imported into the parts database; its page no longer exists	{} is in de artikeldatabase geïmporteerd; de pagina bestaat niet meer
+{} is neither in the parts database nor on the parts server	{} staat niet in de artikeldatabase en niet op de artikelserver
+{} has no function with a symbol; assign it to a device in its properties	{} heeft geen functie met symbool; wijs het toe aan een apparaat in de eigenschappen daarvan
+{} imported into the parts database and placed as {}	{} in de artikeldatabase geïmporteerd en geplaatst als {}
+{} placed as {}	{} geplaatst als {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Plaatst een artikel op een pagina: het symbool van de hoofdfunctie met de aansluitaanduidingen, als nieuw apparaat waaraan het artikel wordt toegewezen (projectartikelen en voorbeeldcatalogus)
+Part number, e.g. GEN.LMP-GN-24	Artikelnummer, bijv. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artikel {} heeft geen functie met symbool
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikelen kunnen alleen op wijzigbare pagina's worden neergezet; deze is vrijgegeven, vergrendeld of gegenereerd

@@ -6318,3 +6318,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	右键单击查看更多
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	尚无标记为墙面安装的部件。请在部件管理中标记：部件编辑器 › 安装数据 › 墙面安装。
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	尚无设备具有安装数据：请为设备分配带尺寸的部件（属性 › 部件）。
+Drag it onto a schematic page to place it	拖到原理图页面上即可放置
+Importing {} from the parts server…	正在从部件服务器导入 {}…
+{} was imported into the parts database; its page no longer exists	{} 已导入部件数据库；其页面已不存在
+{} is neither in the parts database nor on the parts server	{} 不在部件数据库中，也不在部件服务器上
+{} has no function with a symbol; assign it to a device in its properties	{} 没有带符号的功能；请在设备属性中将其分配给设备
+{} imported into the parts database and placed as {}	{} 已导入部件数据库并放置为 {}
+{} placed as {}	{} 已放置为 {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	在页面上放置部件：以其主功能的符号及连接点标识作为新设备放置，并为其分配该部件（项目部件和示例目录）
+Part number, e.g. GEN.LMP-GN-24	部件编号，例如 GEN.LMP-GN-24
+Part {} has no function with a symbol	部件 {} 没有带符号的功能
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	部件只能拖放到可修改的页面上；此页面已发布、已锁定或为生成页面

@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Højreklik for flere
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ingen artikler er markeret til vægmontage endnu. Markér en i artikelstyringen: artikeleditor › Monteringsdata › Vægmontage.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ingen enhed har monteringsdata endnu: tildel enhederne artikler med mål (Egenskaber › Artikler).
+Drag it onto a schematic page to place it	Træk til en diagramside for at placere
+Importing {} from the parts server…	Importerer {} fra artikelserveren…
+{} was imported into the parts database; its page no longer exists	{} blev importeret til artikeldatabasen; dens side findes ikke længere
+{} is neither in the parts database nor on the parts server	{} findes hverken i artikeldatabasen eller på artikelserveren
+{} has no function with a symbol; assign it to a device in its properties	{} har ingen funktion med symbol; tildel den til en enhed i enhedens egenskaber
+{} imported into the parts database and placed as {}	{} importeret til artikeldatabasen og placeret som {}
+{} placed as {}	{} placeret som {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Placerer en artikel på en side: symbolet for dens hovedfunktion med tilslutningsbetegnelserne, som en ny enhed, artiklen tildeles (projektartikler og eksempelkataloget)
+Part number, e.g. GEN.LMP-GN-24	Artikelnummer, f.eks. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artiklen {} har ingen funktion med symbol
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artikler kan kun slippes på sider, der kan ændres; denne er frigivet, låst eller genereret

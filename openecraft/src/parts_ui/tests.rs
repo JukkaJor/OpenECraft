@@ -32,3 +32,16 @@ fn imported_models_go_to_the_requested_part() {
     let project_file = Loaded { purpose: Purpose::Project, name: "x.oec".into(), bytes: Vec::new() };
     assert!(ui.apply_model(&project_file, &mut db, &mut prj).is_err());
 }
+
+#[test]
+fn dropped_parts_come_from_the_project_the_database_the_catalog_or_the_server() {
+    let mut prj = Project::default();
+    // The default database holds the example catalog; this one is empty.
+    let mut db = PartsDb { parts: Vec::new() };
+    assert_eq!(drop_source(&prj, &db, "GEN.LMP-GN-24"), DropSource::Catalog);
+    assert_eq!(drop_source(&prj, &db, "SRV.ONLY-1"), DropSource::Server);
+    db.parts.push(Part { number: "SRV.ONLY-1".into(), ..Default::default() });
+    assert_eq!(drop_source(&prj, &db, "SRV.ONLY-1"), DropSource::Local, "imported into the database");
+    prj.parts.push(Part { number: "PRJ.OWN".into(), ..Default::default() });
+    assert_eq!(drop_source(&prj, &db, "PRJ.OWN"), DropSource::Local);
+}

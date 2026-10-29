@@ -6323,3 +6323,14 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 Right click for more	Clique com o botão direito para mais opções
 No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ainda não há peças marcadas para montagem na parede. Marque uma no gerenciamento de peças: editor de peças › Dados de montagem › Montagem na parede.
 No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nenhum dispositivo tem dados de montagem ainda: atribua peças com dimensões aos dispositivos (Propriedades › Peças).
+Drag it onto a schematic page to place it	Arraste para uma página de esquema para posicioná-la
+Importing {} from the parts server…	Importando {} do servidor de peças…
+{} was imported into the parts database; its page no longer exists	{} foi importada para o banco de dados de peças; a página dela não existe mais
+{} is neither in the parts database nor on the parts server	{} não está no banco de dados de peças nem no servidor de peças
+{} has no function with a symbol; assign it to a device in its properties	{} não tem função com símbolo; atribua-a a um dispositivo nas propriedades dele
+{} imported into the parts database and placed as {}	{} importada para o banco de dados de peças e posicionada como {}
+{} placed as {}	{} posicionada como {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Posiciona uma peça em uma página: o símbolo da função principal com as designações dos pontos de conexão, como um novo dispositivo ao qual a peça é atribuída (peças do projeto e catálogo de exemplo)
+Part number, e.g. GEN.LMP-GN-24	Número da peça, p. ex. GEN.LMP-GN-24
+Part {} has no function with a symbol	A peça {} não tem função com símbolo
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	As peças só podem ser soltas em páginas que podem ser alteradas; esta está liberada, bloqueada ou gerada

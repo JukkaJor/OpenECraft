@@ -96,6 +96,11 @@ panel layout. Most steps below can be tried on it.
   selection offers only parts that provide the device's main function. *Apply
   designations* takes the connection point designations from the part. The *Devices*
   section of the Insert center places a new device from a part with functions.
+- A part can also be dragged from the tree of *Parts management* or from the results
+  of the *Data portal* onto a schematic page: the symbol of its main function is placed
+  there as a new device with the part assigned. A part that is not in the parts
+  database yet is imported first (from the example catalog, or downloaded from the
+  parts server). The command line does the same with `place_part`.
 - The *Unplaced* navigator then lists the functions of the assigned parts that are not
   in the schematic yet (for example the reserve contacts of a contactor); drag one
   into the page to place it with its tag and designations.
