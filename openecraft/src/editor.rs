@@ -803,6 +803,7 @@ impl Editor {
         let dark = ui.visuals().dark_mode;
         let pal = Palette::new(dark);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
+        take_keys(ui, &resp);
         let rect = resp.rect;
         self.canvas_size = rect.size();
         let frame = openecraft_core::frame::of_page(prj, page_i);
@@ -1042,6 +1043,10 @@ impl Editor {
                         label: def.default_label.into(),
                         ..Default::default()
                     };
+                    // A tinted box behind it: the symbol stays visible on a page zoomed out.
+                    let b = def.world_bounds(sn, self.place_rot, self.place_mirror);
+                    let r = Rect::from_two_pos(g.w2s(b.min), g.w2s(b.max)).expand(3.0);
+                    g.painter.rect_filled(r, 2.0, g.pal.ghost.gamma_multiply(0.18));
                     render::draw_symbol(g, &def, &inst, Ink::Ghost);
                 }
             }
@@ -1710,6 +1715,14 @@ pub fn symbol_icon(ui: &mut egui::Ui, prj: &Project, key: &str, size: Vec2) -> e
     let inst = SymbolInst { sym: key.into(), label: def.default_label.into(), ..Default::default() };
     render::draw_symbol(&mut d, &def, &inst, Ink::Line);
     resp
+}
+
+/// A press in a canvas takes the keys back from a field, list or button used before
+/// (their focus would keep R, Del and Enter away from the canvas).
+pub fn take_keys(ui: &egui::Ui, resp: &egui::Response) {
+    if resp.contains_pointer() && ui.input(|i| i.pointer.any_pressed()) {
+        ui.memory_mut(|m| m.stop_text_input());
+    }
 }
 
 #[cfg(test)]

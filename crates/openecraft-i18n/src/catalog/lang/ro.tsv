@@ -6133,7 +6133,6 @@ Draw walls	Desenează pereți
 Wall	Perete
 Wall {}	Peretele {}
 Floor plan with {} walls	Plan cu {} pereți
-{} rails, {} cable ducts, {} devices	{} șine, {} canale de cablu, {} aparate
 A room needs at least four walls	O încăpere are nevoie de cel puțin patru pereți
 Walls {} and {} cross	Pereții {} și {} se intersectează
 Wall {} is shorter than {} mm	Peretele {} este mai scurt de {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Trageți pentru a roti modelul
 Standard workspaces	Spații de lucru standard
 Saved workspaces	Spații de lucru salvate
 Switches to this workspace with its panes at their default places	Comută la acest spațiu de lucru cu panourile la locurile lor implicite
+1 rail	1 șină
+{} rails	{} șine
+1 cable duct	1 canal de cablu
+{} cable ducts	{} canale de cablu
+1 device	1 aparat
+{} devices	{} aparate
+1 door	1 ușă
+{} doors	{} uși
+1 window	1 fereastră
+empty	goală
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Ștergeți încăperea {} cu tot ce este pe pereții ei? Dulapurile din ea rămân, fără încăpere.
+Delete enclosure {} with everything placed in it?	Ștergeți carcasa {} cu tot ce este plasat în ea?
+Undo brings it back.	Anulare îl readuce.
+{}: drag to move it, R turns it, a double-click opens it	{}: trageți pentru a muta, R rotește, dublu clic deschide
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Peretele {}, {} m: peretele afișat în vederea peretelui (evidențiat); trageți pentru a-l muta
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Peretele {}, {} m: trageți pentru a-l muta, dublu clic îl afișează pentru echipare
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Faceți clic pe capetele pereților interiori; fiecare clic îl începe pe următorul, capetele de lângă un perete se lipesc de el. Esc, Enter sau un dublu clic încheie lanțul, încă un Esc instrumentul.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, rotit {} °
+From the left end	De la capătul stâng
+Distance of the opening from the left end of the wall, seen from inside the room	Distanța deschiderii față de capătul stâng al peretelui, văzută din interiorul încăperii
+{}: {} is on	{}: {} este activ
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Creați o carcasă sau o încăpere (Spațiu de montaj › Carcasă nouă, Încăpere nouă) pentru a începe dispunerea.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Încă nicio carcasă – creați una cu Carcasă nouă sau o încăpere pentru dulapuri cu Încăpere nouă.
+Right click for more	Clic dreapta pentru mai multe
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Încă niciun articol marcat pentru montaj pe perete. Marcați unul în gestionarea articolelor: editorul de articole › Date de montaj › Montaj pe perete.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Niciun dispozitiv nu are încă date de montaj: atribuiți dispozitivelor articole cu dimensiuni (Proprietăți › Articole).

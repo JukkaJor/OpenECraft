@@ -429,6 +429,8 @@ pub struct PanelUi {
     /// Requests for the application.
     pub goto_schematic: Option<String>,
     pub add_page: Option<u64>,
+    /// Parts management opened (to mark parts for wall mounting).
+    pub open_parts: bool,
     /// NC export of an enclosure face.
     pub export: Option<(usize, Face, NcFormat)>,
     pattern: Option<PatternDialog>,
@@ -459,6 +461,10 @@ pub struct PanelUi {
     plan_drag: Option<plan::PlanDrag>,
     /// Line-up selected in the floor plan (its first cabinet).
     plan_cabinet: Option<usize>,
+    /// Size of the 2D view in the last frame: a resized view keeps its centre.
+    view_size: egui::Vec2,
+    /// An enclosure or room with content waiting for the confirmation of its removal.
+    confirm_remove: Option<usize>,
     /// Inner wall selected in the floor plan (its id).
     plan_inner: Option<u64>,
 }
@@ -494,6 +500,7 @@ impl Default for PanelUi {
             status: String::new(),
             goto_schematic: None,
             add_page: None,
+            open_parts: false,
             export: None,
             pattern: None,
             save_macro: None,
@@ -511,6 +518,8 @@ impl Default for PanelUi {
             wall_points: Vec::new(),
             plan_drag: None,
             plan_cabinet: None,
+            view_size: egui::Vec2::ZERO,
+            confirm_remove: None,
             plan_inner: None,
         }
     }
@@ -716,7 +725,7 @@ impl PanelUi {
     // ------------------------------------------------------------------ navigator
 
     pub fn navigator(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
-        ui.horizontal(|ui| {
+        ui.horizontal_wrapped(|ui| {
             ui.heading(tr("Enclosures and rooms"));
             if openecraft_ui::icons::button(ui, openecraft_ui::icons::Icon::Plus, tr("New enclosure")).clicked() {
                 self.new_enclosure_dialog(prj, db);
@@ -749,30 +758,37 @@ impl PanelUi {
                 } else {
                     format!("{}  {:.0}×{:.0}×{:.0}", e.name, e.width, e.height, e.depth)
                 };
-                if ui.selectable_label(i == self.enclosure, label).clicked() {
-                    self.enclosure = i;
-                    self.selection.clear();
-                    self.fit_pending = true;
-                    self.cam = None;
-                }
-                let tip = if e.is_room() { tr("Delete room") } else { tr("Delete enclosure") };
-                if icons::button(ui, Icon::Delete, tip).clicked() {
-                    remove = Some(i);
-                }
+                // The delete button stays visible; a long name is shortened instead.
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let tip = if e.is_room() { tr("Delete room") } else { tr("Delete enclosure") };
+                    if icons::button(ui, Icon::Delete, tip).clicked() {
+                        remove = Some(i);
+                    }
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        let r = ui.add(egui::Button::selectable(i == self.enclosure, label.as_str()).truncate()).on_hover_text(label.as_str());
+                        if r.clicked() {
+                            self.enclosure = i;
+                            self.selection.clear();
+                            self.fit_pending = true;
+                            self.cam = None;
+                        }
+                    });
+                });
             });
         }
         if let Some(i) = remove {
-            if prj.layout.enclosures[i].is_room() {
-                for c in panel::cabinets_in(&prj.layout, i) {
-                    let _ = panel::set_room(prj, c, None, None);
-                }
+            // Asked first when something would go with it.
+            let e = &prj.layout.enclosures[i];
+            let content = !e.items.is_empty() || !e.inner_walls.is_empty() || (e.is_room() && !panel::cabinets_in(&prj.layout, i).is_empty());
+            if content {
+                self.confirm_remove = Some(i);
+            } else {
+                self.remove_enclosure(prj, i);
             }
-            panel::unbay(prj, i);
-            prj.layout.enclosures.remove(i);
-            self.selection.clear();
         }
+        self.confirm_remove_ui(ui.ctx(), prj);
         if prj.layout.enclosures.is_empty() {
-            ui.weak(tr("No enclosure yet – create one with New enclosure."));
+            ui.weak(tr("No enclosure yet – create one with New enclosure, or a room for cabinets with New room."));
             return;
         }
         ui.separator();
@@ -801,7 +817,14 @@ impl PanelUi {
                 }
             }
             if todo.is_empty() {
-                ui.weak(tr("All devices with mounting data are placed."));
+                // Nothing placed and nothing to place: the devices have no parts with dimensions yet.
+                let placed = prj.layout.enclosures.iter().any(|e| e.items.iter().any(|i| i.kind == ItemKind::Device));
+                let tagged = prj.pages.iter().any(|pg| pg.symbols.iter().any(|s| !s.tag.is_empty()));
+                if placed || !tagged {
+                    ui.weak(tr("All devices with mounting data are placed."));
+                } else {
+                    ui.weak(tr("No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts)."));
+                }
             }
         });
         ui.separator();
@@ -873,6 +896,8 @@ impl PanelUi {
             let (face_w, face_h) = e.face_size(it.face);
             let room_wall = e.is_room() && matches!(it.face, Face::Wall(_) | Face::Inner(..));
             let room_height = e.height;
+            // A door or window of a room: no part, class, anchors or turning.
+            let opening = room_wall && it.kind == ItemKind::Cutout;
             // Doors and windows of a room are openings, not cutouts of a plate.
             let title = if room_wall && it.kind == ItemKind::Cutout { it.opening.title() } else { it.kind.title() };
             ui.label(RichText::new(title).strong());
@@ -892,19 +917,25 @@ impl PanelUi {
                     });
                     ui.end_row();
                 }
-                ui.label(tr("Part"));
-                if it.kind.is_profile() {
-                    new_part = profile_part_combo(ui, "itempart", &choices, &it.part);
+                if opening {
+                    ui.label(tr("From the left end"));
+                    ui.add(egui::DragValue::new(&mut it.x).speed(1.0).suffix(" mm")).on_hover_text(tr("Distance of the opening from the left end of the wall, seen from inside the room"));
+                    ui.end_row();
                 } else {
-                    ui.label(RichText::new(if it.part.is_empty() { "–" } else { &it.part }).monospace());
+                    ui.label(tr("Part"));
+                    if it.kind.is_profile() {
+                        new_part = profile_part_combo(ui, "itempart", &choices, &it.part);
+                    } else {
+                        ui.label(RichText::new(if it.part.is_empty() { "–" } else { &it.part }).monospace());
+                    }
+                    ui.end_row();
+                    ui.label("X / Y");
+                    ui.horizontal(|ui| {
+                        ui.add(egui::DragValue::new(&mut it.x).speed(1.0).suffix(" mm"));
+                        ui.add(egui::DragValue::new(&mut it.y).speed(1.0).suffix(" mm"));
+                    });
+                    ui.end_row();
                 }
-                ui.end_row();
-                ui.label("X / Y");
-                ui.horizontal(|ui| {
-                    ui.add(egui::DragValue::new(&mut it.x).speed(1.0).suffix(" mm"));
-                    ui.add(egui::DragValue::new(&mut it.y).speed(1.0).suffix(" mm"));
-                });
-                ui.end_row();
                 if matches!(it.kind, ItemKind::Device | ItemKind::Accessory) {
                     ui.label(tr("Width × height"));
                     ui.horizontal(|ui| {
@@ -1007,6 +1038,7 @@ impl PanelUi {
                         ui.end_row();
                     }
                 }
+                if !opening {
                 ui.label(tr("Collision class"));
                 ui.horizontal(|ui| {
                     let auto = tr_fmt!("Automatic ({})", panel::class_title(&auto_class));
@@ -1025,6 +1057,7 @@ impl PanelUi {
                 .response
                 .on_hover_text(tr("The checks keep the distances between classes and let classes overlap as set in Layout checks"));
                 ui.end_row();
+                }
                 if let Some(t) = &air {
                     ui.label(tr("Air temperature"));
                     let text = match t.limit {
@@ -1049,12 +1082,14 @@ impl PanelUi {
                     });
                     ui.end_row();
                 }
-                ui.label(tr("Horizontal position"));
-                align_editor(ui, "anchorx", &mut it.anchor.x);
-                ui.end_row();
-                ui.label(tr("Vertical position"));
-                align_editor(ui, "anchory", &mut it.anchor.y);
-                ui.end_row();
+                if !opening {
+                    ui.label(tr("Horizontal position"));
+                    align_editor(ui, "anchorx", &mut it.anchor.x);
+                    ui.end_row();
+                    ui.label(tr("Vertical position"));
+                    align_editor(ui, "anchory", &mut it.anchor.y);
+                    ui.end_row();
+                }
                 if it.kind == ItemKind::Duct {
                     let limit = prj.layout.duct_fill_limit;
                     match an.duct_fill.iter().find(|f| f.enclosure == ei && f.duct == it.id) {
@@ -1078,7 +1113,7 @@ impl PanelUi {
                 }
             });
             ui.horizontal(|ui| {
-                if icons::text_button(ui, Icon::Rotate, tr("Rotate")).on_hover_text("R").clicked() {
+                if !opening && icons::text_button(ui, Icon::Rotate, tr("Rotate")).on_hover_text("R").clicked() {
                     it.rotate();
                 }
                 if icons::text_button(ui, Icon::Delete, tr("Delete")).on_hover_text(tr("Del")).clicked() {
@@ -1341,7 +1376,7 @@ impl PanelUi {
             ui.label(tr("Place in the plant"));
             let current = e.site;
             let mut place = current.unwrap_or(SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() });
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
                 let mut by_hand = current.is_some();
                 let mut changed = ui.checkbox(&mut by_hand, tr("by hand")).on_hover_text(tr("Otherwise from the plant layout, or next to the other line-ups")).changed();
                 ui.add_enabled_ui(by_hand, |ui| {
@@ -1368,7 +1403,8 @@ impl PanelUi {
         let inside = panel::cabinets_in(&prj.layout, ei);
         for &c in &inside {
             let place = panel::room_place(prj, c).unwrap_or_default();
-            let label = tr_fmt!("{}  x {} mm, z {} mm", prj.layout.enclosures[c].name, format!("{:.0}", place.x), format!("{:.0}", place.z));
+            let (x, z, angle) = (format!("{:.0}", place.x), format!("{:.0}", place.z), format!("{:.0}", place.angle));
+            let label = tr_fmt!("{}  x {} mm, z {} mm, turned {} °", prj.layout.enclosures[c].name, x, z, angle);
             if ui.selectable_label(false, label).on_hover_text(tr("Show this cabinet; its place in the room is in its properties")).clicked() {
                 self.enclosure = c;
                 self.selection.clear();
@@ -1412,9 +1448,6 @@ impl PanelUi {
             let walls = panel::walls(e);
             for f in e.faces() {
                 let items: Vec<&PanelItem> = e.items.iter().filter(|i| i.face == f).collect();
-                let rails = items.iter().filter(|i| i.kind == ItemKind::Rail).count();
-                let ducts = items.iter().filter(|i| i.kind == ItemKind::Duct).count();
-                let devices = items.len() - rails - ducts;
                 if ui.selectable_label(self.face == f && self.view == View::Front, panel::room_face_title(e, f)).on_hover_text(tr("Show and equip this face")).clicked() {
                     self.front_face(f, false);
                 }
@@ -1433,7 +1466,7 @@ impl PanelUi {
                         ui.label("");
                     }
                 }
-                ui.label(tr_fmt!("{} rails, {} cable ducts, {} devices", rails, ducts, devices));
+                ui.label(face_summary(&items));
                 ui.end_row();
             }
         });
@@ -1550,7 +1583,7 @@ impl PanelUi {
                         SitePlace { x: pose.at[0], z: pose.at[2], angle: pose.angle.to_degrees() }
                     })
                 });
-                ui.horizontal(|ui| {
+                ui.horizontal_wrapped(|ui| {
                     let mut by_hand = current.is_some();
                     let mut changed = ui.checkbox(&mut by_hand, tr("by hand")).on_hover_text(tr("Otherwise from the plant layout, or next to the other line-ups")).changed();
                     ui.add_enabled_ui(by_hand, |ui| {
@@ -1792,7 +1825,13 @@ impl PanelUi {
                 enclosures.push(p);
             }
         }
-        egui::Window::new(tr("New enclosure")).open(&mut open).resizable(false).collapsible(false).show(ctx, |ui| {
+        egui::Window::new(tr("New enclosure"))
+            .open(&mut open)
+            .resizable(false)
+            .collapsible(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(ctx.content_rect().center())
+            .show(ctx, |ui| {
             egui::Grid::new("newenc").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr("Location"));
                 ui.text_edit_singleline(&mut ne.name);
@@ -1922,12 +1961,13 @@ impl PanelUi {
     pub fn canvas(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, db: &PartsDb) {
         let Some(ei) = self.enclosure_index(prj) else {
             ui.centered_and_justified(|ui| {
-                ui.label(tr("Create an enclosure (Layout space › New enclosure) to start the panel layout."));
+                ui.label(tr("Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout."));
             });
             return;
         };
         ui.horizontal(|ui| {
-            if self.view == View::ThreeD {
+            // A room has no door to swing.
+            if self.view == View::ThreeD && !self.in_room {
                 self.door_button(ui);
             }
             if let Tool::PlaceDevice(tag) = &self.tool {
@@ -2002,11 +2042,67 @@ impl PanelUi {
         (self.view != View::ThreeD).then(|| self.zoom / crate::editor::ZOOM_ACTUAL * 100.0)
     }
 
+    /// A resized 2D view (pane splitter, window) keeps what was in its centre there.
+    fn keep_centre(&mut self, rect: Rect) {
+        let size = rect.size();
+        if self.view_size != egui::Vec2::ZERO && size != self.view_size && !self.fit_pending {
+            self.offset += (size - self.view_size) / 2.0;
+        }
+        self.view_size = size;
+    }
+
+    /// Removes an enclosure or room; the cabinets standing in a room stay, without one.
+    fn remove_enclosure(&mut self, prj: &mut Project, i: usize) {
+        if prj.layout.enclosures[i].is_room() {
+            for c in panel::cabinets_in(&prj.layout, i) {
+                let _ = panel::set_room(prj, c, None, None);
+            }
+        }
+        panel::unbay(prj, i);
+        prj.layout.enclosures.remove(i);
+        self.selection.clear();
+    }
+
+    /// Asks before an enclosure or room with content is removed.
+    fn confirm_remove_ui(&mut self, ctx: &egui::Context, prj: &mut Project) {
+        let Some(i) = self.confirm_remove.filter(|&i| i < prj.layout.enclosures.len()) else {
+            self.confirm_remove = None;
+            return;
+        };
+        let e = &prj.layout.enclosures[i];
+        let question = if e.is_room() {
+            tr_fmt!("Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.", e.name)
+        } else {
+            tr_fmt!("Delete enclosure {} with everything placed in it?", e.name)
+        };
+        let mut answer = None;
+        egui::Modal::new(egui::Id::unique("confirm_remove_enclosure")).show(ctx, |ui| {
+            ui.set_width(380.0);
+            ui.label(question);
+            ui.weak(tr("Undo brings it back."));
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                if ui.button(tr("Delete")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr("Cancel")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    answer = Some(false);
+                }
+            });
+        });
+        if let Some(delete) = answer {
+            self.confirm_remove = None;
+            if delete {
+                self.remove_enclosure(prj, i);
+            }
+        }
+    }
+
     /// Opens the dialog for a new enclosure.
     pub fn new_enclosure_dialog(&mut self, prj: &Project, db: &PartsDb) {
         let part = if db.get(panel::ENCLOSURE_PART).is_some() { panel::ENCLOSURE_PART } else { "" };
         let mut ne = NewEnclosure {
-            name: format!("+CAB{}", prj.layout.enclosures.len() + 1),
+            name: panel::free_name(&prj.layout, "+CAB"),
             part: part.into(),
             system: String::new(),
             width: 600.0,
@@ -2057,8 +2153,8 @@ impl PanelUi {
 
     /// Adds a room and shows its rear wall.
     pub fn new_room(&mut self, prj: &mut Project) {
-        let n = (1..).find(|n| !prj.layout.enclosures.iter().any(|e| e.name == format!("+ROOM{n}"))).unwrap_or(1);
-        let room = panel::new_room(prj, &format!("+ROOM{n}"), 4000.0, 3000.0, 2800.0);
+        let name = panel::free_name(&prj.layout, "+ROOM");
+        let room = panel::new_room(prj, &name, 4000.0, 3000.0, 2800.0);
         prj.layout.enclosures.push(room);
         self.enclosure = prj.layout.enclosures.len() - 1;
         self.in_room = true;
@@ -2095,7 +2191,11 @@ impl PanelUi {
             }
         });
         if list.is_empty() {
-            ui.weak(tr("No parts marked for wall mounting."));
+            ui.weak(tr("No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting."));
+            if ui.button(tr("Parts management")).clicked() {
+                self.open_parts = true;
+                ui.close();
+            }
         }
     }
 
@@ -2166,7 +2266,9 @@ impl PanelUi {
     fn front_view(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis, db: &PartsDb) {
         let pal = Palette::new(ui.visuals().dark_mode);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
+        crate::editor::take_keys(ui, &resp);
         let rect = resp.rect;
+        self.keep_centre(rect);
         let (ew, eh) = prj.layout.enclosures[ei].view_size(self.face);
         if self.fit_pending && rect.width() > 100.0 && rect.height() > 100.0 {
             self.zoom = ((rect.width() - 40.0) / ew).min((rect.height() - 40.0) / eh).max(0.05);
@@ -2666,7 +2768,8 @@ fn ungroup(e: &mut Enclosure, ids: &[u64]) {
 
 fn rotate(e: &mut Enclosure, sel: &BTreeSet<u64>) {
     for i in 0..e.items.len() {
-        if sel.contains(&e.items[i].id) {
+        // Doors and windows of a room keep their size (only width and height are theirs).
+        if sel.contains(&e.items[i].id) && e.items[i].opening.is_cutout() {
             e.items[i].rotate();
             let mut it = e.items[i].clone();
             panel::snap_to_rail(e, &mut it);
@@ -2725,6 +2828,28 @@ fn end_kind(kind: panel::EndKind) -> &'static str {
     }
 }
 
+
+/// What a face of a room carries: "1 rail, 2 devices, 1 door" (only what is there).
+fn face_summary(items: &[&PanelItem]) -> String {
+    let count = |f: &dyn Fn(&PanelItem) -> bool| items.iter().filter(|i| f(i)).count();
+    let rails = count(&|i| i.kind == ItemKind::Rail);
+    let ducts = count(&|i| i.kind == ItemKind::Duct);
+    let doors = count(&|i| i.opening == Opening::Door);
+    let windows = count(&|i| i.opening == Opening::Window);
+    let devices = items.len() - rails - ducts - doors - windows;
+    let parts: Vec<String> = [
+        (rails, tr("1 rail"), tr_fmt!("{} rails", rails)),
+        (ducts, tr("1 cable duct"), tr_fmt!("{} cable ducts", ducts)),
+        (devices, tr("1 device"), tr_fmt!("{} devices", devices)),
+        (doors, tr("1 door"), tr_fmt!("{} doors", doors)),
+        (windows, tr("1 window"), tr_fmt!("{} windows", windows)),
+    ]
+    .into_iter()
+    .filter(|(n, ..)| *n > 0)
+    .map(|(n, one, many)| if n == 1 { one.to_string() } else { many })
+    .collect();
+    if parts.is_empty() { tr("empty").to_string() } else { parts.join(", ") }
+}
 
 #[cfg(test)]
 mod tests;

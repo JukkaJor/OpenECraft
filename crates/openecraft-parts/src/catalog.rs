@@ -243,6 +243,10 @@ Breaking capacity: 100 kA".into();
 
     let p = c.add("GEN.SOCKET-DIN-16A", "Socket outlet type F for mounting rail, 16 A 250 V", "Installation devices", "Socket outlet", "X", 14.0, (45.0, 90.0, 60.0, 0.1), &[(SocketOutlet, "L N PE")]);
     p.current = "16 A".into();
+    // Made for direct wall mounting in a room (Layout space › Insert › Wall-mounted part).
+    let p = c.add("GEN.LIGHT-EM-3W", "Emergency light LED 3 W, 3 h, IP65, for wall mounting", "Installation devices", "Emergency light", "E", 89.0, (350.0, 120.0, 60.0, 0.9), &[(Signal, "L N")]);
+    p.voltage = "230 V AC".into();
+    p.mounting_data.wall_mount = true;
     let p = c.add("GEN.HEATER-100W", "Enclosure heater 100 W, 230 V AC, with fan", "Installation devices", "Enclosure heater", "E", 75.0, (70.0, 130.0, 70.0, 0.6), &[(Heater, "1 2")]);
     p.voltage = "230 V AC".into();
     p.power = "100 W".into();

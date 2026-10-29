@@ -50,6 +50,26 @@ pub(super) fn closed_outline(points: &[P]) -> Result<Vec<[f32; 2]>, String> {
     panel::normalize_outline(&a).or_else(|_| panel::normalize_outline(&b))
 }
 
+/// An end of an inner wall: on the grid, at a right angle to the last one, and onto a
+/// wall of the room when it is near one (an inner wall starts and ends at a wall).
+pub(super) fn inner_corner(walls: &[panel::Wall], last: Option<P>, q: P) -> P {
+    let mut c = ortho_corner(last, q);
+    for w in walls {
+        let n = w.normal;
+        // Distance in front of the wall's inside surface, along its normal.
+        let d = (c.x - w.a[0]) * n[0] + (c.y - w.a[1]) * n[1];
+        let along = (c.x - w.a[0]) * w.dir()[0] + (c.y - w.a[1]) * w.dir()[1];
+        if d.abs() <= WALL_SNAP && (-0.5..=w.length() + 0.5).contains(&along) {
+            // Only across the wall, so that the right angle to the last end stays.
+            let moved = p(c.x - n[0] * d, c.y - n[1] * d);
+            if last.is_none_or(|l| (l.x - moved.x).abs() < 0.01 || (l.y - moved.y).abs() < 0.01) {
+                c = moved;
+            }
+        }
+    }
+    c
+}
+
 fn snap(v: f32) -> f32 {
     (v / MOVE_SNAP).round() * MOVE_SNAP
 }
@@ -80,7 +100,9 @@ impl PanelUi {
     pub(super) fn plan_view(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
         let pal = Palette::new(ui.visuals().dark_mode);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
+        crate::editor::take_keys(ui, &resp);
         let rect = resp.rect;
+        self.keep_centre(rect);
         let outline = panel::outline(&prj.layout.enclosures[ei]);
         let (lo, hi) = panel::bounds(&outline);
         let margin = 600.0;
@@ -137,9 +159,9 @@ impl PanelUi {
                 self.wall_points.clear();
             }
             if let (true, Some(first)) = (r, self.plan_cabinet) {
-                if let Some(place) = panel::room_place(prj, first) {
-                    let angle = (place.angle + 90.0).rem_euclid(360.0);
-                    prj.layout.enclosures[first].site = Some(SitePlace { angle, ..place });
+                // About the centre of its footprint: it stays where it stood.
+                if let Some(place) = panel::turned_place(prj, first, 90.0) {
+                    prj.layout.enclosures[first].site = Some(place);
                 }
             }
         }
@@ -191,7 +213,7 @@ impl PanelUi {
             Tool::InnerWalls => {
                 if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plan) {
                     // A chain of inner walls: every click ends one and starts the next.
-                    let corner = ortho_corner(self.wall_points.last().copied(), q);
+                    let corner = inner_corner(&walls, self.wall_points.last().copied(), q);
                     match self.wall_points.last().copied() {
                         _ if resp.double_clicked() => self.wall_points.clear(),
                         Some(last) if !last.same(corner) => match panel::add_inner_wall(prj, ei, [last.x, last.y], [corner.x, corner.y], panel::INNER_WALL) {
@@ -367,6 +389,16 @@ impl PanelUi {
             let label = format!("{}  {:.2} m", i + 1, w.length() / 1000.0);
             painter.text(mid, align, label, egui::FontId::proportional(12.0), pal.text);
         }
+        // Under the pointer: which wall it is, and that the highlighted one is the wall shown.
+        let wall_tip = hit_wall.filter(|_| matches!(self.tool, Tool::Select) && self.plan_drag.is_none()).and_then(|i| walls.get(i).map(|w| (i, w.length())));
+        let wall_tip = wall_tip.map(|(i, length)| {
+            let length = format!("{:.2}", length / 1000.0);
+            if self.face == Face::Wall(i as u16) {
+                tr_fmt!("Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it", i + 1, length)
+            } else {
+                tr_fmt!("Wall {}, {} m: drag to move it, a double-click shows it to equip it", i + 1, length)
+            }
+        });
         // Inner walls with their numbers.
         for (k, w) in e.inner_walls.iter().enumerate() {
             let (a, b) = panel::wall_box(e, Face::Inner(w.id, 0));
@@ -405,18 +437,34 @@ impl PanelUi {
                     .collect();
                 painter.add(Shape::line(arc, Stroke::new(1.0, ink.gamma_multiply(0.6))));
             } else {
-                painter.line_segment([at(it.x, -t / 2.0), at(it.x + it.w, -t / 2.0)], Stroke::new(if selected { 3.0 } else { 2.0 }, pal.highlight));
+                // Frame on both faces of the wall and the glass between them.
+                let frame = Stroke::new(1.2, ink);
+                painter.line_segment([at(it.x, 0.0), at(it.x + it.w, 0.0)], frame);
+                painter.line_segment([at(it.x, -t), at(it.x + it.w, -t)], frame);
+                painter.line_segment([at(it.x, -t / 2.0), at(it.x + it.w, -t / 2.0)], Stroke::new(if selected { 4.0 } else { 3.0 }, pal.highlight));
             }
             for along in [it.x, it.x + it.w] {
                 painter.line_segment([at(along, 0.0), at(along, -t)], Stroke::new(1.5, ink));
             }
         }
         // Cabinets: footprint, front edge, name.
+        // A cabinet in a bad place (outside, across a wall, in a door swing, …) is drawn
+        // in the warning colour and tells why under the pointer.
+        let mut hover_tip = None;
         for (c, fp) in &footprints {
             let pts: Vec<Pos2> = fp.iter().map(|q| to_screen(q[0], q[1])).collect();
             let selected = self.plan_cabinet == Some(first_of(prj, *c));
-            let stroke = Stroke::new(if selected { 2.5 } else { 1.0 }, if selected { pal.selected } else { pal.frame });
-            painter.add(Shape::convex_polygon(pts.clone(), pal.plate, stroke));
+            let problems = panel::cabinet_problems(prj, ei, *c);
+            let warn = crate::style::warning();
+            let frame = if selected { pal.selected } else if problems.is_empty() { pal.frame } else { warn };
+            let stroke = Stroke::new(if selected || !problems.is_empty() { 2.5 } else { 1.0 }, frame);
+            let fill = if problems.is_empty() { pal.plate } else { warn.gamma_multiply(0.25) };
+            painter.add(Shape::convex_polygon(pts.clone(), fill, stroke));
+            if hit_cabinet == Some(*c) && self.plan_drag.is_none() {
+                let mut lines = vec![tr_fmt!("{}: drag to move it, R turns it, a double-click opens it", prj.layout.enclosures[*c].name)];
+                lines.extend(problems.into_iter().map(|(_, _, msg)| msg));
+                hover_tip = Some(lines.join("\n"));
+            }
             painter.line_segment([pts[2], pts[3]], Stroke::new(3.0, stroke.color));
             let centre = Pos2::new(pts.iter().map(|q| q.x).sum::<f32>() / 4.0, pts.iter().map(|q| q.y).sum::<f32>() / 4.0);
             painter.text(centre, egui::Align2::CENTER_CENTER, &prj.layout.enclosures[*c].name, egui::FontId::proportional(12.0), pal.text);
@@ -425,7 +473,8 @@ impl PanelUi {
         if !self.wall_points.is_empty() {
             let stroke = Stroke::new(2.0, pal.selected);
             let mut pts: Vec<Pos2> = self.wall_points.iter().map(|q| to_screen(q.x, q.y)).collect();
-            let next = plan.map(|q| ortho_corner(self.wall_points.last().copied(), q));
+            let last = self.wall_points.last().copied();
+            let next = plan.map(|q| if self.tool == Tool::InnerWalls { inner_corner(&walls, last, q) } else { ortho_corner(last, q) });
             if let Some(n) = next {
                 pts.push(to_screen(n.x, n.y));
                 let l = self.wall_points.last().copied().unwrap_or(n);
@@ -444,13 +493,27 @@ impl PanelUi {
         // Hint and pointer position.
         let hint = match self.tool {
             Tool::Walls => tr("Click the corners of the walls; click the first corner again, double-click or press Enter to close the room. Backspace removes the last corner, Esc cancels."),
-            Tool::InnerWalls => tr("Click the ends of the inner walls; every click starts the next one. Esc, Enter or a double-click ends the chain."),
+            Tool::InnerWalls => tr("Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool."),
             Tool::Opening(Opening::Door) => tr("Click on a wall where the door goes; it swings into the room. Size and position in the properties."),
             Tool::Opening(_) => tr("Click on a wall where the window goes. Size, position and sill height in the properties."),
             _ => tr("Drag a wall to move it, drag a cabinet to its place (R turns it); double-click a wall to equip it, a cabinet to open it. Del removes the selected inner wall."),
         };
-        painter.text(rect.left_top() + vec2(8.0, 8.0), egui::Align2::LEFT_TOP, hint, egui::FontId::proportional(12.0), pal.text);
+        // Wrapped to the view, on a backing so that it stays readable over the plan.
+        let galley = painter.layout(hint.to_string(), egui::FontId::proportional(12.0), pal.text, (rect.width() - 16.0).max(80.0));
+        let at = rect.left_top() + vec2(8.0, 8.0);
+        painter.rect_filled(Rect::from_min_size(at, galley.size()).expand(3.0), 3.0, pal.canvas.gamma_multiply(0.85));
+        painter.galley(at, galley, pal.text);
+        if let Some(tip) = hover_tip.or(wall_tip) {
+            resp.clone().on_hover_text_at_pointer(tip);
+        }
         if let Some(q) = plan {
+            // Where a click puts the corner or end, not the raw pointer.
+            let last = self.wall_points.last().copied();
+            let q = match self.tool {
+                Tool::Walls => ortho_corner(last, q),
+                Tool::InnerWalls => inner_corner(&walls, last, q),
+                _ => q,
+            };
             let at = tr_fmt!("x {} mm, z {} mm", format!("{:.0}", q.x), format!("{:.0}", q.y));
             painter.text(rect.left_bottom() + vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, at, egui::FontId::proportional(12.0), pal.text);
         }

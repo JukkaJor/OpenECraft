@@ -6132,7 +6132,6 @@ Draw walls	Рисовать стены
 Wall	Стена
 Wall {}	Стена {}
 Floor plan with {} walls	План с {} стенами
-{} rails, {} cable ducts, {} devices	рейки {}, кабельные каналы {}, устройства {}
 A room needs at least four walls	Помещению нужны минимум четыре стены
 Walls {} and {} cross	Стены {} и {} пересекаются
 Wall {} is shorter than {} mm	Стена {} короче {} мм
@@ -6297,3 +6296,29 @@ Drag to turn the model	Перетащите, чтобы повернуть мо�
 Standard workspaces	Стандартные рабочие пространства
 Saved workspaces	Сохранённые рабочие пространства
 Switches to this workspace with its panes at their default places	Переключает на это рабочее пространство с панелями на их местах по умолчанию
+1 rail	1 рейка
+{} rails	Рейки: {}
+1 cable duct	1 кабельный канал
+{} cable ducts	Кабельные каналы: {}
+1 device	1 устройство
+{} devices	Устройства: {}
+1 door	1 дверь
+{} doors	Двери: {}
+1 window	1 окно
+empty	пусто
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Удалить помещение {} со всем, что на его стенах? Шкафы в нём останутся, без помещения.
+Delete enclosure {} with everything placed in it?	Удалить корпус {} со всем, что в нём размещено?
+Undo brings it back.	Отмена вернёт его.
+{}: drag to move it, R turns it, a double-click opens it	{}: перетащите, чтобы переместить, R поворачивает, двойной щелчок открывает
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Стена {}, {} м: стена, показанная в виде стены (выделена); перетащите, чтобы переместить
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Стена {}, {} м: перетащите, чтобы переместить, двойной щелчок покажет её для оснащения
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Щёлкайте по концам внутренних стен; каждый щелчок начинает следующую, концы у стены притягиваются к ней. Esc, Enter или двойной щелчок завершают цепочку, повторный Esc — инструмент.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} мм, z {} мм, поворот {} °
+From the left end	От левого конца
+Distance of the opening from the left end of the wall, seen from inside the room	Расстояние проёма от левого конца стены, если смотреть изнутри помещения
+{}: {} is on	{}: включено {}
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Создайте корпус или помещение (Монтажное пространство › Новый корпус, Новое помещение), чтобы начать компоновку.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Корпусов пока нет – создайте корпус командой Новый корпус или помещение для шкафов командой Новое помещение.
+Right click for more	Щёлкните правой кнопкой для других действий
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Пока нет изделий с отметкой настенного монтажа. Отметьте изделие в управлении изделиями: редактор изделий › Монтажные данные › Настенный монтаж.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ни у одного устройства пока нет монтажных данных: назначьте устройствам изделия с размерами (Свойства › Изделия).

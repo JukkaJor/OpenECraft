@@ -6133,7 +6133,6 @@ Draw walls	壁を描く
 Wall	壁
 Wall {}	壁 {}
 Floor plan with {} walls	壁 {} 面の平面図
-{} rails, {} cable ducts, {} devices	レール {}、配線ダクト {}、デバイス {}
 A room needs at least four walls	部屋には少なくとも4つの壁が必要です
 Walls {} and {} cross	壁 {} と {} が交差しています
 Wall {} is shorter than {} mm	壁 {} は {} mm より短いです
@@ -6297,3 +6296,29 @@ Drag to turn the model	ドラッグしてモデルを回転
 Standard workspaces	標準のワークスペース
 Saved workspaces	保存されたワークスペース
 Switches to this workspace with its panes at their default places	このワークスペースに切り替え、ペインを既定の位置に戻します
+1 rail	レール 1
+{} rails	レール {}
+1 cable duct	配線ダクト 1
+{} cable ducts	配線ダクト {}
+1 device	デバイス 1
+{} devices	デバイス {}
+1 door	ドア 1
+{} doors	ドア {}
+1 window	ウインドウ 1
+empty	空
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	部屋 {} を壁の内容ごと削除しますか? 部屋にあるキャビネットは部屋なしで残ります。
+Delete enclosure {} with everything placed in it?	エンクロージャー {} を配置済みの内容ごと削除しますか?
+Undo brings it back.	元に戻すで復元できます。
+{}: drag to move it, R turns it, a double-click opens it	{}: ドラッグで移動、R で回転、ダブルクリックで開く
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	壁 {}、{} m: 壁ビューに表示中の壁 (強調表示)、ドラッグで移動
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	壁 {}、{} m: ドラッグで移動、ダブルクリックで表示して取り付け
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	内壁の端点をクリックします。クリックごとに次の内壁が始まり、壁の近くの端点は壁に吸着します。Esc、Enter またはダブルクリックで連続作図を終了し、もう一度 Esc でツールを終了します。
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm、z {} mm、回転 {} °
+From the left end	左端から
+Distance of the opening from the left end of the wall, seen from inside the room	部屋の内側から見た、壁の左端から開口部までの距離
+{}: {} is on	{}: {} がオン
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	エンクロージャーまたは部屋を作成して (レイアウト空間 › 新しいエンクロージャー、新しい部屋) レイアウトを開始します。
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	エンクロージャーがまだありません – 「新しいエンクロージャー」で作成するか、「新しい部屋」でキャビネット用の部屋を作成します。
+Right click for more	右クリックでその他の操作
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	壁取付としてマークされた部品はまだありません。部品管理でマークしてください: 部品エディター › 取付データ › 壁取付。
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	取付データを持つデバイスはまだありません: 寸法のある部品をデバイスに割り当ててください (プロパティ › 部品)。

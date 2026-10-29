@@ -6133,7 +6133,6 @@ Draw walls	Kreslit stěny
 Wall	Stěna
 Wall {}	Stěna {}
 Floor plan with {} walls	Půdorys s {} stěnami
-{} rails, {} cable ducts, {} devices	{} lišty, {} kabelové kanály, {} přístroje
 A room needs at least four walls	Místnost potřebuje alespoň čtyři stěny
 Walls {} and {} cross	Stěny {} a {} se kříží
 Wall {} is shorter than {} mm	Stěna {} je kratší než {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Tažením model otočíte
 Standard workspaces	Standardní pracovní prostory
 Saved workspaces	Uložené pracovní prostory
 Switches to this workspace with its panes at their default places	Přepne do tohoto pracovního prostoru s panely na jejich výchozích místech
+1 rail	1 lišta
+{} rails	Lišty: {}
+1 cable duct	1 kabelový kanál
+{} cable ducts	Kabelové kanály: {}
+1 device	1 přístroj
+{} devices	Přístroje: {}
+1 door	1 dveře
+{} doors	Dveře: {}
+1 window	1 okno
+empty	prázdná
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Smazat místnost {} se vším na jejích stěnách? Rozváděče v ní zůstanou, bez místnosti.
+Delete enclosure {} with everything placed in it?	Odstranit skříň {} se vším, co je v ní umístěno?
+Undo brings it back.	Zpět jej obnoví.
+{}: drag to move it, R turns it, a double-click opens it	{}: přetažením přesunete, R otočí, dvojklik otevře
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Stěna {}, {} m: stěna zobrazená v pohledu na stěnu (zvýrazněná); přetažením ji přesunete
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Stěna {}, {} m: přetažením ji přesunete, dvojklik ji zobrazí k osazení
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Klikněte na konce vnitřních stěn; každé kliknutí začne další, konce u stěny se k ní přichytí. Esc, Enter nebo dvojklik ukončí řetěz, další Esc nástroj.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, otočení {} °
+From the left end	Od levého konce
+Distance of the opening from the left end of the wall, seen from inside the room	Vzdálenost otvoru od levého konce stěny při pohledu z místnosti
+{}: {} is on	{}: zapnuto {}
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Vytvořte skříň nebo místnost (Montážní prostor › Nová skříň, Nová místnost) a začněte s montážním uspořádáním.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Zatím žádná skříň – vytvořte ji pomocí Nová skříň, nebo místnost pro rozváděče pomocí Nová místnost.
+Right click for more	Kliknutím pravým tlačítkem další možnosti
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Zatím žádné artikly označené pro montáž na stěnu. Označte artikl ve správě artiklů: editor artiklů › Montážní data › Montáž na stěnu.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Zatím žádný přístroj nemá montážní data: přiřaďte přístrojům artikly s rozměry (Vlastnosti › Artikly).

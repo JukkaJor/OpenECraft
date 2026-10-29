@@ -6133,7 +6133,6 @@ Draw walls	Piirrä seinät
 Wall	Seinä
 Wall {}	Seinä {}
 Floor plan with {} walls	Pohjapiirros, {} seinää
-{} rails, {} cable ducts, {} devices	kiskoja {}, johtokouruja {}, laitteita {}
 A room needs at least four walls	Tilassa on oltava vähintään neljä seinää
 Walls {} and {} cross	Seinät {} ja {} risteävät
 Wall {} is shorter than {} mm	Seinä {} on lyhyempi kuin {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Käännä mallia vetämällä
 Standard workspaces	Vakiotyötilat
 Saved workspaces	Tallennetut työtilat
 Switches to this workspace with its panes at their default places	Vaihtaa tähän työtilaan ja palauttaa sen paneelit oletuspaikoilleen
+1 rail	1 kisko
+{} rails	{} kiskoa
+1 cable duct	1 johtokouru
+{} cable ducts	{} johtokourua
+1 device	1 laite
+{} devices	{} laitetta
+1 door	1 ovi
+{} doors	{} ovea
+1 window	1 ikkuna
+empty	tyhjä
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Poistetaanko tila {} kaikkineen, mitä sen seinillä on? Siinä olevat kaapit jäävät, ilman tilaa.
+Delete enclosure {} with everything placed in it?	Poistetaanko kotelo {} kaikkineen, mitä siihen on sijoitettu?
+Undo brings it back.	Kumoa palauttaa sen.
+{}: drag to move it, R turns it, a double-click opens it	{}: siirrä vetämällä, R kääntää, kaksoisnapsautus avaa
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Seinä {}, {} m: seinänäkymässä näkyvä seinä (korostettu); siirrä vetämällä
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Seinä {}, {} m: siirrä vetämällä, kaksoisnapsautus näyttää sen varustettavaksi
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Napsauta väliseinien päitä; jokainen napsautus aloittaa seuraavan, seinän lähellä olevat päät tarttuvat siihen. Esc, Enter tai kaksoisnapsautus päättää ketjun, toinen Esc työkalun.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, käännetty {} °
+From the left end	Vasemmasta päästä
+Distance of the opening from the left end of the wall, seen from inside the room	Aukon etäisyys seinän vasemmasta päästä tilan sisältä katsottuna
+{}: {} is on	{}: {} on päällä
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Aloita asennuskuva luomalla kotelo tai tila (Asennustila › Uusi kotelo, Uusi tila).
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Ei vielä koteloa – luo sellainen komennolla Uusi kotelo tai tila kaapeille komennolla Uusi tila.
+Right click for more	Lisää toimintoja hiiren oikealla painikkeella
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Seinäasennukseen merkittyjä osia ei vielä ole. Merkitse osa osien hallinnassa: osaeditori › Asennustiedot › Seinäasennus.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Millään laitteella ei vielä ole asennustietoja: liitä laitteisiin osat, joilla on mitat (Ominaisuudet › Osat).

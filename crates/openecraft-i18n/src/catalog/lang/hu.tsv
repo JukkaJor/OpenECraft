@@ -6133,7 +6133,6 @@ Draw walls	Falak rajzolása
 Wall	Fal
 Wall {}	{}. fal
 Floor plan with {} walls	Alaprajz {} fallal
-{} rails, {} cable ducts, {} devices	{} sín, {} kábelcsatorna, {} készülék
 A room needs at least four walls	Egy helyiségnek legalább négy fal kell
 Walls {} and {} cross	A(z) {}. és {}. fal keresztezi egymást
 Wall {} is shorter than {} mm	A(z) {}. fal rövidebb {} mm-nél
@@ -6298,3 +6297,29 @@ Drag to turn the model	Húzással forgathatja a modellt
 Standard workspaces	Alapértelmezett munkaterületek
 Saved workspaces	Mentett munkaterületek
 Switches to this workspace with its panes at their default places	Átvált erre a munkaterületre, a panelek az alapértelmezett helyükön
+1 rail	1 sín
+{} rails	{} sín
+1 cable duct	1 kábelcsatorna
+{} cable ducts	{} kábelcsatorna
+1 device	1 készülék
+{} devices	{} készülék
+1 door	1 ajtó
+{} doors	{} ajtó
+1 window	1 ablak
+empty	üres
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Törli a(z) {} helyiséget mindennel, ami a falain van? A benne álló szekrények megmaradnak, helyiség nélkül.
+Delete enclosure {} with everything placed in it?	Törli a(z) {} szekrényt mindennel, ami benne van?
+Undo brings it back.	A visszavonás visszahozza.
+{}: drag to move it, R turns it, a double-click opens it	{}: húzással mozgatható, R elforgatja, dupla kattintás megnyitja
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	{}. fal, {} m: a falnézetben látható fal (kiemelve); húzással mozgatható
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	{}. fal, {} m: húzással mozgatható, dupla kattintással megjelenik a felszereléshez
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Kattintson a belső falak végeire; minden kattintás a következőt kezdi, a fal közelében lévő végek a falhoz illeszkednek. Esc, Enter vagy dupla kattintás befejezi a láncot, újabb Esc az eszközt.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, elforgatva {} °
+From the left end	A bal végtől
+Distance of the opening from the left end of the wall, seen from inside the room	A nyílás távolsága a fal bal végétől, a helyiség belsejéből nézve
+{}: {} is on	{}: {} bekapcsolva
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	A szerelési elrendezés megkezdéséhez hozzon létre egy szekrényt vagy helyiséget (Szerelési tér › Új szekrény, Új helyiség).
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Még nincs szekrény – hozzon létre egyet az Új szekrény paranccsal, vagy helyiséget a szekrényeknek az Új helyiség paranccsal.
+Right click for more	A jobb gombbal további lehetőségek
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Még nincs falra szerelésre jelölt alkatrész. Jelöljön meg egyet az alkatrészkezelésben: alkatrész-szerkesztő › Szerelési adatok › Falra szerelés.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Még egyik készüléknek sincsenek szerelési adatai: rendeljen a készülékekhez méretekkel rendelkező alkatrészeket (Tulajdonságok › Alkatrészek).

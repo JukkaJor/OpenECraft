@@ -6133,7 +6133,6 @@ Draw walls	Duvar çiz
 Wall	Duvar
 Wall {}	Duvar {}
 Floor plan with {} walls	{} duvarlı kat planı
-{} rails, {} cable ducts, {} devices	{} ray, {} kablo kanalı, {} cihaz
 A room needs at least four walls	Bir oda en az dört duvar gerektirir
 Walls {} and {} cross	{} ve {} duvarları kesişiyor
 Wall {} is shorter than {} mm	Duvar {}, {} mm'den kısa
@@ -6298,3 +6297,29 @@ Drag to turn the model	Modeli döndürmek için sürükleyin
 Standard workspaces	Standart çalışma alanları
 Saved workspaces	Kaydedilmiş çalışma alanları
 Switches to this workspace with its panes at their default places	Bu çalışma alanına geçer ve bölmeleri varsayılan yerlerine koyar
+1 rail	1 ray
+{} rails	{} ray
+1 cable duct	1 kablo kanalı
+{} cable ducts	{} kablo kanalı
+1 device	1 cihaz
+{} devices	{} cihaz
+1 door	1 kapı
+{} doors	{} kapı
+1 window	1 pencere
+empty	boş
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	{} odası duvarlarındaki her şeyle birlikte silinsin mi? İçindeki panolar odasız kalır.
+Delete enclosure {} with everything placed in it?	{} panosu içine yerleştirilen her şeyle birlikte silinsin mi?
+Undo brings it back.	Geri al ile geri gelir.
+{}: drag to move it, R turns it, a double-click opens it	{}: taşımak için sürükleyin, R döndürür, çift tıklama açar
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Duvar {}, {} m: duvar görünümünde gösterilen duvar (vurgulu); taşımak için sürükleyin
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Duvar {}, {} m: taşımak için sürükleyin, donatmak için çift tıklayarak gösterin
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	İç duvarların uçlarına tıklayın; her tıklama bir sonrakini başlatır, duvara yakın uçlar duvara yapışır. Esc, Enter veya çift tıklama zinciri, ikinci Esc aracı bitirir.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, {} ° döndürülmüş
+From the left end	Sol uçtan
+Distance of the opening from the left end of the wall, seen from inside the room	Açıklığın, odanın içinden bakıldığında duvarın sol ucuna uzaklığı
+{}: {} is on	{}: {} açık
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Montaj yerleşimine başlamak için bir pano veya oda oluşturun (Montaj alanı › Yeni pano, Yeni oda).
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Henüz pano yok – Yeni pano ile bir pano veya Yeni oda ile panolar için bir oda oluşturun.
+Right click for more	Daha fazlası için sağ tıklayın
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Henüz duvara montaj için işaretlenmiş parça yok. Parça yönetiminde bir parça işaretleyin: parça düzenleyici › Montaj verileri › Duvara montaj.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Henüz hiçbir cihazın montaj verisi yok: cihazlara boyutları olan parçalar atayın (Özellikler › Parçalar).

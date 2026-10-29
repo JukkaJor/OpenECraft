@@ -6133,7 +6133,6 @@ Draw walls	Wanden tekenen
 Wall	Wand
 Wall {}	Wand {}
 Floor plan with {} walls	Plattegrond met {} wanden
-{} rails, {} cable ducts, {} devices	{} rails, {} kabelgoten, {} apparaten
 A room needs at least four walls	Een ruimte heeft minstens vier wanden nodig
 Walls {} and {} cross	Wanden {} en {} kruisen elkaar
 Wall {} is shorter than {} mm	Wand {} is korter dan {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Sleep om het model te draaien
 Standard workspaces	Standaardwerkruimten
 Saved workspaces	Opgeslagen werkruimten
 Switches to this workspace with its panes at their default places	Schakelt naar deze werkruimte met de deelvensters op hun standaardplaats
+1 rail	1 rail
+{} rails	{} rails
+1 cable duct	1 kabelgoot
+{} cable ducts	{} kabelgoten
+1 device	1 apparaat
+{} devices	{} apparaten
+1 door	1 deur
+{} doors	{} deuren
+1 window	1 raam
+empty	leeg
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Ruimte {} verwijderen met alles aan de wanden? De kasten erin blijven staan, zonder ruimte.
+Delete enclosure {} with everything placed in it?	Behuizing {} verwijderen met alles wat erin geplaatst is?
+Undo brings it back.	Ongedaan maken haalt het terug.
+{}: drag to move it, R turns it, a double-click opens it	{}: slepen om te verplaatsen, R draait, dubbelklik opent
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Wand {}, {} m: de wand die in het wandaanzicht wordt getoond (gemarkeerd); slepen om te verplaatsen
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Wand {}, {} m: slepen om te verplaatsen, dubbelklik toont hem om uit te rusten
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Klik op de uiteinden van de binnenwanden; elke klik begint de volgende, uiteinden bij een wand klikken daarop vast. Esc, Enter of een dubbelklik beëindigt de reeks, nogmaals Esc het gereedschap.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, gedraaid {} °
+From the left end	Vanaf het linkeruiteinde
+Distance of the opening from the left end of the wall, seen from inside the room	Afstand van de opening tot het linkeruiteinde van de wand, gezien vanuit de ruimte
+{}: {} is on	{}: {} is aan
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Maak een behuizing of een ruimte (Montageruimte › Nieuwe behuizing, Nieuwe ruimte) om met de montage-indeling te beginnen.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Nog geen behuizing – maak er een met Nieuwe behuizing, of een ruimte voor kasten met Nieuwe ruimte.
+Right click for more	Klik met de rechtermuisknop voor meer
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Nog geen artikelen gemarkeerd voor wandmontage. Markeer er een in het artikelbeheer: artikeleditor › Montagegegevens › Wandmontage.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nog geen apparaat heeft montagegegevens: wijs de apparaten artikelen met afmetingen toe (Eigenschappen › Artikelen).

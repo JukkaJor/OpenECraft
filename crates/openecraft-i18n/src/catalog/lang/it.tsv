@@ -6133,7 +6133,6 @@ Draw walls	Disegna pareti
 Wall	Parete
 Wall {}	Parete {}
 Floor plan with {} walls	Pianta con {} pareti
-{} rails, {} cable ducts, {} devices	{} guide, {} canaline, {} dispositivi
 A room needs at least four walls	Un locale richiede almeno quattro pareti
 Walls {} and {} cross	Le pareti {} e {} si incrociano
 Wall {} is shorter than {} mm	La parete {} è più corta di {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Trascina per ruotare il modello
 Standard workspaces	Aree di lavoro standard
 Saved workspaces	Aree di lavoro salvate
 Switches to this workspace with its panes at their default places	Passa a questa area di lavoro con i pannelli nelle posizioni predefinite
+1 rail	1 guida
+{} rails	{} guide
+1 cable duct	1 canalina
+{} cable ducts	{} canaline
+1 device	1 dispositivo
+{} devices	{} dispositivi
+1 door	1 porta
+{} doors	{} porte
+1 window	1 finestra
+empty	vuota
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Eliminare il locale {} con tutto ciò che si trova sulle sue pareti? Gli armadi al suo interno restano, senza locale.
+Delete enclosure {} with everything placed in it?	Eliminare l'armadio {} con tutto ciò che vi è posizionato?
+Undo brings it back.	Annulla lo ripristina.
+{}: drag to move it, R turns it, a double-click opens it	{}: trascina per spostare, R per ruotare, doppio clic per aprire
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Parete {}, {} m: la parete mostrata nella vista della parete (evidenziata); trascina per spostarla
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Parete {}, {} m: trascina per spostarla, doppio clic per mostrarla e attrezzarla
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Fai clic sulle estremità delle pareti interne; ogni clic inizia la successiva, le estremità vicine a una parete vi si agganciano. Esc, Invio o un doppio clic terminano la catena, di nuovo Esc lo strumento.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, ruotato di {} °
+From the left end	Dall'estremità sinistra
+Distance of the opening from the left end of the wall, seen from inside the room	Distanza dell'apertura dall'estremità sinistra della parete, vista dall'interno del locale
+{}: {} is on	{}: {} è attivo
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Crea un armadio o un locale (Spazio di montaggio › Nuovo armadio, Nuovo locale) per iniziare il layout di montaggio.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Ancora nessun armadio – creane uno con Nuovo armadio, o un locale per gli armadi con Nuovo locale.
+Right click for more	Clic destro per altre opzioni
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Nessun articolo ancora contrassegnato per il montaggio a parete. Contrassegnane uno nella gestione articoli: editor articoli › Dati di montaggio › Montaggio a parete.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nessun dispositivo ha ancora dati di montaggio: assegna ai dispositivi articoli con dimensioni (Proprietà › Articoli).

@@ -191,3 +191,30 @@ fn a_row_of_terminals_shows_the_strip_tag_once() {
     assert_eq!(tags.len(), 2, "first terminal of each row: {tags:?}");
     assert!(tags.iter().all(|x| *x < 100.0 || (*x > 180.0 && *x < 200.0)), "{tags:?}");
 }
+
+#[test]
+fn the_contact_image_of_a_turned_coil_stays_clear_of_its_pins() {
+    let mut prj = Project::default();
+    let sym = |id: u64, key: &str, pos: P, rot: u8, pins: &[&str]| SymbolInst {
+        id,
+        sym: key.into(),
+        pos,
+        rot,
+        tag: "-K1".into(),
+        pins: pins.iter().map(|s| s.to_string()).collect(),
+        ..Default::default()
+    };
+    prj.pages[0].symbols.push(sym(1, "coil", p(200.0, 100.0), 1, &["A1", "A2"]));
+    prj.pages[0].symbols.push(sym(2, "no", p(100.0, 60.0), 0, &["13", "14"]));
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    let def = prj.symbol("coil").unwrap();
+    let b = def.world_bounds(p(200.0, 100.0), 1, false);
+    // The rows of the contact image ("13", "14") lie below the coil, nothing of it
+    // beside the coil where A1 and A2 are.
+    let near = |t: &&(P, String, f32, Anchor)| (t.0.x - b.center().x).abs() < 20.0;
+    let image: Vec<_> = d.texts.iter().filter(near).filter(|t| t.1 == "13" || t.1 == "14").collect();
+    assert_eq!(image.len(), 2, "{:?}", d.texts);
+    assert!(image.iter().all(|t| t.0.y > b.max.y), "{image:?} {b:?}");
+}

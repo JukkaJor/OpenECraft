@@ -209,3 +209,37 @@ fn wires_routed_through_ducts_lie_inside_the_duct_boxes() {
     }
     assert!(checked > 0);
 }
+
+#[test]
+fn face_summaries_count_openings_apart() {
+    let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
+    let rail = item(ItemKind::Rail, Opening::Cutout);
+    let window = item(ItemKind::Cutout, Opening::Window);
+    let door = item(ItemKind::Cutout, Opening::Door);
+    let device = item(ItemKind::Device, Opening::Cutout);
+    assert_eq!(face_summary(&[]), "empty");
+    assert_eq!(face_summary(&[&window]), "1 window");
+    assert_eq!(face_summary(&[&rail, &device, &device, &door]), "1 rail, 2 devices, 1 door");
+}
+
+#[test]
+fn inner_walls_end_on_the_walls_of_the_room() {
+    let room = panel::new_room(&mut Project::default(), "+ROOM1", 4030.0, 3000.0, 2800.0);
+    let walls = panel::walls(&room);
+    // The grid alone would leave 50 mm to the rear wall and 30 mm to the right one.
+    assert_eq!(plan::inner_corner(&walls, None, p(2000.0, 40.0)), p(2000.0, 0.0));
+    assert_eq!(plan::inner_corner(&walls, Some(p(2000.0, 1000.0)), p(4010.0, 1000.0)), p(4030.0, 1000.0));
+    // Away from the walls the grid stays.
+    assert_eq!(plan::inner_corner(&walls, Some(p(2000.0, 0.0)), p(2000.0, 1490.0)), p(2000.0, 1500.0));
+}
+
+#[test]
+fn new_enclosures_and_rooms_take_free_names() {
+    let mut prj = Project::default();
+    let mut ui = PanelUi::default();
+    ui.new_room(&mut prj);
+    ui.new_enclosure_dialog(&prj, &PartsDb::default());
+    assert_eq!(ui.new_enclosure.as_ref().map(|n| n.name.as_str()), Some("+CAB1"));
+    ui.new_room(&mut prj);
+    assert_eq!(prj.layout.enclosures[1].name, "+ROOM2");
+}

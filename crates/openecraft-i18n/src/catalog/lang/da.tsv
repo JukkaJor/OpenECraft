@@ -6133,7 +6133,6 @@ Draw walls	Tegn vægge
 Wall	Væg
 Wall {}	Væg {}
 Floor plan with {} walls	Plantegning med {} vægge
-{} rails, {} cable ducts, {} devices	{} skinner, {} kabelkanaler, {} enheder
 A room needs at least four walls	Et rum skal have mindst fire vægge
 Walls {} and {} cross	Væggene {} og {} krydser hinanden
 Wall {} is shorter than {} mm	Væg {} er kortere end {} mm
@@ -6298,3 +6297,29 @@ Drag to turn the model	Træk for at dreje modellen
 Standard workspaces	Standardarbejdsområder
 Saved workspaces	Gemte arbejdsområder
 Switches to this workspace with its panes at their default places	Skifter til dette arbejdsområde med panelerne på deres standardpladser
+1 rail	1 skinne
+{} rails	{} skinner
+1 cable duct	1 kabelkanal
+{} cable ducts	{} kabelkanaler
+1 device	1 enhed
+{} devices	{} enheder
+1 door	1 dør
+{} doors	{} døre
+1 window	1 vindue
+empty	tom
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Slet rummet {} med alt på dets vægge? Skabene i det bliver stående, uden rum.
+Delete enclosure {} with everything placed in it?	Slet kapslingen {} med alt, der er placeret i den?
+Undo brings it back.	Fortryd henter det tilbage.
+{}: drag to move it, R turns it, a double-click opens it	{}: træk for at flytte, R drejer, dobbeltklik åbner
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Væg {}, {} m: væggen, der vises i vægvisningen (fremhævet); træk for at flytte den
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Væg {}, {} m: træk for at flytte, dobbeltklik viser den, så den kan udstyres
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Klik på indervæggenes ender; hvert klik starter den næste, ender nær en væg fastgøres til den. Esc, Enter eller dobbeltklik afslutter kæden, Esc igen værktøjet.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, drejet {} °
+From the left end	Fra venstre ende
+Distance of the opening from the left end of the wall, seen from inside the room	Åbningens afstand fra væggens venstre ende, set inde fra rummet
+{}: {} is on	{}: {} er slået til
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Opret en kapsling eller et rum (Monteringsrum › Ny kapsling, Nyt rum) for at begynde monteringslayoutet.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Ingen kapsling endnu – opret en med Ny kapsling, eller et rum til skabe med Nyt rum.
+Right click for more	Højreklik for flere
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ingen artikler er markeret til vægmontage endnu. Markér en i artikelstyringen: artikeleditor › Monteringsdata › Vægmontage.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ingen enhed har monteringsdata endnu: tildel enhederne artikler med mål (Egenskaber › Artikler).

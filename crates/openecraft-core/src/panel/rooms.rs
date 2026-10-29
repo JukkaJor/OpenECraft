@@ -450,6 +450,36 @@ pub fn room_place(prj: &Project, ei: usize) -> Option<SitePlace> {
     Some(SitePlace { x: local[0], z: local[2], angle: (poses[first].angle - poses[room].angle).to_degrees() })
 }
 
+/// The place of a cabinet's line-up in its room turned by `degrees` (counter-clockwise
+/// seen from above) about the centre of its footprint, so that it stays where it
+/// stood; `None` outside rooms.
+pub fn turned_place(prj: &Project, ei: usize, degrees: f32) -> Option<SitePlace> {
+    let room = room_of(&prj.layout, ei)?;
+    let place = room_place(prj, ei)?;
+    let corners: Vec<[f32; 2]> = lineup_of(&prj.layout, ei).into_iter().flat_map(|c| footprint(prj, room, c)).collect();
+    let (lo, hi) = bounds(&corners);
+    let centre = [(lo[0] + hi[0]) / 2.0, (lo[1] + hi[1]) / 2.0];
+    // The pose turns (x, z) by [[c, s], [-s, c]]; every point turns about the centre.
+    let (s, c) = degrees.to_radians().sin_cos();
+    let turn = |q: [f32; 2]| {
+        let (dx, dz) = (q[0] - centre[0], q[1] - centre[1]);
+        [centre[0] + dx * c + dz * s, centre[1] - dx * s + dz * c]
+    };
+    let [mut x, mut z] = turn([place.x, place.z]);
+    // A cabinet that stood inside the room (against a wall, say) is pushed back inside
+    // where turning would make it cross a wall.
+    let (rlo, rhi) = bounds(&outline(&prj.layout.enclosures[room]));
+    let inside = |lo: [f32; 2], hi: [f32; 2]| lo[0] >= rlo[0] - 0.5 && lo[1] >= rlo[1] - 0.5 && hi[0] <= rhi[0] + 0.5 && hi[1] <= rhi[1] + 0.5;
+    let turned: Vec<[f32; 2]> = corners.iter().map(|&q| turn(q)).collect();
+    let (tlo, thi) = bounds(&turned);
+    if inside(lo, hi) && thi[0] - tlo[0] <= rhi[0] - rlo[0] && thi[1] - tlo[1] <= rhi[1] - rlo[1] {
+        let shift = |lo: f32, hi: f32, min: f32, max: f32| if lo < min { min - lo } else if hi > max { max - hi } else { 0.0 };
+        x += shift(tlo[0], thi[0], rlo[0], rhi[0]);
+        z += shift(tlo[1], thi[1], rlo[1], rhi[1]);
+    }
+    Some(SitePlace { x: x.round(), z: z.round(), angle: (place.angle + degrees).rem_euclid(360.0) })
+}
+
 /// Puts the line-up of a cabinet into a room at a place of its floor plan (`None`:
 /// along the rear of the room after the other line-ups), or takes it out of its room
 /// (`room` `None`).
@@ -737,31 +767,41 @@ pub(super) fn check(prj: &Project, e: &Enclosure, push: &mut impl FnMut(CheckKin
     }
     let layout = &prj.layout;
     let Some(ri) = layout.enclosures.iter().position(|x| std::ptr::eq(x, e)) else { return };
-    let poses = site_poses(prj);
     for ci in cabinets_in(layout, ri) {
-        let c = &layout.enclosures[ci];
-        let fp = footprint(prj, ri, ci);
-        let inside = stands_inside(prj, ri, ci);
-        let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
-        if e.inner_walls.iter().any(|w| convex_overlap(&fp, &inner_footprint(w))) {
-            push(CheckKind::Collision, Severity::Warning, Vec::new(), tr_fmt!("{}: {} stands in an inner wall", e.name, c.name));
-        }
-        for door in &e.items {
-            let Some(zone) = door_zone(e, door) else { continue };
-            if convex_overlap(&fp, &zone) {
-                let wall = match door.face {
-                    Face::Wall(n) => n + 1,
-                    _ => 0,
-                };
-                push(CheckKind::Service, Severity::Warning, vec![door.id], tr_fmt!("{}: {} stands in the swing of the door in wall {}", e.name, c.name, wall));
-            }
-        }
-        if !inside {
-            push(CheckKind::Outside, Severity::Warning, Vec::new(), tr_fmt!("{}: {} stands outside the room", e.name, c.name));
-        } else if top > e.height + 0.5 {
-            push(CheckKind::Outside, Severity::Warning, Vec::new(), tr_fmt!("{}: {} is higher than the ceiling", e.name, c.name));
+        for (kind, ids, msg) in cabinet_problems(prj, ri, ci) {
+            push(kind, Severity::Warning, ids, msg);
         }
     }
+}
+
+/// What is wrong with the place of cabinet `ci` in room `ri`: standing in an inner
+/// wall or the swing of a door (with the door's id), outside the room or across a
+/// wall, higher than the ceiling.
+pub fn cabinet_problems(prj: &Project, ri: usize, ci: usize) -> Vec<(CheckKind, Vec<u64>, String)> {
+    let (e, c) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
+    let poses = site_poses(prj);
+    let fp = footprint(prj, ri, ci);
+    let mut out = Vec::new();
+    if e.inner_walls.iter().any(|w| convex_overlap(&fp, &inner_footprint(w))) {
+        out.push((CheckKind::Collision, Vec::new(), tr_fmt!("{}: {} stands in an inner wall", e.name, c.name)));
+    }
+    for door in &e.items {
+        let Some(zone) = door_zone(e, door) else { continue };
+        if convex_overlap(&fp, &zone) {
+            let wall = match door.face {
+                Face::Wall(n) => n + 1,
+                _ => 0,
+            };
+            out.push((CheckKind::Service, vec![door.id], tr_fmt!("{}: {} stands in the swing of the door in wall {}", e.name, c.name, wall)));
+        }
+    }
+    let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
+    if !stands_inside(prj, ri, ci) {
+        out.push((CheckKind::Outside, Vec::new(), tr_fmt!("{}: {} stands outside the room", e.name, c.name)));
+    } else if top > e.height + 0.5 {
+        out.push((CheckKind::Outside, Vec::new(), tr_fmt!("{}: {} is higher than the ceiling", e.name, c.name)));
+    }
+    out
 }
 
 #[cfg(test)]

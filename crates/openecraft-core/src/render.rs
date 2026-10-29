@@ -702,12 +702,9 @@ fn draw_contact_image(d: &mut dyn Draw, prj: &Project, page_i: usize, tag: &str,
     if rows.is_empty() {
         return;
     }
-    // Placed right of the outgoing wire so it does not overlap it.
-    let (cx, mut y) = if vertical {
-        (bounds.center().x + 7.5, bounds.max.y + 3.0)
-    } else {
-        (bounds.max.x + 8.0, bounds.center().y - (rows.len() as f32 - 1.0) * 1.5)
-    };
+    // Placed right of the outgoing wire so it does not overlap it; below a turned coil,
+    // clear of its wires and connection point designations on both sides.
+    let (cx, mut y) = if vertical { (bounds.center().x + 7.5, bounds.max.y + 3.0) } else { (bounds.center().x, bounds.max.y + 3.0) };
     for (kind, pins, reference) in rows {
         let (text_ink, line_ink) = match (&reference, ink) {
             (None, Ink::Text) => (Ink::FrameText, Ink::Frame),
@@ -996,10 +993,17 @@ pub fn draw_enclosure(
             // The sheet, its mounting area inside the flanges (dashed) and, for walls
             // that are a separate component, the outline of that part.
             d.rect(origin, origin + p(vw * k, vh * k), 0.0, Ink::Plate, true);
-            let a = panel::mounting_area(e, wall);
-            let (s, t) = (tf(a.min.x, a.min.y), tf(a.max.x, a.max.y));
-            for (u, v) in [(s, p(t.x, s.y)), (p(t.x, s.y), t), (t, p(s.x, t.y)), (p(s.x, t.y), s)] {
-                d.line(u, v, 0.15, Ink::Frame, true);
+            if e.is_room() {
+                // A wall of a room has no flanges: the floor is drawn as a strong line.
+                if wall != Face::Roof {
+                    d.line(origin + p(0.0, vh * k), origin + p(vw * k, vh * k), 0.6, Ink::Frame, false);
+                }
+            } else {
+                let a = panel::mounting_area(e, wall);
+                let (s, t) = (tf(a.min.x, a.min.y), tf(a.max.x, a.max.y));
+                for (u, v) in [(s, p(t.x, s.y)), (p(t.x, s.y), t), (t, p(s.x, t.y)), (p(s.x, t.y), s)] {
+                    d.line(u, v, 0.15, Ink::Frame, true);
+                }
             }
             let open = (wall == Face::Left && e.build.left_open) || (wall == Face::Right && e.build.right_open);
             if open {
