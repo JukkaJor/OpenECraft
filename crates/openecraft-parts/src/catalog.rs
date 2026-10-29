@@ -390,6 +390,7 @@ Breaking capacity: 100 kA".into();
     enclosure_systems(&mut c);
     fasteners(&mut c);
     accessories(&mut c);
+    rack_parts(&mut c);
 
     // Ferrules (DIN 46228-4 colour code), sold per piece.
     for (cs, color, len) in [
@@ -472,6 +473,10 @@ fn enclosure_systems(c: &mut C) {
                 add(c, side_number(s, h, d), format!("Side panel {h:.0} x {d:.0} mm for floor-standing enclosures, pair"), "Side panel", 95.0 + 80.0 * h * d / 1e6, (d, h, s.wall, 0.0), String::new());
                 add(c, rear_number(s, w, h), format!("Rear wall {w:.0} x {h:.0} mm, screw-fastened"), "Rear wall", 70.0 + 60.0 * w * h / 1e6, (w, h, s.wall, 0.0), String::new());
             }
+            if s.id == RACK_SYSTEM {
+                let u = rack_units(h);
+                add(c, rack_rail_number(u), format!("19-inch mounting rails {u} U, pair, with cage nut holes"), "19-inch rail", 30.0 + 2.5 * u as f32, (15.0, u as f32 * RACK_UNIT, 20.0, 0.0), String::new());
+            }
             if s.plinth > 0.0 {
                 add(c, plinth_number(w, d, s.plinth), format!("Plinth {w:.0} x {d:.0} mm, {:.0} mm high, corner pieces and trims", s.plinth), "Plinth", 85.0 + 0.1 * (w + d), (w, s.plinth, d, 0.0), String::new());
             }
@@ -481,6 +486,38 @@ fn enclosure_systems(c: &mut C) {
     p.mounting.clear();
     let p = c.add(RAIL_STANDOFF, "Mounting rail standoff 40 mm, M5", "Mounting", "Rail standoff", "", 1.2, (20.0, 20.0, 40.0, 0.02), &[]);
     p.mounting.clear();
+}
+
+/// Parts for 19-inch racks, as wide as a 19-inch panel and a whole number of rack
+/// units high (technical data `Rack units`): network and power devices with a device
+/// tag, blank panels, shelves and cable management without one.
+fn rack_parts(c: &mut C) {
+    use crate::mechanics::{RACK_UNIT, RACK_WIDTH};
+    use FnKind::*;
+    let dims = |u: f32, d: f32, kg: f32| (RACK_WIDTH, u * RACK_UNIT, d, kg);
+    for (number, desc, ident, price, (u, d, kg), functions, power) in [
+        ("GEN.RK-SWITCH-24P", "Network switch 19-inch, 24 x RJ45 1 Gbit/s, 4 x SFP, managed, 1 U", "KF", 690.0, (1.0, 250.0, 3.2), &[(Generic, "L N")][..], 25.0),
+        ("GEN.RK-PATCH-24P", "Patch panel 19-inch, 24 x RJ45 Cat 6A, shielded, 1 U", "XD", 95.0, (1.0, 120.0, 1.1), &[][..], 0.0),
+        ("GEN.RK-PDU-8", "Power distribution unit 19-inch, 8 sockets 230 V, 16 A, 1 U", "XD", 120.0, (1.0, 60.0, 1.4), &[(Generic, "L N")][..], 0.0),
+        ("GEN.RK-SERVER-2U", "Industrial server 19-inch, 2 U, redundant power supply", "KF", 4200.0, (2.0, 550.0, 18.0), &[(Generic, "L N")][..], 350.0),
+        ("GEN.RK-UPS-2U", "UPS 19-inch, 1500 VA, line interactive, 2 U", "GU", 980.0, (2.0, 450.0, 22.0), &[(Generic, "L N")][..], 40.0),
+    ] {
+        let p = c.add(number, desc, "General", "19-inch device", ident, price, dims(u, d, kg), functions);
+        p.voltage = if functions.is_empty() { String::new() } else { "230 V AC".into() };
+        p.tech_data = if power > 0.0 { format!("Rack units: {u:.0}
+Power loss: {power:.0} W") } else { format!("Rack units: {u:.0}") };
+    }
+    for (number, desc, price, (u, d, kg)) in [
+        ("GEN.RK-BLANK-1U", "Blank panel 19-inch, 1 U, sheet steel", 6.5, (1.0, 10.0, 0.3)),
+        ("GEN.RK-BLANK-2U", "Blank panel 19-inch, 2 U, sheet steel", 8.9, (2.0, 10.0, 0.5)),
+        ("GEN.RK-SHELF-1U", "Shelf 19-inch, 1 U, 400 mm deep, max. 25 kg", 38.0, (1.0, 400.0, 2.4)),
+        ("GEN.RK-CABLE-1U", "Cable management panel 19-inch with 5 brush rings, 1 U", 21.0, (1.0, 70.0, 0.6)),
+    ] {
+        let p = c.add(number, desc, "Mounting", "19-inch accessory", "", price, dims(u, d, kg), &[]);
+        p.mounting.clear();
+        p.tech_data = format!("Rack units: {u:.0}
+Faces: Plate");
+    }
 }
 
 /// Screws, nuts, washers and rivet nuts of the fastening systems.

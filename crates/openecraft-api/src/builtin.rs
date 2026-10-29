@@ -29,6 +29,7 @@ pub mod plugs;
 pub mod potentials;
 pub mod process;
 pub mod properties;
+pub mod racks;
 pub mod reports;
 pub mod rooms;
 pub mod routing;
@@ -87,7 +88,7 @@ pub fn check_names() -> Vec<String> {
 }
 
 pub fn plugins() -> Vec<Box<dyn Plugin>> {
-    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(check_settings::CheckSettings), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(harnesses::Harnesses), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(preplanning::Preplanning), Box::new(process::Process), Box::new(properties::Properties), Box::new(reports::ReportBlocks), Box::new(rooms::Rooms), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(terminals::Terminals), Box::new(wiring::Wiring)]
+    vec![Box::new(ProjectChecks), Box::new(ProjectReports), Box::new(ProjectExports), Box::new(Statistics), Box::new(PanelChecks), Box::new(PanelManufacturing), Box::new(PartLifecycle), Box::new(check_settings::CheckSettings), Box::new(config::Configurator), Box::new(devices::Devices), Box::new(drawing::Drawing), Box::new(electrical::Electrical), Box::new(engineering::Engineering), Box::new(field::FieldWiring), Box::new(harnesses::Harnesses), Box::new(integration::Integration), Box::new(languages::Languages), Box::new(management::Management), Box::new(pages::Pages), Box::new(panel::Panel), Box::new(plc::Plc), Box::new(plugs::Plugs), Box::new(potentials::Potentials), Box::new(preplanning::Preplanning), Box::new(process::Process), Box::new(properties::Properties), Box::new(racks::Racks), Box::new(reports::ReportBlocks), Box::new(rooms::Rooms), Box::new(routing::Routing), Box::new(sheets::Sheets), Box::new(singleline::SingleLine), Box::new(structure::Structure), Box::new(tables::Tables), Box::new(terminals::Terminals), Box::new(wiring::Wiring)]
 }
 
 /// The built-in reports of `openecraft_core::reports` as a plugin, so that the Reports

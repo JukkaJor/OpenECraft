@@ -226,7 +226,7 @@ impl PanelUi {
                         }
                         Role::Wall(face) | Role::RoomWall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), None, min, max, color, None, false),
                         Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), None, min, max, color, None, false),
-                        Role::MountingPlate | Role::Body => add_box(&mut prims, 1, None, min, max, color, None, false),
+                        Role::MountingPlate | Role::Body | Role::RackRails => add_box(&mut prims, 1, None, min, max, color, None, false),
                         Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, None, min, max, color, None, false),
                     }
                 }
@@ -249,7 +249,7 @@ impl PanelUi {
                         ItemKind::Cutout => match it.opening {
                             Opening::Door => Color32::from_rgb(150, 110, 70),
                             Opening::Window => Color32::from_rgb(160, 205, 235),
-                            Opening::Cutout => Color32::from_rgb(40, 40, 44),
+                            Opening::Cutout | Opening::Penetration => Color32::from_rgb(40, 40, 44),
                         },
                         ItemKind::Device => Color32::from_rgb(170, 186, 210),
                         ItemKind::Accessory => Color32::from_rgb(95, 100, 110),

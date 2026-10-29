@@ -26,6 +26,7 @@ mod macros;
 mod manufacturing;
 mod placement;
 mod points;
+pub mod rack;
 mod rooms;
 mod system;
 pub mod thermal;
@@ -36,9 +37,11 @@ pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineup
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
+pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
     add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
     room_of, room_place, rooms, set_outline, turned_place, set_room, stand_on_floor, stands_inside, wall_length_set, walls, Wall, MIN_WALL, ROOM_WALL,
+    penetration_link, wall_links, WallLink, MAX_WALL_THICKNESS, PENETRATION_SIZE, PENETRATION_TOP,
 };
 pub(crate) use rooms::inner_footprint;
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
@@ -135,13 +138,14 @@ impl Face {
 }
 
 impl Opening {
-    pub const ALL: [Opening; 3] = [Opening::Cutout, Opening::Door, Opening::Window];
+    pub const ALL: [Opening; 4] = [Opening::Cutout, Opening::Door, Opening::Window, Opening::Penetration];
 
     pub fn title(self) -> &'static str {
         match self {
             Opening::Cutout => tr("Cutout"),
             Opening::Door => tr("Door"),
             Opening::Window => tr("Window"),
+            Opening::Penetration => tr("Wall penetration"),
         }
     }
 
@@ -151,6 +155,16 @@ impl Opening {
             Opening::Cutout => "cutout",
             Opening::Door => "door",
             Opening::Window => "window",
+            Opening::Penetration => "penetration",
+        }
+    }
+
+    /// Default width and height in a wall.
+    pub fn size(self) -> (f32, f32) {
+        match self {
+            Opening::Door => DOOR_SIZE,
+            Opening::Penetration => PENETRATION_SIZE,
+            _ => WINDOW_SIZE,
         }
     }
 
@@ -686,7 +700,7 @@ pub struct Cell {
     pub part: String,
 }
 
-fn part_by_number<'a>(prj: &'a Project, number: &str) -> Option<&'a crate::parts::Part> {
+pub(crate) fn part_by_number<'a>(prj: &'a Project, number: &str) -> Option<&'a crate::parts::Part> {
     prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == number)
 }
 
@@ -894,6 +908,9 @@ pub fn place_accessory(prj: &mut Project, enc: usize, part: &str, face: Face, at
 /// Devices whose centre lies on a horizontal rail are centred on it and mounted on
 /// top of it; otherwise they sit directly on the plate (or a wall of a room).
 pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
+    if rack::snap_into_rack(e, item) {
+        return;
+    }
     if item.kind != ItemKind::Device || (item.face != Face::Plate && !e.is_room()) {
         return;
     }

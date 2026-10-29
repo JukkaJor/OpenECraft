@@ -2251,6 +2251,45 @@ impl PanelUi {
         }
     }
 
+    /// 19-inch parts (technical data `Rack units`) of the parts database, the project
+    /// and the catalog, mounted in the highest free units of the rack shown.
+    pub fn rack_part_menu(&mut self, ui: &mut egui::Ui, prj: &mut Project, db: &PartsDb) {
+        let Some(ei) = self.enclosure_index(prj).filter(|&i| panel::is_rack(&prj.layout.enclosures[i])) else {
+            ui.weak(tr("Choose a 19-inch rack first: 19-inch parts go on its rails."));
+            return;
+        };
+        let mut list: Vec<parts::Part> = Vec::new();
+        for p in db.parts.iter().chain(prj.parts.iter()).chain(parts::catalog()) {
+            if p.tech_value("Rack units").is_some() && !list.iter().any(|x| x.number == p.number) {
+                list.push(p.clone());
+            }
+        }
+        list.sort_by(|a, b| a.manufacturer.cmp(&b.manufacturer).then(natural_cmp(&a.number, &b.number)));
+        let e = &prj.layout.enclosures[ei];
+        let used: u32 = panel::rack::occupied(e).iter().map(|o| o.1).sum();
+        let total = panel::rack_units(e);
+        ui.weak(tr_fmt!("{} of {} rack units free; a part goes into the highest free units", total.saturating_sub(used), total));
+        egui::ScrollArea::vertical().max_height(420.0).show(ui, |ui| {
+            for p in &list {
+                let units = p.tech_value("Rack units").unwrap_or_default().to_string();
+                if ui.button(format!("{} U  {} – {}", units, p.number, p.description)).clicked() {
+                    if db.get(&p.number).is_some() {
+                        parts::ensure_in_project(prj, db, &p.number);
+                    }
+                    match panel::mount_in_rack(prj, ei, &p.number, None) {
+                        Ok(id) => {
+                            self.front_face(Face::Plate, false);
+                            self.select_item(id);
+                            self.status = tr_fmt!("{} mounted in the rack", p.number);
+                        }
+                        Err(e) => self.status = e,
+                    }
+                    ui.close();
+                }
+            }
+        });
+    }
+
     /// Fans, filters, cable glands, lights and handles for the face shown.
     pub fn accessory_menu(&mut self, ui: &mut egui::Ui, prj: &Project, db: &PartsDb) {
         let face = self.face;
@@ -2494,7 +2533,7 @@ impl PanelUi {
             Tool::Walls | Tool::InnerWalls => {}
             Tool::Opening(opening) => {
                 if let (true, Some(q)) = (resp.clicked_by(PointerButton::Primary), plate) {
-                    let (w, _) = if opening == Opening::Door { panel::DOOR_SIZE } else { panel::WINDOW_SIZE };
+                    let (w, _) = opening.size();
                     match panel::add_opening(prj, ei, opening, self.face, Some(q.x - w / 2.0), None, None) {
                         Ok(id) => self.select_item(id),
                         Err(e) => self.status = e,

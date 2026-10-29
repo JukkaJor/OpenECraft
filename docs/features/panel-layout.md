@@ -3,7 +3,7 @@
 Enclosures with their devices at real size in 2D and 3D (in the spirit of EPLAN Pro
 Panel), virtual wiring through the ducts, drilling and NC data, enclosure climate,
 line-ups, rooms of the building with their floor-standing equipment and pipe runs,
-and 3D routing of cables, tubes and pipes. The example projects `conveyor`,
+19-inch racks and 3D routing of cables, tubes and pipes. The example projects `conveyor`,
 `cabinet_lineup`, `electrical_room` and `pump_room` show them.
 
 ![The line-up of the cabinet_lineup example in 3D, door open, with rails, ducts, devices and routed wires](../images/panel-3d.png)
@@ -118,6 +118,12 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   Floor-standing part*, devices to place on the floor's view, command `mount_on_wall`
   with `face` `floor`. They are drawn in the floor plan, dragged there to move them and
   removed with Del.
+- **Wall penetrations** (*Layout space › Draw › Wall penetration*, command
+  `add_wall_opening` with `kind` `penetration`; 300 x 200 mm, 300 mm below the ceiling
+  unless set otherwise) go into the outer walls and lead into the room behind the
+  wall (up to 1 m away, through rooms turned against each other too): cables, tubes
+  and pipes are routed from room to room through them. The floor plan draws them and
+  the way through the wall dashed; `list_rooms` tells where each one leads.
 - **Pipe runs** (*Layout space › Draw › Pipe run*, command `add_pipe_run`) are drawn on a
   wall, the ceiling or the floor by clicking their corners (at right angles), 100 mm in
   front of a wall, 300 mm below the ceiling or 200 mm above the floor unless set
@@ -129,10 +135,38 @@ window, pipe runs across a door or window, items on the ceiling outside the floo
 inner walls leaving the room, cabinets and floor-standing parts in the swing of a door
 or in an inner wall, floor-standing parts on the place of a cabinet or not made to
 stand on the floor, and cabinets and floor-standing parts outside the room (or across a
-wall), cabinets higher than its ceiling. Rooms have no climate calculation and no NC
-data.
+wall), cabinets higher than its ceiling, wall penetrations that lead into no room. Rooms
+have no climate calculation and no NC data.
+
+**Several rooms** stand at their places in the plant (*Rear left corner of the room*
+in its properties, commands `add_room` / `set_room` with `x`, `z` and `angle`). The
+floor plan of a room shows the rooms around it faintly with their names and cabinets;
+a double-click opens one of them. *Layout space › Show › All enclosures* shows every
+room and cabinet at its place in 3D, with the routes between them.
 
 ![Floor plan of the electrical_room example: L-shaped room, inner wall, door, window and the two cabinets](../images/room.png)
+
+## 19-inch racks
+
+The enclosure system *19-inch rack* (`rack19`, *Layout space › New enclosure*, command
+`add_rack` or `add_enclosure` with `system` `rack19`) is a frame with a perforated door
+and two pairs of 19-inch mounting rails (IEC 60297) instead of a mounting plate; its
+standard sizes run from a 12 U wall rack to 47 U, and the rails are a part of the bill
+of materials (`GEN.RK-RAIL-42U`). Its rack units (1 U = 44.45 mm) are numbered from the
+bottom beside the rails in the front view and on the mounting layout page.
+
+- **19-inch parts** are as wide as a 19-inch panel (482.6 mm) and a whole number of
+  units high (technical data `Rack units: 2`): the catalog has a network switch, a
+  patch panel, a PDU, a server, a UPS, blank panels, a shelf and a cable management
+  panel. *Insert › 19-inch part* mounts one in the highest free units of the rack shown
+  (command `mount_in_rack` with `unit`, counted from the bottom); placed or dragged,
+  devices and parts snap onto whole units, centred, their front panel on the front
+  rails, and are held by the rails (no holes in a plate).
+- Units taken twice are collisions; the check reports 19-inch parts outside the units
+  and, as a hint, other parts on the mounting level (they need a shelf or a mounting
+  plate). Report *19-inch rack elevation* (and `list_racks`) lists the parts of every
+  rack from the top with their units and depths, and the free units.
+- Racks bay into line-ups and stand in rooms like other cabinets.
 
 ## 3D routing
 
@@ -142,6 +176,12 @@ segregation of the classes power, control, signal and fluid, routing reservation
 radii, cable bundles with their branches, shield terminations (shield clamp rail,
 pigtail) and their checks; routes can be frozen for production and stay as they are
 until they become invalid.
+
+Between rooms, a route passes the wall penetrations that join them, through as few
+walls as possible: through the first room to a penetration, through the rooms between,
+through the last room to its end (its legs per room and cabinet in the routing list);
+its length includes the ways through the walls. Without such a penetration the route
+stays unrouted (*no wall penetration leads from room to room*).
 
 In a room, routes run through its free space: around its walls, inner walls, the
 cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe

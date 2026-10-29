@@ -1,6 +1,7 @@
 //! Mechanical catalog data shared by the catalog and the panel layout: the standard
-//! enclosure systems with their sizes and the part numbers of their components, and
-//! the fasteners (screws, nuts, washers, rivet nuts) of the fastening systems.
+//! enclosure systems with their sizes and the part numbers of their components, the
+//! dimensions of 19-inch racks (IEC 60297) and the fasteners (screws, nuts, washers,
+//! rivet nuts) of the fastening systems.
 
 /// An enclosure system of the generic catalog.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -88,7 +89,44 @@ pub const SYSTEMS: &[SystemData] = &[
         ip: "IP67",
         price: (45.0, 380.0),
     },
+    SystemData {
+        id: RACK_SYSTEM,
+        prefix: "GEN.RK",
+        body: "19-inch rack, frame with perforated door and two pairs of 19-inch mounting rails",
+        sizes: &[(600.0, 640.0, 450.0), (600.0, 1200.0, 600.0), (600.0, 2000.0, 800.0), (600.0, 2000.0, 1000.0), (800.0, 2000.0, 1000.0), (800.0, 2200.0, 1200.0)],
+        wall: 1.5,
+        flange: 40.0,
+        frame: 40.0,
+        plinth: 0.0,
+        bayable: true,
+        material: "sheet_steel",
+        ip: "IP20",
+        price: (420.0, 480.0),
+    },
 ];
+
+/// The system of the 19-inch racks.
+pub const RACK_SYSTEM: &str = "rack19";
+/// Height of a rack unit (1 U), mm.
+pub const RACK_UNIT: f32 = 44.45;
+/// Width of a 19-inch front panel with its mounting ears, mm.
+pub const RACK_WIDTH: f32 = 482.6;
+/// Clear width between the mounting rails, mm.
+pub const RACK_OPENING: f32 = 450.0;
+/// Space at the top and the bottom of a rack outside its rack units (at least), mm.
+pub const RACK_MARGIN: f32 = 50.0;
+/// Distance of the front mounting rails behind the door, mm.
+pub const RACK_FRONT: f32 = 100.0;
+
+/// Rack units of a rack as high as `height` mm.
+pub fn rack_units(height: f32) -> u32 {
+    ((height - 2.0 * RACK_MARGIN) / RACK_UNIT).floor().max(0.0) as u32
+}
+
+/// A pair of 19-inch mounting rails as long as `units` rack units.
+pub fn rack_rail_number(units: u32) -> String {
+    format!("GEN.RK-RAIL-{units}U")
+}
 
 pub fn system(id: &str) -> Option<&'static SystemData> {
     SYSTEMS.iter().find(|s| s.id == id)

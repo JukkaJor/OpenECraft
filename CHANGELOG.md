@@ -33,7 +33,13 @@ with a command line, an MCP server, a parts server and a project server.
   rooms and enclosures with content are deleted only after a question. Pumps, tanks
   and other parts marked for floor mounting stand on the floor of a room, pipe runs
   go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D
-  through the room and from its cabinets through their cable glands.
+  through the room and from its cabinets through their cable glands. Wall
+  penetrations join neighbouring rooms: routes run from room to room through them
+  (also through the rooms between), and the floor plan shows the rooms around the one
+  shown, opened with a double-click. **19-inch racks** (42 U in 2000 mm) have mounting
+  rails instead of a plate; switches, patch panels, servers, UPS and blank panels snap
+  onto whole rack units, with a rack elevation report and the commands `add_rack`,
+  `mount_in_rack` and `list_racks`.
 - **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
   EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
   power, pre-planning.

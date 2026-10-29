@@ -116,3 +116,14 @@ fn pipe_runs_and_floor_standing_parts() {
     run(&mut s, "remove_routing_object", json!({ "enclosure": "+ROOM1", "id": id })).unwrap();
     assert_eq!(run(&mut s, "list_rooms", json!({})).unwrap()[0]["pipe_runs"].as_array().unwrap().len(), 1);
 }
+
+#[test]
+fn wall_penetrations_join_rooms() {
+    let mut s = demo_session();
+    run(&mut s, "add_room", json!({ "name": "+ROOM1", "width": 4000, "depth": 3000 })).unwrap();
+    run(&mut s, "add_room", json!({ "name": "+ROOM2", "x": 4200, "z": 0 })).unwrap();
+    let r = run(&mut s, "add_wall_opening", json!({ "room": "+ROOM1", "kind": "penetration", "wall": "wall2", "x": 1000 })).unwrap();
+    let item = &r["room"]["faces"][0]["items"][0];
+    assert_eq!((item["kind"].as_str(), item["w"].as_f64(), item["leads_to"].as_str()), (Some("penetration"), Some(300.0), Some("+ROOM2")), "{item}");
+    assert!(run(&mut s, "add_wall_opening", json!({ "room": "+ROOM1", "kind": "penetration", "wall": "ceiling" })).is_err());
+}
