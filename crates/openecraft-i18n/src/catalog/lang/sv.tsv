@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Okänd mall {}: ange en inbyggd ({}) eller en projektfil
 Property {} needs a text or a number	Egenskapen {} kräver en text eller ett tal
 Check settings…	Kontrollinställningar…
+Drop between the pages	Släpp mellan sidorna
+Drop between the rows or onto a section	Släpp mellan raderna eller på ett avsnitt
+Changes the page order; the name stays	Ändrar sidordningen; namnet består
+Moves to the top level as page {}	Flyttas till översta nivån som sida {}
+Moves to {} as page {}	Flyttas till {} som sida {}
+Becomes section {}	Blir avsnitt {}
+Released pages in it keep their names	Frisläppta sidor i det behåller sina namn
+Page {} is now page {}	Sida {} är nu sida {}
+Section {} is now section {}	Avsnitt {} är nu avsnitt {}
+Moves the page before this page of its section (or of the section given)	Flyttar sidan före denna sida i dess avsnitt (eller i det angivna avsnittet)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Flyttar avsnittet före detta avsnitt i dess överordnade avsnitt (eller i det angivna); numren fortsätter i ordning
+{} is not in that section	{} ligger inte i det avsnittet

@@ -6279,3 +6279,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	未知模板 {}：请指定内置模板（{}）或项目文件
 Property {} needs a text or a number	属性 {} 需要文本或数字
 Check settings…	检查设置…
+Drop between the pages	放到页之间
+Drop between the rows or onto a section	放到行之间或分节上
+Changes the page order; the name stays	更改页顺序；名称不变
+Moves to the top level as page {}	移到最上层，成为页 {}
+Moves to {} as page {}	移到 {}，成为页 {}
+Becomes section {}	成为分节 {}
+Released pages in it keep their names	其中已发布的页保留名称
+Page {} is now page {}	页 {} 现在是页 {}
+Section {} is now section {}	分节 {} 现在是分节 {}
+Moves the page before this page of its section (or of the section given)	将页移到其分节（或指定分节）中此页之前
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	将分节移到其上级分节（或指定上级）中此分节之前；编号按顺序继续
+{} is not in that section	{} 不在该分节中

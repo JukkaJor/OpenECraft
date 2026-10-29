@@ -50,6 +50,7 @@ pub static COMMANDS: &[Spec] = &[
             optional("location", Kind::Str, tr_const!("Location aspect (+) of the page; the devices on the page move along")),
             optional("product", Kind::Str, tr_const!("Higher-level product aspect (-) of the page; the devices on the page move along")),
             optional("section", Kind::Str, tr_const!("Moves the page into this section (list_sections; empty = top level); its name gets the section number")),
+            optional("before", Kind::Str, tr_const!("Moves the page before this page of its section (or of the section given)")),
         ],
         run: set_page,
     },
@@ -110,6 +111,7 @@ pub static COMMANDS: &[Spec] = &[
             optional("description", Kind::Str, tr_const!("Description")),
             optional("parent", Kind::Str, tr_const!("Moves the section into this one (empty = top level)")),
             optional("move", Kind::Str, tr_const!("up or down: swaps place and number with the neighbouring section")),
+            optional("before", Kind::Str, tr_const!("Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order")),
         ],
         run: set_section,
     },
@@ -152,9 +154,27 @@ fn set_section(prj: &mut Project, a: &Args) -> Result<Value, String> {
     if id == 0 {
         return Err(tr("Give a section").into());
     }
-    if let Some(p) = a.str("parent") {
-        let parent = section_id(prj, p)?;
-        sections::set_parent(prj, id, parent).map_err(tr)?;
+    let before = match a.str("before").map(str::trim) {
+        Some(b) if !b.is_empty() => Some((b, section_id(prj, b)?)),
+        _ => None,
+    };
+    let parent_of = |prj: &Project, s: u64| sections::get(prj, s).map_or(0, |s| s.parent);
+    match (a.str("parent"), before) {
+        (p, Some((name, b))) => {
+            let parent = match p {
+                Some(p) => section_id(prj, p)?,
+                None => parent_of(prj, b),
+            };
+            if parent_of(prj, b) != parent {
+                return Err(tr_fmt!("{} is not in that section", name));
+            }
+            sections::move_section_to(prj, id, parent, Some(b)).map_err(tr)?;
+        }
+        (Some(p), None) => {
+            let parent = section_id(prj, p)?;
+            sections::set_parent(prj, id, parent).map_err(tr)?;
+        }
+        (None, None) => {}
     }
     if let Some(n) = a.str("number") {
         sections::set_number(prj, id, n).map_err(tr)?;
@@ -262,9 +282,26 @@ fn set_page(prj: &mut Project, a: &Args) -> Result<Value, String> {
         ops::set_page_structure(prj, i, &dt, true);
     }
     let mut i = i;
-    if let Some(s) = a.str("section") {
-        let section = section_id(prj, s)?;
-        i = sections::move_page(prj, i, section).map_err(tr)?;
+    let before = match a.str("before").map(str::trim) {
+        Some(b) if !b.is_empty() => Some((b, page_index(prj, b)?)),
+        _ => None,
+    };
+    match (a.str("section"), before) {
+        (s, Some((name, b))) => {
+            let section = match s {
+                Some(s) => section_id(prj, s)?,
+                None => sections::of_page(prj, b),
+            };
+            if sections::of_page(prj, b) != section {
+                return Err(tr_fmt!("{} is not in that section", name));
+            }
+            i = sections::move_page_to(prj, i, section, Some(b)).map_err(tr)?;
+        }
+        (Some(s), None) => {
+            let section = section_id(prj, s)?;
+            i = sections::move_page(prj, i, section).map_err(tr)?;
+        }
+        (None, None) => {}
     }
     let mut v = page_json(&prj.pages[i]);
     v["section"] = sections::full_number(prj, sections::of_page(prj, i)).into();

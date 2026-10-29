@@ -25,6 +25,9 @@ impl App {
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let mut action = PageAction::None;
+                    // Rows are dragged to move pages and sections, not in the list by structure.
+                    let mut probe = if self.page_tree { page_dnd::Probe::off() } else { page_dnd::Probe::new(ui, &self.session.prj) };
+                    page_dnd::Probe::scroll_at_edges(ui);
                     let shown: Vec<usize> = (0..self.session.prj.pages.len())
                         .filter(|&i| i == self.session.page || area.as_ref().is_none_or(|w| w.shows_page(&self.session.prj.pages[i])))
                         .collect();
@@ -42,16 +45,27 @@ impl App {
                             let title = if st.is_empty() { tr("(no structure)").to_string() } else { self.structure_title(&st) };
                             egui::CollapsingHeader::new(title).id_salt(("ptree", st.as_str())).default_open(true).show(ui, |ui| {
                                 for i in pages {
-                                    action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
+                                    action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i, &mut probe));
                                 }
                             });
                         }
                     } else if !self.session.prj.sections.is_empty() {
-                        action = self.section_tree(ui, &shown);
+                        action = self.section_tree(ui, &shown, &mut probe);
+                        // While dragging: the row for the top level, after the sections.
+                        let strip = probe.dragged.is_some().then(|| {
+                            ui.add_space(4.0);
+                            let r = ui.add(egui::Label::new(RichText::new(tr("(top level)")).weak()).selectable(false));
+                            r.rect.expand2(egui::vec2(0.0, 2.0)).with_max_x(ui.clip_rect().right() - 2.0)
+                        });
+                        probe.below(strip);
                     } else {
                         for i in shown {
-                            action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i));
+                            action = std::mem::replace(&mut action, PageAction::None).or(self.page_row(ui, i, &mut probe));
                         }
+                        probe.below(None);
+                    }
+                    if let Some(a) = self.page_drop(ui, &probe) {
+                        action = action.or(PageAction::Section(a));
                     }
                     let (goto, lock_action) = match action {
                         PageAction::Goto(i) => (Some(i), None),
@@ -254,20 +268,15 @@ impl App {
         }
     }
 
-    /// One page of the page list; with sections it can be dragged onto one.
-    pub(super) fn page_row(&self, ui: &mut egui::Ui, i: usize) -> PageAction {
+    /// One page of the page list; it is dragged to move it between pages or onto a
+    /// section.
+    pub(super) fn page_row(&self, ui: &mut egui::Ui, i: usize, probe: &mut page_dnd::Probe) -> PageAction {
         let pg = &self.session.prj.pages[i];
-        let icon = match pg.kind {
-            PageKind::Schematic => "🗋",
-            PageKind::Cover => "🏷",
-            PageKind::Report(_) => "📊",
-            PageKind::Mounting(_) => "🗄",
-            PageKind::Overview => "🗺",
-            PageKind::Graphic => "✏",
-            PageKind::Document => "📎",
-        };
+        let icon = Self::page_icon(pg.kind);
         let mut text = egui::text::LayoutJob::default();
-        let style = egui::TextFormat { color: ui.visuals().text_color(), ..Default::default() };
+        let dragged = probe.dragged == Some(page_dnd::Dragged::Page(i));
+        let color = if dragged { ui.visuals().weak_text_color() } else { ui.visuals().text_color() };
+        let style = egui::TextFormat { color, ..Default::default() };
         let name = if self.page_tree { pg.name.clone() } else { structure::page_full_name(pg) };
         text.append(&format!("{icon} {name}   {}", pg.description), 0.0, style.clone());
         if let Some((mark, color)) = self.page_lock_mark(pg.id) {
@@ -275,12 +284,10 @@ impl App {
         }
         let sectioned = !self.session.prj.sections.is_empty();
         let mut r = ui.selectable_label(i == self.session.page, text);
-        if sectioned {
+        if probe.enabled {
             r = r.interact(egui::Sense::drag());
-            r.dnd_set_drag_payload(sections_ui::PageDrag(i));
-            if r.dragged() {
-                ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
-            }
+            r.dnd_set_drag_payload(page_dnd::Dragged::Page(i));
+            probe.page(&self.session.prj, r.rect, i);
         }
         if i == self.session.page && self.scroll_nav {
             r.scroll_to_me(None);

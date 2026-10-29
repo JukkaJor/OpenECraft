@@ -40,9 +40,13 @@ panel layout. Most steps below can be tried on it.
   after the current page; renumbering keeps them sub-pages of their page.
 - *Home › New section* structures the pages like directories: a section holds pages
   and subsections, and the page names start with its number (`2.3.1` is page 1 of
-  section 2.3). Drag a page onto a section in the *Pages* navigator (or choose its
-  *Section* in the page properties) to move it there; a right click on a section adds
-  pages and subsections, moves, renumbers or deletes it, and the pages follow.
+  section 2.3). In the *Pages* navigator, drag a page between two pages or onto a
+  section (or choose its *Section* in the page properties) to move it there, and drag
+  a section between sections or onto another one; the line or frame shows where it
+  lands, the label at the pointer the name it gets, a collapsed section opens when the
+  drag is held over it, and the empty space below the list is the top level. A right
+  click on a section adds pages and subsections, moves, renumbers or deletes it, and
+  the pages follow.
   *Renumber pages…* counts again in every section and can number the sections
   1, 2, 3 … first. Once a project has sections, sub-pages are lettered (`2.3.1.a`).
 

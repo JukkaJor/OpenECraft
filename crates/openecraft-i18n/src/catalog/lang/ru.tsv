@@ -6283,3 +6283,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Неизвестный шаблон {}: укажите встроенный ({}) или файл проекта
 Property {} needs a text or a number	Свойству {} нужен текст или число
 Check settings…	Настройки проверки…
+Drop between the pages	Отпустите между листами
+Drop between the rows or onto a section	Отпустите между строками или на разделе
+Changes the page order; the name stays	Меняет порядок листов; имя сохраняется
+Moves to the top level as page {}	Переходит на верхний уровень как лист {}
+Moves to {} as page {}	Переходит в {} как лист {}
+Becomes section {}	Становится разделом {}
+Released pages in it keep their names	Выпущенные листы в нём сохраняют свои имена
+Page {} is now page {}	Лист {} теперь лист {}
+Section {} is now section {}	Раздел {} теперь раздел {}
+Moves the page before this page of its section (or of the section given)	Перемещает лист перед этим листом его раздела (или указанного раздела)
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Перемещает раздел перед этим разделом его родительского раздела (или указанного); номера идут по порядку
+{} is not in that section	{} не входит в этот раздел

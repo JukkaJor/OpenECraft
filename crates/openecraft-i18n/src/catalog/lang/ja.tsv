@@ -6283,3 +6283,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	不明なテンプレート {}: 組み込みのもの ({}) かプロジェクトファイルを指定してください
 Property {} needs a text or a number	プロパティ {} にはテキストまたは数値が必要です
 Check settings…	チェックの設定…
+Drop between the pages	ページの間にドロップ
+Drop between the rows or onto a section	行の間またはセクションの上にドロップ
+Changes the page order; the name stays	ページの順序を変更します。名前は変わりません
+Moves to the top level as page {}	最上位レベルのページ {} になります
+Moves to {} as page {}	{} のページ {} になります
+Becomes section {}	セクション {} になります
+Released pages in it keep their names	その中のリリース済みページは名前を保持します
+Page {} is now page {}	ページ {} はページ {} になりました
+Section {} is now section {}	セクション {} はセクション {} になりました
+Moves the page before this page of its section (or of the section given)	ページをそのセクション（または指定したセクション）のこのページの前に移動します
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	セクションをその親（または指定した親）のこのセクションの前に移動します。番号は順に続きます
+{} is not in that section	{} はそのセクションにありません

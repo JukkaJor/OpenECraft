@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Tuntematon malli {}: anna sisäänrakennettu malli ({}) tai projektitiedosto
 Property {} needs a text or a number	Ominaisuus {} vaatii tekstin tai luvun
 Check settings…	Tarkistusasetukset…
+Drop between the pages	Pudota sivujen väliin
+Drop between the rows or onto a section	Pudota rivien väliin tai osion päälle
+Changes the page order; the name stays	Muuttaa sivujärjestystä; nimi säilyy
+Moves to the top level as page {}	Siirtyy ylimmälle tasolle sivuksi {}
+Moves to {} as page {}	Siirtyy osioon {} sivuksi {}
+Becomes section {}	Muuttuu osioksi {}
+Released pages in it keep their names	Sen vapautetut sivut säilyttävät nimensä
+Page {} is now page {}	Sivu {} on nyt sivu {}
+Section {} is now section {}	Osio {} on nyt osio {}
+Moves the page before this page of its section (or of the section given)	Siirtää sivun osionsa (tai annetun osion) tämän sivun eteen
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Siirtää osion yläosionsa (tai annetun) tämän osion eteen; numerot jatkuvat järjestyksessä
+{} is not in that section	{} ei ole siinä osiossa

@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Ismeretlen sablon: {}; adjon meg egy beépítettet ({}) vagy egy projektfájlt
 Property {} needs a text or a number	A(z) {} tulajdonsághoz szöveg vagy szám kell
 Check settings…	Ellenőrzési beállítások…
+Drop between the pages	Ejtse az oldalak közé
+Drop between the rows or onto a section	Ejtse a sorok közé vagy egy szakaszra
+Changes the page order; the name stays	Megváltoztatja az oldalak sorrendjét; a név marad
+Moves to the top level as page {}	A legfelső szintre kerül {} oldalként
+Moves to {} as page {}	{} szakaszba kerül {} oldalként
+Becomes section {}	{} szakasz lesz belőle
+Released pages in it keep their names	A benne lévő kiadott oldalak megtartják a nevüket
+Page {} is now page {}	A(z) {} oldal most a(z) {} oldal
+Section {} is now section {}	A(z) {} szakasz most a(z) {} szakasz
+Moves the page before this page of its section (or of the section given)	Áthelyezi az oldalt a szakasza (vagy a megadott szakasz) ezen oldala elé
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Áthelyezi a szakaszt a szülője (vagy a megadott szülő) ezen szakasza elé; a számok sorrendben folytatódnak
+{} is not in that section	{} nincs abban a szakaszban

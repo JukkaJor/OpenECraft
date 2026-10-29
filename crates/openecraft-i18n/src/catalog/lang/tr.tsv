@@ -6284,3 +6284,15 @@ Unknown page type: {} (schematic, overview, graphic, cover or a report of list_r
 Unknown template {}: give a built-in one ({}) or a project file	Bilinmeyen şablon {}: yerleşik bir şablon ({}) veya bir proje dosyası belirtin
 Property {} needs a text or a number	{} özelliği bir metin veya sayı gerektirir
 Check settings…	Kontrol ayarları…
+Drop between the pages	Sayfaların arasına bırakın
+Drop between the rows or onto a section	Satırların arasına veya bir bölümün üzerine bırakın
+Changes the page order; the name stays	Sayfa sırasını değiştirir; ad aynı kalır
+Moves to the top level as page {}	En üst düzeye {} sayfası olarak geçer
+Moves to {} as page {}	{} bölümüne {} sayfası olarak geçer
+Becomes section {}	{} bölümü olur
+Released pages in it keep their names	İçindeki yayımlanmış sayfalar adlarını korur
+Page {} is now page {}	{} sayfası artık {} sayfası
+Section {} is now section {}	{} bölümü artık {} bölümü
+Moves the page before this page of its section (or of the section given)	Sayfayı bölümünün (veya verilen bölümün) bu sayfasının önüne taşır
+Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Bölümü üst bölümünün (veya verilen üst bölümün) bu bölümünün önüne taşır; numaralar sırayla devam eder
+{} is not in that section	{} o bölümde değil

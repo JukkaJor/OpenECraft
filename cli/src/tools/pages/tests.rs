@@ -103,3 +103,23 @@ fn pages_are_structured_in_numbered_sections() {
     run(&mut s, "delete_section", json!({ "section": "1.1" })).unwrap();
     assert_eq!(run(&mut s, "list_sections", json!({})).unwrap()[0]["pages"], json!(["1.1", "1.2", "1.3"]));
 }
+
+#[test]
+fn pages_and_sections_move_before_others() {
+    let mut s = new_session();
+    run(&mut s, "add_section", json!({ "description": "Supply" })).unwrap();
+    run(&mut s, "add_section", json!({ "description": "Controls" })).unwrap();
+    for section in ["1", "1", "2"] {
+        run(&mut s, "add_page", json!({ "kind": "schematic", "section": section })).unwrap();
+    }
+    let names = |s: &mut _| -> Vec<Value> { run(s, "list_pages", json!({})).unwrap().as_array().unwrap().iter().map(|p| p["name"].clone()).collect() };
+    // Page 1.2 before page 1.1: the order changes, the names stay.
+    run(&mut s, "set_page", json!({ "page": "1.2", "before": "1.1" })).unwrap();
+    assert_eq!(names(&mut s), vec![json!("1"), json!("1.2"), json!("1.1"), json!("2.1")]);
+    // Page 2.1 into section 1 before page 1.1: number 1 is taken there.
+    assert_eq!(run(&mut s, "set_page", json!({ "page": "2.1", "before": "1.1" })).unwrap()["name"], "1.3");
+    assert!(run(&mut s, "set_page", json!({ "page": "1", "section": "2", "before": "1.1" })).unwrap_err().contains("not in that section"));
+    // Section 2 before section 1: they swap their numbers, the pages follow.
+    run(&mut s, "set_section", json!({ "section": "2", "before": "1" })).unwrap();
+    assert_eq!(run(&mut s, "list_sections", json!({})).unwrap()[1]["pages"], json!(["2.2", "2.3", "2.1"]));
+}
