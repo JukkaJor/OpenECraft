@@ -6295,3 +6295,6 @@ Moves the page before this page of its section (or of the section given)	Przenos
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Przenosi sekcję przed tę sekcję jej sekcji nadrzędnej (lub podanej); numery biegną dalej po kolei
 {} is not in that section	{} nie należy do tej sekcji
 Drag to turn the model	Przeciągnij, aby obrócić model
+Standard workspaces	Standardowe obszary robocze
+Saved workspaces	Zapisane obszary robocze
+Switches to this workspace with its panes at their default places	Przełącza na ten obszar roboczy z panelami w ich domyślnych miejscach

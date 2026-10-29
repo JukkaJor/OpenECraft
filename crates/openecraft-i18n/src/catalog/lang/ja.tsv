@@ -6294,3 +6294,6 @@ Moves the page before this page of its section (or of the section given)	ペー�
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	セクションをその親（または指定した親）のこのセクションの前に移動します。番号は順に続きます
 {} is not in that section	{} はそのセクションにありません
 Drag to turn the model	ドラッグしてモデルを回転
+Standard workspaces	標準のワークスペース
+Saved workspaces	保存されたワークスペース
+Switches to this workspace with its panes at their default places	このワークスペースに切り替え、ペインを既定の位置に戻します

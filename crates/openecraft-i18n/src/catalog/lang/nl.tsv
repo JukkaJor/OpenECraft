@@ -6295,3 +6295,6 @@ Moves the page before this page of its section (or of the section given)	Verplaa
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Verplaatst de sectie vóór deze sectie van de bovenliggende sectie (of van de opgegeven); de nummers lopen door in volgorde
 {} is not in that section	{} ligt niet in die sectie
 Drag to turn the model	Sleep om het model te draaien
+Standard workspaces	Standaardwerkruimten
+Saved workspaces	Opgeslagen werkruimten
+Switches to this workspace with its panes at their default places	Schakelt naar deze werkruimte met de deelvensters op hun standaardplaats

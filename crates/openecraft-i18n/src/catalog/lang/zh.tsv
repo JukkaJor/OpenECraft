@@ -6290,3 +6290,6 @@ Moves the page before this page of its section (or of the section given)	将页�
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	将分节移到其上级分节（或指定上级）中此分节之前；编号按顺序继续
 {} is not in that section	{} 不在该分节中
 Drag to turn the model	拖动以旋转模型
+Standard workspaces	标准工作区
+Saved workspaces	已保存的工作区
+Switches to this workspace with its panes at their default places	切换到此工作区，并将其窗格恢复到默认位置

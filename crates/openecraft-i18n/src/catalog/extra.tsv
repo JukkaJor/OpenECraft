@@ -5789,3 +5789,6 @@ Moves the page before this page of its section (or of the section given)	Verschi
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Verschiebt den Abschnitt vor diesen Abschnitt seines übergeordneten Abschnitts (oder des angegebenen); die Nummern zählen weiter der Reihe nach	Déplace la section avant cette section de son parent (ou du parent indiqué) ; les numéros restent dans l'ordre	Mueve la sección delante de esta sección de su sección superior (o de la indicada); los números siguen en orden
 {} is not in that section	{} liegt nicht in diesem Abschnitt	{} n'est pas dans cette section	{} no está en esa sección
 Drag to turn the model	Ziehen, um das Modell zu drehen	Faites glisser pour tourner le modèle	Arrastre para girar el modelo
+Standard workspaces	Standard-Arbeitsbereiche	Espaces de travail standard	Espacios de trabajo estándar
+Saved workspaces	Gespeicherte Arbeitsbereiche	Espaces de travail enregistrés	Espacios de trabajo guardados
+Switches to this workspace with its panes at their default places	Wechselt in diesen Arbeitsbereich und setzt seine Fenster an ihre Standardplätze	Passe à cet espace de travail avec ses panneaux à leur place par défaut	Cambia a este espacio de trabajo con sus paneles en su lugar predeterminado

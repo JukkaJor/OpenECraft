@@ -389,6 +389,13 @@ pub fn default_tree_for(workspace: Workspace) -> Tree<Pane> {
     Tree::new(egui::Id::unique(("dock", workspace.key())), root, tiles)
 }
 
+/// Puts a workspace back to its default: the arrangement before any change, no floating
+/// panes, every pane opening where it opens by default.
+pub fn reset(workspace: Workspace, tree: &mut Tree<Pane>, side: &mut Side) {
+    *tree = default_tree_for(workspace);
+    *side = Side::default();
+}
+
 /// The arrangement of the schematic workspace before any change.
 #[cfg(test)]
 pub fn default_tree() -> Tree<Pane> {

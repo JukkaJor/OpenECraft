@@ -6294,3 +6294,6 @@ Moves the page before this page of its section (or of the section given)	Пер�
 Moves the section before this section of its parent (or of the parent given); the numbers keep counting in order	Перемещает раздел перед этим разделом его родительского раздела (или указанного); номера идут по порядку
 {} is not in that section	{} не входит в этот раздел
 Drag to turn the model	Перетащите, чтобы повернуть модель
+Standard workspaces	Стандартные рабочие пространства
+Saved workspaces	Сохранённые рабочие пространства
+Switches to this workspace with its panes at their default places	Переключает на это рабочее пространство с панелями на их местах по умолчанию
