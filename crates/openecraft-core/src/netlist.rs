@@ -442,14 +442,17 @@ pub struct Connection {
 /// `open` (terminal sides apart) are chained in schematic order (potentials and
 /// connectors are not physical wire ends). Devices placed in the same enclosure are
 /// chained first, so the wiring stays inside the cabinet and one wire leaves for the
-/// devices outside. Potential names come from `nl`. Fluid nets are left out (see
+/// devices outside; connections assigned to a harness stay as they are
+/// ([`crate::harness::keep_assigned`]). Potential names come from `nl`. Fluid nets are left out (see
 /// [`crate::fluid::hoses`]).
 pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connection> {
     let mut out = Vec::new();
+    let assigned = crate::harness::assigned(prj);
     for net in open.nets.iter().filter(|n| !n.fluid) {
         let mut pins = chained_pins(prj, net);
         let enclosure = |p: &PinRef| crate::panel::locate(prj, &prj.pages[p.page].symbols[p.sym].tag).map(|(e, _)| e).unwrap_or(usize::MAX);
         pins.sort_by_key(enclosure);
+        let pins = crate::harness::keep_assigned(prj, &assigned, pins);
         if pins.len() < 2 {
             continue;
         }

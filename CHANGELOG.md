@@ -28,7 +28,8 @@ with a command line, an MCP server, a parts server and a project server.
   drilling and NC data, enclosure climate, line-ups, rooms and 3D routing; wiring and
   mounting assistants for the workshop.
 - **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
-  EMC, ISO 13849-1 safety functions; wire harnesses with KBL, fluid power, pre-planning.
+  EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
+  power, pre-planning.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
