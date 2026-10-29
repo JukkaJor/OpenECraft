@@ -112,10 +112,6 @@ pub struct Opts {
     pub macro_boxes: bool,
 }
 
-fn is_black(c: &[u8; 3]) -> bool {
-    crate::potentials::color_rgb("BK") == Some(*c)
-}
-
 /// Draws a complete page including frame and title block.
 pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, page_i: usize, opts: &Opts) {
     let page = &prj.pages[page_i];
@@ -175,8 +171,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         };
         let parts = colors.get(&w.id).map(|c| crate::potentials::color_parts(c)).unwrap_or_default();
         match parts.as_slice() {
-            // Black is the normal wire ink (stays visible on a dark canvas).
-            [c] if ink == Ink::Wire && is_black(c) => d.line(w.a, w.b, WIRE_W, ink, false),
+            // Black too: the canvas shows it in its line colour when it is dark.
             [c] if ink == Ink::Wire => d.line(w.a, w.b, WIRE_W, Ink::Color(*c), false),
             // Two-colour wires: the second colour dashed over the first.
             [a, b] if ink == Ink::Wire => {

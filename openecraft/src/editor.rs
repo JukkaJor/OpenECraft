@@ -103,6 +103,8 @@ pub struct Palette {
     pub error: Color32,
     pub plate: Color32,
     pub fill: Color32,
+    /// Dark canvas: black items are drawn in the line colour to stay visible.
+    pub dark: bool,
 }
 
 impl Palette {
@@ -124,6 +126,7 @@ impl Palette {
                 error: Color32::from_rgb(255, 90, 90),
                 plate: Color32::from_rgb(52, 55, 60),
                 fill: Color32::from_rgb(78, 82, 90),
+                dark: true,
             }
         } else {
             Palette {
@@ -142,11 +145,12 @@ impl Palette {
                 error: Color32::from_rgb(220, 0, 0),
                 plate: Color32::from_rgb(236, 238, 241),
                 fill: Color32::from_rgb(214, 218, 224),
+                dark: false,
             }
         }
     }
 
-    fn ink(&self, ink: Ink) -> Color32 {
+    pub(crate) fn ink(&self, ink: Ink) -> Color32 {
         match ink {
             Ink::Line => self.line,
             Ink::Wire => self.wire,
@@ -160,6 +164,8 @@ impl Palette {
             Ink::Error => self.error,
             Ink::Plate => self.plate,
             Ink::Fill => self.fill,
+            // Black (wires of colour BK, black shapes) would vanish on a dark canvas.
+            Ink::Color([r, g, b]) if self.dark && r.max(g).max(b) < 64 => self.line,
             Ink::Color([r, g, b]) => Color32::from_rgb(r, g, b),
             Ink::Paper => self.paper,
         }

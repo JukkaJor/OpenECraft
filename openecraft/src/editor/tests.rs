@@ -466,3 +466,13 @@ fn zoom_commands_keep_the_middle_of_the_canvas() {
     ed.zoom_center(ZOOM_ACTUAL / ed.zoom);
     assert!((ed.zoom - ZOOM_ACTUAL).abs() < 1e-4, "Zoom 100 %");
 }
+
+#[test]
+fn black_is_black_on_paper_and_the_line_colour_on_a_dark_canvas() {
+    let black = Ink::Color([20, 20, 20]);
+    let light = Palette::new(false);
+    assert_eq!(light.ink(black), Color32::from_rgb(20, 20, 20), "a black wire is not drawn blue");
+    let dark = Palette::new(true);
+    assert_eq!(dark.ink(black), dark.line, "visible on a dark canvas");
+    assert_eq!(dark.ink(Ink::Color([200, 0, 0])), Color32::from_rgb(200, 0, 0), "other colours stay");
+}

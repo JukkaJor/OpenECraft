@@ -7,10 +7,13 @@ struct Rec {
     styled: Vec<(P, String, TextStyle)>,
     polys: Vec<(Vec<P>, Ink, bool)>,
     urls: Vec<(P, P, String)>,
+    lines: Vec<Ink>,
 }
 
 impl Draw for Rec {
-    fn line(&mut self, _: P, _: P, _: f32, _: Ink, _: bool) {}
+    fn line(&mut self, _: P, _: P, _: f32, ink: Ink, _: bool) {
+        self.lines.push(ink);
+    }
     fn poly(&mut self, pts: &[P], _: bool, _: f32, ink: Ink, fill: bool) {
         self.polys.push((pts.to_vec(), ink, fill));
     }
@@ -217,4 +220,19 @@ fn the_contact_image_of_a_turned_coil_stays_clear_of_its_pins() {
     let image: Vec<_> = d.texts.iter().filter(near).filter(|t| t.1 == "13" || t.1 == "14").collect();
     assert_eq!(image.len(), 2, "{:?}", d.texts);
     assert!(image.iter().all(|t| t.0.y > b.max.y), "{image:?} {b:?}");
+}
+
+#[test]
+fn black_wires_are_drawn_black_not_in_the_wire_ink() {
+    let mut prj = Project { wire_colors: true, ..Default::default() };
+    let black = crate::potentials::color_rgb("BK").unwrap();
+    let red = crate::potentials::color_rgb("RD").unwrap();
+    prj.pages[0].wires.push(Wire { id: 1, a: p(100.0, 100.0), b: p(200.0, 100.0), color: "BK".into(), ..Default::default() });
+    prj.pages[0].wires.push(Wire { id: 2, a: p(100.0, 150.0), b: p(200.0, 150.0), color: "RD".into(), ..Default::default() });
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    assert!(d.lines.contains(&Ink::Color(black)), "{:?}", d.lines);
+    assert!(d.lines.contains(&Ink::Color(red)));
+    assert!(!d.lines.contains(&Ink::Wire), "no wire falls back to the wire ink");
 }
