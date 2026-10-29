@@ -44,6 +44,9 @@ pub struct Browser {
     pub remote: Vec<Part>,
     pub user_name: String,
     pub password: String,
+    /// The results can be dragged out as [`crate::part_editor::PartDrag`] (the editor
+    /// places them on a schematic page).
+    pub drag_parts: bool,
     /// A new search is due.
     dirty: bool,
 }
@@ -370,7 +373,45 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
     }
     ui.separator();
 
-    let h = ui.available_height() - 64.0;
+    // Adding and the update check: a bottom panel drawn first, so that the columns
+    // get exactly the height left (a fixed reserve made the window grow every frame
+    // when the buttons wrapped or the update list was shown).
+    egui::Panel::bottom("portal_footer").show(ui, |ui| {
+        ui.horizontal_wrapped(|ui| {
+            let marked: Vec<String> = b.marked.iter().cloned().collect();
+            if ui.add_enabled_ui(!busy && !marked.is_empty(), |ui| icons::text_button(ui, Icon::Download, &tr_fmt!("Add marked parts to the parts database ({})", marked.len()))).inner.clicked() {
+                client.fetch(&ctx, &marked);
+                b.marked.clear();
+            }
+            if ui.add_enabled_ui(!busy && !local.is_empty(), |ui| icons::text_button(ui, Icon::Rotate, tr("Check the parts database for updates"))).inner
+                .on_hover_text(tr("Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts"))
+                .clicked()
+            {
+                client.versions(&ctx, local);
+            }
+            if let Some(updates) = &b.updates {
+                let applicable = updates.iter().filter(|u| u.kind != openecraft_parts::portal::UpdateKind::Removed).count();
+                if updates.is_empty() {
+                    ui.label(tr("All parts are up to date"));
+                } else if ui.add_enabled_ui(applicable > 0, |ui| icons::text_button(ui, Icon::Check, &tr_fmt!("Apply {} updates", applicable))).inner.clicked() {
+                    event = Some(BrowserEvent::ApplyUpdates);
+                }
+            }
+        });
+        if let Some(updates) = b.updates.as_ref().filter(|u| !u.is_empty()) {
+            egui::ScrollArea::vertical().id_salt("portal_updates").max_height(110.0).show(ui, |ui| {
+                egui::Grid::new("portal_updates_grid").num_columns(3).striped(true).show(ui, |ui| {
+                    for u in updates {
+                        ui.monospace(&u.number);
+                        ui.label(tr(u.kind.title()));
+                        ui.label(if u.successor.is_empty() { String::new() } else { tr_fmt!("Successor {}", u.successor) });
+                        ui.end_row();
+                    }
+                });
+            });
+        }
+    });
+    let h = ui.available_height();
     ui.horizontal_top(|ui| {
         // Facets
         ui.allocate_ui_with_layout(egui::vec2(230.0, h), egui::Layout::top_down(egui::Align::Min), |ui| {
@@ -436,7 +477,8 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         let in_db = local.iter().any(|l| l.number == p.number);
                         let text = RichText::new(format!("{}  {}", p.number, p.description));
                         let text = if in_db { text.strong() } else { text };
-                        let resp = ui.add(egui::Button::selectable(b.selected.as_deref() == Some(p.number.as_str()), text).truncate());
+                        let selected = b.selected.as_deref() == Some(p.number.as_str());
+                        let resp = crate::part_editor::drag_row(ui, b.drag_parts, &p.number, |ui| ui.add(egui::Button::selectable(selected, text).truncate()));
                         let resp = if in_db { resp.on_hover_text(tr("Already in the parts database")) } else { resp };
                         if resp.clicked() {
                             b.selected = Some(p.number.clone());
@@ -547,42 +589,6 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
             });
         });
     });
-
-    // Adding and the update check
-    ui.separator();
-    ui.horizontal_wrapped(|ui| {
-        let marked: Vec<String> = b.marked.iter().cloned().collect();
-        if ui.add_enabled_ui(!busy && !marked.is_empty(), |ui| icons::text_button(ui, Icon::Download, &tr_fmt!("Add marked parts to the parts database ({})", marked.len()))).inner.clicked() {
-            client.fetch(&ctx, &marked);
-            b.marked.clear();
-        }
-        if ui.add_enabled_ui(!busy && !local.is_empty(), |ui| icons::text_button(ui, Icon::Rotate, tr("Check the parts database for updates"))).inner
-            .on_hover_text(tr("Compares the local parts with the parts server: newer versions, phase-out, discontinued and removed parts"))
-            .clicked()
-        {
-            client.versions(&ctx, local);
-        }
-        if let Some(updates) = &b.updates {
-            let applicable = updates.iter().filter(|u| u.kind != openecraft_parts::portal::UpdateKind::Removed).count();
-            if updates.is_empty() {
-                ui.label(tr("All parts are up to date"));
-            } else if ui.add_enabled_ui(applicable > 0, |ui| icons::text_button(ui, Icon::Check, &tr_fmt!("Apply {} updates", applicable))).inner.clicked() {
-                event = Some(BrowserEvent::ApplyUpdates);
-            }
-        }
-    });
-    if let Some(updates) = b.updates.as_ref().filter(|u| !u.is_empty()) {
-        egui::ScrollArea::vertical().id_salt("portal_updates").max_height(110.0).show(ui, |ui| {
-            egui::Grid::new("portal_updates_grid").num_columns(3).striped(true).show(ui, |ui| {
-                for u in updates {
-                    ui.monospace(&u.number);
-                    ui.label(tr(u.kind.title()));
-                    ui.label(if u.successor.is_empty() { String::new() } else { tr_fmt!("Successor {}", u.successor) });
-                    ui.end_row();
-                }
-            });
-        });
-    }
 
     if let Some(q) = b.take_search() {
         client.search(&ctx, &q);

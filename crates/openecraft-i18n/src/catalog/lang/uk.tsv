@@ -6132,7 +6132,6 @@ Draw walls	Малювати стіни
 Wall	Стіна
 Wall {}	Стіна {}
 Floor plan with {} walls	План із {} стінами
-{} rails, {} cable ducts, {} devices	рейки {}, кабельні канали {}, пристрої {}
 A room needs at least four walls	Приміщенню потрібні щонайменше чотири стіни
 Walls {} and {} cross	Стіни {} і {} перетинаються
 Wall {} is shorter than {} mm	Стіна {} коротша за {} мм
@@ -6297,3 +6296,40 @@ Drag to turn the model	Перетягніть, щоб повернути мод�
 Standard workspaces	Стандартні робочі простори
 Saved workspaces	Збережені робочі простори
 Switches to this workspace with its panes at their default places	Перемикає на цей робочий простір із панелями на їхніх типових місцях
+1 rail	1 рейка
+{} rails	Рейки: {}
+1 cable duct	1 кабельний канал
+{} cable ducts	Кабельні канали: {}
+1 device	1 пристрій
+{} devices	Пристрої: {}
+1 door	1 двері
+{} doors	Двері: {}
+1 window	1 вікно
+empty	порожньо
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Видалити приміщення {} з усім, що на його стінах? Шафи в ньому залишаться, без приміщення.
+Delete enclosure {} with everything placed in it?	Видалити корпус {} з усім, що в ньому розміщено?
+Undo brings it back.	Скасування поверне його.
+{}: drag to move it, R turns it, a double-click opens it	{}: перетягніть, щоб перемістити, R повертає, подвійне клацання відкриває
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Стіна {}, {} м: стіна, показана у вигляді стіни (виділена); перетягніть, щоб перемістити
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Стіна {}, {} м: перетягніть, щоб перемістити, подвійне клацання покаже її для оснащення
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Клацайте кінці внутрішніх стін; кожне клацання починає наступну, кінці біля стіни прилипають до неї. Esc, Enter або подвійне клацання завершують ланцюжок, повторний Esc — інструмент.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} мм, z {} мм, поворот {} °
+From the left end	Від лівого кінця
+Distance of the opening from the left end of the wall, seen from inside the room	Відстань прорізу від лівого кінця стіни, якщо дивитися зсередини приміщення
+{}: {} is on	{}: увімкнено {}
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Створіть корпус або приміщення (Монтажний простір › Новий корпус, Нове приміщення), щоб почати компонування.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Корпусів ще немає – створіть корпус командою Новий корпус або приміщення для шаф командою Нове приміщення.
+Right click for more	Клацніть правою кнопкою для інших дій
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ще немає виробів із позначкою настінного монтажу. Позначте виріб у керуванні виробами: редактор виробів › Дані монтажу › Настінний монтаж.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Жоден пристрій ще не має даних монтажу: призначте пристроям вироби з розмірами (Властивості › Вироби).
+Drag it onto a schematic page to place it	Перетягніть на сторінку схеми, щоб розмістити
+Importing {} from the parts server…	Імпорт {} із сервера виробів…
+{} was imported into the parts database; its page no longer exists	{} імпортовано до бази даних виробів; його сторінки більше немає
+{} is neither in the parts database nor on the parts server	{} немає ні в базі даних виробів, ні на сервері виробів
+{} has no function with a symbol; assign it to a device in its properties	{} не має функції із символом; призначте його пристрою в його властивостях
+{} imported into the parts database and placed as {}	{} імпортовано до бази даних виробів і розміщено як {}
+{} placed as {}	{} розміщено як {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Розміщує виріб на сторінці: символ його основної функції з позначеннями точок підключення, як новий пристрій, якому призначено виріб (вироби проєкту та приклад каталогу)
+Part number, e.g. GEN.LMP-GN-24	Номер виробу, наприклад GEN.LMP-GN-24
+Part {} has no function with a symbol	Виріб {} не має функції із символом
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Вироби можна перетягувати лише на сторінки, які можна змінювати; ця випущена, заблокована або згенерована

@@ -6133,7 +6133,6 @@ Draw walls	Desenhar paredes
 Wall	Parede
 Wall {}	Parede {}
 Floor plan with {} walls	Planta baixa com {} paredes
-{} rails, {} cable ducts, {} devices	{} trilhos, {} canaletas, {} dispositivos
 A room needs at least four walls	Uma sala precisa de pelo menos quatro paredes
 Walls {} and {} cross	As paredes {} e {} se cruzam
 Wall {} is shorter than {} mm	A parede {} é mais curta que {} mm
@@ -6298,3 +6297,40 @@ Drag to turn the model	Arraste para girar o modelo
 Standard workspaces	Espaços de trabalho padrão
 Saved workspaces	Espaços de trabalho salvos
 Switches to this workspace with its panes at their default places	Muda para este espaço de trabalho com os painéis nas posições padrão
+1 rail	1 trilho
+{} rails	{} trilhos
+1 cable duct	1 canaleta
+{} cable ducts	{} canaletas
+1 device	1 dispositivo
+{} devices	{} dispositivos
+1 door	1 porta
+{} doors	{} portas
+1 window	1 janela
+empty	vazia
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Excluir a sala {} com tudo nas suas paredes? Os armários nela permanecem, sem sala.
+Delete enclosure {} with everything placed in it?	Excluir o gabinete {} com tudo o que está colocado nele?
+Undo brings it back.	Desfazer o recupera.
+{}: drag to move it, R turns it, a double-click opens it	{}: arraste para mover, R para girar, clique duplo para abrir
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Parede {}, {} m: a parede mostrada na vista da parede (destacada); arraste para movê-la
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Parede {}, {} m: arraste para movê-la, clique duplo para mostrá-la e equipá-la
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Clique nas extremidades das paredes internas; cada clique inicia a próxima, extremidades perto de uma parede se encaixam nela. Esc, Enter ou um clique duplo terminam a cadeia, Esc de novo a ferramenta.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, girado {} °
+From the left end	Da extremidade esquerda
+Distance of the opening from the left end of the wall, seen from inside the room	Distância da abertura a partir da extremidade esquerda da parede, vista de dentro da sala
+{}: {} is on	{}: {} está ativo
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Crie um gabinete ou uma sala (Espaço de montagem › Novo gabinete, Nova sala) para começar o layout de montagem.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Ainda não há gabinete – crie um com Novo gabinete, ou uma sala para armários com Nova sala.
+Right click for more	Clique com o botão direito para mais opções
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Ainda não há peças marcadas para montagem na parede. Marque uma no gerenciamento de peças: editor de peças › Dados de montagem › Montagem na parede.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Nenhum dispositivo tem dados de montagem ainda: atribua peças com dimensões aos dispositivos (Propriedades › Peças).
+Drag it onto a schematic page to place it	Arraste para uma página de esquema para posicioná-la
+Importing {} from the parts server…	Importando {} do servidor de peças…
+{} was imported into the parts database; its page no longer exists	{} foi importada para o banco de dados de peças; a página dela não existe mais
+{} is neither in the parts database nor on the parts server	{} não está no banco de dados de peças nem no servidor de peças
+{} has no function with a symbol; assign it to a device in its properties	{} não tem função com símbolo; atribua-a a um dispositivo nas propriedades dele
+{} imported into the parts database and placed as {}	{} importada para o banco de dados de peças e posicionada como {}
+{} placed as {}	{} posicionada como {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Posiciona uma peça em uma página: o símbolo da função principal com as designações dos pontos de conexão, como um novo dispositivo ao qual a peça é atribuída (peças do projeto e catálogo de exemplo)
+Part number, e.g. GEN.LMP-GN-24	Número da peça, p. ex. GEN.LMP-GN-24
+Part {} has no function with a symbol	A peça {} não tem função com símbolo
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	As peças só podem ser soltas em páginas que podem ser alteradas; esta está liberada, bloqueada ou gerada

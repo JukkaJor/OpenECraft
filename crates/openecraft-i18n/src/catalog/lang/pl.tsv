@@ -6133,7 +6133,6 @@ Draw walls	Rysuj ściany
 Wall	Ściana
 Wall {}	Ściana {}
 Floor plan with {} walls	Rzut z {} ścianami
-{} rails, {} cable ducts, {} devices	{} szyny, {} korytka kablowe, {} urządzenia
 A room needs at least four walls	Pomieszczenie wymaga co najmniej czterech ścian
 Walls {} and {} cross	Ściany {} i {} przecinają się
 Wall {} is shorter than {} mm	Ściana {} jest krótsza niż {} mm
@@ -6298,3 +6297,40 @@ Drag to turn the model	Przeciągnij, aby obrócić model
 Standard workspaces	Standardowe obszary robocze
 Saved workspaces	Zapisane obszary robocze
 Switches to this workspace with its panes at their default places	Przełącza na ten obszar roboczy z panelami w ich domyślnych miejscach
+1 rail	1 szyna
+{} rails	Szyny: {}
+1 cable duct	1 korytko kablowe
+{} cable ducts	Korytka kablowe: {}
+1 device	1 urządzenie
+{} devices	Urządzenia: {}
+1 door	1 drzwi
+{} doors	Drzwi: {}
+1 window	1 okno
+empty	pusta
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Usunąć pomieszczenie {} ze wszystkim na jego ścianach? Szafy w nim pozostaną, bez pomieszczenia.
+Delete enclosure {} with everything placed in it?	Usunąć obudowę {} ze wszystkim, co w niej umieszczono?
+Undo brings it back.	Cofnij przywróci go.
+{}: drag to move it, R turns it, a double-click opens it	{}: przeciągnij, aby przesunąć, R obraca, dwuklik otwiera
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Ściana {}, {} m: ściana pokazana w widoku ściany (wyróżniona); przeciągnij, aby przesunąć
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Ściana {}, {} m: przeciągnij, aby przesunąć, dwuklik pokazuje ją do wyposażenia
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Kliknij końce ścian wewnętrznych; każde kliknięcie zaczyna następną, końce blisko ściany przyciągają się do niej. Esc, Enter lub dwuklik kończy łańcuch, ponowne Esc narzędzie.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, obrót {} °
+From the left end	Od lewego końca
+Distance of the opening from the left end of the wall, seen from inside the room	Odległość otworu od lewego końca ściany, patrząc z wnętrza pomieszczenia
+{}: {} is on	{}: włączone {}
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Utwórz obudowę lub pomieszczenie (Przestrzeń montażowa › Nowa obudowa, Nowe pomieszczenie), aby rozpocząć układ montażowy.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Brak obudowy – utwórz ją poleceniem Nowa obudowa lub pomieszczenie na szafy poleceniem Nowe pomieszczenie.
+Right click for more	Kliknij prawym przyciskiem, aby uzyskać więcej opcji
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Brak artykułów oznaczonych do montażu naściennego. Oznacz artykuł w zarządzaniu artykułami: edytor artykułów › Dane montażowe › Montaż naścienny.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Żadne urządzenie nie ma jeszcze danych montażowych: przypisz urządzeniom artykuły z wymiarami (Właściwości › Artykuły).
+Drag it onto a schematic page to place it	Przeciągnij na stronę schematu, aby umieścić
+Importing {} from the parts server…	Importowanie {} z serwera artykułów…
+{} was imported into the parts database; its page no longer exists	{} zaimportowano do bazy danych artykułów; jego strona już nie istnieje
+{} is neither in the parts database nor on the parts server	{} nie ma ani w bazie danych artykułów, ani na serwerze artykułów
+{} has no function with a symbol; assign it to a device in its properties	{} nie ma funkcji z symbolem; przypisz go do urządzenia w jego właściwościach
+{} imported into the parts database and placed as {}	{} zaimportowano do bazy danych artykułów i umieszczono jako {}
+{} placed as {}	{} umieszczono jako {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Umieszcza artykuł na stronie: symbol jego funkcji głównej z oznaczeniami punktów przyłączeniowych, jako nowe urządzenie z przypisanym artykułem (artykuły projektu i katalog przykładowy)
+Part number, e.g. GEN.LMP-GN-24	Numer artykułu, np. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artykuł {} nie ma funkcji z symbolem
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artykuły można upuszczać tylko na strony, które można zmieniać; ta jest zwolniona, zablokowana lub wygenerowana

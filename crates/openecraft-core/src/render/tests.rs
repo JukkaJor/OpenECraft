@@ -7,10 +7,13 @@ struct Rec {
     styled: Vec<(P, String, TextStyle)>,
     polys: Vec<(Vec<P>, Ink, bool)>,
     urls: Vec<(P, P, String)>,
+    lines: Vec<Ink>,
 }
 
 impl Draw for Rec {
-    fn line(&mut self, _: P, _: P, _: f32, _: Ink, _: bool) {}
+    fn line(&mut self, _: P, _: P, _: f32, ink: Ink, _: bool) {
+        self.lines.push(ink);
+    }
     fn poly(&mut self, pts: &[P], _: bool, _: f32, ink: Ink, fill: bool) {
         self.polys.push((pts.to_vec(), ink, fill));
     }
@@ -190,4 +193,46 @@ fn a_row_of_terminals_shows_the_strip_tag_once() {
     let tags: Vec<f32> = d.texts.iter().filter(|t| t.1 == "-X1").map(|t| t.0.x).collect();
     assert_eq!(tags.len(), 2, "first terminal of each row: {tags:?}");
     assert!(tags.iter().all(|x| *x < 100.0 || (*x > 180.0 && *x < 200.0)), "{tags:?}");
+}
+
+#[test]
+fn the_contact_image_of_a_turned_coil_stays_clear_of_its_pins() {
+    let mut prj = Project::default();
+    let sym = |id: u64, key: &str, pos: P, rot: u8, pins: &[&str]| SymbolInst {
+        id,
+        sym: key.into(),
+        pos,
+        rot,
+        tag: "-K1".into(),
+        pins: pins.iter().map(|s| s.to_string()).collect(),
+        ..Default::default()
+    };
+    prj.pages[0].symbols.push(sym(1, "coil", p(200.0, 100.0), 1, &["A1", "A2"]));
+    prj.pages[0].symbols.push(sym(2, "no", p(100.0, 60.0), 0, &["13", "14"]));
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    let def = prj.symbol("coil").unwrap();
+    let b = def.world_bounds(p(200.0, 100.0), 1, false);
+    // The rows of the contact image ("13", "14") lie below the coil, nothing of it
+    // beside the coil where A1 and A2 are.
+    let near = |t: &&(P, String, f32, Anchor)| (t.0.x - b.center().x).abs() < 20.0;
+    let image: Vec<_> = d.texts.iter().filter(near).filter(|t| t.1 == "13" || t.1 == "14").collect();
+    assert_eq!(image.len(), 2, "{:?}", d.texts);
+    assert!(image.iter().all(|t| t.0.y > b.max.y), "{image:?} {b:?}");
+}
+
+#[test]
+fn black_wires_are_drawn_black_not_in_the_wire_ink() {
+    let mut prj = Project { wire_colors: true, ..Default::default() };
+    let black = crate::potentials::color_rgb("BK").unwrap();
+    let red = crate::potentials::color_rgb("RD").unwrap();
+    prj.pages[0].wires.push(Wire { id: 1, a: p(100.0, 100.0), b: p(200.0, 100.0), color: "BK".into(), ..Default::default() });
+    prj.pages[0].wires.push(Wire { id: 2, a: p(100.0, 150.0), b: p(200.0, 150.0), color: "RD".into(), ..Default::default() });
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    assert!(d.lines.contains(&Ink::Color(black)), "{:?}", d.lines);
+    assert!(d.lines.contains(&Ink::Color(red)));
+    assert!(!d.lines.contains(&Ink::Wire), "no wire falls back to the wire ink");
 }

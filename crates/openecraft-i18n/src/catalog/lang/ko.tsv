@@ -6127,7 +6127,6 @@ Draw walls	벽 그리기
 Wall	벽
 Wall {}	벽 {}
 Floor plan with {} walls	벽 {}개의 평면도
-{} rails, {} cable ducts, {} devices	레일 {}개, 케이블 덕트 {}개, 장치 {}개
 A room needs at least four walls	방에는 벽이 4개 이상 필요합니다
 Walls {} and {} cross	벽 {}과(와) {}이(가) 교차합니다
 Wall {} is shorter than {} mm	벽 {}이(가) {} mm보다 짧습니다
@@ -6291,3 +6290,40 @@ Drag to turn the model	끌어서 모델 회전
 Standard workspaces	표준 작업 공간
 Saved workspaces	저장된 작업 공간
 Switches to this workspace with its panes at their default places	이 작업 공간으로 전환하고 창을 기본 위치로 되돌립니다
+1 rail	레일 1개
+{} rails	레일 {}개
+1 cable duct	케이블 덕트 1개
+{} cable ducts	케이블 덕트 {}개
+1 device	장치 1개
+{} devices	장치 {}개
+1 door	문 1개
+{} doors	문 {}개
+1 window	창 1개
+empty	비어 있음
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	방 {}을(를) 벽에 있는 모든 것과 함께 삭제하시겠습니까? 그 안의 외함은 방 없이 남습니다.
+Delete enclosure {} with everything placed in it?	외함 {}을(를) 그 안에 배치된 모든 것과 함께 삭제하시겠습니까?
+Undo brings it back.	실행 취소로 되돌릴 수 있습니다.
+{}: drag to move it, R turns it, a double-click opens it	{}: 드래그하여 이동, R로 회전, 두 번 클릭하여 열기
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	벽 {}, {} m: 벽 보기에 표시된 벽(강조 표시), 드래그하여 이동
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	벽 {}, {} m: 드래그하여 이동, 두 번 클릭하면 장착할 수 있도록 표시
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	내벽의 끝점을 클릭하십시오. 클릭할 때마다 다음 내벽이 시작되며, 벽 근처의 끝점은 벽에 맞춰집니다. Esc, Enter 또는 두 번 클릭으로 연속 그리기를 끝내고, Esc를 한 번 더 누르면 도구가 끝납니다.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, 회전 {} °
+From the left end	왼쪽 끝에서
+Distance of the opening from the left end of the wall, seen from inside the room	방 안에서 볼 때 벽 왼쪽 끝에서 개구부까지의 거리
+{}: {} is on	{}: {} 켜짐
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	외함 또는 방을 만들어(레이아웃 공간 › 새 외함, 새 방) 레이아웃을 시작하십시오.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	아직 외함이 없습니다 – 새 외함으로 만들거나 새 방으로 외함용 방을 만드십시오.
+Right click for more	마우스 오른쪽 단추를 클릭하여 추가 옵션
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	아직 벽 설치로 표시된 부품이 없습니다. 부품 관리에서 표시하십시오: 부품 편집기 › 장착 데이터 › 벽 설치.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	아직 장착 데이터가 있는 장치가 없습니다: 장치에 치수가 있는 부품을 할당하십시오(속성 › 부품).
+Drag it onto a schematic page to place it	회로도 페이지로 드래그하여 배치
+Importing {} from the parts server…	부품 서버에서 {} 가져오는 중…
+{} was imported into the parts database; its page no longer exists	{}을(를) 부품 데이터베이스로 가져왔습니다. 해당 페이지는 더 이상 없습니다
+{} is neither in the parts database nor on the parts server	{}은(는) 부품 데이터베이스와 부품 서버 어디에도 없습니다
+{} has no function with a symbol; assign it to a device in its properties	{}에는 기호가 있는 기능이 없습니다. 장치 속성에서 장치에 할당하십시오
+{} imported into the parts database and placed as {}	{}을(를) 부품 데이터베이스로 가져와 {}(으)로 배치했습니다
+{} placed as {}	{}을(를) {}(으)로 배치했습니다
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	페이지에 부품을 배치합니다: 주 기능의 기호를 연결점 지정과 함께, 부품이 할당된 새 장치로 배치합니다(프로젝트 부품 및 예제 카탈로그)
+Part number, e.g. GEN.LMP-GN-24	부품 번호, 예: GEN.LMP-GN-24
+Part {} has no function with a symbol	부품 {}에는 기호가 있는 기능이 없습니다
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	부품은 변경할 수 있는 페이지에만 놓을 수 있습니다. 이 페이지는 릴리스되었거나 잠겨 있거나 생성된 페이지입니다

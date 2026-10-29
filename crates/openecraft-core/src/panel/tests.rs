@@ -544,3 +544,14 @@ fn changing_the_part_of_a_profile_keeps_its_centre_line() {
     assert_eq!(prj.layout.enclosures[0].item(4).unwrap().z, 15.0, "the device sits on the higher rail");
     assert!(!change_profile(&mut prj, 0, 4, "BIG"), "devices are no profiles");
 }
+
+#[test]
+fn free_names_skip_rooms_and_gaps() {
+    let mut layout = Layout::default();
+    assert_eq!(free_name(&layout, "+CAB"), "+CAB1");
+    for name in ["+CAB1", "+ROOM1", "+CAB3"] {
+        layout.enclosures.push(Enclosure { name: name.into(), ..Default::default() });
+    }
+    assert_eq!(free_name(&layout, "+CAB"), "+CAB2");
+    assert_eq!(free_name(&layout, "+ROOM"), "+ROOM2");
+}

@@ -359,14 +359,17 @@ pub fn default_tree_for(workspace: Workspace) -> Tree<Pane> {
             let center = linear(&mut tiles, LinearDir::Vertical, &[(page, 4.0), (messages, 1.0)]);
             let library = tabs(&mut tiles, &[Pane::Library]);
             let props = tabs(&mut tiles, &[Pane::Properties]);
-            let side = linear(&mut tiles, LinearDir::Vertical, &[(library, 1.0), (props, 1.2)]);
+            let side = linear(&mut tiles, LinearDir::Vertical, &[(library, 1.3), (props, 1.0)]);
             linear(&mut tiles, LinearDir::Horizontal, &[(nav, 230.0), (center, 910.0), (side, 300.0)])
         }
         Workspace::Panel => {
             let nav = tabs(&mut tiles, &[Pane::LayoutSpaces, Pane::Navigator(LeftTab::Devices)]);
             let view = tabs(&mut tiles, &[Pane::LayoutView, Pane::Page]);
+            // The layout checks (cabinets outside a room, collisions, …) stay in sight.
+            let messages = tabs(&mut tiles, &[Pane::Navigator(LeftTab::Check)]);
+            let center = linear(&mut tiles, LinearDir::Vertical, &[(view, 4.0), (messages, 1.0)]);
             let props = tabs(&mut tiles, &[Pane::LayoutProperties]);
-            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 250.0), (view, 900.0), (props, 300.0)])
+            linear(&mut tiles, LinearDir::Horizontal, &[(nav, 250.0), (center, 900.0), (props, 300.0)])
         }
         Workspace::Wiring | Workspace::Mounting => {
             let list = tabs(&mut tiles, &[Pane::WiringChecklist]);

@@ -14,6 +14,29 @@ use openecraft_parts::portal::{Attachment, Lifecycle};
 use openecraft_parts::{date_from_unix, productgroups};
 use std::collections::BTreeMap;
 
+/// A part dragged from a part list (parts management, data portal) to be dropped
+/// where it is used, e.g. onto a schematic page.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PartDrag {
+    pub number: String,
+}
+
+/// A row of a part list that can be dragged as a [`PartDrag`] (when `drag` is on) and
+/// still be clicked; the response covers both.
+pub fn drag_row(ui: &mut egui::Ui, drag: bool, number: &str, add: impl FnOnce(&mut egui::Ui) -> egui::Response) -> egui::Response {
+    if !drag {
+        return add(ui);
+    }
+    let id = ui.make_persistent_id(("part_drag", number));
+    let r = ui.dnd_drag_source(id, PartDrag { number: number.to_string() }, add);
+    // egui shows a grab cursor over drag sources; the lists keep the normal pointer
+    // like the other ones of the editor.
+    if r.response.hovered() && !ui.ctx().is_being_dragged(id) {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
+    }
+    r.inner.union(r.response.interact(Sense::click())).on_hover_text(tr("Drag it onto a schematic page to place it"))
+}
+
 /// Graphics file of a part.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModelKind {
@@ -130,6 +153,11 @@ pub fn part_filter(ui: &mut egui::Ui, id: &str, parts: &[&Part], f: &mut PartFil
 /// Part tree, grouped as the filter says (product group, manufacturer or supplier).
 /// Returns the part number that was double clicked.
 pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilter, selected: &mut Option<String>) -> Option<String> {
+    part_tree_with(ui, id, parts, filter, selected, false)
+}
+
+/// [`part_tree`] whose parts can be dragged out of it as [`PartDrag`] (`drag`).
+pub fn part_tree_with(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilter, selected: &mut Option<String>, drag: bool) -> Option<String> {
     let (no_group, no_manufacturer, no_supplier) = (tr("(no product group)"), tr("(no manufacturer)"), tr("(no supplier)"));
     let or = |s: &str, empty: &str| if s.is_empty() { empty } else { s }.to_string();
     // First level: (sort key, title); product groups keep the top group order.
@@ -152,7 +180,7 @@ pub fn part_tree(ui: &mut egui::Ui, id: &str, parts: &[&Part], filter: &PartFilt
         for p in list.iter() {
             let is_sel = selected.as_deref() == Some(p.number.as_str());
             let r = ui.horizontal(|ui| {
-                let r = ui.selectable_label(is_sel, &p.number).on_hover_text(&p.description);
+                let r = drag_row(ui, drag, &p.number, |ui| ui.selectable_label(is_sel, &p.number)).on_hover_text(&p.description);
                 if p.wall_mountable() {
                     wall_badge(ui);
                 }

@@ -3,6 +3,7 @@
 
 use crate::commands::Cmd;
 use crate::shortcuts::Action;
+use openecraft_ui::part_editor::PartDrag;
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_core::geom::{dist_to_segment, p, P, R, GRID};
 use openecraft_core::frame::PlotFrame;
@@ -103,6 +104,8 @@ pub struct Palette {
     pub error: Color32,
     pub plate: Color32,
     pub fill: Color32,
+    /// Dark canvas: black items are drawn in the line colour to stay visible.
+    pub dark: bool,
 }
 
 impl Palette {
@@ -124,6 +127,7 @@ impl Palette {
                 error: Color32::from_rgb(255, 90, 90),
                 plate: Color32::from_rgb(52, 55, 60),
                 fill: Color32::from_rgb(78, 82, 90),
+                dark: true,
             }
         } else {
             Palette {
@@ -142,11 +146,12 @@ impl Palette {
                 error: Color32::from_rgb(220, 0, 0),
                 plate: Color32::from_rgb(236, 238, 241),
                 fill: Color32::from_rgb(214, 218, 224),
+                dark: false,
             }
         }
     }
 
-    fn ink(&self, ink: Ink) -> Color32 {
+    pub(crate) fn ink(&self, ink: Ink) -> Color32 {
         match ink {
             Ink::Line => self.line,
             Ink::Wire => self.wire,
@@ -160,6 +165,8 @@ impl Palette {
             Ink::Error => self.error,
             Ink::Plate => self.plate,
             Ink::Fill => self.fill,
+            // Black (wires of colour BK, black shapes) would vanish on a dark canvas.
+            Ink::Color([r, g, b]) if self.dark && r.max(g).max(b) < 64 => self.line,
             Ink::Color([r, g, b]) => Color32::from_rgb(r, g, b),
             Ink::Paper => self.paper,
         }
@@ -525,6 +532,8 @@ pub struct CanvasOutput {
     pub placed: Option<u64>,
     /// The part chosen for the symbol placed.
     pub placed_part: Option<String>,
+    /// A part dropped onto the page (parts management, data portal) and where.
+    pub dropped_part: Option<(String, P)>,
     /// The canvas with the select tool, for the context menu.
     pub response: Option<egui::Response>,
 }
@@ -803,6 +812,7 @@ impl Editor {
         let dark = ui.visuals().dark_mode;
         let pal = Palette::new(dark);
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
+        take_keys(ui, &resp);
         let rect = resp.rect;
         self.canvas_size = rect.size();
         let frame = openecraft_core::frame::of_page(prj, page_i);
@@ -893,6 +903,13 @@ impl Editor {
             self.review_mouse(&resp, world, &mut out);
         } else if editable {
             self.mouse(ui, &resp, prj, page_i, rect, world, snapped, an, &mut out);
+        } else if resp.dnd_hover_payload::<PartDrag>().is_some() {
+            // A part dragged onto a released, locked or generated page: say why it
+            // cannot be dropped here instead of ignoring it.
+            ui.ctx().set_cursor_icon(egui::CursorIcon::NoDrop);
+            if resp.dnd_release_payload::<PartDrag>().is_some() {
+                out.message = Some(tr("Parts can only be dropped onto pages that can be changed; this one is released, locked or generated").to_string());
+            }
         } else if self.tool == Tool::Select {
             // Read only: select and inspect, no moves.
             if let Some(q) = self.typed.take() {
@@ -952,6 +969,17 @@ impl Editor {
                 let inst = SymbolInst { sym: def.key.into(), pos: sn, label: def.default_label.into(), ..Default::default() };
                 render::draw_symbol(&mut g, &def, &inst, Ink::Ghost);
             }
+        }
+        if let (Some(sn), Some(pl), true) = (snapped, resp.dnd_hover_payload::<PartDrag>(), editable) {
+            // Where the dragged part lands, with its number.
+            let c = self.w2s(rect, sn);
+            let st = Stroke::new(1.5, pal.ghost);
+            painter.line_segment([c - vec2(10.0, 0.0), c + vec2(10.0, 0.0)], st);
+            painter.line_segment([c - vec2(0.0, 10.0), c + vec2(0.0, 10.0)], st);
+            let text = painter.layout_no_wrap(pl.number.clone(), egui::FontId::proportional(12.0), pal.ghost);
+            let at = c + vec2(12.0, -12.0 - text.size().y);
+            painter.rect_filled(Rect::from_min_size(at, text.size()).expand(3.0), 3.0, pal.ghost.gamma_multiply(0.18));
+            painter.galley(at, text, pal.ghost);
         }
         if let (Some(sn), Some(w), true) = (snapped, world, editable) {
             let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
@@ -1042,6 +1070,10 @@ impl Editor {
                         label: def.default_label.into(),
                         ..Default::default()
                     };
+                    // A tinted box behind it: the symbol stays visible on a page zoomed out.
+                    let b = def.world_bounds(sn, self.place_rot, self.place_mirror);
+                    let r = Rect::from_two_pos(g.w2s(b.min), g.w2s(b.max)).expand(3.0);
+                    g.painter.rect_filled(r, 2.0, g.pal.ghost.gamma_multiply(0.18));
                     render::draw_symbol(g, &def, &inst, Ink::Ghost);
                 }
             }
@@ -1323,6 +1355,21 @@ impl Editor {
 
     /// Places the symbol `key` at `sn` (with the tag and label / connection points of
     /// an unplaced function when one is being placed).
+    /// Places a part at `at` (a part dropped onto the page): the symbol of its main
+    /// function with the connection point designations, as a new device; the output
+    /// names the part to assign to it.
+    pub fn place_part_at(&mut self, prj: &mut Project, page_i: usize, symbol: &'static str, pins: Vec<String>, number: &str, at: P) -> CanvasOutput {
+        let mut out = CanvasOutput::default();
+        self.set_tool(Tool::Place(symbol));
+        self.place_rot = 0;
+        self.place_mirror = false;
+        self.place_tag = None;
+        self.place_once = Some((String::new(), pins));
+        self.place_part = Some(number.to_string());
+        self.place_at(prj, page_i, symbol, at, &mut out);
+        out
+    }
+
     fn place_at(&mut self, prj: &mut Project, page_i: usize, key: &str, sn: P, out: &mut CanvasOutput) {
         let Some(def) = prj.symbol(key) else { return };
         let mut ctx = self.place_ctx.clone();
@@ -1384,6 +1431,12 @@ impl Editor {
             } else if self.tool != Tool::Select {
                 self.set_tool(Tool::Select);
             }
+        }
+        // A part from the parts management or the data portal: the application imports
+        // it when needed and places it.
+        if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PartDrag>()) {
+            out.dropped_part = Some((pl.number.clone(), sn));
+            return;
         }
         if let (Some(sn), Some(pl)) = (snapped, resp.dnd_release_payload::<PlacePayload>()) {
             self.set_tool(Tool::Place(pl.symbol));
@@ -1710,6 +1763,14 @@ pub fn symbol_icon(ui: &mut egui::Ui, prj: &Project, key: &str, size: Vec2) -> e
     let inst = SymbolInst { sym: key.into(), label: def.default_label.into(), ..Default::default() };
     render::draw_symbol(&mut d, &def, &inst, Ink::Line);
     resp
+}
+
+/// A press in a canvas takes the keys back from a field, list or button used before
+/// (their focus would keep R, Del and Enter away from the canvas).
+pub fn take_keys(ui: &egui::Ui, resp: &egui::Response) {
+    if resp.contains_pointer() && ui.input(|i| i.pointer.any_pressed()) {
+        ui.memory_mut(|m| m.stop_text_input());
+    }
 }
 
 #[cfg(test)]

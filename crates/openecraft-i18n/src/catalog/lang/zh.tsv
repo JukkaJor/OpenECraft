@@ -6129,7 +6129,6 @@ Draw walls	绘制墙壁
 Wall	墙
 Wall {}	墙 {}
 Floor plan with {} walls	有 {} 面墙的平面图
-{} rails, {} cable ducts, {} devices	{} 根导轨，{} 条线槽，{} 个设备
 Walls {} and {} cross	墙 {} 和 {} 交叉
 Wall {} is shorter than {} mm	墙 {} 短于 {} mm
 Wall {} is not at a right angle	墙 {} 不是直角
@@ -6293,3 +6292,40 @@ Drag to turn the model	拖动以旋转模型
 Standard workspaces	标准工作区
 Saved workspaces	已保存的工作区
 Switches to this workspace with its panes at their default places	切换到此工作区，并将其窗格恢复到默认位置
+1 rail	1 根导轨
+{} rails	{} 根导轨
+1 cable duct	1 条线槽
+{} cable ducts	{} 条线槽
+1 device	1 个设备
+{} devices	{} 个设备
+1 door	1 扇门
+{} doors	{} 扇门
+1 window	1 扇窗
+empty	空
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	删除房间 {} 及其墙上的所有内容？其中的机柜保留，但不再属于任何房间。
+Delete enclosure {} with everything placed in it?	删除机柜 {} 及其中放置的所有内容？
+Undo brings it back.	撤销可将其恢复。
+{}: drag to move it, R turns it, a double-click opens it	{}：拖动以移动，R 旋转，双击打开
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	墙 {}，{} m：墙视图中显示的墙（突出显示）；拖动以移动
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	墙 {}，{} m：拖动以移动，双击显示以进行布置
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	单击内墙的端点；每次单击开始下一段，靠近墙的端点会吸附到墙上。Esc、Enter 或双击结束连续绘制，再按 Esc 退出工具。
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm，z {} mm，旋转 {} °
+From the left end	距左端
+Distance of the opening from the left end of the wall, seen from inside the room	从房间内看，开口距墙左端的距离
+{}: {} is on	{}：{} 已开启
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	创建机柜或房间（布局空间 › 新建机柜、新建房间）以开始布局。
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	还没有机柜 – 使用“新建机柜”创建，或使用“新建房间”创建放置机柜的房间。
+Right click for more	右键单击查看更多
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	尚无标记为墙面安装的部件。请在部件管理中标记：部件编辑器 › 安装数据 › 墙面安装。
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	尚无设备具有安装数据：请为设备分配带尺寸的部件（属性 › 部件）。
+Drag it onto a schematic page to place it	拖到原理图页面上即可放置
+Importing {} from the parts server…	正在从部件服务器导入 {}…
+{} was imported into the parts database; its page no longer exists	{} 已导入部件数据库；其页面已不存在
+{} is neither in the parts database nor on the parts server	{} 不在部件数据库中，也不在部件服务器上
+{} has no function with a symbol; assign it to a device in its properties	{} 没有带符号的功能；请在设备属性中将其分配给设备
+{} imported into the parts database and placed as {}	{} 已导入部件数据库并放置为 {}
+{} placed as {}	{} 已放置为 {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	在页面上放置部件：以其主功能的符号及连接点标识作为新设备放置，并为其分配该部件（项目部件和示例目录）
+Part number, e.g. GEN.LMP-GN-24	部件编号，例如 GEN.LMP-GN-24
+Part {} has no function with a symbol	部件 {} 没有带符号的功能
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	部件只能拖放到可修改的页面上；此页面已发布、已锁定或为生成页面

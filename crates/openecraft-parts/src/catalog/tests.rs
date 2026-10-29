@@ -76,3 +76,10 @@ fn mounting_material_has_models_in_proportion() {
     let tris = |n: &str| parts.iter().find(|p| p.number == n).and_then(|p| p.model_3d.as_ref()).map(|m| m.triangles.len());
     assert_ne!(tris("GEN.RAIL-TS35-1M"), tris("GEN.DUCT-40X60"));
 }
+
+#[test]
+fn the_catalog_has_a_part_for_wall_mounting() {
+    let parts = default_catalog();
+    let light = parts.iter().find(|p| p.number == "GEN.LIGHT-EM-3W").expect("emergency light");
+    assert!(light.wall_mountable() && light.width > 0.0 && light.height > 0.0);
+}

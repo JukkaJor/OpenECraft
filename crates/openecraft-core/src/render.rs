@@ -112,10 +112,6 @@ pub struct Opts {
     pub macro_boxes: bool,
 }
 
-fn is_black(c: &[u8; 3]) -> bool {
-    crate::potentials::color_rgb("BK") == Some(*c)
-}
-
 /// Draws a complete page including frame and title block.
 pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, page_i: usize, opts: &Opts) {
     let page = &prj.pages[page_i];
@@ -175,8 +171,7 @@ pub fn draw_page(d: &mut dyn Draw, prj: &Project, idx: &Index, an: &Analysis, pa
         };
         let parts = colors.get(&w.id).map(|c| crate::potentials::color_parts(c)).unwrap_or_default();
         match parts.as_slice() {
-            // Black is the normal wire ink (stays visible on a dark canvas).
-            [c] if ink == Ink::Wire && is_black(c) => d.line(w.a, w.b, WIRE_W, ink, false),
+            // Black too: the canvas shows it in its line colour when it is dark.
             [c] if ink == Ink::Wire => d.line(w.a, w.b, WIRE_W, Ink::Color(*c), false),
             // Two-colour wires: the second colour dashed over the first.
             [a, b] if ink == Ink::Wire => {
@@ -702,12 +697,9 @@ fn draw_contact_image(d: &mut dyn Draw, prj: &Project, page_i: usize, tag: &str,
     if rows.is_empty() {
         return;
     }
-    // Placed right of the outgoing wire so it does not overlap it.
-    let (cx, mut y) = if vertical {
-        (bounds.center().x + 7.5, bounds.max.y + 3.0)
-    } else {
-        (bounds.max.x + 8.0, bounds.center().y - (rows.len() as f32 - 1.0) * 1.5)
-    };
+    // Placed right of the outgoing wire so it does not overlap it; below a turned coil,
+    // clear of its wires and connection point designations on both sides.
+    let (cx, mut y) = if vertical { (bounds.center().x + 7.5, bounds.max.y + 3.0) } else { (bounds.center().x, bounds.max.y + 3.0) };
     for (kind, pins, reference) in rows {
         let (text_ink, line_ink) = match (&reference, ink) {
             (None, Ink::Text) => (Ink::FrameText, Ink::Frame),
@@ -996,10 +988,17 @@ pub fn draw_enclosure(
             // The sheet, its mounting area inside the flanges (dashed) and, for walls
             // that are a separate component, the outline of that part.
             d.rect(origin, origin + p(vw * k, vh * k), 0.0, Ink::Plate, true);
-            let a = panel::mounting_area(e, wall);
-            let (s, t) = (tf(a.min.x, a.min.y), tf(a.max.x, a.max.y));
-            for (u, v) in [(s, p(t.x, s.y)), (p(t.x, s.y), t), (t, p(s.x, t.y)), (p(s.x, t.y), s)] {
-                d.line(u, v, 0.15, Ink::Frame, true);
+            if e.is_room() {
+                // A wall of a room has no flanges: the floor is drawn as a strong line.
+                if wall != Face::Roof {
+                    d.line(origin + p(0.0, vh * k), origin + p(vw * k, vh * k), 0.6, Ink::Frame, false);
+                }
+            } else {
+                let a = panel::mounting_area(e, wall);
+                let (s, t) = (tf(a.min.x, a.min.y), tf(a.max.x, a.max.y));
+                for (u, v) in [(s, p(t.x, s.y)), (p(t.x, s.y), t), (t, p(s.x, t.y)), (p(s.x, t.y), s)] {
+                    d.line(u, v, 0.15, Ink::Frame, true);
+                }
             }
             let open = (wall == Face::Left && e.build.left_open) || (wall == Face::Right && e.build.right_open);
             if open {

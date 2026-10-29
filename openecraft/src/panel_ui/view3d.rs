@@ -2,7 +2,7 @@
 //! door, mounting plate, rails, ducts, busbars, devices and the routed wiring; orbit,
 //! pan, zoom and picking.
 
-use openecraft_i18n::tr;
+use openecraft_i18n::{tr, tr_fmt};
 use super::routing_ui::RouteRef;
 use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
@@ -570,7 +570,12 @@ impl PanelUi {
         );
         if self.selected_wire.is_none() {
             let e = &prj.layout.enclosures[self.enclosure.min(prj.layout.enclosures.len() - 1)];
-            self.status = format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth);
+            // A room as in the list: width × depth × height; an enclosure width × height × depth.
+            self.status = if e.is_room() {
+                tr_fmt!("{}  room {} × {} × {}", e.name, format!("{:.0}", e.width), format!("{:.0}", e.depth), format!("{:.0}", e.height))
+            } else {
+                format!("{}  {:.0} × {:.0} × {:.0} mm", e.name, e.width, e.height, e.depth)
+            };
         }
     }
 }

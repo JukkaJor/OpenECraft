@@ -380,7 +380,10 @@ impl App {
             self.notify(&ctx, msg);
         }
         if let (Some(id), Some(part)) = (out.placed, out.placed_part) {
-            self.placed(id, &part);
+            self.placed(page, id, &part);
+        }
+        if let Some((number, at)) = out.dropped_part {
+            self.drop_part(&ctx, page, number, at);
         }
         if let Some(resp) = &out.response {
             // A right click while the menu is open closes it; the next frame opens it
@@ -405,8 +408,8 @@ impl App {
 
     /// A symbol was placed with a part chosen in the Insert center: the part goes to
     /// its device.
-    fn placed(&mut self, id: u64, number: &str) {
-        let page = &self.session.prj.pages[self.session.page];
+    pub(super) fn placed(&mut self, page_i: usize, id: u64, number: &str) {
+        let page = &self.session.prj.pages[page_i];
         if let Some(tag) = page.symbols.iter().find(|s| s.id == id).map(|s| s.tag.clone()).filter(|t| !t.is_empty()) {
             parts::add_to_device(&mut self.session.prj, &self.parts_db, &tag, number, 1);
         }

@@ -248,8 +248,15 @@ impl App {
     /// A group that does not fit: one button with the commands of the group in its menu.
     fn collapsed_group(&mut self, ui: &mut egui::Ui, title: &str, items: &[Item]) {
         ui.vertical(|ui| {
-            let icon = items.first().map(|i| commands::def(i.cmd()).icon).unwrap_or(Icon::Dots);
-            let r = self.large_widget(ui, icon, title, false, true, true).on_hover_text(title);
+            // A folded group shows the tool of it that is on (Draw › Door), so that the
+            // active tool stays visible.
+            let active = items.iter().map(|i| i.cmd()).find(|&c| self.cmd_checked(c) == Some(true));
+            let icon = active.or(items.first().map(|i| i.cmd())).map(|c| commands::def(c).icon).unwrap_or(Icon::Dots);
+            let tip = match active {
+                Some(c) => tr_fmt!("{}: {} is on", title, tr(commands::def(c).title)),
+                None => title.to_string(),
+            };
+            let r = self.large_widget(ui, icon, title, active.is_some(), true, true).on_hover_text(tip);
             egui::Popup::menu(&r).show(|ui| {
                 for item in items {
                     let c = item.cmd();

@@ -37,8 +37,8 @@ pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
 pub use points::{device_points, point_of, PlacedPoint};
 pub use rooms::{
-    add_inner_wall, add_opening, add_wall_profile, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinets_in, check_outline, floor_cells, footprint, inside_outline, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
-    room_of, room_place, rooms, set_outline, set_room, stands_inside, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
+    add_inner_wall, add_opening, add_wall_profile, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, footprint, inside_outline, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    room_of, room_place, rooms, set_outline, turned_place, set_room, stands_inside, wall_length_set, wall_mount_ok, walls, Wall, MIN_WALL, ROOM_WALL,
 };
 pub use system::{apply_system, components, outward, sync_part, system_of_part, wall_box, Build, Component, Role, System, SYSTEMS};
 pub use crate::model::panel::{Enclosure, EnclosureKind, Face, InnerWall, ItemKind, Layout, Opening, PanelItem};
@@ -493,6 +493,11 @@ pub fn snap(v: f32) -> f32 {
 }
 
 // ---------------------------------------------------------------------- creation
+
+/// The first name `prefix` + number (`+CAB3`) no enclosure or room of the layout has.
+pub fn free_name(layout: &Layout, prefix: &str) -> String {
+    (1..).map(|n| format!("{prefix}{n}")).find(|name| layout.enclosures.iter().all(|e| &e.name != name)).unwrap_or_default()
+}
 
 /// Creates an enclosure, taking the dimensions from a part if it has them.
 pub fn new_enclosure(prj: &mut Project, part: &str, name: &str) -> Enclosure {

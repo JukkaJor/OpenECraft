@@ -42,3 +42,13 @@ fn defined_potentials_without_a_connection_point_are_unplaced() {
     assert_eq!((l2.symbol, l2.title.as_str()), ("pot_l2", "L2  Phase 2"));
     assert_eq!(list.iter().find(|u| u.label == "+48V").unwrap().symbol, "pot");
 }
+
+#[test]
+fn parts_are_placed_with_the_symbol_of_their_main_function() {
+    let parts = crate::parts::default_catalog();
+    let get = |n: &str| parts.iter().find(|p| p.number == n).unwrap();
+    let (sym, pins) = part_symbol(get("GEN.LMP-GN-24")).expect("lamp");
+    assert_eq!(crate::parts::kind_of_symbol(sym), Some(FnKind::Signal));
+    assert_eq!(pins, vec!["X1".to_string(), "X2".to_string()]);
+    assert_eq!(part_symbol(&crate::parts::Part::default()), None);
+}

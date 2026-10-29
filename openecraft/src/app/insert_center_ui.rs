@@ -206,22 +206,35 @@ impl App {
                 let full = if about.is_empty() { title.clone() } else { format!("{title} – {about}") };
                 let text = title.clone();
                 let selected = active.as_ref() == Some(e);
-                // Symbols can be dragged into the page as well.
-                let lbl = match e.symbol_key(&self.session.prj) {
-                    Some(symbol) => {
-                        let payload = crate::editor::PlacePayload { symbol, tag: String::new(), label: String::new(), pins: Vec::new() };
-                        super::drag_source(ui, ui.make_persistent_id(("ic_drag", symbol)), payload, |ui| ui.selectable_label(selected, text))
-                    }
-                    None => ui.selectable_label(selected, text),
-                };
-                let lbl = lbl.on_hover_text(&full);
-                if !letter.is_empty() {
-                    ui.label(RichText::new(&letter).small().monospace().weak()).on_hover_text(tr_fmt!("Identifying letter: {}", letter));
-                } else if !about.is_empty() {
-                    ui.add(egui::Label::new(RichText::new(&about).small().weak()).truncate());
-                }
+                // Star and letter stay at the right edge; a long title is shortened
+                // (the whole text shows on hover).
                 let fav = self.insert_center.is_favorite(e);
-                let star = icons::toggle_button(ui, if fav { Icon::StarFilled } else { Icon::Star }, tr("Favorite"), fav);
+                let (lbl, star) = ui
+                    .with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let star = icons::toggle_button(ui, if fav { Icon::StarFilled } else { Icon::Star }, tr("Favorite"), fav);
+                        if !letter.is_empty() {
+                            ui.label(RichText::new(&letter).small().monospace().weak()).on_hover_text(tr_fmt!("Identifying letter: {}", letter));
+                        }
+                        let lbl = ui
+                            .with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                let label = |ui: &mut egui::Ui| ui.add(egui::Button::selectable(selected, text.as_str()).truncate());
+                                // Symbols can be dragged into the page as well.
+                                let lbl = match e.symbol_key(&self.session.prj) {
+                                    Some(symbol) => {
+                                        let payload = crate::editor::PlacePayload { symbol, tag: String::new(), label: String::new(), pins: Vec::new() };
+                                        super::drag_source(ui, ui.make_persistent_id(("ic_drag", symbol)), payload, label)
+                                    }
+                                    None => label(ui),
+                                };
+                                if letter.is_empty() && !about.is_empty() {
+                                    ui.add(egui::Label::new(RichText::new(&about).small().weak()).truncate());
+                                }
+                                lbl
+                            })
+                            .inner;
+                        (lbl.on_hover_text(&full), star)
+                    })
+                    .inner;
                 if preview.clicked() || lbl.clicked() {
                     *pick = Some(Pick::Insert(e.clone()));
                 }
@@ -290,9 +303,7 @@ impl App {
             }
             Entry::Part(n) => {
                 let Some(p) = parts::lookup(&self.session.prj, Some(&self.parts_db), n) else { return };
-                let Some(f) = p.functions.iter().find(|f| openecraft_core::unplaced::symbol_for(f.kind).is_some()) else { return };
-                let Some(sym) = openecraft_core::unplaced::symbol_for(f.kind) else { return };
-                let pins = f.pin_list();
+                let Some((sym, pins)) = openecraft_core::unplaced::part_symbol(p) else { return };
                 self.set_tool(Tool::Place(sym));
                 self.editor.place_once = Some((String::new(), pins));
                 self.editor.place_part = Some(n.clone());

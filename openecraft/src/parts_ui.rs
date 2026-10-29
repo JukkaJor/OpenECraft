@@ -30,6 +30,38 @@ pub enum PartsAction {
     Message(String),
 }
 
+/// Where the part dropped onto a page comes from.
+#[derive(Clone, Debug, PartialEq)]
+pub enum DropSource {
+    /// In the project or the parts database: placed at once.
+    Local,
+    /// Only in the example catalog: copied into the parts database first.
+    Catalog,
+    /// Neither: downloaded from the parts server into the parts database first.
+    Server,
+}
+
+/// Where a dropped part comes from (project parts, parts database, example catalog,
+/// else the parts server).
+pub fn drop_source(prj: &Project, db: &PartsDb, number: &str) -> DropSource {
+    if parts::lookup(prj, Some(db), number).is_some() {
+        DropSource::Local
+    } else if parts::catalog().iter().any(|p| p.number == number) {
+        DropSource::Catalog
+    } else {
+        DropSource::Server
+    }
+}
+
+/// A part dropped onto a page that is downloaded from the parts server first: the page
+/// (its id) and the place, both kept until the part has arrived.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PendingDrop {
+    pub number: String,
+    pub page: u64,
+    pub at: openecraft_core::geom::P,
+}
+
 struct SelectRequest {
     tag: String,
 }
@@ -143,6 +175,8 @@ impl PartsUi {
                 }
             });
             ui.separator();
+            // Results are dragged from here onto a schematic page (imported on the drop).
+            self.portal.drag_parts = true;
             if let Some(BrowserEvent::ApplyUpdates) = portal::browser(ui, &mut self.portal, &mut self.server, &db.parts) {
                 if let Some(updates) = &self.portal.updates {
                     let n = parts::portal::apply_updates(&mut db.parts, &self.portal.remote, updates);
@@ -338,7 +372,8 @@ impl PartsUi {
                     let refs: Vec<&Part> = list.iter().collect();
                     pe::part_filter(ui, "mgr", &refs, &mut self.filter);
                     egui::ScrollArea::vertical().id_salt("ptree").auto_shrink([false, false]).show(ui, |ui| {
-                        pe::part_tree(ui, "mgr", &refs, &self.filter, &mut self.selected);
+                        // Parts are dragged from here onto a schematic page.
+                        pe::part_tree_with(ui, "mgr", &refs, &self.filter, &mut self.selected, true);
                     });
                 });
                 ui.separator();

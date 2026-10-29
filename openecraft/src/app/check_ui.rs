@@ -42,6 +42,8 @@ fn level_title(l: Level) -> &'static str {
 
 enum Action {
     Jump(usize, u64),
+    /// A message of the panel layout checks: the layout view comes to the front.
+    ShowLayout,
     Accept(Issue, bool),
     Level(String, Option<Level>),
     Disable(String),
@@ -148,10 +150,15 @@ impl App {
                     ui.label(pg);
                     ui.monospace(obj);
                     ui.end_row();
-                    let r = r.on_hover_text(tr("Click to show, right click for more"));
+                    // The full text too: the column may be narrower than the message.
+                    let layout = issue.target.is_none() && issue.check == "panel_layout";
+                    let how = if issue.target.is_some() || layout { tr("Click to show, right click for more") } else { tr("Right click for more") };
+                    let r = r.on_hover_text(format!("{}\n\n{}", issue.message(), how));
                     if r.clicked() {
                         if let Some((pg, id)) = issue.target {
                             action = Some(Action::Jump(pg, id));
+                        } else if layout {
+                            action = Some(Action::ShowLayout);
                         }
                     }
                     r.context_menu(|ui| {
@@ -195,6 +202,7 @@ impl App {
         }
         match action {
             Some(Action::Jump(pg, id)) => self.goto(pg, id),
+            Some(Action::ShowLayout) => self.show_pane(crate::dock::Pane::LayoutView),
             Some(Action::Accept(issue, on)) => {
                 let (user, date) = (self.user_name(), self.today());
                 checks::accept(&mut self.session.prj, &issue, on, "", &user, &date);

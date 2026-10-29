@@ -6133,7 +6133,6 @@ Draw walls	Rita väggar
 Wall	Vägg
 Wall {}	Vägg {}
 Floor plan with {} walls	Planritning med {} väggar
-{} rails, {} cable ducts, {} devices	{} skenor, {} kabelkanaler, {} enheter
 A room needs at least four walls	Ett rum behöver minst fyra väggar
 Walls {} and {} cross	Väggarna {} och {} korsar varandra
 Wall {} is shorter than {} mm	Vägg {} är kortare än {} mm
@@ -6298,3 +6297,40 @@ Drag to turn the model	Dra för att vrida modellen
 Standard workspaces	Standardarbetsytor
 Saved workspaces	Sparade arbetsytor
 Switches to this workspace with its panes at their default places	Växlar till den här arbetsytan med panelerna på sina standardplatser
+1 rail	1 skena
+{} rails	{} skenor
+1 cable duct	1 kabelkanal
+{} cable ducts	{} kabelkanaler
+1 device	1 enhet
+{} devices	{} enheter
+1 door	1 dörr
+{} doors	{} dörrar
+1 window	1 fönster
+empty	tom
+Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Ta bort rummet {} med allt på dess väggar? Skåpen i det finns kvar, utan rum.
+Delete enclosure {} with everything placed in it?	Ta bort kapslingen {} med allt som är placerat i den?
+Undo brings it back.	Ångra tar tillbaka det.
+{}: drag to move it, R turns it, a double-click opens it	{}: dra för att flytta, R vrider, dubbelklick öppnar
+Wall {}, {} m: the wall shown in the wall view (highlighted); drag to move it	Vägg {}, {} m: väggen som visas i väggvyn (markerad); dra för att flytta den
+Wall {}, {} m: drag to move it, a double-click shows it to equip it	Vägg {}, {} m: dra för att flytta, dubbelklick visar den för att utrusta den
+Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Klicka på innerväggarnas ändar; varje klick börjar nästa, ändar nära en vägg fäster mot den. Esc, Enter eller dubbelklick avslutar kedjan, Esc igen verktyget.
+{}  x {} mm, z {} mm, turned {} °	{}  x {} mm, z {} mm, vriden {} °
+From the left end	Från vänster ände
+Distance of the opening from the left end of the wall, seen from inside the room	Öppningens avstånd från väggens vänstra ände, sett inifrån rummet
+{}: {} is on	{}: {} är på
+Create an enclosure or a room (Layout space › New enclosure, New room) to start the panel layout.	Skapa en kapsling eller ett rum (Monteringsutrymme › Ny kapsling, Nytt rum) för att börja montagelayouten.
+No enclosure yet – create one with New enclosure, or a room for cabinets with New room.	Ingen kapsling ännu – skapa en med Ny kapsling, eller ett rum för skåp med Nytt rum.
+Right click for more	Högerklicka för mer
+No parts marked for wall mounting yet. Mark one in the parts management: part editor › Mounting data › Wall mounting.	Inga artiklar är märkta för väggmontage ännu. Märk en i artikelhanteringen: artikelredigeraren › Monteringsdata › Väggmontage.
+No device has mounting data yet: assign parts with dimensions to the devices (Properties › Parts).	Ingen apparat har monteringsdata ännu: tilldela apparaterna artiklar med mått (Egenskaper › Artiklar).
+Drag it onto a schematic page to place it	Dra till en schemasida för att placera
+Importing {} from the parts server…	Importerar {} från artikelservern…
+{} was imported into the parts database; its page no longer exists	{} importerades till artikeldatabasen; dess sida finns inte längre
+{} is neither in the parts database nor on the parts server	{} finns varken i artikeldatabasen eller på artikelservern
+{} has no function with a symbol; assign it to a device in its properties	{} har ingen funktion med symbol; tilldela den till en apparat i apparatens egenskaper
+{} imported into the parts database and placed as {}	{} importerad till artikeldatabasen och placerad som {}
+{} placed as {}	{} placerad som {}
+Places a part on a page: the symbol of its main function with its connection point designations, as a new device the part is assigned to (project parts and the example catalog)	Placerar en artikel på en sida: symbolen för dess huvudfunktion med anslutningsbeteckningarna, som en ny apparat som artikeln tilldelas (projektartiklar och exempelkatalogen)
+Part number, e.g. GEN.LMP-GN-24	Artikelnummer, t.ex. GEN.LMP-GN-24
+Part {} has no function with a symbol	Artikeln {} har ingen funktion med symbol
+Parts can only be dropped onto pages that can be changed; this one is released, locked or generated	Artiklar kan bara släppas på sidor som kan ändras; den här är frisläppt, låst eller genererad

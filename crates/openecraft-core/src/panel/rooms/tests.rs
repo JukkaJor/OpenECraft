@@ -255,3 +255,35 @@ fn inner_walls_divide_the_room() {
     let room = &prj.layout.enclosures[r];
     assert!(room.inner_walls.is_empty() && room.item(dev).is_none() && room.item(door).is_none());
 }
+
+#[test]
+fn turning_a_cabinet_keeps_its_footprint_in_place() {
+    let (mut prj, r, c) = project();
+    let centre = |prj: &Project| {
+        let (lo, hi) = bounds(&footprint(prj, r, c));
+        [(lo[0] + hi[0]) / 2.0, (lo[1] + hi[1]) / 2.0]
+    };
+    // In the middle of the room it turns about its centre; four turns bring it back.
+    let middle = SitePlace { x: 1700.0, z: 1300.0, angle: 0.0 };
+    set_room(&mut prj, c, Some(r), Some(middle)).unwrap();
+    let before = centre(&prj);
+    let place = turned_place(&prj, c, 90.0).unwrap();
+    assert_eq!(place.angle, 90.0);
+    prj.layout.enclosures[c].site = Some(place);
+    let after = centre(&prj);
+    assert!((before[0] - after[0]).abs() < 1.0 && (before[1] - after[1]).abs() < 1.0, "{before:?} {after:?}");
+    // 600 wide, 400 deep: turned it is 400 wide and 600 deep.
+    let (lo, hi) = bounds(&footprint(&prj, r, c));
+    assert!((hi[0] - lo[0] - 400.0).abs() < 1.0 && (hi[1] - lo[1] - 600.0).abs() < 1.0);
+    for _ in 0..3 {
+        prj.layout.enclosures[c].site = turned_place(&prj, c, 90.0);
+    }
+    assert_eq!(prj.layout.enclosures[c].site, Some(middle));
+    // In the rear left corner it stays inside the room instead of crossing the wall.
+    prj.layout.enclosures[c].site = Some(SitePlace { x: 0.0, z: 0.0, angle: 0.0 });
+    for _ in 0..4 {
+        prj.layout.enclosures[c].site = turned_place(&prj, c, 90.0);
+        assert!(stands_inside(&prj, r, c), "{:?}", prj.layout.enclosures[c].site);
+    }
+    assert_eq!(turned_place(&prj, r, 90.0), None);
+}

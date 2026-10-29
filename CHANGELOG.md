@@ -27,7 +27,10 @@ with a command line, an MCP server, a parts server and a project server.
   are dragged in the Pages navigator with a drop marker and the resulting name shown.
 - **Panel layout:** devices at real size in 2D and 3D, virtual wiring with duct fill,
   drilling and NC data, enclosure climate, line-ups, rooms and 3D routing; wiring and
-  mounting assistants for the workshop.
+  mounting assistants for the workshop. In a room's floor plan cabinets turn in place,
+  cabinets in a bad place are drawn in the warning colour with the reason on hover,
+  inner walls end on the room walls, and the layout checks are shown below the view;
+  rooms and enclosures with content are deleted only after a question.
 - **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
   EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
   power, pre-planning.
@@ -36,7 +39,9 @@ with a command line, an MCP server, a parts server and a project server.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
   JT, IFC), BMEcat, EPLAN XML and EDZ import; a parts server with a data portal that
   shows the 2D front view and the 3D model of a part; the example parts, mounting
-  material included, come with both.
+  material included, come with both. Parts are dragged from parts management or the
+  data portal onto a schematic page, imported into the parts database on the way when
+  needed, and placed as a device with the part.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

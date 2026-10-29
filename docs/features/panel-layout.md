@@ -95,8 +95,8 @@ or Enter), walls are dragged to move them or get a length in the room's properti
 
 - **Inner walls** (*Layout space › Draw › Inner walls*, commands `add_inner_wall`,
   `set_inner_wall`) are drawn in the floor plan by clicking their ends (a chain, at
-  right angles), dragged across to move them, get length and thickness in the room's
-  properties and are removed with Del; both sides (`inner1a`, `inner1b`) are faces like
+  right angles; an end near a wall snaps onto it), dragged across to move them, get
+  length and thickness in the room's properties and are removed with Del; both sides (`inner1a`, `inner1b`) are faces like
   the walls.
 - **Doors and windows** (*Layout space › Draw › Door / Window*, command
   `add_wall_opening`) are openings in a wall, placed by clicking the wall in the floor
@@ -104,7 +104,9 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   (drawn with its swing), a window has its sill height; size, position and sill are in
   their properties.
 - **Cabinets** (their line-ups) stand in it at a place of the floor plan, dragged there
-  in the floor plan, and move with the room.
+  in the floor plan (R turns the selected one about its centre), and move with the
+  room. A cabinet outside the room, across a wall, in an inner wall or in the swing
+  of a door is drawn in the warning colour, and the pointer over it tells why.
 - Every wall (seen from inside the room) and the ceiling carry mounting rails, cable
   ducts and devices: a device on a wall sits on a rail, unless its part is marked
   *Wall mounting* (part editor › Mounting data, a `WALL` badge in the part trees, filter

@@ -25,6 +25,13 @@ pub fn symbol_for(kind: FnKind) -> Option<&'static str> {
     crate::symbols::library().iter().map(|d| d.key).find(|k| parts::kind_of_symbol(k) == Some(kind))
 }
 
+/// The symbol a part is placed with in the schematic and its connection point
+/// designations: those of its first function that has a symbol (a contactor's coil,
+/// a breaker's main contacts). `None` for parts without one (enclosures, rails).
+pub fn part_symbol(part: &parts::Part) -> Option<(&'static str, Vec<String>)> {
+    part.functions.iter().find_map(|f| symbol_for(f.kind).map(|s| (s, f.pin_list())))
+}
+
 /// Channels of the PLC cards (with a device description) without a symbol, per card
 /// in address order.
 pub fn plc_channels(prj: &Project) -> Vec<Unplaced> {
