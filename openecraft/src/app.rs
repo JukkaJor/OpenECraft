@@ -115,6 +115,8 @@ struct ShellState {
     sides: crate::dock::Sides,
     /// Opacity of the walls in front in the 3D view of the panel layout, 0 … 1.
     wall_opacity: f32,
+    /// The title bar shows the frame time and the frames per second.
+    frame_stats: bool,
 }
 
 impl Default for ShellState {
@@ -131,6 +133,7 @@ impl Default for ShellState {
             placement: crate::dock::Placement::default(),
             sides: crate::dock::Sides::default(),
             wall_opacity: crate::panel_ui::WALL_OPACITY,
+            frame_stats: false,
         }
     }
 }
@@ -245,6 +248,8 @@ pub struct App {
     /// and device jumps wait in `deferred` until it is back.
     in_dock: bool,
     deferred: Vec<Deferred>,
+    /// Frame time and frames per second for the title bar.
+    frame_stats: crate::frame_stats::FrameStats,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
     export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Binding whose new shortcut is being recorded.
@@ -484,6 +489,7 @@ impl App {
             pending_example: None,
             in_dock: false,
             deferred: Vec::new(),
+            frame_stats: crate::frame_stats::FrameStats::default(),
             export_form: None,
             recording: None,
             show_cables: false,
@@ -914,8 +920,9 @@ fn drag_source<P: std::any::Any + Send + Sync>(ui: &mut egui::Ui, id: egui::Id, 
 }
 
 impl eframe::App for App {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        self.frame_stats.record(ctx.input(|i| i.time), frame.info().cpu_usage);
         self.dark = ui.visuals().dark_mode;
         crate::style::set_dark(self.dark);
         self.apply_scale(&ctx);
@@ -990,11 +997,14 @@ impl eframe::App for App {
         }
         self.check_locks(&ctx);
 
-        let title = format!(
+        let mut title = format!(
             "OpenECraft – {}{}",
             self.session.prj.info.name,
             if self.session.dirty() { " *" } else { "" }
         );
+        if let Some(stats) = self.frame_stats.text().filter(|_| self.shell.frame_stats) {
+            title = format!("{title}   ({stats})");
+        }
         if title != self.title {
             openecraft_ui::io::set_title(&ctx, &title);
             self.title = title;

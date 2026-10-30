@@ -190,6 +190,9 @@ impl App {
             ui.label(tr("Ribbon"));
             ui.checkbox(&mut self.shell.ribbon_minimized, tr("Minimize the ribbon"));
             ui.end_row();
+            ui.label(tr("Title bar"));
+            ui.checkbox(&mut self.shell.frame_stats, tr("Show the frame time and the frames per second"));
+            ui.end_row();
             ui.label(tr("Wall opacity"));
             let mut percent = self.shell.wall_opacity * 100.0;
             let r = ui.add(egui::Slider::new(&mut percent, 0.0..=100.0).step_by(5.0).suffix(" %"));

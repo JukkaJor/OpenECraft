@@ -41,6 +41,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `crates/openecraft-core/src/reports.rs` | Reports and project check |
 | `crates/openecraft-core/src/render.rs` | Backend independent page renderer (used by canvas and SVG) |
 | `openecraft/src/editor.rs` | Interactive canvas (tools, hit testing, pan/zoom) |
+| `openecraft/src/frame_stats.rs` | Frame time and frames per second for the title bar |
 | `crates/openecraft-core/src/ops.rs` | Editing operations (placement defaults, move, rotate, paste, cable cores, page structure, …) |
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
