@@ -49,7 +49,10 @@ with a command line, an MCP server, a parts server and a project server.
   to the power terminals and ports on their front, the Victron devices from below,
   the Cerbo GX at its row of connectors, Beckhoff terminals at their spring contacts,
   surge arresters with the earth at the bottom, 19-inch devices at the rear; DIN rail
-  models have a screw at every connection point; cables in the 3D routing end at the
+  models have a screw at every connection point; terminal blocks are drawn slice by
+  slice with their stepped profile, wire entries, screw openings and marker fields,
+  between end plates and end brackets, and cable ducts with slotted walls and their
+  cover; cables in the 3D routing end at the
   connection points their cores land on and part into their cores there; routes leave the devices they end at
   instead of running through them. The 3D view hides the walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their

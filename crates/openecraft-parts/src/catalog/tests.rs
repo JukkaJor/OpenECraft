@@ -114,3 +114,34 @@ fn the_catalog_has_fluid_parts_for_rooms() {
         assert!(p.wall_mountable() && !p.floor_standing() && p.width > 0.0, "{n}");
     }
 }
+
+#[test]
+fn terminals_show_their_openings_and_marker() {
+    let parts = default_catalog();
+    let part = |n: &str| parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
+    // Boxes of a colour in the model: (min, max) of their triangles.
+    let painted = |n: &str, c: [u8; 3]| -> Vec<([f32; 3], [f32; 3])> {
+        let m = part(n).model_3d.as_ref().unwrap();
+        (m.triangles.iter().zip(&m.colors))
+            .filter(|(_, col)| **col == c)
+            .map(|(t, _)| {
+                let v = t.map(|i| m.vertices[i as usize]);
+                ([0, 1, 2].map(|k| v.iter().map(|a| a[k]).fold(f32::MAX, f32::min)), [0, 1, 2].map(|k| v.iter().map(|a| a[k]).fold(f32::MIN, f32::max)))
+            })
+            .collect()
+    };
+    for n in ["GEN.TB-2.5", "GEN.TB-35", "GEN.TB-N-16"] {
+        let h = part(n).height;
+        // A screw opening in each outer quarter, the wire entries at the ends, the white
+        // marker field in the middle.
+        let screws = painted(n, models::DARK);
+        assert!(screws.iter().any(|(_, hi)| hi[1] < 0.25 * h) && screws.iter().any(|(lo, _)| lo[1] > 0.75 * h), "{n}");
+        let inside = painted(n, DARK_INSIDE);
+        assert!(inside.iter().any(|(lo, _)| lo[1] < 0.1 * h) && inside.iter().any(|(_, hi)| hi[1] > 0.9 * h), "{n}");
+        assert!(painted(n, models::WHITE).iter().all(|(lo, hi)| lo[1] > 0.3 * h && hi[1] < 0.7 * h), "{n}");
+        assert!(!painted(n, models::WHITE).is_empty(), "{n}");
+    }
+    assert!(!painted("GEN.TB-PE-2.5", [232, 204, 48]).is_empty(), "the yellow marker field of PE");
+    assert!(painted("GEN.TB-END", models::DARK).is_empty() && painted("GEN.TB-END", DARK_INSIDE).is_empty());
+    assert!(!painted("GEN.EB-35", models::STEEL).is_empty(), "the screw of the end bracket");
+}

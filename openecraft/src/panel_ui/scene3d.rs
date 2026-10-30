@@ -352,6 +352,14 @@ impl PanelUi {
                     }
                     continue;
                 }
+                // Cable ducts of a cabinet: slotted walls and the cover.
+                if it.kind == ItemKind::Duct && !e.is_room() {
+                    for (bx, [r, g, b]) in panel::duct_boxes(e, it) {
+                        let (min, max) = up_box(bx);
+                        add_box(&mut s, EQUIPMENT, None, obj, min, max, highlight.unwrap_or(Color32::from_rgb(r, g, b)), Some(it.id), on_door, false);
+                    }
+                    continue;
+                }
                 let (layer, side) = match it.kind {
                     ItemKind::Cutout if it.face.is_wall() => (0, wall_side(&mut s, it.face, (b0, b1), false, true)),
                     ItemKind::Cutout => (1, None),

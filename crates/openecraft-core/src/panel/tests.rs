@@ -600,3 +600,31 @@ fn placed_models_follow_the_frame_of_their_face() {
     // On the plate and the door of cabinets, on the floor and the walls of rooms.
     assert!(faces.contains(&(false, "Plate".into())) && faces.contains(&(true, "Bottom".into())), "{faces:?}");
 }
+
+#[test]
+fn cable_ducts_have_slotted_walls_and_a_cover() {
+    let prj = demo_project();
+    let e = &prj.layout.enclosures[0];
+    let mut checked = 0;
+    for it in e.items.iter().filter(|i| i.kind == ItemKind::Duct) {
+        let (lo, hi) = item_box(e, it);
+        let boxes = duct_boxes(e, it);
+        assert!(boxes.iter().all(|((a, b), _)| (0..3).all(|k| a[k] >= lo[k] - 0.01 && b[k] <= hi[k] + 0.01)), "{it:?}");
+        // The cover closes the duct at the front (plate ducts face the door, door ducts
+        // the inside of the enclosure).
+        let (wall, cover) = DUCT_COLORS;
+        let front = if it.face == Face::Door { lo[2] } else { hi[2] };
+        assert!(boxes.iter().any(|((a, b), c)| *c == cover && (a[2] - front).abs().min((b[2] - front).abs()) < 0.01), "{it:?}");
+        // Fingers with slots between them on both walls.
+        let (len, along) = if it.w >= it.h { (it.w, 0) } else { (it.h, 1) };
+        let fingers: Vec<_> = boxes.iter().filter(|((a, b), c)| *c == wall && b[along] - a[along] < len / 2.0).collect();
+        assert!(fingers.len() >= 2 * (len / 15.0) as usize, "{it:?}: {} fingers", fingers.len());
+        let mut starts: Vec<f32> = fingers.iter().map(|((a, _), _)| a[along]).collect();
+        starts.sort_by(f32::total_cmp);
+        starts.dedup();
+        let width = fingers[0].0 .1[along] - fingers[0].0 .0[along];
+        assert!(starts.windows(2).all(|s| s[1] - s[0] > width + 1.0), "slots between the fingers");
+        checked += 1;
+    }
+    assert!(checked > 2);
+}

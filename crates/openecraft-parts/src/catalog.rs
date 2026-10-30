@@ -700,8 +700,12 @@ fn accessories(c: &mut C) {
 enum Shape {
     /// DIN rail device: base, raised front, screw terminals top and bottom.
     Din { toggle: bool, display: bool },
-    /// Feed-through terminal: thin block with two screws.
+    /// Feed-through terminal: a slice with the stepped profile of a terminal block.
     Terminal,
+    /// End plate of a terminal block: the profile without openings.
+    EndPlate,
+    /// End bracket: low clamp on the rail with its screw.
+    EndBracket,
     /// PLC I/O module: tall block with an LED / connector column.
     Plc,
     /// Contactor or relay: DIN device with a dark front cap and the switch position
@@ -716,7 +720,9 @@ fn shape_of(p: &Part) -> Option<Shape> {
         return None;
     }
     Some(match p.subgroup.as_str() {
-        "Feed-through terminal" | "PE terminal" | "N terminal" | "Disconnect terminal" | "Fuse terminal" | "Accessories" | "End bracket" => Shape::Terminal,
+        "Feed-through terminal" | "PE terminal" | "N terminal" | "Disconnect terminal" | "Fuse terminal" => Shape::Terminal,
+        "Accessories" if p.group == "Terminals" => Shape::EndPlate,
+        "End bracket" => Shape::EndBracket,
         "Digital input module" | "Digital output module" | "Analog input module" | "Analog output module" | "CPU" => Shape::Plc,
         "Circuit breaker" | "Residual current device" | "Motor protection switch" | "Auxiliary switch" | "Main switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" | "Safety relay" | "Frequency converter" | "Soft starter" => Shape::Din { toggle: false, display: true },
@@ -780,20 +786,36 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 prims.push(Prim2d::Circle { c: [cx, h - h * 0.42], r: (w * 0.08).min(3.0), fill: false });
             }
         }
-        Shape::Terminal => {
-            // Grey; protective earth green, neutral blue.
-            let color = match p.subgroup.as_str() {
-                "PE terminal" => [96, 168, 72],
-                "N terminal" => [70, 120, 200],
-                _ => [150, 156, 162],
+        Shape::Terminal | Shape::EndPlate => {
+            // Grey; protective earth green with a yellow marker field, neutral blue; end
+            // plates darker, without openings.
+            let (color, marker) = match p.subgroup.as_str() {
+                "PE terminal" => ([84, 160, 64], [232, 204, 48]),
+                "N terminal" => ([66, 118, 196], models::WHITE),
+                _ if shape == Shape::EndPlate => ([118, 122, 128], [118, 122, 128]),
+                _ => ([168, 172, 174], models::WHITE),
             };
-            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], color);
-            m3.add_painted_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d], color);
-            let r = (w * 0.3).min(2.0);
-            for cy in [h * 0.18, h * 0.82] {
-                prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
+            terminal_slice(&mut m3, w, h, d, color, (shape == Shape::Terminal).then_some(marker));
+            if shape == Shape::Terminal {
+                let r = (w * 0.3).min(2.0);
+                for cy in [h * 0.2, h * 0.8] {
+                    prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
+                }
+                rect(&mut prims, w * 0.15, h * 0.42, w * 0.85, h * 0.58, true);
             }
-            rect(&mut prims, w * 0.1, h * 0.35, w * 0.9, h * 0.65, false);
+            rect(&mut prims, 0.0, h * 0.28, w, h * 0.72, false);
+        }
+        Shape::EndBracket => {
+            // Dark clamp over the rail with a raised middle and its clamping screw.
+            let c = [92, 96, 104];
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.3], c);
+            m3.add_painted_box([0.0, h * 0.1, d * 0.3], [w, h * 0.9, d * 0.55], c);
+            m3.add_painted_box([w * 0.1, h * 0.3, d * 0.55], [w * 0.9, h * 0.7, d * 0.94], c);
+            let s = (w * 0.3).min(2.5);
+            m3.add_painted_box([w / 2.0 - s, h / 2.0 - s, d * 0.94], [w / 2.0 + s, h / 2.0 + s, d], models::STEEL);
+            rect(&mut prims, 0.0, h * 0.1, w, h * 0.9, false);
+            rect(&mut prims, w * 0.1, h * 0.3, w * 0.9, h * 0.7, false);
+            prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: s, fill: false });
         }
         Shape::Plc => {
             // Dark housing, the front connector with its LED column and terminal block.
@@ -833,6 +855,73 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     }
     Some((Model2d { width: w, height: h, prims }, m3))
 }
+
+/// A terminal slice (x across, y along with the rail in the middle, z to the front):
+/// low ends with the wire entries, steps with the recessed screw openings, the high
+/// middle with the marker field and the jumper shafts (`marker`: none on an end plate).
+/// Above the foot a hairline gap is left on both sides, so that the slices of a strip
+/// are seen.
+fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], marker: Option<[u8; 3]>) {
+    let g = (w * 0.03).min(0.15);
+    let (x0, x1) = (g, w - g);
+    let (hx0, hx1) = (w * 0.22, w * 0.78);
+    let mut b = |min: [f32; 3], max: [f32; 3], c: [u8; 3]| m.add_painted_box(min, max, c);
+    // Foot over the rail (the whole width: the slices touch there).
+    b([0.0, 0.0, 0.0], [w, h, d * 0.25], c);
+    // Ends (y from both sides): the wire entry in the end face, the screw step behind it.
+    let mirror = |y: f32, upper: bool| if upper { h - y } else { y };
+    for upper in [false, true] {
+        let y = |a: f32, z: f32| {
+            let (p, q) = (mirror(a, upper), mirror(z, upper));
+            (p.min(q), p.max(q))
+        };
+        let (e0, e1) = y(0.0, h * 0.14);
+        let (s0, s1) = y(h * 0.14, h * 0.28);
+        match marker {
+            Some(_) => {
+                // Wire entry: walls beside and above the opening, its dark inside.
+                let r = h * 0.03;
+                let (o0, o1) = y(r, h * 0.14);
+                b([x0, e0, d * 0.25], [hx0, e1, d * 0.45], c);
+                b([hx1, e0, d * 0.25], [x1, e1, d * 0.45], c);
+                b([hx0, o0, d * 0.25], [hx1, o1, d * 0.45], DARK_INSIDE);
+                b([x0, e0, d * 0.45], [x1, e1, d * 0.55], c);
+                // Screw step: walls around the opening, the screw head with its slot at
+                // its bottom.
+                let (q0, q1) = y(h * 0.15, h * 0.24);
+                b([x0, s0, d * 0.25], [x1, s1, d * 0.6], c);
+                b([x0, s0, d * 0.6], [hx0, s1, d * 0.72], c);
+                b([hx1, s0, d * 0.6], [x1, s1, d * 0.72], c);
+                b([hx0, s0, d * 0.6], [hx1, q0, d * 0.72], c);
+                b([hx0, q1, d * 0.6], [hx1, s1, d * 0.72], c);
+                b([hx0, q0, d * 0.58], [hx1, q1, d * 0.6], models::STEEL);
+                let (qm, sl) = ((q0 + q1) / 2.0, h * 0.008);
+                b([hx0, qm - sl, d * 0.6], [hx1, qm + sl, d * 0.61], models::DARK);
+            }
+            None => {
+                b([x0, e0, d * 0.25], [x1, e1, d * 0.55], c);
+                b([x0, s0, d * 0.25], [x1, s1, d * 0.72], c);
+            }
+        }
+    }
+    // The high middle with the marker field and the jumper shafts beside it.
+    let (m0, m1) = (h * 0.28, h * 0.72);
+    match marker {
+        Some(mc) => {
+            b([x0, m0, d * 0.25], [x1, m1, d * 0.96], c);
+            b([x0, m0, d * 0.96], [x1, h * 0.4, d], c);
+            b([x0, h * 0.6, d * 0.96], [x1, m1, d], c);
+            b([w * 0.15, h * 0.4, d * 0.96], [w * 0.85, h * 0.6, d], mc);
+            for y in [h * 0.33, h * 0.67] {
+                b([hx0, y - h * 0.015, d * 0.96], [hx1, y + h * 0.015, d * 0.965], DARK_INSIDE);
+            }
+        }
+        None => b([x0, m0, d * 0.25], [x1, m1, d], c),
+    }
+}
+
+/// The inside of the openings of a terminal (wire entries, jumper shafts).
+const DARK_INSIDE: [u8; 3] = [46, 48, 52];
 
 mod models;
 mod mounting;
