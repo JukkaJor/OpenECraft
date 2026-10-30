@@ -246,6 +246,20 @@ fn building_services_route_from_room_to_room() {
     // Batteries and network in the 19-inch rack.
     let rack = l.enclosures.iter().position(crate::panel::is_rack).expect("rack");
     assert_eq!(crate::panel::rack::occupied(&l.enclosures[rack]).len(), 9);
+    // The battery cable ends at the + terminal of its battery, the BMS cable at its CAN
+    // port (the connection points of the part, not the middle of the front).
+    let pos = crate::panel::positions(l);
+    let point = |tag: &str, pin: &str| {
+        let (ei, it) = crate::panel::locate(&prj, tag).expect(tag);
+        let q = crate::panel::device_points(&prj, it).into_iter().find(|p| p.pin == pin).expect(pin).pos;
+        crate::parts::vec3::add(crate::panel::face_point(&l.enclosures[ei], it.face, q), pos[ei])
+    };
+    for (cable, pin) in [("=ESS-W71", "+"), ("=ESS-W96", "CAN")] {
+        let c = an.routing.item(cable).expect(cable);
+        let end = c.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").expect("battery end");
+        assert_eq!(end.point, Some(point("=ESS+RACK-G1", pin)), "{cable}");
+        assert!(c.routed(), "{cable}: {:?}", c.status);
+    }
     // PLC cards and EtherCAT terminals, NH fuse switches of three sizes.
     let plc = an.report(&prj, ReportKind::PlcAssignment).unwrap();
     for addr in ["I0.0", "Q0.1", "IW66", "DI4", "DO2"] {

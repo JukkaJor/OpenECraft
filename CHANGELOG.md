@@ -49,7 +49,8 @@ with a command line, an MCP server, a parts server and a project server.
   to the power terminals and ports on their front, the Victron devices from below,
   the Cerbo GX at its row of connectors, Beckhoff terminals at their spring contacts,
   surge arresters with the earth at the bottom, 19-inch devices at the rear; DIN rail
-  models have a screw at every connection point. The 3D view hides the walls in front of the camera or the
+  models have a screw at every connection point; cables in the 3D routing end at the
+  connection points their cores land on. The 3D view hides the walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
   colours and, like cables and tubes, in their real thickness. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
