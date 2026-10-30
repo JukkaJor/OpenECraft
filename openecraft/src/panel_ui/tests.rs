@@ -287,3 +287,39 @@ fn a_device_from_the_schematic_is_shown_where_it_is_placed() {
     assert!(ui.focus_device(&prj, "=CTL+CC1-A1", false));
     assert_eq!((ui.enclosure, ui.view, ui.face), (ci, View::Front, Face::Plate));
 }
+
+/// Shapes of one frame of the 3D view of the room of `prj`, and the smallest alpha of
+/// a filled shape.
+fn room_frame(ui: &mut PanelUi, prj: &mut Project, an: &openecraft_core::analysis::Analysis) -> (usize, u8) {
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    (ui.enclosure, ui.view) = (room, View::ThreeD);
+    let ctx = egui::Context::default();
+    let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0))), ..Default::default() };
+    let mut out = ctx.run_ui(input, |ui_| ui.view_3d(ui_, prj, room, an));
+    out.textures_delta.clear();
+    let mut alpha = 255;
+    for s in &out.shapes {
+        if let egui::Shape::Path(p) = &s.shape {
+            alpha = alpha.min(p.fill.a());
+        }
+    }
+    (out.shapes.len(), alpha)
+}
+
+#[test]
+fn walls_in_front_and_the_ceiling_can_be_left_out() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let mut ui = PanelUi::default();
+    let (all, alpha) = room_frame(&mut ui, &mut prj, &an);
+    assert!(alpha < 200, "walls in front are see-through");
+    ui.hide_ceiling = true;
+    let (no_ceiling, _) = room_frame(&mut ui, &mut prj, &an);
+    assert!(no_ceiling < all, "{no_ceiling} {all}");
+    ui.hide_front_walls = true;
+    let (open, _) = room_frame(&mut ui, &mut prj, &an);
+    assert!(open < no_ceiling, "{open} {no_ceiling}");
+    // Opaque walls in front.
+    let mut ui = PanelUi { wall_opacity: 1.0, ..Default::default() };
+    assert_eq!(room_frame(&mut ui, &mut prj, &an).1, 255);
+}

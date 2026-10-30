@@ -113,6 +113,8 @@ struct ShellState {
     placement: crate::dock::Placement,
     /// Placement and floating panes of the other workspaces.
     sides: crate::dock::Sides,
+    /// Opacity of the walls in front in the 3D view of the panel layout, 0 … 1.
+    wall_opacity: f32,
 }
 
 impl Default for ShellState {
@@ -128,6 +130,7 @@ impl Default for ShellState {
             docks: Vec::new(),
             placement: crate::dock::Placement::default(),
             sides: crate::dock::Sides::default(),
+            wall_opacity: crate::panel_ui::WALL_OPACITY,
         }
     }
 }
@@ -916,6 +919,7 @@ impl eframe::App for App {
         self.dark = ui.visuals().dark_mode;
         crate::style::set_dark(self.dark);
         self.apply_scale(&ctx);
+        self.panel_ui.wall_opacity = self.shell.wall_opacity;
         // Closing the window with unsaved changes asks first (the second close, after
         // the answer, goes through).
         if ctx.input(|i| i.viewport().close_requested()) && !self.closing && self.discard.request(self.session.dirty(), Replace::Close).is_none() {

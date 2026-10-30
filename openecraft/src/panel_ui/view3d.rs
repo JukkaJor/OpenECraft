@@ -138,6 +138,8 @@ impl PanelUi {
         let shown_wire = |i: usize| shown.iter().any(|(k, _)| an.wiring[i].in_enclosure(*k));
         let selected_wire = self.wire_index(an).filter(|i| shown_wire(*i));
         let wire_ends = selected_wire.map(|i| an.wiring[i].items);
+        let opacity = self.wall_opacity.clamp(0.0, 1.0);
+        let (hide_front, hide_ceiling) = (self.hide_front_walls, self.hide_ceiling);
         let mut wire_segs: Vec<(Pos2, Pos2, usize)> = Vec::new();
         let mut outlines: Vec<(Pos2, Pos2)> = Vec::new();
         let mut labels: Vec<(Pos2, f32, &str)> = Vec::new();
@@ -188,7 +190,7 @@ impl PanelUi {
                         (base.b() as f32 * shade) as u8,
                     );
                     if layer == OUTER_WALLS {
-                        color = color.gamma_multiply(0.6);
+                        color = color.gamma_multiply(opacity);
                     }
                     prims.push((layer, obj.map(|o| (o, 1)), depth, Prim::Face { pts: pr.into_iter().map(|x| x.0).collect(), color, item: item.map(|id| (k, id)), outline: true }));
                 }
@@ -224,7 +226,14 @@ impl PanelUi {
                             let layer = if dot(swing_dir([0.0, 0.0, 1.0]), leaf_out) > 0.0 { OUTER_WALLS } else { 3 };
                             add_box(&mut prims, layer, None, min, max, Color32::from_rgb(190, 194, 200), None, true);
                         }
-                        Role::Wall(face) | Role::RoomWall(face) => add_box(&mut prims, wall_layer(outside_of(face, bx)), None, min, max, color, None, false),
+                        // Left out on request: the ceiling, and the walls in front.
+                        Role::RoomWall(Face::Roof) if hide_ceiling => {}
+                        Role::Wall(face) | Role::RoomWall(face) => {
+                            let outside = outside_of(face, bx);
+                            if !(outside && hide_front) {
+                                add_box(&mut prims, wall_layer(outside), None, min, max, color, None, false);
+                            }
+                        }
                         Role::GlandPlate => add_box(&mut prims, wall_layer(outside_of(Face::Bottom, bx)), None, min, max, color, None, false),
                         Role::MountingPlate | Role::Body | Role::RackRails => add_box(&mut prims, 1, None, min, max, color, None, false),
                         Role::Plinth | Role::BayingKit => add_box(&mut prims, 0, None, min, max, color, None, false),

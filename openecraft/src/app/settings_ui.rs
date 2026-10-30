@@ -190,6 +190,13 @@ impl App {
             ui.label(tr("Ribbon"));
             ui.checkbox(&mut self.shell.ribbon_minimized, tr("Minimize the ribbon"));
             ui.end_row();
+            ui.label(tr("Wall opacity"));
+            let mut percent = self.shell.wall_opacity * 100.0;
+            let r = ui.add(egui::Slider::new(&mut percent, 0.0..=100.0).step_by(5.0).suffix(" %"));
+            if r.on_hover_text(tr("Walls, ceilings and doors seen from the outside in the 3D view of the panel layout")).changed() {
+                self.shell.wall_opacity = percent / 100.0;
+            }
+            ui.end_row();
             ui.label(tr("Language"));
             // All languages at once: a list that scrolls hid most of them.
             ui.horizontal_wrapped(|ui| {

@@ -38,7 +38,8 @@ with a command line, an MCP server, a parts server and a project server.
   model of their own get a detailed, coloured one by what they are (pumps, vessels,
   valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
   (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after
-  their product photos. A placed device is shown in the
+  their product photos. The 3D view hides the walls in front of the camera or the
+  ceiling on request; the opacity of the walls is a setting. A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
   and other parts marked for floor mounting stand on the floor of a room, pipe runs
   go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D

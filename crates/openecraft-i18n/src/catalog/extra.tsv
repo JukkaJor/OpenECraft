@@ -5940,3 +5940,9 @@ Show in panel layout	Im Schaltschrankaufbau anzeigen	Afficher dans l'implantatio
 Show in 3D view	In der 3D-Ansicht anzeigen	Afficher dans la vue 3D	Mostrar en la vista 3D
 The selected device in the layout of its cabinet or room	Das gewählte Betriebsmittel im Aufbau seines Schaltschranks oder Raums	L'appareil sélectionné dans l'implantation de son armoire ou de sa salle	El equipo seleccionado en el diseño de su armario o sala
 The selected device in the 3D view of its cabinet or room, seen from close by	Das gewählte Betriebsmittel in der 3D-Ansicht seines Schaltschranks oder Raums, aus der Nähe	L'appareil sélectionné dans la vue 3D de son armoire ou de sa salle, vu de près	El equipo seleccionado en la vista 3D de su armario o sala, visto de cerca
+Hide walls in front	Wände davor ausblenden	Masquer les murs de devant	Ocultar las paredes delante
+Leave out the walls between the eye and the inside of the room or enclosure in the 3D view	In der 3D-Ansicht die Wände zwischen Betrachter und dem Inneren des Raums oder Gehäuses weglassen	Dans la vue 3D, omettre les murs entre l'œil et l'intérieur de la salle ou de l'armoire	En la vista 3D, omitir las paredes entre el ojo y el interior de la sala o del armario
+Hide ceiling	Decke ausblenden	Masquer le plafond	Ocultar el techo
+Leave out the ceilings of the rooms in the 3D view	In der 3D-Ansicht die Decken der Räume weglassen	Dans la vue 3D, omettre les plafonds des salles	En la vista 3D, omitir los techos de las salas
+Wall opacity	Deckkraft der Wände	Opacité des murs	Opacidad de las paredes
+Walls, ceilings and doors seen from the outside in the 3D view of the panel layout	Wände, Decken und Türen, von außen gesehen, in der 3D-Ansicht des Schaltschrankaufbaus	Murs, plafonds et portes vus de l'extérieur dans la vue 3D de l'implantation d'armoire	Paredes, techos y puertas vistos desde fuera en la vista 3D del diseño del armario

@@ -429,6 +429,13 @@ pub struct PanelUi {
     pub show_lineup: bool,
     /// The 3D view shows all enclosures at their places in the room.
     pub show_site: bool,
+    /// The 3D view leaves out the walls between the eye and the inside of a room or
+    /// enclosure.
+    pub hide_front_walls: bool,
+    /// The 3D view leaves out the ceilings of the rooms.
+    pub hide_ceiling: bool,
+    /// Opacity of the walls seen from the outside in the 3D view, 0 … 1.
+    pub wall_opacity: f32,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -501,6 +508,9 @@ impl Default for PanelUi {
             show_heat: false,
             show_lineup: true,
             show_site: false,
+            hide_front_walls: false,
+            hide_ceiling: false,
+            wall_opacity: WALL_OPACITY,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -536,6 +546,9 @@ impl Default for PanelUi {
         }
     }
 }
+
+/// Opacity of the walls seen from the outside in the 3D view, unless set otherwise.
+pub const WALL_OPACITY: f32 = 0.6;
 
 /// Drawing layer of enclosure walls that are seen from the outside.
 const OUTER_WALLS: u8 = 6;

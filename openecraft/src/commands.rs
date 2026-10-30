@@ -230,6 +230,8 @@ pub enum Cmd {
     LayoutHeat,
     LayoutLineup,
     LayoutSite,
+    LayoutHideFrontWalls,
+    LayoutHideCeiling,
     LayoutFit,
     LayoutNcData,
     LayoutReports,
@@ -679,6 +681,10 @@ pub static ALL: &[Def] = &[
     d(C::LayoutSite, "layout_all_enclosures", tr_const!("All enclosures"), I::Eye)
         .toggle()
         .tip(tr_const!("Show all enclosures side by side at their places in the room")),
+    d(C::LayoutHideFrontWalls, "layout_hide_front_walls", tr_const!("Hide walls in front"), I::Wall)
+        .toggle()
+        .tip(tr_const!("Leave out the walls between the eye and the inside of the room or enclosure in the 3D view")),
+    d(C::LayoutHideCeiling, "layout_hide_ceiling", tr_const!("Hide ceiling"), I::Enclosure).toggle().tip(tr_const!("Leave out the ceilings of the rooms in the 3D view")),
     d(C::LayoutFit, "layout_fit", tr_const!("Fit"), I::Fit),
     d(C::LayoutNcData, "layout_nc_data", tr_const!("NC data"), I::Drill).menu().tip(tr_const!("Drilling pattern of the face shown as DXF, DWG or CSV")),
     d(C::LayoutReports, "layout_reports", tr_const!("Panel wiring report"), I::Report),
