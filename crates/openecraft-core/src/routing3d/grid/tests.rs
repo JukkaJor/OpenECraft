@@ -155,3 +155,22 @@ fn simplify_and_bends() {
     assert_eq!(bends(&pts), (2, 30.0));
     assert_eq!(length(&pts), 55.0);
 }
+
+#[test]
+fn a_short_stretch_between_bends_moves_to_an_end() {
+    let prj = project(single());
+    let s = space(&prj);
+    let at = |q: V3| s.centre(s.cell_of(q).unwrap());
+    let c1 = at([100.0, 375.0, 60.0]);
+    let c2 = at([250.0, 375.0, 60.0]);
+    let c3 = at([250.0, 400.0, 60.0]);
+    let c4 = at([400.0, 400.0, 60.0]);
+    let (a, b) = ([c1[0] - 10.0, c1[1] - 10.0, c1[2]], [c4[0] + 5.0, c4[1] + 5.0, c4[2]]);
+    let mut points = vec![a, c1, c2, c3, c4, b];
+    let wide = Request { turn: 100.0, ..req(&[]) };
+    assert!(s.spread_bends(&mut points, &wide, &RoutingRules::default()));
+    // The short stretch first, then straight on to the end.
+    assert_eq!(points, vec![a, c1, [c1[0], c4[1], c1[2]], c4, b]);
+    let mut kept = vec![a, c1, c2, c3, c4, b];
+    assert!(!s.spread_bends(&mut kept, &req(&[]), &RoutingRules::default()), "long enough for a small bend radius");
+}

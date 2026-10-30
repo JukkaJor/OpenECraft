@@ -195,11 +195,17 @@ way.
 
 In a room, routes run through its free space: around its walls, inner walls, the
 cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe
-runs. A route between a cabinet and a device in its room (or two cabinets of one room)
-runs in legs: through the cabinet to a cable gland on its roof, sides or rear (one of
-its own cabinet first, otherwise of the line-up; without one through the middle of the
-roof, which is reported), then through the room. Frozen, such a route keeps its legs.
+runs. Of the ways that cost the same, a route takes one whose bends keep their
+distance (a short stretch first or last). A route between a cabinet and a device in its
+room (or two cabinets of one room) runs in legs: through the cabinet to a cable gland on
+its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
+one through the middle of the roof, which is reported), then through the room. Frozen, such a route keeps its legs.
 The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
+
+The routes are part of the project's analysis. When a project is opened its analysis is
+built in the background: the editor shows a window with the step it is at (netlists,
+connections, panel wiring, 3D routing with the route it is at, duct fill, checks) and
+shows the project once it is ready.
 
 The routed panel is the input of the [wiring and mounting assistants](workshop.md) and of
 the 3D exports (glTF, STEP, IGES, IFC, JT, Parasolid; see

@@ -553,8 +553,13 @@ fn wire_points(pos: &[V3], w: &RoutedWire) -> Vec<V3> {
 /// [`RoutingRules::wires_3d`] their routes are replaced by the 3D routes). Classes
 /// are routed one after the other (power first), so that later ones keep their
 /// distance; frozen routes are kept while they are still possible.
-#[allow(clippy::too_many_lines)]
 pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist) -> Routing {
+    analyse_with(prj, wiring, conns, open, &|_, _| {})
+}
+
+/// Like [`analyse`], telling `progress` how many of all routes are done before each.
+#[allow(clippy::too_many_lines)]
+pub fn analyse_with(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, progress: &dyn Fn(usize, usize)) -> Routing {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
     let lineups = panel::lineups(&prj.layout);
@@ -652,7 +657,9 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
     let mut items: Vec<RoutedItem> = Vec::new();
     let mut problems: Vec<Problem> = Vec::new();
     let mut roof_entries: Vec<String> = Vec::new();
-    for job in jobs {
+    let total = jobs.len();
+    for (n, job) in jobs.into_iter().enumerate() {
+        progress(n, total);
         let start = job.ends.iter().find_map(|e| e.enclosure);
         let lu = start.and_then(lineup_of);
         let mut item = RoutedItem {
@@ -852,6 +859,7 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
             changes.push(Change { key: f.key.clone(), label, before: f.length, after });
         }
     }
+    grid::release_search();
     Routing { items, bundles, branches, shields, paths, changes, problems }
 }
 

@@ -903,6 +903,17 @@ impl eframe::App for App {
         self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
+
+        // The device index follows every committed change; while an edit may be in
+        // progress (mouse down, text field focused, drag) it is rebuilt every frame.
+        let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();
+        self.session.refresh(&self.plugins, editing);
+        // A project just opened shows once it is analysed; until then only what is
+        // being done.
+        if let Some(progress) = self.session.opening() {
+            self.opening_window(ui, progress);
+            return;
+        }
         self.finish_part_drop(&ctx);
         self.key_tips(&ctx);
         self.command_keys(&ctx);
@@ -911,11 +922,6 @@ impl eframe::App for App {
         let now = (self.session.page, self.editor.selection.iter().copied().collect::<Vec<u64>>());
         self.scroll_nav = now != self.last_selection;
         self.last_selection = now;
-
-        // The device index follows every committed change; while an edit may be in
-        // progress (mouse down, text field focused, drag) it is rebuilt every frame.
-        let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();
-        self.session.refresh(&self.plugins, editing);
         let idx = std::mem::take(&mut self.session.index);
 
         if openecraft_i18n::lang() != self.shown_lang {

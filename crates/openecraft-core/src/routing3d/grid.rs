@@ -10,6 +10,7 @@ use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, Enclosure, ItemKind, PLATE_Z};
 use crate::parts::vec3::{dist, V3};
+use std::cell::RefCell;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
@@ -88,6 +89,57 @@ pub struct Space {
     /// Enclosure of each cell column along x (index into the layout), `usize::MAX`
     /// outside.
     column: Vec<usize>,
+}
+
+thread_local! {
+    /// The arrays of the searches on this thread, kept from one search to the next
+    /// until [`release_search`].
+    static SEARCH: RefCell<Search> = RefCell::default();
+}
+
+/// Frees the arrays the searches on this thread kept.
+pub fn release_search() {
+    SEARCH.with_borrow_mut(|s| *s = Search::default());
+}
+
+/// The arrays of the search over all states (cell × direction) and, for the costs to
+/// the goal, over all cells; they grow to the largest space searched. An entry belongs
+/// to the current search only when its stamp is the search's.
+#[derive(Default)]
+struct Search {
+    best: Vec<f32>,
+    prev: Vec<u32>,
+    stamp: Vec<u32>,
+    /// Cost from the cell to the goal without turns, final where `settled`.
+    to_goal: Vec<f32>,
+    reached: Vec<u32>,
+    settled: Vec<u32>,
+    run: u32,
+}
+
+impl Search {
+    /// Starts a search over `cells` cells.
+    fn start(&mut self, cells: usize) -> u32 {
+        if self.reached.len() < cells {
+            *self = Search {
+                best: vec![f32::INFINITY; cells * 7],
+                prev: vec![u32::MAX; cells * 7],
+                stamp: vec![0; cells * 7],
+                to_goal: vec![f32::INFINITY; cells],
+                reached: vec![0; cells],
+                settled: vec![0; cells],
+                run: 0,
+            };
+        }
+        self.run = self.run.wrapping_add(1);
+        if self.run == 0 {
+            for v in [&mut self.stamp, &mut self.reached, &mut self.settled] {
+                v.fill(0);
+            }
+            self.run = 1;
+        }
+        self.run
+    }
 }
 
 impl Space {
@@ -388,26 +440,50 @@ impl Space {
     pub fn route(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules) -> Option<Way> {
         let start = self.nearest_passable(a, req)?;
         let goal = self.nearest_passable(b, req)?;
-        let total = self.block.len();
+        SEARCH.with_borrow_mut(|search| self.search(search, a, b, start, goal, req, rules))
+    }
+
+    /// The A* search of [`Space::route`] with the arrays of `search`.
+    #[allow(clippy::too_many_arguments)]
+    fn search(&self, search: &mut Search, a: V3, b: V3, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> Option<Way> {
         // States: cell × direction it was entered in (6: none).
-        let mut best = vec![f32::INFINITY; total * 7];
-        let mut prev = vec![u32::MAX; total * 7];
+        let run = search.start(self.block.len());
+        let reach = self.costs_to_goal(search, run, start, goal, req, rules);
+        let Search { best, prev, stamp, to_goal, settled, .. } = search;
         let mut heap = BinaryHeap::new();
         let gc = self.coords(goal);
-        let h = |idx: usize| {
-            let c = self.coords(idx);
-            (0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell
-        };
-        best[start * 7 + 6] = 0.0;
-        heap.push(Reverse((h(start).to_bits(), start * 7 + 6)));
-        let mut found = None;
-        while let Some(Reverse((_, state))) = heap.pop() {
+        // Lower bound of the rest: the cost of the cells to the goal (at least `reach`
+        // where it is not known) and the turns, one fewer than the axes it still lies
+        // apart on when heading towards it along one of them.
+        let h = |state: usize| {
             let (idx, dir) = (state / 7, state % 7);
+            let c = self.coords(idx);
+            let apart = (0..3).filter(|&i| c[i] != gc[i]).count();
+            let towards = dir < 6 && {
+                let axis = dir / 2;
+                if dir % 2 == 1 { c[axis] < gc[axis] } else { c[axis] > gc[axis] }
+            };
+            let turns = if apart == 0 { 0 } else if dir == 6 || towards { apart - 1 } else { apart };
+            let cells = if settled[idx] == run { to_goal[idx] } else { reach.max((0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell) };
+            cells + turns as f32 * req.turn
+        };
+        let key = |g: f32, state: usize| Reverse(((g + h(state)).to_bits(), state));
+        let first = start * 7 + 6;
+        (best[first], prev[first], stamp[first]) = (0.0, u32::MAX, run);
+        heap.push(key(0.0, first));
+        let mut found = None;
+        while let Some(Reverse(popped)) = heap.pop() {
+            let state = popped.1;
+            let (idx, dir) = (state / 7, state % 7);
+            let g = best[state];
+            // A state reached again more cheaply was expanded with its better cost.
+            if key(g, state).0 != popped {
+                continue;
+            }
             if idx == goal {
                 found = Some(state);
                 break;
             }
-            let g = best[state];
             let c = self.coords(idx);
             for nd in 0..6 {
                 let (axis, up) = (nd / 2, nd % 2 == 1);
@@ -430,15 +506,14 @@ impl Space {
                 let turn = if dir != 6 && dir != nd { req.turn } else { 0.0 };
                 let ng = g + self.cell * self.factor(ni, req, rules) + turn;
                 let ns = ni * 7 + nd;
-                if ng < best[ns] {
-                    best[ns] = ng;
-                    prev[ns] = state as u32;
-                    heap.push(Reverse(((ng + h(ni)).to_bits(), ns)));
+                if stamp[ns] != run || ng < best[ns] {
+                    (best[ns], prev[ns], stamp[ns]) = (ng, state as u32, run);
+                    heap.push(key(ng, ns));
                 }
             }
         }
         let mut state = found?;
-        let mut cells = vec![state / 7];
+        let mut cells: Vec<usize> = vec![state / 7];
         while prev[state] != u32::MAX {
             state = prev[state] as usize;
             cells.push(state / 7);
@@ -447,9 +522,108 @@ impl Space {
         let mut points = vec![a];
         points.extend(cells.iter().map(|&i| self.centre(i)));
         points.push(b);
-        let points = simplify(points);
+        let mut points = simplify(points);
+        if self.spread_bends(&mut points, req, rules) {
+            let inner: Vec<V3> = std::iter::once(self.centre(start)).chain(points[1..points.len() - 1].iter().copied()).chain(std::iter::once(self.centre(goal))).collect();
+            cells = self.cells_along(&inner);
+        }
         let free = cells.iter().filter(|&&i| !self.channel(i, req)).count() as f32 * self.cell;
         Some(Way { points, cells, free })
+    }
+
+    /// Of two stretches at right angles inside a way, puts one shorter than half the
+    /// turn (the bend radius) before the other where that costs no more, so that it
+    /// becomes the first or last stretch or the bends keep their distance. Whether the
+    /// way changed.
+    fn spread_bends(&self, points: &mut Vec<V3>, req: &Request, rules: &RoutingRules) -> bool {
+        // Stretches between bends that are too short (the first and the last count not).
+        let short = |p: &[V3]| if p.len() > 5 { p[2..p.len() - 2].windows(2).filter(|s| dist(s[0], s[1]) < req.turn * 0.5).count() } else { 0 };
+        let heading = |a: V3, b: V3| [0, 1, 2].map(|i| (b[i] - a[i]).signum() as i8);
+        let turns = |p: &[V3]| p.windows(3).filter(|w| heading(w[0], w[1]) != heading(w[1], w[2])).count();
+        let cost = |p: &[V3]| -> Option<f32> {
+            if p.iter().any(|&q| self.cell_of(q).is_none()) {
+                return None;
+            }
+            let cells = self.cells_along(p);
+            let free = cells.iter().all(|&i| self.passable(i, req)) && cells.windows(2).all(|w| self.coords(w[0])[0] == self.coords(w[1])[0] || self.crossing_ok(w[0], w[1]));
+            free.then(|| cells.iter().skip(1).map(|&i| self.factor(i, req, rules)).sum())
+        };
+        let mut changed = false;
+        'pass: loop {
+            let now = short(points);
+            if now == 0 {
+                break;
+            }
+            // Stretches j - 1 and j between cell centres, the other way round.
+            for j in 2..points.len().saturating_sub(2) {
+                let (p0, p1, p2) = (points[j - 1], points[j], points[j + 1]);
+                let q = [0, 1, 2].map(|i| p0[i] + p2[i] - p1[i]);
+                let mut alt = points.clone();
+                alt[j] = q;
+                let alt = simplify(alt);
+                if short(&alt) >= now || turns(&alt) > turns(points) {
+                    continue;
+                }
+                if let (Some(new), Some(old)) = (cost(&[p0, q, p2]), cost(&[p0, p1, p2])) {
+                    if new <= old {
+                        *points = alt;
+                        changed = true;
+                        continue 'pass;
+                    }
+                }
+            }
+            break;
+        }
+        changed
+    }
+
+    /// The costs from the cells to `goal` without turns (Dijkstra backwards), until
+    /// the one of `start` is known. Gives the highest known cost: the other cells cost
+    /// at least as much.
+    fn costs_to_goal(&self, search: &mut Search, run: u32, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> f32 {
+        let Search { to_goal, reached, settled, .. } = search;
+        let mut heap = BinaryHeap::new();
+        (to_goal[goal], reached[goal]) = (0.0, run);
+        heap.push(Reverse((0.0f32.to_bits(), goal)));
+        let mut reach = 0.0;
+        while let Some(Reverse((d, idx))) = heap.pop() {
+            if settled[idx] == run {
+                continue;
+            }
+            settled[idx] = run;
+            reach = f32::from_bits(d);
+            if idx == start {
+                break;
+            }
+            // Entering this cell from a neighbour costs its factor.
+            let step = self.cell * self.factor(idx, req, rules);
+            let c = self.coords(idx);
+            for nd in 0..6 {
+                let (axis, up) = (nd / 2, nd % 2 == 1);
+                let mut nc = c;
+                if up {
+                    if c[axis] + 1 >= self.n[axis] {
+                        continue;
+                    }
+                    nc[axis] += 1;
+                } else {
+                    if c[axis] == 0 {
+                        continue;
+                    }
+                    nc[axis] -= 1;
+                }
+                let ni = self.index(nc);
+                if settled[ni] == run || !self.passable(ni, req) || (axis == 0 && !self.crossing_ok(ni, idx)) {
+                    continue;
+                }
+                let nd = reach + step;
+                if reached[ni] != run || nd < to_goal[ni] {
+                    (to_goal[ni], reached[ni]) = (nd, run);
+                    heap.push(Reverse((nd.to_bits(), ni)));
+                }
+            }
+        }
+        reach
     }
 
     /// A way that was routed before (frozen) is still possible: its cells are passable

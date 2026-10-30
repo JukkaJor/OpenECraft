@@ -5927,3 +5927,12 @@ Heat pump	Wärmepumpe	Pompe à chaleur	Bomba de calor
 Buffer tank with four nozzles	Pufferspeicher mit vier Anschlüssen	Ballon tampon à quatre piquages	Depósito de inercia con cuatro conexiones
 Hot water	Warmwasser	Eau chaude	Agua caliente
 Heating water	Heizungswasser	Eau de chauffage	Agua de calefacción
+Opening the project	Projekt wird geöffnet	Ouverture du projet	Abriendo el proyecto
+Step {} of {}: {}	Schritt {} von {}: {}	Étape {} sur {} : {}	Paso {} de {}: {}
+{} ({} of {})	{} ({} von {})	{} ({} sur {})	{} ({} de {})
+Building the netlists	Netzlisten werden erstellt	Construction des listes de réseaux	Creando las listas de redes
+Collecting the connections	Verbindungen werden gesammelt	Collecte des connexions	Reuniendo las conexiones
+Wiring the panels	Schaltschränke werden verdrahtet	Câblage des armoires	Cableando los cuadros
+Routing cables and pipes in 3D	Kabel und Rohre werden in 3D verlegt	Routage des câbles et tuyaux en 3D	Trazando cables y tuberías en 3D
+Filling the cable ducts	Kabelkanäle werden befüllt	Remplissage des goulottes	Llenando las canaletas
+Checking the project	Projekt wird geprüft	Vérification du projet	Comprobando el proyecto

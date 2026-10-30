@@ -170,3 +170,47 @@ fn released_generated_and_locked_pages_cannot_be_edited() {
     assert!(!s.may_edit_page(s.prj.pages.len() - 1, false), "generated");
     assert!(!s.may_edit_page(s.prj.pages.len(), false), "no such page");
 }
+
+/// Refreshes until the analysis built in the background is taken.
+fn opened(s: &mut Session, plugins: &Plugins) {
+    let start = std::time::Instant::now();
+    while s.opening().is_some() {
+        assert!(start.elapsed().as_secs() < 120, "the analysis is not ready");
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        s.refresh(plugins, false);
+    }
+}
+
+#[test]
+fn an_opened_project_is_analysed_in_the_background() {
+    let plugins = Plugins::new(Vec::<String>::new());
+    let mut s = Session::new(Project::new_default(), None);
+    s.refresh(&plugins, false);
+    assert!(s.opening().is_none(), "the project of a new session is analysed at once");
+    s.replace(demo_project(), Some("demo.oec".into()));
+    s.refresh(&plugins, false);
+    if openecraft_core::analysis::threads() > 1 {
+        assert!(s.opening().is_some());
+    }
+    opened(&mut s, &plugins);
+    let devices = s.analysis.index.devices.len();
+    assert!(devices > 0 && devices == Index::build(&s.prj).devices.len());
+    assert!(!s.dirty());
+    // Edits are analysed at once again.
+    s.prj.info.name = "Changed".into();
+    s.commit(true);
+    s.refresh(&plugins, false);
+    assert!(s.opening().is_none());
+}
+
+#[test]
+fn a_project_replaced_while_opening_gets_its_own_analysis() {
+    let plugins = Plugins::new(Vec::<String>::new());
+    let mut s = Session::new(Project::new_default(), None);
+    s.replace(demo_project(), None);
+    s.refresh(&plugins, false);
+    s.replace(Project::new_default(), None);
+    s.refresh(&plugins, false);
+    opened(&mut s, &plugins);
+    assert_eq!(s.analysis.index.devices.len(), Index::build(&s.prj).devices.len());
+}

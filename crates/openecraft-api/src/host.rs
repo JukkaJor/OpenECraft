@@ -168,22 +168,28 @@ impl Plugins {
     /// switched off messages and mark accepted ones.
     /// The checks run at the same time where the platform has threads.
     pub fn check(&self, prj: &Project, an: &Analysis) -> Vec<Issue> {
-        let checks: Vec<&Check> = self.checks().filter(|c| openecraft_core::checks::is_enabled(prj, &c.name)).collect();
-        let found = openecraft_core::analysis::par_map(&checks, |c| {
-            let found = match (c.run)(prj, an) {
-                Ok(found) => found,
-                Err(e) => vec![openecraft_core::issue!(Severity::Error, None, "Check {} failed: {}", c.name, e)],
-            };
-            found
-                .into_iter()
-                .map(|mut i| {
-                    i.check = c.name.clone();
-                    i
-                })
-                .collect::<Vec<_>>()
-        });
-        openecraft_core::checks::apply_settings(prj, found.into_iter().flatten().collect())
+        run_checks(self.checks(), prj, an)
     }
+}
+
+/// Runs `checks` that the project enables (e.g. the checks of [`Plugins::checks`] taken
+/// along to another thread) with the project's settings applied to what they find.
+pub fn run_checks<'a>(checks: impl IntoIterator<Item = &'a Check>, prj: &Project, an: &Analysis) -> Vec<Issue> {
+    let checks: Vec<&Check> = checks.into_iter().filter(|c| openecraft_core::checks::is_enabled(prj, &c.name)).collect();
+    let found = openecraft_core::analysis::par_map(&checks, |c| {
+        let found = match (c.run)(prj, an) {
+            Ok(found) => found,
+            Err(e) => vec![openecraft_core::issue!(Severity::Error, None, "Check {} failed: {}", c.name, e)],
+        };
+        found
+            .into_iter()
+            .map(|mut i| {
+                i.check = c.name.clone();
+                i
+            })
+            .collect::<Vec<_>>()
+    });
+    openecraft_core::checks::apply_settings(prj, found.into_iter().flatten().collect())
 }
 
 #[cfg(test)]
