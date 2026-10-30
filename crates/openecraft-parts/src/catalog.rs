@@ -338,14 +338,15 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (6.2, 55.9, 57.4, 0.02), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Fuse\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
-    // Terminals for the cables between enclosures and from the field.
+    // Terminals for the cables between enclosures and from the field (sizes after Phoenix
+    // Contact PT 16 N, PTPOWER 35 and PT 6).
     for (number, desc, subgroup, price, dims) in [
         ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 75.4, 45.1, 0.03)),
         ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 75.4, 45.1, 0.03)),
         ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 75.4, 45.1, 0.05)),
-        ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 85.0, 60.0, 0.06)),
-        ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 85.0, 60.0, 0.06)),
-        ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 85.0, 60.0, 0.09)),
+        ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 91.6, 62.3, 0.06)),
+        ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 91.6, 62.3, 0.06)),
+        ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 91.6, 62.3, 0.09)),
         ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 57.7, 36.0, 0.02)),
         ("GEN.BB-FEED-185", "Busbar feed-in terminal 1-pole, up to 185 mm², for 60 mm busbar systems", "Feed-through terminal", 38.0, (40.0, 90.0, 70.0, 0.4)),
         ("GEN.TB-240", "Feed-through terminal 240 mm², for cable distribution cabinets", "Feed-through terminal", 24.0, (0.0, 0.0, 0.0, 0.5)),
@@ -354,9 +355,19 @@ Breaking capacity: 100 kA".into();
         let p = c.add(number, desc, "Terminals", subgroup, "X", price, dims, &[(Terminal, "")]);
         if number == "GEN.BB-FEED-185" {
             p.mounting = "Busbar 60 mm".into();
+        } else if dims.0 > 0.0 {
+            // On the rail between end brackets, 6 and 16 mm² with an end plate.
+            let plate = if number.ends_with("-16") { Some("GEN.TB-END-16") } else if number == "GEN.TB-PV-6" { Some("GEN.TB-END-6") } else { None };
+            p.tech_data = match plate {
+                Some(plate) => format!("End bracket: GEN.EB-35\nEnd plate: {plate}"),
+                None => "End bracket: GEN.EB-35".into(),
+            };
+            p.accessories = plate.into_iter().chain(["GEN.EB-35"]).map(String::from).collect();
         }
     }
     c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (2.2, 48.6, 29.1, 0.002), &[]);
+    c.add("GEN.TB-END-6", "End plate for terminal 6 mm²", "Terminals", "Accessories", "X", 0.4, (2.2, 57.7, 36.0, 0.003), &[]);
+    c.add("GEN.TB-END-16", "End plate for terminal 16 mm²", "Terminals", "Accessories", "X", 0.6, (2.2, 75.4, 45.1, 0.005), &[]);
     c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.5, 54.6, 26.0, 0.01), &[]);
     for poles in [2, 3, 10] {
         let number = format!("GEN.JMP-2.5-{poles}");

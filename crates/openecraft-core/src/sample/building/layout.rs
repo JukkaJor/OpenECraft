@@ -190,7 +190,7 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
         panel::place_device(prj, md, tag, p(x, 380.0));
     }
     on_rail(prj, md, 900.0, 240.0, &["=MD+MD-P1", "=MD+MD-P2", "=MD+MD-P3", "=MD+MD-F11", "=MD+MD-F10"]);
-    on_rail(prj, md, 900.0, 750.0, &["=MD+MD-X2"]);
+    on_rail(prj, md, 900.0, 730.0, &["=MD+MD-X2"]);
     on_rail(prj, md, 1250.0, 560.0, &["=MD+MD-T11"]);
     panel::place_accessory(prj, md, "GEN.PE-BAR-10", Face::Plate, p(120.0, 1760.0));
     panel::place_accessory(prj, md, "GEN.HANDLE-SWING", Face::Door, p(890.0, 900.0));

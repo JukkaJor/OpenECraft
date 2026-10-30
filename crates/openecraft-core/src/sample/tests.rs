@@ -306,3 +306,29 @@ fn building_services_route_from_room_to_room() {
     let devices = crate::singleline::devices(&prj, &idx);
     assert!(devices.iter().filter(|d| d.status == crate::singleline::Status::Engineered).count() >= 12);
 }
+
+#[test]
+fn terminal_strips_are_drawn_with_their_models() {
+    use crate::panel::{part_by_number, strip_cells, ItemKind};
+    let mut strips = 0;
+    for ex in &EXAMPLES {
+        let prj = example(ex.key).unwrap();
+        for it in prj.layout.enclosures.iter().flat_map(|e| &e.items).filter(|i| i.kind == ItemKind::Device) {
+            let cells = strip_cells(&prj, it);
+            if cells.is_empty() {
+                continue;
+            }
+            strips += 1;
+            // Every terminal, end plate and end bracket has its 3D model (no plain box).
+            for c in &cells {
+                assert!(part_by_number(&prj, &c.part).is_some_and(|p| p.model_3d.is_some()), "{}: {} {:?}", ex.key, it.tag, c.part);
+            }
+            // Strips on a rail end in end brackets.
+            if part_by_number(&prj, &it.part).is_some_and(|p| p.mounting.starts_with("Mounting rail")) {
+                let bracket = |c: &crate::panel::Cell| part_by_number(&prj, &c.part).is_some_and(|p| p.subgroup == "End bracket");
+                assert!(bracket(&cells[0]) && bracket(&cells[cells.len() - 1]), "{}: {}", ex.key, it.tag);
+            }
+        }
+    }
+    assert!(strips > 20, "{strips}");
+}

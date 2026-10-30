@@ -51,8 +51,8 @@ with a command line, an MCP server, a parts server and a project server.
   surge arresters with the earth at the bottom, 19-inch devices at the rear; DIN rail
   models have a screw at every connection point; terminal blocks are drawn slice by
   slice with their stepped profile, wire entries, pushers or screws and marker fields
-  (generic terminals, end covers and end brackets sized after Phoenix Contact PT,
-  D-ST and CLIPFIX), between end plates and end brackets, and cable ducts with slotted walls and their
+  (generic terminals, end covers and end brackets sized after Phoenix Contact PT, PTPOWER,
+  D-ST, D-PT and CLIPFIX), between end plates and end brackets at both ends of every strip, and cable ducts with slotted walls and their
   cover; cables in the 3D routing end at the
   connection points their cores land on and part into their cores there; routes leave the devices they end at
   instead of running through them. The 3D view hides the walls in front of the camera or the
