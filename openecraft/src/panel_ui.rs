@@ -17,8 +17,10 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 use view3d::default_cam;
 
+mod gpu3d;
 mod plan;
 mod routing_ui;
+mod scene3d;
 mod view3d;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -436,6 +438,11 @@ pub struct PanelUi {
     pub hide_ceiling: bool,
     /// Opacity of the walls seen from the outside in the 3D view, 0 … 1.
     pub wall_opacity: f32,
+    /// The 3D view is drawn by the graphics card where it can (set by the application).
+    pub gpu_3d: bool,
+    gpu: gpu3d::Gpu,
+    /// What the 3D view shows, kept while it does not change.
+    scene: Option<Arc<scene3d::Scene3d>>,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -511,6 +518,9 @@ impl Default for PanelUi {
             hide_front_walls: false,
             hide_ceiling: false,
             wall_opacity: WALL_OPACITY,
+            gpu_3d: false,
+            gpu: gpu3d::Gpu::default(),
+            scene: None,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -593,6 +603,11 @@ impl PanelUi {
             Some(e) if self.busy() => Arc::new(panel::validate(prj, e)),
             _ => an.layout_findings(prj, ei),
         }
+    }
+
+    /// The graphics card could not draw the 3D view: it is drawn by the processor.
+    pub fn gpu_failed(&self) -> bool {
+        self.gpu.failed()
     }
 
     /// True while a gesture is in progress (no undo step yet).

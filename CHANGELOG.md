@@ -34,7 +34,9 @@ with a command line, an MCP server, a parts server and a project server.
   analyses it in the background with a window showing the step and the route it is
   at; the 3D routing searches several times faster. Pipes and cables in a room keep to
   its walls and ceiling instead of crossing it, and their bends keep the bend radius
-  apart. The 3D view draws large rooms about twice as fast, and devices without a 3D
+  apart. The 3D view is drawn by the graphics card (OpenGL 3 / WebGL 2, with a depth
+  buffer and anti-aliasing; Settings › Appearance switches it off), and drawn by the
+  processor it keeps what it shows between frames: large rooms turn smoothly. Devices without a 3D
   model of their own get a detailed, coloured one by what they are (pumps, vessels,
   valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
   (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after

@@ -578,3 +578,21 @@ fn free_names_skip_rooms_and_gaps() {
     assert_eq!(free_name(&layout, "+CAB"), "+CAB2");
     assert_eq!(free_name(&layout, "+ROOM"), "+ROOM2");
 }
+
+#[test]
+fn placed_models_follow_the_frame_of_their_face() {
+    // The frame of a face is made once per item; every point lands as with `to_enclosure`.
+    let prj = crate::sample::example("building_services").unwrap();
+    let mut faces = std::collections::BTreeSet::new();
+    for e in &prj.layout.enclosures {
+        for it in &e.items {
+            let Some(tris) = device_mesh(&prj, it) else { continue };
+            let flip = it.face != Face::Door && mirrors(&face_frame(e, it.face));
+            let each: Vec<Tri> = tris.iter().map(|t| t.map(|v| to_enclosure(e, it, v))).map(|t| if flip { [t[0], t[2], t[1]] } else { t }).collect();
+            assert_eq!(place_triangles(e, it, tris), each, "{} {}", e.name, it.tag);
+            faces.insert((e.is_room(), format!("{:?}", it.face)));
+        }
+    }
+    // On the plate and the door of cabinets, on the floor and the walls of rooms.
+    assert!(faces.contains(&(false, "Plate".into())) && faces.contains(&(true, "Bottom".into())), "{faces:?}");
+}

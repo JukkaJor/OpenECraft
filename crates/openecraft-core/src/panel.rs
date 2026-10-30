@@ -406,14 +406,18 @@ pub fn face_frame(e: &Enclosure, face: Face) -> [V3; 4] {
 /// A point of a face (face x, face y, distance into the enclosure) in enclosure
 /// coordinates.
 pub fn face_point(e: &Enclosure, face: Face, v: V3) -> V3 {
-    let [o, u, w, n] = face_frame(e, face);
+    in_frame(&face_frame(e, face), v)
+}
+
+/// A point of a face in enclosure coordinates, given the face's [`face_frame`]: for
+/// many points of one face (the frame of a room's face takes its outline).
+fn in_frame([o, u, w, n]: &[V3; 4], v: V3) -> V3 {
     [0, 1, 2].map(|k| o[k] + v[0] * u[k] + v[1] * w[k] + v[2] * n[k])
 }
 
 /// The face's frame turns models inside out (left-handed): triangles are flipped.
-fn face_mirrors(e: &Enclosure, face: Face) -> bool {
-    let [_, u, w, n] = face_frame(e, face);
-    crate::parts::vec3::dot(crate::parts::vec3::cross(u, w), n) < 0.0
+fn mirrors([_, u, w, n]: &[V3; 4]) -> bool {
+    crate::parts::vec3::dot(crate::parts::vec3::cross(*u, *w), *n) < 0.0
 }
 
 /// 3D box of an item in enclosure coordinates: x to the right and y downwards from
@@ -421,13 +425,14 @@ fn face_mirrors(e: &Enclosure, face: Face) -> bool {
 pub fn item_box(e: &Enclosure, it: &PanelItem) -> (V3, V3) {
     let mut min = [f32::INFINITY; 3];
     let mut max = [f32::NEG_INFINITY; 3];
+    let frame = face_frame(e, it.face);
     for c in 0..8 {
         let v = [
             if c & 1 == 0 { it.x } else { it.x + it.w },
             if c & 2 == 0 { it.y } else { it.y + it.h },
             if c & 4 == 0 { it.z } else { it.z + it.d },
         ];
-        let q = face_point(e, it.face, v);
+        let q = in_frame(&frame, v);
         for k in 0..3 {
             min[k] = min[k].min(q[k]);
             max[k] = max[k].max(q[k]);
@@ -449,10 +454,14 @@ pub fn to_enclosure(e: &Enclosure, it: &PanelItem, v: V3) -> V3 {
 /// Triangles of a placed model ([`place_mesh`] coordinates) in enclosure coordinates,
 /// keeping their outside.
 pub fn place_triangles(e: &Enclosure, it: &PanelItem, tris: Vec<Tri>) -> Vec<Tri> {
-    let flip = it.face != Face::Door && face_mirrors(e, it.face);
+    // As `to_enclosure`, with the face's frame made once.
+    let frame = face_frame(e, it.face);
+    let flip = it.face != Face::Door && mirrors(&frame);
+    let door_z = e.depth - 2.0 * it.z - it.d;
+    let place = |v: V3| if it.face == Face::Door { [v[0], v[1], door_z + v[2]] } else { in_frame(&frame, v) };
     tris.into_iter()
         .map(|t| {
-            let t = t.map(|v| to_enclosure(e, it, v));
+            let t = t.map(place);
             if flip { [t[0], t[2], t[1]] } else { t }
         })
         .collect()
