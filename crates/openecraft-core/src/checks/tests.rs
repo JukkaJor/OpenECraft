@@ -72,3 +72,27 @@ fn a_wire_ending_in_empty_space_is_reported() {
     assert_eq!(issue.severity, Severity::Warning);
     assert_eq!(issue.target, Some((pi, id)));
 }
+
+#[test]
+fn poles_drawn_one_by_one_are_one_device() {
+    let mut prj = demo_project();
+    let twice = |prj: &Project| {
+        let idx = crate::index::Index::build(prj);
+        let nl = crate::netlist::Netlist::build(prj, true);
+        check(prj, &idx, &nl).iter().filter(|i| i.message().starts_with("=") || i.message().contains("main function placed")).map(|i| i.message()).collect::<Vec<_>>()
+    };
+    assert!(twice(&prj).is_empty());
+    // A second breaker -F1: its part has one breaker function.
+    let pi = prj.pages.iter().position(|p| p.symbols.iter().any(|s| s.tag == "-F1")).unwrap();
+    let mut second = prj.pages[pi].symbols.iter().find(|s| s.tag == "-F1").unwrap().clone();
+    second.id = prj.new_id();
+    second.pos = crate::geom::p(360.0, 200.0);
+    prj.pages[pi].symbols.push(second);
+    assert_eq!(twice(&prj), ["-F1: main function placed 2 times"]);
+    // Two breakers in the parts of -F1: two poles of one device.
+    prj.devices.get_mut("-F1").unwrap().parts[0].count = 2;
+    assert!(twice(&prj).is_empty());
+    // Not when the second is of another kind.
+    prj.pages[pi].symbols.last_mut().unwrap().sym = "fuse".into();
+    assert_eq!(twice(&prj), ["-F1: main function placed 2 times"]);
+}

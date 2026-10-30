@@ -2,11 +2,12 @@
 //! device index, saved state and file name. No UI code, so the rules (dirty, first
 //! page, when the analysis is rebuilt) are unit tested; `App` adds the windows.
 
-use openecraft_api::Plugins;
-use openecraft_core::analysis::{Analysis, Cache};
+use openecraft_api::{Check, Plugins, Report};
+use openecraft_core::analysis::{self, Analysis, Cache, Issue, Progress, Step};
 use openecraft_core::history::History;
 use openecraft_core::index::Index;
 use openecraft_core::model::{PageKind, Project};
+use std::sync::{Arc, Mutex};
 
 pub struct Session {
     pub prj: Project,
@@ -25,16 +26,42 @@ pub struct Session {
     saved: Option<u64>,
     /// File the project was opened from or saved to.
     pub file_name: Option<String>,
+    /// The project is new to the session (at its start or replaced) and has no analysis
+    /// yet: the next one is built in the background (`opening`).
+    replaced: bool,
+    /// The analysis of the opened project being built on another thread.
+    opening: Option<Opening>,
+    /// Without threads: the build of `opening`, run by the next `refresh`.
+    waiting: Option<Box<dyn FnOnce() + Send>>,
+}
+
+/// An analysis built in the background for the history revision `rev` in the language
+/// `lang`.
+struct Opening {
+    rev: u64,
+    lang: openecraft_i18n::Lang,
+    /// Where the build is and, once it is done, its result.
+    shared: Arc<Mutex<Built>>,
+}
+
+/// Where a build in the background starts.
+const STARTED: Progress = Progress { step: Step::Netlists, done: 0, total: 0 };
+
+struct Built {
+    progress: Progress,
+    result: Option<Result<(Analysis, Cache), ()>>,
 }
 
 impl Session {
-    /// Opens `prj` (normalised) on its first schematic page; it counts as saved.
+    /// Opens `prj` (normalised) on its first schematic page; it counts as saved. Its
+    /// analysis is built in the background like that of a project opened later (the
+    /// project at the start of the app, restored from the last session).
     pub fn new(mut prj: Project, file_name: Option<String>) -> Session {
         prj.normalize();
         let history = History::new(&prj);
         let saved = Some(history.state());
         let page = first_schematic(&prj);
-        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved, file_name }
+        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved, file_name, replaced: true, opening: None, waiting: None }
     }
 
     /// Replaces the project; the replacement counts as saved. Its history starts
@@ -50,6 +77,9 @@ impl Session {
         self.history = History::new(&self.prj);
         self.history.rev = rev;
         self.mark_saved();
+        self.replaced = true;
+        self.opening = None;
+        self.waiting = None;
     }
 
     /// Changes since the last save (undo back to the saved state leaves none).
@@ -86,19 +116,90 @@ impl Session {
 
     /// Rebuilds the analysis after a committed change or a change of the language
     /// (reports and checks of `plugins`), and the device index after a committed
-    /// change or, while `editing`, every frame.
+    /// change or, while `editing`, every frame. The analysis of a project just opened
+    /// is built in the background ([`Session::opening`]).
     pub fn refresh(&mut self, plugins: &Plugins, editing: bool) {
-        if self.analysis_rev != self.history.rev || self.analysis_lang != openecraft_i18n::lang() {
-            self.analysis = Analysis::build_with(&self.prj, &mut self.cache);
-            self.analysis.set_reports(plugins.reports().cloned());
-            self.analysis.issues = plugins.check(&self.prj, &self.analysis);
-            self.analysis.issues.sort_by_key(|i| i.severity);
-            self.analysis_rev = self.history.rev;
-            self.analysis_lang = openecraft_i18n::lang();
+        self.take_opened();
+        let lang = openecraft_i18n::lang();
+        if self.opening.is_none() && (self.analysis_rev != self.history.rev || self.analysis_lang != lang) {
+            if self.replaced {
+                self.open_in_background(plugins.checks().cloned().collect(), plugins.reports().cloned().collect());
+            } else {
+                self.analysis = analyse(&self.prj, &mut self.cache, plugins.reports().cloned(), |p, a| plugins.check(p, a), &|_| {});
+                self.analysis_rev = self.history.rev;
+                self.analysis_lang = lang;
+            }
         }
         if editing || self.index_rev != self.history.rev {
             self.index = Index::build(&self.prj);
             self.index_rev = self.history.rev;
+        }
+    }
+
+    /// Where the analysis of the project just opened is while it is built in the
+    /// background: the editor shows it instead of the project.
+    pub fn opening(&self) -> Option<Progress> {
+        let o = self.opening.as_ref()?;
+        Some(o.shared.lock().ok().map(|b| b.progress).unwrap_or(STARTED))
+    }
+
+    /// Starts building the analysis of the project on another thread, or (without
+    /// threads) has the next `refresh` build it, after the progress was shown once.
+    fn open_in_background(&mut self, checks: Vec<Check>, reports: Vec<Report>) {
+        let shared = Arc::new(Mutex::new(Built { progress: STARTED, result: None }));
+        let (rev, lang) = (self.history.rev, openecraft_i18n::lang());
+        let prj = self.prj.clone();
+        let mut cache = std::mem::take(&mut self.cache);
+        let job = {
+            let shared = shared.clone();
+            move || {
+                let progress = |p| {
+                    if let Ok(mut b) = shared.lock() {
+                        b.progress = p;
+                    }
+                };
+                let built = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    openecraft_i18n::with_lang(lang, || {
+                        let an = analyse(&prj, &mut cache, reports, |p, a| openecraft_api::run_checks(&checks, p, a), &progress);
+                        (an, cache)
+                    })
+                }));
+                if let Ok(mut b) = shared.lock() {
+                    b.result = Some(built.map_err(|_| ()));
+                }
+            }
+        };
+        if analysis::threads() < 2 {
+            self.waiting = Some(Box::new(job));
+        } else {
+            std::thread::spawn(job);
+        }
+        self.opening = Some(Opening { rev, lang, shared });
+    }
+
+    /// Takes the analysis built in the background once it is ready (or builds it,
+    /// without threads). One built for an earlier state or language is dropped and the
+    /// next `refresh` builds it again.
+    fn take_opened(&mut self) {
+        if let Some(job) = self.waiting.take() {
+            job();
+        }
+        let Some(o) = &self.opening else { return };
+        let Some(result) = o.shared.lock().ok().and_then(|mut b| b.result.take()) else { return };
+        let (rev, lang) = (o.rev, o.lang);
+        self.opening = None;
+        match result {
+            Ok((analysis, cache)) => {
+                self.cache = cache;
+                if rev == self.history.rev && lang == openecraft_i18n::lang() {
+                    self.analysis = analysis;
+                    self.analysis_rev = rev;
+                    self.analysis_lang = lang;
+                    self.replaced = false;
+                }
+            }
+            // Built again here, where a failure shows.
+            Err(_) => self.replaced = false,
         }
     }
 
@@ -134,6 +235,17 @@ impl Session {
         let Some(p) = self.prj.pages.get(page) else { return 0 };
         p.symbols.len() + p.wires.len() + p.texts.len() + p.shapes.len() + p.dimensions.len() + p.images.len() + p.conn_defs.len() + p.cable_defs.len() + p.macro_boxes.len() + usize::from(p.document.is_some())
     }
+}
+
+/// The analysis of `prj` with the reports and the issues `check` finds, telling
+/// `progress` each step.
+pub fn analyse(prj: &Project, cache: &mut Cache, reports: impl IntoIterator<Item = Report>, check: impl Fn(&Project, &Analysis) -> Vec<Issue>, progress: &(dyn Fn(Progress) + Sync)) -> Analysis {
+    let mut an = Analysis::build_progress(prj, cache, progress);
+    an.set_reports(reports);
+    progress(Progress { step: Step::Checks, done: 0, total: 0 });
+    an.issues = check(prj, &an);
+    an.issues.sort_by_key(|i| i.severity);
+    an
 }
 
 /// The question before an action drops unsaved changes (a new or opened project,

@@ -438,7 +438,7 @@ app.
   will not fit browser local storage and load slowly on the desktop (not measured).
   EPLAN uses SQL Server / Access / SQLite with lazy loading.
 - Where: `openecraft-parts/src/part.rs`, `catalog.rs`, `portal.rs`,
-  `parts-server/catalogs`.
+  `openecraft-parts/catalogs`.
 - Size: XL (content), M (typed mounting data), M (lazy local database).
 
 ### 3.11 Panel layout (Pro Panel)

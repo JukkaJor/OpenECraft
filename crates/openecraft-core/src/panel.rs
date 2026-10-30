@@ -39,7 +39,7 @@ pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, cap
 pub use points::{device_points, point_of, PlacedPoint};
 pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
-    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
     room_of, room_place, rooms, set_outline, turned_place, set_room, stand_on_floor, stands_inside, wall_length_set, walls, Wall, MIN_WALL, ROOM_WALL,
     penetration_link, wall_links, WallLink, MAX_WALL_THICKNESS, PENETRATION_SIZE, PENETRATION_TOP,
 };
@@ -138,7 +138,7 @@ impl Face {
 }
 
 impl Opening {
-    pub const ALL: [Opening; 4] = [Opening::Cutout, Opening::Door, Opening::Window, Opening::Penetration];
+    pub const ALL: [Opening; 5] = [Opening::Cutout, Opening::Door, Opening::Window, Opening::Penetration, Opening::Entry];
 
     pub fn title(self) -> &'static str {
         match self {
@@ -146,6 +146,7 @@ impl Opening {
             Opening::Door => tr("Door"),
             Opening::Window => tr("Window"),
             Opening::Penetration => tr("Wall penetration"),
+            Opening::Entry => tr("Building entry"),
         }
     }
 
@@ -156,6 +157,7 @@ impl Opening {
             Opening::Door => "door",
             Opening::Window => "window",
             Opening::Penetration => "penetration",
+            Opening::Entry => "entry",
         }
     }
 
@@ -164,6 +166,7 @@ impl Opening {
         match self {
             Opening::Door => DOOR_SIZE,
             Opening::Penetration => PENETRATION_SIZE,
+            Opening::Entry => ENTRY_SIZE,
             _ => WINDOW_SIZE,
         }
     }
@@ -660,9 +663,13 @@ pub fn item_rotated(it: &PanelItem, part_h: f32) -> bool {
 /// Triangles of a part's 3D model placed into a device on the plate, in plate
 /// coordinates (x right, y down, z = height above the plate). The model is fitted
 /// into the device box; rotated devices turn the model by 90° about the front axis,
-/// a strip of equal models repeats it. Winding (outside) is preserved.
+/// a strip of equal models repeats it. On the floor the model stands up. Winding
+/// (outside) is preserved.
 pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3]; 3]> {
-    let [mw, mh, _] = mesh.size();
+    let [mw, mh, md] = mesh.size();
+    if it.face == Face::Bottom {
+        return place_mesh_in(mesh, it, 0.0, if item_rotated(it, md) { it.h } else { it.w });
+    }
     let rotated = item_rotated(it, mh);
     let n = if rotated { 1 } else { tiles(it.w, mw) };
     let cell = (if rotated { it.h } else { it.w }) / n as f32;
@@ -679,9 +686,17 @@ pub fn place_mesh_in(mesh: &crate::parts::Mesh3d, it: &PanelItem, at: f32, len: 
     }
     let rotated = item_rotated(it, mh);
     let sz = it.d / md;
+    // On the floor the model stands up out of it with its front (z) towards the
+    // larger y of the floor plan; turned, its depth lies along x.
+    let floor = it.face == Face::Bottom;
+    let turned = floor && item_rotated(it, md);
     let tf = |v: [f32; 3]| {
         let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
-        if rotated {
+        if turned {
+            [it.x + z * (it.w / md), it.y + at + (mw - x) * (len / mw), it.z + y_up * (it.d / mh)]
+        } else if floor {
+            [it.x + at + x * (len / mw), it.y + z * (it.h / md), it.z + y_up * (it.d / mh)]
+        } else if rotated {
             // Quarter turn: model up becomes plate right, model right becomes plate down.
             [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * sz]
         } else {
@@ -733,26 +748,37 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
 /// strips the model of every element in its cell (a box where a part has none).
 /// `None` for items without a model.
 pub fn device_mesh(prj: &Project, it: &PanelItem) -> Option<Vec<[[f32; 3]; 3]>> {
+    device_mesh_painted(prj, it).map(|v| v.into_iter().map(|t| t.0).collect())
+}
+
+/// Like [`device_mesh`], with the colour of each triangle where its model has one.
+pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Option<[u8; 3]>)>> {
     if it.kind != ItemKind::Device {
         return None;
     }
+    // A placed model repeats the model's triangles in their order.
+    let painted = |mesh: &crate::parts::Mesh3d, tris: Vec<Tri>| -> Vec<(Tri, Option<[u8; 3]>)> {
+        let n = mesh.triangles.len().max(1);
+        tris.into_iter().enumerate().map(|(i, t)| (t, mesh.color(i % n))).collect()
+    };
     let cells = strip_cells(prj, it);
     if cells.is_empty() {
-        let tris = place_mesh(part_by_number(prj, &it.part)?.model_3d.as_ref()?, it);
+        let mesh = part_by_number(prj, &it.part)?.model_3d.as_ref()?;
+        let tris = painted(mesh, place_mesh(mesh, it));
         return (!tris.is_empty()).then_some(tris);
     }
     let rotated = part_by_number(prj, &it.part).and_then(|p| p.size()).is_some_and(|s| item_rotated(it, s[1]));
     let mut out = Vec::new();
     for c in cells {
         match part_by_number(prj, &c.part).and_then(|p| p.model_3d.as_ref()) {
-            Some(mesh) => out.extend(place_mesh_in(mesh, it, c.at, c.len)),
+            Some(mesh) => out.extend(painted(mesh, place_mesh_in(mesh, it, c.at, c.len))),
             None => {
                 let (min, max) = if rotated {
                     ([it.x, it.y + c.at, it.z], [it.x + it.w, it.y + c.at + c.len, it.z + it.d])
                 } else {
                     ([it.x + c.at, it.y, it.z], [it.x + c.at + c.len, it.y + it.h, it.z + it.d])
                 };
-                out.extend(box_triangles(min, max));
+                out.extend(box_triangles(min, max).into_iter().map(|t| (t, None)));
             }
         }
     }
@@ -1664,7 +1690,12 @@ pub fn layout_material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
 
 /// Item ids involved in any problem of the checks (warnings, for highlighting).
 pub fn problem_items(prj: &Project, e: &Enclosure) -> BTreeSet<u64> {
-    validate(prj, e).into_iter().filter(|f| f.severity == crate::issue::Severity::Warning).flat_map(|f| f.items).collect()
+    problems_of(&validate(prj, e))
+}
+
+/// Item ids involved in the warnings among `findings` of the checks.
+pub fn problems_of(findings: &[Finding]) -> BTreeSet<u64> {
+    findings.iter().filter(|f| f.severity == crate::issue::Severity::Warning).flat_map(|f| f.items.iter().copied()).collect()
 }
 
 #[cfg(test)]

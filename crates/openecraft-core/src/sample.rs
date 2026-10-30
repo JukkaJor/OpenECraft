@@ -1,11 +1,12 @@
 //! Demo project: direct-on-line motor starter with control circuit and PLC I/O,
-//! and the example projects, from a first circuit to a whole plant.
+//! and the example projects, from a first circuit to a whole building.
 
 use crate::geom::{p, P};
 use crate::model::*;
 use crate::parts::PartsDb;
 use openecraft_i18n::tr_const;
 
+mod building;
 mod cabinets;
 mod lamp;
 mod plant;
@@ -29,7 +30,7 @@ pub struct Example {
 }
 
 /// The example projects, simple ones first.
-pub const EXAMPLES: [Example; 10] = [
+pub const EXAMPLES: [Example; 11] = [
     Example {
         key: "lamp_circuit",
         level: 1,
@@ -99,6 +100,13 @@ pub const EXAMPLES: [Example; 10] = [
         title: tr_const!("10 · Pump room"),
         description: tr_const!("The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall."),
         build: pump_room::project,
+    },
+    Example {
+        key: "building_services",
+        level: 11,
+        title: tr_const!("11 · Building services with water supply and PV storage"),
+        description: tr_const!("A whole building in two rooms: the supply cable and the water main come in through building entries to the house connection box and the remote controlled valve; main distribution with busbars, Hager NH fuse switch disconnectors of three sizes and energy meters; cables and the water pipe pass a wall penetration into the technical room with PLC and pump cabinets, tanks and booster pumps, a compressor with air receiver and dryers and oilers at the outlets, a heat pump with buffer tank and hot water circulation, temperature, pressure and level sensors, a PV system with generator junction box, Victron MultiPlus-II and Inverter RS on the wall, Cerbo GX and Pylontech batteries in a 19-inch rack."),
+        build: building::project,
     },
 ];
 

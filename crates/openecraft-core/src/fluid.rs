@@ -15,11 +15,13 @@ use std::collections::{BTreeMap, BTreeSet};
 pub use crate::model::fluid::{FluidSettings, HoseConfig, LineType, Medium};
 
 impl Medium {
-    pub const ALL: [Medium; 9] = [
+    pub const ALL: [Medium; 11] = [
         Medium::CompressedAir,
         Medium::Vacuum,
         Medium::HydraulicOil,
         Medium::Water,
+        Medium::HotWater,
+        Medium::HeatingWater,
         Medium::Coolant,
         Medium::Lubricant,
         Medium::Gas,
@@ -33,6 +35,8 @@ impl Medium {
             Medium::Vacuum => tr("Vacuum"),
             Medium::HydraulicOil => tr("Hydraulic oil"),
             Medium::Water => tr("Water"),
+            Medium::HotWater => tr("Hot water"),
+            Medium::HeatingWater => tr("Heating water"),
             Medium::Coolant => tr("Coolant"),
             Medium::Lubricant => tr("Lubricant"),
             Medium::Gas => tr("Gas"),
@@ -48,6 +52,8 @@ impl Medium {
             Medium::Vacuum => "vacuum",
             Medium::HydraulicOil => "hydraulic_oil",
             Medium::Water => "water",
+            Medium::HotWater => "hot_water",
+            Medium::HeatingWater => "heating_water",
             Medium::Coolant => "coolant",
             Medium::Lubricant => "lubricant",
             Medium::Gas => "gas",
@@ -245,7 +251,8 @@ pub fn port_kind(def: &SymbolDef, label: &str) -> PortKind {
         "fl_pump" | "fl_compressor" => return if label == "S" { PortKind::Suction } else { PortKind::Supply },
         "fl_hyd_motor" => return PortKind::Working,
         "fl_accumulator" => return PortKind::Pressure,
-        "fl_check" | "fl_shutoff" | "fl_flow_valve" | "fl_regulator" | "fl_frl" | "fl_cooler" => return PortKind::Passage,
+        "fl_check" | "fl_shutoff" | "fl_flow_valve" | "fl_regulator" | "fl_frl" | "fl_cooler" | "fl_receiver" | "fl_dryer" | "fl_lubricator" => return PortKind::Passage,
+        "fl_coupling" => return PortKind::Working,
         "fl_tank" => return PortKind::Return,
         "fl_silencer" => return PortKind::Exhaust,
         "fl_gauge" => return PortKind::Measuring,

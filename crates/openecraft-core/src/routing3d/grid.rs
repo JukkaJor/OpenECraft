@@ -9,7 +9,8 @@
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, Enclosure, ItemKind, PLATE_Z};
-use crate::parts::vec3::{dist, V3};
+use crate::parts::vec3::{add, dist, sub, V3};
+use std::cell::RefCell;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
@@ -21,6 +22,9 @@ const ITEM: u8 = 1;
 const FULL: f32 = 10.0;
 /// Upper limit of cells; a larger line-up gets coarser cells.
 const MAX_CELLS: usize = 1_500_000;
+/// Cost factor of a horizontal step in the open space of a room (see
+/// [`Space::mark_open`]).
+const OPEN: f32 = 10.0;
 
 /// A routing path in the grid and what runs through it.
 #[derive(Clone, Debug, PartialEq)]
@@ -88,6 +92,59 @@ pub struct Space {
     /// Enclosure of each cell column along x (index into the layout), `usize::MAX`
     /// outside.
     column: Vec<usize>,
+    /// Cells in the open space of a room, away from its surfaces; empty in a line-up.
+    open: Vec<bool>,
+}
+
+thread_local! {
+    /// The arrays of the searches on this thread, kept from one search to the next
+    /// until [`release_search`].
+    static SEARCH: RefCell<Search> = RefCell::default();
+}
+
+/// Frees the arrays the searches on this thread kept.
+pub fn release_search() {
+    SEARCH.with_borrow_mut(|s| *s = Search::default());
+}
+
+/// The arrays of the search over all states (cell × direction) and, for the costs to
+/// the goal, over all cells; they grow to the largest space searched. An entry belongs
+/// to the current search only when its stamp is the search's.
+#[derive(Default)]
+struct Search {
+    best: Vec<f32>,
+    prev: Vec<u32>,
+    stamp: Vec<u32>,
+    /// Cost from the cell to the goal without turns, final where `settled`.
+    to_goal: Vec<f32>,
+    reached: Vec<u32>,
+    settled: Vec<u32>,
+    run: u32,
+}
+
+impl Search {
+    /// Starts a search over `cells` cells.
+    fn start(&mut self, cells: usize) -> u32 {
+        if self.reached.len() < cells {
+            *self = Search {
+                best: vec![f32::INFINITY; cells * 7],
+                prev: vec![u32::MAX; cells * 7],
+                stamp: vec![0; cells * 7],
+                to_goal: vec![f32::INFINITY; cells],
+                reached: vec![0; cells],
+                settled: vec![0; cells],
+                run: 0,
+            };
+        }
+        self.run = self.run.wrapping_add(1);
+        if self.run == 0 {
+            for v in [&mut self.stamp, &mut self.reached, &mut self.settled] {
+                v.fill(0);
+            }
+            self.run = 1;
+        }
+        self.run
+    }
 }
 
 impl Space {
@@ -115,7 +172,54 @@ impl Space {
             paths: Vec::new(),
             crossings: Vec::new(),
             column: vec![usize::MAX; n[0]],
+            open: Vec::new(),
         }
+    }
+
+    /// Marks the free cells farther than `distance` from the walls, the ceiling (the
+    /// top of the grid) and the items standing or hanging in the room as its open
+    /// space: running through it horizontally costs more, so pipes and cables keep to
+    /// the walls and the ceiling and drop straight to a device standing in the room.
+    pub(super) fn mark_open(&mut self, distance: f32) {
+        let k = (distance / self.cell).ceil() as u32;
+        let total = self.block.len();
+        let mut dist = vec![u32::MAX; total];
+        let mut queue = std::collections::VecDeque::new();
+        for (idx, d) in dist.iter_mut().enumerate() {
+            if self.block[idx] != 0 || self.coords(idx)[1] == 0 {
+                *d = 0;
+                queue.push_back(idx);
+            }
+        }
+        while let Some(idx) = queue.pop_front() {
+            let d = dist[idx];
+            if d >= k {
+                continue;
+            }
+            let c = self.coords(idx);
+            for axis in 0..3 {
+                for up in [false, true] {
+                    let mut nc = c;
+                    if up {
+                        if c[axis] + 1 >= self.n[axis] {
+                            continue;
+                        }
+                        nc[axis] += 1;
+                    } else {
+                        if c[axis] == 0 {
+                            continue;
+                        }
+                        nc[axis] -= 1;
+                    }
+                    let ni = self.index(nc);
+                    if dist[ni] == u32::MAX {
+                        dist[ni] = d + 1;
+                        queue.push_back(ni);
+                    }
+                }
+            }
+        }
+        self.open = dist.into_iter().map(|d| d == u32::MAX).collect();
     }
 
     /// The grid of a line-up (`pos`: [`panel::positions`]).
@@ -348,8 +452,13 @@ impl Space {
         (self.duct[idx] && req.kind != RouteKind::Tube) || self.path_for(idx, req).is_some()
     }
 
-    fn factor(&self, idx: usize, req: &Request, rules: &RoutingRules) -> f32 {
-        let mut f = if self.channel(idx, req) { 1.0 } else { rules.free_factor.max(1.0) };
+    /// Cost factor of a step into the cell (`axis` 1: up or down).
+    fn factor(&self, idx: usize, axis: usize, req: &Request, rules: &RoutingRules) -> f32 {
+        let channel = self.channel(idx, req);
+        let mut f = if channel { 1.0 } else { rules.free_factor.max(1.0) };
+        if !channel && axis != 1 && self.open.get(idx) == Some(&true) {
+            f *= OPEN;
+        }
         if self.path_for(idx, req).is_some_and(|p| p.capacity > 0.0 && p.used + req.area > p.capacity) {
             f *= FULL;
         }
@@ -388,26 +497,56 @@ impl Space {
     pub fn route(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules) -> Option<Way> {
         let start = self.nearest_passable(a, req)?;
         let goal = self.nearest_passable(b, req)?;
-        let total = self.block.len();
+        // Cables and tubes turn only after half their bend radius straight on (but at
+        // the start), where there is a way like that.
+        let straight = if req.kind == RouteKind::Wire { 0 } else { (req.turn * 0.5 / self.cell).ceil() as usize };
+        SEARCH.with_borrow_mut(|search| {
+            self.search(search, a, b, start, goal, req, rules, straight).or_else(|| (straight > 0).then(|| self.search(search, a, b, start, goal, req, rules, 0)).flatten())
+        })
+    }
+
+    /// The A* search of [`Space::route`] with the arrays of `search`; it turns only
+    /// after `straight` cells straight on since the last turn or from the start.
+    #[allow(clippy::too_many_arguments)]
+    fn search(&self, search: &mut Search, a: V3, b: V3, start: usize, goal: usize, req: &Request, rules: &RoutingRules, straight: usize) -> Option<Way> {
         // States: cell × direction it was entered in (6: none).
-        let mut best = vec![f32::INFINITY; total * 7];
-        let mut prev = vec![u32::MAX; total * 7];
+        let run = search.start(self.block.len());
+        let reach = self.costs_to_goal(search, run, start, goal, req, rules);
+        let Search { best, prev, stamp, to_goal, settled, .. } = search;
         let mut heap = BinaryHeap::new();
         let gc = self.coords(goal);
-        let h = |idx: usize| {
-            let c = self.coords(idx);
-            (0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell
-        };
-        best[start * 7 + 6] = 0.0;
-        heap.push(Reverse((h(start).to_bits(), start * 7 + 6)));
-        let mut found = None;
-        while let Some(Reverse((_, state))) = heap.pop() {
+        // Lower bound of the rest: the cost of the cells to the goal (at least `reach`
+        // where it is not known) and the turns, one fewer than the axes it still lies
+        // apart on when heading towards it along one of them.
+        let h = |state: usize| {
             let (idx, dir) = (state / 7, state % 7);
+            let c = self.coords(idx);
+            let apart = (0..3).filter(|&i| c[i] != gc[i]).count();
+            let towards = dir < 6 && {
+                let axis = dir / 2;
+                if dir % 2 == 1 { c[axis] < gc[axis] } else { c[axis] > gc[axis] }
+            };
+            let turns = if apart == 0 { 0 } else if dir == 6 || towards { apart - 1 } else { apart };
+            let cells = if settled[idx] == run { to_goal[idx] } else { reach.max((0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell) };
+            cells + turns as f32 * req.turn
+        };
+        let key = |g: f32, state: usize| Reverse(((g + h(state)).to_bits(), state));
+        let first = start * 7 + 6;
+        (best[first], prev[first], stamp[first]) = (0.0, u32::MAX, run);
+        heap.push(key(0.0, first));
+        let mut found = None;
+        while let Some(Reverse(popped)) = heap.pop() {
+            let state = popped.1;
+            let (idx, dir) = (state / 7, state % 7);
+            let g = best[state];
+            // A state reached again more cheaply was expanded with its better cost.
+            if key(g, state).0 != popped {
+                continue;
+            }
             if idx == goal {
                 found = Some(state);
                 break;
             }
-            let g = best[state];
             let c = self.coords(idx);
             for nd in 0..6 {
                 let (axis, up) = (nd / 2, nd % 2 == 1);
@@ -427,18 +566,21 @@ impl Space {
                 if !self.passable(ni, req) || (axis == 0 && !self.crossing_ok(idx, ni)) {
                     continue;
                 }
-                let turn = if dir != 6 && dir != nd { req.turn } else { 0.0 };
-                let ng = g + self.cell * self.factor(ni, req, rules) + turn;
+                let turning = dir != 6 && dir != nd;
+                if turning && straight > 0 && !straight_on(prev, state, straight) {
+                    continue;
+                }
+                let turn = if turning { req.turn } else { 0.0 };
+                let ng = g + self.cell * self.factor(ni, axis, req, rules) + turn;
                 let ns = ni * 7 + nd;
-                if ng < best[ns] {
-                    best[ns] = ng;
-                    prev[ns] = state as u32;
-                    heap.push(Reverse(((ng + h(ni)).to_bits(), ns)));
+                if stamp[ns] != run || ng < best[ns] {
+                    (best[ns], prev[ns], stamp[ns]) = (ng, state as u32, run);
+                    heap.push(key(ng, ns));
                 }
             }
         }
         let mut state = found?;
-        let mut cells = vec![state / 7];
+        let mut cells: Vec<usize> = vec![state / 7];
         while prev[state] != u32::MAX {
             state = prev[state] as usize;
             cells.push(state / 7);
@@ -447,9 +589,131 @@ impl Space {
         let mut points = vec![a];
         points.extend(cells.iter().map(|&i| self.centre(i)));
         points.push(b);
-        let points = simplify(points);
+        let mut points = simplify(points);
+        if self.spread_bends(&mut points, req, rules) {
+            let inner: Vec<V3> = std::iter::once(self.centre(start)).chain(points[1..points.len() - 1].iter().copied()).chain(std::iter::once(self.centre(goal))).collect();
+            cells = self.cells_along(&inner);
+        }
         let free = cells.iter().filter(|&&i| !self.channel(i, req)).count() as f32 * self.cell;
         Some(Way { points, cells, free })
+    }
+
+    /// Moves the bends of a way apart where its stretches between bends are shorter
+    /// than half the turn (the bend radius): a stretch moves to the start or the end
+    /// of the way (the corners between move with it) or changes places with the next
+    /// one, where that costs at most a turn more, until no stretch inside the way is
+    /// too short or no move helps. Whether the way changed.
+    fn spread_bends(&self, points: &mut Vec<V3>, req: &Request, rules: &RoutingRules) -> bool {
+        let min = req.turn * 0.5;
+        // How much the stretches between bends lack (the first and the last count not),
+        // and how many lack anything.
+        let lack = |p: &[V3]| -> (usize, f32) {
+            if p.len() < 6 {
+                return (0, 0.0);
+            }
+            p[2..p.len() - 2].windows(2).map(|s| (min - dist(s[0], s[1])).max(0.0)).fold((0, 0.0), |(n, sum), l| (n + usize::from(l > 0.0), sum + l))
+        };
+        let heading = |a: V3, b: V3| [0, 1, 2].map(|i| (b[i] - a[i]).signum() as i8);
+        let turns = |p: &[V3]| p.windows(3).filter(|w| heading(w[0], w[1]) != heading(w[1], w[2])).count();
+        // Cost of the way between the cell centres (`None` where it is blocked).
+        let cost = |p: &[V3]| -> Option<f32> {
+            let inner = &p[1..p.len() - 1];
+            if inner.iter().any(|&q| self.cell_of(q).is_none()) {
+                return None;
+            }
+            let cells = self.cells_along(inner);
+            let free = cells.iter().all(|&i| self.passable(i, req)) && cells.windows(2).all(|w| self.coords(w[0])[0] == self.coords(w[1])[0] || self.crossing_ok(w[0], w[1]));
+            let axis = |a: usize, b: usize| (0..3).find(|&k| self.coords(a)[k] != self.coords(b)[k]).unwrap_or(0);
+            free.then(|| cells.windows(2).map(|w| self.factor(w[1], axis(w[0], w[1]), req, rules)).sum::<f32>() * self.cell + turns(p) as f32 * req.turn)
+        };
+        let mut changed = false;
+        for _ in 0..16 {
+            let now = lack(points);
+            if now.0 == 0 {
+                break;
+            }
+            let Some(base) = cost(points) else { break };
+            let n = points.len();
+            let mut candidates: Vec<Vec<V3>> = Vec::new();
+            // Stretch k (between the cell centres k and k + 1) to the end or to the start,
+            // or changed with the next one.
+            for k in 1..n.saturating_sub(2) {
+                let step = sub(points[k + 1], points[k]);
+                if k + 2 < n - 1 {
+                    let mut alt = points[..=k].to_vec();
+                    alt.extend(points[k + 2..n - 1].iter().map(|q| sub(*q, step)));
+                    alt.extend_from_slice(&points[n - 2..]);
+                    candidates.push(alt);
+                }
+                if k > 1 {
+                    let mut alt = points[..2].to_vec();
+                    alt.extend(points[1..=k].iter().map(|q| add(*q, step)));
+                    alt.extend_from_slice(&points[k + 2..]);
+                    candidates.push(alt);
+                }
+                if k + 2 < n - 1 {
+                    let mut alt = points.clone();
+                    alt[k + 1] = add(points[k], sub(points[k + 2], points[k + 1]));
+                    candidates.push(alt);
+                }
+            }
+            let better = candidates.into_iter().map(simplify).filter(|alt| {
+                let l = lack(alt);
+                (l.0, l.1) < (now.0, now.1) && cost(alt).is_some_and(|c| c <= base + req.turn)
+            });
+            let Some(best) = better.min_by(|a, b| lack(a).1.total_cmp(&lack(b).1)) else { break };
+            *points = best;
+            changed = true;
+        }
+        changed
+    }
+
+    /// The costs from the cells to `goal` without turns (Dijkstra backwards), until
+    /// the one of `start` is known. Gives the highest known cost: the other cells cost
+    /// at least as much.
+    fn costs_to_goal(&self, search: &mut Search, run: u32, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> f32 {
+        let Search { to_goal, reached, settled, .. } = search;
+        let mut heap = BinaryHeap::new();
+        (to_goal[goal], reached[goal]) = (0.0, run);
+        heap.push(Reverse((0.0f32.to_bits(), goal)));
+        let mut reach = 0.0;
+        while let Some(Reverse((d, idx))) = heap.pop() {
+            if settled[idx] == run {
+                continue;
+            }
+            settled[idx] = run;
+            reach = f32::from_bits(d);
+            if idx == start {
+                break;
+            }
+            // Entering this cell from a neighbour costs its factor.
+            let c = self.coords(idx);
+            for nd in 0..6 {
+                let (axis, up) = (nd / 2, nd % 2 == 1);
+                let mut nc = c;
+                if up {
+                    if c[axis] + 1 >= self.n[axis] {
+                        continue;
+                    }
+                    nc[axis] += 1;
+                } else {
+                    if c[axis] == 0 {
+                        continue;
+                    }
+                    nc[axis] -= 1;
+                }
+                let ni = self.index(nc);
+                if settled[ni] == run || !self.passable(ni, req) || (axis == 0 && !self.crossing_ok(ni, idx)) {
+                    continue;
+                }
+                let nd = reach + self.cell * self.factor(idx, axis, req, rules);
+                if reached[ni] != run || nd < to_goal[ni] {
+                    (to_goal[ni], reached[ni]) = (nd, run);
+                    heap.push(Reverse((nd.to_bits(), ni)));
+                }
+            }
+        }
+        reach
     }
 
     /// A way that was routed before (frozen) is still possible: its cells are passable
@@ -514,6 +778,25 @@ fn dist_to_segment(q: V3, a: V3, b: V3) -> f32 {
     let l2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
     let t = if l2 <= f32::EPSILON { 0.0 } else { (((q[0] - a[0]) * ab[0] + (q[1] - a[1]) * ab[1] + (q[2] - a[2]) * ab[2]) / l2).clamp(0.0, 1.0) };
     dist(q, [a[0] + ab[0] * t, a[1] + ab[1] * t, a[2] + ab[2] * t])
+}
+
+/// The way to `state` (in `prev`) came at least `n` steps straight on in its
+/// direction, or straight from the start.
+fn straight_on(prev: &[u32], mut state: usize, n: usize) -> bool {
+    let dir = state % 7;
+    // The state is `n` steps from the last turn when its `n - 1` predecessors came the
+    // same way.
+    for _ in 1..n {
+        let p = prev[state];
+        if p == u32::MAX || p as usize % 7 == 6 {
+            return true;
+        }
+        if p as usize % 7 != dir {
+            return false;
+        }
+        state = p as usize;
+    }
+    true
 }
 
 /// Removes repeated points and points in the middle of straight stretches.

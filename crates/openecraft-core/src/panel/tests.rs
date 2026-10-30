@@ -254,7 +254,7 @@ fn mounting_page_draws_part_models() {
 fn collisions_use_the_3d_models() {
     // Two DIN devices whose boxes overlap only beside the raised fronts: the models
     // (base 60 % deep, front in the middle third) do not touch.
-    let ct = crate::parts::catalog().iter().find(|p| p.number == "GEN.CT-9A-24DC").unwrap().clone();
+    let ct = crate::parts::catalog().iter().find(|p| p.number == "GEN.MPS-4-6.3A").unwrap().clone();
     let parts = vec![ct.clone()];
     let (w, h, d) = (ct.width, ct.height, ct.depth);
     let dev = |id, x: f32, y: f32, z: f32| PanelItem { id, kind: ItemKind::Device, part: ct.number.clone(), x, y, w, h, d, z, ..Default::default() };
@@ -474,6 +474,29 @@ fn models_on_walls_keep_their_outside() {
         let v = volume(face);
         assert!(v.signum() == plate.signum() && (v.abs() - plate.abs()).abs() < 0.01 * plate.abs(), "{face:?}: {v} / {plate}");
     }
+}
+
+#[test]
+fn models_on_the_floor_of_a_room_stand_upright() {
+    let mut prj = Project::default();
+    let room = new_room(&mut prj, "+R", 4000.0, 3000.0, 2800.0);
+    let mut part = crate::parts::catalog().iter().find(|p| p.number == "GEN.TANK-1000L").unwrap().clone();
+    part.number = "T".into();
+    let [w, h, d] = part.size().unwrap();
+    // Standing on the floor its height goes up (stand_on_floor swaps height and depth).
+    let mut it = PanelItem { id: 1, kind: ItemKind::Device, part: part.number.clone(), x: 1000.0, y: 1000.0, w, h, d, face: Face::Bottom, ..Default::default() };
+    stand_on_floor(&room, &mut it);
+    let tris = place_triangles(&room, &it, place_mesh(part.model_3d.as_ref().unwrap(), &it));
+    let ys: Vec<f32> = tris.iter().flatten().map(|v| v[1]).collect();
+    let (top, bottom) = (ys.iter().copied().fold(f32::INFINITY, f32::min), ys.iter().copied().fold(f32::NEG_INFINITY, f32::max));
+    assert!((bottom - room.height).abs() < 1.0 && (bottom - top - h).abs() < 1.0, "from the floor up {h} mm: {top} .. {bottom}");
+    // The vessel's top nozzle is above the middle of its footprint.
+    let nozzle = tris.iter().flatten().min_by(|a, b| a[1].total_cmp(&b[1])).unwrap();
+    assert!((nozzle[0] - (1000.0 + w / 2.0)).abs() < 0.2 * w, "{nozzle:?}");
+    let volume: f32 = tris.iter().map(|t| crate::parts::vec3::dot(t[0], crate::parts::vec3::cross(t[1], t[2])) / 6.0).sum();
+    let plate = PanelItem { face: Face::Plate, w, h, d, ..it.clone() };
+    let flat: f32 = place_triangles(&Enclosure::default(), &plate, place_mesh(part.model_3d.as_ref().unwrap(), &plate)).iter().map(|t| crate::parts::vec3::dot(t[0], crate::parts::vec3::cross(t[1], t[2])) / 6.0).sum();
+    assert_eq!(volume.signum(), flat.signum(), "outside kept");
 }
 
 #[test]

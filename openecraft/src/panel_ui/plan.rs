@@ -542,6 +542,17 @@ impl PanelUi {
                 painter.add(Shape::convex_polygon(gap.to_vec(), ink.gamma_multiply(0.35), Stroke::new(if selected { 2.0 } else { 1.2 }, ink)));
                 continue;
             }
+            if it.opening == Opening::Entry {
+                // The lead-in through the wall with an arrow from outside into the room.
+                let ink = if selected { pal.selected } else { PIPE_COLOR };
+                painter.add(Shape::convex_polygon(gap.to_vec(), ink.gamma_multiply(0.6), Stroke::new(if selected { 2.0 } else { 1.2 }, ink)));
+                let mid = it.x + it.w / 2.0;
+                let stroke = Stroke::new(1.5, ink);
+                painter.line_segment([at(mid, -t - 150.0), at(mid, 120.0)], stroke);
+                painter.line_segment([at(mid, 120.0), at(mid - 50.0, 60.0)], stroke);
+                painter.line_segment([at(mid, 120.0), at(mid + 50.0, 60.0)], stroke);
+                continue;
+            }
             if it.opening == Opening::Door {
                 let leaf = Stroke::new(if selected { 2.0 } else { 1.2 }, ink);
                 painter.line_segment([at(it.x, 0.0), at(it.x, it.w)], leaf);
@@ -650,6 +661,7 @@ impl PanelUi {
             Tool::InnerWalls => tr("Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool."),
             Tool::Opening(Opening::Door) => tr("Click on a wall where the door goes; it swings into the room. Size and position in the properties."),
             Tool::Opening(Opening::Penetration) => tr("Click on an outer wall where the wall penetration goes; cables, tubes and pipes pass through it into the room behind the wall. Size and height in the properties."),
+            Tool::Opening(Opening::Entry) => tr("Click on an outer wall where the building entry goes; cables and pipes from outside the building come in through it. Size and height in the properties."),
             Tool::Opening(_) => tr("Click on a wall where the window goes. Size, position and sill height in the properties."),
             _ => tr("Drag a wall to move it, drag a cabinet to its place (R turns it); double-click a wall to equip it, a cabinet to open it. Del removes the selected inner wall."),
         };

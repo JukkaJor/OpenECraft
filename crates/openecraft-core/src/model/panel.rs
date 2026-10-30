@@ -180,6 +180,10 @@ pub enum Opening {
     /// A wall penetration (core hole, cable transit): cables, tubes and pipes pass
     /// through it into the room behind the wall.
     Penetration,
+    /// A building entry (house lead-in) in an outer wall: the supply cable, the water
+    /// main and other service lines come into the building through it; cables and
+    /// pipes of a device in the room whose other end is outside run to it.
+    Entry,
 }
 
 impl Opening {

@@ -426,6 +426,15 @@ impl B {
     }
 }
 
+/// Fuse link along the open switch blade of a pole at x (single-line fuse switch-disconnector).
+fn fuse_blade(b: &mut B, x: f32) {
+    let (mx, my) = (x - 1.0, -0.2);
+    let (ux, uy) = (-0.414, -0.911);
+    let (nx, ny) = (0.911, -0.414);
+    let c = |s: f32, t: f32| (mx + ux * s + nx * t, my + uy * s + ny * t);
+    b.poly(&[c(-1.7, -0.7), c(1.7, -0.7), c(1.7, 0.7), c(-1.7, 0.7)], true, false);
+}
+
 struct Def {
     key: &'static str,
     name: &'static str,
@@ -865,10 +874,79 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -8.0, "P1").pin(0.0, 8.0, "P2").pin(8.0, -4.0, "S1").pin(8.0, 4.0, "S2");
     v.push(def("ct", "Current transformer", C::Loads, "T", MAIN).build(&mut b));
 
+    // Energy meters: the measured conductors pass through, a transformer-operated
+    // meter takes the voltages and the secondary currents of its transformers.
+    b.rect(-3.0, 0.0, 27.0, 12.0, false).text(12.0, 6.0, "Wh", 3.0, Center);
+    for x in [0.0, 8.0, 16.0, 24.0] {
+        b.l(x, -4.0, x, 0.0).l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "3").pin(16.0, -4.0, "5").pin(24.0, -4.0, "N");
+    b.pin(0.0, 16.0, "2").pin(8.0, 16.0, "4").pin(16.0, 16.0, "6").pin(24.0, 16.0, "N'");
+    v.push(def("kwh3", "Energy meter 3-phase", C::Loads, "P", MAIN).build(&mut b));
+
+    b.rect(-3.0, 0.0, 75.0, 12.0, false).text(36.0, 6.0, "Wh", 3.0, Center);
+    for (i, label) in ["1S1", "1S2", "2S1", "2S2", "3S1", "3S2", "V1", "V2", "V3", "N"].into_iter().enumerate() {
+        let x = i as f32 * 8.0;
+        b.l(x, -4.0, x, 0.0).pin(x, -4.0, label);
+    }
+    v.push(def("kwh3_ct", "Energy meter 3-phase, transformer-operated", C::Loads, "P", MAIN).build(&mut b));
+
     b.l(0.0, -4.0, 0.0, -1.0).l(-3.0, -1.0, 3.0, -1.0).l(-1.5, 1.0, 1.5, 1.0).l(0.0, 1.0, 0.0, 4.0);
     b.text(3.0, -2.6, "+", 1.8, Left);
     b.pin(0.0, -4.0, "+").pin(0.0, 4.0, "-");
     v.push(def("battery", "Battery", C::Loads, "G", MAIN).build(&mut b));
+
+    // PV generator (IEC 60617-06-17-01): a cell with the diagonal, light falling on it.
+    b.l(0.0, -4.0, 0.0, 0.0).rect(-4.0, 0.0, 4.0, 12.0, false).l(-4.0, 12.0, 4.0, 0.0).l(0.0, 12.0, 0.0, 16.0);
+    for y in [1.0, 5.0] {
+        b.l(-10.0, y - 4.0, -6.0, y).poly(&[(-6.0, y), (-7.6, y - 0.4), (-6.4, y - 1.6)], true, true);
+    }
+    b.text(2.0, -2.4, "+", 1.8, Left);
+    b.pin(0.0, -4.0, "+").pin(0.0, 16.0, "-");
+    v.push(def("pv", "PV generator", C::Loads, "G", MAIN).build(&mut b));
+
+    // Hybrid inverter: PV input and battery at the top, alternating current at the bottom.
+    b.rect(-3.0, 0.0, 35.0, 12.0, false).l(-3.0, 12.0, 35.0, 0.0);
+    b.text(6.0, 3.5, "=", 3.5, Center).text(26.0, 8.5, "~", 3.5, Center);
+    for x in [0.0, 8.0, 24.0, 32.0] {
+        b.l(x, -4.0, x, 0.0);
+    }
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "PV+").pin(8.0, -4.0, "PV-").pin(24.0, -4.0, "DC+").pin(32.0, -4.0, "DC-");
+    b.pin(0.0, 16.0, "L").pin(8.0, 16.0, "N").pin(16.0, 16.0, "PE");
+    v.push(def("hybrid_inverter", "Hybrid inverter (PV, battery, AC)", C::Loads, "T", MAIN).build(&mut b));
+
+    b.rect(-3.0, 0.0, 11.0, 12.0, false).l(-3.0, 12.0, 11.0, 0.0);
+    b.text(1.0, 3.5, "=", 3.0, Center).text(7.0, 8.5, "=", 3.0, Center);
+    for x in [0.0, 8.0] {
+        b.l(x, -4.0, x, 0.0).l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "PV+").pin(8.0, -4.0, "PV-").pin(0.0, 16.0, "DC+").pin(8.0, 16.0, "DC-");
+    v.push(def("mppt", "Solar charge controller (MPPT)", C::Loads, "T", MAIN).build(&mut b));
+
+    // Inverter / charger: AC input at the top; AC output and battery at the bottom.
+    b.rect(-3.0, 0.0, 35.0, 12.0, false).l(-3.0, 12.0, 35.0, 0.0);
+    b.text(6.0, 4.0, "~", 3.5, Center).text(26.0, 8.5, "=", 3.5, Center);
+    b.poly(&[(12.0, 6.0), (20.0, 6.0)], false, false).poly(&[(20.0, 6.0), (18.6, 5.2), (18.6, 6.8)], true, true).poly(&[(12.0, 6.0), (13.4, 5.2), (13.4, 6.8)], true, true);
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, 0.0);
+    }
+    for x in [0.0, 8.0, 24.0, 32.0] {
+        b.l(x, 12.0, x, 16.0);
+    }
+    b.pin(0.0, -4.0, "ACin-L").pin(8.0, -4.0, "ACin-N").pin(16.0, -4.0, "PE");
+    b.pin(0.0, 16.0, "ACout1-L").pin(8.0, 16.0, "ACout1-N").pin(24.0, 16.0, "DC+").pin(32.0, 16.0, "DC-");
+    v.push(def("inverter_charger", "Inverter / charger", C::Loads, "T", MAIN).build(&mut b));
+
+    // Valve actuator with motor: common, open and close.
+    b.rect(-3.0, 0.0, 19.0, 10.0, false).circle(8.0, 5.0, 3.5, false).text(8.0, 5.0, "M", 3.0, Center);
+    for x in [0.0, 8.0, 16.0] {
+        b.l(x, -4.0, x, 0.0);
+    }
+    b.pin(0.0, -4.0, "1").pin(8.0, -4.0, "2").pin(16.0, -4.0, "3");
+    v.push(def("actuator", "Valve actuator (open / close)", C::Loads, "M", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- terminals
     b.l(0.0, -4.0, 0.0, -1.0).circle(0.0, 0.0, 1.0, false).l(0.0, 1.0, 0.0, 4.0);
@@ -1209,6 +1287,10 @@ fn build_library() -> Vec<SymbolDef> {
     v.push(def("inst_board", "Distribution board", C::Installation, "A", MAIN).build(&mut b));
 
     // ---------------------------------------------------------------- black boxes
+    b.drect(-4.0, -4.0, 4.0, 4.0).l(0.0, -8.0, 0.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "1").pin(0.0, 8.0, "2");
+    v.push(def("box1", "Black box 1 + 1 connections", C::BlackBox, "A", MAIN).build(&mut b));
+
     b.drect(-4.0, -4.0, 12.0, 4.0);
     b.l(0.0, -8.0, 0.0, -4.0).l(8.0, -8.0, 8.0, -4.0).l(0.0, 4.0, 0.0, 8.0).l(8.0, 4.0, 8.0, 8.0);
     b.pin(0.0, -8.0, "1").pin(8.0, -8.0, "2").pin(0.0, 8.0, "3").pin(8.0, 8.0, "4");
@@ -1291,6 +1373,31 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(0.0, -8.0, 0.0, -6.0).circle(0.0, -2.5, 3.5, false).circle(0.0, 2.5, 3.5, false).l(0.0, 6.0, 0.0, 8.0);
     b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
     v.push(def("sl_trafo", "Transformer (single-line)", C::SingleLine, "T", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -2.0).l(0.0, 2.0, 0.0, 8.0).l(0.0, 2.0, -2.0, -2.4).disconnector_bar(0.0);
+    fuse_blade(&mut b, 0.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_fuse_switch", "Fuse switch-disconnector (single-line)", C::SingleLine, "Q", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -3.0).rect(-3.0, -3.0, 3.0, 3.0, false).text(0.0, 0.0, "Wh", 1.8, Center).l(0.0, 3.0, 0.0, 8.0);
+    three(&mut b);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_meter", "Energy meter (single-line)", C::SingleLine, "P", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -4.0).rect(-4.0, -4.0, 4.0, 4.0, false).l(-4.0, 4.0, 4.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.text(-1.8, -1.8, "=", 2.2, Center).text(1.8, 1.8, "~", 2.2, Center);
+    b.pin(0.0, -8.0, "").pin(0.0, 8.0, "");
+    v.push(def("sl_inverter", "Inverter (single-line)", C::SingleLine, "T", OVERVIEW).build(&mut b));
+
+    b.rect(-4.0, -4.0, 4.0, 4.0, false).l(-4.0, 4.0, 4.0, -4.0).l(0.0, 4.0, 0.0, 8.0);
+    b.l(-9.0, -7.0, -5.5, -3.5).poly(&[(-5.5, -3.5), (-7.1, -3.9), (-5.9, -5.1)], true, true);
+    b.pin(0.0, 8.0, "");
+    v.push(def("sl_pv", "PV generator (single-line)", C::SingleLine, "G", OVERVIEW).build(&mut b));
+
+    b.l(0.0, -8.0, 0.0, -1.0).l(-3.0, -1.0, 3.0, -1.0).l(-1.5, 1.0, 1.5, 1.0).l(0.0, 1.0, 0.0, 3.0);
+    b.pin(0.0, -8.0, "");
+    v.push(def("sl_battery", "Battery (single-line)", C::SingleLine, "G", OVERVIEW).build(&mut b));
 
     // ---------------------------------------------------------------- NFPA / JIC
     b.l(0.0, -4.0, 0.0, -3.0).circle(0.0, 0.0, 3.0, false).l(0.0, 3.0, 0.0, 4.0);
@@ -1619,6 +1726,26 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -8.0, "P").pin(0.0, 8.0, "S");
     v.push(def("fl_compressor", "Compressor", C::Fluid, "GQ", MAIN).build(&mut b));
 
+    // Compressed air treatment and distribution (ISO 1219-1).
+    // Air receiver: a pressure vessel with rounded ends.
+    b.l(0.0, -8.0, 0.0, -6.0).arc(0.0, -3.0, 3.0, 180.0, 360.0).l(-3.0, -3.0, -3.0, 3.0).l(3.0, -3.0, 3.0, 3.0).arc(0.0, 3.0, 3.0, 0.0, 180.0).l(0.0, 6.0, 0.0, 8.0);
+    b.pin(0.0, -8.0, "1").pin(0.0, 8.0, "2");
+    v.push(def("fl_receiver", "Air receiver", C::Fluid, "CM", MAIN).build(&mut b));
+    // Dryer: the diamond of the conditioning devices with the drying agent below.
+    b.l(0.0, -4.0, 0.0, -3.0).poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(-3.0, 0.0, 3.0, 0.0).poly(&[(-1.5, 1.5), (1.5, 1.5), (0.0, 3.0)], true, true);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_dryer", "Air dryer", C::Fluid, "HQ", MAIN).build(&mut b));
+    // Lubricator (oiler): the diamond with the oil drop feed.
+    b.l(0.0, -4.0, 0.0, -3.0).poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, 3.0, 0.0, 4.0);
+    b.l(0.0, -3.0, 0.0, 1.0).circle(0.0, 1.6, 0.6, true);
+    b.pin(0.0, -4.0, "1").pin(0.0, 4.0, "2");
+    v.push(def("fl_lubricator", "Lubricator (oiler)", C::Fluid, "HQ", MAIN).build(&mut b));
+    // Self-sealing quick coupling: the outlet of a compressed air line.
+    b.l(0.0, -4.0, 0.0, -2.0).l(-2.0, -2.0, 2.0, -2.0).arc(0.0, 0.0, 1.4, 180.0, 360.0).l(-2.0, 2.0, 2.0, 2.0).l(-1.4, 0.0, -1.4, 2.0).l(1.4, 0.0, 1.4, 2.0);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("fl_coupling", "Quick coupling (outlet)", C::Fluid, "XM", MAIN).build(&mut b));
+
     b.poly(&[(0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-3.0, 0.0)], true, false).l(0.0, -4.0, 0.0, -3.0).l(0.0, 3.0, 0.0, 4.0);
     b.l(-2.0, 0.0, 2.0, 0.0);
     head(&mut b, 2.8, 0.0, 1.0, 0.0);
@@ -1653,6 +1780,22 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
     v.push(def("pid_control_valve", "Control valve", C::Process, "QN", MAIN).build(&mut b));
 
+    // Valve with an electric actuator (the actuator is a device of its own).
+    bowtie(&mut b, false);
+    b.l(0.0, 0.0, 0.0, -4.0).rect(-2.5, -9.0, 2.5, -4.0, false).text(0.0, -6.5, "M", 2.4, Center);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
+    v.push(def("pid_motor_valve", "Motor-operated valve", C::Process, "QM", MAIN).build(&mut b));
+
+    // In-line flow meter (water meter).
+    b.l(-8.0, 0.0, -4.0, 0.0).circle(0.0, 0.0, 4.0, false).text(0.0, 0.0, "FQ", 2.0, Center).l(4.0, 0.0, 8.0, 0.0);
+    b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
+    v.push(def("pid_flow_meter", "Flow meter", C::Process, "BF", MAIN).build(&mut b));
+
+    // Where a pipe comes from or goes to outside the plant (water main, consumers).
+    b.poly(&[(-6.0, -3.0), (0.0, -3.0), (3.0, 0.0), (0.0, 3.0), (-6.0, 3.0)], true, false).l(3.0, 0.0, 8.0, 0.0);
+    b.pin(8.0, 0.0, "1");
+    v.push(def("pid_connection", "Pipe connection (in / out)", C::Process, "UM", MAIN).build(&mut b));
+
     b.l(-8.0, 0.0, -3.0, 0.0).l(3.0, 0.0, 8.0, 0.0).rect(-3.0, -2.5, 3.0, 2.5, false).l(-3.0, 2.5, 3.0, -2.5);
     b.poly(&[(1.0, -1.6), (3.0, -2.5), (2.2, -0.6)], true, true);
     b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2");
@@ -1662,6 +1805,22 @@ fn build_library() -> Vec<SymbolDef> {
     b.l(-4.0, 0.0, -8.0, 0.0).l(4.0, 0.0, 8.0, 0.0).l(0.0, -4.0, 0.0, -8.0).l(0.0, 4.0, 0.0, 8.0);
     b.pin(-8.0, 0.0, "1").pin(8.0, 0.0, "2").pin(0.0, -8.0, "3").pin(0.0, 8.0, "4");
     v.push(def("pid_heat_exchanger", "Heat exchanger", C::Process, "EP", MAIN).build(&mut b));
+
+    // Heat pump: heat taken in on one side, given off at a higher temperature to the
+    // flow and return on the other.
+    b.rect(-6.0, -6.0, 6.0, 6.0, false).l(-6.0, 6.0, 6.0, -6.0);
+    b.poly(&[(-4.0, -1.0), (-2.0, -3.0), (0.0, -1.0)], false, false).poly(&[(0.0, 1.0), (2.0, 3.0), (4.0, 1.0)], false, false);
+    b.l(6.0, -4.0, 8.0, -4.0).l(6.0, 4.0, 8.0, 4.0);
+    b.pin(8.0, -4.0, "1").pin(8.0, 4.0, "2");
+    v.push(def("pid_heat_pump", "Heat pump", C::Process, "EQ", MAIN).build(&mut b));
+
+    // Buffer tank: hot water out at the top, cold water in at the bottom, flow and
+    // return of the heat generator at the side.
+    b.l(-6.0, -6.0, -6.0, 6.0).l(6.0, -6.0, 6.0, 6.0).arc(0.0, -6.0, 6.0, 180.0, 360.0).arc(0.0, 6.0, 6.0, 0.0, 180.0);
+    b.l(0.0, -16.0, 0.0, -12.0).l(0.0, 12.0, 0.0, 16.0).l(-8.0, -4.0, -6.0, -4.0).l(-8.0, 4.0, -6.0, 4.0);
+    b.dl(-6.0, 0.0, 6.0, 0.0);
+    b.pin(0.0, -16.0, "N1").pin(-8.0, -4.0, "N2").pin(-8.0, 4.0, "N3").pin(0.0, 16.0, "N4");
+    v.push(def("pid_buffer", "Buffer tank with four nozzles", C::Process, "CM", MAIN).build(&mut b));
 
     // Instrument bubble: label = function letters and loop number, e.g. "TIC 101".
     b.circle(0.0, 0.0, 4.0, false).l(-4.0, 0.0, 4.0, 0.0).dl(0.0, 4.0, 0.0, 8.0);

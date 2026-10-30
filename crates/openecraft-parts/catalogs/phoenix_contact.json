@@ -212,7 +212,11 @@
       ],
       "voltage": "24 V DC",
       "current": "5 A",
-      "tech_data": "Input: 100 - 240 V AC"
+      "tech_data": "Input: 100 - 240 V AC",
+      "width": 32,
+      "height": 130,
+      "depth": 125,
+      "weight": 0.9
     },
     {
       "number": "PXC.2904601",
@@ -232,7 +236,11 @@
       ],
       "voltage": "24 V DC",
       "current": "10 A",
-      "tech_data": "Input: 100 - 240 V AC"
+      "tech_data": "Input: 100 - 240 V AC",
+      "width": 40,
+      "height": 130,
+      "depth": 125,
+      "weight": 0.9
     },
     {
       "number": "PXC.2904602",
@@ -252,7 +260,11 @@
       ],
       "voltage": "24 V DC",
       "current": "20 A",
-      "tech_data": "Input: 100 - 240 V AC"
+      "tech_data": "Input: 100 - 240 V AC",
+      "width": 50,
+      "height": 130,
+      "depth": 125,
+      "weight": 0.9
     }
   ]
 }

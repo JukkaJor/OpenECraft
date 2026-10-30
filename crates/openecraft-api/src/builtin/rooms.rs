@@ -135,15 +135,15 @@ pub static COMMANDS: &[Spec] = &[
     },
     Spec {
         name: "add_wall_opening",
-        help: tr_const!("Adds a door, a window or a wall penetration to a wall of a room; a door stands on the floor and swings into the room, the check keeps its swing free of cabinets; cables, tubes and pipes pass through a wall penetration into the room behind the wall"),
+        help: tr_const!("Adds a door, a window, a wall penetration or a building entry to a wall of a room; a door stands on the floor and swings into the room, the check keeps its swing free of cabinets; cables, tubes and pipes pass through a wall penetration into the room behind the wall; cables and pipes from outside the building come in through a building entry"),
         params: &[
             param("room", Kind::Str, ROOM),
-            param("kind", Kind::Str, tr_const!("door, window or penetration")),
+            param("kind", Kind::Str, tr_const!("door, window, penetration or entry")),
             param("wall", Kind::Str, tr_const!("wall1, wall2, …, inner1a, inner1b, … (as listed by list_rooms)")),
             optional("x", Kind::Num, tr_const!("Left edge from the left end of the wall (seen from inside) in mm; centred without")),
             optional("width", Kind::Num, tr_const!("Width in mm")),
             optional("height", Kind::Num, tr_const!("Height in mm")),
-            optional("sill", Kind::Num, tr_const!("Windows and wall penetrations: height of the bottom edge above the floor in mm")),
+            optional("sill", Kind::Num, tr_const!("Windows, wall penetrations and building entries: height of the bottom edge above the floor in mm")),
         ],
         run: add_wall_opening,
     },

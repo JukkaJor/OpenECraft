@@ -2,7 +2,7 @@
 //! mounting plate, the routed cables and tubes, the routing rules and the freezing of
 //! routes for production.
 
-use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
+use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
@@ -33,7 +33,12 @@ pub(super) enum RouteRef {
 pub(super) struct RouteLine {
     pub points: Vec<[f32; 3]>,
     pub color: Color32,
+    /// Second colour of a two-colour wire, drawn as a stripe.
+    pub stripe: Option<Color32>,
+    /// Width in pixels; the least one where the line has a `diameter`.
     pub width: f32,
+    /// Outer diameter (mm) of a wire, cable or tube, drawn in perspective; 0 for none.
+    pub diameter: f32,
     pub on_top: bool,
     pub target: RouteRef,
 }
@@ -161,7 +166,7 @@ impl PanelUi {
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
                 let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, width: if selected { 3.0 } else { 1.5 }, on_top: selected, target: RouteRef::None });
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, on_top: selected, target: RouteRef::None });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -185,7 +190,7 @@ impl PanelUi {
                     ((0, 1, 0), (0, 1, 1)),
                     ((1, 1, 0), (1, 1, 1)),
                 ] {
-                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, width: 1.0, on_top: false, target: RouteRef::None });
+                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, on_top: false, target: RouteRef::None });
                 }
             }
         }
@@ -204,16 +209,10 @@ impl PanelUi {
                         if !self.show_wires && !selected && !done {
                             continue;
                         }
-                        let (color, width) = if selected {
-                            (WIRE_HIGHLIGHT, 3.5)
-                        } else if done {
-                            (WIRE_DONE, 1.5)
-                        } else if selected_wire.is_some() {
-                            (WIRE_COLOR.gamma_multiply(0.3), 1.0)
-                        } else {
-                            (WIRE_COLOR, 1.5)
-                        };
-                        out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Wire(wi) });
+                        let wire = &an.wiring[wi];
+                        let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
+                        let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
+                        out.push(RouteLine { points, color, stripe, width, diameter, on_top: selected, target: RouteRef::Wire(wi) });
                     }
                     (RouteKind::Wire, _) => {}
                     _ => {
@@ -221,8 +220,9 @@ impl PanelUi {
                         if !self.show_wires && !selected {
                             continue;
                         }
-                        let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), (it.diameter * 0.25).clamp(2.0, 5.0)) };
-                        out.push(RouteLine { points, color, width, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        // In the colour of its class, as thick as it is.
+                        let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
+                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, on_top: selected, target: RouteRef::Item(it.key.clone()) });
                     }
                 }
             }

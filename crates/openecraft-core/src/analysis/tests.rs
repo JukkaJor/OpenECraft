@@ -84,3 +84,18 @@ fn par_map_keeps_the_order_and_the_language() {
     let (a, b) = openecraft_i18n::with_lang(openecraft_i18n::Lang::Fr, || join(openecraft_i18n::lang, openecraft_i18n::lang));
     assert_eq!((a, b), (openecraft_i18n::Lang::Fr, openecraft_i18n::Lang::Fr));
 }
+
+#[test]
+fn a_build_tells_its_steps_and_the_routes() {
+    let prj = crate::sample::example("pump_room").unwrap();
+    let seen = Mutex::new(Vec::new());
+    let an = Analysis::build_progress(&prj, &mut Cache::default(), &|p| seen.lock().unwrap().push(p));
+    let seen = seen.into_inner().unwrap();
+    let mut steps: Vec<Step> = seen.iter().map(|p| p.step).collect();
+    steps.dedup();
+    assert_eq!(steps, Step::ALL[..5]);
+    let routes: Vec<&Progress> = seen.iter().filter(|p| p.step == Step::Routing && p.total > 0).collect();
+    assert!(!routes.is_empty());
+    assert!(routes.windows(2).all(|w| w[0].done < w[1].done && w[1].done < w[1].total));
+    assert!(!an.routing.items.is_empty());
+}

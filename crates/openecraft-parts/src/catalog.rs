@@ -133,6 +133,27 @@ Breaking capacity: 10 kA".into();
     p.tech_data = "Power loss: 7 W
 Characteristic: C
 Breaking capacity: 10 kA".into();
+    // House connection box and NH fuse links (fitted into fuse bases and fuse switch
+    // disconnectors: added to their devices, three per device).
+    let p = c.add("GEN.HAK-NH2-315A", "House connection box NH2, 3 fuse bases 400 A, PEN terminal, for wall mounting", sd, "House connection box", "F", 165.0, (300.0, 450.0, 160.0, 7.5), &[(Fuse3, main3)]);
+    p.voltage = "400 V AC".into();
+    p.current = "400 A".into();
+    p.mounting = "Wall mounting".into();
+    p.mounting_data.wall_mount = true;
+    p.tech_data = "Fuse size: NH2\nProtection: IP54\nConnection: up to 240 mm² Al / Cu\nPower loss: 25 W".into();
+    for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0)] {
+        let p = c.add(number, &format!("NH fuse link size {size}, gG, {amps} A, 500 V AC"), sd, "Fuse link", "F", price, (0.0, 0.0, 0.0, 0.2), &[]);
+        p.current = format!("{amps} A");
+        p.mounting.clear();
+        p.tech_data = format!("Fuse size: {size}\nUtilisation category: gG\nBreaking capacity: 120 kA");
+    }
+    let p = c.add("GEN.FUSE-10X38-3P-2A", "Fuse holder 3-pole 10 x 38 mm with fuse links 2 A gG, for voltage taps", sd, "Fuse", "F", 24.0, (54.0, 90.0, 60.0, 0.2), &[(Fuse3, main3)]);
+    p.current = "2 A".into();
+    p.tech_data = "Power loss: 1 W\nUtilisation category: gG".into();
+    let p = c.add("GEN.FUSE-PV-2P-15A", "PV fuse holder 2-pole 10 x 38 mm, 1000 V DC, with gPV fuse links 15 A", sd, "Fuse", "F", 32.0, (36.0, 90.0, 60.0, 0.15), &[(Fuse, "1 2"), (Fuse, "3 4")]);
+    p.voltage = "1000 V DC".into();
+    p.current = "15 A".into();
+    p.tech_data = "Power loss: 2 W\nUtilisation category: gPV".into();
     let p = c.add("GEN.FUSE-5X20-2A", "Fuse holder 5x20 mm with fuse 2 A", sd, "Fuse", "F", 4.2, (8.0, 60.0, 50.0, 0.02), &[(Fuse, "1 2")]);
     p.current = "2 A".into();
     p.tech_data = "Power loss: 0.4 W
@@ -227,6 +248,57 @@ Breaking capacity: 100 kA".into();
     p.power = "7.5 kW".into();
     p.tech_data = "Power loss: 6 W".into();
 
+    let p = c.add("GEN.CT-150-5A", "Current transformer 150/5 A, class 1, 2.5 VA, for cables up to Ø 28 mm", "Measuring instruments", "Current transformer", "T", 34.0, (70.0, 80.0, 65.0, 0.4), &[(CurrentTransformer, "P1 P2 S1 S2")]);
+    p.current = "150 / 5 A".into();
+    let p = c.add("GEN.PV-430W", "PV module 430 Wp, monocrystalline, glass-glass, 1722 x 1134 mm", "Power supplies, transformers", "PV module", "G", 118.0, (1134.0, 1722.0, 30.0, 21.5), &[(PvGenerator, "+ -")]);
+    p.current = "13.9 A (Isc)".into();
+    p.power = "430 Wp".into();
+    p.mounting = "Roof".into();
+    p.tech_data = "Open-circuit voltage: 39.2 V\nVoltage at maximum power: 32.6 V\nCurrent at maximum power: 13.2 A\nEfficiency: 22 %\nMax. system voltage: 1500 V DC".into();
+    let p = c.add("GEN.PLC-CPU", "PLC CPU 24 V DC, 2 x Ethernet (Modbus TCP, EtherCAT master), 1 MB work memory", "PLC", "CPU", "A", 690.0, (60.0, 100.0, 75.0, 0.3), &[(Generic, "L+ M"), (Generic, "X1 X2")]);
+    p.voltage = "24 V DC".into();
+    p.tech_data = "Power loss: 6 W\nCurrent consumption: 250 mA".into();
+    let p = c.add("GEN.ACT-VLV-24V", "Valve actuator 24 V AC/DC, open / close, 90°, 15 Nm, with two end position switches", "Motors", "Valve actuator", "MA", 189.0, (0.0, 0.0, 0.0, 1.1), &[(Actuator, "1 2 3"), (No, "S1 S2"), (No, "S3 S4")]);
+    p.voltage = "24 V AC/DC".into();
+    p.power = "6 W".into();
+    let p = c.add("GEN.LT-HYD-2M", "Hydrostatic level transmitter 0 - 2 m H2O, 4 - 20 mA, 2-wire, 10 m cable", sw, "Transmitter", "B", 245.0, (0.0, 0.0, 0.0, 0.4), &[(Transmitter, "+ -")]);
+    p.voltage = "10 - 30 V DC".into();
+    let p = c.add("GEN.MOT-4KW", "Three-phase motor 4 kW 400 V, 2880 rpm, IE3, foot-mounted", "Motors", "Three-phase motor", "M", 410.0, (280.0, 280.0, 380.0, 26.0), &[(Motor3, "U1 V1 W1 PE")]);
+    p.mounting = "Floor".into();
+    p.mounting_data.floor_mount = true;
+    p.voltage = "400 V".into();
+    p.current = "8 A".into();
+    p.power = "4 kW".into();
+    let p = c.add("GEN.HP-AW-12KW", "Heat pump air / water 12 kW, 400 V, inverter, flow up to 70 °C, indoor unit", "Heating", "Heat pump", "EQ", 9800.0, (600.0, 1800.0, 650.0, 150.0), &[(FluidComponent, "1 2")]);
+    p.mounting = "Floor".into();
+    p.mounting_data.floor_mount = true;
+    p.voltage = "400 V".into();
+    p.current = "10 A".into();
+    p.power = "3.4 kW (12 kW heat)".into();
+    p.tech_data = "Coefficient of performance: 4.2 (A7/W35)\nControl: enable contact, 0 - 10 V setpoint, fault contact\nPower loss: 150 W".into();
+    let p = c.add("GEN.PUMP-CIRC-DN25", "Circulating pump group DN25, high-efficiency wet rotor, 230 V, with shut-off valves and wall bracket", "Fluid power components", "Pump", "GP", 420.0, (250.0, 400.0, 200.0, 7.5), &[(Pump, "S P")]);
+    p.mounting = "Wall".into();
+    p.mounting_data.wall_mount = true;
+    p.voltage = "230 V".into();
+    p.current = "0.4 A".into();
+    for (number, desc) in [
+        ("GEN.TT-PT1000-420", "Temperature transmitter PT1000, 0 - 100 °C, 4 - 20 mA, 2-wire, with immersion sleeve"),
+        ("GEN.TT-OUT-420", "Outdoor temperature transmitter -40 - 60 °C, 4 - 20 mA, 2-wire, wall housing IP65"),
+        ("GEN.PT-16BAR-420", "Pressure transmitter 0 - 16 bar, 4 - 20 mA, 2-wire, G1/4"),
+    ] {
+        let p = c.add(number, desc, sw, "Transmitter", "B", 118.0, (0.0, 0.0, 0.0, 0.2), &[(Transmitter, "+ -")]);
+        p.voltage = "10 - 30 V DC".into();
+    }
+    let p = c.add("GEN.RLY-24DC-1NO", "Interface relay 24 V DC, 1 NO 6 A, with socket", rc, "Relay", "K", 9.8, (6.2, 90.0, 70.0, 0.03), &[(Coil, "A1 A2"), (No, "13 14")]);
+    p.voltage = "24 V DC".into();
+    p.current = "6 A".into();
+    p.tech_data = "Power loss: 0.4 W".into();
+    let p = c.add("GEN.MOT-2.2KW", "Three-phase motor 2.2 kW 400 V, 2850 rpm, IE3, foot-mounted", "Motors", "Three-phase motor", "M", 290.0, (230.0, 250.0, 330.0, 16.0), &[(Motor3, "U1 V1 W1 PE")]);
+    p.mounting = "Floor".into();
+    p.mounting_data.floor_mount = true;
+    p.voltage = "400 V".into();
+    p.current = "4.6 A".into();
+    p.power = "2.2 kW".into();
     let p = c.add("GEN.PS-24DC-5A", "Power supply 230 V AC / 24 V DC 5 A", "Power supplies, transformers", "Power supply", "T", 89.0, (40.0, 125.0, 115.0, 0.6), &[(PowerSupply, "L N PE L+ M")]);
     p.voltage = "230 V AC / 24 V DC".into();
     p.current = "5 A".into();
@@ -266,6 +338,24 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (8.2, 70.0, 50.0, 0.02), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Fuse\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
+    // Terminals for the cables between enclosures and from the field.
+    for (number, desc, subgroup, price, dims) in [
+        ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 70.0, 50.0, 0.03)),
+        ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 70.0, 50.0, 0.03)),
+        ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 70.0, 50.0, 0.05)),
+        ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 85.0, 60.0, 0.06)),
+        ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 85.0, 60.0, 0.06)),
+        ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 85.0, 60.0, 0.09)),
+        ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 60.0, 45.0, 0.02)),
+        ("GEN.BB-FEED-185", "Busbar feed-in terminal 1-pole, up to 185 mm², for 60 mm busbar systems", "Feed-through terminal", 38.0, (40.0, 90.0, 70.0, 0.4)),
+        ("GEN.TB-240", "Feed-through terminal 240 mm², for cable distribution cabinets", "Feed-through terminal", 24.0, (0.0, 0.0, 0.0, 0.5)),
+        ("GEN.TB-PEN-150", "PEN terminal 150 mm², green-yellow with blue marking", "PE terminal", 19.0, (0.0, 0.0, 0.0, 0.4)),
+    ] {
+        let p = c.add(number, desc, "Terminals", subgroup, "X", price, dims, &[(Terminal, "")]);
+        if number == "GEN.BB-FEED-185" {
+            p.mounting = "Busbar 60 mm".into();
+        }
+    }
     c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
     c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.0, 40.0, 36.0, 0.01), &[]);
     for poles in [2, 3, 10] {
@@ -323,14 +413,42 @@ Breaking capacity: 100 kA".into();
         p.mounting = "Floor".into();
         p.mounting_data.floor_mount = true;
     }
+    for (number, desc, subgroup, ident, price, dims, function) in [
+        ("GEN.PUMP-BOOST-DN32", "Multistage booster pump DN32, 6 m³/h at 50 m, vertical, on base plate", "Pump", "GP", 1240.0, (260.0, 720.0, 360.0, 34.0), (Pump, "S P")),
+        ("GEN.TANK-1000L", "Storage tank 1000 l, PE, for drinking water, with overflow and inspection opening", "Vessel", "CM", 890.0, (1100.0, 1650.0, 1100.0, 55.0), (FluidComponent, "N1 N2")),
+        ("GEN.TANK-PRESS-100L", "Diaphragm pressure vessel 100 l, 10 bar, flow-through, for drinking water", "Vessel", "CM", 420.0, (450.0, 760.0, 450.0, 21.0), (FluidComponent, "N1 N2")),
+        ("GEN.TANK-BUFFER-500L", "Buffer storage tank 500 l for hot water, 4 connections, insulated", "Vessel", "CM", 1180.0, (800.0, 1750.0, 800.0, 95.0), (FluidComponent, "N1 N2 N3 N4")),
+        ("GEN.COMP-PISTON-450", "Piston compressor 10 bar, 450 l/min, belt-driven, on base frame, without motor", "Compressor", "GQ", 1650.0, (1100.0, 800.0, 500.0, 78.0), (Pump, "S P")),
+        ("GEN.RECEIVER-270L", "Air receiver 270 l, 11 bar, vertical, with safety valve, gauge and condensate drain", "Air receiver", "CM", 520.0, (600.0, 1500.0, 600.0, 58.0), (FluidComponent, "1 2")),
+        ("GEN.DRYER-REFR-600", "Refrigeration dryer 600 l/min, pressure dew point +3 °C, 230 V AC", "Air dryer", "HQ", 1380.0, (450.0, 750.0, 550.0, 36.0), (FluidComponent, "1 2")),
+    ] {
+        let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[function]);
+        p.mounting = "Floor".into();
+        p.mounting_data.floor_mount = true;
+    }
     // Pipe fittings screwed to the wall of a room.
     for (number, desc, subgroup, ident, price, dims, pins) in [
+        ("GEN.VLV-BALL-DN32", "Ball valve DN32, PN25, brass, with wall bracket", "Shut-off valve", "QM", 48.0, (180.0, 130.0, 150.0, 1.9), "1 2"),
+        ("GEN.VLV-MOT-DN32", "Motorised ball valve DN32, PN16, with wall bracket, for valve actuators ISO 5211", "Shut-off valve", "QM", 156.0, (200.0, 140.0, 160.0, 2.4), "1 2"),
+        ("GEN.CHECK-DN32", "Check valve DN32, PN16, brass, with wall bracket", "Check valve", "RM", 29.0, (140.0, 90.0, 90.0, 0.8), "1 2"),
+        ("GEN.WM-DN32", "Water meter Q3 10 m³/h, DN32, with pulse output and wall bracket", "Flow meter", "BF", 168.0, (260.0, 120.0, 120.0, 2.6), "1 2"),
+        ("GEN.HOUSE-ENTRY-DN32", "House service entry for water pipe DN32, wall sleeve with seal and bracket", "Pipe connection", "UM", 210.0, (180.0, 180.0, 140.0, 3.1), "1"),
+        ("GEN.MANIFOLD-DN32-4", "Distribution manifold DN32 with 4 shut-off valves DN20, wall bracket", "Pipe connection", "UM", 145.0, (500.0, 160.0, 120.0, 3.8), "1"),
+        ("GEN.DRYER-MEMBRANE-G38", "Membrane dryer G3/8 for the point of use, pressure dew point -20 °C, with wall bracket", "Air dryer", "HQ", 310.0, (60.0, 300.0, 70.0, 0.9), "1 2"),
+        ("GEN.FR-G38-WALL", "Filter regulator G3/8, 40 µm, 0.5 - 10 bar, with gauge and wall bracket", "Service unit", "AZ", 86.0, (80.0, 220.0, 90.0, 0.8), "1 2"),
+        ("GEN.LUB-G38", "Lubricator (oiler) G3/8, proportional oil mist, with wall bracket", "Lubricator", "HQ", 64.0, (70.0, 200.0, 80.0, 0.6), "1 2"),
+        ("GEN.VLV-BALL-G12", "Ball valve G1/2 for compressed air, with wall bracket", "Shut-off valve", "QM", 21.0, (90.0, 70.0, 60.0, 0.3), "1 2"),
+        ("GEN.COUPLING-NW72", "Quick coupling NW 7.2, self-sealing, wall outlet", "Quick coupling", "XM", 18.0, (60.0, 80.0, 60.0, 0.2), "1"),
+        ("GEN.INTAKE-FILTER-G1", "Intake filter G1 with silencer for compressors", "Intake filter", "RN", 34.0, (0.0, 0.0, 0.0, 0.4), "1"),
         ("GEN.VLV-BALL-DN25", "Ball valve DN25, PN40, with wall bracket", "Shut-off valve", "QM", 64.0, (160.0, 120.0, 140.0, 1.4), "1 2"),
         ("GEN.GAUGE-0-10BAR", "Pressure gauge 0 - 10 bar, Ø 100 mm, with wall bracket", "Pressure gauge", "BP", 38.0, (110.0, 140.0, 70.0, 0.4), "1"),
     ] {
         let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[(FluidComponent, pins)]);
         p.mounting = "Wall".into();
         p.mounting_data.wall_mount = true;
+        if number == "GEN.MANIFOLD-DN32-4" {
+            p.functions = ["IN", "OUT1", "OUT2", "OUT3", "OUT4"].into_iter().map(|pin| FunctionTemplate::new(FluidComponent, pin)).collect();
+        }
     }
 
     c.add("GEN.RES-1K", "Resistor 1 kΩ 0.6 W", "Passive components", "Resistor", "R", 0.1, (0.0, 0.0, 0.0, 0.0), &[(Generic, "1 2")]);
@@ -420,6 +538,17 @@ Breaking capacity: 100 kA".into();
         ("GEN.CBL-5G2.5", "Power cable 5G2.5, rubber sheathed", "Power cable", 4.1, 0.2, "BN BK GY BU GNYE", "2.5 mm²"),
         ("GEN.CBL-7G1.0", "Control cable 7G1.0, numbered cores", "Control cable", 2.9, 0.11, "1 2 3 4 5 6 GNYE", "1 mm²"),
         ("GEN.CBL-SENS-3X0.34", "Sensor cable M12 3 x 0.34, PUR", "Control cable", 1.6, 0.04, "BN BU BK", "0.34 mm²"),
+        ("GEN.CBL-NAYY-4X150", "Power cable NAYY-J 4 x 150 SE 0.6/1 kV, aluminium, for laying in the ground", "Power cable", 14.5, 2.2, "BN BK GY GNYE", "150 mm²"),
+        ("GEN.CBL-NYY-4X150", "Power cable NYY-J 4 x 150 SM 0.6/1 kV", "Power cable", 52.0, 6.3, "BN BK GY GNYE", "150 mm²"),
+        ("GEN.CBL-NYY-5X35", "Power cable NYY-J 5 x 35 RM 0.6/1 kV", "Power cable", 19.5, 2.2, "BN BK GY BU GNYE", "35 mm²"),
+        ("GEN.CBL-NYY-5X25", "Power cable NYY-J 5 x 25 RM 0.6/1 kV", "Power cable", 14.2, 1.6, "BN BK GY BU GNYE", "25 mm²"),
+        ("GEN.CBL-NYY-5X16", "Power cable NYY-J 5 x 16 RM 0.6/1 kV", "Power cable", 9.6, 1.1, "BN BK GY BU GNYE", "16 mm²"),
+        ("GEN.CBL-NYM-3X10", "Installation cable NYM-J 3 x 10", "Power cable", 5.8, 0.5, "BN BU GNYE", "10 mm²"),
+        ("GEN.CBL-NYM-3X2.5", "Installation cable NYM-J 3 x 2.5", "Power cable", 1.4, 0.15, "BN BU GNYE", "2.5 mm²"),
+        ("GEN.CBL-PV-2X6", "Solar cable H1Z2Z2-K 2 x 1 x 6 mm², 1500 V DC, red / black", "Power cable", 2.6, 0.14, "RD BK", "6 mm²"),
+        ("GEN.CBL-BAT-2X35", "Battery cable H07V-K 2 x 1 x 35 mm², red / black", "Power cable", 9.8, 0.75, "RD BK", "35 mm²"),
+        ("GEN.CBL-BAT-2X70", "Battery cable H07V-K 2 x 1 x 70 mm², red / black", "Power cable", 18.9, 1.45, "RD BK", "70 mm²"),
+        ("GEN.CBL-RJ45-CAT6", "Patch cable RJ45 Cat 6, U/UTP, 4 pairs", "Data cable", 0.9, 0.04, "RJ45", "0.14 mm²"),
     ] {
         let p = c.add(number, desc, "Cables", subgroup, "W", price, (0.0, 0.0, 0.0, kg), &[]);
         p.quantity_unit = "m".into();
@@ -498,7 +627,7 @@ fn rack_parts(c: &mut C) {
     for (number, desc, ident, price, (u, d, kg), functions, power) in [
         ("GEN.RK-SWITCH-24P", "Network switch 19-inch, 24 x RJ45 1 Gbit/s, 4 x SFP, managed, 1 U", "KF", 690.0, (1.0, 250.0, 3.2), &[(Generic, "L N")][..], 25.0),
         ("GEN.RK-PATCH-24P", "Patch panel 19-inch, 24 x RJ45 Cat 6A, shielded, 1 U", "XD", 95.0, (1.0, 120.0, 1.1), &[][..], 0.0),
-        ("GEN.RK-PDU-8", "Power distribution unit 19-inch, 8 sockets 230 V, 16 A, 1 U", "XD", 120.0, (1.0, 60.0, 1.4), &[(Generic, "L N")][..], 0.0),
+        ("GEN.RK-PDU-8", "Power distribution unit 19-inch, 8 sockets 230 V, 16 A, 1 U", "XD", 120.0, (1.0, 60.0, 1.4), &[(SocketOutlet, "L N PE")][..], 0.0),
         ("GEN.RK-SERVER-2U", "Industrial server 19-inch, 2 U, redundant power supply", "KF", 4200.0, (2.0, 550.0, 18.0), &[(Generic, "L N")][..], 350.0),
         ("GEN.RK-UPS-2U", "UPS 19-inch, 1500 VA, line interactive, 2 U", "GU", 980.0, (2.0, 450.0, 22.0), &[(Generic, "L N")][..], 40.0),
     ] {
@@ -569,6 +698,9 @@ enum Shape {
     Terminal,
     /// PLC I/O module: tall block with an LED / connector column.
     Plc,
+    /// Contactor or relay: DIN device with a dark front cap and the switch position
+    /// indicator.
+    Contactor,
     /// Door / field device (pushbutton, lamp, sensor): round front.
     Round,
 }
@@ -582,7 +714,9 @@ fn shape_of(p: &Part) -> Option<Shape> {
         "Digital input module" | "Digital output module" | "Analog input module" | "Analog output module" | "CPU" => Shape::Plc,
         "Circuit breaker" | "Residual current device" | "Motor protection switch" | "Auxiliary switch" | "Main switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" | "Safety relay" | "Frequency converter" | "Soft starter" => Shape::Din { toggle: false, display: true },
-        "Temperature switch" => Shape::Din { toggle: false, display: false },
+        "Temperature switch" | "Current transformer" | "Socket outlet" => Shape::Din { toggle: false, display: false },
+        "Power contactor" | "Relay" | "Auxiliary contact block" | "Overload relay" => Shape::Contactor,
+        "Energy meter" | "Battery monitor" | "Measuring transducer" => Shape::Din { toggle: false, display: true },
         _ if matches!(p.group.as_str(), "Sensors, switches, pushbuttons" | "Signal devices" | "Measuring instruments") => Shape::Round,
         _ => Shape::Din { toggle: false, display: false },
     })
@@ -592,6 +726,11 @@ fn shape_of(p: &Part) -> Option<Shape> {
 fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     if p.group == "Mounting" {
         return mounting::model(p);
+    }
+    if p.width > 0.0 && p.height > 0.0 && p.depth > 0.0 {
+        if let Some(m) = models::model(p) {
+            return Some(m);
+        }
     }
     let shape = shape_of(p)?;
     let (w, h, d) = (p.width, p.height, p.depth);
@@ -604,10 +743,10 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     match shape {
         Shape::Din { toggle, display } => {
             let base = d * 0.6;
-            m3.add_box([0.0, 0.0, 0.0], [w, h, base]);
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, base], models::BODY);
             // Raised front in the middle third
             let (f0, f1) = (h * 0.3, h * 0.7);
-            m3.add_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }]);
+            m3.add_painted_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }], models::BODY);
             rect(&mut prims, w * 0.05, f0, w * 0.95, f1, false);
             // Screw terminals on the steps above and below the front
             let n = ((w / 9.0).floor() as usize).clamp(1, 6);
@@ -616,7 +755,7 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 let cx = pitch * (i as f32 + 0.5);
                 let r = (pitch * 0.28).min(3.0);
                 for cy in [h * 0.15, h * 0.85] {
-                    m3.add_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5]);
+                    m3.add_painted_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5], models::DARK);
                     prims.push(Prim2d::Circle { c: [cx, h - cy], r, fill: false });
                     prims.push(Prim2d::Line { a: [cx - r * 0.7, h - cy], b: [cx + r * 0.7, h - cy] });
                 }
@@ -624,20 +763,26 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
             if toggle {
                 let (tw, th) = ((w * 0.35).min(8.0), h * 0.12);
                 let (cx, cy) = (w / 2.0, h / 2.0);
-                m3.add_box([cx - tw / 2.0, cy - th / 2.0, d * 0.92], [cx + tw / 2.0, cy + th / 2.0, d]);
+                m3.add_painted_box([cx - tw / 2.0, cy - th / 2.0, d * 0.92], [cx + tw / 2.0, cy + th / 2.0, d], models::BLACK);
                 rect(&mut prims, cx - tw / 2.0, cy - th / 2.0, cx + tw / 2.0, cy + th / 2.0, true);
             }
             if display {
                 let (cx, cy) = (w / 2.0, h * 0.58);
                 let (dw, dh) = (w * 0.6, h * 0.08);
-                m3.add_box([cx - dw / 2.0, cy - dh / 2.0, d * 0.92], [cx + dw / 2.0, cy + dh / 2.0, d]);
+                m3.add_painted_box([cx - dw / 2.0, cy - dh / 2.0, d * 0.92], [cx + dw / 2.0, cy + dh / 2.0, d], models::DISPLAY);
                 rect(&mut prims, cx - dw / 2.0, cy - dh / 2.0, cx + dw / 2.0, cy + dh / 2.0, false);
                 prims.push(Prim2d::Circle { c: [cx, h - h * 0.42], r: (w * 0.08).min(3.0), fill: false });
             }
         }
         Shape::Terminal => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.7]);
-            m3.add_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d]);
+            // Grey; protective earth green, neutral blue.
+            let color = match p.subgroup.as_str() {
+                "PE terminal" => [96, 168, 72],
+                "N terminal" => [70, 120, 200],
+                _ => [150, 156, 162],
+            };
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], color);
+            m3.add_painted_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d], color);
             let r = (w * 0.3).min(2.0);
             for cy in [h * 0.18, h * 0.82] {
                 prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
@@ -645,18 +790,32 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
             rect(&mut prims, w * 0.1, h * 0.35, w * 0.9, h * 0.65, false);
         }
         Shape::Plc => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.85]);
-            m3.add_box([w * 0.15, h * 0.08, d * 0.85], [w * 0.85, h * 0.92, d]);
+            // Dark housing, the front connector with its LED column and terminal block.
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.85], models::DARK);
+            m3.add_painted_box([w * 0.15, h * 0.08, d * 0.85], [w * 0.85, h * 0.92, d * 0.97], [104, 110, 120]);
             rect(&mut prims, w * 0.15, h * 0.08, w * 0.85, h * 0.92, false);
             for i in 0..8 {
                 let y = h * 0.14 + i as f32 * h * 0.095;
+                m3.add_painted_box([w * 0.25, h - y - h * 0.03, d * 0.97], [w * 0.4, h - y, d], [72, 196, 92]);
+                m3.add_painted_box([w * 0.5, h - y - h * 0.05, d * 0.97], [w * 0.78, h - y, d * 0.99], [60, 150, 72]);
                 prims.push(Prim2d::Rect { min: [w * 0.25, y], max: [w * 0.4, y + h * 0.03], fill: true });
                 prims.push(Prim2d::Line { a: [w * 0.5, y + h * 0.015], b: [w * 0.75, y + h * 0.015] });
             }
         }
+        Shape::Contactor => {
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], models::BODY);
+            for cy in [h * 0.06, h * 0.94] {
+                m3.add_painted_box([w * 0.1, cy - h * 0.04, d * 0.7], [w * 0.9, cy + h * 0.04, d * 0.72], models::DARK);
+            }
+            m3.add_painted_box([w * 0.06, h * 0.2, d * 0.7], [w * 0.94, h * 0.8, d * 0.96], [112, 116, 122]);
+            m3.add_painted_box([w * 0.38, h * 0.44, d * 0.96], [w * 0.62, h * 0.56, d], [232, 232, 228]);
+            m3.add_painted_box([w * 0.15, h * 0.66, d * 0.96], [w * 0.85, h * 0.74, d * 0.98], [228, 228, 224]);
+            rect(&mut prims, w * 0.06, h * 0.2, w * 0.94, h * 0.8, false);
+            rect(&mut prims, w * 0.38, h * 0.44, w * 0.62, h * 0.56, true);
+        }
         Shape::Round => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.8]);
-            m3.add_box([w * 0.15, h * 0.15, d * 0.8], [w * 0.85, h * 0.85, d]);
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.8], models::DARK);
+            m3.add_painted_box([w * 0.15, h * 0.15, d * 0.8], [w * 0.85, h * 0.85, d], [188, 192, 198]);
             prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.42, fill: false });
             prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.3, fill: true });
         }
@@ -664,6 +823,7 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     Some((Model2d { width: w, height: h, prims }, m3))
 }
 
+mod models;
 mod mounting;
 
 #[cfg(test)]

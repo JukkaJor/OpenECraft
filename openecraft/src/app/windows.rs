@@ -1,8 +1,10 @@
 //! The dialogs that stay windows (project and page properties, part selection, export
-//! parameters, workspaces), the Reports pane and the keyboard shortcuts.
+//! parameters, workspaces), the progress of opening a project, the Reports pane and the
+//! keyboard shortcuts.
 
 use super::*;
 use crate::shortcuts::Shortcut;
+use openecraft_core::analysis::{Progress, Step};
 
 impl App {
     pub(super) fn windows(&mut self, ctx: &egui::Context) {
@@ -15,6 +17,29 @@ impl App {
         self.parts_management_and_part_selection_window(ctx);
         self.page_properties_window(ctx);
         self.section_properties_window(ctx);
+    }
+
+    /// What is done while a project opens (its analysis is built in the background):
+    /// the project, the step and how far it is, instead of the panes.
+    pub(super) fn opening_window(&mut self, ui: &mut egui::Ui, progress: Progress) {
+        let ctx = ui.ctx().clone();
+        egui::CentralPanel::default().show(ui, |_| {});
+        let steps = Step::ALL;
+        let i = steps.iter().position(|s| *s == progress.step).unwrap_or(0);
+        let within = if progress.total > 0 { progress.done as f32 / progress.total as f32 } else { 0.0 };
+        let step = if progress.total > 0 { tr_fmt!("{} ({} of {})", progress.step.title(), progress.done + 1, progress.total) } else { progress.step.title().to_string() };
+        egui::Modal::new(egui::Id::unique("opening_project")).show(&ctx, |ui| {
+            ui.set_width(420.0);
+            ui.heading(tr("Opening the project"));
+            ui.label(RichText::new(&self.session.prj.info.name).strong());
+            if let Some(file) = &self.session.file_name {
+                ui.weak(openecraft_ui::io::short_name(file));
+            }
+            ui.add_space(8.0);
+            ui.label(tr_fmt!("Step {} of {}: {}", i + 1, steps.len(), step));
+            ui.add(egui::ProgressBar::new((i as f32 + within) / steps.len() as f32).animate(true));
+        });
+        ctx.request_repaint_after(std::time::Duration::from_millis(50));
     }
 
     /// Asks before a new or opened project replaces one with unsaved changes or the

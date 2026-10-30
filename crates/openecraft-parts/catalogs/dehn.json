@@ -4,7 +4,7 @@
     "name": "DEHN",
     "manufacturer": "DEHN",
     "version": "2026.1",
-    "description": "Surge protective devices: DEHNguard M (type 2), DEHNventil M (type 1 + 2), DEHNshield (type 1 + 2 + 3), DEHNrail M (type 3), BLITZDUCTOR XT for data lines, spare modules. Curated from public data sheets; check against the manufacturer data before ordering."
+    "description": "Surge protective devices: DEHNguard M (type 2), DEHNventil M (type 1 + 2), DEHNshield (type 1 + 2 + 3), DEHNrail M (type 3), DEHNguard M YPV for PV systems, BLITZDUCTOR XT for data lines, spare modules. Curated from public data sheets; check against the manufacturer data before ordering."
   },
   "parts": [
     {
@@ -35,7 +35,11 @@
       "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0",
       "accessories": [
         "DEH.952010"
-      ]
+      ],
+      "width": 54,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.36
     },
     {
       "number": "DEH.952305",
@@ -69,7 +73,11 @@
       "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0\nRemote signalling: floating changeover contact",
       "accessories": [
         "DEH.952010"
-      ]
+      ],
+      "width": 54,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.36
     },
     {
       "number": "DEH.952400",
@@ -103,7 +111,11 @@
       "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0",
       "accessories": [
         "DEH.952010"
-      ]
+      ],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.952405",
@@ -141,7 +153,11 @@
       "tech_data": "Type: 2 (T2)\nNominal discharge current In: 20 kA\nMax. discharge current Imax: 40 kA\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0\nRemote signalling: floating changeover contact",
       "accessories": [
         "DEH.952010"
-      ]
+      ],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.952310",
@@ -176,7 +192,11 @@
       "accessories": [
         "DEH.952010",
         "DEH.952050"
-      ]
+      ],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.952315",
@@ -215,7 +235,11 @@
       "accessories": [
         "DEH.952010",
         "DEH.952050"
-      ]
+      ],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.952200",
@@ -242,7 +266,11 @@
       "accessories": [
         "DEH.952010",
         "DEH.952050"
-      ]
+      ],
+      "width": 36,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.24
     },
     {
       "number": "DEH.952205",
@@ -273,7 +301,11 @@
       "accessories": [
         "DEH.952010",
         "DEH.952050"
-      ]
+      ],
+      "width": 36,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.24
     },
     {
       "number": "DEH.951300",
@@ -301,7 +333,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0",
-      "accessories": []
+      "accessories": [],
+      "width": 108,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.75
     },
     {
       "number": "DEH.951305",
@@ -333,7 +369,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+0\nRemote signalling: floating changeover contact",
-      "accessories": []
+      "accessories": [],
+      "width": 108,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.75
     },
     {
       "number": "DEH.951400",
@@ -365,7 +405,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 4+0",
-      "accessories": []
+      "accessories": [],
+      "width": 144,
+      "height": 90,
+      "depth": 66,
+      "weight": 1.0
     },
     {
       "number": "DEH.951310",
@@ -397,7 +441,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 (T1 + T2)\nLightning impulse current Iimp: 25 kA per pole\nVoltage protection level Up: 1.5 kV\nCircuit: 3+1",
-      "accessories": []
+      "accessories": [],
+      "width": 144,
+      "height": 90,
+      "depth": 66,
+      "weight": 1.0
     },
     {
       "number": "DEH.941300",
@@ -425,7 +473,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 3+0",
-      "accessories": []
+      "accessories": [],
+      "width": 54,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.36
     },
     {
       "number": "DEH.941400",
@@ -457,7 +509,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 4+0",
-      "accessories": []
+      "accessories": [],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.941310",
@@ -489,7 +545,11 @@
       ],
       "voltage": "255 V AC",
       "tech_data": "Type: 1 + 2 + 3 (T1 + T2 + T3)\nLightning impulse current Iimp: 12.5 kA per pole\nCircuit: 3+1",
-      "accessories": []
+      "accessories": [],
+      "width": 72,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.48
     },
     {
       "number": "DEH.953200",
@@ -512,7 +572,11 @@
         }
       ],
       "voltage": "230 V AC",
-      "tech_data": "Type: 3 (T3)\nCircuit: 1+1"
+      "tech_data": "Type: 3 (T3)\nCircuit: 1+1",
+      "width": 36,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.24
     },
     {
       "number": "DEH.953205",
@@ -539,7 +603,11 @@
         }
       ],
       "voltage": "230 V AC",
-      "tech_data": "Type: 3 (T3)\nCircuit: 1+1"
+      "tech_data": "Type: 3 (T3)\nCircuit: 1+1",
+      "width": 36,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.24
     },
     {
       "number": "DEH.952010",
@@ -598,6 +666,68 @@
       "identifier": "F",
       "mounting": "Mounting rail 35 mm",
       "functions": []
+    },
+    {
+      "number": "DEH.952515",
+      "type_number": "DG M YPV SCI 1000 FM",
+      "order_number": "952515",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M YPV SCI 1000 FM, type 2, for PV generators up to 1000 V DC, with remote signalling contact",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "voltage": "1000 V DC",
+      "current": "12.5 kA (8/20 µs)",
+      "tech_data": "Type: 2\nMax. PV voltage: 1000 V DC\nNominal discharge current: 12.5 kA\nVoltage protection level: 4 kV\nModules: 3",
+      "price": 286.0,
+      "width": 54,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.45,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L+ PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L- PE"
+        },
+        {
+          "kind": "Changeover",
+          "pins": "11 12 14"
+        }
+      ]
+    },
+    {
+      "number": "DEH.952510",
+      "type_number": "DG M YPV SCI 1000",
+      "order_number": "952510",
+      "manufacturer": "DEHN",
+      "description": "Surge arrester DEHNguard M YPV SCI 1000, type 2, for PV generators up to 1000 V DC",
+      "group": "Safety devices",
+      "subgroup": "Surge protection",
+      "identifier": "F",
+      "voltage": "1000 V DC",
+      "current": "12.5 kA (8/20 µs)",
+      "tech_data": "Type: 2\nMax. PV voltage: 1000 V DC\nNominal discharge current: 12.5 kA\nVoltage protection level: 4 kV\nModules: 3",
+      "price": 248.0,
+      "width": 54,
+      "height": 90,
+      "depth": 66,
+      "weight": 0.45,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "SurgeProtection",
+          "pins": "L+ PE"
+        },
+        {
+          "kind": "SurgeProtection",
+          "pins": "L- PE"
+        }
+      ]
     }
   ]
 }

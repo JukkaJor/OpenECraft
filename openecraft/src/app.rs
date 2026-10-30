@@ -113,6 +113,10 @@ struct ShellState {
     placement: crate::dock::Placement,
     /// Placement and floating panes of the other workspaces.
     sides: crate::dock::Sides,
+    /// Opacity of the walls in front in the 3D view of the panel layout, 0 … 1.
+    wall_opacity: f32,
+    /// The title bar shows the frame time and the frames per second.
+    frame_stats: bool,
 }
 
 impl Default for ShellState {
@@ -128,6 +132,8 @@ impl Default for ShellState {
             docks: Vec::new(),
             placement: crate::dock::Placement::default(),
             sides: crate::dock::Sides::default(),
+            wall_opacity: crate::panel_ui::WALL_OPACITY,
+            frame_stats: false,
         }
     }
 }
@@ -145,6 +151,14 @@ impl ShellState {
             self.tablet_once = false;
         }
     }
+}
+
+/// What a docked pane asked for while the panes were drawn (`App::in_dock`).
+#[derive(Clone, Debug, PartialEq)]
+enum Deferred {
+    Cmd(Cmd),
+    /// A device shown in the panel layout (`true`: in the 3D view).
+    Focus(String, bool),
 }
 
 /// An action that replaces the project or ends the app: with unsaved changes it waits
@@ -230,6 +244,12 @@ pub struct App {
     confirm_remove_layout: Option<String>,
     /// Example project chosen in a list, opened by `Cmd::OpenExample`.
     pending_example: Option<&'static str>,
+    /// The docked panes are being drawn (their tree is taken out of `dock`): commands
+    /// and device jumps wait in `deferred` until it is back.
+    in_dock: bool,
+    deferred: Vec<Deferred>,
+    /// Frame time and frames per second for the title bar.
+    frame_stats: crate::frame_stats::FrameStats,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
     export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Binding whose new shortcut is being recorded.
@@ -467,6 +487,9 @@ impl App {
             confirm_delete_page: None,
             confirm_remove_layout: None,
             pending_example: None,
+            in_dock: false,
+            deferred: Vec::new(),
+            frame_stats: crate::frame_stats::FrameStats::default(),
             export_form: None,
             recording: None,
             show_cables: false,
@@ -711,6 +734,16 @@ impl App {
         crate::dock::find(&self.dock, pane).is_some() || self.floating.contains(&pane)
     }
 
+    /// Shows a placed device in the panel layout (`three_d`: in the 3D view).
+    pub(super) fn focus_device(&mut self, tag: &str, three_d: bool) {
+        if self.in_dock {
+            self.deferred.push(Deferred::Focus(tag.to_string(), three_d));
+        } else if self.panel_ui.focus_device(&self.session.prj, tag, three_d) {
+            self.set_workspace(Workspace::Panel);
+            self.show_pane(Pane::LayoutView);
+        }
+    }
+
     /// Switches the workspace: its own arrangement of the panes comes back.
     pub(super) fn set_workspace(&mut self, w: Workspace) {
         match w {
@@ -887,11 +920,13 @@ fn drag_source<P: std::any::Any + Send + Sync>(ui: &mut egui::Ui, id: egui::Id, 
 }
 
 impl eframe::App for App {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        self.frame_stats.record(ctx.input(|i| i.time), frame.info().cpu_usage);
         self.dark = ui.visuals().dark_mode;
         crate::style::set_dark(self.dark);
         self.apply_scale(&ctx);
+        self.panel_ui.wall_opacity = self.shell.wall_opacity;
         // Closing the window with unsaved changes asks first (the second close, after
         // the answer, goes through).
         if ctx.input(|i| i.viewport().close_requested()) && !self.closing && self.discard.request(self.session.dirty(), Replace::Close).is_none() {
@@ -903,6 +938,17 @@ impl eframe::App for App {
         self.autosave.poll(&mut self.session, &mut self.parts_db);
         let actions = self.parts_ui.poll_server(&ctx, &mut self.parts_db);
         self.parts_actions(&ctx, actions);
+
+        // The device index follows every committed change; while an edit may be in
+        // progress (mouse down, text field focused, drag) it is rebuilt every frame.
+        let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();
+        self.session.refresh(&self.plugins, editing);
+        // A project just opened shows once it is analysed; until then only what is
+        // being done.
+        if let Some(progress) = self.session.opening() {
+            self.opening_window(ui, progress);
+            return;
+        }
         self.finish_part_drop(&ctx);
         self.key_tips(&ctx);
         self.command_keys(&ctx);
@@ -911,11 +957,6 @@ impl eframe::App for App {
         let now = (self.session.page, self.editor.selection.iter().copied().collect::<Vec<u64>>());
         self.scroll_nav = now != self.last_selection;
         self.last_selection = now;
-
-        // The device index follows every committed change; while an edit may be in
-        // progress (mouse down, text field focused, drag) it is rebuilt every frame.
-        let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();
-        self.session.refresh(&self.plugins, editing);
         let idx = std::mem::take(&mut self.session.index);
 
         if openecraft_i18n::lang() != self.shown_lang {
@@ -934,6 +975,12 @@ impl eframe::App for App {
                 egui::CentralPanel::default().frame(egui::Frame::NONE.fill(fill)).show(ui, |ui| self.docked(ui, &idx));
             }
         }
+        for d in std::mem::take(&mut self.deferred) {
+            match d {
+                Deferred::Cmd(cmd) => self.run(&ctx, cmd),
+                Deferred::Focus(tag, three_d) => self.focus_device(&tag, three_d),
+            }
+        }
         self.open_requests(false);
         self.layout_requests(&ctx, &idx);
         self.session.index = idx;
@@ -950,11 +997,14 @@ impl eframe::App for App {
         }
         self.check_locks(&ctx);
 
-        let title = format!(
+        let mut title = format!(
             "OpenECraft – {}{}",
             self.session.prj.info.name,
             if self.session.dirty() { " *" } else { "" }
         );
+        if let Some(stats) = self.frame_stats.text().filter(|_| self.shell.frame_stats) {
+            title = format!("{title}   ({stats})");
+        }
         if title != self.title {
             openecraft_ui::io::set_title(&ctx, &title);
             self.title = title;

@@ -4,7 +4,7 @@
     "name": "Hager",
     "manufacturer": "Hager",
     "version": "2026.1",
-    "description": "Miniature circuit breakers MBN / MCN, residual current circuit breakers CDA, installation contactors ESC and switch disconnectors SBN. Curated from public data sheets; check against the manufacturer data before ordering."
+    "description": "Miniature circuit breakers MBN / MCN, residual current circuit breakers CDA, installation contactors ESC, switch disconnectors SBN, NH fuse switch disconnectors LT for 60 mm busbar systems and energy meters ECR. Curated from public data sheets; check against the manufacturer data before ordering."
   },
   "parts": [
     {
@@ -25,7 +25,11 @@
       ],
       "current": "6 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MBN110",
@@ -45,7 +49,11 @@
       ],
       "current": "10 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MBN116",
@@ -65,7 +73,11 @@
       ],
       "current": "16 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: B\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MCN106",
@@ -85,7 +97,11 @@
       ],
       "current": "6 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MCN110",
@@ -105,7 +121,11 @@
       ],
       "current": "10 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MCN116",
@@ -125,7 +145,11 @@
       ],
       "current": "16 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MCN120",
@@ -145,7 +169,59 @@
       ],
       "current": "20 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1"
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
+    },
+    {
+      "number": "HAG.MCN132",
+      "type_number": "MCN132",
+      "order_number": "MCN132",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C32, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "32 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
+    },
+    {
+      "number": "HAG.MCN150",
+      "type_number": "MCN150",
+      "order_number": "MCN150",
+      "manufacturer": "Hager",
+      "description": "Miniature circuit breaker 1P C50, 6 kA, 230/400 V AC, 1 module",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Breaker1",
+          "pins": "1 2"
+        }
+      ],
+      "current": "50 A",
+      "voltage": "230/400 V AC",
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 1\nModules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.MCN316",
@@ -165,7 +241,11 @@
       ],
       "current": "16 A",
       "voltage": "400 V AC",
-      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 3\nModules: 3"
+      "tech_data": "Characteristic: C\nBreaking capacity: 6 kA\nPoles: 3\nModules: 3",
+      "width": 52.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.36
     },
     {
       "number": "HAG.CDA440D",
@@ -185,7 +265,11 @@
       ],
       "current": "40 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4"
+      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4",
+      "width": 70.0,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.48
     },
     {
       "number": "HAG.CDA463D",
@@ -205,7 +289,11 @@
       ],
       "current": "63 A",
       "voltage": "230/400 V AC",
-      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4"
+      "tech_data": "Rated residual current: 30 mA\nType: A\nPoles: 4\nModules: 4",
+      "width": 70.0,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.48
     },
     {
       "number": "HAG.ESC225",
@@ -233,7 +321,11 @@
       ],
       "voltage": "230 V AC",
       "current": "25 A (AC-1)",
-      "tech_data": "Modules: 1"
+      "tech_data": "Modules: 1",
+      "width": 17.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.12
     },
     {
       "number": "HAG.ESC425",
@@ -257,7 +349,11 @@
       ],
       "voltage": "230 V AC",
       "current": "25 A (AC-1)",
-      "tech_data": "Modules: 2"
+      "tech_data": "Modules: 2",
+      "width": 35.0,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.24
     },
     {
       "number": "HAG.ESC440",
@@ -281,7 +377,11 @@
       ],
       "voltage": "230 V AC",
       "current": "40 A (AC-1)",
-      "tech_data": "Modules: 3"
+      "tech_data": "Modules: 3",
+      "width": 52.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.36
     },
     {
       "number": "HAG.SBN340",
@@ -301,7 +401,11 @@
       ],
       "current": "40 A",
       "voltage": "400 V AC",
-      "tech_data": "Poles: 3"
+      "tech_data": "Poles: 3",
+      "width": 52.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.36
     },
     {
       "number": "HAG.SBN363",
@@ -321,7 +425,159 @@
       ],
       "current": "63 A",
       "voltage": "400 V AC",
-      "tech_data": "Poles: 3"
+      "tech_data": "Poles: 3",
+      "width": 52.5,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.36
+    },
+    {
+      "number": "HAG.LT0057",
+      "type_number": "LT0057",
+      "order_number": "LT0057",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector size NH000, 3P, 100 A, for 60 mm busbar systems",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "voltage": "690 V AC",
+      "current": "100 A",
+      "tech_data": "Fuse size: NH000\nBusbar system: 60 mm\nConnection: box terminal up to 50 mm²\nPower loss: 7.5 W\nStandard: IEC 60947-3",
+      "price": 96.0,
+      "width": 50,
+      "height": 210,
+      "depth": 100,
+      "weight": 0.9,
+      "mounting": "Busbar 60 mm",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 7.5
+      }
+    },
+    {
+      "number": "HAG.LT056",
+      "type_number": "LT056",
+      "order_number": "LT056",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector size NH00, 3P, 160 A, for 60 mm busbar systems",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "voltage": "690 V AC",
+      "current": "160 A",
+      "tech_data": "Fuse size: NH00\nBusbar system: 60 mm\nConnection: box terminal 2.5 - 95 mm²\nPower loss: 12.0 W\nStandard: IEC 60947-3",
+      "price": 152.0,
+      "width": 106,
+      "height": 210,
+      "depth": 115,
+      "weight": 1.6,
+      "mounting": "Busbar 60 mm",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 12.0
+      }
+    },
+    {
+      "number": "HAG.LT253",
+      "type_number": "LT253",
+      "order_number": "LT253",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector size NH2, 3P, 400 A, for 60 mm busbar systems",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "voltage": "690 V AC",
+      "current": "400 A",
+      "tech_data": "Fuse size: NH2\nBusbar system: 60 mm\nConnection: M10 bolt\nPower loss: 32.0 W\nStandard: IEC 60947-3",
+      "price": 398.0,
+      "width": 210,
+      "height": 306,
+      "depth": 130,
+      "weight": 5.2,
+      "mounting": "Busbar 60 mm",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 32.0
+      }
+    },
+    {
+      "number": "HAG.ECR380D",
+      "type_number": "ECR380D",
+      "order_number": "ECR380D",
+      "manufacturer": "Hager",
+      "description": "Energy meter 3-phase, direct up to 80 A, Modbus, MID, 4 modules",
+      "group": "Measuring instruments",
+      "subgroup": "Energy meter",
+      "identifier": "P",
+      "voltage": "3 x 230/400 V AC",
+      "current": "80 A",
+      "tech_data": "Accuracy class: B (MID)\nInterface: Modbus RTU\nModules: 4\nPower loss: 2 W",
+      "price": 189.0,
+      "width": 72,
+      "height": 90,
+      "depth": 65,
+      "weight": 0.35,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "1 3 5 N 2 4 6 N'"
+        },
+        {
+          "kind": "Generic",
+          "pins": "A B GND"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 2
+      }
+    },
+    {
+      "number": "HAG.ECR300C",
+      "type_number": "ECR300C",
+      "order_number": "ECR300C",
+      "manufacturer": "Hager",
+      "description": "Energy meter 3-phase, transformer-operated x/1 A or x/5 A, Modbus, MID, 4 modules",
+      "group": "Measuring instruments",
+      "subgroup": "Energy meter",
+      "identifier": "P",
+      "voltage": "3 x 230/400 V AC",
+      "current": "1 A / 5 A (transformer)",
+      "tech_data": "Accuracy class: B (MID)\nTransformer ratio: up to 6000/5\nInterface: Modbus RTU\nModules: 4\nPower loss: 2 W",
+      "price": 214.0,
+      "width": 72,
+      "height": 90,
+      "depth": 65,
+      "weight": 0.35,
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "V1 V2 V3 N 1S1 1S2 2S1 2S2 3S1 3S2"
+        },
+        {
+          "kind": "Generic",
+          "pins": "A B GND"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 2
+      }
     }
   ]
 }

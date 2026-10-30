@@ -266,3 +266,106 @@ fn pipe_runs_and_the_floor_belong_to_rooms() {
     assert_eq!(ortho(Some(p(0.0, 0.0)), p(40.0, -500.0)), p(0.0, -500.0));
     assert_eq!(ortho(None, p(40.0, 50.0)), p(40.0, 50.0));
 }
+
+#[test]
+fn a_device_from_the_schematic_is_shown_where_it_is_placed() {
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let mut ui = PanelUi::default();
+    assert!(!ui.focus_device(&prj, "=NOPE-X1", false), "not placed");
+    // On the floor of a room: the floor plan with the device selected.
+    let (ei, it) = panel::locate(&prj, "=WAT+TR-GP1").expect("booster pump placed");
+    assert!(ui.focus_device(&prj, "=WAT+TR-GP1", false));
+    assert_eq!((ui.enclosure, ui.view, ui.selection.iter().copied().collect::<Vec<_>>()), (ei, View::Plan, vec![it.id]));
+    // In 3D the camera looks at it from close by.
+    assert!(ui.focus_device(&prj, "=WAT+TR-GP1", true));
+    assert_eq!(ui.view, View::ThreeD);
+    let cam = ui.cam.expect("camera");
+    let full = view3d::default_cam(&prj, &ui.shown_3d(&prj, ei));
+    assert!(cam.dist < full.dist, "{} {}", cam.dist, full.dist);
+    // On a mounting plate: the front view of its cabinet.
+    let (ci, _) = panel::locate(&prj, "=CTL+CC1-A1").expect("PLC placed");
+    assert!(ui.focus_device(&prj, "=CTL+CC1-A1", false));
+    assert_eq!((ui.enclosure, ui.view, ui.face), (ci, View::Front, Face::Plate));
+}
+
+/// Shapes of one frame of the 3D view of the room of `prj`, and the smallest alpha of
+/// a filled shape.
+fn room_frame(ui: &mut PanelUi, prj: &mut Project, an: &openecraft_core::analysis::Analysis) -> (usize, u8) {
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    (ui.enclosure, ui.view) = (room, View::ThreeD);
+    let ctx = egui::Context::default();
+    let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0))), ..Default::default() };
+    let mut out = ctx.run_ui(input, |ui_| ui.view_3d(ui_, prj, room, an));
+    out.textures_delta.clear();
+    let mut alpha = 255;
+    for s in &out.shapes {
+        if let egui::Shape::Path(p) = &s.shape {
+            alpha = alpha.min(p.fill.a());
+        }
+    }
+    (out.shapes.len(), alpha)
+}
+
+#[test]
+fn walls_in_front_and_the_ceiling_can_be_left_out() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let mut ui = PanelUi::default();
+    let (all, alpha) = room_frame(&mut ui, &mut prj, &an);
+    assert!(alpha < 200, "walls in front are see-through");
+    ui.hide_ceiling = true;
+    let (no_ceiling, _) = room_frame(&mut ui, &mut prj, &an);
+    assert!(no_ceiling < all, "{no_ceiling} {all}");
+    ui.hide_front_walls = true;
+    let (open, _) = room_frame(&mut ui, &mut prj, &an);
+    assert!(open < no_ceiling, "{open} {no_ceiling}");
+    // Opaque walls in front.
+    let mut ui = PanelUi { wall_opacity: 1.0, ..Default::default() };
+    assert_eq!(room_frame(&mut ui, &mut prj, &an).1, 255);
+}
+
+#[test]
+fn wires_take_their_own_colours() {
+    let rgb = |c: [u8; 3]| Color32::from_rgb(c[0], c[1], c[2]);
+    let blue = rgb(openecraft_core::potentials::color_rgb("BU").unwrap());
+    assert_eq!(wire_look("BU", false, false, false), (blue, None, 1.5));
+    let (green, yellow) = (rgb(openecraft_core::potentials::color_rgb("GN").unwrap()), rgb(openecraft_core::potentials::color_rgb("YE").unwrap()));
+    assert_eq!(wire_look("gn/ye", false, false, false), (green, Some(yellow), 1.5), "two colours: a stripe");
+    assert_eq!(wire_look("", false, false, false).0, WIRE_COLOR, "no colour code");
+    assert_eq!(wire_look("BU", true, false, false).0, WIRE_HIGHLIGHT);
+    assert_eq!(wire_look("BU", false, true, false).0, WIRE_DONE);
+    assert_eq!(wire_look("BU", false, false, true).0, blue.gamma_multiply(0.3), "dimmed while another is selected");
+}
+
+#[test]
+fn wires_in_3d_have_their_colour_and_size() {
+    let mut prj = openecraft_core::sample::example("cabinet_lineup").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let colors: std::collections::HashSet<Color32> = an.wiring.iter().filter_map(|w| openecraft_core::potentials::color_rgb(&w.color)).map(|c| Color32::from_rgb(c[0], c[1], c[2])).collect();
+    assert!(colors.len() > 1, "the example has wires of several colours");
+    let e = an.wiring[0].enclosure;
+    // Lines of one frame of the 3D view: their colours and the widest.
+    let frame = |ui: &mut PanelUi, prj: &mut Project| {
+        let ctx = egui::Context::default();
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0))), ..Default::default() };
+        let mut out = ctx.run_ui(input, |ui_| ui.view_3d(ui_, prj, e, &an));
+        out.textures_delta.clear();
+        let mut seen = std::collections::HashSet::new();
+        let mut widest = 0.0f32;
+        for s in &out.shapes {
+            if let egui::Shape::LineSegment { stroke, .. } = &s.shape {
+                seen.insert(stroke.color);
+                widest = widest.max(stroke.width);
+            }
+        }
+        (seen, widest)
+    };
+    let mut ui = PanelUi { enclosure: e, view: View::ThreeD, ..Default::default() };
+    let (seen, far) = frame(&mut ui, &mut prj);
+    assert!(colors.iter().filter(|c| seen.contains(c)).count() > 1, "drawn in their colours");
+    // Closer, the wires are thicker on the screen.
+    let cam = ui.cam.as_mut().unwrap();
+    cam.dist *= 0.2;
+    let (_, near) = frame(&mut ui, &mut prj);
+    assert!(near > far, "{near} {far}");
+}

@@ -493,17 +493,40 @@ pub fn cable_end_tags(prj: &Project, c: &Cable, cores: &[&Connection]) -> Option
     cable_ends(prj, cores).or_else(bus)
 }
 
+/// Where a cable or tube from outside the building comes into room `ri`: the building
+/// entry nearest to `near` (layout coordinates); `None` for a room without one.
+fn building_entry(prj: &Project, pos: &[V3], ri: usize, near: V3) -> Option<End> {
+    let e = &prj.layout.enclosures[ri];
+    let at = |it: &PanelItem| panel::entry_point(e, it).map(|q| add(q, pos[ri]));
+    let it = panel::entries(e).into_iter().filter(|it| at(it).is_some()).min_by(|a, b| manhattan(at(a).unwrap_or(near), near).total_cmp(&manhattan(at(b).unwrap_or(near), near)).then(a.id.cmp(&b.id)))?;
+    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id) })
+}
+
+/// The location of a device tag (`=F1+LOC-K1` → `LOC`), empty without one.
+fn location_of(tag: &str) -> &str {
+    let structure = tag.split('-').next().unwrap_or_default();
+    structure.rsplit_once('+').map_or("", |(_, loc)| loc)
+}
+
+/// A device outside the building: its location is none of the rooms and enclosures
+/// of the layout.
+fn outside(prj: &Project, tag: &str) -> bool {
+    let loc = location_of(tag);
+    !loc.is_empty() && !prj.layout.enclosures.iter().any(|e| e.name.trim_start_matches('+') == loc)
+}
+
 /// The ends of a cable or tube between two devices: placed devices, or the cable
-/// entry of the enclosure the other end is in. `None` if neither end is placed, or if
-/// the placed one is in a room.
+/// entry of the enclosure the other end is in (the building entry of a room for a
+/// device outside the building). `None` if neither end is placed, or if the placed
+/// one is in a room and the other one is not outside or the room has no building
+/// entry.
 fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str) -> Option<[End; 2]> {
     let (ea, eb) = (device_end(prj, pos, a), device_end(prj, pos, b));
     let in_room = |e: &End| e.enclosure.is_some_and(|k| prj.layout.enclosures[k].is_room());
     match (ea.point, eb.point) {
         (None, None) => None,
-        // A room has no cable entry for the field.
-        (Some(_), None) if in_room(&ea) => None,
-        (None, Some(_)) if in_room(&eb) => None,
+        (Some(p), None) if in_room(&ea) => outside(prj, b).then(|| building_entry(prj, pos, ea.enclosure?, p).map(|e| [ea.clone(), End { tag: b.into(), ..e }])).flatten(),
+        (None, Some(p)) if in_room(&eb) => outside(prj, a).then(|| building_entry(prj, pos, eb.enclosure?, p).map(|e| [End { tag: a.into(), ..e }, eb.clone()])).flatten(),
         // Both in one device group: part of its base.
         _ if ea.item.is_some() && ea.item == eb.item => None,
         (Some(p), None) => Some([ea.clone(), End { tag: b.into(), ..entry_end(prj, pos, ea.enclosure?, p) }]),
@@ -530,8 +553,13 @@ fn wire_points(pos: &[V3], w: &RoutedWire) -> Vec<V3> {
 /// [`RoutingRules::wires_3d`] their routes are replaced by the 3D routes). Classes
 /// are routed one after the other (power first), so that later ones keep their
 /// distance; frozen routes are kept while they are still possible.
-#[allow(clippy::too_many_lines)]
 pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist) -> Routing {
+    analyse_with(prj, wiring, conns, open, &|_, _| {})
+}
+
+/// Like [`analyse`], telling `progress` how many of all routes are done before each.
+#[allow(clippy::too_many_lines)]
+pub fn analyse_with(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, progress: &dyn Fn(usize, usize)) -> Routing {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
     let lineups = panel::lineups(&prj.layout);
@@ -629,7 +657,9 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
     let mut items: Vec<RoutedItem> = Vec::new();
     let mut problems: Vec<Problem> = Vec::new();
     let mut roof_entries: Vec<String> = Vec::new();
-    for job in jobs {
+    let total = jobs.len();
+    for (n, job) in jobs.into_iter().enumerate() {
+        progress(n, total);
         let start = job.ends.iter().find_map(|e| e.enclosure);
         let lu = start.and_then(lineup_of);
         let mut item = RoutedItem {
@@ -784,8 +814,14 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
         items.push(item);
     }
     let (bundles, branches) = bundles::find(&items, rules.grid.max(5.0));
-    // Classes that keep apart in one bundle.
-    for b in &bundles {
+    // Classes that keep apart in one bundle; routes that end at the same device (the
+    // power cable and the pipes of a heat pump) meet at it.
+    let at_common_end = |b: &Bundle| {
+        let ends = |i: usize| items[i].ends.iter().filter_map(|e| e.item).collect::<Vec<u64>>();
+        let first = b.items.first().map_or_else(Vec::new, |&i| ends(i));
+        b.length <= 2.0 * rules.grid.max(5.0) && first.iter().any(|id| b.items.iter().all(|&i| ends(i).contains(id)))
+    };
+    for b in bundles.iter().filter(|b| !at_common_end(b)) {
         let classes: Vec<Class> = b.items.iter().map(|&i| items[i].class).collect();
         if classes.iter().any(|a| classes.iter().any(|c| a.keeps_apart(*c))) {
             // Shielded cables are reported with their shield.
@@ -823,6 +859,7 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
             changes.push(Change { key: f.key.clone(), label, before: f.length, after });
         }
     }
+    grid::release_search();
     Routing { items, bundles, branches, shields, paths, changes, problems }
 }
 

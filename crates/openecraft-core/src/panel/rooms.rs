@@ -36,6 +36,9 @@ pub const PIPE_RUN_WIDTH: f32 = 100.0;
 /// ceiling, mm.
 pub const PENETRATION_SIZE: (f32, f32) = (300.0, 200.0);
 pub const PENETRATION_TOP: f32 = 300.0;
+/// Width and height of a new building entry and its sill above the floor, mm.
+pub const ENTRY_SIZE: (f32, f32) = (200.0, 200.0);
+pub const ENTRY_SILL: f32 = 600.0;
 /// Thickest wall a penetration leads through into the room behind it, mm.
 pub const MAX_WALL_THICKNESS: f32 = 1000.0;
 /// How far in front of a wall penetration a route through it starts, mm.
@@ -614,10 +617,12 @@ pub fn opening_sill(e: &Enclosure, it: &PanelItem) -> f32 {
     e.height - it.y - it.h
 }
 
-/// Adds a door, window or wall penetration to a wall of a room: its left edge `x` mm
-/// from the left end of the wall (seen from inside), centred when `None`; default
-/// sizes and sill when not given. A door stands on the floor; a penetration goes into
-/// an outer wall, [`PENETRATION_TOP`] below the ceiling unless its sill is given.
+/// Adds a door, window, wall penetration or building entry to a wall of a room: its
+/// left edge `x` mm from the left end of the wall (seen from inside), centred when
+/// `None`; default sizes and sill when not given. A door stands on the floor; a
+/// penetration goes into an outer wall, [`PENETRATION_TOP`] below the ceiling unless
+/// its sill is given; a building entry into an outer wall, [`ENTRY_SILL`] above the
+/// floor.
 pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face, x: Option<f32>, size: Option<(f32, f32)>, sill: Option<f32>) -> Result<u64, String> {
     let e = prj.layout.enclosures.get(room).ok_or_else(|| tr_fmt!("No enclosure {}", room))?;
     if !e.is_room() {
@@ -628,6 +633,9 @@ pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face,
     }
     if opening == Opening::Penetration && !matches!(face, Face::Wall(_)) {
         return Err(tr("Wall penetrations go into the outer walls of a room").to_string());
+    }
+    if opening == Opening::Entry && !matches!(face, Face::Wall(_)) {
+        return Err(tr("Building entries go into the outer walls of a room").to_string());
     }
     let wall_len = side(e, face).map(|w| w.length()).ok_or_else(|| tr_fmt!("Unknown face: {}", room_face_key(e, face)))?;
     let (w, h, sill) = match opening {
@@ -642,6 +650,10 @@ pub fn add_opening(prj: &mut Project, room: usize, opening: Opening, face: Face,
         Opening::Penetration => {
             let (w, h) = size.unwrap_or(PENETRATION_SIZE);
             (w, h, sill.unwrap_or(e.height - PENETRATION_TOP - h).max(0.0))
+        }
+        Opening::Entry => {
+            let (w, h) = size.unwrap_or(ENTRY_SIZE);
+            (w, h, sill.unwrap_or(ENTRY_SILL).max(0.0))
         }
         Opening::Cutout => return Err(tr("Doors and windows go into walls").to_string()),
     };
@@ -726,6 +738,20 @@ pub fn penetration_link(prj: &Project, poses: &[SitePose], ri: usize, it: &Panel
         d += 5.0;
     }
     None
+}
+
+/// The building entries of a room.
+pub fn entries(e: &Enclosure) -> Vec<&PanelItem> {
+    e.items.iter().filter(|i| i.opening == Opening::Entry && e.is_room()).collect()
+}
+
+/// Where a route through a building entry starts in the room: in front of its middle
+/// (room coordinates).
+pub fn entry_point(e: &Enclosure, it: &PanelItem) -> Option<V3> {
+    let w = side(e, it.face)?;
+    let (s, r, n) = (w.start(), w.right(), w.normal);
+    let along = it.x + it.w / 2.0;
+    Some([s[0] + r[0] * along + n[0] * PASS_OUT, it.y + it.h / 2.0, s[1] + r[1] * along + n[1] * PASS_OUT])
 }
 
 /// The ways through the walls of the layout: one for every wall penetration that

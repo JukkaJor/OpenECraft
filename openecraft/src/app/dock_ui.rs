@@ -162,9 +162,11 @@ impl App {
     pub(super) fn docked(&mut self, ui: &mut egui::Ui, idx: &Index) {
         let mut tree = std::mem::replace(&mut self.dock, egui_tiles::Tree::empty(egui::Id::unique("dock_swap")));
         let documents = dock::panes(&tree).iter().filter(|p| p.is_document()).count();
+        self.in_dock = true;
         let mut behavior = Docked { app: self, idx, request: None, documents, compact: Vec::new() };
         tree.ui(&mut behavior, ui);
         let request = behavior.request.take();
+        self.in_dock = false;
         // egui_tiles shows the grab hand over tabs, which Windows draws as the move cross.
         ui.ctx().output_mut(|o| {
             if o.cursor_icon == egui::CursorIcon::Grab {
@@ -474,6 +476,11 @@ impl App {
         if has_sel {
             if self.selected_tag().is_some() {
                 for c in [Cmd::Properties, Cmd::RenameDevice, Cmd::PartSelection].into_iter().filter(|c| shown(*c)) {
+                    self.cmd_button(ui, c);
+                }
+                // A device placed in a cabinet or room: there in the layout or in 3D.
+                let placed: Vec<Cmd> = [Cmd::ShowInLayout, Cmd::ShowIn3d].into_iter().filter(|c| self.cmd_enabled(*c)).collect();
+                for c in placed {
                     self.cmd_button(ui, c);
                 }
                 ui.separator();

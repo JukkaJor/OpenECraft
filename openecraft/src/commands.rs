@@ -98,6 +98,8 @@ pub enum Cmd {
     Properties,
     RenameDevice,
     PartSelection,
+    ShowInLayout,
+    ShowIn3d,
     // View
     FitPage,
     ZoomActual,
@@ -217,6 +219,7 @@ pub enum Cmd {
     LayoutRoomDoor,
     LayoutRoomWindow,
     LayoutRoomPenetration,
+    LayoutRoomEntry,
     LayoutFront,
     LayoutDoor,
     LayoutDoorInside,
@@ -227,6 +230,8 @@ pub enum Cmd {
     LayoutHeat,
     LayoutLineup,
     LayoutSite,
+    LayoutHideFrontWalls,
+    LayoutHideCeiling,
     LayoutFit,
     LayoutNcData,
     LayoutReports,
@@ -464,6 +469,8 @@ pub static ALL: &[Def] = &[
     d(C::Properties, "properties", tr_const!("Properties…"), I::Properties).keys("F2").tip(tr_const!("The properties of the selection in a window beside the page")),
     d(C::RenameDevice, "rename_device", tr_const!("Rename device…"), I::Device),
     d(C::PartSelection, "part_selection", tr_const!("Part selection…"), I::Parts),
+    d(C::ShowInLayout, "show_in_layout", tr_const!("Show in panel layout"), I::Enclosure).tip(tr_const!("The selected device in the layout of its cabinet or room")),
+    d(C::ShowIn3d, "show_in_3d", tr_const!("Show in 3D view"), I::Cube).tip(tr_const!("The selected device in the 3D view of its cabinet or room, seen from close by")),
     // ---------------------------------------------------------------- view
     d(C::FitPage, "fit_page", tr_const!("Fit page"), I::Fit).keys("F|Home").canvas(),
     d(C::ZoomActual, "zoom_actual", tr_const!("Zoom 100 %"), I::Scale).tip(tr_const!("Real size on a 96 dpi screen")),
@@ -641,6 +648,9 @@ pub static ALL: &[Def] = &[
     d(C::LayoutRoomPenetration, "layout_room_penetration", tr_const!("Wall penetration"), I::Circle)
         .toggle()
         .tip(tr_const!("Wall penetration: cables, tubes and pipes pass through it into the room behind the wall; click on an outer wall in the floor plan or in the view of the wall")),
+    d(C::LayoutRoomEntry, "layout_room_entry", tr_const!("Building entry"), I::Download)
+        .toggle()
+        .tip(tr_const!("Building entry: the supply cable, the water main and other lines from outside come into the building through it; click on an outer wall in the floor plan or in the view of the wall")),
     d(C::LayoutRackPart, "layout_rack_part", tr_const!("19-inch part"), I::Device)
         .menu()
         .tip(tr_const!("19-inch parts (switches, patch panels, servers, blank panels, …) for the rack shown: choose one, it goes into the highest free rack units; dragged, it snaps onto whole units")),
@@ -671,6 +681,10 @@ pub static ALL: &[Def] = &[
     d(C::LayoutSite, "layout_all_enclosures", tr_const!("All enclosures"), I::Eye)
         .toggle()
         .tip(tr_const!("Show all enclosures side by side at their places in the room")),
+    d(C::LayoutHideFrontWalls, "layout_hide_front_walls", tr_const!("Hide walls in front"), I::Wall)
+        .toggle()
+        .tip(tr_const!("Leave out the walls between the eye and the inside of the room or enclosure in the 3D view")),
+    d(C::LayoutHideCeiling, "layout_hide_ceiling", tr_const!("Hide ceiling"), I::Enclosure).toggle().tip(tr_const!("Leave out the ceilings of the rooms in the 3D view")),
     d(C::LayoutFit, "layout_fit", tr_const!("Fit"), I::Fit),
     d(C::LayoutNcData, "layout_nc_data", tr_const!("NC data"), I::Drill).menu().tip(tr_const!("Drilling pattern of the face shown as DXF, DWG or CSV")),
     d(C::LayoutReports, "layout_reports", tr_const!("Panel wiring report"), I::Report),

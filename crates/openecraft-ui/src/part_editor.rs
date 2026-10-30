@@ -967,8 +967,19 @@ pub fn mesh_preview(ui: &mut egui::Ui, mesh: &Mesh3d, size: egui::Vec2) {
         split_triangle(t.map(|i| mesh.vertices[i as usize]), limit, &mut pieces);
         for v in &pieces {
             let depth = v.iter().map(|q| depth_of(*q)).sum::<f32>() / 3.0;
-            let g = (180.0 * shade + 14.0 * (0.5 - depth / (2.0 * radius))).clamp(0.0, 240.0) as u8;
-            items.push((depth, v.map(screen), Some(Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14)))));
+            let near = 14.0 * (0.5 - depth / (2.0 * radius));
+            let color = match mesh.color(k) {
+                // A painted mesh in its colours, shaded the same way.
+                Some(rgb) => {
+                    let [r, g, b] = rgb.map(|v| (v as f32 * (0.35 + 0.75 * shade) + near).clamp(0.0, 255.0) as u8);
+                    Color32::from_rgb(r, g, b)
+                }
+                None => {
+                    let g = (180.0 * shade + near).clamp(0.0, 240.0) as u8;
+                    Color32::from_rgb(g, g.saturating_add(6), g.saturating_add(14))
+                }
+            };
+            items.push((depth, v.map(screen), Some(color)));
         }
     }
     for (a, b, faces) in sharp_edges(mesh, &normals) {

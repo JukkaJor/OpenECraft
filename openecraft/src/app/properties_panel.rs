@@ -614,9 +614,8 @@ impl App {
             if tab == PropTab::Device {
                 if let Some((ei, _)) = openecraft_core::panel::locate(&self.session.prj, &edited.tag) {
                     let enc = self.session.prj.layout.enclosures[ei].name.clone();
-                    if icons::text_button(ui, Icon::Database, &tr_fmt!("Show in panel layout ({})", enc)).clicked() && self.panel_ui.show_device(&self.session.prj, &edited.tag) {
-                        self.set_workspace(Workspace::Panel);
-                        self.show_pane(Pane::LayoutView);
+                    if icons::text_button(ui, Icon::Database, &tr_fmt!("Show in panel layout ({})", enc)).clicked() {
+                        self.focus_device(&edited.tag, false);
                     }
                 }
             }

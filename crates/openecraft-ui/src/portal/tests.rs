@@ -117,7 +117,7 @@ fn the_details_load_the_whole_part_once() {
     assert_eq!(b.detail_due().as_deref(), Some("A"));
     assert_eq!(b.detail_due(), None, "asked for once");
     assert!(b.selected_detail().is_none());
-    let mesh = openecraft_parts::Mesh3d { vertices: vec![[0.0; 3]], triangles: Vec::new() };
+    let mesh = openecraft_parts::Mesh3d { vertices: vec![[0.0; 3]], ..Default::default() };
     let full = Part { number: "A".into(), model_3d: Some(mesh.into()), ..Default::default() };
     // A late answer for another part is dropped.
     b.apply(&Reply::Detail("B".into(), Ok(Some(Box::new(full.clone())))), &[]);

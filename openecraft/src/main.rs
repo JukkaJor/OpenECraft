@@ -13,6 +13,7 @@ mod dock;
 #[cfg(test)]
 mod conventions;
 mod editor;
+mod frame_stats;
 #[cfg(test)]
 mod glyphs;
 mod insert_center;

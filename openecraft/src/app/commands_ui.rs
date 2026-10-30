@@ -34,15 +34,16 @@ impl App {
             Cmd::PdfInLanguage => !self.session.prj.languages.targets.is_empty(),
             Cmd::UpdateReportBlocks => !self.session.prj.report_blocks.is_empty(),
             Cmd::RenameDevice | Cmd::PartSelection => self.selected_tag().is_some(),
+            Cmd::ShowInLayout | Cmd::ShowIn3d => self.selected_tag().is_some_and(|t| openecraft_core::panel::locate(&self.session.prj, &t).is_some()),
             Cmd::Quit => FileIo::has_own_window(),
             Cmd::SaveAs => FileIo::can_save_in_place(),
             Cmd::NextPageTab | Cmd::PreviousPageTab | Cmd::ClosePageTab => self.page_tabs.len() > 1,
             Cmd::LayoutDoorInside | Cmd::LayoutDoor | Cmd::LayoutFront => self.panel_ui.view == crate::panel_ui::View::Front && !self.panel_ui.in_room,
             Cmd::LayoutWalls => self.panel_ui.view != crate::panel_ui::View::ThreeD,
             Cmd::LayoutBusbar | Cmd::LayoutCutout | Cmd::LayoutRoutingPath | Cmd::LayoutReservation | Cmd::LayoutHeat | Cmd::LayoutNcData => !self.panel_ui.in_room,
-            Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow | Cmd::LayoutRoomPenetration => self.panel_ui.in_room,
+            Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow | Cmd::LayoutRoomPenetration | Cmd::LayoutRoomEntry => self.panel_ui.in_room,
             Cmd::LayoutRackPart => self.session.prj.layout.enclosures.get(self.panel_ui.enclosure).is_some_and(openecraft_core::panel::is_rack),
-            Cmd::LayoutLineup | Cmd::LayoutSite => self.panel_ui.view == crate::panel_ui::View::ThreeD,
+            Cmd::LayoutLineup | Cmd::LayoutSite | Cmd::LayoutHideFrontWalls | Cmd::LayoutHideCeiling => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
         }
     }
@@ -105,11 +106,14 @@ impl App {
             Cmd::LayoutRoomDoor => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door),
             Cmd::LayoutRoomWindow => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window),
             Cmd::LayoutRoomPenetration => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Penetration),
+            Cmd::LayoutRoomEntry => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Entry),
             Cmd::LayoutWires => self.panel_ui.show_wires,
             Cmd::LayoutDuctFill => self.panel_ui.show_fill,
             Cmd::LayoutHeat => self.panel_ui.show_heat,
             Cmd::LayoutLineup => self.panel_ui.show_lineup,
             Cmd::LayoutSite => self.panel_ui.show_site,
+            Cmd::LayoutHideFrontWalls => self.panel_ui.hide_front_walls,
+            Cmd::LayoutHideCeiling => self.panel_ui.hide_ceiling,
             Cmd::WiringMode => !self.mounting_ui.active,
             Cmd::MountingMode => self.mounting_ui.active,
             Cmd::TabletMode => self.shell.tablet(),
@@ -128,6 +132,11 @@ impl App {
     #[allow(clippy::too_many_lines)]
     pub(super) fn run(&mut self, ctx: &egui::Context, cmd: Cmd) {
         if !self.cmd_enabled(cmd) {
+            return;
+        }
+        // From a docked pane (a context menu): once the panes are back in the dock.
+        if self.in_dock {
+            self.deferred.push(super::Deferred::Cmd(cmd));
             return;
         }
         let def = commands::def(cmd);
@@ -333,6 +342,11 @@ impl App {
                     self.parts_ui.select_for(&tag);
                 }
             }
+            Cmd::ShowInLayout | Cmd::ShowIn3d => {
+                if let Some(tag) = self.selected_tag() {
+                    self.focus_device(&tag, cmd == Cmd::ShowIn3d);
+                }
+            }
             // ------------------------------------------------------------ view
             Cmd::FitPage => self.editor.fit_pending = true,
             Cmd::ZoomActual => self.editor.zoom_center(crate::editor::ZOOM_ACTUAL / self.editor.zoom),
@@ -381,6 +395,7 @@ impl App {
             Cmd::LayoutRoomDoor => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door)),
             Cmd::LayoutRoomWindow => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window)),
             Cmd::LayoutRoomPenetration => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Penetration)),
+            Cmd::LayoutRoomEntry => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Entry)),
             Cmd::NewRoom => {
                 self.set_workspace(Workspace::Panel);
                 self.panel_ui.new_room(&mut self.session.prj);
@@ -405,6 +420,8 @@ impl App {
             Cmd::LayoutHeat => self.panel_ui.show_heat = !self.panel_ui.show_heat,
             Cmd::LayoutLineup => self.panel_ui.toggle_lineup(),
             Cmd::LayoutSite => self.panel_ui.toggle_site(),
+            Cmd::LayoutHideFrontWalls => self.panel_ui.hide_front_walls = !self.panel_ui.hide_front_walls,
+            Cmd::LayoutHideCeiling => self.panel_ui.hide_ceiling = !self.panel_ui.hide_ceiling,
             Cmd::LayoutFit => self.panel_ui.fit(),
             Cmd::LayoutReports => {
                 self.report_kind = ReportKind::PanelWiring.into();

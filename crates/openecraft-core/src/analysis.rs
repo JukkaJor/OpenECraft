@@ -10,6 +10,7 @@ use crate::model::{Project, ReportId};
 use crate::netlist::{connections, Connection, Netlist, Scans};
 use crate::panel::{self, OpenWire, RoutedWire};
 use crate::table::Table;
+use openecraft_i18n::tr;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -43,6 +44,44 @@ pub struct Analysis {
     reports: Vec<Report>,
     /// Generated report tables.
     tables: Mutex<HashMap<ReportId, Arc<Table>>>,
+    /// Findings of the layout checks per enclosure.
+    layout: Mutex<HashMap<usize, Arc<Vec<panel::Finding>>>>,
+}
+
+/// The steps of building an analysis, in their order, and the checks the host runs
+/// on it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Step {
+    Netlists,
+    Connections,
+    Wiring,
+    Routing,
+    Ducts,
+    Checks,
+}
+
+impl Step {
+    pub const ALL: [Step; 6] = [Step::Netlists, Step::Connections, Step::Wiring, Step::Routing, Step::Ducts, Step::Checks];
+
+    pub fn title(self) -> &'static str {
+        match self {
+            Step::Netlists => tr("Building the netlists"),
+            Step::Connections => tr("Collecting the connections"),
+            Step::Wiring => tr("Wiring the panels"),
+            Step::Routing => tr("Routing cables and pipes in 3D"),
+            Step::Ducts => tr("Filling the cable ducts"),
+            Step::Checks => tr("Checking the project"),
+        }
+    }
+}
+
+/// Where a build of the analysis is: its step and, in a step of many items (the 3D
+/// routing), how many of `total` are done.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Progress {
+    pub step: Step,
+    pub done: usize,
+    pub total: usize,
 }
 
 /// What an analysis keeps for the next one of the same project: the scans of the pages
@@ -69,15 +108,29 @@ impl Analysis {
     /// build with it. On machines with several cores the two netlists are built at
     /// the same time.
     pub fn build_with(prj: &Project, cache: &mut Cache) -> Analysis {
+        Analysis::build_progress(prj, cache, &|_| {})
+    }
+
+    /// Like [`Analysis::build_with`], telling `progress` each step it begins and, in
+    /// the 3D routing, each route.
+    pub fn build_progress(prj: &Project, cache: &mut Cache, progress: &(dyn Fn(Progress) + Sync)) -> Analysis {
+        let step = |step| progress(Progress { step, done: 0, total: 0 });
+        step(Step::Netlists);
         let Cache { netlist: bridged, open: apart } = cache;
         let (netlist, open) = join(|| Netlist::build_with(prj, true, bridged), || Netlist::build_with(prj, false, apart));
         let idx = Index::build(prj);
+        step(Step::Connections);
         let conns = connections(prj, &netlist, &open);
+        step(Step::Wiring);
         let (mut wiring, open_wires) = panel::virtual_wiring(prj, &conns);
-        let routing = crate::routing3d::analyse(prj, &mut wiring, &conns, &open);
+        step(Step::Routing);
+        // The field plan and the revision marks do not need the routing.
+        let (routing, (field, changes)) = join(
+            || crate::routing3d::analyse_with(prj, &mut wiring, &conns, &open, &|done, total| progress(Progress { step: Step::Routing, done, total })),
+            || (crate::field::plan(prj, &conns), crate::revision::pending(prj)),
+        );
+        step(Step::Ducts);
         let fill = panel::duct_fill(prj, &wiring);
-        let field = crate::field::plan(prj, &conns);
-        let changes = crate::revision::pending(prj);
         Analysis {
             index: idx,
             netlist,
@@ -92,6 +145,7 @@ impl Analysis {
             field,
             reports: Vec::new(),
             tables: Mutex::default(),
+            layout: Mutex::default(),
         }
     }
 
@@ -127,6 +181,23 @@ impl Analysis {
         if let Ok(mut m) = self.tables.lock() {
             m.clear();
         }
+        if let Ok(mut m) = self.layout.lock() {
+            m.clear();
+        }
+    }
+
+    /// The findings of the layout checks of enclosure `ei` ([`panel::validate`]),
+    /// made on the first call (from the project the analysis was built from) and kept.
+    pub fn layout_findings(&self, prj: &Project, ei: usize) -> Arc<Vec<panel::Finding>> {
+        if let Some(f) = self.layout.lock().ok().and_then(|m| m.get(&ei).cloned()) {
+            return f;
+        }
+        let Some(e) = prj.layout.enclosures.get(ei) else { return Arc::default() };
+        let found = Arc::new(panel::validate(prj, e));
+        if let Ok(mut m) = self.layout.lock() {
+            m.insert(ei, found.clone());
+        }
+        found
     }
 
 }

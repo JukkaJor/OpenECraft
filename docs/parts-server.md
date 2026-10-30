@@ -33,15 +33,17 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   it. A `.json` data file selects JSON storage. New databases are filled with the
   example catalog and the bundled manufacturer catalogs; `--migrate-from` copies an
   existing database into a new one.
-- Bundled catalogs: `parts-server/catalogs/<id>.json` (a `catalog` and its `parts`,
-  listed in `parts-server/src/bundled.rs`) are curated starter sets of real
+- Bundled catalogs: `crates/openecraft-parts/catalogs/<id>.json` (a `catalog` and its
+  `parts`, listed in `openecraft_parts::bundled`, which the example projects use too)
+  are curated starter sets of real
   manufacturer parts: `abb` (circuit breakers, RCCB, contactors, manual motor
-  starters), `beckhoff` (EtherCAT coupler and terminals), `dehn` (surge protective devices type 1 - 3 and for data lines), `hager` (circuit breakers,
-  RCCBs, installation contactors, switch disconnectors), `mdt` (KNX actuators, IP
+  starters), `beckhoff` (EtherCAT coupler and terminals), `dehn` (surge protective devices type 1 - 3, for PV systems and for data lines), `hager` (circuit breakers,
+  RCCBs, installation contactors, switch disconnectors, NH fuse switch disconnectors
+  for 60 mm busbars, energy meters), `mdt` (KNX actuators, IP
   interface / router, power supply), `phoenix_contact` (terminal blocks, relay
-  modules, power supplies), `siemens` (SIRIUS contactors, overload relays, motor
+  modules, power supplies), `pylontech` (19-inch LiFePO4 battery modules), `siemens` (SIRIUS contactors, overload relays, motor
   starter protectors, SENTRON circuit breakers), `victron` (MultiPlus-II inverter /
-  charger, SmartSolar MPPT, Orion-Tr, Cerbo GX, SmartShunt, BMV-712, Lynx
+  charger, Inverter RS Smart Solar, SmartSolar MPPT, Orion-Tr, Cerbo GX, SmartShunt, BMV-712, Lynx
   Distributor; mostly parts for direct wall mounting) and `weidmueller` (terminals,
   relay module, power supplies, CD wiring ducts). `--install-catalogs all` (or ids such as
   `siemens`) installs or updates them in an existing database: new parts are added,

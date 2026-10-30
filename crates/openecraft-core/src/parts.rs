@@ -64,6 +64,10 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "trafo" => FnKind::Transformer,
         "ct" => FnKind::CurrentTransformer,
         "battery" => FnKind::Battery,
+        "pv" => FnKind::PvGenerator,
+        "hybrid_inverter" | "mppt" | "inverter_charger" => FnKind::PowerSupply,
+        "kwh3" | "kwh3_ct" => FnKind::Meter,
+        "actuator" => FnKind::Actuator,
         "term" | "term_pe" | "term_n" | "term_disc" | "term_fuse" => FnKind::Terminal,
         "plug_pair" | "plug_m" | "plug_f" => FnKind::PlugPin,
         "plc_in" => FnKind::PlcInput,
@@ -72,9 +76,10 @@ pub fn kind_of_symbol(key: &str) -> Option<FnKind> {
         "plc_ao" => FnKind::PlcAnalogOutput,
         "fl_valve42" | "fl_valve52" => FnKind::DirectionalValve,
         "fl_cylinder" | "fl_cylinder_sa" => FnKind::Cylinder,
-        "fl_pump" | "pid_pump" => FnKind::Pump,
+        "fl_pump" | "fl_compressor" | "pid_pump" => FnKind::Pump,
         "fl_filter" | "fl_gauge" | "fl_tank" | "fl_source" | "fl_silencer" | "fl_throttle" | "pid_vessel" | "pid_valve"
-        | "pid_control_valve" | "pid_check_valve" | "pid_heat_exchanger" => FnKind::FluidComponent,
+        | "pid_control_valve" | "pid_check_valve" | "pid_heat_exchanger" | "pid_motor_valve" | "pid_flow_meter" | "pid_connection" | "pid_heat_pump" | "pid_buffer"
+        | "fl_shutoff" | "fl_regulator" | "fl_receiver" | "fl_dryer" | "fl_lubricator" | "fl_coupling" => FnKind::FluidComponent,
         "res" | "cap" | "diode" | "led" | "inductor" | "varistor" | "potentiometer" | "cap_pol" | "zener" | "photodiode" | "npn" | "pnp" | "nmos" | "thyristor" | "triac" | "ntc" | "ldr"
         | "optocoupler" | "bridge_rect" | "inst_switch" | "inst_switch2" | "inst_dimmer" | "inst_push" | "inst_lamp" | "inst_luminaire" | "inst_socket2" | "inst_junction" | "inst_motion"
         | "inst_board" => FnKind::Generic,

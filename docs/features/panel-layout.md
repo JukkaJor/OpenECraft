@@ -15,7 +15,12 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   place" list with their real dimensions from the parts data (contactor + auxiliary
   block add up in depth, terminal strips are as long as their terminals and spares) and
   snapped onto rails; move (devices travel with their rail), rotate, delete.
-- 2D front view and a 3D view (orbit, pan, zoom, click to select).
+- 2D front view and a 3D view (orbit, pan, zoom, click to select). Walls, ceilings and
+  doors seen from the outside are see-through (*Wall opacity* in the settings, under
+  Appearance); *Hide walls in front* leaves out the walls between the eye and the inside,
+  *Hide ceiling* the ceilings of the rooms. Wires are drawn in their colour (two-colour
+  wires such as green-yellow with a stripe) and, like cables and tubes, as thick as
+  their outer diameter.
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate.
 - Mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
@@ -124,6 +129,13 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   wall (up to 1 m away, through rooms turned against each other too): cables, tubes
   and pipes are routed from room to room through them. The floor plan draws them and
   the way through the wall dashed; `list_rooms` tells where each one leads.
+- **Building entries** (*Layout space › Draw › Building entry*, command
+  `add_wall_opening` with `kind` `entry`; 200 x 200 mm, 600 mm above the floor unless
+  set otherwise) are the house lead-ins of the outer walls: the supply cable, the
+  water main and other lines from outside the building come in through them. A cable
+  or pipe from a device in the room to a device outside the building (its location is
+  none of the rooms and enclosures of the layout, such as the utility's cable
+  distribution cabinet) is routed to the nearest building entry.
 - **Pipe runs** (*Layout space › Draw › Pipe run*, command `add_pipe_run`) are drawn on a
   wall, the ceiling or the floor by clicking their corners (at right angles), 100 mm in
   front of a wall, 300 mm below the ceiling or 200 mm above the floor unless set
@@ -181,15 +193,32 @@ Between rooms, a route passes the wall penetrations that join them, through as f
 walls as possible: through the first room to a penetration, through the rooms between,
 through the last room to its end (its legs per room and cabinet in the routing list);
 its length includes the ways through the walls. Without such a penetration the route
-stays unrouted (*no wall penetration leads from room to room*).
+stays unrouted (*no wall penetration leads from room to room*). A route from a device
+of a room to the outside of the building ends at its nearest building entry; of several
+wall penetrations joining the same two rooms the route takes the one with the shortest
+way.
 
 In a room, routes run through its free space: around its walls, inner walls, the
 cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe
-runs. A route between a cabinet and a device in its room (or two cabinets of one room)
-runs in legs: through the cabinet to a cable gland on its roof, sides or rear (one of
-its own cabinet first, otherwise of the line-up; without one through the middle of the
-roof, which is reported), then through the room. Frozen, such a route keeps its legs.
+runs. Running horizontally through the open space of a room, more than 300 mm from its
+walls, its ceiling and what stands in it, costs ten times as much: pipes and cables
+keep to the walls and the ceiling and drop straight to a device standing in the room.
+Cables and pipes turn only after half their bend radius straight on (where there is
+such a way); of the ways that cost about the same, a route takes one whose bends keep
+their distance (a short stretch first or last). A route between a cabinet and a device in its
+room (or two cabinets of one room) runs in legs: through the cabinet to a cable gland on
+its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
+one through the middle of the roof, which is reported), then through the room. Frozen, such a route keeps its legs.
 The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
+
+In a schematic, the context menu of a placed device shows it in the panel layout (its
+cabinet's mounting plate or door, the wall or floor plan of its room) or in the 3D view
+with the camera close to it (*Show in panel layout*, *Show in 3D view*).
+
+The routes are part of the project's analysis. When a project is opened its analysis is
+built in the background: the editor shows a window with the step it is at (netlists,
+connections, panel wiring, 3D routing with the route it is at, duct fill, checks) and
+shows the project once it is ready.
 
 The routed panel is the input of the [wiring and mounting assistants](workshop.md) and of
 the 3D exports (glTF, STEP, IGES, IFC, JT, Parasolid; see
