@@ -101,7 +101,13 @@ refer to each other (the registry kinds take an `&Analysis`).
 - `openecraft/src/autosave.rs` keeps the autosaved project and parts database in the
   app's `openecraft_ui::io::Store` (a file per key on the desktop, IndexedDB in the
   browser) and decides when a value read back at start-up may replace the start-up
-  one.
+  one; once the store works, it packs and writes on another thread.
+- `openecraft/src/jobs.rs` runs work that would hold up the window on another thread
+  (exports with an analysis of their own from `Session::snapshot`, reading model and
+  parts files); `App` applies the results when they are there. After an edit that
+  changes routes the session searches the 3D routing on another thread as well
+  (`Analysis::build_kept`, `routes_pending`). Without threads (the browser) the work
+  is done at once.
 - The shell (see `docs/ux-workplan.md`) is described by four modules without UI code,
   each unit tested: `openecraft/src/commands.rs` is the table of every command of the
   editor (id, title, tooltip, icon, kind, default keys, the pane it shows);

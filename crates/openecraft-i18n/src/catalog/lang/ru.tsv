@@ -6357,3 +6357,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Насосная
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Помещение с рядом шкафов и насосами: двигатели насосов, питаемые через кабельные вводы в крышах шкафов, насос и бак на полу, шаровые краны и манометр на стене, а также трубы DN25 водяного контура, проложенные в 3D вдоль трассы трубопровода на стене.
 Room floor	Пол помещения
+Updating the 3D routing	Обновление 3D-прокладки
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Кабели и трубы прокладываются заново в фоновом режиме; до этого 3D-вид показывает их прежние трассы.
+Exporting {}	Экспорт {}
+Reading {}	Чтение {}
+Reading the parts file	Чтение файла изделий
+{} stopped with an error: {}	{} остановлено с ошибкой: {}

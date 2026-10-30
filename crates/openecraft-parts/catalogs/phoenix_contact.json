@@ -210,6 +210,13 @@
           "pins": "L N PE + -"
         }
       ],
+      "connection_points": [
+        { "pin": "L", "pos": [7.5, 117, 122.5], "exit": "Down" },
+        { "pin": "N", "pos": [16, 117, 122.5], "exit": "Down" },
+        { "pin": "PE", "pos": [24.5, 117, 122.5], "exit": "Down" },
+        { "pin": "+", "pos": [9.6, 13, 122.5], "exit": "Up" },
+        { "pin": "-", "pos": [22.4, 13, 122.5], "exit": "Up" }
+      ],
       "voltage": "24 V DC",
       "current": "5 A",
       "tech_data": "Input: 100 - 240 V AC",
@@ -234,6 +241,13 @@
           "pins": "L N PE + -"
         }
       ],
+      "connection_points": [
+        { "pin": "L", "pos": [9.3, 117, 122.5], "exit": "Down" },
+        { "pin": "N", "pos": [20, 117, 122.5], "exit": "Down" },
+        { "pin": "PE", "pos": [30.7, 117, 122.5], "exit": "Down" },
+        { "pin": "+", "pos": [12, 13, 122.5], "exit": "Up" },
+        { "pin": "-", "pos": [28, 13, 122.5], "exit": "Up" }
+      ],
       "voltage": "24 V DC",
       "current": "10 A",
       "tech_data": "Input: 100 - 240 V AC",
@@ -257,6 +271,13 @@
           "kind": "PowerSupply",
           "pins": "L N PE + -"
         }
+      ],
+      "connection_points": [
+        { "pin": "L", "pos": [11.7, 117, 122.5], "exit": "Down" },
+        { "pin": "N", "pos": [25, 117, 122.5], "exit": "Down" },
+        { "pin": "PE", "pos": [38.3, 117, 122.5], "exit": "Down" },
+        { "pin": "+", "pos": [15, 13, 122.5], "exit": "Up" },
+        { "pin": "-", "pos": [35, 13, 122.5], "exit": "Up" }
       ],
       "voltage": "24 V DC",
       "current": "20 A",

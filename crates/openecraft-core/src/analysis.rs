@@ -40,6 +40,9 @@ pub struct Analysis {
     pub duct_fill: Vec<panel::DuctFill>,
     /// 3D routing of wires, cables and tubes.
     pub routing: crate::routing3d::Routing,
+    /// `routing` is what is left of the routing of an earlier state until the routing
+    /// of this one is ready ([`Analysis::build_kept`]).
+    pub routes_pending: bool,
     /// Cables planned through the route network of the plant.
     pub field: crate::field::Plan,
     /// Reports the tables come from: the built-in ones until the host sets the
@@ -91,17 +94,25 @@ pub struct Progress {
 }
 
 /// What an analysis keeps for the next one of the same project: the scans of the pages
-/// that did not change are reused (see [`Analysis::build_with`]).
+/// that did not change and the 3D routing while nothing it depends on changed are
+/// reused (see [`Analysis::build_with`]).
 #[derive(Clone, Default)]
 pub struct Cache {
     netlist: Scans,
     open: Scans,
+    routing: crate::routing3d::Cache,
 }
 
 impl Cache {
     /// Pages scanned again by the last build (both netlists).
     pub fn scanned(&self) -> usize {
         self.netlist.scanned + self.open.scanned
+    }
+
+    /// Takes the 3D routing kept by `other` (a build of the same project elsewhere,
+    /// e.g. in the background).
+    pub fn keep_routing(&mut self, other: Cache) {
+        self.routing = other.routing;
     }
 }
 
@@ -120,9 +131,22 @@ impl Analysis {
     /// Like [`Analysis::build_with`], telling `progress` each step it begins and, in
     /// the 3D routing, each route.
     pub fn build_progress(prj: &Project, cache: &mut Cache, progress: &(dyn Fn(Progress) + Sync)) -> Analysis {
+        Analysis::build_inner(prj, cache, progress, None)
+    }
+
+    /// Like [`Analysis::build_with`], but the 3D routing is not searched: it is taken
+    /// from `cache` where nothing it depends on changed, otherwise what still fits of
+    /// `before` (the routing of an earlier state) stands in for it, and
+    /// [`Analysis::routes_pending`] is set. Fast enough after every edit; the routing is
+    /// searched by a build elsewhere and handed over with [`Cache::keep_routing`].
+    pub fn build_kept(prj: &Project, cache: &mut Cache, before: &crate::routing3d::Routing) -> Analysis {
+        Analysis::build_inner(prj, cache, &|_| {}, Some(before))
+    }
+
+    fn build_inner(prj: &Project, cache: &mut Cache, progress: &(dyn Fn(Progress) + Sync), before: Option<&crate::routing3d::Routing>) -> Analysis {
         let step = |step| progress(Progress { step, done: 0, total: 0 });
         step(Step::Netlists);
-        let Cache { netlist: bridged, open: apart } = cache;
+        let Cache { netlist: bridged, open: apart, routing: kept } = cache;
         let (netlist, open) = join(|| Netlist::build_with(prj, true, bridged), || Netlist::build_with(prj, false, apart));
         let idx = Index::build(prj);
         step(Step::Connections);
@@ -131,8 +155,14 @@ impl Analysis {
         let (mut wiring, open_wires) = panel::virtual_wiring(prj, &conns);
         step(Step::Routing);
         // The field plan and the revision marks do not need the routing.
-        let (routing, (field, changes)) = join(
-            || crate::routing3d::analyse_with(prj, &mut wiring, &conns, &open, &|done, total| progress(Progress { step: Step::Routing, done, total })),
+        let ((routing, routes_pending), (field, changes)) = join(
+            || match before {
+                None => (crate::routing3d::analyse_cached(prj, &mut wiring, &conns, &open, kept, &|done, total| progress(Progress { step: Step::Routing, done, total })), false),
+                Some(before) => match crate::routing3d::kept(prj, &mut wiring, &conns, &open, kept) {
+                    Some(routing) => (routing, false),
+                    None => (before.interim(prj.layout.enclosures.len()), true),
+                },
+            },
             || (crate::field::plan(prj, &conns), crate::revision::pending(prj)),
         );
         step(Step::Ducts);
@@ -149,6 +179,7 @@ impl Analysis {
             connections: conns,
             duct_fill: fill,
             routing,
+            routes_pending,
             field,
             reports: Vec::new(),
             tables: Mutex::default(),

@@ -4,6 +4,7 @@
 //! fractions of the part's width (x), height (y, up) and depth (z, towards the front).
 
 use super::*;
+use crate::{ConnectionPoint, Exit};
 
 const VICTRON_FRONT: [u8; 3] = [36, 108, 190];
 const ORANGE: [u8; 3] = [232, 122, 40];
@@ -17,20 +18,39 @@ const AMBER: [u8; 3] = [236, 170, 40];
 const SCREEN: [u8; 3] = [60, 124, 220];
 
 /// A model drawn in fractions of the part's box; elements in front (reaching z 0.85)
-/// are drawn in the front view as well.
+/// are drawn in the front view as well. Terminals are drawn where the part's connection
+/// points are.
 pub(super) struct Frac {
     pub m: Mesh3d,
     s: [f32; 3],
     pub prims: Vec<Prim2d>,
+    points: Vec<ConnectionPoint>,
 }
 
 impl Frac {
-    pub(super) fn new(w: f32, h: f32, d: f32) -> Frac {
-        Frac { m: Mesh3d::default(), s: [w, h, d], prims: Vec::new() }
+    pub(super) fn new(w: f32, h: f32, d: f32, points: Vec<ConnectionPoint>) -> Frac {
+        Frac { m: Mesh3d::default(), s: [w, h, d], prims: Vec::new(), points }
     }
 
     fn at(&self, q: [f32; 3]) -> [f32; 3] {
         [q[0] * self.s[0], q[1] * self.s[1], q[2] * self.s[2]]
+    }
+
+    /// The connection points leaving in direction `exit`, as fractions (x, y up).
+    fn points_to(&self, exit: Exit) -> Vec<(f32, f32)> {
+        let [w, h, _] = self.s;
+        self.points.iter().filter(|c| c.exit == exit).map(|c| (c.pos[0] / w, 1.0 - c.pos[1] / h)).collect()
+    }
+
+    /// Spring contacts in the front at the connection points leaving there: the wire
+    /// entry and the release tab above it.
+    fn springs(&mut self, z0: f32) {
+        let [w, h, _] = self.s;
+        let (dx, dy) = (2.2 / w, 1.0 / h);
+        for (x, y) in self.points_to(Exit::Front) {
+            self.b([x - dx, y - 2.4 * dy, z0], [x + dx, y + 0.6 * dy, 1.0], DARK);
+            self.b([x - dx, y + 0.9 * dy, z0], [x + dx, y + 2.4 * dy, 0.99], ORANGE);
+        }
     }
 
     /// A box from `lo` to `hi`.
@@ -59,12 +79,12 @@ impl Frac {
         self.b([0.0, 0.0, 0.0], [1.0, 1.0, 0.6], c);
         self.b([0.0, 0.14, 0.6], [1.0, 0.86, 0.8], c);
         self.b([0.02, 0.27, 0.8], [0.98, 0.73, 0.985], c);
-        // Screw terminals on the steps above and below the shoulders.
-        let n = ((self.s[0] / 9.0).floor() as usize).clamp(1, 8);
-        for k in 0..n {
-            let x = (k as f32 + 0.5) / n as f32;
-            let r = (0.3 / n as f32).min(0.12);
-            for y in [0.07, 0.93] {
+        // Screw terminals on the steps above and below the shoulders, one per
+        // connection point of the row.
+        for (exit, y) in [(Exit::Up, 0.93), (Exit::Down, 0.07)] {
+            let xs = self.points_to(exit);
+            let r = (0.3 / xs.len().max(1) as f32).min(0.12);
+            for (x, _) in xs {
                 self.b([x - r, y - 0.035, 0.6], [x + r, y + 0.035, 0.62], DARK);
             }
         }
@@ -99,6 +119,8 @@ pub(super) fn brand_of(p: &Part) -> Option<Brand> {
             "Inverter / charger" => Brand::MultiPlus,
             "Inverter" => Brand::InverterRs,
             "System monitoring" => Brand::Cerbo,
+            // The BMV in the front panel is no shunt but a display.
+            "Battery monitor" if p.mounting == "Front panel" => return None,
             "Battery monitor" => Brand::Shunt,
             "Fuse" => Brand::Lynx,
             _ => Brand::VictronBox,
@@ -112,7 +134,9 @@ pub(super) fn brand_of(p: &Part) -> Option<Brand> {
             _ => Brand::HagerDin { rcd: false, contactor: false },
         },
         "DEHN" if sub == "Surge protection" => Brand::Dehn(p.functions.iter().filter(|f| f.kind == crate::FnKind::SurgeProtection).count().max(1)),
-        "Beckhoff" if sub == "Bus coupler" => Brand::BeckhoffCoupler,
+        // Power feed terminals (EL9410) are listed as bus couplers but look like terminals.
+        "Beckhoff" if sub == "Bus coupler" && p.width > 20.0 => Brand::BeckhoffCoupler,
+        "Beckhoff" if sub == "Bus coupler" => Brand::BeckhoffIo,
         "Beckhoff" if sub.ends_with("module") => Brand::BeckhoffIo,
         "Phoenix Contact" if sub == "Power supply" => Brand::PhoenixPsu,
         "Siemens" if sub == "Motor protection switch" => Brand::SiemensMps,
@@ -208,8 +232,9 @@ pub(super) fn draw(f: &mut Frac, brand: Brand) {
             }
         }
         Brand::Pylontech => {
-            // 19-inch module: black front with the bow handles, ports, switches, LEDs
-            // and the battery terminals.
+            // 19-inch module: black front with the bow handles, power switch, the ports
+            // CAN, RS485, Link 0 and Link 1, LEDs and the battery terminals (two -, two
+            // +); the catalog's connection points are on these ports and terminals.
             f.b([0.03, 0.0, 0.0], [0.97, 1.0, 0.92], BLACK);
             f.b([0.0, 0.0, 0.92], [1.0, 1.0, 0.95], [34, 36, 40]);
             for x in [0.035, 0.945] {
@@ -219,7 +244,7 @@ pub(super) fn draw(f: &mut Frac, brand: Brand) {
                 }
             }
             f.b([0.09, 0.7, 0.95], [0.115, 0.8, 0.97], RED);
-            for k in 0..3 {
+            for k in 0..4 {
                 let x = 0.13 + k as f32 * 0.036;
                 f.b([x, 0.68, 0.95], [x + 0.028, 0.8, 0.97], WHITE);
             }
@@ -294,31 +319,36 @@ pub(super) fn draw(f: &mut Frac, brand: Brand) {
         }
         Brand::BeckhoffIo => {
             // Slim light grey terminal: LEDs at the top, the spring contacts with their
-            // push buttons, the orange release tab at the bottom.
+            // release tabs, the orange release tab at the bottom.
             f.b([0.0, 0.0, 0.0], [1.0, 1.0, 0.95], LIGHT);
             f.b([0.1, 0.82, 0.95], [0.9, 0.95, 0.98], [206, 206, 200]);
             for y in [0.86, 0.9] {
                 f.b([0.3, y, 0.98], [0.7, y + 0.025, 1.0], LED);
             }
-            for k in 0..4 {
-                let y = 0.22 + k as f32 * 0.14;
-                f.b([0.2, y, 0.95], [0.8, y + 0.08, 1.0], if k % 2 == 0 { ORANGE } else { [150, 152, 150] });
+            if f.points_to(Exit::Front).is_empty() {
+                for k in 0..4 {
+                    let y = 0.22 + k as f32 * 0.14;
+                    f.b([0.2, y, 0.95], [0.8, y + 0.08, 1.0], if k % 2 == 0 { ORANGE } else { [150, 152, 150] });
+                }
             }
+            f.springs(0.95);
             f.b([0.2, 0.02, 0.95], [0.8, 0.12, 1.0], ORANGE);
         }
         Brand::BeckhoffCoupler => {
-            // Grey coupler: two network ports, LEDs, the power contacts with their
-            // coloured push buttons on the right.
+            // Grey coupler: two network ports, LEDs, the power contacts on the right.
             f.b([0.0, 0.0, 0.0], [1.0, 1.0, 0.92], LIGHT);
             f.b([0.05, 0.2, 0.92], [0.13, 0.55, 0.96], [200, 40, 40]);
             for y in [0.58, 0.72] {
                 f.b([0.22, y, 0.92], [0.55, y + 0.11, 1.0], BLACK);
             }
             f.b([0.22, 0.88, 0.92], [0.55, 0.95, 0.98], LED);
-            for (k, c) in [ORANGE, [60, 110, 200], [200, 50, 50], [150, 152, 150]].into_iter().enumerate() {
-                let y = 0.2 + k as f32 * 0.14;
-                f.b([0.65, y, 0.92], [0.9, y + 0.08, 1.0], c);
+            if f.points_to(Exit::Front).is_empty() {
+                for (k, c) in [ORANGE, [60, 110, 200], [200, 50, 50], [150, 152, 150]].into_iter().enumerate() {
+                    let y = 0.2 + k as f32 * 0.14;
+                    f.b([0.65, y, 0.92], [0.9, y + 0.08, 1.0], c);
+                }
             }
+            f.springs(0.92);
         }
         Brand::PhoenixPsu => {
             // Silver ribbed housing, light grey front with the green pluggable terminal

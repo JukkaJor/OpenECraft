@@ -1284,7 +1284,7 @@ pub fn route_weighted(e: &Enclosure, from: WireEnd, to: WireEnd, cost: &dyn Fn(u
 }
 
 /// A routed wire of the virtual wiring.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct RoutedWire {
     pub enclosure: usize,
     pub from: String,

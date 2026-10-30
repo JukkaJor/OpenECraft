@@ -632,6 +632,12 @@ fn rack_parts(c: &mut C) {
         ("GEN.RK-UPS-2U", "UPS 19-inch, 1500 VA, line interactive, 2 U", "GU", 980.0, (2.0, 450.0, 22.0), &[(Generic, "L N")][..], 40.0),
     ] {
         let p = c.add(number, desc, "General", "19-inch device", ident, price, dims(u, d, kg), functions);
+        // The power inlet at the rear, on the right, its cable up along the rack.
+        let (w, h) = (RACK_WIDTH, u * RACK_UNIT);
+        let pins: Vec<String> = p.functions.iter().flat_map(|f| f.pin_list()).collect();
+        p.connection_points = (pins.iter().enumerate())
+            .map(|(i, pin)| crate::ConnectionPoint { pin: pin.clone(), pos: [w * 0.8 + 10.0 * i as f32, h / 2.0, 0.0], exit: crate::Exit::Up })
+            .collect();
         p.voltage = if functions.is_empty() { String::new() } else { "230 V AC".into() };
         p.tech_data = if power > 0.0 { format!("Rack units: {u:.0}
 Power loss: {power:.0} W") } else { format!("Rack units: {u:.0}") };
@@ -748,13 +754,13 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
             let (f0, f1) = (h * 0.3, h * 0.7);
             m3.add_painted_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }], models::BODY);
             rect(&mut prims, w * 0.05, f0, w * 0.95, f1, false);
-            // Screw terminals on the steps above and below the front
-            let n = ((w / 9.0).floor() as usize).clamp(1, 6);
-            let pitch = w / n as f32;
-            for i in 0..n {
-                let cx = pitch * (i as f32 + 0.5);
-                let r = (pitch * 0.28).min(3.0);
-                for cy in [h * 0.15, h * 0.85] {
+            // Screw terminals on the steps above and below the front, one per connection
+            // point of the row
+            let points = p.connection_points_or_default().0;
+            for (exit, cy) in [(crate::Exit::Up, h * 0.85), (crate::Exit::Down, h * 0.15)] {
+                let xs: Vec<f32> = points.iter().filter(|c| c.exit == exit).map(|c| c.pos[0]).collect();
+                let r = (w / xs.len().max(1) as f32 * 0.28).min(3.0);
+                for cx in xs {
                     m3.add_painted_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5], models::DARK);
                     prims.push(Prim2d::Circle { c: [cx, h - cy], r, fill: false });
                     prims.push(Prim2d::Line { a: [cx - r * 0.7, h - cy], b: [cx + r * 0.7, h - cy] });
@@ -804,8 +810,13 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
         }
         Shape::Contactor => {
             m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], models::BODY);
-            for cy in [h * 0.06, h * 0.94] {
-                m3.add_painted_box([w * 0.1, cy - h * 0.04, d * 0.7], [w * 0.9, cy + h * 0.04, d * 0.72], models::DARK);
+            let points = p.connection_points_or_default().0;
+            for (exit, cy) in [(crate::Exit::Up, h * 0.94), (crate::Exit::Down, h * 0.06)] {
+                let xs: Vec<f32> = points.iter().filter(|c| c.exit == exit).map(|c| c.pos[0]).collect();
+                let r = (w / xs.len().max(1) as f32 * 0.3).min(3.0);
+                for cx in xs {
+                    m3.add_painted_box([cx - r, cy - h * 0.04, d * 0.7], [cx + r, cy + h * 0.04, d * 0.72], models::DARK);
+                }
             }
             m3.add_painted_box([w * 0.06, h * 0.2, d * 0.7], [w * 0.94, h * 0.8, d * 0.96], [112, 116, 122]);
             m3.add_painted_box([w * 0.38, h * 0.44, d * 0.96], [w * 0.62, h * 0.56, d], [232, 232, 228]);

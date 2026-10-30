@@ -838,17 +838,35 @@ fn graphics_tab(ui: &mut egui::Ui, part: &mut Part, model_scale: &mut f32) -> Op
 
 /// Parses a model file and assigns it to the part. Returns a status message.
 pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -> Result<String, String> {
+    Ok(assign_model(part, name, read_model(kind, name, bytes)?))
+}
+
+/// A model read from a file: a 2D front view or a 3D model.
+pub enum Model {
+    Front2d(Model2d),
+    Mesh3d(Mesh3d),
+}
+
+/// Parses the model file `name` (STEP, IGES and Parasolid files are tessellated, which
+/// can take long: the editor does it on another thread).
+pub fn read_model(kind: ModelKind, name: &str, bytes: &[u8]) -> Result<Model, String> {
+    match kind {
+        ModelKind::Front2d => Ok(Model::Front2d(parse_svg(&String::from_utf8_lossy(bytes))?)),
+        ModelKind::Mesh3d => Ok(Model::Mesh3d(parse_model_3d(short_name(name), bytes)?)),
+    }
+}
+
+/// Assigns a model read from the file `name` to the part. Returns a status message.
+pub fn assign_model(part: &mut Part, name: &str, model: Model) -> String {
     let file = short_name(name);
     let number = &part.number;
-    match kind {
-        ModelKind::Front2d => {
-            let m = parse_svg(&String::from_utf8_lossy(bytes))?;
+    match model {
+        Model::Front2d(m) => {
             let msg = tr_fmt!("{}: 2D front view with {} elements assigned to {}", file, m.prims.len(), number);
             part.model_2d = Some(m.into());
-            Ok(msg)
+            msg
         }
-        ModelKind::Mesh3d => {
-            let m = parse_model_3d(file, bytes)?;
+        Model::Mesh3d(m) => {
             let s = m.size();
             let msg = tr_fmt!("{}: 3D model with {} triangles ({} × {} × {} mm) assigned to {}", file, m.triangles.len(), format!("{:.1}", s[0]), format!("{:.1}", s[1]), format!("{:.1}", s[2]), number);
             // Parts without mounting data take the model size.
@@ -858,7 +876,7 @@ pub fn apply_model(part: &mut Part, kind: ModelKind, name: &str, bytes: &[u8]) -
                 part.depth = s[2];
             }
             part.model_3d = Some(m.into());
-            Ok(msg)
+            msg
         }
     }
 }

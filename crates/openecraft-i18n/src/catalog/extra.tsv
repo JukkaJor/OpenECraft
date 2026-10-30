@@ -5951,3 +5951,9 @@ Show the frame time and the frames per second	Bildzeit und Bilder pro Sekunde an
 Draw with the graphics card	Mit der Grafikkarte zeichnen	Dessiner avec la carte graphique	Dibujar con la tarjeta gráfica
 Draws the 3D view of the panel layout with OpenGL 3 / WebGL 2, much faster for large rooms; off: drawn by the processor	Zeichnet die 3D-Ansicht des Schaltschrankaufbaus mit OpenGL 3 / WebGL 2, bei großen Räumen viel schneller; aus: Zeichnen durch den Prozessor	Dessine la vue 3D de l'implantation d'armoire avec OpenGL 3 / WebGL 2, beaucoup plus rapide pour les grandes salles ; désactivé : dessinée par le processeur	Dibuja la vista 3D del diseño del armario con OpenGL 3 / WebGL 2, mucho más rápido en salas grandes; desactivado: la dibuja el procesador
 not available, drawn by the processor	nicht verfügbar, Zeichnen durch den Prozessor	non disponible, dessinée par le processeur	no disponible, la dibuja el procesador
+Updating the 3D routing	3D-Verlegung wird aktualisiert	Mise à jour du routage 3D	Actualizando el enrutado 3D
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kabel und Rohre werden im Hintergrund neu verlegt; bis dahin zeigt die 3D-Ansicht ihre bisherigen Verläufe.	Les câbles et tuyaux sont routés à nouveau en arrière-plan ; d'ici là, la vue 3D montre leurs tracés précédents.	Los cables y tuberías se vuelven a trazar en segundo plano; hasta entonces la vista 3D muestra sus recorridos anteriores.
+Exporting {}	Exportiere {}	Exportation de {}	Exportando {}
+Reading {}	Lese {}	Lecture de {}	Leyendo {}
+Reading the parts file	Lese die Artikeldatei	Lecture du fichier d'articles	Leyendo el archivo de artículos
+{} stopped with an error: {}	{} mit einem Fehler abgebrochen: {}	{} interrompu par une erreur : {}	{} se detuvo con un error: {}

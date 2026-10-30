@@ -751,7 +751,14 @@ outside the project.
 **Incremental analysis.** The netlist is built from a scan per page (its connection
 points joined by wires and symbol bridges), kept in `analysis::Cache` with a fingerprint
 of the page's wires and symbols; only changed pages are scanned again, the assembly of
-the nets over the pages stays global. The point-to-point connections are computed once
+the nets over the pages stays global. The 3D routing is kept there too and reused while
+its routes, the wiring, the language and the project apart from its pages stay the same
+(an edit of the schematic: 25 ms instead of 3.8 s for the building services example).
+After an edit that changes routes the editor builds the analysis without searching
+them (`Analysis::build_kept`: the earlier cables and tubes stand in, `routes_pending`)
+and searches them on another thread; the result goes into the cache and the analysis
+is built again with it (a layout edit there: 30 ms, the routes follow about 4 s later).
+The point-to-point connections are computed once
 (the panel wiring took its own copy before), the two netlists are built at the same
 time and the checks run on several threads where the platform has them (sequential in
 the browser, without a `cfg` branch: `std::thread::available_parallelism` fails there).

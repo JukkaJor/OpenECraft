@@ -2,6 +2,17 @@
 //! user opens (projects, parts, libraries, drawings, tables, …).
 
 use super::*;
+use crate::jobs::Job;
+use openecraft_ui::part_editor as pe;
+
+/// What an export or import on another thread brings back.
+pub(super) enum Done {
+    /// The file name, the file type (title and extension) and the content.
+    Export { name: String, title: String, extension: String, out: Result<Vec<u8>, String> },
+    /// A model file read for the part it was chosen for.
+    Model { name: String, model: Result<pe::Model, String> },
+    Parts(Result<Vec<parts::Part>, String>),
+}
 
 impl App {
     pub(super) fn suggested_name(&self, ext: &str) -> String {
@@ -134,16 +145,70 @@ impl App {
         }
     }
 
+    /// Runs an export on another thread (with an analysis of its own, so that the
+    /// editor goes on); the file is saved once it is ready.
     pub(super) fn run_exporter_with(&mut self, ctx: &egui::Context, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) {
-        let title = text(&e.title).to_string();
-        match self.exporter_output(e, lang, extra) {
-            Ok((name, out)) => self.export_bytes(ctx, name, (&title, &e.extension), &out),
-            Err(err) => self.notify_error(ctx, tr_fmt!("Export failed: {}", err)),
+        let (title, extension) = (text(&e.title).to_string(), e.extension.clone());
+        let (name, args) = self.export_args(e, lang, extra);
+        let mut snapshot = self.session.snapshot(&self.plugins);
+        let (e, lang) = (e.clone(), lang.map(String::from));
+        let label = tr_fmt!("Exporting {}", name);
+        self.jobs.push(Job::start(label, ctx, move || {
+            let out = match lang.as_deref() {
+                Some(l) => export_in(&snapshot.prj, snapshot.reports.clone(), &e, l, &args),
+                None => {
+                    let an = snapshot.analyse();
+                    (e.run)(&snapshot.prj, &an, &Args(&args))
+                }
+            };
+            Done::Export { name, title, extension, out: out.map(|o| o.into_bytes()) }
+        }));
+    }
+
+    /// File name and content of an export, made at once; exporters that take a page get
+    /// the current one.
+    pub(super) fn exporter_output(&self, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) -> Result<(String, Vec<u8>), String> {
+        let (name, args) = self.export_args(e, lang, extra);
+        let result = match lang {
+            Some(l) => export_in(&self.session.prj, self.plugins.reports().cloned().collect(), e, l, &args),
+            None => (e.run)(&self.session.prj, &self.session.analysis, &Args(&args)),
+        };
+        result.map(|out| (name, out.into_bytes()))
+    }
+
+    /// The finished exports and imports.
+    pub(super) fn poll_jobs(&mut self, ctx: &egui::Context) {
+        let mut i = 0;
+        while i < self.jobs.len() {
+            let Some(done) = self.jobs[i].take() else {
+                i += 1;
+                continue;
+            };
+            let job = self.jobs.remove(i);
+            match done {
+                Ok(Done::Export { name, title, extension, out: Ok(out) }) => self.export_bytes(ctx, name, (&title, &extension), &out),
+                Ok(Done::Export { out: Err(err), .. }) => self.notify_error(ctx, tr_fmt!("Export failed: {}", err)),
+                Ok(Done::Model { name, model }) => {
+                    let msg = match model.and_then(|m| self.parts_ui.assign_model(&name, m, &mut self.parts_db, &mut self.session.prj)) {
+                        Ok(m) => m,
+                        Err(e) => tr_fmt!("Model import failed: {}", e),
+                    };
+                    self.notify(ctx, msg);
+                }
+                Ok(Done::Parts(list)) => self.add_parts(ctx, list),
+                Err(err) => self.notify_error(ctx, tr_fmt!("{} stopped with an error: {}", job.label, err)),
+            }
         }
     }
 
-    /// File name and content of an export; exporters that take a page get the current one.
-    pub(super) fn exporter_output(&self, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) -> Result<(String, Vec<u8>), String> {
+    /// What runs on another thread, for the status bar.
+    pub(super) fn jobs_running(&self) -> Vec<&str> {
+        self.jobs.iter().map(|j| j.label.as_str()).collect()
+    }
+
+    /// File name and arguments of an export; exporters that take a page get the current
+    /// one.
+    fn export_args(&self, e: &openecraft_api::Exporter, lang: Option<&str>, extra: Map<String, serde_json::Value>) -> (String, Map<String, serde_json::Value>) {
         let takes = |n: &str| e.params.iter().any(|p| p.name == n);
         let page = self.session.prj.pages[self.session.page].name.clone();
         let base = self.suggested_name("x");
@@ -166,15 +231,7 @@ impl App {
         if takes("file") {
             args.insert("file".into(), name.clone().into());
         }
-        let result = match lang {
-            Some(l) => translation::with_language(&self.session.prj, l, |prj| {
-                let mut an = Analysis::build(prj);
-                an.set_reports(self.plugins.reports().cloned());
-                (e.run)(prj, &an, &Args(&args))
-            }),
-            None => (e.run)(&self.session.prj, &self.session.analysis, &Args(&args)),
-        };
-        result.map(|out| (name, out.into_bytes()))
+        (name, args)
     }
 
     pub(super) fn export_bytes(&mut self, ctx: &egui::Context, name: String, filter: (&str, &str), content: &[u8]) {
@@ -204,12 +261,14 @@ impl App {
                 Err(e) => self.notify_failure(ctx, tr_fmt!("{} is not an OpenECraft project template.", io::short_name(&loaded.name)), e),
             },
             Purpose::Parts => self.import_parts(ctx, &loaded.bytes),
-            Purpose::Model(_) => {
-                let msg = match self.parts_ui.apply_model(&loaded, &mut self.parts_db, &mut self.session.prj) {
-                    Ok(m) => m,
-                    Err(e) => tr_fmt!("Model import failed: {}", e),
-                };
-                self.notify(ctx, msg);
+            Purpose::Model(kind) => {
+                // STEP, IGES and Parasolid files are tessellated on another thread.
+                let (name, bytes) = (loaded.name.clone(), loaded.bytes.clone());
+                let label = tr_fmt!("Reading {}", io::short_name(&name));
+                self.jobs.push(Job::start(label, ctx, move || {
+                    let model = pe::read_model(kind, &name, &bytes);
+                    Done::Model { name, model }
+                }));
             }
             Purpose::Macros => self.import_macros(ctx, &loaded.text()),
             Purpose::PlcTable => match openecraft_core::plc::import_symbol_table(&mut self.session.prj, &loaded.text()) {
@@ -324,9 +383,16 @@ impl App {
         }
     }
 
-    /// Imports a parts file (CSV, JSON, BMEcat, EPLAN XML or EDZ) into the database.
+    /// Imports a parts file (CSV, JSON, BMEcat, EPLAN XML or EDZ) into the database; it
+    /// is read on another thread.
     pub(super) fn import_parts(&mut self, ctx: &egui::Context, bytes: &[u8]) {
-        match openecraft_edz::import(bytes) {
+        let bytes = bytes.to_vec();
+        self.jobs.push(Job::start(tr("Reading the parts file").to_string(), ctx, move || Done::Parts(openecraft_edz::import(&bytes))));
+    }
+
+    /// Adds the parts read from a parts file to the database.
+    fn add_parts(&mut self, ctx: &egui::Context, list: Result<Vec<parts::Part>, String>) {
+        match list {
             Ok(list) => {
                 let n = list.len();
                 for p in list {
@@ -371,4 +437,14 @@ impl App {
             Err(e) => self.notify_error(ctx, tr_fmt!("DXF import failed: {}", e)),
         }
     }
+}
+
+/// Runs the exporter `e` on the project with its texts in `lang` (and an analysis in
+/// that language).
+fn export_in(prj: &Project, reports: Vec<openecraft_api::Report>, e: &openecraft_api::Exporter, lang: &str, args: &Map<String, serde_json::Value>) -> Result<openecraft_api::Export, String> {
+    translation::with_language(prj, lang, |prj| {
+        let mut an = Analysis::build(prj);
+        an.set_reports(reports);
+        (e.run)(prj, &an, &Args(args))
+    })
 }

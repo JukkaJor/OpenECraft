@@ -20,11 +20,10 @@ fn the_stored_project_and_parts_replace_the_start_up_ones() {
     let mut parts = PartsDb::default();
     parts.parts.push(openecraft_parts::Part { number: "P1".into(), ..Default::default() });
     // A first run saves.
-    let first = Autosave::start(store.clone(), &ctx, &PartsDb::default());
+    let mut first = Autosave::start(store.clone(), &ctx, &PartsDb::default());
     let mut session = Session::new(named("stored"), None);
     let mut start_parts = PartsDb::default();
     assert!(!first.save(&session, &parts), "nothing is written before the stored values arrived");
-    let mut first = first;
     first.poll(&mut session, &mut start_parts);
     assert!(first.save(&session, &parts));
 
@@ -79,4 +78,24 @@ fn values_arriving_after_a_replacement_do_not_replace_it() {
     session.replace(named("opened"), Some("opened.oec".into()));
     assert!(!autosave.poll(&mut session, &mut PartsDb::default()));
     assert_eq!(session.prj.info.name, "opened");
+}
+
+#[test]
+fn later_saves_are_written_on_another_thread() {
+    let store = store("thread");
+    let ctx = egui::Context::default();
+    let mut autosave = Autosave::start(store.clone(), &ctx, &PartsDb::default());
+    let mut session = Session::new(named("first"), None);
+    autosave.poll(&mut session, &mut PartsDb::default());
+    assert!(autosave.save(&session, &PartsDb::default()), "the first write is made at once");
+    session.prj.info.name = "second".into();
+    assert!(autosave.save(&session, &PartsDb::default()));
+    session.prj.info.name = "third".into();
+    autosave.save(&session, &PartsDb::default());
+    autosave.finish();
+    // The next run gets the last state saved.
+    let mut next = Autosave::start(store, &ctx, &PartsDb::default());
+    let mut restored = Session::new(named("start"), None);
+    assert!(next.poll(&mut restored, &mut PartsDb::default()));
+    assert_eq!(restored.prj.info.name, "third");
 }

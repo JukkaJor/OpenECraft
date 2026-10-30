@@ -61,6 +61,27 @@ fn plc_modules_are_wired_at_the_bottom() {
 }
 
 #[test]
+fn surge_arresters_have_the_earth_at_the_bottom() {
+    let arrester = |groups: &[(FnKind, &str)]| Part {
+        width: 72.0,
+        height: 90.0,
+        depth: 66.0,
+        functions: groups.iter().map(|(k, pins)| FunctionTemplate::new(*k, pins)).collect(),
+        ..Default::default()
+    };
+    let side = |points: &[ConnectionPoint], exit| points.iter().filter(|c| c.exit == exit).map(|c| c.pin.clone()).collect::<Vec<_>>();
+    // TN-S with remote signalling contact: lines on top, PE and the contact below.
+    use FnKind::{Changeover, SurgeProtection as Spd};
+    let points = default_connection_points(&arrester(&[(Spd, "L1 PE"), (Spd, "L2 PE"), (Spd, "L3 PE"), (Spd, "N PE"), (Changeover, "11 12 14")]));
+    assert_eq!(side(&points, Exit::Up), ["L1", "L2", "L3", "N"]);
+    assert_eq!(side(&points, Exit::Down), ["PE", "11", "12", "14"]);
+    // TT: N is a line of its own module; DC: L+ and L- on top.
+    assert_eq!(side(&default_connection_points(&arrester(&[(Spd, "L1 N"), (Spd, "N PE")])), Exit::Down), ["PE"]);
+    assert_eq!(side(&default_connection_points(&arrester(&[(Spd, "L+ PE"), (Spd, "L- PE")])), Exit::Up), ["L+", "L-"]);
+    assert_eq!(side(&default_connection_points(&arrester(&[(Spd, "L1 PEN")])), Exit::Down), ["PEN"]);
+}
+
+#[test]
 fn duplicate_and_missing_data() {
     // The same designation in two functions is one point.
     let part = Part {

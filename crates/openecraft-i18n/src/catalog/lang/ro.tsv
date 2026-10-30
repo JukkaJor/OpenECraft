@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Cameră de pompe
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Încăperea rândului de carcase cu pompele sale: motoare de pompă alimentate prin presetupe în acoperișurile dulapurilor, o pompă și un rezervor pe pardoseală, robinete cu bilă și un manometru pe perete și conductele DN25 ale circuitului de apă pozate 3D de-a lungul unui traseu de conducte pe perete.
 Room floor	Pardoseala încăperii
+Updating the 3D routing	Se actualizează pozarea 3D
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Cablurile și țevile sunt pozate din nou în fundal; până atunci vederea 3D arată traseele anterioare.
+Exporting {}	Se exportă {}
+Reading {}	Se citește {}
+Reading the parts file	Se citește fișierul de piese
+{} stopped with an error: {}	{} s-a oprit cu o eroare: {}

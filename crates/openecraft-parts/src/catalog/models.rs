@@ -104,7 +104,7 @@ fn kind_of(p: &Part) -> Option<Kind> {
 pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
     let (w, h, d) = (p.width, p.height, p.depth);
     if let Some(brand) = brands::brand_of(p) {
-        let mut f = brands::Frac::new(w, h, d);
+        let mut f = brands::Frac::new(w, h, d, p.connection_points_or_default().0);
         brands::draw(&mut f, brand);
         fit(&mut f.m, [w, h, d]);
         let mut prims = vec![Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false }];

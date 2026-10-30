@@ -98,3 +98,89 @@ fn devices_of_the_bundled_catalogs_look_like_their_photos() {
         assert!(p.model_3d.is_some(), "{}", p.number);
     }
 }
+
+#[test]
+fn battery_connection_points_are_on_the_modelled_terminals() {
+    let parts = crate::bundled::default_parts();
+    for n in ["PYL.US5000", "PYL.US3000C"] {
+        let p = parts.iter().find(|p| p.number == n).unwrap();
+        let m = p.model_3d.as_ref().unwrap();
+        // Whether a front face of colour `c` lies under the connection point, at most
+        // 10 mm behind it (the terminal's housing behind its bolt).
+        let on = |pin: &str, c: [u8; 3]| {
+            let cp = p.connection_points.iter().find(|cp| cp.pin == pin).unwrap_or_else(|| panic!("{n} {pin}"));
+            assert_eq!(cp.exit, crate::Exit::Front, "{n} {pin}");
+            let (x, y, z) = (cp.pos[0], p.height - cp.pos[1], cp.pos[2]);
+            m.triangles.iter().zip(&m.colors).any(|(t, col)| {
+                let v = t.map(|i| m.vertices[i as usize]);
+                let within = |k: usize, q: f32| v.iter().any(|a| a[k] <= q) && v.iter().any(|a| a[k] >= q);
+                *col == c && v.iter().all(|a| a[2] == v[0][2]) && v[0][2] <= z + 0.01 && v[0][2] >= z - 10.0 && within(0, x) && within(1, y)
+            })
+        };
+        assert!(on("+", [232, 122, 40]), "{n}: + on an orange terminal");
+        assert!(on("-", BLACK), "{n}: - on a black terminal");
+        for port in ["CAN", "RS485", "Link0", "Link1"] {
+            assert!(on(port, WHITE), "{n}: {port} on its port");
+        }
+    }
+}
+
+#[test]
+fn own_connection_points_are_on_the_models() {
+    use crate::vec3::{cross, dot, sub};
+    // Whether `q` lies on a triangle of the mesh (within half a millimetre).
+    let on_surface = |m: &Mesh3d, q: [f32; 3]| {
+        m.triangles.iter().any(|t| {
+            let [a, b, c] = t.map(|i| m.vertices[i as usize]);
+            let (u, v, w) = (sub(b, a), sub(c, a), sub(q, a));
+            let n = cross(u, v);
+            let nn = dot(n, n);
+            if nn <= 0.0 || dot(n, w).abs() / nn.sqrt() > 0.5 {
+                return false;
+            }
+            let (s, t) = (dot(cross(w, v), n) / nn, dot(cross(u, w), n) / nn);
+            s >= -0.01 && t >= -0.01 && s + t <= 1.01
+        })
+    };
+    let mut parts = default_catalog();
+    parts.extend(crate::bundled::default_parts());
+    let mut checked = 0;
+    for p in parts.iter().filter(|p| !p.connection_points.is_empty() && model(p).is_some()) {
+        let m = p.model_3d.as_ref().unwrap();
+        for c in &p.connection_points {
+            assert!(on_surface(m, [c.pos[0], p.height - c.pos[1], c.pos[2]]), "{} {} at {:?} is on the model", p.number, c.pin, c.pos);
+        }
+        checked += 1;
+    }
+    assert!(checked >= 27, "{checked} parts with own points");
+}
+
+#[test]
+fn din_rail_devices_have_a_screw_at_every_connection_point() {
+    let mut parts = default_catalog();
+    parts.extend(crate::bundled::default_parts());
+    let mut checked = 0;
+    for p in parts.iter().filter(|p| p.connection_points.is_empty() && p.top_group == crate::TopGroup::Electrical && p.mounting.starts_with("Mounting rail") && p.model_3d.is_some()) {
+        let m = p.model_3d.as_ref().unwrap();
+        let screws: Vec<([f32; 3], [f32; 3])> = (m.triangles.iter().zip(&m.colors))
+            .filter(|(_, c)| **c == DARK)
+            .map(|(t, _)| {
+                let v = t.map(|i| m.vertices[i as usize]);
+                let lo = [0, 1, 2].map(|k| v.iter().map(|a| a[k]).fold(f32::MAX, f32::min));
+                let hi = [0, 1, 2].map(|k| v.iter().map(|a| a[k]).fold(f32::MIN, f32::max));
+                (lo, hi)
+            })
+            .collect();
+        if screws.is_empty() {
+            continue;
+        }
+        for c in p.connection_points_or_default().0.iter().filter(|c| matches!(c.exit, crate::Exit::Up | crate::Exit::Down)) {
+            // In the upper or lower quarter of the device (the mesh has y up).
+            let upper = c.exit == crate::Exit::Up;
+            let found = screws.iter().any(|(lo, hi)| lo[0] <= c.pos[0] && c.pos[0] <= hi[0] && if upper { lo[1] > 0.75 * p.height } else { hi[1] < 0.25 * p.height });
+            assert!(found, "{}: screw under {} at x {}", p.number, c.pin, c.pos[0]);
+        }
+        checked += 1;
+    }
+    assert!(checked > 50, "{checked} devices");
+}

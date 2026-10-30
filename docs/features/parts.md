@@ -27,7 +27,11 @@ in the app storage (desktop) / local storage (browser).
 - **Connection points** per part (designation, position in the front view, the
   direction the wire leaves); parts without their own get them from the function
   templates by the IEC convention (odd designations at the top, even at the bottom, door
-  devices from the rear, PLC modules at the bottom). Edited in the part editor (tab
+  devices from the rear, PLC modules at the bottom, surge arresters with the earth and
+  the remote signalling contact at the bottom). The devices of the bundled catalogs
+  that are not wired this way (Victron, Pylontech, Beckhoff, Phoenix Contact power
+  supplies) and the 19-inch devices (power inlet at the rear) have their own; generated
+  models draw their terminals at the connection points. Edited in the part editor (tab
   *Connection points*: table, click into the front view to place one); the panel layout
   wires to them; CSV column `Connection points`: `A1:22.5/0/55/up|A2:…`.
 

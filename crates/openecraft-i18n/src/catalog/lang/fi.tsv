@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Pumppuhuone
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Rivityksen huone pumppuineen: pumppumoottorit syötetään kaappien kattojen kaapeliläpivientien kautta, pumppu ja säiliö lattialla, palloventtiilit ja painemittari seinällä sekä vesipiirin DN25-putket reititettynä 3D:nä seinän putkireittiä pitkin.
 Room floor	Huoneen lattia
+Updating the 3D routing	Päivitetään 3D-reititystä
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kaapelit ja putket reititetään uudelleen taustalla; siihen asti 3D-näkymä näyttää niiden aiemmat reitit.
+Exporting {}	Viedään {}
+Reading {}	Luetaan {}
+Reading the parts file	Luetaan osatiedostoa
+{} stopped with an error: {}	{} keskeytyi virheeseen: {}
