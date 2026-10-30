@@ -26,8 +26,8 @@ pub struct Session {
     saved: Option<u64>,
     /// File the project was opened from or saved to.
     pub file_name: Option<String>,
-    /// The project was replaced and has no analysis yet: the next one is built in the
-    /// background (`opening`).
+    /// The project is new to the session (at its start or replaced) and has no analysis
+    /// yet: the next one is built in the background (`opening`).
     replaced: bool,
     /// The analysis of the opened project being built on another thread.
     opening: Option<Opening>,
@@ -53,13 +53,15 @@ struct Built {
 }
 
 impl Session {
-    /// Opens `prj` (normalised) on its first schematic page; it counts as saved.
+    /// Opens `prj` (normalised) on its first schematic page; it counts as saved. Its
+    /// analysis is built in the background like that of a project opened later (the
+    /// project at the start of the app, restored from the last session).
     pub fn new(mut prj: Project, file_name: Option<String>) -> Session {
         prj.normalize();
         let history = History::new(&prj);
         let saved = Some(history.state());
         let page = first_schematic(&prj);
-        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved, file_name, replaced: false, opening: None, waiting: None }
+        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved, file_name, replaced: true, opening: None, waiting: None }
     }
 
     /// Replaces the project; the replacement counts as saved. Its history starts

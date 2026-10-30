@@ -138,6 +138,7 @@ fn refresh_follows_the_history_and_the_plugins() {
     let plugins = Plugins::new(Vec::<String>::new());
     let mut s = Session::new(demo_project(), None);
     s.refresh(&plugins, false);
+    opened(&mut s, &plugins);
     let devices = s.index.devices.len();
     assert!(devices > 0);
     assert!(s.analysis.reports().len() > 40, "the analysis knows the registered reports");
@@ -184,9 +185,14 @@ fn opened(s: &mut Session, plugins: &Plugins) {
 #[test]
 fn an_opened_project_is_analysed_in_the_background() {
     let plugins = Plugins::new(Vec::<String>::new());
-    let mut s = Session::new(Project::new_default(), None);
+    // The project the app starts with too (restored from the last session).
+    let mut s = Session::new(demo_project(), None);
     s.refresh(&plugins, false);
-    assert!(s.opening().is_none(), "the project of a new session is analysed at once");
+    if openecraft_core::analysis::threads() > 1 {
+        assert!(s.opening().is_some(), "the start project is analysed in the background");
+    }
+    opened(&mut s, &plugins);
+    assert!(!s.analysis.index.devices.is_empty());
     s.replace(demo_project(), Some("demo.oec".into()));
     s.refresh(&plugins, false);
     if openecraft_core::analysis::threads() > 1 {
