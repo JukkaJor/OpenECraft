@@ -5,7 +5,6 @@ use openecraft_i18n::{tr, tr_fmt};
 use openecraft_ui::icons::{self, Icon};
 use openecraft_core::model::Project;
 use openecraft_core::parts::{self, Part, PartFilter, PartsDb};
-use crate::io::{Loaded, Purpose};
 use egui::{vec2, RichText};
 use openecraft_ui::client::{FileUse, Reply, ServerClient};
 use openecraft_ui::part_editor::{self as pe, EditorState, ModelKind, PartTab};
@@ -108,16 +107,16 @@ impl Default for PartsUi {
 }
 
 impl PartsUi {
-    /// Puts an imported 2D / 3D model into the part it was requested for.
-    pub fn apply_model(&mut self, loaded: &Loaded, db: &mut PartsDb, prj: &mut Project) -> Result<String, String> {
-        let Purpose::Model(kind) = loaded.purpose else { return Err("not a model file".into()) };
+    /// Puts a model read from the file `name` (see [`pe::read_model`]) into the part it
+    /// was requested for.
+    pub fn assign_model(&mut self, name: &str, model: pe::Model, db: &mut PartsDb, prj: &mut Project) -> Result<String, String> {
         let (source, number) = self.model_target.take().ok_or("no part selected for the model")?;
         let list = match source {
             Source::Database => &mut db.parts,
             Source::Project => &mut prj.parts,
         };
         let part = list.iter_mut().find(|p| p.number == number).ok_or(tr_fmt!("part {} not found", number))?;
-        pe::apply_model(part, kind, &loaded.name, &loaded.bytes)
+        Ok(pe::assign_model(part, name, model))
     }
 
     /// Applies finished parts server requests (call every frame). Downloaded parts

@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Pompa odası
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Pano dizilimi ve pompalarıyla oda: panoların tavanlarındaki kablo rakorlarından beslenen pompa motorları, zeminde duran bir pompa ve tank, duvarda küresel vanalar ve bir manometre, ve duvardaki boru güzergâhı boyunca 3D olarak döşenen su devresinin DN25 boruları.
 Room floor	Oda zemini
+Updating the 3D routing	3D yönlendirme güncelleniyor
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kablolar ve borular arka planda yeniden yönlendiriliyor; o zamana kadar 3D görünüm önceki güzergâhlarını gösterir.
+Exporting {}	{} dışa aktarılıyor
+Reading {}	{} okunuyor
+Reading the parts file	Parça dosyası okunuyor
+{} stopped with an error: {}	{} bir hatayla durdu: {}

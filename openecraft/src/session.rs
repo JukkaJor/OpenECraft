@@ -33,6 +33,12 @@ pub struct Session {
     opening: Option<Opening>,
     /// Without threads: the build of `opening`, run by the next `refresh`.
     waiting: Option<Box<dyn FnOnce() + Send>>,
+    /// The 3D routing of an edited project being searched on another thread: the
+    /// analysis after an edit takes it from the cache once it is there.
+    routing: Option<Routed>,
+    /// The search in the background failed: the next analysis searches here, where a
+    /// failure shows.
+    route_here: bool,
 }
 
 /// An analysis built in the background for the history revision `rev` in the language
@@ -43,6 +49,10 @@ struct Opening {
     /// Where the build is and, once it is done, its result.
     shared: Arc<Mutex<Built>>,
 }
+
+/// The cache of a 3D routing searched in the background, once it is done (an error if
+/// the search failed).
+type Routed = Arc<Mutex<Option<Result<Cache, ()>>>>;
 
 /// Where a build in the background starts.
 const STARTED: Progress = Progress { step: Step::Netlists, done: 0, total: 0 };
@@ -61,7 +71,24 @@ impl Session {
         let history = History::new(&prj);
         let saved = Some(history.state());
         let page = first_schematic(&prj);
-        Session { prj, page, history, analysis: Analysis::default(), cache: Cache::default(), analysis_rev: 0, analysis_lang: openecraft_i18n::lang(), index: Index::default(), index_rev: 0, saved, file_name, replaced: true, opening: None, waiting: None }
+        Session {
+            prj,
+            page,
+            history,
+            analysis: Analysis::default(),
+            cache: Cache::default(),
+            analysis_rev: 0,
+            analysis_lang: openecraft_i18n::lang(),
+            index: Index::default(),
+            index_rev: 0,
+            saved,
+            file_name,
+            replaced: true,
+            opening: None,
+            waiting: None,
+            routing: None,
+            route_here: false,
+        }
     }
 
     /// Replaces the project; the replacement counts as saved. Its history starts
@@ -80,6 +107,7 @@ impl Session {
         self.replaced = true;
         self.opening = None;
         self.waiting = None;
+        self.routing = None;
     }
 
     /// Changes since the last save (undo back to the saved state leaves none).
@@ -117,17 +145,25 @@ impl Session {
     /// Rebuilds the analysis after a committed change or a change of the language
     /// (reports and checks of `plugins`), and the device index after a committed
     /// change or, while `editing`, every frame. The analysis of a project just opened
-    /// is built in the background ([`Session::opening`]).
+    /// is built in the background ([`Session::opening`]); after an edit, where threads
+    /// are, only the 3D routing is searched in the background
+    /// ([`Analysis::routes_pending`] until it is ready, then the analysis is built
+    /// again with it).
     pub fn refresh(&mut self, plugins: &Plugins, editing: bool) {
         self.take_opened();
+        self.take_routed();
         let lang = openecraft_i18n::lang();
         if self.opening.is_none() && (self.analysis_rev != self.history.rev || self.analysis_lang != lang) {
             if self.replaced {
                 self.open_in_background(plugins.checks().cloned().collect(), plugins.reports().cloned().collect());
             } else {
-                self.analysis = analyse(&self.prj, &mut self.cache, plugins.reports().cloned(), |p, a| plugins.check(p, a), &|_| {});
+                let before = (analysis::threads() >= 2 && !std::mem::take(&mut self.route_here)).then(|| std::mem::take(&mut self.analysis.routing));
+                self.analysis = analyse(&self.prj, &mut self.cache, before.as_ref(), plugins.reports().cloned(), |p, a| plugins.check(p, a), &|_| {});
                 self.analysis_rev = self.history.rev;
                 self.analysis_lang = lang;
+                if self.analysis.routes_pending && self.routing.is_none() {
+                    self.route_in_background();
+                }
             }
         }
         if editing || self.index_rev != self.history.rev {
@@ -160,7 +196,7 @@ impl Session {
                 };
                 let built = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     openecraft_i18n::with_lang(lang, || {
-                        let an = analyse(&prj, &mut cache, reports, |p, a| openecraft_api::run_checks(&checks, p, a), &progress);
+                        let an = analyse(&prj, &mut cache, None, reports, |p, a| openecraft_api::run_checks(&checks, p, a), &progress);
                         (an, cache)
                     })
                 }));
@@ -203,6 +239,55 @@ impl Session {
         }
     }
 
+    /// Searches the 3D routing of the project as it is now on another thread (see
+    /// [`Session::refresh`]).
+    fn route_in_background(&mut self) {
+        let shared = Arc::new(Mutex::new(None));
+        let (prj, mut cache, lang) = (self.prj.clone(), self.cache.clone(), openecraft_i18n::lang());
+        let out = shared.clone();
+        std::thread::spawn(move || {
+            let built = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                openecraft_i18n::with_lang(lang, || Analysis::build_with(&prj, &mut cache));
+                cache
+            }));
+            if let Ok(mut o) = out.lock() {
+                *o = Some(built.map_err(|_| ()));
+            }
+        });
+        self.routing = Some(shared);
+    }
+
+    /// Takes the 3D routing searched in the background once it is ready; the next
+    /// `refresh` builds the analysis again with it (or, if the project changed in the
+    /// meantime, searches again).
+    fn take_routed(&mut self) {
+        let Some(shared) = &self.routing else { return };
+        let Some(result) = shared.lock().ok().and_then(|mut r| r.take()) else { return };
+        self.routing = None;
+        match result {
+            Ok(cache) => self.cache.keep_routing(cache),
+            Err(()) => self.route_here = true,
+        }
+        self.invalidate();
+    }
+
+    /// The 3D routing is being searched in the background.
+    pub fn routing(&self) -> bool {
+        self.routing.is_some()
+    }
+
+    /// What an analysis of the project as it is now needs on another thread (an
+    /// export): the project, the cache and the reports and checks of `plugins`.
+    pub fn snapshot(&self, plugins: &Plugins) -> Snapshot {
+        Snapshot {
+            prj: self.prj.clone(),
+            cache: self.cache.clone(),
+            checks: plugins.checks().cloned().collect(),
+            reports: plugins.reports().cloned().collect(),
+            lang: openecraft_i18n::lang(),
+        }
+    }
+
     /// The next `refresh` rebuilds the analysis (plugins changed).
     pub fn invalidate(&mut self) {
         self.analysis_rev = self.history.rev.wrapping_add(1);
@@ -237,10 +322,33 @@ impl Session {
     }
 }
 
+/// The project and what its analysis needs, taken to another thread
+/// ([`Session::snapshot`]).
+pub struct Snapshot {
+    pub prj: Project,
+    cache: Cache,
+    checks: Vec<Check>,
+    pub reports: Vec<Report>,
+    lang: openecraft_i18n::Lang,
+}
+
+impl Snapshot {
+    /// The analysis of the project with the reports and the issues of the checks, in
+    /// the language of the editor when the snapshot was taken.
+    pub fn analyse(&mut self) -> Analysis {
+        let Snapshot { prj, cache, checks, reports, lang } = self;
+        openecraft_i18n::with_lang(*lang, || analyse(prj, cache, None, reports.clone(), |p, a| openecraft_api::run_checks(checks.iter(), p, a), &|_| {}))
+    }
+}
+
 /// The analysis of `prj` with the reports and the issues `check` finds, telling
-/// `progress` each step.
-pub fn analyse(prj: &Project, cache: &mut Cache, reports: impl IntoIterator<Item = Report>, check: impl Fn(&Project, &Analysis) -> Vec<Issue>, progress: &(dyn Fn(Progress) + Sync)) -> Analysis {
-    let mut an = Analysis::build_progress(prj, cache, progress);
+/// `progress` each step; with `before`, the 3D routing is not searched
+/// ([`Analysis::build_kept`]).
+pub fn analyse(prj: &Project, cache: &mut Cache, before: Option<&openecraft_core::routing3d::Routing>, reports: impl IntoIterator<Item = Report>, check: impl Fn(&Project, &Analysis) -> Vec<Issue>, progress: &(dyn Fn(Progress) + Sync)) -> Analysis {
+    let mut an = match before {
+        Some(before) => Analysis::build_kept(prj, cache, before),
+        None => Analysis::build_progress(prj, cache, progress),
+    };
     an.set_reports(reports);
     progress(Progress { step: Step::Checks, done: 0, total: 0 });
     an.issues = check(prj, &an);

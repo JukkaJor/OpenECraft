@@ -220,3 +220,56 @@ fn a_project_replaced_while_opening_gets_its_own_analysis() {
     opened(&mut s, &plugins);
     assert_eq!(s.analysis.index.devices.len(), Index::build(&s.prj).devices.len());
 }
+
+#[test]
+fn edits_of_the_layout_are_routed_in_the_background() {
+    if analysis::threads() < 2 {
+        return;
+    }
+    let plugins = Plugins::new(Vec::<String>::new());
+    let mut s = Session::new(demo_project(), None);
+    s.refresh(&plugins, false);
+    opened(&mut s, &plugins);
+    let before = s.analysis.routing.clone();
+    assert!(!before.items.is_empty() && !s.routing());
+    // A text changes no route: the routing is taken at once.
+    let page = s.prj.pages.iter().position(|p| !p.texts.is_empty()).unwrap();
+    s.prj.pages[page].texts[0].text.push_str(" (new)");
+    s.commit(true);
+    s.refresh(&plugins, false);
+    assert!(!s.analysis.routes_pending && !s.routing());
+    assert_eq!(s.analysis.routing, before);
+    // A device moved in the layout: the analysis follows at once, the routes when
+    // they are found.
+    let ei = s.prj.layout.enclosures.iter().position(|e| e.items.iter().any(|i| i.tag == "-K1")).unwrap();
+    s.prj.layout.enclosures[ei].items.iter_mut().find(|i| i.tag == "-K1").unwrap().x += 25.0;
+    s.commit(true);
+    s.refresh(&plugins, false);
+    assert!(s.analysis.routes_pending && s.routing());
+    assert!(s.analysis.routing.items.iter().all(|i| i.kind != openecraft_core::routing3d::RouteKind::Wire), "wires wait for their routes");
+    let start = std::time::Instant::now();
+    while s.routing() || s.analysis.routes_pending {
+        assert!(start.elapsed().as_secs() < 120, "the routing is not ready");
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        s.refresh(&plugins, false);
+    }
+    assert_eq!(s.analysis.routing, Analysis::build(&s.prj).routing, "as routed at once");
+    assert_ne!(s.analysis.routing, before);
+}
+
+#[test]
+fn a_snapshot_analyses_like_the_session() {
+    let plugins = Plugins::new(Vec::<String>::new());
+    let mut s = Session::new(demo_project(), None);
+    s.refresh(&plugins, false);
+    opened(&mut s, &plugins);
+    let mut snapshot = s.snapshot(&plugins);
+    // On another thread, as an export does.
+    let an = std::thread::spawn(move || {
+        let an = snapshot.analyse();
+        (an.issues.len(), an.reports().len(), an.routing)
+    })
+    .join()
+    .unwrap();
+    assert_eq!(an, (s.analysis.issues.len(), s.analysis.reports().len(), s.analysis.routing.clone()));
+}

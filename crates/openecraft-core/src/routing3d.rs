@@ -360,6 +360,25 @@ impl Routing {
     pub fn bundles_of(&self, item: usize) -> Vec<usize> {
         (0..self.bundles.len()).filter(|&b| self.bundles[b].items.contains(&item)).collect()
     }
+
+    /// What of this routing, of an earlier state of a project with `enclosures`
+    /// enclosures, is shown until the routing of the current state is ready: the cables
+    /// and tubes in enclosures that still exist. Wires (their indices may have changed),
+    /// bundles and branches are left out.
+    pub fn interim(&self, enclosures: usize) -> Routing {
+        let fits = |k: usize| k < enclosures;
+        let kept = |i: &&RoutedItem| {
+            i.kind != RouteKind::Wire && i.enclosures.iter().all(|&k| fits(k)) && i.legs.iter().all(|l| fits(l.enclosure)) && i.ends.iter().all(|e| e.enclosure.is_none_or(fits))
+        };
+        Routing {
+            items: self.items.iter().filter(kept).cloned().collect(),
+            paths: self.paths.iter().filter(|p| fits(p.enclosure)).cloned().collect(),
+            shields: self.shields.clone(),
+            changes: self.changes.clone(),
+            problems: self.problems.clone(),
+            ..Routing::default()
+        }
+    }
 }
 
 // ---------------------------------------------------------------------- analysis
@@ -447,6 +466,7 @@ fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
 }
 
 /// What is to be routed.
+#[derive(Clone, PartialEq)]
 struct Job {
     kind: RouteKind,
     key: String,
@@ -558,12 +578,70 @@ pub fn analyse(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], o
 }
 
 /// Like [`analyse`], telling `progress` how many of all routes are done before each.
-#[allow(clippy::too_many_lines)]
 pub fn analyse_with(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, progress: &dyn Fn(usize, usize)) -> Routing {
+    analyse_cached(prj, wiring, conns, open, &mut Cache::default(), progress)
+}
+
+/// What a routing keeps for the next one: its inputs and result, reused while they
+/// stay the same (edits of the schematic that change no route).
+#[derive(Clone, Default)]
+pub struct Cache {
+    last: Option<Box<Last>>,
+}
+
+#[derive(Clone)]
+struct Last {
+    /// The project without its pages: the routing takes them only through the jobs.
+    prj: Project,
+    lang: openecraft_i18n::Lang,
+    jobs: Vec<Job>,
+    /// The wiring before and after the routing.
+    wiring: Vec<RoutedWire>,
+    routed: Vec<RoutedWire>,
+    routing: Routing,
+}
+
+/// Like [`analyse_with`], taking the routing from `cache` when nothing it depends on
+/// changed, and keeping this one there.
+pub fn analyse_cached(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, cache: &mut Cache, progress: &dyn Fn(usize, usize)) -> Routing {
+    match lookup(prj, wiring, conns, open, cache) {
+        Ok(routing) => routing,
+        Err(key) => {
+            let (rest, lang, jobs) = *key;
+            let before = wiring.to_vec();
+            let routing = route(prj, wiring, jobs.clone(), progress);
+            cache.last = Some(Box::new(Last { prj: rest, lang, jobs, wiring: before, routed: wiring.to_vec(), routing: routing.clone() }));
+            routing
+        }
+    }
+}
+
+/// The routing kept in `cache` if nothing it depends on changed (`wiring` routed as
+/// with it); `None` where it would have to be searched.
+pub fn kept(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, cache: &Cache) -> Option<Routing> {
+    lookup(prj, wiring, conns, open, cache).ok()
+}
+
+/// The kept routing, or what it is kept for: the project without its pages, the
+/// language and the jobs.
+fn lookup(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: &Netlist, cache: &Cache) -> Result<Routing, Box<(Project, openecraft_i18n::Lang, Vec<Job>)>> {
+    let jobs = jobs(prj, wiring, conns, open);
+    let lang = openecraft_i18n::lang();
+    let rest = Project { pages: Vec::new(), ..prj.clone() };
+    match cache.last.as_deref().filter(|l| l.lang == lang && l.jobs == jobs && l.wiring == wiring && l.prj == rest) {
+        Some(last) => {
+            wiring.clone_from_slice(&last.routed);
+            Ok(last.routing.clone())
+        }
+        None => Err(Box::new((rest, lang, jobs))),
+    }
+}
+
+/// What is to be routed: the cables, hoses and the wires that are no cores of a cable,
+/// in the order they are routed.
+fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netlist) -> Vec<Job> {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
-    let lineups = panel::lineups(&prj.layout);
-    let lineup_of = |ei: usize| lineups.iter().position(|lu| lu.contains(&ei));
     let mut jobs: Vec<Job> = Vec::new();
     // Cables
     for c in &prj.cables {
@@ -644,7 +722,16 @@ pub fn analyse_with(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connectio
         });
     }
     jobs.sort_by(|a, b| a.class.cmp(&b.class).then(a.kind.cmp(&b.kind)).then(a.key.cmp(&b.key)));
+    jobs
+}
 
+/// Routes the `jobs` one after the other.
+#[allow(clippy::too_many_lines)]
+fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dyn Fn(usize, usize)) -> Routing {
+    let rules = &prj.layout.routing;
+    let pos = panel::positions(&prj.layout);
+    let lineups = panel::lineups(&prj.layout);
+    let lineup_of = |ei: usize| lineups.iter().position(|lu| lu.contains(&ei));
     let poses = panel::site_poses(prj);
     // The room an end is in: the room itself, or the room its cabinet stands in.
     let room_of_end = |ei: usize| if prj.layout.enclosures[ei].is_room() { Some(ei) } else { panel::room_of(&prj.layout, ei) };

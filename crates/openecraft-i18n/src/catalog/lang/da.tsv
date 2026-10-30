@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Pumperum
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Rummet med sammenbygningen og dens pumper: pumpemotorer forsynet gennem kabelforskruninger i skabenes tage, en pumpe og en tank på gulvet, kugleventiler og et manometer på væggen og vandkredsløbets DN25-rør ført i 3D langs et rørtracé på væggen.
 Room floor	Rummets gulv
+Updating the 3D routing	Opdaterer 3D-føringen
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kabler og rør føres igen i baggrunden; indtil da viser 3D-visningen deres tidligere føringer.
+Exporting {}	Eksporterer {}
+Reading {}	Læser {}
+Reading the parts file	Læser varefilen
+{} stopped with an error: {}	{} stoppede med en fejl: {}

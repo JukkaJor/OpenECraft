@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Szivattyúhelyiség
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	A szekrénysor helyisége a szivattyúival: a szivattyúmotorok a szekrénytetők kábeltömszelencéin át kapnak tápot, egy szivattyú és egy tartály a padlón, golyóscsapok és egy nyomásmérő a falon, a vízkör DN25-ös csövei pedig 3D-ben egy fali csővezeték-nyomvonal mentén haladnak.
 Room floor	Helyiség padlója
+Updating the 3D routing	3D nyomvonalvezetés frissítése
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	A kábelek és csövek nyomvonala a háttérben újra készül; addig a 3D nézet a korábbi nyomvonalakat mutatja.
+Exporting {}	{} exportálása
+Reading {}	{} beolvasása
+Reading the parts file	Alkatrészfájl beolvasása
+{} stopped with an error: {}	{} hibával leállt: {}

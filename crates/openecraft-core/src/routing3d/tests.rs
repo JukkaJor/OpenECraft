@@ -168,3 +168,66 @@ fn rules_and_frozen_routes_round_trip() {
     // The cable path is reported with its use.
     assert!(an.routing.paths.iter().any(|p| p.path == 5 && p.capacity > 0.0));
 }
+
+#[test]
+fn the_routing_is_reused_while_nothing_it_depends_on_changes() {
+    let mut prj = demo_with_gland();
+    let mut cache = crate::analysis::Cache::default();
+    // Routes searched by a build (progress is told before each one).
+    let searched = |prj: &Project, cache: &mut crate::analysis::Cache| {
+        let routes = std::sync::atomic::AtomicUsize::new(0);
+        let an = Analysis::build_progress(prj, cache, &|p| {
+            if p.step == crate::analysis::Step::Routing && p.total > 0 {
+                routes.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            }
+        });
+        (routes.into_inner(), an)
+    };
+    let (first, an) = searched(&prj, &mut cache);
+    assert!(first > 0);
+    // A text on a page changes no route: the same routing and wiring, nothing searched.
+    let page = prj.pages.iter().position(|p| !p.texts.is_empty()).unwrap();
+    prj.pages[page].texts[0].text.push_str(" (new)");
+    let (again, same) = searched(&prj, &mut cache);
+    assert_eq!(again, 0);
+    assert!(same.routing == an.routing && same.wiring == an.wiring);
+    assert_eq!(same.routing, Analysis::build(&prj).routing, "as built without the cache");
+    // A device moved in the layout and the language are searched again.
+    let it = prj.layout.enclosures[0].items.iter_mut().find(|i| i.tag == "-K1").unwrap();
+    it.x += 25.0;
+    assert_eq!(searched(&prj, &mut cache).0, first);
+    openecraft_i18n::with_lang(openecraft_i18n::Lang::De, || assert_eq!(searched(&prj, &mut cache).0, first));
+}
+
+#[test]
+fn an_interim_routing_keeps_what_still_fits() {
+    let an = Analysis::checked(&demo_with_gland());
+    let r = &an.routing;
+    assert!(r.items.iter().any(|i| i.kind == RouteKind::Wire) && r.items.iter().any(|i| i.kind == RouteKind::Cable));
+    let interim = r.interim(1);
+    assert!(interim.items.iter().all(|i| i.kind != RouteKind::Wire), "wire indices may have changed");
+    assert_eq!(interim.items.len(), r.items.iter().filter(|i| i.kind != RouteKind::Wire).count());
+    assert!(interim.bundles.is_empty() && interim.branches.is_empty());
+    assert_eq!(interim.problems, r.problems);
+    // Without the enclosure the routes run in, nothing is left of them.
+    assert!(r.interim(0).items.iter().all(|i| i.enclosures.is_empty() && i.ends.iter().all(|e| e.enclosure.is_none())));
+}
+
+#[test]
+fn a_kept_routing_is_only_taken_from_the_cache() {
+    let mut prj = demo_with_gland();
+    let mut cache = crate::analysis::Cache::default();
+    let full = Analysis::build_with(&prj, &mut cache);
+    let it = prj.layout.enclosures[0].items.iter_mut().find(|i| i.tag == "-K1").unwrap();
+    it.x += 25.0;
+    let kept = Analysis::build_kept(&prj, &mut cache, &full.routing);
+    assert!(kept.routes_pending);
+    assert_eq!(kept.routing, full.routing.interim(prj.layout.enclosures.len()));
+    // Once a build elsewhere routed the project, its routing is taken.
+    let mut elsewhere = cache.clone();
+    let routed = Analysis::build_with(&prj, &mut elsewhere);
+    cache.keep_routing(elsewhere);
+    let kept = Analysis::build_kept(&prj, &mut cache, &full.routing);
+    assert!(!kept.routes_pending);
+    assert!(kept.routing == routed.routing && kept.wiring == routed.wiring);
+}

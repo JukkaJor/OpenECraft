@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Locale pompe
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Il locale dell'affiancamento con le sue pompe: motori delle pompe alimentati tramite pressacavi nei tetti degli armadi, una pompa e un serbatoio a pavimento, valvole a sfera e un manometro a parete e le tubazioni DN25 del circuito dell'acqua instradate in 3D lungo un percorso tubazioni a parete.
 Room floor	Pavimento del locale
+Updating the 3D routing	Aggiornamento dell'instradamento 3D
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Cavi e tubi vengono instradati di nuovo in background; fino ad allora la vista 3D mostra i percorsi precedenti.
+Exporting {}	Esportazione di {}
+Reading {}	Lettura di {}
+Reading the parts file	Lettura del file degli articoli
+{} stopped with an error: {}	{} interrotto da un errore: {}

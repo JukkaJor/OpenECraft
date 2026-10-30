@@ -251,6 +251,8 @@ pub struct App {
     /// and device jumps wait in `deferred` until it is back.
     in_dock: bool,
     deferred: Vec<Deferred>,
+    /// Exports and imports running on another thread.
+    jobs: Vec<crate::jobs::Job<files::Done>>,
     /// Frame time and frames per second for the title bar.
     frame_stats: crate::frame_stats::FrameStats,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
@@ -492,6 +494,7 @@ impl App {
             pending_example: None,
             in_dock: false,
             deferred: Vec::new(),
+            jobs: Vec::new(),
             frame_stats: crate::frame_stats::FrameStats::default(),
             export_form: None,
             recording: None,
@@ -937,6 +940,7 @@ impl eframe::App for App {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
         }
         self.poll_loaded(&ctx);
+        self.poll_jobs(&ctx);
         self.poll_remote(&ctx);
         self.poll_vault(&ctx);
         self.autosave.poll(&mut self.session, &mut self.parts_db);
@@ -947,6 +951,10 @@ impl eframe::App for App {
         // progress (mouse down, text field focused, drag) it is rebuilt every frame.
         let editing = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.editor.busy() || self.panel_ui.busy() || self.symed.busy() || self.forms_ui.busy();
         self.session.refresh(&self.plugins, editing);
+        // The routes searched in the background show as soon as they are ready.
+        if self.session.routing() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
         // A project just opened shows once it is analysed; until then only what is
         // being done.
         if let Some(progress) = self.session.opening() {
@@ -1013,6 +1021,11 @@ impl eframe::App for App {
             openecraft_ui::io::set_title(&ctx, &title);
             self.title = title;
         }
+    }
+
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        // The autosave of the last `save` is written before the app ends.
+        self.autosave.finish();
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {

@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Pompownia
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Pomieszczenie szeregu szaf z pompami: silniki pomp zasilane przez dławiki kablowe w dachach szaf, pompa i zbiornik stojące na podłodze, zawory kulowe i manometr na ścianie oraz rury DN25 obiegu wody prowadzone w 3D wzdłuż trasy rurociągu na ścianie.
 Room floor	Podłoga pomieszczenia
+Updating the 3D routing	Aktualizacja prowadzenia 3D
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kable i rury są prowadzone ponownie w tle; do tego czasu widok 3D pokazuje ich wcześniejsze trasy.
+Exporting {}	Eksportowanie {}
+Reading {}	Odczyt {}
+Reading the parts file	Odczyt pliku części
+{} stopped with an error: {}	{} przerwano z błędem: {}

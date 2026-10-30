@@ -461,7 +461,8 @@ impl PanelUi {
         ui.label(RichText::new(tr("Production")).strong());
         ui.label(tr_fmt!("{} routes frozen", prj.layout.frozen.len()));
         ui.horizontal(|ui| {
-            if ui.button(tr("Freeze all routes")).on_hover_text(tr("The recalculation keeps frozen routes as long as they are still possible")).clicked() {
+            let freeze = ui.add_enabled(!an.routes_pending, egui::Button::new(tr("Freeze all routes")));
+            if freeze.on_hover_text(tr("The recalculation keeps frozen routes as long as they are still possible")).on_disabled_hover_text(tr("Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.")).clicked() {
                 let n = routing3d::freeze(prj, &an.routing, &[]);
                 self.status = tr_fmt!("{} routes frozen", n);
             }

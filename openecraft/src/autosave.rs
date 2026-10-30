@@ -17,6 +17,8 @@ pub struct Autosave {
     /// The stored parts database is still expected; the start-up one, which it replaces
     /// unless the parts were changed meanwhile.
     awaiting_parts: Option<PartsDb>,
+    /// The write of the last `save` on another thread.
+    writing: Option<std::thread::JoinHandle<()>>,
 }
 
 impl Autosave {
@@ -25,7 +27,7 @@ impl Autosave {
     pub fn start(store: Store, ctx: &egui::Context, parts: &PartsDb) -> Autosave {
         store.load(ctx, PROJECT);
         store.load(ctx, PARTS);
-        Autosave { store, awaiting_project: true, awaiting_parts: Some(parts.clone()) }
+        Autosave { store, awaiting_project: true, awaiting_parts: Some(parts.clone()), writing: None }
     }
 
     /// Takes values that finished loading. Returns true if the project was replaced.
@@ -62,14 +64,34 @@ impl Autosave {
     /// Writes the project and the parts database (not before the stored ones arrived,
     /// which would be overwritten by the start-up values). Returns whether the store
     /// has worked so far: until it does, the caller keeps both in eframe's storage too.
-    pub fn save(&self, session: &Session, parts: &PartsDb) -> bool {
-        if !self.awaiting_project {
-            self.store.store(PROJECT, openecraft_core::archive::pack(&session.prj).into_bytes());
-        }
-        if self.awaiting_parts.is_none() {
-            self.store.store(PARTS, serde_json::to_vec(parts).unwrap_or_default());
+    /// Once it works, they are packed and written on another thread (after the write
+    /// before has finished), so that the editor does not wait for it.
+    pub fn save(&mut self, session: &Session, parts: &PartsDb) -> bool {
+        let project = (!self.awaiting_project).then(|| session.prj.clone());
+        let parts = self.awaiting_parts.is_none().then(|| parts.clone());
+        let store = self.store.clone();
+        let write = move || {
+            if let Some(prj) = project {
+                store.store(PROJECT, openecraft_core::archive::pack(&prj).into_bytes());
+            }
+            if let Some(parts) = parts {
+                store.store(PARTS, serde_json::to_vec(&parts).unwrap_or_default());
+            }
+        };
+        self.finish();
+        if openecraft_core::analysis::threads() < 2 || !self.store.works() {
+            write();
+        } else {
+            self.writing = Some(std::thread::spawn(write));
         }
         !self.awaiting_project && self.awaiting_parts.is_none() && self.store.works()
+    }
+
+    /// Waits for the write on another thread (before the app ends).
+    pub fn finish(&mut self) {
+        if let Some(w) = self.writing.take() {
+            let _ = w.join();
+        }
     }
 }
 

@@ -144,6 +144,16 @@ impl App {
                         icons::show(ui, Icon::Lock, 14.0).on_hover_text(tr_fmt!("Locked by {} – read only", user));
                     }
                 }
+                for label in self.jobs_running() {
+                    ui.label(RichText::new(label).small());
+                    ui.add(egui::Spinner::new().size(12.0));
+                    ui.separator();
+                }
+                if self.session.routing() {
+                    ui.label(RichText::new(tr("Updating the 3D routing")).small()).on_hover_text(tr("Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes."));
+                    ui.add(egui::Spinner::new().size(12.0));
+                    ui.separator();
+                }
                 // The project check applies in every workspace.
                 let n = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Error && !i.accepted).count();
                 let w = self.session.analysis.issues.iter().filter(|i| i.severity == Severity::Warning && !i.accepted).count();

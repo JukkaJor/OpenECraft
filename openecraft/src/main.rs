@@ -18,6 +18,7 @@ mod frame_stats;
 mod glyphs;
 mod insert_center;
 mod io;
+mod jobs;
 mod mounting_ui;
 mod panel_ui;
 mod plugin_commands;

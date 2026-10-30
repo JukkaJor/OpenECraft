@@ -6358,3 +6358,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · Čerpací místnost
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	Místnost s řadou skříní a jejími čerpadly: motory čerpadel napájené kabelovými vývodkami ve střechách skříní, čerpadlo a nádrž stojící na podlaze, kulové kohouty a manometr na stěně a potrubí DN25 vodního okruhu vedené ve 3D podél potrubní trasy na stěně.
 Room floor	Podlaha místnosti
+Updating the 3D routing	Aktualizace 3D vedení
+Cables and pipes are routed again in the background; until then the 3D view shows their earlier routes.	Kabely a potrubí se v pozadí vedou znovu; do té doby 3D pohled ukazuje jejich dřívější trasy.
+Exporting {}	Export {}
+Reading {}	Čtení {}
+Reading the parts file	Čtení souboru dílů
+{} stopped with an error: {}	{} skončilo chybou: {}

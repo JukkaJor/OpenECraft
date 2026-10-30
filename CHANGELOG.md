@@ -32,7 +32,12 @@ with a command line, an MCP server, a parts server and a project server.
   inner walls end on the room walls, and the layout checks are shown below the view;
   rooms and enclosures with content are deleted only after a question. Opening a project
   analyses it in the background with a window showing the step and the route it is
-  at; the 3D routing searches several times faster. Pipes and cables in a room keep to
+  at; the 3D routing searches several times faster and is kept while an edit changes
+  none of its routes; after an edit that does, it is searched in the background (the
+  status bar shows it, the 3D view keeps the earlier routes until then), so editing
+  a project with rooms no longer stalls the editor for seconds. Exports, reading 3D
+  model and parts files (STEP, IGES, Parasolid, EDZ, …) and the autosave run on another
+  thread too; the status bar shows what is running. Pipes and cables in a room keep to
   its walls and ceiling instead of crossing it, and their bends keep the bend radius
   apart. The 3D view is drawn by the graphics card (OpenGL 3 / WebGL 2, with a depth
   buffer and anti-aliasing; Settings › Appearance switches it off), and drawn by the
