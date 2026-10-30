@@ -10,7 +10,7 @@
 //! coordinates of the whole layout, x right, y down, z from the rear walls).
 
 use crate::model::{Cable, Project};
-use crate::netlist::{Connection, Netlist};
+use crate::netlist::{Connection, Netlist, PinRef};
 use crate::panel::{self, Face, ItemKind, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
 use crate::parts::vec3::{add, manhattan, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
@@ -437,17 +437,31 @@ pub fn accessories<'a>(prj: &'a Project, ei: usize, subgroup: &str) -> Vec<&'a P
     prj.layout.enclosures[ei].items.iter().filter(|i| i.kind == ItemKind::Accessory && part_subgroup(prj, &i.part) == Some(subgroup)).collect()
 }
 
-/// Where a device is reached: the middle of its front (layout coordinates); devices of
-/// a placed valve terminal at the terminal ([`panel::locate`]).
-fn device_end(prj: &Project, pos: &[V3], tag: &str) -> End {
+/// Where a device is reached (layout coordinates): the middle of the connection points
+/// the schematic connection points `pins` (the cores of a cable) land on, otherwise the
+/// middle of its front; devices of a placed valve terminal at the terminal
+/// ([`panel::locate`]).
+fn device_end(prj: &Project, pos: &[V3], tag: &str, pins: &[PinRef]) -> End {
     match panel::locate(prj, tag) {
         Some((ei, it)) => {
             let e = &prj.layout.enclosures[ei];
-            let q = panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d]);
+            let placed = if pins.is_empty() { Vec::new() } else { panel::device_points(prj, it) };
+            let at: Vec<V3> = pins.iter().filter_map(|p| panel::point_of(prj, &placed, &prj.pages[p.page].symbols[p.sym], p.pin)).map(|p| p.pos).collect();
+            let q = match at.len() {
+                0 => [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d],
+                n => at.iter().fold([0.0; 3], |s, q| add(s, *q)).map(|v| v / n as f32),
+            };
+            let q = panel::face_point(e, it.face, q);
             End { tag: tag.into(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: Some(it.id) }
         }
         None => End { tag: tag.into(), ..Default::default() },
     }
+}
+
+/// The schematic connection points of `cores` at the device `tag`.
+fn pins_at(prj: &Project, cores: &[&Connection], tag: &str) -> Vec<PinRef> {
+    let at = |p: &PinRef| prj.pages[p.page].symbols[p.sym].tag == tag;
+    cores.iter().flat_map(|c| [c.a, c.b]).filter(at).collect()
 }
 
 /// Where a cable or tube from the field enters the enclosure: the nearest cable
@@ -540,8 +554,9 @@ fn outside(prj: &Project, tag: &str) -> bool {
 /// device outside the building). `None` if neither end is placed, or if the placed
 /// one is in a room and the other one is not outside or the room has no building
 /// entry.
-fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str) -> Option<[End; 2]> {
-    let (ea, eb) = (device_end(prj, pos, a), device_end(prj, pos, b));
+/// `pins`: the schematic connection points of the cores at `a` and `b`.
+fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str, pins: [&[PinRef]; 2]) -> Option<[End; 2]> {
+    let (ea, eb) = (device_end(prj, pos, a, pins[0]), device_end(prj, pos, b, pins[1]));
     let in_room = |e: &End| e.enclosure.is_some_and(|k| prj.layout.enclosures[k].is_room());
     match (ea.point, eb.point) {
         (None, None) => None,
@@ -647,7 +662,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     for c in &prj.cables {
         let cores: Vec<&Connection> = conns.iter().filter(|x| x.cable == c.tag).collect();
         let Some((a, b)) = cable_end_tags(prj, c, &cores) else { continue };
-        let Some(ends) = ends_between(prj, &pos, &a, &b) else { continue };
+        let Some(ends) = ends_between(prj, &pos, &a, &b, [&pins_at(prj, &cores, &a), &pins_at(prj, &cores, &b)]) else { continue };
         let shielded = is_shielded(c);
         jobs.push(Job {
             kind: RouteKind::Cable,
@@ -668,7 +683,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     // depth at both ends for the cut length.
     for h in crate::fluid::hoses(prj, open) {
         let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
-        let Some(ends) = ends_between(prj, &pos, &tag(h.a), &tag(h.b)) else { continue };
+        let Some(ends) = ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]) else { continue };
         let label = if h.number.is_empty() { format!("{} – {}", h.from, h.to) } else { h.number.clone() };
         jobs.push(Job {
             kind: RouteKind::Tube,
