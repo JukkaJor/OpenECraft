@@ -369,3 +369,107 @@ fn wires_in_3d_have_their_colour_and_size() {
     let (_, near) = frame(&mut ui, &mut prj);
     assert!(near > far, "{near} {far}");
 }
+
+/// Draws one frame of the 3D view of the room of `prj`; the shapes it painted.
+fn room_shapes(ui: &mut PanelUi, prj: &mut Project, an: &openecraft_core::analysis::Analysis, yaw: f32) -> Vec<egui::Shape> {
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    (ui.enclosure, ui.view) = (room, View::ThreeD);
+    if let Some(cam) = ui.cam.as_mut() {
+        cam.yaw = yaw;
+    }
+    let ctx = egui::Context::default();
+    let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0))), ..Default::default() };
+    let mut out = ctx.run_ui(input, |ui_| ui.view_3d(ui_, prj, room, an));
+    out.textures_delta.clear();
+    out.shapes.into_iter().map(|s| s.shape).collect()
+}
+
+#[test]
+fn the_3d_scene_is_built_again_only_when_what_it_shows_changes() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let mut ui = PanelUi::default();
+    let id = |ui: &PanelUi| ui.scene.as_ref().map(|s| s.id);
+    let first = room_shapes(&mut ui, &mut prj, &an, 0.5);
+    let built = id(&ui);
+    assert!(built.is_some());
+    // Turning the camera only projects the scene again.
+    let turned = room_shapes(&mut ui, &mut prj, &an, 1.5);
+    assert_eq!(id(&ui), built);
+    assert_ne!(first.len(), 0);
+    assert_ne!(format!("{first:?}"), format!("{turned:?}"));
+    // A selection, the ceiling, a moved item and a new analysis build it again.
+    let room = ui.enclosure;
+    let item = prj.layout.enclosures[room].items[0].id;
+    ui.selection.insert(item);
+    room_shapes(&mut ui, &mut prj, &an, 1.5);
+    let selected = id(&ui);
+    assert_ne!(selected, built);
+    ui.hide_ceiling = true;
+    room_shapes(&mut ui, &mut prj, &an, 1.5);
+    assert_ne!(id(&ui), selected);
+    let hidden = id(&ui);
+    prj.layout.enclosures[room].items[0].x += 10.0;
+    room_shapes(&mut ui, &mut prj, &an, 1.5);
+    assert_ne!(id(&ui), hidden);
+    let moved = id(&ui);
+    room_shapes(&mut ui, &mut prj, &an, 1.5);
+    assert_eq!(id(&ui), moved);
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    room_shapes(&mut ui, &mut prj, &an, 1.5);
+    assert_ne!(id(&ui), moved);
+}
+
+#[test]
+fn the_graphics_card_draws_the_scene_and_egui_the_rest() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let mut painted = PanelUi::default();
+    let mut gpu = PanelUi { gpu_3d: true, ..Default::default() };
+    let shapes = room_shapes(&mut gpu, &mut prj, &an, 0.5);
+    let callbacks = shapes.iter().filter(|s| matches!(s, egui::Shape::Callback(_))).count();
+    assert_eq!(callbacks, 1);
+    // No faces painted by egui: the background, labels, outlines and the hint only.
+    let all = room_shapes(&mut painted, &mut prj, &an, 0.5);
+    assert!(shapes.len() * 4 < all.len(), "{} {}", shapes.len(), all.len());
+    assert!(!all.iter().any(|s| matches!(s, egui::Shape::Callback(_))));
+}
+
+#[test]
+fn clicking_in_the_3d_view_picks_from_the_scene_with_the_graphics_card_too() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    for gpu_3d in [false, true] {
+        let mut ui = PanelUi { gpu_3d, ..Default::default() };
+        room_shapes(&mut ui, &mut prj, &an, 0.5);
+        let room = ui.enclosure;
+        let scene = ui.scene.clone().unwrap();
+        let cam = ui.cam.unwrap();
+        let (eye, right, up, fwd) = cam.basis();
+        let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0));
+        let camera = gpu3d::Camera { eye, right, up, fwd, f: rect.height() * 1.3 };
+        let prims = view3d::project(&scene, &camera, rect, ui.wall_opacity, false);
+        // The centre of a device face that nothing picked is drawn over, clicked.
+        let centre = |pts: &[egui::Pos2]| (pts.iter().fold(egui::Vec2::ZERO, |a, q| a + q.to_vec2()) / pts.len() as f32).to_pos2();
+        let top = |q: egui::Pos2| prims.iter().rev().find_map(|p| match p {
+            view3d::Prim::Face { pts, n, item: Some(item), .. } if super::view3d::point_in_convex(q, &pts[..*n as usize]) => Some(item.1),
+            _ => None,
+        });
+        let target = prims.iter().rev().find_map(|p| match p {
+            view3d::Prim::Face { pts, n, item: Some((k, id)), .. } if prj.layout.enclosures[*k].item(*id).is_some_and(|i| i.kind == ItemKind::Device) => {
+                let at = centre(&pts[..*n as usize]);
+                (top(at) == Some(*id) && rect.contains(at)).then_some((at, *id))
+            }
+            _ => None,
+        });
+        let Some((at, id)) = target else { panic!("no device face") };
+        let ctx = egui::Context::default();
+        for (t, pressed) in [(0.0, None), (0.1, Some(true)), (0.15, Some(false))] {
+            let mut events = vec![egui::Event::PointerMoved(at)];
+            events.extend(pressed.map(|pressed| egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed, modifiers: Default::default() }));
+            let input = egui::RawInput { screen_rect: Some(rect), time: Some(t), events, ..Default::default() };
+            ctx.run_ui(input, |ui_| ui.view_3d(ui_, &mut prj, room, &an)).textures_delta.clear();
+        }
+        assert!(ui.selection.contains(&id), "gpu {gpu_3d}");
+    }
+}

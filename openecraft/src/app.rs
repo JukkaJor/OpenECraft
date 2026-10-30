@@ -117,6 +117,8 @@ struct ShellState {
     wall_opacity: f32,
     /// The title bar shows the frame time and the frames per second.
     frame_stats: bool,
+    /// The 3D view of the panel layout is drawn by the graphics card.
+    gpu_3d: bool,
 }
 
 impl Default for ShellState {
@@ -134,6 +136,7 @@ impl Default for ShellState {
             sides: crate::dock::Sides::default(),
             wall_opacity: crate::panel_ui::WALL_OPACITY,
             frame_stats: false,
+            gpu_3d: true,
         }
     }
 }
@@ -927,6 +930,7 @@ impl eframe::App for App {
         crate::style::set_dark(self.dark);
         self.apply_scale(&ctx);
         self.panel_ui.wall_opacity = self.shell.wall_opacity;
+        self.panel_ui.gpu_3d = self.shell.gpu_3d && frame.gl().is_some();
         // Closing the window with unsaved changes asks first (the second close, after
         // the answer, goes through).
         if ctx.input(|i| i.viewport().close_requested()) && !self.closing && self.discard.request(self.session.dirty(), Replace::Close).is_none() {

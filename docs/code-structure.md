@@ -91,7 +91,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `openecraft/src/panel_ui/plan.rs` | Floor plan of a room: drawing and moving walls, placing cabinets |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |
 | `crates/openecraft-core/src/collab.rs` | Shared projects: API types, lock targets and the merge rules of the project server |
-| `openecraft/src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view, `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
+| `openecraft/src/panel_ui.rs` | Panel layout workspace: navigator, 2D editor, properties; `panel_ui/view3d.rs` the 3D view (`panel_ui/scene3d.rs` what it shows, kept between frames; `panel_ui/gpu3d.rs` drawn by the graphics card), `panel_ui/routing_ui.rs` the 3D routing (paths, reservations, rules, frozen routes) |
 | `crates/openecraft-core/src/parts.rs` | Parts database, function templates, project parts, CSV import/export |
 | `openecraft/src/parts_ui.rs` | Parts management window, part selection dialog, parts server panel, data portal window |
 | `openecraft/src/remote.rs`, `openecraft/src/app/remote_ui.rs` | Project server client, window and shared editing (locks, merging); rules in `crates/openecraft-core/src/collab.rs` |

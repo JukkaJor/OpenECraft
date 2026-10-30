@@ -18,6 +18,9 @@ use std::sync::{Arc, Mutex};
 /// tables are generated when they are first asked for ([`Analysis::report`]).
 #[derive(Default)]
 pub struct Analysis {
+    /// Tells this analysis from every other one built before (caches of the front ends
+    /// that follow the analysis); 0 for an empty one.
+    pub id: u64,
     /// Device / cross-reference index.
     pub index: Index,
     pub netlist: Netlist,
@@ -47,6 +50,9 @@ pub struct Analysis {
     /// Findings of the layout checks per enclosure.
     layout: Mutex<HashMap<usize, Arc<Vec<panel::Finding>>>>,
 }
+
+/// Id of the next analysis built.
+static NEXT_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 /// The steps of building an analysis, in their order, and the checks the host runs
 /// on it.
@@ -132,6 +138,7 @@ impl Analysis {
         step(Step::Ducts);
         let fill = panel::duct_fill(prj, &wiring);
         Analysis {
+            id: NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             index: idx,
             netlist,
             open,

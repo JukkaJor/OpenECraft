@@ -23,6 +23,7 @@ pub(super) fn class_color(c: Class) -> Color32 {
 }
 
 /// What a line of the 3D routing belongs to (for picking).
+#[derive(Clone)]
 pub(super) enum RouteRef {
     Item(String),
     Wire(usize),

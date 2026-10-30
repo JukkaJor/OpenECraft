@@ -193,6 +193,15 @@ impl App {
             ui.label(tr("Title bar"));
             ui.checkbox(&mut self.shell.frame_stats, tr("Show the frame time and the frames per second"));
             ui.end_row();
+            ui.label(tr("3D view"));
+            ui.horizontal(|ui| {
+                let r = ui.checkbox(&mut self.shell.gpu_3d, tr("Draw with the graphics card"));
+                r.on_hover_text(tr("Draws the 3D view of the panel layout with OpenGL 3 / WebGL 2, much faster for large rooms; off: drawn by the processor"));
+                if self.shell.gpu_3d && self.panel_ui.gpu_failed() {
+                    ui.colored_label(crate::style::warning(), tr("not available, drawn by the processor"));
+                }
+            });
+            ui.end_row();
             ui.label(tr("Wall opacity"));
             let mut percent = self.shell.wall_opacity * 100.0;
             let r = ui.add(egui::Slider::new(&mut percent, 0.0..=100.0).step_by(5.0).suffix(" %"));
