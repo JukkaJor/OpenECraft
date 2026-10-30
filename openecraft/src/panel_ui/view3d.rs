@@ -197,10 +197,7 @@ impl PanelUi {
                 self.enclosure = k;
                 self.select_item(id);
             }
-            (None, None) => {
-                self.selection.clear();
-                self.selected_wire = None;
-            }
+            (None, None) => self.deselect(),
         }
         false
     }
@@ -454,3 +451,6 @@ pub(super) fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
     }
     true
 }
+
+#[cfg(test)]
+mod tests;

@@ -618,17 +618,27 @@ impl PanelUi {
     fn select_item(&mut self, id: u64) {
         self.selection = [id].into_iter().collect();
         self.selected_wire = None;
+        self.selected_route = None;
     }
 
     /// Selects an item with the other members of its assembly.
     fn select_assembly(&mut self, e: &Enclosure, id: u64) {
         self.selection = with_group(e, id).into_iter().collect();
         self.selected_wire = None;
+        self.selected_route = None;
     }
 
     fn select_wire(&mut self, key: (String, String)) {
         self.selected_wire = Some(key);
         self.selection.clear();
+        self.selected_route = None;
+    }
+
+    /// Clears the selection: items, the wire and the cable or tube.
+    fn deselect(&mut self) {
+        self.selection.clear();
+        self.selected_wire = None;
+        self.selected_route = None;
     }
 
     /// Index of the selected wire in the current analysis.
@@ -2483,8 +2493,7 @@ impl PanelUi {
                 } else if self.tool != Tool::Select {
                     self.set_tool(Tool::Select);
                 } else {
-                    self.selection.clear();
-                    self.selected_wire = None;
+                    self.deselect();
                 }
             }
             if !self.tool_allowed(&self.tool) {
@@ -2937,7 +2946,7 @@ impl PanelUi {
                     // Alt: the single item of an assembly.
                     Some(id) if alt => self.select_item(id),
                     Some(id) => self.select_assembly(e, id),
-                    None if !shift => self.selection.clear(),
+                    None if !shift => self.deselect(),
                     None => {}
                 }
             }
