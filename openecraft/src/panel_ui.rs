@@ -14,6 +14,7 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d;
 use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, RichText, Sense, Shape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
+use std::sync::Arc;
 use view3d::default_cam;
 
 mod plan;
@@ -195,8 +196,7 @@ fn custom_classes(prj: &Project) -> Vec<String> {
 
 /// Rules and results of the layout checks of an enclosure: clearances, service
 /// space, heights above the floor, collision classes, thermal and manufacturing.
-fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
-    let findings = panel::validate(prj, &prj.layout.enclosures[ei]);
+fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize, findings: &[panel::Finding]) {
     let temps = {
         let e = &prj.layout.enclosures[ei];
         panel::thermal::device_temperatures(prj, e, &panel::thermal::heat_map(prj, e))
@@ -302,7 +302,7 @@ fn checks_section(ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
         if findings.is_empty() {
             ui.weak(tr("No problems found"));
         }
-        for f in &findings {
+        for f in findings {
             let color = if f.severity == openecraft_core::issue::Severity::Info { ui.visuals().weak_text_color() } else { crate::style::lock() };
             ui.horizontal_wrapped(|ui| {
                 ui.label(RichText::new(f.kind.title()).strong().color(color));
@@ -551,6 +551,15 @@ const PATH_COLOR: Color32 = Color32::from_rgb(220, 180, 40);
 const RESERVE_COLOR: Color32 = Color32::from_rgb(220, 70, 60);
 
 impl PanelUi {
+    /// Findings of the layout checks of enclosure `ei`: those the analysis keeps, made
+    /// again while a change of the layout is in progress (a drag).
+    fn findings(&self, prj: &Project, an: &Analysis, ei: usize) -> Arc<Vec<panel::Finding>> {
+        match prj.layout.enclosures.get(ei) {
+            Some(e) if self.busy() => Arc::new(panel::validate(prj, e)),
+            _ => an.layout_findings(prj, ei),
+        }
+    }
+
     /// True while a gesture is in progress (no undo step yet).
     pub fn busy(&self) -> bool {
         self.start.is_some() || self.drag.is_some() || !self.path_points.is_empty() || !self.wall_points.is_empty() || self.plan_drag.is_some()
@@ -723,18 +732,38 @@ impl PanelUi {
         self.aim_camera(prj, enclosure, at);
     }
 
-    /// Selects a placed device (e.g. coming from the schematic); a valve or its coil
-    /// selects the valve terminal it is mounted in.
-    pub fn show_device(&mut self, prj: &Project, tag: &str) -> bool {
-        match panel::locate(prj, tag) {
-            Some((ei, item)) => {
-                self.enclosure = ei;
-                self.face = item.face;
-                self.select_item(item.id);
-                true
-            }
-            None => false,
+    /// Shows a placed device (from the schematic): selected on its face of its
+    /// cabinet or room, a device on the floor of a room in the floor plan; in the 3D
+    /// view with the camera close to it.
+    pub fn focus_device(&mut self, prj: &Project, tag: &str, three_d: bool) -> bool {
+        let Some((ei, it)) = panel::locate(prj, tag) else { return false };
+        let e = &prj.layout.enclosures[ei];
+        if self.enclosure != ei {
+            self.cam = None;
         }
+        self.enclosure = ei;
+        self.in_room = e.is_room();
+        self.face = it.face;
+        self.select_item(it.id);
+        self.fit_pending = true;
+        if !three_d {
+            self.view = if self.in_room && it.face == Face::Bottom { View::Plan } else { View::Front };
+            return true;
+        }
+        self.view = View::ThreeD;
+        if it.face == Face::Door {
+            self.door_open = true;
+        }
+        let (lo, hi) = panel::item_box(e, it);
+        let at = [(lo[0] + hi[0]) / 2.0, e.height - (lo[1] + hi[1]) / 2.0, (lo[2] + hi[2]) / 2.0];
+        let shown = self.shown_3d(prj, ei);
+        let pose = shown.iter().find(|s| s.0 == ei).map(|s| s.1).unwrap_or_default();
+        let size = (0..3).map(|k| hi[k] - lo[k]).fold(0.0, f32::max);
+        let mut cam = view3d::default_cam(prj, &shown);
+        cam.target = pose.apply(at);
+        cam.dist = (size * 6.0).clamp(600.0, cam.dist.max(600.0));
+        self.cam = Some(cam);
+        true
     }
 
     // ------------------------------------------------------------------ navigator
@@ -1197,7 +1226,7 @@ impl PanelUi {
             return;
         }
         if prj.layout.enclosures[ei].is_room() {
-            self.room_properties(ui, prj, ei);
+            self.room_properties(ui, prj, ei, an);
             return;
         }
         // Enclosure properties
@@ -1307,14 +1336,15 @@ impl PanelUi {
         ui.checkbox(&mut prj.layout.ferrules, tr("Wire ends with ferrules")).on_hover_text(tr("Production wire list and bill of materials"));
         ui.checkbox(&mut prj.layout.hardware, tr("Fastening hardware in the bill of materials")).on_hover_text(tr("Screws, nuts, washers and rivet nuts of the fixing points"));
         climate_section(ui, prj, ei);
-        checks_section(ui, prj, ei);
+        let findings = self.findings(prj, an, ei);
+        checks_section(ui, prj, ei, &findings);
         let e = &prj.layout.enclosures[ei];
         let devices = e.items.iter().filter(|i| i.kind == ItemKind::Device).count();
         let wires: Vec<_> = an.wiring.iter().filter(|w| w.in_enclosure(ei)).collect();
         let total: f32 = wires.iter().map(|w| w.length).sum();
         ui.separator();
         ui.add(egui::Label::new(tr_fmt!("{} devices placed, {} wires routed ({} m)", devices, wires.len(), format!("{:.1}", total / 1000.0))).wrap());
-        let problems = panel::problem_items(prj, e).len();
+        let problems = panel::problems_of(&findings).len();
         let holes = openecraft_core::production::holes(e, &prj.parts).len();
         let cutouts = e.items.iter().filter(|i| i.kind == ItemKind::Cutout).count();
         ui.add(egui::Label::new(tr_fmt!("Mounting plate: {} holes, {} cutouts", holes, cutouts)).wrap());
@@ -1368,7 +1398,7 @@ impl PanelUi {
 
     /// Properties of a room: size, place in the plant, the cabinets standing in it and
     /// what its walls and ceiling carry.
-    fn room_properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize) {
+    fn room_properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis) {
         let pose = panel::site_poses(prj)[ei];
         let mut site: Option<Option<SitePlace>> = None;
         let e = &mut prj.layout.enclosures[ei];
@@ -1496,7 +1526,8 @@ impl PanelUi {
         }
         self.inner_walls_section(ui, prj, ei);
         ui.weak(tr("Devices on a wall sit on a mounting rail; parts marked for wall mounting go directly on the wall (Layout space › Insert › Wall-mounted part)."));
-        checks_section(ui, prj, ei);
+        let findings = self.findings(prj, an, ei);
+        checks_section(ui, prj, ei, &findings);
     }
 
     /// Inner walls of a room: length, thickness, removing them.
@@ -2572,7 +2603,7 @@ impl PanelUi {
         let e = &prj.layout.enclosures[ei];
         painter.rect_filled(rect, 0.0, pal.canvas);
         let origin = rect.min + self.offset;
-        let problems = panel::problem_items(prj, e);
+        let problems = panel::problems_of(&self.findings(prj, an, ei));
         let mut d = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: None, mirror, textures: None };
         render::draw_enclosure(&mut d, e, self.face, self.door_inside, p(0.0, 0.0), 1.0, &self.selection, &problems, prj);
         let to_screen = |q: P| origin + vec2(mirror.map(|m| m - (q.x + fm)).unwrap_or(q.x + fm), q.y + fm) * self.zoom;

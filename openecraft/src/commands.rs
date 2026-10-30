@@ -98,6 +98,8 @@ pub enum Cmd {
     Properties,
     RenameDevice,
     PartSelection,
+    ShowInLayout,
+    ShowIn3d,
     // View
     FitPage,
     ZoomActual,
@@ -465,6 +467,8 @@ pub static ALL: &[Def] = &[
     d(C::Properties, "properties", tr_const!("Properties…"), I::Properties).keys("F2").tip(tr_const!("The properties of the selection in a window beside the page")),
     d(C::RenameDevice, "rename_device", tr_const!("Rename device…"), I::Device),
     d(C::PartSelection, "part_selection", tr_const!("Part selection…"), I::Parts),
+    d(C::ShowInLayout, "show_in_layout", tr_const!("Show in panel layout"), I::Enclosure).tip(tr_const!("The selected device in the layout of its cabinet or room")),
+    d(C::ShowIn3d, "show_in_3d", tr_const!("Show in 3D view"), I::Cube).tip(tr_const!("The selected device in the 3D view of its cabinet or room, seen from close by")),
     // ---------------------------------------------------------------- view
     d(C::FitPage, "fit_page", tr_const!("Fit page"), I::Fit).keys("F|Home").canvas(),
     d(C::ZoomActual, "zoom_actual", tr_const!("Zoom 100 %"), I::Scale).tip(tr_const!("Real size on a 96 dpi screen")),

@@ -32,7 +32,14 @@ with a command line, an MCP server, a parts server and a project server.
   inner walls end on the room walls, and the layout checks are shown below the view;
   rooms and enclosures with content are deleted only after a question. Opening a project
   analyses it in the background with a window showing the step and the route it is
-  at; the 3D routing searches several times faster. Pumps, tanks
+  at; the 3D routing searches several times faster. Pipes and cables in a room keep to
+  its walls and ceiling instead of crossing it, and their bends keep the bend radius
+  apart. The 3D view draws large rooms about twice as fast, and devices without a 3D
+  model of their own get a detailed, coloured one by what they are (pumps, vessels,
+  valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
+  (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after
+  their product photos. A placed device is shown in the
+  panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
   and other parts marked for floor mounting stand on the floor of a room, pipe runs
   go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D
   through the room and from its cabinets through their cable glands. Wall

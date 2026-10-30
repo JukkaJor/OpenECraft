@@ -147,6 +147,14 @@ impl ShellState {
     }
 }
 
+/// What a docked pane asked for while the panes were drawn (`App::in_dock`).
+#[derive(Clone, Debug, PartialEq)]
+enum Deferred {
+    Cmd(Cmd),
+    /// A device shown in the panel layout (`true`: in the 3D view).
+    Focus(String, bool),
+}
+
 /// An action that replaces the project or ends the app: with unsaved changes it waits
 /// for the answer of the discard dialog (`App::request_replace`).
 #[derive(Clone, Debug)]
@@ -230,6 +238,10 @@ pub struct App {
     confirm_remove_layout: Option<String>,
     /// Example project chosen in a list, opened by `Cmd::OpenExample`.
     pending_example: Option<&'static str>,
+    /// The docked panes are being drawn (their tree is taken out of `dock`): commands
+    /// and device jumps wait in `deferred` until it is back.
+    in_dock: bool,
+    deferred: Vec<Deferred>,
     /// Export whose parameters are being entered: exporter, language, text per parameter.
     export_form: Option<(openecraft_api::Exporter, Option<String>, Vec<String>)>,
     /// Binding whose new shortcut is being recorded.
@@ -467,6 +479,8 @@ impl App {
             confirm_delete_page: None,
             confirm_remove_layout: None,
             pending_example: None,
+            in_dock: false,
+            deferred: Vec::new(),
             export_form: None,
             recording: None,
             show_cables: false,
@@ -711,6 +725,16 @@ impl App {
         crate::dock::find(&self.dock, pane).is_some() || self.floating.contains(&pane)
     }
 
+    /// Shows a placed device in the panel layout (`three_d`: in the 3D view).
+    pub(super) fn focus_device(&mut self, tag: &str, three_d: bool) {
+        if self.in_dock {
+            self.deferred.push(Deferred::Focus(tag.to_string(), three_d));
+        } else if self.panel_ui.focus_device(&self.session.prj, tag, three_d) {
+            self.set_workspace(Workspace::Panel);
+            self.show_pane(Pane::LayoutView);
+        }
+    }
+
     /// Switches the workspace: its own arrangement of the panes comes back.
     pub(super) fn set_workspace(&mut self, w: Workspace) {
         match w {
@@ -938,6 +962,12 @@ impl eframe::App for App {
             None => {
                 let fill = ui.visuals().panel_fill;
                 egui::CentralPanel::default().frame(egui::Frame::NONE.fill(fill)).show(ui, |ui| self.docked(ui, &idx));
+            }
+        }
+        for d in std::mem::take(&mut self.deferred) {
+            match d {
+                Deferred::Cmd(cmd) => self.run(&ctx, cmd),
+                Deferred::Focus(tag, three_d) => self.focus_device(&tag, three_d),
             }
         }
         self.open_requests(false);

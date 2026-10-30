@@ -321,3 +321,32 @@ fn lines_to_the_outside_run_to_a_building_entry() {
     crate::ops::rename_device(&mut prj, "+YARD-QM3", "+ROOM1-QM3");
     assert!(tubes(&prj).is_empty());
 }
+
+#[test]
+fn pipes_between_devices_in_the_room_keep_to_the_ceiling() {
+    // -QM2 and -QM3 stand on the floor in the middle of the room, 2 m apart.
+    let mut k = Kit::new();
+    let q2 = k.sym("fl_shutoff", 100.0, 80.0, "-QM2", "");
+    let q3 = k.sym("fl_shutoff", 100.0, 120.0, "-QM3", "");
+    k.wire((q2, "2"), (q3, "1"));
+    for tag in ["-QM2", "-QM3"] {
+        k.part(tag, FnKind::FluidComponent, "1 2", |p| {
+            (p.width, p.height, p.depth) = (300.0, 500.0, 300.0);
+            p.mounting_data.floor_mount = true;
+        });
+    }
+    let mut prj = k.prj;
+    let room = panel::new_room(&mut prj, "+ROOM1", 4000.0, 3000.0, 2800.0);
+    prj.layout.enclosures.push(room);
+    panel::mount_on_wall(&mut prj, 0, "-QM2", Face::Bottom, p(850.0, 1350.0)).unwrap();
+    panel::mount_on_wall(&mut prj, 0, "-QM3", Face::Bottom, p(2850.0, 1350.0)).unwrap();
+    let an = Analysis::checked(&prj);
+    let h = tube(&an, "-QM3");
+    assert!(h.routed(), "{:?}", h.status);
+    // Up from the one, along the ceiling, down to the other: not through the open room.
+    let top = h.points.iter().map(|q| q[1]).fold(f32::INFINITY, f32::min);
+    assert!(top <= KEEP_TO_SURFACES + ROOM_GRID, "highest point {top} mm below the ceiling: {:?}", h.points);
+    for s in h.points[1..h.points.len() - 1].windows(2).filter(|s| (s[0][1] - s[1][1]).abs() < 1.0 && crate::parts::vec3::dist(s[0], s[1]) > 400.0) {
+        assert!(s[0][1] <= KEEP_TO_SURFACES + ROOM_GRID, "a long stretch through the room at {} mm: {:?}", s[0][1], h.points);
+    }
+}

@@ -44,6 +44,8 @@ pub struct Analysis {
     reports: Vec<Report>,
     /// Generated report tables.
     tables: Mutex<HashMap<ReportId, Arc<Table>>>,
+    /// Findings of the layout checks per enclosure.
+    layout: Mutex<HashMap<usize, Arc<Vec<panel::Finding>>>>,
 }
 
 /// The steps of building an analysis, in their order, and the checks the host runs
@@ -143,6 +145,7 @@ impl Analysis {
             field,
             reports: Vec::new(),
             tables: Mutex::default(),
+            layout: Mutex::default(),
         }
     }
 
@@ -178,6 +181,23 @@ impl Analysis {
         if let Ok(mut m) = self.tables.lock() {
             m.clear();
         }
+        if let Ok(mut m) = self.layout.lock() {
+            m.clear();
+        }
+    }
+
+    /// The findings of the layout checks of enclosure `ei` ([`panel::validate`]),
+    /// made on the first call (from the project the analysis was built from) and kept.
+    pub fn layout_findings(&self, prj: &Project, ei: usize) -> Arc<Vec<panel::Finding>> {
+        if let Some(f) = self.layout.lock().ok().and_then(|m| m.get(&ei).cloned()) {
+            return f;
+        }
+        let Some(e) = prj.layout.enclosures.get(ei) else { return Arc::default() };
+        let found = Arc::new(panel::validate(prj, e));
+        if let Ok(mut m) = self.layout.lock() {
+            m.insert(ei, found.clone());
+        }
+        found
     }
 
 }

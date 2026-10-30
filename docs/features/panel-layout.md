@@ -195,12 +195,20 @@ way.
 
 In a room, routes run through its free space: around its walls, inner walls, the
 cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe
-runs. Of the ways that cost the same, a route takes one whose bends keep their
-distance (a short stretch first or last). A route between a cabinet and a device in its
+runs. Running horizontally through the open space of a room, more than 300 mm from its
+walls, its ceiling and what stands in it, costs ten times as much: pipes and cables
+keep to the walls and the ceiling and drop straight to a device standing in the room.
+Cables and pipes turn only after half their bend radius straight on (where there is
+such a way); of the ways that cost about the same, a route takes one whose bends keep
+their distance (a short stretch first or last). A route between a cabinet and a device in its
 room (or two cabinets of one room) runs in legs: through the cabinet to a cable gland on
 its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
 one through the middle of the roof, which is reported), then through the room. Frozen, such a route keeps its legs.
 The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
+
+In a schematic, the context menu of a placed device shows it in the panel layout (its
+cabinet's mounting plate or door, the wall or floor plan of its room) or in the 3D view
+with the camera close to it (*Show in panel layout*, *Show in 3D view*).
 
 The routes are part of the project's analysis. When a project is opened its analysis is
 built in the background: the editor shows a window with the step it is at (netlists,

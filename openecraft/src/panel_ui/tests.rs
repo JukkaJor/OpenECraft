@@ -266,3 +266,24 @@ fn pipe_runs_and_the_floor_belong_to_rooms() {
     assert_eq!(ortho(Some(p(0.0, 0.0)), p(40.0, -500.0)), p(0.0, -500.0));
     assert_eq!(ortho(None, p(40.0, 50.0)), p(40.0, 50.0));
 }
+
+#[test]
+fn a_device_from_the_schematic_is_shown_where_it_is_placed() {
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let mut ui = PanelUi::default();
+    assert!(!ui.focus_device(&prj, "=NOPE-X1", false), "not placed");
+    // On the floor of a room: the floor plan with the device selected.
+    let (ei, it) = panel::locate(&prj, "=WAT+TR-GP1").expect("booster pump placed");
+    assert!(ui.focus_device(&prj, "=WAT+TR-GP1", false));
+    assert_eq!((ui.enclosure, ui.view, ui.selection.iter().copied().collect::<Vec<_>>()), (ei, View::Plan, vec![it.id]));
+    // In 3D the camera looks at it from close by.
+    assert!(ui.focus_device(&prj, "=WAT+TR-GP1", true));
+    assert_eq!(ui.view, View::ThreeD);
+    let cam = ui.cam.expect("camera");
+    let full = view3d::default_cam(&prj, &ui.shown_3d(&prj, ei));
+    assert!(cam.dist < full.dist, "{} {}", cam.dist, full.dist);
+    // On a mounting plate: the front view of its cabinet.
+    let (ci, _) = panel::locate(&prj, "=CTL+CC1-A1").expect("PLC placed");
+    assert!(ui.focus_device(&prj, "=CTL+CC1-A1", false));
+    assert_eq!((ui.enclosure, ui.view, ui.face), (ci, View::Front, Face::Plate));
+}

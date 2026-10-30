@@ -25,6 +25,9 @@ const OUTSIDE: f32 = 60.0;
 /// Smallest edge of the cells of a room's grid, mm: rooms are large, their routes
 /// run along walls and pipe runs.
 pub const ROOM_GRID: f32 = 50.0;
+/// Routes in a room keep within this distance of its walls, its ceiling and what
+/// stands in it, where they can.
+pub const KEEP_TO_SURFACES: f32 = 300.0;
 
 /// A point of cabinet `ci` (enclosure coordinates) in room `ri` (room coordinates).
 pub fn cabinet_in_room(prj: &Project, poses: &[SitePose], ri: usize, ci: usize, q: V3) -> V3 {
@@ -70,6 +73,7 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
         s.block_box(shift(cabinet_box(prj, poses, ri, ci)));
     }
     s.add_enclosure(e, ri, o, rules);
+    s.mark_open(KEEP_TO_SURFACES);
     s
 }
 

@@ -34,6 +34,7 @@ impl App {
             Cmd::PdfInLanguage => !self.session.prj.languages.targets.is_empty(),
             Cmd::UpdateReportBlocks => !self.session.prj.report_blocks.is_empty(),
             Cmd::RenameDevice | Cmd::PartSelection => self.selected_tag().is_some(),
+            Cmd::ShowInLayout | Cmd::ShowIn3d => self.selected_tag().is_some_and(|t| openecraft_core::panel::locate(&self.session.prj, &t).is_some()),
             Cmd::Quit => FileIo::has_own_window(),
             Cmd::SaveAs => FileIo::can_save_in_place(),
             Cmd::NextPageTab | Cmd::PreviousPageTab | Cmd::ClosePageTab => self.page_tabs.len() > 1,
@@ -129,6 +130,11 @@ impl App {
     #[allow(clippy::too_many_lines)]
     pub(super) fn run(&mut self, ctx: &egui::Context, cmd: Cmd) {
         if !self.cmd_enabled(cmd) {
+            return;
+        }
+        // From a docked pane (a context menu): once the panes are back in the dock.
+        if self.in_dock {
+            self.deferred.push(super::Deferred::Cmd(cmd));
             return;
         }
         let def = commands::def(cmd);
@@ -332,6 +338,11 @@ impl App {
             Cmd::PartSelection => {
                 if let Some(tag) = self.selected_tag() {
                     self.parts_ui.select_for(&tag);
+                }
+            }
+            Cmd::ShowInLayout | Cmd::ShowIn3d => {
+                if let Some(tag) = self.selected_tag() {
+                    self.focus_device(&tag, cmd == Cmd::ShowIn3d);
                 }
             }
             // ------------------------------------------------------------ view

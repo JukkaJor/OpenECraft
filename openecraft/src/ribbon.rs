@@ -171,6 +171,7 @@ pub static TABS: &[Tab] = &[
             g("plugs", tr_const!("Plugs"), &[L(C::Plugs)]),
             g("plc", tr_const!("PLC"), &[L(C::PlcOverview), S(C::PlcHardware)]),
             g("parts", tr_const!("Parts"), &[L(C::PartSelection)]),
+            g("layout", tr_const!("Panel layout"), &[S(C::ShowInLayout), S(C::ShowIn3d)]),
             g("structure", tr_const!("Structure"), &[L(C::Structure)]),
             g("preplanning", tr_const!("Pre-planning"), &[L(C::Preplanning), S(C::SingleLine)]),
         ],

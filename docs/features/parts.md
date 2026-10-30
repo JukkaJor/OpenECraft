@@ -46,6 +46,21 @@ in the app storage (desktop) / local storage (browser).
   converted to mm;
 - **JT**: the tri-strip meshes of JT 8 files.
 
+Parts with dimensions but without a model get a generated one by what they are: DIN
+rail devices with their terminals, toggle or display, terminals in their colours (PE
+green, N blue), PLC modules, fuse switch disconnectors, wall-mounted electronics with
+display and cable glands, 19-inch devices and rack batteries, PV modules, pumps, motors,
+vessels, heat pumps, compressors, refrigeration dryers, valves with lever or actuator,
+pipe fittings, manifolds and air treatment units. Devices of the bundled catalogs
+are drawn after their product photos: Victron inverters with their black corner caps
+and orange band, the Cerbo GX and SmartShunt, the Lynx distributor, Pylontech rack
+batteries with handles and terminals, Hager fuse switch disconnectors, meters and
+modular devices, DEHN arresters with their plug-in modules, Beckhoff EtherCAT
+terminals, Phoenix Contact power supplies, Siemens motor protection switches and
+contactors. Generated models are painted (a colour
+per triangle, `colors` of the mesh); imported ones take the colour the 3D view gives
+the device. Floor-standing parts stand upright on the floor of a room.
+
 ## Parts in the project
 
 - **Project parts**: parts are copied into the project when assigned; synchronize

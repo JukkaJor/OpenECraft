@@ -698,6 +698,9 @@ enum Shape {
     Terminal,
     /// PLC I/O module: tall block with an LED / connector column.
     Plc,
+    /// Contactor or relay: DIN device with a dark front cap and the switch position
+    /// indicator.
+    Contactor,
     /// Door / field device (pushbutton, lamp, sensor): round front.
     Round,
 }
@@ -711,7 +714,9 @@ fn shape_of(p: &Part) -> Option<Shape> {
         "Digital input module" | "Digital output module" | "Analog input module" | "Analog output module" | "CPU" => Shape::Plc,
         "Circuit breaker" | "Residual current device" | "Motor protection switch" | "Auxiliary switch" | "Main switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" | "Safety relay" | "Frequency converter" | "Soft starter" => Shape::Din { toggle: false, display: true },
-        "Temperature switch" => Shape::Din { toggle: false, display: false },
+        "Temperature switch" | "Current transformer" | "Socket outlet" => Shape::Din { toggle: false, display: false },
+        "Power contactor" | "Relay" | "Auxiliary contact block" | "Overload relay" => Shape::Contactor,
+        "Energy meter" | "Battery monitor" | "Measuring transducer" => Shape::Din { toggle: false, display: true },
         _ if matches!(p.group.as_str(), "Sensors, switches, pushbuttons" | "Signal devices" | "Measuring instruments") => Shape::Round,
         _ => Shape::Din { toggle: false, display: false },
     })
@@ -721,6 +726,11 @@ fn shape_of(p: &Part) -> Option<Shape> {
 fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     if p.group == "Mounting" {
         return mounting::model(p);
+    }
+    if p.width > 0.0 && p.height > 0.0 && p.depth > 0.0 {
+        if let Some(m) = models::model(p) {
+            return Some(m);
+        }
     }
     let shape = shape_of(p)?;
     let (w, h, d) = (p.width, p.height, p.depth);
@@ -733,10 +743,10 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     match shape {
         Shape::Din { toggle, display } => {
             let base = d * 0.6;
-            m3.add_box([0.0, 0.0, 0.0], [w, h, base]);
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, base], models::BODY);
             // Raised front in the middle third
             let (f0, f1) = (h * 0.3, h * 0.7);
-            m3.add_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }]);
+            m3.add_painted_box([w * 0.05, f0, base], [w * 0.95, f1, if toggle || display { d * 0.92 } else { d }], models::BODY);
             rect(&mut prims, w * 0.05, f0, w * 0.95, f1, false);
             // Screw terminals on the steps above and below the front
             let n = ((w / 9.0).floor() as usize).clamp(1, 6);
@@ -745,7 +755,7 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 let cx = pitch * (i as f32 + 0.5);
                 let r = (pitch * 0.28).min(3.0);
                 for cy in [h * 0.15, h * 0.85] {
-                    m3.add_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5]);
+                    m3.add_painted_box([cx - r, cy - r, base], [cx + r, cy + r, base + 1.5], models::DARK);
                     prims.push(Prim2d::Circle { c: [cx, h - cy], r, fill: false });
                     prims.push(Prim2d::Line { a: [cx - r * 0.7, h - cy], b: [cx + r * 0.7, h - cy] });
                 }
@@ -753,20 +763,26 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
             if toggle {
                 let (tw, th) = ((w * 0.35).min(8.0), h * 0.12);
                 let (cx, cy) = (w / 2.0, h / 2.0);
-                m3.add_box([cx - tw / 2.0, cy - th / 2.0, d * 0.92], [cx + tw / 2.0, cy + th / 2.0, d]);
+                m3.add_painted_box([cx - tw / 2.0, cy - th / 2.0, d * 0.92], [cx + tw / 2.0, cy + th / 2.0, d], models::BLACK);
                 rect(&mut prims, cx - tw / 2.0, cy - th / 2.0, cx + tw / 2.0, cy + th / 2.0, true);
             }
             if display {
                 let (cx, cy) = (w / 2.0, h * 0.58);
                 let (dw, dh) = (w * 0.6, h * 0.08);
-                m3.add_box([cx - dw / 2.0, cy - dh / 2.0, d * 0.92], [cx + dw / 2.0, cy + dh / 2.0, d]);
+                m3.add_painted_box([cx - dw / 2.0, cy - dh / 2.0, d * 0.92], [cx + dw / 2.0, cy + dh / 2.0, d], models::DISPLAY);
                 rect(&mut prims, cx - dw / 2.0, cy - dh / 2.0, cx + dw / 2.0, cy + dh / 2.0, false);
                 prims.push(Prim2d::Circle { c: [cx, h - h * 0.42], r: (w * 0.08).min(3.0), fill: false });
             }
         }
         Shape::Terminal => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.7]);
-            m3.add_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d]);
+            // Grey; protective earth green, neutral blue.
+            let color = match p.subgroup.as_str() {
+                "PE terminal" => [96, 168, 72],
+                "N terminal" => [70, 120, 200],
+                _ => [150, 156, 162],
+            };
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], color);
+            m3.add_painted_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d], color);
             let r = (w * 0.3).min(2.0);
             for cy in [h * 0.18, h * 0.82] {
                 prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
@@ -774,18 +790,32 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
             rect(&mut prims, w * 0.1, h * 0.35, w * 0.9, h * 0.65, false);
         }
         Shape::Plc => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.85]);
-            m3.add_box([w * 0.15, h * 0.08, d * 0.85], [w * 0.85, h * 0.92, d]);
+            // Dark housing, the front connector with its LED column and terminal block.
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.85], models::DARK);
+            m3.add_painted_box([w * 0.15, h * 0.08, d * 0.85], [w * 0.85, h * 0.92, d * 0.97], [104, 110, 120]);
             rect(&mut prims, w * 0.15, h * 0.08, w * 0.85, h * 0.92, false);
             for i in 0..8 {
                 let y = h * 0.14 + i as f32 * h * 0.095;
+                m3.add_painted_box([w * 0.25, h - y - h * 0.03, d * 0.97], [w * 0.4, h - y, d], [72, 196, 92]);
+                m3.add_painted_box([w * 0.5, h - y - h * 0.05, d * 0.97], [w * 0.78, h - y, d * 0.99], [60, 150, 72]);
                 prims.push(Prim2d::Rect { min: [w * 0.25, y], max: [w * 0.4, y + h * 0.03], fill: true });
                 prims.push(Prim2d::Line { a: [w * 0.5, y + h * 0.015], b: [w * 0.75, y + h * 0.015] });
             }
         }
+        Shape::Contactor => {
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], models::BODY);
+            for cy in [h * 0.06, h * 0.94] {
+                m3.add_painted_box([w * 0.1, cy - h * 0.04, d * 0.7], [w * 0.9, cy + h * 0.04, d * 0.72], models::DARK);
+            }
+            m3.add_painted_box([w * 0.06, h * 0.2, d * 0.7], [w * 0.94, h * 0.8, d * 0.96], [112, 116, 122]);
+            m3.add_painted_box([w * 0.38, h * 0.44, d * 0.96], [w * 0.62, h * 0.56, d], [232, 232, 228]);
+            m3.add_painted_box([w * 0.15, h * 0.66, d * 0.96], [w * 0.85, h * 0.74, d * 0.98], [228, 228, 224]);
+            rect(&mut prims, w * 0.06, h * 0.2, w * 0.94, h * 0.8, false);
+            rect(&mut prims, w * 0.38, h * 0.44, w * 0.62, h * 0.56, true);
+        }
         Shape::Round => {
-            m3.add_box([0.0, 0.0, 0.0], [w, h, d * 0.8]);
-            m3.add_box([w * 0.15, h * 0.15, d * 0.8], [w * 0.85, h * 0.85, d]);
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.8], models::DARK);
+            m3.add_painted_box([w * 0.15, h * 0.15, d * 0.8], [w * 0.85, h * 0.85, d], [188, 192, 198]);
             prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.42, fill: false });
             prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: w.min(h) * 0.3, fill: true });
         }
@@ -793,6 +823,7 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     Some((Model2d { width: w, height: h, prims }, m3))
 }
 
+mod models;
 mod mounting;
 
 #[cfg(test)]

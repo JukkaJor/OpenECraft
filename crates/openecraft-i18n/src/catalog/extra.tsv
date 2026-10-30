@@ -5936,3 +5936,7 @@ Wiring the panels	Schaltschränke werden verdrahtet	Câblage des armoires	Cablea
 Routing cables and pipes in 3D	Kabel und Rohre werden in 3D verlegt	Routage des câbles et tuyaux en 3D	Trazando cables y tuberías en 3D
 Filling the cable ducts	Kabelkanäle werden befüllt	Remplissage des goulottes	Llenando las canaletas
 Checking the project	Projekt wird geprüft	Vérification du projet	Comprobando el proyecto
+Show in panel layout	Im Schaltschrankaufbau anzeigen	Afficher dans l'implantation d'armoire	Mostrar en el diseño del armario
+Show in 3D view	In der 3D-Ansicht anzeigen	Afficher dans la vue 3D	Mostrar en la vista 3D
+The selected device in the layout of its cabinet or room	Das gewählte Betriebsmittel im Aufbau seines Schaltschranks oder Raums	L'appareil sélectionné dans l'implantation de son armoire ou de sa salle	El equipo seleccionado en el diseño de su armario o sala
+The selected device in the 3D view of its cabinet or room, seen from close by	Das gewählte Betriebsmittel in der 3D-Ansicht seines Schaltschranks oder Raums, aus der Nähe	L'appareil sélectionné dans la vue 3D de son armoire ou de sa salle, vu de près	El equipo seleccionado en la vista 3D de su armario o sala, visto de cerca

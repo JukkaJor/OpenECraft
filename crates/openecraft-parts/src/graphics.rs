@@ -36,7 +36,14 @@ pub struct Model2d {
 pub struct Mesh3d {
     pub vertices: Vec<[f32; 3]>,
     pub triangles: Vec<[u32; 3]>,
+    /// Colour (red, green, blue) of each triangle; triangles without one (all of an
+    /// imported mesh) have the colour the view gives the device.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub colors: Vec<[u8; 3]>,
 }
+
+/// Colour of the triangles of a painted mesh that were not painted.
+pub const UNPAINTED: [u8; 3] = [200, 204, 210];
 
 impl Mesh3d {
     /// Axis aligned bounding box (min, max).
@@ -92,6 +99,74 @@ impl Mesh3d {
             };
         }
         self.normalize();
+    }
+
+    /// Colour of triangle `i`, if the mesh is painted.
+    pub fn color(&self, i: usize) -> Option<[u8; 3]> {
+        self.colors.get(i).copied()
+    }
+
+    /// Paints the triangles from `from` on with `c` (the ones before without a colour
+    /// get [`UNPAINTED`]).
+    pub fn paint(&mut self, from: usize, c: [u8; 3]) {
+        let from = from.min(self.triangles.len());
+        if self.colors.len() < from {
+            self.colors.resize(from, UNPAINTED);
+        }
+        self.colors.truncate(from);
+        self.colors.resize(self.triangles.len(), c);
+    }
+
+    /// A box painted with `c`.
+    pub fn add_painted_box(&mut self, min: [f32; 3], max: [f32; 3], c: [u8; 3]) {
+        let from = self.triangles.len();
+        self.add_box(min, max);
+        self.paint(from, c);
+    }
+
+    /// A closed frustum along `axis` (0 = x, 1 = y, 2 = z) from the centre `base` over
+    /// `len`, with the radius `r0` at the base and `r1` at the other end, `n` sides,
+    /// painted with `c` (outward facing, counter clockwise triangles).
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_frustum(&mut self, base: [f32; 3], axis: usize, r0: f32, r1: f32, len: f32, n: usize, c: [u8; 3]) {
+        let from = self.triangles.len();
+        let (u, v) = ((axis + 1) % 3, (axis + 2) % 3);
+        let first = self.vertices.len() as u32;
+        let n = n.max(3);
+        for (r, along) in [(r0, 0.0), (r1, len)] {
+            for k in 0..n {
+                let t = k as f32 / n as f32 * std::f32::consts::TAU;
+                let mut q = base;
+                q[u] += r * t.cos();
+                q[v] += r * t.sin();
+                q[axis] += along;
+                self.vertices.push(q);
+            }
+        }
+        let mut c1 = base;
+        c1[axis] += len;
+        self.vertices.push(base);
+        self.vertices.push(c1);
+        let (bottom, top, n32) = (first, first + n as u32, n as u32);
+        let (cb, ct) = (first + 2 * n32, first + 2 * n32 + 1);
+        for k in 0..n32 {
+            let k1 = (k + 1) % n32;
+            self.triangles.push([bottom + k, bottom + k1, top + k1]);
+            self.triangles.push([bottom + k, top + k1, top + k]);
+            if r0 > 0.0 {
+                self.triangles.push([cb, bottom + k1, bottom + k]);
+            }
+            if r1 > 0.0 {
+                self.triangles.push([ct, top + k, top + k1]);
+            }
+        }
+        self.paint(from, c);
+    }
+
+    /// A closed cylinder (see [`Mesh3d::add_frustum`]).
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_cylinder(&mut self, base: [f32; 3], axis: usize, r: f32, len: f32, n: usize, c: [u8; 3]) {
+        self.add_frustum(base, axis, r, r, len, n, c);
     }
 
     /// Adds an axis aligned box (outward facing, counter clockwise triangles).
