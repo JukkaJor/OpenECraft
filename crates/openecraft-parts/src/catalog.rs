@@ -323,30 +323,30 @@ Breaking capacity: 100 kA".into();
     p.voltage = "230 V AC".into();
     p.power = "100 W".into();
 
-    let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.6, 29.3, 0.006), &[(Terminal, "")]);
     p.tech_data = "End bracket: GEN.EB-35\nEnd plate: GEN.TB-END\nJumper: GEN.JMP-2.5-2, GEN.JMP-2.5-3, GEN.JMP-2.5-10".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into(), "GEN.JMP-2.5-2".into(), "GEN.JMP-2.5-3".into(), "GEN.JMP-2.5-10".into()];
-    let p = c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.5, 29.3, 0.01), &[(Terminal, "")]);
     p.tech_data = "Terminal type: PE\nEnd bracket: GEN.EB-35\nEnd plate: GEN.TB-END".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into()];
-    let p = c.add("GEN.TB-N-2.5", "Neutral terminal 2.5 mm², blue", "Terminals", "N terminal", "X", 1.0, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-N-2.5", "Neutral terminal 2.5 mm², blue", "Terminals", "N terminal", "X", 1.0, (5.2, 48.6, 29.3, 0.006), &[(Terminal, "")]);
     p.tech_data = "Terminal type: N\nEnd bracket: GEN.EB-35\nEnd plate: GEN.TB-END".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into()];
     let p = c.add("GEN.TB-DISC-4", "Disconnect terminal 4 mm², knife disconnect, grey", "Terminals", "Disconnect terminal", "X", 2.6, (6.2, 60.0, 42.0, 0.01), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Disconnect\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
-    let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (8.2, 70.0, 50.0, 0.02), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (6.2, 55.9, 57.4, 0.02), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Fuse\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
     // Terminals for the cables between enclosures and from the field.
     for (number, desc, subgroup, price, dims) in [
-        ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 70.0, 50.0, 0.03)),
-        ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 70.0, 50.0, 0.03)),
-        ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 70.0, 50.0, 0.05)),
+        ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 75.4, 45.1, 0.03)),
+        ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 75.4, 45.1, 0.03)),
+        ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 75.4, 45.1, 0.05)),
         ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 85.0, 60.0, 0.06)),
         ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 85.0, 60.0, 0.06)),
         ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 85.0, 60.0, 0.09)),
-        ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 60.0, 45.0, 0.02)),
+        ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 57.7, 36.0, 0.02)),
         ("GEN.BB-FEED-185", "Busbar feed-in terminal 1-pole, up to 185 mm², for 60 mm busbar systems", "Feed-through terminal", 38.0, (40.0, 90.0, 70.0, 0.4)),
         ("GEN.TB-240", "Feed-through terminal 240 mm², for cable distribution cabinets", "Feed-through terminal", 24.0, (0.0, 0.0, 0.0, 0.5)),
         ("GEN.TB-PEN-150", "PEN terminal 150 mm², green-yellow with blue marking", "PE terminal", 19.0, (0.0, 0.0, 0.0, 0.4)),
@@ -356,8 +356,8 @@ Breaking capacity: 100 kA".into();
             p.mounting = "Busbar 60 mm".into();
         }
     }
-    c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
-    c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.0, 40.0, 36.0, 0.01), &[]);
+    c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (2.2, 48.6, 29.1, 0.002), &[]);
+    c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.5, 54.6, 26.0, 0.01), &[]);
     for poles in [2, 3, 10] {
         let number = format!("GEN.JMP-2.5-{poles}");
         let desc = format!("Plug-in jumper {poles} poles for terminal 2.5 mm²");
@@ -795,7 +795,9 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 _ if shape == Shape::EndPlate => ([118, 122, 128], [118, 122, 128]),
                 _ => ([168, 172, 174], models::WHITE),
             };
-            terminal_slice(&mut m3, w, h, d, color, (shape == Shape::Terminal).then_some(marker));
+            // Screw terminals where the part says so, push-in otherwise.
+            let clamp = if p.description.to_lowercase().contains("screw") { Clamp::Screw } else { Clamp::PushIn };
+            terminal_slice(&mut m3, w, h, d, color, (shape == Shape::Terminal).then_some((marker, clamp)));
             if shape == Shape::Terminal {
                 let r = (w * 0.3).min(2.0);
                 for cy in [h * 0.2, h * 0.8] {
@@ -856,12 +858,26 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     Some((Model2d { width: w, height: h, prims }, m3))
 }
 
+/// How the conductors of a terminal are clamped.
+#[derive(Clone, Copy, PartialEq)]
+enum Clamp {
+    /// Push-in: the wire entry in the end face, the pusher on the step behind it.
+    PushIn,
+    /// Screw: the wire entry in the end face, the screw in an opening of the step.
+    Screw,
+}
+
+/// Height of the end of a terminal (wire entries), of its steps (pushers or screws) and
+/// of the middle, from the rail to the front, as parts of the depth.
+const TERMINAL_PROFILE: [f32; 3] = [0.6, 0.82, 1.0];
+
 /// A terminal slice (x across, y along with the rail in the middle, z to the front):
-/// low ends with the wire entries, steps with the recessed screw openings, the high
-/// middle with the marker field and the jumper shafts (`marker`: none on an end plate).
-/// Above the foot a hairline gap is left on both sides, so that the slices of a strip
-/// are seen.
-fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], marker: Option<[u8; 3]>) {
+/// low ends with the wire entries, steps with the pushers or the recessed screws, the
+/// high middle with the marker field and the jumper shafts (`front`: the marker colour
+/// and the clamp; none on an end plate). Above the foot a hairline gap is left on both
+/// sides, so that the slices of a strip are seen.
+fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], front: Option<([u8; 3], Clamp)>) {
+    let [end, step, _] = TERMINAL_PROFILE.map(|f| f * d);
     let g = (w * 0.03).min(0.15);
     let (x0, x1) = (g, w - g);
     let (hx0, hx1) = (w * 0.22, w * 0.78);
@@ -877,37 +893,50 @@ fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], marker: Op
         };
         let (e0, e1) = y(0.0, h * 0.14);
         let (s0, s1) = y(h * 0.14, h * 0.28);
-        match marker {
-            Some(_) => {
-                // Wire entry: walls beside and above the opening, its dark inside.
-                let r = h * 0.03;
-                let (o0, o1) = y(r, h * 0.14);
-                b([x0, e0, d * 0.25], [hx0, e1, d * 0.45], c);
-                b([hx1, e0, d * 0.25], [x1, e1, d * 0.45], c);
-                b([hx0, o0, d * 0.25], [hx1, o1, d * 0.45], DARK_INSIDE);
-                b([x0, e0, d * 0.45], [x1, e1, d * 0.55], c);
-                // Screw step: walls around the opening, the screw head with its slot at
-                // its bottom.
-                let (q0, q1) = y(h * 0.15, h * 0.24);
-                b([x0, s0, d * 0.25], [x1, s1, d * 0.6], c);
-                b([x0, s0, d * 0.6], [hx0, s1, d * 0.72], c);
-                b([hx1, s0, d * 0.6], [x1, s1, d * 0.72], c);
-                b([hx0, s0, d * 0.6], [hx1, q0, d * 0.72], c);
-                b([hx0, q1, d * 0.6], [hx1, s1, d * 0.72], c);
-                b([hx0, q0, d * 0.58], [hx1, q1, d * 0.6], models::STEEL);
-                let (qm, sl) = ((q0 + q1) / 2.0, h * 0.008);
-                b([hx0, qm - sl, d * 0.6], [hx1, qm + sl, d * 0.61], models::DARK);
+        let Some((_, clamp)) = front else {
+            b([x0, e0, d * 0.25], [x1, e1, end], c);
+            b([x0, s0, d * 0.25], [x1, s1, step], c);
+            continue;
+        };
+        // Wire entry in the end face: walls beside, below and above the opening, its
+        // dark inside.
+        let (o0, o1) = y(h * 0.03, h * 0.14);
+        let (z0, z1) = (d * 0.3, end - d * 0.1);
+        b([x0, e0, d * 0.25], [hx0, e1, end], c);
+        b([hx1, e0, d * 0.25], [x1, e1, end], c);
+        b([hx0, e0, d * 0.25], [hx1, e1, z0], c);
+        b([hx0, e0, z1], [hx1, e1, end], c);
+        b([hx0, o0, z0], [hx1, o1, z1], DARK_INSIDE);
+        match clamp {
+            // The orange pusher on the step.
+            Clamp::PushIn => {
+                let (q0, q1) = y(h * 0.16, h * 0.26);
+                b([x0, s0, d * 0.25], [x1, s1, step - d * 0.06], c);
+                b([x0, s0, step - d * 0.06], [x1, q0, step], c);
+                b([x0, q1, step - d * 0.06], [x1, s1, step], c);
+                b([x0, q0, step - d * 0.06], [hx0, q1, step], c);
+                b([hx1, q0, step - d * 0.06], [x1, q1, step], c);
+                b([hx0, q0, step - d * 0.06], [hx1, q1, step - d * 0.01], PUSHER);
             }
-            None => {
-                b([x0, e0, d * 0.25], [x1, e1, d * 0.55], c);
-                b([x0, s0, d * 0.25], [x1, s1, d * 0.72], c);
+            // Walls around the screw opening, the screw head with its slot at its bottom.
+            Clamp::Screw => {
+                let (q0, q1) = y(h * 0.15, h * 0.24);
+                let floor = step - d * 0.12;
+                b([x0, s0, d * 0.25], [x1, s1, floor], c);
+                b([x0, s0, floor], [hx0, s1, step], c);
+                b([hx1, s0, floor], [x1, s1, step], c);
+                b([hx0, s0, floor], [hx1, q0, step], c);
+                b([hx0, q1, floor], [hx1, s1, step], c);
+                b([hx0, q0, floor - d * 0.02], [hx1, q1, floor], models::STEEL);
+                let (qm, sl) = ((q0 + q1) / 2.0, h * 0.008);
+                b([hx0, qm - sl, floor], [hx1, qm + sl, floor + d * 0.01], models::DARK);
             }
         }
     }
     // The high middle with the marker field and the jumper shafts beside it.
     let (m0, m1) = (h * 0.28, h * 0.72);
-    match marker {
-        Some(mc) => {
+    match front {
+        Some((mc, _)) => {
             b([x0, m0, d * 0.25], [x1, m1, d * 0.96], c);
             b([x0, m0, d * 0.96], [x1, h * 0.4, d], c);
             b([x0, h * 0.6, d * 0.96], [x1, m1, d], c);
@@ -922,6 +951,8 @@ fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], marker: Op
 
 /// The inside of the openings of a terminal (wire entries, jumper shafts).
 const DARK_INSIDE: [u8; 3] = [46, 48, 52];
+/// The pushers of push-in terminals.
+const PUSHER: [u8; 3] = [236, 116, 34];
 
 mod models;
 mod mounting;

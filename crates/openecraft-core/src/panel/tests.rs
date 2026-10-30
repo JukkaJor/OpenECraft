@@ -17,9 +17,9 @@ fn device_size_from_parts() {
     let k1 = device_size(&prj, "-K1").unwrap();
     assert_eq!((k1.w, k1.h, k1.d), (45.0, 74.0, 113.0));
     assert_eq!(k1.part, "GEN.CT-9A-24DC");
-    // Terminal strip: 4 terminals of 5.2 mm, 2 end plates of 1.5 mm, 2 end brackets of 9 mm
+    // Terminal strip: 4 terminals of 5.2 mm, 2 end plates of 2.2 mm, 2 end brackets of 9.5 mm
     let x1 = device_size(&prj, "-X1").unwrap();
-    assert!((x1.w - 41.8).abs() < 0.01, "{}", x1.w);
+    assert!((x1.w - 44.2).abs() < 0.01, "{}", x1.w);
     // Motors have no mounting data: not placeable
     assert!(device_size(&prj, "-M1").is_none());
 }

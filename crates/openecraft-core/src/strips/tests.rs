@@ -104,11 +104,11 @@ fn strips_are_as_long_as_their_layout() {
     let mut prj = demo_project();
     let terminal = |prj: &Project| crate::panel::device_size(prj, "-X1").unwrap().w;
     // 4 terminals, end plates after the grey ones and after PE, 2 end brackets.
-    assert!((terminal(&prj) - (4.0 * 5.2 + 2.0 * 1.5 + 2.0 * 9.0)).abs() < 0.01);
+    assert!((terminal(&prj) - (4.0 * 5.2 + 2.0 * 2.2 + 2.0 * 9.5)).abs() < 0.01);
     // A wider PE terminal and a spare (with its own end plate) make the strip longer.
     prj.parts.iter_mut().find(|p| p.number == "GEN.TB-PE-2.5").unwrap().width = 10.4;
     prj.strips.entry("-X1".into()).or_default().spares = 1;
-    assert!((terminal(&prj) - (4.0 * 5.2 + 10.4 + 3.0 * 1.5 + 2.0 * 9.0)).abs() < 0.01);
+    assert!((terminal(&prj) - (4.0 * 5.2 + 10.4 + 3.0 * 2.2 + 2.0 * 9.5)).abs() < 0.01);
 }
 
 fn kinds(prj: &Project) -> Vec<ElementKind> {
